@@ -1,0 +1,54 @@
+package org.dows.hep.api.evaluate.response;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.*;
+
+import javax.validation.constraints.*;
+import java.util.Date;
+import java.math.BigDecimal;
+
+/**
+* @description 
+*
+* @author 
+* @date 
+*/
+@Data
+@NoArgsConstructor
+@Schema(name = "EvaluateReportManagement 对象", title = "评估报告管理")
+public class EvaluateReportManagementResponse{
+    @Schema(title = "数据库ID")
+    private Long id;
+
+    @Schema(title = "分布式ID")
+    private String EvaluateReportId;
+
+    @Schema(title = "应用ID")
+    private String appId;
+
+    @Schema(title = "分布式ID")
+    private String questionnaireId;
+
+    @Schema(title = "报告名称")
+    private String reportName;
+
+    @Schema(title = "报告说明")
+    private String reportDescr;
+
+    @Schema(title = "评估结果")
+    private String assessmentResult;
+
+    @Schema(title = "相关建议")
+    private String suggestion;
+
+    @Schema(title = "分数段[最小]")
+    private Integer minScore;
+
+    @Schema(title = "分数段[最大]")
+    private Integer maxScore;
+
+
+}
