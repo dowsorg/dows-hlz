@@ -15,7 +15,7 @@ import java.util.HashMap;;
 * @description project descr:机构:机构操作
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午2:24:35
+* @date 2023年4月14日 下午3:31:43
 */
 public class HepOrgOperateBiz{
     /**
@@ -26,7 +26,7 @@ public class HepOrgOperateBiz{
     * @工时: 3H
     * @开发者: jx
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public PersonInstanceResponse listPerson(PersonQueryRequest personQuery ) {
         return new PersonInstanceResponse();
@@ -39,7 +39,7 @@ public class HepOrgOperateBiz{
     * @工时: 4H
     * @开发者: jx
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public List<OrganizationFunsResponse> listOrgFunc(String orgId ) {
         return new ArrayList<OrganizationFunsResponse>();
@@ -52,7 +52,7 @@ public class HepOrgOperateBiz{
     * @工时: 4H
     * @开发者: jx
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public Boolean listOrgFee(CaseOrgFeeRequest caseOrgFee ) {
         return Boolean.FALSE;
@@ -65,7 +65,7 @@ public class HepOrgOperateBiz{
     * @工时: 4H
     * @开发者: jx
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public Boolean transferPerson(TransferPersonelRequest transferPersonel ) {
         return Boolean.FALSE;

@@ -44,8 +44,8 @@ public class OrgFeeSettingRequest{
     @Schema(title = "报销比例")
     private BigDecimal reimburseRatio;
 
-    @Schema(title = "")
-    private  ;
+    @Schema(title = "费用")
+    private BigDecimal fee;
 
     @Schema(title = "费用名称")
     private String feeName;

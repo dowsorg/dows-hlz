@@ -18,22 +18,16 @@ import java.math.BigDecimal;
 */
 @Data
 @NoArgsConstructor
-@Schema(name = "QuestionsInSection 对象", title = "问卷中条件查询")
-public class QuestionsInSectionRequest{
-    @Schema(title = "appId")
-    private String appId;
-
-    @Schema(title = "问题集ID")
-    private String questionSectionId;
-
+@Schema(name = "QuestionnaireGenerateElements 对象", title = "试卷自动生成因素")
+public class QuestionnaireGenerateElementsRequest{
     @Schema(title = "类别Id")
     private String questionInstanceCategId;
 
-    @Schema(title = "题目答题类型[单选|多选|判断|主观|材料]")
+    @Schema(title = "[JSON]题目答题类型[单选|多选|判断|主观|材料]")
     private String questionType;
 
-    @Schema(title = "题目")
-    private String questionName;
+    @Schema(title = "题数")
+    private Integer questionCount;
 
 
 }

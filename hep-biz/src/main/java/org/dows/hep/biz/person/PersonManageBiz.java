@@ -12,7 +12,7 @@ import java.util.HashMap;;
 * @description project descr:人物:人物管理
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午2:24:35
+* @date 2023年4月14日 下午3:31:43
 */
 public class PersonManageBiz{
     /**
@@ -23,7 +23,7 @@ public class PersonManageBiz{
     * @工时: 3H
     * @开发者: jx
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public Boolean deletePersons(String ids ) {
         return Boolean.FALSE;
@@ -36,7 +36,7 @@ public class PersonManageBiz{
     * @工时: 3H
     * @开发者: jx
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public PersonInstanceResponse getPerson(String accountId ) {
         return new PersonInstanceResponse();
@@ -49,7 +49,7 @@ public class PersonManageBiz{
     * @工时: 3H
     * @开发者: jx
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public Boolean editPerson(PersonInstanceRequest personInstance ) {
         return Boolean.FALSE;
@@ -62,7 +62,7 @@ public class PersonManageBiz{
     * @工时: 6H
     * @开发者: jx
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public Boolean copyPerson(String accountId ) {
         return Boolean.FALSE;

@@ -1,4 +1,4 @@
-package org.dows.hep.api.indicator.request;
+package org.dows.hep.api.question.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -18,6 +18,13 @@ import java.math.BigDecimal;
 */
 @Data
 @NoArgsConstructor
-@Schema(name = "IndicatorViewSupportExamId 对象", title = "查看指标辅助检查类分布式ID")
-public class IndicatorViewSupportExamIdRequest{
+@Schema(name = "QuestionnaireMergeElements 对象", title = "试卷合并因素")
+public class QuestionnaireMergeElementsRequest{
+    @Schema(title = "问题集[试卷]ids")
+    private String questionSectionIds;
+
+    @Schema(title = "appId")
+    private String appId;
+
+
 }

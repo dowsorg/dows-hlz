@@ -10,6 +10,8 @@ import org.dows.hep.api.question.response.QuestionSectionResponse;
 import org.dows.hep.api.question.request.QuestionSectionSearchRequest;
 import org.dows.hep.api.question.response.QuestionSectionResponse;
 import org.dows.hep.api.question.response.QuestionSectionResponse;
+import org.dows.hep.api.question.request.QuestionnaireGenerateElementsRequest;
+import org.dows.hep.api.question.request.QuestionnaireMergeElementsRequest;
 import org.dows.hep.api.question.request.QuestionsInSectionRequest;
 import org.dows.hep.api.question.response.QuestionSectionResponse;
 import org.dows.hep.biz.question.QuestionSectionBiz;
@@ -24,7 +26,7 @@ import java.util.List;
 * @description project descr:问题:
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午2:24:35
+* @date 2023年4月14日 下午3:31:43
 */
 @RequiredArgsConstructor
 @RestController
@@ -140,6 +142,28 @@ public class QuestionSectionRest {
     @PostMapping("v1/question/questionSection/copyQuestionSection")
     public String copyQuestionSection(@RequestBody @Validated String oriQuestionSectionId ) {
         return questionSectionBiz.copyQuestionSection(oriQuestionSectionId);
+    }
+
+    /**
+    * 自动生成问题集[问卷]
+    * @param
+    * @return
+    */
+    @ApiOperation("自动生成问题集[问卷]")
+    @PostMapping("v1/question/questionSection/generateQuestionSectionAutomatic")
+    public String generateQuestionSectionAutomatic(@RequestBody @Validated QuestionnaireGenerateElementsRequest questionnaireGenerateElements ) {
+        return questionSectionBiz.generateQuestionSectionAutomatic(questionnaireGenerateElements);
+    }
+
+    /**
+    * 合并问题集[问卷]
+    * @param
+    * @return
+    */
+    @ApiOperation("合并问题集[问卷]")
+    @PostMapping("v1/question/questionSection/mergeQuestionSection")
+    public String mergeQuestionSection(@RequestBody @Validated QuestionnaireMergeElementsRequest questionnaireMergeElements ) {
+        return questionSectionBiz.mergeQuestionSection(questionnaireMergeElements);
     }
 
     /**

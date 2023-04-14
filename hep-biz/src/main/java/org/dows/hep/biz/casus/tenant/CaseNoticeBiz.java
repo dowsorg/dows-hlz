@@ -1,7 +1,7 @@
 package org.dows.hep.biz.casus.tenant;
 
 import org.dows.framework.api.Response;
-import org.dows.hep.api.casus.tenant.request.CreateCaseNoticeRequest;
+import org.dows.hep.api.casus.tenant.request.CaseNoticeRequest;
 import org.dows.hep.api.casus.tenant.response.CaseNoticeResponse;
 
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.HashMap;;
 * @description project descr:案例:案例公告
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午2:24:35
+* @date 2023年4月14日 下午3:31:43
 */
 public class CaseNoticeBiz{
     /**
@@ -23,9 +23,9 @@ public class CaseNoticeBiz{
     * @工时: 8H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
-    public Boolean saveOrUpdCaseNotice(CreateCaseNoticeRequest createCaseNotice ) {
+    public Boolean saveOrUpdCaseNotice(CaseNoticeRequest caseNotice ) {
         return Boolean.FALSE;
     }
     /**
@@ -36,7 +36,7 @@ public class CaseNoticeBiz{
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public List<CaseNoticeResponse> listCaseNotice(String caseInstanceId ) {
         return new ArrayList<CaseNoticeResponse>();
@@ -49,7 +49,7 @@ public class CaseNoticeBiz{
     * @工时: 3H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public Boolean delCaseNotice(String caseNoticeId ) {
         return Boolean.FALSE;

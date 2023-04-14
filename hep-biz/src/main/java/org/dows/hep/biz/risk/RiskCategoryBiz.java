@@ -13,7 +13,7 @@ import java.util.HashMap;;
 * @description project descr:风险:风险类别
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午2:24:35
+* @date 2023年4月14日 下午3:31:43
 */
 public class RiskCategoryBiz{
     /**
@@ -24,7 +24,7 @@ public class RiskCategoryBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public void createRiskCategory(CreateRiskCategoryRequest createRiskCategory ) {
         
@@ -37,7 +37,7 @@ public class RiskCategoryBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public void deleteRiskCategory(String riskCategoryId ) {
         
@@ -50,7 +50,7 @@ public class RiskCategoryBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public void updateRiskCategory(UpdateRiskCategoryRequest updateRiskCategory ) {
         
@@ -63,7 +63,7 @@ public class RiskCategoryBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public RiskCategoryResponse getRiskCategory(String riskCategoryId ) {
         return new RiskCategoryResponse();

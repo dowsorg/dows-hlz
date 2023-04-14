@@ -15,7 +15,7 @@ import java.util.HashMap;;
 * @description project descr:机构操作:机构管理
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午2:24:35
+* @date 2023年4月14日 下午3:31:43
 */
 public class OrgManageBiz{
     /**
@@ -26,7 +26,7 @@ public class OrgManageBiz{
     * @工时: 4H
     * @开发者: jx
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public String addOrg(AddOrgRequest addOrg ) {
         return new String();
@@ -39,7 +39,7 @@ public class OrgManageBiz{
     * @工时: 4H
     * @开发者: jx
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public Boolean bindOrgFunc(OrgFuncRequest orgFunc ) {
         return Boolean.FALSE;
@@ -52,7 +52,7 @@ public class OrgManageBiz{
     * @工时: 4H
     * @开发者: jx
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public Boolean settingOrgFee(OrgFeeSettingRequest orgFeeSetting ) {
         return Boolean.FALSE;
@@ -65,7 +65,7 @@ public class OrgManageBiz{
     * @工时: 3H
     * @开发者: jx
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public Boolean addMember(AddOrgMemberRequest addOrgMember ) {
         return Boolean.FALSE;
@@ -78,7 +78,7 @@ public class OrgManageBiz{
     * @工时: 0H
     * @开发者: 
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public void exportMember() {
         
@@ -91,7 +91,7 @@ public class OrgManageBiz{
     * @工时: 6H
     * @开发者: jx
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public Boolean importOrgMember(MultipartFileRequest file ) {
         return Boolean.FALSE;
@@ -104,7 +104,7 @@ public class OrgManageBiz{
     * @工时: 5H
     * @开发者: jx
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public void dowsnloadTemplate() {
         

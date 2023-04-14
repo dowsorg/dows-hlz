@@ -16,7 +16,7 @@ import java.util.List;
 * @description project descr:实验:实验管理
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午2:24:35
+* @date 2023年4月14日 下午3:31:42
 */
 @Api(tags = "实验管理")
 public interface ExperimentManageApi{

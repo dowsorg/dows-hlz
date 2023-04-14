@@ -38,6 +38,9 @@ public class QuestionSectionRequest{
     @Schema(title = "问题集说明")
     private String descr;
 
+    @Schema(title = "是否必填")
+    private Integer required;
+
     @Schema(title = "状态")
     private Integer enabled;
 

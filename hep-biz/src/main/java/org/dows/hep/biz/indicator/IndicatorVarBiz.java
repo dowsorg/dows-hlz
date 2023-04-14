@@ -15,7 +15,7 @@ import java.util.HashMap;;
 * @description project descr:指标:指标变量
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午2:24:35
+* @date 2023年4月14日 下午3:31:43
 */
 public class IndicatorVarBiz{
     /**
@@ -26,7 +26,7 @@ public class IndicatorVarBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public void createIndicatorVar(CreateIndicatorVarRequest createIndicatorVar ) {
         
@@ -39,7 +39,7 @@ public class IndicatorVarBiz{
     * @工时: 2H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public void deleteIndicatorVar(IndicatorVarIdRequest indicatorVarId ) {
         
@@ -52,7 +52,7 @@ public class IndicatorVarBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public void updateIndicatorVar(UpdateIndicatorVarRequest updateIndicatorVar ) {
         
@@ -65,7 +65,7 @@ public class IndicatorVarBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public IndicatorVarResponse getIndicatorVar(IndicatorVarIdRequest indicatorVarId ) {
         return new IndicatorVarResponse();
@@ -78,7 +78,7 @@ public class IndicatorVarBiz{
     * @工时: 40H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public void createExpressionComponent(String expressionId ) {
         

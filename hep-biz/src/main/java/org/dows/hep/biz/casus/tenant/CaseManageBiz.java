@@ -14,7 +14,7 @@ import java.util.HashMap;;
 * @description project descr:案例:案例管理
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午2:24:35
+* @date 2023年4月14日 下午3:31:43
 */
 public class CaseManageBiz{
     /**
@@ -25,7 +25,7 @@ public class CaseManageBiz{
     * @工时: 8H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public String saveOrUpdCaseInstance(CaseInstanceRequest caseInstance ) {
         return new String();
@@ -38,7 +38,7 @@ public class CaseManageBiz{
     * @工时: 4H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public String copyCaseInstance(String oriCaseInstanceId ) {
         return new String();
@@ -51,7 +51,7 @@ public class CaseManageBiz{
     * @工时: 4H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public CaseInstanceResponse pageCaseInstance(CaseInstancePageRequest caseInstancePage ) {
         return new CaseInstanceResponse();
@@ -64,7 +64,7 @@ public class CaseManageBiz{
     * @工时: 4H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public CaseInstanceResponse getCaseInstance(String caseInstanceId ) {
         return new CaseInstanceResponse();
@@ -77,7 +77,7 @@ public class CaseManageBiz{
     * @工时: 3H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public Boolean delCaseInstance(String caseInstanceId ) {
         return Boolean.FALSE;

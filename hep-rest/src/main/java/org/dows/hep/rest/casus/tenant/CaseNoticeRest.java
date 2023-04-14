@@ -4,7 +4,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.Response;
-import org.dows.hep.api.casus.tenant.request.CreateCaseNoticeRequest;
+import org.dows.hep.api.casus.tenant.request.CaseNoticeRequest;
 import org.dows.hep.api.casus.tenant.response.CaseNoticeResponse;
 import org.dows.hep.biz.casus.tenant.CaseNoticeBiz;
 import org.springframework.validation.annotation.Validated;
@@ -18,7 +18,7 @@ import java.util.List;
 * @description project descr:案例:案例公告
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午2:24:35
+* @date 2023年4月14日 下午3:31:43
 */
 @RequiredArgsConstructor
 @RestController
@@ -33,8 +33,8 @@ public class CaseNoticeRest {
     */
     @ApiOperation("新增和更新案例公告")
     @PostMapping("v1/casusTenant/caseNotice/saveOrUpdCaseNotice")
-    public Boolean saveOrUpdCaseNotice(@RequestBody @Validated CreateCaseNoticeRequest createCaseNotice ) {
-        return caseNoticeBiz.saveOrUpdCaseNotice(createCaseNotice);
+    public Boolean saveOrUpdCaseNotice(@RequestBody @Validated CaseNoticeRequest caseNotice ) {
+        return caseNoticeBiz.saveOrUpdCaseNotice(caseNotice);
     }
 
     /**

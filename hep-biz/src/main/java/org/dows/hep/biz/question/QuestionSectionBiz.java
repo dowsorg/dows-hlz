@@ -7,6 +7,8 @@ import org.dows.hep.api.question.response.QuestionSectionResponse;
 import org.dows.hep.api.question.request.QuestionSectionSearchRequest;
 import org.dows.hep.api.question.response.QuestionSectionResponse;
 import org.dows.hep.api.question.response.QuestionSectionResponse;
+import org.dows.hep.api.question.request.QuestionnaireGenerateElementsRequest;
+import org.dows.hep.api.question.request.QuestionnaireMergeElementsRequest;
 import org.dows.hep.api.question.request.QuestionsInSectionRequest;
 import org.dows.hep.api.question.response.QuestionSectionResponse;
 
@@ -18,7 +20,7 @@ import java.util.HashMap;;
 * @description project descr:问题:
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午2:24:35
+* @date 2023年4月14日 下午3:31:43
 */
 public class QuestionSectionBiz{
     /**
@@ -29,7 +31,7 @@ public class QuestionSectionBiz{
     * @工时: 8H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public String saveOrUpdQuestionSection(QuestionSectionRequest questionSection ) {
         return new String();
@@ -42,7 +44,7 @@ public class QuestionSectionBiz{
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public QuestionSectionResponse pageQuestionSection(QuestionSectionSearchRequest questionSectionSearch ) {
         return new QuestionSectionResponse();
@@ -55,7 +57,7 @@ public class QuestionSectionBiz{
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public List<QuestionSectionResponse> listQuestionSection(QuestionSectionSearchRequest questionSectionSearch ) {
         return new ArrayList<QuestionSectionResponse>();
@@ -68,7 +70,7 @@ public class QuestionSectionBiz{
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public QuestionSectionResponse getQuestionSection(String questionSectionId ) {
         return new QuestionSectionResponse();
@@ -81,7 +83,7 @@ public class QuestionSectionBiz{
     * @工时: 3H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public Boolean enabledQuestionSection(String questionSectionId ) {
         return Boolean.FALSE;
@@ -94,7 +96,7 @@ public class QuestionSectionBiz{
     * @工时: 3H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public Boolean disabledQuestionSection(String questionSectionId ) {
         return Boolean.FALSE;
@@ -107,7 +109,7 @@ public class QuestionSectionBiz{
     * @工时: 3H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public Boolean sortQuestionSection(String questionSectionId, Integer sequence ) {
         return Boolean.FALSE;
@@ -120,7 +122,7 @@ public class QuestionSectionBiz{
     * @工时: 3H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public Boolean transposeQuestionSection(String leftSectionId, String rightSectionId ) {
         return Boolean.FALSE;
@@ -133,7 +135,7 @@ public class QuestionSectionBiz{
     * @工时: 6H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public Boolean delQuestionSection(String questionSectionIds ) {
         return Boolean.FALSE;
@@ -146,9 +148,35 @@ public class QuestionSectionBiz{
     * @工时: 8H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public String copyQuestionSection(String oriQuestionSectionId ) {
+        return new String();
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 自动生成问题集[问卷]
+    * @关联表: QuestionSection,QuestionSectionItem,QuestionInstance
+    * @工时: 8H
+    * @开发者: fhb
+    * @开始时间: 
+    * @创建时间: 2023年4月14日 下午3:31:43
+    */
+    public String generateQuestionSectionAutomatic(QuestionnaireGenerateElementsRequest questionnaireGenerateElements ) {
+        return new String();
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 合并问题集[问卷]
+    * @关联表: QuestionSection,QuestionSectionItem,QuestionInstance
+    * @工时: 4H
+    * @开发者: fhb
+    * @开始时间: 
+    * @创建时间: 2023年4月14日 下午3:31:43
+    */
+    public String mergeQuestionSection(QuestionnaireMergeElementsRequest questionnaireMergeElements ) {
         return new String();
     }
     /**
@@ -159,7 +187,7 @@ public class QuestionSectionBiz{
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public QuestionSectionResponse listSectionQuestion(QuestionsInSectionRequest questionsInSection ) {
         return new QuestionSectionResponse();
@@ -172,7 +200,7 @@ public class QuestionSectionBiz{
     * @工时: 3H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public Boolean sortSectionQuestion(String questionSectionId, String questionSectionItemId, Integer sequence ) {
         return Boolean.FALSE;
@@ -185,7 +213,7 @@ public class QuestionSectionBiz{
     * @工时: 3H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public Boolean transposeSectionQuestion(String questionSectionId, String leftQuestionSectionItemId, String rightQuestionSectionItemId ) {
         return Boolean.FALSE;
@@ -198,7 +226,7 @@ public class QuestionSectionBiz{
     * @工时: 3H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public Boolean enabledSectionQuestion(String questionSectionId, String questionSectionItemId ) {
         return Boolean.FALSE;
@@ -211,7 +239,7 @@ public class QuestionSectionBiz{
     * @工时: 3H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public Boolean disabledSectionQuestion(String questionSectionId, String questionSectionItemId ) {
         return Boolean.FALSE;
@@ -224,7 +252,7 @@ public class QuestionSectionBiz{
     * @工时: 6H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午2:24:35
+    * @创建时间: 2023年4月14日 下午3:31:43
     */
     public Boolean delSectionQuestion(String questionSectionId, String questionSectionItemIds ) {
         return Boolean.FALSE;
