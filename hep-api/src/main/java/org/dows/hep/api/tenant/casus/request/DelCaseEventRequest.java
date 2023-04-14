@@ -1,0 +1,20 @@
+package org.dows.hep.api.tenant.casus.request;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * @author
+ * @description
+ * @date
+ */
+@Data
+@NoArgsConstructor
+@Schema(name = "DelCaseEvent 对象", title = "删除事件")
+public class DelCaseEventRequest {
+    @Schema(title = "分布式id列表")
+    private String ids;
+
+
+}

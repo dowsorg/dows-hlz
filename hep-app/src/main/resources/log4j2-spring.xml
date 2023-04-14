@@ -3,9 +3,9 @@
                status="DEBUG" name="XInclude">
     <!--https://logging.apache.org/log4j/2.x/manual/async.html#-->
     <!--常量配置-->
-    <xi:include href="hep-log4j-property.xml"/>
+    <xi:include href="log4j-hep-property.xml"/>
     <!--appenders-->
-    <xi:include href="hep-log4j-appenders.xml" />
+    <xi:include href="log4j-hep-appenders.xml" />
     <!--loggers-->
-    <xi:include href="hep-log4j-loggers.xml" />
+    <xi:include href="log4j-hep-loggers.xml" />
 </configuration>
