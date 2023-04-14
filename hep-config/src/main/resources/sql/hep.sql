@@ -864,6 +864,383 @@ CREATE TABLE IF NOT EXISTS `treat_item_indicator`(
     UNIQUE KEY `unique_treat_item_indicator_id` (`treat_item_indicator_id`)
 ) ENGINE=InnoDB COMMENT='治疗项目关联指标';
 
+drop table if exists `question_category`;
+CREATE TABLE IF NOT EXISTS `question_category`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `pid` bigint(19) DEFAULT NULL COMMENT '父ID',
+    `question_categ_pid` varchar(64) DEFAULT NULL COMMENT '类别父id',
+    `question_categ_id` varchar(64) DEFAULT NULL COMMENT '类别ID',
+    `question_categ_name` varchar(64) DEFAULT NULL COMMENT '类别名',
+    `question_categ_id_path` varchar(64) DEFAULT NULL COMMENT '类别ID路径',
+    `question_categ_name_path` varchar(512) DEFAULT NULL COMMENT '类别name路径',
+    ``  DEFAULT NULL COMMENT '',
+    `sequence` integer(2) DEFAULT NULL COMMENT '序列号',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_question_categ_pid` (`question_categ_pid`)
+) ENGINE=InnoDB COMMENT='问题类目';
+
+drop table if exists `question_instance`;
+CREATE TABLE IF NOT EXISTS `question_instance`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `question_instance_id` varchar(64) DEFAULT NULL COMMENT '问题ID',
+    `pid` bigint(19) DEFAULT NULL COMMENT '父ID',
+    `question_instance_pid` varchar(64) DEFAULT NULL COMMENT '问题pid',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `question_categ_id` varchar(64) DEFAULT NULL COMMENT '类别ID',
+    `question_categ_name` varchar(64) DEFAULT NULL COMMENT '类别名',
+    `question_categ_id_path` varchar(64) DEFAULT NULL COMMENT '类别ID路径',
+    `question_categ_name_path` varchar(512) DEFAULT NULL COMMENT '类别name路径',
+    `input_type` varchar(64) DEFAULT NULL COMMENT '题目答题输入类型[input,select,text]',
+    `question_type` varchar(64) DEFAULT NULL COMMENT '题目答题类型[单选|多选|判断|主观|材料]',
+    `question_title` varchar(64) DEFAULT NULL COMMENT '问题标题',
+    `question_descr` text(65535) DEFAULT NULL COMMENT '问题描述',
+    `enabled` tinyint(4) DEFAULT NULL COMMENT '状态',
+    `sequence` integer(2) DEFAULT NULL COMMENT '排序',
+    `source` varchar(64) DEFAULT NULL COMMENT '来源',
+    `account_id` varchar(64) DEFAULT NULL COMMENT '创建者账号ID',
+    `account_name` varchar(64) DEFAULT NULL COMMENT '创建者Name',
+    `permissions` varchar(64) DEFAULT NULL COMMENT '权限[000001]',
+    `detailed_answer` text(65535) DEFAULT NULL COMMENT '答案解析',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_question_instance_id` (`question_instance_id`)
+) ENGINE=InnoDB COMMENT='问题实例';
+
+drop table if exists `question_options`;
+CREATE TABLE IF NOT EXISTS `question_options`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `q` varchar(64) DEFAULT NULL COMMENT '',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `question_instance_id` varchar(64) DEFAULT NULL COMMENT '问题ID',
+    `option_title` varchar(64) DEFAULT NULL COMMENT '选项标题',
+    `option_value` varchar(64) DEFAULT NULL COMMENT '选项值',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_q` (`q`)
+) ENGINE=InnoDB COMMENT='问题-选项';
+
+drop table if exists `question_answers`;
+CREATE TABLE IF NOT EXISTS `question_answers`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `q` varchar(64) DEFAULT NULL COMMENT '',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `question_instance_id` varchar(64) DEFAULT NULL COMMENT '问题ID',
+    `q` varchar(64) DEFAULT NULL COMMENT '',
+    `option_title` varchar(64) DEFAULT NULL COMMENT '选项标题',
+    `option_value` varchar(64) DEFAULT NULL COMMENT '问题的答案',
+    `right` tinyint(4) DEFAULT NULL COMMENT '是否是正确答案[0:错误，1:正确]',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_q` (`q`)
+) ENGINE=InnoDB COMMENT='问题-答案';
+
+drop table if exists `question_score`;
+CREATE TABLE IF NOT EXISTS `question_score`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `question_score_id` varchar(64) DEFAULT NULL COMMENT '问题-分数ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `biz_id` varchar(64) DEFAULT NULL COMMENT '业务ID',
+    `question_instance_id` varchar(64) DEFAULT NULL COMMENT '问题ID',
+    `q` varchar(64) DEFAULT NULL COMMENT '',
+    `q` varchar(64) DEFAULT NULL COMMENT '',
+    `score` float(11,2) DEFAULT NULL COMMENT '分数',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_question_score_id` (`question_score_id`)
+) ENGINE=InnoDB COMMENT='问题-得分';
+
+drop table if exists `question_dimension`;
+CREATE TABLE IF NOT EXISTS `question_dimension`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `question_dimension_id` varchar(64) DEFAULT NULL COMMENT '问题维度ID',
+    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
+    `question_instance_id` varchar(64) DEFAULT NULL COMMENT '问题ID',
+    `demension_name` varchar(64) DEFAULT NULL COMMENT '维度名称',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_question_dimension_id` (`question_dimension_id`)
+) ENGINE=InnoDB COMMENT='问题-维度';
+
+drop table if exists `question_section_category`;
+CREATE TABLE IF NOT EXISTS `question_section_category`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `pid` bigint(19) DEFAULT NULL COMMENT '父ID',
+    `question_section_categ_pid` varchar(64) DEFAULT NULL COMMENT '类别父id',
+    `question_section_categ_id` varchar(64) DEFAULT NULL COMMENT '类别ID',
+    `question_section_categ_name` varchar(64) DEFAULT NULL COMMENT '类别名',
+    `question_section_categ_id_path` varchar(64) DEFAULT NULL COMMENT '类别ID路径',
+    `question_section_categ_name_path` varchar(512) DEFAULT NULL COMMENT '类别name路径',
+    ``  DEFAULT NULL COMMENT '',
+    `sequence` integer(2) DEFAULT NULL COMMENT '序列号',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_question_section_categ_pid` (`question_section_categ_pid`)
+) ENGINE=InnoDB COMMENT='问题集类目';
+
+drop table if exists `question_section`;
+CREATE TABLE IF NOT EXISTS `question_section`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `question_section_categ_id` varchar(64) DEFAULT NULL COMMENT '类别ID',
+    `question_section_categ_name` varchar(64) DEFAULT NULL COMMENT '类别名',
+    `question_section_categ_id_path` varchar(64) DEFAULT NULL COMMENT '类别ID路径',
+    `question_section_categ_name_path` varchar(512) DEFAULT NULL COMMENT '类别name路径',
+    `name` varchar(64) DEFAULT NULL COMMENT '问题集名称',
+    `tips` varchar(64) DEFAULT NULL COMMENT '问题集提示',
+    `descr` varchar(512) DEFAULT NULL COMMENT '问题集说明',
+    `sequence` integer(2) DEFAULT NULL COMMENT '排序',
+    `source` varchar(64) DEFAULT NULL COMMENT '来源',
+    `account_id` varchar(64) DEFAULT NULL COMMENT '创建者账号Id',
+    `account_name` varchar(64) DEFAULT NULL COMMENT '创建者姓名',
+    `permissions` varchar(64) DEFAULT NULL COMMENT '权限[000001]',
+    `question_count` integer(2) DEFAULT NULL COMMENT '题数',
+    `question_section_structure` varchar(64) DEFAULT NULL COMMENT '题型结构',
+    `enabled` tinyint(4) DEFAULT NULL COMMENT '状态',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_question_section_id` (`question_section_id`)
+) ENGINE=InnoDB COMMENT='问题集[试卷]';
+
+drop table if exists `question_section_item`;
+CREATE TABLE IF NOT EXISTS `question_section_item`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `question_section_item_id` varchar(64) DEFAULT NULL COMMENT 'itemID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
+    `question_section_name` varchar(64) DEFAULT NULL COMMENT '问题集名称',
+    `question_instance_id` varchar(64) DEFAULT NULL COMMENT '问题ID',
+    `question_title` varchar(64) DEFAULT NULL COMMENT '问题标题',
+    `question_descr` varchar(512) DEFAULT NULL COMMENT '问题描述',
+    `enabled` tinyint(4) DEFAULT NULL COMMENT '状态',
+    `required` tinyint(4) DEFAULT NULL COMMENT '是否必填',
+    `sequence` integer(2) DEFAULT NULL COMMENT '排序',
+    `account_id` varchar(64) DEFAULT NULL COMMENT '创建者账号Id',
+    `account_name` varchar(64) DEFAULT NULL COMMENT '创建者姓名',
+    `permissions` varchar(64) DEFAULT NULL COMMENT '权限[000001]',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_question_section_item_id` (`question_section_item_id`)
+) ENGINE=InnoDB COMMENT='问题集[试卷]-题目';
+
+drop table if exists `question_section_dimension`;
+CREATE TABLE IF NOT EXISTS `question_section_dimension`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `question_section_dimension_id` varchar(64) DEFAULT NULL COMMENT '问题集维度ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
+    `demension_name` varchar(64) DEFAULT NULL COMMENT '维度名称',
+    `demension_content` varchar(64) DEFAULT NULL COMMENT '内容',
+    `score` float(11,2) DEFAULT NULL COMMENT '分数',
+    `source` varchar(64) DEFAULT NULL COMMENT '来源',
+    `account_id` varchar(64) DEFAULT NULL COMMENT '创建者账号Id',
+    `account_name` varchar(64) DEFAULT NULL COMMENT '创建者姓名',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_question_section_dimension_id` (`question_section_dimension_id`)
+) ENGINE=InnoDB COMMENT='问题集[试卷]-维度';
+
+drop table if exists `question_section_result`;
+CREATE TABLE IF NOT EXISTS `question_section_result`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `question_section_result_id` varchar(64) DEFAULT NULL COMMENT '答题记录ID',
+    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
+    `question_section_name` varchar(64) DEFAULT NULL COMMENT '问题集名称',
+    `question_count` integer(2) DEFAULT NULL COMMENT '题数',
+    `question_section_structure` varchar(64) DEFAULT NULL COMMENT '题型结构',
+    `right_count` integer(2) DEFAULT NULL COMMENT '正确题数',
+    `score_structure` varchar(64) DEFAULT NULL COMMENT '得分结构',
+    `score` float(11,2) DEFAULT NULL COMMENT '分数',
+    `account_id` varchar(64) DEFAULT NULL COMMENT '答题者账号Id',
+    `account_name` varchar(64) DEFAULT NULL COMMENT '答题者姓名',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_question_section_result_id` (`question_section_result_id`)
+) ENGINE=InnoDB COMMENT='问题集[试卷]-答题记录';
+
+drop table if exists `question_section_result_item`;
+CREATE TABLE IF NOT EXISTS `question_section_result_item`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `question_section_result_item_id` varchar(64) DEFAULT NULL COMMENT '记录项ID',
+    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
+    `question_instance_id` varchar(64) DEFAULT NULL COMMENT '问题ID',
+    `question_section_dimension_id` varchar(64) DEFAULT NULL COMMENT '问题集维度ID',
+    `question_title` varchar(64) DEFAULT NULL COMMENT '问题标题',
+    `right_value` varchar(64) DEFAULT NULL COMMENT '正确答案[JSON]',
+    `answer_id` varchar(64) DEFAULT NULL COMMENT '答案值ID[JSON]',
+    `answer_value` varchar(64) DEFAULT NULL COMMENT '答题值[JSON]',
+    `right` tinyint(4) DEFAULT NULL COMMENT '是否正确[0：错误|1：一半|2：完成正确]',
+    `score` float(11,2) DEFAULT NULL COMMENT '分数',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_question_section_result_item_id` (`question_section_result_item_id`)
+) ENGINE=InnoDB COMMENT='问题集[试卷]-答题记录Item';
+
+drop table if exists `case_category`;
+CREATE TABLE IF NOT EXISTS `case_category`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `pid` bigint(19) DEFAULT NULL COMMENT '父ID',
+    `case_categ_pid` varchar(64) DEFAULT NULL COMMENT '类别父id',
+    `case_categ_id` varchar(64) DEFAULT NULL COMMENT '类别ID',
+    `case_categ_name` varchar(64) DEFAULT NULL COMMENT '类别名',
+    `case_categ_id_path` varchar(64) DEFAULT NULL COMMENT '类别ID路径',
+    `case_categ_name_path` varchar(512) DEFAULT NULL COMMENT '类别name路径',
+    `case_categ_group` varchar(64) DEFAULT NULL COMMENT '类别组',
+    `sequence` integer(2) DEFAULT NULL COMMENT '序列号',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_case_categ_pid` (`case_categ_pid`)
+) ENGINE=InnoDB COMMENT='案例类目';
+
+drop table if exists `case_instance`;
+CREATE TABLE IF NOT EXISTS `case_instance`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `case_name` varchar(64) DEFAULT NULL COMMENT '案例名称',
+    `case_pic` varchar(64) DEFAULT NULL COMMENT '案例图片',
+    `case_type` varchar(64) DEFAULT NULL COMMENT '案例类型',
+    `account_id` varchar(64) DEFAULT NULL COMMENT '创建者账号Id',
+    `account_name` varchar(64) DEFAULT NULL COMMENT '创建者姓名',
+    `descr` text(65535) DEFAULT NULL COMMENT '背景描述',
+    `guide` text(65535) DEFAULT NULL COMMENT '指导描述',
+    `state` integer(2) DEFAULT NULL COMMENT '案例状态[0:未发布|1:发布]',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_case_instance_id` (`case_instance_id`)
+) ENGINE=InnoDB COMMENT='案例实例';
+
+drop table if exists `case_notice`;
+CREATE TABLE IF NOT EXISTS `case_notice`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `case_notice_id` varchar(64) DEFAULT NULL COMMENT '案例通知ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
+    `notice_name` varchar(64) DEFAULT NULL COMMENT '公告名称',
+    `notice_content` varchar(64) DEFAULT NULL COMMENT '公告内容',
+    `periods` varchar(64) DEFAULT NULL COMMENT '期数',
+    `period_sequence` tinyint(4) DEFAULT NULL COMMENT '期数排序',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_case_notice_id` (`case_notice_id`)
+) ENGINE=InnoDB COMMENT='案例公告';
+
+drop table if exists `case_scheme`;
+CREATE TABLE IF NOT EXISTS `case_scheme`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `case_scheme_id` varchar(64) DEFAULT NULL COMMENT '方案ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
+    `case_categ_id` varchar(64) DEFAULT NULL COMMENT '类别ID',
+    `case_categ_name` varchar(64) DEFAULT NULL COMMENT '类别名',
+    `case_categ_id_path` varchar(64) DEFAULT NULL COMMENT '类别ID路径',
+    `case_categ_name_path` varchar(512) DEFAULT NULL COMMENT '类别name路径',
+    `scheme_name` varchar(64) DEFAULT NULL COMMENT '方案名称',
+    `tips` varchar(64) DEFAULT NULL COMMENT '方案提示',
+    `scheme_descr` varchar(64) DEFAULT NULL COMMENT '方案说明',
+    `contains_video` tinyint(4) DEFAULT NULL COMMENT '是否包含视频[0-否|1-是]',
+    `enabled` tinyint(4) DEFAULT NULL COMMENT '状态[0-关闭|1-开启]',
+    `source` varchar(64) DEFAULT NULL COMMENT '来源[admin|tenant]',
+    `account_id` varchar(64) DEFAULT NULL COMMENT '创建者账号ID',
+    `account_name` varchar(64) DEFAULT NULL COMMENT '创建者Name',
+    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
+    `question_count` integer(2) DEFAULT NULL COMMENT '题数',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_case_scheme_id` (`case_scheme_id`)
+) ENGINE=InnoDB COMMENT='案例方案';
+
+drop table if exists `case_scheme_result`;
+CREATE TABLE IF NOT EXISTS `case_scheme_result`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `case_scheme_result_id` varchar(64) DEFAULT NULL COMMENT '案例方案结果ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
+    `case_scheme_id` varchar(64) DEFAULT NULL COMMENT '方案ID',
+    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
+    `question_section_result_id` varchar(64) DEFAULT NULL COMMENT '答题记录ID',
+    `account_id` varchar(64) DEFAULT NULL COMMENT '答题者账号ID',
+    `account_name` varchar(64) DEFAULT NULL COMMENT '答题者Name',
+    `question_instance_ids` text(65535) DEFAULT NULL COMMENT '问题ids[1,2]',
+    `status` tinyint(4) DEFAULT NULL COMMENT '状态[0-未开始|1-进行中|2-已完成]',
+    `duration` integer(2) DEFAULT NULL COMMENT '持续时间[min]',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_case_scheme_result_id` (`case_scheme_result_id`)
+) ENGINE=InnoDB COMMENT='案例方案结果';
+
+drop table if exists `case_questionnaire`;
+CREATE TABLE IF NOT EXISTS `case_questionnaire`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `case_questionnaire_id` varchar(64) DEFAULT NULL COMMENT '案例问卷ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
+    `periods` varchar(64) DEFAULT NULL COMMENT '期数',
+    `period_sequence` tinyint(4) DEFAULT NULL COMMENT '期数排序',
+    `allot_mode` varchar(64) DEFAULT NULL COMMENT '分配方式',
+    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
+    `question_count` integer(2) DEFAULT NULL COMMENT '题数',
+    `question_section_structure` varchar(64) DEFAULT NULL COMMENT '题型结构',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_case_questionnaire_id` (`case_questionnaire_id`)
+) ENGINE=InnoDB COMMENT='案例问卷';
+
+drop table if exists `case_questionnaire_result`;
+CREATE TABLE IF NOT EXISTS `case_questionnaire_result`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `case_questionnaire_result_id` varchar(64) DEFAULT NULL COMMENT '案例问卷结果ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
+    `case_questionnaire_id` varchar(64) DEFAULT NULL COMMENT '案例问卷ID',
+    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
+    `question_section_result_id` varchar(64) DEFAULT NULL COMMENT '答题记录ID',
+    `account_id` varchar(64) DEFAULT NULL COMMENT '答题者账号ID',
+    `account_name` varchar(64) DEFAULT NULL COMMENT '答题者Name',
+    `status` tinyint(4) DEFAULT NULL COMMENT '状态[0-未开始|1-进行中|2-已完成]',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_case_questionnaire_result_id` (`case_questionnaire_result_id`)
+) ENGINE=InnoDB COMMENT='案例问卷结果';
+
+drop table if exists `case_setting`;
+CREATE TABLE IF NOT EXISTS `case_setting`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `case_setting_id` varchar(64) DEFAULT NULL COMMENT '案例问卷设置ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
+    `score_mode` varchar(64) DEFAULT NULL COMMENT '记分方式[少选不得分|少选得一半分]',
+    `allot_mode` varchar(64) DEFAULT NULL COMMENT '分配方式',
+    `ext` varchar(64) DEFAULT NULL COMMENT '额外配置[JSON]',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_case_setting_id` (`case_setting_id`)
+) ENGINE=InnoDB COMMENT='案例问卷设置';
+
 drop table if exists `indicator_category`;
 CREATE TABLE IF NOT EXISTS `indicator_category`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
@@ -1258,6 +1635,34 @@ CREATE TABLE IF NOT EXISTS `indicator_judge_disease_problem`(
     UNIQUE KEY `unique_indicator_judge_disease_problem_id` (`indicator_judge_disease_problem_id`)
 ) ENGINE=InnoDB COMMENT='判断指标疾病问题';
 
+drop table if exists `indicator_judge_health_management_goal`;
+CREATE TABLE IF NOT EXISTS `indicator_judge_health_management_goal`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_judge_health_management_goal_id` varchar(64) DEFAULT NULL COMMENT '判断指标健管目标分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '指标分类ID',
+    `point` double(11,2) DEFAULT NULL COMMENT '分数',
+    `status` tinyint(4) DEFAULT NULL COMMENT '0-禁用，1-启用',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_judge_health_management_goal_id` (`indicator_judge_health_management_goal_id`)
+) ENGINE=InnoDB COMMENT='判断指标健管目标';
+
+drop table if exists `indicator_judge_health_management_goal_ref`;
+CREATE TABLE IF NOT EXISTS `indicator_judge_health_management_goal_ref`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_judge_health_management_goal_ref_id` varchar(64) DEFAULT NULL COMMENT '判断指标健管目标关联指标分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `indicator_judge_health_management_goal_id` varchar(64) DEFAULT NULL COMMENT '判断指标健管目标分布式ID',
+    `indicator_instance_id` varchar(64) DEFAULT NULL COMMENT '指标实例分布式ID',
+    `expression` varchar(64) DEFAULT NULL COMMENT '判断规则',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_judge_health_management_goal_ref_id` (`indicator_judge_health_management_goal_ref_id`)
+) ENGINE=InnoDB COMMENT='判断指标健管目标关联指标';
+
 drop table if exists `risk_category`;
 CREATE TABLE IF NOT EXISTS `risk_category`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
@@ -1356,382 +1761,5 @@ CREATE TABLE IF NOT EXISTS `evaluate_report_management`(
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_evaluate_report_management_id` (`evaluate_report_management_id`)
 ) ENGINE=InnoDB COMMENT='评估报告管理';
-
-drop table if exists `question_category`;
-CREATE TABLE IF NOT EXISTS `question_category`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `pid` bigint(19) DEFAULT NULL COMMENT '父ID',
-    `question_categ_pid` varchar(64) DEFAULT NULL COMMENT '类别父id',
-    `question_categ_id` varchar(64) DEFAULT NULL COMMENT '类别ID',
-    `question_categ_name` varchar(64) DEFAULT NULL COMMENT '类别名',
-    `question_categ_id_path` varchar(64) DEFAULT NULL COMMENT '类别ID路径',
-    `question_categ_name_path` varchar(512) DEFAULT NULL COMMENT '类别name路径',
-    ``  DEFAULT NULL COMMENT '',
-    `sequence` integer(2) DEFAULT NULL COMMENT '序列号',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_question_categ_pid` (`question_categ_pid`)
-) ENGINE=InnoDB COMMENT='问题类目';
-
-drop table if exists `question_instance`;
-CREATE TABLE IF NOT EXISTS `question_instance`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `question_instance_id` varchar(64) DEFAULT NULL COMMENT '问题ID',
-    `pid` bigint(19) DEFAULT NULL COMMENT '父ID',
-    `question_instance_pid` varchar(64) DEFAULT NULL COMMENT '问题pid',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `question_categ_id` varchar(64) DEFAULT NULL COMMENT '类别ID',
-    `question_categ_name` varchar(64) DEFAULT NULL COMMENT '类别名',
-    `question_categ_id_path` varchar(64) DEFAULT NULL COMMENT '类别ID路径',
-    `question_categ_name_path` varchar(512) DEFAULT NULL COMMENT '类别name路径',
-    `input_type` varchar(64) DEFAULT NULL COMMENT '题目答题输入类型[input,select,text]',
-    `question_type` varchar(64) DEFAULT NULL COMMENT '题目答题类型[单选|多选|判断|主观|材料]',
-    `question_title` varchar(64) DEFAULT NULL COMMENT '问题标题',
-    `question_descr` text(65535) DEFAULT NULL COMMENT '问题描述',
-    `enabled` tinyint(4) DEFAULT NULL COMMENT '状态',
-    `sequence` integer(2) DEFAULT NULL COMMENT '排序',
-    `source` varchar(64) DEFAULT NULL COMMENT '来源',
-    `account_id` varchar(64) DEFAULT NULL COMMENT '创建者账号ID',
-    `account_name` varchar(64) DEFAULT NULL COMMENT '创建者Name',
-    `permissions` varchar(64) DEFAULT NULL COMMENT '权限[000001]',
-    `detailed_answer` text(65535) DEFAULT NULL COMMENT '答案解析',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_question_instance_id` (`question_instance_id`)
-) ENGINE=InnoDB COMMENT='问题实例';
-
-drop table if exists `question_options`;
-CREATE TABLE IF NOT EXISTS `question_options`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `q` varchar(64) DEFAULT NULL COMMENT '',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `question_instance_id` varchar(64) DEFAULT NULL COMMENT '问题ID',
-    `option_title` varchar(64) DEFAULT NULL COMMENT '选项标题',
-    `option_value` varchar(64) DEFAULT NULL COMMENT '选项值',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_q` (`q`)
-) ENGINE=InnoDB COMMENT='问题-选项';
-
-drop table if exists `question_answers`;
-CREATE TABLE IF NOT EXISTS `question_answers`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `q` varchar(64) DEFAULT NULL COMMENT '',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `question_instance_id` varchar(64) DEFAULT NULL COMMENT '问题ID',
-    `q` varchar(64) DEFAULT NULL COMMENT '',
-    `option_title` varchar(64) DEFAULT NULL COMMENT '选项标题',
-    `option_value` varchar(64) DEFAULT NULL COMMENT '问题的答案',
-    `right` tinyint(4) DEFAULT NULL COMMENT '是否是正确答案[0:错误，1:正确]',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_q` (`q`)
-) ENGINE=InnoDB COMMENT='问题-答案';
-
-drop table if exists `question_score`;
-CREATE TABLE IF NOT EXISTS `question_score`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `question_score_id` varchar(64) DEFAULT NULL COMMENT '问题-分数ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `biz_id` varchar(64) DEFAULT NULL COMMENT '业务ID',
-    `question_instance_id` varchar(64) DEFAULT NULL COMMENT '问题ID',
-    `q` varchar(64) DEFAULT NULL COMMENT '',
-    `q` varchar(64) DEFAULT NULL COMMENT '',
-    `score` float(11,2) DEFAULT NULL COMMENT '分数',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_question_score_id` (`question_score_id`)
-) ENGINE=InnoDB COMMENT='问题-得分';
-
-drop table if exists `question_dimension`;
-CREATE TABLE IF NOT EXISTS `question_dimension`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `question_dimension_id` varchar(64) DEFAULT NULL COMMENT '问题维度ID',
-    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
-    `question_instance_id` varchar(64) DEFAULT NULL COMMENT '问题ID',
-    `demension_name` varchar(64) DEFAULT NULL COMMENT '维度名称',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_question_dimension_id` (`question_dimension_id`)
-) ENGINE=InnoDB COMMENT='问题-维度';
-
-drop table if exists `question_section_category`;
-CREATE TABLE IF NOT EXISTS `question_section_category`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `pid` bigint(19) DEFAULT NULL COMMENT '父ID',
-    `question_section_categ_pid` varchar(64) DEFAULT NULL COMMENT '类别父id',
-    `question_section_categ_id` varchar(64) DEFAULT NULL COMMENT '类别ID',
-    `question_section_categ_name` varchar(64) DEFAULT NULL COMMENT '类别名',
-    `question_section_categ_id_path` varchar(64) DEFAULT NULL COMMENT '类别ID路径',
-    `question_section_categ_name_path` varchar(512) DEFAULT NULL COMMENT '类别name路径',
-    ``  DEFAULT NULL COMMENT '',
-    `sequence` integer(2) DEFAULT NULL COMMENT '序列号',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_question_section_categ_pid` (`question_section_categ_pid`)
-) ENGINE=InnoDB COMMENT='问题集类目';
-
-drop table if exists `question_section`;
-CREATE TABLE IF NOT EXISTS `question_section`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `question_section_categ_id` varchar(64) DEFAULT NULL COMMENT '类别ID',
-    `question_section_categ_name` varchar(64) DEFAULT NULL COMMENT '类别名',
-    `question_section_categ_id_path` varchar(64) DEFAULT NULL COMMENT '类别ID路径',
-    `question_section_categ_name_path` varchar(512) DEFAULT NULL COMMENT '类别name路径',
-    `name` varchar(64) DEFAULT NULL COMMENT '问题集名称',
-    `tips` varchar(64) DEFAULT NULL COMMENT '问题集提示',
-    `descr` varchar(512) DEFAULT NULL COMMENT '问题集说明',
-    `sequence` integer(2) DEFAULT NULL COMMENT '排序',
-    `source` varchar(64) DEFAULT NULL COMMENT '来源',
-    `account_id` varchar(64) DEFAULT NULL COMMENT '创建者账号Id',
-    `account_name` varchar(64) DEFAULT NULL COMMENT '创建者姓名',
-    `permissions` varchar(64) DEFAULT NULL COMMENT '权限[000001]',
-    `question_count` integer(2) DEFAULT NULL COMMENT '题数',
-    `question_section_structure` varchar(64) DEFAULT NULL COMMENT '题型结构',
-    `enabled` tinyint(4) DEFAULT NULL COMMENT '状态',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_question_section_id` (`question_section_id`)
-) ENGINE=InnoDB COMMENT='问题集[试卷]';
-
-drop table if exists `question_section_item`;
-CREATE TABLE IF NOT EXISTS `question_section_item`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `question_section_item_id` varchar(64) DEFAULT NULL COMMENT 'itemID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
-    `question_section_name` varchar(64) DEFAULT NULL COMMENT '问题集名称',
-    `question_instance_id` varchar(64) DEFAULT NULL COMMENT '问题ID',
-    `question_title` varchar(64) DEFAULT NULL COMMENT '问题标题',
-    `question_descr` varchar(512) DEFAULT NULL COMMENT '问题描述',
-    `enabled` tinyint(4) DEFAULT NULL COMMENT '状态',
-    `required` tinyint(4) DEFAULT NULL COMMENT '是否必填',
-    `sequence` integer(2) DEFAULT NULL COMMENT '排序',
-    `account_id` varchar(64) DEFAULT NULL COMMENT '创建者账号Id',
-    `account_name` varchar(64) DEFAULT NULL COMMENT '创建者姓名',
-    `permissions` varchar(64) DEFAULT NULL COMMENT '权限[000001]',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_question_section_item_id` (`question_section_item_id`)
-) ENGINE=InnoDB COMMENT='问题集[试卷]-题目';
-
-drop table if exists `question_section_dimension`;
-CREATE TABLE IF NOT EXISTS `question_section_dimension`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `question_section_dimension_id` varchar(64) DEFAULT NULL COMMENT '问题集维度ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
-    `demension_name` varchar(64) DEFAULT NULL COMMENT '维度名称',
-    `demension_content` varchar(64) DEFAULT NULL COMMENT '内容',
-    `score` float(11,2) DEFAULT NULL COMMENT '分数',
-    `source` varchar(64) DEFAULT NULL COMMENT '来源',
-    `account_id` varchar(64) DEFAULT NULL COMMENT '创建者账号Id',
-    `account_name` varchar(64) DEFAULT NULL COMMENT '创建者姓名',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_question_section_dimension_id` (`question_section_dimension_id`)
-) ENGINE=InnoDB COMMENT='问题集[试卷]-维度';
-
-drop table if exists `question_section_result`;
-CREATE TABLE IF NOT EXISTS `question_section_result`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `question_section_result_id` varchar(64) DEFAULT NULL COMMENT '答题记录ID',
-    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
-    `question_section_name` varchar(64) DEFAULT NULL COMMENT '问题集名称',
-    `question_count` integer(2) DEFAULT NULL COMMENT '题数',
-    `question_section_structure` varchar(64) DEFAULT NULL COMMENT '题型结构',
-    `right_count` integer(2) DEFAULT NULL COMMENT '正确题数',
-    `score_structure` varchar(64) DEFAULT NULL COMMENT '得分结构',
-    `score` float(11,2) DEFAULT NULL COMMENT '分数',
-    `account_id` varchar(64) DEFAULT NULL COMMENT '答题者账号Id',
-    `account_name` varchar(64) DEFAULT NULL COMMENT '答题者姓名',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_question_section_result_id` (`question_section_result_id`)
-) ENGINE=InnoDB COMMENT='问题集[试卷]-答题记录';
-
-drop table if exists `question_section_result_item`;
-CREATE TABLE IF NOT EXISTS `question_section_result_item`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `question_section_result_item_id` varchar(64) DEFAULT NULL COMMENT '记录项ID',
-    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
-    `question_instance_id` varchar(64) DEFAULT NULL COMMENT '问题ID',
-    `question_section_dimension_id` varchar(64) DEFAULT NULL COMMENT '问题集维度ID',
-    `question_title` varchar(64) DEFAULT NULL COMMENT '问题标题',
-    `right_value` varchar(64) DEFAULT NULL COMMENT '正确答案[JSON]',
-    `answer_id` varchar(64) DEFAULT NULL COMMENT '答案值ID[JSON]',
-    `answer_value` varchar(64) DEFAULT NULL COMMENT '答题值[JSON]',
-    `right` tinyint(4) DEFAULT NULL COMMENT '是否正确[0：错误|1：一半|2：完成正确]',
-    `score` float(11,2) DEFAULT NULL COMMENT '分数',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_question_section_result_item_id` (`question_section_result_item_id`)
-) ENGINE=InnoDB COMMENT='问题集[试卷]-答题记录Item';
-
-drop table if exists `case_category`;
-CREATE TABLE IF NOT EXISTS `case_category`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `pid` bigint(19) DEFAULT NULL COMMENT '父ID',
-    `case_categ_pid` varchar(64) DEFAULT NULL COMMENT '类别父id',
-    `case_categ_id` varchar(64) DEFAULT NULL COMMENT '类别ID',
-    `case_categ_name` varchar(64) DEFAULT NULL COMMENT '类别名',
-    `case_categ_id_path` varchar(64) DEFAULT NULL COMMENT '类别ID路径',
-    `case_categ_name_path` varchar(512) DEFAULT NULL COMMENT '类别name路径',
-    `case_categ_group` varchar(64) DEFAULT NULL COMMENT '类别组',
-    `sequence` integer(2) DEFAULT NULL COMMENT '序列号',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_case_categ_pid` (`case_categ_pid`)
-) ENGINE=InnoDB COMMENT='案例类目';
-
-drop table if exists `case_instance`;
-CREATE TABLE IF NOT EXISTS `case_instance`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `case_name` varchar(64) DEFAULT NULL COMMENT '案例名称',
-    `case_pic` varchar(64) DEFAULT NULL COMMENT '案例图片',
-    `case_type` varchar(64) DEFAULT NULL COMMENT '案例类型',
-    `account_id` varchar(64) DEFAULT NULL COMMENT '创建者账号Id',
-    `account_name` varchar(64) DEFAULT NULL COMMENT '创建者姓名',
-    `descr` text(65535) DEFAULT NULL COMMENT '背景描述',
-    `guide` text(65535) DEFAULT NULL COMMENT '指导描述',
-    `state` integer(2) DEFAULT NULL COMMENT '案例状态[0:未发布|1:发布]',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_case_instance_id` (`case_instance_id`)
-) ENGINE=InnoDB COMMENT='案例实例';
-
-drop table if exists `case_notice`;
-CREATE TABLE IF NOT EXISTS `case_notice`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `case_notice_id` varchar(64) DEFAULT NULL COMMENT '案例通知ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
-    `notice_name` varchar(64) DEFAULT NULL COMMENT '公告名称',
-    `notice_content` varchar(64) DEFAULT NULL COMMENT '公告内容',
-    `periods` varchar(64) DEFAULT NULL COMMENT '期数',
-    `period_sequence` tinyint(4) DEFAULT NULL COMMENT '期数排序',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_case_notice_id` (`case_notice_id`)
-) ENGINE=InnoDB COMMENT='案例公告';
-
-drop table if exists `case_scheme`;
-CREATE TABLE IF NOT EXISTS `case_scheme`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `case_scheme_id` varchar(64) DEFAULT NULL COMMENT '方案ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
-    `case_categ_id` varchar(64) DEFAULT NULL COMMENT '类别ID',
-    `case_categ_name` varchar(64) DEFAULT NULL COMMENT '类别名',
-    `case_categ_id_path` varchar(64) DEFAULT NULL COMMENT '类别ID路径',
-    `case_categ_name_path` varchar(512) DEFAULT NULL COMMENT '类别name路径',
-    `scheme_name` varchar(64) DEFAULT NULL COMMENT '方案名称',
-    `tips` varchar(64) DEFAULT NULL COMMENT '方案提示',
-    `scheme_descr` varchar(64) DEFAULT NULL COMMENT '方案说明',
-    `contains_video` tinyint(4) DEFAULT NULL COMMENT '是否包含视频[0-否|1-是]',
-    `enabled` tinyint(4) DEFAULT NULL COMMENT '状态[0-关闭|1-开启]',
-    `source` varchar(64) DEFAULT NULL COMMENT '来源[admin|tenant]',
-    `account_id` varchar(64) DEFAULT NULL COMMENT '创建者账号ID',
-    `account_name` varchar(64) DEFAULT NULL COMMENT '创建者Name',
-    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
-    `question_count` integer(2) DEFAULT NULL COMMENT '题数',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_case_scheme_id` (`case_scheme_id`)
-) ENGINE=InnoDB COMMENT='案例方案';
-
-drop table if exists `case_scheme_result`;
-CREATE TABLE IF NOT EXISTS `case_scheme_result`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `case_scheme_result_id` varchar(64) DEFAULT NULL COMMENT '案例方案结果ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
-    `case_scheme_id` varchar(64) DEFAULT NULL COMMENT '方案ID',
-    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
-    `question_section_result_id` varchar(64) DEFAULT NULL COMMENT '答题记录ID',
-    `account_id` varchar(64) DEFAULT NULL COMMENT '答题者账号ID',
-    `account_name` varchar(64) DEFAULT NULL COMMENT '答题者Name',
-    `question_instance_ids` text(65535) DEFAULT NULL COMMENT '问题ids[1,2]',
-    `status` tinyint(4) DEFAULT NULL COMMENT '状态[0-未开始|1-进行中|2-已完成]',
-    `duration` integer(2) DEFAULT NULL COMMENT '持续时间[min]',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_case_scheme_result_id` (`case_scheme_result_id`)
-) ENGINE=InnoDB COMMENT='案例方案结果';
-
-drop table if exists `case_questionnaire`;
-CREATE TABLE IF NOT EXISTS `case_questionnaire`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `case_questionnaire_id` varchar(64) DEFAULT NULL COMMENT '案例问卷ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
-    `periods` varchar(64) DEFAULT NULL COMMENT '期数',
-    `period_sequence` tinyint(4) DEFAULT NULL COMMENT '期数排序',
-    `allot_mode` varchar(64) DEFAULT NULL COMMENT '分配方式',
-    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
-    `question_count` integer(2) DEFAULT NULL COMMENT '题数',
-    `question_section_structure` varchar(64) DEFAULT NULL COMMENT '题型结构',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_case_questionnaire_id` (`case_questionnaire_id`)
-) ENGINE=InnoDB COMMENT='案例问卷';
-
-drop table if exists `case_questionnaire_result`;
-CREATE TABLE IF NOT EXISTS `case_questionnaire_result`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `case_questionnaire_result_id` varchar(64) DEFAULT NULL COMMENT '案例问卷结果ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
-    `case_questionnaire_id` varchar(64) DEFAULT NULL COMMENT '案例问卷ID',
-    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
-    `question_section_result_id` varchar(64) DEFAULT NULL COMMENT '答题记录ID',
-    `account_id` varchar(64) DEFAULT NULL COMMENT '答题者账号ID',
-    `account_name` varchar(64) DEFAULT NULL COMMENT '答题者Name',
-    `status` tinyint(4) DEFAULT NULL COMMENT '状态[0-未开始|1-进行中|2-已完成]',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_case_questionnaire_result_id` (`case_questionnaire_result_id`)
-) ENGINE=InnoDB COMMENT='案例问卷结果';
-
-drop table if exists `case_setting`;
-CREATE TABLE IF NOT EXISTS `case_setting`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `case_setting_id` varchar(64) DEFAULT NULL COMMENT '案例问卷设置ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
-    `score_mode` varchar(64) DEFAULT NULL COMMENT '记分方式[少选不得分|少选得一半分]',
-    `allot_mode` varchar(64) DEFAULT NULL COMMENT '分配方式',
-    `ext` varchar(64) DEFAULT NULL COMMENT '额外配置[JSON]',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_case_setting_id` (`case_setting_id`)
-) ENGINE=InnoDB COMMENT='案例问卷设置';
 
 

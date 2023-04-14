@@ -14,7 +14,7 @@ import java.util.HashMap;;
 * @description project descr:指标:判断指标健康指导
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午3:31:43
+* @date 2023年4月14日 下午3:45:06
 */
 public class IndicatorJudgeHealthGuidanceBiz{
     /**
@@ -25,7 +25,7 @@ public class IndicatorJudgeHealthGuidanceBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public void createIndicatorJudgeHealthGuidance(CreateIndicatorJudgeHealthGuidanceRequest createIndicatorJudgeHealthGuidance ) {
         
@@ -38,7 +38,7 @@ public class IndicatorJudgeHealthGuidanceBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public void deleteIndicatorJudgeHealthGuidance(String indicatorJudgeHealthGuidanceId ) {
         
@@ -51,7 +51,7 @@ public class IndicatorJudgeHealthGuidanceBiz{
     * @工时: 0H
     * @开发者: 
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public void updateStatus(UpdateStatusIndicatorJudgeHealthGuidanceRequest updateStatusIndicatorJudgeHealthGuidance ) {
         
@@ -64,7 +64,7 @@ public class IndicatorJudgeHealthGuidanceBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public void updateIndicatorJudgeHealthGuidance(UpdateIndicatorJudgeHealthGuidanceRequest updateIndicatorJudgeHealthGuidance ) {
         
@@ -77,9 +77,22 @@ public class IndicatorJudgeHealthGuidanceBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public IndicatorJudgeHealthGuidanceResponse getIndicatorJudgeHealthGuidance(String indicatorJudgeHealthGuidanceId ) {
         return new IndicatorJudgeHealthGuidanceResponse();
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 分页获取判断指标健康指导
+    * @关联表: 
+    * @工时: 4H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月14日 下午3:45:06
+    */
+    public void pageIndicatorJudgeHealthGuidance(String todo ) {
+        
     }
 }

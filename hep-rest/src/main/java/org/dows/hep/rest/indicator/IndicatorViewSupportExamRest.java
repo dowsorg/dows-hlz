@@ -20,7 +20,7 @@ import java.util.List;
 * @description project descr:指标:查看指标辅助检查类
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午3:31:43
+* @date 2023年4月14日 下午3:45:06
 */
 @RequiredArgsConstructor
 @RestController
@@ -81,6 +81,17 @@ public class IndicatorViewSupportExamRest {
     @GetMapping("v1/indicator/indicatorViewSupportExam/getIndicatorViewSupportExam")
     public IndicatorViewSupportExamResponse getIndicatorViewSupportExam(@Validated String indicatorViewSupportExamId) {
         return indicatorViewSupportExamBiz.getIndicatorViewSupportExam(indicatorViewSupportExamId);
+    }
+
+    /**
+    * 分页获取查看指标辅助检查类
+    * @param
+    * @return
+    */
+    @ApiOperation("分页获取查看指标辅助检查类")
+    @GetMapping("v1/indicator/indicatorViewSupportExam/pageIndicatorViewSupportExam")
+    public void pageIndicatorViewSupportExam(@Validated String todo) {
+        indicatorViewSupportExamBiz.pageIndicatorViewSupportExam(todo);
     }
 
 

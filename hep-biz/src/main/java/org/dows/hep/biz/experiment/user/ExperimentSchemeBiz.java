@@ -11,7 +11,7 @@ import java.util.HashMap;;
 * @description project descr:实验:实验方案
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午3:31:43
+* @date 2023年4月14日 下午3:45:06
 */
 public class ExperimentSchemeBiz{
     /**
@@ -22,7 +22,7 @@ public class ExperimentSchemeBiz{
     * @工时: 2H
     * @开发者: lait
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public Boolean designScheme(DesignSchemeRequest designScheme ) {
         return Boolean.FALSE;
@@ -35,7 +35,7 @@ public class ExperimentSchemeBiz{
     * @工时: 2H
     * @开发者: lait
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public Boolean submitScheme(String schemeId ) {
         return Boolean.FALSE;

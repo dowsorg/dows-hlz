@@ -13,7 +13,7 @@ import java.util.HashMap;;
 * @description project descr:指标:指标规则
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午3:31:43
+* @date 2023年4月14日 下午3:45:06
 */
 public class IndicatorRuleBiz{
     /**
@@ -24,7 +24,7 @@ public class IndicatorRuleBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public void createIndicatorRule(CreateIndicatorRuleRequest createIndicatorRule ) {
         
@@ -37,7 +37,7 @@ public class IndicatorRuleBiz{
     * @工时: 2H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public void deleteIndicatorRule(String indicatorRuleId ) {
         
@@ -50,7 +50,7 @@ public class IndicatorRuleBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public void updateIndicatorRule(UpdateIndicatorRuleRequest updateIndicatorRule ) {
         
@@ -63,7 +63,7 @@ public class IndicatorRuleBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public IndicatorRuleResponse getIndicatorRule(String indicatorRuleId ) {
         return new IndicatorRuleResponse();

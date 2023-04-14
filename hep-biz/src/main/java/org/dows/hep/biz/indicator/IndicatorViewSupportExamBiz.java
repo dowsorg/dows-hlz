@@ -14,7 +14,7 @@ import java.util.HashMap;;
 * @description project descr:指标:查看指标辅助检查类
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午3:31:43
+* @date 2023年4月14日 下午3:45:06
 */
 public class IndicatorViewSupportExamBiz{
     /**
@@ -25,7 +25,7 @@ public class IndicatorViewSupportExamBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public void createIndicatorViewSupportExam(CreateIndicatorViewSupportExamRequest createIndicatorViewSupportExam ) {
         
@@ -38,7 +38,7 @@ public class IndicatorViewSupportExamBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public void deleteIndicatorViewSupportExam(String indicatorViewSupportExamId ) {
         
@@ -51,7 +51,7 @@ public class IndicatorViewSupportExamBiz{
     * @工时: 0H
     * @开发者: 
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public void updateStatus(IndicatorViewSupportExamRequest indicatorViewSupportExam ) {
         
@@ -64,7 +64,7 @@ public class IndicatorViewSupportExamBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public void updateIndicatorViewSupportExam(UpdateIndicatorViewSupportExamRequest updateIndicatorViewSupportExam ) {
         
@@ -77,9 +77,22 @@ public class IndicatorViewSupportExamBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public IndicatorViewSupportExamResponse getIndicatorViewSupportExam(String indicatorViewSupportExamId ) {
         return new IndicatorViewSupportExamResponse();
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 分页获取查看指标辅助检查类
+    * @关联表: 
+    * @工时: 4H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月14日 下午3:45:06
+    */
+    public void pageIndicatorViewSupportExam(String todo ) {
+        
     }
 }

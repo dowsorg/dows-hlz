@@ -14,7 +14,7 @@ import java.util.HashMap;;
 * @description project descr:指标:判断指标健康问题
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午3:31:43
+* @date 2023年4月14日 下午3:45:06
 */
 public class IndicatorJudgeHealthProblemBiz{
     /**
@@ -25,7 +25,7 @@ public class IndicatorJudgeHealthProblemBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public void createIndicatorJudgeHealthProblem(CreateIndicatorJudgeHealthProblemRequest createIndicatorJudgeHealthProblem ) {
         
@@ -38,7 +38,7 @@ public class IndicatorJudgeHealthProblemBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public void deleteIndicatorJudgeHealthProblem(String indicatorJudgeHealthProblemId ) {
         
@@ -51,7 +51,7 @@ public class IndicatorJudgeHealthProblemBiz{
     * @工时: 0H
     * @开发者: 
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public void updateStatus(UpdateStatusIndicatorJudgeHealthProblemRequest updateStatusIndicatorJudgeHealthProblem ) {
         
@@ -64,7 +64,7 @@ public class IndicatorJudgeHealthProblemBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public void updateIndicatorJudgeHealthProblem(UpdateIndicatorJudgeHealthProblemRequest updateIndicatorJudgeHealthProblem ) {
         
@@ -77,9 +77,22 @@ public class IndicatorJudgeHealthProblemBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public IndicatorJudgeHealthProblemResponse getIndicatorJudgeHealthProblem(String indicatorJudgeHealthProblemId ) {
         return new IndicatorJudgeHealthProblemResponse();
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 分页获取判断指标健康问题
+    * @关联表: 
+    * @工时: 4H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月14日 下午3:45:06
+    */
+    public void pageIndicatorJudgeHealthProblem(String todo ) {
+        
     }
 }

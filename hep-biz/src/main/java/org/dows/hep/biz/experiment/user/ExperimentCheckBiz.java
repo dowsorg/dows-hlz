@@ -14,7 +14,7 @@ import java.util.HashMap;;
 * @description project descr:实验:实验查看
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午3:31:43
+* @date 2023年4月14日 下午3:45:06
 */
 public class ExperimentCheckBiz{
     /**
@@ -25,7 +25,7 @@ public class ExperimentCheckBiz{
     * @工时: 5H
     * @开发者: lait
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public List<ScoreRankResponse> checkScore(ScoreRankRequest scoreRank ) {
         return new ArrayList<ScoreRankResponse>();
@@ -38,7 +38,7 @@ public class ExperimentCheckBiz{
     * @工时: 5H
     * @开发者: lait
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public List<GroupRankingResponse> checkRanking(GroupRankingRequest groupRanking ) {
         return new ArrayList<GroupRankingResponse>();
@@ -51,7 +51,7 @@ public class ExperimentCheckBiz{
     * @工时: 2H
     * @开发者: lait
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public void checkDigtalArchive() {
         

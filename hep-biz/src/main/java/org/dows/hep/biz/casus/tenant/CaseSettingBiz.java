@@ -12,7 +12,7 @@ import java.util.HashMap;;
 * @description project descr:案例:案例问卷设置
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午3:31:43
+* @date 2023年4月14日 下午3:45:06
 */
 public class CaseSettingBiz{
     /**
@@ -23,7 +23,7 @@ public class CaseSettingBiz{
     * @工时: 8H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public Boolean saveOrUpdCaseSetting(CaseSettingRequest caseSetting ) {
         return Boolean.FALSE;
@@ -36,7 +36,7 @@ public class CaseSettingBiz{
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public CaseSettingResponse getCaseSetting(String caseInstanceId ) {
         return new CaseSettingResponse();
@@ -49,7 +49,7 @@ public class CaseSettingBiz{
     * @工时: 3H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public Boolean delCaseSetting(String caseInstanceId ) {
         return Boolean.FALSE;

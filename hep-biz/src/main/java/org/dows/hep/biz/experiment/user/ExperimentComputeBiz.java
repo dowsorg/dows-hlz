@@ -10,7 +10,7 @@ import java.util.HashMap;;
 * @description project descr:实验:实验分数计算
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午3:31:43
+* @date 2023年4月14日 下午3:45:06
 */
 public class ExperimentComputeBiz{
     /**
@@ -21,7 +21,7 @@ public class ExperimentComputeBiz{
     * @工时: 0H
     * @开发者: 
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public void computeRanking() {
         
@@ -34,7 +34,7 @@ public class ExperimentComputeBiz{
     * @工时: 0H
     * @开发者: 
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public void getRanks() {
         

@@ -15,7 +15,7 @@ import java.util.HashMap;;
 * @description project descr:干预:食材
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午3:31:43
+* @date 2023年4月14日 下午3:45:06
 */
 public class FoodMaterialBiz{
     /**
@@ -26,7 +26,7 @@ public class FoodMaterialBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public FoodMaterialResponse pageFoodMaterial(FindFoodRequest findFood ) {
         return new FoodMaterialResponse();
@@ -39,7 +39,7 @@ public class FoodMaterialBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public FoodMaterialInfoResponse getFoodMaterial(String foodMaterialId ) {
         return new FoodMaterialInfoResponse();
@@ -52,7 +52,7 @@ public class FoodMaterialBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public Boolean saveFoodMaterial(SaveFoodMaterialRequest saveFoodMaterial ) {
         return Boolean.FALSE;
@@ -65,7 +65,7 @@ public class FoodMaterialBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public Boolean delFoodMaterial(DelFoodMaterialRequest delFoodMaterial ) {
         return Boolean.FALSE;

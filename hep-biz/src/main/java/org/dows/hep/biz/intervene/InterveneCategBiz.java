@@ -14,7 +14,7 @@ import java.util.HashMap;;
 * @description project descr:干预:干预类别管理
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午3:31:43
+* @date 2023年4月14日 下午3:45:06
 */
 public class InterveneCategBiz{
     /**
@@ -25,7 +25,7 @@ public class InterveneCategBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public List<InterveneCategResponse> listInterveneCateg(FindInterveneCategRequest findInterveneCateg ) {
         return new ArrayList<InterveneCategResponse>();
@@ -38,7 +38,7 @@ public class InterveneCategBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public Boolean saveInterveneCateg(SaveInterveneCategRequest saveInterveneCateg ) {
         return Boolean.FALSE;
@@ -51,7 +51,7 @@ public class InterveneCategBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public Boolean delInterveneCateg(DelInterveneCategRequest delInterveneCateg ) {
         return Boolean.FALSE;

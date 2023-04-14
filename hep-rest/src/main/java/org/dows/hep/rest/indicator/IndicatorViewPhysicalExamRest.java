@@ -20,7 +20,7 @@ import java.util.List;
 * @description project descr:指标:查看指标体格检查类
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午3:31:43
+* @date 2023年4月14日 下午3:45:06
 */
 @RequiredArgsConstructor
 @RestController
@@ -81,6 +81,17 @@ public class IndicatorViewPhysicalExamRest {
     @GetMapping("v1/indicator/indicatorViewPhysicalExam/getIndicatorViewPhysicalExam")
     public IndicatorViewPhysicalExamResponse getIndicatorViewPhysicalExam(@Validated String indicatorViewPhysicalExamId) {
         return indicatorViewPhysicalExamBiz.getIndicatorViewPhysicalExam(indicatorViewPhysicalExamId);
+    }
+
+    /**
+    * 分页获取查看指标监测随访类
+    * @param
+    * @return
+    */
+    @ApiOperation("分页获取查看指标监测随访类")
+    @GetMapping("v1/indicator/indicatorViewPhysicalExam/pageIndicatorViewPhysicalExam")
+    public void pageIndicatorViewPhysicalExam(@Validated String todo) {
+        indicatorViewPhysicalExamBiz.pageIndicatorViewPhysicalExam(todo);
     }
 
 

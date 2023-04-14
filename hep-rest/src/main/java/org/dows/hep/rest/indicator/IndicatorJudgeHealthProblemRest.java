@@ -20,7 +20,7 @@ import java.util.List;
 * @description project descr:指标:判断指标健康问题
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午3:31:43
+* @date 2023年4月14日 下午3:45:06
 */
 @RequiredArgsConstructor
 @RestController
@@ -81,6 +81,17 @@ public class IndicatorJudgeHealthProblemRest {
     @GetMapping("v1/indicator/indicatorJudgeHealthProblem/getIndicatorJudgeHealthProblem")
     public IndicatorJudgeHealthProblemResponse getIndicatorJudgeHealthProblem(@Validated String indicatorJudgeHealthProblemId) {
         return indicatorJudgeHealthProblemBiz.getIndicatorJudgeHealthProblem(indicatorJudgeHealthProblemId);
+    }
+
+    /**
+    * 分页获取判断指标健康问题
+    * @param
+    * @return
+    */
+    @ApiOperation("分页获取判断指标健康问题")
+    @GetMapping("v1/indicator/indicatorJudgeHealthProblem/pageIndicatorJudgeHealthProblem")
+    public void pageIndicatorJudgeHealthProblem(@Validated String todo) {
+        indicatorJudgeHealthProblemBiz.pageIndicatorJudgeHealthProblem(todo);
     }
 
 

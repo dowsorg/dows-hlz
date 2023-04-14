@@ -20,7 +20,7 @@ import java.util.List;
 * @description project descr:指标:判断指标健康指导
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午3:31:43
+* @date 2023年4月14日 下午3:45:06
 */
 @RequiredArgsConstructor
 @RestController
@@ -81,6 +81,17 @@ public class IndicatorJudgeHealthGuidanceRest {
     @GetMapping("v1/indicator/indicatorJudgeHealthGuidance/getIndicatorJudgeHealthGuidance")
     public IndicatorJudgeHealthGuidanceResponse getIndicatorJudgeHealthGuidance(@Validated String indicatorJudgeHealthGuidanceId) {
         return indicatorJudgeHealthGuidanceBiz.getIndicatorJudgeHealthGuidance(indicatorJudgeHealthGuidanceId);
+    }
+
+    /**
+    * 分页获取判断指标健康指导
+    * @param
+    * @return
+    */
+    @ApiOperation("分页获取判断指标健康指导")
+    @GetMapping("v1/indicator/indicatorJudgeHealthGuidance/pageIndicatorJudgeHealthGuidance")
+    public void pageIndicatorJudgeHealthGuidance(@Validated String todo) {
+        indicatorJudgeHealthGuidanceBiz.pageIndicatorJudgeHealthGuidance(todo);
     }
 
 

@@ -14,7 +14,7 @@ import java.util.HashMap;;
 * @description project descr:指标:查看指标监测随访类
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午3:31:43
+* @date 2023年4月14日 下午3:45:06
 */
 public class IndicatorViewMonitorFollowupBiz{
     /**
@@ -25,7 +25,7 @@ public class IndicatorViewMonitorFollowupBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public void createIndicatorViewMonitorFollowup(CreateIndicatorViewMonitorFollowupRequest createIndicatorViewMonitorFollowup ) {
         
@@ -38,7 +38,7 @@ public class IndicatorViewMonitorFollowupBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public void deleteIndicatorViewMonitorFollowup(String indicatorViewMonitorFollowupId ) {
         
@@ -51,7 +51,7 @@ public class IndicatorViewMonitorFollowupBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public void updateStatus(IndicatorViewMonitorFollowupRequest indicatorViewMonitorFollowup ) {
         
@@ -64,7 +64,7 @@ public class IndicatorViewMonitorFollowupBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public void updateIndicatorViewMonitorFollowup(UpdateIndicatorViewMonitorFollowupRequest updateIndicatorViewMonitorFollowup ) {
         
@@ -77,9 +77,22 @@ public class IndicatorViewMonitorFollowupBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午3:31:43
+    * @创建时间: 2023年4月14日 下午3:45:06
     */
     public IndicatorViewMonitorFollowupResponse getIndicatorViewMonitorFollowup(String indicatorViewMonitorFollowupId ) {
         return new IndicatorViewMonitorFollowupResponse();
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 分页获取查看指标监测随访类
+    * @关联表: 
+    * @工时: 4H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月14日 下午3:45:06
+    */
+    public void pageIndicatorViewMonitorFollowup(String todo ) {
+        
     }
 }

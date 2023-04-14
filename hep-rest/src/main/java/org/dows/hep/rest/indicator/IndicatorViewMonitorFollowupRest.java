@@ -20,7 +20,7 @@ import java.util.List;
 * @description project descr:指标:查看指标监测随访类
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午3:31:43
+* @date 2023年4月14日 下午3:45:06
 */
 @RequiredArgsConstructor
 @RestController
@@ -81,6 +81,17 @@ public class IndicatorViewMonitorFollowupRest {
     @GetMapping("v1/indicator/indicatorViewMonitorFollowup/getIndicatorViewMonitorFollowup")
     public IndicatorViewMonitorFollowupResponse getIndicatorViewMonitorFollowup(@Validated String indicatorViewMonitorFollowupId) {
         return indicatorViewMonitorFollowupBiz.getIndicatorViewMonitorFollowup(indicatorViewMonitorFollowupId);
+    }
+
+    /**
+    * 分页获取查看指标监测随访类
+    * @param
+    * @return
+    */
+    @ApiOperation("分页获取查看指标监测随访类")
+    @GetMapping("v1/indicator/indicatorViewMonitorFollowup/pageIndicatorViewMonitorFollowup")
+    public void pageIndicatorViewMonitorFollowup(@Validated String todo) {
+        indicatorViewMonitorFollowupBiz.pageIndicatorViewMonitorFollowup(todo);
     }
 
 
