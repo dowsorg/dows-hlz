@@ -15,7 +15,7 @@ import java.util.HashMap;;
 * @description project descr:指标:指标实例
 *
 * @author lait.zhang
-* @date 2023年4月13日 下午7:47:15
+* @date 2023年4月14日 上午10:19:59
 */
 public class IndicatorInstanceBiz{
     /**
@@ -26,7 +26,7 @@ public class IndicatorInstanceBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public void createIndicatorInstance(CreateIndicatorInstanceRequest createIndicatorInstance ) {
         
@@ -39,7 +39,7 @@ public class IndicatorInstanceBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public void deleteIndicatorInstance(String indicatorInstanceId ) {
         
@@ -52,7 +52,7 @@ public class IndicatorInstanceBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public void updateIndicatorInstance(UpdateIndicatorInstanceRequest updateIndicatorInstance ) {
         
@@ -65,7 +65,7 @@ public class IndicatorInstanceBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public IndicatorInstanceResponse getIndicatorInstance(String indicatorInstanceId ) {
         return new IndicatorInstanceResponse();
@@ -78,7 +78,7 @@ public class IndicatorInstanceBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public List<IndicatorInstanceResponse> listIndicatorInstance(String appId, VarcharRequest varchar ) {
         return new ArrayList<IndicatorInstanceResponse>();

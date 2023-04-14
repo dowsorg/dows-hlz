@@ -21,7 +21,7 @@ import java.math.BigDecimal;
 @Schema(name = "PersonInstance 对象", title = "人物-实例")
 public class PersonInstanceRequest{
     @Schema(title = "账户ID")
-    private Long String*accountId;
+    private Long accountId;
 
     @Schema(title = "姓名")
     private String name;

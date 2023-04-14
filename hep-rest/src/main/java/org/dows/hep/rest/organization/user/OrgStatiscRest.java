@@ -18,7 +18,7 @@ import java.util.List;
 * @description project descr:机构:机构数据统计
 *
 * @author lait.zhang
-* @date 2023年4月13日 下午7:47:15
+* @date 2023年4月14日 上午10:19:59
 */
 @RequiredArgsConstructor
 @RestController
@@ -43,9 +43,9 @@ public class OrgStatiscRest {
     * @return
     */
     @ApiOperation("获取年龄分类")
-    @GetMapping("v1/organizationUser/orgStatisc/listGenderRatio")
-    public NormalDataResponse listGenderRatio(@Validated String orgId) {
-        return orgStatiscBiz.listGenderRatio(orgId);
+    @GetMapping("v1/organizationUser/orgStatisc/listAgeRatio")
+    public NormalDataResponse listAgeRatio(@Validated String orgId) {
+        return orgStatiscBiz.listAgeRatio(orgId);
     }
 
     /**

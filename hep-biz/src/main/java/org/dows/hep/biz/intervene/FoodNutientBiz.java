@@ -12,7 +12,7 @@ import java.util.HashMap;;
 * @description project descr:干预:饮食关键指标（营养成分）
 *
 * @author lait.zhang
-* @date 2023年4月13日 下午7:47:15
+* @date 2023年4月14日 上午10:19:59
 */
 public class FoodNutientBiz{
     /**
@@ -23,7 +23,7 @@ public class FoodNutientBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public List<FoodNutientResponse> listFoodNutient() {
         return new ArrayList<FoodNutientResponse>();
@@ -36,7 +36,7 @@ public class FoodNutientBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public Boolean saveFoodNutient(SaveFoodNutientRequest saveFoodNutient ) {
         return Boolean.FALSE;

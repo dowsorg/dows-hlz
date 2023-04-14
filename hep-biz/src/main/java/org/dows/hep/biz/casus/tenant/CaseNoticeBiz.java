@@ -12,7 +12,7 @@ import java.util.HashMap;;
 * @description project descr:案例:案例公告
 *
 * @author lait.zhang
-* @date 2023年4月13日 下午7:47:15
+* @date 2023年4月14日 上午10:19:59
 */
 public class CaseNoticeBiz{
     /**
@@ -23,7 +23,7 @@ public class CaseNoticeBiz{
     * @工时: 8H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public Boolean saveOrUpdCaseNotice(CreateCaseNoticeRequest createCaseNotice ) {
         return Boolean.FALSE;
@@ -36,7 +36,7 @@ public class CaseNoticeBiz{
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public List<CaseNoticeResponse> listCaseNotice(String caseInstanceId ) {
         return new ArrayList<CaseNoticeResponse>();
@@ -49,7 +49,7 @@ public class CaseNoticeBiz{
     * @工时: 3H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public Boolean delCaseNotice(String caseNoticeId ) {
         return Boolean.FALSE;

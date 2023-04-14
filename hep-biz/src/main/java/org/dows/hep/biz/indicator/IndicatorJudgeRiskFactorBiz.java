@@ -15,7 +15,7 @@ import java.util.HashMap;;
 * @description project descr:指标:判断指标危险因素
 *
 * @author lait.zhang
-* @date 2023年4月13日 下午7:47:15
+* @date 2023年4月14日 上午10:19:59
 */
 public class IndicatorJudgeRiskFactorBiz{
     /**
@@ -26,7 +26,7 @@ public class IndicatorJudgeRiskFactorBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public void createIndicatorJudgeRiskFactor(CreateIndicatorJudgeRiskFactorRequest createIndicatorJudgeRiskFactor ) {
         
@@ -39,7 +39,7 @@ public class IndicatorJudgeRiskFactorBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public void deleteIndicatorJudgeRiskFactor(IndicatorJudgeRiskFactorIdRequest indicatorJudgeRiskFactorId ) {
         
@@ -52,7 +52,7 @@ public class IndicatorJudgeRiskFactorBiz{
     * @工时: 0H
     * @开发者: 
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public void updateStatus(UpdateStatusIndicatorJudgeRiskFactorRequest updateStatusIndicatorJudgeRiskFactor ) {
         
@@ -65,7 +65,7 @@ public class IndicatorJudgeRiskFactorBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public IndicatorJudgeRiskFactorResponse getIndicatorJudgeRiskFactor(IndicatorJudgeRiskFactorIdRequest indicatorJudgeRiskFactorId ) {
         return new IndicatorJudgeRiskFactorResponse();

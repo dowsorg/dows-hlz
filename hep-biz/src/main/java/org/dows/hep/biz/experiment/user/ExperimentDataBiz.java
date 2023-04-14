@@ -11,7 +11,7 @@ import java.util.HashMap;;
 * @description project descr:实验:实验数据
 *
 * @author lait.zhang
-* @date 2023年4月13日 下午7:47:15
+* @date 2023年4月14日 上午10:19:59
 */
 public class ExperimentDataBiz{
     /**
@@ -22,7 +22,7 @@ public class ExperimentDataBiz{
     * @工时: 0H
     * @开发者: 
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public void saveOperateData(OperateDataRequest operateData ) {
         

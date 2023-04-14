@@ -26,9 +26,6 @@ public class CreateIndicatorInstanceRequest{
     @Schema(title = "指标分类分布式ID")
     private String indicatorCategoryId;
 
-    @Schema(title = "应用ID")
-    private String appId;
-
     @Schema(title = "指标名称")
     private String indicatorName;
 

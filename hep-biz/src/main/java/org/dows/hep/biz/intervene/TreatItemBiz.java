@@ -15,7 +15,7 @@ import java.util.HashMap;;
 * @description project descr:干预:治疗项目
 *
 * @author lait.zhang
-* @date 2023年4月13日 下午7:47:15
+* @date 2023年4月14日 上午10:19:59
 */
 public class TreatItemBiz{
     /**
@@ -26,7 +26,7 @@ public class TreatItemBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public TreatItemResponse pageTreatItem(FindTreatRequest findTreat ) {
         return new TreatItemResponse();
@@ -39,7 +39,7 @@ public class TreatItemBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public TreatItemInfoResponse infoTreatItem(String treatItemId ) {
         return new TreatItemInfoResponse();
@@ -52,7 +52,7 @@ public class TreatItemBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public Boolean saveTreatItem(SaveTreatItmeRequest saveTreatItme ) {
         return Boolean.FALSE;
@@ -65,7 +65,7 @@ public class TreatItemBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public Boolean delTreatItem(DelTreatItemRequest delTreatItem ) {
         return Boolean.FALSE;

@@ -14,7 +14,7 @@ import java.util.HashMap;;
 * @description project descr:风险:风险模型
 *
 * @author lait.zhang
-* @date 2023年4月13日 下午7:47:15
+* @date 2023年4月14日 上午10:20:00
 */
 public class RiskModelBiz{
     /**
@@ -25,7 +25,7 @@ public class RiskModelBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:20:00
     */
     public void createRiskModel(CreateRiskModelRequest createRiskModel ) {
         
@@ -38,7 +38,7 @@ public class RiskModelBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:20:00
     */
     public void deleteRiskModel(String riskModelId ) {
         
@@ -51,7 +51,7 @@ public class RiskModelBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:20:00
     */
     public void updateRiskModel(UpdateRiskModelRequest updateRiskModel ) {
         
@@ -64,7 +64,7 @@ public class RiskModelBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:20:00
     */
     public void updateStatusRiskModel(UpdateStatusRiskModelRequest updateStatusRiskModel ) {
         
@@ -77,7 +77,7 @@ public class RiskModelBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:20:00
     */
     public RiskModelResponse getRiskModel(String riskModelId ) {
         return new RiskModelResponse();

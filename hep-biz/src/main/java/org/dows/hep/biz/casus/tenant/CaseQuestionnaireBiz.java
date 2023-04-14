@@ -13,7 +13,7 @@ import java.util.HashMap;;
 * @description project descr:案例:案例问卷
 *
 * @author lait.zhang
-* @date 2023年4月13日 下午7:47:15
+* @date 2023年4月14日 上午10:19:59
 */
 public class CaseQuestionnaireBiz{
     /**
@@ -24,7 +24,7 @@ public class CaseQuestionnaireBiz{
     * @工时: 8H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public Boolean saveOrUpdCaseQuestionnaire(CaseQuestionnaireRequest caseQuestionnaire ) {
         return Boolean.FALSE;
@@ -37,7 +37,7 @@ public class CaseQuestionnaireBiz{
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public CaseQuestionnaireResponse pageCaseQuestionnaire(CaseQuestionnaireSearchRequest caseQuestionnaireSearch ) {
         return new CaseQuestionnaireResponse();
@@ -50,7 +50,7 @@ public class CaseQuestionnaireBiz{
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public void getCaseQuestionnaire(String caseQuestionnaireId ) {
         
@@ -63,7 +63,7 @@ public class CaseQuestionnaireBiz{
     * @工时: 3H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public Boolean delCaseQuestionnaire(String caseQuestionnaireId ) {
         return Boolean.FALSE;

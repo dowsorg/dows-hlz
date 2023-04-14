@@ -15,7 +15,7 @@ import java.util.HashMap;;
 * @description project descr:指标:判断指标疾病问题
 *
 * @author lait.zhang
-* @date 2023年4月13日 下午7:47:15
+* @date 2023年4月14日 上午10:19:59
 */
 public class IndicatorJudgeDiseaseProblemBiz{
     /**
@@ -26,7 +26,7 @@ public class IndicatorJudgeDiseaseProblemBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public void createIndicatorJudgeDiseaseProblem(CreateIndicatorJudgeDiseaseProblemRequest createIndicatorJudgeDiseaseProblem ) {
         
@@ -39,7 +39,7 @@ public class IndicatorJudgeDiseaseProblemBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:20:00
     */
     public void deleteIndicatorJudgeDiseaseProblem(IndicatorJudgeDiseaseProblemIdRequest indicatorJudgeDiseaseProblemId ) {
         
@@ -52,7 +52,7 @@ public class IndicatorJudgeDiseaseProblemBiz{
     * @工时: 0H
     * @开发者: 
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:20:00
     */
     public void updateStatus(UpdateStatusIndicatorJudgeDiseaseProblemRequest updateStatusIndicatorJudgeDiseaseProblem ) {
         
@@ -65,7 +65,7 @@ public class IndicatorJudgeDiseaseProblemBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:20:00
     */
     public IndicatorJudgeDiseaseProblemResponse getIndicatorJudgeDiseaseProblem(IndicatorJudgeDiseaseProblemIdRequest indicatorJudgeDiseaseProblemId ) {
         return new IndicatorJudgeDiseaseProblemResponse();

@@ -11,7 +11,7 @@ import java.util.HashMap;;
 * @description project descr:案列:案例基础信息
 *
 * @author lait.zhang
-* @date 2023年4月13日 下午7:47:15
+* @date 2023年4月14日 上午10:19:59
 */
 public class CaseInfoBiz{
     /**
@@ -22,7 +22,7 @@ public class CaseInfoBiz{
     * @工时: 6H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public String getCaseInfo(CaseInfoRequest caseInfo ) {
         return new String();

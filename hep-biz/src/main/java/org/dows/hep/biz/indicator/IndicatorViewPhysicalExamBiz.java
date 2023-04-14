@@ -14,7 +14,7 @@ import java.util.HashMap;;
 * @description project descr:指标:查看指标体格检查类
 *
 * @author lait.zhang
-* @date 2023年4月13日 下午7:47:15
+* @date 2023年4月14日 上午10:19:59
 */
 public class IndicatorViewPhysicalExamBiz{
     /**
@@ -25,7 +25,7 @@ public class IndicatorViewPhysicalExamBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public void createIndicatorViewPhysicalExam(CreateIndicatorViewPhysicalExamRequest createIndicatorViewPhysicalExam ) {
         
@@ -38,7 +38,7 @@ public class IndicatorViewPhysicalExamBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public void deleteIndicatorViewPhysicalExam(IndicatorViewPhysicalExamIdRequest indicatorViewPhysicalExamId ) {
         
@@ -51,7 +51,7 @@ public class IndicatorViewPhysicalExamBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public IndicatorViewPhysicalExamResponse getIndicatorViewPhysicalExam(IndicatorViewPhysicalExamIdRequest indicatorViewPhysicalExamId ) {
         return new IndicatorViewPhysicalExamResponse();

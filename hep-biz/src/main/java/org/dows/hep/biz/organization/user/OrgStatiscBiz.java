@@ -12,7 +12,7 @@ import java.util.HashMap;;
 * @description project descr:机构:机构数据统计
 *
 * @author lait.zhang
-* @date 2023年4月13日 下午7:47:15
+* @date 2023年4月14日 上午10:19:59
 */
 public class OrgStatiscBiz{
     /**
@@ -23,7 +23,7 @@ public class OrgStatiscBiz{
     * @工时: 4H
     * @开发者: jx
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public NormalDataResponseResponse listGenderRatio(String orgId ) {
         return new NormalDataResponseResponse();
@@ -36,9 +36,9 @@ public class OrgStatiscBiz{
     * @工时: 4H
     * @开发者: jx
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
-    public NormalDataResponse listGenderRatio(String orgId ) {
+    public NormalDataResponse listAgeRatio(String orgId ) {
         return new NormalDataResponse();
     }
     /**
@@ -49,7 +49,7 @@ public class OrgStatiscBiz{
     * @工时: 0H
     * @开发者: 
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public void listTagRatio() {
         

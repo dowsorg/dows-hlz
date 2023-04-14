@@ -15,7 +15,7 @@ import java.util.HashMap;;
 * @description project descr:指标:判断指标健康问题
 *
 * @author lait.zhang
-* @date 2023年4月13日 下午7:47:15
+* @date 2023年4月14日 上午10:19:59
 */
 public class IndicatorJudgeHealthProblemBiz{
     /**
@@ -26,7 +26,7 @@ public class IndicatorJudgeHealthProblemBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public void createIndicatorJudgeHealthProblem(CreateIndicatorJudgeHealthProblemRequest createIndicatorJudgeHealthProblem ) {
         
@@ -39,7 +39,7 @@ public class IndicatorJudgeHealthProblemBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public void deleteIndicatorJudgeHealthProblem(IndicatorJudgeHealthProblemIdRequest indicatorJudgeHealthProblemId ) {
         
@@ -52,7 +52,7 @@ public class IndicatorJudgeHealthProblemBiz{
     * @工时: 0H
     * @开发者: 
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public void updateStatus(UpdateStatusIndicatorJudgeHealthProblemRequest updateStatusIndicatorJudgeHealthProblem ) {
         
@@ -65,7 +65,7 @@ public class IndicatorJudgeHealthProblemBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public IndicatorJudgeHealthProblemResponse getIndicatorJudgeHealthProblem(IndicatorJudgeHealthProblemIdRequest indicatorJudgeHealthProblemId ) {
         return new IndicatorJudgeHealthProblemResponse();

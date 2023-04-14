@@ -13,7 +13,7 @@ import java.util.HashMap;;
 * @description project descr:指标:指标值
 *
 * @author lait.zhang
-* @date 2023年4月13日 下午7:47:15
+* @date 2023年4月14日 上午10:19:59
 */
 public class IndicatorValBiz{
     /**
@@ -24,7 +24,7 @@ public class IndicatorValBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public void createIndicatorVal(CreateIndicatorValRequest createIndicatorVal ) {
         
@@ -37,7 +37,7 @@ public class IndicatorValBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public void deleteIndicatorVal(String indicatorValId ) {
         
@@ -50,7 +50,7 @@ public class IndicatorValBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public void updateIndicatorVal(UpdateIndicatorValRequest updateIndicatorVal ) {
         
@@ -63,7 +63,7 @@ public class IndicatorValBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public IndicatorValResponse indicatorVal(String indicatorValId ) {
         return new IndicatorValResponse();

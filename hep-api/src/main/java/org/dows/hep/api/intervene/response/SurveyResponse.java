@@ -21,7 +21,7 @@ import java.math.BigDecimal;
 @Schema(name = "Survey 对象", title = "问卷列表")
 public class SurveyResponse{
     @Schema(title = "分布式id")
-    private  surveyId;
+    private String surveyId;
 
     @Schema(title = "问卷名称")
     private String surveyName;

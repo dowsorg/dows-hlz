@@ -14,7 +14,7 @@ import java.util.HashMap;;
 * @description project descr:指标:查看指标辅助检查类
 *
 * @author lait.zhang
-* @date 2023年4月13日 下午7:47:15
+* @date 2023年4月14日 上午10:19:59
 */
 public class IndicatorViewSupportExamBiz{
     /**
@@ -25,7 +25,7 @@ public class IndicatorViewSupportExamBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public void createIndicatorViewSupportExam(CreateIndicatorViewSupportExamRequest createIndicatorViewSupportExam ) {
         
@@ -38,7 +38,7 @@ public class IndicatorViewSupportExamBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public void deleteIndicatorViewSupportExam(IndicatorViewSupportExamIdRequest indicatorViewSupportExamId ) {
         
@@ -51,7 +51,7 @@ public class IndicatorViewSupportExamBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public IndicatorViewSupportExamResponse getIndicatorViewSupportExam(IndicatorViewSupportExamIdRequest indicatorViewSupportExamId ) {
         return new IndicatorViewSupportExamResponse();

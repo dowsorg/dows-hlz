@@ -20,8 +20,8 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Schema(name = "UpdateIndicatorVal 对象", title = "更新指标值")
 public class UpdateIndicatorValRequest{
-    @Schema(title = "")
-    private  分布式ID;
+    @Schema(title = "分布式ID")
+    private String indicatorValId;
 
     @Schema(title = "当前值")
     private String currentVal;

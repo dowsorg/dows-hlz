@@ -15,7 +15,7 @@ import java.util.HashMap;;
 * @description project descr:指标:查看指标基本信息类
 *
 * @author lait.zhang
-* @date 2023年4月13日 下午7:47:15
+* @date 2023年4月14日 上午10:19:59
 */
 public class IndicatorViewBaseInfoBiz{
     /**
@@ -26,7 +26,7 @@ public class IndicatorViewBaseInfoBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public void createIndicatorViewBaseInfo(CreateIndicatorViewBaseInfoRequest createIndicatorViewBaseInfo ) {
         
@@ -39,7 +39,7 @@ public class IndicatorViewBaseInfoBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public void deleteIndicatorViewBaseInfo(IndicatorViewBaseInfoIdRequest indicatorViewBaseInfoId ) {
         
@@ -52,7 +52,7 @@ public class IndicatorViewBaseInfoBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public void updateIndicatorViewBaseInfo(UpdateIndicatorViewBaseInfoRequest updateIndicatorViewBaseInfo ) {
         
@@ -65,7 +65,7 @@ public class IndicatorViewBaseInfoBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public IndicatorViewBaseInfoResponse getIndicatorViewBaseInfo(IndicatorViewBaseInfoIdRequest indicatorViewBaseInfoId ) {
         return new IndicatorViewBaseInfoResponse();

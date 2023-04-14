@@ -14,7 +14,7 @@ import java.util.HashMap;;
 * @description project descr:指标:查看指标监测随访类
 *
 * @author lait.zhang
-* @date 2023年4月13日 下午7:47:15
+* @date 2023年4月14日 上午10:19:59
 */
 public class IndicatorViewMonitorFollowupBiz{
     /**
@@ -25,7 +25,7 @@ public class IndicatorViewMonitorFollowupBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public void createIndicatorViewMonitorFollowup(CreateIndicatorViewMonitorFollowupRequest createIndicatorViewMonitorFollowup ) {
         
@@ -38,7 +38,7 @@ public class IndicatorViewMonitorFollowupBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public void deleteIndicatorViewMonitorFollowup(IndicatorViewMonitorFollowupIdRequest indicatorViewMonitorFollowupId ) {
         
@@ -51,7 +51,7 @@ public class IndicatorViewMonitorFollowupBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月13日 下午7:47:15
+    * @创建时间: 2023年4月14日 上午10:19:59
     */
     public IndicatorViewMonitorFollowupResponse getIndicatorViewMonitorFollowup(IndicatorViewMonitorFollowupIdRequest indicatorViewMonitorFollowupId ) {
         return new IndicatorViewMonitorFollowupResponse();
