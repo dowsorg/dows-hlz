@@ -21,7 +21,7 @@ import java.math.BigDecimal;
 @Schema(name = "UpdateStatusIndicatorJudgeRiskFactor 对象", title = "更改启用状态")
 public class UpdateStatusIndicatorJudgeRiskFactorRequest{
     @Schema(title = "判断指标危险因素分布式Id")
-    private  IndicatorJudgeRiskFactorId;
+    private String IndicatorJudgeRiskFactorId;
 
     @Schema(title = "0-禁用，1-启用")
     private Integer status;

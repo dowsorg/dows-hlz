@@ -24,7 +24,7 @@ public class CreateIndicatorVarRequest{
     private String appId;
 
     @Schema(title = "指标ID")
-    private String indicatorInstanceId;
+    private String indicatorInstanceIdId;
 
     @Schema(title = "数据库名")
     private String dbName;

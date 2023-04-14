@@ -12,7 +12,7 @@ import java.util.HashMap;;
 * @description project descr:问题:问题集-维度
 *
 * @author lait.zhang
-* @date 2023年4月14日 上午10:19:59
+* @date 2023年4月14日 下午2:24:35
 */
 public class QuestionSectionDimensionBiz{
     /**
@@ -23,7 +23,7 @@ public class QuestionSectionDimensionBiz{
     * @工时: 4H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public Boolean saveOrUpdQuestionSectionDimension(QuestionSectionDimensionRequest questionSectionDimension ) {
         return Boolean.FALSE;
@@ -36,7 +36,7 @@ public class QuestionSectionDimensionBiz{
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public List<QuestionSectionDimensionResponse> listQuestionSectionDimension(String questionSectionId ) {
         return new ArrayList<QuestionSectionDimensionResponse>();
@@ -49,7 +49,7 @@ public class QuestionSectionDimensionBiz{
     * @工时: 6H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public Boolean delQuestionSectionDimension(String questionSectionDimensionIds ) {
         return Boolean.FALSE;

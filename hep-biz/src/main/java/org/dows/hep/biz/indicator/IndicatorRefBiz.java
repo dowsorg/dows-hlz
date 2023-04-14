@@ -12,7 +12,7 @@ import java.util.HashMap;;
 * @description project descr:指标:指标引用
 *
 * @author lait.zhang
-* @date 2023年4月14日 上午10:19:59
+* @date 2023年4月14日 下午2:24:35
 */
 public class IndicatorRefBiz{
     /**
@@ -20,10 +20,10 @@ public class IndicatorRefBiz{
     * @return
     * @说明: 创建指标引用
     * @关联表: 
-    * @工时: 5H
+    * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public void createIndicatorRef(CreateIndicatorRefRequest createIndicatorRef ) {
         
@@ -33,10 +33,10 @@ public class IndicatorRefBiz{
     * @return
     * @说明: 删除指标引用
     * @关联表: 
-    * @工时: 5H
+    * @工时: 2H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public void deleteIndicatorRef(String indicatorRefId ) {
         
@@ -46,10 +46,10 @@ public class IndicatorRefBiz{
     * @return
     * @说明: 获取指标引用列表
     * @关联表: 
-    * @工时: 5H
+    * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public List<IndicatorRefResponse> listIndicatorRef(String indicatorInstanceId ) {
         return new ArrayList<IndicatorRefResponse>();

@@ -2,8 +2,8 @@ package org.dows.hep.biz.indicator;
 
 import org.dows.framework.api.Response;
 import org.dows.hep.api.indicator.request.CreateIndicatorViewMonitorFollowupRequest;
-import org.dows.hep.api.indicator.request.IndicatorViewMonitorFollowupIdRequest;
-import org.dows.hep.api.indicator.request.IndicatorViewMonitorFollowupIdRequest;
+import org.dows.hep.api.indicator.request.IndicatorViewMonitorFollowupRequest;
+import org.dows.hep.api.indicator.request.UpdateIndicatorViewMonitorFollowupRequest;
 import org.dows.hep.api.indicator.response.IndicatorViewMonitorFollowupResponse;
 
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.HashMap;;
 * @description project descr:指标:查看指标监测随访类
 *
 * @author lait.zhang
-* @date 2023年4月14日 上午10:19:59
+* @date 2023年4月14日 下午2:24:35
 */
 public class IndicatorViewMonitorFollowupBiz{
     /**
@@ -22,10 +22,10 @@ public class IndicatorViewMonitorFollowupBiz{
     * @return
     * @说明: 创建查看指标监测随访类
     * @关联表: 
-    * @工时: 5H
+    * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public void createIndicatorViewMonitorFollowup(CreateIndicatorViewMonitorFollowupRequest createIndicatorViewMonitorFollowup ) {
         
@@ -35,12 +35,38 @@ public class IndicatorViewMonitorFollowupBiz{
     * @return
     * @说明: 删除指标监测随访类
     * @关联表: 
-    * @工时: 5H
+    * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
-    public void deleteIndicatorViewMonitorFollowup(IndicatorViewMonitorFollowupIdRequest indicatorViewMonitorFollowupId ) {
+    public void deleteIndicatorViewMonitorFollowup(String indicatorViewMonitorFollowupId ) {
+        
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 更改启用状态
+    * @关联表: 
+    * @工时: 4H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月14日 下午2:24:35
+    */
+    public void updateStatus(IndicatorViewMonitorFollowupRequest indicatorViewMonitorFollowup ) {
+        
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 更新查看指标监测随访类
+    * @关联表: 
+    * @工时: 4H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月14日 下午2:24:35
+    */
+    public void updateIndicatorViewMonitorFollowup(UpdateIndicatorViewMonitorFollowupRequest updateIndicatorViewMonitorFollowup ) {
         
     }
     /**
@@ -48,12 +74,12 @@ public class IndicatorViewMonitorFollowupBiz{
     * @return
     * @说明: 获取查看指标监测随访类
     * @关联表: 
-    * @工时: 5H
+    * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
-    public IndicatorViewMonitorFollowupResponse getIndicatorViewMonitorFollowup(IndicatorViewMonitorFollowupIdRequest indicatorViewMonitorFollowupId ) {
+    public IndicatorViewMonitorFollowupResponse getIndicatorViewMonitorFollowup(String indicatorViewMonitorFollowupId ) {
         return new IndicatorViewMonitorFollowupResponse();
     }
 }

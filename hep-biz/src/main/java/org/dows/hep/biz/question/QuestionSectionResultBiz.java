@@ -14,7 +14,7 @@ import java.util.HashMap;;
 * @description project descr:问题:问题集-答题记录
 *
 * @author lait.zhang
-* @date 2023年4月14日 上午10:19:59
+* @date 2023年4月14日 下午2:24:35
 */
 public class QuestionSectionResultBiz{
     /**
@@ -25,7 +25,7 @@ public class QuestionSectionResultBiz{
     * @工时: 8H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public Boolean saveOrUpdQuestionSectionResult(QuestionSectionResultRequest questionSectionResult ) {
         return Boolean.FALSE;
@@ -38,7 +38,7 @@ public class QuestionSectionResultBiz{
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public QuestionSectionResultResponse pageQuestionSectionResult(QuestionSectionResultSearchRequest questionSectionResultSearch ) {
         return new QuestionSectionResultResponse();
@@ -51,7 +51,7 @@ public class QuestionSectionResultBiz{
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public QuestionSectionResultResponse getQuestionSectionResult(String questionSectionResultId ) {
         return new QuestionSectionResultResponse();

@@ -36,7 +36,7 @@ public class QuestionSectionDimensionRequest{
     private String demensionContent;
 
     @Schema(title = "分数")
-    private java.math.BigDecimal score;
+    private BigDecimal score;
 
 
 }

@@ -21,7 +21,7 @@ import java.math.BigDecimal;
 @Schema(name = "UpdateStatusIndicatorJudgeHealthProblem 对象", title = "更改启用状态")
 public class UpdateStatusIndicatorJudgeHealthProblemRequest{
     @Schema(title = "判断指标健康问题分布式Id")
-    private  IndicatorJudgeHealthProblemId;
+    private String IndicatorJudgeHealthProblemId;
 
     @Schema(title = "0-禁用，1-启用")
     private Integer status;

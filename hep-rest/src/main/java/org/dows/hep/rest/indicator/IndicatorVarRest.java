@@ -21,7 +21,7 @@ import java.util.List;
 * @description project descr:指标:指标变量
 *
 * @author lait.zhang
-* @date 2023年4月14日 上午10:19:59
+* @date 2023年4月14日 下午2:24:35
 */
 @RequiredArgsConstructor
 @RestController
@@ -71,6 +71,17 @@ public class IndicatorVarRest {
     @GetMapping("v1/indicator/indicatorVar/getIndicatorVar")
     public IndicatorVarResponse getIndicatorVar(@Validated IndicatorVarIdRequest indicatorVarId) {
         return indicatorVarBiz.getIndicatorVar(indicatorVarId);
+    }
+
+    /**
+    * 做公式组件
+    * @param
+    * @return
+    */
+    @ApiOperation("做公式组件")
+    @PostMapping("v1/indicator/indicatorVar/createExpressionComponent")
+    public void createExpressionComponent(@RequestBody @Validated String expressionId ) {
+        indicatorVarBiz.createExpressionComponent(expressionId);
     }
 
 

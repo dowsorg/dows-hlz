@@ -753,515 +753,6 @@ CREATE TABLE IF NOT EXISTS `case_event_action_indicator`(
     UNIQUE KEY `unique_case_event_action_indicator_id` (`case_event_action_indicator_id`)
 ) ENGINE=InnoDB COMMENT='人物事件处理选项影响指标';
 
-drop table if exists `indicator_category`;
-CREATE TABLE IF NOT EXISTS `indicator_category`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `pid` bigint(19) DEFAULT NULL COMMENT '父ID',
-    `category_name` varchar(64) DEFAULT NULL COMMENT '分类名称',
-    `category_code` varchar(64) DEFAULT NULL COMMENT '分类code',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='指标类别';
-
-drop table if exists `indicator_instance`;
-CREATE TABLE IF NOT EXISTS `indicator_instance`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_instance_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '指标分类ID',
-    `categ_name` varchar(64) DEFAULT NULL COMMENT '分类名称',
-    `indicator_name` varchar(64) DEFAULT NULL COMMENT '指标名称',
-    `indicator_code` varchar(64) DEFAULT NULL COMMENT '指标code',
-    `unit` varchar(64) DEFAULT NULL COMMENT '单位',
-    `core` tinyint(4) DEFAULT NULL COMMENT '0-非核心指标，1-核心指标',
-    `experssion` varchar(64) DEFAULT NULL COMMENT '指标表达式[拆包]',
-    `raw_experssion` varchar(64) DEFAULT NULL COMMENT '未拆包指标表达式',
-    `descr` varchar(64) DEFAULT NULL COMMENT '描述',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='指标';
-
-drop table if exists `indicator_category_ref`;
-CREATE TABLE IF NOT EXISTS `indicator_category_ref`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_category_ref_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `indicator_instance_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `order` integer(2) DEFAULT NULL COMMENT '展示顺序',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='指标分类与指标关联关系';
-
-drop table if exists `indicator_ref`;
-CREATE TABLE IF NOT EXISTS `indicator_ref`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_ref_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `indicator_id` varchar(64) DEFAULT NULL COMMENT '指标ID',
-    `ref_indicator_id` varchar(64) DEFAULT NULL COMMENT '引用这个指标的指标ID',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='指标-引用';
-
-drop table if exists `indicator_var`;
-CREATE TABLE IF NOT EXISTS `indicator_var`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_var_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `indicator_id` varchar(64) DEFAULT NULL COMMENT '指标ID',
-    `db_name` varchar(64) DEFAULT NULL COMMENT '数据库名',
-    `tb_name` varchar(64) DEFAULT NULL COMMENT '表名',
-    `var_name` varchar(64) DEFAULT NULL COMMENT '变量名',
-    `var_code` varchar(64) DEFAULT NULL COMMENT '变量code',
-    `periods` varchar(64) DEFAULT NULL COMMENT '期数，如果多期用[,]分割',
-    `descr` varchar(64) DEFAULT NULL COMMENT '描述',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='指标变量';
-
-drop table if exists `indicator_rule`;
-CREATE TABLE IF NOT EXISTS `indicator_rule`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_rule_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `variable_id` varchar(64) DEFAULT NULL COMMENT '指标或变量ID',
-    `rule_type` integer(2) DEFAULT NULL COMMENT '变量类型[0:指标，1:变量]',
-    `min` varchar(64) DEFAULT NULL COMMENT '最小值',
-    `max` varchar(64) DEFAULT NULL COMMENT '最大值',
-    `def` varchar(64) DEFAULT NULL COMMENT '默认值',
-    `descr` varchar(64) DEFAULT NULL COMMENT '描述',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='指标|变量规则[校验]';
-
-drop table if exists `indicator_val`;
-CREATE TABLE IF NOT EXISTS `indicator_val`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_val_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `indicator_id` varchar(64) DEFAULT NULL COMMENT '指标ID',
-    `current_val` varchar(64) DEFAULT NULL COMMENT '当前值',
-    `min` varchar(64) DEFAULT NULL COMMENT '最小值',
-    `max` varchar(64) DEFAULT NULL COMMENT '最大值',
-    `def` varchar(64) DEFAULT NULL COMMENT '默认值',
-    `descr` varchar(64) DEFAULT NULL COMMENT '描述',
-    `periods` varchar(64) DEFAULT NULL COMMENT '期数',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='指标值';
-
-drop table if exists `indicator_principal_ref`;
-CREATE TABLE IF NOT EXISTS `indicator_principal_ref`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_principal_ref_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `indicator_val_id` varchar(64) DEFAULT NULL COMMENT '指标值ID',
-    `principal_id` varchar(64) DEFAULT NULL COMMENT '主体ID',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='指标主体关联关系';
-
-drop table if exists `indicator_view_base_info`;
-CREATE TABLE IF NOT EXISTS `indicator_view_base_info`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_view_base_info_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '指标分类ID',
-    `name` varchar(64) DEFAULT NULL COMMENT '指标基本信息类名称',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='查看指标基本信息类';
-
-drop table if exists `indicator_view_base_info_desc`;
-CREATE TABLE IF NOT EXISTS `indicator_view_base_info_desc`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_view_base_info_desc_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `name` varchar(64) DEFAULT NULL COMMENT '指标基本信息描述表名称',
-    `order` integer(2) DEFAULT NULL COMMENT '展示顺序',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='指标基本信息描述表';
-
-drop table if exists `indicator_view_base_info_desc_ref`;
-CREATE TABLE IF NOT EXISTS `indicator_view_base_info_desc_ref`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_view_base_info_desc_ref_id` varchar(64) DEFAULT NULL COMMENT '',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `indicator_view_base_info_desc_id` varchar(64) DEFAULT NULL COMMENT '指标描述表ID',
-    `indicator_id` varchar(64) DEFAULT NULL COMMENT '指标ID',
-    `order` integer(2) DEFAULT NULL COMMENT '展示顺序',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='指标';
-
-drop table if exists `indicator_view_base_info_monitor`;
-CREATE TABLE IF NOT EXISTS `indicator_view_base_info_monitor`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_view_base_info_monitor_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `name` varchar(64) DEFAULT NULL COMMENT '指标基本信息监测表名称',
-    `order` integer(2) DEFAULT NULL COMMENT '展示顺序',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='指标基本信息监测表';
-
-drop table if exists `indicator_view_base_info_monitor_content`;
-CREATE TABLE IF NOT EXISTS `indicator_view_base_info_monitor_content`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_view_base_info_monitor_content_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `name` varchar(64) DEFAULT NULL COMMENT '监测内容名称',
-    `order` integer(2) DEFAULT NULL COMMENT '展示顺序',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='指标基本信息监测内容表';
-
-drop table if exists `indicator_view_base_info_monitor_content_ref`;
-CREATE TABLE IF NOT EXISTS `indicator_view_base_info_monitor_content_ref`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_view_base_info_monitor_content_ref_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `indicator_id` varchar(64) DEFAULT NULL COMMENT '指标ID',
-    `order` integer(2) DEFAULT NULL COMMENT '展示顺序',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='指标基本信息监测内容表与指标关联关系';
-
-drop table if exists `indicator_view_base_info_single`;
-CREATE TABLE IF NOT EXISTS `indicator_view_base_info_single`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_view_base_info_single_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `indicator_id` varchar(64) DEFAULT NULL COMMENT '指标ID',
-    `order` integer(2) DEFAULT NULL COMMENT '展示顺序',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='指标基本信息与单一指标关系表';
-
-drop table if exists `indicator_view_monitor_followup`;
-CREATE TABLE IF NOT EXISTS `indicator_view_monitor_followup`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_view_monitor_followup_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '指标分类ID',
-    `name` varchar(64) DEFAULT NULL COMMENT '指标监测随访类表名称',
-    `type` varchar(64) DEFAULT NULL COMMENT '监测随访表类别',
-    `status` tinyint(4) DEFAULT NULL COMMENT '0-禁用，1-启用',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='查看指标监测随访类';
-
-drop table if exists `indicator_view_monitor_followup_followup_content`;
-CREATE TABLE IF NOT EXISTS `indicator_view_monitor_followup_followup_content`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_view_monitor_followup_followup_content_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `indicator_view_monitor_followup_id` varchar(64) DEFAULT NULL COMMENT '查看指标监测随访类ID',
-    `name` varchar(64) DEFAULT NULL COMMENT '随访内容名称',
-    `order` integer(2) DEFAULT NULL COMMENT '展示顺序',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='查看指标监测随访内容';
-
-drop table if exists `indicator_view_monitor_followup_content_ref`;
-CREATE TABLE IF NOT EXISTS `indicator_view_monitor_followup_content_ref`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_view_monitor_followup_content_ref_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `indicator_view_monitor_followup_followup_content_id` varchar(64) DEFAULT NULL COMMENT '指标监测随访内容ID',
-    `indicator_id` varchar(64) DEFAULT NULL COMMENT '指标ID',
-    `order` integer(2) DEFAULT NULL COMMENT '展示顺序',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='指标监测随访随访内容表与指标关联关系';
-
-drop table if exists `indicator_view_physical_exam`;
-CREATE TABLE IF NOT EXISTS `indicator_view_physical_exam`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_view_physical_exam_id` varchar(64) DEFAULT NULL COMMENT '',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '指标分类ID',
-    `name` varchar(64) DEFAULT NULL COMMENT '体格检查名称',
-    `type` varchar(64) DEFAULT NULL COMMENT '体格检查类别',
-    `fee` double(11,2) DEFAULT NULL COMMENT '费用',
-    `result_analysis` varchar(64) DEFAULT NULL COMMENT '结果解析',
-    `status` tinyint(4) DEFAULT NULL COMMENT '0-禁用，1-启用',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='查看指标体格检查类';
-
-drop table if exists `indicator_view_physical_exam_ref`;
-CREATE TABLE IF NOT EXISTS `indicator_view_physical_exam_ref`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_view_physical_exam_ref_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `indicator_id` varchar(64) DEFAULT NULL COMMENT '指标ID',
-    `order` integer(2) DEFAULT NULL COMMENT '展示顺序',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='查看指标体格检查关联指标';
-
-drop table if exists `indicator_view_support_exam`;
-CREATE TABLE IF NOT EXISTS `indicator_view_support_exam`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_view_support_exam_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '指标分类ID',
-    `name` varchar(64) DEFAULT NULL COMMENT '辅助检查名称',
-    `type` varchar(64) DEFAULT NULL COMMENT '辅助检查类别',
-    `fee` double(11,2) DEFAULT NULL COMMENT '费用',
-    `result_analysis` varchar(64) DEFAULT NULL COMMENT '结果解析',
-    `status` tinyint(4) DEFAULT NULL COMMENT '0-禁用，1-启用',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='查看指标辅助检查类';
-
-drop table if exists `indicator_view_support_exam_ref`;
-CREATE TABLE IF NOT EXISTS `indicator_view_support_exam_ref`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_view_support_exam_ref_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `indicator_id` varchar(64) DEFAULT NULL COMMENT '指标ID',
-    `order` integer(2) DEFAULT NULL COMMENT '展示顺序',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='查看指标辅助检查关联指标';
-
-drop table if exists `indicator_judge_risk_factor`;
-CREATE TABLE IF NOT EXISTS `indicator_judge_risk_factor`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_judge_risk_factor_id` varchar(64) DEFAULT NULL COMMENT '',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '指标分类ID',
-    `name` varchar(64) DEFAULT NULL COMMENT '危险因素名称',
-    `type` varchar(64) DEFAULT NULL COMMENT '危险因素类别',
-    `point` double(11,2) DEFAULT NULL COMMENT '分数',
-    `expression` varchar(64) DEFAULT NULL COMMENT '判断规则',
-    `result_explain` varchar(64) DEFAULT NULL COMMENT '结果说明',
-    `status` tinyint(4) DEFAULT NULL COMMENT '0-禁用，1-启用',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='判断指标危险因素';
-
-drop table if exists `indicator_judge_health_problem`;
-CREATE TABLE IF NOT EXISTS `indicator_judge_health_problem`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_judge_health_problem_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '指标分类ID',
-    `name` varchar(64) DEFAULT NULL COMMENT '健康问题名称',
-    `type` varchar(64) DEFAULT NULL COMMENT '健康问题类别',
-    `point` double(11,2) DEFAULT NULL COMMENT '分数',
-    `expression` varchar(64) DEFAULT NULL COMMENT '判断规则',
-    `result_explain` varchar(64) DEFAULT NULL COMMENT '结果说明',
-    `status` tinyint(4) DEFAULT NULL COMMENT '0-禁用，1-启用',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='判断指标健康问题';
-
-drop table if exists `indicator_judge_health_guidance`;
-CREATE TABLE IF NOT EXISTS `indicator_judge_health_guidance`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_judge_health_guidance_id` varchar(64) DEFAULT NULL COMMENT '',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '指标分类ID',
-    `name` varchar(64) DEFAULT NULL COMMENT '健康指导名称',
-    `type` varchar(64) DEFAULT NULL COMMENT '健康指导类别',
-    `point` double(11,2) DEFAULT NULL COMMENT '分数',
-    `expression` varchar(64) DEFAULT NULL COMMENT '判断规则',
-    `result_explain` varchar(64) DEFAULT NULL COMMENT '结果说明',
-    `status` tinyint(4) DEFAULT NULL COMMENT '0-禁用，1-启用',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='判断指标健康指导';
-
-drop table if exists `indicator_judge_disease_problem`;
-CREATE TABLE IF NOT EXISTS `indicator_judge_disease_problem`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_judge_disease_problem_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '指标分类ID',
-    `name` varchar(64) DEFAULT NULL COMMENT '疾病问题名称',
-    `type` varchar(64) DEFAULT NULL COMMENT '疾病问题类别',
-    `point` double(11,2) DEFAULT NULL COMMENT '分数',
-    `expression` varchar(64) DEFAULT NULL COMMENT '判断规则',
-    `result_explain` varchar(64) DEFAULT NULL COMMENT '结果说明',
-    `status` tinyint(4) DEFAULT NULL COMMENT '0-禁用，1-启用',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='判断指标疾病问题';
-
-drop table if exists `risk_category`;
-CREATE TABLE IF NOT EXISTS `risk_category`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `risk_category_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `risk_category_name` varchar(64) DEFAULT NULL COMMENT '风控',
-    `order` integer(2) DEFAULT NULL COMMENT '展示顺序',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='风控类别';
-
-drop table if exists `risk_model`;
-CREATE TABLE IF NOT EXISTS `risk_model`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `risk_model_id` varchar(64) DEFAULT NULL COMMENT '风控模型ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `risk_category_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `name` varchar(64) DEFAULT NULL COMMENT '模型名称',
-    `status` tinyint(4) DEFAULT NULL COMMENT '0-禁用，1-启用',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='风控模型';
-
-drop table if exists `risk_death_model`;
-CREATE TABLE IF NOT EXISTS `risk_death_model`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `risk_death_model_id` varchar(64) DEFAULT NULL COMMENT '死亡模型ID',
-    `risk_model_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `risk_death_reason_name` varchar(64) DEFAULT NULL COMMENT '死亡原因名称',
-    `risk_death_probability` integer(2) DEFAULT NULL COMMENT '死亡概率',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='死亡模型';
-
-drop table if exists `risk_danger_point`;
-CREATE TABLE IF NOT EXISTS `risk_danger_point`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `risk_danger_point_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `risk_death_model_id` varchar(64) DEFAULT NULL COMMENT '死亡模型ID',
-    `indicator_instance_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `expression` varchar(64) DEFAULT NULL COMMENT '公式',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='危险分数';
-
-drop table if exists `survey`;
-CREATE TABLE IF NOT EXISTS `survey`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
-    `survey_id` archar DEFAULT NULL COMMENT '分布式id',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `survey_name` varchar(64) DEFAULT NULL COMMENT '问卷名称',
-    `categ_id` varchar(64) DEFAULT NULL COMMENT '分类id',
-    `categ_name` varchar(64) DEFAULT NULL COMMENT '分类名称',
-    `categ_id_path` varchar(64) DEFAULT NULL COMMENT '分布id路径',
-    `categ_name_path` varchar(64) DEFAULT NULL COMMENT '分类名称路径',
-    `question_section_id` varchar(64) DEFAULT NULL COMMENT '题库id',
-    `state` tinyint(4) DEFAULT NULL COMMENT '状态 0-启用 1-停用',
-    `descr` varchar(64) DEFAULT NULL COMMENT '问卷说明',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='评估问卷';
-
-drop table if exists `survey_eval`;
-CREATE TABLE IF NOT EXISTS `survey_eval`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
-    `survey_eval_id` varchar(64) DEFAULT NULL COMMENT '公式id',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `survey_id` varchar(64) DEFAULT NULL COMMENT '评估id',
-    `dimension_id` varchar(64) DEFAULT NULL COMMENT '评估维度id',
-    `descr` varchar(64) DEFAULT NULL COMMENT '公式描述',
-    `expression` varchar(64) DEFAULT NULL COMMENT '表达式',
-    `expression_vars` varchar(64) DEFAULT NULL COMMENT '表达式涉及变量',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='问卷评估公式';
-
-drop table if exists `survey_report`;
-CREATE TABLE IF NOT EXISTS `survey_report`(
-    `bigint` varchar(64) DEFAULT NULL COMMENT '',
-    `survey_report_id` varchar(64) DEFAULT NULL COMMENT '报告id',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `survey_id` varchar(64) DEFAULT NULL COMMENT '问卷id',
-    `report_name` varchar(64) DEFAULT NULL COMMENT '报告名称',
-    `min_score` integer(2) DEFAULT NULL COMMENT '分数段[最小]',
-    `max_score` integer(2) DEFAULT NULL COMMENT '分数段[最大]',
-    `descr` varchar(64) DEFAULT NULL COMMENT '报告说明',
-    `result` varchar(64) DEFAULT NULL COMMENT '评估结果',
-    `suggestion` varchar(64) DEFAULT NULL COMMENT '相关建议',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-) ENGINE=InnoDB COMMENT='问卷报告';
-
-drop table if exists `evaluate_questionnaire`;
-CREATE TABLE IF NOT EXISTS `evaluate_questionnaire`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `evaluate_questionnaire_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='评估问卷';
-
-drop table if exists `evaluate_dimension_expression`;
-CREATE TABLE IF NOT EXISTS `evaluate_dimension_expression`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `evaluate_dimension_expression_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `questionnaire_id` varchar(64) DEFAULT NULL COMMENT '评估问卷ID',
-    `dimension_id` varchar(64) DEFAULT NULL COMMENT '维度id',
-    `expression` varchar(64) DEFAULT NULL COMMENT '维度公式',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='评估维度公式';
-
-drop table if exists `evaluate_report_management`;
-CREATE TABLE IF NOT EXISTS `evaluate_report_management`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `evaluate_report_management_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `evaluate_questionnaire_id` varchar(64) DEFAULT NULL COMMENT '评估问卷分布式ID',
-    `report_name` varchar(64) DEFAULT NULL COMMENT '报告名称',
-    `report_descr` varchar(64) DEFAULT NULL COMMENT '报告说明',
-    `assessment_result` varchar(64) DEFAULT NULL COMMENT '评估结果',
-    `suggestion` varchar(64) DEFAULT NULL COMMENT '相关建议',
-    `min_score` integer(2) DEFAULT NULL COMMENT '分数段[最小]',
-    `max_score` integer(2) DEFAULT NULL COMMENT '分数段[最大]',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='评估报告管理';
-
 drop table if exists `event_categ`;
 CREATE TABLE IF NOT EXISTS `event_categ`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
@@ -1683,5 +1174,498 @@ CREATE TABLE IF NOT EXISTS `treat_item_indicator`(
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_treat_item_indicator_id` (`treat_item_indicator_id`)
 ) ENGINE=InnoDB COMMENT='治疗项目关联指标';
+
+drop table if exists `indicator_category`;
+CREATE TABLE IF NOT EXISTS `indicator_category`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `pid` varchar(64) DEFAULT NULL COMMENT '父ID',
+    `category_name` varchar(64) DEFAULT NULL COMMENT '分类名称',
+    `category_code` varchar(64) DEFAULT NULL COMMENT '分类code',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_category_id` (`indicator_category_id`)
+) ENGINE=InnoDB COMMENT='指标类别';
+
+drop table if exists `indicator_instance`;
+CREATE TABLE IF NOT EXISTS `indicator_instance`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_instance_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '指标分类ID',
+    `indicator_name` varchar(64) DEFAULT NULL COMMENT '指标名称',
+    `indicator_code` varchar(64) DEFAULT NULL COMMENT '指标code',
+    `unit` varchar(64) DEFAULT NULL COMMENT '单位',
+    `core` tinyint(4) DEFAULT NULL COMMENT '0-非关键指标，1-关键指标',
+    `food` tinyint(4) DEFAULT NULL COMMENT '0-非饮食关键指标，1-饮食关键指标',
+    `experssion` varchar(64) DEFAULT NULL COMMENT '指标表达式[拆包]',
+    `raw_experssion` varchar(64) DEFAULT NULL COMMENT '未拆包指标表达式',
+    `descr` varchar(64) DEFAULT NULL COMMENT '描述',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_instance_id` (`indicator_instance_id`)
+) ENGINE=InnoDB COMMENT='指标';
+
+drop table if exists `indicator_category_ref`;
+CREATE TABLE IF NOT EXISTS `indicator_category_ref`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_category_ref_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `indicator_instance_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `seq` integer(2) DEFAULT NULL COMMENT '展示顺序',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_category_ref_id` (`indicator_category_ref_id`)
+) ENGINE=InnoDB COMMENT='指标分类与指标关联关系';
+
+drop table if exists `indicator_ref`;
+CREATE TABLE IF NOT EXISTS `indicator_ref`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_ref_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `indicator_instance_id` varchar(64) DEFAULT NULL COMMENT '指标ID',
+    `ref_indicator_id` varchar(64) DEFAULT NULL COMMENT '引用这个指标的指标ID',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_ref_id` (`indicator_ref_id`)
+) ENGINE=InnoDB COMMENT='指标-引用';
+
+drop table if exists `indicator_var`;
+CREATE TABLE IF NOT EXISTS `indicator_var`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_var_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `indicator_instance_id` varchar(64) DEFAULT NULL COMMENT '指标ID',
+    `db_name` varchar(64) DEFAULT NULL COMMENT '数据库名',
+    `tb_name` varchar(64) DEFAULT NULL COMMENT '表名',
+    `var_name` varchar(64) DEFAULT NULL COMMENT '变量名',
+    `var_code` varchar(64) DEFAULT NULL COMMENT '变量code',
+    `periods` varchar(64) DEFAULT NULL COMMENT '期数，如果多期用[,]分割',
+    `descr` varchar(64) DEFAULT NULL COMMENT '描述',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_var_id` (`indicator_var_id`)
+) ENGINE=InnoDB COMMENT='指标变量';
+
+drop table if exists `indicator_rule`;
+CREATE TABLE IF NOT EXISTS `indicator_rule`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_rule_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `variable_id` varchar(64) DEFAULT NULL COMMENT '指标或变量ID',
+    `rule_type` integer(2) DEFAULT NULL COMMENT '变量类型[0:指标，1:变量]',
+    `min` varchar(64) DEFAULT NULL COMMENT '最小值',
+    `max` varchar(64) DEFAULT NULL COMMENT '最大值',
+    `def` varchar(64) DEFAULT NULL COMMENT '默认值',
+    `descr` varchar(64) DEFAULT NULL COMMENT '描述',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_rule_id` (`indicator_rule_id`)
+) ENGINE=InnoDB COMMENT='指标|变量规则[校验]';
+
+drop table if exists `indicator_val`;
+CREATE TABLE IF NOT EXISTS `indicator_val`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_val_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `indicator_instance_id` varchar(64) DEFAULT NULL COMMENT '指标ID',
+    `current_val` varchar(64) DEFAULT NULL COMMENT '当前值',
+    `min` varchar(64) DEFAULT NULL COMMENT '最小值',
+    `max` varchar(64) DEFAULT NULL COMMENT '最大值',
+    `def` varchar(64) DEFAULT NULL COMMENT '默认值',
+    `descr` varchar(64) DEFAULT NULL COMMENT '描述',
+    `periods` varchar(64) DEFAULT NULL COMMENT '期数',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_val_id` (`indicator_val_id`)
+) ENGINE=InnoDB COMMENT='指标值';
+
+drop table if exists `indicator_principal_ref`;
+CREATE TABLE IF NOT EXISTS `indicator_principal_ref`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_principal_ref_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `indicator_val_id` varchar(64) DEFAULT NULL COMMENT '指标值ID',
+    `principal_id` varchar(64) DEFAULT NULL COMMENT '主体ID',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_principal_ref_id` (`indicator_principal_ref_id`)
+) ENGINE=InnoDB COMMENT='指标主体关联关系';
+
+drop table if exists `indicator_view_base_info`;
+CREATE TABLE IF NOT EXISTS `indicator_view_base_info`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_view_base_info_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '指标分类ID',
+    `name` varchar(64) DEFAULT NULL COMMENT '指标基本信息类名称',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_view_base_info_id` (`indicator_view_base_info_id`)
+) ENGINE=InnoDB COMMENT='查看指标基本信息类';
+
+drop table if exists `indicator_view_base_info_descr`;
+CREATE TABLE IF NOT EXISTS `indicator_view_base_info_descr`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_view_base_info_desc_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `name` varchar(64) DEFAULT NULL COMMENT '指标基本信息描述表名称',
+    `seq` integer(2) DEFAULT NULL COMMENT '展示顺序',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_view_base_info_desc_id` (`indicator_view_base_info_desc_id`)
+) ENGINE=InnoDB COMMENT='指标基本信息描述表';
+
+drop table if exists `indicator_view_base_info_descr_ref`;
+CREATE TABLE IF NOT EXISTS `indicator_view_base_info_descr_ref`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_view_base_info_desc_ref_id` varchar(64) DEFAULT NULL COMMENT '',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `indicator_view_base_info_desc_id` varchar(64) DEFAULT NULL COMMENT '指标描述表ID',
+    `indicator_instance_id` varchar(64) DEFAULT NULL COMMENT '指标ID',
+    `seq` integer(2) DEFAULT NULL COMMENT '展示顺序',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_view_base_info_desc_ref_id` (`indicator_view_base_info_desc_ref_id`)
+) ENGINE=InnoDB COMMENT='指标';
+
+drop table if exists `indicator_view_base_info_monitor`;
+CREATE TABLE IF NOT EXISTS `indicator_view_base_info_monitor`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_view_base_info_monitor_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `name` varchar(64) DEFAULT NULL COMMENT '指标基本信息监测表名称',
+    `seq` integer(2) DEFAULT NULL COMMENT '展示顺序',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_view_base_info_monitor_id` (`indicator_view_base_info_monitor_id`)
+) ENGINE=InnoDB COMMENT='指标基本信息监测表';
+
+drop table if exists `indicator_view_base_info_monitor_content`;
+CREATE TABLE IF NOT EXISTS `indicator_view_base_info_monitor_content`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_view_base_info_monitor_content_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `name` varchar(64) DEFAULT NULL COMMENT '监测内容名称',
+    `seq` integer(2) DEFAULT NULL COMMENT '展示顺序',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_view_base_info_monitor_content_id` (`indicator_view_base_info_monitor_content_id`)
+) ENGINE=InnoDB COMMENT='指标基本信息监测内容表';
+
+drop table if exists `indicator_view_base_info_monitor_content_ref`;
+CREATE TABLE IF NOT EXISTS `indicator_view_base_info_monitor_content_ref`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_view_base_info_monitor_content_ref_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `indicator_instance_id` varchar(64) DEFAULT NULL COMMENT '指标ID',
+    `seq` integer(2) DEFAULT NULL COMMENT '展示顺序',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_view_base_info_monitor_content_ref_id` (`indicator_view_base_info_monitor_content_ref_id`)
+) ENGINE=InnoDB COMMENT='指标基本信息监测内容表与指标关联关系';
+
+drop table if exists `indicator_view_base_info_single`;
+CREATE TABLE IF NOT EXISTS `indicator_view_base_info_single`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_view_base_info_single_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `indicator_instance_id` varchar(64) DEFAULT NULL COMMENT '指标ID',
+    `seq` integer(2) DEFAULT NULL COMMENT '展示顺序',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_view_base_info_single_id` (`indicator_view_base_info_single_id`)
+) ENGINE=InnoDB COMMENT='指标基本信息与单一指标关系表';
+
+drop table if exists `indicator_view_monitor_followup`;
+CREATE TABLE IF NOT EXISTS `indicator_view_monitor_followup`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_view_monitor_followup_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '指标分类ID',
+    `name` varchar(64) DEFAULT NULL COMMENT '指标监测随访类表名称',
+    `type` varchar(64) DEFAULT NULL COMMENT '监测随访表类别',
+    `status` tinyint(4) DEFAULT NULL COMMENT '0-禁用，1-启用',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_view_monitor_followup_id` (`indicator_view_monitor_followup_id`)
+) ENGINE=InnoDB COMMENT='查看指标监测随访类';
+
+drop table if exists `indicator_view_monitor_followup_followup_content`;
+CREATE TABLE IF NOT EXISTS `indicator_view_monitor_followup_followup_content`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_view_monitor_followup_followup_content_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `indicator_view_monitor_followup_id` varchar(64) DEFAULT NULL COMMENT '查看指标监测随访类ID',
+    `name` varchar(64) DEFAULT NULL COMMENT '随访内容名称',
+    `seq` integer(2) DEFAULT NULL COMMENT '展示顺序',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_view_monitor_followup_followup_content_id` (`indicator_view_monitor_followup_followup_content_id`)
+) ENGINE=InnoDB COMMENT='查看指标监测随访内容';
+
+drop table if exists `indicator_view_monitor_followup_content_ref`;
+CREATE TABLE IF NOT EXISTS `indicator_view_monitor_followup_content_ref`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_view_monitor_followup_content_ref_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `indicator_view_monitor_followup_followup_content_id` varchar(64) DEFAULT NULL COMMENT '指标监测随访内容ID',
+    `indicator_instance_id` varchar(64) DEFAULT NULL COMMENT '指标ID',
+    `seq` integer(2) DEFAULT NULL COMMENT '展示顺序',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_view_monitor_followup_content_ref_id` (`indicator_view_monitor_followup_content_ref_id`)
+) ENGINE=InnoDB COMMENT='指标监测随访随访内容表与指标关联关系';
+
+drop table if exists `indicator_view_physical_exam`;
+CREATE TABLE IF NOT EXISTS `indicator_view_physical_exam`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_view_physical_exam_id` varchar(64) DEFAULT NULL COMMENT '',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '指标分类ID',
+    `name` varchar(64) DEFAULT NULL COMMENT '体格检查名称',
+    `type` varchar(64) DEFAULT NULL COMMENT '体格检查类别',
+    `fee` double(11,2) DEFAULT NULL COMMENT '费用',
+    `result_analysis` varchar(64) DEFAULT NULL COMMENT '结果解析',
+    `status` tinyint(4) DEFAULT NULL COMMENT '0-禁用，1-启用',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_view_physical_exam_id` (`indicator_view_physical_exam_id`)
+) ENGINE=InnoDB COMMENT='查看指标体格检查类';
+
+drop table if exists `indicator_view_physical_exam_ref`;
+CREATE TABLE IF NOT EXISTS `indicator_view_physical_exam_ref`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_view_physical_exam_ref_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `indicator_instance_id` varchar(64) DEFAULT NULL COMMENT '指标ID',
+    `seq` integer(2) DEFAULT NULL COMMENT '展示顺序',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_view_physical_exam_ref_id` (`indicator_view_physical_exam_ref_id`)
+) ENGINE=InnoDB COMMENT='查看指标体格检查关联指标';
+
+drop table if exists `indicator_view_support_exam`;
+CREATE TABLE IF NOT EXISTS `indicator_view_support_exam`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_view_support_exam_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '指标分类ID',
+    `name` varchar(64) DEFAULT NULL COMMENT '辅助检查名称',
+    `type` varchar(64) DEFAULT NULL COMMENT '辅助检查类别',
+    `fee` double(11,2) DEFAULT NULL COMMENT '费用',
+    `result_analysis` varchar(64) DEFAULT NULL COMMENT '结果解析',
+    `status` tinyint(4) DEFAULT NULL COMMENT '0-禁用，1-启用',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_view_support_exam_id` (`indicator_view_support_exam_id`)
+) ENGINE=InnoDB COMMENT='查看指标辅助检查类';
+
+drop table if exists `indicator_view_support_exam_ref`;
+CREATE TABLE IF NOT EXISTS `indicator_view_support_exam_ref`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_view_support_exam_ref_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `indicator_instance_id` varchar(64) DEFAULT NULL COMMENT '指标ID',
+    `seq` integer(2) DEFAULT NULL COMMENT '展示顺序',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_view_support_exam_ref_id` (`indicator_view_support_exam_ref_id`)
+) ENGINE=InnoDB COMMENT='查看指标辅助检查关联指标';
+
+drop table if exists `indicator_judge_risk_factor`;
+CREATE TABLE IF NOT EXISTS `indicator_judge_risk_factor`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_judge_risk_factor_id` varchar(64) DEFAULT NULL COMMENT '',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '指标分类ID',
+    `name` varchar(64) DEFAULT NULL COMMENT '危险因素名称',
+    `type` varchar(64) DEFAULT NULL COMMENT '危险因素类别',
+    `point` double(11,2) DEFAULT NULL COMMENT '分数',
+    `expression` varchar(64) DEFAULT NULL COMMENT '判断规则',
+    `result_explain` varchar(64) DEFAULT NULL COMMENT '结果说明',
+    `status` tinyint(4) DEFAULT NULL COMMENT '0-禁用，1-启用',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_judge_risk_factor_id` (`indicator_judge_risk_factor_id`)
+) ENGINE=InnoDB COMMENT='判断指标危险因素';
+
+drop table if exists `indicator_judge_health_problem`;
+CREATE TABLE IF NOT EXISTS `indicator_judge_health_problem`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_judge_health_problem_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '指标分类ID',
+    `name` varchar(64) DEFAULT NULL COMMENT '健康问题名称',
+    `type` varchar(64) DEFAULT NULL COMMENT '健康问题类别',
+    `point` double(11,2) DEFAULT NULL COMMENT '分数',
+    `expression` varchar(64) DEFAULT NULL COMMENT '判断规则',
+    `result_explain` varchar(64) DEFAULT NULL COMMENT '结果说明',
+    `status` tinyint(4) DEFAULT NULL COMMENT '0-禁用，1-启用',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_judge_health_problem_id` (`indicator_judge_health_problem_id`)
+) ENGINE=InnoDB COMMENT='判断指标健康问题';
+
+drop table if exists `indicator_judge_health_guidance`;
+CREATE TABLE IF NOT EXISTS `indicator_judge_health_guidance`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_judge_health_guidance_id` varchar(64) DEFAULT NULL COMMENT '',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '指标分类ID',
+    `name` varchar(64) DEFAULT NULL COMMENT '健康指导名称',
+    `type` varchar(64) DEFAULT NULL COMMENT '健康指导类别',
+    `point` double(11,2) DEFAULT NULL COMMENT '分数',
+    `expression` varchar(64) DEFAULT NULL COMMENT '判断规则',
+    `result_explain` varchar(64) DEFAULT NULL COMMENT '结果说明',
+    `status` tinyint(4) DEFAULT NULL COMMENT '0-禁用，1-启用',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_judge_health_guidance_id` (`indicator_judge_health_guidance_id`)
+) ENGINE=InnoDB COMMENT='判断指标健康指导';
+
+drop table if exists `indicator_judge_disease_problem`;
+CREATE TABLE IF NOT EXISTS `indicator_judge_disease_problem`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_judge_disease_problem_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '指标分类ID',
+    `name` varchar(64) DEFAULT NULL COMMENT '疾病问题名称',
+    `type` varchar(64) DEFAULT NULL COMMENT '疾病问题类别',
+    `point` double(11,2) DEFAULT NULL COMMENT '分数',
+    `expression` varchar(64) DEFAULT NULL COMMENT '判断规则',
+    `result_explain` varchar(64) DEFAULT NULL COMMENT '结果说明',
+    `status` tinyint(4) DEFAULT NULL COMMENT '0-禁用，1-启用',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_judge_disease_problem_id` (`indicator_judge_disease_problem_id`)
+) ENGINE=InnoDB COMMENT='判断指标疾病问题';
+
+drop table if exists `risk_category`;
+CREATE TABLE IF NOT EXISTS `risk_category`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `risk_category_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `risk_category_name` varchar(64) DEFAULT NULL COMMENT '风险',
+    `seq` integer(2) DEFAULT NULL COMMENT '展示顺序',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_risk_category_id` (`risk_category_id`)
+) ENGINE=InnoDB COMMENT='风险类别';
+
+drop table if exists `risk_model`;
+CREATE TABLE IF NOT EXISTS `risk_model`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `risk_model_id` varchar(64) DEFAULT NULL COMMENT '风险模型ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `risk_category_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `name` varchar(64) DEFAULT NULL COMMENT '模型名称',
+    `status` tinyint(4) DEFAULT NULL COMMENT '0-禁用，1-启用',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_risk_model_id` (`risk_model_id`)
+) ENGINE=InnoDB COMMENT='风险模型';
+
+drop table if exists `risk_death_model`;
+CREATE TABLE IF NOT EXISTS `risk_death_model`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `risk_death_model_id` varchar(64) DEFAULT NULL COMMENT '死亡模型ID',
+    `risk_model_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `risk_death_reason_name` varchar(64) DEFAULT NULL COMMENT '死亡原因名称',
+    `risk_death_probability` integer(2) DEFAULT NULL COMMENT '死亡概率',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_risk_death_model_id` (`risk_death_model_id`)
+) ENGINE=InnoDB COMMENT='死亡模型';
+
+drop table if exists `risk_danger_point`;
+CREATE TABLE IF NOT EXISTS `risk_danger_point`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `risk_danger_point_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `risk_death_model_id` varchar(64) DEFAULT NULL COMMENT '死亡模型ID',
+    `indicator_instance_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `expression` varchar(64) DEFAULT NULL COMMENT '公式',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_risk_danger_point_id` (`risk_danger_point_id`)
+) ENGINE=InnoDB COMMENT='危险分数';
+
+drop table if exists `evaluate_questionnaire`;
+CREATE TABLE IF NOT EXISTS `evaluate_questionnaire`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `evaluate_questionnaire_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_evaluate_questionnaire_id` (`evaluate_questionnaire_id`)
+) ENGINE=InnoDB COMMENT='评估问卷';
+
+drop table if exists `evaluate_dimension_expression`;
+CREATE TABLE IF NOT EXISTS `evaluate_dimension_expression`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `evaluate_dimension_expression_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `questionnaire_id` varchar(64) DEFAULT NULL COMMENT '评估问卷ID',
+    `dimension_id` varchar(64) DEFAULT NULL COMMENT '维度id',
+    `expression` varchar(64) DEFAULT NULL COMMENT '维度公式',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_evaluate_dimension_expression_id` (`evaluate_dimension_expression_id`)
+) ENGINE=InnoDB COMMENT='评估维度公式';
+
+drop table if exists `evaluate_report_management`;
+CREATE TABLE IF NOT EXISTS `evaluate_report_management`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `evaluate_report_management_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `evaluate_questionnaire_id` varchar(64) DEFAULT NULL COMMENT '评估问卷分布式ID',
+    `report_name` varchar(64) DEFAULT NULL COMMENT '报告名称',
+    `report_descr` varchar(64) DEFAULT NULL COMMENT '报告说明',
+    `assessment_result` varchar(64) DEFAULT NULL COMMENT '评估结果',
+    `suggestion` varchar(64) DEFAULT NULL COMMENT '相关建议',
+    `min_score` integer(2) DEFAULT NULL COMMENT '分数段[最小]',
+    `max_score` integer(2) DEFAULT NULL COMMENT '分数段[最大]',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_evaluate_report_management_id` (`evaluate_report_management_id`)
+) ENGINE=InnoDB COMMENT='评估报告管理';
 
 

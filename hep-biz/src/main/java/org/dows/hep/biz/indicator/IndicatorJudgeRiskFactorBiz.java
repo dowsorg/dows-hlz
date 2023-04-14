@@ -2,9 +2,8 @@ package org.dows.hep.biz.indicator;
 
 import org.dows.framework.api.Response;
 import org.dows.hep.api.indicator.request.CreateIndicatorJudgeRiskFactorRequest;
-import org.dows.hep.api.indicator.request.IndicatorJudgeRiskFactorIdRequest;
 import org.dows.hep.api.indicator.request.UpdateStatusIndicatorJudgeRiskFactorRequest;
-import org.dows.hep.api.indicator.request.IndicatorJudgeRiskFactorIdRequest;
+import org.dows.hep.api.indicator.request.UpdateIndicatorJudgeRiskFactorRequest;
 import org.dows.hep.api.indicator.response.IndicatorJudgeRiskFactorResponse;
 
 import java.util.List;
@@ -15,7 +14,7 @@ import java.util.HashMap;;
 * @description project descr:指标:判断指标危险因素
 *
 * @author lait.zhang
-* @date 2023年4月14日 上午10:19:59
+* @date 2023年4月14日 下午2:24:35
 */
 public class IndicatorJudgeRiskFactorBiz{
     /**
@@ -23,10 +22,10 @@ public class IndicatorJudgeRiskFactorBiz{
     * @return
     * @说明: 创建危险因素
     * @关联表: 
-    * @工时: 5H
+    * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public void createIndicatorJudgeRiskFactor(CreateIndicatorJudgeRiskFactorRequest createIndicatorJudgeRiskFactor ) {
         
@@ -36,12 +35,12 @@ public class IndicatorJudgeRiskFactorBiz{
     * @return
     * @说明: 删除判断指标危险因素
     * @关联表: 
-    * @工时: 5H
+    * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
-    public void deleteIndicatorJudgeRiskFactor(IndicatorJudgeRiskFactorIdRequest indicatorJudgeRiskFactorId ) {
+    public void deleteIndicatorJudgeRiskFactor(String indicatorJudgeRiskFactorId ) {
         
     }
     /**
@@ -52,7 +51,7 @@ public class IndicatorJudgeRiskFactorBiz{
     * @工时: 0H
     * @开发者: 
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public void updateStatus(UpdateStatusIndicatorJudgeRiskFactorRequest updateStatusIndicatorJudgeRiskFactor ) {
         
@@ -62,12 +61,25 @@ public class IndicatorJudgeRiskFactorBiz{
     * @return
     * @说明: 判断指标危险因素
     * @关联表: 
-    * @工时: 5H
+    * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
-    public IndicatorJudgeRiskFactorResponse getIndicatorJudgeRiskFactor(IndicatorJudgeRiskFactorIdRequest indicatorJudgeRiskFactorId ) {
+    public void updateIndicatorJudgeRiskFactor(UpdateIndicatorJudgeRiskFactorRequest updateIndicatorJudgeRiskFactor ) {
+        
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 判断指标危险因素
+    * @关联表: 
+    * @工时: 4H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月14日 下午2:24:35
+    */
+    public IndicatorJudgeRiskFactorResponse getIndicatorJudgeRiskFactor(String indicatorJudgeRiskFactorId ) {
         return new IndicatorJudgeRiskFactorResponse();
     }
 }

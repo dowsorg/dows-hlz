@@ -17,7 +17,7 @@ import java.util.HashMap;;
 * @description project descr:案例:案例方案设计
 *
 * @author lait.zhang
-* @date 2023年4月14日 上午10:19:59
+* @date 2023年4月14日 下午2:24:35
 */
 public class CaseSchemeBiz{
     /**
@@ -28,7 +28,7 @@ public class CaseSchemeBiz{
     * @工时: 8H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public Boolean saveOrUpdCaseScheme(CaseSchemeRequest caseScheme ) {
         return Boolean.FALSE;
@@ -41,7 +41,7 @@ public class CaseSchemeBiz{
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public List<CaseSchemeResponse> pageCaseScheme(CaseSchemePageRequest caseSchemePage ) {
         return new ArrayList<CaseSchemeResponse>();
@@ -54,7 +54,7 @@ public class CaseSchemeBiz{
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public CaseSchemeResponse getCaseScheme(String caseSchemeId ) {
         return new CaseSchemeResponse();
@@ -67,7 +67,7 @@ public class CaseSchemeBiz{
     * @工时: 3H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public Boolean enabledCaseScheme(String caseSchemeId ) {
         return Boolean.FALSE;
@@ -80,7 +80,7 @@ public class CaseSchemeBiz{
     * @工时: 3H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public Boolean disabledCaseScheme(String caseSchemeId ) {
         return Boolean.FALSE;
@@ -93,7 +93,7 @@ public class CaseSchemeBiz{
     * @工时: 6H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public Boolean delCaseScheme(String caseSchemeIds ) {
         return Boolean.FALSE;
@@ -106,7 +106,7 @@ public class CaseSchemeBiz{
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public List<CaseSchemeResponse> listC(CaseSchemeSearchRequest caseSchemeSearch ) {
         return new ArrayList<CaseSchemeResponse>();
@@ -119,7 +119,7 @@ public class CaseSchemeBiz{
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public CaseSchemeResponse getC(String caseInstanceId ) {
         return new CaseSchemeResponse();
@@ -132,7 +132,7 @@ public class CaseSchemeBiz{
     * @工时: 3H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public Boolean delC(String caseInstanceId ) {
         return Boolean.FALSE;

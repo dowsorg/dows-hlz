@@ -32,8 +32,8 @@ public class CreateRiskModelRequest{
     @Schema(title = "0-禁用，1-启用")
     private Integer status;
 
-    @Schema(title = "")
-    private  创建死亡模型列表;
+    @Schema(title = "创建死亡模型列表")
+    private String ListCreateRiskDeathModel;
 
 
 }

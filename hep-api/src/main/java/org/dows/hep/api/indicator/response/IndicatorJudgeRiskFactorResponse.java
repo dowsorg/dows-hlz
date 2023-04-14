@@ -24,7 +24,7 @@ public class IndicatorJudgeRiskFactorResponse{
     private Long id;
 
     @Schema(title = "判断指标危险因素分布式Id")
-    private  IndicatorJudgeRiskFactorId;
+    private String IndicatorJudgeRiskFactorId;
 
     @Schema(title = "应用ID")
     private String appId;
@@ -39,7 +39,7 @@ public class IndicatorJudgeRiskFactorResponse{
     private String type;
 
     @Schema(title = "分数")
-    private java.math.BigDecimal point;
+    private BigDecimal point;
 
     @Schema(title = "判断规则")
     private String expression;

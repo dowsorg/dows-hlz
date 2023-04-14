@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.Response;
 import org.dows.hep.api.indicator.request.CreateIndicatorInstanceRequest;
 import org.dows.hep.api.indicator.request.UpdateIndicatorInstanceRequest;
+import org.dows.hep.api.indicator.request.UpdateIndicatorInstanceRequest;
 import org.dows.hep.api.indicator.response.IndicatorInstanceResponse;
 import org.dows.hep.api.indicator.request.VarcharRequest;
 import org.dows.hep.api.indicator.response.IndicatorInstanceResponse;
@@ -21,7 +22,7 @@ import java.util.List;
 * @description project descr:指标:指标实例
 *
 * @author lait.zhang
-* @date 2023年4月14日 上午10:19:59
+* @date 2023年4月14日 下午2:24:35
 */
 @RequiredArgsConstructor
 @RestController
@@ -60,6 +61,17 @@ public class IndicatorInstanceRest {
     @PutMapping("v1/indicator/indicatorInstance/updateIndicatorInstance")
     public void updateIndicatorInstance(@Validated UpdateIndicatorInstanceRequest updateIndicatorInstance ) {
         indicatorInstanceBiz.updateIndicatorInstance(updateIndicatorInstance);
+    }
+
+    /**
+    * 批量更新指标
+    * @param
+    * @return
+    */
+    @ApiOperation("批量更新指标")
+    @PutMapping("v1/indicator/indicatorInstance/batchUpdateIndicatorInstance")
+    public void batchUpdateIndicatorInstance(@Validated List<UpdateIndicatorInstanceRequest> updateIndicatorInstance ) {
+        indicatorInstanceBiz.batchUpdateIndicatorInstance(updateIndicatorInstance);
     }
 
     /**

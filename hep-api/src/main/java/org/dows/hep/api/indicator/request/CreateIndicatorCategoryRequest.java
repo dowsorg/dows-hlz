@@ -24,7 +24,7 @@ public class CreateIndicatorCategoryRequest{
     private String appId;
 
     @Schema(title = "父ID")
-    private Long pid;
+    private String pid;
 
     @Schema(title = "分类名称")
     private String categoryName;

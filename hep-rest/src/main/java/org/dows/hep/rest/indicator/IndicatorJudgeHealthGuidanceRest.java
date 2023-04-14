@@ -5,9 +5,8 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.Response;
 import org.dows.hep.api.indicator.request.CreateIndicatorJudgeHealthGuidanceRequest;
-import org.dows.hep.api.indicator.request.IndicatorJudgeHealthGuidanceIdRequest;
 import org.dows.hep.api.indicator.request.UpdateStatusIndicatorJudgeHealthGuidanceRequest;
-import org.dows.hep.api.indicator.request.IndicatorJudgeHealthGuidanceIdRequest;
+import org.dows.hep.api.indicator.request.UpdateIndicatorJudgeHealthGuidanceRequest;
 import org.dows.hep.api.indicator.response.IndicatorJudgeHealthGuidanceResponse;
 import org.dows.hep.biz.indicator.IndicatorJudgeHealthGuidanceBiz;
 import org.springframework.validation.annotation.Validated;
@@ -21,7 +20,7 @@ import java.util.List;
 * @description project descr:指标:判断指标健康指导
 *
 * @author lait.zhang
-* @date 2023年4月14日 上午10:19:59
+* @date 2023年4月14日 下午2:24:35
 */
 @RequiredArgsConstructor
 @RestController
@@ -47,7 +46,7 @@ public class IndicatorJudgeHealthGuidanceRest {
     */
     @ApiOperation("删除判断指标健康指导")
     @DeleteMapping("v1/indicator/indicatorJudgeHealthGuidance/deleteIndicatorJudgeHealthGuidance")
-    public void deleteIndicatorJudgeHealthGuidance(@Validated IndicatorJudgeHealthGuidanceIdRequest indicatorJudgeHealthGuidanceId ) {
+    public void deleteIndicatorJudgeHealthGuidance(@Validated String indicatorJudgeHealthGuidanceId ) {
         indicatorJudgeHealthGuidanceBiz.deleteIndicatorJudgeHealthGuidance(indicatorJudgeHealthGuidanceId);
     }
 
@@ -63,13 +62,24 @@ public class IndicatorJudgeHealthGuidanceRest {
     }
 
     /**
+    * 判断指标健康指导
+    * @param
+    * @return
+    */
+    @ApiOperation("判断指标健康指导")
+    @PutMapping("v1/indicator/indicatorJudgeHealthGuidance/updateIndicatorJudgeHealthGuidance")
+    public void updateIndicatorJudgeHealthGuidance(@Validated UpdateIndicatorJudgeHealthGuidanceRequest updateIndicatorJudgeHealthGuidance ) {
+        indicatorJudgeHealthGuidanceBiz.updateIndicatorJudgeHealthGuidance(updateIndicatorJudgeHealthGuidance);
+    }
+
+    /**
     * 获取判断指标健康指导
     * @param
     * @return
     */
     @ApiOperation("获取判断指标健康指导")
     @GetMapping("v1/indicator/indicatorJudgeHealthGuidance/getIndicatorJudgeHealthGuidance")
-    public IndicatorJudgeHealthGuidanceResponse getIndicatorJudgeHealthGuidance(@Validated IndicatorJudgeHealthGuidanceIdRequest indicatorJudgeHealthGuidanceId) {
+    public IndicatorJudgeHealthGuidanceResponse getIndicatorJudgeHealthGuidance(@Validated String indicatorJudgeHealthGuidanceId) {
         return indicatorJudgeHealthGuidanceBiz.getIndicatorJudgeHealthGuidance(indicatorJudgeHealthGuidanceId);
     }
 

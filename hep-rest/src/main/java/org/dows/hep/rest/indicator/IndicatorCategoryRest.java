@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.Response;
 import org.dows.hep.api.indicator.request.CreateIndicatorCategoryRequest;
-import org.dows.hep.api.indicator.request.CreateOrUpdateIndicatorCategoryRequest;
+import org.dows.hep.api.indicator.request.UpdateIndicatorCategoryRequest;
 import org.dows.hep.api.indicator.response.IndicatorCategoryResponse;
 import org.dows.hep.api.indicator.response.IndicatorCategoryResponse;
 import org.dows.hep.biz.indicator.IndicatorCategoryBiz;
@@ -20,7 +20,7 @@ import java.util.List;
 * @description project descr:指标:指标目录
 *
 * @author lait.zhang
-* @date 2023年4月14日 上午10:19:59
+* @date 2023年4月14日 下午2:24:35
 */
 @RequiredArgsConstructor
 @RestController
@@ -57,8 +57,8 @@ public class IndicatorCategoryRest {
     */
     @ApiOperation("更新指标目录")
     @PutMapping("v1/indicator/indicatorCategory/updateIndicatorCategory")
-    public void updateIndicatorCategory(@Validated String appId, @Validated List<CreateOrUpdateIndicatorCategoryRequest> createOrUpdateIndicatorCategory ) {
-        indicatorCategoryBiz.updateIndicatorCategory(appId,createOrUpdateIndicatorCategory);
+    public void updateIndicatorCategory(@Validated UpdateIndicatorCategoryRequest updateIndicatorCategory ) {
+        indicatorCategoryBiz.updateIndicatorCategory(updateIndicatorCategory);
     }
 
     /**

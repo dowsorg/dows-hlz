@@ -24,7 +24,7 @@ public class NormalDataResponse{
     private String name;
 
     @Schema(title = "所占百分比")
-    private java.math.BigDecimal per;
+    private BigDecimal per;
 
     @Schema(title = "总人数")
     private String sum;

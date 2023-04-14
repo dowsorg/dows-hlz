@@ -12,7 +12,7 @@ import java.util.HashMap;;
 * @description project descr:评估:评估问卷
 *
 * @author lait.zhang
-* @date 2023年4月14日 上午10:20:00
+* @date 2023年4月14日 下午2:24:35
 */
 public class EvaluateQuestionnaireBiz{
     /**
@@ -20,10 +20,10 @@ public class EvaluateQuestionnaireBiz{
     * @return
     * @说明: 创建评估问卷
     * @关联表: 
-    * @工时: 5H
+    * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:20:00
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public void createEvaluateQuestionnaire(CreateEvaluateQuestionnaireRequest createEvaluateQuestionnaire ) {
         
@@ -33,10 +33,10 @@ public class EvaluateQuestionnaireBiz{
     * @return
     * @说明: 删除评估问卷
     * @关联表: 
-    * @工时: 5H
+    * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:20:00
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public void deleteEvaluateQuestionnaire(String evaluateQuestionnaireId ) {
         
@@ -46,10 +46,10 @@ public class EvaluateQuestionnaireBiz{
     * @return
     * @说明: 查询评估问卷
     * @关联表: 
-    * @工时: 5H
+    * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:20:00
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public EvaluateQuestionnaireResponse getEvaluateQuestionnaire(String evaluateQuestionnaireId ) {
         return new EvaluateQuestionnaireResponse();

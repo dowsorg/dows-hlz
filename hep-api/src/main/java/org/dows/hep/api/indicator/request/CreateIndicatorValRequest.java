@@ -24,7 +24,7 @@ public class CreateIndicatorValRequest{
     private String appId;
 
     @Schema(title = "指标ID")
-    private String indicatorId;
+    private String indicatorInstanceId;
 
     @Schema(title = "当前值")
     private String currentVal;

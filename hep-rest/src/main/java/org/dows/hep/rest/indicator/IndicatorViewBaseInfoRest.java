@@ -5,9 +5,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.Response;
 import org.dows.hep.api.indicator.request.CreateIndicatorViewBaseInfoRequest;
-import org.dows.hep.api.indicator.request.IndicatorViewBaseInfoIdRequest;
 import org.dows.hep.api.indicator.request.UpdateIndicatorViewBaseInfoRequest;
-import org.dows.hep.api.indicator.request.IndicatorViewBaseInfoIdRequest;
 import org.dows.hep.api.indicator.response.IndicatorViewBaseInfoResponse;
 import org.dows.hep.biz.indicator.IndicatorViewBaseInfoBiz;
 import org.springframework.validation.annotation.Validated;
@@ -21,7 +19,7 @@ import java.util.List;
 * @description project descr:指标:查看指标基本信息类
 *
 * @author lait.zhang
-* @date 2023年4月14日 上午10:19:59
+* @date 2023年4月14日 下午2:24:35
 */
 @RequiredArgsConstructor
 @RestController
@@ -47,7 +45,7 @@ public class IndicatorViewBaseInfoRest {
     */
     @ApiOperation("删除指标基本信息类")
     @DeleteMapping("v1/indicator/indicatorViewBaseInfo/deleteIndicatorViewBaseInfo")
-    public void deleteIndicatorViewBaseInfo(@Validated IndicatorViewBaseInfoIdRequest indicatorViewBaseInfoId ) {
+    public void deleteIndicatorViewBaseInfo(@Validated String indicatorViewBaseInfoId ) {
         indicatorViewBaseInfoBiz.deleteIndicatorViewBaseInfo(indicatorViewBaseInfoId);
     }
 
@@ -69,7 +67,7 @@ public class IndicatorViewBaseInfoRest {
     */
     @ApiOperation("获取查看指标基本信息类")
     @GetMapping("v1/indicator/indicatorViewBaseInfo/getIndicatorViewBaseInfo")
-    public IndicatorViewBaseInfoResponse getIndicatorViewBaseInfo(@Validated IndicatorViewBaseInfoIdRequest indicatorViewBaseInfoId) {
+    public IndicatorViewBaseInfoResponse getIndicatorViewBaseInfo(@Validated String indicatorViewBaseInfoId) {
         return indicatorViewBaseInfoBiz.getIndicatorViewBaseInfo(indicatorViewBaseInfoId);
     }
 

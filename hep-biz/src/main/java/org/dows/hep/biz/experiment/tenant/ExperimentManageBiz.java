@@ -13,7 +13,7 @@ import java.util.HashMap;;
 * @description project descr:实验:实验管理
 *
 * @author lait.zhang
-* @date 2023年4月14日 上午10:19:59
+* @date 2023年4月14日 下午2:24:35
 */
 public class ExperimentManageBiz{
     /**
@@ -24,7 +24,7 @@ public class ExperimentManageBiz{
     * @工时: 2H
     * @开发者: lait
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public String experimentAllot(CreateExperimentRequest createExperiment ) {
         return new String();
@@ -32,12 +32,12 @@ public class ExperimentManageBiz{
     /**
     * @param
     * @return
-    * @说明: 实验分组
+    * @说明: 实验分组ss
     * @关联表: experimentGroup,experimentParticipator
     * @工时: 2H
     * @开发者: lait
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public Boolean experimentGrouping(GroupSettingRequest groupSetting ) {
         return Boolean.FALSE;
@@ -50,7 +50,7 @@ public class ExperimentManageBiz{
     * @工时: 2H
     * @开发者: lait
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public ExperimentListResponse experimentList() {
         return new ExperimentListResponse();

@@ -2,9 +2,7 @@ package org.dows.hep.biz.indicator;
 
 import org.dows.framework.api.Response;
 import org.dows.hep.api.indicator.request.CreateIndicatorViewBaseInfoRequest;
-import org.dows.hep.api.indicator.request.IndicatorViewBaseInfoIdRequest;
 import org.dows.hep.api.indicator.request.UpdateIndicatorViewBaseInfoRequest;
-import org.dows.hep.api.indicator.request.IndicatorViewBaseInfoIdRequest;
 import org.dows.hep.api.indicator.response.IndicatorViewBaseInfoResponse;
 
 import java.util.List;
@@ -15,7 +13,7 @@ import java.util.HashMap;;
 * @description project descr:指标:查看指标基本信息类
 *
 * @author lait.zhang
-* @date 2023年4月14日 上午10:19:59
+* @date 2023年4月14日 下午2:24:35
 */
 public class IndicatorViewBaseInfoBiz{
     /**
@@ -23,10 +21,10 @@ public class IndicatorViewBaseInfoBiz{
     * @return
     * @说明: 创建指标基本信息类
     * @关联表: 
-    * @工时: 5H
+    * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public void createIndicatorViewBaseInfo(CreateIndicatorViewBaseInfoRequest createIndicatorViewBaseInfo ) {
         
@@ -36,12 +34,12 @@ public class IndicatorViewBaseInfoBiz{
     * @return
     * @说明: 删除指标基本信息类
     * @关联表: 
-    * @工时: 5H
+    * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
-    public void deleteIndicatorViewBaseInfo(IndicatorViewBaseInfoIdRequest indicatorViewBaseInfoId ) {
+    public void deleteIndicatorViewBaseInfo(String indicatorViewBaseInfoId ) {
         
     }
     /**
@@ -49,10 +47,10 @@ public class IndicatorViewBaseInfoBiz{
     * @return
     * @说明: 更改指标基本信息类
     * @关联表: 
-    * @工时: 5H
+    * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public void updateIndicatorViewBaseInfo(UpdateIndicatorViewBaseInfoRequest updateIndicatorViewBaseInfo ) {
         
@@ -62,12 +60,12 @@ public class IndicatorViewBaseInfoBiz{
     * @return
     * @说明: 获取查看指标基本信息类
     * @关联表: 
-    * @工时: 5H
+    * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
-    public IndicatorViewBaseInfoResponse getIndicatorViewBaseInfo(IndicatorViewBaseInfoIdRequest indicatorViewBaseInfoId ) {
+    public IndicatorViewBaseInfoResponse getIndicatorViewBaseInfo(String indicatorViewBaseInfoId ) {
         return new IndicatorViewBaseInfoResponse();
     }
 }

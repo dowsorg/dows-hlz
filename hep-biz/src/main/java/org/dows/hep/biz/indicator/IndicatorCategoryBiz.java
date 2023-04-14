@@ -2,7 +2,7 @@ package org.dows.hep.biz.indicator;
 
 import org.dows.framework.api.Response;
 import org.dows.hep.api.indicator.request.CreateIndicatorCategoryRequest;
-import org.dows.hep.api.indicator.request.CreateOrUpdateIndicatorCategoryRequest;
+import org.dows.hep.api.indicator.request.UpdateIndicatorCategoryRequest;
 import org.dows.hep.api.indicator.response.IndicatorCategoryResponse;
 import org.dows.hep.api.indicator.response.IndicatorCategoryResponse;
 
@@ -14,7 +14,7 @@ import java.util.HashMap;;
 * @description project descr:指标:指标目录
 *
 * @author lait.zhang
-* @date 2023年4月14日 上午10:19:59
+* @date 2023年4月14日 下午2:24:35
 */
 public class IndicatorCategoryBiz{
     /**
@@ -22,10 +22,10 @@ public class IndicatorCategoryBiz{
     * @return
     * @说明: 创建指标目录
     * @关联表: 
-    * @工时: 5H
+    * @工时: 3H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public void createIndicatorCategory(CreateIndicatorCategoryRequest createIndicatorCategory ) {
         
@@ -35,10 +35,10 @@ public class IndicatorCategoryBiz{
     * @return
     * @说明: 删除指标目录
     * @关联表: 
-    * @工时: 5H
+    * @工时: 2H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public void deleteIndicatorCategory(String indicatorCategoryId ) {
         
@@ -48,12 +48,12 @@ public class IndicatorCategoryBiz{
     * @return
     * @说明: 更新指标目录
     * @关联表: 
-    * @工时: 5H
+    * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
-    public void updateIndicatorCategory(String appId, List<CreateOrUpdateIndicatorCategoryRequest> createOrUpdateIndicatorCategory ) {
+    public void updateIndicatorCategory(UpdateIndicatorCategoryRequest updateIndicatorCategory ) {
         
     }
     /**
@@ -64,7 +64,7 @@ public class IndicatorCategoryBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public IndicatorCategoryResponse getIndicatorCategory(String indicatorCategoryId ) {
         return new IndicatorCategoryResponse();
@@ -77,7 +77,7 @@ public class IndicatorCategoryBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public List<IndicatorCategoryResponse> listIndicatorCategory(String appId, Long pid, String indicatorCategoryId, String categoryCode, String categoryName ) {
         return new ArrayList<IndicatorCategoryResponse>();

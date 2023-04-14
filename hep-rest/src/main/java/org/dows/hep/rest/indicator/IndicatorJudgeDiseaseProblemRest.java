@@ -5,9 +5,8 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.Response;
 import org.dows.hep.api.indicator.request.CreateIndicatorJudgeDiseaseProblemRequest;
-import org.dows.hep.api.indicator.request.IndicatorJudgeDiseaseProblemIdRequest;
 import org.dows.hep.api.indicator.request.UpdateStatusIndicatorJudgeDiseaseProblemRequest;
-import org.dows.hep.api.indicator.request.IndicatorJudgeDiseaseProblemIdRequest;
+import org.dows.hep.api.indicator.request.UpdateIndicatorJudgeDiseaseProblemRequest;
 import org.dows.hep.api.indicator.response.IndicatorJudgeDiseaseProblemResponse;
 import org.dows.hep.biz.indicator.IndicatorJudgeDiseaseProblemBiz;
 import org.springframework.validation.annotation.Validated;
@@ -21,7 +20,7 @@ import java.util.List;
 * @description project descr:指标:判断指标疾病问题
 *
 * @author lait.zhang
-* @date 2023年4月14日 上午10:19:59
+* @date 2023年4月14日 下午2:24:35
 */
 @RequiredArgsConstructor
 @RestController
@@ -47,7 +46,7 @@ public class IndicatorJudgeDiseaseProblemRest {
     */
     @ApiOperation("删除判断指标疾病问题")
     @DeleteMapping("v1/indicator/indicatorJudgeDiseaseProblem/deleteIndicatorJudgeDiseaseProblem")
-    public void deleteIndicatorJudgeDiseaseProblem(@Validated IndicatorJudgeDiseaseProblemIdRequest indicatorJudgeDiseaseProblemId ) {
+    public void deleteIndicatorJudgeDiseaseProblem(@Validated String indicatorJudgeDiseaseProblemId ) {
         indicatorJudgeDiseaseProblemBiz.deleteIndicatorJudgeDiseaseProblem(indicatorJudgeDiseaseProblemId);
     }
 
@@ -63,13 +62,24 @@ public class IndicatorJudgeDiseaseProblemRest {
     }
 
     /**
+    * 判断指标疾病问题
+    * @param
+    * @return
+    */
+    @ApiOperation("判断指标疾病问题")
+    @PutMapping("v1/indicator/indicatorJudgeDiseaseProblem/updateIndicatorJudgeDiseaseProblem")
+    public void updateIndicatorJudgeDiseaseProblem(@Validated UpdateIndicatorJudgeDiseaseProblemRequest updateIndicatorJudgeDiseaseProblem ) {
+        indicatorJudgeDiseaseProblemBiz.updateIndicatorJudgeDiseaseProblem(updateIndicatorJudgeDiseaseProblem);
+    }
+
+    /**
     * 获取判断指标疾病问题
     * @param
     * @return
     */
     @ApiOperation("获取判断指标疾病问题")
     @GetMapping("v1/indicator/indicatorJudgeDiseaseProblem/getIndicatorJudgeDiseaseProblem")
-    public IndicatorJudgeDiseaseProblemResponse getIndicatorJudgeDiseaseProblem(@Validated IndicatorJudgeDiseaseProblemIdRequest indicatorJudgeDiseaseProblemId) {
+    public IndicatorJudgeDiseaseProblemResponse getIndicatorJudgeDiseaseProblem(@Validated String indicatorJudgeDiseaseProblemId) {
         return indicatorJudgeDiseaseProblemBiz.getIndicatorJudgeDiseaseProblem(indicatorJudgeDiseaseProblemId);
     }
 

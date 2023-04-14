@@ -15,7 +15,7 @@ import java.util.HashMap;;
 * @description project descr:案例:案例人物事件
 *
 * @author lait.zhang
-* @date 2023年4月14日 上午10:19:59
+* @date 2023年4月14日 下午2:24:35
 */
 public class CaseEventBiz{
     /**
@@ -26,7 +26,7 @@ public class CaseEventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public CaseEventResponse pageCaseEvent(FindEventRequest findEvent ) {
         return new CaseEventResponse();
@@ -39,7 +39,7 @@ public class CaseEventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public CaseEventInfoResponse getCaseEvent(String caseEventId ) {
         return new CaseEventInfoResponse();
@@ -52,7 +52,7 @@ public class CaseEventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public Boolean saveCaseEvent(SaveCaseEventRequest saveCaseEvent ) {
         return Boolean.FALSE;
@@ -65,7 +65,7 @@ public class CaseEventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public Boolean delCaseEvent(DelCaseEventRequest delCaseEvent ) {
         return Boolean.FALSE;

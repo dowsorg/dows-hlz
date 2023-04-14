@@ -30,7 +30,7 @@ public class IndicatorVarResponse{
     private String appId;
 
     @Schema(title = "指标ID")
-    private String indicatorId;
+    private String indicatorInstanceId;
 
     @Schema(title = "数据库名")
     private String dbName;

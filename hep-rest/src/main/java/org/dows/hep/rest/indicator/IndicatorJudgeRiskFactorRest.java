@@ -5,9 +5,8 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.Response;
 import org.dows.hep.api.indicator.request.CreateIndicatorJudgeRiskFactorRequest;
-import org.dows.hep.api.indicator.request.IndicatorJudgeRiskFactorIdRequest;
 import org.dows.hep.api.indicator.request.UpdateStatusIndicatorJudgeRiskFactorRequest;
-import org.dows.hep.api.indicator.request.IndicatorJudgeRiskFactorIdRequest;
+import org.dows.hep.api.indicator.request.UpdateIndicatorJudgeRiskFactorRequest;
 import org.dows.hep.api.indicator.response.IndicatorJudgeRiskFactorResponse;
 import org.dows.hep.biz.indicator.IndicatorJudgeRiskFactorBiz;
 import org.springframework.validation.annotation.Validated;
@@ -21,7 +20,7 @@ import java.util.List;
 * @description project descr:指标:判断指标危险因素
 *
 * @author lait.zhang
-* @date 2023年4月14日 上午10:19:59
+* @date 2023年4月14日 下午2:24:35
 */
 @RequiredArgsConstructor
 @RestController
@@ -47,7 +46,7 @@ public class IndicatorJudgeRiskFactorRest {
     */
     @ApiOperation("删除判断指标危险因素")
     @DeleteMapping("v1/indicator/indicatorJudgeRiskFactor/deleteIndicatorJudgeRiskFactor")
-    public void deleteIndicatorJudgeRiskFactor(@Validated IndicatorJudgeRiskFactorIdRequest indicatorJudgeRiskFactorId ) {
+    public void deleteIndicatorJudgeRiskFactor(@Validated String indicatorJudgeRiskFactorId ) {
         indicatorJudgeRiskFactorBiz.deleteIndicatorJudgeRiskFactor(indicatorJudgeRiskFactorId);
     }
 
@@ -68,8 +67,19 @@ public class IndicatorJudgeRiskFactorRest {
     * @return
     */
     @ApiOperation("判断指标危险因素")
+    @PutMapping("v1/indicator/indicatorJudgeRiskFactor/updateIndicatorJudgeRiskFactor")
+    public void updateIndicatorJudgeRiskFactor(@Validated UpdateIndicatorJudgeRiskFactorRequest updateIndicatorJudgeRiskFactor ) {
+        indicatorJudgeRiskFactorBiz.updateIndicatorJudgeRiskFactor(updateIndicatorJudgeRiskFactor);
+    }
+
+    /**
+    * 判断指标危险因素
+    * @param
+    * @return
+    */
+    @ApiOperation("判断指标危险因素")
     @GetMapping("v1/indicator/indicatorJudgeRiskFactor/getIndicatorJudgeRiskFactor")
-    public IndicatorJudgeRiskFactorResponse getIndicatorJudgeRiskFactor(@Validated IndicatorJudgeRiskFactorIdRequest indicatorJudgeRiskFactorId) {
+    public IndicatorJudgeRiskFactorResponse getIndicatorJudgeRiskFactor(@Validated String indicatorJudgeRiskFactorId) {
         return indicatorJudgeRiskFactorBiz.getIndicatorJudgeRiskFactor(indicatorJudgeRiskFactorId);
     }
 

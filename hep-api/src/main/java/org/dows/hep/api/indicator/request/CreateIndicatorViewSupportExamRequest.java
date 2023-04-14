@@ -30,7 +30,7 @@ public class CreateIndicatorViewSupportExamRequest{
     private String type;
 
     @Schema(title = "费用")
-    private java.math.BigDecimal fee;
+    private BigDecimal fee;
 
     @Schema(title = "结果解析")
     private String resultAnalysis;
@@ -38,8 +38,8 @@ public class CreateIndicatorViewSupportExamRequest{
     @Schema(title = "0-禁用，1-启用")
     private Integer status;
 
-    @Schema(title = "")
-    private  创建查看指标辅助检查关联指标列表;
+    @Schema(title = "创建查看指标辅助检查关联指标列表")
+    private String ListCreateIndicatorViewSupportExamRef;
 
 
 }

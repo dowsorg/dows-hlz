@@ -5,8 +5,8 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.Response;
 import org.dows.hep.api.indicator.request.CreateIndicatorViewSupportExamRequest;
-import org.dows.hep.api.indicator.request.IndicatorViewSupportExamIdRequest;
-import org.dows.hep.api.indicator.request.IndicatorViewSupportExamIdRequest;
+import org.dows.hep.api.indicator.request.IndicatorViewSupportExamRequest;
+import org.dows.hep.api.indicator.request.UpdateIndicatorViewSupportExamRequest;
 import org.dows.hep.api.indicator.response.IndicatorViewSupportExamResponse;
 import org.dows.hep.biz.indicator.IndicatorViewSupportExamBiz;
 import org.springframework.validation.annotation.Validated;
@@ -20,7 +20,7 @@ import java.util.List;
 * @description project descr:指标:查看指标辅助检查类
 *
 * @author lait.zhang
-* @date 2023年4月14日 上午10:19:59
+* @date 2023年4月14日 下午2:24:35
 */
 @RequiredArgsConstructor
 @RestController
@@ -46,8 +46,30 @@ public class IndicatorViewSupportExamRest {
     */
     @ApiOperation("删除查看指标辅助检查类")
     @DeleteMapping("v1/indicator/indicatorViewSupportExam/deleteIndicatorViewSupportExam")
-    public void deleteIndicatorViewSupportExam(@Validated IndicatorViewSupportExamIdRequest indicatorViewSupportExamId ) {
+    public void deleteIndicatorViewSupportExam(@Validated String indicatorViewSupportExamId ) {
         indicatorViewSupportExamBiz.deleteIndicatorViewSupportExam(indicatorViewSupportExamId);
+    }
+
+    /**
+    * 更改启用状态
+    * @param
+    * @return
+    */
+    @ApiOperation("更改启用状态")
+    @PutMapping("v1/indicator/indicatorViewSupportExam/updateStatus")
+    public void updateStatus(@Validated IndicatorViewSupportExamRequest indicatorViewSupportExam ) {
+        indicatorViewSupportExamBiz.updateStatus(indicatorViewSupportExam);
+    }
+
+    /**
+    * 查看指标辅助检查类
+    * @param
+    * @return
+    */
+    @ApiOperation("查看指标辅助检查类")
+    @PutMapping("v1/indicator/indicatorViewSupportExam/updateIndicatorViewSupportExam")
+    public void updateIndicatorViewSupportExam(@Validated UpdateIndicatorViewSupportExamRequest updateIndicatorViewSupportExam ) {
+        indicatorViewSupportExamBiz.updateIndicatorViewSupportExam(updateIndicatorViewSupportExam);
     }
 
     /**
@@ -57,7 +79,7 @@ public class IndicatorViewSupportExamRest {
     */
     @ApiOperation("查看指标辅助检查类")
     @GetMapping("v1/indicator/indicatorViewSupportExam/getIndicatorViewSupportExam")
-    public IndicatorViewSupportExamResponse getIndicatorViewSupportExam(@Validated IndicatorViewSupportExamIdRequest indicatorViewSupportExamId) {
+    public IndicatorViewSupportExamResponse getIndicatorViewSupportExam(@Validated String indicatorViewSupportExamId) {
         return indicatorViewSupportExamBiz.getIndicatorViewSupportExam(indicatorViewSupportExamId);
     }
 

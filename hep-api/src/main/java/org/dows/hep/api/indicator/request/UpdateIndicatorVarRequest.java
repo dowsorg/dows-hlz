@@ -21,7 +21,7 @@ import java.math.BigDecimal;
 @Schema(name = "UpdateIndicatorVar 对象", title = "更新指标变量")
 public class UpdateIndicatorVarRequest{
     @Schema(title = "指标ID")
-    private String indicatorId;
+    private String indicatorInstanceId;
 
     @Schema(title = "数据库名")
     private String dbName;

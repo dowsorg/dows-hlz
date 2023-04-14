@@ -24,7 +24,7 @@ public class CreateIndicatorRefRequest{
     private String appId;
 
     @Schema(title = "指标ID")
-    private String indicatorInstanceId;
+    private String indicatorInstanceIdId;
 
     @Schema(title = "引用这个指标的指标ID")
     private String refIndicatorId;

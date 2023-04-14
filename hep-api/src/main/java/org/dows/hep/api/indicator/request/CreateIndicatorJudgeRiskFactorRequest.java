@@ -30,7 +30,7 @@ public class CreateIndicatorJudgeRiskFactorRequest{
     private String type;
 
     @Schema(title = "分数")
-    private java.math.BigDecimal point;
+    private BigDecimal point;
 
     @Schema(title = "判断规则")
     private String expression;

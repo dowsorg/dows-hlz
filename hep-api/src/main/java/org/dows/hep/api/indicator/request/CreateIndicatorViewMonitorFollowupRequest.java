@@ -32,8 +32,8 @@ public class CreateIndicatorViewMonitorFollowupRequest{
     @Schema(title = "0-禁用，1-启用")
     private Integer status;
 
-    @Schema(title = "")
-    private  查看指标监测随访内容;
+    @Schema(title = "查看指标监测随访内容列表")
+    private String createIndicatorViewMonitorFollowupContentList;
 
 
 }

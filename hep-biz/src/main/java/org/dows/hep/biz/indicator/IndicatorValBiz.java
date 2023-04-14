@@ -13,7 +13,7 @@ import java.util.HashMap;;
 * @description project descr:指标:指标值
 *
 * @author lait.zhang
-* @date 2023年4月14日 上午10:19:59
+* @date 2023年4月14日 下午2:24:35
 */
 public class IndicatorValBiz{
     /**
@@ -21,10 +21,10 @@ public class IndicatorValBiz{
     * @return
     * @说明: 创建指标值
     * @关联表: 
-    * @工时: 5H
+    * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public void createIndicatorVal(CreateIndicatorValRequest createIndicatorVal ) {
         
@@ -34,10 +34,10 @@ public class IndicatorValBiz{
     * @return
     * @说明: 删除指标值
     * @关联表: 
-    * @工时: 5H
+    * @工时: 2H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public void deleteIndicatorVal(String indicatorValId ) {
         
@@ -47,10 +47,10 @@ public class IndicatorValBiz{
     * @return
     * @说明: 更新指标值
     * @关联表: 
-    * @工时: 5H
+    * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public void updateIndicatorVal(UpdateIndicatorValRequest updateIndicatorVal ) {
         
@@ -60,10 +60,10 @@ public class IndicatorValBiz{
     * @return
     * @说明: 获取指标值
     * @关联表: 
-    * @工时: 5H
+    * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:19:59
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public IndicatorValResponse indicatorVal(String indicatorValId ) {
         return new IndicatorValResponse();

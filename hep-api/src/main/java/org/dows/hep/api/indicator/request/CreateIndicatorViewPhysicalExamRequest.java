@@ -30,7 +30,7 @@ public class CreateIndicatorViewPhysicalExamRequest{
     private String type;
 
     @Schema(title = "费用")
-    private java.math.BigDecimal fee;
+    private BigDecimal fee;
 
     @Schema(title = "结果解析")
     private String resultAnalysis;
@@ -38,8 +38,8 @@ public class CreateIndicatorViewPhysicalExamRequest{
     @Schema(title = "0-禁用，1-启用")
     private Integer status;
 
-    @Schema(title = "")
-    private  查看指标体格检查关联指标列表;
+    @Schema(title = "查看指标体格检查关联指标列表")
+    private String ListCreateIndicatorViewPhysicalExamRef;
 
 
 }

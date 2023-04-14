@@ -30,13 +30,13 @@ public class AddOrgRequest{
     private String checkjButton;
 
     @Schema(title = "挂号费")
-    private java.math.BigDecimal registrationFee;
+    private BigDecimal registrationFee;
 
     @Schema(title = "保险费")
-    private java.math.BigDecimal insuranceFee;
+    private BigDecimal insuranceFee;
 
     @Schema(title = "报销比例")
-    private java.math.BigDecimal reimbursementRatio;
+    private BigDecimal reimbursementRatio;
 
     @Schema(title = "机构操作手册")
     private String operationManual;

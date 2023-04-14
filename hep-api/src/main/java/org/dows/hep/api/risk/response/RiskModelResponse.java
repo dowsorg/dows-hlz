@@ -38,8 +38,8 @@ public class RiskModelResponse{
     @Schema(title = "0-禁用，1-启用")
     private Integer status;
 
-    @Schema(title = "")
-    private  死亡模型列表;
+    @Schema(title = "死亡模型列表")
+    private String ListRiskDeathModel;
 
 
 }

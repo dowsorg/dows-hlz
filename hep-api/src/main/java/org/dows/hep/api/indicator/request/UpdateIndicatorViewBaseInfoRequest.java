@@ -23,14 +23,14 @@ public class UpdateIndicatorViewBaseInfoRequest{
     @Schema(title = "指标基本信息类名称")
     private String name;
 
-    @Schema(title = "")
-    private  指标描述表列表;
+    @Schema(title = "指标描述表列表")
+    private String IndicatorViewBaseInfoDesc;
 
-    @Schema(title = "")
-    private  指标监测表列表;
+    @Schema(title = "指标监测表列表")
+    private String IndicatorViewBaseInfoMonitor;
 
-    @Schema(title = "")
-    private  单一指标列表;
+    @Schema(title = "单一指标列表")
+    private String IndicatorViewBaseInfoSingle;
 
 
 }

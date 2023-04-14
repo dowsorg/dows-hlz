@@ -12,7 +12,7 @@ import java.util.HashMap;;
 * @description project descr:评估:评估报告管理
 *
 * @author lait.zhang
-* @date 2023年4月14日 上午10:20:00
+* @date 2023年4月14日 下午2:24:35
 */
 public class EvaluateReportManagementBiz{
     /**
@@ -20,10 +20,10 @@ public class EvaluateReportManagementBiz{
     * @return
     * @说明: 创建评估报告管理
     * @关联表: 
-    * @工时: 5H
+    * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:20:00
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public void evaluateReportManagement(CreateEvaluateReportManagementRequest createEvaluateReportManagement ) {
         
@@ -33,10 +33,10 @@ public class EvaluateReportManagementBiz{
     * @return
     * @说明: 删除评估报告管理
     * @关联表: 
-    * @工时: 5H
+    * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:20:00
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public void deleteEvaluateReportManagement(String evaluateReportManagementId ) {
         
@@ -46,10 +46,10 @@ public class EvaluateReportManagementBiz{
     * @return
     * @说明: 查看评估报告管理
     * @关联表: 
-    * @工时: 5H
+    * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 上午10:20:00
+    * @创建时间: 2023年4月14日 下午2:24:35
     */
     public EvaluateReportManagementResponse getEvaluateReportManagement(String evaluateReportManagementId ) {
         return new EvaluateReportManagementResponse();

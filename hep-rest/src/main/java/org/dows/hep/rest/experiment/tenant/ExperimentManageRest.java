@@ -11,6 +11,7 @@ import org.dows.hep.biz.experiment.tenant.ExperimentManageBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import org.dows.hep.api.experiment.tenant.ExperimentManageApi;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,12 +20,11 @@ import java.util.List;
 * @description project descr:实验:实验管理
 *
 * @author lait.zhang
-* @date 2023年4月14日 上午10:19:59
+* @date 2023年4月14日 下午2:24:35
 */
 @RequiredArgsConstructor
 @RestController
-@Api(tags = "实验管理")
-public class ExperimentManageRest {
+public class ExperimentManageRest implements ExperimentManageApi{
     private final ExperimentManageBiz experimentManageBiz;
 
     /**
@@ -32,20 +32,18 @@ public class ExperimentManageRest {
     * @param
     * @return
     */
-    @ApiOperation("分配实验")
-    @PostMapping("v1/experimentTenant/experimentManage/experimentAllot")
-    public String experimentAllot(@RequestBody @Validated CreateExperimentRequest createExperiment ) {
+    @Override
+    public String experimentAllot(@RequestBody @Validated CreateExperimentRequest createExperiment) {
         return experimentManageBiz.experimentAllot(createExperiment);
     }
 
     /**
-    * 实验分组
+    * 实验分组ss
     * @param
     * @return
     */
-    @ApiOperation("实验分组")
-    @PostMapping("v1/experimentTenant/experimentManage/experimentGrouping")
-    public Boolean experimentGrouping(@RequestBody @Validated GroupSettingRequest groupSetting ) {
+    @Override
+    public Boolean experimentGrouping(@RequestBody @Validated GroupSettingRequest groupSetting) {
         return experimentManageBiz.experimentGrouping(groupSetting);
     }
 

@@ -39,7 +39,7 @@ public class IndicatorViewSupportExamResponse{
     private String type;
 
     @Schema(title = "费用")
-    private java.math.BigDecimal fee;
+    private BigDecimal fee;
 
     @Schema(title = "结果解析")
     private String resultAnalysis;
