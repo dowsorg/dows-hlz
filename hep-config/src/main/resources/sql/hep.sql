@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS `experiment_instance`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_experiment_instance_id` (`experiment_instance_id`)
-) ENGINE=InnoDB COMMENT='实验实列';
+    ) ENGINE=InnoDB COMMENT='实验实列';
 
 drop table if exists `experiment_setting`;
 CREATE TABLE IF NOT EXISTS `experiment_setting`(
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS `experiment_setting`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_experiment_setting_id` (`experiment_setting_id`)
-) ENGINE=InnoDB COMMENT='实验设置';
+    ) ENGINE=InnoDB COMMENT='实验设置';
 
 drop table if exists `experiment_group`;
 CREATE TABLE IF NOT EXISTS `experiment_group`(
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS `experiment_group`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_experiment_group_id` (`experiment_group_id`)
-) ENGINE=InnoDB COMMENT='实验小组';
+    ) ENGINE=InnoDB COMMENT='实验小组';
 
 drop table if exists `experiment_participator`;
 CREATE TABLE IF NOT EXISTS `experiment_participator`(
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS `experiment_participator`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_experiment_participator_id` (`experiment_participator_id`)
-) ENGINE=InnoDB COMMENT='实验组员（参与者）';
+    ) ENGINE=InnoDB COMMENT='实验组员（参与者）';
 
 drop table if exists `experiment_actor`;
 CREATE TABLE IF NOT EXISTS `experiment_actor`(
@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS `experiment_actor`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_experiment_actor_id` (`experiment_actor_id`)
-) ENGINE=InnoDB COMMENT='实验扮演者';
+    ) ENGINE=InnoDB COMMENT='实验扮演者';
 
 drop table if exists `experiment_scheme`;
 CREATE TABLE IF NOT EXISTS `experiment_scheme`(
@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS `experiment_scheme`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_experiment_design_id` (`experiment_design_id`)
-) ENGINE=InnoDB COMMENT='实验方案';
+    ) ENGINE=InnoDB COMMENT='实验方案';
 
 drop table if exists `experiment_timer`;
 CREATE TABLE IF NOT EXISTS `experiment_timer`(
@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS `experiment_timer`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_experiment_timer_id` (`experiment_timer_id`)
-) ENGINE=InnoDB COMMENT='实验计数计时器';
+    ) ENGINE=InnoDB COMMENT='实验计数计时器';
 
 drop table if exists `experiment_report_schema`;
 CREATE TABLE IF NOT EXISTS `experiment_report_schema`(
@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS `experiment_report_schema`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_experiment_report_schema_id` (`experiment_report_schema_id`)
-) ENGINE=InnoDB COMMENT='实验报告元数据';
+    ) ENGINE=InnoDB COMMENT='实验报告元数据';
 
 drop table if exists `experiment_report_item`;
 CREATE TABLE IF NOT EXISTS `experiment_report_item`(
@@ -142,7 +142,7 @@ CREATE TABLE IF NOT EXISTS `experiment_report_item`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_experiment_case_report_id` (`experiment_case_report_id`)
-) ENGINE=InnoDB COMMENT='报告项';
+    ) ENGINE=InnoDB COMMENT='报告项';
 
 drop table if exists `experiment_case_report`;
 CREATE TABLE IF NOT EXISTS `experiment_case_report`(
@@ -158,7 +158,7 @@ CREATE TABLE IF NOT EXISTS `experiment_case_report`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_experiment_case_report_id` (`experiment_case_report_id`)
-) ENGINE=InnoDB COMMENT='实验案例报告';
+    ) ENGINE=InnoDB COMMENT='实验案例报告';
 
 drop table if exists `experiment_grade_report`;
 CREATE TABLE IF NOT EXISTS `experiment_grade_report`(
@@ -175,7 +175,7 @@ CREATE TABLE IF NOT EXISTS `experiment_grade_report`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_experiment_grade_report_id` (`experiment_grade_report_id`)
-) ENGINE=InnoDB COMMENT='实验成绩报告';
+    ) ENGINE=InnoDB COMMENT='实验成绩报告';
 
 drop table if exists `experiment_periods_question`;
 CREATE TABLE IF NOT EXISTS `experiment_periods_question`(
@@ -190,7 +190,7 @@ CREATE TABLE IF NOT EXISTS `experiment_periods_question`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_experiment_periods_question_id` (`experiment_periods_question_id`)
-) ENGINE=InnoDB COMMENT='实验期数答题';
+    ) ENGINE=InnoDB COMMENT='实验期数答题';
 
 drop table if exists `experiment_question_item`;
 CREATE TABLE IF NOT EXISTS `experiment_question_item`(
@@ -202,8 +202,8 @@ CREATE TABLE IF NOT EXISTS `experiment_question_item`(
     `periods` varchar(64) DEFAULT NULL COMMENT '实验期数|答题位置',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='实验答题项目';
+    PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB COMMENT='实验答题项目';
 
 drop table if exists `experiment_person`;
 CREATE TABLE IF NOT EXISTS `experiment_person`(
@@ -216,8 +216,8 @@ CREATE TABLE IF NOT EXISTS `experiment_person`(
     `case_account_name` varchar(64) DEFAULT NULL COMMENT '账号名称',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='实验机构人物';
+    PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB COMMENT='实验机构人物';
 
 drop table if exists `experiment_person_cost`;
 CREATE TABLE IF NOT EXISTS `experiment_person_cost`(
@@ -232,8 +232,8 @@ CREATE TABLE IF NOT EXISTS `experiment_person_cost`(
     `asset_amount` double(11,2) DEFAULT NULL COMMENT '资产额度[]',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='实验人物资产花费';
+    PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB COMMENT='实验人物资产花费';
 
 drop table if exists `operate_flow`;
 CREATE TABLE IF NOT EXISTS `operate_flow`(
@@ -250,8 +250,8 @@ CREATE TABLE IF NOT EXISTS `operate_flow`(
     `end_time` datetime DEFAULT NULL COMMENT '结束时间',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='实验操作流程';
+    PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB COMMENT='实验操作流程';
 
 drop table if exists `operate_transfers`;
 CREATE TABLE IF NOT EXISTS `operate_transfers`(
@@ -273,7 +273,7 @@ CREATE TABLE IF NOT EXISTS `operate_transfers`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_operate_transfers_id` (`operate_transfers_id`)
-) ENGINE=InnoDB COMMENT='操作机构转入转出记录';
+    ) ENGINE=InnoDB COMMENT='操作机构转入转出记录';
 
 drop table if exists `operate_event`;
 CREATE TABLE IF NOT EXISTS `operate_event`(
@@ -291,7 +291,7 @@ CREATE TABLE IF NOT EXISTS `operate_event`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_operate_event_id` (`operate_event_id`)
-) ENGINE=InnoDB COMMENT='操作事件记录';
+    ) ENGINE=InnoDB COMMENT='操作事件记录';
 
 drop table if exists `operate_exam`;
 CREATE TABLE IF NOT EXISTS `operate_exam`(
@@ -309,7 +309,7 @@ CREATE TABLE IF NOT EXISTS `operate_exam`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_operate_exam_id` (`operate_exam_id`)
-) ENGINE=InnoDB COMMENT='操作考试[题目]记录';
+    ) ENGINE=InnoDB COMMENT='操作考试[题目]记录';
 
 drop table if exists `operate_result`;
 CREATE TABLE IF NOT EXISTS `operate_result`(
@@ -328,7 +328,7 @@ CREATE TABLE IF NOT EXISTS `operate_result`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_operate_result_id` (`operate_result_id`)
-) ENGINE=InnoDB COMMENT='操作结果';
+    ) ENGINE=InnoDB COMMENT='操作结果';
 
 drop table if exists `operate_indictar`;
 CREATE TABLE IF NOT EXISTS `operate_indictar`(
@@ -337,10 +337,10 @@ CREATE TABLE IF NOT EXISTS `operate_indictar`(
     `experiment_instance_id` varchar(64) DEFAULT NULL COMMENT '实验实列ID',
     `experiment_group_id` varchar(64) DEFAULT NULL COMMENT '实验小组ID',
     `case_org_id` varchar(64) DEFAULT NULL COMMENT '案例机构ID',
-    `operate_account_id` varcahr DEFAULT NULL COMMENT '操作人ID',
-    `operate_account_name` varcahr DEFAULT NULL COMMENT '操作人名',
+    `operate_account_id` varchar(64) DEFAULT NULL COMMENT '操作人ID',
+    `operate_account_name` varchar(64) DEFAULT NULL COMMENT '操作人名',
     `case_account_id` varchar(64) DEFAULT NULL COMMENT '案例人物',
-    `case_account_name` varcahr DEFAULT NULL COMMENT '案例人名',
+    `case_account_name` varchar(64) DEFAULT NULL COMMENT '案例人名',
     `operate_type` varchar(64) DEFAULT NULL COMMENT '操作[干预]类型',
     `operate_source_id` varchar(64) DEFAULT NULL COMMENT '干预或事件处理id',
     `indactor_instance_id` varchar(64) DEFAULT NULL COMMENT '指标ID',
@@ -354,7 +354,7 @@ CREATE TABLE IF NOT EXISTS `operate_indictar`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_operate_indictar_id` (`operate_indictar_id`)
-) ENGINE=InnoDB COMMENT='学生操作指标记录表';
+    ) ENGINE=InnoDB COMMENT='学生操作指标记录表';
 
 drop table if exists `operate_intervene`;
 CREATE TABLE IF NOT EXISTS `operate_intervene`(
@@ -364,11 +364,11 @@ CREATE TABLE IF NOT EXISTS `operate_intervene`(
     `experiment_group_id` varchar(64) DEFAULT NULL COMMENT '实验小组id',
     `operate_flow_id` varchar(64) DEFAULT NULL COMMENT '实验操作流程',
     `case_org_id` varchar(64) DEFAULT NULL COMMENT '案例机构ID',
-    `operate_account_id` varcahr DEFAULT NULL COMMENT '操作人id',
-    `operate_account_name` varcahr DEFAULT NULL COMMENT '操作人名',
+    `operate_account_id` varchar(64) DEFAULT NULL COMMENT '操作人id',
+    `operate_account_name` varchar(64) DEFAULT NULL COMMENT '操作人名',
     `experiment_pserson_id` varchar(64) DEFAULT NULL COMMENT '实验人物ID',
     `case_account_id` varchar(64) DEFAULT NULL COMMENT '案例人物',
-    `case_account_name` varcahr DEFAULT NULL COMMENT '案例人名',
+    `case_account_name` varchar(64) DEFAULT NULL COMMENT '案例人名',
     `periods` integer(2) DEFAULT NULL COMMENT '期数',
     `operate_type` varchar(64) DEFAULT NULL COMMENT '操作[干预]类型 1-饮食 2-运动 3-心理 4-治疗',
     `operate_time` varchar(64) DEFAULT NULL COMMENT '操作时间',
@@ -380,7 +380,7 @@ CREATE TABLE IF NOT EXISTS `operate_intervene`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_operate_intervene_id` (`operate_intervene_id`)
-) ENGINE=InnoDB COMMENT='学生干预操作记录';
+    ) ENGINE=InnoDB COMMENT='学生干预操作记录';
 
 drop table if exists `case_category`;
 CREATE TABLE IF NOT EXISTS `case_category`(
@@ -397,7 +397,7 @@ CREATE TABLE IF NOT EXISTS `case_category`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_case_categ_pid` (`case_categ_pid`)
-) ENGINE=InnoDB COMMENT='案例类目';
+    ) ENGINE=InnoDB COMMENT='案例类目';
 
 drop table if exists `case_instance`;
 CREATE TABLE IF NOT EXISTS `case_instance`(
@@ -418,7 +418,7 @@ CREATE TABLE IF NOT EXISTS `case_instance`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_case_instance_id` (`case_instance_id`)
-) ENGINE=InnoDB COMMENT='案例实例';
+    ) ENGINE=InnoDB COMMENT='案例实例';
 
 drop table if exists `case_org_questionnaire`;
 CREATE TABLE IF NOT EXISTS `case_org_questionnaire`(
@@ -434,7 +434,7 @@ CREATE TABLE IF NOT EXISTS `case_org_questionnaire`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_case_org_questionnaire` (`case_org_questionnaire`)
-) ENGINE=InnoDB COMMENT='案例机构问卷';
+    ) ENGINE=InnoDB COMMENT='案例机构问卷';
 
 drop table if exists `case_notice`;
 CREATE TABLE IF NOT EXISTS `case_notice`(
@@ -452,7 +452,7 @@ CREATE TABLE IF NOT EXISTS `case_notice`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_case_notice_id` (`case_notice_id`)
-) ENGINE=InnoDB COMMENT='案例公告';
+    ) ENGINE=InnoDB COMMENT='案例公告';
 
 drop table if exists `case_scheme`;
 CREATE TABLE IF NOT EXISTS `case_scheme`(
@@ -480,7 +480,7 @@ CREATE TABLE IF NOT EXISTS `case_scheme`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_case_scheme_id` (`case_scheme_id`)
-) ENGINE=InnoDB COMMENT='案例方案';
+    ) ENGINE=InnoDB COMMENT='案例方案';
 
 drop table if exists `case_scheme_result`;
 CREATE TABLE IF NOT EXISTS `case_scheme_result`(
@@ -502,7 +502,7 @@ CREATE TABLE IF NOT EXISTS `case_scheme_result`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_case_scheme_result_id` (`case_scheme_result_id`)
-) ENGINE=InnoDB COMMENT='案例方案结果';
+    ) ENGINE=InnoDB COMMENT='案例方案结果';
 
 drop table if exists `case_questionnaire`;
 CREATE TABLE IF NOT EXISTS `case_questionnaire`(
@@ -522,7 +522,7 @@ CREATE TABLE IF NOT EXISTS `case_questionnaire`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_case_questionnaire_id` (`case_questionnaire_id`)
-) ENGINE=InnoDB COMMENT='案例问卷';
+    ) ENGINE=InnoDB COMMENT='案例问卷';
 
 drop table if exists `case_questionnaire_result`;
 CREATE TABLE IF NOT EXISTS `case_questionnaire_result`(
@@ -542,7 +542,7 @@ CREATE TABLE IF NOT EXISTS `case_questionnaire_result`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_case_questionnaire_result_id` (`case_questionnaire_result_id`)
-) ENGINE=InnoDB COMMENT='案例问卷结果';
+    ) ENGINE=InnoDB COMMENT='案例问卷结果';
 
 drop table if exists `case_setting`;
 CREATE TABLE IF NOT EXISTS `case_setting`(
@@ -559,14 +559,14 @@ CREATE TABLE IF NOT EXISTS `case_setting`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_case_setting_id` (`case_setting_id`)
-) ENGINE=InnoDB COMMENT='案例问卷设置';
+    ) ENGINE=InnoDB COMMENT='案例问卷设置';
 
 drop table if exists `case_org`;
 CREATE TABLE IF NOT EXISTS `case_org`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
     `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `case_org_id` varchar(64) DEFAULT NULL COMMENT '案例机构ID',
-    `case_instance_id` varchcar DEFAULT NULL COMMENT '案例ID',
+    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
     `org_id` varchar(64) DEFAULT NULL COMMENT '机构ID[uim域]',
     `org_name` varchar(64) DEFAULT NULL COMMENT '机构名称',
     `scene` varchar(64) DEFAULT NULL COMMENT '场景',
@@ -577,7 +577,7 @@ CREATE TABLE IF NOT EXISTS `case_org`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_case_org_id` (`case_org_id`)
-) ENGINE=InnoDB COMMENT='案例机构';
+    ) ENGINE=InnoDB COMMENT='案例机构';
 
 drop table if exists `case_org_function`;
 CREATE TABLE IF NOT EXISTS `case_org_function`(
@@ -594,7 +594,7 @@ CREATE TABLE IF NOT EXISTS `case_org_function`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_case_org_function_id` (`case_org_function_id`)
-) ENGINE=InnoDB COMMENT='机构功能';
+    ) ENGINE=InnoDB COMMENT='机构功能';
 
 drop table if exists `case_org_indicator`;
 CREATE TABLE IF NOT EXISTS `case_org_indicator`(
@@ -609,15 +609,15 @@ CREATE TABLE IF NOT EXISTS `case_org_indicator`(
     `case_identifier` varchar(64) DEFAULT NULL COMMENT '案例标示',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
-) ENGINE=InnoDB COMMENT='机构功能指标点';
+    PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB COMMENT='机构功能指标点';
 
 drop table if exists `case_org_fee`;
 CREATE TABLE IF NOT EXISTS `case_org_fee`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
     `case_org_fee_id` varchar(64) DEFAULT NULL COMMENT '案例机构费用ID',
     `case_org_indicator_id` varchar(64) DEFAULT NULL COMMENT '机构功能指标点ID',
-    `case_instance_id` varchcar DEFAULT NULL COMMENT '案例ID',
+    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
     `case_org_id` varchar(64) DEFAULT NULL COMMENT '案例机构ID',
     `org_function_id` varchar(64) DEFAULT NULL COMMENT '机构功能ID',
     `function_name` varchar(64) DEFAULT NULL COMMENT '功能|菜单名称',
@@ -632,7 +632,7 @@ CREATE TABLE IF NOT EXISTS `case_org_fee`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_case_org_fee_id` (`case_org_fee_id`)
-) ENGINE=InnoDB COMMENT='案例机构费用';
+    ) ENGINE=InnoDB COMMENT='案例机构费用';
 
 drop table if exists `case_person`;
 CREATE TABLE IF NOT EXISTS `case_person`(
@@ -645,13 +645,13 @@ CREATE TABLE IF NOT EXISTS `case_person`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_case_person_ID` (`case_person_ID`)
-) ENGINE=InnoDB COMMENT='案例人物';
+    ) ENGINE=InnoDB COMMENT='案例人物';
 
 drop table if exists `case_event`;
 CREATE TABLE IF NOT EXISTS `case_event`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `case_event_id` varchar(64) DEFAULT NULL COMMENT '分布式id',
-    `case_instance_id` varchcar DEFAULT NULL COMMENT '案例ID',
+    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
     `case_account_id` varchar(64) DEFAULT NULL COMMENT '人物id',
     `case_account_name` varchar(64) DEFAULT NULL COMMENT '人物名称',
     `event_id` varchar(64) DEFAULT NULL COMMENT '数据库事件id',
@@ -674,7 +674,7 @@ CREATE TABLE IF NOT EXISTS `case_event`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_case_event_id` (`case_event_id`)
-) ENGINE=InnoDB COMMENT='案例人物事件';
+    ) ENGINE=InnoDB COMMENT='案例人物事件';
 
 drop table if exists `case_event_eval`;
 CREATE TABLE IF NOT EXISTS `case_event_eval`(
@@ -692,7 +692,7 @@ CREATE TABLE IF NOT EXISTS `case_event_eval`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_case_event_eval_id` (`case_event_eval_id`)
-) ENGINE=InnoDB COMMENT='案例人物事件触发条件';
+    ) ENGINE=InnoDB COMMENT='案例人物事件触发条件';
 
 drop table if exists `case_event_action`;
 CREATE TABLE IF NOT EXISTS `case_event_action`(
@@ -707,7 +707,7 @@ CREATE TABLE IF NOT EXISTS `case_event_action`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_case_event_action_id` (`case_event_action_id`)
-) ENGINE=InnoDB COMMENT='案例人物事件处理选项';
+    ) ENGINE=InnoDB COMMENT='案例人物事件处理选项';
 
 drop table if exists `case_event_action_indicator`;
 CREATE TABLE IF NOT EXISTS `case_event_action_indicator`(
@@ -729,7 +729,7 @@ CREATE TABLE IF NOT EXISTS `case_event_action_indicator`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_case_event_action_indicator_id` (`case_event_action_indicator_id`)
-) ENGINE=InnoDB COMMENT='人物事件处理选项影响指标';
+    ) ENGINE=InnoDB COMMENT='人物事件处理选项影响指标';
 
 drop table if exists `event_categ`;
 CREATE TABLE IF NOT EXISTS `event_categ`(
@@ -747,7 +747,7 @@ CREATE TABLE IF NOT EXISTS `event_categ`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_event_categ_id` (`event_categ_id`)
-) ENGINE=InnoDB COMMENT='事件类别管理';
+    ) ENGINE=InnoDB COMMENT='事件类别管理';
 
 drop table if exists `event`;
 CREATE TABLE IF NOT EXISTS `event`(
@@ -770,7 +770,7 @@ CREATE TABLE IF NOT EXISTS `event`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_event_id` (`event_id`)
-) ENGINE=InnoDB COMMENT='突发事件';
+    ) ENGINE=InnoDB COMMENT='突发事件';
 
 drop table if exists `event_eval`;
 CREATE TABLE IF NOT EXISTS `event_eval`(
@@ -786,7 +786,7 @@ CREATE TABLE IF NOT EXISTS `event_eval`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_event_eval_id` (`event_eval_id`)
-) ENGINE=InnoDB COMMENT='突发事件触发条件';
+    ) ENGINE=InnoDB COMMENT='突发事件触发条件';
 
 drop table if exists `event_action`;
 CREATE TABLE IF NOT EXISTS `event_action`(
@@ -799,7 +799,7 @@ CREATE TABLE IF NOT EXISTS `event_action`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_event_action_id` (`event_action_id`)
-) ENGINE=InnoDB COMMENT='突发事件处理选项';
+    ) ENGINE=InnoDB COMMENT='突发事件处理选项';
 
 drop table if exists `event_action_indicator`;
 CREATE TABLE IF NOT EXISTS `event_action_indicator`(
@@ -819,7 +819,7 @@ CREATE TABLE IF NOT EXISTS `event_action_indicator`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_event_action_indicator_id` (`event_action_indicator_id`)
-) ENGINE=InnoDB COMMENT='事件处理选项影响指标';
+    ) ENGINE=InnoDB COMMENT='事件处理选项影响指标';
 
 drop table if exists `intervene_category`;
 CREATE TABLE IF NOT EXISTS `intervene_category`(
@@ -837,7 +837,7 @@ CREATE TABLE IF NOT EXISTS `intervene_category`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_intervene_category_id` (`intervene_category_id`)
-) ENGINE=InnoDB COMMENT='干预类别管理';
+    ) ENGINE=InnoDB COMMENT='干预类别管理';
 
 drop table if exists `food_recommend`;
 CREATE TABLE IF NOT EXISTS `food_recommend`(
@@ -852,7 +852,7 @@ CREATE TABLE IF NOT EXISTS `food_recommend`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_food_recommend_id` (`food_recommend_id`)
-) ENGINE=InnoDB COMMENT='食物推荐量配置';
+    ) ENGINE=InnoDB COMMENT='食物推荐量配置';
 
 drop table if exists `food_nutrient`;
 CREATE TABLE IF NOT EXISTS `food_nutrient`(
@@ -868,7 +868,7 @@ CREATE TABLE IF NOT EXISTS `food_nutrient`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_food_nutrient_id` (`food_nutrient_id`)
-) ENGINE=InnoDB COMMENT='食物成分';
+    ) ENGINE=InnoDB COMMENT='食物成分';
 
 drop table if exists `food_material`;
 CREATE TABLE IF NOT EXISTS `food_material`(
@@ -893,7 +893,7 @@ CREATE TABLE IF NOT EXISTS `food_material`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_food_material_id` (`food_material_id`)
-) ENGINE=InnoDB COMMENT='食材';
+    ) ENGINE=InnoDB COMMENT='食材';
 
 drop table if exists `food_material_indicator`;
 CREATE TABLE IF NOT EXISTS `food_material_indicator`(
@@ -911,7 +911,7 @@ CREATE TABLE IF NOT EXISTS `food_material_indicator`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_food_material_indicator_id` (`food_material_indicator_id`)
-) ENGINE=InnoDB COMMENT='食材关联指标';
+    ) ENGINE=InnoDB COMMENT='食材关联指标';
 
 drop table if exists `food_material_nutrient`;
 CREATE TABLE IF NOT EXISTS `food_material_nutrient`(
@@ -927,7 +927,7 @@ CREATE TABLE IF NOT EXISTS `food_material_nutrient`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_food_material_nutrient_id` (`food_material_nutrient_id`)
-) ENGINE=InnoDB COMMENT='食材成分';
+    ) ENGINE=InnoDB COMMENT='食材成分';
 
 drop table if exists `food_dishes`;
 CREATE TABLE IF NOT EXISTS `food_dishes`(
@@ -952,7 +952,7 @@ CREATE TABLE IF NOT EXISTS `food_dishes`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_food_dishes_id` (`food_dishes_id`)
-) ENGINE=InnoDB COMMENT='菜肴';
+    ) ENGINE=InnoDB COMMENT='菜肴';
 
 drop table if exists `food_dishes_material`;
 CREATE TABLE IF NOT EXISTS `food_dishes_material`(
@@ -968,7 +968,7 @@ CREATE TABLE IF NOT EXISTS `food_dishes_material`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_food_dishes_material_id` (`food_dishes_material_id`)
-) ENGINE=InnoDB COMMENT='菜肴食材';
+    ) ENGINE=InnoDB COMMENT='菜肴食材';
 
 drop table if exists `food_dishes_nutrient`;
 CREATE TABLE IF NOT EXISTS `food_dishes_nutrient`(
@@ -984,7 +984,7 @@ CREATE TABLE IF NOT EXISTS `food_dishes_nutrient`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_food_dishes_nutrient_id` (`food_dishes_nutrient_id`)
-) ENGINE=InnoDB COMMENT='菜肴成分';
+    ) ENGINE=InnoDB COMMENT='菜肴成分';
 
 drop table if exists `food_cookbook`;
 CREATE TABLE IF NOT EXISTS `food_cookbook`(
@@ -1009,7 +1009,7 @@ CREATE TABLE IF NOT EXISTS `food_cookbook`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_food_cookbook_id` (`food_cookbook_id`)
-) ENGINE=InnoDB COMMENT='食谱';
+    ) ENGINE=InnoDB COMMENT='食谱';
 
 drop table if exists `food_cookbook_detail`;
 CREATE TABLE IF NOT EXISTS `food_cookbook_detail`(
@@ -1027,7 +1027,7 @@ CREATE TABLE IF NOT EXISTS `food_cookbook_detail`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_food_cookbook_detail_id 分布式id` (`food_cookbook_detail_id 分布式id`)
-) ENGINE=InnoDB COMMENT='食谱食材';
+    ) ENGINE=InnoDB COMMENT='食谱食材';
 
 drop table if exists `food_cookbook_nutrient`;
 CREATE TABLE IF NOT EXISTS `food_cookbook_nutrient`(
@@ -1043,7 +1043,7 @@ CREATE TABLE IF NOT EXISTS `food_cookbook_nutrient`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_food_cookbook_nutrient_id` (`food_cookbook_nutrient_id`)
-) ENGINE=InnoDB COMMENT='食谱成分';
+    ) ENGINE=InnoDB COMMENT='食谱成分';
 
 drop table if exists `sport_plan`;
 CREATE TABLE IF NOT EXISTS `sport_plan`(
@@ -1060,7 +1060,7 @@ CREATE TABLE IF NOT EXISTS `sport_plan`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_sport_plan_id` (`sport_plan_id`)
-) ENGINE=InnoDB COMMENT='运动方案';
+    ) ENGINE=InnoDB COMMENT='运动方案';
 
 drop table if exists `sport_plan_items`;
 CREATE TABLE IF NOT EXISTS `sport_plan_items`(
@@ -1076,7 +1076,7 @@ CREATE TABLE IF NOT EXISTS `sport_plan_items`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_sport_plan_items_id` (`sport_plan_items_id`)
-) ENGINE=InnoDB COMMENT='运动方案项目列表';
+    ) ENGINE=InnoDB COMMENT='运动方案项目列表';
 
 drop table if exists `sport_item`;
 CREATE TABLE IF NOT EXISTS `sport_item`(
@@ -1096,7 +1096,7 @@ CREATE TABLE IF NOT EXISTS `sport_item`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_sport_item_id` (`sport_item_id`)
-) ENGINE=InnoDB COMMENT='运动项目';
+    ) ENGINE=InnoDB COMMENT='运动项目';
 
 drop table if exists `sport_item_indicator`;
 CREATE TABLE IF NOT EXISTS `sport_item_indicator`(
@@ -1114,7 +1114,7 @@ CREATE TABLE IF NOT EXISTS `sport_item_indicator`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_sport_item_indicator_id` (`sport_item_indicator_id`)
-) ENGINE=InnoDB COMMENT='运动项目关联指标';
+    ) ENGINE=InnoDB COMMENT='运动项目关联指标';
 
 drop table if exists `treat_item`;
 CREATE TABLE IF NOT EXISTS `treat_item`(
@@ -1133,7 +1133,7 @@ CREATE TABLE IF NOT EXISTS `treat_item`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_treat_item_id` (`treat_item_id`)
-) ENGINE=InnoDB COMMENT='治疗项目';
+    ) ENGINE=InnoDB COMMENT='治疗项目';
 
 drop table if exists `treat_item_indicator`;
 CREATE TABLE IF NOT EXISTS `treat_item_indicator`(
@@ -1151,7 +1151,7 @@ CREATE TABLE IF NOT EXISTS `treat_item_indicator`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_treat_item_indicator_id` (`treat_item_indicator_id`)
-) ENGINE=InnoDB COMMENT='治疗项目关联指标';
+    ) ENGINE=InnoDB COMMENT='治疗项目关联指标';
 
 drop table if exists `question_category`;
 CREATE TABLE IF NOT EXISTS `question_category`(
@@ -1162,13 +1162,13 @@ CREATE TABLE IF NOT EXISTS `question_category`(
     `question_categ_name` varchar(64) DEFAULT NULL COMMENT '类别名',
     `question_categ_id_path` varchar(64) DEFAULT NULL COMMENT '类别ID路径',
     `question_categ_name_path` varchar(512) DEFAULT NULL COMMENT '类别name路径',
-    ``  DEFAULT NULL COMMENT '',
+    `question_categ_group` varchar(64) DEFAULT NULL COMMENT '类别组',
     `sequence` integer(2) DEFAULT NULL COMMENT '序列号',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_question_categ_pid` (`question_categ_pid`)
-) ENGINE=InnoDB COMMENT='问题类目';
+    ) ENGINE=InnoDB COMMENT='问题类目';
 
 drop table if exists `question_instance`;
 CREATE TABLE IF NOT EXISTS `question_instance`(
@@ -1196,7 +1196,7 @@ CREATE TABLE IF NOT EXISTS `question_instance`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_question_instance_id` (`question_instance_id`)
-) ENGINE=InnoDB COMMENT='问题实例';
+    ) ENGINE=InnoDB COMMENT='问题实例';
 
 drop table if exists `question_options`;
 CREATE TABLE IF NOT EXISTS `question_options`(
@@ -1210,7 +1210,7 @@ CREATE TABLE IF NOT EXISTS `question_options`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_q` (`q`)
-) ENGINE=InnoDB COMMENT='问题-选项';
+    ) ENGINE=InnoDB COMMENT='问题-选项';
 
 drop table if exists `question_answers`;
 CREATE TABLE IF NOT EXISTS `question_answers`(
@@ -1218,7 +1218,7 @@ CREATE TABLE IF NOT EXISTS `question_answers`(
     `q` varchar(64) DEFAULT NULL COMMENT '',
     `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `question_instance_id` varchar(64) DEFAULT NULL COMMENT '问题ID',
-    `q` varchar(64) DEFAULT NULL COMMENT '',
+    `question_options_id` varchar(64) DEFAULT NULL COMMENT '选项ID',
     `option_title` varchar(64) DEFAULT NULL COMMENT '选项标题',
     `option_value` varchar(64) DEFAULT NULL COMMENT '问题的答案',
     `right` tinyint(4) DEFAULT NULL COMMENT '是否是正确答案[0:错误，1:正确]',
@@ -1226,7 +1226,7 @@ CREATE TABLE IF NOT EXISTS `question_answers`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_q` (`q`)
-) ENGINE=InnoDB COMMENT='问题-答案';
+    ) ENGINE=InnoDB COMMENT='问题-答案';
 
 drop table if exists `question_score`;
 CREATE TABLE IF NOT EXISTS `question_score`(
@@ -1235,14 +1235,14 @@ CREATE TABLE IF NOT EXISTS `question_score`(
     `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `biz_id` varchar(64) DEFAULT NULL COMMENT '业务ID',
     `question_instance_id` varchar(64) DEFAULT NULL COMMENT '问题ID',
-    `q` varchar(64) DEFAULT NULL COMMENT '',
-    `q` varchar(64) DEFAULT NULL COMMENT '',
+    `question_options_id` varchar(64) DEFAULT NULL COMMENT '选项ID',
+    `question_answer_id` varchar(64) DEFAULT NULL COMMENT '答案的ID',
     `score` float(11,2) DEFAULT NULL COMMENT '分数',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_question_score_id` (`question_score_id`)
-) ENGINE=InnoDB COMMENT='问题-得分';
+    ) ENGINE=InnoDB COMMENT='问题-得分';
 
 drop table if exists `question_dimension`;
 CREATE TABLE IF NOT EXISTS `question_dimension`(
@@ -1256,7 +1256,7 @@ CREATE TABLE IF NOT EXISTS `question_dimension`(
     `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_question_dimension_id` (`question_dimension_id`)
-) ENGINE=InnoDB COMMENT='问题-维度';
+    ) ENGINE=InnoDB COMMENT='问题-维度';
 
 drop table if exists `question_section_category`;
 CREATE TABLE IF NOT EXISTS `question_section_category`(
@@ -1267,13 +1267,13 @@ CREATE TABLE IF NOT EXISTS `question_section_category`(
     `question_section_categ_name` varchar(64) DEFAULT NULL COMMENT '类别名',
     `question_section_categ_id_path` varchar(64) DEFAULT NULL COMMENT '类别ID路径',
     `question_section_categ_name_path` varchar(512) DEFAULT NULL COMMENT '类别name路径',
-    ``  DEFAULT NULL COMMENT '',
+    `question_categ_group` varchar(64) DEFAULT NULL COMMENT '类别组',
     `sequence` integer(2) DEFAULT NULL COMMENT '序列号',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_question_section_categ_pid` (`question_section_categ_pid`)
-) ENGINE=InnoDB COMMENT='问题集类目';
+    ) ENGINE=InnoDB COMMENT='问题集类目';
 
 drop table if exists `question_section`;
 CREATE TABLE IF NOT EXISTS `question_section`(
@@ -1299,7 +1299,7 @@ CREATE TABLE IF NOT EXISTS `question_section`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_question_section_id` (`question_section_id`)
-) ENGINE=InnoDB COMMENT='问题集[试卷]';
+    ) ENGINE=InnoDB COMMENT='问题集[试卷]';
 
 drop table if exists `question_section_item`;
 CREATE TABLE IF NOT EXISTS `question_section_item`(
@@ -1321,7 +1321,7 @@ CREATE TABLE IF NOT EXISTS `question_section_item`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_question_section_item_id` (`question_section_item_id`)
-) ENGINE=InnoDB COMMENT='问题集[试卷]-题目';
+    ) ENGINE=InnoDB COMMENT='问题集[试卷]-题目';
 
 drop table if exists `question_section_dimension`;
 CREATE TABLE IF NOT EXISTS `question_section_dimension`(
@@ -1339,7 +1339,7 @@ CREATE TABLE IF NOT EXISTS `question_section_dimension`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_question_section_dimension_id` (`question_section_dimension_id`)
-) ENGINE=InnoDB COMMENT='问题集[试卷]-维度';
+    ) ENGINE=InnoDB COMMENT='问题集[试卷]-维度';
 
 drop table if exists `question_section_result`;
 CREATE TABLE IF NOT EXISTS `question_section_result`(
@@ -1359,7 +1359,7 @@ CREATE TABLE IF NOT EXISTS `question_section_result`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_question_section_result_id` (`question_section_result_id`)
-) ENGINE=InnoDB COMMENT='问题集[试卷]-答题记录';
+    ) ENGINE=InnoDB COMMENT='问题集[试卷]-答题记录';
 
 drop table if exists `question_section_result_item`;
 CREATE TABLE IF NOT EXISTS `question_section_result_item`(
@@ -1379,7 +1379,7 @@ CREATE TABLE IF NOT EXISTS `question_section_result_item`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_question_section_result_item_id` (`question_section_result_item_id`)
-) ENGINE=InnoDB COMMENT='问题集[试卷]-答题记录Item';
+    ) ENGINE=InnoDB COMMENT='问题集[试卷]-答题记录Item';
 
 drop table if exists `materials`;
 CREATE TABLE IF NOT EXISTS `materials`(
@@ -1397,7 +1397,7 @@ CREATE TABLE IF NOT EXISTS `materials`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_materials_id` (`materials_id`)
-) ENGINE=InnoDB COMMENT='资料';
+    ) ENGINE=InnoDB COMMENT='资料';
 
 drop table if exists `materials_attachment`;
 CREATE TABLE IF NOT EXISTS `materials_attachment`(
@@ -1413,7 +1413,7 @@ CREATE TABLE IF NOT EXISTS `materials_attachment`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_materials_attachment_id` (`materials_attachment_id`)
-) ENGINE=InnoDB COMMENT='资料-附件';
+    ) ENGINE=InnoDB COMMENT='资料-附件';
 
 drop table if exists `indicator_category`;
 CREATE TABLE IF NOT EXISTS `indicator_category`(
@@ -1427,7 +1427,7 @@ CREATE TABLE IF NOT EXISTS `indicator_category`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_category_id` (`indicator_category_id`)
-) ENGINE=InnoDB COMMENT='指标类别';
+    ) ENGINE=InnoDB COMMENT='指标类别';
 
 drop table if exists `indicator_instance`;
 CREATE TABLE IF NOT EXISTS `indicator_instance`(
@@ -1447,7 +1447,7 @@ CREATE TABLE IF NOT EXISTS `indicator_instance`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_instance_id` (`indicator_instance_id`)
-) ENGINE=InnoDB COMMENT='指标';
+    ) ENGINE=InnoDB COMMENT='指标';
 
 drop table if exists `indicator_category_ref`;
 CREATE TABLE IF NOT EXISTS `indicator_category_ref`(
@@ -1461,7 +1461,7 @@ CREATE TABLE IF NOT EXISTS `indicator_category_ref`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_category_ref_id` (`indicator_category_ref_id`)
-) ENGINE=InnoDB COMMENT='指标分类与指标关联关系';
+    ) ENGINE=InnoDB COMMENT='指标分类与指标关联关系';
 
 drop table if exists `indicator_func`;
 CREATE TABLE IF NOT EXISTS `indicator_func`(
@@ -1477,7 +1477,7 @@ CREATE TABLE IF NOT EXISTS `indicator_func`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_func` (`indicator_func`)
-) ENGINE=InnoDB COMMENT='指标功能';
+    ) ENGINE=InnoDB COMMENT='指标功能';
 
 drop table if exists `indicator_ref`;
 CREATE TABLE IF NOT EXISTS `indicator_ref`(
@@ -1490,7 +1490,7 @@ CREATE TABLE IF NOT EXISTS `indicator_ref`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_ref_id` (`indicator_ref_id`)
-) ENGINE=InnoDB COMMENT='指标-引用';
+    ) ENGINE=InnoDB COMMENT='指标-引用';
 
 drop table if exists `indicator_var`;
 CREATE TABLE IF NOT EXISTS `indicator_var`(
@@ -1508,7 +1508,7 @@ CREATE TABLE IF NOT EXISTS `indicator_var`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_var_id` (`indicator_var_id`)
-) ENGINE=InnoDB COMMENT='指标变量';
+    ) ENGINE=InnoDB COMMENT='指标变量';
 
 drop table if exists `indicator_rule`;
 CREATE TABLE IF NOT EXISTS `indicator_rule`(
@@ -1525,7 +1525,7 @@ CREATE TABLE IF NOT EXISTS `indicator_rule`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_rule_id` (`indicator_rule_id`)
-) ENGINE=InnoDB COMMENT='指标|变量规则[校验]';
+    ) ENGINE=InnoDB COMMENT='指标|变量规则[校验]';
 
 drop table if exists `indicator_val`;
 CREATE TABLE IF NOT EXISTS `indicator_val`(
@@ -1543,7 +1543,7 @@ CREATE TABLE IF NOT EXISTS `indicator_val`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_val_id` (`indicator_val_id`)
-) ENGINE=InnoDB COMMENT='指标值';
+    ) ENGINE=InnoDB COMMENT='指标值';
 
 drop table if exists `indicator_principal_ref`;
 CREATE TABLE IF NOT EXISTS `indicator_principal_ref`(
@@ -1556,7 +1556,7 @@ CREATE TABLE IF NOT EXISTS `indicator_principal_ref`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_principal_ref_id` (`indicator_principal_ref_id`)
-) ENGINE=InnoDB COMMENT='指标主体关联关系';
+    ) ENGINE=InnoDB COMMENT='指标主体关联关系';
 
 drop table if exists `indicator_view_base_info`;
 CREATE TABLE IF NOT EXISTS `indicator_view_base_info`(
@@ -1569,7 +1569,7 @@ CREATE TABLE IF NOT EXISTS `indicator_view_base_info`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_view_base_info_id` (`indicator_view_base_info_id`)
-) ENGINE=InnoDB COMMENT='查看指标基本信息类';
+    ) ENGINE=InnoDB COMMENT='查看指标基本信息类';
 
 drop table if exists `indicator_view_base_info_descr`;
 CREATE TABLE IF NOT EXISTS `indicator_view_base_info_descr`(
@@ -1582,7 +1582,7 @@ CREATE TABLE IF NOT EXISTS `indicator_view_base_info_descr`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_view_base_info_desc_id` (`indicator_view_base_info_desc_id`)
-) ENGINE=InnoDB COMMENT='指标基本信息描述表';
+    ) ENGINE=InnoDB COMMENT='指标基本信息描述表';
 
 drop table if exists `indicator_view_base_info_descr_ref`;
 CREATE TABLE IF NOT EXISTS `indicator_view_base_info_descr_ref`(
@@ -1596,7 +1596,7 @@ CREATE TABLE IF NOT EXISTS `indicator_view_base_info_descr_ref`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_view_base_info_desc_ref_id` (`indicator_view_base_info_desc_ref_id`)
-) ENGINE=InnoDB COMMENT='指标';
+    ) ENGINE=InnoDB COMMENT='指标';
 
 drop table if exists `indicator_view_base_info_monitor`;
 CREATE TABLE IF NOT EXISTS `indicator_view_base_info_monitor`(
@@ -1609,7 +1609,7 @@ CREATE TABLE IF NOT EXISTS `indicator_view_base_info_monitor`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_view_base_info_monitor_id` (`indicator_view_base_info_monitor_id`)
-) ENGINE=InnoDB COMMENT='指标基本信息监测表';
+    ) ENGINE=InnoDB COMMENT='指标基本信息监测表';
 
 drop table if exists `indicator_view_base_info_monitor_content`;
 CREATE TABLE IF NOT EXISTS `indicator_view_base_info_monitor_content`(
@@ -1622,7 +1622,7 @@ CREATE TABLE IF NOT EXISTS `indicator_view_base_info_monitor_content`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_view_base_info_monitor_content_id` (`indicator_view_base_info_monitor_content_id`)
-) ENGINE=InnoDB COMMENT='指标基本信息监测内容表';
+    ) ENGINE=InnoDB COMMENT='指标基本信息监测内容表';
 
 drop table if exists `indicator_view_base_info_monitor_content_ref`;
 CREATE TABLE IF NOT EXISTS `indicator_view_base_info_monitor_content_ref`(
@@ -1635,7 +1635,7 @@ CREATE TABLE IF NOT EXISTS `indicator_view_base_info_monitor_content_ref`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_view_base_info_monitor_content_ref_id` (`indicator_view_base_info_monitor_content_ref_id`)
-) ENGINE=InnoDB COMMENT='指标基本信息监测内容表与指标关联关系';
+    ) ENGINE=InnoDB COMMENT='指标基本信息监测内容表与指标关联关系';
 
 drop table if exists `indicator_view_base_info_single`;
 CREATE TABLE IF NOT EXISTS `indicator_view_base_info_single`(
@@ -1648,7 +1648,7 @@ CREATE TABLE IF NOT EXISTS `indicator_view_base_info_single`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_view_base_info_single_id` (`indicator_view_base_info_single_id`)
-) ENGINE=InnoDB COMMENT='指标基本信息与单一指标关系表';
+    ) ENGINE=InnoDB COMMENT='指标基本信息与单一指标关系表';
 
 drop table if exists `indicator_view_monitor_followup`;
 CREATE TABLE IF NOT EXISTS `indicator_view_monitor_followup`(
@@ -1663,7 +1663,7 @@ CREATE TABLE IF NOT EXISTS `indicator_view_monitor_followup`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_view_monitor_followup_id` (`indicator_view_monitor_followup_id`)
-) ENGINE=InnoDB COMMENT='查看指标监测随访类';
+    ) ENGINE=InnoDB COMMENT='查看指标监测随访类';
 
 drop table if exists `indicator_view_monitor_followup_followup_content`;
 CREATE TABLE IF NOT EXISTS `indicator_view_monitor_followup_followup_content`(
@@ -1677,7 +1677,7 @@ CREATE TABLE IF NOT EXISTS `indicator_view_monitor_followup_followup_content`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_view_monitor_followup_followup_content_id` (`indicator_view_monitor_followup_followup_content_id`)
-) ENGINE=InnoDB COMMENT='查看指标监测随访内容';
+    ) ENGINE=InnoDB COMMENT='查看指标监测随访内容';
 
 drop table if exists `indicator_view_monitor_followup_content_ref`;
 CREATE TABLE IF NOT EXISTS `indicator_view_monitor_followup_content_ref`(
@@ -1691,7 +1691,7 @@ CREATE TABLE IF NOT EXISTS `indicator_view_monitor_followup_content_ref`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_view_monitor_followup_content_ref_id` (`indicator_view_monitor_followup_content_ref_id`)
-) ENGINE=InnoDB COMMENT='指标监测随访随访内容表与指标关联关系';
+    ) ENGINE=InnoDB COMMENT='指标监测随访随访内容表与指标关联关系';
 
 drop table if exists `indicator_view_physical_exam`;
 CREATE TABLE IF NOT EXISTS `indicator_view_physical_exam`(
@@ -1708,7 +1708,7 @@ CREATE TABLE IF NOT EXISTS `indicator_view_physical_exam`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_view_physical_exam_id` (`indicator_view_physical_exam_id`)
-) ENGINE=InnoDB COMMENT='查看指标体格检查类';
+    ) ENGINE=InnoDB COMMENT='查看指标体格检查类';
 
 drop table if exists `indicator_view_physical_exam_ref`;
 CREATE TABLE IF NOT EXISTS `indicator_view_physical_exam_ref`(
@@ -1721,7 +1721,7 @@ CREATE TABLE IF NOT EXISTS `indicator_view_physical_exam_ref`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_view_physical_exam_ref_id` (`indicator_view_physical_exam_ref_id`)
-) ENGINE=InnoDB COMMENT='查看指标体格检查关联指标';
+    ) ENGINE=InnoDB COMMENT='查看指标体格检查关联指标';
 
 drop table if exists `indicator_view_support_exam`;
 CREATE TABLE IF NOT EXISTS `indicator_view_support_exam`(
@@ -1738,7 +1738,7 @@ CREATE TABLE IF NOT EXISTS `indicator_view_support_exam`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_view_support_exam_id` (`indicator_view_support_exam_id`)
-) ENGINE=InnoDB COMMENT='查看指标辅助检查类';
+    ) ENGINE=InnoDB COMMENT='查看指标辅助检查类';
 
 drop table if exists `indicator_view_support_exam_ref`;
 CREATE TABLE IF NOT EXISTS `indicator_view_support_exam_ref`(
@@ -1751,7 +1751,7 @@ CREATE TABLE IF NOT EXISTS `indicator_view_support_exam_ref`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_view_support_exam_ref_id` (`indicator_view_support_exam_ref_id`)
-) ENGINE=InnoDB COMMENT='查看指标辅助检查关联指标';
+    ) ENGINE=InnoDB COMMENT='查看指标辅助检查关联指标';
 
 drop table if exists `indicator_judge_risk_factor`;
 CREATE TABLE IF NOT EXISTS `indicator_judge_risk_factor`(
@@ -1769,7 +1769,7 @@ CREATE TABLE IF NOT EXISTS `indicator_judge_risk_factor`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_judge_risk_factor_id` (`indicator_judge_risk_factor_id`)
-) ENGINE=InnoDB COMMENT='判断指标危险因素';
+    ) ENGINE=InnoDB COMMENT='判断指标危险因素';
 
 drop table if exists `indicator_judge_health_problem`;
 CREATE TABLE IF NOT EXISTS `indicator_judge_health_problem`(
@@ -1787,7 +1787,7 @@ CREATE TABLE IF NOT EXISTS `indicator_judge_health_problem`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_judge_health_problem_id` (`indicator_judge_health_problem_id`)
-) ENGINE=InnoDB COMMENT='判断指标健康问题';
+    ) ENGINE=InnoDB COMMENT='判断指标健康问题';
 
 drop table if exists `indicator_judge_health_guidance`;
 CREATE TABLE IF NOT EXISTS `indicator_judge_health_guidance`(
@@ -1805,7 +1805,7 @@ CREATE TABLE IF NOT EXISTS `indicator_judge_health_guidance`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_judge_health_guidance_id` (`indicator_judge_health_guidance_id`)
-) ENGINE=InnoDB COMMENT='判断指标健康指导';
+    ) ENGINE=InnoDB COMMENT='判断指标健康指导';
 
 drop table if exists `indicator_judge_disease_problem`;
 CREATE TABLE IF NOT EXISTS `indicator_judge_disease_problem`(
@@ -1823,7 +1823,7 @@ CREATE TABLE IF NOT EXISTS `indicator_judge_disease_problem`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_judge_disease_problem_id` (`indicator_judge_disease_problem_id`)
-) ENGINE=InnoDB COMMENT='判断指标疾病问题';
+    ) ENGINE=InnoDB COMMENT='判断指标疾病问题';
 
 drop table if exists `indicator_judge_health_management_goal`;
 CREATE TABLE IF NOT EXISTS `indicator_judge_health_management_goal`(
@@ -1837,7 +1837,7 @@ CREATE TABLE IF NOT EXISTS `indicator_judge_health_management_goal`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_judge_health_management_goal_id` (`indicator_judge_health_management_goal_id`)
-) ENGINE=InnoDB COMMENT='判断指标健管目标';
+    ) ENGINE=InnoDB COMMENT='判断指标健管目标';
 
 drop table if exists `indicator_judge_health_management_goal_ref`;
 CREATE TABLE IF NOT EXISTS `indicator_judge_health_management_goal_ref`(
@@ -1851,7 +1851,7 @@ CREATE TABLE IF NOT EXISTS `indicator_judge_health_management_goal_ref`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_judge_health_management_goal_ref_id` (`indicator_judge_health_management_goal_ref_id`)
-) ENGINE=InnoDB COMMENT='判断指标健管目标关联指标';
+    ) ENGINE=InnoDB COMMENT='判断指标健管目标关联指标';
 
 drop table if exists `risk_category`;
 CREATE TABLE IF NOT EXISTS `risk_category`(
@@ -1864,7 +1864,7 @@ CREATE TABLE IF NOT EXISTS `risk_category`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_risk_category_id` (`risk_category_id`)
-) ENGINE=InnoDB COMMENT='风险类别';
+    ) ENGINE=InnoDB COMMENT='风险类别';
 
 drop table if exists `risk_model`;
 CREATE TABLE IF NOT EXISTS `risk_model`(
@@ -1878,7 +1878,7 @@ CREATE TABLE IF NOT EXISTS `risk_model`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_risk_model_id` (`risk_model_id`)
-) ENGINE=InnoDB COMMENT='风险模型';
+    ) ENGINE=InnoDB COMMENT='风险模型';
 
 drop table if exists `risk_death_model`;
 CREATE TABLE IF NOT EXISTS `risk_death_model`(
@@ -1892,7 +1892,7 @@ CREATE TABLE IF NOT EXISTS `risk_death_model`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_risk_death_model_id` (`risk_death_model_id`)
-) ENGINE=InnoDB COMMENT='死亡模型';
+    ) ENGINE=InnoDB COMMENT='死亡模型';
 
 drop table if exists `risk_danger_point`;
 CREATE TABLE IF NOT EXISTS `risk_danger_point`(
@@ -1906,7 +1906,7 @@ CREATE TABLE IF NOT EXISTS `risk_danger_point`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_risk_danger_point_id` (`risk_danger_point_id`)
-) ENGINE=InnoDB COMMENT='危险分数';
+    ) ENGINE=InnoDB COMMENT='危险分数';
 
 drop table if exists `evaluate_questionnaire`;
 CREATE TABLE IF NOT EXISTS `evaluate_questionnaire`(
@@ -1918,7 +1918,7 @@ CREATE TABLE IF NOT EXISTS `evaluate_questionnaire`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_evaluate_questionnaire_id` (`evaluate_questionnaire_id`)
-) ENGINE=InnoDB COMMENT='评估问卷';
+    ) ENGINE=InnoDB COMMENT='评估问卷';
 
 drop table if exists `evaluate_dimension_expression`;
 CREATE TABLE IF NOT EXISTS `evaluate_dimension_expression`(
@@ -1932,7 +1932,7 @@ CREATE TABLE IF NOT EXISTS `evaluate_dimension_expression`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_evaluate_dimension_expression_id` (`evaluate_dimension_expression_id`)
-) ENGINE=InnoDB COMMENT='评估维度公式';
+    ) ENGINE=InnoDB COMMENT='评估维度公式';
 
 drop table if exists `evaluate_report_management`;
 CREATE TABLE IF NOT EXISTS `evaluate_report_management`(
@@ -1950,6 +1950,6 @@ CREATE TABLE IF NOT EXISTS `evaluate_report_management`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_evaluate_report_management_id` (`evaluate_report_management_id`)
-) ENGINE=InnoDB COMMENT='评估报告管理';
+    ) ENGINE=InnoDB COMMENT='评估报告管理';
 
 
