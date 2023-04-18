@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 * @date 2023年4月17日 下午8:00:11
 */
 @Service
-public class CaseQuestionnaireBiz{
+public class TenantCaseQuestionnaireBiz {
     /**
     * @param
     * @return

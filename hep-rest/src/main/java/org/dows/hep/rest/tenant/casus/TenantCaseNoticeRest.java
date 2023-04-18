@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.tenant.casus.request.CaseNoticeRequest;
 import org.dows.hep.api.tenant.casus.response.CaseNoticeResponse;
-import org.dows.hep.biz.tenant.casus.CaseNoticeBiz;
+import org.dows.hep.biz.tenant.casus.TenantCaseNoticeBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,8 +19,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @Tag(name = "案例公告", description = "案例公告")
-public class CaseNoticeRest {
-    private final CaseNoticeBiz caseNoticeBiz;
+public class TenantCaseNoticeRest {
+    private final TenantCaseNoticeBiz tenantCaseNoticeBiz;
 
     /**
     * 新增和更新案例公告
@@ -30,7 +30,7 @@ public class CaseNoticeRest {
     @Operation(summary = "新增和更新案例公告")
     @PostMapping("v1/tenantCasus/caseNotice/saveOrUpdCaseNotice")
     public Boolean saveOrUpdCaseNotice(@RequestBody @Validated CaseNoticeRequest caseNotice ) {
-        return caseNoticeBiz.saveOrUpdCaseNotice(caseNotice);
+        return tenantCaseNoticeBiz.saveOrUpdCaseNotice(caseNotice);
     }
 
     /**
@@ -41,7 +41,7 @@ public class CaseNoticeRest {
     @Operation(summary = "列出案例公告")
     @GetMapping("v1/tenantCasus/caseNotice/listCaseNotice")
     public List<CaseNoticeResponse> listCaseNotice(@Validated String caseInstanceId) {
-        return caseNoticeBiz.listCaseNotice(caseInstanceId);
+        return tenantCaseNoticeBiz.listCaseNotice(caseInstanceId);
     }
 
     /**
@@ -52,7 +52,7 @@ public class CaseNoticeRest {
     @Operation(summary = "删除案例公告")
     @DeleteMapping("v1/tenantCasus/caseNotice/delCaseNotice")
     public Boolean delCaseNotice(@Validated String caseNoticeId ) {
-        return caseNoticeBiz.delCaseNotice(caseNoticeId);
+        return tenantCaseNoticeBiz.delCaseNotice(caseNoticeId);
     }
 
 

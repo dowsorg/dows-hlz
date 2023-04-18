@@ -5,17 +5,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
-* @description 
-*
-* @author 
-* @date 
-*/
+ * @author
+ * @description
+ * @date
+ */
 @Data
 @NoArgsConstructor
 @Schema(name = "MultipartFile 对象", title = "上传文件")
-public class MultipartFileRequest{
+public class MultipartFileRequest {
     @Schema(title = "notnull")
-    private  1;
+    private String aaa;
 
 
 }

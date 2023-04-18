@@ -16,7 +16,7 @@ import java.util.List;
 * @date 2023年4月17日 下午8:00:11
 */
 @Service
-public class CaseSchemeBiz{
+public class TenantCaseSchemeBiz {
     /**
     * @param
     * @return

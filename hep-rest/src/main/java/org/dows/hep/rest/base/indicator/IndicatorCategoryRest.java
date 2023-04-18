@@ -78,12 +78,12 @@ public class IndicatorCategoryRest {
         return indicatorCategoryBiz.listIndicatorCategory(appId,pid,indicatorCategoryId,categoryCode,categoryName);
     }
 
-    /**
-    * 分页筛选指标类别
-    * @param
-    * @return
-    */
-    @Operation(summary = "分页筛选指标类别")
+//    /**
+//    * 分页筛选指标类别
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "分页筛选指标类别")
 
     /**
     * 一键同步（非常复杂）

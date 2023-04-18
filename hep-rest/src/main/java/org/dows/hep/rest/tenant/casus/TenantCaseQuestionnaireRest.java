@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireRequest;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireSearchRequest;
 import org.dows.hep.api.tenant.casus.response.CaseQuestionnaireResponse;
-import org.dows.hep.biz.tenant.casus.CaseQuestionnaireBiz;
+import org.dows.hep.biz.tenant.casus.TenantCaseQuestionnaireBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RestController
 @Tag(name = "案例问卷", description = "案例问卷")
-public class CaseQuestionnaireRest {
-    private final CaseQuestionnaireBiz caseQuestionnaireBiz;
+public class TenantCaseQuestionnaireRest {
+    private final TenantCaseQuestionnaireBiz tenantCaseQuestionnaireBiz;
 
     /**
     * 新增和更新案例问卷
@@ -29,7 +29,7 @@ public class CaseQuestionnaireRest {
     @Operation(summary = "新增和更新案例问卷")
     @PostMapping("v1/tenantCasus/caseQuestionnaire/saveOrUpdCaseQuestionnaire")
     public Boolean saveOrUpdCaseQuestionnaire(@RequestBody @Validated CaseQuestionnaireRequest caseQuestionnaire ) {
-        return caseQuestionnaireBiz.saveOrUpdCaseQuestionnaire(caseQuestionnaire);
+        return tenantCaseQuestionnaireBiz.saveOrUpdCaseQuestionnaire(caseQuestionnaire);
     }
 
     /**
@@ -40,7 +40,7 @@ public class CaseQuestionnaireRest {
     @Operation(summary = "分页案例问卷")
     @PostMapping("v1/tenantCasus/caseQuestionnaire/pageCaseQuestionnaire")
     public CaseQuestionnaireResponse pageCaseQuestionnaire(@RequestBody @Validated CaseQuestionnaireSearchRequest caseQuestionnaireSearch ) {
-        return caseQuestionnaireBiz.pageCaseQuestionnaire(caseQuestionnaireSearch);
+        return tenantCaseQuestionnaireBiz.pageCaseQuestionnaire(caseQuestionnaireSearch);
     }
 
     /**
@@ -51,7 +51,7 @@ public class CaseQuestionnaireRest {
     @Operation(summary = "获取案例问卷")
     @GetMapping("v1/tenantCasus/caseQuestionnaire/getCaseQuestionnaire")
     public void getCaseQuestionnaire(@Validated String caseQuestionnaireId) {
-        caseQuestionnaireBiz.getCaseQuestionnaire(caseQuestionnaireId);
+        tenantCaseQuestionnaireBiz.getCaseQuestionnaire(caseQuestionnaireId);
     }
 
     /**
@@ -62,7 +62,7 @@ public class CaseQuestionnaireRest {
     @Operation(summary = "删除案例问卷")
     @DeleteMapping("v1/tenantCasus/caseQuestionnaire/delCaseQuestionnaire")
     public Boolean delCaseQuestionnaire(@Validated String caseQuestionnaireId ) {
-        return caseQuestionnaireBiz.delCaseQuestionnaire(caseQuestionnaireId);
+        return tenantCaseQuestionnaireBiz.delCaseQuestionnaire(caseQuestionnaireId);
     }
 
 
