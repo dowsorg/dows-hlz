@@ -90,6 +90,12 @@ public class OperateIndictarEntity implements CrudEntity {
     @Schema(title = "期数")
     private Integer periods;
 
+    @JsonIgnore
+    @TableLogic
+    @TableField(fill = FieldFill.INSERT)
+    @Schema(title = "逻辑删除")
+    private Boolean deleted;
+
     @TableField(fill = FieldFill.INSERT)
     @Schema(title = "时间戳")
     private Date dt;
