@@ -1,0 +1,17 @@
+package org.dows.hep.mapper;
+
+import org.apache.ibatis.annotations.Mapper;
+import org.dows.framework.crud.mybatis.MybatisCrudMapper;
+import org.dows.hep.entity.IndicatorViewPhysicalExamRefEntity;
+
+/**
+ * 查看指标体格检查关联指标(IndicatorViewPhysicalExamRef)表数据库访问层
+ *
+ * @author lait
+ * @since 2023-04-18 13:58:22
+ */
+@Mapper
+public interface IndicatorViewPhysicalExamRefMapper extends MybatisCrudMapper<IndicatorViewPhysicalExamRefEntity> {
+
+}
+
