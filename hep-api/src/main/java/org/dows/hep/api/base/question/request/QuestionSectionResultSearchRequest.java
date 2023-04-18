@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "QuestionSectionResultSearch 对象", title = "关键字聚合")
-public class QuestionSectionResultSearchRequest {
+public class QuestionSectionResultSearchRequest{
     @Schema(title = "页数")
     private Integer pageNo;
 

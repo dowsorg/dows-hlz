@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "DelFoodMaterial 对象", title = "删除食材")
-public class DelFoodMaterialRequest {
+public class DelFoodMaterialRequest{
     @Schema(title = "分布式id列表")
     private String ids;
 

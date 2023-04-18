@@ -7,14 +7,15 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "CreateIndicatorViewPhysicalExam 对象", title = "创建查看指标体格检查类")
-public class CreateIndicatorViewPhysicalExamRequest {
+public class CreateIndicatorViewPhysicalExamRequest{
     @Schema(title = "应用ID")
     private String appId;
 
@@ -34,7 +35,7 @@ public class CreateIndicatorViewPhysicalExamRequest {
     private Integer status;
 
     @Schema(title = "查看指标体格检查关联指标列表")
-    private String ListCreateIndicatorViewPhysicalExamRef;
+    private String listCreateIndicatorViewPhysicalExamRef;
 
 
 }

@@ -1,22 +1,17 @@
 package org.dows.hep.biz.base.intervene;
 
-import org.dows.framework.api.Response;
-import org.dows.hep.api.base.intervene.request.FindFoodRequest;
-import org.dows.hep.api.base.intervene.response.FoodMaterialResponse;
-import org.dows.hep.api.base.intervene.response.FoodMaterialInfoResponse;
-import org.dows.hep.api.base.intervene.request.SaveFoodMaterialRequest;
 import org.dows.hep.api.base.intervene.request.DelFoodMaterialRequest;
+import org.dows.hep.api.base.intervene.request.FindFoodRequest;
+import org.dows.hep.api.base.intervene.request.SaveFoodMaterialRequest;
+import org.dows.hep.api.base.intervene.response.FoodMaterialInfoResponse;
+import org.dows.hep.api.base.intervene.response.FoodMaterialResponse;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
 /**
 * @description project descr:干预:食材
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:53
+* @date 2023年4月18日 上午10:45:07
 */
 @Service
 public class FoodMaterialBiz{
@@ -28,7 +23,7 @@ public class FoodMaterialBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public FoodMaterialResponse pageFoodMaterial(FindFoodRequest findFood ) {
         return new FoodMaterialResponse();
@@ -41,7 +36,7 @@ public class FoodMaterialBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public FoodMaterialInfoResponse getFoodMaterial(String foodMaterialId ) {
         return new FoodMaterialInfoResponse();
@@ -54,7 +49,7 @@ public class FoodMaterialBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public Boolean saveFoodMaterial(SaveFoodMaterialRequest saveFoodMaterial ) {
         return Boolean.FALSE;
@@ -67,7 +62,7 @@ public class FoodMaterialBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public Boolean delFoodMaterial(DelFoodMaterialRequest delFoodMaterial ) {
         return Boolean.FALSE;

@@ -1,19 +1,17 @@
 package org.dows.hep.biz.base.question;
 
-import org.dows.framework.api.Response;
 import org.dows.hep.api.base.question.request.QuestionDimensionRequest;
 import org.dows.hep.api.base.question.response.QuestionDimensionResponse;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.List;
+
 /**
 * @description project descr:问题:问题-维度
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:53
+* @date 2023年4月18日 上午10:45:07
 */
 @Service
 public class QuestionDimensionBiz{
@@ -25,7 +23,7 @@ public class QuestionDimensionBiz{
     * @工时: 4H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public Boolean relateQuestionDimension(QuestionDimensionRequest questionDimension ) {
         return Boolean.FALSE;
@@ -38,7 +36,7 @@ public class QuestionDimensionBiz{
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public List<QuestionDimensionResponse> listQuestionDimension(String questionInstanceId ) {
         return new ArrayList<QuestionDimensionResponse>();

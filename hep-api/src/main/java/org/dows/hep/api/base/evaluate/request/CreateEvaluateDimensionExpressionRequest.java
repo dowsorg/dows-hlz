@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "CreateEvaluateDimensionExpression 对象", title = "创建评估维度对象")
-public class CreateEvaluateDimensionExpressionRequest {
+public class CreateEvaluateDimensionExpressionRequest{
     @Schema(title = "应用ID")
     private String appId;
 

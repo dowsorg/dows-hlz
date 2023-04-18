@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "CreateIndicatorPrincipalRef 对象", title = "创建指标主体关联关系")
-public class CreateIndicatorPrincipalRefRequest {
+public class CreateIndicatorPrincipalRefRequest{
     @Schema(title = "应用ID")
     private String appId;
 

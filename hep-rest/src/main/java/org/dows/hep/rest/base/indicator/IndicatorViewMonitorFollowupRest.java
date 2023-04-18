@@ -2,7 +2,6 @@ package org.dows.hep.rest.base.indicator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.framework.api.Response;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorViewMonitorFollowupRequest;
 import org.dows.hep.api.base.indicator.request.IndicatorViewMonitorFollowupRequest;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorViewMonitorFollowupRequest;
@@ -11,15 +10,13 @@ import org.dows.hep.biz.base.indicator.IndicatorViewMonitorFollowupBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 /**
 * @description project descr:指标:查看指标监测随访类
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:52
+* @date 2023年4月18日 上午10:45:07
 */
 @RequiredArgsConstructor
 @RestController
@@ -47,6 +44,17 @@ public class IndicatorViewMonitorFollowupRest {
     @DeleteMapping("v1/baseIndicator/indicatorViewMonitorFollowup/deleteIndicatorViewMonitorFollowup")
     public void deleteIndicatorViewMonitorFollowup(@Validated String indicatorViewMonitorFollowupId ) {
         indicatorViewMonitorFollowupBiz.deleteIndicatorViewMonitorFollowup(indicatorViewMonitorFollowupId);
+    }
+
+    /**
+    * 批量删除
+    * @param
+    * @return
+    */
+    @Operation(summary = "批量删除")
+    @DeleteMapping("v1/baseIndicator/indicatorViewMonitorFollowup/batchDelete")
+    public void batchDelete(@Validated String string ) {
+        indicatorViewMonitorFollowupBiz.batchDelete(string);
     }
 
     /**
@@ -83,14 +91,25 @@ public class IndicatorViewMonitorFollowupRest {
     }
 
     /**
-    * 分页获取查看指标监测随访类
+    * 筛选查看指标监测随访类
     * @param
     * @return
     */
-    @Operation(summary = "分页获取查看指标监测随访类")
+    @Operation(summary = "筛选查看指标监测随访类")
+    @GetMapping("v1/baseIndicator/indicatorViewMonitorFollowup/listIndicatorViewMonitorFollowup")
+    public List<IndicatorViewMonitorFollowupResponse> listIndicatorViewMonitorFollowup(@Validated String appId, @Validated String indicatorCategoryId, @Validated String name, @Validated Integer type, @Validated Integer status) {
+        return indicatorViewMonitorFollowupBiz.listIndicatorViewMonitorFollowup(appId,indicatorCategoryId,name,type,status);
+    }
+
+    /**
+    * 分页筛选查看指标监测随访类
+    * @param
+    * @return
+    */
+    @Operation(summary = "分页筛选查看指标监测随访类")
     @GetMapping("v1/baseIndicator/indicatorViewMonitorFollowup/pageIndicatorViewMonitorFollowup")
-    public void pageIndicatorViewMonitorFollowup(@Validated String todo) {
-        indicatorViewMonitorFollowupBiz.pageIndicatorViewMonitorFollowup(todo);
+    public String pageIndicatorViewMonitorFollowup(@Validated Integer pageNo, @Validated Integer pageSize, @Validated String appId, @Validated String indicatorCategoryId, @Validated String name, @Validated Integer type, @Validated Integer status) {
+        return indicatorViewMonitorFollowupBiz.pageIndicatorViewMonitorFollowup(pageNo,pageSize,appId,indicatorCategoryId,name,type,status);
     }
 
 

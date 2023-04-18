@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "PersonInstance 对象", title = "人物实例")
-public class PersonInstanceResponse {
+public class PersonInstanceResponse{
     @Schema(title = "姓名")
     private String name;
 

@@ -1,27 +1,19 @@
 package org.dows.hep.biz.base.intervene;
 
-import org.dows.framework.api.Response;
-import org.dows.hep.api.base.intervene.request.FindInterveneCategRequest;
-import org.dows.hep.api.base.intervene.response.InterveneCategResponse;
-import org.dows.hep.api.base.intervene.request.SaveInterveneCategRequest;
-import org.dows.hep.api.base.intervene.request.DelInterveneCategRequest;
-import org.dows.hep.api.base.intervene.request.FindEventRequest;
-import org.dows.hep.api.base.intervene.response.EventResponse;
+import org.dows.hep.api.base.intervene.request.*;
 import org.dows.hep.api.base.intervene.response.EventInfoResponse;
-import org.dows.hep.api.base.intervene.request.SaveEventRequest;
-import org.dows.hep.api.base.intervene.request.DelEventRequest;
-import org.dows.hep.api.base.intervene.request.SetEventStateRequest;
+import org.dows.hep.api.base.intervene.response.EventResponse;
+import org.dows.hep.api.base.intervene.response.InterveneCategResponse;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.List;
+
 /**
 * @description project descr:干预:数据库事件
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:53
+* @date 2023年4月18日 上午10:45:07
 */
 @Service
 public class EventBiz{
@@ -33,7 +25,7 @@ public class EventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public List<InterveneCategResponse> listEventCateg(FindInterveneCategRequest findInterveneCateg ) {
         return new ArrayList<InterveneCategResponse>();
@@ -46,7 +38,7 @@ public class EventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public Boolean saveEventCateg(SaveInterveneCategRequest saveInterveneCateg ) {
         return Boolean.FALSE;
@@ -59,7 +51,7 @@ public class EventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public Boolean delEventCateg(DelInterveneCategRequest delInterveneCateg ) {
         return Boolean.FALSE;
@@ -72,7 +64,7 @@ public class EventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public EventResponse pageEvent(FindEventRequest findEvent ) {
         return new EventResponse();
@@ -85,7 +77,7 @@ public class EventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public EventInfoResponse getEvent(String eventId ) {
         return new EventInfoResponse();
@@ -98,7 +90,7 @@ public class EventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public Boolean saveEvent(SaveEventRequest saveEvent ) {
         return Boolean.FALSE;
@@ -111,7 +103,7 @@ public class EventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public Boolean delEvent(DelEventRequest delEvent ) {
         return Boolean.FALSE;
@@ -124,7 +116,7 @@ public class EventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public Boolean setEventState(SetEventStateRequest setEventState ) {
         return Boolean.FALSE;

@@ -7,14 +7,15 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "CreateIndicatorJudgeRiskFactor 对象", title = "创建危险因素")
-public class CreateIndicatorJudgeRiskFactorRequest {
+public class CreateIndicatorJudgeRiskFactorRequest{
     @Schema(title = "应用ID")
     private String appId;
 

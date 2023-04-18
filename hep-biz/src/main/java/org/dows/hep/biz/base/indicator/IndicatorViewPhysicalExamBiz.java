@@ -1,21 +1,20 @@
 package org.dows.hep.biz.base.indicator;
 
-import org.dows.framework.api.Response;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorViewPhysicalExamRequest;
+import org.dows.hep.api.base.indicator.request.DecimalRequest;
 import org.dows.hep.api.base.indicator.request.IndicatorViewPhysicalExamRequest;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorViewPhysicalExamRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorViewPhysicalExamResponse;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.List;
+
 /**
 * @description project descr:指标:查看指标体格检查类
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:53
+* @date 2023年4月18日 上午10:45:07
 */
 @Service
 public class IndicatorViewPhysicalExamBiz{
@@ -27,7 +26,7 @@ public class IndicatorViewPhysicalExamBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public void createIndicatorViewPhysicalExam(CreateIndicatorViewPhysicalExamRequest createIndicatorViewPhysicalExam ) {
         
@@ -40,7 +39,7 @@ public class IndicatorViewPhysicalExamBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public void deleteIndicatorViewPhysicalExam(String indicatorViewPhysicalExamId ) {
         
@@ -48,12 +47,25 @@ public class IndicatorViewPhysicalExamBiz{
     /**
     * @param
     * @return
+    * @说明: 批量删除
+    * @关联表: 
+    * @工时: 4H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月18日 上午10:45:07
+    */
+    public void batchDelete(String string ) {
+        
+    }
+    /**
+    * @param
+    * @return
     * @说明: 更改启用状态
     * @关联表: 
-    * @工时: 0H
-    * @开发者: 
+    * @工时: 4H
+    * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public void updateStatus(IndicatorViewPhysicalExamRequest indicatorViewPhysicalExam ) {
         
@@ -66,7 +78,7 @@ public class IndicatorViewPhysicalExamBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public void updateIndicatorViewPhysicalExam(UpdateIndicatorViewPhysicalExamRequest updateIndicatorViewPhysicalExam ) {
         
@@ -79,7 +91,7 @@ public class IndicatorViewPhysicalExamBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public IndicatorViewPhysicalExamResponse getIndicatorViewPhysicalExam(String indicatorViewPhysicalExamId ) {
         return new IndicatorViewPhysicalExamResponse();
@@ -87,14 +99,27 @@ public class IndicatorViewPhysicalExamBiz{
     /**
     * @param
     * @return
-    * @说明: 分页获取查看指标监测随访类
+    * @说明: 筛选查看指标体格检查类
     * @关联表: 
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
-    public void pageIndicatorViewPhysicalExam(String todo ) {
-        
+    public List<IndicatorViewPhysicalExamResponse> listIndicatorViewPhysicalExam(String appId, String indicatorCategoryId, String name, Integer type, DecimalRequest fee, String resultAnalysis, Integer status ) {
+        return new ArrayList<IndicatorViewPhysicalExamResponse>();
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 分页筛选查看指标体格检查类
+    * @关联表: 
+    * @工时: 4H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月18日 上午10:45:07
+    */
+    public String pageIndicatorViewPhysicalExam(Integer pageNo, Integer pageSize, String appId, String indicatorCategoryId, String name, Integer type, DecimalRequest fee, String resultAnalysis, Integer status ) {
+        return new String();
     }
 }

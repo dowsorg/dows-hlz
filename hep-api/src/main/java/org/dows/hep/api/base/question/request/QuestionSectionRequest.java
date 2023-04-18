@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "QuestionSection 对象", title = "问题集Request")
-public class QuestionSectionRequest {
+public class QuestionSectionRequest{
     @Schema(title = "应用ID")
     private String appId;
 
@@ -41,10 +42,10 @@ public class QuestionSectionRequest {
     private Integer sequence;
 
     @Schema(title = "问题集合")
-    private String QuestionRequest;
+    private String questionRequest;
 
     @Schema(title = "维度集合")
-    private String QuestionSectionDimensionRequest;
+    private String questionSectionDimensionRequest;
 
 
 }

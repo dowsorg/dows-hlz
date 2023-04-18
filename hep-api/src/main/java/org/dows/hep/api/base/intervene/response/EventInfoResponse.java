@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "EventInfo 对象", title = "事件信息")
-public class EventInfoResponse {
+public class EventInfoResponse{
     @Schema(title = "分布式id")
     private String eventId;
 

@@ -1,19 +1,14 @@
 package org.dows.hep.biz.tenant.casus;
 
-import org.dows.framework.api.Response;
 import org.dows.hep.api.tenant.casus.request.CaseSettingRequest;
 import org.dows.hep.api.tenant.casus.response.CaseSettingResponse;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
 /**
 * @description project descr:案例:案例问卷设置
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:53
+* @date 2023年4月18日 上午10:45:07
 */
 @Service
 public class CaseSettingBiz{
@@ -25,7 +20,7 @@ public class CaseSettingBiz{
     * @工时: 8H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public Boolean saveOrUpdCaseSetting(CaseSettingRequest caseSetting ) {
         return Boolean.FALSE;
@@ -38,7 +33,7 @@ public class CaseSettingBiz{
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public CaseSettingResponse getCaseSetting(String caseInstanceId ) {
         return new CaseSettingResponse();
@@ -51,7 +46,7 @@ public class CaseSettingBiz{
     * @工时: 3H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public Boolean delCaseSetting(String caseInstanceId ) {
         return Boolean.FALSE;

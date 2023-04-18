@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "Question 对象", title = "问题Request")
-public class QuestionRequest {
+public class QuestionRequest{
     @Schema(title = "应用ID")
     private String appId;
 
@@ -50,13 +51,13 @@ public class QuestionRequest {
     private String accountName;
 
     @Schema(title = "选项集合")
-    private String QuestionOptionsRequest;
+    private String questionOptionsRequest;
 
     @Schema(title = "问题答案")
-    private String QuestionAnswersRequest;
+    private String questionAnswersRequest;
 
     @Schema(title = "子问题")
-    private String QuestionRequest;
+    private String questionRequest;
 
 
 }

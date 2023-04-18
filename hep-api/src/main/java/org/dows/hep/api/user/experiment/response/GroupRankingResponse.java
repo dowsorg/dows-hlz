@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "GroupRanking 对象", title = "小组排行榜")
-public class GroupRankingResponse {
+public class GroupRankingResponse{
     @Schema(title = "小组序号")
     private String groupNo;
 

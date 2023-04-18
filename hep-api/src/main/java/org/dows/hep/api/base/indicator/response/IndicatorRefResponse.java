@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "IndicatorRef 对象", title = "指标引用列表")
-public class IndicatorRefResponse {
+public class IndicatorRefResponse{
     @Schema(title = "引用这个指标的指标ID")
     private String refIndicatorId;
 

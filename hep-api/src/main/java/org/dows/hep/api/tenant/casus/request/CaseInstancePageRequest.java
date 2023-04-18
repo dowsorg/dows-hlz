@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "CaseInstancePage 对象", title = "分页请求Request")
-public class CaseInstancePageRequest {
+public class CaseInstancePageRequest{
     @Schema(title = "应用ID")
     private String appId;
 

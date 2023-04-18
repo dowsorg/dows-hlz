@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "FindSurvey 对象", title = "查询条件")
-public class FindSurveyRequest {
+public class FindSurveyRequest{
     @Schema(title = "分页大小")
     private Integer pageSize;
 

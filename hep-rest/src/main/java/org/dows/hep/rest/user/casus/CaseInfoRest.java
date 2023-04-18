@@ -1,22 +1,19 @@
 package org.dows.hep.rest.user.casus;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.framework.api.Response;
 import org.dows.hep.api.user.casus.request.CaseInfoRequest;
 import org.dows.hep.biz.user.casus.CaseInfoBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
 * @description project descr:案列:案例基础信息
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:52
+* @date 2023年4月18日 上午10:45:07
 */
 @RequiredArgsConstructor
 @RestController

@@ -1,19 +1,17 @@
 package org.dows.hep.biz.base.evaluate;
 
-import org.dows.framework.api.Response;
 import org.dows.hep.api.base.evaluate.request.CreateEvaluateDimensionExpressionRequest;
 import org.dows.hep.api.base.evaluate.response.EvaluateDimensionExpressionResponse;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.List;
+
 /**
 * @description project descr:评估:评估维度公式
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:53
+* @date 2023年4月18日 上午10:45:07
 */
 @Service
 public class EvaluateDimensionExpressionBiz{
@@ -25,7 +23,7 @@ public class EvaluateDimensionExpressionBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public void evaluateDimensionExpression(CreateEvaluateDimensionExpressionRequest createEvaluateDimensionExpression ) {
         
@@ -38,7 +36,7 @@ public class EvaluateDimensionExpressionBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public void deleteEvaluateDimensionExpression(String evaluateDimensionExpressionId ) {
         
@@ -46,14 +44,40 @@ public class EvaluateDimensionExpressionBiz{
     /**
     * @param
     * @return
-    * @说明: 查看评估维度公式
+    * @说明: 获取评估维度公式
     * @关联表: 
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public EvaluateDimensionExpressionResponse getEvaluateDimensionExpression(String evaluateDimensionExpressionId ) {
         return new EvaluateDimensionExpressionResponse();
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 筛选评估维度公式
+    * @关联表: 
+    * @工时: 4H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月18日 上午10:45:07
+    */
+    public List<EvaluateDimensionExpressionResponse> listEvaluateDimensionExpression(String appId, String questionnaireId, String dimensionId, String expression ) {
+        return new ArrayList<EvaluateDimensionExpressionResponse>();
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 分页筛选评估维度公式
+    * @关联表: 
+    * @工时: 4H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月18日 上午10:45:07
+    */
+    public String pageEvaluateDimensionExpression(Integer pageNo, Integer pageSize, String appId, String questionnaireId, String dimensionId, String expression ) {
+        return new String();
     }
 }

@@ -1,22 +1,22 @@
 package org.dows.hep.biz.user.organization;
 
-import org.dows.framework.api.Response;
-import org.dows.hep.api.user.organization.request.PersonQueryRequest;
-import org.dows.hep.api.user.organization.response.PersonInstanceResponse;
-import org.dows.hep.api.user.organization.response.OrganizationFunsResponse;
 import org.dows.hep.api.user.organization.request.CaseOrgFeeRequest;
+import org.dows.hep.api.user.organization.request.OrgPositionRequest;
+import org.dows.hep.api.user.organization.request.PersonQueryRequest;
 import org.dows.hep.api.user.organization.request.TransferPersonelRequest;
+import org.dows.hep.api.user.organization.response.AccountOrgGeoResponse;
+import org.dows.hep.api.user.organization.response.OrganizationFunsResponse;
+import org.dows.hep.api.user.organization.response.PersonInstanceResponse;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.List;
+
 /**
 * @description project descr:机构:机构操作
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:53
+* @date 2023年4月18日 上午10:45:07
 */
 @Service
 public class HepOrgOperateBiz{
@@ -28,7 +28,7 @@ public class HepOrgOperateBiz{
     * @工时: 3H
     * @开发者: jx
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public PersonInstanceResponse listPerson(PersonQueryRequest personQuery ) {
         return new PersonInstanceResponse();
@@ -41,7 +41,7 @@ public class HepOrgOperateBiz{
     * @工时: 4H
     * @开发者: jx
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public List<OrganizationFunsResponse> listOrgFunc(String orgId ) {
         return new ArrayList<OrganizationFunsResponse>();
@@ -54,7 +54,7 @@ public class HepOrgOperateBiz{
     * @工时: 4H
     * @开发者: jx
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public Boolean listOrgFee(CaseOrgFeeRequest caseOrgFee ) {
         return Boolean.FALSE;
@@ -67,9 +67,22 @@ public class HepOrgOperateBiz{
     * @工时: 4H
     * @开发者: jx
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public Boolean transferPerson(TransferPersonelRequest transferPersonel ) {
         return Boolean.FALSE;
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 列出机构位置
+    * @关联表: AccountOrgGeo
+    * @工时: 4H
+    * @开发者: jx
+    * @开始时间: 
+    * @创建时间: 2023年4月18日 上午10:45:07
+    */
+    public AccountOrgGeoResponse listOrgPosition(OrgPositionRequest orgPosition ) {
+        return new AccountOrgGeoResponse();
     }
 }

@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "OperateData 对象", title = "操作数据")
-public class OperateDataRequest {
+public class OperateDataRequest{
     @Schema(title = "实验实列ID")
     private String experimentInstanceId;
 

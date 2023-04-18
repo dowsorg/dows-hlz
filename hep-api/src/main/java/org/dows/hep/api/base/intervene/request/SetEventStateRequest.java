@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "SetEventState 对象", title = "启用、禁用菜谱")
-public class SetEventStateRequest {
+public class SetEventStateRequest{
     @Schema(title = "事件id")
     private String eventId;
 

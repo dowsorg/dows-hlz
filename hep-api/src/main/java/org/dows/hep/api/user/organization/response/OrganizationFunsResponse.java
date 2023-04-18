@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "OrganizationFuns 对象", title = "机构功能")
-public class OrganizationFunsResponse {
+public class OrganizationFunsResponse{
     @Schema(title = "机构ID")
     private String orgId;
 

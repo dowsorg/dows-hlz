@@ -5,12 +5,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "IndicatorVarId 对象", title = "指标变量分布式ID")
-public class IndicatorVarIdRequest {
+public class IndicatorVarIdRequest{
 }

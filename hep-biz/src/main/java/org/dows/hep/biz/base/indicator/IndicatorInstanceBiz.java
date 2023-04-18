@@ -1,23 +1,18 @@
 package org.dows.hep.biz.base.indicator;
 
-import org.dows.framework.api.Response;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorInstanceRequest;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorInstanceRequest;
-import org.dows.hep.api.base.indicator.request.UpdateIndicatorInstanceRequest;
-import org.dows.hep.api.base.indicator.response.IndicatorInstanceResponse;
-import org.dows.hep.api.base.indicator.request.VarcharRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorInstanceResponse;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.List;
+
 /**
 * @description project descr:指标:指标实例
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:53
+* @date 2023年4月18日 上午10:45:07
 */
 @Service
 public class IndicatorInstanceBiz{
@@ -29,7 +24,7 @@ public class IndicatorInstanceBiz{
     * @工时: 3H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public void createIndicatorInstance(CreateIndicatorInstanceRequest createIndicatorInstance ) {
         
@@ -42,7 +37,7 @@ public class IndicatorInstanceBiz{
     * @工时: 2H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public void deleteIndicatorInstance(String indicatorInstanceId ) {
         
@@ -55,7 +50,7 @@ public class IndicatorInstanceBiz{
     * @工时: 3H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public void updateIndicatorInstance(UpdateIndicatorInstanceRequest updateIndicatorInstance ) {
         
@@ -68,7 +63,7 @@ public class IndicatorInstanceBiz{
     * @工时: 3H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public void batchUpdateIndicatorInstance(List<UpdateIndicatorInstanceRequest> updateIndicatorInstance ) {
         
@@ -81,7 +76,7 @@ public class IndicatorInstanceBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public IndicatorInstanceResponse getIndicatorInstance(String indicatorInstanceId ) {
         return new IndicatorInstanceResponse();
@@ -94,9 +89,22 @@ public class IndicatorInstanceBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
-    public List<IndicatorInstanceResponse> listIndicatorInstance(String appId, VarcharRequest varchar ) {
+    public List<IndicatorInstanceResponse> listIndicatorInstance(String appId, Integer core, Integer food, String indicatorCategoryId ) {
         return new ArrayList<IndicatorInstanceResponse>();
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 分页筛选指标
+    * @关联表: 
+    * @工时: 5H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月18日 上午10:45:07
+    */
+    public String pageIndicatorInstance(Integer pageNo, Integer pageSize, String appId, Integer core, Integer food, String indicatorCategoryId ) {
+        return new String();
     }
 }

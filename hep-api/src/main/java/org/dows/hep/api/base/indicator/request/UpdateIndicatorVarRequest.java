@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "UpdateIndicatorVar 对象", title = "更新指标变量")
-public class UpdateIndicatorVarRequest {
+public class UpdateIndicatorVarRequest{
     @Schema(title = "指标ID")
     private String indicatorInstanceId;
 

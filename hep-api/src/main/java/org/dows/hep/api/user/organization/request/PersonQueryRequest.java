@@ -5,14 +5,21 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "PersonQuery 对象", title = "关键字")
-public class PersonQueryRequest {
+public class PersonQueryRequest{
+    @Schema(title = "实验实列ID")
+    private String experimentInstanceId;
+
+    @Schema(title = "实验小组ID")
+    private String experimentGroupId;
+
     @Schema(title = "机构ID")
     private String orgId;
 

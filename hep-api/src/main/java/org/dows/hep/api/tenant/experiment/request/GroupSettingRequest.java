@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "GroupSetting 对象", title = "小组设置")
-public class GroupSettingRequest {
+public class GroupSettingRequest{
     @Schema(title = "实验实列ID")
     private String experimentInstanceId;
 

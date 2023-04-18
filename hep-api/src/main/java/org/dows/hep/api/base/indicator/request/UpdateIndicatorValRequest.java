@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "UpdateIndicatorVal 对象", title = "更新指标值")
-public class UpdateIndicatorValRequest {
+public class UpdateIndicatorValRequest{
     @Schema(title = "分布式ID")
     private String indicatorValId;
 

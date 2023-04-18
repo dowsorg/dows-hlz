@@ -1,21 +1,19 @@
 package org.dows.hep.biz.user.experiment;
 
-import org.dows.framework.api.Response;
-import org.dows.hep.api.user.experiment.request.ScoreRankRequest;
-import org.dows.hep.api.user.experiment.response.ScoreRankResponse;
 import org.dows.hep.api.user.experiment.request.GroupRankingRequest;
+import org.dows.hep.api.user.experiment.request.ScoreRankRequest;
 import org.dows.hep.api.user.experiment.response.GroupRankingResponse;
+import org.dows.hep.api.user.experiment.response.ScoreRankResponse;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.List;
+
 /**
 * @description project descr:实验:实验查看
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:53
+* @date 2023年4月18日 上午10:45:07
 */
 @Service
 public class ExperimentCheckBiz{
@@ -27,7 +25,7 @@ public class ExperimentCheckBiz{
     * @工时: 5H
     * @开发者: lait
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public List<ScoreRankResponse> checkScore(ScoreRankRequest scoreRank ) {
         return new ArrayList<ScoreRankResponse>();
@@ -40,7 +38,7 @@ public class ExperimentCheckBiz{
     * @工时: 5H
     * @开发者: lait
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public List<GroupRankingResponse> checkRanking(GroupRankingRequest groupRanking ) {
         return new ArrayList<GroupRankingResponse>();
@@ -53,7 +51,7 @@ public class ExperimentCheckBiz{
     * @工时: 2H
     * @开发者: lait
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public void checkDigtalArchive() {
         

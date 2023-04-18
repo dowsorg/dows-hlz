@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "CreateIndicatorInstance 对象", title = "创建指标实例")
-public class CreateIndicatorInstanceRequest {
+public class CreateIndicatorInstanceRequest{
     @Schema(title = "指标分类分布式ID")
     private String indicatorCategoryId;
 

@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "CreateEvaluateQuestionnaire 对象", title = "创建评估问卷")
-public class CreateEvaluateQuestionnaireRequest {
+public class CreateEvaluateQuestionnaireRequest{
     @Schema(title = "应用ID")
     private String appId;
 

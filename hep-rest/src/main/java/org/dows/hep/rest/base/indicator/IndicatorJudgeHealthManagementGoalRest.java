@@ -1,16 +1,15 @@
 package org.dows.hep.rest.base.indicator;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.framework.api.Response;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeHealthManagementGoalRequest;
-import org.dows.hep.api.base.indicator.request.UpdateStatusIndicatorJudgeHealthManagementGoalRequest;
+import org.dows.hep.api.base.indicator.request.DecimalRequest;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorJudgeHealthManagementGoalRequest;
+import org.dows.hep.api.base.indicator.request.UpdateStatusIndicatorJudgeHealthManagementGoalRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthManagementGoalResponse;
 import org.dows.hep.biz.base.indicator.IndicatorJudgeHealthManagementGoalBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,7 +18,7 @@ import java.util.List;
 * @description project descr:指标:判断指标健管目标
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:52
+* @date 2023年4月18日 上午10:45:07
 */
 @RequiredArgsConstructor
 @RestController
@@ -47,6 +46,17 @@ public class IndicatorJudgeHealthManagementGoalRest {
     @DeleteMapping("v1/baseIndicator/indicatorJudgeHealthManagementGoal/deleteIndicatorJudgeHealthManagementGoal")
     public void deleteIndicatorJudgeHealthManagementGoal(@Validated String indicatorJudgeHealthManagementGoalId ) {
         indicatorJudgeHealthManagementGoalBiz.deleteIndicatorJudgeHealthManagementGoal(indicatorJudgeHealthManagementGoalId);
+    }
+
+    /**
+    * 批量删除
+    * @param
+    * @return
+    */
+    @Operation(summary = "批量删除")
+    @DeleteMapping("v1/baseIndicator/indicatorJudgeHealthManagementGoal/batchDelete")
+    public void batchDelete(@Validated String string ) {
+        indicatorJudgeHealthManagementGoalBiz.batchDelete(string);
     }
 
     /**
@@ -83,14 +93,25 @@ public class IndicatorJudgeHealthManagementGoalRest {
     }
 
     /**
-    * 分页获取判断指标健管目标
+    * 筛选判断指标健管目标
     * @param
     * @return
     */
-    @Operation(summary = "分页获取判断指标健管目标")
+    @Operation(summary = "筛选判断指标健管目标")
+    @GetMapping("v1/baseIndicator/indicatorJudgeHealthManagementGoal/listIndicatorJudgeHealthManagementGoal")
+    public List<IndicatorJudgeHealthManagementGoalResponse> listIndicatorJudgeHealthManagementGoal(@Validated String appId, @Validated String indicatorCategoryId, @Validated DecimalRequest decimal, @Validated Integer integer) {
+        return indicatorJudgeHealthManagementGoalBiz.listIndicatorJudgeHealthManagementGoal(appId,indicatorCategoryId,decimal,integer);
+    }
+
+    /**
+    * 获取判断指标健管目标
+    * @param
+    * @return
+    */
+    @Operation(summary = "获取判断指标健管目标")
     @GetMapping("v1/baseIndicator/indicatorJudgeHealthManagementGoal/pageIndicatorJudgeHealthManagementGoal")
-    public void pageIndicatorJudgeHealthManagementGoal(@Validated String todo) {
-        indicatorJudgeHealthManagementGoalBiz.pageIndicatorJudgeHealthManagementGoal(todo);
+    public String pageIndicatorJudgeHealthManagementGoal(@Validated Integer pageNo, @Validated Integer pageSize, @Validated String appId, @Validated String indicatorCategoryId, @Validated DecimalRequest decimal, @Validated Integer integer) {
+        return indicatorJudgeHealthManagementGoalBiz.pageIndicatorJudgeHealthManagementGoal(pageNo,pageSize,appId,indicatorCategoryId,decimal,integer);
     }
 
 

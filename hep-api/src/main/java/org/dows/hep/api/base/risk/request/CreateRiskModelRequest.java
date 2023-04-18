@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "CreateRiskModel 对象", title = "创建风险模型对象")
-public class CreateRiskModelRequest {
+public class CreateRiskModelRequest{
     @Schema(title = "应用ID")
     private String appId;
 
@@ -26,7 +27,7 @@ public class CreateRiskModelRequest {
     private Integer status;
 
     @Schema(title = "创建死亡模型列表")
-    private String ListCreateRiskDeathModel;
+    private String listCreateRiskDeathModel;
 
 
 }

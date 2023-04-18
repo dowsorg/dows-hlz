@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "ScoreRank 对象", title = "排名列表")
-public class ScoreRankResponse {
+public class ScoreRankResponse{
     @Schema(title = "期数")
     private String periods;
 

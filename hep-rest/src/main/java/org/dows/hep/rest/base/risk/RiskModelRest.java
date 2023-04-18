@@ -2,7 +2,6 @@ package org.dows.hep.rest.base.risk;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.framework.api.Response;
 import org.dows.hep.api.base.risk.request.CreateRiskModelRequest;
 import org.dows.hep.api.base.risk.request.UpdateRiskModelRequest;
 import org.dows.hep.api.base.risk.request.UpdateStatusRiskModelRequest;
@@ -11,15 +10,13 @@ import org.dows.hep.biz.base.risk.RiskModelBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 /**
 * @description project descr:风险:风险模型
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:52
+* @date 2023年4月18日 上午10:45:07
 */
 @RequiredArgsConstructor
 @RestController
@@ -72,14 +69,36 @@ public class RiskModelRest {
     }
 
     /**
-    * 查询风险模型
+    * 获取风险模型
     * @param
     * @return
     */
-    @Operation(summary = "查询风险模型")
+    @Operation(summary = "获取风险模型")
     @GetMapping("v1/baseRisk/riskModel/getRiskModel")
     public RiskModelResponse getRiskModel(@Validated String riskModelId) {
         return riskModelBiz.getRiskModel(riskModelId);
+    }
+
+    /**
+    * 筛选风险模型
+    * @param
+    * @return
+    */
+    @Operation(summary = "筛选风险模型")
+    @GetMapping("v1/baseRisk/riskModel/listRiskModel")
+    public List<RiskModelResponse> listRiskModel(@Validated String appId, @Validated String riskModelId, @Validated String modelName, @Validated Integer status) {
+        return riskModelBiz.listRiskModel(appId,riskModelId,modelName,status);
+    }
+
+    /**
+    * 分页筛选风险模型
+    * @param
+    * @return
+    */
+    @Operation(summary = "分页筛选风险模型")
+    @GetMapping("v1/baseRisk/riskModel/pageRiskModel")
+    public String pageRiskModel(@Validated Integer pageNo, @Validated Integer pageSize, @Validated String appId, @Validated String riskModelId, @Validated String modelName, @Validated Integer status) {
+        return riskModelBiz.pageRiskModel(pageNo,pageSize,appId,riskModelId,modelName,status);
     }
 
 

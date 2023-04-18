@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "QuestionsInSection 对象", title = "问卷中条件查询")
-public class QuestionsInSectionRequest {
+public class QuestionsInSectionRequest{
     @Schema(title = "appId")
     private String appId;
 

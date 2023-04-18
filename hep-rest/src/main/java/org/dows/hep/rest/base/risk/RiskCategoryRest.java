@@ -2,14 +2,11 @@ package org.dows.hep.rest.base.risk;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.framework.api.Response;
 import org.dows.hep.api.base.risk.request.CreateRiskCategoryRequest;
 import org.dows.hep.api.base.risk.request.UpdateRiskCategoryRequest;
 import org.dows.hep.api.base.risk.response.RiskCategoryResponse;
 import org.dows.hep.biz.base.risk.RiskCategoryBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,7 +15,7 @@ import java.util.List;
 * @description project descr:风险:风险类别
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:52
+* @date 2023年4月18日 上午10:45:07
 */
 @RequiredArgsConstructor
 @RestController
@@ -60,14 +57,36 @@ public class RiskCategoryRest {
     }
 
     /**
-    * 查询风险类别
+    * 获取风险类别
     * @param
     * @return
     */
-    @Operation(summary = "查询风险类别")
+    @Operation(summary = "获取风险类别")
     @GetMapping("v1/baseRisk/riskCategory/getRiskCategory")
     public RiskCategoryResponse getRiskCategory(@Validated String riskCategoryId) {
         return riskCategoryBiz.getRiskCategory(riskCategoryId);
+    }
+
+    /**
+    * 筛选风险类别
+    * @param
+    * @return
+    */
+    @Operation(summary = "筛选风险类别")
+    @GetMapping("v1/baseRisk/riskCategory/listRiskCategory")
+    public List<RiskCategoryResponse> listRiskCategory(@Validated String appId, @Validated String riskCategoryName) {
+        return riskCategoryBiz.listRiskCategory(appId,riskCategoryName);
+    }
+
+    /**
+    * 分页筛选风险类别
+    * @param
+    * @return
+    */
+    @Operation(summary = "分页筛选风险类别")
+    @GetMapping("v1/baseRisk/riskCategory/pageRiskCategory")
+    public String pageRiskCategory(@Validated Integer pageNo, @Validated Integer pageSize, @Validated String appId, @Validated String riskCategoryName) {
+        return riskCategoryBiz.pageRiskCategory(pageNo,pageSize,appId,riskCategoryName);
     }
 
 

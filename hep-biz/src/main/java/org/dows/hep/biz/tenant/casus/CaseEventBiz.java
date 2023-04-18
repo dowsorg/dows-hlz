@@ -1,22 +1,17 @@
 package org.dows.hep.biz.tenant.casus;
 
-import org.dows.framework.api.Response;
-import org.dows.hep.api.tenant.casus.request.FindEventRequest;
-import org.dows.hep.api.tenant.casus.response.CaseEventResponse;
-import org.dows.hep.api.tenant.casus.response.CaseEventInfoResponse;
-import org.dows.hep.api.tenant.casus.request.SaveCaseEventRequest;
 import org.dows.hep.api.tenant.casus.request.DelCaseEventRequest;
+import org.dows.hep.api.tenant.casus.request.FindEventRequest;
+import org.dows.hep.api.tenant.casus.request.SaveCaseEventRequest;
+import org.dows.hep.api.tenant.casus.response.CaseEventInfoResponse;
+import org.dows.hep.api.tenant.casus.response.CaseEventResponse;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
 /**
 * @description project descr:案例:案例人物事件
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:53
+* @date 2023年4月18日 上午10:45:07
 */
 @Service
 public class CaseEventBiz{
@@ -28,7 +23,7 @@ public class CaseEventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public CaseEventResponse pageCaseEvent(FindEventRequest findEvent ) {
         return new CaseEventResponse();
@@ -41,7 +36,7 @@ public class CaseEventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public CaseEventInfoResponse getCaseEvent(String caseEventId ) {
         return new CaseEventInfoResponse();
@@ -54,7 +49,7 @@ public class CaseEventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public Boolean saveCaseEvent(SaveCaseEventRequest saveCaseEvent ) {
         return Boolean.FALSE;
@@ -67,7 +62,7 @@ public class CaseEventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public Boolean delCaseEvent(DelCaseEventRequest delCaseEvent ) {
         return Boolean.FALSE;

@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "SetFoodDishesState 对象", title = "启用、禁用菜肴")
-public class SetFoodDishesStateRequest {
+public class SetFoodDishesStateRequest{
     @Schema(title = "菜肴id")
     private String foodDishesId;
 

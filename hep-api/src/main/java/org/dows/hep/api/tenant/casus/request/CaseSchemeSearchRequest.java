@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "CaseSchemeSearch 对象", title = "案例方案搜索")
-public class CaseSchemeSearchRequest {
+public class CaseSchemeSearchRequest{
     @Schema(title = "类别ID")
     private String categId;
 

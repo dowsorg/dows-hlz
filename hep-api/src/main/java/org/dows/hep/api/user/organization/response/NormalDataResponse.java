@@ -7,14 +7,15 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "NormalData 对象", title = "分类实例")
-public class NormalDataResponse {
+public class NormalDataResponse{
     @Schema(title = "分类名称")
     private String name;
 

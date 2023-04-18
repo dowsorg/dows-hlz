@@ -1,22 +1,12 @@
 package org.dows.hep.rest.base.question;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.framework.api.Response;
-import org.dows.hep.api.base.question.request.QuestionSectionRequest;
-import org.dows.hep.api.base.question.request.QuestionSectionSearchRequest;
-import org.dows.hep.api.base.question.response.QuestionSectionResponse;
-import org.dows.hep.api.base.question.request.QuestionSectionSearchRequest;
-import org.dows.hep.api.base.question.response.QuestionSectionResponse;
-import org.dows.hep.api.base.question.response.QuestionSectionResponse;
-import org.dows.hep.api.base.question.request.QuestionnaireGenerateElementsRequest;
-import org.dows.hep.api.base.question.request.QuestionnaireMergeElementsRequest;
-import org.dows.hep.api.base.question.request.QuestionsInSectionRequest;
+import org.dows.hep.api.base.question.request.*;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
 import org.dows.hep.biz.base.question.QuestionSectionBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,7 +15,7 @@ import java.util.List;
 * @description project descr:问题:
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:52
+* @date 2023年4月18日 上午10:45:07
 */
 @RequiredArgsConstructor
 @RestController

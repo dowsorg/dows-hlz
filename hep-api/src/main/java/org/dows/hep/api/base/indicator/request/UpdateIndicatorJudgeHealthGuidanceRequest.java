@@ -7,16 +7,17 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "UpdateIndicatorJudgeHealthGuidance 对象", title = "判断指标健康指导")
-public class UpdateIndicatorJudgeHealthGuidanceRequest {
+public class UpdateIndicatorJudgeHealthGuidanceRequest{
     @Schema(title = "判断指标健康指导分布式ID")
-    private String IndicatorJudgeHealthGuidanceId;
+    private String indicatorJudgeHealthGuidanceId;
 
     @Schema(title = "健康指导名称")
     private String name;

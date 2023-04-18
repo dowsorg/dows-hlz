@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "IndicatorVal 对象", title = "指标值")
-public class IndicatorValResponse {
+public class IndicatorValResponse{
     @Schema(title = "主键")
     private Long id;
 

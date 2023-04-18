@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "CalcFoodGraph 对象", title = "计算能量占比、膳食宝塔")
-public class CalcFoodGraphRequest {
+public class CalcFoodGraphRequest{
     @Schema(title = "计算类型 0-默认 1-只计算能量占比 2-只计算膳食宝塔")
     private Integer calcType;
 

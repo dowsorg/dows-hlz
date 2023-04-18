@@ -5,16 +5,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "IndicatorViewMonitorFollowup 对象", title = "查看指标监测随访类")
-public class IndicatorViewMonitorFollowupRequest {
+public class IndicatorViewMonitorFollowupRequest{
     @Schema(title = "查看指标监测随访类分布式Id")
-    private String IndicatorViewMonitorFollowupId;
+    private String indicatorViewMonitorFollowupId;
 
     @Schema(title = "0-禁用，1-启用")
     private Integer status;

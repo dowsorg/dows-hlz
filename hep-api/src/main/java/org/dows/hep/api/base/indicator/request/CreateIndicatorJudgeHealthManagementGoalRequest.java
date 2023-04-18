@@ -7,14 +7,15 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "CreateIndicatorJudgeHealthManagementGoal 对象", title = "创建判断指标健管目标")
-public class CreateIndicatorJudgeHealthManagementGoalRequest {
+public class CreateIndicatorJudgeHealthManagementGoalRequest{
     @Schema(title = "应用ID")
     private String appId;
 

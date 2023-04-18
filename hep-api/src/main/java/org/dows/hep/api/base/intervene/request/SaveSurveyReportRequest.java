@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "SaveSurveyReport 对象", title = "保存问卷报告设置")
-public class SaveSurveyReportRequest {
+public class SaveSurveyReportRequest{
     @Schema(title = "分布式id")
     private String surveyId;
 

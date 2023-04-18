@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "QuestionDimension 对象", title = "问题维度Request")
-public class QuestionDimensionRequest {
+public class QuestionDimensionRequest{
     @Schema(title = "应用ID")
     private String appId;
 

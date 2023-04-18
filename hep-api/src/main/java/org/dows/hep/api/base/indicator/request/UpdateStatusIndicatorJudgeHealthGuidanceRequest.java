@@ -5,16 +5,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "UpdateStatusIndicatorJudgeHealthGuidance 对象", title = "")
-public class UpdateStatusIndicatorJudgeHealthGuidanceRequest {
+public class UpdateStatusIndicatorJudgeHealthGuidanceRequest{
     @Schema(title = "判断指标健康指导分布式Id")
-    private String IndicatorJudgeHealthGuidanceId;
+    private String indicatorJudgeHealthGuidanceId;
 
     @Schema(title = "0-禁用，1-启用")
     private Integer status;

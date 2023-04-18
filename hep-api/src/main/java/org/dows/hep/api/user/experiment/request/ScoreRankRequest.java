@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "ScoreRank 对象", title = "分数排行")
-public class ScoreRankRequest {
+public class ScoreRankRequest{
     @Schema(title = "实验实列ID")
     private String experimentInstanceId;
 

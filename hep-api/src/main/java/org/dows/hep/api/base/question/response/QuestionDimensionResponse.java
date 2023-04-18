@@ -5,12 +5,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "QuestionDimension 对象", title = "问题维度Response")
-public class QuestionDimensionResponse {
+public class QuestionDimensionResponse{
 }

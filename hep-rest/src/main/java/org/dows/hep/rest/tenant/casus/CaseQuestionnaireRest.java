@@ -2,7 +2,6 @@ package org.dows.hep.rest.tenant.casus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.framework.api.Response;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireRequest;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireSearchRequest;
 import org.dows.hep.api.tenant.casus.response.CaseQuestionnaireResponse;
@@ -10,15 +9,11 @@ import org.dows.hep.biz.tenant.casus.CaseQuestionnaireBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-
 /**
 * @description project descr:案例:案例问卷
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:52
+* @date 2023年4月17日 下午8:00:11
 */
 @RequiredArgsConstructor
 @RestController

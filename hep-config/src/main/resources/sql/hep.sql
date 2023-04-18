@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS `experiment_instance`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
     `experiment_instance_id` varchar(64) DEFAULT NULL COMMENT '实验实列ID',
     `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `case_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
+    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
     `case_name` varchar(64) DEFAULT NULL COMMENT '案例名称[社区名]',
     `experiment_name` varchar(64) DEFAULT NULL COMMENT '实验名称',
     `experiment_descr` varchar(64) DEFAULT NULL COMMENT '实验说明',
@@ -59,12 +59,31 @@ CREATE TABLE IF NOT EXISTS `experiment_participator`(
     `group_alias` varchar(64) DEFAULT NULL COMMENT '小组别名',
     `account_id` varchar(64) DEFAULT NULL COMMENT '组员账号ID',
     `account_name` varchar(64) DEFAULT NULL COMMENT '组员账号名',
-    `participator_type` integer(2) DEFAULT NULL COMMENT '参与者类型[0:教师，1:学生]',
+    `participator_type` integer(2) DEFAULT NULL COMMENT '参与者类型[0:教师，1:组长，2：学生]',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_experiment_participator_id` (`experiment_participator_id`)
 ) ENGINE=InnoDB COMMENT='实验组员（参与者）';
+
+drop table if exists `experiment_actor`;
+CREATE TABLE IF NOT EXISTS `experiment_actor`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `experiment_actor_id` varchar(64) DEFAULT NULL COMMENT '实验扮演者ID',
+    `experiment_group_id` varchar(64) DEFAULT NULL COMMENT '实验小组ID',
+    `experiment_instance_id` varchar(64) DEFAULT NULL COMMENT '实验实列ID',
+    `actor_id` varchar(64) DEFAULT NULL COMMENT '扮演关联ID[分析角色|机构角色]',
+    `actor_name` varchar(64) DEFAULT NULL COMMENT '分配角色[分析角色名|机构角色名]',
+    `actor_type` varchar(64) DEFAULT NULL COMMENT '扮演类型[0:问题，1:机构]',
+    `group_alias` varchar(64) DEFAULT NULL COMMENT '小组别名',
+    `account_id` varchar(64) DEFAULT NULL COMMENT '组员账号ID',
+    `account_name` varchar(64) DEFAULT NULL COMMENT '组员账号名',
+    `participator_type` integer(2) DEFAULT NULL COMMENT '参与者类型[0:教师，1:学生，2:组长]',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_experiment_actor_id` (`experiment_actor_id`)
+) ENGINE=InnoDB COMMENT='实验扮演者';
 
 drop table if exists `experiment_scheme`;
 CREATE TABLE IF NOT EXISTS `experiment_scheme`(
@@ -186,19 +205,68 @@ CREATE TABLE IF NOT EXISTS `experiment_question_item`(
     PRIMARY KEY (`id`) 
 ) ENGINE=InnoDB COMMENT='实验答题项目';
 
+drop table if exists `experiment_person`;
+CREATE TABLE IF NOT EXISTS `experiment_person`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `experiment_instance_id` varchar(64) DEFAULT NULL COMMENT '实验实列ID',
+    `experiment_group_id` varchar(64) DEFAULT NULL COMMENT '实验小组ID',
+    `case_org_id` varchar(64) DEFAULT NULL COMMENT '案例机构ID',
+    `case_org_name` varchar(64) DEFAULT NULL COMMENT '案例机构名称',
+    `case_account_id` varchar(64) DEFAULT NULL COMMENT '账号ID',
+    `case_account_name` varchar(64) DEFAULT NULL COMMENT '账号名称',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) 
+) ENGINE=InnoDB COMMENT='实验机构人物';
+
+drop table if exists `experiment_person_cost`;
+CREATE TABLE IF NOT EXISTS `experiment_person_cost`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `experiment_person_cost_id` varchar(64) DEFAULT NULL COMMENT '实验花费ID',
+    `experiment_pserson_id` varchar(64) DEFAULT NULL COMMENT '实验人物ID',
+    `experiment_instance_id` varchar(64) DEFAULT NULL COMMENT '实验实列ID',
+    `experiment_group_id` varchar(64) DEFAULT NULL COMMENT '实验小组ID',
+    `case_org_id` varchar(64) DEFAULT NULL COMMENT '案例机构ID',
+    `case_account_id` varchar(64) DEFAULT NULL COMMENT '账号ID',
+    `asset_name` varchar(64) DEFAULT NULL COMMENT '资产名称[医保,商保,养老]',
+    `asset_amount` double(11,2) DEFAULT NULL COMMENT '资产额度[]',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) 
+) ENGINE=InnoDB COMMENT='实验人物资产花费';
+
+drop table if exists `operate_flow`;
+CREATE TABLE IF NOT EXISTS `operate_flow`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `operate_flow_id` varchar(64) DEFAULT NULL COMMENT '实验操作流程',
+    `experiment_instance_id` varchar(64) DEFAULT NULL COMMENT '实验实列ID',
+    `case_org_id` varchar(64) DEFAULT NULL COMMENT '案例机构ID',
+    `case_account_id` varchar(64) DEFAULT NULL COMMENT '案例账号ID',
+    `flow_name` varchar(64) DEFAULT NULL COMMENT '流程名称',
+    `flow_sequence` varchar(64) DEFAULT NULL COMMENT '流程顺序',
+    `record_json` text(65535) DEFAULT NULL COMMENT '操作记录',
+    `state` integer(2) DEFAULT NULL COMMENT '状态',
+    `start_time` datetime DEFAULT NULL COMMENT '开始时间',
+    `end_time` datetime DEFAULT NULL COMMENT '结束时间',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) 
+) ENGINE=InnoDB COMMENT='实验操作流程';
+
 drop table if exists `operate_transfers`;
 CREATE TABLE IF NOT EXISTS `operate_transfers`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
     `operate_transfers_id` varchar(64) DEFAULT NULL COMMENT '操作机构转入转出记录ID',
     `experiment_instance_id` varchar(64) DEFAULT NULL COMMENT '实验实列ID',
+    `experiment_group_id` varchar(64) DEFAULT NULL COMMENT '实验小组ID',
     `form_org_id` varchar(64) DEFAULT NULL COMMENT '转出机构ID',
     `form_org_name` varchar(64) DEFAULT NULL COMMENT '转出机构名称',
     `to_org_id` varchar(64) DEFAULT NULL COMMENT '转入机构ID',
     `to_org_name` varchar(64) DEFAULT NULL COMMENT '转入机构名称',
     `case_account_id` varchar(64) DEFAULT NULL COMMENT '案例人物ID',
     `case_account_name` varchar(64) DEFAULT NULL COMMENT '案例人物名',
-    `account_id` varchar(64) DEFAULT NULL COMMENT '操作人员ID',
-    `account_name` varchar(64) DEFAULT NULL COMMENT '操作人员名称',
+    `operate_account_id` varchar(64) DEFAULT NULL COMMENT '操作人员ID',
+    `operate_account_name` varchar(64) DEFAULT NULL COMMENT '操作人员名称',
     `descr` varchar(64) DEFAULT NULL COMMENT '转入说明',
     `periods` integer(2) DEFAULT NULL COMMENT '期数',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
@@ -213,6 +281,7 @@ CREATE TABLE IF NOT EXISTS `operate_event`(
     `operate_event_id` varchar(64) DEFAULT NULL COMMENT '操作事件ID',
     `experiment_instance_id` varchar(64) DEFAULT NULL COMMENT '实验实列ID',
     `experiment_group_id` varchar(64) DEFAULT NULL COMMENT '实验小组ID',
+    `case_org_id` varchar(64) DEFAULT NULL COMMENT '案例机构ID',
     `event_name` varchar(64) DEFAULT NULL COMMENT '事件名称',
     `event_time` datetime DEFAULT NULL COMMENT '事件时间',
     `account_id` varchar(64) DEFAULT NULL COMMENT '操作账号ID',
@@ -229,6 +298,7 @@ CREATE TABLE IF NOT EXISTS `operate_exam`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
     `operate_exam_id` varchar(64) DEFAULT NULL COMMENT '操作考试[题目]记录ID',
     `experiment_instance_id` varchar(64) DEFAULT NULL COMMENT '实验实列ID',
+    `case_org_id` varchar(64) DEFAULT NULL COMMENT '案例机构ID',
     `question_instance_id` varchar(64) DEFAULT NULL COMMENT '问题ID',
     `question_section_result_id` varchar(64) DEFAULT NULL COMMENT '答题记录ID',
     `question_title` varchar(64) DEFAULT NULL COMMENT '问题title',
@@ -246,11 +316,12 @@ CREATE TABLE IF NOT EXISTS `operate_result`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
     `operate_result_id` varchar(64) DEFAULT NULL COMMENT '操作结果ID',
     `experiment_instance_id` varchar(64) DEFAULT NULL COMMENT '实验实列ID',
+    `case_org_id` varchar(64) DEFAULT NULL COMMENT '案例机构ID',
     `account_id` varchar(64) DEFAULT NULL COMMENT '操作账号ID',
     `account_name` varchar(64) DEFAULT NULL COMMENT '操作人员名称',
     `operate_id` varchar(64) DEFAULT NULL COMMENT '操作ID',
     `operate_type` varchar(64) DEFAULT NULL COMMENT '操作类型[答题,考试,事件...]',
-    `operate_answer` varchar(64) DEFAULT NULL COMMENT '操作答案',
+    `operate_result` varchar(64) DEFAULT NULL COMMENT '操作结果[答案]',
     `score` varchar(64) DEFAULT NULL COMMENT '分数',
     `periods` integer(2) DEFAULT NULL COMMENT '期数',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
@@ -265,6 +336,7 @@ CREATE TABLE IF NOT EXISTS `operate_indictar`(
     `operate_indictar_id` varchar(64) DEFAULT NULL COMMENT '学生操作指标记录表ID',
     `experiment_instance_id` varchar(64) DEFAULT NULL COMMENT '实验实列ID',
     `experiment_group_id` varchar(64) DEFAULT NULL COMMENT '实验小组ID',
+    `case_org_id` varchar(64) DEFAULT NULL COMMENT '案例机构ID',
     `operate_account_id` varcahr DEFAULT NULL COMMENT '操作人ID',
     `operate_account_name` varcahr DEFAULT NULL COMMENT '操作人名',
     `case_account_id` varchar(64) DEFAULT NULL COMMENT '案例人物',
@@ -290,12 +362,18 @@ CREATE TABLE IF NOT EXISTS `operate_intervene`(
     `operate_intervene_id` varchar(64) DEFAULT NULL COMMENT '分布式id',
     `experiment_instance_id` varchar(64) DEFAULT NULL COMMENT '实验实例id',
     `experiment_group_id` varchar(64) DEFAULT NULL COMMENT '实验小组id',
+    `operate_flow_id` varchar(64) DEFAULT NULL COMMENT '实验操作流程',
+    `case_org_id` varchar(64) DEFAULT NULL COMMENT '案例机构ID',
     `operate_account_id` varcahr DEFAULT NULL COMMENT '操作人id',
     `operate_account_name` varcahr DEFAULT NULL COMMENT '操作人名',
+    `experiment_pserson_id` varchar(64) DEFAULT NULL COMMENT '实验人物ID',
     `case_account_id` varchar(64) DEFAULT NULL COMMENT '案例人物',
     `case_account_name` varcahr DEFAULT NULL COMMENT '案例人名',
     `periods` integer(2) DEFAULT NULL COMMENT '期数',
     `operate_type` varchar(64) DEFAULT NULL COMMENT '操作[干预]类型 1-饮食 2-运动 3-心理 4-治疗',
+    `operate_time` varchar(64) DEFAULT NULL COMMENT '操作时间',
+    `descr` varchar(64) DEFAULT NULL COMMENT '操作描述',
+    `tag` varchar(64) DEFAULT NULL COMMENT '标签',
     `operate_value_json` varchar(64) DEFAULT NULL COMMENT '学生输入值json',
     `operate_context_json` blob DEFAULT NULL COMMENT '状态完整快照json',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
@@ -303,6 +381,185 @@ CREATE TABLE IF NOT EXISTS `operate_intervene`(
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_operate_intervene_id` (`operate_intervene_id`)
 ) ENGINE=InnoDB COMMENT='学生干预操作记录';
+
+drop table if exists `case_category`;
+CREATE TABLE IF NOT EXISTS `case_category`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `pid` bigint(19) DEFAULT NULL COMMENT '父ID',
+    `case_categ_pid` varchar(64) DEFAULT NULL COMMENT '类别父id',
+    `case_categ_id` varchar(64) DEFAULT NULL COMMENT '类别ID',
+    `case_categ_name` varchar(64) DEFAULT NULL COMMENT '类别名',
+    `case_categ_id_path` varchar(64) DEFAULT NULL COMMENT '类别ID路径',
+    `case_categ_name_path` varchar(512) DEFAULT NULL COMMENT '类别name路径',
+    `case_categ_group` varchar(64) DEFAULT NULL COMMENT '类别组',
+    `sequence` integer(2) DEFAULT NULL COMMENT '序列号',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_case_categ_pid` (`case_categ_pid`)
+) ENGINE=InnoDB COMMENT='案例类目';
+
+drop table if exists `case_instance`;
+CREATE TABLE IF NOT EXISTS `case_instance`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `case_name` varchar(64) DEFAULT NULL COMMENT '案例名称',
+    `case_pic` varchar(64) DEFAULT NULL COMMENT '案例图片',
+    `case_type` varchar(64) DEFAULT NULL COMMENT '案例类型',
+    `account_id` varchar(64) DEFAULT NULL COMMENT '创建者账号Id',
+    `account_name` varchar(64) DEFAULT NULL COMMENT '创建者姓名',
+    `descr` text(65535) DEFAULT NULL COMMENT '背景描述',
+    `guide` text(65535) DEFAULT NULL COMMENT '指导描述',
+    `state` integer(2) DEFAULT NULL COMMENT '案例状态[0:未发布|1:发布]',
+    `case_identifier` varchar(64) DEFAULT NULL COMMENT '案例唯一标示',
+    `ver` varchar(64) DEFAULT NULL COMMENT '版本号',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_case_instance_id` (`case_instance_id`)
+) ENGINE=InnoDB COMMENT='案例实例';
+
+drop table if exists `case_org_questionnaire`;
+CREATE TABLE IF NOT EXISTS `case_org_questionnaire`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `case_org_questionnaire` varchar(64) DEFAULT NULL COMMENT '案例机构问卷ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
+    `case_org_id` varchar(64) DEFAULT NULL COMMENT '案例机构ID',
+    `case_questionnaire_id` varchar(64) DEFAULT NULL COMMENT '案例问卷ID',
+    `case_identifier` varchar(64) DEFAULT NULL COMMENT '案例标示',
+    `ver` varchar(64) DEFAULT NULL COMMENT '版本号',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_case_org_questionnaire` (`case_org_questionnaire`)
+) ENGINE=InnoDB COMMENT='案例机构问卷';
+
+drop table if exists `case_notice`;
+CREATE TABLE IF NOT EXISTS `case_notice`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `case_notice_id` varchar(64) DEFAULT NULL COMMENT '案例通知ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
+    `notice_name` varchar(64) DEFAULT NULL COMMENT '公告名称',
+    `notice_content` varchar(64) DEFAULT NULL COMMENT '公告内容',
+    `periods` varchar(64) DEFAULT NULL COMMENT '期数',
+    `period_sequence` tinyint(4) DEFAULT NULL COMMENT '期数排序',
+    `case_identifier` varchar(64) DEFAULT NULL COMMENT '案例标示',
+    `ver` varchar(64) DEFAULT NULL COMMENT '版本号',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_case_notice_id` (`case_notice_id`)
+) ENGINE=InnoDB COMMENT='案例公告';
+
+drop table if exists `case_scheme`;
+CREATE TABLE IF NOT EXISTS `case_scheme`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `case_scheme_id` varchar(64) DEFAULT NULL COMMENT '方案ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
+    `case_categ_id` varchar(64) DEFAULT NULL COMMENT '类别ID',
+    `case_categ_name` varchar(64) DEFAULT NULL COMMENT '类别名',
+    `case_categ_id_path` varchar(64) DEFAULT NULL COMMENT '类别ID路径',
+    `case_categ_name_path` varchar(512) DEFAULT NULL COMMENT '类别name路径',
+    `scheme_name` varchar(64) DEFAULT NULL COMMENT '方案名称',
+    `tips` varchar(64) DEFAULT NULL COMMENT '方案提示',
+    `scheme_descr` varchar(64) DEFAULT NULL COMMENT '方案说明',
+    `contains_video` tinyint(4) DEFAULT NULL COMMENT '是否包含视频[0-否|1-是]',
+    `enabled` tinyint(4) DEFAULT NULL COMMENT '状态[0-关闭|1-开启]',
+    `source` varchar(64) DEFAULT NULL COMMENT '来源[admin|tenant]',
+    `account_id` varchar(64) DEFAULT NULL COMMENT '创建者账号ID',
+    `account_name` varchar(64) DEFAULT NULL COMMENT '创建者Name',
+    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
+    `question_count` integer(2) DEFAULT NULL COMMENT '题数',
+    `case_identifier` varchar(64) DEFAULT NULL COMMENT '案例标示',
+    `ver` varchar(64) DEFAULT NULL COMMENT '版本号',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_case_scheme_id` (`case_scheme_id`)
+) ENGINE=InnoDB COMMENT='案例方案';
+
+drop table if exists `case_scheme_result`;
+CREATE TABLE IF NOT EXISTS `case_scheme_result`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `case_scheme_result_id` varchar(64) DEFAULT NULL COMMENT '案例方案结果ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
+    `case_scheme_id` varchar(64) DEFAULT NULL COMMENT '方案ID',
+    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
+    `question_section_result_id` varchar(64) DEFAULT NULL COMMENT '答题记录ID',
+    `account_id` varchar(64) DEFAULT NULL COMMENT '答题者账号ID',
+    `account_name` varchar(64) DEFAULT NULL COMMENT '答题者Name',
+    `question_instance_ids` text(65535) DEFAULT NULL COMMENT '问题ids[1,2]',
+    `status` tinyint(4) DEFAULT NULL COMMENT '状态[0-未开始|1-进行中|2-已完成]',
+    `duration` integer(2) DEFAULT NULL COMMENT '持续时间[min]',
+    `case_identifier` varchar(64) DEFAULT NULL COMMENT '案例标示',
+    `ver` varchar(64) DEFAULT NULL COMMENT '版本号',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_case_scheme_result_id` (`case_scheme_result_id`)
+) ENGINE=InnoDB COMMENT='案例方案结果';
+
+drop table if exists `case_questionnaire`;
+CREATE TABLE IF NOT EXISTS `case_questionnaire`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `case_questionnaire_id` varchar(64) DEFAULT NULL COMMENT '案例问卷ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
+    `periods` varchar(64) DEFAULT NULL COMMENT '期数',
+    `period_sequence` tinyint(4) DEFAULT NULL COMMENT '期数排序',
+    `allot_mode` varchar(64) DEFAULT NULL COMMENT '分配方式',
+    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
+    `question_count` integer(2) DEFAULT NULL COMMENT '题数',
+    `question_section_structure` varchar(64) DEFAULT NULL COMMENT '题型结构',
+    `case_identifier` varchar(64) DEFAULT NULL COMMENT '案例标示',
+    `ver` varchar(64) DEFAULT NULL COMMENT '版本号',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_case_questionnaire_id` (`case_questionnaire_id`)
+) ENGINE=InnoDB COMMENT='案例问卷';
+
+drop table if exists `case_questionnaire_result`;
+CREATE TABLE IF NOT EXISTS `case_questionnaire_result`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `case_questionnaire_result_id` varchar(64) DEFAULT NULL COMMENT '案例问卷结果ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
+    `case_questionnaire_id` varchar(64) DEFAULT NULL COMMENT '案例问卷ID',
+    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
+    `question_section_result_id` varchar(64) DEFAULT NULL COMMENT '答题记录ID',
+    `account_id` varchar(64) DEFAULT NULL COMMENT '答题者账号ID',
+    `account_name` varchar(64) DEFAULT NULL COMMENT '答题者Name',
+    `status` tinyint(4) DEFAULT NULL COMMENT '状态[0-未开始|1-进行中|2-已完成]',
+    `case_identifier` varchar(64) DEFAULT NULL COMMENT '案例标示',
+    `ver` varchar(64) DEFAULT NULL COMMENT '版本号',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_case_questionnaire_result_id` (`case_questionnaire_result_id`)
+) ENGINE=InnoDB COMMENT='案例问卷结果';
+
+drop table if exists `case_setting`;
+CREATE TABLE IF NOT EXISTS `case_setting`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `case_setting_id` varchar(64) DEFAULT NULL COMMENT '案例问卷设置ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
+    `score_mode` varchar(64) DEFAULT NULL COMMENT '记分方式[少选不得分|少选得一半分]',
+    `allot_mode` varchar(64) DEFAULT NULL COMMENT '分配方式',
+    `ext` varchar(64) DEFAULT NULL COMMENT '额外配置[JSON]',
+    `case_identifier` varchar(64) DEFAULT NULL COMMENT '案例标示',
+    `ver` varchar(64) DEFAULT NULL COMMENT '版本号',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_case_setting_id` (`case_setting_id`)
+) ENGINE=InnoDB COMMENT='案例问卷设置';
 
 drop table if exists `case_org`;
 CREATE TABLE IF NOT EXISTS `case_org`(
@@ -314,23 +571,29 @@ CREATE TABLE IF NOT EXISTS `case_org`(
     `org_name` varchar(64) DEFAULT NULL COMMENT '机构名称',
     `scene` varchar(64) DEFAULT NULL COMMENT '场景',
     `handbook` varchar(64) DEFAULT NULL COMMENT '操作手册',
+    `ver` varchar(64) DEFAULT NULL COMMENT '版本号',
+    `case_identifier` varchar(64) DEFAULT NULL COMMENT '案例标示',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_case_org_id` (`case_org_id`)
 ) ENGINE=InnoDB COMMENT='案例机构';
 
 drop table if exists `case_org_function`;
 CREATE TABLE IF NOT EXISTS `case_org_function`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `case_org_id` varchar(64) DEFAULT NULL COMMENT '案例机构ID',
     `case_org_function_id` varchar(64) DEFAULT NULL COMMENT '机构功能ID',
+    `case_org_id` varchar(64) DEFAULT NULL COMMENT '案例机构ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `function_name` varchar(64) DEFAULT NULL COMMENT '功能|菜单名称',
     `function_icon` varchar(64) DEFAULT NULL COMMENT '功能图标',
     `org_name` varchar(64) DEFAULT NULL COMMENT '机构名称',
+    `ver` varchar(64) DEFAULT NULL COMMENT '版本号',
+    `case_identifier` varchar(64) DEFAULT NULL COMMENT '案例标示',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_case_org_function_id` (`case_org_function_id`)
 ) ENGINE=InnoDB COMMENT='机构功能';
 
 drop table if exists `case_org_indicator`;
@@ -342,6 +605,8 @@ CREATE TABLE IF NOT EXISTS `case_org_indicator`(
     `indicator_categ_id` varchar(64) DEFAULT NULL COMMENT '指标分类ID',
     `indicator_name` varchar(64) DEFAULT NULL COMMENT '指标名称',
     `indicator_code` varchar(64) DEFAULT NULL COMMENT '指标Code',
+    `ver` varchar(64) DEFAULT NULL COMMENT '版本号',
+    `case_identifier` varchar(64) DEFAULT NULL COMMENT '案例标示',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) 
@@ -350,9 +615,8 @@ CREATE TABLE IF NOT EXISTS `case_org_indicator`(
 drop table if exists `case_org_fee`;
 CREATE TABLE IF NOT EXISTS `case_org_fee`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `case_org_indicator_id` varchar(64) DEFAULT NULL COMMENT '机构功能指标点ID',
     `case_org_fee_id` varchar(64) DEFAULT NULL COMMENT '案例机构费用ID',
+    `case_org_indicator_id` varchar(64) DEFAULT NULL COMMENT '机构功能指标点ID',
     `case_instance_id` varchcar DEFAULT NULL COMMENT '案例ID',
     `case_org_id` varchar(64) DEFAULT NULL COMMENT '案例机构ID',
     `org_function_id` varchar(64) DEFAULT NULL COMMENT '机构功能ID',
@@ -361,10 +625,27 @@ CREATE TABLE IF NOT EXISTS `case_org_fee`(
     `fee` decimal(11,2) DEFAULT NULL COMMENT '费用',
     `fee_code` varchar(64) DEFAULT NULL COMMENT '费用Code',
     `fee_name` varchar(64) DEFAULT NULL COMMENT '费用名称',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `ver` varchar(64) DEFAULT NULL COMMENT '版本号',
+    `case_identifier` varchar(64) DEFAULT NULL COMMENT '案例标示',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) 
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_case_org_fee_id` (`case_org_fee_id`)
 ) ENGINE=InnoDB COMMENT='案例机构费用';
+
+drop table if exists `case_person`;
+CREATE TABLE IF NOT EXISTS `case_person`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `case_person_id` varchar(64) DEFAULT NULL COMMENT '案例人物ID',
+    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
+    `case_org_id` varchar(64) DEFAULT NULL COMMENT '案例机构ID',
+    `case_account_id` varchar(64) DEFAULT NULL COMMENT '案例|病人账号ID[uim]',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_case_person_ID` (`case_person_ID`)
+) ENGINE=InnoDB COMMENT='案例人物';
 
 drop table if exists `case_event`;
 CREATE TABLE IF NOT EXISTS `case_event`(
@@ -385,6 +666,8 @@ CREATE TABLE IF NOT EXISTS `case_event`(
     `create_account_name` varchar(64) DEFAULT NULL COMMENT '创建者名称',
     `trigger_period` varchar(64) DEFAULT NULL COMMENT '触发期数',
     `trigger_span` varchar(64) DEFAULT NULL COMMENT '触发时间段 1-前期 2-中期 3-后期',
+    `ver` varchar(64) DEFAULT NULL COMMENT '版本号',
+    `case_identifier` varchar(64) DEFAULT NULL COMMENT '案例标示sssss',
     `state` tinyint(4) DEFAULT NULL COMMENT '状态 0-启用 1-停用',
     `trigger_type` tinyint(4) DEFAULT NULL COMMENT '触发类型 1-事件触发 2-条件触发',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
@@ -403,6 +686,8 @@ CREATE TABLE IF NOT EXISTS `case_event_eval`(
     `expression_vars` varchar(64) DEFAULT NULL COMMENT '表达式涉及变量',
     `expression_min` varchar(64) DEFAULT NULL COMMENT '最小值',
     `expression_max` varchar(64) DEFAULT NULL COMMENT '最大值',
+    `ver` varchar(64) DEFAULT NULL COMMENT '版本号',
+    `case_identifier` varchar(64) DEFAULT NULL COMMENT '案例标示',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
@@ -415,6 +700,8 @@ CREATE TABLE IF NOT EXISTS `case_event_action`(
     `case_event_action_id` varchar(64) DEFAULT NULL COMMENT '分布式id',
     `case_event_id` varchar(64) DEFAULT NULL COMMENT '事件id',
     `action_desc` varchar(64) DEFAULT NULL COMMENT '处理描述',
+    `ver` varchar(64) DEFAULT NULL COMMENT '版本号',
+    `case_identifier` varchar(64) DEFAULT NULL COMMENT '案例标示',
     `score` integer(2) DEFAULT NULL COMMENT '=0错误选项 >0得分',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
@@ -435,6 +722,8 @@ CREATE TABLE IF NOT EXISTS `case_event_action_indicator`(
     `expression_vars` varchar(64) DEFAULT NULL COMMENT '表达式涉及变量',
     `expression_min` varchar(64) DEFAULT NULL COMMENT '最小值',
     `expression_max` varchar(64) DEFAULT NULL COMMENT '最大值',
+    `ver` varchar(64) DEFAULT NULL COMMENT '版本号',
+    `case_identifier` varchar(64) DEFAULT NULL COMMENT '案例标示',
     `seq` integer(2) DEFAULT NULL COMMENT '排序号',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
@@ -1092,159 +1381,44 @@ CREATE TABLE IF NOT EXISTS `question_section_result_item`(
     UNIQUE KEY `unique_question_section_result_item_id` (`question_section_result_item_id`)
 ) ENGINE=InnoDB COMMENT='问题集[试卷]-答题记录Item';
 
-drop table if exists `case_category`;
-CREATE TABLE IF NOT EXISTS `case_category`(
+drop table if exists `materials`;
+CREATE TABLE IF NOT EXISTS `materials`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `pid` bigint(19) DEFAULT NULL COMMENT '父ID',
-    `case_categ_pid` varchar(64) DEFAULT NULL COMMENT '类别父id',
-    `case_categ_id` varchar(64) DEFAULT NULL COMMENT '类别ID',
-    `case_categ_name` varchar(64) DEFAULT NULL COMMENT '类别名',
-    `case_categ_id_path` varchar(64) DEFAULT NULL COMMENT '类别ID路径',
-    `case_categ_name_path` varchar(512) DEFAULT NULL COMMENT '类别name路径',
-    `case_categ_group` varchar(64) DEFAULT NULL COMMENT '类别组',
-    `sequence` integer(2) DEFAULT NULL COMMENT '序列号',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_case_categ_pid` (`case_categ_pid`)
-) ENGINE=InnoDB COMMENT='案例类目';
-
-drop table if exists `case_instance`;
-CREATE TABLE IF NOT EXISTS `case_instance`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
+    `materials_id` varchar(64) DEFAULT NULL COMMENT '资料ID',
     `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `case_name` varchar(64) DEFAULT NULL COMMENT '案例名称',
-    `case_pic` varchar(64) DEFAULT NULL COMMENT '案例图片',
-    `case_type` varchar(64) DEFAULT NULL COMMENT '案例类型',
+    `title` varchar(64) DEFAULT NULL COMMENT '标题',
+    `descr` varchar(64) DEFAULT NULL COMMENT '资料简介',
+    `type` varchar(64) DEFAULT NULL COMMENT '资料类型',
+    `sequence` integer(2) DEFAULT NULL COMMENT '序号',
+    `enabled` tinyint(4) DEFAULT NULL COMMENT '状态',
     `account_id` varchar(64) DEFAULT NULL COMMENT '创建者账号Id',
     `account_name` varchar(64) DEFAULT NULL COMMENT '创建者姓名',
-    `descr` text(65535) DEFAULT NULL COMMENT '背景描述',
-    `guide` text(65535) DEFAULT NULL COMMENT '指导描述',
-    `state` integer(2) DEFAULT NULL COMMENT '案例状态[0:未发布|1:发布]',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_case_instance_id` (`case_instance_id`)
-) ENGINE=InnoDB COMMENT='案例实例';
+    UNIQUE KEY `unique_materials_id` (`materials_id`)
+) ENGINE=InnoDB COMMENT='资料';
 
-drop table if exists `case_notice`;
-CREATE TABLE IF NOT EXISTS `case_notice`(
+drop table if exists `materials_attachment`;
+CREATE TABLE IF NOT EXISTS `materials_attachment`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `case_notice_id` varchar(64) DEFAULT NULL COMMENT '案例通知ID',
+    `materials_attachment_id` varchar(64) DEFAULT NULL COMMENT '资料附件ID',
     `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
-    `notice_name` varchar(64) DEFAULT NULL COMMENT '公告名称',
-    `notice_content` varchar(64) DEFAULT NULL COMMENT '公告内容',
-    `periods` varchar(64) DEFAULT NULL COMMENT '期数',
-    `period_sequence` tinyint(4) DEFAULT NULL COMMENT '期数排序',
+    `materials_id` varchar(64) DEFAULT NULL COMMENT '资料ID',
+    `file_name` varchar(64) DEFAULT NULL COMMENT '文件名称',
+    `file_uri` varchar(64) DEFAULT NULL COMMENT '文件路径',
+    `file_type` varchar(64) DEFAULT NULL COMMENT '文件类型',
+    `sequence` integer(2) DEFAULT NULL COMMENT '序号',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_case_notice_id` (`case_notice_id`)
-) ENGINE=InnoDB COMMENT='案例公告';
-
-drop table if exists `case_scheme`;
-CREATE TABLE IF NOT EXISTS `case_scheme`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `case_scheme_id` varchar(64) DEFAULT NULL COMMENT '方案ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
-    `case_categ_id` varchar(64) DEFAULT NULL COMMENT '类别ID',
-    `case_categ_name` varchar(64) DEFAULT NULL COMMENT '类别名',
-    `case_categ_id_path` varchar(64) DEFAULT NULL COMMENT '类别ID路径',
-    `case_categ_name_path` varchar(512) DEFAULT NULL COMMENT '类别name路径',
-    `scheme_name` varchar(64) DEFAULT NULL COMMENT '方案名称',
-    `tips` varchar(64) DEFAULT NULL COMMENT '方案提示',
-    `scheme_descr` varchar(64) DEFAULT NULL COMMENT '方案说明',
-    `contains_video` tinyint(4) DEFAULT NULL COMMENT '是否包含视频[0-否|1-是]',
-    `enabled` tinyint(4) DEFAULT NULL COMMENT '状态[0-关闭|1-开启]',
-    `source` varchar(64) DEFAULT NULL COMMENT '来源[admin|tenant]',
-    `account_id` varchar(64) DEFAULT NULL COMMENT '创建者账号ID',
-    `account_name` varchar(64) DEFAULT NULL COMMENT '创建者Name',
-    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
-    `question_count` integer(2) DEFAULT NULL COMMENT '题数',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_case_scheme_id` (`case_scheme_id`)
-) ENGINE=InnoDB COMMENT='案例方案';
-
-drop table if exists `case_scheme_result`;
-CREATE TABLE IF NOT EXISTS `case_scheme_result`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `case_scheme_result_id` varchar(64) DEFAULT NULL COMMENT '案例方案结果ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
-    `case_scheme_id` varchar(64) DEFAULT NULL COMMENT '方案ID',
-    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
-    `question_section_result_id` varchar(64) DEFAULT NULL COMMENT '答题记录ID',
-    `account_id` varchar(64) DEFAULT NULL COMMENT '答题者账号ID',
-    `account_name` varchar(64) DEFAULT NULL COMMENT '答题者Name',
-    `question_instance_ids` text(65535) DEFAULT NULL COMMENT '问题ids[1,2]',
-    `status` tinyint(4) DEFAULT NULL COMMENT '状态[0-未开始|1-进行中|2-已完成]',
-    `duration` integer(2) DEFAULT NULL COMMENT '持续时间[min]',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_case_scheme_result_id` (`case_scheme_result_id`)
-) ENGINE=InnoDB COMMENT='案例方案结果';
-
-drop table if exists `case_questionnaire`;
-CREATE TABLE IF NOT EXISTS `case_questionnaire`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `case_questionnaire_id` varchar(64) DEFAULT NULL COMMENT '案例问卷ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
-    `periods` varchar(64) DEFAULT NULL COMMENT '期数',
-    `period_sequence` tinyint(4) DEFAULT NULL COMMENT '期数排序',
-    `allot_mode` varchar(64) DEFAULT NULL COMMENT '分配方式',
-    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
-    `question_count` integer(2) DEFAULT NULL COMMENT '题数',
-    `question_section_structure` varchar(64) DEFAULT NULL COMMENT '题型结构',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_case_questionnaire_id` (`case_questionnaire_id`)
-) ENGINE=InnoDB COMMENT='案例问卷';
-
-drop table if exists `case_questionnaire_result`;
-CREATE TABLE IF NOT EXISTS `case_questionnaire_result`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `case_questionnaire_result_id` varchar(64) DEFAULT NULL COMMENT '案例问卷结果ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
-    `case_questionnaire_id` varchar(64) DEFAULT NULL COMMENT '案例问卷ID',
-    `question_section_id` varchar(64) DEFAULT NULL COMMENT '问题集ID',
-    `question_section_result_id` varchar(64) DEFAULT NULL COMMENT '答题记录ID',
-    `account_id` varchar(64) DEFAULT NULL COMMENT '答题者账号ID',
-    `account_name` varchar(64) DEFAULT NULL COMMENT '答题者Name',
-    `status` tinyint(4) DEFAULT NULL COMMENT '状态[0-未开始|1-进行中|2-已完成]',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_case_questionnaire_result_id` (`case_questionnaire_result_id`)
-) ENGINE=InnoDB COMMENT='案例问卷结果';
-
-drop table if exists `case_setting`;
-CREATE TABLE IF NOT EXISTS `case_setting`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `case_setting_id` varchar(64) DEFAULT NULL COMMENT '案例问卷设置ID',
-    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
-    `score_mode` varchar(64) DEFAULT NULL COMMENT '记分方式[少选不得分|少选得一半分]',
-    `allot_mode` varchar(64) DEFAULT NULL COMMENT '分配方式',
-    `ext` varchar(64) DEFAULT NULL COMMENT '额外配置[JSON]',
-    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
-    `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_case_setting_id` (`case_setting_id`)
-) ENGINE=InnoDB COMMENT='案例问卷设置';
+    UNIQUE KEY `unique_materials_attachment_id` (`materials_attachment_id`)
+) ENGINE=InnoDB COMMENT='资料-附件';
 
 drop table if exists `indicator_category`;
 CREATE TABLE IF NOT EXISTS `indicator_category`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '指标类别分布式ID',
     `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `pid` varchar(64) DEFAULT NULL COMMENT '父ID',
     `category_name` varchar(64) DEFAULT NULL COMMENT '分类名称',
@@ -1280,7 +1454,7 @@ CREATE TABLE IF NOT EXISTS `indicator_category_ref`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
     `indicator_category_ref_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
     `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
+    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '指标类别分布式ID',
     `indicator_instance_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
     `seq` integer(2) DEFAULT NULL COMMENT '展示顺序',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
@@ -1288,6 +1462,22 @@ CREATE TABLE IF NOT EXISTS `indicator_category_ref`(
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_category_ref_id` (`indicator_category_ref_id`)
 ) ENGINE=InnoDB COMMENT='指标分类与指标关联关系';
+
+drop table if exists `indicator_func`;
+CREATE TABLE IF NOT EXISTS `indicator_func`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `indicator_func` varchar(64) DEFAULT NULL COMMENT '指标功能分布式ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '指标类别分布式ID',
+    `name` varchar(64) DEFAULT NULL COMMENT '功能名称',
+    `operation_tip` varchar(64) DEFAULT NULL COMMENT '操作提示',
+    `dialog_tip` varchar(64) DEFAULT NULL COMMENT '对话提示',
+    `seq` integer(2) DEFAULT NULL COMMENT '展示顺序',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_indicator_func` (`indicator_func`)
+) ENGINE=InnoDB COMMENT='指标功能';
 
 drop table if exists `indicator_ref`;
 CREATE TABLE IF NOT EXISTS `indicator_ref`(

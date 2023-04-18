@@ -1,20 +1,18 @@
 package org.dows.hep.biz.base.indicator;
 
-import org.dows.framework.api.Response;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorRuleRequest;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorRuleRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorRuleResponse;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.List;
+
 /**
 * @description project descr:指标:指标规则
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:53
+* @date 2023年4月18日 上午10:45:07
 */
 @Service
 public class IndicatorRuleBiz{
@@ -26,7 +24,7 @@ public class IndicatorRuleBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public void createIndicatorRule(CreateIndicatorRuleRequest createIndicatorRule ) {
         
@@ -39,7 +37,7 @@ public class IndicatorRuleBiz{
     * @工时: 2H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public void deleteIndicatorRule(String indicatorRuleId ) {
         
@@ -52,7 +50,7 @@ public class IndicatorRuleBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public void updateIndicatorRule(UpdateIndicatorRuleRequest updateIndicatorRule ) {
         
@@ -65,9 +63,35 @@ public class IndicatorRuleBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public IndicatorRuleResponse getIndicatorRule(String indicatorRuleId ) {
         return new IndicatorRuleResponse();
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 筛选指标规则
+    * @关联表: 
+    * @工时: 4H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月18日 上午10:45:07
+    */
+    public List<IndicatorRuleResponse> listIndicatorRule(String appId, String variableId, Integer ruleType, String min, String max, String def, String descr ) {
+        return new ArrayList<IndicatorRuleResponse>();
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 分页筛选指标规则
+    * @关联表: 
+    * @工时: 4H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月18日 上午10:45:07
+    */
+    public String pageIndicatorRule(Integer pageNo, Integer pageSize, String appId, String variableId, Integer ruleType, String min, String max, String def, String descr ) {
+        return new String();
     }
 }

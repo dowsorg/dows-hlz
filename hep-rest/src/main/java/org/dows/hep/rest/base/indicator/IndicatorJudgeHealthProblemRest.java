@@ -1,16 +1,15 @@
 package org.dows.hep.rest.base.indicator;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.framework.api.Response;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeHealthProblemRequest;
-import org.dows.hep.api.base.indicator.request.UpdateStatusIndicatorJudgeHealthProblemRequest;
+import org.dows.hep.api.base.indicator.request.DecimalRequest;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorJudgeHealthProblemRequest;
+import org.dows.hep.api.base.indicator.request.UpdateStatusIndicatorJudgeHealthProblemRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthProblemResponse;
 import org.dows.hep.biz.base.indicator.IndicatorJudgeHealthProblemBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,7 +18,7 @@ import java.util.List;
 * @description project descr:指标:判断指标健康问题
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:52
+* @date 2023年4月18日 上午10:45:07
 */
 @RequiredArgsConstructor
 @RestController
@@ -47,6 +46,17 @@ public class IndicatorJudgeHealthProblemRest {
     @DeleteMapping("v1/baseIndicator/indicatorJudgeHealthProblem/deleteIndicatorJudgeHealthProblem")
     public void deleteIndicatorJudgeHealthProblem(@Validated String indicatorJudgeHealthProblemId ) {
         indicatorJudgeHealthProblemBiz.deleteIndicatorJudgeHealthProblem(indicatorJudgeHealthProblemId);
+    }
+
+    /**
+    * 批量删除
+    * @param
+    * @return
+    */
+    @Operation(summary = "批量删除")
+    @DeleteMapping("v1/baseIndicator/indicatorJudgeHealthProblem/batchDelete")
+    public void batchDelete(@Validated String string ) {
+        indicatorJudgeHealthProblemBiz.batchDelete(string);
     }
 
     /**
@@ -83,14 +93,25 @@ public class IndicatorJudgeHealthProblemRest {
     }
 
     /**
-    * 分页获取判断指标健康问题
+    * 筛选判断指标健康问题
     * @param
     * @return
     */
-    @Operation(summary = "分页获取判断指标健康问题")
+    @Operation(summary = "筛选判断指标健康问题")
+    @GetMapping("v1/baseIndicator/indicatorJudgeHealthProblem/listIndicatorJudgeHealthProblem")
+    public List<IndicatorJudgeHealthProblemResponse> listIndicatorJudgeHealthProblem(@Validated String appId, @Validated String indicatorCategoryId, @Validated String name, @Validated String type, @Validated DecimalRequest point, @Validated String expression, @Validated String resultExplain, @Validated Integer status) {
+        return indicatorJudgeHealthProblemBiz.listIndicatorJudgeHealthProblem(appId,indicatorCategoryId,name,type,point,expression,resultExplain,status);
+    }
+
+    /**
+    * 分页筛选判断指标健康问题
+    * @param
+    * @return
+    */
+    @Operation(summary = "分页筛选判断指标健康问题")
     @GetMapping("v1/baseIndicator/indicatorJudgeHealthProblem/pageIndicatorJudgeHealthProblem")
-    public void pageIndicatorJudgeHealthProblem(@Validated String todo) {
-        indicatorJudgeHealthProblemBiz.pageIndicatorJudgeHealthProblem(todo);
+    public String pageIndicatorJudgeHealthProblem(@Validated Integer pageNo, @Validated Integer pageSize, @Validated String appId, @Validated String indicatorCategoryId, @Validated String name, @Validated String type, @Validated DecimalRequest point, @Validated String expression, @Validated String resultExplain, @Validated Integer status) {
+        return indicatorJudgeHealthProblemBiz.pageIndicatorJudgeHealthProblem(pageNo,pageSize,appId,indicatorCategoryId,name,type,point,expression,resultExplain,status);
     }
 
 

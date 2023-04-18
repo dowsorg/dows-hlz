@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "QuestionnaireMergeElements 对象", title = "试卷合并因素")
-public class QuestionnaireMergeElementsRequest {
+public class QuestionnaireMergeElementsRequest{
     @Schema(title = "问题集[试卷]ids")
     private String questionSectionIds;
 

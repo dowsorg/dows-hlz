@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "FoodNutient 对象", title = "营养指标列表")
-public class FoodNutientResponse {
+public class FoodNutientResponse{
     @Schema(title = "营养指标")
     private String indicatorInstanceId;
 

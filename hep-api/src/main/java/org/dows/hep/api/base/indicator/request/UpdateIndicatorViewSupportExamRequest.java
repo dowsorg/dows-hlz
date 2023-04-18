@@ -7,16 +7,17 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "UpdateIndicatorViewSupportExam 对象", title = "查看指标辅助检查类")
-public class UpdateIndicatorViewSupportExamRequest {
+public class UpdateIndicatorViewSupportExamRequest{
     @Schema(title = "查看指标辅助检查类分布式ID")
-    private String IndicatorViewSupportExamId;
+    private String indicatorViewSupportExamId;
 
     @Schema(title = "辅助检查名称")
     private String name;
@@ -34,7 +35,7 @@ public class UpdateIndicatorViewSupportExamRequest {
     private Integer status;
 
     @Schema(title = "创建查看指标辅助检查关联指标列表")
-    private String ListCreateIndicatorViewSupportExamRef;
+    private String listCreateIndicatorViewSupportExamRef;
 
 
 }

@@ -1,21 +1,20 @@
 package org.dows.hep.biz.base.indicator;
 
-import org.dows.framework.api.Response;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeRiskFactorRequest;
-import org.dows.hep.api.base.indicator.request.UpdateStatusIndicatorJudgeRiskFactorRequest;
+import org.dows.hep.api.base.indicator.request.DecimalRequest;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorJudgeRiskFactorRequest;
+import org.dows.hep.api.base.indicator.request.UpdateStatusIndicatorJudgeRiskFactorRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponse;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.List;
+
 /**
 * @description project descr:指标:判断指标危险因素
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:53
+* @date 2023年4月18日 上午10:45:07
 */
 @Service
 public class IndicatorJudgeRiskFactorBiz{
@@ -27,7 +26,7 @@ public class IndicatorJudgeRiskFactorBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public void createIndicatorJudgeRiskFactor(CreateIndicatorJudgeRiskFactorRequest createIndicatorJudgeRiskFactor ) {
         
@@ -40,7 +39,7 @@ public class IndicatorJudgeRiskFactorBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public void deleteIndicatorJudgeRiskFactor(String indicatorJudgeRiskFactorId ) {
         
@@ -48,12 +47,25 @@ public class IndicatorJudgeRiskFactorBiz{
     /**
     * @param
     * @return
+    * @说明: 批量删除
+    * @关联表: 
+    * @工时: 4H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月18日 上午10:45:07
+    */
+    public void batchDelete(String string ) {
+        
+    }
+    /**
+    * @param
+    * @return
     * @说明: 更改启用状态
     * @关联表: 
-    * @工时: 0H
-    * @开发者: 
+    * @工时: 4H
+    * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public void updateStatus(UpdateStatusIndicatorJudgeRiskFactorRequest updateStatusIndicatorJudgeRiskFactor ) {
         
@@ -66,7 +78,7 @@ public class IndicatorJudgeRiskFactorBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public void updateIndicatorJudgeRiskFactor(UpdateIndicatorJudgeRiskFactorRequest updateIndicatorJudgeRiskFactor ) {
         
@@ -79,7 +91,7 @@ public class IndicatorJudgeRiskFactorBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public IndicatorJudgeRiskFactorResponse getIndicatorJudgeRiskFactor(String indicatorJudgeRiskFactorId ) {
         return new IndicatorJudgeRiskFactorResponse();
@@ -87,14 +99,27 @@ public class IndicatorJudgeRiskFactorBiz{
     /**
     * @param
     * @return
-    * @说明: 分页获取判断指标危险因素
+    * @说明: 筛选判断指标危险因素
     * @关联表: 
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
-    public void pageIndicatorViewSupportExam(String todo ) {
-        
+    public List<IndicatorJudgeRiskFactorResponse> listIndicatorJudgeRiskFactor(String appId, String indicatorCategoryId, String name, String type, DecimalRequest point, String expression, String resultExplain, Integer status ) {
+        return new ArrayList<IndicatorJudgeRiskFactorResponse>();
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 分页筛选判断指标危险因素
+    * @关联表: 
+    * @工时: 4H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月18日 上午10:45:07
+    */
+    public String pageIndicatorJudgeRiskFactor(Integer pageNo, Integer pageSize, String appId, String indicatorCategoryId, String name, String type, DecimalRequest point, String expression, String resultExplain, Integer status ) {
+        return new String();
     }
 }

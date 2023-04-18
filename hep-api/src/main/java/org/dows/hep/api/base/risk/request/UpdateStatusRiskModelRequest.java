@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "UpdateStatusRiskModel 对象", title = "更改启用状态")
-public class UpdateStatusRiskModelRequest {
+public class UpdateStatusRiskModelRequest{
     @Schema(title = "风险模型ID")
     private String riskModelId;
 

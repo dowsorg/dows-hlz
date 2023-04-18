@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "CaseEventInfo 对象", title = "事件信息")
-public class CaseEventInfoResponse {
+public class CaseEventInfoResponse{
     @Schema(title = "案例id")
     private String caseInstanceId;
 

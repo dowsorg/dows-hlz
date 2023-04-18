@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "InterveneCateg 对象", title = "类别信息列表")
-public class InterveneCategResponse {
+public class InterveneCategResponse{
     @Schema(title = "类别key")
     private String section;
 

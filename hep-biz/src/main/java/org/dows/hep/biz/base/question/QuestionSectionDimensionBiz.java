@@ -1,19 +1,17 @@
 package org.dows.hep.biz.base.question;
 
-import org.dows.framework.api.Response;
 import org.dows.hep.api.base.question.request.QuestionSectionDimensionRequest;
 import org.dows.hep.api.base.question.response.QuestionSectionDimensionResponse;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.List;
+
 /**
 * @description project descr:问题:问题集-维度
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:53
+* @date 2023年4月18日 上午10:45:07
 */
 @Service
 public class QuestionSectionDimensionBiz{
@@ -25,7 +23,7 @@ public class QuestionSectionDimensionBiz{
     * @工时: 4H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public Boolean saveOrUpdQuestionSectionDimension(QuestionSectionDimensionRequest questionSectionDimension ) {
         return Boolean.FALSE;
@@ -38,7 +36,7 @@ public class QuestionSectionDimensionBiz{
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public List<QuestionSectionDimensionResponse> listQuestionSectionDimension(String questionSectionId ) {
         return new ArrayList<QuestionSectionDimensionResponse>();
@@ -51,7 +49,7 @@ public class QuestionSectionDimensionBiz{
     * @工时: 6H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public Boolean delQuestionSectionDimension(String questionSectionDimensionIds ) {
         return Boolean.FALSE;

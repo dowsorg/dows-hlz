@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "QuestionnaireGenerateElements 对象", title = "试卷自动生成因素")
-public class QuestionnaireGenerateElementsRequest {
+public class QuestionnaireGenerateElementsRequest{
     @Schema(title = "类别Id")
     private String questionInstanceCategId;
 

@@ -2,13 +2,10 @@ package org.dows.hep.rest.base.evaluate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.framework.api.Response;
 import org.dows.hep.api.base.evaluate.request.CreateEvaluateReportManagementRequest;
 import org.dows.hep.api.base.evaluate.response.EvaluateReportManagementResponse;
 import org.dows.hep.biz.base.evaluate.EvaluateReportManagementBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,7 +14,7 @@ import java.util.List;
 * @description project descr:评估:评估报告管理
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:52
+* @date 2023年4月18日 上午10:45:07
 */
 @RequiredArgsConstructor
 @RestController
@@ -48,14 +45,36 @@ public class EvaluateReportManagementRest {
     }
 
     /**
-    * 查看评估报告管理
+    * 获取评估报告管理
     * @param
     * @return
     */
-    @Operation(summary = "查看评估报告管理")
+    @Operation(summary = "获取评估报告管理")
     @GetMapping("v1/baseEvaluate/evaluateReportManagement/getEvaluateReportManagement")
     public EvaluateReportManagementResponse getEvaluateReportManagement(@Validated String evaluateReportManagementId) {
         return evaluateReportManagementBiz.getEvaluateReportManagement(evaluateReportManagementId);
+    }
+
+    /**
+    * 筛选评估报告管理
+    * @param
+    * @return
+    */
+    @Operation(summary = "筛选评估报告管理")
+    @GetMapping("v1/baseEvaluate/evaluateReportManagement/listEvaluateReportManagement")
+    public List<EvaluateReportManagementResponse> listEvaluateReportManagement(@Validated String appId, @Validated String questionnaireId, @Validated String reportName, @Validated String reportDescr, @Validated String assessmentResult, @Validated String suggestion, @Validated Integer minScore, @Validated Integer maxScore) {
+        return evaluateReportManagementBiz.listEvaluateReportManagement(appId,questionnaireId,reportName,reportDescr,assessmentResult,suggestion,minScore,maxScore);
+    }
+
+    /**
+    * 分页筛选评估报告管理
+    * @param
+    * @return
+    */
+    @Operation(summary = "分页筛选评估报告管理")
+    @GetMapping("v1/baseEvaluate/evaluateReportManagement/pageEvaluateReportManagement")
+    public String pageEvaluateReportManagement(@Validated Integer pageNo, @Validated Integer pageSize, @Validated String appId, @Validated String questionnaireId, @Validated String reportName, @Validated String reportDescr, @Validated String assessmentResult, @Validated String suggestion, @Validated Integer minScore, @Validated Integer maxScore) {
+        return evaluateReportManagementBiz.pageEvaluateReportManagement(pageNo,pageSize,appId,questionnaireId,reportName,reportDescr,assessmentResult,suggestion,minScore,maxScore);
     }
 
 

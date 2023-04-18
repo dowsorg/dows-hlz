@@ -1,17 +1,12 @@
 package org.dows.hep.biz.user.experiment;
 
-import org.dows.framework.api.Response;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
 /**
 * @description project descr:实验:实验分数计算
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:53
+* @date 2023年4月18日 上午10:45:07
 */
 @Service
 public class ExperimentComputeBiz{
@@ -23,7 +18,7 @@ public class ExperimentComputeBiz{
     * @工时: 0H
     * @开发者: 
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public void computeRanking() {
         
@@ -36,7 +31,7 @@ public class ExperimentComputeBiz{
     * @工时: 0H
     * @开发者: 
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public void getRanks() {
         

@@ -1,26 +1,22 @@
 package org.dows.hep.rest.base.intervene;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.framework.api.Response;
-import org.dows.hep.api.base.intervene.request.FindFoodRequest;
-import org.dows.hep.api.base.intervene.response.FoodMaterialResponse;
-import org.dows.hep.api.base.intervene.response.FoodMaterialInfoResponse;
-import org.dows.hep.api.base.intervene.request.SaveFoodMaterialRequest;
 import org.dows.hep.api.base.intervene.request.DelFoodMaterialRequest;
+import org.dows.hep.api.base.intervene.request.FindFoodRequest;
+import org.dows.hep.api.base.intervene.request.SaveFoodMaterialRequest;
+import org.dows.hep.api.base.intervene.response.FoodMaterialInfoResponse;
+import org.dows.hep.api.base.intervene.response.FoodMaterialResponse;
 import org.dows.hep.biz.base.intervene.FoodMaterialBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
 * @description project descr:干预:食材
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:52
+* @date 2023年4月18日 上午10:45:07
 */
 @RequiredArgsConstructor
 @RestController

@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "CreateIndicatorViewMonitorFollowup 对象", title = "创建查看指标监测随访类")
-public class CreateIndicatorViewMonitorFollowupRequest {
+public class CreateIndicatorViewMonitorFollowupRequest{
     @Schema(title = "应用ID")
     private String appId;
 

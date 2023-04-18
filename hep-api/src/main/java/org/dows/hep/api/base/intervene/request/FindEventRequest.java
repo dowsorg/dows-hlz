@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "FindEvent 对象", title = "查询条件")
-public class FindEventRequest {
+public class FindEventRequest{
     @Schema(title = "分页大小")
     private Integer pageSize;
 

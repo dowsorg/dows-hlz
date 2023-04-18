@@ -1,21 +1,15 @@
 package org.dows.hep.biz.base.question;
 
-import org.dows.framework.api.Response;
 import org.dows.hep.api.base.question.request.QuestionSectionResultRequest;
 import org.dows.hep.api.base.question.request.QuestionSectionResultSearchRequest;
 import org.dows.hep.api.base.question.response.QuestionSectionResultResponse;
-import org.dows.hep.api.base.question.response.QuestionSectionResultResponse;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
 /**
 * @description project descr:问题:问题集-答题记录
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:53
+* @date 2023年4月18日 上午10:45:07
 */
 @Service
 public class QuestionSectionResultBiz{
@@ -27,7 +21,7 @@ public class QuestionSectionResultBiz{
     * @工时: 8H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public Boolean saveOrUpdQuestionSectionResult(QuestionSectionResultRequest questionSectionResult ) {
         return Boolean.FALSE;
@@ -40,7 +34,7 @@ public class QuestionSectionResultBiz{
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public QuestionSectionResultResponse pageQuestionSectionResult(QuestionSectionResultSearchRequest questionSectionResultSearch ) {
         return new QuestionSectionResultResponse();
@@ -53,7 +47,7 @@ public class QuestionSectionResultBiz{
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public QuestionSectionResultResponse getQuestionSectionResult(String questionSectionResultId ) {
         return new QuestionSectionResultResponse();

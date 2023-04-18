@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "QuestionSectionSearch 对象", title = "关键字聚合")
-public class QuestionSectionSearchRequest {
+public class QuestionSectionSearchRequest{
     @Schema(title = "appId")
     private String appId;
 

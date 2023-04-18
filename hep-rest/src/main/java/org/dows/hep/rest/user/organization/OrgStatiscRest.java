@@ -1,23 +1,22 @@
 package org.dows.hep.rest.user.organization;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.framework.api.Response;
-import org.dows.hep.api.user.organization.response.NormalDataResponseResponse;
+import org.dows.hep.api.user.organization.request.AgeRatioRequest;
+import org.dows.hep.api.user.organization.request.GenderRatioRequest;
 import org.dows.hep.api.user.organization.response.NormalDataResponse;
+import org.dows.hep.api.user.organization.response.NormalDataResponseResponse;
 import org.dows.hep.biz.user.organization.OrgStatiscBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
 * @description project descr:机构:机构数据统计
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:52
+* @date 2023年4月18日 上午10:45:07
 */
 @RequiredArgsConstructor
 @RestController
@@ -32,8 +31,8 @@ public class OrgStatiscRest {
     */
     @Operation(summary = "获取性别分类")
     @GetMapping("v1/userOrganization/orgStatisc/listGenderRatio")
-    public NormalDataResponseResponse listGenderRatio(@Validated String orgId) {
-        return orgStatiscBiz.listGenderRatio(orgId);
+    public NormalDataResponseResponse listGenderRatio(@Validated GenderRatioRequest genderRatio) {
+        return orgStatiscBiz.listGenderRatio(genderRatio);
     }
 
     /**
@@ -43,8 +42,8 @@ public class OrgStatiscRest {
     */
     @Operation(summary = "获取年龄分类")
     @GetMapping("v1/userOrganization/orgStatisc/listAgeRatio")
-    public NormalDataResponse listAgeRatio(@Validated String orgId) {
-        return orgStatiscBiz.listAgeRatio(orgId);
+    public NormalDataResponse listAgeRatio(@Validated AgeRatioRequest ageRatio) {
+        return orgStatiscBiz.listAgeRatio(ageRatio);
     }
 
     /**

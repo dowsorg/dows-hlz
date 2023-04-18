@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "SetSurveyState 对象", title = "启用、禁用问卷")
-public class SetSurveyStateRequest {
+public class SetSurveyStateRequest{
     @Schema(title = "问卷id")
     private String surveyId;
 

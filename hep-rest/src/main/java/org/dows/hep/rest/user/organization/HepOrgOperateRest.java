@@ -1,18 +1,20 @@
 package org.dows.hep.rest.user.organization;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.framework.api.Response;
-import org.dows.hep.api.user.organization.request.PersonQueryRequest;
-import org.dows.hep.api.user.organization.response.PersonInstanceResponse;
-import org.dows.hep.api.user.organization.response.OrganizationFunsResponse;
 import org.dows.hep.api.user.organization.request.CaseOrgFeeRequest;
+import org.dows.hep.api.user.organization.request.OrgPositionRequest;
+import org.dows.hep.api.user.organization.request.PersonQueryRequest;
 import org.dows.hep.api.user.organization.request.TransferPersonelRequest;
+import org.dows.hep.api.user.organization.response.AccountOrgGeoResponse;
+import org.dows.hep.api.user.organization.response.OrganizationFunsResponse;
+import org.dows.hep.api.user.organization.response.PersonInstanceResponse;
 import org.dows.hep.biz.user.organization.HepOrgOperateBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -20,7 +22,7 @@ import java.util.List;
 * @description project descr:机构:机构操作
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:52
+* @date 2023年4月18日 上午10:45:07
 */
 @RequiredArgsConstructor
 @RestController
@@ -70,6 +72,17 @@ public class HepOrgOperateRest {
     @PutMapping("v1/userOrganization/hepOrgOperate/transferPerson")
     public Boolean transferPerson(@Validated TransferPersonelRequest transferPersonel ) {
         return hepOrgOperateBiz.transferPerson(transferPersonel);
+    }
+
+    /**
+    * 列出机构位置
+    * @param
+    * @return
+    */
+    @Operation(summary = "列出机构位置")
+    @GetMapping("v1/userOrganization/hepOrgOperate/listOrgPosition")
+    public AccountOrgGeoResponse listOrgPosition(@Validated OrgPositionRequest orgPosition) {
+        return hepOrgOperateBiz.listOrgPosition(orgPosition);
     }
 
 

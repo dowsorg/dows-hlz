@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "CountDown 对象", title = "时间")
-public class CountDownResponse {
+public class CountDownResponse{
     @Schema(title = "沙盘时间")
     private Long sandTime;
 

@@ -5,12 +5,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "IndicatorInstance 对象", title = "指标实例列表")
-public class IndicatorInstanceResponse {
+public class IndicatorInstanceResponse{
 }

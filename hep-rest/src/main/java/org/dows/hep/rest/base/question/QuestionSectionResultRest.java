@@ -1,25 +1,23 @@
 package org.dows.hep.rest.base.question;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.framework.api.Response;
 import org.dows.hep.api.base.question.request.QuestionSectionResultRequest;
 import org.dows.hep.api.base.question.request.QuestionSectionResultSearchRequest;
 import org.dows.hep.api.base.question.response.QuestionSectionResultResponse;
-import org.dows.hep.api.base.question.response.QuestionSectionResultResponse;
 import org.dows.hep.biz.base.question.QuestionSectionResultBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
 * @description project descr:问题:问题集-答题记录
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:52
+* @date 2023年4月18日 上午10:45:07
 */
 @RequiredArgsConstructor
 @RestController

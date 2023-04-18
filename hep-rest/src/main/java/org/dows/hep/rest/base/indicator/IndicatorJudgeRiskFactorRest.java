@@ -1,16 +1,15 @@
 package org.dows.hep.rest.base.indicator;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.framework.api.Response;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeRiskFactorRequest;
-import org.dows.hep.api.base.indicator.request.UpdateStatusIndicatorJudgeRiskFactorRequest;
+import org.dows.hep.api.base.indicator.request.DecimalRequest;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorJudgeRiskFactorRequest;
+import org.dows.hep.api.base.indicator.request.UpdateStatusIndicatorJudgeRiskFactorRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponse;
 import org.dows.hep.biz.base.indicator.IndicatorJudgeRiskFactorBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,7 +18,7 @@ import java.util.List;
 * @description project descr:指标:判断指标危险因素
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:52
+* @date 2023年4月18日 上午10:45:07
 */
 @RequiredArgsConstructor
 @RestController
@@ -47,6 +46,17 @@ public class IndicatorJudgeRiskFactorRest {
     @DeleteMapping("v1/baseIndicator/indicatorJudgeRiskFactor/deleteIndicatorJudgeRiskFactor")
     public void deleteIndicatorJudgeRiskFactor(@Validated String indicatorJudgeRiskFactorId ) {
         indicatorJudgeRiskFactorBiz.deleteIndicatorJudgeRiskFactor(indicatorJudgeRiskFactorId);
+    }
+
+    /**
+    * 批量删除
+    * @param
+    * @return
+    */
+    @Operation(summary = "批量删除")
+    @DeleteMapping("v1/baseIndicator/indicatorJudgeRiskFactor/batchDelete")
+    public void batchDelete(@Validated String string ) {
+        indicatorJudgeRiskFactorBiz.batchDelete(string);
     }
 
     /**
@@ -83,14 +93,25 @@ public class IndicatorJudgeRiskFactorRest {
     }
 
     /**
-    * 分页获取判断指标危险因素
+    * 筛选判断指标危险因素
     * @param
     * @return
     */
-    @Operation(summary = "分页获取判断指标危险因素")
-    @GetMapping("v1/baseIndicator/indicatorJudgeRiskFactor/pageIndicatorViewSupportExam")
-    public void pageIndicatorViewSupportExam(@Validated String todo) {
-        indicatorJudgeRiskFactorBiz.pageIndicatorViewSupportExam(todo);
+    @Operation(summary = "筛选判断指标危险因素")
+    @GetMapping("v1/baseIndicator/indicatorJudgeRiskFactor/listIndicatorJudgeRiskFactor")
+    public List<IndicatorJudgeRiskFactorResponse> listIndicatorJudgeRiskFactor(@Validated String appId, @Validated String indicatorCategoryId, @Validated String name, @Validated String type, @Validated DecimalRequest point, @Validated String expression, @Validated String resultExplain, @Validated Integer status) {
+        return indicatorJudgeRiskFactorBiz.listIndicatorJudgeRiskFactor(appId,indicatorCategoryId,name,type,point,expression,resultExplain,status);
+    }
+
+    /**
+    * 分页筛选判断指标危险因素
+    * @param
+    * @return
+    */
+    @Operation(summary = "分页筛选判断指标危险因素")
+    @GetMapping("v1/baseIndicator/indicatorJudgeRiskFactor/pageIndicatorJudgeRiskFactor")
+    public String pageIndicatorJudgeRiskFactor(@Validated Integer pageNo, @Validated Integer pageSize, @Validated String appId, @Validated String indicatorCategoryId, @Validated String name, @Validated String type, @Validated DecimalRequest point, @Validated String expression, @Validated String resultExplain, @Validated Integer status) {
+        return indicatorJudgeRiskFactorBiz.pageIndicatorJudgeRiskFactor(pageNo,pageSize,appId,indicatorCategoryId,name,type,point,expression,resultExplain,status);
     }
 
 

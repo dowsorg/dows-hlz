@@ -1,31 +1,14 @@
 package org.dows.hep.biz.base.intervene;
 
-import org.dows.framework.api.Response;
-import org.dows.hep.api.base.intervene.request.CalcFoodGraphRequest;
-import org.dows.hep.api.base.intervene.response.FoodGraphResponse;
-import org.dows.hep.api.base.intervene.request.FindFoodRequest;
-import org.dows.hep.api.base.intervene.response.FoodDishesResponse;
-import org.dows.hep.api.base.intervene.response.FoodDishesInfoResponse;
-import org.dows.hep.api.base.intervene.request.SaveFoodDishesRequest;
-import org.dows.hep.api.base.intervene.request.DelFoodDishesRequest;
-import org.dows.hep.api.base.intervene.request.SetFoodDishesStateRequest;
-import org.dows.hep.api.base.intervene.request.FindFoodRequest;
-import org.dows.hep.api.base.intervene.response.FoodCookBookResponse;
-import org.dows.hep.api.base.intervene.response.FoodCookBookInfoResponse;
-import org.dows.hep.api.base.intervene.request.SaveFoodCookbookRequest;
-import org.dows.hep.api.base.intervene.request.DelFoodCookbookRequest;
-import org.dows.hep.api.base.intervene.request.SetFoodCookbookStateRequest;
+import org.dows.hep.api.base.intervene.request.*;
+import org.dows.hep.api.base.intervene.response.*;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
 /**
 * @description project descr:干预:饮食方案(菜肴菜谱)
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:53
+* @date 2023年4月18日 上午10:45:07
 */
 @Service
 public class FoodPlanBiz{
@@ -37,7 +20,7 @@ public class FoodPlanBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public FoodGraphResponse calcFoodGraph(CalcFoodGraphRequest calcFoodGraph ) {
         return new FoodGraphResponse();
@@ -50,7 +33,7 @@ public class FoodPlanBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public FoodDishesResponse pageFoodDishes(FindFoodRequest findFood ) {
         return new FoodDishesResponse();
@@ -63,7 +46,7 @@ public class FoodPlanBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public FoodDishesInfoResponse getFoodDishes(String foodDishesId ) {
         return new FoodDishesInfoResponse();
@@ -76,7 +59,7 @@ public class FoodPlanBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public Boolean saveFoodDishes(SaveFoodDishesRequest saveFoodDishes ) {
         return Boolean.FALSE;
@@ -89,7 +72,7 @@ public class FoodPlanBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public Boolean delFoodDishes(DelFoodDishesRequest delFoodDishes ) {
         return Boolean.FALSE;
@@ -102,7 +85,7 @@ public class FoodPlanBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public Boolean setFoodDishesState(SetFoodDishesStateRequest setFoodDishesState ) {
         return Boolean.FALSE;
@@ -115,7 +98,7 @@ public class FoodPlanBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public FoodCookBookResponse pageFoodCookbook(FindFoodRequest findFood ) {
         return new FoodCookBookResponse();
@@ -128,7 +111,7 @@ public class FoodPlanBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public FoodCookBookInfoResponse getFoodCookbook(String foodCookbookId ) {
         return new FoodCookBookInfoResponse();
@@ -141,7 +124,7 @@ public class FoodPlanBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public Boolean saveFoodCookbook(SaveFoodCookbookRequest saveFoodCookbook ) {
         return Boolean.FALSE;
@@ -154,7 +137,7 @@ public class FoodPlanBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public Boolean delFoodCookbook(DelFoodCookbookRequest delFoodCookbook ) {
         return Boolean.FALSE;
@@ -167,7 +150,7 @@ public class FoodPlanBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public Boolean setFoodCookbookState(SetFoodCookbookStateRequest setFoodCookbookState ) {
         return Boolean.FALSE;

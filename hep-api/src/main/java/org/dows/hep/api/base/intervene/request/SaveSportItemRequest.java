@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "SaveSportItem 对象", title = "运动项目信息")
-public class SaveSportItemRequest {
+public class SaveSportItemRequest{
     @Schema(title = "运动项目id，新增时为空")
     private String sportItemId;
 

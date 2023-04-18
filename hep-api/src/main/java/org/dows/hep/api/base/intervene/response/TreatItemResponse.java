@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "TreatItem 对象", title = "治疗项目列表")
-public class TreatItemResponse {
+public class TreatItemResponse{
     @Schema(title = "分布式id")
     private String treatItemId;
 

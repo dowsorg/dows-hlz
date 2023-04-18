@@ -7,14 +7,15 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "QuestionSectionDimension 对象", title = "维度Request")
-public class QuestionSectionDimensionRequest {
+public class QuestionSectionDimensionRequest{
     @Schema(title = "应用ID")
     private String appId;
 

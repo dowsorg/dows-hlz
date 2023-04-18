@@ -1,18 +1,13 @@
 package org.dows.hep.biz.user.casus;
 
-import org.dows.framework.api.Response;
 import org.dows.hep.api.user.casus.request.CaseInfoRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
 /**
 * @description project descr:案列:案例基础信息
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:53
+* @date 2023年4月18日 上午10:45:07
 */
 @Service
 public class CaseInfoBiz{
@@ -24,7 +19,7 @@ public class CaseInfoBiz{
     * @工时: 6H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public String getCaseInfo(CaseInfoRequest caseInfo ) {
         return new String();

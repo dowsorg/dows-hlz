@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "SaveOperateIntevene 对象", title = "保存干预记录")
-public class SaveOperateInteveneRequest {
+public class SaveOperateInteveneRequest{
     @Schema(title = "实验实例id")
     private String experimentInstanceId;
 

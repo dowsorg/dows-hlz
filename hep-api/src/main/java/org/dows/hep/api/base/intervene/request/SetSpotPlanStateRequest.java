@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "SetSpotPlanState 对象", title = "启用、禁用运动方案")
-public class SetSpotPlanStateRequest {
+public class SetSpotPlanStateRequest{
     @Schema(title = "运动方案id")
     private String sportPlanId;
 

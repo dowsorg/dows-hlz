@@ -1,19 +1,17 @@
 package org.dows.hep.biz.tenant.casus;
 
-import org.dows.framework.api.Response;
 import org.dows.hep.api.tenant.casus.request.CaseNoticeRequest;
 import org.dows.hep.api.tenant.casus.response.CaseNoticeResponse;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.List;
+
 /**
 * @description project descr:案例:案例公告
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:53
+* @date 2023年4月17日 下午8:00:11
 */
 @Service
 public class CaseNoticeBiz{
@@ -25,7 +23,7 @@ public class CaseNoticeBiz{
     * @工时: 8H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月17日 下午8:00:11
     */
     public Boolean saveOrUpdCaseNotice(CaseNoticeRequest caseNotice ) {
         return Boolean.FALSE;
@@ -38,7 +36,7 @@ public class CaseNoticeBiz{
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月17日 下午8:00:11
     */
     public List<CaseNoticeResponse> listCaseNotice(String caseInstanceId ) {
         return new ArrayList<CaseNoticeResponse>();
@@ -51,7 +49,7 @@ public class CaseNoticeBiz{
     * @工时: 3H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月17日 下午8:00:11
     */
     public Boolean delCaseNotice(String caseNoticeId ) {
         return Boolean.FALSE;

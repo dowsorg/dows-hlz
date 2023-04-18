@@ -1,21 +1,20 @@
 package org.dows.hep.biz.base.indicator;
 
-import org.dows.framework.api.Response;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeHealthManagementGoalRequest;
-import org.dows.hep.api.base.indicator.request.UpdateStatusIndicatorJudgeHealthManagementGoalRequest;
+import org.dows.hep.api.base.indicator.request.DecimalRequest;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorJudgeHealthManagementGoalRequest;
+import org.dows.hep.api.base.indicator.request.UpdateStatusIndicatorJudgeHealthManagementGoalRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthManagementGoalResponse;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.List;
+
 /**
 * @description project descr:指标:判断指标健管目标
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:53
+* @date 2023年4月18日 上午10:45:07
 */
 @Service
 public class IndicatorJudgeHealthManagementGoalBiz{
@@ -27,7 +26,7 @@ public class IndicatorJudgeHealthManagementGoalBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public void createIndicatorJudgeHealthManagementGoal(CreateIndicatorJudgeHealthManagementGoalRequest createIndicatorJudgeHealthManagementGoal ) {
         
@@ -40,7 +39,7 @@ public class IndicatorJudgeHealthManagementGoalBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public void deleteIndicatorJudgeHealthManagementGoal(String indicatorJudgeHealthManagementGoalId ) {
         
@@ -48,12 +47,25 @@ public class IndicatorJudgeHealthManagementGoalBiz{
     /**
     * @param
     * @return
+    * @说明: 批量删除
+    * @关联表: 
+    * @工时: 4H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月18日 上午10:45:07
+    */
+    public void batchDelete(String string ) {
+        
+    }
+    /**
+    * @param
+    * @return
     * @说明: 更改启用状态
     * @关联表: 
-    * @工时: 0H
-    * @开发者: 
+    * @工时: 4H
+    * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public void updateStatus(UpdateStatusIndicatorJudgeHealthManagementGoalRequest updateStatusIndicatorJudgeHealthManagementGoal ) {
         
@@ -66,7 +78,7 @@ public class IndicatorJudgeHealthManagementGoalBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public void updateIndicatorJudgeHealthManagementGoal(UpdateIndicatorJudgeHealthManagementGoalRequest updateIndicatorJudgeHealthManagementGoal ) {
         
@@ -79,7 +91,7 @@ public class IndicatorJudgeHealthManagementGoalBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
     public IndicatorJudgeHealthManagementGoalResponse getIndicatorJudgeHealthManagementGoal(String indicatorJudgeHealthManagementGoalId ) {
         return new IndicatorJudgeHealthManagementGoalResponse();
@@ -87,14 +99,27 @@ public class IndicatorJudgeHealthManagementGoalBiz{
     /**
     * @param
     * @return
-    * @说明: 分页获取判断指标健管目标
+    * @说明: 筛选判断指标健管目标
     * @关联表: 
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月14日 下午4:47:53
+    * @创建时间: 2023年4月18日 上午10:45:07
     */
-    public void pageIndicatorJudgeHealthManagementGoal(String todo ) {
-        
+    public List<IndicatorJudgeHealthManagementGoalResponse> listIndicatorJudgeHealthManagementGoal(String appId, String indicatorCategoryId, DecimalRequest decimal, Integer integer ) {
+        return new ArrayList<IndicatorJudgeHealthManagementGoalResponse>();
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 获取判断指标健管目标
+    * @关联表: 
+    * @工时: 4H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月18日 上午10:45:07
+    */
+    public String pageIndicatorJudgeHealthManagementGoal(Integer pageNo, Integer pageSize, String appId, String indicatorCategoryId, DecimalRequest decimal, Integer integer ) {
+        return new String();
     }
 }

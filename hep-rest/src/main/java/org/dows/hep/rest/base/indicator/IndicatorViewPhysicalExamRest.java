@@ -1,16 +1,15 @@
 package org.dows.hep.rest.base.indicator;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.framework.api.Response;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorViewPhysicalExamRequest;
+import org.dows.hep.api.base.indicator.request.DecimalRequest;
 import org.dows.hep.api.base.indicator.request.IndicatorViewPhysicalExamRequest;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorViewPhysicalExamRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorViewPhysicalExamResponse;
 import org.dows.hep.biz.base.indicator.IndicatorViewPhysicalExamBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,7 +18,7 @@ import java.util.List;
 * @description project descr:指标:查看指标体格检查类
 *
 * @author lait.zhang
-* @date 2023年4月14日 下午4:47:52
+* @date 2023年4月18日 上午10:45:07
 */
 @RequiredArgsConstructor
 @RestController
@@ -47,6 +46,17 @@ public class IndicatorViewPhysicalExamRest {
     @DeleteMapping("v1/baseIndicator/indicatorViewPhysicalExam/deleteIndicatorViewPhysicalExam")
     public void deleteIndicatorViewPhysicalExam(@Validated String indicatorViewPhysicalExamId ) {
         indicatorViewPhysicalExamBiz.deleteIndicatorViewPhysicalExam(indicatorViewPhysicalExamId);
+    }
+
+    /**
+    * 批量删除
+    * @param
+    * @return
+    */
+    @Operation(summary = "批量删除")
+    @DeleteMapping("v1/baseIndicator/indicatorViewPhysicalExam/batchDelete")
+    public void batchDelete(@Validated String string ) {
+        indicatorViewPhysicalExamBiz.batchDelete(string);
     }
 
     /**
@@ -83,14 +93,25 @@ public class IndicatorViewPhysicalExamRest {
     }
 
     /**
-    * 分页获取查看指标监测随访类
+    * 筛选查看指标体格检查类
     * @param
     * @return
     */
-    @Operation(summary = "分页获取查看指标监测随访类")
+    @Operation(summary = "筛选查看指标体格检查类")
+    @GetMapping("v1/baseIndicator/indicatorViewPhysicalExam/listIndicatorViewPhysicalExam")
+    public List<IndicatorViewPhysicalExamResponse> listIndicatorViewPhysicalExam(@Validated String appId, @Validated String indicatorCategoryId, @Validated String name, @Validated Integer type, @Validated DecimalRequest fee, @Validated String resultAnalysis, @Validated Integer status) {
+        return indicatorViewPhysicalExamBiz.listIndicatorViewPhysicalExam(appId,indicatorCategoryId,name,type,fee,resultAnalysis,status);
+    }
+
+    /**
+    * 分页筛选查看指标体格检查类
+    * @param
+    * @return
+    */
+    @Operation(summary = "分页筛选查看指标体格检查类")
     @GetMapping("v1/baseIndicator/indicatorViewPhysicalExam/pageIndicatorViewPhysicalExam")
-    public void pageIndicatorViewPhysicalExam(@Validated String todo) {
-        indicatorViewPhysicalExamBiz.pageIndicatorViewPhysicalExam(todo);
+    public String pageIndicatorViewPhysicalExam(@Validated Integer pageNo, @Validated Integer pageSize, @Validated String appId, @Validated String indicatorCategoryId, @Validated String name, @Validated Integer type, @Validated DecimalRequest fee, @Validated String resultAnalysis, @Validated Integer status) {
+        return indicatorViewPhysicalExamBiz.pageIndicatorViewPhysicalExam(pageNo,pageSize,appId,indicatorCategoryId,name,type,fee,resultAnalysis,status);
     }
 
 

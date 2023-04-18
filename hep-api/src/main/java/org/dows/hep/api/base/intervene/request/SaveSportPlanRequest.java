@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "SaveSportPlan 对象", title = "保存运动方案")
-public class SaveSportPlanRequest {
+public class SaveSportPlanRequest{
     @Schema(title = "运动方案id")
     private String sportPlanId;
 

@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "SaveInterveneCateg 对象", title = "类别信息")
-public class SaveInterveneCategRequest {
+public class SaveInterveneCategRequest{
     @Schema(title = "分布式id")
     private String eventCategId;
 
