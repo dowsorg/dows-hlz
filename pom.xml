@@ -25,6 +25,13 @@
         <module>hep-rest</module>
     </modules>
 
+    <properties>
+        <account.version>20230418-SNAPSHOT</account.version>
+        <rbac.version>20230418-SNAPSHOT</rbac.version>
+        <tenant.version>20230418-SNAPSHOT</tenant.version>
+        <auth.version>20230418-SNAPSHOT</auth.version>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -73,6 +80,16 @@
                 <artifactId>hep-rest</artifactId>
                 <groupId>org.dows.saas</groupId>
                 <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+
+
+
+
+
+            <dependency>
+                <groupId>org.dows.cloud</groupId>
+                <artifactId>account-api</artifactId>
+                <version>20230418-SNAPSHOT</version>
             </dependency>
 
         </dependencies>

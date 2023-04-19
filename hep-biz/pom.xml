@@ -24,6 +24,11 @@
             <groupId>org.dows.framework</groupId>
             <artifactId>sequence-snowflake</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.dows.cloud</groupId>
+            <artifactId>account-api</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
