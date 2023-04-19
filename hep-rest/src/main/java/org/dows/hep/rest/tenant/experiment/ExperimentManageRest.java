@@ -1,5 +1,6 @@
 package org.dows.hep.rest.tenant.experiment;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
 * @description project descr:实验:实验管理
@@ -53,9 +56,9 @@ public class ExperimentManageRest {
     * @return
     */
     @Operation(summary = "获取实验列表")
-    @GetMapping("v1/tenantExperiment/experimentManage/experimentList")
-    public ExperimentListResponse experimentList() {
-        return experimentManageBiz.experimentList();
+    @GetMapping("v1/tenantExperiment/experimentManage/listExperiment")
+    public List<ExperimentListResponse> listExperiment() {
+        return experimentManageBiz.listExperiment();
     }
 
 

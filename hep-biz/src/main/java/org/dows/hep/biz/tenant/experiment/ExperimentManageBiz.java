@@ -1,15 +1,18 @@
 package org.dows.hep.biz.tenant.experiment;
 
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.uim.AccountInfo;
 import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.tenant.experiment.request.GroupSettingRequest;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
+import org.dows.hep.entity.ExperimentGroupEntity;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.entity.ExperimentSettingEntity;
+import org.dows.hep.service.ExperimentGroupService;
 import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.hep.service.ExperimentSettingService;
@@ -34,7 +37,8 @@ public class ExperimentManageBiz {
     private final ExperimentSettingService experimentSettingService;
     // 实验参与者
     private final ExperimentParticipatorService experimentParticipatorService;
-
+    // 实验小组
+    private final ExperimentGroupService experimentGroupService;
     private final IdGenerator idGenerator;
 
 //    private final
@@ -56,6 +60,7 @@ public class ExperimentManageBiz {
                 .startTime(createExperiment.getStartTime())
                 .experimentName(createExperiment.getExperimentName())
                 .experimentDescr(createExperiment.getExperimentDescr())
+                .state(0)
                 .caseInstanceId(createExperiment.getCaseInstanceId())
                 .caseName(createExperiment.getCaseName())
                 .build();
@@ -69,6 +74,7 @@ public class ExperimentManageBiz {
             ExperimentParticipatorEntity experimentParticipatorEntity = ExperimentParticipatorEntity.builder()
                     .experimentParticipatorId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentInstance.getExperimentInstanceId())
+                    // todo UIM
                     .accountId(teacher.getId() + "")
                     .accountName(teacher.getAccountName())
                     .participatorType(0)
@@ -132,7 +138,32 @@ public class ExperimentManageBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     public Boolean experimentGrouping(GroupSettingRequest groupSetting) {
-        return Boolean.FALSE;
+
+        ExperimentGroupEntity experimentGroupEntity = ExperimentGroupEntity.builder()
+                .experimentGroupId(idGenerator.nextIdStr())
+                .experimentInstanceId(groupSetting.getExperimentInstanceId())
+                .groupName(groupSetting.getGroupName())
+                //.memberCount()
+                .build();
+
+        // 保存实验小组
+        experimentGroupService.saveOrUpdate(experimentGroupEntity);
+
+        List<ExperimentParticipatorEntity> experimentParticipatorEntityList = new ArrayList<>();
+        List<GroupSettingRequest.ExperimentParticipator> experimentParticipators = groupSetting.getExperimentParticipators();
+        for (GroupSettingRequest.ExperimentParticipator experimentParticipator : experimentParticipators) {
+            ExperimentParticipatorEntity experimentParticipatorEntity = ExperimentParticipatorEntity.builder()
+                    .experimentParticipatorId(idGenerator.nextIdStr())
+                    .experimentInstanceId(groupSetting.getExperimentInstanceId())
+//                    .accountId()
+//                    .accountName()
+                    .experimentGroupId(experimentGroupEntity.getExperimentGroupId())
+                    .participatorType(2)
+                    .build();
+            experimentParticipatorEntityList.add(experimentParticipatorEntity);
+        }
+        // 保存实验参与人[学生]
+        return experimentParticipatorService.saveOrUpdateBatch(experimentParticipatorEntityList);
     }
 
     /**
@@ -145,7 +176,26 @@ public class ExperimentManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public ExperimentListResponse experimentList() {
-        return new ExperimentListResponse();
+    public List<ExperimentListResponse> listExperiment() {
+
+
+        return new ArrayList<ExperimentListResponse>();
+    }
+
+
+    /**
+     * @param
+     * @return
+     * @说明: 获取实验列表
+     * @关联表: ExperimentInstance
+     * @工时: 2H
+     * @开发者: lait
+     * @开始时间:
+     * @创建时间: 2023年4月18日 上午10:45:07
+     */
+    public IPage<ExperimentListResponse> pageExperiment() {
+
+
+        return null;
     }
 }
