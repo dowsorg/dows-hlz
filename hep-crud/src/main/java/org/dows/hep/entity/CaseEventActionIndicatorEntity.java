@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
-import org.dows.framework.crud.api.CrudEntity;
+import org.dows.framework.crud.mybatis.CrudEntity;
 
 /**
  * 人物事件处理选项影响指标(CaseEventActionIndicator)实体类

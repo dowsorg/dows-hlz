@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
-import org.dows.framework.crud.api.CrudEntity;
+import org.dows.framework.crud.mybatis.CrudEntity;
 
 /**
  * 查看指标监测随访内容(IndicatorViewMonitorFollowupFollowupContent)实体类
