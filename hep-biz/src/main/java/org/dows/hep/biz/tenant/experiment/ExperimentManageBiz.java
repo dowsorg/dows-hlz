@@ -1,54 +1,150 @@
 package org.dows.hep.biz.tenant.experiment;
 
+import cn.hutool.json.JSONUtil;
+import lombok.RequiredArgsConstructor;
+import org.dows.framework.api.uim.AccountInfo;
 import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
+import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.tenant.experiment.request.GroupSettingRequest;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
+import org.dows.hep.entity.ExperimentInstanceEntity;
+import org.dows.hep.entity.ExperimentParticipatorEntity;
+import org.dows.hep.entity.ExperimentSettingEntity;
+import org.dows.hep.service.ExperimentInstanceService;
+import org.dows.hep.service.ExperimentParticipatorService;
+import org.dows.hep.service.ExperimentSettingService;
+import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
-* @description project descr:实验:实验管理
-*
-* @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
-*/
+ * @author lait.zhang
+ * @description project descr:实验:实验管理
+ * @date 2023年4月18日 上午10:45:07
+ */
+@RequiredArgsConstructor
 @Service
-public class ExperimentManageBiz{
+public class ExperimentManageBiz {
+    // 实验实例
+    private final ExperimentInstanceService experimentInstanceService;
+    // 实验设置
+    private final ExperimentSettingService experimentSettingService;
+    // 实验参与者
+    private final ExperimentParticipatorService experimentParticipatorService;
+
+    private final IdGenerator idGenerator;
+
+//    private final
+
     /**
-    * @param
-    * @return
-    * @说明: 分配实验
-    * @关联表: ExperimentInstance,experimentSetting
-    * @工时: 2H
-    * @开发者: lait
-    * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
-    */
-    public String experimentAllot(CreateExperimentRequest createExperiment ) {
-        return new String();
+     * @param
+     * @return
+     * @说明: 分配实验
+     * @关联表: ExperimentInstance, experimentSetting
+     * @工时: 2H
+     * @开发者: lait
+     * @开始时间:
+     * @创建时间: 2023年4月18日 上午10:45:07
+     */
+    @Transactional
+    public String experimentAllot(CreateExperimentRequest createExperiment) {
+        ExperimentInstanceEntity experimentInstance = ExperimentInstanceEntity.builder()
+                .experimentInstanceId(idGenerator.nextIdStr())
+                .startTime(createExperiment.getStartTime())
+                .experimentName(createExperiment.getExperimentName())
+                .experimentDescr(createExperiment.getExperimentDescr())
+                .caseInstanceId(createExperiment.getCaseInstanceId())
+                .caseName(createExperiment.getCaseName())
+                .build();
+        // 保存实验实例
+        experimentInstanceService.saveOrUpdate(experimentInstance);
+
+        ExperimentSetting experimentSetting = createExperiment.getExperimentSetting();
+        List<AccountInfo> teachers = createExperiment.getTeachers();
+        List<ExperimentParticipatorEntity> experimentParticipatorEntityList = new ArrayList<>();
+        for (AccountInfo teacher : teachers) {
+            ExperimentParticipatorEntity experimentParticipatorEntity = ExperimentParticipatorEntity.builder()
+                    .experimentParticipatorId(idGenerator.nextIdStr())
+                    .experimentInstanceId(experimentInstance.getExperimentInstanceId())
+                    .accountId(teacher.getId() + "")
+                    .accountName(teacher.getAccountName())
+                    .participatorType(0)
+                    .build();
+            experimentParticipatorEntityList.add(experimentParticipatorEntity);
+        }
+        // 保存实验参与人
+        experimentParticipatorService.saveOrUpdateBatch(experimentParticipatorEntityList);
+
+        // 标准模式
+        if (null != experimentSetting.getSchemeSetting() && null != experimentSetting.getSandSetting()) {
+            ExperimentSettingEntity experimentSettingEntity = ExperimentSettingEntity.builder()
+                    .experimentSettingId(idGenerator.nextIdStr())
+                    .experimentInstanceId(experimentInstance.getExperimentInstanceId())
+                    .configKey(experimentSetting.getSchemeSetting().getClass().getName())
+                    .configJsonVals(JSONUtil.toJsonStr(experimentSetting.getSchemeSetting()))
+                    .build();
+            //保存方案设计
+            experimentSettingService.saveOrUpdate(experimentSettingEntity);
+
+            experimentSettingEntity = ExperimentSettingEntity.builder()
+                    .experimentSettingId(idGenerator.nextIdStr())
+                    .experimentInstanceId(experimentInstance.getExperimentInstanceId())
+                    .configKey(experimentSetting.getSandSetting().getClass().getName())
+                    .configJsonVals(JSONUtil.toJsonStr(experimentSetting.getSandSetting()))
+                    .build();
+            //保存沙盘设计
+            experimentSettingService.saveOrUpdate(experimentSettingEntity);
+            // 沙盘模式
+        } else if (null != experimentSetting.getSandSetting()) {
+            ExperimentSettingEntity experimentSettingEntity = ExperimentSettingEntity.builder()
+                    .experimentSettingId(idGenerator.nextIdStr())
+                    .experimentInstanceId(experimentInstance.getExperimentInstanceId())
+                    .configKey(experimentSetting.getSandSetting().getClass().getName())
+                    .configJsonVals(JSONUtil.toJsonStr(experimentSetting.getSandSetting()))
+                    .build();
+            //保存沙盘设计
+            experimentSettingService.saveOrUpdate(experimentSettingEntity);
+            // 方案设计模式i
+        } else if (null != experimentSetting.getSchemeSetting()) {
+            ExperimentSettingEntity experimentSettingEntity = ExperimentSettingEntity.builder()
+                    .experimentSettingId(idGenerator.nextIdStr())
+                    .experimentInstanceId(experimentInstance.getExperimentInstanceId())
+                    .configKey(experimentSetting.getSchemeSetting().getClass().getName())
+                    .configJsonVals(JSONUtil.toJsonStr(experimentSetting.getSchemeSetting()))
+                    .build();
+            //保存方案设计
+            experimentSettingService.saveOrUpdate(experimentSettingEntity);
+        }
+        return experimentInstance.getExperimentInstanceId();
     }
+
     /**
-    * @param
-    * @return
-    * @说明: 实验分组ss
-    * @关联表: experimentGroup,experimentParticipator
-    * @工时: 2H
-    * @开发者: lait
-    * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
-    */
-    public Boolean experimentGrouping(GroupSettingRequest groupSetting ) {
+     * @param
+     * @return
+     * @说明: 实验分组ss
+     * @关联表: experimentGroup, experimentParticipator
+     * @工时: 2H
+     * @开发者: lait
+     * @开始时间:
+     * @创建时间: 2023年4月18日 上午10:45:07
+     */
+    public Boolean experimentGrouping(GroupSettingRequest groupSetting) {
         return Boolean.FALSE;
     }
+
     /**
-    * @param
-    * @return
-    * @说明: 获取实验列表
-    * @关联表: ExperimentInstance
-    * @工时: 2H
-    * @开发者: lait
-    * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
-    */
+     * @param
+     * @return
+     * @说明: 获取实验列表
+     * @关联表: ExperimentInstance
+     * @工时: 2H
+     * @开发者: lait
+     * @开始时间:
+     * @创建时间: 2023年4月18日 上午10:45:07
+     */
     public ExperimentListResponse experimentList() {
         return new ExperimentListResponse();
     }

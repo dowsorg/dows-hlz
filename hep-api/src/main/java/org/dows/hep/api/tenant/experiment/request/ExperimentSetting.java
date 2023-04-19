@@ -1,0 +1,61 @@
+package org.dows.hep.api.tenant.experiment.request;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+
+import java.util.Date;
+import java.util.Map;
+
+@Data
+@Schema(name = "ExperimentSetting 对象", title = "实验设置")
+public class ExperimentSetting {
+
+    @Schema(title = "配置key[标准模式，沙盘模式，方案设计...]")
+    private SchemeSetting schemeSetting;
+
+    @Schema(title = "key对应的json配置")
+    private SandSetting sandSetting;
+
+
+    /**
+     * 方案设计设置
+     */
+    @Data
+    public static class SchemeSetting {
+        // 方案设计时长
+        private Long duration;
+        // 方案设计权重
+        private Float weight;
+        // 设计截止时间
+        private Date schemeEndTime;
+        // 评分截止时间
+        private Date scoreEndTime;
+
+    }
+
+
+    /**
+     * 沙盘设置
+     */
+    @Data
+    public static class SandSetting{
+        // 期数
+        private Integer periods;
+        // 每期间隔
+        private Long interval;
+        // 每期时长
+        private Map<Integer,Integer> durationMap;
+        // 每期权重
+        private Map<Integer,Float> weightMap;
+        // 模拟时间周期
+        private Map<Integer,Integer> periodMap;
+
+        // 健康指数权重
+        private Float healthIndexWeight;
+        // 知识考点权重
+        private Float knowledgeWeight;
+        // 医疗占比权重
+        private Float medicalRatioWeight;
+    }
+
+}
