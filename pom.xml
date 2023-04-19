@@ -25,6 +25,12 @@
         <module>hep-rest</module>
     </modules>
 
+    <properties>
+        <account.version>20230418-SNAPSHOT</account.version>
+        <rbac.version>20230418-SNAPSHOT</rbac.version>
+        <user.version>20230418-SNAPSHOT</user.version>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>

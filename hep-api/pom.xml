@@ -9,16 +9,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>hep-api</artifactId>
-
-
-
-
-
     <dependencies>
-<!--        <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-annotations</artifactId>
-        </dependency>-->
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
