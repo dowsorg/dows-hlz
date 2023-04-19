@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
-import org.dows.framework.crud.mybatis.CrudEntity;
+import org.dows.framework.crud.api.CrudEntity;
 
 /**
  * 突发事件处理选项(EventAction)实体类
