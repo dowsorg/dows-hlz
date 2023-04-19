@@ -1,6 +1,7 @@
 package org.dows.hep.rest.tenant.experiment;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -59,6 +60,18 @@ public class ExperimentManageRest {
     @GetMapping("v1/tenantExperiment/experimentManage/listExperiment")
     public List<ExperimentListResponse> listExperiment() {
         return experimentManageBiz.listExperiment();
+    }
+
+
+    /**
+     * 获取实验列表
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取实验列表")
+    @GetMapping("v1/tenantExperiment/experimentManage/pageExperiment")
+    public IPage<ExperimentListResponse> pageExperiment() {
+        return new PageDTO<>();
     }
 
 
