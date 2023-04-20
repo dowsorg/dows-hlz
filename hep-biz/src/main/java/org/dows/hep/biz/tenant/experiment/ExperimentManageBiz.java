@@ -2,11 +2,14 @@ package org.dows.hep.biz.tenant.experiment;
 
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.uim.AccountInfo;
 import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.tenant.experiment.request.GroupSettingRequest;
+import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.entity.ExperimentGroupEntity;
 import org.dows.hep.entity.ExperimentInstanceEntity;
@@ -190,16 +193,23 @@ public class ExperimentManageBiz {
     /**
      * @param
      * @return
-     * @说明: 获取实验列表
+     * @说明: 分页实验列表
      * @关联表: ExperimentInstance
      * @工时: 2H
      * @开发者: lait
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public IPage<ExperimentListResponse> pageExperiment() {
+    public IPage<ExperimentListResponse> pageExperiment(PageExperimentRequest pageExperimentRequest) {
 
-
-        return null;
+        Page page = new Page<ExperimentInstanceEntity>();
+        page.setCurrent(pageExperimentRequest.getPageNo());
+        page.addOrder(pageExperimentRequest.getDesc() ?
+                OrderItem.desc(pageExperimentRequest.getOrderBy()) : OrderItem.asc(pageExperimentRequest.getOrderBy()));
+        Page page1 = experimentInstanceService.page(page, experimentInstanceService.lambdaQuery()
+                .likeLeft(ExperimentInstanceEntity::getExperimentName, pageExperimentRequest.getKeyword())
+                .likeLeft(ExperimentInstanceEntity::getCaseName, pageExperimentRequest.getKeyword())
+                .likeLeft(ExperimentInstanceEntity::getExperimentDescr, pageExperimentRequest.getKeyword()));
+        return page1;
     }
 }
