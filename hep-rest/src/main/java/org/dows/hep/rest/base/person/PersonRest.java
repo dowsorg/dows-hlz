@@ -42,7 +42,7 @@ public class PersonRest {
     }
 
     /**
-     * 查看用户资料
+     * 查看 个人中心-我的资料
      * @param
      * @return
      */
@@ -53,7 +53,7 @@ public class PersonRest {
     }
 
     /**
-     * 修改用户资料
+     * 修改 个人中心-我的资料
      * @param
      * @return
      */
@@ -61,6 +61,17 @@ public class PersonRest {
     @PutMapping("v1/basePerson/person/updatePersonalInformation")
     public String updatePersonalInformation(@RequestBody AccountInstanceRequest request) {
         return personBiz.updatePersonalInformation(request);
+    }
+
+    /**
+     * 创建教师/学生
+     * @param
+     * @return
+     */
+    @Operation(summary =  "创建教师/学生")
+    @PostMapping("v1/basePerson/person/createTeacherOrStudent")
+    public AccountInstanceResponse createTeacherOrStudent(@RequestBody AccountInstanceRequest request){
+        return personBiz.createTeacherOrStudent(request);
     }
 
 }

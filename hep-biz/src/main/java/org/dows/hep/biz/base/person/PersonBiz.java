@@ -104,4 +104,18 @@ public class PersonBiz {
         userExtinfoApi.insertOrUpdateExtinfo(extinfo);
         return userId;
     }
+
+    /**
+     * @param
+     * @return
+     * @说明: 创建教师/学生
+     * @关联表: ??
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/4/20 19:37
+     */
+    public AccountInstanceResponse createTeacherOrStudent(AccountInstanceRequest request) {
+        return accountInstanceApi.createAccountInstance(request);
+    }
 }
