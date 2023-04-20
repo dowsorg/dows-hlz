@@ -142,8 +142,8 @@ public class ExperimentManageBiz {
         ExperimentGroupEntity experimentGroupEntity = ExperimentGroupEntity.builder()
                 .experimentGroupId(idGenerator.nextIdStr())
                 .experimentInstanceId(groupSetting.getExperimentInstanceId())
-                .groupName(groupSetting.getGroupName())
-                //.memberCount()
+                .groupAlias(groupSetting.getGroupAlias())
+                .memberCount(groupSetting.getMemberCount())
                 .build();
 
         // 保存实验小组
@@ -155,11 +155,15 @@ public class ExperimentManageBiz {
             ExperimentParticipatorEntity experimentParticipatorEntity = ExperimentParticipatorEntity.builder()
                     .experimentParticipatorId(idGenerator.nextIdStr())
                     .experimentInstanceId(groupSetting.getExperimentInstanceId())
-//                    .accountId()
-//                    .accountName()
+                    .accountId(experimentParticipator.getParticipatorId())
+                    .accountName(experimentParticipator.getParticipatorName())
                     .experimentGroupId(experimentGroupEntity.getExperimentGroupId())
-                    .participatorType(2)
+                    .participatorType(1)
                     .build();
+            // 如果是0【第一个人】设置为组长
+            if (experimentParticipator.getSeq() == 0) {
+                experimentParticipatorEntity.setParticipatorType(2);
+            }
             experimentParticipatorEntityList.add(experimentParticipatorEntity);
         }
         // 保存实验参与人[学生]

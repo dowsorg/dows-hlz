@@ -38,7 +38,12 @@ public class GroupSettingRequest{
 
     @Data
     public static class ExperimentParticipator{
-
+        @Schema(title = "参与者顺序")
+        private Integer seq;
+        @Schema(title = "参与者ID")
+        private String participatorId;
+        @Schema(title = "参与者名称")
+        private String participatorName;
 
     }
 
