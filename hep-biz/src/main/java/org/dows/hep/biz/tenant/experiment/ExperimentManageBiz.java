@@ -148,7 +148,7 @@ public class ExperimentManageBiz {
 
         // 保存实验小组
         experimentGroupService.saveOrUpdate(experimentGroupEntity);
-
+        //todo
         List<ExperimentParticipatorEntity> experimentParticipatorEntityList = new ArrayList<>();
         List<GroupSettingRequest.ExperimentParticipator> experimentParticipators = groupSetting.getExperimentParticipators();
         for (GroupSettingRequest.ExperimentParticipator experimentParticipator : experimentParticipators) {
