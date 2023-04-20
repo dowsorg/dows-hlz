@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.dows.account.request.AccountInstanceRequest;
 import org.dows.hep.biz.base.person.PersonBiz;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
@@ -32,4 +33,17 @@ public class PersonRest {
     public Map<String, Object> login(@RequestBody AccountInstanceRequest request) {
         return personBiz.login(request);
     }
+
+    /**
+     * 重置密码
+     * @param
+     * @return
+     */
+    @Operation(summary = "重置密码")
+    @PutMapping("v1/basePerson/person/resetPwd")
+    @DS("uim")
+    public Boolean resetPwd(@RequestBody AccountInstanceRequest request) {
+        return personBiz.resetPwd(request);
+    }
+
 }

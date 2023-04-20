@@ -27,4 +27,18 @@ public class PersonBiz {
     public Map<String, Object> login(AccountInstanceRequest request) {
         return accountInstanceApi.login(request);
     }
+
+    /**
+     * @param
+     * @return
+     * @说明: 重置密码
+     * @关联表: account_instance
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/4/20 13:46
+     */
+    public Boolean resetPwd(AccountInstanceRequest request) {
+        return accountInstanceApi.resetPwd(request);
+    }
 }
