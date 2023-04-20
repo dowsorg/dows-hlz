@@ -14,7 +14,7 @@ spring:
     application:
         name: dows-pay
     profiles:
-        include: hep-mysql,hep-mybatis,hep-mvc,hep-redis
+        include: hep-mysql,hep-mybatis,hep-mvc,hep-redis,hep-oss,hep-mybatis
         active: dev
 
 
