@@ -12,7 +12,6 @@ import org.dows.account.response.AccountOrgResponse;
 import org.dows.user.api.api.UserExtinfoApi;
 import org.dows.user.api.request.UserExtinfoRequest;
 import org.dows.user.api.response.UserExtinfoResponse;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import java.util.Map;
 
