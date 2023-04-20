@@ -41,9 +41,9 @@ public class ExperimentGroupRest {
     * @return
     */
     @Operation(summary = "获取实验小组列表")
-    @GetMapping("v1/userExperiment/experimentGroup/groupList")
+    @GetMapping("v1/userExperiment/experimentGroup/listGroup")
     public ExperimentGroupResponse groupList(@Validated String experimentInstanceId) {
-        return experimentGroupBiz.groupList(experimentInstanceId);
+        return experimentGroupBiz.listGroup(experimentInstanceId);
     }
 
 
