@@ -87,7 +87,7 @@ public class PersonBiz {
      * @param
      * @return
      * @说明: 修改个人资料
-     * @关联表: account_instance、account_user、user_instance、account_group、account_org、user_extinfo
+     * @关联表: account_instance、account_user、user_instance、user_extinfo
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
