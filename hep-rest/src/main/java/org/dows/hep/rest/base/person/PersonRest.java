@@ -52,4 +52,15 @@ public class PersonRest {
         return personBiz.getPersonalInformation(accountId,appId);
     }
 
+    /**
+     * 修改用户资料
+     * @param
+     * @return
+     */
+    @Operation(summary =  "修改个人资料")
+    @PutMapping("v1/basePerson/person/updatePersonalInformation")
+    public String updatePersonalInformation(@RequestBody AccountInstanceRequest request) {
+        return personBiz.updatePersonalInformation(request);
+    }
+
 }

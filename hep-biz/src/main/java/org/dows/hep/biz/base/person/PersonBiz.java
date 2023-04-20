@@ -1,5 +1,6 @@
 package org.dows.hep.biz.base.person;
 
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.api.AccountGroupApi;
@@ -9,7 +10,9 @@ import org.dows.account.request.AccountInstanceRequest;
 import org.dows.account.response.AccountInstanceResponse;
 import org.dows.account.response.AccountOrgResponse;
 import org.dows.user.api.api.UserExtinfoApi;
+import org.dows.user.api.request.UserExtinfoRequest;
 import org.dows.user.api.response.UserExtinfoResponse;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import java.util.Map;
 
@@ -78,5 +81,28 @@ public class PersonBiz {
         UserExtinfoResponse extinfo = userExtinfoApi.getUserExtinfoByUserId(instance.getUserId());
         instance.setIntro(extinfo.getIntro());
         return instance;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 修改个人资料
+     * @关联表: account_instance、account_user、user_instance、account_group、account_org、user_extinfo
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/4/20 14:50
+     */
+    @DSTransactional
+    public String updatePersonalInformation(AccountInstanceRequest request) {
+        //1、更新账户实例
+        String userId = accountInstanceApi.updateAccountInstanceByAccountId(request);
+        //2、更新用户简介
+        UserExtinfoRequest extinfo = UserExtinfoRequest.builder()
+                .userId(userId)
+                .intro(request.getIntro())
+                .build();
+        userExtinfoApi.insertOrUpdateExtinfo(extinfo);
+        return userId;
     }
 }
