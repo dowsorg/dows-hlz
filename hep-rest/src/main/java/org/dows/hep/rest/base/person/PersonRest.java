@@ -1,15 +1,12 @@
 package org.dows.hep.rest.base.person;
 
-import com.baomidou.dynamic.datasource.annotation.DS;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.request.AccountInstanceRequest;
+import org.dows.account.response.AccountInstanceResponse;
 import org.dows.hep.biz.base.person.PersonBiz;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 /**
@@ -29,7 +26,6 @@ public class PersonRest {
      */
     @Operation(summary = "登录")
     @PostMapping("v1/basePerson/person/login")
-    @DS("uim")
     public Map<String, Object> login(@RequestBody AccountInstanceRequest request) {
         return personBiz.login(request);
     }
@@ -41,9 +37,19 @@ public class PersonRest {
      */
     @Operation(summary = "重置密码")
     @PutMapping("v1/basePerson/person/resetPwd")
-    @DS("uim")
     public Boolean resetPwd(@RequestBody AccountInstanceRequest request) {
         return personBiz.resetPwd(request);
+    }
+
+    /**
+     * 查看用户资料
+     * @param
+     * @return
+     */
+    @Operation(summary =  "查看个人资料")
+    @GetMapping("v1/basePerson/person/getPersonalInformation/{accountId}/{appId}")
+    public AccountInstanceResponse getPersonalInformation(@PathVariable("accountId") String accountId, @PathVariable("appId") String appId) {
+        return personBiz.getPersonalInformation(accountId,appId);
     }
 
 }
