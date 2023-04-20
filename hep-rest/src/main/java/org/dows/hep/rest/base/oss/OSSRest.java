@@ -19,22 +19,20 @@ import java.io.InputStream;
 import java.util.Objects;
 
 @Tag(name = "OSS文件上传")
-@Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("oss")
 public class OSSRest {
 
     private final OSSBiz ossBiz;
 
     @Operation(summary = "oss文件上传")
     @PostMapping("/v1/file/upload")
-    Response uploadFile(@RequestParam(value = "file") MultipartFile file) throws IOException{
+    OssInfo uploadFile(@RequestParam(value = "file") MultipartFile file) throws IOException{
         if (Objects.isNull(file) || file.isEmpty()) {
-            return Response.fail("文件不能为空");
+            throw new IOException("文件不能为空");
         }
         if (file.getSize() > 209715200L) {
-            return Response.fail("文件超过最大限制2M");
+            throw new IOException("文件超过最大限制2M");
         }
 
         // 文件名后缀
@@ -63,6 +61,6 @@ public class OSSRest {
             is.close();
         }
 
-        return Response.ok(info);
+        return info;
     }
 }
