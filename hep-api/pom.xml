@@ -6,19 +6,9 @@
         <groupId>org.dows.saas</groupId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-
     <modelVersion>4.0.0</modelVersion>
     <artifactId>hep-api</artifactId>
-
-
-
-
-
     <dependencies>
-<!--        <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-annotations</artifactId>
-        </dependency>-->
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
@@ -37,7 +27,6 @@
             <version>2.2.8</version>
         </dependency>
     </dependencies>
-
     <build>
         <plugins>
         </plugins>

@@ -8,7 +8,6 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>hep-biz</artifactId>
-
     <dependencies>
         <dependency>
             <groupId>org.dows.saas</groupId>
@@ -42,5 +41,4 @@
         <plugins>
         </plugins>
     </build>
-
 </project>
