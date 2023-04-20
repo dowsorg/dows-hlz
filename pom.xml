@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>dows-parent</artifactId>
+        <groupId>org.dows.framework</groupId>
+        <version>20230331-SNAPSHOT</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>dows-hep</artifactId>
+    <groupId>org.dows.saas</groupId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+
+    <modules>
+        <module>hep-api</module>
+        <module>hep-app</module>
+        <module>hep-biz</module>
+        <module>hep-config</module>
+        <module>hep-crud</module>
+        <module>hep-feign</module>
+        <module>hep-pojo</module>
+        <module>hep-rest</module>
+    </modules>
+
+    <properties>
+        <account.version>20230418-SNAPSHOT</account.version>
+        <rbac.version>20230418-SNAPSHOT</rbac.version>
+        <tenant.version>20230418-SNAPSHOT</tenant.version>
+        <auth.version>20230418-SNAPSHOT</auth.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <artifactId>hep-api</artifactId>
+                <groupId>org.dows.saas</groupId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <artifactId>hep-app</artifactId>
+                <groupId>org.dows.saas</groupId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <artifactId>hep-biz</artifactId>
+                <groupId>org.dows.saas</groupId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <artifactId>hep-config</artifactId>
+                <groupId>org.dows.saas</groupId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <artifactId>hep-crud</artifactId>
+                <groupId>org.dows.saas</groupId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <artifactId>hep-feign</artifactId>
+                <groupId>org.dows.saas</groupId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <artifactId>hep-pojo</artifactId>
+                <groupId>org.dows.saas</groupId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <artifactId>hep-rest</artifactId>
+                <groupId>org.dows.saas</groupId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+
+
+
+
+
+            <dependency>
+                <groupId>org.dows.cloud</groupId>
+                <artifactId>account-api</artifactId>
+                <version>20230418-SNAPSHOT</version>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+        </plugins>
+    </build>
+
+</project>

@@ -1,0 +1,57 @@
+package org.dows.hep.api.base.intervene.request;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+* @description 
+*
+* @author 
+* @date 
+*/
+@Data
+@NoArgsConstructor
+@Schema(name = "SaveEvent 对象", title = "保存事件")
+public class SaveEventRequest{
+    @Schema(title = "分布式id")
+    private String eventId;
+
+    @Schema(title = "突发事件名称")
+    private String eventName;
+
+    @Schema(title = "图片")
+    private String pic;
+
+    @Schema(title = "分类id")
+    private String eventCategId;
+
+    @Schema(title = "状态 0-启用 1-停用")
+    private Integer state;
+
+    @Schema(title = "事件说明")
+    private String descr;
+
+    @Schema(title = "创建者账号")
+    private String createAccountId;
+
+    @Schema(title = "创建者名称")
+    private String createAccountName;
+
+    @Schema(title = "触发类型 1-事件触发 2-条件触发")
+    private Integer triggerType;
+
+    @Schema(title = "触发期数")
+    private String triggerPeriod;
+
+    @Schema(title = "触发时间段 1-前期 2-中期 3-后期")
+    private String triggerSpan;
+
+    @Schema(title = "事件条件json")
+    private String eval;
+
+    @Schema(title = "处理选项json")
+    private String actions;
+
+
+}

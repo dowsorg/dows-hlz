@@ -1,0 +1,163 @@
+package org.dows.hep.biz.base.intervene;
+
+import org.dows.hep.api.base.intervene.request.*;
+import org.dows.hep.api.base.intervene.response.InterveneCategResponse;
+import org.dows.hep.api.base.intervene.response.SurveyInfoResponse;
+import org.dows.hep.api.base.intervene.response.SurveyResponse;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+* @description project descr:干预:评估问卷
+*
+* @author lait.zhang
+* @date 2023年4月18日 上午10:45:07
+*/
+@Service
+public class SurveyBiz{
+    /**
+    * @param
+    * @return
+    * @说明: 获取类别
+    * @关联表: survey_category
+    * @工时: 2H
+    * @开发者: wuzl
+    * @开始时间: 
+    * @创建时间: 2023年4月18日 上午10:45:07
+    */
+    public List<InterveneCategResponse> listSurveyCateg(FindInterveneCategRequest findInterveneCateg ) {
+        return new ArrayList<InterveneCategResponse>();
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 保存类别
+    * @关联表: survey_category
+    * @工时: 2H
+    * @开发者: wuzl
+    * @开始时间: 
+    * @创建时间: 2023年4月18日 上午10:45:07
+    */
+    public Boolean saveSurveyCateg(SaveInterveneCategRequest saveInterveneCateg ) {
+        return Boolean.FALSE;
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 删除类别
+    * @关联表: survey_category
+    * @工时: 2H
+    * @开发者: wuzl
+    * @开始时间: 
+    * @创建时间: 2023年4月18日 上午10:45:07
+    */
+    public Boolean delSurveyCateg(DelInterveneCategRequest delInterveneCateg ) {
+        return Boolean.FALSE;
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 获取评估问卷列表
+    * @关联表: survey
+    * @工时: 2H
+    * @开发者: wuzl
+    * @开始时间: 
+    * @创建时间: 2023年4月18日 上午10:45:07
+    */
+    public SurveyResponse pageSurvey(FindSurveyRequest findSurvey ) {
+        return new SurveyResponse();
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 获取评估问卷详细信息
+    * @关联表: 
+    * @工时: 2H
+    * @开发者: wuzl
+    * @开始时间: 
+    * @创建时间: 2023年4月18日 上午10:45:07
+    */
+    public SurveyInfoResponse getSurvey(String surveyId, Integer step ) {
+        return new SurveyInfoResponse();
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 删除问卷
+    * @关联表: survey,survey_eval,survey_report
+    * @工时: 2H
+    * @开发者: wuzl
+    * @开始时间: 
+    * @创建时间: 2023年4月18日 上午10:45:07
+    */
+    public Boolean delSurvey(DelSurveyRequest delSurvey ) {
+        return Boolean.FALSE;
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 启用、禁用问卷
+    * @关联表: survey
+    * @工时: 2H
+    * @开发者: wuzl
+    * @开始时间: 
+    * @创建时间: 2023年4月18日 上午10:45:07
+    */
+    public Boolean setSurveyState(SetSurveyStateRequest setSurveyState ) {
+        return Boolean.FALSE;
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 保存问卷基本信息
+    * @关联表: survey
+    * @工时: 2H
+    * @开发者: wuzl
+    * @开始时间: 
+    * @创建时间: 2023年4月18日 上午10:45:07
+    */
+    public Boolean saveSurveyBasic(SaveSurveyBasicRequest saveSurveyBasic ) {
+        return Boolean.FALSE;
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 保存问卷题目信息
+    * @关联表: 
+    * @工时: 2H
+    * @开发者: wuzl
+    * @开始时间: 
+    * @创建时间: 2023年4月18日 上午10:45:07
+    */
+    public Boolean saveSurveyQuestion(SaveSurveyQuestionRequest saveSurveyQuestion ) {
+        return Boolean.FALSE;
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 保存问卷维度公式
+    * @关联表: survey_eval
+    * @工时: 2H
+    * @开发者: wuzl
+    * @开始时间: 
+    * @创建时间: 2023年4月18日 上午10:45:07
+    */
+    public Boolean saveSurveyEval(SaveSurveyEvalRequest saveSurveyEval ) {
+        return Boolean.FALSE;
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 保存问卷报告设置
+    * @关联表: survey_report
+    * @工时: 2H
+    * @开发者: wuzl
+    * @开始时间: 
+    * @创建时间: 2023年4月18日 上午10:45:07
+    */
+    public Boolean saveSurveyReport(SaveSurveyReportRequest saveSurveyReport ) {
+        return Boolean.FALSE;
+    }
+}

@@ -1,0 +1,17 @@
+package org.dows.hep.mapper;
+
+import org.apache.ibatis.annotations.Mapper;
+import org.dows.framework.crud.mybatis.MybatisCrudMapper;
+import org.dows.hep.entity.IndicatorJudgeHealthProblemEntity;
+
+/**
+ * 判断指标健康问题(IndicatorJudgeHealthProblem)表数据库访问层
+ *
+ * @author lait
+ * @since 2023-04-18 13:57:32
+ */
+@Mapper
+public interface IndicatorJudgeHealthProblemMapper extends MybatisCrudMapper<IndicatorJudgeHealthProblemEntity> {
+
+}
+
