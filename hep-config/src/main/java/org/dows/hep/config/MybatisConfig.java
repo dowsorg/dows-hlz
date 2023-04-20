@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
 @EnableTransactionManagement
-@MapperScan(basePackages = {"org.dows.hep.mapper"}, annotationClass = Mapper.class)
+@MapperScan(basePackages = {"org.dows.*.mapper"}, annotationClass = Mapper.class)
 public class MybatisConfig {
     /**
      * 分页插件
