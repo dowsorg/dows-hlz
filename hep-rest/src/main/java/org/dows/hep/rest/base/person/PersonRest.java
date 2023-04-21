@@ -1,5 +1,6 @@
 package org.dows.hep.rest.base.person;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -72,6 +73,15 @@ public class PersonRest {
     @PostMapping("v1/basePerson/person/createTeacherOrStudent")
     public AccountInstanceResponse createTeacherOrStudent(@RequestBody AccountInstanceRequest request){
         return personBiz.createTeacherOrStudent(request);
+    }
+
+    /**
+     * 获取教师/学生列表
+     */
+    @Operation(summary =  "获取教师/学生列表")
+    @PostMapping("v1/basePerson/person/listTeacherOrStudent")
+    public IPage<AccountInstanceResponse> listTeacherOrStudent(@RequestBody AccountInstanceRequest request){
+          return personBiz.listTeacherOrStudent(request);
     }
 
 }
