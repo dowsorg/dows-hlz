@@ -1,5 +1,6 @@
 package org.dows.hep.biz.tenant.casus;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.dows.hep.api.tenant.casus.request.CaseInstancePageRequest;
 import org.dows.hep.api.tenant.casus.request.CaseInstanceRequest;
 import org.dows.hep.api.tenant.casus.response.CaseInstanceResponse;
@@ -49,8 +50,9 @@ public class CaseManageBiz{
     * @开始时间: 
     * @创建时间: 2023年4月18日 上午10:45:07
     */
-    public CaseInstanceResponse pageCaseInstance(CaseInstancePageRequest caseInstancePage ) {
-        return new CaseInstanceResponse();
+    public IPage<CaseInstanceResponse> pageCaseInstance(CaseInstancePageRequest caseInstancePage ) {
+
+        return null;
     }
     /**
     * @param

@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
 import org.dows.hep.api.tenant.experiment.request.GroupSettingRequest;
+import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
 import org.springframework.validation.annotation.Validated;
@@ -70,8 +71,8 @@ public class ExperimentManageRest {
      */
     @Operation(summary = "获取实验列表")
     @GetMapping("v1/tenantExperiment/experimentManage/pageExperiment")
-    public IPage<ExperimentListResponse> pageExperiment() {
-        return new PageDTO<>();
+    public IPage<ExperimentListResponse> pageExperiment(PageExperimentRequest pageExperimentRequest) {
+        return experimentManageBiz.pageExperiment(pageExperimentRequest);
     }
 
 

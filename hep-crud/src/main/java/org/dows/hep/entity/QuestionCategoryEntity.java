@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 问题类目(QuestionCategory)实体类
  *
  * @author lait
- * @since 2023-04-21 10:30:24
+ * @since 2023-04-21 19:41:32
  */
 @SuppressWarnings("serial")
 @Data

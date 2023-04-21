@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 评估维度公式(EvaluateDimensionExpression)实体类
  *
  * @author lait
- * @since 2023-04-21 10:30:21
+ * @since 2023-04-21 19:41:29
  */
 @SuppressWarnings("serial")
 @Data

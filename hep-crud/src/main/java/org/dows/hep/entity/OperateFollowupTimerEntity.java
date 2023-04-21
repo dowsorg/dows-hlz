@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 学生随访操作计时器(OperateFollowupTimer)实体类
  *
  * @author lait
- * @since 2023-04-21 10:30:23
+ * @since 2023-04-21 19:41:31
  */
 @SuppressWarnings("serial")
 @Data
@@ -92,12 +92,6 @@ public class OperateFollowupTimerEntity implements CrudEntity {
 
     @Schema(title = "最近随访时间")
     private Date followupTime;
-
-    @JsonIgnore
-    @TableLogic
-    @TableField(fill = FieldFill.INSERT)
-    @Schema(title = "逻辑删除")
-    private Boolean deleted;
 
 }
 

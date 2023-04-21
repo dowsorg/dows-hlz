@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 干预类别管理(InterveneCategory)实体类
  *
  * @author lait
- * @since 2023-04-21 10:30:23
+ * @since 2023-04-21 19:41:31
  */
 @SuppressWarnings("serial")
 @Data
@@ -54,7 +54,7 @@ public class InterveneCategoryEntity implements CrudEntity {
     @Schema(title = "类别key")
     private String section;
 
-    @Schema(title = "扩展属性")
+    @Schema(title = "扩展属性，饮食推荐量")
     private String extend;
 
     @Schema(title = "层级")
@@ -62,6 +62,9 @@ public class InterveneCategoryEntity implements CrudEntity {
 
     @Schema(title = "排序号")
     private Integer seq;
+
+    @Schema(title = "可选性，0-普通 1-膳食主要分类")
+    private Boolean option;
 
     @JsonIgnore
     @TableLogic
