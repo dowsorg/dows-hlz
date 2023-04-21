@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 食谱成分(FoodCookbookNutrient)实体类
  *
  * @author lait
- * @since 2023-04-18 13:56:33
+ * @since 2023-04-21 10:30:22
  */
 @SuppressWarnings("serial")
 @Data

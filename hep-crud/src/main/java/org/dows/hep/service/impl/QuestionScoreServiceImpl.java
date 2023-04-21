@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 问题-得分(QuestionScore)表服务实现类
  *
  * @author lait
- * @since 2023-04-18 13:59:14
+ * @since 2023-04-21 10:31:48
  */
 @Service("questionScoreService")
 public class QuestionScoreServiceImpl extends MybatisCrudServiceImpl<QuestionScoreMapper, QuestionScoreEntity> implements QuestionScoreService {

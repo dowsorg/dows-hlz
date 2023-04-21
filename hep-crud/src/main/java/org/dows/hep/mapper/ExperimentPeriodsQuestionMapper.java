@@ -8,7 +8,7 @@ import org.dows.hep.entity.ExperimentPeriodsQuestionEntity;
  * 实验期数答题(ExperimentPeriodsQuestion)表数据库访问层
  *
  * @author lait
- * @since 2023-04-18 13:55:47
+ * @since 2023-04-21 10:31:15
  */
 @Mapper
 public interface ExperimentPeriodsQuestionMapper extends MybatisCrudMapper<ExperimentPeriodsQuestionEntity> {

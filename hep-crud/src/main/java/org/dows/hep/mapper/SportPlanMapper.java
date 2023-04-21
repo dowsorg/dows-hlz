@@ -8,7 +8,7 @@ import org.dows.hep.entity.SportPlanEntity;
  * 运动方案(SportPlan)表数据库访问层
  *
  * @author lait
- * @since 2023-04-18 13:59:55
+ * @since 2023-04-21 10:31:16
  */
 @Mapper
 public interface SportPlanMapper extends MybatisCrudMapper<SportPlanEntity> {

@@ -8,7 +8,7 @@ import org.dows.hep.entity.EventEvalEntity;
  * 突发事件触发条件(EventEval)表数据库访问层
  *
  * @author lait
- * @since 2023-04-18 13:55:20
+ * @since 2023-04-21 10:31:15
  */
 @Mapper
 public interface EventEvalMapper extends MybatisCrudMapper<EventEvalEntity> {

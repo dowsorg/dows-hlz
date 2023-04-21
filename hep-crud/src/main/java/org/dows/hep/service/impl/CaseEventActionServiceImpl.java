@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 案例人物事件处理选项(CaseEventAction)表服务实现类
  *
  * @author lait
- * @since 2023-04-18 13:54:26
+ * @since 2023-04-21 10:31:40
  */
 @Service("caseEventActionService")
 public class CaseEventActionServiceImpl extends MybatisCrudServiceImpl<CaseEventActionMapper, CaseEventActionEntity> implements CaseEventActionService {

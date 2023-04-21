@@ -8,7 +8,7 @@ import org.dows.framework.crud.mybatis.MybatisCrudService;
  * 问题集[试卷]-答题记录(QuestionSectionResult)表服务接口
  *
  * @author lait
- * @since 2023-04-18 13:59:30
+ * @since 2023-04-21 10:31:48
  */
 public interface QuestionSectionResultService extends MybatisCrudService<QuestionSectionResultEntity> {
 

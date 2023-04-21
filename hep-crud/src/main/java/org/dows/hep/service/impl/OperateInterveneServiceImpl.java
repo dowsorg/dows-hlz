@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 学生干预操作记录(OperateIntervene)表服务实现类
  *
  * @author lait
- * @since 2023-04-18 13:58:51
+ * @since 2023-04-21 10:31:45
  */
 @Service("operateInterveneService")
 public class OperateInterveneServiceImpl extends MybatisCrudServiceImpl<OperateInterveneMapper, OperateInterveneEntity> implements OperateInterveneService {

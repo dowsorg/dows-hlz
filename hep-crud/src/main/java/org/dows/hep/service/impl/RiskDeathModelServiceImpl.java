@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 死亡模型(RiskDeathModel)表服务实现类
  *
  * @author lait
- * @since 2023-04-18 13:59:44
+ * @since 2023-04-21 10:31:48
  */
 @Service("riskDeathModelService")
 public class RiskDeathModelServiceImpl extends MybatisCrudServiceImpl<RiskDeathModelMapper, RiskDeathModelEntity> implements RiskDeathModelService {

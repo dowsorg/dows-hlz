@@ -8,7 +8,7 @@ import org.dows.hep.entity.EvaluateQuestionnaireEntity;
  * 评估问卷(EvaluateQuestionnaire)表数据库访问层
  *
  * @author lait
- * @since 2023-04-18 13:54:33
+ * @since 2023-04-21 10:31:15
  */
 @Mapper
 public interface EvaluateQuestionnaireMapper extends MybatisCrudMapper<EvaluateQuestionnaireEntity> {

@@ -8,7 +8,7 @@ import org.dows.hep.entity.IndicatorJudgeDiseaseProblemEntity;
  * 判断指标疾病问题(IndicatorJudgeDiseaseProblem)表数据库访问层
  *
  * @author lait
- * @since 2023-04-18 13:57:21
+ * @since 2023-04-21 10:31:15
  */
 @Mapper
 public interface IndicatorJudgeDiseaseProblemMapper extends MybatisCrudMapper<IndicatorJudgeDiseaseProblemEntity> {

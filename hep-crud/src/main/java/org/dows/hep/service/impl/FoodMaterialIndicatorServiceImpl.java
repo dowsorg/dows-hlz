@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 食材关联指标(FoodMaterialIndicator)表服务实现类
  *
  * @author lait
- * @since 2023-04-18 13:56:54
+ * @since 2023-04-21 10:31:42
  */
 @Service("foodMaterialIndicatorService")
 public class FoodMaterialIndicatorServiceImpl extends MybatisCrudServiceImpl<FoodMaterialIndicatorMapper, FoodMaterialIndicatorEntity> implements FoodMaterialIndicatorService {

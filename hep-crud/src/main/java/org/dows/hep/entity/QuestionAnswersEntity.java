@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 问题-答案(QuestionAnswers)实体类
  *
  * @author lait
- * @since 2023-04-18 13:58:58
+ * @since 2023-04-21 10:30:24
  */
 @SuppressWarnings("serial")
 @Data
@@ -36,8 +36,8 @@ public class QuestionAnswersEntity implements CrudEntity {
     @Schema(title = "数据库ID")
     private Long id;
 
-    @Schema(title = "")
-    private String q;
+    @Schema(title = "答案的ID")
+    private String questionAnswerId;
 
     @Schema(title = "应用ID")
     private String appId;

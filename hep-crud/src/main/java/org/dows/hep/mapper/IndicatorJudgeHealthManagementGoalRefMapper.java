@@ -8,7 +8,7 @@ import org.dows.hep.entity.IndicatorJudgeHealthManagementGoalRefEntity;
  * 判断指标健管目标关联指标(IndicatorJudgeHealthManagementGoalRef)表数据库访问层
  *
  * @author lait
- * @since 2023-04-18 13:57:29
+ * @since 2023-04-21 10:31:15
  */
 @Mapper
 public interface IndicatorJudgeHealthManagementGoalRefMapper extends MybatisCrudMapper<IndicatorJudgeHealthManagementGoalRefEntity> {

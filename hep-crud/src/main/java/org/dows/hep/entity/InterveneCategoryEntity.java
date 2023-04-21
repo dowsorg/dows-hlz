@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 干预类别管理(InterveneCategory)实体类
  *
  * @author lait
- * @since 2023-04-18 13:58:29
+ * @since 2023-04-21 10:30:23
  */
 @SuppressWarnings("serial")
 @Data
@@ -45,6 +45,12 @@ public class InterveneCategoryEntity implements CrudEntity {
     @Schema(title = "名称")
     private String categName;
 
+    @Schema(title = "分布式id路径")
+    private String categIdPath;
+
+    @Schema(title = "名称路径")
+    private String categNamePath;
+
     @Schema(title = "类别key")
     private String section;
 
@@ -53,12 +59,6 @@ public class InterveneCategoryEntity implements CrudEntity {
 
     @Schema(title = "层级")
     private Boolean depth;
-
-    @Schema(title = "分布式id路径")
-    private String categIdPath;
-
-    @Schema(title = "名称路径")
-    private String categNamePath;
 
     @Schema(title = "排序号")
     private Integer seq;

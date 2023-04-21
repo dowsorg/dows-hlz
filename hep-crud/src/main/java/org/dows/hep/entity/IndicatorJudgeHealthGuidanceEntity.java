@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 判断指标健康指导(IndicatorJudgeHealthGuidance)实体类
  *
  * @author lait
- * @since 2023-04-18 13:57:22
+ * @since 2023-04-21 10:30:22
  */
 @SuppressWarnings("serial")
 @Data
@@ -36,7 +36,7 @@ public class IndicatorJudgeHealthGuidanceEntity implements CrudEntity {
     @Schema(title = "主键")
     private Long id;
 
-    @Schema(title = "")
+    @Schema(title = "分布式ID")
     private String indicatorJudgeHealthGuidanceId;
 
     @Schema(title = "应用ID")

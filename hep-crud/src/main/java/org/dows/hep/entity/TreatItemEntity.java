@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 治疗项目(TreatItem)实体类
  *
  * @author lait
- * @since 2023-04-18 13:59:58
+ * @since 2023-04-21 10:30:28
  */
 @SuppressWarnings("serial")
 @Data

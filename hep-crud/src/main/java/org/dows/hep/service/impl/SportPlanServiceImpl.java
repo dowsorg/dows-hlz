@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 运动方案(SportPlan)表服务实现类
  *
  * @author lait
- * @since 2023-04-18 13:59:54
+ * @since 2023-04-21 10:31:48
  */
 @Service("sportPlanService")
 public class SportPlanServiceImpl extends MybatisCrudServiceImpl<SportPlanMapper, SportPlanEntity> implements SportPlanService {

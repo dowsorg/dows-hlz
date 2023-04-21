@@ -8,7 +8,7 @@ import org.dows.framework.crud.mybatis.MybatisCrudService;
  * 评估报告管理(EvaluateReportManagement)表服务接口
  *
  * @author lait
- * @since 2023-04-18 13:54:33
+ * @since 2023-04-21 10:31:41
  */
 public interface EvaluateReportManagementService extends MybatisCrudService<EvaluateReportManagementEntity> {
 

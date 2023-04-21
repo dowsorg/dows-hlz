@@ -8,7 +8,7 @@ import org.dows.hep.entity.EventCategEntity;
  * 事件类别管理(EventCateg)表数据库访问层
  *
  * @author lait
- * @since 2023-04-18 13:54:35
+ * @since 2023-04-21 10:31:15
  */
 @Mapper
 public interface EventCategMapper extends MybatisCrudMapper<EventCategEntity> {

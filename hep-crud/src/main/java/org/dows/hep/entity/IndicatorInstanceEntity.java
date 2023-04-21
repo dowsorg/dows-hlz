@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 指标(IndicatorInstance)实体类
  *
  * @author lait
- * @since 2023-04-18 13:57:17
+ * @since 2023-04-21 10:30:22
  */
 @SuppressWarnings("serial")
 @Data

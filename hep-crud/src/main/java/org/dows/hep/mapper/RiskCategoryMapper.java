@@ -8,7 +8,7 @@ import org.dows.hep.entity.RiskCategoryEntity;
  * 风险类别(RiskCategory)表数据库访问层
  *
  * @author lait
- * @since 2023-04-18 13:59:38
+ * @since 2023-04-21 10:31:16
  */
 @Mapper
 public interface RiskCategoryMapper extends MybatisCrudMapper<RiskCategoryEntity> {

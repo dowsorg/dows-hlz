@@ -8,7 +8,7 @@ import org.dows.hep.entity.OperateExamEntity;
  * 操作考试[题目]记录(OperateExam)表数据库访问层
  *
  * @author lait
- * @since 2023-04-18 13:58:43
+ * @since 2023-04-21 10:31:16
  */
 @Mapper
 public interface OperateExamMapper extends MybatisCrudMapper<OperateExamEntity> {

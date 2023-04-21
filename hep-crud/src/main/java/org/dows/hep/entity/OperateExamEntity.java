@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 操作考试[题目]记录(OperateExam)实体类
  *
  * @author lait
- * @since 2023-04-18 13:58:40
+ * @since 2023-04-21 10:30:23
  */
 @SuppressWarnings("serial")
 @Data

@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 实验机构人物(ExperimentPerson)实体类
  *
  * @author lait
- * @since 2023-04-18 13:55:48
+ * @since 2023-04-21 10:30:21
  */
 @SuppressWarnings("serial")
 @Data
@@ -36,7 +36,10 @@ public class ExperimentPersonEntity implements CrudEntity {
     @Schema(title = "数据库ID")
     private Long id;
 
-    @Schema(title = "实验实列ID")
+    @Schema(title = "实验人物id")
+    private String experimentPersonId;
+
+    @Schema(title = "实验实例ID")
     private String experimentInstanceId;
 
     @Schema(title = "实验小组ID")
@@ -53,6 +56,24 @@ public class ExperimentPersonEntity implements CrudEntity {
 
     @Schema(title = "账号名称")
     private String caseAccountName;
+
+    @Schema(title = "上个案例机构id")
+    private String caseOrgIdLast;
+
+    @Schema(title = "上个案例机构名称")
+    private String caseOrgNameLast;
+
+    @Schema(title = "挂号状态 0-未挂号 1-已挂号")
+    private Boolean flowState;
+
+    @Schema(title = "保险状态 0-未购买 1-已购买")
+    private Boolean insuranceState;
+
+    @Schema(title = "剩余资金")
+    private Double asset;
+
+    @Schema(title = "初始资金")
+    private Double assetInit;
 
     @JsonIgnore
     @TableLogic

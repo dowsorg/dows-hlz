@@ -15,10 +15,10 @@ import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
 
 /**
- * 指标(IndicatorViewBaseInfoDescrRef)实体类
+ * 指标基本信息描述表与指标关联关系(IndicatorViewBaseInfoDescrRef)实体类
  *
  * @author lait
- * @since 2023-04-18 13:57:54
+ * @since 2023-04-21 10:30:22
  */
 @SuppressWarnings("serial")
 @Data
@@ -28,7 +28,7 @@ import org.dows.framework.crud.api.CrudEntity;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "IndicatorViewBaseInfoDescrRef", title = "指标")
+@Schema(name = "IndicatorViewBaseInfoDescrRef", title = "指标基本信息描述表与指标关联关系")
 @TableName("indicator_view_base_info_descr_ref")
 public class IndicatorViewBaseInfoDescrRefEntity implements CrudEntity {
 
@@ -36,7 +36,7 @@ public class IndicatorViewBaseInfoDescrRefEntity implements CrudEntity {
     @Schema(title = "主键")
     private Long id;
 
-    @Schema(title = "")
+    @Schema(title = "分布式ID")
     private String indicatorViewBaseInfoDescRefId;
 
     @Schema(title = "应用ID")

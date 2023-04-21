@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 实验扮演者(ExperimentActor)表服务实现类
  *
  * @author lait
- * @since 2023-04-18 13:55:23
+ * @since 2023-04-21 10:31:41
  */
 @Service("experimentActorService")
 public class ExperimentActorServiceImpl extends MybatisCrudServiceImpl<ExperimentActorMapper, ExperimentActorEntity> implements ExperimentActorService {

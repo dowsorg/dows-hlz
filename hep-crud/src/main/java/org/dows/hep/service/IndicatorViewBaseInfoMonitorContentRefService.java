@@ -8,7 +8,7 @@ import org.dows.framework.crud.mybatis.MybatisCrudService;
  * 指标基本信息监测内容表与指标关联关系(IndicatorViewBaseInfoMonitorContentRef)表服务接口
  *
  * @author lait
- * @since 2023-04-18 13:58:02
+ * @since 2023-04-21 10:31:44
  */
 public interface IndicatorViewBaseInfoMonitorContentRefService extends MybatisCrudService<IndicatorViewBaseInfoMonitorContentRefEntity> {
 

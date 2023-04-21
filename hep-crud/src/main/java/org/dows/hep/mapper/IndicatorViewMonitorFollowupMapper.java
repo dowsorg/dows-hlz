@@ -8,7 +8,7 @@ import org.dows.hep.entity.IndicatorViewMonitorFollowupEntity;
  * 查看指标监测随访类(IndicatorViewMonitorFollowup)表数据库访问层
  *
  * @author lait
- * @since 2023-04-18 13:58:08
+ * @since 2023-04-21 10:31:15
  */
 @Mapper
 public interface IndicatorViewMonitorFollowupMapper extends MybatisCrudMapper<IndicatorViewMonitorFollowupEntity> {

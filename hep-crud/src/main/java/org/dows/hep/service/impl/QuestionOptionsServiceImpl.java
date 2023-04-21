@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 问题-选项(QuestionOptions)表服务实现类
  *
  * @author lait
- * @since 2023-04-18 13:59:11
+ * @since 2023-04-21 10:31:46
  */
 @Service("questionOptionsService")
 public class QuestionOptionsServiceImpl extends MybatisCrudServiceImpl<QuestionOptionsMapper, QuestionOptionsEntity> implements QuestionOptionsService {

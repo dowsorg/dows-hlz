@@ -8,7 +8,7 @@ import org.dows.hep.entity.RiskModelEntity;
  * 风险模型(RiskModel)表数据库访问层
  *
  * @author lait
- * @since 2023-04-18 13:59:48
+ * @since 2023-04-21 10:31:16
  */
 @Mapper
 public interface RiskModelMapper extends MybatisCrudMapper<RiskModelEntity> {

@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 操作机构转入转出记录(OperateTransfers)实体类
  *
  * @author lait
- * @since 2023-04-18 13:58:54
+ * @since 2023-04-21 10:30:24
  */
 @SuppressWarnings("serial")
 @Data
@@ -44,6 +44,9 @@ public class OperateTransfersEntity implements CrudEntity {
 
     @Schema(title = "实验小组ID")
     private String experimentGroupId;
+
+    @Schema(title = "实验人物id")
+    private String experimentPersonId;
 
     @Schema(title = "转出机构ID")
     private String formOrgId;

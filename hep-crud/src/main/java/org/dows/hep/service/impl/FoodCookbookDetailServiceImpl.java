@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 食谱食材(FoodCookbookDetail)表服务实现类
  *
  * @author lait
- * @since 2023-04-18 13:56:30
+ * @since 2023-04-21 10:31:42
  */
 @Service("foodCookbookDetailService")
 public class FoodCookbookDetailServiceImpl extends MybatisCrudServiceImpl<FoodCookbookDetailMapper, FoodCookbookDetailEntity> implements FoodCookbookDetailService {

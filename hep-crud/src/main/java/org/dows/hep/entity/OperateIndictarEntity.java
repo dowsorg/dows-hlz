@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 学生操作指标记录表(OperateIndictar)实体类
  *
  * @author lait
- * @since 2023-04-18 13:58:46
+ * @since 2023-04-21 10:30:24
  */
 @SuppressWarnings("serial")
 @Data
@@ -53,6 +53,9 @@ public class OperateIndictarEntity implements CrudEntity {
 
     @Schema(title = "操作人名")
     private String operateAccountName;
+
+    @Schema(title = "实验人物ID")
+    private String experimentPersonId;
 
     @Schema(title = "案例人物")
     private String caseAccountId;

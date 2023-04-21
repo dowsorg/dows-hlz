@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 学生干预操作记录(OperateIntervene)实体类
  *
  * @author lait
- * @since 2023-04-18 13:58:50
+ * @since 2023-04-21 10:30:24
  */
 @SuppressWarnings("serial")
 @Data

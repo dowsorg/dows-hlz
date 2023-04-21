@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 风险类别(RiskCategory)表服务实现类
  *
  * @author lait
- * @since 2023-04-18 13:59:38
+ * @since 2023-04-21 10:31:48
  */
 @Service("riskCategoryService")
 public class RiskCategoryServiceImpl extends MybatisCrudServiceImpl<RiskCategoryMapper, RiskCategoryEntity> implements RiskCategoryService {

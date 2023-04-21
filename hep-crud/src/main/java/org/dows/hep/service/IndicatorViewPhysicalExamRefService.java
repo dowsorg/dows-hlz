@@ -8,7 +8,7 @@ import org.dows.framework.crud.mybatis.MybatisCrudService;
  * 查看指标体格检查关联指标(IndicatorViewPhysicalExamRef)表服务接口
  *
  * @author lait
- * @since 2023-04-18 13:58:19
+ * @since 2023-04-21 10:31:44
  */
 public interface IndicatorViewPhysicalExamRefService extends MybatisCrudService<IndicatorViewPhysicalExamRefEntity> {
 

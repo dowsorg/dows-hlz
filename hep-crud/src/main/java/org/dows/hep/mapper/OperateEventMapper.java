@@ -8,7 +8,7 @@ import org.dows.hep.entity.OperateEventEntity;
  * 操作事件记录(OperateEvent)表数据库访问层
  *
  * @author lait
- * @since 2023-04-18 13:58:39
+ * @since 2023-04-21 10:31:16
  */
 @Mapper
 public interface OperateEventMapper extends MybatisCrudMapper<OperateEventEntity> {

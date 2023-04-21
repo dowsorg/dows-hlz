@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 实验实列(ExperimentInstance)实体类
  *
  * @author lait
- * @since 2023-04-18 13:55:37
+ * @since 2023-04-21 10:30:21
  */
 @SuppressWarnings("serial")
 @Data
@@ -61,7 +61,7 @@ public class ExperimentInstanceEntity implements CrudEntity {
     private Date startTime;
 
     @Schema(title = "实验状态[默认未开始状态0~6步]")
-    private Integer state;
+    private Boolean state;
 
     @JsonIgnore
     @TableLogic

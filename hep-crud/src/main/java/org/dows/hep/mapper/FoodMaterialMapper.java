@@ -8,7 +8,7 @@ import org.dows.hep.entity.FoodMaterialEntity;
  * 食材(FoodMaterial)表数据库访问层
  *
  * @author lait
- * @since 2023-04-18 13:56:52
+ * @since 2023-04-21 10:31:15
  */
 @Mapper
 public interface FoodMaterialMapper extends MybatisCrudMapper<FoodMaterialEntity> {

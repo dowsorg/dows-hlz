@@ -8,7 +8,7 @@ import org.dows.hep.entity.TreatItemEntity;
  * 治疗项目(TreatItem)表数据库访问层
  *
  * @author lait
- * @since 2023-04-18 14:00:01
+ * @since 2023-04-21 10:31:16
  */
 @Mapper
 public interface TreatItemMapper extends MybatisCrudMapper<TreatItemEntity> {

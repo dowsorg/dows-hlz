@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 实验案例报告(ExperimentCaseReport)表服务实现类
  *
  * @author lait
- * @since 2023-04-18 13:55:27
+ * @since 2023-04-21 10:31:41
  */
 @Service("experimentCaseReportService")
 public class ExperimentCaseReportServiceImpl extends MybatisCrudServiceImpl<ExperimentCaseReportMapper, ExperimentCaseReportEntity> implements ExperimentCaseReportService {
