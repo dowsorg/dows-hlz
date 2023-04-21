@@ -1,5 +1,7 @@
 package org.dows.hep.biz.base.org;
 
+import com.baomidou.dynamic.datasource.annotation.DS;
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.api.AccountGroupApi;
 import org.dows.account.api.AccountGroupInfoApi;
@@ -23,6 +25,7 @@ public class OrgBiz {
     private final AccountGroupInfoApi accountGroupInfoApi;
     private final AccountGroupApi accountGroupApi;
 
+    @DSTransactional
     public String createClass(AccountOrgRequest request,String accountId) {
         //1、生成随机code
         String orgCode = createCode(5);
