@@ -137,13 +137,14 @@ public class PersonBiz {
      */
     @DSTransactional
     public AccountInstanceResponse createTeacherOrStudent(AccountInstanceRequest request) {
-        //1、新增账号信息
-        AccountInstanceResponse vo = accountInstanceApi.createAccountInstance(request);
-        //2、新增用户信息
+        //1、新增用户信息
         UserInstanceRequest user = new UserInstanceRequest();
         BeanUtils.copyProperties(request, user);
         user.setName(request.getUserName());
         String userId = userInstanceApi.insertUserInstance(user);
+        //2、新增账号信息
+        request.setUserId(userId);
+        AccountInstanceResponse vo = accountInstanceApi.createAccountInstance(request);
         //3、创建账户和用户之间的关联关系
         AccountUserRequest accountUserRequest = AccountUserRequest.builder()
                 .accountId(vo.getAccountId())
@@ -233,12 +234,12 @@ public class PersonBiz {
         List<AccountGroupInfoResponse> responseList = accountGroupInfoApi.getGroupInfoListByOrgIds(request.getOrgIds());
         //2、获取项目负责人的账号ID,并更新
         String ownId = responseList.get(0).getAccountId();
-        Boolean flag1 = accountGroupApi.transferAccountIdOfAccountGroup(request.getOrgIds(), ownId, request.getAccountId());
-        if (!flag1) {
+        Integer count1 = accountGroupApi.transferAccountIdOfAccountGroup(request.getOrgIds(), ownId, request.getAccountId());
+        if (count1 == 0) {
             flag = false;
         }
-        Boolean flag2 = accountGroupInfoApi.transferAccountIdOfGroupInfo(request.getOrgIds(), ownId, request.getAccountId());
-        if (!flag2) {
+        Integer count2 = accountGroupInfoApi.transferAccountIdOfGroupInfo(request.getOrgIds(), ownId, request.getAccountId());
+        if (count2 == 0) {
             flag = false;
         }
         return flag;
