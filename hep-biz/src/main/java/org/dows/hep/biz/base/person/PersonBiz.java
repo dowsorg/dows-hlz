@@ -248,7 +248,7 @@ public class PersonBiz {
      * @param
      * @return
      * @说明: 删除 教师/学生
-     * @关联表: ??
+     * @关联表: account_group、account_org、account_org_info、account_group_info、account_instance、account_identifier、account_role、account_user、user_instance
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
