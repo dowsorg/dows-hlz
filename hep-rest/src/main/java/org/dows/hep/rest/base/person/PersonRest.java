@@ -124,4 +124,17 @@ public class PersonRest {
         return personBiz.transferClass(request);
     }
 
+    /**
+     * 删除 教师/学生
+     * 删除教师时需要将班级连带删除
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary =  "删除 教师/学生")
+    @DeleteMapping("v1/basePerson/person/deleteTeacherOrStudent")
+    public Boolean deleteTeacherOrStudent(@RequestBody AccountInstanceRequest request){
+        return personBiz.deleteTeacherOrStudent(request);
+    }
+
 }
