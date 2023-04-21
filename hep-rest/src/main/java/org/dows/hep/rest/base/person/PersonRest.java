@@ -77,6 +77,9 @@ public class PersonRest {
 
     /**
      * 获取教师/学生列表
+     *
+     * @param
+     * @return
      */
     @Operation(summary =  "获取教师/学生列表")
     @PostMapping("v1/basePerson/person/listTeacherOrStudent")
@@ -86,11 +89,23 @@ public class PersonRest {
 
     /**
      * 编辑教师/学生
+     *
+     * @param
+     * @return
      */
     @Operation(summary =  "编辑教师/学生")
     @PostMapping("v1/basePerson/person/editTeacherOrStudent")
     public String editTeacherOrStudent(@RequestBody AccountInstanceRequest request){
         return personBiz.editTeacherOrStudent(request);
+    }
+
+    /**
+     * 教师 判断是否有班级
+     */
+    @Operation(summary =  "教师 判断是否有班级")
+    @PostMapping("v1/basePerson/person/checkOwnClass")
+    public Boolean checkOwnClass(@RequestBody AccountInstanceRequest request){
+        return personBiz.checkOwnClass(request);
     }
 
 }

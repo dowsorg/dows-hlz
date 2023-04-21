@@ -2,7 +2,6 @@ package org.dows.hep.biz.base.person;
 
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.api.AccountGroupApi;
 import org.dows.account.api.AccountInstanceApi;
@@ -10,6 +9,7 @@ import org.dows.account.api.AccountOrgApi;
 import org.dows.account.api.AccountUserApi;
 import org.dows.account.request.AccountInstanceRequest;
 import org.dows.account.request.AccountUserRequest;
+import org.dows.account.response.AccountGroupResponse;
 import org.dows.account.response.AccountInstanceResponse;
 import org.dows.account.response.AccountOrgResponse;
 import org.dows.user.api.api.UserExtinfoApi;
@@ -19,10 +19,9 @@ import org.dows.user.api.request.UserInstanceRequest;
 import org.dows.user.api.response.UserExtinfoResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author jx
@@ -42,6 +41,7 @@ public class PersonBiz {
     private final UserInstanceApi userInstanceApi;
 
     private final AccountUserApi accountUserApi;
+
     /**
      * @param
      * @return
@@ -82,12 +82,19 @@ public class PersonBiz {
      */
     public AccountInstanceResponse getPersonalInformation(String accountId, String appId) {
         //1、获取用户实例和账户实例
-        AccountInstanceResponse instance = accountInstanceApi.getPersonalInformationByAccountId(accountId,appId);
+        AccountInstanceResponse instance = accountInstanceApi.getPersonalInformationByAccountId(accountId, appId);
         //2、获取账户所属机构
-        String orgId = accountGroupApi.getAccountGroupByAccountId(instance.getAccountId()).getOrgId();
-        if(StringUtils.isNotEmpty(orgId)) {
-            AccountOrgResponse org = accountOrgApi.getAccountOrgByOrgId(orgId, appId);
-            instance.setOrgName(org.getOrgName());
+        List<AccountGroupResponse> groupList = accountGroupApi.getAccountGroupListByAccountId(instance.getAccountId(), appId);
+        if (groupList != null && groupList.size() > 0) {
+            //2.1、根据机构ID去重
+            groupList = groupList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(AccountGroupResponse::getOrgId))), ArrayList::new));
+            //2.2、机构名称拼接
+            List<String> orgNameList = new ArrayList<>();
+            groupList.forEach(group -> {
+                AccountOrgResponse org = accountOrgApi.getAccountOrgByOrgId(group.getOrgId(), appId);
+                orgNameList.add(org.getOrgName());
+            });
+            instance.setOrgName(orgNameList.stream().collect(Collectors.joining(",")));
         }
         //3、获取用户拓展信息
         UserExtinfoResponse extinfo = userExtinfoApi.getUserExtinfoByUserId(instance.getUserId());
@@ -161,7 +168,7 @@ public class PersonBiz {
         Set<String> accountIds = new HashSet<>();
         List<AccountInstanceResponse> responses = accountInstanceApi.getAccountInstanceList(AccountInstanceRequest.builder().appId(request.getAppId()).build());
         //2、将accountIds传入
-        responses.forEach(res->{
+        responses.forEach(res -> {
             accountIds.add(res.getAccountId());
         });
         request.setAccountIds(accountIds);
@@ -172,13 +179,31 @@ public class PersonBiz {
      * @param
      * @return
      * @说明: 编辑教师/学生
-     * @关联表: ??
+     * @关联表: account_instance、account_user、user_instance
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
      * @创建时间: 2023/4/21 10:30
      */
     public String editTeacherOrStudent(AccountInstanceRequest request) {
-       return accountInstanceApi.updateAccountInstanceByAccountId(request);
+        return accountInstanceApi.updateAccountInstanceByAccountId(request);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 教师 判断是否有班级
+     * @关联表: ？？
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/4/21 10:52
+     */
+    public Boolean checkOwnClass(AccountInstanceRequest request) {
+        List<AccountGroupResponse> groupList = accountGroupApi.getAccountGroupListByAccountId(request.getAccountId(), request.getAppId());
+        if (groupList != null && groupList.size() > 0) {
+            return true;
+        }
+        return false;
     }
 }
