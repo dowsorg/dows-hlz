@@ -84,4 +84,13 @@ public class PersonRest {
           return personBiz.listTeacherOrStudent(request);
     }
 
+    /**
+     * 编辑教师/学生
+     */
+    @Operation(summary =  "编辑教师/学生")
+    @PostMapping("v1/basePerson/person/editTeacherOrStudent")
+    public String editTeacherOrStudent(@RequestBody AccountInstanceRequest request){
+        return personBiz.editTeacherOrStudent(request);
+    }
+
 }

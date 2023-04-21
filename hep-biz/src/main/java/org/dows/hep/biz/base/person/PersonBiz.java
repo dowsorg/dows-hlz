@@ -19,7 +19,6 @@ import org.dows.user.api.request.UserInstanceRequest;
 import org.dows.user.api.response.UserExtinfoResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -167,5 +166,19 @@ public class PersonBiz {
         });
         request.setAccountIds(accountIds);
         return accountInstanceApi.customAccountInstanceList(request);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 编辑教师/学生
+     * @关联表: ??
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/4/21 10:30
+     */
+    public String editTeacherOrStudent(AccountInstanceRequest request) {
+       return accountInstanceApi.updateAccountInstanceByAccountId(request);
     }
 }
