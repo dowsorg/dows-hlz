@@ -151,7 +151,7 @@ public class PersonBiz {
      * @param
      * @return
      * @说明: 创建教师/学生
-     * @关联表: account_identifier、rbac_role、account_org、account_instance、account_role、account_group、
+     * @关联表: account_identifier、rbac_role、account_org、account_instance、account_role、account_group、user_instance、account_user、account_group_info
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
