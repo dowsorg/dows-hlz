@@ -108,4 +108,13 @@ public class PersonRest {
         return personBiz.checkOwnClass(request);
     }
 
+    /**
+     * 教师 班级转移
+     */
+    @Operation(summary =  "教师 班级转移")
+    @PostMapping("v1/basePerson/person/transferClass")
+    public Boolean transferClass(@RequestBody AccountInstanceRequest request){
+        return personBiz.checkOwnClass(request);
+    }
+
 }

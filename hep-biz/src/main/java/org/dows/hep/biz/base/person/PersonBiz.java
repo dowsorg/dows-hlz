@@ -3,12 +3,10 @@ package org.dows.hep.biz.base.person;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.RequiredArgsConstructor;
-import org.dows.account.api.AccountGroupApi;
-import org.dows.account.api.AccountInstanceApi;
-import org.dows.account.api.AccountOrgApi;
-import org.dows.account.api.AccountUserApi;
+import org.dows.account.api.*;
 import org.dows.account.request.AccountInstanceRequest;
 import org.dows.account.request.AccountUserRequest;
+import org.dows.account.response.AccountGroupInfoResponse;
 import org.dows.account.response.AccountGroupResponse;
 import org.dows.account.response.AccountInstanceResponse;
 import org.dows.account.response.AccountOrgResponse;
@@ -19,7 +17,6 @@ import org.dows.user.api.request.UserInstanceRequest;
 import org.dows.user.api.response.UserExtinfoResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -41,6 +38,8 @@ public class PersonBiz {
     private final UserInstanceApi userInstanceApi;
 
     private final AccountUserApi accountUserApi;
+
+    private final AccountGroupInfoApi accountGroupInfoApi;
 
     /**
      * @param
@@ -193,15 +192,15 @@ public class PersonBiz {
      * @param
      * @return
      * @说明: 教师 判断是否有班级
-     * @关联表: ？？
+     * @关联表: account_group
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
      * @创建时间: 2023/4/21 10:52
      */
     public Boolean checkOwnClass(AccountInstanceRequest request) {
-        List<AccountGroupResponse> groupList = accountGroupApi.getAccountGroupListByAccountId(request.getAccountId(), request.getAppId());
-        if (groupList != null && groupList.size() > 0) {
+        List<AccountGroupInfoResponse> infoList = accountGroupInfoApi.getGroupInfoListByAccountId(request.getAccountId());
+        if (infoList != null && infoList.size() > 0) {
             return true;
         }
         return false;
