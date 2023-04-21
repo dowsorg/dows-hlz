@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Schema(name = "AllocationScheme 对象", title = "分配方案Response")
 public class AllocationSchemeResponse{
     @Schema(title = "案例响应")
-    private  String caseSchemeResponse;
+    private String caseSchemeResponse;
 
 
 }
