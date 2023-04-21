@@ -1,19 +1,28 @@
 package org.dows.hep.biz.base.person;
 
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.api.AccountGroupApi;
 import org.dows.account.api.AccountInstanceApi;
 import org.dows.account.api.AccountOrgApi;
+import org.dows.account.api.AccountUserApi;
 import org.dows.account.request.AccountInstanceRequest;
+import org.dows.account.request.AccountUserRequest;
 import org.dows.account.response.AccountInstanceResponse;
 import org.dows.account.response.AccountOrgResponse;
 import org.dows.user.api.api.UserExtinfoApi;
+import org.dows.user.api.api.UserInstanceApi;
 import org.dows.user.api.request.UserExtinfoRequest;
+import org.dows.user.api.request.UserInstanceRequest;
 import org.dows.user.api.response.UserExtinfoResponse;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author jx
@@ -29,6 +38,10 @@ public class PersonBiz {
     private final AccountOrgApi accountOrgApi;
 
     private final UserExtinfoApi userExtinfoApi;
+
+    private final UserInstanceApi userInstanceApi;
+
+    private final AccountUserApi accountUserApi;
     /**
      * @param
      * @return
@@ -109,13 +122,63 @@ public class PersonBiz {
      * @param
      * @return
      * @说明: 创建教师/学生
-     * @关联表: ??
+     * @关联表: account_identifier、rbac_role、account_org、account_instance、account_role、account_group、account_user、user_instance
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
      * @创建时间: 2023/4/20 19:37
      */
     public AccountInstanceResponse createTeacherOrStudent(AccountInstanceRequest request) {
-        return accountInstanceApi.createAccountInstance(request);
+        //1、新增账号信息
+        AccountInstanceResponse vo = accountInstanceApi.createAccountInstance(request);
+        //2、新增用户信息
+        UserInstanceRequest user = new UserInstanceRequest();
+        BeanUtils.copyProperties(request, user);
+        user.setName(request.getUserName());
+        String userId = userInstanceApi.insertUserInstance(user);
+        //3、创建账户和用户之间的关联关系
+        AccountUserRequest accountUserRequest = AccountUserRequest.builder()
+                .accountId(vo.getAccountId())
+                .userId(userId)
+                .appId(request.getAppId())
+                .tentantId(request.getTenantId()).build();
+        this.accountUserApi.createAccountUser(accountUserRequest);
+        return vo;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 创建教师/学生
+     * @关联表: account_identifier、rbac_role、account_org、account_instance、account_role、account_group、user_instance、account_user、account_group_info
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/4/20 20:04
+     */
+    public IPage<AccountInstanceResponse> listTeacherOrStudent(AccountInstanceRequest request) {
+        //1、获取所有accountIds
+        Set<String> accountIds = new HashSet<>();
+        List<AccountInstanceResponse> responses = accountInstanceApi.getAccountInstanceList(AccountInstanceRequest.builder().appId(request.getAppId()).build());
+        //2、将accountIds传入
+        responses.forEach(res->{
+            accountIds.add(res.getAccountId());
+        });
+        request.setAccountIds(accountIds);
+        return accountInstanceApi.customAccountInstanceList(request);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 编辑教师/学生
+     * @关联表: ??
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/4/21 10:30
+     */
+    public String editTeacherOrStudent(AccountInstanceRequest request) {
+       return accountInstanceApi.updateAccountInstanceByAccountId(request);
     }
 }
