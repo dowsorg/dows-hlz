@@ -3,10 +3,10 @@ package org.dows.hep.rest.user.materials;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.question.request.QuestionSearchRequest;
 import org.dows.hep.api.user.materials.request.MaterialsSearchRequest;
-import org.dows.hep.api.user.materials.request.QuestionSearchRequest;
 import org.dows.hep.api.user.materials.response.MaterialsResponse;
-import org.dows.hep.biz.user.materials.MaterialsBiz;
+import org.dows.hep.biz.user.materials.MaterialsInfoBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Tag(name = "资料信息", description = "资料信息")
 public class MaterialsRest {
-    private final MaterialsBiz materialsBiz;
+    private final MaterialsInfoBiz materialsInfoBiz;
 
     /**
     * 分页
@@ -33,7 +33,7 @@ public class MaterialsRest {
     @Operation(summary = "分页")
     @PostMapping("v1/userMaterials/materials/pageMaterials")
     public MaterialsResponse pageMaterials(@RequestBody @Validated MaterialsSearchRequest materialsSearch ) {
-        return materialsBiz.pageMaterials(materialsSearch);
+        return materialsInfoBiz.pageMaterials(materialsSearch);
     }
 
     /**
@@ -44,7 +44,7 @@ public class MaterialsRest {
     @Operation(summary = "条件查询-无分页")
     @PostMapping("v1/userMaterials/materials/listMaterials")
     public MaterialsResponse listMaterials(@RequestBody @Validated QuestionSearchRequest questionSearch ) {
-        return materialsBiz.listMaterials(questionSearch);
+        return materialsInfoBiz.listMaterials(questionSearch);
     }
 
     /**
@@ -55,7 +55,7 @@ public class MaterialsRest {
     @Operation(summary = "根据ID获取详情")
     @GetMapping("v1/userMaterials/materials/getMaterials")
     public MaterialsResponse getMaterials(@Validated String materialsId) {
-        return materialsBiz.getMaterials(materialsId);
+        return materialsInfoBiz.getMaterials(materialsId);
     }
 
 

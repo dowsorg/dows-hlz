@@ -1,18 +1,18 @@
 package org.dows.hep.biz.user.materials;
 
+import org.dows.hep.api.base.question.request.QuestionSearchRequest;
 import org.dows.hep.api.user.materials.request.MaterialsSearchRequest;
-import org.dows.hep.api.user.materials.request.QuestionSearchRequest;
 import org.dows.hep.api.user.materials.response.MaterialsResponse;
 import org.springframework.stereotype.Service;
 
 /**
-* @description project descr:资料中心:资料信息
+* @description project descr:资料中心:资料信息展示
 *
 * @author lait.zhang
 * @date 2023年4月18日 上午10:45:07
 */
 @Service
-public class MaterialsBiz{
+public class MaterialsInfoBiz {
     /**
     * @param
     * @return
