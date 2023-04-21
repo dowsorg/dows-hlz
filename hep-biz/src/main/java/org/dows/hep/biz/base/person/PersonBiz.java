@@ -17,6 +17,7 @@ import org.dows.user.api.request.UserInstanceRequest;
 import org.dows.user.api.response.UserExtinfoResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -88,7 +89,7 @@ public class PersonBiz {
             //2.1、根据机构ID去重
             groupList = groupList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(AccountGroupResponse::getOrgId))), ArrayList::new));
             //2.2、机构名称拼接
-            List<String> orgNameList = new ArrayList<>();
+            Set<String> orgNameList = new HashSet<>();
             groupList.forEach(group -> {
                 AccountOrgResponse org = accountOrgApi.getAccountOrgByOrgId(group.getOrgId(), appId);
                 orgNameList.add(org.getOrgName());
@@ -134,6 +135,7 @@ public class PersonBiz {
      * @开始时间:
      * @创建时间: 2023/4/20 19:37
      */
+    @DSTransactional
     public AccountInstanceResponse createTeacherOrStudent(AccountInstanceRequest request) {
         //1、新增账号信息
         AccountInstanceResponse vo = accountInstanceApi.createAccountInstance(request);
@@ -184,6 +186,7 @@ public class PersonBiz {
      * @开始时间:
      * @创建时间: 2023/4/21 10:30
      */
+    @DSTransactional
     public String editTeacherOrStudent(AccountInstanceRequest request) {
         return accountInstanceApi.updateAccountInstanceByAccountId(request);
     }
@@ -191,18 +194,53 @@ public class PersonBiz {
     /**
      * @param
      * @return
-     * @说明: 教师 判断是否有班级
-     * @关联表: account_group
+     * @说明: 教师 获取负责班级
+     * @关联表: account_group_info、account_org
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
      * @创建时间: 2023/4/21 10:52
      */
-    public Boolean checkOwnClass(AccountInstanceRequest request) {
+    public Set<String> listOwnClass(AccountInstanceRequest request) {
         List<AccountGroupInfoResponse> infoList = accountGroupInfoApi.getGroupInfoListByAccountId(request.getAccountId());
+        Set<String> orgIdsList = new HashSet<>();
         if (infoList != null && infoList.size() > 0) {
-            return true;
+            //2.1、根据机构ID去重
+            infoList = infoList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(AccountGroupInfoResponse::getOrgId))), ArrayList::new));
+            //2.2、机构id拼接
+            infoList.forEach(group -> {
+                AccountOrgResponse org = accountOrgApi.getAccountOrgByOrgId(group.getOrgId(), request.getAppId());
+                orgIdsList.add(org.getOrgId());
+            });
         }
-        return false;
+        return orgIdsList;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 教师 班级转移
+     * @关联表: account_group_info
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/4/21 11:51
+     */
+    @DSTransactional
+    public Boolean transferClass(AccountInstanceRequest request) {
+        Boolean flag = true;
+        //1、获取班级的负责人
+        List<AccountGroupInfoResponse> responseList = accountGroupInfoApi.getGroupInfoListByOrgIds(request.getOrgIds());
+        //2、获取项目负责人的账号ID,并更新
+        String ownId = responseList.get(0).getAccountId();
+        Boolean flag1 = accountGroupApi.transferAccountIdOfAccountGroup(request.getOrgIds(),ownId,request.getAccountId());
+        if(!flag1){
+            flag = false;
+        }
+        Boolean flag2 = accountGroupInfoApi.transferAccountIdOfGroupInfo(request.getOrgIds(),ownId,request.getAccountId());
+        if(!flag2){
+            flag = false;
+        }
+        return flag;
     }
 }

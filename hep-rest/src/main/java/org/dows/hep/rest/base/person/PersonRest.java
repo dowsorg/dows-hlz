@@ -9,6 +9,7 @@ import org.dows.account.response.AccountInstanceResponse;
 import org.dows.hep.biz.base.person.PersonBiz;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author jx
@@ -100,21 +101,27 @@ public class PersonRest {
     }
 
     /**
-     * 教师 判断是否有班级
+     * 教师 获取负责有班级列表
+     *
+     * @param
+     * @return
      */
-    @Operation(summary =  "教师 判断是否有班级")
-    @PostMapping("v1/basePerson/person/checkOwnClass")
-    public Boolean checkOwnClass(@RequestBody AccountInstanceRequest request){
-        return personBiz.checkOwnClass(request);
+    @Operation(summary =  "教师 获取负责班级列表")
+    @PostMapping("v1/basePerson/person/listOwnClass")
+    public Set<String> listOwnClass(@RequestBody AccountInstanceRequest request){
+        return personBiz.listOwnClass(request);
     }
 
     /**
      * 教师 班级转移
+     *
+     * @param
+     * @return
      */
     @Operation(summary =  "教师 班级转移")
     @PostMapping("v1/basePerson/person/transferClass")
     public Boolean transferClass(@RequestBody AccountInstanceRequest request){
-        return personBiz.checkOwnClass(request);
+        return personBiz.transferClass(request);
     }
 
 }
