@@ -282,6 +282,15 @@ public class PersonBiz {
         if (request.getRoleName().equals("学生")) {
             //2.1、删除学生账户相关信息
             accountInstanceApi.deleteAccountInstanceByAccountIds(Arrays.asList(request.getAccountId()).stream().collect(Collectors.toSet()));
+            //2.2、删除学生与机构的关系表
+            List<AccountGroupResponse> groupList = accountGroupApi.getAccountGroupListByAccountId(request.getAccountId(), request.getAppId());
+            Set<String> ids = new HashSet<>();
+            if(groupList != null && groupList.size() > 0){
+                groupList.forEach(group->{
+                    ids.add(group.getId());
+                });
+            }
+            accountGroupApi.batchDeleteGroups(ids);
             flag = true;
         }
         return flag;
