@@ -13,7 +13,7 @@ import java.util.List;
 * @description project descr:干预:干预类别管理
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class InterveneCategBiz{
@@ -25,7 +25,7 @@ public class InterveneCategBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public List<InterveneCategResponse> listInterveneCateg(FindInterveneCategRequest findInterveneCateg ) {
         return new ArrayList<InterveneCategResponse>();
@@ -38,9 +38,22 @@ public class InterveneCategBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean saveInterveneCateg(SaveInterveneCategRequest saveInterveneCateg ) {
+        return Boolean.FALSE;
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 批量保存类别
+    * @关联表: intervene_category
+    * @工时: 2H
+    * @开发者: wuzl
+    * @开始时间: 
+    * @创建时间: 2023年4月23日 上午9:44:34
+    */
+    public Boolean saveInterveneCategs(List<SaveInterveneCategRequest> saveInterveneCateg ) {
         return Boolean.FALSE;
     }
     /**
@@ -51,7 +64,7 @@ public class InterveneCategBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean delInterveneCateg(DelInterveneCategRequest delInterveneCateg ) {
         return Boolean.FALSE;

@@ -13,7 +13,7 @@ import java.util.List;
 * @description project descr:干预:数据库事件
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class EventBiz{
@@ -25,7 +25,7 @@ public class EventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public List<InterveneCategResponse> listEventCateg(FindInterveneCategRequest findInterveneCateg ) {
         return new ArrayList<InterveneCategResponse>();
@@ -38,7 +38,7 @@ public class EventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean saveEventCateg(SaveInterveneCategRequest saveInterveneCateg ) {
         return Boolean.FALSE;
@@ -51,7 +51,7 @@ public class EventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean delEventCateg(DelInterveneCategRequest delInterveneCateg ) {
         return Boolean.FALSE;
@@ -64,7 +64,7 @@ public class EventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public EventResponse pageEvent(FindEventRequest findEvent ) {
         return new EventResponse();
@@ -77,7 +77,7 @@ public class EventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public EventInfoResponse getEvent(String eventId ) {
         return new EventInfoResponse();
@@ -90,7 +90,7 @@ public class EventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean saveEvent(SaveEventRequest saveEvent ) {
         return Boolean.FALSE;
@@ -103,7 +103,7 @@ public class EventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean delEvent(DelEventRequest delEvent ) {
         return Boolean.FALSE;
@@ -116,7 +116,7 @@ public class EventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean setEventState(SetEventStateRequest setEventState ) {
         return Boolean.FALSE;

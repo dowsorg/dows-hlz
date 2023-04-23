@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 * @description project descr:干预:食材
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class FoodMaterialBiz{
@@ -23,7 +23,7 @@ public class FoodMaterialBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public FoodMaterialResponse pageFoodMaterial(FindFoodRequest findFood ) {
         return new FoodMaterialResponse();
@@ -36,7 +36,7 @@ public class FoodMaterialBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public FoodMaterialInfoResponse getFoodMaterial(String foodMaterialId ) {
         return new FoodMaterialInfoResponse();
@@ -49,7 +49,7 @@ public class FoodMaterialBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean saveFoodMaterial(SaveFoodMaterialRequest saveFoodMaterial ) {
         return Boolean.FALSE;
@@ -62,7 +62,7 @@ public class FoodMaterialBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean delFoodMaterial(DelFoodMaterialRequest delFoodMaterial ) {
         return Boolean.FALSE;

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 * @description project descr:案例:案例人物事件
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class CaseEventBiz{
@@ -23,7 +23,7 @@ public class CaseEventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public CaseEventResponse pageCaseEvent(FindEventRequest findEvent ) {
         return new CaseEventResponse();
@@ -36,7 +36,7 @@ public class CaseEventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public CaseEventInfoResponse getCaseEvent(String caseEventId ) {
         return new CaseEventInfoResponse();
@@ -49,7 +49,7 @@ public class CaseEventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean saveCaseEvent(SaveCaseEventRequest saveCaseEvent ) {
         return Boolean.FALSE;
@@ -62,7 +62,7 @@ public class CaseEventBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean delCaseEvent(DelCaseEventRequest delCaseEvent ) {
         return Boolean.FALSE;

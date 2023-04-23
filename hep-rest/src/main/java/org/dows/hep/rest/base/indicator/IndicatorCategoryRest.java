@@ -15,7 +15,7 @@ import java.util.List;
 * @description project descr:指标:指标类别
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @RequiredArgsConstructor
 @RestController
@@ -78,12 +78,12 @@ public class IndicatorCategoryRest {
         return indicatorCategoryBiz.listIndicatorCategory(appId,pid,indicatorCategoryId,categoryCode,categoryName);
     }
 
-//    /**
-//    * 分页筛选指标类别
-//    * @param
-//    * @return
-//    */
-//    @Operation(summary = "分页筛选指标类别")
+    /**
+    * 分页筛选指标类别
+    * @param
+    * @return
+    */
+    @Operation(summary = "分页筛选指标类别")
 
     /**
     * 一键同步（非常复杂）

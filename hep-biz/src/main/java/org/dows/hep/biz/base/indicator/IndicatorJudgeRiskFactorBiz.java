@@ -14,7 +14,7 @@ import java.util.List;
 * @description project descr:指标:判断指标危险因素
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class IndicatorJudgeRiskFactorBiz{
@@ -26,7 +26,7 @@ public class IndicatorJudgeRiskFactorBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void createIndicatorJudgeRiskFactor(CreateIndicatorJudgeRiskFactorRequest createIndicatorJudgeRiskFactor ) {
         
@@ -39,7 +39,7 @@ public class IndicatorJudgeRiskFactorBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void deleteIndicatorJudgeRiskFactor(String indicatorJudgeRiskFactorId ) {
         
@@ -52,7 +52,7 @@ public class IndicatorJudgeRiskFactorBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void batchDelete(String string ) {
         
@@ -65,7 +65,7 @@ public class IndicatorJudgeRiskFactorBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void updateStatus(UpdateStatusIndicatorJudgeRiskFactorRequest updateStatusIndicatorJudgeRiskFactor ) {
         
@@ -78,7 +78,7 @@ public class IndicatorJudgeRiskFactorBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void updateIndicatorJudgeRiskFactor(UpdateIndicatorJudgeRiskFactorRequest updateIndicatorJudgeRiskFactor ) {
         
@@ -91,7 +91,7 @@ public class IndicatorJudgeRiskFactorBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public IndicatorJudgeRiskFactorResponse getIndicatorJudgeRiskFactor(String indicatorJudgeRiskFactorId ) {
         return new IndicatorJudgeRiskFactorResponse();
@@ -104,7 +104,7 @@ public class IndicatorJudgeRiskFactorBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public List<IndicatorJudgeRiskFactorResponse> listIndicatorJudgeRiskFactor(String appId, String indicatorCategoryId, String name, String type, DecimalRequest point, String expression, String resultExplain, Integer status ) {
         return new ArrayList<IndicatorJudgeRiskFactorResponse>();
@@ -117,7 +117,7 @@ public class IndicatorJudgeRiskFactorBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public String pageIndicatorJudgeRiskFactor(Integer pageNo, Integer pageSize, String appId, String indicatorCategoryId, String name, String type, DecimalRequest point, String expression, String resultExplain, Integer status ) {
         return new String();

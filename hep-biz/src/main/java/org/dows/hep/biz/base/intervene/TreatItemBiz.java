@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 * @description project descr:干预:治疗项目
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class TreatItemBiz{
@@ -23,7 +23,7 @@ public class TreatItemBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public TreatItemResponse pageTreatItem(FindTreatRequest findTreat ) {
         return new TreatItemResponse();
@@ -36,7 +36,7 @@ public class TreatItemBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public TreatItemInfoResponse infoTreatItem(String treatItemId ) {
         return new TreatItemInfoResponse();
@@ -49,7 +49,7 @@ public class TreatItemBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean saveTreatItem(SaveTreatItmeRequest saveTreatItme ) {
         return Boolean.FALSE;
@@ -62,7 +62,7 @@ public class TreatItemBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean delTreatItem(DelTreatItemRequest delTreatItem ) {
         return Boolean.FALSE;

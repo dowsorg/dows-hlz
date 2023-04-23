@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 * @description project descr:指标:指标值
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class IndicatorValBiz{
@@ -21,7 +21,7 @@ public class IndicatorValBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void createIndicatorVal(CreateIndicatorValRequest createIndicatorVal ) {
         
@@ -34,7 +34,7 @@ public class IndicatorValBiz{
     * @工时: 2H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void deleteIndicatorVal(String indicatorValId ) {
         
@@ -47,7 +47,7 @@ public class IndicatorValBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void updateIndicatorVal(UpdateIndicatorValRequest updateIndicatorVal ) {
         
@@ -60,7 +60,7 @@ public class IndicatorValBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public IndicatorValResponse indicatorVal(String indicatorValId ) {
         return new IndicatorValResponse();

@@ -1,20 +1,21 @@
 package org.dows.hep.api.tenant.casus.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.*;
 
 /**
- * @author
- * @description
- * @date
- */
+* @description 
+*
+* @author 
+* @date 
+*/
 @Data
 @NoArgsConstructor
 @Schema(name = "CaseNotice 对象", title = "案例公告")
-public class CaseNoticeRequest {
+public class CaseNoticeRequest{
     @Schema(title = "案例ID")
     private String caseInstanceId;
 

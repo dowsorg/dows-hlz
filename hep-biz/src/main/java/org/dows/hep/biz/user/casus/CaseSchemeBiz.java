@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 * @description project descr:案列:案例方案设计
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class CaseSchemeBiz{
@@ -22,7 +22,7 @@ public class CaseSchemeBiz{
     * @工时: 8H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean allocationCaseScheme(AllocationSchemeRequest allocationScheme ) {
         return Boolean.FALSE;
@@ -35,7 +35,7 @@ public class CaseSchemeBiz{
     * @工时: 8H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public AllocationSchemeResponse getCaseScheme(AllocationSchemeSearchRequest allocationSchemeSearch ) {
         return new AllocationSchemeResponse();
@@ -48,7 +48,7 @@ public class CaseSchemeBiz{
     * @工时: 4H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean submitCaseSchemeResult(CaseSchemeResultRequest caseSchemeResult ) {
         return Boolean.FALSE;

@@ -12,7 +12,7 @@ import java.util.List;
 * @description project descr:指标:查看指标基本信息类
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class IndicatorViewBaseInfoBiz{
@@ -24,7 +24,7 @@ public class IndicatorViewBaseInfoBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void createIndicatorViewBaseInfo(CreateIndicatorViewBaseInfoRequest createIndicatorViewBaseInfo ) {
         
@@ -37,7 +37,7 @@ public class IndicatorViewBaseInfoBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void deleteIndicatorViewBaseInfo(String indicatorViewBaseInfoId ) {
         
@@ -50,7 +50,7 @@ public class IndicatorViewBaseInfoBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void batchDelete(String string ) {
         
@@ -63,7 +63,7 @@ public class IndicatorViewBaseInfoBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void updateIndicatorViewBaseInfo(UpdateIndicatorViewBaseInfoRequest updateIndicatorViewBaseInfo ) {
         
@@ -76,7 +76,7 @@ public class IndicatorViewBaseInfoBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public IndicatorViewBaseInfoResponse getIndicatorViewBaseInfo(String indicatorViewBaseInfoId ) {
         return new IndicatorViewBaseInfoResponse();
@@ -89,7 +89,7 @@ public class IndicatorViewBaseInfoBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public List<IndicatorViewBaseInfoResponse> listIndicatorViewBaseInfo(String appId, String indicatorCategoryId, String name ) {
         return new ArrayList<IndicatorViewBaseInfoResponse>();
@@ -102,7 +102,7 @@ public class IndicatorViewBaseInfoBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public String pageIndicatorViewBaseInfo(Integer pageNo, Integer pageSize, String appId, String indicatorCategoryId, String name ) {
         return new String();

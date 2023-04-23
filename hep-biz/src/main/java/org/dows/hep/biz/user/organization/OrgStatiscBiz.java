@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 * @description project descr:机构:机构数据统计
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class OrgStatiscBiz{
@@ -22,7 +22,7 @@ public class OrgStatiscBiz{
     * @工时: 4H
     * @开发者: jx
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public NormalDataResponseResponse listGenderRatio(GenderRatioRequest genderRatio ) {
         return new NormalDataResponseResponse();
@@ -35,7 +35,7 @@ public class OrgStatiscBiz{
     * @工时: 4H
     * @开发者: jx
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public NormalDataResponse listAgeRatio(AgeRatioRequest ageRatio ) {
         return new NormalDataResponse();
@@ -48,7 +48,7 @@ public class OrgStatiscBiz{
     * @工时: 0H
     * @开发者: 
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void listTagRatio() {
         

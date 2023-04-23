@@ -17,7 +17,7 @@ public class CreateRiskCategoryRequest{
     @Schema(title = "应用ID")
     private String appId;
 
-    @Schema(title = "风险")
+    @Schema(title = "风险类别名称")
     private String riskCategoryName;
 
     @Schema(title = "展示顺序")

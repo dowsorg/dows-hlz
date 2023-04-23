@@ -15,7 +15,7 @@ import java.util.List;
 * @description project descr:问题:问题
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @RequiredArgsConstructor
 @RestController
@@ -96,8 +96,8 @@ public class QuestionInstanceRest {
     */
     @Operation(summary = "排序")
     @GetMapping("v1/baseQuestion/questionInstance/sortQuestion")
-    public Boolean sortQuestion(@Validated String string, @Validated Integer sequence) {
-        return questionInstanceBiz.sortQuestion(string,sequence);
+    public Boolean sortQuestion(@Validated String questionInstanceId, @Validated Integer sequence) {
+        return questionInstanceBiz.sortQuestion(questionInstanceId,sequence);
     }
 
     /**

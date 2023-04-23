@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 * @description project descr:案例:案例问卷设置
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class CaseSettingBiz{
@@ -20,7 +20,7 @@ public class CaseSettingBiz{
     * @工时: 8H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean saveOrUpdCaseSetting(CaseSettingRequest caseSetting ) {
         return Boolean.FALSE;
@@ -33,7 +33,7 @@ public class CaseSettingBiz{
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public CaseSettingResponse getCaseSetting(String caseInstanceId ) {
         return new CaseSettingResponse();
@@ -46,7 +46,7 @@ public class CaseSettingBiz{
     * @工时: 3H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean delCaseSetting(String caseInstanceId ) {
         return Boolean.FALSE;
