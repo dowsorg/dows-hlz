@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.user.casus.request.AllocationQuestionnaireSearchRequest;
 import org.dows.hep.api.user.casus.request.CaseQuestionnaireResultRequest;
 import org.dows.hep.api.user.casus.response.AllocationSchemeResponse;
-import org.dows.hep.biz.user.casus.CaseQuestionnaireBiz;
+import org.dows.hep.biz.user.casus.UserCaseQuestionnaireBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,8 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @Tag(name = "案例问卷", description = "案例问卷")
-public class CaseQuestionnaireRest {
-    private final CaseQuestionnaireBiz caseQuestionnaireBiz;
+public class UserCaseQuestionnaireRest {
+    private final UserCaseQuestionnaireBiz userCaseQuestionnaireBiz;
 
     /**
     * 获取案例问卷-user
@@ -32,7 +32,7 @@ public class CaseQuestionnaireRest {
     @Operation(summary = "获取案例问卷-user")
     @PostMapping("v1/userCasus/caseQuestionnaire/getCaseQuestionnaireOfUser")
     public AllocationSchemeResponse getCaseQuestionnaireOfUser(@RequestBody @Validated AllocationQuestionnaireSearchRequest allocationQuestionnaireSearch ) {
-        return caseQuestionnaireBiz.getCaseQuestionnaireOfUser(allocationQuestionnaireSearch);
+        return userCaseQuestionnaireBiz.getCaseQuestionnaireOfUser(allocationQuestionnaireSearch);
     }
 
     /**
@@ -43,7 +43,7 @@ public class CaseQuestionnaireRest {
     @Operation(summary = "提交结果")
     @PostMapping("v1/userCasus/caseQuestionnaire/submitCaseQuestionnaireResult")
     public Boolean submitCaseQuestionnaireResult(@RequestBody @Validated CaseQuestionnaireResultRequest caseQuestionnaireResult ) {
-        return caseQuestionnaireBiz.submitCaseQuestionnaireResult(caseQuestionnaireResult);
+        return userCaseQuestionnaireBiz.submitCaseQuestionnaireResult(caseQuestionnaireResult);
     }
 
 

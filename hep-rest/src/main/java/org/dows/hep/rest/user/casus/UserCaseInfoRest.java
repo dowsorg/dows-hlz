@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.user.casus.request.CaseInfoRequest;
-import org.dows.hep.biz.user.casus.CaseInfoBiz;
+import org.dows.hep.biz.user.casus.UserCaseInfoBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @Tag(name = "案例基础信息", description = "案例基础信息")
-public class CaseInfoRest {
-    private final CaseInfoBiz caseInfoBiz;
+public class UserCaseInfoRest {
+    private final UserCaseInfoBiz userCaseInfoBiz;
 
     /**
     * 获取案例基础信息[背景|帮助中心|评分提示]
@@ -29,7 +29,7 @@ public class CaseInfoRest {
     @Operation(summary = "获取案例基础信息[背景|帮助中心|评分提示]")
     @GetMapping("v1/userCasus/caseInfo/getCaseInfo")
     public String getCaseInfo(@Validated CaseInfoRequest caseInfo) {
-        return caseInfoBiz.getCaseInfo(caseInfo);
+        return userCaseInfoBiz.getCaseInfo(caseInfo);
     }
 
 
