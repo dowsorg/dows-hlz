@@ -2,14 +2,12 @@ package org.dows.hep.biz.base.person;
 
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import lombok.RequiredArgsConstructor;
-import org.dows.account.api.AccountGroupApi;
-import org.dows.account.api.AccountInstanceApi;
-import org.dows.account.api.AccountOrgApi;
-import org.dows.account.api.AccountUserApi;
+import org.dows.account.api.*;
 import org.dows.account.request.AccountInstanceRequest;
 import org.dows.account.request.AccountUserRequest;
+import org.dows.account.response.AccountGroupInfoResponse;
+import org.dows.account.response.AccountGroupResponse;
 import org.dows.account.response.AccountInstanceResponse;
 import org.dows.account.response.AccountOrgResponse;
 import org.dows.user.api.api.UserExtinfoApi;
@@ -19,10 +17,9 @@ import org.dows.user.api.request.UserInstanceRequest;
 import org.dows.user.api.response.UserExtinfoResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author jx
@@ -42,6 +39,9 @@ public class PersonBiz {
     private final UserInstanceApi userInstanceApi;
 
     private final AccountUserApi accountUserApi;
+
+    private final AccountGroupInfoApi accountGroupInfoApi;
+
     /**
      * @param
      * @return
@@ -82,12 +82,19 @@ public class PersonBiz {
      */
     public AccountInstanceResponse getPersonalInformation(String accountId, String appId) {
         //1、获取用户实例和账户实例
-        AccountInstanceResponse instance = accountInstanceApi.getPersonalInformationByAccountId(accountId,appId);
+        AccountInstanceResponse instance = accountInstanceApi.getPersonalInformationByAccountId(accountId, appId);
         //2、获取账户所属机构
-        String orgId = accountGroupApi.getAccountGroupByAccountId(instance.getAccountId()).getOrgId();
-        if(StringUtils.isNotEmpty(orgId)) {
-            AccountOrgResponse org = accountOrgApi.getAccountOrgByOrgId(orgId, appId);
-            instance.setOrgName(org.getOrgName());
+        List<AccountGroupResponse> groupList = accountGroupApi.getAccountGroupListByAccountId(instance.getAccountId(), appId);
+        if (groupList != null && groupList.size() > 0) {
+            //2.1、根据机构ID去重
+            groupList = groupList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(AccountGroupResponse::getOrgId))), ArrayList::new));
+            //2.2、机构名称拼接
+            Set<String> orgNameList = new HashSet<>();
+            groupList.forEach(group -> {
+                AccountOrgResponse org = accountOrgApi.getAccountOrgByOrgId(group.getOrgId(), appId);
+                orgNameList.add(org.getOrgName());
+            });
+            instance.setOrgName(orgNameList.stream().collect(Collectors.joining(",")));
         }
         //3、获取用户拓展信息
         UserExtinfoResponse extinfo = userExtinfoApi.getUserExtinfoByUserId(instance.getUserId());
@@ -128,14 +135,16 @@ public class PersonBiz {
      * @开始时间:
      * @创建时间: 2023/4/20 19:37
      */
+    @DSTransactional
     public AccountInstanceResponse createTeacherOrStudent(AccountInstanceRequest request) {
-        //1、新增账号信息
-        AccountInstanceResponse vo = accountInstanceApi.createAccountInstance(request);
-        //2、新增用户信息
+        //1、新增用户信息
         UserInstanceRequest user = new UserInstanceRequest();
         BeanUtils.copyProperties(request, user);
         user.setName(request.getUserName());
         String userId = userInstanceApi.insertUserInstance(user);
+        //2、新增账号信息
+        request.setUserId(userId);
+        AccountInstanceResponse vo = accountInstanceApi.createAccountInstance(request);
         //3、创建账户和用户之间的关联关系
         AccountUserRequest accountUserRequest = AccountUserRequest.builder()
                 .accountId(vo.getAccountId())
@@ -161,7 +170,7 @@ public class PersonBiz {
         Set<String> accountIds = new HashSet<>();
         List<AccountInstanceResponse> responses = accountInstanceApi.getAccountInstanceList(AccountInstanceRequest.builder().appId(request.getAppId()).build());
         //2、将accountIds传入
-        responses.forEach(res->{
+        responses.forEach(res -> {
             accountIds.add(res.getAccountId());
         });
         request.setAccountIds(accountIds);
@@ -172,13 +181,118 @@ public class PersonBiz {
      * @param
      * @return
      * @说明: 编辑教师/学生
-     * @关联表: ??
+     * @关联表: account_instance、account_user、user_instance
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
      * @创建时间: 2023/4/21 10:30
      */
+    @DSTransactional
     public String editTeacherOrStudent(AccountInstanceRequest request) {
-       return accountInstanceApi.updateAccountInstanceByAccountId(request);
+        return accountInstanceApi.updateAccountInstanceByAccountId(request);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 教师 获取负责班级
+     * @关联表: account_group_info、account_org
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/4/21 10:52
+     */
+    public Set<String> listOwnClass(AccountInstanceRequest request) {
+        List<AccountGroupInfoResponse> infoList = accountGroupInfoApi.getGroupInfoListByAccountId(request.getAccountId());
+        Set<String> orgIdsList = new HashSet<>();
+        if (infoList != null && infoList.size() > 0) {
+            //2.1、根据机构ID去重
+            infoList = infoList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(AccountGroupInfoResponse::getOrgId))), ArrayList::new));
+            //2.2、机构id拼接
+            infoList.forEach(group -> {
+                AccountOrgResponse org = accountOrgApi.getAccountOrgByOrgId(group.getOrgId(), request.getAppId());
+                orgIdsList.add(org.getOrgId());
+            });
+        }
+        return orgIdsList;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 教师 班级转移
+     * @关联表: account_group_info、account_group
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/4/21 11:51
+     */
+    @DSTransactional
+    public Boolean transferClass(AccountInstanceRequest request) {
+        Boolean flag = true;
+        //1、获取班级的负责人
+        List<AccountGroupInfoResponse> responseList = accountGroupInfoApi.getGroupInfoListByOrgIds(request.getOrgIds());
+        //2、获取项目负责人的账号ID,并更新
+        String ownId = responseList.get(0).getAccountId();
+        Integer count1 = accountGroupApi.transferAccountIdOfAccountGroup(request.getOrgIds(), ownId, request.getAccountId());
+        if (count1 == 0) {
+            flag = false;
+        }
+        Integer count2 = accountGroupInfoApi.transferAccountIdOfGroupInfo(request.getOrgIds(), ownId, request.getAccountId());
+        if (count2 == 0) {
+            flag = false;
+        }
+        return flag;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 删除 教师/学生
+     * @关联表: account_group、account_org、account_org_info、account_group_info、account_instance、account_identifier、account_role、account_user、user_instance
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/4/21 14:12
+     */
+    @DSTransactional
+    public Boolean deleteTeacherOrStudent(AccountInstanceRequest request) {
+        Boolean flag = false;
+        //1、教师
+        if (request.getRoleName().equals("教师")) {
+            //1.1、获取用户组织架构信息
+            List<AccountGroupResponse> groupList = accountGroupApi.getAccountGroupListByAccountId(request.getAccountId(), request.getAppId());
+            Set<String> orgIdsList = new HashSet<>();
+            if (groupList != null && groupList.size() > 0) {
+                //1.2、根据机构ID去重
+                groupList = groupList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(AccountGroupResponse::getOrgId))), ArrayList::new));
+                //1.3、机构id拼接
+                groupList.forEach(group -> {
+                    AccountOrgResponse org = accountOrgApi.getAccountOrgByOrgId(group.getOrgId(), request.getAppId());
+                    orgIdsList.add(org.getOrgId());
+                });
+                //1.4、删除上述机构下的所有成员及机构相关信息
+                accountOrgApi.batchDeleteAccountOrgsByOrgIds(orgIdsList);
+                //1.5、删除账号相关信息
+                accountInstanceApi.deleteAccountInstanceByAccountIds(Arrays.asList(request.getAccountId()).stream().collect(Collectors.toSet()));
+                flag = true;
+            }
+        }
+        //2、学生
+        if (request.getRoleName().equals("学生")) {
+            //2.1、删除学生账户相关信息
+            accountInstanceApi.deleteAccountInstanceByAccountIds(Arrays.asList(request.getAccountId()).stream().collect(Collectors.toSet()));
+            //2.2、删除学生与机构的关系表
+            List<AccountGroupResponse> groupList = accountGroupApi.getAccountGroupListByAccountId(request.getAccountId(), request.getAppId());
+            Set<String> ids = new HashSet<>();
+            if(groupList != null && groupList.size() > 0){
+                groupList.forEach(group->{
+                    ids.add(group.getId());
+                });
+            }
+            accountGroupApi.batchDeleteGroups(ids);
+            flag = true;
+        }
+        return flag;
     }
 }

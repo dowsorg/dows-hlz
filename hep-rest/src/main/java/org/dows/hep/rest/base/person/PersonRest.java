@@ -9,6 +9,7 @@ import org.dows.account.response.AccountInstanceResponse;
 import org.dows.hep.biz.base.person.PersonBiz;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author jx
@@ -77,6 +78,9 @@ public class PersonRest {
 
     /**
      * 获取教师/学生列表
+     *
+     * @param
+     * @return
      */
     @Operation(summary =  "获取教师/学生列表")
     @PostMapping("v1/basePerson/person/listTeacherOrStudent")
@@ -86,11 +90,51 @@ public class PersonRest {
 
     /**
      * 编辑教师/学生
+     *
+     * @param
+     * @return
      */
     @Operation(summary =  "编辑教师/学生")
     @PostMapping("v1/basePerson/person/editTeacherOrStudent")
     public String editTeacherOrStudent(@RequestBody AccountInstanceRequest request){
         return personBiz.editTeacherOrStudent(request);
+    }
+
+    /**
+     * 教师 获取负责有班级列表
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary =  "教师 获取负责班级列表")
+    @PostMapping("v1/basePerson/person/listOwnClass")
+    public Set<String> listOwnClass(@RequestBody AccountInstanceRequest request){
+        return personBiz.listOwnClass(request);
+    }
+
+    /**
+     * 教师 班级转移
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary =  "教师 班级转移")
+    @PostMapping("v1/basePerson/person/transferClass")
+    public Boolean transferClass(@RequestBody AccountInstanceRequest request){
+        return personBiz.transferClass(request);
+    }
+
+    /**
+     * 删除 教师/学生
+     * 删除教师时需要将班级连带删除
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary =  "删除 教师/学生")
+    @DeleteMapping("v1/basePerson/person/deleteTeacherOrStudent")
+    public Boolean deleteTeacherOrStudent(@RequestBody AccountInstanceRequest request){
+        return personBiz.deleteTeacherOrStudent(request);
     }
 
 }
