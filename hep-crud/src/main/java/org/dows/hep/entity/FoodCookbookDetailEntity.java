@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 食谱食材(FoodCookbookDetail)实体类
  *
  * @author lait
- * @since 2023-04-21 19:41:30
+ * @since 2023-04-23 09:47:02
  */
 @SuppressWarnings("serial")
 @Data
@@ -36,8 +36,9 @@ public class FoodCookbookDetailEntity implements CrudEntity {
     @Schema(title = "数据库id")
     private Long id;
 
-    @Schema(title = "分布式id")
-    private String foodCookbookDetailId;
+    @Schema(title = "")
+    private String foodCookbookDetailId
+    分布式id;
 
     @Schema(title = "食谱id")
     private String foodCookbookId;

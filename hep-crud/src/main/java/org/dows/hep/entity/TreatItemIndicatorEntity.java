@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 治疗项目关联指标(TreatItemIndicator)实体类
  *
  * @author lait
- * @since 2023-04-21 19:41:33
+ * @since 2023-04-23 09:47:07
  */
 @SuppressWarnings("serial")
 @Data

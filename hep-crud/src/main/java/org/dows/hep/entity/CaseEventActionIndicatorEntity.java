@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 人物事件处理选项影响指标(CaseEventActionIndicator)实体类
  *
  * @author lait
- * @since 2023-04-21 19:41:29
+ * @since 2023-04-23 09:47:01
  */
 @SuppressWarnings("serial")
 @Data

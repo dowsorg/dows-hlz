@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 学生操作指标记录表(OperateIndictar)实体类
  *
  * @author lait
- * @since 2023-04-21 19:41:31
+ * @since 2023-04-23 09:47:03
  */
 @SuppressWarnings("serial")
 @Data
@@ -92,12 +92,6 @@ public class OperateIndictarEntity implements CrudEntity {
 
     @Schema(title = "期数")
     private Integer periods;
-
-    @JsonIgnore
-    @TableLogic
-    @TableField(fill = FieldFill.INSERT)
-    @Schema(title = "逻辑删除")
-    private Boolean deleted;
 
     @TableField(fill = FieldFill.INSERT)
     @Schema(title = "时间戳")

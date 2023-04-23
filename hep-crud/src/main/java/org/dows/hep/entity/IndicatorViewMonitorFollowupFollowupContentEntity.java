@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 查看指标监测随访内容(IndicatorViewMonitorFollowupFollowupContent)实体类
  *
  * @author lait
- * @since 2023-04-21 19:41:31
+ * @since 2023-04-23 09:47:03
  */
 @SuppressWarnings("serial")
 @Data

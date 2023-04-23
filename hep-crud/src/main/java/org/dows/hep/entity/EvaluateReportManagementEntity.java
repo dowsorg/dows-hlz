@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 评估报告管理(EvaluateReportManagement)实体类
  *
  * @author lait
- * @since 2023-04-21 19:41:29
+ * @since 2023-04-23 09:47:01
  */
 @SuppressWarnings("serial")
 @Data
