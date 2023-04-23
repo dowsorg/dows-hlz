@@ -37,9 +37,9 @@ public class OrgRest {
      * @return
      */
     @Operation(summary = "创建班级")
-    @PostMapping("v1/baseOrg/org/createClass")
-    public String createClass(@RequestBody AccountOrgRequest request, @RequestParam String accountId) {
-        return orgBiz.createClass(request,accountId);
+    @PostMapping("v1/baseOrg/org/addClass")
+    public String addClass(@RequestBody AccountOrgRequest request, @RequestParam String accountId) {
+        return orgBiz.addClass(request,accountId);
     }
 
     /**
@@ -48,9 +48,9 @@ public class OrgRest {
      * @return
      */
     @Operation(summary = "编辑班级")
-    @PutMapping("v1/baseOrg/org/updateClass")
-    public Boolean updateClass(@RequestBody AccountOrgRequest request,@RequestParam String accountId) {
-        return orgBiz.updateClass(request,accountId);
+    @PutMapping("v1/baseOrg/org/editClass")
+    public Boolean editClass(@RequestBody AccountOrgRequest request,@RequestParam String accountId) {
+        return orgBiz.editClass(request,accountId);
     }
 
     /**

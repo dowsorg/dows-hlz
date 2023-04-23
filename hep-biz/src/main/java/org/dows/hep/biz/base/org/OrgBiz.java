@@ -43,7 +43,7 @@ public class OrgBiz {
      * @创建时间: 2023/4/21 17:12
      */
     @DSTransactional
-    public String createClass(AccountOrgRequest request, String accountId) {
+    public String addClass(AccountOrgRequest request, String accountId) {
         //1、生成随机code
         String orgCode = createCode(5);
         request.setOrgCode(orgCode);
@@ -77,7 +77,7 @@ public class OrgBiz {
      * @创建时间: 2023/4/23 13:20
      */
     @DSTransactional
-    public Boolean updateClass(AccountOrgRequest request, String accountId) {
+    public Boolean editClass(AccountOrgRequest request, String accountId) {
         //1、修改机构
         Boolean flag1 = accountOrgApi.updateAccountOrgByOrgId(request);
         //2、更新团队负责人
