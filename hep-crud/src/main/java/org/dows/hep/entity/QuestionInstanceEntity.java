@@ -94,6 +94,15 @@ public class QuestionInstanceEntity implements CrudEntity {
     @Schema(title = "答案解析")
     private String detailedAnswer;
 
+    @Schema(title = "引用计数")
+    private Integer refCount;
+
+    @Schema(title = "问题标识")
+    private String questionIdentifier;
+
+    @Schema(title = "版本号")
+    private String ver;
+
     @JsonIgnore
     @TableLogic
     @TableField(fill = FieldFill.INSERT)

@@ -17,5 +17,8 @@ public class QuestionSearchRequest{
     @Schema(title = "应用ID")
     private String appId;
 
+    private Long pageNo;
+
+    private Long pageSize;
 
 }

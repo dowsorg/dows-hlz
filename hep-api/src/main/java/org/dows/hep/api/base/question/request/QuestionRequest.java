@@ -3,6 +3,7 @@ package org.dows.hep.api.base.question.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dows.hep.api.base.question.QuestionTypeEnum;
 
 import java.util.List;
 
@@ -24,7 +25,7 @@ public class QuestionRequest extends QuestionBaseRequest{
     private String categId;
 
     @Schema(title = "题目答题类型[RADIO:单选题|MULTIPLE:多选题|JUDGMENT:判断题|SUBJECTIVE:主观题|MATERIAL:材料题]")
-    private String questionType;
+    private QuestionTypeEnum questionType;
 
     @Schema(title = "维度ID")
     private String dimensionId;

@@ -1,11 +1,15 @@
 package org.dows.hep.rest.base.question;
+
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.framework.api.Response;
 import org.dows.hep.api.base.question.request.QuestionRequest;
 import org.dows.hep.api.base.question.request.QuestionSearchRequest;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.biz.base.question.QuestionInstanceBiz;
+import org.dows.hep.entity.QuestionInstanceEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,8 +34,9 @@ public class QuestionInstanceRest {
     */
     @Operation(summary = "新增和更新")
     @PostMapping("v1/baseQuestion/questionInstance/saveOrUpdQuestion")
-    public String saveOrUpdQuestion(@RequestBody @Validated QuestionRequest question ) {
-        return questionInstanceBiz.saveOrUpdQuestion(question);
+    public Response<String> saveOrUpdQuestion(@RequestBody @Validated QuestionRequest question ) {
+        String id = questionInstanceBiz.saveOrUpdQuestion(question);
+        return Response.ok(id);
     }
 
     /**
@@ -41,8 +46,9 @@ public class QuestionInstanceRest {
     */
     @Operation(summary = "分页")
     @PostMapping("v1/baseQuestion/questionInstance/pageQuestion")
-    public QuestionResponse pageQuestion(@RequestBody @Validated QuestionSearchRequest questionSearch ) {
-        return questionInstanceBiz.pageQuestion(questionSearch);
+    public Response<Page<QuestionInstanceEntity>> pageQuestion(@RequestBody @Validated QuestionSearchRequest questionSearch ) {
+        Page<QuestionInstanceEntity> page = questionInstanceBiz.pageQuestion(questionSearch);
+        return Response.ok(page);
     }
 
     /**
@@ -52,8 +58,9 @@ public class QuestionInstanceRest {
     */
     @Operation(summary = "条件查询-无分页")
     @PostMapping("v1/baseQuestion/questionInstance/listQuestion")
-    public List<QuestionResponse> listQuestion(@RequestBody @Validated QuestionSearchRequest questionSearch ) {
-        return questionInstanceBiz.listQuestion(questionSearch);
+    public Response<List<QuestionResponse>> listQuestion(@RequestBody @Validated QuestionSearchRequest questionSearch ) {
+        List<QuestionResponse> result = questionInstanceBiz.listQuestion(questionSearch);
+        return Response.ok(result);
     }
 
     /**
@@ -63,8 +70,9 @@ public class QuestionInstanceRest {
     */
     @Operation(summary = "根据ID获取详情")
     @GetMapping("v1/baseQuestion/questionInstance/getQuestion")
-    public QuestionResponse getQuestion(@Validated String questionInstanceId) {
-        return questionInstanceBiz.getQuestion(questionInstanceId);
+    public Response<QuestionResponse> getQuestion(@Validated String questionInstanceId) {
+        QuestionResponse result = questionInstanceBiz.getQuestion(questionInstanceId);
+        return Response.ok(result);
     }
 
     /**
@@ -74,8 +82,9 @@ public class QuestionInstanceRest {
     */
     @Operation(summary = "启用")
     @GetMapping("v1/baseQuestion/questionInstance/enabledQuestion")
-    public Boolean enabledQuestion(@Validated String questionInstanceId) {
-        return questionInstanceBiz.enabledQuestion(questionInstanceId);
+    public Response<Boolean> enabledQuestion(@Validated String questionInstanceId) {
+        Boolean result = questionInstanceBiz.enabledQuestion(questionInstanceId);
+        return Response.ok(result);
     }
 
     /**
@@ -85,8 +94,9 @@ public class QuestionInstanceRest {
     */
     @Operation(summary = "禁用")
     @GetMapping("v1/baseQuestion/questionInstance/disabledQuestion")
-    public Boolean disabledQuestion(@Validated String questionInstanceId) {
-        return questionInstanceBiz.disabledQuestion(questionInstanceId);
+    public Response<Boolean> disabledQuestion(@Validated String questionInstanceId) {
+        Boolean result = questionInstanceBiz.disabledQuestion(questionInstanceId);
+        return Response.ok(result);
     }
 
     /**
@@ -96,8 +106,9 @@ public class QuestionInstanceRest {
     */
     @Operation(summary = "排序")
     @GetMapping("v1/baseQuestion/questionInstance/sortQuestion")
-    public Boolean sortQuestion(@Validated String string, @Validated Integer sequence) {
-        return questionInstanceBiz.sortQuestion(string,sequence);
+    public Response<Boolean> sortQuestion(@Validated String string, @Validated Integer sequence) {
+        Boolean result = questionInstanceBiz.sortQuestion(string, sequence);
+        return Response.ok(result);
     }
 
     /**
@@ -107,8 +118,9 @@ public class QuestionInstanceRest {
     */
     @Operation(summary = "交换")
     @GetMapping("v1/baseQuestion/questionInstance/transposeQuestion")
-    public Boolean transposeQuestion(@Validated String leftQuestionInstanceId, @Validated String rightQuestionInstanceId) {
-        return questionInstanceBiz.transposeQuestion(leftQuestionInstanceId,rightQuestionInstanceId);
+    public Response<Boolean> transposeQuestion(@Validated String leftQuestionInstanceId, @Validated String rightQuestionInstanceId) {
+        Boolean result = questionInstanceBiz.transposeQuestion(leftQuestionInstanceId, rightQuestionInstanceId);
+        return Response.ok(result);
     }
 
     /**
@@ -118,8 +130,9 @@ public class QuestionInstanceRest {
     */
     @Operation(summary = "删除or批量删除")
     @DeleteMapping("v1/baseQuestion/questionInstance/delQuestion")
-    public Boolean delQuestion(@Validated String questionInstanceIds ) {
-        return questionInstanceBiz.delQuestion(questionInstanceIds);
+    public Response<Boolean> delQuestion(@Validated String questionInstanceIds ) {
+        Boolean result = questionInstanceBiz.delQuestion(questionInstanceIds);
+        return Response.ok(result);
     }
 
 

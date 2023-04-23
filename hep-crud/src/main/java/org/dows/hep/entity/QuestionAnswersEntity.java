@@ -55,6 +55,12 @@ public class QuestionAnswersEntity implements CrudEntity {
     @Schema(title = "是否是正确答案[0:错误，1:正确]")
     private Boolean right;
 
+    @Schema(title = "问题标识")
+    private String questionIdentifier;
+
+    @Schema(title = "版本号")
+    private String ver;
+
     @JsonIgnore
     @TableLogic
     @TableField(fill = FieldFill.INSERT)

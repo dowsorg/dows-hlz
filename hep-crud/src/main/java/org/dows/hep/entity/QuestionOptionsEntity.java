@@ -49,6 +49,12 @@ public class QuestionOptionsEntity implements CrudEntity {
     @Schema(title = "选项值")
     private String optionValue;
 
+    @Schema(title = "问题标识")
+    private String questionIdentifier;
+
+    @Schema(title = "版本号")
+    private String ver;
+
     @JsonIgnore
     @TableLogic
     @TableField(fill = FieldFill.INSERT)
