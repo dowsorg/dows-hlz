@@ -1,0 +1,97 @@
+package org.dows.hep.rest.user.experiment;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.user.experiment.request.FindOrgNoticeRequest;
+import org.dows.hep.api.user.experiment.request.FindOrgPersonsRequest;
+import org.dows.hep.api.user.experiment.request.FindOrgReportRequest;
+import org.dows.hep.api.user.experiment.request.StartOrgFlowRequest;
+import org.dows.hep.api.user.experiment.response.*;
+import org.dows.hep.biz.user.experiment.ExperimentOrgBiz;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+* @description project descr:实验:机构操作
+*
+* @author lait.zhang
+* @date 2023年4月23日 上午9:44:34
+*/
+@RequiredArgsConstructor
+@RestController
+@Tag(name = "机构操作", description = "机构操作")
+public class ExperimentOrgRest {
+    private final ExperimentOrgBiz experimentOrgBiz;
+
+    /**
+    * 获取机构人物列表，挂号费用，挂号状态
+    * @param
+    * @return
+    */
+    @Operation(summary = "获取机构人物列表，挂号费用，挂号状态")
+    @PostMapping("v1/userExperiment/experimentOrg/pageOrgPersons")
+    public OrgPersonResponse pageOrgPersons(@RequestBody @Validated FindOrgPersonsRequest findOrgPersons ) {
+        return experimentOrgBiz.pageOrgPersons(findOrgPersons);
+    }
+
+    /**
+    * 挂号：医院，体检中心
+    * @param
+    * @return
+    */
+    @Operation(summary = "挂号：医院，体检中心")
+    @PostMapping("v1/userExperiment/experimentOrg/startOrgFlow")
+    public Boolean startOrgFlow(@RequestBody @Validated StartOrgFlowRequest startOrgFlow ) {
+        return experimentOrgBiz.startOrgFlow(startOrgFlow);
+    }
+
+    /**
+    * 获取机构通知列表
+    * @param
+    * @return
+    */
+    @Operation(summary = "获取机构通知列表")
+    @PostMapping("v1/userExperiment/experimentOrg/pageOrgNotice")
+    public OrgNoticeResponse pageOrgNotice(@RequestBody @Validated FindOrgNoticeRequest findOrgNotice ) {
+        return experimentOrgBiz.pageOrgNotice(findOrgNotice);
+    }
+
+    /**
+    * 获取机构报告列表
+    * @param
+    * @return
+    */
+    @Operation(summary = "获取机构报告列表")
+    @PostMapping("v1/userExperiment/experimentOrg/pageOrgReport")
+    public OrgReportResponse pageOrgReport(@RequestBody @Validated FindOrgReportRequest findOrgReport ) {
+        return experimentOrgBiz.pageOrgReport(findOrgReport);
+    }
+
+    /**
+    * 查看体检报告详情
+    * @param
+    * @return
+    */
+    @Operation(summary = "查看体检报告详情")
+    @GetMapping("v1/userExperiment/experimentOrg/getPhysicalExamReport")
+    public PhysicalExamReportInfoResponse getPhysicalExamReport(@Validated String operateFlowId) {
+        return experimentOrgBiz.getPhysicalExamReport(operateFlowId);
+    }
+
+    /**
+    * 查看诊疗报告详情
+    * @param
+    * @return
+    */
+    @Operation(summary = "查看诊疗报告详情")
+    @GetMapping("v1/userExperiment/experimentOrg/getTreatReport")
+    public TreatReportInfoResponse getTreatReport(@Validated String operateFlowId) {
+        return experimentOrgBiz.getTreatReport(operateFlowId);
+    }
+
+
+}
