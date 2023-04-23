@@ -124,12 +124,7 @@ public class OrgBiz {
     @DSTransactional
     public Boolean deleteClasss(Set<String> ids) {
         Boolean flag = true;
-        //1、删除组织架构
-        Integer count1 = accountOrgApi.batchDeleteAccountOrgs(ids);
-        if(count1 == 0){
-          flag = false;
-        }
-        //2、获取机构下的所有成员
+        //1、获取机构下的所有成员
         Set<String> accountIds = new HashSet<>();
         ids.forEach(id->{
             List<AccountGroupResponse> groupList = accountGroupApi.getAccountGroupByOrgId(id);
@@ -139,6 +134,11 @@ public class OrgBiz {
                 });
             }
         });
+        //2、删除组织架构
+        Integer count1 = accountOrgApi.batchDeleteAccountOrgs(ids);
+        if(count1 == 0){
+          flag = false;
+        }
         //3、删除账户实例
         Integer count2 = accountInstanceApi.deleteAccountInstanceByAccountIds(accountIds);
         if(count2 == 0){

@@ -60,8 +60,8 @@ public class OrgRest {
      * @return
      */
     @Operation(summary =  "删除 班级")
-    @DeleteMapping("v1/basePerson/person/deleteClasss")
-    public Boolean deleteClasss(@RequestBody Set<String> ids){
+    @DeleteMapping("v1/baseOrg/org/deleteClasss")
+    public Boolean deleteClasss(@RequestParam Set<String> ids){
         return orgBiz.deleteClasss(ids);
     }
 }
