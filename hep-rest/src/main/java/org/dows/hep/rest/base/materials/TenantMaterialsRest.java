@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RestController
 @Tag(name = "资料信息", description = "资料信息")
-public class MaterialsRest {
+public class TenantMaterialsRest {
     private final MaterialsBiz materialsBiz;
 
     /**
