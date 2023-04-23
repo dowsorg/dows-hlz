@@ -8,7 +8,7 @@ import org.dows.hep.entity.CaseCategoryEntity;
  * 案例类目(CaseCategory)表数据库访问层
  *
  * @author lait
- * @since 2023-04-18 13:54:25
+ * @since 2023-04-21 10:31:14
  */
 @Mapper
 public interface CaseCategoryMapper extends MybatisCrudMapper<CaseCategoryEntity> {

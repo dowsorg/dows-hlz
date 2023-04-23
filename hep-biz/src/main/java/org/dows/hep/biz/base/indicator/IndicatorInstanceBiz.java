@@ -12,7 +12,7 @@ import java.util.List;
 * @description project descr:指标:指标实例
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class IndicatorInstanceBiz{
@@ -24,7 +24,7 @@ public class IndicatorInstanceBiz{
     * @工时: 3H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void createIndicatorInstance(CreateIndicatorInstanceRequest createIndicatorInstance ) {
         
@@ -37,7 +37,7 @@ public class IndicatorInstanceBiz{
     * @工时: 2H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void deleteIndicatorInstance(String indicatorInstanceId ) {
         
@@ -50,7 +50,7 @@ public class IndicatorInstanceBiz{
     * @工时: 3H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void updateIndicatorInstance(UpdateIndicatorInstanceRequest updateIndicatorInstance ) {
         
@@ -63,7 +63,7 @@ public class IndicatorInstanceBiz{
     * @工时: 3H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void batchUpdateIndicatorInstance(List<UpdateIndicatorInstanceRequest> updateIndicatorInstance ) {
         
@@ -76,7 +76,7 @@ public class IndicatorInstanceBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public IndicatorInstanceResponse getIndicatorInstance(String indicatorInstanceId ) {
         return new IndicatorInstanceResponse();
@@ -89,7 +89,7 @@ public class IndicatorInstanceBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public List<IndicatorInstanceResponse> listIndicatorInstance(String appId, Integer core, Integer food, String indicatorCategoryId ) {
         return new ArrayList<IndicatorInstanceResponse>();
@@ -102,7 +102,7 @@ public class IndicatorInstanceBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public String pageIndicatorInstance(Integer pageNo, Integer pageSize, String appId, Integer core, Integer food, String indicatorCategoryId ) {
         return new String();

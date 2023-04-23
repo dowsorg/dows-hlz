@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 * @description project descr:指标:指标主体关联关系
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class IndicatorPrincipalRefBiz{
@@ -20,7 +20,7 @@ public class IndicatorPrincipalRefBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void createIndicatorPrincipalRef(CreateIndicatorPrincipalRefRequest createIndicatorPrincipalRef ) {
         
@@ -33,7 +33,7 @@ public class IndicatorPrincipalRefBiz{
     * @工时: 2H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void deleteIndicatorPrincipalRef(String indicatorPrincipalRefId ) {
         
@@ -46,7 +46,7 @@ public class IndicatorPrincipalRefBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public IndicatorPrincipalRefResponse getIndicatorPrincipalRef(String indicatorPrincipalRefId ) {
         return new IndicatorPrincipalRefResponse();

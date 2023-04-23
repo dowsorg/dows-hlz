@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 指标(IndicatorInstance)表服务实现类
  *
  * @author lait
- * @since 2023-04-18 13:57:18
+ * @since 2023-04-21 10:31:43
  */
 @Service("indicatorInstanceService")
 public class IndicatorInstanceServiceImpl extends MybatisCrudServiceImpl<IndicatorInstanceMapper, IndicatorInstanceEntity> implements IndicatorInstanceService {

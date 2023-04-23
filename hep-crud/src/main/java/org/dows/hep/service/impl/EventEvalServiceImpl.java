@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 突发事件触发条件(EventEval)表服务实现类
  *
  * @author lait
- * @since 2023-04-18 13:55:16
+ * @since 2023-04-21 10:31:41
  */
 @Service("eventEvalService")
 public class EventEvalServiceImpl extends MybatisCrudServiceImpl<EventEvalMapper, EventEvalEntity> implements EventEvalService {

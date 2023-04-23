@@ -8,7 +8,7 @@ import org.dows.hep.entity.MaterialsEntity;
  * 资料(Materials)表数据库访问层
  *
  * @author lait
- * @since 2023-04-18 13:58:33
+ * @since 2023-04-21 10:31:16
  */
 @Mapper
 public interface MaterialsMapper extends MybatisCrudMapper<MaterialsEntity> {

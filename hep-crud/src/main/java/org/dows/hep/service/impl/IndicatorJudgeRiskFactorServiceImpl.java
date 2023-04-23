@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 判断指标危险因素(IndicatorJudgeRiskFactor)表服务实现类
  *
  * @author lait
- * @since 2023-04-18 13:57:34
+ * @since 2023-04-21 10:31:43
  */
 @Service("indicatorJudgeRiskFactorService")
 public class IndicatorJudgeRiskFactorServiceImpl extends MybatisCrudServiceImpl<IndicatorJudgeRiskFactorMapper, IndicatorJudgeRiskFactorEntity> implements IndicatorJudgeRiskFactorService {

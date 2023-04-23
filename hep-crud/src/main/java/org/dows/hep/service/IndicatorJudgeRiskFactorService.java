@@ -8,7 +8,7 @@ import org.dows.framework.crud.mybatis.MybatisCrudService;
  * 判断指标危险因素(IndicatorJudgeRiskFactor)表服务接口
  *
  * @author lait
- * @since 2023-04-18 13:57:33
+ * @since 2023-04-21 10:31:43
  */
 public interface IndicatorJudgeRiskFactorService extends MybatisCrudService<IndicatorJudgeRiskFactorEntity> {
 

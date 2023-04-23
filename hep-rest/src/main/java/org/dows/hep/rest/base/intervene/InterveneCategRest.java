@@ -20,7 +20,7 @@ import java.util.List;
 * @description project descr:干预:干预类别管理
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @RequiredArgsConstructor
 @RestController
@@ -48,6 +48,17 @@ public class InterveneCategRest {
     @PostMapping("v1/baseIntervene/interveneCateg/saveInterveneCateg")
     public Boolean saveInterveneCateg(@RequestBody @Validated SaveInterveneCategRequest saveInterveneCateg ) {
         return interveneCategBiz.saveInterveneCateg(saveInterveneCateg);
+    }
+
+    /**
+    * 批量保存类别
+    * @param
+    * @return
+    */
+    @Operation(summary = "批量保存类别")
+    @PostMapping("v1/baseIntervene/interveneCateg/saveInterveneCategs")
+    public Boolean saveInterveneCategs(@RequestBody @Validated List<SaveInterveneCategRequest> saveInterveneCateg ) {
+        return interveneCategBiz.saveInterveneCategs(saveInterveneCateg);
     }
 
     /**

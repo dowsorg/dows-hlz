@@ -12,7 +12,7 @@ import java.util.List;
 * @description project descr:指标:指标类别
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class IndicatorCategoryBiz{
@@ -24,7 +24,7 @@ public class IndicatorCategoryBiz{
     * @工时: 3H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void createIndicatorCategory(CreateIndicatorCategoryRequest createIndicatorCategory ) {
         
@@ -37,7 +37,7 @@ public class IndicatorCategoryBiz{
     * @工时: 2H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void deleteIndicatorCategory(String indicatorCategoryId ) {
         
@@ -50,7 +50,7 @@ public class IndicatorCategoryBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void updateIndicatorCategory(UpdateIndicatorCategoryRequest updateIndicatorCategory ) {
         
@@ -63,7 +63,7 @@ public class IndicatorCategoryBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public IndicatorCategoryResponse getIndicatorCategory(String indicatorCategoryId ) {
         return new IndicatorCategoryResponse();
@@ -76,7 +76,7 @@ public class IndicatorCategoryBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public List<IndicatorCategoryResponse> listIndicatorCategory(String appId, Long pid, String indicatorCategoryId, String categoryCode, String categoryName ) {
         return new ArrayList<IndicatorCategoryResponse>();
@@ -89,7 +89,7 @@ public class IndicatorCategoryBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public String pageIndicatorCategory(Integer pageNo, Integer pageSize, String appId, Long pid, String indicatorCategoryId, String categoryCode, String categoryName ) {
         return new String();
@@ -102,7 +102,7 @@ public class IndicatorCategoryBiz{
     * @工时: 8H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void sync(String appId ) {
         

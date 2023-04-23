@@ -12,14 +12,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
-* @description project descr:问题:
+* @description project descr:问题:问题集[问卷]
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @RequiredArgsConstructor
 @RestController
-@Tag(name = "", description = "")
+@Tag(name = "问题集[问卷]", description = "问题集[问卷]")
 public class QuestionSectionRest {
     private final QuestionSectionBiz questionSectionBiz;
 
@@ -156,11 +156,11 @@ public class QuestionSectionRest {
     }
 
     /**
-    * 查询
+    * 查询问题集-问题
     * @param
     * @return
     */
-    @Operation(summary = "查询")
+    @Operation(summary = "查询问题集-问题")
     @PostMapping("v1/baseQuestion/questionSection/listSectionQuestion")
     public QuestionSectionResponse listSectionQuestion(@RequestBody @Validated QuestionsInSectionRequest questionsInSection ) {
         return questionSectionBiz.listSectionQuestion(questionsInSection);

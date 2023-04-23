@@ -8,10 +8,10 @@ import org.springframework.stereotype.Service;
 
 
 /**
- * 指标(IndicatorViewBaseInfoDescrRef)表服务实现类
+ * 指标基本信息描述表与指标关联关系(IndicatorViewBaseInfoDescrRef)表服务实现类
  *
  * @author lait
- * @since 2023-04-18 13:57:55
+ * @since 2023-04-21 10:31:43
  */
 @Service("indicatorViewBaseInfoDescrRefService")
 public class IndicatorViewBaseInfoDescrRefServiceImpl extends MybatisCrudServiceImpl<IndicatorViewBaseInfoDescrRefMapper, IndicatorViewBaseInfoDescrRefEntity> implements IndicatorViewBaseInfoDescrRefService {

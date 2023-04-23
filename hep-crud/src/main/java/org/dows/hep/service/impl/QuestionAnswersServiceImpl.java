@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 问题-答案(QuestionAnswers)表服务实现类
  *
  * @author lait
- * @since 2023-04-18 13:58:59
+ * @since 2023-04-21 10:31:45
  */
 @Service("questionAnswersService")
 public class QuestionAnswersServiceImpl extends MybatisCrudServiceImpl<QuestionAnswersMapper, QuestionAnswersEntity> implements QuestionAnswersService {

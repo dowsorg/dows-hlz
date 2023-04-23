@@ -8,7 +8,7 @@ import org.dows.hep.entity.InterveneCategoryEntity;
  * 干预类别管理(InterveneCategory)表数据库访问层
  *
  * @author lait
- * @since 2023-04-18 13:58:31
+ * @since 2023-04-21 10:31:16
  */
 @Mapper
 public interface InterveneCategoryMapper extends MybatisCrudMapper<InterveneCategoryEntity> {

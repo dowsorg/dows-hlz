@@ -13,7 +13,7 @@ import java.util.List;
 * @description project descr:指标:查看指标监测随访类
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class IndicatorViewMonitorFollowupBiz{
@@ -25,7 +25,7 @@ public class IndicatorViewMonitorFollowupBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void createIndicatorViewMonitorFollowup(CreateIndicatorViewMonitorFollowupRequest createIndicatorViewMonitorFollowup ) {
         
@@ -38,7 +38,7 @@ public class IndicatorViewMonitorFollowupBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void deleteIndicatorViewMonitorFollowup(String indicatorViewMonitorFollowupId ) {
         
@@ -51,7 +51,7 @@ public class IndicatorViewMonitorFollowupBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void batchDelete(String string ) {
         
@@ -64,7 +64,7 @@ public class IndicatorViewMonitorFollowupBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void updateStatus(IndicatorViewMonitorFollowupRequest indicatorViewMonitorFollowup ) {
         
@@ -77,7 +77,7 @@ public class IndicatorViewMonitorFollowupBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void updateIndicatorViewMonitorFollowup(UpdateIndicatorViewMonitorFollowupRequest updateIndicatorViewMonitorFollowup ) {
         
@@ -90,7 +90,7 @@ public class IndicatorViewMonitorFollowupBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public IndicatorViewMonitorFollowupResponse getIndicatorViewMonitorFollowup(String indicatorViewMonitorFollowupId ) {
         return new IndicatorViewMonitorFollowupResponse();
@@ -103,7 +103,7 @@ public class IndicatorViewMonitorFollowupBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public List<IndicatorViewMonitorFollowupResponse> listIndicatorViewMonitorFollowup(String appId, String indicatorCategoryId, String name, Integer type, Integer status ) {
         return new ArrayList<IndicatorViewMonitorFollowupResponse>();
@@ -116,7 +116,7 @@ public class IndicatorViewMonitorFollowupBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public String pageIndicatorViewMonitorFollowup(Integer pageNo, Integer pageSize, String appId, String indicatorCategoryId, String name, Integer type, Integer status ) {
         return new String();

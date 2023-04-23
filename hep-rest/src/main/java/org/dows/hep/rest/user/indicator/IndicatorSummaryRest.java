@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 * @description project descr:指标:指标汇总
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @RequiredArgsConstructor
 @RestController
@@ -26,9 +26,9 @@ public class IndicatorSummaryRest {
     * @return
     */
     @Operation(summary = "指标汇总")
-    @GetMapping("v1/userindicator/indicatorSummary/getIndicatorSummary")
-    public String getIndicatorSummary(@Validated String experimentPsersonId) {
-        return indicatorSummaryBiz.getIndicatorSummary(experimentPsersonId);
+    @GetMapping("v1/userIndicator/indicatorSummary/getIndicatorSummary")
+    public String getIndicatorSummary(@Validated String experimentPersonId) {
+        return indicatorSummaryBiz.getIndicatorSummary(experimentPersonId);
     }
 
 

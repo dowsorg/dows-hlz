@@ -8,7 +8,7 @@ import org.dows.framework.crud.mybatis.MybatisCrudService;
  * 机构功能指标点(CaseOrgIndicator)表服务接口
  *
  * @author lait
- * @since 2023-04-18 13:54:30
+ * @since 2023-04-21 10:31:41
  */
 public interface CaseOrgIndicatorService extends MybatisCrudService<CaseOrgIndicatorEntity> {
 

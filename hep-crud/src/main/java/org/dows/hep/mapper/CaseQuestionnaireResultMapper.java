@@ -8,7 +8,7 @@ import org.dows.hep.entity.CaseQuestionnaireResultEntity;
  * 案例问卷结果(CaseQuestionnaireResult)表数据库访问层
  *
  * @author lait
- * @since 2023-04-18 13:54:31
+ * @since 2023-04-21 10:31:15
  */
 @Mapper
 public interface CaseQuestionnaireResultMapper extends MybatisCrudMapper<CaseQuestionnaireResultEntity> {

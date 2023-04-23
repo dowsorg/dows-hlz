@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 * @description project descr:资料中心:资料信息展示
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class MaterialsInfoBiz {
@@ -21,7 +21,7 @@ public class MaterialsInfoBiz {
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public MaterialsResponse pageMaterials(MaterialsSearchRequest materialsSearch ) {
         return new MaterialsResponse();
@@ -34,7 +34,7 @@ public class MaterialsInfoBiz {
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public MaterialsResponse listMaterials(QuestionSearchRequest questionSearch ) {
         return new MaterialsResponse();
@@ -47,7 +47,7 @@ public class MaterialsInfoBiz {
     * @工时: 5H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public MaterialsResponse getMaterials(String materialsId ) {
         return new MaterialsResponse();

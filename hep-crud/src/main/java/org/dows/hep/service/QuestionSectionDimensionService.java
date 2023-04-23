@@ -8,7 +8,7 @@ import org.dows.framework.crud.mybatis.MybatisCrudService;
  * 问题集[试卷]-维度(QuestionSectionDimension)表服务接口
  *
  * @author lait
- * @since 2023-04-18 13:59:22
+ * @since 2023-04-21 10:31:48
  */
 public interface QuestionSectionDimensionService extends MybatisCrudService<QuestionSectionDimensionEntity> {
 

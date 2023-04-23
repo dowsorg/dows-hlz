@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 指标主体关联关系(IndicatorPrincipalRef)表服务实现类
  *
  * @author lait
- * @since 2023-04-18 13:57:36
+ * @since 2023-04-21 10:31:43
  */
 @Service("indicatorPrincipalRefService")
 public class IndicatorPrincipalRefServiceImpl extends MybatisCrudServiceImpl<IndicatorPrincipalRefMapper, IndicatorPrincipalRefEntity> implements IndicatorPrincipalRefService {

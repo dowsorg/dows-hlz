@@ -13,7 +13,7 @@ import java.util.List;
 * @description project descr:干预:评估问卷
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class SurveyBiz{
@@ -25,7 +25,7 @@ public class SurveyBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public List<InterveneCategResponse> listSurveyCateg(FindInterveneCategRequest findInterveneCateg ) {
         return new ArrayList<InterveneCategResponse>();
@@ -38,7 +38,7 @@ public class SurveyBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean saveSurveyCateg(SaveInterveneCategRequest saveInterveneCateg ) {
         return Boolean.FALSE;
@@ -51,7 +51,7 @@ public class SurveyBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean delSurveyCateg(DelInterveneCategRequest delInterveneCateg ) {
         return Boolean.FALSE;
@@ -64,7 +64,7 @@ public class SurveyBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public SurveyResponse pageSurvey(FindSurveyRequest findSurvey ) {
         return new SurveyResponse();
@@ -77,7 +77,7 @@ public class SurveyBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public SurveyInfoResponse getSurvey(String surveyId, Integer step ) {
         return new SurveyInfoResponse();
@@ -90,7 +90,7 @@ public class SurveyBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean delSurvey(DelSurveyRequest delSurvey ) {
         return Boolean.FALSE;
@@ -103,7 +103,7 @@ public class SurveyBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean setSurveyState(SetSurveyStateRequest setSurveyState ) {
         return Boolean.FALSE;
@@ -116,7 +116,7 @@ public class SurveyBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean saveSurveyBasic(SaveSurveyBasicRequest saveSurveyBasic ) {
         return Boolean.FALSE;
@@ -129,7 +129,7 @@ public class SurveyBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean saveSurveyQuestion(SaveSurveyQuestionRequest saveSurveyQuestion ) {
         return Boolean.FALSE;
@@ -142,7 +142,7 @@ public class SurveyBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean saveSurveyEval(SaveSurveyEvalRequest saveSurveyEval ) {
         return Boolean.FALSE;
@@ -155,7 +155,7 @@ public class SurveyBiz{
     * @工时: 2H
     * @开发者: wuzl
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean saveSurveyReport(SaveSurveyReportRequest saveSurveyReport ) {
         return Boolean.FALSE;

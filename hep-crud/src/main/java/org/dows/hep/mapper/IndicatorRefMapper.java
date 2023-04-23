@@ -8,7 +8,7 @@ import org.dows.hep.entity.IndicatorRefEntity;
  * 指标-引用(IndicatorRef)表数据库访问层
  *
  * @author lait
- * @since 2023-04-18 13:57:39
+ * @since 2023-04-21 10:31:15
  */
 @Mapper
 public interface IndicatorRefMapper extends MybatisCrudMapper<IndicatorRefEntity> {

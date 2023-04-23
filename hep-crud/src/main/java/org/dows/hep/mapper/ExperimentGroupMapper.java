@@ -8,7 +8,7 @@ import org.dows.hep.entity.ExperimentGroupEntity;
  * 实验小组(ExperimentGroup)表数据库访问层
  *
  * @author lait
- * @since 2023-04-18 13:55:36
+ * @since 2023-04-21 10:31:15
  */
 @Mapper
 public interface ExperimentGroupMapper extends MybatisCrudMapper<ExperimentGroupEntity> {

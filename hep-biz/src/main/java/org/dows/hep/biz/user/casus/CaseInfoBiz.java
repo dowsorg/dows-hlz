@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 * @description project descr:案列:案例基础信息
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class CaseInfoBiz{
@@ -19,7 +19,7 @@ public class CaseInfoBiz{
     * @工时: 6H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public String getCaseInfo(CaseInfoRequest caseInfo ) {
         return new String();

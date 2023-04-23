@@ -14,10 +14,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "UpdateRiskCategory 对象", title = "更改风险类别")
 public class UpdateRiskCategoryRequest{
-    @Schema(title = "风险")
+    @Schema(title = "风险类别ID")
     private String riskCategoryId;
 
-    @Schema(title = "风险")
+    @Schema(title = "风险类别名称")
     private String riskCategoryName;
 
     @Schema(title = "展示顺序")

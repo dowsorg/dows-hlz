@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 案例公告(CaseNotice)表服务实现类
  *
  * @author lait
- * @since 2023-04-18 13:54:28
+ * @since 2023-04-21 10:31:40
  */
 @Service("caseNoticeService")
 public class CaseNoticeServiceImpl extends MybatisCrudServiceImpl<CaseNoticeMapper, CaseNoticeEntity> implements CaseNoticeService {

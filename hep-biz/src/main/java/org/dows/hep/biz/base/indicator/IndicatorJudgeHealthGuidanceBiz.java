@@ -14,7 +14,7 @@ import java.util.List;
 * @description project descr:指标:判断指标健康指导
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class IndicatorJudgeHealthGuidanceBiz{
@@ -26,7 +26,7 @@ public class IndicatorJudgeHealthGuidanceBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void createIndicatorJudgeHealthGuidance(CreateIndicatorJudgeHealthGuidanceRequest createIndicatorJudgeHealthGuidance ) {
         
@@ -39,7 +39,7 @@ public class IndicatorJudgeHealthGuidanceBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void deleteIndicatorJudgeHealthGuidance(String indicatorJudgeHealthGuidanceId ) {
         
@@ -52,7 +52,7 @@ public class IndicatorJudgeHealthGuidanceBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void batchDelete(String string ) {
         
@@ -65,7 +65,7 @@ public class IndicatorJudgeHealthGuidanceBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void updateStatus(UpdateStatusIndicatorJudgeHealthGuidanceRequest updateStatusIndicatorJudgeHealthGuidance ) {
         
@@ -78,7 +78,7 @@ public class IndicatorJudgeHealthGuidanceBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void updateIndicatorJudgeHealthGuidance(UpdateIndicatorJudgeHealthGuidanceRequest updateIndicatorJudgeHealthGuidance ) {
         
@@ -91,7 +91,7 @@ public class IndicatorJudgeHealthGuidanceBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public IndicatorJudgeHealthGuidanceResponse getIndicatorJudgeHealthGuidance(String indicatorJudgeHealthGuidanceId ) {
         return new IndicatorJudgeHealthGuidanceResponse();
@@ -104,7 +104,7 @@ public class IndicatorJudgeHealthGuidanceBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public List<IndicatorJudgeHealthGuidanceResponse> listIndicatorJudgeHealthGuidance(String appId, String indicatorCategoryId, String name, String type, DecimalRequest point, String expression, String resultExplain, Integer status ) {
         return new ArrayList<IndicatorJudgeHealthGuidanceResponse>();
@@ -117,7 +117,7 @@ public class IndicatorJudgeHealthGuidanceBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public String pageIndicatorJudgeHealthGuidance(Integer pageNo, Integer pageSize, String appId, String indicatorCategoryId, String name, String type, DecimalRequest point, String expression, String resultExplain, Integer status ) {
         return new String();

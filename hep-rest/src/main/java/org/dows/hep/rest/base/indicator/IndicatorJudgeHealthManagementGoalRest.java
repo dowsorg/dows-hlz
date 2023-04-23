@@ -18,7 +18,7 @@ import java.util.List;
 * @description project descr:指标:判断指标健管目标
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @RequiredArgsConstructor
 @RestController
@@ -99,8 +99,8 @@ public class IndicatorJudgeHealthManagementGoalRest {
     */
     @Operation(summary = "筛选判断指标健管目标")
     @GetMapping("v1/baseIndicator/indicatorJudgeHealthManagementGoal/listIndicatorJudgeHealthManagementGoal")
-    public List<IndicatorJudgeHealthManagementGoalResponse> listIndicatorJudgeHealthManagementGoal(@Validated String appId, @Validated String indicatorCategoryId, @Validated DecimalRequest decimal, @Validated Integer integer) {
-        return indicatorJudgeHealthManagementGoalBiz.listIndicatorJudgeHealthManagementGoal(appId,indicatorCategoryId,decimal,integer);
+    public List<IndicatorJudgeHealthManagementGoalResponse> listIndicatorJudgeHealthManagementGoal(@Validated String appId, @Validated String indicatorCategoryId, @Validated DecimalRequest point, @Validated Integer status) {
+        return indicatorJudgeHealthManagementGoalBiz.listIndicatorJudgeHealthManagementGoal(appId,indicatorCategoryId,point,status);
     }
 
     /**
@@ -110,8 +110,8 @@ public class IndicatorJudgeHealthManagementGoalRest {
     */
     @Operation(summary = "获取判断指标健管目标")
     @GetMapping("v1/baseIndicator/indicatorJudgeHealthManagementGoal/pageIndicatorJudgeHealthManagementGoal")
-    public String pageIndicatorJudgeHealthManagementGoal(@Validated Integer pageNo, @Validated Integer pageSize, @Validated String appId, @Validated String indicatorCategoryId, @Validated DecimalRequest decimal, @Validated Integer integer) {
-        return indicatorJudgeHealthManagementGoalBiz.pageIndicatorJudgeHealthManagementGoal(pageNo,pageSize,appId,indicatorCategoryId,decimal,integer);
+    public String pageIndicatorJudgeHealthManagementGoal(@Validated Integer pageNo, @Validated Integer pageSize, @Validated String appId, @Validated String indicatorCategoryId, @Validated DecimalRequest point, @Validated Integer status) {
+        return indicatorJudgeHealthManagementGoalBiz.pageIndicatorJudgeHealthManagementGoal(pageNo,pageSize,appId,indicatorCategoryId,point,status);
     }
 
 

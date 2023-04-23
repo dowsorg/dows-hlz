@@ -8,7 +8,7 @@ import org.dows.framework.crud.mybatis.MybatisCrudService;
  * 人物事件处理选项影响指标(CaseEventActionIndicator)表服务接口
  *
  * @author lait
- * @since 2023-04-18 13:54:27
+ * @since 2023-04-21 10:31:40
  */
 public interface CaseEventActionIndicatorService extends MybatisCrudService<CaseEventActionIndicatorEntity> {
 

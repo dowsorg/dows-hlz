@@ -7,11 +7,11 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 /**
-* @description 
-*
-* @author 
-* @date 
-*/
+ * @description
+ *
+ * @author
+ * @date
+ */
 @Data
 @NoArgsConstructor
 @Schema(name = "GroupSetting 对象", title = "小组设置")
@@ -34,12 +34,20 @@ public class GroupSettingRequest{
     @Schema(title = "参与者对象")
     private List<ExperimentParticipator> experimentParticipators;
 
+    @Schema(title = "参与者Json对象")
+    private String experimentParticipator;
 
 
     @Data
     public static class ExperimentParticipator{
-
+        @Schema(title = "参与者顺序")
+        private Integer seq;
+        @Schema(title = "参与者ID")
+        private String participatorId;
+        @Schema(title = "参与者名称")
+        private String participatorName;
 
     }
 
 }
+

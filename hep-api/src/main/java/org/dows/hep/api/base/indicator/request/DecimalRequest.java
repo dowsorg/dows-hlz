@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 */
 @Data
 @NoArgsConstructor
-@Schema(name = "Decimal 对象", title = "")
+@Schema(name = "Decimal 对象", title = "分数")
 public class DecimalRequest{
 }

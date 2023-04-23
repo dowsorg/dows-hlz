@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 实验人物资产花费(ExperimentPersonCost)实体类
  *
  * @author lait
- * @since 2023-04-18 13:55:51
+ * @since 2023-04-23 09:47:02
  */
 @SuppressWarnings("serial")
 @Data
@@ -39,8 +39,8 @@ public class ExperimentPersonCostEntity implements CrudEntity {
     @Schema(title = "实验花费ID")
     private String experimentPersonCostId;
 
-    @Schema(title = "实验人物ID")
-    private String experimentPsersonId;
+    @Schema(title = "实验人物id")
+    private String experimentPersonId;
 
     @Schema(title = "实验实列ID")
     private String experimentInstanceId;

@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 实验组员（参与者）(ExperimentParticipator)实体类
  *
  * @author lait
- * @since 2023-04-18 13:55:41
+ * @since 2023-04-23 09:47:02
  */
 @SuppressWarnings("serial")
 @Data
@@ -45,11 +45,8 @@ public class ExperimentParticipatorEntity implements CrudEntity {
     @Schema(title = "实验实列ID")
     private String experimentInstanceId;
 
-    @Schema(title = "组号")
-    private String groupNo;
-
-    @Schema(title = "组名")
-    private String groupName;
+    @Schema(title = "小组序号")
+    private Integer groupNo;
 
     @Schema(title = "小组别名")
     private String groupAlias;
@@ -59,9 +56,6 @@ public class ExperimentParticipatorEntity implements CrudEntity {
 
     @Schema(title = "组员账号名")
     private String accountName;
-
-    @Schema(title = "头像")
-    private String icon;
 
     @Schema(title = "参与者类型[0:教师，1:组长，2：学生]")
     private Integer participatorType;

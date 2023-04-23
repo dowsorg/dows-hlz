@@ -12,7 +12,7 @@ import java.util.List;
 * @description project descr:指标:指标规则
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class IndicatorRuleBiz{
@@ -24,7 +24,7 @@ public class IndicatorRuleBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void createIndicatorRule(CreateIndicatorRuleRequest createIndicatorRule ) {
         
@@ -37,7 +37,7 @@ public class IndicatorRuleBiz{
     * @工时: 2H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void deleteIndicatorRule(String indicatorRuleId ) {
         
@@ -50,7 +50,7 @@ public class IndicatorRuleBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void updateIndicatorRule(UpdateIndicatorRuleRequest updateIndicatorRule ) {
         
@@ -63,7 +63,7 @@ public class IndicatorRuleBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public IndicatorRuleResponse getIndicatorRule(String indicatorRuleId ) {
         return new IndicatorRuleResponse();
@@ -76,7 +76,7 @@ public class IndicatorRuleBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public List<IndicatorRuleResponse> listIndicatorRule(String appId, String variableId, Integer ruleType, String min, String max, String def, String descr ) {
         return new ArrayList<IndicatorRuleResponse>();
@@ -89,7 +89,7 @@ public class IndicatorRuleBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public String pageIndicatorRule(Integer pageNo, Integer pageSize, String appId, String variableId, Integer ruleType, String min, String max, String def, String descr ) {
         return new String();

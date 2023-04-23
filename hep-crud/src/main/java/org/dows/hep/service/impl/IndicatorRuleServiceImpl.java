@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 指标|变量规则[校验](IndicatorRule)表服务实现类
  *
  * @author lait
- * @since 2023-04-18 13:57:41
+ * @since 2023-04-21 10:31:43
  */
 @Service("indicatorRuleService")
 public class IndicatorRuleServiceImpl extends MybatisCrudServiceImpl<IndicatorRuleMapper, IndicatorRuleEntity> implements IndicatorRuleService {

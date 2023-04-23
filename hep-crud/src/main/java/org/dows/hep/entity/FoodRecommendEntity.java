@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 食物推荐量配置(FoodRecommend)实体类
  *
  * @author lait
- * @since 2023-04-18 13:57:05
+ * @since 2023-04-23 09:47:02
  */
 @SuppressWarnings("serial")
 @Data
@@ -47,6 +47,9 @@ public class FoodRecommendEntity implements CrudEntity {
 
     @Schema(title = "主体名称")
     private String instanceName;
+
+    @Schema(title = "单位")
+    private String unit;
 
     @Schema(title = "推荐量下限")
     private String min;

@@ -11,7 +11,7 @@ import java.util.List;
 * @description project descr:评估:评估报告管理
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class EvaluateReportManagementBiz{
@@ -23,7 +23,7 @@ public class EvaluateReportManagementBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void evaluateReportManagement(CreateEvaluateReportManagementRequest createEvaluateReportManagement ) {
         
@@ -36,7 +36,7 @@ public class EvaluateReportManagementBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void deleteEvaluateReportManagement(String evaluateReportManagementId ) {
         
@@ -49,7 +49,7 @@ public class EvaluateReportManagementBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public EvaluateReportManagementResponse getEvaluateReportManagement(String evaluateReportManagementId ) {
         return new EvaluateReportManagementResponse();
@@ -62,7 +62,7 @@ public class EvaluateReportManagementBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public List<EvaluateReportManagementResponse> listEvaluateReportManagement(String appId, String questionnaireId, String reportName, String reportDescr, String assessmentResult, String suggestion, Integer minScore, Integer maxScore ) {
         return new ArrayList<EvaluateReportManagementResponse>();
@@ -75,7 +75,7 @@ public class EvaluateReportManagementBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public String pageEvaluateReportManagement(Integer pageNo, Integer pageSize, String appId, String questionnaireId, String reportName, String reportDescr, String assessmentResult, String suggestion, Integer minScore, Integer maxScore ) {
         return new String();

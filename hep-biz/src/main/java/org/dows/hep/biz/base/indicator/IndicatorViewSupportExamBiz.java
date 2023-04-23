@@ -14,7 +14,7 @@ import java.util.List;
 * @description project descr:指标:查看指标辅助检查类
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class IndicatorViewSupportExamBiz{
@@ -26,7 +26,7 @@ public class IndicatorViewSupportExamBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void createIndicatorViewSupportExam(CreateIndicatorViewSupportExamRequest createIndicatorViewSupportExam ) {
         
@@ -39,7 +39,7 @@ public class IndicatorViewSupportExamBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void deleteIndicatorViewSupportExam(String indicatorViewSupportExamId ) {
         
@@ -52,7 +52,7 @@ public class IndicatorViewSupportExamBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void batchDelete(String string ) {
         
@@ -65,7 +65,7 @@ public class IndicatorViewSupportExamBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void updateStatus(IndicatorViewSupportExamRequest indicatorViewSupportExam ) {
         
@@ -78,7 +78,7 @@ public class IndicatorViewSupportExamBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void updateIndicatorViewSupportExam(UpdateIndicatorViewSupportExamRequest updateIndicatorViewSupportExam ) {
         
@@ -91,7 +91,7 @@ public class IndicatorViewSupportExamBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public IndicatorViewSupportExamResponse getIndicatorViewSupportExam(String indicatorViewSupportExamId ) {
         return new IndicatorViewSupportExamResponse();
@@ -104,7 +104,7 @@ public class IndicatorViewSupportExamBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public List<IndicatorViewSupportExamResponse> listIndicatorViewSupportExam(String appId, String indicatorCategoryId, String name, String type, DecimalRequest fee, String resultAnalysis, Integer status ) {
         return new ArrayList<IndicatorViewSupportExamResponse>();
@@ -117,7 +117,7 @@ public class IndicatorViewSupportExamBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public String pageIndicatorViewSupportExam(Integer pageNo, Integer pageSize, String appId, String indicatorCategoryId, String name, String type, DecimalRequest fee, String resultAnalysis, Integer status ) {
         return new String();

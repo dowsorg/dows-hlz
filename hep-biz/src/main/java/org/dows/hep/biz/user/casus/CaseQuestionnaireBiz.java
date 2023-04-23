@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 * @description project descr:案列:案例问卷
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class CaseQuestionnaireBiz{
@@ -21,7 +21,7 @@ public class CaseQuestionnaireBiz{
     * @工时: 8H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public AllocationSchemeResponse getCaseQuestionnaireOfUser(AllocationQuestionnaireSearchRequest allocationQuestionnaireSearch ) {
         return new AllocationSchemeResponse();
@@ -34,7 +34,7 @@ public class CaseQuestionnaireBiz{
     * @工时: 4H
     * @开发者: fhb
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean submitCaseQuestionnaireResult(CaseQuestionnaireResultRequest caseQuestionnaireResult ) {
         return Boolean.FALSE;

@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 判断指标危险因素(IndicatorJudgeRiskFactor)实体类
  *
  * @author lait
- * @since 2023-04-18 13:57:32
+ * @since 2023-04-23 09:47:03
  */
 @SuppressWarnings("serial")
 @Data
@@ -36,7 +36,7 @@ public class IndicatorJudgeRiskFactorEntity implements CrudEntity {
     @Schema(title = "主键")
     private Long id;
 
-    @Schema(title = "")
+    @Schema(title = "分布式ID")
     private String indicatorJudgeRiskFactorId;
 
     @Schema(title = "应用ID")

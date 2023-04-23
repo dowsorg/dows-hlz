@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 操作事件记录(OperateEvent)实体类
  *
  * @author lait
- * @since 2023-04-18 13:58:37
+ * @since 2023-04-23 09:47:03
  */
 @SuppressWarnings("serial")
 @Data
@@ -44,6 +44,9 @@ public class OperateEventEntity implements CrudEntity {
 
     @Schema(title = "实验小组ID")
     private String experimentGroupId;
+
+    @Schema(title = "实验人物id")
+    private String experimentPersonId;
 
     @Schema(title = "案例机构ID")
     private String caseOrgId;

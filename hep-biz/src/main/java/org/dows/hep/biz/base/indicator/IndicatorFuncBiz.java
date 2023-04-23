@@ -12,7 +12,7 @@ import java.util.List;
 * @description project descr:指标:指标功能
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class IndicatorFuncBiz{
@@ -24,7 +24,7 @@ public class IndicatorFuncBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void createIndicatorFunc(CreateIndicatorFuncRequest createIndicatorFunc ) {
         
@@ -37,7 +37,7 @@ public class IndicatorFuncBiz{
     * @工时: 2H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void deleteIndicatorFunc(String indicatorFunc ) {
         
@@ -50,7 +50,7 @@ public class IndicatorFuncBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void updateIndicatorFunc(UpdateIndicatorFuncRequest updateIndicatorFunc ) {
         
@@ -63,7 +63,7 @@ public class IndicatorFuncBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public IndicatorFuncResponse getIndicatorFunc(String indicatorFunc ) {
         return new IndicatorFuncResponse();
@@ -76,7 +76,7 @@ public class IndicatorFuncBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public List<IndicatorFuncResponse> listIndicatorFunc(String appId, String indicatorCategoryId, String name ) {
         return new ArrayList<IndicatorFuncResponse>();
@@ -89,7 +89,7 @@ public class IndicatorFuncBiz{
     * @工时: 5H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public String pageIndicatorFunc(Integer pageNo, Integer pageSize, String appId, String indicatorCategoryId, String name ) {
         return new String();

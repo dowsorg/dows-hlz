@@ -13,7 +13,7 @@ import java.util.List;
 * @description project descr:实验:实验查看
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class ExperimentCheckBiz{
@@ -25,7 +25,7 @@ public class ExperimentCheckBiz{
     * @工时: 5H
     * @开发者: lait
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public List<ScoreRankResponse> checkScore(ScoreRankRequest scoreRank ) {
         return new ArrayList<ScoreRankResponse>();
@@ -38,7 +38,7 @@ public class ExperimentCheckBiz{
     * @工时: 5H
     * @开发者: lait
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public List<GroupRankingResponse> checkRanking(GroupRankingRequest groupRanking ) {
         return new ArrayList<GroupRankingResponse>();
@@ -51,7 +51,7 @@ public class ExperimentCheckBiz{
     * @工时: 2H
     * @开发者: lait
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void checkDigtalArchive() {
         

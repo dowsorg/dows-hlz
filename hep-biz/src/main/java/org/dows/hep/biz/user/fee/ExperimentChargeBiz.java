@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 * @description project descr:费用:实验扣费
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class ExperimentChargeBiz{
@@ -19,7 +19,7 @@ public class ExperimentChargeBiz{
     * @工时: 5H
     * @开发者: jx
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean chargeRegistration(RegistrationChargeRequest registrationCharge ) {
         return Boolean.FALSE;

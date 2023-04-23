@@ -15,7 +15,7 @@ import java.util.Date;
  * 问题类目(QuestionCategory)实体类
  *
  * @author lait
- * @since 2023-04-18 13:59:00
+ * @since 2023-04-23 09:47:04
  */
 @SuppressWarnings("serial")
 @Data

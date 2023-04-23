@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 风险模型(RiskModel)实体类
  *
  * @author lait
- * @since 2023-04-18 13:59:46
+ * @since 2023-04-23 09:47:06
  */
 @SuppressWarnings("serial")
 @Data

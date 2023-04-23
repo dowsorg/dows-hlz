@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 实验计数计时器(ExperimentTimer)表服务实现类
  *
  * @author lait
- * @since 2023-04-18 13:56:21
+ * @since 2023-04-21 10:31:42
  */
 @Service("experimentTimerService")
 public class ExperimentTimerServiceImpl extends MybatisCrudServiceImpl<ExperimentTimerMapper, ExperimentTimerEntity> implements ExperimentTimerService {

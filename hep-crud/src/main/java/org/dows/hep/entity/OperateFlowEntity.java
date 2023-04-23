@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 实验操作流程(OperateFlow)实体类
  *
  * @author lait
- * @since 2023-04-18 13:58:43
+ * @since 2023-04-23 09:47:03
  */
 @SuppressWarnings("serial")
 @Data
@@ -36,11 +36,17 @@ public class OperateFlowEntity implements CrudEntity {
     @Schema(title = "数据库ID")
     private Long id;
 
-    @Schema(title = "实验操作流程")
+    @Schema(title = "实验操作流程id")
     private String operateFlowId;
 
-    @Schema(title = "实验实列ID")
+    @Schema(title = "实验实例id")
     private String experimentInstanceId;
+
+    @Schema(title = "实验小组id")
+    private String experimentGroupId;
+
+    @Schema(title = "实验人物id")
+    private String experimentPersonId;
 
     @Schema(title = "案例机构ID")
     private String caseOrgId;
@@ -48,23 +54,50 @@ public class OperateFlowEntity implements CrudEntity {
     @Schema(title = "案例账号ID")
     private String caseAccountId;
 
+    @Schema(title = "账号名称")
+    private String caseAccountName;
+
+    @Schema(title = "期数")
+    private Integer periods;
+
     @Schema(title = "流程名称")
     private String flowName;
 
     @Schema(title = "流程顺序")
     private String flowSequence;
 
-    @Schema(title = "操作记录")
-    private String recordJson;
+    @Schema(title = "流程类型 1-体检挂号 2-医院挂号")
+    private Boolean flowType;
 
-    @Schema(title = "状态")
-    private Integer state;
+    @Schema(title = "展示类型 0-不展示 1-用户端展示")
+    private Boolean reportFlag;
+
+    @Schema(title = "消耗资金")
+    private Double feeCost;
+
+    @Schema(title = "剩余资金")
+    private Double feeRemain;
 
     @Schema(title = "开始时间")
     private Date startTime;
 
     @Schema(title = "结束时间")
     private Date endTime;
+
+    @Schema(title = "操作时间")
+    private Date operateTime;
+
+    @Schema(title = "操作描述")
+    private String operateDescr;
+
+    @Schema(title = "标签")
+    private String label;
+
+    @Schema(title = "流程完结状态 0-未完结 1-已完结")
+    private Boolean endState;
+
+    @Schema(title = "状态")
+    private Integer state;
 
     @JsonIgnore
     @TableLogic

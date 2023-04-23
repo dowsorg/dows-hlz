@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 风险类别(RiskCategory)实体类
  *
  * @author lait
- * @since 2023-04-18 13:59:36
+ * @since 2023-04-23 09:47:06
  */
 @SuppressWarnings("serial")
 @Data
@@ -42,7 +42,7 @@ public class RiskCategoryEntity implements CrudEntity {
     @Schema(title = "应用ID")
     private String appId;
 
-    @Schema(title = "风险")
+    @Schema(title = "风险类别名称")
     private String riskCategoryName;
 
     @Schema(title = "展示顺序")

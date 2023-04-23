@@ -13,7 +13,7 @@ import java.util.List;
 * @description project descr:指标:指标变量
 *
 * @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
+* @date 2023年4月23日 上午9:44:34
 */
 @Service
 public class IndicatorVarBiz{
@@ -25,7 +25,7 @@ public class IndicatorVarBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void createIndicatorVar(CreateIndicatorVarRequest createIndicatorVar ) {
         
@@ -38,7 +38,7 @@ public class IndicatorVarBiz{
     * @工时: 2H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void deleteIndicatorVar(IndicatorVarIdRequest indicatorVarId ) {
         
@@ -51,7 +51,7 @@ public class IndicatorVarBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void updateIndicatorVar(UpdateIndicatorVarRequest updateIndicatorVar ) {
         
@@ -64,7 +64,7 @@ public class IndicatorVarBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public IndicatorVarResponse getIndicatorVar(IndicatorVarIdRequest indicatorVarId ) {
         return new IndicatorVarResponse();
@@ -77,7 +77,7 @@ public class IndicatorVarBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public List<IndicatorVarResponse> listIndicatorVar(String appId, String indicatorInstanceId, String dbName, String tbName, String varName, String varCode, String periods, String descr ) {
         return new ArrayList<IndicatorVarResponse>();
@@ -90,7 +90,7 @@ public class IndicatorVarBiz{
     * @工时: 4H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public String pageIndicatorVar(Integer pageNo, Integer pageSize, String appId, String indicatorInstanceId, String dbName, String tbName, String varName, String varCode, String periods, String descr ) {
         return new String();
@@ -103,7 +103,7 @@ public class IndicatorVarBiz{
     * @工时: 40H
     * @开发者: runsix
     * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+    * @创建时间: 2023年4月23日 上午9:44:34
     */
     public void createExpressionComponent(String expressionId ) {
         
