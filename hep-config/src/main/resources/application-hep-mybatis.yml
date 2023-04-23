@@ -1,6 +1,7 @@
 mybatis-plus:
   mapper-locations: classpath*:/mapper/*Mapper.xml
   global-config:
+    field-strategy: 2
     db-config:
       id-type: AUTO
       insert-strategy: not_empty

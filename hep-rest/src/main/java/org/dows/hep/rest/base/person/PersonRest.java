@@ -1,5 +1,6 @@
 package org.dows.hep.rest.base.person;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import org.dows.account.response.AccountInstanceResponse;
 import org.dows.hep.biz.base.person.PersonBiz;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author jx
@@ -42,7 +44,7 @@ public class PersonRest {
     }
 
     /**
-     * 查看用户资料
+     * 查看 个人中心-我的资料
      * @param
      * @return
      */
@@ -50,6 +52,89 @@ public class PersonRest {
     @GetMapping("v1/basePerson/person/getPersonalInformation/{accountId}/{appId}")
     public AccountInstanceResponse getPersonalInformation(@PathVariable("accountId") String accountId, @PathVariable("appId") String appId) {
         return personBiz.getPersonalInformation(accountId,appId);
+    }
+
+    /**
+     * 修改 个人中心-我的资料
+     * @param
+     * @return
+     */
+    @Operation(summary =  "修改个人资料")
+    @PutMapping("v1/basePerson/person/updatePersonalInformation")
+    public String updatePersonalInformation(@RequestBody AccountInstanceRequest request) {
+        return personBiz.updatePersonalInformation(request);
+    }
+
+    /**
+     * 创建教师/学生
+     * @param
+     * @return
+     */
+    @Operation(summary =  "创建教师/学生")
+    @PostMapping("v1/basePerson/person/createTeacherOrStudent")
+    public AccountInstanceResponse createTeacherOrStudent(@RequestBody AccountInstanceRequest request){
+        return personBiz.createTeacherOrStudent(request);
+    }
+
+    /**
+     * 获取教师/学生列表
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary =  "获取教师/学生列表")
+    @PostMapping("v1/basePerson/person/listTeacherOrStudent")
+    public IPage<AccountInstanceResponse> listTeacherOrStudent(@RequestBody AccountInstanceRequest request){
+          return personBiz.listTeacherOrStudent(request);
+    }
+
+    /**
+     * 编辑教师/学生
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary =  "编辑教师/学生")
+    @PostMapping("v1/basePerson/person/editTeacherOrStudent")
+    public String editTeacherOrStudent(@RequestBody AccountInstanceRequest request){
+        return personBiz.editTeacherOrStudent(request);
+    }
+
+    /**
+     * 教师 获取负责有班级列表
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary =  "教师 获取负责班级列表")
+    @PostMapping("v1/basePerson/person/listOwnClass")
+    public Set<String> listOwnClass(@RequestBody AccountInstanceRequest request){
+        return personBiz.listOwnClass(request);
+    }
+
+    /**
+     * 教师 班级转移
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary =  "教师 班级转移")
+    @PostMapping("v1/basePerson/person/transferClass")
+    public Boolean transferClass(@RequestBody AccountInstanceRequest request){
+        return personBiz.transferClass(request);
+    }
+
+    /**
+     * 删除 教师/学生
+     * 删除教师时需要将班级连带删除
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary =  "删除 教师/学生")
+    @DeleteMapping("v1/basePerson/person/deleteTeacherOrStudent")
+    public Boolean deleteTeacherOrStudent(@RequestBody AccountInstanceRequest request){
+        return personBiz.deleteTeacherOrStudent(request);
     }
 
 }
