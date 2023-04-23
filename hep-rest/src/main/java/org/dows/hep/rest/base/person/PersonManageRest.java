@@ -64,6 +64,4 @@ public class PersonManageRest {
     public Boolean copyPerson(@RequestBody @Validated String accountId ) {
         return personManageBiz.copyPerson(accountId);
     }
-
-
 }

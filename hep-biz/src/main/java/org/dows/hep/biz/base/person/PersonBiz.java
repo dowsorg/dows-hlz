@@ -17,7 +17,6 @@ import org.dows.user.api.request.UserInstanceRequest;
 import org.dows.user.api.response.UserExtinfoResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -158,7 +157,7 @@ public class PersonBiz {
     /**
      * @param
      * @return
-     * @说明: 创建教师/学生
+     * @说明: 教师/学生 列表
      * @关联表: account_identifier、rbac_role、account_org、account_instance、account_role、account_group、user_instance、account_user、account_group_info
      * @工时: 2H
      * @开发者: jx
@@ -240,6 +239,11 @@ public class PersonBiz {
         }
         Integer count2 = accountGroupInfoApi.transferAccountIdOfGroupInfo(request.getOrgIds(), ownId, request.getAccountId());
         if (count2 == 0) {
+            flag = false;
+        }
+        //3、删除该账户相关信息
+        Integer count3 = accountInstanceApi.deleteAccountInstanceByAccountIds(Arrays.asList(ownId).stream().collect(Collectors.toSet()));
+        if(count3 == 0){
             flag = false;
         }
         return flag;

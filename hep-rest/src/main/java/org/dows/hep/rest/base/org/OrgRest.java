@@ -1,18 +1,15 @@
 package org.dows.hep.rest.base.org;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.account.request.AccountInstanceRequest;
 import org.dows.account.request.AccountOrgRequest;
+import org.dows.account.response.AccountOrgResponse;
 import org.dows.hep.biz.base.org.OrgBiz;
-import org.dows.hep.biz.base.person.PersonBiz;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import java.util.Set;
 
 /**
  * @author jx
@@ -23,6 +20,18 @@ import java.util.Map;
 @Tag(name = "机构", description = "机构")
 public class OrgRest {
     private final OrgBiz orgBiz;
+
+    /**
+     * 班级 列表
+     * @param
+     * @return
+     */
+    @Operation(summary = "班级列表")
+    @PostMapping("v1/baseOrg/org/listClasss")
+    public IPage<AccountOrgResponse> listClasss(@RequestBody AccountOrgRequest request) {
+        return orgBiz.listClasss(request);
+    }
+
     /**
      * 创建班级
      * @param
@@ -32,5 +41,27 @@ public class OrgRest {
     @PostMapping("v1/baseOrg/org/createClass")
     public String createClass(@RequestBody AccountOrgRequest request, @RequestParam String accountId) {
         return orgBiz.createClass(request,accountId);
+    }
+
+    /**
+     * 编辑班级
+     * @param
+     * @return
+     */
+    @Operation(summary = "编辑班级")
+    @PutMapping("v1/baseOrg/org/updateClass")
+    public Boolean updateClass(@RequestBody AccountOrgRequest request,@RequestParam String accountId) {
+        return orgBiz.updateClass(request,accountId);
+    }
+
+    /**
+     * 删除班级
+     * @param
+     * @return
+     */
+    @Operation(summary =  "删除 班级")
+    @DeleteMapping("v1/basePerson/person/deleteClasss")
+    public Boolean deleteClasss(@RequestBody Set<String> ids){
+        return orgBiz.deleteClasss(ids);
     }
 }
