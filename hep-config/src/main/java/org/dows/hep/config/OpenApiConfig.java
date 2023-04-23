@@ -27,7 +27,7 @@ public class OpenApiConfig {
                         .license(new License().name("dows").url("")))
                 .externalDocs(new ExternalDocumentation()
                         .description("sss")
-                        .url("http://localhost:9009"));
+                        .url("http://localhost:9001"));
         // 配置Authorizations
 //                .components(new Components().addSecuritySchemes("bearer-key",
 //                        new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer")));
