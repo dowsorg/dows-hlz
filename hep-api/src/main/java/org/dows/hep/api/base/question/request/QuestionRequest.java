@@ -3,6 +3,9 @@ package org.dows.hep.api.base.question.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dows.hep.api.base.question.QuestionTypeEnum;
+
+import java.util.List;
 
 /**
 * @description 
@@ -13,21 +16,19 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Schema(name = "Question 对象", title = "问题Request")
-public class QuestionRequest{
-    @Schema(title = "应用ID")
-    private String appId;
+public class QuestionRequest extends QuestionBaseRequest{
 
-    @Schema(title = "问题ID")
+    @Schema(title = "问题ID-更新需要")
     private String questionInstanceId;
 
-    @Schema(title = "类别Id")
+    @Schema(title = "题目类型ID")
     private String categId;
+
+    @Schema(title = "题目答题类型[RADIO:单选题|MULTIPLE:多选题|JUDGMENT:判断题|SUBJECTIVE:主观题|MATERIAL:材料题]")
+    private QuestionTypeEnum questionType;
 
     @Schema(title = "维度ID")
     private String dimensionId;
-
-    @Schema(title = "题目答题输入类型[input,select,text]")
-    private String inputType;
 
     @Schema(title = "问题标题")
     private String questionTitle;
@@ -50,14 +51,10 @@ public class QuestionRequest{
     @Schema(title = "创建者姓名")
     private String accountName;
 
-    @Schema(title = "选项集合")
-    private String questionOptionsRequest;
-
-    @Schema(title = "问题答案")
-    private String questionAnswersRequest;
+    @Schema(title = "选项和答案集合")
+    private List<QuestionOptionWithAnswerRequest> optionWithAnswerList;
 
     @Schema(title = "子问题")
-    private String questionRequest;
-
+    private List<QuestionRequest> children;
 
 }

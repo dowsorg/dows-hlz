@@ -1,11 +1,6 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -13,6 +8,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 问题类目(QuestionCategory)实体类
@@ -43,6 +40,7 @@ public class QuestionCategoryEntity implements CrudEntity {
     private String questionCategPid;
 
     @Schema(title = "类别ID")
+    @TableId(value = "question_categ_id")
     private String questionCategId;
 
     @Schema(title = "类别名")

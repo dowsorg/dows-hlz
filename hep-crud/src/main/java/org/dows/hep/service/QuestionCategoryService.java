@@ -1,7 +1,9 @@
 package org.dows.hep.service;
 
-import org.dows.hep.entity.QuestionCategoryEntity;
 import org.dows.framework.crud.mybatis.MybatisCrudService;
+import org.dows.hep.entity.QuestionCategoryEntity;
+
+import java.util.List;
 
 
 /**
@@ -12,5 +14,8 @@ import org.dows.framework.crud.mybatis.MybatisCrudService;
  */
 public interface QuestionCategoryService extends MybatisCrudService<QuestionCategoryEntity> {
 
+    List<QuestionCategoryEntity> getChildrenByPid(String pid, String categoryGroup);
+
+    List<QuestionCategoryEntity> getAllCategory(String categoryGroup);
 }
 

@@ -1,22 +1,24 @@
-package org.dows.hep.api.user.materials.response;
+package org.dows.hep.api.user.materials.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.dows.hep.api.user.materials.request.MaterialsAttachmentRequest;
 
 import java.util.List;
+
 
 /**
  * @author fhb
  * @description
- * @date 2023/4/18 15:17
+ * @date 2023/4/18 15:02
  */
-
 @Data
 @NoArgsConstructor
-@Schema(name = "MaterialsResponse 对象", title = "资料")
-public class MaterialsResponse {
+@Schema(name = "MaterialsRequest 对象", title = "资料")
+public class MaterialsRequest {
+    @Schema(title = "应用ID")
+    private String appId;
+
     @Schema(title = "资料ID-更新时有")
     private String materialsId;
 
@@ -26,11 +28,11 @@ public class MaterialsResponse {
     @Schema(title = "资料简介")
     private String descr;
 
-    @Schema(title = "资料类型-预留")
+    @Schema(title = "资料类型")
     private String type;
 
     @Schema(title = "状态")
-    private Integer enabled;
+    private Boolean enabled;
 
     @Schema(title = "序号")
     private Integer sequence;
@@ -41,9 +43,7 @@ public class MaterialsResponse {
     @Schema(title = "创建者名")
     private String accountName;
 
-    @Schema(title = "上传时间-eg. 2022年5月3日星期二 17:49")
-    private String uploadTime;
-
     @Schema(title = "附件集合")
-    private List<MaterialsAttachmentResponse> materialsAttachment;
+    private List<MaterialsAttachmentRequest> materialsAttachments;
+
 }
