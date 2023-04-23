@@ -36,9 +36,9 @@ public class FoodCookbookDetailEntity implements CrudEntity {
     @Schema(title = "数据库id")
     private Long id;
 
-    @Schema(title = "")
-    private String foodCookbookDetailId
-    分布式id;
+    @Schema(title = "分布式id")
+    private String foodCookbookDetailId;
+    ;
 
     @Schema(title = "食谱id")
     private String foodCookbookId;

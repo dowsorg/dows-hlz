@@ -87,6 +87,12 @@ public class OperateFollowupTimerEntity implements CrudEntity {
     @Schema(title = "上次随访时间")
     private Integer doneDay;
 
+    @JsonIgnore
+    @TableLogic
+    @TableField(fill = FieldFill.INSERT)
+    @Schema(title = "逻辑删除")
+    private Boolean deleted;
+
     @Schema(title = "最近保存时间")
     private Date setTime;
 
