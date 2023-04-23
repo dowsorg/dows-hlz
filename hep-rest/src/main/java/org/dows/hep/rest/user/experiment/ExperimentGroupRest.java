@@ -43,7 +43,7 @@ public class ExperimentGroupRest {
     @Operation(summary = "获取实验小组列表")
     @GetMapping("v1/userExperiment/experimentGroup/groupList")
     public ExperimentGroupResponse groupList(@Validated String experimentInstanceId) {
-        return experimentGroupBiz.groupList(experimentInstanceId);
+        return experimentGroupBiz.listGroup(experimentInstanceId);
     }
 
 

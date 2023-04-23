@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 /**
 * @description project descr:实验:实验管理
 *
@@ -54,8 +56,8 @@ public class ExperimentManageRest {
     */
     @Operation(summary = "获取实验列表")
     @GetMapping("v1/tenantExperiment/experimentManage/experimentList")
-    public ExperimentListResponse experimentList() {
-        return experimentManageBiz.experimentList();
+    public List<ExperimentListResponse> experimentList() {
+        return experimentManageBiz.listExperiment();
     }
 
 

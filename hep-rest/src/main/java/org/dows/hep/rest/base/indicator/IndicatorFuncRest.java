@@ -78,12 +78,12 @@ public class IndicatorFuncRest {
         return indicatorFuncBiz.listIndicatorFunc(appId,indicatorCategoryId,name);
     }
 
-    /**
-    * 分页筛选指标类别
-    * @param
-    * @return
-    */
-    @Operation(summary = "分页筛选指标类别")
+//    /**
+//    * 分页筛选指标类别
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "分页筛选指标类别")
 
 
 }

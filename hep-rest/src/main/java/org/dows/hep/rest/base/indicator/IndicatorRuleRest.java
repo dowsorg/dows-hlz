@@ -78,12 +78,12 @@ public class IndicatorRuleRest {
         return indicatorRuleBiz.listIndicatorRule(appId,variableId,ruleType,min,max,def,descr);
     }
 
-    /**
-    * 分页筛选指标规则
-    * @param
-    * @return
-    */
-    @Operation(summary = "分页筛选指标规则")
+//    /**
+//    * 分页筛选指标规则
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "分页筛选指标规则")
 
 
 }
