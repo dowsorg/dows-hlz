@@ -1,4 +1,4 @@
-package org.dows.hep.rest.base.org;
+package org.dows.hep.rest.base.organization;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,7 +17,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 @RestController
 @Tag(name = "机构", description = "机构")
-public class OrgRest {
+public class OrgManageRest {
     private final OrgBiz orgBiz;
 
     /**

@@ -1,7 +1,24 @@
 package org.dows.hep.biz.tenant.organization;
 
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import lombok.RequiredArgsConstructor;
+import org.dows.account.request.AccountInstanceRequest;
+import org.dows.account.response.AccountInstanceResponse;
+import org.dows.hep.api.tenant.excel.BatchMemberInsertRequest;
 import org.dows.hep.api.tenant.organization.request.*;
+import org.dows.hep.biz.base.org.OrgBiz;
+import org.dows.hep.biz.base.person.PersonManageBiz;
+import org.dows.hep.biz.tenant.excel.BatchInsertBiz;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
 * @description project descr:机构操作:机构管理
@@ -10,7 +27,12 @@ import org.springframework.stereotype.Service;
 * @date 2023年4月23日 上午9:44:34
 */
 @Service
+@RequiredArgsConstructor
 public class OrgManageBiz{
+
+    private final BatchInsertBiz batchInsertBiz;
+    private final PersonManageBiz personManageBiz;
+    private final OrgBiz orgBiz;
     /**
     * @param
     * @return
@@ -80,14 +102,56 @@ public class OrgManageBiz{
     * @param
     * @return
     * @说明: 导入机构组员数据
-    * @关联表: AccountOrg、AccountGroup、AccountInstance
+    * @关联表: account_identifier、rbac_role、account_org、account_instance、account_role、account_group、account_user、user_instance
     * @工时: 6H
     * @开发者: jx
     * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
+    * @创建时间: 2023年4月24日 上午09:00:00
     */
-    public Boolean importOrgMember(MultipartFileRequest file ) {
-        return Boolean.FALSE;
+    @DSTransactional
+    public Map<String, Object> importOrgMember(AccountInstanceRequest request, MultipartFile file) {
+        Map<String, Object> map = new HashMap<>();
+        //失败成员列表
+        List<BatchMemberInsertRequest> memberList = new ArrayList<>();
+        //导入成功成员数
+        Integer finishCount = 0;
+        //导入失败成员数
+        Integer failCount = 0;
+        InputStream fin = null;
+        try {
+            fin = file.getInputStream();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        List<BatchMemberInsertRequest> list = batchInsertBiz.batchInsert(fin, 2, 10, BatchMemberInsertRequest.class, "accountName");
+        //2、插入用户信息
+        if (list != null && list.size() > 0) {
+            for (int i = 0; i < list.size(); i++) {
+                request.setAccountName(list.get(i).getAccountName());
+                request.setUserName(list.get(i).getUserName());
+                request.setIdentifier(orgBiz.createCode(7));
+                //获取导入成功成员数
+                AccountInstanceResponse response = new AccountInstanceResponse();
+                String message = "";
+                try {
+                    response = personManageBiz.createTeacherOrStudent(request);
+                } catch (Exception e) {
+                    message = e.getMessage();
+                } finally {
+                    if (StringUtils.isEmpty(message)) {
+                        finishCount++;
+                    } else {
+                        list.get(i).setTips(message);
+                        memberList.add(list.get(i));
+                        failCount++;
+                    }
+                }
+            }
+        }
+        map.put("finishCount", finishCount);
+        map.put("failCount", failCount);
+        map.put("memberList", memberList);
+        return map;
     }
     /**
     * @param

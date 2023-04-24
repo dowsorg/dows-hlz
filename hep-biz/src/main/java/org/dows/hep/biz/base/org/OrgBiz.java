@@ -175,7 +175,7 @@ public class OrgBiz {
      * @return
      * @说明: 生成 随机机构编码
      */
-    public static String createCode(int n) {
+    public String createCode(int n) {
         Random r = new Random();
         String code = "";
         for (int i = 0; i < n; i++) {
