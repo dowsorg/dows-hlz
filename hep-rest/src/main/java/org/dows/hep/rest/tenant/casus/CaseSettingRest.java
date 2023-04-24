@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.tenant.casus.request.CaseSettingRequest;
 import org.dows.hep.api.tenant.casus.response.CaseSettingResponse;
-import org.dows.hep.biz.tenant.casus.CaseSettingBiz;
+import org.dows.hep.biz.tenant.casus.TenantCaseSettingBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @Tag(name = "案例问卷设置", description = "案例问卷设置")
 public class CaseSettingRest {
-    private final CaseSettingBiz caseSettingBiz;
+    private final TenantCaseSettingBiz tenantCaseSettingBiz;
 
     /**
     * 新增和更新案例问卷设置
@@ -28,7 +28,7 @@ public class CaseSettingRest {
     @Operation(summary = "新增和更新案例问卷设置")
     @PostMapping("v1/tenantCasus/caseSetting/saveOrUpdCaseSetting")
     public Boolean saveOrUpdCaseSetting(@RequestBody @Validated CaseSettingRequest caseSetting ) {
-        return caseSettingBiz.saveOrUpdCaseSetting(caseSetting);
+        return tenantCaseSettingBiz.saveOrUpdCaseSetting(caseSetting);
     }
 
     /**
@@ -39,7 +39,7 @@ public class CaseSettingRest {
     @Operation(summary = "获取案例问卷设置")
     @GetMapping("v1/tenantCasus/caseSetting/getCaseSetting")
     public CaseSettingResponse getCaseSetting(@Validated String caseInstanceId) {
-        return caseSettingBiz.getCaseSetting(caseInstanceId);
+        return tenantCaseSettingBiz.getCaseSetting(caseInstanceId);
     }
 
     /**
@@ -50,7 +50,7 @@ public class CaseSettingRest {
     @Operation(summary = "删除案例问卷设置")
     @DeleteMapping("v1/tenantCasus/caseSetting/delCaseSetting")
     public Boolean delCaseSetting(@Validated String caseInstanceId ) {
-        return caseSettingBiz.delCaseSetting(caseInstanceId);
+        return tenantCaseSettingBiz.delCaseSetting(caseInstanceId);
     }
 
 
