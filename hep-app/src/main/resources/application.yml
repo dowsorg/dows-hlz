@@ -12,8 +12,8 @@ server:
         threads:
             io: 4
             worker: 32
-    servlet:
-        context-path: /hep
+#    servlet:
+#        context-path: /hep
 
 
 spring:

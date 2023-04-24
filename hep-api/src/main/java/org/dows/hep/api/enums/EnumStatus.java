@@ -1,4 +1,4 @@
-package org.dows.hep.biz.enums;
+package org.dows.hep.api.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,9 +8,10 @@ import lombok.Getter;
  */
 @AllArgsConstructor
 @Getter
-public enum EnumString {
-  LIMIT_1("LIMIT 1", "mybatisplus只取一个值"),
+public enum EnumStatus {
+  ENABLE(0, "启用"),
+  DISABLE(1, "禁用"),
   ;
-  private final String str;
+  private final Integer code;
   private final String desc;
 }

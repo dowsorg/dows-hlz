@@ -1,4 +1,4 @@
-package org.dows.hep.biz.enums;
+package org.dows.hep.api.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

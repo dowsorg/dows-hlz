@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.uim.AccountInfo;
 import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
@@ -31,6 +32,7 @@ import java.util.List;
  * @description project descr:实验:实验管理
  * @date 2023年4月18日 上午10:45:07
  */
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class ExperimentManageBiz {
@@ -58,11 +60,13 @@ public class ExperimentManageBiz {
      */
     @Transactional
     public String experimentAllot(CreateExperimentRequest createExperiment) {
+        log.info("================ddddddd=================");
         ExperimentInstanceEntity experimentInstance = ExperimentInstanceEntity.builder()
                 .experimentInstanceId(idGenerator.nextIdStr())
                 .startTime(createExperiment.getStartTime())
                 .experimentName(createExperiment.getExperimentName())
                 .experimentDescr(createExperiment.getExperimentDescr())
+                .model(createExperiment.getModel())
                 .state(0)
                 .caseInstanceId(createExperiment.getCaseInstanceId())
                 .caseName(createExperiment.getCaseName())
