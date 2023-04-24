@@ -15,12 +15,6 @@ import java.util.List;
 @EnableWebMvc
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
-
-    @Override
-    public void addReturnValueHandlers(List<HandlerMethodReturnValueHandler> handlers) {
-        WebMvcConfigurer.super.addReturnValueHandlers(handlers);
-    }
-
     @Bean
     public ResponseWrapperHandler responseWrapperHandler(){
         return new ResponseWrapperHandler();
