@@ -5,11 +5,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.Response;
+import org.dows.hep.api.base.question.request.QuestionPageRequest;
 import org.dows.hep.api.base.question.request.QuestionRequest;
 import org.dows.hep.api.base.question.request.QuestionSearchRequest;
+import org.dows.hep.api.base.question.response.QuestionPageResponse;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.biz.base.question.QuestionInstanceBiz;
-import org.dows.hep.entity.QuestionInstanceEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,9 +47,9 @@ public class QuestionInstanceRest {
     */
     @Operation(summary = "分页")
     @PostMapping("v1/baseQuestion/questionInstance/pageQuestion")
-    public Response<Page<QuestionInstanceEntity>> pageQuestion(@RequestBody @Validated QuestionSearchRequest questionSearch ) {
-        Page<QuestionInstanceEntity> page = questionInstanceBiz.pageQuestion(questionSearch);
-        return Response.ok(page);
+    public Response<Page<QuestionPageResponse>> pageQuestion(@RequestBody @Validated QuestionPageRequest questionPageRequest ) {
+        Page<QuestionPageResponse> result = questionInstanceBiz.pageQuestion(questionPageRequest);
+        return Response.ok(result);
     }
 
     /**

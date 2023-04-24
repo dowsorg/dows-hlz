@@ -34,7 +34,7 @@ public class QuestionAnswersEntity implements CrudEntity {
     private Long id;
 
     @Schema(title = "问题答案ID")
-    @TableId(value = "questionAnswer_id")
+    @TableId(value = "question_answer_id")
     private String questionAnswerId;
 
     @Schema(title = "应用ID")

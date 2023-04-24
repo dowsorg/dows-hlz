@@ -2,21 +2,21 @@ package org.dows.hep.biz.base.question;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.collections4.CollectionUtils;
+import org.dows.hep.api.base.question.QuestionCloneEnum;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
-import org.dows.hep.api.base.question.request.QuestionOptionWithAnswerRequest;
+import org.dows.hep.api.base.question.request.QuestionPageRequest;
 import org.dows.hep.api.base.question.request.QuestionRequest;
 import org.dows.hep.api.base.question.request.QuestionSearchRequest;
 import org.dows.hep.api.base.question.response.QuestionOptionWithAnswerResponse;
+import org.dows.hep.api.base.question.response.QuestionPageResponse;
 import org.dows.hep.api.base.question.response.QuestionResponse;
+import org.dows.hep.biz.base.question.handler.QuestionTypeFactory;
+import org.dows.hep.biz.base.question.handler.QuestionTypeHandler;
 import org.dows.hep.entity.QuestionAnswersEntity;
 import org.dows.hep.entity.QuestionInstanceEntity;
-import org.dows.hep.entity.QuestionOptionsEntity;
 import org.dows.hep.service.QuestionAnswersService;
 import org.dows.hep.service.QuestionInstanceService;
 import org.dows.hep.service.QuestionOptionsService;
@@ -24,9 +24,7 @@ import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -75,14 +73,29 @@ public class QuestionInstanceBiz{
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public Page<QuestionInstanceEntity> pageQuestion(QuestionSearchRequest questionSearch) {
-        Long pageNo = questionSearch.getPageNo();
-        Long pageSize = questionSearch.getPageSize();
-        Page<QuestionInstanceEntity> page = new Page<>(pageNo, pageSize);
+    public Page<QuestionPageResponse> pageQuestion(QuestionPageRequest questionPageRequest) {
+        Long pageNo = questionPageRequest.getPageNo();
+        Long pageSize = questionPageRequest.getPageSize();
+        Page<QuestionInstanceEntity> pageRequest = new Page<>(pageNo, pageSize);
 
-        return questionInstanceService.lambdaQuery()
-                .eq(questionSearch.getAppId() != null, QuestionInstanceEntity::getAppId, questionSearch.getAppId())
-                .page(page);
+        Page<QuestionPageResponse> result = new Page<>();
+        Page<QuestionInstanceEntity> pageResult = questionInstanceService.lambdaQuery()
+                .eq(questionPageRequest.getAppId() != null, QuestionInstanceEntity::getAppId, questionPageRequest.getAppId())
+                .page(pageRequest);
+        if (pageResult == null) {
+            return result;
+        }
+
+        List<QuestionInstanceEntity> records = pageResult.getRecords();
+        if (records == null || records.isEmpty()) {
+            return result;
+        }
+
+        List<QuestionPageResponse> pageResponseList = records.stream()
+                .map(item -> BeanUtil.copyProperties(item, QuestionPageResponse.class))
+                .collect(Collectors.toList());
+        result.setRecords(pageResponseList);
+        return result;
     }
 
     /**
@@ -222,12 +235,10 @@ public class QuestionInstanceBiz{
 
         Integer leftSequence = left.getSequence();
         Integer rightSequence = right.getSequence();
-
         LambdaUpdateWrapper<QuestionInstanceEntity> leftUpdateWrapper = new LambdaUpdateWrapper<>();
         leftUpdateWrapper.eq(QuestionInstanceEntity::getQuestionInstanceId, left.getQuestionInstanceId())
                 .set(QuestionInstanceEntity::getSequence, rightSequence);
         questionInstanceService.update(leftUpdateWrapper);
-
         LambdaUpdateWrapper<QuestionInstanceEntity> rightUpdateWrapper = new LambdaUpdateWrapper<>();
         rightUpdateWrapper.eq(QuestionInstanceEntity::getQuestionInstanceId, left.getQuestionInstanceId())
                 .set(QuestionInstanceEntity::getSequence, leftSequence);
@@ -253,52 +264,13 @@ public class QuestionInstanceBiz{
 
     private String saveQuestion(QuestionRequest question) {
         String appId = "3";
-        String questionInstanceId = idGenerator.nextIdStr();
-        String questionIdentifier = idGenerator.nextIdStr();
-        String ver = String.valueOf(new Date().getTime());
+        String questionInstancePid = "0";
+        question.setAppId(appId);
+        question.setQuestionInstancePid(questionInstancePid);
 
-        // baseInfo
-        QuestionTypeEnum questionType = question.getQuestionType();
-        assert questionType != null;
-        QuestionInstanceEntity questionInstanceEntity = BeanUtil.copyProperties(question, QuestionInstanceEntity.class);
-        questionInstanceEntity.setAppId(appId);
-        questionInstanceEntity.setQuestionInstanceId(questionInstanceId);
-        questionInstanceEntity.setQuestionType(questionType.getCode());
-        questionInstanceEntity.setQuestionIdentifier(questionIdentifier);
-        questionInstanceEntity.setVer(ver);
-        questionInstanceService.save(questionInstanceEntity);
-
-
-        // options and answers
-        List<QuestionOptionWithAnswerRequest> optionWithAnswerList = question.getOptionWithAnswerList();
-        if (optionWithAnswerList == null || optionWithAnswerList.isEmpty()) {
-            return questionInstanceId;
-        }
-        // answers
-        List<QuestionAnswersEntity> answersEntityList = optionWithAnswerList.stream()
-                .map(item -> {
-                    String questionOptionsId = idGenerator.nextIdStr();
-                    String questionAnswerId = idGenerator.nextIdStr();
-
-                    QuestionAnswersEntity questionAnswersEntity = BeanUtil.copyProperties(item, QuestionAnswersEntity.class);
-                    questionAnswersEntity.setAppId(appId);
-                    questionAnswersEntity.setQuestionInstanceId(questionInstanceId);
-                    questionAnswersEntity.setQuestionOptionsId(questionOptionsId);
-                    questionAnswersEntity.setQuestionAnswerId(questionAnswerId);
-                    questionAnswersEntity.setQuestionIdentifier(questionIdentifier);
-                    questionAnswersEntity.setVer(ver);
-                    return questionAnswersEntity;
-                }).collect(Collectors.toList());
-        questionAnswersService.saveBatch(answersEntityList);
-        // options
-        if (QuestionTypeEnum.isSelect(questionType.getCode())) {
-            List<QuestionOptionsEntity> optionsEntityList = answersEntityList.stream()
-                    .map(item -> BeanUtil.copyProperties(item, QuestionOptionsEntity.class))
-                    .collect(Collectors.toList());
-            questionOptionsService.saveBatch(optionsEntityList);
-        }
-
-        return questionInstanceId;
+        QuestionTypeEnum questionTypeEnum = question.getQuestionType();
+        QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(questionTypeEnum);
+        return questionTypeHandler.save(question);
     }
 
     private String updQuestion(QuestionRequest question) {
@@ -340,11 +312,9 @@ public class QuestionInstanceBiz{
             return "";
         }
 
-        String questionInstanceId = question.getQuestionInstanceId();
-        QuestionResponse oriQuestion = getQuestion(questionInstanceId);
-        QuestionResponse targetQuestion = oriQuestion.clone();
-        // TODO
-        return "";
+        QuestionTypeEnum questionTypeEnum = question.getQuestionType();
+        QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(questionTypeEnum);
+        return questionTypeHandler.clone(question, QuestionCloneEnum.TO_NEW_INSTANCE);
     }
 
     // 克隆 Question 生成新的 Question
@@ -353,11 +323,9 @@ public class QuestionInstanceBiz{
             return "";
         }
 
-        String questionInstanceId = question.getQuestionInstanceId();
-        QuestionResponse oriQuestion = getQuestion(questionInstanceId);
-        QuestionResponse targetQuestion = oriQuestion.clone();
-        // TODO
-        return "";
+        QuestionTypeEnum questionTypeEnum = question.getQuestionType();
+        QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(questionTypeEnum);
+        return questionTypeHandler.clone(question, QuestionCloneEnum.TO_NEW_INSTANCE);
     }
 
     private void updateQue(QuestionRequest question) {
@@ -365,72 +333,8 @@ public class QuestionInstanceBiz{
             return;
         }
 
-        // baseInfo
-        QuestionInstanceEntity questionInstanceEntity = BeanUtil.copyProperties(question, QuestionInstanceEntity.class);
-        questionInstanceService.updateById(questionInstanceEntity);
-
-        // relation
         QuestionTypeEnum questionTypeEnum = question.getQuestionType();
-        String code = questionTypeEnum.getCode();
-        // 选择题
-        if (QuestionTypeEnum.isSelect(code)) {
-            updateSelectType(question, questionInstanceEntity);
-        }
-        // 判断题
-        // 主观题
-        // 材料题
-    }
-
-    // 更新选择题
-    private void updateSelectType(QuestionRequest question, QuestionInstanceEntity questionInstanceEntity) {
-        // new options and answers
-        String questionInstanceId = questionInstanceEntity.getQuestionInstanceId();
-        List<QuestionOptionWithAnswerRequest> optionWithAnswerList = question.getOptionWithAnswerList();
-        if (optionWithAnswerList == null || optionWithAnswerList.isEmpty()) {
-            return;
-        }
-
-        // remove victims
-        List<String> newOptionIdList = optionWithAnswerList.stream()
-                .map(QuestionOptionWithAnswerRequest::getQuestionOptionsId)
-                .filter(StrUtil::isBlank)
-                .collect(Collectors.toList());
-        List<QuestionAnswersEntity> answersEntityList = questionAnswersService.lambdaQuery()
-                .eq(QuestionAnswersEntity::getQuestionInstanceId, questionInstanceId)
-                .list();
-        List<String> oldOptionIdList = answersEntityList.stream()
-                .map(QuestionAnswersEntity::getQuestionOptionsId)
-                .collect(Collectors.toList());
-        List<String> victimsList = listVictims(oldOptionIdList, newOptionIdList);
-        Wrapper<QuestionAnswersEntity> answerRemoveWrapper = new LambdaQueryWrapper<QuestionAnswersEntity>()
-                .in(QuestionAnswersEntity::getQuestionOptionsId, victimsList);
-        Wrapper<QuestionOptionsEntity> optionsRemoveWrapper = new LambdaQueryWrapper<QuestionOptionsEntity>()
-                .in(QuestionOptionsEntity::getQuestionOptionsId, victimsList);
-        questionAnswersService.remove(answerRemoveWrapper);
-        questionOptionsService.remove(optionsRemoveWrapper);
-
-        // save or upd answers and options
-        // answers
-        List<QuestionAnswersEntity> answerList = optionWithAnswerList.stream()
-                .map(item -> BeanUtil.copyProperties(item, QuestionAnswersEntity.class))
-                .toList();
-        questionAnswersService.updateBatchById(answersEntityList);
-        // options
-        List<QuestionOptionsEntity> optionList = answerList.stream()
-                .map(item -> BeanUtil.copyProperties(item, QuestionOptionsEntity.class))
-                .collect(Collectors.toList());
-        questionOptionsService.updateBatchById(optionList);
-
-    }
-
-    // 遇难者 - 找到新选项针对于旧选项的差集，即旧选项有的而新选项中没有的
-    private List<String> listVictims(List<String> oldOptionIdList, List<String> newOptionIdList) {
-        boolean isEmpty = oldOptionIdList == null || oldOptionIdList.isEmpty() || newOptionIdList == null || newOptionIdList.isEmpty();
-        if (isEmpty) {
-            return new ArrayList<>();
-        }
-
-        // oldOptionIdList 的差集
-        return (List<String>) CollectionUtils.subtract(oldOptionIdList, newOptionIdList);
+        QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(questionTypeEnum);
+        questionTypeHandler.update(question);
     }
 }

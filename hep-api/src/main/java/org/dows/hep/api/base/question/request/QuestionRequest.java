@@ -1,5 +1,6 @@
 package org.dows.hep.api.base.question.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,8 +22,12 @@ public class QuestionRequest extends QuestionBaseRequest{
     @Schema(title = "问题ID-更新需要")
     private String questionInstanceId;
 
+    @Schema(title = "问题PID")
+    @JsonIgnore
+    private String questionInstancePid;
+
     @Schema(title = "题目类型ID")
-    private String categId;
+    private String questionCategId;
 
     @Schema(title = "题目答题类型[RADIO:单选题|MULTIPLE:多选题|JUDGMENT:判断题|SUBJECTIVE:主观题|MATERIAL:材料题]")
     private QuestionTypeEnum questionType;
