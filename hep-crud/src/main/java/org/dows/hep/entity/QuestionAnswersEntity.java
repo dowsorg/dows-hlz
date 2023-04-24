@@ -1,11 +1,6 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -14,11 +9,13 @@ import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
 
+import java.util.Date;
+
 /**
  * 问题-答案(QuestionAnswers)实体类
  *
  * @author lait
- * @since 2023-04-24 10:23:50
+ * @since 2023-04-18 13:58:58
  */
 @SuppressWarnings("serial")
 @Data
@@ -36,7 +33,8 @@ public class QuestionAnswersEntity implements CrudEntity {
     @Schema(title = "数据库ID")
     private Long id;
 
-    @Schema(title = "答案的ID")
+    @Schema(title = "问题答案ID")
+    @TableId(value = "questionAnswer_id")
     private String questionAnswerId;
 
     @Schema(title = "应用ID")
@@ -56,6 +54,12 @@ public class QuestionAnswersEntity implements CrudEntity {
 
     @Schema(title = "是否是正确答案[0:错误，1:正确]")
     private Boolean right;
+
+    @Schema(title = "问题标识")
+    private String questionIdentifier;
+
+    @Schema(title = "版本号")
+    private String ver;
 
     @JsonIgnore
     @TableLogic
