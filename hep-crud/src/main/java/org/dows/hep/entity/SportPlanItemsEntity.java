@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 运动方案项目列表(SportPlanItems)实体类
  *
  * @author lait
- * @since 2023-04-23 09:47:07
+ * @since 2023-04-24 10:23:46
  */
 @SuppressWarnings("serial")
 @Data

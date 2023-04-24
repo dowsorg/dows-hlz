@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 事件类别管理(EventCateg)实体类
  *
  * @author lait
- * @since 2023-04-23 09:47:01
+ * @since 2023-04-24 10:23:48
  */
 @SuppressWarnings("serial")
 @Data
@@ -39,32 +39,29 @@ public class EventCategEntity implements CrudEntity {
     @Schema(title = "分布式id")
     private String eventCategId;
 
-    @Schema(title = "分布式父id")
+    @Schema(title = "父类别id")
     private String categPid;
 
     @Schema(title = "名称")
     private String categName;
 
-    @Schema(title = "分布式id路径")
+    @Schema(title = "父类别id路径")
     private String categIdPath;
 
-    @Schema(title = "名称路径")
+    @Schema(title = "父类别名称路径")
     private String categNamePath;
 
-    @Schema(title = "类别key")
-    private String section;
+    @Schema(title = "根类别")
+    private String family;
 
     @Schema(title = "扩展属性")
     private String extend;
 
-    @Schema(title = "层级")
-    private Boolean depth;
-
     @Schema(title = "排序号")
     private Integer seq;
 
-    @Schema(title = "可选性")
-    private Boolean option;
+    @Schema(title = "标记")
+    private Boolean mark;
 
     @JsonIgnore
     @TableLogic
