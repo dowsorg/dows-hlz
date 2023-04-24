@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  */
 @RequiredArgsConstructor
 @Service
-public class MaterialsManagerBiz {
+public class MaterialsManageBiz {
     private final MaterialsService materialsService;
     private final MaterialsAttachmentService materialsAttachmentService;
 
