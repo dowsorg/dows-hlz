@@ -2,10 +2,7 @@ package org.dows.hep.entity;
 
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -13,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+import org.springframework.data.annotation.Id;
 
 /**
  * 指标类别(IndicatorCategory)实体类
@@ -48,8 +46,8 @@ public class IndicatorCategoryEntity implements CrudEntity {
     @Schema(title = "分类名称")
     private String categoryName;
 
-    @Schema(title = "分类code")
-    private String categoryCode;
+    @Schema(title = "展示顺序")
+    private Integer seq;
 
     @JsonIgnore
     @TableLogic

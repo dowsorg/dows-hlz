@@ -2,6 +2,7 @@ package org.dows.hep.rest.base.indicator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.indicator.request.BatchCreateOrUpdateIndicatorCategoryRequest;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorCategoryRequest;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorCategoryRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorCategoryResponse;
@@ -24,14 +25,25 @@ public class IndicatorCategoryRest {
     private final IndicatorCategoryBiz indicatorCategoryBiz;
 
     /**
-    * 创建指标类别
+    * 创建指标类别(目前没用上)
     * @param
     * @return
     */
     @Operation(summary = "创建指标类别")
     @PostMapping("v1/baseIndicator/indicatorCategory/createIndicatorCategory")
-    public void createIndicatorCategory(@RequestBody @Validated CreateIndicatorCategoryRequest createIndicatorCategory ) {
+    public void createIndicatorCategory(@RequestBody @Validated CreateIndicatorCategoryRequest createIndicatorCategory) throws InterruptedException {
         indicatorCategoryBiz.createIndicatorCategory(createIndicatorCategory);
+    }
+
+    /**
+     * 批量创建或修改指标类别
+     * @param
+     * @return
+     */
+    @Operation(summary = "批量创建或修改指标类别")
+    @PostMapping("v1/baseIndicator/indicatorCategory/batchCreateOrUpdateIndicatorCategory")
+    public void batchCreateOrUpdateIndicatorCategory(@RequestBody @Validated BatchCreateOrUpdateIndicatorCategoryRequest batchCreateOrUpdateIndicatorCategoryRequest) throws InterruptedException {
+        indicatorCategoryBiz.batchCreateOrUpdateIndicatorCategory(batchCreateOrUpdateIndicatorCategoryRequest);
     }
 
     /**
@@ -41,7 +53,7 @@ public class IndicatorCategoryRest {
     */
     @Operation(summary = "删除指标类别")
     @DeleteMapping("v1/baseIndicator/indicatorCategory/deleteIndicatorCategory")
-    public void deleteIndicatorCategory(@Validated String indicatorCategoryId ) {
+    public void deleteIndicatorCategory(@RequestParam @Validated String indicatorCategoryId) {
         indicatorCategoryBiz.deleteIndicatorCategory(indicatorCategoryId);
     }
 
