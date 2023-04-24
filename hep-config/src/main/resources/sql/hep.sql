@@ -13,9 +13,9 @@ CREATE TABLE IF NOT EXISTS `experiment_instance`(
     `experiment_name` varchar(64) DEFAULT NULL COMMENT '实验名称',
     `experiment_descr` varchar(64) DEFAULT NULL COMMENT '实验说明',
     `model` integer(2) DEFAULT NULL COMMENT '实验模式[0:标准模式，1:沙盘模式，2:方案设计模式]',
-    `start_time` datetime DEFAULT NULL COMMENT '开始时间',
-    `state` tinyint(4) DEFAULT NULL COMMENT '实验状态[默认未开始状态0~6步]',
+    `state` integer(2) DEFAULT NULL COMMENT '实验状态[默认未开始状态0~6步]',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `start_time` datetime DEFAULT NULL COMMENT '开始时间',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_experiment_instance_id` (`experiment_instance_id`)
@@ -56,9 +56,10 @@ CREATE TABLE IF NOT EXISTS `experiment_participator`(
     `experiment_participator_id` varchar(64) DEFAULT NULL COMMENT '实验组员ID',
     `experiment_group_id` varchar(64) DEFAULT NULL COMMENT '实验小组ID',
     `experiment_instance_id` varchar(64) DEFAULT NULL COMMENT '实验实列ID',
-    `group_alias` varchar(64) DEFAULT NULL COMMENT '小组别名',
     `account_id` varchar(64) DEFAULT NULL COMMENT '组员账号ID',
     `account_name` varchar(64) DEFAULT NULL COMMENT '组员账号名',
+    `group_alias` varchar(64) DEFAULT NULL COMMENT '小组别名',
+    `group_no` integer(2) DEFAULT NULL COMMENT '组序号',
     `participator_type` integer(2) DEFAULT NULL COMMENT '参与者类型[0:教师，1:组长，2：学生]',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
@@ -208,22 +209,30 @@ CREATE TABLE IF NOT EXISTS `experiment_question_item`(
 drop table if exists `experiment_person`;
 CREATE TABLE IF NOT EXISTS `experiment_person`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `experiment_instance_id` varchar(64) DEFAULT NULL COMMENT '实验实列ID',
+    `experiment_person_id` varchar(64) DEFAULT NULL COMMENT '实验人物id',
+    `experiment_instance_id` varchar(64) DEFAULT NULL COMMENT '实验实例ID',
     `experiment_group_id` varchar(64) DEFAULT NULL COMMENT '实验小组ID',
     `case_org_id` varchar(64) DEFAULT NULL COMMENT '案例机构ID',
     `case_org_name` varchar(64) DEFAULT NULL COMMENT '案例机构名称',
     `case_account_id` varchar(64) DEFAULT NULL COMMENT '账号ID',
     `case_account_name` varchar(64) DEFAULT NULL COMMENT '账号名称',
+    `case_org_id_last` varchar(64) DEFAULT NULL COMMENT '上个案例机构id',
+    `case_org_name_last` varchar(64) DEFAULT NULL COMMENT '上个案例机构名称',
+    `flow_state` tinyint(4) DEFAULT NULL COMMENT '挂号状态 0-未挂号 1-已挂号',
+    `insurance_state` tinyint(4) DEFAULT NULL COMMENT '保险状态 0-未购买 1-已购买',
+    `asset` decimal(11,2) DEFAULT NULL COMMENT '剩余资金',
+    `asset_init` decimal(11,2) DEFAULT NULL COMMENT '初始资金',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_experiment_person_id` (`experiment_person_id`)
     ) ENGINE=InnoDB COMMENT='实验机构人物';
 
 drop table if exists `experiment_person_cost`;
 CREATE TABLE IF NOT EXISTS `experiment_person_cost`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
     `experiment_person_cost_id` varchar(64) DEFAULT NULL COMMENT '实验花费ID',
-    `experiment_pserson_id` varchar(64) DEFAULT NULL COMMENT '实验人物ID',
+    `experiment_person_id` varchar(64) DEFAULT NULL COMMENT '实验人物id',
     `experiment_instance_id` varchar(64) DEFAULT NULL COMMENT '实验实列ID',
     `experiment_group_id` varchar(64) DEFAULT NULL COMMENT '实验小组ID',
     `case_org_id` varchar(64) DEFAULT NULL COMMENT '案例机构ID',
@@ -232,26 +241,29 @@ CREATE TABLE IF NOT EXISTS `experiment_person_cost`(
     `asset_amount` double(11,2) DEFAULT NULL COMMENT '资产额度[]',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_experiment_person_cost_id` (`experiment_person_cost_id`)
     ) ENGINE=InnoDB COMMENT='实验人物资产花费';
 
-drop table if exists `operate_flow`;
-CREATE TABLE IF NOT EXISTS `operate_flow`(
+drop table if exists `experiment_org_notice`;
+CREATE TABLE IF NOT EXISTS `experiment_org_notice`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `operate_flow_id` varchar(64) DEFAULT NULL COMMENT '实验操作流程',
-    `experiment_instance_id` varchar(64) DEFAULT NULL COMMENT '实验实列ID',
+    `experiment_org_notice_id` varchar(64) DEFAULT NULL COMMENT '机构通知id',
+    `experiment_instance_id` varchar(64) DEFAULT NULL COMMENT '实验实例id',
+    `experiment_group_id` varchar(64) DEFAULT NULL COMMENT '实验小组id',
+    `experiment_person_id` varchar(64) DEFAULT NULL COMMENT '实验人物id',
     `case_org_id` varchar(64) DEFAULT NULL COMMENT '案例机构ID',
     `case_account_id` varchar(64) DEFAULT NULL COMMENT '案例账号ID',
-    `flow_name` varchar(64) DEFAULT NULL COMMENT '流程名称',
-    `flow_sequence` varchar(64) DEFAULT NULL COMMENT '流程顺序',
-    `record_json` text(65535) DEFAULT NULL COMMENT '操作记录',
-    `state` integer(2) DEFAULT NULL COMMENT '状态',
-    `start_time` datetime DEFAULT NULL COMMENT '开始时间',
-    `end_time` datetime DEFAULT NULL COMMENT '结束时间',
+    `case_account_name` varchar(64) DEFAULT NULL COMMENT '账号名称',
+    `periods` integer(2) DEFAULT NULL COMMENT '期数',
+    `notice_type` tinyint(4) DEFAULT NULL COMMENT '通知类型 1-人物转移 2-检测随访 3-突发事件',
+    `notice_src_id` varchar(64) DEFAULT NULL COMMENT '通知来源id，转移，随访操作id，事件id',
+    `content` varchar(512) DEFAULT NULL COMMENT '通知内容',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
-    PRIMARY KEY (`id`)
-    ) ENGINE=InnoDB COMMENT='实验操作流程';
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_experiment_org_notice_id` (`experiment_org_notice_id`)
+    ) ENGINE=InnoDB COMMENT='实验机构通知';
 
 drop table if exists `operate_transfers`;
 CREATE TABLE IF NOT EXISTS `operate_transfers`(
@@ -259,6 +271,7 @@ CREATE TABLE IF NOT EXISTS `operate_transfers`(
     `operate_transfers_id` varchar(64) DEFAULT NULL COMMENT '操作机构转入转出记录ID',
     `experiment_instance_id` varchar(64) DEFAULT NULL COMMENT '实验实列ID',
     `experiment_group_id` varchar(64) DEFAULT NULL COMMENT '实验小组ID',
+    `experiment_person_id` varchar(64) DEFAULT NULL COMMENT '实验人物id',
     `form_org_id` varchar(64) DEFAULT NULL COMMENT '转出机构ID',
     `form_org_name` varchar(64) DEFAULT NULL COMMENT '转出机构名称',
     `to_org_id` varchar(64) DEFAULT NULL COMMENT '转入机构ID',
@@ -281,6 +294,7 @@ CREATE TABLE IF NOT EXISTS `operate_event`(
     `operate_event_id` varchar(64) DEFAULT NULL COMMENT '操作事件ID',
     `experiment_instance_id` varchar(64) DEFAULT NULL COMMENT '实验实列ID',
     `experiment_group_id` varchar(64) DEFAULT NULL COMMENT '实验小组ID',
+    `experiment_person_id` varchar(64) DEFAULT NULL COMMENT '实验人物id',
     `case_org_id` varchar(64) DEFAULT NULL COMMENT '案例机构ID',
     `event_name` varchar(64) DEFAULT NULL COMMENT '事件名称',
     `event_time` datetime DEFAULT NULL COMMENT '事件时间',
@@ -339,6 +353,7 @@ CREATE TABLE IF NOT EXISTS `operate_indictar`(
     `case_org_id` varchar(64) DEFAULT NULL COMMENT '案例机构ID',
     `operate_account_id` varchar(64) DEFAULT NULL COMMENT '操作人ID',
     `operate_account_name` varchar(64) DEFAULT NULL COMMENT '操作人名',
+    `experiment_person_id` varchar(64) DEFAULT NULL COMMENT '实验人物ID',
     `case_account_id` varchar(64) DEFAULT NULL COMMENT '案例人物',
     `case_account_name` varchar(64) DEFAULT NULL COMMENT '案例人名',
     `operate_type` varchar(64) DEFAULT NULL COMMENT '操作[干预]类型',
@@ -351,36 +366,126 @@ CREATE TABLE IF NOT EXISTS `operate_indictar`(
     `indactor_val` varchar(64) DEFAULT NULL COMMENT '记录最终值',
     `indactor_unit` varchar(64) DEFAULT NULL COMMENT '指标单位',
     `periods` integer(2) DEFAULT NULL COMMENT '期数',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_operate_indictar_id` (`operate_indictar_id`)
     ) ENGINE=InnoDB COMMENT='学生操作指标记录表';
 
-drop table if exists `operate_intervene`;
-CREATE TABLE IF NOT EXISTS `operate_intervene`(
-    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
-    `operate_intervene_id` varchar(64) DEFAULT NULL COMMENT '分布式id',
+drop table if exists `operate_flow`;
+CREATE TABLE IF NOT EXISTS `operate_flow`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `operate_flow_id` varchar(64) DEFAULT NULL COMMENT '实验操作流程id',
     `experiment_instance_id` varchar(64) DEFAULT NULL COMMENT '实验实例id',
     `experiment_group_id` varchar(64) DEFAULT NULL COMMENT '实验小组id',
-    `operate_flow_id` varchar(64) DEFAULT NULL COMMENT '实验操作流程',
+    `experiment_person_id` varchar(64) DEFAULT NULL COMMENT '实验人物id',
     `case_org_id` varchar(64) DEFAULT NULL COMMENT '案例机构ID',
-    `operate_account_id` varchar(64) DEFAULT NULL COMMENT '操作人id',
-    `operate_account_name` varchar(64) DEFAULT NULL COMMENT '操作人名',
-    `experiment_pserson_id` varchar(64) DEFAULT NULL COMMENT '实验人物ID',
-    `case_account_id` varchar(64) DEFAULT NULL COMMENT '案例人物',
-    `case_account_name` varchar(64) DEFAULT NULL COMMENT '案例人名',
+    `case_account_id` varchar(64) DEFAULT NULL COMMENT '案例账号ID',
+    `case_account_name` varchar(64) DEFAULT NULL COMMENT '账号名称',
     `periods` integer(2) DEFAULT NULL COMMENT '期数',
-    `operate_type` varchar(64) DEFAULT NULL COMMENT '操作[干预]类型 1-饮食 2-运动 3-心理 4-治疗',
-    `operate_time` varchar(64) DEFAULT NULL COMMENT '操作时间',
-    `descr` varchar(64) DEFAULT NULL COMMENT '操作描述',
-    `tag` varchar(64) DEFAULT NULL COMMENT '标签',
-    `operate_value_json` varchar(64) DEFAULT NULL COMMENT '学生输入值json',
-    `operate_context_json` blob DEFAULT NULL COMMENT '状态完整快照json',
+    `flow_name` varchar(64) DEFAULT NULL COMMENT '流程名称',
+    `flow_sequence` varchar(64) DEFAULT NULL COMMENT '流程顺序',
+    `flow_type` tinyint(4) DEFAULT NULL COMMENT '流程类型 1-体检挂号 2-医院挂号',
+    `report_flag` tinyint(4) DEFAULT NULL COMMENT '展示类型 0-不展示 1-用户端展示',
+    `fee_cost` decimal(11,2) DEFAULT NULL COMMENT '消耗资金',
+    `fee_remain` decimal(11,2) DEFAULT NULL COMMENT '剩余资金',
+    `start_time` datetime DEFAULT NULL COMMENT '开始时间',
+    `end_time` datetime DEFAULT NULL COMMENT '结束时间',
+    `operate_time` datetime DEFAULT NULL COMMENT '操作时间',
+    `operate_descr` varchar(64) DEFAULT NULL COMMENT '操作描述',
+    `label` varchar(64) DEFAULT NULL COMMENT '标签',
+    `end_state` tinyint(4) DEFAULT NULL COMMENT '流程完结状态 0-未完结 1-已完结',
+    `state` integer(2) DEFAULT NULL COMMENT '状态',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_operate_intervene_id` (`operate_intervene_id`)
-    ) ENGINE=InnoDB COMMENT='学生干预操作记录';
+    UNIQUE KEY `unique_operate_flow_id` (`operate_flow_id`)
+    ) ENGINE=InnoDB COMMENT='实验操作流程';
+
+drop table if exists `operate_flow_snap`;
+CREATE TABLE IF NOT EXISTS `operate_flow_snap`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `operate_flow_snap_id` varchar(64) DEFAULT NULL COMMENT '实验操作流程快照id',
+    `operate_flow_id` varchar(64) DEFAULT NULL COMMENT '实验操作流程id',
+    `snap_time` datetime DEFAULT NULL COMMENT '快照时间',
+    `record_json` text(65535) DEFAULT NULL COMMENT '操作记录',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_operate_flow_snap_id` (`operate_flow_snap_id`)
+    ) ENGINE=InnoDB COMMENT='实验操作流程快照';
+
+drop table if exists `operate_org_func`;
+CREATE TABLE IF NOT EXISTS `operate_org_func`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
+    `operate_org_func_id` varchar(64) DEFAULT NULL COMMENT '机构操作id',
+    `operate_flow_id` varchar(64) DEFAULT NULL COMMENT '实验操作流程id',
+    `case_org_function_id` varchar(64) DEFAULT NULL COMMENT '机构功能ID',
+    `indicator_func_id` varchar(64) DEFAULT NULL COMMENT '指标功能点id',
+    `experiment_instance_id` varchar(64) DEFAULT NULL COMMENT '实验实例id',
+    `experiment_group_id` varchar(64) DEFAULT NULL COMMENT '实验小组id',
+    `experiment_person_id` varchar(64) DEFAULT NULL COMMENT '实验人物id',
+    `case_org_id` varchar(64) DEFAULT NULL COMMENT '案例机构ID',
+    `case_account_id` varchar(64) DEFAULT NULL COMMENT '案例账号ID',
+    `case_account_name` varchar(64) DEFAULT NULL COMMENT '账号名称',
+    `operate_account_id` varchar(64) DEFAULT NULL COMMENT '操作人id',
+    `operate_account_name` varchar(64) DEFAULT NULL COMMENT '操作人名',
+    `periods` integer(2) DEFAULT NULL COMMENT '期数',
+    `func_type` tinyint(4) DEFAULT NULL COMMENT '功能类型  1-基本信息 2-设置随访  3-开始随访 4-体格检查 5-辅助检查 11-健康问题 12-健康指导 13-疾病问题 14-健管目标 21-饮食干预 22-运动干预  23-心理干预 24-治疗方案',
+    `report_flag` tinyint(4) DEFAULT NULL COMMENT '展示类型 0-不展示 1-用户端展示',
+    `fee_cost` decimal(11,2) DEFAULT NULL COMMENT '消耗资金',
+    `asset` decimal(11,2) DEFAULT NULL COMMENT '剩余资金',
+    `score` varchar(64) DEFAULT NULL COMMENT '操作得分',
+    `operate_time` datetime DEFAULT NULL COMMENT '操作时间',
+    `operate_descr` varchar(64) DEFAULT NULL COMMENT '操作描述',
+    `label` varchar(64) DEFAULT NULL COMMENT '标签',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_operate_org_func_id` (`operate_org_func_id`)
+    ) ENGINE=InnoDB COMMENT='学生机构操作记录';
+
+drop table if exists `operate_org_func_snap`;
+CREATE TABLE IF NOT EXISTS `operate_org_func_snap`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `operate_org_func_snap_id` varchar(64) DEFAULT NULL COMMENT '实验操作流程快照id',
+    `operate_org_func_id` varchar(64) DEFAULT NULL COMMENT '机构操作id',
+    `operate_flow_id` varchar(64) DEFAULT NULL COMMENT '实验操作流程id',
+    `snap_time` datetime DEFAULT NULL COMMENT '快照时间',
+    `input_json` text(65535) DEFAULT NULL COMMENT '输入记录',
+    `result_json` text(65535) DEFAULT NULL COMMENT '结果记录',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_operate_org_func_snap_id` (`operate_org_func_snap_id`)
+    ) ENGINE=InnoDB COMMENT='学生机构操作快照';
+
+drop table if exists `operate_followup_timer`;
+CREATE TABLE IF NOT EXISTS `operate_followup_timer`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `operate_followup_timer_id` varchar(64) DEFAULT NULL COMMENT '随访操作计时器id',
+    `experiment_instance_id` varchar(64) DEFAULT NULL COMMENT '实验实例id',
+    `experiment_group_id` varchar(64) DEFAULT NULL COMMENT '实验小组id',
+    `experiment_person_id` varchar(64) DEFAULT NULL COMMENT '实验人物id',
+    `case_org_id` varchar(64) DEFAULT NULL COMMENT '案例机构ID',
+    `case_org_function_id` varchar(64) DEFAULT NULL COMMENT '机构功能ID',
+    `case_account_id` varchar(64) DEFAULT NULL COMMENT '案例账号ID',
+    `case_account_name` varchar(64) DEFAULT NULL COMMENT '账号名称',
+    `operate_account_id` varchar(64) DEFAULT NULL COMMENT '操作人id',
+    `operate_account_name` varchar(64) DEFAULT NULL COMMENT '操作人名',
+    `periods` integer(2) DEFAULT NULL COMMENT '期数',
+    `indicator_view_monitor_followup_id` varchar(64) DEFAULT NULL COMMENT '随访表id',
+    `indicator_followup_name` varchar(64) DEFAULT NULL COMMENT '随访表名称',
+    `start_day` integer(2) DEFAULT NULL COMMENT '游戏内起始天数',
+    `due_days` integer(2) DEFAULT NULL COMMENT '随访间隔天数',
+    `todo_day` integer(2) DEFAULT NULL COMMENT '可以随访时间',
+    `done_day` integer(2) DEFAULT NULL COMMENT '上次随访时间',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `set_time` datetime DEFAULT NULL COMMENT '最近保存时间',
+    `followup_time` datetime DEFAULT NULL COMMENT '最近随访时间',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_operate_followup_timer_id` (`operate_followup_timer_id`)
+    ) ENGINE=InnoDB COMMENT='学生随访操作计时器';
 
 drop table if exists `case_category`;
 CREATE TABLE IF NOT EXISTS `case_category`(
@@ -659,8 +764,8 @@ CREATE TABLE IF NOT EXISTS `case_event`(
     `pic` varchar(64) DEFAULT NULL COMMENT '图片',
     `event_categ_id` varchar(64) DEFAULT NULL COMMENT '分类id',
     `categ_name` varchar(64) DEFAULT NULL COMMENT '分类名称',
-    `categ_id_path` varchar(64) DEFAULT NULL COMMENT '分布id路径',
-    `categ_name_path` varchar(64) DEFAULT NULL COMMENT '分类名称路径',
+    `categ_id_path` varchar(512) DEFAULT NULL COMMENT '分布id路径',
+    `categ_name_path` varchar(512) DEFAULT NULL COMMENT '分类名称路径',
     `descr` varchar(64) DEFAULT NULL COMMENT '事件说明',
     `create_account_id` varchar(64) DEFAULT NULL COMMENT '创建者账号',
     `create_account_name` varchar(64) DEFAULT NULL COMMENT '创建者名称',
@@ -735,14 +840,14 @@ drop table if exists `event_categ`;
 CREATE TABLE IF NOT EXISTS `event_categ`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `event_categ_id` varchar(64) DEFAULT NULL COMMENT '分布式id',
-    `categ_pid` varchar(64) DEFAULT NULL COMMENT '分布式父id',
+    `categ_pid` varchar(64) DEFAULT NULL COMMENT '父类别id',
     `categ_name` varchar(64) DEFAULT NULL COMMENT '名称',
-    `section` varchar(64) DEFAULT NULL COMMENT '类别key',
-    `extend` varchar(64) DEFAULT NULL COMMENT '扩展属性',
-    `depth` tinyint(4) DEFAULT NULL COMMENT '层级',
-    `categ_id_path` varchar(64) DEFAULT NULL COMMENT '分布式id路径',
-    `categ_name_path` varchar(64) DEFAULT NULL COMMENT '名称路径',
+    `categ_id_path` varchar(512) DEFAULT NULL COMMENT '父类别id路径',
+    `categ_name_path` varchar(512) DEFAULT NULL COMMENT '父类别名称路径',
+    `family` varchar(64) DEFAULT NULL COMMENT '根类别',
+    `extend` varchar(512) DEFAULT NULL COMMENT '扩展属性',
     `seq` integer(2) DEFAULT NULL COMMENT '排序号',
+    `mark` tinyint(4) DEFAULT NULL COMMENT '标记',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
@@ -757,8 +862,8 @@ CREATE TABLE IF NOT EXISTS `event`(
     `pic` varchar(64) DEFAULT NULL COMMENT '图片',
     `event_categ_id` varchar(64) DEFAULT NULL COMMENT '分类id',
     `categ_name` varchar(64) DEFAULT NULL COMMENT '分类名称',
-    `categ_id_path` varchar(64) DEFAULT NULL COMMENT '分布id路径',
-    `categ_name_path` varchar(64) DEFAULT NULL COMMENT '分类名称路径',
+    `categ_id_path` varchar(512) DEFAULT NULL COMMENT '分布id路径',
+    `categ_name_path` varchar(512) DEFAULT NULL COMMENT '分类名称路径',
     `state` tinyint(4) DEFAULT NULL COMMENT '状态 0-启用 1-停用',
     `descr` varchar(64) DEFAULT NULL COMMENT '事件说明',
     `create_account_id` varchar(64) DEFAULT NULL COMMENT '创建者账号',
@@ -824,15 +929,15 @@ CREATE TABLE IF NOT EXISTS `event_action_indicator`(
 drop table if exists `intervene_category`;
 CREATE TABLE IF NOT EXISTS `intervene_category`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
-    `intervene_category_id` varchar(64) DEFAULT NULL COMMENT '分布式id',
-    `categ_pid` varchar(64) DEFAULT NULL COMMENT '分布式父id',
+    `intervene_category_id` varchar(64) DEFAULT NULL COMMENT '类别id',
+    `categ_pid` varchar(64) DEFAULT NULL COMMENT '父类别id',
     `categ_name` varchar(64) DEFAULT NULL COMMENT '名称',
-    `section` varchar(64) DEFAULT NULL COMMENT '类别key',
-    `extend` varchar(64) DEFAULT NULL COMMENT '扩展属性',
-    `depth` tinyint(4) DEFAULT NULL COMMENT '层级',
-    `categ_id_path` varchar(64) DEFAULT NULL COMMENT '分布式id路径',
-    `categ_name_path` varchar(64) DEFAULT NULL COMMENT '名称路径',
+    `categ_id_path` varchar(512) DEFAULT NULL COMMENT '父类别id路径',
+    `categ_name_path` varchar(512) DEFAULT NULL COMMENT '父类别名称路径',
+    `family` varchar(64) DEFAULT NULL COMMENT '根类别',
+    `extend` varchar(512) DEFAULT NULL COMMENT '扩展属性，饮食推荐量',
     `seq` integer(2) DEFAULT NULL COMMENT '排序号',
+    `mark` tinyint(4) DEFAULT NULL COMMENT '标记，0-普通 1-膳食主要分类',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
@@ -846,6 +951,7 @@ CREATE TABLE IF NOT EXISTS `food_recommend`(
     `instance_type` tinyint(4) DEFAULT NULL COMMENT '主体类型,1-营养成分 2-食材一级分类',
     `instance_id` varchar(64) DEFAULT NULL COMMENT '主体id ',
     `instance_name` varchar(64) DEFAULT NULL COMMENT '主体名称',
+    `unit` varchar(64) DEFAULT NULL COMMENT '单位',
     `min` varchar(64) DEFAULT NULL COMMENT '推荐量下限',
     `max` varchar(64) DEFAULT NULL COMMENT '推荐量上限',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
@@ -878,8 +984,8 @@ CREATE TABLE IF NOT EXISTS `food_material`(
     `pic` varchar(64) DEFAULT NULL COMMENT '图片',
     `intervene_categ_id` varchar(64) DEFAULT NULL COMMENT '分类id',
     `categ_name` varchar(64) DEFAULT NULL COMMENT '分类名称',
-    `categ_id_path` varchar(64) DEFAULT NULL COMMENT '分布id路径',
-    `categ_name_path` varchar(64) DEFAULT NULL COMMENT '分类名称路径',
+    `categ_id_path` varchar(512) DEFAULT NULL COMMENT '分布id路径',
+    `categ_name_path` varchar(512) DEFAULT NULL COMMENT '分类名称路径',
     `protein` varchar(64) DEFAULT NULL COMMENT '蛋白质每100g',
     `cho` varchar(64) DEFAULT NULL COMMENT '碳水每100g',
     `fat` varchar(64) DEFAULT NULL COMMENT '脂肪每100g',
@@ -937,8 +1043,8 @@ CREATE TABLE IF NOT EXISTS `food_dishes`(
     `materials_desc` varchar(64) DEFAULT NULL COMMENT '食材含量描述',
     `intervene_categ_id` varchar(64) DEFAULT NULL COMMENT '分类id',
     `categ_name` varchar(64) DEFAULT NULL COMMENT '分类名称',
-    `categ_id_path` varchar(64) DEFAULT NULL COMMENT '分布id路径',
-    `categ_name_path` varchar(64) DEFAULT NULL COMMENT '分类名称路径',
+    `categ_id_path` varchar(512) DEFAULT NULL COMMENT '分布id路径',
+    `categ_name_path` varchar(512) DEFAULT NULL COMMENT '分类名称路径',
     `protein` varchar(64) DEFAULT NULL COMMENT '蛋白质每100g',
     `cho` varchar(64) DEFAULT NULL COMMENT '碳水每100g',
     `fat` varchar(64) DEFAULT NULL COMMENT '脂肪每100g',
@@ -994,8 +1100,8 @@ CREATE TABLE IF NOT EXISTS `food_cookbook`(
     `materials_desc` varchar(64) DEFAULT NULL COMMENT '食材含量描述',
     `intervene_categ_id` varchar(64) DEFAULT NULL COMMENT '分类id',
     `categ_name` varchar(64) DEFAULT NULL COMMENT '分类名称',
-    `categ_id_path` varchar(64) DEFAULT NULL COMMENT '分布id路径',
-    `categ_name_path` varchar(64) DEFAULT NULL COMMENT '分类名称路径',
+    `categ_id_path` varchar(512) DEFAULT NULL COMMENT '分布id路径',
+    `categ_name_path` varchar(512) DEFAULT NULL COMMENT '分类名称路径',
     `protein` varchar(64) DEFAULT NULL COMMENT '蛋白质每100g',
     `cho` varchar(64) DEFAULT NULL COMMENT '碳水每100g',
     `fat` varchar(64) DEFAULT NULL COMMENT '脂肪每100g',
@@ -1014,7 +1120,7 @@ CREATE TABLE IF NOT EXISTS `food_cookbook`(
 drop table if exists `food_cookbook_detail`;
 CREATE TABLE IF NOT EXISTS `food_cookbook_detail`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
-    `food_cookbook_detail_id 分布式id` varchar(64) DEFAULT NULL COMMENT '',
+    `food_cookbook_detail_id` varchar(64) DEFAULT NULL COMMENT '分布式id',
     `food_cookbook_id` varchar(64) DEFAULT NULL COMMENT '食谱id',
     `meal_time` varchar(64) DEFAULT NULL COMMENT '进餐时间，早|早加|午|午加|晚|晚加',
     `instance_type` varchar(64) DEFAULT NULL COMMENT '明细类型，1-菜肴 2-食材',
@@ -1026,7 +1132,7 @@ CREATE TABLE IF NOT EXISTS `food_cookbook_detail`(
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_food_cookbook_detail_id 分布式id` (`food_cookbook_detail_id 分布式id`)
+    UNIQUE KEY `unique_food_cookbook_detail_id` (`food_cookbook_detail_id`)
     ) ENGINE=InnoDB COMMENT='食谱食材';
 
 drop table if exists `food_cookbook_nutrient`;
@@ -1052,8 +1158,8 @@ CREATE TABLE IF NOT EXISTS `sport_plan`(
     `sport_plan_name` varchar(64) DEFAULT NULL COMMENT '运动方案名称',
     `intervene_categ_id` varchar(64) DEFAULT NULL COMMENT '分类id',
     `categ_name` varchar(64) DEFAULT NULL COMMENT '分类名称',
-    `categ_id_path` varchar(64) DEFAULT NULL COMMENT '分布id路径',
-    `categ_name_path` varchar(64) DEFAULT NULL COMMENT '分类名称路径',
+    `categ_id_path` varchar(512) DEFAULT NULL COMMENT '分布id路径',
+    `categ_name_path` varchar(512) DEFAULT NULL COMMENT '分类名称路径',
     `state` tinyint(4) DEFAULT NULL COMMENT '状态 0-启用 1-停用',
     `descr` varchar(64) DEFAULT NULL COMMENT '说明',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
@@ -1086,8 +1192,8 @@ CREATE TABLE IF NOT EXISTS `sport_item`(
     `pic` varchar(64) DEFAULT NULL COMMENT '图片',
     `intervene_categ_id` varchar(64) DEFAULT NULL COMMENT '分类id',
     `categ_name` varchar(64) DEFAULT NULL COMMENT '分类名称',
-    `categ_id_path` varchar(64) DEFAULT NULL COMMENT '分布id路径',
-    `categ_name_path` varchar(64) DEFAULT NULL COMMENT '分类名称路径',
+    `categ_id_path` varchar(512) DEFAULT NULL COMMENT '分布id路径',
+    `categ_name_path` varchar(512) DEFAULT NULL COMMENT '分类名称路径',
     `strength_met` varchar(64) DEFAULT NULL COMMENT '运动强度(MET)',
     `strength_type` varchar(64) DEFAULT NULL COMMENT '运动强度类别',
     `state` tinyint(4) DEFAULT NULL COMMENT '状态 0-启用 1-停用',
@@ -1124,8 +1230,8 @@ CREATE TABLE IF NOT EXISTS `treat_item`(
     `treat_item_type` tinyint(4) DEFAULT NULL COMMENT '治疗类型 1-心理治疗 2-医学治疗',
     `intervene_categ_id` varchar(64) DEFAULT NULL COMMENT '分类id',
     `categ_name` varchar(64) DEFAULT NULL COMMENT '分类名称',
-    `categ_id_path` varchar(64) DEFAULT NULL COMMENT '分布id路径',
-    `categ_name_path` varchar(64) DEFAULT NULL COMMENT '分类名称路径',
+    `categ_id_path` varchar(512) DEFAULT NULL COMMENT '分布id路径',
+    `categ_name_path` varchar(512) DEFAULT NULL COMMENT '分类名称路径',
     `unit` varchar(64) DEFAULT NULL COMMENT '单位',
     `fee` varchar(64) DEFAULT NULL COMMENT '费用',
     `state` tinyint(4) DEFAULT NULL COMMENT '状态 0-启用 1-停用',
@@ -1188,6 +1294,9 @@ CREATE TABLE IF NOT EXISTS `question_instance`(
     `enabled` tinyint(4) DEFAULT NULL COMMENT '状态',
     `sequence` integer(2) DEFAULT NULL COMMENT '排序',
     `source` varchar(64) DEFAULT NULL COMMENT '来源',
+    `ref_count` integer(2) DEFAULT NULL COMMENT '引用计数',
+    `question_identifier` varchar(64) DEFAULT NULL COMMENT '问题标识',
+    `ver` varchar(64) DEFAULT NULL COMMENT '版本号',
     `account_id` varchar(64) DEFAULT NULL COMMENT '创建者账号ID',
     `account_name` varchar(64) DEFAULT NULL COMMENT '创建者Name',
     `permissions` varchar(64) DEFAULT NULL COMMENT '权限[000001]',
@@ -1201,7 +1310,7 @@ CREATE TABLE IF NOT EXISTS `question_instance`(
 drop table if exists `question_options`;
 CREATE TABLE IF NOT EXISTS `question_options`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `q` varchar(64) DEFAULT NULL COMMENT '',
+    `question_options_id` varchar(64) DEFAULT NULL COMMENT '选项ID',
     `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `question_instance_id` varchar(64) DEFAULT NULL COMMENT '问题ID',
     `option_title` varchar(64) DEFAULT NULL COMMENT '选项标题',
@@ -1209,23 +1318,25 @@ CREATE TABLE IF NOT EXISTS `question_options`(
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_q` (`q`)
+    UNIQUE KEY `unique_question_options_id` (`question_options_id`)
     ) ENGINE=InnoDB COMMENT='问题-选项';
 
 drop table if exists `question_answers`;
 CREATE TABLE IF NOT EXISTS `question_answers`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
-    `q` varchar(64) DEFAULT NULL COMMENT '',
+    `question_answer_id` varchar(64) DEFAULT NULL COMMENT '答案的ID',
     `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `question_instance_id` varchar(64) DEFAULT NULL COMMENT '问题ID',
     `question_options_id` varchar(64) DEFAULT NULL COMMENT '选项ID',
     `option_title` varchar(64) DEFAULT NULL COMMENT '选项标题',
     `option_value` varchar(64) DEFAULT NULL COMMENT '问题的答案',
     `right` tinyint(4) DEFAULT NULL COMMENT '是否是正确答案[0:错误，1:正确]',
+    `question_identifier` varchar(64) DEFAULT NULL COMMENT '问题标识',
+    `ver` varchar(64) DEFAULT NULL COMMENT '版本号',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
-    UNIQUE KEY `unique_q` (`q`)
+    UNIQUE KEY `unique_question_answer_id` (`question_answer_id`)
     ) ENGINE=InnoDB COMMENT='问题-答案';
 
 drop table if exists `question_score`;
@@ -1381,11 +1492,31 @@ CREATE TABLE IF NOT EXISTS `question_section_result_item`(
     UNIQUE KEY `unique_question_section_result_item_id` (`question_section_result_item_id`)
     ) ENGINE=InnoDB COMMENT='问题集[试卷]-答题记录Item';
 
+drop table if exists `materials_category`;
+CREATE TABLE IF NOT EXISTS `materials_category`(
+    `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
+    `materials_category_id` varchar(64) DEFAULT NULL COMMENT '资料分类ID',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `category_name` varchar(64) DEFAULT NULL COMMENT '分类名称',
+    `materials_categ_id_path` varchar(64) DEFAULT NULL COMMENT '类别ID路径',
+    `materials_categ_name_path` varchar(512) DEFAULT NULL COMMENT '类别name路径',
+    `account_id` varchar(64) DEFAULT NULL COMMENT '创建者账号Id',
+    `account_name` varchar(64) DEFAULT NULL COMMENT '创建者姓名',
+    `sequence` integer(2) DEFAULT NULL COMMENT '序号',
+    `state` integer(2) DEFAULT NULL COMMENT '状态',
+    `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
+    `dt` datetime DEFAULT NULL COMMENT '时间戳',
+    PRIMARY KEY (`id`) ,
+    UNIQUE KEY `unique_materials_category_id` (`materials_category_id`)
+    ) ENGINE=InnoDB COMMENT='资料-分类';
+
 drop table if exists `materials`;
 CREATE TABLE IF NOT EXISTS `materials`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
     `materials_id` varchar(64) DEFAULT NULL COMMENT '资料ID',
     `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
+    `category_id` varchar(64) DEFAULT NULL COMMENT '资料分类Id',
+    `category_name` varchar(64) DEFAULT NULL COMMENT '资料分类名称',
     `title` varchar(64) DEFAULT NULL COMMENT '标题',
     `descr` varchar(64) DEFAULT NULL COMMENT '资料简介',
     `type` varchar(64) DEFAULT NULL COMMENT '资料类型',
@@ -1587,7 +1718,7 @@ CREATE TABLE IF NOT EXISTS `indicator_view_base_info_descr`(
 drop table if exists `indicator_view_base_info_descr_ref`;
 CREATE TABLE IF NOT EXISTS `indicator_view_base_info_descr_ref`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_view_base_info_desc_ref_id` varchar(64) DEFAULT NULL COMMENT '',
+    `indicator_view_base_info_desc_ref_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
     `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `indicator_view_base_info_desc_id` varchar(64) DEFAULT NULL COMMENT '指标描述表ID',
     `indicator_instance_id` varchar(64) DEFAULT NULL COMMENT '指标ID',
@@ -1596,7 +1727,7 @@ CREATE TABLE IF NOT EXISTS `indicator_view_base_info_descr_ref`(
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_indicator_view_base_info_desc_ref_id` (`indicator_view_base_info_desc_ref_id`)
-    ) ENGINE=InnoDB COMMENT='指标';
+    ) ENGINE=InnoDB COMMENT='指标基本信息描述表与指标关联关系';
 
 drop table if exists `indicator_view_base_info_monitor`;
 CREATE TABLE IF NOT EXISTS `indicator_view_base_info_monitor`(
@@ -1696,7 +1827,7 @@ CREATE TABLE IF NOT EXISTS `indicator_view_monitor_followup_content_ref`(
 drop table if exists `indicator_view_physical_exam`;
 CREATE TABLE IF NOT EXISTS `indicator_view_physical_exam`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_view_physical_exam_id` varchar(64) DEFAULT NULL COMMENT '',
+    `indicator_view_physical_exam_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
     `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '指标分类ID',
     `name` varchar(64) DEFAULT NULL COMMENT '体格检查名称',
@@ -1756,7 +1887,7 @@ CREATE TABLE IF NOT EXISTS `indicator_view_support_exam_ref`(
 drop table if exists `indicator_judge_risk_factor`;
 CREATE TABLE IF NOT EXISTS `indicator_judge_risk_factor`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_judge_risk_factor_id` varchar(64) DEFAULT NULL COMMENT '',
+    `indicator_judge_risk_factor_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
     `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '指标分类ID',
     `name` varchar(64) DEFAULT NULL COMMENT '危险因素名称',
@@ -1792,7 +1923,7 @@ CREATE TABLE IF NOT EXISTS `indicator_judge_health_problem`(
 drop table if exists `indicator_judge_health_guidance`;
 CREATE TABLE IF NOT EXISTS `indicator_judge_health_guidance`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `indicator_judge_health_guidance_id` varchar(64) DEFAULT NULL COMMENT '',
+    `indicator_judge_health_guidance_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
     `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '指标分类ID',
     `name` varchar(64) DEFAULT NULL COMMENT '健康指导名称',
@@ -1858,7 +1989,7 @@ CREATE TABLE IF NOT EXISTS `risk_category`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库ID',
     `risk_category_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
     `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
-    `risk_category_name` varchar(64) DEFAULT NULL COMMENT '风险',
+    `risk_category_name` varchar(64) DEFAULT NULL COMMENT '风险类别名称',
     `seq` integer(2) DEFAULT NULL COMMENT '展示顺序',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
@@ -1951,5 +2082,3 @@ CREATE TABLE IF NOT EXISTS `evaluate_report_management`(
     PRIMARY KEY (`id`) ,
     UNIQUE KEY `unique_evaluate_report_management_id` (`evaluate_report_management_id`)
     ) ENGINE=InnoDB COMMENT='评估报告管理';
-
-

@@ -43,7 +43,7 @@ public class ExperimentManageRest {
     * @param
     * @return
     */
-    @Operation(summary = "实验分组ss")
+    @Operation(summary = "实验分组")
     @PostMapping("v1/tenantExperiment/experimentManage/experimentGrouping")
     public Boolean experimentGrouping(@RequestBody @Validated GroupSettingRequest groupSetting ) {
         return experimentManageBiz.experimentGrouping(groupSetting);

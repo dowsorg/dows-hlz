@@ -1,5 +1,7 @@
 package org.dows.hep.entity;
 
+import java.util.Date;
+
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -12,13 +14,11 @@ import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
 
-import java.util.Date;
-
 /**
  * 问题集[试卷](QuestionSection)实体类
  *
  * @author lait
- * @since 2023-04-23 09:47:06
+ * @since 2023-04-24 10:23:47
  */
 @SuppressWarnings("serial")
 @Data
@@ -86,15 +86,6 @@ public class QuestionSectionEntity implements CrudEntity {
 
     @Schema(title = "状态")
     private Boolean enabled;
-
-    @Schema(title = "引用计数")
-    private Integer refCount;
-
-    @Schema(title = "问题集标识")
-    private String questionSectionIdentifier;
-
-    @Schema(title = "版本号")
-    private String ver;
 
     @JsonIgnore
     @TableLogic

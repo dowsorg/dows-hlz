@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 * @description project descr:资料中心:资料信息
 *
 * @author lait.zhang
-* @date 2023年4月23日 上午9:44:34
+* @date 2023年4月24日 上午10:47:00
 */
 @RequiredArgsConstructor
 @RestController
@@ -31,7 +31,7 @@ public class UserMaterialsRest {
     * @return
     */
     @Operation(summary = "分页")
-    @PostMapping("v1/userMaterials/materials/pageMaterials")
+    @PostMapping("v1/userMaterials/userMaterials/pageMaterials")
     public MaterialsResponse pageMaterials(@RequestBody @Validated MaterialsSearchRequest materialsSearch ) {
         return userMaterialsBiz.pageMaterials(materialsSearch);
     }
@@ -42,7 +42,7 @@ public class UserMaterialsRest {
     * @return
     */
     @Operation(summary = "条件查询-无分页")
-    @PostMapping("v1/userMaterials/materials/listMaterials")
+    @PostMapping("v1/userMaterials/userMaterials/listMaterials")
     public MaterialsResponse listMaterials(@RequestBody @Validated QuestionSearchRequest questionSearch ) {
         return userMaterialsBiz.listMaterials(questionSearch);
     }
@@ -53,7 +53,7 @@ public class UserMaterialsRest {
     * @return
     */
     @Operation(summary = "根据ID获取详情")
-    @GetMapping("v1/userMaterials/materials/getMaterials")
+    @GetMapping("v1/userMaterials/userMaterials/getMaterials")
     public MaterialsResponse getMaterials(@Validated String materialsId) {
         return userMaterialsBiz.getMaterials(materialsId);
     }

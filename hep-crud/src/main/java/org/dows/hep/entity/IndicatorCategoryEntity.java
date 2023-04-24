@@ -16,7 +16,7 @@ import org.springframework.data.annotation.Id;
  * 指标类别(IndicatorCategory)实体类
  *
  * @author lait
- * @since 2023-04-23 09:47:02
+ * @since 2023-04-24 10:23:49
  */
 @SuppressWarnings("serial")
 @Data

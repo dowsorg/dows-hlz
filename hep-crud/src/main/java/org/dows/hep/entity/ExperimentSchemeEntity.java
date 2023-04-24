@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 实验方案(ExperimentScheme)实体类
  *
  * @author lait
- * @since 2023-04-23 09:47:02
+ * @since 2023-04-24 10:23:48
  */
 @SuppressWarnings("serial")
 @Data
