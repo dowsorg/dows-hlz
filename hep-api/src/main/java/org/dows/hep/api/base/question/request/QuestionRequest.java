@@ -17,7 +17,9 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @Schema(name = "Question 对象", title = "问题Request")
-public class QuestionRequest extends QuestionBaseRequest{
+public class QuestionRequest {
+    @Schema(title = "应用ID")
+    private String appId;
 
     @Schema(title = "问题ID-更新需要")
     private String questionInstanceId;
