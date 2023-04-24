@@ -1,6 +1,7 @@
 package org.dows.hep.biz.base.question.handler;
 
 import cn.hutool.core.bean.BeanUtil;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.question.QuestionCloneEnum;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
@@ -33,6 +34,13 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
     private final QuestionInstanceService questionInstanceService;
     private final QuestionOptionsService questionOptionsService;
     private final QuestionAnswersService questionAnswersService;
+
+    @PostConstruct
+    @Override
+    public void init() {
+        QuestionTypeFactory.register(QuestionTypeEnum.MULTIPLE_SELECT, this);
+        QuestionTypeFactory.register(QuestionTypeEnum.RADIO_SELECT, this);
+    }
 
     @Transactional
     @Override

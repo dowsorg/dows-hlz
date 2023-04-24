@@ -2,6 +2,7 @@ package org.dows.hep.biz.base.question.handler;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.question.QuestionCloneEnum;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
@@ -25,6 +26,12 @@ public class MaterialQuestionTypeHandler implements QuestionTypeHandler {
 
     private final IdGenerator idGenerator;
     private final QuestionInstanceService questionInstanceService;
+
+    @PostConstruct
+    @Override
+    public void init() {
+        QuestionTypeFactory.register(QuestionTypeEnum.MATERIAL, this);
+    }
 
     @Transactional
     @Override

@@ -4,6 +4,8 @@ import org.dows.hep.api.base.question.QuestionCloneEnum;
 import org.dows.hep.api.base.question.request.QuestionRequest;
 
 public interface QuestionTypeHandler {
+    void init();
+
     String save(QuestionRequest questionRequest);
 
     Boolean update(QuestionRequest questionRequest);
