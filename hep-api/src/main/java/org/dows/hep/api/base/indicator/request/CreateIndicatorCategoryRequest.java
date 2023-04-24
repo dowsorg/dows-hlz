@@ -22,9 +22,4 @@ public class CreateIndicatorCategoryRequest{
 
     @Schema(title = "分类名称")
     private String categoryName;
-
-    @Schema(title = "分类code")
-    private String categoryCode;
-
-
 }

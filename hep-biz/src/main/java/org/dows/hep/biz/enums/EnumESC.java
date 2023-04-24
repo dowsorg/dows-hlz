@@ -1,0 +1,21 @@
+package org.dows.hep.biz.enums;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.dows.framework.api.StatusCode;
+
+/**
+ * @author runsix
+ */
+@Getter
+@AllArgsConstructor
+/* runsix:ESC = ExceptionStatusCode */
+public enum EnumESC implements StatusCode {
+    VALIDATE_EXCEPTION(40000, "参数不正确"),
+    INDICATOR_CATEGORY_DELETE_FAILED(50101, "指标类别删除失败"),
+    SYSTEM_BUSY_PLEASE_OPERATOR_INDICATOR_CATEGORY_LATER(50102, "系统繁忙，请稍后重新操作指标类别"),
+    INDICATOR_CATEGORY_HAS_DATA_CANNOT_DELETE(50103, "该类别下有数据，不能删除"),
+    ;
+    private final Integer code;
+    private final String descr;
+}

@@ -1,0 +1,16 @@
+package org.dows.hep.biz.enums;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+/**
+ * @author runsix
+ */
+@AllArgsConstructor
+@Getter
+public enum EnumRedissonLock {
+    INDICATOR_CATEGORY_CREATE_DELETE_UPDATE(0, "indicator-category-create-delete-update")
+    ;
+    private final Integer code;
+    private final String situation;
+}
