@@ -1,0 +1,6 @@
+FROM eclipse-temurin:17-jre
+ARG JAR_FILE
+COPY hep-app/target/${JAR_FILE} /root/${JAR_FILE}
+ENV JAVA_OPTS='-Xmx2048m -Xms2048m'
+ENV JAR_LOCATION=/root/$JAR_FILE
+CMD java $JAVA_OPTS -Dspring.profiles.active=test -jar $JAR_LOCATION

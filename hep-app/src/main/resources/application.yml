@@ -1,3 +1,9 @@
+management:
+    endpoints:
+        web:
+            exposure:
+                include: '*'
+
 server:
     port: 9001
     undertow:
@@ -6,15 +12,15 @@ server:
         threads:
             io: 4
             worker: 32
-    #  servlet:
-    #    context-path: /${spring.application.name}
+    servlet:
+        context-path: /hep
 
 
 spring:
     application:
-        name: dows-pay
+        name: dows-hep
     profiles:
-        include: hep-mysql,hep-mybatis,hep-mvc,hep-redis,hep-oss,hep-mybatis
+        include: hep-mysql,hep-mybatis,hep-mvc,hep-oss,hep-mybatis
         active: dev
 
 
