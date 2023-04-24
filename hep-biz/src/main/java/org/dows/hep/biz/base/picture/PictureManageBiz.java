@@ -2,11 +2,16 @@ package org.dows.hep.biz.base.picture;
 
 import com.alibaba.fastjson.JSONArray;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
+import org.dows.account.biz.util.ReflectUtil;
+import org.dows.account.entity.AccountGroup;
 import org.dows.hep.api.base.materials.request.MaterialsRequest;
+import org.dows.hep.api.enums.EnumMaterials;
+import org.dows.hep.api.exception.MaterialException;
 import org.dows.hep.api.user.materials.request.MaterialsAttachmentRequest;
-import org.dows.hep.biz.enums.EnumMaterials;
-import org.dows.hep.biz.exception.MaterialException;
 import org.dows.hep.entity.MaterialsAttachmentEntity;
 import org.dows.hep.entity.MaterialsCategoryEntity;
 import org.dows.hep.entity.MaterialsEntity;
@@ -14,10 +19,12 @@ import org.dows.hep.service.MaterialsAttachmentService;
 import org.dows.hep.service.MaterialsCategoryService;
 import org.dows.hep.service.MaterialsService;
 import org.dows.sequence.api.IdGenerator;
+import org.dows.user.entity.UserCompany;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author jx
@@ -64,8 +71,8 @@ public class PictureManageBiz {
         materialsService.save(material);
         //3、保存图片附件
         List<MaterialsAttachmentEntity> entities = new ArrayList<>();
-        if(attachmentList != null && attachmentList.size() > 0){
-            attachmentList.forEach(attachment->{
+        if (attachmentList != null && attachmentList.size() > 0) {
+            attachmentList.forEach(attachment -> {
                 MaterialsAttachmentEntity materialsAttachment = MaterialsAttachmentEntity.builder()
                         .materialsAttachmentId(idGenerator.nextIdStr())
                         .materialsId(material.getMaterialsId())
@@ -78,6 +85,51 @@ public class PictureManageBiz {
             });
             flag = materialsAttachmentService.saveBatch(entities);
         }
-         return flag;
+        return flag;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 删除 图示
+     * @关联表: materials、materials_attachment
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/4/24 15:49
+     */
+    @DSTransactional
+    public Integer deletePersonPictures(Set<String> ids, String appId) {
+        Integer count = 0;
+        for (String id : ids) {
+            //1、删除附件
+            List<MaterialsAttachmentEntity> entityList = materialsAttachmentService.lambdaQuery()
+                    .eq(MaterialsAttachmentEntity::getAppId, appId)
+                    .eq(MaterialsAttachmentEntity::getMaterialsId, id)
+                    .list();
+            //1.1、如果非空，删除
+            if (entityList != null && entityList.size() > 0) {
+                LambdaUpdateWrapper<MaterialsAttachmentEntity> attachmentEntityWrapper = Wrappers.lambdaUpdate(MaterialsAttachmentEntity.class);
+                attachmentEntityWrapper.set(MaterialsAttachmentEntity::getDeleted, true)
+                        .eq(MaterialsAttachmentEntity::getMaterialsId, id)
+                        .eq(MaterialsAttachmentEntity::getAppId, appId);
+                //1.2、删除附件
+                materialsAttachmentService.update(attachmentEntityWrapper);
+            }
+            //2、删除资料
+            MaterialsEntity materials = materialsService.lambdaQuery()
+                    .eq(MaterialsEntity::getAppId, appId)
+                    .eq(MaterialsEntity::getMaterialsId, id)
+                    .one();
+            if(materials != null && !ReflectUtil.isObjectNull(materials)){
+                LambdaUpdateWrapper<MaterialsEntity> materialsWrapper = Wrappers.lambdaUpdate(MaterialsEntity.class);
+                materialsWrapper.set(MaterialsEntity::getDeleted, true)
+                        .eq(MaterialsEntity::getMaterialsId, id)
+                        .eq(MaterialsEntity::getAppId, appId);
+                materialsService.update(materialsWrapper);
+            }
+            count++;
+        }
+        return count;
     }
 }

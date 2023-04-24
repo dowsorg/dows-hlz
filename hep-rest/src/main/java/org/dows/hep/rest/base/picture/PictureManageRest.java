@@ -10,12 +10,10 @@ import org.dows.hep.api.user.materials.request.MaterialsAttachmentRequest;
 import org.dows.hep.biz.base.picture.PictureManageBiz;
 import org.dows.hep.entity.MaterialsAttachmentEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author jx
@@ -36,5 +34,16 @@ public class PictureManageRest {
     @PostMapping("v1/basePicture/picture/savePersonPicture")
     public Boolean savePicture(@RequestBody @Validated MaterialsRequest materials) {
         return pictureManageBiz.savePicture(materials);
+    }
+
+    /**
+     * 删除图示
+     * @param
+     * @return
+     */
+    @Operation(summary = "删除图示")
+    @DeleteMapping("v1/basePicture/picture/deletePersonPictures")
+    public Integer deletePersonPictures(@RequestParam Set<String> ids,@RequestParam String appId) {
+        return pictureManageBiz.deletePersonPictures(ids,appId);
     }
 }
