@@ -17,7 +17,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 @RestController
 @Tag(name = "机构", description = "机构")
-public class OrgManageRest {
+public class OrgRest {
     private final OrgBiz orgBiz;
 
     /**

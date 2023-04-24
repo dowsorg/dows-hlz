@@ -16,7 +16,6 @@ import org.dows.user.api.response.UserInstanceResponse;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author jx
@@ -45,7 +44,7 @@ public class OrgBiz {
     @DSTransactional
     public String addClass(AccountOrgRequest request, String accountId) {
         //1、生成随机code
-        String orgCode = createCode(5);
+        String orgCode = createCode(7);
         request.setOrgCode(orgCode);
         //2、创建机构
         String orgId = accountOrgApi.createAccountOrg(request);

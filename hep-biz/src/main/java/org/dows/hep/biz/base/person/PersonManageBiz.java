@@ -12,6 +12,7 @@ import org.dows.account.response.AccountInstanceResponse;
 import org.dows.account.response.AccountOrgResponse;
 import org.dows.hep.api.base.person.request.PersonInstanceRequest;
 import org.dows.hep.api.base.person.response.PersonInstanceResponse;
+import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.user.api.api.UserExtinfoApi;
 import org.dows.user.api.api.UserInstanceApi;
 import org.dows.user.api.request.UserExtinfoRequest;
@@ -45,6 +46,8 @@ public class PersonManageBiz{
     private final AccountUserApi accountUserApi;
 
     private final AccountGroupInfoApi accountGroupInfoApi;
+
+    private final OrgBiz orgBiz;
     /**
     * @param
     * @return
@@ -200,6 +203,7 @@ public class PersonManageBiz{
         String userId = userInstanceApi.insertUserInstance(user);
         //2、新增账号信息
         request.setUserId(userId);
+        request.setIdentifier(orgBiz.createCode(7));
         AccountInstanceResponse vo = accountInstanceApi.createAccountInstance(request);
         //3、创建账户和用户之间的关联关系
         AccountUserRequest accountUserRequest = AccountUserRequest.builder()
