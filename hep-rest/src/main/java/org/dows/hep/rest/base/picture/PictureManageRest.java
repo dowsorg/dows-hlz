@@ -1,15 +1,21 @@
 package org.dows.hep.rest.base.picture;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.materials.request.MaterialsRequest;
+import org.dows.hep.api.user.materials.request.MaterialsAttachmentRequest;
 import org.dows.hep.biz.base.picture.PictureManageBiz;
+import org.dows.hep.entity.MaterialsAttachmentEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * @author jx
@@ -27,8 +33,8 @@ public class PictureManageRest {
      * @return
      */
     @Operation(summary = "新增图示")
-    @PostMapping("v1/basePicture/picture/savePicture")
-    public String savePicture(@RequestBody @Validated MaterialsRequest materials ) {
+    @PostMapping("v1/basePicture/picture/savePersonPicture")
+    public Boolean savePicture(@RequestBody @Validated MaterialsRequest materials) {
         return pictureManageBiz.savePicture(materials);
     }
 }

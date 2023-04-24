@@ -39,6 +39,12 @@ public class MaterialsEntity implements CrudEntity {
     @Schema(title = "资料ID")
     private String materialsId;
 
+    @Schema(title = "资料分类ID")
+    private String categoryId;
+
+    @Schema(title = "资料分类名称")
+    private String categoryName;
+
     @Schema(title = "应用ID")
     private String appId;
 
