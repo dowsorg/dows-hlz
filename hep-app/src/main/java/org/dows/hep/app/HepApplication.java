@@ -15,7 +15,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
                                            "org.dows.account.*",
                                            "org.dows.user.*",
                                            "org.dows.rbac.*"})
-@MapperScan(basePackages = {"org.dows.*.mapper"})
 public class HepApplication{
     public static void main(String[] args) {
         SpringApplication.run(HepApplication.class, args);
