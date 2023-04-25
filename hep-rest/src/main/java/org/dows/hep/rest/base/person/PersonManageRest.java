@@ -71,16 +71,16 @@ public class PersonManageRest {
         return personManageBiz.copyPerson(accountId);
     }
 
-//    /**
-//     * 新增人物
-//     * @param
-//     * @return
-//     */
-//    @Operation(summary = "新增人物")
-//    @PostMapping("v1/basePerson/personManage/addPerson")
-//    public Boolean addPerson(@RequestBody @Validated AccountInstanceRequest request) {
-//        return personManageBiz.addPerson(request);
-//    }
+    /**
+     * 新增人物
+     * @param
+     * @return
+     */
+    @Operation(summary = "新增人物")
+    @PostMapping("v1/basePerson/personManage/addPerson")
+    public AccountInstanceResponse addPerson(@RequestBody @Validated AccountInstanceRequest request) {
+        return personManageBiz.addPerson(request);
+    }
 
     /**
      * 登录

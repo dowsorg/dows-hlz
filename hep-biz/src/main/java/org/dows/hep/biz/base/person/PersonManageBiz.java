@@ -374,9 +374,46 @@ public class PersonManageBiz {
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
-     * @创建时间: 2023/4/25 13:35
+     * @创建时间: 2023/4/25 16:26
      */
-//    @DSTransactional
-//    public Boolean addPerson(AccountInstanceRequest request) {
-//    }
+    @DSTransactional
+    public AccountInstanceResponse addPerson(AccountInstanceRequest request) {
+        //1、创建随机账号
+        request.setAccountName(randomWord(6));
+        //2、新增用户信息
+        UserInstanceRequest user = new UserInstanceRequest();
+        BeanUtils.copyProperties(request, user);
+        user.setName(request.getUserName());
+        String userId = userInstanceApi.insertUserInstance(user);
+        //3、新增用户简介
+        UserExtinfoRequest userExtinfo = UserExtinfoRequest.builder()
+                .userId(userId)
+                .intro(request.getIntro())
+                .build();
+        String extinfoId = userExtinfoApi.insertUserExtinfo(userExtinfo);
+        //4、新增账号信息
+        request.setIdentifier(orgBiz.createCode(7));
+        AccountInstanceResponse vo = accountInstanceApi.createAccountInstance(request);
+        //5、创建账户和用户之间的关联关系
+        AccountUserRequest accountUserRequest = AccountUserRequest.builder()
+                .accountId(vo.getAccountId())
+                .userId(userId)
+                .appId(request.getAppId())
+                .tentantId(request.getTenantId()).build();
+        this.accountUserApi.createAccountUser(accountUserRequest);
+        return vo;
+    }
+
+    /**
+     * 生成随机账号
+     */
+    public static String randomWord(int length) {
+        Random random = new Random();
+        StringBuilder word = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            word.append((char)('a' + random.nextInt(26)));
+        }
+
+        return word.toString();
+    }
 }
