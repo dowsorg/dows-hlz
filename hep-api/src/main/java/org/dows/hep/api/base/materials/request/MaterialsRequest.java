@@ -20,6 +20,12 @@ public class MaterialsRequest{
     @Schema(title = "资料ID")
     private String materialsId;
 
+    @Schema(title = "资料分类ID")
+    private String categoryId;
+
+    @Schema(title = "资料分类名称")
+    private String categoryName;
+
     @Schema(title = "资料ID")
     private String informationId;
 
@@ -33,7 +39,7 @@ public class MaterialsRequest{
     private String type;
 
     @Schema(title = "状态")
-    private Integer enabled;
+    private Boolean enabled;
 
     @Schema(title = "序号")
     private Integer sequence;
@@ -47,5 +53,9 @@ public class MaterialsRequest{
     @Schema(title = "附件集合")
     private String materialsAttachment;
 
+    @Schema(title = "页码")
+    private Integer pageNo;
 
+    @Schema(title = "页数")
+    private Integer pageSize;
 }

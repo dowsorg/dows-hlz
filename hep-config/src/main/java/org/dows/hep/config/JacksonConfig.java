@@ -1,4 +1,4 @@
-package org.dows.hep.biz.config;
+package org.dows.hep.config;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

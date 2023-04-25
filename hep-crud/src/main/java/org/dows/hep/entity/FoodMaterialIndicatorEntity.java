@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 食材关联指标(FoodMaterialIndicator)实体类
@@ -43,7 +43,7 @@ public class FoodMaterialIndicatorEntity implements CrudEntity {
     private String foodMaterialId;
 
     @Schema(title = "指标id")
-    private String indicatorInstaceId;
+    private String indicatorInstanceId;
 
     @Schema(title = "表达式")
     private String expression;
