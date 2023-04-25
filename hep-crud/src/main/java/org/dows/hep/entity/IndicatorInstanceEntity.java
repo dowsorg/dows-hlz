@@ -48,23 +48,20 @@ public class IndicatorInstanceEntity implements CrudEntity {
     @Schema(title = "指标名称")
     private String indicatorName;
 
-    @Schema(title = "指标code")
-    private String indicatorCode;
-
     @Schema(title = "单位")
     private String unit;
 
     @Schema(title = "0-非关键指标，1-关键指标")
-    private Boolean core;
+    private Integer core;
 
     @Schema(title = "0-非饮食关键指标，1-饮食关键指标")
-    private Boolean food;
+    private Integer food;
 
     @Schema(title = "指标表达式[拆包]")
-    private String experssion;
+    private String expression;
 
     @Schema(title = "未拆包指标表达式")
-    private String rawExperssion;
+    private String rawExpression;
 
     @Schema(title = "描述")
     private String descr;
