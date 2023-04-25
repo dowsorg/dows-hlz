@@ -49,6 +49,21 @@ public class IndicatorCategoryBiz{
     private final RedissonClient redissonClient;
     private final IdGenerator idGenerator;
 
+    private static IndicatorCategoryResponse indicatorCategoryEntity2Response(IndicatorCategoryEntity indicatorCategoryEntity) {
+        if (Objects.isNull(indicatorCategoryEntity)) {
+            return null;
+        }
+        return IndicatorCategoryResponse
+            .builder()
+            .id(indicatorCategoryEntity.getId())
+            .indicatorCategoryId(indicatorCategoryEntity.getIndicatorCategoryId())
+            .appId(indicatorCategoryEntity.getAppId())
+            .pid(indicatorCategoryEntity.getPid())
+            .categoryName(indicatorCategoryEntity.getCategoryName())
+            .seq(indicatorCategoryEntity.getSeq())
+            .build();
+    }
+
     /**
     * @param
     * @return
@@ -186,6 +201,16 @@ public class IndicatorCategoryBiz{
     @Transactional(rollbackFor = Exception.class)
     public void updateIndicatorCategory(UpdateIndicatorCategoryRequest updateIndicatorCategory ) {
         
+    }
+
+    public List<IndicatorCategoryResponse> getIndicatorCategoryByPid(String appId, String pid) {
+        return indicatorCategoryService.lambdaQuery()
+            .eq(IndicatorCategoryEntity::getAppId, appId)
+            .eq(IndicatorCategoryEntity::getPid, pid)
+            .list()
+            .stream()
+            .map(IndicatorCategoryBiz::indicatorCategoryEntity2Response)
+            .collect(Collectors.toList());
     }
     /**
     * @param
