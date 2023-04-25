@@ -360,4 +360,18 @@ public class PersonManageBiz{
         }
         return flag;
     }
+
+    /**
+     * @param
+     * @return
+     * @说明: 新增 人物
+     * @关联表:
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/4/25 13:35
+     */
+//    @DSTransactional
+//    public Boolean addPerson(AccountInstanceRequest request) {
+//    }
 }
