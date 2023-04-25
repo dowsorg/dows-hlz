@@ -58,7 +58,7 @@ public class EventEntity implements CrudEntity {
     private String categNamePath;
 
     @Schema(title = "状态 0-启用 1-停用")
-    private Boolean state;
+    private Integer state;
 
     @Schema(title = "事件说明")
     private String descr;

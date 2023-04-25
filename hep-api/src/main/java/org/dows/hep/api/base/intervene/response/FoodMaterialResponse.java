@@ -3,6 +3,7 @@ package org.dows.hep.api.base.intervene.response;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 /**
 * @description 
@@ -12,8 +13,12 @@ import lombok.NoArgsConstructor;
 */
 @Data
 @NoArgsConstructor
+@Accessors(chain = true)
 @Schema(name = "FoodMaterial 对象", title = "食材列表")
 public class FoodMaterialResponse{
+
+    @Schema(title = "数据库id")
+    private Long id;
     @Schema(title = "食材id")
     private String foodMaterialId;
 
@@ -37,6 +42,11 @@ public class FoodMaterialResponse{
 
     @Schema(title = "总能量每100g")
     private String energy;
+
+    @Schema(title = "状态 0-启用 1-停用")
+    private Integer state;
+
+
 
 
 }
