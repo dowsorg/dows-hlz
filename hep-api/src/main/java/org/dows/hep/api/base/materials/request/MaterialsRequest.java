@@ -53,5 +53,9 @@ public class MaterialsRequest{
     @Schema(title = "附件集合")
     private String materialsAttachment;
 
+    @Schema(title = "页码")
+    private Integer pageNo;
 
+    @Schema(title = "页数")
+    private Integer pageSize;
 }

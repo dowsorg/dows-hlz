@@ -2,6 +2,7 @@ package org.dows.hep.rest.base.picture;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -45,5 +46,16 @@ public class PictureManageRest {
     @DeleteMapping("v1/basePicture/picture/deletePersonPictures")
     public Integer deletePersonPictures(@RequestParam Set<String> ids,@RequestParam String appId) {
         return pictureManageBiz.deletePersonPictures(ids,appId);
+    }
+
+    /**
+     * 图示列表
+     * @param
+     * @return
+     */
+    @Operation(summary = "图示列表")
+    @PostMapping("v1/basePicture/picture/listPersonPictures")
+    public IPage<MaterialsRequest> listPersonPictures(@RequestBody MaterialsRequest request) {
+        return pictureManageBiz.listPersonPictures(request);
     }
 }

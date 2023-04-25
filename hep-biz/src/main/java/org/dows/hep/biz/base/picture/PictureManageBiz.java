@@ -1,13 +1,17 @@
 package org.dows.hep.biz.base.picture;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.dows.account.biz.util.ReflectUtil;
-import org.dows.account.entity.AccountGroup;
+import org.dows.account.entity.AccountInstance;
 import org.dows.hep.api.base.materials.request.MaterialsRequest;
 import org.dows.hep.api.enums.EnumMaterials;
 import org.dows.hep.api.exception.MaterialException;
@@ -19,12 +23,11 @@ import org.dows.hep.service.MaterialsAttachmentService;
 import org.dows.hep.service.MaterialsCategoryService;
 import org.dows.hep.service.MaterialsService;
 import org.dows.sequence.api.IdGenerator;
-import org.dows.user.entity.UserCompany;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author jx
@@ -42,7 +45,7 @@ public class PictureManageBiz {
      * @param
      * @return
      * @说明: 新增 图示
-     * @关联表: materials、materials_attachment
+     * @关联表: materials、materials_attachment、materials_category
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
@@ -121,7 +124,7 @@ public class PictureManageBiz {
                     .eq(MaterialsEntity::getAppId, appId)
                     .eq(MaterialsEntity::getMaterialsId, id)
                     .one();
-            if(materials != null && !ReflectUtil.isObjectNull(materials)){
+            if (materials != null && !ReflectUtil.isObjectNull(materials)) {
                 LambdaUpdateWrapper<MaterialsEntity> materialsWrapper = Wrappers.lambdaUpdate(MaterialsEntity.class);
                 materialsWrapper.set(MaterialsEntity::getDeleted, true)
                         .eq(MaterialsEntity::getMaterialsId, id)
@@ -131,5 +134,53 @@ public class PictureManageBiz {
             count++;
         }
         return count;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 删除 图示
+     * @关联表: materials、materials_attachment、materials_category
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/4/24 15:49
+     */
+    public IPage<MaterialsRequest> listPersonPictures(MaterialsRequest request) {
+        IPage<MaterialsRequest> voPage = new Page<>();
+        //1、根据分类名称找到资料ID
+        MaterialsCategoryEntity materialsCategory = materialsCategoryService.lambdaQuery()
+                .eq(MaterialsCategoryEntity::getAppId, request.getAppId())
+                .eq(MaterialsCategoryEntity::getCategoryName, request.getCategoryName())
+                .oneOpt()
+                .orElseThrow(() -> new MaterialException(EnumMaterials.CATEGORY_IS_NOT_FIND));
+        //2、根据资料类别ID找到资料
+        LambdaQueryWrapper<MaterialsEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(MaterialsEntity::getAppId, request.getAppId())
+                    .eq(MaterialsEntity::getCategoryId,materialsCategory.getMaterialsCategoryId());
+        Page<MaterialsEntity> page = new Page<>(request.getPageNo(), request.getPageSize());
+        IPage<MaterialsEntity> materialPage = materialsService.page(page, queryWrapper);
+        List<MaterialsRequest> voList = new ArrayList<>();
+        //3、根据资料ID找到资料相关的附件
+        if (materialPage.getRecords() != null && materialPage.getRecords().size() > 0) {
+            materialPage.getRecords().forEach(materialsEntity -> {
+                List<MaterialsAttachmentEntity> attachmentEntities = materialsAttachmentService.lambdaQuery()
+                        .eq(MaterialsAttachmentEntity::getMaterialsId,materialsEntity.getMaterialsId())
+                        .eq(MaterialsAttachmentEntity::getAppId,request.getAppId())
+                        .list();
+                //3.1、分组去重
+                Map<String,MaterialsAttachmentEntity> map = attachmentEntities.stream().collect(Collectors.groupingBy(MaterialsAttachmentEntity::getMaterialsId,
+                        Collectors.collectingAndThen(Collectors.toList(), value -> value.get(0))));
+                //3.2、赋值
+                MaterialsRequest materialsRequest = new MaterialsRequest();
+                BeanUtil.copyProperties(materialsEntity,materialsRequest);
+                MaterialsAttachmentEntity materialsAttachmentEntity = map.get(materialsEntity.getMaterialsId());
+                materialsRequest.setMaterialsAttachment(materialsAttachmentEntity.getFileUri());
+                voList.add(materialsRequest);
+            });
+        }
+        BeanUtils.copyProperties(materialPage, voPage, new String[]{"records"});
+        voPage.setRecords(voList);
+        return voPage;
     }
 }
