@@ -35,8 +35,6 @@ public class ExperimentManageRest {
     @Operation(summary = "分配实验")
     @PostMapping("v1/tenantExperiment/experimentManage/experimentAllot")
     public String experimentAllot(@RequestBody @Validated CreateExperimentRequest createExperiment ) {
-        System.out.println("dddd==============");
-        System.out.println("cccc==================dddd=");
         return experimentManageBiz.experimentAllot(createExperiment);
     }
 

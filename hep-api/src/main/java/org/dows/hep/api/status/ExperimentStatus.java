@@ -1,4 +1,4 @@
-package org.dows.hep.api;
+package org.dows.hep.api.status;
 
 public enum ExperimentStatus {
     // 暂停
