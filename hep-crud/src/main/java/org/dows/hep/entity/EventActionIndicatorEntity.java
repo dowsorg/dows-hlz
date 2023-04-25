@@ -49,7 +49,7 @@ public class EventActionIndicatorEntity implements CrudEntity {
     private String eventActionId;
 
     @Schema(title = "指标id")
-    private String indicatorInstaceId;
+    private String indicatorInstanceId;
 
     @Schema(title = "表达式")
     private String expression;

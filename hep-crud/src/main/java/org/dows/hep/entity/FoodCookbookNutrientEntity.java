@@ -43,7 +43,7 @@ public class FoodCookbookNutrientEntity implements CrudEntity {
     private String foodCookbookId;
 
     @Schema(title = "营养指标")
-    private String indicatorInstaceId;
+    private String indicatorInstanceId;
 
     @Schema(title = "营养成分名称")
     private String nutrientName;

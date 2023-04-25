@@ -43,7 +43,7 @@ public class TreatItemIndicatorEntity implements CrudEntity {
     private String treatItemId;
 
     @Schema(title = "指标id")
-    private String indicatorInstaceId;
+    private String indicatorInstanceId;
 
     @Schema(title = "公式描述")
     private String expressionDescr;
