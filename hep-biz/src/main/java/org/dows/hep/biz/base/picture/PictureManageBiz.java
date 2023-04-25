@@ -99,7 +99,7 @@ public class PictureManageBiz {
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
-     * @创建时间: 2023/4/24 15:49
+     * @创建时间: 2023/4/24 19:49
      */
     @DSTransactional
     public Integer deletePersonPictures(Set<String> ids, String appId) {
@@ -139,12 +139,12 @@ public class PictureManageBiz {
     /**
      * @param
      * @return
-     * @说明: 删除 图示
+     * @说明: 图示 列表
      * @关联表: materials、materials_attachment、materials_category
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
-     * @创建时间: 2023/4/24 15:49
+     * @创建时间: 2023/4/25 09:00
      */
     public IPage<MaterialsRequest> listPersonPictures(MaterialsRequest request) {
         IPage<MaterialsRequest> voPage = new Page<>();
@@ -168,7 +168,7 @@ public class PictureManageBiz {
                         .eq(MaterialsAttachmentEntity::getMaterialsId,materialsEntity.getMaterialsId())
                         .eq(MaterialsAttachmentEntity::getAppId,request.getAppId())
                         .list();
-                //3.1、分组去重
+                //3.1、分组去重，人物有两个图片，只取一个
                 Map<String,MaterialsAttachmentEntity> map = attachmentEntities.stream().collect(Collectors.groupingBy(MaterialsAttachmentEntity::getMaterialsId,
                         Collectors.collectingAndThen(Collectors.toList(), value -> value.get(0))));
                 //3.2、赋值
