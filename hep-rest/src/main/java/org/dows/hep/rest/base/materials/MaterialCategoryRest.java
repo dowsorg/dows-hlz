@@ -10,12 +10,16 @@ import org.dows.account.biz.util.JwtUtil;
 import org.dows.hep.api.base.materials.request.MaterialsCategoryRequest;
 import org.dows.hep.api.base.materials.request.MaterialsRequest;
 import org.dows.hep.biz.base.materials.MaterialsCategoryBiz;
+import org.dows.hep.entity.MaterialsCategoryEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author jx
@@ -34,7 +38,6 @@ public class MaterialCategoryRest {
      */
     @Operation(summary = "新增资料类别信息")
     @PostMapping("v1/baseMaterials/materialsCategory/saveMaterialsCategory")
-    @DS("hep")
     public Boolean saveMaterialsCategory(@RequestBody @Validated MaterialsCategoryRequest materials, HttpServletRequest request) {
         String token = request.getHeader("token");
         Map<String, Object> map = JwtUtil.parseJWT(token, BaseConstant.PROPERTIES_JWT_KEY);
@@ -45,5 +48,27 @@ public class MaterialCategoryRest {
         materials.setAccountName(accountName);
         //2、保存账号
         return materialsCategoryBiz.saveMaterialsCategory(materials);
+    }
+
+    /**
+     * 获取 资料类别信息 列表
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取 资料类别信息 列表")
+    @PostMapping("v1/baseMaterials/materialsCategory/listMaterialsCategory")
+    public List<MaterialsCategoryEntity> listMaterialsCategory(@RequestBody @Validated MaterialsCategoryRequest materials) {
+        return materialsCategoryBiz.listMaterialsCategory(materials);
+    }
+
+    /**
+     * 删除 资料类别信息
+     * @param
+     * @return
+     */
+    @Operation(summary = "删除 资料类别信息")
+    @PostMapping("v1/baseMaterials/materialsCategory/deleteCaterialsCategorys")
+    public Integer deleteCaterialsCategorys(@RequestParam @Validated Set<String> materialsCategoryIds,@RequestParam String appId) {
+        return materialsCategoryBiz.deleteCaterialsCategorys(materialsCategoryIds,appId);
     }
 }
