@@ -83,6 +83,17 @@ public class PersonManageRest {
     }
 
     /**
+     * 人物列表
+     * @param
+     * @return
+     */
+    @Operation(summary = "人物列表")
+    @PostMapping("v1/basePerson/personManage/listPerson")
+    public IPage<AccountInstanceResponse> listPerson(@RequestBody @Validated AccountInstanceRequest request) {
+        return personManageBiz.listPerson(request);
+    }
+
+    /**
      * 登录
      * @param
      * @return

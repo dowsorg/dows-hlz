@@ -370,11 +370,11 @@ public class PersonManageBiz {
      * @param
      * @return
      * @说明: 新增 人物
-     * @关联表:
+     * @关联表: user_instance、user_extinfo、account_identifier、rbac_role、account_org、account_instance、account_role、account_group、account_user
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
-     * @创建时间: 2023/4/25 16:26
+     * @创建时间: 2023/4/25 17:35
      */
     @DSTransactional
     public AccountInstanceResponse addPerson(AccountInstanceRequest request) {
@@ -415,5 +415,27 @@ public class PersonManageBiz {
         }
 
         return word.toString();
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 人物 列表
+     * @关联表: user_instance、user_extinfo、account_identifier、rbac_role、account_org、account_instance、account_role、account_group、account_user
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/4/25 17:35
+     */
+    public IPage<AccountInstanceResponse> listPerson(AccountInstanceRequest request) {
+        //1、获取所有accountIds
+        Set<String> accountIds = new HashSet<>();
+        List<AccountInstanceResponse> responses = accountInstanceApi.getAccountInstanceList(AccountInstanceRequest.builder().appId(request.getAppId()).build());
+        //2、将accountIds传入
+        responses.forEach(res -> {
+            accountIds.add(res.getAccountId());
+        });
+        request.setAccountIds(accountIds);
+        return accountInstanceApi.customAccountInstanceList(request);
     }
 }
