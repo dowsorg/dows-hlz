@@ -18,6 +18,7 @@ import org.dows.sequence.api.IdGenerator;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -92,7 +93,7 @@ public class MaterialsCategoryBiz {
      * @param
      * @return
      * @说明: 删除 资料类别信息
-     * @关联表: MaterialsCategory
+     * @关联表: MaterialsCategory、Materials
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
@@ -125,5 +126,34 @@ public class MaterialsCategoryBiz {
             count++;
         }
         return count;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 排序 资料类别信息列表
+     * @关联表: MaterialsCategory
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年4月25日 下午15:18:46
+     */
+    @DSTransactional
+    public Boolean sortCaterialsCategoryList(List<MaterialsCategoryRequest> list) {
+        List<MaterialsCategoryEntity> entities = new ArrayList<>();
+        list.forEach(materialsCategoryRequest -> {
+            MaterialsCategoryEntity entity = new MaterialsCategoryEntity();
+            BeanUtils.copyProperties(materialsCategoryRequest,entity);
+            //1、根据分布式键找到主键
+            MaterialsCategoryEntity materialsCategoryEntity = materialsCategoryService.lambdaQuery()
+                    .eq(MaterialsCategoryEntity::getAppId, materialsCategoryRequest.getAppId())
+                    .eq(MaterialsCategoryEntity::getMaterialsCategoryId, materialsCategoryRequest.getMaterialsCategoryId())
+                    .oneOpt()
+                    .orElseThrow(() -> new MaterialException(EnumMaterials.CATEGORY_IS_NOT_FIND));
+            entity.setId(materialsCategoryEntity.getId());
+            entities.add(entity);
+        });
+        //2、批量更新
+        return materialsCategoryService.updateBatchById(entities);
     }
 }
