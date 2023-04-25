@@ -14,11 +14,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "FindInterveneCateg 对象", title = "查询条件")
 public class FindInterveneCategRequest{
-    @Schema(title = "类别列表,逗号分隔")
-    private String sections;
+    @Schema(title = "根类别")
+    private String family;
 
-    @Schema(title = "父级categ_id")
+    @Schema(title = "父类别")
     private String pid;
+
+    @Schema(title = "是否包含子节点")
+    private Boolean withChild;
 
 
 }

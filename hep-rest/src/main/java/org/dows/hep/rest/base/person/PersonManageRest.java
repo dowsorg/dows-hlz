@@ -72,6 +72,28 @@ public class PersonManageRest {
     }
 
     /**
+     * 新增人物
+     * @param
+     * @return
+     */
+    @Operation(summary = "新增人物")
+    @PostMapping("v1/basePerson/personManage/addPerson")
+    public AccountInstanceResponse addPerson(@RequestBody @Validated AccountInstanceRequest request) {
+        return personManageBiz.addPerson(request);
+    }
+
+    /**
+     * 人物列表
+     * @param
+     * @return
+     */
+    @Operation(summary = "人物列表")
+    @PostMapping("v1/basePerson/personManage/listPerson")
+    public IPage<AccountInstanceResponse> listPerson(@RequestBody @Validated AccountInstanceRequest request) {
+        return personManageBiz.listPerson(request);
+    }
+
+    /**
      * 登录
      * @param
      * @return
@@ -182,8 +204,8 @@ public class PersonManageRest {
      * @return
      */
     @Operation(summary =  "删除 教师/学生")
-    @DeleteMapping("v1/basePerson/person/deleteTeacherOrStudent")
-    public Boolean deleteTeacherOrStudent(@RequestBody AccountInstanceRequest request){
-        return personManageBiz.deleteTeacherOrStudent(request);
+    @DeleteMapping("v1/basePerson/person/deleteTeacherOrStudents")
+    public Boolean deleteTeacherOrStudents(@RequestParam Set<String> accountIds,@RequestParam String roleName,@RequestParam String appId){
+        return personManageBiz.deleteTeacherOrStudents(accountIds,roleName,appId);
     }
 }

@@ -58,7 +58,7 @@ public class IndicatorCategoryRest {
     }
 
     /**
-    * 更新指标类别
+    * 更新指标类别(目前没用上)
     * @param
     * @return
     */
@@ -66,6 +66,15 @@ public class IndicatorCategoryRest {
     @PutMapping("v1/baseIndicator/indicatorCategory/updateIndicatorCategory")
     public void updateIndicatorCategory(@Validated UpdateIndicatorCategoryRequest updateIndicatorCategory ) {
         indicatorCategoryBiz.updateIndicatorCategory(updateIndicatorCategory);
+    }
+
+    @Operation(summary = "根据pid查询出所有的指标类别")
+    @GetMapping("v1/baseIndicator/indicatorCategory/getIndicatorCategoryByPid")
+    public List<IndicatorCategoryResponse> getIndicatorCategoryByPid(
+        @RequestParam @Validated String appId,
+        @RequestParam(required = false) @Validated String pid
+        ) {
+        return indicatorCategoryBiz.getIndicatorCategoryByPid(appId, appId);
     }
 
     /**

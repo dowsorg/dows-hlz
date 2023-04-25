@@ -25,14 +25,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
-* @description project descr:人物:人物管理
-*
-* @author lait.zhang
-* @date 2023年4月23日 上午9:44:34
-*/
+ * @author lait.zhang
+ * @description project descr:人物:人物管理
+ * @date 2023年4月23日 上午9:44:34
+ */
 @Service
 @RequiredArgsConstructor
-public class PersonManageBiz{
+public class PersonManageBiz {
     private final AccountInstanceApi accountInstanceApi;
 
     private final AccountGroupApi accountGroupApi;
@@ -48,56 +47,60 @@ public class PersonManageBiz{
     private final AccountGroupInfoApi accountGroupInfoApi;
 
     private final OrgBiz orgBiz;
+
     /**
-    * @param
-    * @return
-    * @说明: 批量删除人物
-    * @关联表: AccountInstance、AccountUser、AccountRole、UserInstance、UserExtinfo、IndicatorInstance、IndicatorPrincipalRef、CaseEvent、CaseEventEval、CaseEventAction
-    * @工时: 3H
-    * @开发者: jx
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public Boolean deletePersons(String ids ) {
+     * @param
+     * @return
+     * @说明: 批量删除人物
+     * @关联表: AccountInstance、AccountUser、AccountRole、UserInstance、UserExtinfo、IndicatorInstance、IndicatorPrincipalRef、CaseEvent、CaseEventEval、CaseEventAction
+     * @工时: 3H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public Boolean deletePersons(String ids) {
         return Boolean.FALSE;
     }
+
     /**
-    * @param
-    * @return
-    * @说明: 查看人物基本信息
-    * @关联表: AccountInstance、AccountUser、UserInstance、UserExtinfo
-    * @工时: 3H
-    * @开发者: jx
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public PersonInstanceResponse getPerson(String accountId ) {
+     * @param
+     * @return
+     * @说明: 查看人物基本信息
+     * @关联表: AccountInstance、AccountUser、UserInstance、UserExtinfo
+     * @工时: 3H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public PersonInstanceResponse getPerson(String accountId) {
         return new PersonInstanceResponse();
     }
+
     /**
-    * @param
-    * @return
-    * @说明: 编辑人物基本信息
-    * @关联表: AccountInstance、AccountUser、UserInstance、UserExtinfo
-    * @工时: 3H
-    * @开发者: jx
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public Boolean editPerson(PersonInstanceRequest personInstance ) {
+     * @param
+     * @return
+     * @说明: 编辑人物基本信息
+     * @关联表: AccountInstance、AccountUser、UserInstance、UserExtinfo
+     * @工时: 3H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public Boolean editPerson(PersonInstanceRequest personInstance) {
         return Boolean.FALSE;
     }
+
     /**
-    * @param
-    * @return
-    * @说明: 复制人物
-    * @关联表: AccountInstance、AccountUser、AccountRole、UserInstance、UserExtinfo、IndicatorInstance、IndicatorPrincipalRef、CaseEvent、CaseEventEval、CaseEventAction
-    * @工时: 6H
-    * @开发者: jx
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public Boolean copyPerson(String accountId ) {
+     * @param
+     * @return
+     * @说明: 复制人物
+     * @关联表: AccountInstance、AccountUser、AccountRole、UserInstance、UserExtinfo、IndicatorInstance、IndicatorPrincipalRef、CaseEvent、CaseEventEval、CaseEventAction
+     * @工时: 6H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public Boolean copyPerson(String accountId) {
         return Boolean.FALSE;
     }
 
@@ -304,7 +307,7 @@ public class PersonManageBiz{
         }
         //3、删除该账户相关信息
         Integer count3 = accountInstanceApi.deleteAccountInstanceByAccountIds(Arrays.asList(ownId).stream().collect(Collectors.toSet()));
-        if(count3 == 0){
+        if (count3 == 0) {
             flag = false;
         }
         return flag;
@@ -321,43 +324,118 @@ public class PersonManageBiz{
      * @创建时间: 2023/4/21 14:12
      */
     @DSTransactional
-    public Boolean deleteTeacherOrStudent(AccountInstanceRequest request) {
+    public Boolean deleteTeacherOrStudents(Set<String> accountIds, String roleName, String appId) {
         Boolean flag = false;
-        //1、教师
-        if (request.getRoleName().equals("教师")) {
-            //1.1、获取用户组织架构信息
-            List<AccountGroupResponse> groupList = accountGroupApi.getAccountGroupListByAccountId(request.getAccountId(), request.getAppId());
-            Set<String> orgIdsList = new HashSet<>();
-            if (groupList != null && groupList.size() > 0) {
-                //1.2、根据机构ID去重
-                groupList = groupList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(AccountGroupResponse::getOrgId))), ArrayList::new));
-                //1.3、机构id拼接
-                groupList.forEach(group -> {
-                    AccountOrgResponse org = accountOrgApi.getAccountOrgByOrgId(group.getOrgId(), request.getAppId());
-                    orgIdsList.add(org.getOrgId());
-                });
-                //1.4、删除上述机构下的所有成员及机构相关信息
-                accountOrgApi.batchDeleteAccountOrgsByOrgIds(orgIdsList);
+        for (String accountId : accountIds) {
+            //1、教师
+            if (roleName.equals("教师")) {
+                //1.1、获取用户组织架构信息
+                List<AccountGroupResponse> groupList = accountGroupApi.getAccountGroupListByAccountId(accountId, appId);
+                Set<String> orgIdsList = new HashSet<>();
+                if (groupList != null && groupList.size() > 0) {
+                    //1.2、根据机构ID去重
+                    groupList = groupList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(AccountGroupResponse::getOrgId))), ArrayList::new));
+                    //1.3、机构id拼接
+                    groupList.forEach(group -> {
+                        AccountOrgResponse org = accountOrgApi.getAccountOrgByOrgId(group.getOrgId(), appId);
+                        orgIdsList.add(org.getOrgId());
+                    });
+                    //1.4、删除上述机构下的所有成员及机构相关信息
+                    accountOrgApi.batchDeleteAccountOrgsByOrgIds(orgIdsList);
+                }
                 //1.5、删除账号相关信息
-                accountInstanceApi.deleteAccountInstanceByAccountIds(Arrays.asList(request.getAccountId()).stream().collect(Collectors.toSet()));
+                accountInstanceApi.deleteAccountInstanceByAccountIds(Arrays.asList(accountId).stream().collect(Collectors.toSet()));
+                flag = true;
+            }
+            //2、学生
+            if (roleName.equals("学生")) {
+                //2.1、删除学生账户相关信息
+                accountInstanceApi.deleteAccountInstanceByAccountIds(Arrays.asList(accountId).stream().collect(Collectors.toSet()));
+                //2.2、删除学生与机构的关系表
+                List<AccountGroupResponse> groupList = accountGroupApi.getAccountGroupListByAccountId(accountId, appId);
+                Set<String> ids = new HashSet<>();
+                if (groupList != null && groupList.size() > 0) {
+                    groupList.forEach(group -> {
+                        ids.add(group.getId());
+                    });
+                }
+                accountGroupApi.batchDeleteGroups(ids);
                 flag = true;
             }
         }
-        //2、学生
-        if (request.getRoleName().equals("学生")) {
-            //2.1、删除学生账户相关信息
-            accountInstanceApi.deleteAccountInstanceByAccountIds(Arrays.asList(request.getAccountId()).stream().collect(Collectors.toSet()));
-            //2.2、删除学生与机构的关系表
-            List<AccountGroupResponse> groupList = accountGroupApi.getAccountGroupListByAccountId(request.getAccountId(), request.getAppId());
-            Set<String> ids = new HashSet<>();
-            if(groupList != null && groupList.size() > 0){
-                groupList.forEach(group->{
-                    ids.add(group.getId());
-                });
-            }
-            accountGroupApi.batchDeleteGroups(ids);
-            flag = true;
-        }
         return flag;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 新增 人物
+     * @关联表: user_instance、user_extinfo、account_identifier、rbac_role、account_org、account_instance、account_role、account_group、account_user
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/4/25 17:35
+     */
+    @DSTransactional
+    public AccountInstanceResponse addPerson(AccountInstanceRequest request) {
+        //1、创建随机账号
+        request.setAccountName(randomWord(6));
+        //2、新增用户信息
+        UserInstanceRequest user = new UserInstanceRequest();
+        BeanUtils.copyProperties(request, user);
+        user.setName(request.getUserName());
+        String userId = userInstanceApi.insertUserInstance(user);
+        //3、新增用户简介
+        UserExtinfoRequest userExtinfo = UserExtinfoRequest.builder()
+                .userId(userId)
+                .intro(request.getIntro())
+                .build();
+        String extinfoId = userExtinfoApi.insertUserExtinfo(userExtinfo);
+        //4、新增账号信息
+        request.setIdentifier(orgBiz.createCode(7));
+        AccountInstanceResponse vo = accountInstanceApi.createAccountInstance(request);
+        //5、创建账户和用户之间的关联关系
+        AccountUserRequest accountUserRequest = AccountUserRequest.builder()
+                .accountId(vo.getAccountId())
+                .userId(userId)
+                .appId(request.getAppId())
+                .tentantId(request.getTenantId()).build();
+        this.accountUserApi.createAccountUser(accountUserRequest);
+        return vo;
+    }
+
+    /**
+     * 生成随机账号
+     */
+    public static String randomWord(int length) {
+        Random random = new Random();
+        StringBuilder word = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            word.append((char)('a' + random.nextInt(26)));
+        }
+
+        return word.toString();
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 人物 列表
+     * @关联表: user_instance、user_extinfo、account_identifier、rbac_role、account_org、account_instance、account_role、account_group、account_user
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/4/25 17:35
+     */
+    public IPage<AccountInstanceResponse> listPerson(AccountInstanceRequest request) {
+        //1、获取所有accountIds
+        Set<String> accountIds = new HashSet<>();
+        List<AccountInstanceResponse> responses = accountInstanceApi.getAccountInstanceList(AccountInstanceRequest.builder().appId(request.getAppId()).build());
+        //2、将accountIds传入
+        responses.forEach(res -> {
+            accountIds.add(res.getAccountId());
+        });
+        request.setAccountIds(accountIds);
+        return accountInstanceApi.customAccountInstanceList(request);
     }
 }

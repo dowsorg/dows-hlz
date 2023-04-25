@@ -1,13 +1,14 @@
 package org.dows.hep.rest.base.intervene;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.intervene.request.DelInterveneCategRequest;
 import org.dows.hep.api.base.intervene.request.FindInterveneCategRequest;
 import org.dows.hep.api.base.intervene.request.SaveInterveneCategRequest;
-import org.dows.hep.api.base.intervene.response.InterveneCategResponse;
 import org.dows.hep.biz.base.intervene.InterveneCategBiz;
+import org.dows.hep.biz.vo.CategVO;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,7 +36,7 @@ public class InterveneCategRest {
     */
     @Operation(summary = "获取类别")
     @PostMapping("v1/baseIntervene/interveneCateg/listInterveneCateg")
-    public List<InterveneCategResponse> listInterveneCateg(@RequestBody @Validated FindInterveneCategRequest findInterveneCateg ) {
+    public List<CategVO> listInterveneCateg(@RequestBody @Validated FindInterveneCategRequest findInterveneCateg ) {
         return interveneCategBiz.listInterveneCateg(findInterveneCateg);
     }
 
@@ -46,7 +47,7 @@ public class InterveneCategRest {
     */
     @Operation(summary = "保存类别")
     @PostMapping("v1/baseIntervene/interveneCateg/saveInterveneCateg")
-    public Boolean saveInterveneCateg(@RequestBody @Validated SaveInterveneCategRequest saveInterveneCateg ) {
+    public Boolean saveInterveneCateg(@RequestBody @Validated SaveInterveneCategRequest saveInterveneCateg ) throws JsonProcessingException {
         return interveneCategBiz.saveInterveneCateg(saveInterveneCateg);
     }
 
@@ -57,7 +58,7 @@ public class InterveneCategRest {
     */
     @Operation(summary = "批量保存类别")
     @PostMapping("v1/baseIntervene/interveneCateg/saveInterveneCategs")
-    public Boolean saveInterveneCategs(@RequestBody @Validated List<SaveInterveneCategRequest> saveInterveneCateg ) {
+    public Boolean saveInterveneCategs(@RequestBody @Validated List<SaveInterveneCategRequest> saveInterveneCateg ) throws JsonProcessingException {
         return interveneCategBiz.saveInterveneCategs(saveInterveneCateg);
     }
 
@@ -68,7 +69,7 @@ public class InterveneCategRest {
     */
     @Operation(summary = "删除类别")
     @DeleteMapping("v1/baseIntervene/interveneCateg/delInterveneCateg")
-    public Boolean delInterveneCateg(@Validated DelInterveneCategRequest delInterveneCateg ) {
+    public Boolean delInterveneCateg(@RequestBody @Validated DelInterveneCategRequest delInterveneCateg ) {
         return interveneCategBiz.delInterveneCateg(delInterveneCateg);
     }
 

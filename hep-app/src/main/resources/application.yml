@@ -20,7 +20,7 @@ spring:
     application:
         name: dows-hep
     profiles:
-        include: hep-mysql,hep-mybatis,hep-mvc,hep-oss,hep-mybatis,hep-apidoc
+        include: hep-mysql,hep-mybatis,hep-mvc,hep-oss,hep-apidoc
         active: dev
 
 

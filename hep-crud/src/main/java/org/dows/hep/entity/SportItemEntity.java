@@ -64,7 +64,7 @@ public class SportItemEntity implements CrudEntity {
     private String strengthType;
 
     @Schema(title = "状态 0-启用 1-停用")
-    private Boolean state;
+    private Integer state;
 
     @Schema(title = "说明")
     private String descr;
