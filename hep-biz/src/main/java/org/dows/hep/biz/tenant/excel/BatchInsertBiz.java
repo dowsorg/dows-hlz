@@ -1,7 +1,8 @@
 package org.dows.hep.biz.tenant.excel;
 
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.fastjson.JSONObject;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.doc.api.entity.excel.ExcelSelector;
 import org.dows.framework.doc.api.entity.excel.Point;
@@ -62,13 +63,13 @@ public class BatchInsertBiz {
                         if (Objects.isNull(v)) {
                             return false;
                         }
-                        final String s = JSONObject.toJSONString(v);
-                        final JSONObject jsonObject = JSONObject.parseObject(s);
+                        final String s = JSONUtil.toJsonStr(v);
+                        final JSONObject jsonObject = JSONUtil.parseObj(s);
                         if (Objects.isNull(jsonObject)) {
                             return false;
                         }
 
-                        final String first = (String) jsonObject.get(primaryKey);
+                        final String first = jsonObject.getStr(primaryKey);
                         if (StrUtil.isBlank(first)) {
                             return false;
                         }

@@ -16,17 +16,17 @@
         <!--uim包-->
         <dependency>
             <groupId>org.dows.cloud</groupId>
-            <artifactId>account-biz</artifactId>
+            <artifactId>account-api</artifactId>
             <version>20230418-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.dows.cloud</groupId>
-            <artifactId>user-biz</artifactId>
+            <artifactId>user-api</artifactId>
             <version>20230418-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.dows.cloud</groupId>
-            <artifactId>rbac-biz</artifactId>
+            <artifactId>rbac-api</artifactId>
             <version>20230418-SNAPSHOT</version>
         </dependency>
         <!--oss-->

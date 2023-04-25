@@ -1,19 +1,13 @@
 package org.dows.hep.rest.base.picture;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.materials.request.MaterialsRequest;
-import org.dows.hep.api.user.materials.request.MaterialsAttachmentRequest;
 import org.dows.hep.biz.base.picture.PictureManageBiz;
-import org.dows.hep.entity.MaterialsAttachmentEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 import java.util.Set;
 
 /**

@@ -30,6 +30,22 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
         </dependency>
+        <!--uim实现-->
+        <dependency>
+            <groupId>org.dows.cloud</groupId>
+            <artifactId>account-biz</artifactId>
+            <version>20230418-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dows.cloud</groupId>
+            <artifactId>user-biz</artifactId>
+            <version>20230418-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dows.cloud</groupId>
+            <artifactId>rbac-biz</artifactId>
+            <version>20230418-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>

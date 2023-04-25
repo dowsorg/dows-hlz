@@ -1,7 +1,7 @@
 package org.dows.hep.biz.base.picture;
 
 import cn.hutool.core.bean.BeanUtil;
-import com.alibaba.fastjson.JSONArray;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -9,9 +9,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
-import org.dows.account.biz.util.ReflectUtil;
-import org.dows.account.entity.AccountInstance;
+import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.base.materials.request.MaterialsRequest;
 import org.dows.hep.api.enums.EnumMaterials;
 import org.dows.hep.api.exception.MaterialException;
@@ -25,7 +23,6 @@ import org.dows.hep.service.MaterialsService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -61,7 +58,7 @@ public class PictureManageBiz {
                 .oneOpt()
                 .orElseThrow(() -> new MaterialException(EnumMaterials.CATEGORY_IS_NOT_FIND));
         //2、获取图片附件
-        List<MaterialsAttachmentRequest> attachmentList = JSONArray.parseArray(materials.getMaterialsAttachment(), MaterialsAttachmentRequest.class);
+        List<MaterialsAttachmentRequest> attachmentList = JSONUtil.toList(materials.getMaterialsAttachment(), MaterialsAttachmentRequest.class);
         //3、保存图片主体
         MaterialsEntity material = MaterialsEntity.builder()
                 .materialsId(idGenerator.nextIdStr())
