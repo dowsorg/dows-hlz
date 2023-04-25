@@ -17,7 +17,19 @@
             <groupId>org.dows.saas</groupId>
             <artifactId>hep-config</artifactId>
         </dependency>
-
+        <!--uim-->
+        <dependency>
+            <groupId>org.dows.cloud</groupId>
+            <artifactId>account-biz</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.dows.cloud</groupId>
+            <artifactId>user-biz</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.dows.cloud</groupId>
+            <artifactId>rbac-biz</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
