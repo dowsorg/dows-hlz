@@ -131,7 +131,7 @@ public class QuestionInstanceRest {
     */
     @Operation(summary = "删除or批量删除")
     @DeleteMapping("v1/baseQuestion/questionInstance/delQuestion")
-    public Response<Boolean> delQuestion(@Validated String questionInstanceIds ) {
+    public Response<Boolean> delQuestion(List<String> questionInstanceIds ) {
         Boolean result = questionInstanceBiz.delQuestion(questionInstanceIds);
         return Response.ok(result);
     }

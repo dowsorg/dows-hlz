@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 */
 @Data
 @NoArgsConstructor
-@Schema(name = "QuestionSection 对象", title = "问题集Response")
-public class QuestionSectionResponse{
+@Schema(name = "QuestionSectionResponse 对象", title = "问题集Response")
+public class QuestionSectionResponse {
 }

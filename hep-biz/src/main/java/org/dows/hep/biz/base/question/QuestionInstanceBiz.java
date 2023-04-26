@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.question.QuestionAccessAuthEnum;
 import org.dows.hep.api.base.question.QuestionCloneEnum;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.QuestionPageRequest;
@@ -19,12 +20,9 @@ import org.dows.hep.entity.QuestionAnswersEntity;
 import org.dows.hep.entity.QuestionInstanceEntity;
 import org.dows.hep.service.QuestionAnswersService;
 import org.dows.hep.service.QuestionInstanceService;
-import org.dows.hep.service.QuestionOptionsService;
-import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,9 +36,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class QuestionInstanceBiz{
 
-    private final IdGenerator idGenerator;
     private final QuestionInstanceService questionInstanceService;
-    private final QuestionOptionsService questionOptionsService;
     private final QuestionAnswersService questionAnswersService;
     /**
      * @param
@@ -54,6 +50,12 @@ public class QuestionInstanceBiz{
      */
     @Transactional
     public String saveOrUpdQuestion(QuestionRequest question) {
+        return saveOrUpdQuestion(question, QuestionAccessAuthEnum.PRIVATE_VIEWING);
+    }
+
+    @Transactional
+    public String saveOrUpdQuestion(QuestionRequest question, QuestionAccessAuthEnum questionAccessAuthEnum) {
+        question.setBizCode(questionAccessAuthEnum);
         String questionInstanceId = question.getQuestionInstanceId();
         if (StrUtil.isBlank(questionInstanceId)) {
             questionInstanceId = saveQuestion(question);
@@ -61,6 +63,16 @@ public class QuestionInstanceBiz{
             questionInstanceId = updQuestion(question);
         }
         return questionInstanceId;
+    }
+
+    public boolean saveOrUpdQuestionBatch(List<QuestionRequest> questionList) {
+        if (questionList == null || questionList.isEmpty()) {
+            return false;
+        }
+
+        // leave it to you to perfect, brother
+        questionList.forEach(this::saveOrUpdQuestion);
+        return Boolean.TRUE;
     }
 
     /**
@@ -256,10 +268,8 @@ public class QuestionInstanceBiz{
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public Boolean delQuestion(String questionInstanceIds) {
-        String[] ids = questionInstanceIds.split(",");
-        List<String> idList = Arrays.stream(ids).toList();
-        return questionInstanceService.removeBatchByIds(idList);
+    public Boolean delQuestion(List<String> questionInstanceIds) {
+        return questionInstanceService.removeBatchByIds(questionInstanceIds);
     }
 
     private String saveQuestion(QuestionRequest question) {

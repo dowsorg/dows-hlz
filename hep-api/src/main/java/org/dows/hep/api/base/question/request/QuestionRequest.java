@@ -1,9 +1,11 @@
 package org.dows.hep.api.base.question.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dows.hep.api.base.question.QuestionAccessAuthEnum;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
 
 import java.util.List;
@@ -18,15 +20,12 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(name = "Question 对象", title = "问题Request")
 public class QuestionRequest {
-    @Schema(title = "应用ID")
-    private String appId;
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @Schema(title = "数据库ID")
+    private Long id;
 
     @Schema(title = "问题ID-更新需要")
     private String questionInstanceId;
-
-    @Schema(title = "问题PID")
-    @JsonIgnore
-    private String questionInstancePid;
 
     @Schema(title = "题目类型ID")
     private String questionCategId;
@@ -43,9 +42,6 @@ public class QuestionRequest {
     @Schema(title = "问题描述")
     private String questionDescr;
 
-    @Schema(title = "答案解析")
-    private String detailedAnswer;
-
     @Schema(title = "状态")
     private Integer enabled;
 
@@ -58,10 +54,59 @@ public class QuestionRequest {
     @Schema(title = "创建者姓名")
     private String accountName;
 
+    @Schema(title = "权限[000001]")
+    private String permissions;
+
+    @Schema(title = "答案解析")
+    private String detailedAnswer;
+
     @Schema(title = "选项和答案集合")
     private List<QuestionOptionWithAnswerRequest> optionWithAnswerList;
 
     @Schema(title = "子问题")
     private List<QuestionRequest> children;
+
+
+
+    // JsonIgnore
+    @Schema(title = "应用ID")
+    @JsonIgnore
+    private String appId;
+
+    @Schema(title = "问题PID")
+    @JsonIgnore
+    private String questionInstancePid;
+
+    @Schema(title = "类别名")
+    @JsonIgnore
+    private String questionCategName;
+
+    @Schema(title = "类别ID路径")
+    @JsonIgnore
+    private String questionCategIdPath;
+
+    @Schema(title = "类别name路径")
+    @JsonIgnore
+    private String questionCategNamePath;
+
+    @Schema(title = "来源")
+    @JsonIgnore
+    private String source;
+
+    @Schema(title = "引用计数")
+    @JsonIgnore
+    private Integer refCount;
+
+    @Schema(title = "问题标识")
+    @JsonIgnore
+    private String questionIdentifier;
+
+    @Schema(title = "版本号")
+    @JsonIgnore
+    private String ver;
+
+    @Schema(title = "biz code: PUBLIC_VIEWING：被所有人查看 | PRIVATE_VIEWING：只能被自己查看")
+    @JsonIgnore
+    private QuestionAccessAuthEnum bizCode;
 
 }

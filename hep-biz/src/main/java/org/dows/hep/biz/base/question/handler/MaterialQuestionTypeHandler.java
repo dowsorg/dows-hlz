@@ -68,7 +68,7 @@ public class MaterialQuestionTypeHandler implements QuestionTypeHandler {
 
     @Transactional
     @Override
-    public Boolean update(QuestionRequest questionRequest) {
+    public boolean update(QuestionRequest questionRequest) {
         // update base
         QuestionInstanceEntity questionInstanceEntity = BeanUtil.copyProperties(questionRequest, QuestionInstanceEntity.class);
         boolean updInstanceRes = questionInstanceService.updateById(questionInstanceEntity);

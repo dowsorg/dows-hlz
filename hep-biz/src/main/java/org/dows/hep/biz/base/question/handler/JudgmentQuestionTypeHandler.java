@@ -28,8 +28,8 @@ public class JudgmentQuestionTypeHandler implements QuestionTypeHandler {
     }
 
     @Override
-    public Boolean update(QuestionRequest questionRequest) {
-        return null;
+    public boolean update(QuestionRequest questionRequest) {
+        return Boolean.FALSE;
     }
 
     @Override

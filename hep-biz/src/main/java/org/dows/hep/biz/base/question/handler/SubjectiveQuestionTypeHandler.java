@@ -41,7 +41,7 @@ public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
 
     @Transactional
     @Override
-    public Boolean update(QuestionRequest questionRequest) {
+    public boolean update(QuestionRequest questionRequest) {
         return traverseUpd(questionRequest);
     }
 

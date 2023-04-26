@@ -103,6 +103,9 @@ public class QuestionInstanceEntity implements CrudEntity {
     @Schema(title = "版本号")
     private String ver;
 
+    @Schema(title = "biz code")
+    private String bizCode;
+
     @JsonIgnore
     @TableLogic
     @TableField(fill = FieldFill.INSERT)
