@@ -8,7 +8,7 @@ import org.dows.hep.api.base.intervene.request.FindInterveneCategRequest;
 import org.dows.hep.api.base.intervene.request.SaveInterveneCategRequest;
 import org.dows.hep.biz.cache.InterveneCategCache;
 import org.dows.hep.biz.dao.InterveneCategDao;
-import org.dows.hep.biz.enums.EnumCategFamily;
+import org.dows.hep.api.enums.EnumCategFamily;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.JacksonUtil;
