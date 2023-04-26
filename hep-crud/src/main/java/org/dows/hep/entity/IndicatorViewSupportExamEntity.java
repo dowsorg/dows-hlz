@@ -42,8 +42,8 @@ public class IndicatorViewSupportExamEntity implements CrudEntity {
     @Schema(title = "应用ID")
     private String appId;
 
-    @Schema(title = "指标分类ID")
-    private String indicatorCategoryId;
+    @Schema(title = "指标功能ID")
+    private String indicatorFuncId;
 
     @Schema(title = "辅助检查名称")
     private String name;
