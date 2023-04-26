@@ -4,15 +4,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.dows.account.constant.BaseConstant;
 import org.dows.account.util.JwtUtil;
 import org.dows.hep.api.base.materials.request.MaterialsCategoryRequest;
+import org.dows.hep.api.enums.EnumToken;
 import org.dows.hep.biz.base.materials.MaterialsCategoryBiz;
 import org.dows.hep.entity.MaterialsCategoryEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,7 +34,7 @@ public class MaterialCategoryRest {
     @PostMapping("v1/baseMaterials/materialsCategory/saveMaterialsCategory")
     public Boolean saveMaterialsCategory(@RequestBody @Validated MaterialsCategoryRequest materials, HttpServletRequest request) {
         String token = request.getHeader("token");
-        Map<String, Object> map = JwtUtil.parseJWT(token, BaseConstant.PROPERTIES_JWT_KEY);
+        Map<String, Object> map = JwtUtil.parseJWT(token, EnumToken.PROPERTIES_JWT_KEY.getStr());
         //1、获取登录账户和名称
         String accountId = map.get("accountId").toString();
         String accountName = map.get("accountName").toString();

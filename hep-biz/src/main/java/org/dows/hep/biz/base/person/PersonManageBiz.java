@@ -78,8 +78,15 @@ public class PersonManageBiz {
         AccountUserResponse accountUser = accountUserApi.getUserByAccountId(accountId);
         //3、获取用户实例
         UserInstanceResponse userInstance = userInstanceApi.getUserInstanceByUserId(accountUser.getUserId());
-        //4、根据账户信息获取
-        return new PersonInstanceResponse();
+        //4、获取用户拓展信息
+        UserExtinfoResponse extinfoResponse = userExtinfoApi.getUserExtinfoByUserId(userInstance.getUserId());
+        PersonInstanceResponse response = PersonInstanceResponse.builder()
+                .accountId(accountId)
+                .accountName(accounInstance.getAccountName())
+                .intro(extinfoResponse.getIntro())
+                .avatar(accounInstance.getAvatar())
+                .build();
+        return response;
     }
 
     /**
