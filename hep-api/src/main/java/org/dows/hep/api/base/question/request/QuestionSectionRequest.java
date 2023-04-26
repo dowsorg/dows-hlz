@@ -3,8 +3,8 @@ package org.dows.hep.api.base.question.request;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.Accessors;
 
 import java.util.List;
 
@@ -15,6 +15,10 @@ import java.util.List;
 * @date 
 */
 @Data
+@ToString
+@Builder
+@Accessors(chain = true)
+@AllArgsConstructor
 @NoArgsConstructor
 @Schema(name = "QuestionSectionRequest 对象", title = "问题集Request")
 public class QuestionSectionRequest{
