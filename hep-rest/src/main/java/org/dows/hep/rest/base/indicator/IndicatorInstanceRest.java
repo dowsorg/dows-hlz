@@ -30,8 +30,8 @@ public class IndicatorInstanceRest {
     */
     @Operation(summary = "创建指标实例")
     @PostMapping("v1/baseIndicator/indicatorInstance/createIndicatorInstance")
-    public void createIndicatorInstance(@RequestBody @Validated CreateIndicatorInstanceRequest createIndicatorInstance ) {
-        indicatorInstanceBiz.createIndicatorInstance(createIndicatorInstance);
+    public void createIndicatorInstance(@RequestBody @Validated CreateIndicatorInstanceRequest createIndicatorInstanceRequest) throws InterruptedException {
+        indicatorInstanceBiz.createIndicatorInstance(createIndicatorInstanceRequest);
     }
 
     /**
@@ -41,7 +41,8 @@ public class IndicatorInstanceRest {
     */
     @Operation(summary = "删除指标")
     @DeleteMapping("v1/baseIndicator/indicatorInstance/deleteIndicatorInstance")
-    public void deleteIndicatorInstance(@Validated String indicatorInstanceId ) {
+    public void deleteIndicatorInstance(
+        @RequestParam @Validated String indicatorInstanceId) throws InterruptedException {
         indicatorInstanceBiz.deleteIndicatorInstance(indicatorInstanceId);
     }
 
@@ -65,6 +66,18 @@ public class IndicatorInstanceRest {
     @PutMapping("v1/baseIndicator/indicatorInstance/batchUpdateIndicatorInstance")
     public void batchUpdateIndicatorInstance(@Validated List<UpdateIndicatorInstanceRequest> updateIndicatorInstance ) {
         indicatorInstanceBiz.batchUpdateIndicatorInstance(updateIndicatorInstance);
+    }
+
+    @Operation(summary = "批量设置关键指标")
+    @PutMapping("v1/baseIndicator/indicatorInstance/batchUpdateCore")
+    public void batchUpdateCore(@RequestBody List<String> indicatorInstanceIdList) {
+        indicatorInstanceBiz.batchUpdateCore(indicatorInstanceIdList);
+    }
+
+    @Operation(summary = "批量设置饮食关键指标")
+    @PutMapping("v1/baseIndicator/indicatorInstance/batchUpdateFood")
+    public void batchUpdateFood(@RequestBody List<String> indicatorInstanceIdList) {
+        indicatorInstanceBiz.batchUpdateFood(indicatorInstanceIdList);
     }
 
     /**

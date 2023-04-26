@@ -1,11 +1,13 @@
 package org.dows.hep.rest.base.intervene;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.intervene.request.DelFoodMaterialRequest;
 import org.dows.hep.api.base.intervene.request.FindFoodRequest;
 import org.dows.hep.api.base.intervene.request.SaveFoodMaterialRequest;
+import org.dows.hep.api.base.intervene.request.SetFoodMaterialStateRequest;
 import org.dows.hep.api.base.intervene.response.FoodMaterialInfoResponse;
 import org.dows.hep.api.base.intervene.response.FoodMaterialResponse;
 import org.dows.hep.biz.base.intervene.FoodMaterialBiz;
@@ -31,7 +33,7 @@ public class FoodMaterialRest {
     */
     @Operation(summary = "获取食材列表")
     @PostMapping("v1/baseIntervene/foodMaterial/pageFoodMaterial")
-    public FoodMaterialResponse pageFoodMaterial(@RequestBody @Validated FindFoodRequest findFood ) {
+    public PageDTO<FoodMaterialResponse> pageFoodMaterial(@RequestBody @Validated FindFoodRequest findFood ) {
         return foodMaterialBiz.pageFoodMaterial(findFood);
     }
 
@@ -64,8 +66,14 @@ public class FoodMaterialRest {
     */
     @Operation(summary = "删除食材")
     @DeleteMapping("v1/baseIntervene/foodMaterial/delFoodMaterial")
-    public Boolean delFoodMaterial(@Validated DelFoodMaterialRequest delFoodMaterial ) {
+    public Boolean delFoodMaterial(@RequestBody @Validated DelFoodMaterialRequest delFoodMaterial ) {
         return foodMaterialBiz.delFoodMaterial(delFoodMaterial);
+    }
+
+    @Operation(summary = "启用禁用食材")
+    @PostMapping("v1/baseIntervene/foodMaterial/setFoodMaterialState")
+    public Boolean setFoodMaterialState(@RequestBody @Validated SetFoodMaterialStateRequest setFoodMaterialState ){
+        return foodMaterialBiz.setFoodMaterialState(setFoodMaterialState);
     }
 
 

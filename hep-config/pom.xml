@@ -11,10 +11,13 @@
     <artifactId>hep-config</artifactId>
 
 
-
-
-
     <dependencies>
+
+        <dependency>
+            <groupId>org.dows.framework</groupId>
+            <artifactId>sequence-snowflake</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.dows.saas</groupId>
             <artifactId>hep-api</artifactId>
@@ -67,10 +70,25 @@
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.0.4</version>
         </dependency>
+
+
         <dependency>
-            <groupId>org.dows.framework</groupId>
-            <artifactId>sequence-snowflake</artifactId>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson-spring-boot-starter</artifactId>
         </dependency>
+        <!--
+                <dependency>
+                    <groupId>org.redisson</groupId>
+                    <artifactId>redisson</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.fasterxml.jackson.datatype</groupId>
+                    <artifactId>jackson-datatype-jsr310</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.fasterxml.jackson.datatype</groupId>
+                    <artifactId>jackson-datatype-jdk8</artifactId>
+                </dependency>-->
     </dependencies>
     <build>
         <plugins>

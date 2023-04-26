@@ -12,15 +12,15 @@ server:
         threads:
             io: 4
             worker: 32
-    servlet:
-        context-path: /hep
+#    servlet:
+#        context-path: /hep
 
 
 spring:
     application:
         name: dows-hep
     profiles:
-        include: hep-mysql,hep-mybatis,hep-mvc,hep-oss,hep-mybatis
+        include: hep-mysql,hep-mybatis,hep-mvc,hep-oss,hep-apidoc
         active: dev
 
 

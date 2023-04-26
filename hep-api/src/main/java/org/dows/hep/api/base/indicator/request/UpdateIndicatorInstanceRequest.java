@@ -14,4 +14,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "UpdateIndicatorInstance 对象", title = "更新指标")
 public class UpdateIndicatorInstanceRequest{
+
 }

@@ -8,9 +8,10 @@ import lombok.Getter;
  */
 @AllArgsConstructor
 @Getter
-public enum EnumString {
-  LIMIT_1("LIMIT 1", "mybatisplus只取一个值"),
+public enum EnumIndicatorRuleType {
+  INDICATOR(0, "指标"),
+  VARIABLE(1, "变量"),
   ;
-  private final String str;
+  private final Integer code;
   private final String desc;
 }

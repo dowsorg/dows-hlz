@@ -129,11 +129,9 @@ public class OrgManageBiz{
                 request.setAccountName(list.get(i).getAccountName());
                 request.setUserName(list.get(i).getUserName());
                 request.setIdentifier(orgManageBiz.createCode(7));
-                //获取导入成功成员数
-                AccountInstanceResponse response = new AccountInstanceResponse();
                 String message = "";
                 try {
-                    response = personManageBiz.createTeacherOrStudent(request);
+                    personManageBiz.createTeacherOrStudent(request);
                 } catch (Exception e) {
                     message = e.getMessage();
                 } finally {

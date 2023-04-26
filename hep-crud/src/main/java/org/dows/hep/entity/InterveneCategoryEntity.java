@@ -61,7 +61,7 @@ public class InterveneCategoryEntity implements CrudEntity {
     private Integer seq;
 
     @Schema(title = "标记，0-普通 1-膳食主要分类")
-    private Boolean mark;
+    private Integer mark;
 
     @JsonIgnore
     @TableLogic

@@ -17,14 +17,18 @@
             <groupId>org.dows.saas</groupId>
             <artifactId>hep-config</artifactId>
         </dependency>
+        <!--uim-->
         <dependency>
-            <groupId>org.redisson</groupId>
-            <artifactId>redisson</artifactId>
-            <version>3.19.3</version>
+            <groupId>org.dows.cloud</groupId>
+            <artifactId>account-biz</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
+            <groupId>org.dows.cloud</groupId>
+            <artifactId>user-biz</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.dows.cloud</groupId>
+            <artifactId>rbac-biz</artifactId>
         </dependency>
     </dependencies>
 

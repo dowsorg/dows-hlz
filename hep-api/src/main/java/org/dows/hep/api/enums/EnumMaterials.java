@@ -1,0 +1,20 @@
+package org.dows.hep.api.enums;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.dows.framework.api.StatusCode;
+
+/**
+ * @author runsix
+ */
+@AllArgsConstructor
+@Getter
+public enum EnumMaterials implements StatusCode {
+  CATEGORY_NAME_IS_EXIST(40000, "类别名称已存在"),
+  CATEGORY_IS_NOT_FIND(40001, "未找到该类别"),
+  MATERIALS_IS_NOT_FIND(40002, "未找到该资料"),
+  CATEGORY_HAVE_FILE(40003, "该类别下存在数据"),
+  ;
+  private final Integer code;
+  private final String descr;
+}

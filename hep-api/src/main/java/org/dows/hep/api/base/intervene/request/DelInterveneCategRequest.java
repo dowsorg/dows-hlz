@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
 * @description 
 *
@@ -13,9 +15,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Schema(name = "DelInterveneCateg 对象", title = "删除类别")
-public class DelInterveneCategRequest{
+public class DelInterveneCategRequest {
     @Schema(title = "分布式id列表")
-    private String ids;
-
+    private List<String> ids;
 
 }

@@ -1,4 +1,4 @@
-package org.dows.hep.biz.config;
+package org.dows.hep.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.Redisson;
