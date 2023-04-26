@@ -42,8 +42,8 @@ public class IndicatorViewMonitorFollowupEntity implements CrudEntity {
     @Schema(title = "应用ID")
     private String appId;
 
-    @Schema(title = "指标分类ID")
-    private String indicatorCategoryId;
+    @Schema(title = "指标功能ID")
+    private String indicatorFuncId;
 
     @Schema(title = "指标监测随访类表名称")
     private String name;

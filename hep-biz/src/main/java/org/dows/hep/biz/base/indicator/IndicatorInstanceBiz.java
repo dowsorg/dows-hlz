@@ -44,7 +44,7 @@ public class IndicatorInstanceBiz{
     @Value("${redisson.lock.lease-time.teacher.indicator-instance-create-delete-update:5000}")
     private Integer leaseTimeIndicatorInstanceCreateDeleteUpdate;
 
-    private final String IndicatorInstanceFieldPid = "pid";
+    private final String indicatorInstanceFieldPid = "pid";
     private final IdGenerator idGenerator;
     private final RedissonClient redissonClient;
     private final IndicatorInstanceService indicatorInstanceService;
@@ -88,7 +88,7 @@ public class IndicatorInstanceBiz{
         String min = createIndicatorInstanceRequest.getMin();
         String max = createIndicatorInstanceRequest.getMax();
         String def = createIndicatorInstanceRequest.getDef();
-        RLock lock = redissonClient.getLock(RedissonUtil.getLockName(appId, EnumRedissonLock.INDICATOR_INSTANCE_CREATE_DELETE_UPDATE, IndicatorInstanceFieldPid, indicatorCategoryId));
+        RLock lock = redissonClient.getLock(RedissonUtil.getLockName(appId, EnumRedissonLock.INDICATOR_INSTANCE_CREATE_DELETE_UPDATE, indicatorInstanceFieldPid, indicatorCategoryId));
         boolean isLocked = lock.tryLock(leaseTimeIndicatorInstanceCreateDeleteUpdate, TimeUnit.MILLISECONDS);
         if (!isLocked) {
             throw new IndicatorInstanceException(EnumESC.SYSTEM_BUSY_PLEASE_OPERATOR_INDICATOR_INSTANCE_LATER);
@@ -173,7 +173,7 @@ public class IndicatorInstanceBiz{
                 log.warn("方法deleteIndicatorInstance对indicatorInstanceId：{}的IndicatorInstance不存在", indicatorInstanceId);
                 throw new IndicatorInstanceException(EnumESC.VALIDATE_EXCEPTION);
             });
-        RLock lock = redissonClient.getLock(RedissonUtil.getLockName(appId, EnumRedissonLock.INDICATOR_INSTANCE_CREATE_DELETE_UPDATE, IndicatorInstanceFieldPid, indicatorCategoryRefEntity.getIndicatorCategoryId()));
+        RLock lock = redissonClient.getLock(RedissonUtil.getLockName(appId, EnumRedissonLock.INDICATOR_INSTANCE_CREATE_DELETE_UPDATE, indicatorInstanceFieldPid, indicatorCategoryRefEntity.getIndicatorCategoryId()));
         boolean isLocked = lock.tryLock(leaseTimeIndicatorInstanceCreateDeleteUpdate, TimeUnit.MILLISECONDS);
         if (!isLocked) {
             throw new IndicatorInstanceException(EnumESC.SYSTEM_BUSY_PLEASE_OPERATOR_INDICATOR_INSTANCE_LATER);
