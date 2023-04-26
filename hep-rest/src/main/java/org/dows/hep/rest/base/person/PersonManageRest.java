@@ -78,7 +78,7 @@ public class PersonManageRest {
      */
     @Operation(summary = "新增人物")
     @PostMapping("v1/basePerson/personManage/addPerson")
-    public AccountInstanceResponse addPerson(@RequestBody @Validated AccountInstanceRequest request) {
+    public PersonInstanceResponse addPerson(@RequestBody @Validated AccountInstanceRequest request) {
         return personManageBiz.addPerson(request);
     }
 
@@ -89,7 +89,7 @@ public class PersonManageRest {
      */
     @Operation(summary = "人物列表")
     @PostMapping("v1/basePerson/personManage/listPerson")
-    public IPage<AccountInstanceResponse> listPerson(@RequestBody @Validated AccountInstanceRequest request) {
+    public IPage<PersonInstanceResponse> listPerson(@RequestBody @Validated AccountInstanceRequest request) {
         return personManageBiz.listPerson(request);
     }
 

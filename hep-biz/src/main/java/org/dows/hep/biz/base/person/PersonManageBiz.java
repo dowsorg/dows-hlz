@@ -2,14 +2,12 @@ package org.dows.hep.biz.base.person;
 
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.api.*;
 import org.dows.account.request.AccountInstanceRequest;
 import org.dows.account.request.AccountUserRequest;
-import org.dows.account.response.AccountGroupInfoResponse;
-import org.dows.account.response.AccountGroupResponse;
-import org.dows.account.response.AccountInstanceResponse;
-import org.dows.account.response.AccountOrgResponse;
+import org.dows.account.response.*;
 import org.dows.hep.api.base.person.request.PersonInstanceRequest;
 import org.dows.hep.api.base.person.response.PersonInstanceResponse;
 import org.dows.hep.biz.base.org.OrgBiz;
@@ -18,6 +16,7 @@ import org.dows.user.api.api.UserInstanceApi;
 import org.dows.user.api.request.UserExtinfoRequest;
 import org.dows.user.api.request.UserInstanceRequest;
 import org.dows.user.api.response.UserExtinfoResponse;
+import org.dows.user.api.response.UserInstanceResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -73,6 +72,13 @@ public class PersonManageBiz {
      * @创建时间: 2023年4月23日 上午9:44:34
      */
     public PersonInstanceResponse getPerson(String accountId) {
+        //1、根据账户ID获取账户信息
+        AccountInstanceResponse accounInstance = accountInstanceApi.getAccountInstanceByAccountId(accountId);
+        //2、获取用户信息
+        AccountUserResponse accountUser = accountUserApi.getUserByAccountId(accountId);
+        //3、获取用户实例
+        UserInstanceResponse userInstance = userInstanceApi.getUserInstanceByUserId(accountUser.getUserId());
+        //4、根据账户信息获取
         return new PersonInstanceResponse();
     }
 
@@ -377,7 +383,7 @@ public class PersonManageBiz {
      * @创建时间: 2023/4/25 17:35
      */
     @DSTransactional
-    public AccountInstanceResponse addPerson(AccountInstanceRequest request) {
+    public PersonInstanceResponse addPerson(AccountInstanceRequest request) {
         //1、创建随机账号
         request.setAccountName(randomWord(6));
         //2、新增用户信息
@@ -401,9 +407,9 @@ public class PersonManageBiz {
                 .appId(request.getAppId())
                 .tentantId(request.getTenantId()).build();
         this.accountUserApi.createAccountUser(accountUserRequest);
-        return vo;
+        return PersonInstanceResponse.builder().accountId(vo.getAccountId())
+                .build();
     }
-
     /**
      * 生成随机账号
      */
@@ -427,7 +433,7 @@ public class PersonManageBiz {
      * @开始时间:
      * @创建时间: 2023/4/25 17:35
      */
-    public IPage<AccountInstanceResponse> listPerson(AccountInstanceRequest request) {
+    public IPage<PersonInstanceResponse> listPerson(AccountInstanceRequest request) {
         //1、获取所有accountIds
         Set<String> accountIds = new HashSet<>();
         List<AccountInstanceResponse> responses = accountInstanceApi.getAccountInstanceList(AccountInstanceRequest.builder().appId(request.getAppId()).build());
@@ -436,6 +442,22 @@ public class PersonManageBiz {
             accountIds.add(res.getAccountId());
         });
         request.setAccountIds(accountIds);
-        return accountInstanceApi.customAccountInstanceList(request);
+        IPage<AccountInstanceResponse> accountInstancePage = accountInstanceApi.customAccountInstanceList(request);
+        //3、复制
+        List<PersonInstanceResponse> personInstanceResponseList = new ArrayList<>();
+        List<AccountInstanceResponse> accountInstanceList = accountInstancePage.getRecords();
+        accountInstanceList.forEach(accountInstance->{
+            PersonInstanceResponse personInstance = PersonInstanceResponse.builder()
+                    .accountId(accountInstance.getAccountId())
+                    .accountName(accountInstance.getAccountName())
+                    .avatar(accountInstance.getAvatar())
+                    .intro(accountInstance.getIntro())
+                    .build();
+            personInstanceResponseList.add(personInstance);
+        });
+        IPage<PersonInstanceResponse> personInstancePage = new Page<>();
+        BeanUtils.copyProperties(accountInstancePage, personInstancePage, new String[]{"records"});
+        personInstancePage.setRecords(personInstanceResponseList);
+        return personInstancePage;
     }
 }
