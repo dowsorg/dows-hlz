@@ -10,7 +10,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum EnumToken {
-    PROPERTIES_JWT_KEY(0, "findsoft.token.jwtkey"),
+    PROPERTIES_JWT_KEY(0, "dows.token.jwtkey"),
     ;
     private final Integer code;
     private final String str;
