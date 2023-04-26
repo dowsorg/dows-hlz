@@ -67,14 +67,12 @@ public class QuestionCategBiz {
             questionCategory.setQuestionCategPid("0");
         }
 
-//        questionCategoryService.lambdaQuery()
-//                .eq(QuestionCategoryEntity::getQuestionCategGroup, questionCategory.getQuestionCategGroup())
-//                .orderByDesc(QuestionCategoryEntity::getSequence)
-
-        Integer sequence = questionCategory.getSequence();
-        if (sequence == null) {
-
-        }
+        LambdaQueryWrapper<QuestionCategoryEntity> queryWrapper = new LambdaQueryWrapper<QuestionCategoryEntity>()
+                .eq(QuestionCategoryEntity::getQuestionCategGroup, questionCategGroup)
+                .orderByDesc(QuestionCategoryEntity::getSequence);
+        QuestionCategoryEntity lastOne = questionCategoryService.getOne(queryWrapper);
+        Integer lastSequence = lastOne.getSequence();
+        questionCategory.setSequence(lastSequence);
     }
 
     private QuestionCategoryEntity saveCategory(QuestionCategoryRequest questionCategory) {

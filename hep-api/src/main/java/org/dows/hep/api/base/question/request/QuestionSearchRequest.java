@@ -12,13 +12,8 @@ import lombok.NoArgsConstructor;
 */
 @Data
 @NoArgsConstructor
-@Schema(name = "QuestionSearch 对象", title = "关键字聚合")
+@Schema(name = "QuestionSearch 对象", title = "问题无分页查询")
 public class QuestionSearchRequest{
     @Schema(title = "应用ID")
     private String appId;
-
-    private Long pageNo;
-
-    private Long pageSize;
-
 }

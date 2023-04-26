@@ -145,17 +145,6 @@ public class QuestionSectionRest {
     }
 
     /**
-    * 合并问题集[问卷]
-    * @param
-    * @return
-    */
-    @Operation(summary = "合并问题集[问卷]")
-    @PostMapping("v1/baseQuestion/questionSection/mergeQuestionSection")
-    public String mergeQuestionSection(@RequestBody @Validated QuestionnaireMergeElementsRequest questionnaireMergeElements ) {
-        return questionSectionBiz.mergeQuestionSection(questionnaireMergeElements);
-    }
-
-    /**
     * 查询问题集-问题
     * @param
     * @return
@@ -217,8 +206,8 @@ public class QuestionSectionRest {
     */
     @Operation(summary = "删除or批量删除问题集-题目")
     @DeleteMapping("v1/baseQuestion/questionSection/delSectionQuestion")
-    public Boolean delSectionQuestion(@Validated String questionSectionId, @Validated String questionSectionItemIds ) {
-        return questionSectionBiz.delSectionQuestion(questionSectionId,questionSectionItemIds);
+    public Boolean delSectionQuestion(String questionSectionId, List<String> questionSectionItemIds ) {
+        return questionSectionBiz.delSectionQuestion(questionSectionId, questionSectionItemIds);
     }
 
 
