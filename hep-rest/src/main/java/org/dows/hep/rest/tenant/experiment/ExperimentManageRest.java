@@ -33,9 +33,9 @@ public class ExperimentManageRest {
     * @return
     */
     @Operation(summary = "分配实验")
-    @PostMapping("v1/tenantExperiment/experimentManage/experimentAllot")
-    public String experimentAllot(@RequestBody @Validated CreateExperimentRequest createExperiment ) {
-        return experimentManageBiz.experimentAllot(createExperiment);
+    @PostMapping("v1/tenantExperiment/experimentManage/allot")
+    public String allot(@RequestBody @Validated CreateExperimentRequest createExperiment ) {
+        return experimentManageBiz.allot(createExperiment);
     }
 
     /**
@@ -44,9 +44,9 @@ public class ExperimentManageRest {
     * @return
     */
     @Operation(summary = "实验分组")
-    @PostMapping("v1/tenantExperiment/experimentManage/experimentGrouping")
-    public Boolean experimentGrouping(@RequestBody @Validated GroupSettingRequest groupSetting ) {
-        return experimentManageBiz.experimentGrouping(groupSetting);
+    @PostMapping("v1/tenantExperiment/experimentManage/grouping")
+    public Boolean grouping(@RequestBody @Validated GroupSettingRequest groupSetting ) {
+        return experimentManageBiz.grouping(groupSetting);
     }
 
     /**
@@ -55,9 +55,9 @@ public class ExperimentManageRest {
     * @return
     */
     @Operation(summary = "获取实验列表")
-    @GetMapping("v1/tenantExperiment/experimentManage/experimentList")
-    public List<ExperimentListResponse> experimentList() {
-        return experimentManageBiz.listExperiment();
+    @GetMapping("v1/tenantExperiment/experimentManage/list")
+    public List<ExperimentListResponse> list() {
+        return experimentManageBiz.list();
     }
 
 
