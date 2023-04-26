@@ -82,8 +82,7 @@
                 <version>1.0.0-SNAPSHOT</version>
             </dependency>
 
-
-
+           <!--uim包-->
             <dependency>
                 <groupId>org.dows.cloud</groupId>
                 <artifactId>account-biz</artifactId>

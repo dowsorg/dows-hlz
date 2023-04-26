@@ -42,8 +42,8 @@ public class IndicatorViewBaseInfoEntity implements CrudEntity {
     @Schema(title = "应用ID")
     private String appId;
 
-    @Schema(title = "指标分类ID")
-    private String indicatorCategoryId;
+    @Schema(title = "指标功能ID")
+    private String indicatorFuncId;
 
     @Schema(title = "指标基本信息类名称")
     private String name;

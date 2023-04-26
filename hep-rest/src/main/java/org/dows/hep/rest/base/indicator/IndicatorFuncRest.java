@@ -30,8 +30,8 @@ public class IndicatorFuncRest {
     */
     @Operation(summary = "创建指标功能")
     @PostMapping("v1/baseIndicator/indicatorFunc/createIndicatorFunc")
-    public void createIndicatorFunc(@RequestBody @Validated CreateIndicatorFuncRequest createIndicatorFunc ) {
-        indicatorFuncBiz.createIndicatorFunc(createIndicatorFunc);
+    public void createIndicatorFunc(@RequestBody @Validated CreateIndicatorFuncRequest createIndicatorFuncRequest) {
+        indicatorFuncBiz.createIndicatorFunc(createIndicatorFuncRequest);
     }
 
     /**
