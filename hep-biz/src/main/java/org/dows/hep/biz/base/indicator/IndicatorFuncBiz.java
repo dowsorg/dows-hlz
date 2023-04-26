@@ -1,9 +1,16 @@
 package org.dows.hep.biz.base.indicator;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorFuncRequest;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorFuncRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorFuncResponse;
+import org.dows.hep.service.IndicatorFuncService;
+import org.dows.sequence.api.IdGenerator;
+import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +22,16 @@ import java.util.List;
 * @date 2023年4月23日 上午9:44:34
 */
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class IndicatorFuncBiz{
+    @Value("${redisson.lock.lease-time.teacher.indicator-func-create-delete-update:5000}")
+    private Integer leaseTimeIndicatorFuncCreateDeleteUpdate;
+
+    private final String indicatorFuncFieldIndicatorCategoryId = "indicator_category_id";
+    private final IdGenerator idGenerator;
+    private final RedissonClient redissonClient;
+    private final IndicatorFuncService indicatorFuncService;
     /**
     * @param
     * @return
@@ -26,8 +42,9 @@ public class IndicatorFuncBiz{
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public void createIndicatorFunc(CreateIndicatorFuncRequest createIndicatorFunc ) {
-        
+    @Transactional(rollbackFor = Exception.class)
+    public void createIndicatorFunc(CreateIndicatorFuncRequest createIndicatorFuncRequest) {
+        String indicatorCategoryId = createIndicatorFuncRequest.getIndicatorCategoryId();
     }
     /**
     * @param

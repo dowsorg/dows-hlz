@@ -54,6 +54,9 @@ public class IndicatorFuncEntity implements CrudEntity {
     @Schema(title = "对话提示")
     private String dialogTip;
 
+    @Schema(title = "背景图")
+    private String background;
+
     @Schema(title = "展示顺序")
     private Integer seq;
 
