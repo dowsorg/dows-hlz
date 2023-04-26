@@ -14,14 +14,21 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "CaseSchemeSearch 对象", title = "案例方案搜索")
 public class CaseSchemeSearchRequest{
-    @Schema(title = "类别ID")
-    private String categId;
+
+    @Schema(title = "appId")
+    private String appId;
 
     @Schema(title = "案例ID")
     private String caseInstanceId;
 
-    @Schema(title = "方案名称")
-    private String schemeName;
+    @Schema(title = "类别ID")
+    private String categId;
+
+    @Schema(title = "关键字")
+    private String keyword;
+
+    @Schema(title = "来源")
+    private String source;
 
 
 }

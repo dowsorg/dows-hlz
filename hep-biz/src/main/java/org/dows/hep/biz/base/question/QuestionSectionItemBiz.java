@@ -75,7 +75,7 @@ public class QuestionSectionItemBiz {
             QuestionAccessAuthEnum bizCode = questionRequest.getBizCode();
             boolean isPrivateView = QuestionAccessAuthEnum.PRIVATE_VIEWING.equals(bizCode);
             if (isPrivateView) {
-                questionInstanceId = questionInstanceBiz.saveOrUpdQuestion(questionRequest, bizCode);
+                questionInstanceId = questionInstanceBiz.saveQuestion(questionRequest, bizCode);
                 questionSectionItemEntity.setQuestionInstanceId(questionInstanceId);
             }
 

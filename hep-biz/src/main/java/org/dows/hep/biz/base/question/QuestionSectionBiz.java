@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 @Service
 public class QuestionSectionBiz {
 
-    private final QuestionBaseBiz baseBiz;
+    private final BaseBiz baseBiz;
     private final QuestionSectionService questionSectionService;
     private final QuestionSectionItemBiz questionSectionItemBiz;
     private final QuestionSectionItemService questionSectionItemService;
@@ -47,26 +47,34 @@ public class QuestionSectionBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public String saveOrUpdQuestionSection(QuestionSectionRequest questionSection) {
-        String questionSectionId = questionSection.getQuestionSectionId();
-        if (StrUtil.isBlank(questionSectionId)) {
-            questionSectionId = save(questionSection);
-        } else {
-            update(questionSection);
-        }
-        return questionSectionId;
+    public String saveQuestionSection(QuestionSectionRequest questionSection) {
+        return save(questionSection);
     }
 
     /**
-    * @param
-    * @return
-    * @说明: 分页问题集[问卷]
-    * @关联表: QuestionSection,QuestionSectionItem,QuestionSectionDimension
-    * @工时: 5H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
+     * @param
+     * @return
+     * @说明: 新增和更新问题集[问卷]
+     * @关联表: QuestionSection, QuestionSectionItem, QuestionSectionDimension
+     * @工时: 8H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public boolean updQuestionSection(QuestionSectionRequest questionSection) {
+        return update(questionSection);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 分页问题集[问卷]
+     * @关联表: QuestionSection, QuestionSectionItem, QuestionSectionDimension
+     * @工时: 5H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
     public QuestionSectionResponse pageQuestionSection(QuestionSectionSearchRequest questionSectionSearch ) {
         return new QuestionSectionResponse();
     }
@@ -158,7 +166,8 @@ public class QuestionSectionBiz {
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public Boolean delQuestionSection(String questionSectionIds ) {
+    public Boolean delQuestionSection(List<String> questionSectionIds ) {
+
         return Boolean.FALSE;
     }
     /**

@@ -54,27 +54,4 @@ public class QuestionResponse {
 
     @Schema(title = "子问题")
     private List<QuestionResponse> children;
-
-//    @Override
-//    public QuestionResponse clone() {
-//        try {
-//            QuestionResponse clone = (QuestionResponse) super.clone();
-//
-//            List<QuestionOptionWithAnswerResponse> optionWithAnswerList = new ArrayList<>();
-//            for (QuestionOptionWithAnswerResponse qwa : this.optionWithAnswerList) {
-//                optionWithAnswerList.add(qwa.clone());
-//            }
-//            clone.setOptionWithAnswerList(optionWithAnswerList);
-//
-//            List<QuestionResponse> children = new ArrayList<>();
-//            for (QuestionResponse qr : this.children) {
-//                children.add(qr.clone());
-//            }
-//            clone.setChildren(children);
-//
-//            return clone;
-//        } catch (CloneNotSupportedException e) {
-//            throw new AssertionError();
-//        }
-//    }
 }

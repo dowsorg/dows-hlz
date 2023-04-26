@@ -8,23 +8,23 @@ import java.util.Date;
 
 @RequiredArgsConstructor
 @Service
-public class QuestionBaseBiz {
+public class BaseBiz {
 
     private final IdGenerator idGenerator;
 
-    protected String getAppId() {
+    public String getAppId() {
         return "3";
     }
 
-    protected Integer getSequence() {
+    public Integer getSequence() {
         return 0;
     }
 
-    protected String getIdStr() {
+    public String getIdStr() {
         return idGenerator.nextIdStr();
     }
 
-    protected String getVer() {
+    public String getVer() {
         return String.valueOf(new Date().getTime());
     }
 }

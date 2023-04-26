@@ -24,14 +24,25 @@ public class QuestionSectionRest {
     private final QuestionSectionBiz questionSectionBiz;
 
     /**
-    * 新增和更新问题集[问卷]
+    * 新增问题集[问卷]
     * @param
     * @return
     */
-    @Operation(summary = "新增和更新问题集[问卷]")
-    @PostMapping("v1/baseQuestion/questionSection/saveOrUpdQuestionSection")
-    public String saveOrUpdQuestionSection(@RequestBody @Validated QuestionSectionRequest questionSection ) {
-        return questionSectionBiz.saveOrUpdQuestionSection(questionSection);
+    @Operation(summary = "新增问题集[问卷]")
+    @PostMapping("v1/baseQuestion/questionSection/saveQuestionSection")
+    public String saveQuestionSection(@RequestBody @Validated QuestionSectionRequest questionSection ) {
+        return questionSectionBiz.saveQuestionSection(questionSection);
+    }
+
+    /**
+     * 更新问题集[问卷]
+     * @param
+     * @return
+     */
+    @Operation(summary = "更新问题集[问卷]")
+    @PostMapping("v1/baseQuestion/questionSection/updQuestionSection")
+    public Boolean updQuestionSection(@RequestBody @Validated QuestionSectionRequest questionSection ) {
+        return questionSectionBiz.updQuestionSection(questionSection);
     }
 
     /**
@@ -118,7 +129,7 @@ public class QuestionSectionRest {
     */
     @Operation(summary = "删除or批量删除问题集[问卷]")
     @DeleteMapping("v1/baseQuestion/questionSection/delQuestionSection")
-    public Boolean delQuestionSection(@Validated String questionSectionIds ) {
+    public Boolean delQuestionSection(List<String> questionSectionIds ) {
         return questionSectionBiz.delQuestionSection(questionSectionIds);
     }
 
@@ -142,17 +153,6 @@ public class QuestionSectionRest {
     @PostMapping("v1/baseQuestion/questionSection/generateQuestionSectionAutomatic")
     public String generateQuestionSectionAutomatic(@RequestBody @Validated QuestionnaireGenerateElementsRequest questionnaireGenerateElements ) {
         return questionSectionBiz.generateQuestionSectionAutomatic(questionnaireGenerateElements);
-    }
-
-    /**
-    * 查询问题集-问题
-    * @param
-    * @return
-    */
-    @Operation(summary = "查询问题集-问题")
-    @PostMapping("v1/baseQuestion/questionSection/listSectionQuestion")
-    public QuestionSectionResponse listSectionQuestion(@RequestBody @Validated QuestionsInSectionRequest questionsInSection ) {
-        return questionSectionBiz.listSectionQuestion(questionsInSection);
     }
 
     /**

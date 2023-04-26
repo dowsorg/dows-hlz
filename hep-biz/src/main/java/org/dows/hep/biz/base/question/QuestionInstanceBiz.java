@@ -2,11 +2,13 @@ package org.dows.hep.biz.base.question;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.question.QuestionAccessAuthEnum;
 import org.dows.hep.api.base.question.QuestionCloneEnum;
+import org.dows.hep.api.base.question.QuestionEnabledEnum;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.QuestionPageRequest;
 import org.dows.hep.api.base.question.request.QuestionRequest;
@@ -36,12 +38,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class QuestionInstanceBiz{
 
+    private final BaseBiz baseBiz;
     private final QuestionInstanceService questionInstanceService;
     private final QuestionAnswersService questionAnswersService;
     /**
      * @param
      * @return
-     * @说明: 新增和更新
+     * @说明: 新增
      * @关联表: QuestionInstance, QuestionOptions, QuestionAnswers
      * @工时: 8H
      * @开发者: fhb
@@ -49,29 +52,41 @@ public class QuestionInstanceBiz{
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     @Transactional
-    public String saveOrUpdQuestion(QuestionRequest question) {
-        return saveOrUpdQuestion(question, QuestionAccessAuthEnum.PRIVATE_VIEWING);
-    }
-
-    @Transactional
-    public String saveOrUpdQuestion(QuestionRequest question, QuestionAccessAuthEnum questionAccessAuthEnum) {
+    public String saveQuestion(QuestionRequest question, QuestionAccessAuthEnum questionAccessAuthEnum) {
         question.setBizCode(questionAccessAuthEnum);
-        String questionInstanceId = question.getQuestionInstanceId();
-        if (StrUtil.isBlank(questionInstanceId)) {
-            questionInstanceId = saveQuestion(question);
-        } else {
-            questionInstanceId = updQuestion(question);
-        }
-        return questionInstanceId;
+        question.setAppId(baseBiz.getAppId());
+        question.setQuestionInstancePid("0");
+
+        QuestionTypeEnum questionTypeEnum = question.getQuestionType();
+        QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(questionTypeEnum);
+        return questionTypeHandler.save(question);
     }
 
-    public boolean saveOrUpdQuestionBatch(List<QuestionRequest> questionList) {
-        if (questionList == null || questionList.isEmpty()) {
-            return false;
+    /**
+     * @param
+     * @return
+     * @说明: 更新
+     * @关联表: QuestionInstance, QuestionOptions, QuestionAnswers
+     * @工时: 8H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月18日 上午10:45:07
+     */
+    @Transactional
+    public Boolean updQuestion(QuestionRequest question) {
+        boolean error = checkQuestionTypeIsError(question);
+        if (error) {
+            return Boolean.FALSE;
         }
 
-        // leave it to you to perfect, brother
-        questionList.forEach(this::saveOrUpdQuestion);
+        // check ref-count, then update or clone
+        String questionInstanceId = question.getQuestionInstanceId();
+        boolean ref = checkQuestionRefCount(questionInstanceId);
+        if (ref) {
+            cloneQue2NewVer(question);
+        } else {
+            updateQue(question);
+        }
         return Boolean.TRUE;
     }
 
@@ -86,17 +101,14 @@ public class QuestionInstanceBiz{
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     public Page<QuestionPageResponse> pageQuestion(QuestionPageRequest questionPageRequest) {
+        Page<QuestionPageResponse> result = new Page<>();
+
         Long pageNo = questionPageRequest.getPageNo();
         Long pageSize = questionPageRequest.getPageSize();
         Page<QuestionInstanceEntity> pageRequest = new Page<>(pageNo, pageSize);
-
-        Page<QuestionPageResponse> result = new Page<>();
         Page<QuestionInstanceEntity> pageResult = questionInstanceService.lambdaQuery()
                 .eq(questionPageRequest.getAppId() != null, QuestionInstanceEntity::getAppId, questionPageRequest.getAppId())
                 .page(pageRequest);
-        if (pageResult == null) {
-            return result;
-        }
 
         List<QuestionInstanceEntity> records = pageResult.getRecords();
         if (records == null || records.isEmpty()) {
@@ -150,7 +162,7 @@ public class QuestionInstanceBiz{
         }
         QuestionResponse result = BeanUtil.copyProperties(questionInstanceEntity, QuestionResponse.class);
 
-        // 选择题
+        // todo 选择题
         String questionType = questionInstanceEntity.getQuestionType();
         if (QuestionTypeEnum.isSelect(questionType)) {
             List<QuestionAnswersEntity> answersEntityList = questionAnswersService.lambdaQuery()
@@ -182,9 +194,9 @@ public class QuestionInstanceBiz{
             return false;
         }
 
-        LambdaUpdateWrapper<QuestionInstanceEntity> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceId)
-                .set(QuestionInstanceEntity::getEnabled, 1);
+        LambdaUpdateWrapper<QuestionInstanceEntity> updateWrapper = new LambdaUpdateWrapper<QuestionInstanceEntity>()
+                .eq(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceId)
+                .set(QuestionInstanceEntity::getEnabled, QuestionEnabledEnum.ENABLED.getCode());
         return questionInstanceService.update(updateWrapper);
     }
 
@@ -203,9 +215,9 @@ public class QuestionInstanceBiz{
             return false;
         }
 
-        LambdaUpdateWrapper<QuestionInstanceEntity> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceId)
-                .set(QuestionInstanceEntity::getEnabled, 0);
+        LambdaUpdateWrapper<QuestionInstanceEntity> updateWrapper = new LambdaUpdateWrapper<QuestionInstanceEntity>()
+                .eq(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceId)
+                .set(QuestionInstanceEntity::getEnabled, QuestionEnabledEnum.DISABLED.getCode());
         return questionInstanceService.update(updateWrapper);
     }
 
@@ -239,20 +251,25 @@ public class QuestionInstanceBiz{
             return false;
         }
 
-        QuestionInstanceEntity left = questionInstanceService.getById(leftQuestionInstanceId);
-        QuestionInstanceEntity right = questionInstanceService.getById(rightQuestionInstanceId);
+        LambdaQueryWrapper<QuestionInstanceEntity> leftQueryWrapper = new LambdaQueryWrapper<QuestionInstanceEntity>()
+                .eq(QuestionInstanceEntity::getQuestionInstanceId, leftQuestionInstanceId);
+        LambdaQueryWrapper<QuestionInstanceEntity>rightQueryWrapper = new LambdaQueryWrapper<QuestionInstanceEntity>()
+                .eq(QuestionInstanceEntity::getQuestionInstanceId, rightQuestionInstanceId);
+        QuestionInstanceEntity left = questionInstanceService.getOne(leftQueryWrapper);
+        QuestionInstanceEntity right = questionInstanceService.getOne(rightQueryWrapper);
         if (BeanUtil.isEmpty(left) || BeanUtil.isEmpty(right)) {
             return false;
         }
 
         Integer leftSequence = left.getSequence();
         Integer rightSequence = right.getSequence();
-        LambdaUpdateWrapper<QuestionInstanceEntity> leftUpdateWrapper = new LambdaUpdateWrapper<>();
-        leftUpdateWrapper.eq(QuestionInstanceEntity::getQuestionInstanceId, left.getQuestionInstanceId())
+        LambdaUpdateWrapper<QuestionInstanceEntity> leftUpdateWrapper = new LambdaUpdateWrapper<QuestionInstanceEntity>()
+                .eq(QuestionInstanceEntity::getQuestionInstanceId, left.getQuestionInstanceId())
                 .set(QuestionInstanceEntity::getSequence, rightSequence);
         questionInstanceService.update(leftUpdateWrapper);
-        LambdaUpdateWrapper<QuestionInstanceEntity> rightUpdateWrapper = new LambdaUpdateWrapper<>();
-        rightUpdateWrapper.eq(QuestionInstanceEntity::getQuestionInstanceId, left.getQuestionInstanceId())
+
+        LambdaUpdateWrapper<QuestionInstanceEntity> rightUpdateWrapper = new LambdaUpdateWrapper<QuestionInstanceEntity>()
+                .eq(QuestionInstanceEntity::getQuestionInstanceId, left.getQuestionInstanceId())
                 .set(QuestionInstanceEntity::getSequence, leftSequence);
         questionInstanceService.update(rightUpdateWrapper);
         return Boolean.TRUE;
@@ -269,35 +286,13 @@ public class QuestionInstanceBiz{
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     public Boolean delQuestion(List<String> questionInstanceIds) {
-        return questionInstanceService.removeBatchByIds(questionInstanceIds);
-    }
-
-    private String saveQuestion(QuestionRequest question) {
-        String appId = "3";
-        String questionInstancePid = "0";
-        question.setAppId(appId);
-        question.setQuestionInstancePid(questionInstancePid);
-
-        QuestionTypeEnum questionTypeEnum = question.getQuestionType();
-        QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(questionTypeEnum);
-        return questionTypeHandler.save(question);
-    }
-
-    private String updQuestion(QuestionRequest question) {
-        boolean error = checkQuestionTypeIsError(question);
-        if (error) {
-            return question.getQuestionInstanceId();
+        if (questionInstanceIds == null || questionInstanceIds.isEmpty()) {
+            return Boolean.FALSE;
         }
 
-        // check ref-count, then update or clone
-        String questionInstanceId = question.getQuestionInstanceId();
-        boolean ref = checkQuestionRefCount(questionInstanceId);
-        if (ref) {
-            questionInstanceId = cloneQue2NewVer(question);
-        } else {
-            updateQue(question);
-        }
-        return questionInstanceId;
+        LambdaQueryWrapper<QuestionInstanceEntity> queryWrapper = new LambdaQueryWrapper<QuestionInstanceEntity>()
+                .in(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceIds);
+        return questionInstanceService.remove(queryWrapper);
     }
 
     // 检查问题的类型是否有错-发生变更即为有错，大错特错，挨板子吧
