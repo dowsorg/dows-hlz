@@ -1,6 +1,6 @@
 package org.dows.hep.biz.cache;
 
-import org.dows.hep.biz.enums.EnumCategFamily;
+import org.dows.hep.api.enums.EnumCategFamily;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.vo.CategVO;
 
