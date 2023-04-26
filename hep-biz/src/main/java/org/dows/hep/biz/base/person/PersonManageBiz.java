@@ -373,6 +373,15 @@ public class PersonManageBiz {
                     });
                 }
                 accountGroupApi.batchDeleteGroups(ids);
+
+                List<AccountGroupInfoResponse> groupInfoList = accountGroupInfoApi.getGroupInfoListByAccountId(accountId);
+                Set<String> groupInfoIds = new HashSet<>();
+                if (groupInfoList != null && groupInfoList.size() > 0) {
+                    groupInfoList.forEach(groupInfo -> {
+                        groupInfoIds.add(groupInfo.getId());
+                    });
+                }
+                accountGroupInfoApi.batchDeleteGroupInfos(groupInfoIds);
                 flag = true;
             }
         }

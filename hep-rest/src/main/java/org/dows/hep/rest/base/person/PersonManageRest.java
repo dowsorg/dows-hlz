@@ -82,6 +82,17 @@ public class PersonManageRest {
         return personManageBiz.addPerson(request);
     }
 
+//    /**
+//     * 新增其他图示管理
+//     * @param
+//     * @return
+//     */
+//    @Operation(summary = "新增其他图示管理")
+//    @PostMapping("v1/basePerson/personManage/addOtherBackground")
+//    public PersonInstanceResponse addOtherBackground(@RequestBody @Validated IndicatorFuncRequest request) {
+//        return personManageBiz.addOtherBackground(request);
+//    }
+
     /**
      * 人物列表
      * @param
