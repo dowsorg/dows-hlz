@@ -178,8 +178,43 @@ public class PersonManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public Boolean copyPerson(String accountId) {
-        return Boolean.FALSE;
+    @DSTransactional
+    public PersonInstanceResponse copyPerson(String accountId) {
+        //1、获取用户信息及简介并创建新用户及简介
+        AccountUserResponse accountUser = accountUserApi.getUserByAccountId(accountId);
+        UserInstanceResponse userInstanceResponse = userInstanceApi.getUserInstanceByUserId(accountUser.getUserId());
+        UserExtinfoResponse userExtinfoResponse = userExtinfoApi.getUserExtinfoByUserId(accountUser.getUserId());
+        UserInstanceRequest userInstanceRequest = new UserInstanceRequest();
+        BeanUtils.copyProperties(userInstanceResponse,userInstanceRequest,new String[]{"id","accountId"});
+        String userId = userInstanceApi.insertUserInstance(userInstanceRequest);
+        UserExtinfoRequest userExtinfo = UserExtinfoRequest.builder()
+                .userId(userId)
+                .intro(userExtinfoResponse.getIntro())
+                .build();
+        String extinfoId = userExtinfoApi.insertUserExtinfo(userExtinfo);
+        //2、获取该账户的所有信息
+        AccountInstanceResponse accountInstanceResponse = accountInstanceApi.getAccountInstanceByAccountId(accountId);
+        //3、复制账户信息
+        AccountInstanceRequest accountInstanceRequest = AccountInstanceRequest.builder()
+                .appId(accountInstanceResponse.getAppId())
+                .avatar(accountInstanceResponse.getAvatar())
+                .status(accountInstanceResponse.getStatus())
+                .source(accountInstanceResponse.getSource())
+                .principalType(accountInstanceResponse.getPrincipalType())
+                .identifier(orgBiz.createCode(7))
+                .accountName(randomWord(6))
+                .build();
+        AccountInstanceResponse vo = accountInstanceApi.createAccountInstance(accountInstanceRequest);
+        //4、创建账户和用户之间的关联关系
+        AccountUserRequest accountUserRequest = AccountUserRequest.builder()
+                .accountId(vo.getAccountId())
+                .userId(userId)
+                .appId(accountInstanceResponse.getAppId())
+                .tentantId(accountInstanceResponse.getTenantId()).build();
+        this.accountUserApi.createAccountUser(accountUserRequest);
+        //todo 复制指标信息和突发事件
+        return PersonInstanceResponse.builder().accountId(vo.getAccountId())
+                .build();
     }
 
     /**

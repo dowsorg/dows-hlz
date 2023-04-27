@@ -69,7 +69,7 @@ public class PersonManageRest {
     */
     @Operation(summary = "复制人物")
     @PostMapping("v1/basePerson/personManage/copyPerson")
-    public Boolean copyPerson(@RequestBody @Validated String accountId ) {
+    public PersonInstanceResponse copyPerson(@RequestParam @Validated String accountId) {
         return personManageBiz.copyPerson(accountId);
     }
 
