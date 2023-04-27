@@ -1,4 +1,4 @@
-package org.dows.hep.api.user.materials.request;
+package org.dows.hep.api.base.materials.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;

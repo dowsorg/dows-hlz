@@ -2,13 +2,19 @@ package org.dows.hep.biz.base.materials;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.user.materials.request.MaterialsAttachmentRequest;
-import org.dows.hep.api.user.materials.request.MaterialsRequest;
-import org.dows.hep.api.user.materials.request.MaterialsSearchRequest;
-import org.dows.hep.api.user.materials.response.MaterialsAttachmentResponse;
-import org.dows.hep.api.user.materials.response.MaterialsResponse;
+import org.dows.hep.api.enums.EnumStatus;
+import org.dows.hep.api.base.materials.request.MaterialsAttachmentRequest;
+import org.dows.hep.api.base.materials.request.MaterialsPageRequest;
+import org.dows.hep.api.base.materials.request.MaterialsRequest;
+import org.dows.hep.api.base.materials.request.MaterialsSearchRequest;
+import org.dows.hep.api.base.materials.response.MaterialsAttachmentResponse;
+import org.dows.hep.api.base.materials.response.MaterialsPageResponse;
+import org.dows.hep.api.base.materials.response.MaterialsResponse;
+import org.dows.hep.biz.base.question.BaseBiz;
 import org.dows.hep.entity.MaterialsAttachmentEntity;
 import org.dows.hep.entity.MaterialsEntity;
 import org.dows.hep.service.MaterialsAttachmentService;
@@ -29,6 +35,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class MaterialsManageBiz {
+    private final BaseBiz baseBiz;
     private final MaterialsService materialsService;
     private final MaterialsAttachmentService materialsAttachmentService;
 
@@ -43,14 +50,23 @@ public class MaterialsManageBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     @Transactional
-    public String saveOrUpdMaterials(MaterialsRequest materials) {
-        MaterialsEntity materialsEntity = BeanUtil.copyProperties(materials, MaterialsEntity.class);
-        String id = fillDefault(materialsEntity);
-//        saveOrUpd(materialsEntity);
+    public String saveOrUpdMaterials(MaterialsRequest materialsRequest) {
+        if (BeanUtil.isEmpty(materialsRequest)) {
+            return "";
+        }
+
+        // materials
+        if (StrUtil.isBlank(materialsRequest.getMaterialsId())) {
+            materialsRequest.setEnabled(materialsRequest.getEnabled() == null ? EnumStatus.ENABLE.getCode() : materialsRequest.getEnabled());
+            materialsRequest.setAppId(baseBiz.getAppId());
+            materialsRequest.setMaterialsId(baseBiz.getIdStr());
+        }
+        MaterialsEntity materialsEntity = BeanUtil.copyProperties(materialsRequest, MaterialsEntity.class);
         materialsService.saveOrUpdate(materialsEntity);
 
-        handleAttachment(materials);
-        return id;
+        // handle materials' attachments
+        handleAttachment(materialsRequest);
+        return materialsEntity.getMaterialsId();
     }
 
     /**
@@ -63,22 +79,29 @@ public class MaterialsManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public IPage<MaterialsEntity> pageMaterials(MaterialsSearchRequest materialsSearch) {
-        // TODO
-//        IPage<MaterialsEntity> pageEntity = getPage(materialsSearch);
+    public Page<MaterialsPageResponse> pageMaterials(MaterialsPageRequest materialsPageRequest) {
+        Page<MaterialsPageResponse> result = new Page<>();
+        if (BeanUtil.isEmpty(materialsPageRequest)) {
+            return result;
+        }
 
-//        IPage<MaterialsEntity> pageResult = materialsService.lambdaQuery()
-//                .like(BeanUtil.isNotEmpty(materialsSearch) && StrUtil.isNotBlank(materialsSearch.getKeyword()), MaterialsEntity::getTitle, materialsSearch.getKeyword())
-//                .like(BeanUtil.isNotEmpty(materialsSearch) && StrUtil.isNotBlank(materialsSearch.getKeyword()), MaterialsEntity::getAccountName, materialsSearch.getKeyword())
-//                .like(BeanUtil.isNotEmpty(materialsSearch) && StrUtil.isNotBlank(materialsSearch.getKeyword()), MaterialsEntity::getAccountId, materialsSearch.getKeyword())
-//                .page(pageEntity);
-//        List<MaterialsEntity> records = pageResult.getRecords();
-//        if (records != null && records.size() > 0) {
-//            List<MaterialsResponse> collect = records.stream()
-//                    .map(item -> BeanUtil.copyProperties(item, MaterialsResponse.class))
-//                    .collect(Collectors.toList());
-//        }
-        return null;
+        Page<MaterialsEntity> pageRequest = new Page<>(materialsPageRequest.getPageNo(), materialsPageRequest.getPageSize());
+        Page<MaterialsEntity> pageResult = materialsService.lambdaQuery()
+                .like(BeanUtil.isNotEmpty(materialsPageRequest) && StrUtil.isNotBlank(materialsPageRequest.getKeyword()), MaterialsEntity::getTitle, materialsPageRequest.getKeyword())
+                .like(BeanUtil.isNotEmpty(materialsPageRequest) && StrUtil.isNotBlank(materialsPageRequest.getKeyword()), MaterialsEntity::getDescr, materialsPageRequest.getKeyword())
+                .like(BeanUtil.isNotEmpty(materialsPageRequest) && StrUtil.isNotBlank(materialsPageRequest.getKeyword()), MaterialsEntity::getAccountName, materialsPageRequest.getKeyword())
+                .like(BeanUtil.isNotEmpty(materialsPageRequest) && StrUtil.isNotBlank(materialsPageRequest.getKeyword()), MaterialsEntity::getAccountId, materialsPageRequest.getKeyword())
+                .page(pageRequest);
+        List<MaterialsEntity> records = pageResult.getRecords();
+        if (records == null || records.isEmpty()) {
+            return result;
+        }
+
+        List<MaterialsPageResponse> pageResponseList = records.stream()
+                .map(item -> BeanUtil.copyProperties(item, MaterialsPageResponse.class))
+                .collect(Collectors.toList());
+        result.setRecords(pageResponseList);
+        return result;
     }
 
     /**
@@ -91,21 +114,24 @@ public class MaterialsManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public List<MaterialsResponse> listMaterials(MaterialsSearchRequest materialsSearch) {
+    public List<MaterialsResponse> listMaterials(MaterialsSearchRequest materialsSearchRequest) {
         List<MaterialsResponse> result = new ArrayList<>();
 
         // list materials
         List<MaterialsEntity> materialsEntityList = materialsService.lambdaQuery()
-                .like(BeanUtil.isNotEmpty(materialsSearch) && StrUtil.isNotBlank(materialsSearch.getKeyword()), MaterialsEntity::getTitle, materialsSearch.getKeyword())
-                .like(BeanUtil.isNotEmpty(materialsSearch) && StrUtil.isNotBlank(materialsSearch.getKeyword()), MaterialsEntity::getAccountName, materialsSearch.getKeyword())
-                .like(BeanUtil.isNotEmpty(materialsSearch) && StrUtil.isNotBlank(materialsSearch.getKeyword()), MaterialsEntity::getAccountId, materialsSearch.getKeyword())
+                .like(BeanUtil.isNotEmpty(materialsSearchRequest) && StrUtil.isNotBlank(materialsSearchRequest.getKeyword()), MaterialsEntity::getTitle, materialsSearchRequest.getKeyword())
+                .like(BeanUtil.isNotEmpty(materialsSearchRequest) && StrUtil.isNotBlank(materialsSearchRequest.getKeyword()), MaterialsEntity::getDescr, materialsSearchRequest.getKeyword())
+                .like(BeanUtil.isNotEmpty(materialsSearchRequest) && StrUtil.isNotBlank(materialsSearchRequest.getKeyword()), MaterialsEntity::getAccountName, materialsSearchRequest.getKeyword())
+                .like(BeanUtil.isNotEmpty(materialsSearchRequest) && StrUtil.isNotBlank(materialsSearchRequest.getKeyword()), MaterialsEntity::getAccountId, materialsSearchRequest.getKeyword())
                 .list();
         if (materialsEntityList == null || materialsEntityList.isEmpty()) {
             return result;
         }
 
         // list attachmentResponse
-        List<String> materialsIds = materialsEntityList.stream().map(MaterialsEntity::getMaterialsId).collect(Collectors.toList());
+        List<String> materialsIds = materialsEntityList.stream()
+                .map(MaterialsEntity::getMaterialsId)
+                .collect(Collectors.toList());
         List<MaterialsAttachmentResponse> attachmentResponseList = listMaterialsAttachmentResponses(materialsIds);
 
         // build
@@ -139,7 +165,26 @@ public class MaterialsManageBiz {
             return result;
         }
 
-        return new MaterialsResponse();
+        // get materials
+        LambdaQueryWrapper<MaterialsEntity> queryWrapper = new LambdaQueryWrapper<MaterialsEntity>()
+                .eq(MaterialsEntity::getMaterialsId, materialsId);
+        MaterialsEntity materialsEntity = materialsService.getOne(queryWrapper);
+        if (BeanUtil.isEmpty(materialsEntity)) {
+            return result;
+        }
+
+        // list attachment of materials
+        List<MaterialsAttachmentEntity> attachmentEntityList = materialsAttachmentService.lambdaQuery()
+                .eq(MaterialsAttachmentEntity::getMaterialsId, materialsId)
+                .list();
+
+        // build result
+        MaterialsResponse materialsResponse = BeanUtil.copyProperties(materialsEntity, MaterialsResponse.class);
+        List<MaterialsAttachmentResponse> attachmentResponseList = attachmentEntityList.stream()
+                .map(item -> BeanUtil.copyProperties(item, MaterialsAttachmentResponse.class))
+                .collect(Collectors.toList());
+        materialsResponse.setMaterialsAttachment(attachmentResponseList);
+        return result;
     }
 
     /**
@@ -153,7 +198,14 @@ public class MaterialsManageBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     public Boolean enabledMaterials(String materialsId) {
-        return Boolean.FALSE;
+        if (StrUtil.isBlank(materialsId)) {
+            return Boolean.FALSE;
+        }
+
+        LambdaUpdateWrapper<MaterialsEntity> updateWrapper = new LambdaUpdateWrapper<MaterialsEntity>()
+                .eq(MaterialsEntity::getMaterialsId, materialsId)
+                .set(MaterialsEntity::getEnabled, EnumStatus.ENABLE.getCode());
+        return materialsService.update(updateWrapper);
     }
 
     /**
@@ -167,7 +219,14 @@ public class MaterialsManageBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     public Boolean disabledMaterials(String materialsId) {
-        return Boolean.FALSE;
+        if (StrUtil.isBlank(materialsId)) {
+            return Boolean.FALSE;
+        }
+
+        LambdaUpdateWrapper<MaterialsEntity> updateWrapper = new LambdaUpdateWrapper<MaterialsEntity>()
+                .eq(MaterialsEntity::getMaterialsId, materialsId)
+                .set(MaterialsEntity::getEnabled, EnumStatus.DISABLE.getCode());
+        return materialsService.update(updateWrapper);
     }
 
     /**
@@ -180,15 +239,28 @@ public class MaterialsManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public Boolean delMaterials(String materialsId) {
-        return Boolean.FALSE;
+    public Boolean delMaterials(List<String> materialsIds) {
+        if (materialsIds == null || materialsIds.isEmpty()) {
+            return Boolean.FALSE;
+        }
+
+        // remove materials
+        LambdaQueryWrapper<MaterialsEntity> queryWrapper1 = new LambdaQueryWrapper<MaterialsEntity>()
+                .in(MaterialsEntity::getMaterialsId, materialsIds);
+        boolean remRes1 = materialsService.remove(queryWrapper1);
+
+        // remove attachment
+        LambdaQueryWrapper<MaterialsAttachmentEntity> queryWrapper2 = new LambdaQueryWrapper<MaterialsAttachmentEntity>()
+                .in(MaterialsAttachmentEntity::getMaterialsId, materialsIds);
+        boolean remRes2 = materialsAttachmentService.remove(queryWrapper2);
+
+        return remRes1 && remRes2;
     }
 
     private void handleAttachment(MaterialsRequest materials) {
         if (BeanUtil.isEmpty(materials)) {
             return;
         }
-
         List<MaterialsAttachmentRequest> materialsAttachments = materials.getMaterialsAttachments();
         if (materialsAttachments == null || materialsAttachments.isEmpty()) {
             return;
@@ -196,46 +268,16 @@ public class MaterialsManageBiz {
 
         String materialsId = materials.getMaterialsId();
         String appId = materials.getAppId();
-        int sequence = 1;
         List<MaterialsAttachmentEntity> attachmentEntities = materialsAttachments.stream()
                 .map(item -> {
-                    // TODO generate id
-                    String id = "";
                     MaterialsAttachmentEntity materialsAttachmentEntity = BeanUtil.copyProperties(item, MaterialsAttachmentEntity.class);
-                    materialsAttachmentEntity.setMaterialsAttachmentId(id);
+                    materialsAttachmentEntity.setMaterialsAttachmentId(baseBiz.getIdStr());
                     materialsAttachmentEntity.setMaterialsId(materialsId);
                     materialsAttachmentEntity.setAppId(appId);
-                    materialsAttachmentEntity.setSequence(sequence + 1);
                     return materialsAttachmentEntity;
                 })
                 .collect(Collectors.toList());
         materialsAttachmentService.saveOrUpdateBatch(attachmentEntities);
-    }
-
-    private String fillDefault(MaterialsEntity materialsEntity) {
-        String id = "";
-        if (BeanUtil.isEmpty(materialsEntity)) {
-            return id;
-        }
-
-        // todo generate id
-        String materialsId = materialsEntity.getMaterialsId();
-        if (materialsId == null) {
-//            id = IdGenerator;
-            materialsEntity.setMaterialsId(id);
-        }
-
-        Boolean enabled = materialsEntity.getEnabled();
-        if (enabled == null) {
-            materialsEntity.setEnabled(true);
-        }
-
-        Integer sequence = materialsEntity.getSequence();
-        if (null == sequence) {
-            materialsEntity.setSequence(0);
-        }
-
-        return id;
     }
 
     private List<MaterialsAttachmentResponse> listMaterialsAttachmentResponses(List<String> materialsIds) {
@@ -243,7 +285,6 @@ public class MaterialsManageBiz {
         if (materialsIds == null || materialsIds.isEmpty()) {
             return result;
         }
-
 
         List<MaterialsAttachmentEntity> attachmentEntityList = materialsAttachmentService.lambdaQuery()
                 .in(MaterialsAttachmentEntity::getMaterialsId, materialsIds)

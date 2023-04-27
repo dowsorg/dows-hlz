@@ -1,13 +1,19 @@
-package org.dows.hep.api.base.question.request;
+package org.dows.hep.api.base.materials.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * @author fhb
+ * @description
+ * @date 2023/4/27 10:16
+ */
 @Data
 @NoArgsConstructor
-@Schema(name = "QuestionPageRequest 对象", title = "问题分页Request")
-public class QuestionPageRequest {
+@Schema(name = "MaterialsPageRequest 对象", title = "资料")
+public class MaterialsPageRequest {
+
     @Schema(title = "pageNo")
     private Long pageNo;
 
@@ -19,9 +25,4 @@ public class QuestionPageRequest {
 
     @Schema(title = "关键字")
     private String keyword;
-
-    @Schema(title = "题型")
-    private String questionType;
-
-
 }

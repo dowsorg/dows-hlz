@@ -1,8 +1,11 @@
 package org.dows.hep.biz.user.materials;
 
-import org.dows.hep.api.user.materials.request.MaterialsSearchRequest;
-import org.dows.hep.api.user.materials.request.QuestionSearchRequest;
-import org.dows.hep.api.user.materials.response.MaterialsResponse;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.materials.request.MaterialsPageRequest;
+import org.dows.hep.api.base.materials.response.MaterialsPageResponse;
+import org.dows.hep.api.base.materials.response.MaterialsResponse;
+import org.dows.hep.biz.base.materials.MaterialsManageBiz;
 import org.springframework.stereotype.Service;
 
 /**
@@ -11,8 +14,10 @@ import org.springframework.stereotype.Service;
 * @author lait.zhang
 * @date 2023年4月23日 上午9:44:34
 */
+@RequiredArgsConstructor
 @Service
 public class UserMaterialsBiz {
+    private final MaterialsManageBiz materialsManageBiz;
     /**
     * @param
     * @return
@@ -23,21 +28,8 @@ public class UserMaterialsBiz {
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public MaterialsResponse pageMaterials(MaterialsSearchRequest materialsSearch ) {
-        return new MaterialsResponse();
-    }
-    /**
-    * @param
-    * @return
-    * @说明: 条件查询-无分页
-    * @关联表: Materials,MaterialsAttachment
-    * @工时: 5H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public MaterialsResponse listMaterials(QuestionSearchRequest questionSearch ) {
-        return new MaterialsResponse();
+    public Page<MaterialsPageResponse> pageMaterials(MaterialsPageRequest materialsPageRequest ) {
+        return materialsManageBiz.pageMaterials(materialsPageRequest);
     }
     /**
     * @param
@@ -50,6 +42,6 @@ public class UserMaterialsBiz {
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public MaterialsResponse getMaterials(String materialsId ) {
-        return new MaterialsResponse();
+        return materialsManageBiz.getMaterials(materialsId);
     }
 }

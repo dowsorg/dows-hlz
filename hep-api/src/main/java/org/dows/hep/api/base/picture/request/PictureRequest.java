@@ -37,7 +37,7 @@ public class PictureRequest {
     private String type;
 
     @Schema(title = "状态")
-    private Boolean enabled;
+    private Integer enabled;
 
     @Schema(title = "序号")
     private Integer sequence;

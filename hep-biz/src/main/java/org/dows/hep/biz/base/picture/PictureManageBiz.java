@@ -10,11 +10,11 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.util.ReflectUtil;
+import org.dows.hep.api.base.materials.request.MaterialsAttachmentRequest;
 import org.dows.hep.api.base.picture.request.PictureRequest;
 import org.dows.hep.api.base.picture.response.PictureResponse;
 import org.dows.hep.api.enums.EnumMaterials;
 import org.dows.hep.api.exception.MaterialException;
-import org.dows.hep.api.user.materials.request.MaterialsAttachmentRequest;
 import org.dows.hep.entity.MaterialsAttachmentEntity;
 import org.dows.hep.entity.MaterialsCategoryEntity;
 import org.dows.hep.entity.MaterialsEntity;
@@ -70,7 +70,6 @@ public class PictureManageBiz {
                 .appId(picture.getAppId())
                 .categoryId(entity.getMaterialsCategoryId())
                 .categoryName(picture.getCategoryName())
-                .type(picture.getType())
                 .enabled(picture.getEnabled())
                 .build();
         materialsService.save(material);
