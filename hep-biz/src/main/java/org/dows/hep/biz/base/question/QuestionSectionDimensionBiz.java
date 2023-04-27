@@ -1,6 +1,7 @@
 package org.dows.hep.biz.base.question;
 
 import org.dows.hep.api.base.question.request.QuestionSectionDimensionRequest;
+import org.dows.hep.api.base.question.request.QuestionSectionRequest;
 import org.dows.hep.api.base.question.response.QuestionSectionDimensionResponse;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +28,14 @@ public class QuestionSectionDimensionBiz{
     */
     public Boolean saveOrUpdQuestionSectionDimension(QuestionSectionDimensionRequest questionSectionDimension ) {
         return Boolean.FALSE;
+    }
+
+    public Boolean saveBatch(QuestionSectionRequest questionSectionRequest, List<QuestionSectionDimensionRequest> questionSectionDimensionList) {
+        return true;
+    }
+
+    public Boolean updateBatch(QuestionSectionRequest questionSectionRequest, List<QuestionSectionDimensionRequest> questionSectionDimensionList) {
+        return true;
     }
     /**
     * @param

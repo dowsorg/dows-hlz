@@ -39,6 +39,9 @@ public class MaterialsCategoryEntity implements CrudEntity {
     @Schema(title = "应用ID")
     private String appId;
 
+    @Schema(title = "bizCode")
+    private String bizCode;
+
     @Schema(title = "分类名称")
     private String categoryName;
 

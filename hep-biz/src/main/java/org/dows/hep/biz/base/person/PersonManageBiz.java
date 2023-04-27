@@ -2,6 +2,7 @@ package org.dows.hep.biz.base.person;
 
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.api.*;
@@ -10,7 +11,11 @@ import org.dows.account.request.AccountUserRequest;
 import org.dows.account.response.*;
 import org.dows.hep.api.base.person.request.PersonInstanceRequest;
 import org.dows.hep.api.base.person.response.PersonInstanceResponse;
+import org.dows.hep.api.tenant.casus.request.CasePersonIndicatorFuncRequest;
 import org.dows.hep.biz.base.org.OrgBiz;
+import org.dows.hep.entity.CasePersonIndicatorFuncEntity;
+import org.dows.hep.service.CasePersonIndicatorFuncService;
+import org.dows.sequence.api.IdGenerator;
 import org.dows.user.api.api.UserExtinfoApi;
 import org.dows.user.api.api.UserInstanceApi;
 import org.dows.user.api.request.UserExtinfoRequest;
@@ -47,6 +52,10 @@ public class PersonManageBiz {
 
     private final OrgBiz orgBiz;
 
+    private final IdGenerator idGenerator;
+
+    private final CasePersonIndicatorFuncService casePersonIndicatorFuncService;
+
     /**
      * @param
      * @return
@@ -57,15 +66,28 @@ public class PersonManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public Boolean deletePersons(String ids) {
-        return Boolean.FALSE;
+    @DSTransactional
+    public Integer deletePersons(Set<String> accountIds) {
+        //1、通过账户ID找到用户ID
+        Set<String> userIds = new HashSet<>();
+        accountIds.forEach(accountId -> {
+            userIds.add(accountUserApi.getUserByAccountId(accountId).getUserId());
+        });
+        //2、删除账户实例
+        Integer count = accountInstanceApi.deleteAccountInstanceByAccountIds(accountIds);
+        //3、删除用户扩展信息
+        userIds.forEach(userId -> {
+            UserExtinfoResponse extinfoResponse = userExtinfoApi.getUserExtinfoByUserId(userId);
+            userExtinfoApi.deleteUserExtinfoById(extinfoResponse.getId());
+        });
+        return count;
     }
 
     /**
      * @param
      * @return
      * @说明: 查看人物基本信息
-     * @关联表: AccountInstance、AccountUser、UserInstance、UserExtinfo
+     * @关联表: AccountInstance、AccountUser、UserInstance、UserExtinfo、IndicatorFunc、CasePersonIndicatorFunc
      * @工时: 3H
      * @开发者: jx
      * @开始时间:
@@ -86,6 +108,20 @@ public class PersonManageBiz {
                 .intro(extinfoResponse.getIntro())
                 .avatar(accounInstance.getAvatar())
                 .build();
+        //5、获取用户其他图示管理图片
+        List<CasePersonIndicatorFuncRequest> funcList = new ArrayList<>();
+        List<CasePersonIndicatorFuncEntity> casePersonIndicatorFuncList = casePersonIndicatorFuncService.lambdaQuery()
+                .eq(CasePersonIndicatorFuncEntity::getCasePersonId, accountId)
+                .eq(CasePersonIndicatorFuncEntity::getDeleted, false)
+                .list();
+        if (casePersonIndicatorFuncList != null && casePersonIndicatorFuncList.size() > 0) {
+            casePersonIndicatorFuncList.forEach(casePersonIndicatorFuncEntity -> {
+                CasePersonIndicatorFuncRequest request = new CasePersonIndicatorFuncRequest();
+                BeanUtils.copyProperties(casePersonIndicatorFuncEntity, request);
+                funcList.add(request);
+            });
+        }
+        response.setEntityList(funcList);
         return response;
     }
 
@@ -99,8 +135,37 @@ public class PersonManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public Boolean editPerson(PersonInstanceRequest personInstance) {
-        return Boolean.FALSE;
+    @DSTransactional
+    public Boolean editPerson(PersonInstanceRequest request) {
+        //1、修改账户
+        AccountInstanceRequest accountInstanceRequest = AccountInstanceRequest.builder()
+                .accountId(request.getAccountId().toString())
+                .userName(request.getName())
+                .appId(request.getAppId())
+                .avatar(request.getAvatar())
+                .build();
+        String userId = accountInstanceApi.updateAccountInstanceByAccountId(accountInstanceRequest);
+        //2、修改用户扩展信息
+        if (StringUtils.isNotEmpty(request.getIntro())) {
+            UserExtinfoResponse extinfoResponse = userExtinfoApi.getUserExtinfoByUserId(userId);
+            UserExtinfoRequest extinfoRequest = new UserExtinfoRequest();
+            BeanUtils.copyProperties(extinfoResponse, extinfoRequest);
+            userExtinfoApi.updateUserExtinfoById(extinfoRequest);
+        }
+        //3、修改用户功能点
+        List<CasePersonIndicatorFuncRequest> funcList = request.getEntityList();
+        List<CasePersonIndicatorFuncEntity> entities = new ArrayList<>();
+        funcList.forEach(func -> {
+            CasePersonIndicatorFuncEntity casePersonIndicatorFuncEntity = casePersonIndicatorFuncService.lambdaQuery()
+                    .eq(CasePersonIndicatorFuncEntity::getCasePersonIndicatorFuncId, func.getCasePersonIndicatorFuncId())
+                    .eq(CasePersonIndicatorFuncEntity::getDeleted, false)
+                    .one();
+            CasePersonIndicatorFuncEntity entity = new CasePersonIndicatorFuncEntity();
+            BeanUtils.copyProperties(func, entity);
+            entity.setId(casePersonIndicatorFuncEntity.getId());
+            entities.add(entity);
+        });
+        return casePersonIndicatorFuncService.updateBatchById(entities);
     }
 
     /**
@@ -113,8 +178,43 @@ public class PersonManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public Boolean copyPerson(String accountId) {
-        return Boolean.FALSE;
+    @DSTransactional
+    public PersonInstanceResponse copyPerson(String accountId) {
+        //1、获取用户信息及简介并创建新用户及简介
+        AccountUserResponse accountUser = accountUserApi.getUserByAccountId(accountId);
+        UserInstanceResponse userInstanceResponse = userInstanceApi.getUserInstanceByUserId(accountUser.getUserId());
+        UserExtinfoResponse userExtinfoResponse = userExtinfoApi.getUserExtinfoByUserId(accountUser.getUserId());
+        UserInstanceRequest userInstanceRequest = new UserInstanceRequest();
+        BeanUtils.copyProperties(userInstanceResponse,userInstanceRequest,new String[]{"id","accountId"});
+        String userId = userInstanceApi.insertUserInstance(userInstanceRequest);
+        UserExtinfoRequest userExtinfo = UserExtinfoRequest.builder()
+                .userId(userId)
+                .intro(userExtinfoResponse.getIntro())
+                .build();
+        String extinfoId = userExtinfoApi.insertUserExtinfo(userExtinfo);
+        //2、获取该账户的所有信息
+        AccountInstanceResponse accountInstanceResponse = accountInstanceApi.getAccountInstanceByAccountId(accountId);
+        //3、复制账户信息
+        AccountInstanceRequest accountInstanceRequest = AccountInstanceRequest.builder()
+                .appId(accountInstanceResponse.getAppId())
+                .avatar(accountInstanceResponse.getAvatar())
+                .status(accountInstanceResponse.getStatus())
+                .source(accountInstanceResponse.getSource())
+                .principalType(accountInstanceResponse.getPrincipalType())
+                .identifier(orgBiz.createCode(7))
+                .accountName(randomWord(6))
+                .build();
+        AccountInstanceResponse vo = accountInstanceApi.createAccountInstance(accountInstanceRequest);
+        //4、创建账户和用户之间的关联关系
+        AccountUserRequest accountUserRequest = AccountUserRequest.builder()
+                .accountId(vo.getAccountId())
+                .userId(userId)
+                .appId(accountInstanceResponse.getAppId())
+                .tentantId(accountInstanceResponse.getTenantId()).build();
+        this.accountUserApi.createAccountUser(accountUserRequest);
+        //todo 复制指标信息和突发事件
+        return PersonInstanceResponse.builder().accountId(vo.getAccountId())
+                .build();
     }
 
     /**
@@ -373,6 +473,15 @@ public class PersonManageBiz {
                     });
                 }
                 accountGroupApi.batchDeleteGroups(ids);
+
+                List<AccountGroupInfoResponse> groupInfoList = accountGroupInfoApi.getGroupInfoListByAccountId(accountId);
+                Set<String> groupInfoIds = new HashSet<>();
+                if (groupInfoList != null && groupInfoList.size() > 0) {
+                    groupInfoList.forEach(groupInfo -> {
+                        groupInfoIds.add(groupInfo.getId());
+                    });
+                }
+                accountGroupInfoApi.batchDeleteGroupInfos(groupInfoIds);
                 flag = true;
             }
         }
@@ -417,6 +526,7 @@ public class PersonManageBiz {
         return PersonInstanceResponse.builder().accountId(vo.getAccountId())
                 .build();
     }
+
     /**
      * 生成随机账号
      */
@@ -424,7 +534,7 @@ public class PersonManageBiz {
         Random random = new Random();
         StringBuilder word = new StringBuilder(length);
         for (int i = 0; i < length; i++) {
-            word.append((char)('a' + random.nextInt(26)));
+            word.append((char) ('a' + random.nextInt(26)));
         }
 
         return word.toString();
@@ -453,7 +563,7 @@ public class PersonManageBiz {
         //3、复制
         List<PersonInstanceResponse> personInstanceResponseList = new ArrayList<>();
         List<AccountInstanceResponse> accountInstanceList = accountInstancePage.getRecords();
-        accountInstanceList.forEach(accountInstance->{
+        accountInstanceList.forEach(accountInstance -> {
             PersonInstanceResponse personInstance = PersonInstanceResponse.builder()
                     .accountId(accountInstance.getAccountId())
                     .accountName(accountInstance.getAccountName())
@@ -466,5 +576,27 @@ public class PersonManageBiz {
         BeanUtils.copyProperties(accountInstancePage, personInstancePage, new String[]{"records"});
         personInstancePage.setRecords(personInstanceResponseList);
         return personInstancePage;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 创建 人物功能点
+     * @关联表:
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/4/27 10:24
+     */
+    @DSTransactional
+    public Boolean addOtherBackground(List<CasePersonIndicatorFuncRequest> list) {
+        List<CasePersonIndicatorFuncEntity> funcList = new ArrayList<>();
+        list.forEach(model -> {
+            CasePersonIndicatorFuncEntity entity = new CasePersonIndicatorFuncEntity();
+            BeanUtils.copyProperties(model, entity);
+            entity.setCasePersonIndicatorFuncId(idGenerator.nextIdStr());
+            funcList.add(entity);
+        });
+        return casePersonIndicatorFuncService.saveBatch(funcList);
     }
 }

@@ -18,8 +18,8 @@ public class MaterialsCategoryRequest {
     @Schema(title = "资料分类ID")
     private String materialsCategoryId;
 
-    @Schema(title = "资料类别")
-    private String type;
+    @Schema(title = "bizCode")
+    private String bizCode;
 
     @Schema(title = "分类名称")
     private String categoryName;

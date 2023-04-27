@@ -1,43 +1,80 @@
 package org.dows.hep.biz.base.question;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.question.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.*;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
+import org.dows.hep.entity.QuestionSectionEntity;
+import org.dows.hep.entity.QuestionSectionItemEntity;
+import org.dows.hep.service.QuestionSectionItemService;
+import org.dows.hep.service.QuestionSectionService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
-* @description project descr:问题:问题集[问卷]
-*
-* @author lait.zhang
-* @date 2023年4月23日 上午9:44:34
-*/
+ * @author lait.zhang
+ * @description project descr:问题:问题集[问卷]
+ * @date 2023年4月23日 上午9:44:34
+ */
+
+@RequiredArgsConstructor
 @Service
-public class QuestionSectionBiz{
+public class QuestionSectionBiz {
+
+    private final BaseBiz baseBiz;
+    private final QuestionSectionService questionSectionService;
+    private final QuestionSectionItemBiz questionSectionItemBiz;
+    private final QuestionSectionItemService questionSectionItemService;
+    private final QuestionSectionDimensionBiz questionSectionDimensionBiz;
+
+
     /**
-    * @param
-    * @return
-    * @说明: 新增和更新问题集[问卷]
-    * @关联表: QuestionSection,QuestionSectionItem,QuestionSectionDimension
-    * @工时: 8H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public String saveOrUpdQuestionSection(QuestionSectionRequest questionSection ) {
-        return new String();
+     * @param
+     * @return
+     * @说明: 新增和更新问题集[问卷]
+     * @关联表: QuestionSection, QuestionSectionItem, QuestionSectionDimension
+     * @工时: 8H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public String saveQuestionSection(QuestionSectionRequest questionSection) {
+        return save(questionSection);
     }
+
     /**
-    * @param
-    * @return
-    * @说明: 分页问题集[问卷]
-    * @关联表: QuestionSection,QuestionSectionItem,QuestionSectionDimension
-    * @工时: 5H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
+     * @param
+     * @return
+     * @说明: 新增和更新问题集[问卷]
+     * @关联表: QuestionSection, QuestionSectionItem, QuestionSectionDimension
+     * @工时: 8H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public boolean updQuestionSection(QuestionSectionRequest questionSection) {
+        return update(questionSection);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 分页问题集[问卷]
+     * @关联表: QuestionSection, QuestionSectionItem, QuestionSectionDimension
+     * @工时: 5H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
     public QuestionSectionResponse pageQuestionSection(QuestionSectionSearchRequest questionSectionSearch ) {
         return new QuestionSectionResponse();
     }
@@ -129,7 +166,8 @@ public class QuestionSectionBiz{
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public Boolean delQuestionSection(String questionSectionIds ) {
+    public Boolean delQuestionSection(List<String> questionSectionIds ) {
+
         return Boolean.FALSE;
     }
     /**
@@ -158,19 +196,7 @@ public class QuestionSectionBiz{
     public String generateQuestionSectionAutomatic(QuestionnaireGenerateElementsRequest questionnaireGenerateElements ) {
         return new String();
     }
-    /**
-    * @param
-    * @return
-    * @说明: 合并问题集[问卷]
-    * @关联表: QuestionSection,QuestionSectionItem,QuestionInstance
-    * @工时: 4H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public String mergeQuestionSection(QuestionnaireMergeElementsRequest questionnaireMergeElements ) {
-        return new String();
-    }
+
     /**
     * @param
     * @return
@@ -210,43 +236,152 @@ public class QuestionSectionBiz{
     public Boolean transposeSectionQuestion(String questionSectionId, String leftQuestionSectionItemId, String rightQuestionSectionItemId ) {
         return Boolean.FALSE;
     }
+
     /**
-    * @param
-    * @return
-    * @说明: 启用问题集-题目
-    * @关联表: QuestionSection,QuestionSectionItem
-    * @工时: 3H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public Boolean enabledSectionQuestion(String questionSectionId, String questionSectionItemId ) {
+     * @param
+     * @return
+     * @说明: 启用问题集-题目
+     * @关联表: QuestionSection, QuestionSectionItem
+     * @工时: 3H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public Boolean enabledSectionQuestion(String questionSectionId, String questionSectionItemId) {
+        if (StrUtil.isBlank(questionSectionId) || StrUtil.isBlank(questionSectionItemId)) {
+            return false;
+        }
+
+        LambdaUpdateWrapper<QuestionSectionItemEntity> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(QuestionSectionItemEntity::getQuestionSectionId, questionSectionId)
+                .set(QuestionSectionItemEntity::getQuestionSectionItemId, questionSectionItemId)
+                .set(QuestionSectionItemEntity::getEnabled, 1);
+        return questionSectionItemService.update(updateWrapper);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 禁用问题集-题目
+     * @关联表: QuestionSection, QuestionSectionItem
+     * @工时: 3H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public Boolean disabledSectionQuestion(String questionSectionId, String questionSectionItemId) {
+        if (StrUtil.isBlank(questionSectionId) || StrUtil.isBlank(questionSectionItemId)) {
+            return false;
+        }
+
+        LambdaUpdateWrapper<QuestionSectionItemEntity> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(QuestionSectionItemEntity::getQuestionSectionId, questionSectionId)
+                .set(QuestionSectionItemEntity::getQuestionSectionItemId, questionSectionItemId)
+                .set(QuestionSectionItemEntity::getEnabled, 0);
+        return questionSectionItemService.update(updateWrapper);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 删除or批量删除问题集-题目
+     * @关联表: QuestionSection, QuestionSectionItem
+     * @工时: 6H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public Boolean delSectionQuestion(String questionSectionId, List<String> questionSectionItemIds) {
+        if (StrUtil.isBlank(questionSectionId) || questionSectionItemIds == null || questionSectionItemIds.isEmpty()) {
+            return false;
+        }
+
+        questionSectionItemBiz.delBatch(questionSectionId, questionSectionItemIds);
         return Boolean.FALSE;
     }
-    /**
-    * @param
-    * @return
-    * @说明: 禁用问题集-题目
-    * @关联表: QuestionSection,QuestionSectionItem
-    * @工时: 3H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public Boolean disabledSectionQuestion(String questionSectionId, String questionSectionItemId ) {
-        return Boolean.FALSE;
+
+    @Transactional
+    private String save(QuestionSectionRequest questionSection) {
+        if (questionSection == null) {
+            return "";
+        }
+
+        // base info
+        questionSection.setAppId(baseBiz.getAppId());
+        questionSection.setQuestionSectionId(baseBiz.getIdStr());
+        questionSection.setQuestionSectionIdentifier(baseBiz.getIdStr());
+        questionSection.setVer(baseBiz.getVer());
+        questionSection.setSequence(baseBiz.getSequence());
+
+        // save section item
+        List<QuestionSectionItemRequest> sectionItemList = questionSection.getSectionItemList();
+        questionSectionItemBiz.saveBatch(questionSection, sectionItemList);
+
+        // generate question section structure
+        String struct = generateStruct(sectionItemList);
+
+        // save section dimension
+        List<QuestionSectionDimensionRequest> questionSectionDimensionList = questionSection.getQuestionSectionDimensionList();
+        questionSectionDimensionBiz.saveBatch(questionSection, questionSectionDimensionList);
+
+        // save base info
+        QuestionSectionEntity questionSectionEntity = BeanUtil.copyProperties(questionSection, QuestionSectionEntity.class);
+        questionSectionEntity.setQuestionCount(sectionItemList.size());
+        questionSectionEntity.setQuestionSectionStructure(struct);
+        questionSectionService.save(questionSectionEntity);
+
+        return questionSection.getQuestionSectionId();
     }
-    /**
-    * @param
-    * @return
-    * @说明: 删除or批量删除问题集-题目
-    * @关联表: QuestionSection,QuestionSectionItem
-    * @工时: 6H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public Boolean delSectionQuestion(String questionSectionId, String questionSectionItemIds ) {
-        return Boolean.FALSE;
+
+    @Transactional
+    private boolean update(QuestionSectionRequest questionSection) {
+        if (questionSection == null) {
+            return Boolean.FALSE;
+        }
+
+        // update section item
+        List<QuestionSectionItemRequest> sectionItemList = questionSection.getSectionItemList();
+        questionSectionItemBiz.updateBatch(questionSection, sectionItemList);
+
+        // generate question section structure
+        String struct = generateStruct(sectionItemList);
+
+        // update section dimension
+        List<QuestionSectionDimensionRequest> questionSectionDimensionList = questionSection.getQuestionSectionDimensionList();
+        questionSectionDimensionBiz.updateBatch(questionSection, questionSectionDimensionList);
+
+        // update base info
+        QuestionSectionEntity questionSectionEntity = BeanUtil.copyProperties(questionSection, QuestionSectionEntity.class);
+        questionSectionEntity.setQuestionCount(sectionItemList.size());
+        questionSectionEntity.setQuestionSectionStructure(struct);
+        questionSectionService.updateById(questionSectionEntity);
+
+        return Boolean.TRUE;
+    }
+
+    private String generateStruct(List<QuestionSectionItemRequest> sectionItemList) {
+        if (sectionItemList == null || sectionItemList.isEmpty()) {
+            return "";
+        }
+
+        Map<QuestionTypeEnum, Long> collect = sectionItemList.stream()
+                .map(QuestionSectionItemRequest::getQuestionRequest)
+                .collect(Collectors.groupingBy(QuestionRequest::getQuestionType, Collectors.counting()));
+        if (collect.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        Arrays.stream(QuestionTypeEnum.values()).forEach(item -> {
+            String name = item.getName();
+            Long count = collect.get(item);
+            if (count != null && count != 0) {
+                sb.append(count)
+                        .append(name)
+                        .append("/");
+            }
+        });
+        // TODO remove the last 斜杠
+        return sb.toString();
     }
 }

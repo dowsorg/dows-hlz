@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -16,7 +15,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @Schema(name = "Question 对象", title = "问题Response")
-public class QuestionResponse implements Cloneable {
+public class QuestionResponse {
     @Schema(title = "问题ID-更新需要")
     private String questionInstanceId;
 
@@ -55,27 +54,4 @@ public class QuestionResponse implements Cloneable {
 
     @Schema(title = "子问题")
     private List<QuestionResponse> children;
-
-    @Override
-    public QuestionResponse clone() {
-        try {
-            QuestionResponse clone = (QuestionResponse) super.clone();
-
-            List<QuestionOptionWithAnswerResponse> optionWithAnswerList = new ArrayList<>();
-            for (QuestionOptionWithAnswerResponse qwa : this.optionWithAnswerList) {
-                optionWithAnswerList.add(qwa.clone());
-            }
-            clone.setOptionWithAnswerList(optionWithAnswerList);
-
-            List<QuestionResponse> children = new ArrayList<>();
-            for (QuestionResponse qr : this.children) {
-                children.add(qr.clone());
-            }
-            clone.setChildren(children);
-
-            return clone;
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError();
-        }
-    }
 }

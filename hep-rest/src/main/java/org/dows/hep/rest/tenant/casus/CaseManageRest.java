@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.tenant.casus.request.CaseInstancePageRequest;
 import org.dows.hep.api.tenant.casus.request.CaseInstanceRequest;
 import org.dows.hep.api.tenant.casus.response.CaseInstanceResponse;
-import org.dows.hep.biz.tenant.casus.CaseManageBiz;
+import org.dows.hep.biz.tenant.casus.TenantCaseManageBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @Tag(name = "案例管理", description = "案例管理")
 public class CaseManageRest {
-    private final CaseManageBiz caseManageBiz;
+    private final TenantCaseManageBiz tenantCaseManageBiz;
 
     /**
     * 创建和更新案例
@@ -30,7 +30,7 @@ public class CaseManageRest {
     @Operation(summary = "创建和更新案例")
     @PostMapping("v1/tenantCasus/caseManage/saveOrUpdCaseInstance")
     public String saveOrUpdCaseInstance(@RequestBody @Validated CaseInstanceRequest caseInstance ) {
-        return caseManageBiz.saveOrUpdCaseInstance(caseInstance);
+        return tenantCaseManageBiz.saveOrUpdCaseInstance(caseInstance);
     }
 
     /**
@@ -41,7 +41,7 @@ public class CaseManageRest {
     @Operation(summary = "复制")
     @PostMapping("v1/tenantCasus/caseManage/copyCaseInstance")
     public String copyCaseInstance(@RequestBody @Validated String oriCaseInstanceId ) {
-        return caseManageBiz.copyCaseInstance(oriCaseInstanceId);
+        return tenantCaseManageBiz.copyCaseInstance(oriCaseInstanceId);
     }
 
     /**
@@ -52,7 +52,7 @@ public class CaseManageRest {
     @Operation(summary = "列表")
     @PostMapping("v1/tenantCasus/caseManage/pageCaseInstance")
     public CaseInstanceResponse pageCaseInstance(@RequestBody @Validated CaseInstancePageRequest caseInstancePage ) {
-        return caseManageBiz.pageCaseInstance(caseInstancePage);
+        return tenantCaseManageBiz.pageCaseInstance(caseInstancePage);
     }
 
     /**
@@ -63,7 +63,7 @@ public class CaseManageRest {
     @Operation(summary = "获取案例详情")
     @GetMapping("v1/tenantCasus/caseManage/getCaseInstance")
     public CaseInstanceResponse getCaseInstance(@Validated String caseInstanceId) {
-        return caseManageBiz.getCaseInstance(caseInstanceId);
+        return tenantCaseManageBiz.getCaseInstance(caseInstanceId);
     }
 
     /**
@@ -74,7 +74,7 @@ public class CaseManageRest {
     @Operation(summary = "删除")
     @DeleteMapping("v1/tenantCasus/caseManage/delCaseInstance")
     public Boolean delCaseInstance(@Validated String caseInstanceId ) {
-        return caseManageBiz.delCaseInstance(caseInstanceId);
+        return tenantCaseManageBiz.delCaseInstance(caseInstanceId);
     }
 
 

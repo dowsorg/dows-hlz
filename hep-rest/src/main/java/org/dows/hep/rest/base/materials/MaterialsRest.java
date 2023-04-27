@@ -1,15 +1,19 @@
 package org.dows.hep.rest.base.materials;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.materials.request.MaterialsPageRequest;
 import org.dows.hep.api.base.materials.request.MaterialsRequest;
 import org.dows.hep.api.base.materials.request.MaterialsSearchRequest;
-import org.dows.hep.api.base.materials.request.QuestionSearchRequest;
+import org.dows.hep.api.base.materials.response.MaterialsPageResponse;
 import org.dows.hep.api.base.materials.response.MaterialsResponse;
-import org.dows.hep.biz.base.materials.MaterialsBiz;
+import org.dows.hep.biz.base.materials.MaterialsManageBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
 * @description project descr:资料中心:资料信息
@@ -21,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @Tag(name = "资料信息", description = "资料信息")
 public class MaterialsRest {
-    private final MaterialsBiz materialsBiz;
+    private final MaterialsManageBiz materialsBiz;
 
     /**
     * 新增和更新资料信息
@@ -35,25 +39,27 @@ public class MaterialsRest {
     }
 
     /**
-    * 分页
-    * @param
-    * @return
-    */
+     * 分页
+     *
+     * @param
+     * @return
+     */
     @Operation(summary = "分页")
     @PostMapping("v1/baseMaterials/materials/pageMaterials")
-    public MaterialsResponse pageMaterials(@RequestBody @Validated MaterialsSearchRequest materialsSearch ) {
-        return materialsBiz.pageMaterials(materialsSearch);
+    public Page<MaterialsPageResponse> pageMaterials(@RequestBody @Validated MaterialsPageRequest materialsPageRequest) {
+        return materialsBiz.pageMaterials(materialsPageRequest);
     }
 
     /**
-    * 条件查询-无分页
-    * @param
-    * @return
-    */
+     * 条件查询-无分页
+     *
+     * @param
+     * @return
+     */
     @Operation(summary = "条件查询-无分页")
     @PostMapping("v1/baseMaterials/materials/listMaterials")
-    public MaterialsResponse listMaterials(@RequestBody @Validated QuestionSearchRequest questionSearch ) {
-        return materialsBiz.listMaterials(questionSearch);
+    public List<MaterialsResponse> listMaterials(@RequestBody @Validated MaterialsSearchRequest materialsSearchRequest) {
+        return materialsBiz.listMaterials(materialsSearchRequest);
     }
 
     /**
@@ -90,15 +96,15 @@ public class MaterialsRest {
     }
 
     /**
-    * 删除or批量删除
-    * @param
-    * @return
-    */
+     * 删除or批量删除
+     *
+     * @param
+     * @return
+     */
     @Operation(summary = "删除or批量删除")
     @DeleteMapping("v1/baseMaterials/materials/delMaterials")
-    public Boolean delMaterials(@Validated String materialsId ) {
+    public Boolean delMaterials(List<String> materialsId) {
         return materialsBiz.delMaterials(materialsId);
     }
-
 
 }

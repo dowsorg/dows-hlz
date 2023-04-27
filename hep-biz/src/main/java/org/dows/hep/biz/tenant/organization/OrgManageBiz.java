@@ -122,7 +122,7 @@ public class OrgManageBiz{
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        List<BatchMemberInsertRequest> list = batchInsertBiz.batchInsert(fin, 2, 10, BatchMemberInsertRequest.class, "accountName");
+        List<BatchMemberInsertRequest> list = batchInsertBiz.batchInsert(fin, 2, 100, BatchMemberInsertRequest.class, "accountName");
         //2、插入用户信息
         if (list != null && list.size() > 0) {
             for (int i = 0; i < list.size(); i++) {

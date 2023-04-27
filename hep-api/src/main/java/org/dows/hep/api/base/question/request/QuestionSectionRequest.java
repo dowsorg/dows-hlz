@@ -1,8 +1,12 @@
 package org.dows.hep.api.base.question.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.Accessors;
+
+import java.util.List;
 
 /**
 * @description 
@@ -11,11 +15,16 @@ import lombok.NoArgsConstructor;
 * @date 
 */
 @Data
+@ToString
+@Builder
+@Accessors(chain = true)
+@AllArgsConstructor
 @NoArgsConstructor
-@Schema(name = "QuestionSection 对象", title = "问题集Request")
+@Schema(name = "QuestionSectionRequest 对象", title = "问题集Request")
 public class QuestionSectionRequest{
-    @Schema(title = "应用ID")
-    private String appId;
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @Schema(title = "数据库ID")
+    private Long id;
 
     @Schema(title = "问题集ID")
     private String questionSectionId;
@@ -32,20 +41,73 @@ public class QuestionSectionRequest{
     @Schema(title = "问题集说明")
     private String descr;
 
-    @Schema(title = "是否必填")
-    private Integer required;
+    @Schema(title = "排序")
+    private Integer sequence;
 
     @Schema(title = "状态")
     private Integer enabled;
 
-    @Schema(title = "排序")
-    private Integer sequence;
+    @Schema(title = "创建者账号Id")
+    private String accountId;
+
+    @Schema(title = "创建者姓名")
+    private String accountName;
 
     @Schema(title = "问题集合")
-    private String questionRequest;
+    private List<QuestionSectionItemRequest> sectionItemList;
 
     @Schema(title = "维度集合")
-    private String questionSectionDimensionRequest;
+    private List<QuestionSectionDimensionRequest> questionSectionDimensionList;
 
+
+
+    // JsonIgnored
+    @Schema(title = "应用ID")
+    @JsonIgnore
+    private String appId;
+
+    @Schema(title = "类别名")
+    @JsonIgnore
+    private String questionSectionCategName;
+
+    @Schema(title = "类别ID路径")
+    @JsonIgnore
+    private String questionSectionCategIdPath;
+
+    @Schema(title = "类别name路径")
+    @JsonIgnore
+    private String questionSectionCategNamePath;
+
+    @Schema(title = "来源")
+    @JsonIgnore
+    private String source;
+
+    @Schema(title = "权限[000001]")
+    @JsonIgnore
+    private String permissions;
+
+    @Schema(title = "题数")
+    @JsonIgnore
+    private Integer questionCount;
+
+    @Schema(title = "题型结构")
+    @JsonIgnore
+    private String questionSectionStructure;
+
+    @Schema(title = "引用计数")
+    @JsonIgnore
+    private Integer refCount;
+
+    @Schema(title = "问题集标识")
+    @JsonIgnore
+    private String questionSectionIdentifier;
+
+    @Schema(title = "版本号")
+    @JsonIgnore
+    private String ver;
+
+    @Schema(title = "biz code")
+    @JsonIgnore
+    private String bizCode;
 
 }

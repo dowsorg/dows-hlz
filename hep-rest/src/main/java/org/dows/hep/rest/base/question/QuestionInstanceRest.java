@@ -5,11 +5,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.Response;
+import org.dows.hep.api.base.question.QuestionAccessAuthEnum;
+import org.dows.hep.api.base.question.request.QuestionPageRequest;
 import org.dows.hep.api.base.question.request.QuestionRequest;
 import org.dows.hep.api.base.question.request.QuestionSearchRequest;
+import org.dows.hep.api.base.question.response.QuestionPageResponse;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.biz.base.question.QuestionInstanceBiz;
-import org.dows.hep.entity.QuestionInstanceEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,15 +30,26 @@ public class QuestionInstanceRest {
     private final QuestionInstanceBiz questionInstanceBiz;
 
     /**
-    * 新增和更新
+    * 新增
     * @param
     * @return
     */
-    @Operation(summary = "新增和更新")
-    @PostMapping("v1/baseQuestion/questionInstance/saveOrUpdQuestion")
-    public Response<String> saveOrUpdQuestion(@RequestBody @Validated QuestionRequest question ) {
-        String id = questionInstanceBiz.saveOrUpdQuestion(question);
-        return Response.ok(id);
+    @Operation(summary = "新增题目")
+    @PostMapping("v1/baseQuestion/questionInstance/saveQuestion")
+    public String saveQuestion(@RequestBody @Validated QuestionRequest question ) {
+        return questionInstanceBiz.saveQuestion(question, QuestionAccessAuthEnum.PUBLIC_VIEWING);
+    }
+
+    /**
+     * 更新
+     * @param
+     * @return
+     */
+    @Operation(summary = "更新题目")
+    @PostMapping("v1/baseQuestion/questionInstance/updQuestion")
+    public Boolean updQuestion(@RequestBody @Validated QuestionRequest question ) {
+        return questionInstanceBiz.updQuestion(question);
+
     }
 
     /**
@@ -46,9 +59,9 @@ public class QuestionInstanceRest {
     */
     @Operation(summary = "分页")
     @PostMapping("v1/baseQuestion/questionInstance/pageQuestion")
-    public Response<Page<QuestionInstanceEntity>> pageQuestion(@RequestBody @Validated QuestionSearchRequest questionSearch ) {
-        Page<QuestionInstanceEntity> page = questionInstanceBiz.pageQuestion(questionSearch);
-        return Response.ok(page);
+    public Response<Page<QuestionPageResponse>> pageQuestion(@RequestBody @Validated QuestionPageRequest questionPageRequest ) {
+        Page<QuestionPageResponse> result = questionInstanceBiz.pageQuestion(questionPageRequest);
+        return Response.ok(result);
     }
 
     /**
@@ -130,7 +143,7 @@ public class QuestionInstanceRest {
     */
     @Operation(summary = "删除or批量删除")
     @DeleteMapping("v1/baseQuestion/questionInstance/delQuestion")
-    public Response<Boolean> delQuestion(@Validated String questionInstanceIds ) {
+    public Response<Boolean> delQuestion(List<String> questionInstanceIds ) {
         Boolean result = questionInstanceBiz.delQuestion(questionInstanceIds);
         return Response.ok(result);
     }

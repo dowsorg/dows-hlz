@@ -1,11 +1,12 @@
 package org.dows.hep.rest.user.materials;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.user.materials.request.MaterialsSearchRequest;
-import org.dows.hep.api.user.materials.request.QuestionSearchRequest;
-import org.dows.hep.api.user.materials.response.MaterialsResponse;
+import org.dows.hep.api.base.materials.request.MaterialsPageRequest;
+import org.dows.hep.api.base.materials.response.MaterialsPageResponse;
+import org.dows.hep.api.base.materials.response.MaterialsResponse;
 import org.dows.hep.biz.user.materials.UserMaterialsBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,19 +33,8 @@ public class UserMaterialsRest {
     */
     @Operation(summary = "分页")
     @PostMapping("v1/userMaterials/userMaterials/pageMaterials")
-    public MaterialsResponse pageMaterials(@RequestBody @Validated MaterialsSearchRequest materialsSearch ) {
-        return userMaterialsBiz.pageMaterials(materialsSearch);
-    }
-
-    /**
-    * 条件查询-无分页
-    * @param
-    * @return
-    */
-    @Operation(summary = "条件查询-无分页")
-    @PostMapping("v1/userMaterials/userMaterials/listMaterials")
-    public MaterialsResponse listMaterials(@RequestBody @Validated QuestionSearchRequest questionSearch ) {
-        return userMaterialsBiz.listMaterials(questionSearch);
+    public Page<MaterialsPageResponse> pageMaterials(@RequestBody @Validated MaterialsPageRequest materialsPageRequest ) {
+        return userMaterialsBiz.pageMaterials(materialsPageRequest);
     }
 
     /**
