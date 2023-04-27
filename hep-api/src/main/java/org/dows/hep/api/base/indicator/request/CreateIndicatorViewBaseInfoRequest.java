@@ -1,6 +1,8 @@
 package org.dows.hep.api.base.indicator.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +14,8 @@ import lombok.NoArgsConstructor;
 */
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Schema(name = "CreateIndicatorViewBaseInfo 对象", title = "创建指标基本信息类")
 public class CreateIndicatorViewBaseInfoRequest{
     @Schema(title = "应用ID")

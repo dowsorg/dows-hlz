@@ -42,6 +42,9 @@ public class IndicatorViewBaseInfoMonitorContentRefEntity implements CrudEntity 
     @Schema(title = "应用ID")
     private String appId;
 
+    @Schema(title = "分布式ID")
+    private String indicatorViewBaseInfoMonitorContentId;
+
     @Schema(title = "指标ID")
     private String indicatorInstanceId;
 
