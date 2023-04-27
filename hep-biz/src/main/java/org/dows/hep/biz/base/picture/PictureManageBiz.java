@@ -67,6 +67,7 @@ public class PictureManageBiz {
         //3、保存图片主体
         MaterialsEntity material = MaterialsEntity.builder()
                 .materialsId(idGenerator.nextIdStr())
+                .bizCode(picture.getBizCode())
                 .appId(picture.getAppId())
                 .categoryId(entity.getMaterialsCategoryId())
                 .categoryName(picture.getCategoryName())

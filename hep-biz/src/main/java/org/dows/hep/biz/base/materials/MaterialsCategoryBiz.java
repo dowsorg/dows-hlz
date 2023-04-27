@@ -2,6 +2,7 @@ package org.dows.hep.biz.base.materials;
 
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.materials.request.MaterialsCategoryRequest;
@@ -44,14 +45,11 @@ public class MaterialsCategoryBiz {
      */
     @DSTransactional
     public Boolean saveMaterialsCategory(MaterialsCategoryRequest materials) {
-        //1、判断是否存在父类
-        MaterialsCategoryEntity materialsCategoryEntity = materialsCategoryService.lambdaQuery()
-                .eq(MaterialsCategoryEntity::getAppId, materials.getAppId())
-                .eq(MaterialsCategoryEntity::getCategoryName, materials.getType())
-                .oneOpt()
-                .orElseThrow(() -> new MaterialException(EnumMaterials.CATEGORY_IS_NOT_FIND));
-        materials.setMaterialsCategIdPath(materialsCategoryEntity.getMaterialsCategoryId() + "/");
-        materials.setMaterialsCategNamePath(materialsCategoryEntity.getCategoryName() + "/");
+        //1、添加父节点
+        if(StringUtils.isNotEmpty(materials.getBizCode())) {
+            materials.setMaterialsCategIdPath(materials.getBizCode() + "/");
+            materials.setMaterialsCategNamePath(materials.getBizCode() + "/");
+        }
         //2、判断是否已经存在该类别名称
         materialsCategoryService.lambdaQuery()
                 .eq(MaterialsCategoryEntity::getAppId, materials.getAppId())
@@ -60,10 +58,11 @@ public class MaterialsCategoryBiz {
                 .ifPresent((a) -> {
                     throw new MaterialException(EnumMaterials.CATEGORY_NAME_IS_EXIST);
                 });
-        //2、新增
+        //3、新增
         MaterialsCategoryEntity model = new MaterialsCategoryEntity();
         BeanUtils.copyProperties(materials, model);
         model.setMaterialsCategoryId(idGenerator.nextIdStr());
+        model.setBizCode(materials.getBizCode());
         return materialsCategoryService.save(model);
     }
 

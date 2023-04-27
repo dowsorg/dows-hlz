@@ -21,6 +21,9 @@ public class PictureRequest {
     @Schema(title = "资料分类ID")
     private String categoryId;
 
+    @Schema(title = "bizCode")
+    private String bizCode;
+
     @Schema(title = "资料分类名称")
     private String categoryName;
 
