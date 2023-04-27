@@ -3,7 +3,6 @@ package org.dows.hep.rest.base.question;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.framework.api.Response;
 import org.dows.hep.api.base.question.request.QuestionCategoryRequest;
 import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
 import org.dows.hep.biz.base.question.QuestionCategBiz;
@@ -32,9 +31,8 @@ public class QuestionCategoryRest {
      */
     @Operation(summary = "查询所有类目-根据groupCode")
     @GetMapping("v1/baseQuestion/questionCategory/listByCategoryGroup")
-    public Response<List<QuestionCategoryResponse>> listByCategoryGroup(String categoryGroup) {
-        List<QuestionCategoryResponse> children = questionCategBiz.getChildrenByPid("0", categoryGroup);
-        return Response.ok(children);
+    public List<QuestionCategoryResponse> listByCategoryGroup(String categoryGroup) {
+        return questionCategBiz.getChildrenByPid("0", categoryGroup);
     }
 
     /**
@@ -46,9 +44,8 @@ public class QuestionCategoryRest {
      */
     @Operation(summary = "新增和更新")
     @PostMapping("v1/baseQuestion/questionCategory/saveOrUpdQuestionCategory")
-    public Response<String> saveOrUpdQuestionCategory(@RequestBody @Validated QuestionCategoryRequest request) {
-        String id = questionCategBiz.saveOrUpdateQuestionCategory(request);
-        return Response.ok(id);
+    public String saveOrUpdQuestionCategory(@RequestBody @Validated QuestionCategoryRequest request) {
+        return questionCategBiz.saveOrUpdateQuestionCategory(request);
     }
 
     /**
@@ -60,8 +57,7 @@ public class QuestionCategoryRest {
      */
     @Operation(summary = "删除or批量删除")
     @DeleteMapping("v1/baseQuestion/questionCategory/delQuestionCategory")
-    public Response<Boolean> delQuestionCategory(String questionCategoryIds) {
-        Boolean aBoolean = questionCategBiz.delById(questionCategoryIds);
-        return Response.ok(aBoolean);
+    public Boolean delQuestionCategory(List<String> questionCategoryIds) {
+        return questionCategBiz.delByIds(questionCategoryIds);
     }
 }
