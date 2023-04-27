@@ -66,8 +66,21 @@ public class PersonManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public Boolean deletePersons(String ids) {
-        return Boolean.FALSE;
+    @DSTransactional
+    public Integer deletePersons(Set<String> accountIds) {
+        //1、通过账户ID找到用户ID
+        Set<String> userIds = new HashSet<>();
+        accountIds.forEach(accountId -> {
+            userIds.add(accountUserApi.getUserByAccountId(accountId).getUserId());
+        });
+        //2、删除账户实例
+        Integer count = accountInstanceApi.deleteAccountInstanceByAccountIds(accountIds);
+        //3、删除用户扩展信息
+        userIds.forEach(userId -> {
+            UserExtinfoResponse extinfoResponse = userExtinfoApi.getUserExtinfoByUserId(userId);
+            userExtinfoApi.deleteUserExtinfoById(extinfoResponse.getId());
+        });
+        return count;
     }
 
     /**
@@ -98,13 +111,13 @@ public class PersonManageBiz {
         //5、获取用户其他图示管理图片
         List<CasePersonIndicatorFuncRequest> funcList = new ArrayList<>();
         List<CasePersonIndicatorFuncEntity> casePersonIndicatorFuncList = casePersonIndicatorFuncService.lambdaQuery()
-                .eq(CasePersonIndicatorFuncEntity::getCasePersonId,accountId)
-                .eq(CasePersonIndicatorFuncEntity::getDeleted,false)
+                .eq(CasePersonIndicatorFuncEntity::getCasePersonId, accountId)
+                .eq(CasePersonIndicatorFuncEntity::getDeleted, false)
                 .list();
-        if(casePersonIndicatorFuncList != null && casePersonIndicatorFuncList.size() > 0){
+        if (casePersonIndicatorFuncList != null && casePersonIndicatorFuncList.size() > 0) {
             casePersonIndicatorFuncList.forEach(casePersonIndicatorFuncEntity -> {
                 CasePersonIndicatorFuncRequest request = new CasePersonIndicatorFuncRequest();
-                BeanUtils.copyProperties(casePersonIndicatorFuncEntity,request);
+                BeanUtils.copyProperties(casePersonIndicatorFuncEntity, request);
                 funcList.add(request);
             });
         }
@@ -133,22 +146,22 @@ public class PersonManageBiz {
                 .build();
         String userId = accountInstanceApi.updateAccountInstanceByAccountId(accountInstanceRequest);
         //2、修改用户扩展信息
-        if(StringUtils.isNotEmpty(request.getIntro())){
+        if (StringUtils.isNotEmpty(request.getIntro())) {
             UserExtinfoResponse extinfoResponse = userExtinfoApi.getUserExtinfoByUserId(userId);
             UserExtinfoRequest extinfoRequest = new UserExtinfoRequest();
-            BeanUtils.copyProperties(extinfoResponse,extinfoRequest);
+            BeanUtils.copyProperties(extinfoResponse, extinfoRequest);
             userExtinfoApi.updateUserExtinfoById(extinfoRequest);
         }
         //3、修改用户功能点
         List<CasePersonIndicatorFuncRequest> funcList = request.getEntityList();
         List<CasePersonIndicatorFuncEntity> entities = new ArrayList<>();
-        funcList.forEach(func->{
+        funcList.forEach(func -> {
             CasePersonIndicatorFuncEntity casePersonIndicatorFuncEntity = casePersonIndicatorFuncService.lambdaQuery()
-                    .eq(CasePersonIndicatorFuncEntity::getCasePersonIndicatorFuncId,func.getCasePersonIndicatorFuncId())
-                    .eq(CasePersonIndicatorFuncEntity::getDeleted,false)
+                    .eq(CasePersonIndicatorFuncEntity::getCasePersonIndicatorFuncId, func.getCasePersonIndicatorFuncId())
+                    .eq(CasePersonIndicatorFuncEntity::getDeleted, false)
                     .one();
             CasePersonIndicatorFuncEntity entity = new CasePersonIndicatorFuncEntity();
-            BeanUtils.copyProperties(func,entity);
+            BeanUtils.copyProperties(func, entity);
             entity.setId(casePersonIndicatorFuncEntity.getId());
             entities.add(entity);
         });
@@ -478,6 +491,7 @@ public class PersonManageBiz {
         return PersonInstanceResponse.builder().accountId(vo.getAccountId())
                 .build();
     }
+
     /**
      * 生成随机账号
      */
@@ -485,7 +499,7 @@ public class PersonManageBiz {
         Random random = new Random();
         StringBuilder word = new StringBuilder(length);
         for (int i = 0; i < length; i++) {
-            word.append((char)('a' + random.nextInt(26)));
+            word.append((char) ('a' + random.nextInt(26)));
         }
 
         return word.toString();
@@ -514,7 +528,7 @@ public class PersonManageBiz {
         //3、复制
         List<PersonInstanceResponse> personInstanceResponseList = new ArrayList<>();
         List<AccountInstanceResponse> accountInstanceList = accountInstancePage.getRecords();
-        accountInstanceList.forEach(accountInstance->{
+        accountInstanceList.forEach(accountInstance -> {
             PersonInstanceResponse personInstance = PersonInstanceResponse.builder()
                     .accountId(accountInstance.getAccountId())
                     .accountName(accountInstance.getAccountName())
@@ -542,9 +556,9 @@ public class PersonManageBiz {
     @DSTransactional
     public Boolean addOtherBackground(List<CasePersonIndicatorFuncRequest> list) {
         List<CasePersonIndicatorFuncEntity> funcList = new ArrayList<>();
-        list.forEach(model->{
+        list.forEach(model -> {
             CasePersonIndicatorFuncEntity entity = new CasePersonIndicatorFuncEntity();
-            BeanUtils.copyProperties(model,entity);
+            BeanUtils.copyProperties(model, entity);
             entity.setCasePersonIndicatorFuncId(idGenerator.nextIdStr());
             funcList.add(entity);
         });
