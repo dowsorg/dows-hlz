@@ -49,10 +49,10 @@ public class MaterialCategoryRest {
      * @param
      * @return
      */
-    @Operation(summary = "获取 资料类别信息 列表")
-    @PostMapping("v1/baseMaterials/materialsCategory/listMaterialsCategory")
-    public List<MaterialsCategoryEntity> listMaterialsCategory(@RequestBody @Validated MaterialsCategoryRequest materials) {
-        return materialsCategoryBiz.listMaterialsCategory(materials);
+    @Operation(summary = "获取 资料类别下的子类")
+    @PostMapping("v1/baseMaterials/materialsCategory/listChildMaterialsCategory")
+    public List<MaterialsCategoryEntity> listChildMaterialsCategory(@RequestBody @Validated MaterialsCategoryRequest materials) {
+        return materialsCategoryBiz.listChildMaterialsCategory(materials);
     }
 
     /**
