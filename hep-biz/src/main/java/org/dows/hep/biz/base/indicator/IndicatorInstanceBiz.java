@@ -43,7 +43,6 @@ import java.util.stream.Collectors;
 public class IndicatorInstanceBiz{
     @Value("${redisson.lock.lease-time.teacher.indicator-instance-create-delete-update:5000}")
     private Integer leaseTimeIndicatorInstanceCreateDeleteUpdate;
-
     private final String indicatorInstanceFieldPid = "pid";
     private final IdGenerator idGenerator;
     private final RedissonClient redissonClient;

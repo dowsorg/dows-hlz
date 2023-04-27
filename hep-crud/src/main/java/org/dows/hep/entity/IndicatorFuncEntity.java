@@ -37,13 +37,13 @@ public class IndicatorFuncEntity implements CrudEntity {
     private Long id;
 
     @Schema(title = "指标功能分布式ID")
-    private String indicatorFunc;
+    private String indicatorFuncId;
 
     @Schema(title = "应用ID")
     private String appId;
 
-    @Schema(title = "指标类别分布式ID")
-    private String indicatorCategoryId;
+    @Schema(title = "指标功能父类别分布式ID")
+    private String pid;
 
     @Schema(title = "功能名称")
     private String name;
@@ -53,9 +53,6 @@ public class IndicatorFuncEntity implements CrudEntity {
 
     @Schema(title = "对话提示")
     private String dialogTip;
-
-    @Schema(title = "背景图")
-    private String background;
 
     @Schema(title = "展示顺序")
     private Integer seq;

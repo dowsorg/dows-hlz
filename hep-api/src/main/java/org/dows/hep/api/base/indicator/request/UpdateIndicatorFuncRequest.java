@@ -15,10 +15,7 @@ import lombok.NoArgsConstructor;
 @Schema(name = "UpdateIndicatorFunc 对象", title = "更新指标功能")
 public class UpdateIndicatorFuncRequest{
     @Schema(title = "指标功能分布式ID")
-    private String indicatorFunc;
-
-    @Schema(title = "指标类别分布式ID")
-    private String indicatorCategoryId;
+    private String indicatorFuncId;
 
     @Schema(title = "功能名称")
     private String name;
