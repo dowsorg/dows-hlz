@@ -5,16 +5,18 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 /**
-* @description 
-*
-* @author 
-* @date 
-*/
+ * @author fhb
+ * @description
+ * @date 2023/4/27 11:50
+ */
 @Data
 @NoArgsConstructor
-@Schema(name = "CaseInstanceResponse 对象", title = "案例Response")
-public class CaseInstanceResponse{
+@Schema(name = "CaseInstancePageResponse 对象", title = "案例Response")
+public class CaseInstancePageResponse {
+
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库ID")
     private Long id;
@@ -28,23 +30,12 @@ public class CaseInstanceResponse{
     @Schema(title = "案例图片")
     private String casePic;
 
-    @Schema(title = "案例类型")
-    private String caseType;
-
-    @Schema(title = "背景描述")
-    private String descr;
-
-    @Schema(title = "指导描述")
-    private String guide;
-
-    @Schema(title = "创建者账号Id")
-    private String accountId;
-
     @Schema(title = "创建者姓名")
     private String accountName;
 
-    @Schema(title = "案例状态[0:未发布|1:发布]")
+    @Schema(title = "案例状态[0:发布|1:关闭]")
     private Integer state;
 
-
+    @Schema(title = "创建时间")
+    private Date dt;
 }
