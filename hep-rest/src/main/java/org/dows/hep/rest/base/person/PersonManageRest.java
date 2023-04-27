@@ -8,10 +8,12 @@ import org.dows.account.request.AccountInstanceRequest;
 import org.dows.account.response.AccountInstanceResponse;
 import org.dows.hep.api.base.person.request.PersonInstanceRequest;
 import org.dows.hep.api.base.person.response.PersonInstanceResponse;
+import org.dows.hep.api.tenant.casus.request.CasePersonIndicatorFuncRequest;
 import org.dows.hep.biz.base.person.PersonManageBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -82,16 +84,16 @@ public class PersonManageRest {
         return personManageBiz.addPerson(request);
     }
 
-//    /**
-//     * 新增其他图示管理
-//     * @param
-//     * @return
-//     */
-//    @Operation(summary = "新增其他图示管理")
-//    @PostMapping("v1/basePerson/personManage/addOtherBackground")
-//    public PersonInstanceResponse addOtherBackground(@RequestBody @Validated IndicatorFuncRequest request) {
-//        return personManageBiz.addOtherBackground(request);
-//    }
+    /**
+     * 新增其他图示管理
+     * @param
+     * @return
+     */
+    @Operation(summary = "新增其他图示管理")
+    @PostMapping("v1/basePerson/personManage/addOtherBackground")
+    public boolean addOtherBackground(@RequestBody @Validated List<CasePersonIndicatorFuncRequest> list) {
+        return personManageBiz.addOtherBackground(list);
+    }
 
     /**
      * 人物列表

@@ -10,7 +10,11 @@ import org.dows.account.request.AccountUserRequest;
 import org.dows.account.response.*;
 import org.dows.hep.api.base.person.request.PersonInstanceRequest;
 import org.dows.hep.api.base.person.response.PersonInstanceResponse;
+import org.dows.hep.api.tenant.casus.request.CasePersonIndicatorFuncRequest;
 import org.dows.hep.biz.base.org.OrgBiz;
+import org.dows.hep.entity.CasePersonIndicatorFuncEntity;
+import org.dows.hep.service.CasePersonIndicatorFuncService;
+import org.dows.sequence.api.IdGenerator;
 import org.dows.user.api.api.UserExtinfoApi;
 import org.dows.user.api.api.UserInstanceApi;
 import org.dows.user.api.request.UserExtinfoRequest;
@@ -46,6 +50,10 @@ public class PersonManageBiz {
     private final AccountGroupInfoApi accountGroupInfoApi;
 
     private final OrgBiz orgBiz;
+
+    private final IdGenerator idGenerator;
+
+    private final CasePersonIndicatorFuncService casePersonIndicatorFuncService;
 
     /**
      * @param
@@ -475,5 +483,27 @@ public class PersonManageBiz {
         BeanUtils.copyProperties(accountInstancePage, personInstancePage, new String[]{"records"});
         personInstancePage.setRecords(personInstanceResponseList);
         return personInstancePage;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 创建 人物功能点
+     * @关联表:
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/4/27 10:24
+     */
+    @DSTransactional
+    public Boolean addOtherBackground(List<CasePersonIndicatorFuncRequest> list) {
+        List<CasePersonIndicatorFuncEntity> funcList = new ArrayList<>();
+        list.forEach(model->{
+            CasePersonIndicatorFuncEntity entity = new CasePersonIndicatorFuncEntity();
+            BeanUtils.copyProperties(model,entity);
+            entity.setCasePersonIndicatorFuncId(idGenerator.nextIdStr());
+            funcList.add(entity);
+        });
+        return casePersonIndicatorFuncService.saveBatch(funcList);
     }
 }
