@@ -2,6 +2,7 @@ package org.dows.hep.biz.base.person;
 
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.api.*;
@@ -121,8 +122,37 @@ public class PersonManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public Boolean editPerson(PersonInstanceRequest personInstance) {
-        return Boolean.FALSE;
+    @DSTransactional
+    public Boolean editPerson(PersonInstanceRequest request) {
+        //1、修改账户
+        AccountInstanceRequest accountInstanceRequest = AccountInstanceRequest.builder()
+                .accountId(request.getAccountId().toString())
+                .userName(request.getName())
+                .appId(request.getAppId())
+                .avatar(request.getAvatar())
+                .build();
+        String userId = accountInstanceApi.updateAccountInstanceByAccountId(accountInstanceRequest);
+        //2、修改用户扩展信息
+        if(StringUtils.isNotEmpty(request.getIntro())){
+            UserExtinfoResponse extinfoResponse = userExtinfoApi.getUserExtinfoByUserId(userId);
+            UserExtinfoRequest extinfoRequest = new UserExtinfoRequest();
+            BeanUtils.copyProperties(extinfoResponse,extinfoRequest);
+            userExtinfoApi.updateUserExtinfoById(extinfoRequest);
+        }
+        //3、修改用户功能点
+        List<CasePersonIndicatorFuncRequest> funcList = request.getEntityList();
+        List<CasePersonIndicatorFuncEntity> entities = new ArrayList<>();
+        funcList.forEach(func->{
+            CasePersonIndicatorFuncEntity casePersonIndicatorFuncEntity = casePersonIndicatorFuncService.lambdaQuery()
+                    .eq(CasePersonIndicatorFuncEntity::getCasePersonIndicatorFuncId,func.getCasePersonIndicatorFuncId())
+                    .eq(CasePersonIndicatorFuncEntity::getDeleted,false)
+                    .one();
+            CasePersonIndicatorFuncEntity entity = new CasePersonIndicatorFuncEntity();
+            BeanUtils.copyProperties(func,entity);
+            entity.setId(casePersonIndicatorFuncEntity.getId());
+            entities.add(entity);
+        });
+        return casePersonIndicatorFuncService.updateBatchById(entities);
     }
 
     /**

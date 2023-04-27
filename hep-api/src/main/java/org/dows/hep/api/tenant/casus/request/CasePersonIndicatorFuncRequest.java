@@ -13,6 +13,9 @@ import lombok.NoArgsConstructor;
 @Schema(name = "CasePersonIndicatorFunc 对象", title = "人物-功能点")
 public class CasePersonIndicatorFuncRequest {
 
+    @Schema(title = "案例人物功能点ID")
+    private String casePersonIndicatorFuncId;
+
     @Schema(title = "指标分类ID")
     private String indicatorCategoryId;
 

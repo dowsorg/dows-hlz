@@ -58,8 +58,8 @@ public class PersonManageRest {
     */
     @Operation(summary = "编辑人物基本信息")
     @PutMapping("v1/basePerson/personManage/editPerson")
-    public Boolean editPerson(@Validated PersonInstanceRequest personInstance ) {
-        return personManageBiz.editPerson(personInstance);
+    public Boolean editPerson(@RequestBody @Validated PersonInstanceRequest request) {
+        return personManageBiz.editPerson(request);
     }
 
     /**
