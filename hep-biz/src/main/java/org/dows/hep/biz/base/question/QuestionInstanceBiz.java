@@ -108,6 +108,9 @@ public class QuestionInstanceBiz{
         Page<QuestionInstanceEntity> pageRequest = new Page<>(pageNo, pageSize);
         Page<QuestionInstanceEntity> pageResult = questionInstanceService.lambdaQuery()
                 .eq(questionPageRequest.getAppId() != null, QuestionInstanceEntity::getAppId, questionPageRequest.getAppId())
+                .like(StrUtil.isNotBlank(questionPageRequest.getKeyword()), QuestionInstanceEntity::getQuestionTitle, questionPageRequest.getKeyword())
+                .like(StrUtil.isNotBlank(questionPageRequest.getKeyword()), QuestionInstanceEntity::getQuestionDescr, questionPageRequest.getKeyword())
+                .like(StrUtil.isNotBlank(questionPageRequest.getQuestionType()), QuestionInstanceEntity::getQuestionType, questionPageRequest.getQuestionType())
                 .page(pageRequest);
 
         List<QuestionInstanceEntity> records = pageResult.getRecords();
