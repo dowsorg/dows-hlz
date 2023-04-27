@@ -86,6 +86,13 @@ public class WebMvcConfig implements WebMvcConfigurer {
 //        registry.addInterceptor(new HeaderInterceptor());
 //    }
 
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // 静态资源访问路径和存放路径配置(本地磁盘图片映射)
+        registry.addResourceHandler("/hepapi/**")
+                .addResourceLocations("file:/data/resources/images/hep/");
+    }
+
 
     /**
      * 跨域处理

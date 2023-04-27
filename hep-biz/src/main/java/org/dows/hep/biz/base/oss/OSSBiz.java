@@ -14,7 +14,7 @@ public class OSSBiz {
 
     public OssInfo upload(InputStream is, String fileName) {
         OssInfo info = ossClient.upLoad(is, fileName, false);
-        info.setPath("/hep/" + fileName);
+        info.setPath("/hepapi/" + fileName);
         return info;
     }
 }
