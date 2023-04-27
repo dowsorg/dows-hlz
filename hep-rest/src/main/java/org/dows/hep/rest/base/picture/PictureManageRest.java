@@ -4,10 +4,12 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.materials.request.MaterialsRequest;
+import org.dows.hep.api.base.picture.request.PictureRequest;
+import org.dows.hep.api.base.picture.response.PictureResponse;
 import org.dows.hep.biz.base.picture.PictureManageBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Set;
 
 /**
@@ -27,8 +29,8 @@ public class PictureManageRest {
      */
     @Operation(summary = "新增图示")
     @PostMapping("v1/basePicture/picture/savePersonPicture")
-    public Boolean savePicture(@RequestBody @Validated MaterialsRequest materials) {
-        return pictureManageBiz.savePicture(materials);
+    public Boolean savePicture(@RequestBody @Validated PictureRequest request) {
+        return pictureManageBiz.savePicture(request);
     }
 
     /**
@@ -49,7 +51,7 @@ public class PictureManageRest {
      */
     @Operation(summary = "图示列表")
     @PostMapping("v1/basePicture/picture/listPersonPictures")
-    public IPage<MaterialsRequest> listPersonPictures(@RequestBody MaterialsRequest request) {
+    public IPage<PictureResponse> listPersonPictures(@RequestBody PictureRequest request) {
         return pictureManageBiz.listPersonPictures(request);
     }
 }

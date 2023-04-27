@@ -10,7 +10,8 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.util.ReflectUtil;
-import org.dows.hep.api.base.materials.request.MaterialsRequest;
+import org.dows.hep.api.base.picture.request.PictureRequest;
+import org.dows.hep.api.base.picture.response.PictureResponse;
 import org.dows.hep.api.enums.EnumMaterials;
 import org.dows.hep.api.exception.MaterialException;
 import org.dows.hep.api.user.materials.request.MaterialsAttachmentRequest;
@@ -23,7 +24,11 @@ import org.dows.hep.service.MaterialsService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -49,24 +54,24 @@ public class PictureManageBiz {
      * @创建时间: 2023/4/24 15:49
      */
     @DSTransactional
-    public Boolean savePicture(MaterialsRequest materials) {
+    public Boolean savePicture(PictureRequest picture) {
         Boolean flag = null;
         //1、根据分类名称找到资料ID
         MaterialsCategoryEntity entity = materialsCategoryService.lambdaQuery()
-                .eq(MaterialsCategoryEntity::getAppId, materials.getAppId())
-                .eq(MaterialsCategoryEntity::getCategoryName, materials.getCategoryName())
+                .eq(MaterialsCategoryEntity::getAppId, picture.getAppId())
+                .eq(MaterialsCategoryEntity::getCategoryName, picture.getCategoryName())
                 .oneOpt()
                 .orElseThrow(() -> new MaterialException(EnumMaterials.CATEGORY_IS_NOT_FIND));
         //2、获取图片附件
-        List<MaterialsAttachmentRequest> attachmentList = JSONUtil.toList(materials.getMaterialsAttachment(), MaterialsAttachmentRequest.class);
+        List<MaterialsAttachmentRequest> attachmentList = JSONUtil.toList(picture.getMaterialsAttachment(), MaterialsAttachmentRequest.class);
         //3、保存图片主体
         MaterialsEntity material = MaterialsEntity.builder()
                 .materialsId(idGenerator.nextIdStr())
-                .appId(materials.getAppId())
+                .appId(picture.getAppId())
                 .categoryId(entity.getMaterialsCategoryId())
-                .categoryName(materials.getCategoryName())
-                .type(materials.getType())
-                .enabled(materials.getEnabled())
+                .categoryName(picture.getCategoryName())
+                .type(picture.getType())
+                .enabled(picture.getEnabled())
                 .build();
         materialsService.save(material);
         //3、保存图片附件
@@ -78,7 +83,7 @@ public class PictureManageBiz {
                         .materialsId(material.getMaterialsId())
                         .fileName(attachment.getFileName())
                         .fileUri(attachment.getFileUri())
-                        .appId(materials.getAppId())
+                        .appId(picture.getAppId())
                         .fileType(attachment.getFileType())
                         .build();
                 entities.add(materialsAttachment);
@@ -143,8 +148,8 @@ public class PictureManageBiz {
      * @开始时间:
      * @创建时间: 2023/4/25 09:00
      */
-    public IPage<MaterialsRequest> listPersonPictures(MaterialsRequest request) {
-        IPage<MaterialsRequest> voPage = new Page<>();
+    public IPage<PictureResponse> listPersonPictures(PictureRequest request) {
+        IPage<PictureResponse> voPage = new Page<>();
         //1、根据分类名称找到资料ID
         MaterialsCategoryEntity materialsCategory = materialsCategoryService.lambdaQuery()
                 .eq(MaterialsCategoryEntity::getAppId, request.getAppId())
@@ -157,7 +162,7 @@ public class PictureManageBiz {
                     .eq(MaterialsEntity::getCategoryId,materialsCategory.getMaterialsCategoryId());
         Page<MaterialsEntity> page = new Page<>(request.getPageNo(), request.getPageSize());
         IPage<MaterialsEntity> materialPage = materialsService.page(page, queryWrapper);
-        List<MaterialsRequest> voList = new ArrayList<>();
+        List<PictureResponse> voList = new ArrayList<>();
         //3、根据资料ID找到资料相关的附件
         if (materialPage.getRecords() != null && materialPage.getRecords().size() > 0) {
             materialPage.getRecords().forEach(materialsEntity -> {
@@ -169,11 +174,11 @@ public class PictureManageBiz {
                 Map<String,MaterialsAttachmentEntity> map = attachmentEntities.stream().collect(Collectors.groupingBy(MaterialsAttachmentEntity::getMaterialsId,
                         Collectors.collectingAndThen(Collectors.toList(), value -> value.get(0))));
                 //3.2、赋值
-                MaterialsRequest materialsRequest = new MaterialsRequest();
-                BeanUtil.copyProperties(materialsEntity,materialsRequest);
+                PictureResponse pictureResponse = new PictureResponse();
+                BeanUtil.copyProperties(materialsEntity,pictureResponse);
                 MaterialsAttachmentEntity materialsAttachmentEntity = map.get(materialsEntity.getMaterialsId());
-                materialsRequest.setMaterialsAttachment(materialsAttachmentEntity.getFileUri());
-                voList.add(materialsRequest);
+                pictureResponse.setMaterialsAttachment(materialsAttachmentEntity.getFileUri());
+                voList.add(pictureResponse);
             });
         }
         BeanUtils.copyProperties(materialPage, voPage, new String[]{"records"});
