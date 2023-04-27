@@ -73,7 +73,7 @@ public class PersonManageBiz {
      * @param
      * @return
      * @说明: 查看人物基本信息
-     * @关联表: AccountInstance、AccountUser、UserInstance、UserExtinfo
+     * @关联表: AccountInstance、AccountUser、UserInstance、UserExtinfo、IndicatorFunc、CasePersonIndicatorFunc
      * @工时: 3H
      * @开发者: jx
      * @开始时间:
@@ -94,6 +94,20 @@ public class PersonManageBiz {
                 .intro(extinfoResponse.getIntro())
                 .avatar(accounInstance.getAvatar())
                 .build();
+        //5、获取用户其他图示管理图片
+        List<CasePersonIndicatorFuncRequest> funcList = new ArrayList<>();
+        List<CasePersonIndicatorFuncEntity> casePersonIndicatorFuncList = casePersonIndicatorFuncService.lambdaQuery()
+                .eq(CasePersonIndicatorFuncEntity::getCasePersonId,accountId)
+                .eq(CasePersonIndicatorFuncEntity::getDeleted,false)
+                .list();
+        if(casePersonIndicatorFuncList != null && casePersonIndicatorFuncList.size() > 0){
+            casePersonIndicatorFuncList.forEach(casePersonIndicatorFuncEntity -> {
+                CasePersonIndicatorFuncRequest request = new CasePersonIndicatorFuncRequest();
+                BeanUtils.copyProperties(casePersonIndicatorFuncEntity,request);
+                funcList.add(request);
+            });
+        }
+        response.setEntityList(funcList);
         return response;
     }
 

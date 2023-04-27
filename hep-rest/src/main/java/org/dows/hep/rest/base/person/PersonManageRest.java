@@ -46,8 +46,8 @@ public class PersonManageRest {
     * @return
     */
     @Operation(summary = "查看人物基本信息")
-    @GetMapping("v1/basePerson/personManage/getPerson")
-    public PersonInstanceResponse getPerson(@Validated String accountId) {
+    @GetMapping("v1/basePerson/personManage/getPerson/{accountId}")
+    public PersonInstanceResponse getPerson(@PathVariable @Validated String accountId) {
         return personManageBiz.getPerson(accountId);
     }
 

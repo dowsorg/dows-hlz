@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dows.hep.api.tenant.casus.request.CasePersonIndicatorFuncRequest;
+
+import java.util.List;
 
 /**
 * @description 
@@ -32,4 +35,7 @@ public class PersonInstanceResponse{
 
     @Schema(title = "账号名")
     private String accountName;
+
+    @Schema(title = "人物功能点集合")
+    private List<CasePersonIndicatorFuncRequest> entityList;
 }
