@@ -43,7 +43,7 @@ public class ExperimentInstanceEntity implements CrudEntity {
     private String appId;
 
     @Schema(title = "案例ID")
-    private String caseId;
+    private String caseInstanceId;
 
     @Schema(title = "案例名称[社区名]")
     private String caseName;
@@ -64,7 +64,7 @@ public class ExperimentInstanceEntity implements CrudEntity {
     private Date startTime;
 
     @Schema(title = "实验状态[默认未开始状态0~6步]")
-    private Boolean state;
+    private Integer state;
 
     @JsonIgnore
     @TableLogic
