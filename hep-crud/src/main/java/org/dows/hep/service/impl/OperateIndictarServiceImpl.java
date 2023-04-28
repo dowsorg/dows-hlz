@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 学生操作指标记录表(OperateIndictar)表服务实现类
  *
  * @author lait
- * @since 2023-04-21 10:31:45
+ * @since 2023-04-28 10:31:18
  */
 @Service("operateIndictarService")
 public class OperateIndictarServiceImpl extends MybatisCrudServiceImpl<OperateIndictarMapper, OperateIndictarEntity> implements OperateIndictarService {

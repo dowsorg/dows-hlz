@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 问题集[试卷]-答题记录Item(QuestionSectionResultItem)实体类
  *
  * @author lait
- * @since 2023-04-24 10:23:46
+ * @since 2023-04-28 10:29:00
  */
 @SuppressWarnings("serial")
 @Data
@@ -68,6 +68,12 @@ public class QuestionSectionResultItemEntity implements CrudEntity {
 
     @Schema(title = "分数")
     private Object score;
+
+    @Schema(title = "问题集标识")
+    private String questionSectionIdentifier;
+
+    @Schema(title = "版本号")
+    private String ver;
 
     @JsonIgnore
     @TableLogic

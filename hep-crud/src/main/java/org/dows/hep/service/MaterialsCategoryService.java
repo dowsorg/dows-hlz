@@ -1,12 +1,16 @@
 package org.dows.hep.service;
 
-import org.dows.framework.crud.mybatis.MybatisCrudService;
 import org.dows.hep.entity.MaterialsCategoryEntity;
-import org.dows.hep.entity.MaterialsEntity;
+import org.dows.framework.crud.mybatis.MybatisCrudService;
+
 
 /**
- * @author jx
- * @date 2023/4/24 17:00
+ * 资料-分类(MaterialsCategory)表服务接口
+ *
+ * @author lait
+ * @since 2023-04-28 10:30:48
  */
 public interface MaterialsCategoryService extends MybatisCrudService<MaterialsCategoryEntity> {
+
 }
+

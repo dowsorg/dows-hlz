@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 查看指标监测随访类(IndicatorViewMonitorFollowup)表服务实现类
  *
  * @author lait
- * @since 2023-04-21 10:31:44
+ * @since 2023-04-28 10:31:14
  */
 @Service("indicatorViewMonitorFollowupService")
 public class IndicatorViewMonitorFollowupServiceImpl extends MybatisCrudServiceImpl<IndicatorViewMonitorFollowupMapper, IndicatorViewMonitorFollowupEntity> implements IndicatorViewMonitorFollowupService {

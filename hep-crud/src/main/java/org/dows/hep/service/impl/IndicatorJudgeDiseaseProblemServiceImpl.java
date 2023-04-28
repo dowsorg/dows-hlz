@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 判断指标疾病问题(IndicatorJudgeDiseaseProblem)表服务实现类
  *
  * @author lait
- * @since 2023-04-21 10:31:43
+ * @since 2023-04-28 10:31:13
  */
 @Service("indicatorJudgeDiseaseProblemService")
 public class IndicatorJudgeDiseaseProblemServiceImpl extends MybatisCrudServiceImpl<IndicatorJudgeDiseaseProblemMapper, IndicatorJudgeDiseaseProblemEntity> implements IndicatorJudgeDiseaseProblemService {

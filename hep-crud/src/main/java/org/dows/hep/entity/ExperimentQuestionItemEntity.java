@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 实验答题项目(ExperimentQuestionItem)实体类
  *
  * @author lait
- * @since 2023-04-24 10:23:47
+ * @since 2023-04-28 10:25:39
  */
 @SuppressWarnings("serial")
 @Data
@@ -35,6 +35,9 @@ public class ExperimentQuestionItemEntity implements CrudEntity {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库ID")
     private Long id;
+
+    @Schema(title = "应用ID")
+    private String appId;
 
     @Schema(title = "实验答题项目")
     private String experimentQuestionItemId;

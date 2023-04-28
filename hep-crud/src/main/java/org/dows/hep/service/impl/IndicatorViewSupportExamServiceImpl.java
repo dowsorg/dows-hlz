@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 查看指标辅助检查类(IndicatorViewSupportExam)表服务实现类
  *
  * @author lait
- * @since 2023-04-21 10:31:44
+ * @since 2023-04-28 10:31:15
  */
 @Service("indicatorViewSupportExamService")
 public class IndicatorViewSupportExamServiceImpl extends MybatisCrudServiceImpl<IndicatorViewSupportExamMapper, IndicatorViewSupportExamEntity> implements IndicatorViewSupportExamService {

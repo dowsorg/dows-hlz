@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 实验实列(ExperimentInstance)实体类
  *
  * @author lait
- * @since 2023-04-24 10:23:47
+ * @since 2023-04-28 10:25:29
  */
 @SuppressWarnings("serial")
 @Data
@@ -43,7 +43,7 @@ public class ExperimentInstanceEntity implements CrudEntity {
     private String appId;
 
     @Schema(title = "案例ID")
-    private String caseInstanceId;
+    private String caseId;
 
     @Schema(title = "案例名称[社区名]")
     private String caseName;
@@ -54,6 +54,9 @@ public class ExperimentInstanceEntity implements CrudEntity {
     @Schema(title = "实验说明")
     private String experimentDescr;
 
+    @Schema(title = "分配人账号")
+    private String appointor;
+
     @Schema(title = "实验模式[0:标准模式，1:沙盘模式，2:方案设计模式]")
     private Integer model;
 
@@ -61,7 +64,7 @@ public class ExperimentInstanceEntity implements CrudEntity {
     private Date startTime;
 
     @Schema(title = "实验状态[默认未开始状态0~6步]")
-    private Integer state;
+    private Boolean state;
 
     @JsonIgnore
     @TableLogic

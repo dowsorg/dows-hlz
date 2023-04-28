@@ -61,4 +61,15 @@ public class ExperimentManageRest {
     }
 
 
+    /**
+     * 获取实验列表
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取实验列表")
+    @GetMapping("v1/tenantExperiment/experimentManage/list")
+    public List<ExperimentListResponse> page() {
+        return experimentManageBiz.list();
+    }
+
 }

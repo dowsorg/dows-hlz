@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 实验操作流程(OperateFlow)表服务实现类
  *
  * @author lait
- * @since 2023-04-21 10:31:44
+ * @since 2023-04-28 10:31:17
  */
 @Service("operateFlowService")
 public class OperateFlowServiceImpl extends MybatisCrudServiceImpl<OperateFlowMapper, OperateFlowEntity> implements OperateFlowService {

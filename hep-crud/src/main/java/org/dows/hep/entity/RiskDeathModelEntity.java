@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 死亡模型(RiskDeathModel)实体类
  *
  * @author lait
- * @since 2023-04-24 10:23:54
+ * @since 2023-04-28 10:29:04
  */
 @SuppressWarnings("serial")
 @Data

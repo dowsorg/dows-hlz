@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 判断指标健管目标(IndicatorJudgeHealthManagementGoal)表服务实现类
  *
  * @author lait
- * @since 2023-04-21 10:31:43
+ * @since 2023-04-28 10:31:13
  */
 @Service("indicatorJudgeHealthManagementGoalService")
 public class IndicatorJudgeHealthManagementGoalServiceImpl extends MybatisCrudServiceImpl<IndicatorJudgeHealthManagementGoalMapper, IndicatorJudgeHealthManagementGoalEntity> implements IndicatorJudgeHealthManagementGoalService {

@@ -1,5 +1,7 @@
 package org.dows.hep.entity;
 
+import java.util.Date;
+
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -12,13 +14,11 @@ import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
 
-import java.util.Date;
-
 /**
  * 食材(FoodMaterial)实体类
  *
  * @author lait
- * @since 2023-04-24 10:23:53
+ * @since 2023-04-28 10:25:58
  */
 @SuppressWarnings("serial")
 @Data
@@ -79,7 +79,7 @@ public class FoodMaterialEntity implements CrudEntity {
     private String fatEnergy;
 
     @Schema(title = "状态 0-启用 1-停用")
-    private Integer state;
+    private Boolean state;
 
     @Schema(title = "说明")
     private String descr;

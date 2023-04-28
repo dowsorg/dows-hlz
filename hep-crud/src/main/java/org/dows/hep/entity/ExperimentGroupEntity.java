@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 实验小组(ExperimentGroup)实体类
  *
  * @author lait
- * @since 2023-04-24 10:23:50
+ * @since 2023-04-28 10:25:27
  */
 @SuppressWarnings("serial")
 @Data
@@ -35,6 +35,9 @@ public class ExperimentGroupEntity implements CrudEntity {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库ID")
     private Long id;
+
+    @Schema(title = "应用ID")
+    private String appId;
 
     @Schema(title = "实验小组ID")
     private String experimentGroupId;
@@ -54,8 +57,17 @@ public class ExperimentGroupEntity implements CrudEntity {
     @Schema(title = "成员数量")
     private Integer memberCount;
 
+    @Schema(title = "最小成员数量")
+    private Integer minMemberCount;
+
+    @Schema(title = "最大成员数量")
+    private Integer maxMemberCount;
+
     @Schema(title = "实验状态[默认未开始状态0~6步]")
     private Boolean state;
+
+    @Schema(title = "小组状态 [0-新建（待重新命名） 1-编队中 （分配成员角色） 2-编队完成 3-已锁定 4-已解散]")
+    private Boolean groupState;
 
     @JsonIgnore
     @TableLogic

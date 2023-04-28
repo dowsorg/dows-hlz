@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 问题集[试卷]-答题记录Item(QuestionSectionResultItem)表服务实现类
  *
  * @author lait
- * @since 2023-04-21 10:31:48
+ * @since 2023-04-28 10:31:19
  */
 @Service("questionSectionResultItemService")
 public class QuestionSectionResultItemServiceImpl extends MybatisCrudServiceImpl<QuestionSectionResultItemMapper, QuestionSectionResultItemEntity> implements QuestionSectionResultItemService {

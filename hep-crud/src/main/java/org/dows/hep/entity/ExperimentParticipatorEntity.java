@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 实验组员（参与者）(ExperimentParticipator)实体类
  *
  * @author lait
- * @since 2023-04-24 10:23:46
+ * @since 2023-04-28 10:25:31
  */
 @SuppressWarnings("serial")
 @Data
@@ -36,7 +36,10 @@ public class ExperimentParticipatorEntity implements CrudEntity {
     @Schema(title = "数据库ID")
     private Long id;
 
-    @Schema(title = "实验组员ID")
+    @Schema(title = "应用ID")
+    private String appId;
+
+    @Schema(title = "实验参与者ID")
     private String experimentParticipatorId;
 
     @Schema(title = "实验小组ID")
@@ -51,14 +54,23 @@ public class ExperimentParticipatorEntity implements CrudEntity {
     @Schema(title = "组员账号名")
     private String accountName;
 
-    @Schema(title = "小组别名")
-    private String groupAlias;
+    @Schema(title = "组名")
+    private String groupName;
 
     @Schema(title = "组序号")
     private Integer groupNo;
 
+    @Schema(title = "参与者序号")
+    private Integer participatorNo;
+
     @Schema(title = "参与者类型[0:教师，1:组长，2：学生]")
     private Integer participatorType;
+
+    @Schema(title = "参与者状态[0: 未准备 1:已准备 2:选择阶段中 3:已选择阶段]")
+    private Boolean participatorState;
+
+    @Schema(title = "实验者状态[默认未开始状态0~6步]")
+    private Boolean state;
 
     @JsonIgnore
     @TableLogic
