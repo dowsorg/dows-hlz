@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 public class IndicatorViewBaseInfoBiz{
     @Value("${redisson.lock.lease-time.teacher.indicator-view-base-info-create-delete-update:5000}")
     private Integer leaseTimeIndicatorViewBaseInfoCreateDeleteUpdate;
-    private final String indicatorFuncFieldPid = "pid";
+    private final String indicatorViewBaseInfoFieldIndicatorViewBaseInfoId = "indicatorViewBaseInfoId";
     private final IdGenerator idGenerator;
     private final RedissonClient redissonClient;
     private final IndicatorViewBaseInfoService indicatorViewBaseInfoService;
@@ -78,13 +78,12 @@ public class IndicatorViewBaseInfoBiz{
      *     2.2.1 save List<IndicatorViewBaseInfoMonitorContentEntity>
      *       2.2.1.1 save List<IndicatorViewBaseInfoMonitorContentRefEntity>
      *   2.3 save List<IndicatorViewBaseInfoSingleEntity>
-     *
     */
     @Transactional(rollbackFor = Exception.class)
     public void createOrUpdateRs(CreateOrUpdateIndicatorViewBaseInfoRequestRs createOrUpdateIndicatorViewBaseInfoRequestRs) throws InterruptedException {
         String appId = createOrUpdateIndicatorViewBaseInfoRequestRs.getAppId();
         String indicatorFuncId = createOrUpdateIndicatorViewBaseInfoRequestRs.getIndicatorFuncId();
-        IndicatorFuncEntity indicatorFuncEntity = indicatorFuncService.lambdaQuery()
+        indicatorFuncService.lambdaQuery()
             .eq(IndicatorFuncEntity::getAppId, appId)
             .eq(IndicatorFuncEntity::getIndicatorFuncId, indicatorFuncId)
             .oneOpt()
@@ -93,8 +92,7 @@ public class IndicatorViewBaseInfoBiz{
                 throw new IndicatorViewBaseInfoException(EnumESC.VALIDATE_EXCEPTION);
             });
         String indicatorViewBaseInfoId = createOrUpdateIndicatorViewBaseInfoRequestRs.getIndicatorViewBaseInfoId();
-        String pid = indicatorFuncEntity.getPid();
-        RLock lock = redissonClient.getLock(RedissonUtil.getLockName(appId, EnumRedissonLock.INDICATOR_VIEW_BASE_INFO_CREATE_DELETE_UPDATE, indicatorFuncFieldPid, pid));
+        RLock lock = redissonClient.getLock(RedissonUtil.getLockName(appId, EnumRedissonLock.INDICATOR_VIEW_BASE_INFO_CREATE_DELETE_UPDATE, indicatorViewBaseInfoFieldIndicatorViewBaseInfoId, indicatorViewBaseInfoId));
         boolean isLocked = lock.tryLock(leaseTimeIndicatorViewBaseInfoCreateDeleteUpdate, TimeUnit.MILLISECONDS);
         if (!isLocked) {
             throw new IndicatorViewBaseInfoException(EnumESC.SYSTEM_BUSY_PLEASE_OPERATOR_INDICATOR_VIEW_BASE_INFO_LATER);
