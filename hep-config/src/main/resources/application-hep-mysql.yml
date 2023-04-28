@@ -24,13 +24,13 @@ spring:
         #数据源一
         hep:
           driver-class-name: com.mysql.cj.jdbc.Driver
-          url: jdbc:mysql://192.168.1.60:3307/dows_hep?serverTimezone=GMT%2B8&autoReconnect=true&allowMultiQueries=true&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false
+          url: jdbc:mysql://192.168.1.60:3309/dows_hep?serverTimezone=GMT%2B8&autoReconnect=true&allowMultiQueries=true&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false
           username: root
           password: 123456
         #数据源二
         uim:
           driver-class-name: com.mysql.cj.jdbc.Driver
-          url: jdbc:mysql://192.168.1.60:3307/dow_uim_jx?serverTimezone=GMT%2B8&autoReconnect=true&allowMultiQueries=true&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false
+          url: jdbc:mysql://192.168.1.60:3309/dow_uim_jx?serverTimezone=GMT%2B8&autoReconnect=true&allowMultiQueries=true&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false
           username: root
           password: 1234567
 ---
@@ -58,13 +58,13 @@ spring:
         #数据源一
         hep:
           driver-class-name: com.mysql.cj.jdbc.Driver
-          url: jdbc:mysql://192.168.1.60:3308/dows_hep?serverTimezone=GMT%2B8&autoReconnect=true&allowMultiQueries=true&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false
+          url: jdbc:mysql://192.168.1.60:3307/dows_hep?serverTimezone=GMT%2B8&autoReconnect=true&allowMultiQueries=true&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false
           username: root
           password: 123456
         #数据源二
         uim:
           driver-class-name: com.mysql.cj.jdbc.Driver
-          url: jdbc:mysql://192.168.1.60:3308/dow_uim_jx?serverTimezone=GMT%2B8&autoReconnect=true&allowMultiQueries=true&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false
+          url: jdbc:mysql://192.168.1.60:3307/dow_uim_jx?serverTimezone=GMT%2B8&autoReconnect=true&allowMultiQueries=true&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false
           username: root
           password: 123456
 ---
