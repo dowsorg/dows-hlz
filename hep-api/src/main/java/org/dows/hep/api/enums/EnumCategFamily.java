@@ -16,7 +16,6 @@ public enum EnumCategFamily {
     FOODCookBook("food.cookbook","菜谱类别"),
 
     SPORTItem("sport.item","运动项目类别"),
-    TreatItem1("","心理干预类别"),
     ;
     private String code;
     private String name;

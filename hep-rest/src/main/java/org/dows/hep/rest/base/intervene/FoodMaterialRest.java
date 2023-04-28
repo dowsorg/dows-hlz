@@ -1,6 +1,6 @@
 package org.dows.hep.rest.base.intervene;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ public class FoodMaterialRest {
     */
     @Operation(summary = "获取食材列表")
     @PostMapping("v1/baseIntervene/foodMaterial/pageFoodMaterial")
-    public PageDTO<FoodMaterialResponse> pageFoodMaterial(@RequestBody @Validated FindFoodRequest findFood ) {
+    public Page<FoodMaterialResponse> pageFoodMaterial(@RequestBody @Validated FindFoodRequest findFood ) {
         return foodMaterialBiz.pageFoodMaterial(findFood);
     }
 

@@ -1,5 +1,6 @@
 package org.dows.hep.biz.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,6 +22,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CategVO {
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @Schema(title = "数据库id")
+    private Long id;
     @Schema(title = "根类别")
     private String family;
 
