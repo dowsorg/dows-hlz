@@ -1,5 +1,6 @@
 package org.dows.hep.api.base.intervene.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,7 +21,7 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(name = "FoodMaterialInfo 对象", title = "食材信息")
 public class FoodMaterialInfoResponse{
-
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库id")
     private Long id;
 
@@ -58,6 +59,8 @@ public class FoodMaterialInfoResponse{
     @Schema(title = "总能量每100g")
     private String energy;
 
+    @Schema(title = "状态 0-启用 1-停用")
+    private Integer state;
 
     @Schema(title = "关联指标列表json")
     private List<InterveneIndicatorVO> indicators;

@@ -35,21 +35,20 @@ public class JacksonUtil {
     }
     public static ObjectMapper getOnlyFieldsMapper(){ return s_onlyFieldsMapper; }
 
-    public static ObjectMapper createCommonObjectMapper(String dateFormat){
-        ObjectMapper mapper= Jackson2ObjectMapperBuilder.json().build();
-        mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-        mapper.configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS,true);
-        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-        mapper.setDateFormat(new SimpleDateFormat(dateFormat));
-        return mapper;
+    public static ObjectMapper createCommonObjectMapper(String dateFormat) {
+        return Jackson2ObjectMapperBuilder.json().build()
+                .setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY)
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
+                .configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true)
+                .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                .setDateFormat(new SimpleDateFormat(dateFormat));
     }
-    public static ObjectMapper createOnlyFieldsMapper(String dateFormat){
-        ObjectMapper mapper=createCommonObjectMapper(dateFormat);
-        mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
-        mapper.setVisibility(PropertyAccessor.FIELD,JsonAutoDetect.Visibility.ANY);
-        return mapper;
+    public static ObjectMapper createOnlyFieldsMapper(String dateFormat) {
+        return createCommonObjectMapper(dateFormat)
+                .setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE)
+                .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+
     }
 
 

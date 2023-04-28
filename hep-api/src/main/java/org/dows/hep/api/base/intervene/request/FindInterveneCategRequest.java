@@ -21,7 +21,7 @@ public class FindInterveneCategRequest{
     private String pid;
 
     @Schema(title = "是否包含子节点")
-    private Boolean withChild;
+    private Integer withChild;
 
 
 }

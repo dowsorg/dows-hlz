@@ -7,7 +7,10 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -17,9 +20,20 @@ import java.util.function.Supplier;
  */
 public class ShareUtil {
     public static class XObject {
+
+        public static boolean notEmpty(Number obj,boolean zeroAsEmpty){
+            return !isEmpty(obj,zeroAsEmpty);
+        }
+        public static boolean notEmpty(Object obj){
+            return !isEmpty(obj);
+        }
+        public static boolean isEmpty(Number obj,boolean zeroAsEmpty){
+            return ObjectUtils.isEmpty(obj)||zeroAsEmpty && obj.equals(0);
+        }
         public static boolean isEmpty(Object obj){
             return ObjectUtils.isEmpty(obj);
         }
+
 
         public static boolean isAllEmpty(Object...objs) {
             return isEmpty(objs) || Arrays.stream(objs).allMatch(ObjectUtils::isEmpty);
@@ -37,6 +51,10 @@ public class ShareUtil {
 
         public static <T> T defaultIfNull(T source, Supplier<? extends T> defaultValueSupplier) {
             return ObjectUtil.defaultIfNull(source,defaultValueSupplier);
+        }
+
+        public static boolean nullSafeEquals(Object o1, Object o2){
+            return ObjectUtils.nullSafeEquals(o1,o2);
         }
 
 
@@ -58,6 +76,17 @@ public class ShareUtil {
             }
             return src;
         }
+
+        public static boolean nullSafeEquals(String o1, String o2,boolean ignoreCase) {
+            if (o1 == o2) {
+                return true;
+            }
+            if (o1 == null || o2 == null) {
+                return false;
+            }
+            return ignoreCase ? o1.equalsIgnoreCase(o2) : o1.equals(o2);
+        }
+
         public static boolean hasLength(String src){
             return StringUtils.hasLength(src);
         }
@@ -67,6 +96,10 @@ public class ShareUtil {
     }
 
     public static class XCollection {
+
+        public static boolean notEmpty(Collection<?> collection){
+            return !isEmpty(collection);
+        }
         public static boolean isEmpty(Collection<?> collection){
             return CollectionUtils.isEmpty(collection);
         }

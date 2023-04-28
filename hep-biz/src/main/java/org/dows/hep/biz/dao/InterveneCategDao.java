@@ -1,9 +1,9 @@
 package org.dows.hep.biz.dao;
 
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.InterveneCategoryEntity;
 import org.dows.hep.service.InterveneCategoryService;
@@ -11,7 +11,6 @@ import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -27,9 +26,30 @@ public class InterveneCategDao {
 
     private final IdGenerator idGenerator;
 
-    private final static SFunction<InterveneCategoryEntity,?> FUNCLogicKey=InterveneCategoryEntity::getInterveneCategoryId;
+    private final static SFunction<InterveneCategoryEntity,?> COLLogicKey =InterveneCategoryEntity::getInterveneCategoryId;
 
+    //region trans
     @Transactional(rollbackFor = Exception.class)
+    public boolean tranSave(InterveneCategoryEntity entity){
+        AssertUtil.falseThenThrow(saveOrUpdate(entity))
+                .throwMessage("保存失败,请刷新");
+        return true;
+    }
+    @Transactional(rollbackFor = Exception.class)
+    public boolean tranSave(List<InterveneCategoryEntity> entities){
+        AssertUtil.falseThenThrow(saveOrUpdate(entities))
+                .throwMessage("保存失败,请刷新");
+        return true;
+    }
+    @Transactional(rollbackFor = Exception.class)
+    public boolean transDelete(List<String> ids){
+        AssertUtil.falseThenThrow(delByIds(ids))
+                .throwMessage("删除失败,请刷新");
+        return true;
+    }
+
+    //endregion
+
     public boolean saveOrUpdate(InterveneCategoryEntity entity){
         if(ShareUtil.XObject.isEmpty(entity)) {
             return false;
@@ -38,9 +58,9 @@ public class InterveneCategDao {
             entity.setInterveneCategoryId(idGenerator.nextIdStr());
         }
         return interveneCategoryService.saveOrUpdate(entity,Wrappers.<InterveneCategoryEntity>lambdaUpdate()
-                .eq(FUNCLogicKey,entity.getInterveneCategoryId()));
+                .eq(COLLogicKey,entity.getInterveneCategoryId()));
     }
-    @Transactional(rollbackFor = Exception.class)
+
     public boolean saveOrUpdate(List<InterveneCategoryEntity> entities){
         if(ShareUtil.XObject.isEmpty(entities)) {
             return false;
@@ -51,7 +71,7 @@ public class InterveneCategDao {
                 item.setInterveneCategoryId(idGenerator.nextIdStr());
             }
             rst&=interveneCategoryService.saveOrUpdate(item,Wrappers.<InterveneCategoryEntity>lambdaUpdate()
-                    .eq(FUNCLogicKey,item.getInterveneCategoryId()));
+                    .eq(COLLogicKey,item.getInterveneCategoryId()));
         }
         return rst;
     }
@@ -61,7 +81,7 @@ public class InterveneCategDao {
             return Optional.empty();
         }
         return interveneCategoryService.lambdaQuery()
-                .eq(FUNCLogicKey,categId)
+                .eq(COLLogicKey,categId)
                 .select(cols)
                 .oneOpt();
     }
@@ -73,21 +93,7 @@ public class InterveneCategDao {
                 .list();
     }
 
-    public List<InterveneCategoryEntity> listBySections(String sections, String pid, SFunction<InterveneCategoryEntity, ?>... cols){
-        if(ShareUtil.XObject.isAllEmpty(sections,pid)){
-            return Collections.emptyList();
-        }
-        String[] arr=sections.split(",|，");
-        final boolean oneFlag=arr.length==1;
 
-        return interveneCategoryService.lambdaQuery()
-                .eq(oneFlag,InterveneCategoryEntity::getFamily,arr[0])
-                .in(!oneFlag,InterveneCategoryEntity::getFamily,arr)
-                .eq(!ShareUtil.XObject.isEmpty(pid),InterveneCategoryEntity::getCategPid,pid)
-                .select(cols)
-                .orderByAsc(InterveneCategoryEntity::getSeq,InterveneCategoryEntity::getId)
-                .list();
-    }
 
     public boolean delByIds(List<String> ids){
         if(ShareUtil.XCollection.isEmpty(ids)){
@@ -95,8 +101,8 @@ public class InterveneCategDao {
         }
         final boolean oneFlag=ids.size()==1;
         return interveneCategoryService.remove(Wrappers.<InterveneCategoryEntity>lambdaQuery()
-                .eq(oneFlag,FUNCLogicKey,ids.get(0))
-                .in(!oneFlag,FUNCLogicKey,ids));
+                .eq(oneFlag, COLLogicKey,ids.get(0))
+                .in(!oneFlag, COLLogicKey,ids));
     }
 
 

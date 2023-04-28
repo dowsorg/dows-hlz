@@ -1,11 +1,13 @@
 package org.dows.hep.rest.base.intervene;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.intervene.request.DelSpotItemRequest;
 import org.dows.hep.api.base.intervene.request.FindSportRequest;
 import org.dows.hep.api.base.intervene.request.SaveSportItemRequest;
+import org.dows.hep.api.base.intervene.request.SetSportItemStateRequest;
 import org.dows.hep.api.base.intervene.response.SportItemInfoResponse;
 import org.dows.hep.api.base.intervene.response.SportItemResponse;
 import org.dows.hep.biz.base.intervene.SportItemBiz;
@@ -31,7 +33,7 @@ public class SportItemRest {
     */
     @Operation(summary = "获取运动项目列表")
     @PostMapping("v1/baseIntervene/sportItem/pageSportItem")
-    public SportItemResponse pageSportItem(@RequestBody @Validated FindSportRequest findSport ) {
+    public Page<SportItemResponse> pageSportItem(@RequestBody @Validated FindSportRequest findSport ) {
         return sportItemBiz.pageSportItem(findSport);
     }
 
@@ -58,14 +60,26 @@ public class SportItemRest {
     }
 
     /**
+     * 启用禁用运动项目
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "启用禁用运动项目")
+    @PostMapping("v1/baseIntervene/sportItem/setSportItemState")
+    public Boolean setSportItemState(@RequestBody @Validated SetSportItemStateRequest setSportItemStateRequest ) {
+        return sportItemBiz.setSportItemState(setSportItemStateRequest);
+    }
+
+    /**
     * 删除运动项目
     * @param
     * @return
     */
     @Operation(summary = "删除运动项目")
     @DeleteMapping("v1/baseIntervene/sportItem/delSportItem")
-    public Boolean delSportItem(@Validated DelSpotItemRequest delSpotItem ) {
-        return sportItemBiz.delSportItem(delSpotItem);
+    public Boolean delSportItem(@RequestBody @Validated DelSpotItemRequest delSportItem ) {
+        return sportItemBiz.delSportItem(delSportItem);
     }
 
 

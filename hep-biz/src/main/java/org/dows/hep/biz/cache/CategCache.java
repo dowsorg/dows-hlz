@@ -1,6 +1,8 @@
 package org.dows.hep.biz.cache;
 
+
 import org.dows.hep.api.enums.EnumCategFamily;
+import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.vo.CategVO;
 
@@ -18,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class CategCache extends BaseLocalCache<CategCache.CacheData> {
 
     //region .ctor
-    protected final String splitCategPath="/";
+    protected final String SPLITCategPath ="/";
     protected CategCache(long expireInMinutes){
         super(expireInMinutes);
     }
@@ -61,12 +63,12 @@ public abstract class CategCache extends BaseLocalCache<CategCache.CacheData> {
         if (ShareUtil.XObject.isEmpty(child)) {
             return null;
         }
+        sbId.insert(0, String.format("%s%s", child.getCategId(), SPLITCategPath));
+        sbName.insert(0, String.format("%s%s", child.getCategName(), SPLITCategPath));
         CategVO parent = cache.mapItems.get(child.getCategPid());
         if (null == parent) {
             return child;
         }
-        sbId.insert(0, String.format("%s%s", parent.getCategId(),splitCategPath));
-        sbName.insert(0, String.format("%s%s", parent.getCategName(),splitCategPath));
         return getParent(cache,sbId, sbName, parent);
     }
 
@@ -79,6 +81,9 @@ public abstract class CategCache extends BaseLocalCache<CategCache.CacheData> {
      * @return
      */
     public CategVO getById(String categId){
+        if(ShareUtil.XObject.isEmpty(categId)){
+            return null;
+        }
         return ensureCache().mapItems.get(fixKey(categId));
     }
 
@@ -88,7 +93,7 @@ public abstract class CategCache extends BaseLocalCache<CategCache.CacheData> {
      * @param withChild 是否包含子节点
      * @return
      */
-    public List<CategVO> getByFamily(EnumCategFamily family,boolean withChild) {
+    public List<CategVO> getByFamily(EnumCategFamily family, boolean withChild) {
         List<CategVO> rst= ensureCache().mapGroups.get(fixKey(family.getCode()));
         return withChild?rst:flatCopy(rst);
     }
@@ -100,6 +105,9 @@ public abstract class CategCache extends BaseLocalCache<CategCache.CacheData> {
      * @return
      */
     public List<CategVO> getByParentId(String categId,boolean withChild) {
+        if(ShareUtil.XObject.isEmpty(categId)){
+            return Collections.emptyList();
+        }
         List<CategVO> rst=  ensureCache().mapGroups.get(fixKey(categId));
         return withChild?rst:flatCopy(rst);
     }
@@ -114,54 +122,36 @@ public abstract class CategCache extends BaseLocalCache<CategCache.CacheData> {
         if(ShareUtil.XObject.isEmpty(src)){
             return Collections.emptyList();
         }
-        return ShareUtil.XCollection.map(src,true, i->CategVO.builder()
-                .family(i.getFamily())
-                .categId(i.getCategId())
-                .categPid(i.getCategPid())
-                .categName(i.getCategName())
-                .categIdPath(i.getCategIdPath())
-                .categNamePath(i.getCategNamePath())
-                .mark(i.getMark())
-                .extend(i.getExtend())
-                .seq(i.getSeq())
-                .build());
+        return ShareUtil.XCollection.map(src,true, i-> CopyWrapper.create(CategVO::new).endFrom(i,"childs"));
     }
 
 
     /**
-     * 获取父级路径
-     * @param pid
+     * 获取一级目录
+     * @param path
+     * @param self
      * @return
      */
-    public CategVO getRootPath(String pid){
-        if(ShareUtil.XObject.isEmpty(pid)){
-            return null;
-        }
-        CategVO parent=getById(pid);
-        if(null==parent){
-            return null;
-        }
-        StringBuilder sbId=new StringBuilder();
-        StringBuilder sbName=new StringBuilder();
-        if(ShareUtil.XString.hasLength(parent.getCategIdPath())){
-            sbId.append(ShareUtil.XString.eusureEndsWith(parent.getCategIdPath(),splitCategPath));
-        }
-        sbId.append(ShareUtil.XString.eusureEndsWith(parent.getCategId(),splitCategPath));
-        if(ShareUtil.XString.hasLength(parent.getCategNamePath())){
-            sbName.append(ShareUtil.XString.eusureEndsWith(parent.getCategNamePath(),splitCategPath));
-        }
-        sbName.append(ShareUtil.XString.eusureEndsWith(parent.getCategName(),splitCategPath));
-        return CategVO.builder()
-                .categIdPath(sbId.toString())
-                .categNamePath(sbName.toString())
-                .build();
-    }
-
-    public static String getCategLv1(String path,String self){
+    public String getCategLv1(String path,String self){
         if(ShareUtil.XObject.isEmpty(path)){
             return self;
         }
-        return path.split("/")[0];
+        return path.split(SPLITCategPath)[0];
+    }
+
+    /**
+     * 获取子级目录路径
+     *
+     * @param path
+     * @param self
+     * @return
+     */
+    public String getCategPath(String path,String self){
+        if(ShareUtil.XObject.isEmpty(path)){
+            return ShareUtil.XString.eusureEndsWith(self,SPLITCategPath);
+        }
+        return String.format("%s%s", ShareUtil.XString.eusureEndsWith(path,SPLITCategPath),
+                ShareUtil.XString.eusureEndsWith(self,SPLITCategPath));
     }
 
 

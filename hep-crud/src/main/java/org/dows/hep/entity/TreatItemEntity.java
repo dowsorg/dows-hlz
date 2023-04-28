@@ -42,8 +42,11 @@ public class TreatItemEntity implements CrudEntity {
     @Schema(title = "治疗名称")
     private String treatItemName;
 
-    @Schema(title = "治疗类型 1-心理治疗 2-医学治疗")
-    private Boolean treatItemType;
+    @Schema(title = "功能点类别")
+    private String indicatorCategoryId;
+
+    @Schema(title = "功能点id")
+    private String indicatorFuncId;
 
     @Schema(title = "分类id")
     private String interveneCategId;

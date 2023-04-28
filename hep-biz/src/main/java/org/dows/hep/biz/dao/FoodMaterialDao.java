@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.FoodMaterialEntity;
 import org.dows.hep.entity.FoodMaterialIndicatorEntity;
@@ -33,29 +34,51 @@ public class FoodMaterialDao {
 
     private final IdGenerator idGenerator;
 
-    private final static SFunction<FoodMaterialEntity,?> FUNCLogicKey4Material=FoodMaterialEntity::getFoodMaterialId;
+    private final static SFunction<FoodMaterialEntity,?> COLLogicKey4Material =FoodMaterialEntity::getFoodMaterialId;
 
+
+    //region trans
+    @Transactional(rollbackFor = Exception.class)
+    public boolean tranSave(FoodMaterialEntity material, List<FoodMaterialNutrientEntity> nutrients, List<FoodMaterialIndicatorEntity> indicators){
+        AssertUtil.falseThenThrow(coreSave(material,nutrients,indicators))
+                .throwMessage("保存失败,请刷新");
+        return true;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public boolean tranSetState(String materialId, Integer state) {
+        AssertUtil.falseThenThrow(setState(materialId,state))
+                .throwMessage("食材不存在,请刷新");
+        return true;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public boolean tranDelete(List<String> ids) {
+        AssertUtil.falseThenThrow(coreDelete(ids))
+                .throwMessage("食材不存在,请刷新");
+        return true;
+    }
+    //endregion
 
     //region save
-    @Transactional(rollbackFor = Exception.class)
-    public boolean saveMaterial(FoodMaterialEntity material,List<FoodMaterialNutrientEntity> nutrients,List<FoodMaterialIndicatorEntity> indicators){
-        final boolean updateFlag=!ShareUtil.XObject.isEmpty(material.getFoodMaterialId());
+    public boolean coreSave(FoodMaterialEntity material, List<FoodMaterialNutrientEntity> nutrients, List<FoodMaterialIndicatorEntity> indicators){
+        final boolean existsFlag=ShareUtil.XObject.notEmpty(material.getFoodMaterialId());
         if(!saveOrUpdate(material)) {
             return false;
         }
         final String materialId=material.getFoodMaterialId();
-        if(updateFlag&&!delByMaterialId4Nutrient(materialId)) {
-            return false;
+        if(existsFlag) {
+            delByLeadId4Nutrient(materialId);
         }
         if(!saveBatch4Nutrients(materialId,nutrients)){
             return false;
         }
-        if(updateFlag&&!delByMaterialId4Indicator(materialId)) {
-            return false;
+        if(existsFlag) {
+            delByLeadId4Indicator(materialId);
         }
         return saveBatch4Indicators(materialId, indicators);
     }
-    public boolean saveOrUpdate(FoodMaterialEntity entity){
+     public boolean saveOrUpdate(FoodMaterialEntity entity){
         if(ShareUtil.XObject.isEmpty(entity)){
             return false;
         }
@@ -64,12 +87,8 @@ public class FoodMaterialDao {
         }
         return foodMaterialService.saveOrUpdate(entity);
     }
-    public boolean updateState(String materialId,Integer state) {
-        return foodMaterialService.update(Wrappers.<FoodMaterialEntity>lambdaUpdate()
-                .eq(FoodMaterialEntity::getFoodMaterialId, materialId)
-                .set(FoodMaterialEntity::getState, Optional.ofNullable(state).orElse(0) > 0));
-    }
-    public boolean saveBatch4Nutrients(String materialId,  List<FoodMaterialNutrientEntity> nutrients){
+
+    public boolean saveBatch4Nutrients(String materialId, List<FoodMaterialNutrientEntity> nutrients){
         if(ShareUtil.XObject.isEmpty(nutrients)){
             return true;
         }
@@ -95,21 +114,24 @@ public class FoodMaterialDao {
         }
         return foodMaterialIndicatorService.saveBatch(indicators);
     }
+    public boolean setState(String materialId, Integer state) {
+        return foodMaterialService.update(Wrappers.<FoodMaterialEntity>lambdaUpdate()
+                .eq(COLLogicKey4Material, materialId)
+                .set(FoodMaterialEntity::getState, Optional.ofNullable(state).orElse(0) ));
+    }
     //endregion
 
 
     //region find
-    public Page<FoodMaterialEntity> getByCondition4Material(Page<FoodMaterialEntity> page, String keyWords, String categId, SFunction<FoodMaterialEntity,?>... cols){
-        if(ShareUtil.XString.hasLength(categId)&&!categId.endsWith("/")) {
-            categId = String.format("%s/", categId);
-        }
+    public Page<FoodMaterialEntity> getByCondition(Page<FoodMaterialEntity> page, String keyWords, String categId, SFunction<FoodMaterialEntity,?>... cols){
+
         return foodMaterialService.page(page,Wrappers.<FoodMaterialEntity>lambdaQuery()
-                .likeLeft(ShareUtil.XString.hasLength(categId), FoodMaterialEntity::getCategIdPath,categId)
-                .likeLeft(ShareUtil.XString.hasLength(keyWords), FoodMaterialEntity::getFoodMaterialName,keyWords)
+                .likeRight(ShareUtil.XString.hasLength(categId), FoodMaterialEntity::getCategIdPath,categId)
+                .like(ShareUtil.XString.hasLength(keyWords), FoodMaterialEntity::getFoodMaterialName,keyWords)
                 .select(cols));
 
     }
-    public Optional<FoodMaterialEntity> getByPk4Material(Long pk, SFunction<FoodMaterialEntity,?>... cols){
+    public Optional<FoodMaterialEntity> getByPk(Long pk, SFunction<FoodMaterialEntity,?>... cols){
         if(ShareUtil.XObject.isEmpty(pk)){
             return Optional.empty();
         }
@@ -118,17 +140,17 @@ public class FoodMaterialDao {
                 .select(cols)
                 .oneOpt();
     }
-    public Optional<FoodMaterialEntity> getById4Material(String materialId, SFunction<FoodMaterialEntity,?>... cols){
+    public Optional<FoodMaterialEntity> getById(String materialId, SFunction<FoodMaterialEntity,?>... cols){
         if(ShareUtil.XObject.isEmpty(materialId)){
             return Optional.empty();
         }
         return foodMaterialService.lambdaQuery()
-                .eq(FUNCLogicKey4Material,materialId)
+                .eq(COLLogicKey4Material,materialId)
                 .select(cols)
                 .oneOpt();
     }
 
-    public List<FoodMaterialNutrientEntity> getByMaterialId4Nutrient(String materialId,SFunction<FoodMaterialNutrientEntity,?>... cols) {
+    public List<FoodMaterialNutrientEntity> getByLeadId4Nutrient(String materialId, SFunction<FoodMaterialNutrientEntity,?>... cols) {
         if (ShareUtil.XObject.isEmpty(materialId)) {
             return Collections.emptyList();
         }
@@ -138,7 +160,7 @@ public class FoodMaterialDao {
                 .select(cols)
                 .list();
     }
-    public List<FoodMaterialIndicatorEntity> getByMaterialId4Indicator(String materialId,SFunction<FoodMaterialIndicatorEntity,?>... cols){
+    public List<FoodMaterialIndicatorEntity> getByLeadId4Indicator(String materialId, SFunction<FoodMaterialIndicatorEntity,?>... cols){
         if(ShareUtil.XObject.isEmpty(materialId)){
             return Collections.emptyList();
         }
@@ -153,32 +175,32 @@ public class FoodMaterialDao {
     //endregion
 
     //region delete
-    @Transactional(rollbackFor = Exception.class)
-    public boolean delMaterials(List<String> ids){
-        if(!delByIds4Material(ids)){
+    public boolean coreDelete(List<String> ids){
+        if(!delByIds(ids)){
             return false;
         }
-        delByMaterialId4Nutrient(ids);
-        delByMaterialId4Indicator(ids);
+        delByLeadId4Nutrient(ids);
+        delByLeadId4Indicator(ids);
         return true;
     }
-    public boolean delByIds4Material(List<String> ids){
+
+    public boolean delByIds(List<String> ids){
         if(ShareUtil.XObject.isEmpty(ids)){
             return false;
         }
         final boolean oneFlag=ids.size()==1;
         return foodMaterialService.remove(Wrappers.<FoodMaterialEntity>lambdaQuery()
-                .eq(oneFlag,FUNCLogicKey4Material,ids.get(0))
-                .in(!oneFlag,FUNCLogicKey4Material,ids));
+                .eq(oneFlag, COLLogicKey4Material,ids.get(0))
+                .in(!oneFlag, COLLogicKey4Material,ids));
     }
-    public boolean delByMaterialId4Nutrient(String materialId){
+    public boolean delByLeadId4Nutrient(String materialId){
         if(ShareUtil.XObject.isEmpty(materialId)){
             return false;
         }
         return foodMaterialNutrientService.remove(Wrappers.<FoodMaterialNutrientEntity>lambdaQuery()
                 .eq(FoodMaterialNutrientEntity::getFoodMaterialId,materialId));
     }
-    public boolean delByMaterialId4Nutrient(List<String> ids){
+    public boolean delByLeadId4Nutrient(List<String> ids){
         if(ShareUtil.XObject.isEmpty(ids)){
             return false;
         }
@@ -187,14 +209,14 @@ public class FoodMaterialDao {
                 .eq(oneFlag,FoodMaterialNutrientEntity::getFoodMaterialId,ids.get(0))
                 .in(!oneFlag,FoodMaterialNutrientEntity::getFoodMaterialId,ids));
     }
-    public boolean delByMaterialId4Indicator(String materialId){
+    public boolean delByLeadId4Indicator(String materialId){
         if(ShareUtil.XObject.isEmpty(materialId)){
             return false;
         }
         return foodMaterialIndicatorService.remove(Wrappers.<FoodMaterialIndicatorEntity>lambdaQuery()
                 .eq(FoodMaterialIndicatorEntity::getFoodMaterialId,materialId));
     }
-    public boolean delByMaterialId4Indicator(List<String> ids){
+    public boolean delByLeadId4Indicator(List<String> ids){
         if(ShareUtil.XObject.isEmpty(ids)){
             return false;
         }
