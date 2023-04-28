@@ -30,7 +30,7 @@ public class IndicatorFuncRest {
     */
     @Operation(summary = "创建指标功能")
     @PostMapping("v1/baseIndicator/indicatorFunc/createIndicatorFunc")
-    public void createIndicatorFunc(@RequestBody @Validated CreateIndicatorFuncRequest createIndicatorFuncRequest) {
+    public void createIndicatorFunc(@RequestBody @Validated CreateIndicatorFuncRequest createIndicatorFuncRequest) throws InterruptedException {
         indicatorFuncBiz.createIndicatorFunc(createIndicatorFuncRequest);
     }
 
@@ -52,8 +52,8 @@ public class IndicatorFuncRest {
     */
     @Operation(summary = "更新指标功能")
     @PutMapping("v1/baseIndicator/indicatorFunc/updateIndicatorFunc")
-    public void updateIndicatorFunc(@Validated UpdateIndicatorFuncRequest updateIndicatorFunc ) {
-        indicatorFuncBiz.updateIndicatorFunc(updateIndicatorFunc);
+    public void updateIndicatorFunc(@RequestBody @Validated UpdateIndicatorFuncRequest updateIndicatorFuncRequest) throws InterruptedException {
+        indicatorFuncBiz.updateIndicatorFunc(updateIndicatorFuncRequest);
     }
 
     /**
@@ -72,10 +72,20 @@ public class IndicatorFuncRest {
     * @param
     * @return
     */
-    @Operation(summary = "筛选指标类别")
+    @Operation(summary = "查询指标类别下所有功能点")
     @GetMapping("v1/baseIndicator/indicatorFunc/listIndicatorFunc")
-    public List<IndicatorFuncResponse> listIndicatorFunc(@Validated String appId, @Validated String indicatorCategoryId, @Validated String name) {
-        return indicatorFuncBiz.listIndicatorFunc(appId,indicatorCategoryId,name);
+    public List<IndicatorFuncResponse> listIndicatorFunc(
+        @RequestParam @Validated String appId,
+        @RequestParam @Validated String indicatorCategoryId) {
+        return indicatorFuncBiz.listIndicatorFunc(appId,indicatorCategoryId);
+    }
+
+    @Operation(summary = "根据pid查询所有功能点")
+    @GetMapping("v1/baseIndicator/indicatorFunc/getByPidAndAppId")
+    public List<IndicatorFuncResponse> getByPidAndAppId(
+        @RequestParam @Validated String appId,
+        @RequestParam @Validated String pid) {
+        return indicatorFuncBiz.getByPidAndAppId(appId, pid);
     }
 
 //    /**

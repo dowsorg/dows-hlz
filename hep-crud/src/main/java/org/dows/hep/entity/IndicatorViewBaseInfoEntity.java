@@ -45,9 +45,6 @@ public class IndicatorViewBaseInfoEntity implements CrudEntity {
     @Schema(title = "指标功能ID")
     private String indicatorFuncId;
 
-    @Schema(title = "指标基本信息类名称")
-    private String name;
-
     @JsonIgnore
     @TableLogic
     @TableField(fill = FieldFill.INSERT)

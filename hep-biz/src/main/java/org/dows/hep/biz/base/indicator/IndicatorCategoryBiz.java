@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 public class IndicatorCategoryBiz{
     @Value("${redisson.lock.lease-time.teacher.indicator-category-create-delete-update:5000}")
     private Integer leaseTimeIndicatorCategoryCreateDeleteUpdate;
-    private final String IndicatorCategoryFieldPid = "pid";
+    private final String indicatorCategoryFieldPid = "pid";
     private final IndicatorCategoryService indicatorCategoryService;
     private final IndicatorInstanceService indicatorInstanceService;
     private final RedissonClient redissonClient;
@@ -82,7 +82,7 @@ public class IndicatorCategoryBiz{
     public void batchCreateOrUpdateIndicatorCategory(BatchCreateOrUpdateIndicatorCategoryRequest batchCreateOrUpdateIndicatorCategoryRequest) throws InterruptedException {
         String appId = batchCreateOrUpdateIndicatorCategoryRequest.getAppId();
         String pid = batchCreateOrUpdateIndicatorCategoryRequest.getPid();
-        RLock lock = redissonClient.getLock(RedissonUtil.getLockName(appId, EnumRedissonLock.INDICATOR_CATEGORY_CREATE_DELETE_UPDATE, IndicatorCategoryFieldPid, pid));
+        RLock lock = redissonClient.getLock(RedissonUtil.getLockName(appId, EnumRedissonLock.INDICATOR_CATEGORY_CREATE_DELETE_UPDATE, indicatorCategoryFieldPid, pid));
         boolean isLocked = lock.tryLock(leaseTimeIndicatorCategoryCreateDeleteUpdate, TimeUnit.MILLISECONDS);
         if (!isLocked) {
             throw new IndicatorCategoryException(EnumESC.SYSTEM_BUSY_PLEASE_OPERATOR_INDICATOR_CATEGORY_LATER);
