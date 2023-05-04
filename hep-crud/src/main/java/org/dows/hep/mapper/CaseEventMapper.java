@@ -8,7 +8,7 @@ import org.dows.hep.entity.CaseEventEntity;
  * 案例人物事件(CaseEvent)表数据库访问层
  *
  * @author lait
- * @since 2023-04-21 10:31:14
+ * @since 2023-04-28 10:29:43
  */
 @Mapper
 public interface CaseEventMapper extends MybatisCrudMapper<CaseEventEntity> {

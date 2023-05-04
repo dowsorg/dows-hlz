@@ -15,10 +15,10 @@ import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
 
 /**
- * 实验机构人物(ExperimentPerson)实体类
+ * 实验人物(ExperimentPerson)实体类
  *
  * @author lait
- * @since 2023-04-24 10:23:46
+ * @since 2023-04-28 10:25:34
  */
 @SuppressWarnings("serial")
 @Data
@@ -28,13 +28,16 @@ import org.dows.framework.crud.api.CrudEntity;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "ExperimentPerson", title = "实验机构人物")
+@Schema(name = "ExperimentPerson", title = "实验人物")
 @TableName("experiment_person")
 public class ExperimentPersonEntity implements CrudEntity {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库ID")
     private Long id;
+
+    @Schema(title = "应用ID")
+    private String appId;
 
     @Schema(title = "实验人物id")
     private String experimentPersonId;
@@ -51,29 +54,14 @@ public class ExperimentPersonEntity implements CrudEntity {
     @Schema(title = "案例机构名称")
     private String caseOrgName;
 
-    @Schema(title = "账号ID")
-    private String caseAccountId;
+    @Schema(title = "案例人物ID")
+    private String casePersonId;
 
-    @Schema(title = "账号名称")
-    private String caseAccountName;
+    @Schema(title = "案列人物名称")
+    private String casePersonName;
 
-    @Schema(title = "上个案例机构id")
-    private String caseOrgIdLast;
-
-    @Schema(title = "上个案例机构名称")
-    private String caseOrgNameLast;
-
-    @Schema(title = "挂号状态 0-未挂号 1-已挂号")
-    private Boolean flowState;
-
-    @Schema(title = "保险状态 0-未购买 1-已购买")
-    private Boolean insuranceState;
-
-    @Schema(title = "剩余资金")
-    private Double asset;
-
-    @Schema(title = "初始资金")
-    private Double assetInit;
+    @Schema(title = "期数")
+    private Integer periods;
 
     @JsonIgnore
     @TableLogic

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 运动项目关联指标(SportItemIndicator)表服务实现类
  *
  * @author lait
- * @since 2023-04-21 10:31:48
+ * @since 2023-04-28 10:31:19
  */
 @Service("sportItemIndicatorService")
 public class SportItemIndicatorServiceImpl extends MybatisCrudServiceImpl<SportItemIndicatorMapper, SportItemIndicatorEntity> implements SportItemIndicatorService {

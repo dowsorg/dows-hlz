@@ -1,19 +1,18 @@
 package org.dows.hep.rest.base.intervene;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.intervene.request.DelTreatItemRequest;
 import org.dows.hep.api.base.intervene.request.FindTreatRequest;
-import org.dows.hep.api.base.intervene.request.SaveTreatItmeRequest;
+import org.dows.hep.api.base.intervene.request.SaveTreatItemRequest;
+import org.dows.hep.api.base.intervene.request.SetTreatItemStateRequest;
 import org.dows.hep.api.base.intervene.response.TreatItemInfoResponse;
 import org.dows.hep.api.base.intervene.response.TreatItemResponse;
 import org.dows.hep.biz.base.intervene.TreatItemBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
 * @description project descr:干预:治疗项目
@@ -34,7 +33,7 @@ public class TreatItemRest {
     */
     @Operation(summary = "获取治疗项目列表")
     @PostMapping("v1/baseIntervene/treatItem/pageTreatItem")
-    public TreatItemResponse pageTreatItem(@RequestBody @Validated FindTreatRequest findTreat ) {
+    public Page<TreatItemResponse> pageTreatItem(@RequestBody @Validated FindTreatRequest findTreat ) {
         return treatItemBiz.pageTreatItem(findTreat);
     }
 
@@ -44,8 +43,8 @@ public class TreatItemRest {
     * @return
     */
     @Operation(summary = "获取治疗项目信息")
-    @PostMapping("v1/baseIntervene/treatItem/infoTreatItem")
-    public TreatItemInfoResponse infoTreatItem(@RequestBody @Validated String treatItemId ) {
+    @GetMapping("v1/baseIntervene/treatItem/infoTreatItem")
+    public TreatItemInfoResponse infoTreatItem( @Validated String treatItemId ) {
         return treatItemBiz.infoTreatItem(treatItemId);
     }
 
@@ -56,9 +55,22 @@ public class TreatItemRest {
     */
     @Operation(summary = "保存治疗项目")
     @PostMapping("v1/baseIntervene/treatItem/saveTreatItem")
-    public Boolean saveTreatItem(@RequestBody @Validated SaveTreatItmeRequest saveTreatItme ) {
+    public Boolean saveTreatItem(@RequestBody @Validated SaveTreatItemRequest saveTreatItme ) {
         return treatItemBiz.saveTreatItem(saveTreatItme);
     }
+
+    /**
+     * 启用禁用治疗项目
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "启用禁用治疗项目")
+    @PostMapping("v1/baseIntervene/treatItem/setTreatItemState")
+    public Boolean setTreatItemState(@RequestBody @Validated SetTreatItemStateRequest setTreatItemState ) {
+        return treatItemBiz.setTreatItemState(setTreatItemState);
+    }
+
 
     /**
     * 删除治疗项目
@@ -67,7 +79,7 @@ public class TreatItemRest {
     */
     @Operation(summary = "删除治疗项目")
     @DeleteMapping("v1/baseIntervene/treatItem/delTreatItem")
-    public Boolean delTreatItem(@Validated DelTreatItemRequest delTreatItem ) {
+    public Boolean delTreatItem(@RequestBody @Validated DelTreatItemRequest delTreatItem ) {
         return treatItemBiz.delTreatItem(delTreatItem);
     }
 

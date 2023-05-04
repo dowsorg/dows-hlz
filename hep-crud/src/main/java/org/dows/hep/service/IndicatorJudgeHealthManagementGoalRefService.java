@@ -8,7 +8,7 @@ import org.dows.framework.crud.mybatis.MybatisCrudService;
  * 判断指标健管目标关联指标(IndicatorJudgeHealthManagementGoalRef)表服务接口
  *
  * @author lait
- * @since 2023-04-21 10:31:43
+ * @since 2023-04-28 10:30:47
  */
 public interface IndicatorJudgeHealthManagementGoalRefService extends MybatisCrudService<IndicatorJudgeHealthManagementGoalRefEntity> {
 

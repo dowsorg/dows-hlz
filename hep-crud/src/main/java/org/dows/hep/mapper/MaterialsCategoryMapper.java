@@ -5,9 +5,13 @@ import org.dows.framework.crud.mybatis.MybatisCrudMapper;
 import org.dows.hep.entity.MaterialsCategoryEntity;
 
 /**
- * @author jx
- * @date 2023/4/24 17:06
+ * 资料-分类(MaterialsCategory)表数据库访问层
+ *
+ * @author lait
+ * @since 2023-04-28 10:29:51
  */
 @Mapper
 public interface MaterialsCategoryMapper extends MybatisCrudMapper<MaterialsCategoryEntity> {
+
 }
+

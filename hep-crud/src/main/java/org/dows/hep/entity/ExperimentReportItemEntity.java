@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 报告项(ExperimentReportItem)实体类
  *
  * @author lait
- * @since 2023-04-24 10:23:45
+ * @since 2023-04-28 10:25:42
  */
 @SuppressWarnings("serial")
 @Data
@@ -36,6 +36,9 @@ public class ExperimentReportItemEntity implements CrudEntity {
     @Schema(title = "数据库ID")
     private Long id;
 
+    @Schema(title = "应用ID")
+    private String appId;
+
     @Schema(title = "实验案例报告ID")
     private String experimentCaseReportId;
 
@@ -50,6 +53,9 @@ public class ExperimentReportItemEntity implements CrudEntity {
 
     @Schema(title = "字段的数据类型")
     private String fieldType;
+
+    @Schema(title = "来源库表")
+    private String source;
 
     @JsonIgnore
     @TableLogic

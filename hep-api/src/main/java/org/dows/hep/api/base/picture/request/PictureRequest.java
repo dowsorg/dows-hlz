@@ -40,7 +40,7 @@ public class PictureRequest {
     private String type;
 
     @Schema(title = "状态")
-    private Integer enabled;
+    private Boolean enabled;
 
     @Schema(title = "序号")
     private Integer sequence;
@@ -59,4 +59,5 @@ public class PictureRequest {
 
     @Schema(title = "页数")
     private Integer pageSize;
+
 }

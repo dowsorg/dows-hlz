@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 指标基本信息描述表与指标关联关系(IndicatorViewBaseInfoDescrRef)实体类
  *
  * @author lait
- * @since 2023-04-24 10:23:48
+ * @since 2023-04-28 10:26:26
  */
 @SuppressWarnings("serial")
 @Data

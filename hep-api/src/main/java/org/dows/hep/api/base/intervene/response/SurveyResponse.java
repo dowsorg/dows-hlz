@@ -1,5 +1,6 @@
 package org.dows.hep.api.base.intervene.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,6 +15,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "Survey 对象", title = "问卷列表")
 public class SurveyResponse{
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @Schema(title = "数据库id")
+    private Long id;
     @Schema(title = "分布式id")
     private String surveyId;
 

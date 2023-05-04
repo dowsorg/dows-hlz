@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 指标基本信息描述表(IndicatorViewBaseInfoDescr)实体类
  *
  * @author lait
- * @since 2023-04-24 10:23:47
+ * @since 2023-04-28 10:26:25
  */
 @SuppressWarnings("serial")
 @Data
@@ -41,6 +41,9 @@ public class IndicatorViewBaseInfoDescrEntity implements CrudEntity {
 
     @Schema(title = "应用ID")
     private String appId;
+
+    @Schema(title = "分布式ID")
+    private String indicatorViewBaseInfoId;
 
     @Schema(title = "指标基本信息描述表名称")
     private String name;

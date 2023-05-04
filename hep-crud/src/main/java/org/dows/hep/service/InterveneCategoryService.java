@@ -8,7 +8,7 @@ import org.dows.framework.crud.mybatis.MybatisCrudService;
  * 干预类别管理(InterveneCategory)表服务接口
  *
  * @author lait
- * @since 2023-04-21 10:31:44
+ * @since 2023-04-28 10:30:48
  */
 public interface InterveneCategoryService extends MybatisCrudService<InterveneCategoryEntity> {
 

@@ -1,5 +1,6 @@
 package org.dows.hep.api.base.intervene.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,11 +15,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "InterveneCateg 对象", title = "类别信息列表")
 public class InterveneCategResponse{
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @Schema(title = "数据库id")
+    private Long id;
+
     @Schema(title = "类别key")
-    private String section;
+    private String family;
 
     @Schema(title = "分布式id")
-    private String eventCategId;
+    private String interveneCategId;
 
     @Schema(title = "分布式父id")
     private String categPid;

@@ -1,8 +1,13 @@
 package org.dows.hep.api.base.intervene.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
+import org.dows.hep.api.base.intervene.vo.InterveneIndicatorVO;
+
+import java.util.List;
 
 /**
 * @description 
@@ -11,14 +16,23 @@ import lombok.NoArgsConstructor;
 * @date 
 */
 @Data
+@Accessors(chain = true)
 @NoArgsConstructor
 @Schema(name = "TreatItemInfo 对象", title = "治疗项目信息")
 public class TreatItemInfoResponse{
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @Schema(title = "数据库id")
+    private Long id;
+
     @Schema(title = "分布式id")
     private String treatItemId;
 
     @Schema(title = "治疗名称")
     private String treatItemName;
+
+    @Schema(title = "功能点id")
+    private String indicatorFuncId;
 
     @Schema(title = "当前分类id")
     private String interveneCategId;
@@ -38,8 +52,13 @@ public class TreatItemInfoResponse{
     @Schema(title = "费用")
     private String fee;
 
+    @Schema(title = "状态 0-启用 1-停用")
+    private Integer state;
+
     @Schema(title = "关联指标json对象")
-    private String indicators;
+    private List<InterveneIndicatorVO> indicators;
+
+
 
 
 }

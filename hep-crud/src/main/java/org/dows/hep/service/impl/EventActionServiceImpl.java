@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 突发事件处理选项(EventAction)表服务实现类
  *
  * @author lait
- * @since 2023-04-21 10:31:41
+ * @since 2023-04-28 10:31:08
  */
 @Service("eventActionService")
 public class EventActionServiceImpl extends MybatisCrudServiceImpl<EventActionMapper, EventActionEntity> implements EventActionService {

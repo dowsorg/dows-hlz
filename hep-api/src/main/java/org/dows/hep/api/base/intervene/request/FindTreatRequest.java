@@ -1,6 +1,7 @@
 package org.dows.hep.api.base.intervene.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -29,8 +30,9 @@ public class FindTreatRequest{
     @Schema(title = "搜索关键字")
     private String keywords;
 
-    @Schema(title = "治疗类型 1-心理治疗 2-医学治疗")
-    private Integer treatItemType;
+    @Schema(title = "功能点id")
+    @NotNull(message = "功能点ID不可为空")
+    private String indicatorFuncId;
 
 
 }

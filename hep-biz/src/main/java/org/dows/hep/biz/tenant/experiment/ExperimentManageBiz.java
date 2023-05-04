@@ -21,6 +21,7 @@ import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.hep.service.ExperimentSettingService;
 import org.dows.sequence.api.IdGenerator;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,8 +60,7 @@ public class ExperimentManageBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     @Transactional
-    public String experimentAllot(CreateExperimentRequest createExperiment) {
-        log.info("================ddddddd=================");
+    public String allot(CreateExperimentRequest createExperiment) {
         ExperimentInstanceEntity experimentInstance = ExperimentInstanceEntity.builder()
                 .experimentInstanceId(idGenerator.nextIdStr())
                 .startTime(createExperiment.getStartTime())
@@ -144,7 +144,7 @@ public class ExperimentManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public Boolean experimentGrouping(GroupSettingRequest groupSetting) {
+    public Boolean grouping(GroupSettingRequest groupSetting) {
 
         ExperimentGroupEntity experimentGroupEntity = ExperimentGroupEntity.builder()
                 .experimentGroupId(idGenerator.nextIdStr())
@@ -187,7 +187,7 @@ public class ExperimentManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public List<ExperimentListResponse> listExperiment() {
+    public List<ExperimentListResponse> list() {
 
 
         return new ArrayList<ExperimentListResponse>();
@@ -204,8 +204,7 @@ public class ExperimentManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public IPage<ExperimentListResponse> pageExperiment(PageExperimentRequest pageExperimentRequest) {
-
+    public IPage<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
         Page page = new Page<ExperimentInstanceEntity>();
         page.setCurrent(pageExperimentRequest.getPageNo());
         page.addOrder(pageExperimentRequest.getDesc() ?

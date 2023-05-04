@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 食谱(FoodCookbook)实体类
  *
  * @author lait
- * @since 2023-04-24 10:23:47
+ * @since 2023-04-28 10:25:47
  */
 @SuppressWarnings("serial")
 @Data
@@ -79,7 +79,7 @@ public class FoodCookbookEntity implements CrudEntity {
     private String fatEnergy;
 
     @Schema(title = "状态 0-启用 1-停用")
-    private Integer state;
+    private Boolean state;
 
     @Schema(title = "说明")
     private String descr;

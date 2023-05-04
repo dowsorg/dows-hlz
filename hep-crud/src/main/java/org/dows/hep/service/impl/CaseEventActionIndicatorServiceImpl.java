@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 人物事件处理选项影响指标(CaseEventActionIndicator)表服务实现类
  *
  * @author lait
- * @since 2023-04-21 10:31:40
+ * @since 2023-04-28 10:31:07
  */
 @Service("caseEventActionIndicatorService")
 public class CaseEventActionIndicatorServiceImpl extends MybatisCrudServiceImpl<CaseEventActionIndicatorMapper, CaseEventActionIndicatorEntity> implements CaseEventActionIndicatorService {

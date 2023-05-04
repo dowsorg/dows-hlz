@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 判断指标健管目标(IndicatorJudgeHealthManagementGoal)实体类
  *
  * @author lait
- * @since 2023-04-24 10:23:47
+ * @since 2023-04-28 10:26:15
  */
 @SuppressWarnings("serial")
 @Data

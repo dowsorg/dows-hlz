@@ -1,12 +1,29 @@
 package org.dows.hep.biz.base.indicator;
 
-import org.dows.hep.api.base.indicator.request.CreateIndicatorViewBaseInfoRequest;
-import org.dows.hep.api.base.indicator.request.UpdateIndicatorViewBaseInfoRequest;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.dows.hep.api.base.indicator.request.*;
 import org.dows.hep.api.base.indicator.response.IndicatorViewBaseInfoResponse;
+import org.dows.hep.api.enums.EnumESC;
+import org.dows.hep.api.enums.EnumRedissonLock;
+import org.dows.hep.biz.exception.IndicatorViewBaseInfoException;
+import org.dows.hep.biz.util.RedissonUtil;
+import org.dows.hep.entity.*;
+import org.dows.hep.service.*;
+import org.dows.sequence.api.IdGenerator;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
 * @description project descr:指标:查看指标基本信息类
@@ -15,7 +32,22 @@ import java.util.List;
 * @date 2023年4月23日 上午9:44:34
 */
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class IndicatorViewBaseInfoBiz{
+    @Value("${redisson.lock.lease-time.teacher.indicator-view-base-info-create-delete-update:5000}")
+    private Integer leaseTimeIndicatorViewBaseInfoCreateDeleteUpdate;
+    private final String indicatorViewBaseInfoFieldIndicatorViewBaseInfoId = "indicatorViewBaseInfoId";
+    private final IdGenerator idGenerator;
+    private final RedissonClient redissonClient;
+    private final IndicatorViewBaseInfoService indicatorViewBaseInfoService;
+    private final IndicatorViewBaseInfoDescrService indicatorViewBaseInfoDescrService;
+    private final IndicatorViewBaseInfoDescrRefService indicatorViewBaseInfoDescrRefService;
+    private final IndicatorViewBaseInfoMonitorService indicatorViewBaseInfoMonitorService;
+    private final IndicatorViewBaseInfoMonitorContentService indicatorViewBaseInfoMonitorContentService;
+    private final IndicatorViewBaseInfoMonitorContentRefService indicatorViewBaseInfoMonitorContentRefService;
+    private final IndicatorViewBaseInfoSingleService indicatorViewBaseInfoSingleService;
+    private final IndicatorFuncService indicatorFuncService;
     /**
     * @param
     * @return
@@ -26,9 +58,215 @@ public class IndicatorViewBaseInfoBiz{
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public void createIndicatorViewBaseInfo(CreateIndicatorViewBaseInfoRequest createIndicatorViewBaseInfo ) {
+    public void createIndicatorViewBaseInfo(CreateIndicatorViewBaseInfoRequest createIndicatorViewBaseInfo) {
         
     }
+
+    /**
+     * runsix method process
+     * 1.if indicatorViewBaseInfoId isNotBlank
+     *  1.1 delete IndicatorViewBaseInfoDescrEntity by indicatorViewBaseInfoId
+     *  1.2 delete IndicatorViewBaseInfoDescrRefEntity by indicatorViewBaseInfoDescId
+     *  1.3 delete IndicatorViewBaseInfoMonitorEntity by indicatorViewBaseInfoId
+     *  1.4 delete IndicatorViewBaseInfoMonitorContentEntity by indicatorViewBaseInfoMonitorId
+     *  1.5 delete IndicatorViewBaseInfoMonitorContentRefEntity by indicatorViewBaseInfoMonitorContentId
+     *  1.6 delete IndicatorViewBaseInfoSingleEntity by indicatorViewBaseInfoId
+     * 2.save IndicatorViewBaseInfoEntity
+     *   2.1 save List<IndicatorViewBaseInfoDescrEntity>
+     *     2.1.1 save List<IndicatorViewBaseInfoDescrRefEntity>
+     *   2.2 save List<IndicatorViewBaseInfoMonitorEntity>
+     *     2.2.1 save List<IndicatorViewBaseInfoMonitorContentEntity>
+     *       2.2.1.1 save List<IndicatorViewBaseInfoMonitorContentRefEntity>
+     *   2.3 save List<IndicatorViewBaseInfoSingleEntity>
+    */
+    @Transactional(rollbackFor = Exception.class)
+    public void createOrUpdateRs(CreateOrUpdateIndicatorViewBaseInfoRequestRs createOrUpdateIndicatorViewBaseInfoRequestRs) throws InterruptedException {
+        String appId = createOrUpdateIndicatorViewBaseInfoRequestRs.getAppId();
+        String indicatorFuncId = createOrUpdateIndicatorViewBaseInfoRequestRs.getIndicatorFuncId();
+        indicatorFuncService.lambdaQuery()
+            .eq(IndicatorFuncEntity::getAppId, appId)
+            .eq(IndicatorFuncEntity::getIndicatorFuncId, indicatorFuncId)
+            .oneOpt()
+            .orElseThrow(() -> {
+                log.warn("method createIndicatorViewBaseInfoRs param createIndicatorViewBaseInfoRs field indicatorFuncId:{} is illegal", indicatorFuncId);
+                throw new IndicatorViewBaseInfoException(EnumESC.VALIDATE_EXCEPTION);
+            });
+        String indicatorViewBaseInfoId = createOrUpdateIndicatorViewBaseInfoRequestRs.getIndicatorViewBaseInfoId();
+        RLock lock = redissonClient.getLock(RedissonUtil.getLockName(appId, EnumRedissonLock.INDICATOR_VIEW_BASE_INFO_CREATE_DELETE_UPDATE, indicatorViewBaseInfoFieldIndicatorViewBaseInfoId, indicatorViewBaseInfoId));
+        boolean isLocked = lock.tryLock(leaseTimeIndicatorViewBaseInfoCreateDeleteUpdate, TimeUnit.MILLISECONDS);
+        if (!isLocked) {
+            throw new IndicatorViewBaseInfoException(EnumESC.SYSTEM_BUSY_PLEASE_OPERATOR_INDICATOR_VIEW_BASE_INFO_LATER);
+        }
+        try {
+            if (StringUtils.isNotBlank(indicatorViewBaseInfoId)) {
+                String finalIndicatorViewBaseInfoId3 = indicatorViewBaseInfoId;
+                indicatorViewBaseInfoService.lambdaQuery()
+                    .eq(IndicatorViewBaseInfoEntity::getAppId,appId)
+                    .eq(IndicatorViewBaseInfoEntity::getIndicatorViewBaseInfoId, indicatorViewBaseInfoId)
+                    .oneOpt()
+                    .orElseThrow(() -> {
+                        log.warn("method createOrUpdateRs param createOrUpdateIndicatorViewBaseInfoRequestRs field indicatorViewBaseInfoId:{} is illegal", finalIndicatorViewBaseInfoId3);
+                        throw new IndicatorViewBaseInfoException(EnumESC.VALIDATE_EXCEPTION);
+                    });
+                List<String> indicatorViewBaseInfoDescIdList = indicatorViewBaseInfoDescrService.lambdaQuery()
+                    .eq(IndicatorViewBaseInfoDescrEntity::getAppId, appId)
+                    .eq(IndicatorViewBaseInfoDescrEntity::getIndicatorViewBaseInfoId, indicatorViewBaseInfoId)
+                    .list()
+                    .stream()
+                    .map(IndicatorViewBaseInfoDescrEntity::getIndicatorViewBaseInfoDescId)
+                    .collect(Collectors.toList());
+                indicatorViewBaseInfoDescrService.remove(
+                    new LambdaQueryWrapper<IndicatorViewBaseInfoDescrEntity>()
+                        .eq(IndicatorViewBaseInfoDescrEntity::getAppId, appId)
+                        .eq(IndicatorViewBaseInfoDescrEntity::getIndicatorViewBaseInfoId, indicatorViewBaseInfoId)
+                );
+                if (!indicatorViewBaseInfoDescIdList.isEmpty()) {
+                    indicatorViewBaseInfoDescrRefService.remove(
+                        new LambdaQueryWrapper<IndicatorViewBaseInfoDescrRefEntity>()
+                            .eq(IndicatorViewBaseInfoDescrRefEntity::getAppId, appId)
+                            .in(IndicatorViewBaseInfoDescrRefEntity::getIndicatorViewBaseInfoDescId, indicatorViewBaseInfoDescIdList)
+                    );
+                }
+                List<String> indicatorViewBaseInfoMonitorIdList = indicatorViewBaseInfoMonitorService.lambdaQuery()
+                    .eq(IndicatorViewBaseInfoMonitorEntity::getAppId, appId)
+                    .eq(IndicatorViewBaseInfoMonitorEntity::getIndicatorViewBaseInfoId, indicatorViewBaseInfoId)
+                    .list()
+                    .stream()
+                    .map(IndicatorViewBaseInfoMonitorEntity::getIndicatorViewBaseInfoMonitorId)
+                    .collect(Collectors.toList());
+                indicatorViewBaseInfoMonitorService.remove(
+                    new LambdaQueryWrapper<IndicatorViewBaseInfoMonitorEntity>()
+                        .eq(IndicatorViewBaseInfoMonitorEntity::getAppId, appId)
+                        .eq(IndicatorViewBaseInfoMonitorEntity::getIndicatorViewBaseInfoId, indicatorViewBaseInfoId)
+                );
+                if (!indicatorViewBaseInfoMonitorIdList.isEmpty()) {
+                    List<String> indicatorViewBaseInfoMonitorContentIdList = indicatorViewBaseInfoMonitorContentService.lambdaQuery()
+                        .eq(IndicatorViewBaseInfoMonitorContentEntity::getAppId, appId)
+                        .in(IndicatorViewBaseInfoMonitorContentEntity::getIndicatorViewBaseInfoMonitorId, indicatorViewBaseInfoMonitorIdList)
+                        .list()
+                        .stream()
+                        .map(IndicatorViewBaseInfoMonitorContentEntity::getIndicatorViewBaseInfoMonitorContentId)
+                        .collect(Collectors.toList());
+                    if (!indicatorViewBaseInfoMonitorContentIdList.isEmpty()) {
+                        indicatorViewBaseInfoMonitorContentRefService.remove(
+                            new LambdaQueryWrapper<IndicatorViewBaseInfoMonitorContentRefEntity>()
+                                .eq(IndicatorViewBaseInfoMonitorContentRefEntity::getAppId, appId)
+                                .in(IndicatorViewBaseInfoMonitorContentRefEntity::getIndicatorViewBaseInfoMonitorContentId, indicatorViewBaseInfoMonitorContentIdList)
+                        );
+                    }
+                }
+                indicatorViewBaseInfoSingleService.remove(
+                    new LambdaQueryWrapper<IndicatorViewBaseInfoSingleEntity>()
+                        .eq(IndicatorViewBaseInfoSingleEntity::getIndicatorViewBaseInfoId, indicatorViewBaseInfoId)
+                );
+            } else {
+                indicatorViewBaseInfoId = idGenerator.nextIdStr();
+                indicatorViewBaseInfoService.save(
+                    IndicatorViewBaseInfoEntity
+                        .builder()
+                        .indicatorViewBaseInfoId(indicatorViewBaseInfoId)
+                        .appId(appId)
+                        .indicatorFuncId(indicatorFuncId)
+                        .build()
+                );
+            }
+            List<IndicatorViewBaseInfoDescrEntity> indicatorViewBaseInfoDescrEntityList = new ArrayList<>();
+            List<IndicatorViewBaseInfoDescrRefEntity> indicatorViewBaseInfoDescrRefEntityList = new ArrayList<>();
+            String finalIndicatorViewBaseInfoId = indicatorViewBaseInfoId;
+            createOrUpdateIndicatorViewBaseInfoRequestRs.getCreateIndicatorViewBaseInfoDescrRsList()
+                .forEach(createIndicatorViewBaseInfoDescrRs -> {
+                    String indicatorViewBaseInfoDescId = idGenerator.nextIdStr();
+                    indicatorViewBaseInfoDescrEntityList.add(
+                        IndicatorViewBaseInfoDescrEntity
+                            .builder()
+                            .indicatorViewBaseInfoDescId(indicatorViewBaseInfoDescId)
+                            .appId(appId)
+                            .indicatorViewBaseInfoId(finalIndicatorViewBaseInfoId)
+                            .name(createIndicatorViewBaseInfoDescrRs.getName())
+                            .seq(createIndicatorViewBaseInfoDescrRs.getSeq())
+                            .build()
+                    );
+                    AtomicInteger seqAtomicInteger = new AtomicInteger(1);
+                    createIndicatorViewBaseInfoDescrRs.getIndicatorInstanceIdList()
+                        .forEach(indicatorInstanceId -> indicatorViewBaseInfoDescrRefEntityList.add(
+                            IndicatorViewBaseInfoDescrRefEntity
+                                .builder()
+                                .indicatorViewBaseInfoDescRefId(idGenerator.nextIdStr())
+                                .appId(appId)
+                                .indicatorViewBaseInfoDescId(indicatorViewBaseInfoDescId)
+                                .indicatorInstanceId(indicatorInstanceId)
+                                .seq(seqAtomicInteger.getAndIncrement())
+                                .build()
+                        ));
+                });
+            indicatorViewBaseInfoDescrService.saveBatch(indicatorViewBaseInfoDescrEntityList);
+            indicatorViewBaseInfoDescrRefService.saveBatch(indicatorViewBaseInfoDescrRefEntityList);
+            List<IndicatorViewBaseInfoMonitorEntity> indicatorViewBaseInfoMonitorEntityList = new ArrayList<>();
+            List<IndicatorViewBaseInfoMonitorContentEntity> indicatorViewBaseInfoMonitorContentEntityList = new ArrayList<>();
+            List<IndicatorViewBaseInfoMonitorContentRefEntity> indicatorViewBaseInfoMonitorContentRefEntityList = new ArrayList<>();
+            String finalIndicatorViewBaseInfoId1 = indicatorViewBaseInfoId;
+            createOrUpdateIndicatorViewBaseInfoRequestRs.getCreateIndicatorViewBaseInfoMonitorRsList()
+                    .forEach(createIndicatorViewBaseInfoMonitorRs -> {
+                        String indicatorViewBaseInfoMonitorId = idGenerator.nextIdStr();
+                        indicatorViewBaseInfoMonitorEntityList.add(
+                            IndicatorViewBaseInfoMonitorEntity
+                                .builder()
+                                .indicatorViewBaseInfoMonitorId(indicatorViewBaseInfoMonitorId)
+                                .appId(appId)
+                                .indicatorViewBaseInfoId(finalIndicatorViewBaseInfoId1)
+                                .name(createIndicatorViewBaseInfoMonitorRs.getName())
+                                .seq(createIndicatorViewBaseInfoMonitorRs.getSeq())
+                                .build()
+                        );
+                        createIndicatorViewBaseInfoMonitorRs.getCreateIndicatorViewBaseInfoMonitorContentRsList()
+                            .forEach(createIndicatorViewBaseInfoMonitorContentRs -> {
+                                String indicatorViewBaseInfoMonitorContentId = idGenerator.nextIdStr();
+                                indicatorViewBaseInfoMonitorContentEntityList.add(
+                                    IndicatorViewBaseInfoMonitorContentEntity
+                                        .builder()
+                                        .indicatorViewBaseInfoMonitorContentId(indicatorViewBaseInfoMonitorContentId)
+                                        .appId(appId)
+                                        .indicatorViewBaseInfoMonitorId(indicatorViewBaseInfoMonitorId)
+                                        .name(createIndicatorViewBaseInfoMonitorContentRs.getName())
+                                        .seq(createIndicatorViewBaseInfoMonitorContentRs.getSeq())
+                                        .build()
+                                );
+                                AtomicInteger seqAtomicInteger = new AtomicInteger(1);
+                                createIndicatorViewBaseInfoMonitorContentRs.getIndicatorInstanceIdList()
+                                    .forEach(indicatorInstanceId -> indicatorViewBaseInfoMonitorContentRefEntityList.add(
+                                        IndicatorViewBaseInfoMonitorContentRefEntity
+                                            .builder()
+                                            .indicatorViewBaseInfoMonitorContentRefId(idGenerator.nextIdStr())
+                                            .appId(appId)
+                                            .indicatorViewBaseInfoMonitorContentId(indicatorViewBaseInfoMonitorContentId)
+                                            .indicatorInstanceId(indicatorInstanceId)
+                                            .seq(seqAtomicInteger.getAndIncrement())
+                                            .build()
+                                    ));
+                            });
+                    });
+            indicatorViewBaseInfoMonitorService.saveBatch(indicatorViewBaseInfoMonitorEntityList);
+            indicatorViewBaseInfoMonitorContentService.saveBatch(indicatorViewBaseInfoMonitorContentEntityList);
+            indicatorViewBaseInfoMonitorContentRefService.saveBatch(indicatorViewBaseInfoMonitorContentRefEntityList);
+            List<IndicatorViewBaseInfoSingleEntity> indicatorViewBaseInfoSingleEntityList = new ArrayList<>();
+            String finalIndicatorViewBaseInfoId2 = indicatorViewBaseInfoId;
+            createOrUpdateIndicatorViewBaseInfoRequestRs.getCreateIndicatorViewBaseInfoSingleRsList()
+                    .forEach(createIndicatorViewBaseInfoSingleRs -> indicatorViewBaseInfoSingleEntityList.add(
+                        IndicatorViewBaseInfoSingleEntity
+                            .builder()
+                            .indicatorViewBaseInfoSingleId(idGenerator.nextIdStr())
+                            .appId(appId)
+                            .indicatorViewBaseInfoId(finalIndicatorViewBaseInfoId2)
+                            .indicatorInstanceId(createIndicatorViewBaseInfoSingleRs.getIndicatorInstanceId())
+                            .seq(createIndicatorViewBaseInfoSingleRs.getSeq())
+                            .build()
+                    ));
+            indicatorViewBaseInfoSingleService.saveBatch(indicatorViewBaseInfoSingleEntityList);
+        } finally {
+            lock.unlock();
+        }
+    }
+
     /**
     * @param
     * @return

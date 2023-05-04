@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 评估问卷(EvaluateQuestionnaire)实体类
  *
  * @author lait
- * @since 2023-04-24 10:23:50
+ * @since 2023-04-28 10:25:19
  */
 @SuppressWarnings("serial")
 @Data
