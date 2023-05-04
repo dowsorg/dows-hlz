@@ -106,4 +106,13 @@ public class OrgRest {
     public AccountOrgResponse getOrg(@PathVariable String orgId,@PathVariable String appId) {
         return orgBiz.getOrg(orgId,appId);
     }
+
+    /**
+     * 编辑机构基本信息
+     */
+    @Operation(summary = "编辑机构基本信息")
+    @GetMapping("v1/baseOrg/org/editOrg")
+    public Boolean editOrg(@RequestBody AccountOrgRequest request) {
+        return orgBiz.editOrg(request);
+    }
 }

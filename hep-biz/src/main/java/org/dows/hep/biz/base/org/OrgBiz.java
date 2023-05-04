@@ -258,11 +258,11 @@ public class OrgBiz {
         //1、获取该账号对应的组织架构
         List<AccountGroupResponse> groupResponseList = accountGroupApi.getAccountGroupByOrgId(request.getOrgId());
         Set<String> accountIds = new HashSet<>();
-        if(groupResponseList != null && groupResponseList.size() > 0){
-            groupResponseList.forEach(group->{
+        if (groupResponseList != null && groupResponseList.size() > 0) {
+            groupResponseList.forEach(group -> {
                 accountIds.add(group.getAccountId());
             });
-        }else{
+        } else {
             accountIds.add("fill");
         }
         request.setAccountIds(accountIds);
@@ -279,9 +279,9 @@ public class OrgBiz {
      * @开始时间:
      * @创建时间: 2023/5/04 16:04
      */
-    public AccountOrgResponse getOrg(String orgId,String appId) {
+    public AccountOrgResponse getOrg(String orgId, String appId) {
         //1、获取机构实例
-        AccountOrgResponse orgResponse = accountOrgApi.getAccountOrgByOrgId(orgId,appId);
+        AccountOrgResponse orgResponse = accountOrgApi.getAccountOrgByOrgId(orgId, appId);
         //2、获取机构基本信息
         AccountOrgInfoResponse orgInfoResponse = accountOrgApi.getAccountOrgInfoByOrgId(orgId);
         orgResponse.setOperationManual(orgInfoResponse.getOperationManual());
@@ -297,6 +297,35 @@ public class OrgBiz {
                 .list();
         orgResponse.setDescr(JSONUtil.toJsonStr(caseOrgFeeList));
         return orgResponse;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 编辑机构基本信息
+     * @关联表: account_org、case_org_fee、account_org_geo、account_org_info
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/5/05 09:00
+     */
+    @DSTransactional
+    public Boolean editOrg(AccountOrgRequest request) {
+        //1、更新机构实例
+        Boolean flag1 = accountOrgApi.updateAccountOrgByOrgId(request);
+        //2、更新机构地理信息
+        if (request.getOrgLatitude() != null && request.getOrgLongitude() != null) {
+            AccountOrgGeoRequest geoRequest = AccountOrgGeoRequest.builder()
+                    .orgId(request.getOrgId())
+                    .orgLatitude(request.getOrgLatitude())
+                    .orgLongitude(request.getOrgLongitude())
+                    .build();
+            Boolean flag2 = accountOrgGeoApi.updateAccountOrgGeoByOrgId(geoRequest);
+        }
+        //3、更新机构费用信息
+        List<CaseOrgFeeEntity> caseOrgList = JSONUtil.toList(request.getDescr(), CaseOrgFeeEntity.class);
+        Boolean flag3 = caseOrgFeeService.updateBatchById(caseOrgList);
+        return flag3;
     }
 
     /**
