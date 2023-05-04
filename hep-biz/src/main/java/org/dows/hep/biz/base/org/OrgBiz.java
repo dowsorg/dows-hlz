@@ -10,10 +10,7 @@ import org.dows.account.request.AccountGroupInfoRequest;
 import org.dows.account.request.AccountGroupRequest;
 import org.dows.account.request.AccountOrgGeoRequest;
 import org.dows.account.request.AccountOrgRequest;
-import org.dows.account.response.AccountGroupResponse;
-import org.dows.account.response.AccountInstanceResponse;
-import org.dows.account.response.AccountOrgResponse;
-import org.dows.account.response.AccountUserResponse;
+import org.dows.account.response.*;
 import org.dows.hep.entity.CaseOrgFeeEntity;
 import org.dows.hep.service.CaseOrgFeeService;
 import org.dows.sequence.api.IdGenerator;
@@ -185,7 +182,7 @@ public class OrgBiz {
      * @param
      * @return
      * @说明: 创建 机构
-     * @关联表: account_org、account_org_fee
+     * @关联表: account_org、case_org_fee、account_org_geo
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
@@ -270,6 +267,36 @@ public class OrgBiz {
         }
         request.setAccountIds(accountIds);
         return accountGroupApi.customAccountGroupList(request);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 查看机构基本信息
+     * @关联表: account_org、case_org_fee、account_org_geo、account_org_info
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/5/04 16:04
+     */
+    public AccountOrgResponse getOrg(String orgId,String appId) {
+        //1、获取机构实例
+        AccountOrgResponse orgResponse = accountOrgApi.getAccountOrgByOrgId(orgId,appId);
+        //2、获取机构基本信息
+        AccountOrgInfoResponse orgInfoResponse = accountOrgApi.getAccountOrgInfoByOrgId(orgId);
+        orgResponse.setOperationManual(orgInfoResponse.getOperationManual());
+        orgInfoResponse.setIsEnable(orgInfoResponse.getIsEnable());
+        //3、获取机构地理位置信息
+        AccountOrgGeoResponse orgGeoResponse = accountOrgGeoApi.getAccountOrgInfoByOrgId(orgId);
+        orgResponse.setOrgLongitude(orgGeoResponse.getOrgLongitude());
+        orgResponse.setOrgLatitude(orgGeoResponse.getOrgLatitude());
+        //4、获取机构费用列表
+        List<CaseOrgFeeEntity> caseOrgFeeList = caseOrgFeeService.lambdaQuery()
+                .eq(CaseOrgFeeEntity::getCaseOrgId, orgId)
+                .eq(CaseOrgFeeEntity::getDeleted, false)
+                .list();
+        orgResponse.setDescr(JSONUtil.toJsonStr(caseOrgFeeList));
+        return orgResponse;
     }
 
     /**

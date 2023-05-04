@@ -97,4 +97,13 @@ public class OrgRest {
     public IPage<AccountGroupResponse> listPerson(@RequestBody AccountGroupRequest request) {
         return orgBiz.listPerson(request);
     }
+
+    /**
+     * 查看机构基本信息
+     */
+    @Operation(summary = "查看机构基本信息")
+    @GetMapping("v1/baseOrg/org/getOrg/{orgId}/{appId}")
+    public AccountOrgResponse getOrg(@PathVariable String orgId,@PathVariable String appId) {
+        return orgBiz.getOrg(orgId,appId);
+    }
 }
