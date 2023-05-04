@@ -4,10 +4,13 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.account.request.AccountGroupRequest;
 import org.dows.account.request.AccountOrgRequest;
+import org.dows.account.response.AccountGroupResponse;
 import org.dows.account.response.AccountOrgResponse;
 import org.dows.hep.biz.base.org.OrgBiz;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Set;
 
 /**
@@ -84,5 +87,14 @@ public class OrgRest {
     @PostMapping("v1/baseOrg/org/addPerson")
     public Integer addPerson(@RequestParam Set<String> personIds, @RequestParam String orgId,@RequestParam String appId) {
         return orgBiz.addPerson(personIds,orgId,appId);
+    }
+
+    /**
+     * 获取机构人物列表
+     */
+    @Operation(summary = "获取机构人物列表")
+    @PostMapping("v1/baseOrg/org/listPerson")
+    public IPage<AccountGroupResponse> listPerson(@RequestBody AccountGroupRequest request) {
+        return orgBiz.listPerson(request);
     }
 }

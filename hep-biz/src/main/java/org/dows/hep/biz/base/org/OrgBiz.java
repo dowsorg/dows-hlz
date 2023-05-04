@@ -218,7 +218,7 @@ public class OrgBiz {
      * @param
      * @return
      * @说明: 添加机构人物
-     * @关联表: account_group、account
+     * @关联表: account_group、account_org、account_group
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
@@ -245,6 +245,31 @@ public class OrgBiz {
             }
         }
         return count;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 机构人物列表
+     * @关联表: account_group、account_org、account_group
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/5/04 14:30
+     */
+    public IPage<AccountGroupResponse> listPerson(AccountGroupRequest request) {
+        //1、获取该账号对应的组织架构
+        List<AccountGroupResponse> groupResponseList = accountGroupApi.getAccountGroupByOrgId(request.getOrgId());
+        Set<String> accountIds = new HashSet<>();
+        if(groupResponseList != null && groupResponseList.size() > 0){
+            groupResponseList.forEach(group->{
+                accountIds.add(group.getAccountId());
+            });
+        }else{
+            accountIds.add("fill");
+        }
+        request.setAccountIds(accountIds);
+        return accountGroupApi.customAccountGroupList(request);
     }
 
     /**
