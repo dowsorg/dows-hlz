@@ -1,20 +1,30 @@
 package org.dows.hep.biz.base.org;
 
+import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.api.*;
 import org.dows.account.request.AccountGroupInfoRequest;
 import org.dows.account.request.AccountGroupRequest;
+import org.dows.account.request.AccountOrgGeoRequest;
 import org.dows.account.request.AccountOrgRequest;
 import org.dows.account.response.AccountGroupResponse;
 import org.dows.account.response.AccountInstanceResponse;
 import org.dows.account.response.AccountOrgResponse;
 import org.dows.account.response.AccountUserResponse;
+import org.dows.hep.entity.CaseOrgFeeEntity;
+import org.dows.hep.service.CaseOrgFeeService;
+import org.dows.sequence.api.IdGenerator;
 import org.dows.user.api.api.UserInstanceApi;
 import org.dows.user.api.response.UserInstanceResponse;
 import org.springframework.stereotype.Service;
-import java.util.*;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 /**
  * @author jx
@@ -29,6 +39,9 @@ public class OrgBiz {
     private final AccountUserApi accountUserApi;
     private final UserInstanceApi userInstanceApi;
     private final AccountInstanceApi accountInstanceApi;
+    private final CaseOrgFeeService caseOrgFeeService;
+    private final IdGenerator idGenerator;
+    private final AccountOrgGeoApi accountOrgGeoApi;
 
     /**
      * @param
@@ -124,22 +137,22 @@ public class OrgBiz {
         Boolean flag = true;
         //1、获取机构下的所有成员
         Set<String> accountIds = new HashSet<>();
-        ids.forEach(id->{
+        ids.forEach(id -> {
             List<AccountGroupResponse> groupList = accountGroupApi.getAccountGroupByOrgId(id);
-            if(groupList != null && groupList.size() > 0){
-                groupList.forEach(group->{
+            if (groupList != null && groupList.size() > 0) {
+                groupList.forEach(group -> {
                     accountIds.add(group.getAccountId());
                 });
             }
         });
         //2、删除组织架构
         Integer count1 = accountOrgApi.batchDeleteAccountOrgs(ids);
-        if(count1 == 0){
-          flag = false;
+        if (count1 == 0) {
+            flag = false;
         }
         //3、删除账户实例
         Integer count2 = accountInstanceApi.deleteAccountInstanceByAccountIds(accountIds);
-        if(count2 == 0){
+        if (count2 == 0) {
             flag = false;
         }
         return flag;
@@ -159,13 +172,79 @@ public class OrgBiz {
         IPage<AccountOrgResponse> accountOrgResponse = accountOrgApi.customAccountOrgList(request);
         //1、总人数剔除教师一个
         List<AccountOrgResponse> accountList = accountOrgResponse.getRecords();
-        if(accountList != null && accountList.size() > 0){
-            accountList.forEach(account->{
+        if (accountList != null && accountList.size() > 0) {
+            accountList.forEach(account -> {
                 account.setCurrentNum(account.getCurrentNum() - 1);
             });
         }
         accountOrgResponse.setRecords(accountList);
         return accountOrgResponse;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 创建 机构
+     * @关联表: account_org、account_org_fee
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/4/28 11:50
+     */
+    @DSTransactional
+    public Boolean addOrgnization(AccountOrgRequest request) {
+        //1、创建机构
+        String orgId = accountOrgApi.createAccountOrg(request);
+        //2、创建机构费用明细
+        List<CaseOrgFeeEntity> caseOrgList = JSONUtil.toList(request.getDescr(), CaseOrgFeeEntity.class);
+        caseOrgList.forEach(caseOrg -> {
+            caseOrg.setAppId(request.getAppId());
+            caseOrg.setCaseOrgId(orgId);
+            caseOrg.setCaseOrgFeeId(idGenerator.nextIdStr());
+        });
+        caseOrgFeeService.saveBatch(caseOrgList);
+        //3、创建机构点位
+        AccountOrgGeoRequest geoRequest = AccountOrgGeoRequest
+                .builder()
+                .orgId(orgId)
+                .orgName(request.getOrgName())
+                .orgLongitude(request.getOrgLongitude())
+                .orgLatitude(request.getOrgLatitude())
+                .build();
+        return accountOrgGeoApi.insertOrgGeo(geoRequest);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 添加机构人物
+     * @关联表: account_group、account
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/5/04 14:30
+     */
+    @DSTransactional
+    public Integer addPerson(Set<String> personIds, String orgId, String appId) {
+        Integer count = 0;
+        for (String personId : personIds) {
+            AccountInstanceResponse instanceResponse = accountInstanceApi.getAccountInstanceByAccountId(personId);
+            AccountOrgResponse orgResponse = accountOrgApi.getAccountOrgByOrgId(orgId, appId);
+            AccountGroupRequest request = AccountGroupRequest
+                    .builder()
+                    .orgId(orgId)
+                    .orgName(orgResponse.getOrgName())
+                    .accountId(personId)
+                    .accountName(instanceResponse.getAccountName())
+                    .userId(instanceResponse.getUserId())
+                    .appId(appId)
+                    .build();
+            String groupId = accountGroupApi.insertAccountGroup(request);
+            if (StringUtils.isNotEmpty(groupId)) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /**

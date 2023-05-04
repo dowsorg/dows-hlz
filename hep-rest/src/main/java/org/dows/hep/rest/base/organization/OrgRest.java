@@ -63,4 +63,26 @@ public class OrgRest {
     public Boolean deleteClasss(@RequestParam Set<String> ids){
         return orgBiz.deleteClasss(ids);
     }
+
+    /**
+     * 创建机构
+     * @param
+     * @return
+     */
+    @Operation(summary = "创建机构")
+    @PostMapping("v1/baseOrg/org/addOrgnization")
+    public Boolean addOrgnization(@RequestBody AccountOrgRequest request) {
+        return orgBiz.addOrgnization(request);
+    }
+
+    /**
+     * 添加机构人物
+     * @param
+     * @return
+     */
+    @Operation(summary = "添加机构人物")
+    @PostMapping("v1/baseOrg/org/addPerson")
+    public Integer addPerson(@RequestParam Set<String> personIds, @RequestParam String orgId,@RequestParam String appId) {
+        return orgBiz.addPerson(personIds,orgId,appId);
+    }
 }
