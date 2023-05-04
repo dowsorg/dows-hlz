@@ -8,7 +8,7 @@ import org.dows.hep.entity.ExperimentTimerEntity;
  * 实验计数计时器(ExperimentTimer)表数据库访问层
  *
  * @author lait
- * @since 2023-04-21 10:31:15
+ * @since 2023-04-28 10:29:48
  */
 @Mapper
 public interface ExperimentTimerMapper extends MybatisCrudMapper<ExperimentTimerEntity> {

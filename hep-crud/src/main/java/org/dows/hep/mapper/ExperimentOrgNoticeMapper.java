@@ -8,7 +8,7 @@ import org.dows.hep.entity.ExperimentOrgNoticeEntity;
  * 实验机构通知(ExperimentOrgNotice)表数据库访问层
  *
  * @author lait
- * @since 2023-04-21 10:31:15
+ * @since 2023-04-28 10:29:46
  */
 @Mapper
 public interface ExperimentOrgNoticeMapper extends MybatisCrudMapper<ExperimentOrgNoticeEntity> {

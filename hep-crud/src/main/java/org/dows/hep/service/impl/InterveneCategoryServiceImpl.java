@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 干预类别管理(InterveneCategory)表服务实现类
  *
  * @author lait
- * @since 2023-04-21 10:31:44
+ * @since 2023-04-28 10:31:15
  */
 @Service("interveneCategoryService")
 public class InterveneCategoryServiceImpl extends MybatisCrudServiceImpl<InterveneCategoryMapper, InterveneCategoryEntity> implements InterveneCategoryService {

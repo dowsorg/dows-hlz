@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 指标基本信息监测内容表(IndicatorViewBaseInfoMonitorContent)表服务实现类
  *
  * @author lait
- * @since 2023-04-21 10:31:44
+ * @since 2023-04-28 10:31:14
  */
 @Service("indicatorViewBaseInfoMonitorContentService")
 public class IndicatorViewBaseInfoMonitorContentServiceImpl extends MybatisCrudServiceImpl<IndicatorViewBaseInfoMonitorContentMapper, IndicatorViewBaseInfoMonitorContentEntity> implements IndicatorViewBaseInfoMonitorContentService {

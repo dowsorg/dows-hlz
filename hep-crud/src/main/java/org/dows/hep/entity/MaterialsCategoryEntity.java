@@ -1,5 +1,7 @@
 package org.dows.hep.entity;
 
+import java.util.Date;
+
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -12,12 +14,13 @@ import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
 
-import java.util.Date;
-
 /**
- * @author jx
- * @date 2023/4/24 17:01
+ * 资料-分类(MaterialsCategory)实体类
+ *
+ * @author lait
+ * @since 2023-04-28 10:26:51
  */
+@SuppressWarnings("serial")
 @Data
 @ToString
 @Builder
@@ -25,7 +28,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "MaterialsCategory", title = "资料类别")
+@Schema(name = "MaterialsCategory", title = "资料-分类")
 @TableName("materials_category")
 public class MaterialsCategoryEntity implements CrudEntity {
 
@@ -72,4 +75,6 @@ public class MaterialsCategoryEntity implements CrudEntity {
     @TableField(fill = FieldFill.INSERT)
     @Schema(title = "时间戳")
     private Date dt;
+
 }
+

@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 突发事件(Event)实体类
  *
  * @author lait
- * @since 2023-04-24 10:23:48
+ * @since 2023-04-28 10:25:20
  */
 @SuppressWarnings("serial")
 @Data
@@ -58,7 +58,7 @@ public class EventEntity implements CrudEntity {
     private String categNamePath;
 
     @Schema(title = "状态 0-启用 1-停用")
-    private Integer state;
+    private Boolean state;
 
     @Schema(title = "事件说明")
     private String descr;

@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 案例人物(CasePerson)实体类
  *
  * @author lait
- * @since 2023-04-24 10:23:48
+ * @since 2023-04-28 10:25:12
  */
 @SuppressWarnings("serial")
 @Data
@@ -46,7 +46,7 @@ public class CasePersonEntity implements CrudEntity {
     private String caseOrgId;
 
     @Schema(title = "案例|病人账号ID[uim]")
-    private String caseAccountId;
+    private String accountId;
 
     @JsonIgnore
     @TableLogic

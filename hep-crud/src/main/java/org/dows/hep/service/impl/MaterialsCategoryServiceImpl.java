@@ -1,15 +1,20 @@
 package org.dows.hep.service.impl;
 
 import org.dows.framework.crud.mybatis.MybatisCrudServiceImpl;
-import org.dows.hep.entity.MaterialsCategoryEntity;
 import org.dows.hep.mapper.MaterialsCategoryMapper;
+import org.dows.hep.entity.MaterialsCategoryEntity;
 import org.dows.hep.service.MaterialsCategoryService;
 import org.springframework.stereotype.Service;
 
+
 /**
- * @author jx
- * @date 2023/4/24 17:05
+ * 资料-分类(MaterialsCategory)表服务实现类
+ *
+ * @author lait
+ * @since 2023-04-28 10:31:15
  */
 @Service("materialsCategoryService")
 public class MaterialsCategoryServiceImpl extends MybatisCrudServiceImpl<MaterialsCategoryMapper, MaterialsCategoryEntity> implements MaterialsCategoryService {
+
 }
+

@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 学生随访操作计时器(OperateFollowupTimer)实体类
  *
  * @author lait
- * @since 2023-04-24 10:23:54
+ * @since 2023-04-28 10:27:00
  */
 @SuppressWarnings("serial")
 @Data

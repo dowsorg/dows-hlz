@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 运动方案(SportPlan)实体类
  *
  * @author lait
- * @since 2023-04-24 10:23:46
+ * @since 2023-04-28 10:29:07
  */
 @SuppressWarnings("serial")
 @Data
@@ -55,7 +55,7 @@ public class SportPlanEntity implements CrudEntity {
     private String categNamePath;
 
     @Schema(title = "状态 0-启用 1-停用")
-    private Integer state;
+    private Boolean state;
 
     @Schema(title = "说明")
     private String descr;

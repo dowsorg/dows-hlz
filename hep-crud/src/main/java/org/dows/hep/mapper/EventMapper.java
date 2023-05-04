@@ -8,7 +8,7 @@ import org.dows.hep.entity.EventEntity;
  * 突发事件(Event)表数据库访问层
  *
  * @author lait
- * @since 2023-04-21 10:31:15
+ * @since 2023-04-28 10:29:44
  */
 @Mapper
 public interface EventMapper extends MybatisCrudMapper<EventEntity> {

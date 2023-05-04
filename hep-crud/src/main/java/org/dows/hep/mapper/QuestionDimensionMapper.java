@@ -8,7 +8,7 @@ import org.dows.hep.entity.QuestionDimensionEntity;
  * 问题-维度(QuestionDimension)表数据库访问层
  *
  * @author lait
- * @since 2023-04-21 10:31:16
+ * @since 2023-04-28 10:29:52
  */
 @Mapper
 public interface QuestionDimensionMapper extends MybatisCrudMapper<QuestionDimensionEntity> {

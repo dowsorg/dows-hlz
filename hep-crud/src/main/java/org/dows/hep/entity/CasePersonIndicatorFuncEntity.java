@@ -1,5 +1,7 @@
 package org.dows.hep.entity;
 
+import java.util.Date;
+
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -11,13 +13,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
-import java.util.Date;
 
 /**
- * 人物功能点(CasePersonIndicatorFunc)实体类
+ * 案例人物功能点(CasePersonIndicatorFunc)实体类
  *
  * @author lait
- * @since 2023-04-24 10:23:48
+ * @since 2023-04-28 10:25:13
  */
 @SuppressWarnings("serial")
 @Data
@@ -27,9 +28,10 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "CasePersonIndicatorFunc", title = "人物功能点")
+@Schema(name = "CasePersonIndicatorFunc", title = "案例人物功能点")
 @TableName("case_person_indicator_func")
 public class CasePersonIndicatorFuncEntity implements CrudEntity {
+
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库ID")
     private Long id;
@@ -58,4 +60,6 @@ public class CasePersonIndicatorFuncEntity implements CrudEntity {
     @TableField(fill = FieldFill.INSERT)
     @Schema(title = "时间戳")
     private Date dt;
+
 }
+

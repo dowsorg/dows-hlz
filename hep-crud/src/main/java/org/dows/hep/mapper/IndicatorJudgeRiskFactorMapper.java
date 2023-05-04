@@ -8,7 +8,7 @@ import org.dows.hep.entity.IndicatorJudgeRiskFactorEntity;
  * 判断指标危险因素(IndicatorJudgeRiskFactor)表数据库访问层
  *
  * @author lait
- * @since 2023-04-21 10:31:15
+ * @since 2023-04-28 10:29:49
  */
 @Mapper
 public interface IndicatorJudgeRiskFactorMapper extends MybatisCrudMapper<IndicatorJudgeRiskFactorEntity> {

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 学生随访操作计时器(OperateFollowupTimer)表服务实现类
  *
  * @author lait
- * @since 2023-04-21 10:31:44
+ * @since 2023-04-28 10:31:18
  */
 @Service("operateFollowupTimerService")
 public class OperateFollowupTimerServiceImpl extends MybatisCrudServiceImpl<OperateFollowupTimerMapper, OperateFollowupTimerEntity> implements OperateFollowupTimerService {

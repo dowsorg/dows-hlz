@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 问题集类目(QuestionSectionCategory)表服务实现类
  *
  * @author lait
- * @since 2023-04-21 10:31:48
+ * @since 2023-04-28 10:31:18
  */
 @Service("questionSectionCategoryService")
 public class QuestionSectionCategoryServiceImpl extends MybatisCrudServiceImpl<QuestionSectionCategoryMapper, QuestionSectionCategoryEntity> implements QuestionSectionCategoryService {

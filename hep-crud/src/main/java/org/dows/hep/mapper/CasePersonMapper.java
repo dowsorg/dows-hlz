@@ -8,7 +8,7 @@ import org.dows.hep.entity.CasePersonEntity;
  * 案例人物(CasePerson)表数据库访问层
  *
  * @author lait
- * @since 2023-04-21 10:31:15
+ * @since 2023-04-28 10:29:44
  */
 @Mapper
 public interface CasePersonMapper extends MybatisCrudMapper<CasePersonEntity> {

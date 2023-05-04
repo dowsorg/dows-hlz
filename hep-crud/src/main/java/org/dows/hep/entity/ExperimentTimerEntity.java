@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 实验计数计时器(ExperimentTimer)实体类
  *
  * @author lait
- * @since 2023-04-24 10:23:49
+ * @since 2023-04-28 10:25:46
  */
 @SuppressWarnings("serial")
 @Data
@@ -35,6 +35,9 @@ public class ExperimentTimerEntity implements CrudEntity {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库ID")
     private Long id;
+
+    @Schema(title = "应用ID")
+    private String appId;
 
     @Schema(title = "实验定时器ID")
     private String experimentTimerId;

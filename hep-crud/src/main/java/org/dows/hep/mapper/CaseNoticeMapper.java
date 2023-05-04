@@ -8,7 +8,7 @@ import org.dows.hep.entity.CaseNoticeEntity;
  * 案例公告(CaseNotice)表数据库访问层
  *
  * @author lait
- * @since 2023-04-21 10:31:14
+ * @since 2023-04-28 10:29:43
  */
 @Mapper
 public interface CaseNoticeMapper extends MybatisCrudMapper<CaseNoticeEntity> {

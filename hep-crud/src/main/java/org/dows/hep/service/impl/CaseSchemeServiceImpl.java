@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 案例方案(CaseScheme)表服务实现类
  *
  * @author lait
- * @since 2023-04-21 10:31:41
+ * @since 2023-04-28 10:31:08
  */
 @Service("caseSchemeService")
 public class CaseSchemeServiceImpl extends MybatisCrudServiceImpl<CaseSchemeMapper, CaseSchemeEntity> implements CaseSchemeService {

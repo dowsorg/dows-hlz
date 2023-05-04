@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 食物推荐量配置(FoodRecommend)实体类
  *
  * @author lait
- * @since 2023-04-24 10:23:53
+ * @since 2023-04-28 10:26:05
  */
 @SuppressWarnings("serial")
 @Data

@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 机构功能(CaseOrgFunction)实体类
  *
  * @author lait
- * @since 2023-04-24 10:23:47
+ * @since 2023-04-28 10:25:09
  */
 @SuppressWarnings("serial")
 @Data

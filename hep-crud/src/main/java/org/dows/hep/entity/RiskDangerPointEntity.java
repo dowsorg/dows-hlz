@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 危险分数(RiskDangerPoint)实体类
  *
  * @author lait
- * @since 2023-04-24 10:23:53
+ * @since 2023-04-28 10:29:03
  */
 @SuppressWarnings("serial")
 @Data

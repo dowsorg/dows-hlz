@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 资料(Materials)表服务实现类
  *
  * @author lait
- * @since 2023-04-21 10:31:44
+ * @since 2023-04-28 10:31:15
  */
 @Service("materialsService")
 public class MaterialsServiceImpl extends MybatisCrudServiceImpl<MaterialsMapper, MaterialsEntity> implements MaterialsService {

@@ -18,7 +18,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 事件类别管理(EventCateg)实体类
  *
  * @author lait
- * @since 2023-04-24 10:23:48
+ * @since 2023-04-28 10:25:23
  */
 @SuppressWarnings("serial")
 @Data
