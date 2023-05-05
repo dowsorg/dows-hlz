@@ -192,7 +192,7 @@ public class OrgBiz {
      * @param
      * @return
      * @说明: 创建 机构
-     * @关联表: account_org、case_org_fee、account_org_geo、case_person
+     * @关联表: account_org、case_org_fee、account_org_geo、case_person、case_org、account_org_info
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
@@ -242,7 +242,7 @@ public class OrgBiz {
      * @param
      * @return
      * @说明: 添加机构人物
-     * @关联表: account_group、account_org、account_group、case_org、case_person
+     * @关联表: account_group、account_org、account_group、case_org、case_person、account_instance
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
@@ -327,17 +327,17 @@ public class OrgBiz {
                 .eq(CaseOrgEntity::getDeleted, false)
                 .eq(CaseOrgEntity::getAppId, appId)
                 .one();
-        //1、获取机构实例
+        //2、获取机构实例
         AccountOrgResponse orgResponse = accountOrgApi.getAccountOrgByOrgId(entity.getOrgId(), appId);
-        //2、获取机构基本信息
+        //3、获取机构基本信息
         AccountOrgInfoResponse orgInfoResponse = accountOrgApi.getAccountOrgInfoByOrgId(entity.getOrgId());
         orgResponse.setOperationManual(orgInfoResponse.getOperationManual());
         orgInfoResponse.setIsEnable(orgInfoResponse.getIsEnable());
-        //3、获取机构地理位置信息
+        //4、获取机构地理位置信息
         AccountOrgGeoResponse orgGeoResponse = accountOrgGeoApi.getAccountOrgInfoByOrgId(entity.getOrgId());
         orgResponse.setOrgLongitude(orgGeoResponse.getOrgLongitude());
         orgResponse.setOrgLatitude(orgGeoResponse.getOrgLatitude());
-        //4、获取机构费用列表
+        //5、获取机构费用列表
         List<CaseOrgFeeEntity> caseOrgFeeList = caseOrgFeeService.lambdaQuery()
                 .eq(CaseOrgFeeEntity::getCaseOrgId, entity.getCaseOrgId())
                 .eq(CaseOrgFeeEntity::getDeleted, false)
