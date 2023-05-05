@@ -19,6 +19,9 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @Schema(name = "QuestionSectionItemRequest 对象", title = "问题集 item Request")
 public class QuestionSectionItemRequest {
+    @Schema(title = "应用ID")
+    private String appId;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库ID")
     private Long id;
@@ -41,29 +44,13 @@ public class QuestionSectionItemRequest {
 
 
     // JsonIgnore
-    @Schema(title = "应用ID")
-    @JsonIgnore
-    private String appId;
-
     @Schema(title = "问题集ID")
     @JsonIgnore
     private String questionSectionId;
 
-    @Schema(title = "问题集名称")
-    @JsonIgnore
-    private String questionSectionName;
-
     @Schema(title = "问题ID")
     @JsonIgnore
     private String questionInstanceId;
-
-    @Schema(title = "问题标题")
-    @JsonIgnore
-    private String questionTitle;
-
-    @Schema(title = "问题描述")
-    @JsonIgnore
-    private String questionDescr;
 
     @Schema(title = "创建者账号Id")
     @JsonIgnore
@@ -76,13 +63,5 @@ public class QuestionSectionItemRequest {
     @Schema(title = "权限[000001]")
     @JsonIgnore
     private String permissions;
-
-    @Schema(title = "问题集标识")
-    @JsonIgnore
-    private String questionSectionIdentifier;
-
-    @Schema(title = "版本号")
-    @JsonIgnore
-    private String ver;
 
 }

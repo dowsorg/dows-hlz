@@ -8,7 +8,9 @@ import java.util.Date;
 
 @RequiredArgsConstructor
 @Service
-public class BaseBiz {
+public class BaseQuestionDomainBiz {
+
+    private static final String LAST_VERSION = "SNAPSHOT";
 
     private final IdGenerator idGenerator;
 
@@ -24,7 +26,17 @@ public class BaseBiz {
         return idGenerator.nextIdStr();
     }
 
-    public String getVer() {
-        return String.valueOf(new Date().getTime());
+    public String getLastVer() {
+        return LAST_VERSION;
     }
+
+    public String getVer(Date date) {
+        return String.valueOf((date == null ? new Date() : date).getTime());
+    }
+
+    public String getQuestionInstancePid() {
+        return "0";
+    }
+
+
 }

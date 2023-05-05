@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
+import org.dows.hep.api.base.question.QuestionSectionGenerationModeEnum;
 
 import java.util.List;
 
@@ -22,6 +23,9 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(name = "QuestionSectionRequest 对象", title = "问题集Request")
 public class QuestionSectionRequest{
+    @Schema(title = "应用ID")
+    private String appId;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库ID")
     private Long id;
@@ -53,6 +57,9 @@ public class QuestionSectionRequest{
     @Schema(title = "创建者姓名")
     private String accountName;
 
+    @Schema(title = "问卷生成模式[SELECT ：从数据库选择 | ADD_NEW ： 添加新的]")
+    private QuestionSectionGenerationModeEnum generationMode;
+
     @Schema(title = "问题集合")
     private List<QuestionSectionItemRequest> sectionItemList;
 
@@ -61,11 +68,7 @@ public class QuestionSectionRequest{
 
 
 
-    // JsonIgnored
-    @Schema(title = "应用ID")
-    @JsonIgnore
-    private String appId;
-
+    // JsonIgnore
     @Schema(title = "类别名")
     @JsonIgnore
     private String questionSectionCategName;

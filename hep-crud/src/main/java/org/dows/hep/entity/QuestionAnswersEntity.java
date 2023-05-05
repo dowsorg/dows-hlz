@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 问题-答案(QuestionAnswers)实体类
@@ -56,12 +56,6 @@ public class QuestionAnswersEntity implements CrudEntity {
 
     @Schema(title = "是否是正确答案[0:错误，1:正确]")
     private Boolean right;
-
-    @Schema(title = "问题标识")
-    private String questionIdentifier;
-
-    @Schema(title = "版本号")
-    private String ver;
 
     @JsonIgnore
     @TableLogic

@@ -18,7 +18,7 @@ import org.dows.hep.api.tenant.casus.request.CaseSchemeRequest;
 import org.dows.hep.api.tenant.casus.request.CaseSchemeSearchRequest;
 import org.dows.hep.api.tenant.casus.response.CaseSchemePageResponse;
 import org.dows.hep.api.tenant.casus.response.CaseSchemeResponse;
-import org.dows.hep.biz.base.question.BaseBiz;
+import org.dows.hep.biz.base.question.BaseQuestionDomainBiz;
 import org.dows.hep.biz.base.question.QuestionSectionBiz;
 import org.dows.hep.entity.CaseSchemeEntity;
 import org.dows.hep.service.CaseSchemeService;
@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class TenantCaseSchemeBiz {
-    private final BaseBiz baseBiz;
+    private final BaseQuestionDomainBiz baseQuestionDomainBiz;
     private final CaseSchemeService caseSchemeService;
     private final QuestionSectionBiz questionSectionBiz;
 
@@ -54,8 +54,8 @@ public class TenantCaseSchemeBiz {
     @Transactional
     public String saveCaseScheme(CaseSchemeRequest caseScheme) {
         // base Info
-        caseScheme.setAppId(baseBiz.getAppId());
-        caseScheme.setCaseSchemeId(baseBiz.getIdStr());
+        caseScheme.setAppId(baseQuestionDomainBiz.getAppId());
+        caseScheme.setCaseSchemeId(baseQuestionDomainBiz.getIdStr());
         caseScheme.setEnabled(caseScheme.getEnabled() == null ? EnumStatus.ENABLE.getCode() : caseScheme.getEnabled());
         caseScheme.setSource(StrUtil.isBlank(caseScheme.getSource()) ? EnumSource.ADMIN.name() : caseScheme.getSource());
         List<QuestionSectionItemRequest> sectionItemList = caseScheme.getSectionItemList();
@@ -242,7 +242,7 @@ public class TenantCaseSchemeBiz {
                 .appId(caseScheme.getAppId())
                 .source(caseScheme.getSource())
                 .build();
-        return questionSectionBiz.saveQuestionSection(questionSectionRequest);
+        return questionSectionBiz.saveOrUpdQuestionSection(questionSectionRequest);
     }
 
     private boolean changeStatus(String caseSchemeId, EnumStatus enumStatus) {

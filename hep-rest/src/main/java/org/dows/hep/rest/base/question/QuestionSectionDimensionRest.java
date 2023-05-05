@@ -29,8 +29,8 @@ public class QuestionSectionDimensionRest {
     */
     @Operation(summary = "新增和更新问题集维度")
     @PostMapping("v1/baseQuestion/questionSectionDimension/saveOrUpdQuestionSectionDimension")
-    public Boolean saveOrUpdQuestionSectionDimension(@RequestBody @Validated QuestionSectionDimensionRequest questionSectionDimension ) {
-        return questionSectionDimensionBiz.saveOrUpdQuestionSectionDimension(questionSectionDimension);
+    public Boolean saveOrUpdQuestionSectionDimension(@RequestBody @Validated List<QuestionSectionDimensionRequest> questionSectionDimension ) {
+        return questionSectionDimensionBiz.batchSaveOrUpdQSDimension(questionSectionDimension);
     }
 
     /**

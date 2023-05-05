@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.Response;
-import org.dows.hep.api.base.question.QuestionAccessAuthEnum;
 import org.dows.hep.api.base.question.request.QuestionPageRequest;
 import org.dows.hep.api.base.question.request.QuestionRequest;
 import org.dows.hep.api.base.question.request.QuestionSearchRequest;
@@ -37,7 +36,7 @@ public class QuestionInstanceRest {
     @Operation(summary = "新增题目")
     @PostMapping("v1/baseQuestion/questionInstance/saveQuestion")
     public String saveQuestion(@RequestBody @Validated QuestionRequest question ) {
-        return questionInstanceBiz.saveQuestion(question, QuestionAccessAuthEnum.PUBLIC_VIEWING);
+        return questionInstanceBiz.saveQuestion(question);
     }
 
     /**

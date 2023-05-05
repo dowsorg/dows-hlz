@@ -1,7 +1,7 @@
 package org.dows.hep.biz.base.question.handler;
 
-import org.dows.hep.api.base.question.QuestionCloneEnum;
 import org.dows.hep.api.base.question.request.QuestionRequest;
+import org.dows.hep.api.base.question.response.QuestionResponse;
 
 public interface QuestionTypeHandler {
     void init();
@@ -10,6 +10,5 @@ public interface QuestionTypeHandler {
 
     boolean update(QuestionRequest questionRequest);
 
-    // 根据克隆类型进行不同形式的克隆
-    String clone(QuestionRequest questionRequest, QuestionCloneEnum questionCloneEnum);
+    QuestionResponse get(String questionInstanceId);
 }
