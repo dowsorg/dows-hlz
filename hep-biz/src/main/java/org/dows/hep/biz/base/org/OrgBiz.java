@@ -13,8 +13,10 @@ import org.dows.account.request.AccountGroupRequest;
 import org.dows.account.request.AccountOrgGeoRequest;
 import org.dows.account.request.AccountOrgRequest;
 import org.dows.account.response.*;
+import org.dows.hep.api.base.person.response.PersonInstanceResponse;
 import org.dows.hep.api.enums.EnumCaseFee;
 import org.dows.hep.api.exception.CaseFeeException;
+import org.dows.hep.biz.base.person.PersonManageBiz;
 import org.dows.hep.entity.CaseOrgEntity;
 import org.dows.hep.entity.CaseOrgFeeEntity;
 import org.dows.hep.entity.CasePersonEntity;
@@ -49,6 +51,7 @@ public class OrgBiz {
     private final AccountOrgGeoApi accountOrgGeoApi;
     private final CaseOrgService caseOrgService;
     private final CasePersonService casePersonService;
+    private final PersonManageBiz personManageBiz;
 
     /**
      * @param
@@ -257,8 +260,14 @@ public class OrgBiz {
                 .eq(CaseOrgEntity::getAppId, appId)
                 .one();
         Integer count = 0;
-        //2、uim中将人物放到对应小组
-        for (String personId : personIds) {
+        //2、复制人物，每个机构的人物都是机构独有的
+        Set<String> ids = new HashSet<>();
+        personIds.forEach(personId->{
+            PersonInstanceResponse personInstanceResponse = personManageBiz.copyPerson(personId,"机构人物");
+            ids.add(personInstanceResponse.getAccountId());
+        });
+        //3、uim中将人物放到对应小组
+        for (String personId : ids) {
             AccountInstanceResponse instanceResponse = accountInstanceApi.getAccountInstanceByAccountId(personId);
             AccountOrgResponse orgResponse = accountOrgApi.getAccountOrgByOrgId(entity.getOrgId(), appId);
             AccountGroupRequest request = AccountGroupRequest
@@ -274,16 +283,16 @@ public class OrgBiz {
             if (StringUtils.isNotEmpty(groupId)) {
                 count++;
             }
+            //4、沙盘中将人物放到案例小组
+            String casePersonId = idGenerator.nextIdStr();
+            CasePersonEntity person = CasePersonEntity.builder()
+                    .casePersonId(casePersonId)
+                    .caseInstanceId(caseInstanceId)
+                    .caseOrgId(caseOrgId)
+                    .accountId(personId)
+                    .build();
+            casePersonService.save(person);
         }
-        //3、沙盘中将人物放到案例小组
-        String personId = idGenerator.nextIdStr();
-        CasePersonEntity person = CasePersonEntity.builder()
-                .casePersonId(personId)
-                .caseInstanceId(caseInstanceId)
-                .caseOrgId(caseOrgId)
-                .accountId(personId)
-                .build();
-        casePersonService.save(person);
         return count;
     }
 
