@@ -263,7 +263,7 @@ public class OrgBiz {
         //2、复制人物，每个机构的人物都是机构独有的
         Set<String> ids = new HashSet<>();
         personIds.forEach(personId->{
-            //1、获取用户信息及简介并创建新用户及简介
+            //2.1、获取用户信息及简介并创建新用户及简介
             AccountUserResponse accountUser = accountUserApi.getUserByAccountId(personId);
             UserInstanceResponse userInstanceResponse = userInstanceApi.getUserInstanceByUserId(accountUser.getUserId());
             UserExtinfoResponse userExtinfoResponse = userExtinfoApi.getUserExtinfoByUserId(accountUser.getUserId());
@@ -275,9 +275,9 @@ public class OrgBiz {
                     .intro(userExtinfoResponse.getIntro())
                     .build();
             String extinfoId = userExtinfoApi.insertUserExtinfo(userExtinfo);
-            //2、获取该账户的所有信息
+            //2.2、获取该账户的所有信息
             AccountInstanceResponse accountInstanceResponse = accountInstanceApi.getAccountInstanceByAccountId(personId);
-            //3、复制账户信息
+            //2.3、复制账户信息
             AccountInstanceRequest accountInstanceRequest = AccountInstanceRequest.builder()
                     .appId(accountInstanceResponse.getAppId())
                     .avatar(accountInstanceResponse.getAvatar())
@@ -288,7 +288,7 @@ public class OrgBiz {
                     .accountName(randomWord(6))
                     .build();
             AccountInstanceResponse vo = accountInstanceApi.createAccountInstance(accountInstanceRequest);
-            //4、创建账户和用户之间的关联关系
+            //2.4、创建账户和用户之间的关联关系
             AccountUserRequest accountUserRequest = AccountUserRequest.builder()
                     .accountId(vo.getAccountId())
                     .userId(userId)
@@ -589,7 +589,7 @@ public class OrgBiz {
     @DSTransactional
     public Boolean copyPerson(String caseOrgId, String caseInstanceId, String accountId) {
         //1、机构内人物复制
-        //1、获取用户信息及简介并创建新用户及简介
+        //1.1、获取用户信息及简介并创建新用户及简介
         AccountUserResponse accountUser = accountUserApi.getUserByAccountId(accountId);
         UserInstanceResponse userInstanceResponse = userInstanceApi.getUserInstanceByUserId(accountUser.getUserId());
         UserExtinfoResponse userExtinfoResponse = userExtinfoApi.getUserExtinfoByUserId(accountUser.getUserId());
@@ -601,9 +601,9 @@ public class OrgBiz {
                 .intro(userExtinfoResponse.getIntro())
                 .build();
         String extinfoId = userExtinfoApi.insertUserExtinfo(userExtinfo);
-        //2、获取该账户的所有信息
+        //1.2、获取该账户的所有信息
         AccountInstanceResponse accountInstanceResponse = accountInstanceApi.getAccountInstanceByAccountId(accountId);
-        //3、复制账户信息
+        //1.3、复制账户信息
         AccountInstanceRequest accountInstanceRequest = AccountInstanceRequest.builder()
                 .appId(accountInstanceResponse.getAppId())
                 .avatar(accountInstanceResponse.getAvatar())
@@ -614,7 +614,7 @@ public class OrgBiz {
                 .accountName(randomWord(6))
                 .build();
         AccountInstanceResponse vo = accountInstanceApi.createAccountInstance(accountInstanceRequest);
-        //4、创建账户和用户之间的关联关系
+        //1.4、创建账户和用户之间的关联关系
         AccountUserRequest accountUserRequest = AccountUserRequest.builder()
                 .accountId(vo.getAccountId())
                 .userId(userId)
