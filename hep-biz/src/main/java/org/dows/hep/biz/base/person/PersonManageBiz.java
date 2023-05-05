@@ -179,7 +179,7 @@ public class PersonManageBiz {
      * @创建时间: 2023年4月23日 上午9:44:34
      */
     @DSTransactional
-    public PersonInstanceResponse copyPerson(String accountId) {
+    public PersonInstanceResponse copyPerson(String accountId,String source) {
         //1、获取用户信息及简介并创建新用户及简介
         AccountUserResponse accountUser = accountUserApi.getUserByAccountId(accountId);
         UserInstanceResponse userInstanceResponse = userInstanceApi.getUserInstanceByUserId(accountUser.getUserId());
@@ -199,7 +199,7 @@ public class PersonManageBiz {
                 .appId(accountInstanceResponse.getAppId())
                 .avatar(accountInstanceResponse.getAvatar())
                 .status(accountInstanceResponse.getStatus())
-                .source(accountInstanceResponse.getSource())
+                .source(source)
                 .principalType(accountInstanceResponse.getPrincipalType())
                 .identifier(orgBiz.createCode(7))
                 .accountName(randomWord(6))
