@@ -15,8 +15,10 @@ import org.dows.account.request.AccountOrgRequest;
 import org.dows.account.response.*;
 import org.dows.hep.api.enums.EnumCaseFee;
 import org.dows.hep.api.exception.CaseFeeException;
+import org.dows.hep.entity.CaseOrgEntity;
 import org.dows.hep.entity.CaseOrgFeeEntity;
 import org.dows.hep.service.CaseOrgFeeService;
+import org.dows.hep.service.CaseOrgService;
 import org.dows.sequence.api.IdGenerator;
 import org.dows.user.api.api.UserInstanceApi;
 import org.dows.user.api.response.UserInstanceResponse;
@@ -43,6 +45,7 @@ public class OrgBiz {
     private final CaseOrgFeeService caseOrgFeeService;
     private final IdGenerator idGenerator;
     private final AccountOrgGeoApi accountOrgGeoApi;
+    private final CaseOrgService caseOrgService;
 
     /**
      * @param
@@ -193,20 +196,34 @@ public class OrgBiz {
      * @创建时间: 2023/4/28 11:50
      */
     @DSTransactional
-    public Boolean addOrgnization(AccountOrgRequest request) {
+    public Boolean addOrgnization(AccountOrgRequest request,String caseInstanceId,String ver,String caseIdentifier) {
         //1、创建机构
         String feeJson = request.getDescr();
         request.setDescr("");
         String orgId = accountOrgApi.createAccountOrg(request);
-        //2、创建机构费用明细
+        //2、创建案例与机构关系
+        String caseOrgId = idGenerator.nextIdStr();
+        CaseOrgEntity entity = CaseOrgEntity.builder()
+                .appId(request.getAppId())
+                .caseOrgId(caseOrgId)
+                .caseInstanceId(caseInstanceId)
+                .orgId(orgId)
+                .orgName(request.getOrgName())
+                .scene(request.getProfile())
+                .handbook(request.getOperationManual())
+                .ver(ver)
+                .caseIdentifier(caseIdentifier)
+                .build();
+        caseOrgService.save(entity);
+        //3、创建机构费用明细
         List<CaseOrgFeeEntity> caseOrgList = JSONUtil.toList(feeJson, CaseOrgFeeEntity.class);
         caseOrgList.forEach(caseOrg -> {
             caseOrg.setAppId(request.getAppId());
-            caseOrg.setCaseOrgId(orgId);
+            caseOrg.setCaseOrgId(caseOrgId);
             caseOrg.setCaseOrgFeeId(idGenerator.nextIdStr());
         });
         caseOrgFeeService.saveBatch(caseOrgList);
-        //3、创建机构点位
+        //4、创建机构点位
         AccountOrgGeoRequest geoRequest = AccountOrgGeoRequest
                 .builder()
                 .orgId(orgId)

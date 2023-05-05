@@ -74,8 +74,8 @@ public class OrgRest {
      */
     @Operation(summary = "创建机构")
     @PostMapping("v1/baseOrg/org/addOrgnization")
-    public Boolean addOrgnization(@RequestBody AccountOrgRequest request) {
-        return orgBiz.addOrgnization(request);
+    public Boolean addOrgnization(@RequestBody AccountOrgRequest request,@RequestParam String caseInstanceId,@RequestParam String ver,@RequestParam String caseIdentifier) {
+        return orgBiz.addOrgnization(request,caseInstanceId,ver,caseIdentifier);
     }
 
     /**
