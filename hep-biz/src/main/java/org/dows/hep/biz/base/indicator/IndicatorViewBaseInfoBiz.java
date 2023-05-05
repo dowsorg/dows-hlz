@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.*;
-import org.dows.hep.api.base.indicator.response.IndicatorViewBaseInfoResponse;
+import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.enums.EnumRedissonLock;
 import org.dows.hep.biz.exception.IndicatorViewBaseInfoException;
@@ -19,8 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -48,6 +47,7 @@ public class IndicatorViewBaseInfoBiz{
     private final IndicatorViewBaseInfoMonitorContentRefService indicatorViewBaseInfoMonitorContentRefService;
     private final IndicatorViewBaseInfoSingleService indicatorViewBaseInfoSingleService;
     private final IndicatorFuncService indicatorFuncService;
+    private final IndicatorInstanceService indicatorInstanceService;
     /**
     * @param
     * @return
@@ -344,5 +344,211 @@ public class IndicatorViewBaseInfoBiz{
     */
     public String pageIndicatorViewBaseInfo(Integer pageNo, Integer pageSize, String appId, String indicatorCategoryId, String name ) {
         return new String();
+    }
+
+    public IndicatorViewBaseInfoResponseRs getRs(String indicatorViewBaseInfoId) {
+        IndicatorViewBaseInfoEntity indicatorViewBaseInfoEntity = indicatorViewBaseInfoService.lambdaQuery()
+            .eq(IndicatorViewBaseInfoEntity::getIndicatorViewBaseInfoId, indicatorViewBaseInfoId)
+            .oneOpt()
+            .orElseThrow(() -> {
+                log.warn("method IndicatorViewBaseInfoResponseRs param indicatorViewBaseInfoId:{} is illegal", indicatorViewBaseInfoId);
+                throw new IndicatorViewBaseInfoException(EnumESC.VALIDATE_EXCEPTION);
+            });
+        Long id = indicatorViewBaseInfoEntity.getId();
+        String dbIndicatorViewBaseInfoId = indicatorViewBaseInfoEntity.getIndicatorViewBaseInfoId();
+        String appId = indicatorViewBaseInfoEntity.getAppId();
+        String indicatorFuncId = indicatorViewBaseInfoEntity.getIndicatorFuncId();
+        Set<String> indicatorInstanceIdSet = new HashSet<>();
+        List<IndicatorViewBaseInfoDescrEntity> indicatorViewBaseInfoDescrEntityList = indicatorViewBaseInfoDescrService.lambdaQuery()
+            .eq(IndicatorViewBaseInfoDescrEntity::getAppId, appId)
+            .eq(IndicatorViewBaseInfoDescrEntity::getIndicatorViewBaseInfoId, dbIndicatorViewBaseInfoId)
+            .list();
+        Map<String, List<IndicatorViewBaseInfoDescrRefEntity>> kIndicatorViewBaseInfoDescIdVIndicatorViewBaseInfoDescrRefListMap = new HashMap<>();
+        if (!indicatorViewBaseInfoDescrEntityList.isEmpty()) {
+          indicatorViewBaseInfoDescrRefService.lambdaQuery()
+              .eq(IndicatorViewBaseInfoDescrRefEntity::getAppId, appId)
+              .in(IndicatorViewBaseInfoDescrRefEntity::getIndicatorViewBaseInfoDescId, indicatorViewBaseInfoDescrEntityList
+                  .stream().map(IndicatorViewBaseInfoDescrEntity::getIndicatorViewBaseInfoDescId).collect(Collectors.toSet()))
+              .list()
+              .forEach(indicatorViewBaseInfoDescrRefEntity -> {
+                String indicatorViewBaseInfoDescId = indicatorViewBaseInfoDescrRefEntity.getIndicatorViewBaseInfoDescId();
+                indicatorInstanceIdSet.add(indicatorViewBaseInfoDescrRefEntity.getIndicatorInstanceId());
+                List<IndicatorViewBaseInfoDescrRefEntity> indicatorViewBaseInfoDescrRefEntityList = kIndicatorViewBaseInfoDescIdVIndicatorViewBaseInfoDescrRefListMap.get(indicatorViewBaseInfoDescId);
+                if (Objects.isNull(indicatorViewBaseInfoDescrRefEntityList)) {
+                  indicatorViewBaseInfoDescrRefEntityList = new ArrayList<>();
+                }
+                indicatorViewBaseInfoDescrRefEntityList.add(indicatorViewBaseInfoDescrRefEntity);
+                kIndicatorViewBaseInfoDescIdVIndicatorViewBaseInfoDescrRefListMap.put(indicatorViewBaseInfoDescId, indicatorViewBaseInfoDescrRefEntityList);
+              });
+        }
+        List<IndicatorViewBaseInfoMonitorEntity> indicatorViewBaseInfoMonitorEntityList = indicatorViewBaseInfoMonitorService.lambdaQuery()
+            .eq(IndicatorViewBaseInfoMonitorEntity::getAppId, appId)
+            .eq(IndicatorViewBaseInfoMonitorEntity::getIndicatorViewBaseInfoId, dbIndicatorViewBaseInfoId)
+            .list();
+        Map<String, List<IndicatorViewBaseInfoMonitorContentEntity>> kIndicatorViewBaseInfoMonitorIdVIndicatorViewBaseInfoMonitorContentListMap = new HashMap<>();
+        Set<String> indicatorViewBaseInfoMonitorContentIdSet = new HashSet<>();
+        Map<String, List<IndicatorViewBaseInfoMonitorContentRefEntity>> kIndicatorViewBaseInfoMonitorContentIdVIndicatorViewBaseInfoMonitorContentRefListMap = new HashMap<>();
+        if (!indicatorViewBaseInfoMonitorEntityList.isEmpty()) {
+          indicatorViewBaseInfoMonitorContentService.lambdaQuery()
+              .eq(IndicatorViewBaseInfoMonitorContentEntity::getAppId, appId)
+              .in(IndicatorViewBaseInfoMonitorContentEntity::getIndicatorViewBaseInfoMonitorId, indicatorViewBaseInfoMonitorEntityList
+                  .stream().map(IndicatorViewBaseInfoMonitorEntity::getIndicatorViewBaseInfoMonitorId).collect(Collectors.toSet()))
+              .list()
+              .forEach(indicatorViewBaseInfoMonitorContentEntity -> {
+                indicatorViewBaseInfoMonitorContentIdSet.add(indicatorViewBaseInfoMonitorContentEntity.getIndicatorViewBaseInfoMonitorContentId());
+                String indicatorViewBaseInfoMonitorId = indicatorViewBaseInfoMonitorContentEntity.getIndicatorViewBaseInfoMonitorId();
+                List<IndicatorViewBaseInfoMonitorContentEntity> indicatorViewBaseInfoMonitorContentEntityList = kIndicatorViewBaseInfoMonitorIdVIndicatorViewBaseInfoMonitorContentListMap.get(indicatorViewBaseInfoMonitorId);
+                if (Objects.isNull(indicatorViewBaseInfoMonitorContentEntityList)) {
+                  indicatorViewBaseInfoMonitorContentEntityList = new ArrayList<>();
+                }
+                indicatorViewBaseInfoMonitorContentEntityList.add(indicatorViewBaseInfoMonitorContentEntity);
+                kIndicatorViewBaseInfoMonitorIdVIndicatorViewBaseInfoMonitorContentListMap.put(indicatorViewBaseInfoMonitorId, indicatorViewBaseInfoMonitorContentEntityList);
+              });
+          if (!indicatorViewBaseInfoMonitorContentIdSet.isEmpty()) {
+            indicatorViewBaseInfoMonitorContentRefService.lambdaQuery()
+                .eq(IndicatorViewBaseInfoMonitorContentRefEntity::getAppId, appId)
+                .in(IndicatorViewBaseInfoMonitorContentRefEntity::getIndicatorViewBaseInfoMonitorContentId, indicatorViewBaseInfoMonitorContentIdSet)
+                .list()
+                .forEach(indicatorViewBaseInfoMonitorContentRefEntity -> {
+                  indicatorInstanceIdSet.add(indicatorViewBaseInfoMonitorContentRefEntity.getIndicatorInstanceId());
+                  String indicatorViewBaseInfoMonitorContentId = indicatorViewBaseInfoMonitorContentRefEntity.getIndicatorViewBaseInfoMonitorContentId();
+                  List<IndicatorViewBaseInfoMonitorContentRefEntity> indicatorViewBaseInfoMonitorContentRefEntityList = kIndicatorViewBaseInfoMonitorContentIdVIndicatorViewBaseInfoMonitorContentRefListMap.get(indicatorViewBaseInfoMonitorContentId);
+                  if (indicatorViewBaseInfoMonitorContentRefEntityList.isEmpty()) {
+                    indicatorViewBaseInfoMonitorContentRefEntityList = new ArrayList<>();
+                  }
+                  indicatorViewBaseInfoMonitorContentRefEntityList.add(indicatorViewBaseInfoMonitorContentRefEntity);
+                  kIndicatorViewBaseInfoMonitorContentIdVIndicatorViewBaseInfoMonitorContentRefListMap.put(indicatorViewBaseInfoMonitorContentId, indicatorViewBaseInfoMonitorContentRefEntityList);
+                });
+          }
+        }
+        List<IndicatorViewBaseInfoSingleEntity> indicatorViewBaseInfoSingleEntityList = indicatorViewBaseInfoSingleService.lambdaQuery()
+            .eq(IndicatorViewBaseInfoSingleEntity::getAppId, appId)
+            .eq(IndicatorViewBaseInfoSingleEntity::getIndicatorViewBaseInfoId, dbIndicatorViewBaseInfoId)
+            .list();
+        indicatorViewBaseInfoSingleEntityList.forEach(indicatorViewBaseInfoSingleEntity -> indicatorInstanceIdSet.add(indicatorViewBaseInfoSingleEntity.getIndicatorInstanceId()));
+        Map<String, IndicatorInstanceResponseRs> kIndicatorInstanceIdVIndicatorInstanceResponseRsMap = new HashMap<>();
+        if (!indicatorInstanceIdSet.isEmpty()) {
+          indicatorInstanceService.lambdaQuery()
+              .eq(IndicatorInstanceEntity::getAppId, appId)
+              .in(IndicatorInstanceEntity::getIndicatorInstanceId, indicatorInstanceIdSet)
+              .list()
+              .forEach(indicatorInstanceEntity -> kIndicatorInstanceIdVIndicatorInstanceResponseRsMap.put(
+                  indicatorInstanceEntity.getIndicatorInstanceId(), IndicatorInstanceBiz.indicatorInstance2ResponseRs(indicatorInstanceEntity)
+              ));
+        }
+        List<IndicatorViewBaseInfoDescrResponseRs> indicatorViewBaseInfoDescrResponseRsList = new ArrayList<>();
+        if (!indicatorViewBaseInfoDescrEntityList.isEmpty()) {
+          indicatorViewBaseInfoDescrResponseRsList = indicatorViewBaseInfoDescrEntityList
+              .stream()
+              .map(indicatorViewBaseInfoDescrEntity -> {
+                String indicatorViewBaseInfoDescId = indicatorViewBaseInfoDescrEntity.getIndicatorViewBaseInfoDescId();
+                List<IndicatorViewBaseInfoDescrRefEntity> indicatorViewBaseInfoDescrRefList = kIndicatorViewBaseInfoDescIdVIndicatorViewBaseInfoDescrRefListMap.get(indicatorViewBaseInfoDescId);
+                return IndicatorViewBaseInfoDescrResponseRs
+                    .builder()
+                    .id(indicatorViewBaseInfoDescrEntity.getId())
+                    .indicatorViewBaseInfoDescId(indicatorViewBaseInfoDescId)
+                    .appId(indicatorViewBaseInfoDescrEntity.getAppId())
+                    .indicatorViewBaseInfoId(indicatorViewBaseInfoDescrEntity.getIndicatorViewBaseInfoId())
+                    .name(indicatorViewBaseInfoDescrEntity.getName())
+                    .seq(indicatorViewBaseInfoDescrEntity.getSeq())
+                    .indicatorViewBaseInfoDescrRefResponseRsList(indicatorViewBaseInfoDescrRefList
+                        .stream()
+                        .map(indicatorViewBaseInfoDescrRefEntity -> {
+                          return IndicatorViewBaseInfoDescrRefResponseRs
+                              .builder()
+                              .id(indicatorViewBaseInfoDescrRefEntity.getId())
+                              .indicatorViewBaseInfoDescRefId(indicatorViewBaseInfoDescrRefEntity.getIndicatorViewBaseInfoDescRefId())
+                              .appId(indicatorViewBaseInfoDescrRefEntity.getAppId())
+                              .indicatorViewBaseInfoDescId(indicatorViewBaseInfoDescrRefEntity.getIndicatorViewBaseInfoDescId())
+                              .indicatorInstanceResponseRs(kIndicatorInstanceIdVIndicatorInstanceResponseRsMap.get(indicatorViewBaseInfoDescrRefEntity.getIndicatorInstanceId()))
+                              .seq(indicatorViewBaseInfoDescrRefEntity.getSeq())
+                              .build();
+                        })
+                        .collect(Collectors.toList())
+                    )
+                    .build();
+              })
+              .collect(Collectors.toList());
+        }
+        List<IndicatorViewBaseInfoMonitorResponseRs> indicatorViewBaseInfoMonitorResponseRsList = new ArrayList<>();
+        if (!indicatorViewBaseInfoMonitorEntityList.isEmpty()) {
+          indicatorViewBaseInfoMonitorResponseRsList = indicatorViewBaseInfoMonitorEntityList
+              .stream()
+              .map(indicatorViewBaseInfoMonitorEntity -> {
+                String indicatorViewBaseInfoMonitorId = indicatorViewBaseInfoMonitorEntity.getIndicatorViewBaseInfoMonitorId();
+                List<IndicatorViewBaseInfoMonitorContentEntity> indicatorViewBaseInfoMonitorContentEntityList = kIndicatorViewBaseInfoMonitorIdVIndicatorViewBaseInfoMonitorContentListMap
+                    .get(indicatorViewBaseInfoMonitorId);
+                return IndicatorViewBaseInfoMonitorResponseRs
+                    .builder()
+                    .id(indicatorViewBaseInfoMonitorEntity.getId())
+                    .indicatorViewBaseInfoMonitorId(indicatorViewBaseInfoMonitorId)
+                    .appId(indicatorViewBaseInfoMonitorEntity.getAppId())
+                    .indicatorViewBaseInfoId(indicatorViewBaseInfoMonitorEntity.getIndicatorViewBaseInfoId())
+                    .name(indicatorViewBaseInfoMonitorEntity.getName())
+                    .seq(indicatorViewBaseInfoMonitorEntity.getSeq())
+                    .indicatorViewBaseInfoMonitorContentResponseRsList(indicatorViewBaseInfoMonitorContentEntityList
+                        .stream()
+                        .map(indicatorViewBaseInfoMonitorContentEntity -> {
+                          String indicatorViewBaseInfoMonitorContentId = indicatorViewBaseInfoMonitorContentEntity.getIndicatorViewBaseInfoMonitorContentId();
+                          List<IndicatorViewBaseInfoMonitorContentRefEntity> indicatorViewBaseInfoMonitorContentRefEntityList = kIndicatorViewBaseInfoMonitorContentIdVIndicatorViewBaseInfoMonitorContentRefListMap
+                              .get(indicatorViewBaseInfoMonitorContentId);
+                          return IndicatorViewBaseInfoMonitorContentResponseRs
+                              .builder()
+                              .id(indicatorViewBaseInfoMonitorContentEntity.getId())
+                              .indicatorViewBaseInfoMonitorContentId(indicatorViewBaseInfoMonitorContentId)
+                              .appId(indicatorViewBaseInfoMonitorContentEntity.getAppId())
+                              .indicatorViewBaseInfoMonitorId(indicatorViewBaseInfoMonitorContentEntity.getIndicatorViewBaseInfoMonitorId())
+                              .name(indicatorViewBaseInfoMonitorContentEntity.getName())
+                              .seq(indicatorViewBaseInfoMonitorContentEntity.getSeq())
+                              .indicatorViewBaseInfoMonitorContentRefResponseRsList(indicatorViewBaseInfoMonitorContentRefEntityList
+                                  .stream()
+                                  .map(indicatorViewBaseInfoMonitorContentRefEntity -> {
+                                    return IndicatorViewBaseInfoMonitorContentRefResponseRs
+                                        .builder()
+                                        .id(indicatorViewBaseInfoMonitorContentRefEntity.getId())
+                                        .indicatorViewBaseInfoMonitorContentRefId(indicatorViewBaseInfoMonitorContentRefEntity.getIndicatorViewBaseInfoMonitorContentRefId())
+                                        .appId(indicatorViewBaseInfoMonitorContentRefEntity.getAppId())
+                                        .indicatorViewBaseInfoMonitorContentId(indicatorViewBaseInfoMonitorContentRefEntity.getIndicatorViewBaseInfoMonitorContentId())
+                                        .indicatorInstanceResponseRs(kIndicatorInstanceIdVIndicatorInstanceResponseRsMap.get(indicatorViewBaseInfoMonitorContentRefEntity.getIndicatorInstanceId()))
+                                        .seq(indicatorViewBaseInfoMonitorContentRefEntity.getSeq())
+                                        .build();
+                                  })
+                                  .collect(Collectors.toList())
+                              )
+                              .build();
+                        })
+                        .collect(Collectors.toList())
+                    )
+                    .build();
+              })
+              .collect(Collectors.toList());
+        }
+        List<IndicatorViewBaseInfoSingleResponseRs> indicatorViewBaseInfoSingleResponseRsList = new ArrayList<>();
+        if (!indicatorViewBaseInfoSingleEntityList.isEmpty()) {
+          indicatorViewBaseInfoSingleResponseRsList = indicatorViewBaseInfoSingleEntityList
+              .stream()
+              .map(indicatorViewBaseInfoSingleEntity -> {
+                return IndicatorViewBaseInfoSingleResponseRs
+                    .builder()
+                    .id(indicatorViewBaseInfoSingleEntity.getId())
+                    .indicatorViewBaseInfoSingleId(indicatorViewBaseInfoSingleEntity.getIndicatorViewBaseInfoSingleId())
+                    .appId(indicatorViewBaseInfoSingleEntity.getAppId())
+                    .indicatorViewBaseInfoId(indicatorViewBaseInfoSingleEntity.getIndicatorViewBaseInfoId())
+                    .indicatorInstanceResponseRs(kIndicatorInstanceIdVIndicatorInstanceResponseRsMap.get(indicatorViewBaseInfoSingleEntity.getIndicatorInstanceId()))
+                    .seq(indicatorViewBaseInfoSingleEntity.getSeq())
+                    .build();
+              })
+              .collect(Collectors.toList());
+        }
+        return IndicatorViewBaseInfoResponseRs
+            .builder()
+            .id(id)
+            .indicatorViewBaseInfoId(dbIndicatorViewBaseInfoId)
+            .appId(appId)
+            .indicatorFuncId(indicatorFuncId)
+            .indicatorViewBaseInfoDescrResponseRsList(indicatorViewBaseInfoDescrResponseRsList)
+            .indicatorViewBaseInfoMonitorResponseRsList(indicatorViewBaseInfoMonitorResponseRsList)
+            .indicatorViewBaseInfoSingleResponseRsList(indicatorViewBaseInfoSingleResponseRsList)
+            .build();
     }
 }
