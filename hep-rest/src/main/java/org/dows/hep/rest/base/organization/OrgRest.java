@@ -69,43 +69,43 @@ public class OrgRest {
     }
 
     /**
-     * 创建机构
+     * 创建案例机构
      * @param
      * @return
      */
-    @Operation(summary = "创建机构")
+    @Operation(summary = "创建案例机构")
     @PostMapping("v1/baseOrg/org/addOrgnization")
     public String addOrgnization(@RequestBody AccountOrgRequest request,@RequestParam String caseInstanceId,@RequestParam String ver,@Nullable @RequestParam String caseIdentifier) {
         return orgBiz.addOrgnization(request,caseInstanceId,ver,caseIdentifier);
     }
 
     /**
-     * 添加机构人物
+     * 添加案例机构人物
      * @param
      * @return
      */
-    @Operation(summary = "添加机构人物")
+    @Operation(summary = "添加案例机构人物")
     @PostMapping("v1/baseOrg/org/addPerson")
     public Integer addPerson(@RequestParam Set<String> personIds, @RequestParam String caseInstanceId,@RequestParam String caseOrgId,@RequestParam String appId) {
         return orgBiz.addPerson(personIds,caseInstanceId,caseOrgId,appId);
     }
 
     /**
-     * 获取机构人物列表
+     * 获取案例机构人物列表
      */
-    @Operation(summary = "获取机构人物列表")
+    @Operation(summary = "获取案例机构人物列表")
     @PostMapping("v1/baseOrg/org/listPerson")
     public IPage<AccountGroupResponse> listPerson(@RequestBody AccountGroupRequest request,@RequestParam String caseOrgId) {
         return orgBiz.listPerson(request,caseOrgId);
     }
 
     /**
-     * 查看机构基本信息
+     * 查看案例机构基本信息
      */
     @Operation(summary = "查看机构基本信息")
-    @GetMapping("v1/baseOrg/org/getOrg/{orgId}/{appId}")
-    public AccountOrgResponse getOrg(@PathVariable String orgId,@PathVariable String appId) {
-        return orgBiz.getOrg(orgId,appId);
+    @GetMapping("v1/baseOrg/org/getOrg/{caseOrgId}/{appId}")
+    public AccountOrgResponse getOrg(@PathVariable String caseOrgId,@PathVariable String appId) {
+        return orgBiz.getOrg(caseOrgId,appId);
     }
 
     /**

@@ -320,20 +320,26 @@ public class OrgBiz {
      * @开始时间:
      * @创建时间: 2023/5/04 16:04
      */
-    public AccountOrgResponse getOrg(String orgId, String appId) {
+    public AccountOrgResponse getOrg(String caseOrgId, String appId) {
+        //1、获取该案例机构对应的机构ID
+        CaseOrgEntity entity = caseOrgService.lambdaQuery()
+                .eq(CaseOrgEntity::getCaseOrgId,caseOrgId)
+                .eq(CaseOrgEntity::getDeleted,false)
+                .eq(CaseOrgEntity::getAppId,appId)
+                .one();
         //1、获取机构实例
-        AccountOrgResponse orgResponse = accountOrgApi.getAccountOrgByOrgId(orgId, appId);
+        AccountOrgResponse orgResponse = accountOrgApi.getAccountOrgByOrgId(entity.getOrgId(), appId);
         //2、获取机构基本信息
-        AccountOrgInfoResponse orgInfoResponse = accountOrgApi.getAccountOrgInfoByOrgId(orgId);
+        AccountOrgInfoResponse orgInfoResponse = accountOrgApi.getAccountOrgInfoByOrgId(entity.getOrgId());
         orgResponse.setOperationManual(orgInfoResponse.getOperationManual());
         orgInfoResponse.setIsEnable(orgInfoResponse.getIsEnable());
         //3、获取机构地理位置信息
-        AccountOrgGeoResponse orgGeoResponse = accountOrgGeoApi.getAccountOrgInfoByOrgId(orgId);
+        AccountOrgGeoResponse orgGeoResponse = accountOrgGeoApi.getAccountOrgInfoByOrgId(entity.getOrgId());
         orgResponse.setOrgLongitude(orgGeoResponse.getOrgLongitude());
         orgResponse.setOrgLatitude(orgGeoResponse.getOrgLatitude());
         //4、获取机构费用列表
         List<CaseOrgFeeEntity> caseOrgFeeList = caseOrgFeeService.lambdaQuery()
-                .eq(CaseOrgFeeEntity::getCaseOrgId, orgId)
+                .eq(CaseOrgFeeEntity::getCaseOrgId, entity.getOrgId())
                 .eq(CaseOrgFeeEntity::getDeleted, false)
                 .list();
         orgResponse.setDescr(JSONUtil.toJsonStr(caseOrgFeeList));
