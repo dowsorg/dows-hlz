@@ -115,4 +115,31 @@ public class OrgRest {
     public Boolean editOrg(@RequestBody AccountOrgRequest request) {
         return orgBiz.editOrg(request);
     }
+
+    /**
+     * 判断机构名称是否重复
+     */
+    @Operation(summary = "判断机构名称是否重复")
+    @GetMapping("v1/baseOrg/org/checkOrg")
+    public Boolean checkOrg(@RequestParam String orgCode,@RequestParam String appId,@RequestParam String orgName) {
+        return orgBiz.checkOrg(orgCode,appId,orgName);
+    }
+
+    /**
+     * 删除机构基本信息
+     */
+    @Operation(summary = "删除机构基本信息")
+    @DeleteMapping("v1/baseOrg/org/deleteOrgs")
+    public Boolean deleteOrgs(@RequestParam Set<String> orgIds) {
+        return orgBiz.deleteOrgs(orgIds);
+    }
+
+    /**
+     * 删除机构人物
+     */
+    @Operation(summary = "删除机构人物")
+    @DeleteMapping("v1/baseOrg/org/deletePersons")
+    public Boolean deletePersons(@RequestParam Set<String> orgIds) {
+        return orgBiz.deletePersons(orgIds);
+    }
 }

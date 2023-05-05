@@ -2,8 +2,10 @@ package org.dows.hep.biz.base.org;
 
 import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.api.*;
 import org.dows.account.request.AccountGroupInfoRequest;
@@ -11,6 +13,8 @@ import org.dows.account.request.AccountGroupRequest;
 import org.dows.account.request.AccountOrgGeoRequest;
 import org.dows.account.request.AccountOrgRequest;
 import org.dows.account.response.*;
+import org.dows.hep.api.enums.EnumCaseFee;
+import org.dows.hep.api.exception.CaseFeeException;
 import org.dows.hep.entity.CaseOrgFeeEntity;
 import org.dows.hep.service.CaseOrgFeeService;
 import org.dows.sequence.api.IdGenerator;
@@ -323,9 +327,88 @@ public class OrgBiz {
             Boolean flag2 = accountOrgGeoApi.updateAccountOrgGeoByOrgId(geoRequest);
         }
         //3、更新机构费用信息
-        List<CaseOrgFeeEntity> caseOrgList = JSONUtil.toList(request.getDescr(), CaseOrgFeeEntity.class);
-        Boolean flag3 = caseOrgFeeService.updateBatchById(caseOrgList);
+        Boolean flag3 = false;
+        if(StringUtils.isNotEmpty(request.getDescr())) {
+            List<CaseOrgFeeEntity> caseOrgList = JSONUtil.toList(request.getDescr(), CaseOrgFeeEntity.class);
+            flag3 = caseOrgFeeService.updateBatchById(caseOrgList);
+        }
         return flag3;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 判断机构名称
+     * @关联表: account_org
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/5/05 09:00
+     */
+    public Boolean checkOrg(String orgCode, String appId, String orgName) {
+        return accountOrgApi.checkOrgIsExist(orgCode,appId,orgName);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 删除机构基本信息
+     * @关联表: account_org、case_org_fee、account_org_geo、account_org_info
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/5/05 09:00
+     */
+    @DSTransactional
+    public Boolean deleteOrgs(Set<String> orgIds) {
+        //1、删除组织机构
+        accountOrgApi.batchDeleteAccountOrgsByOrgIds(orgIds);
+        //2、删除组织机构地理位置
+        accountOrgGeoApi.batchDeleteAccountOrgGeosByOrgIds(orgIds);
+        //3、删除组织机构费用
+        for (String orgId : orgIds) {
+            List<CaseOrgFeeEntity> feeList = caseOrgFeeService.lambdaQuery()
+                    .eq(CaseOrgFeeEntity::getCaseOrgId, orgId)
+                    .eq(CaseOrgFeeEntity::getDeleted, false)
+                    .list();
+            if (feeList == null && feeList.size() > 0) {
+                LambdaUpdateWrapper<CaseOrgFeeEntity> feeWrapper = Wrappers.lambdaUpdate(CaseOrgFeeEntity.class);
+                feeWrapper.set(CaseOrgFeeEntity::getDeleted, true)
+                        .eq(CaseOrgFeeEntity::getCaseOrgId, orgId);
+                boolean flag = caseOrgFeeService.update(feeWrapper);
+                if(!flag){
+                    throw new CaseFeeException(EnumCaseFee.CASE_FEE_UPDATE_EXCEPTION);
+                }
+            }
+        }
+        //4、todo 删除功能点
+        return true;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 删除机构人物
+     * @关联表: account_group
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/5/05 10:00
+     */
+    @DSTransactional
+    public Boolean deletePersons(Set<String> orgIds) {
+        //1、获取该机构下的成员
+        for(String orgId:orgIds){
+            List<AccountGroupResponse> groupResponseList = accountGroupApi.getAccountGroupByOrgId(orgId);
+            if(groupResponseList != null && groupResponseList.size() > 0){
+                Set<String> ids = new HashSet<>();
+                groupResponseList.forEach(group->{
+                    ids.add(group.getId());
+                });
+                accountGroupApi.batchDeleteGroups(ids);
+            }
+        }
+        return true;
     }
 
     /**
