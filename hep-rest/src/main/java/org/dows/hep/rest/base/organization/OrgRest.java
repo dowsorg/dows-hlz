@@ -111,7 +111,7 @@ public class OrgRest {
      * 编辑机构基本信息
      */
     @Operation(summary = "编辑机构基本信息")
-    @GetMapping("v1/baseOrg/org/editOrg")
+    @PostMapping("v1/baseOrg/org/editOrg")
     public Boolean editOrg(@RequestBody AccountOrgRequest request) {
         return orgBiz.editOrg(request);
     }
@@ -139,7 +139,7 @@ public class OrgRest {
      */
     @Operation(summary = "删除机构人物")
     @DeleteMapping("v1/baseOrg/org/deletePersons")
-    public Boolean deletePersons(@RequestParam Set<String> orgIds) {
-        return orgBiz.deletePersons(orgIds);
+    public Boolean deletePersons(@RequestParam Set<String> orgIds,@RequestParam Set<String> accountIds) {
+        return orgBiz.deletePersons(orgIds,accountIds);
     }
 }

@@ -375,7 +375,7 @@ public class OrgBiz {
                     .eq(CaseOrgFeeEntity::getCaseOrgId, orgId)
                     .eq(CaseOrgFeeEntity::getDeleted, false)
                     .list();
-            if (feeList == null && feeList.size() > 0) {
+            if (feeList != null && feeList.size() > 0) {
                 LambdaUpdateWrapper<CaseOrgFeeEntity> feeWrapper = Wrappers.lambdaUpdate(CaseOrgFeeEntity.class);
                 feeWrapper.set(CaseOrgFeeEntity::getDeleted, true)
                         .eq(CaseOrgFeeEntity::getCaseOrgId, orgId);
@@ -400,7 +400,7 @@ public class OrgBiz {
      * @创建时间: 2023/5/05 10:00
      */
     @DSTransactional
-    public Boolean deletePersons(Set<String> orgIds) {
+    public Boolean deletePersons(Set<String> orgIds,Set<String> accountIds) {
         //1、获取该机构下的成员
         for(String orgId:orgIds){
             List<AccountGroupResponse> groupResponseList = accountGroupApi.getAccountGroupByOrgId(orgId);
@@ -409,7 +409,7 @@ public class OrgBiz {
                 groupResponseList.forEach(group->{
                     ids.add(group.getId());
                 });
-                accountGroupApi.batchDeleteGroups(ids);
+                accountGroupApi.batchDeleteGroups(ids,accountIds);
             }
         }
         return true;
