@@ -95,8 +95,8 @@ public class OrgRest {
      */
     @Operation(summary = "获取机构人物列表")
     @PostMapping("v1/baseOrg/org/listPerson")
-    public IPage<AccountGroupResponse> listPerson(@RequestBody AccountGroupRequest request) {
-        return orgBiz.listPerson(request);
+    public IPage<AccountGroupResponse> listPerson(@RequestBody AccountGroupRequest request,@RequestParam String caseOrgId) {
+        return orgBiz.listPerson(request,caseOrgId);
     }
 
     /**

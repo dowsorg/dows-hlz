@@ -297,19 +297,15 @@ public class OrgBiz {
      * @开始时间:
      * @创建时间: 2023/5/04 14:30
      */
-    public IPage<AccountGroupResponse> listPerson(AccountGroupRequest request) {
-        //1、获取该账号对应的组织架构
-//        List<AccountGroupResponse> groupResponseList = accountGroupApi.getAccountGroupByOrgId(request.getOrgId());
-//        Set<String> accountIds = new HashSet<>();
-//        if (groupResponseList != null && groupResponseList.size() > 0) {
-//            groupResponseList.forEach(group -> {
-//                accountIds.add(group.getAccountId());
-//            });
-//        } else {
-//            accountIds.add("fill");
-//        }
+    public IPage<AccountGroupResponse> listPerson(AccountGroupRequest request,String caseOrgId) {
+        //1、获取该案例机构对应的机构ID
+        CaseOrgEntity entity = caseOrgService.lambdaQuery()
+                .eq(CaseOrgEntity::getCaseOrgId,caseOrgId)
+                .eq(CaseOrgEntity::getDeleted,false)
+                .eq(CaseOrgEntity::getAppId,request.getAppId())
+                .one();
         Set<String> orgIds = new HashSet<>();
-        orgIds.add(request.getOrgId());
+        orgIds.add(entity.getOrgId());
         request.setOrgIds(orgIds);
         return accountGroupApi.customAccountGroupList(request);
     }
