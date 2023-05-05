@@ -157,4 +157,15 @@ public class OrgRest {
                                  @RequestParam String accountId) {
         return orgBiz.checkInstancePerson(caseOrgId,caseInstanceId,accountId);
     }
+
+    /**
+     * 复制机构人物
+     */
+    @Operation(summary = "复制机构人物")
+    @PostMapping("v1/baseOrg/org/copyPerson")
+    public Boolean copyPerson(@RequestParam String caseOrgId,
+                                       @RequestParam String caseInstanceId,
+                                       @RequestParam String accountId) {
+        return orgBiz.copyPerson(caseOrgId,caseInstanceId,accountId);
+    }
 }
