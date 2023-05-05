@@ -192,7 +192,7 @@ public class OrgBiz {
      * @param
      * @return
      * @说明: 创建 机构
-     * @关联表: account_org、case_org_fee、account_org_geo
+     * @关联表: account_org、case_org_fee、account_org_geo、case_person
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
@@ -242,7 +242,7 @@ public class OrgBiz {
      * @param
      * @return
      * @说明: 添加机构人物
-     * @关联表: account_group、account_org、account_group
+     * @关联表: account_group、account_org、account_group、case_org、case_person
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
@@ -291,7 +291,7 @@ public class OrgBiz {
      * @param
      * @return
      * @说明: 机构人物列表
-     * @关联表: account_group、account_org、account_group
+     * @关联表: account_group、account_org、account_group、case_org
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
@@ -314,7 +314,7 @@ public class OrgBiz {
      * @param
      * @return
      * @说明: 查看机构基本信息
-     * @关联表: account_org、case_org_fee、account_org_geo、account_org_info
+     * @关联表: account_org、case_org_fee、account_org_geo、account_org_info、case_org
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
@@ -350,17 +350,33 @@ public class OrgBiz {
      * @param
      * @return
      * @说明: 编辑机构基本信息
-     * @关联表: account_org、case_org_fee、account_org_geo、account_org_info
+     * @关联表: account_org、case_org_fee、account_org_geo、account_org_info、case_org
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
      * @创建时间: 2023/5/05 09:00
      */
     @DSTransactional
-    public Boolean editOrg(AccountOrgRequest request) {
-        //1、更新机构实例
+    public Boolean editOrg(AccountOrgRequest request,String caseOrgId,String ver,String caseIdentifier) {
+        //1、获取该案例机构对应的机构ID
+        CaseOrgEntity entity = caseOrgService.lambdaQuery()
+                .eq(CaseOrgEntity::getCaseOrgId,caseOrgId)
+                .eq(CaseOrgEntity::getDeleted,false)
+                .eq(CaseOrgEntity::getAppId,request.getAppId())
+                .one();
+        //2、更新机构实例
+        request.setOrgId(entity.getOrgId());
         Boolean flag1 = accountOrgApi.updateAccountOrgByOrgId(request);
-        //2、更新机构地理信息
+        //3、更新案例机构实例
+        CaseOrgEntity entity1 = CaseOrgEntity.builder().orgName(request.getOrgName())
+                .scene(request.getProfile())
+                .handbook(request.getOperationManual())
+                .ver(ver)
+                .caseIdentifier(caseIdentifier)
+                .id(entity.getId())
+                .build();
+        boolean orgFlag = caseOrgService.updateById(entity1);
+        //4、更新机构地理信息
         if (request.getOrgLatitude() != null && request.getOrgLongitude() != null) {
             AccountOrgGeoRequest geoRequest = AccountOrgGeoRequest.builder()
                     .orgId(request.getOrgId())
@@ -369,7 +385,7 @@ public class OrgBiz {
                     .build();
             Boolean flag2 = accountOrgGeoApi.updateAccountOrgGeoByOrgId(geoRequest);
         }
-        //3、更新机构费用信息
+        //5、更新机构费用信息
         Boolean flag3 = false;
         if(StringUtils.isNotEmpty(request.getDescr())) {
             List<CaseOrgFeeEntity> caseOrgList = JSONUtil.toList(request.getDescr(), CaseOrgFeeEntity.class);

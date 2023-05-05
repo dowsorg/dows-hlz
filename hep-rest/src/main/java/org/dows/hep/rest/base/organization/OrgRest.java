@@ -113,8 +113,8 @@ public class OrgRest {
      */
     @Operation(summary = "编辑机构基本信息")
     @PostMapping("v1/baseOrg/org/editOrg")
-    public Boolean editOrg(@RequestBody AccountOrgRequest request) {
-        return orgBiz.editOrg(request);
+    public Boolean editOrg(@RequestBody AccountOrgRequest request,@RequestParam String caseOrgId,@Nullable @RequestParam String ver,@Nullable @RequestParam String caseIdentifier) {
+        return orgBiz.editOrg(request,caseOrgId,ver,caseIdentifier);
     }
 
     /**
