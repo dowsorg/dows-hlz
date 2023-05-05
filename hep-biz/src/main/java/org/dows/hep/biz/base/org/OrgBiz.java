@@ -471,7 +471,7 @@ public class OrgBiz {
      * @param
      * @return
      * @说明: 删除机构人物
-     * @关联表: account_group
+     * @关联表: account_group、case_person、case_org
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
@@ -508,6 +508,29 @@ public class OrgBiz {
                     accountGroupApi.batchDeleteGroups(ids, accountIds);
                 }
             }
+        }
+        return true;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 同一案例中，人物不能被多个机构共享
+     * @关联表: case_person
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/5/05 10:00
+     */
+    public Boolean checkInstancePerson(String caseOrgId, String caseInstanceId, String accountId) {
+        CasePersonEntity entity = casePersonService.lambdaQuery()
+                .eq(CasePersonEntity::getCaseOrgId, caseOrgId)
+                .eq(CasePersonEntity::getCaseInstanceId,caseInstanceId)
+                .eq(CasePersonEntity::getDeleted, false)
+                .eq(CasePersonEntity::getAccountId, accountId)
+                .one();
+        if(entity != null){
+            return false;
         }
         return true;
     }

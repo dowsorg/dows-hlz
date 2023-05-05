@@ -146,4 +146,15 @@ public class OrgRest {
                                  @RequestParam String appId) {
         return orgBiz.deletePersons(caseOrgIds,caseInstanceId,accountIds,appId);
     }
+
+    /**
+     * 同一案例中，人物不能被多个机构共享
+     */
+    @Operation(summary = "同一案例中，人物不能被多个机构共享")
+    @PostMapping("v1/baseOrg/org/checkInstancePerson")
+    public Boolean checkInstancePerson(@RequestParam String caseOrgId,
+                                 @RequestParam String caseInstanceId,
+                                 @RequestParam String accountId) {
+        return orgBiz.checkInstancePerson(caseOrgId,caseInstanceId,accountId);
+    }
 }
