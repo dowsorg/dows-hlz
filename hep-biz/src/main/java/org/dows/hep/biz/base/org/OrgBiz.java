@@ -195,9 +195,11 @@ public class OrgBiz {
     @DSTransactional
     public Boolean addOrgnization(AccountOrgRequest request) {
         //1、创建机构
+        String feeJson = request.getDescr();
+        request.setDescr("");
         String orgId = accountOrgApi.createAccountOrg(request);
         //2、创建机构费用明细
-        List<CaseOrgFeeEntity> caseOrgList = JSONUtil.toList(request.getDescr(), CaseOrgFeeEntity.class);
+        List<CaseOrgFeeEntity> caseOrgList = JSONUtil.toList(feeJson, CaseOrgFeeEntity.class);
         caseOrgList.forEach(caseOrg -> {
             caseOrg.setAppId(request.getAppId());
             caseOrg.setCaseOrgId(orgId);
@@ -260,16 +262,18 @@ public class OrgBiz {
      */
     public IPage<AccountGroupResponse> listPerson(AccountGroupRequest request) {
         //1、获取该账号对应的组织架构
-        List<AccountGroupResponse> groupResponseList = accountGroupApi.getAccountGroupByOrgId(request.getOrgId());
-        Set<String> accountIds = new HashSet<>();
-        if (groupResponseList != null && groupResponseList.size() > 0) {
-            groupResponseList.forEach(group -> {
-                accountIds.add(group.getAccountId());
-            });
-        } else {
-            accountIds.add("fill");
-        }
-        request.setAccountIds(accountIds);
+//        List<AccountGroupResponse> groupResponseList = accountGroupApi.getAccountGroupByOrgId(request.getOrgId());
+//        Set<String> accountIds = new HashSet<>();
+//        if (groupResponseList != null && groupResponseList.size() > 0) {
+//            groupResponseList.forEach(group -> {
+//                accountIds.add(group.getAccountId());
+//            });
+//        } else {
+//            accountIds.add("fill");
+//        }
+        Set<String> orgIds = new HashSet<>();
+        orgIds.add(request.getOrgId());
+        request.setOrgIds(orgIds);
         return accountGroupApi.customAccountGroupList(request);
     }
 
