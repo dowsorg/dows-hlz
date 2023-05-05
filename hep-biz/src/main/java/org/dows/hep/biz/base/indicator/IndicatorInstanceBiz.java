@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorInstanceRequest;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorInstanceRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorInstanceResponse;
+import org.dows.hep.api.base.indicator.response.IndicatorInstanceResponseRs;
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.IndicatorInstanceException;
 import org.dows.hep.biz.util.RedissonUtil;
