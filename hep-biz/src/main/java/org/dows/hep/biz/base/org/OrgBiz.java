@@ -17,8 +17,10 @@ import org.dows.hep.api.enums.EnumCaseFee;
 import org.dows.hep.api.exception.CaseFeeException;
 import org.dows.hep.entity.CaseOrgEntity;
 import org.dows.hep.entity.CaseOrgFeeEntity;
+import org.dows.hep.entity.CasePersonEntity;
 import org.dows.hep.service.CaseOrgFeeService;
 import org.dows.hep.service.CaseOrgService;
+import org.dows.hep.service.CasePersonService;
 import org.dows.sequence.api.IdGenerator;
 import org.dows.user.api.api.UserInstanceApi;
 import org.dows.user.api.response.UserInstanceResponse;
@@ -46,6 +48,7 @@ public class OrgBiz {
     private final IdGenerator idGenerator;
     private final AccountOrgGeoApi accountOrgGeoApi;
     private final CaseOrgService caseOrgService;
+    private final CasePersonService casePersonService;
 
     /**
      * @param
@@ -196,7 +199,7 @@ public class OrgBiz {
      * @创建时间: 2023/4/28 11:50
      */
     @DSTransactional
-    public Boolean addOrgnization(AccountOrgRequest request,String caseInstanceId,String ver,String caseIdentifier) {
+    public String addOrgnization(AccountOrgRequest request,String caseInstanceId,String ver,String caseIdentifier) {
         //1、创建机构
         String feeJson = request.getDescr();
         request.setDescr("");
@@ -231,7 +234,8 @@ public class OrgBiz {
                 .orgLongitude(request.getOrgLongitude())
                 .orgLatitude(request.getOrgLatitude())
                 .build();
-        return accountOrgGeoApi.insertOrgGeo(geoRequest);
+        accountOrgGeoApi.insertOrgGeo(geoRequest);
+        return caseOrgId;
     }
 
     /**
@@ -245,14 +249,21 @@ public class OrgBiz {
      * @创建时间: 2023/5/04 14:30
      */
     @DSTransactional
-    public Integer addPerson(Set<String> personIds, String orgId, String appId) {
+    public Integer addPerson(Set<String> personIds, String caseInstanceId,String caseOrgId, String appId) {
+        //1、通过案例机构ID找到机构ID
+        CaseOrgEntity entity = caseOrgService.lambdaQuery()
+                .eq(CaseOrgEntity::getCaseOrgId,caseOrgId)
+                .eq(CaseOrgEntity::getDeleted,false)
+                .eq(CaseOrgEntity::getAppId,appId)
+                .one();
         Integer count = 0;
+        //2、uim中将人物放到对应小组
         for (String personId : personIds) {
             AccountInstanceResponse instanceResponse = accountInstanceApi.getAccountInstanceByAccountId(personId);
-            AccountOrgResponse orgResponse = accountOrgApi.getAccountOrgByOrgId(orgId, appId);
+            AccountOrgResponse orgResponse = accountOrgApi.getAccountOrgByOrgId(entity.getOrgId(), appId);
             AccountGroupRequest request = AccountGroupRequest
                     .builder()
-                    .orgId(orgId)
+                    .orgId(entity.getOrgId())
                     .orgName(orgResponse.getOrgName())
                     .accountId(personId)
                     .accountName(instanceResponse.getAccountName())
@@ -264,6 +275,15 @@ public class OrgBiz {
                 count++;
             }
         }
+        //3、沙盘中将人物放到案例小组
+        String personId = idGenerator.nextIdStr();
+        CasePersonEntity person = CasePersonEntity.builder()
+                .casePersonId(personId)
+                .caseInstanceId(caseInstanceId)
+                .caseOrgId(caseOrgId)
+                .accountId(personId)
+                .build();
+        casePersonService.save(person);
         return count;
     }
 

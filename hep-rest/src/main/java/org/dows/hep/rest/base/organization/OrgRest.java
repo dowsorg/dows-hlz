@@ -11,6 +11,7 @@ import org.dows.account.response.AccountOrgResponse;
 import org.dows.hep.biz.base.org.OrgBiz;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Nullable;
 import java.util.Set;
 
 /**
@@ -74,7 +75,7 @@ public class OrgRest {
      */
     @Operation(summary = "创建机构")
     @PostMapping("v1/baseOrg/org/addOrgnization")
-    public Boolean addOrgnization(@RequestBody AccountOrgRequest request,@RequestParam String caseInstanceId,@RequestParam String ver,@RequestParam String caseIdentifier) {
+    public String addOrgnization(@RequestBody AccountOrgRequest request,@RequestParam String caseInstanceId,@RequestParam String ver,@Nullable @RequestParam String caseIdentifier) {
         return orgBiz.addOrgnization(request,caseInstanceId,ver,caseIdentifier);
     }
 
@@ -85,8 +86,8 @@ public class OrgRest {
      */
     @Operation(summary = "添加机构人物")
     @PostMapping("v1/baseOrg/org/addPerson")
-    public Integer addPerson(@RequestParam Set<String> personIds, @RequestParam String orgId,@RequestParam String appId) {
-        return orgBiz.addPerson(personIds,orgId,appId);
+    public Integer addPerson(@RequestParam Set<String> personIds, @RequestParam String caseInstanceId,@RequestParam String caseOrgId,@RequestParam String appId) {
+        return orgBiz.addPerson(personIds,caseInstanceId,caseOrgId,appId);
     }
 
     /**
