@@ -199,7 +199,7 @@ public class OrgBiz {
      * @创建时间: 2023/4/28 11:50
      */
     @DSTransactional
-    public String addOrgnization(AccountOrgRequest request,String caseInstanceId,String ver,String caseIdentifier) {
+    public String addOrgnization(AccountOrgRequest request, String caseInstanceId, String ver, String caseIdentifier) {
         //1、创建机构
         String feeJson = request.getDescr();
         request.setDescr("");
@@ -249,12 +249,12 @@ public class OrgBiz {
      * @创建时间: 2023/5/04 14:30
      */
     @DSTransactional
-    public Integer addPerson(Set<String> personIds, String caseInstanceId,String caseOrgId, String appId) {
+    public Integer addPerson(Set<String> personIds, String caseInstanceId, String caseOrgId, String appId) {
         //1、通过案例机构ID找到机构ID
         CaseOrgEntity entity = caseOrgService.lambdaQuery()
-                .eq(CaseOrgEntity::getCaseOrgId,caseOrgId)
-                .eq(CaseOrgEntity::getDeleted,false)
-                .eq(CaseOrgEntity::getAppId,appId)
+                .eq(CaseOrgEntity::getCaseOrgId, caseOrgId)
+                .eq(CaseOrgEntity::getDeleted, false)
+                .eq(CaseOrgEntity::getAppId, appId)
                 .one();
         Integer count = 0;
         //2、uim中将人物放到对应小组
@@ -297,12 +297,12 @@ public class OrgBiz {
      * @开始时间:
      * @创建时间: 2023/5/04 14:30
      */
-    public IPage<AccountGroupResponse> listPerson(AccountGroupRequest request,String caseOrgId) {
+    public IPage<AccountGroupResponse> listPerson(AccountGroupRequest request, String caseOrgId) {
         //1、获取该案例机构对应的机构ID
         CaseOrgEntity entity = caseOrgService.lambdaQuery()
-                .eq(CaseOrgEntity::getCaseOrgId,caseOrgId)
-                .eq(CaseOrgEntity::getDeleted,false)
-                .eq(CaseOrgEntity::getAppId,request.getAppId())
+                .eq(CaseOrgEntity::getCaseOrgId, caseOrgId)
+                .eq(CaseOrgEntity::getDeleted, false)
+                .eq(CaseOrgEntity::getAppId, request.getAppId())
                 .one();
         Set<String> orgIds = new HashSet<>();
         orgIds.add(entity.getOrgId());
@@ -323,9 +323,9 @@ public class OrgBiz {
     public AccountOrgResponse getOrg(String caseOrgId, String appId) {
         //1、获取该案例机构对应的机构ID
         CaseOrgEntity entity = caseOrgService.lambdaQuery()
-                .eq(CaseOrgEntity::getCaseOrgId,caseOrgId)
-                .eq(CaseOrgEntity::getDeleted,false)
-                .eq(CaseOrgEntity::getAppId,appId)
+                .eq(CaseOrgEntity::getCaseOrgId, caseOrgId)
+                .eq(CaseOrgEntity::getDeleted, false)
+                .eq(CaseOrgEntity::getAppId, appId)
                 .one();
         //1、获取机构实例
         AccountOrgResponse orgResponse = accountOrgApi.getAccountOrgByOrgId(entity.getOrgId(), appId);
@@ -339,7 +339,7 @@ public class OrgBiz {
         orgResponse.setOrgLatitude(orgGeoResponse.getOrgLatitude());
         //4、获取机构费用列表
         List<CaseOrgFeeEntity> caseOrgFeeList = caseOrgFeeService.lambdaQuery()
-                .eq(CaseOrgFeeEntity::getCaseOrgId, entity.getOrgId())
+                .eq(CaseOrgFeeEntity::getCaseOrgId, entity.getCaseOrgId())
                 .eq(CaseOrgFeeEntity::getDeleted, false)
                 .list();
         orgResponse.setDescr(JSONUtil.toJsonStr(caseOrgFeeList));
@@ -357,12 +357,12 @@ public class OrgBiz {
      * @创建时间: 2023/5/05 09:00
      */
     @DSTransactional
-    public Boolean editOrg(AccountOrgRequest request,String caseOrgId,String ver,String caseIdentifier) {
+    public Boolean editOrg(AccountOrgRequest request, String caseOrgId, String ver, String caseIdentifier) {
         //1、获取该案例机构对应的机构ID
         CaseOrgEntity entity = caseOrgService.lambdaQuery()
-                .eq(CaseOrgEntity::getCaseOrgId,caseOrgId)
-                .eq(CaseOrgEntity::getDeleted,false)
-                .eq(CaseOrgEntity::getAppId,request.getAppId())
+                .eq(CaseOrgEntity::getCaseOrgId, caseOrgId)
+                .eq(CaseOrgEntity::getDeleted, false)
+                .eq(CaseOrgEntity::getAppId, request.getAppId())
                 .one();
         //2、更新机构实例
         request.setOrgId(entity.getOrgId());
@@ -387,7 +387,7 @@ public class OrgBiz {
         }
         //5、更新机构费用信息
         Boolean flag3 = false;
-        if(StringUtils.isNotEmpty(request.getDescr())) {
+        if (StringUtils.isNotEmpty(request.getDescr())) {
             List<CaseOrgFeeEntity> caseOrgList = JSONUtil.toList(request.getDescr(), CaseOrgFeeEntity.class);
             flag3 = caseOrgFeeService.updateBatchById(caseOrgList);
         }
@@ -405,42 +405,65 @@ public class OrgBiz {
      * @创建时间: 2023/5/05 09:00
      */
     public Boolean checkOrg(String orgCode, String appId, String orgName) {
-        return accountOrgApi.checkOrgIsExist(orgCode,appId,orgName);
+        return accountOrgApi.checkOrgIsExist(orgCode, appId, orgName);
     }
 
     /**
      * @param
      * @return
      * @说明: 删除机构基本信息
-     * @关联表: account_org、case_org_fee、account_org_geo、account_org_info
+     * @关联表: account_org、case_org_fee、account_org_geo、account_org_info、case_org
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
      * @创建时间: 2023/5/05 09:00
      */
     @DSTransactional
-    public Boolean deleteOrgs(Set<String> orgIds) {
-        //1、删除组织机构
-        accountOrgApi.batchDeleteAccountOrgsByOrgIds(orgIds);
-        //2、删除组织机构地理位置
-        accountOrgGeoApi.batchDeleteAccountOrgGeosByOrgIds(orgIds);
-        //3、删除组织机构费用
-        for (String orgId : orgIds) {
-            List<CaseOrgFeeEntity> feeList = caseOrgFeeService.lambdaQuery()
-                    .eq(CaseOrgFeeEntity::getCaseOrgId, orgId)
-                    .eq(CaseOrgFeeEntity::getDeleted, false)
-                    .list();
-            if (feeList != null && feeList.size() > 0) {
-                LambdaUpdateWrapper<CaseOrgFeeEntity> feeWrapper = Wrappers.lambdaUpdate(CaseOrgFeeEntity.class);
-                feeWrapper.set(CaseOrgFeeEntity::getDeleted, true)
-                        .eq(CaseOrgFeeEntity::getCaseOrgId, orgId);
-                boolean flag = caseOrgFeeService.update(feeWrapper);
-                if(!flag){
-                    throw new CaseFeeException(EnumCaseFee.CASE_FEE_UPDATE_EXCEPTION);
+    public Boolean deleteOrgs(Set<String> caseOrgIds,String caseInstanceId, String appId) {
+        //1、获取该案例机构对应的机构ID
+        List<CaseOrgEntity> entityList = caseOrgService.lambdaQuery()
+                .in(caseOrgIds != null && caseOrgIds.size() > 0 ,CaseOrgEntity::getCaseOrgId, caseOrgIds)
+                .eq(CaseOrgEntity::getCaseInstanceId,caseInstanceId)
+                .eq(CaseOrgEntity::getDeleted, false)
+                .eq(CaseOrgEntity::getAppId, appId)
+                .list();
+        if (entityList != null && entityList.size() > 0) {
+            Set<String> orgIds = new HashSet<>();
+            entityList.forEach(entity -> {
+                orgIds.add(entity.getOrgId());
+                //2、删除案例机构关系表
+                LambdaUpdateWrapper<CaseOrgEntity> orgWrapper = Wrappers.lambdaUpdate(CaseOrgEntity.class);
+                orgWrapper.set(CaseOrgEntity::getDeleted, true)
+                        .eq(CaseOrgEntity::getCaseOrgId, entity.getCaseOrgId())
+                        .eq(CaseOrgEntity::getCaseInstanceId, caseInstanceId);
+                boolean flag1 = caseOrgService.update(orgWrapper);
+                //3、删除案例人物关系表
+                LambdaUpdateWrapper<CasePersonEntity> personWrapper = Wrappers.lambdaUpdate(CasePersonEntity.class);
+                personWrapper.set(CasePersonEntity::getDeleted, true)
+                        .eq(CasePersonEntity::getCaseOrgId, entity.getCaseOrgId())
+                        .eq(CasePersonEntity::getCaseInstanceId, caseInstanceId);
+                boolean flag2 = caseOrgService.update(orgWrapper);
+                //4、删除组织机构费用表
+                List<CaseOrgFeeEntity> feeList = caseOrgFeeService.lambdaQuery()
+                        .eq(CaseOrgFeeEntity::getCaseOrgId, entity.getCaseOrgId())
+                        .eq(CaseOrgFeeEntity::getDeleted, false)
+                        .list();
+                if (feeList != null && feeList.size() > 0) {
+                    LambdaUpdateWrapper<CaseOrgFeeEntity> feeWrapper = Wrappers.lambdaUpdate(CaseOrgFeeEntity.class);
+                    feeWrapper.set(CaseOrgFeeEntity::getDeleted, true)
+                            .eq(CaseOrgFeeEntity::getCaseOrgId, entity.getCaseOrgId());
+                    boolean flag = caseOrgFeeService.update(feeWrapper);
+                    if (!flag) {
+                        throw new CaseFeeException(EnumCaseFee.CASE_FEE_UPDATE_EXCEPTION);
+                    }
                 }
-            }
+            });
+            //5、删除组织机构
+            accountOrgApi.batchDeleteAccountOrgsByOrgIds(orgIds);
+            //6、删除组织机构地理位置
+            accountOrgGeoApi.batchDeleteAccountOrgGeosByOrgIds(orgIds);
         }
-        //4、todo 删除功能点
+        //7、todo 删除功能点
         return true;
     }
 
@@ -455,16 +478,16 @@ public class OrgBiz {
      * @创建时间: 2023/5/05 10:00
      */
     @DSTransactional
-    public Boolean deletePersons(Set<String> orgIds,Set<String> accountIds) {
+    public Boolean deletePersons(Set<String> orgIds, Set<String> accountIds) {
         //1、获取该机构下的成员
-        for(String orgId:orgIds){
+        for (String orgId : orgIds) {
             List<AccountGroupResponse> groupResponseList = accountGroupApi.getAccountGroupByOrgId(orgId);
-            if(groupResponseList != null && groupResponseList.size() > 0){
+            if (groupResponseList != null && groupResponseList.size() > 0) {
                 Set<String> ids = new HashSet<>();
-                groupResponseList.forEach(group->{
+                groupResponseList.forEach(group -> {
                     ids.add(group.getId());
                 });
-                accountGroupApi.batchDeleteGroups(ids,accountIds);
+                accountGroupApi.batchDeleteGroups(ids, accountIds);
             }
         }
         return true;
