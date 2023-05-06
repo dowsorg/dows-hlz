@@ -3,7 +3,7 @@ package org.dows.hep.api.tenant.experiment.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.dows.framework.api.uim.AccountInfo;
+import org.dows.account.response.AccountInstanceResponse;
 
 import java.util.Date;
 import java.util.List;
@@ -37,7 +37,7 @@ public class CreateExperimentRequest{
     private Integer model;
 
     @Schema(title = "参与教师")
-    private List<AccountInfo> teachers;
+    private List<AccountInstanceResponse> teachers;
 
     @Schema(title = "实验设置JSON对象")
     private ExperimentSetting experimentSetting;

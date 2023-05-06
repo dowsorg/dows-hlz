@@ -1,12 +1,13 @@
 package org.dows.hep.biz.tenant.experiment;
 
 import cn.hutool.json.JSONUtil;
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dows.framework.api.uim.AccountInfo;
+import org.dows.account.response.AccountInstanceResponse;
 import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.tenant.experiment.request.GroupSettingRequest;
@@ -21,9 +22,7 @@ import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.hep.service.ExperimentSettingService;
 import org.dows.sequence.api.IdGenerator;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +58,7 @@ public class ExperimentManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    @Transactional
+    @DSTransactional
     public String allot(CreateExperimentRequest createExperiment) {
         ExperimentInstanceEntity experimentInstance = ExperimentInstanceEntity.builder()
                 .experimentInstanceId(idGenerator.nextIdStr())
@@ -75,14 +74,13 @@ public class ExperimentManageBiz {
         experimentInstanceService.saveOrUpdate(experimentInstance);
 
         ExperimentSetting experimentSetting = createExperiment.getExperimentSetting();
-        List<AccountInfo> teachers = createExperiment.getTeachers();
+        List<AccountInstanceResponse> teachers = createExperiment.getTeachers();
         List<ExperimentParticipatorEntity> experimentParticipatorEntityList = new ArrayList<>();
-        for (AccountInfo teacher : teachers) {
+        for (AccountInstanceResponse teacher : teachers) {
             ExperimentParticipatorEntity experimentParticipatorEntity = ExperimentParticipatorEntity.builder()
                     .experimentParticipatorId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentInstance.getExperimentInstanceId())
-                    // todo UIM
-                    .accountId(teacher.getId() + "")
+                    .accountId(teacher.getAccountId())
                     .accountName(teacher.getAccountName())
                     .participatorType(0)
                     .build();
