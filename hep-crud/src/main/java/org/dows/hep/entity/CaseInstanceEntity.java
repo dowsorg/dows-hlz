@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 案例实例(CaseInstance)实体类
@@ -51,17 +51,17 @@ public class CaseInstanceEntity implements CrudEntity {
     @Schema(title = "案例类型")
     private String caseType;
 
-    @Schema(title = "创建者账号Id")
-    private String accountId;
-
-    @Schema(title = "创建者姓名")
-    private String accountName;
-
     @Schema(title = "背景描述")
     private String descr;
 
     @Schema(title = "指导描述")
     private String guide;
+
+    @Schema(title = "创建者账号Id")
+    private String accountId;
+
+    @Schema(title = "创建者姓名")
+    private String accountName;
 
     @Schema(title = "案例状态[0:未发布|1:发布]")
     private Integer state;

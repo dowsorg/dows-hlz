@@ -1,23 +1,25 @@
 package org.dows.hep.biz.base.question.handler;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.question.QuestionCloneEnum;
+import org.dows.hep.api.base.question.QuestionAccessAuthEnum;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.QuestionOptionWithAnswerRequest;
 import org.dows.hep.api.base.question.request.QuestionRequest;
+import org.dows.hep.api.base.question.response.QuestionOptionWithAnswerResponse;
+import org.dows.hep.api.base.question.response.QuestionResponse;
+import org.dows.hep.biz.base.question.BaseQuestionDomainBiz;
 import org.dows.hep.entity.QuestionAnswersEntity;
 import org.dows.hep.entity.QuestionInstanceEntity;
 import org.dows.hep.entity.QuestionOptionsEntity;
 import org.dows.hep.service.QuestionAnswersService;
 import org.dows.hep.service.QuestionInstanceService;
 import org.dows.hep.service.QuestionOptionsService;
-import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,7 +32,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SelectQuestionTypeHandler implements QuestionTypeHandler {
 
-    private final IdGenerator idGenerator;
+    private final BaseQuestionDomainBiz baseQuestionDomainBiz;
     private final QuestionInstanceService questionInstanceService;
     private final QuestionOptionsService questionOptionsService;
     private final QuestionAnswersService questionAnswersService;
@@ -45,41 +47,33 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
     @Transactional
     @Override
     public String save(QuestionRequest questionRequest) {
-        // baseInfo
-        String appId = questionRequest.getAppId();
-        String questionInstanceId = idGenerator.nextIdStr();
-        String questionIdentifier = idGenerator.nextIdStr();
-        String ver = String.valueOf(new Date().getTime());
-        QuestionTypeEnum questionTypeEnum = questionRequest.getQuestionType();
-        String questionType = questionTypeEnum.getCode();
+        // base-info
+        questionRequest.setBizCode(questionRequest.getBizCode() == null ? QuestionAccessAuthEnum.PRIVATE_VIEWING : questionRequest.getBizCode());
+        questionRequest.setAppId(questionRequest.getAppId() == null ? baseQuestionDomainBiz.getAppId() : baseQuestionDomainBiz.getAppId());
+        questionRequest.setQuestionInstancePid(baseQuestionDomainBiz.getQuestionInstancePid());
+        questionRequest.setQuestionCategId(baseQuestionDomainBiz.getIdStr());
+        questionRequest.setQuestionIdentifier(baseQuestionDomainBiz.getIdStr());
+        questionRequest.setVer(baseQuestionDomainBiz.getLastVer());
 
-        // save baseInfo
+        // save base-info
         QuestionInstanceEntity questionInstanceEntity = BeanUtil.copyProperties(questionRequest, QuestionInstanceEntity.class);
-        questionInstanceEntity.setQuestionInstanceId(questionInstanceId);
-        questionInstanceEntity.setQuestionType(questionType);
-        questionInstanceEntity.setQuestionIdentifier(questionIdentifier);
-        questionInstanceEntity.setVer(ver);
+        questionInstanceEntity.setQuestionType(questionRequest.getQuestionType().getCode());
         questionInstanceService.save(questionInstanceEntity);
 
         // list options and answers
         List<QuestionOptionWithAnswerRequest> optionWithAnswerList = questionRequest.getOptionWithAnswerList();
         if (optionWithAnswerList == null || optionWithAnswerList.isEmpty()) {
-            return questionInstanceId;
+            return questionInstanceEntity.getQuestionInstanceId();
         }
 
         // save answers
         List<QuestionAnswersEntity> answersEntityList = optionWithAnswerList.stream()
                 .map(item -> {
-                    String questionOptionsId = idGenerator.nextIdStr();
-                    String questionAnswerId = idGenerator.nextIdStr();
-
                     QuestionAnswersEntity questionAnswersEntity = BeanUtil.copyProperties(item, QuestionAnswersEntity.class);
-                    questionAnswersEntity.setAppId(appId);
-                    questionAnswersEntity.setQuestionInstanceId(questionInstanceId);
-                    questionAnswersEntity.setQuestionOptionsId(questionOptionsId);
-                    questionAnswersEntity.setQuestionAnswerId(questionAnswerId);
-                    questionAnswersEntity.setQuestionIdentifier(questionIdentifier);
-                    questionAnswersEntity.setVer(ver);
+                    questionAnswersEntity.setAppId(questionInstanceEntity.getAppId());
+                    questionAnswersEntity.setQuestionInstanceId(questionInstanceEntity.getQuestionInstanceId());
+                    questionAnswersEntity.setQuestionOptionsId(baseQuestionDomainBiz.getIdStr());
+                    questionAnswersEntity.setQuestionAnswerId(baseQuestionDomainBiz.getIdStr());
                     return questionAnswersEntity;
                 }).collect(Collectors.toList());
         questionAnswersService.saveBatch(answersEntityList);
@@ -89,13 +83,14 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
                 .map(item -> BeanUtil.copyProperties(item, QuestionOptionsEntity.class))
                 .collect(Collectors.toList());
         questionOptionsService.saveBatch(optionsEntityList);
-        return questionInstanceId;
+
+        return questionInstanceEntity.getQuestionInstanceId();
     }
 
     @Transactional
     @Override
     public boolean update(QuestionRequest questionRequest) {
-        // update base
+        // update base-info
         QuestionInstanceEntity questionInstanceEntity = BeanUtil.copyProperties(questionRequest, QuestionInstanceEntity.class);
         boolean updInstanceRes = questionInstanceService.updateById(questionInstanceEntity);
 
@@ -116,13 +111,35 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
                 .map(item -> BeanUtil.copyProperties(item, QuestionOptionsEntity.class))
                 .collect(Collectors.toList());
         boolean updOptionsRes = questionOptionsService.saveOrUpdateBatch(optionList);
+
         return updInstanceRes && updOptionsRes && updAnswerRes;
     }
 
     @Override
-    public String clone(QuestionRequest questionRequest, QuestionCloneEnum questionCloneEnum) {
-        return null;
-    }
+    public QuestionResponse get(String questionInstanceId) {
+        // instance
+        LambdaQueryWrapper<QuestionInstanceEntity> instanceWrapper = new LambdaQueryWrapper<QuestionInstanceEntity>()
+                .eq(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceId);
+        QuestionInstanceEntity questionInstance = questionInstanceService.getOne(instanceWrapper);
+        if (BeanUtil.isEmpty(questionInstance)) {
+            return new QuestionResponse();
+        }
+        QuestionResponse result = BeanUtil.copyProperties(questionInstance, QuestionResponse.class);
 
+
+        // options with answers
+        LambdaQueryWrapper<QuestionAnswersEntity> answersWrapper = new LambdaQueryWrapper<QuestionAnswersEntity>()
+                .eq(QuestionAnswersEntity::getQuestionInstanceId, questionInstance);
+        List<QuestionAnswersEntity> answersEntityList = questionAnswersService.list(answersWrapper);
+        if (answersEntityList == null || answersEntityList.isEmpty()) {
+            return result;
+        }
+        List<QuestionOptionWithAnswerResponse> optionWithAnswerResponses = answersEntityList.stream()
+                .map(item -> BeanUtil.copyProperties(item, QuestionOptionWithAnswerResponse.class))
+                .collect(Collectors.toList());
+        result.setOptionWithAnswerList(optionWithAnswerResponses);
+
+        return result;
+    }
 
 }

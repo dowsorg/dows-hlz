@@ -16,4 +16,10 @@ import lombok.NoArgsConstructor;
 public class QuestionSearchRequest{
     @Schema(title = "应用ID")
     private String appId;
+
+    @Schema(title = "关键字")
+    private String keyword;
+
+    @Schema(title = "题型")
+    private String questionType;
 }

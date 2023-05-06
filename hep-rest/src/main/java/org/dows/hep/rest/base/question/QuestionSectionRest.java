@@ -29,31 +29,9 @@ public class QuestionSectionRest {
     * @return
     */
     @Operation(summary = "新增问题集[问卷]")
-    @PostMapping("v1/baseQuestion/questionSection/saveQuestionSection")
-    public String saveQuestionSection(@RequestBody @Validated QuestionSectionRequest questionSection ) {
-        return questionSectionBiz.saveQuestionSection(questionSection);
-    }
-
-    /**
-     * 更新问题集[问卷]
-     * @param
-     * @return
-     */
-    @Operation(summary = "更新问题集[问卷]")
-    @PostMapping("v1/baseQuestion/questionSection/updQuestionSection")
-    public Boolean updQuestionSection(@RequestBody @Validated QuestionSectionRequest questionSection ) {
-        return questionSectionBiz.updQuestionSection(questionSection);
-    }
-
-    /**
-    * 分页问题集[问卷]
-    * @param
-    * @return
-    */
-    @Operation(summary = "分页问题集[问卷]")
-    @PostMapping("v1/baseQuestion/questionSection/pageQuestionSection")
-    public QuestionSectionResponse pageQuestionSection(@RequestBody @Validated QuestionSectionSearchRequest questionSectionSearch ) {
-        return questionSectionBiz.pageQuestionSection(questionSectionSearch);
+    @PostMapping("v1/baseQuestion/questionSection/saveOrUpdQuestionSection")
+    public String saveOrUpdQuestionSection(@RequestBody @Validated QuestionSectionRequest questionSection ) {
+        return questionSectionBiz.saveOrUpdQuestionSection(questionSection);
     }
 
     /**
@@ -63,8 +41,8 @@ public class QuestionSectionRest {
     */
     @Operation(summary = "列出问题集[问卷]-无分页")
     @PostMapping("v1/baseQuestion/questionSection/listQuestionSection")
-    public List<QuestionSectionResponse> listQuestionSection(@RequestBody @Validated QuestionSectionSearchRequest questionSectionSearch ) {
-        return questionSectionBiz.listQuestionSection(questionSectionSearch);
+    public List<QuestionSectionResponse> listQuestionSection(@RequestBody @Validated List<String> ids) {
+        return questionSectionBiz.listQuestionSection(ids);
     }
 
     /**
@@ -76,50 +54,6 @@ public class QuestionSectionRest {
     @GetMapping("v1/baseQuestion/questionSection/getQuestionSection")
     public QuestionSectionResponse getQuestionSection(@Validated String questionSectionId) {
         return questionSectionBiz.getQuestionSection(questionSectionId);
-    }
-
-    /**
-    * 启用问题集[问卷]
-    * @param
-    * @return
-    */
-    @Operation(summary = "启用问题集[问卷]")
-    @GetMapping("v1/baseQuestion/questionSection/enabledQuestionSection")
-    public Boolean enabledQuestionSection(@Validated String questionSectionId) {
-        return questionSectionBiz.enabledQuestionSection(questionSectionId);
-    }
-
-    /**
-    * 禁用问题集[问卷]
-    * @param
-    * @return
-    */
-    @Operation(summary = "禁用问题集[问卷]")
-    @GetMapping("v1/baseQuestion/questionSection/disabledQuestionSection")
-    public Boolean disabledQuestionSection(@Validated String questionSectionId) {
-        return questionSectionBiz.disabledQuestionSection(questionSectionId);
-    }
-
-    /**
-    * 排序问题集[问卷]
-    * @param
-    * @return
-    */
-    @Operation(summary = "排序问题集[问卷]")
-    @GetMapping("v1/baseQuestion/questionSection/sortQuestionSection")
-    public Boolean sortQuestionSection(@Validated String questionSectionId, @Validated Integer sequence) {
-        return questionSectionBiz.sortQuestionSection(questionSectionId,sequence);
-    }
-
-    /**
-    * 交换问题集[问卷]
-    * @param
-    * @return
-    */
-    @Operation(summary = "交换问题集[问卷]")
-    @GetMapping("v1/baseQuestion/questionSection/transposeQuestionSection")
-    public Boolean transposeQuestionSection(@Validated String leftSectionId, @Validated String rightSectionId) {
-        return questionSectionBiz.transposeQuestionSection(leftSectionId,rightSectionId);
     }
 
     /**

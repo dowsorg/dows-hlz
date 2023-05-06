@@ -14,7 +14,7 @@ import org.dows.hep.api.base.materials.request.MaterialsSearchRequest;
 import org.dows.hep.api.base.materials.response.MaterialsAttachmentResponse;
 import org.dows.hep.api.base.materials.response.MaterialsPageResponse;
 import org.dows.hep.api.base.materials.response.MaterialsResponse;
-import org.dows.hep.biz.base.question.BaseBiz;
+import org.dows.hep.biz.base.question.BaseQuestionDomainBiz;
 import org.dows.hep.entity.MaterialsAttachmentEntity;
 import org.dows.hep.entity.MaterialsEntity;
 import org.dows.hep.service.MaterialsAttachmentService;
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class MaterialsManageBiz {
-    private final BaseBiz baseBiz;
+    private final BaseQuestionDomainBiz baseQuestionDomainBiz;
     private final MaterialsService materialsService;
     private final MaterialsAttachmentService materialsAttachmentService;
 
@@ -58,8 +58,8 @@ public class MaterialsManageBiz {
         // materials
         if (StrUtil.isBlank(materialsRequest.getMaterialsId())) {
             materialsRequest.setEnabled(materialsRequest.getEnabled() == null ? EnumStatus.ENABLE.getCode() : materialsRequest.getEnabled());
-            materialsRequest.setAppId(baseBiz.getAppId());
-            materialsRequest.setMaterialsId(baseBiz.getIdStr());
+            materialsRequest.setAppId(baseQuestionDomainBiz.getAppId());
+            materialsRequest.setMaterialsId(baseQuestionDomainBiz.getIdStr());
         }
         MaterialsEntity materialsEntity = BeanUtil.copyProperties(materialsRequest, MaterialsEntity.class);
         materialsService.saveOrUpdate(materialsEntity);
@@ -271,7 +271,7 @@ public class MaterialsManageBiz {
         List<MaterialsAttachmentEntity> attachmentEntities = materialsAttachments.stream()
                 .map(item -> {
                     MaterialsAttachmentEntity materialsAttachmentEntity = BeanUtil.copyProperties(item, MaterialsAttachmentEntity.class);
-                    materialsAttachmentEntity.setMaterialsAttachmentId(baseBiz.getIdStr());
+                    materialsAttachmentEntity.setMaterialsAttachmentId(baseQuestionDomainBiz.getIdStr());
                     materialsAttachmentEntity.setMaterialsId(materialsId);
                     materialsAttachmentEntity.setAppId(appId);
                     return materialsAttachmentEntity;

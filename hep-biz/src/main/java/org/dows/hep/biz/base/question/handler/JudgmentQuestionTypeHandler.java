@@ -2,9 +2,9 @@ package org.dows.hep.biz.base.question.handler;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.question.QuestionCloneEnum;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.QuestionRequest;
+import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.springframework.stereotype.Component;
 
 /**
@@ -33,7 +33,7 @@ public class JudgmentQuestionTypeHandler implements QuestionTypeHandler {
     }
 
     @Override
-    public String clone(QuestionRequest questionRequest, QuestionCloneEnum questionCloneEnum) {
+    public QuestionResponse get(String questionInstanceId) {
         return null;
     }
 

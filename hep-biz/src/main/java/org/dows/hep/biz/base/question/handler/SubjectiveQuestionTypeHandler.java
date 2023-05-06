@@ -2,18 +2,20 @@ package org.dows.hep.biz.base.question.handler;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.question.QuestionCloneEnum;
+import org.dows.hep.api.base.question.QuestionAccessAuthEnum;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.QuestionRequest;
+import org.dows.hep.api.base.question.response.QuestionResponse;
+import org.dows.hep.biz.base.question.BaseQuestionDomainBiz;
 import org.dows.hep.entity.QuestionInstanceEntity;
 import org.dows.hep.service.QuestionInstanceService;
-import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
+import java.util.List;
 
 /**
  * @author fhb
@@ -24,7 +26,7 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
 
-    private final IdGenerator idGenerator;
+    private final BaseQuestionDomainBiz baseQuestionDomainBiz;
     private final QuestionInstanceService questionInstanceService;
 
     @PostConstruct
@@ -36,6 +38,9 @@ public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
     @Transactional
     @Override
     public String save(QuestionRequest questionRequest) {
+        questionRequest.setBizCode(questionRequest.getBizCode() == null ? QuestionAccessAuthEnum.PRIVATE_VIEWING : questionRequest.getBizCode());
+        questionRequest.setAppId(baseQuestionDomainBiz.getAppId());
+        questionRequest.setQuestionInstancePid(baseQuestionDomainBiz.getQuestionInstancePid());
         return traverseSave(questionRequest);
     }
 
@@ -46,16 +51,53 @@ public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
     }
 
     @Override
-    public String clone(QuestionRequest questionRequest, QuestionCloneEnum questionCloneEnum) {
-        return null;
+    public QuestionResponse get(String questionInstanceId) {
+        LambdaQueryWrapper<QuestionInstanceEntity> queryWrapper = new LambdaQueryWrapper<QuestionInstanceEntity>()
+                .eq(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceId);
+        QuestionInstanceEntity questionInstance = questionInstanceService.getOne(queryWrapper);
+        if (BeanUtil.isEmpty(questionInstance)) {
+            return new QuestionResponse();
+        }
+
+        QuestionResponse questionResponse = BeanUtil.copyProperties(questionInstance, QuestionResponse.class);
+        setChildren(questionResponse);
+
+        return questionResponse;
+    }
+
+    private void setChildren(QuestionResponse questionResponse) {
+        // 判空
+        LambdaQueryWrapper<QuestionInstanceEntity> queryWrapper = new LambdaQueryWrapper<QuestionInstanceEntity>()
+                .eq(QuestionInstanceEntity::getQuestionInstancePid, questionResponse.getQuestionInstanceId());
+        List<QuestionInstanceEntity> childrenEntity = questionInstanceService.list(queryWrapper);
+        if (childrenEntity == null || childrenEntity.isEmpty()) {
+            return;
+        }
+
+        // 处理当前节点
+        List<QuestionResponse> childrenResponse = childrenEntity.stream()
+                .map(item -> BeanUtil.copyProperties(item, QuestionResponse.class))
+                .toList();
+        questionResponse.setChildren(childrenResponse);
+
+        // 遍历子节点
+        childrenResponse.forEach(this::setChildren);
     }
 
     private Boolean traverseUpd(QuestionRequest node) {
         if (node == null) {
-            return false;
+            return Boolean.FALSE;
         }
 
+        // 处理当前节点
         boolean updRes = updNode(node);
+
+        // 判空
+        if (node.getChildren() == null || node.getChildren().isEmpty()) {
+            return Boolean.FALSE;
+        }
+
+        // 遍历子节点
         for (QuestionRequest qr : node.getChildren()) {
             if (StrUtil.isBlank(qr.getQuestionInstanceId())) {
                 qr.setAppId(node.getAppId());
@@ -82,31 +124,33 @@ public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
             return "";
         }
 
+        // 处理当前节点
         String questionInstanceId = saveNode(node);
+
+        // 判空
+        if (node.getChildren() == null || node.getChildren().isEmpty()) {
+            return "";
+        }
+
+        // 遍历子节点
         for (QuestionRequest qr : node.getChildren()) {
             qr.setAppId(node.getAppId());
             qr.setQuestionInstancePid(node.getQuestionInstanceId());
             qr.setQuestionType(qr.getQuestionType() == null ? node.getQuestionType() : qr.getQuestionType());
             traverseSave(qr);
         }
+
         return questionInstanceId;
     }
 
     private String saveNode(QuestionRequest qr) {
-        // generate id and ver
-        String curQuestionInstanceId = idGenerator.nextIdStr();
-        String curQuestionIdentifier = idGenerator.nextIdStr();
-        String curVer = String.valueOf(new Date().getTime());
-        QuestionTypeEnum questionTypeEnum = qr.getQuestionType();
-        String questionType = questionTypeEnum.getCode();
-
         // save instance
         QuestionInstanceEntity questionInstanceEntity = BeanUtil.copyProperties(qr, QuestionInstanceEntity.class);
-        questionInstanceEntity.setQuestionInstanceId(curQuestionInstanceId);
-        questionInstanceEntity.setQuestionType(questionType);
-        questionInstanceEntity.setQuestionIdentifier(curQuestionIdentifier);
-        questionInstanceEntity.setVer(curVer);
+        questionInstanceEntity.setQuestionInstanceId(baseQuestionDomainBiz.getIdStr());
+        questionInstanceEntity.setQuestionIdentifier(baseQuestionDomainBiz.getIdStr());
+        questionInstanceEntity.setVer(baseQuestionDomainBiz.getLastVer());
+        questionInstanceEntity.setQuestionType(qr.getQuestionType().getCode());
         questionInstanceService.save(questionInstanceEntity);
-        return curQuestionInstanceId;
+        return questionInstanceEntity.getQuestionInstanceId();
     }
 }

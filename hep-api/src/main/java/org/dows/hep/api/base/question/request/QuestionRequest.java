@@ -20,6 +20,9 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(name = "Question 对象", title = "问题Request")
 public class QuestionRequest {
+    @Schema(title = "应用ID")
+    private String appId;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库ID")
     private Long id;
@@ -69,10 +72,6 @@ public class QuestionRequest {
 
 
     // JsonIgnore
-    @Schema(title = "应用ID")
-    @JsonIgnore
-    private String appId;
-
     @Schema(title = "问题PID")
     @JsonIgnore
     private String questionInstancePid;

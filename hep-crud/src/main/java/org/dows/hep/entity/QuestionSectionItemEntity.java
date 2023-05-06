@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 问题集[试卷]-题目(QuestionSectionItem)实体类
@@ -45,23 +45,14 @@ public class QuestionSectionItemEntity implements CrudEntity {
     @Schema(title = "问题集ID")
     private String questionSectionId;
 
-    @Schema(title = "问题集名称")
-    private String questionSectionName;
-
     @Schema(title = "问题ID")
     private String questionInstanceId;
 
-    @Schema(title = "问题标题")
-    private String questionTitle;
-
-    @Schema(title = "问题描述")
-    private String questionDescr;
-
     @Schema(title = "状态")
-    private Boolean enabled;
+    private Integer enabled;
 
     @Schema(title = "是否必填")
-    private Boolean required;
+    private Integer required;
 
     @Schema(title = "排序")
     private Integer sequence;
@@ -74,12 +65,6 @@ public class QuestionSectionItemEntity implements CrudEntity {
 
     @Schema(title = "权限[000001]")
     private String permissions;
-
-    @Schema(title = "问题集标识")
-    private String questionSectionIdentifier;
-
-    @Schema(title = "版本号")
-    private String ver;
 
     @JsonIgnore
     @TableLogic

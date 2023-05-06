@@ -2,9 +2,9 @@ package org.dows.hep.biz.base.question;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.question.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.*;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
 import org.dows.hep.entity.QuestionSectionEntity;
@@ -12,13 +12,9 @@ import org.dows.hep.entity.QuestionSectionItemEntity;
 import org.dows.hep.service.QuestionSectionItemService;
 import org.dows.hep.service.QuestionSectionService;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author lait.zhang
@@ -30,7 +26,7 @@ import java.util.stream.Collectors;
 @Service
 public class QuestionSectionBiz {
 
-    private final BaseBiz baseBiz;
+    private final BaseQuestionDomainBiz baseBiz;
     private final QuestionSectionService questionSectionService;
     private final QuestionSectionItemBiz questionSectionItemBiz;
     private final QuestionSectionItemService questionSectionItemService;
@@ -47,37 +43,59 @@ public class QuestionSectionBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public String saveQuestionSection(QuestionSectionRequest questionSection) {
-        return save(questionSection);
+    public String saveOrUpdQuestionSection(QuestionSectionRequest questionSection) {
+        if (questionSection == null) {
+            return "";
+        }
+
+        // save base-info
+        if (StrUtil.isBlank(questionSection.getQuestionSectionId())) {
+            questionSection.setAppId(baseBiz.getAppId());
+            questionSection.setQuestionSectionId(baseBiz.getIdStr());
+            questionSection.setQuestionSectionIdentifier(baseBiz.getIdStr());
+            questionSection.setVer(baseBiz.getLastVer());
+            questionSection.setSequence(baseBiz.getSequence());
+        }
+        QuestionSectionEntity questionSectionEntity = BeanUtil.copyProperties(questionSection, QuestionSectionEntity.class);
+        questionSectionService.save(questionSectionEntity);
+
+        // save section dimension
+        List<QuestionSectionDimensionRequest> questionSectionDimensionList = questionSection.getQuestionSectionDimensionList();
+        if (questionSectionDimensionList != null && !questionSectionDimensionList.isEmpty()) {
+            questionSectionDimensionList.forEach(item -> {
+                item.setQuestionSectionId(questionSectionEntity.getQuestionSectionId());
+                item.setAppId(questionSectionEntity.getAppId());
+                item.setAccountId(questionSectionEntity.getAccountId());
+                item.setAccountName(questionSectionEntity.getAccountName());
+            });
+            questionSectionDimensionBiz.batchSaveOrUpdQSDimension(questionSectionDimensionList);
+        }
+
+        // save section item
+        String struct = "";
+        int questionCount = 0;
+        List<QuestionSectionItemRequest> sectionItemList = questionSection.getSectionItemList();
+        if (sectionItemList != null && !sectionItemList.isEmpty()) {
+            sectionItemList.forEach(item -> {
+                item.setQuestionSectionId(questionSectionEntity.getQuestionSectionId());
+                item.setAppId(questionSectionEntity.getAppId());
+                item.setAccountId(questionSectionEntity.getAccountId());
+                item.setAccountName(questionSectionEntity.getAccountName());
+            });
+            questionCount = sectionItemList.size();
+            struct = questionSectionItemBiz.batchSaveOrUpdByMode(sectionItemList, questionSection.getGenerationMode());
+        }
+
+        // update struct and questionCount
+        LambdaUpdateWrapper<QuestionSectionEntity> updateWrapper = new LambdaUpdateWrapper<QuestionSectionEntity>()
+                .eq(QuestionSectionEntity::getQuestionSectionId, questionSectionEntity.getQuestionSectionId())
+                .set(QuestionSectionEntity::getQuestionSectionStructure, struct)
+                .set(QuestionSectionEntity::getQuestionCount, questionCount);
+        questionSectionService.update(updateWrapper);
+
+        return questionSectionEntity.getQuestionSectionId();
     }
 
-    /**
-     * @param
-     * @return
-     * @说明: 新增和更新问题集[问卷]
-     * @关联表: QuestionSection, QuestionSectionItem, QuestionSectionDimension
-     * @工时: 8H
-     * @开发者: fhb
-     * @开始时间:
-     * @创建时间: 2023年4月23日 上午9:44:34
-     */
-    public boolean updQuestionSection(QuestionSectionRequest questionSection) {
-        return update(questionSection);
-    }
-
-    /**
-     * @param
-     * @return
-     * @说明: 分页问题集[问卷]
-     * @关联表: QuestionSection, QuestionSectionItem, QuestionSectionDimension
-     * @工时: 5H
-     * @开发者: fhb
-     * @开始时间:
-     * @创建时间: 2023年4月23日 上午9:44:34
-     */
-    public QuestionSectionResponse pageQuestionSection(QuestionSectionSearchRequest questionSectionSearch ) {
-        return new QuestionSectionResponse();
-    }
     /**
     * @param
     * @return
@@ -88,9 +106,23 @@ public class QuestionSectionBiz {
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public List<QuestionSectionResponse> listQuestionSection(QuestionSectionSearchRequest questionSectionSearch ) {
-        return new ArrayList<QuestionSectionResponse>();
+    public List<QuestionSectionResponse> listQuestionSection(List<String> sectionIds) {
+        if (sectionIds == null || sectionIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        LambdaQueryWrapper<QuestionSectionEntity> queryWrapper = new LambdaQueryWrapper<QuestionSectionEntity>()
+                .in(QuestionSectionEntity::getQuestionSectionId, sectionIds);
+        List<QuestionSectionEntity> list = questionSectionService.list(queryWrapper);
+        if (list == null || list.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return list.stream()
+                .map(item -> BeanUtil.copyProperties(item, QuestionSectionResponse.class))
+                .toList();
     }
+
     /**
     * @param
     * @return
@@ -102,60 +134,17 @@ public class QuestionSectionBiz {
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public QuestionSectionResponse getQuestionSection(String questionSectionId ) {
-        return new QuestionSectionResponse();
+        if (StrUtil.isBlank(questionSectionId)) {
+            return new QuestionSectionResponse();
+        }
+
+        LambdaQueryWrapper<QuestionSectionEntity> queryWrapper = new LambdaQueryWrapper<QuestionSectionEntity>()
+                .eq(QuestionSectionEntity::getQuestionSectionId, questionSectionId);
+        QuestionSectionEntity entity = questionSectionService.getOne(queryWrapper);
+
+        return BeanUtil.copyProperties(entity, QuestionSectionResponse.class);
     }
-    /**
-    * @param
-    * @return
-    * @说明: 启用问题集[问卷]
-    * @关联表: QuestionSection
-    * @工时: 3H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public Boolean enabledQuestionSection(String questionSectionId ) {
-        return Boolean.FALSE;
-    }
-    /**
-    * @param
-    * @return
-    * @说明: 禁用问题集[问卷]
-    * @关联表: QuestionSection
-    * @工时: 3H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public Boolean disabledQuestionSection(String questionSectionId ) {
-        return Boolean.FALSE;
-    }
-    /**
-    * @param
-    * @return
-    * @说明: 排序问题集[问卷]
-    * @关联表: 
-    * @工时: 3H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public Boolean sortQuestionSection(String questionSectionId, Integer sequence ) {
-        return Boolean.FALSE;
-    }
-    /**
-    * @param
-    * @return
-    * @说明: 交换问题集[问卷]
-    * @关联表: QuestionSection
-    * @工时: 3H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public Boolean transposeQuestionSection(String leftSectionId, String rightSectionId ) {
-        return Boolean.FALSE;
-    }
+
     /**
     * @param
     * @return
@@ -167,9 +156,15 @@ public class QuestionSectionBiz {
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean delQuestionSection(List<String> questionSectionIds ) {
+        if (questionSectionIds == null || questionSectionIds.isEmpty()) {
+            return Boolean.FALSE;
+        }
 
-        return Boolean.FALSE;
+        LambdaQueryWrapper<QuestionSectionEntity> remWrapper = new LambdaQueryWrapper<QuestionSectionEntity>()
+                .in(QuestionSectionEntity::getQuestionSectionId, questionSectionIds);
+        return questionSectionService.remove(remWrapper);
     }
+
     /**
     * @param
     * @return
@@ -183,6 +178,7 @@ public class QuestionSectionBiz {
     public String copyQuestionSection(String oriQuestionSectionId ) {
         return new String();
     }
+
     /**
     * @param
     * @return
@@ -298,90 +294,5 @@ public class QuestionSectionBiz {
 
         questionSectionItemBiz.delBatch(questionSectionId, questionSectionItemIds);
         return Boolean.FALSE;
-    }
-
-    @Transactional
-    private String save(QuestionSectionRequest questionSection) {
-        if (questionSection == null) {
-            return "";
-        }
-
-        // base info
-        questionSection.setAppId(baseBiz.getAppId());
-        questionSection.setQuestionSectionId(baseBiz.getIdStr());
-        questionSection.setQuestionSectionIdentifier(baseBiz.getIdStr());
-        questionSection.setVer(baseBiz.getVer());
-        questionSection.setSequence(baseBiz.getSequence());
-
-        // save section item
-        List<QuestionSectionItemRequest> sectionItemList = questionSection.getSectionItemList();
-        questionSectionItemBiz.saveBatch(questionSection, sectionItemList);
-
-        // generate question section structure
-        String struct = generateStruct(sectionItemList);
-
-        // save section dimension
-        List<QuestionSectionDimensionRequest> questionSectionDimensionList = questionSection.getQuestionSectionDimensionList();
-        questionSectionDimensionBiz.saveBatch(questionSection, questionSectionDimensionList);
-
-        // save base info
-        QuestionSectionEntity questionSectionEntity = BeanUtil.copyProperties(questionSection, QuestionSectionEntity.class);
-        questionSectionEntity.setQuestionCount(sectionItemList.size());
-        questionSectionEntity.setQuestionSectionStructure(struct);
-        questionSectionService.save(questionSectionEntity);
-
-        return questionSection.getQuestionSectionId();
-    }
-
-    @Transactional
-    private boolean update(QuestionSectionRequest questionSection) {
-        if (questionSection == null) {
-            return Boolean.FALSE;
-        }
-
-        // update section item
-        List<QuestionSectionItemRequest> sectionItemList = questionSection.getSectionItemList();
-        questionSectionItemBiz.updateBatch(questionSection, sectionItemList);
-
-        // generate question section structure
-        String struct = generateStruct(sectionItemList);
-
-        // update section dimension
-        List<QuestionSectionDimensionRequest> questionSectionDimensionList = questionSection.getQuestionSectionDimensionList();
-        questionSectionDimensionBiz.updateBatch(questionSection, questionSectionDimensionList);
-
-        // update base info
-        QuestionSectionEntity questionSectionEntity = BeanUtil.copyProperties(questionSection, QuestionSectionEntity.class);
-        questionSectionEntity.setQuestionCount(sectionItemList.size());
-        questionSectionEntity.setQuestionSectionStructure(struct);
-        questionSectionService.updateById(questionSectionEntity);
-
-        return Boolean.TRUE;
-    }
-
-    private String generateStruct(List<QuestionSectionItemRequest> sectionItemList) {
-        if (sectionItemList == null || sectionItemList.isEmpty()) {
-            return "";
-        }
-
-        Map<QuestionTypeEnum, Long> collect = sectionItemList.stream()
-                .map(QuestionSectionItemRequest::getQuestionRequest)
-                .collect(Collectors.groupingBy(QuestionRequest::getQuestionType, Collectors.counting()));
-        if (collect.isEmpty()) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        Arrays.stream(QuestionTypeEnum.values()).forEach(item -> {
-            String name = item.getName();
-            Long count = collect.get(item);
-            if (count != null && count != 0) {
-                sb.append(count)
-                        .append(name)
-                        .append("/");
-            }
-        });
-        // TODO remove the last 斜杠
-        return sb.toString();
     }
 }
