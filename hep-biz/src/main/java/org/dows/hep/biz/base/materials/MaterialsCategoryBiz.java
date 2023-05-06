@@ -133,6 +133,7 @@ public class MaterialsCategoryBiz {
         List<MaterialsCategoryEntity> categoryEntities = materialsCategoryService.lambdaQuery()
                 .eq(MaterialsCategoryEntity::getMaterialsCategNamePath, materials.getCategoryName() + "/")
                 .eq(MaterialsCategoryEntity::getAppId, materials.getAppId())
+                .eq(MaterialsCategoryEntity::getDeleted,false)
                 .list();
         categoryEntities = categoryEntities.stream().sorted(Comparator.comparing(MaterialsCategoryEntity::getSequence)).collect(Collectors.toList());
         return categoryEntities;
