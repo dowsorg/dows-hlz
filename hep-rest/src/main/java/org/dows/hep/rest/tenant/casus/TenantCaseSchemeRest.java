@@ -32,7 +32,7 @@ public class TenantCaseSchemeRest {
      * @param
      * @return
      */
-    @Operation(summary = "新增方案设计")
+    @Operation(summary = "新增和更新")
     @PostMapping("v1/tenantCasus/caseScheme/saveOrUpdCaseScheme")
     public String saveOrUpdCaseScheme(@RequestBody @Validated CaseSchemeRequest caseScheme) {
         return tenantCaseSchemeBiz.saveOrUpdCaseScheme(caseScheme);
