@@ -1,5 +1,7 @@
 package org.dows.hep.api.tenant.casus.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -15,10 +17,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "CaseNotice 对象", title = "案例公告")
 public class CaseNoticeRequest {
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @Schema(title = "数据库ID")
+    private Long id;
+
     @Schema(title = "案例ID")
     private String caseInstanceId;
 
-    @Schema(title = "案例公告ID")
+    @Schema(title = "案例通知ID")
     private String caseNoticeId;
 
     @NotNull(message = "公告名称[noticeName]不能为空")
@@ -34,5 +40,18 @@ public class CaseNoticeRequest {
     @Schema(title = "期数排序")
     private Integer periodSequence;
 
+
+    // JsonIgnore
+    @Schema(title = "应用ID")
+    @JsonIgnore
+    private String appId;
+
+    @Schema(title = "案例标示")
+    @JsonIgnore
+    private String caseIdentifier;
+
+    @Schema(title = "版本号")
+    @JsonIgnore
+    private String ver;
 
 }

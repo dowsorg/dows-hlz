@@ -1,4 +1,4 @@
-package org.dows.hep.biz.exception;
+package org.dows.hep.api.exception;
 
 import org.dows.framework.api.StatusCode;
 import org.dows.framework.api.exceptions.BaseException;

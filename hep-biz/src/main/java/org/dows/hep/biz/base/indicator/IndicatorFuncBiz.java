@@ -1,8 +1,5 @@
 package org.dows.hep.biz.base.indicator;
 
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorFuncRequest;
@@ -11,7 +8,7 @@ import org.dows.hep.api.base.indicator.response.IndicatorFuncResponse;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.enums.EnumRedissonLock;
 import org.dows.hep.api.enums.EnumString;
-import org.dows.hep.biz.exception.IndicatorFuncException;
+import org.dows.hep.api.exception.IndicatorFuncException;
 import org.dows.hep.biz.util.RedissonUtil;
 import org.dows.hep.entity.IndicatorCategoryEntity;
 import org.dows.hep.entity.IndicatorFuncEntity;

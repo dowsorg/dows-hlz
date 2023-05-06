@@ -11,7 +11,6 @@ import org.dows.hep.api.tenant.casus.request.CaseInstancePageRequest;
 import org.dows.hep.api.tenant.casus.request.CaseInstanceRequest;
 import org.dows.hep.api.tenant.casus.response.CaseInstancePageResponse;
 import org.dows.hep.api.tenant.casus.response.CaseInstanceResponse;
-import org.dows.hep.biz.base.question.BaseQuestionDomainBiz;
 import org.dows.hep.entity.CaseInstanceEntity;
 import org.dows.hep.service.CaseInstanceService;
 import org.springframework.stereotype.Service;
@@ -27,7 +26,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class TenantCaseManageBiz {
-    private final BaseQuestionDomainBiz baseQuestionDomainBiz;
+    private final BaseTenantCaseBiz baseBiz;
     private final CaseInstanceService caseInstanceService;
 
     /**
@@ -46,10 +45,10 @@ public class TenantCaseManageBiz {
         }
 
         if (StrUtil.isBlank(caseInstanceRequest.getCaseInstanceId())) {
-            caseInstanceRequest.setAccountId(baseQuestionDomainBiz.getAppId());
-            caseInstanceRequest.setCaseInstanceId(baseQuestionDomainBiz.getIdStr());
-            caseInstanceRequest.setCaseIdentifier(baseQuestionDomainBiz.getIdStr());
-            caseInstanceRequest.setVer(baseQuestionDomainBiz.getLastVer());
+            caseInstanceRequest.setAccountId(baseBiz.getAppId());
+            caseInstanceRequest.setCaseInstanceId(baseBiz.getIdStr());
+            caseInstanceRequest.setCaseIdentifier(baseBiz.getIdStr());
+            caseInstanceRequest.setVer(baseBiz.getLastVer());
         }
         CaseInstanceEntity caseInstanceEntity = BeanUtil.copyProperties(caseInstanceRequest, CaseInstanceEntity.class);
         caseInstanceService.saveOrUpdate(caseInstanceEntity);
@@ -69,6 +68,7 @@ public class TenantCaseManageBiz {
     public String copyCaseInstance(String oriCaseInstanceId ) {
         return new String();
     }
+
     /**
     * @param
     * @return

@@ -23,7 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @Tag(name = "案例管理", description = "案例管理")
-public class CaseManageRest {
+public class TenantCaseManageRest {
     private final TenantCaseManageBiz tenantCaseManageBiz;
 
     /**

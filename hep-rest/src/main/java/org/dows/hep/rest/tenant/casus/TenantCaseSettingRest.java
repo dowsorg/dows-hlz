@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RestController
 @Tag(name = "案例问卷设置", description = "案例问卷设置")
-public class CaseSettingRest {
+public class TenantCaseSettingRest {
     private final TenantCaseSettingBiz tenantCaseSettingBiz;
 
     /**

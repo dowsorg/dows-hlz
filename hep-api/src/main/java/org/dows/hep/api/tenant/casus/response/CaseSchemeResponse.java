@@ -35,6 +35,9 @@ public class CaseSchemeResponse{
     @Schema(title = "类别ID")
     private String caseCategId;
 
+    @Schema(title = "类别名")
+    private String caseCategName;
+
     @Schema(title = "状态[0-启用|1-关闭]")
     private Integer enabled;
 
@@ -52,6 +55,12 @@ public class CaseSchemeResponse{
 
     @Schema(title = "维度集合")
     private List<QuestionSectionDimensionResponse> questionSectionDimensionList;
+
+    @Schema(title = "来源[admin|tenant]")
+    private String source;
+
+    @Schema(title = "创建者账号ID")
+    private String accountId;
 
     @Schema(title = "创建者Name")
     private String accountName;
