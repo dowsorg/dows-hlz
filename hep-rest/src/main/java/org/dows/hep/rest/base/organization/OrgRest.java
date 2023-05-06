@@ -8,6 +8,8 @@ import org.dows.account.request.AccountGroupRequest;
 import org.dows.account.request.AccountOrgRequest;
 import org.dows.account.response.AccountGroupResponse;
 import org.dows.account.response.AccountOrgResponse;
+import org.dows.hep.api.user.organization.request.CaseOrgRequest;
+import org.dows.hep.api.user.organization.response.CaseOrgResponse;
 import org.dows.hep.biz.base.org.OrgBiz;
 import org.springframework.web.bind.annotation.*;
 
@@ -66,6 +68,17 @@ public class OrgRest {
     @DeleteMapping("v1/baseOrg/org/deleteClasss")
     public Boolean deleteClasss(@RequestParam Set<String> ids){
         return orgBiz.deleteClasss(ids);
+    }
+
+    /**
+     * 获取案例机构 分页
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取案例机构 分页")
+    @PostMapping("v1/baseOrg/org/listOrgnization")
+    public IPage<CaseOrgResponse> listOrgnization(@RequestBody CaseOrgRequest request){
+        return orgBiz.listOrgnization(request);
     }
 
     /**

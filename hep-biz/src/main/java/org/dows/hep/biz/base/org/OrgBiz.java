@@ -2,16 +2,20 @@ package org.dows.hep.biz.base.org;
 
 import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.api.*;
 import org.dows.account.request.*;
 import org.dows.account.response.*;
 import org.dows.hep.api.enums.EnumCaseFee;
 import org.dows.hep.api.exception.CaseFeeException;
+import org.dows.hep.api.user.organization.request.CaseOrgRequest;
+import org.dows.hep.api.user.organization.response.CaseOrgResponse;
 import org.dows.hep.entity.CaseOrgEntity;
 import org.dows.hep.entity.CaseOrgFeeEntity;
 import org.dows.hep.entity.CasePersonEntity;
@@ -635,6 +639,39 @@ public class OrgBiz {
                 .sourceAccountId(accountId)
                 .build();
         return casePersonService.save(person);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 获取案例机构 分页
+     * @关联表: case_org
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/5/06 10:00
+     */
+    public IPage<CaseOrgResponse> listOrgnization(CaseOrgRequest request) {
+        LambdaQueryWrapper<CaseOrgEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(StringUtils.isNotEmpty(request.getOrgId()), CaseOrgEntity::getOrgId, request.getOrgId())
+                .like(StringUtils.isNotEmpty(request.getOrgName()), CaseOrgEntity::getOrgName, request.getOrgName())
+                .orderByDesc(CaseOrgEntity::getDt);
+        Page<CaseOrgEntity> page = new Page<>(request.getPageNo(), request.getPageSize());
+        IPage<CaseOrgEntity> orgList = caseOrgService.page(page, queryWrapper);
+        //复制属性
+        IPage<CaseOrgResponse> pageVo = new Page<>();
+        BeanUtils.copyProperties(orgList, pageVo, new String[]{"records"});
+        List<CaseOrgResponse> voList = new ArrayList<>();
+        if (orgList.getRecords() != null && orgList.getRecords().size() > 0) {
+            orgList.getRecords().forEach(model -> {
+                CaseOrgResponse vo = new CaseOrgResponse();
+                BeanUtils.copyProperties(model, vo);
+                vo.setId(model.getId().toString());
+                voList.add(vo);
+            });
+        }
+        pageVo.setRecords(voList);
+        return pageVo;
     }
 
     /**
