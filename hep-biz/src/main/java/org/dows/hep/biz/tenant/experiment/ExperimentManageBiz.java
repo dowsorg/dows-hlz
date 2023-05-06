@@ -163,6 +163,7 @@ public class ExperimentManageBiz {
         List<GroupSettingRequest.ExperimentParticipator> experimentParticipators = groupSetting.getExperimentParticipators();
         for (GroupSettingRequest.ExperimentParticipator experimentParticipator : experimentParticipators) {
             ExperimentParticipatorEntity experimentParticipatorEntity = ExperimentParticipatorEntity.builder()
+                    .id(Long.valueOf(experimentParticipator.getId()))
                     .experimentParticipatorId(idGenerator.nextIdStr())
                     .experimentInstanceId(groupSetting.getExperimentInstanceId())
                     .accountId(experimentParticipator.getParticipatorId())
