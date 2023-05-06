@@ -42,5 +42,6 @@ public class CreateExperimentRequest{
     @Schema(title = "实验设置JSON对象")
     private ExperimentSetting experimentSetting;
 
-
+    @Schema(title = "应用ID")
+    private String appId;
 }
