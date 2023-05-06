@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 实验组员（参与者）(ExperimentParticipator)实体类
@@ -58,7 +58,7 @@ public class ExperimentParticipatorEntity implements CrudEntity {
     private String groupName;
 
     @Schema(title = "组序号")
-    private Integer groupNo;
+    private String groupNo;
 
     @Schema(title = "参与者序号")
     private Integer participatorNo;

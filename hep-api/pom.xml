@@ -31,6 +31,12 @@
             <artifactId>doc-processor</artifactId>
             <version>20230331-SNAPSHOT</version>
         </dependency>
+        <!--uim包-->
+        <dependency>
+            <groupId>org.dows.cloud</groupId>
+            <artifactId>account-biz</artifactId>
+            <version>20230418-SNAPSHOT</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
