@@ -27,25 +27,15 @@ public class TenantCaseSchemeRest {
     private final TenantCaseSchemeBiz tenantCaseSchemeBiz;
 
     /**
-    * 新增方案设计
-    * @param
-    * @return
-    */
-    @Operation(summary = "新增方案设计")
-    @PostMapping("v1/tenantCasus/caseScheme/saveCaseScheme")
-    public String saveCaseScheme(@RequestBody @Validated CaseSchemeRequest caseScheme ) {
-        return tenantCaseSchemeBiz.saveCaseScheme(caseScheme);
-    }
-
-    /**
-     * 更新方案设计
+     * 新增方案设计
+     *
      * @param
      * @return
      */
-    @Operation(summary = "更新方案设计")
-    @PostMapping("v1/tenantCasus/caseScheme/updCaseScheme")
-    public Boolean updCaseScheme(@RequestBody @Validated CaseSchemeRequest caseScheme ) {
-        return tenantCaseSchemeBiz.updCaseScheme(caseScheme);
+    @Operation(summary = "新增方案设计")
+    @PostMapping("v1/tenantCasus/caseScheme/saveOrUpdCaseScheme")
+    public String saveOrUpdCaseScheme(@RequestBody @Validated CaseSchemeRequest caseScheme) {
+        return tenantCaseSchemeBiz.saveOrUpdCaseScheme(caseScheme);
     }
 
     /**
