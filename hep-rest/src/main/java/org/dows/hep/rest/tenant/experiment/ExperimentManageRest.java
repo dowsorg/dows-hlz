@@ -1,16 +1,17 @@
 package org.dows.hep.rest.tenant.experiment;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
 import org.dows.hep.api.tenant.experiment.request.GroupSettingRequest;
-import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -66,11 +67,9 @@ public class ExperimentManageRest {
      * @return
      */
     @Operation(summary = "获取实验列表")
-    @GetMapping("v1/tenantExperiment/experimentManage/page")
-    public List<ExperimentListResponse> page(@RequestParam("list") List<String> list) {
-        //IPage<ExperimentListResponse> page = experimentManageBiz.page(pageExperimentRequest);
-        System.out.println(list);
-        return null;
+    @GetMapping("v1/tenantExperiment/experimentManage/list")
+    public List<ExperimentListResponse> page() {
+        return experimentManageBiz.list();
     }
 
 }

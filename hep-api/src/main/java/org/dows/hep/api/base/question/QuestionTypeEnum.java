@@ -3,6 +3,8 @@ package org.dows.hep.api.base.question;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Arrays;
+
 @AllArgsConstructor
 @Getter
 public enum QuestionTypeEnum {
@@ -29,5 +31,13 @@ public enum QuestionTypeEnum {
             return true;
         }
         return false;
+    }
+
+    public static QuestionTypeEnum getByCode(String code) {
+        QuestionTypeEnum[] values = values();
+        return Arrays.stream(values)
+                .filter(item -> item.getCode().equals(code))
+                .findFirst()
+                .orElse(null);
     }
 }

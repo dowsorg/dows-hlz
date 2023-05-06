@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorInstanceRequest;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorInstanceRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorInstanceResponse;
+import org.dows.hep.api.base.indicator.response.IndicatorInstanceResponseRs;
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.IndicatorInstanceException;
 import org.dows.hep.biz.util.RedissonUtil;
@@ -50,6 +51,26 @@ public class IndicatorInstanceBiz{
     private final IndicatorCategoryRefService indicatorCategoryRefService;
     private final IndicatorRuleService indicatorRuleService;
     private final IndicatorCategoryService indicatorCategoryService;
+
+    public static IndicatorInstanceResponseRs indicatorInstance2ResponseRs(IndicatorInstanceEntity indicatorInstanceEntity) {
+        if (Objects.isNull(indicatorInstanceEntity)) {
+            return null;
+        }
+        return IndicatorInstanceResponseRs
+            .builder()
+            .id(indicatorInstanceEntity.getId())
+            .indicatorInstanceId(indicatorInstanceEntity.getIndicatorInstanceId())
+            .appId(indicatorInstanceEntity.getAppId())
+            .indicatorCategoryId(indicatorInstanceEntity.getIndicatorCategoryId())
+            .indicatorName(indicatorInstanceEntity.getIndicatorName())
+            .unit(indicatorInstanceEntity.getUnit())
+            .core(indicatorInstanceEntity.getCore())
+            .food(indicatorInstanceEntity.getFood())
+            .expression(indicatorInstanceEntity.getExpression())
+            .rawExpression(indicatorInstanceEntity.getRawExpression())
+            .descr(indicatorInstanceEntity.getDescr())
+            .build();
+    }
     /**
     * @param
     * @return

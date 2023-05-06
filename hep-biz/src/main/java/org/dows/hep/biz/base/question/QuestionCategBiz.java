@@ -4,12 +4,10 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
-import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.request.QuestionCategoryRequest;
 import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
 import org.dows.hep.entity.QuestionCategoryEntity;
 import org.dows.hep.service.QuestionCategoryService;
-import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +26,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class QuestionCategBiz {
 
-    private final IdGenerator idGenerator;
+    private final BaseQuestionDomainBiz baseQuestionDomainBiz;
     private final QuestionCategoryService questionCategoryService;
     public static final String CATEG_PATH_DELIMITER = "|";
 
@@ -42,50 +40,14 @@ public class QuestionCategBiz {
         beforeSaveOrUpd(questionCategory);
 
         // handle
-        QuestionCategoryEntity questionCategoryEntity;
-        String questionCategId = questionCategory.getQuestionCategId();
-        if (StrUtil.isBlank(questionCategId)) {
-            questionCategoryEntity = saveCategory(questionCategory);
-        } else {
-            questionCategoryEntity = updCategory(questionCategory);
-        }
+        QuestionCategoryEntity questionCategoryEntity = BeanUtil.copyProperties(questionCategory, QuestionCategoryEntity.class);
+        questionCategoryService.saveOrUpdate(questionCategoryEntity);
 
         // after handle
         buildCategPath(questionCategoryEntity);
         questionCategoryService.updateById(questionCategoryEntity);
-        return questionCategId;
-    }
 
-    private void beforeSaveOrUpd(QuestionCategoryRequest questionCategory) {
-        String questionCategGroup = questionCategory.getQuestionCategGroup();
-        if (StrUtil.isBlank(questionCategGroup)) {
-            throw new BizException("问题域类别管理分组不能为空");
-        }
-
-        String questionCategPid = questionCategory.getQuestionCategPid();
-        if (questionCategPid == null) {
-            questionCategory.setQuestionCategPid("0");
-        }
-
-        LambdaQueryWrapper<QuestionCategoryEntity> queryWrapper = new LambdaQueryWrapper<QuestionCategoryEntity>()
-                .eq(QuestionCategoryEntity::getQuestionCategGroup, questionCategGroup)
-                .orderByDesc(QuestionCategoryEntity::getSequence);
-        QuestionCategoryEntity lastOne = questionCategoryService.getOne(queryWrapper);
-        Integer lastSequence = lastOne.getSequence();
-        questionCategory.setSequence(lastSequence);
-    }
-
-    private QuestionCategoryEntity saveCategory(QuestionCategoryRequest questionCategory) {
-        QuestionCategoryEntity questionCategoryEntity = BeanUtil.copyProperties(questionCategory, QuestionCategoryEntity.class);
-        questionCategoryEntity.setQuestionCategId(idGenerator.nextIdStr());
-        questionCategoryService.save(questionCategoryEntity);
-        return questionCategoryEntity;
-    }
-
-    private QuestionCategoryEntity updCategory(QuestionCategoryRequest questionCategory) {
-        QuestionCategoryEntity questionCategoryEntity = BeanUtil.copyProperties(questionCategory, QuestionCategoryEntity.class);
-        questionCategoryService.updateById(questionCategoryEntity);
-        return questionCategoryEntity;
+        return questionCategoryEntity.getQuestionCategId();
     }
 
     public List<QuestionCategoryResponse> getChildrenByPid(String pid, String categoryGroup) {
@@ -111,19 +73,22 @@ public class QuestionCategBiz {
     }
 
     @Transactional
-    public Boolean delById(String id) {
-        if (Objects.isNull(id)) {
+    public Boolean delByIds(List<String> ids) {
+        if (Objects.isNull(ids)) {
             return false;
         }
 
         // del self
-        questionCategoryService.removeById(id);
+        LambdaQueryWrapper<QuestionCategoryEntity> queryWrapper1 = new LambdaQueryWrapper<QuestionCategoryEntity>()
+                .in(QuestionCategoryEntity::getQuestionCategId, ids);
+        boolean remRes1 = questionCategoryService.remove(queryWrapper1);
 
         // del children
-        LambdaQueryWrapper<QuestionCategoryEntity> remWrapper = new LambdaQueryWrapper<>();
-        remWrapper.eq(QuestionCategoryEntity::getQuestionCategPid, id);
-        questionCategoryService.remove(remWrapper);
-        return true;
+        LambdaQueryWrapper<QuestionCategoryEntity> remWrapper = new LambdaQueryWrapper<QuestionCategoryEntity>()
+                .in(QuestionCategoryEntity::getQuestionCategPid, ids);
+        boolean remRes2 = questionCategoryService.remove(remWrapper);
+
+        return remRes1 && remRes2;
     }
 
     private void buildCategPath(QuestionCategoryEntity entity) {
@@ -178,5 +143,17 @@ public class QuestionCategBiz {
 
         String questionCategPid = questionCategoryEntity.getQuestionCategPid();
         return questionCategoryService.getById(questionCategPid);
+    }
+
+    private void beforeSaveOrUpd(QuestionCategoryRequest questionCategory) {
+        String questionCategId = questionCategory.getQuestionCategId();
+        if (StrUtil.isBlank(questionCategId)) {
+            questionCategory.setQuestionCategId(baseQuestionDomainBiz.getIdStr());
+        }
+        String questionCategPid = questionCategory.getQuestionCategPid();
+        if (StrUtil.isBlank(questionCategPid)) {
+            questionCategory.setQuestionCategPid("0");
+        }
+        // todo seq
     }
 }

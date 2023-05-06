@@ -18,7 +18,6 @@ import org.dows.hep.api.tenant.casus.request.CaseSchemeRequest;
 import org.dows.hep.api.tenant.casus.request.CaseSchemeSearchRequest;
 import org.dows.hep.api.tenant.casus.response.CaseSchemePageResponse;
 import org.dows.hep.api.tenant.casus.response.CaseSchemeResponse;
-import org.dows.hep.biz.base.question.BaseBiz;
 import org.dows.hep.biz.base.question.QuestionSectionBiz;
 import org.dows.hep.entity.CaseSchemeEntity;
 import org.dows.hep.service.CaseSchemeService;
@@ -37,7 +36,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class TenantCaseSchemeBiz {
-    private final BaseBiz baseBiz;
+    private final BaseTenantCaseBiz baseBiz;
     private final CaseSchemeService caseSchemeService;
     private final QuestionSectionBiz questionSectionBiz;
 
@@ -52,42 +51,30 @@ public class TenantCaseSchemeBiz {
      * @创建时间: 2023年4月17日 下午8:00:11
      */
     @Transactional
-    public String saveCaseScheme(CaseSchemeRequest caseScheme) {
-        // base Info
-        caseScheme.setAppId(baseBiz.getAppId());
-        caseScheme.setCaseSchemeId(baseBiz.getIdStr());
-        caseScheme.setEnabled(caseScheme.getEnabled() == null ? EnumStatus.ENABLE.getCode() : caseScheme.getEnabled());
-        caseScheme.setSource(StrUtil.isBlank(caseScheme.getSource()) ? EnumSource.ADMIN.name() : caseScheme.getSource());
-        List<QuestionSectionItemRequest> sectionItemList = caseScheme.getSectionItemList();
-        Integer questionCount = sectionItemList == null ? 0 : sectionItemList.size();
-        // TODO categIdPath...
+    public String saveOrUpdCaseScheme(CaseSchemeRequest caseScheme) {
+        if (caseScheme == null) {
+            return "";
+        }
 
-        // save question section
-        String questionSectionId = saveQuestionSection(caseScheme);
+        // save base-Info
+        if (StrUtil.isBlank(caseScheme.getCaseSchemeId())) {
+            caseScheme.setAppId(baseBiz.getAppId());
+            caseScheme.setCaseSchemeId(baseBiz.getIdStr());
+            caseScheme.setEnabled(caseScheme.getEnabled() == null ? EnumStatus.ENABLE.getCode() : caseScheme.getEnabled());
+            caseScheme.setSource(StrUtil.isBlank(caseScheme.getSource()) ? EnumSource.ADMIN.name() : caseScheme.getSource());
+        }
+
+        // save question-section
+        QuestionSectionRequest questionSectionRequest = caseScheme2QS(caseScheme);
+        String questionSectionId = questionSectionBiz.saveOrUpdQuestionSection(questionSectionRequest);
 
         // save caseScheme
         CaseSchemeEntity caseSchemeEntity = BeanUtil.copyProperties(caseScheme, CaseSchemeEntity.class);
         caseSchemeEntity.setQuestionSectionId(questionSectionId);
-        caseSchemeEntity.setQuestionCount(questionCount);
-        caseSchemeService.save(caseSchemeEntity);
-        return caseSchemeEntity.getCaseSchemeId();
-    }
+        caseSchemeEntity.setQuestionCount(getQuestionCount(caseScheme));
+        caseSchemeService.saveOrUpdate(caseSchemeEntity);
 
-    /**
-     * @param
-     * @return
-     * @说明: 新增和更新方案设计
-     * @关联表: caseScheme
-     * @工时: 8H
-     * @开发者: fhb
-     * @开始时间:
-     * @创建时间: 2023年4月17日 下午8:00:11
-     */
-    public Boolean updCaseScheme(CaseSchemeRequest caseScheme) {
-        CaseSchemeEntity caseSchemeEntity = BeanUtil.copyProperties(caseScheme, CaseSchemeEntity.class);
-        LambdaUpdateWrapper<CaseSchemeEntity> updateWrapper = new LambdaUpdateWrapper<CaseSchemeEntity>()
-                .eq(CaseSchemeEntity::getCaseSchemeId, caseScheme.getCaseSchemeId());
-        return caseSchemeService.update(caseSchemeEntity, updateWrapper);
+        return caseSchemeEntity.getCaseSchemeId();
     }
 
     /**
@@ -229,8 +216,8 @@ public class TenantCaseSchemeBiz {
         return caseSchemeService.remove(queryWrapper);
     }
 
-    private String saveQuestionSection(CaseSchemeRequest caseScheme) {
-        QuestionSectionRequest questionSectionRequest = QuestionSectionRequest.builder()
+    private QuestionSectionRequest caseScheme2QS(CaseSchemeRequest caseScheme) {
+        return QuestionSectionRequest.builder()
                 .name(caseScheme.getSchemeName())
                 .tips(caseScheme.getTips())
                 .descr(caseScheme.getSchemeDescr())
@@ -242,7 +229,6 @@ public class TenantCaseSchemeBiz {
                 .appId(caseScheme.getAppId())
                 .source(caseScheme.getSource())
                 .build();
-        return questionSectionBiz.saveQuestionSection(questionSectionRequest);
     }
 
     private boolean changeStatus(String caseSchemeId, EnumStatus enumStatus) {
@@ -263,5 +249,10 @@ public class TenantCaseSchemeBiz {
         List<QuestionSectionDimensionResponse> questionSectionDimensionList = questionSectionResponse.getQuestionSectionDimensionList();
         result.setSectionItemList(sectionItemList);
         result.setQuestionSectionDimensionList(questionSectionDimensionList);
+    }
+
+    private Integer getQuestionCount(CaseSchemeRequest caseScheme) {
+        List<QuestionSectionItemRequest> sectionItemList = caseScheme.getSectionItemList();
+        return sectionItemList == null ? 0 : sectionItemList.size();
     }
 }

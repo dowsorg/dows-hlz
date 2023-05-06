@@ -1,4 +1,4 @@
-package org.dows.hep.biz.base.question;
+package org.dows.hep.biz.tenant.casus;
 
 import lombok.RequiredArgsConstructor;
 import org.dows.sequence.api.IdGenerator;
@@ -8,7 +8,8 @@ import java.util.Date;
 
 @RequiredArgsConstructor
 @Service
-public class BaseBiz {
+public class BaseTenantCaseBiz {
+    private static final String LAST_VERSION = "SNAPSHOT";
 
     private final IdGenerator idGenerator;
 
@@ -16,15 +17,16 @@ public class BaseBiz {
         return "3";
     }
 
-    public Integer getSequence() {
-        return 0;
-    }
-
     public String getIdStr() {
         return idGenerator.nextIdStr();
     }
 
-    public String getVer() {
-        return String.valueOf(new Date().getTime());
+    public String getLastVer() {
+        return LAST_VERSION;
     }
+
+    public String getVer(Date date) {
+        return String.valueOf((date == null ? new Date() : date).getTime());
+    }
+
 }

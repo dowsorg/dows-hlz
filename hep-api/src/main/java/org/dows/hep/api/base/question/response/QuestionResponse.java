@@ -1,5 +1,6 @@
 package org.dows.hep.api.base.question.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,11 +17,18 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(name = "Question 对象", title = "问题Response")
 public class QuestionResponse {
+    @Schema(title = "应用ID")
+    private String appId;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @Schema(title = "数据库ID")
+    private Long id;
+
     @Schema(title = "问题ID-更新需要")
     private String questionInstanceId;
 
     @Schema(title = "题目类型ID")
-    private String categId;
+    private String questionCategId;
 
     @Schema(title = "题目答题类型[RADIO:单选题|MULTIPLE:多选题|JUDGMENT:判断题|SUBJECTIVE:主观题|MATERIAL:材料题]")
     private QuestionTypeEnum questionType;
@@ -34,9 +42,6 @@ public class QuestionResponse {
     @Schema(title = "问题描述")
     private String questionDescr;
 
-    @Schema(title = "答案解析")
-    private String detailedAnswer;
-
     @Schema(title = "状态")
     private Integer enabled;
 
@@ -48,6 +53,9 @@ public class QuestionResponse {
 
     @Schema(title = "创建者姓名")
     private String accountName;
+
+    @Schema(title = "答案解析")
+    private String detailedAnswer;
 
     @Schema(title = "选项和答案集合")
     private List<QuestionOptionWithAnswerResponse> optionWithAnswerList;

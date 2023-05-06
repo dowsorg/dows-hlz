@@ -6,6 +6,7 @@ import org.dows.hep.api.base.indicator.request.CreateIndicatorViewBaseInfoReques
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorViewBaseInfoRequestRs;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorViewBaseInfoRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorViewBaseInfoResponse;
+import org.dows.hep.api.base.indicator.response.IndicatorViewBaseInfoResponseRs;
 import org.dows.hep.biz.base.indicator.IndicatorViewBaseInfoBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -83,6 +84,17 @@ public class IndicatorViewBaseInfoRest {
     @GetMapping("v1/baseIndicator/indicatorViewBaseInfo/getIndicatorViewBaseInfo")
     public IndicatorViewBaseInfoResponse getIndicatorViewBaseInfo(@Validated String indicatorViewBaseInfoId) {
         return indicatorViewBaseInfoBiz.getIndicatorViewBaseInfo(indicatorViewBaseInfoId);
+    }
+
+    /**
+     * 获取查看指标基本信息类
+     * @param
+     * @return
+     */
+    @Operation(summary = "Rs获取查看指标基本信息类")
+    @GetMapping("v1/baseIndicator/indicatorViewBaseInfo/getRs")
+    public IndicatorViewBaseInfoResponseRs getRs(@Validated String indicatorViewBaseInfoId) {
+        return indicatorViewBaseInfoBiz.getRs(indicatorViewBaseInfoId);
     }
 
     /**

@@ -1,8 +1,13 @@
 package org.dows.hep.biz.base.question;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.question.request.QuestionSectionDimensionRequest;
-import org.dows.hep.api.base.question.request.QuestionSectionRequest;
 import org.dows.hep.api.base.question.response.QuestionSectionDimensionResponse;
+import org.dows.hep.entity.QuestionSectionDimensionEntity;
+import org.dows.hep.service.QuestionSectionDimensionService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -14,8 +19,11 @@ import java.util.List;
 * @author lait.zhang
 * @date 2023年4月23日 上午9:44:34
 */
+@RequiredArgsConstructor
 @Service
 public class QuestionSectionDimensionBiz{
+    private BaseQuestionDomainBiz baseBiz;
+    private final QuestionSectionDimensionService questionSectionDimensionService;
     /**
     * @param
     * @return
@@ -26,17 +34,24 @@ public class QuestionSectionDimensionBiz{
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public Boolean saveOrUpdQuestionSectionDimension(QuestionSectionDimensionRequest questionSectionDimension ) {
-        return Boolean.FALSE;
+    public Boolean batchSaveOrUpdQSDimension(List<QuestionSectionDimensionRequest> questionSectionDimensionList ) {
+        if (questionSectionDimensionList == null || questionSectionDimensionList.isEmpty()) {
+            return Boolean.FALSE;
+        }
+
+        List<QuestionSectionDimensionEntity> entityList = questionSectionDimensionList.stream()
+                .map(item -> {
+                    QuestionSectionDimensionEntity entity = BeanUtil.copyProperties(item, QuestionSectionDimensionEntity.class);
+                    String questionSectionDimensionId = entity.getQuestionSectionDimensionId();
+                    if (StrUtil.isBlank(questionSectionDimensionId)) {
+                        entity.setQuestionSectionDimensionId(baseBiz.getIdStr());
+                    }
+                    return entity;
+                })
+                .toList();
+        return questionSectionDimensionService.saveOrUpdateBatch(entityList);
     }
 
-    public Boolean saveBatch(QuestionSectionRequest questionSectionRequest, List<QuestionSectionDimensionRequest> questionSectionDimensionList) {
-        return true;
-    }
-
-    public Boolean updateBatch(QuestionSectionRequest questionSectionRequest, List<QuestionSectionDimensionRequest> questionSectionDimensionList) {
-        return true;
-    }
     /**
     * @param
     * @return
@@ -48,19 +63,39 @@ public class QuestionSectionDimensionBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public List<QuestionSectionDimensionResponse> listQuestionSectionDimension(String questionSectionId ) {
-        return new ArrayList<QuestionSectionDimensionResponse>();
+        if (StrUtil.isBlank(questionSectionId)) {
+            return new ArrayList<>();
+        }
+
+        LambdaQueryWrapper<QuestionSectionDimensionEntity> queryWrapper = new LambdaQueryWrapper<QuestionSectionDimensionEntity>()
+                .eq(QuestionSectionDimensionEntity::getQuestionSectionId, questionSectionId);
+        List<QuestionSectionDimensionEntity> entityList = questionSectionDimensionService.list(queryWrapper);
+        if (entityList == null || entityList.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return entityList.stream()
+                .map(item -> BeanUtil.copyProperties(item, QuestionSectionDimensionResponse.class))
+                .toList();
     }
+
     /**
-    * @param
-    * @return
-    * @说明: 删除问题集维度
-    * @关联表: QuestionSection,QuestionSectionDimension
-    * @工时: 6H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public Boolean delQuestionSectionDimension(String questionSectionDimensionIds ) {
-        return Boolean.FALSE;
+     * @param
+     * @return
+     * @说明: 删除问题集维度
+     * @关联表: QuestionSection, QuestionSectionDimension
+     * @工时: 6H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public Boolean delQuestionSectionDimension(List<String> questionSectionDimensionIds) {
+        if (questionSectionDimensionIds == null || questionSectionDimensionIds.isEmpty()) {
+            return Boolean.FALSE;
+        }
+
+        LambdaQueryWrapper<QuestionSectionDimensionEntity> remWrapper = new LambdaQueryWrapper<QuestionSectionDimensionEntity>()
+                .in(QuestionSectionDimensionEntity::getQuestionSectionDimensionId, questionSectionDimensionIds);
+        return questionSectionDimensionService.remove(remWrapper);
     }
 }

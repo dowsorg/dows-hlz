@@ -14,11 +14,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "CaseInstancePage 对象", title = "分页请求Request")
 public class CaseInstancePageRequest{
+
+    @Schema(title = "pageNo")
+    private Long pageNo;
+
+    @Schema(title = "pageSize")
+    private Long pageSize;
+
     @Schema(title = "应用ID")
     private String appId;
 
-    @Schema(title = "案例名称")
-    private String caseName;
-
+    @Schema(title = "关键字")
+    private String keyword;
 
 }
