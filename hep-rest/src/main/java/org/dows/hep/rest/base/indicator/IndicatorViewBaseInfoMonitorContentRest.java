@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 /**
  * @author runsix
  */
@@ -21,5 +23,11 @@ public class IndicatorViewBaseInfoMonitorContentRest {
   @DeleteMapping("v1/baseIndicator/indicatorViewBaseInfoMonitorContent/deleteIndicatorViewBaseInfoMonitorContent")
   public void deleteIndicatorViewBaseInfoMonitorContent(@RequestParam String indicatorViewBaseInfoMonitorContentId) throws InterruptedException {
     indicatorViewBaseInfoMonitorContentBiz.deleteIndicatorViewBaseInfoMonitorContent(indicatorViewBaseInfoMonitorContentId);
+  }
+
+  @Operation(summary = "批量删除查看指标基本信息指标监测内容")
+  @DeleteMapping("v1/baseIndicator/indicatorViewBaseInfoMonitorContent/batchDeleteIndicatorViewBaseInfoMonitorContent")
+  public void batchDeleteIndicatorViewBaseInfoMonitorContent(@RequestParam List<String> indicatorViewBaseInfoMonitorContentIdList) throws InterruptedException {
+    indicatorViewBaseInfoMonitorContentBiz.batchDeleteIndicatorViewBaseInfoMonitorContent(indicatorViewBaseInfoMonitorContentIdList);
   }
 }
