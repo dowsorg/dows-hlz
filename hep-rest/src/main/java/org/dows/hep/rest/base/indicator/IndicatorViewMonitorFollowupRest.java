@@ -3,6 +3,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorViewMonitorFollowupRequest;
+import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorViewMonitorFollowupRequestRs;
 import org.dows.hep.api.base.indicator.request.IndicatorViewMonitorFollowupRequest;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorViewMonitorFollowupRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorViewMonitorFollowupResponse;
@@ -36,13 +37,24 @@ public class IndicatorViewMonitorFollowupRest {
     }
 
     /**
+     * Rs创建查看指标监测随访类
+     * @param
+     * @return
+     */
+    @Operation(summary = "Rs创建查看指标监测随访类")
+    @PostMapping("v1/baseIndicator/indicatorViewMonitorFollowup/createOrUpdateRs")
+    public void createOrUpdateRs(@RequestBody @Validated CreateOrUpdateIndicatorViewMonitorFollowupRequestRs createOrUpdateIndicatorViewMonitorFollowupRequestRs) throws InterruptedException {
+        indicatorViewMonitorFollowupBiz.createOrUpdateRs(createOrUpdateIndicatorViewMonitorFollowupRequestRs);
+    }
+
+    /**
     * 删除指标监测随访类
     * @param
     * @return
     */
     @Operation(summary = "删除指标监测随访类")
     @DeleteMapping("v1/baseIndicator/indicatorViewMonitorFollowup/deleteIndicatorViewMonitorFollowup")
-    public void deleteIndicatorViewMonitorFollowup(@Validated String indicatorViewMonitorFollowupId ) {
+    public void deleteIndicatorViewMonitorFollowup(@Validated String indicatorViewMonitorFollowupId) throws InterruptedException {
         indicatorViewMonitorFollowupBiz.deleteIndicatorViewMonitorFollowup(indicatorViewMonitorFollowupId);
     }
 
@@ -57,6 +69,12 @@ public class IndicatorViewMonitorFollowupRest {
         indicatorViewMonitorFollowupBiz.batchDelete(string);
     }
 
+    @Operation(summary = "Rs批量删除")
+    @DeleteMapping("v1/baseIndicator/indicatorViewMonitorFollowup/batchDeleteRs")
+    public void batchDeleteRs(@RequestBody @Validated List<String> indicatorViewMonitorFollowupIdList) {
+        indicatorViewMonitorFollowupBiz.batchDeleteRs(indicatorViewMonitorFollowupIdList);
+    }
+
     /**
     * 更改启用状态
     * @param
@@ -66,6 +84,14 @@ public class IndicatorViewMonitorFollowupRest {
     @PutMapping("v1/baseIndicator/indicatorViewMonitorFollowup/updateStatus")
     public void updateStatus(@Validated IndicatorViewMonitorFollowupRequest indicatorViewMonitorFollowup ) {
         indicatorViewMonitorFollowupBiz.updateStatus(indicatorViewMonitorFollowup);
+    }
+
+    @Operation(summary = "Rs更改启用状态")
+    @PutMapping("v1/baseIndicator/indicatorViewMonitorFollowup/updateStatusRs")
+    public void updateStatusRs(
+        @RequestParam String indicatorViewMonitorFollowupId,
+        @RequestParam Integer status) {
+        indicatorViewMonitorFollowupBiz.updateStatusRs(indicatorViewMonitorFollowupId, status);
     }
 
     /**

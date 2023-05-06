@@ -48,11 +48,11 @@ public class IndicatorViewMonitorFollowupEntity implements CrudEntity {
     @Schema(title = "指标监测随访类表名称")
     private String name;
 
-    @Schema(title = "监测随访表类别")
-    private String type;
+    @Schema(title = "监测随访表类别Id")
+    private String indicatorCategoryId;
 
     @Schema(title = "0-禁用，1-启用")
-    private Boolean status;
+    private Integer status;
 
     @JsonIgnore
     @TableLogic

@@ -1,7 +1,7 @@
 package org.dows.hep.biz.util;
 
 
-import org.dows.hep.biz.enums.EnumRedissonLock;
+import org.dows.hep.api.enums.EnumRedissonLock;
 
 /**
  * @author runsix

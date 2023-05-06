@@ -8,9 +8,9 @@ import org.dows.hep.api.base.indicator.request.BatchCreateOrUpdateIndicatorCateg
 import org.dows.hep.api.base.indicator.request.CreateIndicatorCategoryRequest;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorCategoryRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorCategoryResponse;
-import org.dows.hep.biz.enums.EnumESC;
-import org.dows.hep.biz.enums.EnumRedissonLock;
-import org.dows.hep.biz.exception.IndicatorCategoryException;
+import org.dows.hep.api.enums.EnumESC;
+import org.dows.hep.api.enums.EnumRedissonLock;
+import org.dows.hep.api.exception.IndicatorCategoryException;
 import org.dows.hep.biz.util.RedissonUtil;
 import org.dows.hep.entity.IndicatorCategoryEntity;
 import org.dows.hep.entity.IndicatorInstanceEntity;
