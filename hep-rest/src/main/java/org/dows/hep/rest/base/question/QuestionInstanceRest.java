@@ -29,26 +29,14 @@ public class QuestionInstanceRest {
     private final QuestionInstanceBiz questionInstanceBiz;
 
     /**
-    * 新增
+    * 新增和更新
     * @param
     * @return
     */
-    @Operation(summary = "新增题目")
-    @PostMapping("v1/baseQuestion/questionInstance/saveQuestion")
-    public String saveQuestion(@RequestBody @Validated QuestionRequest question ) {
-        return questionInstanceBiz.saveQuestion(question);
-    }
-
-    /**
-     * 更新
-     * @param
-     * @return
-     */
-    @Operation(summary = "更新题目")
-    @PostMapping("v1/baseQuestion/questionInstance/updQuestion")
-    public Boolean updQuestion(@RequestBody @Validated QuestionRequest question ) {
-        return questionInstanceBiz.updQuestion(question);
-
+    @Operation(summary = "新增和更新")
+    @PostMapping("v1/baseQuestion/questionInstance/saveOrUpdQuestion")
+    public String saveOrUpdQuestion(@RequestBody @Validated QuestionRequest question ) {
+        return questionInstanceBiz.saveOrUpdQuestion(question);
     }
 
     /**

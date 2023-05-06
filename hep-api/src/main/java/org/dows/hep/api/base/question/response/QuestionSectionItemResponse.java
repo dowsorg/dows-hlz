@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.dows.hep.api.base.question.request.QuestionRequest;
 
 @Data
 @NoArgsConstructor
@@ -30,5 +29,5 @@ public class QuestionSectionItemResponse {
     private Integer sequence;
 
     @Schema(title = "问题")
-    private QuestionRequest questionRequest;
+    private QuestionResponse questionResponse;
 }
