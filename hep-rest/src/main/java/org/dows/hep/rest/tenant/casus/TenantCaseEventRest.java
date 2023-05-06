@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RestController
 @Tag(name = "案例人物事件", description = "案例人物事件")
-public class CaseEventRest {
+public class TenantCaseEventRest {
     private final TenantCaseEventBiz tenantCaseEventBiz;
 
     /**
