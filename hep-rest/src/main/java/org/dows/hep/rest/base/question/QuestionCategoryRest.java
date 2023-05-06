@@ -24,19 +24,6 @@ public class QuestionCategoryRest {
 
     /**
      * @author fhb
-     * @description 以树形结构返回该组（categoryGroup）下的类目
-     * @date 2023/4/20 10:16
-     * @param categoryGroup - 类目分组
-     * @return 树形结构的类目集合
-     */
-    @Operation(summary = "查询所有类目-根据groupCode")
-    @GetMapping("v1/baseQuestion/questionCategory/listByCategoryGroup")
-    public List<QuestionCategoryResponse> listByCategoryGroup(String categoryGroup) {
-        return questionCategBiz.getChildrenByPid("0", categoryGroup);
-    }
-
-    /**
-     * @author fhb
      * @description 新增和更新问题域类目
      * @date 2023/4/20 10:22
      * @param request - 请求对象
@@ -46,6 +33,19 @@ public class QuestionCategoryRest {
     @PostMapping("v1/baseQuestion/questionCategory/saveOrUpdQuestionCategory")
     public String saveOrUpdQuestionCategory(@RequestBody @Validated QuestionCategoryRequest request) {
         return questionCategBiz.saveOrUpdateQuestionCategory(request);
+    }
+
+    /**
+     * @author fhb
+     * @description 以树形结构返回该组（categoryGroup）下的类目
+     * @date 2023/4/20 10:16
+     * @param categoryGroup - 类目分组
+     * @return 树形结构的类目集合
+     */
+    @Operation(summary = "根据 groupCode 查询所有类目")
+    @GetMapping("v1/baseQuestion/questionCategory/listByCategoryGroup")
+    public List<QuestionCategoryResponse> listByCategoryGroup(String categoryGroup) {
+        return questionCategBiz.getChildrenByPid("0", categoryGroup);
     }
 
     /**

@@ -80,16 +80,22 @@ public class QuestionSectionDimensionBiz{
     }
 
     /**
-    * @param
-    * @return
-    * @说明: 删除问题集维度
-    * @关联表: QuestionSection,QuestionSectionDimension
-    * @工时: 6H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public Boolean delQuestionSectionDimension(String questionSectionDimensionIds ) {
-        return Boolean.FALSE;
+     * @param
+     * @return
+     * @说明: 删除问题集维度
+     * @关联表: QuestionSection, QuestionSectionDimension
+     * @工时: 6H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public Boolean delQuestionSectionDimension(List<String> questionSectionDimensionIds) {
+        if (questionSectionDimensionIds == null || questionSectionDimensionIds.isEmpty()) {
+            return Boolean.FALSE;
+        }
+
+        LambdaQueryWrapper<QuestionSectionDimensionEntity> remWrapper = new LambdaQueryWrapper<QuestionSectionDimensionEntity>()
+                .in(QuestionSectionDimensionEntity::getQuestionSectionDimensionId, questionSectionDimensionIds);
+        return questionSectionDimensionService.remove(remWrapper);
     }
 }

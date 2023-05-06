@@ -90,7 +90,7 @@ public class QuestionInstanceBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     @Transactional
-    public String saveOrUpd(QuestionRequest question) {
+    public String saveOrUpdQuestion(QuestionRequest question) {
         String questionInstanceId = question.getQuestionInstanceId();
         if (StrUtil.isBlank(questionInstanceId)) {
             questionInstanceId = saveQuestion(question);

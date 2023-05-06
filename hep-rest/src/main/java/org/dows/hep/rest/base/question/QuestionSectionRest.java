@@ -28,7 +28,7 @@ public class QuestionSectionRest {
     * @param
     * @return
     */
-    @Operation(summary = "新增问题集[问卷]")
+    @Operation(summary = "新增和更新")
     @PostMapping("v1/baseQuestion/questionSection/saveOrUpdQuestionSection")
     public String saveOrUpdQuestionSection(@RequestBody @Validated QuestionSectionRequest questionSection ) {
         return questionSectionBiz.saveOrUpdQuestionSection(questionSection);
@@ -68,50 +68,6 @@ public class QuestionSectionRest {
     }
 
     /**
-    * 复制问题集[问卷]
-    * @param
-    * @return
-    */
-    @Operation(summary = "复制问题集[问卷]")
-    @PostMapping("v1/baseQuestion/questionSection/copyQuestionSection")
-    public String copyQuestionSection(@RequestBody @Validated String oriQuestionSectionId ) {
-        return questionSectionBiz.copyQuestionSection(oriQuestionSectionId);
-    }
-
-    /**
-    * 自动生成问题集[问卷]
-    * @param
-    * @return
-    */
-    @Operation(summary = "自动生成问题集[问卷]")
-    @PostMapping("v1/baseQuestion/questionSection/generateQuestionSectionAutomatic")
-    public String generateQuestionSectionAutomatic(@RequestBody @Validated QuestionnaireGenerateElementsRequest questionnaireGenerateElements ) {
-        return questionSectionBiz.generateQuestionSectionAutomatic(questionnaireGenerateElements);
-    }
-
-    /**
-    * 排序问题集-题目
-    * @param
-    * @return
-    */
-    @Operation(summary = "排序问题集-题目")
-    @GetMapping("v1/baseQuestion/questionSection/sortSectionQuestion")
-    public Boolean sortSectionQuestion(@Validated String questionSectionId, @Validated String questionSectionItemId, @Validated Integer sequence) {
-        return questionSectionBiz.sortSectionQuestion(questionSectionId,questionSectionItemId,sequence);
-    }
-
-    /**
-    * 交换问题集-题目顺序
-    * @param
-    * @return
-    */
-    @Operation(summary = "交换问题集-题目顺序")
-    @GetMapping("v1/baseQuestion/questionSection/transposeSectionQuestion")
-    public Boolean transposeSectionQuestion(@Validated String questionSectionId, @Validated String leftQuestionSectionItemId, @Validated String rightQuestionSectionItemId) {
-        return questionSectionBiz.transposeSectionQuestion(questionSectionId,leftQuestionSectionItemId,rightQuestionSectionItemId);
-    }
-
-    /**
     * 启用问题集-题目
     * @param
     * @return
@@ -143,6 +99,5 @@ public class QuestionSectionRest {
     public Boolean delSectionQuestion(String questionSectionId, List<String> questionSectionItemIds ) {
         return questionSectionBiz.delSectionQuestion(questionSectionId, questionSectionItemIds);
     }
-
 
 }

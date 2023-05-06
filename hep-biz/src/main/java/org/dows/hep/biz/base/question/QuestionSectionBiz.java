@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.question.request.*;
+import org.dows.hep.api.base.question.response.QuestionSectionDimensionResponse;
+import org.dows.hep.api.base.question.response.QuestionSectionItemResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
 import org.dows.hep.entity.QuestionSectionEntity;
 import org.dows.hep.entity.QuestionSectionItemEntity;
@@ -29,7 +31,6 @@ public class QuestionSectionBiz {
     private final BaseQuestionDomainBiz baseBiz;
     private final QuestionSectionService questionSectionService;
     private final QuestionSectionItemBiz questionSectionItemBiz;
-    private final QuestionSectionItemService questionSectionItemService;
     private final QuestionSectionDimensionBiz questionSectionDimensionBiz;
 
 
@@ -57,7 +58,7 @@ public class QuestionSectionBiz {
             questionSection.setSequence(baseBiz.getSequence());
         }
         QuestionSectionEntity questionSectionEntity = BeanUtil.copyProperties(questionSection, QuestionSectionEntity.class);
-        questionSectionService.save(questionSectionEntity);
+        questionSectionService.saveOrUpdate(questionSectionEntity);
 
         // save section dimension
         List<QuestionSectionDimensionRequest> questionSectionDimensionList = questionSection.getQuestionSectionDimensionList();
@@ -138,11 +139,21 @@ public class QuestionSectionBiz {
             return new QuestionSectionResponse();
         }
 
+        // questionSectionResponse
         LambdaQueryWrapper<QuestionSectionEntity> queryWrapper = new LambdaQueryWrapper<QuestionSectionEntity>()
                 .eq(QuestionSectionEntity::getQuestionSectionId, questionSectionId);
         QuestionSectionEntity entity = questionSectionService.getOne(queryWrapper);
+        QuestionSectionResponse questionSectionResponse = BeanUtil.copyProperties(entity, QuestionSectionResponse.class);
 
-        return BeanUtil.copyProperties(entity, QuestionSectionResponse.class);
+        // questionSectionItemResponse
+        List<QuestionSectionItemResponse> itemResponseList = questionSectionItemBiz.listBySectionId(questionSectionId);
+        questionSectionResponse.setSectionItemList(itemResponseList);
+
+        // questionSectionDimensionResponse
+        List<QuestionSectionDimensionResponse> dimensionResponseList = questionSectionDimensionBiz.listQuestionSectionDimension(questionSectionId);
+        questionSectionResponse.setQuestionSectionDimensionList(dimensionResponseList);
+
+        return questionSectionResponse;
     }
 
     /**
@@ -166,74 +177,6 @@ public class QuestionSectionBiz {
     }
 
     /**
-    * @param
-    * @return
-    * @说明: 复制问题集[问卷]
-    * @关联表: caseInstance
-    * @工时: 8H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public String copyQuestionSection(String oriQuestionSectionId ) {
-        return new String();
-    }
-
-    /**
-    * @param
-    * @return
-    * @说明: 自动生成问题集[问卷]
-    * @关联表: QuestionSection,QuestionSectionItem,QuestionInstance
-    * @工时: 8H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public String generateQuestionSectionAutomatic(QuestionnaireGenerateElementsRequest questionnaireGenerateElements ) {
-        return new String();
-    }
-
-    /**
-    * @param
-    * @return
-    * @说明: 查询问题集-问题
-    * @关联表: QuestionSection,QuestionSectionItem
-    * @工时: 5H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public QuestionSectionResponse listSectionQuestion(QuestionsInSectionRequest questionsInSection ) {
-        return new QuestionSectionResponse();
-    }
-    /**
-    * @param
-    * @return
-    * @说明: 排序问题集-题目
-    * @关联表: QuestionSection,QuestionSectionItem
-    * @工时: 3H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public Boolean sortSectionQuestion(String questionSectionId, String questionSectionItemId, Integer sequence ) {
-        return Boolean.FALSE;
-    }
-    /**
-    * @param
-    * @return
-    * @说明: 交换问题集-题目顺序
-    * @关联表: QuestionSection,QuestionSectionItem
-    * @工时: 3H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public Boolean transposeSectionQuestion(String questionSectionId, String leftQuestionSectionItemId, String rightQuestionSectionItemId ) {
-        return Boolean.FALSE;
-    }
-
-    /**
      * @param
      * @return
      * @说明: 启用问题集-题目
@@ -248,11 +191,7 @@ public class QuestionSectionBiz {
             return false;
         }
 
-        LambdaUpdateWrapper<QuestionSectionItemEntity> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(QuestionSectionItemEntity::getQuestionSectionId, questionSectionId)
-                .set(QuestionSectionItemEntity::getQuestionSectionItemId, questionSectionItemId)
-                .set(QuestionSectionItemEntity::getEnabled, 1);
-        return questionSectionItemService.update(updateWrapper);
+        return questionSectionItemBiz.enabledSectionQuestion(questionSectionId, questionSectionItemId);
     }
 
     /**
@@ -270,11 +209,7 @@ public class QuestionSectionBiz {
             return false;
         }
 
-        LambdaUpdateWrapper<QuestionSectionItemEntity> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(QuestionSectionItemEntity::getQuestionSectionId, questionSectionId)
-                .set(QuestionSectionItemEntity::getQuestionSectionItemId, questionSectionItemId)
-                .set(QuestionSectionItemEntity::getEnabled, 0);
-        return questionSectionItemService.update(updateWrapper);
+        return questionSectionItemBiz.disabledSectionQuestion(questionSectionId, questionSectionItemId);
     }
 
     /**
