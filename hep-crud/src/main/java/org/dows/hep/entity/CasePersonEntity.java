@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 案例人物(CasePerson)实体类
@@ -46,7 +46,10 @@ public class CasePersonEntity implements CrudEntity {
     private String caseOrgId;
 
     @Schema(title = "案例|病人账号ID[uim]")
-    private String accountId;
+    private String caseAccountId;
+
+    @Schema(title = "被复制的账号源")
+    private String sourceAccountId;
 
     @JsonIgnore
     @TableLogic

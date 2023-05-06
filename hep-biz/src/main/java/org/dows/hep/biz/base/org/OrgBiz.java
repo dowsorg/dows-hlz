@@ -28,10 +28,7 @@ import org.dows.user.api.response.UserInstanceResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author jx
@@ -262,9 +259,9 @@ public class OrgBiz {
         Integer count = 0;
         //2、复制人物，每个机构的人物都是机构独有的
         Set<String> ids = new HashSet<>();
-        personIds.forEach(personId->{
+        personIds.forEach(id->{
             //2.1、获取用户信息及简介并创建新用户及简介
-            AccountUserResponse accountUser = accountUserApi.getUserByAccountId(personId);
+            AccountUserResponse accountUser = accountUserApi.getUserByAccountId(id);
             UserInstanceResponse userInstanceResponse = userInstanceApi.getUserInstanceByUserId(accountUser.getUserId());
             UserExtinfoResponse userExtinfoResponse = userExtinfoApi.getUserExtinfoByUserId(accountUser.getUserId());
             UserInstanceRequest userInstanceRequest = new UserInstanceRequest();
@@ -276,7 +273,7 @@ public class OrgBiz {
                     .build();
             String extinfoId = userExtinfoApi.insertUserExtinfo(userExtinfo);
             //2.2、获取该账户的所有信息
-            AccountInstanceResponse accountInstanceResponse = accountInstanceApi.getAccountInstanceByAccountId(personId);
+            AccountInstanceResponse accountInstanceResponse = accountInstanceApi.getAccountInstanceByAccountId(id);
             //2.3、复制账户信息
             AccountInstanceRequest accountInstanceRequest = AccountInstanceRequest.builder()
                     .appId(accountInstanceResponse.getAppId())
@@ -296,17 +293,22 @@ public class OrgBiz {
                     .tentantId(accountInstanceResponse.getTenantId()).build();
             this.accountUserApi.createAccountUser(accountUserRequest);
             //todo 复制指标信息和突发事件
-            ids.add(vo.getAccountId());
+            StringBuffer sb = new StringBuffer();
+            sb.append(vo.getAccountId());
+            sb.append(",");
+            sb.append(id);
+            ids.add(sb.toString());
         });
         //3、uim中将人物放到对应小组
-        for (String personId : ids) {
-            AccountInstanceResponse instanceResponse = accountInstanceApi.getAccountInstanceByAccountId(personId);
+        for (String str : ids) {
+            List<String> list = Arrays.asList(str.split(","));
+            AccountInstanceResponse instanceResponse = accountInstanceApi.getAccountInstanceByAccountId(list.get(0));
             AccountOrgResponse orgResponse = accountOrgApi.getAccountOrgByOrgId(entity.getOrgId(), appId);
             AccountGroupRequest request = AccountGroupRequest
                     .builder()
                     .orgId(entity.getOrgId())
                     .orgName(orgResponse.getOrgName())
-                    .accountId(personId)
+                    .accountId(list.get(0))
                     .accountName(instanceResponse.getAccountName())
                     .userId(instanceResponse.getUserId())
                     .appId(appId)
@@ -321,7 +323,8 @@ public class OrgBiz {
                     .casePersonId(casePersonId)
                     .caseInstanceId(caseInstanceId)
                     .caseOrgId(caseOrgId)
-                    .accountId(personId)
+                    .caseAccountId(list.get(0))
+                    .sourceAccountId(list.get(1))
                     .build();
             casePersonService.save(person);
         }
@@ -568,7 +571,7 @@ public class OrgBiz {
                 .eq(CasePersonEntity::getCaseOrgId, caseOrgId)
                 .eq(CasePersonEntity::getCaseInstanceId,caseInstanceId)
                 .eq(CasePersonEntity::getDeleted, false)
-                .eq(CasePersonEntity::getAccountId, accountId)
+                .eq(CasePersonEntity::getSourceAccountId, accountId)
                 .one();
         if(entity != null){
             return false;
@@ -628,7 +631,8 @@ public class OrgBiz {
                 .casePersonId(casePersonId)
                 .caseInstanceId(caseInstanceId)
                 .caseOrgId(caseOrgId)
-                .accountId(vo.getAccountId())
+                .caseAccountId(vo.getAccountId())
+                .sourceAccountId(accountId)
                 .build();
         return casePersonService.save(person);
     }
