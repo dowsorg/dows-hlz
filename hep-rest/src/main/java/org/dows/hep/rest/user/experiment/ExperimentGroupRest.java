@@ -5,12 +5,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.user.experiment.request.CreateGroupRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
+import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
 import org.dows.hep.biz.user.experiment.ExperimentGroupBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
 * @description project descr:实验:实验小组
@@ -41,10 +44,31 @@ public class ExperimentGroupRest {
     * @return
     */
     @Operation(summary = "获取实验小组列表")
-    @GetMapping("v1/userExperiment/experimentGroup/groupList")
-    public ExperimentGroupResponse groupList(@Validated String experimentInstanceId) {
+    @PostMapping("v1/userExperiment/experimentGroup/listGroup")
+    public List<ExperimentGroupResponse> listGroup(@Validated String experimentInstanceId) {
         return experimentGroupBiz.listGroup(experimentInstanceId);
     }
 
+    /**
+     * 获取小组组员列表
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取小组组员列表")
+    @PostMapping("v1/userExperiment/experimentGroup/listGroupMembers")
+    public List<ExperimentParticipatorResponse> listGroupMembers(@RequestParam @Validated String experimentGroupId) {
+        return experimentGroupBiz.listGroupMembers(experimentGroupId);
+    }
+
+//    /**
+//     * 分配小组成员
+//     * @param
+//     * @return
+//     */
+//    @Operation(summary = "分配小组成员")
+//    @PostMapping("v1/userExperiment/experimentGroup/allotGroupMembers")
+//    public ExperimentGroupResponse allotGroupMembers(@RequestBody @Validated CasePersonIndicatorFuncRequest request) {
+//        return experimentGroupBiz.allotGroupMembers(experimentInstanceId);
+//    }
 
 }

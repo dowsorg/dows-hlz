@@ -39,7 +39,18 @@ public class ExperimentManageRest {
     }
 
     /**
-    * 实验分组ss
+     * 案例人物复制到实验
+     * @param
+     * @return
+     */
+    @Operation(summary = "案例人物复制到实验")
+    @PostMapping("v1/tenantExperiment/experimentManage/copyExperimentPerson")
+    public Boolean copyExperimentPerson(@RequestBody @Validated CreateExperimentRequest createExperiment ) {
+        return experimentManageBiz.copyExperimentPerson(createExperiment);
+    }
+
+    /**
+    * 实验分组
     * @param
     * @return
     */
