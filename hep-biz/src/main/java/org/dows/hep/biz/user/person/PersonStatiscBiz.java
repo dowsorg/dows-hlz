@@ -7,10 +7,15 @@ import org.dows.account.response.AccountInstanceResponse;
 import org.dows.account.response.AccountOrgGeoResponse;
 import org.dows.account.response.AccountOrgResponse;
 import org.dows.framework.api.util.ReflectUtil;
+import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
 import org.dows.hep.entity.CaseOrgEntity;
 import org.dows.hep.entity.CasePersonEntity;
+import org.dows.hep.entity.ExperimentGroupEntity;
+import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.service.CaseOrgService;
 import org.dows.hep.service.CasePersonService;
+import org.dows.hep.service.ExperimentGroupService;
+import org.dows.hep.service.ExperimentParticipatorService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -31,6 +36,10 @@ public class PersonStatiscBiz {
     private final AccountInstanceApi accountInstanceApi;
 
     private final AccountOrgGeoApi accountOrgGeoApi;
+
+    private final ExperimentParticipatorService experimentParticipatorService;
+
+    private final ExperimentGroupService experimentGroupService;
 
     /**
      * @param
@@ -103,5 +112,41 @@ public class PersonStatiscBiz {
             });
         }
         return orgResponses;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 获取参与者信息
+     * @关联表: experiment_participator、account_instance
+     * @工时: 1H
+    * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年5月8日 下午16:35:34
+     */
+    public ExperimentParticipatorResponse getParticipatorInfo(String experimentParticipatorId) {
+        ExperimentParticipatorResponse experimentParticipatorResponse = new ExperimentParticipatorResponse();
+        ExperimentParticipatorEntity participatorEntity = experimentParticipatorService
+                .lambdaQuery()
+                .eq(ExperimentParticipatorEntity::getExperimentParticipatorId,experimentParticipatorId)
+                .eq(ExperimentParticipatorEntity::getDeleted,false)
+                .one();
+        //1、获取参与者小组信息
+        if(participatorEntity != null && !ReflectUtil.isObjectNull(participatorEntity)){
+            experimentParticipatorResponse.setAccountId(participatorEntity.getAccountId());
+            experimentParticipatorResponse.setAccountName(participatorEntity.getAccountName());
+            ExperimentGroupEntity groupEntity = experimentGroupService
+                    .lambdaQuery()
+                    .eq(ExperimentGroupEntity::getDeleted,false)
+                    .eq(ExperimentGroupEntity::getExperimentGroupId,participatorEntity.getExperimentGroupId())
+                    .one();
+            if(groupEntity != null && !ReflectUtil.isObjectNull(groupEntity)){
+                experimentParticipatorResponse.setGroupName(groupEntity.getGroupName());
+            }
+        }
+        //2、根据账号ID找到头像
+        AccountInstanceResponse instanceResponse = accountInstanceApi.getAccountInstanceByAccountId(participatorEntity.getAccountId());
+        experimentParticipatorResponse.setAvatar(instanceResponse.getAvatar());
+        return experimentParticipatorResponse;
     }
 }
