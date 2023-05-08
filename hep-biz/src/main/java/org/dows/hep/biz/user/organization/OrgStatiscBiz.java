@@ -1,9 +1,15 @@
 package org.dows.hep.biz.user.organization;
 
+import cn.hutool.core.bean.BeanUtil;
+import lombok.RequiredArgsConstructor;
+import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.user.organization.request.AgeRatioRequest;
 import org.dows.hep.api.user.organization.request.GenderRatioRequest;
+import org.dows.hep.api.user.organization.response.CaseOrgResponse;
 import org.dows.hep.api.user.organization.response.NormalDataResponse;
 import org.dows.hep.api.user.organization.response.NormalDataResponseResponse;
+import org.dows.hep.entity.CaseOrgEntity;
+import org.dows.hep.service.CaseOrgService;
 import org.springframework.stereotype.Service;
 
 /**
@@ -13,7 +19,10 @@ import org.springframework.stereotype.Service;
 * @date 2023年4月23日 上午9:44:34
 */
 @Service
+@RequiredArgsConstructor
 public class OrgStatiscBiz{
+
+    private final CaseOrgService caseOrgService;
     /**
     * @param
     * @return
@@ -52,5 +61,27 @@ public class OrgStatiscBiz{
     */
     public void listTagRatio() {
         
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 获取机构操作手册
+     * @关联表: case_org
+     * @工时: 0.5H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年5月08日 下午17:19:34
+     */
+    public CaseOrgResponse getOrgHandbook(String caseOrgId) {
+        CaseOrgResponse orgResponse = new CaseOrgResponse();
+        CaseOrgEntity entity = caseOrgService.lambdaQuery()
+                .eq(CaseOrgEntity::getDeleted,false)
+                .eq(CaseOrgEntity::getCaseOrgId,caseOrgId)
+                .one();
+        if(entity != null && !ReflectUtil.isObjectNull(entity)){
+            BeanUtil.copyProperties(entity,orgResponse);
+        }
+        return orgResponse;
     }
 }
