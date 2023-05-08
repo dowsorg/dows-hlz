@@ -261,58 +261,57 @@ public class OrgBiz {
                 .eq(CaseOrgEntity::getAppId, appId)
                 .one();
         Integer count = 0;
-        //2、复制人物，每个机构的人物都是机构独有的
-        Set<String> ids = new HashSet<>();
-        personIds.forEach(id->{
-            //2.1、获取用户信息及简介并创建新用户及简介
-            AccountUserResponse accountUser = accountUserApi.getUserByAccountId(id);
-            UserInstanceResponse userInstanceResponse = userInstanceApi.getUserInstanceByUserId(accountUser.getUserId());
-            UserExtinfoResponse userExtinfoResponse = userExtinfoApi.getUserExtinfoByUserId(accountUser.getUserId());
-            UserInstanceRequest userInstanceRequest = new UserInstanceRequest();
-            BeanUtils.copyProperties(userInstanceResponse,userInstanceRequest,new String[]{"id","accountId"});
-            String userId = userInstanceApi.insertUserInstance(userInstanceRequest);
-            UserExtinfoRequest userExtinfo = UserExtinfoRequest.builder()
-                    .userId(userId)
-                    .intro(userExtinfoResponse.getIntro())
-                    .build();
-            String extinfoId = userExtinfoApi.insertUserExtinfo(userExtinfo);
-            //2.2、获取该账户的所有信息
-            AccountInstanceResponse accountInstanceResponse = accountInstanceApi.getAccountInstanceByAccountId(id);
-            //2.3、复制账户信息
-            AccountInstanceRequest accountInstanceRequest = AccountInstanceRequest.builder()
-                    .appId(accountInstanceResponse.getAppId())
-                    .avatar(accountInstanceResponse.getAvatar())
-                    .status(accountInstanceResponse.getStatus())
-                    .source("机构人物")
-                    .principalType(accountInstanceResponse.getPrincipalType())
-                    .identifier(createCode(7))
-                    .accountName(randomWord(6))
-                    .build();
-            AccountInstanceResponse vo = accountInstanceApi.createAccountInstance(accountInstanceRequest);
-            //2.4、创建账户和用户之间的关联关系
-            AccountUserRequest accountUserRequest = AccountUserRequest.builder()
-                    .accountId(vo.getAccountId())
-                    .userId(userId)
-                    .appId(accountInstanceResponse.getAppId())
-                    .tentantId(accountInstanceResponse.getTenantId()).build();
-            this.accountUserApi.createAccountUser(accountUserRequest);
-            //todo 复制指标信息和突发事件
-            StringBuffer sb = new StringBuffer();
-            sb.append(vo.getAccountId());
-            sb.append(",");
-            sb.append(id);
-            ids.add(sb.toString());
-        });
+//        //2、复制人物，每个机构的人物都是机构独有的
+//        Set<String> ids = new HashSet<>();
+//        personIds.forEach(id->{
+//            //2.1、获取用户信息及简介并创建新用户及简介
+//            AccountUserResponse accountUser = accountUserApi.getUserByAccountId(id);
+//            UserInstanceResponse userInstanceResponse = userInstanceApi.getUserInstanceByUserId(accountUser.getUserId());
+//            UserExtinfoResponse userExtinfoResponse = userExtinfoApi.getUserExtinfoByUserId(accountUser.getUserId());
+//            UserInstanceRequest userInstanceRequest = new UserInstanceRequest();
+//            BeanUtils.copyProperties(userInstanceResponse,userInstanceRequest,new String[]{"id","accountId"});
+//            String userId = userInstanceApi.insertUserInstance(userInstanceRequest);
+//            UserExtinfoRequest userExtinfo = UserExtinfoRequest.builder()
+//                    .userId(userId)
+//                    .intro(userExtinfoResponse.getIntro())
+//                    .build();
+//            String extinfoId = userExtinfoApi.insertUserExtinfo(userExtinfo);
+//            //2.2、获取该账户的所有信息
+//            AccountInstanceResponse accountInstanceResponse = accountInstanceApi.getAccountInstanceByAccountId(id);
+//            //2.3、复制账户信息
+//            AccountInstanceRequest accountInstanceRequest = AccountInstanceRequest.builder()
+//                    .appId(accountInstanceResponse.getAppId())
+//                    .avatar(accountInstanceResponse.getAvatar())
+//                    .status(accountInstanceResponse.getStatus())
+//                    .source("机构人物")
+//                    .principalType(accountInstanceResponse.getPrincipalType())
+//                    .identifier(createCode(7))
+//                    .accountName(randomWord(6))
+//                    .build();
+//            AccountInstanceResponse vo = accountInstanceApi.createAccountInstance(accountInstanceRequest);
+//            //2.4、创建账户和用户之间的关联关系
+//            AccountUserRequest accountUserRequest = AccountUserRequest.builder()
+//                    .accountId(vo.getAccountId())
+//                    .userId(userId)
+//                    .appId(accountInstanceResponse.getAppId())
+//                    .tentantId(accountInstanceResponse.getTenantId()).build();
+//            this.accountUserApi.createAccountUser(accountUserRequest);
+//            //todo 复制指标信息和突发事件
+//            StringBuffer sb = new StringBuffer();
+//            sb.append(vo.getAccountId());
+//            sb.append(",");
+//            sb.append(id);
+//            ids.add(sb.toString());
+//        });
         //3、uim中将人物放到对应小组
-        for (String str : ids) {
-            List<String> list = Arrays.asList(str.split(","));
-            AccountInstanceResponse instanceResponse = accountInstanceApi.getAccountInstanceByAccountId(list.get(0));
+        for (String personId : personIds) {
+            AccountInstanceResponse instanceResponse = accountInstanceApi.getAccountInstanceByAccountId(personId);
             AccountOrgResponse orgResponse = accountOrgApi.getAccountOrgByOrgId(entity.getOrgId(), appId);
             AccountGroupRequest request = AccountGroupRequest
                     .builder()
                     .orgId(entity.getOrgId())
                     .orgName(orgResponse.getOrgName())
-                    .accountId(list.get(0))
+                    .accountId(personId)
                     .accountName(instanceResponse.getAccountName())
                     .userId(instanceResponse.getUserId())
                     .appId(appId)
@@ -327,8 +326,7 @@ public class OrgBiz {
                     .casePersonId(casePersonId)
                     .caseInstanceId(caseInstanceId)
                     .caseOrgId(caseOrgId)
-                    .caseAccountId(list.get(0))
-                    .sourceAccountId(list.get(1))
+                    .accountId(personId)
                     .build();
             casePersonService.save(person);
         }
@@ -575,7 +573,7 @@ public class OrgBiz {
                 .eq(CasePersonEntity::getCaseOrgId, caseOrgId)
                 .eq(CasePersonEntity::getCaseInstanceId,caseInstanceId)
                 .eq(CasePersonEntity::getDeleted, false)
-                .eq(CasePersonEntity::getSourceAccountId, accountId)
+                .eq(CasePersonEntity::getAccountId, accountId)
                 .one();
         if(entity != null){
             return false;
@@ -635,8 +633,7 @@ public class OrgBiz {
                 .casePersonId(casePersonId)
                 .caseInstanceId(caseInstanceId)
                 .caseOrgId(caseOrgId)
-                .caseAccountId(vo.getAccountId())
-                .sourceAccountId(accountId)
+                .accountId(vo.getAccountId())
                 .build();
         return casePersonService.save(person);
     }
@@ -679,7 +676,7 @@ public class OrgBiz {
      * @return
      * @说明: 生成 随机机构编码
      */
-    public String createCode(int n) {
+    public static String createCode(int n) {
         Random r = new Random();
         String code = "";
         for (int i = 0; i < n; i++) {

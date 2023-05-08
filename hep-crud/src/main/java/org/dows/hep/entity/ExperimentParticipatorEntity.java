@@ -48,6 +48,12 @@ public class ExperimentParticipatorEntity implements CrudEntity {
     @Schema(title = "实验实列ID")
     private String experimentInstanceId;
 
+    @Schema(title = "案例机构ID")
+    private String caseOrgIds;
+
+    @Schema(title = "案例机构名称")
+    private String caseOrgNames;
+
     @Schema(title = "组员账号ID")
     private String accountId;
 
@@ -67,7 +73,7 @@ public class ExperimentParticipatorEntity implements CrudEntity {
     private Integer participatorType;
 
     @Schema(title = "参与者状态[0: 未准备 1:已准备 2:选择阶段中 3:已选择阶段]")
-    private Boolean participatorState;
+    private Integer participatorState;
 
     @Schema(title = "实验者状态[默认未开始状态0~6步]")
     private Boolean state;
