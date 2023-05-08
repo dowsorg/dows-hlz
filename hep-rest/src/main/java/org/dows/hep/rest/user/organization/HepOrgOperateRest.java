@@ -70,8 +70,8 @@ public class HepOrgOperateRest {
     */
     @Operation(summary = "转移人员")
     @PutMapping("v1/userOrganization/hepOrgOperate/transferPerson")
-    public Boolean transferPerson(@Validated TransferPersonelRequest transferPersonel ) {
-        return hepOrgOperateBiz.transferPerson(transferPersonel);
+    public Boolean transferPerson(@Validated TransferPersonelRequest request) {
+        return hepOrgOperateBiz.transferPerson(request);
     }
 
     /**

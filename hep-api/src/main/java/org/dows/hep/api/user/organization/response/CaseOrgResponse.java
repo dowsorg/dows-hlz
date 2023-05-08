@@ -30,4 +30,7 @@ public class CaseOrgResponse {
 
     @Schema(title = "机构名称")
     private String orgName;
+
+    @Schema(title = "操作手册")
+    private String handbook;
 }
