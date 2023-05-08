@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.user.experiment.request.CreateGroupRequest;
+import org.dows.hep.api.user.experiment.request.ExperimentParticipatorRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
 import org.dows.hep.biz.user.experiment.ExperimentGroupBiz;
@@ -60,15 +61,15 @@ public class ExperimentGroupRest {
         return experimentGroupBiz.listGroupMembers(experimentGroupId);
     }
 
-//    /**
-//     * 分配小组成员
-//     * @param
-//     * @return
-//     */
-//    @Operation(summary = "分配小组成员")
-//    @PostMapping("v1/userExperiment/experimentGroup/allotGroupMembers")
-//    public ExperimentGroupResponse allotGroupMembers(@RequestBody @Validated CasePersonIndicatorFuncRequest request) {
-//        return experimentGroupBiz.allotGroupMembers(experimentInstanceId);
-//    }
+    /**
+     * 分配小组成员
+     * @param
+     * @return
+     */
+    @Operation(summary = "分配小组成员")
+    @PostMapping("v1/userExperiment/experimentGroup/allotGroupMembers")
+    public Boolean allotGroupMembers(@RequestBody @Validated ExperimentParticipatorRequest request) {
+        return experimentGroupBiz.allotGroupMembers(request);
+    }
 
 }
