@@ -267,10 +267,10 @@ public class ExperimentManageBiz {
                     .experimentGroupId(request.getExperimentGroupId())
                     .experimentPersonId(idGenerator.nextIdStr())
                     .appId(request.getAppId())
-                    .caseOrgId(model.getOrgId())
-                    .caseOrgName(model.getOrgName())
-                    .casePersonId(model.getAccountId())
-                    .casePersonName(model.getAccountName())
+                    .experimentOrgId(model.getOrgId())
+                    .experimentOrgName(model.getOrgName())
+                    .experimentAccountId(model.getAccountId())
+                    .experimentAccountName(model.getAccountName())
                     .periods(request.getPeriods())
                     .build();
             experimentPersonService.save(entity);
@@ -338,10 +338,10 @@ public class ExperimentManageBiz {
                             .experimentPersonId(vo.getAccountId())
                             .experimentInstanceId(createExperiment.getExperimentInstanceId())
                             .experimentGroupId(model.getExperimentGroupId())
-                            .caseOrgId(teacher.getOrgId())
-                            .casePersonId(teacher.getAccountId())
-                            .casePersonName(teacher.getAccountName())
-                            .caseOrgName(teacher.getOrgName())
+                            .experimentOrgId(teacher.getOrgId())
+                            .experimentOrgName(teacher.getAccountId())
+                            .experimentAccountId(teacher.getAccountName())
+                            .experimentAccountName(teacher.getOrgName())
                             .build();
                     experimentPersonService.save(entity);
                 });
