@@ -1,6 +1,6 @@
 package org.dows.hep.biz.user.materials;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.materials.request.MaterialsPageRequest;
 import org.dows.hep.api.base.materials.response.MaterialsPageResponse;
@@ -28,7 +28,7 @@ public class UserMaterialsBiz {
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public Page<MaterialsPageResponse> pageMaterials(MaterialsPageRequest materialsPageRequest ) {
+    public IPage<MaterialsPageResponse> pageMaterials(MaterialsPageRequest materialsPageRequest ) {
         return materialsManageBiz.pageMaterials(materialsPageRequest);
     }
     /**

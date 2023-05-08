@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.materials.request.MaterialsAttachmentRequest;
@@ -78,7 +79,7 @@ public class MaterialsManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public Page<MaterialsPageResponse> pageMaterials(MaterialsPageRequest materialsPageRequest) {
+    public IPage<MaterialsPageResponse> pageMaterials(MaterialsPageRequest materialsPageRequest) {
         Page<MaterialsPageResponse> result = new Page<>();
         if (BeanUtil.isEmpty(materialsPageRequest)) {
             return result;
