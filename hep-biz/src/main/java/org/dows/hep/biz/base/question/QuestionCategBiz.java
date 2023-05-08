@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class QuestionCategBiz {
 
-    private final BaseQuestionDomainBiz baseQuestionDomainBiz;
+    private final QuestionDomainBaseBiz questionDomainBaseBiz;
     private final QuestionCategoryService questionCategoryService;
     public static final String CATEG_PATH_DELIMITER = "|";
 
@@ -148,7 +148,7 @@ public class QuestionCategBiz {
     private void beforeSaveOrUpd(QuestionCategoryRequest questionCategory) {
         String questionCategId = questionCategory.getQuestionCategId();
         if (StrUtil.isBlank(questionCategId)) {
-            questionCategory.setQuestionCategId(baseQuestionDomainBiz.getIdStr());
+            questionCategory.setQuestionCategId(questionDomainBaseBiz.getIdStr());
         }
         String questionCategPid = questionCategory.getQuestionCategPid();
         if (StrUtil.isBlank(questionCategPid)) {

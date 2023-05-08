@@ -9,7 +9,7 @@ import org.dows.hep.api.base.question.QuestionAccessAuthEnum;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.QuestionRequest;
 import org.dows.hep.api.base.question.response.QuestionResponse;
-import org.dows.hep.biz.base.question.BaseQuestionDomainBiz;
+import org.dows.hep.biz.base.question.QuestionDomainBaseBiz;
 import org.dows.hep.entity.QuestionInstanceEntity;
 import org.dows.hep.service.QuestionInstanceService;
 import org.springframework.stereotype.Component;
@@ -26,7 +26,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
 
-    private final BaseQuestionDomainBiz baseQuestionDomainBiz;
+    private final QuestionDomainBaseBiz questionDomainBaseBiz;
     private final QuestionInstanceService questionInstanceService;
 
     @PostConstruct
@@ -39,8 +39,8 @@ public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
     @Override
     public String save(QuestionRequest questionRequest) {
         questionRequest.setBizCode(questionRequest.getBizCode() == null ? QuestionAccessAuthEnum.PRIVATE_VIEWING : questionRequest.getBizCode());
-        questionRequest.setAppId(baseQuestionDomainBiz.getAppId());
-        questionRequest.setQuestionInstancePid(baseQuestionDomainBiz.getQuestionInstancePid());
+        questionRequest.setAppId(questionDomainBaseBiz.getAppId());
+        questionRequest.setQuestionInstancePid(questionDomainBaseBiz.getQuestionInstancePid());
         return traverseSave(questionRequest);
     }
 
@@ -146,9 +146,9 @@ public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
     private String saveNode(QuestionRequest qr) {
         // save instance
         QuestionInstanceEntity questionInstanceEntity = BeanUtil.copyProperties(qr, QuestionInstanceEntity.class);
-        questionInstanceEntity.setQuestionInstanceId(baseQuestionDomainBiz.getIdStr());
-        questionInstanceEntity.setQuestionIdentifier(baseQuestionDomainBiz.getIdStr());
-        questionInstanceEntity.setVer(baseQuestionDomainBiz.getLastVer());
+        questionInstanceEntity.setQuestionInstanceId(questionDomainBaseBiz.getIdStr());
+        questionInstanceEntity.setQuestionIdentifier(questionDomainBaseBiz.getIdStr());
+        questionInstanceEntity.setVer(questionDomainBaseBiz.getLastVer());
         questionInstanceEntity.setQuestionType(qr.getQuestionType().getCode());
         questionInstanceService.save(questionInstanceEntity);
         return questionInstanceEntity.getQuestionInstanceId();
