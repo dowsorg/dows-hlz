@@ -276,7 +276,6 @@ public class ExperimentManageBiz {
             experimentPersonService.save(entity);
             count++;
         }
-        ;
         return count;
     }
 

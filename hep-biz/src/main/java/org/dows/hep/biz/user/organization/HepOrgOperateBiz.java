@@ -1,5 +1,7 @@
 package org.dows.hep.biz.user.organization;
 
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
+import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.user.organization.request.CaseOrgFeeRequest;
 import org.dows.hep.api.user.organization.request.OrgPositionRequest;
 import org.dows.hep.api.user.organization.request.PersonQueryRequest;
@@ -7,6 +9,7 @@ import org.dows.hep.api.user.organization.request.TransferPersonelRequest;
 import org.dows.hep.api.user.organization.response.AccountOrgGeoResponse;
 import org.dows.hep.api.user.organization.response.OrganizationFunsResponse;
 import org.dows.hep.api.user.organization.response.PersonInstanceResponse;
+import org.dows.hep.service.ExperimentPersonService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -19,7 +22,10 @@ import java.util.List;
 * @date 2023年4月23日 上午9:44:34
 */
 @Service
+@RequiredArgsConstructor
 public class HepOrgOperateBiz{
+
+    private final ExperimentPersonService experimentPersonService;
     /**
     * @param
     * @return
@@ -69,8 +75,10 @@ public class HepOrgOperateBiz{
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public Boolean transferPerson(TransferPersonelRequest transferPersonel ) {
-        return Boolean.FALSE;
+    @DSTransactional
+    public Boolean transferPerson(TransferPersonelRequest request) {
+      //1、根据案例机构ID和账户ID查找用户
+      return false;
     }
     /**
     * @param
