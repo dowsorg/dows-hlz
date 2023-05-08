@@ -2,7 +2,10 @@ package org.dows.hep.biz.user.person;
 
 import lombok.RequiredArgsConstructor;
 import org.dows.account.api.AccountInstanceApi;
+import org.dows.account.api.AccountOrgGeoApi;
 import org.dows.account.response.AccountInstanceResponse;
+import org.dows.account.response.AccountOrgGeoResponse;
+import org.dows.account.response.AccountOrgResponse;
 import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.entity.CaseOrgEntity;
 import org.dows.hep.entity.CasePersonEntity;
@@ -10,6 +13,7 @@ import org.dows.hep.service.CaseOrgService;
 import org.dows.hep.service.CasePersonService;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,11 +30,13 @@ public class PersonStatiscBiz {
 
     private final AccountInstanceApi accountInstanceApi;
 
+    private final AccountOrgGeoApi accountOrgGeoApi;
+
     /**
      * @param
      * @return
      * @说明: 获取社区人数
-     * @关联表: case_person
+     * @关联表: case_person、case_org
      * @工时: 1H
      * @开发者: jx
      * @开始时间:
@@ -63,5 +69,39 @@ public class PersonStatiscBiz {
             }
         }
         return count;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 获取案例机构
+     * @关联表: case_person、case_org
+     * @工时: 1H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年5月8日 上午13:57:34
+     */
+    public List<AccountOrgResponse> countCaseOrgs(String caseInstanceId) {
+        //1、获取案例中的已经被开启的机构
+        List<CaseOrgEntity> orgList = caseOrgService.lambdaQuery()
+                .eq(CaseOrgEntity::getCaseInstanceId, caseInstanceId)
+                .eq(CaseOrgEntity::getDeleted, false)
+                .list();
+        //2、获取机构的经纬度信息
+        List<AccountOrgResponse> orgResponses = new ArrayList<>();
+        if(orgList != null && orgList.size() > 0){
+            orgList.forEach(org->{
+                AccountOrgResponse orgResponse = AccountOrgResponse
+                        .builder()
+                        .orgId(org.getCaseOrgId())
+                        .orgName(org.getOrgName())
+                        .build();
+                AccountOrgGeoResponse orgGeo = accountOrgGeoApi.getAccountOrgInfoByOrgId(org.getOrgId());
+                orgResponse.setOrgLatitude(orgGeo.getOrgLatitude());
+                orgResponse.setOrgLongitude(orgGeo.getOrgLongitude());
+                orgResponses.add(orgResponse);
+            });
+        }
+        return orgResponses;
     }
 }
