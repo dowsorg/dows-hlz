@@ -24,6 +24,9 @@ public class CreateExperimentRequest{
     @Schema(title = "案例实验ID")
     private String experimentInstanceId;
 
+    @Schema(title = "实验小组ID")
+    private String experimentGroupId;
+
     @Schema(title = "案例名称")
     private String caseName;
 
@@ -47,4 +50,7 @@ public class CreateExperimentRequest{
 
     @Schema(title = "应用ID")
     private String appId;
+
+    @Schema(title = "期数")
+    private Integer periods;
 }

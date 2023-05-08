@@ -61,6 +61,7 @@ public class ExperimentManageBiz {
     private final UserInstanceApi userInstanceApi;
     private final UserExtinfoApi userExtinfoApi;
     private final AccountInstanceApi accountInstanceApi;
+    private final CasePersonService casePersonService;
 
 //    private final
 
@@ -113,7 +114,7 @@ public class ExperimentManageBiz {
                     .configKey(experimentSetting.getSchemeSetting().getClass().getName())
                     .configJsonVals(JSONUtil.toJsonStr(experimentSetting.getSchemeSetting()))
                     .build();
-            //保存方案设计
+            // 保存方案设计
             experimentSettingService.saveOrUpdate(experimentSettingEntity);
 
             experimentSettingEntity = ExperimentSettingEntity.builder()
@@ -122,7 +123,7 @@ public class ExperimentManageBiz {
                     .configKey(experimentSetting.getSandSetting().getClass().getName())
                     .configJsonVals(JSONUtil.toJsonStr(experimentSetting.getSandSetting()))
                     .build();
-            //保存沙盘设计
+            // 保存沙盘设计
             experimentSettingService.saveOrUpdate(experimentSettingEntity);
             // 沙盘模式
         } else if (null != experimentSetting.getSandSetting()) {
@@ -142,7 +143,7 @@ public class ExperimentManageBiz {
                     .configKey(experimentSetting.getSchemeSetting().getClass().getName())
                     .configJsonVals(JSONUtil.toJsonStr(experimentSetting.getSchemeSetting()))
                     .build();
-            //保存方案设计
+            // 保存方案设计
             experimentSettingService.saveOrUpdate(experimentSettingEntity);
         }
         return experimentInstance.getExperimentInstanceId();
@@ -234,6 +235,49 @@ public class ExperimentManageBiz {
                 .likeLeft(ExperimentInstanceEntity::getCaseName, pageExperimentRequest.getKeyword())
                 .likeLeft(ExperimentInstanceEntity::getExperimentDescr, pageExperimentRequest.getKeyword()));
         return page1;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 实验小组保存案例人物
+     * @关联表: ExperimentPerson
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年5月8日 上午11:23:07
+     */
+    @DSTransactional
+    public Integer addExperimentGroupPerson(CreateExperimentRequest request) {
+        Integer count = 0;
+        List<AccountInstanceResponse> instanceResponses = request.getTeachers();
+        //1、通过案例人物ID找到账户ID，进而找到姓名
+        instanceResponses.forEach(instance -> {
+            CasePersonEntity entity = casePersonService.lambdaQuery()
+                    .eq(CasePersonEntity::getCaseOrgId, instance.getOrgId())
+                    .eq(CasePersonEntity::getDeleted, false)
+                    .eq(CasePersonEntity::getCasePersonId, instance.getAccountId())
+                    .one();
+            instance.setAccountName(accountInstanceApi.getAccountInstanceByAccountId(entity.getAccountId()).getAccountName());
+        });
+        //2、保存实验小组人物信息
+        for (AccountInstanceResponse model : instanceResponses) {
+            ExperimentPersonEntity entity = ExperimentPersonEntity.builder()
+                    .experimentInstanceId(request.getExperimentInstanceId())
+                    .experimentGroupId(request.getExperimentGroupId())
+                    .experimentPersonId(idGenerator.nextIdStr())
+                    .appId(request.getAppId())
+                    .caseOrgId(model.getOrgId())
+                    .caseOrgName(model.getOrgName())
+                    .casePersonId(model.getAccountId())
+                    .casePersonName(model.getAccountName())
+                    .periods(request.getPeriods())
+                    .build();
+            experimentPersonService.save(entity);
+            count++;
+        }
+        ;
+        return count;
     }
 
     /**

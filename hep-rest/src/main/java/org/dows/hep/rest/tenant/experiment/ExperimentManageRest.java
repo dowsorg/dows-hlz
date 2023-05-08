@@ -49,6 +49,18 @@ public class ExperimentManageRest {
         return experimentManageBiz.copyExperimentPerson(createExperiment);
     }
 
+
+    /**
+     * 实验小组保存案例人物
+     * @param
+     * @return
+     */
+    @Operation(summary = "实验小组保存案例人物")
+    @PostMapping("v1/tenantExperiment/experimentManage/addExperimentGroupPerson")
+    public Integer addExperimentGroupPerson(@RequestBody @Validated CreateExperimentRequest request) {
+        return experimentManageBiz.addExperimentGroupPerson(request);
+    }
+
     /**
     * 实验分组
     * @param
