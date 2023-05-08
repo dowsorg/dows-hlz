@@ -1,10 +1,9 @@
 package org.dows.hep.rest.base.question;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.framework.api.Response;
 import org.dows.hep.api.base.question.request.QuestionPageRequest;
 import org.dows.hep.api.base.question.request.QuestionRequest;
 import org.dows.hep.api.base.question.request.QuestionSearchRequest;
@@ -46,9 +45,8 @@ public class QuestionInstanceRest {
     */
     @Operation(summary = "分页")
     @PostMapping("v1/baseQuestion/questionInstance/pageQuestion")
-    public Response<Page<QuestionPageResponse>> pageQuestion(@RequestBody @Validated QuestionPageRequest questionPageRequest ) {
-        Page<QuestionPageResponse> result = questionInstanceBiz.pageQuestion(questionPageRequest);
-        return Response.ok(result);
+    public IPage<QuestionPageResponse> pageQuestion(@RequestBody @Validated QuestionPageRequest questionPageRequest ) {
+        return questionInstanceBiz.pageQuestion(questionPageRequest);
     }
 
     /**
@@ -58,9 +56,8 @@ public class QuestionInstanceRest {
     */
     @Operation(summary = "条件查询-无分页")
     @PostMapping("v1/baseQuestion/questionInstance/listQuestion")
-    public Response<List<QuestionResponse>> listQuestion(@RequestBody @Validated QuestionSearchRequest questionSearch ) {
-        List<QuestionResponse> result = questionInstanceBiz.listQuestion(questionSearch);
-        return Response.ok(result);
+    public List<QuestionResponse> listQuestion(@RequestBody @Validated QuestionSearchRequest questionSearch ) {
+        return questionInstanceBiz.listQuestion(questionSearch);
     }
 
     /**
@@ -70,9 +67,8 @@ public class QuestionInstanceRest {
     */
     @Operation(summary = "根据ID获取详情")
     @GetMapping("v1/baseQuestion/questionInstance/getQuestion")
-    public Response<QuestionResponse> getQuestion(@Validated String questionInstanceId) {
-        QuestionResponse result = questionInstanceBiz.getQuestion(questionInstanceId);
-        return Response.ok(result);
+    public QuestionResponse getQuestion(@Validated String questionInstanceId) {
+        return questionInstanceBiz.getQuestion(questionInstanceId);
     }
 
     /**
@@ -82,9 +78,8 @@ public class QuestionInstanceRest {
     */
     @Operation(summary = "启用")
     @GetMapping("v1/baseQuestion/questionInstance/enabledQuestion")
-    public Response<Boolean> enabledQuestion(@Validated String questionInstanceId) {
-        Boolean result = questionInstanceBiz.enabledQuestion(questionInstanceId);
-        return Response.ok(result);
+    public Boolean enabledQuestion(@Validated String questionInstanceId) {
+        return questionInstanceBiz.enabledQuestion(questionInstanceId);
     }
 
     /**
@@ -94,9 +89,8 @@ public class QuestionInstanceRest {
     */
     @Operation(summary = "禁用")
     @GetMapping("v1/baseQuestion/questionInstance/disabledQuestion")
-    public Response<Boolean> disabledQuestion(@Validated String questionInstanceId) {
-        Boolean result = questionInstanceBiz.disabledQuestion(questionInstanceId);
-        return Response.ok(result);
+    public Boolean disabledQuestion(@Validated String questionInstanceId) {
+        return questionInstanceBiz.disabledQuestion(questionInstanceId);
     }
 
     /**
@@ -106,9 +100,8 @@ public class QuestionInstanceRest {
     */
     @Operation(summary = "排序")
     @GetMapping("v1/baseQuestion/questionInstance/sortQuestion")
-    public Response<Boolean> sortQuestion(@Validated String string, @Validated Integer sequence) {
-        Boolean result = questionInstanceBiz.sortQuestion(string, sequence);
-        return Response.ok(result);
+    public Boolean sortQuestion(@Validated String string, @Validated Integer sequence) {
+        return questionInstanceBiz.sortQuestion(string, sequence);
     }
 
     /**
@@ -118,9 +111,8 @@ public class QuestionInstanceRest {
     */
     @Operation(summary = "交换")
     @GetMapping("v1/baseQuestion/questionInstance/transposeQuestion")
-    public Response<Boolean> transposeQuestion(@Validated String leftQuestionInstanceId, @Validated String rightQuestionInstanceId) {
-        Boolean result = questionInstanceBiz.transposeQuestion(leftQuestionInstanceId, rightQuestionInstanceId);
-        return Response.ok(result);
+    public Boolean transposeQuestion(@Validated String leftQuestionInstanceId, @Validated String rightQuestionInstanceId) {
+        return questionInstanceBiz.transposeQuestion(leftQuestionInstanceId, rightQuestionInstanceId);
     }
 
     /**
@@ -130,9 +122,8 @@ public class QuestionInstanceRest {
     */
     @Operation(summary = "删除or批量删除")
     @DeleteMapping("v1/baseQuestion/questionInstance/delQuestion")
-    public Response<Boolean> delQuestion(List<String> questionInstanceIds ) {
-        Boolean result = questionInstanceBiz.delQuestion(questionInstanceIds);
-        return Response.ok(result);
+    public Boolean delQuestion(List<String> questionInstanceIds ) {
+        return questionInstanceBiz.delQuestion(questionInstanceIds);
     }
 
 

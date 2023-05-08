@@ -22,7 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 public class QuestionSectionDimensionBiz{
-    private BaseQuestionDomainBiz baseBiz;
+    private QuestionDomainBaseBiz baseBiz;
     private final QuestionSectionDimensionService questionSectionDimensionService;
     /**
     * @param

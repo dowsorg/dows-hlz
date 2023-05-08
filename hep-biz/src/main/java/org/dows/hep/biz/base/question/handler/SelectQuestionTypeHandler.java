@@ -10,7 +10,7 @@ import org.dows.hep.api.base.question.request.QuestionOptionWithAnswerRequest;
 import org.dows.hep.api.base.question.request.QuestionRequest;
 import org.dows.hep.api.base.question.response.QuestionOptionWithAnswerResponse;
 import org.dows.hep.api.base.question.response.QuestionResponse;
-import org.dows.hep.biz.base.question.BaseQuestionDomainBiz;
+import org.dows.hep.biz.base.question.QuestionDomainBaseBiz;
 import org.dows.hep.entity.QuestionAnswersEntity;
 import org.dows.hep.entity.QuestionInstanceEntity;
 import org.dows.hep.entity.QuestionOptionsEntity;
@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SelectQuestionTypeHandler implements QuestionTypeHandler {
 
-    private final BaseQuestionDomainBiz baseQuestionDomainBiz;
+    private final QuestionDomainBaseBiz questionDomainBaseBiz;
     private final QuestionInstanceService questionInstanceService;
     private final QuestionOptionsService questionOptionsService;
     private final QuestionAnswersService questionAnswersService;
@@ -49,11 +49,11 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
     public String save(QuestionRequest questionRequest) {
         // base-info
         questionRequest.setBizCode(questionRequest.getBizCode() == null ? QuestionAccessAuthEnum.PRIVATE_VIEWING : questionRequest.getBizCode());
-        questionRequest.setAppId(questionRequest.getAppId() == null ? baseQuestionDomainBiz.getAppId() : baseQuestionDomainBiz.getAppId());
-        questionRequest.setQuestionInstancePid(baseQuestionDomainBiz.getQuestionInstancePid());
-        questionRequest.setQuestionCategId(baseQuestionDomainBiz.getIdStr());
-        questionRequest.setQuestionIdentifier(baseQuestionDomainBiz.getIdStr());
-        questionRequest.setVer(baseQuestionDomainBiz.getLastVer());
+        questionRequest.setAppId(questionRequest.getAppId() == null ? questionDomainBaseBiz.getAppId() : questionDomainBaseBiz.getAppId());
+        questionRequest.setQuestionInstancePid(questionDomainBaseBiz.getQuestionInstancePid());
+        questionRequest.setQuestionCategId(questionDomainBaseBiz.getIdStr());
+        questionRequest.setQuestionIdentifier(questionDomainBaseBiz.getIdStr());
+        questionRequest.setVer(questionDomainBaseBiz.getLastVer());
 
         // save base-info
         QuestionInstanceEntity questionInstanceEntity = BeanUtil.copyProperties(questionRequest, QuestionInstanceEntity.class);
@@ -72,8 +72,8 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
                     QuestionAnswersEntity questionAnswersEntity = BeanUtil.copyProperties(item, QuestionAnswersEntity.class);
                     questionAnswersEntity.setAppId(questionInstanceEntity.getAppId());
                     questionAnswersEntity.setQuestionInstanceId(questionInstanceEntity.getQuestionInstanceId());
-                    questionAnswersEntity.setQuestionOptionsId(baseQuestionDomainBiz.getIdStr());
-                    questionAnswersEntity.setQuestionAnswerId(baseQuestionDomainBiz.getIdStr());
+                    questionAnswersEntity.setQuestionOptionsId(questionDomainBaseBiz.getIdStr());
+                    questionAnswersEntity.setQuestionAnswerId(questionDomainBaseBiz.getIdStr());
                     return questionAnswersEntity;
                 }).collect(Collectors.toList());
         questionAnswersService.saveBatch(answersEntityList);

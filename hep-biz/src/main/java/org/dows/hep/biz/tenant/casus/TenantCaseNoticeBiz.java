@@ -22,7 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 public class TenantCaseNoticeBiz {
-    private final BaseTenantCaseBiz baseBiz;
+    private final TenantCaseBaseBiz baseBiz;
     private final CaseNoticeService caseNoticeService;
 
     /**

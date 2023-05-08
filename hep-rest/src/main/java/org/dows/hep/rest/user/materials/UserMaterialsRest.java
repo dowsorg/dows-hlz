@@ -1,6 +1,6 @@
 package org.dows.hep.rest.user.materials;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ public class UserMaterialsRest {
     */
     @Operation(summary = "分页")
     @PostMapping("v1/userMaterials/userMaterials/pageMaterials")
-    public Page<MaterialsPageResponse> pageMaterials(@RequestBody @Validated MaterialsPageRequest materialsPageRequest ) {
+    public IPage<MaterialsPageResponse> pageMaterials(@RequestBody @Validated MaterialsPageRequest materialsPageRequest ) {
         return userMaterialsBiz.pageMaterials(materialsPageRequest);
     }
 

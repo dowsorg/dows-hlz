@@ -28,7 +28,7 @@ import java.util.function.Function;
 @Service
 public class QuestionSectionItemBiz {
 
-    private final BaseQuestionDomainBiz baseBiz;
+    private final QuestionDomainBaseBiz baseBiz;
     private final QuestionInstanceBiz questionInstanceBiz;
     private final QuestionSectionItemService questionSectionItemService;
 

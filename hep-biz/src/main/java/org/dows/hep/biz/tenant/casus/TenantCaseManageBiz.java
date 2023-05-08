@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.enums.EnumStatus;
@@ -26,7 +27,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class TenantCaseManageBiz {
-    private final BaseTenantCaseBiz baseBiz;
+    private final TenantCaseBaseBiz baseBiz;
     private final CaseInstanceService caseInstanceService;
 
     /**
@@ -70,16 +71,16 @@ public class TenantCaseManageBiz {
     }
 
     /**
-    * @param
-    * @return
-    * @说明: 列表
-    * @关联表: caseInstance
-    * @工时: 4H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public Page<CaseInstancePageResponse> pageCaseInstance(CaseInstancePageRequest caseInstancePageRequest ) {
+     * @param
+     * @return
+     * @说明: 列表
+     * @关联表: caseInstance
+     * @工时: 4H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public IPage<CaseInstancePageResponse> pageCaseInstance(CaseInstancePageRequest caseInstancePageRequest ) {
         Page<CaseInstancePageResponse> result = new Page<>();
         if (BeanUtil.isEmpty(caseInstancePageRequest)) {
             return result;

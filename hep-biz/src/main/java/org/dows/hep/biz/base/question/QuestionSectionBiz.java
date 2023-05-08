@@ -10,8 +10,6 @@ import org.dows.hep.api.base.question.response.QuestionSectionDimensionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionItemResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
 import org.dows.hep.entity.QuestionSectionEntity;
-import org.dows.hep.entity.QuestionSectionItemEntity;
-import org.dows.hep.service.QuestionSectionItemService;
 import org.dows.hep.service.QuestionSectionService;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +26,7 @@ import java.util.List;
 @Service
 public class QuestionSectionBiz {
 
-    private final BaseQuestionDomainBiz baseBiz;
+    private final QuestionDomainBaseBiz baseBiz;
     private final QuestionSectionService questionSectionService;
     private final QuestionSectionItemBiz questionSectionItemBiz;
     private final QuestionSectionDimensionBiz questionSectionDimensionBiz;
