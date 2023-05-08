@@ -9,7 +9,7 @@ import org.dows.hep.api.base.question.QuestionAccessAuthEnum;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.QuestionRequest;
 import org.dows.hep.api.base.question.response.QuestionResponse;
-import org.dows.hep.biz.base.question.BaseQuestionDomainBiz;
+import org.dows.hep.biz.base.question.QuestionDomainBaseBiz;
 import org.dows.hep.entity.QuestionInstanceEntity;
 import org.dows.hep.service.QuestionInstanceService;
 import org.springframework.stereotype.Component;
@@ -26,7 +26,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MaterialQuestionTypeHandler implements QuestionTypeHandler {
 
-    private final BaseQuestionDomainBiz baseBiz;
+    private final QuestionDomainBaseBiz baseBiz;
     private final QuestionInstanceService questionInstanceService;
 
     @PostConstruct

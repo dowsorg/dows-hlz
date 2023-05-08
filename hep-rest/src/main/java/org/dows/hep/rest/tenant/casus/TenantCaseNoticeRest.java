@@ -29,7 +29,7 @@ public class TenantCaseNoticeRest {
     */
     @Operation(summary = "新增和更新案例公告")
     @PostMapping("v1/tenantCasus/caseNotice/saveOrUpdCaseNotice")
-    public Boolean saveOrUpdCaseNotice(@RequestBody @Validated CaseNoticeRequest caseNotice ) {
+    public String saveOrUpdCaseNotice(@RequestBody @Validated CaseNoticeRequest caseNotice ) {
         return tenantCaseNoticeBiz.saveOrUpdCaseNotice(caseNotice);
     }
 

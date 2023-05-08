@@ -45,6 +45,23 @@ public class MaterialCategoryRest {
     }
 
     /**
+     * 批量新增或修改资料类别信息
+     * @param
+     * @return
+     */
+    @Operation(summary = "批量新增或修改资料类别信息")
+    @PostMapping("v1/baseMaterials/materialsCategory/batchSaveOrUpdateMaterialsCategory")
+    public Integer batchSaveMaterialsCategory(@RequestBody @Validated List<MaterialsCategoryRequest> materialsList, HttpServletRequest request) {
+        String token = request.getHeader("token");
+        Map<String, Object> map = JwtUtil.parseJWT(token, EnumToken.PROPERTIES_JWT_KEY.getStr());
+        //1、获取登录账户和名称
+        String accountId = map.get("accountId").toString();
+        String accountName = map.get("accountName").toString();
+        //2、保存账号
+        return materialsCategoryBiz.batchSaveOrUpdateMaterialsCategory(materialsList,accountId,accountName);
+    }
+
+    /**
      * 获取 资料类别信息 列表
      * @param
      * @return

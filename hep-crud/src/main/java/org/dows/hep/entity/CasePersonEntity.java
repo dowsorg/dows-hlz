@@ -46,10 +46,7 @@ public class CasePersonEntity implements CrudEntity {
     private String caseOrgId;
 
     @Schema(title = "案例|病人账号ID[uim]")
-    private String caseAccountId;
-
-    @Schema(title = "被复制的账号源")
-    private String sourceAccountId;
+    private String accountId;
 
     @JsonIgnore
     @TableLogic

@@ -8,7 +8,7 @@ import java.util.Date;
 
 @RequiredArgsConstructor
 @Service
-public class BaseTenantCaseBiz {
+public class TenantCaseBaseBiz {
     private static final String LAST_VERSION = "SNAPSHOT";
 
     private final IdGenerator idGenerator;

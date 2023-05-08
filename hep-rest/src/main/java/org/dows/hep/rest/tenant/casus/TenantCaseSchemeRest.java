@@ -1,6 +1,6 @@
 package org.dows.hep.rest.tenant.casus;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +35,7 @@ public class TenantCaseSchemeRest {
      * @param
      * @return
      */
-    @Operation(summary = "新增方案设计")
+    @Operation(summary = "新增和更新")
     @PostMapping("v1/tenantCasus/caseScheme/saveOrUpdCaseScheme")
     public String saveOrUpdCaseScheme(@RequestBody @Validated CaseSchemeRequest caseScheme) {
         return tenantCaseSchemeBiz.saveOrUpdCaseScheme(caseScheme);
@@ -48,7 +48,7 @@ public class TenantCaseSchemeRest {
     */
     @Operation(summary = "分页案例方案")
     @PostMapping("v1/tenantCasus/caseScheme/pageCaseScheme")
-    public Page<CaseSchemePageResponse> pageCaseScheme(@RequestBody @Validated CaseSchemePageRequest caseSchemePage ) {
+    public IPage<CaseSchemePageResponse> pageCaseScheme(@RequestBody @Validated CaseSchemePageRequest caseSchemePage ) {
         return tenantCaseSchemeBiz.pageCaseScheme(caseSchemePage);
     }
 

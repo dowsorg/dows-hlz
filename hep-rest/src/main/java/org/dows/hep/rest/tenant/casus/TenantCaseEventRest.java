@@ -8,7 +8,7 @@ import org.dows.hep.api.tenant.casus.request.FindEventRequest;
 import org.dows.hep.api.tenant.casus.request.SaveCaseEventRequest;
 import org.dows.hep.api.tenant.casus.response.CaseEventInfoResponse;
 import org.dows.hep.api.tenant.casus.response.CaseEventResponse;
-import org.dows.hep.biz.tenant.casus.CaseEventBiz;
+import org.dows.hep.biz.tenant.casus.TenantCaseEventBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,8 +21,8 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RestController
 @Tag(name = "案例人物事件", description = "案例人物事件")
-public class CaseEventRest {
-    private final CaseEventBiz caseEventBiz;
+public class TenantCaseEventRest {
+    private final TenantCaseEventBiz tenantCaseEventBiz;
 
     /**
     * 获取人物事件列表
@@ -32,7 +32,7 @@ public class CaseEventRest {
     @Operation(summary = "获取人物事件列表")
     @PostMapping("v1/tenantCasus/caseEvent/pageCaseEvent")
     public CaseEventResponse pageCaseEvent(@RequestBody @Validated FindEventRequest findEvent ) {
-        return caseEventBiz.pageCaseEvent(findEvent);
+        return tenantCaseEventBiz.pageCaseEvent(findEvent);
     }
 
     /**
@@ -43,7 +43,7 @@ public class CaseEventRest {
     @Operation(summary = "获取人物事件详细")
     @GetMapping("v1/tenantCasus/caseEvent/getCaseEvent")
     public CaseEventInfoResponse getCaseEvent(@Validated String caseEventId) {
-        return caseEventBiz.getCaseEvent(caseEventId);
+        return tenantCaseEventBiz.getCaseEvent(caseEventId);
     }
 
     /**
@@ -54,7 +54,7 @@ public class CaseEventRest {
     @Operation(summary = "保存人物事件")
     @PostMapping("v1/tenantCasus/caseEvent/saveCaseEvent")
     public Boolean saveCaseEvent(@RequestBody @Validated SaveCaseEventRequest saveCaseEvent ) {
-        return caseEventBiz.saveCaseEvent(saveCaseEvent);
+        return tenantCaseEventBiz.saveCaseEvent(saveCaseEvent);
     }
 
     /**
@@ -65,7 +65,7 @@ public class CaseEventRest {
     @Operation(summary = "删除事件")
     @DeleteMapping("v1/tenantCasus/caseEvent/delCaseEvent")
     public Boolean delCaseEvent(@Validated DelCaseEventRequest delCaseEvent ) {
-        return caseEventBiz.delCaseEvent(delCaseEvent);
+        return tenantCaseEventBiz.delCaseEvent(delCaseEvent);
     }
 
 

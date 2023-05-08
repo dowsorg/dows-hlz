@@ -69,6 +69,59 @@ public class MaterialsCategoryBiz {
     /**
      * @param
      * @return
+     * @说明: 批量新增或修改资料类别信息
+     * @关联表: MaterialsCategory
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年5月06日 下午14:23:46
+     */
+    @DSTransactional
+    public Integer batchSaveOrUpdateMaterialsCategory(List<MaterialsCategoryRequest> materialsList, String accountId, String accountName) {
+        Integer count = 0;
+        for(MaterialsCategoryRequest materials : materialsList) {
+            //1、添加父节点
+            if (StringUtils.isNotEmpty(materials.getBizCode())) {
+                materials.setMaterialsCategIdPath(materials.getBizCode() + "/");
+                materials.setMaterialsCategNamePath(materials.getBizCode() + "/");
+            }
+            //2、新增判断是否已经存在该类别名称
+            if (StringUtils.isEmpty(materials.getMaterialsCategoryId())) {
+                materialsCategoryService.lambdaQuery()
+                        .eq(MaterialsCategoryEntity::getAppId, materials.getAppId())
+                        .eq(MaterialsCategoryEntity::getCategoryName, materials.getCategoryName())
+                        .oneOpt()
+                        .ifPresent((a) -> {
+                            throw new MaterialException(EnumMaterials.CATEGORY_NAME_IS_EXIST);
+                        });
+            }
+            //3、判断有没有materialsCategoryId，有的话就更新，没有则新增
+            if (StringUtils.isNotEmpty(materials.getMaterialsCategoryId())) {
+                MaterialsCategoryEntity entity = materialsCategoryService.lambdaQuery()
+                        .eq(MaterialsCategoryEntity::getMaterialsCategoryId, materials.getMaterialsCategoryId())
+                        .eq(MaterialsCategoryEntity::getDeleted, false)
+                        .one();
+                BeanUtils.copyProperties(materials, entity);
+                entity.setAccountId(accountId);
+                entity.setAccountName(accountName);
+                materialsCategoryService.updateById(entity);
+            } else {
+                MaterialsCategoryEntity model = new MaterialsCategoryEntity();
+                BeanUtils.copyProperties(materials, model);
+                model.setMaterialsCategoryId(idGenerator.nextIdStr());
+                model.setBizCode(materials.getBizCode());
+                model.setAccountId(accountId);
+                model.setAccountName(accountName);
+                materialsCategoryService.save(model);
+            }
+            count++;
+        }
+        return count;
+    }
+
+    /**
+     * @param
+     * @return
      * @说明: 获取 资料类别下的子类
      * @关联表: MaterialsCategory
      * @工时: 2H
@@ -80,6 +133,7 @@ public class MaterialsCategoryBiz {
         List<MaterialsCategoryEntity> categoryEntities = materialsCategoryService.lambdaQuery()
                 .eq(MaterialsCategoryEntity::getMaterialsCategNamePath, materials.getCategoryName() + "/")
                 .eq(MaterialsCategoryEntity::getAppId, materials.getAppId())
+                .eq(MaterialsCategoryEntity::getDeleted,false)
                 .list();
         categoryEntities = categoryEntities.stream().sorted(Comparator.comparing(MaterialsCategoryEntity::getSequence)).collect(Collectors.toList());
         return categoryEntities;
@@ -152,4 +206,5 @@ public class MaterialsCategoryBiz {
         //2、批量更新
         return materialsCategoryService.updateBatchById(entities);
     }
+
 }

@@ -2,8 +2,10 @@ package org.dows.hep.biz.tenant.casus;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.question.request.QuestionSectionItemRequest;
@@ -22,10 +24,11 @@ import org.dows.hep.biz.base.question.QuestionSectionBiz;
 import org.dows.hep.entity.CaseSchemeEntity;
 import org.dows.hep.service.CaseSchemeService;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -36,7 +39,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class TenantCaseSchemeBiz {
-    private final BaseTenantCaseBiz baseBiz;
+    private final TenantCaseBaseBiz baseBiz;
     private final CaseSchemeService caseSchemeService;
     private final QuestionSectionBiz questionSectionBiz;
 
@@ -50,7 +53,7 @@ public class TenantCaseSchemeBiz {
      * @开始时间:
      * @创建时间: 2023年4月17日 下午8:00:11
      */
-    @Transactional
+    @DSTransactional
     public String saveOrUpdCaseScheme(CaseSchemeRequest caseScheme) {
         if (caseScheme == null) {
             return "";
@@ -87,7 +90,7 @@ public class TenantCaseSchemeBiz {
      * @开始时间:
      * @创建时间: 2023年4月17日 下午8:00:11
      */
-    public Page<CaseSchemePageResponse> pageCaseScheme(CaseSchemePageRequest caseSchemePage) {
+    public IPage<CaseSchemePageResponse> pageCaseScheme(CaseSchemePageRequest caseSchemePage) {
         if (BeanUtil.isEmpty(caseSchemePage)) {
             return new Page<>();
         }
@@ -125,7 +128,27 @@ public class TenantCaseSchemeBiz {
      * @创建时间: 2023年4月17日 下午8:00:11
      */
     public List<CaseSchemeResponse> listCaseScheme(CaseSchemeSearchRequest caseSchemeSearch) {
-        return new ArrayList<CaseSchemeResponse>();
+        return list(caseSchemeSearch);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明:
+     * @关联表: caseScheme
+     * @工时: 5H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年5月6日 下午14:00:11
+     */
+    public Map<String, List<CaseSchemeResponse>> listGroupByCateg(CaseSchemeSearchRequest caseSchemeSearch) {
+        List<CaseSchemeResponse> responseList = list(caseSchemeSearch);
+        if(responseList == null || responseList.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        // group by categ
+        return responseList.stream().collect(Collectors.groupingBy(CaseSchemeResponse::getCaseCategName));
     }
 
     /**
@@ -139,9 +162,7 @@ public class TenantCaseSchemeBiz {
      * @创建时间: 2023年4月17日 下午8:00:11
      */
     public CaseSchemeResponse getCaseScheme(String caseSchemeId) {
-        LambdaQueryWrapper<CaseSchemeEntity> queryWrapper = new LambdaQueryWrapper<CaseSchemeEntity>()
-                .eq(CaseSchemeEntity::getCaseSchemeId, caseSchemeId);
-        CaseSchemeEntity caseSchemeEntity = caseSchemeService.getOne(queryWrapper);
+        CaseSchemeEntity caseSchemeEntity = getById(caseSchemeId);
         CaseSchemeResponse result = BeanUtil.copyProperties(caseSchemeEntity, CaseSchemeResponse.class);
         // set question-section
         setQuestionSection(caseSchemeEntity, result);
@@ -254,5 +275,30 @@ public class TenantCaseSchemeBiz {
     private Integer getQuestionCount(CaseSchemeRequest caseScheme) {
         List<QuestionSectionItemRequest> sectionItemList = caseScheme.getSectionItemList();
         return sectionItemList == null ? 0 : sectionItemList.size();
+    }
+
+    private CaseSchemeEntity getById(String caseSchemeId) {
+        LambdaQueryWrapper<CaseSchemeEntity> queryWrapper = new LambdaQueryWrapper<CaseSchemeEntity>()
+                .eq(CaseSchemeEntity::getCaseSchemeId, caseSchemeId);
+        return caseSchemeService.getOne(queryWrapper);
+    }
+
+    private List<CaseSchemeResponse> list(CaseSchemeSearchRequest caseSchemeSearch) {
+        if (caseSchemeSearch == null) {
+            return new ArrayList<>();
+        }
+
+        // list admin
+        LambdaQueryWrapper<CaseSchemeEntity> queryWrapper = new LambdaQueryWrapper<CaseSchemeEntity>()
+                .eq(CaseSchemeEntity::getSource, EnumSource.ADMIN.name());
+        List<CaseSchemeEntity> caseSchemeEntityList = caseSchemeService.list(queryWrapper);
+        if (caseSchemeEntityList == null || caseSchemeEntityList.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // convert 2 response
+        return caseSchemeEntityList.stream()
+                .map(item -> BeanUtil.copyProperties(item, CaseSchemeResponse.class))
+                .toList();
     }
 }

@@ -4,9 +4,9 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.enums.EnumStatus;
 import org.dows.hep.api.base.materials.request.MaterialsAttachmentRequest;
 import org.dows.hep.api.base.materials.request.MaterialsPageRequest;
 import org.dows.hep.api.base.materials.request.MaterialsRequest;
@@ -14,7 +14,7 @@ import org.dows.hep.api.base.materials.request.MaterialsSearchRequest;
 import org.dows.hep.api.base.materials.response.MaterialsAttachmentResponse;
 import org.dows.hep.api.base.materials.response.MaterialsPageResponse;
 import org.dows.hep.api.base.materials.response.MaterialsResponse;
-import org.dows.hep.biz.base.question.BaseQuestionDomainBiz;
+import org.dows.hep.api.enums.EnumStatus;
 import org.dows.hep.entity.MaterialsAttachmentEntity;
 import org.dows.hep.entity.MaterialsEntity;
 import org.dows.hep.service.MaterialsAttachmentService;
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class MaterialsManageBiz {
-    private final BaseQuestionDomainBiz baseQuestionDomainBiz;
+    private final MaterialsBaseBiz materialsBaseBiz;
     private final MaterialsService materialsService;
     private final MaterialsAttachmentService materialsAttachmentService;
 
@@ -58,8 +58,8 @@ public class MaterialsManageBiz {
         // materials
         if (StrUtil.isBlank(materialsRequest.getMaterialsId())) {
             materialsRequest.setEnabled(materialsRequest.getEnabled() == null ? EnumStatus.ENABLE.getCode() : materialsRequest.getEnabled());
-            materialsRequest.setAppId(baseQuestionDomainBiz.getAppId());
-            materialsRequest.setMaterialsId(baseQuestionDomainBiz.getIdStr());
+            materialsRequest.setAppId(materialsBaseBiz.getAppId());
+            materialsRequest.setMaterialsId(materialsBaseBiz.getIdStr());
         }
         MaterialsEntity materialsEntity = BeanUtil.copyProperties(materialsRequest, MaterialsEntity.class);
         materialsService.saveOrUpdate(materialsEntity);
@@ -79,7 +79,7 @@ public class MaterialsManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public Page<MaterialsPageResponse> pageMaterials(MaterialsPageRequest materialsPageRequest) {
+    public IPage<MaterialsPageResponse> pageMaterials(MaterialsPageRequest materialsPageRequest) {
         Page<MaterialsPageResponse> result = new Page<>();
         if (BeanUtil.isEmpty(materialsPageRequest)) {
             return result;
@@ -271,7 +271,7 @@ public class MaterialsManageBiz {
         List<MaterialsAttachmentEntity> attachmentEntities = materialsAttachments.stream()
                 .map(item -> {
                     MaterialsAttachmentEntity materialsAttachmentEntity = BeanUtil.copyProperties(item, MaterialsAttachmentEntity.class);
-                    materialsAttachmentEntity.setMaterialsAttachmentId(baseQuestionDomainBiz.getIdStr());
+                    materialsAttachmentEntity.setMaterialsAttachmentId(materialsBaseBiz.getIdStr());
                     materialsAttachmentEntity.setMaterialsId(materialsId);
                     materialsAttachmentEntity.setAppId(appId);
                     return materialsAttachmentEntity;

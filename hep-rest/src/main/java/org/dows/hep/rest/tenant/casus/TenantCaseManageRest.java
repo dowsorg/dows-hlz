@@ -1,6 +1,6 @@
 package org.dows.hep.rest.tenant.casus;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @Tag(name = "案例管理", description = "案例管理")
-public class CaseManageRest {
+public class TenantCaseManageRest {
     private final TenantCaseManageBiz tenantCaseManageBiz;
 
     /**
@@ -55,7 +55,7 @@ public class CaseManageRest {
     */
     @Operation(summary = "列表")
     @PostMapping("v1/tenantCasus/caseManage/pageCaseInstance")
-    public Page<CaseInstancePageResponse> pageCaseInstance(@RequestBody @Validated CaseInstancePageRequest caseInstancePage ) {
+    public IPage<CaseInstancePageResponse> pageCaseInstance(@RequestBody @Validated CaseInstancePageRequest caseInstancePage ) {
         return tenantCaseManageBiz.pageCaseInstance(caseInstancePage);
     }
 

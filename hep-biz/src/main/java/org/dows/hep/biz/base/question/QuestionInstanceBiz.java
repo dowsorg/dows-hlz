@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.question.QuestionCloneEnum;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class QuestionInstanceBiz {
 
-    private final BaseQuestionDomainBiz baseBiz;
+    private final QuestionDomainBaseBiz baseBiz;
 
     private final QuestionInstanceService questionInstanceService;
 
@@ -148,7 +149,7 @@ public class QuestionInstanceBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public Page<QuestionPageResponse> pageQuestion(QuestionPageRequest questionPageRequest) {
+    public IPage<QuestionPageResponse> pageQuestion(QuestionPageRequest questionPageRequest) {
         Page<QuestionPageResponse> result = new Page<>();
 
         Page<QuestionInstanceEntity> pageRequest = new Page<>(questionPageRequest.getPageNo(), questionPageRequest.getPageSize());

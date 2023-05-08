@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 实验组员（参与者）(ExperimentParticipator)实体类
@@ -48,6 +48,12 @@ public class ExperimentParticipatorEntity implements CrudEntity {
     @Schema(title = "实验实列ID")
     private String experimentInstanceId;
 
+    @Schema(title = "案例机构ID")
+    private String caseOrgIds;
+
+    @Schema(title = "案例机构名称")
+    private String caseOrgNames;
+
     @Schema(title = "组员账号ID")
     private String accountId;
 
@@ -58,7 +64,7 @@ public class ExperimentParticipatorEntity implements CrudEntity {
     private String groupName;
 
     @Schema(title = "组序号")
-    private Integer groupNo;
+    private String groupNo;
 
     @Schema(title = "参与者序号")
     private Integer participatorNo;
@@ -67,7 +73,7 @@ public class ExperimentParticipatorEntity implements CrudEntity {
     private Integer participatorType;
 
     @Schema(title = "参与者状态[0: 未准备 1:已准备 2:选择阶段中 3:已选择阶段]")
-    private Boolean participatorState;
+    private Integer participatorState;
 
     @Schema(title = "实验者状态[默认未开始状态0~6步]")
     private Boolean state;
