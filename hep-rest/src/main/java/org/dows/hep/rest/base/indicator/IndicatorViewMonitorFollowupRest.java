@@ -1,4 +1,5 @@
 package org.dows.hep.rest.base.indicator;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -7,6 +8,9 @@ import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorViewMonito
 import org.dows.hep.api.base.indicator.request.IndicatorViewMonitorFollowupRequest;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorViewMonitorFollowupRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorViewMonitorFollowupResponse;
+import org.dows.hep.api.base.indicator.response.IndicatorViewMonitorFollowupResponseRs;
+import org.dows.hep.api.constant.RsPageConstant;
+import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.biz.base.indicator.IndicatorViewMonitorFollowupBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -109,11 +113,19 @@ public class IndicatorViewMonitorFollowupRest {
     * 获取查看指标监测随访类
     * @param
     * @return
+     *
+     *
     */
     @Operation(summary = "获取查看指标监测随访类")
     @GetMapping("v1/baseIndicator/indicatorViewMonitorFollowup/getIndicatorViewMonitorFollowup")
     public IndicatorViewMonitorFollowupResponse getIndicatorViewMonitorFollowup(@Validated String indicatorViewMonitorFollowupId) {
         return indicatorViewMonitorFollowupBiz.getIndicatorViewMonitorFollowup(indicatorViewMonitorFollowupId);
+    }
+
+    @Operation(summary = "Rs获取查看指标监测随访类")
+    @GetMapping("v1/baseIndicator/indicatorViewMonitorFollowup/getRs")
+    public IndicatorViewMonitorFollowupResponseRs getRs(@Validated String indicatorViewMonitorFollowupId) {
+        return indicatorViewMonitorFollowupBiz.getRs(indicatorViewMonitorFollowupId);
     }
 
     /**
@@ -138,5 +150,18 @@ public class IndicatorViewMonitorFollowupRest {
         return indicatorViewMonitorFollowupBiz.pageIndicatorViewMonitorFollowup(pageNo,pageSize,appId,indicatorCategoryId,name,type,status);
     }
 
-
+    @Operation(summary = "Rs分页筛选查看指标监测随访类")
+    @GetMapping("v1/baseIndicator/indicatorViewMonitorFollowup/pageRs")
+    public IPage<IndicatorViewMonitorFollowupResponseRs> pageRs(
+        @RequestParam(required = false, defaultValue = RsPageConstant.PAGE_NO) Long pageNo,
+        @RequestParam(required = false, defaultValue = RsPageConstant.PAGE_SIZE) Long pageSize,
+        @RequestParam(required = false, defaultValue = RsPageConstant.ORDER) String order,
+        @RequestParam(required = false, defaultValue = RsPageConstant.ASC) Boolean asc,
+        @RequestParam(required = false) String appId,
+        @RequestParam(required = false) String indicatorFuncId,
+        @RequestParam(required = false) String name,
+        @RequestParam(required = false) String indicatorCategoryId,
+        @RequestParam(required = false) Integer status) {
+        return indicatorViewMonitorFollowupBiz.pageRs(pageNo,pageSize,order,asc, appId,indicatorFuncId,name,indicatorCategoryId,status);
+    }
 }
