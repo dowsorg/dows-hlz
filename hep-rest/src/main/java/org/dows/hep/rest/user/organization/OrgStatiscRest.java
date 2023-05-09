@@ -32,9 +32,9 @@ public class OrgStatiscRest {
      * @return
      */
     @Operation(summary = "获取机构操作手册")
-    @GetMapping("v1/userOrganization/orgStatisc/getOrgHandbook/{caseOrgId}")
-    public CaseOrgResponse getOrgHandbook(@PathVariable @Validated String caseOrgId) {
-        return orgStatiscBiz.getOrgHandbook(caseOrgId);
+    @GetMapping("v1/userOrganization/orgStatisc/getOrgHandbook/{experimentInstanceId}")
+    public CaseOrgResponse getOrgHandbook(@PathVariable @Validated String experimentInstanceId) {
+        return orgStatiscBiz.getOrgHandbook(experimentInstanceId);
     }
 
     /**
