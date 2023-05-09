@@ -1,16 +1,19 @@
 package org.dows.hep.biz.base.indicator;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.*;
-import org.dows.hep.api.base.indicator.response.IndicatorViewMonitorFollowupResponse;
+import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.enums.EnumRedissonLock;
 import org.dows.hep.api.exception.IndicatorInstanceException;
 import org.dows.hep.api.exception.IndicatorViewMonitorFollowupException;
 import org.dows.hep.biz.util.RedissonUtil;
+import org.dows.hep.biz.util.RsPageUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -414,5 +417,350 @@ public class IndicatorViewMonitorFollowupBiz{
             });
         indicatorViewMonitorFollowupEntity.setStatus(status);
         indicatorViewMonitorFollowupService.saveOrUpdate(indicatorViewMonitorFollowupEntity);
+    }
+
+    public IndicatorViewMonitorFollowupResponseRs getRs(String indicatorViewMonitorFollowupId) {
+        IndicatorViewMonitorFollowupEntity indicatorViewMonitorFollowupEntity = indicatorViewMonitorFollowupService.lambdaQuery()
+            .eq(IndicatorViewMonitorFollowupEntity::getIndicatorViewMonitorFollowupId, indicatorViewMonitorFollowupId)
+            .one();
+        if (Objects.isNull(indicatorViewMonitorFollowupEntity)) {
+            return null;
+        }
+        String appId = indicatorViewMonitorFollowupEntity.getAppId();
+        String indicatorCategoryId = indicatorViewMonitorFollowupEntity.getIndicatorCategoryId();
+        IndicatorCategoryEntity indicatorCategoryEntity = indicatorCategoryService.lambdaQuery()
+            .eq(IndicatorCategoryEntity::getAppId, appId)
+            .eq(IndicatorCategoryEntity::getIndicatorCategoryId, indicatorCategoryId)
+            .oneOpt()
+            .orElseThrow(() -> {
+                log.warn("method IndicatorViewMonitorFollowupBiz.getRs param indicatorViewMonitorFollowupId ref indicatorCategoryId:{} is illegal", indicatorCategoryId);
+                throw new IndicatorViewMonitorFollowupException(EnumESC.VALIDATE_EXCEPTION);
+            });
+        IndicatorCategoryResponse indicatorCategoryResponse = IndicatorCategoryBiz.indicatorCategoryEntity2Response(indicatorCategoryEntity);
+        Set<String> indicatorViewMonitorFollowupFollowupContentIdSet = new HashSet<>();
+        Map<String, List<IndicatorViewMonitorFollowupContentRefEntity>> kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupContentRefListMap = new HashMap<>();
+        Set<String> indicatorInstanceIdSet = new HashSet<>();
+        Map<String, IndicatorInstanceEntity> kIndicatorInstanceIdVIndicatorInstanceEntityMap = new HashMap<>();
+        List<IndicatorViewMonitorFollowupFollowupContentEntity> indicatorViewMonitorFollowupFollowupContentEntityList = indicatorViewMonitorFollowupFollowupContentService.lambdaQuery()
+            .eq(IndicatorViewMonitorFollowupFollowupContentEntity::getAppId, appId)
+            .eq(IndicatorViewMonitorFollowupFollowupContentEntity::getIndicatorViewMonitorFollowupId, indicatorViewMonitorFollowupId)
+            .list()
+            .stream()
+            .peek(indicatorViewMonitorFollowupFollowupContentEntity -> indicatorViewMonitorFollowupFollowupContentIdSet.add(indicatorViewMonitorFollowupFollowupContentEntity.getIndicatorViewMonitorFollowupFollowupContentId()))
+            .collect(Collectors.toList());
+        if (!indicatorViewMonitorFollowupFollowupContentIdSet.isEmpty()) {
+            indicatorViewMonitorFollowupContentRefService.lambdaQuery()
+                .eq(IndicatorViewMonitorFollowupContentRefEntity::getAppId, appId)
+                .in(IndicatorViewMonitorFollowupContentRefEntity::getIndicatorViewMonitorFollowupFollowupContentId, indicatorViewMonitorFollowupFollowupContentIdSet)
+                .list()
+                .forEach(indicatorViewMonitorFollowupContentRefEntity -> {
+                    String indicatorInstanceId = indicatorViewMonitorFollowupContentRefEntity.getIndicatorInstanceId();
+                    indicatorInstanceIdSet.add(indicatorInstanceId);
+                    String indicatorViewMonitorFollowupFollowupContentId = indicatorViewMonitorFollowupContentRefEntity.getIndicatorViewMonitorFollowupFollowupContentId();
+                    List<IndicatorViewMonitorFollowupContentRefEntity> indicatorViewMonitorFollowupContentRefEntityList = kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupContentRefListMap.get(indicatorViewMonitorFollowupFollowupContentId);
+                    if (Objects.isNull(indicatorViewMonitorFollowupContentRefEntityList)) {
+                        indicatorViewMonitorFollowupContentRefEntityList = new ArrayList<>();
+                    }
+                    indicatorViewMonitorFollowupContentRefEntityList.add(indicatorViewMonitorFollowupContentRefEntity);
+                    kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupContentRefListMap.put(
+                        indicatorViewMonitorFollowupFollowupContentId, indicatorViewMonitorFollowupContentRefEntityList
+                    );
+                });
+        }
+        if (!indicatorInstanceIdSet.isEmpty()) {
+            indicatorInstanceService.lambdaQuery()
+                .eq(IndicatorInstanceEntity::getAppId, appId)
+                .in(IndicatorInstanceEntity::getIndicatorInstanceId, indicatorInstanceIdSet)
+                .list()
+                .forEach(indicatorInstanceEntity -> kIndicatorInstanceIdVIndicatorInstanceEntityMap.put(indicatorInstanceEntity.getIndicatorInstanceId(), indicatorInstanceEntity));
+        }
+        List<IndicatorViewMonitorFollowupFollowupContentResponseRs> indicatorViewMonitorFollowupFollowupContentResponseRsList = indicatorViewMonitorFollowupFollowupContentEntityList
+            .stream()
+            .map(indicatorViewMonitorFollowupFollowupContentEntity -> IndicatorViewMonitorFollowupBiz
+                .indicatorViewMonitorFollowupFollowupContentEntity2IndicatorViewMonitorFollowupFollowupContentResponseRs(
+                    indicatorViewMonitorFollowupFollowupContentEntity,
+                    kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupContentRefListMap,
+                    kIndicatorInstanceIdVIndicatorInstanceEntityMap
+                ))
+            .collect(Collectors.toList());
+        return IndicatorViewMonitorFollowupResponseRs
+            .builder()
+            .id(indicatorViewMonitorFollowupEntity.getId())
+            .indicatorViewMonitorFollowupId(indicatorViewMonitorFollowupEntity.getIndicatorViewMonitorFollowupId())
+            .appId(appId)
+            .indicatorFuncId(indicatorViewMonitorFollowupEntity.getIndicatorFuncId())
+            .name(indicatorViewMonitorFollowupEntity.getName())
+            .status(indicatorViewMonitorFollowupEntity.getStatus())
+            .indicatorCategoryResponse(indicatorCategoryResponse)
+            .indicatorViewMonitorFollowupFollowupContentResponseRsList(indicatorViewMonitorFollowupFollowupContentResponseRsList)
+            .build();
+    }
+
+    public IPage<IndicatorViewMonitorFollowupResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String paramIndicatorCategoryId, Integer status) {
+        Page<IndicatorViewMonitorFollowupEntity> page = RsPageUtil.getRsPage(pageNo, pageSize, order, asc);
+        LambdaQueryWrapper<IndicatorViewMonitorFollowupEntity> indicatorViewMonitorFollowupEntityLQW = new LambdaQueryWrapper<>();
+        indicatorViewMonitorFollowupEntityLQW
+            .eq(Objects.nonNull(appId), IndicatorViewMonitorFollowupEntity::getAppId, appId)
+            .eq(StringUtils.isNotBlank(indicatorFuncId), IndicatorViewMonitorFollowupEntity::getIndicatorFuncId, indicatorFuncId)
+            .eq(StringUtils.isNotBlank(paramIndicatorCategoryId), IndicatorViewMonitorFollowupEntity::getIndicatorCategoryId, paramIndicatorCategoryId)
+            .eq(Objects.nonNull(status), IndicatorViewMonitorFollowupEntity::getStatus, status)
+            .like(StringUtils.isNotBlank(name), IndicatorViewMonitorFollowupEntity::getName, StringUtils.isNotBlank(name) ? null : name.trim());
+        Page<IndicatorViewMonitorFollowupEntity> indicatorViewMonitorFollowupEntityPage = indicatorViewMonitorFollowupService.page(page, indicatorViewMonitorFollowupEntityLQW);
+        Page<IndicatorViewMonitorFollowupResponseRs> indicatorViewMonitorFollowupResponseRsPage = RsPageUtil.convertFromAnother(indicatorViewMonitorFollowupEntityPage);
+        List<IndicatorViewMonitorFollowupEntity> indicatorViewMonitorFollowupEntityList = indicatorViewMonitorFollowupEntityPage.getRecords();
+        Set<String> indicatorViewMonitorFollowupIdSet = new HashSet<>();
+        Set<String> indicatorCategoryIdSet = new HashSet<>();
+        Map<String, IndicatorCategoryResponse> kIndicatorCategoryIdVIndicatorCategoryResponseMap = new HashMap<>();
+        Map<String, List<IndicatorViewMonitorFollowupFollowupContentEntity>> kIndicatorViewMonitorFollowupIdVIndicatorViewMonitorFollowupFollowupContentListMap = new HashMap<>();
+        Set<String> indicatorViewMonitorFollowupFollowupContentIdSet = new HashSet<>();
+        Map<String, List<IndicatorViewMonitorFollowupContentRefEntity>> kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupContentRefListMap = new HashMap<>();
+        Set<String> indicatorInstanceIdSet = new HashSet<>();
+        Map<String, IndicatorInstanceEntity> kIndicatorInstanceIdVIndicatorInstanceEntityMap = new HashMap<>();
+        indicatorViewMonitorFollowupEntityList.forEach(
+            indicatorViewMonitorFollowupEntity -> {
+                indicatorViewMonitorFollowupIdSet.add(indicatorViewMonitorFollowupEntity.getIndicatorViewMonitorFollowupId());
+                indicatorCategoryIdSet.add(indicatorViewMonitorFollowupEntity.getIndicatorCategoryId());
+            });
+        if (!indicatorCategoryIdSet.isEmpty()) {
+            indicatorCategoryService.lambdaQuery()
+                .eq(IndicatorCategoryEntity::getAppId, appId)
+                .in(IndicatorCategoryEntity::getIndicatorCategoryId, indicatorCategoryIdSet)
+                .list()
+                .stream()
+                .map(IndicatorCategoryBiz::indicatorCategoryEntity2Response).filter(Objects::nonNull)
+                .forEach(indicatorCategoryResponse -> kIndicatorCategoryIdVIndicatorCategoryResponseMap.put(
+                    indicatorCategoryResponse.getIndicatorCategoryId(), indicatorCategoryResponse
+                ));
+        }
+        if (!indicatorViewMonitorFollowupIdSet.isEmpty()) {
+            indicatorViewMonitorFollowupFollowupContentService.lambdaQuery()
+                .eq(IndicatorViewMonitorFollowupFollowupContentEntity::getAppId, appId)
+                .in(IndicatorViewMonitorFollowupFollowupContentEntity::getIndicatorViewMonitorFollowupId, indicatorViewMonitorFollowupIdSet)
+                .list()
+                .forEach(indicatorViewMonitorFollowupFollowupContentEntity -> {
+                    String indicatorViewMonitorFollowupFollowupContentId = indicatorViewMonitorFollowupFollowupContentEntity.getIndicatorViewMonitorFollowupFollowupContentId();
+                    indicatorViewMonitorFollowupFollowupContentIdSet.add(indicatorViewMonitorFollowupFollowupContentId);
+                    String indicatorViewMonitorFollowupId = indicatorViewMonitorFollowupFollowupContentEntity.getIndicatorViewMonitorFollowupId();
+                    List<IndicatorViewMonitorFollowupFollowupContentEntity> indicatorViewMonitorFollowupFollowupContentEntityList = kIndicatorViewMonitorFollowupIdVIndicatorViewMonitorFollowupFollowupContentListMap.get(indicatorViewMonitorFollowupId);
+                    if (Objects.isNull(indicatorViewMonitorFollowupFollowupContentEntityList)) {
+                        indicatorViewMonitorFollowupFollowupContentEntityList = new ArrayList<>();
+                    }
+                    indicatorViewMonitorFollowupFollowupContentEntityList.add(indicatorViewMonitorFollowupFollowupContentEntity);
+                    kIndicatorViewMonitorFollowupIdVIndicatorViewMonitorFollowupFollowupContentListMap.put(indicatorViewMonitorFollowupId, indicatorViewMonitorFollowupFollowupContentEntityList);
+                });
+        }
+        if (!indicatorViewMonitorFollowupFollowupContentIdSet.isEmpty()) {
+            indicatorViewMonitorFollowupContentRefService.lambdaQuery()
+                .eq(IndicatorViewMonitorFollowupContentRefEntity::getAppId, appId)
+                .in(IndicatorViewMonitorFollowupContentRefEntity::getIndicatorViewMonitorFollowupFollowupContentId, indicatorViewMonitorFollowupFollowupContentIdSet)
+                .list()
+                .forEach(indicatorViewMonitorFollowupContentRefEntity -> {
+                    String indicatorInstanceId = indicatorViewMonitorFollowupContentRefEntity.getIndicatorInstanceId();
+                    indicatorInstanceIdSet.add(indicatorInstanceId);
+                    String indicatorViewMonitorFollowupFollowupContentId = indicatorViewMonitorFollowupContentRefEntity.getIndicatorViewMonitorFollowupFollowupContentId();
+                    List<IndicatorViewMonitorFollowupContentRefEntity> indicatorViewMonitorFollowupContentRefEntityList = kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupContentRefListMap.get(indicatorViewMonitorFollowupFollowupContentId);
+                    if (Objects.isNull(indicatorViewMonitorFollowupContentRefEntityList)) {
+                        indicatorViewMonitorFollowupContentRefEntityList = new ArrayList<>();
+                    }
+                    indicatorViewMonitorFollowupContentRefEntityList.add(indicatorViewMonitorFollowupContentRefEntity);
+                    kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupContentRefListMap.put(
+                        indicatorViewMonitorFollowupFollowupContentId, indicatorViewMonitorFollowupContentRefEntityList
+                    );
+                });
+        }
+        if (!indicatorInstanceIdSet.isEmpty()) {
+            indicatorInstanceService.lambdaQuery()
+                .eq(IndicatorInstanceEntity::getAppId, appId)
+                .in(IndicatorInstanceEntity::getIndicatorInstanceId, indicatorInstanceIdSet)
+                .list()
+                .forEach(indicatorInstanceEntity -> kIndicatorInstanceIdVIndicatorInstanceEntityMap.put(indicatorInstanceEntity.getIndicatorInstanceId(), indicatorInstanceEntity));
+        }
+        List<IndicatorViewMonitorFollowupResponseRs> indicatorViewMonitorFollowupResponseRsList = indicatorViewMonitorFollowupEntityList
+            .stream()
+            .map(indicatorViewMonitorFollowupEntity -> {
+                String indicatorCategoryId = indicatorViewMonitorFollowupEntity.getIndicatorCategoryId();
+                String indicatorViewMonitorFollowupId = indicatorViewMonitorFollowupEntity.getIndicatorViewMonitorFollowupId();
+                IndicatorCategoryResponse indicatorCategoryResponse = kIndicatorCategoryIdVIndicatorCategoryResponseMap.get(indicatorCategoryId);
+                List<IndicatorViewMonitorFollowupFollowupContentEntity> indicatorViewMonitorFollowupFollowupContentEntityList = kIndicatorViewMonitorFollowupIdVIndicatorViewMonitorFollowupFollowupContentListMap.get(indicatorViewMonitorFollowupId);
+                return IndicatorViewMonitorFollowupResponseRs
+                    .builder()
+                    .id(indicatorViewMonitorFollowupEntity.getId())
+                    .indicatorViewMonitorFollowupId(indicatorViewMonitorFollowupId)
+                    .appId(appId)
+                    .indicatorFuncId(indicatorViewMonitorFollowupEntity.getIndicatorFuncId())
+                    .name(indicatorViewMonitorFollowupEntity.getName())
+                    .status(indicatorViewMonitorFollowupEntity.getStatus())
+                    .indicatorCategoryResponse(indicatorCategoryResponse)
+                    .indicatorViewMonitorFollowupFollowupContentResponseRsList(indicatorViewMonitorFollowupFollowupContentEntityList
+                        .stream()
+                        .map(indicatorViewMonitorFollowupFollowupContentEntity -> IndicatorViewMonitorFollowupBiz
+                            .indicatorViewMonitorFollowupFollowupContentEntity2IndicatorViewMonitorFollowupFollowupContentResponseRs(
+                                indicatorViewMonitorFollowupFollowupContentEntity,
+                                kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupContentRefListMap,
+                                kIndicatorInstanceIdVIndicatorInstanceEntityMap
+                            ))
+                        .collect(Collectors.toList())
+                    )
+                    .build();
+            }
+        ).collect(Collectors.toList());
+        indicatorViewMonitorFollowupResponseRsPage.setRecords(indicatorViewMonitorFollowupResponseRsList);
+        return indicatorViewMonitorFollowupResponseRsPage;
+    }
+
+    private static IndicatorViewMonitorFollowupFollowupContentResponseRs indicatorViewMonitorFollowupFollowupContentEntity2IndicatorViewMonitorFollowupFollowupContentResponseRs(
+        IndicatorViewMonitorFollowupFollowupContentEntity indicatorViewMonitorFollowupFollowupContentEntity,
+        Map<String, List<IndicatorViewMonitorFollowupContentRefEntity>> kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupContentRefListMap,
+        Map<String, IndicatorInstanceEntity> kIndicatorInstanceIdVIndicatorInstanceEntityMap
+    ) {
+        if (Objects.isNull(indicatorViewMonitorFollowupFollowupContentEntity)) {
+            return null;
+        }
+        if (Objects.isNull(kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupContentRefListMap)) {
+            kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupContentRefListMap = new HashMap<>();
+        }
+        if (Objects.isNull(kIndicatorInstanceIdVIndicatorInstanceEntityMap)) {
+            kIndicatorInstanceIdVIndicatorInstanceEntityMap = new HashMap<>();
+        }
+        String appId = indicatorViewMonitorFollowupFollowupContentEntity.getAppId();
+        String indicatorViewMonitorFollowupId = indicatorViewMonitorFollowupFollowupContentEntity.getIndicatorViewMonitorFollowupId();
+        String indicatorViewMonitorFollowupFollowupContentId = indicatorViewMonitorFollowupFollowupContentEntity.getIndicatorViewMonitorFollowupFollowupContentId();
+        List<IndicatorViewMonitorFollowupContentRefEntity> indicatorViewMonitorFollowupContentRefEntityList =
+            kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupContentRefListMap.get(indicatorViewMonitorFollowupFollowupContentId)
+            ;
+        if (Objects.isNull(indicatorViewMonitorFollowupContentRefEntityList)) {
+            indicatorViewMonitorFollowupContentRefEntityList =  new ArrayList<>();
+        }
+        Map<String, IndicatorInstanceEntity> finalKIndicatorInstanceIdVIndicatorInstanceEntityMap = kIndicatorInstanceIdVIndicatorInstanceEntityMap;
+        return IndicatorViewMonitorFollowupFollowupContentResponseRs
+            .builder()
+            .id(indicatorViewMonitorFollowupFollowupContentEntity.getId())
+            .indicatorViewMonitorFollowupFollowupContentId(indicatorViewMonitorFollowupFollowupContentEntity.getIndicatorViewMonitorFollowupFollowupContentId())
+            .appId(appId)
+            .indicatorViewMonitorFollowupId(indicatorViewMonitorFollowupId)
+            .name(indicatorViewMonitorFollowupFollowupContentEntity.getName())
+            .seq(indicatorViewMonitorFollowupFollowupContentEntity.getSeq())
+            .indicatorViewMonitorFollowupContentRefResponseRsList(indicatorViewMonitorFollowupContentRefEntityList
+                .stream()
+                .map(indicatorViewMonitorFollowupContentRefEntity -> IndicatorViewMonitorFollowupContentRefResponseRs
+                    .builder()
+                    .id(indicatorViewMonitorFollowupContentRefEntity.getId())
+                    .indicatorViewMonitorFollowupContentRefId(indicatorViewMonitorFollowupContentRefEntity.getIndicatorViewMonitorFollowupContentRefId())
+                    .appId(appId)
+                    .indicatorViewMonitorFollowupFollowupContentId(indicatorViewMonitorFollowupFollowupContentId)
+                    .indicatorInstanceResponseRs(IndicatorInstanceBiz.indicatorInstance2ResponseRs(
+                        finalKIndicatorInstanceIdVIndicatorInstanceEntityMap.get(indicatorViewMonitorFollowupContentRefEntity.getIndicatorInstanceId())
+                    ))
+                    .seq(indicatorViewMonitorFollowupContentRefEntity.getSeq())
+                    .build()
+                )
+                .collect(Collectors.toList())
+            )
+            .build();
+    }
+
+    private List<IndicatorViewMonitorFollowupResponseRs> indicatorViewMonitorFollowupEntityList2IndicatorViewMonitorFollowupResponseRsList(
+        List<IndicatorViewMonitorFollowupEntity> indicatorViewMonitorFollowupEntityList
+    ) {
+        if (Objects.isNull(indicatorViewMonitorFollowupEntityList) || indicatorViewMonitorFollowupEntityList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        String appId = indicatorViewMonitorFollowupEntityList.get(0).getAppId();
+        Set<String> indicatorViewMonitorFollowupIdSet = new HashSet<>();
+        Set<String> indicatorCategoryIdSet = new HashSet<>();
+        Map<String, IndicatorCategoryResponse> kIndicatorCategoryIdVIndicatorCategoryResponseMap = new HashMap<>();
+        Map<String, List<IndicatorViewMonitorFollowupFollowupContentEntity>> kIndicatorViewMonitorFollowupIdVIndicatorViewMonitorFollowupFollowupContentListMap = new HashMap<>();
+        Set<String> indicatorViewMonitorFollowupFollowupContentIdSet = new HashSet<>();
+        Map<String, List<IndicatorViewMonitorFollowupContentRefEntity>> kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupContentRefListMap = new HashMap<>();
+        Set<String> indicatorInstanceIdSet = new HashSet<>();
+        Map<String, IndicatorInstanceEntity> kIndicatorInstanceIdVIndicatorInstanceEntityMap = new HashMap<>();
+        indicatorViewMonitorFollowupEntityList.forEach(
+            indicatorViewMonitorFollowupEntity -> {
+                indicatorViewMonitorFollowupIdSet.add(indicatorViewMonitorFollowupEntity.getIndicatorViewMonitorFollowupId());
+                indicatorCategoryIdSet.add(indicatorViewMonitorFollowupEntity.getIndicatorCategoryId());
+            });
+        if (!indicatorCategoryIdSet.isEmpty()) {
+            indicatorCategoryService.lambdaQuery()
+                .eq(IndicatorCategoryEntity::getAppId, appId)
+                .in(IndicatorCategoryEntity::getIndicatorCategoryId, indicatorCategoryIdSet)
+                .list()
+                .stream()
+                .map(IndicatorCategoryBiz::indicatorCategoryEntity2Response).filter(Objects::nonNull)
+                .forEach(indicatorCategoryResponse -> kIndicatorCategoryIdVIndicatorCategoryResponseMap.put(
+                    indicatorCategoryResponse.getIndicatorCategoryId(), indicatorCategoryResponse
+                ));
+        }
+        if (!indicatorViewMonitorFollowupIdSet.isEmpty()) {
+            indicatorViewMonitorFollowupFollowupContentService.lambdaQuery()
+                .eq(IndicatorViewMonitorFollowupFollowupContentEntity::getAppId, appId)
+                .in(IndicatorViewMonitorFollowupFollowupContentEntity::getIndicatorViewMonitorFollowupId, indicatorViewMonitorFollowupIdSet)
+                .list()
+                .forEach(indicatorViewMonitorFollowupFollowupContentEntity -> {
+                    String indicatorViewMonitorFollowupFollowupContentId = indicatorViewMonitorFollowupFollowupContentEntity.getIndicatorViewMonitorFollowupFollowupContentId();
+                    indicatorViewMonitorFollowupFollowupContentIdSet.add(indicatorViewMonitorFollowupFollowupContentId);
+                    String indicatorViewMonitorFollowupId = indicatorViewMonitorFollowupFollowupContentEntity.getIndicatorViewMonitorFollowupId();
+                    List<IndicatorViewMonitorFollowupFollowupContentEntity> indicatorViewMonitorFollowupFollowupContentEntityList = kIndicatorViewMonitorFollowupIdVIndicatorViewMonitorFollowupFollowupContentListMap.get(indicatorViewMonitorFollowupId);
+                    if (Objects.isNull(indicatorViewMonitorFollowupFollowupContentEntityList)) {
+                        indicatorViewMonitorFollowupFollowupContentEntityList = new ArrayList<>();
+                    }
+                    indicatorViewMonitorFollowupFollowupContentEntityList.add(indicatorViewMonitorFollowupFollowupContentEntity);
+                    kIndicatorViewMonitorFollowupIdVIndicatorViewMonitorFollowupFollowupContentListMap.put(indicatorViewMonitorFollowupId, indicatorViewMonitorFollowupFollowupContentEntityList);
+                });
+        }
+        if (!indicatorViewMonitorFollowupFollowupContentIdSet.isEmpty()) {
+            indicatorViewMonitorFollowupContentRefService.lambdaQuery()
+                .eq(IndicatorViewMonitorFollowupContentRefEntity::getAppId, appId)
+                .in(IndicatorViewMonitorFollowupContentRefEntity::getIndicatorViewMonitorFollowupFollowupContentId, indicatorViewMonitorFollowupFollowupContentIdSet)
+                .list()
+                .forEach(indicatorViewMonitorFollowupContentRefEntity -> {
+                    String indicatorInstanceId = indicatorViewMonitorFollowupContentRefEntity.getIndicatorInstanceId();
+                    indicatorInstanceIdSet.add(indicatorInstanceId);
+                    String indicatorViewMonitorFollowupFollowupContentId = indicatorViewMonitorFollowupContentRefEntity.getIndicatorViewMonitorFollowupFollowupContentId();
+                    List<IndicatorViewMonitorFollowupContentRefEntity> indicatorViewMonitorFollowupContentRefEntityList = kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupContentRefListMap.get(indicatorViewMonitorFollowupFollowupContentId);
+                    if (Objects.isNull(indicatorViewMonitorFollowupContentRefEntityList)) {
+                        indicatorViewMonitorFollowupContentRefEntityList = new ArrayList<>();
+                    }
+                    indicatorViewMonitorFollowupContentRefEntityList.add(indicatorViewMonitorFollowupContentRefEntity);
+                    kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupContentRefListMap.put(
+                        indicatorViewMonitorFollowupFollowupContentId, indicatorViewMonitorFollowupContentRefEntityList
+                    );
+                });
+        }
+        if (!indicatorInstanceIdSet.isEmpty()) {
+            indicatorInstanceService.lambdaQuery()
+                .eq(IndicatorInstanceEntity::getAppId, appId)
+                .in(IndicatorInstanceEntity::getIndicatorInstanceId, indicatorInstanceIdSet)
+                .list()
+                .forEach(indicatorInstanceEntity -> kIndicatorInstanceIdVIndicatorInstanceEntityMap.put(indicatorInstanceEntity.getIndicatorInstanceId(), indicatorInstanceEntity));
+        }
+        return indicatorViewMonitorFollowupEntityList
+            .stream()
+            .map(indicatorViewMonitorFollowupEntity -> {
+                    String indicatorCategoryId = indicatorViewMonitorFollowupEntity.getIndicatorCategoryId();
+                    String indicatorViewMonitorFollowupId = indicatorViewMonitorFollowupEntity.getIndicatorViewMonitorFollowupId();
+                    IndicatorCategoryResponse indicatorCategoryResponse = kIndicatorCategoryIdVIndicatorCategoryResponseMap.get(indicatorCategoryId);
+                    List<IndicatorViewMonitorFollowupFollowupContentEntity> indicatorViewMonitorFollowupFollowupContentEntityList = kIndicatorViewMonitorFollowupIdVIndicatorViewMonitorFollowupFollowupContentListMap.get(indicatorViewMonitorFollowupId);
+                    return IndicatorViewMonitorFollowupResponseRs
+                        .builder()
+                        .id(indicatorViewMonitorFollowupEntity.getId())
+                        .indicatorViewMonitorFollowupId(indicatorViewMonitorFollowupId)
+                        .appId(appId)
+                        .indicatorFuncId(indicatorViewMonitorFollowupEntity.getIndicatorFuncId())
+                        .name(indicatorViewMonitorFollowupEntity.getName())
+                        .status(indicatorViewMonitorFollowupEntity.getStatus())
+                        .indicatorCategoryResponse(indicatorCategoryResponse)
+                        .indicatorViewMonitorFollowupFollowupContentResponseRsList(indicatorViewMonitorFollowupFollowupContentEntityList
+                            .stream()
+                            .map(indicatorViewMonitorFollowupFollowupContentEntity -> IndicatorViewMonitorFollowupBiz
+                                .indicatorViewMonitorFollowupFollowupContentEntity2IndicatorViewMonitorFollowupFollowupContentResponseRs(
+                                    indicatorViewMonitorFollowupFollowupContentEntity,
+                                    kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupContentRefListMap,
+                                    kIndicatorInstanceIdVIndicatorInstanceEntityMap
+                                ))
+                            .collect(Collectors.toList())
+                        )
+                        .build();
+                }
+            ).collect(Collectors.toList());
     }
 }
