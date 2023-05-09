@@ -3,16 +3,15 @@ package org.dows.hep.biz.util;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * @author : wuzl
@@ -62,10 +61,10 @@ public class ShareUtil {
 
     }
     public static class XString {
-        public static String defaultIfNull(String src, String dft) {
+        public static String defaultIfEmpty(String src, String dft) {
             return StringUtils.hasLength(src) ? src : dft;
         }
-        public static String defaultIfNull(String src,String... dftValues) {
+        public static String defaultIfEmpty(String src, String... dftValues) {
             if(StringUtils.hasLength(src)||null==dftValues|| dftValues.length==0) {
                 return src;
             }
@@ -103,12 +102,22 @@ public class ShareUtil {
         public static boolean isEmpty(Collection<?> collection){
             return CollectionUtils.isEmpty(collection);
         }
+        public static boolean notEmpty(Map<?, ?> map){
+            return !isEmpty(map);
+        }
         public static boolean isEmpty(Map<?, ?> map){
             return CollectionUtils.isEmpty(map);
         }
 
         public static <T, R> List<R> map(Iterable<T> collection, boolean ignoreNull, Function<? super T, ? extends R> func){
             return CollUtil.map(collection,func,ignoreNull);
+        }
+        public static <T,K,U> Map<K,U> toMap(List<T> src, Function<? super T, ? extends K> keyMapper,
+              Function<? super T, ? extends U> valueMapper){
+            if(isEmpty(src)){
+                return new HashMap<>(0);
+            }
+            return src.stream().collect(Collectors.toMap(keyMapper,valueMapper,(c,n)->c));
         }
 
     }
@@ -117,6 +126,14 @@ public class ShareUtil {
         public static boolean isEmpty(Object array) {
             return ArrayUtil.isEmpty(array);
         }
+        public static boolean notEmpty(Object array) {
+            return !isEmpty(array);
+        }
+
+        public static boolean contains(T[] array, T value) {
+            return ArrayUtil.contains(array, value);
+        }
+
     }
 
 

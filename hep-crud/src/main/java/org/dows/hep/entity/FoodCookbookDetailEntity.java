@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 食谱食材(FoodCookbookDetail)实体类
@@ -43,16 +43,19 @@ public class FoodCookbookDetailEntity implements CrudEntity {
     private String foodCookbookId;
 
     @Schema(title = "进餐时间，早|早加|午|午加|晚|晚加")
-    private String mealTime;
+    private Integer mealTime;
 
-    @Schema(title = "明细类型，1-菜肴 2-食材")
-    private String instanceType;
+    @Schema(title = "明细类型，1-食材 2-菜肴 ")
+    private Integer instanceType;
 
     @Schema(title = "菜肴、食材id")
     private String instanceId;
 
     @Schema(title = "菜肴、食材名称")
     private String instanceName;
+
+    @Schema(title = "食材含量描述")
+    private String materialsDesc;
 
     @Schema(title = "重量")
     private String weight;

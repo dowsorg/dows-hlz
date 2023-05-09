@@ -1,5 +1,6 @@
 package org.dows.hep.rest.base.intervene;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 /**
 * @description project descr:干预:饮食方案(菜肴菜谱)
+* @folder 饮食方案(菜肴菜谱)
 *
 * @author lait.zhang
 * @date 2023年4月23日 上午9:44:34
@@ -39,7 +41,7 @@ public class FoodPlanRest {
     */
     @Operation(summary = "获取菜肴列表")
     @PostMapping("v1/baseIntervene/foodPlan/pageFoodDishes")
-    public FoodDishesResponse pageFoodDishes(@RequestBody @Validated FindFoodRequest findFood ) {
+    public Page<FoodDishesResponse> pageFoodDishes(@RequestBody @Validated FindFoodRequest findFood ) {
         return foodPlanBiz.pageFoodDishes(findFood);
     }
 
@@ -72,8 +74,20 @@ public class FoodPlanRest {
     */
     @Operation(summary = "删除菜肴")
     @DeleteMapping("v1/baseIntervene/foodPlan/delFoodDishes")
-    public Boolean delFoodDishes(@Validated DelFoodDishesRequest delFoodDishes ) {
+    public Boolean delFoodDishes(@RequestBody @Validated DelFoodDishesRequest delFoodDishes ) {
         return foodPlanBiz.delFoodDishes(delFoodDishes);
+    }
+
+    /**
+     * 删除菜肴下的食材
+     *
+     * @param delRefItem
+     * @return
+     */
+    @Operation(summary = "删除菜肴下的食材")
+    @DeleteMapping("v1/baseIntervene/foodPlan/delFoodDishesRefItem")
+    public Boolean delFoodDishesRefItem(@RequestBody @Validated DelRefItemRequest delRefItem ) {
+        return foodPlanBiz.delFoodDishesRefItem(delRefItem);
     }
 
     /**
@@ -94,7 +108,7 @@ public class FoodPlanRest {
     */
     @Operation(summary = "获取菜谱列表")
     @PostMapping("v1/baseIntervene/foodPlan/pageFoodCookbook")
-    public FoodCookBookResponse pageFoodCookbook(@RequestBody @Validated FindFoodRequest findFood ) {
+    public Page<FoodCookBookResponse> pageFoodCookbook(@RequestBody @Validated FindFoodRequest findFood ) {
         return foodPlanBiz.pageFoodCookbook(findFood);
     }
 
@@ -127,9 +141,23 @@ public class FoodPlanRest {
     */
     @Operation(summary = "删除菜谱")
     @DeleteMapping("v1/baseIntervene/foodPlan/delFoodCookbook")
-    public Boolean delFoodCookbook(@Validated DelFoodCookbookRequest delFoodCookbook ) {
+    public Boolean delFoodCookbook(@RequestBody @Validated DelFoodCookbookRequest delFoodCookbook ) {
         return foodPlanBiz.delFoodCookbook(delFoodCookbook);
     }
+
+    /**
+     * 删除菜谱下的食材菜肴
+     * @param delRefItem
+     * @return
+     */
+
+    @Operation(summary = "删除菜谱下的食材菜肴")
+    @DeleteMapping("v1/baseIntervene/foodPlan/delFoodCookbookRefItem")
+    public Boolean delFoodCookbookRefItem(@RequestBody @Validated DelRefItemRequest delRefItem ) {
+        return foodPlanBiz.delFoodCookbookRefItem(delRefItem);
+    }
+
+
 
     /**
     * 启用、禁用菜谱

@@ -4,10 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.intervene.request.DelSpotItemRequest;
-import org.dows.hep.api.base.intervene.request.FindSportRequest;
-import org.dows.hep.api.base.intervene.request.SaveSportItemRequest;
-import org.dows.hep.api.base.intervene.request.SetSportItemStateRequest;
+import org.dows.hep.api.base.intervene.request.*;
 import org.dows.hep.api.base.intervene.response.SportItemInfoResponse;
 import org.dows.hep.api.base.intervene.response.SportItemResponse;
 import org.dows.hep.biz.base.intervene.SportItemBiz;
@@ -17,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 /**
 * @description project descr:干预:运动项目
 *
+ * @folder 运动项目
 * @author lait.zhang
 * @date 2023年4月23日 上午9:44:34
 */
@@ -82,5 +80,15 @@ public class SportItemRest {
         return sportItemBiz.delSportItem(delSportItem);
     }
 
+    /**
+     * 删除关联指标
+     * @param delRefIndicator
+     * @return
+     */
+    @Operation(summary = "删除关联指标")
+    @DeleteMapping("v1/baseIntervene/sportItem/delRefIndicator")
+    public Boolean delRefIndicator(@RequestBody @Validated DelRefIndicatorRequest delRefIndicator ) {
+        return sportItemBiz.delRefIndicator(delRefIndicator);
+    }
 
 }

@@ -27,8 +27,6 @@ public class SaveSportItemRequest{
     @Schema(title = "运动项目名称")
     private String sportItemName;
 
-    @Schema(title = "图片")
-    private String pic;
 
     @Schema(title = "当前分类id")
     private String interveneCategId;
@@ -36,7 +34,7 @@ public class SaveSportItemRequest{
     @Schema(title = "运动强度(MET)")
     private String strengthMet;
 
-    @Schema(title = "运动强度类别")
+    @Schema(title = "运动强度类别 运动强度类别 低|中|高")
     private String strengthType;
 
     @Schema(title = "状态 0-启用 1-停用")

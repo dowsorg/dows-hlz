@@ -4,10 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.intervene.request.DelFoodMaterialRequest;
-import org.dows.hep.api.base.intervene.request.FindFoodRequest;
-import org.dows.hep.api.base.intervene.request.SaveFoodMaterialRequest;
-import org.dows.hep.api.base.intervene.request.SetFoodMaterialStateRequest;
+import org.dows.hep.api.base.intervene.request.*;
 import org.dows.hep.api.base.intervene.response.FoodMaterialInfoResponse;
 import org.dows.hep.api.base.intervene.response.FoodMaterialResponse;
 import org.dows.hep.biz.base.intervene.FoodMaterialBiz;
@@ -16,7 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 /**
 * @description project descr:干预:食材
-*
+* @folder 食材
+ *
 * @author lait.zhang
 * @date 2023年4月23日 上午9:44:34
 */
@@ -69,6 +67,13 @@ public class FoodMaterialRest {
     public Boolean delFoodMaterial(@RequestBody @Validated DelFoodMaterialRequest delFoodMaterial ) {
         return foodMaterialBiz.delFoodMaterial(delFoodMaterial);
     }
+
+    @Operation(summary = "删除食材关联指标")
+    @DeleteMapping("v1/baseIntervene/foodMaterial/delRefIndicator")
+    public Boolean delRefIndicator(@RequestBody @Validated DelRefIndicatorRequest delRefIndicator ) {
+        return foodMaterialBiz.delRefIndicator(delRefIndicator);
+    }
+
 
     @Operation(summary = "启用禁用食材")
     @PostMapping("v1/baseIntervene/foodMaterial/setFoodMaterialState")

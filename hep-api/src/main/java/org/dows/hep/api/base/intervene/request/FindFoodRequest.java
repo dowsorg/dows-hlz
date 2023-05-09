@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
 * @description 
 *
@@ -28,6 +30,16 @@ public class FindFoodRequest{
 
     @Schema(title = "搜索关键字")
     private String keywords;
+
+    @Schema(title = "包含的分布式id列表")
+    private List<String> incIds;
+
+    @Schema(title = "排除的分布式id列表")
+    private List<String> excIds;
+
+    @Schema(title = "状态 null-所有, 0-启用 1-停用")
+    private Integer state;
+
 
 
 }

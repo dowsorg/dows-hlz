@@ -4,6 +4,10 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
+import org.dows.hep.api.base.intervene.vo.SportPlanItemVO;
+
+import java.util.List;
 
 /**
 * @description 
@@ -12,6 +16,7 @@ import lombok.NoArgsConstructor;
 * @date 
 */
 @Data
+@Accessors(chain = true)
 @NoArgsConstructor
 @Schema(name = "SportPlanInfo 对象", title = "运动方案信息")
 public class SportPlanInfoResponse{
@@ -41,7 +46,7 @@ public class SportPlanInfoResponse{
     private Integer state;
 
     @Schema(title = "运动项目列表json")
-    private String sportItems;
+    private List<SportPlanItemVO> sportItems;
 
 
 }
