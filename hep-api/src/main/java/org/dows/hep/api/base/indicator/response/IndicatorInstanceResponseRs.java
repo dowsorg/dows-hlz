@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author runsix
@@ -50,4 +51,7 @@ public class IndicatorInstanceResponseRs implements Serializable {
 
   @Schema(title = "描述")
   private String descr;
+
+  @Schema(title = "时间戳")
+  private Date dt;
 }

@@ -69,6 +69,7 @@ public class IndicatorInstanceBiz{
             .expression(indicatorInstanceEntity.getExpression())
             .rawExpression(indicatorInstanceEntity.getRawExpression())
             .descr(indicatorInstanceEntity.getDescr())
+            .dt(indicatorInstanceEntity.getDt())
             .build();
     }
     /**
