@@ -319,10 +319,9 @@ public class ExperimentManageBiz {
                 request.setOperationManual(orgEntity.getHandbook());
                 String orgId = accountOrgApi.createAccountOrg(request);
                 //1.1.2. 创建案例机构实例副本
-                String experimentOrgId = idGenerator.nextIdStr();
                 ExperimentOrgEntity entity = ExperimentOrgEntity.builder()
                         .appId(createExperiment.getAppId())
-                        .experimentOrgId(experimentOrgId)
+                        .experimentOrgId(orgId)
                         .experimentOrgName(orgEntity.getOrgName())
                         .experimentInstanceId(orgEntity.getCaseInstanceId())
                         .experimentGroupId(model.getExperimentGroupId())
@@ -344,7 +343,7 @@ public class ExperimentManageBiz {
                             .caseOrgFeeId(idGenerator.nextIdStr())
                             .caseOrgIndicatorId(fee.getCaseOrgIndicatorId())
                             .caseInstanceId(fee.getCaseInstanceId())
-                            .caseOrgId(experimentOrgId)
+                            .caseOrgId(orgId)
                             .orgFunctionId(fee.getOrgFunctionId())
                             .functionName(fee.getFunctionName())
                             .reimburseRatio(fee.getReimburseRatio())
@@ -420,7 +419,7 @@ public class ExperimentManageBiz {
                     AccountInstanceResponse instanceResponse = accountInstanceApi.getAccountInstanceByAccountId(accountId);
                     AccountGroupRequest request1 = AccountGroupRequest
                             .builder()
-                            .orgId(experimentOrgId)
+                            .orgId(orgId)
                             .orgName(orgEntity.getOrgName())
                             .accountId(accountId)
                             .accountName(instanceResponse.getAccountName())

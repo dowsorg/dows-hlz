@@ -17,25 +17,37 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class IndicatorViewMonitorFollowupContentRefResponseRs implements Serializable {
+public class IndicatorViewPhysicalExamResponseRs implements Serializable {
   @JsonFormat(shape = JsonFormat.Shape.STRING)
   @Schema(title = "主键")
   private Long id;
 
   @Schema(title = "分布式ID")
-  private String indicatorViewMonitorFollowupContentRefId;
+  private String indicatorViewPhysicalExamId;
 
   @Schema(title = "应用ID")
   private String appId;
 
-  @Schema(title = "指标监测随访内容ID")
-  private String indicatorViewMonitorFollowupFollowupContentId;
+  @Schema(title = "指标功能ID")
+  private String indicatorFuncId;
 
-  @Schema(title = "指标Response")
+  @Schema(title = "体格检查名称")
+  private String name;
+
+  @Schema(title = "体格检查类别")
+  private IndicatorCategoryResponse indicatorCategoryResponse;
+
+  @Schema(title = "费用")
+  private Double fee;
+
+  @Schema(title = "关联指标")
   private IndicatorInstanceResponseRs indicatorInstanceResponseRs;
 
-  @Schema(title = "展示顺序")
-  private Integer seq;
+  @Schema(title = "结果解析")
+  private String resultAnalysis;
+
+  @Schema(title = "0-禁用，1-启用")
+  private Integer status;
 
   @Schema(title = "时间戳")
   private Date dt;

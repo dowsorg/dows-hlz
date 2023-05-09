@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -40,6 +41,10 @@ public class IndicatorViewMonitorFollowupResponseRs implements Serializable {
   @Schema(title = "监测随访表的类别")
   private IndicatorCategoryResponse indicatorCategoryResponse;
 
+  @Schema(title = "时间戳")
+  private Date dt;
+
   @Schema(title = "监测随访表的随访内容列表")
   private List<IndicatorViewMonitorFollowupFollowupContentResponseRs> indicatorViewMonitorFollowupFollowupContentResponseRsList;
+
 }

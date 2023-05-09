@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 操作机构转入转出记录(OperateTransfers)实体类
@@ -60,11 +60,8 @@ public class OperateTransfersEntity implements CrudEntity {
     @Schema(title = "转入机构名称")
     private String toOrgName;
 
-    @Schema(title = "案例人物ID")
-    private String caseAccountId;
-
-    @Schema(title = "案例人物名")
-    private String caseAccountName;
+    @Schema(title = "实验人物名")
+    private String experimentAccountName;
 
     @Schema(title = "操作人员ID")
     private String operateAccountId;
