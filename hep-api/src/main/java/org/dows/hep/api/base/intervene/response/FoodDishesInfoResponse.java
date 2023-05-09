@@ -4,6 +4,11 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
+import org.dows.hep.api.base.intervene.vo.FoodMaterialVO;
+import org.dows.hep.api.base.intervene.vo.FoodStatVO;
+
+import java.util.List;
 
 /**
 * @description 
@@ -12,6 +17,7 @@ import lombok.NoArgsConstructor;
 * @date 
 */
 @Data
+@Accessors(chain = true)
 @NoArgsConstructor
 @Schema(name = "FoodDishesInfo 对象", title = "菜肴信息")
 public class FoodDishesInfoResponse{
@@ -41,13 +47,13 @@ public class FoodDishesInfoResponse{
     private Integer state;
 
     @Schema(title = "食材列表json")
-    private String materials;
+    private List<FoodMaterialVO> materials;
 
     @Schema(title = "能量占比json")
-    private String statEnergy;
+    private List<FoodStatVO> statEnergy;
 
     @Schema(title = "膳食结构json")
-    private String statCateg;
+    private List<FoodStatVO> statCateg;
 
 
 }

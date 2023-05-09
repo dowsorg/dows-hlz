@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
 * @description 
 *
@@ -33,6 +35,15 @@ public class FindTreatRequest{
     @Schema(title = "功能点id")
     @NotNull(message = "功能点ID不可为空")
     private String indicatorFuncId;
+
+    @Schema(title = "包含的分布式id列表")
+    private List<String> incIds;
+
+    @Schema(title = "排除的分布式id列表")
+    private List<String> excIds;
+
+    @Schema(title = "状态 null-所有, 0-启用 1-停用")
+    private Integer state;
 
 
 }

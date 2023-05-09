@@ -31,7 +31,7 @@ public class TreatItemInfoResponse{
     @Schema(title = "治疗名称")
     private String treatItemName;
 
-    @Schema(title = "功能点id")
+    @Schema(title = "指标功能点id")
     private String indicatorFuncId;
 
     @Schema(title = "当前分类id")

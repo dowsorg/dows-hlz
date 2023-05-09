@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 /**
 * @description 
@@ -12,6 +13,7 @@ import lombok.NoArgsConstructor;
 * @date 
 */
 @Data
+@Accessors(chain = true)
 @NoArgsConstructor
 @Schema(name = "FoodCookBook 对象", title = "菜谱信息")
 public class FoodCookBookResponse{
@@ -30,6 +32,12 @@ public class FoodCookBookResponse{
 
     @Schema(title = "一级分类名称")
     private String categNameLv1;
+
+    @Schema(title = "父分类id路径")
+    private String categIdPath;
+
+    @Schema(title = "父分类名称路径")
+    private String categNamePath;
 
     @Schema(title = "蛋白质每100g")
     private String protein;

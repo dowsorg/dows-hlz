@@ -1,20 +1,17 @@
 package org.dows.hep.biz.base.intervene;
 
-import com.baomidou.mybatisplus.core.metadata.OrderItem;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.intervene.request.DelSpotItemRequest;
-import org.dows.hep.api.base.intervene.request.FindSportRequest;
-import org.dows.hep.api.base.intervene.request.SaveSportItemRequest;
-import org.dows.hep.api.base.intervene.request.SetSportItemStateRequest;
+import org.dows.hep.api.base.intervene.request.*;
 import org.dows.hep.api.base.intervene.response.SportItemInfoResponse;
 import org.dows.hep.api.base.intervene.response.SportItemResponse;
 import org.dows.hep.api.base.intervene.vo.InterveneIndicatorVO;
-import org.dows.hep.api.enums.EnumStatus;
 import org.dows.hep.biz.cache.InterveneCategCache;
 import org.dows.hep.biz.dao.SportItemDao;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.CopyWrapper;
+import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.vo.CategVO;
 import org.dows.hep.entity.SportItemEntity;
@@ -22,6 +19,7 @@ import org.dows.hep.entity.SportItemIndicatorEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
 * @description project descr:干预:运动项目
@@ -45,12 +43,9 @@ public class SportItemBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Page<SportItemResponse> pageSportItem(FindSportRequest findSport ) {
-        if(ShareUtil.XString.hasLength(findSport.getCategIdLv1())) {
-            findSport.setCategIdLv1(ShareUtil.XString.eusureEndsWith(findSport.getCategIdLv1(),"/"));
-        }
-        Page<SportItemEntity> page=Page.of(findSport.getPageNo(),findSport.getPageSize());
-        page.addOrder(OrderItem.asc("id"));
-        page=dao.getByCondition(page,findSport.getKeywords(), findSport.getCategIdLv1());
+        findSport.setCategIdLv1(ShareBiz.ensureCategPathSuffix(findSport.getCategIdLv1()));
+
+        IPage<SportItemEntity> page=dao.pageByCondition(findSport);
         Page<SportItemResponse> pageDto= Page.of (page.getCurrent(),page.getSize(),page.getTotal(),page.searchCount());
         return pageDto.setRecords(ShareUtil.XCollection.map(page.getRecords(),true, i-> CopyWrapper.create(SportItemResponse::new)
                 .endFrom(i)
@@ -71,7 +66,7 @@ public class SportItemBiz{
         SportItemEntity row=AssertUtil.getNotNull(dao.getById(sportItemId))
                 .orElseThrow("运动项目不存在");
 
-        List<SportItemIndicatorEntity> indicators=dao.getByLeadId(sportItemId,
+        List<SportItemIndicatorEntity> indicators=dao.getSubByLeadId(sportItemId,
                 SportItemIndicatorEntity::getId,
                 SportItemIndicatorEntity::getIndicatorInstanceId,
                 SportItemIndicatorEntity::getExpression,
@@ -80,8 +75,7 @@ public class SportItemBiz{
 
         List<InterveneIndicatorVO> voIndicators=ShareUtil.XCollection.map(indicators,true,
                 i->CopyWrapper.create(InterveneIndicatorVO::new)
-                        .endFrom(i)
-                        .setRefId(i.getSportItemIndicatorId()));
+                        .endFrom(i,v->v.setRefId(i.getSportItemIndicatorId())));
         return CopyWrapper.create(SportItemInfoResponse::new).endFrom(row)
                 .setIndicators(voIndicators);
 
@@ -97,24 +91,30 @@ public class SportItemBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean saveSportItem(SaveSportItemRequest saveSportItem ) {
-        AssertUtil.trueThenThrow(ShareUtil.XObject.notEmpty(saveSportItem.getId(),true)
-                        && dao.getByPk(saveSportItem.getId(), SportItemEntity::getId).isEmpty())
+        AssertUtil.trueThenThrow(ShareUtil.XObject.notEmpty(saveSportItem.getSportItemId())
+                        && dao.getById(saveSportItem.getSportItemId(), SportItemEntity::getSportItemId).isEmpty())
                 .throwMessage("运动项目不存在");
         CategVO categVO=null;
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(saveSportItem.getInterveneCategId())
                         ||null==(categVO= InterveneCategCache.Instance.getById(saveSportItem.getInterveneCategId())))
                 .throwMessage("类别不存在");
 
-        saveSportItem.setState(EnumStatus.of(saveSportItem.getState()).getCode());
+        AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(saveSportItem.getIndicators())
+                        &&saveSportItem.getIndicators().stream()
+                        .map(InterveneIndicatorVO::getIndicatorInstanceId)
+                        .collect(Collectors.toSet())
+                        .size()<saveSportItem.getIndicators().size())
+                .throwMessage("存在重复的关联指标，请检查");
+
         SportItemEntity row= CopyWrapper.create(SportItemEntity::new)
                 .endFrom(saveSportItem)
                 .setCategName(categVO.getCategName())
                 .setCategIdPath(categVO.getCategIdPath())
                 .setCategNamePath(categVO.getCategNamePath());
 
-        List<SportItemIndicatorEntity> rowIndicators=ShareUtil.XCollection.map(saveSportItem.getIndicators(),true,
-                i->CopyWrapper.create(SportItemIndicatorEntity::new).endFrom(i));
-        return dao.tranSave(row,rowIndicators);
+        List<SportItemIndicatorEntity> subRows=ShareUtil.XCollection.map(saveSportItem.getIndicators(),true,
+                i->CopyWrapper.create(SportItemIndicatorEntity::new).endFrom(i,v->v.setSportItemIndicatorId(i.getRefId())));
+        return dao.tranSave(row,subRows,false);
     }
     /**
     * @param
@@ -128,7 +128,16 @@ public class SportItemBiz{
     */
     public Boolean delSportItem(DelSpotItemRequest delSportItem ) {
         //TODO checkRefence
-        return dao.tranDelete(delSportItem.getIds());
+        return dao.tranDelete(delSportItem.getIds(),true);
+    }
+
+    /**
+     * 删除关联指标
+     * @param delRefIndicator
+     * @return
+     */
+    public Boolean delRefIndicator(DelRefIndicatorRequest delRefIndicator ) {
+        return dao.tranDeleteSub(delRefIndicator.getIds(),"关联指标不存在或已删除");
     }
 
     /**
@@ -138,7 +147,7 @@ public class SportItemBiz{
      * @return
      */
     public Boolean setSportItemState(SetSportItemStateRequest setSportItemStateRequest ) {
-        setSportItemStateRequest.setState(EnumStatus.of(setSportItemStateRequest.getState()).getCode());
+
         return dao.tranSetState(setSportItemStateRequest.getSportItemId(), setSportItemStateRequest.getState());
     }
 }

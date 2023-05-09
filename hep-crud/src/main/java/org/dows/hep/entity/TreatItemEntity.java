@@ -67,7 +67,7 @@ public class TreatItemEntity implements CrudEntity {
     private String fee;
 
     @Schema(title = "状态 0-启用 1-停用")
-    private Boolean state;
+    private Integer state;
 
     @JsonIgnore
     @TableLogic

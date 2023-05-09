@@ -35,7 +35,8 @@ public class SportItemResponse{
     @Schema(title = "一级分类名称")
     private String categNameLv1;
 
-    @Schema(title = "分布id路径")
+
+    @Schema(title = "分布式id路径")
     private String categIdPath;
 
     @Schema(title = "分类名称路径")

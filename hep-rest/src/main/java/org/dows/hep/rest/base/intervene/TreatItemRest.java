@@ -4,10 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.intervene.request.DelTreatItemRequest;
-import org.dows.hep.api.base.intervene.request.FindTreatRequest;
-import org.dows.hep.api.base.intervene.request.SaveTreatItemRequest;
-import org.dows.hep.api.base.intervene.request.SetTreatItemStateRequest;
+import org.dows.hep.api.base.intervene.request.*;
 import org.dows.hep.api.base.intervene.response.TreatItemInfoResponse;
 import org.dows.hep.api.base.intervene.response.TreatItemResponse;
 import org.dows.hep.biz.base.intervene.TreatItemBiz;
@@ -17,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 /**
 * @description project descr:干预:治疗项目
 *
+ * @folder 治疗项目
 * @author lait.zhang
 * @date 2023年4月23日 上午9:44:34
 */
@@ -81,6 +79,17 @@ public class TreatItemRest {
     @DeleteMapping("v1/baseIntervene/treatItem/delTreatItem")
     public Boolean delTreatItem(@RequestBody @Validated DelTreatItemRequest delTreatItem ) {
         return treatItemBiz.delTreatItem(delTreatItem);
+    }
+
+    /**
+     * 删除关联指标
+     * @param delRefIndicator
+     * @return
+     */
+    @Operation(summary = "删除关联指标")
+    @DeleteMapping("v1/baseIntervene/treatItem/delRefIndicator")
+    public Boolean delRefIndicator(@RequestBody @Validated DelRefIndicatorRequest delRefIndicator ) {
+        return treatItemBiz.delRefIndicator(delRefIndicator);
     }
 
 

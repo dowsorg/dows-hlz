@@ -154,6 +154,10 @@ public abstract class CategCache extends BaseLocalCache<CategCache.CacheData> {
                 ShareUtil.XString.eusureEndsWith(self,SPLITCategPath));
     }
 
+    public String getSplitTCategPath(){
+        return SPLITCategPath;
+    }
+
 
     @Override
     public boolean isExpired() {
@@ -178,7 +182,7 @@ public abstract class CategCache extends BaseLocalCache<CategCache.CacheData> {
     }
 
     protected String fixKey(String key){
-        return ShareUtil.XString.defaultIfNull(key,"").toLowerCase();
+        return ShareUtil.XString.defaultIfEmpty(key,"").toLowerCase();
     }
 
     public static class CacheData {

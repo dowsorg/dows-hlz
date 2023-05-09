@@ -1,12 +1,28 @@
 package org.dows.hep.biz.base.intervene;
 
-import org.dows.hep.api.base.intervene.request.DelSportPlanRequest;
-import org.dows.hep.api.base.intervene.request.FindSportRequest;
-import org.dows.hep.api.base.intervene.request.SaveSportPlanRequest;
-import org.dows.hep.api.base.intervene.request.SetSpotPlanStateRequest;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.intervene.request.*;
 import org.dows.hep.api.base.intervene.response.SportPlanInfoResponse;
 import org.dows.hep.api.base.intervene.response.SportPlanResponse;
+import org.dows.hep.api.base.intervene.vo.SportPlanItemVO;
+import org.dows.hep.biz.cache.InterveneCategCache;
+import org.dows.hep.biz.dao.SportItemDao;
+import org.dows.hep.biz.dao.SportPlanDao;
+import org.dows.hep.biz.util.AssertUtil;
+import org.dows.hep.biz.util.CopyWrapper;
+import org.dows.hep.biz.util.ShareBiz;
+import org.dows.hep.biz.util.ShareUtil;
+import org.dows.hep.biz.vo.CategVO;
+import org.dows.hep.entity.SportItemEntity;
+import org.dows.hep.entity.SportPlanEntity;
+import org.dows.hep.entity.SportPlanItemsEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
 * @description project descr:干预:运动方案
@@ -15,7 +31,11 @@ import org.springframework.stereotype.Service;
 * @date 2023年4月23日 上午9:44:34
 */
 @Service
+@RequiredArgsConstructor
 public class SportPlanBiz{
+    private final SportPlanDao dao;
+    private final SportItemDao daoSportItem;
+
     /**
     * @param
     * @return
@@ -26,8 +46,15 @@ public class SportPlanBiz{
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public SportPlanResponse pageSportPlan(FindSportRequest findSport ) {
-        return new SportPlanResponse();
+    public Page<SportPlanResponse> pageSportPlan(FindSportRequest findSport ) {
+        findSport.setCategIdLv1(ShareBiz.ensureCategPathSuffix(findSport.getCategIdLv1()));
+        IPage<SportPlanEntity> page=dao.pageByCondition(findSport);
+        Page<SportPlanResponse> pageDto= Page.of (page.getCurrent(),page.getSize(),page.getTotal(),page.searchCount());
+        return pageDto.setRecords(ShareUtil.XCollection.map(page.getRecords(),true, i-> CopyWrapper.create(SportPlanResponse::new)
+                .endFrom(i)
+                .setCategIdLv1(InterveneCategCache.Instance.getCategLv1(i.getCategIdPath() ,i.getInterveneCategId()))
+                .setCategNameLv1(InterveneCategCache.Instance.getCategLv1(i.getCategNamePath() ,i.getCategName()))));
+
     }
     /**
     * @param
@@ -40,7 +67,31 @@ public class SportPlanBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public SportPlanInfoResponse getSportPlan(String sportPlanId ) {
-        return new SportPlanInfoResponse();
+        SportPlanEntity row= AssertUtil.getNotNull(dao.getById(sportPlanId))
+                .orElseThrow("运动方案不存在或已删除，请刷新");
+
+        List<SportPlanItemsEntity> subRows=dao.getSubByLeadId(sportPlanId,
+                SportPlanItemsEntity::getId,
+                SportPlanItemsEntity::getSportPlanItemsId,
+                SportPlanItemsEntity::getSportItemId,
+                SportPlanItemsEntity::getSportItemName,
+                SportPlanItemsEntity::getFrequency,
+                SportPlanItemsEntity::getLastTime,
+                SportPlanItemsEntity::getSeq);
+        List<String> itemIds=ShareUtil.XCollection.map(subRows,true,SportPlanItemsEntity::getSportItemId);
+        Map<String,SportItemEntity> mapItems=daoSportItem.getMapByIds(itemIds,
+                SportItemEntity::getSportItemId,
+                SportItemEntity::getStrengthMet,
+                SportItemEntity::getStrengthType);
+        List<SportPlanItemVO> vos=ShareUtil.XCollection.map(subRows,true,i->
+                CopyWrapper.create(SportPlanItemVO::new)
+                        .from(mapItems.get(i.getSportItemId()))
+                        .endFrom(i,v->v.setRefId(i.getSportPlanItemsId())));
+        subRows.clear();
+        itemIds.clear();
+        mapItems.clear();
+        return CopyWrapper.create(SportPlanInfoResponse::new).endFrom(row)
+                .setSportItems(vos);
     }
     /**
     * @param
@@ -53,7 +104,30 @@ public class SportPlanBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean saveSportPlan(SaveSportPlanRequest saveSportPlan ) {
-        return Boolean.FALSE;
+        AssertUtil.trueThenThrow(ShareUtil.XObject.notEmpty(saveSportPlan.getSportPlanId())
+                        && dao.getById(saveSportPlan.getSportPlanId(), SportPlanEntity::getSportPlanId).isEmpty())
+                .throwMessage("运动方案不存在");
+        CategVO categVO=null;
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(saveSportPlan.getInterveneCategId())
+                        ||null==(categVO= InterveneCategCache.Instance.getById(saveSportPlan.getInterveneCategId())))
+                .throwMessage("类别不存在");
+        AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(saveSportPlan.getSportItems())
+                &&saveSportPlan.getSportItems().stream()
+                .map(SportPlanItemVO::getSportItemId)
+                .collect(Collectors.toSet())
+                .size()<saveSportPlan.getSportItems().size())
+                .throwMessage("存在重复的运动项目，请检查");
+
+        SportPlanEntity row= CopyWrapper.create(SportPlanEntity::new)
+                .endFrom(saveSportPlan)
+                .setCategName(categVO.getCategName())
+                .setCategIdPath(categVO.getCategIdPath())
+                .setCategNamePath(categVO.getCategNamePath());
+
+        List<SportPlanItemsEntity> subrows=ShareUtil.XCollection.map(saveSportPlan.getSportItems(),true,
+                i->CopyWrapper.create(SportPlanItemsEntity::new)
+                        .endFrom(i,v->v.setSportPlanItemsId(i.getRefId())));
+        return dao.tranSave(row,subrows,false);
     }
     /**
     * @param
@@ -66,7 +140,16 @@ public class SportPlanBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean delSportPlan(DelSportPlanRequest delSportPlan ) {
-        return Boolean.FALSE;
+        return dao.tranDelete(delSportPlan.getIds(),true);
+    }
+
+    /**
+     * 删除运动项目
+     * @param delRefItem
+     * @return
+     */
+    public Boolean delRefItem(DelRefItemRequest delRefItem ) {
+        return dao.tranDeleteSub(delRefItem.getIds(),"运动项目不存在或已删除");
     }
     /**
     * @param
@@ -78,7 +161,7 @@ public class SportPlanBiz{
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public Boolean setSpotPlanState(SetSpotPlanStateRequest setSpotPlanState ) {
-        return Boolean.FALSE;
+    public Boolean setSportPlanState(SetSpotPlanStateRequest setSpotPlanState ) {
+        return dao.tranSetState(setSpotPlanState.getSportPlanId(),setSpotPlanState.getState());
     }
 }
