@@ -6,10 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.checkerframework.checker.units.qual.Acceleration;
 
 import java.io.Serializable;
-import java.util.List;
+import java.math.BigDecimal;
 
 /**
  * @author runsix
@@ -18,9 +17,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CreateOrUpdateIndicatorViewMonitorFollowupRequestRs implements Serializable {
+public class CreateOrUpdateIndicatorViewPhysicalExamRequestRs implements Serializable {
   @Schema(title = "分布式ID")
-  private String indicatorViewMonitorFollowupId;
+  private String indicatorViewPhysicalExamId;
 
   @Schema(title = "应用ID")
   private String appId;
@@ -28,15 +27,22 @@ public class CreateOrUpdateIndicatorViewMonitorFollowupRequestRs implements Seri
   @Schema(title = "指标功能ID")
   private String indicatorFuncId;
 
-  @Schema(title = "指标监测随访类表名称")
+  @Schema(title = "体格检查名称")
   private String name;
 
-  @Schema(title = "监测随访表类别Id")
+  @Schema(title = "体格检查类别")
   private String indicatorCategoryId;
+
+  @Schema(title = "费用")
+  private Double fee;
+
+  @Schema(title = "关联指标")
+  private String indicatorInstanceId;
+
+  @Schema(title = "结果解析")
+  private String resultAnalysis;
 
   @Schema(title = "0-禁用，1-启用")
   private Integer status;
 
-  @Schema(title = "随访内容列表")
-  private List<CreateOrUpdateIndicatorViewMonitorFollowupFollowupContentRequestRs> createOrUpdateIndicatorViewMonitorFollowupFollowupContentRequestRsList;
 }

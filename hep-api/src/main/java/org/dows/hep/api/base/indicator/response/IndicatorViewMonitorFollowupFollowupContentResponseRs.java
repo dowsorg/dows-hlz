@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -36,6 +37,9 @@ public class IndicatorViewMonitorFollowupFollowupContentResponseRs implements Se
 
   @Schema(title = "展示顺序")
   private Integer seq;
+
+  @Schema(title = "时间戳")
+  private Date dt;
 
   @Schema(title = "查看指标监测随访随访内容关联指标")
   private List<IndicatorViewMonitorFollowupContentRefResponseRs> indicatorViewMonitorFollowupContentRefResponseRsList;
