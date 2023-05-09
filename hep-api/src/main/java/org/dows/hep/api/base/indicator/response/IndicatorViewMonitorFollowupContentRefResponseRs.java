@@ -30,7 +30,7 @@ public class IndicatorViewMonitorFollowupContentRefResponseRs implements Seriali
   @Schema(title = "指标监测随访内容ID")
   private String indicatorViewMonitorFollowupFollowupContentId;
 
-  @Schema(title = "指标ID")
+  @Schema(title = "指标Response")
   private IndicatorInstanceResponseRs indicatorInstanceResponseRs;
 
   @Schema(title = "展示顺序")
