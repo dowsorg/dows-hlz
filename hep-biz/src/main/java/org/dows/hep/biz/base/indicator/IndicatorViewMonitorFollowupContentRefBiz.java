@@ -49,6 +49,7 @@ public class IndicatorViewMonitorFollowupContentRefBiz {
         .appId(indicatorViewMonitorFollowupContentRefEntity.getAppId())
         .indicatorViewMonitorFollowupFollowupContentId(indicatorViewMonitorFollowupContentRefEntity.getIndicatorViewMonitorFollowupFollowupContentId())
         .indicatorInstanceResponseRs(indicatorInstanceResponseRs)
+        .dt(indicatorViewMonitorFollowupContentRefEntity.getDt())
         .seq(indicatorViewMonitorFollowupContentRefEntity.getSeq())
         .build();
   }

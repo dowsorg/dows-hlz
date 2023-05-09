@@ -41,6 +41,23 @@ public class IndicatorViewMonitorFollowupFollowupContentBiz {
   private final IndicatorViewMonitorFollowupFollowupContentService indicatorViewMonitorFollowupFollowupContentService;
   private final IndicatorViewMonitorFollowupContentRefService indicatorViewMonitorFollowupContentRefService;
 
+  public static IndicatorViewMonitorFollowupFollowupContentResponseRs indicatorViewMonitorFollowupFollowupContent2ResponseRs(
+      IndicatorViewMonitorFollowupFollowupContentEntity indicatorViewMonitorFollowupFollowupContentEntity,
+      List<IndicatorViewMonitorFollowupContentRefResponseRs> indicatorViewMonitorFollowupContentRefResponseRsList
+  ) {
+    return IndicatorViewMonitorFollowupFollowupContentResponseRs
+        .builder()
+        .id(indicatorViewMonitorFollowupFollowupContentEntity.getId())
+        .indicatorViewMonitorFollowupFollowupContentId(indicatorViewMonitorFollowupFollowupContentEntity.getIndicatorViewMonitorFollowupFollowupContentId())
+        .appId(indicatorViewMonitorFollowupFollowupContentEntity.getAppId())
+        .indicatorViewMonitorFollowupId(indicatorViewMonitorFollowupFollowupContentEntity.getIndicatorViewMonitorFollowupId())
+        .name(indicatorViewMonitorFollowupFollowupContentEntity.getName())
+        .seq(indicatorViewMonitorFollowupFollowupContentEntity.getSeq())
+        .dt(indicatorViewMonitorFollowupFollowupContentEntity.getDt())
+        .indicatorViewMonitorFollowupContentRefResponseRsList(indicatorViewMonitorFollowupContentRefResponseRsList)
+        .build();
+  }
+
   @Transactional(rollbackFor = Exception.class)
   public void delete(String indicatorViewMonitorFollowupFollowupContentId) throws InterruptedException {
     IndicatorViewMonitorFollowupFollowupContentEntity indicatorViewMonitorFollowupFollowupContentEntity = indicatorViewMonitorFollowupFollowupContentService.lambdaQuery()
@@ -124,21 +141,5 @@ public class IndicatorViewMonitorFollowupFollowupContentBiz {
     } finally {
       lock.unlock();
     }
-  }
-
-  public static IndicatorViewMonitorFollowupFollowupContentResponseRs indicatorViewMonitorFollowupFollowupContent2ResponseRs(
-      IndicatorViewMonitorFollowupFollowupContentEntity indicatorViewMonitorFollowupFollowupContentEntity,
-      List<IndicatorViewMonitorFollowupContentRefResponseRs> indicatorViewMonitorFollowupContentRefResponseRsList
-      ) {
-    return IndicatorViewMonitorFollowupFollowupContentResponseRs
-        .builder()
-        .id(indicatorViewMonitorFollowupFollowupContentEntity.getId())
-        .indicatorViewMonitorFollowupFollowupContentId(indicatorViewMonitorFollowupFollowupContentEntity.getIndicatorViewMonitorFollowupFollowupContentId())
-        .appId(indicatorViewMonitorFollowupFollowupContentEntity.getAppId())
-        .indicatorViewMonitorFollowupId(indicatorViewMonitorFollowupFollowupContentEntity.getIndicatorViewMonitorFollowupId())
-        .name(indicatorViewMonitorFollowupFollowupContentEntity.getName())
-        .seq(indicatorViewMonitorFollowupFollowupContentEntity.getSeq())
-        .indicatorViewMonitorFollowupContentRefResponseRsList(indicatorViewMonitorFollowupContentRefResponseRsList)
-        .build();
   }
 }

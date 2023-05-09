@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author runsix
@@ -35,4 +36,7 @@ public class IndicatorViewBaseInfoMonitorContentRefResponseRs implements Seriali
 
   @Schema(title = "展示顺序")
   private Integer seq;
+
+  @Schema(title = "时间戳")
+  private Date dt;
 }
