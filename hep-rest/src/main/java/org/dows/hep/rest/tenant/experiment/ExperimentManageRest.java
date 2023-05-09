@@ -57,7 +57,7 @@ public class ExperimentManageRest {
      */
     @Operation(summary = "实验小组保存案例人物")
     @PostMapping("v1/tenantExperiment/experimentManage/addExperimentGroupPerson")
-    public Integer addExperimentGroupPerson(@RequestBody @Validated CreateExperimentRequest request) {
+    public Boolean addExperimentGroupPerson(@RequestBody @Validated CreateExperimentRequest request) {
         return experimentManageBiz.addExperimentGroupPerson(request);
     }
 

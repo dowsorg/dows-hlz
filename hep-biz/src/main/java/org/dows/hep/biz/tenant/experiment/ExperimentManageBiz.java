@@ -248,7 +248,7 @@ public class ExperimentManageBiz {
      * @创建时间: 2023年5月8日 上午11:23:07
      */
     @DSTransactional
-    public Integer addExperimentGroupPerson(CreateExperimentRequest request) {
+    public Boolean addExperimentGroupPerson(CreateExperimentRequest request) {
         Integer count = 0;
         List<AccountInstanceResponse> instanceResponses = request.getTeachers();
         //1、通过案例人物ID找到账户ID，进而找到姓名
@@ -261,22 +261,22 @@ public class ExperimentManageBiz {
             instance.setAccountName(accountInstanceApi.getAccountInstanceByAccountId(entity.getAccountId()).getAccountName());
         });
         //2、保存实验小组人物信息
+        List<ExperimentPersonEntity> entityList = new ArrayList<>();
         for (AccountInstanceResponse model : instanceResponses) {
             ExperimentPersonEntity entity = ExperimentPersonEntity.builder()
                     .experimentInstanceId(request.getExperimentInstanceId())
                     .experimentGroupId(request.getExperimentGroupId())
                     .experimentPersonId(idGenerator.nextIdStr())
                     .appId(request.getAppId())
-                    .caseOrgId(model.getOrgId())
-                    .caseOrgName(model.getOrgName())
-                    .casePersonId(model.getAccountId())
-                    .casePersonName(model.getAccountName())
+                    .experimentOrgId(model.getOrgId())
+                    .experimentOrgName(model.getOrgName())
+                    .experimentAccountId(model.getAccountId())
+                    .experimentAccountName(model.getAccountName())
                     .periods(request.getPeriods())
                     .build();
-            experimentPersonService.save(entity);
-            count++;
+            entityList.add(entity);
         }
-        return count;
+        return experimentPersonService.saveOrUpdateBatch(entityList);
     }
 
     /**
@@ -338,10 +338,10 @@ public class ExperimentManageBiz {
                             .experimentPersonId(vo.getAccountId())
                             .experimentInstanceId(createExperiment.getExperimentInstanceId())
                             .experimentGroupId(model.getExperimentGroupId())
-                            .caseOrgId(teacher.getOrgId())
-                            .casePersonId(teacher.getAccountId())
-                            .casePersonName(teacher.getAccountName())
-                            .caseOrgName(teacher.getOrgName())
+                            .experimentOrgId(teacher.getOrgId())
+                            .experimentOrgName(teacher.getAccountId())
+                            .experimentAccountId(teacher.getAccountName())
+                            .experimentAccountName(teacher.getOrgName())
                             .build();
                     experimentPersonService.save(entity);
                 });
