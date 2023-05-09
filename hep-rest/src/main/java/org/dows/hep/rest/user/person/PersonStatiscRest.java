@@ -33,8 +33,8 @@ public class PersonStatiscRest {
      */
     @Operation(summary = "获取社区人数")
     @PostMapping("v1/basePerson/personManage/countCasePersons")
-    public Integer countCasePersons(@RequestParam @Validated String caseInstanceId) {
-        return personStatiscBiz.countCasePersons(caseInstanceId);
+    public Integer countCasePersons(@RequestParam @Validated String experimentInstanceId) {
+        return personStatiscBiz.countCasePersons(experimentInstanceId);
     }
 
     /**
