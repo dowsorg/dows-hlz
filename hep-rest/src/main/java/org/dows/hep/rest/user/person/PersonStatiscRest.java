@@ -47,7 +47,7 @@ public class PersonStatiscRest {
      * @开始时间:
      * @创建时间: 2023年5月8日 下午15:40:34
      */
-    @Operation(summary = "获取案例机构")
+    @Operation(summary = "获取实验机构")
     @PostMapping("v1/basePerson/personManage/countExperimentOrgs")
     public List<AccountOrgResponse> countExperimentOrgs(@RequestParam @Validated String experimentInstanceId) {
         return personStatiscBiz.countExperimentOrgs(experimentInstanceId);
