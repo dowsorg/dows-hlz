@@ -9,11 +9,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.account.api.*;
-import org.dows.account.request.AccountInstanceRequest;
-import org.dows.account.request.AccountOrgGeoRequest;
-import org.dows.account.request.AccountOrgRequest;
-import org.dows.account.request.AccountUserRequest;
+import org.dows.account.request.*;
 import org.dows.account.response.AccountInstanceResponse;
+import org.dows.account.response.AccountOrgGeoResponse;
 import org.dows.account.response.AccountOrgResponse;
 import org.dows.account.response.AccountUserResponse;
 import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
@@ -33,8 +31,7 @@ import org.dows.user.api.response.UserInstanceResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static org.dows.hep.biz.base.org.OrgBiz.createCode;
 import static org.dows.hep.biz.base.org.OrgBiz.randomWord;
@@ -64,10 +61,11 @@ public class ExperimentManageBiz {
     private final UserExtinfoApi userExtinfoApi;
     private final AccountInstanceApi accountInstanceApi;
     private final CasePersonService casePersonService;
+    private final ExperimentOrgService experimentOrgService;
     private final CaseOrgService caseOrgService;
     private final AccountOrgApi accountOrgApi;
-    private final CaseOrgFeeService caseOrgFeeService;
     private final AccountOrgGeoApi accountOrgGeoApi;
+    private final CaseOrgFeeService caseOrgFeeService;
 
 //    private final
 
@@ -289,14 +287,15 @@ public class ExperimentManageBiz {
      * @param
      * @return
      * @说明: 案例人物复制到实验
-     * @关联表: case_person、experiment_person
-     * @工时: 2H
+     * @关联表: case_person、experiment_person、case_org、account_org、account_org_geo、account_org_info
+     * @工时: 3H
      * @开发者: jx
      * @开始时间:
-     * @创建时间: 2023年5月06日 下午17:20:07
+     * @创建时间: 2023年5月09日 上午10:20:07
      */
     @DSTransactional
     public Boolean copyExperimentPersonAndOrg(CreateExperimentRequest createExperiment) {
+        Map<String, Object> map = new HashMap<>();
         //1、复制案例人物到每个实验，有几个实验小组就要分配几次人物和机构
         List<ExperimentGroupEntity> entityList = experimentGroupService.lambdaQuery()
                 .eq(ExperimentGroupEntity::getExperimentInstanceId, createExperiment.getExperimentInstanceId())
@@ -305,76 +304,78 @@ public class ExperimentManageBiz {
         List<AccountInstanceResponse> teachers = createExperiment.getTeachers();
         entityList.forEach(model -> {
             if (teachers != null && teachers.size() > 0) {
-                teachers.forEach(teacher -> {
-                    //1.1、根据案例机构复制案例机构
-                    CaseOrgEntity orgEntity = caseOrgService.lambdaQuery()
-                            .eq(CaseOrgEntity::getCaseOrgId,createExperiment.getCaseOrgId())
-                            .eq(CaseOrgEntity::getDeleted,false)
-                            .one();
-                    AccountOrgResponse orgResponse = accountOrgApi.getAccountOrgByOrgId(orgEntity.getOrgId(),createExperiment.getAppId());
-                    //1.1.1、生成随机code，复制机构基础信息
-                    String orgCode = createCode(7);
-                    AccountOrgRequest request = new AccountOrgRequest();
-                    request.setOrgCode(orgCode);
-                    BeanUtil.copyProperties(orgResponse,request,new String[]{"id"});
-                    String orgId = accountOrgApi.createAccountOrg(request);
-                    //1.1.2. 创建案例机构实例副本
-                    String caseOrgId = idGenerator.nextIdStr();
-                    CaseOrgEntity entity = CaseOrgEntity.builder()
-                            .appId(createExperiment.getAppId())
-                            .caseOrgId(caseOrgId)
-                            .caseInstanceId(orgEntity.getCaseInstanceId())
-                            .orgId(orgId)
-                            .orgName(request.getOrgName())
-                            .scene(request.getProfile())
-                            .handbook(request.getOperationManual())
-                            .ver(request.getVer().toString())
-                            .caseIdentifier(orgEntity.getCaseIdentifier())
-                            .build();
-                    caseOrgService.save(entity);
-                    //1.1.3、创建机构费用明细副本
-                    List<CaseOrgFeeEntity> caseOrgList = caseOrgFeeService
-                            .lambdaQuery()
-                            .eq(CaseOrgFeeEntity::getCaseOrgId,createExperiment.getCaseOrgId())
-                            .eq(CaseOrgFeeEntity::getDeleted,false)
-                            .list();
-                    List<CaseOrgFeeEntity> feeList = new ArrayList<>();
-                    caseOrgList.forEach(fee -> {
-                        CaseOrgFeeEntity feeEntity = CaseOrgFeeEntity
-                                .builder()
-                                .caseOrgFeeId(idGenerator.nextIdStr())
-                                .caseOrgIndicatorId(fee.getCaseOrgIndicatorId())
-                                .caseInstanceId(fee.getCaseInstanceId())
-                                .caseOrgId(orgId)
-                                .orgFunctionId(fee.getOrgFunctionId())
-                                .functionName(fee.getFunctionName())
-                                .reimburseRatio(fee.getReimburseRatio())
-                                .fee(fee.getFee())
-                                .feeCode(fee.getFeeCode())
-                                .feeName(fee.getFeeName())
-                                .appId(fee.getAppId())
-                                .ver(fee.getVer())
-                                .caseIdentifier(fee.getCaseIdentifier())
-                                .build();
-                        feeList.add(feeEntity);
-                    });
-                    caseOrgFeeService.saveBatch(feeList);
-                    //1.1.4、创建机构点位
-                    AccountOrgGeoRequest geoRequest = AccountOrgGeoRequest
+                //1.1、根据案例机构复制案例机构
+                CaseOrgEntity orgEntity = caseOrgService.lambdaQuery()
+                        .eq(CaseOrgEntity::getCaseOrgId, createExperiment.getCaseOrgId())
+                        .eq(CaseOrgEntity::getDeleted, false)
+                        .one();
+                AccountOrgResponse orgResponse = accountOrgApi.getAccountOrgByOrgId(orgEntity.getOrgId(), createExperiment.getAppId());
+                AccountOrgGeoResponse orgGeoResponse = accountOrgGeoApi.getAccountOrgInfoByOrgId(orgEntity.getOrgId());
+                //1.1.1、生成随机code，复制机构基础信息
+                String orgCode = createCode(7);
+                AccountOrgRequest request = new AccountOrgRequest();
+                BeanUtil.copyProperties(orgResponse, request, new String[]{"id","dt"});
+                request.setOrgCode(orgCode);
+                request.setOperationManual(orgEntity.getHandbook());
+                String orgId = accountOrgApi.createAccountOrg(request);
+                //1.1.2. 创建案例机构实例副本
+                String experimentOrgId = idGenerator.nextIdStr();
+                ExperimentOrgEntity entity = ExperimentOrgEntity.builder()
+                        .appId(createExperiment.getAppId())
+                        .experimentOrgId(experimentOrgId)
+                        .experimentOrgName(orgEntity.getOrgName())
+                        .experimentInstanceId(orgEntity.getCaseInstanceId())
+                        .experimentGroupId(model.getExperimentGroupId())
+                        .caseOrgId(orgEntity.getCaseOrgId())
+                        .caseOrgName(orgEntity.getOrgName())
+                        .periods(createExperiment.getPeriods())
+                        .build();
+                experimentOrgService.save(entity);
+                //1.1.3、创建机构费用明细副本
+                List<CaseOrgFeeEntity> caseOrgList = caseOrgFeeService
+                        .lambdaQuery()
+                        .eq(CaseOrgFeeEntity::getCaseOrgId, createExperiment.getCaseOrgId())
+                        .eq(CaseOrgFeeEntity::getDeleted, false)
+                        .list();
+                List<CaseOrgFeeEntity> feeList = new ArrayList<>();
+                caseOrgList.forEach(fee -> {
+                    CaseOrgFeeEntity feeEntity = CaseOrgFeeEntity
                             .builder()
-                            .orgId(orgId)
-                            .orgName(request.getOrgName())
-                            .orgLongitude(request.getOrgLongitude())
-                            .orgLatitude(request.getOrgLatitude())
+                            .caseOrgFeeId(idGenerator.nextIdStr())
+                            .caseOrgIndicatorId(fee.getCaseOrgIndicatorId())
+                            .caseInstanceId(fee.getCaseInstanceId())
+                            .caseOrgId(experimentOrgId)
+                            .orgFunctionId(fee.getOrgFunctionId())
+                            .functionName(fee.getFunctionName())
+                            .reimburseRatio(fee.getReimburseRatio())
+                            .fee(fee.getFee())
+                            .feeCode(fee.getFeeCode())
+                            .feeName(fee.getFeeName())
+                            .appId(fee.getAppId())
+                            .ver(fee.getVer())
+                            .caseIdentifier(fee.getCaseIdentifier())
                             .build();
-                    accountOrgGeoApi.insertOrgGeo(geoRequest);
+                    feeList.add(feeEntity);
+                });
+                caseOrgFeeService.saveBatch(feeList);
+                //1.1.4、创建机构点位
+                AccountOrgGeoRequest geoRequest = AccountOrgGeoRequest
+                        .builder()
+                        .orgId(orgId)
+                        .orgName(request.getOrgName())
+                        .orgLongitude(orgGeoResponse.getOrgLongitude())
+                        .orgLatitude(orgGeoResponse.getOrgLatitude())
+                        .build();
+                accountOrgGeoApi.insertOrgGeo(geoRequest);
+                Set<String> experimentAccountIds = new HashSet<>();
+                for (AccountInstanceResponse teacher : teachers) {
                     //2、案例人物复制一份到实验中
                     //2.1、获取用户信息及简介并创建新用户及简介
                     AccountUserResponse accountUser = accountUserApi.getUserByAccountId(teacher.getAccountId());
                     UserInstanceResponse userInstanceResponse = userInstanceApi.getUserInstanceByUserId(accountUser.getUserId());
                     UserExtinfoResponse userExtinfoResponse = userExtinfoApi.getUserExtinfoByUserId(accountUser.getUserId());
                     UserInstanceRequest userInstanceRequest = new UserInstanceRequest();
-                    BeanUtils.copyProperties(userInstanceResponse, userInstanceRequest, new String[]{"id", "accountId"});
+                    BeanUtils.copyProperties(userInstanceResponse, userInstanceRequest, new String[]{"id", "accountId","dt"});
                     String userId = userInstanceApi.insertUserInstance(userInstanceRequest);
                     UserExtinfoRequest userExtinfo = UserExtinfoRequest.builder()
                             .userId(userId)
@@ -388,7 +389,7 @@ public class ExperimentManageBiz {
                             .appId(accountInstanceResponse.getAppId())
                             .avatar(accountInstanceResponse.getAvatar())
                             .status(accountInstanceResponse.getStatus())
-                            .source("机构人物")
+                            .source("实验人物")
                             .principalType(accountInstanceResponse.getPrincipalType())
                             .identifier(createCode(7))
                             .accountName(randomWord(6))
@@ -401,7 +402,7 @@ public class ExperimentManageBiz {
                             .appId(accountInstanceResponse.getAppId())
                             .tentantId(accountInstanceResponse.getTenantId()).build();
                     this.accountUserApi.createAccountUser(accountUserRequest);
-                    //2、添加新人物到实验中
+                    //2.5、添加新人物到实验中
                     ExperimentPersonEntity entity1 = ExperimentPersonEntity.builder()
                             .experimentPersonId(idGenerator.nextIdStr())
                             .experimentInstanceId(createExperiment.getExperimentInstanceId())
@@ -412,7 +413,23 @@ public class ExperimentManageBiz {
                             .experimentAccountName(vo.getAccountName())
                             .build();
                     experimentPersonService.save(entity1);
+                    experimentAccountIds.add(vo.getAccountId());
+                }
+                //复制人物到新建的小组
+                experimentAccountIds.forEach(accountId -> {
+                    AccountInstanceResponse instanceResponse = accountInstanceApi.getAccountInstanceByAccountId(accountId);
+                    AccountGroupRequest request1 = AccountGroupRequest
+                            .builder()
+                            .orgId(experimentOrgId)
+                            .orgName(orgEntity.getOrgName())
+                            .accountId(accountId)
+                            .accountName(instanceResponse.getAccountName())
+                            .userId(instanceResponse.getUserId())
+                            .appId(createExperiment.getAppId())
+                            .build();
+                    accountGroupApi.insertAccountGroupNotCheck(request1);
                 });
+                experimentAccountIds = new HashSet<>();
             }
         });
         return true;
