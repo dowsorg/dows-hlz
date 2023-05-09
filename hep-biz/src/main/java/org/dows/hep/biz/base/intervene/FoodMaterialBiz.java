@@ -10,6 +10,7 @@ import org.dows.hep.api.base.intervene.vo.FoodNutrientVO;
 import org.dows.hep.api.base.intervene.vo.InterveneIndicatorVO;
 import org.dows.hep.biz.cache.InterveneCategCache;
 import org.dows.hep.biz.dao.FoodMaterialDao;
+import org.dows.hep.biz.dao.IndicatorInstanceDao;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.ShareBiz;
@@ -18,9 +19,13 @@ import org.dows.hep.biz.vo.CategVO;
 import org.dows.hep.entity.FoodMaterialEntity;
 import org.dows.hep.entity.FoodMaterialIndicatorEntity;
 import org.dows.hep.entity.FoodMaterialNutrientEntity;
+import org.dows.hep.entity.IndicatorInstanceEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -34,6 +39,7 @@ import java.util.stream.Collectors;
 public class FoodMaterialBiz{
 
     private final FoodMaterialDao dao;
+    private final IndicatorInstanceDao daoIndicator;
 
     /**
     * @param
@@ -80,8 +86,20 @@ public class FoodMaterialBiz{
                 FoodMaterialNutrientEntity::getNutrientName,
                 FoodMaterialNutrientEntity::getWeight,
                 FoodMaterialNutrientEntity::getSeq);
-        //TODO 合并营养指标
-
+        //同步最新饮食指标
+        List<IndicatorInstanceEntity> defNutrients = daoIndicator.getIndicators4Nutrient(
+                IndicatorInstanceEntity::getIndicatorInstanceId,
+                IndicatorInstanceEntity::getIndicatorName,
+                IndicatorInstanceEntity::getUnit);
+        Map<String,FoodMaterialNutrientEntity> mapExists=ShareUtil.XCollection.toMap(nutrients,FoodMaterialNutrientEntity::getIndicatorInstanceId, Function.identity());
+        nutrients=new ArrayList<>();
+        for(IndicatorInstanceEntity item:defNutrients) {
+            nutrients.add(mapExists.getOrDefault(item.getIndicatorInstanceId(), new FoodMaterialNutrientEntity())
+                    .setNutrientName(item.getIndicatorName())
+                    .setUnit(item.getUnit()));
+        }
+        defNutrients.clear();
+        mapExists.clear();
         List<InterveneIndicatorVO> voIndicators=ShareUtil.XCollection.map(indicators,true,
                 i->CopyWrapper.create(InterveneIndicatorVO::new)
                         .endFrom(i,v->v.setRefId(i.getFoodMaterialIndicatorId())));

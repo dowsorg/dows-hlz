@@ -1026,6 +1026,7 @@ CREATE TABLE IF NOT EXISTS `food_material_nutrient`(
     `food_material_id` varchar(64) DEFAULT NULL COMMENT '食材id',
     `indicator_Instance_id` varchar(64) DEFAULT NULL COMMENT '营养指标',
     `nutrient_name` varchar(64) DEFAULT NULL COMMENT '营养成分名称',
+    `unit` varchar(64) DEFAULT NULL COMMENT '单位',
     `weight` varchar(64) DEFAULT NULL COMMENT '重量',
     `energy` varchar(64) DEFAULT NULL COMMENT '能量',
     `seq` integer(2) DEFAULT NULL COMMENT '排序号',

@@ -9,6 +9,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -96,28 +97,37 @@ public class ShareUtil {
 
     public static class XCollection {
 
-        public static boolean notEmpty(Collection<?> collection){
+        public static boolean notEmpty(Collection<?> collection) {
             return !isEmpty(collection);
         }
-        public static boolean isEmpty(Collection<?> collection){
+
+        public static boolean isEmpty(Collection<?> collection) {
             return CollectionUtils.isEmpty(collection);
         }
-        public static boolean notEmpty(Map<?, ?> map){
+
+        public static boolean notEmpty(Map<?, ?> map) {
             return !isEmpty(map);
         }
-        public static boolean isEmpty(Map<?, ?> map){
+
+        public static boolean isEmpty(Map<?, ?> map) {
             return CollectionUtils.isEmpty(map);
         }
 
-        public static <T, R> List<R> map(Iterable<T> collection, boolean ignoreNull, Function<? super T, ? extends R> func){
-            return CollUtil.map(collection,func,ignoreNull);
+        public static <T, R> List<R> map(Iterable<T> collection, boolean ignoreNull, Function<? super T, ? extends R> func) {
+            return CollUtil.map(collection, func, ignoreNull);
         }
-        public static <T,K,U> Map<K,U> toMap(List<T> src, Function<? super T, ? extends K> keyMapper,
-              Function<? super T, ? extends U> valueMapper){
-            if(isEmpty(src)){
+
+        public static <T, K, U> Map<K, U> toMap(List<T> src, Function<? super T, ? extends K> keyMapper,
+                                                Function<? super T, ? extends U> valueMapper) {
+            if (isEmpty(src)) {
                 return new HashMap<>(0);
             }
-            return src.stream().collect(Collectors.toMap(keyMapper,valueMapper,(c,n)->c));
+            return src.stream().collect(Collectors.toMap(keyMapper, valueMapper, (c, n) -> c));
+        }
+
+        public static <T, K, U, M extends Map<K, U>> M toMap(List<T> src, Function<? super T, ? extends K> keyMapper,
+                                                             Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction, Supplier<M> mapFactory) {
+            return src.stream().collect(Collectors.toMap(keyMapper, valueMapper, mergeFunction, mapFactory));
         }
 
     }
