@@ -177,7 +177,7 @@ public class PictureManageBiz {
                 PictureResponse pictureResponse = new PictureResponse();
                 BeanUtil.copyProperties(materialsEntity,pictureResponse);
                 MaterialsAttachmentEntity materialsAttachmentEntity = map.get(materialsEntity.getMaterialsId());
-                pictureResponse.setMaterialsAttachment(materialsAttachmentEntity.getFileUri() + materialsAttachmentEntity.getFileName());
+                pictureResponse.setMaterialsAttachment(materialsAttachmentEntity.getFileUri());
                 voList.add(pictureResponse);
             });
         }

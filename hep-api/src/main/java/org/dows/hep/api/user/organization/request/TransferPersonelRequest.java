@@ -13,15 +13,12 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Schema(name = "TransferPersonel 对象", title = "人物转移")
-public class TransferPersonelRequest{
+public class TransferPersonelRequest {
     @Schema(title = "实验实列ID")
     private String experimentInstanceId;
 
     @Schema(title = "实验小组ID")
     private String experimentGroupId;
-
-    @Schema(title = "案例机构ID")
-    private String caseOrgId;
 
     @Schema(title = "转移说明")
     private String descr;
