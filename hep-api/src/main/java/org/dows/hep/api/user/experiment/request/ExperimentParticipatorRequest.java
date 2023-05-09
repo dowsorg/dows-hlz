@@ -35,11 +35,11 @@ public class ExperimentParticipatorRequest {
     @Schema(title = "小组别名")
     private String groupAlias;
 
-    @Schema(title = "案例机构ID")
-    private String caseOrgIds;
+    @Schema(title = "实验机构ID")
+    private String experimentOrgIds;
 
-    @Schema(title = "案例机构名称")
-    private String caseOrgNames;
+    @Schema(title = "实验机构名称")
+    private String experimentOrgNames;
 
     @Schema(title = "实验状态[默认未开始状态0~6步]")
     private Integer state;

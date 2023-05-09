@@ -8,6 +8,7 @@ import org.dows.hep.api.user.experiment.request.ExperimentParticipatorRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
 import org.dows.hep.biz.user.experiment.ExperimentGroupBiz;
+import org.dows.hep.entity.ExperimentOrgEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -40,6 +41,19 @@ public class ExperimentGroupRest {
     }
 
     /**
+     * 获取某个实验中某个小组的机构列表
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取某个实验中某个小组的机构列表")
+    @PostMapping("v1/userExperiment/experimentGroup/listExperimentGroupOrg")
+    public List<ExperimentOrgEntity> listExperimentGroupOrg(@RequestParam @Validated String experimentGroupId,
+                                                            @RequestParam @Validated String experimentInstanceId,
+                                                            @RequestParam @Validated String periods) {
+        return experimentGroupBiz.listExperimentGroupOrg(experimentGroupId,experimentInstanceId,periods);
+    }
+
+    /**
     * 获取实验小组列表
     * @param
     * @return
@@ -57,8 +71,8 @@ public class ExperimentGroupRest {
      */
     @Operation(summary = "获取小组组员列表")
     @PostMapping("v1/userExperiment/experimentGroup/listGroupMembers")
-    public List<ExperimentParticipatorResponse> listGroupMembers(@RequestParam @Validated String experimentGroupId) {
-        return experimentGroupBiz.listGroupMembers(experimentGroupId);
+    public List<ExperimentParticipatorResponse> listGroupMembers(@RequestParam @Validated String experimentGroupId,@RequestParam @Validated String experimentInstanceId) {
+        return experimentGroupBiz.listGroupMembers(experimentGroupId,experimentInstanceId);
     }
 
     /**
