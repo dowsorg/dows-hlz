@@ -32,15 +32,15 @@ public class PersonStatiscRest {
      * @创建时间: 2023年5月8日 上午13:57:34
      */
     @Operation(summary = "获取社区人数")
-    @PostMapping("v1/basePerson/personManage/countCasePersons")
-    public Integer countCasePersons(@RequestParam @Validated String experimentInstanceId) {
-        return personStatiscBiz.countCasePersons(experimentInstanceId);
+    @PostMapping("v1/basePerson/personManage/countExperimentPersons")
+    public Integer countExperimentPersons(@RequestParam @Validated String experimentInstanceId) {
+        return personStatiscBiz.countExperimentPersons(experimentInstanceId);
     }
 
     /**
      * @param
      * @return
-     * @说明: 获取案例机构
+     * @说明: 获取实验机构
      * @关联表:
      * @工时: 1H
      * @开发者: jx
@@ -48,9 +48,9 @@ public class PersonStatiscRest {
      * @创建时间: 2023年5月8日 下午15:40:34
      */
     @Operation(summary = "获取案例机构")
-    @PostMapping("v1/basePerson/personManage/countCaseOrgs")
-    public List<AccountOrgResponse> countCaseOrgs(@RequestParam @Validated String caseInstanceId) {
-        return personStatiscBiz.countCaseOrgs(caseInstanceId);
+    @PostMapping("v1/basePerson/personManage/countExperimentOrgs")
+    public List<AccountOrgResponse> countExperimentOrgs(@RequestParam @Validated String experimentInstanceId) {
+        return personStatiscBiz.countExperimentOrgs(experimentInstanceId);
     }
 
     /**

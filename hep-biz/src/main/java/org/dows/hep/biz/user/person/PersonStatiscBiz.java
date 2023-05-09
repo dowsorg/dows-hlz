@@ -47,7 +47,7 @@ public class PersonStatiscBiz {
      * @开始时间:
      * @创建时间: 2023年5月8日 上午13:57:34
      */
-    public Integer countCasePersons(String experimentInstanceId) {
+    public Integer countExperimentPersons(String experimentInstanceId) {
         Integer count = 0;
         //1、获取案例中的已经被开启的机构
         List<ExperimentOrgEntity> experimentOrgList = experimentOrgService.lambdaQuery()
@@ -92,26 +92,33 @@ public class PersonStatiscBiz {
      * @开始时间:
      * @创建时间: 2023年5月8日 上午13:57:34
      */
-    public List<AccountOrgResponse> countCaseOrgs(String caseInstanceId) {
-        //1、获取案例中的已经被开启的机构
-        List<CaseOrgEntity> orgList = caseOrgService.lambdaQuery()
-                .eq(CaseOrgEntity::getCaseInstanceId, caseInstanceId)
-                .eq(CaseOrgEntity::getDeleted, false)
-                .list();
-        //2、获取机构的经纬度信息
+    public List<AccountOrgResponse> countExperimentOrgs(String experimentInstanceId) {
         List<AccountOrgResponse> orgResponses = new ArrayList<>();
-        if (orgList != null && orgList.size() > 0) {
-            orgList.forEach(org -> {
-                AccountOrgResponse orgResponse = AccountOrgResponse
-                        .builder()
-                        .orgId(org.getCaseOrgId())
-                        .orgName(org.getOrgName())
-                        .build();
-                AccountOrgGeoResponse orgGeo = accountOrgGeoApi.getAccountOrgInfoByOrgId(org.getOrgId());
-                orgResponse.setOrgLatitude(orgGeo.getOrgLatitude());
-                orgResponse.setOrgLongitude(orgGeo.getOrgLongitude());
-                orgResponses.add(orgResponse);
-            });
+        //1、根据实验找到案例机构ID
+        List<ExperimentOrgEntity> experimentOrgList = experimentOrgService.lambdaQuery()
+                .eq(ExperimentOrgEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentOrgEntity::getDeleted, false)
+                .list();
+        if (experimentOrgList != null && experimentOrgList.size() > 0) {
+            //2、获取案例中的已经被开启的机构
+            List<CaseOrgEntity> orgList = caseOrgService.lambdaQuery()
+                    .eq(CaseOrgEntity::getCaseOrgId, experimentOrgList.get(0).getCaseOrgId())
+                    .eq(CaseOrgEntity::getDeleted, false)
+                    .list();
+            //3、获取机构的经纬度信息
+            if (orgList != null && orgList.size() > 0) {
+                orgList.forEach(org -> {
+                    AccountOrgResponse orgResponse = AccountOrgResponse
+                            .builder()
+                            .orgId(org.getCaseOrgId())
+                            .orgName(org.getOrgName())
+                            .build();
+                    AccountOrgGeoResponse orgGeo = accountOrgGeoApi.getAccountOrgInfoByOrgId(org.getOrgId());
+                    orgResponse.setOrgLatitude(orgGeo.getOrgLatitude());
+                    orgResponse.setOrgLongitude(orgGeo.getOrgLongitude());
+                    orgResponses.add(orgResponse);
+                });
+            }
         }
         return orgResponses;
     }
