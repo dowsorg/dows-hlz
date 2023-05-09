@@ -5,11 +5,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.user.organization.request.AgeRatioRequest;
 import org.dows.hep.api.user.organization.request.GenderRatioRequest;
+import org.dows.hep.api.user.organization.response.CaseOrgResponse;
 import org.dows.hep.api.user.organization.response.NormalDataResponse;
 import org.dows.hep.api.user.organization.response.NormalDataResponseResponse;
 import org.dows.hep.biz.user.organization.OrgStatiscBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -23,6 +25,17 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "机构数据统计", description = "机构数据统计")
 public class OrgStatiscRest {
     private final OrgStatiscBiz orgStatiscBiz;
+
+    /**
+     * 获取机构操作手册
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取机构操作手册")
+    @GetMapping("v1/userOrganization/orgStatisc/getOrgHandbook/{experimentInstanceId}")
+    public CaseOrgResponse getOrgHandbook(@PathVariable @Validated String experimentInstanceId) {
+        return orgStatiscBiz.getOrgHandbook(experimentInstanceId);
+    }
 
     /**
     * 获取性别分类

@@ -15,12 +15,9 @@ import org.dows.framework.crud.api.CrudEntity;
 import java.util.Date;
 
 /**
- * 实验人物(ExperimentPerson)实体类
- *
- * @author lait
- * @since 2023-04-28 10:25:34
+ * @author jx
+ * @date 2023/5/8 20:32
  */
-@SuppressWarnings("serial")
 @Data
 @ToString
 @Builder
@@ -28,25 +25,15 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "ExperimentPerson", title = "实验人物")
-@TableName("experiment_person")
-public class ExperimentPersonEntity implements CrudEntity {
-
+@Schema(name = "ExperimentOrg", title = "实验机构")
+@TableName("experiment_org")
+public class ExperimentOrgEntity implements CrudEntity {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Schema(title = "数据库ID")
+    @Schema(title = "主键ID")
     private Long id;
 
     @Schema(title = "应用ID")
     private String appId;
-
-    @Schema(title = "实验人物id")
-    private String experimentPersonId;
-
-    @Schema(title = "实验实例ID")
-    private String experimentInstanceId;
-
-    @Schema(title = "实验小组ID")
-    private String experimentGroupId;
 
     @Schema(title = "实验机构ID")
     private String experimentOrgId;
@@ -54,11 +41,17 @@ public class ExperimentPersonEntity implements CrudEntity {
     @Schema(title = "实验机构名称")
     private String experimentOrgName;
 
-    @Schema(title = "实验人物ID")
-    private String experimentAccountId;
+    @Schema(title = "实验实例ID")
+    private String experimentInstanceId;
 
-    @Schema(title = "实验人物名称")
-    private String experimentAccountName;
+    @Schema(title = "实验小组ID")
+    private String experimentGroupId;
+
+    @Schema(title = "案例机构ID")
+    private String caseOrgId;
+
+    @Schema(title = "案例机构名称")
+    private String caseOrgName;
 
     @Schema(title = "期数")
     private Integer periods;
@@ -74,4 +67,3 @@ public class ExperimentPersonEntity implements CrudEntity {
     private Date dt;
 
 }
-

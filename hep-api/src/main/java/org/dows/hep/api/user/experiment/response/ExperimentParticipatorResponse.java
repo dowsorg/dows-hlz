@@ -17,6 +17,15 @@ import java.util.List;
 @Schema(name = "ExperimentGroup 对象", title = "实验小组信息")
 public class ExperimentParticipatorResponse {
 
+    @Schema(title = "组员账号ID")
+    private String accountId;
+
+    @Schema(title = "组员账号名")
+    private String accountName;
+
+    @Schema(title = "头像")
+    private String avatar;
+
     @Schema(title = "实验参与者ID")
     private String experimentParticipatorId;
 
