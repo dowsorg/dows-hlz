@@ -5,13 +5,16 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.question.request.QuestionCategoryRequest;
+import org.dows.hep.api.base.question.request.QuestionSearchRequest;
 import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
+import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.entity.QuestionCategoryEntity;
 import org.dows.hep.service.QuestionCategoryService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -26,6 +29,7 @@ import java.util.stream.Collectors;
 public class QuestionCategBiz {
 
     private final QuestionDomainBaseBiz baseBiz;
+    private final QuestionInstanceBiz questionInstanceBiz;
     private final QuestionCategoryService questionCategoryService;
     public static final String CATEG_PATH_DELIMITER = "|";
 
@@ -50,7 +54,8 @@ public class QuestionCategBiz {
     }
 
     public List<QuestionCategoryEntity> getChildrenByPid(String pid, String categoryGroup) {
-        return questionCategoryService.getChildrenByPid(pid, categoryGroup);
+//        return questionCategoryService.getChildrenByPid(pid, categoryGroup);
+        return Collections.emptyList();
     }
 
     public List<QuestionCategoryResponse> getAllCategory(String categoryGroup) {
@@ -70,6 +75,9 @@ public class QuestionCategBiz {
             return false;
         }
 
+        // get referenced id
+        ids = getUnReferencedIds(ids);
+
         // del self
         LambdaQueryWrapper<QuestionCategoryEntity> queryWrapper1 = new LambdaQueryWrapper<QuestionCategoryEntity>()
                 .in(QuestionCategoryEntity::getQuestionCategId, ids);
@@ -81,6 +89,25 @@ public class QuestionCategBiz {
         boolean remRes2 = questionCategoryService.remove(remWrapper);
 
         return remRes1 && remRes2;
+    }
+
+    private List<String> getUnReferencedIds(List<String> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return ids;
+        }
+
+        QuestionSearchRequest questionSearchRequest = QuestionSearchRequest.builder()
+                .categIdList(ids)
+                .build();
+        List<QuestionResponse> questionResponses = questionInstanceBiz.listQuestion(questionSearchRequest);
+        if (questionResponses == null || questionResponses.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return questionResponses.stream()
+                .map(QuestionResponse::getQuestionCategId)
+                .toList();
+
     }
 
 //    private void buildCategPath(QuestionCategoryEntity entity) {

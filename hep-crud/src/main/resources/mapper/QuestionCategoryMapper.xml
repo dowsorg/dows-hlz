@@ -15,17 +15,18 @@
         <result column="dt" property="dt"/>
     </resultMap>
 
-    <resultMap id="NodeTreeResult" type="org.dows.hep.entity.QuestionCategoryEntity" extends="BaseResultMap">
-        <collection property="children"
-                    ofType="org.dows.hep.entity.QuestionCategoryEntity"
-                    select="getChildrenByPid">
-        </collection>
-    </resultMap>
+<!--    <resultMap id="NodeTreeResult" type="org.dows.hep.entity.QuestionCategoryEntity" extends="BaseResultMap">-->
+<!--        <collection property="children"-->
+<!--                    ofType="org.dows.hep.entity.QuestionCategoryEntity"-->
+<!--                    javaType="java.util.ArrayList"-->
+<!--                    select="getChildrenByPid">-->
+<!--        </collection>-->
+<!--    </resultMap>-->
 
     <sql id="Base_Column_List">
         id,
         pid,
-        question_categ_pid,
+        question_categ_pid ,
         question_categ_id,
         question_categ_name,
         question_categ_id_path,
