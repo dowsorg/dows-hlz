@@ -152,19 +152,26 @@ public class OrgBiz {
             List<AccountGroupResponse> groupList = accountGroupApi.getAccountGroupByOrgId(id);
             if (groupList != null && groupList.size() > 0) {
                 groupList.forEach(group -> {
-                    accountIds.add(group.getAccountId());
+                    //2、删除学生，不删除教师
+                    List<AccountGroupInfoResponse> infoList = accountGroupInfoApi.getAccountGroupInfoByOrgIdAndAccountId(id,group.getAccountId());
+                    if(infoList == null || infoList.size() == 0) {
+                        //2.1、说明不是教师，是学生
+                        accountIds.add(group.getAccountId());
+                    }
                 });
             }
         });
-        //2、删除组织架构
+        //3、删除组织架构
         Integer count1 = accountOrgApi.batchDeleteAccountOrgs(ids);
         if (count1 == 0) {
             flag = false;
         }
-        //3、删除账户实例
-        Integer count2 = accountInstanceApi.deleteAccountInstanceByAccountIds(accountIds);
-        if (count2 == 0) {
-            flag = false;
+        //4、删除账户实例
+        if(accountIds != null && accountIds.size() > 0) {
+            Integer count2 = accountInstanceApi.deleteAccountInstanceByAccountIds(accountIds);
+            if (count2 == 0) {
+                flag = false;
+            }
         }
         return flag;
     }
