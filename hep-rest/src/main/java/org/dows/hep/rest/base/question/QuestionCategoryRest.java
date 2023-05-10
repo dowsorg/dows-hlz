@@ -4,21 +4,22 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.question.request.QuestionCategoryRequest;
-import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
 import org.dows.hep.biz.base.question.QuestionCategBiz;
+import org.dows.hep.entity.QuestionCategoryEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 /**
+ * @folder admin-hep/问题域-类目管理
  * @author fhb
  * @description
  * @date 2023/4/20 9:50
  */
 @RequiredArgsConstructor
 @RestController
-@Tag(name = "问题域类目", description = "问题域类目")
+@Tag(name = "问题域-类目管理", description = "问题域-类目管理")
 public class QuestionCategoryRest {
     private final QuestionCategBiz questionCategBiz;
 
@@ -44,7 +45,7 @@ public class QuestionCategoryRest {
      */
     @Operation(summary = "根据 groupCode 查询所有类目")
     @GetMapping("v1/baseQuestion/questionCategory/listByCategoryGroup")
-    public List<QuestionCategoryResponse> listByCategoryGroup(String categoryGroup) {
+    public List<QuestionCategoryEntity> listByCategoryGroup(String categoryGroup) {
         return questionCategBiz.getChildrenByPid("0", categoryGroup);
     }
 
@@ -57,7 +58,7 @@ public class QuestionCategoryRest {
      */
     @Operation(summary = "删除or批量删除")
     @DeleteMapping("v1/baseQuestion/questionCategory/delQuestionCategory")
-    public Boolean delQuestionCategory(List<String> questionCategoryIds) {
+    public Boolean delQuestionCategory(@RequestBody List<String> questionCategoryIds) {
         return questionCategBiz.delByIds(questionCategoryIds);
     }
 }

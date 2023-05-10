@@ -22,13 +22,13 @@ public class QuestionCategoryServiceImpl extends MybatisCrudServiceImpl<Question
     private final QuestionCategoryMapper questionCategoryMapper;
 
     @Override
-    public List<QuestionCategoryEntity> getChildrenByPid(String pid, String categoryGroup) {
-        return questionCategoryMapper.getChildrenByPid(pid, categoryGroup);
+    public List<QuestionCategoryEntity> getChildrenByPid(String questionCategPid, String questionCategGroup) {
+        return questionCategoryMapper.getChildrenByPid(questionCategPid, questionCategGroup);
     }
 
     @Override
-    public List<QuestionCategoryEntity> getAllCategory(String categoryGroup) {
-        return questionCategoryMapper.getAllCategory(categoryGroup);
+    public List<QuestionCategoryEntity> getAllCategory(String questionCategGroup) {
+        return questionCategoryMapper.getAllCategory(questionCategGroup);
     }
 }
 

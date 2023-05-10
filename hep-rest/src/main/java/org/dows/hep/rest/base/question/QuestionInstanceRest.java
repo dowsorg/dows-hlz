@@ -23,7 +23,7 @@ import java.util.List;
 */
 @RequiredArgsConstructor
 @RestController
-@Tag(name = "问题", description = "问题")
+@Tag(name = "问题域-题目", description = "问题")
 public class QuestionInstanceRest {
     private final QuestionInstanceBiz questionInstanceBiz;
 

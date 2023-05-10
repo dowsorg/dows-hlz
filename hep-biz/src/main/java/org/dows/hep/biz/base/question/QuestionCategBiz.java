@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -26,7 +25,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class QuestionCategBiz {
 
-    private final QuestionDomainBaseBiz questionDomainBaseBiz;
+    private final QuestionDomainBaseBiz baseBiz;
     private final QuestionCategoryService questionCategoryService;
     public static final String CATEG_PATH_DELIMITER = "|";
 
@@ -44,21 +43,14 @@ public class QuestionCategBiz {
         questionCategoryService.saveOrUpdate(questionCategoryEntity);
 
         // after handle
-        buildCategPath(questionCategoryEntity);
-        questionCategoryService.updateById(questionCategoryEntity);
+//        buildCategPath(questionCategoryEntity);
+//        questionCategoryService.updateById(questionCategoryEntity);
 
         return questionCategoryEntity.getQuestionCategId();
     }
 
-    public List<QuestionCategoryResponse> getChildrenByPid(String pid, String categoryGroup) {
-        List<QuestionCategoryEntity> children = questionCategoryService.getChildrenByPid(pid, categoryGroup);
-        if (children == null || children.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        return children.stream()
-                .map(item -> BeanUtil.copyProperties(item, QuestionCategoryResponse.class))
-                .collect(Collectors.toList());
+    public List<QuestionCategoryEntity> getChildrenByPid(String pid, String categoryGroup) {
+        return questionCategoryService.getChildrenByPid(pid, categoryGroup);
     }
 
     public List<QuestionCategoryResponse> getAllCategory(String categoryGroup) {
@@ -91,68 +83,69 @@ public class QuestionCategBiz {
         return remRes1 && remRes2;
     }
 
-    private void buildCategPath(QuestionCategoryEntity entity) {
-        String categIdPath = "";
-        String categNamePath = "";
-        String questionCategId = entity.getQuestionCategId();
-        String questionCategName = entity.getQuestionCategName();
+//    private void buildCategPath(QuestionCategoryEntity entity) {
+//        String categIdPath = "";
+//        String categNamePath = "";
+//        String questionCategId = entity.getQuestionCategId();
+//        String questionCategName = entity.getQuestionCategName();
+//
+//        List<QuestionCategoryEntity> parents = getParents(questionCategId);
+//        if (parents.size() > 0) {
+//            categNamePath = parents.stream()
+//                    .map(QuestionCategoryEntity::getQuestionCategName)
+//                    .collect(Collectors.joining(CATEG_PATH_DELIMITER));
+//            categNamePath += CATEG_PATH_DELIMITER + questionCategName;
+//
+//            categIdPath = parents.stream()
+//                    .map(QuestionCategoryEntity::getQuestionCategId)
+//                    .collect(Collectors.joining(CATEG_PATH_DELIMITER));
+//            categIdPath += CATEG_PATH_DELIMITER + questionCategId;
+//        } else {
+//            categNamePath = questionCategName;
+//            categIdPath = questionCategId;
+//        }
+//
+//        entity.setQuestionCategNamePath(categNamePath);
+//        entity.setQuestionCategIdPath(categIdPath);
+//    }
+//
+//    private List<QuestionCategoryEntity> getParents(String questionCategId) {
+//        List<QuestionCategoryEntity> result = new ArrayList<>();
+//        buildParents(questionCategId, result);
+//        Collections.reverse(result);
+//        return result;
+//    }
 
-        List<QuestionCategoryEntity> parents = getParents(questionCategId);
-        if (parents.size() > 0) {
-            categNamePath = parents.stream()
-                    .map(QuestionCategoryEntity::getQuestionCategName)
-                    .collect(Collectors.joining(CATEG_PATH_DELIMITER));
-            categNamePath += CATEG_PATH_DELIMITER + questionCategName;
+//    private void buildParents(String questionCategId, List<QuestionCategoryEntity> list) {
+//        QuestionCategoryEntity parent = getParent(questionCategId);
+//        if (null == parent) {
+//            return;
+//        }
+//
+//        list.add(parent);
+//        String categId = parent.getQuestionCategId();
+//        buildParents(categId, list);
+//    }
 
-            categIdPath = parents.stream()
-                    .map(QuestionCategoryEntity::getQuestionCategId)
-                    .collect(Collectors.joining(CATEG_PATH_DELIMITER));
-            categIdPath += CATEG_PATH_DELIMITER + questionCategId;
-        } else {
-            categNamePath = questionCategName;
-            categIdPath = questionCategId;
-        }
-
-        entity.setQuestionCategNamePath(categNamePath);
-        entity.setQuestionCategIdPath(categIdPath);
-    }
-
-    private List<QuestionCategoryEntity> getParents(String questionCategId) {
-        List<QuestionCategoryEntity> result = new ArrayList<>();
-        buildParents(questionCategId, result);
-        Collections.reverse(result);
-        return result;
-    }
-
-    private void buildParents(String questionCategId, List<QuestionCategoryEntity> list) {
-        QuestionCategoryEntity parent = getParent(questionCategId);
-        if (null == parent) {
-            return;
-        }
-
-        list.add(parent);
-        String categId = parent.getQuestionCategId();
-        buildParents(categId, list);
-    }
-
-    private QuestionCategoryEntity getParent(String questionCategId) {
-        QuestionCategoryEntity questionCategoryEntity = questionCategoryService.getById(questionCategId);
-        if (BeanUtil.isEmpty(questionCategoryEntity)) {
-            return null;
-        }
-
-        String questionCategPid = questionCategoryEntity.getQuestionCategPid();
-        return questionCategoryService.getById(questionCategPid);
-    }
+//    private QuestionCategoryEntity getParent(String questionCategId) {
+//        QuestionCategoryEntity questionCategoryEntity = questionCategoryService.getById(questionCategId);
+//        if (BeanUtil.isEmpty(questionCategoryEntity)) {
+//            return null;
+//        }
+//
+//        String questionCategPid = questionCategoryEntity.getQuestionCategPid();
+//        return questionCategoryService.getById(questionCategPid);
+//    }
 
     private void beforeSaveOrUpd(QuestionCategoryRequest questionCategory) {
         String questionCategId = questionCategory.getQuestionCategId();
         if (StrUtil.isBlank(questionCategId)) {
-            questionCategory.setQuestionCategId(questionDomainBaseBiz.getIdStr());
+            questionCategory.setQuestionCategId(baseBiz.getIdStr());
         }
+
         String questionCategPid = questionCategory.getQuestionCategPid();
         if (StrUtil.isBlank(questionCategPid)) {
-            questionCategory.setQuestionCategPid("0");
+            questionCategory.setQuestionCategPid(baseBiz.getQuestionInstancePid());
         }
         // todo seq
     }

@@ -16,9 +16,9 @@
     </resultMap>
 
     <resultMap id="NodeTreeResult" type="org.dows.hep.entity.QuestionCategoryEntity" extends="BaseResultMap">
-        <collection property="children" column="{questionCategPid = question_categ_id, questionCategGroup = question_categ_group}"
+        <collection property="children"
                     ofType="org.dows.hep.entity.QuestionCategoryEntity"
-                    javaType="java.util.ArrayList" select="getChildrenByPid">
+                    select="getChildrenByPid">
         </collection>
     </resultMap>
 

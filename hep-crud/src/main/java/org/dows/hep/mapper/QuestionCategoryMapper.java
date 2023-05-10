@@ -16,7 +16,7 @@ import java.util.List;
 @Mapper
 public interface QuestionCategoryMapper extends MybatisCrudMapper<QuestionCategoryEntity> {
 
-    List<QuestionCategoryEntity> getChildrenByPid(@Param("pid") String pid, @Param("categoryGroup") String categoryGroup);
+    List<QuestionCategoryEntity> getChildrenByPid(@Param("questionCategPid") String questionCategPid, @Param("questionCategGroup") String questionCategGroup);
 
     List<QuestionCategoryEntity> getAllCategory(@Param("categoryGroup") String categoryGroup);
 }
