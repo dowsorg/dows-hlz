@@ -22,14 +22,25 @@ public class TenantCaseQuestionnaireRest {
     private final TenantCaseQuestionnaireBiz tenantCaseQuestionnaireBiz;
 
     /**
-    * 新增和更新案例问卷
+    * 新增案例问卷
     * @param
     * @return
     */
     @Operation(summary = "新增和更新案例问卷")
-    @PostMapping("v1/tenantCasus/caseQuestionnaire/saveOrUpdCaseQuestionnaire")
-    public Boolean saveOrUpdCaseQuestionnaire(@RequestBody @Validated CaseQuestionnaireRequest caseQuestionnaire ) {
-        return tenantCaseQuestionnaireBiz.saveOrUpdCaseQuestionnaire(caseQuestionnaire);
+    @PostMapping("v1/tenantCasus/caseQuestionnaire/saveCaseQuestionnaire")
+    public String saveCaseQuestionnaire(@RequestBody @Validated CaseQuestionnaireRequest caseQuestionnaire ) {
+        return tenantCaseQuestionnaireBiz.saveCaseQuestionnaire(caseQuestionnaire);
+    }
+
+    /**
+     * 更新案例问卷
+     * @param
+     * @return
+     */
+    @Operation(summary = "新增和更新案例问卷")
+    @PostMapping("v1/tenantCasus/caseQuestionnaire/updCaseQuestionnaire")
+    public Boolean updCaseQuestionnaire(@RequestBody @Validated CaseQuestionnaireRequest caseQuestionnaire ) {
+        return tenantCaseQuestionnaireBiz.updCaseQuestionnaire(caseQuestionnaire);
     }
 
     /**

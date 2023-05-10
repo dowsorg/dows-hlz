@@ -123,6 +123,24 @@ public class QuestionSectionBiz {
     }
 
     /**
+     * @param
+     * @return
+     * @说明: 列出问题集[问卷]-无分页
+     * @关联表:
+     * @工时: 5H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public List<QuestionSectionItemResponse> listItem(List<String> sectionIds) {
+        if (sectionIds == null || sectionIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return questionSectionItemBiz.listBySectionIds(sectionIds);
+    }
+
+    /**
     * @param
     * @return
     * @说明: 根据ID获取详情
@@ -138,13 +156,11 @@ public class QuestionSectionBiz {
         }
 
         // questionSectionResponse
-        LambdaQueryWrapper<QuestionSectionEntity> queryWrapper = new LambdaQueryWrapper<QuestionSectionEntity>()
-                .eq(QuestionSectionEntity::getQuestionSectionId, questionSectionId);
-        QuestionSectionEntity entity = questionSectionService.getOne(queryWrapper);
+        QuestionSectionEntity entity = getById(questionSectionId);
         QuestionSectionResponse questionSectionResponse = BeanUtil.copyProperties(entity, QuestionSectionResponse.class);
 
         // questionSectionItemResponse
-        List<QuestionSectionItemResponse> itemResponseList = questionSectionItemBiz.listBySectionId(questionSectionId);
+        List<QuestionSectionItemResponse> itemResponseList = questionSectionItemBiz.listBySectionIds(List.of(questionSectionId));
         questionSectionResponse.setSectionItemList(itemResponseList);
 
         // questionSectionDimensionResponse
@@ -152,6 +168,12 @@ public class QuestionSectionBiz {
         questionSectionResponse.setQuestionSectionDimensionList(dimensionResponseList);
 
         return questionSectionResponse;
+    }
+
+    public QuestionSectionEntity getById(String questionSectionId) {
+        LambdaQueryWrapper<QuestionSectionEntity> queryWrapper = new LambdaQueryWrapper<QuestionSectionEntity>()
+                .eq(QuestionSectionEntity::getQuestionSectionId, questionSectionId);
+        return questionSectionService.getOne(queryWrapper);
     }
 
     /**

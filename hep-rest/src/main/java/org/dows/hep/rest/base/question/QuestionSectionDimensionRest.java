@@ -19,7 +19,7 @@ import java.util.List;
 */
 @RequiredArgsConstructor
 @RestController
-@Tag(name = "问题集-维度", description = "问题集-维度")
+@Tag(name = "问题集[问卷]-维度", description = "问题集-维度")
 public class QuestionSectionDimensionRest {
     private final QuestionSectionDimensionBiz questionSectionDimensionBiz;
 
