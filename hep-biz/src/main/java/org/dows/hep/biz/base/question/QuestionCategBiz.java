@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
+import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.request.QuestionCategoryRequest;
 import org.dows.hep.api.base.question.request.QuestionSearchRequest;
 import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
@@ -76,7 +77,10 @@ public class QuestionCategBiz {
         }
 
         // get referenced id
-        ids = getUnReferencedIds(ids);
+        Boolean referenced = isReferenced(ids);
+        if (referenced) {
+            throw new BizException("被引用类目不可删除");
+        }
 
         // del self
         LambdaQueryWrapper<QuestionCategoryEntity> queryWrapper1 = new LambdaQueryWrapper<QuestionCategoryEntity>()
@@ -91,9 +95,9 @@ public class QuestionCategBiz {
         return remRes1 && remRes2;
     }
 
-    private List<String> getUnReferencedIds(List<String> ids) {
+    private void getUnReferencedIds(List<String> ids) {
         if (ids == null || ids.isEmpty()) {
-            return ids;
+            return;
         }
 
         QuestionSearchRequest questionSearchRequest = QuestionSearchRequest.builder()
@@ -101,13 +105,28 @@ public class QuestionCategBiz {
                 .build();
         List<QuestionResponse> questionResponses = questionInstanceBiz.listQuestion(questionSearchRequest);
         if (questionResponses == null || questionResponses.isEmpty()) {
-            return new ArrayList<>();
+            return;
         }
 
-        return questionResponses.stream()
+        List<String> referencedIds = questionResponses.stream()
                 .map(QuestionResponse::getQuestionCategId)
                 .toList();
+        ids.removeAll(referencedIds);
+    }
 
+    private Boolean isReferenced(List<String> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Boolean.FALSE;
+        }
+
+        QuestionSearchRequest questionSearchRequest = QuestionSearchRequest.builder()
+                .categIdList(ids)
+                .build();
+        List<QuestionResponse> questionResponses = questionInstanceBiz.listQuestion(questionSearchRequest);
+        if (questionResponses != null && !questionResponses.isEmpty()) {
+            return Boolean.TRUE;
+        }
+        return Boolean.FALSE;
     }
 
 //    private void buildCategPath(QuestionCategoryEntity entity) {

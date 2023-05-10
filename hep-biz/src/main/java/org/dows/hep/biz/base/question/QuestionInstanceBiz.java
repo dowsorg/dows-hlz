@@ -186,12 +186,13 @@ public class QuestionInstanceBiz {
      */
     public List<QuestionResponse> listQuestion(QuestionSearchRequest questionSearch ) {
         List<QuestionInstanceEntity> entityList = questionInstanceService.lambdaQuery()
-                .eq(questionSearch.getAppId() != null, QuestionInstanceEntity::getAppId, questionSearch.getAppId())
+                .eq(QuestionInstanceEntity::getAppId, questionSearch.getAppId())
                 .eq(QuestionInstanceEntity::getVer, baseBiz.getLastVer())
                 .eq(QuestionInstanceEntity::getQuestionInstancePid, baseBiz.getQuestionInstancePid())
                 .like(StrUtil.isNotBlank(questionSearch.getKeyword()), QuestionInstanceEntity::getQuestionTitle, questionSearch.getKeyword())
                 .like(StrUtil.isNotBlank(questionSearch.getKeyword()), QuestionInstanceEntity::getQuestionDescr, questionSearch.getKeyword())
                 .like(StrUtil.isNotBlank(questionSearch.getQuestionType()), QuestionInstanceEntity::getQuestionType, questionSearch.getQuestionType())
+                .in(questionSearch.getCategIdList() != null && !questionSearch.getCategIdList().isEmpty(), QuestionInstanceEntity::getQuestionCategId, questionSearch.getCategIdList())
                 .list();
 
         return entityList.stream()
