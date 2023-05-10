@@ -27,8 +27,7 @@ public class FoodNutientResponse{
     @Schema(title = "成分单位")
     private String unit;
 
-    @Schema(title = "初始值")
-    private String amt;
+
 
 
 }
