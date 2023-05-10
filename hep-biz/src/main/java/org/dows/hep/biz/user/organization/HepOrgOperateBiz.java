@@ -2,6 +2,7 @@ package org.dows.hep.biz.user.organization;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.api.AccountGroupApi;
 import org.dows.account.api.AccountOrgApi;
@@ -90,7 +91,7 @@ public class HepOrgOperateBiz {
      * @param
      * @return
      * @说明: 转移人员
-     * @关联表: OperateTransfers, AccountGroup
+     * @关联表: operate_transfers, account_group,experiment_person
      * @工时: 1H
      * @开发者: jx
      * @开始时间:
@@ -144,6 +145,15 @@ public class HepOrgOperateBiz {
                     .periods(periods)
                     .build();
             flag = operateTransfersService.save(operateTransfersEntity);
+            //5、更改实验账户所属机构
+            LambdaUpdateWrapper<ExperimentPersonEntity> updateWrapper = new LambdaUpdateWrapper<ExperimentPersonEntity>()
+                    .eq(ExperimentPersonEntity::getId, experimentPerson.getId())
+                    .eq(ExperimentPersonEntity::getExperimentPersonId,request.getAccountId())
+                    .eq(ExperimentPersonEntity::getExperimentInstanceId,request.getExperimentInstanceId())
+                    .eq(ExperimentPersonEntity::getExperimentGroupId,request.getExperimentGroupId())
+                    .set(ExperimentPersonEntity::getExperimentOrgId, request.getOrgId())
+                    .set(ExperimentPersonEntity::getExperimentOrgName,orgResponse.getOrgName());
+            experimentPersonService.update(updateWrapper);
         }
         return flag;
     }
