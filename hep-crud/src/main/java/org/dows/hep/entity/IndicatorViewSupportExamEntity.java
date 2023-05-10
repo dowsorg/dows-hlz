@@ -1,5 +1,6 @@
 package org.dows.hep.entity;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
@@ -49,16 +50,19 @@ public class IndicatorViewSupportExamEntity implements CrudEntity {
     private String name;
 
     @Schema(title = "辅助检查类别")
-    private String type;
+    private String indicatorCategoryId;
 
     @Schema(title = "费用")
-    private Object fee;
+    private BigDecimal fee;
+
+    @Schema(title = "关联指标")
+    private String indicatorInstanceId;
 
     @Schema(title = "结果解析")
     private String resultAnalysis;
 
     @Schema(title = "0-禁用，1-启用")
-    private Boolean status;
+    private Integer status;
 
     @JsonIgnore
     @TableLogic
