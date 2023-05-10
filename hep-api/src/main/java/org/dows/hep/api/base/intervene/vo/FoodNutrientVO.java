@@ -1,5 +1,6 @@
 package org.dows.hep.api.base.intervene.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,9 +20,10 @@ import lombok.experimental.Accessors;
 @Schema(name = "FoodNutrientVO 对象", title = "饮食关键指标")
 public class FoodNutrientVO {
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库id")
     private Long id;
-    @Schema(title = "营养指标")
+    @Schema(title = "营养指标id")
     private String indicatorInstanceId;
 
     @Schema(title = "营养成分名称")

@@ -22,18 +22,16 @@ import java.util.List;
 @Schema(name = "FoodMaterialInfo 对象", title = "食材信息")
 public class FoodMaterialInfoResponse{
     @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Schema(title = "数据库id")
+    @Schema(title = "数据库id,新增时为空")
     private Long id;
 
 
-    @Schema(title = "食材id")
+    @Schema(title = "食材id,新增时为空")
     private String foodMaterialId;
 
     @Schema(title = "食材名称")
     private String foodMaterialName;
 
-    @Schema(title = "图片")
-    private String pic;
 
     @Schema(title = "当前分类id")
     private String interveneCategId;
@@ -41,10 +39,10 @@ public class FoodMaterialInfoResponse{
     @Schema(title = "当前分类名称")
     private String categName;
 
-    @Schema(title = "分布id路径")
+    @Schema(title = "父分类id路径")
     private String categIdPath;
 
-    @Schema(title = "分类名称路径")
+    @Schema(title = "父分类名称路径")
     private String categNamePath;
 
     @Schema(title = "蛋白质每100g")

@@ -11,6 +11,7 @@ import org.dows.hep.api.base.indicator.request.CreateIndicatorViewBaseInfoMonito
 import org.dows.hep.api.base.indicator.request.CreateIndicatorViewBaseInfoSingleRs;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -30,6 +31,8 @@ public class IndicatorViewBaseInfoResponseRs implements Serializable {
     private String appId;
     @Schema(title = "指标功能ID")
     private String indicatorFuncId;
+    @Schema(title = "时间戳")
+    private Date dt;
     private List<IndicatorViewBaseInfoDescrResponseRs> indicatorViewBaseInfoDescrResponseRsList;
     private List<IndicatorViewBaseInfoMonitorResponseRs> indicatorViewBaseInfoMonitorResponseRsList;
     private List<IndicatorViewBaseInfoSingleResponseRs> indicatorViewBaseInfoSingleResponseRsList;

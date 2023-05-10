@@ -3,6 +3,8 @@ package org.dows.hep.biz.base.indicator;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.base.indicator.response.IndicatorInstanceResponseRs;
+import org.dows.hep.api.base.indicator.response.IndicatorViewMonitorFollowupContentRefResponseRs;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.enums.EnumRedissonLock;
 import org.dows.hep.api.exception.IndicatorInstanceException;
@@ -36,7 +38,21 @@ public class IndicatorViewMonitorFollowupContentRefBiz {
   private final IndicatorViewMonitorFollowupFollowupContentService indicatorViewMonitorFollowupFollowupContentService;
   private final IndicatorViewMonitorFollowupContentRefService indicatorViewMonitorFollowupContentRefService;
 
-
+  public static IndicatorViewMonitorFollowupContentRefResponseRs indicatorViewMonitorFollowupContentRef2ResponseRs(
+      IndicatorViewMonitorFollowupContentRefEntity indicatorViewMonitorFollowupContentRefEntity,
+      IndicatorInstanceResponseRs indicatorInstanceResponseRs
+      ) {
+    return IndicatorViewMonitorFollowupContentRefResponseRs
+        .builder()
+        .id(indicatorViewMonitorFollowupContentRefEntity.getId())
+        .indicatorViewMonitorFollowupContentRefId(indicatorViewMonitorFollowupContentRefEntity.getIndicatorViewMonitorFollowupContentRefId())
+        .appId(indicatorViewMonitorFollowupContentRefEntity.getAppId())
+        .indicatorViewMonitorFollowupFollowupContentId(indicatorViewMonitorFollowupContentRefEntity.getIndicatorViewMonitorFollowupFollowupContentId())
+        .indicatorInstanceResponseRs(indicatorInstanceResponseRs)
+        .dt(indicatorViewMonitorFollowupContentRefEntity.getDt())
+        .seq(indicatorViewMonitorFollowupContentRefEntity.getSeq())
+        .build();
+  }
   @Transactional(rollbackFor = Exception.class)
   public void delete(String indicatorViewMonitorFollowupContentRefId) throws InterruptedException {
     IndicatorViewMonitorFollowupContentRefEntity indicatorViewMonitorFollowupContentRefEntity = indicatorViewMonitorFollowupContentRefService.lambdaQuery()

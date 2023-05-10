@@ -3,6 +3,9 @@ package org.dows.hep.api.base.intervene.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dows.hep.api.base.intervene.vo.FoodMaterialVO;
+
+import java.util.List;
 
 /**
 * @description 
@@ -14,7 +17,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "SaveFoodDishes 对象", title = "菜肴信息")
 public class SaveFoodDishesRequest{
-    @Schema(title = "菜肴id")
+
+
+    @Schema(title = "数据库id，新增时为空")
+    private Long id;
+
+    @Schema(title = "菜肴id，新增时为空")
     private String foodDishesId;
 
     @Schema(title = "菜肴名称")
@@ -27,7 +35,7 @@ public class SaveFoodDishesRequest{
     private Integer state;
 
     @Schema(title = "食材列表json")
-    private String materials;
+    private List<FoodMaterialVO> materials;
 
 
 }

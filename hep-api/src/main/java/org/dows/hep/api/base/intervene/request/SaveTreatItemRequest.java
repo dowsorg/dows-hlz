@@ -18,16 +18,16 @@ import java.util.List;
 @Schema(name = "SaveTreatItme 对象", title = "治疗项目信息")
 public class SaveTreatItemRequest {
 
-    @Schema(title = "数据库id")
+    @Schema(title = "数据库id,新增时为空")
     private Long id;
-    @Schema(title = "分布式id")
+    @Schema(title = "分布式id,新增时为空")
     private String treatItemId;
 
 
     @Schema(title = "治疗名称")
     private String treatItemName;
 
-    @Schema(title = "功能点id")
+    @Schema(title = "指标功能点id")
     private String indicatorFuncId;
 
     @Schema(title = "当前分类id")

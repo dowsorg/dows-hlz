@@ -9,8 +9,12 @@ import org.dows.hep.api.user.organization.response.CaseOrgResponse;
 import org.dows.hep.api.user.organization.response.NormalDataResponse;
 import org.dows.hep.api.user.organization.response.NormalDataResponseResponse;
 import org.dows.hep.entity.CaseOrgEntity;
+import org.dows.hep.entity.ExperimentOrgEntity;
 import org.dows.hep.service.CaseOrgService;
+import org.dows.hep.service.ExperimentOrgService;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
 * @description project descr:机构:机构数据统计
@@ -23,6 +27,8 @@ import org.springframework.stereotype.Service;
 public class OrgStatiscBiz{
 
     private final CaseOrgService caseOrgService;
+
+    private final ExperimentOrgService experimentOrgService;
     /**
     * @param
     * @return
@@ -73,14 +79,22 @@ public class OrgStatiscBiz{
      * @开始时间:
      * @创建时间: 2023年5月08日 下午17:19:34
      */
-    public CaseOrgResponse getOrgHandbook(String caseOrgId) {
+    public CaseOrgResponse getOrgHandbook(String experimentInstanceId) {
+        //1、根据实验找到案例机构ID
+        List<ExperimentOrgEntity> experimentOrgList = experimentOrgService.lambdaQuery()
+                .eq(ExperimentOrgEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentOrgEntity::getDeleted, false)
+                .list();
         CaseOrgResponse orgResponse = new CaseOrgResponse();
-        CaseOrgEntity entity = caseOrgService.lambdaQuery()
-                .eq(CaseOrgEntity::getDeleted,false)
-                .eq(CaseOrgEntity::getCaseOrgId,caseOrgId)
-                .one();
-        if(entity != null && !ReflectUtil.isObjectNull(entity)){
-            BeanUtil.copyProperties(entity,orgResponse);
+        //2、获取操作手册
+        if (experimentOrgList != null && experimentOrgList.size() > 0) {
+            CaseOrgEntity entity = caseOrgService.lambdaQuery()
+                    .eq(CaseOrgEntity::getDeleted, false)
+                    .eq(CaseOrgEntity::getCaseOrgId, experimentOrgList.get(0).getCaseOrgId())
+                    .one();
+            if (entity != null && !ReflectUtil.isObjectNull(entity)) {
+                BeanUtil.copyProperties(entity, orgResponse);
+            }
         }
         return orgResponse;
     }

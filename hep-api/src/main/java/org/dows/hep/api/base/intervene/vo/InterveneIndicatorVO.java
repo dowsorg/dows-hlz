@@ -21,7 +21,7 @@ import lombok.experimental.Accessors;
 @Schema(name = "InterveneIndicatorVO 对象", title = "干预关联指标")
 public class InterveneIndicatorVO {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Schema(title = "数据库id")
+    @Schema(title = "数据库id,新增时为空")
     private Long id;
 
     @Schema(title = "关联分布式id，删除使用")

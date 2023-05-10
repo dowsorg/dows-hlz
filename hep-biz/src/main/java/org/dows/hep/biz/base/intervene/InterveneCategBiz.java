@@ -56,7 +56,7 @@ public class InterveneCategBiz {
         }
         final String family=findInterveneCateg.getFamily();
         checkFamily(family);
-        final String pid=ShareUtil.XString.defaultIfNull(findInterveneCateg.getPid(),findInterveneCateg.getFamily());
+        final String pid=ShareUtil.XString.defaultIfEmpty(findInterveneCateg.getPid(),findInterveneCateg.getFamily());
         return InterveneCategCache.Instance.getByParentId(pid, Optional.ofNullable(findInterveneCateg.getWithChild()).orElse(0)>0);
     }
     /**
@@ -75,6 +75,10 @@ public class InterveneCategBiz {
         saveInterveneCateg.setFamily(family);
         AssertUtil.trueThenThrow(ShareUtil.XObject.isAllEmpty(family,pid))
                 .throwMessage("未找到父类别参数");
+        AssertUtil.trueThenThrow(ShareUtil.XObject.notEmpty(saveInterveneCateg.getCategName())
+                &&saveInterveneCateg.getCategName().contains(InterveneCategCache.Instance.getSplitTCategPath()))
+                .throwMessage("类别名称不可包含\"/\"符号");
+
         checkFamily(family);
         CategVO parent = ShareUtil.XObject.defaultIfNull(InterveneCategCache.Instance.getById(pid),new CategVO());
         AssertUtil.trueThenThrow(ShareUtil.XString.hasLength(pid) && ShareUtil.XObject.isEmpty(parent.getCategIdPath()))
@@ -132,7 +136,7 @@ public class InterveneCategBiz {
                     .setCategNamePath(InterveneCategCache.Instance.getCategPath(parent.getCategNamePath(), i.getCategName()));
         });
 
-        interveneCategDao.tranSave(rows);
+        interveneCategDao.tranSaveBatch(rows);
         InterveneCategCache.Instance.clear();
         return true;
     }
@@ -154,7 +158,7 @@ public class InterveneCategBiz {
             AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(childs))
                     .throwMessage("包含子级类别不可删除，请检查");
         });
-        interveneCategDao.transDelete(delInterveneCateg.getIds());
+        interveneCategDao.tranDelete(delInterveneCateg.getIds());
         InterveneCategCache.Instance.clear();
         return true;
     }

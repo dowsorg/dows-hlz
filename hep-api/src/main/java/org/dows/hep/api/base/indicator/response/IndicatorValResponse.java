@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 /**
 * @description 
 *
@@ -44,5 +46,6 @@ public class IndicatorValResponse{
     @Schema(title = "期数")
     private String periods;
 
-
+    @Schema(title = "时间戳")
+    private Date dt;
 }

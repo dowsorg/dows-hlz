@@ -28,7 +28,7 @@ public class TreatItemResponse{
     @Schema(title = "治疗名称")
     private String treatItemName;
 
-    @Schema(title = "功能点id")
+    @Schema(title = "指标功能点id")
     private String indicatorFuncId;
 
 
@@ -37,6 +37,12 @@ public class TreatItemResponse{
 
     @Schema(title = "一级分类名称")
     private String categNameLv1;
+
+    @Schema(title = "分布式id路径")
+    private String categIdPath;
+
+    @Schema(title = "分类名称路径")
+    private String categNamePath;
 
     @Schema(title = "单位")
     private String unit;
