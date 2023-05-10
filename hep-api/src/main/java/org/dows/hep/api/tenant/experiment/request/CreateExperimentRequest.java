@@ -27,6 +27,9 @@ public class CreateExperimentRequest{
     @Schema(title = "实验小组ID")
     private String experimentGroupId;
 
+    @Schema(title = "案例ID")
+    private String caseOrgId;
+
     @Schema(title = "案例名称")
     private String caseName;
 

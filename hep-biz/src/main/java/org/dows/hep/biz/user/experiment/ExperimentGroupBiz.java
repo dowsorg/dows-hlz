@@ -16,9 +16,11 @@ import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
 import org.dows.hep.entity.ExperimentActorEntity;
 import org.dows.hep.entity.ExperimentGroupEntity;
+import org.dows.hep.entity.ExperimentOrgEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.service.ExperimentActorService;
 import org.dows.hep.service.ExperimentGroupService;
+import org.dows.hep.service.ExperimentOrgService;
 import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
@@ -42,6 +44,8 @@ public class ExperimentGroupBiz {
     private final ExperimentActorService experimentActorService;
 
     private final IdGenerator idGenerator;
+
+    private final ExperimentOrgService experimentOrgService;
     /**
      * @param
      * @return
@@ -52,8 +56,8 @@ public class ExperimentGroupBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
+    @DSTransactional
     public Boolean createGroup(CreateGroupRequest createGroup) {
-
         ExperimentGroupEntity experimentGroupEntity = ExperimentGroupEntity.builder()
                 .groupName(createGroup.getGroupName())
                 .build();
@@ -108,7 +112,7 @@ public class ExperimentGroupBiz {
      * @param
      * @return
      * @说明: 获取实验小组列表
-     * @关联表:
+     * @关联表:experiment_group
      * @工时: 0.5H
      * @开发者: jx
      * @开始时间:
@@ -160,9 +164,10 @@ public class ExperimentGroupBiz {
      * @开始时间:
      * @创建时间: 2023年5月6日 上午16:28:07
      */
-    public List<ExperimentParticipatorResponse> listGroupMembers(String experimentGroupId) {
+    public List<ExperimentParticipatorResponse> listGroupMembers(String experimentGroupId, String experimentInstanceId) {
         List<ExperimentParticipatorEntity> entities = experimentParticipatorService.lambdaQuery()
                 .eq(ExperimentParticipatorEntity::getExperimentGroupId,experimentGroupId)
+                .eq(ExperimentParticipatorEntity::getExperimentInstanceId,experimentInstanceId)
                 .eq(ExperimentParticipatorEntity::getDeleted,false)
                 .list();
         //复制属性
@@ -175,6 +180,26 @@ public class ExperimentGroupBiz {
             });
         }
         return experimentParticipatorResponses;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 获取某个实验中某个小组的机构列表
+     * @关联表: experiment_org
+     * @工时: 0.5H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年5月9日 下午13:34:07
+     */
+    public List<ExperimentOrgEntity> listExperimentGroupOrg(String experimentGroupId, String experimentInstanceId, String periods) {
+        List<ExperimentOrgEntity> entities = experimentOrgService.lambdaQuery()
+                .eq(ExperimentOrgEntity::getExperimentGroupId,experimentGroupId)
+                .eq(ExperimentOrgEntity::getExperimentInstanceId,experimentInstanceId)
+                .eq(ExperimentOrgEntity::getPeriods,periods)
+                .eq(ExperimentOrgEntity::getDeleted,false)
+                .list();
+        return entities;
     }
 
     /**
@@ -200,8 +225,8 @@ public class ExperimentGroupBiz {
            throw new ExperimentParticipatorException(EnumExperimentParticipator.PARTICIPATOR_NOT_EXIST_EXCEPTION);
         }
         ExperimentParticipatorEntity entity = ExperimentParticipatorEntity.builder()
-                .caseOrgIds(request.getCaseOrgIds())
-                .caseOrgNames(request.getCaseOrgNames())
+                .caseOrgIds(request.getExperimentOrgIds())
+                .caseOrgNames(request.getExperimentOrgNames())
                 .participatorState(3)
                 .id(model.getId())
                 .build();

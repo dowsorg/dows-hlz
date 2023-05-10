@@ -12,9 +12,7 @@ import org.dows.hep.api.user.organization.response.OrganizationFunsResponse;
 import org.dows.hep.api.user.organization.response.PersonInstanceResponse;
 import org.dows.hep.biz.user.organization.HepOrgOperateBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -70,8 +68,13 @@ public class HepOrgOperateRest {
     */
     @Operation(summary = "转移人员")
     @PutMapping("v1/userOrganization/hepOrgOperate/transferPerson")
-    public Boolean transferPerson(@Validated TransferPersonelRequest transferPersonel ) {
-        return hepOrgOperateBiz.transferPerson(transferPersonel);
+    public Boolean transferPerson(@RequestBody TransferPersonelRequest transferPersonelRequest,
+                                  @RequestParam String appId,
+                                  @RequestParam String operateAccountId,
+                                  @RequestParam String operateAccountName,
+                                  @RequestParam Integer periods
+    ) {
+        return hepOrgOperateBiz.transferPerson(transferPersonelRequest,appId,operateAccountId,operateAccountName,periods);
     }
 
     /**

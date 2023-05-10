@@ -3,6 +3,9 @@ package org.dows.hep.api.base.intervene.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dows.hep.api.base.intervene.vo.SportPlanItemVO;
+
+import java.util.List;
 
 /**
 * @description 
@@ -14,7 +17,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "SaveSportPlan 对象", title = "保存运动方案")
 public class SaveSportPlanRequest{
-    @Schema(title = "运动方案id")
+
+
+    @Schema(title = "数据库id,新增时为空")
+    private Long id;
+
+    @Schema(title = "运动方案id,新增时为空")
     private String sportPlanId;
 
     @Schema(title = "运动方案名称")
@@ -27,7 +35,7 @@ public class SaveSportPlanRequest{
     private Integer state;
 
     @Schema(title = "运动项目列表json")
-    private String sportItems;
+    private List<SportPlanItemVO> sportItems;
 
 
 }

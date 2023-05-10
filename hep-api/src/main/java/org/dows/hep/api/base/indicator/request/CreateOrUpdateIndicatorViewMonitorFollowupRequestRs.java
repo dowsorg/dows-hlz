@@ -35,7 +35,7 @@ public class CreateOrUpdateIndicatorViewMonitorFollowupRequestRs implements Seri
   private String indicatorCategoryId;
 
   @Schema(title = "0-禁用，1-启用")
-  private Boolean status;
+  private Integer status;
 
   @Schema(title = "随访内容列表")
   private List<CreateOrUpdateIndicatorViewMonitorFollowupFollowupContentRequestRs> createOrUpdateIndicatorViewMonitorFollowupFollowupContentRequestRsList;

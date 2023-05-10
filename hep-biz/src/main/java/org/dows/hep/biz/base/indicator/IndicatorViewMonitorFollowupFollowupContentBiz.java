@@ -3,6 +3,8 @@ package org.dows.hep.biz.base.indicator;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.base.indicator.response.IndicatorViewMonitorFollowupContentRefResponseRs;
+import org.dows.hep.api.base.indicator.response.IndicatorViewMonitorFollowupFollowupContentResponseRs;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.enums.EnumRedissonLock;
 import org.dows.hep.api.exception.IndicatorInstanceException;
@@ -19,6 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -36,6 +40,23 @@ public class IndicatorViewMonitorFollowupFollowupContentBiz {
   private final RedissonClient redissonClient;
   private final IndicatorViewMonitorFollowupFollowupContentService indicatorViewMonitorFollowupFollowupContentService;
   private final IndicatorViewMonitorFollowupContentRefService indicatorViewMonitorFollowupContentRefService;
+
+  public static IndicatorViewMonitorFollowupFollowupContentResponseRs indicatorViewMonitorFollowupFollowupContent2ResponseRs(
+      IndicatorViewMonitorFollowupFollowupContentEntity indicatorViewMonitorFollowupFollowupContentEntity,
+      List<IndicatorViewMonitorFollowupContentRefResponseRs> indicatorViewMonitorFollowupContentRefResponseRsList
+  ) {
+    return IndicatorViewMonitorFollowupFollowupContentResponseRs
+        .builder()
+        .id(indicatorViewMonitorFollowupFollowupContentEntity.getId())
+        .indicatorViewMonitorFollowupFollowupContentId(indicatorViewMonitorFollowupFollowupContentEntity.getIndicatorViewMonitorFollowupFollowupContentId())
+        .appId(indicatorViewMonitorFollowupFollowupContentEntity.getAppId())
+        .indicatorViewMonitorFollowupId(indicatorViewMonitorFollowupFollowupContentEntity.getIndicatorViewMonitorFollowupId())
+        .name(indicatorViewMonitorFollowupFollowupContentEntity.getName())
+        .seq(indicatorViewMonitorFollowupFollowupContentEntity.getSeq())
+        .dt(indicatorViewMonitorFollowupFollowupContentEntity.getDt())
+        .indicatorViewMonitorFollowupContentRefResponseRsList(indicatorViewMonitorFollowupContentRefResponseRsList)
+        .build();
+  }
 
   @Transactional(rollbackFor = Exception.class)
   public void delete(String indicatorViewMonitorFollowupFollowupContentId) throws InterruptedException {

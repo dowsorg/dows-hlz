@@ -1,9 +1,11 @@
 package org.dows.hep.biz.dao;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.intervene.request.FindFoodRequest;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.FoodMaterialEntity;
@@ -12,13 +14,12 @@ import org.dows.hep.entity.FoodMaterialNutrientEntity;
 import org.dows.hep.service.FoodMaterialIndicatorService;
 import org.dows.hep.service.FoodMaterialNutrientService;
 import org.dows.hep.service.FoodMaterialService;
-import org.dows.sequence.api.IdGenerator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author : wuzl
@@ -26,205 +27,173 @@ import java.util.Optional;
  */
 
 @Component
-@RequiredArgsConstructor
-public class FoodMaterialDao {
-    private final FoodMaterialService foodMaterialService;
-    private final FoodMaterialIndicatorService foodMaterialIndicatorService;
-    private final FoodMaterialNutrientService foodMaterialNutrientService;
+public class FoodMaterialDao extends BaseSubDao<FoodMaterialService,FoodMaterialEntity,FoodMaterialIndicatorService,FoodMaterialIndicatorEntity>
+    implements IPageDao<FoodMaterialEntity, FindFoodRequest> {
 
-    private final IdGenerator idGenerator;
-
-    private final static SFunction<FoodMaterialEntity,?> COLLogicKey4Material =FoodMaterialEntity::getFoodMaterialId;
-
-
-    //region trans
-    @Transactional(rollbackFor = Exception.class)
-    public boolean tranSave(FoodMaterialEntity material, List<FoodMaterialNutrientEntity> nutrients, List<FoodMaterialIndicatorEntity> indicators){
-        AssertUtil.falseThenThrow(coreSave(material,nutrients,indicators))
-                .throwMessage("保存失败,请刷新");
-        return true;
+    public FoodMaterialDao(){
+        super("食材不存在或已删除,请刷新");
     }
 
-    @Transactional(rollbackFor = Exception.class)
-    public boolean tranSetState(String materialId, Integer state) {
-        AssertUtil.falseThenThrow(setState(materialId,state))
-                .throwMessage("食材不存在,请刷新");
-        return true;
+    @Autowired
+    protected FoodMaterialNutrientService subServiceX;
+
+    //region override
+
+    @Override
+    protected SFunction<FoodMaterialEntity, String> getColId() {
+        return FoodMaterialEntity::getFoodMaterialId;
     }
 
-    @Transactional(rollbackFor = Exception.class)
-    public boolean tranDelete(List<String> ids) {
-        AssertUtil.falseThenThrow(coreDelete(ids))
-                .throwMessage("食材不存在,请刷新");
-        return true;
+    @Override
+    protected SFunction<String, ?> setColId(FoodMaterialEntity item) {
+        return item::setFoodMaterialId;
     }
+
+    @Override
+    protected SFunction<FoodMaterialEntity, Integer> getColState() {
+        return FoodMaterialEntity::getState;
+    }
+
+    @Override
+    protected SFunction<Integer, ?> setColState(FoodMaterialEntity item) {
+        return item::setState;
+    }
+
+    @Override
+    protected SFunction<FoodMaterialIndicatorEntity, String> getColLeadId() {
+        return FoodMaterialIndicatorEntity::getFoodMaterialId;
+    }
+
+    @Override
+    protected SFunction<String, ?> setColLeadId(FoodMaterialIndicatorEntity item) {
+        return item::setFoodMaterialId;
+    }
+
+    @Override
+    protected SFunction<FoodMaterialIndicatorEntity, String> getColSubId() {
+        return FoodMaterialIndicatorEntity::getFoodMaterialIndicatorId;
+    }
+
+    @Override
+    protected SFunction<String, ?> setColSubId(FoodMaterialIndicatorEntity item) {
+        return item::setFoodMaterialIndicatorId;
+    }
+
     //endregion
+
+
+
+    @Override
+    public IPage<FoodMaterialEntity> pageByCondition(FindFoodRequest req, SFunction<FoodMaterialEntity, ?>... cols) {
+        final String categId = req.getCategIdLv1();
+        final String keyWords = req.getKeywords();
+        Page<FoodMaterialEntity> page = Page.of(req.getPageNo(), req.getPageSize());
+        page.addOrder(OrderItem.asc("id"));
+        return service.page(page, Wrappers.<FoodMaterialEntity>lambdaQuery()
+                .likeRight(ShareUtil.XString.hasLength(categId), FoodMaterialEntity::getCategIdPath, categId)
+                .like(ShareUtil.XString.hasLength(keyWords), FoodMaterialEntity::getFoodMaterialName, keyWords)
+                .in(ShareUtil.XCollection.notEmpty(req.getIncIds()), getColId(), req.getIncIds())
+                .notIn(ShareUtil.XCollection.notEmpty(req.getExcIds()), getColId(), req.getExcIds())
+                .eq(ShareUtil.XObject.notEmpty(req.getState()), getColState(), req.getState())
+                .select(cols));
+    }
+
+
+
+    @Transactional(rollbackFor = Exception.class)
+    public boolean tranSave(FoodMaterialEntity lead, List<FoodMaterialIndicatorEntity> indicators,List<FoodMaterialNutrientEntity> nutrients){
+        AssertUtil.falseThenThrow(coreTranSave(lead,indicators,nutrients,false, true,false))
+                .throwMessage(failedSaveMessage );
+        return true;
+    }
+
+
+
 
     //region save
-    public boolean coreSave(FoodMaterialEntity material, List<FoodMaterialNutrientEntity> nutrients, List<FoodMaterialIndicatorEntity> indicators){
-        final boolean existsFlag=ShareUtil.XObject.notEmpty(material.getFoodMaterialId());
-        if(!saveOrUpdate(material)) {
+
+    protected boolean coreTranSave(FoodMaterialEntity lead, List<FoodMaterialIndicatorEntity> subs,List<FoodMaterialNutrientEntity> subsX, boolean delSubBefore,boolean delSubXBefore, boolean useLogicId) {
+        final boolean existsFlag = ShareUtil.XObject.notEmpty(getColId().apply(lead));
+        if (!super.coreTranSave(lead, subs, delSubBefore, useLogicId)) {
             return false;
         }
-        final String materialId=material.getFoodMaterialId();
-        if(existsFlag) {
-            delByLeadId4Nutrient(materialId);
+        final String leadId = getColId().apply(lead);
+        if (existsFlag && delSubXBefore) {
+            delSubByLeadIdX(leadId, true);
+            if (null != subsX) {
+                subsX.forEach(i -> i.setId(null));
+            }
         }
-        if(!saveBatch4Nutrients(materialId,nutrients)){
-            return false;
-        }
-        if(existsFlag) {
-            delByLeadId4Indicator(materialId);
-        }
-        return saveBatch4Indicators(materialId, indicators);
-    }
-     public boolean saveOrUpdate(FoodMaterialEntity entity){
-        if(ShareUtil.XObject.isEmpty(entity)){
-            return false;
-        }
-        if(ShareUtil.XObject.isEmpty(entity.getFoodMaterialId())){
-            entity.setFoodMaterialId(idGenerator.nextIdStr());
-        }
-        return foodMaterialService.saveOrUpdate(entity);
+        return saveOrUpdateBatchX(leadId, subsX, useLogicId, true);
     }
 
-    public boolean saveBatch4Nutrients(String materialId, List<FoodMaterialNutrientEntity> nutrients){
-        if(ShareUtil.XObject.isEmpty(nutrients)){
-            return true;
+    public boolean saveOrUpdateBatchX(String leadId, List<FoodMaterialNutrientEntity> subs,boolean useLogicId,  boolean dftIfEmpty){
+        if(ShareUtil.XObject.isEmpty(subs)) {
+            return dftIfEmpty;
         }
         int seq=0;
-        for(FoodMaterialNutrientEntity item:nutrients){
-            item.setId(null)
-                    .setFoodMaterialNutrientId(idGenerator.nextIdStr())
-                    .setFoodMaterialId(materialId)
+        for(FoodMaterialNutrientEntity item:subs) {
+            item.setFoodMaterialId(leadId)
                     .setSeq(++seq);
+            if(ShareUtil.XObject.isEmpty(item.getFoodMaterialNutrientId())){
+                item.setFoodMaterialNutrientId(idGenerator.nextIdStr());
+            }
+
         }
-        return foodMaterialNutrientService.saveBatch(nutrients);
-    }
-    public boolean saveBatch4Indicators(String materialId,  List<FoodMaterialIndicatorEntity> indicators){
-        if(ShareUtil.XObject.isEmpty(indicators)){
-            return true;
+        if(!useLogicId){
+            return subServiceX.saveOrUpdateBatch(subs);
         }
-        int seq=0;
-        for(FoodMaterialIndicatorEntity item:indicators){
-            item.setId(null)
-                    .setFoodMaterialIndicatorId(idGenerator.nextIdStr())
-                    .setFoodMaterialId(materialId)
-                    .setSeq(++seq);
+        boolean rst=true;
+        for(FoodMaterialNutrientEntity item:subs) {
+            rst &= subServiceX.saveOrUpdate(item, Wrappers.<FoodMaterialNutrientEntity>lambdaUpdate()
+                    .eq(FoodMaterialNutrientEntity::getFoodMaterialNutrientId, item.getFoodMaterialNutrientId()));
         }
-        return foodMaterialIndicatorService.saveBatch(indicators);
-    }
-    public boolean setState(String materialId, Integer state) {
-        return foodMaterialService.update(Wrappers.<FoodMaterialEntity>lambdaUpdate()
-                .eq(COLLogicKey4Material, materialId)
-                .set(FoodMaterialEntity::getState, Optional.ofNullable(state).orElse(0) ));
+        return rst;
+
     }
     //endregion
 
-
-    //region find
-    public Page<FoodMaterialEntity> getByCondition(Page<FoodMaterialEntity> page, String keyWords, String categId, SFunction<FoodMaterialEntity,?>... cols){
-
-        return foodMaterialService.page(page,Wrappers.<FoodMaterialEntity>lambdaQuery()
-                .likeRight(ShareUtil.XString.hasLength(categId), FoodMaterialEntity::getCategIdPath,categId)
-                .like(ShareUtil.XString.hasLength(keyWords), FoodMaterialEntity::getFoodMaterialName,keyWords)
-                .select(cols));
-
-    }
-    public Optional<FoodMaterialEntity> getByPk(Long pk, SFunction<FoodMaterialEntity,?>... cols){
-        if(ShareUtil.XObject.isEmpty(pk)){
-            return Optional.empty();
-        }
-        return foodMaterialService.lambdaQuery()
-                .eq(FoodMaterialEntity::getId,pk)
-                .select(cols)
-                .oneOpt();
-    }
-    public Optional<FoodMaterialEntity> getById(String materialId, SFunction<FoodMaterialEntity,?>... cols){
-        if(ShareUtil.XObject.isEmpty(materialId)){
-            return Optional.empty();
-        }
-        return foodMaterialService.lambdaQuery()
-                .eq(COLLogicKey4Material,materialId)
-                .select(cols)
-                .oneOpt();
-    }
-
-    public List<FoodMaterialNutrientEntity> getByLeadId4Nutrient(String materialId, SFunction<FoodMaterialNutrientEntity,?>... cols) {
-        if (ShareUtil.XObject.isEmpty(materialId)) {
+    //region retrieve
+    public List<FoodMaterialNutrientEntity> getSubByLeadIdX(String leadId, SFunction<FoodMaterialNutrientEntity,?>... cols) {
+        if (ShareUtil.XObject.isEmpty(leadId)) {
             return Collections.emptyList();
         }
-        return foodMaterialNutrientService.lambdaQuery()
-                .eq(FoodMaterialNutrientEntity::getFoodMaterialId, materialId)
+        return subServiceX.lambdaQuery()
+                .eq(FoodMaterialNutrientEntity::getFoodMaterialId, leadId)
                 .orderByAsc(FoodMaterialNutrientEntity::getId)
                 .select(cols)
                 .list();
     }
-    public List<FoodMaterialIndicatorEntity> getByLeadId4Indicator(String materialId, SFunction<FoodMaterialIndicatorEntity,?>... cols){
-        if(ShareUtil.XObject.isEmpty(materialId)){
-            return Collections.emptyList();
-        }
-        return foodMaterialIndicatorService.lambdaQuery()
-                .eq(FoodMaterialIndicatorEntity::getFoodMaterialId,materialId)
-                .orderByAsc(FoodMaterialIndicatorEntity::getId)
-                .select(cols)
-                .list();
-    }
-
-
     //endregion
 
     //region delete
-    public boolean coreDelete(List<String> ids){
-        if(!delByIds(ids)){
+    @Override
+    protected boolean coreTranDelete(List<String> ids, boolean delSub, boolean dftIfSubEmpty) {
+        if(!super.coreTranDelete(ids, delSub, dftIfSubEmpty)){
             return false;
         }
-        delByLeadId4Nutrient(ids);
-        delByLeadId4Indicator(ids);
+        if(delSub) {
+            delSubByLeadIdX(ids, dftIfSubEmpty);
+        }
         return true;
     }
-
-    public boolean delByIds(List<String> ids){
+    public boolean delSubByLeadIdX(String leadId,boolean dftIfEmpty){
+        if(ShareUtil.XObject.isEmpty(leadId)){
+            return dftIfEmpty;
+        }
+        return subServiceX.remove(Wrappers.<FoodMaterialNutrientEntity>lambdaQuery()
+                .eq(FoodMaterialNutrientEntity::getFoodMaterialId,leadId));
+    }
+    public boolean delSubByLeadIdX(List<String> ids,boolean dftIfEmpty){
         if(ShareUtil.XObject.isEmpty(ids)){
-            return false;
+            return dftIfEmpty;
         }
         final boolean oneFlag=ids.size()==1;
-        return foodMaterialService.remove(Wrappers.<FoodMaterialEntity>lambdaQuery()
-                .eq(oneFlag, COLLogicKey4Material,ids.get(0))
-                .in(!oneFlag, COLLogicKey4Material,ids));
-    }
-    public boolean delByLeadId4Nutrient(String materialId){
-        if(ShareUtil.XObject.isEmpty(materialId)){
-            return false;
-        }
-        return foodMaterialNutrientService.remove(Wrappers.<FoodMaterialNutrientEntity>lambdaQuery()
-                .eq(FoodMaterialNutrientEntity::getFoodMaterialId,materialId));
-    }
-    public boolean delByLeadId4Nutrient(List<String> ids){
-        if(ShareUtil.XObject.isEmpty(ids)){
-            return false;
-        }
-        final boolean oneFlag=ids.size()==1;
-        return foodMaterialNutrientService.remove(Wrappers.<FoodMaterialNutrientEntity>lambdaQuery()
+        return subServiceX.remove(Wrappers.<FoodMaterialNutrientEntity>lambdaQuery()
                 .eq(oneFlag,FoodMaterialNutrientEntity::getFoodMaterialId,ids.get(0))
                 .in(!oneFlag,FoodMaterialNutrientEntity::getFoodMaterialId,ids));
     }
-    public boolean delByLeadId4Indicator(String materialId){
-        if(ShareUtil.XObject.isEmpty(materialId)){
-            return false;
-        }
-        return foodMaterialIndicatorService.remove(Wrappers.<FoodMaterialIndicatorEntity>lambdaQuery()
-                .eq(FoodMaterialIndicatorEntity::getFoodMaterialId,materialId));
-    }
-    public boolean delByLeadId4Indicator(List<String> ids){
-        if(ShareUtil.XObject.isEmpty(ids)){
-            return false;
-        }
-        final boolean oneFlag=ids.size()==1;
-        return foodMaterialIndicatorService.remove(Wrappers.<FoodMaterialIndicatorEntity>lambdaQuery()
-                .eq(oneFlag,FoodMaterialIndicatorEntity::getFoodMaterialId,ids.get(0))
-                .in(!oneFlag,FoodMaterialIndicatorEntity::getFoodMaterialId,ids));
-    }
+
 
     //endregion
 

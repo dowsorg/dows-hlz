@@ -1,12 +1,10 @@
 package org.dows.hep.rest.user.experiment;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.user.experiment.request.FindOrgNoticeRequest;
-import org.dows.hep.api.user.experiment.request.FindOrgPersonsRequest;
-import org.dows.hep.api.user.experiment.request.FindOrgReportRequest;
-import org.dows.hep.api.user.experiment.request.StartOrgFlowRequest;
+import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.biz.user.experiment.ExperimentOrgBiz;
 import org.springframework.validation.annotation.Validated;
@@ -36,6 +34,17 @@ public class ExperimentOrgRest {
     @PostMapping("v1/userExperiment/experimentOrg/pageOrgPersons")
     public OrgPersonResponse pageOrgPersons(@RequestBody @Validated FindOrgPersonsRequest findOrgPersons ) {
         return experimentOrgBiz.pageOrgPersons(findOrgPersons);
+    }
+
+    /**
+     * 获取实验人物列表
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取实验人物列表")
+    @PostMapping("v1/userExperiment/experimentOrg/pageExperimentPersons")
+    public IPage<ExperimentPersonResponse> pageExperimentPersons(@RequestBody @Validated ExperimentPersonRequest personRequest) {
+        return experimentOrgBiz.pageExperimentPersons(personRequest);
     }
 
     /**

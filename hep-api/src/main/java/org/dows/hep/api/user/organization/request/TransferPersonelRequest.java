@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Schema(name = "TransferPersonel 对象", title = "人物转移")
-public class TransferPersonelRequest{
+public class TransferPersonelRequest {
     @Schema(title = "实验实列ID")
     private String experimentInstanceId;
 
@@ -28,6 +28,5 @@ public class TransferPersonelRequest{
 
     @Schema(title = "机构ID")
     private String orgId;
-
 
 }

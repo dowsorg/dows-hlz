@@ -33,6 +33,13 @@ public class FoodMaterialResponse{
     @Schema(title = "一级分类名称")
     private String categNameLv1;
 
+    @Schema(title = "分布式id路径")
+    private String categIdPath;
+
+    @Schema(title = "分类名称路径")
+    private String categNamePath;
+
+
     @Schema(title = "蛋白质每100g")
     private String protein;
 

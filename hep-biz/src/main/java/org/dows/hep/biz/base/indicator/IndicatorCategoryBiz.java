@@ -49,7 +49,7 @@ public class IndicatorCategoryBiz{
     private final RedissonClient redissonClient;
     private final IdGenerator idGenerator;
 
-    private static IndicatorCategoryResponse indicatorCategoryEntity2Response(IndicatorCategoryEntity indicatorCategoryEntity) {
+    public static IndicatorCategoryResponse indicatorCategoryEntity2Response(IndicatorCategoryEntity indicatorCategoryEntity) {
         if (Objects.isNull(indicatorCategoryEntity)) {
             return null;
         }
