@@ -23,5 +23,5 @@ public class QuestionOptionWithAnswerRequest {
     private String optionValue;
 
     @Schema(title = "是否是正确答案[0:错误，1:正确]")
-    private Boolean right;
+    private Integer rightAnswer;
 }

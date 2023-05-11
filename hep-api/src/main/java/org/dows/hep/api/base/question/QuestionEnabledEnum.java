@@ -11,8 +11,8 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum QuestionEnabledEnum {
-    ENABLED(0, "启用"),
-    DISABLED(1, "禁用");
+    ENABLED(1, "启用"),
+    DISABLED(0, "禁用");
 
     private final Integer code;
     private final String name;

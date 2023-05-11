@@ -1,13 +1,10 @@
 package org.dows.hep.service.impl;
 
-import lombok.RequiredArgsConstructor;
 import org.dows.framework.crud.mybatis.MybatisCrudServiceImpl;
 import org.dows.hep.entity.QuestionCategoryEntity;
 import org.dows.hep.mapper.QuestionCategoryMapper;
 import org.dows.hep.service.QuestionCategoryService;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 
 /**
@@ -16,19 +13,8 @@ import java.util.List;
  * @author lait
  * @since 2023-04-21 10:31:45
  */
-@RequiredArgsConstructor
 @Service("questionCategoryService")
 public class QuestionCategoryServiceImpl extends MybatisCrudServiceImpl<QuestionCategoryMapper, QuestionCategoryEntity> implements QuestionCategoryService {
-    private final QuestionCategoryMapper questionCategoryMapper;
 
-    @Override
-    public List<QuestionCategoryEntity> getChildrenByPid(String questionCategPid, String questionCategGroup) {
-        return questionCategoryMapper.getChildrenByPid(questionCategPid, questionCategGroup);
-    }
-
-    @Override
-    public List<QuestionCategoryEntity> getAllCategory(String questionCategGroup) {
-        return questionCategoryMapper.getAllCategory(questionCategGroup);
-    }
 }
 

@@ -4,8 +4,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.question.request.QuestionCategoryRequest;
+import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
 import org.dows.hep.biz.base.question.QuestionCategBiz;
-import org.dows.hep.entity.QuestionCategoryEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,7 +45,7 @@ public class QuestionCategoryRest {
      */
     @Operation(summary = "根据 groupCode 查询所有类目")
     @GetMapping("v1/baseQuestion/questionCategory/listByCategoryGroup")
-    public List<QuestionCategoryEntity> listByCategoryGroup(String categoryGroup) {
+    public List<QuestionCategoryResponse> listByCategoryGroup(String categoryGroup) {
         return questionCategBiz.getChildrenByPid("0", categoryGroup);
     }
 

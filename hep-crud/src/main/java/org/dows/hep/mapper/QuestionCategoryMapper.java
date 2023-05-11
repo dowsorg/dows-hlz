@@ -1,11 +1,8 @@
 package org.dows.hep.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 import org.dows.framework.crud.mybatis.MybatisCrudMapper;
 import org.dows.hep.entity.QuestionCategoryEntity;
-
-import java.util.List;
 
 /**
  * 问题类目(QuestionCategory)表数据库访问层
@@ -16,8 +13,5 @@ import java.util.List;
 @Mapper
 public interface QuestionCategoryMapper extends MybatisCrudMapper<QuestionCategoryEntity> {
 
-    List<QuestionCategoryEntity> getChildrenByPid(@Param("questionCategPid") String questionCategPid, @Param("questionCategGroup") String questionCategGroup);
-
-    List<QuestionCategoryEntity> getAllCategory(@Param("categoryGroup") String categoryGroup);
 }
 

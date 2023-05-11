@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.question.QuestionAccessAuthEnum;
+import org.dows.hep.api.base.question.QuestionEnabledEnum;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.QuestionOptionWithAnswerRequest;
 import org.dows.hep.api.base.question.request.QuestionRequest;
@@ -51,9 +52,10 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
         questionRequest.setBizCode(questionRequest.getBizCode() == null ? QuestionAccessAuthEnum.PRIVATE_VIEWING : questionRequest.getBizCode());
         questionRequest.setAppId(questionRequest.getAppId() == null ? questionDomainBaseBiz.getAppId() : questionDomainBaseBiz.getAppId());
         questionRequest.setQuestionInstancePid(questionDomainBaseBiz.getQuestionInstancePid());
-        questionRequest.setQuestionCategId(questionDomainBaseBiz.getIdStr());
+        questionRequest.setQuestionInstanceId(questionDomainBaseBiz.getIdStr());
         questionRequest.setQuestionIdentifier(questionDomainBaseBiz.getIdStr());
         questionRequest.setVer(questionDomainBaseBiz.getLastVer());
+        questionRequest.setEnabled(QuestionEnabledEnum.ENABLED.getCode());
 
         // save base-info
         QuestionInstanceEntity questionInstanceEntity = BeanUtil.copyProperties(questionRequest, QuestionInstanceEntity.class);
@@ -129,7 +131,7 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
 
         // options with answers
         LambdaQueryWrapper<QuestionAnswersEntity> answersWrapper = new LambdaQueryWrapper<QuestionAnswersEntity>()
-                .eq(QuestionAnswersEntity::getQuestionInstanceId, questionInstance);
+                .eq(QuestionAnswersEntity::getQuestionInstanceId, questionInstance.getQuestionInstanceId());
         List<QuestionAnswersEntity> answersEntityList = questionAnswersService.list(answersWrapper);
         if (answersEntityList == null || answersEntityList.isEmpty()) {
             return result;
