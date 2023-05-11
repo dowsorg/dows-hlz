@@ -467,9 +467,9 @@ public class PersonManageBiz {
                     //1.5、删除上述机构下的所有成员及机构相关信息
                     accountOrgApi.batchDeleteAccountOrgsByOrgIds(orgIdsList);
                 }
-                //1.6、删除账号相关信息
+                //1.6、删除老师账号相关信息
                 accountInstanceApi.deleteAccountInstanceByAccountIds(Arrays.asList(accountId).stream().collect(Collectors.toSet()));
-                //1.7、删除学生相关信息
+                //1.7、删除学生账号相关信息
                 accountInstanceApi.deleteAccountInstanceByAccountIds(studentIds);
                 flag = true;
             }
