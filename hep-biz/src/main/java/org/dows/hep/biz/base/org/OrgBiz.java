@@ -146,7 +146,7 @@ public class OrgBiz {
     @DSTransactional
     public Boolean deleteClasss(Set<String> ids) {
         Boolean flag = true;
-        //1、获取机构下的所有成员
+        //1、获取机构下的所有学生，不删除老师
         Set<String> accountIds = new HashSet<>();
         ids.forEach(id -> {
             List<AccountGroupResponse> groupList = accountGroupApi.getAccountGroupByOrgId(id);
