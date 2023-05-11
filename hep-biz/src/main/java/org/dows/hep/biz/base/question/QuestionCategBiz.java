@@ -31,28 +31,59 @@ public class QuestionCategBiz {
     private final QuestionDomainBaseBiz baseBiz;
     private final QuestionInstanceBiz questionInstanceBiz;
     private final QuestionCategoryService questionCategoryService;
-    public static final String CATEG_PATH_DELIMITER = "|";
 
+    /**
+     * @author fhb
+     * @description
+     * @date 2023/5/11 21:22
+     * @param 
+     * @return 
+     */
     @Transactional
     public String saveOrUpdateQuestionCategory(QuestionCategoryRequest questionCategory) {
         if (BeanUtil.isEmpty(questionCategory)) {
             return "";
         }
 
-        // before handle
-        beforeSaveOrUpd(questionCategory);
+        String questionCategId = questionCategory.getQuestionCategId();
+        if (StrUtil.isBlank(questionCategId)) {
+            questionCategory.setQuestionCategId(baseBiz.getIdStr());
+            questionCategory.setQuestionCategPid(baseBiz.getQuestionInstancePid());
+        } else {
+            QuestionCategoryEntity questionCategoryEntity = getQuestionCategory(questionCategId);
+            if (BeanUtil.isEmpty(questionCategoryEntity)) {
+                throw new BizException("数据不存在");
+            }
+            questionCategory.setId(questionCategoryEntity.getId());
+        }
 
         // handle
         QuestionCategoryEntity questionCategoryEntity = BeanUtil.copyProperties(questionCategory, QuestionCategoryEntity.class);
         questionCategoryService.saveOrUpdate(questionCategoryEntity);
 
-        // after handle
-//        buildCategPath(questionCategoryEntity);
-//        questionCategoryService.updateById(questionCategoryEntity);
-
         return questionCategoryEntity.getQuestionCategId();
     }
 
+    /**
+     * @author fhb
+     * @description
+     * @date 2023/5/11 21:22
+     * @param 
+     * @return 
+     */
+    public QuestionCategoryEntity getQuestionCategory(String questionCategId) {
+        LambdaQueryWrapper<QuestionCategoryEntity> queryWrapper = new LambdaQueryWrapper<QuestionCategoryEntity>()
+                .eq(QuestionCategoryEntity::getQuestionCategId, questionCategId);
+        return questionCategoryService.getOne(queryWrapper);
+    }
+
+    /**
+     * @author fhb
+     * @description
+     * @date 2023/5/11 21:22
+     * @param 
+     * @return 
+     */
     public List<QuestionCategoryResponse> getChildrenByPid(String pid, String categoryGroup) {
         List<QuestionCategoryResponse> result = new ArrayList<>();
         List<QuestionCategoryResponse> listInGroup = listInGroup(categoryGroup);
@@ -60,6 +91,13 @@ public class QuestionCategBiz {
         return result;
     }
 
+    /**
+     * @author fhb
+     * @description
+     * @date 2023/5/11 21:22
+     * @param 
+     * @return 
+     */
     @Transactional
     public Boolean delByIds(List<String> ids) {
         if (Objects.isNull(ids)) {
@@ -117,19 +155,6 @@ public class QuestionCategBiz {
             return Boolean.TRUE;
         }
         return Boolean.FALSE;
-    }
-
-    private void beforeSaveOrUpd(QuestionCategoryRequest questionCategory) {
-        String questionCategId = questionCategory.getQuestionCategId();
-        if (StrUtil.isBlank(questionCategId)) {
-            questionCategory.setQuestionCategId(baseBiz.getIdStr());
-        }
-
-        String questionCategPid = questionCategory.getQuestionCategPid();
-        if (StrUtil.isBlank(questionCategPid)) {
-            questionCategory.setQuestionCategPid(baseBiz.getQuestionInstancePid());
-        }
-        // todo seq
     }
 
     private List<QuestionCategoryResponse> listInGroup(String questionCategGroup) {

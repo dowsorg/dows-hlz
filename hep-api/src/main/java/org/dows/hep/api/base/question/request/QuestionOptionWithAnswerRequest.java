@@ -1,5 +1,6 @@
 package org.dows.hep.api.base.question.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,8 +14,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "QuestionOptionRequest 对象", title = "问题选项Request")
 public class QuestionOptionWithAnswerRequest {
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @Schema(title = "数据库ID")
+    private Long id;
+
     @Schema(title = "问题选项ID")
     private String questionOptionsId;
+
+    @Schema(title = "答案的ID")
+    private String questionAnswerId;
 
     @Schema(title = "选项标题")
     private String optionTitle;
