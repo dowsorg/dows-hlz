@@ -160,18 +160,7 @@ public class QuestionInstanceBiz {
                 .like(StrUtil.isNotBlank(questionPageRequest.getKeyword()), QuestionInstanceEntity::getQuestionDescr, questionPageRequest.getKeyword())
                 .like(StrUtil.isNotBlank(questionPageRequest.getQuestionType()), QuestionInstanceEntity::getQuestionType, questionPageRequest.getQuestionType())
                 .page(pageRequest);
-
-        Page<QuestionPageResponse> result = BeanUtil.copyProperties(pageResult, Page.class);
-        List<QuestionInstanceEntity> records = pageResult.getRecords();
-        if (records == null || records.isEmpty()) {
-            return result;
-        }
-
-        List<QuestionPageResponse> pageResponseList = records.stream()
-                .map(item -> BeanUtil.copyProperties(item, QuestionPageResponse.class))
-                .collect(Collectors.toList());
-        result.setRecords(pageResponseList);
-        return result;
+        return baseBiz.convertPage(pageResult, QuestionPageResponse.class);
     }
 
     /**
