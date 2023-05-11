@@ -151,8 +151,6 @@ public class QuestionInstanceBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     public IPage<QuestionPageResponse> pageQuestion(QuestionPageRequest questionPageRequest) {
-        Page<QuestionPageResponse> result = new Page<>();
-
         Page<QuestionInstanceEntity> pageRequest = new Page<>(questionPageRequest.getPageNo(), questionPageRequest.getPageSize());
         Page<QuestionInstanceEntity> pageResult = questionInstanceService.lambdaQuery()
                 .eq(questionPageRequest.getAppId() != null, QuestionInstanceEntity::getAppId, questionPageRequest.getAppId())
@@ -163,6 +161,7 @@ public class QuestionInstanceBiz {
                 .like(StrUtil.isNotBlank(questionPageRequest.getQuestionType()), QuestionInstanceEntity::getQuestionType, questionPageRequest.getQuestionType())
                 .page(pageRequest);
 
+        Page<QuestionPageResponse> result = BeanUtil.copyProperties(pageResult, Page.class);
         List<QuestionInstanceEntity> records = pageResult.getRecords();
         if (records == null || records.isEmpty()) {
             return result;
