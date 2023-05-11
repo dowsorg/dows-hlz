@@ -1,13 +1,13 @@
 package org.dows.hep.rest.base.indicator;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeHealthProblemRequest;
-import org.dows.hep.api.base.indicator.request.DecimalRequest;
-import org.dows.hep.api.base.indicator.request.UpdateIndicatorJudgeHealthProblemRequest;
-import org.dows.hep.api.base.indicator.request.UpdateStatusIndicatorJudgeHealthProblemRequest;
+import org.dows.hep.api.base.indicator.request.*;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthProblemResponse;
+import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthProblemResponseRs;
+import org.dows.hep.api.constant.RsPageConstant;
 import org.dows.hep.biz.base.indicator.IndicatorJudgeHealthProblemBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +25,47 @@ import java.util.List;
 @Tag(name = "判断指标健康问题", description = "判断指标健康问题")
 public class IndicatorJudgeHealthProblemRest {
     private final IndicatorJudgeHealthProblemBiz indicatorJudgeHealthProblemBiz;
+
+    @Operation(summary = "Rs创建或保存查看指标危险因素类")
+    @PostMapping("v1/baseIndicator/indicatorJudgeHealthProblem/createOrUpdateRs")
+    public void createOrUpdateRs(@RequestBody @Validated CreateOrUpdateIndicatorJudgeHealthProblemRequestRs createOrUpdateIndicatorJudgeHealthProblemRequestRs) {
+        indicatorJudgeHealthProblemBiz.createOrUpdateRs(createOrUpdateIndicatorJudgeHealthProblemRequestRs);
+    }
+
+    @Operation(summary = "Rs批量删除")
+    @DeleteMapping("v1/baseIndicator/indicatorJudgeHealthProblem/batchDeleteRs")
+    public void batchDeleteRs(@RequestBody List<String> indicatorJudgeHealthProblemIdList) {
+        indicatorJudgeHealthProblemBiz.batchDeleteRs(indicatorJudgeHealthProblemIdList);
+    }
+
+    @Operation(summary = "Rs更改启用状态")
+    @PutMapping("v1/baseIndicator/indicatorJudgeHealthProblem/updateStatusRs")
+    public void updateStatusRs(
+        @RequestParam String indicatorJudgeHealthProblemId,
+        @RequestParam Integer status) {
+        indicatorJudgeHealthProblemBiz.updateStatusRs(indicatorJudgeHealthProblemId, status);
+    }
+
+    @Operation(summary = "Rs获取查看指标危险因素类")
+    @GetMapping("v1/baseIndicator/indicatorJudgeHealthProblem/getRs")
+    public IndicatorJudgeHealthProblemResponseRs getRs(@RequestParam @Validated String indicatorJudgeHealthProblemId) {
+        return indicatorJudgeHealthProblemBiz.getRs(indicatorJudgeHealthProblemId);
+    }
+
+    @Operation(summary = "Rs分页筛选查看指标危险因素类")
+    @GetMapping("v1/baseIndicator/indicatorJudgeHealthProblem/pageRs")
+    public IPage<IndicatorJudgeHealthProblemResponseRs> pageRs(
+        @RequestParam(required = false, defaultValue = RsPageConstant.PAGE_NO) Long pageNo,
+        @RequestParam(required = false, defaultValue = RsPageConstant.PAGE_SIZE) Long pageSize,
+        @RequestParam(required = false, defaultValue = RsPageConstant.ORDER) String order,
+        @RequestParam(required = false, defaultValue = RsPageConstant.ASC) Boolean asc,
+        @RequestParam(required = false) String appId,
+        @RequestParam(required = false) String indicatorFuncId,
+        @RequestParam(required = false) String name,
+        @RequestParam(required = false) String indicatorCategoryId,
+        @RequestParam(required = false) Integer status) {
+        return indicatorJudgeHealthProblemBiz.pageRs(pageNo,pageSize,order,asc, appId,indicatorFuncId,name,indicatorCategoryId,status);
+    }
 
     /**
     * 创建判断指标健康问题
