@@ -37,12 +37,12 @@
         dt
     </sql>
 
-    <select id="getChildrenByPid" resultMap="NodeTreeResult">
-        select
-        <include refid="Base_Column_List"/>
-        from question_category
-        where question_categ_pid = #{questionCategPid} and question_categ_group = #{questionCategGroup} and deleted = 0
-    </select>
+<!--    <select id="getChildrenByPid" resultMap="NodeTreeResult">-->
+<!--        select-->
+<!--        <include refid="Base_Column_List"/>-->
+<!--        from question_category-->
+<!--        where question_categ_pid = #{questionCategPid} and question_categ_group = #{questionCategGroup} and deleted = 0-->
+<!--    </select>-->
 
     <select id="getAllCategory" resultType="org.dows.hep.entity.QuestionCategoryEntity">
         select
