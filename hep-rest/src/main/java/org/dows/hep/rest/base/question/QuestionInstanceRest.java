@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.question.QuestionAccessAuthEnum;
 import org.dows.hep.api.base.question.request.QuestionPageRequest;
 import org.dows.hep.api.base.question.request.QuestionRequest;
 import org.dows.hep.api.base.question.request.QuestionSearchRequest;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
+ *
+ * @folder admin-hep/问题域-题目
 * @description project descr:问题:问题
 *
 * @author lait.zhang
@@ -35,6 +38,7 @@ public class QuestionInstanceRest {
     @Operation(summary = "新增和更新")
     @PostMapping("v1/baseQuestion/questionInstance/saveOrUpdQuestion")
     public String saveOrUpdQuestion(@RequestBody @Validated QuestionRequest question ) {
+        question.setBizCode(QuestionAccessAuthEnum.PUBLIC_VIEWING);
         return questionInstanceBiz.saveOrUpdQuestion(question);
     }
 
@@ -122,7 +126,7 @@ public class QuestionInstanceRest {
     */
     @Operation(summary = "删除or批量删除")
     @DeleteMapping("v1/baseQuestion/questionInstance/delQuestion")
-    public Boolean delQuestion(List<String> questionInstanceIds ) {
+    public Boolean delQuestion(@RequestBody List<String> questionInstanceIds ) {
         return questionInstanceBiz.delQuestion(questionInstanceIds);
     }
 

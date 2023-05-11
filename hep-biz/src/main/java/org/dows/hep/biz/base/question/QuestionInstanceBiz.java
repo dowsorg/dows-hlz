@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.QuestionCloneEnum;
 import org.dows.hep.api.base.question.QuestionEnabledEnum;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
@@ -281,7 +282,14 @@ public class QuestionInstanceBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     public Boolean sortQuestion(String questionInstanceId, Integer sequence) {
-        return Boolean.FALSE;
+        if (StrUtil.isBlank(questionInstanceId) || sequence == null) {
+            return false;
+        }
+
+        LambdaUpdateWrapper<QuestionInstanceEntity> updateWrapper = new LambdaUpdateWrapper<QuestionInstanceEntity>()
+                .eq(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceId)
+                .set(QuestionInstanceEntity::getSequence, sequence);
+        return questionInstanceService.update(updateWrapper);
     }
 
     /**
@@ -371,10 +379,33 @@ public class QuestionInstanceBiz {
             return Boolean.FALSE;
         }
 
+        // check
+        boolean canRemove = checkCanRemove(questionInstanceIds);
+        if (!canRemove) {
+            throw new BizException("被引用数据不可删除");
+        }
+
+        // rem instance
         LambdaQueryWrapper<QuestionInstanceEntity> queryWrapper = new LambdaQueryWrapper<QuestionInstanceEntity>()
                 .in(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceIds);
-        return questionInstanceService.remove(queryWrapper);
+        boolean remInstanceRes = questionInstanceService.remove(queryWrapper);
+
+        // rem relation
+        boolean remRelationRes = removeRelationOfInstance(questionInstanceIds);
+
+        return remInstanceRes && remRelationRes;
     }
+
+    // TODO: 2023/5/11  
+    private boolean removeRelationOfInstance(List<String> questionInstanceIds) {
+        return Boolean.TRUE;
+    }
+
+    // TODO: 2023/5/11  
+    private boolean checkCanRemove(List<String> questionInstanceIds) {
+        return Boolean.TRUE;
+    }
+
 
     // 检查问题的类型是否有错-发生变更即为有错，大错特错，挨板子吧
     private boolean checkQuestionTypeIsError(QuestionRequest question) {

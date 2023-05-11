@@ -15,10 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.function.Predicate;
 
 /**
  * @author fhb
@@ -54,20 +53,11 @@ public class QuestionCategBiz {
         return questionCategoryEntity.getQuestionCategId();
     }
 
-    public List<QuestionCategoryEntity> getChildrenByPid(String pid, String categoryGroup) {
-//        return questionCategoryService.getChildrenByPid(pid, categoryGroup);
-        return Collections.emptyList();
-    }
-
-    public List<QuestionCategoryResponse> getAllCategory(String categoryGroup) {
-        List<QuestionCategoryEntity> allCategory = questionCategoryService.getAllCategory(categoryGroup);
-        if (allCategory == null || allCategory.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        return allCategory.stream()
-                .map(item -> BeanUtil.copyProperties(item, QuestionCategoryResponse.class))
-                .collect(Collectors.toList());
+    public List<QuestionCategoryResponse> getChildrenByPid(String pid, String categoryGroup) {
+        List<QuestionCategoryResponse> result = new ArrayList<>();
+        List<QuestionCategoryResponse> listInGroup = listInGroup(categoryGroup);
+        convertList2TreeList(listInGroup, pid, result);
+        return result;
     }
 
     @Transactional
@@ -129,60 +119,6 @@ public class QuestionCategBiz {
         return Boolean.FALSE;
     }
 
-//    private void buildCategPath(QuestionCategoryEntity entity) {
-//        String categIdPath = "";
-//        String categNamePath = "";
-//        String questionCategId = entity.getQuestionCategId();
-//        String questionCategName = entity.getQuestionCategName();
-//
-//        List<QuestionCategoryEntity> parents = getParents(questionCategId);
-//        if (parents.size() > 0) {
-//            categNamePath = parents.stream()
-//                    .map(QuestionCategoryEntity::getQuestionCategName)
-//                    .collect(Collectors.joining(CATEG_PATH_DELIMITER));
-//            categNamePath += CATEG_PATH_DELIMITER + questionCategName;
-//
-//            categIdPath = parents.stream()
-//                    .map(QuestionCategoryEntity::getQuestionCategId)
-//                    .collect(Collectors.joining(CATEG_PATH_DELIMITER));
-//            categIdPath += CATEG_PATH_DELIMITER + questionCategId;
-//        } else {
-//            categNamePath = questionCategName;
-//            categIdPath = questionCategId;
-//        }
-//
-//        entity.setQuestionCategNamePath(categNamePath);
-//        entity.setQuestionCategIdPath(categIdPath);
-//    }
-//
-//    private List<QuestionCategoryEntity> getParents(String questionCategId) {
-//        List<QuestionCategoryEntity> result = new ArrayList<>();
-//        buildParents(questionCategId, result);
-//        Collections.reverse(result);
-//        return result;
-//    }
-
-//    private void buildParents(String questionCategId, List<QuestionCategoryEntity> list) {
-//        QuestionCategoryEntity parent = getParent(questionCategId);
-//        if (null == parent) {
-//            return;
-//        }
-//
-//        list.add(parent);
-//        String categId = parent.getQuestionCategId();
-//        buildParents(categId, list);
-//    }
-
-//    private QuestionCategoryEntity getParent(String questionCategId) {
-//        QuestionCategoryEntity questionCategoryEntity = questionCategoryService.getById(questionCategId);
-//        if (BeanUtil.isEmpty(questionCategoryEntity)) {
-//            return null;
-//        }
-//
-//        String questionCategPid = questionCategoryEntity.getQuestionCategPid();
-//        return questionCategoryService.getById(questionCategPid);
-//    }
-
     private void beforeSaveOrUpd(QuestionCategoryRequest questionCategory) {
         String questionCategId = questionCategory.getQuestionCategId();
         if (StrUtil.isBlank(questionCategId)) {
@@ -194,5 +130,70 @@ public class QuestionCategBiz {
             questionCategory.setQuestionCategPid(baseBiz.getQuestionInstancePid());
         }
         // todo seq
+    }
+
+    private List<QuestionCategoryResponse> listInGroup(String questionCategGroup) {
+        if (StrUtil.isBlank(questionCategGroup)) {
+            return new ArrayList<>();
+        }
+
+        return questionCategoryService.lambdaQuery()
+                .eq(QuestionCategoryEntity::getQuestionCategGroup, questionCategGroup)
+                .list()
+                .stream()
+                .map(item -> BeanUtil.copyProperties(item, QuestionCategoryResponse.class))
+                .toList();
+    }
+
+    private void convertList2TreeList(List<QuestionCategoryResponse> sources, String pid, List<QuestionCategoryResponse> target) {
+        // list children
+        List<QuestionCategoryResponse> children = listChildren(sources, item -> pid.equals(item.getQuestionCategPid()));
+
+        // add target
+        target.addAll(children);
+
+        // handle children
+        target.forEach(item -> traverse(item, sources));
+    }
+
+    private void traverse(QuestionCategoryResponse node, List<QuestionCategoryResponse> sources) {
+        // 判空
+        boolean isBack = checkNull(node, sources);
+        if (isBack) {
+            return;
+        }
+
+        // 处理当前节点
+        handleCurrentNode(node, sources);
+
+        // 处理子节点
+        handleChildrenNode(node, sources);
+    }
+
+    private boolean checkNull(QuestionCategoryResponse currentNode, List<QuestionCategoryResponse> sources) {
+        List<QuestionCategoryResponse> children = listChildren(sources, item -> currentNode.getQuestionCategId().equals(item.getQuestionCategPid()));
+        if (children.isEmpty()) {
+            return Boolean.TRUE;
+        }
+
+        return Boolean.FALSE;
+    }
+
+    private void handleCurrentNode(QuestionCategoryResponse currentNode, List<QuestionCategoryResponse> sources) {
+        List<QuestionCategoryResponse> children = listChildren(sources, item -> currentNode.getQuestionCategId().equals(item.getQuestionCategPid()));
+        currentNode.setChildren(children);
+    }
+
+    private static List<QuestionCategoryResponse> listChildren(List<QuestionCategoryResponse> sources, Predicate<QuestionCategoryResponse> predicate) {
+        return sources.stream()
+                .filter(predicate)
+                .toList();
+    }
+
+    private void handleChildrenNode(QuestionCategoryResponse currentNode, List<QuestionCategoryResponse> sources) {
+        List<QuestionCategoryResponse> children = currentNode.getChildren();
+        for (QuestionCategoryResponse cNode : children) {
+            traverse(cNode, sources);
+        }
     }
 }

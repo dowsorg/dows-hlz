@@ -13,7 +13,6 @@ import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
 
 import java.util.Date;
-import java.util.List;
 
 /**
  * 问题类目(QuestionCategory)实体类
@@ -60,10 +59,6 @@ public class QuestionCategoryEntity implements CrudEntity {
 
     @Schema(title = "序列号")
     private Integer sequence;
-
-    @Schema(title = "子集合")
-    @TableField(exist = false)
-    private List<QuestionCategoryEntity> children;
 
     @JsonIgnore
     @TableLogic
