@@ -14,6 +14,8 @@ import org.dows.account.response.AccountInstanceResponse;
 import org.dows.account.response.AccountOrgGeoResponse;
 import org.dows.account.response.AccountOrgResponse;
 import org.dows.account.response.AccountUserResponse;
+import org.dows.hep.api.enums.EnumExperimentParticipator;
+import org.dows.hep.api.exception.ExperimentParticipatorException;
 import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.tenant.experiment.request.GroupSettingRequest;
@@ -163,7 +165,8 @@ public class ExperimentManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public Boolean grouping(GroupSettingRequest groupSetting) {
+    @DSTransactional
+    public Boolean grouping(GroupSettingRequest groupSetting,String caseInstanceId) {
 
         ExperimentGroupEntity experimentGroupEntity = ExperimentGroupEntity.builder()
                 .experimentGroupId(idGenerator.nextIdStr())
@@ -197,6 +200,14 @@ public class ExperimentManageBiz {
                 experimentParticipatorEntity.setParticipatorType(1);
             }
             experimentParticipatorEntityList.add(experimentParticipatorEntity);
+        }
+        // 判断实验参与人数是否大于该案例得机构数
+        List<CaseOrgEntity> entityList = caseOrgService.lambdaQuery()
+                .eq(CaseOrgEntity::getCaseInstanceId,caseInstanceId)
+                .eq(CaseOrgEntity::getDeleted,false)
+                .list();
+        if(entityList == null || experimentParticipatorEntityList.size() > entityList.size()){
+            throw new ExperimentParticipatorException(EnumExperimentParticipator.PARTICIPATOR_NUMBER_CANNOT_MORE_THAN_ORG_EXCEPTION);
         }
         // 保存实验参与人[学生]
         return experimentParticipatorService.saveOrUpdateBatch(experimentParticipatorEntityList);

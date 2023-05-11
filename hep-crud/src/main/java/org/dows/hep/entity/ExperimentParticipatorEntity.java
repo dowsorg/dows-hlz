@@ -48,11 +48,11 @@ public class ExperimentParticipatorEntity implements CrudEntity {
     @Schema(title = "实验实列ID")
     private String experimentInstanceId;
 
-    @Schema(title = "案例机构ID")
-    private String caseOrgIds;
+    @Schema(title = "实验机构ID")
+    private String experimentOrgIds;
 
-    @Schema(title = "案例机构名称")
-    private String caseOrgNames;
+    @Schema(title = "实验机构名称")
+    private String experimentOrgNames;
 
     @Schema(title = "组员账号ID")
     private String accountId;

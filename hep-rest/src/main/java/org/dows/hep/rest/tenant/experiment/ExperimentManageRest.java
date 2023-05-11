@@ -8,10 +8,7 @@ import org.dows.hep.api.tenant.experiment.request.GroupSettingRequest;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -68,8 +65,8 @@ public class ExperimentManageRest {
     */
     @Operation(summary = "实验分组")
     @PostMapping("v1/tenantExperiment/experimentManage/grouping")
-    public Boolean grouping(@RequestBody @Validated GroupSettingRequest groupSetting ) {
-        return experimentManageBiz.grouping(groupSetting);
+    public Boolean grouping(@RequestBody @Validated GroupSettingRequest groupSetting,@RequestParam @Validated String caseInstanceId) {
+        return experimentManageBiz.grouping(groupSetting,caseInstanceId);
     }
 
     /**
