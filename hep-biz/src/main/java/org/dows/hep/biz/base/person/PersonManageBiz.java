@@ -437,7 +437,7 @@ public class PersonManageBiz {
      * @创建时间: 2023/4/21 14:12
      */
     @DSTransactional
-    public Boolean deleteTeacherOrStudents(Set<String> accountIds, String roleName, String appId,Integer isTransfer) {
+    public Boolean deleteTeacherOrStudents(Set<String> accountIds, String roleName, String appId) {
         Boolean flag = false;
         for (String accountId : accountIds) {
             //1、教师

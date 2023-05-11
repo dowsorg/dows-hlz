@@ -220,9 +220,8 @@ public class PersonManageRest {
     @DeleteMapping("v1/basePerson/person/deleteTeacherOrStudents")
     public Boolean deleteTeacherOrStudents(@RequestParam Set<String> accountIds,
                                            @RequestParam String roleName,
-                                           @RequestParam String appId,
-                                           @RequestParam Integer isTransfer
+                                           @RequestParam String appId
                                            ){
-        return personManageBiz.deleteTeacherOrStudents(accountIds,roleName,appId,isTransfer);
+        return personManageBiz.deleteTeacherOrStudents(accountIds,roleName,appId);
     }
 }
