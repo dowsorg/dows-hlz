@@ -211,7 +211,7 @@ public class PersonManageRest {
 
     /**
      * 删除 教师/学生
-     * 删除教师时需要将班级连带删除
+     * 删除教师时需要将班级连带删除，同时删除学生
      *
      * @param
      * @return
