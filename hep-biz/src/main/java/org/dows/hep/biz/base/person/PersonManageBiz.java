@@ -442,21 +442,19 @@ public class PersonManageBiz {
         for (String accountId : accountIds) {
             //1、教师
             if (roleName.equals("教师")) {
-                if(isTransfer == 0) {
-                    //1.1、获取用户组织架构信息
-                    List<AccountGroupResponse> groupList = accountGroupApi.getAccountGroupListByAccountId(accountId, appId);
-                    Set<String> orgIdsList = new HashSet<>();
-                    if (groupList != null && groupList.size() > 0) {
-                        //1.2、根据机构ID去重
-                        groupList = groupList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(AccountGroupResponse::getOrgId))), ArrayList::new));
-                        //1.3、机构id拼接
-                        groupList.forEach(group -> {
-                            AccountOrgResponse org = accountOrgApi.getAccountOrgByOrgId(group.getOrgId(), appId);
-                            orgIdsList.add(org.getOrgId());
-                        });
-                        //1.4、删除上述机构下的所有成员及机构相关信息
-                        accountOrgApi.batchDeleteAccountOrgsByOrgIds(orgIdsList);
-                    }
+                //1.1、获取用户组织架构信息
+                List<AccountGroupResponse> groupList = accountGroupApi.getAccountGroupListByAccountId(accountId, appId);
+                Set<String> orgIdsList = new HashSet<>();
+                if (groupList != null && groupList.size() > 0) {
+                    //1.2、根据机构ID去重
+                    groupList = groupList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(AccountGroupResponse::getOrgId))), ArrayList::new));
+                    //1.3、机构id拼接
+                    groupList.forEach(group -> {
+                        AccountOrgResponse org = accountOrgApi.getAccountOrgByOrgId(group.getOrgId(), appId);
+                        orgIdsList.add(org.getOrgId());
+                    });
+                    //1.4、删除上述机构下的所有成员及机构相关信息
+                    accountOrgApi.batchDeleteAccountOrgsByOrgIds(orgIdsList);
                 }
                 //1.5、删除账号相关信息
                 accountInstanceApi.deleteAccountInstanceByAccountIds(Arrays.asList(accountId).stream().collect(Collectors.toSet()));
