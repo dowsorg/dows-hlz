@@ -26,7 +26,7 @@ import java.util.List;
 public class IndicatorJudgeHealthProblemRest {
     private final IndicatorJudgeHealthProblemBiz indicatorJudgeHealthProblemBiz;
 
-    @Operation(summary = "Rs创建或保存查看指标危险因素类")
+    @Operation(summary = "Rs创建或保存查看指标健康问题类")
     @PostMapping("v1/baseIndicator/indicatorJudgeHealthProblem/createOrUpdateRs")
     public void createOrUpdateRs(@RequestBody @Validated CreateOrUpdateIndicatorJudgeHealthProblemRequestRs createOrUpdateIndicatorJudgeHealthProblemRequestRs) {
         indicatorJudgeHealthProblemBiz.createOrUpdateRs(createOrUpdateIndicatorJudgeHealthProblemRequestRs);
@@ -46,13 +46,13 @@ public class IndicatorJudgeHealthProblemRest {
         indicatorJudgeHealthProblemBiz.updateStatusRs(indicatorJudgeHealthProblemId, status);
     }
 
-    @Operation(summary = "Rs获取查看指标危险因素类")
+    @Operation(summary = "Rs获取查看指标健康问题类")
     @GetMapping("v1/baseIndicator/indicatorJudgeHealthProblem/getRs")
     public IndicatorJudgeHealthProblemResponseRs getRs(@RequestParam @Validated String indicatorJudgeHealthProblemId) {
         return indicatorJudgeHealthProblemBiz.getRs(indicatorJudgeHealthProblemId);
     }
 
-    @Operation(summary = "Rs分页筛选查看指标危险因素类")
+    @Operation(summary = "Rs分页筛选查看指标健康问题类")
     @GetMapping("v1/baseIndicator/indicatorJudgeHealthProblem/pageRs")
     public IPage<IndicatorJudgeHealthProblemResponseRs> pageRs(
         @RequestParam(required = false, defaultValue = RsPageConstant.PAGE_NO) Long pageNo,
