@@ -146,14 +146,14 @@ public class OrgBiz {
     @DSTransactional
     public Boolean deleteClasss(Set<String> ids) {
         Boolean flag = true;
-        //1、获取机构下的所有成员
+        //1、获取机构下的所有学生，不删除老师
         Set<String> accountIds = new HashSet<>();
         ids.forEach(id -> {
             List<AccountGroupResponse> groupList = accountGroupApi.getAccountGroupByOrgId(id);
             if (groupList != null && groupList.size() > 0) {
                 groupList.forEach(group -> {
                     //2、删除学生，不删除教师
-                    List<AccountGroupInfoResponse> infoList = new ArrayList<>();
+                    List<AccountGroupInfoResponse> infoList = accountGroupInfoApi.getAccountGroupInfoByOrgIdAndAccountId(id,group.getAccountId());
                     if(infoList == null || infoList.size() == 0) {
                         //2.1、说明不是教师，是学生
                         accountIds.add(group.getAccountId());

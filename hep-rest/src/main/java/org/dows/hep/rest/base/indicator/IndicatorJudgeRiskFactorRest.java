@@ -1,13 +1,13 @@
 package org.dows.hep.rest.base.indicator;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeRiskFactorRequest;
-import org.dows.hep.api.base.indicator.request.DecimalRequest;
-import org.dows.hep.api.base.indicator.request.UpdateIndicatorJudgeRiskFactorRequest;
-import org.dows.hep.api.base.indicator.request.UpdateStatusIndicatorJudgeRiskFactorRequest;
+import org.dows.hep.api.base.indicator.request.*;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponse;
+import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponseRs;
+import org.dows.hep.api.constant.RsPageConstant;
 import org.dows.hep.biz.base.indicator.IndicatorJudgeRiskFactorBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +25,47 @@ import java.util.List;
 @Tag(name = "判断指标危险因素", description = "判断指标危险因素")
 public class IndicatorJudgeRiskFactorRest {
     private final IndicatorJudgeRiskFactorBiz indicatorJudgeRiskFactorBiz;
+
+    @Operation(summary = "Rs创建或保存查看指标危险因素类")
+    @PostMapping("v1/baseIndicator/indicatorJudgeRiskFactor/createOrUpdateRs")
+    public void createOrUpdateRs(@RequestBody @Validated CreateOrUpdateIndicatorJudgeRiskFactorRequestRs createOrUpdateIndicatorJudgeRiskFactorRequestRs) {
+        indicatorJudgeRiskFactorBiz.createOrUpdateRs(createOrUpdateIndicatorJudgeRiskFactorRequestRs);
+    }
+
+    @Operation(summary = "Rs批量删除")
+    @DeleteMapping("v1/baseIndicator/indicatorJudgeRiskFactor/batchDeleteRs")
+    public void batchDeleteRs(@RequestBody List<String> indicatorJudgeRiskFactorIdList) {
+        indicatorJudgeRiskFactorBiz.batchDeleteRs(indicatorJudgeRiskFactorIdList);
+    }
+
+    @Operation(summary = "Rs更改启用状态")
+    @PutMapping("v1/baseIndicator/indicatorJudgeRiskFactor/updateStatusRs")
+    public void updateStatusRs(
+        @RequestParam String indicatorJudgeRiskFactorId,
+        @RequestParam Integer status) {
+        indicatorJudgeRiskFactorBiz.updateStatusRs(indicatorJudgeRiskFactorId, status);
+    }
+
+    @Operation(summary = "Rs获取查看指标危险因素类")
+    @GetMapping("v1/baseIndicator/indicatorJudgeRiskFactor/getRs")
+    public IndicatorJudgeRiskFactorResponseRs getRs(@RequestParam @Validated String indicatorJudgeRiskFactorId) {
+        return indicatorJudgeRiskFactorBiz.getRs(indicatorJudgeRiskFactorId);
+    }
+
+    @Operation(summary = "Rs分页筛选查看指标危险因素类")
+    @GetMapping("v1/baseIndicator/indicatorJudgeRiskFactor/pageRs")
+    public IPage<IndicatorJudgeRiskFactorResponseRs> pageRs(
+        @RequestParam(required = false, defaultValue = RsPageConstant.PAGE_NO) Long pageNo,
+        @RequestParam(required = false, defaultValue = RsPageConstant.PAGE_SIZE) Long pageSize,
+        @RequestParam(required = false, defaultValue = RsPageConstant.ORDER) String order,
+        @RequestParam(required = false, defaultValue = RsPageConstant.ASC) Boolean asc,
+        @RequestParam(required = false) String appId,
+        @RequestParam(required = false) String indicatorFuncId,
+        @RequestParam(required = false) String name,
+        @RequestParam(required = false) String indicatorCategoryId,
+        @RequestParam(required = false) Integer status) {
+        return indicatorJudgeRiskFactorBiz.pageRs(pageNo,pageSize,order,asc, appId,indicatorFuncId,name,indicatorCategoryId,status);
+    }
 
     /**
     * 创建危险因素
@@ -44,7 +85,7 @@ public class IndicatorJudgeRiskFactorRest {
     */
     @Operation(summary = "删除判断指标危险因素")
     @DeleteMapping("v1/baseIndicator/indicatorJudgeRiskFactor/deleteIndicatorJudgeRiskFactor")
-    public void deleteIndicatorJudgeRiskFactor(@Validated String indicatorJudgeRiskFactorId ) {
+    public void deleteIndicatorJudgeRiskFactor(@Validated String indicatorJudgeRiskFactorId) {
         indicatorJudgeRiskFactorBiz.deleteIndicatorJudgeRiskFactor(indicatorJudgeRiskFactorId);
     }
 
