@@ -153,7 +153,7 @@ public class OrgBiz {
             if (groupList != null && groupList.size() > 0) {
                 groupList.forEach(group -> {
                     //2、删除学生，不删除教师
-                    List<AccountGroupInfoResponse> infoList = new ArrayList<>();
+                    List<AccountGroupInfoResponse> infoList = accountGroupInfoApi.getAccountGroupInfoByOrgIdAndAccountId(id,group.getAccountId());
                     if(infoList == null || infoList.size() == 0) {
                         //2.1、说明不是教师，是学生
                         accountIds.add(group.getAccountId());
