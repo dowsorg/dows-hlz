@@ -184,9 +184,7 @@ public class QuestionInstanceBiz {
                 .in(questionSearch.getCategIdList() != null && !questionSearch.getCategIdList().isEmpty(), QuestionInstanceEntity::getQuestionCategId, questionSearch.getCategIdList())
                 .list();
 
-        return entityList.stream()
-                .map(item -> BeanUtil.copyProperties(item, QuestionResponse.class))
-                .collect(Collectors.toList());
+        return BeanUtil.copyToList(entityList, QuestionResponse.class);
     }
 
     /**
