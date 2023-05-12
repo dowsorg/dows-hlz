@@ -51,7 +51,7 @@ public class OrgRest {
     public String addClass(@RequestBody AccountOrgRequest request, @RequestParam String accountId, HttpServletRequest servletRequest) {
         String token = servletRequest.getHeader("token");
         Map<String, Object> map = JwtUtil.parseJWT(token, EnumToken.PROPERTIES_JWT_KEY.getStr());
-        //1、获取登录账户和名称
+        //1、获取登录账户和角色
         String loginId = map.get("accountId").toString();
         return orgBiz.addClass(request,accountId,loginId);
     }

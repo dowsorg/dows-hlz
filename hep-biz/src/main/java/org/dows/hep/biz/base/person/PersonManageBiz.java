@@ -1,11 +1,15 @@
 package org.dows.hep.biz.base.person;
 
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.api.*;
+import org.dows.account.biz.enums.EnumAccountStatusCode;
+import org.dows.account.biz.exception.AccountException;
 import org.dows.account.request.AccountInstanceRequest;
 import org.dows.account.request.AccountUserRequest;
 import org.dows.account.response.*;
@@ -14,7 +18,9 @@ import org.dows.hep.api.base.person.response.PersonInstanceResponse;
 import org.dows.hep.api.tenant.casus.request.CasePersonIndicatorFuncRequest;
 import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.entity.CasePersonIndicatorFuncEntity;
+import org.dows.hep.entity.HepArmEntity;
 import org.dows.hep.service.CasePersonIndicatorFuncService;
+import org.dows.hep.service.HepArmService;
 import org.dows.sequence.api.IdGenerator;
 import org.dows.user.api.api.UserExtinfoApi;
 import org.dows.user.api.api.UserInstanceApi;
@@ -55,6 +61,8 @@ public class PersonManageBiz {
     private final IdGenerator idGenerator;
 
     private final CasePersonIndicatorFuncService casePersonIndicatorFuncService;
+
+    private final HepArmService hepArmService;
 
     /**
      * @param
@@ -341,14 +349,38 @@ public class PersonManageBiz {
      * @开始时间:
      * @创建时间: 2023/4/20 20:04
      */
-    public IPage<AccountInstanceResponse> listTeacherOrStudent(AccountInstanceRequest request) {
-        //1、获取所有accountIds
+    public IPage<AccountInstanceResponse> listTeacherOrStudent(AccountInstanceRequest request,String accountId) {
         Set<String> accountIds = new HashSet<>();
-        List<AccountInstanceResponse> responses = accountInstanceApi.getAccountInstanceList(AccountInstanceRequest.builder().appId(request.getAppId()).build());
-        //2、将accountIds传入
-        responses.forEach(res -> {
-            accountIds.add(res.getAccountId());
-        });
+        //1、如果是教师，只能查看该教师下面的班级
+        if(StringUtils.isNotEmpty(accountId)){
+            List<HepArmEntity> armList = hepArmService.lambdaQuery()
+                    .eq(HepArmEntity::getAccountId,accountId)
+                    .eq(HepArmEntity::getDeleted,false)
+                    .list();
+            if(armList != null && armList.size() > 0){
+                Set<String> orgIds = new HashSet<>();
+                armList.forEach(arm->{
+                    orgIds.add(arm.getOrgId());
+                });
+                //1.1、根据机构ID找到对应的成员
+                if(orgIds != null && orgIds.size() > 0){
+                    orgIds.forEach(orgId->{
+                        List<AccountGroupResponse> groupList = accountGroupApi.getAccountGroupByOrgId(orgId);
+                        if(groupList != null && groupList.size() > 0){
+                            groupList.forEach(group->{
+                                accountIds.add(group.getAccountId());
+                            });
+                        }
+                    });
+                }
+            }
+        }else {
+            //2、管理员获取所有accountIds
+            List<AccountInstanceResponse> responses = accountInstanceApi.getAccountInstanceList(AccountInstanceRequest.builder().appId(request.getAppId()).build());
+            responses.forEach(res -> {
+                accountIds.add(res.getAccountId());
+            });
+        }
         request.setAccountIds(accountIds);
         return accountInstanceApi.customAccountInstanceList(request);
     }
@@ -466,6 +498,21 @@ public class PersonManageBiz {
                     });
                     //1.5、删除上述机构下的所有成员及机构相关信息
                     accountOrgApi.batchDeleteAccountOrgsByOrgIds(orgIdsList);
+                    //1.6、删除与业务表的映射关系
+                    //1.7、删除业务映射关系
+                    List<HepArmEntity> hepArmList = hepArmService.lambdaQuery()
+                            .eq(HepArmEntity::getAccountId, accountId)
+                            .eq(HepArmEntity::getDeleted, false)
+                            .list();
+                    if(hepArmList != null && hepArmList.size() > 0) {
+                        LambdaUpdateWrapper<HepArmEntity> armWrapper = Wrappers.lambdaUpdate(HepArmEntity.class);
+                        armWrapper.set(HepArmEntity::getDeleted, true)
+                                .eq(HepArmEntity::getAccountId, accountId);
+                        boolean flag3 = hepArmService.update(armWrapper);
+                        if (!flag3) {
+                            throw new AccountException(EnumAccountStatusCode.ACCOUNT_UPDATE_FAIL_EXCEPTION);
+                        }
+                    }
                 }
                 //1.6、删除老师账号相关信息
                 accountInstanceApi.deleteAccountInstanceByAccountIds(Arrays.asList(accountId).stream().collect(Collectors.toSet()));

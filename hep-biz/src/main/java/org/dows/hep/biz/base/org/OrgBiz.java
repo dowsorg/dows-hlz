@@ -10,6 +10,8 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.api.*;
+import org.dows.account.biz.enums.EnumAccountStatusCode;
+import org.dows.account.biz.exception.AccountException;
 import org.dows.account.request.*;
 import org.dows.account.response.*;
 import org.dows.hep.api.enums.EnumCaseFee;
@@ -56,6 +58,7 @@ public class OrgBiz {
     private final CasePersonService casePersonService;
     private final UserExtinfoApi userExtinfoApi;
     private final HepArmService hepArmService;
+    private final AccountRoleApi accountRoleApi;
 
     /**
      * @param
@@ -88,16 +91,19 @@ public class OrgBiz {
                 .orgId(orgId)
                 .appId(request.getAppId())
                 .build());
-        //5、创建机构和登录账户的映射关系
-        HepArmEntity hepArmEntity = HepArmEntity
-                .builder()
-                .armId(idGenerator.nextIdStr())
-                .accountId(loginId)
-                .orgId(orgId)
-                .tenantId(request.getTenantId())
-                .appId(request.getAppId())
-                .build();
-        hepArmService.save(hepArmEntity);
+        //5、只创建教师和班级的映射关系
+        AccountRoleResponse roleResponse = accountRoleApi.getAccountRoleByPrincipalId(loginId);
+        if(roleResponse.getRoleName().equals("教师")) {
+            HepArmEntity hepArmEntity = HepArmEntity
+                    .builder()
+                    .armId(idGenerator.nextIdStr())
+                    .accountId(loginId)
+                    .orgId(orgId)
+                    .tenantId(request.getTenantId())
+                    .appId(request.getAppId())
+                    .build();
+            hepArmService.save(hepArmEntity);
+        }
         return orgId;
     }
 
@@ -173,13 +179,27 @@ public class OrgBiz {
                     }
                 });
             }
+            //3、删除映射关系
+            List<HepArmEntity> hepArmList = hepArmService.lambdaQuery()
+                    .eq(HepArmEntity::getOrgId, id)
+                    .eq(HepArmEntity::getDeleted, false)
+                    .list();
+            if(hepArmList != null && hepArmList.size() > 0) {
+                LambdaUpdateWrapper<HepArmEntity> armWrapper = Wrappers.lambdaUpdate(HepArmEntity.class);
+                armWrapper.set(HepArmEntity::getDeleted, true)
+                        .eq(HepArmEntity::getOrgId, id);
+                boolean flag3 = hepArmService.update(armWrapper);
+                if (!flag3) {
+                    throw new AccountException(EnumAccountStatusCode.ACCOUNT_UPDATE_FAIL_EXCEPTION);
+                }
+            }
         });
-        //3、删除组织架构
+        //4、删除组织架构
         Integer count1 = accountOrgApi.batchDeleteAccountOrgs(ids);
         if (count1 == 0) {
             flag = false;
         }
-        //4、删除账户实例
+        //5、删除账户实例
         if(accountIds != null && accountIds.size() > 0) {
             Integer count2 = accountInstanceApi.deleteAccountInstanceByAccountIds(accountIds);
             if (count2 == 0) {
@@ -210,8 +230,10 @@ public class OrgBiz {
               armList.forEach(arm->{
                   ids.add(arm.getOrgId());
               });
-              request.setIds(ids);
+          }else{
+              ids.add("fill");
           }
+            request.setIds(ids);
         }
         IPage<AccountOrgResponse> accountOrgResponse = accountOrgApi.customAccountOrgList(request);
         //2、总人数剔除教师一个
