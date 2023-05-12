@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.QuestionAccessAuthEnum;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.QuestionRequest;
@@ -65,6 +66,10 @@ public class MaterialQuestionTypeHandler implements QuestionTypeHandler {
     @Override
     public boolean update(QuestionRequest questionRequest) {
         // update base
+        QuestionInstanceEntity oriEntity = getById(questionRequest.getQuestionInstanceId());
+        if (BeanUtil.isEmpty(oriEntity)) {
+            throw new BizException("数据不存在");
+        }
         QuestionInstanceEntity questionInstanceEntity = BeanUtil.copyProperties(questionRequest, QuestionInstanceEntity.class);
         boolean updInstanceRes = questionInstanceService.updateById(questionInstanceEntity);
 
@@ -92,9 +97,7 @@ public class MaterialQuestionTypeHandler implements QuestionTypeHandler {
         }
 
         // instance
-        LambdaQueryWrapper<QuestionInstanceEntity> instanceWrapper = new LambdaQueryWrapper<QuestionInstanceEntity>()
-                .eq(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceId);
-        QuestionInstanceEntity questionInstance = questionInstanceService.getOne(instanceWrapper);
+        QuestionInstanceEntity questionInstance = getById(questionInstanceId);
         if (BeanUtil.isEmpty(questionInstance)) {
             return new QuestionResponse();
         }
@@ -113,6 +116,12 @@ public class MaterialQuestionTypeHandler implements QuestionTypeHandler {
         result.setChildren(responseList);
 
         return result;
+    }
+
+    private QuestionInstanceEntity getById(String questionInstanceId) {
+        LambdaQueryWrapper<QuestionInstanceEntity> instanceWrapper = new LambdaQueryWrapper<QuestionInstanceEntity>()
+                .eq(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceId);
+        return questionInstanceService.getOne(instanceWrapper);
     }
 
 }

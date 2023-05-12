@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.QuestionAccessAuthEnum;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.QuestionRequest;
@@ -52,9 +53,7 @@ public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
 
     @Override
     public QuestionResponse get(String questionInstanceId) {
-        LambdaQueryWrapper<QuestionInstanceEntity> queryWrapper = new LambdaQueryWrapper<QuestionInstanceEntity>()
-                .eq(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceId);
-        QuestionInstanceEntity questionInstance = questionInstanceService.getOne(queryWrapper);
+        QuestionInstanceEntity questionInstance = getById(questionInstanceId);
         if (BeanUtil.isEmpty(questionInstance)) {
             return new QuestionResponse();
         }
@@ -63,6 +62,12 @@ public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
         setChildren(questionResponse);
 
         return questionResponse;
+    }
+
+    private QuestionInstanceEntity getById(String questionInstanceId) {
+        LambdaQueryWrapper<QuestionInstanceEntity> queryWrapper = new LambdaQueryWrapper<QuestionInstanceEntity>()
+                .eq(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceId);
+        return questionInstanceService.getOne(queryWrapper);
     }
 
     private void setChildren(QuestionResponse questionResponse) {
@@ -113,6 +118,11 @@ public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
         if (StrUtil.isBlank(qr.getQuestionInstanceId())) {
             saveNode(qr);
         } else {
+            QuestionInstanceEntity oriEntity = getById(qr.getQuestionInstanceId());
+            if (BeanUtil.isEmpty(oriEntity)) {
+               throw new BizException("数据不存在");
+            }
+
             QuestionInstanceEntity updEntity = BeanUtil.copyProperties(qr, QuestionInstanceEntity.class);
             questionInstanceService.updateById(updEntity);
         }
