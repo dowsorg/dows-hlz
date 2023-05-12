@@ -45,19 +45,8 @@ public class QuestionCategBiz {
             return "";
         }
 
-        String questionCategId = questionCategory.getQuestionCategId();
-        if (StrUtil.isBlank(questionCategId)) {
-            questionCategory.setQuestionCategId(baseBiz.getIdStr());
-            if (StrUtil.isBlank(questionCategory.getQuestionCategPid())) {
-                questionCategory.setQuestionCategPid(baseBiz.getQuestionInstancePid());
-            }
-        } else {
-            QuestionCategoryEntity questionCategoryEntity = getQuestionCategory(questionCategId);
-            if (BeanUtil.isEmpty(questionCategoryEntity)) {
-                throw new BizException("数据不存在");
-            }
-            questionCategory.setId(questionCategoryEntity.getId());
-        }
+        // check
+        checkBeforeSaveOrUpd(questionCategory);
 
         // handle
         QuestionCategoryEntity questionCategoryEntity = BeanUtil.copyProperties(questionCategory, QuestionCategoryEntity.class);
@@ -221,6 +210,22 @@ public class QuestionCategBiz {
         List<QuestionCategoryResponse> children = currentNode.getChildren();
         for (QuestionCategoryResponse cNode : children) {
             traverse(cNode, sources);
+        }
+    }
+
+    private void checkBeforeSaveOrUpd(QuestionCategoryRequest questionCategory) {
+        String questionCategId = questionCategory.getQuestionCategId();
+        if (StrUtil.isBlank(questionCategId)) {
+            questionCategory.setQuestionCategId(baseBiz.getIdStr());
+            if (StrUtil.isBlank(questionCategory.getQuestionCategPid())) {
+                questionCategory.setQuestionCategPid(baseBiz.getQuestionInstancePid());
+            }
+        } else {
+            QuestionCategoryEntity questionCategoryEntity = getQuestionCategory(questionCategId);
+            if (BeanUtil.isEmpty(questionCategoryEntity)) {
+                throw new BizException("数据不存在");
+            }
+            questionCategory.setId(questionCategoryEntity.getId());
         }
     }
 }
