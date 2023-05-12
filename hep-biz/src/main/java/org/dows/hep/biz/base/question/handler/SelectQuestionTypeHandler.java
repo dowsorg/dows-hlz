@@ -53,7 +53,7 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
     public String save(QuestionRequest questionRequest) {
         // base-info
         questionRequest.setBizCode(questionRequest.getBizCode() == null ? QuestionAccessAuthEnum.PRIVATE_VIEWING : questionRequest.getBizCode());
-        questionRequest.setAppId(questionRequest.getAppId() == null ? questionDomainBaseBiz.getAppId() : questionDomainBaseBiz.getAppId());
+        questionRequest.setAppId(questionRequest.getAppId() == null ? questionDomainBaseBiz.getAppId() : questionRequest.getAppId());
         questionRequest.setQuestionInstancePid(questionDomainBaseBiz.getQuestionInstancePid());
         questionRequest.setQuestionInstanceId(questionDomainBaseBiz.getIdStr());
         questionRequest.setQuestionIdentifier(questionDomainBaseBiz.getIdStr());

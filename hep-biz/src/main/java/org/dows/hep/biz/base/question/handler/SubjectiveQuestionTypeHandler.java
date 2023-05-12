@@ -27,7 +27,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
 
-    private final QuestionDomainBaseBiz questionDomainBaseBiz;
+    private final QuestionDomainBaseBiz baseBiz;
     private final QuestionInstanceService questionInstanceService;
 
     @PostConstruct
@@ -40,8 +40,8 @@ public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
     @Override
     public String save(QuestionRequest questionRequest) {
         questionRequest.setBizCode(questionRequest.getBizCode() == null ? QuestionAccessAuthEnum.PRIVATE_VIEWING : questionRequest.getBizCode());
-        questionRequest.setAppId(questionDomainBaseBiz.getAppId());
-        questionRequest.setQuestionInstancePid(questionDomainBaseBiz.getQuestionInstancePid());
+        questionRequest.setAppId(baseBiz.getAppId());
+        questionRequest.setQuestionInstancePid(baseBiz.getQuestionInstancePid());
         return traverseSave(questionRequest);
     }
 
@@ -89,46 +89,6 @@ public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
         childrenResponse.forEach(this::setChildren);
     }
 
-    private Boolean traverseUpd(QuestionRequest node) {
-        if (node == null) {
-            return Boolean.FALSE;
-        }
-
-        // 处理当前节点
-        boolean updRes = updNode(node);
-
-        // 判空
-        if (node.getChildren() == null || node.getChildren().isEmpty()) {
-            return Boolean.FALSE;
-        }
-
-        // 遍历子节点
-        for (QuestionRequest qr : node.getChildren()) {
-            if (StrUtil.isBlank(qr.getQuestionInstanceId())) {
-                qr.setAppId(node.getAppId());
-                qr.setQuestionInstancePid(node.getQuestionInstanceId());
-                qr.setQuestionType(qr.getQuestionType() == null ? node.getQuestionType() : qr.getQuestionType());
-            }
-            traverseUpd(qr);
-        }
-        return updRes;
-    }
-
-    private Boolean updNode(QuestionRequest qr) {
-        if (StrUtil.isBlank(qr.getQuestionInstanceId())) {
-            saveNode(qr);
-        } else {
-            QuestionInstanceEntity oriEntity = getById(qr.getQuestionInstanceId());
-            if (BeanUtil.isEmpty(oriEntity)) {
-               throw new BizException("数据不存在");
-            }
-
-            QuestionInstanceEntity updEntity = BeanUtil.copyProperties(qr, QuestionInstanceEntity.class);
-            questionInstanceService.updateById(updEntity);
-        }
-        return true;
-    }
-
     private String traverseSave(QuestionRequest node) {
         if (node == null) {
             return "";
@@ -154,14 +114,57 @@ public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
         return questionInstanceId;
     }
 
+    private Boolean traverseUpd(QuestionRequest node) {
+        if (node == null) {
+            return Boolean.FALSE;
+        }
+
+        // 处理当前节点
+        Boolean updRes = updNode(node);
+
+        // 判空
+        if (node.getChildren() == null || node.getChildren().isEmpty()) {
+            return Boolean.FALSE;
+        }
+
+        // 遍历子节点
+        for (QuestionRequest qr : node.getChildren()) {
+            qr.setAppId(node.getAppId());
+            qr.setBizCode(node.getBizCode());
+            qr.setQuestionInstancePid(node.getQuestionInstanceId());
+            qr.setQuestionType(qr.getQuestionType() == null ? node.getQuestionType() : qr.getQuestionType());
+            traverseUpd(qr);
+        }
+        return updRes;
+    }
+
     private String saveNode(QuestionRequest qr) {
         // save instance
         QuestionInstanceEntity questionInstanceEntity = BeanUtil.copyProperties(qr, QuestionInstanceEntity.class);
-        questionInstanceEntity.setQuestionInstanceId(questionDomainBaseBiz.getIdStr());
-        questionInstanceEntity.setQuestionIdentifier(questionDomainBaseBiz.getIdStr());
-        questionInstanceEntity.setVer(questionDomainBaseBiz.getLastVer());
+        questionInstanceEntity.setBizCode(qr.getBizCode() == null ? QuestionAccessAuthEnum.PRIVATE_VIEWING.name() : qr.getBizCode().name());
+        questionInstanceEntity.setAppId(qr.getAppId() == null ? baseBiz.getAppId() : qr.getAppId());
+        questionInstanceEntity.setQuestionInstanceId(baseBiz.getIdStr());
+        questionInstanceEntity.setQuestionIdentifier(baseBiz.getIdStr());
+        questionInstanceEntity.setVer(baseBiz.getLastVer());
         questionInstanceEntity.setQuestionType(qr.getQuestionType().getCode());
         questionInstanceService.save(questionInstanceEntity);
         return questionInstanceEntity.getQuestionInstanceId();
+    }
+
+    private Boolean updNode(QuestionRequest qr) {
+        if (StrUtil.isBlank(qr.getQuestionInstanceId())) {
+            saveNode(qr);
+        } else {
+            QuestionInstanceEntity oriEntity = getById(qr.getQuestionInstanceId());
+            if (BeanUtil.isEmpty(oriEntity)) {
+                throw new BizException("数据不存在");
+            }
+            qr.setId(oriEntity.getId());
+            qr.setAppId(baseBiz.getAppId());
+
+            QuestionInstanceEntity updEntity = BeanUtil.copyProperties(qr, QuestionInstanceEntity.class);
+            questionInstanceService.updateById(updEntity);
+        }
+        return true;
     }
 }
