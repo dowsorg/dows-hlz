@@ -157,10 +157,10 @@ public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
                 throw new BizException("数据不存在");
             }
             qr.setId(oriEntity.getId());
-            qr.setAppId(baseBiz.getAppId());
-
             QuestionInstanceEntity updEntity = BeanUtil.copyProperties(qr, QuestionInstanceEntity.class);
             questionInstanceService.updateById(updEntity);
+
+            qr.setAppId(oriEntity.getAppId());
         }
         return true;
     }

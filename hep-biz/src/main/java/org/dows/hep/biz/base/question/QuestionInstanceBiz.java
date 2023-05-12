@@ -52,7 +52,7 @@ public class QuestionInstanceBiz {
      */
     @Transactional
     public String saveQuestion(QuestionRequest question) {
-        // base-info
+        // 问题会嵌套，公共数据在外层配置
         question.setAppId(question.getAppId() == null ? baseBiz.getAppId() : question.getAppId());
         question.setQuestionInstancePid(baseBiz.getQuestionInstancePid());
         question.setBizCode(question.getBizCode() == null ? QuestionAccessAuthEnum.PRIVATE_VIEWING : question.getBizCode());

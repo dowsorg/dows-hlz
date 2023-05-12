@@ -89,11 +89,13 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
     @Transactional
     @Override
     public boolean update(QuestionRequest questionRequest) {
-        // update base-info
+        // base-info
+        // get ori data
         QuestionInstanceEntity oriEntity = getById(questionRequest.getQuestionInstanceId());
         if (BeanUtil.isEmpty(oriEntity)) {
             return Boolean.FALSE;
         }
+        // update base-info
         questionRequest.setId(oriEntity.getId());
         QuestionInstanceEntity questionInstanceEntity = BeanUtil.copyProperties(questionRequest, QuestionInstanceEntity.class);
         boolean updInstanceRes = questionInstanceService.updateById(questionInstanceEntity);
@@ -105,13 +107,16 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
         }
 
         // save or upd answers and options
+        // get instance-info
+        String appId = oriEntity.getAppId();
+        String questionInstanceId = oriEntity.getQuestionInstanceId();
         // save or upd answers
         List<QuestionAnswersEntity> answerList = optionWithAnswerList.stream()
                 .map(item -> {
                     QuestionAnswersEntity questionAnswersEntity = BeanUtil.copyProperties(item, QuestionAnswersEntity.class);
                     if (StrUtil.isBlank(questionAnswersEntity.getQuestionAnswerId())) {
-                        questionAnswersEntity.setAppId(oriEntity.getAppId());
-                        questionAnswersEntity.setQuestionInstanceId(oriEntity.getQuestionInstanceId());
+                        questionAnswersEntity.setAppId(appId);
+                        questionAnswersEntity.setQuestionInstanceId(questionInstanceId);
                         questionAnswersEntity.setQuestionOptionsId(questionDomainBaseBiz.getIdStr());
                         questionAnswersEntity.setQuestionAnswerId(questionDomainBaseBiz.getIdStr());
                     }

@@ -73,16 +73,24 @@ public class MaterialQuestionTypeHandler implements QuestionTypeHandler {
         if (BeanUtil.isEmpty(oriEntity)) {
             throw new BizException("数据不存在");
         }
+        questionRequest.setId(oriEntity.getId());
         QuestionInstanceEntity questionInstanceEntity = BeanUtil.copyProperties(questionRequest, QuestionInstanceEntity.class);
         boolean updInstanceRes = questionInstanceService.updateById(questionInstanceEntity);
 
-        // children
+        // update children
+        String appId = oriEntity.getAppId();
+        QuestionAccessAuthEnum bizCode = questionRequest.getBizCode();
+        String questionInstanceId = oriEntity.getQuestionInstanceId();
+
         List<QuestionRequest> children = questionRequest.getChildren();
         for (QuestionRequest qr : children) {
+            qr.setAppId(appId);
+            qr.setBizCode(bizCode);
+            qr.setQuestionInstancePid(questionInstanceId);
+
             String curQuestionInstanceId = qr.getQuestionInstanceId();
             QuestionTypeEnum curQuestionTypeEnum = qr.getQuestionType();
             QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(curQuestionTypeEnum);
-
             if (StrUtil.isBlank(curQuestionInstanceId)) {
                 questionTypeHandler.save(qr);
             } else {
