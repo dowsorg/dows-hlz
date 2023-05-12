@@ -1,6 +1,5 @@
 package org.dows.hep.api.base.question.response;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,12 +16,6 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(name = "Question 对象", title = "问题Response")
 public class QuestionResponse {
-    @Schema(title = "应用ID")
-    private String appId;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Schema(title = "数据库ID")
-    private Long id;
 
     @Schema(title = "问题ID-更新需要")
     private String questionInstanceId;
@@ -62,4 +55,5 @@ public class QuestionResponse {
 
     @Schema(title = "子问题")
     private List<QuestionResponse> children;
+
 }

@@ -96,13 +96,18 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
     @Override
     public boolean update(QuestionRequest questionRequest) {
         // update base-info
+        QuestionInstanceEntity oriEntity = getById(questionRequest.getQuestionInstanceId());
+        if (BeanUtil.isEmpty(oriEntity)) {
+            return Boolean.FALSE;
+        }
+        questionRequest.setId(oriEntity.getId());
         QuestionInstanceEntity questionInstanceEntity = BeanUtil.copyProperties(questionRequest, QuestionInstanceEntity.class);
         boolean updInstanceRes = questionInstanceService.updateById(questionInstanceEntity);
 
         // list options and answers
         List<QuestionOptionWithAnswerRequest> optionWithAnswerList = questionRequest.getOptionWithAnswerList();
         if (optionWithAnswerList == null || optionWithAnswerList.isEmpty()) {
-            return true;
+            return Boolean.TRUE;
         }
 
         // save or upd answers and options
@@ -111,8 +116,8 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
                 .map(item -> {
                     QuestionAnswersEntity questionAnswersEntity = BeanUtil.copyProperties(item, QuestionAnswersEntity.class);
                     if (StrUtil.isBlank(questionAnswersEntity.getQuestionAnswerId())) {
-                        questionAnswersEntity.setAppId(questionInstanceEntity.getAppId());
-                        questionAnswersEntity.setQuestionInstanceId(questionInstanceEntity.getQuestionInstanceId());
+                        questionAnswersEntity.setAppId(oriEntity.getAppId());
+                        questionAnswersEntity.setQuestionInstanceId(oriEntity.getQuestionInstanceId());
                         questionAnswersEntity.setQuestionOptionsId(questionDomainBaseBiz.getIdStr());
                         questionAnswersEntity.setQuestionAnswerId(questionDomainBaseBiz.getIdStr());
                     }
@@ -132,9 +137,7 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
     @Override
     public QuestionResponse get(String questionInstanceId) {
         // instance
-        LambdaQueryWrapper<QuestionInstanceEntity> instanceWrapper = new LambdaQueryWrapper<QuestionInstanceEntity>()
-                .eq(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceId);
-        QuestionInstanceEntity questionInstance = questionInstanceService.getOne(instanceWrapper);
+        QuestionInstanceEntity questionInstance = getById(questionInstanceId);
         if (BeanUtil.isEmpty(questionInstance)) {
             return new QuestionResponse();
         }
@@ -152,6 +155,12 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
         List<QuestionOptionWithAnswerResponse> optionWithAnswerResponses = BeanUtil.copyToList(answersEntityList, QuestionOptionWithAnswerResponse.class);
         result.setOptionWithAnswerList(optionWithAnswerResponses);
         return result;
+    }
+
+    private QuestionInstanceEntity getById(String questionInstanceId) {
+        LambdaQueryWrapper<QuestionInstanceEntity> instanceWrapper = new LambdaQueryWrapper<QuestionInstanceEntity>()
+                .eq(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceId);
+        return questionInstanceService.getOne(instanceWrapper);
     }
 
 }

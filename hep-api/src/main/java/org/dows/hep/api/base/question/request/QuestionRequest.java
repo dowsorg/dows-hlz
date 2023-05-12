@@ -27,10 +27,6 @@ public class QuestionRequest {
     @Schema(title = "应用ID")
     private String appId;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Schema(title = "数据库ID")
-    private Long id;
-
     @Schema(title = "问题ID-更新需要")
     private String questionInstanceId;
 
@@ -73,6 +69,11 @@ public class QuestionRequest {
 
 
     // JsonIgnore
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @JsonIgnore
+    @Schema(title = "数据库ID")
+    private Long id;
+
     @Schema(title = "问题PID")
     @JsonIgnore
     private String questionInstancePid;

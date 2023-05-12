@@ -36,7 +36,7 @@ public class QuestionCategBiz {
      * @author fhb
      * @description
      * @date 2023/5/11 21:22
-     * @param 
+     * @param
      * @return 
      */
     @Transactional
@@ -48,7 +48,9 @@ public class QuestionCategBiz {
         String questionCategId = questionCategory.getQuestionCategId();
         if (StrUtil.isBlank(questionCategId)) {
             questionCategory.setQuestionCategId(baseBiz.getIdStr());
-            questionCategory.setQuestionCategPid(baseBiz.getQuestionInstancePid());
+            if (StrUtil.isBlank(questionCategory.getQuestionCategPid())) {
+                questionCategory.setQuestionCategPid(baseBiz.getQuestionInstancePid());
+            }
         } else {
             QuestionCategoryEntity questionCategoryEntity = getQuestionCategory(questionCategId);
             if (BeanUtil.isEmpty(questionCategoryEntity)) {
