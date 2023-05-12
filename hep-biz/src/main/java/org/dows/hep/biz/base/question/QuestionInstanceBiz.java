@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.hep.api.base.question.QuestionAccessAuthEnum;
 import org.dows.hep.api.base.question.QuestionCloneEnum;
 import org.dows.hep.api.base.question.QuestionEnabledEnum;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
@@ -51,6 +52,11 @@ public class QuestionInstanceBiz {
      */
     @Transactional
     public String saveQuestion(QuestionRequest question) {
+        // base-info
+        question.setAppId(question.getAppId() == null ? baseBiz.getAppId() : question.getAppId());
+        question.setQuestionInstancePid(baseBiz.getQuestionInstancePid());
+        question.setBizCode(question.getBizCode() == null ? QuestionAccessAuthEnum.PRIVATE_VIEWING : question.getBizCode());
+        question.setEnabled(QuestionEnabledEnum.ENABLED.getCode());
         return saveQue(question);
     }
 
