@@ -88,7 +88,7 @@ public class OrgBiz {
                 .orgId(orgId)
                 .appId(request.getAppId())
                 .build());
-        //5、创建机构和登录账户的映射关系，只创建和教师的映射关系
+        //5、创建机构和登录账户的映射关系，只创建教师和班级的映射关系
         if(role.equals("teacher")) {
             HepArmEntity hepArmEntity = HepArmEntity
                     .builder()
