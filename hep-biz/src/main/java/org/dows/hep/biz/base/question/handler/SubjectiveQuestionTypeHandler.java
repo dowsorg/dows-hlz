@@ -39,9 +39,6 @@ public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
     @Transactional
     @Override
     public String save(QuestionRequest questionRequest) {
-        questionRequest.setBizCode(questionRequest.getBizCode() == null ? QuestionAccessAuthEnum.PRIVATE_VIEWING : questionRequest.getBizCode());
-        questionRequest.setAppId(baseBiz.getAppId());
-        questionRequest.setQuestionInstancePid(baseBiz.getQuestionInstancePid());
         return traverseSave(questionRequest);
     }
 

@@ -5,8 +5,6 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.question.QuestionAccessAuthEnum;
-import org.dows.hep.api.base.question.QuestionEnabledEnum;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.QuestionOptionWithAnswerRequest;
 import org.dows.hep.api.base.question.request.QuestionRequest;
@@ -52,13 +50,9 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
     @Override
     public String save(QuestionRequest questionRequest) {
         // base-info
-        questionRequest.setBizCode(questionRequest.getBizCode() == null ? QuestionAccessAuthEnum.PRIVATE_VIEWING : questionRequest.getBizCode());
-        questionRequest.setAppId(questionRequest.getAppId() == null ? questionDomainBaseBiz.getAppId() : questionRequest.getAppId());
-        questionRequest.setQuestionInstancePid(questionDomainBaseBiz.getQuestionInstancePid());
         questionRequest.setQuestionInstanceId(questionDomainBaseBiz.getIdStr());
         questionRequest.setQuestionIdentifier(questionDomainBaseBiz.getIdStr());
         questionRequest.setVer(questionDomainBaseBiz.getLastVer());
-        questionRequest.setEnabled(QuestionEnabledEnum.ENABLED.getCode());
 
         // save base-info
         QuestionInstanceEntity questionInstanceEntity = BeanUtil.copyProperties(questionRequest, QuestionInstanceEntity.class);

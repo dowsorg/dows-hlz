@@ -16,6 +16,7 @@ import org.dows.hep.service.QuestionInstanceService;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -39,12 +40,11 @@ public class MaterialQuestionTypeHandler implements QuestionTypeHandler {
     @Transactional
     @Override
     public String save(QuestionRequest questionRequest) {
-        questionRequest.setBizCode(questionRequest.getBizCode() == null ? QuestionAccessAuthEnum.PRIVATE_VIEWING : questionRequest.getBizCode());
-        questionRequest.setAppId(baseBiz.getAppId());
-        questionRequest.setQuestionInstancePid(baseBiz.getQuestionInstancePid());
+        QuestionAccessAuthEnum bizCode = questionRequest.getBizCode();
         questionRequest.setQuestionInstanceId(baseBiz.getIdStr());
         questionRequest.setQuestionIdentifier(baseBiz.getIdStr());
         questionRequest.setVer(baseBiz.getLastVer());
+
 
         // save baseInfo
         QuestionInstanceEntity questionInstanceEntity = BeanUtil.copyProperties(questionRequest, QuestionInstanceEntity.class);
@@ -55,6 +55,9 @@ public class MaterialQuestionTypeHandler implements QuestionTypeHandler {
         List<QuestionRequest> children = questionRequest.getChildren();
         for (QuestionRequest qr : children) {
             qr.setQuestionInstancePid(questionInstanceEntity.getQuestionInstanceId());
+            qr.setAppId(questionInstanceEntity.getAppId());
+            qr.setBizCode(bizCode);
+
             QuestionTypeEnum curQuestionTypeEnum = qr.getQuestionType();
             QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(curQuestionTypeEnum);
             questionTypeHandler.save(qr);
@@ -110,9 +113,14 @@ public class MaterialQuestionTypeHandler implements QuestionTypeHandler {
         if (children == null || children.isEmpty()) {
             return result;
         }
-        List<QuestionResponse> responseList = children.stream()
-                .map(item -> BeanUtil.copyProperties(item, QuestionResponse.class))
-                .toList();
+
+        List<QuestionResponse> responseList = new ArrayList<>();
+        children.forEach(item -> {
+            QuestionTypeEnum questionTypeEnum = QuestionTypeEnum.getByCode(item.getQuestionType());
+            QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(questionTypeEnum);
+            QuestionResponse questionResponse = questionTypeHandler.get(item.getQuestionInstanceId());
+            responseList.add(questionResponse);
+        });
         result.setChildren(responseList);
 
         return result;
