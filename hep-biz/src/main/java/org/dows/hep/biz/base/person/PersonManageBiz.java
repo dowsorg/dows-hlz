@@ -1,11 +1,15 @@
 package org.dows.hep.biz.base.person;
 
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.api.*;
+import org.dows.account.biz.enums.EnumAccountStatusCode;
+import org.dows.account.biz.exception.AccountException;
 import org.dows.account.request.AccountInstanceRequest;
 import org.dows.account.request.AccountUserRequest;
 import org.dows.account.response.*;
@@ -493,6 +497,21 @@ public class PersonManageBiz {
                     });
                     //1.5、删除上述机构下的所有成员及机构相关信息
                     accountOrgApi.batchDeleteAccountOrgsByOrgIds(orgIdsList);
+                    //1.6、删除与业务表的映射关系
+                    //1.7、删除业务映射关系
+                    List<HepArmEntity> hepArmList = hepArmService.lambdaQuery()
+                            .eq(HepArmEntity::getAccountId, accountId)
+                            .eq(HepArmEntity::getDeleted, false)
+                            .list();
+                    if(hepArmList != null && hepArmList.size() > 0) {
+                        LambdaUpdateWrapper<HepArmEntity> armWrapper = Wrappers.lambdaUpdate(HepArmEntity.class);
+                        armWrapper.set(HepArmEntity::getDeleted, true)
+                                .eq(HepArmEntity::getAccountId, accountId);
+                        boolean flag3 = hepArmService.update(armWrapper);
+                        if (!flag3) {
+                            throw new AccountException(EnumAccountStatusCode.ACCOUNT_UPDATE_FAIL_EXCEPTION);
+                        }
+                    }
                 }
                 //1.6、删除老师账号相关信息
                 accountInstanceApi.deleteAccountInstanceByAccountIds(Arrays.asList(accountId).stream().collect(Collectors.toSet()));
