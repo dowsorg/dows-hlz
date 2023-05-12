@@ -142,7 +142,6 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
         }
         QuestionResponse result = BeanUtil.copyProperties(questionInstance, QuestionResponse.class);
 
-
         // options with answers
         List<QuestionAnswersEntity> answersEntityList = questionAnswersService.lambdaQuery()
                 .eq(QuestionAnswersEntity::getQuestionInstanceId, questionInstance.getQuestionInstanceId())

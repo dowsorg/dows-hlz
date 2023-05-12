@@ -20,10 +20,6 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(name = "CaseScheme 对象", title = "案例方案")
 public class CaseSchemeRequest{
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Schema(title = "数据库ID")
-    private Long id;
-
     @Schema(title = "方案ID")
     private String caseSchemeId;
 
@@ -69,6 +65,11 @@ public class CaseSchemeRequest{
     @Schema(title = "应用ID")
     @JsonIgnore
     private String appId;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @JsonIgnore
+    @Schema(title = "数据库ID")
+    private Long id;
 
     @Schema(title = "类别名")
     @JsonIgnore

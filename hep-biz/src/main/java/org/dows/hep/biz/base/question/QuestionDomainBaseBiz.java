@@ -17,7 +17,6 @@ public class QuestionDomainBaseBiz {
     private static final String LAST_VERSION = "SNAPSHOT";
 
     private final IdGenerator idGenerator;
-
     public String getAppId() {
         return "3";
     }

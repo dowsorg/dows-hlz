@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.request.QuestionSectionItemRequest;
 import org.dows.hep.api.base.question.request.QuestionSectionRequest;
 import org.dows.hep.api.base.question.response.QuestionSectionDimensionResponse;
@@ -59,14 +60,10 @@ public class TenantCaseSchemeBiz {
             return "";
         }
 
-        // save base-Info
-        if (StrUtil.isBlank(caseScheme.getCaseSchemeId())) {
-            caseScheme.setAppId(baseBiz.getAppId());
-            caseScheme.setCaseSchemeId(baseBiz.getIdStr());
-            caseScheme.setEnabled(caseScheme.getEnabled() == null ? EnumStatus.ENABLE.getCode() : caseScheme.getEnabled());
-            caseScheme.setSource(StrUtil.isBlank(caseScheme.getSource()) ? EnumSource.ADMIN.name() : caseScheme.getSource());
-        }
+        // check
+        checkBeforeSaveOrUpd(caseScheme);
 
+        // handle
         // save question-section
         QuestionSectionRequest questionSectionRequest = caseScheme2QS(caseScheme);
         String questionSectionId = questionSectionBiz.saveOrUpdQuestionSection(questionSectionRequest);
@@ -300,5 +297,21 @@ public class TenantCaseSchemeBiz {
         return caseSchemeEntityList.stream()
                 .map(item -> BeanUtil.copyProperties(item, CaseSchemeResponse.class))
                 .toList();
+    }
+
+    private void checkBeforeSaveOrUpd(CaseSchemeRequest caseScheme) {
+        String caseSchemeId = caseScheme.getCaseSchemeId();
+        if (StrUtil.isBlank(caseSchemeId)) {
+            caseScheme.setAppId(baseBiz.getAppId());
+            caseScheme.setCaseSchemeId(baseBiz.getIdStr());
+            caseScheme.setEnabled(caseScheme.getEnabled() == null ? EnumStatus.ENABLE.getCode() : caseScheme.getEnabled());
+            caseScheme.setSource(StrUtil.isBlank(caseScheme.getSource()) ? EnumSource.ADMIN.name() : caseScheme.getSource());
+        } else {
+            CaseSchemeEntity caseSchemeEntity = getById(caseSchemeId);
+            if (BeanUtil.isEmpty(caseSchemeEntity)) {
+                throw new BizException("数据不存在");
+            }
+            caseScheme.setId(caseSchemeEntity.getId());
+        }
     }
 }

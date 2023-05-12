@@ -21,10 +21,6 @@ public class QuestionSectionDimensionRequest{
     @Schema(title = "应用ID")
     private String appId;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Schema(title = "数据库ID")
-    private Long id;
-
     @Schema(title = "问题集ID")
     private String questionSectionId;
 
@@ -42,6 +38,11 @@ public class QuestionSectionDimensionRequest{
 
 
     // JsonIgnore
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @Schema(title = "数据库ID")
+    @JsonIgnore
+    private Long id;
+
     @Schema(title = "来源")
     @JsonIgnore
     private String source;

@@ -2,16 +2,14 @@ package org.dows.hep.biz.base.question;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
-import org.dows.hep.api.base.question.QuestionAccessAuthEnum;
-import org.dows.hep.api.base.question.QuestionCloneEnum;
-import org.dows.hep.api.base.question.QuestionEnabledEnum;
-import org.dows.hep.api.base.question.QuestionTypeEnum;
+import org.dows.hep.api.base.question.*;
 import org.dows.hep.api.base.question.request.QuestionPageRequest;
 import org.dows.hep.api.base.question.request.QuestionRequest;
 import org.dows.hep.api.base.question.request.QuestionSearchRequest;
@@ -37,6 +35,7 @@ import java.util.stream.Collectors;
 public class QuestionInstanceBiz {
 
     private final QuestionDomainBaseBiz baseBiz;
+    private final QuestionCategBiz questionCategBiz;
 
     private final QuestionInstanceService questionInstanceService;
 
@@ -218,7 +217,9 @@ public class QuestionInstanceBiz {
         }
 
         QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(questionTypeEnum);
-        return questionTypeHandler.get(questionInstanceId);
+        QuestionResponse questionResponse = questionTypeHandler.get(questionInstanceId);
+        setQuestionCategIds(questionResponse);
+        return questionResponse;
     }
 
     /**
@@ -517,7 +518,7 @@ public class QuestionInstanceBiz {
         questionInstanceService.update(updateWrapper);
     }
 
-    @Transactional
+    @DSTransactional
     private Boolean saveQuestionBatch(List<QuestionRequest> questionList) {
         if (questionList == null || questionList.isEmpty()) {
             return Boolean.FALSE;
@@ -527,7 +528,7 @@ public class QuestionInstanceBiz {
         return Boolean.TRUE;
     }
 
-    @Transactional
+    @DSTransactional
     private Boolean updQuestionBatch(List<QuestionRequest> questionList) {
         if (questionList == null || questionList.isEmpty()) {
             return Boolean.FALSE;
@@ -541,5 +542,11 @@ public class QuestionInstanceBiz {
         LambdaQueryWrapper<QuestionInstanceEntity> queryWrapper = new LambdaQueryWrapper<QuestionInstanceEntity>()
                 .eq(QuestionInstanceEntity::getQuestionInstanceId, questionId);
         return questionInstanceService.getOne(queryWrapper);
+    }
+
+    private void setQuestionCategIds(QuestionResponse questionResponse) {
+        String questionCategId = questionResponse.getQuestionCategId();
+        String[] parentIds = questionCategBiz.getParentIds(questionCategId, QuestionCategGroupEnum.QUESTION.name());
+        questionResponse.setQuestionCategIds(parentIds);
     }
 }
