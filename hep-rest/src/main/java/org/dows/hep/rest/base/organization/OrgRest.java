@@ -53,8 +53,7 @@ public class OrgRest {
         Map<String, Object> map = JwtUtil.parseJWT(token, EnumToken.PROPERTIES_JWT_KEY.getStr());
         //1、获取登录账户和角色
         String loginId = map.get("accountId").toString();
-        String role = map.get("role").toString();
-        return orgBiz.addClass(request,accountId,loginId,role);
+        return orgBiz.addClass(request,accountId,loginId);
     }
 
     /**

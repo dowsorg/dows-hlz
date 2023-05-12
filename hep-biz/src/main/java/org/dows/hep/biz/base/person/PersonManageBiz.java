@@ -353,7 +353,8 @@ public class PersonManageBiz {
         Set<String> accountIds = new HashSet<>();
         //1、如果是教师，只能查看该教师下面的班级
         if(StringUtils.isNotEmpty(accountId)){
-            List<HepArmEntity> armList = hepArmService.lambdaQuery().eq(HepArmEntity::getAccountId,accountId)
+            List<HepArmEntity> armList = hepArmService.lambdaQuery()
+                    .eq(HepArmEntity::getAccountId,accountId)
                     .eq(HepArmEntity::getDeleted,false)
                     .list();
             if(armList != null && armList.size() > 0){

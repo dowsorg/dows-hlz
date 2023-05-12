@@ -58,6 +58,7 @@ public class OrgBiz {
     private final CasePersonService casePersonService;
     private final UserExtinfoApi userExtinfoApi;
     private final HepArmService hepArmService;
+    private final AccountRoleApi accountRoleApi;
 
     /**
      * @param
@@ -70,7 +71,7 @@ public class OrgBiz {
      * @创建时间: 2023/4/21 17:12
      */
     @DSTransactional
-    public String addClass(AccountOrgRequest request, String accountId,String loginId,String role) {
+    public String addClass(AccountOrgRequest request, String accountId,String loginId) {
         //1、生成随机code
         String orgCode = createCode(7);
         request.setOrgCode(orgCode);
@@ -91,7 +92,8 @@ public class OrgBiz {
                 .appId(request.getAppId())
                 .build());
         //5、只创建教师和班级的映射关系
-        if(role.equals("teacher")) {
+        AccountRoleResponse roleResponse = accountRoleApi.getAccountRoleByPrincipalId(loginId);
+        if(roleResponse.getRoleName().equals("教师")) {
             HepArmEntity hepArmEntity = HepArmEntity
                     .builder()
                     .armId(idGenerator.nextIdStr())
