@@ -68,7 +68,7 @@ public class OrgBiz {
      * @创建时间: 2023/4/21 17:12
      */
     @DSTransactional
-    public String addClass(AccountOrgRequest request, String accountId,String loginId) {
+    public String addClass(AccountOrgRequest request, String accountId,String loginId,String role) {
         //1、生成随机code
         String orgCode = createCode(7);
         request.setOrgCode(orgCode);
@@ -88,16 +88,18 @@ public class OrgBiz {
                 .orgId(orgId)
                 .appId(request.getAppId())
                 .build());
-        //5、创建机构和登录账户的映射关系
-        HepArmEntity hepArmEntity = HepArmEntity
-                .builder()
-                .armId(idGenerator.nextIdStr())
-                .accountId(loginId)
-                .orgId(orgId)
-                .tenantId(request.getTenantId())
-                .appId(request.getAppId())
-                .build();
-        hepArmService.save(hepArmEntity);
+        //5、创建机构和登录账户的映射关系，只创建和教师的映射关系
+        if(role.equals("teacher")) {
+            HepArmEntity hepArmEntity = HepArmEntity
+                    .builder()
+                    .armId(idGenerator.nextIdStr())
+                    .accountId(loginId)
+                    .orgId(orgId)
+                    .tenantId(request.getTenantId())
+                    .appId(request.getAppId())
+                    .build();
+            hepArmService.save(hepArmEntity);
+        }
         return orgId;
     }
 
