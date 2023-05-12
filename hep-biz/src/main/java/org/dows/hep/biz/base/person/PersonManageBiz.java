@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.dows.account.api.*;
 import org.dows.account.biz.enums.EnumAccountStatusCode;
 import org.dows.account.biz.exception.AccountException;
+import org.dows.account.request.AccountGroupInfoRequest;
 import org.dows.account.request.AccountInstanceRequest;
 import org.dows.account.request.AccountUserRequest;
 import org.dows.account.response.*;
@@ -397,7 +398,21 @@ public class PersonManageBiz {
      */
     @DSTransactional
     public String editTeacherOrStudent(AccountInstanceRequest request) {
-        return accountInstanceApi.updateAccountInstanceByAccountId(request);
+        //1、更改账户实例
+        String userId = accountInstanceApi.updateAccountInstanceByAccountId(request);
+        //2、更改负责人信息
+        List<AccountGroupInfoResponse> groupInfoList = accountGroupInfoApi.getGroupInfoListByAccountId(request.getAccountId());
+        if(groupInfoList != null && groupInfoList.size() > 0){
+            groupInfoList.forEach(groupInfo->{
+                AccountGroupInfoRequest request1 = AccountGroupInfoRequest
+                        .builder()
+                        .owner(request.getUserName())
+                        .orgId(groupInfo.getOrgId())
+                        .build();
+                accountGroupInfoApi.updateAccountGroupInfo(request1);
+            });
+        }
+        return userId;
     }
 
     /**
