@@ -14,7 +14,9 @@ import org.dows.hep.api.base.person.response.PersonInstanceResponse;
 import org.dows.hep.api.tenant.casus.request.CasePersonIndicatorFuncRequest;
 import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.entity.CasePersonIndicatorFuncEntity;
+import org.dows.hep.entity.HepArmEntity;
 import org.dows.hep.service.CasePersonIndicatorFuncService;
+import org.dows.hep.service.HepArmService;
 import org.dows.sequence.api.IdGenerator;
 import org.dows.user.api.api.UserExtinfoApi;
 import org.dows.user.api.api.UserInstanceApi;
@@ -55,6 +57,8 @@ public class PersonManageBiz {
     private final IdGenerator idGenerator;
 
     private final CasePersonIndicatorFuncService casePersonIndicatorFuncService;
+
+    private final HepArmService hepArmService;
 
     /**
      * @param
@@ -341,14 +345,37 @@ public class PersonManageBiz {
      * @开始时间:
      * @创建时间: 2023/4/20 20:04
      */
-    public IPage<AccountInstanceResponse> listTeacherOrStudent(AccountInstanceRequest request) {
-        //1、获取所有accountIds
+    public IPage<AccountInstanceResponse> listTeacherOrStudent(AccountInstanceRequest request,String accountId) {
         Set<String> accountIds = new HashSet<>();
-        List<AccountInstanceResponse> responses = accountInstanceApi.getAccountInstanceList(AccountInstanceRequest.builder().appId(request.getAppId()).build());
-        //2、将accountIds传入
-        responses.forEach(res -> {
-            accountIds.add(res.getAccountId());
-        });
+        //1、如果是教师，只能查看该教师下面的班级
+        if(StringUtils.isNotEmpty(accountId)){
+            List<HepArmEntity> armList = hepArmService.lambdaQuery().eq(HepArmEntity::getAccountId,accountId)
+                    .eq(HepArmEntity::getDeleted,false)
+                    .list();
+            if(armList != null && armList.size() > 0){
+                Set<String> orgIds = new HashSet<>();
+                armList.forEach(arm->{
+                    orgIds.add(arm.getOrgId());
+                });
+                //1.1、根据机构ID找到对应的成员
+                if(orgIds != null && orgIds.size() > 0){
+                    orgIds.forEach(orgId->{
+                        List<AccountGroupResponse> groupList = accountGroupApi.getAccountGroupByOrgId(orgId);
+                        if(groupList != null && groupList.size() > 0){
+                            groupList.forEach(group->{
+                                accountIds.add(group.getAccountId());
+                            });
+                        }
+                    });
+                }
+            }
+        }else {
+            //2、管理员获取所有accountIds
+            List<AccountInstanceResponse> responses = accountInstanceApi.getAccountInstanceList(AccountInstanceRequest.builder().appId(request.getAppId()).build());
+            responses.forEach(res -> {
+                accountIds.add(res.getAccountId());
+            });
+        }
         request.setAccountIds(accountIds);
         return accountInstanceApi.customAccountInstanceList(request);
     }

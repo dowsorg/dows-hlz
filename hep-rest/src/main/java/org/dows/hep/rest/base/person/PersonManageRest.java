@@ -13,6 +13,7 @@ import org.dows.hep.biz.base.person.PersonManageBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -169,8 +170,8 @@ public class PersonManageRest {
      */
     @Operation(summary =  "获取教师/学生列表")
     @PostMapping("v1/basePerson/person/listTeacherOrStudent")
-    public IPage<AccountInstanceResponse> listTeacherOrStudent(@RequestBody AccountInstanceRequest request){
-        return personManageBiz.listTeacherOrStudent(request);
+    public IPage<AccountInstanceResponse> listTeacherOrStudent(@RequestBody AccountInstanceRequest request,@Nullable @RequestParam String accountId){
+        return personManageBiz.listTeacherOrStudent(request,accountId);
     }
 
     /**
