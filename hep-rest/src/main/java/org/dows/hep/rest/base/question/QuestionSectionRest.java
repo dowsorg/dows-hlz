@@ -19,7 +19,7 @@ import java.util.List;
 */
 @RequiredArgsConstructor
 @RestController
-@Tag(name = "问题集[问卷]", description = "问题集[问卷]")
+@Tag(name = "问题域-问题集[问卷]", description = "问题集[问卷]")
 public class QuestionSectionRest {
     private final QuestionSectionBiz questionSectionBiz;
 

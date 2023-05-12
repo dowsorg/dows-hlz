@@ -3,8 +3,8 @@ package org.dows.hep.api.base.question.request;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.Accessors;
 import org.dows.hep.api.base.question.QuestionAccessAuthEnum;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
 
@@ -17,6 +17,10 @@ import java.util.List;
 * @date 
 */
 @Data
+@ToString
+@Builder
+@Accessors(chain = true)
+@AllArgsConstructor
 @NoArgsConstructor
 @Schema(name = "Question 对象", title = "问题Request")
 public class QuestionRequest {
@@ -33,7 +37,7 @@ public class QuestionRequest {
     @Schema(title = "题目类型ID")
     private String questionCategId;
 
-    @Schema(title = "题目答题类型[RADIO:单选题|MULTIPLE:多选题|JUDGMENT:判断题|SUBJECTIVE:主观题|MATERIAL:材料题]")
+    @Schema(title = "题目答题类型[RADIO_SELECT:单选题|MULTIPLE_SELECT:多选题|JUDGMENT:判断题|SUBJECTIVE:主观题|MATERIAL:材料题]")
     private QuestionTypeEnum questionType;
 
     @Schema(title = "维度ID")
@@ -45,7 +49,7 @@ public class QuestionRequest {
     @Schema(title = "问题描述")
     private String questionDescr;
 
-    @Schema(title = "状态")
+    @Schema(title = "状态 0-启用 1-禁用")
     private Integer enabled;
 
     @Schema(title = "排序")
@@ -56,9 +60,6 @@ public class QuestionRequest {
 
     @Schema(title = "创建者姓名")
     private String accountName;
-
-    @Schema(title = "权限[000001]")
-    private String permissions;
 
     @Schema(title = "答案解析")
     private String detailedAnswer;

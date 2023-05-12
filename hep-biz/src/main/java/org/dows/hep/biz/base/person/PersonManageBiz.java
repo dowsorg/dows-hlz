@@ -437,29 +437,40 @@ public class PersonManageBiz {
      * @创建时间: 2023/4/21 14:12
      */
     @DSTransactional
-    public Boolean deleteTeacherOrStudents(Set<String> accountIds, String roleName, String appId,Integer isTransfer) {
+    public Boolean deleteTeacherOrStudents(Set<String> accountIds, String roleName, String appId) {
         Boolean flag = false;
         for (String accountId : accountIds) {
             //1、教师
             if (roleName.equals("教师")) {
-                if(isTransfer == 0) {
-                    //1.1、获取用户组织架构信息
-                    List<AccountGroupResponse> groupList = accountGroupApi.getAccountGroupListByAccountId(accountId, appId);
-                    Set<String> orgIdsList = new HashSet<>();
-                    if (groupList != null && groupList.size() > 0) {
-                        //1.2、根据机构ID去重
-                        groupList = groupList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(AccountGroupResponse::getOrgId))), ArrayList::new));
-                        //1.3、机构id拼接
-                        groupList.forEach(group -> {
-                            AccountOrgResponse org = accountOrgApi.getAccountOrgByOrgId(group.getOrgId(), appId);
-                            orgIdsList.add(org.getOrgId());
-                        });
-                        //1.4、删除上述机构下的所有成员及机构相关信息
-                        accountOrgApi.batchDeleteAccountOrgsByOrgIds(orgIdsList);
-                    }
+                Set<String> studentIds = new HashSet<>();
+                //1.1、获取用户组织架构信息
+                List<AccountGroupResponse> groupList = accountGroupApi.getAccountGroupListByAccountId(accountId, appId);
+                Set<String> orgIdsList = new HashSet<>();
+                if (groupList != null && groupList.size() > 0) {
+                    //1.2、根据机构ID去重
+                    groupList = groupList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(AccountGroupResponse::getOrgId))), ArrayList::new));
+                    //1.3、机构id拼接
+                    groupList.forEach(group -> {
+                        AccountOrgResponse org = accountOrgApi.getAccountOrgByOrgId(group.getOrgId(), appId);
+                        orgIdsList.add(org.getOrgId());
+                        //1.4、获取该班级的学生，单独删
+                        List<AccountGroupResponse> groupResponseList = accountGroupApi.getAccountGroupByOrgId(org.getOrgId());
+                        if(groupResponseList != null && groupResponseList.size() > 0){
+                            groupResponseList.forEach(groupResponse->{
+                                if(!groupResponse.getAccountId().equals(accountId)){
+                                    studentIds.add(groupResponse.getAccountId());
+                                }
+                            });
+                        }
+
+                    });
+                    //1.5、删除上述机构下的所有成员及机构相关信息
+                    accountOrgApi.batchDeleteAccountOrgsByOrgIds(orgIdsList);
                 }
-                //1.5、删除账号相关信息
+                //1.6、删除老师账号相关信息
                 accountInstanceApi.deleteAccountInstanceByAccountIds(Arrays.asList(accountId).stream().collect(Collectors.toSet()));
+                //1.7、删除学生账号相关信息
+                accountInstanceApi.deleteAccountInstanceByAccountIds(studentIds);
                 flag = true;
             }
             //2、学生

@@ -119,9 +119,7 @@ public class TenantCaseManageBiz {
             return result;
         }
 
-        LambdaQueryWrapper<CaseInstanceEntity> queryWrapper = new LambdaQueryWrapper<CaseInstanceEntity>()
-                .eq(CaseInstanceEntity::getCaseInstanceId, caseInstanceId);
-        CaseInstanceEntity caseInstanceEntity = caseInstanceService.getOne(queryWrapper);
+        CaseInstanceEntity caseInstanceEntity = getById(caseInstanceId);
         result = BeanUtil.copyProperties(caseInstanceEntity, CaseInstanceResponse.class);
         return result;
     }
@@ -186,5 +184,12 @@ public class TenantCaseManageBiz {
         LambdaQueryWrapper<CaseInstanceEntity> queryWrapper = new LambdaQueryWrapper<CaseInstanceEntity>()
                 .in(CaseInstanceEntity::getCaseInstanceId, caseInstanceIds);
         return caseInstanceService.remove(queryWrapper);
+    }
+
+    public CaseInstanceEntity getById(String caseInstanceId) {
+        LambdaQueryWrapper<CaseInstanceEntity> queryWrapper = new LambdaQueryWrapper<CaseInstanceEntity>()
+                .eq(CaseInstanceEntity::getCaseInstanceId, caseInstanceId);
+
+        return caseInstanceService.getOne(queryWrapper);
     }
 }

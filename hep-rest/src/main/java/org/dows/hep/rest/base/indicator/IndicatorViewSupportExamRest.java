@@ -1,13 +1,13 @@
 package org.dows.hep.rest.base.indicator;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.indicator.request.CreateIndicatorViewSupportExamRequest;
-import org.dows.hep.api.base.indicator.request.DecimalRequest;
-import org.dows.hep.api.base.indicator.request.IndicatorViewSupportExamRequest;
-import org.dows.hep.api.base.indicator.request.UpdateIndicatorViewSupportExamRequest;
+import org.dows.hep.api.base.indicator.request.*;
+import org.dows.hep.api.base.indicator.response.IndicatorViewSupportExamResponseRs;
 import org.dows.hep.api.base.indicator.response.IndicatorViewSupportExamResponse;
+import org.dows.hep.api.constant.RsPageConstant;
 import org.dows.hep.biz.base.indicator.IndicatorViewSupportExamBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +25,47 @@ import java.util.List;
 @Tag(name = "查看指标辅助检查类", description = "查看指标辅助检查类")
 public class IndicatorViewSupportExamRest {
     private final IndicatorViewSupportExamBiz indicatorViewSupportExamBiz;
+
+    @Operation(summary = "Rs创建或保存查看指标辅助检查类")
+    @PostMapping("v1/baseIndicator/indicatorViewSupportExam/createOrUpdateRs")
+    public void createOrUpdateRs(@RequestBody @Validated CreateOrUpdateIndicatorViewSupportExamRequestRs createOrUpdateIndicatorViewSupportExamRequestRs) {
+        indicatorViewSupportExamBiz.createOrUpdateRs(createOrUpdateIndicatorViewSupportExamRequestRs);
+    }
+
+    @Operation(summary = "Rs批量删除")
+    @DeleteMapping("v1/baseIndicator/indicatorViewSupportExam/batchDeleteRs")
+    public void batchDeleteRs(@RequestBody List<String> indicatorViewSupportExamIdList) {
+        indicatorViewSupportExamBiz.batchDeleteRs(indicatorViewSupportExamIdList);
+    }
+
+    @Operation(summary = "Rs更改启用状态")
+    @PutMapping("v1/baseIndicator/indicatorViewSupportExam/updateStatusRs")
+    public void updateStatusRs(
+        @RequestParam String indicatorViewSupportExamId,
+        @RequestParam Integer status) {
+        indicatorViewSupportExamBiz.updateStatusRs(indicatorViewSupportExamId, status);
+    }
+
+    @Operation(summary = "Rs获取查看指标辅助检查类")
+    @GetMapping("v1/baseIndicator/indicatorViewSupportExam/getRs")
+    public IndicatorViewSupportExamResponseRs getRs(@RequestParam @Validated String indicatorViewSupportExamId) {
+        return indicatorViewSupportExamBiz.getRs(indicatorViewSupportExamId);
+    }
+
+    @Operation(summary = "Rs分页筛选查看指标辅助检查类")
+    @GetMapping("v1/baseIndicator/indicatorViewSupportExam/pageRs")
+    public IPage<IndicatorViewSupportExamResponseRs> pageRs(
+        @RequestParam(required = false, defaultValue = RsPageConstant.PAGE_NO) Long pageNo,
+        @RequestParam(required = false, defaultValue = RsPageConstant.PAGE_SIZE) Long pageSize,
+        @RequestParam(required = false, defaultValue = RsPageConstant.ORDER) String order,
+        @RequestParam(required = false, defaultValue = RsPageConstant.ASC) Boolean asc,
+        @RequestParam(required = false) String appId,
+        @RequestParam(required = false) String indicatorFuncId,
+        @RequestParam(required = false) String name,
+        @RequestParam(required = false) String indicatorCategoryId,
+        @RequestParam(required = false) Integer status) {
+        return indicatorViewSupportExamBiz.pageRs(pageNo,pageSize,order,asc, appId,indicatorFuncId,name,indicatorCategoryId,status);
+    }
 
     /**
     * 创建查看指标辅助检查类

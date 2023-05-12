@@ -11,7 +11,8 @@ import org.dows.framework.api.StatusCode;
 @Getter
 @AllArgsConstructor
 public enum EnumExperimentParticipator implements StatusCode {
-    PARTICIPATOR_NOT_EXIST_EXCEPTION(40000,"参数不正确");
+    PARTICIPATOR_NOT_EXIST_EXCEPTION(40000,"参数不正确"),
+    PARTICIPATOR_NUMBER_CANNOT_MORE_THAN_ORG_EXCEPTION(40001,"组员数不能大于小组机构数");
 
     private final Integer code;
     private final String descr;

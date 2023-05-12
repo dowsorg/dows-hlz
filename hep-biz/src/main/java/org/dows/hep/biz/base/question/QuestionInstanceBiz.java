@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.QuestionCloneEnum;
 import org.dows.hep.api.base.question.QuestionEnabledEnum;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
@@ -150,8 +151,6 @@ public class QuestionInstanceBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     public IPage<QuestionPageResponse> pageQuestion(QuestionPageRequest questionPageRequest) {
-        Page<QuestionPageResponse> result = new Page<>();
-
         Page<QuestionInstanceEntity> pageRequest = new Page<>(questionPageRequest.getPageNo(), questionPageRequest.getPageSize());
         Page<QuestionInstanceEntity> pageResult = questionInstanceService.lambdaQuery()
                 .eq(questionPageRequest.getAppId() != null, QuestionInstanceEntity::getAppId, questionPageRequest.getAppId())
@@ -161,17 +160,7 @@ public class QuestionInstanceBiz {
                 .like(StrUtil.isNotBlank(questionPageRequest.getKeyword()), QuestionInstanceEntity::getQuestionDescr, questionPageRequest.getKeyword())
                 .like(StrUtil.isNotBlank(questionPageRequest.getQuestionType()), QuestionInstanceEntity::getQuestionType, questionPageRequest.getQuestionType())
                 .page(pageRequest);
-
-        List<QuestionInstanceEntity> records = pageResult.getRecords();
-        if (records == null || records.isEmpty()) {
-            return result;
-        }
-
-        List<QuestionPageResponse> pageResponseList = records.stream()
-                .map(item -> BeanUtil.copyProperties(item, QuestionPageResponse.class))
-                .collect(Collectors.toList());
-        result.setRecords(pageResponseList);
-        return result;
+        return baseBiz.convertPage(pageResult, QuestionPageResponse.class);
     }
 
     /**
@@ -186,17 +175,16 @@ public class QuestionInstanceBiz {
      */
     public List<QuestionResponse> listQuestion(QuestionSearchRequest questionSearch ) {
         List<QuestionInstanceEntity> entityList = questionInstanceService.lambdaQuery()
-                .eq(questionSearch.getAppId() != null, QuestionInstanceEntity::getAppId, questionSearch.getAppId())
+                .eq(QuestionInstanceEntity::getAppId, questionSearch.getAppId())
                 .eq(QuestionInstanceEntity::getVer, baseBiz.getLastVer())
                 .eq(QuestionInstanceEntity::getQuestionInstancePid, baseBiz.getQuestionInstancePid())
                 .like(StrUtil.isNotBlank(questionSearch.getKeyword()), QuestionInstanceEntity::getQuestionTitle, questionSearch.getKeyword())
                 .like(StrUtil.isNotBlank(questionSearch.getKeyword()), QuestionInstanceEntity::getQuestionDescr, questionSearch.getKeyword())
                 .like(StrUtil.isNotBlank(questionSearch.getQuestionType()), QuestionInstanceEntity::getQuestionType, questionSearch.getQuestionType())
+                .in(questionSearch.getCategIdList() != null && !questionSearch.getCategIdList().isEmpty(), QuestionInstanceEntity::getQuestionCategId, questionSearch.getCategIdList())
                 .list();
 
-        return entityList.stream()
-                .map(item -> BeanUtil.copyProperties(item, QuestionResponse.class))
-                .collect(Collectors.toList());
+        return BeanUtil.copyToList(entityList, QuestionResponse.class);
     }
 
     /**
@@ -280,7 +268,14 @@ public class QuestionInstanceBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     public Boolean sortQuestion(String questionInstanceId, Integer sequence) {
-        return Boolean.FALSE;
+        if (StrUtil.isBlank(questionInstanceId) || sequence == null) {
+            return false;
+        }
+
+        LambdaUpdateWrapper<QuestionInstanceEntity> updateWrapper = new LambdaUpdateWrapper<QuestionInstanceEntity>()
+                .eq(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceId)
+                .set(QuestionInstanceEntity::getSequence, sequence);
+        return questionInstanceService.update(updateWrapper);
     }
 
     /**
@@ -370,10 +365,33 @@ public class QuestionInstanceBiz {
             return Boolean.FALSE;
         }
 
+        // check
+        boolean canRemove = checkCanRemove(questionInstanceIds);
+        if (!canRemove) {
+            throw new BizException("被引用数据不可删除");
+        }
+
+        // rem instance
         LambdaQueryWrapper<QuestionInstanceEntity> queryWrapper = new LambdaQueryWrapper<QuestionInstanceEntity>()
                 .in(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceIds);
-        return questionInstanceService.remove(queryWrapper);
+        boolean remInstanceRes = questionInstanceService.remove(queryWrapper);
+
+        // rem relation
+        boolean remRelationRes = removeRelationOfInstance(questionInstanceIds);
+
+        return remInstanceRes && remRelationRes;
     }
+
+    // TODO: 2023/5/11  
+    private boolean removeRelationOfInstance(List<String> questionInstanceIds) {
+        return Boolean.TRUE;
+    }
+
+    // TODO: 2023/5/11  
+    private boolean checkCanRemove(List<String> questionInstanceIds) {
+        return Boolean.TRUE;
+    }
+
 
     // 检查问题的类型是否有错-发生变更即为有错，大错特错，挨板子吧
     private boolean checkQuestionTypeIsError(QuestionRequest question) {

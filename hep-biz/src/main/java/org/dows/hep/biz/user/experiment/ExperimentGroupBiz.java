@@ -225,8 +225,8 @@ public class ExperimentGroupBiz {
            throw new ExperimentParticipatorException(EnumExperimentParticipator.PARTICIPATOR_NOT_EXIST_EXCEPTION);
         }
         ExperimentParticipatorEntity entity = ExperimentParticipatorEntity.builder()
-                .caseOrgIds(request.getExperimentOrgIds())
-                .caseOrgNames(request.getExperimentOrgNames())
+                .experimentOrgIds(request.getExperimentOrgIds())
+                .experimentOrgNames(request.getExperimentOrgNames())
                 .participatorState(3)
                 .id(model.getId())
                 .build();

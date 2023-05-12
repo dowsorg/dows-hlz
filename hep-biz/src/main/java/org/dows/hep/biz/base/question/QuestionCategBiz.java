@@ -4,18 +4,20 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
+import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.request.QuestionCategoryRequest;
+import org.dows.hep.api.base.question.request.QuestionSearchRequest;
 import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
+import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.entity.QuestionCategoryEntity;
 import org.dows.hep.service.QuestionCategoryService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.function.Predicate;
 
 /**
  * @author fhb
@@ -26,56 +28,86 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class QuestionCategBiz {
 
-    private final QuestionDomainBaseBiz questionDomainBaseBiz;
+    private final QuestionDomainBaseBiz baseBiz;
+    private final QuestionInstanceBiz questionInstanceBiz;
     private final QuestionCategoryService questionCategoryService;
-    public static final String CATEG_PATH_DELIMITER = "|";
 
+    /**
+     * @author fhb
+     * @description
+     * @date 2023/5/11 21:22
+     * @param 
+     * @return 
+     */
     @Transactional
     public String saveOrUpdateQuestionCategory(QuestionCategoryRequest questionCategory) {
         if (BeanUtil.isEmpty(questionCategory)) {
             return "";
         }
 
-        // before handle
-        beforeSaveOrUpd(questionCategory);
+        String questionCategId = questionCategory.getQuestionCategId();
+        if (StrUtil.isBlank(questionCategId)) {
+            questionCategory.setQuestionCategId(baseBiz.getIdStr());
+            questionCategory.setQuestionCategPid(baseBiz.getQuestionInstancePid());
+        } else {
+            QuestionCategoryEntity questionCategoryEntity = getQuestionCategory(questionCategId);
+            if (BeanUtil.isEmpty(questionCategoryEntity)) {
+                throw new BizException("数据不存在");
+            }
+            questionCategory.setId(questionCategoryEntity.getId());
+        }
 
         // handle
         QuestionCategoryEntity questionCategoryEntity = BeanUtil.copyProperties(questionCategory, QuestionCategoryEntity.class);
         questionCategoryService.saveOrUpdate(questionCategoryEntity);
 
-        // after handle
-        buildCategPath(questionCategoryEntity);
-        questionCategoryService.updateById(questionCategoryEntity);
-
         return questionCategoryEntity.getQuestionCategId();
     }
 
+    /**
+     * @author fhb
+     * @description
+     * @date 2023/5/11 21:22
+     * @param 
+     * @return 
+     */
+    public QuestionCategoryEntity getQuestionCategory(String questionCategId) {
+        LambdaQueryWrapper<QuestionCategoryEntity> queryWrapper = new LambdaQueryWrapper<QuestionCategoryEntity>()
+                .eq(QuestionCategoryEntity::getQuestionCategId, questionCategId);
+        return questionCategoryService.getOne(queryWrapper);
+    }
+
+    /**
+     * @author fhb
+     * @description
+     * @date 2023/5/11 21:22
+     * @param 
+     * @return 
+     */
     public List<QuestionCategoryResponse> getChildrenByPid(String pid, String categoryGroup) {
-        List<QuestionCategoryEntity> children = questionCategoryService.getChildrenByPid(pid, categoryGroup);
-        if (children == null || children.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        return children.stream()
-                .map(item -> BeanUtil.copyProperties(item, QuestionCategoryResponse.class))
-                .collect(Collectors.toList());
+        List<QuestionCategoryResponse> result = new ArrayList<>();
+        List<QuestionCategoryResponse> listInGroup = listInGroup(categoryGroup);
+        convertList2TreeList(listInGroup, pid, result);
+        return result;
     }
 
-    public List<QuestionCategoryResponse> getAllCategory(String categoryGroup) {
-        List<QuestionCategoryEntity> allCategory = questionCategoryService.getAllCategory(categoryGroup);
-        if (allCategory == null || allCategory.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        return allCategory.stream()
-                .map(item -> BeanUtil.copyProperties(item, QuestionCategoryResponse.class))
-                .collect(Collectors.toList());
-    }
-
+    /**
+     * @author fhb
+     * @description
+     * @date 2023/5/11 21:22
+     * @param 
+     * @return 
+     */
     @Transactional
     public Boolean delByIds(List<String> ids) {
         if (Objects.isNull(ids)) {
             return false;
+        }
+
+        // get referenced id
+        Boolean referenced = isReferenced(ids);
+        if (referenced) {
+            throw new BizException("被引用类目不可删除");
         }
 
         // del self
@@ -91,69 +123,102 @@ public class QuestionCategBiz {
         return remRes1 && remRes2;
     }
 
-    private void buildCategPath(QuestionCategoryEntity entity) {
-        String categIdPath = "";
-        String categNamePath = "";
-        String questionCategId = entity.getQuestionCategId();
-        String questionCategName = entity.getQuestionCategName();
-
-        List<QuestionCategoryEntity> parents = getParents(questionCategId);
-        if (parents.size() > 0) {
-            categNamePath = parents.stream()
-                    .map(QuestionCategoryEntity::getQuestionCategName)
-                    .collect(Collectors.joining(CATEG_PATH_DELIMITER));
-            categNamePath += CATEG_PATH_DELIMITER + questionCategName;
-
-            categIdPath = parents.stream()
-                    .map(QuestionCategoryEntity::getQuestionCategId)
-                    .collect(Collectors.joining(CATEG_PATH_DELIMITER));
-            categIdPath += CATEG_PATH_DELIMITER + questionCategId;
-        } else {
-            categNamePath = questionCategName;
-            categIdPath = questionCategId;
-        }
-
-        entity.setQuestionCategNamePath(categNamePath);
-        entity.setQuestionCategIdPath(categIdPath);
-    }
-
-    private List<QuestionCategoryEntity> getParents(String questionCategId) {
-        List<QuestionCategoryEntity> result = new ArrayList<>();
-        buildParents(questionCategId, result);
-        Collections.reverse(result);
-        return result;
-    }
-
-    private void buildParents(String questionCategId, List<QuestionCategoryEntity> list) {
-        QuestionCategoryEntity parent = getParent(questionCategId);
-        if (null == parent) {
+    private void getUnReferencedIds(List<String> ids) {
+        if (ids == null || ids.isEmpty()) {
             return;
         }
 
-        list.add(parent);
-        String categId = parent.getQuestionCategId();
-        buildParents(categId, list);
+        QuestionSearchRequest questionSearchRequest = QuestionSearchRequest.builder()
+                .categIdList(ids)
+                .build();
+        List<QuestionResponse> questionResponses = questionInstanceBiz.listQuestion(questionSearchRequest);
+        if (questionResponses == null || questionResponses.isEmpty()) {
+            return;
+        }
+
+        List<String> referencedIds = questionResponses.stream()
+                .map(QuestionResponse::getQuestionCategId)
+                .toList();
+        ids.removeAll(referencedIds);
     }
 
-    private QuestionCategoryEntity getParent(String questionCategId) {
-        QuestionCategoryEntity questionCategoryEntity = questionCategoryService.getById(questionCategId);
-        if (BeanUtil.isEmpty(questionCategoryEntity)) {
-            return null;
+    private Boolean isReferenced(List<String> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Boolean.FALSE;
         }
 
-        String questionCategPid = questionCategoryEntity.getQuestionCategPid();
-        return questionCategoryService.getById(questionCategPid);
+        QuestionSearchRequest questionSearchRequest = QuestionSearchRequest.builder()
+                .categIdList(ids)
+                .build();
+        List<QuestionResponse> questionResponses = questionInstanceBiz.listQuestion(questionSearchRequest);
+        if (questionResponses != null && !questionResponses.isEmpty()) {
+            return Boolean.TRUE;
+        }
+        return Boolean.FALSE;
     }
 
-    private void beforeSaveOrUpd(QuestionCategoryRequest questionCategory) {
-        String questionCategId = questionCategory.getQuestionCategId();
-        if (StrUtil.isBlank(questionCategId)) {
-            questionCategory.setQuestionCategId(questionDomainBaseBiz.getIdStr());
+    private List<QuestionCategoryResponse> listInGroup(String questionCategGroup) {
+        if (StrUtil.isBlank(questionCategGroup)) {
+            return new ArrayList<>();
         }
-        String questionCategPid = questionCategory.getQuestionCategPid();
-        if (StrUtil.isBlank(questionCategPid)) {
-            questionCategory.setQuestionCategPid("0");
+
+        return questionCategoryService.lambdaQuery()
+                .eq(QuestionCategoryEntity::getQuestionCategGroup, questionCategGroup)
+                .list()
+                .stream()
+                .map(item -> BeanUtil.copyProperties(item, QuestionCategoryResponse.class))
+                .toList();
+    }
+
+    private void convertList2TreeList(List<QuestionCategoryResponse> sources, String pid, List<QuestionCategoryResponse> target) {
+        // list children
+        List<QuestionCategoryResponse> children = listChildren(sources, item -> pid.equals(item.getQuestionCategPid()));
+
+        // add target
+        target.addAll(children);
+
+        // handle children
+        target.forEach(item -> traverse(item, sources));
+    }
+
+    private void traverse(QuestionCategoryResponse node, List<QuestionCategoryResponse> sources) {
+        // 判空
+        boolean isBack = checkNull(node, sources);
+        if (isBack) {
+            return;
         }
-        // todo seq
+
+        // 处理当前节点
+        handleCurrentNode(node, sources);
+
+        // 处理子节点
+        handleChildrenNode(node, sources);
+    }
+
+    private boolean checkNull(QuestionCategoryResponse currentNode, List<QuestionCategoryResponse> sources) {
+        List<QuestionCategoryResponse> children = listChildren(sources, item -> currentNode.getQuestionCategId().equals(item.getQuestionCategPid()));
+        if (children.isEmpty()) {
+            return Boolean.TRUE;
+        }
+
+        return Boolean.FALSE;
+    }
+
+    private void handleCurrentNode(QuestionCategoryResponse currentNode, List<QuestionCategoryResponse> sources) {
+        List<QuestionCategoryResponse> children = listChildren(sources, item -> currentNode.getQuestionCategId().equals(item.getQuestionCategPid()));
+        currentNode.setChildren(children);
+    }
+
+    private static List<QuestionCategoryResponse> listChildren(List<QuestionCategoryResponse> sources, Predicate<QuestionCategoryResponse> predicate) {
+        return sources.stream()
+                .filter(predicate)
+                .toList();
+    }
+
+    private void handleChildrenNode(QuestionCategoryResponse currentNode, List<QuestionCategoryResponse> sources) {
+        List<QuestionCategoryResponse> children = currentNode.getChildren();
+        for (QuestionCategoryResponse cNode : children) {
+            traverse(cNode, sources);
+        }
     }
 }

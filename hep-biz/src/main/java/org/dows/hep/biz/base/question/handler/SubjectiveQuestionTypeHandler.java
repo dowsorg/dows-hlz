@@ -135,7 +135,8 @@ public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
         // 遍历子节点
         for (QuestionRequest qr : node.getChildren()) {
             qr.setAppId(node.getAppId());
-            qr.setQuestionInstancePid(node.getQuestionInstanceId());
+            qr.setBizCode(node.getBizCode());
+            qr.setQuestionInstancePid(questionInstanceId);
             qr.setQuestionType(qr.getQuestionType() == null ? node.getQuestionType() : qr.getQuestionType());
             traverseSave(qr);
         }

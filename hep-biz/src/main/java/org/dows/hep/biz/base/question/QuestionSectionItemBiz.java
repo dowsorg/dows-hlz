@@ -61,13 +61,13 @@ public class QuestionSectionItemBiz {
      * @description
      * @date 2023/5/6 10:42
      */
-    public List<QuestionSectionItemResponse> listBySectionId(String questionSectionId) {
-        if (StrUtil.isBlank(questionSectionId)) {
+    public List<QuestionSectionItemResponse> listBySectionIds(List<String> questionSectionIds) {
+        if (questionSectionIds == null || questionSectionIds.isEmpty()) {
             return new ArrayList<>();
         }
 
         LambdaQueryWrapper<QuestionSectionItemEntity> queryWrapper = new LambdaQueryWrapper<QuestionSectionItemEntity>()
-                .eq(QuestionSectionItemEntity::getQuestionSectionId, questionSectionId);
+                .in(QuestionSectionItemEntity::getQuestionSectionId, questionSectionIds);
         List<QuestionSectionItemEntity> itemList = questionSectionItemService.list(queryWrapper);
         if (itemList == null || itemList.isEmpty()) {
             return new ArrayList<>();

@@ -12,13 +12,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
+ * @folder admin-hep/问题域-类目管理
  * @author fhb
  * @description
  * @date 2023/4/20 9:50
  */
 @RequiredArgsConstructor
 @RestController
-@Tag(name = "问题域类目", description = "问题域类目")
+@Tag(name = "问题域-类目管理", description = "问题域-类目管理")
 public class QuestionCategoryRest {
     private final QuestionCategBiz questionCategBiz;
 
@@ -57,7 +58,7 @@ public class QuestionCategoryRest {
      */
     @Operation(summary = "删除or批量删除")
     @DeleteMapping("v1/baseQuestion/questionCategory/delQuestionCategory")
-    public Boolean delQuestionCategory(List<String> questionCategoryIds) {
+    public Boolean delQuestionCategory(@RequestBody List<String> questionCategoryIds) {
         return questionCategBiz.delByIds(questionCategoryIds);
     }
 }

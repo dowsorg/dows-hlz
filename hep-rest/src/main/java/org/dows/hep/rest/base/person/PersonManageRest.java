@@ -211,7 +211,7 @@ public class PersonManageRest {
 
     /**
      * 删除 教师/学生
-     * 删除教师时需要将班级连带删除
+     * 删除教师时需要将班级连带删除，同时删除学生
      *
      * @param
      * @return
@@ -220,9 +220,8 @@ public class PersonManageRest {
     @DeleteMapping("v1/basePerson/person/deleteTeacherOrStudents")
     public Boolean deleteTeacherOrStudents(@RequestParam Set<String> accountIds,
                                            @RequestParam String roleName,
-                                           @RequestParam String appId,
-                                           @RequestParam Integer isTransfer
+                                           @RequestParam String appId
                                            ){
-        return personManageBiz.deleteTeacherOrStudents(accountIds,roleName,appId,isTransfer);
+        return personManageBiz.deleteTeacherOrStudents(accountIds,roleName,appId);
     }
 }

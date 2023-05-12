@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 */
 @RequiredArgsConstructor
 @RestController
-@Tag(name = "问题集-答题记录", description = "问题集-答题记录")
+@Tag(name = "问题域-问题集答题记录", description = "问题集-答题记录")
 public class QuestionSectionResultRest {
     private final QuestionSectionResultBiz questionSectionResultBiz;
 

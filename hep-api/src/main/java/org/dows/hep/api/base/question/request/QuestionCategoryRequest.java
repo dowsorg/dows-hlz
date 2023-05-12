@@ -1,6 +1,9 @@
 package org.dows.hep.api.base.question.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,24 +17,33 @@ import lombok.NoArgsConstructor;
 @Schema(name = "QuestionCategoryRequest 对象", title = "问题域类目Request")
 public class QuestionCategoryRequest {
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @Schema(title = "数据库ID")
+    private Long id;
+
     @Schema(title = "类别ID")
     private String questionCategId;
 
     @Schema(title = "类别父id")
+    @NotBlank(message = "类别父id不能为空")
     private String questionCategPid;
 
     @Schema(title = "类别组")
+    @NotBlank(message = "类别组不能为空")
     private String questionCategGroup;
 
     @Schema(title = "类别名")
+    @NotBlank(message = "类别名不能为空")
     private String questionCategName;
-
-    @Schema(title = "类别ID路径")
-    private String questionCategIdPath;
-
-    @Schema(title = "类别name路径")
-    private String questionCategNamePath;
 
     @Schema(title = "序列号")
     private Integer sequence;
+
+    @Schema(title = "类别ID路径")
+    @JsonIgnore
+    private String questionCategIdPath;
+
+    @Schema(title = "类别name路径")
+    @JsonIgnore
+    private String questionCategNamePath;
 }
