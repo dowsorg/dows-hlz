@@ -230,8 +230,10 @@ public class OrgBiz {
               armList.forEach(arm->{
                   ids.add(arm.getOrgId());
               });
-              request.setIds(ids);
+          }else{
+              ids.add("fill");
           }
+            request.setIds(ids);
         }
         IPage<AccountOrgResponse> accountOrgResponse = accountOrgApi.customAccountOrgList(request);
         //2、总人数剔除教师一个
