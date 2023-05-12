@@ -279,4 +279,15 @@ public class QuestionCategBiz {
         // 处理父节点
         getQcrpList(questionCategPid, idCollect, result);
     }
+
+    public List<QuestionCategoryResponse> listQuestionCategory(List<String> categIds) {
+        if (categIds == null || categIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<QuestionCategoryEntity> list = questionCategoryService.lambdaQuery()
+                .in(QuestionCategoryEntity::getQuestionCategId, categIds)
+                .list();
+        return BeanUtil.copyToList(list, QuestionCategoryResponse.class);
+    }
 }

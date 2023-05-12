@@ -13,6 +13,7 @@ import org.dows.hep.api.base.question.*;
 import org.dows.hep.api.base.question.request.QuestionPageRequest;
 import org.dows.hep.api.base.question.request.QuestionRequest;
 import org.dows.hep.api.base.question.request.QuestionSearchRequest;
+import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
 import org.dows.hep.api.base.question.response.QuestionPageResponse;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.biz.base.question.handler.QuestionTypeFactory;
@@ -165,7 +166,25 @@ public class QuestionInstanceBiz {
                 .like(StrUtil.isNotBlank(questionPageRequest.getKeyword()), QuestionInstanceEntity::getQuestionDescr, questionPageRequest.getKeyword())
                 .like(StrUtil.isNotBlank(questionPageRequest.getQuestionType()), QuestionInstanceEntity::getQuestionType, questionPageRequest.getQuestionType())
                 .page(pageRequest);
-        return baseBiz.convertPage(pageResult, QuestionPageResponse.class);
+        Page<QuestionPageResponse> result = baseBiz.convertPage(pageResult, QuestionPageResponse.class);
+        fillResult(result);
+        return result;
+    }
+
+    private void fillResult(Page<QuestionPageResponse> result) {
+        List<QuestionPageResponse> records = result.getRecords();
+        if (records != null && !records.isEmpty()) {
+            List<String> categIds = records.stream()
+                    .map(QuestionPageResponse::getQuestionCategId)
+                    .toList();
+            List<QuestionCategoryResponse> questionCategoryResponses = questionCategBiz.listQuestionCategory(categIds);
+            Map<String, String> collect = questionCategoryResponses.stream()
+                    .collect(Collectors.toMap(QuestionCategoryResponse::getQuestionCategId, QuestionCategoryResponse::getQuestionCategName, (v1, v2) -> v1));
+            records.forEach(item -> {
+                item.setQuestionCategName(collect.get(item.getQuestionCategId()));
+                item.setQuestionType(QuestionTypeEnum.getNameByCode(item.getQuestionType()));
+            });
+        }
     }
 
     /**
