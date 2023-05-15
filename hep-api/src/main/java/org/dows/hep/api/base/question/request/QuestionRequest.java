@@ -45,7 +45,7 @@ public class QuestionRequest {
     @Schema(title = "问题描述")
     private String questionDescr;
 
-    @Schema(title = "状态 0-启用 1-禁用")
+    @Schema(title = "状态 0-禁用 1-启用")
     private Integer enabled;
 
     @Schema(title = "排序")
