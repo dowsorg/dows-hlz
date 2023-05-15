@@ -25,17 +25,6 @@ public class IndicatorCategoryRest {
     private final IndicatorCategoryBiz indicatorCategoryBiz;
 
     /**
-    * 创建指标类别(目前没用上)
-    * @param
-    * @return
-    */
-    @Operation(summary = "创建指标类别")
-    @PostMapping("v1/baseIndicator/indicatorCategory/createIndicatorCategory")
-    public void createIndicatorCategory(@RequestBody @Validated CreateIndicatorCategoryRequest createIndicatorCategory) throws InterruptedException {
-        indicatorCategoryBiz.createIndicatorCategory(createIndicatorCategory);
-    }
-
-    /**
      * 批量创建或修改指标类别
      * @param
      * @return
@@ -47,14 +36,25 @@ public class IndicatorCategoryRest {
     }
 
     /**
-    * 删除指标类别
-    * @param
-    * @return
-    */
+     * 删除指标类别
+     * @param
+     * @return
+     */
     @Operation(summary = "删除指标类别")
     @DeleteMapping("v1/baseIndicator/indicatorCategory/deleteIndicatorCategory")
     public void deleteIndicatorCategory(@RequestParam @Validated String indicatorCategoryId) {
         indicatorCategoryBiz.deleteIndicatorCategory(indicatorCategoryId);
+    }
+
+    /**
+    * 创建指标类别(目前没用上)
+    * @param
+    * @return
+    */
+    @Operation(summary = "创建指标类别")
+    @PostMapping("v1/baseIndicator/indicatorCategory/createIndicatorCategory")
+    public void createIndicatorCategory(@RequestBody @Validated CreateIndicatorCategoryRequest createIndicatorCategory) throws InterruptedException {
+        indicatorCategoryBiz.createIndicatorCategory(createIndicatorCategory);
     }
 
     /**

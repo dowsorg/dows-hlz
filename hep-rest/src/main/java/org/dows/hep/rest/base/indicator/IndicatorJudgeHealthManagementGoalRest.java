@@ -3,11 +3,9 @@ package org.dows.hep.rest.base.indicator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeHealthManagementGoalRequest;
-import org.dows.hep.api.base.indicator.request.DecimalRequest;
-import org.dows.hep.api.base.indicator.request.UpdateIndicatorJudgeHealthManagementGoalRequest;
-import org.dows.hep.api.base.indicator.request.UpdateStatusIndicatorJudgeHealthManagementGoalRequest;
+import org.dows.hep.api.base.indicator.request.*;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthManagementGoalResponse;
+import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthManagementGoalResponseRs;
 import org.dows.hep.biz.base.indicator.IndicatorJudgeHealthManagementGoalBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +23,30 @@ import java.util.List;
 @Tag(name = "判断指标健管目标", description = "判断指标健管目标")
 public class IndicatorJudgeHealthManagementGoalRest {
     private final IndicatorJudgeHealthManagementGoalBiz indicatorJudgeHealthManagementGoalBiz;
+
+    @Operation(summary = "Rs批量创建或保存查看指标健管目标类")
+    @PostMapping("v1/baseIndicator/indicatorJudgeHealthManagementGoal/batchCreateOrUpdateRs")
+    public void batchCreateOrUpdateRs(@RequestBody @Validated BatchCreateOrUpdateIndicatorJudgeHealthManagementGoalRequestRs batchCreateOrUpdateIndicatorJudgeHealthManagementGoalRequestRs) {
+        indicatorJudgeHealthManagementGoalBiz.batchCreateOrUpdateRs(batchCreateOrUpdateIndicatorJudgeHealthManagementGoalRequestRs);
+    }
+
+    @Operation(summary = "Rs批量删除")
+    @DeleteMapping("v1/baseIndicator/indicatorJudgeHealthManagementGoal/batchDeleteRs")
+    public void batchDeleteRs(@RequestBody List<String> indicatorJudgeHealthManagementGoalIdList) {
+        indicatorJudgeHealthManagementGoalBiz.batchDeleteRs(indicatorJudgeHealthManagementGoalIdList);
+    }
+
+    @Operation(summary = "Rs获取查看指标健管目标类")
+    @GetMapping("v1/baseIndicator/indicatorJudgeHealthManagementGoal/getRs")
+    public IndicatorJudgeHealthManagementGoalResponseRs getRs(@RequestParam @Validated String indicatorJudgeHealthManagementGoalId) {
+        return indicatorJudgeHealthManagementGoalBiz.getRs(indicatorJudgeHealthManagementGoalId);
+    }
+
+    @Operation(summary = "Rs根据功能点id获取所有查看指标健管目标类")
+    @GetMapping("v1/baseIndicator/indicatorJudgeHealthManagementGoal/getRsByIndicatorFuncId")
+    public List<IndicatorJudgeHealthManagementGoalResponseRs> getRsByIndicatorFuncId(@RequestParam String indicatorFuncId) {
+        return indicatorJudgeHealthManagementGoalBiz.getRsByIndicatorFuncId(indicatorFuncId);
+    }
 
     /**
     * 创建判断指标健管目标

@@ -45,19 +45,14 @@ public class IndicatorViewPhysicalExamRest {
         indicatorViewPhysicalExamBiz.deleteIndicatorViewPhysicalExam(indicatorViewPhysicalExamId);
     }
 
-    @Operation(summary = "批量删除")
-    @DeleteMapping("v1/baseIndicator/indicatorViewPhysicalExam/batchDelete")
-    public void batchDelete(@Validated String string ) {
-        indicatorViewPhysicalExamBiz.batchDelete(string);
-    }
-
-    @Operation(summary = "Rs更改启用状态")
+    @Operation(summary = "Rs更改体格启用状态")
     @PutMapping("v1/baseIndicator/indicatorViewPhysicalExam/updateStatusRs")
     public void updateStatusRs(
         @RequestParam String indicatorViewPhysicalExamId,
         @RequestParam Integer status) {
         indicatorViewPhysicalExamBiz.updateStatusRs(indicatorViewPhysicalExamId, status);
     }
+
 
     @Operation(summary = "Rs获取查看指标体格检查类")
     @GetMapping("v1/baseIndicator/indicatorViewPhysicalExam/getRs")
@@ -80,6 +75,11 @@ public class IndicatorViewPhysicalExamRest {
         return indicatorViewPhysicalExamBiz.pageRs(pageNo,pageSize,order,asc, appId,indicatorFuncId,name,indicatorCategoryId,status);
     }
 
+    @Operation(summary = "批量删除")
+    @DeleteMapping("v1/baseIndicator/indicatorViewPhysicalExam/batchDelete")
+    public void batchDelete(@Validated String string ) {
+        indicatorViewPhysicalExamBiz.batchDelete(string);
+    }
     /**
      * 创建查看指标体格检查类
      * @param

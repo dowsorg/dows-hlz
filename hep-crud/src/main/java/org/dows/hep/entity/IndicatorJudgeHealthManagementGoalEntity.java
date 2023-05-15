@@ -1,5 +1,6 @@
 package org.dows.hep.entity;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
@@ -42,14 +43,17 @@ public class IndicatorJudgeHealthManagementGoalEntity implements CrudEntity {
     @Schema(title = "应用ID")
     private String appId;
 
-    @Schema(title = "指标分类ID")
-    private String indicatorCategoryId;
+    @Schema(title = "指标功能ID")
+    private String indicatorFuncId;
+
+    @Schema(title = "指标实例ID")
+    private String indicatorInstanceId;
 
     @Schema(title = "分数")
-    private Object point;
+    private BigDecimal point;
 
-    @Schema(title = "0-禁用，1-启用")
-    private Boolean status;
+    @Schema(title = "公式")
+    private String expression;
 
     @JsonIgnore
     @TableLogic

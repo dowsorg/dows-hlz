@@ -205,6 +205,9 @@ public class IndicatorJudgeRiskFactorBiz{
         List<IndicatorJudgeRiskFactorEntity> indicatorJudgeRiskFactorEntityList = new ArrayList<>();
         indicatorJudgeRiskFactorEntityList.add(indicatorJudgeRiskFactorEntity);
         List<IndicatorJudgeRiskFactorResponseRs> indicatorJudgeRiskFactorResponseRsList = indicatorJudgeRiskFactorEntityList2ResponseRsList(indicatorJudgeRiskFactorEntityList);
+        if (indicatorJudgeRiskFactorResponseRsList.isEmpty()) {
+            return null;
+        }
         return indicatorJudgeRiskFactorResponseRsList.get(0);
     }
 

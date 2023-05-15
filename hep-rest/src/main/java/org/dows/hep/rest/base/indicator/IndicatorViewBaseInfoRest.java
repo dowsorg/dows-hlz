@@ -25,6 +25,23 @@ import java.util.List;
 public class IndicatorViewBaseInfoRest {
     private final IndicatorViewBaseInfoBiz indicatorViewBaseInfoBiz;
 
+    @Operation(summary = "Rs创建指标基本信息类")
+    @PostMapping("v1/baseIndicator/indicatorViewBaseInfo/createOrUpdateRs")
+    public void createOrUpdateRs(@RequestBody @Validated CreateOrUpdateIndicatorViewBaseInfoRequestRs createOrUpdateIndicatorViewBaseInfoRs) throws InterruptedException {
+        indicatorViewBaseInfoBiz.createOrUpdateRs(createOrUpdateIndicatorViewBaseInfoRs);
+    }
+
+    /**
+     * 获取查看指标基本信息类
+     * @param
+     * @return
+     */
+    @Operation(summary = "Rs获取查看指标基本信息类")
+    @GetMapping("v1/baseIndicator/indicatorViewBaseInfo/getRs")
+    public IndicatorViewBaseInfoResponseRs getRs(@Validated String indicatorViewBaseInfoId) {
+        return indicatorViewBaseInfoBiz.getRs(indicatorViewBaseInfoId);
+    }
+
     /**
     * 创建指标基本信息类
     * @param
@@ -34,12 +51,6 @@ public class IndicatorViewBaseInfoRest {
     @PostMapping("v1/baseIndicator/indicatorViewBaseInfo/createIndicatorViewBaseInfo")
     public void createIndicatorViewBaseInfo(@RequestBody @Validated CreateIndicatorViewBaseInfoRequest createIndicatorViewBaseInfo ) {
         indicatorViewBaseInfoBiz.createIndicatorViewBaseInfo(createIndicatorViewBaseInfo);
-    }
-
-    @Operation(summary = "Rs创建指标基本信息类")
-    @PostMapping("v1/baseIndicator/indicatorViewBaseInfo/createOrUpdateRs")
-    public void createOrUpdateRs(@RequestBody @Validated CreateOrUpdateIndicatorViewBaseInfoRequestRs createOrUpdateIndicatorViewBaseInfoRs) throws InterruptedException {
-        indicatorViewBaseInfoBiz.createOrUpdateRs(createOrUpdateIndicatorViewBaseInfoRs);
     }
 
     /**
@@ -84,17 +95,6 @@ public class IndicatorViewBaseInfoRest {
     @GetMapping("v1/baseIndicator/indicatorViewBaseInfo/getIndicatorViewBaseInfo")
     public IndicatorViewBaseInfoResponse getIndicatorViewBaseInfo(@Validated String indicatorViewBaseInfoId) {
         return indicatorViewBaseInfoBiz.getIndicatorViewBaseInfo(indicatorViewBaseInfoId);
-    }
-
-    /**
-     * 获取查看指标基本信息类
-     * @param
-     * @return
-     */
-    @Operation(summary = "Rs获取查看指标基本信息类")
-    @GetMapping("v1/baseIndicator/indicatorViewBaseInfo/getRs")
-    public IndicatorViewBaseInfoResponseRs getRs(@Validated String indicatorViewBaseInfoId) {
-        return indicatorViewBaseInfoBiz.getRs(indicatorViewBaseInfoId);
     }
 
     /**
