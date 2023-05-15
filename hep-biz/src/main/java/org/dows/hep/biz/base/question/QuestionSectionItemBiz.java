@@ -44,6 +44,9 @@ public class QuestionSectionItemBiz {
         if (itemList == null || itemList.isEmpty()) {
             return "";
         }
+        if (generationModeEnum == null) {
+            throw new BizException("参数不能为空");
+        }
 
         String struct = "";
         switch (generationModeEnum) {
