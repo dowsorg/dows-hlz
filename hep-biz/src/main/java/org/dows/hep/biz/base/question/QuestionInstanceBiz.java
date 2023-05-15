@@ -56,7 +56,6 @@ public class QuestionInstanceBiz {
         question.setAppId(question.getAppId() == null ? baseBiz.getAppId() : question.getAppId());
         question.setQuestionInstancePid(baseBiz.getQuestionInstancePid());
         question.setBizCode(question.getBizCode() == null ? QuestionAccessAuthEnum.PRIVATE_VIEWING : question.getBizCode());
-        question.setEnabled(QuestionEnabledEnum.ENABLED.getCode());
         return saveQue(question);
     }
 
