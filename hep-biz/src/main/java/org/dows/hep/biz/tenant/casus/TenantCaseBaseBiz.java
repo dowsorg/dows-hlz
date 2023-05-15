@@ -29,6 +29,10 @@ public class TenantCaseBaseBiz {
         return LAST_VERSION;
     }
 
+    public String getCaseCategoryPid() {
+        return "0";
+    }
+
     public String getVer(Date date) {
         return String.valueOf((date == null ? new Date() : date).getTime());
     }

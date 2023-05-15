@@ -62,7 +62,7 @@ public class QuestionCategBiz {
      * @param 
      * @return 
      */
-    public QuestionCategoryEntity getQuestionCategory(String questionCategId) {
+    public QuestionCategoryEntity getById(String questionCategId) {
         LambdaQueryWrapper<QuestionCategoryEntity> queryWrapper = new LambdaQueryWrapper<QuestionCategoryEntity>()
                 .eq(QuestionCategoryEntity::getQuestionCategId, questionCategId);
         return questionCategoryService.getOne(queryWrapper);
@@ -93,29 +93,6 @@ public class QuestionCategBiz {
         return getParents0(id, categoryGroup);
     }
 
-    @NotNull
-    private ArrayList<QuestionCategoryResponse> getParents0(String id, String categoryGroup) {
-        if (StrUtil.isBlank(id) || StrUtil.isBlank(categoryGroup)) {
-            return new ArrayList<>();
-        }
-
-        // list all in group
-        List<QuestionCategoryResponse> listInGroup = listInGroup(categoryGroup);
-        if (listInGroup == null || listInGroup.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        // convert list 2 collect
-        Map<String, QuestionCategoryResponse> idCollect = listInGroup.stream()
-                .collect(Collectors.toMap(QuestionCategoryResponse::getQuestionCategId, v -> v, (v1, v2) -> v1));
-
-        // get parents
-        ArrayList<QuestionCategoryResponse> result = new ArrayList<>();
-        getQcrpList(id, idCollect, result);
-        Collections.reverse(result);
-        return result;
-    }
-
     /**
      * @param
      * @return
@@ -132,6 +109,17 @@ public class QuestionCategBiz {
         return arrayList.stream()
                 .map(QuestionCategoryResponse::getQuestionCategId)
                 .toArray(String[]::new);
+    }
+
+    public List<QuestionCategoryResponse> listQuestionCategory(List<String> categIds) {
+        if (categIds == null || categIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<QuestionCategoryEntity> list = questionCategoryService.lambdaQuery()
+                .in(QuestionCategoryEntity::getQuestionCategId, categIds)
+                .list();
+        return BeanUtil.copyToList(list, QuestionCategoryResponse.class);
     }
 
     /**
@@ -253,7 +241,7 @@ public class QuestionCategBiz {
                 questionCategory.setQuestionCategPid(baseBiz.getQuestionInstancePid());
             }
         } else {
-            QuestionCategoryEntity questionCategoryEntity = getQuestionCategory(questionCategId);
+            QuestionCategoryEntity questionCategoryEntity = getById(questionCategId);
             if (BeanUtil.isEmpty(questionCategoryEntity)) {
                 throw new BizException("数据不存在");
             }
@@ -280,14 +268,27 @@ public class QuestionCategBiz {
         getQcrpList(questionCategPid, idCollect, result);
     }
 
-    public List<QuestionCategoryResponse> listQuestionCategory(List<String> categIds) {
-        if (categIds == null || categIds.isEmpty()) {
+    @NotNull
+    private ArrayList<QuestionCategoryResponse> getParents0(String id, String categoryGroup) {
+        if (StrUtil.isBlank(id) || StrUtil.isBlank(categoryGroup)) {
             return new ArrayList<>();
         }
 
-        List<QuestionCategoryEntity> list = questionCategoryService.lambdaQuery()
-                .in(QuestionCategoryEntity::getQuestionCategId, categIds)
-                .list();
-        return BeanUtil.copyToList(list, QuestionCategoryResponse.class);
+        // list all in group
+        List<QuestionCategoryResponse> listInGroup = listInGroup(categoryGroup);
+        if (listInGroup == null || listInGroup.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // convert list 2 collect
+        Map<String, QuestionCategoryResponse> idCollect = listInGroup.stream()
+                .collect(Collectors.toMap(QuestionCategoryResponse::getQuestionCategId, v -> v, (v1, v2) -> v1));
+
+        // get parents
+        ArrayList<QuestionCategoryResponse> result = new ArrayList<>();
+        getQcrpList(id, idCollect, result);
+        Collections.reverse(result);
+        return result;
     }
+
 }
