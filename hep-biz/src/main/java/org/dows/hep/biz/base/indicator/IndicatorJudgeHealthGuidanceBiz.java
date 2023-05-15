@@ -209,6 +209,9 @@ public class IndicatorJudgeHealthGuidanceBiz{
         List<IndicatorJudgeHealthGuidanceEntity> indicatorJudgeHealthGuidanceEntityList = new ArrayList<>();
         indicatorJudgeHealthGuidanceEntityList.add(indicatorJudgeHealthGuidanceEntity);
         List<IndicatorJudgeHealthGuidanceResponseRs> indicatorJudgeHealthGuidanceResponseRsList = indicatorJudgeHealthGuidanceEntityList2ResponseRsList(indicatorJudgeHealthGuidanceEntityList);
+        if (indicatorJudgeHealthGuidanceResponseRsList.isEmpty()) {
+            return null;
+        }
         return indicatorJudgeHealthGuidanceResponseRsList.get(0);
     }
 

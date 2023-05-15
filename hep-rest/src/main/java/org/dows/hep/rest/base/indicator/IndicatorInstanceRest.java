@@ -23,49 +23,17 @@ import java.util.List;
 public class IndicatorInstanceRest {
     private final IndicatorInstanceBiz indicatorInstanceBiz;
 
-    /**
-    * 创建指标实例
-    * @param
-    * @return
-    */
     @Operation(summary = "创建指标实例")
-    @PostMapping("v1/baseIndicator/indicatorInstance/createIndicatorInstance")
-    public void createIndicatorInstance(@RequestBody @Validated CreateIndicatorInstanceRequest createIndicatorInstanceRequest) throws InterruptedException {
-        indicatorInstanceBiz.createIndicatorInstance(createIndicatorInstanceRequest);
+    @PostMapping("v1/baseIndicator/indicatorInstance/create")
+    public void create(@RequestBody @Validated CreateIndicatorInstanceRequest createIndicatorInstanceRequest) throws InterruptedException {
+        indicatorInstanceBiz.create(createIndicatorInstanceRequest);
     }
 
-    /**
-    * 删除指标
-    * @param
-    * @return
-    */
     @Operation(summary = "删除指标")
     @DeleteMapping("v1/baseIndicator/indicatorInstance/deleteIndicatorInstance")
     public void deleteIndicatorInstance(
         @RequestParam @Validated String indicatorInstanceId) throws InterruptedException {
         indicatorInstanceBiz.deleteIndicatorInstance(indicatorInstanceId);
-    }
-
-    /**
-    * 更新指标
-    * @param
-    * @return
-    */
-    @Operation(summary = "更新指标")
-    @PutMapping("v1/baseIndicator/indicatorInstance/updateIndicatorInstance")
-    public void updateIndicatorInstance(@Validated UpdateIndicatorInstanceRequest updateIndicatorInstance ) {
-        indicatorInstanceBiz.updateIndicatorInstance(updateIndicatorInstance);
-    }
-
-    /**
-    * 批量更新指标
-    * @param
-    * @return
-    */
-    @Operation(summary = "批量更新指标")
-    @PutMapping("v1/baseIndicator/indicatorInstance/batchUpdateIndicatorInstance")
-    public void batchUpdateIndicatorInstance(@Validated List<UpdateIndicatorInstanceRequest> updateIndicatorInstance ) {
-        indicatorInstanceBiz.batchUpdateIndicatorInstance(updateIndicatorInstance);
     }
 
     @Operation(summary = "批量设置关键指标")
@@ -80,38 +48,60 @@ public class IndicatorInstanceRest {
         indicatorInstanceBiz.batchUpdateFood(indicatorInstanceIdList);
     }
 
-    /**
-    * 查询指标
-    * @param
-    * @return
-    */
-    @Operation(summary = "查询指标")
-    @GetMapping("v1/baseIndicator/indicatorInstance/getIndicatorInstance")
-    public IndicatorInstanceResponse getIndicatorInstance(@Validated String indicatorInstanceId) {
-        return indicatorInstanceBiz.getIndicatorInstance(indicatorInstanceId);
-    }
+//    /**
+//    * 更新指标
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "更新指标")
+//    @PutMapping("v1/baseIndicator/indicatorInstance/updateIndicatorInstance")
+//    public void updateIndicatorInstance(@Validated UpdateIndicatorInstanceRequest updateIndicatorInstance ) {
+//        indicatorInstanceBiz.updateIndicatorInstance(updateIndicatorInstance);
+//    }
 
-    /**
-    * 筛选指标
-    * @param
-    * @return
-    */
-    @Operation(summary = "筛选指标")
-    @GetMapping("v1/baseIndicator/indicatorInstance/listIndicatorInstance")
-    public List<IndicatorInstanceResponse> listIndicatorInstance(@Validated String appId, @Validated Integer core, @Validated Integer food, @Validated String indicatorCategoryId) {
-        return indicatorInstanceBiz.listIndicatorInstance(appId,core,food,indicatorCategoryId);
-    }
+//    /**
+//    * 批量更新指标
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "批量更新指标")
+//    @PutMapping("v1/baseIndicator/indicatorInstance/batchUpdateIndicatorInstance")
+//    public void batchUpdateIndicatorInstance(@Validated List<UpdateIndicatorInstanceRequest> updateIndicatorInstance ) {
+//        indicatorInstanceBiz.batchUpdateIndicatorInstance(updateIndicatorInstance);
+//    }
 
-    /**
-    * 分页筛选指标
-    * @param
-    * @return
-    */
-    @Operation(summary = "分页筛选指标")
-    @GetMapping("v1/baseIndicator/indicatorInstance/pageIndicatorInstance")
-    public String pageIndicatorInstance(@Validated Integer pageNo, @Validated Integer pageSize, @Validated String appId, @Validated Integer core, @Validated Integer food, @Validated String indicatorCategoryId) {
-        return indicatorInstanceBiz.pageIndicatorInstance(pageNo,pageSize,appId,core,food,indicatorCategoryId);
-    }
+//    /**
+//    * 查询指标
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "查询指标")
+//    @GetMapping("v1/baseIndicator/indicatorInstance/getIndicatorInstance")
+//    public IndicatorInstanceResponse getIndicatorInstance(@Validated String indicatorInstanceId) {
+//        return indicatorInstanceBiz.getIndicatorInstance(indicatorInstanceId);
+//    }
+
+//    /**
+//    * 筛选指标
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "筛选指标")
+//    @GetMapping("v1/baseIndicator/indicatorInstance/listIndicatorInstance")
+//    public List<IndicatorInstanceResponse> listIndicatorInstance(@Validated String appId, @Validated Integer core, @Validated Integer food, @Validated String indicatorCategoryId) {
+//        return indicatorInstanceBiz.listIndicatorInstance(appId,core,food,indicatorCategoryId);
+//    }
+
+//    /**
+//    * 分页筛选指标
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "分页筛选指标")
+//    @GetMapping("v1/baseIndicator/indicatorInstance/pageIndicatorInstance")
+//    public String pageIndicatorInstance(@Validated Integer pageNo, @Validated Integer pageSize, @Validated String appId, @Validated Integer core, @Validated Integer food, @Validated String indicatorCategoryId) {
+//        return indicatorInstanceBiz.pageIndicatorInstance(pageNo,pageSize,appId,core,food,indicatorCategoryId);
+//    }
 
 
 }

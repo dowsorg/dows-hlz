@@ -42,6 +42,9 @@ public class RiskCategoryEntity implements CrudEntity {
     @Schema(title = "应用ID")
     private String appId;
 
+    @Schema(title = "父ID")
+    private String pid;
+
     @Schema(title = "风险类别名称")
     private String riskCategoryName;
 

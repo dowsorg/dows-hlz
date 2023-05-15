@@ -576,6 +576,9 @@ public class IndicatorViewMonitorFollowupBiz{
         List<IndicatorViewMonitorFollowupEntity> indicatorViewMonitorFollowupEntityList = new ArrayList<>();
         indicatorViewMonitorFollowupEntityList.add(indicatorViewMonitorFollowupEntity);
         List<IndicatorViewMonitorFollowupResponseRs> indicatorViewMonitorFollowupResponseRs = indicatorViewMonitorFollowupEntityList2ResponseRsList(indicatorViewMonitorFollowupEntityList);
+        if (indicatorViewMonitorFollowupResponseRs.isEmpty()) {
+          return null;
+        }
         return indicatorViewMonitorFollowupResponseRs.get(0);
     }
 

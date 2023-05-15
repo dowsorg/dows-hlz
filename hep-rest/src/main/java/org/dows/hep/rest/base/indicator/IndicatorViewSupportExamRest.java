@@ -67,93 +67,93 @@ public class IndicatorViewSupportExamRest {
         return indicatorViewSupportExamBiz.pageRs(pageNo,pageSize,order,asc, appId,indicatorFuncId,name,indicatorCategoryId,status);
     }
 
-    /**
-    * 创建查看指标辅助检查类
-    * @param
-    * @return
-    */
-    @Operation(summary = "创建查看指标辅助检查类")
-    @PostMapping("v1/baseIndicator/indicatorViewSupportExam/createIndicatorViewSupportExam")
-    public void createIndicatorViewSupportExam(@RequestBody @Validated CreateIndicatorViewSupportExamRequest createIndicatorViewSupportExam ) {
-        indicatorViewSupportExamBiz.createIndicatorViewSupportExam(createIndicatorViewSupportExam);
-    }
-
-    /**
-    * 删除查看指标辅助检查类
-    * @param
-    * @return
-    */
-    @Operation(summary = "删除查看指标辅助检查类")
-    @DeleteMapping("v1/baseIndicator/indicatorViewSupportExam/deleteIndicatorViewSupportExam")
-    public void deleteIndicatorViewSupportExam(@Validated String indicatorViewSupportExamId ) {
-        indicatorViewSupportExamBiz.deleteIndicatorViewSupportExam(indicatorViewSupportExamId);
-    }
-
-    /**
-    * 批量删除
-    * @param
-    * @return
-    */
-    @Operation(summary = "批量删除")
-    @DeleteMapping("v1/baseIndicator/indicatorViewSupportExam/batchDelete")
-    public void batchDelete(@Validated String string ) {
-        indicatorViewSupportExamBiz.batchDelete(string);
-    }
-
-    /**
-    * 更改启用状态
-    * @param
-    * @return
-    */
-    @Operation(summary = "更改启用状态")
-    @PutMapping("v1/baseIndicator/indicatorViewSupportExam/updateStatus")
-    public void updateStatus(@Validated IndicatorViewSupportExamRequest indicatorViewSupportExam ) {
-        indicatorViewSupportExamBiz.updateStatus(indicatorViewSupportExam);
-    }
-
-    /**
-    * 查看指标辅助检查类
-    * @param
-    * @return
-    */
-    @Operation(summary = "查看指标辅助检查类")
-    @PutMapping("v1/baseIndicator/indicatorViewSupportExam/updateIndicatorViewSupportExam")
-    public void updateIndicatorViewSupportExam(@Validated UpdateIndicatorViewSupportExamRequest updateIndicatorViewSupportExam ) {
-        indicatorViewSupportExamBiz.updateIndicatorViewSupportExam(updateIndicatorViewSupportExam);
-    }
-
-    /**
-    * 查看指标辅助检查类
-    * @param
-    * @return
-    */
-    @Operation(summary = "查看指标辅助检查类")
-    @GetMapping("v1/baseIndicator/indicatorViewSupportExam/getIndicatorViewSupportExam")
-    public IndicatorViewSupportExamResponse getIndicatorViewSupportExam(@Validated String indicatorViewSupportExamId) {
-        return indicatorViewSupportExamBiz.getIndicatorViewSupportExam(indicatorViewSupportExamId);
-    }
-
-    /**
-    * 筛选指标辅助检查类
-    * @param
-    * @return
-    */
-    @Operation(summary = "筛选指标辅助检查类")
-    @GetMapping("v1/baseIndicator/indicatorViewSupportExam/listIndicatorViewSupportExam")
-    public List<IndicatorViewSupportExamResponse> listIndicatorViewSupportExam(@Validated String appId, @Validated String indicatorCategoryId, @Validated String name, @Validated String type, @Validated DecimalRequest fee, @Validated String resultAnalysis, @Validated Integer status) {
-        return indicatorViewSupportExamBiz.listIndicatorViewSupportExam(appId,indicatorCategoryId,name,type,fee,resultAnalysis,status);
-    }
-
-    /**
-    * 分页筛选指标辅助检查类
-    * @param
-    * @return
-    */
-    @Operation(summary = "分页筛选指标辅助检查类")
-    @GetMapping("v1/baseIndicator/indicatorViewSupportExam/pageIndicatorViewSupportExam")
-    public String pageIndicatorViewSupportExam(@Validated Integer pageNo, @Validated Integer pageSize, @Validated String appId, @Validated String indicatorCategoryId, @Validated String name, @Validated String type, @Validated DecimalRequest fee, @Validated String resultAnalysis, @Validated Integer status) {
-        return indicatorViewSupportExamBiz.pageIndicatorViewSupportExam(pageNo,pageSize,appId,indicatorCategoryId,name,type,fee,resultAnalysis,status);
-    }
+//    /**
+//    * 创建查看指标辅助检查类
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "创建查看指标辅助检查类")
+//    @PostMapping("v1/baseIndicator/indicatorViewSupportExam/createIndicatorViewSupportExam")
+//    public void createIndicatorViewSupportExam(@RequestBody @Validated CreateIndicatorViewSupportExamRequest createIndicatorViewSupportExam ) {
+//        indicatorViewSupportExamBiz.createIndicatorViewSupportExam(createIndicatorViewSupportExam);
+//    }
+//
+//    /**
+//    * 删除查看指标辅助检查类
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "删除查看指标辅助检查类")
+//    @DeleteMapping("v1/baseIndicator/indicatorViewSupportExam/deleteIndicatorViewSupportExam")
+//    public void deleteIndicatorViewSupportExam(@Validated String indicatorViewSupportExamId ) {
+//        indicatorViewSupportExamBiz.deleteIndicatorViewSupportExam(indicatorViewSupportExamId);
+//    }
+//
+//    /**
+//    * 批量删除
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "批量删除")
+//    @DeleteMapping("v1/baseIndicator/indicatorViewSupportExam/batchDelete")
+//    public void batchDelete(@Validated String string ) {
+//        indicatorViewSupportExamBiz.batchDelete(string);
+//    }
+//
+//    /**
+//    * 更改启用状态
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "更改启用状态")
+//    @PutMapping("v1/baseIndicator/indicatorViewSupportExam/updateStatus")
+//    public void updateStatus(@Validated IndicatorViewSupportExamRequest indicatorViewSupportExam ) {
+//        indicatorViewSupportExamBiz.updateStatus(indicatorViewSupportExam);
+//    }
+//
+//    /**
+//    * 查看指标辅助检查类
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "查看指标辅助检查类")
+//    @PutMapping("v1/baseIndicator/indicatorViewSupportExam/updateIndicatorViewSupportExam")
+//    public void updateIndicatorViewSupportExam(@Validated UpdateIndicatorViewSupportExamRequest updateIndicatorViewSupportExam ) {
+//        indicatorViewSupportExamBiz.updateIndicatorViewSupportExam(updateIndicatorViewSupportExam);
+//    }
+//
+//    /**
+//    * 查看指标辅助检查类
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "查看指标辅助检查类")
+//    @GetMapping("v1/baseIndicator/indicatorViewSupportExam/getIndicatorViewSupportExam")
+//    public IndicatorViewSupportExamResponse getIndicatorViewSupportExam(@Validated String indicatorViewSupportExamId) {
+//        return indicatorViewSupportExamBiz.getIndicatorViewSupportExam(indicatorViewSupportExamId);
+//    }
+//
+//    /**
+//    * 筛选指标辅助检查类
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "筛选指标辅助检查类")
+//    @GetMapping("v1/baseIndicator/indicatorViewSupportExam/listIndicatorViewSupportExam")
+//    public List<IndicatorViewSupportExamResponse> listIndicatorViewSupportExam(@Validated String appId, @Validated String indicatorCategoryId, @Validated String name, @Validated String type, @Validated DecimalRequest fee, @Validated String resultAnalysis, @Validated Integer status) {
+//        return indicatorViewSupportExamBiz.listIndicatorViewSupportExam(appId,indicatorCategoryId,name,type,fee,resultAnalysis,status);
+//    }
+//
+//    /**
+//    * 分页筛选指标辅助检查类
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "分页筛选指标辅助检查类")
+//    @GetMapping("v1/baseIndicator/indicatorViewSupportExam/pageIndicatorViewSupportExam")
+//    public String pageIndicatorViewSupportExam(@Validated Integer pageNo, @Validated Integer pageSize, @Validated String appId, @Validated String indicatorCategoryId, @Validated String name, @Validated String type, @Validated DecimalRequest fee, @Validated String resultAnalysis, @Validated Integer status) {
+//        return indicatorViewSupportExamBiz.pageIndicatorViewSupportExam(pageNo,pageSize,appId,indicatorCategoryId,name,type,fee,resultAnalysis,status);
+//    }
 
 
 }

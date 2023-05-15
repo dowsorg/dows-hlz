@@ -234,6 +234,9 @@ public class IndicatorViewPhysicalExamBiz{
         List<IndicatorViewPhysicalExamEntity> indicatorViewPhysicalExamEntityList = new ArrayList<>();
         indicatorViewPhysicalExamEntityList.add(indicatorViewPhysicalExamEntity);
         List<IndicatorViewPhysicalExamResponseRs> indicatorViewPhysicalExamResponseRsList = indicatorViewPhysicalExamEntityList2ResponseRsList(indicatorViewPhysicalExamEntityList);
+        if (indicatorViewPhysicalExamResponseRsList.isEmpty()) {
+            return null;
+        }
         return indicatorViewPhysicalExamResponseRsList.get(0);
     }
 

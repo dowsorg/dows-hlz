@@ -24,98 +24,54 @@ import java.util.List;
 public class IndicatorCategoryRest {
     private final IndicatorCategoryBiz indicatorCategoryBiz;
 
-    /**
-    * 创建指标类别(目前没用上)
-    * @param
-    * @return
-    */
-    @Operation(summary = "创建指标类别")
-    @PostMapping("v1/baseIndicator/indicatorCategory/createIndicatorCategory")
-    public void createIndicatorCategory(@RequestBody @Validated CreateIndicatorCategoryRequest createIndicatorCategory) throws InterruptedException {
-        indicatorCategoryBiz.createIndicatorCategory(createIndicatorCategory);
-    }
 
-    /**
-     * 批量创建或修改指标类别
-     * @param
-     * @return
-     */
     @Operation(summary = "批量创建或修改指标类别")
-    @PostMapping("v1/baseIndicator/indicatorCategory/batchCreateOrUpdateIndicatorCategory")
-    public void batchCreateOrUpdateIndicatorCategory(@RequestBody @Validated BatchCreateOrUpdateIndicatorCategoryRequest batchCreateOrUpdateIndicatorCategoryRequest) throws InterruptedException {
-        indicatorCategoryBiz.batchCreateOrUpdateIndicatorCategory(batchCreateOrUpdateIndicatorCategoryRequest);
+    @PostMapping("v1/baseIndicator/indicatorCategory/batchCreateOrUpdateRs")
+    public void batchCreateOrUpdateRs(@RequestBody @Validated BatchCreateOrUpdateIndicatorCategoryRequest batchCreateOrUpdateIndicatorCategoryRequest) throws InterruptedException {
+        indicatorCategoryBiz.batchCreateOrUpdateRs(batchCreateOrUpdateIndicatorCategoryRequest);
     }
 
-    /**
-    * 删除指标类别
-    * @param
-    * @return
-    */
+
     @Operation(summary = "删除指标类别")
-    @DeleteMapping("v1/baseIndicator/indicatorCategory/deleteIndicatorCategory")
-    public void deleteIndicatorCategory(@RequestParam @Validated String indicatorCategoryId) {
-        indicatorCategoryBiz.deleteIndicatorCategory(indicatorCategoryId);
-    }
-
-    /**
-    * 更新指标类别(目前没用上)
-    * @param
-    * @return
-    */
-    @Operation(summary = "更新指标类别")
-    @PutMapping("v1/baseIndicator/indicatorCategory/updateIndicatorCategory")
-    public void updateIndicatorCategory(@Validated UpdateIndicatorCategoryRequest updateIndicatorCategory ) {
-        indicatorCategoryBiz.updateIndicatorCategory(updateIndicatorCategory);
+    @DeleteMapping("v1/baseIndicator/indicatorCategory/delete")
+    public void delete(@RequestParam @Validated String indicatorCategoryId) {
+        indicatorCategoryBiz.delete(indicatorCategoryId);
     }
 
     @Operation(summary = "根据pid查询出所有的指标类别")
-    @GetMapping("v1/baseIndicator/indicatorCategory/getIndicatorCategoryByPid")
-    public List<IndicatorCategoryResponse> getIndicatorCategoryByPid(
+    @GetMapping("v1/baseIndicator/indicatorCategory/getByPid")
+    public List<IndicatorCategoryResponse> getByPid(
         @RequestParam @Validated String appId,
         @RequestParam(required = false) @Validated String pid
         ) {
-        return indicatorCategoryBiz.getIndicatorCategoryByPid(appId, appId);
+        return indicatorCategoryBiz.getByPid(appId, pid);
     }
 
-    /**
-    * 查询指标类别
-    * @param
-    * @return
-    */
-    @Operation(summary = "查询指标类别")
-    @GetMapping("v1/baseIndicator/indicatorCategory/getIndicatorCategory")
-    public IndicatorCategoryResponse getIndicatorCategory(@Validated String indicatorCategoryId) {
-        return indicatorCategoryBiz.getIndicatorCategory(indicatorCategoryId);
-    }
-
-    /**
-    * 筛选指标类别
-    * @param
-    * @return
-    */
-    @Operation(summary = "筛选指标类别")
-    @GetMapping("v1/baseIndicator/indicatorCategory/listIndicatorCategory")
-    public List<IndicatorCategoryResponse> listIndicatorCategory(@Validated String appId, @Validated Long pid, @Validated String indicatorCategoryId, @Validated String categoryCode, @Validated String categoryName) {
-        return indicatorCategoryBiz.listIndicatorCategory(appId,pid,indicatorCategoryId,categoryCode,categoryName);
-    }
-
-//    /**
-//    * 分页筛选指标类别
-//    * @param
-//    * @return
-//    */
-//    @Operation(summary = "分页筛选指标类别")
-
-    /**
-    * 一键同步（非常复杂）
-    * @param
-    * @return
-    */
-    @Operation(summary = "一键同步（非常复杂）")
-    @PostMapping("v1/baseIndicator/indicatorCategory/sync")
-    public void sync(@RequestBody @Validated String appId ) {
-        indicatorCategoryBiz.sync(appId);
-    }
+//    @PostMapping("v1/baseIndicator/indicatorCategory/createIndicatorCategory")
+//    public void createIndicatorCategory(@RequestBody @Validated CreateIndicatorCategoryRequest createIndicatorCategory) throws InterruptedException {
+//        indicatorCategoryBiz.createIndicatorCategory(createIndicatorCategory);
+//    }
+//
+//    @PutMapping("v1/baseIndicator/indicatorCategory/updateIndicatorCategory")
+//    public void updateIndicatorCategory(@Validated UpdateIndicatorCategoryRequest updateIndicatorCategory ) {
+//        indicatorCategoryBiz.updateIndicatorCategory(updateIndicatorCategory);
+//    }
+//
+//
+//    @GetMapping("v1/baseIndicator/indicatorCategory/getIndicatorCategory")
+//    public IndicatorCategoryResponse getIndicatorCategory(@Validated String indicatorCategoryId) {
+//        return indicatorCategoryBiz.getIndicatorCategory(indicatorCategoryId);
+//    }
+//
+//    @GetMapping("v1/baseIndicator/indicatorCategory/listIndicatorCategory")
+//    public List<IndicatorCategoryResponse> listIndicatorCategory(@Validated String appId, @Validated Long pid, @Validated String indicatorCategoryId, @Validated String categoryCode, @Validated String categoryName) {
+//        return indicatorCategoryBiz.listIndicatorCategory(appId,pid,indicatorCategoryId,categoryCode,categoryName);
+//    }
+//
+//    @PostMapping("v1/baseIndicator/indicatorCategory/sync")
+//    public void sync(@RequestBody @Validated String appId ) {
+//        indicatorCategoryBiz.sync(appId);
+//    }
 
 
 }

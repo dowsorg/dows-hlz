@@ -2,6 +2,7 @@ package org.dows.hep.rest.base.risk;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.risk.request.BatchCreateOrUpdateRiskCategoryRequest;
 import org.dows.hep.api.base.risk.request.CreateRiskCategoryRequest;
 import org.dows.hep.api.base.risk.request.UpdateRiskCategoryRequest;
 import org.dows.hep.api.base.risk.response.RiskCategoryResponse;
@@ -23,6 +24,23 @@ import java.util.List;
 public class RiskCategoryRest {
     private final RiskCategoryBiz riskCategoryBiz;
 
+    @Operation(summary = "批量创建或修改指标类别")
+    @PostMapping("v1/baseRisk/riskCategory/batchCreateOrUpdateRiskCategory")
+    public void batchCreateOrUpdateRiskCategory(@RequestBody @Validated BatchCreateOrUpdateRiskCategoryRequest batchCreateOrUpdateRiskCategoryRequest) throws InterruptedException {
+        riskCategoryBiz.batchCreateOrUpdateRiskCategory(batchCreateOrUpdateRiskCategoryRequest);
+    }
+
+    /**
+     * 删除风险类别
+     * @param
+     * @return
+     */
+    @Operation(summary = "删除风险类别")
+    @DeleteMapping("v1/baseRisk/riskCategory/deleteRiskCategory")
+    public void deleteRiskCategory(@Validated String riskCategoryId ) {
+        riskCategoryBiz.deleteRiskCategory(riskCategoryId);
+    }
+
     /**
     * 创建风险类别
     * @param
@@ -32,17 +50,6 @@ public class RiskCategoryRest {
     @PostMapping("v1/baseRisk/riskCategory/createRiskCategory")
     public void createRiskCategory(@RequestBody @Validated CreateRiskCategoryRequest createRiskCategory ) {
         riskCategoryBiz.createRiskCategory(createRiskCategory);
-    }
-
-    /**
-    * 删除风险类别
-    * @param
-    * @return
-    */
-    @Operation(summary = "删除风险类别")
-    @DeleteMapping("v1/baseRisk/riskCategory/deleteRiskCategory")
-    public void deleteRiskCategory(@Validated String riskCategoryId ) {
-        riskCategoryBiz.deleteRiskCategory(riskCategoryId);
     }
 
     /**

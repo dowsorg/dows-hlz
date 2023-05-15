@@ -57,7 +57,7 @@ public class IndicatorFuncBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     @Transactional(rollbackFor = Exception.class)
-    public void createIndicatorFunc(CreateIndicatorFuncRequest createIndicatorFuncRequest) throws InterruptedException {
+    public void create(CreateIndicatorFuncRequest createIndicatorFuncRequest) throws InterruptedException {
         String indicatorCategoryId = createIndicatorFuncRequest.getPid();
         IndicatorCategoryEntity indicatorCategoryEntity = indicatorCategoryService.lambdaQuery()
             .eq(IndicatorCategoryEntity::getIndicatorCategoryId, indicatorCategoryId)
@@ -124,7 +124,7 @@ public class IndicatorFuncBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     @Transactional(rollbackFor = Exception.class)
-    public void updateIndicatorFunc(UpdateIndicatorFuncRequest updateIndicatorFuncRequest) throws InterruptedException {
+    public void update(UpdateIndicatorFuncRequest updateIndicatorFuncRequest) throws InterruptedException {
         String indicatorFuncId = updateIndicatorFuncRequest.getIndicatorFuncId();
         IndicatorFuncEntity indicatorFuncEntity = indicatorFuncService.lambdaQuery()
             .eq(IndicatorFuncEntity::getIndicatorFuncId, indicatorFuncId)
