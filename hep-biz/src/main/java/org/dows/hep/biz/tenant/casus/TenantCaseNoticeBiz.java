@@ -4,8 +4,10 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
+import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.tenant.casus.request.CaseNoticeRequest;
 import org.dows.hep.api.tenant.casus.response.CaseNoticeResponse;
+import org.dows.hep.entity.CaseInstanceEntity;
 import org.dows.hep.entity.CaseNoticeEntity;
 import org.dows.hep.service.CaseNoticeService;
 import org.springframework.stereotype.Service;
@@ -64,8 +66,7 @@ public class TenantCaseNoticeBiz {
             return new ArrayList<>();
         }
 
-        LambdaQueryWrapper<CaseNoticeEntity> queryWrapper = new LambdaQueryWrapper<CaseNoticeEntity>().eq(CaseNoticeEntity::getCaseInstanceId, caseInstanceId);
-        List<CaseNoticeEntity> entityList = caseNoticeService.list(queryWrapper);
+        List<CaseNoticeEntity> entityList = listCaseNotice0(caseInstanceId);
         if (entityList == null || entityList.isEmpty()) {
             return new ArrayList<>();
         }
@@ -74,6 +75,31 @@ public class TenantCaseNoticeBiz {
                 .map(item -> BeanUtil.copyProperties(item, CaseNoticeResponse.class))
                 .sorted(Comparator.comparingInt(CaseNoticeResponse::getPeriodSequence))
                 .toList();
+    }
+
+    public void copyCaseNotice(String oriCaseInstanceId, CaseInstanceEntity targetCaseInstance) {
+        List<CaseNoticeEntity> oriEntityList = listCaseNotice0(oriCaseInstanceId);
+        if (oriEntityList == null || oriEntityList.isEmpty()) {
+            throw new BizException("数据不存在");
+        }
+
+        String targetCaseInstanceId = targetCaseInstance.getCaseInstanceId();
+        if (StrUtil.isBlank(targetCaseInstanceId)) {
+            throw new BizException("数据不存在");
+        }
+
+        List<CaseNoticeEntity> targetCaseNoticeList = new ArrayList<>();
+        oriEntityList.forEach(item -> {
+            CaseNoticeEntity targetCaseNotice = BeanUtil.copyProperties(item, CaseNoticeEntity.class);
+            targetCaseNotice.setId(null);
+            targetCaseNotice.setCaseNoticeId(baseBiz.getIdStr());
+            targetCaseNotice.setCaseInstanceId(targetCaseInstanceId);
+            targetCaseNotice.setCaseIdentifier(targetCaseInstance.getCaseIdentifier());
+            targetCaseNotice.setVer(targetCaseInstance.getVer());
+            targetCaseNoticeList.add(targetCaseNotice);
+        });
+
+        caseNoticeService.saveBatch(targetCaseNoticeList);
     }
 
     /**
@@ -94,4 +120,11 @@ public class TenantCaseNoticeBiz {
         LambdaQueryWrapper<CaseNoticeEntity> remWrapper = new LambdaQueryWrapper<CaseNoticeEntity>().eq(CaseNoticeEntity::getCaseNoticeId, caseNoticeId);
         return caseNoticeService.remove(remWrapper);
     }
+
+    private List<CaseNoticeEntity> listCaseNotice0(String caseInstanceId) {
+        LambdaQueryWrapper<CaseNoticeEntity> queryWrapper = new LambdaQueryWrapper<CaseNoticeEntity>().eq(CaseNoticeEntity::getCaseInstanceId, caseInstanceId);
+        return caseNoticeService.list(queryWrapper);
+    }
+
+
 }

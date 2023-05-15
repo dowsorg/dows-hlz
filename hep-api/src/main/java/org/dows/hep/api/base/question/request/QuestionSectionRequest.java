@@ -26,10 +26,6 @@ public class QuestionSectionRequest{
     @Schema(title = "应用ID")
     private String appId;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Schema(title = "数据库ID")
-    private Long id;
-
     @Schema(title = "问题集ID")
     private String questionSectionId;
 
@@ -69,6 +65,11 @@ public class QuestionSectionRequest{
 
 
     // JsonIgnore
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @JsonIgnore
+    @Schema(title = "数据库ID")
+    private Long id;
+
     @Schema(title = "类别名")
     @JsonIgnore
     private String questionSectionCategName;

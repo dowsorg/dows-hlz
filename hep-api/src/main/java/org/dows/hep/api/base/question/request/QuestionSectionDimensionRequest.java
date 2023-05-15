@@ -18,11 +18,6 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Schema(name = "QuestionSectionDimension 对象", title = "维度Request")
 public class QuestionSectionDimensionRequest{
-    @Schema(title = "应用ID")
-    private String appId;
-
-    @Schema(title = "问题集ID")
-    private String questionSectionId;
 
     @Schema(title = "维度ID")
     private String questionSectionDimensionId;
@@ -42,6 +37,14 @@ public class QuestionSectionDimensionRequest{
     @Schema(title = "数据库ID")
     @JsonIgnore
     private Long id;
+
+    @Schema(title = "应用ID")
+    @JsonIgnore
+    private String appId;
+
+    @Schema(title = "问题集ID")
+    @JsonIgnore
+    private String questionSectionId;
 
     @Schema(title = "来源")
     @JsonIgnore

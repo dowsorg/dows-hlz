@@ -22,6 +22,7 @@ import org.dows.hep.api.tenant.casus.request.CaseSchemeSearchRequest;
 import org.dows.hep.api.tenant.casus.response.CaseSchemePageResponse;
 import org.dows.hep.api.tenant.casus.response.CaseSchemeResponse;
 import org.dows.hep.biz.base.question.QuestionSectionBiz;
+import org.dows.hep.entity.CaseInstanceEntity;
 import org.dows.hep.entity.CaseSchemeEntity;
 import org.dows.hep.service.CaseSchemeService;
 import org.springframework.stereotype.Service;
@@ -152,7 +153,8 @@ public class TenantCaseSchemeBiz {
         CaseSchemeEntity caseSchemeEntity = getById(caseSchemeId);
         CaseSchemeResponse result = BeanUtil.copyProperties(caseSchemeEntity, CaseSchemeResponse.class);
         // set question-section
-        setQuestionSection(caseSchemeEntity, result);
+        String questionSectionId = caseSchemeEntity.getQuestionSectionId();
+        setQuestionSection(questionSectionId, result);
         return result;
     }
 
@@ -167,12 +169,11 @@ public class TenantCaseSchemeBiz {
      * @创建时间: 2023年4月17日 下午8:00:11
      */
     public CaseSchemeResponse getCaseSchemeByInstanceId(String caseInstanceId) {
-        LambdaQueryWrapper<CaseSchemeEntity> queryWrapper = new LambdaQueryWrapper<CaseSchemeEntity>()
-                .eq(CaseSchemeEntity::getCaseInstanceId, caseInstanceId);
-        CaseSchemeEntity caseSchemeEntity = caseSchemeService.getOne(queryWrapper);
+        CaseSchemeEntity caseSchemeEntity = getByInstanceId(caseInstanceId);
         CaseSchemeResponse result = BeanUtil.copyProperties(caseSchemeEntity, CaseSchemeResponse.class);
         // set question-section
-        setQuestionSection(caseSchemeEntity, result);
+        String questionSectionId = caseSchemeEntity.getQuestionSectionId();
+        setQuestionSection(questionSectionId, result);
         return result;
     }
 
@@ -207,6 +208,36 @@ public class TenantCaseSchemeBiz {
     /**
      * @param
      * @return
+     * @说明: 复制案例方案
+     * @关联表: caseScheme
+     * @工时: 3H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月17日 下午8:00:11
+     */
+    public void copyCaseScheme(String oriCaseInstanceId, CaseInstanceEntity targetCaseInstance) {
+        CaseSchemeEntity oriEntity = getByInstanceId(oriCaseInstanceId);
+        if (BeanUtil.isEmpty(oriEntity)) {
+            throw new BizException("数据不存在");
+        }
+
+        String targetCaseInstanceId = targetCaseInstance.getCaseInstanceId();
+        if (StrUtil.isBlank(targetCaseInstanceId)) {
+            throw new BizException("数据不存在");
+        }
+
+        CaseSchemeEntity targetCaseScheme = BeanUtil.copyProperties(oriEntity, CaseSchemeEntity.class);
+        targetCaseScheme.setId(null);
+        targetCaseScheme.setCaseSchemeId(baseBiz.getIdStr());
+        targetCaseScheme.setCaseInstanceId(targetCaseInstanceId);
+        targetCaseScheme.setCaseIdentifier(targetCaseInstance.getCaseIdentifier());
+        targetCaseScheme.setVer(targetCaseInstance.getVer());
+        caseSchemeService.save(targetCaseScheme);
+    }
+
+    /**
+     * @param
+     * @return
      * @说明: 删除or批量删除案例方案
      * @关联表: caseScheme
      * @工时: 6H
@@ -231,9 +262,8 @@ public class TenantCaseSchemeBiz {
         return caseSchemeService.update(updateWrapper);
     }
 
-    private void setQuestionSection(CaseSchemeEntity caseSchemeEntity, CaseSchemeResponse result) {
+    private void setQuestionSection(String questionSectionId, CaseSchemeResponse result) {
         // get and set question-section
-        String questionSectionId = caseSchemeEntity.getQuestionSectionId();
         QuestionSectionResponse questionSectionResponse = questionSectionBiz.getQuestionSection(questionSectionId);
         if (BeanUtil.isEmpty(questionSectionResponse)) {
             return;
@@ -309,4 +339,12 @@ public class TenantCaseSchemeBiz {
         List<QuestionSectionItemRequest> sectionItemList = caseScheme.getSectionItemList();
         return sectionItemList == null ? 0 : sectionItemList.size();
     }
+
+    private CaseSchemeEntity getByInstanceId(String caseInstanceId) {
+        LambdaQueryWrapper<CaseSchemeEntity> queryWrapper = new LambdaQueryWrapper<CaseSchemeEntity>()
+                .eq(CaseSchemeEntity::getCaseInstanceId, caseInstanceId);
+        return caseSchemeService.getOne(queryWrapper);
+    }
+
+
 }
