@@ -78,18 +78,6 @@ public class QuestionRequest {
     @JsonIgnore
     private String questionInstancePid;
 
-    @Schema(title = "类别名")
-    @JsonIgnore
-    private String questionCategName;
-
-    @Schema(title = "类别ID路径")
-    @JsonIgnore
-    private String questionCategIdPath;
-
-    @Schema(title = "类别name路径")
-    @JsonIgnore
-    private String questionCategNamePath;
-
     @Schema(title = "来源")
     @JsonIgnore
     private String source;

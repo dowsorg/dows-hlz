@@ -63,9 +63,6 @@ public class QuestionSectionItemEntity implements CrudEntity {
     @Schema(title = "创建者姓名")
     private String accountName;
 
-    @Schema(title = "权限[000001]")
-    private String permissions;
-
     @JsonIgnore
     @TableLogic
     @TableField(fill = FieldFill.INSERT)

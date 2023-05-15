@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.QuestionOptionWithAnswerRequest;
 import org.dows.hep.api.base.question.request.QuestionRequest;
@@ -93,7 +94,7 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
         // get ori data
         QuestionInstanceEntity oriEntity = getById(questionRequest.getQuestionInstanceId());
         if (BeanUtil.isEmpty(oriEntity)) {
-            return Boolean.FALSE;
+           throw new BizException("数据不存在");
         }
         // update base-info
         questionRequest.setId(oriEntity.getId());

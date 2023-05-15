@@ -2,6 +2,7 @@ package org.dows.hep.biz.base.question;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,7 @@ public class QuestionSectionBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
+    @DSTransactional
     public String saveOrUpdQuestionSection(QuestionSectionRequest questionSection) {
         if (questionSection == null) {
             return "";
@@ -57,8 +59,8 @@ public class QuestionSectionBiz {
         List<QuestionSectionDimensionRequest> questionSectionDimensionList = questionSection.getQuestionSectionDimensionList();
         if (questionSectionDimensionList != null && !questionSectionDimensionList.isEmpty()) {
             questionSectionDimensionList.forEach(item -> {
-                item.setQuestionSectionId(questionSectionEntity.getQuestionSectionId());
                 item.setAppId(questionSectionEntity.getAppId());
+                item.setQuestionSectionId(questionSectionEntity.getQuestionSectionId());
                 item.setAccountId(questionSectionEntity.getAccountId());
                 item.setAccountName(questionSectionEntity.getAccountName());
             });

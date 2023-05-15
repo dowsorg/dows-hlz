@@ -68,6 +68,7 @@ public class QuestionSectionItemBiz {
         }
 
         LambdaQueryWrapper<QuestionSectionItemEntity> queryWrapper = new LambdaQueryWrapper<QuestionSectionItemEntity>()
+                .eq(QuestionSectionItemEntity::getEnabled, QuestionEnabledEnum.ENABLED.getCode())
                 .in(QuestionSectionItemEntity::getQuestionSectionId, questionSectionIds);
         List<QuestionSectionItemEntity> itemList = questionSectionItemService.list(queryWrapper);
         if (itemList == null || itemList.isEmpty()) {
@@ -94,7 +95,7 @@ public class QuestionSectionItemBiz {
     public Boolean enabledSectionQuestion(String questionSectionId, String questionSectionItemId) {
         LambdaUpdateWrapper<QuestionSectionItemEntity> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(QuestionSectionItemEntity::getQuestionSectionId, questionSectionId)
-                .set(QuestionSectionItemEntity::getQuestionSectionItemId, questionSectionItemId)
+                .eq(QuestionSectionItemEntity::getQuestionSectionItemId, questionSectionItemId)
                 .set(QuestionSectionItemEntity::getEnabled, QuestionEnabledEnum.ENABLED.getCode());
         return questionSectionItemService.update(updateWrapper);
     }
@@ -109,7 +110,7 @@ public class QuestionSectionItemBiz {
     public Boolean disabledSectionQuestion(String questionSectionId, String questionSectionItemId) {
         LambdaUpdateWrapper<QuestionSectionItemEntity> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(QuestionSectionItemEntity::getQuestionSectionId, questionSectionId)
-                .set(QuestionSectionItemEntity::getQuestionSectionItemId, questionSectionItemId)
+                .eq(QuestionSectionItemEntity::getQuestionSectionItemId, questionSectionItemId)
                 .set(QuestionSectionItemEntity::getEnabled, QuestionEnabledEnum.DISABLED.getCode());
         return questionSectionItemService.update(updateWrapper);
     }
@@ -133,7 +134,9 @@ public class QuestionSectionItemBiz {
             return "";
         }
 
-        return batchSaveOrUpd(itemRequestList, QuestionRequest::getQuestionInstanceId);
+        // clone or ref ?
+        return batchSaveOrUpd(itemRequestList, questionInstanceBiz::cloneQuestion);
+//        return batchSaveOrUpd(itemRequestList, QuestionRequest::getQuestionInstanceId);
     }
 
     private String batchSaveOrUpdAddNewMode(List<QuestionSectionItemRequest> itemRequestList) {

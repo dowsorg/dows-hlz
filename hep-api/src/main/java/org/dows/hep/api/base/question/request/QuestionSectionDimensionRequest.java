@@ -23,10 +23,10 @@ public class QuestionSectionDimensionRequest{
     private String questionSectionDimensionId;
 
     @Schema(title = "维度名称")
-    private String demensionName;
+    private String dimensionName;
 
     @Schema(title = "内容")
-    private String demensionContent;
+    private String dimensionContent;
 
     @Schema(title = "分数")
     private BigDecimal score;
@@ -45,10 +45,6 @@ public class QuestionSectionDimensionRequest{
     @Schema(title = "问题集ID")
     @JsonIgnore
     private String questionSectionId;
-
-    @Schema(title = "来源")
-    @JsonIgnore
-    private String source;
 
     @Schema(title = "创建者账号Id")
     @JsonIgnore

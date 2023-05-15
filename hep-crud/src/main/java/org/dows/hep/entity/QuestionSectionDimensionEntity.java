@@ -46,16 +46,13 @@ public class QuestionSectionDimensionEntity implements CrudEntity {
     private String questionSectionId;
 
     @Schema(title = "维度名称")
-    private String demensionName;
+    private String dimensionName;
 
     @Schema(title = "内容")
-    private String demensionContent;
+    private String dimensionContent;
 
     @Schema(title = "分数")
     private Object score;
-
-    @Schema(title = "来源")
-    private String source;
 
     @Schema(title = "创建者账号Id")
     private String accountId;

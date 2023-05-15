@@ -3,7 +3,8 @@ package org.dows.hep.rest.base.question;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.question.request.*;
+import org.dows.hep.api.base.question.QuestionSectionAccessAuthEnum;
+import org.dows.hep.api.base.question.request.QuestionSectionRequest;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
 import org.dows.hep.biz.base.question.QuestionSectionBiz;
 import org.springframework.validation.annotation.Validated;
@@ -13,7 +14,7 @@ import java.util.List;
 
 /**
 * @description project descr:问题:问题集[问卷]
-*
+* @folder admin-hep/问题域-问卷
 * @author lait.zhang
 * @date 2023年4月23日 上午9:44:34
 */
@@ -31,6 +32,7 @@ public class QuestionSectionRest {
     @Operation(summary = "新增和更新")
     @PostMapping("v1/baseQuestion/questionSection/saveOrUpdQuestionSection")
     public String saveOrUpdQuestionSection(@RequestBody @Validated QuestionSectionRequest questionSection ) {
+        questionSection.setBizCode(QuestionSectionAccessAuthEnum.PUBLIC_VIEWING.name());
         return questionSectionBiz.saveOrUpdQuestionSection(questionSection);
     }
 

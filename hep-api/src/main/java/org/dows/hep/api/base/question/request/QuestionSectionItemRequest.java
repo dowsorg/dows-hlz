@@ -61,8 +61,4 @@ public class QuestionSectionItemRequest {
     @JsonIgnore
     private String accountName;
 
-    @Schema(title = "权限[000001]")
-    @JsonIgnore
-    private String permissions;
-
 }

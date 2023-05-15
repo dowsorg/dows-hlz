@@ -70,18 +70,6 @@ public class QuestionSectionRequest{
     @Schema(title = "数据库ID")
     private Long id;
 
-    @Schema(title = "类别名")
-    @JsonIgnore
-    private String questionSectionCategName;
-
-    @Schema(title = "类别ID路径")
-    @JsonIgnore
-    private String questionSectionCategIdPath;
-
-    @Schema(title = "类别name路径")
-    @JsonIgnore
-    private String questionSectionCategNamePath;
-
     @Schema(title = "来源")
     @JsonIgnore
     private String source;
