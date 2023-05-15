@@ -45,19 +45,14 @@ public class IndicatorViewPhysicalExamRest {
         indicatorViewPhysicalExamBiz.deleteIndicatorViewPhysicalExam(indicatorViewPhysicalExamId);
     }
 
-    @Operation(summary = "批量删除")
-    @DeleteMapping("v1/baseIndicator/indicatorViewPhysicalExam/batchDelete")
-    public void batchDelete(@Validated String string ) {
-        indicatorViewPhysicalExamBiz.batchDelete(string);
-    }
-
-    @Operation(summary = "Rs更改启用状态")
+    @Operation(summary = "Rs更改体格启用状态")
     @PutMapping("v1/baseIndicator/indicatorViewPhysicalExam/updateStatusRs")
     public void updateStatusRs(
         @RequestParam String indicatorViewPhysicalExamId,
         @RequestParam Integer status) {
         indicatorViewPhysicalExamBiz.updateStatusRs(indicatorViewPhysicalExamId, status);
     }
+
 
     @Operation(summary = "Rs获取查看指标体格检查类")
     @GetMapping("v1/baseIndicator/indicatorViewPhysicalExam/getRs")
@@ -80,69 +75,74 @@ public class IndicatorViewPhysicalExamRest {
         return indicatorViewPhysicalExamBiz.pageRs(pageNo,pageSize,order,asc, appId,indicatorFuncId,name,indicatorCategoryId,status);
     }
 
-    /**
-     * 创建查看指标体格检查类
-     * @param
-     * @return
-     */
-    @Operation(summary = "创建查看指标体格检查类")
-    @PostMapping("v1/baseIndicator/indicatorViewPhysicalExam/createIndicatorViewPhysicalExam")
-    public void createIndicatorViewPhysicalExam(@RequestBody @Validated CreateIndicatorViewPhysicalExamRequest createIndicatorViewPhysicalExam ) {
-        indicatorViewPhysicalExamBiz.createIndicatorViewPhysicalExam(createIndicatorViewPhysicalExam);
-    }
-
-    /**
-     * 更改启用状态
-     * @param
-     * @return
-     */
-    @Operation(summary = "更改启用状态")
-    @PutMapping("v1/baseIndicator/indicatorViewPhysicalExam/updateStatus")
-    public void updateStatus(@Validated IndicatorViewPhysicalExamRequest indicatorViewPhysicalExam ) {
-        indicatorViewPhysicalExamBiz.updateStatus(indicatorViewPhysicalExam);
-    }
-
-    /**
-    * 查看指标体格检查类
-    * @param
-    * @return
-    */
-    @Operation(summary = "查看指标体格检查类")
-    @PutMapping("v1/baseIndicator/indicatorViewPhysicalExam/updateIndicatorViewPhysicalExam")
-    public void updateIndicatorViewPhysicalExam(@Validated UpdateIndicatorViewPhysicalExamRequest updateIndicatorViewPhysicalExam ) {
-        indicatorViewPhysicalExamBiz.updateIndicatorViewPhysicalExam(updateIndicatorViewPhysicalExam);
-    }
-
-    /**
-    * 获取查看指标体格检查类
-    * @param
-    * @return
-    */
-    @Operation(summary = "获取查看指标体格检查类")
-    @GetMapping("v1/baseIndicator/indicatorViewPhysicalExam/getIndicatorViewPhysicalExam")
-    public IndicatorViewPhysicalExamResponse getIndicatorViewPhysicalExam(@Validated String indicatorViewPhysicalExamId) {
-        return indicatorViewPhysicalExamBiz.getIndicatorViewPhysicalExam(indicatorViewPhysicalExamId);
-    }
-
-    /**
-    * 筛选查看指标体格检查类
-    * @param
-    * @return
-    */
-    @Operation(summary = "筛选查看指标体格检查类")
-    @GetMapping("v1/baseIndicator/indicatorViewPhysicalExam/listIndicatorViewPhysicalExam")
-    public List<IndicatorViewPhysicalExamResponse> listIndicatorViewPhysicalExam(@Validated String appId, @Validated String indicatorCategoryId, @Validated String name, @Validated Integer type, @Validated DecimalRequest fee, @Validated String resultAnalysis, @Validated Integer status) {
-        return indicatorViewPhysicalExamBiz.listIndicatorViewPhysicalExam(appId,indicatorCategoryId,name,type,fee,resultAnalysis,status);
-    }
-
-    /**
-    * 分页筛选查看指标体格检查类
-    * @param
-    * @return
-    */
-    @Operation(summary = "分页筛选查看指标体格检查类")
-    @GetMapping("v1/baseIndicator/indicatorViewPhysicalExam/pageIndicatorViewPhysicalExam")
-    public String pageIndicatorViewPhysicalExam(@Validated Integer pageNo, @Validated Integer pageSize, @Validated String appId, @Validated String indicatorCategoryId, @Validated String name, @Validated Integer type, @Validated DecimalRequest fee, @Validated String resultAnalysis, @Validated Integer status) {
-        return indicatorViewPhysicalExamBiz.pageIndicatorViewPhysicalExam(pageNo,pageSize,appId,indicatorCategoryId,name,type,fee,resultAnalysis,status);
-    }
+//    @Operation(summary = "批量删除")
+//    @DeleteMapping("v1/baseIndicator/indicatorViewPhysicalExam/batchDelete")
+//    public void batchDelete(@Validated String string ) {
+//        indicatorViewPhysicalExamBiz.batchDelete(string);
+//    }
+//    /**
+//     * 创建查看指标体格检查类
+//     * @param
+//     * @return
+//     */
+//    @Operation(summary = "创建查看指标体格检查类")
+//    @PostMapping("v1/baseIndicator/indicatorViewPhysicalExam/createIndicatorViewPhysicalExam")
+//    public void createIndicatorViewPhysicalExam(@RequestBody @Validated CreateIndicatorViewPhysicalExamRequest createIndicatorViewPhysicalExam ) {
+//        indicatorViewPhysicalExamBiz.createIndicatorViewPhysicalExam(createIndicatorViewPhysicalExam);
+//    }
+//
+//    /**
+//     * 更改启用状态
+//     * @param
+//     * @return
+//     */
+//    @Operation(summary = "更改启用状态")
+//    @PutMapping("v1/baseIndicator/indicatorViewPhysicalExam/updateStatus")
+//    public void updateStatus(@Validated IndicatorViewPhysicalExamRequest indicatorViewPhysicalExam ) {
+//        indicatorViewPhysicalExamBiz.updateStatus(indicatorViewPhysicalExam);
+//    }
+//
+//    /**
+//    * 查看指标体格检查类
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "查看指标体格检查类")
+//    @PutMapping("v1/baseIndicator/indicatorViewPhysicalExam/updateIndicatorViewPhysicalExam")
+//    public void updateIndicatorViewPhysicalExam(@Validated UpdateIndicatorViewPhysicalExamRequest updateIndicatorViewPhysicalExam ) {
+//        indicatorViewPhysicalExamBiz.updateIndicatorViewPhysicalExam(updateIndicatorViewPhysicalExam);
+//    }
+//
+//    /**
+//    * 获取查看指标体格检查类
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "获取查看指标体格检查类")
+//    @GetMapping("v1/baseIndicator/indicatorViewPhysicalExam/getIndicatorViewPhysicalExam")
+//    public IndicatorViewPhysicalExamResponse getIndicatorViewPhysicalExam(@Validated String indicatorViewPhysicalExamId) {
+//        return indicatorViewPhysicalExamBiz.getIndicatorViewPhysicalExam(indicatorViewPhysicalExamId);
+//    }
+//
+//    /**
+//    * 筛选查看指标体格检查类
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "筛选查看指标体格检查类")
+//    @GetMapping("v1/baseIndicator/indicatorViewPhysicalExam/listIndicatorViewPhysicalExam")
+//    public List<IndicatorViewPhysicalExamResponse> listIndicatorViewPhysicalExam(@Validated String appId, @Validated String indicatorCategoryId, @Validated String name, @Validated Integer type, @Validated DecimalRequest fee, @Validated String resultAnalysis, @Validated Integer status) {
+//        return indicatorViewPhysicalExamBiz.listIndicatorViewPhysicalExam(appId,indicatorCategoryId,name,type,fee,resultAnalysis,status);
+//    }
+//
+//    /**
+//    * 分页筛选查看指标体格检查类
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "分页筛选查看指标体格检查类")
+//    @GetMapping("v1/baseIndicator/indicatorViewPhysicalExam/pageIndicatorViewPhysicalExam")
+//    public String pageIndicatorViewPhysicalExam(@Validated Integer pageNo, @Validated Integer pageSize, @Validated String appId, @Validated String indicatorCategoryId, @Validated String name, @Validated Integer type, @Validated DecimalRequest fee, @Validated String resultAnalysis, @Validated Integer status) {
+//        return indicatorViewPhysicalExamBiz.pageIndicatorViewPhysicalExam(pageNo,pageSize,appId,indicatorCategoryId,name,type,fee,resultAnalysis,status);
+//    }
 }

@@ -222,6 +222,9 @@ public class IndicatorJudgeHealthProblemBiz{
         List<IndicatorJudgeHealthProblemEntity> indicatorJudgeHealthProblemEntityList = new ArrayList<>();
         indicatorJudgeHealthProblemEntityList.add(indicatorJudgeHealthProblemEntity);
         List<IndicatorJudgeHealthProblemResponseRs> indicatorJudgeHealthProblemResponseRsList = indicatorJudgeHealthProblemEntityList2ResponseRsList(indicatorJudgeHealthProblemEntityList);
+        if (indicatorJudgeHealthProblemResponseRsList.isEmpty()) {
+            return null;
+        }
         return indicatorJudgeHealthProblemResponseRsList.get(0);
     }
 
