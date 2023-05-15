@@ -1,4 +1,4 @@
-package org.dows.hep.rest.tenant.casus;
+package org.dows.hep.rest.base.scheme;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * @folder tenant-hep/案例域-方案设计
+ * @folder admin-hep/案例域-方案设计
  * @author lait.zhang
  * @description project descr:案例:案例方案设计
  * @date 2023年4月17日 下午8:00:11
@@ -23,7 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @Tag(name = "案例方案设计", description = "案例方案设计")
-public class TenantCaseSchemeRest {
+public class CaseSchemeRest {
     private final TenantCaseSchemeBiz tenantCaseSchemeBiz;
 
     /**
@@ -33,7 +33,7 @@ public class TenantCaseSchemeRest {
      * @return
      */
     @Operation(summary = "新增和更新")
-    @PostMapping("v1/tenantCasus/caseScheme/saveOrUpdCaseScheme")
+    @PostMapping("v1/baseCasus/caseScheme/saveOrUpdCaseScheme")
     public String saveOrUpdCaseScheme(@RequestBody @Validated CaseSchemeRequest caseScheme) {
         return tenantCaseSchemeBiz.saveOrUpdCaseScheme(caseScheme);
     }
@@ -44,7 +44,7 @@ public class TenantCaseSchemeRest {
     * @return
     */
     @Operation(summary = "分页案例方案")
-    @PostMapping("v1/tenantCasus/caseScheme/pageCaseScheme")
+    @PostMapping("v1/baseCasus/caseScheme/pageCaseScheme")
     public IPage<CaseSchemePageResponse> pageCaseScheme(@RequestBody @Validated CaseSchemePageRequest caseSchemePage ) {
         return tenantCaseSchemeBiz.pageCaseScheme(caseSchemePage);
     }
@@ -55,7 +55,7 @@ public class TenantCaseSchemeRest {
     * @return
     */
     @Operation(summary = "获取案例方案")
-    @GetMapping("v1/tenantCasus/caseScheme/getCaseScheme")
+    @GetMapping("v1/baseCasus/caseScheme/getCaseScheme")
     public CaseSchemeResponse getCaseScheme(@Validated String caseSchemeId) {
         return tenantCaseSchemeBiz.getCaseScheme(caseSchemeId);
     }
@@ -66,7 +66,7 @@ public class TenantCaseSchemeRest {
     * @return
     */
     @Operation(summary = "启用案例方案")
-    @GetMapping("v1/tenantCasus/caseScheme/enabledCaseScheme")
+    @GetMapping("v1/baseCasus/caseScheme/enabledCaseScheme")
     public Boolean enabledCaseScheme(@Validated String caseSchemeId) {
         return tenantCaseSchemeBiz.enabledCaseScheme(caseSchemeId);
     }
@@ -77,7 +77,7 @@ public class TenantCaseSchemeRest {
     * @return
     */
     @Operation(summary = "禁用案例方案")
-    @GetMapping("v1/tenantCasus/caseScheme/disabledCaseScheme")
+    @GetMapping("v1/baseCasus/caseScheme/disabledCaseScheme")
     public Boolean disabledCaseScheme(@Validated String caseSchemeId) {
         return tenantCaseSchemeBiz.disabledCaseScheme(caseSchemeId);
     }
@@ -88,7 +88,7 @@ public class TenantCaseSchemeRest {
     * @return
     */
     @Operation(summary = "删除or批量删除案例方案")
-    @DeleteMapping("v1/tenantCasus/caseScheme/delCaseScheme")
+    @DeleteMapping("v1/baseCasus/caseScheme/delCaseScheme")
     public Boolean delCaseScheme(List<String> caseSchemeIds ) {
         return tenantCaseSchemeBiz.delCaseScheme(caseSchemeIds);
     }

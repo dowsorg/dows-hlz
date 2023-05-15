@@ -65,8 +65,7 @@ public class TenantCaseSchemeBiz {
 
         // handle
         // save question-section
-        QuestionSectionRequest questionSectionRequest = caseScheme2QS(caseScheme);
-        String questionSectionId = questionSectionBiz.saveOrUpdQuestionSection(questionSectionRequest);
+        String questionSectionId = saveOrUpdQuestionSection(caseScheme);
 
         // save caseScheme
         CaseSchemeEntity caseSchemeEntity = BeanUtil.copyProperties(caseScheme, CaseSchemeEntity.class);
@@ -91,7 +90,6 @@ public class TenantCaseSchemeBiz {
         if (BeanUtil.isEmpty(caseSchemePage)) {
             return new Page<>();
         }
-        Page<CaseSchemePageResponse> result = new Page<>();
 
         // page
         Page<CaseSchemeEntity> page = new Page<>(caseSchemePage.getPageNo(), caseSchemePage.getPageSize());
@@ -103,15 +101,7 @@ public class TenantCaseSchemeBiz {
         Page<CaseSchemeEntity> pageResult = caseSchemeService.page(page, queryWrapper);
 
         // convert
-        List<CaseSchemeEntity> records = pageResult.getRecords();
-        if (records == null || records.isEmpty()) {
-            return result;
-        }
-        List<CaseSchemePageResponse> pageResponseList = records.stream()
-                .map(item -> BeanUtil.copyProperties(item, CaseSchemePageResponse.class))
-                .collect(Collectors.toList());
-        result.setRecords(pageResponseList);
-        return result;
+        return baseBiz.convertPage(pageResult, CaseSchemePageResponse.class);
     }
 
     /**
@@ -234,21 +224,6 @@ public class TenantCaseSchemeBiz {
         return caseSchemeService.remove(queryWrapper);
     }
 
-    private QuestionSectionRequest caseScheme2QS(CaseSchemeRequest caseScheme) {
-        return QuestionSectionRequest.builder()
-                .name(caseScheme.getSchemeName())
-                .tips(caseScheme.getTips())
-                .descr(caseScheme.getSchemeDescr())
-                .enabled(EnumStatus.ENABLE.getCode())
-                .accountId(caseScheme.getAccountId())
-                .accountName(caseScheme.getAccountName())
-                .sectionItemList(caseScheme.getSectionItemList())
-                .questionSectionDimensionList(caseScheme.getQuestionSectionDimensionList())
-                .appId(caseScheme.getAppId())
-                .source(caseScheme.getSource())
-                .build();
-    }
-
     private boolean changeStatus(String caseSchemeId, EnumStatus enumStatus) {
         LambdaUpdateWrapper<CaseSchemeEntity> updateWrapper = new LambdaUpdateWrapper<CaseSchemeEntity>()
                 .eq(CaseSchemeEntity::getCaseSchemeId, caseSchemeId)
@@ -267,11 +242,6 @@ public class TenantCaseSchemeBiz {
         List<QuestionSectionDimensionResponse> questionSectionDimensionList = questionSectionResponse.getQuestionSectionDimensionList();
         result.setSectionItemList(sectionItemList);
         result.setQuestionSectionDimensionList(questionSectionDimensionList);
-    }
-
-    private Integer getQuestionCount(CaseSchemeRequest caseScheme) {
-        List<QuestionSectionItemRequest> sectionItemList = caseScheme.getSectionItemList();
-        return sectionItemList == null ? 0 : sectionItemList.size();
     }
 
     private CaseSchemeEntity getById(String caseSchemeId) {
@@ -313,5 +283,30 @@ public class TenantCaseSchemeBiz {
             }
             caseScheme.setId(caseSchemeEntity.getId());
         }
+    }
+
+    private String saveOrUpdQuestionSection(CaseSchemeRequest caseScheme) {
+        QuestionSectionRequest questionSectionRequest = caseScheme2QS(caseScheme);
+        return questionSectionBiz.saveOrUpdQuestionSection(questionSectionRequest);
+    }
+
+    private QuestionSectionRequest caseScheme2QS(CaseSchemeRequest caseScheme) {
+        return QuestionSectionRequest.builder()
+                .name(caseScheme.getSchemeName())
+                .tips(caseScheme.getTips())
+                .descr(caseScheme.getSchemeDescr())
+                .enabled(EnumStatus.ENABLE.getCode())
+                .accountId(caseScheme.getAccountId())
+                .accountName(caseScheme.getAccountName())
+                .sectionItemList(caseScheme.getSectionItemList())
+                .questionSectionDimensionList(caseScheme.getQuestionSectionDimensionList())
+                .appId(caseScheme.getAppId())
+                .source(caseScheme.getSource())
+                .build();
+    }
+
+    private Integer getQuestionCount(CaseSchemeRequest caseScheme) {
+        List<QuestionSectionItemRequest> sectionItemList = caseScheme.getSectionItemList();
+        return sectionItemList == null ? 0 : sectionItemList.size();
     }
 }
