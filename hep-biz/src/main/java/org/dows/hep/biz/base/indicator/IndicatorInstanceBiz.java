@@ -89,7 +89,7 @@ public class IndicatorInstanceBiz{
      * 3.save IndicatorRule
     */
     @Transactional(rollbackFor = Exception.class)
-    public void createIndicatorInstance(CreateIndicatorInstanceRequest createIndicatorInstanceRequest) throws InterruptedException {
+    public void create(CreateIndicatorInstanceRequest createIndicatorInstanceRequest) throws InterruptedException {
         String indicatorCategoryId = createIndicatorInstanceRequest.getIndicatorCategoryId();
         if (Objects.nonNull(indicatorCategoryId)) {
             indicatorCategoryService.lambdaQuery()
