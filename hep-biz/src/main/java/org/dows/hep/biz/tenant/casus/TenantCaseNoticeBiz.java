@@ -9,6 +9,7 @@ import org.dows.hep.api.tenant.casus.request.CaseNoticeRequest;
 import org.dows.hep.api.tenant.casus.response.CaseNoticeResponse;
 import org.dows.hep.entity.CaseInstanceEntity;
 import org.dows.hep.entity.CaseNoticeEntity;
+import org.dows.hep.service.CaseInstanceService;
 import org.dows.hep.service.CaseNoticeService;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +27,7 @@ import java.util.List;
 public class TenantCaseNoticeBiz {
     private final TenantCaseBaseBiz baseBiz;
     private final CaseNoticeService caseNoticeService;
+    private final CaseInstanceService caseInstanceService;
 
     /**
      * @param
@@ -38,13 +40,12 @@ public class TenantCaseNoticeBiz {
      * @创建时间: 2023年4月17日 下午8:00:11
      */
     public String saveOrUpdCaseNotice(CaseNoticeRequest caseNotice) {
-        if (caseNotice == null) {
+        if (BeanUtil.isEmpty(caseNotice)) {
             return "";
         }
 
-        if (StrUtil.isBlank(caseNotice.getCaseNoticeId())) {
-            caseNotice.setCaseNoticeId(baseBiz.getIdStr());
-        }
+        // check and save
+        checkBeforeSaveOrUpd(caseNotice);
         CaseNoticeEntity caseNoticeEntity = BeanUtil.copyProperties(caseNotice, CaseNoticeEntity.class);
         caseNoticeService.saveOrUpdate(caseNoticeEntity);
 
@@ -77,6 +78,32 @@ public class TenantCaseNoticeBiz {
                 .toList();
     }
 
+    /**
+     * @param
+     * @return
+     * @说明: 根据ID获取案例公告
+     * @关联表: caseNotice
+     * @工时: 5H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月17日 下午8:00:11
+     */
+    public CaseNoticeEntity getById(String caseNoticeId) {
+        LambdaQueryWrapper<CaseNoticeEntity> queryWrapper = new LambdaQueryWrapper<CaseNoticeEntity>()
+                .eq(CaseNoticeEntity::getCaseNoticeId, caseNoticeId);
+        return caseNoticeService.getOne(queryWrapper);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 复制案例公告
+     * @关联表: caseNotice
+     * @工时: 5H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月17日 下午8:00:11
+     */
     public void copyCaseNotice(String oriCaseInstanceId, CaseInstanceEntity targetCaseInstance) {
         List<CaseNoticeEntity> oriEntityList = listCaseNotice0(oriCaseInstanceId);
         if (oriEntityList == null || oriEntityList.isEmpty()) {
@@ -103,21 +130,22 @@ public class TenantCaseNoticeBiz {
     }
 
     /**
-    * @param
-    * @return
-    * @说明: 删除案例公告
-    * @关联表: caseNotice
-    * @工时: 3H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月17日 下午8:00:11
-    */
-    public Boolean delCaseNotice(String caseNoticeId ) {
-        if (StrUtil.isBlank(caseNoticeId)) {
+     * @param
+     * @return
+     * @说明: 删除案例公告
+     * @关联表: caseNotice
+     * @工时: 3H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月17日 下午8:00:11
+     */
+    public Boolean delCaseNotice(List<String> caseNoticeIds) {
+        if (caseNoticeIds == null || caseNoticeIds.isEmpty()) {
             return Boolean.FALSE;
         }
 
-        LambdaQueryWrapper<CaseNoticeEntity> remWrapper = new LambdaQueryWrapper<CaseNoticeEntity>().eq(CaseNoticeEntity::getCaseNoticeId, caseNoticeId);
+        LambdaQueryWrapper<CaseNoticeEntity> remWrapper = new LambdaQueryWrapper<CaseNoticeEntity>()
+                .in(CaseNoticeEntity::getCaseNoticeId, caseNoticeIds);
         return caseNoticeService.remove(remWrapper);
     }
 
@@ -126,5 +154,30 @@ public class TenantCaseNoticeBiz {
         return caseNoticeService.list(queryWrapper);
     }
 
+    private void checkBeforeSaveOrUpd(CaseNoticeRequest request) {
+        String uniqueId = request.getCaseNoticeId();
+        if (StrUtil.isBlank(uniqueId)) {
+            request.setCaseNoticeId(baseBiz.getIdStr());
+
+            // get case-instance
+            String caseInstanceId = request.getCaseInstanceId();
+            LambdaQueryWrapper<CaseInstanceEntity> queryWrapper = new LambdaQueryWrapper<CaseInstanceEntity>()
+                    .eq(CaseInstanceEntity::getCaseInstanceId, caseInstanceId);
+            CaseInstanceEntity caseInstance = caseInstanceService.getOne(queryWrapper);
+            if (BeanUtil.isEmpty(caseInstance)) {
+                throw new BizException("数据不存在");
+            }
+
+            request.setCaseInstanceId(caseInstance.getCaseInstanceId());
+            request.setCaseIdentifier(caseInstance.getCaseIdentifier());
+            request.setVer(caseInstance.getVer());
+        } else {
+            CaseNoticeEntity entity = getById(uniqueId);
+            if (BeanUtil.isEmpty(entity)) {
+                throw new BizException("数据不存在");
+            }
+            request.setId(entity.getId());
+        }
+    }
 
 }
