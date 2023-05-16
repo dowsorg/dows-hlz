@@ -83,13 +83,14 @@ public class CaseSchemeRest {
     }
 
     /**
-    * 删除or批量删除案例方案
-    * @param
-    * @return
-    */
+     * 删除or批量删除案例方案
+     *
+     * @param
+     * @return
+     */
     @Operation(summary = "删除or批量删除案例方案")
     @DeleteMapping("v1/baseCasus/caseScheme/delCaseScheme")
-    public Boolean delCaseScheme(List<String> caseSchemeIds ) {
+    public Boolean delCaseScheme(@RequestBody List<String> caseSchemeIds) {
         return tenantCaseSchemeBiz.delCaseScheme(caseSchemeIds);
     }
 

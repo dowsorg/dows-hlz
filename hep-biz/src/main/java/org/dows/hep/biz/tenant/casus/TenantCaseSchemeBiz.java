@@ -9,6 +9,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.hep.api.base.question.QuestionEnabledEnum;
+import org.dows.hep.api.base.question.QuestionSectionAccessAuthEnum;
+import org.dows.hep.api.base.question.QuestionSectionGenerationModeEnum;
 import org.dows.hep.api.base.question.request.QuestionSectionItemRequest;
 import org.dows.hep.api.base.question.request.QuestionSectionRequest;
 import org.dows.hep.api.base.question.response.QuestionSectionDimensionResponse;
@@ -16,6 +19,7 @@ import org.dows.hep.api.base.question.response.QuestionSectionItemResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
 import org.dows.hep.api.enums.EnumSource;
 import org.dows.hep.api.enums.EnumStatus;
+import org.dows.hep.api.tenant.casus.CaseEnabledEnum;
 import org.dows.hep.api.tenant.casus.request.CaseSchemePageRequest;
 import org.dows.hep.api.tenant.casus.request.CaseSchemeRequest;
 import org.dows.hep.api.tenant.casus.request.CaseSchemeSearchRequest;
@@ -94,11 +98,10 @@ public class TenantCaseSchemeBiz {
 
         // page
         Page<CaseSchemeEntity> page = new Page<>(caseSchemePage.getPageNo(), caseSchemePage.getPageSize());
-        Page<CaseSchemeEntity> pageResult = caseSchemeService
-                .lambdaQuery()
-                .eq(caseSchemePage.getCategId() != null, CaseSchemeEntity::getCaseCategId, caseSchemePage.getCategId())
+        Page<CaseSchemeEntity> pageResult = caseSchemeService.lambdaQuery()
+                .eq(StrUtil.isNotBlank(caseSchemePage.getCategId()), CaseSchemeEntity::getCaseCategId, caseSchemePage.getCategId())
                 .eq(CaseSchemeEntity::getSource, EnumSource.ADMIN.name())
-                .like(caseSchemePage.getKeyword() != null, CaseSchemeEntity::getSchemeName, caseSchemePage.getKeyword())
+                .like(StrUtil.isNotBlank(caseSchemePage.getKeyword()), CaseSchemeEntity::getSchemeName, caseSchemePage.getKeyword())
                 .page(page);
 
         // convert
@@ -188,7 +191,7 @@ public class TenantCaseSchemeBiz {
      * @创建时间: 2023年4月17日 下午8:00:11
     */
     public Boolean enabledCaseScheme(String caseSchemeId ) {
-        return changeStatus(caseSchemeId, EnumStatus.ENABLE);
+        return changeStatus(caseSchemeId, CaseEnabledEnum.ENABLED);
     }
 
     /**
@@ -202,7 +205,7 @@ public class TenantCaseSchemeBiz {
     * @创建时间: 2023年4月17日 下午8:00:11
     */
     public Boolean disabledCaseScheme(String caseSchemeId ) {
-        return changeStatus(caseSchemeId, EnumStatus.DISABLE);
+        return changeStatus(caseSchemeId, CaseEnabledEnum.DISABLED);
     }
 
     /**
@@ -255,7 +258,7 @@ public class TenantCaseSchemeBiz {
         return caseSchemeService.remove(queryWrapper);
     }
 
-    private boolean changeStatus(String caseSchemeId, EnumStatus enumStatus) {
+    private boolean changeStatus(String caseSchemeId, CaseEnabledEnum enumStatus) {
         LambdaUpdateWrapper<CaseSchemeEntity> updateWrapper = new LambdaUpdateWrapper<CaseSchemeEntity>()
                 .eq(CaseSchemeEntity::getCaseSchemeId, caseSchemeId)
                 .set(CaseSchemeEntity::getEnabled, enumStatus.getCode());
@@ -322,16 +325,18 @@ public class TenantCaseSchemeBiz {
 
     private QuestionSectionRequest caseScheme2QS(CaseSchemeRequest caseScheme) {
         return QuestionSectionRequest.builder()
+                .bizCode(QuestionSectionAccessAuthEnum.PRIVATE_VIEWING.name())
                 .name(caseScheme.getSchemeName())
                 .tips(caseScheme.getTips())
                 .descr(caseScheme.getSchemeDescr())
-                .enabled(EnumStatus.ENABLE.getCode())
+                .enabled(QuestionEnabledEnum.ENABLED.getCode())
                 .accountId(caseScheme.getAccountId())
                 .accountName(caseScheme.getAccountName())
                 .sectionItemList(caseScheme.getSectionItemList())
                 .questionSectionDimensionList(caseScheme.getQuestionSectionDimensionList())
                 .appId(caseScheme.getAppId())
                 .source(caseScheme.getSource())
+                .generationMode(QuestionSectionGenerationModeEnum.ADD_NEW)
                 .build();
     }
 
