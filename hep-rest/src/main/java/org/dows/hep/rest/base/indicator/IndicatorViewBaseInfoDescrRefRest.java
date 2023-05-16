@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class IndicatorViewBaseInfoDescrRefRest {
   private final IndicatorViewBaseInfoDescrRefBiz indicatorViewBaseInfoDescrRefBiz;
 
-  @Operation(summary = "删除指标基本信息描述表类")
+  @Operation(summary = "删除指标基本信息描述表关联指标")
   @DeleteMapping("v1/baseIndicator/indicatorViewBaseInfoDescrRef/deleteIndicatorViewBaseInfoDescrRef")
   public void deleteIndicatorViewBaseInfoDescrRef(@RequestParam String indicatorViewBaseInfoDescRefId) throws InterruptedException {
     indicatorViewBaseInfoDescrRefBiz.deleteIndicatorViewBaseInfoDescrRef(indicatorViewBaseInfoDescRefId);

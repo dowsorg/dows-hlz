@@ -55,7 +55,7 @@ public class QuestionAnswersEntity implements CrudEntity {
     private String optionValue;
 
     @Schema(title = "是否是正确答案[0:错误，1:正确]")
-    private Integer rightAnswer;
+    private Boolean rightAnswer;
 
     @JsonIgnore
     @TableLogic

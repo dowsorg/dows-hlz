@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.tenant.casus.request.CaseInstanceCopyRequest;
 import org.dows.hep.api.tenant.casus.request.CaseInstancePageRequest;
 import org.dows.hep.api.tenant.casus.request.CaseInstanceRequest;
 import org.dows.hep.api.tenant.casus.response.CaseInstancePageResponse;
@@ -16,7 +17,7 @@ import java.util.List;
 
 /**
 * @description project descr:案例:案例管理
-*
+* @folder tenant-hep/案例域-案例管理
 * @author lait.zhang
 * @date 2023年4月23日 上午9:44:34
 */
@@ -44,8 +45,8 @@ public class TenantCaseManageRest {
     */
     @Operation(summary = "复制")
     @PostMapping("v1/tenantCasus/caseManage/copyCaseInstance")
-    public String copyCaseInstance(@RequestBody @Validated String oriCaseInstanceId ) {
-        return tenantCaseManageBiz.copyCaseInstance(oriCaseInstanceId);
+    public String copyCaseInstance(@RequestBody CaseInstanceCopyRequest request) {
+        return tenantCaseManageBiz.copyCaseInstance(request);
     }
 
     /**
@@ -53,7 +54,7 @@ public class TenantCaseManageRest {
     * @param
     * @return
     */
-    @Operation(summary = "列表")
+    @Operation(summary = "分页")
     @PostMapping("v1/tenantCasus/caseManage/pageCaseInstance")
     public IPage<CaseInstancePageResponse> pageCaseInstance(@RequestBody @Validated CaseInstancePageRequest caseInstancePage ) {
         return tenantCaseManageBiz.pageCaseInstance(caseInstancePage);
@@ -77,7 +78,7 @@ public class TenantCaseManageRest {
     */
     @Operation(summary = "删除")
     @DeleteMapping("v1/tenantCasus/caseManage/delCaseInstance")
-    public Boolean delCaseInstance(List<String> caseInstanceId ) {
+    public Boolean delCaseInstance(@RequestBody List<String> caseInstanceId ) {
         return tenantCaseManageBiz.delCaseInstance(caseInstanceId);
     }
 

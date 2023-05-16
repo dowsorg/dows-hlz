@@ -30,7 +30,7 @@ public class QuestionAnswersBiz {
 
         // 都是新增的
         if (answersEntityList == null || answersEntityList.isEmpty()) {
-            questionAnswersService.saveBatch(answersEntityList);
+            questionAnswersService.saveBatch(answersList);
             return Boolean.TRUE;
         }
 
@@ -53,8 +53,8 @@ public class QuestionAnswersBiz {
                 .toList();
         if (!updList.isEmpty()) {
             updList.forEach(item -> {
-                String questionOptionsId = item.getQuestionOptionsId();
-                QuestionAnswersEntity questionAnswersEntity = collect.get(questionOptionsId);
+                String questionAnswerId = item.getQuestionAnswerId();
+                QuestionAnswersEntity questionAnswersEntity = collect.get(questionAnswerId);
                 Long id = questionAnswersEntity.getId();
                 item.setId(id);
             });

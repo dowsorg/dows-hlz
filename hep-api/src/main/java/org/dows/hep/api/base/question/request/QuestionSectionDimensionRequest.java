@@ -18,33 +18,33 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Schema(name = "QuestionSectionDimension 对象", title = "维度Request")
 public class QuestionSectionDimensionRequest{
-    @Schema(title = "应用ID")
-    private String appId;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Schema(title = "数据库ID")
-    private Long id;
-
-    @Schema(title = "问题集ID")
-    private String questionSectionId;
 
     @Schema(title = "维度ID")
     private String questionSectionDimensionId;
 
     @Schema(title = "维度名称")
-    private String demensionName;
+    private String dimensionName;
 
     @Schema(title = "内容")
-    private String demensionContent;
+    private String dimensionContent;
 
     @Schema(title = "分数")
     private BigDecimal score;
 
 
     // JsonIgnore
-    @Schema(title = "来源")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @Schema(title = "数据库ID")
     @JsonIgnore
-    private String source;
+    private Long id;
+
+    @Schema(title = "应用ID")
+    @JsonIgnore
+    private String appId;
+
+    @Schema(title = "问题集ID")
+    @JsonIgnore
+    private String questionSectionId;
 
     @Schema(title = "创建者账号Id")
     @JsonIgnore

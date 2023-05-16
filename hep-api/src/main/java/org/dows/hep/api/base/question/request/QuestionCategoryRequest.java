@@ -17,10 +17,6 @@ import lombok.NoArgsConstructor;
 @Schema(name = "QuestionCategoryRequest 对象", title = "问题域类目Request")
 public class QuestionCategoryRequest {
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Schema(title = "数据库ID")
-    private Long id;
-
     @Schema(title = "类别ID")
     private String questionCategId;
 
@@ -39,6 +35,8 @@ public class QuestionCategoryRequest {
     @Schema(title = "序列号")
     private Integer sequence;
 
+
+    // JsonIgnore
     @Schema(title = "类别ID路径")
     @JsonIgnore
     private String questionCategIdPath;
@@ -46,4 +44,9 @@ public class QuestionCategoryRequest {
     @Schema(title = "类别name路径")
     @JsonIgnore
     private String questionCategNamePath;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @Schema(title = "数据库ID")
+    @JsonIgnore
+    private Long id;
 }

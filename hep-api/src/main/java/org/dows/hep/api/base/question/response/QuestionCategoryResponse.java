@@ -1,6 +1,5 @@
 package org.dows.hep.api.base.question.response;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,10 +15,6 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(name = "QuestionCategoryResponse 对象", title = "问题类目 Response")
 public class QuestionCategoryResponse {
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Schema(title = "数据库ID")
-    private Long id;
 
     @Schema(title = "类别ID")
     private String questionCategId;

@@ -40,4 +40,8 @@ public enum QuestionTypeEnum {
                 .findFirst()
                 .orElse(null);
     }
+
+    public static String getNameByCode(String code) {
+        return getByCode(code).getName();
+    }
 }

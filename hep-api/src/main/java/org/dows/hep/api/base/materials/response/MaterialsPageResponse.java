@@ -1,6 +1,5 @@
 package org.dows.hep.api.base.materials.response;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,9 +15,6 @@ import java.util.Date;
 @NoArgsConstructor
 @Schema(name = "MaterialsPageResponse 对象", title = "问题分页Response")
 public class MaterialsPageResponse {
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Schema(title = "数据库ID")
-    private Long id;
 
     @Schema(title = "资料ID")
     private String materialsId;

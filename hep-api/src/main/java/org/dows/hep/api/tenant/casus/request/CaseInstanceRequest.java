@@ -16,9 +16,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "CaseInstance 对象", title = "案例实例Request")
 public class CaseInstanceRequest{
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Schema(title = "数据库ID")
-    private Long id;
 
     @Schema(title = "案例ID")
     private String caseInstanceId;
@@ -52,6 +49,11 @@ public class CaseInstanceRequest{
     @Schema(title = "应用ID")
     @JsonIgnore
     private String appId;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @JsonIgnore
+    @Schema(title = "数据库ID")
+    private Long id;
 
     @Schema(title = "案例唯一标示")
     @JsonIgnore

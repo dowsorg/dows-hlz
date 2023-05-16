@@ -2,9 +2,11 @@ package org.dows.hep.biz.base.question;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.RequiredArgsConstructor;
+import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.request.*;
 import org.dows.hep.api.base.question.response.QuestionSectionDimensionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionItemResponse;
@@ -42,19 +44,14 @@ public class QuestionSectionBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
+    @DSTransactional
     public String saveOrUpdQuestionSection(QuestionSectionRequest questionSection) {
         if (questionSection == null) {
             return "";
         }
 
-        // save base-info
-        if (StrUtil.isBlank(questionSection.getQuestionSectionId())) {
-            questionSection.setAppId(baseBiz.getAppId());
-            questionSection.setQuestionSectionId(baseBiz.getIdStr());
-            questionSection.setQuestionSectionIdentifier(baseBiz.getIdStr());
-            questionSection.setVer(baseBiz.getLastVer());
-            questionSection.setSequence(baseBiz.getSequence());
-        }
+        // check and save base-info
+        checkBeforeSaveOrUpd(questionSection);
         QuestionSectionEntity questionSectionEntity = BeanUtil.copyProperties(questionSection, QuestionSectionEntity.class);
         questionSectionService.saveOrUpdate(questionSectionEntity);
 
@@ -62,8 +59,8 @@ public class QuestionSectionBiz {
         List<QuestionSectionDimensionRequest> questionSectionDimensionList = questionSection.getQuestionSectionDimensionList();
         if (questionSectionDimensionList != null && !questionSectionDimensionList.isEmpty()) {
             questionSectionDimensionList.forEach(item -> {
-                item.setQuestionSectionId(questionSectionEntity.getQuestionSectionId());
                 item.setAppId(questionSectionEntity.getAppId());
+                item.setQuestionSectionId(questionSectionEntity.getQuestionSectionId());
                 item.setAccountId(questionSectionEntity.getAccountId());
                 item.setAccountName(questionSectionEntity.getAccountName());
             });
@@ -249,5 +246,23 @@ public class QuestionSectionBiz {
 
         questionSectionItemBiz.delBatch(questionSectionId, questionSectionItemIds);
         return Boolean.FALSE;
+    }
+
+    private void checkBeforeSaveOrUpd(QuestionSectionRequest request) {
+        String uniqueId = request.getQuestionSectionId();
+        if (StrUtil.isBlank(uniqueId)) {
+            request.setAppId(baseBiz.getAppId());
+            request.setQuestionSectionId(baseBiz.getIdStr());
+            request.setQuestionSectionIdentifier(baseBiz.getIdStr());
+            request.setVer(baseBiz.getLastVer());
+            request.setSequence(baseBiz.getSequence());
+        } else {
+            QuestionSectionEntity entity = getById(uniqueId);
+            if (BeanUtil.isEmpty(entity)) {
+                throw new BizException("数据不存在");
+            }
+            request.setId(entity.getId());
+        }
+
     }
 }

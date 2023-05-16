@@ -5,8 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.question.QuestionAccessAuthEnum;
-import org.dows.hep.api.base.question.QuestionEnabledEnum;
+import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.QuestionOptionWithAnswerRequest;
 import org.dows.hep.api.base.question.request.QuestionRequest;
@@ -52,13 +51,9 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
     @Override
     public String save(QuestionRequest questionRequest) {
         // base-info
-        questionRequest.setBizCode(questionRequest.getBizCode() == null ? QuestionAccessAuthEnum.PRIVATE_VIEWING : questionRequest.getBizCode());
-        questionRequest.setAppId(questionRequest.getAppId() == null ? questionDomainBaseBiz.getAppId() : questionDomainBaseBiz.getAppId());
-        questionRequest.setQuestionInstancePid(questionDomainBaseBiz.getQuestionInstancePid());
         questionRequest.setQuestionInstanceId(questionDomainBaseBiz.getIdStr());
         questionRequest.setQuestionIdentifier(questionDomainBaseBiz.getIdStr());
         questionRequest.setVer(questionDomainBaseBiz.getLastVer());
-        questionRequest.setEnabled(QuestionEnabledEnum.ENABLED.getCode());
 
         // save base-info
         QuestionInstanceEntity questionInstanceEntity = BeanUtil.copyProperties(questionRequest, QuestionInstanceEntity.class);
@@ -95,24 +90,34 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
     @Transactional
     @Override
     public boolean update(QuestionRequest questionRequest) {
+        // base-info
+        // get ori data
+        QuestionInstanceEntity oriEntity = getById(questionRequest.getQuestionInstanceId());
+        if (BeanUtil.isEmpty(oriEntity)) {
+           throw new BizException("数据不存在");
+        }
         // update base-info
+        questionRequest.setId(oriEntity.getId());
         QuestionInstanceEntity questionInstanceEntity = BeanUtil.copyProperties(questionRequest, QuestionInstanceEntity.class);
         boolean updInstanceRes = questionInstanceService.updateById(questionInstanceEntity);
 
         // list options and answers
         List<QuestionOptionWithAnswerRequest> optionWithAnswerList = questionRequest.getOptionWithAnswerList();
         if (optionWithAnswerList == null || optionWithAnswerList.isEmpty()) {
-            return true;
+            return Boolean.TRUE;
         }
 
         // save or upd answers and options
+        // get instance-info
+        String appId = oriEntity.getAppId();
+        String questionInstanceId = oriEntity.getQuestionInstanceId();
         // save or upd answers
         List<QuestionAnswersEntity> answerList = optionWithAnswerList.stream()
                 .map(item -> {
                     QuestionAnswersEntity questionAnswersEntity = BeanUtil.copyProperties(item, QuestionAnswersEntity.class);
                     if (StrUtil.isBlank(questionAnswersEntity.getQuestionAnswerId())) {
-                        questionAnswersEntity.setAppId(questionInstanceEntity.getAppId());
-                        questionAnswersEntity.setQuestionInstanceId(questionInstanceEntity.getQuestionInstanceId());
+                        questionAnswersEntity.setAppId(appId);
+                        questionAnswersEntity.setQuestionInstanceId(questionInstanceId);
                         questionAnswersEntity.setQuestionOptionsId(questionDomainBaseBiz.getIdStr());
                         questionAnswersEntity.setQuestionAnswerId(questionDomainBaseBiz.getIdStr());
                     }
@@ -132,14 +137,11 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
     @Override
     public QuestionResponse get(String questionInstanceId) {
         // instance
-        LambdaQueryWrapper<QuestionInstanceEntity> instanceWrapper = new LambdaQueryWrapper<QuestionInstanceEntity>()
-                .eq(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceId);
-        QuestionInstanceEntity questionInstance = questionInstanceService.getOne(instanceWrapper);
+        QuestionInstanceEntity questionInstance = getById(questionInstanceId);
         if (BeanUtil.isEmpty(questionInstance)) {
             return new QuestionResponse();
         }
         QuestionResponse result = BeanUtil.copyProperties(questionInstance, QuestionResponse.class);
-
 
         // options with answers
         List<QuestionAnswersEntity> answersEntityList = questionAnswersService.lambdaQuery()
@@ -152,6 +154,12 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
         List<QuestionOptionWithAnswerResponse> optionWithAnswerResponses = BeanUtil.copyToList(answersEntityList, QuestionOptionWithAnswerResponse.class);
         result.setOptionWithAnswerList(optionWithAnswerResponses);
         return result;
+    }
+
+    private QuestionInstanceEntity getById(String questionInstanceId) {
+        LambdaQueryWrapper<QuestionInstanceEntity> instanceWrapper = new LambdaQueryWrapper<QuestionInstanceEntity>()
+                .eq(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceId);
+        return questionInstanceService.getOne(instanceWrapper);
     }
 
 }

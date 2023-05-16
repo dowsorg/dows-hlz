@@ -28,7 +28,7 @@ public class QuestionOptionsBiz {
 
         // 都是新增的
         if (optionsEntityList == null || optionsEntityList.isEmpty()) {
-            questionOptionsService.saveBatch(optionsEntityList);
+            questionOptionsService.saveBatch(optionList);
             return Boolean.TRUE;
         }
 

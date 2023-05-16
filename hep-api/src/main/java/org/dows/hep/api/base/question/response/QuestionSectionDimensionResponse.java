@@ -1,6 +1,5 @@
 package org.dows.hep.api.base.question.response;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,10 +19,6 @@ public class QuestionSectionDimensionResponse{
     @Schema(title = "应用ID")
     private String appId;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Schema(title = "数据库ID")
-    private Long id;
-
     @Schema(title = "问题集ID")
     private String questionSectionId;
 
@@ -31,10 +26,10 @@ public class QuestionSectionDimensionResponse{
     private String questionSectionDimensionId;
 
     @Schema(title = "维度名称")
-    private String demensionName;
+    private String dimensionName;
 
     @Schema(title = "内容")
-    private String demensionContent;
+    private String dimensionContent;
 
     @Schema(title = "分数")
     private BigDecimal score;

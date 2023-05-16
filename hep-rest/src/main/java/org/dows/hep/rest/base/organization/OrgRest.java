@@ -3,17 +3,21 @@ package org.dows.hep.rest.base.organization;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.request.AccountGroupRequest;
 import org.dows.account.request.AccountOrgRequest;
 import org.dows.account.response.AccountGroupResponse;
 import org.dows.account.response.AccountOrgResponse;
+import org.dows.account.util.JwtUtil;
+import org.dows.hep.api.enums.EnumToken;
 import org.dows.hep.api.user.organization.request.CaseOrgRequest;
 import org.dows.hep.api.user.organization.response.CaseOrgResponse;
 import org.dows.hep.biz.base.org.OrgBiz;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Nullable;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -33,8 +37,8 @@ public class OrgRest {
      */
     @Operation(summary = "班级列表")
     @PostMapping("v1/baseOrg/org/listClasss")
-    public IPage<AccountOrgResponse> listClasss(@RequestBody AccountOrgRequest request) {
-        return orgBiz.listClasss(request);
+    public IPage<AccountOrgResponse> listClasss(@RequestBody AccountOrgRequest request,@Nullable @RequestParam String accountId) {
+        return orgBiz.listClasss(request,accountId);
     }
 
     /**
@@ -44,8 +48,12 @@ public class OrgRest {
      */
     @Operation(summary = "创建班级")
     @PostMapping("v1/baseOrg/org/addClass")
-    public String addClass(@RequestBody AccountOrgRequest request, @RequestParam String accountId) {
-        return orgBiz.addClass(request,accountId);
+    public String addClass(@RequestBody AccountOrgRequest request, @RequestParam String accountId, HttpServletRequest servletRequest) {
+        String token = servletRequest.getHeader("token");
+        Map<String, Object> map = JwtUtil.parseJWT(token, EnumToken.PROPERTIES_JWT_KEY.getStr());
+        //1、获取登录账户和角色
+        String loginId = map.get("accountId").toString();
+        return orgBiz.addClass(request,accountId,loginId);
     }
 
     /**

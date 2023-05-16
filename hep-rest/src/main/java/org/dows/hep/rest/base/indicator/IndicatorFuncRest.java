@@ -23,61 +23,16 @@ import java.util.List;
 public class IndicatorFuncRest {
     private final IndicatorFuncBiz indicatorFuncBiz;
 
-    /**
-    * 创建指标功能
-    * @param
-    * @return
-    */
     @Operation(summary = "创建指标功能")
-    @PostMapping("v1/baseIndicator/indicatorFunc/createIndicatorFunc")
-    public void createIndicatorFunc(@RequestBody @Validated CreateIndicatorFuncRequest createIndicatorFuncRequest) throws InterruptedException {
-        indicatorFuncBiz.createIndicatorFunc(createIndicatorFuncRequest);
+    @PostMapping("v1/baseIndicator/indicatorFunc/create")
+    public void create(@RequestBody @Validated CreateIndicatorFuncRequest createIndicatorFuncRequest) throws InterruptedException {
+        indicatorFuncBiz.create(createIndicatorFuncRequest);
     }
 
-    /**
-    * 删除指标功能
-    * @param
-    * @return
-    */
-    @Operation(summary = "删除指标功能")
-    @DeleteMapping("v1/baseIndicator/indicatorFunc/deleteIndicatorFunc")
-    public void deleteIndicatorFunc(@Validated String indicatorFunc ) {
-        indicatorFuncBiz.deleteIndicatorFunc(indicatorFunc);
-    }
-
-    /**
-    * 更新指标功能
-    * @param
-    * @return
-    */
     @Operation(summary = "更新指标功能")
-    @PutMapping("v1/baseIndicator/indicatorFunc/updateIndicatorFunc")
-    public void updateIndicatorFunc(@RequestBody @Validated UpdateIndicatorFuncRequest updateIndicatorFuncRequest) throws InterruptedException {
-        indicatorFuncBiz.updateIndicatorFunc(updateIndicatorFuncRequest);
-    }
-
-    /**
-    * 获取指标功能
-    * @param
-    * @return
-    */
-    @Operation(summary = "获取指标功能")
-    @GetMapping("v1/baseIndicator/indicatorFunc/getIndicatorFunc")
-    public IndicatorFuncResponse getIndicatorFunc(@Validated String indicatorFunc) {
-        return indicatorFuncBiz.getIndicatorFunc(indicatorFunc);
-    }
-
-    /**
-    * 筛选指标类别
-    * @param
-    * @return
-    */
-    @Operation(summary = "查询指标类别下所有功能点")
-    @GetMapping("v1/baseIndicator/indicatorFunc/listIndicatorFunc")
-    public List<IndicatorFuncResponse> listIndicatorFunc(
-        @RequestParam @Validated String appId,
-        @RequestParam @Validated String indicatorCategoryId) {
-        return indicatorFuncBiz.listIndicatorFunc(appId,indicatorCategoryId);
+    @PutMapping("v1/baseIndicator/indicatorFunc/update")
+    public void update(@RequestBody @Validated UpdateIndicatorFuncRequest updateIndicatorFuncRequest) throws InterruptedException {
+        indicatorFuncBiz.update(updateIndicatorFuncRequest);
     }
 
     @Operation(summary = "根据pid查询所有功能点")
@@ -87,6 +42,36 @@ public class IndicatorFuncRest {
         @RequestParam @Validated String pid) {
         return indicatorFuncBiz.getByPidAndAppId(appId, pid);
     }
+
+//    @Operation(summary = "删除指标功能")
+//    @DeleteMapping("v1/baseIndicator/indicatorFunc/deleteIndicatorFunc")
+//    public void deleteIndicatorFunc(@Validated String indicatorFunc ) {
+//        indicatorFuncBiz.deleteIndicatorFunc(indicatorFunc);
+//    }
+
+//    /**
+//    * 获取指标功能
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "获取指标功能")
+//    @GetMapping("v1/baseIndicator/indicatorFunc/getIndicatorFunc")
+//    public IndicatorFuncResponse getIndicatorFunc(@Validated String indicatorFunc) {
+//        return indicatorFuncBiz.getIndicatorFunc(indicatorFunc);
+//    }
+
+//    /**
+//    * 筛选指标类别
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "查询指标类别下所有功能点")
+//    @GetMapping("v1/baseIndicator/indicatorFunc/listIndicatorFunc")
+//    public List<IndicatorFuncResponse> listIndicatorFunc(
+//        @RequestParam @Validated String appId,
+//        @RequestParam @Validated String indicatorCategoryId) {
+//        return indicatorFuncBiz.listIndicatorFunc(appId,indicatorCategoryId);
+//    }
 
 //    /**
 //    * 分页筛选指标类别

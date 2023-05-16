@@ -6,18 +6,18 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.request.QuestionCategoryRequest;
-import org.dows.hep.api.base.question.request.QuestionSearchRequest;
 import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
-import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.entity.QuestionCategoryEntity;
+import org.dows.hep.entity.QuestionInstanceEntity;
 import org.dows.hep.service.QuestionCategoryService;
+import org.dows.hep.service.QuestionInstanceService;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * @author fhb
@@ -29,14 +29,14 @@ import java.util.function.Predicate;
 public class QuestionCategBiz {
 
     private final QuestionDomainBaseBiz baseBiz;
-    private final QuestionInstanceBiz questionInstanceBiz;
+    private final QuestionInstanceService questionInstanceService;
     private final QuestionCategoryService questionCategoryService;
 
     /**
      * @author fhb
      * @description
      * @date 2023/5/11 21:22
-     * @param 
+     * @param
      * @return 
      */
     @Transactional
@@ -45,17 +45,8 @@ public class QuestionCategBiz {
             return "";
         }
 
-        String questionCategId = questionCategory.getQuestionCategId();
-        if (StrUtil.isBlank(questionCategId)) {
-            questionCategory.setQuestionCategId(baseBiz.getIdStr());
-            questionCategory.setQuestionCategPid(baseBiz.getQuestionInstancePid());
-        } else {
-            QuestionCategoryEntity questionCategoryEntity = getQuestionCategory(questionCategId);
-            if (BeanUtil.isEmpty(questionCategoryEntity)) {
-                throw new BizException("数据不存在");
-            }
-            questionCategory.setId(questionCategoryEntity.getId());
-        }
+        // check
+        checkBeforeSaveOrUpd(questionCategory);
 
         // handle
         QuestionCategoryEntity questionCategoryEntity = BeanUtil.copyProperties(questionCategory, QuestionCategoryEntity.class);
@@ -71,18 +62,18 @@ public class QuestionCategBiz {
      * @param 
      * @return 
      */
-    public QuestionCategoryEntity getQuestionCategory(String questionCategId) {
+    public QuestionCategoryEntity getById(String questionCategId) {
         LambdaQueryWrapper<QuestionCategoryEntity> queryWrapper = new LambdaQueryWrapper<QuestionCategoryEntity>()
                 .eq(QuestionCategoryEntity::getQuestionCategId, questionCategId);
         return questionCategoryService.getOne(queryWrapper);
     }
 
     /**
+     * @param
+     * @return
      * @author fhb
      * @description
      * @date 2023/5/11 21:22
-     * @param 
-     * @return 
      */
     public List<QuestionCategoryResponse> getChildrenByPid(String pid, String categoryGroup) {
         List<QuestionCategoryResponse> result = new ArrayList<>();
@@ -92,11 +83,51 @@ public class QuestionCategBiz {
     }
 
     /**
+     * @param
+     * @return
      * @author fhb
      * @description
      * @date 2023/5/11 21:22
-     * @param 
-     * @return 
+     */
+    public List<QuestionCategoryResponse> getParents(String id, String categoryGroup) {
+        return getParents0(id, categoryGroup);
+    }
+
+    /**
+     * @param
+     * @return
+     * @author fhb
+     * @description
+     * @date 2023/5/11 21:22
+     */
+    public String[] getParentIds(String id, String categoryGroup) {
+        List<QuestionCategoryResponse> arrayList = getParents0(id, categoryGroup);
+        if (arrayList.isEmpty()) {
+            return new String[0];
+        }
+
+        return arrayList.stream()
+                .map(QuestionCategoryResponse::getQuestionCategId)
+                .toArray(String[]::new);
+    }
+
+    public List<QuestionCategoryResponse> listQuestionCategory(List<String> categIds) {
+        if (categIds == null || categIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<QuestionCategoryEntity> list = questionCategoryService.lambdaQuery()
+                .in(QuestionCategoryEntity::getQuestionCategId, categIds)
+                .list();
+        return BeanUtil.copyToList(list, QuestionCategoryResponse.class);
+    }
+
+    /**
+     * @param
+     * @return
+     * @author fhb
+     * @description
+     * @date 2023/5/11 21:22
      */
     @Transactional
     public Boolean delByIds(List<String> ids) {
@@ -123,35 +154,15 @@ public class QuestionCategBiz {
         return remRes1 && remRes2;
     }
 
-    private void getUnReferencedIds(List<String> ids) {
-        if (ids == null || ids.isEmpty()) {
-            return;
-        }
-
-        QuestionSearchRequest questionSearchRequest = QuestionSearchRequest.builder()
-                .categIdList(ids)
-                .build();
-        List<QuestionResponse> questionResponses = questionInstanceBiz.listQuestion(questionSearchRequest);
-        if (questionResponses == null || questionResponses.isEmpty()) {
-            return;
-        }
-
-        List<String> referencedIds = questionResponses.stream()
-                .map(QuestionResponse::getQuestionCategId)
-                .toList();
-        ids.removeAll(referencedIds);
-    }
-
     private Boolean isReferenced(List<String> ids) {
         if (ids == null || ids.isEmpty()) {
             return Boolean.FALSE;
         }
 
-        QuestionSearchRequest questionSearchRequest = QuestionSearchRequest.builder()
-                .categIdList(ids)
-                .build();
-        List<QuestionResponse> questionResponses = questionInstanceBiz.listQuestion(questionSearchRequest);
-        if (questionResponses != null && !questionResponses.isEmpty()) {
+        List<QuestionInstanceEntity> list = questionInstanceService.lambdaQuery()
+                .in(QuestionInstanceEntity::getQuestionCategId, ids)
+                .list();
+        if (list != null && !list.isEmpty()) {
             return Boolean.TRUE;
         }
         return Boolean.FALSE;
@@ -221,4 +232,63 @@ public class QuestionCategBiz {
             traverse(cNode, sources);
         }
     }
+
+    private void checkBeforeSaveOrUpd(QuestionCategoryRequest questionCategory) {
+        String questionCategId = questionCategory.getQuestionCategId();
+        if (StrUtil.isBlank(questionCategId)) {
+            questionCategory.setQuestionCategId(baseBiz.getIdStr());
+            if (StrUtil.isBlank(questionCategory.getQuestionCategPid())) {
+                questionCategory.setQuestionCategPid(baseBiz.getQuestionInstancePid());
+            }
+        } else {
+            QuestionCategoryEntity questionCategoryEntity = getById(questionCategId);
+            if (BeanUtil.isEmpty(questionCategoryEntity)) {
+                throw new BizException("数据不存在");
+            }
+            questionCategory.setId(questionCategoryEntity.getId());
+        }
+    }
+
+    private void getQcrpList(String id, Map<String, QuestionCategoryResponse> idCollect, ArrayList<QuestionCategoryResponse> result) {
+        QuestionCategoryResponse questionCategoryResponse = idCollect.get(id);
+        if (questionCategoryResponse == null) {
+            return;
+        }
+
+        // 处理当前节点
+        result.add(questionCategoryResponse);
+
+        // 判空
+        String questionCategPid = questionCategoryResponse.getQuestionCategPid();
+        if (baseBiz.getQuestionInstancePid().equals(questionCategPid)) {
+            return;
+        }
+
+        // 处理父节点
+        getQcrpList(questionCategPid, idCollect, result);
+    }
+
+    @NotNull
+    private ArrayList<QuestionCategoryResponse> getParents0(String id, String categoryGroup) {
+        if (StrUtil.isBlank(id) || StrUtil.isBlank(categoryGroup)) {
+            return new ArrayList<>();
+        }
+
+        // list all in group
+        List<QuestionCategoryResponse> listInGroup = listInGroup(categoryGroup);
+        if (listInGroup == null || listInGroup.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // convert list 2 collect
+        Map<String, QuestionCategoryResponse> idCollect = listInGroup.stream()
+                .collect(Collectors.toMap(QuestionCategoryResponse::getQuestionCategId, v -> v, (v1, v2) -> v1));
+
+        // get parents
+        ArrayList<QuestionCategoryResponse> result = new ArrayList<>();
+        getQcrpList(id, idCollect, result);
+        Collections.reverse(result);
+        return result;
+    }
+
 }

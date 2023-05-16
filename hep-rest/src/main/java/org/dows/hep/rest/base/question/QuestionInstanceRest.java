@@ -17,13 +17,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- *
+ * @author lait.zhang
  * @folder admin-hep/问题域-题目
-* @description project descr:问题:问题
-*
-* @author lait.zhang
-* @date 2023年4月18日 上午10:45:07
-*/
+ * @description project descr:问题:问题
+ * @date 2023年4月18日 上午10:45:07
+ */
 @RequiredArgsConstructor
 @RestController
 @Tag(name = "问题域-题目", description = "问题")

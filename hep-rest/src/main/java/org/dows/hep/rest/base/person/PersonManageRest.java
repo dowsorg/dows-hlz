@@ -13,6 +13,7 @@ import org.dows.hep.biz.base.person.PersonManageBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -69,7 +70,8 @@ public class PersonManageRest {
     */
     @Operation(summary = "复制人物")
     @PostMapping("v1/basePerson/personManage/copyPerson")
-    public PersonInstanceResponse copyPerson(@RequestParam @Validated String accountId,@RequestParam @Validated String source) {
+    public PersonInstanceResponse copyPerson(@RequestParam @Validated String accountId,
+                                             @RequestParam @Validated String source) {
         return personManageBiz.copyPerson(accountId,source);
     }
 
@@ -135,7 +137,8 @@ public class PersonManageRest {
      */
     @Operation(summary =  "查看个人资料")
     @GetMapping("v1/basePerson/person/getPersonalInformation/{accountId}/{appId}")
-    public AccountInstanceResponse getPersonalInformation(@PathVariable("accountId") String accountId, @PathVariable("appId") String appId) {
+    public AccountInstanceResponse getPersonalInformation(@PathVariable("accountId") String accountId,
+                                                          @PathVariable("appId") String appId) {
         return personManageBiz.getPersonalInformation(accountId,appId);
     }
 
@@ -169,8 +172,9 @@ public class PersonManageRest {
      */
     @Operation(summary =  "获取教师/学生列表")
     @PostMapping("v1/basePerson/person/listTeacherOrStudent")
-    public IPage<AccountInstanceResponse> listTeacherOrStudent(@RequestBody AccountInstanceRequest request){
-        return personManageBiz.listTeacherOrStudent(request);
+    public IPage<AccountInstanceResponse> listTeacherOrStudent(@RequestBody AccountInstanceRequest request,
+                                                               @Nullable @RequestParam String accountId){
+        return personManageBiz.listTeacherOrStudent(request,accountId);
     }
 
     /**
