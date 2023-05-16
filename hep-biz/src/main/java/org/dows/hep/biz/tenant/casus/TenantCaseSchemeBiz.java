@@ -20,6 +20,7 @@ import org.dows.hep.api.base.question.response.QuestionSectionResponse;
 import org.dows.hep.api.enums.EnumSource;
 import org.dows.hep.api.enums.EnumStatus;
 import org.dows.hep.api.tenant.casus.CaseEnabledEnum;
+import org.dows.hep.api.tenant.casus.CaseSchemeSourceEnum;
 import org.dows.hep.api.tenant.casus.request.CaseSchemePageRequest;
 import org.dows.hep.api.tenant.casus.request.CaseSchemeRequest;
 import org.dows.hep.api.tenant.casus.request.CaseSchemeSearchRequest;
@@ -48,6 +49,7 @@ public class TenantCaseSchemeBiz {
     private final TenantCaseBaseBiz baseBiz;
     private final CaseSchemeService caseSchemeService;
     private final QuestionSectionBiz questionSectionBiz;
+    private final TenantCaseCategoryBiz caseCategoryBiz;
 
     /**
      * @param
@@ -100,7 +102,7 @@ public class TenantCaseSchemeBiz {
         Page<CaseSchemeEntity> page = new Page<>(caseSchemePage.getPageNo(), caseSchemePage.getPageSize());
         Page<CaseSchemeEntity> pageResult = caseSchemeService.lambdaQuery()
                 .eq(StrUtil.isNotBlank(caseSchemePage.getCategId()), CaseSchemeEntity::getCaseCategId, caseSchemePage.getCategId())
-                .eq(CaseSchemeEntity::getSource, EnumSource.ADMIN.name())
+                .eq(CaseSchemeEntity::getSource, CaseSchemeSourceEnum.ADMIN.name())
                 .like(StrUtil.isNotBlank(caseSchemePage.getKeyword()), CaseSchemeEntity::getSchemeName, caseSchemePage.getKeyword())
                 .page(page);
 
@@ -118,7 +120,7 @@ public class TenantCaseSchemeBiz {
      * @开始时间:
      * @创建时间: 2023年4月17日 下午8:00:11
      */
-    public List<CaseSchemeResponse> listCaseScheme(CaseSchemeSearchRequest caseSchemeSearch) {
+    public List<CaseSchemeResponse> listCaseSchemeOfDS(CaseSchemeSearchRequest caseSchemeSearch) {
         return list(caseSchemeSearch);
     }
 
@@ -132,7 +134,7 @@ public class TenantCaseSchemeBiz {
      * @开始时间:
      * @创建时间: 2023年5月6日 下午14:00:11
      */
-    public Map<String, List<CaseSchemeResponse>> listGroupByCateg(CaseSchemeSearchRequest caseSchemeSearch) {
+    public Map<String, List<CaseSchemeResponse>> listSchemeGroupOfDS(CaseSchemeSearchRequest caseSchemeSearch) {
         List<CaseSchemeResponse> responseList = list(caseSchemeSearch);
         if(responseList == null || responseList.isEmpty()) {
             return new HashMap<>();
@@ -290,7 +292,11 @@ public class TenantCaseSchemeBiz {
 
         // list admin
         LambdaQueryWrapper<CaseSchemeEntity> queryWrapper = new LambdaQueryWrapper<CaseSchemeEntity>()
-                .eq(CaseSchemeEntity::getSource, EnumSource.ADMIN.name());
+                .eq(StrUtil.isNotBlank(caseSchemeSearch.getSource()), CaseSchemeEntity::getSource, caseSchemeSearch.getSource())
+                .eq(StrUtil.isNotBlank(caseSchemeSearch.getCaseInstanceId()), CaseSchemeEntity::getCaseInstanceId, caseSchemeSearch.getCaseInstanceId())
+                .eq(StrUtil.isNotBlank(caseSchemeSearch.getAppId()), CaseSchemeEntity::getAppId, caseSchemeSearch.getAppId())
+                .in(caseSchemeSearch.getCategIds() != null, CaseSchemeEntity::getCaseCategId, caseSchemeSearch.getCategIds())
+                .like(StrUtil.isNotBlank(caseSchemeSearch.getKeyword()), CaseSchemeEntity::getSchemeName, caseSchemeSearch.getKeyword());
         List<CaseSchemeEntity> caseSchemeEntityList = caseSchemeService.list(queryWrapper);
         if (caseSchemeEntityList == null || caseSchemeEntityList.isEmpty()) {
             return new ArrayList<>();
@@ -350,6 +356,4 @@ public class TenantCaseSchemeBiz {
                 .eq(CaseSchemeEntity::getCaseInstanceId, caseInstanceId);
         return caseSchemeService.getOne(queryWrapper);
     }
-
-
 }

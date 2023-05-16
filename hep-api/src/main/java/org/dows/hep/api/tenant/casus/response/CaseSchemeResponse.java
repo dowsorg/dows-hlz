@@ -47,8 +47,11 @@ public class CaseSchemeResponse{
     @Schema(title = "方案说明")
     private String schemeDescr;
 
+    @Schema(title = "添加方式")
+    private String addType;
+
     @Schema(title = "是否包含视频[0-否|1-是]")
-    private Boolean containsVideo;
+    private Integer containsVideo;
 
     @Schema(title = "问题集合")
     private List<QuestionSectionItemResponse> sectionItemList;
