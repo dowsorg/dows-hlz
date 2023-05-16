@@ -88,9 +88,6 @@ public class MaterialsManageBiz {
                 .eq(MaterialsEntity::getAppId, request.getAppId())
                 .eq(MaterialsEntity::getBizCode, request.getBizCode())
                 .like(BeanUtil.isNotEmpty(request) && StrUtil.isNotBlank(request.getKeyword()), MaterialsEntity::getTitle, request.getKeyword())
-                .like(BeanUtil.isNotEmpty(request) && StrUtil.isNotBlank(request.getKeyword()), MaterialsEntity::getDescr, request.getKeyword())
-                .like(BeanUtil.isNotEmpty(request) && StrUtil.isNotBlank(request.getKeyword()), MaterialsEntity::getAccountName, request.getKeyword())
-                .like(BeanUtil.isNotEmpty(request) && StrUtil.isNotBlank(request.getKeyword()), MaterialsEntity::getAccountId, request.getKeyword())
                 .page(pageRequest);
         return baseBiz.convertPage(pageResult, MaterialsPageResponse.class);
     }

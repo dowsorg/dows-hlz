@@ -94,12 +94,12 @@ public class TenantCaseSchemeBiz {
 
         // page
         Page<CaseSchemeEntity> page = new Page<>(caseSchemePage.getPageNo(), caseSchemePage.getPageSize());
-        LambdaQueryWrapper<CaseSchemeEntity> queryWrapper = new LambdaQueryWrapper<CaseSchemeEntity>()
+        Page<CaseSchemeEntity> pageResult = caseSchemeService
+                .lambdaQuery()
                 .eq(caseSchemePage.getCategId() != null, CaseSchemeEntity::getCaseCategId, caseSchemePage.getCategId())
                 .eq(CaseSchemeEntity::getSource, EnumSource.ADMIN.name())
                 .like(caseSchemePage.getKeyword() != null, CaseSchemeEntity::getSchemeName, caseSchemePage.getKeyword())
-                .like(caseSchemePage.getKeyword() != null, CaseSchemeEntity::getAccountName, caseSchemePage.getKeyword());
-        Page<CaseSchemeEntity> pageResult = caseSchemeService.page(page, queryWrapper);
+                .page(page);
 
         // convert
         return baseBiz.convertPage(pageResult, CaseSchemePageResponse.class);
