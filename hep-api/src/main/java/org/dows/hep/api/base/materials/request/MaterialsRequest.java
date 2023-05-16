@@ -3,6 +3,7 @@ package org.dows.hep.api.base.materials.request;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -19,14 +20,11 @@ import java.util.List;
 @Schema(name = "MaterialsRequest 对象", title = "资料")
 public class MaterialsRequest {
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Schema(title = "数据库ID")
-    private Long id;
-
     @Schema(title = "资料ID-更新时有")
     private String materialsId;
 
     @Schema(title = "bizCode")
+    @NotBlank(message = "业务代码不能为空")
     private String bizCode;
 
     @Schema(title = "资料分类ID")
@@ -52,6 +50,11 @@ public class MaterialsRequest {
 
 
     // @JsonIgnore
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @JsonIgnore
+    @Schema(title = "数据库ID")
+    private Long id;
+
     @Schema(title = "应用ID")
     @JsonIgnore
     private String appId;

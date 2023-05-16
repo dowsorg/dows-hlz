@@ -23,6 +23,9 @@ public class MaterialsPageRequest {
     @Schema(title = "应用ID")
     private String appId;
 
+    @Schema(title = "bizCode")
+    private String bizCode;
+
     @Schema(title = "关键字")
     private String keyword;
 }

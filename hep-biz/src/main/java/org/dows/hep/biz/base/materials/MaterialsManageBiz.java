@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import org.dows.framework.api.exceptions.BizException;
+import org.dows.hep.api.base.materials.MaterialsEnabledEnum;
 import org.dows.hep.api.base.materials.request.MaterialsAttachmentRequest;
 import org.dows.hep.api.base.materials.request.MaterialsPageRequest;
 import org.dows.hep.api.base.materials.request.MaterialsRequest;
@@ -35,7 +37,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class MaterialsManageBiz {
-    private final MaterialsBaseBiz materialsBaseBiz;
+    private final MaterialsBaseBiz baseBiz;
     private final MaterialsService materialsService;
     private final MaterialsAttachmentService materialsAttachmentService;
 
@@ -55,12 +57,8 @@ public class MaterialsManageBiz {
             return "";
         }
 
-        // materials
-        if (StrUtil.isBlank(materialsRequest.getMaterialsId())) {
-            materialsRequest.setEnabled(materialsRequest.getEnabled() == null ? EnumStatus.ENABLE.getCode() : materialsRequest.getEnabled());
-            materialsRequest.setAppId(materialsBaseBiz.getAppId());
-            materialsRequest.setMaterialsId(materialsBaseBiz.getIdStr());
-        }
+        // check and saveOrUpd
+        checkBeforeSaveOrUpd(materialsRequest);
         MaterialsEntity materialsEntity = BeanUtil.copyProperties(materialsRequest, MaterialsEntity.class);
         materialsService.saveOrUpdate(materialsEntity);
 
@@ -79,29 +77,22 @@ public class MaterialsManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public IPage<MaterialsPageResponse> pageMaterials(MaterialsPageRequest materialsPageRequest) {
+    public IPage<MaterialsPageResponse> pageMaterials(MaterialsPageRequest request) {
         Page<MaterialsPageResponse> result = new Page<>();
-        if (BeanUtil.isEmpty(materialsPageRequest)) {
+        if (BeanUtil.isEmpty(request)) {
             return result;
         }
 
-        Page<MaterialsEntity> pageRequest = new Page<>(materialsPageRequest.getPageNo(), materialsPageRequest.getPageSize());
+        Page<MaterialsEntity> pageRequest = new Page<>(request.getPageNo(), request.getPageSize());
         Page<MaterialsEntity> pageResult = materialsService.lambdaQuery()
-                .like(BeanUtil.isNotEmpty(materialsPageRequest) && StrUtil.isNotBlank(materialsPageRequest.getKeyword()), MaterialsEntity::getTitle, materialsPageRequest.getKeyword())
-                .like(BeanUtil.isNotEmpty(materialsPageRequest) && StrUtil.isNotBlank(materialsPageRequest.getKeyword()), MaterialsEntity::getDescr, materialsPageRequest.getKeyword())
-                .like(BeanUtil.isNotEmpty(materialsPageRequest) && StrUtil.isNotBlank(materialsPageRequest.getKeyword()), MaterialsEntity::getAccountName, materialsPageRequest.getKeyword())
-                .like(BeanUtil.isNotEmpty(materialsPageRequest) && StrUtil.isNotBlank(materialsPageRequest.getKeyword()), MaterialsEntity::getAccountId, materialsPageRequest.getKeyword())
+                .eq(MaterialsEntity::getAppId, request.getAppId())
+                .eq(MaterialsEntity::getBizCode, request.getBizCode())
+                .like(BeanUtil.isNotEmpty(request) && StrUtil.isNotBlank(request.getKeyword()), MaterialsEntity::getTitle, request.getKeyword())
+                .like(BeanUtil.isNotEmpty(request) && StrUtil.isNotBlank(request.getKeyword()), MaterialsEntity::getDescr, request.getKeyword())
+                .like(BeanUtil.isNotEmpty(request) && StrUtil.isNotBlank(request.getKeyword()), MaterialsEntity::getAccountName, request.getKeyword())
+                .like(BeanUtil.isNotEmpty(request) && StrUtil.isNotBlank(request.getKeyword()), MaterialsEntity::getAccountId, request.getKeyword())
                 .page(pageRequest);
-        List<MaterialsEntity> records = pageResult.getRecords();
-        if (records == null || records.isEmpty()) {
-            return result;
-        }
-
-        List<MaterialsPageResponse> pageResponseList = records.stream()
-                .map(item -> BeanUtil.copyProperties(item, MaterialsPageResponse.class))
-                .collect(Collectors.toList());
-        result.setRecords(pageResponseList);
-        return result;
+        return baseBiz.convertPage(pageResult, MaterialsPageResponse.class);
     }
 
     /**
@@ -114,15 +105,17 @@ public class MaterialsManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public List<MaterialsResponse> listMaterials(MaterialsSearchRequest materialsSearchRequest) {
+    public List<MaterialsResponse> listMaterials(MaterialsSearchRequest request) {
         List<MaterialsResponse> result = new ArrayList<>();
 
         // list materials
         List<MaterialsEntity> materialsEntityList = materialsService.lambdaQuery()
-                .like(BeanUtil.isNotEmpty(materialsSearchRequest) && StrUtil.isNotBlank(materialsSearchRequest.getKeyword()), MaterialsEntity::getTitle, materialsSearchRequest.getKeyword())
-                .like(BeanUtil.isNotEmpty(materialsSearchRequest) && StrUtil.isNotBlank(materialsSearchRequest.getKeyword()), MaterialsEntity::getDescr, materialsSearchRequest.getKeyword())
-                .like(BeanUtil.isNotEmpty(materialsSearchRequest) && StrUtil.isNotBlank(materialsSearchRequest.getKeyword()), MaterialsEntity::getAccountName, materialsSearchRequest.getKeyword())
-                .like(BeanUtil.isNotEmpty(materialsSearchRequest) && StrUtil.isNotBlank(materialsSearchRequest.getKeyword()), MaterialsEntity::getAccountId, materialsSearchRequest.getKeyword())
+                .eq(MaterialsEntity::getAppId, request.getAppId())
+                .eq(MaterialsEntity::getBizCode, request.getBizCode())
+                .like(BeanUtil.isNotEmpty(request) && StrUtil.isNotBlank(request.getKeyword()), MaterialsEntity::getTitle, request.getKeyword())
+                .like(BeanUtil.isNotEmpty(request) && StrUtil.isNotBlank(request.getKeyword()), MaterialsEntity::getDescr, request.getKeyword())
+                .like(BeanUtil.isNotEmpty(request) && StrUtil.isNotBlank(request.getKeyword()), MaterialsEntity::getAccountName, request.getKeyword())
+                .like(BeanUtil.isNotEmpty(request) && StrUtil.isNotBlank(request.getKeyword()), MaterialsEntity::getAccountId, request.getKeyword())
                 .list();
         if (materialsEntityList == null || materialsEntityList.isEmpty()) {
             return result;
@@ -143,7 +136,6 @@ public class MaterialsManageBiz {
                     String materialsId = materialsResponse.getMaterialsId();
                     List<MaterialsAttachmentResponse> att = attachmentMap.get(materialsId);
                     materialsResponse.setMaterialsAttachment(att);
-
                     return materialsResponse;
                 })
                 .collect(Collectors.toList());
@@ -160,30 +152,28 @@ public class MaterialsManageBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     public MaterialsResponse getMaterials(String materialsId) {
-        MaterialsResponse result = new MaterialsResponse();
         if (StrUtil.isBlank(materialsId)) {
-            return result;
+            return new MaterialsResponse();
         }
 
         // get materials
-        LambdaQueryWrapper<MaterialsEntity> queryWrapper = new LambdaQueryWrapper<MaterialsEntity>()
-                .eq(MaterialsEntity::getMaterialsId, materialsId);
-        MaterialsEntity materialsEntity = materialsService.getOne(queryWrapper);
+        MaterialsEntity materialsEntity = getById(materialsId);
         if (BeanUtil.isEmpty(materialsEntity)) {
-            return result;
+            return new MaterialsResponse();
         }
+        MaterialsResponse result = BeanUtil.copyProperties(materialsEntity, MaterialsResponse.class);
 
         // list attachment of materials
         List<MaterialsAttachmentEntity> attachmentEntityList = materialsAttachmentService.lambdaQuery()
                 .eq(MaterialsAttachmentEntity::getMaterialsId, materialsId)
                 .list();
-
-        // build result
-        MaterialsResponse materialsResponse = BeanUtil.copyProperties(materialsEntity, MaterialsResponse.class);
+        if (attachmentEntityList == null || attachmentEntityList.isEmpty()) {
+            return result;
+        }
         List<MaterialsAttachmentResponse> attachmentResponseList = attachmentEntityList.stream()
                 .map(item -> BeanUtil.copyProperties(item, MaterialsAttachmentResponse.class))
                 .collect(Collectors.toList());
-        materialsResponse.setMaterialsAttachment(attachmentResponseList);
+        result.setMaterialsAttachment(attachmentResponseList);
         return result;
     }
 
@@ -257,6 +247,27 @@ public class MaterialsManageBiz {
         return remRes1 && remRes2;
     }
 
+    private void checkBeforeSaveOrUpd(MaterialsRequest request) {
+        String uniqueId = request.getMaterialsId();
+        if (StrUtil.isBlank(uniqueId)) {
+            request.setAppId(baseBiz.getAppId());
+            request.setMaterialsId(baseBiz.getIdStr());
+            request.setEnabled(request.getEnabled() == null ? MaterialsEnabledEnum.ENABLED.getCode() : request.getEnabled());
+        } else {
+            MaterialsEntity entity = getById(uniqueId);
+            if (BeanUtil.isEmpty(entity)) {
+                throw new BizException("数据不存在");
+            }
+            request.setId(entity.getId());
+        }
+    }
+
+    private MaterialsEntity getById(String materialsId) {
+        LambdaQueryWrapper<MaterialsEntity> queryWrapper = new LambdaQueryWrapper<MaterialsEntity>()
+                .eq(MaterialsEntity::getMaterialsId, materialsId);
+        return materialsService.getOne(queryWrapper);
+    }
+
     private void handleAttachment(MaterialsRequest materials) {
         if (BeanUtil.isEmpty(materials)) {
             return;
@@ -271,7 +282,7 @@ public class MaterialsManageBiz {
         List<MaterialsAttachmentEntity> attachmentEntities = materialsAttachments.stream()
                 .map(item -> {
                     MaterialsAttachmentEntity materialsAttachmentEntity = BeanUtil.copyProperties(item, MaterialsAttachmentEntity.class);
-                    materialsAttachmentEntity.setMaterialsAttachmentId(materialsBaseBiz.getIdStr());
+                    materialsAttachmentEntity.setMaterialsAttachmentId(baseBiz.getIdStr());
                     materialsAttachmentEntity.setMaterialsId(materialsId);
                     materialsAttachmentEntity.setAppId(appId);
                     return materialsAttachmentEntity;

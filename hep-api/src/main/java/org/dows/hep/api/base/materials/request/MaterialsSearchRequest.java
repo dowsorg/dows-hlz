@@ -15,14 +15,11 @@ import lombok.NoArgsConstructor;
 @Schema(name = "MaterialsSearchRequest 对象", title = "关键字聚合")
 public class MaterialsSearchRequest{
 
-    @Schema(title = "页数")
-    private Integer pageNo;
-
-    @Schema(title = "页大小")
-    private Integer pageSize;
-
     @Schema(title = "应用ID")
     private String appId;
+
+    @Schema(title = "bizCode")
+    private String bizCode;
 
     @Schema(title = "关键字-标题/作者")
     private String keyword;
