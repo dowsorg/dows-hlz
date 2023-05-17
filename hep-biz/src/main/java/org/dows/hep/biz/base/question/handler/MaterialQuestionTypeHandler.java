@@ -44,6 +44,7 @@ public class MaterialQuestionTypeHandler implements QuestionTypeHandler {
         questionRequest.setQuestionInstanceId(baseBiz.getIdStr());
         questionRequest.setQuestionIdentifier(baseBiz.getIdStr());
         questionRequest.setVer(baseBiz.getLastVer());
+        questionRequest.setQuestionTitle(questionRequest.getQuestionDescr());
 
 
         // save baseInfo
@@ -74,6 +75,7 @@ public class MaterialQuestionTypeHandler implements QuestionTypeHandler {
             throw new BizException("数据不存在");
         }
         questionRequest.setId(oriEntity.getId());
+        questionRequest.setQuestionTitle(questionRequest.getQuestionDescr());
         QuestionInstanceEntity questionInstanceEntity = BeanUtil.copyProperties(questionRequest, QuestionInstanceEntity.class);
         boolean updInstanceRes = questionInstanceService.updateById(questionInstanceEntity);
 
