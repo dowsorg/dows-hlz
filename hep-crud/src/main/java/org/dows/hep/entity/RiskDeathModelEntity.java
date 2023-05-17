@@ -39,11 +39,12 @@ public class RiskDeathModelEntity implements CrudEntity {
     @Schema(title = "死亡模型ID")
     private String riskDeathModelId;
 
+    @Schema(title = "应用ID")
+    private String appId;
+
     @Schema(title = "分布式ID")
     private String riskModelId;
 
-    @Schema(title = "应用ID")
-    private String appId;
 
     @Schema(title = "死亡原因名称")
     private String riskDeathReasonName;

@@ -2,6 +2,7 @@ package org.dows.hep.api.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
  * @author runsix
@@ -39,5 +40,4 @@ public enum EnumIndicatorCategory {
 
   private final String code;
   private final String categoryName;
-
 }

@@ -48,8 +48,11 @@ public class RiskModelEntity implements CrudEntity {
     @Schema(title = "模型名称")
     private String name;
 
+    @Schema(title = "死亡概率")
+    private Integer riskDeathProbability;
+
     @Schema(title = "0-禁用，1-启用")
-    private Boolean status;
+    private Integer status;
 
     @JsonIgnore
     @TableLogic

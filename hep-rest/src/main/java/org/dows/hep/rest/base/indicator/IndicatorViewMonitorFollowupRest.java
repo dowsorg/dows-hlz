@@ -1,5 +1,6 @@
 package org.dows.hep.rest.base.indicator;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -73,7 +74,7 @@ public class IndicatorViewMonitorFollowupRest {
 
     @Operation(summary = "Rs分页筛选查看指标监测随访类")
     @GetMapping("v1/baseIndicator/indicatorViewMonitorFollowup/pageRs")
-    public IPage<IndicatorViewMonitorFollowupResponseRs> pageRs(
+    public Page<IndicatorViewMonitorFollowupResponseRs> pageRs(
         @RequestParam(required = false, defaultValue = RsPageConstant.PAGE_NO) Long pageNo,
         @RequestParam(required = false, defaultValue = RsPageConstant.PAGE_SIZE) Long pageSize,
         @RequestParam(required = false, defaultValue = RsPageConstant.ORDER) String order,
