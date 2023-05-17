@@ -20,10 +20,6 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(name = "CaseScheme 对象", title = "案例方案")
 public class CaseSchemeRequest{
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Schema(title = "数据库ID")
-    private Long id;
-
     @Schema(title = "方案ID")
     private String caseSchemeId;
 
@@ -36,7 +32,7 @@ public class CaseSchemeRequest{
     @Schema(title = "类别ID")
     private String caseCategId;
 
-    @Schema(title = "状态[0-启用|1-关闭]")
+    @Schema(title = "状态[0-关闭|1-启用]")
     private Integer enabled;
 
     @Schema(title = "方案提示")
@@ -44,6 +40,9 @@ public class CaseSchemeRequest{
 
     @Schema(title = "方案说明")
     private String schemeDescr;
+
+    @Schema(title = "添加方式")
+    private String addType;
 
     @Schema(title = "是否包含视频[0-否|1-是]")
     private Integer containsVideo;
@@ -53,9 +52,6 @@ public class CaseSchemeRequest{
 
     @Schema(title = "维度集合")
     private List<QuestionSectionDimensionRequest> questionSectionDimensionList;
-
-    @Schema(title = "来源[admin|tenant]")
-    private String source;
 
     @Schema(title = "创建者账号ID")
     private String accountId;
@@ -69,6 +65,15 @@ public class CaseSchemeRequest{
     @Schema(title = "应用ID")
     @JsonIgnore
     private String appId;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @JsonIgnore
+    @Schema(title = "数据库ID")
+    private Long id;
+
+    @Schema(title = "来源[ADMIN|TENANT]")
+    @JsonIgnore
+    private String source;
 
     @Schema(title = "类别名")
     @JsonIgnore

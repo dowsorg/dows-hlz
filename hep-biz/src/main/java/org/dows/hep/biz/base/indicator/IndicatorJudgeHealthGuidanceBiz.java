@@ -209,10 +209,13 @@ public class IndicatorJudgeHealthGuidanceBiz{
         List<IndicatorJudgeHealthGuidanceEntity> indicatorJudgeHealthGuidanceEntityList = new ArrayList<>();
         indicatorJudgeHealthGuidanceEntityList.add(indicatorJudgeHealthGuidanceEntity);
         List<IndicatorJudgeHealthGuidanceResponseRs> indicatorJudgeHealthGuidanceResponseRsList = indicatorJudgeHealthGuidanceEntityList2ResponseRsList(indicatorJudgeHealthGuidanceEntityList);
+        if (indicatorJudgeHealthGuidanceResponseRsList.isEmpty()) {
+            return null;
+        }
         return indicatorJudgeHealthGuidanceResponseRsList.get(0);
     }
 
-    public IPage<IndicatorJudgeHealthGuidanceResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String paramIndicatorCategoryId, Integer status) {
+    public Page<IndicatorJudgeHealthGuidanceResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String paramIndicatorCategoryId, Integer status) {
         Page<IndicatorJudgeHealthGuidanceEntity> page = RsPageUtil.getRsPage(pageNo, pageSize, order, asc);
         LambdaQueryWrapper<IndicatorJudgeHealthGuidanceEntity> indicatorJudgeHealthGuidanceEntityLQW = new LambdaQueryWrapper<>();
         indicatorJudgeHealthGuidanceEntityLQW

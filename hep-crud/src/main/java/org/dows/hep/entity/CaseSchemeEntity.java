@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 案例方案(CaseScheme)实体类
@@ -66,11 +66,14 @@ public class CaseSchemeEntity implements CrudEntity {
     @Schema(title = "方案说明")
     private String schemeDescr;
 
+    @Schema(title = "添加方式")
+    private String addType;
+
     @Schema(title = "是否包含视频[0-否|1-是]")
-    private Boolean containsVideo;
+    private Integer containsVideo;
 
     @Schema(title = "状态[0-关闭|1-开启]")
-    private Boolean enabled;
+    private Integer enabled;
 
     @Schema(title = "来源[admin|tenant]")
     private String source;

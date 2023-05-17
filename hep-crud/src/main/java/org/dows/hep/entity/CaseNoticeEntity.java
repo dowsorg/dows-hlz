@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 案例公告(CaseNotice)实体类
@@ -55,7 +55,7 @@ public class CaseNoticeEntity implements CrudEntity {
     private String periods;
 
     @Schema(title = "期数排序")
-    private Boolean periodSequence;
+    private Integer periodSequence;
 
     @Schema(title = "案例标示")
     private String caseIdentifier;

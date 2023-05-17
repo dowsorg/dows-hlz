@@ -576,10 +576,13 @@ public class IndicatorViewMonitorFollowupBiz{
         List<IndicatorViewMonitorFollowupEntity> indicatorViewMonitorFollowupEntityList = new ArrayList<>();
         indicatorViewMonitorFollowupEntityList.add(indicatorViewMonitorFollowupEntity);
         List<IndicatorViewMonitorFollowupResponseRs> indicatorViewMonitorFollowupResponseRs = indicatorViewMonitorFollowupEntityList2ResponseRsList(indicatorViewMonitorFollowupEntityList);
+        if (indicatorViewMonitorFollowupResponseRs.isEmpty()) {
+          return null;
+        }
         return indicatorViewMonitorFollowupResponseRs.get(0);
     }
 
-    public IPage<IndicatorViewMonitorFollowupResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String paramIndicatorCategoryId, Integer status) {
+    public Page<IndicatorViewMonitorFollowupResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String paramIndicatorCategoryId, Integer status) {
         Page<IndicatorViewMonitorFollowupEntity> page = RsPageUtil.getRsPage(pageNo, pageSize, order, asc);
         LambdaQueryWrapper<IndicatorViewMonitorFollowupEntity> indicatorViewMonitorFollowupEntityLQW = new LambdaQueryWrapper<>();
         indicatorViewMonitorFollowupEntityLQW

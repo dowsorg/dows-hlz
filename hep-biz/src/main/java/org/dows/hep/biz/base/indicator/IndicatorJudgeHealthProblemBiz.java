@@ -222,10 +222,13 @@ public class IndicatorJudgeHealthProblemBiz{
         List<IndicatorJudgeHealthProblemEntity> indicatorJudgeHealthProblemEntityList = new ArrayList<>();
         indicatorJudgeHealthProblemEntityList.add(indicatorJudgeHealthProblemEntity);
         List<IndicatorJudgeHealthProblemResponseRs> indicatorJudgeHealthProblemResponseRsList = indicatorJudgeHealthProblemEntityList2ResponseRsList(indicatorJudgeHealthProblemEntityList);
+        if (indicatorJudgeHealthProblemResponseRsList.isEmpty()) {
+            return null;
+        }
         return indicatorJudgeHealthProblemResponseRsList.get(0);
     }
 
-    public IPage<IndicatorJudgeHealthProblemResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String paramIndicatorCategoryId, Integer status) {
+    public Page<IndicatorJudgeHealthProblemResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String paramIndicatorCategoryId, Integer status) {
         Page<IndicatorJudgeHealthProblemEntity> page = RsPageUtil.getRsPage(pageNo, pageSize, order, asc);
         LambdaQueryWrapper<IndicatorJudgeHealthProblemEntity> indicatorJudgeHealthProblemEntityLQW = new LambdaQueryWrapper<>();
         indicatorJudgeHealthProblemEntityLQW

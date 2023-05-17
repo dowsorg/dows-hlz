@@ -20,6 +20,7 @@ import org.dows.hep.biz.tenant.casus.handler.CaseQuestionnaireHandler;
 import org.dows.hep.entity.CaseInstanceEntity;
 import org.dows.hep.entity.CaseQuestionnaireEntity;
 import org.dows.hep.entity.QuestionSectionEntity;
+import org.dows.hep.service.CaseInstanceService;
 import org.dows.hep.service.CaseQuestionnaireService;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
@@ -37,9 +38,9 @@ import java.util.stream.Collectors;
 public class TenantCaseQuestionnaireBiz {
     private final TenantCaseBaseBiz baseBiz;
     private final QuestionSectionBiz questionSectionBiz;
-    private final TenantCaseManageBiz caseManageBiz;
     private final QuestionInstanceBiz questionInstanceBiz;
     private final CaseQuestionnaireService caseQuestionnaireService;
+    private final CaseInstanceService caseInstanceService;
 
     /**
      * @param
@@ -60,7 +61,9 @@ public class TenantCaseQuestionnaireBiz {
 
         // prepare base-info
         // get case-instance
-        CaseInstanceEntity caseInstance = caseManageBiz.getById(caseInstanceId);
+        LambdaQueryWrapper<CaseInstanceEntity> queryWrapper = new LambdaQueryWrapper<CaseInstanceEntity>()
+                .eq(CaseInstanceEntity::getCaseInstanceId, caseInstanceId);
+        CaseInstanceEntity caseInstance = caseInstanceService.getOne(queryWrapper);
         // file caseQuestionnaire
         fillCaseQuestionnaire(caseQuestionnaire, caseInstance);
         
@@ -169,6 +172,10 @@ public class TenantCaseQuestionnaireBiz {
 
     }
 
+    public void copyCaseQuestionnaire(String oriCaseInstanceId, CaseInstanceEntity targetCaseInstance) {
+
+    }
+
     /**
      * @param
      * @return
@@ -181,6 +188,23 @@ public class TenantCaseQuestionnaireBiz {
      */
     public Boolean delCaseQuestionnaire(String caseQuestionnaireId) {
         return Boolean.FALSE;
+    }
+
+    @NotNull
+    private List<QuestionResponse> listUsableQuestionFromSource0(QuestionSearchRequest questionSearchRequest, String caseInstanceId) {
+        // list from question source
+        List<QuestionResponse> questionResponses = listQuestionFromSource0(questionSearchRequest);
+
+        // list existing-question of case-instance
+        List<String> existingIds = listQuestionIdOfCaseInstance(caseInstanceId);
+
+        // filter usable question
+        return filterUsableQuestion(questionResponses, existingIds);
+    }
+
+    private List<QuestionResponse> listQuestionFromSource0(QuestionSearchRequest questionSearchRequest) {
+        questionSearchRequest.setAppId(baseBiz.getAppId());
+        return questionInstanceBiz.listQuestion(questionSearchRequest);
     }
 
     private List<String> listQuestionIdOfCaseInstance(String caseInstanceId) {
@@ -205,23 +229,6 @@ public class TenantCaseQuestionnaireBiz {
                 .map(QuestionResponse::getQuestionInstanceId)
                 .distinct()
                 .toList();
-    }
-
-    private List<QuestionResponse> listQuestionFromSource0(QuestionSearchRequest questionSearchRequest) {
-        questionSearchRequest.setAppId(baseBiz.getAppId());
-        return questionInstanceBiz.listQuestion(questionSearchRequest);
-    }
-
-    @NotNull
-    private List<QuestionResponse> listUsableQuestionFromSource0(QuestionSearchRequest questionSearchRequest, String caseInstanceId) {
-        // list from question source
-        List<QuestionResponse> questionResponses = listQuestionFromSource0(questionSearchRequest);
-
-        // list existing-question of case-instance
-        List<String> existingIds = listQuestionIdOfCaseInstance(caseInstanceId);
-
-        // filter usable question
-        return filterUsableQuestion(questionResponses, existingIds);
     }
 
     @NotNull
@@ -279,5 +286,4 @@ public class TenantCaseQuestionnaireBiz {
         caseQuestionnaireService.save(caseQuestionnaireEntity);
         return caseQuestionnaireEntity;
     }
-
 }

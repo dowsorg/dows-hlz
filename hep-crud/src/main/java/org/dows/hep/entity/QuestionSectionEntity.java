@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 问题集[试卷](QuestionSection)实体类
@@ -44,15 +44,6 @@ public class QuestionSectionEntity implements CrudEntity {
 
     @Schema(title = "类别ID")
     private String questionSectionCategId;
-
-    @Schema(title = "类别名")
-    private String questionSectionCategName;
-
-    @Schema(title = "类别ID路径")
-    private String questionSectionCategIdPath;
-
-    @Schema(title = "类别name路径")
-    private String questionSectionCategNamePath;
 
     @Schema(title = "问题集名称")
     private String name;

@@ -205,10 +205,13 @@ public class IndicatorJudgeRiskFactorBiz{
         List<IndicatorJudgeRiskFactorEntity> indicatorJudgeRiskFactorEntityList = new ArrayList<>();
         indicatorJudgeRiskFactorEntityList.add(indicatorJudgeRiskFactorEntity);
         List<IndicatorJudgeRiskFactorResponseRs> indicatorJudgeRiskFactorResponseRsList = indicatorJudgeRiskFactorEntityList2ResponseRsList(indicatorJudgeRiskFactorEntityList);
+        if (indicatorJudgeRiskFactorResponseRsList.isEmpty()) {
+            return null;
+        }
         return indicatorJudgeRiskFactorResponseRsList.get(0);
     }
 
-    public IPage<IndicatorJudgeRiskFactorResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String paramIndicatorCategoryId, Integer status) {
+    public Page<IndicatorJudgeRiskFactorResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String paramIndicatorCategoryId, Integer status) {
         Page<IndicatorJudgeRiskFactorEntity> page = RsPageUtil.getRsPage(pageNo, pageSize, order, asc);
         LambdaQueryWrapper<IndicatorJudgeRiskFactorEntity> indicatorJudgeRiskFactorEntityLQW = new LambdaQueryWrapper<>();
         indicatorJudgeRiskFactorEntityLQW

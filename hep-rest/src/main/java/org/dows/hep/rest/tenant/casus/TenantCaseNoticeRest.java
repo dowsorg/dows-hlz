@@ -12,7 +12,7 @@ import java.util.List;
 
 /**
 * @description project descr:案例:案例公告
-*
+* @folder tenant-hep/案例域-案例公告
 * @author lait.zhang
 * @date 2023年4月17日 下午8:00:11
 */
@@ -51,8 +51,8 @@ public class TenantCaseNoticeRest {
     */
     @Operation(summary = "删除案例公告")
     @DeleteMapping("v1/tenantCasus/caseNotice/delCaseNotice")
-    public Boolean delCaseNotice(@Validated String caseNoticeId ) {
-        return tenantCaseNoticeBiz.delCaseNotice(caseNoticeId);
+    public Boolean delCaseNotice(@RequestBody List<String> caseNoticeIds ) {
+        return tenantCaseNoticeBiz.delCaseNotice(caseNoticeIds);
     }
 
 

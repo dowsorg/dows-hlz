@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.biz.base.indicator.IndicatorViewBaseInfoMonitorContentBiz;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,7 +28,7 @@ public class IndicatorViewBaseInfoMonitorContentRest {
 
   @Operation(summary = "批量删除查看指标基本信息指标监测内容")
   @DeleteMapping("v1/baseIndicator/indicatorViewBaseInfoMonitorContent/batchDeleteIndicatorViewBaseInfoMonitorContent")
-  public void batchDeleteIndicatorViewBaseInfoMonitorContent(@RequestParam List<String> indicatorViewBaseInfoMonitorContentIdList) throws InterruptedException {
+  public void batchDeleteIndicatorViewBaseInfoMonitorContent(@RequestBody List<String> indicatorViewBaseInfoMonitorContentIdList) throws InterruptedException {
     indicatorViewBaseInfoMonitorContentBiz.batchDeleteIndicatorViewBaseInfoMonitorContent(indicatorViewBaseInfoMonitorContentIdList);
   }
 }

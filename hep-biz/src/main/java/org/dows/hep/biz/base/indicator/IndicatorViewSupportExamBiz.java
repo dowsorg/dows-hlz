@@ -137,110 +137,6 @@ public class IndicatorViewSupportExamBiz{
             })
             .collect(Collectors.toList());
     }
-    /**
-    * @param
-    * @return
-    * @说明: 创建查看指标辅助检查类
-    * @关联表: 
-    * @工时: 4H
-    * @开发者: runsix
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public void createIndicatorViewSupportExam(CreateIndicatorViewSupportExamRequest createIndicatorViewSupportExam ) {
-        
-    }
-    /**
-    * @param
-    * @return
-    * @说明: 删除查看指标辅助检查类
-    * @关联表: 
-    * @工时: 4H
-    * @开发者: runsix
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public void deleteIndicatorViewSupportExam(String indicatorViewSupportExamId ) {
-        
-    }
-    /**
-    * @param
-    * @return
-    * @说明: 批量删除
-    * @关联表: 
-    * @工时: 4H
-    * @开发者: runsix
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public void batchDelete(String string ) {
-        
-    }
-    /**
-    * @param
-    * @return
-    * @说明: 更改启用状态
-    * @关联表: 
-    * @工时: 4H
-    * @开发者: runsix
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public void updateStatus(IndicatorViewSupportExamRequest indicatorViewSupportExam ) {
-        
-    }
-    /**
-    * @param
-    * @return
-    * @说明: 查看指标辅助检查类
-    * @关联表: 
-    * @工时: 4H
-    * @开发者: runsix
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public void updateIndicatorViewSupportExam(UpdateIndicatorViewSupportExamRequest updateIndicatorViewSupportExam ) {
-        
-    }
-    /**
-    * @param
-    * @return
-    * @说明: 查看指标辅助检查类
-    * @关联表: 
-    * @工时: 4H
-    * @开发者: runsix
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public IndicatorViewSupportExamResponse getIndicatorViewSupportExam(String indicatorViewSupportExamId ) {
-        return new IndicatorViewSupportExamResponse();
-    }
-    /**
-    * @param
-    * @return
-    * @说明: 筛选指标辅助检查类
-    * @关联表: 
-    * @工时: 4H
-    * @开发者: runsix
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public List<IndicatorViewSupportExamResponse> listIndicatorViewSupportExam(String appId, String indicatorCategoryId, String name, String type, DecimalRequest fee, String resultAnalysis, Integer status ) {
-        return new ArrayList<IndicatorViewSupportExamResponse>();
-    }
-    /**
-    * @param
-    * @return
-    * @说明: 分页筛选指标辅助检查类
-    * @关联表: 
-    * @工时: 4H
-    * @开发者: runsix
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public String pageIndicatorViewSupportExam(Integer pageNo, Integer pageSize, String appId, String indicatorCategoryId, String name, String type, DecimalRequest fee, String resultAnalysis, Integer status ) {
-        return new String();
-    }
 
     @Transactional(rollbackFor = Exception.class)
     public void createOrUpdateRs(CreateOrUpdateIndicatorViewSupportExamRequestRs createOrUpdateIndicatorViewSupportExamRequestRs) {
@@ -363,10 +259,13 @@ public class IndicatorViewSupportExamBiz{
         List<IndicatorViewSupportExamEntity> indicatorViewSupportExamEntityList = new ArrayList<>();
         indicatorViewSupportExamEntityList.add(indicatorViewSupportExamEntity);
         List<IndicatorViewSupportExamResponseRs> indicatorViewSupportExamResponseRsList = indicatorViewSupportExamEntityList2ResponseRsList(indicatorViewSupportExamEntityList);
+        if (indicatorViewSupportExamResponseRsList.isEmpty()) {
+            return null;
+        }
         return indicatorViewSupportExamResponseRsList.get(0);
     }
 
-    public IPage<IndicatorViewSupportExamResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String paramIndicatorCategoryId, Integer status) {
+    public Page<IndicatorViewSupportExamResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String paramIndicatorCategoryId, Integer status) {
         Page<IndicatorViewSupportExamEntity> page = RsPageUtil.getRsPage(pageNo, pageSize, order, asc);
         LambdaQueryWrapper<IndicatorViewSupportExamEntity> indicatorViewSupportExamEntityLQW = new LambdaQueryWrapper<>();
         indicatorViewSupportExamEntityLQW
@@ -381,5 +280,110 @@ public class IndicatorViewSupportExamBiz{
         List<IndicatorViewSupportExamResponseRs> indicatorViewSupportExamResponseRsList = indicatorViewSupportExamEntityList2ResponseRsList(indicatorViewSupportExamEntityList);
         indicatorViewSupportExamResponseRsPage.setRecords(indicatorViewSupportExamResponseRsList);
         return indicatorViewSupportExamResponseRsPage;
+    }
+
+    /**
+    * @param
+    * @return
+    * @说明: 创建查看指标辅助检查类
+    * @关联表: 
+    * @工时: 4H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月23日 上午9:44:34
+    */
+    public void createIndicatorViewSupportExam(CreateIndicatorViewSupportExamRequest createIndicatorViewSupportExam ) {
+        
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 删除查看指标辅助检查类
+    * @关联表: 
+    * @工时: 4H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月23日 上午9:44:34
+    */
+    public void deleteIndicatorViewSupportExam(String indicatorViewSupportExamId ) {
+        
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 批量删除
+    * @关联表: 
+    * @工时: 4H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月23日 上午9:44:34
+    */
+    public void batchDelete(String string ) {
+        
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 更改启用状态
+    * @关联表: 
+    * @工时: 4H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月23日 上午9:44:34
+    */
+    public void updateStatus(IndicatorViewSupportExamRequest indicatorViewSupportExam ) {
+        
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 查看指标辅助检查类
+    * @关联表: 
+    * @工时: 4H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月23日 上午9:44:34
+    */
+    public void updateIndicatorViewSupportExam(UpdateIndicatorViewSupportExamRequest updateIndicatorViewSupportExam ) {
+        
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 查看指标辅助检查类
+    * @关联表: 
+    * @工时: 4H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月23日 上午9:44:34
+    */
+    public IndicatorViewSupportExamResponse getIndicatorViewSupportExam(String indicatorViewSupportExamId ) {
+        return new IndicatorViewSupportExamResponse();
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 筛选指标辅助检查类
+    * @关联表: 
+    * @工时: 4H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月23日 上午9:44:34
+    */
+    public List<IndicatorViewSupportExamResponse> listIndicatorViewSupportExam(String appId, String indicatorCategoryId, String name, String type, DecimalRequest fee, String resultAnalysis, Integer status ) {
+        return new ArrayList<IndicatorViewSupportExamResponse>();
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 分页筛选指标辅助检查类
+    * @关联表: 
+    * @工时: 4H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月23日 上午9:44:34
+    */
+    public String pageIndicatorViewSupportExam(Integer pageNo, Integer pageSize, String appId, String indicatorCategoryId, String name, String type, DecimalRequest fee, String resultAnalysis, Integer status ) {
+        return new String();
     }
 }

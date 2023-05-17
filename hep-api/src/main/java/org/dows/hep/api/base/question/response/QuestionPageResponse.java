@@ -19,7 +19,10 @@ public class QuestionPageResponse {
     @Schema(title = "题目内容")
     private String questionTitle;
 
-    @Schema(title = "一级类别")
+    @Schema(title = "一级类别ID")
+    private String questionCategId;
+
+    @Schema(title = "一级类别名称")
     private String questionCategName;
 
     @Schema(title = "题型")

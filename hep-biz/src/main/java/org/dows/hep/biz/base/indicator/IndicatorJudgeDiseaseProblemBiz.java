@@ -46,6 +46,9 @@ public class IndicatorJudgeDiseaseProblemBiz {
         IndicatorJudgeDiseaseProblemEntity indicatorJudgeDiseaseProblemEntity,
         List<IndicatorCategoryResponse> indicatorCategoryResponseList
     ) {
+        if (Objects.isNull(indicatorJudgeDiseaseProblemEntity)) {
+            return null;
+        }
         return IndicatorJudgeDiseaseProblemResponseRs
             .builder()
             .id(indicatorJudgeDiseaseProblemEntity.getId())
@@ -68,7 +71,6 @@ public class IndicatorJudgeDiseaseProblemBiz {
         if (Objects.isNull(indicatorJudgeDiseaseProblemEntityList) || indicatorJudgeDiseaseProblemEntityList.isEmpty()) {
             return Collections.emptyList();
         }
-        String appId = indicatorJudgeDiseaseProblemEntityList.get(0).getAppId();
         Set<String> indicatorCategoryIdSetSecond = new HashSet<>();
         indicatorJudgeDiseaseProblemEntityList.forEach(
             indicatorJudgeDiseaseProblemEntity -> {
@@ -222,10 +224,13 @@ public class IndicatorJudgeDiseaseProblemBiz {
         List<IndicatorJudgeDiseaseProblemEntity> indicatorJudgeDiseaseProblemEntityList = new ArrayList<>();
         indicatorJudgeDiseaseProblemEntityList.add(indicatorJudgeDiseaseProblemEntity);
         List<IndicatorJudgeDiseaseProblemResponseRs> indicatorJudgeDiseaseProblemResponseRsList = indicatorJudgeDiseaseProblemEntityList2ResponseRsList(indicatorJudgeDiseaseProblemEntityList);
+        if (indicatorJudgeDiseaseProblemResponseRsList.isEmpty()) {
+            return null;
+        }
         return indicatorJudgeDiseaseProblemResponseRsList.get(0);
     }
 
-    public IPage<IndicatorJudgeDiseaseProblemResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String paramIndicatorCategoryId, Integer status) {
+    public Page<IndicatorJudgeDiseaseProblemResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String paramIndicatorCategoryId, Integer status) {
         Page<IndicatorJudgeDiseaseProblemEntity> page = RsPageUtil.getRsPage(pageNo, pageSize, order, asc);
         LambdaQueryWrapper<IndicatorJudgeDiseaseProblemEntity> indicatorJudgeDiseaseProblemEntityLQW = new LambdaQueryWrapper<>();
         indicatorJudgeDiseaseProblemEntityLQW

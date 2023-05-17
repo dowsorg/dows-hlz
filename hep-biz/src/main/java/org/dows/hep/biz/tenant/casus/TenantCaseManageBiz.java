@@ -7,7 +7,9 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.enums.EnumStatus;
+import org.dows.hep.api.tenant.casus.request.CaseInstanceCopyRequest;
 import org.dows.hep.api.tenant.casus.request.CaseInstancePageRequest;
 import org.dows.hep.api.tenant.casus.request.CaseInstanceRequest;
 import org.dows.hep.api.tenant.casus.response.CaseInstancePageResponse;
@@ -17,7 +19,6 @@ import org.dows.hep.service.CaseInstanceService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author lait.zhang
@@ -27,8 +28,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class TenantCaseManageBiz {
-    private final TenantCaseBaseBiz baseBiz;
     private final CaseInstanceService caseInstanceService;
+    private final TenantCaseBaseBiz baseBiz;
+    private final TenantCaseNoticeBiz caseNoticeBiz;
+    private final TenantCaseSchemeBiz caseSchemeBiz;
+    private final TenantCaseQuestionnaireBiz caseQuestionnaireBiz;
 
     /**
      * @param
@@ -45,12 +49,8 @@ public class TenantCaseManageBiz {
             return "";
         }
 
-        if (StrUtil.isBlank(caseInstanceRequest.getCaseInstanceId())) {
-            caseInstanceRequest.setAccountId(baseBiz.getAppId());
-            caseInstanceRequest.setCaseInstanceId(baseBiz.getIdStr());
-            caseInstanceRequest.setCaseIdentifier(baseBiz.getIdStr());
-            caseInstanceRequest.setVer(baseBiz.getLastVer());
-        }
+        // check and save base-info
+        checkBeforeSaveOrUpd(caseInstanceRequest);
         CaseInstanceEntity caseInstanceEntity = BeanUtil.copyProperties(caseInstanceRequest, CaseInstanceEntity.class);
         caseInstanceService.saveOrUpdate(caseInstanceEntity);
         return caseInstanceEntity.getCaseInstanceId();
@@ -66,8 +66,24 @@ public class TenantCaseManageBiz {
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public String copyCaseInstance(String oriCaseInstanceId ) {
-        return new String();
+    public String copyCaseInstance(CaseInstanceCopyRequest request) {
+        String oriCaseInstanceId = request.getOriCaseInstanceId();
+        String targetCaseInstanceName = request.getTargetCaseInstanceName();
+        if (StrUtil.isBlank(oriCaseInstanceId) || StrUtil.isBlank(targetCaseInstanceName)) {
+            throw new BizException("数据不存在");
+        }
+
+        // copy base-info
+        CaseInstanceEntity caseInstanceEntity = copyCaseInstance0(oriCaseInstanceId, targetCaseInstanceName);
+        // copy case-scheme
+        caseSchemeBiz.copyCaseScheme(oriCaseInstanceId, caseInstanceEntity);
+        // todo copy case-org
+        // copy case-notice
+        caseNoticeBiz.copyCaseNotice(oriCaseInstanceId, caseInstanceEntity);
+        // todo copy case-questionnaire
+        caseQuestionnaireBiz.copyCaseQuestionnaire(oriCaseInstanceId, caseInstanceEntity);
+
+        return caseInstanceEntity.getCaseInstanceId();
     }
 
     /**
@@ -81,9 +97,8 @@ public class TenantCaseManageBiz {
      * @创建时间: 2023年4月23日 上午9:44:34
      */
     public IPage<CaseInstancePageResponse> pageCaseInstance(CaseInstancePageRequest caseInstancePageRequest ) {
-        Page<CaseInstancePageResponse> result = new Page<>();
         if (BeanUtil.isEmpty(caseInstancePageRequest)) {
-            return result;
+            return new Page<>();
         }
 
         Page<CaseInstanceEntity> pageRequest = new Page<>(caseInstancePageRequest.getPageNo(), caseInstancePageRequest.getPageSize());
@@ -91,18 +106,9 @@ public class TenantCaseManageBiz {
                 .eq(caseInstancePageRequest.getAppId() != null, CaseInstanceEntity::getAppId, caseInstancePageRequest.getAppId())
                 .like(StrUtil.isNotBlank(caseInstancePageRequest.getKeyword()), CaseInstanceEntity::getCaseName, caseInstancePageRequest.getKeyword())
                 .page(pageRequest);
-
-        List<CaseInstanceEntity> records = pageResult.getRecords();
-        if (records == null || records.isEmpty()) {
-            return result;
-        }
-
-        List<CaseInstancePageResponse> pageResponseList = records.stream()
-                .map(item -> BeanUtil.copyProperties(item, CaseInstancePageResponse.class))
-                .collect(Collectors.toList());
-        result.setRecords(pageResponseList);
-        return result;
+        return baseBiz.convertPage(pageResult, CaseInstancePageResponse.class);
     }
+
     /**
     * @param
     * @return
@@ -122,6 +128,23 @@ public class TenantCaseManageBiz {
         CaseInstanceEntity caseInstanceEntity = getById(caseInstanceId);
         result = BeanUtil.copyProperties(caseInstanceEntity, CaseInstanceResponse.class);
         return result;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 获取案例详情
+     * @关联表: caseInstance
+     * @工时: 4H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public CaseInstanceEntity getById(String caseInstanceId) {
+        LambdaQueryWrapper<CaseInstanceEntity> queryWrapper = new LambdaQueryWrapper<CaseInstanceEntity>()
+                .eq(CaseInstanceEntity::getCaseInstanceId, caseInstanceId);
+
+        return caseInstanceService.getOne(queryWrapper);
     }
 
     /**
@@ -186,10 +209,33 @@ public class TenantCaseManageBiz {
         return caseInstanceService.remove(queryWrapper);
     }
 
-    public CaseInstanceEntity getById(String caseInstanceId) {
-        LambdaQueryWrapper<CaseInstanceEntity> queryWrapper = new LambdaQueryWrapper<CaseInstanceEntity>()
-                .eq(CaseInstanceEntity::getCaseInstanceId, caseInstanceId);
+    private void checkBeforeSaveOrUpd(CaseInstanceRequest request) {
+        String uniqueId = request.getCaseInstanceId();
+        if (StrUtil.isBlank(uniqueId)) {
+            request.setAppId(baseBiz.getAppId());
+            request.setCaseInstanceId(baseBiz.getIdStr());
+            request.setCaseIdentifier(baseBiz.getIdStr());
+            request.setVer(baseBiz.getLastVer());
+        } else {
+            CaseInstanceEntity entity = getById(uniqueId);
+            if (BeanUtil.isEmpty(entity)) {
+                throw new BizException("数据不存在");
+            }
+            request.setId(entity.getId());
+        }
+    }
 
-        return caseInstanceService.getOne(queryWrapper);
+    private CaseInstanceEntity copyCaseInstance0(String oriCaseInstanceId, String caseInstanceName) {
+        // get ori
+        CaseInstanceEntity oriEntity = getById(oriCaseInstanceId);
+        // copy
+        CaseInstanceEntity newEntity = BeanUtil.copyProperties(oriEntity, CaseInstanceEntity.class);
+        newEntity.setId(null);
+        newEntity.setCaseInstanceId(baseBiz.getIdStr());
+        newEntity.setCaseIdentifier(baseBiz.getIdStr());
+        newEntity.setVer(baseBiz.getLastVer());
+        newEntity.setCaseName(caseInstanceName);
+        caseInstanceService.save(newEntity);
+        return newEntity;
     }
 }

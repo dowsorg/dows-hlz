@@ -1,6 +1,7 @@
 package org.dows.hep.rest.base.indicator;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -54,7 +55,7 @@ public class IndicatorJudgeHealthGuidanceRest {
 
     @Operation(summary = "Rs分页筛选查看指标健康指导类")
     @GetMapping("v1/baseIndicator/indicatorJudgeHealthGuidance/pageRs")
-    public IPage<IndicatorJudgeHealthGuidanceResponseRs> pageRs(
+    public Page<IndicatorJudgeHealthGuidanceResponseRs> pageRs(
         @RequestParam(required = false, defaultValue = RsPageConstant.PAGE_NO) Long pageNo,
         @RequestParam(required = false, defaultValue = RsPageConstant.PAGE_SIZE) Long pageSize,
         @RequestParam(required = false, defaultValue = RsPageConstant.ORDER) String order,
@@ -67,93 +68,93 @@ public class IndicatorJudgeHealthGuidanceRest {
         return indicatorJudgeHealthGuidanceBiz.pageRs(pageNo,pageSize,order,asc, appId,indicatorFuncId,name,indicatorCategoryId,status);
     }
 
-    /**
-    * 创建判断指标健康指导
-    * @param
-    * @return
-    */
-    @Operation(summary = "创建判断指标健康指导")
-    @PostMapping("v1/baseIndicator/indicatorJudgeHealthGuidance/createIndicatorJudgeHealthGuidance")
-    public void createIndicatorJudgeHealthGuidance(@RequestBody @Validated CreateIndicatorJudgeHealthGuidanceRequest createIndicatorJudgeHealthGuidance ) {
-        indicatorJudgeHealthGuidanceBiz.createIndicatorJudgeHealthGuidance(createIndicatorJudgeHealthGuidance);
-    }
-
-    /**
-    * 删除判断指标健康指导
-    * @param
-    * @return
-    */
-    @Operation(summary = "删除判断指标健康指导")
-    @DeleteMapping("v1/baseIndicator/indicatorJudgeHealthGuidance/deleteIndicatorJudgeHealthGuidance")
-    public void deleteIndicatorJudgeHealthGuidance(@Validated String indicatorJudgeHealthGuidanceId ) {
-        indicatorJudgeHealthGuidanceBiz.deleteIndicatorJudgeHealthGuidance(indicatorJudgeHealthGuidanceId);
-    }
-
-    /**
-    * 批量删除
-    * @param
-    * @return
-    */
-    @Operation(summary = "批量删除")
-    @DeleteMapping("v1/baseIndicator/indicatorJudgeHealthGuidance/batchDelete")
-    public void batchDelete(@Validated String string ) {
-        indicatorJudgeHealthGuidanceBiz.batchDelete(string);
-    }
-
-    /**
-    * 更改启用状态
-    * @param
-    * @return
-    */
-    @Operation(summary = "更改启用状态")
-    @PutMapping("v1/baseIndicator/indicatorJudgeHealthGuidance/updateStatus")
-    public void updateStatus(@Validated UpdateStatusIndicatorJudgeHealthGuidanceRequest updateStatusIndicatorJudgeHealthGuidance ) {
-        indicatorJudgeHealthGuidanceBiz.updateStatus(updateStatusIndicatorJudgeHealthGuidance);
-    }
-
-    /**
-    * 判断指标健康指导
-    * @param
-    * @return
-    */
-    @Operation(summary = "判断指标健康指导")
-    @PutMapping("v1/baseIndicator/indicatorJudgeHealthGuidance/updateIndicatorJudgeHealthGuidance")
-    public void updateIndicatorJudgeHealthGuidance(@Validated UpdateIndicatorJudgeHealthGuidanceRequest updateIndicatorJudgeHealthGuidance ) {
-        indicatorJudgeHealthGuidanceBiz.updateIndicatorJudgeHealthGuidance(updateIndicatorJudgeHealthGuidance);
-    }
-
-    /**
-    * 获取判断指标健康指导
-    * @param
-    * @return
-    */
-    @Operation(summary = "获取判断指标健康指导")
-    @GetMapping("v1/baseIndicator/indicatorJudgeHealthGuidance/getIndicatorJudgeHealthGuidance")
-    public IndicatorJudgeHealthGuidanceResponse getIndicatorJudgeHealthGuidance(@Validated String indicatorJudgeHealthGuidanceId) {
-        return indicatorJudgeHealthGuidanceBiz.getIndicatorJudgeHealthGuidance(indicatorJudgeHealthGuidanceId);
-    }
-
-    /**
-    * 筛选判断指标健康指导
-    * @param
-    * @return
-    */
-    @Operation(summary = "筛选判断指标健康指导")
-    @GetMapping("v1/baseIndicator/indicatorJudgeHealthGuidance/listIndicatorJudgeHealthGuidance")
-    public List<IndicatorJudgeHealthGuidanceResponse> listIndicatorJudgeHealthGuidance(@Validated String appId, @Validated String indicatorCategoryId, @Validated String name, @Validated String type, @Validated DecimalRequest point, @Validated String expression, @Validated String resultExplain, @Validated Integer status) {
-        return indicatorJudgeHealthGuidanceBiz.listIndicatorJudgeHealthGuidance(appId,indicatorCategoryId,name,type,point,expression,resultExplain,status);
-    }
-
-    /**
-    * 分页筛选判断指标健康指导
-    * @param
-    * @return
-    */
-    @Operation(summary = "分页筛选判断指标健康指导")
-    @GetMapping("v1/baseIndicator/indicatorJudgeHealthGuidance/pageIndicatorJudgeHealthGuidance")
-    public String pageIndicatorJudgeHealthGuidance(@Validated Integer pageNo, @Validated Integer pageSize, @Validated String appId, @Validated String indicatorCategoryId, @Validated String name, @Validated String type, @Validated DecimalRequest point, @Validated String expression, @Validated String resultExplain, @Validated Integer status) {
-        return indicatorJudgeHealthGuidanceBiz.pageIndicatorJudgeHealthGuidance(pageNo,pageSize,appId,indicatorCategoryId,name,type,point,expression,resultExplain,status);
-    }
+//    /**
+//    * 创建判断指标健康指导
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "创建判断指标健康指导")
+//    @PostMapping("v1/baseIndicator/indicatorJudgeHealthGuidance/createIndicatorJudgeHealthGuidance")
+//    public void createIndicatorJudgeHealthGuidance(@RequestBody @Validated CreateIndicatorJudgeHealthGuidanceRequest createIndicatorJudgeHealthGuidance ) {
+//        indicatorJudgeHealthGuidanceBiz.createIndicatorJudgeHealthGuidance(createIndicatorJudgeHealthGuidance);
+//    }
+//
+//    /**
+//    * 删除判断指标健康指导
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "删除判断指标健康指导")
+//    @DeleteMapping("v1/baseIndicator/indicatorJudgeHealthGuidance/deleteIndicatorJudgeHealthGuidance")
+//    public void deleteIndicatorJudgeHealthGuidance(@Validated String indicatorJudgeHealthGuidanceId ) {
+//        indicatorJudgeHealthGuidanceBiz.deleteIndicatorJudgeHealthGuidance(indicatorJudgeHealthGuidanceId);
+//    }
+//
+//    /**
+//    * 批量删除
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "批量删除")
+//    @DeleteMapping("v1/baseIndicator/indicatorJudgeHealthGuidance/batchDelete")
+//    public void batchDelete(@Validated String string ) {
+//        indicatorJudgeHealthGuidanceBiz.batchDelete(string);
+//    }
+//
+//    /**
+//    * 更改启用状态
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "更改启用状态")
+//    @PutMapping("v1/baseIndicator/indicatorJudgeHealthGuidance/updateStatus")
+//    public void updateStatus(@Validated UpdateStatusIndicatorJudgeHealthGuidanceRequest updateStatusIndicatorJudgeHealthGuidance ) {
+//        indicatorJudgeHealthGuidanceBiz.updateStatus(updateStatusIndicatorJudgeHealthGuidance);
+//    }
+//
+//    /**
+//    * 判断指标健康指导
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "判断指标健康指导")
+//    @PutMapping("v1/baseIndicator/indicatorJudgeHealthGuidance/updateIndicatorJudgeHealthGuidance")
+//    public void updateIndicatorJudgeHealthGuidance(@Validated UpdateIndicatorJudgeHealthGuidanceRequest updateIndicatorJudgeHealthGuidance ) {
+//        indicatorJudgeHealthGuidanceBiz.updateIndicatorJudgeHealthGuidance(updateIndicatorJudgeHealthGuidance);
+//    }
+//
+//    /**
+//    * 获取判断指标健康指导
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "获取判断指标健康指导")
+//    @GetMapping("v1/baseIndicator/indicatorJudgeHealthGuidance/getIndicatorJudgeHealthGuidance")
+//    public IndicatorJudgeHealthGuidanceResponse getIndicatorJudgeHealthGuidance(@Validated String indicatorJudgeHealthGuidanceId) {
+//        return indicatorJudgeHealthGuidanceBiz.getIndicatorJudgeHealthGuidance(indicatorJudgeHealthGuidanceId);
+//    }
+//
+//    /**
+//    * 筛选判断指标健康指导
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "筛选判断指标健康指导")
+//    @GetMapping("v1/baseIndicator/indicatorJudgeHealthGuidance/listIndicatorJudgeHealthGuidance")
+//    public List<IndicatorJudgeHealthGuidanceResponse> listIndicatorJudgeHealthGuidance(@Validated String appId, @Validated String indicatorCategoryId, @Validated String name, @Validated String type, @Validated DecimalRequest point, @Validated String expression, @Validated String resultExplain, @Validated Integer status) {
+//        return indicatorJudgeHealthGuidanceBiz.listIndicatorJudgeHealthGuidance(appId,indicatorCategoryId,name,type,point,expression,resultExplain,status);
+//    }
+//
+//    /**
+//    * 分页筛选判断指标健康指导
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "分页筛选判断指标健康指导")
+//    @GetMapping("v1/baseIndicator/indicatorJudgeHealthGuidance/pageIndicatorJudgeHealthGuidance")
+//    public String pageIndicatorJudgeHealthGuidance(@Validated Integer pageNo, @Validated Integer pageSize, @Validated String appId, @Validated String indicatorCategoryId, @Validated String name, @Validated String type, @Validated DecimalRequest point, @Validated String expression, @Validated String resultExplain, @Validated Integer status) {
+//        return indicatorJudgeHealthGuidanceBiz.pageIndicatorJudgeHealthGuidance(pageNo,pageSize,appId,indicatorCategoryId,name,type,point,expression,resultExplain,status);
+//    }
 
 
 }

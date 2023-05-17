@@ -1,6 +1,5 @@
 package org.dows.hep.api.tenant.casus.response;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,10 +14,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "CaseInstanceResponse 对象", title = "案例Response")
 public class CaseInstanceResponse{
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Schema(title = "数据库ID")
-    private Long id;
-
     @Schema(title = "案例ID")
     private String caseInstanceId;
 

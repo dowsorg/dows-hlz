@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 问题实例(QuestionInstance)实体类
@@ -39,9 +39,6 @@ public class QuestionInstanceEntity implements CrudEntity {
     @Schema(title = "问题ID")
     private String questionInstanceId;
 
-    @Schema(title = "父ID")
-    private Long pid;
-
     @Schema(title = "问题pid")
     private String questionInstancePid;
 
@@ -50,15 +47,6 @@ public class QuestionInstanceEntity implements CrudEntity {
 
     @Schema(title = "类别ID")
     private String questionCategId;
-
-    @Schema(title = "类别名")
-    private String questionCategName;
-
-    @Schema(title = "类别ID路径")
-    private String questionCategIdPath;
-
-    @Schema(title = "类别name路径")
-    private String questionCategNamePath;
 
     @Schema(title = "题目答题输入类型[input,select,text]")
     private String inputType;

@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
+import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.request.QuestionSectionDimensionRequest;
 import org.dows.hep.api.base.question.response.QuestionSectionDimensionResponse;
 import org.dows.hep.entity.QuestionSectionDimensionEntity;
@@ -22,7 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 public class QuestionSectionDimensionBiz{
-    private QuestionDomainBaseBiz baseBiz;
+    private final QuestionDomainBaseBiz baseBiz;
     private final QuestionSectionDimensionService questionSectionDimensionService;
     /**
     * @param
@@ -41,12 +42,8 @@ public class QuestionSectionDimensionBiz{
 
         List<QuestionSectionDimensionEntity> entityList = questionSectionDimensionList.stream()
                 .map(item -> {
-                    QuestionSectionDimensionEntity entity = BeanUtil.copyProperties(item, QuestionSectionDimensionEntity.class);
-                    String questionSectionDimensionId = entity.getQuestionSectionDimensionId();
-                    if (StrUtil.isBlank(questionSectionDimensionId)) {
-                        entity.setQuestionSectionDimensionId(baseBiz.getIdStr());
-                    }
-                    return entity;
+                    checkBeforeSaveOrUpd(item);
+                    return BeanUtil.copyProperties(item, QuestionSectionDimensionEntity.class);
                 })
                 .toList();
         return questionSectionDimensionService.saveOrUpdateBatch(entityList);
@@ -97,5 +94,24 @@ public class QuestionSectionDimensionBiz{
         LambdaQueryWrapper<QuestionSectionDimensionEntity> remWrapper = new LambdaQueryWrapper<QuestionSectionDimensionEntity>()
                 .in(QuestionSectionDimensionEntity::getQuestionSectionDimensionId, questionSectionDimensionIds);
         return questionSectionDimensionService.remove(remWrapper);
+    }
+
+    public QuestionSectionDimensionEntity getById(String uniqueId) {
+        LambdaQueryWrapper<QuestionSectionDimensionEntity> queryWrapper = new LambdaQueryWrapper<QuestionSectionDimensionEntity>()
+                .eq(QuestionSectionDimensionEntity::getQuestionSectionDimensionId, uniqueId);
+        return questionSectionDimensionService.getOne(queryWrapper);
+    }
+
+    private void checkBeforeSaveOrUpd(QuestionSectionDimensionRequest request) {
+        String uniqueId = request.getQuestionSectionDimensionId();
+        if (StrUtil.isBlank(uniqueId)) {
+            request.setQuestionSectionDimensionId(baseBiz.getIdStr());
+        } else {
+            QuestionSectionDimensionEntity entity = getById(uniqueId);
+            if (BeanUtil.isEmpty(entity)) {
+                throw new BizException("数据不存在");
+            }
+            request.setId(entity.getId());
+        }
     }
 }

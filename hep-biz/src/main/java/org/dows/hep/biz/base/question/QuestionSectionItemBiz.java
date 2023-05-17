@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.RequiredArgsConstructor;
+import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.QuestionEnabledEnum;
 import org.dows.hep.api.base.question.QuestionSectionGenerationModeEnum;
 import org.dows.hep.api.base.question.request.QuestionRequest;
@@ -43,6 +44,9 @@ public class QuestionSectionItemBiz {
         if (itemList == null || itemList.isEmpty()) {
             return "";
         }
+        if (generationModeEnum == null) {
+            throw new BizException("参数不能为空");
+        }
 
         String struct = "";
         switch (generationModeEnum) {
@@ -67,6 +71,7 @@ public class QuestionSectionItemBiz {
         }
 
         LambdaQueryWrapper<QuestionSectionItemEntity> queryWrapper = new LambdaQueryWrapper<QuestionSectionItemEntity>()
+                .eq(QuestionSectionItemEntity::getEnabled, QuestionEnabledEnum.ENABLED.getCode())
                 .in(QuestionSectionItemEntity::getQuestionSectionId, questionSectionIds);
         List<QuestionSectionItemEntity> itemList = questionSectionItemService.list(queryWrapper);
         if (itemList == null || itemList.isEmpty()) {
@@ -93,7 +98,7 @@ public class QuestionSectionItemBiz {
     public Boolean enabledSectionQuestion(String questionSectionId, String questionSectionItemId) {
         LambdaUpdateWrapper<QuestionSectionItemEntity> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(QuestionSectionItemEntity::getQuestionSectionId, questionSectionId)
-                .set(QuestionSectionItemEntity::getQuestionSectionItemId, questionSectionItemId)
+                .eq(QuestionSectionItemEntity::getQuestionSectionItemId, questionSectionItemId)
                 .set(QuestionSectionItemEntity::getEnabled, QuestionEnabledEnum.ENABLED.getCode());
         return questionSectionItemService.update(updateWrapper);
     }
@@ -108,7 +113,7 @@ public class QuestionSectionItemBiz {
     public Boolean disabledSectionQuestion(String questionSectionId, String questionSectionItemId) {
         LambdaUpdateWrapper<QuestionSectionItemEntity> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(QuestionSectionItemEntity::getQuestionSectionId, questionSectionId)
-                .set(QuestionSectionItemEntity::getQuestionSectionItemId, questionSectionItemId)
+                .eq(QuestionSectionItemEntity::getQuestionSectionItemId, questionSectionItemId)
                 .set(QuestionSectionItemEntity::getEnabled, QuestionEnabledEnum.DISABLED.getCode());
         return questionSectionItemService.update(updateWrapper);
     }
@@ -132,7 +137,9 @@ public class QuestionSectionItemBiz {
             return "";
         }
 
-        return batchSaveOrUpd(itemRequestList, QuestionRequest::getQuestionInstanceId);
+        // clone or ref ?
+        return batchSaveOrUpd(itemRequestList, questionInstanceBiz::cloneQuestion);
+//        return batchSaveOrUpd(itemRequestList, QuestionRequest::getQuestionInstanceId);
     }
 
     private String batchSaveOrUpdAddNewMode(List<QuestionSectionItemRequest> itemRequestList) {
@@ -148,17 +155,16 @@ public class QuestionSectionItemBiz {
         int sequence = 0;
         List<QuestionSectionItemEntity> entityList = new ArrayList<>();
         for (QuestionSectionItemRequest item : itemRequestList) {
-            QuestionSectionItemEntity itemEntity = BeanUtil.copyProperties(item, QuestionSectionItemEntity.class);
-            String questionSectionItemId = itemEntity.getQuestionSectionItemId();
-            if (StrUtil.isBlank(questionSectionItemId)) {
-                itemEntity.setQuestionSectionItemId(baseBiz.getIdStr());
-                itemEntity.setSequence(sequence++);
-                itemEntity.setEnabled(QuestionEnabledEnum.ENABLED.getCode());
-            }
+            // check
+            checkBeforeSaveOrUpd(item);
+
+            // saveOrUpdQuestion
             QuestionRequest questionRequest = item.getQuestionRequest();
             String questionInstanceId = function.apply(questionRequest);
-            itemEntity.setQuestionInstanceId(questionInstanceId);
+            item.setQuestionInstanceId(questionInstanceId);
 
+            // save
+            QuestionSectionItemEntity itemEntity = BeanUtil.copyProperties(item, QuestionSectionItemEntity.class);
             entityList.add(itemEntity);
         }
         questionSectionItemService.saveOrUpdateBatch(entityList);
@@ -169,5 +175,28 @@ public class QuestionSectionItemBiz {
                 .map(QuestionRequest::getQuestionInstanceId)
                 .toList();
         return questionInstanceBiz.getStruct(questionIdList);
+    }
+
+    private int checkBeforeSaveOrUpd(QuestionSectionItemRequest request) {
+        int sequence = 0;
+        String uniqueId = request.getQuestionSectionItemId();
+        if (StrUtil.isBlank(uniqueId)) {
+            request.setQuestionSectionItemId(baseBiz.getIdStr());
+            request.setSequence(sequence++);
+            request.setEnabled(QuestionEnabledEnum.ENABLED.getCode());
+        } else {
+            QuestionSectionItemEntity entity = getById(uniqueId);
+            if (BeanUtil.isEmpty(entity)) {
+                throw new BizException("数据不存在");
+            }
+            request.setId(entity.getId());
+        }
+        return sequence;
+    }
+
+    private QuestionSectionItemEntity getById(String uniqueId) {
+        LambdaQueryWrapper<QuestionSectionItemEntity> queryWrapper = new LambdaQueryWrapper<QuestionSectionItemEntity>()
+                .eq(QuestionSectionItemEntity::getQuestionSectionItemId, uniqueId);
+        return questionSectionItemService.getOne(queryWrapper);
     }
 }

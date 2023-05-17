@@ -27,7 +27,7 @@ public class QuestionOptionWithAnswerResponse implements Cloneable{
     private String optionValue;
 
     @Schema(title = "是否是正确答案[0:错误，1:正确]")
-    private Integer rightAnswer;
+    private Boolean rightAnswer;
 
     @Override
     public QuestionOptionWithAnswerResponse clone() {

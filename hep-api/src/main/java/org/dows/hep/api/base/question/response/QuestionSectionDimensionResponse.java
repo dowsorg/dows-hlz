@@ -26,10 +26,10 @@ public class QuestionSectionDimensionResponse{
     private String questionSectionDimensionId;
 
     @Schema(title = "维度名称")
-    private String demensionName;
+    private String dimensionName;
 
     @Schema(title = "内容")
-    private String demensionContent;
+    private String dimensionContent;
 
     @Schema(title = "分数")
     private BigDecimal score;

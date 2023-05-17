@@ -45,7 +45,7 @@ public class QuestionRequest {
     @Schema(title = "问题描述")
     private String questionDescr;
 
-    @Schema(title = "状态 0-启用 1-禁用")
+    @Schema(title = "状态 0-禁用 1-启用")
     private Integer enabled;
 
     @Schema(title = "排序")
@@ -77,18 +77,6 @@ public class QuestionRequest {
     @Schema(title = "问题PID")
     @JsonIgnore
     private String questionInstancePid;
-
-    @Schema(title = "类别名")
-    @JsonIgnore
-    private String questionCategName;
-
-    @Schema(title = "类别ID路径")
-    @JsonIgnore
-    private String questionCategIdPath;
-
-    @Schema(title = "类别name路径")
-    @JsonIgnore
-    private String questionCategNamePath;
 
     @Schema(title = "来源")
     @JsonIgnore

@@ -23,6 +23,9 @@ public class QuestionResponse {
     @Schema(title = "题目类型ID")
     private String questionCategId;
 
+    @Schema(title = "问题类型ID数组")
+    private String[] questionCategIds;
+
     @Schema(title = "题目答题类型[RADIO:单选题|MULTIPLE:多选题|JUDGMENT:判断题|SUBJECTIVE:主观题|MATERIAL:材料题]")
     private QuestionTypeEnum questionType;
 

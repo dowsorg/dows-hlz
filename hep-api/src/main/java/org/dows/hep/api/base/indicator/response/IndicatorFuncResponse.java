@@ -34,6 +34,9 @@ public class IndicatorFuncResponse{
   @Schema(title = "指标功能父类别分布式ID")
   private String pid;
 
+  @Schema(title = "具体功能类型分布式ID")
+  private String indicatorCategoryId;
+
   @Schema(title = "功能名称")
   private String name;
 

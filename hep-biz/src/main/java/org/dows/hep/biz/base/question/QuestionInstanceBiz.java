@@ -2,19 +2,18 @@ package org.dows.hep.biz.base.question;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
-import org.dows.hep.api.base.question.QuestionAccessAuthEnum;
-import org.dows.hep.api.base.question.QuestionCloneEnum;
-import org.dows.hep.api.base.question.QuestionEnabledEnum;
-import org.dows.hep.api.base.question.QuestionTypeEnum;
+import org.dows.hep.api.base.question.*;
 import org.dows.hep.api.base.question.request.QuestionPageRequest;
 import org.dows.hep.api.base.question.request.QuestionRequest;
 import org.dows.hep.api.base.question.request.QuestionSearchRequest;
+import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
 import org.dows.hep.api.base.question.response.QuestionPageResponse;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.biz.base.question.handler.QuestionTypeFactory;
@@ -37,6 +36,7 @@ import java.util.stream.Collectors;
 public class QuestionInstanceBiz {
 
     private final QuestionDomainBaseBiz baseBiz;
+    private final QuestionCategBiz questionCategBiz;
 
     private final QuestionInstanceService questionInstanceService;
 
@@ -52,11 +52,10 @@ public class QuestionInstanceBiz {
      */
     @Transactional
     public String saveQuestion(QuestionRequest question) {
-        // base-info
+        // 问题会嵌套，公共数据在外层配置
         question.setAppId(question.getAppId() == null ? baseBiz.getAppId() : question.getAppId());
         question.setQuestionInstancePid(baseBiz.getQuestionInstancePid());
         question.setBizCode(question.getBizCode() == null ? QuestionAccessAuthEnum.PRIVATE_VIEWING : question.getBizCode());
-        question.setEnabled(QuestionEnabledEnum.ENABLED.getCode());
         return saveQue(question);
     }
 
@@ -161,12 +160,29 @@ public class QuestionInstanceBiz {
         Page<QuestionInstanceEntity> pageResult = questionInstanceService.lambdaQuery()
                 .eq(questionPageRequest.getAppId() != null, QuestionInstanceEntity::getAppId, questionPageRequest.getAppId())
                 .eq(QuestionInstanceEntity::getVer, baseBiz.getLastVer())
+                .eq(StrUtil.isNotBlank(questionPageRequest.getQuestionType()), QuestionInstanceEntity::getQuestionType, questionPageRequest.getQuestionType())
                 .eq(QuestionInstanceEntity::getQuestionInstancePid, baseBiz.getQuestionInstancePid())
                 .like(StrUtil.isNotBlank(questionPageRequest.getKeyword()), QuestionInstanceEntity::getQuestionTitle, questionPageRequest.getKeyword())
-                .like(StrUtil.isNotBlank(questionPageRequest.getKeyword()), QuestionInstanceEntity::getQuestionDescr, questionPageRequest.getKeyword())
-                .like(StrUtil.isNotBlank(questionPageRequest.getQuestionType()), QuestionInstanceEntity::getQuestionType, questionPageRequest.getQuestionType())
                 .page(pageRequest);
-        return baseBiz.convertPage(pageResult, QuestionPageResponse.class);
+        Page<QuestionPageResponse> result = baseBiz.convertPage(pageResult, QuestionPageResponse.class);
+        fillResult(result);
+        return result;
+    }
+
+    private void fillResult(Page<QuestionPageResponse> result) {
+        List<QuestionPageResponse> records = result.getRecords();
+        if (records != null && !records.isEmpty()) {
+            List<String> categIds = records.stream()
+                    .map(QuestionPageResponse::getQuestionCategId)
+                    .toList();
+            List<QuestionCategoryResponse> questionCategoryResponses = questionCategBiz.listQuestionCategory(categIds);
+            Map<String, String> collect = questionCategoryResponses.stream()
+                    .collect(Collectors.toMap(QuestionCategoryResponse::getQuestionCategId, QuestionCategoryResponse::getQuestionCategName, (v1, v2) -> v1));
+            records.forEach(item -> {
+                item.setQuestionCategName(collect.get(item.getQuestionCategId()));
+                item.setQuestionType(QuestionTypeEnum.getNameByCode(item.getQuestionType()));
+            });
+        }
     }
 
     /**
@@ -218,7 +234,9 @@ public class QuestionInstanceBiz {
         }
 
         QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(questionTypeEnum);
-        return questionTypeHandler.get(questionInstanceId);
+        QuestionResponse questionResponse = questionTypeHandler.get(questionInstanceId);
+        setQuestionCategIds(questionResponse);
+        return questionResponse;
     }
 
     /**
@@ -517,7 +535,7 @@ public class QuestionInstanceBiz {
         questionInstanceService.update(updateWrapper);
     }
 
-    @Transactional
+    @DSTransactional
     private Boolean saveQuestionBatch(List<QuestionRequest> questionList) {
         if (questionList == null || questionList.isEmpty()) {
             return Boolean.FALSE;
@@ -527,7 +545,7 @@ public class QuestionInstanceBiz {
         return Boolean.TRUE;
     }
 
-    @Transactional
+    @DSTransactional
     private Boolean updQuestionBatch(List<QuestionRequest> questionList) {
         if (questionList == null || questionList.isEmpty()) {
             return Boolean.FALSE;
@@ -541,5 +559,11 @@ public class QuestionInstanceBiz {
         LambdaQueryWrapper<QuestionInstanceEntity> queryWrapper = new LambdaQueryWrapper<QuestionInstanceEntity>()
                 .eq(QuestionInstanceEntity::getQuestionInstanceId, questionId);
         return questionInstanceService.getOne(queryWrapper);
+    }
+
+    private void setQuestionCategIds(QuestionResponse questionResponse) {
+        String questionCategId = questionResponse.getQuestionCategId();
+        String[] parentIds = questionCategBiz.getParentIds(questionCategId, QuestionCategGroupEnum.QUESTION.name());
+        questionResponse.setQuestionCategIds(parentIds);
     }
 }

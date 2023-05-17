@@ -3,6 +3,7 @@ package org.dows.hep.biz.base.indicator;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.BatchCreateOrUpdateIndicatorCategoryDTO;
 import org.dows.hep.api.base.indicator.request.BatchCreateOrUpdateIndicatorCategoryRequest;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorCategoryRequest;
@@ -79,7 +80,7 @@ public class IndicatorCategoryBiz{
 
     }
     @Transactional(rollbackFor = Exception.class)
-    public void batchCreateOrUpdateIndicatorCategory(BatchCreateOrUpdateIndicatorCategoryRequest batchCreateOrUpdateIndicatorCategoryRequest) throws InterruptedException {
+    public void batchCreateOrUpdateRs(BatchCreateOrUpdateIndicatorCategoryRequest batchCreateOrUpdateIndicatorCategoryRequest) throws InterruptedException {
         String appId = batchCreateOrUpdateIndicatorCategoryRequest.getAppId();
         String pid = batchCreateOrUpdateIndicatorCategoryRequest.getPid();
         RLock lock = redissonClient.getLock(RedissonUtil.getLockName(appId, EnumRedissonLock.INDICATOR_CATEGORY_CREATE_DELETE_UPDATE, indicatorCategoryFieldPid, pid));
@@ -167,7 +168,7 @@ public class IndicatorCategoryBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     @Transactional(rollbackFor = Exception.class)
-    public void deleteIndicatorCategory(String indicatorCategoryId) {
+    public void delete(String indicatorCategoryId) {
         boolean isRefByIndicatorCategory = indicatorCategoryService.lambdaQuery()
             .eq(IndicatorCategoryEntity::getPid, indicatorCategoryId)
             .exists();
@@ -203,10 +204,11 @@ public class IndicatorCategoryBiz{
         
     }
 
-    public List<IndicatorCategoryResponse> getIndicatorCategoryByPid(String appId, String pid) {
+    public List<IndicatorCategoryResponse> getByPid(String appId, String pid) {
         return indicatorCategoryService.lambdaQuery()
             .eq(IndicatorCategoryEntity::getAppId, appId)
-            .eq(IndicatorCategoryEntity::getPid, pid)
+            .isNull(StringUtils.isBlank(pid), IndicatorCategoryEntity::getPid)
+            .eq(StringUtils.isNotBlank(pid), IndicatorCategoryEntity::getPid, pid)
             .list()
             .stream()
             .map(IndicatorCategoryBiz::indicatorCategoryEntity2Response)

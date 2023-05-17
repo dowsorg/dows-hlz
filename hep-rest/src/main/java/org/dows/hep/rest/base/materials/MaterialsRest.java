@@ -17,7 +17,7 @@ import java.util.List;
 
 /**
 * @description project descr:资料中心:资料信息
-*
+* @folder admin-hep/资料管理
 * @author lait.zhang
 * @date 2023年4月21日 上午10:26:46
 */
@@ -103,7 +103,7 @@ public class MaterialsRest {
      */
     @Operation(summary = "删除or批量删除")
     @DeleteMapping("v1/baseMaterials/materials/delMaterials")
-    public Boolean delMaterials(List<String> materialsId) {
+    public Boolean delMaterials(@RequestBody List<String> materialsId) {
         return materialsBiz.delMaterials(materialsId);
     }
 
