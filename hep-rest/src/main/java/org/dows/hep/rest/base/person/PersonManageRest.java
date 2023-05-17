@@ -222,7 +222,7 @@ public class PersonManageRest {
      */
     @Operation(summary =  "删除 教师/学生")
     @DeleteMapping("v1/basePerson/person/deleteTeacherOrStudents")
-    public Boolean deleteTeacherOrStudents(@RequestParam Set<String> accountIds,
+    public Boolean deleteTeacherOrStudents(@RequestBody Set<String> accountIds,
                                            @RequestParam String roleName,
                                            @RequestParam String appId
                                            ){
