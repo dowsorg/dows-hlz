@@ -24,7 +24,7 @@ import java.util.List;
 public class RiskCategoryRest {
     private final RiskCategoryBiz riskCategoryBiz;
 
-    @Operation(summary = "批量创建或修改指标类别")
+    @Operation(summary = "批量创建或修改风险类别")
     @PostMapping("v1/baseRisk/riskCategory/batchCreateOrUpdateRiskCategory")
     public void batchCreateOrUpdateRiskCategory(@RequestBody @Validated BatchCreateOrUpdateRiskCategoryRequest batchCreateOrUpdateRiskCategoryRequest) throws InterruptedException {
         riskCategoryBiz.batchCreateOrUpdateRiskCategory(batchCreateOrUpdateRiskCategoryRequest);

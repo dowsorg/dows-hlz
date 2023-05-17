@@ -409,7 +409,7 @@ public class RiskModelBiz{
         return riskModelResponseRsList.get(0);
     }
 
-    public IPage<RiskModelResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String name, String riskCategoryId, Integer status) {
+    public Page<RiskModelResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String name, String riskCategoryId, Integer status) {
         Page<RiskModelEntity> page = RsPageUtil.getRsPage(pageNo, pageSize, order, asc);
         LambdaQueryWrapper<RiskModelEntity> riskModelEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
         riskModelEntityLambdaQueryWrapper
