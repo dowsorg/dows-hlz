@@ -48,7 +48,7 @@ public class IndicatorViewMonitorFollowupRest {
      */
     @Operation(summary = "删除指标监测随访类")
     @DeleteMapping("v1/baseIndicator/indicatorViewMonitorFollowup/deleteIndicatorViewMonitorFollowup")
-    public void deleteIndicatorViewMonitorFollowup(@Validated String indicatorViewMonitorFollowupId) throws InterruptedException {
+    public void deleteIndicatorViewMonitorFollowup(@RequestParam @Validated String indicatorViewMonitorFollowupId) throws InterruptedException {
         indicatorViewMonitorFollowupBiz.deleteIndicatorViewMonitorFollowup(indicatorViewMonitorFollowupId);
     }
 
