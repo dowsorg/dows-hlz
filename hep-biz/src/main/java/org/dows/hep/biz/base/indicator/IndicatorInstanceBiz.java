@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorInstanceRequest;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorInstanceRequest;
+import org.dows.hep.api.base.indicator.response.IndicatorInstanceCategoryResponseRs;
 import org.dows.hep.api.base.indicator.response.IndicatorInstanceResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorInstanceResponseRs;
 import org.dows.hep.api.enums.*;
@@ -25,9 +26,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -72,6 +71,27 @@ public class IndicatorInstanceBiz{
             .dt(indicatorInstanceEntity.getDt())
             .build();
     }
+
+    public static IndicatorInstanceCategoryResponseRs IndicatorInstanceCategoryResponseRs(
+        IndicatorCategoryEntity indicatorCategoryEntity,
+        List<IndicatorInstanceResponseRs> indicatorInstanceResponseRsList
+        ) {
+        if (Objects.isNull(indicatorCategoryEntity)) {
+            return null;
+        }
+        return IndicatorInstanceCategoryResponseRs
+            .builder()
+            .id(indicatorCategoryEntity.getId())
+            .indicatorCategoryId(indicatorCategoryEntity.getIndicatorCategoryId())
+            .appId(indicatorCategoryEntity.getAppId())
+            .pid(indicatorCategoryEntity.getPid())
+            .categoryName(indicatorCategoryEntity.getCategoryName())
+            .seq(indicatorCategoryEntity.getSeq())
+            .dt(indicatorCategoryEntity.getDt())
+            .indicatorInstanceResponseRsList(indicatorInstanceResponseRsList)
+            .build();
+    }
+
     /**
     * @param
     * @return
@@ -118,7 +138,7 @@ public class IndicatorInstanceBiz{
             indicatorInstanceService.save(
                 IndicatorInstanceEntity
                     .builder()
-                    .indicatorInstanceId(indicatorCategoryId)
+                    .indicatorCategoryId(indicatorCategoryId)
                     .appId(appId)
                     .indicatorInstanceId(indicatorInstanceId)
                     .indicatorName(indicatorName)
@@ -293,6 +313,49 @@ public class IndicatorInstanceBiz{
             }
         }
         indicatorInstanceService.saveOrUpdateBatch(indicatorInstanceEntityList);
+    }
+
+    public List<IndicatorInstanceCategoryResponseRs> getByAppId(String appId) {
+        Set<String> indicatorCategoryIdSet = new HashSet<>();
+        List<IndicatorCategoryEntity> indicatorCategoryEntityList = indicatorCategoryService.lambdaQuery()
+            .eq(IndicatorCategoryEntity::getAppId, appId)
+            .eq(IndicatorCategoryEntity::getPid, EnumIndicatorCategory.INDICATOR_MANAGEMENT.getCode())
+            .list()
+            .stream()
+            .peek(indicatorCategoryEntity -> indicatorCategoryIdSet.add(indicatorCategoryEntity.getIndicatorCategoryId()))
+            .collect(Collectors.toList());
+        Map<String, List<IndicatorInstanceEntity>> kIndicatorCategoryIdVIndicatorInstanceListMap = new HashMap<>();
+        if (indicatorCategoryIdSet.isEmpty()) {
+            return Collections.emptyList();
+        }
+        indicatorInstanceService.lambdaQuery()
+            .eq(IndicatorInstanceEntity::getAppId, appId)
+            .in(IndicatorInstanceEntity::getIndicatorCategoryId, indicatorCategoryIdSet)
+            .list()
+            .forEach(indicatorInstanceEntity -> {
+                String indicatorCategoryId = indicatorInstanceEntity.getIndicatorCategoryId();
+                List<IndicatorInstanceEntity> indicatorInstanceEntityList = kIndicatorCategoryIdVIndicatorInstanceListMap.get(indicatorCategoryId);
+                if (Objects.isNull(indicatorInstanceEntityList)) {
+                    indicatorInstanceEntityList = new ArrayList<>();
+                }
+                indicatorInstanceEntityList.add(indicatorInstanceEntity);
+                kIndicatorCategoryIdVIndicatorInstanceListMap.put(indicatorCategoryId, indicatorInstanceEntityList);
+            });
+        return indicatorCategoryEntityList
+            .stream()
+            .map(indicatorCategoryEntity -> {
+                String indicatorCategoryId = indicatorCategoryEntity.getIndicatorCategoryId();
+                List<IndicatorInstanceResponseRs> indicatorInstanceResponseRsList = new ArrayList<>();
+                List<IndicatorInstanceEntity> indicatorInstanceEntityList = kIndicatorCategoryIdVIndicatorInstanceListMap.get(indicatorCategoryId);
+                if (Objects.nonNull(indicatorInstanceEntityList)) {
+                    indicatorInstanceResponseRsList = indicatorInstanceEntityList.stream()
+                        .map(IndicatorInstanceBiz::indicatorInstance2ResponseRs)
+                        .collect(Collectors.toList());
+                }
+                return IndicatorInstanceBiz.IndicatorInstanceCategoryResponseRs(
+                    indicatorCategoryEntity, indicatorInstanceResponseRsList
+                );
+            }).collect(Collectors.toList());
     }
 
     /**
