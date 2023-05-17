@@ -43,6 +43,7 @@ public class HepApplication{
         List<IndicatorCategoryEntity> indicatorCategoryEntityList = new ArrayList<>();
         for (EnumIndicatorCategory enumIndicatorCategory : EnumIndicatorCategory.values()) {
             String indicatorCategoryId = enumIndicatorCategory.getCode();
+            String pid = indicatorCategoryId.length() <= 3 ? null : indicatorCategoryId.substring(0, indicatorCategoryId.length() - 2);
             String categoryName = enumIndicatorCategory.getCategoryName();
             IndicatorCategoryEntity indicatorCategoryEntity = kIndicatorCategoryIdVIndicatorCategoryMap.get(indicatorCategoryId);
             if (Objects.isNull(indicatorCategoryEntity)) {
@@ -50,7 +51,7 @@ public class HepApplication{
                     .builder()
                     .indicatorCategoryId(indicatorCategoryId)
                     .appId("3")
-                    .pid(null)
+                    .pid(pid)
                     .categoryName(categoryName)
                     .build()
                 );
