@@ -21,9 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -58,16 +56,19 @@ public class IndicatorFuncBiz{
     */
     @Transactional(rollbackFor = Exception.class)
     public void create(CreateIndicatorFuncRequest createIndicatorFuncRequest) throws InterruptedException {
-        String indicatorCategoryId = createIndicatorFuncRequest.getPid();
-        IndicatorCategoryEntity indicatorCategoryEntity = indicatorCategoryService.lambdaQuery()
-            .eq(IndicatorCategoryEntity::getIndicatorCategoryId, indicatorCategoryId)
-            .oneOpt()
-            .orElseThrow(() -> {
-                log.warn("方法createIndicatorFunc的参数createIndicatorFuncRequest的indicatorCategoryId：{},不合法", indicatorCategoryId);
-                throw new IndicatorFuncException(EnumESC.VALIDATE_EXCEPTION);
-            });
-        String appId = indicatorCategoryEntity.getAppId();
-        String pid = indicatorCategoryEntity.getPid();
+        String pid = createIndicatorFuncRequest.getPid();
+        String indicatorCategoryId = createIndicatorFuncRequest.getIndicatorCategoryId();
+        Set<String> indicatorCategoryIdSet = new HashSet<>();
+        indicatorCategoryIdSet.add(pid);
+        indicatorCategoryIdSet.add(indicatorCategoryId);
+        List<IndicatorCategoryEntity> indicatorCategoryEntityList = indicatorCategoryService.lambdaQuery()
+            .in(IndicatorCategoryEntity::getIndicatorCategoryId, indicatorCategoryIdSet)
+            .list();
+        if (indicatorCategoryEntityList.size() < 2) {
+            log.info("method IndicatorFuncBiz.create param createIndicatorFuncRequest pid:{} or indicatorCategoryId:{} is illegal", pid, indicatorCategoryId);
+            throw new IndicatorFuncException(EnumESC.VALIDATE_EXCEPTION);
+        }
+        String appId = indicatorCategoryEntityList.get(0).getAppId();
         String name = createIndicatorFuncRequest.getName();
         String operationTip = createIndicatorFuncRequest.getOperationTip();
         String dialogTip = createIndicatorFuncRequest.getDialogTip();
@@ -90,6 +91,7 @@ public class IndicatorFuncBiz{
                     .indicatorFuncId(idGenerator.nextIdStr())
                     .appId(appId)
                     .pid(pid)
+                    .indicatorCategoryId(indicatorCategoryId)
                     .name(name)
                     .operationTip(operationTip)
                     .dialogTip(dialogTip)
@@ -212,6 +214,7 @@ public class IndicatorFuncBiz{
             .indicatorFuncId(indicatorFuncEntity.getIndicatorFuncId())
             .appId(indicatorFuncEntity.getAppId())
             .pid(indicatorFuncEntity.getPid())
+            .indicatorCategoryId(indicatorFuncEntity.getIndicatorCategoryId())
             .name(indicatorFuncEntity.getName())
             .operationTip(indicatorFuncEntity.getOperationTip())
             .dialogTip(indicatorFuncEntity.getDialogTip())
