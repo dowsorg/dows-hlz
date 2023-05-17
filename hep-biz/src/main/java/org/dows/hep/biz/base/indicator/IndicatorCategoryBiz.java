@@ -3,6 +3,7 @@ package org.dows.hep.biz.base.indicator;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.BatchCreateOrUpdateIndicatorCategoryDTO;
 import org.dows.hep.api.base.indicator.request.BatchCreateOrUpdateIndicatorCategoryRequest;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorCategoryRequest;
@@ -206,7 +207,8 @@ public class IndicatorCategoryBiz{
     public List<IndicatorCategoryResponse> getByPid(String appId, String pid) {
         return indicatorCategoryService.lambdaQuery()
             .eq(IndicatorCategoryEntity::getAppId, appId)
-            .eq(IndicatorCategoryEntity::getPid, pid)
+            .isNull(StringUtils.isBlank(pid), IndicatorCategoryEntity::getPid)
+            .eq(StringUtils.isNotBlank(pid), IndicatorCategoryEntity::getPid, pid)
             .list()
             .stream()
             .map(IndicatorCategoryBiz::indicatorCategoryEntity2Response)

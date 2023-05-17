@@ -240,7 +240,7 @@ public class IndicatorViewPhysicalExamBiz{
         return indicatorViewPhysicalExamResponseRsList.get(0);
     }
 
-    public IPage<IndicatorViewPhysicalExamResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String paramIndicatorCategoryId, Integer status) {
+    public Page<IndicatorViewPhysicalExamResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String paramIndicatorCategoryId, Integer status) {
         Page<IndicatorViewPhysicalExamEntity> page = RsPageUtil.getRsPage(pageNo, pageSize, order, asc);
         LambdaQueryWrapper<IndicatorViewPhysicalExamEntity> indicatorViewPhysicalExamEntityLQW = new LambdaQueryWrapper<>();
         indicatorViewPhysicalExamEntityLQW

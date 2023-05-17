@@ -17,6 +17,8 @@ import org.dows.hep.biz.base.org.OrgBiz;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -74,7 +76,7 @@ public class OrgRest {
      */
     @Operation(summary =  "删除 班级")
     @DeleteMapping("v1/baseOrg/org/deleteClasss")
-    public Boolean deleteClasss(@RequestParam Set<String> ids){
+    public Boolean deleteClasss(@RequestBody Set<String> ids){
         return orgBiz.deleteClasss(ids);
     }
 
@@ -161,11 +163,14 @@ public class OrgRest {
      */
     @Operation(summary = "删除机构人物")
     @DeleteMapping("v1/baseOrg/org/deletePersons")
-    public Boolean deletePersons(@RequestParam Set<String> caseOrgIds,
+    public Boolean deletePersons(@RequestBody Map<String,Object> ids,
                                  @RequestParam String caseInstanceId,
-                                 @RequestParam Set<String> accountIds,
                                  @RequestParam String appId) {
-        return orgBiz.deletePersons(caseOrgIds,caseInstanceId,accountIds,appId);
+        return orgBiz.deletePersons(
+                new HashSet<>((ArrayList)ids.get("caseOrgIds")),
+                caseInstanceId,
+                new HashSet<>((ArrayList)ids.get("accountIds")),
+                appId);
     }
 
     /**

@@ -37,7 +37,7 @@ public class PersonManageRest {
     */
     @Operation(summary = "批量删除人物")
     @DeleteMapping("v1/basePerson/personManage/deletePersons")
-    public Integer deletePersons(@RequestParam @Validated Set<String> accountIds) {
+    public Integer deletePersons(@RequestBody @Validated Set<String> accountIds) {
         return personManageBiz.deletePersons(accountIds);
     }
 
@@ -222,7 +222,7 @@ public class PersonManageRest {
      */
     @Operation(summary =  "删除 教师/学生")
     @DeleteMapping("v1/basePerson/person/deleteTeacherOrStudents")
-    public Boolean deleteTeacherOrStudents(@RequestParam Set<String> accountIds,
+    public Boolean deleteTeacherOrStudents(@RequestBody Set<String> accountIds,
                                            @RequestParam String roleName,
                                            @RequestParam String appId
                                            ){

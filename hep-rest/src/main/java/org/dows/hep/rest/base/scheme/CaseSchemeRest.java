@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.tenant.casus.CaseSchemeSourceEnum;
 import org.dows.hep.api.tenant.casus.request.CaseSchemePageRequest;
 import org.dows.hep.api.tenant.casus.request.CaseSchemeRequest;
 import org.dows.hep.api.tenant.casus.response.CaseSchemePageResponse;
@@ -35,6 +36,7 @@ public class CaseSchemeRest {
     @Operation(summary = "新增和更新")
     @PostMapping("v1/baseCasus/caseScheme/saveOrUpdCaseScheme")
     public String saveOrUpdCaseScheme(@RequestBody @Validated CaseSchemeRequest caseScheme) {
+        caseScheme.setSource(CaseSchemeSourceEnum.ADMIN.name());
         return tenantCaseSchemeBiz.saveOrUpdCaseScheme(caseScheme);
     }
 
@@ -83,13 +85,14 @@ public class CaseSchemeRest {
     }
 
     /**
-    * 删除or批量删除案例方案
-    * @param
-    * @return
-    */
+     * 删除or批量删除案例方案
+     *
+     * @param
+     * @return
+     */
     @Operation(summary = "删除or批量删除案例方案")
     @DeleteMapping("v1/baseCasus/caseScheme/delCaseScheme")
-    public Boolean delCaseScheme(List<String> caseSchemeIds ) {
+    public Boolean delCaseScheme(@RequestBody List<String> caseSchemeIds) {
         return tenantCaseSchemeBiz.delCaseScheme(caseSchemeIds);
     }
 

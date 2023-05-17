@@ -1,8 +1,11 @@
 package org.dows.hep.api.tenant.casus.request;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.Accessors;
+
+import java.util.List;
 
 /**
 * @description 
@@ -11,7 +14,12 @@ import lombok.NoArgsConstructor;
 * @date 
 */
 @Data
+@ToString
+@Builder
+@Accessors(chain = true)
+@AllArgsConstructor
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(name = "CaseSchemeSearch 对象", title = "案例方案搜索")
 public class CaseSchemeSearchRequest{
 
@@ -22,7 +30,7 @@ public class CaseSchemeSearchRequest{
     private String caseInstanceId;
 
     @Schema(title = "类别ID")
-    private String categId;
+    private List<String> categIds;
 
     @Schema(title = "关键字")
     private String keyword;
