@@ -41,60 +41,60 @@ public class RiskCategoryRest {
         riskCategoryBiz.deleteRiskCategory(riskCategoryId);
     }
 
-    /**
-    * 创建风险类别
-    * @param
-    * @return
-    */
-    @Operation(summary = "创建风险类别")
-    @PostMapping("v1/baseRisk/riskCategory/createRiskCategory")
-    public void createRiskCategory(@RequestBody @Validated CreateRiskCategoryRequest createRiskCategory ) {
-        riskCategoryBiz.createRiskCategory(createRiskCategory);
-    }
-
-    /**
-    * 更改风险类别
-    * @param
-    * @return
-    */
-    @Operation(summary = "更改风险类别")
-    @PutMapping("v1/baseRisk/riskCategory/updateRiskCategory")
-    public void updateRiskCategory(@Validated UpdateRiskCategoryRequest updateRiskCategory ) {
-        riskCategoryBiz.updateRiskCategory(updateRiskCategory);
-    }
-
-    /**
-    * 获取风险类别
-    * @param
-    * @return
-    */
-    @Operation(summary = "获取风险类别")
-    @GetMapping("v1/baseRisk/riskCategory/getRiskCategory")
-    public RiskCategoryResponse getRiskCategory(@Validated String riskCategoryId) {
-        return riskCategoryBiz.getRiskCategory(riskCategoryId);
-    }
-
-    /**
-    * 筛选风险类别
-    * @param
-    * @return
-    */
-    @Operation(summary = "筛选风险类别")
-    @GetMapping("v1/baseRisk/riskCategory/listRiskCategory")
-    public List<RiskCategoryResponse> listRiskCategory(@Validated String appId, @Validated String riskCategoryName) {
-        return riskCategoryBiz.listRiskCategory(appId,riskCategoryName);
-    }
-
-    /**
-    * 分页筛选风险类别
-    * @param
-    * @return
-    */
-    @Operation(summary = "分页筛选风险类别")
-    @GetMapping("v1/baseRisk/riskCategory/pageRiskCategory")
-    public String pageRiskCategory(@Validated Integer pageNo, @Validated Integer pageSize, @Validated String appId, @Validated String riskCategoryName) {
-        return riskCategoryBiz.pageRiskCategory(pageNo,pageSize,appId,riskCategoryName);
-    }
+//    /**
+//    * 创建风险类别
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "创建风险类别")
+//    @PostMapping("v1/baseRisk/riskCategory/createRiskCategory")
+//    public void createRiskCategory(@RequestBody @Validated CreateRiskCategoryRequest createRiskCategory ) {
+//        riskCategoryBiz.createRiskCategory(createRiskCategory);
+//    }
+//
+//    /**
+//    * 更改风险类别
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "更改风险类别")
+//    @PutMapping("v1/baseRisk/riskCategory/updateRiskCategory")
+//    public void updateRiskCategory(@Validated UpdateRiskCategoryRequest updateRiskCategory ) {
+//        riskCategoryBiz.updateRiskCategory(updateRiskCategory);
+//    }
+//
+//    /**
+//    * 获取风险类别
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "获取风险类别")
+//    @GetMapping("v1/baseRisk/riskCategory/getRiskCategory")
+//    public RiskCategoryResponse getRiskCategory(@Validated String riskCategoryId) {
+//        return riskCategoryBiz.getRiskCategory(riskCategoryId);
+//    }
+//
+//    /**
+//    * 筛选风险类别
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "筛选风险类别")
+//    @GetMapping("v1/baseRisk/riskCategory/listRiskCategory")
+//    public List<RiskCategoryResponse> listRiskCategory(@Validated String appId, @Validated String riskCategoryName) {
+//        return riskCategoryBiz.listRiskCategory(appId,riskCategoryName);
+//    }
+//
+//    /**
+//    * 分页筛选风险类别
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "分页筛选风险类别")
+//    @GetMapping("v1/baseRisk/riskCategory/pageRiskCategory")
+//    public String pageRiskCategory(@Validated Integer pageNo, @Validated Integer pageSize, @Validated String appId, @Validated String riskCategoryName) {
+//        return riskCategoryBiz.pageRiskCategory(pageNo,pageSize,appId,riskCategoryName);
+//    }
 
 
 }

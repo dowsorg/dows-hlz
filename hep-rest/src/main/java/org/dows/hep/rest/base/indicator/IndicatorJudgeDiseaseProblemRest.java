@@ -1,6 +1,7 @@
 package org.dows.hep.rest.base.indicator;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -54,7 +55,7 @@ public class IndicatorJudgeDiseaseProblemRest {
 
     @Operation(summary = "Rs分页筛选查看指标疾病问题类")
     @GetMapping("v1/baseIndicator/indicatorJudgeDiseaseProblem/pageRs")
-    public IPage<IndicatorJudgeDiseaseProblemResponseRs> pageRs(
+    public Page<IndicatorJudgeDiseaseProblemResponseRs> pageRs(
         @RequestParam(required = false, defaultValue = RsPageConstant.PAGE_NO) Long pageNo,
         @RequestParam(required = false, defaultValue = RsPageConstant.PAGE_SIZE) Long pageSize,
         @RequestParam(required = false, defaultValue = RsPageConstant.ORDER) String order,

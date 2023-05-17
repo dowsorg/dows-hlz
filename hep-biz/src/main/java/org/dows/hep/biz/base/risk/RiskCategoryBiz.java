@@ -8,6 +8,7 @@ import org.dows.hep.api.base.risk.request.BatchCreateOrUpdateRiskCategoryRequest
 import org.dows.hep.api.base.risk.request.CreateRiskCategoryRequest;
 import org.dows.hep.api.base.risk.request.UpdateRiskCategoryRequest;
 import org.dows.hep.api.base.risk.response.RiskCategoryResponse;
+import org.dows.hep.api.base.risk.response.RiskCategoryResponseRs;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.enums.EnumRedissonLock;
 import org.dows.hep.api.exception.RiskCategoryException;
@@ -50,6 +51,22 @@ public class RiskCategoryBiz{
     private final IdGenerator idGenerator;
 
     private final RiskModelService riskModelService;
+
+    public static RiskCategoryResponseRs riskCategory2ResponseRs(RiskCategoryEntity riskCategoryEntity) {
+        if (Objects.isNull(riskCategoryEntity)) {
+            return null;
+        }
+        return RiskCategoryResponseRs
+            .builder()
+            .id(riskCategoryEntity.getId())
+            .riskCategoryId(riskCategoryEntity.getRiskCategoryId())
+            .appId(riskCategoryEntity.getAppId())
+            .pid(riskCategoryEntity.getPid())
+            .riskCategoryName(riskCategoryEntity.getRiskCategoryName())
+            .seq(riskCategoryEntity.getSeq())
+            .dt(riskCategoryEntity.getDt())
+            .build();
+    }
 
     @Transactional(rollbackFor = Exception.class)
     public void batchCreateOrUpdateRiskCategory(BatchCreateOrUpdateRiskCategoryRequest batchCreateOrUpdateRiskCategoryRequest) throws InterruptedException {

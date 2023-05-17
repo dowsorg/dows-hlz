@@ -1,11 +1,11 @@
 package org.dows.hep.rest.base.risk;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.risk.request.CreateRiskModelRequest;
-import org.dows.hep.api.base.risk.request.UpdateRiskModelRequest;
-import org.dows.hep.api.base.risk.request.UpdateStatusRiskModelRequest;
-import org.dows.hep.api.base.risk.response.RiskModelResponse;
+import org.dows.hep.api.base.indicator.request.CreateOrUpdateRiskModelRequestRs;
+import org.dows.hep.api.base.risk.response.RiskModelResponseRs;
+import org.dows.hep.api.constant.RsPageConstant;
 import org.dows.hep.biz.base.risk.RiskModelBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -24,82 +24,122 @@ import java.util.List;
 public class RiskModelRest {
     private final RiskModelBiz riskModelBiz;
 
-    /**
-    * 创建风险模型
-    * @param
-    * @return
-    */
-    @Operation(summary = "创建风险模型")
-    @PostMapping("v1/baseRisk/riskModel/createRiskModel")
-    public void createRiskModel(@RequestBody @Validated CreateRiskModelRequest createRiskModel ) {
-        riskModelBiz.createRiskModel(createRiskModel);
+    @Operation(summary = "创建或更新风险模型")
+    @PostMapping("v1/baseRisk/riskModel/createOrUpdateRs")
+    public void createOrUpdateRs(@RequestBody @Validated CreateOrUpdateRiskModelRequestRs createOrUpdateRiskModelRequestRs) {
+        riskModelBiz.createOrUpdateRs(createOrUpdateRiskModelRequestRs);
     }
 
-    /**
-    * 删除风险模型
-    * @param
-    * @return
-    */
-    @Operation(summary = "删除风险模型")
-    @DeleteMapping("v1/baseRisk/riskModel/deleteRiskModel")
-    public void deleteRiskModel(@Validated String riskModelId ) {
-        riskModelBiz.deleteRiskModel(riskModelId);
+    @Operation(summary = "Rs批量删除")
+    @DeleteMapping("v1/baseRisk/riskModel/batchDeleteRs")
+    public void batchDeleteRs(@RequestBody List<String> riskModelIdList) {
+        riskModelBiz.batchDeleteRs(riskModelIdList);
     }
 
-    /**
-    * 更改风险模型
-    * @param
-    * @return
-    */
-    @Operation(summary = "更改风险模型")
-    @PutMapping("v1/baseRisk/riskModel/updateRiskModel")
-    public void updateRiskModel(@Validated UpdateRiskModelRequest updateRiskModel ) {
-        riskModelBiz.updateRiskModel(updateRiskModel);
+    @Operation(summary = "Rs更改启用状态")
+    @PutMapping("v1/baseRisk/riskModel/updateStatusRs")
+    public void updateStatusRs(
+        @RequestParam String riskModelId,
+        @RequestParam Integer status) {
+        riskModelBiz.updateStatusRs(riskModelId, status);
     }
 
-    /**
-    * 更改启用状态
-    * @param
-    * @return
-    */
-    @Operation(summary = "更改启用状态")
-    @PutMapping("v1/baseRisk/riskModel/updateStatusRiskModel")
-    public void updateStatusRiskModel(@Validated UpdateStatusRiskModelRequest updateStatusRiskModel ) {
-        riskModelBiz.updateStatusRiskModel(updateStatusRiskModel);
+    @Operation(summary = "Rs获取风险模型类")
+    @GetMapping("v1/baseRisk/riskModel/getRs")
+    public RiskModelResponseRs getRs(@RequestParam @Validated String riskModelId) {
+        return riskModelBiz.getRs(riskModelId);
     }
 
-    /**
-    * 获取风险模型
-    * @param
-    * @return
-    */
-    @Operation(summary = "获取风险模型")
-    @GetMapping("v1/baseRisk/riskModel/getRiskModel")
-    public RiskModelResponse getRiskModel(@Validated String riskModelId) {
-        return riskModelBiz.getRiskModel(riskModelId);
+    @Operation(summary = "Rs分页筛选风险模型类")
+    @GetMapping("v1/baseRisk/riskModel/pageRs")
+    public IPage<RiskModelResponseRs> pageRs(
+        @RequestParam(required = false, defaultValue = RsPageConstant.PAGE_NO) Long pageNo,
+        @RequestParam(required = false, defaultValue = RsPageConstant.PAGE_SIZE) Long pageSize,
+        @RequestParam(required = false, defaultValue = RsPageConstant.ORDER) String order,
+        @RequestParam(required = false, defaultValue = RsPageConstant.ASC) Boolean asc,
+        @RequestParam(required = false) String appId,
+        @RequestParam(required = false) String name,
+        @RequestParam(required = false) String riskCategoryId,
+        @RequestParam(required = false) Integer status) {
+        return riskModelBiz.pageRs(pageNo,pageSize,order,asc, appId, name, riskCategoryId, status);
     }
 
-    /**
-    * 筛选风险模型
-    * @param
-    * @return
-    */
-    @Operation(summary = "筛选风险模型")
-    @GetMapping("v1/baseRisk/riskModel/listRiskModel")
-    public List<RiskModelResponse> listRiskModel(@Validated String appId, @Validated String riskModelId, @Validated String modelName, @Validated Integer status) {
-        return riskModelBiz.listRiskModel(appId,riskModelId,modelName,status);
-    }
+//    /**
+//    * 创建风险模型
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "创建风险模型")
+//    @PostMapping("v1/baseRisk/riskModel/createRiskModel")
+//    public void createRiskModel(@RequestBody @Validated CreateRiskModelRequest createRiskModel ) {
+//        riskModelBiz.createRiskModel(createRiskModel);
+//    }
 
-    /**
-    * 分页筛选风险模型
-    * @param
-    * @return
-    */
-    @Operation(summary = "分页筛选风险模型")
-    @GetMapping("v1/baseRisk/riskModel/pageRiskModel")
-    public String pageRiskModel(@Validated Integer pageNo, @Validated Integer pageSize, @Validated String appId, @Validated String riskModelId, @Validated String modelName, @Validated Integer status) {
-        return riskModelBiz.pageRiskModel(pageNo,pageSize,appId,riskModelId,modelName,status);
-    }
+//    /**
+//    * 删除风险模型
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "删除风险模型")
+//    @DeleteMapping("v1/baseRisk/riskModel/deleteRiskModel")
+//    public void deleteRiskModel(@Validated String riskModelId ) {
+//        riskModelBiz.deleteRiskModel(riskModelId);
+//    }
+//
+//    /**
+//    * 更改风险模型
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "更改风险模型")
+//    @PutMapping("v1/baseRisk/riskModel/updateRiskModel")
+//    public void updateRiskModel(@Validated UpdateRiskModelRequest updateRiskModel ) {
+//        riskModelBiz.updateRiskModel(updateRiskModel);
+//    }
+//
+//    /**
+//    * 更改启用状态
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "更改启用状态")
+//    @PutMapping("v1/baseRisk/riskModel/updateStatusRiskModel")
+//    public void updateStatusRiskModel(@Validated UpdateStatusRiskModelRequest updateStatusRiskModel ) {
+//        riskModelBiz.updateStatusRiskModel(updateStatusRiskModel);
+//    }
+//
+//    /**
+//    * 获取风险模型
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "获取风险模型")
+//    @GetMapping("v1/baseRisk/riskModel/getRiskModel")
+//    public RiskModelResponse getRiskModel(@Validated String riskModelId) {
+//        return riskModelBiz.getRiskModel(riskModelId);
+//    }
+//
+//    /**
+//    * 筛选风险模型
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "筛选风险模型")
+//    @GetMapping("v1/baseRisk/riskModel/listRiskModel")
+//    public List<RiskModelResponse> listRiskModel(@Validated String appId, @Validated String riskModelId, @Validated String modelName, @Validated Integer status) {
+//        return riskModelBiz.listRiskModel(appId,riskModelId,modelName,status);
+//    }
+//
+//    /**
+//    * 分页筛选风险模型
+//    * @param
+//    * @return
+//    */
+//    @Operation(summary = "分页筛选风险模型")
+//    @GetMapping("v1/baseRisk/riskModel/pageRiskModel")
+//    public String pageRiskModel(@Validated Integer pageNo, @Validated Integer pageSize, @Validated String appId, @Validated String riskModelId, @Validated String modelName, @Validated Integer status) {
+//        return riskModelBiz.pageRiskModel(pageNo,pageSize,appId,riskModelId,modelName,status);
+//    }
 
 
 }
