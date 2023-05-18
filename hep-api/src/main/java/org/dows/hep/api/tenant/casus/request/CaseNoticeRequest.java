@@ -48,12 +48,4 @@ public class CaseNoticeRequest {
     @JsonIgnore
     private String appId;
 
-    @Schema(title = "案例标示")
-    @JsonIgnore
-    private String caseIdentifier;
-
-    @Schema(title = "版本号")
-    @JsonIgnore
-    private String ver;
-
 }

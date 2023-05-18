@@ -57,12 +57,6 @@ public class CaseNoticeEntity implements CrudEntity {
     @Schema(title = "期数排序")
     private Integer periodSequence;
 
-    @Schema(title = "案例标示")
-    private String caseIdentifier;
-
-    @Schema(title = "版本号")
-    private String ver;
-
     @JsonIgnore
     @TableLogic
     @TableField(fill = FieldFill.INSERT)

@@ -121,8 +121,6 @@ public class TenantCaseNoticeBiz {
             targetCaseNotice.setId(null);
             targetCaseNotice.setCaseNoticeId(baseBiz.getIdStr());
             targetCaseNotice.setCaseInstanceId(targetCaseInstanceId);
-            targetCaseNotice.setCaseIdentifier(targetCaseInstance.getCaseIdentifier());
-            targetCaseNotice.setVer(targetCaseInstance.getVer());
             targetCaseNoticeList.add(targetCaseNotice);
         });
 
@@ -169,8 +167,6 @@ public class TenantCaseNoticeBiz {
             }
 
             request.setCaseInstanceId(caseInstance.getCaseInstanceId());
-            request.setCaseIdentifier(caseInstance.getCaseIdentifier());
-            request.setVer(caseInstance.getVer());
         } else {
             CaseNoticeEntity entity = getById(uniqueId);
             if (BeanUtil.isEmpty(entity)) {

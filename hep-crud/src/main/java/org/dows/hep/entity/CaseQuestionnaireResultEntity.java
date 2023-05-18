@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 案例问卷结果(CaseQuestionnaireResult)实体类
@@ -62,12 +62,6 @@ public class CaseQuestionnaireResultEntity implements CrudEntity {
 
     @Schema(title = "状态[0-未开始|1-进行中|2-已完成]")
     private Boolean status;
-
-    @Schema(title = "案例标示")
-    private String caseIdentifier;
-
-    @Schema(title = "版本号")
-    private String ver;
 
     @JsonIgnore
     @TableLogic

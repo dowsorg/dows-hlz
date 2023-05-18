@@ -90,12 +90,4 @@ public class CaseSchemeRequest{
     @Schema(title = "题数")
     @JsonIgnore
     private Integer questionCount;
-
-    @Schema(title = "案例标示")
-    @JsonIgnore
-    private String caseIdentifier;
-
-    @Schema(title = "版本号")
-    @JsonIgnore
-    private String ver;
 }

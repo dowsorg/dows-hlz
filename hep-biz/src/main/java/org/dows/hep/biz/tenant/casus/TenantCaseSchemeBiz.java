@@ -235,8 +235,6 @@ public class TenantCaseSchemeBiz {
         targetCaseScheme.setId(null);
         targetCaseScheme.setCaseSchemeId(baseBiz.getIdStr());
         targetCaseScheme.setCaseInstanceId(targetCaseInstanceId);
-        targetCaseScheme.setCaseIdentifier(targetCaseInstance.getCaseIdentifier());
-        targetCaseScheme.setVer(targetCaseInstance.getVer());
         caseSchemeService.save(targetCaseScheme);
     }
 
@@ -308,19 +306,19 @@ public class TenantCaseSchemeBiz {
                 .toList();
     }
 
-    private void checkBeforeSaveOrUpd(CaseSchemeRequest caseScheme) {
-        String caseSchemeId = caseScheme.getCaseSchemeId();
+    private void checkBeforeSaveOrUpd(CaseSchemeRequest request) {
+        String caseSchemeId = request.getCaseSchemeId();
         if (StrUtil.isBlank(caseSchemeId)) {
-            caseScheme.setAppId(baseBiz.getAppId());
-            caseScheme.setCaseSchemeId(baseBiz.getIdStr());
-            caseScheme.setEnabled(caseScheme.getEnabled() == null ? EnumStatus.ENABLE.getCode() : caseScheme.getEnabled());
-            caseScheme.setSource(StrUtil.isBlank(caseScheme.getSource()) ? EnumSource.ADMIN.name() : caseScheme.getSource());
+            request.setAppId(baseBiz.getAppId());
+            request.setCaseSchemeId(baseBiz.getIdStr());
+            request.setEnabled(request.getEnabled() == null ? EnumStatus.ENABLE.getCode() : request.getEnabled());
+            request.setSource(StrUtil.isBlank(request.getSource()) ? EnumSource.ADMIN.name() : request.getSource());
         } else {
             CaseSchemeEntity caseSchemeEntity = getById(caseSchemeId);
             if (BeanUtil.isEmpty(caseSchemeEntity)) {
                 throw new BizException("数据不存在");
             }
-            caseScheme.setId(caseSchemeEntity.getId());
+            request.setId(caseSchemeEntity.getId());
         }
     }
 
