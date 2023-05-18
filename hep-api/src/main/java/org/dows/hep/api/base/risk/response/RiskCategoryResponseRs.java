@@ -1,6 +1,7 @@
-package org.dows.hep.api.base.indicator.response;
+package org.dows.hep.api.base.risk.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,32 +20,23 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Schema(name = "IndicatorFunc 对象", title = "指标功能列表")
-public class IndicatorFuncResponse{
+@Schema(name = "RiskCategoryResponseRs对象", title = "筛选风险类别")
+public class RiskCategoryResponseRs {
   @JsonFormat(shape = JsonFormat.Shape.STRING)
-  @Schema(title = "主键")
+  @Schema(title = "数据库ID")
   private Long id;
 
-  @Schema(title = "指标功能分布式ID")
-  private String indicatorFuncId;
+  @Schema(title = "分布式ID")
+  private String riskCategoryId;
 
   @Schema(title = "应用ID")
   private String appId;
 
-  @Schema(title = "指标功能父类别分布式ID")
+  @Schema(title = "父ID")
   private String pid;
 
-  @Schema(title = "具体功能类型分布式ID")
-  private String indicatorCategoryId;
-
-  @Schema(title = "功能名称")
-  private String name;
-
-  @Schema(title = "操作提示")
-  private String operationTip;
-
-  @Schema(title = "对话提示")
-  private String dialogTip;
+  @Schema(title = "风险类别名称")
+  private String riskCategoryName;
 
   @Schema(title = "展示顺序")
   private Integer seq;

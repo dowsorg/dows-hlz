@@ -280,8 +280,10 @@ public class PersonManageBiz {
             });
             instance.setOrgName(orgNameList.stream().collect(Collectors.joining(",")));
         }
+        //3、根据账户ID获取用户ID
+        AccountUserResponse accountUser = accountUserApi.getUserByAccountId(accountId);
         //3、获取用户拓展信息
-        UserExtinfoResponse extinfo = userExtinfoApi.getUserExtinfoByUserId(instance.getUserId());
+        UserExtinfoResponse extinfo = userExtinfoApi.getUserExtinfoByUserId(accountUser.getUserId());
         instance.setIntro(extinfo.getIntro());
         return instance;
     }

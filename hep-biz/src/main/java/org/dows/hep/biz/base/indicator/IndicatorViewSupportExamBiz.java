@@ -265,7 +265,7 @@ public class IndicatorViewSupportExamBiz{
         return indicatorViewSupportExamResponseRsList.get(0);
     }
 
-    public IPage<IndicatorViewSupportExamResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String paramIndicatorCategoryId, Integer status) {
+    public Page<IndicatorViewSupportExamResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String paramIndicatorCategoryId, Integer status) {
         Page<IndicatorViewSupportExamEntity> page = RsPageUtil.getRsPage(pageNo, pageSize, order, asc);
         LambdaQueryWrapper<IndicatorViewSupportExamEntity> indicatorViewSupportExamEntityLQW = new LambdaQueryWrapper<>();
         indicatorViewSupportExamEntityLQW

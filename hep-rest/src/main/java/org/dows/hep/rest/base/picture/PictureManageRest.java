@@ -40,7 +40,7 @@ public class PictureManageRest {
      */
     @Operation(summary = "删除图示")
     @DeleteMapping("v1/basePicture/picture/deletePersonPictures")
-    public Integer deletePersonPictures(@RequestParam Set<String> ids,@RequestParam String appId) {
+    public Integer deletePersonPictures(@RequestBody Set<String> ids,@RequestParam String appId) {
         return pictureManageBiz.deletePersonPictures(ids,appId);
     }
 

@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorInstanceRequest;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorInstanceRequest;
+import org.dows.hep.api.base.indicator.response.IndicatorInstanceCategoryResponseRs;
 import org.dows.hep.api.base.indicator.response.IndicatorInstanceResponse;
 import org.dows.hep.biz.base.indicator.IndicatorInstanceBiz;
 import org.springframework.validation.annotation.Validated;
@@ -46,6 +47,12 @@ public class IndicatorInstanceRest {
     @PutMapping("v1/baseIndicator/indicatorInstance/batchUpdateFood")
     public void batchUpdateFood(@RequestBody List<String> indicatorInstanceIdList) {
         indicatorInstanceBiz.batchUpdateFood(indicatorInstanceIdList);
+    }
+
+    @Operation(summary = "根据appId查询出所有的指标")
+    @GetMapping("v1/baseIndicator/indicatorInstance/getByAppId")
+    public List<IndicatorInstanceCategoryResponseRs> getByAppId(@RequestParam String appId) {
+        return indicatorInstanceBiz.getByAppId(appId);
     }
 
 //    /**
