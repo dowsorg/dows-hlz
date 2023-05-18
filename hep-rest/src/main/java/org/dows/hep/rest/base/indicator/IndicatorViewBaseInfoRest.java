@@ -31,15 +31,16 @@ public class IndicatorViewBaseInfoRest {
         indicatorViewBaseInfoBiz.createOrUpdateRs(createOrUpdateIndicatorViewBaseInfoRs);
     }
 
-    /**
-     * 获取查看指标基本信息类
-     * @param
-     * @return
-     */
     @Operation(summary = "Rs获取查看指标基本信息类")
     @GetMapping("v1/baseIndicator/indicatorViewBaseInfo/getRs")
     public IndicatorViewBaseInfoResponseRs getRs(@RequestParam @Validated String indicatorViewBaseInfoId) {
         return indicatorViewBaseInfoBiz.getRs(indicatorViewBaseInfoId);
+    }
+
+    @Operation(summary = "Rs根据功能点id获取查看指标基本信息类")
+    @GetMapping("v1/baseIndicator/indicatorViewBaseInfo/getRsByIndicatorFuncId")
+    public IndicatorViewBaseInfoResponseRs getRsByIndicatorFuncId(@RequestParam @Validated String indicatorFuncId) {
+        return indicatorViewBaseInfoBiz.getRsByIndicatorFuncId(indicatorFuncId);
     }
 
 //    /**
