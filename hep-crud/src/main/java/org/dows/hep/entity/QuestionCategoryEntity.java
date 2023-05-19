@@ -36,9 +36,6 @@ public class QuestionCategoryEntity implements CrudEntity {
     @Schema(title = "数据库ID")
     private Long id;
 
-    @Schema(title = "父ID")
-    private Long pid;
-
     @Schema(title = "类别父id")
     private String questionCategPid;
 
@@ -47,12 +44,6 @@ public class QuestionCategoryEntity implements CrudEntity {
 
     @Schema(title = "类别名")
     private String questionCategName;
-
-    @Schema(title = "类别ID路径")
-    private String questionCategIdPath;
-
-    @Schema(title = "类别name路径")
-    private String questionCategNamePath;
 
     @Schema(title = "类别组")
     private String questionCategGroup;

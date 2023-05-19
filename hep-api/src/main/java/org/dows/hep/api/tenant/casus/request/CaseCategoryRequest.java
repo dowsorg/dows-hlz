@@ -36,14 +36,6 @@ public class CaseCategoryRequest {
 
 
     // JsonIgnore
-    @Schema(title = "类别ID路径")
-    @JsonIgnore
-    private String caseCategIdPath;
-
-    @Schema(title = "类别name路径")
-    @JsonIgnore
-    private String caseCategNamePath;
-
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库ID")
     @JsonIgnore

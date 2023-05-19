@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 案例类目(CaseCategory)实体类
@@ -36,23 +36,14 @@ public class CaseCategoryEntity implements CrudEntity {
     @Schema(title = "数据库ID")
     private Long id;
 
-    @Schema(title = "父ID")
-    private Long pid;
+    @Schema(title = "类别ID")
+    private String caseCategId;
 
     @Schema(title = "类别父id")
     private String caseCategPid;
 
-    @Schema(title = "类别ID")
-    private String caseCategId;
-
     @Schema(title = "类别名")
     private String caseCategName;
-
-    @Schema(title = "类别ID路径")
-    private String caseCategIdPath;
-
-    @Schema(title = "类别name路径")
-    private String caseCategNamePath;
 
     @Schema(title = "类别组")
     private String caseCategGroup;

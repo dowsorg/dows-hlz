@@ -37,14 +37,6 @@ public class QuestionCategoryRequest {
 
 
     // JsonIgnore
-    @Schema(title = "类别ID路径")
-    @JsonIgnore
-    private String questionCategIdPath;
-
-    @Schema(title = "类别name路径")
-    @JsonIgnore
-    private String questionCategNamePath;
-
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库ID")
     @JsonIgnore
