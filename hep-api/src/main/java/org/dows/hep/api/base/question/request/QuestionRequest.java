@@ -3,6 +3,7 @@ package org.dows.hep.api.base.question.request;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.hep.api.base.question.QuestionAccessAuthEnum;
@@ -34,6 +35,7 @@ public class QuestionRequest {
     private String questionCategId;
 
     @Schema(title = "题目答题类型[RADIO_SELECT:单选题|MULTIPLE_SELECT:多选题|JUDGMENT:判断题|SUBJECTIVE:主观题|MATERIAL:材料题]")
+    @NotBlank
     private QuestionTypeEnum questionType;
 
     @Schema(title = "维度ID")

@@ -2,12 +2,14 @@ package org.dows.hep.biz.tenant.casus.handler;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
+import org.dows.hep.api.base.question.QuestionEnabledEnum;
 import org.dows.hep.api.base.question.QuestionSectionGenerationModeEnum;
 import org.dows.hep.api.base.question.request.QuestionRequest;
 import org.dows.hep.api.base.question.request.QuestionSectionItemRequest;
 import org.dows.hep.api.base.question.request.QuestionSectionRequest;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireRequest;
+import org.dows.hep.biz.base.question.QuestionInstanceBiz;
 import org.dows.hep.biz.base.question.QuestionSectionBiz;
 import org.dows.hep.biz.tenant.casus.TenantCaseBaseBiz;
 import org.springframework.beans.BeansException;
@@ -20,6 +22,7 @@ import java.util.List;
 public abstract class BaseCaseQuestionnaireHandler implements ApplicationContextAware, CaseQuestionnaireHandler {
     private TenantCaseBaseBiz baseBiz;
     private QuestionSectionBiz questionSectionBiz;
+    private QuestionInstanceBiz questionInstanceBiz;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -29,7 +32,7 @@ public abstract class BaseCaseQuestionnaireHandler implements ApplicationContext
 
     @Override
     public String handle(CaseQuestionnaireRequest caseQuestionnaire) {
-        QuestionSectionRequest questionSectionRequest = checkSectionIsExist(caseQuestionnaire);
+        QuestionSectionRequest questionSectionRequest = buildSectionRequest(caseQuestionnaire);
         return questionSectionBiz.saveOrUpdQuestionSection(questionSectionRequest);
     }
 
@@ -39,19 +42,17 @@ public abstract class BaseCaseQuestionnaireHandler implements ApplicationContext
 
     public abstract boolean needOriRequest();
 
-    private QuestionSectionRequest checkSectionIsExist(CaseQuestionnaireRequest caseQuestionnaire) {
-        QuestionSectionRequest result = new QuestionSectionRequest();
+    private QuestionSectionRequest buildSectionRequest(CaseQuestionnaireRequest caseQuestionnaire) {
+        // build current
+        QuestionSectionRequest questionSectionRequest2 = buildCurrentRequest(caseQuestionnaire);
 
         // build ori
         if (needOriRequest()) {
             QuestionSectionRequest questionSectionRequest1 = buildOriRequest(caseQuestionnaire);
-            merge(result, questionSectionRequest1);
+            merge(questionSectionRequest2, questionSectionRequest1);
         }
 
-        // build current
-        QuestionSectionRequest questionSectionRequest2 = buildCurrentRequest(caseQuestionnaire);
-        merge(result, questionSectionRequest2);
-        return result;
+        return questionSectionRequest2;
     }
 
     private QuestionSectionRequest buildCurrentRequest(CaseQuestionnaireRequest caseQuestionnaire) {
@@ -84,8 +85,7 @@ public abstract class BaseCaseQuestionnaireHandler implements ApplicationContext
                     .build();
             QuestionSectionItemRequest questionSectionItemRequest = QuestionSectionItemRequest.builder()
                     .appId(baseBiz.getAppId())
-                    .questionSectionItemId(baseBiz.getIdStr())
-                    .enabled(1)
+                    .enabled(QuestionEnabledEnum.ENABLED.getCode())
                     .required(0)
                     .sequence(i)
                     .questionRequest(questionRequest)
@@ -94,9 +94,8 @@ public abstract class BaseCaseQuestionnaireHandler implements ApplicationContext
         }
         return QuestionSectionRequest.builder()
                 .appId(baseBiz.getAppId())
-                .questionSectionId(baseBiz.getIdStr())
                 .name(caseQuestionnaire.getQuestionSectionName())
-                .enabled(1)
+                .enabled(QuestionEnabledEnum.ENABLED.getCode())
                 .generationMode(QuestionSectionGenerationModeEnum.SELECT)
                 .sectionItemList(questionSectionItemRequests)
                 .build();

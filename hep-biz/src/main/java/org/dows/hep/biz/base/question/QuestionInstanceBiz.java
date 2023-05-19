@@ -10,10 +10,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.*;
+import org.dows.hep.api.base.question.request.QuestionOptionWithAnswerRequest;
 import org.dows.hep.api.base.question.request.QuestionPageRequest;
 import org.dows.hep.api.base.question.request.QuestionRequest;
 import org.dows.hep.api.base.question.request.QuestionSearchRequest;
 import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
+import org.dows.hep.api.base.question.response.QuestionOptionWithAnswerResponse;
 import org.dows.hep.api.base.question.response.QuestionPageResponse;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.biz.base.question.handler.QuestionTypeFactory;
@@ -512,11 +514,39 @@ public class QuestionInstanceBiz {
         if (BeanUtil.isEmpty(question)) {
             return "";
         }
+        if (StrUtil.isBlank(question.getQuestionInstanceId())) {
+            throw new BizException("被克隆数据不能为空");
+        }
+
+        // 被克隆的ID
+        String clonedId = question.getQuestionInstanceId();
+        QuestionResponse oriQuestion = getQuestion(clonedId);
+        QuestionRequest request = convertResponse2Request(oriQuestion);
 
         // 新增新 data
-        QuestionTypeEnum questionType = question.getQuestionType();
+        QuestionTypeEnum questionType = oriQuestion.getQuestionType();
         QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(questionType);
-        return questionTypeHandler.save(question);
+        return questionTypeHandler.save(request);
+    }
+
+    private QuestionRequest convertResponse2Request(QuestionResponse questionResponse) {
+        if (BeanUtil.isEmpty(questionResponse)) {
+            return new QuestionRequest();
+        }
+
+        QuestionRequest result = BeanUtil.copyProperties(questionResponse, QuestionRequest.class);
+
+        // options with answer
+        List<QuestionOptionWithAnswerResponse> optionWithAnswerList = questionResponse.getOptionWithAnswerList();
+        List<QuestionOptionWithAnswerRequest> questionOptionWithAnswerRequests = BeanUtil.copyToList(optionWithAnswerList, QuestionOptionWithAnswerRequest.class);
+        result.setOptionWithAnswerList(questionOptionWithAnswerRequests);
+
+        // children
+        List<QuestionResponse> children = questionResponse.getChildren();
+        List<QuestionRequest> questionRequestList = BeanUtil.copyToList(children, QuestionRequest.class);
+        result.setChildren(questionRequestList);
+
+        return result;
     }
 
     private void updateVer(QuestionInstanceEntity instance) {

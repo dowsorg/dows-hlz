@@ -10,7 +10,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.QuestionEnabledEnum;
-import org.dows.hep.api.base.question.QuestionSectionAccessAuthEnum;
 import org.dows.hep.api.base.question.QuestionSectionGenerationModeEnum;
 import org.dows.hep.api.base.question.request.QuestionSectionItemRequest;
 import org.dows.hep.api.base.question.request.QuestionSectionRequest;
@@ -329,7 +328,6 @@ public class TenantCaseSchemeBiz {
 
     private QuestionSectionRequest caseScheme2QS(CaseSchemeRequest caseScheme) {
         return QuestionSectionRequest.builder()
-                .bizCode(QuestionSectionAccessAuthEnum.PRIVATE_VIEWING.name())
                 .name(caseScheme.getSchemeName())
                 .tips(caseScheme.getTips())
                 .descr(caseScheme.getSchemeDescr())

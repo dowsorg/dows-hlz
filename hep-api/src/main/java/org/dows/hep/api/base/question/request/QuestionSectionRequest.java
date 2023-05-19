@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
+import org.dows.hep.api.base.question.QuestionSectionAccessAuthEnum;
 import org.dows.hep.api.base.question.QuestionSectionGenerationModeEnum;
 
 import java.util.List;
@@ -100,6 +101,6 @@ public class QuestionSectionRequest{
 
     @Schema(title = "biz code")
     @JsonIgnore
-    private String bizCode;
+    private QuestionSectionAccessAuthEnum bizCode;
 
 }

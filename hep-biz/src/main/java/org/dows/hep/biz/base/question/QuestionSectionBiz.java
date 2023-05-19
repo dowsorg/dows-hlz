@@ -7,7 +7,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
-import org.dows.hep.api.base.question.request.*;
+import org.dows.hep.api.base.question.QuestionSectionAccessAuthEnum;
+import org.dows.hep.api.base.question.request.QuestionSectionDimensionRequest;
+import org.dows.hep.api.base.question.request.QuestionSectionItemRequest;
+import org.dows.hep.api.base.question.request.QuestionSectionRequest;
 import org.dows.hep.api.base.question.response.QuestionSectionDimensionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionItemResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
@@ -256,6 +259,7 @@ public class QuestionSectionBiz {
             request.setQuestionSectionIdentifier(baseBiz.getIdStr());
             request.setVer(baseBiz.getLastVer());
             request.setSequence(baseBiz.getSequence());
+            request.setBizCode(request.getBizCode() == null ? QuestionSectionAccessAuthEnum.PRIVATE_VIEWING : request.getBizCode());
         } else {
             QuestionSectionEntity entity = getById(uniqueId);
             if (BeanUtil.isEmpty(entity)) {

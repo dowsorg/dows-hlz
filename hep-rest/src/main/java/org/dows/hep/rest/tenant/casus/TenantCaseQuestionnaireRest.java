@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.question.response.QuestionResponse;
+import org.dows.hep.api.base.question.response.QuestionSectionResponse;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionSearchRequest;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireDelItemRequest;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireRequest;
@@ -79,19 +80,19 @@ public class TenantCaseQuestionnaireRest {
     */
     @Operation(summary = "获取案例问卷")
     @GetMapping("v1/tenantCasus/caseQuestionnaire/getCaseQuestionnaire")
-    public void getCaseQuestionnaire(@Validated String caseQuestionnaireId) {
-        tenantCaseQuestionnaireBiz.getCaseQuestionnaire(caseQuestionnaireId);
+    public CaseQuestionnaireResponse getCaseQuestionnaire(@Validated String caseQuestionnaireId) {
+        return tenantCaseQuestionnaireBiz.getCaseQuestionnaire(caseQuestionnaireId);
     }
 
     /**
-     * 获取案例问卷
+     * 预览案例问卷
      * @param
      * @return
      */
     @Operation(summary = "预览案例问卷")
     @GetMapping("v1/tenantCasus/caseQuestionnaire/showCaseQuestionnaire")
-    public void showCaseQuestionnaire(@Validated String caseQuestionnaireId) {
-        tenantCaseQuestionnaireBiz.showCaseQuestionnaire(caseQuestionnaireId);
+    public QuestionSectionResponse showCaseQuestionnaire(@Validated String caseQuestionnaireId) {
+        return tenantCaseQuestionnaireBiz.showCaseQuestionnaire(caseQuestionnaireId);
     }
 
     /**

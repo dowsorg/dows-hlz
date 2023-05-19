@@ -158,20 +158,14 @@ public class TenantCaseQuestionnaireBiz {
      * @开始时间:
      * @创建时间: 2023年4月17日 下午8:00:11
      */
-    public CaseQuestionnaireResponse showCaseQuestionnaire(String caseQuestionnaireId ) {
+    public QuestionSectionResponse showCaseQuestionnaire(String caseQuestionnaireId ) {
         if (StrUtil.isBlank(caseQuestionnaireId)) {
-            return new CaseQuestionnaireResponse();
+            return new QuestionSectionResponse();
         }
 
-        // get entity
-        CaseQuestionnaireResponse result = getCaseQuestionnaire(caseQuestionnaireId);
-
-        // get question-section
-        String questionSectionId = result.getQuestionSectionId();
-        QuestionSectionResponse questionSection = questionSectionBiz.getQuestionSection(questionSectionId);
-
-        result.setQuestionSectionResponse(questionSection);
-        return result;
+        CaseQuestionnaireEntity entity = getById(caseQuestionnaireId);
+        String questionSectionId = entity.getQuestionSectionId();
+        return questionSectionBiz.getQuestionSection(questionSectionId);
     }
 
     /**
@@ -370,6 +364,7 @@ public class TenantCaseQuestionnaireBiz {
             List<String> childrenIds = children.stream().map(QuestionCategoryResponse::getQuestionCategId).toList();
             result.addAll(childrenIds);
         }
+        result.add(l1CategoryId);
         return result;
     }
 

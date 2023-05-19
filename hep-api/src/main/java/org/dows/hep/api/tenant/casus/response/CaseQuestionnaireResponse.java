@@ -22,6 +22,9 @@ public class CaseQuestionnaireResponse{
     @Schema(title = "案例问卷ID")
     private String caseQuestionnaireId;
 
+    @Schema(title = "试卷名称")
+    private String questionSectionName;
+
     @Schema(title = "期数")
     private String periods;
 

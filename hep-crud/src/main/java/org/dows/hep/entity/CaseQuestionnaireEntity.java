@@ -57,6 +57,9 @@ public class CaseQuestionnaireEntity implements CrudEntity {
     @Schema(title = "问题集ID")
     private String questionSectionId;
 
+    @Schema(title = "问题集名称")
+    private String questionSectionName;
+
     @Schema(title = "题数")
     private Integer questionCount;
 

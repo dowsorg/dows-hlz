@@ -32,7 +32,7 @@ public class QuestionSectionRest {
     @Operation(summary = "新增和更新")
     @PostMapping("v1/baseQuestion/questionSection/saveOrUpdQuestionSection")
     public String saveOrUpdQuestionSection(@RequestBody @Validated QuestionSectionRequest questionSection ) {
-        questionSection.setBizCode(QuestionSectionAccessAuthEnum.PUBLIC_VIEWING.name());
+        questionSection.setBizCode(QuestionSectionAccessAuthEnum.PUBLIC_VIEWING);
         return questionSectionBiz.saveOrUpdQuestionSection(questionSection);
     }
 
