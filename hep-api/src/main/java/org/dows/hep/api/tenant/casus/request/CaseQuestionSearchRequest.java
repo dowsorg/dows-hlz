@@ -1,19 +1,22 @@
 package org.dows.hep.api.tenant.casus.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.Accessors;
 
 /**
-* @description 
-*
-* @author 
-* @date 
-*/
+ * @author fhb
+ * @description
+ * @date 2023/5/18 17:00
+ */
 @Data
+@ToString
+@Builder
+@Accessors(chain = true)
+@AllArgsConstructor
 @NoArgsConstructor
-@Schema(name = "CaseQuestionnaireSearch 对象", title = "关键字聚合")
-public class CaseQuestionnaireSearchRequest{
+@Schema(name = "CaseQuestionSearchRequest 对象", title = "问题搜索")
+public class CaseQuestionSearchRequest {
     @Schema(title = "案例ID")
     private String caseInstanceId;
 
@@ -22,6 +25,4 @@ public class CaseQuestionnaireSearchRequest{
 
     @Schema(title = "知识类别")
     private String l2CategId;
-
-
 }
