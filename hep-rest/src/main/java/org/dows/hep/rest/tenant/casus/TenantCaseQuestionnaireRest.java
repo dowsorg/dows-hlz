@@ -1,7 +1,9 @@
 package org.dows.hep.rest.tenant.casus;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireDelItemRequest;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireRequest;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireSearchRequest;
 import org.dows.hep.api.tenant.casus.response.CaseQuestionnaireResponse;
@@ -9,9 +11,11 @@ import org.dows.hep.biz.tenant.casus.TenantCaseQuestionnaireBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.*;
+
 /**
 * @description project descr:案例:案例问卷
-*
+* @folder tenant-hep/案例域-案例问卷
 * @author lait.zhang
 * @date 2023年4月17日 下午8:00:11
 */
@@ -22,25 +26,14 @@ public class TenantCaseQuestionnaireRest {
     private final TenantCaseQuestionnaireBiz tenantCaseQuestionnaireBiz;
 
     /**
-    * 新增案例问卷
+    * 新增和更新案例问卷
     * @param
     * @return
     */
     @Operation(summary = "新增和更新案例问卷")
     @PostMapping("v1/tenantCasus/caseQuestionnaire/saveCaseQuestionnaire")
     public String saveCaseQuestionnaire(@RequestBody @Validated CaseQuestionnaireRequest caseQuestionnaire ) {
-        return tenantCaseQuestionnaireBiz.saveCaseQuestionnaire(caseQuestionnaire);
-    }
-
-    /**
-     * 更新案例问卷
-     * @param
-     * @return
-     */
-    @Operation(summary = "新增和更新案例问卷")
-    @PostMapping("v1/tenantCasus/caseQuestionnaire/updCaseQuestionnaire")
-    public Boolean updCaseQuestionnaire(@RequestBody @Validated CaseQuestionnaireRequest caseQuestionnaire ) {
-        return tenantCaseQuestionnaireBiz.updCaseQuestionnaire(caseQuestionnaire);
+        return tenantCaseQuestionnaireBiz.saveOrUpdCaseQuestionnaire(caseQuestionnaire);
     }
 
     /**
@@ -48,10 +41,10 @@ public class TenantCaseQuestionnaireRest {
     * @param
     * @return
     */
-    @Operation(summary = "分页案例问卷")
-    @PostMapping("v1/tenantCasus/caseQuestionnaire/pageCaseQuestionnaire")
-    public CaseQuestionnaireResponse pageCaseQuestionnaire(@RequestBody @Validated CaseQuestionnaireSearchRequest caseQuestionnaireSearch ) {
-        return tenantCaseQuestionnaireBiz.pageCaseQuestionnaire(caseQuestionnaireSearch);
+    @Operation(summary = "列出案例问卷")
+    @PostMapping("v1/tenantCasus/caseQuestionnaire/listCaseQuestionnaire")
+    public List<CaseQuestionnaireResponse> listCaseQuestionnaire(@RequestBody @Validated CaseQuestionnaireSearchRequest request ) {
+        return tenantCaseQuestionnaireBiz.listCaseQuestionnaire(request);
     }
 
     /**
@@ -66,14 +59,36 @@ public class TenantCaseQuestionnaireRest {
     }
 
     /**
+     * 获取案例问卷
+     * @param
+     * @return
+     */
+    @Operation(summary = "预览案例问卷")
+    @GetMapping("v1/tenantCasus/caseQuestionnaire/showCaseQuestionnaire")
+    public void showCaseQuestionnaire(@Validated String caseQuestionnaireId) {
+        tenantCaseQuestionnaireBiz.showCaseQuestionnaire(caseQuestionnaireId);
+    }
+
+    /**
     * 删除案例问卷
     * @param
     * @return
     */
     @Operation(summary = "删除案例问卷")
     @DeleteMapping("v1/tenantCasus/caseQuestionnaire/delCaseQuestionnaire")
-    public Boolean delCaseQuestionnaire(@Validated String caseQuestionnaireId ) {
-        return tenantCaseQuestionnaireBiz.delCaseQuestionnaire(caseQuestionnaireId);
+    public Boolean delCaseQuestionnaire(@RequestBody List<String> ids ) {
+        return tenantCaseQuestionnaireBiz.delCaseQuestionnaire(ids);
+    }
+
+    /**
+     * 删除案例问卷Item
+     * @param
+     * @return
+     */
+    @Operation(summary = "删除案例问卷Item")
+    @DeleteMapping("v1/tenantCasus/caseQuestionnaire/delQuestionnaireItem")
+    public Boolean delQuestionnaireItem(@RequestBody CaseQuestionnaireDelItemRequest request) {
+        return tenantCaseQuestionnaireBiz.delQuestionnaireItem(request.getQuestionSectionId(), request.getQuestionSectionItemId());
     }
 
 

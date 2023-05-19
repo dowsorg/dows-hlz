@@ -4,14 +4,20 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.QuestionSearchRequest;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionItemResponse;
+import org.dows.hep.api.base.question.response.QuestionSectionResponse;
 import org.dows.hep.api.tenant.casus.QuestionSelectModeEnum;
+import org.dows.hep.api.tenant.casus.request.CaseQuestionnairePageRequest;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireRequest;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireSearchRequest;
+import org.dows.hep.api.tenant.casus.response.CaseQuestionnairePageResponse;
 import org.dows.hep.api.tenant.casus.response.CaseQuestionnaireResponse;
 import org.dows.hep.biz.base.question.QuestionInstanceBiz;
 import org.dows.hep.biz.base.question.QuestionSectionBiz;
@@ -20,7 +26,6 @@ import org.dows.hep.biz.tenant.casus.handler.CaseQuestionnaireHandler;
 import org.dows.hep.entity.CaseInstanceEntity;
 import org.dows.hep.entity.CaseQuestionnaireEntity;
 import org.dows.hep.entity.QuestionSectionEntity;
-import org.dows.hep.service.CaseInstanceService;
 import org.dows.hep.service.CaseQuestionnaireService;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
@@ -40,7 +45,6 @@ public class TenantCaseQuestionnaireBiz {
     private final QuestionSectionBiz questionSectionBiz;
     private final QuestionInstanceBiz questionInstanceBiz;
     private final CaseQuestionnaireService caseQuestionnaireService;
-    private final CaseInstanceService caseInstanceService;
 
     /**
      * @param
@@ -53,43 +57,20 @@ public class TenantCaseQuestionnaireBiz {
      * @创建时间: 2023年4月17日 下午8:00:11
      */
     @DSTransactional
-    public String saveCaseQuestionnaire(CaseQuestionnaireRequest caseQuestionnaire) {
-        if (BeanUtil.isEmpty(caseQuestionnaire) || StrUtil.isBlank(caseQuestionnaire.getCaseInstanceId())) {
+    public String saveOrUpdCaseQuestionnaire(CaseQuestionnaireRequest caseQuestionnaire) {
+        if (BeanUtil.isEmpty(caseQuestionnaire)) {
             return "";
         }
-        String caseInstanceId = caseQuestionnaire.getCaseInstanceId();
 
-        // prepare base-info
-        // get case-instance
-        LambdaQueryWrapper<CaseInstanceEntity> queryWrapper = new LambdaQueryWrapper<CaseInstanceEntity>()
-                .eq(CaseInstanceEntity::getCaseInstanceId, caseInstanceId);
-        CaseInstanceEntity caseInstance = caseInstanceService.getOne(queryWrapper);
-        // file caseQuestionnaire
-        fillCaseQuestionnaire(caseQuestionnaire, caseInstance);
-        
-        // core
+        // check
+        checkBeforeSaveOrUpd(caseQuestionnaire);
+
         // save question-section
-        String questionSectionId = saveQuestionSection(caseQuestionnaire);
+        String questionSectionId = saveOrUpdQuestionSection(caseQuestionnaire);
         // save case-questionnaire
-        CaseQuestionnaireEntity caseQuestionnaireEntity = saveCaseQuestionnaire(caseQuestionnaire, questionSectionId);
+        CaseQuestionnaireEntity caseQuestionnaireEntity = saveOrUpdCaseQuestionnaire0(caseQuestionnaire, questionSectionId);
 
         return caseQuestionnaireEntity.getCaseQuestionnaireId();
-    }
-
-    
-
-    /**
-     * @param
-     * @return
-     * @说明: 更新案例问卷
-     * @关联表: caseQuestionnaire
-     * @工时: 8H
-     * @开发者: fhb
-     * @开始时间:
-     * @创建时间: 2023年4月17日 下午8:00:11
-     */
-    public Boolean updCaseQuestionnaire(CaseQuestionnaireRequest caseQuestionnaire) {
-        return Boolean.FALSE;
     }
 
     /**
@@ -102,8 +83,104 @@ public class TenantCaseQuestionnaireBiz {
      * @开始时间:
      * @创建时间: 2023年4月17日 下午8:00:11
      */
-    public CaseQuestionnaireResponse pageCaseQuestionnaire(CaseQuestionnaireSearchRequest caseQuestionnaireSearch) {
-        return new CaseQuestionnaireResponse();
+    public IPage<CaseQuestionnairePageResponse> pageCaseQuestionnaire(CaseQuestionnairePageRequest request) {
+        if (BeanUtil.isEmpty(request)) {
+            return new Page<>();
+        }
+
+        // page
+        Page<CaseQuestionnaireEntity> page = new Page<>(request.getPageNo(), request.getPageSize());
+        Page<CaseQuestionnaireEntity> pageResult = caseQuestionnaireService.lambdaQuery()
+                .eq(StrUtil.isNotBlank(request.getCaseInstanceId()), CaseQuestionnaireEntity::getCaseInstanceId, request.getCaseInstanceId())
+                .page(page);
+        // convert
+        return baseBiz.convertPage(pageResult, CaseQuestionnairePageResponse.class);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 分页案例问卷
+     * @关联表: caseQuestionnaire
+     * @工时: 5H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月17日 下午8:00:11
+     */
+    public List<CaseQuestionnaireResponse> listCaseQuestionnaire(CaseQuestionnaireSearchRequest request) {
+        if (BeanUtil.isEmpty(request)) {
+            return new ArrayList<>();
+        }
+
+        // page
+        List<CaseQuestionnaireEntity> list = caseQuestionnaireService.lambdaQuery()
+                .eq(StrUtil.isNotBlank(request.getCaseInstanceId()), CaseQuestionnaireEntity::getCaseInstanceId, request.getCaseInstanceId())
+                .list();
+        // convert
+        return BeanUtil.copyToList(list, CaseQuestionnaireResponse.class);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 获取案例问卷
+     * @关联表: caseQuestionnaire
+     * @工时: 5H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月17日 下午8:00:11
+     */
+    public CaseQuestionnaireResponse getCaseQuestionnaire(String caseQuestionnaireId ) {
+        if (StrUtil.isBlank(caseQuestionnaireId)) {
+            return new CaseQuestionnaireResponse();
+        }
+
+        // get entity
+        CaseQuestionnaireEntity entity = getById(caseQuestionnaireId);
+        if (BeanUtil.isEmpty(entity)) {
+            return new CaseQuestionnaireResponse();
+        }
+        return BeanUtil.copyProperties(entity, CaseQuestionnaireResponse.class);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 获取案例问卷
+     * @关联表: caseQuestionnaire
+     * @工时: 5H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月17日 下午8:00:11
+     */
+    public CaseQuestionnaireResponse showCaseQuestionnaire(String caseQuestionnaireId ) {
+        if (StrUtil.isBlank(caseQuestionnaireId)) {
+            return new CaseQuestionnaireResponse();
+        }
+
+        // get entity
+        CaseQuestionnaireResponse result = getCaseQuestionnaire(caseQuestionnaireId);
+
+        // get question-section
+        String questionSectionId = result.getQuestionSectionId();
+        QuestionSectionResponse questionSection = questionSectionBiz.getQuestionSection(questionSectionId);
+
+        result.setQuestionSectionResponse(questionSection);
+        return result;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 复制案例问卷
+     * @关联表: caseQuestionnaire
+     * @工时: 3H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月17日 下午8:00:11
+     */
+    public void copyCaseQuestionnaire(String oriCaseInstanceId, CaseInstanceEntity targetCaseInstance) {
+
     }
 
     /**
@@ -161,24 +238,6 @@ public class TenantCaseQuestionnaireBiz {
     /**
      * @param
      * @return
-     * @说明: 获取案例问卷
-     * @关联表: caseQuestionnaire
-     * @工时: 5H
-     * @开发者: fhb
-     * @开始时间:
-     * @创建时间: 2023年4月17日 下午8:00:11
-     */
-    public void getCaseQuestionnaire(String caseQuestionnaireId ) {
-
-    }
-
-    public void copyCaseQuestionnaire(String oriCaseInstanceId, CaseInstanceEntity targetCaseInstance) {
-
-    }
-
-    /**
-     * @param
-     * @return
      * @说明: 删除案例问卷
      * @关联表: caseQuestionnaire
      * @工时: 3H
@@ -186,8 +245,28 @@ public class TenantCaseQuestionnaireBiz {
      * @开始时间:
      * @创建时间: 2023年4月17日 下午8:00:11
      */
-    public Boolean delCaseQuestionnaire(String caseQuestionnaireId) {
-        return Boolean.FALSE;
+    public Boolean delCaseQuestionnaire(List<String> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Boolean.FALSE;
+        }
+
+        LambdaQueryWrapper<CaseQuestionnaireEntity> remWrapper = new LambdaQueryWrapper<CaseQuestionnaireEntity>()
+                .eq(CaseQuestionnaireEntity::getCaseQuestionnaireId, ids);
+        return caseQuestionnaireService.remove(remWrapper);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 删除案例问卷item
+     * @关联表: caseQuestionnaire
+     * @工时: 3H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月17日 下午8:00:11
+     */
+    public Boolean delQuestionnaireItem(String questionSectionId, String questionSectionItemId) {
+        return questionSectionBiz.disabledSectionQuestion(questionSectionId, questionSectionItemId);
     }
 
     @NotNull
@@ -257,21 +336,14 @@ public class TenantCaseQuestionnaireBiz {
                 .collect(Collectors.groupingBy(item -> item.getQuestionType().getCode()));
     }
 
-    private void fillCaseQuestionnaire(CaseQuestionnaireRequest caseQuestionnaire, CaseInstanceEntity caseInstance) {
-        caseQuestionnaire.setCaseIdentifier(caseInstance.getCaseIdentifier());
-        caseQuestionnaire.setVer(caseInstance.getVer());
-        caseQuestionnaire.setAppId(baseBiz.getAppId());
-        caseQuestionnaire.setCaseQuestionnaireId(baseBiz.getIdStr());
-    }
-
-    private String saveQuestionSection(CaseQuestionnaireRequest caseQuestionnaire) {
+    private String saveOrUpdQuestionSection(CaseQuestionnaireRequest caseQuestionnaire) {
         QuestionSelectModeEnum addType = caseQuestionnaire.getAddType();
         CaseQuestionnaireHandler handler = CaseQuestionnaireFactory.get(addType);
         return handler.handle(caseQuestionnaire);
     }
 
     @NotNull
-    private CaseQuestionnaireEntity saveCaseQuestionnaire(CaseQuestionnaireRequest caseQuestionnaire, String questionSectionId) {
+    private CaseQuestionnaireEntity saveOrUpdCaseQuestionnaire0(CaseQuestionnaireRequest caseQuestionnaire, String questionSectionId) {
         QuestionSectionEntity sectionEntity = questionSectionBiz.getById(questionSectionId);
         Integer questionCount = Optional.of(sectionEntity)
                 .map(QuestionSectionEntity::getQuestionCount)
@@ -283,7 +355,27 @@ public class TenantCaseQuestionnaireBiz {
         caseQuestionnaireEntity.setQuestionSectionId(questionSectionId);
         caseQuestionnaireEntity.setQuestionCount(questionCount);
         caseQuestionnaireEntity.setQuestionSectionStructure(questionStruct);
-        caseQuestionnaireService.save(caseQuestionnaireEntity);
+        caseQuestionnaireService.saveOrUpdate(caseQuestionnaireEntity);
         return caseQuestionnaireEntity;
+    }
+
+    private void checkBeforeSaveOrUpd(CaseQuestionnaireRequest request) {
+        String uniqueId = request.getCaseQuestionnaireId();
+        if (StrUtil.isBlank(uniqueId)) {
+            request.setAppId(baseBiz.getAppId());
+            request.setCaseQuestionnaireId(baseBiz.getIdStr());
+        } else {
+            CaseQuestionnaireEntity entity = getById(uniqueId);
+            if (BeanUtil.isEmpty(entity)) {
+                throw new BizException("数据不存在");
+            }
+            request.setId(entity.getId());
+        }
+    }
+
+    private CaseQuestionnaireEntity getById(String caseQuestionnaireId) {
+        LambdaQueryWrapper<CaseQuestionnaireEntity> queryWrapper = new LambdaQueryWrapper<CaseQuestionnaireEntity>()
+                .eq(CaseQuestionnaireEntity::getCaseQuestionnaireId, caseQuestionnaireId);
+        return caseQuestionnaireService.getOne(queryWrapper);
     }
 }

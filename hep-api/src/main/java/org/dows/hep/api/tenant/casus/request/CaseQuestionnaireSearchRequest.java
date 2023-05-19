@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "CaseQuestionnaireSearch 对象", title = "关键字聚合")
 public class CaseQuestionnaireSearchRequest{
-    
-
+    @Schema(title = "案例ID")
+    private String caseInstanceId;
 
 }
