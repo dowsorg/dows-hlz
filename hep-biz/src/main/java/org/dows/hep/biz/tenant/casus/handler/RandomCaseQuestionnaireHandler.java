@@ -4,13 +4,11 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.question.QuestionTypeEnum;
+import org.dows.hep.api.base.question.enums.QuestionTypeEnum;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.api.tenant.casus.QuestionSelectModeEnum;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionSearchRequest;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireRequest;
-import org.dows.hep.biz.base.question.QuestionCategBiz;
-import org.dows.hep.biz.tenant.casus.TenantCaseBaseBiz;
 import org.dows.hep.biz.tenant.casus.TenantCaseQuestionnaireBiz;
 import org.springframework.stereotype.Component;
 
@@ -22,9 +20,7 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class RandomCaseQuestionnaireHandler extends BaseCaseQuestionnaireHandler implements CaseQuestionnaireHandler {
-    private final TenantCaseBaseBiz baseBiz;
     private final TenantCaseQuestionnaireBiz caseQuestionnaireBiz;
-    private final QuestionCategBiz categBiz;
 
     @PostConstruct
     @Override

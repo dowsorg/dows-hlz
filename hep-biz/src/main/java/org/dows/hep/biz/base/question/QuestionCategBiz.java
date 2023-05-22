@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.request.QuestionCategoryRequest;
 import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
+import org.dows.hep.api.tenant.casus.CaseESCEnum;
 import org.dows.hep.entity.QuestionCategoryEntity;
 import org.dows.hep.entity.QuestionInstanceEntity;
 import org.dows.hep.service.QuestionCategoryService;
@@ -45,11 +46,7 @@ public class QuestionCategBiz {
             return "";
         }
 
-        // check
-        checkBeforeSaveOrUpd(questionCategory);
-
-        // handle
-        QuestionCategoryEntity questionCategoryEntity = BeanUtil.copyProperties(questionCategory, QuestionCategoryEntity.class);
+        QuestionCategoryEntity questionCategoryEntity = convertRequest2Entity(questionCategory);
         questionCategoryService.saveOrUpdate(questionCategoryEntity);
 
         return questionCategoryEntity.getQuestionCategId();
@@ -233,20 +230,34 @@ public class QuestionCategBiz {
         }
     }
 
-    private void checkBeforeSaveOrUpd(QuestionCategoryRequest questionCategory) {
-        String questionCategId = questionCategory.getQuestionCategId();
+    private QuestionCategoryEntity convertRequest2Entity(QuestionCategoryRequest request) {
+        if (BeanUtil.isEmpty(request)) {
+            throw new BizException(CaseESCEnum.PARAMS_NON_NULL);
+        }
+
+        QuestionCategoryEntity result = QuestionCategoryEntity.builder()
+                .appId(baseBiz.getAppId())
+                .questionCategPid(request.getQuestionCategPid())
+                .questionCategId(request.getQuestionCategId())
+                .questionCategName(request.getQuestionCategName())
+                .questionCategGroup(request.getQuestionCategGroup())
+                .sequence(request.getSequence())
+                .build();
+
+        String questionCategId = result.getQuestionCategId();
         if (StrUtil.isBlank(questionCategId)) {
-            questionCategory.setQuestionCategId(baseBiz.getIdStr());
-            if (StrUtil.isBlank(questionCategory.getQuestionCategPid())) {
-                questionCategory.setQuestionCategPid(baseBiz.getQuestionInstancePid());
+            result.setQuestionCategId(baseBiz.getIdStr());
+            if (StrUtil.isBlank(result.getQuestionCategPid())) {
+                result.setQuestionCategPid(baseBiz.getQuestionInstancePid());
             }
         } else {
-            QuestionCategoryEntity questionCategoryEntity = getById(questionCategId);
-            if (BeanUtil.isEmpty(questionCategoryEntity)) {
-                throw new BizException("数据不存在");
+            QuestionCategoryEntity oriEntity = getById(questionCategId);
+            if (BeanUtil.isEmpty(oriEntity)) {
+                throw new BizException(CaseESCEnum.DATA_NULL);
             }
-            questionCategory.setId(questionCategoryEntity.getId());
+            result.setId(oriEntity.getId());
         }
+        return result;
     }
 
     private void getQcrpList(String id, Map<String, QuestionCategoryResponse> idCollect, ArrayList<QuestionCategoryResponse> result) {

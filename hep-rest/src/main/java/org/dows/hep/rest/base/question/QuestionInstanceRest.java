@@ -3,13 +3,16 @@ package org.dows.hep.rest.base.question;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.question.QuestionAccessAuthEnum;
+import org.dows.hep.api.base.question.enums.QuestionAccessAuthEnum;
+import org.dows.hep.api.base.question.enums.QuestionSourceEnum;
 import org.dows.hep.api.base.question.request.QuestionPageRequest;
 import org.dows.hep.api.base.question.request.QuestionRequest;
 import org.dows.hep.api.base.question.request.QuestionSearchRequest;
 import org.dows.hep.api.base.question.response.QuestionPageResponse;
 import org.dows.hep.api.base.question.response.QuestionResponse;
+import org.dows.hep.biz.base.question.QuestionDomainBaseBiz;
 import org.dows.hep.biz.base.question.QuestionInstanceBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +30,7 @@ import java.util.List;
 @Tag(name = "问题域-题目", description = "问题")
 public class QuestionInstanceRest {
     private final QuestionInstanceBiz questionInstanceBiz;
+    private final QuestionDomainBaseBiz baseBiz;
 
     /**
     * 新增和更新
@@ -35,9 +39,12 @@ public class QuestionInstanceRest {
     */
     @Operation(summary = "新增和更新")
     @PostMapping("v1/baseQuestion/questionInstance/saveOrUpdQuestion")
-    public String saveOrUpdQuestion(@RequestBody @Validated QuestionRequest question ) {
-        question.setBizCode(QuestionAccessAuthEnum.PUBLIC_VIEWING);
-        return questionInstanceBiz.saveOrUpdQuestion(question);
+    public String saveOrUpdQuestion(@RequestBody @Validated QuestionRequest question , HttpServletRequest request) {
+        String accountId = baseBiz.getAccountId(request);
+        String accountName = baseBiz.getAccountName(request);
+        question.setAccountId(accountId);
+        question.setAccountName(accountName);
+        return questionInstanceBiz.saveOrUpdQuestion(question, QuestionAccessAuthEnum.PUBLIC_VIEWING, QuestionSourceEnum.ADMIN);
     }
 
     /**

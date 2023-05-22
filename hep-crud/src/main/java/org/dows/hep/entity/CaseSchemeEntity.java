@@ -48,15 +48,6 @@ public class CaseSchemeEntity implements CrudEntity {
     @Schema(title = "类别ID")
     private String caseCategId;
 
-    @Schema(title = "类别名")
-    private String caseCategName;
-
-    @Schema(title = "类别ID路径")
-    private String caseCategIdPath;
-
-    @Schema(title = "类别name路径")
-    private String caseCategNamePath;
-
     @Schema(title = "方案名称")
     private String schemeName;
 

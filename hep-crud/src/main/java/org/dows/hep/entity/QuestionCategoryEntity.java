@@ -36,6 +36,9 @@ public class QuestionCategoryEntity implements CrudEntity {
     @Schema(title = "数据库ID")
     private Long id;
 
+    @Schema(title = "appId")
+    private String appId;
+
     @Schema(title = "类别父id")
     private String questionCategPid;
 

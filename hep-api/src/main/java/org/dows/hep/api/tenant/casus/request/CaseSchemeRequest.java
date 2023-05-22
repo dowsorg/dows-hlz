@@ -1,6 +1,5 @@
 package org.dows.hep.api.tenant.casus.request;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -54,40 +53,10 @@ public class CaseSchemeRequest{
     private List<QuestionSectionDimensionRequest> questionSectionDimensionList;
 
     @Schema(title = "创建者账号ID")
+    @JsonIgnore
     private String accountId;
 
     @Schema(title = "创建者Name")
+    @JsonIgnore
     private String accountName;
-
-
-
-    // JsonIgnore
-    @Schema(title = "应用ID")
-    @JsonIgnore
-    private String appId;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @JsonIgnore
-    @Schema(title = "数据库ID")
-    private Long id;
-
-    @Schema(title = "来源[ADMIN|TENANT]")
-    @JsonIgnore
-    private String source;
-
-    @Schema(title = "类别名")
-    @JsonIgnore
-    private String caseCategName;
-
-    @Schema(title = "类别ID路径")
-    @JsonIgnore
-    private String caseCategIdPath;
-
-    @Schema(title = "类别name路径")
-    @JsonIgnore
-    private String caseCategNamePath;
-
-    @Schema(title = "题数")
-    @JsonIgnore
-    private Integer questionCount;
 }

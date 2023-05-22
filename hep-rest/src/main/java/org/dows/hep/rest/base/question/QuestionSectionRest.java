@@ -2,10 +2,13 @@ package org.dows.hep.rest.base.question;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.question.QuestionSectionAccessAuthEnum;
+import org.dows.hep.api.base.question.enums.QuestionSectionAccessAuthEnum;
+import org.dows.hep.api.base.question.enums.QuestionSourceEnum;
 import org.dows.hep.api.base.question.request.QuestionSectionRequest;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
+import org.dows.hep.biz.base.question.QuestionDomainBaseBiz;
 import org.dows.hep.biz.base.question.QuestionSectionBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +25,7 @@ import java.util.List;
 @RestController
 @Tag(name = "问题域-问题集[问卷]", description = "问题集[问卷]")
 public class QuestionSectionRest {
+    private final QuestionDomainBaseBiz baseBiz;
     private final QuestionSectionBiz questionSectionBiz;
 
     /**
@@ -31,9 +35,12 @@ public class QuestionSectionRest {
     */
     @Operation(summary = "新增和更新")
     @PostMapping("v1/baseQuestion/questionSection/saveOrUpdQuestionSection")
-    public String saveOrUpdQuestionSection(@RequestBody @Validated QuestionSectionRequest questionSection ) {
-        questionSection.setBizCode(QuestionSectionAccessAuthEnum.PUBLIC_VIEWING);
-        return questionSectionBiz.saveOrUpdQuestionSection(questionSection);
+    public String saveOrUpdQuestionSection(@RequestBody @Validated QuestionSectionRequest questionSection, HttpServletRequest request) {
+        String accountId = baseBiz.getAccountId(request);
+        String accountName = baseBiz.getAccountName(request);
+        questionSection.setAccountId(accountId);
+        questionSection.setAccountName(accountName);
+        return questionSectionBiz.saveOrUpdQuestionSection(questionSection, QuestionSectionAccessAuthEnum.PUBLIC_VIEWING, QuestionSourceEnum.ADMIN);
     }
 
     /**

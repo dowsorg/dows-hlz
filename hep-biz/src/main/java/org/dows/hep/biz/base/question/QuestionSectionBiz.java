@@ -7,10 +7,14 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
-import org.dows.hep.api.base.question.QuestionSectionAccessAuthEnum;
+import org.dows.hep.api.base.question.enums.QuestionESCEnum;
+import org.dows.hep.api.base.question.enums.QuestionSectionAccessAuthEnum;
+import org.dows.hep.api.base.question.enums.QuestionSourceEnum;
+import org.dows.hep.api.base.question.request.QuestionRequest;
 import org.dows.hep.api.base.question.request.QuestionSectionDimensionRequest;
 import org.dows.hep.api.base.question.request.QuestionSectionItemRequest;
 import org.dows.hep.api.base.question.request.QuestionSectionRequest;
+import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionDimensionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionItemResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
@@ -20,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author lait.zhang
@@ -35,6 +40,7 @@ public class QuestionSectionBiz {
     private final QuestionSectionService questionSectionService;
     private final QuestionSectionItemBiz questionSectionItemBiz;
     private final QuestionSectionDimensionBiz questionSectionDimensionBiz;
+    private final QuestionInstanceBiz questionInstanceBiz;
 
 
     /**
@@ -48,44 +54,41 @@ public class QuestionSectionBiz {
      * @创建时间: 2023年4月23日 上午9:44:34
      */
     @DSTransactional
-    public String saveOrUpdQuestionSection(QuestionSectionRequest questionSection) {
-        if (questionSection == null) {
+    public String saveOrUpdQuestionSection(QuestionSectionRequest request, QuestionSectionAccessAuthEnum questionSectionAccessAuthEnum, QuestionSourceEnum questionSourceEnum) {
+        if (request == null) {
             return "";
         }
 
         // check and save base-info
-        checkBeforeSaveOrUpd(questionSection);
-        QuestionSectionEntity questionSectionEntity = BeanUtil.copyProperties(questionSection, QuestionSectionEntity.class);
+        QuestionSectionEntity questionSectionEntity = convertRequest2Entity(request, questionSectionAccessAuthEnum, questionSourceEnum);
         questionSectionService.saveOrUpdate(questionSectionEntity);
 
         // save section dimension
-        List<QuestionSectionDimensionRequest> questionSectionDimensionList = questionSection.getQuestionSectionDimensionList();
+        List<QuestionSectionDimensionRequest> questionSectionDimensionList = request.getQuestionSectionDimensionList();
         if (questionSectionDimensionList != null && !questionSectionDimensionList.isEmpty()) {
-            questionSectionDimensionList.forEach(item -> {
-                item.setAppId(questionSectionEntity.getAppId());
-                item.setQuestionSectionId(questionSectionEntity.getQuestionSectionId());
-                item.setAccountId(questionSectionEntity.getAccountId());
-                item.setAccountName(questionSectionEntity.getAccountName());
-            });
-            questionSectionDimensionBiz.batchSaveOrUpdQSDimension(questionSectionDimensionList);
+            questionSectionDimensionBiz.batchSaveOrUpdQSDimension(questionSectionDimensionList, questionSectionEntity.getQuestionSectionId());
         }
 
         // save section item
-        String struct = "";
-        int questionCount = 0;
-        List<QuestionSectionItemRequest> sectionItemList = questionSection.getSectionItemList();
+        List<QuestionSectionItemRequest> sectionItemList = request.getSectionItemList();
         if (sectionItemList != null && !sectionItemList.isEmpty()) {
             sectionItemList.forEach(item -> {
-                item.setQuestionSectionId(questionSectionEntity.getQuestionSectionId());
-                item.setAppId(questionSectionEntity.getAppId());
-                item.setAccountId(questionSectionEntity.getAccountId());
-                item.setAccountName(questionSectionEntity.getAccountName());
+                QuestionRequest questionRequest = item.getQuestionRequest();
+                questionRequest.setAccountId(questionSectionEntity.getAccountId());
+                questionRequest.setAccountName(questionSectionEntity.getAccountName());
             });
-            questionCount = sectionItemList.size();
-            struct = questionSectionItemBiz.batchSaveOrUpdByMode(sectionItemList, questionSection.getGenerationMode());
+            questionSectionItemBiz.batchSaveOrUpdByMode(sectionItemList, questionSectionEntity.getQuestionSectionId(), request.getGenerationMode(), questionSourceEnum);
         }
 
         // update struct and questionCount
+        String struct = "";
+        int questionCount = 0;
+        List<QuestionSectionItemResponse> itemResponseList = listItem(List.of(questionSectionEntity.getQuestionSectionId()));
+        if (Objects.nonNull(itemResponseList) && !itemResponseList.isEmpty()) {
+            questionCount = itemResponseList.size();
+            List<String> questionIds = itemResponseList.stream().map(QuestionSectionItemResponse::getQuestionResponse).map(QuestionResponse::getQuestionInstanceId).toList();
+            struct = questionInstanceBiz.getStruct(questionIds);
+        }
         LambdaUpdateWrapper<QuestionSectionEntity> updateWrapper = new LambdaUpdateWrapper<QuestionSectionEntity>()
                 .eq(QuestionSectionEntity::getQuestionSectionId, questionSectionEntity.getQuestionSectionId())
                 .set(QuestionSectionEntity::getQuestionSectionStructure, struct)
@@ -251,22 +254,33 @@ public class QuestionSectionBiz {
         return Boolean.FALSE;
     }
 
-    private void checkBeforeSaveOrUpd(QuestionSectionRequest request) {
-        String uniqueId = request.getQuestionSectionId();
+    private QuestionSectionEntity convertRequest2Entity(QuestionSectionRequest request, QuestionSectionAccessAuthEnum questionSectionAccessAuthEnum, QuestionSourceEnum questionSourceEnum) {
+        QuestionSectionEntity result = QuestionSectionEntity.builder()
+                .appId(baseBiz.getAppId())
+                .questionSectionId(request.getQuestionSectionId())
+                .questionSectionCategId(request.getQuestionSectionCategId())
+                .name(request.getName())
+                .tips(request.getTips())
+                .descr(request.getDescr())
+                .sequence(request.getSequence())
+                .enabled(request.getEnabled())
+                .accountId(request.getAccountId())
+                .accountName(request.getAccountName())
+                .bizCode(questionSectionAccessAuthEnum.name())
+                .source(questionSourceEnum.name())
+                .build();
+        String uniqueId = result.getQuestionSectionId();
         if (StrUtil.isBlank(uniqueId)) {
-            request.setAppId(baseBiz.getAppId());
-            request.setQuestionSectionId(baseBiz.getIdStr());
-            request.setQuestionSectionIdentifier(baseBiz.getIdStr());
-            request.setVer(baseBiz.getLastVer());
-            request.setSequence(baseBiz.getSequence());
-            request.setBizCode(request.getBizCode() == null ? QuestionSectionAccessAuthEnum.PRIVATE_VIEWING : request.getBizCode());
+            result.setQuestionSectionId(baseBiz.getIdStr());
+            result.setQuestionSectionIdentifier(baseBiz.getIdStr());
+            result.setVer(baseBiz.getLastVer());
         } else {
-            QuestionSectionEntity entity = getById(uniqueId);
-            if (BeanUtil.isEmpty(entity)) {
-                throw new BizException("数据不存在");
+            QuestionSectionEntity oriEntity = getById(uniqueId);
+            if (BeanUtil.isEmpty(oriEntity)) {
+                throw new BizException(QuestionESCEnum.DATA_NULL);
             }
-            request.setId(entity.getId());
+            result.setId(oriEntity.getId());
         }
-
+        return result;
     }
 }

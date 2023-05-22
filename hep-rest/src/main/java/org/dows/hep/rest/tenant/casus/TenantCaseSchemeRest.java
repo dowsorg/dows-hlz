@@ -3,6 +3,7 @@ package org.dows.hep.rest.tenant.casus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.question.enums.QuestionSourceEnum;
 import org.dows.hep.api.tenant.casus.CaseSchemeSourceEnum;
 import org.dows.hep.api.tenant.casus.request.CaseSchemeRequest;
 import org.dows.hep.api.tenant.casus.request.CaseSchemeSearchRequest;
@@ -38,8 +39,7 @@ public class TenantCaseSchemeRest {
     @Operation(summary = "新增和更新")
     @PostMapping("v1/tenantCasus/caseScheme/saveOrUpdCaseScheme")
     public String saveOrUpdCaseScheme(@RequestBody @Validated CaseSchemeRequest caseScheme) {
-        caseScheme.setSource(CaseSchemeSourceEnum.TENANT.name());
-        return tenantCaseSchemeBiz.saveOrUpdCaseScheme(caseScheme);
+        return tenantCaseSchemeBiz.saveOrUpdCaseScheme(caseScheme, CaseSchemeSourceEnum.TENANT, QuestionSourceEnum.TENANT);
     }
 
     /**

@@ -1,4 +1,4 @@
-package org.dows.hep.api.base.question;
+package org.dows.hep.api.base.question.enums;
 
 /**
  * @author fhb

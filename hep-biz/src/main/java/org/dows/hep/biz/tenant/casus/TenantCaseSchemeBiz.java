@@ -9,15 +9,13 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
-import org.dows.hep.api.base.question.QuestionEnabledEnum;
-import org.dows.hep.api.base.question.QuestionSectionGenerationModeEnum;
+import org.dows.hep.api.base.question.enums.*;
 import org.dows.hep.api.base.question.request.QuestionSectionItemRequest;
 import org.dows.hep.api.base.question.request.QuestionSectionRequest;
 import org.dows.hep.api.base.question.response.QuestionSectionDimensionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionItemResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
-import org.dows.hep.api.enums.EnumSource;
-import org.dows.hep.api.enums.EnumStatus;
+import org.dows.hep.api.tenant.casus.CaseESCEnum;
 import org.dows.hep.api.tenant.casus.CaseEnabledEnum;
 import org.dows.hep.api.tenant.casus.CaseSchemeSourceEnum;
 import org.dows.hep.api.tenant.casus.request.CaseSchemePageRequest;
@@ -61,22 +59,12 @@ public class TenantCaseSchemeBiz {
      * @创建时间: 2023年4月17日 下午8:00:11
      */
     @DSTransactional
-    public String saveOrUpdCaseScheme(CaseSchemeRequest caseScheme) {
+    public String saveOrUpdCaseScheme(CaseSchemeRequest caseScheme, CaseSchemeSourceEnum caseSchemeSourceEnum, QuestionSourceEnum questionSourceEnum) {
         if (caseScheme == null) {
             return "";
         }
 
-        // check
-        checkBeforeSaveOrUpd(caseScheme);
-
-        // handle
-        // save question-section
-        String questionSectionId = saveOrUpdQuestionSection(caseScheme);
-
-        // save caseScheme
-        CaseSchemeEntity caseSchemeEntity = BeanUtil.copyProperties(caseScheme, CaseSchemeEntity.class);
-        caseSchemeEntity.setQuestionSectionId(questionSectionId);
-        caseSchemeEntity.setQuestionCount(getQuestionCount(caseScheme));
+        CaseSchemeEntity caseSchemeEntity = checkBeforeSaveOrUpd(caseScheme, caseSchemeSourceEnum, questionSourceEnum);
         caseSchemeService.saveOrUpdate(caseSchemeEntity);
 
         return caseSchemeEntity.getCaseSchemeId();
@@ -222,12 +210,12 @@ public class TenantCaseSchemeBiz {
     public void copyCaseScheme(String oriCaseInstanceId, CaseInstanceEntity targetCaseInstance) {
         CaseSchemeEntity oriEntity = getByInstanceId(oriCaseInstanceId);
         if (BeanUtil.isEmpty(oriEntity)) {
-            throw new BizException("数据不存在");
+            throw new BizException(CaseESCEnum.DATA_NULL);
         }
 
         String targetCaseInstanceId = targetCaseInstance.getCaseInstanceId();
         if (StrUtil.isBlank(targetCaseInstanceId)) {
-            throw new BizException("数据不存在");
+            throw new BizException(CaseESCEnum.DATA_NULL);
         }
 
         CaseSchemeEntity targetCaseScheme = BeanUtil.copyProperties(oriEntity, CaseSchemeEntity.class);
@@ -305,25 +293,47 @@ public class TenantCaseSchemeBiz {
                 .toList();
     }
 
-    private void checkBeforeSaveOrUpd(CaseSchemeRequest request) {
-        String caseSchemeId = request.getCaseSchemeId();
-        if (StrUtil.isBlank(caseSchemeId)) {
-            request.setAppId(baseBiz.getAppId());
-            request.setCaseSchemeId(baseBiz.getIdStr());
-            request.setEnabled(request.getEnabled() == null ? EnumStatus.ENABLE.getCode() : request.getEnabled());
-            request.setSource(StrUtil.isBlank(request.getSource()) ? EnumSource.ADMIN.name() : request.getSource());
-        } else {
-            CaseSchemeEntity caseSchemeEntity = getById(caseSchemeId);
-            if (BeanUtil.isEmpty(caseSchemeEntity)) {
-                throw new BizException("数据不存在");
-            }
-            request.setId(caseSchemeEntity.getId());
+    private CaseSchemeEntity checkBeforeSaveOrUpd(CaseSchemeRequest request, CaseSchemeSourceEnum caseSchemeSourceEnum, QuestionSourceEnum questionSourceEnum) {
+        if (BeanUtil.isEmpty(request)) {
+            throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
         }
+
+        CaseSchemeEntity result = CaseSchemeEntity.builder()
+                .appId(baseBiz.getAppId())
+                .caseSchemeId(request.getCaseSchemeId())
+                .caseInstanceId(request.getCaseInstanceId())
+                .schemeName(request.getSchemeName())
+                .caseCategId(request.getCaseCategId())
+                .enabled(request.getEnabled())
+                .tips(request.getTips())
+                .schemeDescr(request.getSchemeDescr())
+                .addType(request.getAddType())
+                .containsVideo(request.getContainsVideo())
+                .source(caseSchemeSourceEnum.name())
+                .accountId(request.getAccountId())
+                .accountName(request.getAccountName())
+                .build();
+
+        String caseSchemeId = result.getCaseSchemeId();
+        if (StrUtil.isBlank(caseSchemeId)) {
+            result.setCaseSchemeId(baseBiz.getIdStr());
+        } else {
+            CaseSchemeEntity oriEntity = getById(caseSchemeId);
+            if (BeanUtil.isEmpty(oriEntity)) {
+                throw new BizException(CaseESCEnum.DATA_NULL);
+            }
+            result.setId(oriEntity.getId());
+        }
+
+        String questionSectionId = saveOrUpdQuestionSection(request, questionSourceEnum);
+        result.setQuestionSectionId(questionSectionId);
+        result.setQuestionCount(getQuestionCount(request));
+        return result;
     }
 
-    private String saveOrUpdQuestionSection(CaseSchemeRequest caseScheme) {
+    private String saveOrUpdQuestionSection(CaseSchemeRequest caseScheme, QuestionSourceEnum questionSourceEnum) {
         QuestionSectionRequest questionSectionRequest = caseScheme2QS(caseScheme);
-        return questionSectionBiz.saveOrUpdQuestionSection(questionSectionRequest);
+        return questionSectionBiz.saveOrUpdQuestionSection(questionSectionRequest, QuestionSectionAccessAuthEnum.PRIVATE_VIEWING, questionSourceEnum);
     }
 
     private QuestionSectionRequest caseScheme2QS(CaseSchemeRequest caseScheme) {
@@ -336,8 +346,6 @@ public class TenantCaseSchemeBiz {
                 .accountName(caseScheme.getAccountName())
                 .sectionItemList(caseScheme.getSectionItemList())
                 .questionSectionDimensionList(caseScheme.getQuestionSectionDimensionList())
-                .appId(caseScheme.getAppId())
-                .source(caseScheme.getSource())
                 .generationMode(QuestionSectionGenerationModeEnum.ADD_NEW)
                 .build();
     }

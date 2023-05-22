@@ -61,7 +61,7 @@ public class QuestionInstanceEntity implements CrudEntity {
     private String questionDescr;
 
     @Schema(title = "状态")
-    private Boolean enabled;
+    private Integer enabled;
 
     @Schema(title = "排序")
     private Integer sequence;
