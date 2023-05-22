@@ -1,7 +1,5 @@
 package org.dows.hep.api.tenant.casus.request;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -36,16 +34,5 @@ public class CaseNoticeRequest {
 
     @Schema(title = "期数排序")
     private Integer periodSequence;
-
-
-    // JsonIgnore
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @JsonIgnore
-    @Schema(title = "数据库ID")
-    private Long id;
-
-    @Schema(title = "应用ID")
-    @JsonIgnore
-    private String appId;
 
 }

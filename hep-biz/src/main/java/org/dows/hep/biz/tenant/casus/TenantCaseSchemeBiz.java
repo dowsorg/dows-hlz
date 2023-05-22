@@ -21,6 +21,7 @@ import org.dows.hep.api.tenant.casus.CaseSchemeSourceEnum;
 import org.dows.hep.api.tenant.casus.request.CaseSchemePageRequest;
 import org.dows.hep.api.tenant.casus.request.CaseSchemeRequest;
 import org.dows.hep.api.tenant.casus.request.CaseSchemeSearchRequest;
+import org.dows.hep.api.tenant.casus.response.CaseCategoryResponse;
 import org.dows.hep.api.tenant.casus.response.CaseSchemePageResponse;
 import org.dows.hep.api.tenant.casus.response.CaseSchemeResponse;
 import org.dows.hep.biz.base.question.QuestionSectionBiz;
@@ -46,6 +47,7 @@ public class TenantCaseSchemeBiz {
     private final TenantCaseBaseBiz baseBiz;
     private final CaseSchemeService caseSchemeService;
     private final QuestionSectionBiz questionSectionBiz;
+    private final TenantCaseCategoryBiz caseCategoryBiz;
 
     /**
      * @param
@@ -122,12 +124,19 @@ public class TenantCaseSchemeBiz {
      */
     public Map<String, List<CaseSchemeResponse>> listSchemeGroupOfDS(CaseSchemeSearchRequest caseSchemeSearch) {
         List<CaseSchemeResponse> responseList = list(caseSchemeSearch);
-        if(responseList == null || responseList.isEmpty()) {
+        if (responseList == null || responseList.isEmpty()) {
             return new HashMap<>();
         }
 
+        List<String> categIds = responseList.stream().map(CaseSchemeResponse::getCaseCategId).toList();
+        List<CaseCategoryResponse> categoryResponseList = caseCategoryBiz.listCaseCategory(categIds);
+        Map<String, String> collect = categoryResponseList.stream().collect(Collectors.toMap(CaseCategoryResponse::getCaseCategId, CaseCategoryResponse::getCaseCategName));
+        responseList.forEach(item -> item.setCaseCategName(collect.get(item.getCaseCategId())));
+
         // group by categ
-        return responseList.stream().collect(Collectors.groupingBy(CaseSchemeResponse::getCaseCategName));
+        return responseList.stream()
+                .filter(item -> StrUtil.isNotBlank(item.getCaseCategId()))
+                .collect(Collectors.groupingBy(CaseSchemeResponse::getCaseCategName));
     }
 
     /**
@@ -314,11 +323,11 @@ public class TenantCaseSchemeBiz {
                 .accountName(request.getAccountName())
                 .build();
 
-        String caseSchemeId = result.getCaseSchemeId();
-        if (StrUtil.isBlank(caseSchemeId)) {
+        String uniqueId = result.getCaseSchemeId();
+        if (StrUtil.isBlank(uniqueId)) {
             result.setCaseSchemeId(baseBiz.getIdStr());
         } else {
-            CaseSchemeEntity oriEntity = getById(caseSchemeId);
+            CaseSchemeEntity oriEntity = getById(uniqueId);
             if (BeanUtil.isEmpty(oriEntity)) {
                 throw new BizException(CaseESCEnum.DATA_NULL);
             }

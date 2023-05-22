@@ -1,7 +1,5 @@
 package org.dows.hep.api.tenant.casus.request;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -43,24 +41,5 @@ public class CaseInstanceRequest{
 
     @Schema(title = "案例状态[0:未发布|1:发布]")
     private Integer state;
-
-
-    // JsonIgnore
-    @Schema(title = "应用ID")
-    @JsonIgnore
-    private String appId;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @JsonIgnore
-    @Schema(title = "数据库ID")
-    private Long id;
-
-    @Schema(title = "案例唯一标示")
-    @JsonIgnore
-    private String caseIdentifier;
-
-    @Schema(title = "版本号")
-    @JsonIgnore
-    private String ver;
 
 }
