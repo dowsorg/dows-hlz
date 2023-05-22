@@ -119,6 +119,7 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
         QuestionRequest qr0 = request.getQuestionRequest();
         QuestionInstanceEntity questionInstance = QuestionInstanceEntity.builder()
                 .id(oriEntity.getId())
+                .questionInstanceId(qr0.getQuestionInstanceId())
                 .questionCategId(qr0.getQuestionCategId())
                 .questionTitle(qr0.getQuestionTitle())
                 .questionDescr(qr0.getQuestionDescr())
