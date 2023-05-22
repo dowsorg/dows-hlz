@@ -6,9 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.dows.hep.api.base.indicator.request.CreateIndicatorViewBaseInfoDescrRs;
-import org.dows.hep.api.base.indicator.request.CreateIndicatorViewBaseInfoMonitorRs;
-import org.dows.hep.api.base.indicator.request.CreateIndicatorViewBaseInfoSingleRs;
 
 import java.io.Serializable;
 import java.util.Date;
