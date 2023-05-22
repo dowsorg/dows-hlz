@@ -112,7 +112,7 @@ public class IndicatorViewBaseInfoBiz{
                 indicatorInstanceIdSet.add(indicatorViewBaseInfoMonitorContentRefEntity.getIndicatorInstanceId());
                 String indicatorViewBaseInfoMonitorContentId = indicatorViewBaseInfoMonitorContentRefEntity.getIndicatorViewBaseInfoMonitorContentId();
                 List<IndicatorViewBaseInfoMonitorContentRefEntity> indicatorViewBaseInfoMonitorContentRefEntityList = kIndicatorViewBaseInfoMonitorContentIdVIndicatorViewBaseInfoMonitorContentRefListMap.get(indicatorViewBaseInfoMonitorContentId);
-                if (indicatorViewBaseInfoMonitorContentRefEntityList.isEmpty()) {
+                if (Objects.isNull(indicatorViewBaseInfoMonitorContentRefEntityList)) {
                   indicatorViewBaseInfoMonitorContentRefEntityList = new ArrayList<>();
                 }
                 indicatorViewBaseInfoMonitorContentRefEntityList.add(indicatorViewBaseInfoMonitorContentRefEntity);
