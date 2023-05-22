@@ -19,11 +19,15 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(name = "CalcFoodGraph 对象", title = "计算能量占比、膳食宝塔")
 public class CalcFoodGraphRequest{
+    @Schema(title = "应用ID")
+    private String appId;
     @Schema(title = "计算类型 0-默认 1-只计算能量占比 2-只计算膳食宝塔")
     private Integer calcType;
 
     @Schema(title = "食材,菜肴重量列表json")
     private List<FoodDetailVO> details;
+
+
 
 
 }

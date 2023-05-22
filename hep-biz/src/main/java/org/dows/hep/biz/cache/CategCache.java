@@ -122,7 +122,7 @@ public abstract class CategCache extends BaseLocalCache<CategCache.CacheData> {
         if(ShareUtil.XObject.isEmpty(src)){
             return Collections.emptyList();
         }
-        return ShareUtil.XCollection.map(src,true, i-> CopyWrapper.create(CategVO::new).endFrom(i,"childs"));
+        return ShareUtil.XCollection.map(src, i-> CopyWrapper.create(CategVO::new).endFrom(i,"childs"));
     }
 
 
@@ -154,7 +154,7 @@ public abstract class CategCache extends BaseLocalCache<CategCache.CacheData> {
                 ShareUtil.XString.eusureEndsWith(self,SPLITCategPath));
     }
 
-    public String getSplitTCategPath(){
+    public String getSplitCategPath(){
         return SPLITCategPath;
     }
 

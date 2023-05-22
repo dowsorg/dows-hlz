@@ -16,6 +16,8 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(name = "DelInterveneCateg 对象", title = "删除类别")
 public class DelInterveneCategRequest {
+    @Schema(title = "应用ID")
+    private String appId;
     @Schema(title = "分布式id列表")
     private List<String> ids;
 

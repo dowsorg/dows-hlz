@@ -756,9 +756,10 @@ drop table if exists `case_event`;
 CREATE TABLE IF NOT EXISTS `case_event`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `case_event_id` varchar(64) DEFAULT NULL COMMENT '分布式id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `case_instance_id` varchar(64) DEFAULT NULL COMMENT '案例ID',
-    `case_account_id` varchar(64) DEFAULT NULL COMMENT '人物id',
-    `case_account_name` varchar(64) DEFAULT NULL COMMENT '人物名称',
+    `person_id` varchar(64) DEFAULT NULL COMMENT '人物id',
+    `person_name` varchar(64) DEFAULT NULL COMMENT '人物名称',
     `event_id` varchar(64) DEFAULT NULL COMMENT '数据库事件id',
     `case_event_name` varchar(64) DEFAULT NULL COMMENT '事件名称',
     `pic` varchar(64) DEFAULT NULL COMMENT '图片',
@@ -769,12 +770,12 @@ CREATE TABLE IF NOT EXISTS `case_event`(
     `descr` varchar(64) DEFAULT NULL COMMENT '事件说明',
     `create_account_id` varchar(64) DEFAULT NULL COMMENT '创建者账号',
     `create_account_name` varchar(64) DEFAULT NULL COMMENT '创建者名称',
+    `trigger_type` integer(2) DEFAULT NULL COMMENT '触发类型 0-条件触发 1-第一期 2-第二期...5-第5期',
     `trigger_period` varchar(64) DEFAULT NULL COMMENT '触发期数',
     `trigger_span` varchar(64) DEFAULT NULL COMMENT '触发时间段 1-前期 2-中期 3-后期',
     `ver` varchar(64) DEFAULT NULL COMMENT '版本号',
-    `case_identifier` varchar(64) DEFAULT NULL COMMENT '案例标示sssss',
-    `state` tinyint(4) DEFAULT NULL COMMENT '状态 0-启用 1-停用',
-    `trigger_type` tinyint(4) DEFAULT NULL COMMENT '触发类型 1-事件触发 2-条件触发',
+    `case_identifier` varchar(64) DEFAULT NULL COMMENT '案例标识',
+    `state` integer(2) DEFAULT NULL COMMENT '状态 0-启用 1-停用',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
@@ -785,6 +786,7 @@ drop table if exists `case_event_eval`;
 CREATE TABLE IF NOT EXISTS `case_event_eval`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `case_event_eval_id` varchar(64) DEFAULT NULL COMMENT '分布式id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `case_event_id` varchar(64) DEFAULT NULL COMMENT '事件id',
     `expression` varchar(64) DEFAULT NULL COMMENT '表达式',
     `expression_descr` varchar(64) DEFAULT NULL COMMENT '触发条件描述',
@@ -803,6 +805,7 @@ drop table if exists `case_event_action`;
 CREATE TABLE IF NOT EXISTS `case_event_action`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `case_event_action_id` varchar(64) DEFAULT NULL COMMENT '分布式id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `case_event_id` varchar(64) DEFAULT NULL COMMENT '事件id',
     `action_desc` varchar(64) DEFAULT NULL COMMENT '处理描述',
     `ver` varchar(64) DEFAULT NULL COMMENT '版本号',
@@ -818,6 +821,7 @@ drop table if exists `case_event_action_indicator`;
 CREATE TABLE IF NOT EXISTS `case_event_action_indicator`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `case_event_action_indicator_id` varchar(64) DEFAULT NULL COMMENT '分布式id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `case_event_id` varchar(64) DEFAULT NULL COMMENT '事件id',
     `init_flag` tinyint(4) DEFAULT NULL COMMENT '初始指标影响标记，0-否 1-是',
     `case_event_action_id` varchar(64) DEFAULT NULL COMMENT '事件选项id',
@@ -840,6 +844,7 @@ drop table if exists `event_categ`;
 CREATE TABLE IF NOT EXISTS `event_categ`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `event_categ_id` varchar(64) DEFAULT NULL COMMENT '分布式id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `categ_pid` varchar(64) DEFAULT NULL COMMENT '父类别id',
     `categ_name` varchar(64) DEFAULT NULL COMMENT '名称',
     `categ_id_path` varchar(512) DEFAULT NULL COMMENT '父类别id路径',
@@ -858,19 +863,20 @@ drop table if exists `event`;
 CREATE TABLE IF NOT EXISTS `event`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `event_id` varchar(64) DEFAULT NULL COMMENT '分布式id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `event_name` varchar(64) DEFAULT NULL COMMENT '突发事件名称',
     `pic` varchar(64) DEFAULT NULL COMMENT '图片',
     `event_categ_id` varchar(64) DEFAULT NULL COMMENT '分类id',
     `categ_name` varchar(64) DEFAULT NULL COMMENT '分类名称',
     `categ_id_path` varchar(512) DEFAULT NULL COMMENT '分布id路径',
     `categ_name_path` varchar(512) DEFAULT NULL COMMENT '分类名称路径',
-    `state` tinyint(4) DEFAULT NULL COMMENT '状态 0-启用 1-停用',
     `descr` varchar(64) DEFAULT NULL COMMENT '事件说明',
     `create_account_id` varchar(64) DEFAULT NULL COMMENT '创建者账号',
     `create_account_name` varchar(64) DEFAULT NULL COMMENT '创建者名称',
-    `trigger_type` tinyint(4) DEFAULT NULL COMMENT '触发类型 1-事件触发 2-条件触发',
+    `trigger_type` integer(2) DEFAULT NULL COMMENT '触发类型 0-条件触发 1-第一期 2-第二期...5-第5期',
     `trigger_period` varchar(64) DEFAULT NULL COMMENT '触发期数',
     `trigger_span` varchar(64) DEFAULT NULL COMMENT '触发时间段 1-前期 2-中期 3-后期',
+    `state` integer(2) DEFAULT NULL COMMENT '状态 0-启用 1-停用',
     `deleted` tinyint(4) DEFAULT NULL COMMENT '逻辑删除',
     `dt` datetime DEFAULT NULL COMMENT '时间戳',
     PRIMARY KEY (`id`) ,
@@ -881,6 +887,7 @@ drop table if exists `event_eval`;
 CREATE TABLE IF NOT EXISTS `event_eval`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `event_eval_id` varchar(64) DEFAULT NULL COMMENT '分布式id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `event_id` varchar(64) DEFAULT NULL COMMENT '事件id',
     `expression` varchar(64) DEFAULT NULL COMMENT '表达式',
     `expression_descr` varchar(64) DEFAULT NULL COMMENT '触发条件描述',
@@ -897,6 +904,7 @@ drop table if exists `event_action`;
 CREATE TABLE IF NOT EXISTS `event_action`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `event_action_id` varchar(64) DEFAULT NULL COMMENT '分布式id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `event_id` varchar(64) DEFAULT NULL COMMENT '事件id',
     `action_desc` varchar(64) DEFAULT NULL COMMENT '处理描述',
     `score` integer(2) DEFAULT NULL COMMENT '=0错误选项 >0得分',
@@ -910,6 +918,7 @@ drop table if exists `event_action_indicator`;
 CREATE TABLE IF NOT EXISTS `event_action_indicator`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `event_action_indicator_id` varchar(64) DEFAULT NULL COMMENT '分布式id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `event_id` varchar(64) DEFAULT NULL COMMENT '事件id',
     `init_flag` tinyint(4) DEFAULT NULL COMMENT '初始指标影响标记，0-否 1-是',
     `event_action_id` varchar(64) DEFAULT NULL COMMENT '事件选项id',
@@ -930,6 +939,7 @@ drop table if exists `intervene_category`;
 CREATE TABLE IF NOT EXISTS `intervene_category`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `intervene_category_id` varchar(64) DEFAULT NULL COMMENT '类别id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `categ_pid` varchar(64) DEFAULT NULL COMMENT '父类别id',
     `categ_name` varchar(64) DEFAULT NULL COMMENT '名称',
     `categ_id_path` varchar(512) DEFAULT NULL COMMENT '父类别id路径',
@@ -948,6 +958,7 @@ drop table if exists `food_recommend`;
 CREATE TABLE IF NOT EXISTS `food_recommend`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `food_recommend_id` varchar(64) DEFAULT NULL COMMENT '分布式id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `instance_type` tinyint(4) DEFAULT NULL COMMENT '主体类型,1-营养成分 2-食材一级分类',
     `instance_id` varchar(64) DEFAULT NULL COMMENT '主体id ',
     `instance_name` varchar(64) DEFAULT NULL COMMENT '主体名称',
@@ -964,6 +975,7 @@ drop table if exists `food_nutrient`;
 CREATE TABLE IF NOT EXISTS `food_nutrient`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `food_nutrient_id` varchar(64) DEFAULT NULL COMMENT '分布式id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `indicator_instance_id` varchar(64) DEFAULT NULL COMMENT '营养指标',
     `nutrient_name` varchar(64) DEFAULT NULL COMMENT '营养成分名称',
     `nutrient_type` tinyint(4) DEFAULT NULL COMMENT '特定成分标识，1-蛋白质2-碳水3-脂肪0-其它',
@@ -980,6 +992,7 @@ drop table if exists `food_material`;
 CREATE TABLE IF NOT EXISTS `food_material`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `food_material_id` varchar(64) DEFAULT NULL COMMENT '食材id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `food_material_name` varchar(64) DEFAULT NULL COMMENT '食材名称',
     `pic` varchar(64) DEFAULT NULL COMMENT '图片',
     `intervene_categ_id` varchar(64) DEFAULT NULL COMMENT '分类id',
@@ -1005,6 +1018,7 @@ drop table if exists `food_material_indicator`;
 CREATE TABLE IF NOT EXISTS `food_material_indicator`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `food_material_indicator_id` varchar(64) DEFAULT NULL COMMENT '关联id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `food_material_id` varchar(64) DEFAULT NULL COMMENT '食材id',
     `indicator_Instance_id` varchar(64) DEFAULT NULL COMMENT '指标id',
     `expression` varchar(64) DEFAULT NULL COMMENT '表达式',
@@ -1023,8 +1037,9 @@ drop table if exists `food_material_nutrient`;
 CREATE TABLE IF NOT EXISTS `food_material_nutrient`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `food_material_nutrient_id` varchar(64) DEFAULT NULL COMMENT '关联id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `food_material_id` varchar(64) DEFAULT NULL COMMENT '食材id',
-    `indicator_Instance_id` varchar(64) DEFAULT NULL COMMENT '营养指标',
+    `indicator_instance_id` varchar(64) DEFAULT NULL COMMENT '营养指标',
     `nutrient_name` varchar(64) DEFAULT NULL COMMENT '营养成分名称',
     `unit` varchar(64) DEFAULT NULL COMMENT '单位',
     `weight` varchar(64) DEFAULT NULL COMMENT '重量',
@@ -1040,6 +1055,7 @@ drop table if exists `food_dishes`;
 CREATE TABLE IF NOT EXISTS `food_dishes`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `food_dishes_id` varchar(64) DEFAULT NULL COMMENT '菜肴id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `food_dishes_name` varchar(64) DEFAULT NULL COMMENT '菜肴名称',
     `materials_desc` varchar(512) DEFAULT NULL COMMENT '食材含量描述',
     `intervene_categ_id` varchar(64) DEFAULT NULL COMMENT '分类id',
@@ -1065,6 +1081,7 @@ drop table if exists `food_dishes_material`;
 CREATE TABLE IF NOT EXISTS `food_dishes_material`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `food_dishes_material_id` varchar(64) DEFAULT NULL COMMENT '关联id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `food_dishes_id` varchar(64) DEFAULT NULL COMMENT '菜肴id',
     `food_material_id` varchar(64) DEFAULT NULL COMMENT '食材id',
     `food_material_name` varchar(64) DEFAULT NULL COMMENT '食材名称',
@@ -1081,6 +1098,7 @@ drop table if exists `food_dishes_nutrient`;
 CREATE TABLE IF NOT EXISTS `food_dishes_nutrient`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `food_dishes_nutrient_id` varchar(64) DEFAULT NULL COMMENT '关联id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `food_dishes_id` varchar(64) DEFAULT NULL COMMENT '菜肴id',
     `instance_type`           integer(2) DEFAULT NULL comment '主体类型 1-营养成分 2-食材分类',
     `instance_id`             varchar(64) DEFAULT NULL comment '主体(营养指标，食材分类)id ',
@@ -1101,6 +1119,7 @@ drop table if exists `food_cookbook`;
 CREATE TABLE IF NOT EXISTS `food_cookbook`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `food_cookbook_id` varchar(64) DEFAULT NULL COMMENT '食谱id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `food_cookbook_name` varchar(64) DEFAULT NULL COMMENT '食谱名称',
     `materials_desc` varchar(512) DEFAULT NULL COMMENT '食材含量描述',
     `intervene_categ_id` varchar(64) DEFAULT NULL COMMENT '分类id',
@@ -1126,6 +1145,7 @@ drop table if exists `food_cookbook_detail`;
 CREATE TABLE IF NOT EXISTS `food_cookbook_detail`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `food_cookbook_detail_id` varchar(64) DEFAULT NULL COMMENT '分布式id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `food_cookbook_id` varchar(64) DEFAULT NULL COMMENT '食谱id',
     `meal_time` integer(2) DEFAULT NULL COMMENT '进餐时间，1-早|2-早加|午|午加|晚|晚加',
     `instance_type` integer(2) DEFAULT NULL COMMENT '明细类型，1-菜肴 2-食材',
@@ -1145,6 +1165,7 @@ drop table if exists `food_cookbook_nutrient`;
 CREATE TABLE IF NOT EXISTS `food_cookbook_nutrient`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `food_cookbook_nutrient_id` varchar(64) DEFAULT NULL COMMENT '关联id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `food_cookbook_id` varchar(64) DEFAULT NULL COMMENT '食谱id',
     `instance_type`           integer(2) DEFAULT NULL comment '主体类型 1-营养成分 2-食材分类',
     `instance_id`             varchar(64) DEFAULT NULL comment '主体(营养指标，食材分类)id ',
@@ -1165,6 +1186,7 @@ drop table if exists `sport_plan`;
 CREATE TABLE IF NOT EXISTS `sport_plan`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `sport_plan_id` varchar(64) DEFAULT NULL COMMENT '运动方案id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `sport_plan_name` varchar(64) DEFAULT NULL COMMENT '运动方案名称',
     `intervene_categ_id` varchar(64) DEFAULT NULL COMMENT '分类id',
     `categ_name` varchar(64) DEFAULT NULL COMMENT '分类名称',
@@ -1182,6 +1204,7 @@ drop table if exists `sport_plan_items`;
 CREATE TABLE IF NOT EXISTS `sport_plan_items`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `sport_plan_items_id` varchar(64) DEFAULT NULL COMMENT '分布式id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `sport_plan_id` varchar(64) DEFAULT NULL COMMENT '运动方案id',
     `sport_item_id` varchar(64) DEFAULT NULL COMMENT '运动项目id',
     `sport_item_name` varchar(64) DEFAULT NULL COMMENT '运动项目名称',
@@ -1198,6 +1221,7 @@ drop table if exists `sport_item`;
 CREATE TABLE IF NOT EXISTS `sport_item`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `sport_item_id` varchar(64) DEFAULT NULL COMMENT '运动项目id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `sport_item_name` varchar(64) DEFAULT NULL COMMENT '运动项目名称',
     `pic` varchar(64) DEFAULT NULL COMMENT '图片',
     `intervene_categ_id` varchar(64) DEFAULT NULL COMMENT '分类id',
@@ -1218,6 +1242,7 @@ drop table if exists `sport_item_indicator`;
 CREATE TABLE IF NOT EXISTS `sport_item_indicator`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `sport_item_indicator_id` varchar(64) DEFAULT NULL COMMENT '关联id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `sport_item_id` varchar(64) DEFAULT NULL COMMENT '运动项目id',
     `indicator_instance_id` varchar(64) DEFAULT NULL COMMENT '分布式ID',
     `expression` varchar(64) DEFAULT NULL COMMENT '表达式',
@@ -1236,6 +1261,7 @@ drop table if exists `treat_item`;
 CREATE TABLE IF NOT EXISTS `treat_item`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `treat_item_id` varchar(64) DEFAULT NULL COMMENT '分布式id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `treat_item_name` varchar(64) DEFAULT NULL COMMENT '治疗名称',
     `indicator_category_id` varchar(64) DEFAULT NULL COMMENT '功能点类别',
     `indicator_func_id` varchar(64) DEFAULT NULL COMMENT '功能点id',
@@ -1256,6 +1282,7 @@ drop table if exists `treat_item_indicator`;
 CREATE TABLE IF NOT EXISTS `treat_item_indicator`(
     `id` bigint(19) NOT NULL AUTO_INCREMENT COMMENT '数据库id',
     `treat_item_indicator_id` varchar(64) DEFAULT NULL COMMENT '关联id',
+    `app_id` varchar(64) DEFAULT NULL COMMENT '应用ID',
     `treat_item_id` varchar(64) DEFAULT NULL COMMENT '治疗项目id',
     `indicator_Instance_id` varchar(64) DEFAULT NULL COMMENT '指标id',
     `expression_descr` varchar(64) DEFAULT NULL COMMENT '公式描述',

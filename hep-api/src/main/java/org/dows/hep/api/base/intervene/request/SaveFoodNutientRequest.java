@@ -14,6 +14,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "SaveFoodNutient 对象", title = "营养指标集合")
 public class SaveFoodNutientRequest{
+
+    @Schema(title = "应用ID")
+    private String appId;
     @Schema(title = "营养指标集合")
     private String ids;
 

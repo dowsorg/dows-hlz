@@ -10,9 +10,10 @@ import org.dows.hep.biz.util.ShareUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * 主从表操作基类
@@ -23,7 +24,7 @@ import java.util.Optional;
 
 
 public abstract class BaseSubDao<LS extends MybatisCrudService<LE>, LE extends CrudEntity,SS extends MybatisCrudService<SE>,SE extends CrudEntity>
-    extends BaseDao<LS, LE> {
+    extends BaseCategDao<LS, LE> {
 
     protected BaseSubDao(String notExistsMessage){
         super(notExistsMessage);
@@ -97,15 +98,28 @@ public abstract class BaseSubDao<LS extends MybatisCrudService<LE>, LE extends C
     //region tran
 
     /**
+     * 批量主从保存事务
+     * @param leads 主表记录列表
+     * @param subs 从表记录列表
+     * @param dftIfLeadEmpty 主表为空时返回
+     * @return
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public boolean tranSaveBatch(List<LE> leads, List<SE> subs,boolean dftIfLeadEmpty){
+        AssertUtil.falseThenThrow(coreTranSaveBatch(leads, subs,defaultUseLogicId,dftIfLeadEmpty))
+                .throwMessage(failedSaveMessage);
+        return true;
+    }
+    /**
      *  主从保存事务
      * @param lead 主表记录
-     * @param subs 从表记录
+     * @param subs 从表记录列表
      * @param delSubBefore 是否先删除从表
      * @return
      */
     @Transactional(rollbackFor = Exception.class)
     public boolean tranSave(LE lead, List<SE> subs,boolean delSubBefore) {
-        AssertUtil.falseThenThrow(coreTranSave(lead, subs,delSubBefore,false))
+        AssertUtil.falseThenThrow(coreTranSave(lead, subs,delSubBefore,defaultUseLogicId))
                 .throwMessage(failedSaveMessage);
         return true;
     }
@@ -141,6 +155,37 @@ public abstract class BaseSubDao<LS extends MybatisCrudService<LE>, LE extends C
     //region save
 
     /**
+     * 批量主从保存事务
+     * @param leads
+     * @param subs
+     * @param useLogicId
+     * @param dftIfLeadEmpty
+     * @return
+     */
+    protected boolean coreTranSaveBatch(List<LE> leads, List<SE> subs,boolean useLogicId,boolean dftIfLeadEmpty){
+        if(!saveOrUpdateBatch(leads,useLogicId,dftIfLeadEmpty)){
+            return false;
+        }
+        if(ShareUtil.XObject.isEmpty(subs)) {
+            return true;
+        }
+        subs.forEach(i->{
+            if(ShareUtil.XObject.isEmpty(getColSubId().apply(i))) {
+                setColSubId(i).apply(idGenerator.nextIdStr());
+            }});
+
+        if(!useLogicId){
+            return subService.saveOrUpdateBatch(subs);
+        }
+        boolean rst=true;
+        for(SE item:subs) {
+            rst &= subService.saveOrUpdate(item, Wrappers.<SE>lambdaUpdate()
+                    .eq(getColSubId(), getColSubId().apply(item)));
+        }
+        return rst;
+    }
+
+    /**
      *  主从保存事务
      * @param lead 主表记录
      * @param subs 从表记录
@@ -172,13 +217,15 @@ public abstract class BaseSubDao<LS extends MybatisCrudService<LE>, LE extends C
      * @param dftIfEmpty 从表为空时返回值
      * @return
      */
-    public boolean saveOrUpdateBatch(String leadId, List<SE> subs,boolean useLogicId,  boolean dftIfEmpty){
+    public boolean saveOrUpdateBatch(String leadId, Collection<SE> subs, boolean useLogicId, boolean dftIfEmpty){
         if(ShareUtil.XObject.isEmpty(subs)) {
             return dftIfEmpty;
         }
         int seq=0;
         for(SE item:subs){
-            setColLeadId(item).apply(leadId);
+            if(ShareUtil.XObject.notEmpty(leadId)) {
+                setColLeadId(item).apply(leadId);
+            }
             if(null!=setColSubSeq(item)) {
                 setColSubSeq(item).apply(++seq);
             }
@@ -249,6 +296,76 @@ public abstract class BaseSubDao<LS extends MybatisCrudService<LE>, LE extends C
         postGetSubByLeadId(wrapper);
         return wrapper.list();
     }
+
+    /**
+     * 按多主表id获取从表列表
+     * @param ids 主表id列表
+     * @param cols 选择列
+     * @return
+     */
+    public List<SE> getSubByLeadIds(Collection<String> ids,SFunction<SE,?>... cols){
+        if(ShareUtil.XObject.isEmpty(ids)){
+            return Collections.emptyList();
+        }
+        final boolean oneFlag=ids.size()==1;
+        return subService.lambdaQuery()
+                .eq(oneFlag, getColLeadId(),ids.iterator().next())
+                .in(!oneFlag, getColLeadId(),ids)
+                .orderByAsc(getColLeadId(),SE::getId)
+                .select(cols)
+                .list();
+    }
+
+    /**
+     *  按多主表id获取map
+     * @param ids 主表id列表
+     * @param cols 选择列
+     * @return
+     */
+    public Map<String,SE> getSubMapByLeadIds(Collection<String> ids, SFunction<SE, ?>... cols) {
+        return ShareUtil.XCollection.toMap(getSubByLeadIds(ids, cols), getColLeadId(), Function.identity());
+    }
+
+    /**
+     * 按多主表id获取map
+     * @param ids
+     * @param mapFactory
+     * @param keyCol
+     * @param preferNew
+     * @param cols
+     * @return
+     * @param <K>
+     */
+    public <K> Map<K,SE> getSubMapByLeadIds(Collection<String> ids,Supplier<Map<K,SE>> mapFactory, SFunction<SE,K> keyCol,boolean preferNew, SFunction<SE, ?>... cols) {
+        return ShareUtil.XCollection.toMap(getSubByLeadIds(ids, cols),mapFactory,  keyCol, Function.identity(),preferNew);
+    }
+
+    /**
+     * 按多主表id获取分组
+     * @param ids 主表id列表
+     * @param groupByCol 分组列
+     * @param selectCols 选择列，需包含分组列
+     * @return
+     * @param <K>
+     */
+    public <K> Map<K,List<SE>> getSubGroupByLeadIds(Collection<String> ids, SFunction<SE, K> groupByCol, SFunction<SE, ?>... selectCols){
+        return ShareUtil.XCollection.toGroup(getSubByLeadIds(ids, selectCols),groupByCol);
+    }
+
+    /**
+     * 按多主表id获取分组
+     * @param ids 主表id列表
+     * @param mapFactory map工厂
+     * @param groupByCol 分组列
+     * @param selectCols 选择列，需包含分组列
+     * @return
+     * @param <K>
+     */
+    public <K> Map<K,List<SE>> getSubGroupByLeadIds(Collection<String> ids, Supplier<Map<K,List<SE>>> mapFactory, SFunction<SE, K> groupByCol, SFunction<SE, ?>... selectCols){
+        return ShareUtil.XCollection.toGroup(getSubByLeadIds(ids, selectCols),mapFactory, Function.identity(), groupByCol,Collectors.toList());
+    }
+
+
     //endregion
 
     //region delete

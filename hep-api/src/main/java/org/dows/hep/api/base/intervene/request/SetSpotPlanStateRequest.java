@@ -14,6 +14,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "SetSpotPlanState 对象", title = "启用、禁用运动方案")
 public class SetSpotPlanStateRequest{
+    @Schema(title = "应用ID")
+    private String appId;
     @Schema(title = "运动方案id")
     private String sportPlanId;
 

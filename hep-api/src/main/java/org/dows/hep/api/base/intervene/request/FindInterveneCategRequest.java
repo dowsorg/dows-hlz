@@ -14,7 +14,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "FindInterveneCateg 对象", title = "查询条件")
 public class FindInterveneCategRequest{
-    @Schema(title = "根类别标识，food.material-食材类别；sport.item-运动项目类别...")
+    @Schema(title = "应用ID")
+    private String appId;
+    @Schema(title = "根类别标识，food.material-食材类别；sport.item-运动项目类别  treat.item:指标功能点id -自定义治疗项目...")
     private String family;
 
     @Schema(title = "父类别")

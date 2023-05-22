@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 事件类别管理(EventCateg)实体类
@@ -38,6 +38,9 @@ public class EventCategEntity implements CrudEntity {
 
     @Schema(title = "分布式id")
     private String eventCategId;
+
+    @Schema(title = "应用ID")
+    private String appId;
 
     @Schema(title = "父类别id")
     private String categPid;

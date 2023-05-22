@@ -18,6 +18,9 @@ import java.util.List;
 @Schema(name = "SaveFoodCookbook 对象", title = "保存菜谱")
 public class SaveFoodCookbookRequest{
 
+    @Schema(title = "应用ID")
+    private String appId;
+
     @Schema(title = "数据库id，新增时为空")
     private Long id;
     @Schema(title = "食谱id，新增时为空")

@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "SetFoodMaterialState 对象", title = "启用、禁用食材")
 public class SetFoodMaterialStateRequest {
+    @Schema(title = "应用ID")
+    private String appId;
     @Schema(title = "食材id")
     private String foodMaterialId;
 

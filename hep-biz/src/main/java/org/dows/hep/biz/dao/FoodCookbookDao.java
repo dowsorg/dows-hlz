@@ -8,8 +8,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.dows.hep.api.base.intervene.request.FindFoodRequest;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
-import org.dows.hep.entity.FoodCookbookEntity;
 import org.dows.hep.entity.FoodCookbookDetailEntity;
+import org.dows.hep.entity.FoodCookbookEntity;
 import org.dows.hep.entity.FoodCookbookNutrientEntity;
 import org.dows.hep.service.FoodCookbookDetailService;
 import org.dows.hep.service.FoodCookbookNutrientService;
@@ -59,6 +59,10 @@ public class FoodCookbookDao extends BaseSubDao<FoodCookbookService, FoodCookboo
     }
 
     @Override
+    protected SFunction<FoodCookbookEntity,String> getColCateg(){
+        return FoodCookbookEntity::getInterveneCategId;
+    }
+    @Override
     protected SFunction<FoodCookbookDetailEntity, String> getColLeadId() {
         return FoodCookbookDetailEntity::getFoodCookbookId;
     }
@@ -105,7 +109,6 @@ public class FoodCookbookDao extends BaseSubDao<FoodCookbookService, FoodCookboo
                 .throwMessage(failedSaveMessage );
         return true;
     }
-
 
 
 

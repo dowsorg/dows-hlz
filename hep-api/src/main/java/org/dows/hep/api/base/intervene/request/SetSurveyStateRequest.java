@@ -14,6 +14,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "SetSurveyState 对象", title = "启用、禁用问卷")
 public class SetSurveyStateRequest{
+    @Schema(title = "应用ID")
+    private String appId;
     @Schema(title = "问卷id")
     private String surveyId;
 

@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 食物推荐量配置(FoodRecommend)实体类
@@ -38,6 +38,9 @@ public class FoodRecommendEntity implements CrudEntity {
 
     @Schema(title = "分布式id")
     private String foodRecommendId;
+
+    @Schema(title = "应用ID")
+    private String appId;
 
     @Schema(title = "主体类型,1-营养成分 2-食材一级分类")
     private Boolean instanceType;

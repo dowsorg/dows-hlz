@@ -1,6 +1,5 @@
 package org.dows.hep.biz.base.intervene;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.intervene.request.*;
@@ -36,6 +35,10 @@ public class SportPlanBiz{
     private final SportPlanDao dao;
     private final SportItemDao daoSportItem;
 
+    protected InterveneCategCache getCategCache(){
+        return InterveneCategCache.Instance;
+    }
+
     /**
     * @param
     * @return
@@ -48,12 +51,10 @@ public class SportPlanBiz{
     */
     public Page<SportPlanResponse> pageSportPlan(FindSportRequest findSport ) {
         findSport.setCategIdLv1(ShareBiz.ensureCategPathSuffix(findSport.getCategIdLv1()));
-        IPage<SportPlanEntity> page=dao.pageByCondition(findSport);
-        Page<SportPlanResponse> pageDto= Page.of (page.getCurrent(),page.getSize(),page.getTotal(),page.searchCount());
-        return pageDto.setRecords(ShareUtil.XCollection.map(page.getRecords(),true, i-> CopyWrapper.create(SportPlanResponse::new)
-                .endFrom(i)
-                .setCategIdLv1(InterveneCategCache.Instance.getCategLv1(i.getCategIdPath() ,i.getInterveneCategId()))
-                .setCategNameLv1(InterveneCategCache.Instance.getCategLv1(i.getCategNamePath() ,i.getCategName()))));
+        return ShareBiz.buildPage(dao.pageByCondition(findSport),  i-> CopyWrapper.create(SportPlanResponse::new)
+                .endFrom(refreshCateg(i))
+                .setCategIdLv1(getCategCache().getCategLv1(i.getCategIdPath() ,i.getInterveneCategId()))
+                .setCategNameLv1(getCategCache().getCategLv1(i.getCategNamePath() ,i.getCategName())));
 
     }
     /**
@@ -78,19 +79,19 @@ public class SportPlanBiz{
                 SportPlanItemsEntity::getFrequency,
                 SportPlanItemsEntity::getLastTime,
                 SportPlanItemsEntity::getSeq);
-        List<String> itemIds=ShareUtil.XCollection.map(subRows,true,SportPlanItemsEntity::getSportItemId);
+        List<String> itemIds=ShareUtil.XCollection.map(subRows,SportPlanItemsEntity::getSportItemId);
         Map<String,SportItemEntity> mapItems=daoSportItem.getMapByIds(itemIds,
                 SportItemEntity::getSportItemId,
                 SportItemEntity::getStrengthMet,
                 SportItemEntity::getStrengthType);
-        List<SportPlanItemVO> vos=ShareUtil.XCollection.map(subRows,true,i->
+        List<SportPlanItemVO> vos=ShareUtil.XCollection.map(subRows,i->
                 CopyWrapper.create(SportPlanItemVO::new)
                         .from(mapItems.get(i.getSportItemId()))
                         .endFrom(i,v->v.setRefId(i.getSportPlanItemsId())));
         subRows.clear();
         itemIds.clear();
         mapItems.clear();
-        return CopyWrapper.create(SportPlanInfoResponse::new).endFrom(row)
+        return CopyWrapper.create(SportPlanInfoResponse::new).endFrom(refreshCateg(row))
                 .setSportItems(vos);
     }
     /**
@@ -109,7 +110,7 @@ public class SportPlanBiz{
                 .throwMessage("运动方案不存在");
         CategVO categVO=null;
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(saveSportPlan.getInterveneCategId())
-                        ||null==(categVO= InterveneCategCache.Instance.getById(saveSportPlan.getInterveneCategId())))
+                        ||null==(categVO= getCategCache().getById(saveSportPlan.getInterveneCategId())))
                 .throwMessage("类别不存在");
         AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(saveSportPlan.getSportItems())
                 &&saveSportPlan.getSportItems().stream()
@@ -124,7 +125,7 @@ public class SportPlanBiz{
                 .setCategIdPath(categVO.getCategIdPath())
                 .setCategNamePath(categVO.getCategNamePath());
 
-        List<SportPlanItemsEntity> subrows=ShareUtil.XCollection.map(saveSportPlan.getSportItems(),true,
+        List<SportPlanItemsEntity> subrows=ShareUtil.XCollection.map(saveSportPlan.getSportItems(),
                 i->CopyWrapper.create(SportPlanItemsEntity::new)
                         .endFrom(i,v->v.setSportPlanItemsId(i.getRefId())));
         return dao.tranSave(row,subrows,false);
@@ -163,5 +164,24 @@ public class SportPlanBiz{
     */
     public Boolean setSportPlanState(SetSpotPlanStateRequest setSpotPlanState ) {
         return dao.tranSetState(setSpotPlanState.getSportPlanId(),setSpotPlanState.getState());
+    }
+
+    /**
+     * 获取缓存最新分类信息
+     * @param src
+     * @return
+     */
+    protected SportPlanEntity refreshCateg(SportPlanEntity src) {
+        if (ShareUtil.XObject.isEmpty(src.getInterveneCategId())) {
+            return src;
+        }
+        CategVO cacheItem = getCategCache().getById(src.getInterveneCategId());
+        if (null == cacheItem) {
+            return src;
+        }
+        return src.setCategName(cacheItem.getCategName())
+                .setCategIdPath(cacheItem.getCategIdPath())
+                .setCategNamePath(cacheItem.getCategNamePath());
+
     }
 }

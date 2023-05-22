@@ -39,6 +39,9 @@ public class TreatItemEntity implements CrudEntity {
     @Schema(title = "分布式id")
     private String treatItemId;
 
+    @Schema(title = "应用ID")
+    private String appId;
+
     @Schema(title = "治疗名称")
     private String treatItemName;
 

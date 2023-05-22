@@ -1,6 +1,5 @@
 package org.dows.hep.biz.base.intervene;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.intervene.request.*;
@@ -32,6 +31,10 @@ import java.util.stream.Collectors;
 public class SportItemBiz{
 
     private final SportItemDao dao;
+
+    protected InterveneCategCache getCategCache(){
+        return InterveneCategCache.Instance;
+    }
     /**
     * @param
     * @return
@@ -44,14 +47,12 @@ public class SportItemBiz{
     */
     public Page<SportItemResponse> pageSportItem(FindSportRequest findSport ) {
         findSport.setCategIdLv1(ShareBiz.ensureCategPathSuffix(findSport.getCategIdLv1()));
+        return ShareBiz.buildPage(dao.pageByCondition(findSport),  i-> CopyWrapper.create(SportItemResponse::new)
+                .endFrom(refreshCateg(i))
+                .setCategIdLv1(getCategCache().getCategLv1(i.getCategIdPath() ,i.getInterveneCategId()))
+                .setCategNameLv1(getCategCache().getCategLv1(i.getCategNamePath() ,i.getCategName())));
 
-        IPage<SportItemEntity> page=dao.pageByCondition(findSport);
-        Page<SportItemResponse> pageDto= Page.of (page.getCurrent(),page.getSize(),page.getTotal(),page.searchCount());
-        return pageDto.setRecords(ShareUtil.XCollection.map(page.getRecords(),true, i-> CopyWrapper.create(SportItemResponse::new)
-                .endFrom(i)
-                .setCategIdLv1(InterveneCategCache.Instance.getCategLv1(i.getCategIdPath() ,i.getInterveneCategId()))
-                .setCategNameLv1(InterveneCategCache.Instance.getCategLv1(i.getCategNamePath() ,i.getCategName()))));
-    }
+   }
     /**
     * @param
     * @return
@@ -73,10 +74,10 @@ public class SportItemBiz{
                 SportItemIndicatorEntity::getExpressionDescr,
                 SportItemIndicatorEntity::getSeq);
 
-        List<InterveneIndicatorVO> voIndicators=ShareUtil.XCollection.map(indicators,true,
+        List<InterveneIndicatorVO> voIndicators=ShareUtil.XCollection.map(indicators,
                 i->CopyWrapper.create(InterveneIndicatorVO::new)
                         .endFrom(i,v->v.setRefId(i.getSportItemIndicatorId())));
-        return CopyWrapper.create(SportItemInfoResponse::new).endFrom(row)
+        return CopyWrapper.create(SportItemInfoResponse::new).endFrom(refreshCateg(row))
                 .setIndicators(voIndicators);
 
     }
@@ -96,7 +97,7 @@ public class SportItemBiz{
                 .throwMessage("运动项目不存在");
         CategVO categVO=null;
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(saveSportItem.getInterveneCategId())
-                        ||null==(categVO= InterveneCategCache.Instance.getById(saveSportItem.getInterveneCategId())))
+                        ||null==(categVO= getCategCache().getById(saveSportItem.getInterveneCategId())))
                 .throwMessage("类别不存在");
 
         AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(saveSportItem.getIndicators())
@@ -112,7 +113,7 @@ public class SportItemBiz{
                 .setCategIdPath(categVO.getCategIdPath())
                 .setCategNamePath(categVO.getCategNamePath());
 
-        List<SportItemIndicatorEntity> subRows=ShareUtil.XCollection.map(saveSportItem.getIndicators(),true,
+        List<SportItemIndicatorEntity> subRows=ShareUtil.XCollection.map(saveSportItem.getIndicators(),
                 i->CopyWrapper.create(SportItemIndicatorEntity::new).endFrom(i,v->v.setSportItemIndicatorId(i.getRefId())));
         return dao.tranSave(row,subRows,false);
     }
@@ -149,5 +150,24 @@ public class SportItemBiz{
     public Boolean setSportItemState(SetSportItemStateRequest setSportItemStateRequest ) {
 
         return dao.tranSetState(setSportItemStateRequest.getSportItemId(), setSportItemStateRequest.getState());
+    }
+
+    /**
+     * 获取缓存最新分类信息
+     * @param src
+     * @return
+     */
+    protected SportItemEntity refreshCateg(SportItemEntity src) {
+        if (ShareUtil.XObject.isEmpty(src.getInterveneCategId())) {
+            return src;
+        }
+        CategVO cacheItem = getCategCache().getById(src.getInterveneCategId());
+        if (null == cacheItem) {
+            return src;
+        }
+        return src.setCategName(cacheItem.getCategName())
+                .setCategIdPath(cacheItem.getCategIdPath())
+                .setCategNamePath(cacheItem.getCategNamePath());
+
     }
 }

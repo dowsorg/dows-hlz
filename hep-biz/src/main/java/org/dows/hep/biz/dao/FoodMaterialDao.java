@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,7 +29,7 @@ import java.util.List;
 
 @Component
 public class FoodMaterialDao extends BaseSubDao<FoodMaterialService,FoodMaterialEntity,FoodMaterialIndicatorService,FoodMaterialIndicatorEntity>
-    implements IPageDao<FoodMaterialEntity, FindFoodRequest> {
+    implements IPageDao<FoodMaterialEntity, FindFoodRequest>,ICheckCategRef  {
 
     public FoodMaterialDao(){
         super("食材不存在或已删除,请刷新");
@@ -57,6 +58,11 @@ public class FoodMaterialDao extends BaseSubDao<FoodMaterialService,FoodMaterial
     @Override
     protected SFunction<Integer, ?> setColState(FoodMaterialEntity item) {
         return item::setState;
+    }
+
+    @Override
+    protected SFunction<FoodMaterialEntity,String> getColCateg(){
+        return FoodMaterialEntity::getInterveneCategId;
     }
 
     @Override
@@ -109,7 +115,6 @@ public class FoodMaterialDao extends BaseSubDao<FoodMaterialService,FoodMaterial
 
 
 
-
     //region save
 
     protected boolean coreTranSave(FoodMaterialEntity lead, List<FoodMaterialIndicatorEntity> subs,List<FoodMaterialNutrientEntity> subsX, boolean delSubBefore,boolean delSubXBefore, boolean useLogicId) {
@@ -154,6 +159,20 @@ public class FoodMaterialDao extends BaseSubDao<FoodMaterialService,FoodMaterial
     //endregion
 
     //region retrieve
+    public List<FoodMaterialNutrientEntity> getNutrientsByLeadIdsX(Collection<String> leadIds,Collection<String> indicatorIds, SFunction<FoodMaterialNutrientEntity,?>... cols){
+        if(ShareUtil.XObject.isEmpty(leadIds)){
+            return Collections.emptyList();
+        }
+        final boolean oneFlag=leadIds.size()==1;
+        return subServiceX.lambdaQuery()
+                .eq(oneFlag, FoodMaterialNutrientEntity::getFoodMaterialId,leadIds.iterator().next())
+                .in(!oneFlag, FoodMaterialNutrientEntity::getFoodMaterialId,leadIds)
+                .in(ShareUtil.XCollection.notEmpty(indicatorIds),FoodMaterialNutrientEntity::getIndicatorInstanceId,indicatorIds)
+                .select(cols)
+                .list();
+    }
+
+
     public List<FoodMaterialNutrientEntity> getSubByLeadIdX(String leadId, SFunction<FoodMaterialNutrientEntity,?>... cols) {
         if (ShareUtil.XObject.isEmpty(leadId)) {
             return Collections.emptyList();

@@ -16,6 +16,9 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(name = "DelRefItem 对象", title = "删除关联子项")
 public class DelRefItemRequest {
+
+    @Schema(title = "应用ID")
+    private String appId;
     @Schema(title = "分布式refId列表")
     private List<String> ids;
 
