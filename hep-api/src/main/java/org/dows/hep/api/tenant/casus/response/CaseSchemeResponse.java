@@ -53,6 +53,9 @@ public class CaseSchemeResponse{
     @Schema(title = "是否包含视频[0-否|1-是]")
     private Integer containsVideo;
 
+    @Schema(title = "视频问题题干")
+    private String videoQuestion;
+
     @Schema(title = "问题集合")
     private List<QuestionSectionItemResponse> sectionItemList;
 

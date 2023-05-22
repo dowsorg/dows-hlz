@@ -46,7 +46,6 @@ public class TenantCaseSchemeBiz {
     private final TenantCaseBaseBiz baseBiz;
     private final CaseSchemeService caseSchemeService;
     private final QuestionSectionBiz questionSectionBiz;
-    private final TenantCaseCategoryBiz caseCategoryBiz;
 
     /**
      * @param
@@ -64,7 +63,7 @@ public class TenantCaseSchemeBiz {
             return "";
         }
 
-        CaseSchemeEntity caseSchemeEntity = checkBeforeSaveOrUpd(caseScheme, caseSchemeSourceEnum, questionSourceEnum);
+        CaseSchemeEntity caseSchemeEntity = convertRequest2Entity(caseScheme, caseSchemeSourceEnum, questionSourceEnum);
         caseSchemeService.saveOrUpdate(caseSchemeEntity);
 
         return caseSchemeEntity.getCaseSchemeId();
@@ -293,7 +292,7 @@ public class TenantCaseSchemeBiz {
                 .toList();
     }
 
-    private CaseSchemeEntity checkBeforeSaveOrUpd(CaseSchemeRequest request, CaseSchemeSourceEnum caseSchemeSourceEnum, QuestionSourceEnum questionSourceEnum) {
+    private CaseSchemeEntity convertRequest2Entity(CaseSchemeRequest request, CaseSchemeSourceEnum caseSchemeSourceEnum, QuestionSourceEnum questionSourceEnum) {
         if (BeanUtil.isEmpty(request)) {
             throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
         }
@@ -309,6 +308,7 @@ public class TenantCaseSchemeBiz {
                 .schemeDescr(request.getSchemeDescr())
                 .addType(request.getAddType())
                 .containsVideo(request.getContainsVideo())
+                .videoQuestion(request.getVideoQuestion())
                 .source(caseSchemeSourceEnum.name())
                 .accountId(request.getAccountId())
                 .accountName(request.getAccountName())
@@ -327,7 +327,11 @@ public class TenantCaseSchemeBiz {
 
         String questionSectionId = saveOrUpdQuestionSection(request, questionSourceEnum);
         result.setQuestionSectionId(questionSectionId);
-        result.setQuestionCount(getQuestionCount(request));
+        int questionCount = getQuestionCount(request);
+        if (result.getContainsVideo() != null && result.getContainsVideo() == 1) {
+            questionCount += 1;
+        }
+        result.setQuestionCount(questionCount);
         return result;
     }
 

@@ -63,6 +63,9 @@ public class CaseSchemeEntity implements CrudEntity {
     @Schema(title = "是否包含视频[0-否|1-是]")
     private Integer containsVideo;
 
+    @Schema(title = "视频题干")
+    private String videoQuestion;
+
     @Schema(title = "状态[0-关闭|1-开启]")
     private Integer enabled;
 
