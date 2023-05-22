@@ -44,7 +44,7 @@ public class TenantCaseNoticeBiz {
             return "";
         }
 
-        CaseNoticeEntity caseNoticeEntity = checkBeforeSaveOrUpd(caseNotice);
+        CaseNoticeEntity caseNoticeEntity = convertRequest2Entity(caseNotice);
         caseNoticeService.saveOrUpdate(caseNoticeEntity);
 
         return caseNoticeEntity.getCaseNoticeId();
@@ -150,7 +150,7 @@ public class TenantCaseNoticeBiz {
         return caseNoticeService.list(queryWrapper);
     }
 
-    private CaseNoticeEntity checkBeforeSaveOrUpd(CaseNoticeRequest request) {
+    private CaseNoticeEntity convertRequest2Entity(CaseNoticeRequest request) {
         if (BeanUtil.isEmpty(request)) {
             throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
         }
