@@ -172,7 +172,7 @@ public class PictureManageBiz {
                         .list();
                 //3.1、分组去重，人物有两个图片，只取一个
                 Map<String,MaterialsAttachmentEntity> map = attachmentEntities.stream().collect(Collectors.groupingBy(MaterialsAttachmentEntity::getMaterialsId,
-                        Collectors.collectingAndThen(Collectors.toList(), value -> value.get(0))));
+                        Collectors.collectingAndThen(Collectors.toList(), value -> value.get(1))));
                 //3.2、赋值
                 PictureResponse pictureResponse = new PictureResponse();
                 BeanUtil.copyProperties(materialsEntity,pictureResponse);
