@@ -3,6 +3,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorInstanceRequest;
+import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorInstanceRequestRs;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorInstanceRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorInstanceCategoryResponseRs;
 import org.dows.hep.api.base.indicator.response.IndicatorInstanceResponse;
@@ -28,6 +29,12 @@ public class IndicatorInstanceRest {
     @PostMapping("v1/baseIndicator/indicatorInstance/create")
     public void create(@RequestBody @Validated CreateIndicatorInstanceRequest createIndicatorInstanceRequest) throws InterruptedException {
         indicatorInstanceBiz.create(createIndicatorInstanceRequest);
+    }
+
+    @Operation(summary = "创建或修改指标实例")
+    @PostMapping("v1/baseIndicator/indicatorInstance/createOrUpdateRs")
+    public void createOrUpdateRs(@RequestBody @Validated CreateOrUpdateIndicatorInstanceRequestRs createOrUpdateIndicatorInstanceRequestRs) throws InterruptedException {
+        indicatorInstanceBiz.createOrUpdateRs(createOrUpdateIndicatorInstanceRequestRs);
     }
 
     @Operation(summary = "删除指标")

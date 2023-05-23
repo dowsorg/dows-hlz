@@ -3,7 +3,9 @@ package org.dows.hep.biz.base.indicator;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorInstanceRequest;
+import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorInstanceRequestRs;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorInstanceRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorInstanceCategoryResponseRs;
 import org.dows.hep.api.base.indicator.response.IndicatorInstanceResponse;
@@ -90,6 +92,68 @@ public class IndicatorInstanceBiz{
             .dt(indicatorCategoryEntity.getDt())
             .indicatorInstanceResponseRsList(indicatorInstanceResponseRsList)
             .build();
+    }
+    @Transactional(rollbackFor = Exception.class)
+    public void createOrUpdateRs(CreateOrUpdateIndicatorInstanceRequestRs createOrUpdateIndicatorInstanceRequestRs) throws InterruptedException {
+        String indicatorInstanceId = createOrUpdateIndicatorInstanceRequestRs.getIndicatorInstanceId();
+        String indicatorCategoryId = createOrUpdateIndicatorInstanceRequestRs.getIndicatorCategoryId();
+        String appId = createOrUpdateIndicatorInstanceRequestRs.getAppId();
+        indicatorCategoryService.lambdaQuery()
+            .eq(IndicatorCategoryEntity::getAppId, appId)
+            .eq(IndicatorCategoryEntity::getIndicatorCategoryId, indicatorCategoryId)
+            .oneOpt()
+            .orElseThrow(() -> {
+                log.warn("method createOrUpdateRs param createOrUpdateIndicatorInstanceRequestRs indicatorCategoryId：{} is illegal", indicatorCategoryId);
+                return new IndicatorInstanceException(EnumESC.VALIDATE_EXCEPTION);
+            });
+        String indicatorName = createOrUpdateIndicatorInstanceRequestRs.getIndicatorName();
+        Integer displayByPercent = createOrUpdateIndicatorInstanceRequestRs.getDisplayByPercent();
+        String unit = createOrUpdateIndicatorInstanceRequestRs.getUnit();
+        Integer core = createOrUpdateIndicatorInstanceRequestRs.getCore();
+        Integer food = createOrUpdateIndicatorInstanceRequestRs.getFood();
+        String min = createOrUpdateIndicatorInstanceRequestRs.getMin();
+        String max = createOrUpdateIndicatorInstanceRequestRs.getMax();
+        String def = createOrUpdateIndicatorInstanceRequestRs.getDef();
+        IndicatorInstanceEntity indicatorInstanceEntity = null;
+        if (StringUtils.isBlank(indicatorInstanceId)) {
+            indicatorInstanceId = idGenerator.nextIdStr();
+            indicatorInstanceEntity = IndicatorInstanceEntity
+                .builder()
+                .indicatorInstanceId(indicatorInstanceId)
+                .appId(appId)
+                .indicatorCategoryId(indicatorCategoryId)
+                .indicatorName(indicatorName)
+                .displayByPercent(displayByPercent)
+                .unit(unit)
+                .core(core)
+                .food(food)
+                .build();
+        } else {
+            String finalIndicatorInstanceId = indicatorInstanceId;
+            indicatorInstanceEntity = indicatorInstanceService.lambdaQuery()
+                .eq(IndicatorInstanceEntity::getAppId, appId)
+                .eq(IndicatorInstanceEntity::getIndicatorInstanceId, indicatorInstanceId)
+                .oneOpt()
+                .orElseThrow(() -> {
+                    log.warn("method createOrUpdateRs param createOrUpdateIndicatorInstanceRequestRs indicatorInstanceId:{} is illegal", finalIndicatorInstanceId);
+                    return new IndicatorInstanceException(EnumESC.VALIDATE_EXCEPTION);
+                });
+            indicatorInstanceEntity.setIndicatorName(indicatorName);
+            indicatorInstanceEntity.setDisplayByPercent(displayByPercent);
+            indicatorInstanceEntity.setUnit(unit);
+            indicatorInstanceEntity.setCore(core);
+            indicatorInstanceEntity.setFood(food);
+        }
+        RLock lock = redissonClient.getLock(RedissonUtil.getLockName(appId, EnumRedissonLock.INDICATOR_INSTANCE_CREATE_DELETE_UPDATE, indicatorInstanceFieldPid, indicatorCategoryId));
+        boolean isLocked = lock.tryLock(leaseTimeIndicatorInstanceCreateDeleteUpdate, TimeUnit.MILLISECONDS);
+        if (!isLocked) {
+            throw new IndicatorInstanceException(EnumESC.SYSTEM_BUSY_PLEASE_OPERATOR_INDICATOR_INSTANCE_LATER);
+        }
+        try {
+            indicatorInstanceService.saveOrUpdate(indicatorInstanceEntity);
+        } finally {
+            lock.unlock();
+        }
     }
 
     /**
