@@ -1,6 +1,5 @@
 package org.dows.hep.biz.base.indicator;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -17,11 +16,9 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -489,6 +486,7 @@ public class IndicatorViewBaseInfoBiz{
             String name1 = createOrUpdateIndicatorViewBaseInfoMonitorContentRequestRs.getName();
             Integer seq1 = createOrUpdateIndicatorViewBaseInfoMonitorContentRequestRs.getSeq();
             if (StringUtils.isBlank(indicatorViewBaseInfoMonitorContentId)) {
+              indicatorViewBaseInfoMonitorContentId = idGenerator.nextIdStr();
               indicatorViewBaseInfoMonitorContentEntity = IndicatorViewBaseInfoMonitorContentEntity
                   .builder()
                   .indicatorViewBaseInfoMonitorContentId(indicatorViewBaseInfoMonitorContentId)
@@ -503,6 +501,7 @@ public class IndicatorViewBaseInfoBiz{
               indicatorViewBaseInfoMonitorContentEntity.setSeq(seq1);
             }
             indicatorViewBaseInfoMonitorContentEntityList.add(indicatorViewBaseInfoMonitorContentEntity);
+            String finalIndicatorViewBaseInfoMonitorContentId = indicatorViewBaseInfoMonitorContentId;
             createOrUpdateIndicatorViewBaseInfoMonitorContentRequestRs.getCreateOrUpdateIndicatorViewBaseInfoMonitorContentRefRequestRsList()
                 .forEach(createOrUpdateIndicatorViewBaseInfoMonitorContentRefRequestRs -> {
                   IndicatorViewBaseInfoMonitorContentRefEntity indicatorViewBaseInfoMonitorContentRefEntity = null;
@@ -510,11 +509,12 @@ public class IndicatorViewBaseInfoBiz{
                   String indicatorInstanceId = createOrUpdateIndicatorViewBaseInfoMonitorContentRefRequestRs.getIndicatorInstanceId();
                   Integer seq2 = createOrUpdateIndicatorViewBaseInfoMonitorContentRefRequestRs.getSeq();
                   if (StringUtils.isBlank(indicatorViewBaseInfoMonitorContentRefId)) {
+                    indicatorViewBaseInfoMonitorContentRefId = idGenerator.nextIdStr();
                     indicatorViewBaseInfoMonitorContentRefEntity = IndicatorViewBaseInfoMonitorContentRefEntity
                         .builder()
                         .indicatorViewBaseInfoMonitorContentRefId(indicatorViewBaseInfoMonitorContentRefId)
                         .appId(appId)
-                        .indicatorViewBaseInfoMonitorContentId(indicatorViewBaseInfoMonitorContentId)
+                        .indicatorViewBaseInfoMonitorContentId(finalIndicatorViewBaseInfoMonitorContentId)
                         .indicatorInstanceId(indicatorInstanceId)
                         .seq(seq2)
                         .build();
