@@ -268,7 +268,10 @@ public class IndicatorViewBaseInfoBiz{
             paramIndicatorViewBaseInfoDescIdSet.add(indicatorViewBaseInfoDescId);
             createOrUpdateIndicatorViewBaseInfoDescrRs.getCreateOrUpdateIndicatorViewBaseInfoDescrRefRequestRsList()
                 .forEach(createOrUpdateIndicatorViewBaseInfoDescrRefRequestRs -> {
-                  paramIndicatorViewBaseInfoDescRefIdSet.add(createOrUpdateIndicatorViewBaseInfoDescrRefRequestRs.getIndicatorViewBaseInfoDescRefId());
+                  String indicatorViewBaseInfoDescRefId = createOrUpdateIndicatorViewBaseInfoDescrRefRequestRs.getIndicatorViewBaseInfoDescRefId();
+                  if (StringUtils.isNotBlank(indicatorViewBaseInfoDescRefId)) {
+                    paramIndicatorViewBaseInfoDescRefIdSet.add(indicatorViewBaseInfoDescRefId);
+                  }
                   paramIndicatorInstanceIdSet.add(createOrUpdateIndicatorViewBaseInfoDescrRefRequestRs.getIndicatorInstanceId());
                 });
           }
