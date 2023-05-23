@@ -51,7 +51,8 @@ public class QuestionSectionItemBiz {
 
         boolean res = false;
         switch (generationModeEnum) {
-            case SELECT -> res = batchSaveSelectMode(itemList, questionSectionId, questionSourceEnum);
+            case SELECT_CLONE -> res = batchSaveSelectCloneMode(itemList, questionSectionId, questionSourceEnum);
+            case SELECT_REF -> res = batchSaveSelectRefMode(itemList, questionSectionId, questionSourceEnum);
             case ADD_NEW -> res = batchSaveOrUpdAddNewMode(itemList, questionSectionId, questionSourceEnum);
             default -> {
             }
@@ -126,7 +127,7 @@ public class QuestionSectionItemBiz {
     }
 
     // 选择模式的不可以更新题目，仅可以新增
-    private boolean batchSaveSelectMode(List<QuestionSectionItemRequest> itemRequestList, String questionSectionId, QuestionSourceEnum questionSourceEnum) {
+    private boolean batchSaveSelectCloneMode(List<QuestionSectionItemRequest> itemRequestList, String questionSectionId, QuestionSourceEnum questionSourceEnum) {
         if (StrUtil.isBlank(questionSectionId)) {
             throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
         }
@@ -149,6 +150,39 @@ public class QuestionSectionItemBiz {
                     .build();
             String questionInstanceId = questionInstanceBiz.cloneQue2NewQue(clonedRequest, QuestionAccessAuthEnum.PRIVATE_VIEWING, questionSourceEnum);
 
+            QuestionSectionItemEntity entity = QuestionSectionItemEntity.builder()
+                    .questionSectionItemId(baseBiz.getIdStr())
+                    .questionSectionId(questionSectionId)
+                    .required(item.getRequired())
+                    .questionInstanceId(questionInstanceId)
+                    .enabled(QuestionEnabledEnum.ENABLED.getCode())
+                    .build();
+            itemList.add(entity);
+        });
+
+        questionSectionItemService.saveBatch(itemList);
+        return Boolean.TRUE;
+    }
+
+    private boolean batchSaveSelectRefMode(List<QuestionSectionItemRequest> itemRequestList, String questionSectionId, QuestionSourceEnum questionSourceEnum) {
+        if (StrUtil.isBlank(questionSectionId)) {
+            throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
+        }
+        if (itemRequestList == null || itemRequestList.isEmpty()) {
+            return Boolean.FALSE;
+        }
+
+        List<QuestionSectionItemRequest> addList = itemRequestList.stream()
+                .filter(item -> StrUtil.isBlank(item.getQuestionSectionItemId()))
+                .toList();
+        if (addList.isEmpty()) {
+            return Boolean.FALSE;
+        }
+
+        List<QuestionSectionItemEntity> itemList = new ArrayList<>();
+        addList.forEach(item -> {
+            QuestionRequest questionRequest = item.getQuestionRequest();
+            String questionInstanceId = questionRequest.getQuestionInstanceId();
             QuestionSectionItemEntity entity = QuestionSectionItemEntity.builder()
                     .questionSectionItemId(baseBiz.getIdStr())
                     .questionSectionId(questionSectionId)

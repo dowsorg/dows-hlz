@@ -43,7 +43,7 @@ public class QuestionSectionRequest{
     @Schema(title = "状态")
     private Integer enabled;
 
-    @Schema(title = "问卷生成模式[SELECT ：从数据库选择 | ADD_NEW ： 添加新的]")
+    @Schema(title = "问卷生成模式[SELECT_CLONE ：从数据库选择并克隆一份 | SELECT_REF : 从数据库选择并引用 | ADD_NEW ： 添加新的]")
     private QuestionSectionGenerationModeEnum generationMode;
 
     @Schema(title = "问题集合")

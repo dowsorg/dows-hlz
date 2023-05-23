@@ -125,6 +125,17 @@ public class QuestionInstanceRest {
     }
 
     /**
+     * 删除单选和多选题的选项
+     * @param
+     * @return
+     */
+    @Operation(summary = "删除单选和多选题的选项")
+    @GetMapping("v1/baseQuestion/questionInstance/delQuestionOptions")
+    public Boolean delQuestionOptions(String questionOptionId ) {
+        return questionInstanceBiz.delQuestionOptions(questionOptionId);
+    }
+
+    /**
     * 删除or批量删除
     * @param
     * @return

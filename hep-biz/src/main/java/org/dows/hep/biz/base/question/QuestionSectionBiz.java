@@ -269,6 +269,7 @@ public class QuestionSectionBiz {
                 .bizCode(questionSectionAccessAuthEnum.name())
                 .source(questionSourceEnum.name())
                 .build();
+
         String uniqueId = result.getQuestionSectionId();
         if (StrUtil.isBlank(uniqueId)) {
             result.setQuestionSectionId(baseBiz.getIdStr());
@@ -281,6 +282,7 @@ public class QuestionSectionBiz {
             }
             result.setId(oriEntity.getId());
         }
+
         return result;
     }
 }
