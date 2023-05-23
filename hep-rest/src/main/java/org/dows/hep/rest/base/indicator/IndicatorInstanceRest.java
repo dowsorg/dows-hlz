@@ -25,12 +25,6 @@ import java.util.List;
 public class IndicatorInstanceRest {
     private final IndicatorInstanceBiz indicatorInstanceBiz;
 
-    @Operation(summary = "创建指标实例")
-    @PostMapping("v1/baseIndicator/indicatorInstance/create")
-    public void create(@RequestBody @Validated CreateIndicatorInstanceRequest createIndicatorInstanceRequest) throws InterruptedException {
-        indicatorInstanceBiz.create(createIndicatorInstanceRequest);
-    }
-
     @Operation(summary = "创建或修改指标实例")
     @PostMapping("v1/baseIndicator/indicatorInstance/createOrUpdateRs")
     public void createOrUpdateRs(@RequestBody @Validated CreateOrUpdateIndicatorInstanceRequestRs createOrUpdateIndicatorInstanceRequestRs) throws InterruptedException {
@@ -60,6 +54,12 @@ public class IndicatorInstanceRest {
     @GetMapping("v1/baseIndicator/indicatorInstance/getByAppId")
     public List<IndicatorInstanceCategoryResponseRs> getByAppId(@RequestParam String appId) {
         return indicatorInstanceBiz.getByAppId(appId);
+    }
+
+    @Operation(summary = "创建指标实例")
+    @PostMapping("v1/baseIndicator/indicatorInstance/create")
+    public void create(@RequestBody @Validated CreateIndicatorInstanceRequest createIndicatorInstanceRequest) throws InterruptedException {
+        indicatorInstanceBiz.create(createIndicatorInstanceRequest);
     }
 
 //    /**

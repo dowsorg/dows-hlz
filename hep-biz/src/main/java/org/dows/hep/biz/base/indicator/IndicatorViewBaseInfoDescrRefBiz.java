@@ -3,6 +3,7 @@ package org.dows.hep.biz.base.indicator;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.enums.EnumRedissonLock;
 import org.dows.hep.api.exception.IndicatorViewBaseInfoDescrRefException;
@@ -18,7 +19,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author runsix
@@ -71,6 +77,64 @@ public class IndicatorViewBaseInfoDescrRefBiz {
       );
       if (!isRemoved) {
         log.warn("method deleteIndicatorViewBaseInfoDescrRef param indicatorViewBaseInfoDescRefId:{}", indicatorViewBaseInfoDescRefId);
+        throw new IndicatorViewBaseInfoDescrRefException(EnumESC.VALIDATE_EXCEPTION);
+      }
+    } finally {
+      lock.unlock();
+    }
+  }
+
+  @Transactional(rollbackFor = Exception.class)
+  public void batchDelete(List<String> indicatorViewBaseInfoDescRefIdList) throws InterruptedException {
+    if (Objects.isNull(indicatorViewBaseInfoDescRefIdList) || indicatorViewBaseInfoDescRefIdList.isEmpty()) {
+      log.warn("method deleteIndicatorViewBaseInfoDescrRef param indicatorViewBaseInfoDescRefIdList is empty");
+      throw new IndicatorViewBaseInfoDescrRefException(EnumESC.VALIDATE_EXCEPTION);
+    }
+    List<String> dbIndicatorViewBaseInfoDescRefIdList = new ArrayList<>();
+    StringBuffer indicatorViewBaseInfoDescIdBuffer = new StringBuffer();
+    StringBuffer appIdBuffer = new StringBuffer();
+    indicatorViewBaseInfoDescrRefService.lambdaQuery()
+        .in(IndicatorViewBaseInfoDescrRefEntity::getIndicatorViewBaseInfoDescRefId, indicatorViewBaseInfoDescRefIdList)
+        .list()
+        .forEach(indicatorViewBaseInfoDescrRefEntity -> {
+          dbIndicatorViewBaseInfoDescRefIdList.add(indicatorViewBaseInfoDescrRefEntity.getIndicatorViewBaseInfoDescRefId());
+          if (indicatorViewBaseInfoDescIdBuffer.isEmpty()) {
+            indicatorViewBaseInfoDescIdBuffer.append(indicatorViewBaseInfoDescrRefEntity.getIndicatorViewBaseInfoDescId());
+          }
+          if (appIdBuffer.isEmpty()) {
+            appIdBuffer.append(indicatorViewBaseInfoDescrRefEntity.getAppId());
+          }
+        });
+    String indicatorViewBaseInfoDescId = indicatorViewBaseInfoDescIdBuffer.toString();
+    String appId = appIdBuffer.toString();
+    if (
+        indicatorViewBaseInfoDescRefIdList.stream().anyMatch(indicatorViewBaseInfoDescRefId -> !dbIndicatorViewBaseInfoDescRefIdList.contains(indicatorViewBaseInfoDescRefId))
+    ) {
+      log.warn("method deleteIndicatorViewBaseInfoDescrRef param indicatorViewBaseInfoDescRefIdList:{} is illegal", indicatorViewBaseInfoDescRefIdList);
+      throw new IndicatorViewBaseInfoDescrRefException(EnumESC.VALIDATE_EXCEPTION);
+    }
+    IndicatorViewBaseInfoDescrEntity indicatorViewBaseInfoDescrEntity = indicatorViewBaseInfoDescrService.lambdaQuery()
+        .eq(IndicatorViewBaseInfoDescrEntity::getAppId, appId)
+        .eq(IndicatorViewBaseInfoDescrEntity::getIndicatorViewBaseInfoDescId, indicatorViewBaseInfoDescId)
+        .oneOpt()
+        .orElseThrow(() -> {
+          log.error("method batchDelete param indicatorViewBaseInfoDescRefIdList indicatorViewBaseInfoDescId:{} is illegal", indicatorViewBaseInfoDescId);
+          throw new IndicatorViewBaseInfoDescrRefException(EnumESC.VALIDATE_EXCEPTION);
+        });
+    String indicatorViewBaseInfoId = indicatorViewBaseInfoDescrEntity.getIndicatorViewBaseInfoId();
+    RLock lock = redissonClient.getLock(RedissonUtil.getLockName(appId, EnumRedissonLock.INDICATOR_VIEW_BASE_INFO_CREATE_DELETE_UPDATE, indicatorViewBaseInfoFieldIndicatorViewBaseInfoId, indicatorViewBaseInfoId));
+    boolean isLocked = lock.tryLock(leaseTimeIndicatorViewBaseInfoCreateDeleteUpdate, TimeUnit.MILLISECONDS);
+    if (!isLocked) {
+      throw new IndicatorViewBaseInfoException(EnumESC.SYSTEM_BUSY_PLEASE_OPERATOR_INDICATOR_VIEW_BASE_INFO_LATER);
+    }
+    try {
+      boolean isRemoved = indicatorViewBaseInfoDescrRefService.remove(
+          new LambdaQueryWrapper<IndicatorViewBaseInfoDescrRefEntity>()
+              .eq(IndicatorViewBaseInfoDescrRefEntity::getAppId, appId)
+              .in(IndicatorViewBaseInfoDescrRefEntity::getIndicatorViewBaseInfoDescRefId, indicatorViewBaseInfoDescRefIdList)
+      );
+      if (!isRemoved) {
+        log.warn("method batchDelete param indicatorViewBaseInfoDescRefIdList:{} is illegal", indicatorViewBaseInfoDescRefIdList);
         throw new IndicatorViewBaseInfoDescrRefException(EnumESC.VALIDATE_EXCEPTION);
       }
     } finally {
