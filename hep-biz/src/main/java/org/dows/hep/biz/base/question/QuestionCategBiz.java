@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.hep.api.base.question.enums.QuestionESCEnum;
 import org.dows.hep.api.base.question.request.QuestionCategoryRequest;
 import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
 import org.dows.hep.api.tenant.casus.CaseESCEnum;
@@ -135,7 +136,7 @@ public class QuestionCategBiz {
         // get referenced id
         Boolean referenced = isReferenced(ids);
         if (referenced) {
-            throw new BizException("被引用类目不可删除");
+            throw new BizException(QuestionESCEnum.CANNOT_DEL_FER_DATA);
         }
 
         // del self

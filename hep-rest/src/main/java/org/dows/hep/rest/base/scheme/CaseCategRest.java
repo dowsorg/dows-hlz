@@ -38,6 +38,19 @@ public class CaseCategRest {
 
     /**
      * @author fhb
+     * @description 批量新增和更新
+     * @date 2023/5/23 16:14
+     * @param
+     * @return
+     */
+    @Operation(summary = "批量新增和更新")
+    @PostMapping("v1/baseCase/caseCategory/batchSaveOrUpd")
+    public Boolean batchSaveOrUpd(@RequestBody @Validated List<CaseCategoryRequest> list) {
+        return caseCategoryBiz.batchSaveOrUpd(list);
+    }
+
+    /**
+     * @author fhb
      * @description 以树形结构返回该组（categoryGroup）下的类目
      * @date 2023/4/20 10:16
      * @param categoryGroup - 类目分组
