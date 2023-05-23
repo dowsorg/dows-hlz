@@ -2,7 +2,7 @@ package org.dows.hep.rest.base.evaluate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.evaluate.request.CreateEvaluateDimensionExpressionRequest;
+import org.dows.hep.api.base.evaluate.request.EvaluateDimensionExpressionRequest;
 import org.dows.hep.api.base.evaluate.response.EvaluateDimensionExpressionResponse;
 import org.dows.hep.biz.base.evaluate.EvaluateDimensionExpressionBiz;
 import org.springframework.validation.annotation.Validated;
@@ -29,7 +29,7 @@ public class EvaluateDimensionExpressionRest {
     */
     @Operation(summary = "创建评估维度公式")
     @PostMapping("v1/baseEvaluate/evaluateDimensionExpression/evaluateDimensionExpression")
-    public void evaluateDimensionExpression(@RequestBody @Validated CreateEvaluateDimensionExpressionRequest createEvaluateDimensionExpression ) {
+    public void evaluateDimensionExpression(@RequestBody @Validated EvaluateDimensionExpressionRequest createEvaluateDimensionExpression ) {
         evaluateDimensionExpressionBiz.evaluateDimensionExpression(createEvaluateDimensionExpression);
     }
 

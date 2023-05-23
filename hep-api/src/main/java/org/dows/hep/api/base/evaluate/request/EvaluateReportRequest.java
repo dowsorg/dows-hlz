@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Schema(name = "CreateEvaluateReportManagement 对象", title = "创建评估报告管理对象")
-public class CreateEvaluateReportManagementRequest{
+public class EvaluateReportRequest {
     @Schema(title = "分布式ID")
     private String evaluateQuestionnaireId;
 

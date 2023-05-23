@@ -1,6 +1,6 @@
 package org.dows.hep.biz.base.evaluate;
 
-import org.dows.hep.api.base.evaluate.request.CreateEvaluateReportManagementRequest;
+import org.dows.hep.api.base.evaluate.request.EvaluateReportRequest;
 import org.dows.hep.api.base.evaluate.response.EvaluateReportManagementResponse;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +25,7 @@ public class EvaluateReportManagementBiz{
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public void evaluateReportManagement(CreateEvaluateReportManagementRequest createEvaluateReportManagement ) {
+    public void evaluateReportManagement(EvaluateReportRequest createEvaluateReportManagement ) {
         
     }
     /**

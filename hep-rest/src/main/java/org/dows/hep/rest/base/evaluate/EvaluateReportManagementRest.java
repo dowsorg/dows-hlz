@@ -2,7 +2,7 @@ package org.dows.hep.rest.base.evaluate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.evaluate.request.CreateEvaluateReportManagementRequest;
+import org.dows.hep.api.base.evaluate.request.EvaluateReportRequest;
 import org.dows.hep.api.base.evaluate.response.EvaluateReportManagementResponse;
 import org.dows.hep.biz.base.evaluate.EvaluateReportManagementBiz;
 import org.springframework.validation.annotation.Validated;
@@ -29,7 +29,7 @@ public class EvaluateReportManagementRest {
     */
     @Operation(summary = "创建评估报告管理")
     @PostMapping("v1/baseEvaluate/evaluateReportManagement/evaluateReportManagement")
-    public void evaluateReportManagement(@RequestBody @Validated CreateEvaluateReportManagementRequest createEvaluateReportManagement ) {
+    public void evaluateReportManagement(@RequestBody @Validated EvaluateReportRequest createEvaluateReportManagement ) {
         evaluateReportManagementBiz.evaluateReportManagement(createEvaluateReportManagement);
     }
 

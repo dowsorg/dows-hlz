@@ -1,6 +1,6 @@
 package org.dows.hep.biz.base.evaluate;
 
-import org.dows.hep.api.base.evaluate.request.CreateEvaluateDimensionExpressionRequest;
+import org.dows.hep.api.base.evaluate.request.EvaluateDimensionExpressionRequest;
 import org.dows.hep.api.base.evaluate.response.EvaluateDimensionExpressionResponse;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +25,7 @@ public class EvaluateDimensionExpressionBiz{
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public void evaluateDimensionExpression(CreateEvaluateDimensionExpressionRequest createEvaluateDimensionExpression ) {
+    public void evaluateDimensionExpression(EvaluateDimensionExpressionRequest createEvaluateDimensionExpression ) {
         
     }
     /**

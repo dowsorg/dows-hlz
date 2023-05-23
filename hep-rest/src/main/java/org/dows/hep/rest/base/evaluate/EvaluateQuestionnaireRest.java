@@ -2,7 +2,7 @@ package org.dows.hep.rest.base.evaluate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.evaluate.request.CreateEvaluateQuestionnaireRequest;
+import org.dows.hep.api.base.evaluate.request.EvaluateQuestionnaireRequest;
 import org.dows.hep.api.base.evaluate.response.EvaluateQuestionnaireResponse;
 import org.dows.hep.biz.base.evaluate.EvaluateQuestionnaireBiz;
 import org.springframework.validation.annotation.Validated;
@@ -29,7 +29,7 @@ public class EvaluateQuestionnaireRest {
     */
     @Operation(summary = "创建评估问卷")
     @PostMapping("v1/baseEvaluate/evaluateQuestionnaire/createEvaluateQuestionnaire")
-    public void createEvaluateQuestionnaire(@RequestBody @Validated CreateEvaluateQuestionnaireRequest createEvaluateQuestionnaire ) {
+    public void createEvaluateQuestionnaire(@RequestBody @Validated EvaluateQuestionnaireRequest createEvaluateQuestionnaire ) {
         evaluateQuestionnaireBiz.createEvaluateQuestionnaire(createEvaluateQuestionnaire);
     }
 

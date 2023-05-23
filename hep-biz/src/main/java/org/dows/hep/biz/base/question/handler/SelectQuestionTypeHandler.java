@@ -17,14 +17,19 @@ import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.biz.base.question.QuestionAnswersBiz;
 import org.dows.hep.biz.base.question.QuestionDomainBaseBiz;
 import org.dows.hep.biz.base.question.QuestionOptionsBiz;
+import org.dows.hep.biz.base.question.QuestionScoreBiz;
 import org.dows.hep.entity.QuestionAnswersEntity;
 import org.dows.hep.entity.QuestionInstanceEntity;
 import org.dows.hep.entity.QuestionOptionsEntity;
+import org.dows.hep.entity.QuestionScoreEntity;
 import org.dows.hep.service.QuestionAnswersService;
 import org.dows.hep.service.QuestionInstanceService;
+import org.dows.hep.service.QuestionScoreService;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -40,7 +45,9 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
     private final QuestionInstanceService questionInstanceService;
     private final QuestionOptionsBiz questionOptionsBiz;
     private final QuestionAnswersBiz questionAnswersBiz;
+    private final QuestionScoreBiz questionScoreBiz;
     private final QuestionAnswersService questionAnswersService;
+    private final QuestionScoreService questionScoreService;
 
     @PostConstruct
     @Override
@@ -81,24 +88,35 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
             return questionInstance.getQuestionInstanceId();
         }
 
-        // save answers
-        List<QuestionAnswersEntity> answersEntityList = optionWithAnswerList.stream()
-                .map(item -> QuestionAnswersEntity.builder()
-                        .questionInstanceId(questionInstance.getQuestionInstanceId())
-                        .questionAnswerId(baseBiz.getIdStr())
-                        .questionOptionsId(baseBiz.getIdStr())
-                        .optionTitle(item.getOptionTitle())
-                        .optionValue(item.getOptionValue())
-                        .rightAnswer(item.getRightAnswer())
-                        .build())
-                .collect(Collectors.toList());
-        questionAnswersBiz.saveOrUpdBatch(answersEntityList);
+        List<QuestionScoreEntity> scoreEntityList = new ArrayList<>();
+        List<QuestionAnswersEntity> answersEntityList = new ArrayList<>();
+        List<QuestionOptionsEntity> optionsEntityList = new ArrayList<>();
+        optionWithAnswerList.forEach(item -> {
+            // answer
+            QuestionAnswersEntity questionAnswersEntity = QuestionAnswersEntity.builder()
+                    .questionInstanceId(questionInstance.getQuestionInstanceId())
+                    .questionAnswerId(baseBiz.getIdStr())
+                    .questionOptionsId(baseBiz.getIdStr())
+                    .optionTitle(item.getOptionTitle())
+                    .optionValue(item.getOptionValue())
+                    .rightAnswer(item.getRightAnswer())
+                    .build();
+            answersEntityList.add(questionAnswersEntity);
 
-        // save options
-        List<QuestionOptionsEntity> optionsEntityList = answersEntityList.stream()
-                .map(item -> BeanUtil.copyProperties(item, QuestionOptionsEntity.class))
-                .collect(Collectors.toList());
+            // score
+            QuestionScoreEntity questionScoreEntity = BeanUtil.copyProperties(questionAnswersEntity, QuestionScoreEntity.class);
+            questionScoreEntity.setQuestionScoreId(baseBiz.getIdStr());
+            questionScoreEntity.setScore(item.getScore());
+            scoreEntityList.add(questionScoreEntity);
+
+            // answer
+            QuestionOptionsEntity questionOptionsEntity = BeanUtil.copyProperties(questionAnswersEntity, QuestionOptionsEntity.class);
+            optionsEntityList.add(questionOptionsEntity);
+        });
+
+        questionAnswersBiz.saveOrUpdBatch(answersEntityList);
         questionOptionsBiz.saveOrUpdBatch(optionsEntityList);
+        questionScoreBiz.saveOrUpdBatch(scoreEntityList);
 
         return questionInstance.getQuestionInstanceId();
     }
@@ -134,32 +152,44 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
             return Boolean.TRUE;
         }
 
-        // save or upd answers
-        List<QuestionAnswersEntity> answerList = optionWithAnswerList.stream()
-                .map(item -> {
-                    QuestionAnswersEntity questionAnswersEntity = QuestionAnswersEntity.builder()
-                            .questionInstanceId(questionInstance.getQuestionInstanceId())
-                            .questionAnswerId(item.getQuestionAnswerId())
-                            .questionOptionsId(item.getQuestionOptionsId())
-                            .optionTitle(item.getOptionTitle())
-                            .optionValue(item.getOptionValue())
-                            .rightAnswer(item.getRightAnswer())
-                            .build();
-                    if (StrUtil.isBlank(questionAnswersEntity.getQuestionAnswerId())) {
-                        questionAnswersEntity.setQuestionOptionsId(baseBiz.getIdStr());
-                        questionAnswersEntity.setQuestionAnswerId(baseBiz.getIdStr());
-                    }
-                    return questionAnswersEntity;
-                })
-                .toList();
-        boolean updAnswerRes = questionAnswersBiz.saveOrUpdBatch(answerList);
-        // save or upd options
-        List<QuestionOptionsEntity> optionList = answerList.stream()
-                .map(item -> BeanUtil.copyProperties(item, QuestionOptionsEntity.class))
-                .collect(Collectors.toList());
-        boolean updOptionsRes = questionOptionsBiz.saveOrUpdBatch(optionList);
+        List<QuestionAnswersEntity> answersEntityList = new ArrayList<>();
+        List<QuestionScoreEntity> scoreEntityList = new ArrayList<>();
+        List<QuestionOptionsEntity> optionsEntityList = new ArrayList<>();
+        optionWithAnswerList.forEach(item -> {
+            // answer
+            QuestionAnswersEntity questionAnswersEntity = QuestionAnswersEntity.builder()
+                    .questionInstanceId(questionInstance.getQuestionInstanceId())
+                    .questionAnswerId(item.getQuestionAnswerId())
+                    .questionOptionsId(item.getQuestionOptionsId())
+                    .optionTitle(item.getOptionTitle())
+                    .optionValue(item.getOptionValue())
+                    .rightAnswer(item.getRightAnswer())
+                    .build();
+            if (StrUtil.isBlank(questionAnswersEntity.getQuestionAnswerId())) {
+                questionAnswersEntity.setQuestionOptionsId(baseBiz.getIdStr());
+                questionAnswersEntity.setQuestionAnswerId(baseBiz.getIdStr());
+            }
+            answersEntityList.add(questionAnswersEntity);
 
-        return updInstanceRes && updOptionsRes && updAnswerRes;
+            // score
+            QuestionScoreEntity questionScoreEntity = BeanUtil.copyProperties(questionAnswersEntity, QuestionScoreEntity.class);
+            questionScoreEntity.setQuestionScoreId(item.getQuestionScoreId());
+            questionScoreEntity.setScore(item.getScore());
+            if (StrUtil.isBlank(questionScoreEntity.getQuestionScoreId())) {
+                questionScoreEntity.setQuestionScoreId(baseBiz.getIdStr());
+            }
+            scoreEntityList.add(questionScoreEntity);
+
+            // options
+            QuestionOptionsEntity questionOptionsEntity = BeanUtil.copyProperties(questionAnswersEntity, QuestionOptionsEntity.class);
+            optionsEntityList.add(questionOptionsEntity);
+        });
+
+        boolean updAnswerRes = questionAnswersBiz.saveOrUpdBatch(answersEntityList);
+        boolean updOptionsRes = questionOptionsBiz.saveOrUpdBatch(optionsEntityList);
+        boolean updScoreRes = questionScoreBiz.saveOrUpdBatch(scoreEntityList);
+
+        return updInstanceRes && updOptionsRes && updAnswerRes && updScoreRes;
     }
 
     @Override
@@ -178,8 +208,24 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
         if (answersEntityList == null || answersEntityList.isEmpty()) {
             return result;
         }
-
         List<QuestionOptionWithAnswerResponse> optionWithAnswerResponses = BeanUtil.copyToList(answersEntityList, QuestionOptionWithAnswerResponse.class);
+
+        // score
+        List<QuestionScoreEntity> socreList = questionScoreService.lambdaQuery()
+                .eq(QuestionScoreEntity::getQuestionInstanceId, questionInstance.getQuestionInstanceId())
+                .list();
+        if (socreList != null && !socreList.isEmpty()) {
+            Map<String, QuestionScoreEntity> collect = socreList.stream().collect(Collectors.toMap(QuestionScoreEntity::getQuestionOptionsId, v -> v, (v1, v2) -> v1));
+            optionWithAnswerResponses.forEach(item -> {
+                String questionOptionsId = item.getQuestionOptionsId();
+                QuestionScoreEntity questionScoreEntity = collect.get(questionOptionsId);
+                if (BeanUtil.isNotEmpty(questionScoreEntity)) {
+                    item.setQuestionScoreId(questionScoreEntity.getQuestionScoreId());
+                    item.setScore(questionScoreEntity.getScore());
+                }
+            });
+        }
+
         result.setOptionWithAnswerList(optionWithAnswerResponses);
         return result;
     }

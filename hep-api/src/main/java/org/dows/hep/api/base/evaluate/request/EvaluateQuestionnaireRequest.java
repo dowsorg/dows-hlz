@@ -13,12 +13,12 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Schema(name = "CreateEvaluateQuestionnaire 对象", title = "创建评估问卷")
-public class CreateEvaluateQuestionnaireRequest{
-    @Schema(title = "应用ID")
-    private String appId;
+public class EvaluateQuestionnaireRequest {
+
+    @Schema(title = "分布式ID")
+    private String evaluateQuestionnaireId;
 
     @Schema(title = "问题集")
     private String questionSectionId;
-
 
 }

@@ -1,6 +1,6 @@
 package org.dows.hep.biz.base.evaluate;
 
-import org.dows.hep.api.base.evaluate.request.CreateEvaluateQuestionnaireRequest;
+import org.dows.hep.api.base.evaluate.request.EvaluateQuestionnaireRequest;
 import org.dows.hep.api.base.evaluate.response.EvaluateQuestionnaireResponse;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +25,7 @@ public class EvaluateQuestionnaireBiz{
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public void createEvaluateQuestionnaire(CreateEvaluateQuestionnaireRequest createEvaluateQuestionnaire ) {
+    public void createEvaluateQuestionnaire(EvaluateQuestionnaireRequest createEvaluateQuestionnaire ) {
         
     }
     /**
