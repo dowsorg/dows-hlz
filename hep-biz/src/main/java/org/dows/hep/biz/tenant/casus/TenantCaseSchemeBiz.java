@@ -12,9 +12,7 @@ import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.enums.*;
 import org.dows.hep.api.base.question.request.QuestionSectionItemRequest;
 import org.dows.hep.api.base.question.request.QuestionSectionRequest;
-import org.dows.hep.api.base.question.response.QuestionSectionDimensionResponse;
-import org.dows.hep.api.base.question.response.QuestionSectionItemResponse;
-import org.dows.hep.api.base.question.response.QuestionSectionResponse;
+import org.dows.hep.api.base.question.response.*;
 import org.dows.hep.api.tenant.casus.CaseESCEnum;
 import org.dows.hep.api.tenant.casus.CaseEnabledEnum;
 import org.dows.hep.api.tenant.casus.CaseSchemeSourceEnum;
@@ -95,7 +93,24 @@ public class TenantCaseSchemeBiz {
                 .page(page);
 
         // convert
-        return baseBiz.convertPage(pageResult, CaseSchemePageResponse.class);
+        Page<CaseSchemePageResponse> result = baseBiz.convertPage(pageResult, CaseSchemePageResponse.class);
+        fillResult(result);
+        return result;
+    }
+
+    private void fillResult(Page<CaseSchemePageResponse> result) {
+        List<CaseSchemePageResponse> records = result.getRecords();
+        if (records != null && !records.isEmpty()) {
+            List<String> categIds = records.stream()
+                    .map(CaseSchemePageResponse::getCaseCategId)
+                    .toList();
+            List<CaseCategoryResponse> categoryResponseList = caseCategoryBiz.listCaseCategory(categIds);
+            Map<String, String> collect = categoryResponseList.stream()
+                    .collect(Collectors.toMap(CaseCategoryResponse::getCaseCategId, CaseCategoryResponse::getCaseCategName, (v1, v2) -> v1));
+            records.forEach(item -> {
+                item.setCaseCategName(collect.get(item.getCaseCategId()));
+            });
+        }
     }
 
     /**
