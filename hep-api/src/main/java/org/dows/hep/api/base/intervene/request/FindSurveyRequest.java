@@ -14,6 +14,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "FindSurvey 对象", title = "查询条件")
 public class FindSurveyRequest{
+
+    @Schema(title = "应用ID")
+    private String appId;
     @Schema(title = "分页大小")
     private Integer pageSize;
 

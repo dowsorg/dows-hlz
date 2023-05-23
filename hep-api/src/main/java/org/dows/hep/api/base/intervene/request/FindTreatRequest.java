@@ -17,6 +17,9 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(name = "FindTreat 对象", title = "查询条件")
 public class FindTreatRequest{
+
+    @Schema(title = "应用ID")
+    private String appId;
     @Schema(title = "分页大小")
     private Integer pageSize;
 

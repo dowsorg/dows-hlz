@@ -5,6 +5,7 @@ import org.dows.hep.entity.IndicatorInstanceEntity;
 import org.dows.hep.service.IndicatorInstanceService;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -39,6 +40,11 @@ public class IndicatorInstanceDao extends BaseDao<IndicatorInstanceService, Indi
         return null;
     }
 
+    /**
+     * 获取所有营养成分
+     * @param cols
+     * @return
+     */
     public List<IndicatorInstanceEntity> getIndicators4Nutrient(SFunction<IndicatorInstanceEntity,?>...cols ){
         final Integer foodFlag=1;
         return service.lambdaQuery()
@@ -47,4 +53,23 @@ public class IndicatorInstanceDao extends BaseDao<IndicatorInstanceService, Indi
                 .select(cols)
                 .list();
     }
+
+    /**
+     * 获取三大营养成分
+     * @param nutrientNames
+     * @param cols
+     * @return
+     */
+    public List<IndicatorInstanceEntity> getIndicators4Nutrient(Collection<String> nutrientNames, SFunction<IndicatorInstanceEntity, ?>...cols ){
+        final Integer foodFlag=1;
+        return service.lambdaQuery()
+                .eq(IndicatorInstanceEntity::getFood,foodFlag)
+                .in(IndicatorInstanceEntity::getIndicatorName,nutrientNames)
+                .orderByAsc(IndicatorInstanceEntity::getId)
+                .select(cols)
+                .list();
+    }
+
+
+
 }

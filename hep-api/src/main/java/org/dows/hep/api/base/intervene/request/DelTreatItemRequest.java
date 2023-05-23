@@ -16,6 +16,9 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(name = "DelTreatItem 对象", title = "删除治疗项目")
 public class DelTreatItemRequest{
+
+    @Schema(title = "应用ID")
+    private String appId;
     @Schema(title = "分布式id列表")
     private List<String> ids;
 

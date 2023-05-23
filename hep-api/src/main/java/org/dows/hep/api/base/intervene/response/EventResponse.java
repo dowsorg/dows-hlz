@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 /**
 * @description 
@@ -12,6 +13,7 @@ import lombok.NoArgsConstructor;
 * @date 
 */
 @Data
+@Accessors(chain = true)
 @NoArgsConstructor
 @Schema(name = "Event 对象", title = "事件列表")
 public class EventResponse{
@@ -31,6 +33,12 @@ public class EventResponse{
     @Schema(title = "一级分类名称")
     private String categNameLv1;
 
+    @Schema(title = "分布式id路径")
+    private String categIdPath;
+
+    @Schema(title = "分类名称路径")
+    private String categNamePath;
+
     @Schema(title = "状态 0-启用 1-停用")
     private Integer state;
 
@@ -40,11 +48,10 @@ public class EventResponse{
     @Schema(title = "创建者名称")
     private String createAccountName;
 
-    @Schema(title = "触发类型 1-事件触发 2-条件触发")
+    @Schema(title = "触发类型 0-条件触发 1-第一期 2-第二期...5-第5期")
     private Integer triggerType;
 
-    @Schema(title = "触发类型描述")
-    private String triggerTypeDescr;
+
 
 
 }

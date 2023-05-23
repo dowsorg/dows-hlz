@@ -1,5 +1,6 @@
 package org.dows.hep.biz.util;
 
+
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -12,6 +13,7 @@ import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -21,63 +23,68 @@ import java.util.stream.Collectors;
 public class ShareUtil {
     public static class XObject {
 
-        public static boolean notEmpty(Number obj,boolean zeroAsEmpty){
-            return !isEmpty(obj,zeroAsEmpty);
+        public static boolean notEmpty(Number obj, boolean zeroAsEmpty) {
+            return !isEmpty(obj, zeroAsEmpty);
         }
-        public static boolean notEmpty(Object obj){
+
+        public static boolean notEmpty(Object obj) {
             return !isEmpty(obj);
         }
-        public static boolean isEmpty(Number obj,boolean zeroAsEmpty){
-            return ObjectUtils.isEmpty(obj)||zeroAsEmpty && obj.equals(0);
+
+        public static boolean isEmpty(Number obj, boolean zeroAsEmpty) {
+            return ObjectUtils.isEmpty(obj) || zeroAsEmpty && obj.equals(0);
         }
-        public static boolean isEmpty(Object obj){
+
+        public static boolean isEmpty(Object obj) {
             return ObjectUtils.isEmpty(obj);
         }
 
 
-        public static boolean isAllEmpty(Object...objs) {
+        public static boolean isAllEmpty(Object... objs) {
             return isEmpty(objs) || Arrays.stream(objs).allMatch(ObjectUtils::isEmpty);
         }
-        public static boolean isAnyEmpty(Object...objs) {
+
+        public static boolean isAnyEmpty(Object... objs) {
             return isEmpty(objs) || Arrays.stream(objs).anyMatch(ObjectUtils::isEmpty);
         }
-        public static boolean isAnyEmpty(Object obj, Supplier func){
-            return isEmpty(obj)||isEmpty(func.get());
+
+        public static boolean isAnyEmpty(Object obj, Supplier func) {
+            return isEmpty(obj) || isEmpty(func.get());
         }
 
         public static <T> T defaultIfNull(T object, T defaultValue) {
-            return ObjectUtil.defaultIfNull(object,defaultValue);
+            return ObjectUtil.defaultIfNull(object, defaultValue);
         }
 
         public static <T> T defaultIfNull(T source, Supplier<? extends T> defaultValueSupplier) {
-            return ObjectUtil.defaultIfNull(source,defaultValueSupplier);
+            return ObjectUtil.defaultIfNull(source, defaultValueSupplier);
         }
 
-        public static boolean nullSafeEquals(Object o1, Object o2){
-            return ObjectUtils.nullSafeEquals(o1,o2);
+        public static boolean nullSafeEquals(Object o1, Object o2) {
+            return ObjectUtils.nullSafeEquals(o1, o2);
         }
-
-
 
 
     }
+
     public static class XString {
         public static String defaultIfEmpty(String src, String dft) {
             return StringUtils.hasLength(src) ? src : dft;
         }
+
         public static String defaultIfEmpty(String src, String... dftValues) {
-            if(StringUtils.hasLength(src)||null==dftValues|| dftValues.length==0) {
+            if (StringUtils.hasLength(src) || null == dftValues || dftValues.length == 0) {
                 return src;
             }
-            for(String val : dftValues){
-                if(StringUtils.hasLength(val)) {
+            for (String val : dftValues) {
+                if (StringUtils.hasLength(val)) {
                     return val;
                 }
             }
             return src;
         }
 
-        public static boolean nullSafeEquals(String o1, String o2,boolean ignoreCase) {
+        public static boolean nullSafeEquals(String o1, String o2, boolean ignoreCase) {
             if (o1 == o2) {
                 return true;
             }
@@ -87,11 +94,16 @@ public class ShareUtil {
             return ignoreCase ? o1.equalsIgnoreCase(o2) : o1.equals(o2);
         }
 
-        public static boolean hasLength(String src){
+        public static boolean hasLength(String src) {
             return StringUtils.hasLength(src);
         }
-        public static String eusureEndsWith(String src,String end){
-            return src.endsWith(end)?src:String.format("%s%s",src,end);
+
+        public static String eusureEndsWith(String src, String end) {
+            return src.endsWith(end) ? src : String.format("%s%s", src, end);
+        }
+
+        public static String trimStart(String src, String replace) {
+            return src.startsWith(replace)?src.substring(replace.length()):src;
         }
     }
 
@@ -113,22 +125,45 @@ public class ShareUtil {
             return CollectionUtils.isEmpty(map);
         }
 
+        public static <T, R> List<R> map(Iterable<T> collection,  Function<? super T, ? extends R> func) {
+            return CollUtil.map(collection, func, true);
+        }
+
         public static <T, R> List<R> map(Iterable<T> collection, boolean ignoreNull, Function<? super T, ? extends R> func) {
             return CollUtil.map(collection, func, ignoreNull);
         }
 
-        public static <T, K, U> Map<K, U> toMap(List<T> src, Function<? super T, ? extends K> keyMapper,
-                                                Function<? super T, ? extends U> valueMapper) {
+
+        public static <T, K, U> Map<K, U> toMap(List<T> src, Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
+           return toMap(src, keyMapper, valueMapper, false);
+        }
+        public static <T, K, U> Map<K, U> toMap(List<T> src, Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,boolean preferNew) {
             if (isEmpty(src)) {
                 return new HashMap<>(0);
             }
-            return src.stream().collect(Collectors.toMap(keyMapper, valueMapper, (c, n) -> c));
+            return src.stream().collect(Collectors.toMap(keyMapper, valueMapper, (c, n) -> preferNew ? n : c));
         }
-
-        public static <T, K, U, M extends Map<K, U>> M toMap(List<T> src, Function<? super T, ? extends K> keyMapper,
-                                                             Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction, Supplier<M> mapFactory) {
+        public static <T, K, U, M extends Map<K, U>> M toMap(List<T> src, Supplier<M> mapFactory, Function<? super T, ? extends K> keyMapper,
+                                                             Function<? super T, ? extends U> valueMapper, boolean preferNew) {
+            return src.stream().collect(Collectors.toMap(keyMapper, valueMapper, (c, n) -> preferNew ? n : c, mapFactory));
+        }
+        public static <T, K, U, M extends Map<K, U>> M toMap(List<T> src, Supplier<M> mapFactory, Function<? super T, ? extends K> keyMapper,
+                                                             Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
             return src.stream().collect(Collectors.toMap(keyMapper, valueMapper, mergeFunction, mapFactory));
         }
+
+
+        public static <T, K> Map<K,List<T>> toGroup(List<T> src, Function<? super T, ? extends K> keyMapper) {
+            return src.stream().collect(Collectors.groupingBy(keyMapper, HashMap::new, Collectors.toList()));
+        }
+        public static <T,U, K> Map<K,List<U>> toGroup(List<T> src, Function<? super T, ? extends U> mapper, Function<? super U, ? extends K> keyMapper) {
+            return src.stream().map(mapper).collect(Collectors.groupingBy(keyMapper, HashMap::new, Collectors.toList()));
+        }
+        public static <T, K, U,D,A, M extends Map<K, D>> M toGroup(List<T> src, Supplier<M> mapFactory,Function<? super T, ? extends U> mapper,Function<? super U, ? extends K> keyMapper,  Collector<? super U, A, D> downstream){
+            return src.stream().map(mapper).collect(Collectors.groupingBy(keyMapper,mapFactory,downstream));
+        }
+
+
 
     }
 
@@ -136,6 +171,7 @@ public class ShareUtil {
         public static boolean isEmpty(Object array) {
             return ArrayUtil.isEmpty(array);
         }
+
         public static boolean notEmpty(Object array) {
             return !isEmpty(array);
         }
@@ -145,6 +181,8 @@ public class ShareUtil {
         }
 
     }
+
+
 
 
 }

@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * @author runsix
@@ -16,10 +15,20 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CreateIndicatorViewBaseInfoDescrRs implements Serializable {
-  @Schema(title = "指标基本信息描述表名称")
-  private String name;
+public class CreateOrUpdateIndicatorViewBaseInfoSingleRs implements Serializable {
+  @Schema(title = "分布式ID")
+  private String indicatorViewBaseInfoSingleId;
+
+  @Schema(title = "应用ID")
+  private String appId;
+
+  @Schema(title = "分布式ID")
+  private String indicatorViewBaseInfoId;
+
+  @Schema(title = "指标ID")
+  private String indicatorInstanceId;
+
   @Schema(title = "展示顺序")
   private Integer seq;
-  private List<String> indicatorInstanceIdList;
+
 }

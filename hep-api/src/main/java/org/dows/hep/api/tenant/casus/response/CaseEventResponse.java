@@ -3,6 +3,7 @@ package org.dows.hep.api.tenant.casus.response;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 /**
 * @description 
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
 * @date 
 */
 @Data
+@Accessors(chain = true)
 @NoArgsConstructor
 @Schema(name = "CaseEvent 对象", title = "人物事件列表")
 public class CaseEventResponse{
@@ -21,7 +23,7 @@ public class CaseEventResponse{
     private String caseEventName;
 
     @Schema(title = "一级分类id")
-    private String eventCategIdLv1;
+    private String categIdLv1;
 
     @Schema(title = "一级分类名称")
     private String categNameLv1;

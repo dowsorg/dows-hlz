@@ -17,7 +17,8 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(name = "SaveFoodDishes 对象", title = "菜肴信息")
 public class SaveFoodDishesRequest{
-
+    @Schema(title = "应用ID")
+    private String appId;
 
     @Schema(title = "数据库id，新增时为空")
     private Long id;

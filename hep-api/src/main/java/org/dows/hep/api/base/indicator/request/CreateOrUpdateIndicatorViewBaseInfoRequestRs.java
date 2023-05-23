@@ -25,7 +25,7 @@ public class CreateOrUpdateIndicatorViewBaseInfoRequestRs implements Serializabl
     private String indicatorFuncId;
     @Schema(title = "指标基本信息类名称")
     private String name;
-    private List<CreateIndicatorViewBaseInfoDescrRs> createIndicatorViewBaseInfoDescrRsList;
-    private List<CreateIndicatorViewBaseInfoMonitorRs> createIndicatorViewBaseInfoMonitorRsList;
-    private List<CreateIndicatorViewBaseInfoSingleRs> createIndicatorViewBaseInfoSingleRsList;
+    private List<CreateOrUpdateIndicatorViewBaseInfoDescrRs> createOrUpdateIndicatorViewBaseInfoDescrRsList;
+    private List<CreateOrUpdateIndicatorViewBaseInfoMonitorRs> createOrUpdateIndicatorViewBaseInfoMonitorRsList;
+    private List<CreateOrUpdateIndicatorViewBaseInfoSingleRs> createOrUpdateIndicatorViewBaseInfoSingleRsList;
 }

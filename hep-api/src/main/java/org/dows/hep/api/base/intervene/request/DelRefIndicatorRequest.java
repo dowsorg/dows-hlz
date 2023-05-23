@@ -16,6 +16,9 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(name = "DelRefIndicator 对象", title = "删除食材关联指标")
 public class DelRefIndicatorRequest {
+
+    @Schema(title = "应用ID")
+    private String appId;
     @Schema(title = "分布式refId列表")
     private List<String> ids;
 

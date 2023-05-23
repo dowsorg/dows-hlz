@@ -25,10 +25,7 @@ import org.dows.sequence.api.IdGenerator;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -159,7 +156,7 @@ public class PictureManageBiz {
         //2、根据资料类别ID找到资料
         LambdaQueryWrapper<MaterialsEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(MaterialsEntity::getAppId, request.getAppId())
-                    .eq(MaterialsEntity::getCategoryId,materialsCategory.getMaterialsCategoryId());
+                .eq(MaterialsEntity::getCategoryId, materialsCategory.getMaterialsCategoryId());
         Page<MaterialsEntity> page = new Page<>(request.getPageNo(), request.getPageSize());
         IPage<MaterialsEntity> materialPage = materialsService.page(page, queryWrapper);
         List<PictureResponse> voList = new ArrayList<>();
@@ -167,15 +164,21 @@ public class PictureManageBiz {
         if (materialPage.getRecords() != null && materialPage.getRecords().size() > 0) {
             materialPage.getRecords().forEach(materialsEntity -> {
                 List<MaterialsAttachmentEntity> attachmentEntities = materialsAttachmentService.lambdaQuery()
-                        .eq(MaterialsAttachmentEntity::getMaterialsId,materialsEntity.getMaterialsId())
-                        .eq(MaterialsAttachmentEntity::getAppId,request.getAppId())
+                        .eq(MaterialsAttachmentEntity::getMaterialsId, materialsEntity.getMaterialsId())
+                        .eq(MaterialsAttachmentEntity::getAppId, request.getAppId())
                         .list();
                 //3.1、分组去重，人物有两个图片，只取一个
-                Map<String,MaterialsAttachmentEntity> map = attachmentEntities.stream().collect(Collectors.groupingBy(MaterialsAttachmentEntity::getMaterialsId,
-                        Collectors.collectingAndThen(Collectors.toList(), value -> value.get(0))));
+                Map<String, MaterialsAttachmentEntity> map = new HashMap<>();
+                if (request.getCategoryName().equals("人物图示")) {
+                    map = attachmentEntities.stream().collect(Collectors.groupingBy(MaterialsAttachmentEntity::getMaterialsId,
+                            Collectors.collectingAndThen(Collectors.toList(), value -> value.get(1))));
+                } else {
+                    map = attachmentEntities.stream().collect(Collectors.groupingBy(MaterialsAttachmentEntity::getMaterialsId,
+                            Collectors.collectingAndThen(Collectors.toList(), value -> value.get(0))));
+                }
                 //3.2、赋值
                 PictureResponse pictureResponse = new PictureResponse();
-                BeanUtil.copyProperties(materialsEntity,pictureResponse);
+                BeanUtil.copyProperties(materialsEntity, pictureResponse);
                 MaterialsAttachmentEntity materialsAttachmentEntity = map.get(materialsEntity.getMaterialsId());
                 pictureResponse.setMaterialsAttachment(materialsAttachmentEntity.getFileUri());
                 voList.add(pictureResponse);

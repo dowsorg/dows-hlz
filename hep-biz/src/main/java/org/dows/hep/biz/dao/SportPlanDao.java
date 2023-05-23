@@ -49,6 +49,11 @@ public class SportPlanDao extends BaseSubDao<SportPlanService, SportPlanEntity, 
     }
 
     @Override
+    protected SFunction<SportPlanEntity,String> getColCateg(){
+        return SportPlanEntity::getInterveneCategId;
+    }
+
+    @Override
     protected SFunction<SportPlanItemsEntity, String> getColLeadId() {
         return SportPlanItemsEntity::getSportPlanId;
     }

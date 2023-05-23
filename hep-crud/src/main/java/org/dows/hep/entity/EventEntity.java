@@ -39,6 +39,9 @@ public class EventEntity implements CrudEntity {
     @Schema(title = "分布式id")
     private String eventId;
 
+    @Schema(title = "应用ID")
+    private String appId;
+
     @Schema(title = "突发事件名称")
     private String eventName;
 
@@ -57,8 +60,6 @@ public class EventEntity implements CrudEntity {
     @Schema(title = "分类名称路径")
     private String categNamePath;
 
-    @Schema(title = "状态 0-启用 1-停用")
-    private Integer state;
 
     @Schema(title = "事件说明")
     private String descr;
@@ -69,14 +70,17 @@ public class EventEntity implements CrudEntity {
     @Schema(title = "创建者名称")
     private String createAccountName;
 
-    @Schema(title = "触发类型 1-事件触发 2-条件触发")
-    private Boolean triggerType;
+    @Schema(title = "触发类型 0-条件触发 1-第一期 2-第二期...5-第5期")
+    private Integer triggerType;
 
     @Schema(title = "触发期数")
     private String triggerPeriod;
 
     @Schema(title = "触发时间段 1-前期 2-中期 3-后期")
     private String triggerSpan;
+
+    @Schema(title = "状态 0-启用 1-停用")
+    private Integer state;
 
     @JsonIgnore
     @TableLogic

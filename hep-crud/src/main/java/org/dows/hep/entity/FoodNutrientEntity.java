@@ -39,6 +39,9 @@ public class FoodNutrientEntity implements CrudEntity {
     @Schema(title = "分布式id")
     private String foodNutrientId;
 
+    @Schema(title = "应用ID")
+    private String appId;
+
     @Schema(title = "营养指标")
     private String indicatorInstanceId;
 

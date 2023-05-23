@@ -17,6 +17,8 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(name = "SaveTreatItme 对象", title = "治疗项目信息")
 public class SaveTreatItemRequest {
+    @Schema(title = "应用ID")
+    private String appId;
 
     @Schema(title = "数据库id,新增时为空")
     private Long id;
