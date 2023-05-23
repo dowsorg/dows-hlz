@@ -142,6 +142,9 @@ public class IndicatorViewBaseInfoBiz{
             .map(indicatorViewBaseInfoDescrEntity -> {
               String indicatorViewBaseInfoDescId = indicatorViewBaseInfoDescrEntity.getIndicatorViewBaseInfoDescId();
               List<IndicatorViewBaseInfoDescrRefEntity> indicatorViewBaseInfoDescrRefList = kIndicatorViewBaseInfoDescIdVIndicatorViewBaseInfoDescrRefListMap.get(indicatorViewBaseInfoDescId);
+              if (Objects.isNull(indicatorViewBaseInfoDescrRefList)) {
+                indicatorViewBaseInfoDescrRefList = new ArrayList<>();
+              }
               return IndicatorViewBaseInfoDescrResponseRs
                   .builder()
                   .id(indicatorViewBaseInfoDescrEntity.getId())
