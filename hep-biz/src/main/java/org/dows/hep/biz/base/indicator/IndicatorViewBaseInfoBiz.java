@@ -191,6 +191,9 @@ public class IndicatorViewBaseInfoBiz{
                         String indicatorViewBaseInfoMonitorContentId = indicatorViewBaseInfoMonitorContentEntity.getIndicatorViewBaseInfoMonitorContentId();
                         List<IndicatorViewBaseInfoMonitorContentRefEntity> indicatorViewBaseInfoMonitorContentRefEntityList = kIndicatorViewBaseInfoMonitorContentIdVIndicatorViewBaseInfoMonitorContentRefListMap
                             .get(indicatorViewBaseInfoMonitorContentId);
+                        if (Objects.isNull(indicatorViewBaseInfoMonitorContentRefEntityList)) {
+                          indicatorViewBaseInfoMonitorContentRefEntityList = new ArrayList<>();
+                        }
                         return IndicatorViewBaseInfoMonitorContentResponseRs
                             .builder()
                             .id(indicatorViewBaseInfoMonitorContentEntity.getId())
