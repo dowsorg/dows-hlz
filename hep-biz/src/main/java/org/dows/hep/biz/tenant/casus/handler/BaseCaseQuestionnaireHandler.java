@@ -58,7 +58,7 @@ public abstract class BaseCaseQuestionnaireHandler implements ApplicationContext
                     .enabled(QuestionEnabledEnum.ENABLED.getCode())
                     .required(0)
                     .sequence(i)
-                    .questionRequest(questionRequest)
+                    .question(questionRequest)
                     .build();
             questionSectionItemRequests.add(questionSectionItemRequest);
         }
