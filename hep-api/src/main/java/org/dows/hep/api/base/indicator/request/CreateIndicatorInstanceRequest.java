@@ -1,5 +1,6 @@
 package org.dows.hep.api.base.indicator.request;
 
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,12 +16,15 @@ import lombok.NoArgsConstructor;
 @Schema(name = "CreateIndicatorInstance 对象", title = "创建指标实例")
 public class CreateIndicatorInstanceRequest{
     @Schema(title = "指标类别分布式ID")
+    @ApiModelProperty(required = true, value = "手动新建的指标都必须有指标类别id")
     private String indicatorCategoryId;
 
     @Schema(title = "应用ID")
+    @ApiModelProperty(required = true)
     private String appId;
 
     @Schema(title = "指标名称")
+    @ApiModelProperty(required = true)
     private String indicatorName;
 
     @Schema(title = "默认值")

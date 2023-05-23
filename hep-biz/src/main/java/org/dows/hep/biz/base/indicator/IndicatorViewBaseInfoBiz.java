@@ -561,6 +561,7 @@ public class IndicatorViewBaseInfoBiz{
           String indicatorInstanceId = createOrUpdateIndicatorViewBaseInfoSingleRs.getIndicatorInstanceId();
           Integer seq = createOrUpdateIndicatorViewBaseInfoSingleRs.getSeq();
           if (StringUtils.isBlank(indicatorViewBaseInfoSingleId)) {
+            indicatorViewBaseInfoSingleId = idGenerator.nextIdStr();
             indicatorViewBaseInfoSingleEntity = IndicatorViewBaseInfoSingleEntity
                 .builder()
                 .indicatorViewBaseInfoSingleId(indicatorViewBaseInfoSingleId)
