@@ -142,6 +142,9 @@ public class IndicatorViewBaseInfoBiz{
             .map(indicatorViewBaseInfoDescrEntity -> {
               String indicatorViewBaseInfoDescId = indicatorViewBaseInfoDescrEntity.getIndicatorViewBaseInfoDescId();
               List<IndicatorViewBaseInfoDescrRefEntity> indicatorViewBaseInfoDescrRefList = kIndicatorViewBaseInfoDescIdVIndicatorViewBaseInfoDescrRefListMap.get(indicatorViewBaseInfoDescId);
+              if (Objects.isNull(indicatorViewBaseInfoDescrRefList)) {
+                indicatorViewBaseInfoDescrRefList = new ArrayList<>();
+              }
               return IndicatorViewBaseInfoDescrResponseRs
                   .builder()
                   .id(indicatorViewBaseInfoDescrEntity.getId())
@@ -191,6 +194,9 @@ public class IndicatorViewBaseInfoBiz{
                         String indicatorViewBaseInfoMonitorContentId = indicatorViewBaseInfoMonitorContentEntity.getIndicatorViewBaseInfoMonitorContentId();
                         List<IndicatorViewBaseInfoMonitorContentRefEntity> indicatorViewBaseInfoMonitorContentRefEntityList = kIndicatorViewBaseInfoMonitorContentIdVIndicatorViewBaseInfoMonitorContentRefListMap
                             .get(indicatorViewBaseInfoMonitorContentId);
+                        if (Objects.isNull(indicatorViewBaseInfoMonitorContentRefEntityList)) {
+                          indicatorViewBaseInfoMonitorContentRefEntityList = new ArrayList<>();
+                        }
                         return IndicatorViewBaseInfoMonitorContentResponseRs
                             .builder()
                             .id(indicatorViewBaseInfoMonitorContentEntity.getId())
@@ -268,7 +274,10 @@ public class IndicatorViewBaseInfoBiz{
             paramIndicatorViewBaseInfoDescIdSet.add(indicatorViewBaseInfoDescId);
             createOrUpdateIndicatorViewBaseInfoDescrRs.getCreateOrUpdateIndicatorViewBaseInfoDescrRefRequestRsList()
                 .forEach(createOrUpdateIndicatorViewBaseInfoDescrRefRequestRs -> {
-                  paramIndicatorViewBaseInfoDescRefIdSet.add(createOrUpdateIndicatorViewBaseInfoDescrRefRequestRs.getIndicatorViewBaseInfoDescRefId());
+                  String indicatorViewBaseInfoDescRefId = createOrUpdateIndicatorViewBaseInfoDescrRefRequestRs.getIndicatorViewBaseInfoDescRefId();
+                  if (StringUtils.isNotBlank(indicatorViewBaseInfoDescRefId)) {
+                    paramIndicatorViewBaseInfoDescRefIdSet.add(indicatorViewBaseInfoDescRefId);
+                  }
                   paramIndicatorInstanceIdSet.add(createOrUpdateIndicatorViewBaseInfoDescrRefRequestRs.getIndicatorInstanceId());
                 });
           }
