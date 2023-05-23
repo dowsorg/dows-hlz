@@ -116,18 +116,35 @@ public class QuestionInstanceBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     public IPage<QuestionPageResponse> pageQuestion(QuestionPageRequest request) {
+        List<String> categoryIdList = getCategoryIdList(request);
         Page<QuestionInstanceEntity> pageRequest = new Page<>(request.getPageNo(), request.getPageSize());
         Page<QuestionInstanceEntity> pageResult = questionInstanceService.lambdaQuery()
                 .eq(QuestionInstanceEntity::getAppId, request.getAppId())
                 .eq(QuestionInstanceEntity::getVer, baseBiz.getLastVer())
                 .eq(QuestionInstanceEntity::getQuestionInstancePid, baseBiz.getQuestionInstancePid())
                 .eq(QuestionInstanceEntity::getBizCode, QuestionAccessAuthEnum.PUBLIC_VIEWING.name())
-                .eq(StrUtil.isNotBlank(request.getQuestionType()), QuestionInstanceEntity::getQuestionType, request.getQuestionType())
-                .in(request.getCategIdList() != null && !request.getCategIdList().isEmpty(), QuestionInstanceEntity::getQuestionCategId, request.getCategIdList())
+                .in(request.getQuestionType() != null && !request.getQuestionType().isEmpty(), QuestionInstanceEntity::getQuestionType, request.getQuestionType())
+                .in(!categoryIdList.isEmpty(), QuestionInstanceEntity::getQuestionCategId, categoryIdList)
                 .like(StrUtil.isNotBlank(request.getKeyword()), QuestionInstanceEntity::getQuestionTitle, request.getKeyword())
                 .page(pageRequest);
         Page<QuestionPageResponse> result = baseBiz.convertPage(pageResult, QuestionPageResponse.class);
         fillResult(result);
+        return result;
+    }
+
+    private List<String> getCategoryIdList(QuestionPageRequest request) {
+        List<String> l1CategIdList = request.getL1CategIdList();
+        List<String> l2CategIdList = request.getL2CategIdList();
+
+        List<String> result = new ArrayList<>(l2CategIdList);
+        l1CategIdList.forEach(l1CategoryId -> {
+            List<QuestionCategoryResponse> children = questionCategBiz.getChildrenByPid(l1CategoryId, QuestionCategGroupEnum.QUESTION.name());
+            if (children != null && !children.isEmpty()) {
+                List<String> childrenIds = children.stream().map(QuestionCategoryResponse::getQuestionCategId).toList();
+                result.addAll(childrenIds);
+            }
+        });
+
         return result;
     }
 

@@ -23,10 +23,13 @@ public class QuestionPageRequest {
     private String keyword;
 
     @Schema(title = "题型")
-    private String questionType;
+    private List<String> questionType;
 
-    @Schema(title = "类别ID集合")
-    private List<String> categIdList;
+    @Schema(title = "一级类别ID集合")
+    private List<String> l1CategIdList;
+
+    @Schema(title = "二级类别ID集合")
+    private List<String> l2CategIdList;
 
 
 }
