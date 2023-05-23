@@ -388,7 +388,7 @@ public class TenantCaseQuestionnaireBiz {
 
         // list question-id
         return itemResponseList.stream()
-                .map(QuestionSectionItemResponse::getQuestionResponse)
+                .map(QuestionSectionItemResponse::getQuestion)
                 .map(QuestionResponse::getQuestionInstanceId)
                 .distinct()
                 .toList();

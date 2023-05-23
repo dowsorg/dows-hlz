@@ -84,7 +84,7 @@ public class QuestionSectionItemBiz {
                 .map(item -> {
                     QuestionSectionItemResponse itemResponse = BeanUtil.copyProperties(item, QuestionSectionItemResponse.class);
                     QuestionResponse question = questionInstanceBiz.getQuestion(item.getQuestionInstanceId());
-                    itemResponse.setQuestionResponse(question);
+                    itemResponse.setQuestion(question);
                     return itemResponse;
                 })
                 .toList();
@@ -144,7 +144,7 @@ public class QuestionSectionItemBiz {
 
         List<QuestionSectionItemEntity> itemList = new ArrayList<>();
         addList.forEach(item -> {
-            QuestionRequest questionRequest = item.getQuestionRequest();
+            QuestionRequest questionRequest = item.getQuestion();
             QuestionClonedRequest clonedRequest = QuestionClonedRequest.builder()
                     .oriQuestionInstanceId(questionRequest.getQuestionInstanceId())
                     .build();
@@ -181,7 +181,7 @@ public class QuestionSectionItemBiz {
 
         List<QuestionSectionItemEntity> itemList = new ArrayList<>();
         addList.forEach(item -> {
-            QuestionRequest questionRequest = item.getQuestionRequest();
+            QuestionRequest questionRequest = item.getQuestion();
             String questionInstanceId = questionRequest.getQuestionInstanceId();
             QuestionSectionItemEntity entity = QuestionSectionItemEntity.builder()
                     .questionSectionItemId(baseBiz.getIdStr())
@@ -213,7 +213,7 @@ public class QuestionSectionItemBiz {
         if (!addList.isEmpty()) {
             List<QuestionSectionItemEntity> addItemList = new ArrayList<>();
             addList.forEach(item -> {
-                QuestionRequest questionRequest = item.getQuestionRequest();
+                QuestionRequest questionRequest = item.getQuestion();
                 String questionInstanceId = questionInstanceBiz.saveOrUpdQuestion(questionRequest, QuestionAccessAuthEnum.PRIVATE_VIEWING, questionSourceEnum);
 
                 QuestionSectionItemEntity entity = QuestionSectionItemEntity.builder()
@@ -241,7 +241,7 @@ public class QuestionSectionItemBiz {
                 Map<String, Long> collect = entityList.stream().collect(Collectors.toMap(QuestionSectionItemEntity::getQuestionSectionItemId, QuestionSectionItemEntity::getId));
                 List<QuestionSectionItemEntity> updItemList = new ArrayList<>();
                 updList.forEach(item -> {
-                    QuestionRequest questionRequest = item.getQuestionRequest();
+                    QuestionRequest questionRequest = item.getQuestion();
                     String questionInstanceId = questionInstanceBiz.saveOrUpdQuestion(questionRequest, QuestionAccessAuthEnum.PRIVATE_VIEWING, questionSourceEnum);
 
                     QuestionSectionItemEntity entity = QuestionSectionItemEntity.builder()

@@ -75,7 +75,7 @@ public class QuestionSectionBiz {
         List<QuestionSectionItemRequest> sectionItemList = request.getSectionItemList();
         if (sectionItemList != null && !sectionItemList.isEmpty()) {
             sectionItemList.forEach(item -> {
-                QuestionRequest questionRequest = item.getQuestionRequest();
+                QuestionRequest questionRequest = item.getQuestion();
                 questionRequest.setAccountId(questionSectionEntity.getAccountId());
                 questionRequest.setAccountName(questionSectionEntity.getAccountName());
             });
@@ -88,7 +88,7 @@ public class QuestionSectionBiz {
         List<QuestionSectionItemResponse> itemResponseList = listItem(List.of(questionSectionEntity.getQuestionSectionId()));
         if (Objects.nonNull(itemResponseList) && !itemResponseList.isEmpty()) {
             questionCount = itemResponseList.size();
-            List<String> questionIds = itemResponseList.stream().map(QuestionSectionItemResponse::getQuestionResponse).map(QuestionResponse::getQuestionInstanceId).toList();
+            List<String> questionIds = itemResponseList.stream().map(QuestionSectionItemResponse::getQuestion).map(QuestionResponse::getQuestionInstanceId).toList();
             struct = questionInstanceBiz.getStruct(questionIds);
         }
         LambdaUpdateWrapper<QuestionSectionEntity> updateWrapper = new LambdaUpdateWrapper<QuestionSectionEntity>()

@@ -33,6 +33,6 @@ public class QuestionSectionItemRequest {
     private Integer sequence;
 
     @Schema(title = "问题")
-    private QuestionRequest questionRequest;
+    private QuestionRequest question;
 
 }
