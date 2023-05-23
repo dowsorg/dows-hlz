@@ -8,6 +8,7 @@ import org.dows.hep.api.base.question.response.QuestionSectionDimensionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionItemResponse;
 
 import java.util.List;
+import java.util.Map;
 
 /**
 * @description 
@@ -61,6 +62,9 @@ public class CaseSchemeResponse{
 
     @Schema(title = "维度集合")
     private List<QuestionSectionDimensionResponse> questionSectionDimensionList;
+
+    @Schema(title = "维度Map")
+    private Map<String, List<QuestionSectionDimensionResponse>> questionSectionDimensionMap;
 
     @Schema(title = "来源[admin|tenant]")
     private String source;

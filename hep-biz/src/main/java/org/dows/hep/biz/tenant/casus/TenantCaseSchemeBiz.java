@@ -283,8 +283,10 @@ public class TenantCaseSchemeBiz {
         }
         List<QuestionSectionItemResponse> sectionItemList = questionSectionResponse.getSectionItemList();
         List<QuestionSectionDimensionResponse> questionSectionDimensionList = questionSectionResponse.getQuestionSectionDimensionList();
+        Map<String, List<QuestionSectionDimensionResponse>> questionSectionDimensionMap = questionSectionResponse.getQuestionSectionDimensionMap();
         result.setSectionItemList(sectionItemList);
         result.setQuestionSectionDimensionList(questionSectionDimensionList);
+        result.setQuestionSectionDimensionMap(questionSectionDimensionMap);
     }
 
     private CaseSchemeEntity getById(String caseSchemeId) {
