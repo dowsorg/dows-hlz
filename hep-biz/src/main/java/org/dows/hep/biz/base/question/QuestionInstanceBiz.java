@@ -136,14 +136,19 @@ public class QuestionInstanceBiz {
         List<String> l1CategIdList = request.getL1CategIdList();
         List<String> l2CategIdList = request.getL2CategIdList();
 
-        List<String> result = new ArrayList<>(l2CategIdList);
-        l1CategIdList.forEach(l1CategoryId -> {
-            List<QuestionCategoryResponse> children = questionCategBiz.getChildrenByPid(l1CategoryId, QuestionCategGroupEnum.QUESTION.name());
-            if (children != null && !children.isEmpty()) {
-                List<String> childrenIds = children.stream().map(QuestionCategoryResponse::getQuestionCategId).toList();
-                result.addAll(childrenIds);
-            }
-        });
+        List<String> result = new ArrayList<>();
+        if (l2CategIdList != null && !l2CategIdList.isEmpty()) {
+            result.addAll(l2CategIdList);
+        }
+        if (l1CategIdList != null && !l1CategIdList.isEmpty()) {
+            l1CategIdList.forEach(l1CategoryId -> {
+                List<QuestionCategoryResponse> children = questionCategBiz.getChildrenByPid(l1CategoryId, QuestionCategGroupEnum.QUESTION.name());
+                if (children != null && !children.isEmpty()) {
+                    List<String> childrenIds = children.stream().map(QuestionCategoryResponse::getQuestionCategId).toList();
+                    result.addAll(childrenIds);
+                }
+            });
+        }
 
         return result;
     }
