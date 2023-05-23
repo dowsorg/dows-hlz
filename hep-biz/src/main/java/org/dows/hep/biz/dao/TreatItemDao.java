@@ -49,6 +49,11 @@ public class TreatItemDao extends BaseSubDao<TreatItemService,TreatItemEntity,Tr
     }
 
     @Override
+    protected SFunction<TreatItemEntity,String> getColCateg(){
+        return TreatItemEntity::getInterveneCategId;
+    }
+
+    @Override
     protected SFunction<TreatItemIndicatorEntity, String> getColLeadId() {
         return TreatItemIndicatorEntity::getTreatItemId;
     }

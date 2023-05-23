@@ -1,5 +1,8 @@
 package org.dows.hep.rest.base.indicator;
+import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiParam;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.BatchCreateOrUpdateIndicatorCategoryRequest;
@@ -42,7 +45,7 @@ public class IndicatorCategoryRest {
     @GetMapping("v1/baseIndicator/indicatorCategory/getByPid")
     public List<IndicatorCategoryResponse> getByPid(
         @RequestParam @Validated String appId,
-        @RequestParam(required = false) @Validated String pid
+        @RequestParam(required = false) @Validated @ApiParam(value = "父类别分布式id") String pid
         ) {
         return indicatorCategoryBiz.getByPid(appId, pid);
     }

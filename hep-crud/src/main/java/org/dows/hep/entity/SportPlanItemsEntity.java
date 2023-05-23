@@ -39,6 +39,9 @@ public class SportPlanItemsEntity implements CrudEntity {
     @Schema(title = "分布式id")
     private String sportPlanItemsId;
 
+    @Schema(title = "应用ID")
+    private String appId;
+
     @Schema(title = "运动方案id")
     private String sportPlanId;
 

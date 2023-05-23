@@ -3,12 +3,15 @@ package org.dows.hep.rest.base.scheme;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.question.enums.QuestionSourceEnum;
 import org.dows.hep.api.tenant.casus.CaseSchemeSourceEnum;
 import org.dows.hep.api.tenant.casus.request.CaseSchemePageRequest;
 import org.dows.hep.api.tenant.casus.request.CaseSchemeRequest;
 import org.dows.hep.api.tenant.casus.response.CaseSchemePageResponse;
 import org.dows.hep.api.tenant.casus.response.CaseSchemeResponse;
+import org.dows.hep.biz.tenant.casus.TenantCaseBaseBiz;
 import org.dows.hep.biz.tenant.casus.TenantCaseSchemeBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +29,7 @@ import java.util.List;
 @Tag(name = "案例方案设计", description = "案例方案设计")
 public class CaseSchemeRest {
     private final TenantCaseSchemeBiz tenantCaseSchemeBiz;
+    private final TenantCaseBaseBiz baseBiz;
 
     /**
      * 新增方案设计
@@ -35,9 +39,12 @@ public class CaseSchemeRest {
      */
     @Operation(summary = "新增和更新")
     @PostMapping("v1/baseCasus/caseScheme/saveOrUpdCaseScheme")
-    public String saveOrUpdCaseScheme(@RequestBody @Validated CaseSchemeRequest caseScheme) {
-        caseScheme.setSource(CaseSchemeSourceEnum.ADMIN.name());
-        return tenantCaseSchemeBiz.saveOrUpdCaseScheme(caseScheme);
+    public String saveOrUpdCaseScheme(@RequestBody @Validated CaseSchemeRequest caseScheme, HttpServletRequest request) {
+        String accountId = baseBiz.getAccountId(request);
+        String accountName = baseBiz.getAccountName(request);
+        caseScheme.setAccountId(accountId);
+        caseScheme.setAccountName(accountName);
+        return tenantCaseSchemeBiz.saveOrUpdCaseScheme(caseScheme, CaseSchemeSourceEnum.ADMIN, QuestionSourceEnum.ADMIN);
     }
 
     /**

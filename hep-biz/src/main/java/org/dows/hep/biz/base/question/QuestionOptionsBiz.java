@@ -33,7 +33,6 @@ public class QuestionOptionsBiz {
         }
 
         // 新增更新都有的
-        // 数据库中已存在的
         Map<String, QuestionOptionsEntity> collect = optionsEntityList.stream()
                 .collect(Collectors.toMap(QuestionOptionsEntity::getQuestionOptionsId, v -> v, (v1, v2) -> v1));
 

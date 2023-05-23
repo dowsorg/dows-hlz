@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dows.hep.api.base.question.enums.QuestionTypeEnum;
 import org.dows.hep.api.tenant.casus.QuestionSelectModeEnum;
 
 import java.util.List;
@@ -20,15 +21,9 @@ import java.util.Map;
 @NoArgsConstructor
 @Schema(name = "CaseQuestionnaire 对象", title = "案例问卷Request")
 public class CaseQuestionnaireRequest{
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Schema(title = "数据库ID")
-    private Long id;
 
     @Schema(title = "案例问卷ID")
     private String caseQuestionnaireId;
-
-    @Schema(title = "应用ID")
-    private String appId;
 
     @Schema(title = "案例ID")
     private String caseInstanceId;
@@ -55,25 +50,28 @@ public class CaseQuestionnaireRequest{
     @NoArgsConstructor
     @Schema(name = "RandomMode 对象", title = "随机添加方式Request")
     public static class RandomMode {
-        @Schema(title = "分类路径")
-        private List<String> questionCategIdPaths;
+        @Schema(title = "知识体系")
+        private String l1CategId;
+
+        @Schema(title = "知识类别")
+        private String l2CategId;
 
         @Schema(title = "题目数量")
-        private Map<String, Integer> numMap;
-
-//        @Schema(title = "单选题-题目数量")
-//        private Integer radioSelectNum;
-//
-//        @Schema(title = "单选题-题目数量")
-//        private Integer multipleSelectNum;
-//
-//        @Schema(title = "材料题-题目数量")
-//        private Integer materialNum;
+        private Map<QuestionTypeEnum, Integer> numMap;
     }
 
 
 
     // JsonIgnore
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @JsonIgnore
+    @Schema(title = "数据库ID")
+    private Long id;
+
+    @Schema(title = "应用ID")
+    @JsonIgnore
+    private String appId;
+
     @Schema(title = "分配方式")
     @JsonIgnore
     private String allotMode;
@@ -89,21 +87,5 @@ public class CaseQuestionnaireRequest{
     @Schema(title = "题型结构")
     @JsonIgnore
     private String questionSectionStructure;
-
-    @Schema(title = "案例标示")
-    @JsonIgnore
-    private String caseIdentifier;
-
-    @Schema(title = "版本号")
-    @JsonIgnore
-    private String ver;
-
-    @Schema(title = "创建者账号Id")
-    @JsonIgnore
-    private String accountId;
-
-    @Schema(title = "创建者姓名")
-    @JsonIgnore
-    private String accountName;
 
 }

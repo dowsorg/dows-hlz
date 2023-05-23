@@ -6,8 +6,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
-import org.dows.hep.api.base.question.QuestionAccessAuthEnum;
-import org.dows.hep.api.base.question.QuestionTypeEnum;
+import org.dows.hep.api.base.question.dto.QuestionRequestDTO;
+import org.dows.hep.api.base.question.enums.QuestionESCEnum;
+import org.dows.hep.api.base.question.enums.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.QuestionRequest;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.biz.base.question.QuestionDomainBaseBiz;
@@ -39,64 +40,104 @@ public class MaterialQuestionTypeHandler implements QuestionTypeHandler {
 
     @Transactional
     @Override
-    public String save(QuestionRequest questionRequest) {
-        QuestionAccessAuthEnum bizCode = questionRequest.getBizCode();
-        questionRequest.setQuestionInstanceId(baseBiz.getIdStr());
-        questionRequest.setQuestionIdentifier(baseBiz.getIdStr());
-        questionRequest.setVer(baseBiz.getLastVer());
-        questionRequest.setQuestionTitle(questionRequest.getQuestionDescr());
-
-
-        // save baseInfo
-        QuestionInstanceEntity questionInstanceEntity = BeanUtil.copyProperties(questionRequest, QuestionInstanceEntity.class);
-        questionInstanceEntity.setQuestionType(questionRequest.getQuestionType().getCode());
-        questionInstanceService.save(questionInstanceEntity);
+    public String save(QuestionRequestDTO request) {
+        // save base-info
+        QuestionRequest qr0 = request.getQuestionRequest();
+        QuestionInstanceEntity questionInstance = QuestionInstanceEntity.builder()
+                .questionType(QuestionTypeEnum.MATERIAL.getCode())
+                .questionInstanceId(baseBiz.getIdStr())
+                .questionIdentifier(baseBiz.getIdStr())
+                .ver(baseBiz.getLastVer())
+                .appId(request.getAppId())
+                .source(request.getSource())
+                .accountId(request.getAccountId())
+                .accountName(request.getAccountName())
+                .questionInstancePid(request.getQuestionInstancePid())
+                .bizCode(request.getBizCode())
+                .questionCategId(qr0.getQuestionCategId())
+                .inputType(null)
+                .questionTitle(qr0.getQuestionTitle())
+                .questionDescr(qr0.getQuestionDescr())
+                .enabled(qr0.getEnabled())
+                .refCount(0)
+                .detailedAnswer(qr0.getDetailedAnswer())
+                .build();
+        questionInstanceService.save(questionInstance);
 
         // handle children
-        List<QuestionRequest> children = questionRequest.getChildren();
+        List<QuestionRequest> children = qr0.getChildren();
         for (QuestionRequest qr : children) {
-            qr.setQuestionInstancePid(questionInstanceEntity.getQuestionInstanceId());
-            qr.setAppId(questionInstanceEntity.getAppId());
-            qr.setBizCode(bizCode);
+            String questionType = qr.getQuestionType();
+            QuestionTypeEnum questionTypeEnum = QuestionTypeEnum.getByCode(questionType);
+            QuestionRequestDTO itemDto = QuestionRequestDTO.builder()
+                    .questionRequest(qr)
+                    .questionInstanceId(qr.getQuestionInstanceId())
+                    .questionType(questionTypeEnum)
+                    .appId(questionInstance.getAppId())
+                    .questionInstancePid(questionInstance.getQuestionInstanceId())
+                    .accountId(questionInstance.getAccountId())
+                    .accountName(questionInstance.getAccountName())
+                    .source(questionInstance.getSource())
+                    .bizCode(questionInstance.getBizCode())
+                    .build();
 
-            QuestionTypeEnum curQuestionTypeEnum = qr.getQuestionType();
-            QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(curQuestionTypeEnum);
-            questionTypeHandler.save(qr);
+            QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(questionTypeEnum);
+            questionTypeHandler.save(itemDto);
         }
-        return questionInstanceEntity.getQuestionInstanceId();
+        return questionInstance.getQuestionInstanceId();
     }
 
     @Transactional
     @Override
-    public boolean update(QuestionRequest questionRequest) {
-        // update base
-        QuestionInstanceEntity oriEntity = getById(questionRequest.getQuestionInstanceId());
-        if (BeanUtil.isEmpty(oriEntity)) {
-            throw new BizException("数据不存在");
+    public boolean update(QuestionRequestDTO request) {
+        if (BeanUtil.isEmpty(request)) {
+            throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
         }
-        questionRequest.setId(oriEntity.getId());
-        questionRequest.setQuestionTitle(questionRequest.getQuestionDescr());
-        QuestionInstanceEntity questionInstanceEntity = BeanUtil.copyProperties(questionRequest, QuestionInstanceEntity.class);
-        boolean updInstanceRes = questionInstanceService.updateById(questionInstanceEntity);
+        String questionInstanceId = request.getQuestionInstanceId();
+        if (StrUtil.isBlank(questionInstanceId)) {
+            throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
+        }
+        QuestionInstanceEntity oriEntity = getById(questionInstanceId);
+        if (BeanUtil.isEmpty(oriEntity)) {
+            throw new BizException(QuestionESCEnum.DATA_NULL);
+        }
+
+        // update base-info
+        QuestionRequest qr0 = request.getQuestionRequest();
+        QuestionInstanceEntity questionInstance = QuestionInstanceEntity.builder()
+                .id(oriEntity.getId())
+                .questionInstanceId(qr0.getQuestionInstanceId())
+                .questionCategId(qr0.getQuestionCategId())
+                .questionTitle(qr0.getQuestionTitle())
+                .questionDescr(qr0.getQuestionDescr())
+                .enabled(qr0.getEnabled())
+                .detailedAnswer(qr0.getDetailedAnswer())
+                .build();
+        boolean updInstanceRes = questionInstanceService.updateById(questionInstance);
 
         // update children
-        String appId = oriEntity.getAppId();
-        QuestionAccessAuthEnum bizCode = questionRequest.getBizCode();
-        String questionInstanceId = oriEntity.getQuestionInstanceId();
-
-        List<QuestionRequest> children = questionRequest.getChildren();
+        List<QuestionRequest> children = qr0.getChildren();
         for (QuestionRequest qr : children) {
-            qr.setAppId(appId);
-            qr.setBizCode(bizCode);
-            qr.setQuestionInstancePid(questionInstanceId);
+            String questionType = qr.getQuestionType();
+            QuestionTypeEnum questionTypeEnum = QuestionTypeEnum.getByCode(questionType);
+            QuestionRequestDTO itemDto = QuestionRequestDTO.builder()
+                    .questionRequest(qr)
+                    .questionInstanceId(qr.getQuestionInstanceId())
+                    .questionType(questionTypeEnum)
+                    .appId(questionInstance.getAppId())
+                    .questionInstancePid(questionInstance.getQuestionInstanceId())
+                    .accountId(questionInstance.getAccountId())
+                    .accountName(questionInstance.getAccountName())
+                    .source(questionInstance.getSource())
+                    .bizCode(questionInstance.getBizCode())
+                    .build();
 
             String curQuestionInstanceId = qr.getQuestionInstanceId();
-            QuestionTypeEnum curQuestionTypeEnum = qr.getQuestionType();
-            QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(curQuestionTypeEnum);
+            QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(questionTypeEnum);
             if (StrUtil.isBlank(curQuestionInstanceId)) {
-                questionTypeHandler.save(qr);
+                questionTypeHandler.save(itemDto);
             } else {
-                questionTypeHandler.update(qr);
+                questionTypeHandler.update(itemDto);
             }
         }
 

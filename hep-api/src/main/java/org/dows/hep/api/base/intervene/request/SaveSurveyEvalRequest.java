@@ -14,6 +14,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "SaveSurveyEval 对象", title = "保存问卷维度公式")
 public class SaveSurveyEvalRequest{
+    @Schema(title = "应用ID")
+    private String appId;
     @Schema(title = "分布式id")
     private String surveyId;
 

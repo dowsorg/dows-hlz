@@ -9,11 +9,11 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
-import org.dows.hep.api.base.question.*;
-import org.dows.hep.api.base.question.request.QuestionPageRequest;
-import org.dows.hep.api.base.question.request.QuestionRequest;
-import org.dows.hep.api.base.question.request.QuestionSearchRequest;
+import org.dows.hep.api.base.question.dto.QuestionRequestDTO;
+import org.dows.hep.api.base.question.enums.*;
+import org.dows.hep.api.base.question.request.*;
 import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
+import org.dows.hep.api.base.question.response.QuestionOptionWithAnswerResponse;
 import org.dows.hep.api.base.question.response.QuestionPageResponse;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.biz.base.question.handler.QuestionTypeFactory;
@@ -37,13 +37,12 @@ public class QuestionInstanceBiz {
 
     private final QuestionDomainBaseBiz baseBiz;
     private final QuestionCategBiz questionCategBiz;
-
     private final QuestionInstanceService questionInstanceService;
 
     /**
      * @param
      * @return
-     * @说明: 新增
+     * @说明: 新增和更新，如果 bizCode 为空， 则默认为 PRIVATE_VIEWING
      * @关联表: QuestionInstance, QuestionOptions, QuestionAnswers
      * @工时: 8H
      * @开发者: fhb
@@ -51,58 +50,16 @@ public class QuestionInstanceBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     @Transactional
-    public String saveQuestion(QuestionRequest question) {
-        // 问题会嵌套，公共数据在外层配置
-        question.setAppId(question.getAppId() == null ? baseBiz.getAppId() : question.getAppId());
-        question.setQuestionInstancePid(baseBiz.getQuestionInstancePid());
-        question.setBizCode(question.getBizCode() == null ? QuestionAccessAuthEnum.PRIVATE_VIEWING : question.getBizCode());
-        return saveQue(question);
-    }
+    public String saveOrUpdQuestion(QuestionRequest question, QuestionAccessAuthEnum questionAccessAuth, QuestionSourceEnum questionSource) {
+        // check and convert
+        QuestionRequestDTO questionRequestDTO = convertRequest2DTO(question, questionAccessAuth, questionSource);
 
-    /**
-     * @param
-     * @return
-     * @说明: 更新
-     * @关联表: QuestionInstance, QuestionOptions, QuestionAnswers
-     * @工时: 8H
-     * @开发者: fhb
-     * @开始时间:
-     * @创建时间: 2023年4月18日 上午10:45:07
-     */
-    @Transactional
-    public Boolean updQuestion(QuestionRequest question) {
-        boolean error = checkQuestionTypeIsError(question);
-        if (error) {
-            return Boolean.FALSE;
-        }
-
-        // check ref-count, then update or clone
-        boolean ref = checkQuestionRefCount(question.getQuestionInstanceId());
-        if (ref) {
-            cloneQue(question, QuestionCloneEnum.TO_NEW_VERSION);
-        } else {
-            updateQue(question);
-        }
-        return Boolean.TRUE;
-    }
-
-    /**
-     * @param
-     * @return
-     * @说明: 新增
-     * @关联表: QuestionInstance, QuestionOptions, QuestionAnswers
-     * @工时: 8H
-     * @开发者: fhb
-     * @开始时间:
-     * @创建时间: 2023年4月18日 上午10:45:07
-     */
-    @Transactional
-    public String saveOrUpdQuestion(QuestionRequest question) {
-        String questionInstanceId = question.getQuestionInstanceId();
+        // save or upd
+        String questionInstanceId = questionRequestDTO.getQuestionInstanceId();
         if (StrUtil.isBlank(questionInstanceId)) {
-            questionInstanceId = saveQuestion(question);
+            questionInstanceId = saveQue(questionRequestDTO);
         } else {
-            updQuestion(question);
+            updQuestion(questionRequestDTO);
         }
         return questionInstanceId;
     }
@@ -117,32 +74,28 @@ public class QuestionInstanceBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public String cloneQuestion(QuestionRequest question) {
-        return cloneQue(question, QuestionCloneEnum.TO_NEW_INSTANCE);
-    }
-
-    /**
-     * @param
-     * @return
-     * @说明: 批量新增和更新
-     * @关联表: QuestionInstance, QuestionOptions
-     * @工时: 2H
-     * @开发者: fhb
-     * @开始时间:
-     * @创建时间: 2023年4月18日 上午10:45:07
-     */
-    public Boolean saveOrUpdQuestionBatch(List<QuestionRequest> questionList) {
-        if (questionList == null || questionList.isEmpty()) {
-            return Boolean.FALSE;
+    public String cloneQue2NewQue(QuestionClonedRequest question, QuestionAccessAuthEnum questionAccessAuthEnum, QuestionSourceEnum questionSourceEnum) {
+        // check
+        if (BeanUtil.isEmpty(question)) {
+            throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
+        }
+        String oriQuestionInstanceId = question.getOriQuestionInstanceId();
+        if (StrUtil.isBlank(oriQuestionInstanceId)) {
+            throw new BizException(QuestionESCEnum.QUESTION_CLONED_ID_NON_NULL);
+        }
+        QuestionResponse oriQuestionResponse = getQuestion(oriQuestionInstanceId);
+        if (BeanUtil.isEmpty(oriQuestionResponse)) {
+            throw new BizException(QuestionESCEnum.QUESTION_CLONED_OBJ_NON_NULL);
         }
 
-        Map<Boolean, List<QuestionRequest>> collect = questionList.stream()
-                .collect(Collectors.groupingBy(questionRequest -> StrUtil.isBlank(questionRequest.getQuestionInstanceId())));
-        List<QuestionRequest> addList = collect.get(Boolean.TRUE);
-        List<QuestionRequest> updList = collect.get(Boolean.FALSE);
-        this.saveQuestionBatch(addList);
-        this.updQuestionBatch(updList);
-        return Boolean.TRUE;
+        // convert response 2 request
+        QuestionRequest request = convertResponse2Request(oriQuestionResponse);
+        if (StrUtil.isNotBlank(question.getTargetQuestionTitle())) {
+            request.setQuestionTitle(question.getTargetQuestionTitle());
+        }
+
+        // 新增新 data
+        return saveOrUpdQuestion(request, questionAccessAuthEnum, questionSourceEnum);
     }
 
     /**
@@ -155,34 +108,20 @@ public class QuestionInstanceBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public IPage<QuestionPageResponse> pageQuestion(QuestionPageRequest questionPageRequest) {
-        Page<QuestionInstanceEntity> pageRequest = new Page<>(questionPageRequest.getPageNo(), questionPageRequest.getPageSize());
+    public IPage<QuestionPageResponse> pageQuestion(QuestionPageRequest request) {
+        Page<QuestionInstanceEntity> pageRequest = new Page<>(request.getPageNo(), request.getPageSize());
         Page<QuestionInstanceEntity> pageResult = questionInstanceService.lambdaQuery()
-                .eq(questionPageRequest.getAppId() != null, QuestionInstanceEntity::getAppId, questionPageRequest.getAppId())
+                .eq(QuestionInstanceEntity::getAppId, request.getAppId())
                 .eq(QuestionInstanceEntity::getVer, baseBiz.getLastVer())
-                .eq(StrUtil.isNotBlank(questionPageRequest.getQuestionType()), QuestionInstanceEntity::getQuestionType, questionPageRequest.getQuestionType())
                 .eq(QuestionInstanceEntity::getQuestionInstancePid, baseBiz.getQuestionInstancePid())
-                .like(StrUtil.isNotBlank(questionPageRequest.getKeyword()), QuestionInstanceEntity::getQuestionTitle, questionPageRequest.getKeyword())
+                .eq(QuestionInstanceEntity::getBizCode, QuestionAccessAuthEnum.PUBLIC_VIEWING.name())
+                .eq(StrUtil.isNotBlank(request.getQuestionType()), QuestionInstanceEntity::getQuestionType, request.getQuestionType())
+                .in(request.getCategIdList() != null && !request.getCategIdList().isEmpty(), QuestionInstanceEntity::getQuestionCategId, request.getCategIdList())
+                .like(StrUtil.isNotBlank(request.getKeyword()), QuestionInstanceEntity::getQuestionTitle, request.getKeyword())
                 .page(pageRequest);
         Page<QuestionPageResponse> result = baseBiz.convertPage(pageResult, QuestionPageResponse.class);
         fillResult(result);
         return result;
-    }
-
-    private void fillResult(Page<QuestionPageResponse> result) {
-        List<QuestionPageResponse> records = result.getRecords();
-        if (records != null && !records.isEmpty()) {
-            List<String> categIds = records.stream()
-                    .map(QuestionPageResponse::getQuestionCategId)
-                    .toList();
-            List<QuestionCategoryResponse> questionCategoryResponses = questionCategBiz.listQuestionCategory(categIds);
-            Map<String, String> collect = questionCategoryResponses.stream()
-                    .collect(Collectors.toMap(QuestionCategoryResponse::getQuestionCategId, QuestionCategoryResponse::getQuestionCategName, (v1, v2) -> v1));
-            records.forEach(item -> {
-                item.setQuestionCategName(collect.get(item.getQuestionCategId()));
-                item.setQuestionType(QuestionTypeEnum.getNameByCode(item.getQuestionType()));
-            });
-        }
     }
 
     /**
@@ -200,9 +139,9 @@ public class QuestionInstanceBiz {
                 .eq(QuestionInstanceEntity::getAppId, questionSearch.getAppId())
                 .eq(QuestionInstanceEntity::getVer, baseBiz.getLastVer())
                 .eq(QuestionInstanceEntity::getQuestionInstancePid, baseBiz.getQuestionInstancePid())
+                .eq(QuestionInstanceEntity::getBizCode, QuestionAccessAuthEnum.PUBLIC_VIEWING.name())
+                .eq(StrUtil.isNotBlank(questionSearch.getQuestionType()), QuestionInstanceEntity::getQuestionType, questionSearch.getQuestionType())
                 .like(StrUtil.isNotBlank(questionSearch.getKeyword()), QuestionInstanceEntity::getQuestionTitle, questionSearch.getKeyword())
-                .like(StrUtil.isNotBlank(questionSearch.getKeyword()), QuestionInstanceEntity::getQuestionDescr, questionSearch.getKeyword())
-                .like(StrUtil.isNotBlank(questionSearch.getQuestionType()), QuestionInstanceEntity::getQuestionType, questionSearch.getQuestionType())
                 .in(questionSearch.getCategIdList() != null && !questionSearch.getCategIdList().isEmpty(), QuestionInstanceEntity::getQuestionCategId, questionSearch.getCategIdList())
                 .list();
 
@@ -240,24 +179,83 @@ public class QuestionInstanceBiz {
     }
 
     /**
-    * @param
-    * @return
-    * @说明: 启用
-    * @关联表: QuestionInstance,QuestionOptions,QuestionAnswers
-    * @工时: 3H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
+     * @param
+     * @return
+     * @说明: 根据ids获取题目
+     * @关联表: QuestionInstance
+     * @工时: 5H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月18日 上午10:45:07
+     */
+    public List<QuestionInstanceEntity> listByIds(List<String> questionInstanceIds) {
+        if (Objects.isNull(questionInstanceIds)) {
+            throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
+        }
+
+        return questionInstanceService.lambdaQuery()
+                .in(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceIds)
+                .list();
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 获取问题结构
+     * @关联表: QuestionInstance, QuestionOptions, QuestionAnswers
+     * @工时: 3H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月18日 上午10:45:07
+     */
+    public String getStruct(List<String> idList) {
+        if (idList == null || idList.isEmpty()) {
+            return "";
+        }
+
+        // list question-instance
+        LambdaQueryWrapper<QuestionInstanceEntity> queryWrapper = new LambdaQueryWrapper<QuestionInstanceEntity>()
+                .in(QuestionInstanceEntity::getQuestionInstanceId, idList);
+        List<QuestionInstanceEntity> instanceList = questionInstanceService.list(queryWrapper);
+        // collect
+        Map<String, Long> collect = instanceList.stream()
+                .collect(Collectors.groupingBy(QuestionInstanceEntity::getQuestionType, Collectors.counting()));
+        if (collect.isEmpty()) {
+            return "";
+        }
+        // append 2 str
+        StringBuilder sb = new StringBuilder();
+        Arrays.stream(QuestionTypeEnum.values())
+                .forEach(item -> {
+                    String code = item.getCode();
+                    String name = item.getName();
+                    Long count = collect.get(code);
+                    if (count != null && count != 0) {
+                        sb.append(count)
+                                .append(name)
+                                .append("/");
+                    }
+                });
+        // TODO remove the last 斜杠
+        return sb.toString();
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 启用
+     * @关联表: QuestionInstance, QuestionOptions, QuestionAnswers
+     * @工时: 3H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月18日 上午10:45:07
     */
     public Boolean enabledQuestion(String questionInstanceId ) {
         if (StrUtil.isBlank(questionInstanceId)) {
             return false;
         }
 
-        LambdaUpdateWrapper<QuestionInstanceEntity> updateWrapper = new LambdaUpdateWrapper<QuestionInstanceEntity>()
-                .eq(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceId)
-                .set(QuestionInstanceEntity::getEnabled, QuestionEnabledEnum.ENABLED.getCode());
-        return questionInstanceService.update(updateWrapper);
+        return changeEnable(questionInstanceId, QuestionEnabledEnum.ENABLED);
     }
 
     /**
@@ -275,10 +273,7 @@ public class QuestionInstanceBiz {
             return false;
         }
 
-        LambdaUpdateWrapper<QuestionInstanceEntity> updateWrapper = new LambdaUpdateWrapper<QuestionInstanceEntity>()
-                .eq(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceId)
-                .set(QuestionInstanceEntity::getEnabled, QuestionEnabledEnum.DISABLED.getCode());
-        return questionInstanceService.update(updateWrapper);
+        return changeEnable(questionInstanceId, QuestionEnabledEnum.DISABLED);
     }
 
     /**
@@ -312,7 +307,7 @@ public class QuestionInstanceBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    @Transactional
+    @DSTransactional
     public Boolean transposeQuestion(String leftQuestionInstanceId, String rightQuestionInstanceId) {
         if (StrUtil.isBlank(leftQuestionInstanceId) || StrUtil.isBlank(rightQuestionInstanceId)) {
             return false;
@@ -340,38 +335,6 @@ public class QuestionInstanceBiz {
                 .set(QuestionInstanceEntity::getSequence, leftSequence);
         questionInstanceService.update(rightUpdateWrapper);
         return Boolean.TRUE;
-    }
-
-    public String getStruct(List<String> idList) {
-        if (idList == null || idList.isEmpty()) {
-            return "";
-        }
-
-        // list question-instance
-        LambdaQueryWrapper<QuestionInstanceEntity> queryWrapper = new LambdaQueryWrapper<QuestionInstanceEntity>()
-                .in(QuestionInstanceEntity::getQuestionInstanceId, idList);
-        List<QuestionInstanceEntity> instanceList = questionInstanceService.list(queryWrapper);
-        // collect
-        Map<String, Long> collect = instanceList.stream()
-                .collect(Collectors.groupingBy(QuestionInstanceEntity::getQuestionType, Collectors.counting()));
-        if (collect.isEmpty()) {
-            return "";
-        }
-        // append 2 str
-        StringBuilder sb = new StringBuilder();
-        Arrays.stream(QuestionTypeEnum.values())
-                .forEach(item -> {
-                    String code = item.getCode();
-                    String name = item.getName();
-                    Long count = collect.get(code);
-                    if (count != null && count != 0) {
-                        sb.append(count)
-                                .append(name)
-                                .append("/");
-                    }
-                });
-        // TODO remove the last 斜杠
-        return sb.toString();
     }
 
     /**
@@ -416,14 +379,66 @@ public class QuestionInstanceBiz {
         return Boolean.TRUE;
     }
 
+    // 映射
+    public QuestionRequestDTO convertRequest2DTO(QuestionRequest request, QuestionAccessAuthEnum accessAuthEnum, QuestionSourceEnum questionSource) {
+        if (BeanUtil.isEmpty(request)) {
+            throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
+        }
+        String questionType = request.getQuestionType();
+        if (StrUtil.isBlank(questionType)) {
+            throw new BizException(QuestionESCEnum.QUESTION_TYPE_NON_NULL);
+        }
+        QuestionTypeEnum questionTypeEnum = QuestionTypeEnum.getByCode(questionType);
+        if (Objects.isNull(questionTypeEnum)) {
+            throw new BizException(QuestionESCEnum.QUESTION_TYPE_NON_NULL);
+        }
+
+        return QuestionRequestDTO.builder()
+                .questionRequest(request)
+                .questionInstanceId(request.getQuestionInstanceId())
+                .accountId(request.getAccountId())
+                .accountName(request.getAccountName())
+                .questionType(questionTypeEnum)
+                .appId(baseBiz.getAppId())
+                .questionInstancePid(baseBiz.getQuestionInstancePid())
+                .source(questionSource.name())
+                .bizCode(accessAuthEnum.name())
+                .build();
+    }
+
+    @DSTransactional
+    private String saveQue(QuestionRequestDTO question) {
+        if (BeanUtil.isEmpty(question)) {
+            return "";
+        }
+
+        QuestionTypeEnum questionTypeEnum = question.getQuestionType();
+        QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(questionTypeEnum);
+        return questionTypeHandler.save(question);
+    }
+
+    private void updQuestion(QuestionRequestDTO question) {
+        boolean error = checkQuestionTypeIsError(question);
+        if (error) {
+            throw new BizException(QuestionESCEnum.QUESTION_TYPE_CANNOT_CHANGE);
+        }
+
+        // check ref-count, then update or clone
+        boolean ref = checkQuestionRefCount(question.getQuestionInstanceId());
+        if (ref) {
+            cloneQue2NewVer(question);
+        } else {
+            updateQue(question);
+        }
+    }
 
     // 检查问题的类型是否有错-发生变更即为有错，大错特错，挨板子吧
-    private boolean checkQuestionTypeIsError(QuestionRequest question) {
+    private boolean checkQuestionTypeIsError(QuestionRequestDTO question) {
         String questionInstanceId = Optional.of(question)
-                .map(QuestionRequest::getQuestionInstanceId)
+                .map(QuestionRequestDTO::getQuestionInstanceId)
                 .orElse("");
         String newQuestionType = Optional.of(question)
-                .map(QuestionRequest::getQuestionType)
+                .map(QuestionRequestDTO::getQuestionType)
                 .map(QuestionTypeEnum::getCode)
                 .orElse("");
         QuestionInstanceEntity questionInstanceEntity = getById(questionInstanceId);
@@ -438,17 +453,8 @@ public class QuestionInstanceBiz {
         return refCount != null && refCount > 0;
     }
 
-    private String saveQue(QuestionRequest question) {
-        if (BeanUtil.isEmpty(question)) {
-            return "";
-        }
-
-        QuestionTypeEnum questionTypeEnum = question.getQuestionType();
-        QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(questionTypeEnum);
-        return questionTypeHandler.save(question);
-    }
-
-    private void updateQue(QuestionRequest question) {
+    @DSTransactional
+    private void updateQue(QuestionRequestDTO question) {
         if (BeanUtil.isEmpty(question)) {
             return;
         }
@@ -458,101 +464,96 @@ public class QuestionInstanceBiz {
         questionTypeHandler.update(question);
     }
 
-    @Transactional
-    private String cloneQue(QuestionRequest questionRequest, QuestionCloneEnum questionCloneEnum) {
-        if (BeanUtil.isEmpty(questionRequest)) {
-            return questionRequest.getQuestionInstanceId();
-        }
-
-        String questionInstanceId = "";
-        switch (questionCloneEnum) {
-            case TO_NEW_VERSION -> {
-                questionInstanceId = cloneQue2NewVer(questionRequest);
-            }
-            case TO_NEW_INSTANCE -> {
-                questionInstanceId = cloneQue2NewQue(questionRequest);
-            }
-            default -> {
-            }
-        }
-        return questionInstanceId;
-    }
-
-    @Transactional
+    // clone
     // 克隆 Question 生成一个新 version
-    private String cloneQue2NewVer(QuestionRequest question) {
+    @DSTransactional
+    private String cloneQue2NewVer(QuestionRequestDTO question) {
+        // check
         if (BeanUtil.isEmpty(question)) {
-            return "";
+            throw new BizException(QuestionESCEnum.QUESTION_CLONED_OBJ_NON_NULL);
         }
-
-        String oriInstanceId = Optional.of(question)
-                .map(QuestionRequest::getQuestionInstanceId)
-                .orElse("");
-        LambdaQueryWrapper<QuestionInstanceEntity> queryWrapper = new LambdaQueryWrapper<QuestionInstanceEntity>()
-                .eq(QuestionInstanceEntity::getQuestionInstanceId, oriInstanceId);
-        QuestionInstanceEntity oriInstance = questionInstanceService.getOne(queryWrapper);
-        String questionIdentifier = oriInstance.getQuestionIdentifier();
+        String oriQuestionInstanceId = question.getQuestionInstanceId();
+        if (StrUtil.isBlank(oriQuestionInstanceId)) {
+            throw new BizException(QuestionESCEnum.QUESTION_CLONED_ID_NON_NULL);
+        }
+        QuestionInstanceEntity oriEntity = getById(oriQuestionInstanceId);
+        if (BeanUtil.isEmpty(oriEntity)) {
+            throw new BizException(QuestionESCEnum.QUESTION_CLONED_OBJ_NON_NULL);
+        }
+        String questionIdentifier = oriEntity.getQuestionIdentifier();
+        if (StrUtil.isBlank(questionIdentifier)) {
+            throw new BizException(QuestionESCEnum.QUESTION_CLONED_IDENTIFIER_NON_NULL);
+        }
+        QuestionTypeEnum questionType = question.getQuestionType();
+        if (Objects.isNull(questionType)) {
+            throw new BizException(QuestionESCEnum.QUESTION_TYPE_NON_NULL);
+        }
 
         // 更新原 data 版本号
-        updateVer(oriInstance);
+        String ver = baseBiz.getVer(oriEntity.getDt());
+        LambdaUpdateWrapper<QuestionInstanceEntity> updateVerWrapper = new LambdaUpdateWrapper<QuestionInstanceEntity>()
+                .eq(QuestionInstanceEntity::getQuestionInstanceId, oriQuestionInstanceId)
+                .set(QuestionInstanceEntity::getVer, ver);
+        questionInstanceService.update(updateVerWrapper);
 
         // 新增新 data
-        QuestionTypeEnum questionType = question.getQuestionType();
         QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(questionType);
         String newInstanceId = questionTypeHandler.save(question);
 
         // 更新新 data 标识符
-        updateIdentifier(newInstanceId, questionIdentifier);
+        LambdaUpdateWrapper<QuestionInstanceEntity> updateIdentifierWrapper = new LambdaUpdateWrapper<QuestionInstanceEntity>()
+                .eq(QuestionInstanceEntity::getQuestionInstanceId, newInstanceId)
+                .set(QuestionInstanceEntity::getQuestionIdentifier, questionIdentifier);
+        questionInstanceService.update(updateIdentifierWrapper);
 
         return newInstanceId;
     }
 
-    // 克隆 Question 生成新的 Question
-    private String cloneQue2NewQue(QuestionRequest question) {
-        if (BeanUtil.isEmpty(question)) {
-            return "";
+    private QuestionRequest convertResponse2Request(QuestionResponse questionResponse) {
+        if (BeanUtil.isEmpty(questionResponse)) {
+            return new QuestionRequest();
         }
 
-        // 新增新 data
-        QuestionTypeEnum questionType = question.getQuestionType();
-        QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(questionType);
-        return questionTypeHandler.save(question);
+        // children
+        QuestionRequest result = convertResponse2Request0(questionResponse);
+
+        // options with answer
+        List<QuestionOptionWithAnswerResponse> optionWithAnswerList = questionResponse.getOptionWithAnswerList();
+        List<QuestionOptionWithAnswerRequest> questionOptionWithAnswerRequests = BeanUtil.copyToList(optionWithAnswerList, QuestionOptionWithAnswerRequest.class);
+        result.setOptionWithAnswerList(questionOptionWithAnswerRequests);
+
+        return result;
     }
 
-    private void updateVer(QuestionInstanceEntity instance) {
-        Date dt = instance.getDt();
-        String ver = baseBiz.getVer(dt);
-        instance.setVer(ver);
+    private QuestionRequest convertResponse2Request0(QuestionResponse response) {
+        QuestionRequest request = BeanUtil.copyProperties(response, QuestionRequest.class);
+        List<QuestionRequest> nestedRequestList = new ArrayList<>();
 
-        // update instance-ver
-        questionInstanceService.updateById(instance);
-    }
-
-    private void updateIdentifier(String newInstanceId, String questionIdentifier) {
-        LambdaUpdateWrapper<QuestionInstanceEntity> updateWrapper = new LambdaUpdateWrapper<QuestionInstanceEntity>()
-                .eq(QuestionInstanceEntity::getQuestionInstanceId, newInstanceId)
-                .eq(QuestionInstanceEntity::getQuestionIdentifier, questionIdentifier);
-        questionInstanceService.update(updateWrapper);
-    }
-
-    @DSTransactional
-    private Boolean saveQuestionBatch(List<QuestionRequest> questionList) {
-        if (questionList == null || questionList.isEmpty()) {
-            return Boolean.FALSE;
+        if (response.getChildren() != null) {
+            for (QuestionResponse nestedResponse : response.getChildren()) {
+                QuestionRequest nestedRequest = convertResponse2Request0(nestedResponse);
+                nestedRequestList.add(nestedRequest);
+            }
         }
 
-        questionList.forEach(this::saveQuestion);
-        return Boolean.TRUE;
+        request.setChildren(nestedRequestList);
+        return request;
     }
 
-    @DSTransactional
-    private Boolean updQuestionBatch(List<QuestionRequest> questionList) {
-        if (questionList == null || questionList.isEmpty()) {
-            return Boolean.FALSE;
+    private void fillResult(Page<QuestionPageResponse> result) {
+        List<QuestionPageResponse> records = result.getRecords();
+        if (records != null && !records.isEmpty()) {
+            List<String> categIds = records.stream()
+                    .map(QuestionPageResponse::getQuestionCategId)
+                    .toList();
+            List<QuestionCategoryResponse> questionCategoryResponses = questionCategBiz.listQuestionCategory(categIds);
+            Map<String, String> collect = questionCategoryResponses.stream()
+                    .collect(Collectors.toMap(QuestionCategoryResponse::getQuestionCategId, QuestionCategoryResponse::getQuestionCategName, (v1, v2) -> v1));
+            records.forEach(item -> {
+                item.setQuestionCategName(collect.get(item.getQuestionCategId()));
+                item.setQuestionType(QuestionTypeEnum.getNameByCode(item.getQuestionType()));
+            });
         }
-
-        questionList.forEach(this::updQuestion);
-        return Boolean.TRUE;
     }
 
     private QuestionInstanceEntity getById(String questionId) {
@@ -565,5 +566,12 @@ public class QuestionInstanceBiz {
         String questionCategId = questionResponse.getQuestionCategId();
         String[] parentIds = questionCategBiz.getParentIds(questionCategId, QuestionCategGroupEnum.QUESTION.name());
         questionResponse.setQuestionCategIds(parentIds);
+    }
+
+    private boolean changeEnable(String questionInstanceId, QuestionEnabledEnum questionEnabledEnum) {
+        LambdaUpdateWrapper<QuestionInstanceEntity> updateWrapper = new LambdaUpdateWrapper<QuestionInstanceEntity>()
+                .eq(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceId)
+                .set(QuestionInstanceEntity::getEnabled, questionEnabledEnum.getCode());
+        return questionInstanceService.update(updateWrapper);
     }
 }

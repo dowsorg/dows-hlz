@@ -35,7 +35,6 @@ public class QuestionAnswersBiz {
         }
 
         // 新增更新都有的
-        // 数据库中已存在的
         Map<String, QuestionAnswersEntity> collect = answersEntityList.stream()
                 .collect(Collectors.toMap(QuestionAnswersEntity::getQuestionAnswerId, v -> v, (v1, v2) -> v1));
 

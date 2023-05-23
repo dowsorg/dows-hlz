@@ -8,7 +8,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.hep.api.base.question.enums.QuestionESCEnum;
 import org.dows.hep.api.enums.EnumStatus;
+import org.dows.hep.api.tenant.casus.CaseESCEnum;
 import org.dows.hep.api.tenant.casus.request.CaseInstanceCopyRequest;
 import org.dows.hep.api.tenant.casus.request.CaseInstancePageRequest;
 import org.dows.hep.api.tenant.casus.request.CaseInstanceRequest;
@@ -49,10 +51,9 @@ public class TenantCaseManageBiz {
             return "";
         }
 
-        // check and save base-info
-        checkBeforeSaveOrUpd(caseInstanceRequest);
-        CaseInstanceEntity caseInstanceEntity = BeanUtil.copyProperties(caseInstanceRequest, CaseInstanceEntity.class);
+        CaseInstanceEntity caseInstanceEntity = checkBeforeSaveOrUpd(caseInstanceRequest);
         caseInstanceService.saveOrUpdate(caseInstanceEntity);
+
         return caseInstanceEntity.getCaseInstanceId();
     }
 
@@ -143,7 +144,6 @@ public class TenantCaseManageBiz {
     public CaseInstanceEntity getById(String caseInstanceId) {
         LambdaQueryWrapper<CaseInstanceEntity> queryWrapper = new LambdaQueryWrapper<CaseInstanceEntity>()
                 .eq(CaseInstanceEntity::getCaseInstanceId, caseInstanceId);
-
         return caseInstanceService.getOne(queryWrapper);
     }
 
@@ -162,10 +162,7 @@ public class TenantCaseManageBiz {
             return false;
         }
 
-        LambdaUpdateWrapper<CaseInstanceEntity> updateWrapper = new LambdaUpdateWrapper<CaseInstanceEntity>()
-                .eq(CaseInstanceEntity::getCaseInstanceId, caseInstanceId)
-                .set(CaseInstanceEntity::getState, EnumStatus.ENABLE.getCode());
-        return caseInstanceService.update(updateWrapper);
+        return changeEnable(caseInstanceId, EnumStatus.ENABLE);
     }
 
     /**
@@ -183,10 +180,7 @@ public class TenantCaseManageBiz {
             return false;
         }
 
-        LambdaUpdateWrapper<CaseInstanceEntity> updateWrapper = new LambdaUpdateWrapper<CaseInstanceEntity>()
-                .eq(CaseInstanceEntity::getCaseInstanceId, caseInstanceId)
-                .set(CaseInstanceEntity::getState, EnumStatus.DISABLE.getCode());
-        return caseInstanceService.update(updateWrapper);
+        return changeEnable(caseInstanceId, EnumStatus.DISABLE);
     }
 
     /**
@@ -209,20 +203,36 @@ public class TenantCaseManageBiz {
         return caseInstanceService.remove(queryWrapper);
     }
 
-    private void checkBeforeSaveOrUpd(CaseInstanceRequest request) {
-        String uniqueId = request.getCaseInstanceId();
+    private CaseInstanceEntity checkBeforeSaveOrUpd(CaseInstanceRequest request) {
+        if (BeanUtil.isEmpty(request)) {
+            throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
+        }
+
+        CaseInstanceEntity result = CaseInstanceEntity.builder()
+                .appId(baseBiz.getAppId())
+                .caseInstanceId(request.getCaseInstanceId())
+                .caseName(request.getCaseName())
+                .casePic(request.getCasePic())
+                .caseType(request.getCaseType())
+                .descr(request.getDescr())
+                .guide(request.getGuide())
+                .accountId(request.getAccountId())
+                .accountName(request.getAccountName())
+                .build();
+
+        String uniqueId = result.getCaseInstanceId();
         if (StrUtil.isBlank(uniqueId)) {
-            request.setAppId(baseBiz.getAppId());
-            request.setCaseInstanceId(baseBiz.getIdStr());
-            request.setCaseIdentifier(baseBiz.getIdStr());
-            request.setVer(baseBiz.getLastVer());
+            result.setCaseInstanceId(baseBiz.getIdStr());
+            result.setCaseIdentifier(baseBiz.getIdStr());
+            result.setVer(baseBiz.getLastVer());
         } else {
             CaseInstanceEntity entity = getById(uniqueId);
             if (BeanUtil.isEmpty(entity)) {
-                throw new BizException("数据不存在");
+                throw new BizException(CaseESCEnum.DATA_NULL);
             }
-            request.setId(entity.getId());
+            result.setId(entity.getId());
         }
+        return result;
     }
 
     private CaseInstanceEntity copyCaseInstance0(String oriCaseInstanceId, String caseInstanceName) {
@@ -237,5 +247,12 @@ public class TenantCaseManageBiz {
         newEntity.setCaseName(caseInstanceName);
         caseInstanceService.save(newEntity);
         return newEntity;
+    }
+
+    private boolean changeEnable(String caseInstanceId, EnumStatus enable) {
+        LambdaUpdateWrapper<CaseInstanceEntity> updateWrapper = new LambdaUpdateWrapper<CaseInstanceEntity>()
+                .eq(CaseInstanceEntity::getCaseInstanceId, caseInstanceId)
+                .set(CaseInstanceEntity::getState, enable.getCode());
+        return caseInstanceService.update(updateWrapper);
     }
 }

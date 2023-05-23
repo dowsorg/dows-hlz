@@ -50,6 +50,10 @@ public class FoodDishesDao extends BaseSubDao<FoodDishesService, FoodDishesEntit
     }
 
     @Override
+    protected SFunction<FoodDishesEntity,String> getColCateg(){
+        return FoodDishesEntity::getInterveneCategId;
+    }
+    @Override
     protected SFunction<Integer, ?> setColState(FoodDishesEntity item) {
         return item::setState;
     }
@@ -159,6 +163,7 @@ public class FoodDishesDao extends BaseSubDao<FoodDishesService, FoodDishesEntit
     //endregion
 
     //region retrieve
+
     public List<FoodDishesNutrientEntity> getSubByLeadIdX(String leadId, SFunction<FoodDishesNutrientEntity,?>... cols) {
         if (ShareUtil.XObject.isEmpty(leadId)) {
             return Collections.emptyList();
