@@ -115,6 +115,8 @@ public class IndicatorInstanceBiz{
         String max = createOrUpdateIndicatorInstanceRequestRs.getMax();
         String def = createOrUpdateIndicatorInstanceRequestRs.getDef();
         IndicatorInstanceEntity indicatorInstanceEntity = null;
+        IndicatorCategoryRefEntity indicatorCategoryRefEntity = null;
+        IndicatorRuleEntity indicatorRuleEntity = null;
         if (StringUtils.isBlank(indicatorInstanceId)) {
             indicatorInstanceId = idGenerator.nextIdStr();
             indicatorInstanceEntity = IndicatorInstanceEntity
@@ -127,6 +129,31 @@ public class IndicatorInstanceBiz{
                 .unit(unit)
                 .core(core)
                 .food(food)
+                .build();
+            AtomicInteger seqAtomicInteger = new AtomicInteger(1);
+            indicatorCategoryRefService.lambdaQuery()
+                .eq(IndicatorCategoryRefEntity::getIndicatorCategoryId, indicatorCategoryId)
+                .orderByDesc(IndicatorCategoryRefEntity::getSeq)
+                .last(EnumString.LIMIT_1.getStr())
+                .oneOpt()
+                .ifPresent(indicatorCategoryRefEntity1 -> seqAtomicInteger.set(indicatorCategoryRefEntity1.getSeq() + 1));
+            indicatorCategoryRefEntity = IndicatorCategoryRefEntity
+                .builder()
+                .indicatorCategoryRefId(idGenerator.nextIdStr())
+                .appId(appId)
+                .indicatorCategoryId(indicatorCategoryId)
+                .indicatorInstanceId(indicatorInstanceId)
+                .seq(seqAtomicInteger.get())
+                .build();
+            indicatorRuleEntity = IndicatorRuleEntity
+                .builder()
+                .indicatorRuleId(idGenerator.nextIdStr())
+                .appId(appId)
+                .variableId(indicatorInstanceId)
+                .ruleType(EnumIndicatorRuleType.INDICATOR.getCode())
+                .min(min)
+                .max(max)
+                .def(def)
                 .build();
         } else {
             String finalIndicatorInstanceId = indicatorInstanceId;
@@ -143,6 +170,17 @@ public class IndicatorInstanceBiz{
             indicatorInstanceEntity.setUnit(unit);
             indicatorInstanceEntity.setCore(core);
             indicatorInstanceEntity.setFood(food);
+            indicatorRuleEntity = indicatorRuleService.lambdaQuery()
+                .eq(IndicatorRuleEntity::getAppId, appId)
+                .eq(IndicatorRuleEntity::getVariableId, finalIndicatorInstanceId)
+                .oneOpt()
+                .orElseThrow(() -> {
+                    log.warn("method createOrUpdateRs param createOrUpdateIndicatorInstanceRequestRs indicatorInstanceId:{} is illegal, do not have indicator rule", finalIndicatorInstanceId);
+                    return new IndicatorInstanceException(EnumESC.VALIDATE_EXCEPTION);
+                });
+            indicatorRuleEntity.setMin(min);
+            indicatorRuleEntity.setMin(max);
+            indicatorRuleEntity.setDef(def);
         }
         RLock lock = redissonClient.getLock(RedissonUtil.getLockName(appId, EnumRedissonLock.INDICATOR_INSTANCE_CREATE_DELETE_UPDATE, indicatorInstanceFieldPid, indicatorCategoryId));
         boolean isLocked = lock.tryLock(leaseTimeIndicatorInstanceCreateDeleteUpdate, TimeUnit.MILLISECONDS);
@@ -151,6 +189,8 @@ public class IndicatorInstanceBiz{
         }
         try {
             indicatorInstanceService.saveOrUpdate(indicatorInstanceEntity);
+            indicatorCategoryRefService.saveOrUpdate(indicatorCategoryRefEntity);
+            indicatorRuleService.saveOrUpdate(indicatorRuleEntity);
         } finally {
             lock.unlock();
         }
