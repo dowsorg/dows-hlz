@@ -10,15 +10,14 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
-import org.dows.framework.crud.api.CrudEntity;
 
 import java.util.Date;
 
 /**
- * 评估问卷(EvaluateQuestionnaire)实体类
+ * 评估类别管理(EvaluateCategEntity)实体类
  *
  * @author lait
- * @since 2023-04-28 10:25:19
+ * @since 2023-04-28 10:25:18
  */
 @SuppressWarnings("serial")
 @Data
@@ -28,40 +27,31 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "EvaluateQuestionnaire", title = "评估问卷")
-@TableName("evaluate_questionnaire")
-public class EvaluateQuestionnaireEntity implements CrudEntity {
+@Schema(name = "EvaluateCategoryEntity", title = "评估类目管理")
+@TableName("evaluate_category")
+public class EvaluateCategoryEntity {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库ID")
     private Long id;
 
-    @Schema(title = "分布式ID")
-    private String evaluateQuestionnaireId;
+    @Schema(title = "类别ID")
+    private String evaluateCategId;
 
     @Schema(title = "应用ID")
     private String appId;
 
-    @Schema(title = "类别ID")
-    private String evaluateCategId;
+    @Schema(title = "类别父id")
+    private String evaluateCategPid;
 
-    @Schema(title = "问卷名")
-    private String evaluateQuestionnaireName;
+    @Schema(title = "类别名")
+    private String evaluateCategName;
 
-    @Schema(title = "问卷描述")
-    private String evaluateQuestionnaireDesc;
+    @Schema(title = "类别组")
+    private String evaluateCategGroup;
 
-    @Schema(title = "问题集")
-    private String questionSectionId;
-
-    @Schema(title = "状态")
-    private Integer enabled;
-
-    @Schema(title = "创建者账号ID")
-    private String accountId;
-
-    @Schema(title = "创建者Name")
-    private String accountName;
+    @Schema(title = "序列号")
+    private Integer sequence;
 
     @JsonIgnore
     @TableLogic
@@ -72,6 +62,4 @@ public class EvaluateQuestionnaireEntity implements CrudEntity {
     @TableField(fill = FieldFill.INSERT)
     @Schema(title = "时间戳")
     private Date dt;
-
 }
-

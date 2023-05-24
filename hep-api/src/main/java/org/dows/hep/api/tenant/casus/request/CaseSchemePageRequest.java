@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
 * @description 
 *
@@ -24,6 +26,6 @@ public class CaseSchemePageRequest{
     private String keyword;
 
     @Schema(title = "类别ID")
-    private String categId;
+    private List<String> categIds;
 
 }

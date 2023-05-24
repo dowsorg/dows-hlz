@@ -14,8 +14,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "CreateEvaluateDimensionExpression 对象", title = "创建评估维度对象")
 public class EvaluateDimensionExpressionRequest {
-    @Schema(title = "应用ID")
-    private String appId;
+
+    @Schema(title = "表达式ID")
+    private String evaluateDimensionExpressionId;
 
     @Schema(title = "评估问卷分布式ID")
     private String evaluateQuestionnaireId;

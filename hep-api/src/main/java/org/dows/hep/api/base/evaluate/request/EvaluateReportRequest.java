@@ -15,6 +15,9 @@ import lombok.NoArgsConstructor;
 @Schema(name = "CreateEvaluateReportManagement 对象", title = "创建评估报告管理对象")
 public class EvaluateReportRequest {
     @Schema(title = "分布式ID")
+    private String evaluateReportManagementId;
+
+    @Schema(title = "评估问卷分布式ID")
     private String evaluateQuestionnaireId;
 
     @Schema(title = "报告名称")
@@ -30,10 +33,10 @@ public class EvaluateReportRequest {
     private String suggestion;
 
     @Schema(title = "分数段[最小]")
-    private Integer minScore;
+    private Float minScore;
 
     @Schema(title = "分数段[最大]")
-    private Integer maxScore;
+    private Float maxScore;
 
 
 }

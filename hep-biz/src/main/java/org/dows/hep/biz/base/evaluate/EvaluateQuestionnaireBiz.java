@@ -1,83 +1,287 @@
 package org.dows.hep.biz.base.evaluate;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import lombok.AllArgsConstructor;
+import org.dows.framework.api.exceptions.BizException;
+import org.dows.hep.api.base.evaluate.EvaluateESCEnum;
+import org.dows.hep.api.base.evaluate.EvaluateEnabledEnum;
+import org.dows.hep.api.base.evaluate.request.EvaluateQuestionnairePageRequest;
 import org.dows.hep.api.base.evaluate.request.EvaluateQuestionnaireRequest;
+import org.dows.hep.api.base.evaluate.response.EvaluateCategoryResponse;
+import org.dows.hep.api.base.evaluate.response.EvaluateQuestionnairePageResponse;
 import org.dows.hep.api.base.evaluate.response.EvaluateQuestionnaireResponse;
+import org.dows.hep.api.base.question.enums.QuestionEnabledEnum;
+import org.dows.hep.api.base.question.enums.QuestionSectionAccessAuthEnum;
+import org.dows.hep.api.base.question.enums.QuestionSectionGenerationModeEnum;
+import org.dows.hep.api.base.question.enums.QuestionSourceEnum;
+import org.dows.hep.api.base.question.request.QuestionSectionRequest;
+import org.dows.hep.api.base.question.response.QuestionSectionDimensionResponse;
+import org.dows.hep.api.base.question.response.QuestionSectionItemResponse;
+import org.dows.hep.api.base.question.response.QuestionSectionResponse;
+import org.dows.hep.biz.base.question.QuestionSectionBiz;
+import org.dows.hep.entity.EvaluateQuestionnaireEntity;
+import org.dows.hep.service.EvaluateQuestionnaireService;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
-* @description project descr:评估:评估问卷
-*
-* @author lait.zhang
-* @date 2023年4月23日 上午9:44:34
-*/
+ * @author lait.zhang
+ * @description project descr:评估:评估问卷
+ * @date 2023年4月23日 上午9:44:34
+ */
+@AllArgsConstructor
 @Service
-public class EvaluateQuestionnaireBiz{
+public class EvaluateQuestionnaireBiz {
+    private final EvaluateBaseBiz baseBiz;
+    private final EvaluateQuestionnaireService evaluateQuestionnaireService;
+    private final QuestionSectionBiz questionSectionBiz;
+    private final EvaluateCategoryBiz categoryBiz;
+
+
     /**
-    * @param
-    * @return
-    * @说明: 创建评估问卷
-    * @关联表: 
-    * @工时: 4H
-    * @开发者: runsix
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public void createEvaluateQuestionnaire(EvaluateQuestionnaireRequest createEvaluateQuestionnaire ) {
-        
+     * @param
+     * @return
+     * @说明: 创建评估问卷
+     * @关联表:
+     * @工时: 4H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public boolean saveOrUpdEQ(EvaluateQuestionnaireRequest request) {
+        if (BeanUtil.isEmpty(request)) {
+            throw new BizException(EvaluateESCEnum.PARAMS_NON_NULL);
+        }
+
+        EvaluateQuestionnaireEntity entity = convertRequest2Entity(request, QuestionSourceEnum.ADMIN);
+        return evaluateQuestionnaireService.saveOrUpdate(entity);
     }
+
     /**
-    * @param
-    * @return
-    * @说明: 删除评估问卷
-    * @关联表: 
-    * @工时: 4H
-    * @开发者: runsix
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public void deleteEvaluateQuestionnaire(String evaluateQuestionnaireId ) {
-        
+     * @param
+     * @return
+     * @说明: 分页筛选评估问卷
+     * @关联表:
+     * @工时: 4H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public IPage<EvaluateQuestionnairePageResponse> pageEvaluateQuestionnaire(EvaluateQuestionnairePageRequest request) {
+        if (BeanUtil.isEmpty(request)) {
+            return new Page<>();
+        }
+
+        // page
+        Page<EvaluateQuestionnaireEntity> page = new Page<>(request.getPageNo(), request.getPageSize());
+        Page<EvaluateQuestionnaireEntity> pageResult = evaluateQuestionnaireService.lambdaQuery()
+                .in(request.getCategIds() != null && !request.getCategIds().isEmpty(), EvaluateQuestionnaireEntity::getEvaluateCategId, request.getCategIds())
+                .like(StrUtil.isNotBlank(request.getKeyword()), EvaluateQuestionnaireEntity::getEvaluateQuestionnaireName, request.getKeyword())
+                .page(page);
+
+        // convert
+        Page<EvaluateQuestionnairePageResponse> result = baseBiz.convertPage(pageResult, EvaluateQuestionnairePageResponse.class);
+        fillPageResponse(result);
+        return result;
     }
+
     /**
-    * @param
-    * @return
-    * @说明: 获取评估问卷
-    * @关联表: 
-    * @工时: 4H
-    * @开发者: runsix
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public EvaluateQuestionnaireResponse getEvaluateQuestionnaire(String evaluateQuestionnaireId ) {
-        return new EvaluateQuestionnaireResponse();
+     * @param
+     * @return
+     * @说明: 获取评估问卷
+     * @关联表:
+     * @工时: 4H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public EvaluateQuestionnaireResponse getEvaluateQuestionnaire(String evaluateQuestionnaireId) {
+        if (StrUtil.isBlank(evaluateQuestionnaireId)) {
+            throw new BizException(EvaluateESCEnum.PARAMS_NON_NULL);
+        }
+
+        EvaluateQuestionnaireEntity entity = getById(evaluateQuestionnaireId);
+        EvaluateQuestionnaireResponse result = BeanUtil.copyProperties(entity, EvaluateQuestionnaireResponse.class);
+        // set question-section
+        String questionSectionId = entity.getQuestionSectionId();
+        fillResponseQS(questionSectionId, result);
+
+        return result;
     }
+
     /**
-    * @param
-    * @return
-    * @说明: 筛选评估问卷
-    * @关联表: 
-    * @工时: 4H
-    * @开发者: runsix
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public List<EvaluateQuestionnaireResponse> listEvaluateQuestionnaire(String appId, String questionSectionId ) {
-        return new ArrayList<EvaluateQuestionnaireResponse>();
+     * @param
+     * @return
+     * @说明: 获取评估问卷
+     * @关联表:
+     * @工时: 4H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public EvaluateQuestionnaireEntity getById(String evaluateQuestionnaireId) {
+        LambdaQueryWrapper<EvaluateQuestionnaireEntity> queryWrapper = new LambdaQueryWrapper<EvaluateQuestionnaireEntity>()
+                .eq(EvaluateQuestionnaireEntity::getEvaluateQuestionnaireId, evaluateQuestionnaireId);
+        return evaluateQuestionnaireService.getOne(queryWrapper);
     }
+
     /**
-    * @param
-    * @return
-    * @说明: 分页筛选评估问卷
-    * @关联表: 
-    * @工时: 4H
-    * @开发者: runsix
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public String pageEvaluateQuestionnaire(Integer pageNo, Integer pageSize, String appId, String questionSectionId ) {
-        return new String();
+     * @param
+     * @return
+     * @说明: 启用
+     * @关联表:
+     * @工时: 3H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月18日 上午10:45:07
+     */
+    public Boolean enabledQuestionnaire(String questionInstanceId ) {
+        if (StrUtil.isBlank(questionInstanceId)) {
+            return false;
+        }
+
+        return changeEnable(questionInstanceId, EvaluateEnabledEnum.ENABLED);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 禁用
+     * @关联表:
+     * @工时: 3H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月18日 上午10:45:07
+     */
+    public Boolean disabledQuestionnaire(String questionInstanceId ) {
+        if (StrUtil.isBlank(questionInstanceId)) {
+            return false;
+        }
+
+        return changeEnable(questionInstanceId, EvaluateEnabledEnum.DISABLED);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 删除评估问卷
+     * @关联表:
+     * @工时: 4H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public Boolean deleteEvaluateQuestionnaire(List<String> ids) {
+        if (Objects.isNull(ids) || ids.isEmpty()) {
+            throw new BizException(EvaluateESCEnum.PARAMS_NON_NULL);
+        }
+
+        // 删除 self
+        LambdaQueryWrapper<EvaluateQuestionnaireEntity> remWrapper = new LambdaQueryWrapper<EvaluateQuestionnaireEntity>()
+                .in(EvaluateQuestionnaireEntity::getEvaluateQuestionnaireId);
+        boolean removeRes1 = evaluateQuestionnaireService.remove(remWrapper);
+
+        // TODO: 2023/5/24
+        // 删除关联
+
+        return removeRes1;
+    }
+
+    private EvaluateQuestionnaireEntity convertRequest2Entity(EvaluateQuestionnaireRequest request, QuestionSourceEnum questionSourceEnum) {
+        if (BeanUtil.isEmpty(request)) {
+            throw new BizException(EvaluateESCEnum.PARAMS_NON_NULL);
+        }
+
+        // save or upd question-section
+        String questionSectionId = saveOrUpdQuestionSection(request, questionSourceEnum);
+
+        // save or upd questionnaire
+        EvaluateQuestionnaireEntity result = EvaluateQuestionnaireEntity.builder()
+                .appId(request.getAppId() == null ? baseBiz.getAppId() : request.getAppId())
+                .evaluateQuestionnaireId(request.getEvaluateQuestionnaireId())
+                .evaluateCategId(request.getEvaluateCategId())
+                .evaluateQuestionnaireName(request.getEvaluateQuestionnaireName())
+                .evaluateQuestionnaireDesc(request.getEvaluateQuestionnaireDesc())
+                .accountId(request.getAccountId())
+                .accountName(request.getAccountName())
+                .questionSectionId(questionSectionId)
+                .build();
+
+        String uniqueId = result.getEvaluateQuestionnaireId();
+        if (StrUtil.isBlank(uniqueId)) {
+            result.setEvaluateQuestionnaireId(baseBiz.getIdStr());
+        } else {
+            EvaluateQuestionnaireEntity entity = getById(uniqueId);
+            if (BeanUtil.isEmpty(entity)) {
+                throw new BizException(EvaluateESCEnum.DATA_NULL);
+            }
+            result.setId(entity.getId());
+        }
+
+        return result;
+    }
+
+    private String saveOrUpdQuestionSection(EvaluateQuestionnaireRequest request, QuestionSourceEnum questionSourceEnum) {
+        QuestionSectionRequest questionSectionRequest = evaluateQuestionnaire2QS(request);
+        return questionSectionBiz.saveOrUpdQuestionSection(questionSectionRequest, QuestionSectionAccessAuthEnum.PRIVATE_VIEWING, questionSourceEnum);
+    }
+
+    private QuestionSectionRequest evaluateQuestionnaire2QS(EvaluateQuestionnaireRequest request) {
+        return QuestionSectionRequest.builder()
+                .name(request.getEvaluateQuestionnaireName())
+                .tips(null)
+                .descr(request.getEvaluateQuestionnaireDesc())
+                .enabled(QuestionEnabledEnum.ENABLED.getCode())
+                .accountId(request.getAccountId())
+                .accountName(request.getAccountName())
+                .sectionItemList(request.getSectionItemList())
+                .questionSectionDimensionList(request.getQuestionSectionDimensionList())
+                .generationMode(QuestionSectionGenerationModeEnum.ADD_NEW)
+                .build();
+    }
+
+    private void fillPageResponse(Page<EvaluateQuestionnairePageResponse> result) {
+        List<EvaluateQuestionnairePageResponse> records = result.getRecords();
+        if (records != null && !records.isEmpty()) {
+            List<String> categIds = records.stream()
+                    .map(EvaluateQuestionnairePageResponse::getEvaluateCategId)
+                    .toList();
+            List<EvaluateCategoryResponse> responseList = categoryBiz.listCaseCategory(categIds);
+            Map<String, String> collect = responseList.stream()
+                    .collect(Collectors.toMap(EvaluateCategoryResponse::getEvaluateCategId, EvaluateCategoryResponse::getEvaluateCategName, (v1, v2) -> v1));
+            records.forEach(item -> {
+                item.setEvaluateCategName(collect.get(item.getEvaluateCategId()));
+            });
+        }
+    }
+
+    private void fillResponseQS(String questionSectionId, EvaluateQuestionnaireResponse result) {
+        // get and set question-section
+        QuestionSectionResponse questionSectionResponse = questionSectionBiz.getQuestionSection(questionSectionId);
+        if (BeanUtil.isEmpty(questionSectionResponse)) {
+            return;
+        }
+        List<QuestionSectionItemResponse> sectionItemList = questionSectionResponse.getSectionItemList();
+        List<QuestionSectionDimensionResponse> questionSectionDimensionList = questionSectionResponse.getQuestionSectionDimensionList();
+        Map<String, List<QuestionSectionDimensionResponse>> questionSectionDimensionMap = questionSectionResponse.getQuestionSectionDimensionMap();
+        result.setSectionItemList(sectionItemList);
+        result.setQuestionSectionDimensionList(questionSectionDimensionList);
+        result.setQuestionSectionDimensionMap(questionSectionDimensionMap);
+    }
+
+    private boolean changeEnable(String evaluateQuestionnaireId, EvaluateEnabledEnum evaluateEnabledEnum) {
+        LambdaUpdateWrapper<EvaluateQuestionnaireEntity> updateWrapper = new LambdaUpdateWrapper<EvaluateQuestionnaireEntity>()
+                .eq(EvaluateQuestionnaireEntity::getEvaluateQuestionnaireId, evaluateQuestionnaireId)
+                .set(EvaluateQuestionnaireEntity::getEnabled, evaluateEnabledEnum.getCode());
+        return evaluateQuestionnaireService.update(updateWrapper);
     }
 }

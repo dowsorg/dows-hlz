@@ -48,6 +48,13 @@ public class TenantCaseCategoryBiz {
         return caseCategoryEntity.getCaseCategId();
     }
 
+    /**
+     * @author fhb
+     * @description dude, go optimize yourself
+     * @date 2023/5/24 11:25
+     * @param
+     * @return
+     */
     public boolean batchSaveOrUpd(List<CaseCategoryRequest> list) {
         if (Objects.isNull(list) || list.isEmpty()) {
             return Boolean.FALSE;

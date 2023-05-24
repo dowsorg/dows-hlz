@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.evaluate.request.EvaluateReportRequest;
 import org.dows.hep.api.base.evaluate.response.EvaluateReportManagementResponse;
-import org.dows.hep.biz.base.evaluate.EvaluateReportManagementBiz;
+import org.dows.hep.biz.base.evaluate.EvaluateReportBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,62 +20,50 @@ import java.util.List;
 @RestController
 @Tag(name = "评估报告管理", description = "评估报告管理")
 public class EvaluateReportManagementRest {
-    private final EvaluateReportManagementBiz evaluateReportManagementBiz;
+    private final EvaluateReportBiz evaluateReportBiz;
 
     /**
-    * 创建评估报告管理
+    * 新增或更新评估报告管理
     * @param
     * @return
     */
-    @Operation(summary = "创建评估报告管理")
-    @PostMapping("v1/baseEvaluate/evaluateReportManagement/evaluateReportManagement")
-    public void evaluateReportManagement(@RequestBody @Validated EvaluateReportRequest createEvaluateReportManagement ) {
-        evaluateReportManagementBiz.evaluateReportManagement(createEvaluateReportManagement);
+    @Operation(summary = "新增或更新评估报告管理")
+    @PostMapping("v1/baseEvaluate/evaluateReportManagement/saveOrUpdEvaluateReport")
+    public Boolean saveOrUpdEvaluateReport(@RequestBody @Validated List<EvaluateReportRequest> requests ) {
+        return evaluateReportBiz.saveOrUpdEvaluateReport(requests);
     }
 
     /**
-    * 删除评估报告管理
-    * @param
-    * @return
-    */
-    @Operation(summary = "删除评估报告管理")
-    @DeleteMapping("v1/baseEvaluate/evaluateReportManagement/deleteEvaluateReportManagement")
-    public void deleteEvaluateReportManagement(@Validated String evaluateReportManagementId ) {
-        evaluateReportManagementBiz.deleteEvaluateReportManagement(evaluateReportManagementId);
+     * 获取问卷下评估报告
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取问卷下评估报告")
+    @GetMapping("v1/baseEvaluate/evaluateReportManagement/listByQuestionnaireId")
+    public List<EvaluateReportManagementResponse> listByQuestionnaireId(String evaluateQuestionnaireId) {
+        return evaluateReportBiz.listByQuestionnaireId(evaluateQuestionnaireId);
     }
 
     /**
-    * 获取评估报告管理
-    * @param
-    * @return
-    */
+     * 获取评估报告管理
+     * @param
+     * @return
+     */
     @Operation(summary = "获取评估报告管理")
     @GetMapping("v1/baseEvaluate/evaluateReportManagement/getEvaluateReportManagement")
     public EvaluateReportManagementResponse getEvaluateReportManagement(@Validated String evaluateReportManagementId) {
-        return evaluateReportManagementBiz.getEvaluateReportManagement(evaluateReportManagementId);
+        return evaluateReportBiz.getEvaluateReportManagement(evaluateReportManagementId);
     }
 
     /**
-    * 筛选评估报告管理
+    * 删除or批量删除评估报告管理
     * @param
     * @return
     */
-    @Operation(summary = "筛选评估报告管理")
-    @GetMapping("v1/baseEvaluate/evaluateReportManagement/listEvaluateReportManagement")
-    public List<EvaluateReportManagementResponse> listEvaluateReportManagement(@Validated String appId, @Validated String questionnaireId, @Validated String reportName, @Validated String reportDescr, @Validated String assessmentResult, @Validated String suggestion, @Validated Integer minScore, @Validated Integer maxScore) {
-        return evaluateReportManagementBiz.listEvaluateReportManagement(appId,questionnaireId,reportName,reportDescr,assessmentResult,suggestion,minScore,maxScore);
+    @Operation(summary = "删除or批量删除评估报告管理")
+    @DeleteMapping("v1/baseEvaluate/evaluateReportManagement/deleteEvaluateReportManagement")
+    public Boolean deleteEvaluateReportManagement(@RequestBody List<String> evaluateReportManagementIds ) {
+        return evaluateReportBiz.deleteEvaluateReportManagement(evaluateReportManagementIds);
     }
-
-    /**
-    * 分页筛选评估报告管理
-    * @param
-    * @return
-    */
-    @Operation(summary = "分页筛选评估报告管理")
-    @GetMapping("v1/baseEvaluate/evaluateReportManagement/pageEvaluateReportManagement")
-    public String pageEvaluateReportManagement(@Validated Integer pageNo, @Validated Integer pageSize, @Validated String appId, @Validated String questionnaireId, @Validated String reportName, @Validated String reportDescr, @Validated String assessmentResult, @Validated String suggestion, @Validated Integer minScore, @Validated Integer maxScore) {
-        return evaluateReportManagementBiz.pageEvaluateReportManagement(pageNo,pageSize,appId,questionnaireId,reportName,reportDescr,assessmentResult,suggestion,minScore,maxScore);
-    }
-
 
 }

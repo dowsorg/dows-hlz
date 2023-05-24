@@ -1,8 +1,11 @@
 package org.dows.hep.rest.base.evaluate;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.evaluate.request.EvaluateQuestionnairePageRequest;
 import org.dows.hep.api.base.evaluate.request.EvaluateQuestionnaireRequest;
+import org.dows.hep.api.base.evaluate.response.EvaluateQuestionnairePageResponse;
 import org.dows.hep.api.base.evaluate.response.EvaluateQuestionnaireResponse;
 import org.dows.hep.biz.base.evaluate.EvaluateQuestionnaireBiz;
 import org.springframework.validation.annotation.Validated;
@@ -23,32 +26,32 @@ public class EvaluateQuestionnaireRest {
     private final EvaluateQuestionnaireBiz evaluateQuestionnaireBiz;
 
     /**
-    * 创建评估问卷
+    * 新增或更新评估问卷
     * @param
     * @return
     */
-    @Operation(summary = "创建评估问卷")
-    @PostMapping("v1/baseEvaluate/evaluateQuestionnaire/createEvaluateQuestionnaire")
-    public void createEvaluateQuestionnaire(@RequestBody @Validated EvaluateQuestionnaireRequest createEvaluateQuestionnaire ) {
-        evaluateQuestionnaireBiz.createEvaluateQuestionnaire(createEvaluateQuestionnaire);
+    @Operation(summary = "新增或更新评估问卷")
+    @PostMapping("v1/baseEvaluate/evaluateQuestionnaire/saveOrUpdEvaluateQuestionnaire")
+    public Boolean saveOrUpdEvaluateQuestionnaire(@RequestBody @Validated EvaluateQuestionnaireRequest createEvaluateQuestionnaire ) {
+        return evaluateQuestionnaireBiz.saveOrUpdEQ(createEvaluateQuestionnaire);
     }
 
     /**
-    * 删除评估问卷
-    * @param
-    * @return
-    */
-    @Operation(summary = "删除评估问卷")
-    @DeleteMapping("v1/baseEvaluate/evaluateQuestionnaire/deleteEvaluateQuestionnaire")
-    public void deleteEvaluateQuestionnaire(@Validated String evaluateQuestionnaireId ) {
-        evaluateQuestionnaireBiz.deleteEvaluateQuestionnaire(evaluateQuestionnaireId);
+     * 分页筛选评估问卷
+     * @param
+     * @return
+     */
+    @Operation(summary = "分页筛选评估问卷")
+    @PostMapping("v1/baseEvaluate/evaluateQuestionnaire/pageEvaluateQuestionnaire")
+    public IPage<EvaluateQuestionnairePageResponse> pageEvaluateQuestionnaire(@RequestBody EvaluateQuestionnairePageRequest request) {
+        return evaluateQuestionnaireBiz.pageEvaluateQuestionnaire(request);
     }
 
     /**
-    * 获取评估问卷
-    * @param
-    * @return
-    */
+     * 获取评估问卷
+     * @param
+     * @return
+     */
     @Operation(summary = "获取评估问卷")
     @GetMapping("v1/baseEvaluate/evaluateQuestionnaire/getEvaluateQuestionnaire")
     public EvaluateQuestionnaireResponse getEvaluateQuestionnaire(@Validated String evaluateQuestionnaireId) {
@@ -56,26 +59,35 @@ public class EvaluateQuestionnaireRest {
     }
 
     /**
-    * 筛选评估问卷
-    * @param
-    * @return
-    */
-    @Operation(summary = "筛选评估问卷")
-    @GetMapping("v1/baseEvaluate/evaluateQuestionnaire/listEvaluateQuestionnaire")
-    public List<EvaluateQuestionnaireResponse> listEvaluateQuestionnaire(@Validated String appId, @Validated String questionSectionId) {
-        return evaluateQuestionnaireBiz.listEvaluateQuestionnaire(appId,questionSectionId);
+     * 启用
+     * @param
+     * @return
+     */
+    @Operation(summary = "启用")
+    @GetMapping("v1/baseEvaluate/evaluateQuestionnaire/enabledQuestionnaire")
+    public Boolean enabledQuestion(@Validated String questionInstanceId) {
+        return evaluateQuestionnaireBiz.enabledQuestionnaire(questionInstanceId);
     }
 
     /**
-    * 分页筛选评估问卷
+     * 禁用
+     * @param
+     * @return
+     */
+    @Operation(summary = "禁用")
+    @GetMapping("v1/baseEvaluate/evaluateQuestionnaire/disabledQuestionnaire")
+    public Boolean disabledQuestion(@Validated String questionInstanceId) {
+        return evaluateQuestionnaireBiz.disabledQuestionnaire(questionInstanceId);
+    }
+
+    /**
+    * 删除or批量删除评估问卷
     * @param
     * @return
     */
-    @Operation(summary = "分页筛选评估问卷")
-    @GetMapping("v1/baseEvaluate/evaluateQuestionnaire/pageEvaluateQuestionnaire")
-    public String pageEvaluateQuestionnaire(@Validated Integer pageNo, @Validated Integer pageSize, @Validated String appId, @Validated String questionSectionId) {
-        return evaluateQuestionnaireBiz.pageEvaluateQuestionnaire(pageNo,pageSize,appId,questionSectionId);
+    @Operation(summary = "删除or批量删除评估问卷")
+    @DeleteMapping("v1/baseEvaluate/evaluateQuestionnaire/deleteEvaluateQuestionnaire")
+    public Boolean deleteEvaluateQuestionnaire(@RequestBody List<String> evaluateQuestionnaireIds ) {
+        return evaluateQuestionnaireBiz.deleteEvaluateQuestionnaire(evaluateQuestionnaireIds);
     }
-
-
 }
