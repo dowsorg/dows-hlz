@@ -6,10 +6,7 @@ import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.vo.CategVO;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -35,11 +32,10 @@ public abstract class CategCache extends BaseLocalCache<CategCache.CacheData> {
             return vCache;
         }
         src.forEach(i->{
-            if(ShareUtil.XObject.isEmpty(i.getCategPid())){
-                i.setCategPid(i.getFamily());
-            }
+            i.setCategPid(Optional.ofNullable(i.getCategPid()).orElse(""));
             vCache.mapItems.put(fixKey(i.getCategId()),i);
-            vCache.mapGroups.computeIfAbsent(fixKey(i.getCategPid()),v-> new ArrayList<>()).add(i);
+            vCache.mapGroups.computeIfAbsent(fixKey(ShareUtil.XString.defaultIfEmpty(i.getCategPid(),i.getFamily())),v-> new ArrayList<>())
+                    .add(i);
         });
         StringBuilder sbId=new StringBuilder();
         StringBuilder sbName=new StringBuilder();
