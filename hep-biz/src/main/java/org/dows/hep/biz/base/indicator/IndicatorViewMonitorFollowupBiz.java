@@ -512,7 +512,7 @@ public class IndicatorViewMonitorFollowupBiz{
         .eq(StringUtils.isNotBlank(indicatorFuncId), IndicatorViewMonitorFollowupEntity::getIndicatorFuncId, indicatorFuncId)
         .eq(StringUtils.isNotBlank(paramIndicatorCategoryId), IndicatorViewMonitorFollowupEntity::getIndicatorCategoryId, paramIndicatorCategoryId)
         .eq(Objects.nonNull(status), IndicatorViewMonitorFollowupEntity::getStatus, status)
-        .like(StringUtils.isNotBlank(name), IndicatorViewMonitorFollowupEntity::getName, StringUtils.isNotBlank(name) ? null : name.trim());
+        .like(StringUtils.isNotBlank(name), IndicatorViewMonitorFollowupEntity::getName, StringUtils.isBlank(name) ? null : name.trim());
     Page<IndicatorViewMonitorFollowupEntity> indicatorViewMonitorFollowupEntityPage = indicatorViewMonitorFollowupService.page(page, indicatorViewMonitorFollowupEntityLQW);
     Page<IndicatorViewMonitorFollowupResponseRs> indicatorViewMonitorFollowupResponseRsPage = RsPageUtil.convertFromAnother(indicatorViewMonitorFollowupEntityPage);
     List<IndicatorViewMonitorFollowupEntity> indicatorViewMonitorFollowupEntityList = indicatorViewMonitorFollowupEntityPage.getRecords();
