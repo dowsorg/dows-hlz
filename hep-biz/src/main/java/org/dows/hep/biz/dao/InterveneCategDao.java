@@ -49,6 +49,15 @@ public class InterveneCategDao extends BaseDao<InterveneCategoryService,Interven
         return null;
     }
 
+    @Override
+    protected SFunction<InterveneCategoryEntity, Integer> getColSeq() {
+        return InterveneCategoryEntity::getSeq;
+    }
+
+    @Override
+    protected SFunction<Integer, ?> setColSeq(InterveneCategoryEntity item) {
+        return item::setSeq;
+    }
 
     public List<InterveneCategoryEntity> getAll(){
         return service.lambdaQuery()

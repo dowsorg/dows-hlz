@@ -35,7 +35,7 @@ public class CreateOrUpdateIndicatorInstanceRequestRs implements Serializable {
   @Schema(title = "是否按照百分比展示")
   private Integer displayByPercent;
 
-  @ApiModelProperty(required = true)
+  @ApiModelProperty(required = true, value = "指标默认值，当模版使用必须填写")
   private String def;
 
   private String unit;

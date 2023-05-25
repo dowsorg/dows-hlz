@@ -41,6 +41,15 @@ public class EventCategDao extends BaseDao<EventCategService, EventCategEntity> 
         return null;
     }
 
+    @Override
+    protected SFunction<EventCategEntity, Integer> getColSeq() {
+        return EventCategEntity::getSeq;
+    }
+
+    @Override
+    protected SFunction<Integer, ?> setColSeq(EventCategEntity item) {
+        return item::setSeq;
+    }
 
     public List<EventCategEntity> getAll(){
         return service.lambdaQuery()

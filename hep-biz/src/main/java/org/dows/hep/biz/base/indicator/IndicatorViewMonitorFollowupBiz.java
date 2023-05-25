@@ -388,7 +388,7 @@ public class IndicatorViewMonitorFollowupBiz{
               .name(name)
               .seq(seq)
               .build();
-        } {
+        } else {
           indicatorViewMonitorFollowupFollowupContentEntity = kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupFollowupContentMap.get(indicatorViewMonitorFollowupFollowupContentId);
           indicatorViewMonitorFollowupFollowupContentEntity.setName(name);
           indicatorViewMonitorFollowupFollowupContentEntity.setSeq(seq);

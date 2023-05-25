@@ -93,13 +93,13 @@ public class EventDao extends BaseSubDao<EventService, EventEntity, EventEvalSer
 
     @Override
     public IPage<EventEntity> pageByCondition(FindEventRequest req, SFunction<EventEntity, ?>... cols) {
-        final String categId = req.getCategIdLv1();
         final String keyWords = req.getKeywords();
         Page<EventEntity> page = Page.of(req.getPageNo(), req.getPageSize());
         page.addOrder(OrderItem.asc("id"));
         return service.page(page, Wrappers.<EventEntity>lambdaQuery()
-                .likeRight(ShareUtil.XString.hasLength(categId), EventEntity::getCategIdPath, categId)
+                //.likeRight(ShareUtil.XString.hasLength(categId), EventEntity::getCategIdPath, categId)
                 .like(ShareUtil.XString.hasLength(keyWords), EventEntity::getEventName, keyWords)
+                .in(ShareUtil.XCollection.notEmpty(req.getCategIdLv1()), EventEntity::getEventCategId, req.getCategIdLv1())
                 .in(ShareUtil.XCollection.notEmpty(req.getIncIds()), getColId(), req.getIncIds())
                 .notIn(ShareUtil.XCollection.notEmpty(req.getExcIds()), getColId(), req.getExcIds())
                 .eq(ShareUtil.XObject.notEmpty(req.getState()), getColState(), req.getState())

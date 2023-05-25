@@ -68,7 +68,7 @@ public class IndicatorViewMonitorFollowupRest {
 
     @Operation(summary = "Rs获取查看指标监测随访类")
     @GetMapping("v1/baseIndicator/indicatorViewMonitorFollowup/getRs")
-    public IndicatorViewMonitorFollowupResponseRs getRs(@Validated String indicatorViewMonitorFollowupId) {
+    public IndicatorViewMonitorFollowupResponseRs getRs(@RequestParam @Validated String indicatorViewMonitorFollowupId) {
         return indicatorViewMonitorFollowupBiz.getRs(indicatorViewMonitorFollowupId);
     }
 

@@ -28,15 +28,18 @@ public class CreateIndicatorInstanceRequest{
     private String indicatorName;
 
     @Schema(title = "默认值")
+    @ApiModelProperty(required = true)
     private String def;
 
     @Schema(title = "单位")
     private String unit;
 
     @Schema(title = "0-非关键指标，1-关键指标")
+    @ApiModelProperty(required = true)
     private Integer core;
 
     @Schema(title = "0-非饮食关键指标，1-饮食关键指标")
+    @ApiModelProperty(required = true)
     private Integer food;
 
     @Schema(title = "最小值")
