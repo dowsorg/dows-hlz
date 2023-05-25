@@ -457,7 +457,7 @@ public class IndicatorViewMonitorFollowupBiz{
         .collect(Collectors.toSet());
     boolean isRemoved = indicatorViewMonitorFollowupService.remove(
         new LambdaQueryWrapper<IndicatorViewMonitorFollowupEntity>()
-            .in(IndicatorViewMonitorFollowupEntity::getIndicatorViewMonitorFollowupId, dbIndicatorViewMonitorFollowupFollowupContentIdSet)
+            .in(IndicatorViewMonitorFollowupEntity::getIndicatorViewMonitorFollowupId, indicatorViewMonitorFollowupIdList)
     );
     if (!isRemoved) {
       log.warn("method IndicatorViewMonitorFollowupBiz.batchDeleteRs param indicatorViewMonitorFollowupIdList:{} is illegal", indicatorViewMonitorFollowupIdList);
