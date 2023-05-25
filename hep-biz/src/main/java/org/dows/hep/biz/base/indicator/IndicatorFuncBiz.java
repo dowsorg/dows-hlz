@@ -235,7 +235,7 @@ public class IndicatorFuncBiz{
                 .eq(IndicatorFuncEntity::getIndicatorFuncId, indicatorFuncId)
         );
         if (!isRemoved) {
-            log.warn("method IndicatorFuncBiz.delete param indicatorFuncId is blank");
+            log.warn("method IndicatorFuncBiz.delete param indicatorFuncId:{} is illegal", indicatorFuncId);
             throw new IndicatorFuncException(EnumESC.VALIDATE_EXCEPTION);
         }
     }
