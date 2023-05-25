@@ -236,7 +236,7 @@ public class IndicatorJudgeHealthProblemBiz{
             .eq(StringUtils.isNotBlank(indicatorFuncId), IndicatorJudgeHealthProblemEntity::getIndicatorFuncId, indicatorFuncId)
             .eq(StringUtils.isNotBlank(paramIndicatorCategoryId), IndicatorJudgeHealthProblemEntity::getIndicatorCategoryId, paramIndicatorCategoryId)
             .eq(Objects.nonNull(status), IndicatorJudgeHealthProblemEntity::getStatus, status)
-            .like(StringUtils.isNotBlank(name), IndicatorJudgeHealthProblemEntity::getName, StringUtils.isNotBlank(name) ? null : name.trim());
+            .like(StringUtils.isNotBlank(name), IndicatorJudgeHealthProblemEntity::getName, StringUtils.isBlank(name) ? null : name.trim());
         Page<IndicatorJudgeHealthProblemEntity> indicatorJudgeHealthProblemEntityPage = indicatorJudgeHealthProblemService.page(page, indicatorJudgeHealthProblemEntityLQW);
         Page<IndicatorJudgeHealthProblemResponseRs> indicatorJudgeHealthProblemResponseRsPage = RsPageUtil.convertFromAnother(indicatorJudgeHealthProblemEntityPage);
         List<IndicatorJudgeHealthProblemEntity> indicatorJudgeHealthProblemEntityList = indicatorJudgeHealthProblemEntityPage.getRecords();

@@ -248,7 +248,7 @@ public class IndicatorViewPhysicalExamBiz{
             .eq(StringUtils.isNotBlank(indicatorFuncId), IndicatorViewPhysicalExamEntity::getIndicatorFuncId, indicatorFuncId)
             .eq(StringUtils.isNotBlank(paramIndicatorCategoryId), IndicatorViewPhysicalExamEntity::getIndicatorCategoryId, paramIndicatorCategoryId)
             .eq(Objects.nonNull(status), IndicatorViewPhysicalExamEntity::getStatus, status)
-            .like(StringUtils.isNotBlank(name), IndicatorViewPhysicalExamEntity::getName, StringUtils.isNotBlank(name) ? null : name.trim());
+            .like(StringUtils.isNotBlank(name), IndicatorViewPhysicalExamEntity::getName, StringUtils.isBlank(name) ? null : name.trim());
         Page<IndicatorViewPhysicalExamEntity> indicatorViewPhysicalExamEntityPage = indicatorViewPhysicalExamService.page(page, indicatorViewPhysicalExamEntityLQW);
         Page<IndicatorViewPhysicalExamResponseRs> indicatorViewPhysicalExamResponseRsPage = RsPageUtil.convertFromAnother(indicatorViewPhysicalExamEntityPage);
         List<IndicatorViewPhysicalExamEntity> indicatorViewPhysicalExamEntityList = indicatorViewPhysicalExamEntityPage.getRecords();

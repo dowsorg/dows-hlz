@@ -223,7 +223,7 @@ public class IndicatorJudgeHealthGuidanceBiz{
             .eq(StringUtils.isNotBlank(indicatorFuncId), IndicatorJudgeHealthGuidanceEntity::getIndicatorFuncId, indicatorFuncId)
             .eq(StringUtils.isNotBlank(paramIndicatorCategoryId), IndicatorJudgeHealthGuidanceEntity::getIndicatorCategoryId, paramIndicatorCategoryId)
             .eq(Objects.nonNull(status), IndicatorJudgeHealthGuidanceEntity::getStatus, status)
-            .like(StringUtils.isNotBlank(name), IndicatorJudgeHealthGuidanceEntity::getName, StringUtils.isNotBlank(name) ? null : name.trim());
+            .like(StringUtils.isNotBlank(name), IndicatorJudgeHealthGuidanceEntity::getName, StringUtils.isBlank(name) ? null : name.trim());
         Page<IndicatorJudgeHealthGuidanceEntity> indicatorJudgeHealthGuidanceEntityPage = indicatorJudgeHealthGuidanceService.page(page, indicatorJudgeHealthGuidanceEntityLQW);
         Page<IndicatorJudgeHealthGuidanceResponseRs> indicatorJudgeHealthGuidanceResponseRsPage = RsPageUtil.convertFromAnother(indicatorJudgeHealthGuidanceEntityPage);
         List<IndicatorJudgeHealthGuidanceEntity> indicatorJudgeHealthGuidanceEntityList = indicatorJudgeHealthGuidanceEntityPage.getRecords();

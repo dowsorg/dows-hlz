@@ -273,7 +273,7 @@ public class IndicatorViewSupportExamBiz{
             .eq(StringUtils.isNotBlank(indicatorFuncId), IndicatorViewSupportExamEntity::getIndicatorFuncId, indicatorFuncId)
             .eq(StringUtils.isNotBlank(paramIndicatorCategoryId), IndicatorViewSupportExamEntity::getIndicatorCategoryId, paramIndicatorCategoryId)
             .eq(Objects.nonNull(status), IndicatorViewSupportExamEntity::getStatus, status)
-            .like(StringUtils.isNotBlank(name), IndicatorViewSupportExamEntity::getName, StringUtils.isNotBlank(name) ? null : name.trim());
+            .like(StringUtils.isNotBlank(name), IndicatorViewSupportExamEntity::getName, StringUtils.isBlank(name) ? null : name.trim());
         Page<IndicatorViewSupportExamEntity> indicatorViewSupportExamEntityPage = indicatorViewSupportExamService.page(page, indicatorViewSupportExamEntityLQW);
         Page<IndicatorViewSupportExamResponseRs> indicatorViewSupportExamResponseRsPage = RsPageUtil.convertFromAnother(indicatorViewSupportExamEntityPage);
         List<IndicatorViewSupportExamEntity> indicatorViewSupportExamEntityList = indicatorViewSupportExamEntityPage.getRecords();
