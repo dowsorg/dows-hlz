@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 评估维度公式(EvaluateDimensionExpression)实体类
@@ -39,11 +39,8 @@ public class EvaluateDimensionExpressionEntity implements CrudEntity {
     @Schema(title = "分布式ID")
     private String evaluateDimensionExpressionId;
 
-    @Schema(title = "应用ID")
-    private String appId;
-
     @Schema(title = "评估问卷ID")
-    private String questionnaireId;
+    private String evaluateQuestionnaireId;
 
     @Schema(title = "维度id")
     private String dimensionId;

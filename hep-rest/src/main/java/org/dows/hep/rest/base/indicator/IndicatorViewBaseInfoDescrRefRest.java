@@ -5,8 +5,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.biz.base.indicator.IndicatorViewBaseInfoDescrRefBiz;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * @author runsix
@@ -16,6 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "查看指标基本信息描述表指标关联类", description = "查看指标基本信息描述表指标关联类")
 public class IndicatorViewBaseInfoDescrRefRest {
   private final IndicatorViewBaseInfoDescrRefBiz indicatorViewBaseInfoDescrRefBiz;
+
+  @Operation(summary = "批量删除指标基本信息描述表关联指标")
+  @DeleteMapping("v1/baseIndicator/indicatorViewBaseInfoDescrRef/batchDelete")
+  public void batchDelete(@RequestBody List<String> indicatorViewBaseInfoDescRefIdList) throws InterruptedException {
+    indicatorViewBaseInfoDescrRefBiz.batchDelete(indicatorViewBaseInfoDescRefIdList);
+  }
 
   @Operation(summary = "删除指标基本信息描述表关联指标")
   @DeleteMapping("v1/baseIndicator/indicatorViewBaseInfoDescrRef/deleteIndicatorViewBaseInfoDescrRef")

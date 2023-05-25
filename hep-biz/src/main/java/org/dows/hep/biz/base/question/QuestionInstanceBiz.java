@@ -18,8 +18,12 @@ import org.dows.hep.api.base.question.response.QuestionPageResponse;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.biz.base.question.handler.QuestionTypeFactory;
 import org.dows.hep.biz.base.question.handler.QuestionTypeHandler;
+import org.dows.hep.entity.QuestionAnswersEntity;
 import org.dows.hep.entity.QuestionInstanceEntity;
+import org.dows.hep.entity.QuestionOptionsEntity;
+import org.dows.hep.service.QuestionAnswersService;
 import org.dows.hep.service.QuestionInstanceService;
+import org.dows.hep.service.QuestionOptionsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +42,8 @@ public class QuestionInstanceBiz {
     private final QuestionDomainBaseBiz baseBiz;
     private final QuestionCategBiz questionCategBiz;
     private final QuestionInstanceService questionInstanceService;
+    private final QuestionOptionsService optionsService;
+    private final QuestionAnswersService answersService;
 
     /**
      * @param
@@ -93,6 +99,7 @@ public class QuestionInstanceBiz {
         if (StrUtil.isNotBlank(question.getTargetQuestionTitle())) {
             request.setQuestionTitle(question.getTargetQuestionTitle());
         }
+        request.setQuestionInstanceId(null);
 
         // 新增新 data
         return saveOrUpdQuestion(request, questionAccessAuthEnum, questionSourceEnum);
@@ -109,18 +116,40 @@ public class QuestionInstanceBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     public IPage<QuestionPageResponse> pageQuestion(QuestionPageRequest request) {
+        List<String> categoryIdList = getCategoryIdList(request);
         Page<QuestionInstanceEntity> pageRequest = new Page<>(request.getPageNo(), request.getPageSize());
         Page<QuestionInstanceEntity> pageResult = questionInstanceService.lambdaQuery()
                 .eq(QuestionInstanceEntity::getAppId, request.getAppId())
                 .eq(QuestionInstanceEntity::getVer, baseBiz.getLastVer())
                 .eq(QuestionInstanceEntity::getQuestionInstancePid, baseBiz.getQuestionInstancePid())
                 .eq(QuestionInstanceEntity::getBizCode, QuestionAccessAuthEnum.PUBLIC_VIEWING.name())
-                .eq(StrUtil.isNotBlank(request.getQuestionType()), QuestionInstanceEntity::getQuestionType, request.getQuestionType())
-                .in(request.getCategIdList() != null && !request.getCategIdList().isEmpty(), QuestionInstanceEntity::getQuestionCategId, request.getCategIdList())
+                .in(request.getQuestionType() != null && !request.getQuestionType().isEmpty(), QuestionInstanceEntity::getQuestionType, request.getQuestionType())
+                .in(!categoryIdList.isEmpty(), QuestionInstanceEntity::getQuestionCategId, categoryIdList)
                 .like(StrUtil.isNotBlank(request.getKeyword()), QuestionInstanceEntity::getQuestionTitle, request.getKeyword())
                 .page(pageRequest);
         Page<QuestionPageResponse> result = baseBiz.convertPage(pageResult, QuestionPageResponse.class);
         fillResult(result);
+        return result;
+    }
+
+    private List<String> getCategoryIdList(QuestionPageRequest request) {
+        List<String> l1CategIdList = request.getL1CategIdList();
+        List<String> l2CategIdList = request.getL2CategIdList();
+
+        List<String> result = new ArrayList<>();
+        if (l2CategIdList != null && !l2CategIdList.isEmpty()) {
+            result.addAll(l2CategIdList);
+        }
+        if (l1CategIdList != null && !l1CategIdList.isEmpty()) {
+            l1CategIdList.forEach(l1CategoryId -> {
+                List<QuestionCategoryResponse> children = questionCategBiz.getChildrenByPid(l1CategoryId, QuestionCategGroupEnum.QUESTION.name());
+                if (children != null && !children.isEmpty()) {
+                    List<String> childrenIds = children.stream().map(QuestionCategoryResponse::getQuestionCategId).toList();
+                    result.addAll(childrenIds);
+                }
+            });
+        }
+
         return result;
     }
 
@@ -340,6 +369,33 @@ public class QuestionInstanceBiz {
     /**
      * @param
      * @return
+     * @说明: 删除单选和多选题的选项
+     * @关联表: QuestionInstance, QuestionOptions, QuestionAnswers
+     * @工时: 6H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月18日 上午10:45:07
+     */
+    @DSTransactional
+    public Boolean delQuestionOptions(String questionOptionId) {
+        if (StrUtil.isBlank(questionOptionId)) {
+            throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
+        }
+
+        LambdaQueryWrapper<QuestionOptionsEntity> remOpsWrapper = new LambdaQueryWrapper<QuestionOptionsEntity>()
+                .eq(QuestionOptionsEntity::getQuestionOptionsId, questionOptionId);
+        boolean removeOpsRes = optionsService.remove(remOpsWrapper);
+
+        LambdaQueryWrapper<QuestionAnswersEntity> remAnsWrapper = new LambdaQueryWrapper<QuestionAnswersEntity>()
+                .eq(QuestionAnswersEntity::getQuestionOptionsId, questionOptionId);
+        boolean removeAnsRes = answersService.remove(remAnsWrapper);
+
+        return removeOpsRes && removeAnsRes;
+    }
+
+    /**
+     * @param
+     * @return
      * @说明: 删除or批量删除
      * @关联表: QuestionInstance, QuestionOptions, QuestionAnswers
      * @工时: 6H
@@ -355,7 +411,7 @@ public class QuestionInstanceBiz {
         // check
         boolean canRemove = checkCanRemove(questionInstanceIds);
         if (!canRemove) {
-            throw new BizException("被引用数据不可删除");
+            throw new BizException(QuestionESCEnum.CANNOT_DEL_FER_DATA);
         }
 
         // rem instance

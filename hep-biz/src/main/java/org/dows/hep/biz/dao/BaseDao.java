@@ -65,6 +65,24 @@ public abstract class BaseDao<S extends MybatisCrudService<E>,E extends CrudEnti
      */
     protected abstract SFunction<Integer,?> setColState(E item);
 
+    /**
+     * get 序号字段
+     * @return
+     */
+    protected SFunction<E,Integer> getColSeq(){
+        return null;
+    }
+
+    /**
+     * set 序号字段
+     * @param item
+     * @return
+     */
+    protected SFunction<Integer,?> setColSeq(E item){
+        return null;
+    }
+
+
 
 
     //endregion
@@ -177,14 +195,19 @@ public abstract class BaseDao<S extends MybatisCrudService<E>,E extends CrudEnti
         if(ShareUtil.XObject.isEmpty(items)){
             return dftIfEmpty;
         }
-        items.forEach(i->{
-            if(ShareUtil.XObject.isEmpty(getColId().apply(i))){
-                setColId(i).apply(idGenerator.nextIdStr());
+
+        int seq=0;
+        for(E item:items){
+            if(ShareUtil.XObject.isEmpty(getColId().apply(item))){
+                setColId(item).apply(idGenerator.nextIdStr());
             }
-            if(null!=setColState(i)){
-                setColState(i).apply(EnumStatus.of(getColState().apply(i)).getCode());
+            if(null!=setColSeq(item)) {
+                setColSeq(item).apply(++seq);
             }
-        });
+            if(null!=setColState(item)){
+                setColState(item).apply(EnumStatus.of(getColState().apply(item)).getCode());
+            }
+        }
         if(!useLogicId){
             return service.saveOrUpdateBatch(items);
         }

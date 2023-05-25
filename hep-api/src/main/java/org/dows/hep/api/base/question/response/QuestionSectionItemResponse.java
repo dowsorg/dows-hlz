@@ -24,5 +24,5 @@ public class QuestionSectionItemResponse {
     private Integer sequence;
 
     @Schema(title = "问题")
-    private QuestionResponse questionResponse;
+    private QuestionResponse question;
 }

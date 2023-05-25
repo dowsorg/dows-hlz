@@ -219,7 +219,7 @@ public class IndicatorJudgeRiskFactorBiz{
             .eq(StringUtils.isNotBlank(indicatorFuncId), IndicatorJudgeRiskFactorEntity::getIndicatorFuncId, indicatorFuncId)
             .eq(StringUtils.isNotBlank(paramIndicatorCategoryId), IndicatorJudgeRiskFactorEntity::getIndicatorCategoryId, paramIndicatorCategoryId)
             .eq(Objects.nonNull(status), IndicatorJudgeRiskFactorEntity::getStatus, status)
-            .like(StringUtils.isNotBlank(name), IndicatorJudgeRiskFactorEntity::getName, StringUtils.isNotBlank(name) ? null : name.trim());
+            .like(StringUtils.isNotBlank(name), IndicatorJudgeRiskFactorEntity::getName, StringUtils.isBlank(name) ? null : name.trim());
         Page<IndicatorJudgeRiskFactorEntity> indicatorJudgeRiskFactorEntityPage = indicatorJudgeRiskFactorService.page(page, indicatorJudgeRiskFactorEntityLQW);
         Page<IndicatorJudgeRiskFactorResponseRs> indicatorJudgeRiskFactorResponseRsPage = RsPageUtil.convertFromAnother(indicatorJudgeRiskFactorEntityPage);
         List<IndicatorJudgeRiskFactorEntity> indicatorJudgeRiskFactorEntityList = indicatorJudgeRiskFactorEntityPage.getRecords();

@@ -9,12 +9,14 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.enums.QuestionCategGroupEnum;
+import org.dows.hep.api.base.question.enums.QuestionESCEnum;
 import org.dows.hep.api.base.question.enums.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.QuestionSearchRequest;
 import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionItemResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
+import org.dows.hep.api.tenant.casus.CaseESCEnum;
 import org.dows.hep.api.tenant.casus.QuestionSelectModeEnum;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionSearchRequest;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnairePageRequest;
@@ -31,7 +33,6 @@ import org.dows.hep.entity.CaseInstanceEntity;
 import org.dows.hep.entity.CaseQuestionnaireEntity;
 import org.dows.hep.entity.QuestionSectionEntity;
 import org.dows.hep.service.CaseQuestionnaireService;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -64,16 +65,11 @@ public class TenantCaseQuestionnaireBiz {
     @DSTransactional
     public String saveOrUpdCaseQuestionnaire(CaseQuestionnaireRequest caseQuestionnaire) {
         if (BeanUtil.isEmpty(caseQuestionnaire)) {
-            return "";
+            throw new BizException(CaseESCEnum.PARAMS_NON_NULL);
         }
 
-        // check
-        checkBeforeSaveOrUpd(caseQuestionnaire);
-
-        // save question-section
-        String questionSectionId = saveOrUpdQuestionSection(caseQuestionnaire);
-        // save case-questionnaire
-        CaseQuestionnaireEntity caseQuestionnaireEntity = saveOrUpdCaseQuestionnaire0(caseQuestionnaire, questionSectionId);
+        CaseQuestionnaireEntity caseQuestionnaireEntity = convertRequest2Entity(caseQuestionnaire);
+        caseQuestionnaireService.saveOrUpdate(caseQuestionnaireEntity);
 
         return caseQuestionnaireEntity.getCaseQuestionnaireId();
     }
@@ -268,27 +264,37 @@ public class TenantCaseQuestionnaireBiz {
         return questionSectionBiz.disabledSectionQuestion(questionSectionId, questionSectionItemId);
     }
 
-    private void checkBeforeSaveOrUpd(CaseQuestionnaireRequest request) {
-        String uniqueId = request.getCaseQuestionnaireId();
+    private CaseQuestionnaireEntity convertRequest2Entity(CaseQuestionnaireRequest request) {
+        if (BeanUtil.isEmpty(request)) {
+            throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
+        }
+
+        CaseQuestionnaireEntity result = CaseQuestionnaireEntity.builder()
+                .caseQuestionnaireId(request.getCaseQuestionnaireId())
+                .caseInstanceId(request.getCaseInstanceId())
+                .questionSectionName(request.getQuestionSectionName())
+                .periods(request.getPeriods())
+                .periodSequence(request.getPeriodSequence())
+                .addType(request.getAddType().name())
+                .build();
+
+        String uniqueId = result.getCaseQuestionnaireId();
         if (StrUtil.isBlank(uniqueId)) {
-            request.setAppId(baseBiz.getAppId());
-            request.setCaseQuestionnaireId(baseBiz.getIdStr());
+            result.setCaseQuestionnaireId(baseBiz.getIdStr());
         } else {
             CaseQuestionnaireEntity entity = getById(uniqueId);
             if (BeanUtil.isEmpty(entity)) {
-                throw new BizException("数据不存在");
+                throw new BizException(CaseESCEnum.DATA_NULL);
             }
-            request.setId(entity.getId());
+            result.setId(entity.getId());
         }
-    }
 
-    private String saveOrUpdQuestionSection(CaseQuestionnaireRequest caseQuestionnaire) {
-        QuestionSelectModeEnum addType = caseQuestionnaire.getAddType();
+        // generate question-section
+        QuestionSelectModeEnum addType = request.getAddType();
         CaseQuestionnaireHandler handler = CaseQuestionnaireFactory.get(addType);
-        return handler.handle(caseQuestionnaire);
-    }
+        String questionSectionId = handler.handle(request);
 
-    private CaseQuestionnaireEntity saveOrUpdCaseQuestionnaire0(CaseQuestionnaireRequest caseQuestionnaire, String questionSectionId) {
+        // get question-struct and question-count
         QuestionSectionEntity sectionEntity = questionSectionBiz.getById(questionSectionId);
         Integer questionCount = Optional.of(sectionEntity)
                 .map(QuestionSectionEntity::getQuestionCount)
@@ -296,22 +302,19 @@ public class TenantCaseQuestionnaireBiz {
         String questionStruct = Optional.of(sectionEntity)
                 .map(QuestionSectionEntity::getQuestionSectionStructure)
                 .orElse("");
-        CaseQuestionnaireEntity caseQuestionnaireEntity = BeanUtil.copyProperties(caseQuestionnaire, CaseQuestionnaireEntity.class);
-        caseQuestionnaireEntity.setQuestionSectionId(questionSectionId);
-        caseQuestionnaireEntity.setQuestionCount(questionCount);
-        caseQuestionnaireEntity.setQuestionSectionStructure(questionStruct);
-        caseQuestionnaireService.saveOrUpdate(caseQuestionnaireEntity);
-        return caseQuestionnaireEntity;
+        result.setQuestionSectionId(questionSectionId);
+        result.setQuestionCount(questionCount);
+        result.setQuestionSectionStructure(questionStruct);
+
+        return result;
     }
 
-    @NotNull
     private Map<String, List<QuestionResponse>> collectQuestionOfUsableQuestion0(CaseQuestionSearchRequest request) {
         // default
         HashMap<String, List<QuestionResponse>> result = new HashMap<>();
         result.put(QuestionTypeEnum.RADIO_SELECT.getCode(), new ArrayList<>());
         result.put(QuestionTypeEnum.MULTIPLE_SELECT.getCode(), new ArrayList<>());
         result.put(QuestionTypeEnum.MATERIAL.getCode(), new ArrayList<>());
-//        result.put(QuestionTypeEnum.SUBJECTIVE.getCode(), new ArrayList<>());
 
         // new
         List<QuestionResponse> questionResponses = listUsableQuestionFromSource0(request);
@@ -320,7 +323,7 @@ public class TenantCaseQuestionnaireBiz {
         }
 
         Map<String, List<QuestionResponse>> collect = questionResponses.stream()
-                .collect(Collectors.groupingBy(item -> item.getQuestionType().getCode()));
+                .collect(Collectors.groupingBy(QuestionResponse::getQuestionType));
         result.forEach((key, value) -> {
             List<QuestionResponse> list = collect.get(key);
             if (list != null && !list.isEmpty()) {
@@ -330,7 +333,6 @@ public class TenantCaseQuestionnaireBiz {
         return result;
     }
 
-    @NotNull
     private List<QuestionResponse> listUsableQuestionFromSource0(CaseQuestionSearchRequest request) {
         // list from question source
         List<String> categoryIdList = getCategoryIdList(request);
@@ -386,13 +388,12 @@ public class TenantCaseQuestionnaireBiz {
 
         // list question-id
         return itemResponseList.stream()
-                .map(QuestionSectionItemResponse::getQuestionResponse)
+                .map(QuestionSectionItemResponse::getQuestion)
                 .map(QuestionResponse::getQuestionInstanceId)
                 .distinct()
                 .toList();
     }
 
-    @NotNull
     private List<QuestionResponse> filterUsableQuestion(List<QuestionResponse> questionResponses, List<String> existingIds) {
         Map<String, String> existingIdsMap = existingIds.stream().collect(Collectors.toMap(item -> item, item -> item, (v1, v2) -> v1));
         return questionResponses.stream()

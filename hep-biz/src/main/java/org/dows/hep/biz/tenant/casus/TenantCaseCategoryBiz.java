@@ -2,6 +2,7 @@ package org.dows.hep.biz.tenant.casus;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
@@ -35,16 +36,32 @@ public class TenantCaseCategoryBiz {
      * @description
      * @date 2023/5/11 21:22
      */
-    @Transactional
+    @DSTransactional
     public String saveOrUpdateCaseCategory(CaseCategoryRequest request) {
         if (BeanUtil.isEmpty(request)) {
-            return "";
+            throw new BizException(CaseESCEnum.PARAMS_NON_NULL);
         }
 
         CaseCategoryEntity caseCategoryEntity = checkBeforeSaveOrUpd(request);
         caseCategoryService.saveOrUpdate(caseCategoryEntity);
 
         return caseCategoryEntity.getCaseCategId();
+    }
+
+    /**
+     * @author fhb
+     * @description dude, go optimize yourself
+     * @date 2023/5/24 11:25
+     * @param
+     * @return
+     */
+    public boolean batchSaveOrUpd(List<CaseCategoryRequest> list) {
+        if (Objects.isNull(list) || list.isEmpty()) {
+            return Boolean.FALSE;
+        }
+
+        list.forEach(this::saveOrUpdateCaseCategory);
+        return Boolean.TRUE;
     }
 
     /**
@@ -297,4 +314,6 @@ public class TenantCaseCategoryBiz {
 
         return Boolean.FALSE;
     }
+
+
 }

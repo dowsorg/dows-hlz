@@ -22,9 +22,4 @@ public class ManualCaseQuestionnaireHandler extends BaseCaseQuestionnaireHandler
     public List<String> getQuestionIds(CaseQuestionnaireRequest caseQuestionnaire) {
         return caseQuestionnaire.getQuestionInstanceIdList();
     }
-
-    @Override
-    public boolean needOriRequest() {
-        return Boolean.TRUE;
-    }
 }

@@ -9,6 +9,7 @@ import org.dows.framework.api.StatusCode;
 public enum QuestionESCEnum implements StatusCode {
     PARAMS_NON_NULL(42000, "请求参数不能为空"),
     DATA_NULL(42001, "数据不存在"),
+    CANNOT_DEL_FER_DATA(42002, "被引用数据不可删除"),
     QUESTION_TYPE_NON_NULL(42100, "题目类型不能为空"),
     QUESTION_TYPE_CANNOT_CHANGE(42101, "题目类型不能变更"),
     QUESTION_CLONED_OBJ_NON_NULL(42102, "被克隆对象不能为空"),

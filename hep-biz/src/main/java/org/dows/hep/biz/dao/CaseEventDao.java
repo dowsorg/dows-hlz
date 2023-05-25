@@ -8,10 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.dows.hep.api.tenant.casus.request.FindCaseEventRequest;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
-import org.dows.hep.entity.CaseEventActionEntity;
-import org.dows.hep.entity.CaseEventActionIndicatorEntity;
-import org.dows.hep.entity.CaseEventEntity;
-import org.dows.hep.entity.CaseEventEvalEntity;
+import org.dows.hep.entity.*;
 import org.dows.hep.service.CaseEventEvalService;
 import org.dows.hep.service.CaseEventService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,14 +90,14 @@ public class CaseEventDao extends BaseSubDao<CaseEventService, CaseEventEntity, 
 
     @Override
     public IPage<CaseEventEntity> pageByCondition(FindCaseEventRequest req, SFunction<CaseEventEntity, ?>... cols) {
-        final String categId = req.getCategIdLv1();
         final String keyWords = req.getKeywords();
         Page<CaseEventEntity> page = Page.of(req.getPageNo(), req.getPageSize());
         page.addOrder(OrderItem.asc("id"));
         return service.page(page, Wrappers.<CaseEventEntity>lambdaQuery()
                 .eq(CaseEventEntity::getPersonId, req.getPersonId())
-                .likeRight(ShareUtil.XString.hasLength(categId), CaseEventEntity::getCategIdPath, categId)
+                //.likeRight(ShareUtil.XString.hasLength(categId), CaseEventEntity::getCategIdPath, categId)
                 .like(ShareUtil.XString.hasLength(keyWords), CaseEventEntity::getCaseEventName, keyWords)
+                .in(ShareUtil.XCollection.notEmpty(req.getCategIdLv1()), CaseEventEntity::getEventCategId, req.getCategIdLv1())
                 .in(ShareUtil.XCollection.notEmpty(req.getIncIds()), getColId(), req.getIncIds())
                 .notIn(ShareUtil.XCollection.notEmpty(req.getExcIds()), getColId(), req.getExcIds())
                 .eq(ShareUtil.XObject.notEmpty(req.getState()), getColState(), req.getState())

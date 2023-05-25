@@ -139,7 +139,7 @@ public class EventBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Page<EventResponse> pageEvent(FindEventRequest findEvent ) {
-        findEvent.setCategIdLv1(ShareBiz.ensureCategPathSuffix(findEvent.getCategIdLv1()));
+
         return ShareBiz.buildPage(eventDao.pageByCondition(findEvent),i-> CopyWrapper.create(EventResponse::new)
                 .endFrom( refreshCateg(i) )
                 .setCategIdLv1(getCategCache().getCategLv1(i.getCategIdPath() ,i.getEventCategId()))

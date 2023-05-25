@@ -60,11 +60,6 @@ public class RandomCaseQuestionnaireHandler extends BaseCaseQuestionnaireHandler
         return questionIds;
     }
 
-    @Override
-    public boolean needOriRequest() {
-        return Boolean.FALSE;
-    }
-
     private Map<String, List<QuestionResponse>> collectQuestionOfUsableQuestion(CaseQuestionnaireRequest.RandomMode randomMode, String caseInstanceId) {
         if (BeanUtil.isEmpty(randomMode) || StrUtil.isBlank(caseInstanceId)) {
             return new HashMap<>();

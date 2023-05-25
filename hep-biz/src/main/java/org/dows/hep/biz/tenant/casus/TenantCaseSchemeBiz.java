@@ -12,9 +12,7 @@ import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.enums.*;
 import org.dows.hep.api.base.question.request.QuestionSectionItemRequest;
 import org.dows.hep.api.base.question.request.QuestionSectionRequest;
-import org.dows.hep.api.base.question.response.QuestionSectionDimensionResponse;
-import org.dows.hep.api.base.question.response.QuestionSectionItemResponse;
-import org.dows.hep.api.base.question.response.QuestionSectionResponse;
+import org.dows.hep.api.base.question.response.*;
 import org.dows.hep.api.tenant.casus.CaseESCEnum;
 import org.dows.hep.api.tenant.casus.CaseEnabledEnum;
 import org.dows.hep.api.tenant.casus.CaseSchemeSourceEnum;
@@ -89,13 +87,15 @@ public class TenantCaseSchemeBiz {
         // page
         Page<CaseSchemeEntity> page = new Page<>(caseSchemePage.getPageNo(), caseSchemePage.getPageSize());
         Page<CaseSchemeEntity> pageResult = caseSchemeService.lambdaQuery()
-                .eq(StrUtil.isNotBlank(caseSchemePage.getCategId()), CaseSchemeEntity::getCaseCategId, caseSchemePage.getCategId())
                 .eq(CaseSchemeEntity::getSource, CaseSchemeSourceEnum.ADMIN.name())
+                .in(caseSchemePage.getCategIds() != null && !caseSchemePage.getCategIds().isEmpty(), CaseSchemeEntity::getCaseCategId, caseSchemePage.getCategIds())
                 .like(StrUtil.isNotBlank(caseSchemePage.getKeyword()), CaseSchemeEntity::getSchemeName, caseSchemePage.getKeyword())
                 .page(page);
 
         // convert
-        return baseBiz.convertPage(pageResult, CaseSchemePageResponse.class);
+        Page<CaseSchemePageResponse> result = baseBiz.convertPage(pageResult, CaseSchemePageResponse.class);
+        fillPageResponse(result);
+        return result;
     }
 
     /**
@@ -154,7 +154,7 @@ public class TenantCaseSchemeBiz {
         CaseSchemeResponse result = BeanUtil.copyProperties(caseSchemeEntity, CaseSchemeResponse.class);
         // set question-section
         String questionSectionId = caseSchemeEntity.getQuestionSectionId();
-        setQuestionSection(questionSectionId, result);
+        fillResponseQS(questionSectionId, result);
         return result;
     }
 
@@ -173,7 +173,7 @@ public class TenantCaseSchemeBiz {
         CaseSchemeResponse result = BeanUtil.copyProperties(caseSchemeEntity, CaseSchemeResponse.class);
         // set question-section
         String questionSectionId = caseSchemeEntity.getQuestionSectionId();
-        setQuestionSection(questionSectionId, result);
+        fillResponseQS(questionSectionId, result);
         return result;
     }
 
@@ -260,7 +260,7 @@ public class TenantCaseSchemeBiz {
         return caseSchemeService.update(updateWrapper);
     }
 
-    private void setQuestionSection(String questionSectionId, CaseSchemeResponse result) {
+    private void fillResponseQS(String questionSectionId, CaseSchemeResponse result) {
         // get and set question-section
         QuestionSectionResponse questionSectionResponse = questionSectionBiz.getQuestionSection(questionSectionId);
         if (BeanUtil.isEmpty(questionSectionResponse)) {
@@ -268,8 +268,10 @@ public class TenantCaseSchemeBiz {
         }
         List<QuestionSectionItemResponse> sectionItemList = questionSectionResponse.getSectionItemList();
         List<QuestionSectionDimensionResponse> questionSectionDimensionList = questionSectionResponse.getQuestionSectionDimensionList();
+        Map<String, List<QuestionSectionDimensionResponse>> questionSectionDimensionMap = questionSectionResponse.getQuestionSectionDimensionMap();
         result.setSectionItemList(sectionItemList);
         result.setQuestionSectionDimensionList(questionSectionDimensionList);
+        result.setQuestionSectionDimensionMap(questionSectionDimensionMap);
     }
 
     private CaseSchemeEntity getById(String caseSchemeId) {
@@ -306,6 +308,12 @@ public class TenantCaseSchemeBiz {
             throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
         }
 
+        String questionSectionId = saveOrUpdQuestionSection(request, questionSourceEnum);
+        int questionCount = getQuestionCount(request);
+        if (request.getContainsVideo() != null && request.getContainsVideo() == 1) {
+            questionCount += 1;
+        }
+
         CaseSchemeEntity result = CaseSchemeEntity.builder()
                 .appId(baseBiz.getAppId())
                 .caseSchemeId(request.getCaseSchemeId())
@@ -318,29 +326,24 @@ public class TenantCaseSchemeBiz {
                 .addType(request.getAddType())
                 .containsVideo(request.getContainsVideo())
                 .videoQuestion(request.getVideoQuestion())
-                .source(caseSchemeSourceEnum.name())
                 .accountId(request.getAccountId())
                 .accountName(request.getAccountName())
+                .source(caseSchemeSourceEnum.name())
+                .questionSectionId(questionSectionId)
+                .questionCount(questionCount)
                 .build();
 
         String uniqueId = result.getCaseSchemeId();
         if (StrUtil.isBlank(uniqueId)) {
             result.setCaseSchemeId(baseBiz.getIdStr());
         } else {
-            CaseSchemeEntity oriEntity = getById(uniqueId);
-            if (BeanUtil.isEmpty(oriEntity)) {
+            CaseSchemeEntity entity = getById(uniqueId);
+            if (BeanUtil.isEmpty(entity)) {
                 throw new BizException(CaseESCEnum.DATA_NULL);
             }
-            result.setId(oriEntity.getId());
+            result.setId(entity.getId());
         }
 
-        String questionSectionId = saveOrUpdQuestionSection(request, questionSourceEnum);
-        result.setQuestionSectionId(questionSectionId);
-        int questionCount = getQuestionCount(request);
-        if (result.getContainsVideo() != null && result.getContainsVideo() == 1) {
-            questionCount += 1;
-        }
-        result.setQuestionCount(questionCount);
         return result;
     }
 
@@ -372,5 +375,20 @@ public class TenantCaseSchemeBiz {
         LambdaQueryWrapper<CaseSchemeEntity> queryWrapper = new LambdaQueryWrapper<CaseSchemeEntity>()
                 .eq(CaseSchemeEntity::getCaseInstanceId, caseInstanceId);
         return caseSchemeService.getOne(queryWrapper);
+    }
+
+    private void fillPageResponse(Page<CaseSchemePageResponse> result) {
+        List<CaseSchemePageResponse> records = result.getRecords();
+        if (records != null && !records.isEmpty()) {
+            List<String> categIds = records.stream()
+                    .map(CaseSchemePageResponse::getCaseCategId)
+                    .toList();
+            List<CaseCategoryResponse> categoryResponseList = caseCategoryBiz.listCaseCategory(categIds);
+            Map<String, String> collect = categoryResponseList.stream()
+                    .collect(Collectors.toMap(CaseCategoryResponse::getCaseCategId, CaseCategoryResponse::getCaseCategName, (v1, v2) -> v1));
+            records.forEach(item -> {
+                item.setCaseCategName(collect.get(item.getCaseCategId()));
+            });
+        }
     }
 }

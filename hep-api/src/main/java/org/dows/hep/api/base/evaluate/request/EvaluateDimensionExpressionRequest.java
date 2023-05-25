@@ -13,9 +13,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Schema(name = "CreateEvaluateDimensionExpression 对象", title = "创建评估维度对象")
-public class CreateEvaluateDimensionExpressionRequest{
-    @Schema(title = "应用ID")
-    private String appId;
+public class EvaluateDimensionExpressionRequest {
+
+    @Schema(title = "表达式ID")
+    private String evaluateDimensionExpressionId;
 
     @Schema(title = "评估问卷分布式ID")
     private String evaluateQuestionnaireId;

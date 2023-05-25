@@ -68,7 +68,6 @@ public class TenantCaseEventBiz {
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Page<CaseEventResponse> pageCaseEvent(FindCaseEventRequest findEvent ) {
-        findEvent.setCategIdLv1(ShareBiz.ensureCategPathSuffix(findEvent.getCategIdLv1()));
         return ShareBiz.buildPage(caseEventDao.pageByCondition(findEvent), i-> CopyWrapper.create(CaseEventResponse::new)
                 .endFrom( refreshCateg(i) )
                 .setCategIdLv1(getCategCache().getCategLv1(i.getCategIdPath() ,i.getEventCategId()))

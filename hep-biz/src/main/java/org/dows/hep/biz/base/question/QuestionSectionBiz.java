@@ -24,7 +24,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author lait.zhang
@@ -73,7 +75,7 @@ public class QuestionSectionBiz {
         List<QuestionSectionItemRequest> sectionItemList = request.getSectionItemList();
         if (sectionItemList != null && !sectionItemList.isEmpty()) {
             sectionItemList.forEach(item -> {
-                QuestionRequest questionRequest = item.getQuestionRequest();
+                QuestionRequest questionRequest = item.getQuestion();
                 questionRequest.setAccountId(questionSectionEntity.getAccountId());
                 questionRequest.setAccountName(questionSectionEntity.getAccountName());
             });
@@ -86,7 +88,7 @@ public class QuestionSectionBiz {
         List<QuestionSectionItemResponse> itemResponseList = listItem(List.of(questionSectionEntity.getQuestionSectionId()));
         if (Objects.nonNull(itemResponseList) && !itemResponseList.isEmpty()) {
             questionCount = itemResponseList.size();
-            List<String> questionIds = itemResponseList.stream().map(QuestionSectionItemResponse::getQuestionResponse).map(QuestionResponse::getQuestionInstanceId).toList();
+            List<String> questionIds = itemResponseList.stream().map(QuestionSectionItemResponse::getQuestion).map(QuestionResponse::getQuestionInstanceId).toList();
             struct = questionInstanceBiz.getStruct(questionIds);
         }
         LambdaUpdateWrapper<QuestionSectionEntity> updateWrapper = new LambdaUpdateWrapper<QuestionSectionEntity>()
@@ -169,6 +171,10 @@ public class QuestionSectionBiz {
         // questionSectionDimensionResponse
         List<QuestionSectionDimensionResponse> dimensionResponseList = questionSectionDimensionBiz.listQuestionSectionDimension(questionSectionId);
         questionSectionResponse.setQuestionSectionDimensionList(dimensionResponseList);
+        if (!dimensionResponseList.isEmpty()) {
+            Map<String, List<QuestionSectionDimensionResponse>> collect = dimensionResponseList.stream().collect(Collectors.groupingBy(QuestionSectionDimensionResponse::getDimensionName));
+            questionSectionResponse.setQuestionSectionDimensionMap(collect);
+        }
 
         return questionSectionResponse;
     }
@@ -269,6 +275,7 @@ public class QuestionSectionBiz {
                 .bizCode(questionSectionAccessAuthEnum.name())
                 .source(questionSourceEnum.name())
                 .build();
+
         String uniqueId = result.getQuestionSectionId();
         if (StrUtil.isBlank(uniqueId)) {
             result.setQuestionSectionId(baseBiz.getIdStr());
@@ -281,6 +288,7 @@ public class QuestionSectionBiz {
             }
             result.setId(oriEntity.getId());
         }
+
         return result;
     }
 }

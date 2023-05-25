@@ -1,7 +1,5 @@
 package org.dows.hep.api.tenant.casus.request;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -59,33 +57,5 @@ public class CaseQuestionnaireRequest{
         @Schema(title = "题目数量")
         private Map<QuestionTypeEnum, Integer> numMap;
     }
-
-
-
-    // JsonIgnore
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @JsonIgnore
-    @Schema(title = "数据库ID")
-    private Long id;
-
-    @Schema(title = "应用ID")
-    @JsonIgnore
-    private String appId;
-
-    @Schema(title = "分配方式")
-    @JsonIgnore
-    private String allotMode;
-
-    @Schema(title = "问题集ID")
-    @JsonIgnore
-    private String questionSectionId;
-
-    @Schema(title = "题数")
-    @JsonIgnore
-    private Integer questionCount;
-
-    @Schema(title = "题型结构")
-    @JsonIgnore
-    private String questionSectionStructure;
 
 }

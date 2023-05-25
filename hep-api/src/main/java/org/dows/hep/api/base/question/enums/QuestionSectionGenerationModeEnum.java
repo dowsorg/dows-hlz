@@ -1,5 +1,5 @@
 package org.dows.hep.api.base.question.enums;
 
 public enum QuestionSectionGenerationModeEnum {
-    SELECT, ADD_NEW;
+    SELECT_CLONE, SELECT_REF, ADD_NEW;
 }
