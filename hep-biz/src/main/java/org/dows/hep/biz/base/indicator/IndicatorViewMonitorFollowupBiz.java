@@ -504,15 +504,18 @@ public class IndicatorViewMonitorFollowupBiz{
     return indicatorViewMonitorFollowupResponseRs.get(0);
   }
 
-  public Page<IndicatorViewMonitorFollowupResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String paramIndicatorCategoryId, Integer status) {
+  public Page<IndicatorViewMonitorFollowupResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String indicatorCategoryIdList, Integer status) {
     Page<IndicatorViewMonitorFollowupEntity> page = RsPageUtil.getRsPage(pageNo, pageSize, order, asc);
     LambdaQueryWrapper<IndicatorViewMonitorFollowupEntity> indicatorViewMonitorFollowupEntityLQW = new LambdaQueryWrapper<>();
     indicatorViewMonitorFollowupEntityLQW
-        .eq(Objects.nonNull(appId), IndicatorViewMonitorFollowupEntity::getAppId, appId)
+        .eq(StringUtils.isNotBlank(appId), IndicatorViewMonitorFollowupEntity::getAppId, StringUtils.isBlank(appId) ? null : appId.trim())
         .eq(StringUtils.isNotBlank(indicatorFuncId), IndicatorViewMonitorFollowupEntity::getIndicatorFuncId, indicatorFuncId)
-        .eq(StringUtils.isNotBlank(paramIndicatorCategoryId), IndicatorViewMonitorFollowupEntity::getIndicatorCategoryId, paramIndicatorCategoryId)
         .eq(Objects.nonNull(status), IndicatorViewMonitorFollowupEntity::getStatus, status)
         .like(StringUtils.isNotBlank(name), IndicatorViewMonitorFollowupEntity::getName, StringUtils.isBlank(name) ? null : name.trim());
+    if (StringUtils.isNotBlank(indicatorCategoryIdList)) {
+      List<String> paramIndicatorCategoryIdList = Arrays.stream(indicatorCategoryIdList.split(",")).toList();
+      indicatorViewMonitorFollowupEntityLQW.in(IndicatorViewMonitorFollowupEntity::getIndicatorCategoryId, paramIndicatorCategoryIdList);
+    }
     Page<IndicatorViewMonitorFollowupEntity> indicatorViewMonitorFollowupEntityPage = indicatorViewMonitorFollowupService.page(page, indicatorViewMonitorFollowupEntityLQW);
     Page<IndicatorViewMonitorFollowupResponseRs> indicatorViewMonitorFollowupResponseRsPage = RsPageUtil.convertFromAnother(indicatorViewMonitorFollowupEntityPage);
     List<IndicatorViewMonitorFollowupEntity> indicatorViewMonitorFollowupEntityList = indicatorViewMonitorFollowupEntityPage.getRecords();
