@@ -2,11 +2,13 @@ package org.dows.hep.rest.base.evaluate;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.evaluate.request.EvaluateQuestionnairePageRequest;
 import org.dows.hep.api.base.evaluate.request.EvaluateQuestionnaireRequest;
 import org.dows.hep.api.base.evaluate.response.EvaluateQuestionnairePageResponse;
 import org.dows.hep.api.base.evaluate.response.EvaluateQuestionnaireResponse;
+import org.dows.hep.biz.base.evaluate.EvaluateBaseBiz;
 import org.dows.hep.biz.base.evaluate.EvaluateQuestionnaireBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +17,7 @@ import java.util.List;
 
 /**
 * @description project descr:评估:评估问卷
-*
+* @folder admin-hep/评估问卷
 * @author lait.zhang
 * @date 2023年4月23日 上午9:44:34
 */
@@ -23,6 +25,7 @@ import java.util.List;
 @RestController
 @Tag(name = "评估问卷", description = "评估问卷")
 public class EvaluateQuestionnaireRest {
+    private final EvaluateBaseBiz baseBiz;
     private final EvaluateQuestionnaireBiz evaluateQuestionnaireBiz;
 
     /**
@@ -32,8 +35,12 @@ public class EvaluateQuestionnaireRest {
     */
     @Operation(summary = "新增或更新评估问卷")
     @PostMapping("v1/baseEvaluate/evaluateQuestionnaire/saveOrUpdEvaluateQuestionnaire")
-    public Boolean saveOrUpdEvaluateQuestionnaire(@RequestBody @Validated EvaluateQuestionnaireRequest createEvaluateQuestionnaire ) {
-        return evaluateQuestionnaireBiz.saveOrUpdEQ(createEvaluateQuestionnaire);
+    public String saveOrUpdEvaluateQuestionnaire(@RequestBody @Validated EvaluateQuestionnaireRequest evaluateQuestionnaireRequest, HttpServletRequest request) {
+        String accountId = baseBiz.getAccountId(request);
+        String accountName = baseBiz.getAccountName(request);
+        evaluateQuestionnaireRequest.setAccountId(accountId);
+        evaluateQuestionnaireRequest.setAccountName(accountName);
+        return evaluateQuestionnaireBiz.saveOrUpdEQ(evaluateQuestionnaireRequest);
     }
 
     /**

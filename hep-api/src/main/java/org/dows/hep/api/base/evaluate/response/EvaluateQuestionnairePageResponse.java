@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "EvaluateQuestionnairePageResponse 对象", title = "评估问卷分页返回")
 public class EvaluateQuestionnairePageResponse {
+    @Schema(title = "问卷ID")
+    private String evaluateQuestionnaireId;
+
     @Schema(title = "类别ID")
     private String evaluateCategId;
 

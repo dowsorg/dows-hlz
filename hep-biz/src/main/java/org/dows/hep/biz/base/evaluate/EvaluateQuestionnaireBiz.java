@@ -57,13 +57,15 @@ public class EvaluateQuestionnaireBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public boolean saveOrUpdEQ(EvaluateQuestionnaireRequest request) {
+    public String saveOrUpdEQ(EvaluateQuestionnaireRequest request) {
         if (BeanUtil.isEmpty(request)) {
             throw new BizException(EvaluateESCEnum.PARAMS_NON_NULL);
         }
 
         EvaluateQuestionnaireEntity entity = convertRequest2Entity(request, QuestionSourceEnum.ADMIN);
-        return evaluateQuestionnaireService.saveOrUpdate(entity);
+        evaluateQuestionnaireService.saveOrUpdate(entity);
+
+        return entity.getEvaluateQuestionnaireId();
     }
 
     /**
@@ -187,7 +189,7 @@ public class EvaluateQuestionnaireBiz {
 
         // 删除 self
         LambdaQueryWrapper<EvaluateQuestionnaireEntity> remWrapper = new LambdaQueryWrapper<EvaluateQuestionnaireEntity>()
-                .in(EvaluateQuestionnaireEntity::getEvaluateQuestionnaireId);
+                .in(EvaluateQuestionnaireEntity::getEvaluateQuestionnaireId, ids);
         boolean removeRes1 = evaluateQuestionnaireService.remove(remWrapper);
 
         // TODO: 2023/5/24
