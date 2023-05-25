@@ -240,15 +240,18 @@ public class IndicatorViewPhysicalExamBiz{
         return indicatorViewPhysicalExamResponseRsList.get(0);
     }
 
-    public Page<IndicatorViewPhysicalExamResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String paramIndicatorCategoryId, Integer status) {
+    public Page<IndicatorViewPhysicalExamResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String indicatorCategoryIdList, Integer status) {
         Page<IndicatorViewPhysicalExamEntity> page = RsPageUtil.getRsPage(pageNo, pageSize, order, asc);
         LambdaQueryWrapper<IndicatorViewPhysicalExamEntity> indicatorViewPhysicalExamEntityLQW = new LambdaQueryWrapper<>();
         indicatorViewPhysicalExamEntityLQW
             .eq(Objects.nonNull(appId), IndicatorViewPhysicalExamEntity::getAppId, appId)
             .eq(StringUtils.isNotBlank(indicatorFuncId), IndicatorViewPhysicalExamEntity::getIndicatorFuncId, indicatorFuncId)
-            .eq(StringUtils.isNotBlank(paramIndicatorCategoryId), IndicatorViewPhysicalExamEntity::getIndicatorCategoryId, paramIndicatorCategoryId)
             .eq(Objects.nonNull(status), IndicatorViewPhysicalExamEntity::getStatus, status)
             .like(StringUtils.isNotBlank(name), IndicatorViewPhysicalExamEntity::getName, StringUtils.isBlank(name) ? null : name.trim());
+        if (StringUtils.isNotBlank(indicatorCategoryIdList)) {
+            List<String> paramIndicatorCategoryIdList = Arrays.stream(indicatorCategoryIdList.split(",")).toList();
+            indicatorViewPhysicalExamEntityLQW.in(IndicatorViewPhysicalExamEntity::getIndicatorCategoryId, paramIndicatorCategoryIdList);
+        }
         Page<IndicatorViewPhysicalExamEntity> indicatorViewPhysicalExamEntityPage = indicatorViewPhysicalExamService.page(page, indicatorViewPhysicalExamEntityLQW);
         Page<IndicatorViewPhysicalExamResponseRs> indicatorViewPhysicalExamResponseRsPage = RsPageUtil.convertFromAnother(indicatorViewPhysicalExamEntityPage);
         List<IndicatorViewPhysicalExamEntity> indicatorViewPhysicalExamEntityList = indicatorViewPhysicalExamEntityPage.getRecords();
