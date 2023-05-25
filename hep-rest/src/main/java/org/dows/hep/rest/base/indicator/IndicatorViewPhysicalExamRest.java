@@ -42,7 +42,7 @@ public class IndicatorViewPhysicalExamRest {
 
     @Operation(summary = "删除指标体格检查类")
     @DeleteMapping("v1/baseIndicator/indicatorViewPhysicalExam/deleteIndicatorViewPhysicalExam")
-    public void deleteIndicatorViewPhysicalExam(@Validated String indicatorViewPhysicalExamId ) {
+    public void deleteIndicatorViewPhysicalExam(@RequestParam @Validated String indicatorViewPhysicalExamId) {
         indicatorViewPhysicalExamBiz.deleteIndicatorViewPhysicalExam(indicatorViewPhysicalExamId);
     }
 

@@ -1,5 +1,6 @@
 package org.dows.hep.api.base.indicator.request;
 
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,11 +24,14 @@ public class CreateOrUpdateIndicatorViewMonitorFollowupContentRefRequestRs imple
   private String appId;
 
   @Schema(title = "指标监测随访内容ID")
+  @ApiModelProperty(required = true)
   private String indicatorViewMonitorFollowupFollowupContentId;
 
   @Schema(title = "指标ID")
+  @ApiModelProperty(required = true)
   private String indicatorInstanceId;
 
   @Schema(title = "展示顺序")
+  @ApiModelProperty(required = true)
   private Integer seq;
 }

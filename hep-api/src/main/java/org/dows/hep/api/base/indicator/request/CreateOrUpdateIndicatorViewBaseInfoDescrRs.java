@@ -25,14 +25,17 @@ public class CreateOrUpdateIndicatorViewBaseInfoDescrRs implements Serializable 
   private String appId;
 
   @Schema(title = "分布式ID")
+  @ApiModelProperty(required = true)
   private String indicatorViewBaseInfoId;
 
   @Schema(title = "指标基本信息描述表名称")
+  @ApiModelProperty(required = true)
   private String name;
 
   @Schema(title = "展示顺序")
+  @ApiModelProperty(required = true)
   private Integer seq;
 
-  @ApiModelProperty(required = true, value = "基本信息的指标描述表与指标关联关系列表")
+  @ApiModelProperty(required = true, value = "基本信息-指标描述表与指标关联关系列表")
   private List<CreateOrUpdateIndicatorViewBaseInfoDescrRefRequestRs> createOrUpdateIndicatorViewBaseInfoDescrRefRequestRsList;
 }

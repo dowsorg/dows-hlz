@@ -56,12 +56,6 @@ public class IndicatorInstanceRest {
         return indicatorInstanceBiz.getByAppId(appId);
     }
 
-    @Operation(summary = "创建指标实例")
-    @PostMapping("v1/baseIndicator/indicatorInstance/create")
-    public void create(@RequestBody @Validated CreateIndicatorInstanceRequest createIndicatorInstanceRequest) throws InterruptedException {
-        indicatorInstanceBiz.create(createIndicatorInstanceRequest);
-    }
-
 //    /**
 //    * 更新指标
 //    * @param
