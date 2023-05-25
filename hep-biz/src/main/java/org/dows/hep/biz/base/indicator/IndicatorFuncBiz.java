@@ -224,6 +224,7 @@ public class IndicatorFuncBiz{
             .build();
     }
 
+    /* runsix:TODO 关联表后面再删除 */
     @Transactional(rollbackFor = Exception.class)
     public void delete(String indicatorFuncId) {
         if (StringUtils.isBlank(indicatorFuncId)) {
