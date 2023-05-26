@@ -177,6 +177,7 @@ public class IndicatorJudgeDiseaseProblemBiz {
                 .indicatorCategoryId(indicatorCategoryId)
                 .point(point)
                 .resultExplain(createOrUpdateIndicatorJudgeDiseaseProblemRequestRs.getResultExplain())
+                .status(createOrUpdateIndicatorJudgeDiseaseProblemRequestRs.getStatus())
                 .build();
         } else {
             indicatorJudgeDiseaseProblemEntity = indicatorJudgeDiseaseProblemService.lambdaQuery()
