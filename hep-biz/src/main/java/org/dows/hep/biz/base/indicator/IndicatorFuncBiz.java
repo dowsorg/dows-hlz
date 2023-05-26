@@ -87,16 +87,27 @@ public class IndicatorFuncBiz{
                             .last(EnumString.LIMIT_1.getStr())
                                 .oneOpt()
                                     .ifPresent(indicatorFuncEntity -> seqAtomicInteger.set(indicatorFuncEntity.getSeq() + 1));
+            String indicatorFuncId = idGenerator.nextIdStr();
             indicatorFuncService.save(
                 IndicatorFuncEntity
                     .builder()
-                    .indicatorFuncId(idGenerator.nextIdStr())
+                    .indicatorFuncId(indicatorFuncId)
                     .appId(appId)
                     .pid(pid)
                     .indicatorCategoryId(indicatorCategoryId)
                     .name(name)
                     .operationTip(operationTip)
                     .dialogTip(dialogTip)
+                    .seq(seqAtomicInteger.get())
+                    .build()
+            );
+            indicatorCategoryService.save(
+                IndicatorCategoryEntity
+                    .builder()
+                    .indicatorCategoryId(indicatorFuncId)
+                    .appId(appId)
+                    .pid(indicatorCategoryId)
+                    .categoryName(name)
                     .seq(seqAtomicInteger.get())
                     .build()
             );
