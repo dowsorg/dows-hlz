@@ -100,7 +100,7 @@ public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
         QuestionRequest questionRequest = node.getQuestionRequest();
         List<QuestionRequest> children = questionRequest.getChildren();
         if (children == null || children.isEmpty()) {
-            return "";
+            return questionInstanceId;
         }
 
         // 遍历子节点

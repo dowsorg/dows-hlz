@@ -151,6 +151,9 @@ public class TenantCaseSchemeBiz {
      */
     public CaseSchemeResponse getCaseScheme(String caseSchemeId) {
         CaseSchemeEntity caseSchemeEntity = getById(caseSchemeId);
+        if (BeanUtil.isEmpty(caseSchemeEntity)) {
+            throw new BizException(CaseESCEnum.DATA_NULL);
+        }
         CaseSchemeResponse result = BeanUtil.copyProperties(caseSchemeEntity, CaseSchemeResponse.class);
         // set question-section
         String questionSectionId = caseSchemeEntity.getQuestionSectionId();
