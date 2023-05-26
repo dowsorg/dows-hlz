@@ -3,15 +3,18 @@ package org.dows.hep.rest.user.experiment;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponse;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.biz.user.experiment.ExperimentOrgJudgeBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 /**
 * @description project descr:实验:机构操作-判断指标
@@ -34,6 +37,18 @@ public class ExperimentOrgJudgeRest {
     @PostMapping("v1/userExperiment/experimentOrgJudge/listOrgJudgeItems")
     public List<OrgJudgeItemsResponse> listOrgJudgeItems(@RequestBody @Validated FindOrgJudgeItemsRequest findOrgJudgeItems ) {
         return experimentOrgJudgeBiz.listOrgJudgeItems(findOrgJudgeItems);
+    }
+
+    /**
+     *
+     * 获取二级类无报告的判断指标信息
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取二级类无报告的判断指标信息")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeRiskFactor")
+    public Map<String,List<IndicatorJudgeRiskFactorResponse>> getIndicatorJudgeRiskFactor(@RequestParam @Validated String indicatorFuncId) {
+        return experimentOrgJudgeBiz.getIndicatorJudgeRiskFactor(indicatorFuncId);
     }
 
     /**
