@@ -88,7 +88,7 @@ public class IndicatorCategoryBiz{
         String categoryName = createOrUpdateIndicatorCategoryRequestRs.getCategoryName();
         Integer seq = createOrUpdateIndicatorCategoryRequestRs.getSeq();
         if (StringUtils.isNotBlank(pid)) {
-            indicatorCategoryEntity = indicatorCategoryService.lambdaQuery()
+            indicatorCategoryService.lambdaQuery()
                 .eq(IndicatorCategoryEntity::getIndicatorCategoryId, pid)
                 .oneOpt()
                 .orElseThrow(() -> {
