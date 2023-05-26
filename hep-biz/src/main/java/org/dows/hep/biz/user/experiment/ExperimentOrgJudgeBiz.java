@@ -180,7 +180,7 @@ public class ExperimentOrgJudgeBiz{
     /**
      * @param
      * @return
-     * @说明: 三级列别：根据指标分类ID获取所有符合条件的数据
+     * @说明: 三级类别/四级类别：根据指标分类ID获取所有符合条件的数据
      * @关联表: indicatorJudgeHealthProblem
      * @工时: 2H
      * @开发者: jx

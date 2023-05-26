@@ -64,11 +64,11 @@ public class ExperimentOrgJudgeRest {
 
     /**
      *
-     * 三级列别：根据指标分类ID获取所有符合条件的数据
+     * 三级类别/四级类别：根据指标分类ID获取所有符合条件的数据
      * @param
      * @return
      */
-    @Operation(summary = "三级列别：根据指标分类ID获取所有符合条件的数据")
+    @Operation(summary = "三级类别/四级类别：根据指标分类ID获取所有符合条件的数据")
     @GetMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeHealthProblemByCategoryId/{indicatoryCategoryId}")
     public List<IndicatorJudgeHealthProblemResponse> getIndicatorJudgeHealthProblemByCategoryId(@PathVariable String indicatoryCategoryId) {
         return experimentOrgJudgeBiz.getIndicatorJudgeHealthProblemByCategoryId(indicatoryCategoryId);
