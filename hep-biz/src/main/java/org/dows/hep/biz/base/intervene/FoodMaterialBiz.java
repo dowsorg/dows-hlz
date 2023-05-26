@@ -57,7 +57,7 @@ public class FoodMaterialBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Page<FoodMaterialResponse> pageFoodMaterial(FindFoodRequest findFood ) {
-        findFood.setCategIdLv1(ShareBiz.ensureCategPathSuffix(findFood.getCategIdLv1()));
+        findFood.setCategIdLv1(getCategCache().getLeafIds(findFood.getCategIdLv1()));
         return ShareBiz.buildPage(dao.pageByCondition(findFood), i -> CopyWrapper.create(FoodMaterialResponse::new)
                 .endFrom(refreshCateg(i))
                 .setCategIdLv1(getCategCache().getCategLv1(i.getCategIdPath(), i.getInterveneCategId()))

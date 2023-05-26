@@ -63,7 +63,7 @@ public class FoodPlanBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Page<FoodDishesResponse> pageFoodDishes(FindFoodRequest findFood ) {
-        findFood.setCategIdLv1(ShareBiz.ensureCategPathSuffix(findFood.getCategIdLv1()));
+        findFood.setCategIdLv1( getCategCache().getLeafIds(findFood.getCategIdLv1()));
         return ShareBiz.buildPage(daoDishes.pageByCondition(findFood), i-> CopyWrapper.create(FoodDishesResponse::new)
                 .endFrom(refreshCateg(i))
                 .setCategIdLv1(getCategCache().getCategLv1(i.getCategIdPath() ,i.getInterveneCategId()))
@@ -208,7 +208,7 @@ public class FoodPlanBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Page<FoodCookBookResponse> pageFoodCookbook(FindFoodRequest findFood ) {
-        findFood.setCategIdLv1(ShareBiz.ensureCategPathSuffix(findFood.getCategIdLv1()));
+        findFood.setCategIdLv1(getCategCache().getLeafIds(findFood.getCategIdLv1()));
         return ShareBiz.buildPage(daoCookbook.pageByCondition(findFood), i-> CopyWrapper.create(FoodCookBookResponse::new)
                 .endFrom(refreshCateg(i))
                 .setCategIdLv1(getCategCache().getCategLv1(i.getCategIdPath() ,i.getInterveneCategId()))

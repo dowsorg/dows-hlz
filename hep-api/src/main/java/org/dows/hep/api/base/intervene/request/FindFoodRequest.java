@@ -28,7 +28,7 @@ public class FindFoodRequest{
     private String sorts;
 
     @Schema(title = "一级分类id")
-    private String categIdLv1;
+    private List<String> categIdLv1;
 
     @Schema(title = "搜索关键字")
     private String keywords;

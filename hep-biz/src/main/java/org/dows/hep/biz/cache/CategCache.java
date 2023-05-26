@@ -109,6 +109,32 @@ public abstract class CategCache extends BaseLocalCache<CategCache.CacheData> {
     }
 
     /**
+     * 获取id下所有的叶节点id
+     * @param categIds
+     * @return
+     */
+    public List<String> getLeafIds(List<String> categIds){
+        if(ShareUtil.XCollection.isEmpty(categIds)){
+            return Collections.emptyList();
+        }
+        Set<String> rst=new HashSet<>();
+        categIds.forEach(i->fillLeafIds(rst,getById(i)));
+        return new ArrayList<>(rst);
+    }
+    protected void fillLeafIds(Collection<String> rst,CategVO categ){
+        if(ShareUtil.XObject.isEmpty(categ)){
+            return;
+        }
+        if(ShareUtil.XCollection.isEmpty(categ.getChilds())){
+            rst.add(categ.getCategId());
+            return;
+        }
+        for(CategVO item:categ.getChilds()) {
+            fillLeafIds(rst, item);
+        }
+    }
+
+    /**
      * 获取不带子节点的列表
      *
      * @param src
