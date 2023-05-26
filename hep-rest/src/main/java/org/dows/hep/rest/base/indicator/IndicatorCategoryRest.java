@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.BatchCreateOrUpdateIndicatorCategoryRequest;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorCategoryRequest;
+import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorCategoryRequestRs;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorCategoryRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorCategoryResponse;
 import org.dows.hep.biz.base.indicator.IndicatorCategoryBiz;
@@ -27,6 +28,12 @@ import java.util.List;
 public class IndicatorCategoryRest {
     private final IndicatorCategoryBiz indicatorCategoryBiz;
 
+    @Operation(summary = "单个创建或修改指标类别")
+    @PostMapping("v1/baseIndicator/indicatorCategory/createRs")
+    public void createRs(@RequestBody @Validated CreateOrUpdateIndicatorCategoryRequestRs createOrUpdateIndicatorCategoryRequestRs) {
+        indicatorCategoryBiz.createRs(createOrUpdateIndicatorCategoryRequestRs);
+    }
+
 
     @Operation(summary = "批量创建或修改指标类别")
     @PostMapping("v1/baseIndicator/indicatorCategory/batchCreateOrUpdateRs")
@@ -40,6 +47,8 @@ public class IndicatorCategoryRest {
     public void delete(@RequestParam @Validated String indicatorCategoryId) {
         indicatorCategoryBiz.delete(indicatorCategoryId);
     }
+
+
 
     @Operation(summary = "根据pid查询出所有的指标类别")
     @GetMapping("v1/baseIndicator/indicatorCategory/getByPid")
