@@ -35,6 +35,12 @@ public class EvaluateQuestionnaireRequest {
     @Schema(title = "状态[0-关闭|1-启用]")
     private Integer enabled;
 
+    @Schema(title = "操作提示")
+    private String operationPrompt;
+
+    @Schema(title = "对话提示")
+    private String tips;
+
     @Schema(title = "问题集合")
     private List<QuestionSectionItemRequest> sectionItemList;
 
