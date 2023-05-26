@@ -300,16 +300,13 @@ public class IndicatorViewMonitorFollowupBiz{
       Map<String, IndicatorViewMonitorFollowupContentRefEntity> kIndicatorViewMonitorFollowupContentRefIdVIndicatorViewMonitorFollowupContentRefMap = new HashMap<>();
       Set<String> paramIndicatorInstanceIdSet = new HashSet<>();
       Set<String> dbIndicatorInstanceIdSet = new HashSet<>();
-      createOrUpdateIndicatorViewMonitorFollowupFollowupContentRequestRsList
-          .parallelStream()
-          .peek(createOrUpdateIndicatorViewMonitorFollowupFollowupContentRequestRs -> {
+      createOrUpdateIndicatorViewMonitorFollowupFollowupContentRequestRsList.forEach(createOrUpdateIndicatorViewMonitorFollowupFollowupContentRequestRs -> {
             String indicatorViewMonitorFollowupFollowupContentId = createOrUpdateIndicatorViewMonitorFollowupFollowupContentRequestRs.getIndicatorViewMonitorFollowupFollowupContentId();
             if (StringUtils.isNotBlank(indicatorViewMonitorFollowupFollowupContentId)) {
               paramIndicatorViewMonitorFollowupFollowupContentIdSet.add(indicatorViewMonitorFollowupFollowupContentId);
             }
             createOrUpdateIndicatorViewMonitorFollowupFollowupContentRequestRs.getCreateOrUpdateIndicatorViewMonitorFollowupContentRefRequestRsList()
-                .parallelStream()
-                .peek(createOrUpdateIndicatorViewMonitorFollowupContentRefRequestRs -> {
+                .forEach(createOrUpdateIndicatorViewMonitorFollowupContentRefRequestRs -> {
                   String indicatorViewMonitorFollowupContentRefId = createOrUpdateIndicatorViewMonitorFollowupContentRefRequestRs.getIndicatorViewMonitorFollowupContentRefId();
                   if (StringUtils.isNotBlank(indicatorViewMonitorFollowupContentRefId)) {
                     paramIndicatorViewMonitorFollowupContentRefIdSet.add(indicatorViewMonitorFollowupContentRefId);
@@ -363,8 +360,7 @@ public class IndicatorViewMonitorFollowupBiz{
             .eq(IndicatorInstanceEntity::getAppId, appId)
             .in(IndicatorInstanceEntity::getIndicatorInstanceId, paramIndicatorInstanceIdSet)
             .list()
-            .stream()
-            .peek(indicatorInstanceEntity -> dbIndicatorInstanceIdSet.add(indicatorInstanceEntity.getIndicatorInstanceId()));
+            .forEach(indicatorInstanceEntity -> dbIndicatorInstanceIdSet.add(indicatorInstanceEntity.getIndicatorInstanceId()));
         if (
             paramIndicatorInstanceIdSet.stream().anyMatch(indicatorInstanceId -> !dbIndicatorInstanceIdSet.contains(indicatorInstanceId))
         ) {
@@ -504,15 +500,18 @@ public class IndicatorViewMonitorFollowupBiz{
     return indicatorViewMonitorFollowupResponseRs.get(0);
   }
 
-  public Page<IndicatorViewMonitorFollowupResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String paramIndicatorCategoryId, Integer status) {
+  public Page<IndicatorViewMonitorFollowupResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String indicatorCategoryIdList, Integer status) {
     Page<IndicatorViewMonitorFollowupEntity> page = RsPageUtil.getRsPage(pageNo, pageSize, order, asc);
     LambdaQueryWrapper<IndicatorViewMonitorFollowupEntity> indicatorViewMonitorFollowupEntityLQW = new LambdaQueryWrapper<>();
     indicatorViewMonitorFollowupEntityLQW
-        .eq(Objects.nonNull(appId), IndicatorViewMonitorFollowupEntity::getAppId, appId)
+        .eq(StringUtils.isNotBlank(appId), IndicatorViewMonitorFollowupEntity::getAppId, StringUtils.isBlank(appId) ? null : appId.trim())
         .eq(StringUtils.isNotBlank(indicatorFuncId), IndicatorViewMonitorFollowupEntity::getIndicatorFuncId, indicatorFuncId)
-        .eq(StringUtils.isNotBlank(paramIndicatorCategoryId), IndicatorViewMonitorFollowupEntity::getIndicatorCategoryId, paramIndicatorCategoryId)
         .eq(Objects.nonNull(status), IndicatorViewMonitorFollowupEntity::getStatus, status)
         .like(StringUtils.isNotBlank(name), IndicatorViewMonitorFollowupEntity::getName, StringUtils.isBlank(name) ? null : name.trim());
+    if (StringUtils.isNotBlank(indicatorCategoryIdList)) {
+      List<String> paramIndicatorCategoryIdList = Arrays.stream(indicatorCategoryIdList.split(",")).toList();
+      indicatorViewMonitorFollowupEntityLQW.in(IndicatorViewMonitorFollowupEntity::getIndicatorCategoryId, paramIndicatorCategoryIdList);
+    }
     Page<IndicatorViewMonitorFollowupEntity> indicatorViewMonitorFollowupEntityPage = indicatorViewMonitorFollowupService.page(page, indicatorViewMonitorFollowupEntityLQW);
     Page<IndicatorViewMonitorFollowupResponseRs> indicatorViewMonitorFollowupResponseRsPage = RsPageUtil.convertFromAnother(indicatorViewMonitorFollowupEntityPage);
     List<IndicatorViewMonitorFollowupEntity> indicatorViewMonitorFollowupEntityList = indicatorViewMonitorFollowupEntityPage.getRecords();

@@ -265,15 +265,18 @@ public class IndicatorViewSupportExamBiz{
         return indicatorViewSupportExamResponseRsList.get(0);
     }
 
-    public Page<IndicatorViewSupportExamResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String paramIndicatorCategoryId, Integer status) {
+    public Page<IndicatorViewSupportExamResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String indicatorCategoryIdList, Integer status) {
         Page<IndicatorViewSupportExamEntity> page = RsPageUtil.getRsPage(pageNo, pageSize, order, asc);
         LambdaQueryWrapper<IndicatorViewSupportExamEntity> indicatorViewSupportExamEntityLQW = new LambdaQueryWrapper<>();
         indicatorViewSupportExamEntityLQW
             .eq(Objects.nonNull(appId), IndicatorViewSupportExamEntity::getAppId, appId)
             .eq(StringUtils.isNotBlank(indicatorFuncId), IndicatorViewSupportExamEntity::getIndicatorFuncId, indicatorFuncId)
-            .eq(StringUtils.isNotBlank(paramIndicatorCategoryId), IndicatorViewSupportExamEntity::getIndicatorCategoryId, paramIndicatorCategoryId)
             .eq(Objects.nonNull(status), IndicatorViewSupportExamEntity::getStatus, status)
             .like(StringUtils.isNotBlank(name), IndicatorViewSupportExamEntity::getName, StringUtils.isBlank(name) ? null : name.trim());
+        if (StringUtils.isNotBlank(indicatorCategoryIdList)) {
+            List<String> paramIndicatorCategoryIdList = Arrays.stream(indicatorCategoryIdList.split(",")).toList();
+            indicatorViewSupportExamEntityLQW.in(IndicatorViewSupportExamEntity::getIndicatorCategoryId, paramIndicatorCategoryIdList);
+        }
         Page<IndicatorViewSupportExamEntity> indicatorViewSupportExamEntityPage = indicatorViewSupportExamService.page(page, indicatorViewSupportExamEntityLQW);
         Page<IndicatorViewSupportExamResponseRs> indicatorViewSupportExamResponseRsPage = RsPageUtil.convertFromAnother(indicatorViewSupportExamEntityPage);
         List<IndicatorViewSupportExamEntity> indicatorViewSupportExamEntityList = indicatorViewSupportExamEntityPage.getRecords();

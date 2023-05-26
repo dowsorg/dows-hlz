@@ -211,15 +211,18 @@ public class IndicatorJudgeRiskFactorBiz{
         return indicatorJudgeRiskFactorResponseRsList.get(0);
     }
 
-    public Page<IndicatorJudgeRiskFactorResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String paramIndicatorCategoryId, Integer status) {
+    public Page<IndicatorJudgeRiskFactorResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String indicatorCategoryIdList, Integer status) {
         Page<IndicatorJudgeRiskFactorEntity> page = RsPageUtil.getRsPage(pageNo, pageSize, order, asc);
         LambdaQueryWrapper<IndicatorJudgeRiskFactorEntity> indicatorJudgeRiskFactorEntityLQW = new LambdaQueryWrapper<>();
         indicatorJudgeRiskFactorEntityLQW
             .eq(Objects.nonNull(appId), IndicatorJudgeRiskFactorEntity::getAppId, appId)
             .eq(StringUtils.isNotBlank(indicatorFuncId), IndicatorJudgeRiskFactorEntity::getIndicatorFuncId, indicatorFuncId)
-            .eq(StringUtils.isNotBlank(paramIndicatorCategoryId), IndicatorJudgeRiskFactorEntity::getIndicatorCategoryId, paramIndicatorCategoryId)
             .eq(Objects.nonNull(status), IndicatorJudgeRiskFactorEntity::getStatus, status)
             .like(StringUtils.isNotBlank(name), IndicatorJudgeRiskFactorEntity::getName, StringUtils.isBlank(name) ? null : name.trim());
+        if (StringUtils.isNotBlank(indicatorCategoryIdList)) {
+            List<String> paramIndicatorCategoryIdList = Arrays.stream(indicatorCategoryIdList.split(",")).toList();
+            indicatorJudgeRiskFactorEntityLQW.in(IndicatorJudgeRiskFactorEntity::getIndicatorCategoryId, paramIndicatorCategoryIdList);
+        }
         Page<IndicatorJudgeRiskFactorEntity> indicatorJudgeRiskFactorEntityPage = indicatorJudgeRiskFactorService.page(page, indicatorJudgeRiskFactorEntityLQW);
         Page<IndicatorJudgeRiskFactorResponseRs> indicatorJudgeRiskFactorResponseRsPage = RsPageUtil.convertFromAnother(indicatorJudgeRiskFactorEntityPage);
         List<IndicatorJudgeRiskFactorEntity> indicatorJudgeRiskFactorEntityList = indicatorJudgeRiskFactorEntityPage.getRecords();
