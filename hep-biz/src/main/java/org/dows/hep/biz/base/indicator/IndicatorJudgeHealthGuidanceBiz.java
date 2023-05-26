@@ -136,6 +136,7 @@ public class IndicatorJudgeHealthGuidanceBiz{
                 .indicatorCategoryId(indicatorCategoryId)
                 .point(point)
                 .resultExplain(createOrUpdateIndicatorJudgeHealthGuidanceRequestRs.getResultExplain())
+                .status(createOrUpdateIndicatorJudgeHealthGuidanceRequestRs.getStatus())
                 .build();
         } else {
             indicatorJudgeHealthGuidanceEntity = indicatorJudgeHealthGuidanceService.lambdaQuery()

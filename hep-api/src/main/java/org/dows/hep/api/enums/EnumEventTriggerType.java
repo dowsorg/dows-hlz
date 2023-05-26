@@ -14,11 +14,11 @@ import java.util.Arrays;
 @Getter
 public enum EnumEventTriggerType {
     CONDITION(0,"条件触发"),
-    PERIOD1(1,"规则触发-第1期"),
-    PERIOD2(2,"规则触发-第2期"),
-    PERIOD3(3,"规则触发-第3期"),
-    PERIOD4(4,"规则触发-第4期"),
-    PERIOD5(5,"规则触发-第5期"),
+    PERIOD1(1,"时间触发-第一期"),
+    PERIOD2(2,"时间触发-第二期"),
+    PERIOD3(3,"时间触发-第三期"),
+    PERIOD4(4,"时间触发-第四期"),
+    PERIOD5(5,"时间触发-第五期"),
     ;
     private Integer code;
     private String name;

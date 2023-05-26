@@ -49,7 +49,7 @@ public class TreatItemBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Page<TreatItemResponse> pageTreatItem(FindTreatRequest findTreat ) {
-        findTreat.setCategIdLv1(ShareBiz.ensureCategPathSuffix(findTreat.getCategIdLv1()));
+        findTreat.setCategIdLv1(getCategCache().getLeafIds(findTreat.getCategIdLv1()));
         return ShareBiz.buildPage(dao.pageByCondition(findTreat), i -> CopyWrapper.create(TreatItemResponse::new)
                 .endFrom(refreshCateg(i))
                 .setCategIdLv1(getCategCache().getCategLv1(i.getCategIdPath(), i.getInterveneCategId()))

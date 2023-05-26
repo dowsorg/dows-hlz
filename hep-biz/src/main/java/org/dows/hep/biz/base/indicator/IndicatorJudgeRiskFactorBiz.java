@@ -134,6 +134,7 @@ public class IndicatorJudgeRiskFactorBiz{
                 .indicatorCategoryId(indicatorCategoryId)
                 .point(point)
                 .resultExplain(createOrUpdateIndicatorJudgeRiskFactorRequestRs.getResultExplain())
+                .status(createOrUpdateIndicatorJudgeRiskFactorRequestRs.getStatus())
                 .build();
         } else {
             indicatorJudgeRiskFactorEntity = indicatorJudgeRiskFactorService.lambdaQuery()

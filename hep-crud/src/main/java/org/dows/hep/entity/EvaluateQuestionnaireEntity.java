@@ -54,6 +54,12 @@ public class EvaluateQuestionnaireEntity implements CrudEntity {
     @Schema(title = "问题集")
     private String questionSectionId;
 
+    @Schema(title = "操作提示")
+    private String operationPrompt;
+
+    @Schema(title = "对话提示")
+    private String tips;
+
     @Schema(title = "状态")
     private Integer enabled;
 

@@ -50,7 +50,7 @@ public class SportPlanBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Page<SportPlanResponse> pageSportPlan(FindSportRequest findSport ) {
-        findSport.setCategIdLv1(ShareBiz.ensureCategPathSuffix(findSport.getCategIdLv1()));
+        findSport.setCategIdLv1(getCategCache().getLeafIds(findSport.getCategIdLv1()));
         return ShareBiz.buildPage(dao.pageByCondition(findSport),  i-> CopyWrapper.create(SportPlanResponse::new)
                 .endFrom(refreshCateg(i))
                 .setCategIdLv1(getCategCache().getCategLv1(i.getCategIdPath() ,i.getInterveneCategId()))

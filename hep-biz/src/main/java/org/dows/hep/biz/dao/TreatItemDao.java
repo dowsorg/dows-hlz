@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.dows.hep.api.base.intervene.request.FindTreatRequest;
 import org.dows.hep.biz.util.ShareUtil;
+import org.dows.hep.entity.FoodMaterialEntity;
 import org.dows.hep.entity.TreatItemEntity;
 import org.dows.hep.entity.TreatItemIndicatorEntity;
 import org.dows.hep.service.TreatItemIndicatorService;
@@ -75,14 +76,12 @@ public class TreatItemDao extends BaseSubDao<TreatItemService,TreatItemEntity,Tr
 
     @Override
     public IPage<TreatItemEntity> pageByCondition(FindTreatRequest req, SFunction<TreatItemEntity, ?>... cols) {
-        final String categId=req.getCategIdLv1();
-        final String keyWords=req.getKeywords();
         Page<TreatItemEntity> page=Page.of(req.getPageNo(),req.getPageSize());
         page.addOrder(OrderItem.asc("id"));
         return service.page(page, Wrappers.<TreatItemEntity>lambdaQuery()
                 .eq(TreatItemEntity::getIndicatorFuncId, req.getIndicatorFuncId())
-                .likeRight(ShareUtil.XString.hasLength(categId), TreatItemEntity::getCategIdPath, categId)
-                .like(ShareUtil.XString.hasLength(keyWords), TreatItemEntity::getTreatItemName, keyWords)
+                .in(ShareUtil.XCollection.notEmpty(req.getCategIdLv1()), TreatItemEntity::getInterveneCategId, req.getCategIdLv1())
+                .like(ShareUtil.XString.hasLength(req.getKeywords()), TreatItemEntity::getTreatItemName, req.getKeywords())
                 .in(ShareUtil.XCollection.notEmpty(req.getIncIds()), getColId(), req.getIncIds())
                 .notIn(ShareUtil.XCollection.notEmpty(req.getExcIds()), getColId(), req.getExcIds())
                 .eq(ShareUtil.XObject.notEmpty(req.getState()), getColState(), req.getState())
