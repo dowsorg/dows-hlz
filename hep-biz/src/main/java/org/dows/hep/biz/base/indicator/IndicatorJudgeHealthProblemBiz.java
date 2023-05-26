@@ -98,14 +98,19 @@ public class IndicatorJudgeHealthProblemBiz{
         return indicatorJudgeHealthProblemEntityList
             .stream()
             .map(indicatorJudgeHealthProblemEntity -> {
+                List<IndicatorCategoryResponse> indicatorCategoryResponseList = new ArrayList<>();
                 String indicatorCategoryIdSecond = indicatorJudgeHealthProblemEntity.getIndicatorCategoryId();
                 IndicatorCategoryEntity indicatorCategoryEntitySecond = kIndicatorCategoryIdSecondVIndicatorCategoryMap.get(indicatorCategoryIdSecond);
-                String indicatorCategoryIdFirst = indicatorCategoryEntitySecond.getPid();
-                IndicatorCategoryEntity indicatorCategoryEntityFirst= kIndicatorCategoryIdFirstVIndicatorCategoryMap.get(indicatorCategoryIdFirst);
-                List<IndicatorCategoryEntity> indicatorCategoryEntityList = new ArrayList<>();
-                indicatorCategoryEntityList.add(indicatorCategoryEntityFirst);
-                indicatorCategoryEntityList.add(indicatorCategoryEntitySecond);
-                List<IndicatorCategoryResponse> indicatorCategoryResponseList = indicatorCategoryEntityList.stream().map(IndicatorCategoryBiz::indicatorCategoryEntity2Response).collect(Collectors.toList());
+                if (Objects.nonNull(indicatorCategoryEntitySecond)) {
+                    List<IndicatorCategoryEntity> indicatorCategoryEntityList = new ArrayList<>();
+                    String indicatorCategoryIdFirst = indicatorCategoryEntitySecond.getPid();
+                    IndicatorCategoryEntity indicatorCategoryEntityFirst= kIndicatorCategoryIdFirstVIndicatorCategoryMap.get(indicatorCategoryIdFirst);
+                    if (Objects.nonNull(indicatorCategoryEntityFirst)) {
+                        indicatorCategoryEntityList.add(indicatorCategoryEntityFirst);
+                    }
+                    indicatorCategoryEntityList.add(indicatorCategoryEntitySecond);
+                    indicatorCategoryResponseList = indicatorCategoryEntityList.stream().map(IndicatorCategoryBiz::indicatorCategoryEntity2Response).collect(Collectors.toList());
+                }
                 return indicatorJudgeHealthProblem2ResponseRs(
                     indicatorJudgeHealthProblemEntity,
                     indicatorCategoryResponseList
