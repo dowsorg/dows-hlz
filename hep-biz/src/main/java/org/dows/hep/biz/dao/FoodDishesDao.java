@@ -94,13 +94,11 @@ public class FoodDishesDao extends BaseSubDao<FoodDishesService, FoodDishesEntit
 
     @Override
     public IPage<FoodDishesEntity> pageByCondition(FindFoodRequest req, SFunction<FoodDishesEntity, ?>... cols) {
-        final String categId = req.getCategIdLv1();
-        final String keyWords = req.getKeywords();
         Page<FoodDishesEntity> page = Page.of(req.getPageNo(), req.getPageSize());
         page.addOrder(OrderItem.asc("id"));
         return service.page(page, Wrappers.<FoodDishesEntity>lambdaQuery()
-                .likeRight(ShareUtil.XString.hasLength(categId), FoodDishesEntity::getCategIdPath, categId)
-                .like(ShareUtil.XString.hasLength(keyWords), FoodDishesEntity::getFoodDishesName, keyWords)
+                .in(ShareUtil.XCollection.notEmpty(req.getCategIdLv1()), FoodDishesEntity::getInterveneCategId, req.getCategIdLv1())
+                .like(ShareUtil.XString.hasLength(req.getKeywords()), FoodDishesEntity::getFoodDishesName, req.getKeywords())
                 .in(ShareUtil.XCollection.notEmpty(req.getIncIds()), getColId(), req.getIncIds())
                 .notIn(ShareUtil.XCollection.notEmpty(req.getExcIds()), getColId(), req.getExcIds())
                 .eq(ShareUtil.XObject.notEmpty(req.getState()), getColState(), req.getState())

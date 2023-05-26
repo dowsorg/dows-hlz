@@ -88,13 +88,11 @@ public class FoodCookbookDao extends BaseSubDao<FoodCookbookService, FoodCookboo
 
     @Override
     public IPage<FoodCookbookEntity> pageByCondition(FindFoodRequest req, SFunction<FoodCookbookEntity, ?>... cols) {
-        final String categId = req.getCategIdLv1();
-        final String keyWords = req.getKeywords();
         Page<FoodCookbookEntity> page = Page.of(req.getPageNo(), req.getPageSize());
         page.addOrder(OrderItem.asc("id"));
         return service.page(page, Wrappers.<FoodCookbookEntity>lambdaQuery()
-                .likeRight(ShareUtil.XString.hasLength(categId), FoodCookbookEntity::getCategIdPath, categId)
-                .like(ShareUtil.XString.hasLength(keyWords), FoodCookbookEntity::getFoodCookbookName, keyWords)
+                .in(ShareUtil.XCollection.notEmpty(req.getCategIdLv1()), FoodCookbookEntity::getInterveneCategId, req.getCategIdLv1())
+                .like(ShareUtil.XString.hasLength(req.getKeywords()), FoodCookbookEntity::getFoodCookbookName, req.getKeywords())
                 .in(ShareUtil.XCollection.notEmpty(req.getIncIds()), getColId(), req.getIncIds())
                 .notIn(ShareUtil.XCollection.notEmpty(req.getExcIds()), getColId(), req.getExcIds())
                 .eq(ShareUtil.XObject.notEmpty(req.getState()), getColState(), req.getState())

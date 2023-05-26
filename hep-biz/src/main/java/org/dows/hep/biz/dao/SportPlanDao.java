@@ -87,13 +87,11 @@ public class SportPlanDao extends BaseSubDao<SportPlanService, SportPlanEntity, 
 
     @Override
     public IPage<SportPlanEntity> pageByCondition(FindSportRequest req, SFunction<SportPlanEntity,?>... cols) {
-        final String categId=req.getCategIdLv1();
-        final String keyWords=req.getKeywords();
         Page<SportPlanEntity> page=Page.of(req.getPageNo(),req.getPageSize());
         page.addOrder(OrderItem.asc("id"));
         return service.page(page, Wrappers.<SportPlanEntity>lambdaQuery()
-                .likeRight(ShareUtil.XString.hasLength(categId), SportPlanEntity::getCategIdPath,categId)
-                .like(ShareUtil.XString.hasLength(keyWords), SportPlanEntity::getSportPlanName,keyWords)
+                .in(ShareUtil.XCollection.notEmpty(req.getCategIdLv1()), SportPlanEntity::getInterveneCategId, req.getCategIdLv1())
+                .like(ShareUtil.XString.hasLength(req.getKeywords()), SportPlanEntity::getSportPlanName,req.getKeywords())
                 .in(ShareUtil.XCollection.notEmpty(req.getIncIds()), getColId(), req.getIncIds())
                 .notIn(ShareUtil.XCollection.notEmpty(req.getExcIds()), getColId(), req.getExcIds())
                 .eq(ShareUtil.XObject.notEmpty(req.getState()), getColState(), req.getState())
