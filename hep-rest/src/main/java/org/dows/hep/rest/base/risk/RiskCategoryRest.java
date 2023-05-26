@@ -37,7 +37,7 @@ public class RiskCategoryRest {
      */
     @Operation(summary = "删除风险类别")
     @DeleteMapping("v1/baseRisk/riskCategory/deleteRiskCategory")
-    public void deleteRiskCategory(@Validated String riskCategoryId ) {
+    public void deleteRiskCategory(@RequestParam @Validated String riskCategoryId ) {
         riskCategoryBiz.deleteRiskCategory(riskCategoryId);
     }
 

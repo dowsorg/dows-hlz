@@ -1,11 +1,16 @@
 package org.dows.hep.biz.user.experiment;
 
+import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponse;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
+import org.dows.hep.entity.IndicatorJudgeRiskFactorEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
 * @description project descr:实验:机构操作-判断指标
@@ -14,7 +19,9 @@ import java.util.List;
 * @date 2023年4月23日 上午9:44:34
 */
 @Service
+@RequiredArgsConstructor
 public class ExperimentOrgJudgeBiz{
+    private final org.dows.hep.service.IndicatorJudgeRiskFactorService indicatorJudgeRiskFactorService;
     /**
     * @param
     * @return
@@ -92,5 +99,39 @@ public class ExperimentOrgJudgeBiz{
     */
     public SaveOrgJudgeGoalsResponse saveOrgJudgeGoals(SaveOrgJudgeGoalsRequest saveOrgJudgeGoals ) {
         return new SaveOrgJudgeGoalsResponse();
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 获取二级类无报告的判断指标信息
+     * @关联表: indicatorJudgeRiskFactor
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年5月26日 上午9:49:34
+     */
+    public Map<String,List<IndicatorJudgeRiskFactorResponse>> getIndicatorJudgeRiskFactor(String indicatorFuncId) {
+        //1、根据指标功能ID获取所有的分类
+        List<IndicatorJudgeRiskFactorEntity> entityList = indicatorJudgeRiskFactorService.lambdaQuery()
+                .eq(IndicatorJudgeRiskFactorEntity::getIndicatorFuncId, indicatorFuncId)
+                .eq(IndicatorJudgeRiskFactorEntity::getStatus, true)
+                .list();
+        List<IndicatorJudgeRiskFactorResponse> responseList = new ArrayList<>();
+        if(entityList != null && entityList.size() > 0){
+            entityList.forEach(entity->{
+                IndicatorJudgeRiskFactorResponse response = IndicatorJudgeRiskFactorResponse
+                        .builder()
+                        .id(entity.getId())
+                        .indicatorJudgeRiskFactorId(entity.getIndicatorJudgeRiskFactorId())
+                        .name(entity.getName())
+                        .indicatorCategoryId(entity.getIndicatorCategoryId())
+                        .build();
+                responseList.add(response);
+            });
+        }
+        //2、根据分类ID分组
+        Map<String,List<IndicatorJudgeRiskFactorResponse>> categoryList = responseList.stream().collect(Collectors.groupingBy(IndicatorJudgeRiskFactorResponse::getIndicatorCategoryId));
+        return categoryList;
     }
 }

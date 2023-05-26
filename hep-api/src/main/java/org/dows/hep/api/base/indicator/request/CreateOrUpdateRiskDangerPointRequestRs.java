@@ -1,5 +1,6 @@
 package org.dows.hep.api.base.indicator.request;
 
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,11 +24,14 @@ public class CreateOrUpdateRiskDangerPointRequestRs implements Serializable {
   private String appId;
 
   @Schema(title = "死亡模型ID")
+  @ApiModelProperty(required = true)
   private String riskDeathModelId;
 
   @Schema(title = "分布式ID")
+  @ApiModelProperty(required = true)
   private String indicatorInstanceId;
 
   @Schema(title = "公式")
+  @ApiModelProperty(required = true)
   private String expression;
 }

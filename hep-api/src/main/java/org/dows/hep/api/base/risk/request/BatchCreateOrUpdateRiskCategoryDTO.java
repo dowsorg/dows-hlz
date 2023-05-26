@@ -1,5 +1,6 @@
 package org.dows.hep.api.base.risk.request;
 
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,5 +16,6 @@ public class BatchCreateOrUpdateRiskCategoryDTO {
   private String riskCategoryId;
 
   @Schema(title = "风险类别名称")
+  @ApiModelProperty(required = true)
   private String riskCategoryName;
 }
