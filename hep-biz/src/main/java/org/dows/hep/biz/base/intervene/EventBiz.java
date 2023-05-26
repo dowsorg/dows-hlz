@@ -10,6 +10,7 @@ import org.dows.hep.api.base.intervene.vo.EventActionVO;
 import org.dows.hep.api.base.intervene.vo.EventEvalVO;
 import org.dows.hep.api.base.intervene.vo.EventIndicatorVO;
 import org.dows.hep.api.enums.EnumCategFamily;
+import org.dows.hep.api.enums.EnumEventTriggerSpan;
 import org.dows.hep.api.enums.EnumEventTriggerType;
 import org.dows.hep.biz.cache.EventCategCache;
 import org.dows.hep.biz.dao.EnumCheckCategPolicy;
@@ -222,6 +223,8 @@ public class EventBiz{
                         .throwMessage("条件触发时不支持定义影响的指标");
         AssertUtil.trueThenThrow(triggerType!=EnumEventTriggerType.CONDITION&&ShareUtil.XCollection.notEmpty(saveEvent.getEvals()))
                 .throwMessage("时间触发时不支持定义触发条件");
+        AssertUtil.trueThenThrow(triggerType!=EnumEventTriggerType.CONDITION&& EnumEventTriggerSpan.of(saveEvent.getTriggerSpan())==EnumEventTriggerSpan.NONE)
+                .throwMessage("请选择正确的触发时间段");
 
         //重复指标检查
         AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(saveEvent.getIndicators())

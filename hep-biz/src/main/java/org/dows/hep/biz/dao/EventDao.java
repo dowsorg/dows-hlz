@@ -103,7 +103,7 @@ public class EventDao extends BaseSubDao<EventService, EventEntity, EventEvalSer
                 .in(ShareUtil.XCollection.notEmpty(req.getIncIds()), getColId(), req.getIncIds())
                 .notIn(ShareUtil.XCollection.notEmpty(req.getExcIds()), getColId(), req.getExcIds())
                 .eq(ShareUtil.XObject.notEmpty(req.getState()), getColState(), req.getState())
-                .eq(ShareUtil.XObject.notEmpty(req.getTriggerType()), EventEntity::getTriggerType, req.getTriggerType())
+                .in(ShareUtil.XObject.notEmpty(req.getTriggerType()), EventEntity::getTriggerType, req.getTriggerType())
                 .select(cols));
     }
 

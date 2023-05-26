@@ -160,7 +160,7 @@ public class FoodCalcBiz {
             }
             final BigDecimal val=BigDecimalUtil.tryParseDecimalElseZero(item.getWeight());
             boxEnergy.add(nutrientType.calcEnergy(val));
-            item.setWeight(BigDecimalUtil.formatRoundDecimal(val, NUMBERScale2, EMPTYValue));
+            item.setWeight(BigDecimalUtil.formatRoundDecimal(val, NUMBERScale2,false, EMPTYValue));
             switch (nutrientType){
                 case PROTEIN:
                     material.setProtein(item.getWeight());
