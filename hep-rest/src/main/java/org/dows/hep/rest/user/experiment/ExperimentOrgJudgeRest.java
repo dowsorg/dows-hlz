@@ -3,6 +3,7 @@ package org.dows.hep.rest.user.experiment;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthGuidanceResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponse;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
@@ -49,6 +50,18 @@ public class ExperimentOrgJudgeRest {
     @PostMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeRiskFactor")
     public Map<String,List<IndicatorJudgeRiskFactorResponse>> getIndicatorJudgeRiskFactor(@RequestParam @Validated String indicatorFuncId) {
         return experimentOrgJudgeBiz.getIndicatorJudgeRiskFactor(indicatorFuncId);
+    }
+
+    /**
+     *
+     * 获取二级类有报告的判断指标信息
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取二级类有报告的判断指标信息")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeHealthGuidance")
+    public Map<String,List<IndicatorJudgeHealthGuidanceResponse>> getIndicatorJudgeHealthGuidance(@RequestParam @Validated String indicatorFuncId) {
+        return experimentOrgJudgeBiz.getIndicatorJudgeHealthGuidance(indicatorFuncId);
     }
 
     /**
