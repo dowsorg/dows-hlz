@@ -117,6 +117,13 @@ public class QuestionInstanceBiz {
      */
     public IPage<QuestionPageResponse> pageQuestion(QuestionPageRequest request) {
         List<String> categoryIdList = getCategoryIdList(request);
+        if (categoryIdList.isEmpty()) {
+            List<String> l1CategIdList = request.getL1CategIdList();
+            if (Objects.nonNull(l1CategIdList) && !l1CategIdList.isEmpty()) {
+                categoryIdList.addAll(l1CategIdList);
+            }
+        }
+
         Page<QuestionInstanceEntity> pageRequest = new Page<>(request.getPageNo(), request.getPageSize());
         Page<QuestionInstanceEntity> pageResult = questionInstanceService.lambdaQuery()
                 .eq(QuestionInstanceEntity::getAppId, request.getAppId())
@@ -139,6 +146,7 @@ public class QuestionInstanceBiz {
         List<String> result = new ArrayList<>();
         if (l2CategIdList != null && !l2CategIdList.isEmpty()) {
             result.addAll(l2CategIdList);
+            return result;
         }
         if (l1CategIdList != null && !l1CategIdList.isEmpty()) {
             l1CategIdList.forEach(l1CategoryId -> {
