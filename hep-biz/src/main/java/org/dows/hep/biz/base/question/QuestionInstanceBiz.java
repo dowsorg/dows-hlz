@@ -602,11 +602,19 @@ public class QuestionInstanceBiz {
             List<String> categIds = records.stream()
                     .map(QuestionPageResponse::getQuestionCategId)
                     .toList();
-            List<QuestionCategoryResponse> questionCategoryResponses = questionCategBiz.listQuestionCategory(categIds);
-            Map<String, String> collect = questionCategoryResponses.stream()
+
+            List<QuestionCategoryResponse> curs = questionCategBiz.listQuestionCategory(categIds);
+            Map<String, String> pidCollect = curs.stream()
+                    .collect(Collectors.toMap(QuestionCategoryResponse::getQuestionCategId, QuestionCategoryResponse::getQuestionCategPid, (v1, v2) -> v1));
+
+            List<QuestionCategoryResponse> parents = questionCategBiz.listParents(categIds);
+            Map<String, String> pNameCollect = parents.stream()
                     .collect(Collectors.toMap(QuestionCategoryResponse::getQuestionCategId, QuestionCategoryResponse::getQuestionCategName, (v1, v2) -> v1));
+
             records.forEach(item -> {
-                item.setQuestionCategName(collect.get(item.getQuestionCategId()));
+                String pid = pidCollect.get(item.getQuestionCategId());
+                String categoryName = pNameCollect.get(pid);
+                item.setQuestionCategName(categoryName);
                 item.setQuestionType(QuestionTypeEnum.getNameByCode(item.getQuestionType()));
             });
         }
@@ -620,7 +628,7 @@ public class QuestionInstanceBiz {
 
     private void setQuestionCategIds(QuestionResponse questionResponse) {
         String questionCategId = questionResponse.getQuestionCategId();
-        String[] parentIds = questionCategBiz.getParentIds(questionCategId, QuestionCategGroupEnum.QUESTION.name());
+        String[] parentIds = questionCategBiz.getFullPathIds(questionCategId, QuestionCategGroupEnum.QUESTION.name());
         questionResponse.setQuestionCategIds(parentIds);
     }
 

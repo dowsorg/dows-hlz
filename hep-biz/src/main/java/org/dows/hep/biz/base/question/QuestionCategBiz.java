@@ -84,10 +84,10 @@ public class QuestionCategBiz {
      * @param
      * @return
      * @author fhb
-     * @description
+     * @description 递归获取该类目的全路径 
      * @date 2023/5/11 21:22
      */
-    public List<QuestionCategoryResponse> getParents(String id, String categoryGroup) {
+    public List<QuestionCategoryResponse> getFullPath(String id, String categoryGroup) {
         return getParents0(id, categoryGroup);
     }
 
@@ -95,10 +95,10 @@ public class QuestionCategBiz {
      * @param
      * @return
      * @author fhb
-     * @description
+     * @description 获取该类目的全路径 id 数组
      * @date 2023/5/11 21:22
      */
-    public String[] getParentIds(String id, String categoryGroup) {
+    public String[] getFullPathIds(String id, String categoryGroup) {
         List<QuestionCategoryResponse> arrayList = getParents0(id, categoryGroup);
         if (arrayList.isEmpty()) {
             return new String[0];
@@ -109,6 +109,30 @@ public class QuestionCategBiz {
                 .toArray(String[]::new);
     }
 
+    /**
+     * @author fhb
+     * @description 根据Ids 获取父类的 QuestionCategoryResponse
+     * @date 2023/5/26 16:48
+     * @param
+     * @return
+     */
+    public List<QuestionCategoryResponse> listParents(List<String> categIds) {
+        List<QuestionCategoryResponse> curs = listQuestionCategory(categIds);
+        if (Objects.isNull(curs) || curs.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<String> pIds = curs.stream().map(QuestionCategoryResponse::getQuestionCategPid).toList();
+        return listQuestionCategory(pIds);
+    }
+
+    /**
+     * @author fhb
+     * @description 根据ids 获取对应的 QuestionCategoryResponse
+     * @date 2023/5/26 16:48
+     * @param
+     * @return
+     */
     public List<QuestionCategoryResponse> listQuestionCategory(List<String> categIds) {
         if (categIds == null || categIds.isEmpty()) {
             return new ArrayList<>();
@@ -218,7 +242,7 @@ public class QuestionCategBiz {
         currentNode.setChildren(children);
     }
 
-    private static List<QuestionCategoryResponse> listChildren(List<QuestionCategoryResponse> sources, Predicate<QuestionCategoryResponse> predicate) {
+    private List<QuestionCategoryResponse> listChildren(List<QuestionCategoryResponse> sources, Predicate<QuestionCategoryResponse> predicate) {
         return sources.stream()
                 .filter(predicate)
                 .toList();
@@ -302,5 +326,4 @@ public class QuestionCategBiz {
         Collections.reverse(result);
         return result;
     }
-
 }
