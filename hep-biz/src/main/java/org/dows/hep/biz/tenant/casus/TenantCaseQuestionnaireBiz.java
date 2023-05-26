@@ -113,7 +113,6 @@ public class TenantCaseQuestionnaireBiz {
             return new ArrayList<>();
         }
 
-        // page
         List<CaseQuestionnaireEntity> list = caseQuestionnaireService.lambdaQuery()
                 .eq(StrUtil.isNotBlank(request.getCaseInstanceId()), CaseQuestionnaireEntity::getCaseInstanceId, request.getCaseInstanceId())
                 .list();
