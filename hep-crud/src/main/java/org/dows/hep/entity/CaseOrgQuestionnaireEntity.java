@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 案例机构问卷(CaseOrgQuestionnaire)实体类
@@ -37,7 +37,7 @@ public class CaseOrgQuestionnaireEntity implements CrudEntity {
     private Long id;
 
     @Schema(title = "案例机构问卷ID")
-    private String caseOrgQuestionnaire;
+    private String caseOrgQuestionnaireId;
 
     @Schema(title = "应用ID")
     private String appId;
@@ -51,11 +51,8 @@ public class CaseOrgQuestionnaireEntity implements CrudEntity {
     @Schema(title = "案例问卷ID")
     private String caseQuestionnaireId;
 
-    @Schema(title = "案例标示")
-    private String caseIdentifier;
-
-    @Schema(title = "版本号")
-    private String ver;
+    @Schema(title = "期数")
+    private String periods;
 
     @JsonIgnore
     @TableLogic
