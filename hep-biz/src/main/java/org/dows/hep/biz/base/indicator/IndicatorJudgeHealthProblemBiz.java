@@ -69,7 +69,6 @@ public class IndicatorJudgeHealthProblemBiz{
         if (Objects.isNull(indicatorJudgeHealthProblemEntityList) || indicatorJudgeHealthProblemEntityList.isEmpty()) {
             return Collections.emptyList();
         }
-        String appId = indicatorJudgeHealthProblemEntityList.get(0).getAppId();
         Set<String> indicatorCategoryIdSetSecond = new HashSet<>();
         indicatorJudgeHealthProblemEntityList.forEach(
             indicatorJudgeHealthProblemEntity -> {
