@@ -43,8 +43,8 @@ public class FindCaseEventRequest {
     @Schema(title = "状态 null-所有, 0-启用 1-停用")
     private Integer state;
 
-    @Schema(title = "触发类型 null-所有 0-条件触发 1-第一期 2-第二期...5-第5期")
-    private Integer triggerType;
+    @Schema(title = "触发类型列表 null或空-所有 0-条件触发 1-第一期 2-第二期...5-第5期")
+    private List<Integer> triggerType;
 
     @Schema(title = "人物accountId 数据库/案例人物")
     @NotEmpty(message = "人物ID不可为空")

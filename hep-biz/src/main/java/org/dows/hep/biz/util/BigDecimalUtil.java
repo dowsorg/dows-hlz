@@ -12,7 +12,7 @@ import java.util.Optional;
  */
 public class BigDecimalUtil {
     final static int s_commonDivideScale=8;
-    public static final BigDecimal ONEHundred=new BigDecimal(100);
+    public static final BigDecimal ONEHundred=new BigDecimal("100");
     //region parse
     public static Short shortValue(BigDecimal src) {
         return shortValue(src,null);
@@ -121,14 +121,33 @@ public class BigDecimalUtil {
 
     //region round
     public static BigDecimal roundDecimal(BigDecimal src, int scale) {
-        return null == src ? null : src.setScale(scale, BigDecimal.ROUND_HALF_UP);
+        return roundDecimal(src, scale,false,null);
     }
-    public static String formatRoundDecimal(BigDecimal src, int scale) {
-        return formatRoundDecimal(src, scale, null);
+    public static BigDecimal roundDecimal(BigDecimal src, int scale,boolean stripZero){
+        return roundDecimal(src, scale,stripZero,null);
+    }
+    public static BigDecimal roundDecimal(BigDecimal src, int scale,boolean stripZero,BigDecimal dft) {
+        if(null==src){
+            return dft;
+        }
+        BigDecimal rst=src.setScale(scale, BigDecimal.ROUND_HALF_UP);
+        if(stripZero){
+            rst=rst.stripTrailingZeros();
+        }
+        return rst;
+    }
+    public static String formatRoundDecimal(BigDecimal src, int scale){
+        return formatRoundDecimal(src, scale, false,null);
+    }
+    public static String formatRoundDecimal(BigDecimal src, int scale,boolean stripZero) {
+        return formatRoundDecimal(src, scale, stripZero,null);
     }
 
-    public static String formatRoundDecimal(BigDecimal src, int scale, String dft) {
-        return null == src ? dft : src.setScale(scale, BigDecimal.ROUND_HALF_UP).toPlainString();
+    public static String formatRoundDecimal(BigDecimal src, int scale,boolean stripZero,  String dft) {
+        if(null==src){
+            return dft;
+        }
+        return roundDecimal(src,scale,stripZero).toPlainString();
     }
     //endregion
 

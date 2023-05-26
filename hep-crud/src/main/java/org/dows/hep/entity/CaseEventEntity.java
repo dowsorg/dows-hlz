@@ -75,6 +75,9 @@ public class CaseEventEntity implements CrudEntity {
     @Schema(title = "事件说明")
     private String descr;
 
+    @Schema(title = "事件提示")
+    private String tips;
+
     @Schema(title = "创建者账号")
     private String createAccountId;
 

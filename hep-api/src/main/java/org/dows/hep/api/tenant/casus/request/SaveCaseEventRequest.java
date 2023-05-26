@@ -56,7 +56,8 @@ public class SaveCaseEventRequest{
     @Schema(title = "事件说明")
     private String descr;
 
-
+    @Schema(title = "事件提示")
+    private String tips;
 
     @Schema(title = "触发类型 0-条件触发 1-第一期 2-第二期...5-第5期")
     private Integer triggerType;
