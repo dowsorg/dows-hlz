@@ -1,10 +1,16 @@
 package org.dows.hep.biz.user.experiment;
 
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthGuidanceResponse;
+import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthProblemResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponse;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
+import org.dows.hep.entity.IndicatorJudgeHealthGuidanceEntity;
+import org.dows.hep.entity.IndicatorJudgeHealthProblemEntity;
 import org.dows.hep.entity.IndicatorJudgeRiskFactorEntity;
+import org.dows.hep.service.IndicatorJudgeHealthGuidanceService;
+import org.dows.hep.service.IndicatorJudgeHealthProblemService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -22,6 +28,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ExperimentOrgJudgeBiz{
     private final org.dows.hep.service.IndicatorJudgeRiskFactorService indicatorJudgeRiskFactorService;
+    private final IndicatorJudgeHealthGuidanceService indicatorJudgeHealthGuidanceService;
+    private final IndicatorJudgeHealthProblemService indicatorJudgeHealthProblemService;
     /**
     * @param
     * @return
@@ -133,5 +141,71 @@ public class ExperimentOrgJudgeBiz{
         //2、根据分类ID分组
         Map<String,List<IndicatorJudgeRiskFactorResponse>> categoryList = responseList.stream().collect(Collectors.groupingBy(IndicatorJudgeRiskFactorResponse::getIndicatorCategoryId));
         return categoryList;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 获取二级类有报告的判断指标信息
+     * @关联表: indicatorJudgeHealthGuidance
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年5月26日 上午11:51:34
+     */
+    public Map<String, List<IndicatorJudgeHealthGuidanceResponse>> getIndicatorJudgeHealthGuidance(String indicatorFuncId) {
+        //1、根据指标功能ID获取所有的分类
+        List<IndicatorJudgeHealthGuidanceEntity> entityList = indicatorJudgeHealthGuidanceService.lambdaQuery()
+                .eq(IndicatorJudgeHealthGuidanceEntity::getIndicatorFuncId, indicatorFuncId)
+                .eq(IndicatorJudgeHealthGuidanceEntity::getStatus, true)
+                .list();
+        List<IndicatorJudgeHealthGuidanceResponse> responseList = new ArrayList<>();
+        if(entityList != null && entityList.size() > 0){
+            entityList.forEach(entity->{
+                IndicatorJudgeHealthGuidanceResponse response = IndicatorJudgeHealthGuidanceResponse
+                        .builder()
+                        .id(entity.getId())
+                        .indicatorJudgeHealthGuidanceId(entity.getIndicatorJudgeHealthGuidanceId())
+                        .name(entity.getName())
+                        .indicatorCategoryId(entity.getIndicatorCategoryId())
+                        .build();
+                responseList.add(response);
+            });
+        }
+        //2、根据分类ID分组
+        Map<String,List<IndicatorJudgeHealthGuidanceResponse>> categoryList = responseList.stream().collect(Collectors.groupingBy(IndicatorJudgeHealthGuidanceResponse::getIndicatorCategoryId));
+        return categoryList;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 三级类别/四级类别：根据指标分类ID获取所有符合条件的数据
+     * @关联表: indicatorJudgeHealthProblem
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年5月26日 下午13:56:34
+     */
+    public List<IndicatorJudgeHealthProblemResponse> getIndicatorJudgeHealthProblemByCategoryId(String indicatoryCategoryId) {
+        //1、根据指标分类ID获取所有符合条件的数据
+        List<IndicatorJudgeHealthProblemEntity> entityList = indicatorJudgeHealthProblemService.lambdaQuery()
+                .eq(IndicatorJudgeHealthProblemEntity::getIndicatorCategoryId, indicatoryCategoryId)
+                .eq(IndicatorJudgeHealthProblemEntity::getStatus, true)
+                .list();
+        List<IndicatorJudgeHealthProblemResponse> responseList = new ArrayList<>();
+        if(entityList != null && entityList.size() > 0) {
+            entityList.forEach(entity -> {
+                IndicatorJudgeHealthProblemResponse response = IndicatorJudgeHealthProblemResponse
+                        .builder()
+                        .id(entity.getId())
+                        .indicatorJudgeHealthProblemId(entity.getIndicatorJudgeHealthProblemId())
+                        .name(entity.getName())
+                        .indicatorCategoryId(entity.getIndicatorCategoryId())
+                        .build();
+                responseList.add(response);
+            });
+        }
+        return responseList;
     }
 }

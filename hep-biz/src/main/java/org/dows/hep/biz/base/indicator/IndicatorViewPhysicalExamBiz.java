@@ -164,6 +164,7 @@ public class IndicatorViewPhysicalExamBiz{
                 .fee(fee)
                 .indicatorInstanceId(indicatorInstanceId)
                 .resultAnalysis(createOrUpdateIndicatorViewPhysicalExamRequestRs.getResultAnalysis())
+                .status(createOrUpdateIndicatorViewPhysicalExamRequestRs.getStatus())
                 .build();
         } else {
             indicatorViewPhysicalExamEntity = indicatorViewPhysicalExamService.lambdaQuery()

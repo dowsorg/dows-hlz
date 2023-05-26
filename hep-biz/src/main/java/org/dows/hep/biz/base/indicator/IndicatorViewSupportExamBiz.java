@@ -188,6 +188,7 @@ public class IndicatorViewSupportExamBiz{
                 .fee(fee)
                 .indicatorInstanceId(indicatorInstanceId)
                 .resultAnalysis(createOrUpdateIndicatorViewSupportExamRequestRs.getResultAnalysis())
+                .status(createOrUpdateIndicatorViewSupportExamRequestRs.getStatus())
                 .build();
         } else {
             indicatorViewSupportExamEntity = indicatorViewSupportExamService.lambdaQuery()
