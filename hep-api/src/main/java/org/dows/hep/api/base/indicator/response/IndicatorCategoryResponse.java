@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dows.hep.api.view.IndicatorCategoryResponseView;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -22,7 +23,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 @Schema(name = "IndicatorCategory对象", title = "指标类别列表")
-public class IndicatorCategoryResponse{
+public class IndicatorCategoryResponse implements Serializable {
   @JsonFormat(shape = JsonFormat.Shape.STRING)
   @Schema(title = "主键")
   private Long id;

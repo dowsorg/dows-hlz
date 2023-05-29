@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.*;
 import org.dows.hep.api.base.indicator.response.IndicatorCategoryResponse;
+import org.dows.hep.api.enums.EnumBoolean;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.enums.EnumRedissonLock;
 import org.dows.hep.api.enums.EnumString;
@@ -20,6 +21,7 @@ import org.dows.sequence.api.IdGenerator;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -258,6 +260,7 @@ public class IndicatorCategoryBiz{
             .eq(IndicatorCategoryEntity::getAppId, appId)
             .isNull(StringUtils.isBlank(pid), IndicatorCategoryEntity::getPid)
             .eq(StringUtils.isNotBlank(pid), IndicatorCategoryEntity::getPid, pid)
+            .orderByAsc(IndicatorCategoryEntity::getSeq)
             .list()
             .stream()
             .map(IndicatorCategoryBiz::indicatorCategoryEntity2Response)
