@@ -1,7 +1,5 @@
 package org.dows.hep.api.base.materials.request;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -47,24 +45,5 @@ public class MaterialsRequest {
 
     @Schema(title = "附件集合")
     private List<MaterialsAttachmentRequest> materialsAttachments;
-
-
-    // @JsonIgnore
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @JsonIgnore
-    @Schema(title = "数据库ID")
-    private Long id;
-
-    @Schema(title = "应用ID")
-    @JsonIgnore
-    private String appId;
-
-    @Schema(title = "状态")
-    @JsonIgnore
-    private Integer enabled;
-
-    @Schema(title = "资料分类名称")
-    @JsonIgnore
-    private String categoryName;
 
 }
