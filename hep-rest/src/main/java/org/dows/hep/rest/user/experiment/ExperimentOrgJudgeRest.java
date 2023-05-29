@@ -166,6 +166,21 @@ public class ExperimentOrgJudgeRest {
         return experimentOrgJudgeBiz.delExperimentIndicatorJudgeHealthProblem(indicatorJudgeHealthProblemId,experimentPersonId);
     }
 
+    /**
+     * 直接判断 赋值
+     * @param
+     * @return
+     */
+    @Operation(summary = "assignmentDirectJudgment")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/assignmentDirectJudgment")
+    public Boolean assignmentDirectJudgment(@RequestParam @Validated String indicatorJudgeHealthProblemId,
+                                            @RequestParam @Validated String experimentPersonId
+    )
+
+    {
+        return null;
+    }
+
 
     /**
     * 健康问题+健康指导+疾病问题：保存
