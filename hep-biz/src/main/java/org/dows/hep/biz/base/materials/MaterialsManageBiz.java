@@ -17,8 +17,6 @@ import org.dows.hep.api.base.materials.request.MaterialsSearchRequest;
 import org.dows.hep.api.base.materials.response.MaterialsAttachmentResponse;
 import org.dows.hep.api.base.materials.response.MaterialsPageResponse;
 import org.dows.hep.api.base.materials.response.MaterialsResponse;
-import org.dows.hep.api.base.question.enums.QuestionESCEnum;
-import org.dows.hep.api.tenant.casus.CaseESCEnum;
 import org.dows.hep.entity.MaterialsAttachmentEntity;
 import org.dows.hep.entity.MaterialsEntity;
 import org.dows.hep.service.MaterialsAttachmentService;
@@ -226,7 +224,7 @@ public class MaterialsManageBiz {
 
     private MaterialsEntity convertRequest2Entity(MaterialsRequest request) {
         if (BeanUtil.isEmpty(request)) {
-            throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
+            throw new BizException(MaterialsESCEnum.PARAMS_NON_NULL);
         }
 
         MaterialsEntity result = MaterialsEntity.builder()
@@ -248,7 +246,7 @@ public class MaterialsManageBiz {
         } else {
             MaterialsEntity entity = getById(uniqueId);
             if (BeanUtil.isEmpty(entity)) {
-                throw new BizException("数据不存在");
+                throw new BizException(MaterialsESCEnum.DATA_NULL);
             }
             result.setId(entity.getId());
         }
@@ -287,7 +285,7 @@ public class MaterialsManageBiz {
             } else {
                 MaterialsAttachmentEntity entity = attachmentCollect.get(uniqueId);
                 if (BeanUtil.isEmpty(entity)) {
-                    throw new BizException(CaseESCEnum.DATA_NULL);
+                    throw new BizException(MaterialsESCEnum.DATA_NULL);
                 }
                 result.setId(entity.getId());
             }
