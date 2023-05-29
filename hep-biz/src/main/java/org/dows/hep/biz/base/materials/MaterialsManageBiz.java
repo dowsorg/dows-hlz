@@ -90,6 +90,7 @@ public class MaterialsManageBiz {
                 .eq(MaterialsEntity::getAppId, request.getAppId())
                 .eq(MaterialsEntity::getBizCode, request.getBizCode())
                 .like(BeanUtil.isNotEmpty(request) && StrUtil.isNotBlank(request.getKeyword()), MaterialsEntity::getTitle, request.getKeyword())
+                .orderBy(true, true, MaterialsEntity::getSequence)
                 .page(pageRequest);
         result = baseBiz.convertPage(pageResult, MaterialsPageResponse.class);
         fillResult(result);
