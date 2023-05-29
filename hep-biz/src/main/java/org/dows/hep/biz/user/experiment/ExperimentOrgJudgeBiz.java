@@ -3,6 +3,7 @@ package org.dows.hep.biz.user.experiment;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeHealthProblemRequest;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeRiskFactorRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthGuidanceResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthProblemResponse;
@@ -10,6 +11,7 @@ import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponse
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.entity.*;
+import org.dows.hep.service.ExperimentPersonHealthProblemService;
 import org.dows.hep.service.ExperimentPersonPropertyService;
 import org.dows.hep.service.IndicatorJudgeHealthGuidanceService;
 import org.dows.hep.service.IndicatorJudgeHealthProblemService;
@@ -34,6 +36,7 @@ public class ExperimentOrgJudgeBiz{
     private final IndicatorJudgeHealthGuidanceService indicatorJudgeHealthGuidanceService;
     private final IndicatorJudgeHealthProblemService indicatorJudgeHealthProblemService;
     private final ExperimentPersonPropertyService experimentPersonPropertyService;
+    private final ExperimentPersonHealthProblemService experimentPersonHealthProblemService;
     /**
     * @param
     * @return
@@ -240,7 +243,7 @@ public class ExperimentOrgJudgeBiz{
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
-     * @创建时间: 2023年5月29日 下午16:11:34
+     * @创建时间: 2023年5月29日 上午10:11:34
      */
     public Boolean isIndicatorJudgeRiskFactor(List<CreateIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList) {
         AtomicReference<Boolean> flag = new AtomicReference<>(true);
@@ -255,5 +258,30 @@ public class ExperimentOrgJudgeBiz{
             flag.set(false);
         });
         return flag.get();
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 判断用户操作正确与否
+     * @关联表: indicatorJudgeRiskFactor
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年5月29日 下午16:11:34
+     */
+    @DSTransactional
+    public Boolean saveIndicatorJudgeHealthProblem(List<CreateIndicatorJudgeHealthProblemRequest> judgeHealthProblemRequestList) {
+        List<ExperimentPersonHealthProblemEntity> modelList = new ArrayList<>();
+        judgeHealthProblemRequestList.forEach(judgeHealthProblemRequest->{
+            ExperimentPersonHealthProblemEntity model = ExperimentPersonHealthProblemEntity
+                    .builder()
+                    .indicatorJudgeHealthProblemId(judgeHealthProblemRequest.getIndicatorJudgeHealthProblemId())
+                    .experimentPersonId(judgeHealthProblemRequest.getExperimentPersonId())
+                    .name(judgeHealthProblemRequest.getName())
+                    .build();
+            modelList.add(model);
+        });
+        return experimentPersonHealthProblemService.saveBatch(modelList);
     }
 }
