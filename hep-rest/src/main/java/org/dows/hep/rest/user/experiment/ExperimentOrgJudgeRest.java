@@ -167,18 +167,15 @@ public class ExperimentOrgJudgeRest {
     }
 
     /**
-     * 直接判断 赋值
+     * 直接判断 判断范围是否满足公式
      * @param
      * @return
      */
-    @Operation(summary = "assignmentDirectJudgment")
-    @PostMapping("v1/userExperiment/experimentOrgJudge/assignmentDirectJudgment")
-    public Boolean assignmentDirectJudgment(@RequestParam @Validated String indicatorJudgeHealthProblemId,
-                                            @RequestParam @Validated String experimentPersonId
-    )
-
+    @Operation(summary = "checkRangeMatchFormula")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/checkRangeMatchFormula")
+    public Boolean checkRangeMatchFormula(@RequestBody @Validated ExperimentPersonHealthManagementGoalRequest request)
     {
-        return null;
+        return experimentOrgJudgeBiz.checkRangeMatchFormula(request);
     }
 
 
