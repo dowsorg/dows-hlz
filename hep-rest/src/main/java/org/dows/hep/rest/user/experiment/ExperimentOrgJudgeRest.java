@@ -3,6 +3,7 @@ package org.dows.hep.rest.user.experiment;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeHealthProblemRequest;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeRiskFactorRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthGuidanceResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthProblemResponse;
@@ -112,16 +113,29 @@ public class ExperimentOrgJudgeRest {
     }
 
     /**
-     * 判断用户操作正确与否
+     * 二级-无报告 判断操作
      * @param
      * @return
      */
-    @Operation(summary = "isJudgeAction")
-    @PostMapping("v1/userExperiment/experimentOrgJudge/isJudgeAction")
-    public Boolean isJudgeAction(@RequestBody @Validated List<CreateIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList)
+    @Operation(summary = "isIndicatorJudgeRiskFactor")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/isIndicatorJudgeRiskFactor")
+    public Boolean isIndicatorJudgeRiskFactor(@RequestBody @Validated List<CreateIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList)
     {
-        return experimentOrgJudgeBiz.isJudgeAction(judgeRiskFactorRequestList);
+        return experimentOrgJudgeBiz.isIndicatorJudgeRiskFactor(judgeRiskFactorRequestList);
     }
+
+    /**
+     * 三级-无报告 保存操作
+     * @param
+     * @return
+     */
+    @Operation(summary = "saveIndicatorJudgeHealthProblem")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/saveIndicatorJudgeHealthProblem")
+    public Boolean saveIndicatorJudgeHealthProblem(@RequestBody @Validated List<CreateIndicatorJudgeHealthProblemRequest> judgeHealthProblemRequestList)
+    {
+        return experimentOrgJudgeBiz.saveIndicatorJudgeHealthProblem(judgeHealthProblemRequestList);
+    }
+
 
     /**
     * 健康问题+健康指导+疾病问题：保存
