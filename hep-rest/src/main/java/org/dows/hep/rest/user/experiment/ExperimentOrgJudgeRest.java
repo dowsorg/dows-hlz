@@ -3,6 +3,7 @@ package org.dows.hep.rest.user.experiment;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeRiskFactorRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthGuidanceResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthProblemResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponse;
@@ -53,6 +54,7 @@ public class ExperimentOrgJudgeRest {
     /**
      *
      * 获取二级类有报告的判断指标信息
+     *
      * @param
      * @return
      */
@@ -104,9 +106,21 @@ public class ExperimentOrgJudgeRest {
     @Operation(summary = "是否购买保险")
     @PostMapping("v1/userExperiment/experimentOrgJudge/isPurchaseInsure")
     public Boolean isPurchaseInsure(@RequestParam @Validated String isPurchase,
-                                    @RequestParam @Validated String experimentPersonId
-                                    ) {
+                                    @RequestParam @Validated String experimentPersonId)
+    {
         return experimentOrgJudgeBiz.isPurchaseInsure(isPurchase,experimentPersonId);
+    }
+
+    /**
+     * 判断用户操作正确与否
+     * @param
+     * @return
+     */
+    @Operation(summary = "isJudgeAction")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/isJudgeAction")
+    public Boolean isJudgeAction(@RequestBody @Validated List<CreateIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList)
+    {
+        return experimentOrgJudgeBiz.isJudgeAction(judgeRiskFactorRequestList);
     }
 
     /**
