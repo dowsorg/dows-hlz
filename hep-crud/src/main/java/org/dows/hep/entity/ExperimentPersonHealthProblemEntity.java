@@ -42,6 +42,9 @@ public class ExperimentPersonHealthProblemEntity implements CrudEntity {
     @Schema(title = "健康问题名称")
     private String name;
 
+    @Schema(title = "健康问题类别名称")
+    private String healthProbleamCategoryName;
+
     @JsonIgnore
     @TableLogic
     @TableField(fill = FieldFill.INSERT)

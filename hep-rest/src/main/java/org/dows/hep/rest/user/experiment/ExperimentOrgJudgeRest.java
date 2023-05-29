@@ -1,10 +1,13 @@
 package org.dows.hep.rest.user.experiment;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeHealthProblemRequest;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeRiskFactorRequest;
+import org.dows.hep.api.base.indicator.request.ExperimentPersonHealthProblemRequest;
+import org.dows.hep.api.base.indicator.response.ExperimentPersonHealthProblemResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthGuidanceResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthProblemResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponse;
@@ -129,11 +132,23 @@ public class ExperimentOrgJudgeRest {
      * @param
      * @return
      */
-    @Operation(summary = "saveIndicatorJudgeHealthProblem")
-    @PostMapping("v1/userExperiment/experimentOrgJudge/saveIndicatorJudgeHealthProblem")
-    public Boolean saveIndicatorJudgeHealthProblem(@RequestBody @Validated List<CreateIndicatorJudgeHealthProblemRequest> judgeHealthProblemRequestList)
+    @Operation(summary = "saveExperimentIndicatorJudgeHealthProblem")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/saveExperimentIndicatorJudgeHealthProblem")
+    public Boolean saveExperimentIndicatorJudgeHealthProblem(@RequestBody @Validated List<CreateIndicatorJudgeHealthProblemRequest> judgeHealthProblemRequestList)
     {
-        return experimentOrgJudgeBiz.saveIndicatorJudgeHealthProblem(judgeHealthProblemRequestList);
+        return experimentOrgJudgeBiz.saveExperimentIndicatorJudgeHealthProblem(judgeHealthProblemRequestList);
+    }
+
+    /**
+     * 三级-无报告 获取分页
+     * @param
+     * @return
+     */
+    @Operation(summary = "pageExperimentIndicatorJudgeHealthProblem")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/pageExperimentIndicatorJudgeHealthProblem")
+    public IPage<ExperimentPersonHealthProblemResponse> pageExperimentIndicatorJudgeHealthProblem(@RequestBody @Validated ExperimentPersonHealthProblemRequest experimentPersonHealthProblemRequest)
+    {
+        return experimentOrgJudgeBiz.pageExperimentIndicatorJudgeHealthProblem(experimentPersonHealthProblemRequest);
     }
 
 
