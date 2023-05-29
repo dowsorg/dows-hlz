@@ -242,7 +242,7 @@ public class ExperimentOrgJudgeBiz{
      * @开始时间:
      * @创建时间: 2023年5月29日 下午16:11:34
      */
-    public Boolean isJudgeAction(List<CreateIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList) {
+    public Boolean isIndicatorJudgeRiskFactor(List<CreateIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList) {
         AtomicReference<Boolean> flag = new AtomicReference<>(true);
         judgeRiskFactorRequestList.forEach(judgeRiskFactorRequest -> {
             //1、根据ID获取判断规则

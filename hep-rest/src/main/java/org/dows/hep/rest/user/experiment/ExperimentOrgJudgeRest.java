@@ -112,15 +112,15 @@ public class ExperimentOrgJudgeRest {
     }
 
     /**
-     * 判断用户操作正确与否
+     * 二级-无报告 判断操作
      * @param
      * @return
      */
-    @Operation(summary = "isJudgeAction")
-    @PostMapping("v1/userExperiment/experimentOrgJudge/isJudgeAction")
-    public Boolean isJudgeAction(@RequestBody @Validated List<CreateIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList)
+    @Operation(summary = "isIndicatorJudgeRiskFactor")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/isIndicatorJudgeRiskFactor")
+    public Boolean isIndicatorJudgeRiskFactor(@RequestBody @Validated List<CreateIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList)
     {
-        return experimentOrgJudgeBiz.isJudgeAction(judgeRiskFactorRequestList);
+        return experimentOrgJudgeBiz.isIndicatorJudgeRiskFactor(judgeRiskFactorRequestList);
     }
 
     /**
