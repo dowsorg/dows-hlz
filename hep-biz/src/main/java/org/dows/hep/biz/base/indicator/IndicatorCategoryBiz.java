@@ -4,16 +4,15 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.dows.hep.api.base.indicator.request.BatchCreateOrUpdateIndicatorCategoryDTO;
-import org.dows.hep.api.base.indicator.request.BatchCreateOrUpdateIndicatorCategoryRequest;
-import org.dows.hep.api.base.indicator.request.CreateIndicatorCategoryRequest;
-import org.dows.hep.api.base.indicator.request.UpdateIndicatorCategoryRequest;
+import org.dows.hep.api.base.indicator.request.*;
 import org.dows.hep.api.base.indicator.response.IndicatorCategoryResponse;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.enums.EnumRedissonLock;
+import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.api.exception.IndicatorCategoryException;
 import org.dows.hep.biz.util.RedissonUtil;
 import org.dows.hep.entity.IndicatorCategoryEntity;
+import org.dows.hep.entity.IndicatorFuncEntity;
 import org.dows.hep.entity.IndicatorInstanceEntity;
 import org.dows.hep.service.IndicatorCategoryService;
 import org.dows.hep.service.IndicatorInstanceService;
@@ -79,6 +78,56 @@ public class IndicatorCategoryBiz{
     public void createIndicatorCategory(CreateIndicatorCategoryRequest createIndicatorCategory) throws InterruptedException {
 
     }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void createRs(CreateOrUpdateIndicatorCategoryRequestRs createOrUpdateIndicatorCategoryRequestRs) {
+        IndicatorCategoryEntity indicatorCategoryEntity = null;
+        String indicatorCategoryId = createOrUpdateIndicatorCategoryRequestRs.getIndicatorCategoryId();
+        String appId = createOrUpdateIndicatorCategoryRequestRs.getAppId();
+        String pid = createOrUpdateIndicatorCategoryRequestRs.getPid();
+        String categoryName = createOrUpdateIndicatorCategoryRequestRs.getCategoryName();
+        Integer seq = createOrUpdateIndicatorCategoryRequestRs.getSeq();
+        if (StringUtils.isNotBlank(pid)) {
+            indicatorCategoryService.lambdaQuery()
+                .eq(IndicatorCategoryEntity::getIndicatorCategoryId, pid)
+                .oneOpt()
+                .orElseThrow(() -> {
+                    log.warn("method batchCreateOrUpdateIndicatorCategory param createOrUpdateIndicatorCategoryRequestRs pid:{} is illegal", pid);
+                    return new IndicatorCategoryException(EnumESC.VALIDATE_EXCEPTION);
+                });
+        }
+        if (StringUtils.isBlank(indicatorCategoryId)) {
+            indicatorCategoryId = idGenerator.nextIdStr();
+            AtomicInteger seqAtomicInteger = new AtomicInteger(1);
+            indicatorCategoryService.lambdaQuery()
+                .eq(IndicatorCategoryEntity::getPid, pid)
+                .orderByDesc(IndicatorCategoryEntity::getSeq)
+                .last(EnumString.LIMIT_1.getStr())
+                .oneOpt()
+                .ifPresent(indicatorFuncEntity -> seqAtomicInteger.set(indicatorFuncEntity.getSeq() + 1));
+            indicatorCategoryEntity = IndicatorCategoryEntity
+                .builder()
+                .indicatorCategoryId(indicatorCategoryId)
+                .appId(appId)
+                .pid(pid)
+                .categoryName(categoryName)
+                .seq(seqAtomicInteger.get())
+                .build();
+        } else {
+            String finalIndicatorCategoryId = indicatorCategoryId;
+            indicatorCategoryEntity = indicatorCategoryService.lambdaQuery()
+                .eq(IndicatorCategoryEntity::getIndicatorCategoryId, indicatorCategoryId)
+                .oneOpt()
+                .orElseThrow(() -> {
+                    log.warn("method batchCreateOrUpdateIndicatorCategory param createOrUpdateIndicatorCategoryRequestRs indicatorCategoryId:{} is illegal", finalIndicatorCategoryId);
+                    return new IndicatorCategoryException(EnumESC.VALIDATE_EXCEPTION);
+                });
+            indicatorCategoryEntity.setCategoryName(categoryName);
+            indicatorCategoryEntity.setSeq(seq);
+        }
+        indicatorCategoryService.saveOrUpdate(indicatorCategoryEntity);
+    }
+
     @Transactional(rollbackFor = Exception.class)
     public void batchCreateOrUpdateRs(BatchCreateOrUpdateIndicatorCategoryRequest batchCreateOrUpdateIndicatorCategoryRequest) throws InterruptedException {
         String appId = batchCreateOrUpdateIndicatorCategoryRequest.getAppId();
@@ -94,7 +143,7 @@ public class IndicatorCategoryBiz{
                     .eq(IndicatorCategoryEntity::getIndicatorCategoryId, pid)
                     .oneOpt()
                     .orElseThrow(() -> {
-                        log.warn("方法batchCreateOrUpdateIndicatorCategory的参数batchCreateOrUpdateIndicatorCategory的pid：{}在数据库不存在", pid);
+                        log.warn("method batchCreateOrUpdateIndicatorCategory param batchCreateOrUpdateIndicatorCategory pid：{} is illegal", pid);
                         return new IndicatorCategoryException(EnumESC.VALIDATE_EXCEPTION);
                     });
             }

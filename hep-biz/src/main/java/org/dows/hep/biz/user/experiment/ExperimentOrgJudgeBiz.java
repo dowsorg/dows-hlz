@@ -1,14 +1,15 @@
 package org.dows.hep.biz.user.experiment;
 
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthGuidanceResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthProblemResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponse;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
-import org.dows.hep.entity.IndicatorJudgeHealthGuidanceEntity;
-import org.dows.hep.entity.IndicatorJudgeHealthProblemEntity;
-import org.dows.hep.entity.IndicatorJudgeRiskFactorEntity;
+import org.dows.hep.entity.*;
+import org.dows.hep.service.ExperimentPersonPropertyService;
 import org.dows.hep.service.IndicatorJudgeHealthGuidanceService;
 import org.dows.hep.service.IndicatorJudgeHealthProblemService;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ public class ExperimentOrgJudgeBiz{
     private final org.dows.hep.service.IndicatorJudgeRiskFactorService indicatorJudgeRiskFactorService;
     private final IndicatorJudgeHealthGuidanceService indicatorJudgeHealthGuidanceService;
     private final IndicatorJudgeHealthProblemService indicatorJudgeHealthProblemService;
+    private final ExperimentPersonPropertyService experimentPersonPropertyService;
     /**
     * @param
     * @return
@@ -207,5 +209,24 @@ public class ExperimentOrgJudgeBiz{
             });
         }
         return responseList;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 是否购买保险
+     * @关联表: experimentPersonProperty
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年5月26日 下午16:11:34
+     */
+    @DSTransactional
+    public Boolean isPurchaseInsure(String isPurchase,String experimentPersonId) {
+        LambdaUpdateWrapper<ExperimentPersonPropertyEntity> updateWrapper = new LambdaUpdateWrapper<ExperimentPersonPropertyEntity>()
+                .eq(ExperimentPersonPropertyEntity::getExperimentPersonId, experimentPersonId)
+                .eq(ExperimentPersonPropertyEntity::getDeleted,false)
+                .set(ExperimentPersonPropertyEntity::getInsuranceState, isPurchase);
+        return experimentPersonPropertyService.update(updateWrapper);
     }
 }
