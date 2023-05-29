@@ -49,7 +49,7 @@ public class QuestionSectionDimensionEntity implements CrudEntity {
     private String dimensionContent;
 
     @Schema(title = "分数")
-    private float score;
+    private Float score;
 
     @JsonIgnore
     @TableLogic

@@ -14,6 +14,9 @@ import lombok.NoArgsConstructor;
 @Schema(name = "MaterialsAttachmentRequest 对象", title = "资料附件")
 public class MaterialsAttachmentRequest {
 
+    @Schema(title = "资料附件ID")
+    private String materialsAttachmentId;
+
     @Schema(title = "文件名称")
     private String fileName;
 

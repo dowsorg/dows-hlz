@@ -68,7 +68,7 @@ public class PictureManageBiz {
                 .appId(picture.getAppId())
                 .categoryId(entity.getMaterialsCategoryId())
                 .categoryName(picture.getCategoryName())
-                .enabled(picture.getEnabled())
+                .enabled(picture.getEnabled() == Boolean.TRUE ? 1 : 0)
                 .build();
         materialsService.save(material);
         //3、保存图片附件

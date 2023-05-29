@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -14,8 +12,10 @@ import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
 
+import java.util.Date;
+
 /**
- * 学生操作指标记录表(OperateIndictar)实体类
+ * 学生操作指标记录表(OperateIndicator)实体类
  *
  * @author lait
  * @since 2023-04-28 10:27:03
@@ -28,16 +28,19 @@ import org.dows.framework.crud.api.CrudEntity;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "OperateIndictar", title = "学生操作指标记录表")
-@TableName("operate_indictar")
-public class OperateIndictarEntity implements CrudEntity {
+@Schema(name = "OperateIndicator", title = "学生操作指标记录表")
+@TableName("operate_indicator")
+public class OperateIndicatorEntity implements CrudEntity {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库ID")
     private Long id;
 
     @Schema(title = "学生操作指标记录表ID")
-    private String operateIndictarId;
+    private String operateIndicatorId;
+
+    @Schema(title = "应用ID")
+    private String appId;
 
     @Schema(title = "实验实列ID")
     private String experimentInstanceId;
@@ -45,17 +48,11 @@ public class OperateIndictarEntity implements CrudEntity {
     @Schema(title = "实验小组ID")
     private String experimentGroupId;
 
-    @Schema(title = "案例机构ID")
-    private String caseOrgId;
-
-    @Schema(title = "操作人ID")
-    private String operateAccountId;
-
-    @Schema(title = "操作人名")
-    private String operateAccountName;
-
     @Schema(title = "实验人物ID")
     private String experimentPersonId;
+
+    @Schema(title = "案例机构ID")
+    private String caseOrgId;
 
     @Schema(title = "案例人物")
     private String caseAccountId;
@@ -63,8 +60,14 @@ public class OperateIndictarEntity implements CrudEntity {
     @Schema(title = "案例人名")
     private String caseAccountName;
 
+    @Schema(title = "操作人ID")
+    private String operateAccountId;
+
+    @Schema(title = "操作人名")
+    private String operateAccountName;
+
     @Schema(title = "操作[干预]类型")
-    private String operateType;
+    private Integer operateType;
 
     @Schema(title = "干预或事件处理id")
     private String operateSourceId;
@@ -92,6 +95,9 @@ public class OperateIndictarEntity implements CrudEntity {
 
     @Schema(title = "期数")
     private Integer periods;
+
+    @Schema(title = "游戏内天数")
+    private Integer gameDay;
 
     @JsonIgnore
     @TableLogic

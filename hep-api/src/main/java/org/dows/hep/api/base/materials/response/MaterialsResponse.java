@@ -44,5 +44,5 @@ public class MaterialsResponse {
     private String uploadTime;
 
     @Schema(title = "附件集合")
-    private List<MaterialsAttachmentResponse> materialsAttachment;
+    private List<MaterialsAttachmentResponse> materialsAttachments;
 }
