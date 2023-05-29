@@ -321,4 +321,24 @@ public class ExperimentOrgJudgeBiz{
         voPage.setRecords(responseList);
         return voPage;
     }
+
+    /**
+     * @param
+     * @return
+     * @说明: 三级-无报告 删除数据
+     * @关联表: experimentPersonHealthProblem
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年5月29日 下午15:41:34
+     */
+    @DSTransactional
+    public Boolean delExperimentIndicatorJudgeHealthProblem(String indicatorJudgeHealthProblemId, String experimentPersonId) {
+        LambdaUpdateWrapper<ExperimentPersonHealthProblemEntity> updateWrapper = new LambdaUpdateWrapper<ExperimentPersonHealthProblemEntity>()
+                .eq(ExperimentPersonHealthProblemEntity::getIndicatorJudgeHealthProblemId, indicatorJudgeHealthProblemId)
+                .eq(ExperimentPersonHealthProblemEntity::getExperimentPersonId,experimentPersonId)
+                .eq(ExperimentPersonHealthProblemEntity::getDeleted,false)
+                .set(ExperimentPersonHealthProblemEntity::getDeleted, true);
+        return experimentPersonHealthProblemService.update(updateWrapper);
+    }
 }

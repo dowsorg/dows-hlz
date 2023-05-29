@@ -151,6 +151,21 @@ public class ExperimentOrgJudgeRest {
         return experimentOrgJudgeBiz.pageExperimentIndicatorJudgeHealthProblem(experimentPersonHealthProblemRequest);
     }
 
+    /**
+     * 三级-无报告 删除数据
+     * @param
+     * @return
+     */
+    @Operation(summary = "delExperimentIndicatorJudgeHealthProblem")
+    @DeleteMapping("v1/userExperiment/experimentOrgJudge/delExperimentIndicatorJudgeHealthProblem")
+    public Boolean delExperimentIndicatorJudgeHealthProblem(@RequestParam @Validated String indicatorJudgeHealthProblemId,
+                                                            @RequestParam @Validated String experimentPersonId
+                                                            )
+
+    {
+        return experimentOrgJudgeBiz.delExperimentIndicatorJudgeHealthProblem(indicatorJudgeHealthProblemId,experimentPersonId);
+    }
+
 
     /**
     * 健康问题+健康指导+疾病问题：保存
