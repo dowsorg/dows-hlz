@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 资料(Materials)实体类
@@ -61,7 +61,7 @@ public class MaterialsEntity implements CrudEntity {
     private Integer sequence;
 
     @Schema(title = "状态")
-    private Boolean enabled;
+    private Integer enabled;
 
     @Schema(title = "创建者账号Id")
     private String accountId;

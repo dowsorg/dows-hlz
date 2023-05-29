@@ -22,6 +22,9 @@ public class CreateIndicatorJudgeRiskFactorRequest{
     @Schema(title = "危险因素名称")
     private String name;
 
+    @Schema(title = "分布式ID")
+    String indicatorJudgeRiskFactorId;
+
     @Schema(title = "危险因素类别")
     private String type;
 

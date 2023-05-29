@@ -5,8 +5,10 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.hep.api.base.question.enums.QuestionESCEnum;
 import org.dows.hep.api.base.question.request.QuestionCategoryRequest;
 import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
+import org.dows.hep.api.tenant.casus.CaseESCEnum;
 import org.dows.hep.entity.QuestionCategoryEntity;
 import org.dows.hep.entity.QuestionInstanceEntity;
 import org.dows.hep.service.QuestionCategoryService;
@@ -45,11 +47,7 @@ public class QuestionCategBiz {
             return "";
         }
 
-        // check
-        checkBeforeSaveOrUpd(questionCategory);
-
-        // handle
-        QuestionCategoryEntity questionCategoryEntity = BeanUtil.copyProperties(questionCategory, QuestionCategoryEntity.class);
+        QuestionCategoryEntity questionCategoryEntity = convertRequest2Entity(questionCategory);
         questionCategoryService.saveOrUpdate(questionCategoryEntity);
 
         return questionCategoryEntity.getQuestionCategId();
@@ -86,10 +84,10 @@ public class QuestionCategBiz {
      * @param
      * @return
      * @author fhb
-     * @description
+     * @description 递归获取该类目的全路径 
      * @date 2023/5/11 21:22
      */
-    public List<QuestionCategoryResponse> getParents(String id, String categoryGroup) {
+    public List<QuestionCategoryResponse> getFullPath(String id, String categoryGroup) {
         return getParents0(id, categoryGroup);
     }
 
@@ -97,10 +95,10 @@ public class QuestionCategBiz {
      * @param
      * @return
      * @author fhb
-     * @description
+     * @description 获取该类目的全路径 id 数组
      * @date 2023/5/11 21:22
      */
-    public String[] getParentIds(String id, String categoryGroup) {
+    public String[] getFullPathIds(String id, String categoryGroup) {
         List<QuestionCategoryResponse> arrayList = getParents0(id, categoryGroup);
         if (arrayList.isEmpty()) {
             return new String[0];
@@ -111,6 +109,30 @@ public class QuestionCategBiz {
                 .toArray(String[]::new);
     }
 
+    /**
+     * @author fhb
+     * @description 根据Ids 获取父类的 QuestionCategoryResponse
+     * @date 2023/5/26 16:48
+     * @param
+     * @return
+     */
+    public List<QuestionCategoryResponse> listParents(List<String> categIds) {
+        List<QuestionCategoryResponse> curs = listQuestionCategory(categIds);
+        if (Objects.isNull(curs) || curs.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<String> pIds = curs.stream().map(QuestionCategoryResponse::getQuestionCategPid).toList();
+        return listQuestionCategory(pIds);
+    }
+
+    /**
+     * @author fhb
+     * @description 根据ids 获取对应的 QuestionCategoryResponse
+     * @date 2023/5/26 16:48
+     * @param
+     * @return
+     */
     public List<QuestionCategoryResponse> listQuestionCategory(List<String> categIds) {
         if (categIds == null || categIds.isEmpty()) {
             return new ArrayList<>();
@@ -138,7 +160,7 @@ public class QuestionCategBiz {
         // get referenced id
         Boolean referenced = isReferenced(ids);
         if (referenced) {
-            throw new BizException("被引用类目不可删除");
+            throw new BizException(QuestionESCEnum.CANNOT_DEL_FER_DATA);
         }
 
         // del self
@@ -220,7 +242,7 @@ public class QuestionCategBiz {
         currentNode.setChildren(children);
     }
 
-    private static List<QuestionCategoryResponse> listChildren(List<QuestionCategoryResponse> sources, Predicate<QuestionCategoryResponse> predicate) {
+    private List<QuestionCategoryResponse> listChildren(List<QuestionCategoryResponse> sources, Predicate<QuestionCategoryResponse> predicate) {
         return sources.stream()
                 .filter(predicate)
                 .toList();
@@ -233,20 +255,34 @@ public class QuestionCategBiz {
         }
     }
 
-    private void checkBeforeSaveOrUpd(QuestionCategoryRequest questionCategory) {
-        String questionCategId = questionCategory.getQuestionCategId();
+    private QuestionCategoryEntity convertRequest2Entity(QuestionCategoryRequest request) {
+        if (BeanUtil.isEmpty(request)) {
+            throw new BizException(CaseESCEnum.PARAMS_NON_NULL);
+        }
+
+        QuestionCategoryEntity result = QuestionCategoryEntity.builder()
+                .appId(baseBiz.getAppId())
+                .questionCategPid(request.getQuestionCategPid())
+                .questionCategId(request.getQuestionCategId())
+                .questionCategName(request.getQuestionCategName())
+                .questionCategGroup(request.getQuestionCategGroup())
+                .sequence(request.getSequence())
+                .build();
+
+        String questionCategId = result.getQuestionCategId();
         if (StrUtil.isBlank(questionCategId)) {
-            questionCategory.setQuestionCategId(baseBiz.getIdStr());
-            if (StrUtil.isBlank(questionCategory.getQuestionCategPid())) {
-                questionCategory.setQuestionCategPid(baseBiz.getQuestionInstancePid());
+            result.setQuestionCategId(baseBiz.getIdStr());
+            if (StrUtil.isBlank(result.getQuestionCategPid())) {
+                result.setQuestionCategPid(baseBiz.getQuestionInstancePid());
             }
         } else {
-            QuestionCategoryEntity questionCategoryEntity = getById(questionCategId);
-            if (BeanUtil.isEmpty(questionCategoryEntity)) {
-                throw new BizException("数据不存在");
+            QuestionCategoryEntity oriEntity = getById(questionCategId);
+            if (BeanUtil.isEmpty(oriEntity)) {
+                throw new BizException(CaseESCEnum.DATA_NULL);
             }
-            questionCategory.setId(questionCategoryEntity.getId());
+            result.setId(oriEntity.getId());
         }
+        return result;
     }
 
     private void getQcrpList(String id, Map<String, QuestionCategoryResponse> idCollect, ArrayList<QuestionCategoryResponse> result) {
@@ -290,5 +326,4 @@ public class QuestionCategBiz {
         Collections.reverse(result);
         return result;
     }
-
 }

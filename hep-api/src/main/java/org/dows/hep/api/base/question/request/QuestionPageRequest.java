@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @Schema(name = "QuestionPageRequest 对象", title = "问题分页Request")
@@ -21,7 +23,13 @@ public class QuestionPageRequest {
     private String keyword;
 
     @Schema(title = "题型")
-    private String questionType;
+    private List<String> questionType;
+
+    @Schema(title = "一级类别ID集合")
+    private List<String> l1CategIdList;
+
+    @Schema(title = "二级类别ID集合")
+    private List<String> l2CategIdList;
 
 
 }

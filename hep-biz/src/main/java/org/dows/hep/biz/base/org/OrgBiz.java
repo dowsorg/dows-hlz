@@ -707,6 +707,7 @@ public class OrgBiz {
         LambdaQueryWrapper<CaseOrgEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(StringUtils.isNotEmpty(request.getOrgId()), CaseOrgEntity::getOrgId, request.getOrgId())
                 .like(StringUtils.isNotEmpty(request.getOrgName()), CaseOrgEntity::getOrgName, request.getOrgName())
+                .eq(StringUtils.isNotEmpty(request.getCaseInstanceId()), CaseOrgEntity::getCaseInstanceId, request.getCaseInstanceId())
                 .orderByDesc(CaseOrgEntity::getDt);
         Page<CaseOrgEntity> page = new Page<>(request.getPageNo(), request.getPageSize());
         IPage<CaseOrgEntity> orgList = caseOrgService.page(page, queryWrapper);

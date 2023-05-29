@@ -15,6 +15,8 @@ import org.dows.hep.api.base.intervene.vo.FoodCategExtendVO;
 @NoArgsConstructor
 @Schema(name = "SaveInterveneCateg 对象", title = "类别信息")
 public class SaveInterveneCategRequest{
+    @Schema(title = "应用ID")
+    private String appId;
     @Schema(title = "数据库id，新增时为空")
     private Long id;
 
@@ -27,7 +29,7 @@ public class SaveInterveneCategRequest{
     @Schema(title = "父类别分布式id")
     private String categPid;
 
-    @Schema(title = "根类别标识，food.material-食材类别；sport.item-运动项目类别...")
+    @Schema(title = "根类别标识，food.material-食材类别；sport.item-运动项目类别  treat.item:指标功能点id -自定义治疗项目...")
     private String family;
 
     @Schema(title = "标记 1-膳食主要分类")

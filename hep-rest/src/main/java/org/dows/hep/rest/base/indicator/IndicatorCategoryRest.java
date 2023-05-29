@@ -1,9 +1,13 @@
 package org.dows.hep.rest.base.indicator;
+import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiParam;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.BatchCreateOrUpdateIndicatorCategoryRequest;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorCategoryRequest;
+import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorCategoryRequestRs;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorCategoryRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorCategoryResponse;
 import org.dows.hep.biz.base.indicator.IndicatorCategoryBiz;
@@ -24,6 +28,12 @@ import java.util.List;
 public class IndicatorCategoryRest {
     private final IndicatorCategoryBiz indicatorCategoryBiz;
 
+    @Operation(summary = "单个创建或修改指标类别")
+    @PostMapping("v1/baseIndicator/indicatorCategory/createRs")
+    public void createRs(@RequestBody @Validated CreateOrUpdateIndicatorCategoryRequestRs createOrUpdateIndicatorCategoryRequestRs) {
+        indicatorCategoryBiz.createRs(createOrUpdateIndicatorCategoryRequestRs);
+    }
+
 
     @Operation(summary = "批量创建或修改指标类别")
     @PostMapping("v1/baseIndicator/indicatorCategory/batchCreateOrUpdateRs")
@@ -38,11 +48,13 @@ public class IndicatorCategoryRest {
         indicatorCategoryBiz.delete(indicatorCategoryId);
     }
 
+
+
     @Operation(summary = "根据pid查询出所有的指标类别")
     @GetMapping("v1/baseIndicator/indicatorCategory/getByPid")
     public List<IndicatorCategoryResponse> getByPid(
         @RequestParam @Validated String appId,
-        @RequestParam(required = false) @Validated String pid
+        @RequestParam(required = false) @Validated @ApiParam(value = "父类别分布式id") String pid
         ) {
         return indicatorCategoryBiz.getByPid(appId, pid);
     }

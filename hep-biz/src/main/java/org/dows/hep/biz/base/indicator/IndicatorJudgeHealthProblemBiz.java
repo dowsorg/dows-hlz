@@ -15,6 +15,7 @@ import org.dows.hep.api.exception.IndicatorJudgeHealthProblemException;
 import org.dows.hep.biz.util.RsPageUtil;
 import org.dows.hep.entity.IndicatorCategoryEntity;
 import org.dows.hep.entity.IndicatorFuncEntity;
+import org.dows.hep.entity.IndicatorJudgeHealthGuidanceEntity;
 import org.dows.hep.entity.IndicatorJudgeHealthProblemEntity;
 import org.dows.hep.service.IndicatorCategoryService;
 import org.dows.hep.service.IndicatorFuncService;
@@ -68,7 +69,6 @@ public class IndicatorJudgeHealthProblemBiz{
         if (Objects.isNull(indicatorJudgeHealthProblemEntityList) || indicatorJudgeHealthProblemEntityList.isEmpty()) {
             return Collections.emptyList();
         }
-        String appId = indicatorJudgeHealthProblemEntityList.get(0).getAppId();
         Set<String> indicatorCategoryIdSetSecond = new HashSet<>();
         indicatorJudgeHealthProblemEntityList.forEach(
             indicatorJudgeHealthProblemEntity -> {
@@ -97,14 +97,19 @@ public class IndicatorJudgeHealthProblemBiz{
         return indicatorJudgeHealthProblemEntityList
             .stream()
             .map(indicatorJudgeHealthProblemEntity -> {
+                List<IndicatorCategoryResponse> indicatorCategoryResponseList = new ArrayList<>();
                 String indicatorCategoryIdSecond = indicatorJudgeHealthProblemEntity.getIndicatorCategoryId();
                 IndicatorCategoryEntity indicatorCategoryEntitySecond = kIndicatorCategoryIdSecondVIndicatorCategoryMap.get(indicatorCategoryIdSecond);
-                String indicatorCategoryIdFirst = indicatorCategoryEntitySecond.getPid();
-                IndicatorCategoryEntity indicatorCategoryEntityFirst= kIndicatorCategoryIdFirstVIndicatorCategoryMap.get(indicatorCategoryIdFirst);
-                List<IndicatorCategoryEntity> indicatorCategoryEntityList = new ArrayList<>();
-                indicatorCategoryEntityList.add(indicatorCategoryEntityFirst);
-                indicatorCategoryEntityList.add(indicatorCategoryEntitySecond);
-                List<IndicatorCategoryResponse> indicatorCategoryResponseList = indicatorCategoryEntityList.stream().map(IndicatorCategoryBiz::indicatorCategoryEntity2Response).collect(Collectors.toList());
+                if (Objects.nonNull(indicatorCategoryEntitySecond)) {
+                    List<IndicatorCategoryEntity> indicatorCategoryEntityList = new ArrayList<>();
+                    String indicatorCategoryIdFirst = indicatorCategoryEntitySecond.getPid();
+                    IndicatorCategoryEntity indicatorCategoryEntityFirst= kIndicatorCategoryIdFirstVIndicatorCategoryMap.get(indicatorCategoryIdFirst);
+                    if (Objects.nonNull(indicatorCategoryEntityFirst)) {
+                        indicatorCategoryEntityList.add(indicatorCategoryEntityFirst);
+                    }
+                    indicatorCategoryEntityList.add(indicatorCategoryEntitySecond);
+                    indicatorCategoryResponseList = indicatorCategoryEntityList.stream().map(IndicatorCategoryBiz::indicatorCategoryEntity2Response).collect(Collectors.toList());
+                }
                 return indicatorJudgeHealthProblem2ResponseRs(
                     indicatorJudgeHealthProblemEntity,
                     indicatorCategoryResponseList
@@ -151,6 +156,7 @@ public class IndicatorJudgeHealthProblemBiz{
                 .indicatorCategoryId(indicatorCategoryId)
                 .point(point)
                 .resultExplain(createOrUpdateIndicatorJudgeHealthProblemRequestRs.getResultExplain())
+                .status(createOrUpdateIndicatorJudgeHealthProblemRequestRs.getStatus())
                 .build();
         } else {
             indicatorJudgeHealthProblemEntity = indicatorJudgeHealthProblemService.lambdaQuery()
@@ -228,15 +234,18 @@ public class IndicatorJudgeHealthProblemBiz{
         return indicatorJudgeHealthProblemResponseRsList.get(0);
     }
 
-    public Page<IndicatorJudgeHealthProblemResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String paramIndicatorCategoryId, Integer status) {
+    public Page<IndicatorJudgeHealthProblemResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String indicatorCategoryIdList, Integer status) {
         Page<IndicatorJudgeHealthProblemEntity> page = RsPageUtil.getRsPage(pageNo, pageSize, order, asc);
         LambdaQueryWrapper<IndicatorJudgeHealthProblemEntity> indicatorJudgeHealthProblemEntityLQW = new LambdaQueryWrapper<>();
         indicatorJudgeHealthProblemEntityLQW
             .eq(Objects.nonNull(appId), IndicatorJudgeHealthProblemEntity::getAppId, appId)
             .eq(StringUtils.isNotBlank(indicatorFuncId), IndicatorJudgeHealthProblemEntity::getIndicatorFuncId, indicatorFuncId)
-            .eq(StringUtils.isNotBlank(paramIndicatorCategoryId), IndicatorJudgeHealthProblemEntity::getIndicatorCategoryId, paramIndicatorCategoryId)
             .eq(Objects.nonNull(status), IndicatorJudgeHealthProblemEntity::getStatus, status)
-            .like(StringUtils.isNotBlank(name), IndicatorJudgeHealthProblemEntity::getName, StringUtils.isNotBlank(name) ? null : name.trim());
+            .like(StringUtils.isNotBlank(name), IndicatorJudgeHealthProblemEntity::getName, StringUtils.isBlank(name) ? null : name.trim());
+        if (StringUtils.isNotBlank(indicatorCategoryIdList)) {
+            List<String> paramIndicatorCategoryIdList = Arrays.stream(indicatorCategoryIdList.split(",")).toList();
+            indicatorJudgeHealthProblemEntityLQW.in(IndicatorJudgeHealthProblemEntity::getIndicatorCategoryId, paramIndicatorCategoryIdList);
+        }
         Page<IndicatorJudgeHealthProblemEntity> indicatorJudgeHealthProblemEntityPage = indicatorJudgeHealthProblemService.page(page, indicatorJudgeHealthProblemEntityLQW);
         Page<IndicatorJudgeHealthProblemResponseRs> indicatorJudgeHealthProblemResponseRsPage = RsPageUtil.convertFromAnother(indicatorJudgeHealthProblemEntityPage);
         List<IndicatorJudgeHealthProblemEntity> indicatorJudgeHealthProblemEntityList = indicatorJudgeHealthProblemEntityPage.getRecords();

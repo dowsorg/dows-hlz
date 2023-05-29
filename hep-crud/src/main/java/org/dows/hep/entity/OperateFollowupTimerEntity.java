@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 学生随访操作计时器(OperateFollowupTimer)实体类
@@ -39,6 +39,12 @@ public class OperateFollowupTimerEntity implements CrudEntity {
     @Schema(title = "随访操作计时器id")
     private String operateFollowupTimerId;
 
+    @Schema(title = "应用ID")
+    private String appId;
+
+    @Schema(title = "机构功能ID")
+    private String caseOrgFunctionId;
+
     @Schema(title = "实验实例id")
     private String experimentInstanceId;
 
@@ -50,9 +56,6 @@ public class OperateFollowupTimerEntity implements CrudEntity {
 
     @Schema(title = "案例机构ID")
     private String caseOrgId;
-
-    @Schema(title = "机构功能ID")
-    private String caseOrgFunctionId;
 
     @Schema(title = "案例账号ID")
     private String caseAccountId;
@@ -76,7 +79,7 @@ public class OperateFollowupTimerEntity implements CrudEntity {
     private String indicatorFollowupName;
 
     @Schema(title = "游戏内起始天数")
-    private Integer startDay;
+    private Integer setAtDay;
 
     @Schema(title = "随访间隔天数")
     private Integer dueDays;
@@ -87,17 +90,28 @@ public class OperateFollowupTimerEntity implements CrudEntity {
     @Schema(title = "上次随访时间")
     private Integer doneDay;
 
+    @Schema(title = "最近保存时间")
+    private Date setAtTime;
+
+    @Schema(title = "最近随访时间")
+    private Date followupTime;
+
+    @Schema(title = "本期随访次数")
+    private Integer followupTimes;
+
+
+
     @JsonIgnore
     @TableLogic
     @TableField(fill = FieldFill.INSERT)
     @Schema(title = "逻辑删除")
     private Boolean deleted;
 
-    @Schema(title = "最近保存时间")
-    private Date setTime;
+    @TableField(fill = FieldFill.INSERT)
+    @Schema(title = "时间戳")
+    private Date dt;
 
-    @Schema(title = "最近随访时间")
-    private Date followupTime;
+
 
 }
 

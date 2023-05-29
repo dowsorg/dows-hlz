@@ -85,7 +85,7 @@ public class QuestionSectionEntity implements CrudEntity {
     private String ver;
 
     @Schema(title = "状态")
-    private Boolean enabled;
+    private Integer enabled;
 
     @Schema(title = "业务code")
     private String bizCode;

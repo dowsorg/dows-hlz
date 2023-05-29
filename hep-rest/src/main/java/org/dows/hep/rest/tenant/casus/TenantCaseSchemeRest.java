@@ -3,6 +3,7 @@ package org.dows.hep.rest.tenant.casus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.question.enums.QuestionSourceEnum;
 import org.dows.hep.api.tenant.casus.CaseSchemeSourceEnum;
 import org.dows.hep.api.tenant.casus.request.CaseSchemeRequest;
 import org.dows.hep.api.tenant.casus.request.CaseSchemeSearchRequest;
@@ -30,7 +31,7 @@ public class TenantCaseSchemeRest {
     private final TenantCaseSchemeBiz tenantCaseSchemeBiz;
 
     /**
-     * 新增方案设计
+     * 新增和更新方案设计
      *
      * @param
      * @return
@@ -38,20 +39,7 @@ public class TenantCaseSchemeRest {
     @Operation(summary = "新增和更新")
     @PostMapping("v1/tenantCasus/caseScheme/saveOrUpdCaseScheme")
     public String saveOrUpdCaseScheme(@RequestBody @Validated CaseSchemeRequest caseScheme) {
-        caseScheme.setSource(CaseSchemeSourceEnum.TENANT.name());
-        return tenantCaseSchemeBiz.saveOrUpdCaseScheme(caseScheme);
-    }
-
-    /**
-     * 获取方案设计类别以及方案设计名称
-     * @param
-     * @return
-     */
-    @Operation(summary = "获取数据库案例方案")
-    @GetMapping("v1/tenantCasus/caseScheme/listSchemeGroupOfDS")
-    public Map<String, List<CaseSchemeResponse>> listSchemeGroupOfDS(@RequestBody @Validated CaseSchemeSearchRequest caseSchemeSearchRequest) {
-        caseSchemeSearchRequest.setSource(CaseSchemeSourceEnum.ADMIN.name());
-        return tenantCaseSchemeBiz.listSchemeGroupOfDS(caseSchemeSearchRequest);
+        return tenantCaseSchemeBiz.saveOrUpdCaseScheme(caseScheme, CaseSchemeSourceEnum.TENANT, QuestionSourceEnum.TENANT);
     }
 
     /**
@@ -60,17 +48,29 @@ public class TenantCaseSchemeRest {
      * @return
      */
     @Operation(summary = "获取数据库案例方案")
+    @PostMapping("v1/tenantCasus/caseScheme/listSchemeGroupOfDS")
+    public Map<String, List<CaseSchemeResponse>> listSchemeGroupOfDS(@RequestBody @Validated CaseSchemeSearchRequest caseSchemeSearchRequest) {
+        caseSchemeSearchRequest.setSource(CaseSchemeSourceEnum.ADMIN.name());
+        return tenantCaseSchemeBiz.listSchemeGroupOfDS(caseSchemeSearchRequest);
+    }
+
+    /**
+     * 获取ID获取案例方案详情
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取ID获取案例方案详情")
     @GetMapping("v1/tenantCasus/caseScheme/getCaseScheme")
     public CaseSchemeResponse getCaseScheme(@Validated String caseSchemeId) {
         return tenantCaseSchemeBiz.getCaseScheme(caseSchemeId);
     }
 
     /**
-    * 获取案例方案
+    * 根据案例ID获取案例方案
     * @param
     * @return
     */
-    @Operation(summary = "获取案例方案")
+    @Operation(summary = "根据案例ID获取案例方案")
     @GetMapping("v1/tenantCasus/caseScheme/getCaseSchemeByInstanceId")
     public CaseSchemeResponse getCaseSchemeByInstanceId(@Validated String caseInstanceId) {
         return tenantCaseSchemeBiz.getCaseSchemeByInstanceId(caseInstanceId);

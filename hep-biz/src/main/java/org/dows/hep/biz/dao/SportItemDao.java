@@ -49,6 +49,11 @@ public class SportItemDao extends BaseSubDao<SportItemService,SportItemEntity,Sp
     }
 
     @Override
+    protected SFunction<SportItemEntity,String> getColCateg(){
+        return SportItemEntity::getInterveneCategId;
+    }
+
+    @Override
     protected SFunction<SportItemIndicatorEntity, String> getColLeadId() {
         return SportItemIndicatorEntity::getSportItemId;
     }
@@ -82,13 +87,12 @@ public class SportItemDao extends BaseSubDao<SportItemService,SportItemEntity,Sp
 
     @Override
     public IPage<SportItemEntity> pageByCondition(FindSportRequest req, SFunction<SportItemEntity,?>... cols) {
-        final String categId=req.getCategIdLv1();
-        final String keyWords=req.getKeywords();
+
         Page<SportItemEntity> page=Page.of(req.getPageNo(),req.getPageSize());
         page.addOrder(OrderItem.asc("id"));
         return service.page(page,Wrappers.<SportItemEntity>lambdaQuery()
-                .likeRight(ShareUtil.XString.hasLength(categId), SportItemEntity::getCategIdPath,categId)
-                .like(ShareUtil.XString.hasLength(keyWords), SportItemEntity::getSportItemName,keyWords)
+                .in(ShareUtil.XCollection.notEmpty(req.getCategIdLv1()), SportItemEntity::getInterveneCategId, req.getCategIdLv1())
+                .like(ShareUtil.XString.hasLength(req.getKeywords()), SportItemEntity::getSportItemName,req.getKeywords())
                 .in(ShareUtil.XCollection.notEmpty(req.getIncIds()), getColId(), req.getIncIds())
                 .notIn(ShareUtil.XCollection.notEmpty(req.getExcIds()), getColId(), req.getExcIds())
                 .eq(ShareUtil.XObject.notEmpty(req.getState()), getColState(), req.getState())

@@ -14,6 +14,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "SetEventState 对象", title = "启用、禁用菜谱")
 public class SetEventStateRequest{
+    @Schema(title = "应用ID")
+    private String appId;
     @Schema(title = "事件id")
     private String eventId;
 

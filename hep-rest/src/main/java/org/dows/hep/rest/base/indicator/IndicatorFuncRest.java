@@ -43,6 +43,13 @@ public class IndicatorFuncRest {
         return indicatorFuncBiz.getByPidAndAppId(appId, pid);
     }
 
+    @Operation(summary = "删除指标功能")
+    @DeleteMapping("v1/baseIndicator/indicatorFunc/delete")
+    public void delete(@Validated String indicatorFuncId) {
+        indicatorFuncBiz.delete(indicatorFuncId);
+    }
+
+//
 //    @Operation(summary = "删除指标功能")
 //    @DeleteMapping("v1/baseIndicator/indicatorFunc/deleteIndicatorFunc")
 //    public void deleteIndicatorFunc(@Validated String indicatorFunc ) {

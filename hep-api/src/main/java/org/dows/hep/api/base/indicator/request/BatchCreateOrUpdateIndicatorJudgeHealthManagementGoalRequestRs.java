@@ -1,5 +1,6 @@
 package org.dows.hep.api.base.indicator.request;
 
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,9 +19,13 @@ import java.util.List;
 @Builder
 public class BatchCreateOrUpdateIndicatorJudgeHealthManagementGoalRequestRs implements Serializable {
   @Schema(title = "应用ID")
+  @ApiModelProperty(required = true)
   private String appId;
+
   @Schema(title = "指标功能ID")
+  @ApiModelProperty(required = true)
   private String indicatorFuncId;
+
   @Schema(title = "批量创建或修改健管目标DTO")
   private List<BatchCreateOrUpdateHealthManagementGoalDTO> batchCreateOrUpdateHealthManagementGoalDTOList;
 }

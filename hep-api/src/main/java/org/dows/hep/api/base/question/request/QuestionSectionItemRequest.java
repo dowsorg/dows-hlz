@@ -1,7 +1,5 @@
 package org.dows.hep.api.base.question.request;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
@@ -19,11 +17,11 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @Schema(name = "QuestionSectionItemRequest 对象", title = "问题集 item Request")
 public class QuestionSectionItemRequest {
-    @Schema(title = "应用ID")
-    private String appId;
-
     @Schema(title = "itemID")
     private String questionSectionItemId;
+
+    @Schema(title = "问题集ID")
+    private String questionSectionId;
 
     @Schema(title = "状态")
     private Integer enabled;
@@ -35,30 +33,6 @@ public class QuestionSectionItemRequest {
     private Integer sequence;
 
     @Schema(title = "问题")
-    private QuestionRequest questionRequest;
-
-
-
-    // JsonIgnore
-    @Schema(title = "问题集ID")
-    @JsonIgnore
-    private String questionSectionId;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Schema(title = "数据库ID")
-    @JsonIgnore
-    private Long id;
-
-    @Schema(title = "问题ID")
-    @JsonIgnore
-    private String questionInstanceId;
-
-    @Schema(title = "创建者账号Id")
-    @JsonIgnore
-    private String accountId;
-
-    @Schema(title = "创建者姓名")
-    @JsonIgnore
-    private String accountName;
+    private QuestionRequest question;
 
 }

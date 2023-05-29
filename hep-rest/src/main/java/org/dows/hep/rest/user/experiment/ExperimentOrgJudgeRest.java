@@ -3,15 +3,18 @@ package org.dows.hep.rest.user.experiment;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeRiskFactorRequest;
+import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthGuidanceResponse;
+import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthProblemResponse;
+import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponse;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.biz.user.experiment.ExperimentOrgJudgeBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
 * @description project descr:实验:机构操作-判断指标
@@ -37,6 +40,43 @@ public class ExperimentOrgJudgeRest {
     }
 
     /**
+     *
+     * 获取二级类无报告的判断指标信息
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取二级类无报告的判断指标信息")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeRiskFactor")
+    public Map<String,List<IndicatorJudgeRiskFactorResponse>> getIndicatorJudgeRiskFactor(@RequestParam @Validated String indicatorFuncId) {
+        return experimentOrgJudgeBiz.getIndicatorJudgeRiskFactor(indicatorFuncId);
+    }
+
+    /**
+     *
+     * 获取二级类有报告的判断指标信息
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取二级类有报告的判断指标信息")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeHealthGuidance")
+    public Map<String,List<IndicatorJudgeHealthGuidanceResponse>> getIndicatorJudgeHealthGuidance(@RequestParam @Validated String indicatorFuncId) {
+        return experimentOrgJudgeBiz.getIndicatorJudgeHealthGuidance(indicatorFuncId);
+    }
+
+    /**
+     *
+     * 三级类别/四级类别：根据指标分类ID获取所有符合条件的数据
+     * @param
+     * @return
+     */
+    @Operation(summary = "三级类别/四级类别：根据指标分类ID获取所有符合条件的数据")
+    @GetMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeHealthProblemByCategoryId/{indicatoryCategoryId}")
+    public List<IndicatorJudgeHealthProblemResponse> getIndicatorJudgeHealthProblemByCategoryId(@PathVariable String indicatoryCategoryId) {
+        return experimentOrgJudgeBiz.getIndicatorJudgeHealthProblemByCategoryId(indicatoryCategoryId);
+    }
+
+    /**
     * 疾病问题：获取检查类别+项目
     * @param
     * @return
@@ -56,6 +96,31 @@ public class ExperimentOrgJudgeRest {
     @PostMapping("v1/userExperiment/experimentOrgJudge/listOrgJudgedItems")
     public List<OrgJudgedItemsResponse> listOrgJudgedItems(@RequestBody @Validated FindOrgJudgedItemsRequest findOrgJudgedItems ) {
         return experimentOrgJudgeBiz.listOrgJudgedItems(findOrgJudgedItems);
+    }
+
+    /**
+     * 是否购买保险
+     * @param
+     * @return
+     */
+    @Operation(summary = "是否购买保险")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/isPurchaseInsure")
+    public Boolean isPurchaseInsure(@RequestParam @Validated String isPurchase,
+                                    @RequestParam @Validated String experimentPersonId)
+    {
+        return experimentOrgJudgeBiz.isPurchaseInsure(isPurchase,experimentPersonId);
+    }
+
+    /**
+     * 判断用户操作正确与否
+     * @param
+     * @return
+     */
+    @Operation(summary = "isJudgeAction")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/isJudgeAction")
+    public Boolean isJudgeAction(@RequestBody @Validated List<CreateIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList)
+    {
+        return experimentOrgJudgeBiz.isJudgeAction(judgeRiskFactorRequestList);
     }
 
     /**

@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * @author : wuzl
@@ -21,7 +23,7 @@ import java.util.function.Function;
 public abstract class BaseDao<S extends MybatisCrudService<E>,E extends CrudEntity> {
 
     protected BaseDao(String notExistsMessage){
-        this.notExistsMessage=ShareUtil.XString.defaultIfEmpty(notExistsMessage,this.notExistsMessage);
+       this.notExistsMessage=ShareUtil.XString.defaultIfEmpty(notExistsMessage,this.notExistsMessage);
     }
 
     @Autowired
@@ -33,6 +35,8 @@ public abstract class BaseDao<S extends MybatisCrudService<E>,E extends CrudEnti
 
     protected String notExistsMessage="数据不存在或已删除，请刷新";
     protected String failedSaveMessage="保存失败";
+
+    protected final boolean defaultUseLogicId=false;
 
     //region virtual
 
@@ -60,6 +64,24 @@ public abstract class BaseDao<S extends MybatisCrudService<E>,E extends CrudEnti
      * @return
      */
     protected abstract SFunction<Integer,?> setColState(E item);
+
+    /**
+     * get 序号字段
+     * @return
+     */
+    protected SFunction<E,Integer> getColSeq(){
+        return null;
+    }
+
+    /**
+     * set 序号字段
+     * @param item
+     * @return
+     */
+    protected SFunction<Integer,?> setColSeq(E item){
+        return null;
+    }
+
 
 
 
@@ -126,7 +148,7 @@ public abstract class BaseDao<S extends MybatisCrudService<E>,E extends CrudEnti
      * @return
      */
     public boolean saveOrUpdate(E item){
-        return saveOrUpdate(item,false);
+        return saveOrUpdate(item,defaultUseLogicId);
     }
 
     /**
@@ -159,7 +181,7 @@ public abstract class BaseDao<S extends MybatisCrudService<E>,E extends CrudEnti
      * @return
      */
     public boolean saveOrUpdateBatch(Collection<E> items){
-        return saveOrUpdateBatch(items,false);
+        return saveOrUpdateBatch(items,defaultUseLogicId,false);
     }
 
     /**
@@ -169,18 +191,23 @@ public abstract class BaseDao<S extends MybatisCrudService<E>,E extends CrudEnti
      * @return
      */
 
-    public boolean saveOrUpdateBatch(Collection<E> items,boolean useLogicId){
+    public boolean saveOrUpdateBatch(Collection<E> items,boolean useLogicId,boolean dftIfEmpty){
         if(ShareUtil.XObject.isEmpty(items)){
-            return false;
+            return dftIfEmpty;
         }
-        items.forEach(i->{
-            if(ShareUtil.XObject.isEmpty(getColId().apply(i))){
-                setColId(i).apply(idGenerator.nextIdStr());
+
+        int seq=0;
+        for(E item:items){
+            if(ShareUtil.XObject.isEmpty(getColId().apply(item))){
+                setColId(item).apply(idGenerator.nextIdStr());
             }
-            if(null!=setColState(i)){
-                setColState(i).apply(EnumStatus.of(getColState().apply(i)).getCode());
+            if(null!=setColSeq(item)) {
+                setColSeq(item).apply(++seq);
             }
-        });
+            if(null!=setColState(item)){
+                setColState(item).apply(EnumStatus.of(getColState().apply(item)).getCode());
+            }
+        }
         if(!useLogicId){
             return service.saveOrUpdateBatch(items);
         }
@@ -281,18 +308,59 @@ public abstract class BaseDao<S extends MybatisCrudService<E>,E extends CrudEnti
         return service.lambdaQuery()
                 .eq(oneFlag, getColId(),ids.iterator().next())
                 .in(!oneFlag, getColId(),ids)
+                .orderByAsc(getColId())
                 .select(cols)
                 .list();
     }
 
     /**
      * 按多逻辑主键获取map
-     * @param ids
-     * @param cols
+     * @param ids 主键列表
+     * @param cols 选择列，主键列
      * @return
      */
     public Map<String,E> getMapByIds(Collection<String> ids, SFunction<E, ?>... cols) {
         return ShareUtil.XCollection.toMap(getByIds(ids, cols), getColId(), Function.identity());
+    }
+
+    /**
+     * 按多逻辑主键获取map
+     * @param ids
+     * @param mapFactory
+     * @param keyCol
+     * @param preferNew
+     * @param cols
+     * @return
+     * @param <K>
+     */
+    public <K> Map<K,E> getMapByIds(Collection<String> ids,Supplier<Map<K,E>> mapFactory, SFunction<E,K> keyCol,boolean preferNew, SFunction<E, ?>... cols) {
+        return ShareUtil.XCollection.toMap(getByIds(ids, cols),mapFactory,  keyCol, Function.identity(),preferNew);
+    }
+
+
+
+    /**
+     * 按多逻辑主键获取分组
+     * @param ids 主键列表
+     * @param groupByCol 分组列
+     * @param selectCols 选择列，需包含分组列
+     * @return
+     * @param <K>
+     */
+    public <K> Map<K,List<E>> getGroupByIds(Collection<String> ids, SFunction<E, K> groupByCol, SFunction<E, ?>... selectCols){
+        return ShareUtil.XCollection.toGroup(getByIds(ids, selectCols),groupByCol);
+    }
+    /**
+     * 按多逻辑主键获取分组
+     * @param ids
+     * @param mapFactory
+     * @param groupByCol
+     * @param selectCols
+     * @return
+     * @param <K>
+     */
+    public <K> Map<K,List<E>> getGroupByIds(Collection<String> ids, Supplier<Map<K,List<E>>> mapFactory, SFunction<E, K> groupByCol, SFunction<E, ?>... selectCols){
+        return ShareUtil.XCollection.toGroup(getByIds(ids, selectCols),mapFactory,Function.identity(), groupByCol, Collectors.toList());
     }
 
     //endregion

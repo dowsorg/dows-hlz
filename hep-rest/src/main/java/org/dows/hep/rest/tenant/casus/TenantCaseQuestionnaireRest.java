@@ -3,6 +3,9 @@ package org.dows.hep.rest.tenant.casus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.question.response.QuestionResponse;
+import org.dows.hep.api.base.question.response.QuestionSectionResponse;
+import org.dows.hep.api.tenant.casus.request.CaseQuestionSearchRequest;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireDelItemRequest;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireRequest;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireSearchRequest;
@@ -11,7 +14,8 @@ import org.dows.hep.biz.tenant.casus.TenantCaseQuestionnaireBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 /**
 * @description project descr:案例:案例问卷
@@ -37,7 +41,7 @@ public class TenantCaseQuestionnaireRest {
     }
 
     /**
-    * 分页案例问卷
+    * 列出案例问卷
     * @param
     * @return
     */
@@ -48,25 +52,47 @@ public class TenantCaseQuestionnaireRest {
     }
 
     /**
+     * 列出题目类型及对应题目数量
+     * @param
+     * @return
+     */
+    @Operation(summary = "列出题目类型及对应题目数量")
+    @PostMapping("v1/tenantCasus/caseQuestionnaire/getQuestionTypeWithCount")
+    public Map<String, Long> questionTypeWithCount(@RequestBody @Validated CaseQuestionSearchRequest request ) {
+        return tenantCaseQuestionnaireBiz.collectQuestionCountOfUsableQuestion(request);
+    }
+
+    /**
+     * 列出可以使用的题目
+     * @param
+     * @return
+     */
+    @Operation(summary = "列出可以使用的题目")
+    @PostMapping("v1/tenantCasus/caseQuestionnaire/listUsableQuestion")
+    public List<QuestionResponse> listUsableQuestion(@RequestBody @Validated CaseQuestionSearchRequest request ) {
+        return tenantCaseQuestionnaireBiz.listUsableQuestionFromSource(request);
+    }
+
+    /**
     * 获取案例问卷
     * @param
     * @return
     */
     @Operation(summary = "获取案例问卷")
     @GetMapping("v1/tenantCasus/caseQuestionnaire/getCaseQuestionnaire")
-    public void getCaseQuestionnaire(@Validated String caseQuestionnaireId) {
-        tenantCaseQuestionnaireBiz.getCaseQuestionnaire(caseQuestionnaireId);
+    public CaseQuestionnaireResponse getCaseQuestionnaire(@Validated String caseQuestionnaireId) {
+        return tenantCaseQuestionnaireBiz.getCaseQuestionnaire(caseQuestionnaireId);
     }
 
     /**
-     * 获取案例问卷
+     * 预览案例问卷
      * @param
      * @return
      */
     @Operation(summary = "预览案例问卷")
     @GetMapping("v1/tenantCasus/caseQuestionnaire/showCaseQuestionnaire")
-    public void showCaseQuestionnaire(@Validated String caseQuestionnaireId) {
-        tenantCaseQuestionnaireBiz.showCaseQuestionnaire(caseQuestionnaireId);
+    public QuestionSectionResponse showCaseQuestionnaire(@Validated String caseQuestionnaireId) {
+        return tenantCaseQuestionnaireBiz.showCaseQuestionnaire(caseQuestionnaireId);
     }
 
     /**

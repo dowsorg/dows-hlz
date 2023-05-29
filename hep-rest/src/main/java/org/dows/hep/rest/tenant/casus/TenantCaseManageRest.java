@@ -3,12 +3,14 @@ package org.dows.hep.rest.tenant.casus;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.tenant.casus.request.CaseInstanceCopyRequest;
 import org.dows.hep.api.tenant.casus.request.CaseInstancePageRequest;
 import org.dows.hep.api.tenant.casus.request.CaseInstanceRequest;
 import org.dows.hep.api.tenant.casus.response.CaseInstancePageResponse;
 import org.dows.hep.api.tenant.casus.response.CaseInstanceResponse;
+import org.dows.hep.biz.tenant.casus.TenantCaseBaseBiz;
 import org.dows.hep.biz.tenant.casus.TenantCaseManageBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +28,7 @@ import java.util.List;
 @Tag(name = "案例管理", description = "案例管理")
 public class TenantCaseManageRest {
     private final TenantCaseManageBiz tenantCaseManageBiz;
+    private final TenantCaseBaseBiz baseBiz;
 
     /**
     * 创建和更新案例
@@ -34,7 +37,11 @@ public class TenantCaseManageRest {
     */
     @Operation(summary = "创建和更新案例")
     @PostMapping("v1/tenantCasus/caseManage/saveOrUpdCaseInstance")
-    public String saveOrUpdCaseInstance(@RequestBody @Validated CaseInstanceRequest caseInstance ) {
+    public String saveOrUpdCaseInstance(@RequestBody @Validated CaseInstanceRequest caseInstance, HttpServletRequest request) {
+        String accountId = baseBiz.getAccountId(request);
+        String accountName = baseBiz.getAccountName(request);
+        caseInstance.setAccountId(accountId);
+        caseInstance.setAccountName(accountName);
         return tenantCaseManageBiz.saveOrUpdCaseInstance(caseInstance);
     }
 

@@ -1,7 +1,5 @@
 package org.dows.hep.api.base.question.request;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,6 +20,9 @@ public class QuestionOptionWithAnswerRequest {
     @Schema(title = "答案的ID")
     private String questionAnswerId;
 
+    @Schema(title = "问题-分数ID")
+    private String questionScoreId;
+
     @Schema(title = "选项标题")
     private String optionTitle;
 
@@ -31,10 +32,7 @@ public class QuestionOptionWithAnswerRequest {
     @Schema(title = "是否是正确答案[0:错误，1:正确]")
     private Boolean rightAnswer;
 
+    @Schema(title = "选项得分")
+    private float score;
 
-    // JsonIgnore
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @JsonIgnore
-    @Schema(title = "数据库ID")
-    private Long id;
 }

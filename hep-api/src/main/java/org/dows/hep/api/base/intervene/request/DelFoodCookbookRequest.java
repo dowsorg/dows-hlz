@@ -16,6 +16,9 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(name = "DelFoodCookbook 对象", title = "删除菜谱")
 public class DelFoodCookbookRequest{
+
+    @Schema(title = "应用ID")
+    private String appId;
     @Schema(title = "分布式id列表")
     private List<String> ids;
 

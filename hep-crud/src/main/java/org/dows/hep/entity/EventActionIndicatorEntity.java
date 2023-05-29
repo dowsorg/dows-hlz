@@ -39,6 +39,9 @@ public class EventActionIndicatorEntity implements CrudEntity {
     @Schema(title = "分布式id")
     private String eventActionIndicatorId;
 
+    @Schema(title = "应用ID")
+    private String appId;
+
     @Schema(title = "事件id")
     private String eventId;
 

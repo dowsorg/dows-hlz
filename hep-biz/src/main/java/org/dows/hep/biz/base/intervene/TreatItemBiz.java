@@ -1,6 +1,5 @@
 package org.dows.hep.biz.base.intervene;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.intervene.request.*;
@@ -35,6 +34,10 @@ public class TreatItemBiz{
 
     private final TreatItemDao dao;
     private final IndicatorFuncDao indicatorFuncDao;
+
+    protected InterveneCategCache getCategCache(){
+        return InterveneCategCache.Instance;
+    }
     /**
     * @param
     * @return
@@ -46,15 +49,14 @@ public class TreatItemBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Page<TreatItemResponse> pageTreatItem(FindTreatRequest findTreat ) {
-        findTreat.setCategIdLv1(ShareBiz.ensureCategPathSuffix(findTreat.getCategIdLv1()));
-        IPage<TreatItemEntity> page=dao.pageByCondition(findTreat);
-        Page<TreatItemResponse> pageDto= Page.of (page.getCurrent(),page.getSize(),page.getTotal(),page.searchCount());
-        return pageDto.setRecords(ShareUtil.XCollection.map(page.getRecords(),true, i-> CopyWrapper.create(TreatItemResponse::new)
-                .endFrom(i)
-                .setCategIdLv1(InterveneCategCache.Instance.getCategLv1(i.getCategIdPath() ,i.getInterveneCategId()))
-                .setCategNameLv1(InterveneCategCache.Instance.getCategLv1(i.getCategNamePath() ,i.getCategName()))));
+        findTreat.setCategIdLv1(getCategCache().getLeafIds(findTreat.getCategIdLv1()));
+        return ShareBiz.buildPage(dao.pageByCondition(findTreat), i -> CopyWrapper.create(TreatItemResponse::new)
+                .endFrom(refreshCateg(i))
+                .setCategIdLv1(getCategCache().getCategLv1(i.getCategIdPath(), i.getInterveneCategId()))
+                .setCategNameLv1(getCategCache().getCategLv1(i.getCategNamePath(), i.getCategName())));
 
     }
+
     /**
     * @param
     * @return
@@ -76,11 +78,11 @@ public class TreatItemBiz{
                 TreatItemIndicatorEntity::getExpressionDescr,
                 TreatItemIndicatorEntity::getSeq);
 
-        List<InterveneIndicatorVO> voIndicators=ShareUtil.XCollection.map(indicators,true,
+        List<InterveneIndicatorVO> voIndicators=ShareUtil.XCollection.map(indicators,
                 i->CopyWrapper.create(InterveneIndicatorVO::new)
                         .endFrom(i,v->v.setRefId(i.getTreatItemIndicatorId())));
         return CopyWrapper.create(TreatItemInfoResponse::new)
-                .endFrom(row)
+                .endFrom(refreshCateg(row))
                 .setIndicators(voIndicators);
     }
     /**
@@ -99,7 +101,7 @@ public class TreatItemBiz{
                 .throwMessage("干预项目不存在");
         CategVO categVO=null;
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(saveTreatItem.getInterveneCategId())
-                        ||null==(categVO= InterveneCategCache.Instance.getById(saveTreatItem.getInterveneCategId())))
+                        ||null==(categVO= getCategCache().getById(saveTreatItem.getInterveneCategId())))
                 .throwMessage("类别不存在");
         final IndicatorFuncEntity funcRow= AssertUtil.getNotNull(indicatorFuncDao.getById(saveTreatItem.getIndicatorFuncId(), IndicatorFuncEntity::getPid))
                 .orElseThrow("功能点不存在");
@@ -117,7 +119,7 @@ public class TreatItemBiz{
                 .setCategNamePath(categVO.getCategNamePath())
                 .setIndicatorCategoryId(funcRow.getPid());
 
-        List<TreatItemIndicatorEntity> subRows=ShareUtil.XCollection.map(saveTreatItem.getIndicators(),true,
+        List<TreatItemIndicatorEntity> subRows=ShareUtil.XCollection.map(saveTreatItem.getIndicators(),
                 i->CopyWrapper.create(TreatItemIndicatorEntity::new).endFrom(i,v->v.setTreatItemIndicatorId(i.getRefId())));
         return dao.tranSave(row,subRows,false);
     }
@@ -151,5 +153,24 @@ public class TreatItemBiz{
      */
     public Boolean setTreatItemState(SetTreatItemStateRequest setTreatItemStateRequest ){
         return dao.tranSetState(setTreatItemStateRequest.getTreatItemId(),setTreatItemStateRequest.getState());
+    }
+
+    /**
+     * 获取缓存最新分类信息
+     * @param src
+     * @return
+     */
+    protected TreatItemEntity refreshCateg(TreatItemEntity src) {
+        if (ShareUtil.XObject.isEmpty(src.getInterveneCategId())) {
+            return src;
+        }
+        CategVO cacheItem = getCategCache().getById(src.getInterveneCategId());
+        if (null == cacheItem) {
+            return src;
+        }
+        return src.setCategName(cacheItem.getCategName())
+                .setCategIdPath(cacheItem.getCategIdPath())
+                .setCategNamePath(cacheItem.getCategNamePath());
+
     }
 }

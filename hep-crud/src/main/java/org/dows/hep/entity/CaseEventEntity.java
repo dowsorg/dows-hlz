@@ -39,14 +39,17 @@ public class CaseEventEntity implements CrudEntity {
     @Schema(title = "分布式id")
     private String caseEventId;
 
+    @Schema(title = "应用ID")
+    private String appId;
+
     @Schema(title = "案例ID")
     private String caseInstanceId;
 
     @Schema(title = "人物id")
-    private String caseAccountId;
+    private String personId;
 
     @Schema(title = "人物名称")
-    private String caseAccountName;
+    private String personName;
 
     @Schema(title = "数据库事件id")
     private String eventId;
@@ -72,11 +75,17 @@ public class CaseEventEntity implements CrudEntity {
     @Schema(title = "事件说明")
     private String descr;
 
+    @Schema(title = "事件提示")
+    private String tips;
+
     @Schema(title = "创建者账号")
     private String createAccountId;
 
     @Schema(title = "创建者名称")
     private String createAccountName;
+
+    @Schema(title = "触发类型 0-条件触发 1-第一期 2-第二期...5-第5期")
+    private Integer triggerType;
 
     @Schema(title = "触发期数")
     private String triggerPeriod;
@@ -87,14 +96,13 @@ public class CaseEventEntity implements CrudEntity {
     @Schema(title = "版本号")
     private String ver;
 
-    @Schema(title = "案例标示sssss")
+    @Schema(title = "案例标识")
     private String caseIdentifier;
 
     @Schema(title = "状态 0-启用 1-停用")
     private Integer state;
 
-    @Schema(title = "触发类型 1-事件触发 2-条件触发")
-    private Boolean triggerType;
+
 
     @JsonIgnore
     @TableLogic

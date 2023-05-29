@@ -7,6 +7,7 @@ import org.dows.hep.api.base.intervene.request.DelInterveneCategRequest;
 import org.dows.hep.api.base.intervene.request.FindInterveneCategRequest;
 import org.dows.hep.api.base.intervene.request.SaveInterveneCategRequest;
 import org.dows.hep.biz.cache.InterveneCategCache;
+import org.dows.hep.biz.dao.EnumCheckCategPolicy;
 import org.dows.hep.biz.dao.IndicatorFuncDao;
 import org.dows.hep.biz.dao.InterveneCategDao;
 import org.dows.hep.api.enums.EnumCategFamily;
@@ -40,6 +41,10 @@ public class InterveneCategBiz {
 
     private final IdGenerator idGenerator;
 
+    protected InterveneCategCache getCategCache(){
+        return InterveneCategCache.Instance;
+    }
+
     /**
     * @param
     * @return
@@ -57,7 +62,7 @@ public class InterveneCategBiz {
         final String family=findInterveneCateg.getFamily();
         checkFamily(family);
         final String pid=ShareUtil.XString.defaultIfEmpty(findInterveneCateg.getPid(),findInterveneCateg.getFamily());
-        return InterveneCategCache.Instance.getByParentId(pid, Optional.ofNullable(findInterveneCateg.getWithChild()).orElse(0)>0);
+        return getCategCache().getByParentId(pid, Optional.ofNullable(findInterveneCateg.getWithChild()).orElse(0)>0);
     }
     /**
     * @param
@@ -76,11 +81,11 @@ public class InterveneCategBiz {
         AssertUtil.trueThenThrow(ShareUtil.XObject.isAllEmpty(family,pid))
                 .throwMessage("未找到父类别参数");
         AssertUtil.trueThenThrow(ShareUtil.XObject.notEmpty(saveInterveneCateg.getCategName())
-                &&saveInterveneCateg.getCategName().contains(InterveneCategCache.Instance.getSplitTCategPath()))
+                &&saveInterveneCateg.getCategName().contains(getCategCache().getSplitCategPath()))
                 .throwMessage("类别名称不可包含\"/\"符号");
 
         checkFamily(family);
-        CategVO parent = ShareUtil.XObject.defaultIfNull(InterveneCategCache.Instance.getById(pid),new CategVO());
+        CategVO parent = ShareUtil.XObject.defaultIfNull(getCategCache().getById(pid),new CategVO());
         AssertUtil.trueThenThrow(ShareUtil.XString.hasLength(pid) && ShareUtil.XObject.isEmpty(parent.getCategIdPath()))
                 .throwMessage("父类别不存在");
         if(ShareUtil.XObject.isEmpty(saveInterveneCateg.getCategId())){
@@ -93,11 +98,11 @@ public class InterveneCategBiz {
         InterveneCategoryEntity row = CopyWrapper.create(InterveneCategoryEntity::new).endFrom(saveInterveneCateg)
                 .setInterveneCategoryId(categId)
                 .setExtend(JacksonUtil.toJson(saveInterveneCateg.getExtend(), false))
-                .setCategIdPath(InterveneCategCache.Instance.getCategPath(parent.getCategIdPath(),categId))
-                .setCategNamePath(InterveneCategCache.Instance.getCategPath(parent.getCategNamePath(),saveInterveneCateg.getCategName()));
+                .setCategIdPath(getCategCache().getCategPath(parent.getCategIdPath(),categId))
+                .setCategNamePath(getCategCache().getCategPath(parent.getCategNamePath(),saveInterveneCateg.getCategName()));
 
         interveneCategDao.tranSave(row);
-        InterveneCategCache.Instance.clear();
+        getCategCache().clear();
         return true;
     }
     /**
@@ -120,10 +125,10 @@ public class InterveneCategBiz {
                 .throwMessage("未找到父类别参数");
         checkFamily(family);
 
-        CategVO parent = ShareUtil.XObject.defaultIfNull(InterveneCategCache.Instance.getById(pid),new CategVO());
+        CategVO parent = ShareUtil.XObject.defaultIfNull(getCategCache().getById(pid),new CategVO());
         AssertUtil.trueThenThrow(ShareUtil.XString.hasLength(pid) && ShareUtil.XObject.isEmpty(parent.getCategIdPath()))
                 .throwMessage("父类别不存在");
-        List<InterveneCategoryEntity> rows=ShareUtil.XCollection.map(saveInterveneCateg,true,i-> {
+        List<InterveneCategoryEntity> rows=ShareUtil.XCollection.map(saveInterveneCateg,i-> {
             if(ShareUtil.XObject.isEmpty(i.getCategId())){
                 i.setCategId(idGenerator.nextIdStr());
             }
@@ -132,12 +137,12 @@ public class InterveneCategBiz {
                     .setFamily(family)
                     .setInterveneCategoryId(i.getCategId())
                     .setCategPid(pid)
-                    .setCategIdPath(InterveneCategCache.Instance.getCategPath(parent.getCategIdPath(), i.getCategId()))
-                    .setCategNamePath(InterveneCategCache.Instance.getCategPath(parent.getCategNamePath(), i.getCategName()));
+                    .setCategIdPath(getCategCache().getCategPath(parent.getCategIdPath(), i.getCategId()))
+                    .setCategNamePath(getCategCache().getCategPath(parent.getCategNamePath(), i.getCategName()));
         });
 
         interveneCategDao.tranSaveBatch(rows);
-        InterveneCategCache.Instance.clear();
+        getCategCache().clear();
         return true;
     }
     /**
@@ -154,20 +159,31 @@ public class InterveneCategBiz {
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(delInterveneCateg.getIds()))
                         .throwMessage("缺少必要参数");
         delInterveneCateg.getIds().forEach(i->{
-            List<CategVO> childs=InterveneCategCache.Instance.getByParentId(i,true);
-            AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(childs))
-                    .throwMessage("包含子级类别不可删除，请检查");
+            AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(getCategCache().getByParentId(i,true)))
+                    .throwMessage("类别包含子级类别，不可删除");
+            CategVO cacheCateg=getCategCache().getById(i);
+            AssertUtil.trueThenThrow(null!=cacheCateg&&EnumCheckCategPolicy.checkCategRef(cacheCateg.getFamily(),i))
+                    .throwMessage("类别已被引用，不可删除");
         });
         interveneCategDao.tranDelete(delInterveneCateg.getIds());
-        InterveneCategCache.Instance.clear();
+        getCategCache().clear();
         return true;
     }
 
     private boolean checkFamily(String family){
-        if(ShareUtil.XObject.isEmpty(family)||null!=EnumCategFamily.of(family)) {
+        if(ShareUtil.XObject.isEmpty(family)){
             return true;
         }
-        AssertUtil.getNotNull(indicatorFuncDao.getById(family, IndicatorFuncEntity::getId)).orElseThrow("根类别或功能点不存在");
+        EnumCategFamily enumCateg=EnumCategFamily.of(family);
+        AssertUtil.getNotNull(enumCateg).orElseThrow("根类别不存在");
+        switch (enumCateg){
+            case TreatItem:
+                AssertUtil.getNotNull(indicatorFuncDao.getById(ShareUtil.XString.trimStart(family,enumCateg.getCode()), IndicatorFuncEntity::getId))
+                        .orElseThrow("指标功能点不存在");
+                break;
+            default:
+                break;
+        }
         return true;
 
     }

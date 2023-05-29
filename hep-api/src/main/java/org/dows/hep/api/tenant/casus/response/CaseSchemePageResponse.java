@@ -24,6 +24,9 @@ public class CaseSchemePageResponse {
     @Schema(title = "方案名称")
     private String schemeName;
 
+    @Schema(title = "类别ID")
+    private String caseCategId;
+
     @Schema(title = "类别名")
     private String caseCategName;
 

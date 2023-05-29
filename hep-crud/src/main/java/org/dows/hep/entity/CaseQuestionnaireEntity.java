@@ -39,9 +39,6 @@ public class CaseQuestionnaireEntity implements CrudEntity {
     @Schema(title = "案例问卷ID")
     private String caseQuestionnaireId;
 
-    @Schema(title = "应用ID")
-    private String appId;
-
     @Schema(title = "案例ID")
     private String caseInstanceId;
 
@@ -49,13 +46,19 @@ public class CaseQuestionnaireEntity implements CrudEntity {
     private String periods;
 
     @Schema(title = "期数排序")
-    private Boolean periodSequence;
+    private Integer periodSequence;
 
     @Schema(title = "分配方式")
     private String allotMode;
 
+    @Schema(title = "添加方式")
+    private String addType;
+
     @Schema(title = "问题集ID")
     private String questionSectionId;
+
+    @Schema(title = "问题集名称")
+    private String questionSectionName;
 
     @Schema(title = "题数")
     private Integer questionCount;

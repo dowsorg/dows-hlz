@@ -17,6 +17,8 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(name = "SaveSportItem 对象", title = "运动项目信息")
 public class SaveSportItemRequest{
+    @Schema(title = "应用ID")
+    private String appId;
 
     @Schema(title = "数据库id，新增时为空")
     private Long id;

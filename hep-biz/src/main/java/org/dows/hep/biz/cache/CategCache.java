@@ -6,10 +6,7 @@ import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.vo.CategVO;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -35,11 +32,10 @@ public abstract class CategCache extends BaseLocalCache<CategCache.CacheData> {
             return vCache;
         }
         src.forEach(i->{
-            if(ShareUtil.XObject.isEmpty(i.getCategPid())){
-                i.setCategPid(i.getFamily());
-            }
+            i.setCategPid(Optional.ofNullable(i.getCategPid()).orElse(""));
             vCache.mapItems.put(fixKey(i.getCategId()),i);
-            vCache.mapGroups.computeIfAbsent(fixKey(i.getCategPid()),v-> new ArrayList<>()).add(i);
+            vCache.mapGroups.computeIfAbsent(fixKey(ShareUtil.XString.defaultIfEmpty(i.getCategPid(),i.getFamily())),v-> new ArrayList<>())
+                    .add(i);
         });
         StringBuilder sbId=new StringBuilder();
         StringBuilder sbName=new StringBuilder();
@@ -113,6 +109,32 @@ public abstract class CategCache extends BaseLocalCache<CategCache.CacheData> {
     }
 
     /**
+     * 获取id下所有的叶节点id
+     * @param categIds
+     * @return
+     */
+    public List<String> getLeafIds(List<String> categIds){
+        if(ShareUtil.XCollection.isEmpty(categIds)){
+            return Collections.emptyList();
+        }
+        Set<String> rst=new HashSet<>();
+        categIds.forEach(i->fillLeafIds(rst,getById(i)));
+        return new ArrayList<>(rst);
+    }
+    protected void fillLeafIds(Collection<String> rst,CategVO categ){
+        if(ShareUtil.XObject.isEmpty(categ)){
+            return;
+        }
+        if(ShareUtil.XCollection.isEmpty(categ.getChilds())){
+            rst.add(categ.getCategId());
+            return;
+        }
+        for(CategVO item:categ.getChilds()) {
+            fillLeafIds(rst, item);
+        }
+    }
+
+    /**
      * 获取不带子节点的列表
      *
      * @param src
@@ -122,7 +144,7 @@ public abstract class CategCache extends BaseLocalCache<CategCache.CacheData> {
         if(ShareUtil.XObject.isEmpty(src)){
             return Collections.emptyList();
         }
-        return ShareUtil.XCollection.map(src,true, i-> CopyWrapper.create(CategVO::new).endFrom(i,"childs"));
+        return ShareUtil.XCollection.map(src, i-> CopyWrapper.create(CategVO::new).endFrom(i,"childs"));
     }
 
 
@@ -154,7 +176,7 @@ public abstract class CategCache extends BaseLocalCache<CategCache.CacheData> {
                 ShareUtil.XString.eusureEndsWith(self,SPLITCategPath));
     }
 
-    public String getSplitTCategPath(){
+    public String getSplitCategPath(){
         return SPLITCategPath;
     }
 

@@ -39,6 +39,9 @@ public class FoodDishesNutrientEntity implements CrudEntity {
     @Schema(title = "关联id")
     private String foodDishesNutrientId;
 
+    @Schema(title = "应用ID")
+    private String appId;
+
     @Schema(title = "菜肴id")
     private String foodDishesId;
 

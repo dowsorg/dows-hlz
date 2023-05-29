@@ -3,6 +3,7 @@ package org.dows.hep.biz.cache;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.api.CrudContextHolder;
 import org.dows.hep.api.base.intervene.vo.FoodCategExtendVO;
+import org.dows.hep.api.enums.EnumCategFamily;
 import org.dows.hep.biz.dao.InterveneCategDao;
 import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.JacksonUtil;
@@ -10,9 +11,8 @@ import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.vo.CategVO;
 import org.dows.hep.entity.InterveneCategoryEntity;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -52,6 +52,17 @@ public class InterveneCategCache extends CategCache {
             rst.add(vo);
         });
         return rst;
+    }
+
+    /**
+     * 获取关键饮食分类
+     * @return
+     */
+    public List<CategVO> getPrimeCategs(){
+        return ensureCache().mapItems.values().stream()
+                .filter(i->i.getMark().equals(1)&& EnumCategFamily.FOODMaterial.getCode().equalsIgnoreCase(i.getFamily()))
+                .sorted(Comparator.comparingInt((CategVO a) -> Optional.ofNullable(a.getSeq()).orElse(0)).thenComparingLong(CategVO::getId))
+                .collect(Collectors.toList());
     }
 
 

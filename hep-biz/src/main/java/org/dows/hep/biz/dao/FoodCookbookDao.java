@@ -8,8 +8,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.dows.hep.api.base.intervene.request.FindFoodRequest;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
-import org.dows.hep.entity.FoodCookbookEntity;
 import org.dows.hep.entity.FoodCookbookDetailEntity;
+import org.dows.hep.entity.FoodCookbookEntity;
 import org.dows.hep.entity.FoodCookbookNutrientEntity;
 import org.dows.hep.service.FoodCookbookDetailService;
 import org.dows.hep.service.FoodCookbookNutrientService;
@@ -59,6 +59,10 @@ public class FoodCookbookDao extends BaseSubDao<FoodCookbookService, FoodCookboo
     }
 
     @Override
+    protected SFunction<FoodCookbookEntity,String> getColCateg(){
+        return FoodCookbookEntity::getInterveneCategId;
+    }
+    @Override
     protected SFunction<FoodCookbookDetailEntity, String> getColLeadId() {
         return FoodCookbookDetailEntity::getFoodCookbookId;
     }
@@ -84,13 +88,11 @@ public class FoodCookbookDao extends BaseSubDao<FoodCookbookService, FoodCookboo
 
     @Override
     public IPage<FoodCookbookEntity> pageByCondition(FindFoodRequest req, SFunction<FoodCookbookEntity, ?>... cols) {
-        final String categId = req.getCategIdLv1();
-        final String keyWords = req.getKeywords();
         Page<FoodCookbookEntity> page = Page.of(req.getPageNo(), req.getPageSize());
         page.addOrder(OrderItem.asc("id"));
         return service.page(page, Wrappers.<FoodCookbookEntity>lambdaQuery()
-                .likeRight(ShareUtil.XString.hasLength(categId), FoodCookbookEntity::getCategIdPath, categId)
-                .like(ShareUtil.XString.hasLength(keyWords), FoodCookbookEntity::getFoodCookbookName, keyWords)
+                .in(ShareUtil.XCollection.notEmpty(req.getCategIdLv1()), FoodCookbookEntity::getInterveneCategId, req.getCategIdLv1())
+                .like(ShareUtil.XString.hasLength(req.getKeywords()), FoodCookbookEntity::getFoodCookbookName, req.getKeywords())
                 .in(ShareUtil.XCollection.notEmpty(req.getIncIds()), getColId(), req.getIncIds())
                 .notIn(ShareUtil.XCollection.notEmpty(req.getExcIds()), getColId(), req.getExcIds())
                 .eq(ShareUtil.XObject.notEmpty(req.getState()), getColState(), req.getState())
@@ -105,7 +107,6 @@ public class FoodCookbookDao extends BaseSubDao<FoodCookbookService, FoodCookboo
                 .throwMessage(failedSaveMessage );
         return true;
     }
-
 
 
 

@@ -4,15 +4,11 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.question.QuestionCategGroupEnum;
-import org.dows.hep.api.base.question.QuestionTypeEnum;
-import org.dows.hep.api.base.question.request.QuestionSearchRequest;
-import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
+import org.dows.hep.api.base.question.enums.QuestionTypeEnum;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.api.tenant.casus.QuestionSelectModeEnum;
+import org.dows.hep.api.tenant.casus.request.CaseQuestionSearchRequest;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireRequest;
-import org.dows.hep.biz.base.question.QuestionCategBiz;
-import org.dows.hep.biz.tenant.casus.TenantCaseBaseBiz;
 import org.dows.hep.biz.tenant.casus.TenantCaseQuestionnaireBiz;
 import org.springframework.stereotype.Component;
 
@@ -24,9 +20,7 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class RandomCaseQuestionnaireHandler extends BaseCaseQuestionnaireHandler implements CaseQuestionnaireHandler {
-    private final TenantCaseBaseBiz baseBiz;
     private final TenantCaseQuestionnaireBiz caseQuestionnaireBiz;
-    private final QuestionCategBiz categBiz;
 
     @PostConstruct
     @Override
@@ -66,40 +60,16 @@ public class RandomCaseQuestionnaireHandler extends BaseCaseQuestionnaireHandler
         return questionIds;
     }
 
-    @Override
-    public boolean needOriRequest() {
-        return Boolean.FALSE;
-    }
-
     private Map<String, List<QuestionResponse>> collectQuestionOfUsableQuestion(CaseQuestionnaireRequest.RandomMode randomMode, String caseInstanceId) {
         if (BeanUtil.isEmpty(randomMode) || StrUtil.isBlank(caseInstanceId)) {
             return new HashMap<>();
         }
 
         // list question by category
-        QuestionSearchRequest request = new QuestionSearchRequest();
-        List<String> categoryIdList = getCategoryIdList(randomMode);
-        request.setAppId(baseBiz.getAppId());
-        request.setCategIdList(categoryIdList);
-        return caseQuestionnaireBiz.collectQuestionOfUsableQuestion(request, caseInstanceId);
-    }
-
-    private List<String> getCategoryIdList(CaseQuestionnaireRequest.RandomMode randomMode) {
-        List<String> result = new ArrayList<>();
-        // level-2
-        String l2CategoryId = randomMode.getL2CategId();
-        if (StrUtil.isNotBlank(l2CategoryId)) {
-            result.add(l2CategoryId);
-            return result;
-        }
-
-        // level-1 convert to level-2
-        String l1CategoryId = randomMode.getL1CategId();
-        List<QuestionCategoryResponse> children = categBiz.getChildrenByPid(l1CategoryId, QuestionCategGroupEnum.QUESTION.name());
-        if (children != null && !children.isEmpty()) {
-            List<String> childrenIds = children.stream().map(QuestionCategoryResponse::getQuestionCategId).toList();
-            result.addAll(childrenIds);
-        }
-        return result;
+        CaseQuestionSearchRequest request = CaseQuestionSearchRequest.builder()
+                .caseInstanceId(caseInstanceId)
+                .l2CategId(randomMode.getL2CategId())
+                .l1CategId(randomMode.getL1CategId()).build();
+        return caseQuestionnaireBiz.collectQuestionOfUsableQuestion(request);
     }
 }

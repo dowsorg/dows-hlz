@@ -12,13 +12,16 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Schema(name = "QuestionOptionRequest 对象", title = "问题选项Request")
-public class QuestionOptionWithAnswerResponse implements Cloneable{
+public class QuestionOptionWithAnswerResponse {
 
     @Schema(title = "问题选项ID")
     private String questionOptionsId;
 
     @Schema(title = "答案的ID")
     private String questionAnswerId;
+
+    @Schema(title = "问题-分数ID")
+    private String questionScoreId;
 
     @Schema(title = "选项标题")
     private String optionTitle;
@@ -29,12 +32,6 @@ public class QuestionOptionWithAnswerResponse implements Cloneable{
     @Schema(title = "是否是正确答案[0:错误，1:正确]")
     private Boolean rightAnswer;
 
-    @Override
-    public QuestionOptionWithAnswerResponse clone() {
-        try {
-            return  (QuestionOptionWithAnswerResponse) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError();
-        }
-    }
+    @Schema(title = "选项得分")
+    private float score;
 }

@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 问题-得分(QuestionScore)实体类
@@ -39,12 +39,6 @@ public class QuestionScoreEntity implements CrudEntity {
     @Schema(title = "问题-分数ID")
     private String questionScoreId;
 
-    @Schema(title = "应用ID")
-    private String appId;
-
-    @Schema(title = "业务ID")
-    private String bizId;
-
     @Schema(title = "问题ID")
     private String questionInstanceId;
 
@@ -55,7 +49,7 @@ public class QuestionScoreEntity implements CrudEntity {
     private String questionAnswerId;
 
     @Schema(title = "分数")
-    private Object score;
+    private Float score;
 
     @JsonIgnore
     @TableLogic

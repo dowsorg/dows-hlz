@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.intervene.request.*;
 import org.dows.hep.api.base.intervene.response.*;
+import org.dows.hep.biz.base.intervene.FoodCalcBiz;
 import org.dows.hep.biz.base.intervene.FoodPlanBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "饮食方案(菜肴菜谱)", description = "饮食方案(菜肴菜谱)")
 public class FoodPlanRest {
     private final FoodPlanBiz foodPlanBiz;
+    private final FoodCalcBiz foodCalcBiz;
 
     /**
     * 计算能量占比、膳食宝塔
@@ -31,7 +33,7 @@ public class FoodPlanRest {
     @Operation(summary = "计算能量占比、膳食宝塔")
     @PostMapping("v1/baseIntervene/foodPlan/calcFoodGraph")
     public FoodGraphResponse calcFoodGraph(@RequestBody @Validated CalcFoodGraphRequest calcFoodGraph ) {
-        return foodPlanBiz.calcFoodGraph(calcFoodGraph);
+        return foodCalcBiz.calcFoodGraph(calcFoodGraph);
     }
 
     /**

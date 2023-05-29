@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 治疗项目关联指标(TreatItemIndicator)实体类
@@ -38,6 +38,9 @@ public class TreatItemIndicatorEntity implements CrudEntity {
 
     @Schema(title = "关联id")
     private String treatItemIndicatorId;
+
+    @Schema(title = "应用ID")
+    private String appId;
 
     @Schema(title = "治疗项目id")
     private String treatItemId;

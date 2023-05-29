@@ -1,17 +1,11 @@
 package org.dows.hep.rest.base.indicator;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.indicator.request.CreateIndicatorViewMonitorFollowupRequest;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorViewMonitorFollowupRequestRs;
-import org.dows.hep.api.base.indicator.request.IndicatorViewMonitorFollowupRequest;
-import org.dows.hep.api.base.indicator.request.UpdateIndicatorViewMonitorFollowupRequest;
-import org.dows.hep.api.base.indicator.response.IndicatorViewMonitorFollowupResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorViewMonitorFollowupResponseRs;
 import org.dows.hep.api.constant.RsPageConstant;
-import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.biz.base.indicator.IndicatorViewMonitorFollowupBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -68,7 +62,7 @@ public class IndicatorViewMonitorFollowupRest {
 
     @Operation(summary = "Rs获取查看指标监测随访类")
     @GetMapping("v1/baseIndicator/indicatorViewMonitorFollowup/getRs")
-    public IndicatorViewMonitorFollowupResponseRs getRs(@Validated String indicatorViewMonitorFollowupId) {
+    public IndicatorViewMonitorFollowupResponseRs getRs(@RequestParam @Validated String indicatorViewMonitorFollowupId) {
         return indicatorViewMonitorFollowupBiz.getRs(indicatorViewMonitorFollowupId);
     }
 
@@ -82,9 +76,9 @@ public class IndicatorViewMonitorFollowupRest {
         @RequestParam(required = false) String appId,
         @RequestParam(required = false) String indicatorFuncId,
         @RequestParam(required = false) String name,
-        @RequestParam(required = false) String indicatorCategoryId,
+        @RequestParam(required = false) String indicatorCategoryIdList,
         @RequestParam(required = false) Integer status) {
-        return indicatorViewMonitorFollowupBiz.pageRs(pageNo,pageSize,order,asc, appId,indicatorFuncId,name,indicatorCategoryId,status);
+        return indicatorViewMonitorFollowupBiz.pageRs(pageNo,pageSize,order,asc, appId,indicatorFuncId,name, indicatorCategoryIdList, status);
     }
 
 //    /**

@@ -3,9 +3,10 @@ package org.dows.hep.api.base.question.response;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.dows.hep.api.base.question.QuestionSectionGenerationModeEnum;
+import org.dows.hep.api.base.question.enums.QuestionSectionGenerationModeEnum;
 
 import java.util.List;
+import java.util.Map;
 
 /**
 * @description 
@@ -55,4 +56,7 @@ public class QuestionSectionResponse {
 
     @Schema(title = "维度集合")
     private List<QuestionSectionDimensionResponse> questionSectionDimensionList;
+
+    @Schema(title = "维度Map")
+    private Map<String, List<QuestionSectionDimensionResponse>> questionSectionDimensionMap;
 }

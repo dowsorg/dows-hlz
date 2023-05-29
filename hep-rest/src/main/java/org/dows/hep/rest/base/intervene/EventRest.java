@@ -1,13 +1,15 @@
 package org.dows.hep.rest.base.intervene;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.intervene.request.*;
 import org.dows.hep.api.base.intervene.response.EventInfoResponse;
 import org.dows.hep.api.base.intervene.response.EventResponse;
-import org.dows.hep.api.base.intervene.response.InterveneCategResponse;
 import org.dows.hep.biz.base.intervene.EventBiz;
+import org.dows.hep.biz.vo.CategVO;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +17,8 @@ import java.util.List;
 
 /**
 * @description project descr:干预:数据库事件
-*
+* @folder 数据库事件
+ *
 * @author lait.zhang
 * @date 2023年4月23日 上午9:44:34
 */
@@ -30,10 +33,10 @@ public class EventRest {
     * @param
     * @return
     */
-    @Operation(summary = "获取类别")
+    @Operation(summary = "获取事件类别")
     @PostMapping("v1/baseIntervene/event/listEventCateg")
-    public List<InterveneCategResponse> listEventCateg(@RequestBody @Validated FindInterveneCategRequest findInterveneCateg ) {
-        return eventBiz.listEventCateg(findInterveneCateg);
+    public List<CategVO> listEventCateg(@RequestBody @Validated FindEventCategRequest findEventCateg ) {
+        return eventBiz.listEventCateg(findEventCateg);
     }
 
     /**
@@ -41,10 +44,10 @@ public class EventRest {
     * @param
     * @return
     */
-    @Operation(summary = "保存类别")
+    @Operation(summary = "批量保存事件类别")
     @PostMapping("v1/baseIntervene/event/saveEventCateg")
-    public Boolean saveEventCateg(@RequestBody @Validated SaveInterveneCategRequest saveInterveneCateg ) {
-        return eventBiz.saveEventCateg(saveInterveneCateg);
+    public Boolean saveEventCategs(@RequestBody @Validated List<SaveEventCategRequest> saveEventCateg ) {
+        return eventBiz.saveEventCategs(saveEventCateg);
     }
 
     /**
@@ -52,10 +55,10 @@ public class EventRest {
     * @param
     * @return
     */
-    @Operation(summary = "删除类别")
+    @Operation(summary = "删除事件类别")
     @DeleteMapping("v1/baseIntervene/event/delEventCateg")
-    public Boolean delEventCateg(@Validated DelInterveneCategRequest delInterveneCateg ) {
-        return eventBiz.delEventCateg(delInterveneCateg);
+    public Boolean delEventCateg(@RequestBody @Validated DelEventCategRequest delEventCateg ) {
+        return eventBiz.delEventCateg(delEventCateg);
     }
 
     /**
@@ -65,7 +68,7 @@ public class EventRest {
     */
     @Operation(summary = "获取事件列表")
     @PostMapping("v1/baseIntervene/event/pageEvent")
-    public EventResponse pageEvent(@RequestBody @Validated FindEventRequest findEvent ) {
+    public Page<EventResponse> pageEvent(@RequestBody @Validated FindEventRequest findEvent ) {
         return eventBiz.pageEvent(findEvent);
     }
 
@@ -74,7 +77,7 @@ public class EventRest {
     * @param
     * @return
     */
-    @Operation(summary = "获取事件详细")
+    @Operation(summary = "获取事件详细信息")
     @GetMapping("v1/baseIntervene/event/getEvent")
     public EventInfoResponse getEvent(@Validated String eventId) {
         return eventBiz.getEvent(eventId);
@@ -87,8 +90,8 @@ public class EventRest {
     */
     @Operation(summary = "保存事件")
     @PostMapping("v1/baseIntervene/event/saveEvent")
-    public Boolean saveEvent(@RequestBody @Validated SaveEventRequest saveEvent ) {
-        return eventBiz.saveEvent(saveEvent);
+    public Boolean saveEvent(@RequestBody @Validated SaveEventRequest saveEvent , HttpServletRequest request) {
+        return eventBiz.saveEvent(saveEvent,request);
     }
 
     /**
@@ -98,8 +101,53 @@ public class EventRest {
     */
     @Operation(summary = "删除事件")
     @DeleteMapping("v1/baseIntervene/event/delEvent")
-    public Boolean delEvent(@Validated DelEventRequest delEvent ) {
+    public Boolean delEvent(@RequestBody @Validated DelEventRequest delEvent ) {
         return eventBiz.delEvent(delEvent);
+    }
+
+
+    /**
+     * 删除事件触发条件
+     * @param delRefItemRequest
+     * @return
+     */
+    @Operation(summary = "删除事件触发条件")
+    @DeleteMapping("v1/baseIntervene/event/delRefEval")
+    public Boolean delRefEval(@RequestBody @Validated DelRefItemRequest delRefItemRequest ) {
+        return eventBiz.delRefEval(delRefItemRequest);
+    }
+
+    /**
+     * 删除处理措施
+     * @param delRefItemRequest
+     * @return
+     */
+    @Operation(summary = "删除处理措施")
+    @DeleteMapping("v1/baseIntervene/event/delRefAction")
+    public Boolean delRefAction(@RequestBody @Validated DelRefItemRequest delRefItemRequest){
+        return eventBiz.delRefAction(delRefItemRequest);
+    }
+
+    /**
+     * 删除事件影响指标
+     * @param delRefItemRequest
+     * @return
+     */
+    @Operation(summary = "删除事件影响指标")
+    @DeleteMapping("v1/baseIntervene/event/delRefEventIndicator")
+    public Boolean delRefEventIndicator(@RequestBody @Validated  DelRefItemRequest delRefItemRequest){
+        return eventBiz.delRefEventIndicator(delRefItemRequest);
+    }
+
+    /**
+     * 删除处理措施影响指标
+     * @param delRefItemRequest
+     * @return
+     */
+    @Operation(summary = "删除处理措施影响指标")
+    @DeleteMapping("v1/baseIntervene/event/delRefActionIndicator")
+    public Boolean delRefActionIndicator(@RequestBody @Validated  DelRefItemRequest delRefItemRequest){
+        return eventBiz.delRefActionIndicator(delRefItemRequest);
     }
 
     /**

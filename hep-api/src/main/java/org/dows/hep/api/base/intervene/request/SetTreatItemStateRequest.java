@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "SetTreatItemState 对象", title = "启用、禁用 干预项目")
 public class SetTreatItemStateRequest {
+    @Schema(title = "应用ID")
+    private String appId;
     @Schema(title = "干预项目id")
     private String treatItemId;
 

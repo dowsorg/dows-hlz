@@ -39,9 +39,6 @@ public class QuestionSectionItemEntity implements CrudEntity {
     @Schema(title = "itemID")
     private String questionSectionItemId;
 
-    @Schema(title = "应用ID")
-    private String appId;
-
     @Schema(title = "问题集ID")
     private String questionSectionId;
 
@@ -56,12 +53,6 @@ public class QuestionSectionItemEntity implements CrudEntity {
 
     @Schema(title = "排序")
     private Integer sequence;
-
-    @Schema(title = "创建者账号Id")
-    private String accountId;
-
-    @Schema(title = "创建者姓名")
-    private String accountName;
 
     @JsonIgnore
     @TableLogic

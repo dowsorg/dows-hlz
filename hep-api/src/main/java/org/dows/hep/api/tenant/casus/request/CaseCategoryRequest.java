@@ -1,7 +1,5 @@
 package org.dows.hep.api.tenant.casus.request;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -33,19 +31,4 @@ public class CaseCategoryRequest {
 
     @Schema(title = "序列号")
     private Integer sequence;
-
-
-    // JsonIgnore
-    @Schema(title = "类别ID路径")
-    @JsonIgnore
-    private String caseCategIdPath;
-
-    @Schema(title = "类别name路径")
-    @JsonIgnore
-    private String caseCategNamePath;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Schema(title = "数据库ID")
-    @JsonIgnore
-    private Long id;
 }

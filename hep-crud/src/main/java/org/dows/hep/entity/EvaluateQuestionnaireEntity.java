@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 评估问卷(EvaluateQuestionnaire)实体类
@@ -42,8 +42,32 @@ public class EvaluateQuestionnaireEntity implements CrudEntity {
     @Schema(title = "应用ID")
     private String appId;
 
+    @Schema(title = "类别ID")
+    private String evaluateCategId;
+
+    @Schema(title = "问卷名")
+    private String evaluateQuestionnaireName;
+
+    @Schema(title = "问卷描述")
+    private String evaluateQuestionnaireDesc;
+
     @Schema(title = "问题集")
     private String questionSectionId;
+
+    @Schema(title = "操作提示")
+    private String operationPrompt;
+
+    @Schema(title = "对话提示")
+    private String tips;
+
+    @Schema(title = "状态")
+    private Integer enabled;
+
+    @Schema(title = "创建者账号ID")
+    private String accountId;
+
+    @Schema(title = "创建者Name")
+    private String accountName;
 
     @JsonIgnore
     @TableLogic

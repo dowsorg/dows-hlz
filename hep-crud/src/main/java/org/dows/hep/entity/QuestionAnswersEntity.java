@@ -39,9 +39,6 @@ public class QuestionAnswersEntity implements CrudEntity {
     @Schema(title = "答案的ID")
     private String questionAnswerId;
 
-    @Schema(title = "应用ID")
-    private String appId;
-
     @Schema(title = "问题ID")
     private String questionInstanceId;
 

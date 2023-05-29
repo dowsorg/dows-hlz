@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,7 +29,7 @@ import java.util.List;
 
 @Component
 public class FoodMaterialDao extends BaseSubDao<FoodMaterialService,FoodMaterialEntity,FoodMaterialIndicatorService,FoodMaterialIndicatorEntity>
-    implements IPageDao<FoodMaterialEntity, FindFoodRequest> {
+    implements IPageDao<FoodMaterialEntity, FindFoodRequest>,ICheckCategRef  {
 
     public FoodMaterialDao(){
         super("食材不存在或已删除,请刷新");
@@ -60,6 +61,11 @@ public class FoodMaterialDao extends BaseSubDao<FoodMaterialService,FoodMaterial
     }
 
     @Override
+    protected SFunction<FoodMaterialEntity,String> getColCateg(){
+        return FoodMaterialEntity::getInterveneCategId;
+    }
+
+    @Override
     protected SFunction<FoodMaterialIndicatorEntity, String> getColLeadId() {
         return FoodMaterialIndicatorEntity::getFoodMaterialId;
     }
@@ -85,13 +91,11 @@ public class FoodMaterialDao extends BaseSubDao<FoodMaterialService,FoodMaterial
 
     @Override
     public IPage<FoodMaterialEntity> pageByCondition(FindFoodRequest req, SFunction<FoodMaterialEntity, ?>... cols) {
-        final String categId = req.getCategIdLv1();
-        final String keyWords = req.getKeywords();
         Page<FoodMaterialEntity> page = Page.of(req.getPageNo(), req.getPageSize());
         page.addOrder(OrderItem.asc("id"));
         return service.page(page, Wrappers.<FoodMaterialEntity>lambdaQuery()
-                .likeRight(ShareUtil.XString.hasLength(categId), FoodMaterialEntity::getCategIdPath, categId)
-                .like(ShareUtil.XString.hasLength(keyWords), FoodMaterialEntity::getFoodMaterialName, keyWords)
+                .in(ShareUtil.XCollection.notEmpty(req.getCategIdLv1()), FoodMaterialEntity::getInterveneCategId, req.getCategIdLv1())
+                .like(ShareUtil.XString.hasLength(req.getKeywords()), FoodMaterialEntity::getFoodMaterialName, req.getKeywords())
                 .in(ShareUtil.XCollection.notEmpty(req.getIncIds()), getColId(), req.getIncIds())
                 .notIn(ShareUtil.XCollection.notEmpty(req.getExcIds()), getColId(), req.getExcIds())
                 .eq(ShareUtil.XObject.notEmpty(req.getState()), getColState(), req.getState())
@@ -106,7 +110,6 @@ public class FoodMaterialDao extends BaseSubDao<FoodMaterialService,FoodMaterial
                 .throwMessage(failedSaveMessage );
         return true;
     }
-
 
 
 
@@ -154,6 +157,20 @@ public class FoodMaterialDao extends BaseSubDao<FoodMaterialService,FoodMaterial
     //endregion
 
     //region retrieve
+    public List<FoodMaterialNutrientEntity> getNutrientsByLeadIdsX(Collection<String> leadIds,Collection<String> indicatorIds, SFunction<FoodMaterialNutrientEntity,?>... cols){
+        if(ShareUtil.XObject.isEmpty(leadIds)){
+            return Collections.emptyList();
+        }
+        final boolean oneFlag=leadIds.size()==1;
+        return subServiceX.lambdaQuery()
+                .eq(oneFlag, FoodMaterialNutrientEntity::getFoodMaterialId,leadIds.iterator().next())
+                .in(!oneFlag, FoodMaterialNutrientEntity::getFoodMaterialId,leadIds)
+                .in(ShareUtil.XCollection.notEmpty(indicatorIds),FoodMaterialNutrientEntity::getIndicatorInstanceId,indicatorIds)
+                .select(cols)
+                .list();
+    }
+
+
     public List<FoodMaterialNutrientEntity> getSubByLeadIdX(String leadId, SFunction<FoodMaterialNutrientEntity,?>... cols) {
         if (ShareUtil.XObject.isEmpty(leadId)) {
             return Collections.emptyList();

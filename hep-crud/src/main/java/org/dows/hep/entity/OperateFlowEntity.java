@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * 实验操作流程(OperateFlow)实体类
@@ -39,6 +40,9 @@ public class OperateFlowEntity implements CrudEntity {
     @Schema(title = "实验操作流程id")
     private String operateFlowId;
 
+    @Schema(title = "应用ID")
+    private String appId;
+
     @Schema(title = "实验实例id")
     private String experimentInstanceId;
 
@@ -57,6 +61,13 @@ public class OperateFlowEntity implements CrudEntity {
     @Schema(title = "账号名称")
     private String caseAccountName;
 
+    @Schema(title = "操作人ID")
+    private String operateAccountId;
+
+    @Schema(title = "操作人名")
+    private String operateAccountName;
+
+
     @Schema(title = "期数")
     private Integer periods;
 
@@ -66,17 +77,24 @@ public class OperateFlowEntity implements CrudEntity {
     @Schema(title = "流程顺序")
     private String flowSequence;
 
-    @Schema(title = "流程类型 1-体检挂号 2-医院挂号")
-    private Boolean flowType;
 
     @Schema(title = "展示类型 0-不展示 1-用户端展示")
-    private Boolean reportFlag;
+    private Integer reportFlag;
+
+    @Schema(title = "展示标签")
+    private String reportLabel;
+
+    @Schema(title = "操作描述")
+    private String reportDescr;
 
     @Schema(title = "消耗资金")
-    private Double feeCost;
+    private BigDecimal fee;
 
     @Schema(title = "剩余资金")
-    private Double feeRemain;
+    private BigDecimal asset;
+
+    @Schema(title = "报销资金")
+    private BigDecimal refund;
 
     @Schema(title = "开始时间")
     private Date startTime;
@@ -87,14 +105,15 @@ public class OperateFlowEntity implements CrudEntity {
     @Schema(title = "操作时间")
     private Date operateTime;
 
-    @Schema(title = "操作描述")
-    private String operateDescr;
+    @Schema(title = "操作所在游戏内天数")
+    private Integer operateGameDay;
 
-    @Schema(title = "标签")
-    private String label;
+    @Schema(title = "结算处理时间")
+    private Date dealTime;
 
-    @Schema(title = "流程完结状态 0-未完结 1-已完结")
-    private Boolean endState;
+    @Schema(title = "结算所在游戏内天数")
+    private Integer dealGameDay;
+
 
     @Schema(title = "状态")
     private Integer state;

@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 评估报告管理(EvaluateReportManagement)实体类
@@ -39,9 +39,6 @@ public class EvaluateReportManagementEntity implements CrudEntity {
     @Schema(title = "分布式ID")
     private String evaluateReportManagementId;
 
-    @Schema(title = "应用ID")
-    private String appId;
-
     @Schema(title = "评估问卷分布式ID")
     private String evaluateQuestionnaireId;
 
@@ -58,10 +55,10 @@ public class EvaluateReportManagementEntity implements CrudEntity {
     private String suggestion;
 
     @Schema(title = "分数段[最小]")
-    private Integer minScore;
+    private Float minScore;
 
     @Schema(title = "分数段[最大]")
-    private Integer maxScore;
+    private Float maxScore;
 
     @JsonIgnore
     @TableLogic

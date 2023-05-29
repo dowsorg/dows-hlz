@@ -2,9 +2,11 @@ package org.dows.hep.biz.tenant.casus;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.hep.api.tenant.casus.CaseESCEnum;
 import org.dows.hep.api.tenant.casus.request.CaseCategoryRequest;
 import org.dows.hep.api.tenant.casus.response.CaseCategoryResponse;
 import org.dows.hep.entity.CaseCategoryEntity;
@@ -34,20 +36,32 @@ public class TenantCaseCategoryBiz {
      * @description
      * @date 2023/5/11 21:22
      */
-    @Transactional
+    @DSTransactional
     public String saveOrUpdateCaseCategory(CaseCategoryRequest request) {
         if (BeanUtil.isEmpty(request)) {
-            return "";
+            throw new BizException(CaseESCEnum.PARAMS_NON_NULL);
         }
 
-        // check
-        checkBeforeSaveOrUpd(request);
-
-        // handle
-        CaseCategoryEntity caseCategoryEntity = BeanUtil.copyProperties(request, CaseCategoryEntity.class);
+        CaseCategoryEntity caseCategoryEntity = checkBeforeSaveOrUpd(request);
         caseCategoryService.saveOrUpdate(caseCategoryEntity);
 
         return caseCategoryEntity.getCaseCategId();
+    }
+
+    /**
+     * @author fhb
+     * @description dude, go optimize yourself
+     * @date 2023/5/24 11:25
+     * @param
+     * @return
+     */
+    public boolean batchSaveOrUpd(List<CaseCategoryRequest> list) {
+        if (Objects.isNull(list) || list.isEmpty()) {
+            return Boolean.FALSE;
+        }
+
+        list.forEach(this::saveOrUpdateCaseCategory);
+        return Boolean.TRUE;
     }
 
     /**
@@ -156,20 +170,33 @@ public class TenantCaseCategoryBiz {
         return remRes1 && remRes2;
     }
 
-    private void checkBeforeSaveOrUpd(CaseCategoryRequest request) {
-        String uniqueId = request.getCaseCategId();
-        if (StrUtil.isBlank(uniqueId)) {
-            request.setCaseCategId(baseBiz.getIdStr());
-            if (StrUtil.isBlank(request.getCaseCategPid())) {
-                request.setCaseCategPid(baseBiz.getCaseCategoryPid());
+    private CaseCategoryEntity checkBeforeSaveOrUpd(CaseCategoryRequest request) {
+        if (BeanUtil.isEmpty(request)) {
+            throw new BizException(CaseESCEnum.PARAMS_NON_NULL);
+        }
+
+        CaseCategoryEntity result = CaseCategoryEntity.builder()
+                .appId(baseBiz.getAppId())
+                .caseCategId(request.getCaseCategId())
+                .caseCategName(request.getCaseCategName())
+                .caseCategGroup(request.getCaseCategGroup())
+                .sequence(request.getSequence())
+                .build();
+
+        String caseCategId = result.getCaseCategId();
+        if (StrUtil.isBlank(caseCategId)) {
+            result.setCaseCategId(baseBiz.getIdStr());
+            if (StrUtil.isBlank(result.getCaseCategPid())) {
+                result.setCaseCategPid(baseBiz.getCaseCategoryPid());
             }
         } else {
-            CaseCategoryEntity entity = getById(uniqueId);
-            if (BeanUtil.isEmpty(entity)) {
-                throw new BizException("数据不存在");
+            CaseCategoryEntity oriEntity = getById(caseCategId);
+            if (BeanUtil.isEmpty(oriEntity)) {
+                throw new BizException(CaseESCEnum.DATA_NULL);
             }
-            request.setId(entity.getId());
+            result.setId(oriEntity.getId());
         }
+        return result;
     }
 
     private List<CaseCategoryResponse> listInGroup(String categGroup) {
@@ -287,4 +314,6 @@ public class TenantCaseCategoryBiz {
 
         return Boolean.FALSE;
     }
+
+
 }

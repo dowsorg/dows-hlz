@@ -5,11 +5,12 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.hep.api.base.question.enums.QuestionESCEnum;
+import org.dows.hep.api.tenant.casus.CaseESCEnum;
 import org.dows.hep.api.tenant.casus.request.CaseNoticeRequest;
 import org.dows.hep.api.tenant.casus.response.CaseNoticeResponse;
 import org.dows.hep.entity.CaseInstanceEntity;
 import org.dows.hep.entity.CaseNoticeEntity;
-import org.dows.hep.service.CaseInstanceService;
 import org.dows.hep.service.CaseNoticeService;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +28,6 @@ import java.util.List;
 public class TenantCaseNoticeBiz {
     private final TenantCaseBaseBiz baseBiz;
     private final CaseNoticeService caseNoticeService;
-    private final CaseInstanceService caseInstanceService;
 
     /**
      * @param
@@ -44,9 +44,7 @@ public class TenantCaseNoticeBiz {
             return "";
         }
 
-        // check and save
-        checkBeforeSaveOrUpd(caseNotice);
-        CaseNoticeEntity caseNoticeEntity = BeanUtil.copyProperties(caseNotice, CaseNoticeEntity.class);
+        CaseNoticeEntity caseNoticeEntity = convertRequest2Entity(caseNotice);
         caseNoticeService.saveOrUpdate(caseNoticeEntity);
 
         return caseNoticeEntity.getCaseNoticeId();
@@ -107,12 +105,12 @@ public class TenantCaseNoticeBiz {
     public void copyCaseNotice(String oriCaseInstanceId, CaseInstanceEntity targetCaseInstance) {
         List<CaseNoticeEntity> oriEntityList = listCaseNotice0(oriCaseInstanceId);
         if (oriEntityList == null || oriEntityList.isEmpty()) {
-            throw new BizException("数据不存在");
+            throw new BizException(CaseESCEnum.DATA_NULL);
         }
 
         String targetCaseInstanceId = targetCaseInstance.getCaseInstanceId();
         if (StrUtil.isBlank(targetCaseInstanceId)) {
-            throw new BizException("数据不存在");
+            throw new BizException(CaseESCEnum.DATA_NULL);
         }
 
         List<CaseNoticeEntity> targetCaseNoticeList = new ArrayList<>();
@@ -152,28 +150,32 @@ public class TenantCaseNoticeBiz {
         return caseNoticeService.list(queryWrapper);
     }
 
-    private void checkBeforeSaveOrUpd(CaseNoticeRequest request) {
-        String uniqueId = request.getCaseNoticeId();
+    private CaseNoticeEntity convertRequest2Entity(CaseNoticeRequest request) {
+        if (BeanUtil.isEmpty(request)) {
+            throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
+        }
+
+        CaseNoticeEntity result = CaseNoticeEntity.builder()
+                .appId(baseBiz.getAppId())
+                .caseInstanceId(request.getCaseInstanceId())
+                .noticeName(request.getNoticeName())
+                .noticeContent(request.getNoticeContent())
+                .periods(request.getPeriods())
+                .periodSequence(request.getPeriodSequence())
+                .build();
+
+        String uniqueId = result.getCaseNoticeId();
         if (StrUtil.isBlank(uniqueId)) {
-            request.setCaseNoticeId(baseBiz.getIdStr());
-
-            // get case-instance
-            String caseInstanceId = request.getCaseInstanceId();
-            LambdaQueryWrapper<CaseInstanceEntity> queryWrapper = new LambdaQueryWrapper<CaseInstanceEntity>()
-                    .eq(CaseInstanceEntity::getCaseInstanceId, caseInstanceId);
-            CaseInstanceEntity caseInstance = caseInstanceService.getOne(queryWrapper);
-            if (BeanUtil.isEmpty(caseInstance)) {
-                throw new BizException("数据不存在");
-            }
-
-            request.setCaseInstanceId(caseInstance.getCaseInstanceId());
+            result.setCaseNoticeId(baseBiz.getIdStr());
         } else {
             CaseNoticeEntity entity = getById(uniqueId);
             if (BeanUtil.isEmpty(entity)) {
-                throw new BizException("数据不存在");
+                throw new BizException(CaseESCEnum.DATA_NULL);
             }
-            request.setId(entity.getId());
+            result.setId(entity.getId());
         }
+
+        return result;
     }
 
 }

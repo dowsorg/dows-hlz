@@ -37,7 +37,7 @@ public class FoodNutientBiz{
                 IndicatorInstanceEntity::getIndicatorInstanceId,
                 IndicatorInstanceEntity::getIndicatorName,
                 IndicatorInstanceEntity::getUnit);
-        return ShareUtil.XCollection.map(rows, true, i ->
+        return ShareUtil.XCollection.map(rows,  i ->
                 CopyWrapper.create(FoodNutientResponse::new).endFrom(i,v->v.setNutrientName(i.getIndicatorName())));
     }
     /**

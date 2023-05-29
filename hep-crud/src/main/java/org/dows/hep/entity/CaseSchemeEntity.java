@@ -48,15 +48,6 @@ public class CaseSchemeEntity implements CrudEntity {
     @Schema(title = "类别ID")
     private String caseCategId;
 
-    @Schema(title = "类别名")
-    private String caseCategName;
-
-    @Schema(title = "类别ID路径")
-    private String caseCategIdPath;
-
-    @Schema(title = "类别name路径")
-    private String caseCategNamePath;
-
     @Schema(title = "方案名称")
     private String schemeName;
 
@@ -71,6 +62,9 @@ public class CaseSchemeEntity implements CrudEntity {
 
     @Schema(title = "是否包含视频[0-否|1-是]")
     private Integer containsVideo;
+
+    @Schema(title = "视频题干")
+    private String videoQuestion;
 
     @Schema(title = "状态[0-关闭|1-开启]")
     private Integer enabled;

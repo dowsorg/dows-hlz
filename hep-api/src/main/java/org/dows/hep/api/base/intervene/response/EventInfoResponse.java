@@ -4,6 +4,12 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
+import org.dows.hep.api.base.intervene.vo.EventActionVO;
+import org.dows.hep.api.base.intervene.vo.EventEvalVO;
+import org.dows.hep.api.base.intervene.vo.EventIndicatorVO;
+
+import java.util.List;
 
 /**
 * @description 
@@ -12,6 +18,7 @@ import lombok.NoArgsConstructor;
 * @date 
 */
 @Data
+@Accessors(chain = true)
 @NoArgsConstructor
 @Schema(name = "EventInfo 对象", title = "事件信息")
 public class EventInfoResponse{
@@ -26,8 +33,6 @@ public class EventInfoResponse{
     @Schema(title = "突发事件名称")
     private String eventName;
 
-    @Schema(title = "图片")
-    private String pic;
 
     @Schema(title = "分类id")
     private String eventCategId;
@@ -47,26 +52,30 @@ public class EventInfoResponse{
     @Schema(title = "事件说明")
     private String descr;
 
+    @Schema(title = "事件提示")
+    private String tips;
+
+
     @Schema(title = "创建者账号")
     private String createAccountId;
 
     @Schema(title = "创建者名称")
     private String createAccountName;
 
-    @Schema(title = "触发类型 1-事件触发 2-条件触发")
+    @Schema(title = "触发类型 0-条件触发 1-第一期 2-第二期...5-第5期")
     private Integer triggerType;
 
-    @Schema(title = "触发期数")
-    private String triggerPeriod;
 
     @Schema(title = "触发时间段 1-前期 2-中期 3-后期")
     private String triggerSpan;
 
-    @Schema(title = "事件条件json")
-    private String eval;
+    @Schema(title = "事件影响指标列表,仅限时间触发triggerType>0时有值")
+    private List<EventIndicatorVO> indicators;
+    @Schema(title = "事件触发条件列表,仅限条件触发triggerType=0时有值")
+    private List<EventEvalVO> evals;
 
-    @Schema(title = "处理选项json")
-    private String actions;
+    @Schema(title = "事件处理措施列表")
+    private List<EventActionVO> actions;
 
 
 }

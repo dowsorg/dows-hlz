@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "SetSportItemState 对象", title = "启用、禁用运动项目")
 public class SetSportItemStateRequest {
+    @Schema(title = "应用ID")
+    private String appId;
     @Schema(title = "运动项目id")
     private String sportItemId;
 

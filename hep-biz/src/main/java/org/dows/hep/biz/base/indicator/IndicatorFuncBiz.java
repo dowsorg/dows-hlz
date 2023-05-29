@@ -1,7 +1,9 @@
 package org.dows.hep.biz.base.indicator;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorFuncRequest;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorFuncRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorFuncResponse;
@@ -85,16 +87,27 @@ public class IndicatorFuncBiz{
                             .last(EnumString.LIMIT_1.getStr())
                                 .oneOpt()
                                     .ifPresent(indicatorFuncEntity -> seqAtomicInteger.set(indicatorFuncEntity.getSeq() + 1));
+            String indicatorFuncId = idGenerator.nextIdStr();
             indicatorFuncService.save(
                 IndicatorFuncEntity
                     .builder()
-                    .indicatorFuncId(idGenerator.nextIdStr())
+                    .indicatorFuncId(indicatorFuncId)
                     .appId(appId)
                     .pid(pid)
                     .indicatorCategoryId(indicatorCategoryId)
                     .name(name)
                     .operationTip(operationTip)
                     .dialogTip(dialogTip)
+                    .seq(seqAtomicInteger.get())
+                    .build()
+            );
+            indicatorCategoryService.save(
+                IndicatorCategoryEntity
+                    .builder()
+                    .indicatorCategoryId(indicatorFuncId)
+                    .appId(appId)
+                    .pid(indicatorCategoryId)
+                    .categoryName(name)
                     .seq(seqAtomicInteger.get())
                     .build()
             );
@@ -220,5 +233,22 @@ public class IndicatorFuncBiz{
             .dialogTip(indicatorFuncEntity.getDialogTip())
             .seq(indicatorFuncEntity.getSeq())
             .build();
+    }
+
+    /* runsix:TODO 关联表后面再删除 */
+    @Transactional(rollbackFor = Exception.class)
+    public void delete(String indicatorFuncId) {
+        if (StringUtils.isBlank(indicatorFuncId)) {
+            log.warn("method IndicatorFuncBiz.delete param indicatorFuncId is blank");
+            throw new IndicatorFuncException(EnumESC.VALIDATE_EXCEPTION);
+        }
+        boolean isRemoved = indicatorFuncService.remove(
+            new LambdaQueryWrapper<IndicatorFuncEntity>()
+                .eq(IndicatorFuncEntity::getIndicatorFuncId, indicatorFuncId)
+        );
+        if (!isRemoved) {
+            log.warn("method IndicatorFuncBiz.delete param indicatorFuncId:{} is illegal", indicatorFuncId);
+            throw new IndicatorFuncException(EnumESC.VALIDATE_EXCEPTION);
+        }
     }
 }

@@ -1,6 +1,5 @@
 package org.dows.hep.biz.base.intervene;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.intervene.request.*;
@@ -41,6 +40,12 @@ public class FoodMaterialBiz{
     private final FoodMaterialDao dao;
     private final IndicatorInstanceDao daoIndicator;
 
+    private final FoodCalcBiz foodCalcBiz;
+
+    protected InterveneCategCache getCategCache(){
+        return InterveneCategCache.Instance;
+    }
+
     /**
     * @param
     * @return
@@ -52,13 +57,11 @@ public class FoodMaterialBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Page<FoodMaterialResponse> pageFoodMaterial(FindFoodRequest findFood ) {
-        findFood.setCategIdLv1(ShareBiz.ensureCategPathSuffix(findFood.getCategIdLv1()));
-        IPage<FoodMaterialEntity> page= dao.pageByCondition(findFood);
-        Page<FoodMaterialResponse> pageDto= Page.of (page.getCurrent(),page.getSize(),page.getTotal(),page.searchCount());
-        return pageDto.setRecords(ShareUtil.XCollection.map(page.getRecords(),true, i-> CopyWrapper.create(FoodMaterialResponse::new)
-                .endFrom(i)
-                .setCategIdLv1(InterveneCategCache.Instance.getCategLv1(i.getCategIdPath() ,i.getInterveneCategId()))
-                .setCategNameLv1(InterveneCategCache.Instance.getCategLv1(i.getCategNamePath() ,i.getCategName()))));
+        findFood.setCategIdLv1(getCategCache().getLeafIds(findFood.getCategIdLv1()));
+        return ShareBiz.buildPage(dao.pageByCondition(findFood), i -> CopyWrapper.create(FoodMaterialResponse::new)
+                .endFrom(refreshCateg(i))
+                .setCategIdLv1(getCategCache().getCategLv1(i.getCategIdPath(), i.getInterveneCategId()))
+                .setCategNameLv1(getCategCache().getCategLv1(i.getCategNamePath(), i.getCategName())));
     }
     /**
     * @param
@@ -71,7 +74,7 @@ public class FoodMaterialBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public FoodMaterialInfoResponse getFoodMaterial(String foodMaterialId ) {
-        FoodMaterialEntity rowMaterial=AssertUtil.getNotNull(dao.getById(foodMaterialId))
+        FoodMaterialEntity row=AssertUtil.getNotNull(dao.getById(foodMaterialId))
                 .orElseThrow("食材不存在");
 
         List<FoodMaterialIndicatorEntity> indicators= dao.getSubByLeadId(foodMaterialId,
@@ -95,17 +98,19 @@ public class FoodMaterialBiz{
         nutrients=new ArrayList<>();
         for(IndicatorInstanceEntity item:defNutrients) {
             nutrients.add(mapExists.getOrDefault(item.getIndicatorInstanceId(), new FoodMaterialNutrientEntity())
+                    .setIndicatorInstanceId(item.getIndicatorInstanceId())
                     .setNutrientName(item.getIndicatorName())
                     .setUnit(item.getUnit()));
         }
         defNutrients.clear();
         mapExists.clear();
-        List<InterveneIndicatorVO> voIndicators=ShareUtil.XCollection.map(indicators,true,
+        List<InterveneIndicatorVO> voIndicators=ShareUtil.XCollection.map(indicators,
                 i->CopyWrapper.create(InterveneIndicatorVO::new)
                         .endFrom(i,v->v.setRefId(i.getFoodMaterialIndicatorId())));
-        List<FoodNutrientVO> voNutrients=ShareUtil.XCollection.map(nutrients,true,
+        List<FoodNutrientVO> voNutrients=ShareUtil.XCollection.map(nutrients,
                 i->CopyWrapper.create(FoodNutrientVO::new).endFrom(i));
-        return CopyWrapper.create(FoodMaterialInfoResponse::new).endFrom(rowMaterial)
+        return CopyWrapper.create(FoodMaterialInfoResponse::new)
+                .endFrom(refreshCateg(row))
                 .setIndicators(voIndicators)
                 .setNutrients(voNutrients);
 
@@ -126,7 +131,7 @@ public class FoodMaterialBiz{
                 .throwMessage("食材不存在");
         CategVO categVO=null;
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(saveFoodMaterial.getInterveneCategId())
-                        ||null==(categVO=InterveneCategCache.Instance.getById(saveFoodMaterial.getInterveneCategId())))
+                        ||null==(categVO=getCategCache().getById(saveFoodMaterial.getInterveneCategId())))
                 .throwMessage("食材类别不存在");
 
         AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(saveFoodMaterial.getIndicators())
@@ -142,11 +147,12 @@ public class FoodMaterialBiz{
                 .setCategIdPath(categVO.getCategIdPath())
                 .setCategNamePath(categVO.getCategNamePath());
 
-        //TODO checkExists，calc
-        List<FoodMaterialIndicatorEntity> rowIndicators=ShareUtil.XCollection.map(saveFoodMaterial.getIndicators(),true,
+        //TODO checkExists
+        List<FoodMaterialIndicatorEntity> rowIndicators=ShareUtil.XCollection.map(saveFoodMaterial.getIndicators(),
                 i->CopyWrapper.create(FoodMaterialIndicatorEntity::new).endFrom(i,v->v.setFoodMaterialIndicatorId(i.getRefId())));
-        List<FoodMaterialNutrientEntity> rowNutrients=ShareUtil.XCollection.map(saveFoodMaterial.getNutrients(),true,
+        List<FoodMaterialNutrientEntity> rowNutrients=ShareUtil.XCollection.map(saveFoodMaterial.getNutrients(),
                 i->CopyWrapper.create(FoodMaterialNutrientEntity::new).endFrom(i));
+        foodCalcBiz.calcFoodEnergy(row,rowNutrients);
         return dao.tranSave(row,rowIndicators,rowNutrients);
 
     }
@@ -183,6 +189,25 @@ public class FoodMaterialBiz{
      */
     public Boolean setFoodMaterialState(SetFoodMaterialStateRequest setFoodMaterialState ) {
         return dao.tranSetState(setFoodMaterialState.getFoodMaterialId(), setFoodMaterialState.getState());
+    }
+
+    /**
+     * 获取缓存最新分类信息
+     * @param src
+     * @return
+     */
+    protected FoodMaterialEntity refreshCateg(FoodMaterialEntity src) {
+        if (ShareUtil.XObject.isEmpty(src.getInterveneCategId())) {
+            return src;
+        }
+        CategVO cacheItem = getCategCache().getById(src.getInterveneCategId());
+        if (null == cacheItem) {
+            return src;
+        }
+        return src.setCategName(cacheItem.getCategName())
+                .setCategIdPath(cacheItem.getCategIdPath())
+                .setCategNamePath(cacheItem.getCategNamePath());
+
     }
 
 

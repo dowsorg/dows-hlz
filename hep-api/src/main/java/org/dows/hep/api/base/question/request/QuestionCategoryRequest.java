@@ -1,7 +1,5 @@
 package org.dows.hep.api.base.question.request;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -34,19 +32,4 @@ public class QuestionCategoryRequest {
 
     @Schema(title = "序列号")
     private Integer sequence;
-
-
-    // JsonIgnore
-    @Schema(title = "类别ID路径")
-    @JsonIgnore
-    private String questionCategIdPath;
-
-    @Schema(title = "类别name路径")
-    @JsonIgnore
-    private String questionCategNamePath;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Schema(title = "数据库ID")
-    @JsonIgnore
-    private Long id;
 }
