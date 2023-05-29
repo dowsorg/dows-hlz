@@ -3,6 +3,7 @@ package org.dows.hep.biz.user.experiment;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeRiskFactorRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthGuidanceResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthProblemResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponse;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -228,5 +230,30 @@ public class ExperimentOrgJudgeBiz{
                 .eq(ExperimentPersonPropertyEntity::getDeleted,false)
                 .set(ExperimentPersonPropertyEntity::getInsuranceState, isPurchase);
         return experimentPersonPropertyService.update(updateWrapper);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 判断用户操作正确与否
+     * @关联表: indicatorJudgeRiskFactor
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年5月29日 下午16:11:34
+     */
+    public Boolean isJudgeAction(List<CreateIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList) {
+        AtomicReference<Boolean> flag = new AtomicReference<>(true);
+        judgeRiskFactorRequestList.forEach(judgeRiskFactorRequest -> {
+            //1、根据ID获取判断规则
+            IndicatorJudgeRiskFactorEntity entity = indicatorJudgeRiskFactorService.lambdaQuery()
+                    .eq(IndicatorJudgeRiskFactorEntity::getIndicatorJudgeRiskFactorId, judgeRiskFactorRequest.getIndicatorJudgeRiskFactorId())
+                    .eq(IndicatorJudgeRiskFactorEntity::getStatus, true)
+                    .one();
+            //todo、根据判断规则判断是否满足条件,不满足将flag变为false，只要有一个false,就说明失败
+            entity.getExpression();
+            flag.set(false);
+        });
+        return flag.get();
     }
 }
