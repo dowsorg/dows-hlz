@@ -1,10 +1,15 @@
 package org.dows.hep.biz.user.experiment;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeHealthProblemRequest;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeRiskFactorRequest;
+import org.dows.hep.api.base.indicator.request.ExperimentPersonHealthProblemRequest;
+import org.dows.hep.api.base.indicator.response.ExperimentPersonHealthProblemResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthGuidanceResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthProblemResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponse;
@@ -15,6 +20,7 @@ import org.dows.hep.service.ExperimentPersonHealthProblemService;
 import org.dows.hep.service.ExperimentPersonPropertyService;
 import org.dows.hep.service.IndicatorJudgeHealthGuidanceService;
 import org.dows.hep.service.IndicatorJudgeHealthProblemService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -263,15 +269,15 @@ public class ExperimentOrgJudgeBiz{
     /**
      * @param
      * @return
-     * @说明: 判断用户操作正确与否
-     * @关联表: indicatorJudgeRiskFactor
+     * @说明: 三级-无报告 保存操作
+     * @关联表: experimentPersonHealthProblem
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
      * @创建时间: 2023年5月29日 下午16:11:34
      */
     @DSTransactional
-    public Boolean saveIndicatorJudgeHealthProblem(List<CreateIndicatorJudgeHealthProblemRequest> judgeHealthProblemRequestList) {
+    public Boolean saveExperimentIndicatorJudgeHealthProblem(List<CreateIndicatorJudgeHealthProblemRequest> judgeHealthProblemRequestList) {
         List<ExperimentPersonHealthProblemEntity> modelList = new ArrayList<>();
         judgeHealthProblemRequestList.forEach(judgeHealthProblemRequest->{
             ExperimentPersonHealthProblemEntity model = ExperimentPersonHealthProblemEntity
@@ -279,9 +285,40 @@ public class ExperimentOrgJudgeBiz{
                     .indicatorJudgeHealthProblemId(judgeHealthProblemRequest.getIndicatorJudgeHealthProblemId())
                     .experimentPersonId(judgeHealthProblemRequest.getExperimentPersonId())
                     .name(judgeHealthProblemRequest.getName())
+                    .healthProbleamCategoryName(judgeHealthProblemRequest.getHealthProbleamCategoryName())
                     .build();
             modelList.add(model);
         });
         return experimentPersonHealthProblemService.saveBatch(modelList);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 三级-无报告 获取列表
+     * @关联表: experimentPersonHealthProblem
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年5月29日 下午14:53:34
+     */
+    public IPage<ExperimentPersonHealthProblemResponse> pageExperimentIndicatorJudgeHealthProblem(ExperimentPersonHealthProblemRequest experimentPersonHealthProblemRequest) {
+        Page<ExperimentPersonHealthProblemEntity> page = new Page<>(experimentPersonHealthProblemRequest.getPageNo(), experimentPersonHealthProblemRequest.getPageSize());
+        IPage<ExperimentPersonHealthProblemEntity> pageResult = experimentPersonHealthProblemService.lambdaQuery()
+                .eq(ExperimentPersonHealthProblemEntity::getExperimentPersonId, experimentPersonHealthProblemRequest.getExperimentPersonId())
+                .eq(ExperimentPersonHealthProblemEntity::getDeleted, false)
+                .page(page);
+        // 复制
+        IPage<ExperimentPersonHealthProblemResponse> voPage = new Page<>();
+        BeanUtils.copyProperties(pageResult, voPage, new String[]{"records"});
+        List<ExperimentPersonHealthProblemResponse> responseList = new ArrayList<>();
+        for(ExperimentPersonHealthProblemEntity entity : pageResult.getRecords()){
+            ExperimentPersonHealthProblemResponse person = new ExperimentPersonHealthProblemResponse();
+            BeanUtil.copyProperties(entity,person);
+            person.setId(entity.getId());
+            responseList.add(person);
+        }
+        voPage.setRecords(responseList);
+        return voPage;
     }
 }
