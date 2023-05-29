@@ -49,7 +49,7 @@ public class QuestionScoreEntity implements CrudEntity {
     private String questionAnswerId;
 
     @Schema(title = "分数")
-    private float score;
+    private Float score;
 
     @JsonIgnore
     @TableLogic
