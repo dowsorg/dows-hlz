@@ -56,6 +56,30 @@ public class ExperimentOrgJudgeRest {
     }
 
     /**
+     * 二级-无报告 判断操作
+     * @param
+     * @return
+     */
+    @Operation(summary = "isIndicatorJudgeRiskFactor")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/isIndicatorJudgeRiskFactor")
+    public Boolean isIndicatorJudgeRiskFactor(@RequestBody @Validated List<CreateIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList)
+    {
+        return experimentOrgJudgeBiz.isIndicatorJudgeRiskFactor(judgeRiskFactorRequestList);
+    }
+
+    /**
+     * 二级-无报告 保存操作
+     * @param
+     * @return
+     */
+    @Operation(summary = "saveExperimentPersRiskFactor")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/saveExperimentPersonRiskFactor")
+    public Boolean saveExperimentPersonRiskFactor(@RequestBody @Validated List<ExperimentPersonRiskFactorRequest> personRiskFactorRequestList)
+    {
+        return experimentOrgJudgeBiz.saveExperimentPersonRiskFactor(personRiskFactorRequestList);
+    }
+
+    /**
      *
      * 获取二级类有报告的判断指标信息
      *
@@ -66,6 +90,19 @@ public class ExperimentOrgJudgeRest {
     @PostMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeHealthGuidance")
     public Map<String,List<IndicatorJudgeHealthGuidanceResponse>> getIndicatorJudgeHealthGuidance(@RequestParam @Validated String indicatorFuncId) {
         return experimentOrgJudgeBiz.getIndicatorJudgeHealthGuidance(indicatorFuncId);
+    }
+
+    /**
+     *
+     * 二级类有报告 保存操作
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "二级类有报告 保存操作")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/saveExperimentPersonJudgeHealthGuidance")
+    public Boolean saveExperimentPersonJudgeHealthGuidance(@RequestBody @Validated List<ExperimentPersonHealthGuidanceRequest> requestList) {
+        return experimentOrgJudgeBiz.saveExperimentPersonJudgeHealthGuidance(requestList);
     }
 
     /**
@@ -113,30 +150,6 @@ public class ExperimentOrgJudgeRest {
                                     @RequestParam @Validated String experimentPersonId)
     {
         return experimentOrgJudgeBiz.isPurchaseInsure(isPurchase,experimentPersonId);
-    }
-
-    /**
-     * 二级-无报告 判断操作
-     * @param
-     * @return
-     */
-    @Operation(summary = "isIndicatorJudgeRiskFactor")
-    @PostMapping("v1/userExperiment/experimentOrgJudge/isIndicatorJudgeRiskFactor")
-    public Boolean isIndicatorJudgeRiskFactor(@RequestBody @Validated List<CreateIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList)
-    {
-        return experimentOrgJudgeBiz.isIndicatorJudgeRiskFactor(judgeRiskFactorRequestList);
-    }
-
-    /**
-     * 二级-无报告 保存操作
-     * @param
-     * @return
-     */
-    @Operation(summary = "saveExperimentPersRiskFactor")
-    @PostMapping("v1/userExperiment/experimentOrgJudge/saveExperimentPersonRiskFactor")
-    public Boolean saveExperimentPersonRiskFactor(@RequestBody @Validated List<ExperimentPersonRiskFactorRequest> personRiskFactorRequestList)
-    {
-        return experimentOrgJudgeBiz.saveExperimentPersonRiskFactor(personRiskFactorRequestList);
     }
 
     /**
