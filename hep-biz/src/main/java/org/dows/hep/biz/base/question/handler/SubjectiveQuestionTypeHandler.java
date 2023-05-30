@@ -29,7 +29,7 @@ import java.util.List;
 public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
 
     private final QuestionDomainBaseBiz baseBiz;
-    private BaseQuestionHandler baseQuestionHandler;
+    private final BaseQuestionHandler baseQuestionHandler;
     private final QuestionInstanceService questionInstanceService;
 
     @PostConstruct
