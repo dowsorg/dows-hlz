@@ -328,8 +328,9 @@ public class ExperimentOrgJudgeBiz {
     public Boolean saveExperimentJudgeOperate(List<OperateOrgFuncRequest> operateOrgFuncRequest, String accountId, String accountName) {
         //1、删除用户以前功能点信息
         List<OperateOrgFuncEntity> entityList = operateOrgFuncService.lambdaQuery()
-                .eq(OperateOrgFuncEntity::getCaseOrgFunctionId, operateOrgFuncRequest.get(0).getCaseOrgFunctionId())
+                .eq(OperateOrgFuncEntity::getPeriods, operateOrgFuncRequest.get(0).getPeriods())
                 .eq(OperateOrgFuncEntity::getIndicatorFuncId, operateOrgFuncRequest.get(0).getIndicatorFuncId())
+                .eq(OperateOrgFuncEntity::getExperimentPersonId, operateOrgFuncRequest.get(0).getExperimentPersonId())
                 .eq(OperateOrgFuncEntity::getAppId, operateOrgFuncRequest.get(0).getAppId())
                 .eq(OperateOrgFuncEntity::getDeleted, false)
                 .list();
