@@ -1,7 +1,6 @@
 package org.dows.hep.biz.base.question;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -13,7 +12,10 @@ import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.dto.QuestionRequestDTO;
 import org.dows.hep.api.base.question.enums.*;
 import org.dows.hep.api.base.question.request.*;
-import org.dows.hep.api.base.question.response.*;
+import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
+import org.dows.hep.api.base.question.response.QuestionOptionWithAnswerResponse;
+import org.dows.hep.api.base.question.response.QuestionPageResponse;
+import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.biz.base.question.handler.QuestionTypeFactory;
 import org.dows.hep.biz.base.question.handler.QuestionTypeHandler;
 import org.dows.hep.entity.QuestionAnswersEntity;
@@ -39,7 +41,6 @@ public class QuestionInstanceBiz {
 
     private final QuestionDomainBaseBiz baseBiz;
     private final QuestionCategBiz questionCategBiz;
-    private final QuestionDimensionBiz questionDimensionBiz;
     private final QuestionInstanceService questionInstanceService;
     private final QuestionOptionsService optionsService;
     private final QuestionAnswersService answersService;
@@ -66,9 +67,6 @@ public class QuestionInstanceBiz {
         } else {
             updQuestion(questionRequestDTO);
         }
-
-        // save or upd question-dimension
-        saveOrUpdQuestionDimension(question, questionInstanceId);
 
         return questionInstanceId;
     }
@@ -215,7 +213,6 @@ public class QuestionInstanceBiz {
         QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(questionTypeEnum);
         QuestionResponse questionResponse = questionTypeHandler.get(questionInstanceId);
         setQuestionCategIds(questionResponse);
-        setDimensionId(questionResponse);
         return questionResponse;
     }
 
@@ -474,23 +471,6 @@ public class QuestionInstanceBiz {
                 .build();
     }
 
-    private void saveOrUpdQuestionDimension(QuestionRequest question, String questionInstanceId) {
-        List<String> dimensionIds = new ArrayList<>();
-        List<String> ids = question.getDimensionIds();
-        if (CollUtil.isNotEmpty(ids)) {
-            dimensionIds.addAll(ids);
-        } else {
-            String dimensionId = question.getDimensionId();
-            if (StrUtil.isNotBlank(dimensionId)) {
-                dimensionIds.add(dimensionId);
-            }
-        }
-        if (CollUtil.isNotEmpty(dimensionIds)) {
-            QuestionDimensionRequest dimensionRequest = builderQuestionDimensionRequest(questionInstanceId, dimensionIds);
-            questionDimensionBiz.relateQuestionDimension(dimensionRequest);
-        }
-    }
-
     @DSTransactional
     private String saveQue(QuestionRequestDTO question) {
         if (BeanUtil.isEmpty(question)) {
@@ -661,41 +641,10 @@ public class QuestionInstanceBiz {
         questionResponse.setQuestionCategIds(parentIds);
     }
 
-    private void setDimensionId(QuestionResponse questionResponse) {
-        String questionInstanceId = questionResponse.getQuestionInstanceId();
-        QuestionDimensionResponse questionDimensionResponse = questionDimensionBiz.listQuestionDimension(questionInstanceId);
-        if (BeanUtil.isEmpty(questionDimensionResponse)) {
-            return;
-        }
-
-        List<String> idList = questionDimensionResponse.getQuestionSectionDimensionIds();
-        if (CollUtil.isEmpty(idList)) {
-            return;
-        }
-
-        if (idList.size() > 1) {
-            questionResponse.setDimensionIds(idList);
-        } else {
-            questionResponse.setDimensionId(idList.get(0));
-        }
-    }
-
     private boolean changeEnable(String questionInstanceId, QuestionEnabledEnum questionEnabledEnum) {
         LambdaUpdateWrapper<QuestionInstanceEntity> updateWrapper = new LambdaUpdateWrapper<QuestionInstanceEntity>()
                 .eq(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceId)
                 .set(QuestionInstanceEntity::getEnabled, questionEnabledEnum.getCode());
         return questionInstanceService.update(updateWrapper);
-    }
-
-    private QuestionDimensionRequest builderQuestionDimensionRequest(String questionInstanceId, List<String> dimensionIds) {
-        if (StrUtil.isBlank(questionInstanceId) || CollUtil.isEmpty(dimensionIds)) {
-            throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
-        }
-
-        QuestionDimensionRequest result = new QuestionDimensionRequest();
-        result.setQuestionInstanceId(questionInstanceId);
-        result.setQuestionSectionDimensionIds(dimensionIds);
-
-        return result;
     }
 }
