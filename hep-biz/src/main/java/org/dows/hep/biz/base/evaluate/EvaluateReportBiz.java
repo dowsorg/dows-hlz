@@ -1,6 +1,7 @@
 package org.dows.hep.biz.base.evaluate;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.AllArgsConstructor;
@@ -33,7 +34,7 @@ public class EvaluateReportBiz {
     * @说明: 新增或更新评估报告管理
     * @关联表: 
     * @工时: 4H
-    * @开发者: runsix
+    * @开发者: fhb
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
@@ -52,12 +53,12 @@ public class EvaluateReportBiz {
      * @说明: 获取问卷下评估报告
      * @关联表:
      * @工时: 4H
-     * @开发者: runsix
+     * @开发者: fhb
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
     public List<EvaluateReportManagementResponse> listByQuestionnaireId(String evaluateQuestionnaireId) {
-        if (BeanUtil.isEmpty(evaluateQuestionnaireId)) {
+        if (StrUtil.isEmpty(evaluateQuestionnaireId)) {
             throw new BizException(EvaluateESCEnum.PARAMS_NON_NULL);
         }
 
@@ -74,7 +75,7 @@ public class EvaluateReportBiz {
      * @说明: 获取评估报告管理
      * @关联表:
      * @工时: 4H
-     * @开发者: runsix
+     * @开发者: fhb
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
@@ -90,7 +91,7 @@ public class EvaluateReportBiz {
     * @说明: 获取评估报告管理
     * @关联表: 
     * @工时: 4H
-    * @开发者: runsix
+    * @开发者: fhb
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
@@ -109,12 +110,12 @@ public class EvaluateReportBiz {
      * @说明: 删除评估报告管理
      * @关联表:
      * @工时: 4H
-     * @开发者: runsix
+     * @开发者: fhb
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
     public Boolean deleteEvaluateReportManagement(List<String> evaluateReportManagementIds ) {
-        if (Objects.isNull(evaluateReportManagementIds) || evaluateReportManagementIds.isEmpty()) {
+        if (CollUtil.isEmpty(evaluateReportManagementIds)) {
             throw new BizException(EvaluateESCEnum.PARAMS_NON_NULL);
         }
 
@@ -124,7 +125,7 @@ public class EvaluateReportBiz {
     }
 
     private List<EvaluateReportManagementEntity> convertRequest2Entity(List<EvaluateReportRequest> requests) {
-        if (BeanUtil.isEmpty(requests)) {
+        if (CollUtil.isEmpty(requests)) {
             throw new BizException(EvaluateESCEnum.PARAMS_NON_NULL);
         }
 
@@ -134,7 +135,7 @@ public class EvaluateReportBiz {
                     .evaluateReportManagementId(request.getEvaluateReportManagementId())
                     .evaluateQuestionnaireId(request.getEvaluateQuestionnaireId())
                     .reportName(request.getReportName())
-                    .reportDescr(request.getReportDesc())
+                    .reportDescr(request.getReportDescr())
                     .assessmentResult(request.getAssessmentResult())
                     .suggestion(request.getSuggestion())
                     .minScore(request.getMinScore())

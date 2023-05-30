@@ -52,6 +52,12 @@ public class IndicatorExpressionItemEntity implements CrudEntity {
   @Schema(title = "结果")
   private String result;
 
+  @Schema(title = "结果参数名字，以英文逗号分割")
+  private String resultNameList;
+
+  @Schema(title = "结果参数数值，以英文逗号分割")
+  private String resultValList;
+
   @Schema(title = "优先判断顺序")
   private Integer seq;
 

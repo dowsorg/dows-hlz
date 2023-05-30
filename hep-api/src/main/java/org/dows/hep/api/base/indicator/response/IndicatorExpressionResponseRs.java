@@ -31,9 +31,6 @@ public class IndicatorExpressionResponseRs implements Serializable {
   @Schema(title = "应用ID")
   private String appId;
 
-  @Schema(title = "指标公式默认值")
-  private String def;
-
   @JsonIgnore
   @Schema(title = "逻辑删除")
   private Boolean deleted;
@@ -43,4 +40,10 @@ public class IndicatorExpressionResponseRs implements Serializable {
 
   @Schema(title = "指标公式细项列表")
   private List<IndicatorExpressionItemResponseRs> indicatorExpressionItemResponseRsList;
+
+  @Schema(title = "上限")
+  private IndicatorExpressionItemResponseRs maxIndicatorExpressionItemResponseRs;
+
+  @Schema(title = "下限")
+  private IndicatorExpressionItemResponseRs minIndicatorExpressionItemResponseRs;
 }
