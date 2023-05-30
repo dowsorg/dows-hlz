@@ -115,19 +115,6 @@ public class ExperimentOrgJudgeRest {
 
     /**
      *
-     * 二级类有报告 保存操作
-     *
-     * @param
-     * @return
-     */
-    @Operation(summary = "二级类有报告 保存操作")
-    @PostMapping("v1/userExperiment/experimentOrgJudge/saveExperimentPersonJudgeHealthGuidance")
-    public Boolean saveExperimentPersonJudgeHealthGuidance(@RequestBody @Validated List<ExperimentPersonHealthGuidanceRequest> requestList) {
-        return experimentOrgJudgeBiz.saveExperimentPersonJudgeHealthGuidance(requestList);
-    }
-
-    /**
-     *
      * 三级类别/四级类别：根据指标分类ID获取所有符合条件的数据
      * @param
      * @return
