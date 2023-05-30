@@ -152,7 +152,10 @@ public class RiskModelBiz{
                             .stream()
                             .map(riskDangerPointEntity -> {
                                 String indicatorInstanceId = riskDangerPointEntity.getIndicatorInstanceId();
-                                IndicatorInstanceResponseRs indicatorInstanceResponseRs = IndicatorInstanceBiz.indicatorInstance2ResponseRs(kIndicatorInstanceIdVIndicatorInstanceMap.get(indicatorInstanceId));
+                                IndicatorInstanceResponseRs indicatorInstanceResponseRs = IndicatorInstanceBiz.indicatorInstance2ResponseRs(
+                                    kIndicatorInstanceIdVIndicatorInstanceMap.get(indicatorInstanceId),
+                                    null
+                                    );
                                 return RiskDangerPointBiz.riskDangerPoint2ResponseRs(riskDangerPointEntity, indicatorInstanceResponseRs);
                             })
                             .collect(Collectors.toList());
