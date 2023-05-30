@@ -128,6 +128,18 @@ public class ExperimentOrgJudgeRest {
     }
 
     /**
+     * 二级-无报告 保存操作
+     * @param
+     * @return
+     */
+    @Operation(summary = "saveExperimentPersRiskFactor")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/saveExperimentPersonRiskFactor")
+    public Boolean saveExperimentPersonRiskFactor(@RequestBody @Validated List<ExperimentPersonRiskFactorRequest> personRiskFactorRequestList)
+    {
+        return experimentOrgJudgeBiz.saveExperimentPersonRiskFactor(personRiskFactorRequestList);
+    }
+
+    /**
      * 三级-无报告 保存操作
      * @param
      * @return
