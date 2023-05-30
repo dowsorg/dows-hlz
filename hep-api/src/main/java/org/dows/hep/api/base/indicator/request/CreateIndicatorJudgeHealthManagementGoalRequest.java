@@ -25,5 +25,7 @@ public class CreateIndicatorJudgeHealthManagementGoalRequest{
     @Schema(title = "0-禁用，1-启用")
     private Integer status;
 
+    @Schema(title = "判断指标健管目标分布式ID")
+    private String indicatorJudgeHealthManagementGoalId;
 
 }

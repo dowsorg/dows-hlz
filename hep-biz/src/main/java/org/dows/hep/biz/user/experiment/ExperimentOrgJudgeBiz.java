@@ -3,6 +3,7 @@ package org.dows.hep.biz.user.experiment;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeHealthManagementGoalRequest;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeHealthProblemRequest;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeRiskFactorRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthGuidanceResponse;
@@ -35,7 +36,6 @@ public class ExperimentOrgJudgeBiz {
     private final IndicatorJudgeHealthProblemService indicatorJudgeHealthProblemService;
     private final ExperimentPersonPropertyService experimentPersonPropertyService;
     private final IndicatorJudgeHealthManagementGoalService indicatorJudgeHealthManagementGoalService;
-    private final ExperimentPersonHealthManagementGoalService experimentPersonHealthManagementGoalService;
     private final OperateOrgFuncService operateOrgFuncService;
     private final OperateOrgFuncSnapService operateOrgFuncSnapService;
 
@@ -302,7 +302,7 @@ public class ExperimentOrgJudgeBiz {
      * @开始时间:
      * @创建时间: 2023年5月29日 下午17:24:34
      */
-    public Boolean checkRangeMatchFormula(ExperimentPersonHealthManagementGoalRequest request) {
+    public Boolean checkRangeMatchFormula(CreateIndicatorJudgeHealthManagementGoalRequest request) {
         Boolean flag = true;
         //1、根据直接判断分布式ID获取公式
         IndicatorJudgeHealthManagementGoalEntity entity = indicatorJudgeHealthManagementGoalService.lambdaQuery()
@@ -312,30 +312,6 @@ public class ExperimentOrgJudgeBiz {
         //2、todo 根据公式计算范围是否符合
         flag = false;
         return flag;
-    }
-
-    /**
-     * @param
-     * @return
-     * @说明: 直接判断 赋值
-     * @关联表: experimentPersonHealthManagementGoal
-     * @工时: 2H
-     * @开发者: jx
-     * @开始时间:
-     * @创建时间: 2023年5月29日 下午17:24:34
-     */
-    @DSTransactional
-    public Boolean saveJudgmentResult(List<ExperimentPersonHealthManagementGoalRequest> requestList) {
-        List<ExperimentPersonHealthManagementGoalEntity> entityList = new ArrayList<>();
-        requestList.forEach(request -> {
-            ExperimentPersonHealthManagementGoalEntity goalEntity = ExperimentPersonHealthManagementGoalEntity.builder()
-                    .indicatorJudgeHealthManagementGoalId(request.getIndicatorJudgeHealthManagementGoalId())
-                    .experimentPersonId(request.getExperimentPersonId())
-                    .ranges(request.getRanges())
-                    .build();
-            entityList.add(goalEntity);
-        });
-        return experimentPersonHealthManagementGoalService.saveBatch(entityList);
     }
 
     /**

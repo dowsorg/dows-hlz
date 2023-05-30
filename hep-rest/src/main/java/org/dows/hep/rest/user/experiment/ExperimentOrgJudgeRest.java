@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.util.JwtUtil;
+import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeHealthManagementGoalRequest;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeHealthProblemRequest;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeRiskFactorRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthGuidanceResponse;
@@ -176,23 +177,10 @@ public class ExperimentOrgJudgeRest {
      */
     @Operation(summary = "checkRangeMatchFormula")
     @PostMapping("v1/userExperiment/experimentOrgJudge/checkRangeMatchFormula")
-    public Boolean checkRangeMatchFormula(@RequestBody @Validated ExperimentPersonHealthManagementGoalRequest request)
+    public Boolean checkRangeMatchFormula(@RequestBody @Validated CreateIndicatorJudgeHealthManagementGoalRequest request)
     {
         return experimentOrgJudgeBiz.checkRangeMatchFormula(request);
     }
-
-    /**
-     * 直接判断 保存结果
-     * @param
-     * @return
-     */
-    @Operation(summary = "saveJudgmentResult")
-    @PostMapping("v1/userExperiment/experimentOrgJudge/saveJudgmentResult")
-    public Boolean saveJudgmentResult(@RequestBody @Validated List<ExperimentPersonHealthManagementGoalRequest> requestList)
-    {
-        return experimentOrgJudgeBiz.saveJudgmentResult(requestList);
-    }
-
 
     /**
     * 健康问题+健康指导+疾病问题：保存
