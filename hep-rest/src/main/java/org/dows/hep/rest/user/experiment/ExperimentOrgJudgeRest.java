@@ -178,6 +178,18 @@ public class ExperimentOrgJudgeRest {
         return experimentOrgJudgeBiz.checkRangeMatchFormula(request);
     }
 
+    /**
+     * 直接判断 保存结果
+     * @param
+     * @return
+     */
+    @Operation(summary = "saveJudgmentResult")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/saveJudgmentResult")
+    public Boolean saveJudgmentResult(@RequestBody @Validated List<ExperimentPersonHealthManagementGoalRequest> requestList)
+    {
+        return experimentOrgJudgeBiz.saveJudgmentResult(requestList);
+    }
+
 
     /**
     * 健康问题+健康指导+疾病问题：保存

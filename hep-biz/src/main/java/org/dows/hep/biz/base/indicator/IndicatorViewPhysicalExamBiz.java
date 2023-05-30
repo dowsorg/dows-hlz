@@ -103,7 +103,8 @@ public class IndicatorViewPhysicalExamBiz{
             .map(indicatorViewPhysicalExamEntity -> {
                 IndicatorCategoryResponse indicatorCategoryResponse = kIndicatorCategoryIdVIndicatorCategoryResponseMap.get(indicatorViewPhysicalExamEntity.getIndicatorCategoryId());
                 IndicatorInstanceResponseRs indicatorInstanceResponseRs = IndicatorInstanceBiz.indicatorInstance2ResponseRs(
-                    kIndicatorInstanceIdVIndicatorInstanceEntityMap.get(indicatorViewPhysicalExamEntity.getIndicatorInstanceId())
+                    kIndicatorInstanceIdVIndicatorInstanceEntityMap.get(indicatorViewPhysicalExamEntity.getIndicatorInstanceId()),
+                    null
                 );
                 return indicatorViewPhysicalExam2ResponseRs(
                     indicatorViewPhysicalExamEntity,

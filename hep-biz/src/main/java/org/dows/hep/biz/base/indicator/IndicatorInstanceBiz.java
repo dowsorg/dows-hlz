@@ -4,23 +4,14 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.dows.hep.api.base.indicator.request.CreateIndicatorInstanceRequest;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorInstanceRequestRs;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorInstanceRequest;
-import org.dows.hep.api.base.indicator.response.IndicatorInstanceCategoryResponseRs;
-import org.dows.hep.api.base.indicator.response.IndicatorInstanceResponse;
-import org.dows.hep.api.base.indicator.response.IndicatorInstanceResponseRs;
+import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.IndicatorInstanceException;
 import org.dows.hep.biz.util.RedissonUtil;
-import org.dows.hep.entity.IndicatorCategoryEntity;
-import org.dows.hep.entity.IndicatorCategoryRefEntity;
-import org.dows.hep.entity.IndicatorInstanceEntity;
-import org.dows.hep.entity.IndicatorRuleEntity;
-import org.dows.hep.service.IndicatorCategoryRefService;
-import org.dows.hep.service.IndicatorCategoryService;
-import org.dows.hep.service.IndicatorInstanceService;
-import org.dows.hep.service.IndicatorRuleService;
+import org.dows.hep.entity.*;
+import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -53,7 +44,15 @@ public class IndicatorInstanceBiz{
     private final IndicatorRuleService indicatorRuleService;
     private final IndicatorCategoryService indicatorCategoryService;
 
-    public static IndicatorInstanceResponseRs indicatorInstance2ResponseRs(IndicatorInstanceEntity indicatorInstanceEntity) {
+    private final IndicatorExpressionService indicatorExpressionService;
+
+    private final IndicatorExpressionItemService indicatorExpressionItemService;
+
+    private final IndicatorExpressionRefService indicatorExpressionRefService;
+
+    public static IndicatorInstanceResponseRs indicatorInstance2ResponseRs(
+        IndicatorInstanceEntity indicatorInstanceEntity,
+        IndicatorExpressionResponseRs indicatorExpressionResponseRs) {
         if (Objects.isNull(indicatorInstanceEntity)) {
             return null;
         }
@@ -71,10 +70,11 @@ public class IndicatorInstanceBiz{
             .rawExpression(indicatorInstanceEntity.getRawExpression())
             .descr(indicatorInstanceEntity.getDescr())
             .dt(indicatorInstanceEntity.getDt())
+            .indicatorExpressionResponseRs(indicatorExpressionResponseRs)
             .build();
     }
 
-    public static IndicatorInstanceCategoryResponseRs IndicatorInstanceCategoryResponseRs(
+    public static IndicatorInstanceCategoryResponseRs indicatorInstanceCategoryResponseRs(
         IndicatorCategoryEntity indicatorCategoryEntity,
         List<IndicatorInstanceResponseRs> indicatorInstanceResponseRsList
         ) {
@@ -93,6 +93,63 @@ public class IndicatorInstanceBiz{
             .indicatorInstanceResponseRsList(indicatorInstanceResponseRsList)
             .build();
     }
+
+    public void populateKIndicatorExpressionIdVIndicatorExpressionEntityMap(String appId, Set<String> indicatorInstanceIdSet, Map<String, IndicatorExpressionResponseRs> kIndicatorInstanceIdVIndicatorExpressionResponseRsMap) {
+        if (Objects.isNull(kIndicatorInstanceIdVIndicatorExpressionResponseRsMap)) {
+            log.warn("method IndicatorInstanceBiz.populateKIndicatorExpressionIdVIndicatorExpressionEntityMap param kIndicatorInstanceIdVIndicatorExpressionResponseRsMap is null");
+            return;
+        }
+        Map<String, String> kIndicatorInstanceIdVIndicatorExpressionIdMap = new HashMap<>();
+        Set<String> indicatorExpressionIdSet = new HashSet<>();
+        Map<String, IndicatorExpressionEntity> kIndicatorExpressionIdVIndicatorExpressionEntityMap = new HashMap<>();
+        Map<String, List<IndicatorExpressionItemEntity>> kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap = new HashMap<>();
+        if (!indicatorInstanceIdSet.isEmpty()) {
+            indicatorExpressionRefService.lambdaQuery()
+                .eq(IndicatorExpressionRefEntity::getAppId, appId)
+                .in(IndicatorExpressionRefEntity::getPrincipalId, indicatorInstanceIdSet)
+                .list()
+                .forEach(indicatorExpressionRefEntity -> {
+                    indicatorExpressionIdSet.add(indicatorExpressionRefEntity.getIndicatorExpressionId());
+                    kIndicatorInstanceIdVIndicatorExpressionIdMap.put(indicatorExpressionRefEntity.getPrincipalId(), indicatorExpressionRefEntity.getIndicatorExpressionId());
+                });
+        }
+        if (!indicatorExpressionIdSet.isEmpty()) {
+            indicatorExpressionService.lambdaQuery()
+                .eq(IndicatorExpressionEntity::getAppId, appId)
+                .in(IndicatorExpressionEntity::getIndicatorExpressionId, indicatorExpressionIdSet)
+                .list()
+                .forEach(indicatorExpressionEntity -> kIndicatorExpressionIdVIndicatorExpressionEntityMap.put(
+                    indicatorExpressionEntity.getIndicatorExpressionId(), indicatorExpressionEntity)
+                );
+            indicatorExpressionItemService.lambdaQuery()
+                .eq(IndicatorExpressionItemEntity::getAppId, appId)
+                .in(IndicatorExpressionItemEntity::getIndicatorExpressionId, indicatorExpressionIdSet)
+                .list()
+                .forEach(indicatorExpressionItemEntity -> {
+                    String indicatorExpressionId = indicatorExpressionItemEntity.getIndicatorExpressionId();
+                    List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.get(indicatorExpressionId);
+                    if (Objects.isNull(indicatorExpressionItemEntityList)) {
+                        indicatorExpressionItemEntityList = Collections.emptyList();
+                    }
+                    indicatorExpressionItemEntityList.add(indicatorExpressionItemEntity);
+                    kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.put(indicatorExpressionId, indicatorExpressionItemEntityList);
+                });
+        }
+        kIndicatorInstanceIdVIndicatorExpressionIdMap.forEach((indicatorInstanceId, indicatorExpressionId) -> {
+            IndicatorExpressionEntity indicatorExpressionEntity = kIndicatorExpressionIdVIndicatorExpressionEntityMap.get(indicatorExpressionId);
+            if (Objects.isNull(indicatorExpressionEntity)) {
+                return;
+            }
+            List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.get(indicatorExpressionId);
+            if (Objects.isNull(indicatorExpressionItemEntityList)) {
+                indicatorExpressionItemEntityList = new ArrayList<>();
+            }
+            List<IndicatorExpressionItemResponseRs> indicatorExpressionItemResponseRsList = indicatorExpressionItemEntityList.stream().map(IndicatorExpressionItemBiz::indicatorExpressionItem2ResponseRs).collect(Collectors.toList());
+            IndicatorExpressionResponseRs indicatorExpressionResponseRs = IndicatorExpressionBiz.indicatorExpression2ResponseRs(indicatorExpressionEntity, indicatorExpressionItemResponseRsList);
+            kIndicatorInstanceIdVIndicatorExpressionResponseRsMap.put(indicatorInstanceId, indicatorExpressionResponseRs);
+        });
+    }
+
     @Transactional(rollbackFor = Exception.class)
     public void createOrUpdateRs(CreateOrUpdateIndicatorInstanceRequestRs createOrUpdateIndicatorInstanceRequestRs) throws InterruptedException {
         String indicatorInstanceId = createOrUpdateIndicatorInstanceRequestRs.getIndicatorInstanceId();
@@ -344,6 +401,8 @@ public class IndicatorInstanceBiz{
         if (indicatorCategoryIdSet.isEmpty()) {
             return Collections.emptyList();
         }
+        Set<String> indicatorInstanceIdSet = new HashSet<>();
+        Map<String, IndicatorExpressionResponseRs> kIndicatorInstanceIdVIndicatorExpressionResponseRsMap = new HashMap<>();
         indicatorInstanceService.lambdaQuery()
             .eq(IndicatorInstanceEntity::getAppId, appId)
             .in(IndicatorInstanceEntity::getIndicatorCategoryId, indicatorCategoryIdSet)
@@ -354,9 +413,11 @@ public class IndicatorInstanceBiz{
                 if (Objects.isNull(indicatorInstanceEntityList)) {
                     indicatorInstanceEntityList = new ArrayList<>();
                 }
+                indicatorInstanceIdSet.add(indicatorInstanceEntity.getIndicatorInstanceId());
                 indicatorInstanceEntityList.add(indicatorInstanceEntity);
                 kIndicatorCategoryIdVIndicatorInstanceListMap.put(indicatorCategoryId, indicatorInstanceEntityList);
             });
+        populateKIndicatorExpressionIdVIndicatorExpressionEntityMap(appId, indicatorInstanceIdSet, kIndicatorInstanceIdVIndicatorExpressionResponseRsMap);
         return indicatorCategoryEntityList
             .stream()
             .map(indicatorCategoryEntity -> {
@@ -365,10 +426,14 @@ public class IndicatorInstanceBiz{
                 List<IndicatorInstanceEntity> indicatorInstanceEntityList = kIndicatorCategoryIdVIndicatorInstanceListMap.get(indicatorCategoryId);
                 if (Objects.nonNull(indicatorInstanceEntityList)) {
                     indicatorInstanceResponseRsList = indicatorInstanceEntityList.stream()
-                        .map(IndicatorInstanceBiz::indicatorInstance2ResponseRs)
+                        .map(indicatorInstanceEntity -> {
+                            String indicatorInstanceId = indicatorInstanceEntity.getIndicatorInstanceId();
+                            IndicatorExpressionResponseRs indicatorExpressionResponseRs = kIndicatorInstanceIdVIndicatorExpressionResponseRsMap.get(indicatorInstanceId);
+                            return IndicatorInstanceBiz.indicatorInstance2ResponseRs(indicatorInstanceEntity, indicatorExpressionResponseRs);
+                        })
                         .collect(Collectors.toList());
                 }
-                return IndicatorInstanceBiz.IndicatorInstanceCategoryResponseRs(
+                return IndicatorInstanceBiz.indicatorInstanceCategoryResponseRs(
                     indicatorCategoryEntity, indicatorInstanceResponseRsList
                 );
             }).collect(Collectors.toList());

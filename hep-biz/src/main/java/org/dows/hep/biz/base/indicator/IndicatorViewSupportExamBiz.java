@@ -127,7 +127,8 @@ public class IndicatorViewSupportExamBiz{
                 indicatorCategoryEntityList.add(indicatorCategoryEntityThird);
                 List<IndicatorCategoryResponse> indicatorCategoryResponseList = indicatorCategoryEntityList.stream().map(IndicatorCategoryBiz::indicatorCategoryEntity2Response).collect(Collectors.toList());
                 IndicatorInstanceResponseRs indicatorInstanceResponseRs = IndicatorInstanceBiz.indicatorInstance2ResponseRs(
-                    kIndicatorInstanceIdVIndicatorInstanceEntityMap.get(indicatorViewSupportExamEntity.getIndicatorInstanceId())
+                    kIndicatorInstanceIdVIndicatorInstanceEntityMap.get(indicatorViewSupportExamEntity.getIndicatorInstanceId()),
+                    null
                 );
                 return indicatorViewSupportExam2ResponseRs(
                     indicatorViewSupportExamEntity,
