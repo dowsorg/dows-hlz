@@ -24,7 +24,7 @@ public class EvaluateReportRequest {
     private String reportName;
 
     @Schema(title = "报告说明")
-    private String reportDesc;
+    private String reportDescr;
 
     @Schema(title = "评估结果")
     private String assessmentResult;
