@@ -10,10 +10,7 @@ import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.enums.QuestionESCEnum;
 import org.dows.hep.api.base.question.enums.QuestionSectionAccessAuthEnum;
 import org.dows.hep.api.base.question.enums.QuestionSourceEnum;
-import org.dows.hep.api.base.question.request.QuestionRequest;
-import org.dows.hep.api.base.question.request.QuestionSectionDimensionRequest;
-import org.dows.hep.api.base.question.request.QuestionSectionItemRequest;
-import org.dows.hep.api.base.question.request.QuestionSectionRequest;
+import org.dows.hep.api.base.question.request.*;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionDimensionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionItemResponse;
@@ -251,11 +248,13 @@ public class QuestionSectionBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public Boolean delSectionQuestion(String questionSectionId, List<String> questionSectionItemIds) {
-        if (StrUtil.isBlank(questionSectionId) || questionSectionItemIds == null || questionSectionItemIds.isEmpty()) {
-            return false;
+    public Boolean delSectionQuestion(QuestionSectionDelItemRequest request) {
+        if (BeanUtil.isEmpty(request)) {
+            throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
         }
 
+        String questionSectionId = request.getQuestionSectionId();
+        List<String> questionSectionItemIds = request.getQuestionSectionItemIds();
         questionSectionItemBiz.delBatch(questionSectionId, questionSectionItemIds);
         return Boolean.FALSE;
     }

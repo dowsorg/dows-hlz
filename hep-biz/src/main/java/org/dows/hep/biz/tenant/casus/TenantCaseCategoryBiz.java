@@ -42,7 +42,7 @@ public class TenantCaseCategoryBiz {
             throw new BizException(CaseESCEnum.PARAMS_NON_NULL);
         }
 
-        CaseCategoryEntity caseCategoryEntity = checkBeforeSaveOrUpd(request);
+        CaseCategoryEntity caseCategoryEntity = convertRequest2Entity(request);
         caseCategoryService.saveOrUpdate(caseCategoryEntity);
 
         return caseCategoryEntity.getCaseCategId();
@@ -170,7 +170,7 @@ public class TenantCaseCategoryBiz {
         return remRes1 && remRes2;
     }
 
-    private CaseCategoryEntity checkBeforeSaveOrUpd(CaseCategoryRequest request) {
+    private CaseCategoryEntity convertRequest2Entity(CaseCategoryRequest request) {
         if (BeanUtil.isEmpty(request)) {
             throw new BizException(CaseESCEnum.PARAMS_NON_NULL);
         }
@@ -206,6 +206,7 @@ public class TenantCaseCategoryBiz {
 
         return caseCategoryService.lambdaQuery()
                 .eq(CaseCategoryEntity::getCaseCategGroup, categGroup)
+                .orderBy(true, true, CaseCategoryEntity::getSequence)
                 .list()
                 .stream()
                 .map(item -> BeanUtil.copyProperties(item, CaseCategoryResponse.class))

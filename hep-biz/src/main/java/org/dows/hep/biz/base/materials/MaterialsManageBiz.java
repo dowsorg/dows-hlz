@@ -1,6 +1,9 @@
 package org.dows.hep.biz.base.materials;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -87,8 +90,11 @@ public class MaterialsManageBiz {
                 .eq(MaterialsEntity::getAppId, request.getAppId())
                 .eq(MaterialsEntity::getBizCode, request.getBizCode())
                 .like(BeanUtil.isNotEmpty(request) && StrUtil.isNotBlank(request.getKeyword()), MaterialsEntity::getTitle, request.getKeyword())
+                .orderBy(true, true, MaterialsEntity::getSequence)
                 .page(pageRequest);
-        return baseBiz.convertPage(pageResult, MaterialsPageResponse.class);
+        result = baseBiz.convertPage(pageResult, MaterialsPageResponse.class);
+        fillResult(result);
+        return result;
     }
 
     /**
@@ -336,4 +342,37 @@ public class MaterialsManageBiz {
                 .set(MaterialsEntity::getEnabled, enable.getCode());
         return materialsService.update(updateWrapper);
     }
+
+    private void fillResult(Page<MaterialsPageResponse> result) {
+        if (BeanUtil.isEmpty(result)) {
+            throw new BizException(MaterialsESCEnum.DATA_NULL);
+        }
+
+        List<MaterialsPageResponse> records = result.getRecords();
+        if (CollUtil.isEmpty(records)) {
+            return;
+        }
+
+        records.forEach(record -> {
+            Date dt = record.getDt();
+            String uploadTime = convertDate2String(dt);
+            record.setUploadTime(uploadTime);
+        });
+    }
+
+    private String convertDate2String(Date date) {
+        if (Objects.isNull(date)) {
+            throw new BizException(MaterialsESCEnum.PARAMS_NON_NULL);
+        }
+
+        DateTime dateTime = DateUtil.date(date);
+        // 年月日
+        String ymd = dateTime.toDateStr();
+        // 星期
+        String week = dateTime.dayOfWeekEnum().toChinese();
+        // 小时：分
+        String time = dateTime.toTimeStr();
+        return ymd + week + " " + time;
+    }
+
 }

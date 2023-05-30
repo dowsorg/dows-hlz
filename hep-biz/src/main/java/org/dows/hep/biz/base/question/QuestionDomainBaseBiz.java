@@ -9,10 +9,8 @@ import org.dows.hep.api.enums.EnumToken;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Supplier;
 
 @RequiredArgsConstructor
 @Service
@@ -25,8 +23,19 @@ public class QuestionDomainBaseBiz {
         return "3";
     }
 
-    public Integer getSequence() {
-        return 0;
+    public Integer getSequence(Supplier<Integer> supplier) {
+        if (Objects.isNull(supplier)) {
+            return 0;
+        }
+
+        Integer sequence = supplier.get();
+        if (Objects.isNull(sequence)) {
+            return 0;
+        } else {
+            sequence += 1;
+        }
+
+        return sequence;
     }
 
     public String getIdStr() {

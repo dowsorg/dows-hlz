@@ -22,6 +22,15 @@ public class CreateIndicatorJudgeHealthProblemRequest{
     @Schema(title = "健康问题名称")
     private String name;
 
+    @Schema(title = "分布式ID")
+    private String indicatorJudgeHealthProblemId;
+
+    @Schema(title = "实验人物ID")
+    private String experimentPersonId;
+
+    @Schema(title = "健康问题类别名称")
+    private String healthProbleamCategoryName;
+
     @Schema(title = "健康问题类别")
     private String type;
 

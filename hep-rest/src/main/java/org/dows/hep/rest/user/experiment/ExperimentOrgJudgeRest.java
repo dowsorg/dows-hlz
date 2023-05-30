@@ -1,9 +1,13 @@
 package org.dows.hep.rest.user.experiment;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeHealthProblemRequest;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeRiskFactorRequest;
+import org.dows.hep.api.base.indicator.request.ExperimentPersonHealthProblemRequest;
+import org.dows.hep.api.base.indicator.response.ExperimentPersonHealthProblemResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthGuidanceResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthProblemResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponse;
@@ -52,6 +56,30 @@ public class ExperimentOrgJudgeRest {
     }
 
     /**
+     * 二级-无报告 判断操作
+     * @param
+     * @return
+     */
+    @Operation(summary = "isIndicatorJudgeRiskFactor")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/isIndicatorJudgeRiskFactor")
+    public Boolean isIndicatorJudgeRiskFactor(@RequestBody @Validated List<CreateIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList)
+    {
+        return experimentOrgJudgeBiz.isIndicatorJudgeRiskFactor(judgeRiskFactorRequestList);
+    }
+
+    /**
+     * 二级-无报告 保存操作
+     * @param
+     * @return
+     */
+    @Operation(summary = "saveExperimentPersRiskFactor")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/saveExperimentPersonRiskFactor")
+    public Boolean saveExperimentPersonRiskFactor(@RequestBody @Validated List<ExperimentPersonRiskFactorRequest> personRiskFactorRequestList)
+    {
+        return experimentOrgJudgeBiz.saveExperimentPersonRiskFactor(personRiskFactorRequestList);
+    }
+
+    /**
      *
      * 获取二级类有报告的判断指标信息
      *
@@ -62,6 +90,19 @@ public class ExperimentOrgJudgeRest {
     @PostMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeHealthGuidance")
     public Map<String,List<IndicatorJudgeHealthGuidanceResponse>> getIndicatorJudgeHealthGuidance(@RequestParam @Validated String indicatorFuncId) {
         return experimentOrgJudgeBiz.getIndicatorJudgeHealthGuidance(indicatorFuncId);
+    }
+
+    /**
+     *
+     * 二级类有报告 保存操作
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "二级类有报告 保存操作")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/saveExperimentPersonJudgeHealthGuidance")
+    public Boolean saveExperimentPersonJudgeHealthGuidance(@RequestBody @Validated List<ExperimentPersonHealthGuidanceRequest> requestList) {
+        return experimentOrgJudgeBiz.saveExperimentPersonJudgeHealthGuidance(requestList);
     }
 
     /**
@@ -112,16 +153,68 @@ public class ExperimentOrgJudgeRest {
     }
 
     /**
-     * 判断用户操作正确与否
+     * 三级-无报告 保存操作
      * @param
      * @return
      */
-    @Operation(summary = "isJudgeAction")
-    @PostMapping("v1/userExperiment/experimentOrgJudge/isJudgeAction")
-    public Boolean isJudgeAction(@RequestBody @Validated List<CreateIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList)
+    @Operation(summary = "saveExperimentIndicatorJudgeHealthProblem")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/saveExperimentIndicatorJudgeHealthProblem")
+    public Boolean saveExperimentIndicatorJudgeHealthProblem(@RequestBody @Validated List<CreateIndicatorJudgeHealthProblemRequest> judgeHealthProblemRequestList)
     {
-        return experimentOrgJudgeBiz.isJudgeAction(judgeRiskFactorRequestList);
+        return experimentOrgJudgeBiz.saveExperimentIndicatorJudgeHealthProblem(judgeHealthProblemRequestList);
     }
+
+    /**
+     * 三级-无报告 获取分页
+     * @param
+     * @return
+     */
+    @Operation(summary = "pageExperimentIndicatorJudgeHealthProblem")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/pageExperimentIndicatorJudgeHealthProblem")
+    public IPage<ExperimentPersonHealthProblemResponse> pageExperimentIndicatorJudgeHealthProblem(@RequestBody @Validated ExperimentPersonHealthProblemRequest experimentPersonHealthProblemRequest)
+    {
+        return experimentOrgJudgeBiz.pageExperimentIndicatorJudgeHealthProblem(experimentPersonHealthProblemRequest);
+    }
+
+    /**
+     * 三级-无报告 删除数据
+     * @param
+     * @return
+     */
+    @Operation(summary = "delExperimentIndicatorJudgeHealthProblem")
+    @DeleteMapping("v1/userExperiment/experimentOrgJudge/delExperimentIndicatorJudgeHealthProblem")
+    public Boolean delExperimentIndicatorJudgeHealthProblem(@RequestParam @Validated String indicatorJudgeHealthProblemId,
+                                                            @RequestParam @Validated String experimentPersonId
+                                                            )
+
+    {
+        return experimentOrgJudgeBiz.delExperimentIndicatorJudgeHealthProblem(indicatorJudgeHealthProblemId,experimentPersonId);
+    }
+
+    /**
+     * 直接判断 判断范围是否满足公式
+     * @param
+     * @return
+     */
+    @Operation(summary = "checkRangeMatchFormula")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/checkRangeMatchFormula")
+    public Boolean checkRangeMatchFormula(@RequestBody @Validated ExperimentPersonHealthManagementGoalRequest request)
+    {
+        return experimentOrgJudgeBiz.checkRangeMatchFormula(request);
+    }
+
+    /**
+     * 直接判断 保存结果
+     * @param
+     * @return
+     */
+    @Operation(summary = "saveJudgmentResult")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/saveJudgmentResult")
+    public Boolean saveJudgmentResult(@RequestBody @Validated List<ExperimentPersonHealthManagementGoalRequest> requestList)
+    {
+        return experimentOrgJudgeBiz.saveJudgmentResult(requestList);
+    }
+
 
     /**
     * 健康问题+健康指导+疾病问题：保存

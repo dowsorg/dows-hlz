@@ -213,6 +213,9 @@ public class EvaluateQuestionnaireBiz {
                 .evaluateCategId(request.getEvaluateCategId())
                 .evaluateQuestionnaireName(request.getEvaluateQuestionnaireName())
                 .evaluateQuestionnaireDesc(request.getEvaluateQuestionnaireDesc())
+                .operationPrompt(request.getOperationPrompt())
+                .tips(request.getTips())
+                .enabled(request.getEnabled())
                 .accountId(request.getAccountId())
                 .accountName(request.getAccountName())
                 .questionSectionId(questionSectionId)
@@ -221,6 +224,9 @@ public class EvaluateQuestionnaireBiz {
         String uniqueId = result.getEvaluateQuestionnaireId();
         if (StrUtil.isBlank(uniqueId)) {
             result.setEvaluateQuestionnaireId(baseBiz.getIdStr());
+            if (result.getEnabled() == null) {
+                result.setEnabled(EvaluateEnabledEnum.ENABLED.getCode());
+            }
         } else {
             EvaluateQuestionnaireEntity entity = getById(uniqueId);
             if (BeanUtil.isEmpty(entity)) {
