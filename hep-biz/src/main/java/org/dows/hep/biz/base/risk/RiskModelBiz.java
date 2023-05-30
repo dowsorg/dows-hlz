@@ -154,6 +154,8 @@ public class RiskModelBiz{
                                 String indicatorInstanceId = riskDangerPointEntity.getIndicatorInstanceId();
                                 IndicatorInstanceResponseRs indicatorInstanceResponseRs = IndicatorInstanceBiz.indicatorInstance2ResponseRs(
                                     kIndicatorInstanceIdVIndicatorInstanceMap.get(indicatorInstanceId),
+                                    null,
+                                    null,
                                     null
                                     );
                                 return RiskDangerPointBiz.riskDangerPoint2ResponseRs(riskDangerPointEntity, indicatorInstanceResponseRs);

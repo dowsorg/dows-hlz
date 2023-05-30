@@ -128,6 +128,8 @@ public class IndicatorViewSupportExamBiz{
                 List<IndicatorCategoryResponse> indicatorCategoryResponseList = indicatorCategoryEntityList.stream().map(IndicatorCategoryBiz::indicatorCategoryEntity2Response).collect(Collectors.toList());
                 IndicatorInstanceResponseRs indicatorInstanceResponseRs = IndicatorInstanceBiz.indicatorInstance2ResponseRs(
                     kIndicatorInstanceIdVIndicatorInstanceEntityMap.get(indicatorViewSupportExamEntity.getIndicatorInstanceId()),
+                    null,
+                    null,
                     null
                 );
                 return indicatorViewSupportExam2ResponseRs(
