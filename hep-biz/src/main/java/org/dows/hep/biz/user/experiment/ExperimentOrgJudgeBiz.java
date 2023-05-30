@@ -387,7 +387,7 @@ public class ExperimentOrgJudgeBiz {
             ExperimentPersonHealthManagementGoalEntity goalEntity = ExperimentPersonHealthManagementGoalEntity.builder()
                     .indicatorJudgeHealthManagementGoalId(request.getIndicatorJudgeHealthManagementGoalId())
                     .experimentPersonId(request.getExperimentPersonId())
-                    .range(request.getRange())
+                    .ranges(request.getRanges())
                     .build();
             entityList.add(goalEntity);
         });

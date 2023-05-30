@@ -40,7 +40,7 @@ public class ExperimentPersonHealthManagementGoalEntity implements CrudEntity {
     private String experimentPersonId;
 
     @Schema(title = "范围")
-    private String range;
+    private String ranges;
 
     @JsonIgnore
     @TableLogic

@@ -19,5 +19,5 @@ public class ExperimentPersonHealthManagementGoalRequest {
     private String experimentPersonId;
 
     @Schema(title = "范围")
-    private String range;
+    private String ranges;
 }
