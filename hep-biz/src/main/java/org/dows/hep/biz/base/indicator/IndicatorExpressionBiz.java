@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorExpressionItemRequestRs;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorExpressionRequestRs;
+import org.dows.hep.api.base.indicator.response.IndicatorExpressionItemResponseRs;
+import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.exception.IndicatorExpressionException;
 import org.dows.hep.entity.IndicatorExpressionEntity;
@@ -32,6 +34,28 @@ public class IndicatorExpressionBiz{
   private final IndicatorExpressionService indicatorExpressionService;
   private final IndicatorExpressionItemService indicatorExpressionItemService;
   private final IndicatorExpressionRefService indicatorExpressionRefService;
+
+  public static IndicatorExpressionResponseRs indicatorExpression2ResponseRs(
+      IndicatorExpressionEntity indicatorExpressionEntity,
+      List<IndicatorExpressionItemResponseRs> indicatorExpressionItemResponseRsList
+      ) {
+    if (Objects.isNull(indicatorExpressionEntity)) {
+      return null;
+    }
+    if (Objects.isNull(indicatorExpressionItemResponseRsList)) {
+      indicatorExpressionItemResponseRsList = Collections.emptyList();
+    }
+    return IndicatorExpressionResponseRs
+        .builder()
+        .id(indicatorExpressionEntity.getId())
+        .indicatorExpressionId(indicatorExpressionEntity.getIndicatorExpressionId())
+        .appId(indicatorExpressionEntity.getAppId())
+        .def(indicatorExpressionEntity.getDef())
+        .deleted(indicatorExpressionEntity.getDeleted())
+        .dt(indicatorExpressionEntity.getDt())
+        .indicatorExpressionItemResponseRsList(indicatorExpressionItemResponseRsList)
+        .build();
+  }
   @Transactional(rollbackFor = Exception.class)
   public void createOrUpdate(CreateOrUpdateIndicatorExpressionRequestRs createOrUpdateIndicatorExpressionRequestRs) {
     String indicatorExpressionId = createOrUpdateIndicatorExpressionRequestRs.getIndicatorExpressionId();
@@ -75,20 +99,53 @@ public class IndicatorExpressionBiz{
             .map(CreateOrUpdateIndicatorExpressionItemRequestRs::getIndicatorExpressionItemId)
             .filter(Objects::nonNull)
             .collect(Collectors.toSet());
-        Set<String> dbIndicatorExpressionItemIdSet = indicatorExpressionItemService.lambdaQuery()
+        Set<String> dbIndicatorExpressionItemIdSet = new HashSet<>();
+        Map<String, IndicatorExpressionItemEntity> kIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap = indicatorExpressionItemService.lambdaQuery()
             .eq(IndicatorExpressionItemEntity::getAppId, appId)
             .in(IndicatorExpressionItemEntity::getIndicatorExpressionItemId, paramIndicatorExpressionItemIdSet)
             .list()
             .stream()
-            .map(IndicatorExpressionItemEntity::getIndicatorExpressionItemId)
-            .collect(Collectors.toSet());
+            .peek(indicatorExpressionItemEntity -> dbIndicatorExpressionItemIdSet.add(indicatorExpressionItemEntity.getIndicatorExpressionItemId()))
+            .collect(Collectors.toMap(IndicatorExpressionItemEntity::getIndicatorExpressionItemId, a->a));
         if (
             paramIndicatorExpressionItemIdSet.stream().anyMatch(indicatorExpressionItemId -> !dbIndicatorExpressionItemIdSet.contains(indicatorExpressionItemId))
         ) {
           log.warn("method IndicatorExpressionBiz.createOrUpdate param createOrUpdateIndicatorExpressionRequestRs paramIndicatorExpressionItemIdSet:{} is illegal", paramIndicatorExpressionItemIdSet);
           throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
         }
-
+        createOrUpdateIndicatorExpressionItemRequestRsList.forEach(createOrUpdateIndicatorExpressionItemRequestRs -> {
+          String indicatorExpressionItemId = createOrUpdateIndicatorExpressionItemRequestRs.getIndicatorExpressionItemId();
+          String condition = createOrUpdateIndicatorExpressionItemRequestRs.getCondition();
+          String conditionNameList = createOrUpdateIndicatorExpressionItemRequestRs.getConditionNameList();
+          String conditionValList = createOrUpdateIndicatorExpressionItemRequestRs.getConditionValList();
+          String result = createOrUpdateIndicatorExpressionItemRequestRs.getResult();
+          Integer seq = createOrUpdateIndicatorExpressionItemRequestRs.getSeq();
+          IndicatorExpressionItemEntity indicatorExpressionItemEntity = null;
+          if (StringUtils.isBlank(indicatorExpressionItemId)) {
+            indicatorExpressionItemId = idGenerator.nextIdStr();
+            indicatorExpressionItemEntity = IndicatorExpressionItemEntity
+                .builder()
+                .indicatorExpressionItemId(indicatorExpressionItemId)
+                .condition(condition)
+                .conditionNameList(conditionNameList)
+                .conditionValList(conditionValList)
+                .result(result)
+                .seq(seq)
+                .build();
+          } else {
+            indicatorExpressionItemEntity = kIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap.get(indicatorExpressionItemId);
+            if (Objects.isNull(indicatorExpressionItemEntity)) {
+              log.warn("method IndicatorExpressionBiz.createOrUpdate param createOrUpdateIndicatorExpressionRequestRs paramIndicatorExpressionItemIdSet:{} is illegal", paramIndicatorExpressionItemIdSet);
+              throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
+            }
+            indicatorExpressionItemEntity.setCondition(condition);
+            indicatorExpressionItemEntity.setConditionNameList(conditionNameList);
+            indicatorExpressionItemEntity.setConditionValList(conditionValList);
+            indicatorExpressionItemEntity.setResult(result);
+            indicatorExpressionItemEntity.setSeq(seq);
+          }
+          indicatorExpressionItemEntityList.add(indicatorExpressionItemEntity);
+        });
       }
     }
     indicatorExpressionService.saveOrUpdate(indicatorExpressionEntity);

@@ -7,9 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.*;
-import org.dows.hep.api.base.indicator.response.IndicatorInstanceResponseRs;
-import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthManagementGoalResponse;
-import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthManagementGoalResponseRs;
+import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthManagementGoalResponseRs;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.exception.IndicatorJudgeHealthManagementGoalException;
@@ -43,6 +41,8 @@ public class IndicatorJudgeHealthManagementGoalBiz{
     private final IndicatorJudgeHealthManagementGoalService indicatorJudgeHealthManagementGoalService;
     private final IndicatorFuncService indicatorFuncService;
     private final IndicatorInstanceService indicatorInstanceService;
+
+    private final IndicatorInstanceBiz indicatorInstanceBiz;
 
     public static IndicatorJudgeHealthManagementGoalResponseRs indicatorJudgeHealthManagementGoal2ResponseRs(
         IndicatorJudgeHealthManagementGoalEntity indicatorJudgeHealthManagementGoalEntity,
@@ -84,11 +84,17 @@ public class IndicatorJudgeHealthManagementGoalBiz{
                 .list()
                 .forEach(indicatorInstanceEntity -> kIndicatorInstanceIdVIndicatorInstanceMap.put(indicatorInstanceEntity.getIndicatorInstanceId(), indicatorInstanceEntity));
         }
+        Map<String, IndicatorExpressionResponseRs> kIndicatorInstanceIdVIndicatorExpressionResponseRsMap = new HashMap<>();
+        indicatorInstanceBiz.populateKIndicatorExpressionIdVIndicatorExpressionEntityMap(appId, indicatorInstanceIdSet, kIndicatorInstanceIdVIndicatorExpressionResponseRsMap);
         return indicatorJudgeHealthManagementGoalEntityList
             .stream()
             .map(indicatorJudgeHealthManagementGoalEntity -> {
+                String indicatorInstanceId = indicatorJudgeHealthManagementGoalEntity.getIndicatorInstanceId();
                 IndicatorInstanceResponseRs indicatorInstanceResponseRs = IndicatorInstanceBiz.indicatorInstance2ResponseRs(
-                    kIndicatorInstanceIdVIndicatorInstanceMap.get(indicatorJudgeHealthManagementGoalEntity.getIndicatorInstanceId())
+                    kIndicatorInstanceIdVIndicatorInstanceMap.get(indicatorInstanceId),
+                    null,
+                    null,
+                    kIndicatorInstanceIdVIndicatorExpressionResponseRsMap.get(indicatorInstanceId)
                 );
                 return indicatorJudgeHealthManagementGoal2ResponseRs(indicatorJudgeHealthManagementGoalEntity, indicatorInstanceResponseRs);
             })
