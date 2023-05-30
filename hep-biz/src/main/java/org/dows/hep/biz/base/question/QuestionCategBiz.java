@@ -197,6 +197,7 @@ public class QuestionCategBiz {
 
         return questionCategoryService.lambdaQuery()
                 .eq(QuestionCategoryEntity::getQuestionCategGroup, questionCategGroup)
+                .orderBy(true, true, QuestionCategoryEntity::getSequence)
                 .list()
                 .stream()
                 .map(item -> BeanUtil.copyProperties(item, QuestionCategoryResponse.class))
@@ -272,6 +273,7 @@ public class QuestionCategBiz {
         String questionCategId = result.getQuestionCategId();
         if (StrUtil.isBlank(questionCategId)) {
             result.setQuestionCategId(baseBiz.getIdStr());
+//            result.setSequence(baseBiz.getSequence(() -> getLastSequence(request.getQuestionCategGroup())));
             if (StrUtil.isBlank(result.getQuestionCategPid())) {
                 result.setQuestionCategPid(baseBiz.getQuestionInstancePid());
             }
@@ -283,6 +285,16 @@ public class QuestionCategBiz {
             result.setId(oriEntity.getId());
         }
         return result;
+    }
+
+    private Integer getLastSequence(String categoryGroup) {
+        return questionCategoryService.lambdaQuery()
+                .eq(QuestionCategoryEntity::getQuestionCategGroup, categoryGroup)
+                .orderByDesc(QuestionCategoryEntity::getSequence)
+                .last("limit 1")
+                .oneOpt()
+                .map(QuestionCategoryEntity::getSequence)
+                .orElse(0);
     }
 
     private void getQcrpList(String id, Map<String, QuestionCategoryResponse> idCollect, ArrayList<QuestionCategoryResponse> result) {

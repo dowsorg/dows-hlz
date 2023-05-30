@@ -32,8 +32,11 @@ public class QuestionRequest {
     @NotBlank
     private String questionType;
 
-    @Schema(title = "维度ID")
+    @Schema(title = "维度ID-单维度情况")
     private String dimensionId;
+
+    @Schema(title = "维度ID-多维度情况")
+    private List<String> dimensionIds;
 
     @Schema(title = "问题标题")
     private String questionTitle;

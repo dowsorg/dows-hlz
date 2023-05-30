@@ -30,6 +30,7 @@ import java.util.List;
 public class MaterialQuestionTypeHandler implements QuestionTypeHandler {
 
     private final QuestionDomainBaseBiz baseBiz;
+    private final BaseQuestionHandler baseQuestionHandler;
     private final QuestionInstanceService questionInstanceService;
 
     @PostConstruct
@@ -84,6 +85,10 @@ public class MaterialQuestionTypeHandler implements QuestionTypeHandler {
             QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(questionTypeEnum);
             questionTypeHandler.save(itemDto);
         }
+
+        // handle question-dimension
+        baseQuestionHandler.saveOrUpdQuestionDimension(qr0, questionInstance.getQuestionInstanceId());
+
         return questionInstance.getQuestionInstanceId();
     }
 
@@ -141,6 +146,9 @@ public class MaterialQuestionTypeHandler implements QuestionTypeHandler {
             }
         }
 
+        // handle question-dimension
+        baseQuestionHandler.saveOrUpdQuestionDimension(qr0, questionInstance.getQuestionInstanceId());
+
         return updInstanceRes;
     }
 
@@ -173,6 +181,9 @@ public class MaterialQuestionTypeHandler implements QuestionTypeHandler {
             responseList.add(questionResponse);
         });
         result.setChildren(responseList);
+
+        // question-dimension
+        baseQuestionHandler.setDimensionId(result);
 
         return result;
     }

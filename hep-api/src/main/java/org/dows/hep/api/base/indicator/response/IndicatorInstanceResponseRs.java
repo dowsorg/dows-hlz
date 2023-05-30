@@ -54,4 +54,13 @@ public class IndicatorInstanceResponseRs implements Serializable {
 
   @Schema(title = "时间戳")
   private Date dt;
+
+  @Schema(title = "指标公式")
+  private IndicatorExpressionResponseRs indicatorExpressionResponseRs;
+
+  @Schema(title = "指标默认值")
+  private String def;
+
+  @Schema(title = "指标顺序")
+  private Integer seq;
 }

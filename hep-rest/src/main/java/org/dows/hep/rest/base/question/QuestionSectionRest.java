@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.question.enums.QuestionSectionAccessAuthEnum;
 import org.dows.hep.api.base.question.enums.QuestionSourceEnum;
+import org.dows.hep.api.base.question.request.QuestionSectionDelItemRequest;
 import org.dows.hep.api.base.question.request.QuestionSectionRequest;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
 import org.dows.hep.biz.base.question.QuestionDomainBaseBiz;
@@ -72,7 +73,7 @@ public class QuestionSectionRest {
     */
     @Operation(summary = "删除or批量删除问题集[问卷]")
     @DeleteMapping("v1/baseQuestion/questionSection/delQuestionSection")
-    public Boolean delQuestionSection(List<String> questionSectionIds ) {
+    public Boolean delQuestionSection(@RequestBody List<String> questionSectionIds ) {
         return questionSectionBiz.delQuestionSection(questionSectionIds);
     }
 
@@ -105,8 +106,8 @@ public class QuestionSectionRest {
     */
     @Operation(summary = "删除or批量删除问题集-题目")
     @DeleteMapping("v1/baseQuestion/questionSection/delSectionQuestion")
-    public Boolean delSectionQuestion(String questionSectionId, List<String> questionSectionItemIds ) {
-        return questionSectionBiz.delSectionQuestion(questionSectionId, questionSectionItemIds);
+    public Boolean delSectionQuestion(@RequestBody QuestionSectionDelItemRequest request) {
+        return questionSectionBiz.delSectionQuestion(request);
     }
 
 }

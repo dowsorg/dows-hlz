@@ -28,8 +28,11 @@ public class QuestionResponse {
     @Schema(title = "题目答题类型[RADIO:单选题|MULTIPLE:多选题|JUDGMENT:判断题|SUBJECTIVE:主观题|MATERIAL:材料题]")
     private String questionType;
 
-    @Schema(title = "维度ID")
+    @Schema(title = "维度ID-单维度情况")
     private String dimensionId;
+
+    @Schema(title = "维度ID-多维度情况")
+    private List<String> dimensionIds;
 
     @Schema(title = "问题标题")
     private String questionTitle;

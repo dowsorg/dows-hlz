@@ -67,6 +67,7 @@ public class QuestionInstanceBiz {
         } else {
             updQuestion(questionRequestDTO);
         }
+
         return questionInstanceId;
     }
 
