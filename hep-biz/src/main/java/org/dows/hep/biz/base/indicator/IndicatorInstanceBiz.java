@@ -52,6 +52,8 @@ public class IndicatorInstanceBiz{
 
     public static IndicatorInstanceResponseRs indicatorInstance2ResponseRs(
         IndicatorInstanceEntity indicatorInstanceEntity,
+        String def,
+        Integer seq,
         IndicatorExpressionResponseRs indicatorExpressionResponseRs) {
         if (Objects.isNull(indicatorInstanceEntity)) {
             return null;
@@ -71,6 +73,8 @@ public class IndicatorInstanceBiz{
             .descr(indicatorInstanceEntity.getDescr())
             .dt(indicatorInstanceEntity.getDt())
             .indicatorExpressionResponseRs(indicatorExpressionResponseRs)
+            .def(def)
+            .seq(seq)
             .build();
     }
 
@@ -99,20 +103,21 @@ public class IndicatorInstanceBiz{
             log.warn("method IndicatorInstanceBiz.populateKIndicatorExpressionIdVIndicatorExpressionEntityMap param kIndicatorInstanceIdVIndicatorExpressionResponseRsMap is null");
             return;
         }
+        if (Objects.isNull(indicatorInstanceIdSet) || indicatorInstanceIdSet.isEmpty()) {
+            return;
+        }
         Map<String, String> kIndicatorInstanceIdVIndicatorExpressionIdMap = new HashMap<>();
         Set<String> indicatorExpressionIdSet = new HashSet<>();
         Map<String, IndicatorExpressionEntity> kIndicatorExpressionIdVIndicatorExpressionEntityMap = new HashMap<>();
         Map<String, List<IndicatorExpressionItemEntity>> kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap = new HashMap<>();
-        if (!indicatorInstanceIdSet.isEmpty()) {
-            indicatorExpressionRefService.lambdaQuery()
-                .eq(IndicatorExpressionRefEntity::getAppId, appId)
-                .in(IndicatorExpressionRefEntity::getPrincipalId, indicatorInstanceIdSet)
-                .list()
-                .forEach(indicatorExpressionRefEntity -> {
-                    indicatorExpressionIdSet.add(indicatorExpressionRefEntity.getIndicatorExpressionId());
-                    kIndicatorInstanceIdVIndicatorExpressionIdMap.put(indicatorExpressionRefEntity.getPrincipalId(), indicatorExpressionRefEntity.getIndicatorExpressionId());
-                });
-        }
+        indicatorExpressionRefService.lambdaQuery()
+            .eq(IndicatorExpressionRefEntity::getAppId, appId)
+            .in(IndicatorExpressionRefEntity::getPrincipalId, indicatorInstanceIdSet)
+            .list()
+            .forEach(indicatorExpressionRefEntity -> {
+                indicatorExpressionIdSet.add(indicatorExpressionRefEntity.getIndicatorExpressionId());
+                kIndicatorInstanceIdVIndicatorExpressionIdMap.put(indicatorExpressionRefEntity.getPrincipalId(), indicatorExpressionRefEntity.getIndicatorExpressionId());
+            });
         if (!indicatorExpressionIdSet.isEmpty()) {
             indicatorExpressionService.lambdaQuery()
                 .eq(IndicatorExpressionEntity::getAppId, appId)
@@ -148,6 +153,36 @@ public class IndicatorInstanceBiz{
             IndicatorExpressionResponseRs indicatorExpressionResponseRs = IndicatorExpressionBiz.indicatorExpression2ResponseRs(indicatorExpressionEntity, indicatorExpressionItemResponseRsList);
             kIndicatorInstanceIdVIndicatorExpressionResponseRsMap.put(indicatorInstanceId, indicatorExpressionResponseRs);
         });
+    }
+
+    public void populateKIndicatorInstanceIdVSeqMap(String appId, Set<String> indicatorInstanceIdSet, Map<String, Integer> kIndicatorInstanceIdVSeqMap) {
+        if (Objects.isNull(kIndicatorInstanceIdVSeqMap)) {
+            log.warn("method IndicatorInstanceBiz.populateKIndicatorInstanceIdVSeqMap param kIndicatorInstanceIdVSeqMap is null");
+            return;
+        }
+        if (Objects.isNull(indicatorInstanceIdSet) || indicatorInstanceIdSet.isEmpty()) {
+            return;
+        }
+        indicatorCategoryRefService.lambdaQuery()
+            .eq(IndicatorCategoryRefEntity::getAppId, appId)
+            .in(IndicatorCategoryRefEntity::getIndicatorInstanceId, indicatorInstanceIdSet)
+            .list()
+            .forEach(indicatorCategoryRefEntity -> kIndicatorInstanceIdVSeqMap.put(indicatorCategoryRefEntity.getIndicatorInstanceId(), indicatorCategoryRefEntity.getSeq()));
+    }
+
+    public void populateKIndicatorInstanceIdVDefMap(String appId, Set<String> indicatorInstanceIdSet, Map<String, String> kIndicatorInstanceIdVDefMap) {
+        if (Objects.isNull(kIndicatorInstanceIdVDefMap)) {
+            log.warn("method IndicatorInstanceBiz.populateKIndicatorInstanceIdVDefMap param kIndicatorInstanceIdVDefMap is null");
+            return;
+        }
+        if (Objects.isNull(indicatorInstanceIdSet) || indicatorInstanceIdSet.isEmpty()) {
+            return;
+        }
+        indicatorRuleService.lambdaQuery()
+            .eq(IndicatorRuleEntity::getAppId, appId)
+            .in(IndicatorRuleEntity::getVariableId, indicatorInstanceIdSet)
+            .list()
+            .forEach(indicatorRuleEntity -> kIndicatorInstanceIdVDefMap.put(indicatorRuleEntity.getVariableId(), indicatorRuleEntity.getDef()));
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -321,30 +356,7 @@ public class IndicatorInstanceBiz{
             lock.unlock();
         }
     }
-    /**
-    * @param
-    * @return
-    * @说明: 更新指标
-    * @关联表: 
-    * @工时: 3H
-    * @开发者: runsix
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public void updateIndicatorInstance(UpdateIndicatorInstanceRequest updateIndicatorInstance) {
-    }
-    /**
-    * @param
-    * @return
-    * @说明: 批量更新指标
-    * @关联表: 
-    * @工时: 3H
-    * @开发者: runsix
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public void batchUpdateIndicatorInstance(List<UpdateIndicatorInstanceRequest> updateIndicatorInstance ) {
-    }
+
 
     @Transactional(rollbackFor = Exception.class)
     public void batchUpdateCore(List<String> indicatorInstanceIdList) {
@@ -402,7 +414,6 @@ public class IndicatorInstanceBiz{
             return Collections.emptyList();
         }
         Set<String> indicatorInstanceIdSet = new HashSet<>();
-        Map<String, IndicatorExpressionResponseRs> kIndicatorInstanceIdVIndicatorExpressionResponseRsMap = new HashMap<>();
         indicatorInstanceService.lambdaQuery()
             .eq(IndicatorInstanceEntity::getAppId, appId)
             .in(IndicatorInstanceEntity::getIndicatorCategoryId, indicatorCategoryIdSet)
@@ -417,7 +428,12 @@ public class IndicatorInstanceBiz{
                 indicatorInstanceEntityList.add(indicatorInstanceEntity);
                 kIndicatorCategoryIdVIndicatorInstanceListMap.put(indicatorCategoryId, indicatorInstanceEntityList);
             });
+        Map<String, IndicatorExpressionResponseRs> kIndicatorInstanceIdVIndicatorExpressionResponseRsMap = new HashMap<>();
         populateKIndicatorExpressionIdVIndicatorExpressionEntityMap(appId, indicatorInstanceIdSet, kIndicatorInstanceIdVIndicatorExpressionResponseRsMap);
+        Map<String, String> kIndicatorInstanceIdVDefMap = new HashMap<>();
+        populateKIndicatorInstanceIdVDefMap(appId, indicatorInstanceIdSet, kIndicatorInstanceIdVDefMap);
+        Map<String, Integer> kIndicatorInstanceIdVSeqMap = new HashMap<>();
+        populateKIndicatorInstanceIdVSeqMap(appId, indicatorInstanceIdSet, kIndicatorInstanceIdVSeqMap);
         return indicatorCategoryEntityList
             .stream()
             .map(indicatorCategoryEntity -> {
@@ -429,7 +445,9 @@ public class IndicatorInstanceBiz{
                         .map(indicatorInstanceEntity -> {
                             String indicatorInstanceId = indicatorInstanceEntity.getIndicatorInstanceId();
                             IndicatorExpressionResponseRs indicatorExpressionResponseRs = kIndicatorInstanceIdVIndicatorExpressionResponseRsMap.get(indicatorInstanceId);
-                            return IndicatorInstanceBiz.indicatorInstance2ResponseRs(indicatorInstanceEntity, indicatorExpressionResponseRs);
+                            String def = kIndicatorInstanceIdVDefMap.get(indicatorInstanceId);
+                            Integer seq = kIndicatorInstanceIdVSeqMap.get(indicatorInstanceId);
+                            return IndicatorInstanceBiz.indicatorInstance2ResponseRs(indicatorInstanceEntity, def, seq, indicatorExpressionResponseRs);
                         })
                         .collect(Collectors.toList());
                 }
@@ -437,6 +455,30 @@ public class IndicatorInstanceBiz{
                     indicatorCategoryEntity, indicatorInstanceResponseRsList
                 );
             }).collect(Collectors.toList());
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 更新指标
+    * @关联表: 
+    * @工时: 3H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月23日 上午9:44:34
+    */
+    public void updateIndicatorInstance(UpdateIndicatorInstanceRequest updateIndicatorInstance) {
+    }
+    /**
+    * @param
+    * @return
+    * @说明: 批量更新指标
+    * @关联表: 
+    * @工时: 3H
+    * @开发者: runsix
+    * @开始时间: 
+    * @创建时间: 2023年4月23日 上午9:44:34
+    */
+    public void batchUpdateIndicatorInstance(List<UpdateIndicatorInstanceRequest> updateIndicatorInstance ) {
     }
 
     /**

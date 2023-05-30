@@ -159,6 +159,8 @@ public class IndicatorViewMonitorFollowupBiz{
                                 .map(indicatorViewMonitorFollowupContentRefEntity -> {
                                   IndicatorInstanceResponseRs indicatorInstanceResponseRs = IndicatorInstanceBiz.indicatorInstance2ResponseRs(
                                       kIndicatorInstanceIdVIndicatorInstanceEntityMap.get(indicatorViewMonitorFollowupContentRefEntity.getIndicatorInstanceId()),
+                                      null,
+                                      null,
                                       null
                                   );
                                   return IndicatorViewMonitorFollowupContentRefBiz.indicatorViewMonitorFollowupContentRef2ResponseRs(
