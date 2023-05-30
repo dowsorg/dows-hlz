@@ -38,6 +38,15 @@ public class IndicatorExpressionEntity implements CrudEntity {
   @Schema(title = "应用ID")
   private String appId;
 
+  @Schema(title = "上限")
+  private String maxIndicatorExpressionItemId;
+
+  @Schema(title = "下限")
+  private String minIndicatorExpressionItemId;
+
+  @Schema(title = "公式类型，0-条件，1-随机")
+  private Integer type;
+
   @JsonIgnore
   @TableLogic
   @TableField(fill = FieldFill.INSERT)
