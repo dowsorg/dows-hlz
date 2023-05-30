@@ -32,9 +32,6 @@ public class CreateOrUpdateIndicatorExpressionRequestRs implements Serializable 
   @ApiModelProperty(required = true)
   private String appId;
 
-  @Schema(title = "指标公式默认值")
-  private String def;
-
   @Schema(title = "指标公式细项")
   @ApiModelProperty(required = true)
   private List<CreateOrUpdateIndicatorExpressionItemRequestRs> createOrUpdateIndicatorExpressionItemRequestRsList;

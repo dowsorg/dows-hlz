@@ -104,6 +104,8 @@ public class IndicatorViewPhysicalExamBiz{
                 IndicatorCategoryResponse indicatorCategoryResponse = kIndicatorCategoryIdVIndicatorCategoryResponseMap.get(indicatorViewPhysicalExamEntity.getIndicatorCategoryId());
                 IndicatorInstanceResponseRs indicatorInstanceResponseRs = IndicatorInstanceBiz.indicatorInstance2ResponseRs(
                     kIndicatorInstanceIdVIndicatorInstanceEntityMap.get(indicatorViewPhysicalExamEntity.getIndicatorInstanceId()),
+                    null,
+                    null,
                     null
                 );
                 return indicatorViewPhysicalExam2ResponseRs(

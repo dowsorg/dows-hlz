@@ -92,6 +92,8 @@ public class IndicatorJudgeHealthManagementGoalBiz{
                 String indicatorInstanceId = indicatorJudgeHealthManagementGoalEntity.getIndicatorInstanceId();
                 IndicatorInstanceResponseRs indicatorInstanceResponseRs = IndicatorInstanceBiz.indicatorInstance2ResponseRs(
                     kIndicatorInstanceIdVIndicatorInstanceMap.get(indicatorInstanceId),
+                    null,
+                    null,
                     kIndicatorInstanceIdVIndicatorExpressionResponseRsMap.get(indicatorInstanceId)
                 );
                 return indicatorJudgeHealthManagementGoal2ResponseRs(indicatorJudgeHealthManagementGoalEntity, indicatorInstanceResponseRs);

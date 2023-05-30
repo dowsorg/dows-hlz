@@ -41,6 +41,7 @@ public class ExperimentOrgJudgeBiz {
     private final ExperimentPersonHealthProblemService experimentPersonHealthProblemService;
     private final IndicatorJudgeHealthManagementGoalService indicatorJudgeHealthManagementGoalService;
     private final ExperimentPersonHealthManagementGoalService experimentPersonHealthManagementGoalService;
+    private final ExperimentPersonRiskFactorService experimentPersonRiskFactorService;
 
     /**
      * @param
@@ -390,5 +391,43 @@ public class ExperimentOrgJudgeBiz {
             entityList.add(goalEntity);
         });
         return experimentPersonHealthManagementGoalService.saveBatch(entityList);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 实验 二级无报告
+     * @关联表: experimentPersonRiskFactor
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年5月30日 上午10:33:34
+     */
+    @DSTransactional
+    public Boolean saveExperimentPersonRiskFactor(List<ExperimentPersonRiskFactorRequest> personRiskFactorRequestList) {
+        //1、删除用户以前信息
+        List<ExperimentPersonRiskFactorEntity> entityList = experimentPersonRiskFactorService.lambdaQuery()
+                .eq(ExperimentPersonRiskFactorEntity::getExperimentPersonId, personRiskFactorRequestList.get(0).getExperimentPersonId())
+                .eq(ExperimentPersonRiskFactorEntity::getDeleted, false)
+                .list();
+        if(entityList != null && entityList.size() > 0){
+            entityList.forEach(entity->{
+                entity.setDeleted(true);
+            });
+            experimentPersonRiskFactorService.updateBatchById(entityList);
+        }
+        //2、重新插入数据
+        List<ExperimentPersonRiskFactorEntity> entities = new ArrayList<>();
+        personRiskFactorRequestList.forEach(personRiskFactorRequest->{
+            ExperimentPersonRiskFactorEntity entity = ExperimentPersonRiskFactorEntity
+                    .builder()
+                    .indicatorJudgeRiskFactorId(personRiskFactorRequest.getIndicatorJudgeRiskFactorId())
+                    .experimentPersonId(personRiskFactorRequest.getExperimentPersonId())
+                    .name(personRiskFactorRequest.getName())
+                    .indicatorCategoryId(personRiskFactorRequest.getIndicatorCategoryId())
+                    .build();
+            entities.add(entity);
+        });
+        return experimentPersonRiskFactorService.saveBatch(entities);
     }
 }
