@@ -40,6 +40,7 @@ public class ExperimentOrgJudgeBiz {
     private final ExperimentPersonPropertyService experimentPersonPropertyService;
     private final ExperimentPersonHealthProblemService experimentPersonHealthProblemService;
     private final IndicatorJudgeHealthManagementGoalService indicatorJudgeHealthManagementGoalService;
+    private final ExperimentPersonHealthManagementGoalService experimentPersonHealthManagementGoalService;
 
     /**
      * @param
@@ -355,7 +356,6 @@ public class ExperimentOrgJudgeBiz {
      * @开始时间:
      * @创建时间: 2023年5月29日 下午17:24:34
      */
-    @DSTransactional
     public Boolean checkRangeMatchFormula(ExperimentPersonHealthManagementGoalRequest request) {
         Boolean flag = true;
         //1、根据直接判断分布式ID获取公式
@@ -366,5 +366,29 @@ public class ExperimentOrgJudgeBiz {
         //2、todo 根据公式计算范围是否符合
         flag = false;
         return flag;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 直接判断 赋值
+     * @关联表: experimentPersonHealthManagementGoal
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年5月29日 下午17:24:34
+     */
+    @DSTransactional
+    public Boolean saveJudgmentResult(List<ExperimentPersonHealthManagementGoalRequest> requestList) {
+        List<ExperimentPersonHealthManagementGoalEntity> entityList = new ArrayList<>();
+        requestList.forEach(request->{
+            ExperimentPersonHealthManagementGoalEntity goalEntity = ExperimentPersonHealthManagementGoalEntity.builder()
+                    .indicatorJudgeHealthManagementGoalId(request.getIndicatorJudgeHealthManagementGoalId())
+                    .experimentPersonId(request.getExperimentPersonId())
+                    .range(request.getRange())
+                    .build();
+            entityList.add(goalEntity);
+        });
+        return experimentPersonHealthManagementGoalService.saveBatch(entityList);
     }
 }
