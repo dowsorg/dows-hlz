@@ -42,6 +42,7 @@ public class ExperimentOrgJudgeBiz {
     private final IndicatorJudgeHealthManagementGoalService indicatorJudgeHealthManagementGoalService;
     private final ExperimentPersonHealthManagementGoalService experimentPersonHealthManagementGoalService;
     private final ExperimentPersonRiskFactorService experimentPersonRiskFactorService;
+    private final ExperimentPersonHealthGuidanceService experimentPersonHealthGuidanceService;
 
     /**
      * @param
@@ -429,5 +430,43 @@ public class ExperimentOrgJudgeBiz {
             entities.add(entity);
         });
         return experimentPersonRiskFactorService.saveBatch(entities);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 实验 二级有报告
+     * @关联表: experimentPersonHealthGuidance
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年5月30日 下午14:29:34
+     */
+    @DSTransactional
+    public Boolean saveExperimentPersonJudgeHealthGuidance(List<ExperimentPersonHealthGuidanceRequest> requestList) {
+        //1、删除用户以前信息
+        List<ExperimentPersonHealthGuidanceEntity> entityList = experimentPersonHealthGuidanceService.lambdaQuery()
+                .eq(ExperimentPersonHealthGuidanceEntity::getExperimentPersonId, requestList.get(0).getExperimentPersonId())
+                .eq(ExperimentPersonHealthGuidanceEntity::getDeleted, false)
+                .list();
+        if(entityList != null && entityList.size() > 0){
+            entityList.forEach(entity->{
+                entity.setDeleted(true);
+            });
+            experimentPersonHealthGuidanceService.updateBatchById(entityList);
+        }
+        //2、重新插入数据
+        List<ExperimentPersonHealthGuidanceEntity> entities = new ArrayList<>();
+        requestList.forEach(request->{
+            ExperimentPersonHealthGuidanceEntity entity = ExperimentPersonHealthGuidanceEntity
+                    .builder()
+                    .indicatorJudgeHealthGuidanceId(request.getIndicatorJudgeHealthGuidanceId())
+                    .experimentPersonId(request.getExperimentPersonId())
+                    .name(request.getName())
+                    .indicatorCategoryId(request.getIndicatorCategoryId())
+                    .build();
+            entities.add(entity);
+        });
+        return experimentPersonHealthGuidanceService.saveBatch(entities);
     }
 }

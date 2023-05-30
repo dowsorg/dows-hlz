@@ -28,22 +28,23 @@ public class CreateOrUpdateIndicatorExpressionItemRequestRs implements Serializa
   private String indicatorExpressionId;
 
   @Schema(title = "条件")
-  @ApiModelProperty(required = true)
   private String condition;
 
   @Schema(title = "条件参数名字，以英文逗号分割")
-  @ApiModelProperty(required = true)
   private String conditionNameList;
 
   @Schema(title = "条件参数数值，以英文逗号分割")
-  @ApiModelProperty(required = true)
   private String conditionValList;
 
   @Schema(title = "结果")
-  @ApiModelProperty(required = true)
   private String result;
 
+  @Schema(title = "结果参数名字，以英文逗号分割")
+  private String resultNameList;
+
+  @Schema(title = "结果参数数值，以英文逗号分割")
+  private String resultValList;
+
   @Schema(title = "优先判断顺序")
-  @ApiModelProperty(required = true)
   private Integer seq;
 }
