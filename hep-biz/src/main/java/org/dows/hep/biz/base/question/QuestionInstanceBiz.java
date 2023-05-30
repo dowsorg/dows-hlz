@@ -67,12 +67,8 @@ public class QuestionInstanceBiz {
             updQuestion(questionRequestDTO);
         }
 
-        // save or upd question-section
-        String dimensionId = question.getDimensionId();
-        if (StrUtil.isNotBlank(dimensionId)) {
-            QuestionDimensionRequest dimensionRequest = builderQuestionDimensionRequest(questionInstanceId, dimensionId);
-            questionDimensionBiz.relateQuestionDimension(dimensionRequest);
-        }
+        // save or upd question-dimension
+        saveOrUpdQuestionDimension(question, questionInstanceId);
 
         return questionInstanceId;
     }
@@ -478,6 +474,23 @@ public class QuestionInstanceBiz {
                 .build();
     }
 
+    private void saveOrUpdQuestionDimension(QuestionRequest question, String questionInstanceId) {
+        List<String> dimensionIds = new ArrayList<>();
+        List<String> ids = question.getDimensionIds();
+        if (CollUtil.isNotEmpty(ids)) {
+            dimensionIds.addAll(ids);
+        } else {
+            String dimensionId = question.getDimensionId();
+            if (StrUtil.isNotBlank(dimensionId)) {
+                dimensionIds.add(dimensionId);
+            }
+        }
+        if (CollUtil.isNotEmpty(dimensionIds)) {
+            QuestionDimensionRequest dimensionRequest = builderQuestionDimensionRequest(questionInstanceId, dimensionIds);
+            questionDimensionBiz.relateQuestionDimension(dimensionRequest);
+        }
+    }
+
     @DSTransactional
     private String saveQue(QuestionRequestDTO question) {
         if (BeanUtil.isEmpty(question)) {
@@ -660,8 +673,11 @@ public class QuestionInstanceBiz {
             return;
         }
 
-        String dimensionId = String.join(",", idList);
-        questionResponse.setDimensionId(dimensionId);
+        if (idList.size() > 1) {
+            questionResponse.setDimensionIds(idList);
+        } else {
+            questionResponse.setDimensionId(idList.get(0));
+        }
     }
 
     private boolean changeEnable(String questionInstanceId, QuestionEnabledEnum questionEnabledEnum) {
@@ -671,17 +687,14 @@ public class QuestionInstanceBiz {
         return questionInstanceService.update(updateWrapper);
     }
 
-    private QuestionDimensionRequest builderQuestionDimensionRequest(String questionInstanceId, String dimensionId) {
-        if (StrUtil.isBlank(dimensionId)) {
-            return new QuestionDimensionRequest();
+    private QuestionDimensionRequest builderQuestionDimensionRequest(String questionInstanceId, List<String> dimensionIds) {
+        if (StrUtil.isBlank(questionInstanceId) || CollUtil.isEmpty(dimensionIds)) {
+            throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
         }
-
-        String[] ids = dimensionId.split(",");
-        List<String> idList = Arrays.stream(ids).toList();
 
         QuestionDimensionRequest result = new QuestionDimensionRequest();
         result.setQuestionInstanceId(questionInstanceId);
-        result.setQuestionSectionDimensionIds(idList);
+        result.setQuestionSectionDimensionIds(dimensionIds);
 
         return result;
     }
