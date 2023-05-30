@@ -36,7 +36,9 @@ public class IndicatorExpressionBiz{
 
   public static IndicatorExpressionResponseRs indicatorExpression2ResponseRs(
       IndicatorExpressionEntity indicatorExpressionEntity,
-      List<IndicatorExpressionItemResponseRs> indicatorExpressionItemResponseRsList
+      List<IndicatorExpressionItemResponseRs> indicatorExpressionItemResponseRsList,
+      IndicatorExpressionItemResponseRs maxIndicatorExpressionItemResponseRs,
+      IndicatorExpressionItemResponseRs minIndicatorExpressionItemResponseRs
       ) {
     if (Objects.isNull(indicatorExpressionEntity)) {
       return null;
@@ -52,6 +54,8 @@ public class IndicatorExpressionBiz{
         .deleted(indicatorExpressionEntity.getDeleted())
         .dt(indicatorExpressionEntity.getDt())
         .indicatorExpressionItemResponseRsList(indicatorExpressionItemResponseRsList)
+        .maxIndicatorExpressionItemResponseRs(maxIndicatorExpressionItemResponseRs)
+        .minIndicatorExpressionItemResponseRs(minIndicatorExpressionItemResponseRs)
         .build();
   }
   @Transactional(rollbackFor = Exception.class)
