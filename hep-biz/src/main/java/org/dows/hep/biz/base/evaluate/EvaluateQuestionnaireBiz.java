@@ -224,6 +224,9 @@ public class EvaluateQuestionnaireBiz {
         String uniqueId = result.getEvaluateQuestionnaireId();
         if (StrUtil.isBlank(uniqueId)) {
             result.setEvaluateQuestionnaireId(baseBiz.getIdStr());
+            if (result.getEnabled() == null) {
+                result.setEnabled(EvaluateEnabledEnum.ENABLED.getCode());
+            }
         } else {
             EvaluateQuestionnaireEntity entity = getById(uniqueId);
             if (BeanUtil.isEmpty(entity)) {

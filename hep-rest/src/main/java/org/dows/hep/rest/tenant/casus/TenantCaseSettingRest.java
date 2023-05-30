@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 /**
 * @description project descr:案例:案例问卷设置
-*
+* @folder tenant-hep/案例域-案例问卷设置
 * @author lait.zhang
 * @date 2023年4月23日 上午9:44:34
 */
@@ -27,7 +27,7 @@ public class TenantCaseSettingRest {
     */
     @Operation(summary = "新增和更新案例问卷设置")
     @PostMapping("v1/tenantCasus/caseSetting/saveOrUpdCaseSetting")
-    public Boolean saveOrUpdCaseSetting(@RequestBody @Validated CaseSettingRequest caseSetting ) {
+    public String saveOrUpdCaseSetting(@RequestBody @Validated CaseSettingRequest caseSetting ) {
         return tenantCaseSettingBiz.saveOrUpdCaseSetting(caseSetting);
     }
 
@@ -41,17 +41,5 @@ public class TenantCaseSettingRest {
     public CaseSettingResponse getCaseSetting(@Validated String caseInstanceId) {
         return tenantCaseSettingBiz.getCaseSetting(caseInstanceId);
     }
-
-    /**
-    * 删除案例问卷设置
-    * @param
-    * @return
-    */
-    @Operation(summary = "删除案例问卷设置")
-    @DeleteMapping("v1/tenantCasus/caseSetting/delCaseSetting")
-    public Boolean delCaseSetting(@Validated String caseInstanceId ) {
-        return tenantCaseSettingBiz.delCaseSetting(caseInstanceId);
-    }
-
 
 }

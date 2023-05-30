@@ -40,9 +40,6 @@ public class MaterialsResponse {
     @Schema(title = "创建者名")
     private String accountName;
 
-    @Schema(title = "上传时间-eg. 2022年5月3日星期二 17:49")
-    private String uploadTime;
-
     @Schema(title = "附件集合")
     private List<MaterialsAttachmentResponse> materialsAttachments;
 }

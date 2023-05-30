@@ -29,7 +29,10 @@ public class MaterialsPageResponse {
     private String accountName;
 
     @Schema(title = "上传时间")
-    private Date uploadTime;
+    private Date dt;
+
+    @Schema(title = "上传时间-eg. 2022年5月3日星期二 17:49")
+    private String uploadTime;
 
 
 }
