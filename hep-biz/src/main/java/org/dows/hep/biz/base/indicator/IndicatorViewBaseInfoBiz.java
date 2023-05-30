@@ -129,7 +129,7 @@ public class IndicatorViewBaseInfoBiz{
             .in(IndicatorInstanceEntity::getIndicatorInstanceId, indicatorInstanceIdSet)
             .list()
             .forEach(indicatorInstanceEntity -> kIndicatorInstanceIdVIndicatorInstanceResponseRsMap.put(
-                indicatorInstanceEntity.getIndicatorInstanceId(), IndicatorInstanceBiz.indicatorInstance2ResponseRs(indicatorInstanceEntity)
+                indicatorInstanceEntity.getIndicatorInstanceId(), IndicatorInstanceBiz.indicatorInstance2ResponseRs(indicatorInstanceEntity, null)
             ));
       }
       List<IndicatorViewBaseInfoDescrResponseRs> indicatorViewBaseInfoDescrResponseRsList = new ArrayList<>();
