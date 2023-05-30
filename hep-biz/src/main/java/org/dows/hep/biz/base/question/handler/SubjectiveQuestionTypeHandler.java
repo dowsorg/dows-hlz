@@ -29,6 +29,7 @@ import java.util.List;
 public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
 
     private final QuestionDomainBaseBiz baseBiz;
+    private BaseQuestionHandler baseQuestionHandler;
     private final QuestionInstanceService questionInstanceService;
 
     @PostConstruct
@@ -58,6 +59,7 @@ public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
 
         QuestionResponse questionResponse = BeanUtil.copyProperties(questionInstance, QuestionResponse.class);
         setChildren(questionResponse);
+        baseQuestionHandler.setDimensionId(questionResponse);
 
         return questionResponse;
     }
@@ -176,6 +178,7 @@ public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
                 .refCount(0)
                 .build();
         questionInstanceService.save(questionInstance);
+        baseQuestionHandler.saveOrUpdQuestionDimension(qr0, questionInstance.getQuestionInstanceId());
         return questionInstance.getQuestionInstanceId();
     }
 
@@ -200,6 +203,7 @@ public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
                     .detailedAnswer(qr0.getDetailedAnswer())
                     .build();
             questionInstanceService.updateById(questionInstance);
+            baseQuestionHandler.saveOrUpdQuestionDimension(qr0, questionInstance.getQuestionInstanceId());
         }
         return true;
     }

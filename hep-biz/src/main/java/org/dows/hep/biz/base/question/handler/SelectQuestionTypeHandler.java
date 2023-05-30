@@ -46,6 +46,7 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
     private final QuestionOptionsBiz questionOptionsBiz;
     private final QuestionAnswersBiz questionAnswersBiz;
     private final QuestionScoreBiz questionScoreBiz;
+    private final BaseQuestionHandler baseQuestionHandler;
     private final QuestionAnswersService questionAnswersService;
     private final QuestionScoreService questionScoreService;
 
@@ -117,6 +118,7 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
         questionAnswersBiz.saveOrUpdBatch(answersEntityList);
         questionOptionsBiz.saveOrUpdBatch(optionsEntityList);
         questionScoreBiz.saveOrUpdBatch(scoreEntityList);
+        baseQuestionHandler.saveOrUpdQuestionDimension(qr0, questionInstance.getQuestionInstanceId());
 
         return questionInstance.getQuestionInstanceId();
     }
@@ -188,8 +190,9 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
         boolean updAnswerRes = questionAnswersBiz.saveOrUpdBatch(answersEntityList);
         boolean updOptionsRes = questionOptionsBiz.saveOrUpdBatch(optionsEntityList);
         boolean updScoreRes = questionScoreBiz.saveOrUpdBatch(scoreEntityList);
+        boolean updDimensionRes = baseQuestionHandler.saveOrUpdQuestionDimension(qr0, questionInstance.getQuestionInstanceId());
 
-        return updInstanceRes && updOptionsRes && updAnswerRes && updScoreRes;
+        return updInstanceRes && updOptionsRes && updAnswerRes && updScoreRes && updDimensionRes;
     }
 
     @Override
@@ -227,6 +230,7 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
         }
 
         result.setOptionWithAnswerList(optionWithAnswerResponses);
+        baseQuestionHandler.setDimensionId(result);
         return result;
     }
 
