@@ -1,18 +1,16 @@
 package org.dows.hep.biz.vo;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import org.dows.hep.api.base.intervene.vo.FoodCategExtendVO;
 
 import java.util.List;
 
 /**
- * 教师端类别
+ * 学生端类别
  * @author : wuzl
  * @date : 2023/4/21 16:12
  */
@@ -22,11 +20,10 @@ import java.util.List;
 @Accessors(chain = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategVO {
+@Schema(name = "Categ4ExptVO 对象", title = "实验干预类别")
+public class Categ4ExptVO {
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Schema(title = "数据库id")
-    private Long id;
+
     @Schema(title = "根类别")
     private String family;
 
@@ -39,25 +36,13 @@ public class CategVO {
     @Schema(title = "类别名称")
     private String categName;
 
-    @Schema(title = "父类别路径")
-    private String categIdPath;
-
-    @Schema(title = "父名称路径")
-    private String categNamePath;
-
-    @Schema(title = "标记，0-普通 1-膳食主要分类")
-    private Integer mark;
-
-    @Schema(title = "扩展属性，饮食推荐量")
-    private FoodCategExtendVO extend;
-
     @Schema(title = "排序号")
     private Integer seq;
 
 
 
     @Schema(title = "子类别json")
-    private List<CategVO> childs;
+    private List<Categ4ExptVO> childs;
 
 
 }

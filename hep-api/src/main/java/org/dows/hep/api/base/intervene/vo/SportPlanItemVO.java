@@ -32,6 +32,12 @@ public class SportPlanItemVO {
     @Schema(title = "运动项目名称")
     private String sportItemName;
 
+    @Schema(title = "一级分类id")
+    private String categIdLv1;
+
+    @Schema(title = "一级分类名称")
+    private String categNameLv1;
+
     @Schema(title = "运动强度(MET)")
     private String strengthMet;
 
