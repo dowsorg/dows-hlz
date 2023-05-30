@@ -38,9 +38,6 @@ public class IndicatorExpressionEntity implements CrudEntity {
   @Schema(title = "应用ID")
   private String appId;
 
-  @Schema(title = "指标公式默认值")
-  private String def;
-
   @JsonIgnore
   @TableLogic
   @TableField(fill = FieldFill.INSERT)
