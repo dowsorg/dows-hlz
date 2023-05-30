@@ -1,15 +1,10 @@
 package org.dows.hep.biz.user.experiment;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeHealthProblemRequest;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeRiskFactorRequest;
-import org.dows.hep.api.base.indicator.request.ExperimentPersonHealthProblemRequest;
-import org.dows.hep.api.base.indicator.response.ExperimentPersonHealthProblemResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthGuidanceResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthProblemResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponse;
@@ -17,7 +12,6 @@ import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -40,7 +34,6 @@ public class ExperimentOrgJudgeBiz {
     private final IndicatorJudgeHealthGuidanceService indicatorJudgeHealthGuidanceService;
     private final IndicatorJudgeHealthProblemService indicatorJudgeHealthProblemService;
     private final ExperimentPersonPropertyService experimentPersonPropertyService;
-    private final ExperimentPersonHealthProblemService experimentPersonHealthProblemService;
     private final IndicatorJudgeHealthManagementGoalService indicatorJudgeHealthManagementGoalService;
     private final ExperimentPersonHealthManagementGoalService experimentPersonHealthManagementGoalService;
     private final OperateOrgFuncService operateOrgFuncService;
@@ -297,82 +290,6 @@ public class ExperimentOrgJudgeBiz {
             totalAmount.add(entity.getPoint());
         });
         return totalAmount;
-    }
-
-    /**
-     * @param
-     * @return
-     * @说明: 三级-无报告 保存操作
-     * @关联表: experimentPersonHealthProblem
-     * @工时: 2H
-     * @开发者: jx
-     * @开始时间:
-     * @创建时间: 2023年5月29日 下午16:11:34
-     */
-    @DSTransactional
-    public Boolean saveExperimentIndicatorJudgeHealthProblem(List<CreateIndicatorJudgeHealthProblemRequest> judgeHealthProblemRequestList) {
-        List<ExperimentPersonHealthProblemEntity> modelList = new ArrayList<>();
-        judgeHealthProblemRequestList.forEach(judgeHealthProblemRequest -> {
-            ExperimentPersonHealthProblemEntity model = ExperimentPersonHealthProblemEntity
-                    .builder()
-                    .indicatorJudgeHealthProblemId(judgeHealthProblemRequest.getIndicatorJudgeHealthProblemId())
-                    .experimentPersonId(judgeHealthProblemRequest.getExperimentPersonId())
-                    .name(judgeHealthProblemRequest.getName())
-                    .healthProbleamCategoryName(judgeHealthProblemRequest.getHealthProbleamCategoryName())
-                    .build();
-            modelList.add(model);
-        });
-        return experimentPersonHealthProblemService.saveBatch(modelList);
-    }
-
-    /**
-     * @param
-     * @return
-     * @说明: 三级-无报告 获取列表
-     * @关联表: experimentPersonHealthProblem
-     * @工时: 2H
-     * @开发者: jx
-     * @开始时间:
-     * @创建时间: 2023年5月29日 下午14:53:34
-     */
-    public IPage<ExperimentPersonHealthProblemResponse> pageExperimentIndicatorJudgeHealthProblem(ExperimentPersonHealthProblemRequest experimentPersonHealthProblemRequest) {
-        Page<ExperimentPersonHealthProblemEntity> page = new Page<>(experimentPersonHealthProblemRequest.getPageNo(), experimentPersonHealthProblemRequest.getPageSize());
-        IPage<ExperimentPersonHealthProblemEntity> pageResult = experimentPersonHealthProblemService.lambdaQuery()
-                .eq(ExperimentPersonHealthProblemEntity::getExperimentPersonId, experimentPersonHealthProblemRequest.getExperimentPersonId())
-                .eq(ExperimentPersonHealthProblemEntity::getDeleted, false)
-                .page(page);
-        // 复制
-        IPage<ExperimentPersonHealthProblemResponse> voPage = new Page<>();
-        BeanUtils.copyProperties(pageResult, voPage, new String[]{"records"});
-        List<ExperimentPersonHealthProblemResponse> responseList = new ArrayList<>();
-        for (ExperimentPersonHealthProblemEntity entity : pageResult.getRecords()) {
-            ExperimentPersonHealthProblemResponse person = new ExperimentPersonHealthProblemResponse();
-            BeanUtil.copyProperties(entity, person);
-            person.setId(entity.getId());
-            responseList.add(person);
-        }
-        voPage.setRecords(responseList);
-        return voPage;
-    }
-
-    /**
-     * @param
-     * @return
-     * @说明: 三级-无报告 删除数据
-     * @关联表: experimentPersonHealthProblem
-     * @工时: 2H
-     * @开发者: jx
-     * @开始时间:
-     * @创建时间: 2023年5月29日 下午15:41:34
-     */
-    @DSTransactional
-    public Boolean delExperimentIndicatorJudgeHealthProblem(String indicatorJudgeHealthProblemId, String experimentPersonId) {
-        LambdaUpdateWrapper<ExperimentPersonHealthProblemEntity> updateWrapper = new LambdaUpdateWrapper<ExperimentPersonHealthProblemEntity>()
-                .eq(ExperimentPersonHealthProblemEntity::getIndicatorJudgeHealthProblemId, indicatorJudgeHealthProblemId)
-                .eq(ExperimentPersonHealthProblemEntity::getExperimentPersonId, experimentPersonId)
-                .eq(ExperimentPersonHealthProblemEntity::getDeleted, false)
-                .set(ExperimentPersonHealthProblemEntity::getDeleted, true);
-        return experimentPersonHealthProblemService.update(updateWrapper);
     }
 
     /**

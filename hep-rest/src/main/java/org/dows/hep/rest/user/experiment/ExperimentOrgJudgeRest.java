@@ -1,6 +1,5 @@
 package org.dows.hep.rest.user.experiment;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,8 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.dows.account.util.JwtUtil;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeHealthProblemRequest;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeRiskFactorRequest;
-import org.dows.hep.api.base.indicator.request.ExperimentPersonHealthProblemRequest;
-import org.dows.hep.api.base.indicator.response.ExperimentPersonHealthProblemResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthGuidanceResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthProblemResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponse;
@@ -170,45 +167,6 @@ public class ExperimentOrgJudgeRest {
                                     @RequestParam @Validated String experimentPersonId)
     {
         return experimentOrgJudgeBiz.isPurchaseInsure(isPurchase,experimentPersonId);
-    }
-
-    /**
-     * 三级-无报告 保存操作
-     * @param
-     * @return
-     */
-    @Operation(summary = "saveExperimentIndicatorJudgeHealthProblem")
-    @PostMapping("v1/userExperiment/experimentOrgJudge/saveExperimentIndicatorJudgeHealthProblem")
-    public Boolean saveExperimentIndicatorJudgeHealthProblem(@RequestBody @Validated List<CreateIndicatorJudgeHealthProblemRequest> judgeHealthProblemRequestList)
-    {
-        return experimentOrgJudgeBiz.saveExperimentIndicatorJudgeHealthProblem(judgeHealthProblemRequestList);
-    }
-
-    /**
-     * 三级-无报告 获取分页
-     * @param
-     * @return
-     */
-    @Operation(summary = "pageExperimentIndicatorJudgeHealthProblem")
-    @PostMapping("v1/userExperiment/experimentOrgJudge/pageExperimentIndicatorJudgeHealthProblem")
-    public IPage<ExperimentPersonHealthProblemResponse> pageExperimentIndicatorJudgeHealthProblem(@RequestBody @Validated ExperimentPersonHealthProblemRequest experimentPersonHealthProblemRequest)
-    {
-        return experimentOrgJudgeBiz.pageExperimentIndicatorJudgeHealthProblem(experimentPersonHealthProblemRequest);
-    }
-
-    /**
-     * 三级-无报告 删除数据
-     * @param
-     * @return
-     */
-    @Operation(summary = "delExperimentIndicatorJudgeHealthProblem")
-    @DeleteMapping("v1/userExperiment/experimentOrgJudge/delExperimentIndicatorJudgeHealthProblem")
-    public Boolean delExperimentIndicatorJudgeHealthProblem(@RequestParam @Validated String indicatorJudgeHealthProblemId,
-                                                            @RequestParam @Validated String experimentPersonId
-                                                            )
-
-    {
-        return experimentOrgJudgeBiz.delExperimentIndicatorJudgeHealthProblem(indicatorJudgeHealthProblemId,experimentPersonId);
     }
 
     /**
