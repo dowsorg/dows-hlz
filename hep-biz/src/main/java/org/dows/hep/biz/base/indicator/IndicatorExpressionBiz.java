@@ -1,6 +1,5 @@
 package org.dows.hep.biz.base.indicator;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -50,7 +49,6 @@ public class IndicatorExpressionBiz{
         .id(indicatorExpressionEntity.getId())
         .indicatorExpressionId(indicatorExpressionEntity.getIndicatorExpressionId())
         .appId(indicatorExpressionEntity.getAppId())
-        .def(indicatorExpressionEntity.getDef())
         .deleted(indicatorExpressionEntity.getDeleted())
         .dt(indicatorExpressionEntity.getDt())
         .indicatorExpressionItemResponseRsList(indicatorExpressionItemResponseRsList)
@@ -62,7 +60,6 @@ public class IndicatorExpressionBiz{
     String principalId = createOrUpdateIndicatorExpressionRequestRs.getPrincipalId();
     String indicatorExpressionRefId = createOrUpdateIndicatorExpressionRequestRs.getIndicatorExpressionRefId();
     String appId = createOrUpdateIndicatorExpressionRequestRs.getAppId();
-    String def = createOrUpdateIndicatorExpressionRequestRs.getDef();
     IndicatorExpressionEntity indicatorExpressionEntity = null;
     List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = new ArrayList<>();
     List<CreateOrUpdateIndicatorExpressionItemRequestRs> createOrUpdateIndicatorExpressionItemRequestRsList = createOrUpdateIndicatorExpressionRequestRs.getCreateOrUpdateIndicatorExpressionItemRequestRsList();
@@ -72,7 +69,6 @@ public class IndicatorExpressionBiz{
           .builder()
           .indicatorExpressionId(indicatorExpressionId)
           .appId(appId)
-          .def(def)
           .build();
       indicatorExpressionRefService.save(IndicatorExpressionRefEntity
           .builder()
