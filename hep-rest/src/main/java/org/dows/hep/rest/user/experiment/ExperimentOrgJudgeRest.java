@@ -3,7 +3,9 @@ package org.dows.hep.rest.user.experiment;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.dows.account.util.JwtUtil;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeHealthProblemRequest;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeRiskFactorRequest;
 import org.dows.hep.api.base.indicator.request.ExperimentPersonHealthProblemRequest;
@@ -11,11 +13,14 @@ import org.dows.hep.api.base.indicator.response.ExperimentPersonHealthProblemRes
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthGuidanceResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthProblemResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponse;
+import org.dows.hep.api.enums.EnumToken;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.biz.user.experiment.ExperimentOrgJudgeBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -67,15 +72,32 @@ public class ExperimentOrgJudgeRest {
     }
 
     /**
-     * 二级-无报告 保存操作
+     * 二级-无报告 获取判断得分
      * @param
      * @return
      */
-    @Operation(summary = "saveExperimentPersRiskFactor")
-    @PostMapping("v1/userExperiment/experimentOrgJudge/saveExperimentPersonRiskFactor")
-    public Boolean saveExperimentPersonRiskFactor(@RequestBody @Validated List<ExperimentPersonRiskFactorRequest> personRiskFactorRequestList)
+    @Operation(summary = "getJudgeRiskFactorScore")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/getJudgeRiskFactorScore")
+    public BigDecimal getJudgeRiskFactorScore(@RequestBody @Validated List<CreateIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList)
     {
-        return experimentOrgJudgeBiz.saveExperimentPersonRiskFactor(personRiskFactorRequestList);
+        return experimentOrgJudgeBiz.getJudgeRiskFactorScore(judgeRiskFactorRequestList);
+    }
+
+    /**
+     * 判断操作 保存
+     * @param
+     * @return
+     */
+    @Operation(summary = "saveExperimentJudgeOperate")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/saveExperimentJudgeOperate")
+    public Boolean saveExperimentJudgeOperate(@RequestBody @Validated List<OperateOrgFuncRequest> operateOrgFuncRequest, HttpServletRequest request)
+    {
+        String token = request.getHeader("token");
+        Map<String, Object> map = JwtUtil.parseJWT(token, EnumToken.PROPERTIES_JWT_KEY.getStr());
+        //1、获取登录账户和名称
+        String accountId = map.get("accountId").toString();
+        String accountName = map.get("accountName").toString();
+        return experimentOrgJudgeBiz.saveExperimentJudgeOperate(operateOrgFuncRequest,accountId,accountName);
     }
 
     /**

@@ -20,7 +20,9 @@ import org.dows.hep.service.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -41,8 +43,9 @@ public class ExperimentOrgJudgeBiz {
     private final ExperimentPersonHealthProblemService experimentPersonHealthProblemService;
     private final IndicatorJudgeHealthManagementGoalService indicatorJudgeHealthManagementGoalService;
     private final ExperimentPersonHealthManagementGoalService experimentPersonHealthManagementGoalService;
-    private final ExperimentPersonRiskFactorService experimentPersonRiskFactorService;
     private final ExperimentPersonHealthGuidanceService experimentPersonHealthGuidanceService;
+    private final OperateOrgFuncService operateOrgFuncService;
+    private final OperateOrgFuncSnapService operateOrgFuncSnapService;
 
     /**
      * @param
@@ -275,6 +278,31 @@ public class ExperimentOrgJudgeBiz {
     /**
      * @param
      * @return
+     * @说明: 二级-无报告 获取判断得分
+     * @关联表: indicatorJudgeRiskFactor
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年5月29日 上午10:11:34
+     */
+    public BigDecimal getJudgeRiskFactorScore(List<CreateIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList) {
+        BigDecimal totalAmount = new BigDecimal(0);
+        judgeRiskFactorRequestList.forEach(judgeRiskFactorRequest -> {
+            //1、根据ID获取判断规则
+            IndicatorJudgeRiskFactorEntity entity = indicatorJudgeRiskFactorService.lambdaQuery()
+                    .eq(IndicatorJudgeRiskFactorEntity::getIndicatorJudgeRiskFactorId, judgeRiskFactorRequest.getIndicatorJudgeRiskFactorId())
+                    .eq(IndicatorJudgeRiskFactorEntity::getStatus, true)
+                    .one();
+            //todo、根据判断规则判断是否满足条件,不满足将flag变为false，只要有一个false,就说明失败
+            entity.getExpression();
+            totalAmount.add(entity.getPoint());
+        });
+        return totalAmount;
+    }
+
+    /**
+     * @param
+     * @return
      * @说明: 三级-无报告 保存操作
      * @关联表: experimentPersonHealthProblem
      * @工时: 2H
@@ -383,7 +411,7 @@ public class ExperimentOrgJudgeBiz {
     @DSTransactional
     public Boolean saveJudgmentResult(List<ExperimentPersonHealthManagementGoalRequest> requestList) {
         List<ExperimentPersonHealthManagementGoalEntity> entityList = new ArrayList<>();
-        requestList.forEach(request->{
+        requestList.forEach(request -> {
             ExperimentPersonHealthManagementGoalEntity goalEntity = ExperimentPersonHealthManagementGoalEntity.builder()
                     .indicatorJudgeHealthManagementGoalId(request.getIndicatorJudgeHealthManagementGoalId())
                     .experimentPersonId(request.getExperimentPersonId())
@@ -397,39 +425,74 @@ public class ExperimentOrgJudgeBiz {
     /**
      * @param
      * @return
-     * @说明: 实验 二级无报告
-     * @关联表: experimentPersonRiskFactor
+     * @说明: 判断操作 保存
+     * @关联表: operateOrgFunc、operateOrgFuncSnap
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
-     * @创建时间: 2023年5月30日 上午10:33:34
+     * @创建时间: 2023年5月30日 下午17:12:34
      */
     @DSTransactional
-    public Boolean saveExperimentPersonRiskFactor(List<ExperimentPersonRiskFactorRequest> personRiskFactorRequestList) {
-        //1、删除用户以前信息
-        List<ExperimentPersonRiskFactorEntity> entityList = experimentPersonRiskFactorService.lambdaQuery()
-                .eq(ExperimentPersonRiskFactorEntity::getExperimentPersonId, personRiskFactorRequestList.get(0).getExperimentPersonId())
-                .eq(ExperimentPersonRiskFactorEntity::getDeleted, false)
+    public Boolean saveExperimentJudgeOperate(List<OperateOrgFuncRequest> operateOrgFuncRequest, String accountId, String accountName) {
+        //1、删除用户以前功能点信息
+        List<OperateOrgFuncEntity> entityList = operateOrgFuncService.lambdaQuery()
+                .eq(OperateOrgFuncEntity::getCaseOrgFunctionId, operateOrgFuncRequest.get(0).getCaseOrgFunctionId())
+                .eq(OperateOrgFuncEntity::getIndicatorFuncId, operateOrgFuncRequest.get(0).getIndicatorFuncId())
+                .eq(OperateOrgFuncEntity::getAppId, operateOrgFuncRequest.get(0).getAppId())
+                .eq(OperateOrgFuncEntity::getDeleted, false)
                 .list();
-        if(entityList != null && entityList.size() > 0){
-            entityList.forEach(entity->{
+        if (entityList != null && entityList.size() > 0) {
+            List<OperateOrgFuncSnapEntity> snapList = new ArrayList<>();
+            entityList.forEach(entity -> {
                 entity.setDeleted(true);
+                OperateOrgFuncSnapEntity snapEntity = operateOrgFuncSnapService.lambdaQuery()
+                        .eq(OperateOrgFuncSnapEntity::getOperateOrgFuncId, entity.getOperateOrgFuncId())
+                        .eq(OperateOrgFuncSnapEntity::getAppId, operateOrgFuncRequest.get(0).getAppId())
+                        .eq(OperateOrgFuncSnapEntity::getDeleted, false)
+                        .one();
+                snapList.add(snapEntity);
+
             });
-            experimentPersonRiskFactorService.updateBatchById(entityList);
+            operateOrgFuncService.updateBatchById(entityList);
+            //1.1、删除用户以前的功能点快照
+            if (snapList != null && snapList.size() > 0) {
+                snapList.forEach(snap -> {
+                    snap.setDeleted(true);
+                });
+                operateOrgFuncSnapService.updateBatchById(snapList);
+            }
         }
+
         //2、重新插入数据
-        List<ExperimentPersonRiskFactorEntity> entities = new ArrayList<>();
-        personRiskFactorRequestList.forEach(personRiskFactorRequest->{
-            ExperimentPersonRiskFactorEntity entity = ExperimentPersonRiskFactorEntity
+        List<OperateOrgFuncSnapEntity> snapList = new ArrayList<>();
+        operateOrgFuncRequest.forEach(operateOrgFunc -> {
+            OperateOrgFuncEntity entity = OperateOrgFuncEntity
                     .builder()
-                    .indicatorJudgeRiskFactorId(personRiskFactorRequest.getIndicatorJudgeRiskFactorId())
-                    .experimentPersonId(personRiskFactorRequest.getExperimentPersonId())
-                    .name(personRiskFactorRequest.getName())
-                    .indicatorCategoryId(personRiskFactorRequest.getIndicatorCategoryId())
+                    .appId(operateOrgFunc.getAppId())
+                    .operateFlowId(operateOrgFunc.getOperateFlowId())
+                    .caseOrgFunctionId(operateOrgFunc.getCaseOrgFunctionId())
+                    .indicatorFuncId(operateOrgFunc.getIndicatorFuncId())
+                    .experimentInstanceId(operateOrgFunc.getExperimentInstanceId())
+                    .experimentGroupId(operateOrgFunc.getExperimentGroupId())
+                    .experimentPersonId(operateOrgFunc.getExperimentPersonId())
+                    .operateAccountId(accountId)
+                    .operateAccountName(accountName)
+                    .operateType(operateOrgFunc.getOperateType())
+                    .periods(operateOrgFunc.getPeriods())
+                    .score(operateOrgFunc.getScore())
+                    .operateTime(new Date())
                     .build();
-            entities.add(entity);
+            operateOrgFuncService.save(entity);
+            OperateOrgFuncSnapEntity snapEntity = OperateOrgFuncSnapEntity.builder()
+                    .appId(operateOrgFunc.getAppId())
+                    .operateOrgFuncId(entity.getOperateOrgFuncId())
+                    .operateFlowId(entity.getOperateFlowId())
+                    .snapTime(new Date())
+                    .inputJson(operateOrgFunc.getInputJson())
+                    .build();
+            snapList.add(snapEntity);
         });
-        return experimentPersonRiskFactorService.saveBatch(entities);
+        return operateOrgFuncSnapService.saveBatch(snapList);
     }
 
     /**
@@ -449,15 +512,15 @@ public class ExperimentOrgJudgeBiz {
                 .eq(ExperimentPersonHealthGuidanceEntity::getExperimentPersonId, requestList.get(0).getExperimentPersonId())
                 .eq(ExperimentPersonHealthGuidanceEntity::getDeleted, false)
                 .list();
-        if(entityList != null && entityList.size() > 0){
-            entityList.forEach(entity->{
+        if (entityList != null && entityList.size() > 0) {
+            entityList.forEach(entity -> {
                 entity.setDeleted(true);
             });
             experimentPersonHealthGuidanceService.updateBatchById(entityList);
         }
         //2、重新插入数据
         List<ExperimentPersonHealthGuidanceEntity> entities = new ArrayList<>();
-        requestList.forEach(request->{
+        requestList.forEach(request -> {
             ExperimentPersonHealthGuidanceEntity entity = ExperimentPersonHealthGuidanceEntity
                     .builder()
                     .indicatorJudgeHealthGuidanceId(request.getIndicatorJudgeHealthGuidanceId())
