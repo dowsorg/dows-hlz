@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
 * @description project descr:资料中心:资料信息
-*
+* @folder user-hep/资料中心
 * @author lait.zhang
 * @date 2023年4月24日 上午10:47:00
 */
