@@ -91,11 +91,11 @@ public class OperateOrgFuncEntity implements CrudEntity {
     @Schema(title = "操作描述")
     private String reportDescr;
 
-    @Schema(title = "消耗资金")
-    private BigDecimal fee;
-
     @Schema(title = "剩余资金")
     private BigDecimal asset;
+
+    @Schema(title = "消耗资金")
+    private BigDecimal fee;
 
     @Schema(title = "报销资金")
     private BigDecimal refund;

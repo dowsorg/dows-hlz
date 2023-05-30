@@ -87,14 +87,23 @@ public class OperateFlowEntity implements CrudEntity {
     @Schema(title = "操作描述")
     private String reportDescr;
 
-    @Schema(title = "消耗资金")
-    private BigDecimal fee;
-
     @Schema(title = "剩余资金")
     private BigDecimal asset;
 
+    @Schema(title = "消耗资金")
+    private BigDecimal fee;
+
     @Schema(title = "报销资金")
     private BigDecimal refund;
+
+    @Schema(title = "操作得分")
+    private String score;
+
+    @Schema(title = "总操作数")
+    private Integer totalSteps;
+
+    @Schema(title = "完成操作数")
+    private Integer doneSteps;
 
     @Schema(title = "开始时间")
     private Date startTime;
@@ -102,18 +111,14 @@ public class OperateFlowEntity implements CrudEntity {
     @Schema(title = "结束时间")
     private Date endTime;
 
+    @Schema(title = "机构操作id")
+    private String operateOrgFuncId;
+
     @Schema(title = "操作时间")
     private Date operateTime;
 
     @Schema(title = "操作所在游戏内天数")
     private Integer operateGameDay;
-
-    @Schema(title = "结算处理时间")
-    private Date dealTime;
-
-    @Schema(title = "结算所在游戏内天数")
-    private Integer dealGameDay;
-
 
     @Schema(title = "状态")
     private Integer state;
