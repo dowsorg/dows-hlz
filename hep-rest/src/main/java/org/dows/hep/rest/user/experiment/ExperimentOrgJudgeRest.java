@@ -118,6 +118,18 @@ public class ExperimentOrgJudgeRest {
     }
 
     /**
+     *
+     * 三级类别/四级类别：判断操作
+     * @param
+     * @return
+     */
+    @Operation(summary = "三级类别/四级类别：判断操作")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/isIndicatorJudgeHealthProblem")
+    public Boolean isIndicatorJudgeHealthProblem(@RequestBody @Validated List<CreateIndicatorJudgeHealthProblemRequest> judgeHealthProblemRequest) {
+        return experimentOrgJudgeBiz.isIndicatorJudgeHealthProblem(judgeHealthProblemRequest);
+    }
+
+    /**
     * 疾病问题：获取检查类别+项目
     * @param
     * @return

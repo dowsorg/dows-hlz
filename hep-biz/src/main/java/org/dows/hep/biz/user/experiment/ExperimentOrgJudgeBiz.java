@@ -469,4 +469,29 @@ public class ExperimentOrgJudgeBiz {
         });
         return experimentPersonHealthGuidanceService.saveBatch(entities);
     }
+
+    /**
+     * @param
+     * @return
+     * @说明: 三级类别/四级类别：判断操作
+     * @关联表: IndicatorJudgeHealthProblem
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年5月30日 下午16:13:34
+     */
+    public Boolean isIndicatorJudgeHealthProblem(List<CreateIndicatorJudgeHealthProblemRequest> judgeHealthProblemRequest) {
+        AtomicReference<Boolean> flag = new AtomicReference<>(true);
+        judgeHealthProblemRequest.forEach(judgeHealthProblem -> {
+            //1、根据ID获取判断规则
+            IndicatorJudgeHealthProblemEntity entity = indicatorJudgeHealthProblemService.lambdaQuery()
+                    .eq(IndicatorJudgeHealthProblemEntity::getIndicatorJudgeHealthProblemId, judgeHealthProblem.getIndicatorJudgeHealthProblemId())
+                    .eq(IndicatorJudgeHealthProblemEntity::getStatus, true)
+                    .one();
+            //todo、根据判断规则判断是否满足条件,不满足将flag变为false，只要有一个false,就说明失败
+            entity.getExpression();
+            flag.set(false);
+        });
+        return flag.get();
+    }
 }
