@@ -7,6 +7,7 @@ import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorExpression
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorExpressionRequestRs;
 import org.dows.hep.api.base.indicator.response.IndicatorExpressionItemResponseRs;
 import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
+import org.dows.hep.api.enums.EnumBoolean;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.exception.IndicatorExpressionException;
 import org.dows.hep.entity.IndicatorExpressionEntity;
@@ -67,6 +68,8 @@ public class IndicatorExpressionBiz{
     IndicatorExpressionEntity indicatorExpressionEntity = null;
     List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = new ArrayList<>();
     List<CreateOrUpdateIndicatorExpressionItemRequestRs> createOrUpdateIndicatorExpressionItemRequestRsList = createOrUpdateIndicatorExpressionRequestRs.getCreateOrUpdateIndicatorExpressionItemRequestRsList();
+    CreateOrUpdateIndicatorExpressionItemRequestRs maxCreateOrUpdateIndicatorExpressionItemRequestRs = createOrUpdateIndicatorExpressionRequestRs.getMaxCreateOrUpdateIndicatorExpressionItemRequestRs();
+    CreateOrUpdateIndicatorExpressionItemRequestRs minCreateOrUpdateIndicatorExpressionItemRequestRs = createOrUpdateIndicatorExpressionRequestRs.getMinCreateOrUpdateIndicatorExpressionItemRequestRs();
     if (StringUtils.isBlank(indicatorExpressionId)) {
       indicatorExpressionId = idGenerator.nextIdStr();
       indicatorExpressionEntity = IndicatorExpressionEntity
@@ -147,6 +150,72 @@ public class IndicatorExpressionBiz{
           indicatorExpressionItemEntityList.add(indicatorExpressionItemEntity);
         });
       }
+    }
+    if (Objects.nonNull(maxCreateOrUpdateIndicatorExpressionItemRequestRs)) {
+      IndicatorExpressionItemEntity indicatorExpressionItemEntity = null;
+      String indicatorExpressionItemId = maxCreateOrUpdateIndicatorExpressionItemRequestRs.getIndicatorExpressionItemId();
+      String result = maxCreateOrUpdateIndicatorExpressionItemRequestRs.getResult();
+      String resultNameList = maxCreateOrUpdateIndicatorExpressionItemRequestRs.getResultNameList();
+      String resultValList = maxCreateOrUpdateIndicatorExpressionItemRequestRs.getResultValList();
+      if (StringUtils.isBlank(indicatorExpressionItemId)) {
+        indicatorExpressionItemId = idGenerator.nextIdStr();
+        indicatorExpressionItemEntity = IndicatorExpressionItemEntity
+            .builder()
+            .indicatorExpressionItemId(indicatorExpressionItemId)
+            .appId(appId)
+            .indicatorExpressionId(indicatorExpressionId)
+            .result(result)
+            .resultNameList(resultNameList)
+            .resultValList(resultValList)
+            .build();
+      } else {
+        String finalIndicatorExpressionItemId = indicatorExpressionItemId;
+        indicatorExpressionItemEntity = indicatorExpressionItemService.lambdaQuery()
+            .eq(IndicatorExpressionItemEntity::getAppId, appId)
+            .eq(IndicatorExpressionItemEntity::getIndicatorExpressionItemId, indicatorExpressionItemId)
+            .oneOpt()
+            .orElseThrow(() -> {
+              log.warn("method IndicatorExpressionBiz.createOrUpdate param createOrUpdateIndicatorExpressionRequestRs maxCreateOrUpdateIndicatorExpressionItemRequestRs indicatorExpressionItemId:{} is illegal", finalIndicatorExpressionItemId);
+              throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
+            });
+        indicatorExpressionItemEntity.setResult(result);
+        indicatorExpressionItemEntity.setResultNameList(resultNameList);
+        indicatorExpressionItemEntity.setResultValList(resultValList);
+      }
+      indicatorExpressionItemEntityList.add(indicatorExpressionItemEntity);
+    }
+    if (Objects.nonNull(minCreateOrUpdateIndicatorExpressionItemRequestRs)) {
+      IndicatorExpressionItemEntity indicatorExpressionItemEntity = null;
+      String indicatorExpressionItemId = minCreateOrUpdateIndicatorExpressionItemRequestRs.getIndicatorExpressionItemId();
+      String result = minCreateOrUpdateIndicatorExpressionItemRequestRs.getResult();
+      String resultNameList = minCreateOrUpdateIndicatorExpressionItemRequestRs.getResultNameList();
+      String resultValList = minCreateOrUpdateIndicatorExpressionItemRequestRs.getResultValList();
+      if (StringUtils.isBlank(indicatorExpressionItemId)) {
+        indicatorExpressionItemId = idGenerator.nextIdStr();
+        indicatorExpressionItemEntity = IndicatorExpressionItemEntity
+            .builder()
+            .indicatorExpressionItemId(indicatorExpressionItemId)
+            .appId(appId)
+            .indicatorExpressionId(indicatorExpressionId)
+            .result(result)
+            .resultNameList(resultNameList)
+            .resultValList(resultValList)
+            .build();
+      } else {
+        String finalIndicatorExpressionItemId = indicatorExpressionItemId;
+        indicatorExpressionItemEntity = indicatorExpressionItemService.lambdaQuery()
+            .eq(IndicatorExpressionItemEntity::getAppId, appId)
+            .eq(IndicatorExpressionItemEntity::getIndicatorExpressionItemId, indicatorExpressionItemId)
+            .oneOpt()
+            .orElseThrow(() -> {
+              log.warn("method IndicatorExpressionBiz.createOrUpdate param createOrUpdateIndicatorExpressionRequestRs maxCreateOrUpdateIndicatorExpressionItemRequestRs indicatorExpressionItemId:{} is illegal", finalIndicatorExpressionItemId);
+              throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
+            });
+        indicatorExpressionItemEntity.setResult(result);
+        indicatorExpressionItemEntity.setResultNameList(resultNameList);
+        indicatorExpressionItemEntity.setResultValList(resultValList);
+      }
+      indicatorExpressionItemEntityList.add(indicatorExpressionItemEntity);
     }
     indicatorExpressionService.saveOrUpdate(indicatorExpressionEntity);
     indicatorExpressionItemService.saveOrUpdateBatch(indicatorExpressionItemEntityList);
