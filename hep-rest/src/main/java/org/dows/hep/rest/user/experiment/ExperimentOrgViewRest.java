@@ -146,13 +146,24 @@ public class ExperimentOrgViewRest {
      * @return
      */
     @Operation(summary = "体格检查+辅助检查：体格检查+辅助检查保存")
-    @PostMapping("v1/userExperiment/experimentOrgView/saveOrgViewReport")
-    public Boolean saveOrgViewReport(@RequestBody @Validated List<GetOrgViewReportRequest> reportRequestList, HttpServletRequest request) {
+    @PostMapping("v1/userExperiment/experimentOrgView/savePhysiqueAndAuxiliary")
+    public Boolean savePhysiqueAndAuxiliary(@RequestBody @Validated List<GetOrgViewReportRequest> reportRequestList, HttpServletRequest request) {
         String token = request.getHeader("token");
         Map<String, Object> map = JwtUtil.parseJWT(token, EnumToken.PROPERTIES_JWT_KEY.getStr());
         //1、获取登录账户和名称
         String accountId = map.get("accountId").toString();
         String accountName = map.get("accountName").toString();
-        return experimentOrgViewBiz.saveOrgViewReport(reportRequestList,accountId,accountName);
+        return experimentOrgViewBiz.savePhysiqueAndAuxiliary(reportRequestList,accountId,accountName);
+    }
+
+    /**
+     * 体格检查：获取判断结果
+     * @param
+     * @return
+     */
+    @Operation(summary = "体格检查：获取判断结果")
+    @PostMapping("v1/userExperiment/experimentOrgView/getIndicatorPhysicalExamVerifiResults")
+    public List<GetOrgViewReportResponse> getIndicatorPhysicalExamVerifiResults(@RequestBody @Validated List<GetOrgViewReportRequest> reportRequestList) {
+        return experimentOrgViewBiz.getIndicatorPhysicalExamVerifiResults(reportRequestList);
     }
 }

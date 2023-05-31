@@ -4,8 +4,10 @@ import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
+import org.dows.hep.entity.IndicatorViewPhysicalExamEntity;
 import org.dows.hep.entity.OperateOrgFuncEntity;
 import org.dows.hep.entity.OperateOrgFuncSnapEntity;
+import org.dows.hep.service.IndicatorViewPhysicalExamService;
 import org.dows.hep.service.OperateOrgFuncService;
 import org.dows.hep.service.OperateOrgFuncSnapService;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
 * @description project descr:实验:机构操作-查看指标
@@ -26,6 +29,7 @@ public class ExperimentOrgViewBiz{
 
     private final OperateOrgFuncService operateOrgFuncService;
     private final OperateOrgFuncSnapService operateOrgFuncSnapService;
+    private final IndicatorViewPhysicalExamService indicatorViewPhysicalExamService;
     /**
     * @param
     * @return
@@ -168,7 +172,7 @@ public class ExperimentOrgViewBiz{
      * @创建时间: 2023年5月31日 下午17:14:34
      */
     @DSTransactional
-    public Boolean saveOrgViewReport(List<GetOrgViewReportRequest> reportRequestList,String accountId, String accountName) {
+    public Boolean savePhysiqueAndAuxiliary(List<GetOrgViewReportRequest> reportRequestList,String accountId, String accountName) {
         //1、删除用户以前功能点信息
         List<OperateOrgFuncEntity> entityList = operateOrgFuncService.lambdaQuery()
                 .select(OperateOrgFuncEntity::getId,OperateOrgFuncEntity::getDeleted)
@@ -229,5 +233,31 @@ public class ExperimentOrgViewBiz{
             snapList.add(snapEntity);
         });
         return operateOrgFuncSnapService.saveBatch(snapList);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 体格检查：判断是否满足指标
+     * @关联表: OperateOrgFunc,OperateOrgFuncSnap
+     * @工时: 6H
+     * @开发者: wuzl
+     * @开始时间:
+     * @创建时间: 2023年5月31日 下午18:06:34
+     */
+    public List<GetOrgViewReportResponse> getIndicatorPhysicalExamVerifiResults(List<GetOrgViewReportRequest> reportRequestList) {
+        List<GetOrgViewReportResponse> responseList = new ArrayList<>();
+        AtomicReference<Boolean> flag = new AtomicReference<>(true);
+        reportRequestList.forEach(reportRequest -> {
+            //1、根据ID获取判断规则
+            IndicatorViewPhysicalExamEntity entity = indicatorViewPhysicalExamService.lambdaQuery()
+                    .select(IndicatorViewPhysicalExamEntity::getIndicatorInstanceId,IndicatorViewPhysicalExamEntity::getFee)
+                    .eq(IndicatorViewPhysicalExamEntity::getIndicatorViewPhysicalExamId, reportRequest.getIndicatorViewPhysicalExamId())
+                    .eq(IndicatorViewPhysicalExamEntity::getStatus, true)
+                    .one();
+            //todo、根据判断规则判断是否满足条件,将指标值返回
+            flag.set(false);
+        });
+        return responseList;
     }
 }
