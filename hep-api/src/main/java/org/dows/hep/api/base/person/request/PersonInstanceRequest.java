@@ -27,6 +27,9 @@ public class PersonInstanceRequest{
     @Schema(title = "姓名")
     private String name;
 
+    @Schema(title = "状态")
+    private Integer status;
+
     @Schema(title = "头像")
     private String avatar;
 
