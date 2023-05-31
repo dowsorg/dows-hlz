@@ -64,6 +64,7 @@ public class IndicatorExpressionBiz{
     String principalId = createOrUpdateIndicatorExpressionRequestRs.getPrincipalId();
     String indicatorExpressionRefId = createOrUpdateIndicatorExpressionRequestRs.getIndicatorExpressionRefId();
     String appId = createOrUpdateIndicatorExpressionRequestRs.getAppId();
+    Integer type = createOrUpdateIndicatorExpressionRequestRs.getType();
     IndicatorExpressionEntity indicatorExpressionEntity = null;
     List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = new ArrayList<>();
     List<CreateOrUpdateIndicatorExpressionItemRequestRs> createOrUpdateIndicatorExpressionItemRequestRsList = createOrUpdateIndicatorExpressionRequestRs.getCreateOrUpdateIndicatorExpressionItemRequestRsList();
@@ -75,6 +76,7 @@ public class IndicatorExpressionBiz{
           .builder()
           .indicatorExpressionId(indicatorExpressionId)
           .appId(appId)
+          .type(type)
           .build();
       indicatorExpressionRefService.save(IndicatorExpressionRefEntity
           .builder()
