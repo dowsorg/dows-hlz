@@ -1,10 +1,17 @@
 package org.dows.hep.biz.user.experiment;
 
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
+import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
+import org.dows.hep.entity.OperateOrgFuncEntity;
+import org.dows.hep.entity.OperateOrgFuncSnapEntity;
+import org.dows.hep.service.OperateOrgFuncService;
+import org.dows.hep.service.OperateOrgFuncSnapService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -14,7 +21,11 @@ import java.util.List;
 * @date 2023年4月23日 上午9:44:34
 */
 @Service
+@RequiredArgsConstructor
 public class ExperimentOrgViewBiz{
+
+    private final OperateOrgFuncService operateOrgFuncService;
+    private final OperateOrgFuncSnapService operateOrgFuncSnapService;
     /**
     * @param
     * @return
@@ -144,5 +155,79 @@ public class ExperimentOrgViewBiz{
     */
     public GetOrgViewReportResponse getOrgViewReport(GetOrgViewReportRequest getOrgViewReport ) {
         return new GetOrgViewReportResponse();
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 体格检查+辅助检查：体格检查+辅助检查保存
+     * @关联表: OperateOrgFunc,OperateOrgFuncSnap
+     * @工时: 6H
+     * @开发者: wuzl
+     * @开始时间:
+     * @创建时间: 2023年5月31日 下午17:14:34
+     */
+    @DSTransactional
+    public Boolean saveOrgViewReport(List<GetOrgViewReportRequest> reportRequestList,String accountId, String accountName) {
+        //1、删除用户以前功能点信息
+        List<OperateOrgFuncEntity> entityList = operateOrgFuncService.lambdaQuery()
+                .select(OperateOrgFuncEntity::getId,OperateOrgFuncEntity::getDeleted)
+                .eq(OperateOrgFuncEntity::getPeriods, reportRequestList.get(0).getPeriods())
+                .eq(OperateOrgFuncEntity::getIndicatorFuncId, reportRequestList.get(0).getIndicatorFuncId())
+                .eq(OperateOrgFuncEntity::getExperimentPersonId, reportRequestList.get(0).getExperimentPersonId())
+                .eq(OperateOrgFuncEntity::getAppId, reportRequestList.get(0).getAppId())
+                .eq(OperateOrgFuncEntity::getDeleted, false)
+                .list();
+        if (entityList != null && entityList.size() > 0) {
+            List<OperateOrgFuncSnapEntity> snapList = new ArrayList<>();
+            entityList.forEach(entity -> {
+                entity.setDeleted(true);
+                operateOrgFuncService.updateById(entity);
+                OperateOrgFuncSnapEntity snapEntity = operateOrgFuncSnapService.lambdaQuery()
+                        .eq(OperateOrgFuncSnapEntity::getOperateOrgFuncId, entity.getOperateOrgFuncId())
+                        .eq(OperateOrgFuncSnapEntity::getAppId, reportRequestList.get(0).getAppId())
+                        .eq(OperateOrgFuncSnapEntity::getDeleted, false)
+                        .one();
+                snapList.add(snapEntity);
+
+            });
+            //1.1、删除用户以前的功能点快照
+            if (snapList != null && snapList.size() > 0) {
+                snapList.forEach(snap -> {
+                    snap.setDeleted(true);
+                });
+                operateOrgFuncSnapService.updateBatchById(snapList);
+            }
+        }
+        //2、todo 扣费
+        //3、重新插入数据
+        List<OperateOrgFuncSnapEntity> snapList = new ArrayList<>();
+        reportRequestList.forEach(operateOrgFunc -> {
+            OperateOrgFuncEntity entity = OperateOrgFuncEntity
+                    .builder()
+                    .appId(operateOrgFunc.getAppId())
+                    .operateFlowId(operateOrgFunc.getOperateFlowId())
+                    .indicatorFuncId(operateOrgFunc.getIndicatorFuncId())
+                    .experimentInstanceId(operateOrgFunc.getExperimentInstanceId())
+                    .experimentGroupId(operateOrgFunc.getExperimentGroupId())
+                    .experimentPersonId(operateOrgFunc.getExperimentPersonId())
+                    .experimentOrgId(operateOrgFunc.getExperimentOrgId())
+                    .operateAccountId(accountId)
+                    .operateAccountName(accountName)
+                    .operateType(operateOrgFunc.getOperateType())
+                    .periods(operateOrgFunc.getPeriods())
+                    .score(operateOrgFunc.getScore())
+                    .operateTime(new Date())
+                    .build();
+            operateOrgFuncService.save(entity);
+            OperateOrgFuncSnapEntity snapEntity = OperateOrgFuncSnapEntity.builder()
+                    .appId(operateOrgFunc.getAppId())
+                    .operateOrgFuncId(entity.getOperateOrgFuncId())
+                    .snapTime(new Date())
+                    .inputJson(operateOrgFunc.getInputJson())
+                    .build();
+            snapList.add(snapEntity);
+        });
+        return operateOrgFuncSnapService.saveBatch(snapList);
     }
 }

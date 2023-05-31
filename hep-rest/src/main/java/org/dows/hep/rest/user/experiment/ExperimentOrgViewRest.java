@@ -2,7 +2,10 @@ package org.dows.hep.rest.user.experiment;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.dows.account.util.JwtUtil;
+import org.dows.hep.api.enums.EnumToken;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.biz.user.experiment.ExperimentOrgViewBiz;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 /**
 * @description project descr:实验:机构操作-查看指标
@@ -136,5 +140,19 @@ public class ExperimentOrgViewRest {
         return experimentOrgViewBiz.getOrgViewReport(getOrgViewReport);
     }
 
-
+    /**
+     * 体格检查+辅助检查：体格检查+辅助检查保存
+     * @param
+     * @return
+     */
+    @Operation(summary = "体格检查+辅助检查：体格检查+辅助检查保存")
+    @PostMapping("v1/userExperiment/experimentOrgView/saveOrgViewReport")
+    public Boolean saveOrgViewReport(@RequestBody @Validated List<GetOrgViewReportRequest> reportRequestList, HttpServletRequest request) {
+        String token = request.getHeader("token");
+        Map<String, Object> map = JwtUtil.parseJWT(token, EnumToken.PROPERTIES_JWT_KEY.getStr());
+        //1、获取登录账户和名称
+        String accountId = map.get("accountId").toString();
+        String accountName = map.get("accountName").toString();
+        return experimentOrgViewBiz.saveOrgViewReport(reportRequestList,accountId,accountName);
+    }
 }
