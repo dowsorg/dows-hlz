@@ -644,6 +644,8 @@ public class PersonManageBiz {
             PersonInstanceResponse personInstance = PersonInstanceResponse.builder()
                     .accountId(accountInstance.getAccountId())
                     .accountName(accountInstance.getAccountName())
+                    .userName(accountInstance.getUserName())
+                    .status(accountInstance.getStatus())
                     .avatar(accountInstance.getAvatar())
                     .intro(accountInstance.getIntro())
                     .build();
