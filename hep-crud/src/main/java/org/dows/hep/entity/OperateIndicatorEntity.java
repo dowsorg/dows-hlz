@@ -68,25 +68,25 @@ public class OperateIndicatorEntity implements CrudEntity {
     private String operateSourceId;
 
     @Schema(title = "指标ID")
-    private String indactorInstanceId;
+    private String indicatorInstanceId;
 
     @Schema(title = "指标名称")
-    private String indactorName;
+    private String indicatorName;
 
     @Schema(title = "指标")
-    private String indactorCode;
+    private String indicatorCode;
 
     @Schema(title = "记录原值")
-    private String indactorOrgVal;
+    private String indicatorOrgVal;
 
     @Schema(title = "记录变化值")
-    private String indactorIncVal;
+    private String indicatorIncVal;
 
     @Schema(title = "记录最终值")
-    private String indactorVal;
+    private String indicatorVal;
 
     @Schema(title = "指标单位")
-    private String indactorUnit;
+    private String indicatorUnit;
 
     @Schema(title = "期数")
     private Integer periods;
