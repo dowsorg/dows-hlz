@@ -41,7 +41,7 @@ public class IndicatorExpressionItemEntity implements CrudEntity {
   private String indicatorExpressionId;
 
   @Schema(title = "条件")
-  private String condition;
+  private String conditionExpression;
 
   @Schema(title = "条件参数名字，以英文逗号分割")
   private String conditionNameList;
@@ -50,7 +50,7 @@ public class IndicatorExpressionItemEntity implements CrudEntity {
   private String conditionValList;
 
   @Schema(title = "结果")
-  private String result;
+  private String resultExpression;
 
   @Schema(title = "结果参数名字，以英文逗号分割")
   private String resultNameList;

@@ -34,7 +34,7 @@ public class IndicatorExpressionItemResponseRs implements Serializable {
   private String indicatorExpressionId;
 
   @Schema(title = "条件")
-  private String condition;
+  private String conditionExpression;
 
   @Schema(title = "条件参数名字，以英文逗号分割")
   private String conditionNameList;
@@ -43,7 +43,7 @@ public class IndicatorExpressionItemResponseRs implements Serializable {
   private String conditionValList;
 
   @Schema(title = "结果")
-  private String result;
+  private String resultExpression;
 
   @Schema(title = "优先判断顺序")
   private Integer seq;
