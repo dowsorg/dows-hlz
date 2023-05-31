@@ -52,4 +52,13 @@ public class ExperimentIndicatorInstanceEntity {
   private String descr;
 
 
+  @Schema(title = "指标类别分布式ID")
+  private String indicatorCategoryId;
+
+
+  @Schema(title = "指标类别")
+  private String categoryName;
+
+  @Schema(title = "实验指标表达式分布式ID")
+  private String experimentIndicatorExpressionId;
 }
