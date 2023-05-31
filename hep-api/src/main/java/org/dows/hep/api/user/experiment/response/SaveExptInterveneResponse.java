@@ -12,13 +12,15 @@ import lombok.NoArgsConstructor;
 */
 @Data
 @NoArgsConstructor
-@Schema(name = "SaveOrgInterveneTreat 对象", title = "操作记录")
-public class SaveOrgInterveneTreatResponse{
+@Schema(name = "SaveExptIntervene 对象", title = "干预操作结果")
+public class SaveExptInterveneResponse {
+
+    @Schema(title = "是否操作成功")
+    private Boolean success;
     @Schema(title = "机构操作id")
     private String operateOrgFuncId;
 
-    @Schema(title = "报告详情,24-保存治疗方案时返回诊疗报告")
-    private String resultJson;
+
 
 
 }

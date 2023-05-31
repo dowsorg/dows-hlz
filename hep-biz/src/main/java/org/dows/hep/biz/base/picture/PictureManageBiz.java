@@ -188,4 +188,52 @@ public class PictureManageBiz {
         voPage.setRecords(voList);
         return voPage;
     }
+
+    /**
+     * @param
+     * @return
+     * @说明: 人物头像列表
+     * @关联表: materials、materials_attachment、materials_category
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/5/31 14:23
+     */
+    public IPage<PictureResponse> listPersonAvatar(PictureRequest request) {
+        IPage<PictureResponse> voPage = new Page<>();
+        //1、根据分类名称找到资料ID
+        MaterialsCategoryEntity materialsCategory = materialsCategoryService.lambdaQuery()
+                .eq(MaterialsCategoryEntity::getAppId, request.getAppId())
+                .eq(MaterialsCategoryEntity::getCategoryName, request.getCategoryName())
+                .oneOpt()
+                .orElseThrow(() -> new MaterialException(EnumMaterials.CATEGORY_IS_NOT_FIND));
+        //2、根据资料类别ID找到资料
+        LambdaQueryWrapper<MaterialsEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(MaterialsEntity::getAppId, request.getAppId())
+                .eq(MaterialsEntity::getCategoryId, materialsCategory.getMaterialsCategoryId());
+        Page<MaterialsEntity> page = new Page<>(request.getPageNo(), request.getPageSize());
+        IPage<MaterialsEntity> materialPage = materialsService.page(page, queryWrapper);
+        List<PictureResponse> voList = new ArrayList<>();
+        //3、根据资料ID找到资料相关的附件
+        if (materialPage.getRecords() != null && materialPage.getRecords().size() > 0) {
+            materialPage.getRecords().forEach(materialsEntity -> {
+                List<MaterialsAttachmentEntity> attachmentEntities = materialsAttachmentService.lambdaQuery()
+                        .eq(MaterialsAttachmentEntity::getMaterialsId, materialsEntity.getMaterialsId())
+                        .eq(MaterialsAttachmentEntity::getAppId, request.getAppId())
+                        .list();
+                //3.1、分组去重，人物取头像
+                Map<String, MaterialsAttachmentEntity> map = attachmentEntities.stream().collect(Collectors.groupingBy(MaterialsAttachmentEntity::getMaterialsId,
+                        Collectors.collectingAndThen(Collectors.toList(), value -> value.get(0))));
+                //3.2、赋值
+                PictureResponse pictureResponse = new PictureResponse();
+                BeanUtil.copyProperties(materialsEntity, pictureResponse);
+                MaterialsAttachmentEntity materialsAttachmentEntity = map.get(materialsEntity.getMaterialsId());
+                pictureResponse.setMaterialsAttachment(materialsAttachmentEntity.getFileUri());
+                voList.add(pictureResponse);
+            });
+        }
+        BeanUtils.copyProperties(materialPage, voPage, new String[]{"records"});
+        voPage.setRecords(voList);
+        return voPage;
+    }
 }

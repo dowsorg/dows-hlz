@@ -60,6 +60,9 @@ public class ExperimentPersonEntity implements CrudEntity {
     @Schema(title = "实验人物名称")
     private String experimentAccountName;
 
+    @Schema(title = "案例人物ID")
+    private String casePersonId;
+
     @Schema(title = "期数")
     private Integer periods;
 

@@ -180,6 +180,28 @@ public class PersonManageBiz {
     /**
      * @param
      * @return
+     * @说明: 编辑人物状态
+     * @关联表: AccountInstance
+     * @工时: 3H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年5月31日 下午16:22:34
+     */
+    @DSTransactional
+    public String editPersonStatus(PersonInstanceRequest request) {
+        //1、修改账户
+        AccountInstanceRequest accountInstanceRequest = AccountInstanceRequest.builder()
+                .accountId(request.getAccountId().toString())
+                .status(request.getStatus())
+                .appId(request.getAppId())
+                .build();
+        String userId = accountInstanceApi.updateAccountInstanceByAccountId(accountInstanceRequest);
+        return userId;
+    }
+
+    /**
+     * @param
+     * @return
      * @说明: 复制人物
      * @关联表: AccountInstance、AccountUser、AccountRole、UserInstance、UserExtinfo、IndicatorInstance、IndicatorPrincipalRef、CaseEvent、CaseEventEval、CaseEventAction
      * @工时: 6H
@@ -644,6 +666,8 @@ public class PersonManageBiz {
             PersonInstanceResponse personInstance = PersonInstanceResponse.builder()
                     .accountId(accountInstance.getAccountId())
                     .accountName(accountInstance.getAccountName())
+                    .userName(accountInstance.getUserName())
+                    .status(accountInstance.getStatus())
                     .avatar(accountInstance.getAvatar())
                     .intro(accountInstance.getIntro())
                     .build();

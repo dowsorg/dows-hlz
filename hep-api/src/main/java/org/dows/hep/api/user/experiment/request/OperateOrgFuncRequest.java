@@ -1,39 +1,20 @@
-package org.dows.hep.entity;
+package org.dows.hep.api.user.experiment.request;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import lombok.experimental.Accessors;
-import org.dows.framework.crud.api.CrudEntity;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * 学生机构操作记录(OperateOrgFunc)实体类
- *
- * @author lait
- * @since 2023-04-28 10:27:05
+ * @author jx
+ * @date 2023/5/30 17:04
  */
-@SuppressWarnings("serial")
 @Data
-@ToString
-@Builder
-@Accessors(chain = true)
-@AllArgsConstructor
 @NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "OperateOrgFunc", title = "学生机构操作记录")
-@TableName("operate_org_func")
-public class OperateOrgFuncEntity implements CrudEntity {
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
+@Schema(name = "OperateOrgFunc 对象", title = "学生机构操作快照")
+public class OperateOrgFuncRequest {
     @Schema(title = "数据库id")
     private Long id;
 
@@ -46,6 +27,11 @@ public class OperateOrgFuncEntity implements CrudEntity {
     @Schema(title = "实验操作流程id")
     private String operateFlowId;
 
+    @Schema(title = "机构功能ID")
+    private String caseOrgFunctionId;
+
+    @Schema(title = "指标功能点id")
+    private String indicatorFuncId;
 
     @Schema(title = "实验实例id")
     private String experimentInstanceId;
@@ -56,14 +42,8 @@ public class OperateOrgFuncEntity implements CrudEntity {
     @Schema(title = "实验人物id")
     private String experimentPersonId;
 
-    @Schema(title = "实验机构ID")
+    @Schema(title = "实验机构id")
     private String experimentOrgId;
-
-
-
-    @Schema(title = "指标功能点id")
-    private String indicatorFuncId;
-
 
     @Schema(title = "操作人id")
     private String operateAccountId;
@@ -86,11 +66,11 @@ public class OperateOrgFuncEntity implements CrudEntity {
     @Schema(title = "操作描述")
     private String reportDescr;
 
-    @Schema(title = "剩余资金")
-    private BigDecimal asset;
-
     @Schema(title = "消耗资金")
     private BigDecimal fee;
+
+    @Schema(title = "剩余资金")
+    private BigDecimal asset;
 
     @Schema(title = "报销资金")
     private BigDecimal refund;
@@ -113,15 +93,6 @@ public class OperateOrgFuncEntity implements CrudEntity {
     @Schema(title = "状态")
     private Integer state;
 
-    @JsonIgnore
-    @TableLogic
-    @TableField(fill = FieldFill.INSERT)
-    @Schema(title = "逻辑删除")
-    private Boolean deleted;
-
-    @TableField(fill = FieldFill.INSERT)
-    @Schema(title = "时间戳")
-    private Date dt;
-
+    @Schema(title = "输入记录")
+    private String inputJson;
 }
-

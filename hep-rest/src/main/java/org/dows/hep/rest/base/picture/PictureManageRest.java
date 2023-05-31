@@ -54,4 +54,15 @@ public class PictureManageRest {
     public IPage<PictureResponse> listPersonPictures(@RequestBody PictureRequest request) {
         return pictureManageBiz.listPersonPictures(request);
     }
+
+    /**
+     * 人物头像
+     * @param
+     * @return
+     */
+    @Operation(summary = "人物头像")
+    @PostMapping("v1/basePicture/picture/listPersonAvatar")
+    public IPage<PictureResponse> listPersonAvatar(@RequestBody PictureRequest request) {
+        return pictureManageBiz.listPersonAvatar(request);
+    }
 }

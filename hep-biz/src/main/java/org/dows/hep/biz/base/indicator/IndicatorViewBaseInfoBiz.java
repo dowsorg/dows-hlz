@@ -177,6 +177,9 @@ public class IndicatorViewBaseInfoBiz{
               String indicatorViewBaseInfoMonitorId = indicatorViewBaseInfoMonitorEntity.getIndicatorViewBaseInfoMonitorId();
               List<IndicatorViewBaseInfoMonitorContentEntity> indicatorViewBaseInfoMonitorContentEntityList = kIndicatorViewBaseInfoMonitorIdVIndicatorViewBaseInfoMonitorContentListMap
                   .get(indicatorViewBaseInfoMonitorId);
+              if (Objects.isNull(indicatorViewBaseInfoMonitorContentEntityList)) {
+                indicatorViewBaseInfoMonitorContentEntityList = new ArrayList<>();
+              }
               return IndicatorViewBaseInfoMonitorResponseRs
                   .builder()
                   .id(indicatorViewBaseInfoMonitorEntity.getId())
