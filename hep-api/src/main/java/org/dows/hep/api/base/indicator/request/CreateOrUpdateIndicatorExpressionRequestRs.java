@@ -36,6 +36,9 @@ public class CreateOrUpdateIndicatorExpressionRequestRs implements Serializable 
   @ApiModelProperty(required = true)
   private List<CreateOrUpdateIndicatorExpressionItemRequestRs> createOrUpdateIndicatorExpressionItemRequestRsList;
 
+  @Schema(title = "公式上限")
   private CreateOrUpdateIndicatorExpressionItemRequestRs maxCreateOrUpdateIndicatorExpressionItemRequestRs;
+
+  @Schema(title = "公式下限")
   private CreateOrUpdateIndicatorExpressionItemRequestRs minCreateOrUpdateIndicatorExpressionItemRequestRs;
 }
