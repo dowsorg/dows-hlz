@@ -5,9 +5,11 @@ import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.entity.IndicatorViewPhysicalExamEntity;
+import org.dows.hep.entity.IndicatorViewSupportExamEntity;
 import org.dows.hep.entity.OperateOrgFuncEntity;
 import org.dows.hep.entity.OperateOrgFuncSnapEntity;
 import org.dows.hep.service.IndicatorViewPhysicalExamService;
+import org.dows.hep.service.IndicatorViewSupportExamService;
 import org.dows.hep.service.OperateOrgFuncService;
 import org.dows.hep.service.OperateOrgFuncSnapService;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,7 @@ public class ExperimentOrgViewBiz{
     private final OperateOrgFuncService operateOrgFuncService;
     private final OperateOrgFuncSnapService operateOrgFuncSnapService;
     private final IndicatorViewPhysicalExamService indicatorViewPhysicalExamService;
+    private final IndicatorViewSupportExamService indicatorViewSupportExamService;
     /**
     * @param
     * @return
@@ -239,9 +242,9 @@ public class ExperimentOrgViewBiz{
      * @param
      * @return
      * @说明: 体格检查：判断是否满足指标
-     * @关联表: OperateOrgFunc,OperateOrgFuncSnap
+     * @关联表: indicatorViewPhysicalExam
      * @工时: 6H
-     * @开发者: wuzl
+     * @开发者: jx
      * @开始时间:
      * @创建时间: 2023年5月31日 下午18:06:34
      */
@@ -254,6 +257,32 @@ public class ExperimentOrgViewBiz{
                     .select(IndicatorViewPhysicalExamEntity::getIndicatorInstanceId,IndicatorViewPhysicalExamEntity::getFee)
                     .eq(IndicatorViewPhysicalExamEntity::getIndicatorViewPhysicalExamId, reportRequest.getIndicatorViewPhysicalExamId())
                     .eq(IndicatorViewPhysicalExamEntity::getStatus, true)
+                    .one();
+            //todo、根据判断规则判断是否满足条件,将指标值返回
+            flag.set(false);
+        });
+        return responseList;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 辅助检查：获取判断结果
+     * @关联表: indicatorViewSupportExam
+     * @工时: 6H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年5月31日 下午18:30:34
+     */
+    public List<GetOrgViewReportResponse> getIndicatorSupportExamVerifiResults(List<GetOrgViewReportRequest> reportRequestList) {
+        List<GetOrgViewReportResponse> responseList = new ArrayList<>();
+        AtomicReference<Boolean> flag = new AtomicReference<>(true);
+        reportRequestList.forEach(reportRequest -> {
+            //1、根据ID获取判断规则
+            IndicatorViewSupportExamEntity entity = indicatorViewSupportExamService.lambdaQuery()
+                    .select(IndicatorViewSupportExamEntity::getIndicatorInstanceId,IndicatorViewSupportExamEntity::getFee)
+                    .eq(IndicatorViewSupportExamEntity::getIndicatorViewSupportExamId, reportRequest.getIndicatorViewSupportExamId())
+                    .eq(IndicatorViewSupportExamEntity::getStatus, true)
                     .one();
             //todo、根据判断规则判断是否满足条件,将指标值返回
             flag.set(false);

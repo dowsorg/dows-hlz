@@ -166,4 +166,15 @@ public class ExperimentOrgViewRest {
     public List<GetOrgViewReportResponse> getIndicatorPhysicalExamVerifiResults(@RequestBody @Validated List<GetOrgViewReportRequest> reportRequestList) {
         return experimentOrgViewBiz.getIndicatorPhysicalExamVerifiResults(reportRequestList);
     }
+
+    /**
+     * 辅助检查：获取判断结果
+     * @param
+     * @return
+     */
+    @Operation(summary = "辅助检查：获取判断结果")
+    @PostMapping("v1/userExperiment/experimentOrgView/getIndicatorSupportExamVerifiResults")
+    public List<GetOrgViewReportResponse> getIndicatorSupportExamVerifiResults(@RequestBody @Validated List<GetOrgViewReportRequest> reportRequestList) {
+        return experimentOrgViewBiz.getIndicatorSupportExamVerifiResults(reportRequestList);
+    }
 }
