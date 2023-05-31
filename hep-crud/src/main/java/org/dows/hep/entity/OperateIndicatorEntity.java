@@ -51,14 +51,9 @@ public class OperateIndicatorEntity implements CrudEntity {
     @Schema(title = "实验人物ID")
     private String experimentPersonId;
 
-    @Schema(title = "案例机构ID")
-    private String caseOrgId;
+    @Schema(title = "实验机构ID")
+    private String experimentOrgId;
 
-    @Schema(title = "案例人物")
-    private String caseAccountId;
-
-    @Schema(title = "案例人名")
-    private String caseAccountName;
 
     @Schema(title = "操作人ID")
     private String operateAccountId;

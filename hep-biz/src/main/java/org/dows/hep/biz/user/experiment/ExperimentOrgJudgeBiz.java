@@ -373,7 +373,7 @@ public class ExperimentOrgJudgeBiz {
                     .builder()
                     .appId(operateOrgFunc.getAppId())
                     .operateFlowId(operateOrgFunc.getOperateFlowId())
-                    .caseOrgFunctionId(operateOrgFunc.getCaseOrgFunctionId())
+                    //.caseOrgFunctionId(operateOrgFunc.getCaseOrgFunctionId())
                     .indicatorFuncId(operateOrgFunc.getIndicatorFuncId())
                     .experimentInstanceId(operateOrgFunc.getExperimentInstanceId())
                     .experimentGroupId(operateOrgFunc.getExperimentGroupId())
@@ -389,7 +389,7 @@ public class ExperimentOrgJudgeBiz {
             OperateOrgFuncSnapEntity snapEntity = OperateOrgFuncSnapEntity.builder()
                     .appId(operateOrgFunc.getAppId())
                     .operateOrgFuncId(entity.getOperateOrgFuncId())
-                    .operateFlowId(entity.getOperateFlowId())
+                    //.operateFlowId(entity.getOperateFlowId())
                     .snapTime(new Date())
                     .inputJson(operateOrgFunc.getInputJson())
                     .build();
