@@ -7,7 +7,6 @@ import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorExpression
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorExpressionRequestRs;
 import org.dows.hep.api.base.indicator.response.IndicatorExpressionItemResponseRs;
 import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
-import org.dows.hep.api.enums.EnumBoolean;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.exception.IndicatorExpressionException;
 import org.dows.hep.entity.IndicatorExpressionEntity;
@@ -118,10 +117,10 @@ public class IndicatorExpressionBiz{
         }
         createOrUpdateIndicatorExpressionItemRequestRsList.forEach(createOrUpdateIndicatorExpressionItemRequestRs -> {
           String indicatorExpressionItemId = createOrUpdateIndicatorExpressionItemRequestRs.getIndicatorExpressionItemId();
-          String condition = createOrUpdateIndicatorExpressionItemRequestRs.getCondition();
+          String condition = createOrUpdateIndicatorExpressionItemRequestRs.getConditionExpression();
           String conditionNameList = createOrUpdateIndicatorExpressionItemRequestRs.getConditionNameList();
           String conditionValList = createOrUpdateIndicatorExpressionItemRequestRs.getConditionValList();
-          String result = createOrUpdateIndicatorExpressionItemRequestRs.getResult();
+          String result = createOrUpdateIndicatorExpressionItemRequestRs.getResultExpression();
           Integer seq = createOrUpdateIndicatorExpressionItemRequestRs.getSeq();
           IndicatorExpressionItemEntity indicatorExpressionItemEntity = null;
           if (StringUtils.isBlank(indicatorExpressionItemId)) {
@@ -129,10 +128,10 @@ public class IndicatorExpressionBiz{
             indicatorExpressionItemEntity = IndicatorExpressionItemEntity
                 .builder()
                 .indicatorExpressionItemId(indicatorExpressionItemId)
-                .condition(condition)
+                .conditionExpression(condition)
                 .conditionNameList(conditionNameList)
                 .conditionValList(conditionValList)
-                .result(result)
+                .resultExpression(result)
                 .seq(seq)
                 .build();
           } else {
@@ -141,10 +140,10 @@ public class IndicatorExpressionBiz{
               log.warn("method IndicatorExpressionBiz.createOrUpdate param createOrUpdateIndicatorExpressionRequestRs paramIndicatorExpressionItemIdSet:{} is illegal", paramIndicatorExpressionItemIdSet);
               throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
             }
-            indicatorExpressionItemEntity.setCondition(condition);
+            indicatorExpressionItemEntity.setConditionExpression(condition);
             indicatorExpressionItemEntity.setConditionNameList(conditionNameList);
             indicatorExpressionItemEntity.setConditionValList(conditionValList);
-            indicatorExpressionItemEntity.setResult(result);
+            indicatorExpressionItemEntity.setResultExpression(result);
             indicatorExpressionItemEntity.setSeq(seq);
           }
           indicatorExpressionItemEntityList.add(indicatorExpressionItemEntity);
@@ -154,7 +153,7 @@ public class IndicatorExpressionBiz{
     if (Objects.nonNull(maxCreateOrUpdateIndicatorExpressionItemRequestRs)) {
       IndicatorExpressionItemEntity indicatorExpressionItemEntity = null;
       String indicatorExpressionItemId = maxCreateOrUpdateIndicatorExpressionItemRequestRs.getIndicatorExpressionItemId();
-      String result = maxCreateOrUpdateIndicatorExpressionItemRequestRs.getResult();
+      String result = maxCreateOrUpdateIndicatorExpressionItemRequestRs.getResultExpression();
       String resultNameList = maxCreateOrUpdateIndicatorExpressionItemRequestRs.getResultNameList();
       String resultValList = maxCreateOrUpdateIndicatorExpressionItemRequestRs.getResultValList();
       if (StringUtils.isBlank(indicatorExpressionItemId)) {
@@ -164,7 +163,7 @@ public class IndicatorExpressionBiz{
             .indicatorExpressionItemId(indicatorExpressionItemId)
             .appId(appId)
             .indicatorExpressionId(indicatorExpressionId)
-            .result(result)
+            .resultExpression(result)
             .resultNameList(resultNameList)
             .resultValList(resultValList)
             .build();
@@ -178,7 +177,7 @@ public class IndicatorExpressionBiz{
               log.warn("method IndicatorExpressionBiz.createOrUpdate param createOrUpdateIndicatorExpressionRequestRs maxCreateOrUpdateIndicatorExpressionItemRequestRs indicatorExpressionItemId:{} is illegal", finalIndicatorExpressionItemId);
               throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
             });
-        indicatorExpressionItemEntity.setResult(result);
+        indicatorExpressionItemEntity.setResultExpression(result);
         indicatorExpressionItemEntity.setResultNameList(resultNameList);
         indicatorExpressionItemEntity.setResultValList(resultValList);
       }
@@ -187,7 +186,7 @@ public class IndicatorExpressionBiz{
     if (Objects.nonNull(minCreateOrUpdateIndicatorExpressionItemRequestRs)) {
       IndicatorExpressionItemEntity indicatorExpressionItemEntity = null;
       String indicatorExpressionItemId = minCreateOrUpdateIndicatorExpressionItemRequestRs.getIndicatorExpressionItemId();
-      String result = minCreateOrUpdateIndicatorExpressionItemRequestRs.getResult();
+      String result = minCreateOrUpdateIndicatorExpressionItemRequestRs.getResultExpression();
       String resultNameList = minCreateOrUpdateIndicatorExpressionItemRequestRs.getResultNameList();
       String resultValList = minCreateOrUpdateIndicatorExpressionItemRequestRs.getResultValList();
       if (StringUtils.isBlank(indicatorExpressionItemId)) {
@@ -197,7 +196,7 @@ public class IndicatorExpressionBiz{
             .indicatorExpressionItemId(indicatorExpressionItemId)
             .appId(appId)
             .indicatorExpressionId(indicatorExpressionId)
-            .result(result)
+            .resultExpression(result)
             .resultNameList(resultNameList)
             .resultValList(resultValList)
             .build();
@@ -211,7 +210,7 @@ public class IndicatorExpressionBiz{
               log.warn("method IndicatorExpressionBiz.createOrUpdate param createOrUpdateIndicatorExpressionRequestRs maxCreateOrUpdateIndicatorExpressionItemRequestRs indicatorExpressionItemId:{} is illegal", finalIndicatorExpressionItemId);
               throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
             });
-        indicatorExpressionItemEntity.setResult(result);
+        indicatorExpressionItemEntity.setResultExpression(result);
         indicatorExpressionItemEntity.setResultNameList(resultNameList);
         indicatorExpressionItemEntity.setResultValList(resultValList);
       }
