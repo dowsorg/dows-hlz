@@ -145,7 +145,7 @@ public class IndicatorInstanceBiz{
                     String indicatorExpressionId = indicatorExpressionItemEntity.getIndicatorExpressionId();
                     List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.get(indicatorExpressionId);
                     if (Objects.isNull(indicatorExpressionItemEntityList)) {
-                        indicatorExpressionItemEntityList = Collections.emptyList();
+                        indicatorExpressionItemEntityList = new ArrayList<>();
                     }
                     indicatorExpressionItemEntityList.add(indicatorExpressionItemEntity);
                     kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.put(indicatorExpressionId, indicatorExpressionItemEntityList);
