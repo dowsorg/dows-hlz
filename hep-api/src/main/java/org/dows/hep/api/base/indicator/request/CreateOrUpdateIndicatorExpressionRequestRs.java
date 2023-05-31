@@ -33,6 +33,7 @@ public class CreateOrUpdateIndicatorExpressionRequestRs implements Serializable 
   private String appId;
 
   @Schema(title = "公式类型，0-条件公式，1-随机公式")
+  @ApiModelProperty(required = true, value = "公式类型，0-条件公式，1-随机公式")
   private Integer type;
 
   @Schema(title = "指标公式细项")
