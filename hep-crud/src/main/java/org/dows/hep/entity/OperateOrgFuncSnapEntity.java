@@ -45,8 +45,6 @@ public class OperateOrgFuncSnapEntity implements CrudEntity {
     @Schema(title = "机构操作id")
     private String operateOrgFuncId;
 
-    @Schema(title = "实验操作流程id")
-    private String operateFlowId;
 
     @Schema(title = "快照时间")
     private Date snapTime;

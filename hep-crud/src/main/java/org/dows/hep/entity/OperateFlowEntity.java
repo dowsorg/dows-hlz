@@ -52,14 +52,10 @@ public class OperateFlowEntity implements CrudEntity {
     @Schema(title = "实验人物id")
     private String experimentPersonId;
 
-    @Schema(title = "案例机构ID")
-    private String caseOrgId;
+    @Schema(title = "实验机构ID")
+    private String experimentOrgId;
 
-    @Schema(title = "案例账号ID")
-    private String caseAccountId;
 
-    @Schema(title = "账号名称")
-    private String caseAccountName;
 
     @Schema(title = "操作人ID")
     private String operateAccountId;

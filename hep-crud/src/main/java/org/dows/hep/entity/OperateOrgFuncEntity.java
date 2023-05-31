@@ -46,11 +46,6 @@ public class OperateOrgFuncEntity implements CrudEntity {
     @Schema(title = "实验操作流程id")
     private String operateFlowId;
 
-    @Schema(title = "机构功能ID")
-    private String caseOrgFunctionId;
-
-    @Schema(title = "指标功能点id")
-    private String indicatorFuncId;
 
     @Schema(title = "实验实例id")
     private String experimentInstanceId;
@@ -61,14 +56,14 @@ public class OperateOrgFuncEntity implements CrudEntity {
     @Schema(title = "实验人物id")
     private String experimentPersonId;
 
-    @Schema(title = "案例机构ID")
-    private String caseOrgId;
+    @Schema(title = "实验机构ID")
+    private String experimentOrgId;
 
-    @Schema(title = "案例账号ID")
-    private String caseAccountId;
 
-    @Schema(title = "账号名称")
-    private String caseAccountName;
+
+    @Schema(title = "指标功能点id")
+    private String indicatorFuncId;
+
 
     @Schema(title = "操作人id")
     private String operateAccountId;
