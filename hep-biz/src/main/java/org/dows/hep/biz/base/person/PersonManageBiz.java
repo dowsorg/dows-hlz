@@ -185,7 +185,7 @@ public class PersonManageBiz {
      * @工时: 3H
      * @开发者: jx
      * @开始时间:
-     * @创建时间: 2023年4月23日 上午9:44:34
+     * @创建时间: 2023年5月31日 下午16:22:34
      */
     @DSTransactional
     public String editPersonStatus(PersonInstanceRequest request) {
@@ -193,6 +193,7 @@ public class PersonManageBiz {
         AccountInstanceRequest accountInstanceRequest = AccountInstanceRequest.builder()
                 .accountId(request.getAccountId().toString())
                 .status(request.getStatus())
+                .appId(request.getAppId())
                 .build();
         String userId = accountInstanceApi.updateAccountInstanceByAccountId(accountInstanceRequest);
         return userId;
