@@ -412,7 +412,14 @@ public class ExperimentManageBiz {
                             .appId(accountInstanceResponse.getAppId())
                             .tentantId(accountInstanceResponse.getTenantId()).build();
                     this.accountUserApi.createAccountUser(accountUserRequest);
-                    //2.5、添加新人物到实验中
+                    //2.5、获取案例人物ID
+                    CasePersonEntity personEntity = casePersonService
+                            .lambdaQuery()
+                            .eq(CasePersonEntity::getCaseOrgId, createExperiment.getCaseOrgId())
+                            .eq(CasePersonEntity::getAccountId, teacher.getAccountId())
+                            .eq(CasePersonEntity::getDeleted, false)
+                            .one();
+                    //2.6、添加新人物到实验中
                     ExperimentPersonEntity entity1 = ExperimentPersonEntity.builder()
                             .experimentPersonId(idGenerator.nextIdStr())
                             .experimentInstanceId(createExperiment.getExperimentInstanceId())
@@ -421,12 +428,12 @@ public class ExperimentManageBiz {
                             .experimentOrgName(request.getOrgName())
                             .experimentAccountId(vo.getAccountId())
                             .experimentAccountName(vo.getAccountName())
-                            .casePersonId(teacher.getAccountId())
+                            .casePersonId(personEntity.getCasePersonId())
                             .build();
                     experimentPersonService.save(entity1);
                     experimentAccountIds.add(vo.getAccountId());
                 }
-                //2.6、复制人物到新建的小组
+                //2.7、复制人物到新建的小组
                 experimentAccountIds.forEach(accountId -> {
                     AccountInstanceResponse instanceResponse = accountInstanceApi.getAccountInstanceByAccountId(accountId);
                     AccountGroupRequest request1 = AccountGroupRequest
