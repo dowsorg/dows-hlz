@@ -136,6 +136,10 @@ public class ExperimentOrgJudgeBiz {
     public Map<String, List<IndicatorJudgeRiskFactorResponse>> getIndicatorJudgeRiskFactor(String indicatorFuncId) {
         //1、根据指标功能ID获取所有的分类
         List<IndicatorJudgeRiskFactorEntity> entityList = indicatorJudgeRiskFactorService.lambdaQuery()
+                .select(IndicatorJudgeRiskFactorEntity::getId,
+                        IndicatorJudgeRiskFactorEntity::getIndicatorJudgeRiskFactorId,
+                        IndicatorJudgeRiskFactorEntity::getName,
+                        IndicatorJudgeRiskFactorEntity::getIndicatorCategoryId)
                 .eq(IndicatorJudgeRiskFactorEntity::getIndicatorFuncId, indicatorFuncId)
                 .eq(IndicatorJudgeRiskFactorEntity::getStatus, true)
                 .list();
@@ -204,6 +208,10 @@ public class ExperimentOrgJudgeBiz {
     public List<IndicatorJudgeHealthProblemResponse> getIndicatorJudgeHealthProblemByCategoryId(String indicatoryCategoryId) {
         //1、根据指标分类ID获取所有符合条件的数据
         List<IndicatorJudgeHealthProblemEntity> entityList = indicatorJudgeHealthProblemService.lambdaQuery()
+                .select(IndicatorJudgeHealthProblemEntity::getId,
+                        IndicatorJudgeHealthProblemEntity::getIndicatorJudgeHealthProblemId,
+                        IndicatorJudgeHealthProblemEntity::getName,
+                        IndicatorJudgeHealthProblemEntity::getIndicatorCategoryId)
                 .eq(IndicatorJudgeHealthProblemEntity::getIndicatorCategoryId, indicatoryCategoryId)
                 .eq(IndicatorJudgeHealthProblemEntity::getStatus, true)
                 .list();
@@ -257,11 +265,11 @@ public class ExperimentOrgJudgeBiz {
         judgeRiskFactorRequestList.forEach(judgeRiskFactorRequest -> {
             //1、根据ID获取判断规则
             IndicatorJudgeRiskFactorEntity entity = indicatorJudgeRiskFactorService.lambdaQuery()
+                    .select(IndicatorJudgeRiskFactorEntity::getExpression)
                     .eq(IndicatorJudgeRiskFactorEntity::getIndicatorJudgeRiskFactorId, judgeRiskFactorRequest.getIndicatorJudgeRiskFactorId())
                     .eq(IndicatorJudgeRiskFactorEntity::getStatus, true)
                     .one();
             //todo、根据判断规则判断是否满足条件,不满足将flag变为false，只要有一个false,就说明失败
-            entity.getExpression();
             flag.set(false);
         });
         return flag.get();
@@ -306,6 +314,7 @@ public class ExperimentOrgJudgeBiz {
         Boolean flag = true;
         //1、根据直接判断分布式ID获取公式
         IndicatorJudgeHealthManagementGoalEntity entity = indicatorJudgeHealthManagementGoalService.lambdaQuery()
+                .select(IndicatorJudgeHealthManagementGoalEntity::getExpression)
                 .eq(IndicatorJudgeHealthManagementGoalEntity::getIndicatorJudgeHealthManagementGoalId, request.getIndicatorJudgeHealthManagementGoalId())
                 .eq(IndicatorJudgeHealthManagementGoalEntity::getDeleted, false)
                 .one();
@@ -328,6 +337,7 @@ public class ExperimentOrgJudgeBiz {
     public Boolean saveExperimentJudgeOperate(List<OperateOrgFuncRequest> operateOrgFuncRequest, String accountId, String accountName) {
         //1、删除用户以前功能点信息
         List<OperateOrgFuncEntity> entityList = operateOrgFuncService.lambdaQuery()
+                .select(OperateOrgFuncEntity::getId,OperateOrgFuncEntity::getDeleted)
                 .eq(OperateOrgFuncEntity::getPeriods, operateOrgFuncRequest.get(0).getPeriods())
                 .eq(OperateOrgFuncEntity::getIndicatorFuncId, operateOrgFuncRequest.get(0).getIndicatorFuncId())
                 .eq(OperateOrgFuncEntity::getExperimentPersonId, operateOrgFuncRequest.get(0).getExperimentPersonId())
@@ -338,6 +348,7 @@ public class ExperimentOrgJudgeBiz {
             List<OperateOrgFuncSnapEntity> snapList = new ArrayList<>();
             entityList.forEach(entity -> {
                 entity.setDeleted(true);
+                operateOrgFuncService.updateById(entity);
                 OperateOrgFuncSnapEntity snapEntity = operateOrgFuncSnapService.lambdaQuery()
                         .eq(OperateOrgFuncSnapEntity::getOperateOrgFuncId, entity.getOperateOrgFuncId())
                         .eq(OperateOrgFuncSnapEntity::getAppId, operateOrgFuncRequest.get(0).getAppId())
@@ -346,7 +357,6 @@ public class ExperimentOrgJudgeBiz {
                 snapList.add(snapEntity);
 
             });
-            operateOrgFuncService.updateBatchById(entityList);
             //1.1、删除用户以前的功能点快照
             if (snapList != null && snapList.size() > 0) {
                 snapList.forEach(snap -> {
@@ -403,11 +413,11 @@ public class ExperimentOrgJudgeBiz {
         judgeHealthProblemRequest.forEach(judgeHealthProblem -> {
             //1、根据ID获取判断规则
             IndicatorJudgeHealthProblemEntity entity = indicatorJudgeHealthProblemService.lambdaQuery()
+                    .select(IndicatorJudgeHealthProblemEntity::getExpression)
                     .eq(IndicatorJudgeHealthProblemEntity::getIndicatorJudgeHealthProblemId, judgeHealthProblem.getIndicatorJudgeHealthProblemId())
                     .eq(IndicatorJudgeHealthProblemEntity::getStatus, true)
                     .one();
             //todo、根据判断规则判断是否满足条件,不满足将flag变为false，只要有一个false,就说明失败
-            entity.getExpression();
             flag.set(false);
         });
         return flag.get();
