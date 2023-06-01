@@ -202,6 +202,7 @@ public class IndicatorExpressionBiz{
         indicatorExpressionItemEntity.setResultNameList(resultNameList);
         indicatorExpressionItemEntity.setResultValList(resultValList);
       }
+      indicatorExpressionEntity.setMaxIndicatorExpressionItemId(indicatorExpressionItemId);
       indicatorExpressionItemEntityList.add(indicatorExpressionItemEntity);
     }
     if (Objects.nonNull(minCreateOrUpdateIndicatorExpressionItemRequestRs)) {
@@ -238,6 +239,7 @@ public class IndicatorExpressionBiz{
         indicatorExpressionItemEntity.setResultNameList(resultNameList);
         indicatorExpressionItemEntity.setResultValList(resultValList);
       }
+      indicatorExpressionEntity.setMinIndicatorExpressionItemId(indicatorExpressionItemId);
       indicatorExpressionItemEntityList.add(indicatorExpressionItemEntity);
     }
     indicatorExpressionService.saveOrUpdate(indicatorExpressionEntity);
