@@ -114,6 +114,7 @@ public class PersonManageBiz {
         PersonInstanceResponse response = PersonInstanceResponse.builder()
                 .accountId(accountId)
                 .accountName(accounInstance.getAccountName())
+                .userName(userInstance.getName())
                 .intro(extinfoResponse.getIntro())
                 .avatar(accounInstance.getAvatar())
                 .build();
