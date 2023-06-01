@@ -2,11 +2,8 @@ package org.dows.hep.rest.base.indicator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.indicator.request.CreateIndicatorInstanceRequest;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorInstanceRequestRs;
-import org.dows.hep.api.base.indicator.request.UpdateIndicatorInstanceRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorInstanceCategoryResponseRs;
-import org.dows.hep.api.base.indicator.response.IndicatorInstanceResponse;
 import org.dows.hep.biz.base.indicator.IndicatorInstanceBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -32,10 +29,10 @@ public class IndicatorInstanceRest {
     }
 
     @Operation(summary = "删除指标")
-    @DeleteMapping("v1/baseIndicator/indicatorInstance/deleteIndicatorInstance")
-    public void deleteIndicatorInstance(
+    @DeleteMapping("v1/baseIndicator/indicatorInstance/delete")
+    public void delete(
         @RequestParam @Validated String indicatorInstanceId) throws InterruptedException {
-        indicatorInstanceBiz.deleteIndicatorInstance(indicatorInstanceId);
+        indicatorInstanceBiz.delete(indicatorInstanceId);
     }
 
     @Operation(summary = "批量设置关键指标")
@@ -55,6 +52,13 @@ public class IndicatorInstanceRest {
     public List<IndicatorInstanceCategoryResponseRs> getByAppId(@RequestParam String appId) {
         return indicatorInstanceBiz.getByAppId(appId);
     }
+
+//    @Operation(summary = "删除指标")
+//    @DeleteMapping("v1/baseIndicator/indicatorInstance/deleteIndicatorInstance")
+//    public void deleteIndicatorInstance(
+//        @RequestParam @Validated String indicatorInstanceId) throws InterruptedException {
+//        indicatorInstanceBiz.delete(indicatorInstanceId);
+//    }
 
 //    /**
 //    * 更新指标
