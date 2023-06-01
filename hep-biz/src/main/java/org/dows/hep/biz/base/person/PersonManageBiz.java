@@ -152,6 +152,7 @@ public class PersonManageBiz {
         AccountInstanceRequest accountInstanceRequest = AccountInstanceRequest.builder()
                 .accountId(request.getAccountId().toString())
                 .userName(request.getUserName())
+                .nickName(request.getExtra())
                 .appId(request.getAppId())
                 .avatar(request.getAvatar())
                 .build();
