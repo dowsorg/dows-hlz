@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
 * @description 
 *
@@ -14,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Schema(name = "UpdateIndicatorFunc 对象", title = "更新指标功能")
-public class UpdateIndicatorFuncRequest{
+public class UpdateIndicatorFuncRequest implements Serializable {
     @Schema(title = "指标功能分布式ID")
     @ApiModelProperty(required = true, value = "指标功能的分布式id，在修改的时候必备")
     private String indicatorFuncId;
