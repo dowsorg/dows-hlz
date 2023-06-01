@@ -1,0 +1,53 @@
+package org.dows.hep.entity;
+
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.*;
+import lombok.experimental.Accessors;
+
+/**
+ * @author runsix
+ */
+@Data
+@ToString
+@Builder
+@Accessors(chain = true)
+@AllArgsConstructor
+@NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@Schema(name = "ExperimentIndicatorVal", title = "实验指标值")
+@TableName("experiment_indicator_val")
+public class ExperimentIndicatorValEntity {
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
+  @Schema(title = "主键")
+  private Long id;
+
+  @Schema(title = "实验指标值分布式ID")
+  private String experimentIndicatorValId;
+
+  @Schema(title = "案例指标值分布式ID")
+  private String caseIndicatorValId;
+
+  @Schema(title = "实验实例ID")
+  private String experimentInstanceId;
+
+  @Schema(title = "实验指标ID")
+  public String experimentIndicatorInstanceId;
+
+  @Schema(title = "当前值")
+  private String currentVal;
+
+  @Schema(title = "最小值")
+  private String min;
+
+  @Schema(title = "最大值")
+  private String max;
+
+  @Schema(title = "描述")
+  private String descr;
+
+  @Schema(title = "期数")
+  private String periods;
+}
