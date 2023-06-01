@@ -155,13 +155,37 @@ public class ExperimentOrgViewBiz{
     * @return
     * @说明: 体格检查+辅助检查：获取最新检查报告
     * @关联表: OperateOrgFunc,OperateOrgFuncSnap
-    * @工时: 6H
-    * @开发者: wuzl
+    * @工时: 2H
+    * @开发者: jx
     * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
+    * @创建时间: 2023年6月01日 下午13:44:34
     */
-    public GetOrgViewReportResponse getOrgViewReport(GetOrgViewReportRequest getOrgViewReport ) {
-        return new GetOrgViewReportResponse();
+    public List<OperateOrgFuncSnapRequest> getOrgViewReport(GetOrgViewReportRequest orgViewReport) {
+        List<OperateOrgFuncSnapRequest> requestList = new ArrayList<>();
+        //1、获取操作记录
+        List<OperateOrgFuncEntity> entityList = operateOrgFuncService.lambdaQuery()
+                .select(OperateOrgFuncEntity::getOperateOrgFuncId,OperateOrgFuncEntity::getDeleted)
+                .eq(OperateOrgFuncEntity::getPeriods, orgViewReport.getPeriods())
+                .eq(OperateOrgFuncEntity::getIndicatorFuncId, orgViewReport.getIndicatorFuncId())
+                .eq(OperateOrgFuncEntity::getExperimentPersonId, orgViewReport.getExperimentPersonId())
+                .eq(OperateOrgFuncEntity::getAppId, orgViewReport.getAppId())
+                .eq(OperateOrgFuncEntity::getDeleted, false)
+                .list();
+        //2、获取操作记录快照
+        if(entityList != null && entityList.size() > 0){
+            entityList.forEach(entity->{
+                OperateOrgFuncSnapEntity snapEntity = operateOrgFuncSnapService.lambdaQuery()
+                        .eq(OperateOrgFuncSnapEntity::getOperateOrgFuncId,entity.getOperateOrgFuncId())
+                        .eq(OperateOrgFuncSnapEntity::getDeleted,false)
+                        .one();
+                OperateOrgFuncSnapRequest snapRequest = OperateOrgFuncSnapRequest.builder()
+                        .operateOrgFuncSnapId(snapEntity.getOperateOrgFuncSnapId())
+                        .inputJson(snapEntity.getInputJson())
+                        .build();
+                requestList.add(snapRequest);
+            });
+        }
+        return requestList;
     }
 
     /**

@@ -136,8 +136,8 @@ public class ExperimentOrgViewRest {
     */
     @Operation(summary = "体格检查+辅助检查：获取最新检查报告")
     @PostMapping("v1/userExperiment/experimentOrgView/getOrgViewReport")
-    public GetOrgViewReportResponse getOrgViewReport(@RequestBody @Validated GetOrgViewReportRequest getOrgViewReport ) {
-        return experimentOrgViewBiz.getOrgViewReport(getOrgViewReport);
+    public List<OperateOrgFuncSnapRequest> getOrgViewReport(@RequestBody @Validated GetOrgViewReportRequest orgViewReport) {
+        return experimentOrgViewBiz.getOrgViewReport(orgViewReport);
     }
 
     /**
