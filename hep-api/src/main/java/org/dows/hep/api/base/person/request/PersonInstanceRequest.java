@@ -24,8 +24,11 @@ public class PersonInstanceRequest{
     @Schema(title = "应用ID")
     private String appId;
 
-    @Schema(title = "姓名")
-    private String name;
+    @Schema(title = "用户姓名")
+    private String userName;
+
+    @Schema(title = "状态")
+    private Integer status;
 
     @Schema(title = "头像")
     private String avatar;
