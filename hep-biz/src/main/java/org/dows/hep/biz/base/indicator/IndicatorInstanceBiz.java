@@ -67,6 +67,7 @@ public class IndicatorInstanceBiz{
             .appId(indicatorInstanceEntity.getAppId())
             .indicatorCategoryId(indicatorInstanceEntity.getIndicatorCategoryId())
             .indicatorName(indicatorInstanceEntity.getIndicatorName())
+            .displayByPercent(indicatorInstanceEntity.getDisplayByPercent())
             .unit(indicatorInstanceEntity.getUnit())
             .core(indicatorInstanceEntity.getCore())
             .food(indicatorInstanceEntity.getFood())
