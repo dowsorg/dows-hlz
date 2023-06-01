@@ -149,7 +149,7 @@ public class PersonManageBiz {
         //1、修改账户
         AccountInstanceRequest accountInstanceRequest = AccountInstanceRequest.builder()
                 .accountId(request.getAccountId().toString())
-                .userName(request.getName())
+                .userName(request.getUserName())
                 .appId(request.getAppId())
                 .avatar(request.getAvatar())
                 .build();
