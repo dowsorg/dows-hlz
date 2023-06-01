@@ -51,6 +51,7 @@ public class IndicatorExpressionBiz{
         .id(indicatorExpressionEntity.getId())
         .indicatorExpressionId(indicatorExpressionEntity.getIndicatorExpressionId())
         .appId(indicatorExpressionEntity.getAppId())
+        .type(indicatorExpressionEntity.getType())
         .deleted(indicatorExpressionEntity.getDeleted())
         .dt(indicatorExpressionEntity.getDt())
         .indicatorExpressionItemResponseRsList(indicatorExpressionItemResponseRsList)
