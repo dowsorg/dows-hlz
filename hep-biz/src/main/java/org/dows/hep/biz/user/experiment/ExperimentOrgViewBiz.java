@@ -224,6 +224,9 @@ public class ExperimentOrgViewBiz{
                     .operateType(operateOrgFunc.getOperateType())
                     .periods(operateOrgFunc.getPeriods())
                     .score(operateOrgFunc.getScore())
+//                    .asset(??)
+//                    .fee(??)
+//                    .refund(??)
                     .operateTime(new Date())
                     .build();
             operateOrgFuncService.save(entity);
