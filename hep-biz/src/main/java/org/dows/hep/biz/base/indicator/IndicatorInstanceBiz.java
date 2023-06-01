@@ -302,7 +302,7 @@ public class IndicatorInstanceBiz{
                     return new IndicatorInstanceException(EnumESC.VALIDATE_EXCEPTION);
                 });
             indicatorRuleEntity.setMin(min);
-            indicatorRuleEntity.setMin(max);
+            indicatorRuleEntity.setMax(max);
             indicatorRuleEntity.setDef(def);
         }
         RLock lock = redissonClient.getLock(RedissonUtil.getLockName(appId, EnumRedissonLock.INDICATOR_INSTANCE_CREATE_DELETE_UPDATE, indicatorInstanceFieldPid, indicatorCategoryId));
@@ -337,7 +337,7 @@ public class IndicatorInstanceBiz{
      * 3.delete IndicatorRule
     */
     @Transactional(rollbackFor = Exception.class)
-    public void deleteIndicatorInstance(String indicatorInstanceId) throws InterruptedException {
+    public void delete(String indicatorInstanceId) throws InterruptedException {
         IndicatorInstanceEntity indicatorInstanceEntity = indicatorInstanceService.lambdaQuery()
             .eq(IndicatorInstanceEntity::getIndicatorInstanceId, indicatorInstanceId)
             .oneOpt()
