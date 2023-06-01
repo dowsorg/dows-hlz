@@ -61,6 +61,12 @@ public class IndicatorInstanceResponseRs implements Serializable {
   @Schema(title = "指标默认值")
   private String def;
 
+  @Schema(title = "指标推荐最小值")
+  private String min;
+
+  @Schema(title = "指标推荐最大值")
+  private String max;
+
   @Schema(title = "指标顺序")
   private Integer seq;
 }
