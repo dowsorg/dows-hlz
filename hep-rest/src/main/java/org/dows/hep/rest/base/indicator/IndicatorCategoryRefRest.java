@@ -14,10 +14,4 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Tag(name = "指标类别", description = "指标类别")
 public class IndicatorCategoryRefRest {
-  private final ICRBiz
-
-  @PutMapping("v1/baseIndicator/indicatorCategoryRef/update")
-  public void updateSeq(@RequestBody UpdateIndicatorCategpryRefSeqRequestRs updateIndicatorCategpryRefSeqRequestRs) {
-
-  }
 }
