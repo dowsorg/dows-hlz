@@ -2,6 +2,8 @@ package org.dows.hep.rest.base.indicator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.indicator.request.BatchUpdateCoreRequestRs;
+import org.dows.hep.api.base.indicator.request.BatchUpdateFoodRequestRs;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorInstanceRequestRs;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorInstanceMoveRequestRs;
 import org.dows.hep.api.base.indicator.response.IndicatorInstanceCategoryResponseRs;
@@ -38,14 +40,14 @@ public class IndicatorInstanceRest {
 
     @Operation(summary = "批量设置关键指标")
     @PutMapping("v1/baseIndicator/indicatorInstance/batchUpdateCore")
-    public void batchUpdateCore(@RequestBody List<String> indicatorInstanceIdList) {
-        indicatorInstanceBiz.batchUpdateCore(indicatorInstanceIdList);
+    public void batchUpdateCore(@RequestBody BatchUpdateCoreRequestRs batchUpdateCoreRequestRs) {
+        indicatorInstanceBiz.batchUpdateCore(batchUpdateCoreRequestRs);
     }
 
     @Operation(summary = "批量设置饮食关键指标")
     @PutMapping("v1/baseIndicator/indicatorInstance/batchUpdateFood")
-    public void batchUpdateFood(@RequestBody List<String> indicatorInstanceIdList) {
-        indicatorInstanceBiz.batchUpdateFood(indicatorInstanceIdList);
+    public void batchUpdateFood(@RequestBody BatchUpdateFoodRequestRs batchUpdateFoodRequestRs) {
+        indicatorInstanceBiz.batchUpdateFood(batchUpdateFoodRequestRs);
     }
 
     @Operation(summary = "上移下移功能")

@@ -9,8 +9,8 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum EnumStatus {
-  ENABLE(0, "启用"),
-  DISABLE(1, "禁用"),
+  DISABLE(0, "禁用"),
+  ENABLE(1, "启用"),
   ;
   private final Integer code;
   private final String desc;
