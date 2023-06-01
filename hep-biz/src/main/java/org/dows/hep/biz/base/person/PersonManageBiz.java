@@ -115,6 +115,7 @@ public class PersonManageBiz {
                 .accountId(accountId)
                 .accountName(accounInstance.getAccountName())
                 .userName(userInstance.getName())
+                .extra(userInstance.getNickName())
                 .intro(extinfoResponse.getIntro())
                 .avatar(accounInstance.getAvatar())
                 .build();
@@ -606,6 +607,8 @@ public class PersonManageBiz {
         UserInstanceRequest user = new UserInstanceRequest();
         BeanUtils.copyProperties(request, user);
         user.setName(request.getUserName());
+        //3、保存其他图示
+        user.setNickName(request.getExtra());
         String userId = userInstanceApi.insertUserInstance(user);
         //3、新增用户简介
         UserExtinfoRequest userExtinfo = UserExtinfoRequest.builder()
