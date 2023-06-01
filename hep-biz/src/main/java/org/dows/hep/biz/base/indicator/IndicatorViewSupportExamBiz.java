@@ -130,6 +130,8 @@ public class IndicatorViewSupportExamBiz{
                     kIndicatorInstanceIdVIndicatorInstanceEntityMap.get(indicatorViewSupportExamEntity.getIndicatorInstanceId()),
                     null,
                     null,
+                    null,
+                    null,
                     null
                 );
                 return indicatorViewSupportExam2ResponseRs(

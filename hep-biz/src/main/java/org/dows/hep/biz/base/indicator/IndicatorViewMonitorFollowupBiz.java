@@ -165,6 +165,8 @@ public class IndicatorViewMonitorFollowupBiz{
                                     kIndicatorInstanceIdVIndicatorInstanceEntityMap.get(indicatorViewMonitorFollowupContentRefEntity.getIndicatorInstanceId()),
                                     null,
                                     null,
+                                    null,
+                                    null,
                                     null
                                 );
                                 return IndicatorViewMonitorFollowupContentRefBiz.indicatorViewMonitorFollowupContentRef2ResponseRs(

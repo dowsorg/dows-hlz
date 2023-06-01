@@ -53,6 +53,8 @@ public class IndicatorInstanceBiz{
     public static IndicatorInstanceResponseRs indicatorInstance2ResponseRs(
         IndicatorInstanceEntity indicatorInstanceEntity,
         String def,
+        String min,
+        String max,
         Integer seq,
         IndicatorExpressionResponseRs indicatorExpressionResponseRs) {
         if (Objects.isNull(indicatorInstanceEntity)) {
@@ -74,6 +76,8 @@ public class IndicatorInstanceBiz{
             .dt(indicatorInstanceEntity.getDt())
             .indicatorExpressionResponseRs(indicatorExpressionResponseRs)
             .def(def)
+            .min(min)
+            .max(max)
             .seq(seq)
             .build();
     }
@@ -197,8 +201,8 @@ public class IndicatorInstanceBiz{
             .forEach(indicatorCategoryRefEntity -> kIndicatorInstanceIdVSeqMap.put(indicatorCategoryRefEntity.getIndicatorInstanceId(), indicatorCategoryRefEntity.getSeq()));
     }
 
-    public void populateKIndicatorInstanceIdVDefMap(String appId, Set<String> indicatorInstanceIdSet, Map<String, String> kIndicatorInstanceIdVDefMap) {
-        if (Objects.isNull(kIndicatorInstanceIdVDefMap)) {
+    public void populateKIndicatorInstanceIdVIndicatorRuleMap(String appId, Set<String> indicatorInstanceIdSet, Map<String, IndicatorRuleEntity> kIndicatorInstanceIdVIndicatorRuleMap) {
+        if (Objects.isNull(kIndicatorInstanceIdVIndicatorRuleMap)) {
             log.warn("method IndicatorInstanceBiz.populateKIndicatorInstanceIdVDefMap param kIndicatorInstanceIdVDefMap is null");
             return;
         }
@@ -209,7 +213,7 @@ public class IndicatorInstanceBiz{
             .eq(IndicatorRuleEntity::getAppId, appId)
             .in(IndicatorRuleEntity::getVariableId, indicatorInstanceIdSet)
             .list()
-            .forEach(indicatorRuleEntity -> kIndicatorInstanceIdVDefMap.put(indicatorRuleEntity.getVariableId(), indicatorRuleEntity.getDef()));
+            .forEach(indicatorRuleEntity -> kIndicatorInstanceIdVIndicatorRuleMap.put(indicatorRuleEntity.getVariableId(), indicatorRuleEntity));
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -457,8 +461,8 @@ public class IndicatorInstanceBiz{
             });
         Map<String, IndicatorExpressionResponseRs> kIndicatorInstanceIdVIndicatorExpressionResponseRsMap = new HashMap<>();
         populateKIndicatorExpressionIdVIndicatorExpressionEntityMap(appId, indicatorInstanceIdSet, kIndicatorInstanceIdVIndicatorExpressionResponseRsMap);
-        Map<String, String> kIndicatorInstanceIdVDefMap = new HashMap<>();
-        populateKIndicatorInstanceIdVDefMap(appId, indicatorInstanceIdSet, kIndicatorInstanceIdVDefMap);
+        Map<String, IndicatorRuleEntity> kIndicatorInstanceIdVIndicatorRuleMap = new HashMap<>();
+        populateKIndicatorInstanceIdVIndicatorRuleMap(appId, indicatorInstanceIdSet, kIndicatorInstanceIdVIndicatorRuleMap);
         Map<String, Integer> kIndicatorInstanceIdVSeqMap = new HashMap<>();
         populateKIndicatorInstanceIdVSeqMap(appId, indicatorInstanceIdSet, kIndicatorInstanceIdVSeqMap);
         return indicatorCategoryEntityList
@@ -472,9 +476,17 @@ public class IndicatorInstanceBiz{
                         .map(indicatorInstanceEntity -> {
                             String indicatorInstanceId = indicatorInstanceEntity.getIndicatorInstanceId();
                             IndicatorExpressionResponseRs indicatorExpressionResponseRs = kIndicatorInstanceIdVIndicatorExpressionResponseRsMap.get(indicatorInstanceId);
-                            String def = kIndicatorInstanceIdVDefMap.get(indicatorInstanceId);
+                            String def = null;
+                            String min = null;
+                            String max = null;
+                            IndicatorRuleEntity indicatorRuleEntity = kIndicatorInstanceIdVIndicatorRuleMap.get(indicatorInstanceId);
+                            if (Objects.nonNull(indicatorRuleEntity)) {
+                                def = indicatorRuleEntity.getDef();
+                                min = indicatorRuleEntity.getMin();
+                                max = indicatorRuleEntity.getMax();
+                            }
                             Integer seq = kIndicatorInstanceIdVSeqMap.get(indicatorInstanceId);
-                            return IndicatorInstanceBiz.indicatorInstance2ResponseRs(indicatorInstanceEntity, def, seq, indicatorExpressionResponseRs);
+                            return IndicatorInstanceBiz.indicatorInstance2ResponseRs(indicatorInstanceEntity, def, min, max, seq, indicatorExpressionResponseRs);
                         })
                         .collect(Collectors.toList());
                 }
