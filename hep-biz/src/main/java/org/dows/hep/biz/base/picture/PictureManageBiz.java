@@ -236,4 +236,26 @@ public class PictureManageBiz {
         voPage.setRecords(voList);
         return voPage;
     }
+
+    /**
+     * @param
+     * @return
+     * @说明: 获取人物全身照
+     * @关联表: materials、materials_attachment、materials_category
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/6/01 10:00
+     */
+    public MaterialsAttachmentEntity getBodyByMaterialsId(String materialsId,String appId) {
+        IPage<PictureResponse> voPage = new Page<>();
+        //1、根据资料ID获取全身照
+        MaterialsAttachmentEntity materialsAttachment = materialsAttachmentService.lambdaQuery()
+                .eq(MaterialsAttachmentEntity::getAppId, appId)
+                .eq(MaterialsAttachmentEntity::getMaterialsId, materialsId)
+                .eq(MaterialsAttachmentEntity::getFileType,1)
+                .oneOpt()
+                .orElseThrow(() -> new MaterialException(EnumMaterials.MATERIALS_IS_NOT_FIND));
+        return materialsAttachment;
+    }
 }

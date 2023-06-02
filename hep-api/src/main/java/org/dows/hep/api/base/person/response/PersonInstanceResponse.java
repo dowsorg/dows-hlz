@@ -27,6 +27,9 @@ public class PersonInstanceResponse{
     @Schema(title = "头像")
     private String avatar;
 
+    @Schema(title = "其他图示")
+    private String extra;
+
     @Schema(title = "用户简介")
     private String intro;
 

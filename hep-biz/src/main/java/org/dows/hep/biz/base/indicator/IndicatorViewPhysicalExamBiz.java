@@ -106,6 +106,8 @@ public class IndicatorViewPhysicalExamBiz{
                     kIndicatorInstanceIdVIndicatorInstanceEntityMap.get(indicatorViewPhysicalExamEntity.getIndicatorInstanceId()),
                     null,
                     null,
+                    null,
+                    null,
                     null
                 );
                 return indicatorViewPhysicalExam2ResponseRs(

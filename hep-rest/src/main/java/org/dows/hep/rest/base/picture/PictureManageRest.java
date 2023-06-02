@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.picture.request.PictureRequest;
 import org.dows.hep.api.base.picture.response.PictureResponse;
 import org.dows.hep.biz.base.picture.PictureManageBiz;
+import org.dows.hep.entity.MaterialsAttachmentEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -64,5 +65,16 @@ public class PictureManageRest {
     @PostMapping("v1/basePicture/picture/listPersonAvatar")
     public IPage<PictureResponse> listPersonAvatar(@RequestBody PictureRequest request) {
         return pictureManageBiz.listPersonAvatar(request);
+    }
+
+    /**
+     * 获取人物全身照
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取人物全身照")
+    @GetMapping("v1/basePicture/picture/getBodyByMaterialsId/{materialsId}/{appId}")
+    public MaterialsAttachmentEntity getBodyByMaterialsId(@PathVariable String materialsId,@PathVariable String appId) {
+        return pictureManageBiz.getBodyByMaterialsId(materialsId,appId);
     }
 }

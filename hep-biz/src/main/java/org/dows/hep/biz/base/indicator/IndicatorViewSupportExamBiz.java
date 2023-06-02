@@ -1,7 +1,6 @@
 package org.dows.hep.biz.base.indicator;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -128,6 +127,8 @@ public class IndicatorViewSupportExamBiz{
                 List<IndicatorCategoryResponse> indicatorCategoryResponseList = indicatorCategoryEntityList.stream().map(IndicatorCategoryBiz::indicatorCategoryEntity2Response).collect(Collectors.toList());
                 IndicatorInstanceResponseRs indicatorInstanceResponseRs = IndicatorInstanceBiz.indicatorInstance2ResponseRs(
                     kIndicatorInstanceIdVIndicatorInstanceEntityMap.get(indicatorViewSupportExamEntity.getIndicatorInstanceId()),
+                    null,
+                    null,
                     null,
                     null,
                     null
@@ -270,6 +271,8 @@ public class IndicatorViewSupportExamBiz{
     }
 
     public Page<IndicatorViewSupportExamResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String indicatorCategoryIdList, Integer status) {
+
+
         Page<IndicatorViewSupportExamEntity> page = RsPageUtil.getRsPage(pageNo, pageSize, order, asc);
         LambdaQueryWrapper<IndicatorViewSupportExamEntity> indicatorViewSupportExamEntityLQW = new LambdaQueryWrapper<>();
         indicatorViewSupportExamEntityLQW
@@ -278,8 +281,14 @@ public class IndicatorViewSupportExamBiz{
             .eq(Objects.nonNull(status), IndicatorViewSupportExamEntity::getStatus, status)
             .like(StringUtils.isNotBlank(name), IndicatorViewSupportExamEntity::getName, StringUtils.isBlank(name) ? null : name.trim());
         if (StringUtils.isNotBlank(indicatorCategoryIdList)) {
-            List<String> paramIndicatorCategoryIdList = Arrays.stream(indicatorCategoryIdList.split(",")).toList();
-            indicatorViewSupportExamEntityLQW.in(IndicatorViewSupportExamEntity::getIndicatorCategoryId, paramIndicatorCategoryIdList);
+            Set<String> firstIndicatorCategoryIdSet = Arrays.stream(indicatorCategoryIdList.split(",")).collect(Collectors.toSet());
+            Set<String> thirdIndicatorCategoryIdSet = getThirdIndicatorCategoryIdSet(firstIndicatorCategoryIdSet);
+            /* runsix:if first category list mapped third category list is empty, means nothing */
+            if (thirdIndicatorCategoryIdSet.isEmpty()) {
+                return RsPageUtil.getRsPage(pageNo, pageSize, order, asc);
+            } else {
+                indicatorViewSupportExamEntityLQW.in(IndicatorViewSupportExamEntity::getIndicatorCategoryId, thirdIndicatorCategoryIdSet);
+            }
         }
         Page<IndicatorViewSupportExamEntity> indicatorViewSupportExamEntityPage = indicatorViewSupportExamService.page(page, indicatorViewSupportExamEntityLQW);
         Page<IndicatorViewSupportExamResponseRs> indicatorViewSupportExamResponseRsPage = RsPageUtil.convertFromAnother(indicatorViewSupportExamEntityPage);
@@ -287,6 +296,28 @@ public class IndicatorViewSupportExamBiz{
         List<IndicatorViewSupportExamResponseRs> indicatorViewSupportExamResponseRsList = indicatorViewSupportExamEntityList2ResponseRsList(indicatorViewSupportExamEntityList);
         indicatorViewSupportExamResponseRsPage.setRecords(indicatorViewSupportExamResponseRsList);
         return indicatorViewSupportExamResponseRsPage;
+    }
+
+    private Set<String> getThirdIndicatorCategoryIdSet(Collection<String> firstIndicatorCategoryIdCollection) {
+        Set<String> resultSet = new HashSet<>();
+        if (Objects.nonNull(firstIndicatorCategoryIdCollection) && !firstIndicatorCategoryIdCollection.isEmpty()) {
+            Set<String> secondIndicatorCategoryIdSet = new HashSet<>();
+            indicatorCategoryService.lambdaQuery()
+                .in(IndicatorCategoryEntity::getPid, firstIndicatorCategoryIdCollection)
+                .list()
+                .forEach(indicatorCategoryEntity -> {
+                    secondIndicatorCategoryIdSet.add(indicatorCategoryEntity.getIndicatorCategoryId());
+                });
+            if (!secondIndicatorCategoryIdSet.isEmpty()) {
+                indicatorCategoryService.lambdaQuery()
+                    .in(IndicatorCategoryEntity::getPid, secondIndicatorCategoryIdSet)
+                    .list()
+                    .forEach(indicatorCategoryEntity -> {
+                        resultSet.add(indicatorCategoryEntity.getIndicatorCategoryId());
+                    });
+            }
+        }
+        return resultSet;
     }
 
     /**

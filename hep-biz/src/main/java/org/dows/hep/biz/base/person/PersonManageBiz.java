@@ -114,6 +114,8 @@ public class PersonManageBiz {
         PersonInstanceResponse response = PersonInstanceResponse.builder()
                 .accountId(accountId)
                 .accountName(accounInstance.getAccountName())
+                .userName(userInstance.getName())
+                .extra(userInstance.getNickName())
                 .intro(extinfoResponse.getIntro())
                 .avatar(accounInstance.getAvatar())
                 .build();
@@ -149,7 +151,8 @@ public class PersonManageBiz {
         //1、修改账户
         AccountInstanceRequest accountInstanceRequest = AccountInstanceRequest.builder()
                 .accountId(request.getAccountId().toString())
-                .userName(request.getName())
+                .userName(request.getUserName())
+                .nickName(request.getExtra())
                 .appId(request.getAppId())
                 .avatar(request.getAvatar())
                 .build();
@@ -158,7 +161,8 @@ public class PersonManageBiz {
         if (StringUtils.isNotEmpty(request.getIntro())) {
             UserExtinfoResponse extinfoResponse = userExtinfoApi.getUserExtinfoByUserId(userId);
             UserExtinfoRequest extinfoRequest = new UserExtinfoRequest();
-            BeanUtils.copyProperties(extinfoResponse, extinfoRequest);
+            BeanUtils.copyProperties(extinfoResponse, extinfoRequest,new String[]{"intro"});
+            extinfoRequest.setIntro(request.getIntro());
             userExtinfoApi.updateUserExtinfoById(extinfoRequest);
         }
         //3、修改用户功能点
@@ -605,6 +609,8 @@ public class PersonManageBiz {
         UserInstanceRequest user = new UserInstanceRequest();
         BeanUtils.copyProperties(request, user);
         user.setName(request.getUserName());
+        //3、保存其他图示
+        user.setNickName(request.getExtra());
         String userId = userInstanceApi.insertUserInstance(user);
         //3、新增用户简介
         UserExtinfoRequest userExtinfo = UserExtinfoRequest.builder()
