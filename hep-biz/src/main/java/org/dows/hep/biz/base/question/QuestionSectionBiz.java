@@ -83,7 +83,7 @@ public class QuestionSectionBiz {
         // update struct and questionCount
         String struct = "";
         int questionCount = 0;
-        List<QuestionSectionItemResponse> itemResponseList = listItem(List.of(questionSectionEntity.getQuestionSectionId()));
+        List<QuestionSectionItemResponse> itemResponseList = listQuestionSectionItem(List.of(questionSectionEntity.getQuestionSectionId()));
         if (Objects.nonNull(itemResponseList) && !itemResponseList.isEmpty()) {
             questionCount = itemResponseList.size();
             List<String> questionIds = itemResponseList.stream().map(QuestionSectionItemResponse::getQuestion).map(QuestionResponse::getQuestionInstanceId).toList();
@@ -142,6 +142,38 @@ public class QuestionSectionBiz {
     /**
      * @param
      * @return
+     * @说明: 列出问题集[问卷]-无分页-有答案
+     * @关联表:
+     * @工时: 5H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public List<QuestionSectionItemResponse> listQuestionSectionItem(List<String> sectionIds, QuestionResultRecordDTO recordDTO) {
+        if (sectionIds == null || sectionIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return questionSectionItemBiz.listBySectionIds(sectionIds, recordDTO);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 根据ID获取详情
+     * @关联表: QuestionSection, QuestionSectionItem, QuestionSectionDimension
+     * @工时: 5H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public QuestionSectionResponse getQuestionSection(String questionSectionId) {
+        return getQuestionSection(questionSectionId, null);
+    }
+
+    /**
+     * @param
+     * @return
      * @说明: 根据ID获取详情-有答案
      * @关联表: QuestionSection, QuestionSectionItem, QuestionSectionDimension
      * @工时: 5H
@@ -173,6 +205,13 @@ public class QuestionSectionBiz {
         return questionSectionResponse;
     }
 
+    /**
+     * @param
+     * @return
+     * @author fhb
+     * @description 根据ID获取详情
+     * @date 2023/6/2 15:17
+     */
     public QuestionSectionEntity getById(String questionSectionId) {
         LambdaQueryWrapper<QuestionSectionEntity> queryWrapper = new LambdaQueryWrapper<QuestionSectionEntity>()
                 .eq(QuestionSectionEntity::getQuestionSectionId, questionSectionId);
@@ -180,9 +219,9 @@ public class QuestionSectionBiz {
     }
 
     /**
-    * @param
-    * @return
-    * @说明: 删除or批量删除问题集[问卷]
+     * @param
+     * @return
+     * @说明: 删除or批量删除问题集[问卷]
     * @关联表: QuestionSection
     * @工时: 6H
     * @开发者: fhb
