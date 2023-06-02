@@ -223,8 +223,12 @@ public class IndicatorJudgeHealthGuidanceBiz{
             .eq(Objects.nonNull(status), IndicatorJudgeHealthGuidanceEntity::getStatus, status)
             .like(StringUtils.isNotBlank(name), IndicatorJudgeHealthGuidanceEntity::getName, StringUtils.isBlank(name) ? null : name.trim());
         if (StringUtils.isNotBlank(indicatorCategoryIdList)) {
-            List<String> paramIndicatorCategoryIdList = Arrays.stream(indicatorCategoryIdList.split(",")).toList();
-            indicatorJudgeHealthGuidanceEntityLQW.in(IndicatorJudgeHealthGuidanceEntity::getIndicatorCategoryId, paramIndicatorCategoryIdList);
+            Set<String> firstIndicatorCategoryIdSet = Arrays.stream(indicatorCategoryIdList.split(",")).collect(Collectors.toSet());
+            if (firstIndicatorCategoryIdSet.isEmpty()) {
+                return RsPageUtil.getRsPage(pageNo, pageSize, order, asc);
+            } else {
+                indicatorJudgeHealthGuidanceEntityLQW.in(IndicatorJudgeHealthGuidanceEntity::getIndicatorCategoryId, firstIndicatorCategoryIdSet);
+            }
         }
         Page<IndicatorJudgeHealthGuidanceEntity> indicatorJudgeHealthGuidanceEntityPage = indicatorJudgeHealthGuidanceService.page(page, indicatorJudgeHealthGuidanceEntityLQW);
         Page<IndicatorJudgeHealthGuidanceResponseRs> indicatorJudgeHealthGuidanceResponseRsPage = RsPageUtil.convertFromAnother(indicatorJudgeHealthGuidanceEntityPage);

@@ -243,8 +243,14 @@ public class IndicatorJudgeHealthProblemBiz{
             .eq(Objects.nonNull(status), IndicatorJudgeHealthProblemEntity::getStatus, status)
             .like(StringUtils.isNotBlank(name), IndicatorJudgeHealthProblemEntity::getName, StringUtils.isBlank(name) ? null : name.trim());
         if (StringUtils.isNotBlank(indicatorCategoryIdList)) {
-            List<String> paramIndicatorCategoryIdList = Arrays.stream(indicatorCategoryIdList.split(",")).toList();
-            indicatorJudgeHealthProblemEntityLQW.in(IndicatorJudgeHealthProblemEntity::getIndicatorCategoryId, paramIndicatorCategoryIdList);
+            Set<String> firstIndicatorCategoryIdSet = Arrays.stream(indicatorCategoryIdList.split(",")).collect(Collectors.toSet());
+            Set<String> secondIndicatorCategoryIdSet = getSecondIndicatorCategoryIdSet(firstIndicatorCategoryIdSet);
+            /* runsix:if first category list mapped second category list is empty, means nothing */
+            if (secondIndicatorCategoryIdSet.isEmpty()) {
+                return RsPageUtil.getRsPage(pageNo, pageSize, order, asc);
+            } else {
+                indicatorJudgeHealthProblemEntityLQW.in(IndicatorJudgeHealthProblemEntity::getIndicatorCategoryId, secondIndicatorCategoryIdSet);
+            }
         }
         Page<IndicatorJudgeHealthProblemEntity> indicatorJudgeHealthProblemEntityPage = indicatorJudgeHealthProblemService.page(page, indicatorJudgeHealthProblemEntityLQW);
         Page<IndicatorJudgeHealthProblemResponseRs> indicatorJudgeHealthProblemResponseRsPage = RsPageUtil.convertFromAnother(indicatorJudgeHealthProblemEntityPage);
@@ -252,6 +258,19 @@ public class IndicatorJudgeHealthProblemBiz{
         List<IndicatorJudgeHealthProblemResponseRs> indicatorJudgeHealthProblemResponseRsList = indicatorJudgeHealthProblemEntityList2ResponseRsList(indicatorJudgeHealthProblemEntityList);
         indicatorJudgeHealthProblemResponseRsPage.setRecords(indicatorJudgeHealthProblemResponseRsList);
         return indicatorJudgeHealthProblemResponseRsPage;
+    }
+
+    private Set<String> getSecondIndicatorCategoryIdSet(Collection<String> firstIndicatorCategoryIdCollection) {
+        Set<String> resultSet = new HashSet<>();
+        if (Objects.nonNull(firstIndicatorCategoryIdCollection) && !firstIndicatorCategoryIdCollection.isEmpty()) {
+            indicatorCategoryService.lambdaQuery()
+                .in(IndicatorCategoryEntity::getPid, firstIndicatorCategoryIdCollection)
+                .list()
+                .forEach(indicatorCategoryEntity -> {
+                    resultSet.add(indicatorCategoryEntity.getIndicatorCategoryId());
+                });
+        }
+        return resultSet;
     }
     
     /**
