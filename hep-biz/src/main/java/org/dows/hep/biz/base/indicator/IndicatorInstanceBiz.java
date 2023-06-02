@@ -44,11 +44,7 @@ public class IndicatorInstanceBiz{
     private final IndicatorRuleService indicatorRuleService;
     private final IndicatorCategoryService indicatorCategoryService;
 
-    private final IndicatorExpressionService indicatorExpressionService;
-
-    private final IndicatorExpressionItemService indicatorExpressionItemService;
-
-    private final IndicatorExpressionRefService indicatorExpressionRefService;
+    private final IndicatorExpressionBiz indicatorExpressionBiz;
 
     public static IndicatorInstanceResponseRs indicatorInstance2ResponseRs(
         IndicatorInstanceEntity indicatorInstanceEntity,
@@ -102,92 +98,6 @@ public class IndicatorInstanceBiz{
             .indicatorInstanceResponseRsList(indicatorInstanceResponseRsList)
             .build();
     }
-
-    public void populateKIndicatorExpressionIdVIndicatorExpressionEntityMap(String appId, Set<String> indicatorInstanceIdSet, Map<String, IndicatorExpressionResponseRs> kIndicatorInstanceIdVIndicatorExpressionResponseRsMap) {
-        if (Objects.isNull(kIndicatorInstanceIdVIndicatorExpressionResponseRsMap)) {
-            log.warn("method IndicatorInstanceBiz.populateKIndicatorExpressionIdVIndicatorExpressionEntityMap param kIndicatorInstanceIdVIndicatorExpressionResponseRsMap is null");
-            return;
-        }
-        if (Objects.isNull(indicatorInstanceIdSet) || indicatorInstanceIdSet.isEmpty()) {
-            return;
-        }
-        Map<String, String> kIndicatorInstanceIdVIndicatorExpressionIdMap = new HashMap<>();
-        Set<String> indicatorExpressionIdSet = new HashSet<>();
-        Map<String, IndicatorExpressionEntity> kIndicatorExpressionIdVIndicatorExpressionEntityMap = new HashMap<>();
-        Map<String, List<IndicatorExpressionItemEntity>> kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap = new HashMap<>();
-        Set<String> maxAndMinIndicatorExpressionItemIdSet = new HashSet<>();
-        Map<String, IndicatorExpressionItemResponseRs> kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap = new HashMap<>();
-        indicatorExpressionRefService.lambdaQuery()
-            .eq(IndicatorExpressionRefEntity::getAppId, appId)
-            .in(IndicatorExpressionRefEntity::getPrincipalId, indicatorInstanceIdSet)
-            .list()
-            .forEach(indicatorExpressionRefEntity -> {
-                indicatorExpressionIdSet.add(indicatorExpressionRefEntity.getIndicatorExpressionId());
-                kIndicatorInstanceIdVIndicatorExpressionIdMap.put(indicatorExpressionRefEntity.getPrincipalId(), indicatorExpressionRefEntity.getIndicatorExpressionId());
-            });
-        if (!indicatorExpressionIdSet.isEmpty()) {
-            indicatorExpressionService.lambdaQuery()
-                .eq(IndicatorExpressionEntity::getAppId, appId)
-                .in(IndicatorExpressionEntity::getIndicatorExpressionId, indicatorExpressionIdSet)
-                .list()
-                .forEach(indicatorExpressionEntity -> {
-                    kIndicatorExpressionIdVIndicatorExpressionEntityMap.put(
-                        indicatorExpressionEntity.getIndicatorExpressionId(), indicatorExpressionEntity);
-                    String maxIndicatorExpressionItemId = indicatorExpressionEntity.getMaxIndicatorExpressionItemId();
-                    String minIndicatorExpressionItemId = indicatorExpressionEntity.getMinIndicatorExpressionItemId();
-                    if (StringUtils.isNotBlank(maxIndicatorExpressionItemId)) {
-                        maxAndMinIndicatorExpressionItemIdSet.add(maxIndicatorExpressionItemId);
-                    }
-                    if (StringUtils.isNotBlank(minIndicatorExpressionItemId)) {
-                        maxAndMinIndicatorExpressionItemIdSet.add(minIndicatorExpressionItemId);
-                    }
-                });
-            indicatorExpressionItemService.lambdaQuery()
-                .eq(IndicatorExpressionItemEntity::getAppId, appId)
-                .in(IndicatorExpressionItemEntity::getIndicatorExpressionId, indicatorExpressionIdSet)
-                .list()
-                .forEach(indicatorExpressionItemEntity -> {
-                    String indicatorExpressionId = indicatorExpressionItemEntity.getIndicatorExpressionId();
-                    List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.get(indicatorExpressionId);
-                    if (Objects.isNull(indicatorExpressionItemEntityList)) {
-                        indicatorExpressionItemEntityList = new ArrayList<>();
-                    }
-                    indicatorExpressionItemEntityList.add(indicatorExpressionItemEntity);
-                    kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.put(indicatorExpressionId, indicatorExpressionItemEntityList);
-                });
-        }
-        if (!maxAndMinIndicatorExpressionItemIdSet.isEmpty()) {
-            indicatorExpressionItemService.lambdaQuery()
-                .eq(IndicatorExpressionItemEntity::getAppId, appId)
-                .in(IndicatorExpressionItemEntity::getIndicatorExpressionItemId, maxAndMinIndicatorExpressionItemIdSet)
-                .list()
-                .forEach(indicatorExpressionItemEntity -> kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.put(
-                    indicatorExpressionItemEntity.getIndicatorExpressionItemId(), IndicatorExpressionItemBiz.indicatorExpressionItem2ResponseRs(indicatorExpressionItemEntity)
-                ));
-        }
-        kIndicatorInstanceIdVIndicatorExpressionIdMap.forEach((indicatorInstanceId, indicatorExpressionId) -> {
-            IndicatorExpressionEntity indicatorExpressionEntity = kIndicatorExpressionIdVIndicatorExpressionEntityMap.get(indicatorExpressionId);
-            if (Objects.isNull(indicatorExpressionEntity)) {
-                return;
-            }
-            String maxIndicatorExpressionItemId = indicatorExpressionEntity.getMaxIndicatorExpressionItemId();
-            String minIndicatorExpressionItemId = indicatorExpressionEntity.getMinIndicatorExpressionItemId();
-            List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.get(indicatorExpressionId);
-            if (Objects.isNull(indicatorExpressionItemEntityList)) {
-                indicatorExpressionItemEntityList = new ArrayList<>();
-            }
-            List<IndicatorExpressionItemResponseRs> indicatorExpressionItemResponseRsList = indicatorExpressionItemEntityList.stream().map(IndicatorExpressionItemBiz::indicatorExpressionItem2ResponseRs)
-                .sorted(Comparator.comparingInt(IndicatorExpressionItemResponseRs::getSeq)).collect(Collectors.toList());
-            IndicatorExpressionResponseRs indicatorExpressionResponseRs = IndicatorExpressionBiz.indicatorExpression2ResponseRs(
-                indicatorExpressionEntity,
-                indicatorExpressionItemResponseRsList,
-                kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(maxIndicatorExpressionItemId),
-                kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(minIndicatorExpressionItemId)
-                );
-            kIndicatorInstanceIdVIndicatorExpressionResponseRsMap.put(indicatorInstanceId, indicatorExpressionResponseRs);
-        });
-    }
-
     public void populateKIndicatorInstanceIdVSeqMap(String appId, Set<String> indicatorInstanceIdSet, Map<String, Integer> kIndicatorInstanceIdVSeqMap) {
         if (Objects.isNull(kIndicatorInstanceIdVSeqMap)) {
             log.warn("method IndicatorInstanceBiz.populateKIndicatorInstanceIdVSeqMap param kIndicatorInstanceIdVSeqMap is null");
@@ -541,8 +451,8 @@ public class IndicatorInstanceBiz{
                 indicatorInstanceEntityList.add(indicatorInstanceEntity);
                 kIndicatorCategoryIdVIndicatorInstanceListMap.put(indicatorCategoryId, indicatorInstanceEntityList);
             });
-        Map<String, IndicatorExpressionResponseRs> kIndicatorInstanceIdVIndicatorExpressionResponseRsMap = new HashMap<>();
-        populateKIndicatorExpressionIdVIndicatorExpressionEntityMap(appId, indicatorInstanceIdSet, kIndicatorInstanceIdVIndicatorExpressionResponseRsMap);
+        Map<String, IndicatorExpressionResponseRs> kPrincipalIdVIndicatorExpressionResponseRsMap = new HashMap<>();
+        indicatorExpressionBiz.populateKIndicatorExpressionIdVIndicatorExpressionEntityMap(appId, indicatorInstanceIdSet, kPrincipalIdVIndicatorExpressionResponseRsMap);
         Map<String, IndicatorRuleEntity> kIndicatorInstanceIdVIndicatorRuleMap = new HashMap<>();
         populateKIndicatorInstanceIdVIndicatorRuleMap(appId, indicatorInstanceIdSet, kIndicatorInstanceIdVIndicatorRuleMap);
         Map<String, Integer> kIndicatorInstanceIdVSeqMap = new HashMap<>();
@@ -557,7 +467,7 @@ public class IndicatorInstanceBiz{
                     indicatorInstanceResponseRsList = indicatorInstanceEntityList.stream()
                         .map(indicatorInstanceEntity -> {
                             String indicatorInstanceId = indicatorInstanceEntity.getIndicatorInstanceId();
-                            IndicatorExpressionResponseRs indicatorExpressionResponseRs = kIndicatorInstanceIdVIndicatorExpressionResponseRsMap.get(indicatorInstanceId);
+                            IndicatorExpressionResponseRs indicatorExpressionResponseRs = kPrincipalIdVIndicatorExpressionResponseRsMap.get(indicatorInstanceId);
                             String def = null;
                             String min = null;
                             String max = null;
