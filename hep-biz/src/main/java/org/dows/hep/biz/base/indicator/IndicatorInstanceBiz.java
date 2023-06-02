@@ -176,7 +176,8 @@ public class IndicatorInstanceBiz{
             if (Objects.isNull(indicatorExpressionItemEntityList)) {
                 indicatorExpressionItemEntityList = new ArrayList<>();
             }
-            List<IndicatorExpressionItemResponseRs> indicatorExpressionItemResponseRsList = indicatorExpressionItemEntityList.stream().map(IndicatorExpressionItemBiz::indicatorExpressionItem2ResponseRs).collect(Collectors.toList());
+            List<IndicatorExpressionItemResponseRs> indicatorExpressionItemResponseRsList = indicatorExpressionItemEntityList.stream().map(IndicatorExpressionItemBiz::indicatorExpressionItem2ResponseRs)
+                .sorted(Comparator.comparingInt(IndicatorExpressionItemResponseRs::getSeq)).collect(Collectors.toList());
             IndicatorExpressionResponseRs indicatorExpressionResponseRs = IndicatorExpressionBiz.indicatorExpression2ResponseRs(
                 indicatorExpressionEntity,
                 indicatorExpressionItemResponseRsList,
@@ -563,6 +564,7 @@ public class IndicatorInstanceBiz{
                             Integer seq = kIndicatorInstanceIdVSeqMap.get(indicatorInstanceId);
                             return IndicatorInstanceBiz.indicatorInstance2ResponseRs(indicatorInstanceEntity, def, min, max, seq, indicatorExpressionResponseRs);
                         })
+                        .sorted(Comparator.comparingInt(IndicatorInstanceResponseRs::getSeq))
                         .collect(Collectors.toList());
                 }
                 return IndicatorInstanceBiz.indicatorInstanceCategoryResponseRs(
