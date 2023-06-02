@@ -24,6 +24,7 @@ public class IndicatorExpressionItemBiz {
         .id(indicatorExpressionItemEntity.getId())
         .appId(indicatorExpressionItemEntity.getAppId())
         .indicatorExpressionId(indicatorExpressionItemEntity.getIndicatorExpressionId())
+        .indicatorExpressionItemId(indicatorExpressionItemEntity.getIndicatorExpressionItemId())
         .conditionRaw(indicatorExpressionItemEntity.getConditionRaw())
         .conditionExpression(indicatorExpressionItemEntity.getConditionExpression())
         .conditionNameList(indicatorExpressionItemEntity.getConditionNameList())
