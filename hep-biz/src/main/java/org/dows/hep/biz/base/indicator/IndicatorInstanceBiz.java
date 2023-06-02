@@ -437,7 +437,7 @@ public class IndicatorInstanceBiz{
     public void move(UpdateIndicatorInstanceMoveRequestRs updateIndicatorInstanceMoveRequestRs) throws InterruptedException {
         String indicatorInstanceId = updateIndicatorInstanceMoveRequestRs.getIndicatorInstanceId();
         Integer up = updateIndicatorInstanceMoveRequestRs.getUp();
-        if (!Objects.equals(EnumStatus.ENABLE.getCode(), up) && !Objects.equals(EnumStatus.DISABLE.getCode(), up)) {
+        if (!EnumStatus.ENABLE.getCode().equals(up) && !EnumStatus.DISABLE.getCode().equals(up)) {
             log.warn("method move param updateIndicatorInstanceMoveRequestRs up:{} is illegal", up);
             throw new IndicatorInstanceException(EnumESC.VALIDATE_EXCEPTION);
         }
@@ -480,7 +480,7 @@ public class IndicatorInstanceBiz{
                 });
             currentIndicatorCategoryRefEntity = kIndicatorInstanceIdVIndicatorCategoryRefMap.get(indicatorInstanceId);
             Integer currentSeq = currentIndicatorCategoryRefEntity.getSeq();
-            if (Objects.equals(EnumStatus.ENABLE.getCode(), up)) {
+            if (EnumStatus.DISABLE.getCode().equals(up)) {
                 if (currentSeq >= maxSeqAR.get()) {
                     log.warn("method move param updateIndicatorInstanceMoveRequestRs last one cannot move down");
                     throw new IndicatorInstanceException(EnumESC.VALIDATE_EXCEPTION);
