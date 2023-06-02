@@ -144,39 +144,45 @@ public class IndicatorViewMonitorFollowupBiz{
         }
         return indicatorViewMonitorFollowupEntityList
             .stream()
-            .map(indicatorViewMonitorFollowupEntity ->
-                IndicatorViewMonitorFollowupBiz.indicatorViewMonitorFollowup2ResponseRs(
-                    indicatorViewMonitorFollowupEntity,
-                    kIndicatorCategoryIdVIndicatorCategoryResponseMap.get(indicatorViewMonitorFollowupEntity.getIndicatorCategoryId()),
-                    kIndicatorViewMonitorFollowupIdVIndicatorViewMonitorFollowupFollowupContentListMap.get(indicatorViewMonitorFollowupEntity.getIndicatorViewMonitorFollowupId())
-                        .stream()
-                        .map(indicatorViewMonitorFollowupFollowupContentEntity -> {
-                          List<IndicatorViewMonitorFollowupContentRefEntity> indicatorViewMonitorFollowupContentRefEntityList = kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupContentRefListMap.get(indicatorViewMonitorFollowupFollowupContentEntity.getIndicatorViewMonitorFollowupFollowupContentId());
-                          List<IndicatorViewMonitorFollowupContentRefResponseRs> indicatorViewMonitorFollowupContentRefResponseRsList = new ArrayList<>();
-                          if (Objects.nonNull(indicatorViewMonitorFollowupContentRefEntityList)) {
-                            indicatorViewMonitorFollowupContentRefResponseRsList = indicatorViewMonitorFollowupContentRefEntityList
-                                .stream()
-                                .map(indicatorViewMonitorFollowupContentRefEntity -> {
-                                  IndicatorInstanceResponseRs indicatorInstanceResponseRs = IndicatorInstanceBiz.indicatorInstance2ResponseRs(
-                                      kIndicatorInstanceIdVIndicatorInstanceEntityMap.get(indicatorViewMonitorFollowupContentRefEntity.getIndicatorInstanceId()),
-                                      null,
-                                      null,
-                                      null
-                                  );
-                                  return IndicatorViewMonitorFollowupContentRefBiz.indicatorViewMonitorFollowupContentRef2ResponseRs(
-                                      indicatorViewMonitorFollowupContentRefEntity, indicatorInstanceResponseRs
-                                  );
-                                })
-                                .collect(Collectors.toList());
-                          }
-                            return IndicatorViewMonitorFollowupFollowupContentBiz.indicatorViewMonitorFollowupFollowupContent2ResponseRs(
-                                indicatorViewMonitorFollowupFollowupContentEntity,
-                                indicatorViewMonitorFollowupContentRefResponseRsList
-                            );
-                        })
-                        .collect(Collectors.toList())
-                )
-            )
+            .map(indicatorViewMonitorFollowupEntity -> {
+              List<IndicatorViewMonitorFollowupFollowupContentEntity> indicatorViewMonitorFollowupEntityList1 = kIndicatorViewMonitorFollowupIdVIndicatorViewMonitorFollowupFollowupContentListMap.get(indicatorViewMonitorFollowupEntity.getIndicatorViewMonitorFollowupId());
+              if (Objects.isNull(indicatorViewMonitorFollowupEntityList1)) {
+                indicatorViewMonitorFollowupEntityList1 = new ArrayList<>();
+              }
+              return IndicatorViewMonitorFollowupBiz.indicatorViewMonitorFollowup2ResponseRs(
+                  indicatorViewMonitorFollowupEntity,
+                  kIndicatorCategoryIdVIndicatorCategoryResponseMap.get(indicatorViewMonitorFollowupEntity.getIndicatorCategoryId()),
+                  indicatorViewMonitorFollowupEntityList1
+                      .stream()
+                      .map(indicatorViewMonitorFollowupFollowupContentEntity -> {
+                        List<IndicatorViewMonitorFollowupContentRefEntity> indicatorViewMonitorFollowupContentRefEntityList = kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupContentRefListMap.get(indicatorViewMonitorFollowupFollowupContentEntity.getIndicatorViewMonitorFollowupFollowupContentId());
+                        List<IndicatorViewMonitorFollowupContentRefResponseRs> indicatorViewMonitorFollowupContentRefResponseRsList = new ArrayList<>();
+                        if (Objects.nonNull(indicatorViewMonitorFollowupContentRefEntityList)) {
+                          indicatorViewMonitorFollowupContentRefResponseRsList = indicatorViewMonitorFollowupContentRefEntityList
+                              .stream()
+                              .map(indicatorViewMonitorFollowupContentRefEntity -> {
+                                IndicatorInstanceResponseRs indicatorInstanceResponseRs = IndicatorInstanceBiz.indicatorInstance2ResponseRs(
+                                    kIndicatorInstanceIdVIndicatorInstanceEntityMap.get(indicatorViewMonitorFollowupContentRefEntity.getIndicatorInstanceId()),
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null
+                                );
+                                return IndicatorViewMonitorFollowupContentRefBiz.indicatorViewMonitorFollowupContentRef2ResponseRs(
+                                    indicatorViewMonitorFollowupContentRefEntity, indicatorInstanceResponseRs
+                                );
+                              })
+                              .collect(Collectors.toList());
+                        }
+                        return IndicatorViewMonitorFollowupFollowupContentBiz.indicatorViewMonitorFollowupFollowupContent2ResponseRs(
+                            indicatorViewMonitorFollowupFollowupContentEntity,
+                            indicatorViewMonitorFollowupContentRefResponseRsList
+                        );
+                      })
+                      .collect(Collectors.toList())
+              );
+            })
             .collect(Collectors.toList());
     }
 

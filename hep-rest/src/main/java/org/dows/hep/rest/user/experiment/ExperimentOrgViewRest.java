@@ -2,7 +2,10 @@ package org.dows.hep.rest.user.experiment;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.dows.account.util.JwtUtil;
+import org.dows.hep.api.enums.EnumToken;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.biz.user.experiment.ExperimentOrgViewBiz;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 /**
 * @description project descr:实验:机构操作-查看指标
@@ -132,9 +136,45 @@ public class ExperimentOrgViewRest {
     */
     @Operation(summary = "体格检查+辅助检查：获取最新检查报告")
     @PostMapping("v1/userExperiment/experimentOrgView/getOrgViewReport")
-    public GetOrgViewReportResponse getOrgViewReport(@RequestBody @Validated GetOrgViewReportRequest getOrgViewReport ) {
-        return experimentOrgViewBiz.getOrgViewReport(getOrgViewReport);
+    public List<OperateOrgFuncSnapRequest> getOrgViewReport(@RequestBody @Validated GetOrgViewReportRequest orgViewReport) {
+        return experimentOrgViewBiz.getOrgViewReport(orgViewReport);
     }
 
+    /**
+     * 体格检查+辅助检查：体格检查+辅助检查保存
+     * @param
+     * @return
+     */
+    @Operation(summary = "体格检查+辅助检查：体格检查+辅助检查保存")
+    @PostMapping("v1/userExperiment/experimentOrgView/savePhysiqueAndAuxiliary")
+    public Boolean savePhysiqueAndAuxiliary(@RequestBody @Validated List<GetOrgViewReportRequest> reportRequestList, HttpServletRequest request) {
+        String token = request.getHeader("token");
+        Map<String, Object> map = JwtUtil.parseJWT(token, EnumToken.PROPERTIES_JWT_KEY.getStr());
+        //1、获取登录账户和名称
+        String accountId = map.get("accountId").toString();
+        String accountName = map.get("accountName").toString();
+        return experimentOrgViewBiz.savePhysiqueAndAuxiliary(reportRequestList,accountId,accountName);
+    }
 
+    /**
+     * 体格检查：获取判断结果
+     * @param
+     * @return
+     */
+    @Operation(summary = "体格检查：获取判断结果")
+    @PostMapping("v1/userExperiment/experimentOrgView/getIndicatorPhysicalExamVerifiResults")
+    public List<GetOrgViewReportResponse> getIndicatorPhysicalExamVerifiResults(@RequestBody @Validated List<GetOrgViewReportRequest> reportRequestList) {
+        return experimentOrgViewBiz.getIndicatorPhysicalExamVerifiResults(reportRequestList);
+    }
+
+    /**
+     * 辅助检查：获取判断结果
+     * @param
+     * @return
+     */
+    @Operation(summary = "辅助检查：获取判断结果")
+    @PostMapping("v1/userExperiment/experimentOrgView/getIndicatorSupportExamVerifiResults")
+    public List<GetOrgViewReportResponse> getIndicatorSupportExamVerifiResults(@RequestBody @Validated List<GetOrgViewReportRequest> reportRequestList) {
+        return experimentOrgViewBiz.getIndicatorSupportExamVerifiResults(reportRequestList);
+    }
 }

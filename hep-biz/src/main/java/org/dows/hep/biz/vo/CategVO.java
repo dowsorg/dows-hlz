@@ -12,6 +12,7 @@ import org.dows.hep.api.base.intervene.vo.FoodCategExtendVO;
 import java.util.List;
 
 /**
+ * 教师端类别
  * @author : wuzl
  * @date : 2023/4/21 16:12
  */

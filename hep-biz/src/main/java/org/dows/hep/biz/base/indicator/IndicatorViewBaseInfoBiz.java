@@ -129,7 +129,8 @@ public class IndicatorViewBaseInfoBiz{
             .in(IndicatorInstanceEntity::getIndicatorInstanceId, indicatorInstanceIdSet)
             .list()
             .forEach(indicatorInstanceEntity -> kIndicatorInstanceIdVIndicatorInstanceResponseRsMap.put(
-                indicatorInstanceEntity.getIndicatorInstanceId(), IndicatorInstanceBiz.indicatorInstance2ResponseRs(indicatorInstanceEntity, null, null, null)
+                indicatorInstanceEntity.getIndicatorInstanceId(), IndicatorInstanceBiz.indicatorInstance2ResponseRs(indicatorInstanceEntity, null,null,
+                    null, null, null)
             ));
       }
       List<IndicatorViewBaseInfoDescrResponseRs> indicatorViewBaseInfoDescrResponseRsList = new ArrayList<>();
@@ -177,6 +178,9 @@ public class IndicatorViewBaseInfoBiz{
               String indicatorViewBaseInfoMonitorId = indicatorViewBaseInfoMonitorEntity.getIndicatorViewBaseInfoMonitorId();
               List<IndicatorViewBaseInfoMonitorContentEntity> indicatorViewBaseInfoMonitorContentEntityList = kIndicatorViewBaseInfoMonitorIdVIndicatorViewBaseInfoMonitorContentListMap
                   .get(indicatorViewBaseInfoMonitorId);
+              if (Objects.isNull(indicatorViewBaseInfoMonitorContentEntityList)) {
+                indicatorViewBaseInfoMonitorContentEntityList = new ArrayList<>();
+              }
               return IndicatorViewBaseInfoMonitorResponseRs
                   .builder()
                   .id(indicatorViewBaseInfoMonitorEntity.getId())
@@ -626,39 +630,39 @@ public class IndicatorViewBaseInfoBiz{
               log.warn("method createOrUpdateRs param createOrUpdateIndicatorViewBaseInfoRequestRs field indicatorViewBaseInfoId:{} is illegal", finalIndicatorViewBaseInfoId1);
               throw new IndicatorViewBaseInfoException(EnumESC.VALIDATE_EXCEPTION);
             });
-        Set<String> paramIndicatorInstanceIdSet = new HashSet<>();
-        Set<String> dbIndicatorInstanceIdSet = new HashSet<>();
-        List<CreateOrUpdateIndicatorViewBaseInfoDescrRs> createOrUpdateIndicatorViewBaseInfoDescrRsList = createOrUpdateIndicatorViewBaseInfoRequestRs.getCreateOrUpdateIndicatorViewBaseInfoDescrRsList();
-        if (Objects.nonNull(createOrUpdateIndicatorViewBaseInfoDescrRsList) && !createOrUpdateIndicatorViewBaseInfoDescrRsList.isEmpty()) {
-          populateIndicatorViewBaseInfoDescrRelatedList(
-              indicatorViewBaseInfoDescrEntityList, indicatorViewBaseInfoDescrRefEntityList,
-              paramIndicatorInstanceIdSet, appId, createOrUpdateIndicatorViewBaseInfoDescrRsList, indicatorViewBaseInfoId);
-        }
-        List<CreateOrUpdateIndicatorViewBaseInfoMonitorRs> createOrUpdateIndicatorViewBaseInfoMonitorRsList = createOrUpdateIndicatorViewBaseInfoRequestRs.getCreateOrUpdateIndicatorViewBaseInfoMonitorRsList();
-        if (Objects.nonNull(createOrUpdateIndicatorViewBaseInfoMonitorRsList) && !createOrUpdateIndicatorViewBaseInfoMonitorRsList.isEmpty()) {
-          populateIndicatorViewBaseInfoMonitorRelatedList(
-              indicatorViewBaseInfoMonitorEntityList, indicatorViewBaseInfoMonitorContentEntityList, indicatorViewBaseInfoMonitorContentRefEntityList,
-              paramIndicatorInstanceIdSet, appId, createOrUpdateIndicatorViewBaseInfoMonitorRsList, indicatorViewBaseInfoId
-          );
-        }
-        List<CreateOrUpdateIndicatorViewBaseInfoSingleRs> createOrUpdateIndicatorViewBaseInfoSingleRsList = createOrUpdateIndicatorViewBaseInfoRequestRs.getCreateOrUpdateIndicatorViewBaseInfoSingleRsList();
-        if (Objects.nonNull(createOrUpdateIndicatorViewBaseInfoSingleRsList) && !createOrUpdateIndicatorViewBaseInfoSingleRsList.isEmpty()) {
-          populateIndicatorViewBaseInfoSingleRelatedList(
-              indicatorViewBaseInfoSingleEntityList, paramIndicatorInstanceIdSet, appId, createOrUpdateIndicatorViewBaseInfoSingleRsList, indicatorViewBaseInfoId
-          );
-        }
-        if (!paramIndicatorInstanceIdSet.isEmpty()) {
-          indicatorInstanceService.lambdaQuery()
-              .eq(IndicatorInstanceEntity::getAppId, appId)
-              .in(IndicatorInstanceEntity::getIndicatorInstanceId, paramIndicatorInstanceIdSet)
-              .list()
-              .forEach(indicatorInstanceEntity -> dbIndicatorInstanceIdSet.add(indicatorInstanceEntity.getIndicatorInstanceId()));
-          if (
-              paramIndicatorInstanceIdSet.stream().anyMatch(indicatorInstanceId -> !dbIndicatorInstanceIdSet.contains(indicatorInstanceId))
-          ) {
-            log.warn("method createOrUpdateRs param createOrUpdateIndicatorViewBaseInfoRequestRs field indicatorInstanceId:{} is illegal", paramIndicatorInstanceIdSet);
-            throw new IndicatorViewBaseInfoException(EnumESC.VALIDATE_EXCEPTION);
-          }
+      }
+      Set<String> paramIndicatorInstanceIdSet = new HashSet<>();
+      Set<String> dbIndicatorInstanceIdSet = new HashSet<>();
+      List<CreateOrUpdateIndicatorViewBaseInfoDescrRs> createOrUpdateIndicatorViewBaseInfoDescrRsList = createOrUpdateIndicatorViewBaseInfoRequestRs.getCreateOrUpdateIndicatorViewBaseInfoDescrRsList();
+      if (Objects.nonNull(createOrUpdateIndicatorViewBaseInfoDescrRsList) && !createOrUpdateIndicatorViewBaseInfoDescrRsList.isEmpty()) {
+        populateIndicatorViewBaseInfoDescrRelatedList(
+            indicatorViewBaseInfoDescrEntityList, indicatorViewBaseInfoDescrRefEntityList,
+            paramIndicatorInstanceIdSet, appId, createOrUpdateIndicatorViewBaseInfoDescrRsList, indicatorViewBaseInfoId);
+      }
+      List<CreateOrUpdateIndicatorViewBaseInfoMonitorRs> createOrUpdateIndicatorViewBaseInfoMonitorRsList = createOrUpdateIndicatorViewBaseInfoRequestRs.getCreateOrUpdateIndicatorViewBaseInfoMonitorRsList();
+      if (Objects.nonNull(createOrUpdateIndicatorViewBaseInfoMonitorRsList) && !createOrUpdateIndicatorViewBaseInfoMonitorRsList.isEmpty()) {
+        populateIndicatorViewBaseInfoMonitorRelatedList(
+            indicatorViewBaseInfoMonitorEntityList, indicatorViewBaseInfoMonitorContentEntityList, indicatorViewBaseInfoMonitorContentRefEntityList,
+            paramIndicatorInstanceIdSet, appId, createOrUpdateIndicatorViewBaseInfoMonitorRsList, indicatorViewBaseInfoId
+        );
+      }
+      List<CreateOrUpdateIndicatorViewBaseInfoSingleRs> createOrUpdateIndicatorViewBaseInfoSingleRsList = createOrUpdateIndicatorViewBaseInfoRequestRs.getCreateOrUpdateIndicatorViewBaseInfoSingleRsList();
+      if (Objects.nonNull(createOrUpdateIndicatorViewBaseInfoSingleRsList) && !createOrUpdateIndicatorViewBaseInfoSingleRsList.isEmpty()) {
+        populateIndicatorViewBaseInfoSingleRelatedList(
+            indicatorViewBaseInfoSingleEntityList, paramIndicatorInstanceIdSet, appId, createOrUpdateIndicatorViewBaseInfoSingleRsList, indicatorViewBaseInfoId
+        );
+      }
+      if (!paramIndicatorInstanceIdSet.isEmpty()) {
+        indicatorInstanceService.lambdaQuery()
+            .eq(IndicatorInstanceEntity::getAppId, appId)
+            .in(IndicatorInstanceEntity::getIndicatorInstanceId, paramIndicatorInstanceIdSet)
+            .list()
+            .forEach(indicatorInstanceEntity -> dbIndicatorInstanceIdSet.add(indicatorInstanceEntity.getIndicatorInstanceId()));
+        if (
+            paramIndicatorInstanceIdSet.stream().anyMatch(indicatorInstanceId -> !dbIndicatorInstanceIdSet.contains(indicatorInstanceId))
+        ) {
+          log.warn("method createOrUpdateRs param createOrUpdateIndicatorViewBaseInfoRequestRs field indicatorInstanceId:{} is illegal", paramIndicatorInstanceIdSet);
+          throw new IndicatorViewBaseInfoException(EnumESC.VALIDATE_EXCEPTION);
         }
       }
       RLock lock = redissonClient.getLock(RedissonUtil.getLockName(appId, EnumRedissonLock.INDICATOR_VIEW_BASE_INFO_CREATE_DELETE_UPDATE, indicatorViewBaseInfoFieldIndicatorViewBaseInfoId, indicatorViewBaseInfoId));

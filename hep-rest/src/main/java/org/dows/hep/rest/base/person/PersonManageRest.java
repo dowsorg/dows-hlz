@@ -64,6 +64,17 @@ public class PersonManageRest {
     }
 
     /**
+     * 编辑人物状态
+     * @param
+     * @return
+     */
+    @Operation(summary = "编辑人物状态")
+    @PutMapping("v1/basePerson/personManage/editPersonStatus")
+    public String editPersonStatus(@RequestBody @Validated PersonInstanceRequest request) {
+        return personManageBiz.editPersonStatus(request);
+    }
+
+    /**
     * 复制人物
     * @param
     * @return
@@ -87,6 +98,7 @@ public class PersonManageRest {
     }
 
     /**
+     *
      * 新增其他图示管理
      * @param
      * @return

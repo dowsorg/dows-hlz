@@ -27,6 +27,9 @@ public class PersonInstanceResponse{
     @Schema(title = "头像")
     private String avatar;
 
+    @Schema(title = "其他图示")
+    private String extra;
+
     @Schema(title = "用户简介")
     private String intro;
 
@@ -35,6 +38,12 @@ public class PersonInstanceResponse{
 
     @Schema(title = "账号名")
     private String accountName;
+
+    @Schema(title = "用户名")
+    private String userName;
+
+    @Schema(title = "是否已发布")
+    private Integer status;
 
     @Schema(title = "人物功能点集合")
     private List<CasePersonIndicatorFuncRequest> entityList;

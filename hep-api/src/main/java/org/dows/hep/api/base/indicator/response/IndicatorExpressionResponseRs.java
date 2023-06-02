@@ -38,6 +38,9 @@ public class IndicatorExpressionResponseRs implements Serializable {
   @Schema(title = "时间戳")
   private Date dt;
 
+  @Schema(title = "公式类型，0-条件，1-随机")
+  private Integer type;
+
   @Schema(title = "指标公式细项列表")
   private List<IndicatorExpressionItemResponseRs> indicatorExpressionItemResponseRsList;
 

@@ -222,6 +222,7 @@ public class TenantCaseEventBiz {
                         .setId(null)
                         .setState(EnumStatus.ENABLE.getCode())
                         .setEventId(i.getEventId())
+                        .setCaseEventName(i.getEventName())
                         .setCaseEventId(mapEventIds.computeIfAbsent(i.getEventId(), v -> idGenerator.nextIdStr()))
         );
         List<CaseEventEvalEntity> rowsCaseEval = ShareUtil.XCollection.map(rowsEval, i ->

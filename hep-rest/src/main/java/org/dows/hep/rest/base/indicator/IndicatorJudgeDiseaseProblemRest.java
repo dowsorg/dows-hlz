@@ -1,12 +1,10 @@
 package org.dows.hep.rest.base.indicator;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.*;
-import org.dows.hep.api.base.indicator.response.IndicatorJudgeDiseaseProblemResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeDiseaseProblemResponseRs;
 import org.dows.hep.api.constant.RsPageConstant;
 import org.dows.hep.biz.base.indicator.IndicatorJudgeDiseaseProblemBiz;
@@ -63,9 +61,9 @@ public class IndicatorJudgeDiseaseProblemRest {
         @RequestParam(required = false) String appId,
         @RequestParam(required = false) String indicatorFuncId,
         @RequestParam(required = false) String name,
-        @RequestParam(required = false) String indicatorCategoryId,
+        @RequestParam(required = false) String indicatorCategoryIdList,
         @RequestParam(required = false) Integer status) {
-        return indicatorJudgeDiseaseProblemBiz.pageRs(pageNo,pageSize,order,asc, appId,indicatorFuncId,name,indicatorCategoryId,status);
+        return indicatorJudgeDiseaseProblemBiz.pageRs(pageNo,pageSize,order,asc, appId,indicatorFuncId,name, indicatorCategoryIdList,status);
     }
 
 //    /**

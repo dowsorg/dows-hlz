@@ -114,6 +114,9 @@ public class PersonManageBiz {
         PersonInstanceResponse response = PersonInstanceResponse.builder()
                 .accountId(accountId)
                 .accountName(accounInstance.getAccountName())
+                .userName(userInstance.getName())
+                .status(accounInstance.getStatus())
+                .extra(userInstance.getNickName())
                 .intro(extinfoResponse.getIntro())
                 .avatar(accounInstance.getAvatar())
                 .build();
@@ -149,7 +152,8 @@ public class PersonManageBiz {
         //1、修改账户
         AccountInstanceRequest accountInstanceRequest = AccountInstanceRequest.builder()
                 .accountId(request.getAccountId().toString())
-                .userName(request.getName())
+                .userName(request.getUserName())
+                .nickName(request.getExtra())
                 .appId(request.getAppId())
                 .avatar(request.getAvatar())
                 .build();
@@ -158,7 +162,8 @@ public class PersonManageBiz {
         if (StringUtils.isNotEmpty(request.getIntro())) {
             UserExtinfoResponse extinfoResponse = userExtinfoApi.getUserExtinfoByUserId(userId);
             UserExtinfoRequest extinfoRequest = new UserExtinfoRequest();
-            BeanUtils.copyProperties(extinfoResponse, extinfoRequest);
+            BeanUtils.copyProperties(extinfoResponse, extinfoRequest,new String[]{"intro"});
+            extinfoRequest.setIntro(request.getIntro());
             userExtinfoApi.updateUserExtinfoById(extinfoRequest);
         }
         //3、修改用户功能点
@@ -175,6 +180,28 @@ public class PersonManageBiz {
             entities.add(entity);
         });
         return casePersonIndicatorFuncService.updateBatchById(entities);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 编辑人物状态
+     * @关联表: AccountInstance
+     * @工时: 3H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年5月31日 下午16:22:34
+     */
+    @DSTransactional
+    public String editPersonStatus(PersonInstanceRequest request) {
+        //1、修改账户
+        AccountInstanceRequest accountInstanceRequest = AccountInstanceRequest.builder()
+                .accountId(request.getAccountId().toString())
+                .status(request.getStatus())
+                .appId(request.getAppId())
+                .build();
+        String userId = accountInstanceApi.updateAccountInstanceByAccountId(accountInstanceRequest);
+        return userId;
     }
 
     /**
@@ -583,6 +610,8 @@ public class PersonManageBiz {
         UserInstanceRequest user = new UserInstanceRequest();
         BeanUtils.copyProperties(request, user);
         user.setName(request.getUserName());
+        //3、保存其他图示
+        user.setNickName(request.getExtra());
         String userId = userInstanceApi.insertUserInstance(user);
         //3、新增用户简介
         UserExtinfoRequest userExtinfo = UserExtinfoRequest.builder()
@@ -644,6 +673,8 @@ public class PersonManageBiz {
             PersonInstanceResponse personInstance = PersonInstanceResponse.builder()
                     .accountId(accountInstance.getAccountId())
                     .accountName(accountInstance.getAccountName())
+                    .userName(accountInstance.getUserName())
+                    .status(accountInstance.getStatus())
                     .avatar(accountInstance.getAvatar())
                     .intro(accountInstance.getIntro())
                     .build();

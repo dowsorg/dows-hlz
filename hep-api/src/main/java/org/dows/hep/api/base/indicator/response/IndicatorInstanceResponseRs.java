@@ -34,6 +34,9 @@ public class IndicatorInstanceResponseRs implements Serializable {
   @Schema(title = "指标名称")
   private String indicatorName;
 
+  @Schema(title = "是否按照百分比展示")
+  private Integer displayByPercent;
+
   @Schema(title = "单位")
   private String unit;
 
@@ -60,6 +63,12 @@ public class IndicatorInstanceResponseRs implements Serializable {
 
   @Schema(title = "指标默认值")
   private String def;
+
+  @Schema(title = "指标推荐最小值")
+  private String min;
+
+  @Schema(title = "指标推荐最大值")
+  private String max;
 
   @Schema(title = "指标顺序")
   private Integer seq;

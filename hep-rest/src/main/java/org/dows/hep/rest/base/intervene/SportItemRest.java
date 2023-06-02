@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 /**
 * @description project descr:干预:运动项目
 *
- * @folder 运动项目
+ * @folder admin-hep/运动项目
 * @author lait.zhang
 * @date 2023年4月23日 上午9:44:34
 */

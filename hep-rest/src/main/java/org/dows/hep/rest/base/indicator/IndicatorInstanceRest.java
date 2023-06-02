@@ -2,11 +2,11 @@ package org.dows.hep.rest.base.indicator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.indicator.request.CreateIndicatorInstanceRequest;
+import org.dows.hep.api.base.indicator.request.BatchUpdateCoreRequestRs;
+import org.dows.hep.api.base.indicator.request.BatchUpdateFoodRequestRs;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorInstanceRequestRs;
-import org.dows.hep.api.base.indicator.request.UpdateIndicatorInstanceRequest;
+import org.dows.hep.api.base.indicator.request.UpdateIndicatorInstanceMoveRequestRs;
 import org.dows.hep.api.base.indicator.response.IndicatorInstanceCategoryResponseRs;
-import org.dows.hep.api.base.indicator.response.IndicatorInstanceResponse;
 import org.dows.hep.biz.base.indicator.IndicatorInstanceBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -32,22 +32,28 @@ public class IndicatorInstanceRest {
     }
 
     @Operation(summary = "删除指标")
-    @DeleteMapping("v1/baseIndicator/indicatorInstance/deleteIndicatorInstance")
-    public void deleteIndicatorInstance(
+    @DeleteMapping("v1/baseIndicator/indicatorInstance/delete")
+    public void delete(
         @RequestParam @Validated String indicatorInstanceId) throws InterruptedException {
-        indicatorInstanceBiz.deleteIndicatorInstance(indicatorInstanceId);
+        indicatorInstanceBiz.delete(indicatorInstanceId);
     }
 
     @Operation(summary = "批量设置关键指标")
     @PutMapping("v1/baseIndicator/indicatorInstance/batchUpdateCore")
-    public void batchUpdateCore(@RequestBody List<String> indicatorInstanceIdList) {
-        indicatorInstanceBiz.batchUpdateCore(indicatorInstanceIdList);
+    public void batchUpdateCore(@RequestBody BatchUpdateCoreRequestRs batchUpdateCoreRequestRs) {
+        indicatorInstanceBiz.batchUpdateCore(batchUpdateCoreRequestRs);
     }
 
     @Operation(summary = "批量设置饮食关键指标")
     @PutMapping("v1/baseIndicator/indicatorInstance/batchUpdateFood")
-    public void batchUpdateFood(@RequestBody List<String> indicatorInstanceIdList) {
-        indicatorInstanceBiz.batchUpdateFood(indicatorInstanceIdList);
+    public void batchUpdateFood(@RequestBody BatchUpdateFoodRequestRs batchUpdateFoodRequestRs) {
+        indicatorInstanceBiz.batchUpdateFood(batchUpdateFoodRequestRs);
+    }
+
+    @Operation(summary = "上移下移功能")
+    @PostMapping("v1/baseIndicator/indicatorInstance/move")
+    public void move(@RequestBody UpdateIndicatorInstanceMoveRequestRs updateIndicatorInstanceMoveRequestRs) throws InterruptedException {
+        indicatorInstanceBiz.move(updateIndicatorInstanceMoveRequestRs);
     }
 
     @Operation(summary = "根据appId查询出所有的指标")
@@ -55,6 +61,13 @@ public class IndicatorInstanceRest {
     public List<IndicatorInstanceCategoryResponseRs> getByAppId(@RequestParam String appId) {
         return indicatorInstanceBiz.getByAppId(appId);
     }
+
+//    @Operation(summary = "删除指标")
+//    @DeleteMapping("v1/baseIndicator/indicatorInstance/deleteIndicatorInstance")
+//    public void deleteIndicatorInstance(
+//        @RequestParam @Validated String indicatorInstanceId) throws InterruptedException {
+//        indicatorInstanceBiz.delete(indicatorInstanceId);
+//    }
 
 //    /**
 //    * 更新指标

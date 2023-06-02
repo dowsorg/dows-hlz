@@ -1,7 +1,6 @@
 package org.dows.hep.biz.base.indicator;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +10,7 @@ import org.dows.hep.api.base.indicator.response.IndicatorCategoryResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponseRs;
 import org.dows.hep.api.enums.EnumESC;
+import org.dows.hep.api.enums.EnumIndicatorExpressionType;
 import org.dows.hep.api.exception.IndicatorJudgeRiskFactorException;
 import org.dows.hep.biz.util.RsPageUtil;
 import org.dows.hep.entity.*;
@@ -39,6 +39,8 @@ public class IndicatorJudgeRiskFactorBiz{
     private final IndicatorCategoryService indicatorCategoryService;
     private final IndicatorFuncService indicatorFuncService;
     private final IndicatorJudgeRiskFactorService indicatorJudgeRiskFactorService;
+
+    private final IndicatorExpressionBiz indicatorExpressionBiz;
 
     public static IndicatorJudgeRiskFactorResponseRs indicatorJudgeRiskFactor2ResponseRs(
         IndicatorJudgeRiskFactorEntity indicatorJudgeRiskFactorEntity,
@@ -153,6 +155,12 @@ public class IndicatorJudgeRiskFactorBiz{
             indicatorJudgeRiskFactorEntity.setResultExplain(createOrUpdateIndicatorJudgeRiskFactorRequestRs.getResultExplain());
         }
         indicatorJudgeRiskFactorService.saveOrUpdate(indicatorJudgeRiskFactorEntity);
+        CreateOrUpdateIndicatorExpressionRequestRs createOrUpdateIndicatorExpressionRequestRs = createOrUpdateIndicatorJudgeRiskFactorRequestRs.getCreateOrUpdateIndicatorExpressionRequestRs();
+        if (Objects.nonNull(createOrUpdateIndicatorExpressionRequestRs)) {
+            createOrUpdateIndicatorExpressionRequestRs.setType(EnumIndicatorExpressionType.INDICATOR_JUDGE_RISK_FACTOR.getType());
+            createOrUpdateIndicatorExpressionRequestRs.setPrincipalId(indicatorJudgeRiskFactorId);
+        }
+        indicatorExpressionBiz.createOrUpdate(createOrUpdateIndicatorExpressionRequestRs);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -221,8 +229,13 @@ public class IndicatorJudgeRiskFactorBiz{
             .eq(Objects.nonNull(status), IndicatorJudgeRiskFactorEntity::getStatus, status)
             .like(StringUtils.isNotBlank(name), IndicatorJudgeRiskFactorEntity::getName, StringUtils.isBlank(name) ? null : name.trim());
         if (StringUtils.isNotBlank(indicatorCategoryIdList)) {
-            List<String> paramIndicatorCategoryIdList = Arrays.stream(indicatorCategoryIdList.split(",")).toList();
-            indicatorJudgeRiskFactorEntityLQW.in(IndicatorJudgeRiskFactorEntity::getIndicatorCategoryId, paramIndicatorCategoryIdList);
+            Set<String> firstIndicatorCategoryIdSet = Arrays.stream(indicatorCategoryIdList.split(",")).collect(Collectors.toSet());
+            /* runsix:if first category list mapped second category list is empty, means nothing */
+            if (firstIndicatorCategoryIdSet.isEmpty()) {
+                return RsPageUtil.getRsPage(pageNo, pageSize, order, asc);
+            } else {
+                indicatorJudgeRiskFactorEntityLQW.in(IndicatorJudgeRiskFactorEntity::getIndicatorCategoryId, firstIndicatorCategoryIdSet);
+            }
         }
         Page<IndicatorJudgeRiskFactorEntity> indicatorJudgeRiskFactorEntityPage = indicatorJudgeRiskFactorService.page(page, indicatorJudgeRiskFactorEntityLQW);
         Page<IndicatorJudgeRiskFactorResponseRs> indicatorJudgeRiskFactorResponseRsPage = RsPageUtil.convertFromAnother(indicatorJudgeRiskFactorEntityPage);

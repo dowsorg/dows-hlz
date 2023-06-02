@@ -1,10 +1,13 @@
 package org.dows.hep.biz.user.experiment;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.dows.hep.api.base.intervene.response.*;
+import org.dows.hep.api.core.ExptOrgFuncRequest;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
+import org.dows.hep.biz.vo.Categ4ExptVO;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -15,95 +18,65 @@ import java.util.List;
 */
 @Service
 public class ExperimentOrgInterveneBiz{
-    /**
-    * @param
-    * @return
-    * @说明: 心理干预+治疗方案：获取分类+项目
-    * @关联表: intervene_category,sport_item，treat_item
-    * @工时: 6H
-    * @开发者: wuzl
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public List<OrgInterveneCategResponse> listOrgInterveneCategs(FindOrgInterveneCategsRequest findOrgInterveneCategs ) {
-        return new ArrayList<OrgInterveneCategResponse>();
+
+    //region 快照数据查询
+    public List<Categ4ExptVO> listInterveneCateg4Expt(FindInterveneCateg4ExptRequest findCateg ) {
+        return null;
     }
-    /**
-    * @param
-    * @return
-    * @说明: 饮食干预：保存食谱
-    * @关联表: OperateOrgFunc,OperateOrgFuncSnap
-    * @工时: 6H
-    * @开发者: wuzl
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public SaveOrgInterveneFoodResponse saveOrgInterveneFood(SaveOrgInterveneFoodRequest saveOrgInterveneFood ) {
-        return new SaveOrgInterveneFoodResponse();
+
+    public Page<FoodCookBookResponse> pageFoodCookbook4Expt(FindInterveneList4ExptRequest findFood ){
+        return null;
     }
-    /**
-    * @param
-    * @return
-    * @说明: 饮食干预：获取最新食谱
-    * @关联表: OperateOrgFunc,OperateOrgFuncSnap
-    * @工时: 6H
-    * @开发者: wuzl
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public OrgInterveneFoodResponse getOrgInterveneFood(FindOrgInterveneFoodRequest findOrgInterveneFood ) {
-        return new OrgInterveneFoodResponse();
+    public FoodCookBookInfoResponse getFoodCookbook4Expt(GetInfo4ExptRequest getInfo) {
+        return null;
     }
-    /**
-    * @param
-    * @return
-    * @说明: 运动干预：保存运动方案
-    * @关联表: OperateOrgFunc,OperateOrgFuncSnap
-    * @工时: 6H
-    * @开发者: wuzl
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public SaveOrgInterveneSportResponse saveOrgInterveneSport(SaveOrgInterveneSportRequest saveOrgInterveneSport ) {
-        return new SaveOrgInterveneSportResponse();
+    public Page<FoodDishesResponse> pageFoodDishes4Expt(FindInterveneList4ExptRequest findFood ) {
+        return null;
     }
-    /**
-    * @param
-    * @return
-    * @说明: 运动干预：获取最新运动方案
-    * @关联表: OperateOrgFunc,OperateOrgFuncSnap
-    * @工时: 6H
-    * @开发者: wuzl
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public OrgInterveneSportResponse getOrgInterveneSport(FindOrgInterveneSportRequest findOrgInterveneSport ) {
-        return new OrgInterveneSportResponse();
+    public Page<FoodMaterialResponse> pageFoodMaterial4Expt( FindInterveneList4ExptRequest findFood ) {
+        return null;
     }
-    /**
-    * @param
-    * @return
-    * @说明: 心理干预+治疗方案：保存，生成诊疗报告
-    * @关联表: OperateOrgFunc,OperateOrgFuncSnap
-    * @工时: 6H
-    * @开发者: wuzl
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public SaveOrgInterveneTreatResponse saveOrgInterveneTreat(SaveOrgInterveneTreatRequest saveOrgInterveneTreat ) {
-        return new SaveOrgInterveneTreatResponse();
+    public Page<SportPlanResponse> pageSportPlan4Expt(FindInterveneList4ExptRequest findSport ){
+        return null;
     }
-    /**
-    * @param
-    * @return
-    * @说明: 心理干预+治疗方案：获取最新保存列表
-    * @关联表: OperateOrgFunc,OperateOrgFuncSnap
-    * @工时: 6H
-    * @开发者: wuzl
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public OrgInterveneTreatResponse getOrgInterveneTreat(FindOrgInterveneTreatRequest findOrgInterveneTreat ) {
-        return new OrgInterveneTreatResponse();
+    public SportPlanInfoResponse getSportPlan4Expt(GetInfo4ExptRequest getInfo) {
+        return null;
     }
+    public List<Categ4ExptVO> listTreatCateg4Expt( FindInterveneCateg4ExptRequest findTreat ){
+        return null;
+    }
+    public ExptTreatPlanResponse listTreatItem4Expt( FindTreatList4ExptRequest findTreat ){
+        return null;
+    }
+
+    //endregion
+
+    //region 实验数据读写
+    public ExptFoodCookbookResponse getExptFoodCookbook(ExptOrgFuncRequest exptOrgFunc ) {
+        return null;
+    }
+    public SaveExptInterveneResponse saveExptFoodCookbook(SaveExptFoodRequest saveFood ) {
+        return null;
+    }
+    public ExptFoodGraphResponse calcExptFoodGraph( SaveExptFoodRequest saveFood ){
+        return null;
+    }
+
+    public ExptSportPlanResponse getExptSportPlan(ExptOrgFuncRequest exptOrgFunc ){
+        return null;
+    }
+    public SaveExptInterveneResponse saveExptSportPlan(SaveExptSportRequest saveSport ) {
+        return null;
+    }
+    public ExptTreatPlanResponse getExptTreatPlan(ExptOrgFuncRequest exptOrgFunc){
+        return null;
+    }
+    public SaveExptTreatResponse saveExptTreatPlan( SaveExptTreatRequest saveTreat){
+        return null;
+    }
+
+    //endregion
+
+
+
 }
