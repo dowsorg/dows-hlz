@@ -184,20 +184,22 @@ public class IndicatorExpressionBiz{
             paramIndicatorExpressionItemIdSet.add(indicatorExpressionItemId);
           }
         });
-        indicatorExpressionItemService.lambdaQuery()
-            .eq(IndicatorExpressionItemEntity::getAppId, appId)
-            .in(IndicatorExpressionItemEntity::getIndicatorExpressionItemId, paramIndicatorExpressionItemIdSet)
-            .list()
-            .forEach(indicatorExpressionItemEntity -> {
-              String indicatorExpressionItemId = indicatorExpressionItemEntity.getIndicatorExpressionItemId();
-              dbIndicatorExpressionItemIdSet.add(indicatorExpressionItemId);
-              kIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap.put(indicatorExpressionItemId, indicatorExpressionItemEntity);
-            });
-        if (
-            paramIndicatorExpressionItemIdSet.stream().anyMatch(indicatorExpressionItemId -> !dbIndicatorExpressionItemIdSet.contains(indicatorExpressionItemId))
-        ) {
-          log.warn("method IndicatorExpressionBiz.createOrUpdate param createOrUpdateIndicatorExpressionRequestRs paramIndicatorExpressionItemIdSet:{} is illegal", paramIndicatorExpressionItemIdSet);
-          throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
+        if (!paramIndicatorExpressionItemIdSet.isEmpty()) {
+          indicatorExpressionItemService.lambdaQuery()
+              .eq(IndicatorExpressionItemEntity::getAppId, appId)
+              .in(IndicatorExpressionItemEntity::getIndicatorExpressionItemId, paramIndicatorExpressionItemIdSet)
+              .list()
+              .forEach(indicatorExpressionItemEntity -> {
+                String indicatorExpressionItemId = indicatorExpressionItemEntity.getIndicatorExpressionItemId();
+                dbIndicatorExpressionItemIdSet.add(indicatorExpressionItemId);
+                kIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap.put(indicatorExpressionItemId, indicatorExpressionItemEntity);
+              });
+          if (
+              paramIndicatorExpressionItemIdSet.stream().anyMatch(indicatorExpressionItemId -> !dbIndicatorExpressionItemIdSet.contains(indicatorExpressionItemId))
+          ) {
+            log.warn("method IndicatorExpressionBiz.createOrUpdate param createOrUpdateIndicatorExpressionRequestRs paramIndicatorExpressionItemIdSet:{} is illegal", paramIndicatorExpressionItemIdSet);
+            throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
+          }
         }
       }
     }
