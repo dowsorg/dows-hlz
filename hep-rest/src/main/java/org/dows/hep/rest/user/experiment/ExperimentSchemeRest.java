@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.user.experiment.request.DesignSchemeRequest;
+import org.dows.hep.biz.user.experiment.ExperimentCaseInfoBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,24 +22,37 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "实验方案", description = "实验方案")
 public class ExperimentSchemeRest {
     private final ExperimentSchemeBiz experimentSchemeBiz;
+    private final ExperimentCaseInfoBiz experimentCaseInfoBiz;
 
     /**
-    * 设计实验方案
-    * @param
-    * @return
-    */
-    @Operation(summary = "设计实验方案")
-    @PostMapping("v1/userExperiment/experimentScheme/designScheme")
-    public Boolean designScheme(@RequestBody @Validated DesignSchemeRequest designScheme ) {
-        return experimentSchemeBiz.designScheme(designScheme);
+     * 获取社区背景
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取社区背景")
+    @PostMapping("v1/userExperiment/experimentScheme/getCaseDescr")
+    public String getCaseDescr(@RequestBody @Validated String  experimentInstanceId ) {
+        return experimentCaseInfoBiz.getDescr(experimentInstanceId);
     }
 
     /**
-    * 提交方案
+    * 获取设计方案
     * @param
     * @return
     */
-    @Operation(summary = "提交方案")
+    @Operation(summary = "获取设计方案")
+    @PostMapping("v1/userExperiment/experimentScheme/getCaseScheme")
+    public Boolean getCaseScheme(@RequestBody @Validated DesignSchemeRequest designScheme ) {
+//        return experimentSchemeBiz.getCaseScheme(designScheme);\
+        return null;
+    }
+
+    /**
+    * 提交设计方案
+    * @param
+    * @return
+    */
+    @Operation(summary = "提交设计方案")
     @PostMapping("v1/userExperiment/experimentScheme/submitScheme")
     public Boolean submitScheme(@RequestBody @Validated String schemeId ) {
         return experimentSchemeBiz.submitScheme(schemeId);
