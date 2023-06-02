@@ -161,7 +161,8 @@ public class PersonManageBiz {
         if (StringUtils.isNotEmpty(request.getIntro())) {
             UserExtinfoResponse extinfoResponse = userExtinfoApi.getUserExtinfoByUserId(userId);
             UserExtinfoRequest extinfoRequest = new UserExtinfoRequest();
-            BeanUtils.copyProperties(extinfoResponse, extinfoRequest);
+            BeanUtils.copyProperties(extinfoResponse, extinfoRequest,new String[]{"intro"});
+            extinfoRequest.setIntro(request.getIntro());
             userExtinfoApi.updateUserExtinfoById(extinfoRequest);
         }
         //3、修改用户功能点
