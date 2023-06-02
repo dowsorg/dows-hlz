@@ -127,9 +127,10 @@ public class IndicatorJudgeRiskFactorBiz{
         String indicatorJudgeRiskFactorId = createOrUpdateIndicatorJudgeRiskFactorRequestRs.getIndicatorJudgeRiskFactorId();
         BigDecimal point = BigDecimal.valueOf(createOrUpdateIndicatorJudgeRiskFactorRequestRs.getPoint());
         if (StringUtils.isBlank(indicatorJudgeRiskFactorId)) {
+            indicatorJudgeRiskFactorId = idGenerator.nextIdStr();
             indicatorJudgeRiskFactorEntity = IndicatorJudgeRiskFactorEntity
                 .builder()
-                .indicatorJudgeRiskFactorId(idGenerator.nextIdStr())
+                .indicatorJudgeRiskFactorId(indicatorJudgeRiskFactorId)
                 .appId(appId)
                 .indicatorFuncId(indicatorFuncId)
                 .name(createOrUpdateIndicatorJudgeRiskFactorRequestRs.getName())
@@ -139,12 +140,13 @@ public class IndicatorJudgeRiskFactorBiz{
                 .status(createOrUpdateIndicatorJudgeRiskFactorRequestRs.getStatus())
                 .build();
         } else {
+            String finalIndicatorJudgeRiskFactorId = indicatorJudgeRiskFactorId;
             indicatorJudgeRiskFactorEntity = indicatorJudgeRiskFactorService.lambdaQuery()
                 .eq(IndicatorJudgeRiskFactorEntity::getAppId, appId)
                 .eq(IndicatorJudgeRiskFactorEntity::getIndicatorJudgeRiskFactorId, indicatorJudgeRiskFactorId)
                 .oneOpt()
                 .orElseThrow(() -> {
-                    log.warn("method IndicatorJudgeRiskFactorBiz.createOrUpdateRs param createOrUpdateIndicatorJudgeRiskFactorRequestRs indicatorJudgeRiskFactorId:{} is illegal", indicatorJudgeRiskFactorId);
+                    log.warn("method IndicatorJudgeRiskFactorBiz.createOrUpdateRs param createOrUpdateIndicatorJudgeRiskFactorRequestRs indicatorJudgeRiskFactorId:{} is illegal", finalIndicatorJudgeRiskFactorId);
                     throw new IndicatorJudgeRiskFactorException(EnumESC.VALIDATE_EXCEPTION);
                 });
             indicatorJudgeRiskFactorEntity.setName(createOrUpdateIndicatorJudgeRiskFactorRequestRs.getName());
