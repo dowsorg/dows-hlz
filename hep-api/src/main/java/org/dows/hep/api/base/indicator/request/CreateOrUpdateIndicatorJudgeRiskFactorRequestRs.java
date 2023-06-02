@@ -51,5 +51,6 @@ public class CreateOrUpdateIndicatorJudgeRiskFactorRequestRs implements Serializ
   private Integer status;
 
   @Schema(title = "公式")
+  @ApiModelProperty(required = true)
   private CreateOrUpdateIndicatorExpressionRequestRs createOrUpdateIndicatorExpressionRequestRs;
 }

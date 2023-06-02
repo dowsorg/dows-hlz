@@ -395,13 +395,16 @@ public class IndicatorInstanceBiz{
         indicatorInstanceService.lambdaQuery()
             .eq(IndicatorInstanceEntity::getAppId, appId)
             .list()
-            .forEach(indicatorInstanceEntity -> dbIndicatorInstanceIdList.add(indicatorInstanceEntity.getIndicatorInstanceId()));
+            .forEach(indicatorInstanceEntity -> {
+                indicatorInstanceEntityList.add(indicatorInstanceEntity);
+                dbIndicatorInstanceIdList.add(indicatorInstanceEntity.getIndicatorInstanceId());
+            });
         indicatorInstanceEntityList.forEach(indicatorInstanceEntity -> {
             String indicatorInstanceId = indicatorInstanceEntity.getIndicatorInstanceId();
             if (paramIndicatorInstanceIdList.contains(indicatorInstanceId)) {
                 indicatorInstanceEntity.setCore(EnumStatus.ENABLE.getCode());
             } else {
-                indicatorInstanceEntity.setFood(EnumStatus.DISABLE.getCode());
+                indicatorInstanceEntity.setCore(EnumStatus.DISABLE.getCode());
             }
         });
         indicatorInstanceService.saveOrUpdateBatch(indicatorInstanceEntityList);
@@ -421,7 +424,10 @@ public class IndicatorInstanceBiz{
         indicatorInstanceService.lambdaQuery()
             .eq(IndicatorInstanceEntity::getAppId, appId)
             .list()
-            .forEach(indicatorInstanceEntity -> dbIndicatorInstanceIdList.add(indicatorInstanceEntity.getIndicatorInstanceId()));
+            .forEach(indicatorInstanceEntity -> {
+                indicatorInstanceEntityList.add(indicatorInstanceEntity);
+                dbIndicatorInstanceIdList.add(indicatorInstanceEntity.getIndicatorInstanceId());
+            });
         indicatorInstanceEntityList.forEach(indicatorInstanceEntity -> {
             String indicatorInstanceId = indicatorInstanceEntity.getIndicatorInstanceId();
             if (paramIndicatorInstanceIdList.contains(indicatorInstanceId)) {
