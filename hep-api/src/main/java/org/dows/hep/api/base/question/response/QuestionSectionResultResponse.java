@@ -14,4 +14,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "QuestionSectionResult 对象", title = "问卷以及答案")
 public class QuestionSectionResultResponse{
+
 }

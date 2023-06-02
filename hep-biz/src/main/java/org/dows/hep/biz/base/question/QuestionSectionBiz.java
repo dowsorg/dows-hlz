@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.hep.api.base.question.dto.QuestionResultRecordDTO;
 import org.dows.hep.api.base.question.enums.QuestionESCEnum;
 import org.dows.hep.api.base.question.enums.QuestionSectionAccessAuthEnum;
 import org.dows.hep.api.base.question.enums.QuestionSourceEnum;
@@ -134,25 +135,21 @@ public class QuestionSectionBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public List<QuestionSectionItemResponse> listItem(List<String> sectionIds) {
-        if (sectionIds == null || sectionIds.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        return questionSectionItemBiz.listBySectionIds(sectionIds);
+    public List<QuestionSectionItemResponse> listQuestionSectionItem(List<String> sectionIds) {
+        return listQuestionSectionItem(sectionIds, null);
     }
 
     /**
-    * @param
-    * @return
-    * @说明: 根据ID获取详情
-    * @关联表: QuestionSection,QuestionSectionItem,QuestionSectionDimension
-    * @工时: 5H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public QuestionSectionResponse getQuestionSection(String questionSectionId ) {
+     * @param
+     * @return
+     * @说明: 根据ID获取详情-有答案
+     * @关联表: QuestionSection, QuestionSectionItem, QuestionSectionDimension
+     * @工时: 5H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public QuestionSectionResponse getQuestionSection(String questionSectionId, QuestionResultRecordDTO questionResultRecordDTO) {
         if (StrUtil.isBlank(questionSectionId)) {
             return new QuestionSectionResponse();
         }
@@ -162,7 +159,7 @@ public class QuestionSectionBiz {
         QuestionSectionResponse questionSectionResponse = BeanUtil.copyProperties(entity, QuestionSectionResponse.class);
 
         // questionSectionItemResponse
-        List<QuestionSectionItemResponse> itemResponseList = questionSectionItemBiz.listBySectionIds(List.of(questionSectionId));
+        List<QuestionSectionItemResponse> itemResponseList = questionSectionItemBiz.listBySectionIds(List.of(questionSectionId), questionResultRecordDTO);
         questionSectionResponse.setSectionItemList(itemResponseList);
 
         // questionSectionDimensionResponse

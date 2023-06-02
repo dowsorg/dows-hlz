@@ -61,7 +61,7 @@ public class QuestionSectionResultEntity implements CrudEntity {
     private String scoreStructure;
 
     @Schema(title = "分数")
-    private Object score;
+    private Float score;
 
     @Schema(title = "答题者账号Id")
     private String accountId;
