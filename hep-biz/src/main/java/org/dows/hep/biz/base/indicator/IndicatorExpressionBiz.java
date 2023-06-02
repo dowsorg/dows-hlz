@@ -150,7 +150,6 @@ public class IndicatorExpressionBiz{
   public void createOrUpdate(CreateOrUpdateIndicatorExpressionRequestRs createOrUpdateIndicatorExpressionRequestRs) {
     String indicatorExpressionId = createOrUpdateIndicatorExpressionRequestRs.getIndicatorExpressionId();
     String principalId = createOrUpdateIndicatorExpressionRequestRs.getPrincipalId();
-    String indicatorExpressionRefId = createOrUpdateIndicatorExpressionRequestRs.getIndicatorExpressionRefId();
     String appId = createOrUpdateIndicatorExpressionRequestRs.getAppId();
     Integer type = createOrUpdateIndicatorExpressionRequestRs.getType();
     IndicatorExpressionEntity indicatorExpressionEntity = null;
@@ -179,15 +178,6 @@ public class IndicatorExpressionBiz{
       );
     } else {
       String finalIndicatorExpressionId = indicatorExpressionId;
-      indicatorExpressionRefService.lambdaQuery()
-          .eq(IndicatorExpressionRefEntity::getIndicatorExpressionRefId, indicatorExpressionRefId)
-          .eq(IndicatorExpressionRefEntity::getIndicatorExpressionId, indicatorExpressionId)
-          .eq(IndicatorExpressionRefEntity::getPrincipalId, principalId)
-          .oneOpt()
-          .orElseThrow(() -> {
-            log.warn("method IndicatorExpressionBiz.createOrUpdate param createOrUpdateIndicatorExpressionRequestRs indicatorExpressionRefId:{}, indicatorExpressionId:{}, principalId:{} is illegal", indicatorExpressionRefId, finalIndicatorExpressionId, principalId);
-            throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
-          });
       if (!createOrUpdateIndicatorExpressionItemRequestRsList.isEmpty()) {
         createOrUpdateIndicatorExpressionItemRequestRsList.forEach(createOrUpdateIndicatorExpressionItemRequestRs -> paramIndicatorExpressionItemIdSet.add(createOrUpdateIndicatorExpressionItemRequestRs.getIndicatorExpressionItemId()));
         indicatorExpressionItemService.lambdaQuery()
