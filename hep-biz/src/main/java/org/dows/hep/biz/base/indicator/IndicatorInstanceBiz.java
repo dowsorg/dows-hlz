@@ -297,11 +297,6 @@ public class IndicatorInstanceBiz{
         List<String> dbIndicatorInstanceIdList = new ArrayList<>();
         String appId = batchUpdateCoreRequestRs.getAppId();
         List<String> paramIndicatorInstanceIdList = batchUpdateCoreRequestRs.getIndicatorInstanceIdList();
-        if (
-            paramIndicatorInstanceIdList.stream().anyMatch(indicatorInstanceId -> !dbIndicatorInstanceIdList.contains(indicatorInstanceId))
-        ) {
-            log.warn("method IndicatorInstanceBiz.batchUpdateCore param batchUpdateCoreRequestRs paramIndicatorInstanceIdList:{} is illegal", paramIndicatorInstanceIdList);
-        }
         indicatorInstanceService.lambdaQuery()
             .eq(IndicatorInstanceEntity::getAppId, appId)
             .list()
@@ -309,6 +304,11 @@ public class IndicatorInstanceBiz{
                 indicatorInstanceEntityList.add(indicatorInstanceEntity);
                 dbIndicatorInstanceIdList.add(indicatorInstanceEntity.getIndicatorInstanceId());
             });
+        if (
+            paramIndicatorInstanceIdList.stream().anyMatch(indicatorInstanceId -> !dbIndicatorInstanceIdList.contains(indicatorInstanceId))
+        ) {
+            log.warn("method IndicatorInstanceBiz.batchUpdateCore param batchUpdateCoreRequestRs paramIndicatorInstanceIdList:{} is illegal", paramIndicatorInstanceIdList);
+        }
         indicatorInstanceEntityList.forEach(indicatorInstanceEntity -> {
             String indicatorInstanceId = indicatorInstanceEntity.getIndicatorInstanceId();
             if (paramIndicatorInstanceIdList.contains(indicatorInstanceId)) {
@@ -326,11 +326,6 @@ public class IndicatorInstanceBiz{
         List<String> dbIndicatorInstanceIdList = new ArrayList<>();
         String appId = batchUpdateFoodRequestRs.getAppId();
         List<String> paramIndicatorInstanceIdList = batchUpdateFoodRequestRs.getIndicatorInstanceIdList();
-        if (
-            paramIndicatorInstanceIdList.stream().anyMatch(indicatorInstanceId -> !dbIndicatorInstanceIdList.contains(indicatorInstanceId))
-        ) {
-            log.warn("method IndicatorInstanceBiz.batchUpdateFood param batchUpdateCoreRequestRs paramIndicatorInstanceIdList:{} is illegal", paramIndicatorInstanceIdList);
-        }
         indicatorInstanceService.lambdaQuery()
             .eq(IndicatorInstanceEntity::getAppId, appId)
             .list()
@@ -338,6 +333,11 @@ public class IndicatorInstanceBiz{
                 indicatorInstanceEntityList.add(indicatorInstanceEntity);
                 dbIndicatorInstanceIdList.add(indicatorInstanceEntity.getIndicatorInstanceId());
             });
+        if (
+            paramIndicatorInstanceIdList.stream().anyMatch(indicatorInstanceId -> !dbIndicatorInstanceIdList.contains(indicatorInstanceId))
+        ) {
+            log.warn("method IndicatorInstanceBiz.batchUpdateFood param batchUpdateCoreRequestRs paramIndicatorInstanceIdList:{} is illegal", paramIndicatorInstanceIdList);
+        }
         indicatorInstanceEntityList.forEach(indicatorInstanceEntity -> {
             String indicatorInstanceId = indicatorInstanceEntity.getIndicatorInstanceId();
             if (paramIndicatorInstanceIdList.contains(indicatorInstanceId)) {
