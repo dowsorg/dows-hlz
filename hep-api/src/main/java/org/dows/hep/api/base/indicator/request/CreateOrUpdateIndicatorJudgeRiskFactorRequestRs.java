@@ -49,4 +49,7 @@ public class CreateOrUpdateIndicatorJudgeRiskFactorRequestRs implements Serializ
   @Schema(title = "0-禁用，1-启用")
   @ApiModelProperty(required = true)
   private Integer status;
+
+  @Schema(title = "公式")
+  private CreateOrUpdateIndicatorExpressionRequestRs createOrUpdateIndicatorExpressionRequestRs;
 }

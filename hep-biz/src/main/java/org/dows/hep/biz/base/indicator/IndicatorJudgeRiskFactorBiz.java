@@ -10,6 +10,7 @@ import org.dows.hep.api.base.indicator.response.IndicatorCategoryResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponseRs;
 import org.dows.hep.api.enums.EnumESC;
+import org.dows.hep.api.enums.EnumIndicatorExpressionType;
 import org.dows.hep.api.exception.IndicatorJudgeRiskFactorException;
 import org.dows.hep.biz.util.RsPageUtil;
 import org.dows.hep.entity.*;
@@ -38,6 +39,8 @@ public class IndicatorJudgeRiskFactorBiz{
     private final IndicatorCategoryService indicatorCategoryService;
     private final IndicatorFuncService indicatorFuncService;
     private final IndicatorJudgeRiskFactorService indicatorJudgeRiskFactorService;
+
+    private final IndicatorExpressionBiz indicatorExpressionBiz;
 
     public static IndicatorJudgeRiskFactorResponseRs indicatorJudgeRiskFactor2ResponseRs(
         IndicatorJudgeRiskFactorEntity indicatorJudgeRiskFactorEntity,
@@ -152,6 +155,12 @@ public class IndicatorJudgeRiskFactorBiz{
             indicatorJudgeRiskFactorEntity.setResultExplain(createOrUpdateIndicatorJudgeRiskFactorRequestRs.getResultExplain());
         }
         indicatorJudgeRiskFactorService.saveOrUpdate(indicatorJudgeRiskFactorEntity);
+        CreateOrUpdateIndicatorExpressionRequestRs createOrUpdateIndicatorExpressionRequestRs = createOrUpdateIndicatorJudgeRiskFactorRequestRs.getCreateOrUpdateIndicatorExpressionRequestRs();
+        if (Objects.nonNull(createOrUpdateIndicatorExpressionRequestRs)) {
+            createOrUpdateIndicatorExpressionRequestRs.setType(EnumIndicatorExpressionType.INDICATOR_JUDGE_RISK_FACTOR.getType());
+            createOrUpdateIndicatorExpressionRequestRs.setPrincipalId(indicatorJudgeRiskFactorId);
+        }
+        indicatorExpressionBiz.createOrUpdate(createOrUpdateIndicatorExpressionRequestRs);
     }
 
     @Transactional(rollbackFor = Exception.class)
