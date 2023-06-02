@@ -4,9 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorInstanceRequestRs;
-import org.dows.hep.api.base.indicator.request.UpdateIndicatorInstanceMoveRequestRs;
-import org.dows.hep.api.base.indicator.request.UpdateIndicatorInstanceRequest;
+import org.dows.hep.api.base.indicator.request.*;
 import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.IndicatorInstanceException;
@@ -69,6 +67,7 @@ public class IndicatorInstanceBiz{
             .appId(indicatorInstanceEntity.getAppId())
             .indicatorCategoryId(indicatorInstanceEntity.getIndicatorCategoryId())
             .indicatorName(indicatorInstanceEntity.getIndicatorName())
+            .displayByPercent(indicatorInstanceEntity.getDisplayByPercent())
             .unit(indicatorInstanceEntity.getUnit())
             .core(indicatorInstanceEntity.getCore())
             .food(indicatorInstanceEntity.getFood())
@@ -382,44 +381,54 @@ public class IndicatorInstanceBiz{
 
 
     @Transactional(rollbackFor = Exception.class)
-    public void batchUpdateCore(List<String> indicatorInstanceIdList) {
+    public void batchUpdateCore(BatchUpdateCoreRequestRs batchUpdateCoreRequestRs) {
+        List<IndicatorInstanceEntity> indicatorInstanceEntityList = new ArrayList<>();
         List<String> dbIndicatorInstanceIdList = new ArrayList<>();
-        List<IndicatorInstanceEntity> indicatorInstanceEntityList = indicatorInstanceService.lambdaQuery()
-            .in(IndicatorInstanceEntity::getIndicatorInstanceId, indicatorInstanceIdList)
-            .list()
-            .stream()
-            .peek(indicatorInstanceEntity -> {
-                dbIndicatorInstanceIdList.add(indicatorInstanceEntity.getIndicatorInstanceId());
-                indicatorInstanceEntity.setCore(EnumStatus.ENABLE.getCode());
-            })
-            .collect(Collectors.toList());
-        for (String indicatorInstanceId : indicatorInstanceIdList) {
-            if (!dbIndicatorInstanceIdList.contains(indicatorInstanceId)) {
-                log.warn("method:batchUpdateCore param indicatorInstanceIdList:{}, exist illegal data indicatorInstanceId:{}", indicatorInstanceIdList, indicatorInstanceId);
-                throw new IndicatorInstanceException(EnumESC.VALIDATE_EXCEPTION);
-            }
+        String appId = batchUpdateCoreRequestRs.getAppId();
+        List<String> paramIndicatorInstanceIdList = batchUpdateCoreRequestRs.getIndicatorInstanceIdList();
+        if (
+            paramIndicatorInstanceIdList.stream().anyMatch(indicatorInstanceId -> !dbIndicatorInstanceIdList.contains(indicatorInstanceId))
+        ) {
+            log.warn("method IndicatorInstanceBiz.batchUpdateCore param batchUpdateCoreRequestRs paramIndicatorInstanceIdList:{} is illegal", paramIndicatorInstanceIdList);
         }
+        indicatorInstanceService.lambdaQuery()
+            .eq(IndicatorInstanceEntity::getAppId, appId)
+            .list()
+            .forEach(indicatorInstanceEntity -> dbIndicatorInstanceIdList.add(indicatorInstanceEntity.getIndicatorInstanceId()));
+        indicatorInstanceEntityList.forEach(indicatorInstanceEntity -> {
+            String indicatorInstanceId = indicatorInstanceEntity.getIndicatorInstanceId();
+            if (paramIndicatorInstanceIdList.contains(indicatorInstanceId)) {
+                indicatorInstanceEntity.setCore(EnumStatus.ENABLE.getCode());
+            } else {
+                indicatorInstanceEntity.setFood(EnumStatus.DISABLE.getCode());
+            }
+        });
         indicatorInstanceService.saveOrUpdateBatch(indicatorInstanceEntityList);
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void batchUpdateFood(List<String> indicatorInstanceIdList) {
+    public void batchUpdateFood(BatchUpdateFoodRequestRs batchUpdateFoodRequestRs) {
+        List<IndicatorInstanceEntity> indicatorInstanceEntityList = new ArrayList<>();
         List<String> dbIndicatorInstanceIdList = new ArrayList<>();
-        List<IndicatorInstanceEntity> indicatorInstanceEntityList = indicatorInstanceService.lambdaQuery()
-            .in(IndicatorInstanceEntity::getIndicatorInstanceId, indicatorInstanceIdList)
-            .list()
-            .stream()
-            .peek(indicatorInstanceEntity -> {
-                dbIndicatorInstanceIdList.add(indicatorInstanceEntity.getIndicatorInstanceId());
-                indicatorInstanceEntity.setFood(EnumStatus.ENABLE.getCode());
-            })
-            .collect(Collectors.toList());
-        for (String indicatorInstanceId : indicatorInstanceIdList) {
-            if (!dbIndicatorInstanceIdList.contains(indicatorInstanceId)) {
-                log.warn("method:batchUpdateFood param indicatorInstanceIdList:{}, exist illegal data indicatorInstanceId:{}", indicatorInstanceIdList, indicatorInstanceId);
-                throw new IndicatorInstanceException(EnumESC.VALIDATE_EXCEPTION);
-            }
+        String appId = batchUpdateFoodRequestRs.getAppId();
+        List<String> paramIndicatorInstanceIdList = batchUpdateFoodRequestRs.getIndicatorInstanceIdList();
+        if (
+            paramIndicatorInstanceIdList.stream().anyMatch(indicatorInstanceId -> !dbIndicatorInstanceIdList.contains(indicatorInstanceId))
+        ) {
+            log.warn("method IndicatorInstanceBiz.batchUpdateFood param batchUpdateCoreRequestRs paramIndicatorInstanceIdList:{} is illegal", paramIndicatorInstanceIdList);
         }
+        indicatorInstanceService.lambdaQuery()
+            .eq(IndicatorInstanceEntity::getAppId, appId)
+            .list()
+            .forEach(indicatorInstanceEntity -> dbIndicatorInstanceIdList.add(indicatorInstanceEntity.getIndicatorInstanceId()));
+        indicatorInstanceEntityList.forEach(indicatorInstanceEntity -> {
+            String indicatorInstanceId = indicatorInstanceEntity.getIndicatorInstanceId();
+            if (paramIndicatorInstanceIdList.contains(indicatorInstanceId)) {
+                indicatorInstanceEntity.setFood(EnumStatus.ENABLE.getCode());
+            } else {
+                indicatorInstanceEntity.setFood(EnumStatus.DISABLE.getCode());
+            }
+        });
         indicatorInstanceService.saveOrUpdateBatch(indicatorInstanceEntityList);
     }
 
