@@ -177,9 +177,13 @@ public class IndicatorExpressionBiz{
           .build()
       );
     } else {
-      String finalIndicatorExpressionId = indicatorExpressionId;
       if (!createOrUpdateIndicatorExpressionItemRequestRsList.isEmpty()) {
-        createOrUpdateIndicatorExpressionItemRequestRsList.forEach(createOrUpdateIndicatorExpressionItemRequestRs -> paramIndicatorExpressionItemIdSet.add(createOrUpdateIndicatorExpressionItemRequestRs.getIndicatorExpressionItemId()));
+        createOrUpdateIndicatorExpressionItemRequestRsList.forEach(createOrUpdateIndicatorExpressionItemRequestRs -> {
+          String indicatorExpressionItemId = createOrUpdateIndicatorExpressionItemRequestRs.getIndicatorExpressionItemId();
+          if (StringUtils.isNotBlank(indicatorExpressionItemId)) {
+            paramIndicatorExpressionItemIdSet.add(indicatorExpressionItemId);
+          }
+        });
         indicatorExpressionItemService.lambdaQuery()
             .eq(IndicatorExpressionItemEntity::getAppId, appId)
             .in(IndicatorExpressionItemEntity::getIndicatorExpressionItemId, paramIndicatorExpressionItemIdSet)
