@@ -503,7 +503,7 @@ public class IndicatorInstanceBiz{
                 Integer previousSeq = currentSeq - 1;
                 currentIndicatorCategoryRefEntity.setSeq(previousSeq);
                 anotherIndicatorCategoryRefEntity = kSeqVIndicatorCategoryRefMap.get(previousSeq);
-                anotherIndicatorCategoryRefEntity.setSeq(previousSeq);
+                anotherIndicatorCategoryRefEntity.setSeq(currentSeq);
             }
             indicatorCategoryRefEntityList.add(currentIndicatorCategoryRefEntity);
             indicatorCategoryRefEntityList.add(anotherIndicatorCategoryRefEntity);
