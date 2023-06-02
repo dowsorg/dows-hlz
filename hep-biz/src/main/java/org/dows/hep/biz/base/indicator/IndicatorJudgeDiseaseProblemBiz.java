@@ -7,16 +7,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.*;
-import org.dows.hep.api.base.indicator.response.IndicatorCategoryResponse;
-import org.dows.hep.api.base.indicator.response.IndicatorJudgeDiseaseProblemResponse;
-import org.dows.hep.api.base.indicator.response.IndicatorJudgeDiseaseProblemResponseRs;
+import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.exception.IndicatorJudgeDiseaseProblemException;
 import org.dows.hep.biz.util.RsPageUtil;
-import org.dows.hep.entity.IndicatorCategoryEntity;
-import org.dows.hep.entity.IndicatorFuncEntity;
-import org.dows.hep.entity.IndicatorJudgeDiseaseProblemEntity;
-import org.dows.hep.entity.IndicatorViewSupportExamEntity;
+import org.dows.hep.entity.*;
 import org.dows.hep.service.IndicatorCategoryService;
 import org.dows.hep.service.IndicatorFuncService;
 import org.dows.hep.service.IndicatorJudgeDiseaseProblemService;
@@ -66,18 +61,17 @@ public class IndicatorJudgeDiseaseProblemBiz {
             .build();
     }
 
-    private List<IndicatorJudgeDiseaseProblemResponseRs> indicatorJudgeDiseaseProblemEntityList2ResponseRsList(
-        List<IndicatorJudgeDiseaseProblemEntity> indicatorJudgeDiseaseProblemEntityList
-    ) {
+    private List<IndicatorJudgeDiseaseProblemResponseRs> indicatorJudgeDiseaseProblemEntityList2ResponseRsList(List<IndicatorJudgeDiseaseProblemEntity> indicatorJudgeDiseaseProblemEntityList) {
         if (Objects.isNull(indicatorJudgeDiseaseProblemEntityList) || indicatorJudgeDiseaseProblemEntityList.isEmpty()) {
             return Collections.emptyList();
         }
+        String appId = indicatorJudgeDiseaseProblemEntityList.get(0).getAppId();
         Set<String> indicatorCategoryIdSetThird = new HashSet<>();
         indicatorJudgeDiseaseProblemEntityList.forEach(
             indicatorJudgeDiseaseProblemEntity -> {
                 indicatorCategoryIdSetThird.add(indicatorJudgeDiseaseProblemEntity.getIndicatorCategoryId());
             });
-        Map<String, IndicatorCategoryEntity> kIndicatorCategoryIdVIndicatorCategoryMap = new HashMap<>();
+        Map<String, IndicatorCategoryEntity> kIndicatorCategoryIdThirdVIndicatorCategoryMap = new HashMap<>();
         Set<String> indicatorCategoryIdSetSecond = new HashSet<>();
         if (!indicatorCategoryIdSetThird.isEmpty()) {
             indicatorCategoryService.lambdaQuery()
@@ -85,9 +79,10 @@ public class IndicatorJudgeDiseaseProblemBiz {
                 .list()
                 .forEach(indicatorCategoryEntity -> {
                     indicatorCategoryIdSetSecond.add(indicatorCategoryEntity.getPid());
-                    kIndicatorCategoryIdVIndicatorCategoryMap.put(indicatorCategoryEntity.getIndicatorCategoryId(), indicatorCategoryEntity);
+                    kIndicatorCategoryIdThirdVIndicatorCategoryMap.put(indicatorCategoryEntity.getIndicatorCategoryId(), indicatorCategoryEntity);
                 });
         }
+        Map<String, IndicatorCategoryEntity> kIndicatorCategoryIdSecondVIndicatorCategoryMap = new HashMap<>();
         Set<String> indicatorCategoryIdSetFirst = new HashSet<>();
         if (!indicatorCategoryIdSetSecond.isEmpty()) {
             indicatorCategoryService.lambdaQuery()
@@ -95,43 +90,32 @@ public class IndicatorJudgeDiseaseProblemBiz {
                 .list()
                 .forEach(indicatorCategoryEntity -> {
                     indicatorCategoryIdSetFirst.add(indicatorCategoryEntity.getPid());
-                    kIndicatorCategoryIdVIndicatorCategoryMap.put(indicatorCategoryEntity.getIndicatorCategoryId(), indicatorCategoryEntity);
+                    kIndicatorCategoryIdSecondVIndicatorCategoryMap.put(indicatorCategoryEntity.getIndicatorCategoryId(), indicatorCategoryEntity);
                 });
         }
+        Map<String, IndicatorCategoryEntity> kIndicatorCategoryIdFirstVIndicatorCategoryMap = new HashMap<>();
         if (!indicatorCategoryIdSetFirst.isEmpty()) {
             indicatorCategoryService.lambdaQuery()
                 .in(IndicatorCategoryEntity::getIndicatorCategoryId, indicatorCategoryIdSetFirst)
                 .list()
                 .forEach(indicatorCategoryEntity -> {
-                    kIndicatorCategoryIdVIndicatorCategoryMap.put(indicatorCategoryEntity.getIndicatorCategoryId(), indicatorCategoryEntity);
+                    kIndicatorCategoryIdFirstVIndicatorCategoryMap.put(indicatorCategoryEntity.getIndicatorCategoryId(), indicatorCategoryEntity);
                 });
         }
         return indicatorJudgeDiseaseProblemEntityList
             .stream()
             .map(indicatorJudgeDiseaseProblemEntity -> {
-                List<IndicatorCategoryResponse> indicatorCategoryResponseList = new ArrayList<>();
-                List<IndicatorCategoryEntity> indicatorCategoryEntityList = new ArrayList<>();
                 String indicatorCategoryIdThird = indicatorJudgeDiseaseProblemEntity.getIndicatorCategoryId();
-                IndicatorCategoryEntity indicatorCategoryEntityThird = kIndicatorCategoryIdVIndicatorCategoryMap.get(indicatorCategoryIdThird);
+                IndicatorCategoryEntity indicatorCategoryEntityThird = kIndicatorCategoryIdThirdVIndicatorCategoryMap.get(indicatorCategoryIdThird);
+                String indicatorCategoryIdSecond = indicatorCategoryEntityThird.getPid();
+                IndicatorCategoryEntity indicatorCategoryEntitySecond = kIndicatorCategoryIdSecondVIndicatorCategoryMap.get(indicatorCategoryIdSecond);
+                String indicatorCategoryIdFirst = indicatorCategoryEntitySecond.getPid();
+                IndicatorCategoryEntity indicatorCategoryEntityFirst= kIndicatorCategoryIdFirstVIndicatorCategoryMap.get(indicatorCategoryIdFirst);
+                List<IndicatorCategoryEntity> indicatorCategoryEntityList = new ArrayList<>();
+                indicatorCategoryEntityList.add(indicatorCategoryEntityFirst);
+                indicatorCategoryEntityList.add(indicatorCategoryEntitySecond);
                 indicatorCategoryEntityList.add(indicatorCategoryEntityThird);
-                if (Objects.nonNull(indicatorCategoryEntityThird)) {
-                    String indicatorCategoryIdSecond = indicatorCategoryEntityThird.getPid();
-                    IndicatorCategoryEntity indicatorCategoryEntitySecond = kIndicatorCategoryIdVIndicatorCategoryMap.get(indicatorCategoryIdSecond);
-                    indicatorCategoryEntityList.add(indicatorCategoryEntitySecond);
-                    if (Objects.nonNull(indicatorCategoryEntitySecond)) {
-                        String indicatorCategoryIdFirst = indicatorCategoryEntitySecond.getPid();
-                        IndicatorCategoryEntity indicatorCategoryEntityFirst = kIndicatorCategoryIdVIndicatorCategoryMap.get(indicatorCategoryIdFirst);
-                        indicatorCategoryEntityList.add(indicatorCategoryEntityFirst);
-                    }
-                }
-//                String indicatorCategoryIdSecond = indicatorJudgeDiseaseProblemEntity.getIndicatorCategoryId();
-//                IndicatorCategoryEntity indicatorCategoryEntitySecond = kIndicatorCategoryIdThirdVIndicatorCategoryMap.get(indicatorCategoryIdSecond);
-//                String indicatorCategoryIdFirst = indicatorCategoryEntitySecond.getPid();
-//                IndicatorCategoryEntity indicatorCategoryEntityFirst= kIndicatorCategoryIdSecondVIndicatorCategoryMap.get(indicatorCategoryIdFirst);
-//                List<IndicatorCategoryEntity> indicatorCategoryEntityList = new ArrayList<>();
-//                indicatorCategoryEntityList.add(indicatorCategoryEntityFirst);
-//                indicatorCategoryEntityList.add(indicatorCategoryEntitySecond);
-//                List<IndicatorCategoryResponse> indicatorCategoryResponseList = indicatorCategoryEntityList.stream().map(IndicatorCategoryBiz::indicatorCategoryEntity2Response).collect(Collectors.toList());
+                List<IndicatorCategoryResponse> indicatorCategoryResponseList = indicatorCategoryEntityList.stream().map(IndicatorCategoryBiz::indicatorCategoryEntity2Response).collect(Collectors.toList());
                 return indicatorJudgeDiseaseProblem2ResponseRs(
                     indicatorJudgeDiseaseProblemEntity,
                     indicatorCategoryResponseList
