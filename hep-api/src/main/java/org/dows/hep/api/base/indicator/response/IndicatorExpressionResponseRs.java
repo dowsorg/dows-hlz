@@ -26,6 +26,9 @@ public class IndicatorExpressionResponseRs implements Serializable {
   private Long id;
 
   @Schema(title = "分布式ID")
+  private String indicatorExpressionItemId;
+
+  @Schema(title = "分布式ID")
   private String indicatorExpressionId;
 
   @Schema(title = "应用ID")
