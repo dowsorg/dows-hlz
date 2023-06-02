@@ -1,7 +1,6 @@
 package org.dows.hep.biz.base.indicator;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -221,8 +220,13 @@ public class IndicatorJudgeRiskFactorBiz{
             .eq(Objects.nonNull(status), IndicatorJudgeRiskFactorEntity::getStatus, status)
             .like(StringUtils.isNotBlank(name), IndicatorJudgeRiskFactorEntity::getName, StringUtils.isBlank(name) ? null : name.trim());
         if (StringUtils.isNotBlank(indicatorCategoryIdList)) {
-            List<String> paramIndicatorCategoryIdList = Arrays.stream(indicatorCategoryIdList.split(",")).toList();
-            indicatorJudgeRiskFactorEntityLQW.in(IndicatorJudgeRiskFactorEntity::getIndicatorCategoryId, paramIndicatorCategoryIdList);
+            Set<String> firstIndicatorCategoryIdSet = Arrays.stream(indicatorCategoryIdList.split(",")).collect(Collectors.toSet());
+            /* runsix:if first category list mapped second category list is empty, means nothing */
+            if (firstIndicatorCategoryIdSet.isEmpty()) {
+                return RsPageUtil.getRsPage(pageNo, pageSize, order, asc);
+            } else {
+                indicatorJudgeRiskFactorEntityLQW.in(IndicatorJudgeRiskFactorEntity::getIndicatorCategoryId, firstIndicatorCategoryIdSet);
+            }
         }
         Page<IndicatorJudgeRiskFactorEntity> indicatorJudgeRiskFactorEntityPage = indicatorJudgeRiskFactorService.page(page, indicatorJudgeRiskFactorEntityLQW);
         Page<IndicatorJudgeRiskFactorResponseRs> indicatorJudgeRiskFactorResponseRsPage = RsPageUtil.convertFromAnother(indicatorJudgeRiskFactorEntityPage);

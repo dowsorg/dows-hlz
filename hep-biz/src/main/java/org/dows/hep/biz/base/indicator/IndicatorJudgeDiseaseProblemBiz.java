@@ -16,6 +16,7 @@ import org.dows.hep.biz.util.RsPageUtil;
 import org.dows.hep.entity.IndicatorCategoryEntity;
 import org.dows.hep.entity.IndicatorFuncEntity;
 import org.dows.hep.entity.IndicatorJudgeDiseaseProblemEntity;
+import org.dows.hep.entity.IndicatorViewSupportExamEntity;
 import org.dows.hep.service.IndicatorCategoryService;
 import org.dows.hep.service.IndicatorFuncService;
 import org.dows.hep.service.IndicatorJudgeDiseaseProblemService;
@@ -255,21 +256,52 @@ public class IndicatorJudgeDiseaseProblemBiz {
         return indicatorJudgeDiseaseProblemResponseRsList.get(0);
     }
 
-    public Page<IndicatorJudgeDiseaseProblemResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String paramIndicatorCategoryId, Integer status) {
+    public Page<IndicatorJudgeDiseaseProblemResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String indicatorCategoryIdList, Integer status) {
         Page<IndicatorJudgeDiseaseProblemEntity> page = RsPageUtil.getRsPage(pageNo, pageSize, order, asc);
         LambdaQueryWrapper<IndicatorJudgeDiseaseProblemEntity> indicatorJudgeDiseaseProblemEntityLQW = new LambdaQueryWrapper<>();
         indicatorJudgeDiseaseProblemEntityLQW
             .eq(Objects.nonNull(appId), IndicatorJudgeDiseaseProblemEntity::getAppId, appId)
             .eq(StringUtils.isNotBlank(indicatorFuncId), IndicatorJudgeDiseaseProblemEntity::getIndicatorFuncId, indicatorFuncId)
-            .eq(StringUtils.isNotBlank(paramIndicatorCategoryId), IndicatorJudgeDiseaseProblemEntity::getIndicatorCategoryId, paramIndicatorCategoryId)
             .eq(Objects.nonNull(status), IndicatorJudgeDiseaseProblemEntity::getStatus, status)
             .like(StringUtils.isNotBlank(name), IndicatorJudgeDiseaseProblemEntity::getName, StringUtils.isBlank(name) ? null : name.trim());
+        if (StringUtils.isNotBlank(indicatorCategoryIdList)) {
+            Set<String> firstIndicatorCategoryIdSet = Arrays.stream(indicatorCategoryIdList.split(",")).collect(Collectors.toSet());
+            Set<String> thirdIndicatorCategoryIdSet = getThirdIndicatorCategoryIdSet(firstIndicatorCategoryIdSet);
+            /* runsix:if first category list mapped third category list is empty, means nothing */
+            if (thirdIndicatorCategoryIdSet.isEmpty()) {
+                return RsPageUtil.getRsPage(pageNo, pageSize, order, asc);
+            } else {
+                indicatorJudgeDiseaseProblemEntityLQW.in(IndicatorJudgeDiseaseProblemEntity::getIndicatorCategoryId, thirdIndicatorCategoryIdSet);
+            }
+        }
         Page<IndicatorJudgeDiseaseProblemEntity> indicatorJudgeDiseaseProblemEntityPage = indicatorJudgeDiseaseProblemService.page(page, indicatorJudgeDiseaseProblemEntityLQW);
         Page<IndicatorJudgeDiseaseProblemResponseRs> indicatorJudgeDiseaseProblemResponseRsPage = RsPageUtil.convertFromAnother(indicatorJudgeDiseaseProblemEntityPage);
         List<IndicatorJudgeDiseaseProblemEntity> indicatorJudgeDiseaseProblemEntityList = indicatorJudgeDiseaseProblemEntityPage.getRecords();
         List<IndicatorJudgeDiseaseProblemResponseRs> indicatorJudgeDiseaseProblemResponseRsList = indicatorJudgeDiseaseProblemEntityList2ResponseRsList(indicatorJudgeDiseaseProblemEntityList);
         indicatorJudgeDiseaseProblemResponseRsPage.setRecords(indicatorJudgeDiseaseProblemResponseRsList);
         return indicatorJudgeDiseaseProblemResponseRsPage;
+    }
+
+    private Set<String> getThirdIndicatorCategoryIdSet(Collection<String> firstIndicatorCategoryIdCollection) {
+        Set<String> resultSet = new HashSet<>();
+        if (Objects.nonNull(firstIndicatorCategoryIdCollection) && !firstIndicatorCategoryIdCollection.isEmpty()) {
+            Set<String> secondIndicatorCategoryIdSet = new HashSet<>();
+            indicatorCategoryService.lambdaQuery()
+                .in(IndicatorCategoryEntity::getPid, firstIndicatorCategoryIdCollection)
+                .list()
+                .forEach(indicatorCategoryEntity -> {
+                    secondIndicatorCategoryIdSet.add(indicatorCategoryEntity.getIndicatorCategoryId());
+                });
+            if (!secondIndicatorCategoryIdSet.isEmpty()) {
+                indicatorCategoryService.lambdaQuery()
+                    .in(IndicatorCategoryEntity::getPid, secondIndicatorCategoryIdSet)
+                    .list()
+                    .forEach(indicatorCategoryEntity -> {
+                        resultSet.add(indicatorCategoryEntity.getIndicatorCategoryId());
+                    });
+            }
+        }
+        return resultSet;
     }
     
     /**
