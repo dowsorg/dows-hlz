@@ -19,9 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ExperimentSchemeManageBiz {
     private final IdGenerator idGenerator;
-
     private final TenantCaseSchemeBiz tenantCaseSchemeBiz;
-
     private final ExperimentSchemeService experimentSchemeService;
 
     /**
