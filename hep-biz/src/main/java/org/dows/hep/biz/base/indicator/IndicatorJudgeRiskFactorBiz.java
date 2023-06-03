@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.*;
 import org.dows.hep.api.base.indicator.response.IndicatorCategoryResponse;
+import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponseRs;
 import org.dows.hep.api.enums.EnumESC;
@@ -44,7 +45,8 @@ public class IndicatorJudgeRiskFactorBiz{
 
     public static IndicatorJudgeRiskFactorResponseRs indicatorJudgeRiskFactor2ResponseRs(
         IndicatorJudgeRiskFactorEntity indicatorJudgeRiskFactorEntity,
-        IndicatorCategoryResponse indicatorCategoryResponse
+        IndicatorCategoryResponse indicatorCategoryResponse,
+        IndicatorExpressionResponseRs indicatorExpressionResponseRs
     ) {
         return IndicatorJudgeRiskFactorResponseRs
             .builder()
@@ -59,6 +61,7 @@ public class IndicatorJudgeRiskFactorBiz{
             .resultExplain(indicatorJudgeRiskFactorEntity.getResultExplain())
             .status(indicatorJudgeRiskFactorEntity.getStatus())
             .dt(indicatorJudgeRiskFactorEntity.getDt())
+            .indicatorExpressionResponseRs(indicatorExpressionResponseRs)
             .build();
     }
 
@@ -70,9 +73,11 @@ public class IndicatorJudgeRiskFactorBiz{
         }
         String appId = indicatorJudgeRiskFactorEntityList.get(0).getAppId();
         Set<String> indicatorCategoryIdSet = new HashSet<>();
+        Set<String> principalIdSet = new HashSet<>();
         indicatorJudgeRiskFactorEntityList.forEach(
             indicatorJudgeRiskFactorEntity -> {
                 indicatorCategoryIdSet.add(indicatorJudgeRiskFactorEntity.getIndicatorCategoryId());
+                principalIdSet.add(indicatorJudgeRiskFactorEntity.getIndicatorJudgeRiskFactorId());
             });
         Map<String, IndicatorCategoryResponse> kIndicatorCategoryIdVIndicatorCategoryResponseMap = new HashMap<>();
         if (!indicatorCategoryIdSet.isEmpty()) {
@@ -86,13 +91,17 @@ public class IndicatorJudgeRiskFactorBiz{
                     indicatorCategoryResponse.getIndicatorCategoryId(), indicatorCategoryResponse
                 ));
         }
+        Map<String, IndicatorExpressionResponseRs> kPrincipalIdVIndicatorExpressionResponseRsMap = new HashMap<>();
+        indicatorExpressionBiz.populateKIndicatorExpressionIdVIndicatorExpressionEntityMap(appId, principalIdSet, kPrincipalIdVIndicatorExpressionResponseRsMap);
         return indicatorJudgeRiskFactorEntityList
             .stream()
             .map(indicatorJudgeRiskFactorEntity -> {
                 IndicatorCategoryResponse indicatorCategoryResponse = kIndicatorCategoryIdVIndicatorCategoryResponseMap.get(indicatorJudgeRiskFactorEntity.getIndicatorCategoryId());
+                IndicatorExpressionResponseRs indicatorExpressionResponseRs = kPrincipalIdVIndicatorExpressionResponseRsMap.get(indicatorJudgeRiskFactorEntity.getIndicatorJudgeRiskFactorId());
                 return indicatorJudgeRiskFactor2ResponseRs(
                     indicatorJudgeRiskFactorEntity,
-                    indicatorCategoryResponse
+                    indicatorCategoryResponse,
+                    indicatorExpressionResponseRs
                 );
             })
             .collect(Collectors.toList());
@@ -127,9 +136,10 @@ public class IndicatorJudgeRiskFactorBiz{
         String indicatorJudgeRiskFactorId = createOrUpdateIndicatorJudgeRiskFactorRequestRs.getIndicatorJudgeRiskFactorId();
         BigDecimal point = BigDecimal.valueOf(createOrUpdateIndicatorJudgeRiskFactorRequestRs.getPoint());
         if (StringUtils.isBlank(indicatorJudgeRiskFactorId)) {
+            indicatorJudgeRiskFactorId = idGenerator.nextIdStr();
             indicatorJudgeRiskFactorEntity = IndicatorJudgeRiskFactorEntity
                 .builder()
-                .indicatorJudgeRiskFactorId(idGenerator.nextIdStr())
+                .indicatorJudgeRiskFactorId(indicatorJudgeRiskFactorId)
                 .appId(appId)
                 .indicatorFuncId(indicatorFuncId)
                 .name(createOrUpdateIndicatorJudgeRiskFactorRequestRs.getName())
@@ -139,12 +149,13 @@ public class IndicatorJudgeRiskFactorBiz{
                 .status(createOrUpdateIndicatorJudgeRiskFactorRequestRs.getStatus())
                 .build();
         } else {
+            String finalIndicatorJudgeRiskFactorId = indicatorJudgeRiskFactorId;
             indicatorJudgeRiskFactorEntity = indicatorJudgeRiskFactorService.lambdaQuery()
                 .eq(IndicatorJudgeRiskFactorEntity::getAppId, appId)
                 .eq(IndicatorJudgeRiskFactorEntity::getIndicatorJudgeRiskFactorId, indicatorJudgeRiskFactorId)
                 .oneOpt()
                 .orElseThrow(() -> {
-                    log.warn("method IndicatorJudgeRiskFactorBiz.createOrUpdateRs param createOrUpdateIndicatorJudgeRiskFactorRequestRs indicatorJudgeRiskFactorId:{} is illegal", indicatorJudgeRiskFactorId);
+                    log.warn("method IndicatorJudgeRiskFactorBiz.createOrUpdateRs param createOrUpdateIndicatorJudgeRiskFactorRequestRs indicatorJudgeRiskFactorId:{} is illegal", finalIndicatorJudgeRiskFactorId);
                     throw new IndicatorJudgeRiskFactorException(EnumESC.VALIDATE_EXCEPTION);
                 });
             indicatorJudgeRiskFactorEntity.setName(createOrUpdateIndicatorJudgeRiskFactorRequestRs.getName());
