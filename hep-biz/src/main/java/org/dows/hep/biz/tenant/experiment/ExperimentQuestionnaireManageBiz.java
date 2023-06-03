@@ -41,10 +41,10 @@ public class ExperimentQuestionnaireManageBiz {
      * @description 预生成知识考点问卷
      * @date 2023/6/3 15:33
      */
-    public void preHandleExperimentQuestionnaire(String experimentInstanceId, String caseInstanceId, List<String> experimentGroupId) {
+    public void preHandleExperimentQuestionnaire(String experimentInstanceId, String caseInstanceId, List<String> experimentGroupIds) {
         Assert.notNull(experimentInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
         Assert.notNull(caseInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
-        Assert.notEmpty(experimentGroupId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
+        Assert.notEmpty(experimentGroupIds, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
 
         // 案例下所有问卷
         CaseQuestionnaireSearchRequest searchRequest = new CaseQuestionnaireSearchRequest();
@@ -62,8 +62,9 @@ public class ExperimentQuestionnaireManageBiz {
             return;
         }
 
+        // 为每个小组分配试卷
         List<ExperimentQuestionnaireEntity> entityList = new ArrayList<>();
-        experimentGroupId.forEach(groupId -> {
+        experimentGroupIds.forEach(groupId -> {
             periodOrgCollect.forEach((period, orgCollect) -> {
                 if (!orgCollect.isEmpty()) {
                     orgCollect.forEach((org, orgQuestionnaire) -> {
