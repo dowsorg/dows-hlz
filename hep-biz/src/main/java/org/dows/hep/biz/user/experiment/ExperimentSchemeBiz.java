@@ -48,7 +48,7 @@ public class ExperimentSchemeBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public ExperimentSchemeResponse getCaseScheme(String experimentInstanceId, String experimentGroupId) {
+    public ExperimentSchemeResponse getScheme(String experimentInstanceId, String experimentGroupId) {
         if (StrUtil.isBlank(experimentGroupId) || StrUtil.isBlank(experimentInstanceId)) {
             throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
         }

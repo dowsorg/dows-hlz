@@ -31,7 +31,7 @@ public class ExperimentSchemeRest {
     @Operation(summary = "获取设计方案")
     @PostMapping("v1/userExperiment/experimentScheme/getCaseScheme")
     public ExperimentSchemeResponse getCaseScheme(String experimentInstanceId, String experimentGroupId ) {
-        return experimentSchemeBiz.getCaseScheme(experimentInstanceId, experimentGroupId);
+        return experimentSchemeBiz.getScheme(experimentInstanceId, experimentGroupId);
     }
 
     /**
