@@ -140,6 +140,19 @@ public class TenantCaseSchemeBiz {
     }
 
     /**
+     * @author fhb
+     * @description
+     * @date 2023/6/3 13:56
+     * @param
+     * @return
+     */
+    public CaseSchemeEntity getById(String caseSchemeId) {
+        return caseSchemeService.lambdaQuery()
+                .eq(CaseSchemeEntity::getCaseSchemeId, caseSchemeId)
+                .one();
+    }
+
+    /**
      * @param
      * @return
      * @说明: 获取案例方案
@@ -159,6 +172,19 @@ public class TenantCaseSchemeBiz {
         String questionSectionId = caseSchemeEntity.getQuestionSectionId();
         fillResponseQS(questionSectionId, result);
         return result;
+    }
+
+    /**
+     * @author fhb
+     * @description
+     * @date 2023/6/3 13:56
+     * @param
+     * @return
+     */
+    public CaseSchemeEntity getByInstanceId(String caseInstanceId) {
+        return caseSchemeService.lambdaQuery()
+                .eq(CaseSchemeEntity::getCaseInstanceId, caseInstanceId)
+                .one();
     }
 
     /**
@@ -280,12 +306,6 @@ public class TenantCaseSchemeBiz {
         result.setQuestionSectionDimensionMap(questionSectionDimensionMap);
     }
 
-    private CaseSchemeEntity getById(String caseSchemeId) {
-        LambdaQueryWrapper<CaseSchemeEntity> queryWrapper = new LambdaQueryWrapper<CaseSchemeEntity>()
-                .eq(CaseSchemeEntity::getCaseSchemeId, caseSchemeId);
-        return caseSchemeService.getOne(queryWrapper);
-    }
-
     private List<CaseSchemeResponse> list(CaseSchemeSearchRequest caseSchemeSearch) {
         if (caseSchemeSearch == null) {
             return new ArrayList<>();
@@ -375,12 +395,6 @@ public class TenantCaseSchemeBiz {
     private Integer getQuestionCount(CaseSchemeRequest caseScheme) {
         List<QuestionSectionItemRequest> sectionItemList = caseScheme.getSectionItemList();
         return sectionItemList == null ? 0 : sectionItemList.size();
-    }
-
-    private CaseSchemeEntity getByInstanceId(String caseInstanceId) {
-        LambdaQueryWrapper<CaseSchemeEntity> queryWrapper = new LambdaQueryWrapper<CaseSchemeEntity>()
-                .eq(CaseSchemeEntity::getCaseInstanceId, caseInstanceId);
-        return caseSchemeService.getOne(queryWrapper);
     }
 
     private void fillPageResponse(Page<CaseSchemePageResponse> result) {

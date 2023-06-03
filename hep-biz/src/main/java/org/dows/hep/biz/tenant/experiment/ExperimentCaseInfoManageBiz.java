@@ -19,15 +19,17 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class CaseInfoManageBiz {
+public class ExperimentCaseInfoManageBiz {
     private final IdGenerator idGenerator;
+
     private final TenantCaseManageBiz tenantCaseManageBiz;
     private final TenantCaseNoticeBiz tenantCaseNoticeBiz;
+
     private final ExperimentCaseInfoService experimentCaseInfoService;
 
     /**
      * @author fhb
-     * @description 为实验设置案例信息
+     * @description 预生成社区基本信息
      * @date 2023/6/1 9:33
      * @param
      * @return

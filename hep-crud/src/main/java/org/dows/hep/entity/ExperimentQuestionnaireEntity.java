@@ -15,7 +15,7 @@ import org.dows.framework.crud.api.CrudEntity;
 import java.util.Date;
 
 /**
- * 实验方案(ExperimentScheme)实体类
+ * 实验知识答题(ExperimentQuestionnaire)实体类
  *
  * @author lait
  * @since 2023-04-28 10:25:44
@@ -28,19 +28,21 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "ExperimentScheme", title = "实验方案")
-@TableName("experiment_scheme")
-public class ExperimentSchemeEntity implements CrudEntity {
-
+@Schema(name = "ExperimentQuestionnaire", title = "实验知识答题")
+@TableName("experiment_questionnaire")
+public class ExperimentQuestionnaireEntity implements CrudEntity {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库ID")
     private Long id;
 
-    @Schema(title = "实验方案设计ID")
-    private String experimentSchemeId;
+    @Schema(title = "实验知识答题ID")
+    private String experimentQuestionnaireId;
 
     @Schema(title = "实验实列ID")
     private String experimentInstanceId;
+
+    @Schema(title = "实验机构ID")
+    private String experimentOrgId;
 
     @Schema(title = "问卷ID")
     private String questionSectionId;
@@ -48,10 +50,16 @@ public class ExperimentSchemeEntity implements CrudEntity {
     @Schema(title = "答题卡ID")
     private String questionSectionResultId;
 
+    @Schema(title = "期数|位置")
+    private String periods;
+
     @Schema(title = "实验小组ID")
     private String experimentGroupId;
 
-    @Schema(title = "方案状态[0:未提交,1:已提交]")
+    @Schema(title = "实验答题者ID")
+    private String experimentAccountId;
+
+    @Schema(title = "方案状态[0:未开始,1:进行中, 2:已提交]")
     private Integer state;
 
     @JsonIgnore
@@ -63,6 +71,4 @@ public class ExperimentSchemeEntity implements CrudEntity {
     @TableField(fill = FieldFill.INSERT)
     @Schema(title = "时间戳")
     private Date dt;
-
 }
-
