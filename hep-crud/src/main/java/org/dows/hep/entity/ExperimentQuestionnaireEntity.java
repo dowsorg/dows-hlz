@@ -44,8 +44,8 @@ public class ExperimentQuestionnaireEntity implements CrudEntity {
     @Schema(title = "实验机构ID")
     private String experimentOrgId;
 
-    @Schema(title = "问卷ID")
-    private String questionSectionId;
+    @Schema(title = "案例问卷ID")
+    private String caseQuestionnaireId;
 
     @Schema(title = "答题卡ID")
     private String questionSectionResultId;

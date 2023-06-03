@@ -42,12 +42,12 @@ public class ExperimentSchemeManageBiz {
 
         // 为每个小组分配试卷
         List<ExperimentSchemeEntity> entityList = new ArrayList<>();
-        String questionSectionId = caseSchemeEntity.getQuestionSectionId();
+        String caseSchemeId = caseSchemeEntity.getCaseSchemeId();
         experimentGroupIds.forEach(groupId -> {
             ExperimentSchemeEntity entity = ExperimentSchemeEntity.builder()
                     .experimentSchemeId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentInstanceId)
-                    .questionSectionId(questionSectionId)
+                    .caseSchemeId(caseSchemeId)
                     .questionSectionResultId(null)
                     .experimentGroupId(groupId)
                     .build();

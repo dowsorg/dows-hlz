@@ -4,12 +4,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.dows.account.util.JwtUtil;
 import org.dows.hep.api.enums.EnumToken;
-import org.dows.hep.entity.ExperimentInstanceEntity;
-import org.dows.hep.service.ExperimentInstanceService;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * @author fhb
@@ -19,15 +16,15 @@ import java.util.Optional;
 @AllArgsConstructor
 @Service
 public class ExperimentBaseBiz {
-    private final ExperimentInstanceService experimentInstanceService;
-
-    public String getCaseInstanceId(String experimentInstanceId) {
-        return Optional.ofNullable(experimentInstanceService.lambdaQuery()
-                        .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
-                        .one())
-                .map(ExperimentInstanceEntity::getCaseInstanceId)
-                .orElse("");
-    }
+//    private final ExperimentInstanceService experimentInstanceService;
+//
+//    public String getCaseInstanceId(String experimentInstanceId) {
+//        return Optional.ofNullable(experimentInstanceService.lambdaQuery()
+//                        .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
+//                        .one())
+//                .map(ExperimentInstanceEntity::getCaseInstanceId)
+//                .orElse("");
+//    }
 
     public String getAccountId(HttpServletRequest request) {
         String token = request.getHeader("token");

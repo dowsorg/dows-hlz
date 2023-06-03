@@ -1,15 +1,11 @@
 package org.dows.hep.biz.tenant.experiment;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireSearchRequest;
 import org.dows.hep.api.tenant.casus.response.CaseOrgQuestionnaireResponse;
-import org.dows.hep.api.tenant.casus.response.CaseQuestionnaireResponse;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.ExptQuestionnaireStateEnum;
 import org.dows.hep.biz.tenant.casus.TenantCaseOrgQuestionnaireBiz;
-import org.dows.hep.biz.tenant.casus.TenantCaseQuestionnaireBiz;
 import org.dows.hep.entity.ExperimentQuestionnaireEntity;
 import org.dows.hep.service.ExperimentQuestionnaireService;
 import org.dows.sequence.api.IdGenerator;
@@ -19,7 +15,6 @@ import org.springframework.util.Assert;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author fhb
@@ -30,7 +25,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ExperimentQuestionnaireManageBiz {
     private final IdGenerator idGenerator;
-    private final TenantCaseQuestionnaireBiz tenantCaseQuestionnaireBiz;
     private final TenantCaseOrgQuestionnaireBiz tenantCaseOrgQuestionnaireBiz;
     private final ExperimentQuestionnaireService experimentQuestionnaireService;
 
@@ -46,16 +40,6 @@ public class ExperimentQuestionnaireManageBiz {
         Assert.notNull(caseInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
         Assert.notEmpty(experimentGroupIds, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
 
-        // 案例下所有问卷
-        CaseQuestionnaireSearchRequest searchRequest = new CaseQuestionnaireSearchRequest();
-        searchRequest.setCaseInstanceId(caseInstanceId);
-        List<CaseQuestionnaireResponse> caseQuestionnaireList = tenantCaseQuestionnaireBiz.listCaseQuestionnaire(searchRequest);
-        if (BeanUtil.isEmpty(caseQuestionnaireList)) {
-            return;
-        }
-        Map<String, String> questionnaireIdMapSectionId = caseQuestionnaireList.stream()
-                .collect(Collectors.toMap(CaseQuestionnaireResponse::getCaseQuestionnaireId, CaseQuestionnaireResponse::getQuestionSectionId, (v1, v2) -> v1));
-
         // 期数-机构分组
         Map<String, Map<String, CaseOrgQuestionnaireResponse>> periodOrgCollect = tenantCaseOrgQuestionnaireBiz.listSelectedQuestionnaires(caseInstanceId);
         if (CollUtil.isEmpty(periodOrgCollect)) {
@@ -69,12 +53,11 @@ public class ExperimentQuestionnaireManageBiz {
                 if (!orgCollect.isEmpty()) {
                     orgCollect.forEach((org, orgQuestionnaire) -> {
                         String caseQuestionnaireId = orgQuestionnaire.getCaseQuestionnaireId();
-                        String questionSectionId = questionnaireIdMapSectionId.get(caseQuestionnaireId);
                         ExperimentQuestionnaireEntity entity = ExperimentQuestionnaireEntity.builder()
                                 .experimentQuestionnaireId(idGenerator.nextIdStr())
                                 .experimentInstanceId(experimentInstanceId)
                                 .experimentOrgId(org)
-                                .questionSectionId(questionSectionId)
+                                .caseQuestionnaireId(caseQuestionnaireId)
                                 .questionSectionResultId(null)
                                 .periods(period)
                                 .experimentGroupId(groupId)

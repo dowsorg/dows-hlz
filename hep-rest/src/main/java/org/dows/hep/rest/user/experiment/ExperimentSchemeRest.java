@@ -3,8 +3,8 @@ package org.dows.hep.rest.user.experiment;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.user.experiment.request.DesignSchemeRequest;
-import org.dows.hep.biz.user.experiment.ExperimentCaseInfoBiz;
+import org.dows.hep.api.user.experiment.request.ExperimentSchemeRequest;
+import org.dows.hep.api.user.experiment.response.ExperimentSchemeResponse;
 import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,18 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "实验方案", description = "实验方案")
 public class ExperimentSchemeRest {
     private final ExperimentSchemeBiz experimentSchemeBiz;
-    private final ExperimentCaseInfoBiz experimentCaseInfoBiz;
-
-    /**
-     * 获取社区背景
-     * @param
-     * @return
-     */
-    @Operation(summary = "获取社区背景")
-    @PostMapping("v1/userExperiment/experimentScheme/getCaseDescr")
-    public String getCaseDescr(@RequestBody @Validated String  experimentInstanceId ) {
-        return experimentCaseInfoBiz.getDescr(experimentInstanceId);
-    }
 
     /**
     * 获取设计方案
@@ -42,9 +30,8 @@ public class ExperimentSchemeRest {
     */
     @Operation(summary = "获取设计方案")
     @PostMapping("v1/userExperiment/experimentScheme/getCaseScheme")
-    public Boolean getCaseScheme(@RequestBody @Validated DesignSchemeRequest designScheme ) {
-//        return experimentSchemeBiz.getCaseScheme(designScheme);\
-        return null;
+    public ExperimentSchemeResponse getCaseScheme(String experimentInstanceId, String experimentGroupId ) {
+        return experimentSchemeBiz.getCaseScheme(experimentInstanceId, experimentGroupId);
     }
 
     /**
@@ -54,8 +41,8 @@ public class ExperimentSchemeRest {
     */
     @Operation(summary = "提交设计方案")
     @PostMapping("v1/userExperiment/experimentScheme/submitScheme")
-    public Boolean submitScheme(@RequestBody @Validated String schemeId ) {
-        return experimentSchemeBiz.submitScheme(schemeId);
+    public Boolean submitScheme(@RequestBody @Validated ExperimentSchemeRequest request ) {
+        return experimentSchemeBiz.submitScheme(request);
     }
 
 
