@@ -141,7 +141,7 @@ public class ExperimentSchemeBiz {
         }
 
         // 有 Result
-        CaseSchemeResponse caseScheme = getCaseSchemeResponse(caseSchemeId, questionSectionResultId);
+        CaseSchemeResponse caseScheme = getCaseSchemeResponse(caseSchemeId, questionSectionResult);
         result.setCaseSchemeResponse(caseScheme);
         return result;
     }
@@ -248,19 +248,26 @@ public class ExperimentSchemeBiz {
         return getCaseScheme0(caseSchemeId, null);
     }
 
-    private CaseSchemeResponse getCaseSchemeResponse(String caseSchemeId, String questionSectionResultId) {
-        return getCaseScheme0(caseSchemeId, questionSectionResultId);
+    private CaseSchemeResponse getCaseSchemeResponse(String caseSchemeId, QuestionSectionResponse questionSectionResult) {
+        return getCaseScheme0(caseSchemeId, questionSectionResult);
     }
 
-    private CaseSchemeResponse getCaseScheme0(String caseSchemeId, String questionSectionResultId) {
+    private CaseSchemeResponse getCaseScheme0(String caseSchemeId, QuestionSectionResponse questionSectionResult) {
         CaseSchemeEntity caseSchemeEntity = getById(caseSchemeId);
         if (BeanUtil.isEmpty(caseSchemeEntity)) {
             throw new BizException(CaseESCEnum.DATA_NULL);
         }
         CaseSchemeResponse result = BeanUtil.copyProperties(caseSchemeEntity, CaseSchemeResponse.class);
+
         // set question-section
         String questionSectionId = caseSchemeEntity.getQuestionSectionId();
-        fillResponseQS(questionSectionId, questionSectionResultId, result);
+        if (BeanUtil.isEmpty(questionSectionResult)) {
+            QuestionSectionResponse questionSectionResponse = questionSectionBiz.getQuestionSection(questionSectionId);
+            fillResponseQS(questionSectionResponse, result);
+        } else {
+            fillResponseQS(questionSectionResult, result);
+        }
+
         return result;
     }
 
@@ -270,14 +277,7 @@ public class ExperimentSchemeBiz {
                 .one();
     }
 
-    private void fillResponseQS(String questionSectionId, String questionSectionResultId, CaseSchemeResponse result) {
-        // get and set question-section
-        QuestionSectionResponse questionSectionResponse = null;
-        if (StrUtil.isNotBlank(questionSectionResultId)) {
-            questionSectionResponse = questionSectionResultBiz.getQuestionSectionResult(questionSectionResultId);
-        } else {
-            questionSectionResponse = questionSectionBiz.getQuestionSection(questionSectionId);
-        }
+    private void fillResponseQS(QuestionSectionResponse questionSectionResponse, CaseSchemeResponse result) {
         if (BeanUtil.isEmpty(questionSectionResponse)) {
             return;
         }

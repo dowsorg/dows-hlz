@@ -14,8 +14,8 @@ import org.dows.hep.api.tenant.casus.response.CaseQuestionnaireResponse;
 @NoArgsConstructor
 @Schema(name = "ExperimentQuestionnaireResponse 对象", title = "实验知识答题")
 public class ExperimentQuestionnaireResponse {
-    @Schema(title = "实验方案设计ID")
-    private String experimentSchemeId;
+    @Schema(title = "实验知识答题ID")
+    private String experimentQuestionnaireId;
 
     @Schema(title = "知识答题")
     private CaseQuestionnaireResponse caseQuestionnaireResponse;
