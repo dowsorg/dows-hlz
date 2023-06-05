@@ -156,6 +156,7 @@ public class TenantCaseNoticeBiz {
         }
 
         CaseNoticeEntity result = CaseNoticeEntity.builder()
+                .caseNoticeId(request.getCaseNoticeId())
                 .caseInstanceId(request.getCaseInstanceId())
                 .noticeName(request.getNoticeName())
                 .noticeContent(request.getNoticeContent())
