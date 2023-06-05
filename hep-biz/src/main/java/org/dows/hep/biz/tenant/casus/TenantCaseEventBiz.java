@@ -140,8 +140,8 @@ public class TenantCaseEventBiz {
     public Boolean saveCaseEvent(SaveCaseEventRequest saveCaseEvent , HttpServletRequest request) {
         LoginContextVO voLogin=ShareBiz.getLoginUser(request);
         //TODO checkLogin
-        AssertUtil.trueThenThrow(ShareUtil.XObject.notEmpty(saveCaseEvent.getEventId())
-                        && caseEventDao.getById(saveCaseEvent.getEventId(), CaseEventEntity::getId).isEmpty())
+        AssertUtil.trueThenThrow(ShareUtil.XObject.notEmpty(saveCaseEvent.getCaseEventId())
+                        && caseEventDao.getById(saveCaseEvent.getCaseEventId(), CaseEventEntity::getId).isEmpty())
                 .throwMessage("人物事件不存在或已删除");
         CategVO categVO = null;
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(saveCaseEvent.getEventCategId())

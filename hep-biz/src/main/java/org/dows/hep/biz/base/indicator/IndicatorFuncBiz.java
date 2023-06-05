@@ -211,6 +211,7 @@ public class IndicatorFuncBiz{
         return indicatorFuncService.lambdaQuery()
             .eq(IndicatorFuncEntity::getAppId, appId)
             .eq(IndicatorFuncEntity::getPid, pid)
+            .orderByAsc(IndicatorFuncEntity::getSeq)
             .list()
             .stream()
             .map(IndicatorFuncBiz::indicatorFunc2Response)
