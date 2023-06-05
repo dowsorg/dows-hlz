@@ -10,10 +10,7 @@ import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.biz.user.experiment.ExperimentOrgViewBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -138,6 +135,17 @@ public class ExperimentOrgViewRest {
     @PostMapping("v1/userExperiment/experimentOrgView/getOrgViewReport")
     public List<OperateOrgFuncSnapRequest> getOrgViewReport(@RequestBody @Validated GetOrgViewReportRequest orgViewReport) {
         return experimentOrgViewBiz.getOrgViewReport(orgViewReport);
+    }
+
+    /**
+     * 基本信息：查看
+     * @param
+     * @return
+     */
+    @Operation(summary = "基本信息：查看")
+    @GetMapping("v1/userExperiment/experimentOrgView/getIndicatorBaseInfo/{indicatorViewBaseInfoId}/{appId}")
+    public Boolean getIndicatorBaseInfo(@PathVariable @Validated String indicatorViewBaseInfoId,@PathVariable @Validated String appId) {
+        return experimentOrgViewBiz.getIndicatorBaseInfo(indicatorViewBaseInfoId,appId);
     }
 
     /**

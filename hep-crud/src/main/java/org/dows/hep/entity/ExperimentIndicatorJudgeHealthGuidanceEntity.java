@@ -12,15 +12,13 @@ import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * 案例问卷设置(CaseSetting)实体类
- *
- * @author lait
- * @since 2023-04-28 10:25:17
+ * @author jx
+ * @date 2023/6/5 14:17
  */
-@SuppressWarnings("serial")
 @Data
 @ToString
 @Builder
@@ -28,28 +26,42 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "CaseSetting", title = "案例问卷设置")
-@TableName("case_setting")
-public class CaseSettingEntity implements CrudEntity {
-
+@Schema(name = "ExperimentIndicatorJudgeHealthGuidance", title = "实验判断指标健康指导")
+@TableName("experiment_indicator_judge_health_guidance")
+public class ExperimentIndicatorJudgeHealthGuidanceEntity implements CrudEntity {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库ID")
     private Long id;
 
-    @Schema(title = "案例问卷设置ID")
-    private String caseSettingId;
+    @Schema(title = "实验判断健康指导分布式ID")
+    private String experimentJudgeHealthGuidanceId;
 
-    @Schema(title = "案例ID")
-    private String caseInstanceId;
+    @Schema(title = "教师端判断健康指导ID")
+    private String indicatorJudgeHealthGuidanceId;
 
-    @Schema(title = "记分方式[少选不得分|少选得一半分]")
-    private String scoreMode;
+    @Schema(title = "应用ID")
+    private String appId;
 
-    @Schema(title = "分配方式")
-    private String allotMode;
+    @Schema(title = "指标功能ID")
+    private String indicatorFuncId;
 
-    @Schema(title = "额外配置[JSON]")
-    private String ext;
+    @Schema(title = "指标分类ID")
+    private String indicatorCategoryId;
+
+    @Schema(title = "危险因素名称")
+    private String name;
+
+    @Schema(title = "分数")
+    private BigDecimal point;
+
+    @Schema(title = "判断规则")
+    private String expression;
+
+    @Schema(title = "结果说明")
+    private String resultExplain;
+
+    @Schema(title = "0-禁用，1-启用")
+    private Integer status;
 
     @JsonIgnore
     @TableLogic
@@ -60,6 +72,4 @@ public class CaseSettingEntity implements CrudEntity {
     @TableField(fill = FieldFill.INSERT)
     @Schema(title = "时间戳")
     private Date dt;
-
 }
-

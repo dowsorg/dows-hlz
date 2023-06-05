@@ -1,10 +1,12 @@
 package org.dows.hep.biz.user.experiment;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import lombok.AllArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.request.QuestionSectionResultRequest;
+import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionDimensionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionItemResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
@@ -12,18 +14,19 @@ import org.dows.hep.api.tenant.casus.CaseESCEnum;
 import org.dows.hep.api.tenant.casus.response.CaseSchemeResponse;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeRequest;
+import org.dows.hep.api.user.experiment.response.ExperimentSchemeItemResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeResponse;
 import org.dows.hep.biz.base.question.QuestionSectionBiz;
 import org.dows.hep.biz.base.question.QuestionSectionResultBiz;
 import org.dows.hep.entity.CaseSchemeEntity;
+import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.entity.ExperimentSchemeEntity;
 import org.dows.hep.service.CaseSchemeService;
+import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.hep.service.ExperimentSchemeService;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @author lait.zhang
@@ -34,9 +37,70 @@ import java.util.Optional;
 @Service
 public class ExperimentSchemeBiz {
     private final ExperimentSchemeService experimentSchemeService;
+    private final ExperimentParticipatorService experimentParticipatorService;
     private final CaseSchemeService caseSchemeService;
     private final QuestionSectionBiz questionSectionBiz;
     private final QuestionSectionResultBiz questionSectionResultBiz;
+
+    /**
+     * @param
+     * @return
+     * @author fhb
+     * @description 获取实验方案缩略图
+     * @date 2023/5/30 19:25
+     */
+    public List<ExperimentSchemeItemResponse> getThumbnailScheme(String experimentInstanceId, String experimentGroupId) {
+        if (StrUtil.isBlank(experimentGroupId) || StrUtil.isBlank(experimentInstanceId)) {
+            throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
+        }
+
+        ExperimentSchemeEntity entity = experimentSchemeService.lambdaQuery()
+                .eq(ExperimentSchemeEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentSchemeEntity::getExperimentGroupId, experimentGroupId)
+                .oneOpt()
+                .orElseThrow(() -> new BizException(ExperimentESCEnum.SCHEME_NOT_NULL));
+        String caseSchemeId = entity.getCaseSchemeId();
+        CaseSchemeResponse caseSchemeResponse = getCaseSchemeResponse(caseSchemeId);
+        if (BeanUtil.isEmpty(caseSchemeResponse)) {
+            throw new BizException(ExperimentESCEnum.SCHEME_NOT_NULL);
+        }
+
+        return convertCSR2ESR(caseSchemeResponse);
+    }
+
+    /**
+     * @param
+     * @return
+     * @author fhb
+     * @description 获取组员实验方案缩略图
+     * @date 2023/5/30 19:25
+     */
+    public List<ExperimentSchemeItemResponse> getThumbnailScheme(String experimentInstanceId, String experimentGroupId, String accountId) {
+        List<ExperimentSchemeItemResponse> result = getThumbnailScheme(experimentInstanceId, experimentGroupId);
+        if (BeanUtil.isEmpty(result)) {
+            return result;
+        }
+
+        result.forEach(item -> item.setCanEdit(Boolean.FALSE));
+        ExperimentParticipatorEntity experimentParticipatorEntity = experimentParticipatorService.lambdaQuery()
+                .eq(ExperimentParticipatorEntity::getExperimentGroupId, experimentGroupId)
+                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentParticipatorEntity::getAccountId, accountId)
+                .oneOpt()
+                .orElse(null);
+        if (BeanUtil.isEmpty(experimentParticipatorEntity)) {
+            return result;
+        }
+
+        String experimentSchemeItemIds = experimentParticipatorEntity.getExperimentSchemeItemIds();
+        result.forEach(item -> {
+            String questionSectionItemId = item.getQuestionSectionItemId();
+            if (experimentSchemeItemIds.contains(questionSectionItemId)) {
+                item.setCanEdit(Boolean.TRUE);
+            }
+        });
+        return result;
+    }
 
     /**
      * @param
@@ -110,6 +174,74 @@ public class ExperimentSchemeBiz {
                 .eq(ExperimentSchemeEntity::getExperimentSchemeId, experimentSchemeId)
                 .set(ExperimentSchemeEntity::getQuestionSectionResultId, questionSectionResultId)
                 .update();
+    }
+
+    private List<ExperimentSchemeItemResponse> convertCSR2ESR(CaseSchemeResponse caseSchemeResponse) {
+        List<QuestionSectionItemResponse> sectionItemList = caseSchemeResponse.getSectionItemList();
+        if (CollUtil.isEmpty(sectionItemList)) {
+            return new ArrayList<>();
+        }
+
+        List<ExperimentSchemeItemResponse> result = new ArrayList<>();
+        sectionItemList.forEach(sectionItem -> {
+            QuestionResponse question = sectionItem.getQuestion();
+            String questionSectionItemId = sectionItem.getQuestionSectionItemId();
+            ExperimentSchemeItemResponse itemResponse = buildItemResponse(question, questionSectionItemId);
+            if (BeanUtil.isNotEmpty(itemResponse)) {
+                result.add(itemResponse);
+            }
+        });
+
+        // set video-question
+        Integer containsVideo = caseSchemeResponse.getContainsVideo();
+        if (Objects.nonNull(containsVideo) && containsVideo == 1) {
+            ExperimentSchemeItemResponse itemResponse = ExperimentSchemeItemResponse.builder()
+                    .questionSectionItemId("1008610010")
+                    .question(ExperimentSchemeItemResponse.Question.builder()
+                            .questionId("1008610011")
+                            .questionTitle("上传视频")
+                            .build())
+                    .build();
+            result.add(itemResponse);
+        }
+
+        return result;
+    }
+
+    private ExperimentSchemeItemResponse buildItemResponse(QuestionResponse question, String questionSectionItemId) {
+        return ExperimentSchemeItemResponse.builder()
+                .questionSectionItemId(questionSectionItemId)
+                .question(buildQuestion(question))
+                .build();
+    }
+
+    private ExperimentSchemeItemResponse.Question buildQuestion(QuestionResponse question) {
+        // 判空
+        if (BeanUtil.isEmpty(question)) {
+            return null;
+        }
+
+        // 处理当前结点
+        ExperimentSchemeItemResponse.Question result = ExperimentSchemeItemResponse.Question.builder()
+                .questionId(question.getQuestionInstanceId())
+                .questionTitle(question.getQuestionTitle())
+                .build();
+
+        // 是否有子类
+        List<QuestionResponse> children = question.getChildren();
+        if (CollUtil.isEmpty(children)) {
+            return result;
+        }
+
+        // 处理子类
+        List<ExperimentSchemeItemResponse.Question> itemList = new ArrayList<>();
+        children.forEach(questionResponse -> {
+            ExperimentSchemeItemResponse.Question itemQuestion = buildQuestion(questionResponse);
+            itemList.add(itemQuestion);
+        });
+        result.setChildren(itemList);
+
+        return result;
     }
 
     private CaseSchemeResponse getCaseSchemeResponse(String caseSchemeId) {

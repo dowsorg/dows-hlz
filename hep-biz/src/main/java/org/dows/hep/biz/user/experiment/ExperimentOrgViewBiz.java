@@ -4,14 +4,8 @@ import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
-import org.dows.hep.entity.IndicatorViewPhysicalExamEntity;
-import org.dows.hep.entity.IndicatorViewSupportExamEntity;
-import org.dows.hep.entity.OperateOrgFuncEntity;
-import org.dows.hep.entity.OperateOrgFuncSnapEntity;
-import org.dows.hep.service.IndicatorViewPhysicalExamService;
-import org.dows.hep.service.IndicatorViewSupportExamService;
-import org.dows.hep.service.OperateOrgFuncService;
-import org.dows.hep.service.OperateOrgFuncSnapService;
+import org.dows.hep.entity.*;
+import org.dows.hep.service.*;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -33,6 +27,12 @@ public class ExperimentOrgViewBiz{
     private final OperateOrgFuncSnapService operateOrgFuncSnapService;
     private final IndicatorViewPhysicalExamService indicatorViewPhysicalExamService;
     private final IndicatorViewSupportExamService indicatorViewSupportExamService;
+    private final IndicatorViewBaseInfoDescrService indicatorViewBaseInfoDescrService;
+    private final IndicatorViewBaseInfoDescrRefService indicatorViewBaseInfoDescrRefService;
+    private final IndicatorViewBaseInfoMonitorService indicatorViewBaseInfoMonitorService;
+    private final IndicatorViewBaseInfoMonitorContentService indicatorViewBaseInfoMonitorContentService;
+    private final IndicatorViewBaseInfoMonitorContentRefService indicatorViewBaseInfoMonitorContentRefService;
+    private final IndicatorViewBaseInfoSingleService indicatorViewBaseInfoSingleService;
     /**
     * @param
     * @return
@@ -315,5 +315,33 @@ public class ExperimentOrgViewBiz{
             flag.set(false);
         });
         return responseList;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 基本信息：查看
+     * @关联表: indicatorViewBaseInfo、indicatorViewBaseInfoDescr、indicatorViewBaseInfoDescrRef
+     * @工时: 3H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月02日 下午16:26:34
+     */
+    public Boolean getIndicatorBaseInfo(String indicatorViewBaseInfoId,String appId) {
+        //1、根据分布式ID找到指标描述功能点
+        List<IndicatorViewBaseInfoDescrEntity> descrList = indicatorViewBaseInfoDescrService.lambdaQuery()
+                .eq(IndicatorViewBaseInfoDescrEntity::getAppId,appId)
+                .eq(IndicatorViewBaseInfoDescrEntity::getIndicatorViewBaseInfoId,indicatorViewBaseInfoId)
+                .eq(IndicatorViewBaseInfoDescrEntity::getDeleted,false)
+                .list();
+        if(descrList != null && descrList.size() > 0){
+            descrList.forEach(descr->{
+                List<IndicatorViewBaseInfoDescrRefEntity> refList = indicatorViewBaseInfoDescrRefService.lambdaQuery()
+                        .eq(IndicatorViewBaseInfoDescrRefEntity::getIndicatorViewBaseInfoDescId,descr.getIndicatorViewBaseInfoDescId())
+                        .eq(IndicatorViewBaseInfoDescrRefEntity::getDeleted,false)
+                        .list();
+            });
+        }
+        return false;
     }
 }

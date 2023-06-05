@@ -1,6 +1,7 @@
 package org.dows.hep.biz.user.experiment;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.lang.Assert;
 import lombok.AllArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.request.QuestionSectionResultRequest;
@@ -8,7 +9,9 @@ import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.request.ExperimentQuestionnaireRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireResponse;
 import org.dows.hep.biz.base.question.QuestionSectionResultBiz;
+import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.entity.ExperimentQuestionnaireEntity;
+import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.hep.service.ExperimentQuestionnaireService;
 import org.springframework.stereotype.Service;
 
@@ -23,20 +26,34 @@ import java.util.Optional;
 @Service
 public class ExperimentQuestionnaireBiz {
     private final QuestionSectionResultBiz questionSectionResultBiz;
+    private final ExperimentParticipatorService experimentParticipatorService;
     private final ExperimentQuestionnaireService experimentQuestionnaireService;
 
     /**
+     * @param
+     * @return
      * @author fhb
      * @description
      * @date 2023/6/3 20:53
-     * @param
-     * @return
      */
-    public ExperimentQuestionnaireResponse getQuestionnaire(String experimentInstanceId, String periods, String experimentAccountId) {
+    public ExperimentQuestionnaireResponse getQuestionnaire(String experimentInstanceId, String periods, String experimentGroupId, String experimentAccountId) {
+        Assert.notNull(experimentInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
+        Assert.notNull(periods, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
+        Assert.notNull(experimentGroupId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
+        Assert.notNull(experimentAccountId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
 
-        // todo 根据账号获取机构
+        // 根据账号获取机构
+        ExperimentParticipatorEntity participatorEntity = experimentParticipatorService.lambdaQuery()
+                .eq(ExperimentParticipatorEntity::getAccountId, experimentAccountId)
+                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
+                .oneOpt()
+                .orElse(null);
+        if (BeanUtil.isEmpty(participatorEntity)) {
 
-        // todo 根据实验id、期数、机构id 获取知识答题
+        }
+
+
+        // 根据实验id、期数、小组id， 机构id 获取知识答题
         ExperimentQuestionnaireResponse result = new ExperimentQuestionnaireResponse();
         return result;
     }
