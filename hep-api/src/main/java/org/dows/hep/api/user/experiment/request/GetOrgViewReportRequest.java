@@ -24,6 +24,12 @@ public class GetOrgViewReportRequest{
     @Schema(title = "指标功能点id")
     private String indicatorFuncId;
 
+    @Schema(title = "实验查看指标体格检查分布式ID")
+    private String experimentJudgePhysicalExamId;
+
+    @Schema(title = "实验查看指标辅助检查分布式ID")
+    private String experimentJudgeSupportExamId;
+
     @Schema(title = "机构功能类型 4-体格检查 5-辅助检查")
     private Integer funcType;
 

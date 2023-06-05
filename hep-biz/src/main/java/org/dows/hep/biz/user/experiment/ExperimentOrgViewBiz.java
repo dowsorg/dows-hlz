@@ -25,14 +25,10 @@ public class ExperimentOrgViewBiz{
 
     private final OperateOrgFuncService operateOrgFuncService;
     private final OperateOrgFuncSnapService operateOrgFuncSnapService;
-    private final IndicatorViewPhysicalExamService indicatorViewPhysicalExamService;
-    private final IndicatorViewSupportExamService indicatorViewSupportExamService;
+    private final ExperimentIndicatorViewPhysicalExamService experimentIndicatorViewPhysicalExamService;
+    private final ExperimentIndicatorViewSupportExamService experimentIndicatorViewSupportExamService;
     private final IndicatorViewBaseInfoDescrService indicatorViewBaseInfoDescrService;
     private final IndicatorViewBaseInfoDescrRefService indicatorViewBaseInfoDescrRefService;
-    private final IndicatorViewBaseInfoMonitorService indicatorViewBaseInfoMonitorService;
-    private final IndicatorViewBaseInfoMonitorContentService indicatorViewBaseInfoMonitorContentService;
-    private final IndicatorViewBaseInfoMonitorContentRefService indicatorViewBaseInfoMonitorContentRefService;
-    private final IndicatorViewBaseInfoSingleService indicatorViewBaseInfoSingleService;
     /**
     * @param
     * @return
@@ -280,10 +276,10 @@ public class ExperimentOrgViewBiz{
         AtomicReference<Boolean> flag = new AtomicReference<>(true);
         reportRequestList.forEach(reportRequest -> {
             //1、根据ID获取判断规则
-            IndicatorViewPhysicalExamEntity entity = indicatorViewPhysicalExamService.lambdaQuery()
-                    .select(IndicatorViewPhysicalExamEntity::getIndicatorInstanceId,IndicatorViewPhysicalExamEntity::getFee)
-                    .eq(IndicatorViewPhysicalExamEntity::getIndicatorViewPhysicalExamId, reportRequest.getIndicatorViewPhysicalExamId())
-                    .eq(IndicatorViewPhysicalExamEntity::getStatus, true)
+            ExperimentIndicatorViewPhysicalExamEntity entity = experimentIndicatorViewPhysicalExamService.lambdaQuery()
+                    .select(ExperimentIndicatorViewPhysicalExamEntity::getExperimentJudgePhysicalExamId,ExperimentIndicatorViewPhysicalExamEntity::getFee)
+                    .eq(ExperimentIndicatorViewPhysicalExamEntity::getExperimentJudgePhysicalExamId, reportRequest.getExperimentJudgePhysicalExamId())
+                    .eq(ExperimentIndicatorViewPhysicalExamEntity::getStatus, true)
                     .one();
             //todo、根据判断规则判断是否满足条件,将指标值返回
             flag.set(false);
@@ -306,10 +302,10 @@ public class ExperimentOrgViewBiz{
         AtomicReference<Boolean> flag = new AtomicReference<>(true);
         reportRequestList.forEach(reportRequest -> {
             //1、根据ID获取判断规则
-            IndicatorViewSupportExamEntity entity = indicatorViewSupportExamService.lambdaQuery()
-                    .select(IndicatorViewSupportExamEntity::getIndicatorInstanceId,IndicatorViewSupportExamEntity::getFee)
-                    .eq(IndicatorViewSupportExamEntity::getIndicatorViewSupportExamId, reportRequest.getIndicatorViewSupportExamId())
-                    .eq(IndicatorViewSupportExamEntity::getStatus, true)
+            ExperimentIndicatorViewSupportExamEntity entity = experimentIndicatorViewSupportExamService.lambdaQuery()
+                    .select(ExperimentIndicatorViewSupportExamEntity::getExperimentJudgeSupportExamId,ExperimentIndicatorViewSupportExamEntity::getFee)
+                    .eq(ExperimentIndicatorViewSupportExamEntity::getExperimentJudgeSupportExamId, reportRequest.getExperimentJudgeSupportExamId())
+                    .eq(ExperimentIndicatorViewSupportExamEntity::getStatus, true)
                     .one();
             //todo、根据判断规则判断是否满足条件,将指标值返回
             flag.set(false);
