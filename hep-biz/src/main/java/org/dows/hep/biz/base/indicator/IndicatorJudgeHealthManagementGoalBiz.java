@@ -42,7 +42,7 @@ public class IndicatorJudgeHealthManagementGoalBiz{
     private final IndicatorFuncService indicatorFuncService;
     private final IndicatorInstanceService indicatorInstanceService;
 
-    private final IndicatorInstanceBiz indicatorInstanceBiz;
+    private final IndicatorExpressionBiz indicatorExpressionBiz;
 
     public static IndicatorJudgeHealthManagementGoalResponseRs indicatorJudgeHealthManagementGoal2ResponseRs(
         IndicatorJudgeHealthManagementGoalEntity indicatorJudgeHealthManagementGoalEntity,
@@ -85,7 +85,7 @@ public class IndicatorJudgeHealthManagementGoalBiz{
                 .forEach(indicatorInstanceEntity -> kIndicatorInstanceIdVIndicatorInstanceMap.put(indicatorInstanceEntity.getIndicatorInstanceId(), indicatorInstanceEntity));
         }
         Map<String, IndicatorExpressionResponseRs> kIndicatorInstanceIdVIndicatorExpressionResponseRsMap = new HashMap<>();
-        indicatorInstanceBiz.populateKIndicatorExpressionIdVIndicatorExpressionEntityMap(appId, indicatorInstanceIdSet, kIndicatorInstanceIdVIndicatorExpressionResponseRsMap);
+        indicatorExpressionBiz.populateKIndicatorExpressionIdVIndicatorExpressionEntityMap(appId, indicatorInstanceIdSet, kIndicatorInstanceIdVIndicatorExpressionResponseRsMap);
         return indicatorJudgeHealthManagementGoalEntityList
             .stream()
             .map(indicatorJudgeHealthManagementGoalEntity -> {

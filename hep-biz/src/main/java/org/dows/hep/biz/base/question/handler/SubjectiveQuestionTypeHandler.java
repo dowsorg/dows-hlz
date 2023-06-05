@@ -7,6 +7,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.dto.QuestionRequestDTO;
+import org.dows.hep.api.base.question.dto.QuestionResultRecordDTO;
 import org.dows.hep.api.base.question.enums.QuestionESCEnum;
 import org.dows.hep.api.base.question.enums.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.QuestionRequest;
@@ -51,7 +52,7 @@ public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
     }
 
     @Override
-    public QuestionResponse get(String questionInstanceId) {
+    public QuestionResponse get(String questionInstanceId, QuestionResultRecordDTO questionResultRecordDTO) {
         QuestionInstanceEntity questionInstance = getById(questionInstanceId);
         if (BeanUtil.isEmpty(questionInstance)) {
             return new QuestionResponse();
@@ -60,6 +61,7 @@ public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
         QuestionResponse questionResponse = BeanUtil.copyProperties(questionInstance, QuestionResponse.class);
         setChildren(questionResponse);
         baseQuestionHandler.setDimensionId(questionResponse);
+        baseQuestionHandler.setQuestionResult(questionResponse, questionResultRecordDTO);
 
         return questionResponse;
     }

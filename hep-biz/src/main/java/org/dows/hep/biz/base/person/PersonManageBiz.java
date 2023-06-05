@@ -115,6 +115,7 @@ public class PersonManageBiz {
                 .accountId(accountId)
                 .accountName(accounInstance.getAccountName())
                 .userName(userInstance.getName())
+                .status(accounInstance.getStatus())
                 .extra(userInstance.getNickName())
                 .intro(extinfoResponse.getIntro())
                 .avatar(accounInstance.getAvatar())

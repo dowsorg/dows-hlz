@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.hep.api.base.question.dto.QuestionResultRecordDTO;
 import org.dows.hep.api.base.question.enums.*;
 import org.dows.hep.api.base.question.request.QuestionClonedRequest;
 import org.dows.hep.api.base.question.request.QuestionRequest;
@@ -67,7 +68,7 @@ public class QuestionSectionItemBiz {
      * @description
      * @date 2023/5/6 10:42
      */
-    public List<QuestionSectionItemResponse> listBySectionIds(List<String> questionSectionIds) {
+    public List<QuestionSectionItemResponse> listBySectionIds(List<String> questionSectionIds, QuestionResultRecordDTO recordDTO) {
         if (questionSectionIds == null || questionSectionIds.isEmpty()) {
             return new ArrayList<>();
         }
@@ -83,7 +84,7 @@ public class QuestionSectionItemBiz {
         return itemList.stream()
                 .map(item -> {
                     QuestionSectionItemResponse itemResponse = BeanUtil.copyProperties(item, QuestionSectionItemResponse.class);
-                    QuestionResponse question = questionInstanceBiz.getQuestion(item.getQuestionInstanceId());
+                    QuestionResponse question = questionInstanceBiz.getQuestion(item.getQuestionInstanceId(), recordDTO);
                     itemResponse.setQuestion(question);
                     return itemResponse;
                 })

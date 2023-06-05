@@ -4,8 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.question.request.QuestionSectionResultRequest;
-import org.dows.hep.api.base.question.request.QuestionSectionResultSearchRequest;
-import org.dows.hep.api.base.question.response.QuestionSectionResultResponse;
+import org.dows.hep.api.base.question.response.QuestionSectionResponse;
 import org.dows.hep.biz.base.question.QuestionSectionResultBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,19 +31,8 @@ public class QuestionSectionResultRest {
     */
     @Operation(summary = "新增和更新问题集-答题")
     @PostMapping("v1/baseQuestion/questionSectionResult/saveOrUpdQuestionSectionResult")
-    public Boolean saveOrUpdQuestionSectionResult(@RequestBody @Validated QuestionSectionResultRequest questionSectionResult ) {
+    public String saveOrUpdQuestionSectionResult(@RequestBody @Validated QuestionSectionResultRequest questionSectionResult ) {
         return questionSectionResultBiz.saveOrUpdQuestionSectionResult(questionSectionResult);
-    }
-
-    /**
-    * 分页查询问题集-答题记录
-    * @param
-    * @return
-    */
-    @Operation(summary = "分页查询问题集-答题记录")
-    @PostMapping("v1/baseQuestion/questionSectionResult/pageQuestionSectionResult")
-    public QuestionSectionResultResponse pageQuestionSectionResult(@RequestBody @Validated QuestionSectionResultSearchRequest questionSectionResultSearch ) {
-        return questionSectionResultBiz.pageQuestionSectionResult(questionSectionResultSearch);
     }
 
     /**
@@ -54,7 +42,7 @@ public class QuestionSectionResultRest {
     */
     @Operation(summary = "获取问题集-答题记录")
     @GetMapping("v1/baseQuestion/questionSectionResult/getQuestionSectionResult")
-    public QuestionSectionResultResponse getQuestionSectionResult(@Validated String questionSectionResultId) {
+    public QuestionSectionResponse getQuestionSectionResult(@Validated String questionSectionResultId) {
         return questionSectionResultBiz.getQuestionSectionResult(questionSectionResultId);
     }
 

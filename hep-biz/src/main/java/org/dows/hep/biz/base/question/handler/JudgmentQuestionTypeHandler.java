@@ -3,6 +3,7 @@ package org.dows.hep.biz.base.question.handler;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.question.dto.QuestionRequestDTO;
+import org.dows.hep.api.base.question.dto.QuestionResultRecordDTO;
 import org.dows.hep.api.base.question.enums.QuestionTypeEnum;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.springframework.stereotype.Component;
@@ -33,7 +34,7 @@ public class JudgmentQuestionTypeHandler implements QuestionTypeHandler {
     }
 
     @Override
-    public QuestionResponse get(String questionInstanceId) {
+    public QuestionResponse get(String questionInstanceId, QuestionResultRecordDTO questionResultRecordDTO) {
         return null;
     }
 

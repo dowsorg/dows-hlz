@@ -63,7 +63,7 @@ public class QuestionSectionRest {
     @Operation(summary = "根据ID获取详情")
     @GetMapping("v1/baseQuestion/questionSection/getQuestionSection")
     public QuestionSectionResponse getQuestionSection(@Validated String questionSectionId) {
-        return questionSectionBiz.getQuestionSection(questionSectionId);
+        return questionSectionBiz.getQuestionSection(questionSectionId, null);
     }
 
     /**

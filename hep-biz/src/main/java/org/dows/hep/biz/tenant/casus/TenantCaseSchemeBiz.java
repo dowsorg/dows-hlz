@@ -140,6 +140,19 @@ public class TenantCaseSchemeBiz {
     }
 
     /**
+     * @author fhb
+     * @description
+     * @date 2023/6/3 13:56
+     * @param
+     * @return
+     */
+    public CaseSchemeEntity getById(String caseSchemeId) {
+        return caseSchemeService.lambdaQuery()
+                .eq(CaseSchemeEntity::getCaseSchemeId, caseSchemeId)
+                .one();
+    }
+
+    /**
      * @param
      * @return
      * @说明: 获取案例方案
@@ -162,6 +175,19 @@ public class TenantCaseSchemeBiz {
     }
 
     /**
+     * @author fhb
+     * @description
+     * @date 2023/6/3 13:56
+     * @param
+     * @return
+     */
+    public CaseSchemeEntity getByInstanceId(String caseInstanceId) {
+        return caseSchemeService.lambdaQuery()
+                .eq(CaseSchemeEntity::getCaseInstanceId, caseInstanceId)
+                .one();
+    }
+
+    /**
      * @param
      * @return
      * @说明: 根据 caseInstanceId 获取案例方案
@@ -173,6 +199,9 @@ public class TenantCaseSchemeBiz {
      */
     public CaseSchemeResponse getCaseSchemeByInstanceId(String caseInstanceId) {
         CaseSchemeEntity caseSchemeEntity = getByInstanceId(caseInstanceId);
+        if (BeanUtil.isEmpty(caseSchemeEntity)) {
+            return new CaseSchemeResponse();
+        }
         CaseSchemeResponse result = BeanUtil.copyProperties(caseSchemeEntity, CaseSchemeResponse.class);
         // set question-section
         String questionSectionId = caseSchemeEntity.getQuestionSectionId();
@@ -277,12 +306,6 @@ public class TenantCaseSchemeBiz {
         result.setQuestionSectionDimensionMap(questionSectionDimensionMap);
     }
 
-    private CaseSchemeEntity getById(String caseSchemeId) {
-        LambdaQueryWrapper<CaseSchemeEntity> queryWrapper = new LambdaQueryWrapper<CaseSchemeEntity>()
-                .eq(CaseSchemeEntity::getCaseSchemeId, caseSchemeId);
-        return caseSchemeService.getOne(queryWrapper);
-    }
-
     private List<CaseSchemeResponse> list(CaseSchemeSearchRequest caseSchemeSearch) {
         if (caseSchemeSearch == null) {
             return new ArrayList<>();
@@ -372,12 +395,6 @@ public class TenantCaseSchemeBiz {
     private Integer getQuestionCount(CaseSchemeRequest caseScheme) {
         List<QuestionSectionItemRequest> sectionItemList = caseScheme.getSectionItemList();
         return sectionItemList == null ? 0 : sectionItemList.size();
-    }
-
-    private CaseSchemeEntity getByInstanceId(String caseInstanceId) {
-        LambdaQueryWrapper<CaseSchemeEntity> queryWrapper = new LambdaQueryWrapper<CaseSchemeEntity>()
-                .eq(CaseSchemeEntity::getCaseInstanceId, caseInstanceId);
-        return caseSchemeService.getOne(queryWrapper);
     }
 
     private void fillPageResponse(Page<CaseSchemePageResponse> result) {

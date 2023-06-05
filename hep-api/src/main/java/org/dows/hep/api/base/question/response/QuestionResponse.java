@@ -55,6 +55,9 @@ public class QuestionResponse {
     @Schema(title = "答案解析")
     private String detailedAnswer;
 
+    @Schema(title = "答题结果")
+    private String questionResult;
+
     @Schema(title = "选项和答案集合")
     private List<QuestionOptionWithAnswerResponse> optionWithAnswerList;
 

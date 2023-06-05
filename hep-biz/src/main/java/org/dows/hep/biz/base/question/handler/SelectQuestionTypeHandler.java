@@ -8,6 +8,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.dto.QuestionRequestDTO;
+import org.dows.hep.api.base.question.dto.QuestionResultRecordDTO;
 import org.dows.hep.api.base.question.enums.QuestionESCEnum;
 import org.dows.hep.api.base.question.enums.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.QuestionOptionWithAnswerRequest;
@@ -196,7 +197,7 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
     }
 
     @Override
-    public QuestionResponse get(String questionInstanceId) {
+    public QuestionResponse get(String questionInstanceId, QuestionResultRecordDTO questionResultRecordDTO) {
         // instance
         QuestionInstanceEntity questionInstance = getById(questionInstanceId);
         if (BeanUtil.isEmpty(questionInstance)) {
@@ -231,6 +232,7 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
 
         result.setOptionWithAnswerList(optionWithAnswerResponses);
         baseQuestionHandler.setDimensionId(result);
+        baseQuestionHandler.setQuestionResult(result, questionResultRecordDTO);
         return result;
     }
 
