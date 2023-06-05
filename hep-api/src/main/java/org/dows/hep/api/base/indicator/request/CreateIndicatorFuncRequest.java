@@ -2,8 +2,12 @@ package org.dows.hep.api.base.indicator.request;
 
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
 
 /**
 * @description 
@@ -13,8 +17,10 @@ import lombok.NoArgsConstructor;
 */
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 @Schema(name = "CreateIndicatorFunc 对象", title = "创建指标功能")
-public class CreateIndicatorFuncRequest{
+@Builder
+public class CreateIndicatorFuncRequest implements Serializable {
     @Schema(title = "应用ID")
     @ApiModelProperty(required = true)
     private String appId;
