@@ -29,6 +29,7 @@ public class ExperimentOrgJudgeBiz {
     private final ExperimentIndicatorJudgeRiskFactorService experimentIndicatorJudgeRiskFactorService;
     private final ExperimentIndicatorJudgeHealthGuidanceService experimentIndicatorJudgeHealthGuidanceService;
     private final ExperimentIndicatorJudgeHealthProblemService experimentIndicatorJudgeHealthProblemService;
+    private final ExperimentIndicatorJudgeDiseaseProblemService experimentIndicatorJudgeDiseaseProblemService;
     private final ExperimentPersonPropertyService experimentPersonPropertyService;
     private final IndicatorJudgeHealthManagementGoalService indicatorJudgeHealthManagementGoalService;
     private final OperateOrgFuncService operateOrgFuncService;
@@ -227,6 +228,44 @@ public class ExperimentOrgJudgeBiz {
                         .id(entity.getId())
                         .experimentJudgeHealthProblemId(entity.getExperimentJudgeHealthProblemId())
                         .indicatorJudgeHealthProblemId(entity.getIndicatorJudgeHealthProblemId())
+                        .name(entity.getName())
+                        .indicatorCategoryId(entity.getIndicatorCategoryId())
+                        .build();
+                responseList.add(response);
+            });
+        }
+        return responseList;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 四级类别：根据指标分类ID获取所有符合条件的数据
+     * @关联表: indicatorJudgeHealthProblem
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月05日 下午17:22:34
+     */
+    public List<ExperimentIndicatorJudgeDiseaseProblemResponse> getIndicatorJudgeDiseaseProblemByCategoryId(String indicatoryCategoryId) {
+        //1、根据指标分类ID获取所有符合条件的数据
+        List<ExperimentIndicatorJudgeDiseaseProblemEntity> entityList = experimentIndicatorJudgeDiseaseProblemService.lambdaQuery()
+                .select(ExperimentIndicatorJudgeDiseaseProblemEntity::getId,
+                        ExperimentIndicatorJudgeDiseaseProblemEntity::getExperimentJudgeDiseaseProblemId,
+                        ExperimentIndicatorJudgeDiseaseProblemEntity::getIndicatorJudgeDiseaseProblemId,
+                        ExperimentIndicatorJudgeDiseaseProblemEntity::getName,
+                        ExperimentIndicatorJudgeDiseaseProblemEntity::getIndicatorCategoryId)
+                .eq(ExperimentIndicatorJudgeDiseaseProblemEntity::getIndicatorCategoryId, indicatoryCategoryId)
+                .eq(ExperimentIndicatorJudgeDiseaseProblemEntity::getStatus, true)
+                .list();
+        List<ExperimentIndicatorJudgeDiseaseProblemResponse> responseList = new ArrayList<>();
+        if (entityList != null && entityList.size() > 0) {
+            entityList.forEach(entity -> {
+                ExperimentIndicatorJudgeDiseaseProblemResponse response = ExperimentIndicatorJudgeDiseaseProblemResponse
+                        .builder()
+                        .id(entity.getId())
+                        .experimentJudgeDiseaseProblemId(entity.getExperimentJudgeDiseaseProblemId())
+                        .indicatorJudgeDiseaseProblemId(entity.getIndicatorJudgeDiseaseProblemId())
                         .name(entity.getName())
                         .indicatorCategoryId(entity.getIndicatorCategoryId())
                         .build();

@@ -108,14 +108,26 @@ public class ExperimentOrgJudgeRest {
 
     /**
      *
-     * 三级类别/四级类别：根据指标分类ID获取所有符合条件的数据
+     * 三级类别：根据指标分类ID获取所有符合条件的数据
      * @param
      * @return
      */
-    @Operation(summary = "三级类别/四级类别：根据指标分类ID获取所有符合条件的数据")
+    @Operation(summary = "三级类别：根据指标分类ID获取所有符合条件的数据")
     @GetMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeHealthProblemByCategoryId/{indicatoryCategoryId}")
     public List<ExperimentIndicatorJudgeHealthProblemResponse> getIndicatorJudgeHealthProblemByCategoryId(@PathVariable String indicatoryCategoryId) {
         return experimentOrgJudgeBiz.getIndicatorJudgeHealthProblemByCategoryId(indicatoryCategoryId);
+    }
+
+    /**
+     *
+     * 四级类别：根据指标分类ID获取所有符合条件的数据
+     * @param
+     * @return
+     */
+    @Operation(summary = "四级类别：根据指标分类ID获取所有符合条件的数据")
+    @GetMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeDiseaseProblemByCategoryId/{indicatoryCategoryId}")
+    public List<ExperimentIndicatorJudgeDiseaseProblemResponse> getIndicatorJudgeDiseaseProblemByCategoryId(@PathVariable String indicatoryCategoryId) {
+        return experimentOrgJudgeBiz.getIndicatorJudgeDiseaseProblemByCategoryId(indicatoryCategoryId);
     }
 
     /**

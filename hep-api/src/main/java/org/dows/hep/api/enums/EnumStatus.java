@@ -18,6 +18,6 @@ public enum EnumStatus {
   private final String desc;
 
   public static EnumStatus of(Integer src) {
-    return Optional.ofNullable(src).orElse(0) > 0 ? EnumStatus.DISABLE : EnumStatus.ENABLE;
+    return Optional.ofNullable(src).orElse(0) > 0 ? EnumStatus.ENABLE : EnumStatus.DISABLE;
   }
 }
