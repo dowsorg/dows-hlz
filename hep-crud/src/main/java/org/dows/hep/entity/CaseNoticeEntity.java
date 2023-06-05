@@ -39,9 +39,6 @@ public class CaseNoticeEntity implements CrudEntity {
     @Schema(title = "案例通知ID")
     private String caseNoticeId;
 
-    @Schema(title = "应用ID")
-    private String appId;
-
     @Schema(title = "案例ID")
     private String caseInstanceId;
 
