@@ -340,4 +340,42 @@ public class ExperimentOrgViewBiz{
         }
         return false;
     }
+
+    /**
+     * @param
+     * @return
+     * @说明: 二级类别：根据指标分类ID获取所有符合条件的数据
+     * @关联表: experimentIndicatorViewPhysicalExam
+     * @工时: 3H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月05日 下午17:40:34
+     */
+    public List<ExperimentIndicatorJudgePhysicalExamResponse> getIndicatorViewPhysicalExamByCategoryId(String indicatoryCategoryId) {
+        //1、根据指标分类ID获取所有符合条件的数据
+        List<ExperimentIndicatorViewPhysicalExamEntity> entityList = experimentIndicatorViewPhysicalExamService.lambdaQuery()
+                .select(ExperimentIndicatorViewPhysicalExamEntity::getId,
+                        ExperimentIndicatorViewPhysicalExamEntity::getExperimentJudgePhysicalExamId,
+                        ExperimentIndicatorViewPhysicalExamEntity::getIndicatorViewPhysicalExamId,
+                        ExperimentIndicatorViewPhysicalExamEntity::getName,
+                        ExperimentIndicatorViewPhysicalExamEntity::getIndicatorCategoryId)
+                .eq(ExperimentIndicatorViewPhysicalExamEntity::getIndicatorCategoryId, indicatoryCategoryId)
+                .eq(ExperimentIndicatorViewPhysicalExamEntity::getStatus, true)
+                .list();
+        List<ExperimentIndicatorJudgePhysicalExamResponse> responseList = new ArrayList<>();
+        if (entityList != null && entityList.size() > 0) {
+            entityList.forEach(entity -> {
+                ExperimentIndicatorJudgePhysicalExamResponse response = ExperimentIndicatorJudgePhysicalExamResponse
+                        .builder()
+                        .id(entity.getId())
+                        .experimentJudgePhysicalExamId(entity.getExperimentJudgePhysicalExamId())
+                        .indicatorJudgePhysicalExamId(entity.getIndicatorViewPhysicalExamId())
+                        .name(entity.getName())
+                        .indicatorCategoryId(entity.getIndicatorCategoryId())
+                        .build();
+                responseList.add(response);
+            });
+        }
+        return responseList;
+    }
 }
