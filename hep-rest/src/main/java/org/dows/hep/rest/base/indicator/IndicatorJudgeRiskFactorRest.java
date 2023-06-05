@@ -27,7 +27,7 @@ public class IndicatorJudgeRiskFactorRest {
 
     @Operation(summary = "Rs创建或保存查看指标危险因素类")
     @PostMapping("v1/baseIndicator/indicatorJudgeRiskFactor/createOrUpdateRs")
-    public void createOrUpdateRs(@RequestBody @Validated CreateOrUpdateIndicatorJudgeRiskFactorRequestRs createOrUpdateIndicatorJudgeRiskFactorRequestRs) {
+    public void createOrUpdateRs(@RequestBody @Validated CreateOrUpdateIndicatorJudgeRiskFactorRequestRs createOrUpdateIndicatorJudgeRiskFactorRequestRs) throws InterruptedException {
         indicatorJudgeRiskFactorBiz.createOrUpdateRs(createOrUpdateIndicatorJudgeRiskFactorRequestRs);
     }
 

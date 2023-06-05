@@ -108,7 +108,7 @@ public class IndicatorJudgeRiskFactorBiz{
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void createOrUpdateRs(CreateOrUpdateIndicatorJudgeRiskFactorRequestRs createOrUpdateIndicatorJudgeRiskFactorRequestRs) {
+    public void createOrUpdateRs(CreateOrUpdateIndicatorJudgeRiskFactorRequestRs createOrUpdateIndicatorJudgeRiskFactorRequestRs) throws InterruptedException {
         IndicatorJudgeRiskFactorEntity indicatorJudgeRiskFactorEntity;
         String appId = createOrUpdateIndicatorJudgeRiskFactorRequestRs.getAppId();
         String indicatorFuncId = createOrUpdateIndicatorJudgeRiskFactorRequestRs.getIndicatorFuncId();
