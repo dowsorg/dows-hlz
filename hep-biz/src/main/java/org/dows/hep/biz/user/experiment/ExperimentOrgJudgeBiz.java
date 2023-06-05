@@ -4,11 +4,6 @@ import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeHealthManagementGoalRequest;
-import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeHealthProblemRequest;
-import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeRiskFactorRequest;
-import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthGuidanceResponse;
-import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthProblemResponse;
-import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponse;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.entity.*;
@@ -31,9 +26,9 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ExperimentOrgJudgeBiz {
-    private final org.dows.hep.service.IndicatorJudgeRiskFactorService indicatorJudgeRiskFactorService;
-    private final IndicatorJudgeHealthGuidanceService indicatorJudgeHealthGuidanceService;
-    private final IndicatorJudgeHealthProblemService indicatorJudgeHealthProblemService;
+    private final ExperimentIndicatorJudgeRiskFactorService experimentIndicatorJudgeRiskFactorService;
+    private final ExperimentIndicatorJudgeHealthGuidanceService experimentIndicatorJudgeHealthGuidanceService;
+    private final ExperimentIndicatorJudgeHealthProblemService experimentIndicatorJudgeHealthProblemService;
     private final ExperimentPersonPropertyService experimentPersonPropertyService;
     private final IndicatorJudgeHealthManagementGoalService indicatorJudgeHealthManagementGoalService;
     private final OperateOrgFuncService operateOrgFuncService;
@@ -133,22 +128,24 @@ public class ExperimentOrgJudgeBiz {
      * @开始时间:
      * @创建时间: 2023年5月26日 上午9:49:34
      */
-    public Map<String, List<IndicatorJudgeRiskFactorResponse>> getIndicatorJudgeRiskFactor(String indicatorFuncId) {
+    public Map<String, List<ExperimentIndicatorJudgeRiskFactorResponse>> getIndicatorJudgeRiskFactor(String indicatorFuncId) {
         //1、根据指标功能ID获取所有的分类
-        List<IndicatorJudgeRiskFactorEntity> entityList = indicatorJudgeRiskFactorService.lambdaQuery()
-                .select(IndicatorJudgeRiskFactorEntity::getId,
-                        IndicatorJudgeRiskFactorEntity::getIndicatorJudgeRiskFactorId,
-                        IndicatorJudgeRiskFactorEntity::getName,
-                        IndicatorJudgeRiskFactorEntity::getIndicatorCategoryId)
-                .eq(IndicatorJudgeRiskFactorEntity::getIndicatorFuncId, indicatorFuncId)
-                .eq(IndicatorJudgeRiskFactorEntity::getStatus, true)
+        List<ExperimentIndicatorJudgeRiskFactorEntity> entityList = experimentIndicatorJudgeRiskFactorService.lambdaQuery()
+                .select(ExperimentIndicatorJudgeRiskFactorEntity::getId,
+                        ExperimentIndicatorJudgeRiskFactorEntity::getExperimentJudgeRiskFactorId,
+                        ExperimentIndicatorJudgeRiskFactorEntity::getIndicatorJudgeRiskFactorId,
+                        ExperimentIndicatorJudgeRiskFactorEntity::getName,
+                        ExperimentIndicatorJudgeRiskFactorEntity::getIndicatorCategoryId)
+                .eq(ExperimentIndicatorJudgeRiskFactorEntity::getIndicatorFuncId, indicatorFuncId)
+                .eq(ExperimentIndicatorJudgeRiskFactorEntity::getStatus, true)
                 .list();
-        List<IndicatorJudgeRiskFactorResponse> responseList = new ArrayList<>();
+        List<ExperimentIndicatorJudgeRiskFactorResponse> responseList = new ArrayList<>();
         if (entityList != null && entityList.size() > 0) {
             entityList.forEach(entity -> {
-                IndicatorJudgeRiskFactorResponse response = IndicatorJudgeRiskFactorResponse
+                ExperimentIndicatorJudgeRiskFactorResponse response = ExperimentIndicatorJudgeRiskFactorResponse
                         .builder()
                         .id(entity.getId())
+                        .experimentJudgeRiskFactorId(entity.getExperimentJudgeRiskFactorId())
                         .indicatorJudgeRiskFactorId(entity.getIndicatorJudgeRiskFactorId())
                         .name(entity.getName())
                         .indicatorCategoryId(entity.getIndicatorCategoryId())
@@ -157,7 +154,7 @@ public class ExperimentOrgJudgeBiz {
             });
         }
         //2、根据分类ID分组
-        Map<String, List<IndicatorJudgeRiskFactorResponse>> categoryList = responseList.stream().collect(Collectors.groupingBy(IndicatorJudgeRiskFactorResponse::getIndicatorCategoryId));
+        Map<String, List<ExperimentIndicatorJudgeRiskFactorResponse>> categoryList = responseList.stream().collect(Collectors.groupingBy(ExperimentIndicatorJudgeRiskFactorResponse::getIndicatorCategoryId));
         return categoryList;
     }
 
@@ -171,18 +168,24 @@ public class ExperimentOrgJudgeBiz {
      * @开始时间:
      * @创建时间: 2023年5月26日 上午11:51:34
      */
-    public Map<String, List<IndicatorJudgeHealthGuidanceResponse>> getIndicatorJudgeHealthGuidance(String indicatorFuncId) {
+    public Map<String, List<ExperimentIndicatorJudgeHealthGuidanceResponse>> getIndicatorJudgeHealthGuidance(String indicatorFuncId) {
         //1、根据指标功能ID获取所有的分类
-        List<IndicatorJudgeHealthGuidanceEntity> entityList = indicatorJudgeHealthGuidanceService.lambdaQuery()
-                .eq(IndicatorJudgeHealthGuidanceEntity::getIndicatorFuncId, indicatorFuncId)
-                .eq(IndicatorJudgeHealthGuidanceEntity::getStatus, true)
+        List<ExperimentIndicatorJudgeHealthGuidanceEntity> entityList = experimentIndicatorJudgeHealthGuidanceService.lambdaQuery()
+                .select(ExperimentIndicatorJudgeHealthGuidanceEntity::getId,
+                        ExperimentIndicatorJudgeHealthGuidanceEntity::getExperimentJudgeHealthGuidanceId,
+                        ExperimentIndicatorJudgeHealthGuidanceEntity::getIndicatorJudgeHealthGuidanceId,
+                        ExperimentIndicatorJudgeHealthGuidanceEntity::getName,
+                        ExperimentIndicatorJudgeHealthGuidanceEntity::getIndicatorCategoryId)
+                .eq(ExperimentIndicatorJudgeHealthGuidanceEntity::getIndicatorFuncId, indicatorFuncId)
+                .eq(ExperimentIndicatorJudgeHealthGuidanceEntity::getStatus, true)
                 .list();
-        List<IndicatorJudgeHealthGuidanceResponse> responseList = new ArrayList<>();
+        List<ExperimentIndicatorJudgeHealthGuidanceResponse> responseList = new ArrayList<>();
         if (entityList != null && entityList.size() > 0) {
             entityList.forEach(entity -> {
-                IndicatorJudgeHealthGuidanceResponse response = IndicatorJudgeHealthGuidanceResponse
+                ExperimentIndicatorJudgeHealthGuidanceResponse response = ExperimentIndicatorJudgeHealthGuidanceResponse
                         .builder()
                         .id(entity.getId())
+                        .experimentJudgeHealthGuidanceId(entity.getExperimentJudgeHealthGuidanceId())
                         .indicatorJudgeHealthGuidanceId(entity.getIndicatorJudgeHealthGuidanceId())
                         .name(entity.getName())
                         .indicatorCategoryId(entity.getIndicatorCategoryId())
@@ -191,7 +194,7 @@ public class ExperimentOrgJudgeBiz {
             });
         }
         //2、根据分类ID分组
-        Map<String, List<IndicatorJudgeHealthGuidanceResponse>> categoryList = responseList.stream().collect(Collectors.groupingBy(IndicatorJudgeHealthGuidanceResponse::getIndicatorCategoryId));
+        Map<String, List<ExperimentIndicatorJudgeHealthGuidanceResponse>> categoryList = responseList.stream().collect(Collectors.groupingBy(ExperimentIndicatorJudgeHealthGuidanceResponse::getIndicatorCategoryId));
         return categoryList;
     }
 
@@ -205,22 +208,24 @@ public class ExperimentOrgJudgeBiz {
      * @开始时间:
      * @创建时间: 2023年5月26日 下午13:56:34
      */
-    public List<IndicatorJudgeHealthProblemResponse> getIndicatorJudgeHealthProblemByCategoryId(String indicatoryCategoryId) {
+    public List<ExperimentIndicatorJudgeHealthProblemResponse> getIndicatorJudgeHealthProblemByCategoryId(String indicatoryCategoryId) {
         //1、根据指标分类ID获取所有符合条件的数据
-        List<IndicatorJudgeHealthProblemEntity> entityList = indicatorJudgeHealthProblemService.lambdaQuery()
-                .select(IndicatorJudgeHealthProblemEntity::getId,
-                        IndicatorJudgeHealthProblemEntity::getIndicatorJudgeHealthProblemId,
-                        IndicatorJudgeHealthProblemEntity::getName,
-                        IndicatorJudgeHealthProblemEntity::getIndicatorCategoryId)
-                .eq(IndicatorJudgeHealthProblemEntity::getIndicatorCategoryId, indicatoryCategoryId)
-                .eq(IndicatorJudgeHealthProblemEntity::getStatus, true)
+        List<ExperimentIndicatorJudgeHealthProblemEntity> entityList = experimentIndicatorJudgeHealthProblemService.lambdaQuery()
+                .select(ExperimentIndicatorJudgeHealthProblemEntity::getId,
+                        ExperimentIndicatorJudgeHealthProblemEntity::getExperimentJudgeHealthProblemId,
+                        ExperimentIndicatorJudgeHealthProblemEntity::getIndicatorJudgeHealthProblemId,
+                        ExperimentIndicatorJudgeHealthProblemEntity::getName,
+                        ExperimentIndicatorJudgeHealthProblemEntity::getIndicatorCategoryId)
+                .eq(ExperimentIndicatorJudgeHealthProblemEntity::getIndicatorCategoryId, indicatoryCategoryId)
+                .eq(ExperimentIndicatorJudgeHealthProblemEntity::getStatus, true)
                 .list();
-        List<IndicatorJudgeHealthProblemResponse> responseList = new ArrayList<>();
+        List<ExperimentIndicatorJudgeHealthProblemResponse> responseList = new ArrayList<>();
         if (entityList != null && entityList.size() > 0) {
             entityList.forEach(entity -> {
-                IndicatorJudgeHealthProblemResponse response = IndicatorJudgeHealthProblemResponse
+                ExperimentIndicatorJudgeHealthProblemResponse response = ExperimentIndicatorJudgeHealthProblemResponse
                         .builder()
                         .id(entity.getId())
+                        .experimentJudgeHealthProblemId(entity.getExperimentJudgeHealthProblemId())
                         .indicatorJudgeHealthProblemId(entity.getIndicatorJudgeHealthProblemId())
                         .name(entity.getName())
                         .indicatorCategoryId(entity.getIndicatorCategoryId())
@@ -260,14 +265,14 @@ public class ExperimentOrgJudgeBiz {
      * @开始时间:
      * @创建时间: 2023年5月29日 上午10:11:34
      */
-    public Boolean isIndicatorJudgeRiskFactor(List<CreateIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList) {
+    public Boolean isIndicatorJudgeRiskFactor(List<ExperimentIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList) {
         AtomicReference<Boolean> flag = new AtomicReference<>(true);
         judgeRiskFactorRequestList.forEach(judgeRiskFactorRequest -> {
             //1、根据ID获取判断规则
-            IndicatorJudgeRiskFactorEntity entity = indicatorJudgeRiskFactorService.lambdaQuery()
-                    .select(IndicatorJudgeRiskFactorEntity::getExpression)
-                    .eq(IndicatorJudgeRiskFactorEntity::getIndicatorJudgeRiskFactorId, judgeRiskFactorRequest.getIndicatorJudgeRiskFactorId())
-                    .eq(IndicatorJudgeRiskFactorEntity::getStatus, true)
+            ExperimentIndicatorJudgeRiskFactorEntity entity = experimentIndicatorJudgeRiskFactorService.lambdaQuery()
+                    .select(ExperimentIndicatorJudgeRiskFactorEntity::getExpression)
+                    .eq(ExperimentIndicatorJudgeRiskFactorEntity::getExperimentJudgeRiskFactorId, judgeRiskFactorRequest.getExperimentJudgeRiskFactorId())
+                    .eq(ExperimentIndicatorJudgeRiskFactorEntity::getStatus, true)
                     .one();
             //todo、根据判断规则判断是否满足条件,不满足将flag变为false，只要有一个false,就说明失败
             flag.set(false);
@@ -285,13 +290,13 @@ public class ExperimentOrgJudgeBiz {
      * @开始时间:
      * @创建时间: 2023年5月29日 上午10:11:34
      */
-    public BigDecimal getJudgeRiskFactorScore(List<CreateIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList) {
+    public BigDecimal getJudgeRiskFactorScore(List<ExperimentIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList) {
         BigDecimal totalAmount = new BigDecimal(0);
         judgeRiskFactorRequestList.forEach(judgeRiskFactorRequest -> {
             //1、根据ID获取判断规则
-            IndicatorJudgeRiskFactorEntity entity = indicatorJudgeRiskFactorService.lambdaQuery()
-                    .eq(IndicatorJudgeRiskFactorEntity::getIndicatorJudgeRiskFactorId, judgeRiskFactorRequest.getIndicatorJudgeRiskFactorId())
-                    .eq(IndicatorJudgeRiskFactorEntity::getStatus, true)
+            ExperimentIndicatorJudgeRiskFactorEntity entity = experimentIndicatorJudgeRiskFactorService.lambdaQuery()
+                    .eq(ExperimentIndicatorJudgeRiskFactorEntity::getExperimentJudgeRiskFactorId, judgeRiskFactorRequest.getExperimentJudgeRiskFactorId())
+                    .eq(ExperimentIndicatorJudgeRiskFactorEntity::getStatus, true)
                     .one();
             //todo、根据判断规则判断是否满足条件,不满足将flag变为false，只要有一个false,就说明失败
             entity.getExpression();
@@ -395,30 +400,5 @@ public class ExperimentOrgJudgeBiz {
             snapList.add(snapEntity);
         });
         return operateOrgFuncSnapService.saveBatch(snapList);
-    }
-
-    /**
-     * @param
-     * @return
-     * @说明: 三级类别/四级类别：判断操作
-     * @关联表: IndicatorJudgeHealthProblem
-     * @工时: 2H
-     * @开发者: jx
-     * @开始时间:
-     * @创建时间: 2023年5月30日 下午16:13:34
-     */
-    public Boolean isIndicatorJudgeHealthProblem(List<CreateIndicatorJudgeHealthProblemRequest> judgeHealthProblemRequest) {
-        AtomicReference<Boolean> flag = new AtomicReference<>(true);
-        judgeHealthProblemRequest.forEach(judgeHealthProblem -> {
-            //1、根据ID获取判断规则
-            IndicatorJudgeHealthProblemEntity entity = indicatorJudgeHealthProblemService.lambdaQuery()
-                    .select(IndicatorJudgeHealthProblemEntity::getExpression)
-                    .eq(IndicatorJudgeHealthProblemEntity::getIndicatorJudgeHealthProblemId, judgeHealthProblem.getIndicatorJudgeHealthProblemId())
-                    .eq(IndicatorJudgeHealthProblemEntity::getStatus, true)
-                    .one();
-            //todo、根据判断规则判断是否满足条件,不满足将flag变为false，只要有一个false,就说明失败
-            flag.set(false);
-        });
-        return flag.get();
     }
 }
