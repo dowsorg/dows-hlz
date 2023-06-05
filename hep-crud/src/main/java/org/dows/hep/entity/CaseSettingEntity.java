@@ -39,9 +39,6 @@ public class CaseSettingEntity implements CrudEntity {
     @Schema(title = "案例问卷设置ID")
     private String caseSettingId;
 
-    @Schema(title = "应用ID")
-    private String appId;
-
     @Schema(title = "案例ID")
     private String caseInstanceId;
 

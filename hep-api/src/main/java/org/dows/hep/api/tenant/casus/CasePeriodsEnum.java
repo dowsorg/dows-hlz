@@ -6,11 +6,11 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum CasePeriodsEnum {
-    FIRST(1, "第一期"),
-    SECOND(2, "第二期"),
-    THIRD(3, "第三期"),
-    FOURTH(4, "第四期"),
-    FIFTH(5, "第五期");
+    FIRST(1, "FIRST"),
+    SECOND(2, "SECOND"),
+    THIRD(3, "THIRD"),
+    FOURTH(4, "FOURTH"),
+    FIFTH(5, "FIFTH");
 
     private final Integer code;
     private final String name;
