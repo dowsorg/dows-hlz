@@ -7,6 +7,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.dto.QuestionRequestDTO;
+import org.dows.hep.api.base.question.dto.QuestionResultRecordDTO;
 import org.dows.hep.api.base.question.enums.QuestionESCEnum;
 import org.dows.hep.api.base.question.enums.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.QuestionRequest;
@@ -153,7 +154,7 @@ public class MaterialQuestionTypeHandler implements QuestionTypeHandler {
     }
 
     @Override
-    public QuestionResponse get(String questionInstanceId) {
+    public QuestionResponse get(String questionInstanceId, QuestionResultRecordDTO questionResultRecordDTO) {
         if (StrUtil.isBlank(questionInstanceId)) {
             return new QuestionResponse();
         }
@@ -177,13 +178,14 @@ public class MaterialQuestionTypeHandler implements QuestionTypeHandler {
         children.forEach(item -> {
             QuestionTypeEnum questionTypeEnum = QuestionTypeEnum.getByCode(item.getQuestionType());
             QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(questionTypeEnum);
-            QuestionResponse questionResponse = questionTypeHandler.get(item.getQuestionInstanceId());
+            QuestionResponse questionResponse = questionTypeHandler.get(item.getQuestionInstanceId(), questionResultRecordDTO);
             responseList.add(questionResponse);
         });
         result.setChildren(responseList);
 
         // question-dimension
         baseQuestionHandler.setDimensionId(result);
+        baseQuestionHandler.setQuestionResult(result, questionResultRecordDTO);
 
         return result;
     }

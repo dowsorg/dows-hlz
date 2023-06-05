@@ -3,7 +3,8 @@ package org.dows.hep.rest.user.experiment;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.user.experiment.request.DesignSchemeRequest;
+import org.dows.hep.api.user.experiment.request.ExperimentSchemeRequest;
+import org.dows.hep.api.user.experiment.response.ExperimentSchemeResponse;
 import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,25 +24,25 @@ public class ExperimentSchemeRest {
     private final ExperimentSchemeBiz experimentSchemeBiz;
 
     /**
-    * 设计实验方案
+    * 获取设计方案
     * @param
     * @return
     */
-    @Operation(summary = "设计实验方案")
-    @PostMapping("v1/userExperiment/experimentScheme/designScheme")
-    public Boolean designScheme(@RequestBody @Validated DesignSchemeRequest designScheme ) {
-        return experimentSchemeBiz.designScheme(designScheme);
+    @Operation(summary = "获取设计方案")
+    @PostMapping("v1/userExperiment/experimentScheme/getCaseScheme")
+    public ExperimentSchemeResponse getCaseScheme(String experimentInstanceId, String experimentGroupId ) {
+        return experimentSchemeBiz.getScheme(experimentInstanceId, experimentGroupId);
     }
 
     /**
-    * 提交方案
+    * 提交设计方案
     * @param
     * @return
     */
-    @Operation(summary = "提交方案")
+    @Operation(summary = "提交设计方案")
     @PostMapping("v1/userExperiment/experimentScheme/submitScheme")
-    public Boolean submitScheme(@RequestBody @Validated String schemeId ) {
-        return experimentSchemeBiz.submitScheme(schemeId);
+    public Boolean submitScheme(@RequestBody @Validated ExperimentSchemeRequest request ) {
+        return experimentSchemeBiz.submitScheme(request);
     }
 
 

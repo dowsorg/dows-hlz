@@ -62,7 +62,7 @@ public class EvaluateQuestionnaireRest {
     @Operation(summary = "获取评估问卷")
     @GetMapping("v1/baseEvaluate/evaluateQuestionnaire/getEvaluateQuestionnaire")
     public EvaluateQuestionnaireResponse getEvaluateQuestionnaire(@Validated String evaluateQuestionnaireId) {
-        return evaluateQuestionnaireBiz.getEvaluateQuestionnaire(evaluateQuestionnaireId);
+        return evaluateQuestionnaireBiz.getEvaluateQuestionnaire(evaluateQuestionnaireId, null);
     }
 
     /**

@@ -1,6 +1,7 @@
 package org.dows.hep.biz.base.question.handler;
 
 import org.dows.hep.api.base.question.dto.QuestionRequestDTO;
+import org.dows.hep.api.base.question.dto.QuestionResultRecordDTO;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 
 public interface QuestionTypeHandler {
@@ -10,5 +11,5 @@ public interface QuestionTypeHandler {
 
     boolean update(QuestionRequestDTO questionRequest);
 
-    QuestionResponse get(String questionInstanceId);
+    QuestionResponse get(String questionInstanceId, QuestionResultRecordDTO questionResultRecordDTO);
 }

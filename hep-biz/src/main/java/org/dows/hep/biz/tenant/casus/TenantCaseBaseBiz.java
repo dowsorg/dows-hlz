@@ -14,8 +14,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class TenantCaseBaseBiz {
     private static final String LAST_VERSION = "SNAPSHOT";
 

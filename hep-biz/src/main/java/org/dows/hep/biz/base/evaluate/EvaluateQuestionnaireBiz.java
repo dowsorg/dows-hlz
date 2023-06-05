@@ -15,6 +15,7 @@ import org.dows.hep.api.base.evaluate.request.EvaluateQuestionnaireRequest;
 import org.dows.hep.api.base.evaluate.response.EvaluateCategoryResponse;
 import org.dows.hep.api.base.evaluate.response.EvaluateQuestionnairePageResponse;
 import org.dows.hep.api.base.evaluate.response.EvaluateQuestionnaireResponse;
+import org.dows.hep.api.base.question.dto.QuestionResultRecordDTO;
 import org.dows.hep.api.base.question.enums.QuestionEnabledEnum;
 import org.dows.hep.api.base.question.enums.QuestionSectionAccessAuthEnum;
 import org.dows.hep.api.base.question.enums.QuestionSectionGenerationModeEnum;
@@ -106,7 +107,7 @@ public class EvaluateQuestionnaireBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public EvaluateQuestionnaireResponse getEvaluateQuestionnaire(String evaluateQuestionnaireId) {
+    public EvaluateQuestionnaireResponse getEvaluateQuestionnaire(String evaluateQuestionnaireId, QuestionResultRecordDTO recordDTO) {
         if (StrUtil.isBlank(evaluateQuestionnaireId)) {
             throw new BizException(EvaluateESCEnum.PARAMS_NON_NULL);
         }
@@ -115,7 +116,7 @@ public class EvaluateQuestionnaireBiz {
         EvaluateQuestionnaireResponse result = BeanUtil.copyProperties(entity, EvaluateQuestionnaireResponse.class);
         // set question-section
         String questionSectionId = entity.getQuestionSectionId();
-        fillResponseQS(questionSectionId, result);
+        fillResponseQS(questionSectionId, result, recordDTO);
 
         return result;
     }
@@ -272,9 +273,9 @@ public class EvaluateQuestionnaireBiz {
         }
     }
 
-    private void fillResponseQS(String questionSectionId, EvaluateQuestionnaireResponse result) {
+    private void fillResponseQS(String questionSectionId, EvaluateQuestionnaireResponse result, QuestionResultRecordDTO recordDTO) {
         // get and set question-section
-        QuestionSectionResponse questionSectionResponse = questionSectionBiz.getQuestionSection(questionSectionId);
+        QuestionSectionResponse questionSectionResponse = questionSectionBiz.getQuestionSection(questionSectionId, recordDTO);
         if (BeanUtil.isEmpty(questionSectionResponse)) {
             return;
         }

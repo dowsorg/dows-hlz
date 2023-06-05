@@ -160,7 +160,7 @@ public class TenantCaseQuestionnaireBiz {
 
         CaseQuestionnaireEntity entity = getById(caseQuestionnaireId);
         String questionSectionId = entity.getQuestionSectionId();
-        return questionSectionBiz.getQuestionSection(questionSectionId);
+        return questionSectionBiz.getQuestionSection(questionSectionId, null);
     }
 
     /**
@@ -380,7 +380,7 @@ public class TenantCaseQuestionnaireBiz {
 
         // list section-item
         List<String> sectionIdList = caseQuestionnaireList.stream().map(CaseQuestionnaireEntity::getQuestionSectionId).toList();
-        List<QuestionSectionItemResponse> itemResponseList = questionSectionBiz.listItem(sectionIdList);
+        List<QuestionSectionItemResponse> itemResponseList = questionSectionBiz.listQuestionSectionItem(sectionIdList);
         if (itemResponseList == null || itemResponseList.isEmpty()) {
             return new ArrayList<>();
         }

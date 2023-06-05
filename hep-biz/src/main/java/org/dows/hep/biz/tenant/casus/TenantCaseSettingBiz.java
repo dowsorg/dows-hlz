@@ -3,7 +3,7 @@ package org.dows.hep.biz.tenant.casus;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.materials.MaterialsESCEnum;
 import org.dows.hep.api.tenant.casus.CaseESCEnum;
@@ -19,8 +19,8 @@ import org.springframework.stereotype.Service;
 * @author lait.zhang
 * @date 2023年4月23日 上午9:44:34
 */
-@AllArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class TenantCaseSettingBiz {
     private final TenantCaseBaseBiz baseBiz;
     private final CaseSettingService caseSettingService;

@@ -44,11 +44,7 @@ public class IndicatorInstanceBiz{
     private final IndicatorRuleService indicatorRuleService;
     private final IndicatorCategoryService indicatorCategoryService;
 
-    private final IndicatorExpressionService indicatorExpressionService;
-
-    private final IndicatorExpressionItemService indicatorExpressionItemService;
-
-    private final IndicatorExpressionRefService indicatorExpressionRefService;
+    private final IndicatorExpressionBiz indicatorExpressionBiz;
 
     public static IndicatorInstanceResponseRs indicatorInstance2ResponseRs(
         IndicatorInstanceEntity indicatorInstanceEntity,
@@ -67,6 +63,7 @@ public class IndicatorInstanceBiz{
             .appId(indicatorInstanceEntity.getAppId())
             .indicatorCategoryId(indicatorInstanceEntity.getIndicatorCategoryId())
             .indicatorName(indicatorInstanceEntity.getIndicatorName())
+            .displayByPercent(indicatorInstanceEntity.getDisplayByPercent())
             .unit(indicatorInstanceEntity.getUnit())
             .core(indicatorInstanceEntity.getCore())
             .food(indicatorInstanceEntity.getFood())
@@ -101,91 +98,6 @@ public class IndicatorInstanceBiz{
             .indicatorInstanceResponseRsList(indicatorInstanceResponseRsList)
             .build();
     }
-
-    public void populateKIndicatorExpressionIdVIndicatorExpressionEntityMap(String appId, Set<String> indicatorInstanceIdSet, Map<String, IndicatorExpressionResponseRs> kIndicatorInstanceIdVIndicatorExpressionResponseRsMap) {
-        if (Objects.isNull(kIndicatorInstanceIdVIndicatorExpressionResponseRsMap)) {
-            log.warn("method IndicatorInstanceBiz.populateKIndicatorExpressionIdVIndicatorExpressionEntityMap param kIndicatorInstanceIdVIndicatorExpressionResponseRsMap is null");
-            return;
-        }
-        if (Objects.isNull(indicatorInstanceIdSet) || indicatorInstanceIdSet.isEmpty()) {
-            return;
-        }
-        Map<String, String> kIndicatorInstanceIdVIndicatorExpressionIdMap = new HashMap<>();
-        Set<String> indicatorExpressionIdSet = new HashSet<>();
-        Map<String, IndicatorExpressionEntity> kIndicatorExpressionIdVIndicatorExpressionEntityMap = new HashMap<>();
-        Map<String, List<IndicatorExpressionItemEntity>> kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap = new HashMap<>();
-        Set<String> maxAndMinIndicatorExpressionItemIdSet = new HashSet<>();
-        Map<String, IndicatorExpressionItemResponseRs> kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap = new HashMap<>();
-        indicatorExpressionRefService.lambdaQuery()
-            .eq(IndicatorExpressionRefEntity::getAppId, appId)
-            .in(IndicatorExpressionRefEntity::getPrincipalId, indicatorInstanceIdSet)
-            .list()
-            .forEach(indicatorExpressionRefEntity -> {
-                indicatorExpressionIdSet.add(indicatorExpressionRefEntity.getIndicatorExpressionId());
-                kIndicatorInstanceIdVIndicatorExpressionIdMap.put(indicatorExpressionRefEntity.getPrincipalId(), indicatorExpressionRefEntity.getIndicatorExpressionId());
-            });
-        if (!indicatorExpressionIdSet.isEmpty()) {
-            indicatorExpressionService.lambdaQuery()
-                .eq(IndicatorExpressionEntity::getAppId, appId)
-                .in(IndicatorExpressionEntity::getIndicatorExpressionId, indicatorExpressionIdSet)
-                .list()
-                .forEach(indicatorExpressionEntity -> {
-                    kIndicatorExpressionIdVIndicatorExpressionEntityMap.put(
-                        indicatorExpressionEntity.getIndicatorExpressionId(), indicatorExpressionEntity);
-                    String maxIndicatorExpressionItemId = indicatorExpressionEntity.getMaxIndicatorExpressionItemId();
-                    String minIndicatorExpressionItemId = indicatorExpressionEntity.getMinIndicatorExpressionItemId();
-                    if (StringUtils.isNotBlank(maxIndicatorExpressionItemId)) {
-                        maxAndMinIndicatorExpressionItemIdSet.add(maxIndicatorExpressionItemId);
-                    }
-                    if (StringUtils.isNotBlank(minIndicatorExpressionItemId)) {
-                        maxAndMinIndicatorExpressionItemIdSet.add(minIndicatorExpressionItemId);
-                    }
-                });
-            indicatorExpressionItemService.lambdaQuery()
-                .eq(IndicatorExpressionItemEntity::getAppId, appId)
-                .in(IndicatorExpressionItemEntity::getIndicatorExpressionId, indicatorExpressionIdSet)
-                .list()
-                .forEach(indicatorExpressionItemEntity -> {
-                    String indicatorExpressionId = indicatorExpressionItemEntity.getIndicatorExpressionId();
-                    List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.get(indicatorExpressionId);
-                    if (Objects.isNull(indicatorExpressionItemEntityList)) {
-                        indicatorExpressionItemEntityList = new ArrayList<>();
-                    }
-                    indicatorExpressionItemEntityList.add(indicatorExpressionItemEntity);
-                    kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.put(indicatorExpressionId, indicatorExpressionItemEntityList);
-                });
-        }
-        if (!maxAndMinIndicatorExpressionItemIdSet.isEmpty()) {
-            indicatorExpressionItemService.lambdaQuery()
-                .eq(IndicatorExpressionItemEntity::getAppId, appId)
-                .in(IndicatorExpressionItemEntity::getIndicatorExpressionItemId, maxAndMinIndicatorExpressionItemIdSet)
-                .list()
-                .forEach(indicatorExpressionItemEntity -> kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.put(
-                    indicatorExpressionItemEntity.getIndicatorExpressionItemId(), IndicatorExpressionItemBiz.indicatorExpressionItem2ResponseRs(indicatorExpressionItemEntity)
-                ));
-        }
-        kIndicatorInstanceIdVIndicatorExpressionIdMap.forEach((indicatorInstanceId, indicatorExpressionId) -> {
-            IndicatorExpressionEntity indicatorExpressionEntity = kIndicatorExpressionIdVIndicatorExpressionEntityMap.get(indicatorExpressionId);
-            if (Objects.isNull(indicatorExpressionEntity)) {
-                return;
-            }
-            String maxIndicatorExpressionItemId = indicatorExpressionEntity.getMaxIndicatorExpressionItemId();
-            String minIndicatorExpressionItemId = indicatorExpressionEntity.getMinIndicatorExpressionItemId();
-            List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.get(indicatorExpressionId);
-            if (Objects.isNull(indicatorExpressionItemEntityList)) {
-                indicatorExpressionItemEntityList = new ArrayList<>();
-            }
-            List<IndicatorExpressionItemResponseRs> indicatorExpressionItemResponseRsList = indicatorExpressionItemEntityList.stream().map(IndicatorExpressionItemBiz::indicatorExpressionItem2ResponseRs).collect(Collectors.toList());
-            IndicatorExpressionResponseRs indicatorExpressionResponseRs = IndicatorExpressionBiz.indicatorExpression2ResponseRs(
-                indicatorExpressionEntity,
-                indicatorExpressionItemResponseRsList,
-                kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(maxIndicatorExpressionItemId),
-                kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(minIndicatorExpressionItemId)
-                );
-            kIndicatorInstanceIdVIndicatorExpressionResponseRsMap.put(indicatorInstanceId, indicatorExpressionResponseRs);
-        });
-    }
-
     public void populateKIndicatorInstanceIdVSeqMap(String appId, Set<String> indicatorInstanceIdSet, Map<String, Integer> kIndicatorInstanceIdVSeqMap) {
         if (Objects.isNull(kIndicatorInstanceIdVSeqMap)) {
             log.warn("method IndicatorInstanceBiz.populateKIndicatorInstanceIdVSeqMap param kIndicatorInstanceIdVSeqMap is null");
@@ -385,21 +297,24 @@ public class IndicatorInstanceBiz{
         List<String> dbIndicatorInstanceIdList = new ArrayList<>();
         String appId = batchUpdateCoreRequestRs.getAppId();
         List<String> paramIndicatorInstanceIdList = batchUpdateCoreRequestRs.getIndicatorInstanceIdList();
+        indicatorInstanceService.lambdaQuery()
+            .eq(IndicatorInstanceEntity::getAppId, appId)
+            .list()
+            .forEach(indicatorInstanceEntity -> {
+                indicatorInstanceEntityList.add(indicatorInstanceEntity);
+                dbIndicatorInstanceIdList.add(indicatorInstanceEntity.getIndicatorInstanceId());
+            });
         if (
             paramIndicatorInstanceIdList.stream().anyMatch(indicatorInstanceId -> !dbIndicatorInstanceIdList.contains(indicatorInstanceId))
         ) {
             log.warn("method IndicatorInstanceBiz.batchUpdateCore param batchUpdateCoreRequestRs paramIndicatorInstanceIdList:{} is illegal", paramIndicatorInstanceIdList);
         }
-        indicatorInstanceService.lambdaQuery()
-            .eq(IndicatorInstanceEntity::getAppId, appId)
-            .list()
-            .forEach(indicatorInstanceEntity -> dbIndicatorInstanceIdList.add(indicatorInstanceEntity.getIndicatorInstanceId()));
         indicatorInstanceEntityList.forEach(indicatorInstanceEntity -> {
             String indicatorInstanceId = indicatorInstanceEntity.getIndicatorInstanceId();
             if (paramIndicatorInstanceIdList.contains(indicatorInstanceId)) {
                 indicatorInstanceEntity.setCore(EnumStatus.ENABLE.getCode());
             } else {
-                indicatorInstanceEntity.setFood(EnumStatus.DISABLE.getCode());
+                indicatorInstanceEntity.setCore(EnumStatus.DISABLE.getCode());
             }
         });
         indicatorInstanceService.saveOrUpdateBatch(indicatorInstanceEntityList);
@@ -411,15 +326,18 @@ public class IndicatorInstanceBiz{
         List<String> dbIndicatorInstanceIdList = new ArrayList<>();
         String appId = batchUpdateFoodRequestRs.getAppId();
         List<String> paramIndicatorInstanceIdList = batchUpdateFoodRequestRs.getIndicatorInstanceIdList();
+        indicatorInstanceService.lambdaQuery()
+            .eq(IndicatorInstanceEntity::getAppId, appId)
+            .list()
+            .forEach(indicatorInstanceEntity -> {
+                indicatorInstanceEntityList.add(indicatorInstanceEntity);
+                dbIndicatorInstanceIdList.add(indicatorInstanceEntity.getIndicatorInstanceId());
+            });
         if (
             paramIndicatorInstanceIdList.stream().anyMatch(indicatorInstanceId -> !dbIndicatorInstanceIdList.contains(indicatorInstanceId))
         ) {
             log.warn("method IndicatorInstanceBiz.batchUpdateFood param batchUpdateCoreRequestRs paramIndicatorInstanceIdList:{} is illegal", paramIndicatorInstanceIdList);
         }
-        indicatorInstanceService.lambdaQuery()
-            .eq(IndicatorInstanceEntity::getAppId, appId)
-            .list()
-            .forEach(indicatorInstanceEntity -> dbIndicatorInstanceIdList.add(indicatorInstanceEntity.getIndicatorInstanceId()));
         indicatorInstanceEntityList.forEach(indicatorInstanceEntity -> {
             String indicatorInstanceId = indicatorInstanceEntity.getIndicatorInstanceId();
             if (paramIndicatorInstanceIdList.contains(indicatorInstanceId)) {
@@ -435,7 +353,7 @@ public class IndicatorInstanceBiz{
     public void move(UpdateIndicatorInstanceMoveRequestRs updateIndicatorInstanceMoveRequestRs) throws InterruptedException {
         String indicatorInstanceId = updateIndicatorInstanceMoveRequestRs.getIndicatorInstanceId();
         Integer up = updateIndicatorInstanceMoveRequestRs.getUp();
-        if (!Objects.equals(EnumStatus.ENABLE.getCode(), up) && !Objects.equals(EnumStatus.DISABLE.getCode(), up)) {
+        if (!EnumStatus.ENABLE.getCode().equals(up) && !EnumStatus.DISABLE.getCode().equals(up)) {
             log.warn("method move param updateIndicatorInstanceMoveRequestRs up:{} is illegal", up);
             throw new IndicatorInstanceException(EnumESC.VALIDATE_EXCEPTION);
         }
@@ -478,7 +396,7 @@ public class IndicatorInstanceBiz{
                 });
             currentIndicatorCategoryRefEntity = kIndicatorInstanceIdVIndicatorCategoryRefMap.get(indicatorInstanceId);
             Integer currentSeq = currentIndicatorCategoryRefEntity.getSeq();
-            if (Objects.equals(EnumStatus.ENABLE.getCode(), up)) {
+            if (EnumStatus.DISABLE.getCode().equals(up)) {
                 if (currentSeq >= maxSeqAR.get()) {
                     log.warn("method move param updateIndicatorInstanceMoveRequestRs last one cannot move down");
                     throw new IndicatorInstanceException(EnumESC.VALIDATE_EXCEPTION);
@@ -495,7 +413,7 @@ public class IndicatorInstanceBiz{
                 Integer previousSeq = currentSeq - 1;
                 currentIndicatorCategoryRefEntity.setSeq(previousSeq);
                 anotherIndicatorCategoryRefEntity = kSeqVIndicatorCategoryRefMap.get(previousSeq);
-                anotherIndicatorCategoryRefEntity.setSeq(previousSeq);
+                anotherIndicatorCategoryRefEntity.setSeq(currentSeq);
             }
             indicatorCategoryRefEntityList.add(currentIndicatorCategoryRefEntity);
             indicatorCategoryRefEntityList.add(anotherIndicatorCategoryRefEntity);
@@ -533,8 +451,8 @@ public class IndicatorInstanceBiz{
                 indicatorInstanceEntityList.add(indicatorInstanceEntity);
                 kIndicatorCategoryIdVIndicatorInstanceListMap.put(indicatorCategoryId, indicatorInstanceEntityList);
             });
-        Map<String, IndicatorExpressionResponseRs> kIndicatorInstanceIdVIndicatorExpressionResponseRsMap = new HashMap<>();
-        populateKIndicatorExpressionIdVIndicatorExpressionEntityMap(appId, indicatorInstanceIdSet, kIndicatorInstanceIdVIndicatorExpressionResponseRsMap);
+        Map<String, IndicatorExpressionResponseRs> kPrincipalIdVIndicatorExpressionResponseRsMap = new HashMap<>();
+        indicatorExpressionBiz.populateKIndicatorExpressionIdVIndicatorExpressionEntityMap(appId, indicatorInstanceIdSet, kPrincipalIdVIndicatorExpressionResponseRsMap);
         Map<String, IndicatorRuleEntity> kIndicatorInstanceIdVIndicatorRuleMap = new HashMap<>();
         populateKIndicatorInstanceIdVIndicatorRuleMap(appId, indicatorInstanceIdSet, kIndicatorInstanceIdVIndicatorRuleMap);
         Map<String, Integer> kIndicatorInstanceIdVSeqMap = new HashMap<>();
@@ -549,7 +467,7 @@ public class IndicatorInstanceBiz{
                     indicatorInstanceResponseRsList = indicatorInstanceEntityList.stream()
                         .map(indicatorInstanceEntity -> {
                             String indicatorInstanceId = indicatorInstanceEntity.getIndicatorInstanceId();
-                            IndicatorExpressionResponseRs indicatorExpressionResponseRs = kIndicatorInstanceIdVIndicatorExpressionResponseRsMap.get(indicatorInstanceId);
+                            IndicatorExpressionResponseRs indicatorExpressionResponseRs = kPrincipalIdVIndicatorExpressionResponseRsMap.get(indicatorInstanceId);
                             String def = null;
                             String min = null;
                             String max = null;
@@ -562,6 +480,7 @@ public class IndicatorInstanceBiz{
                             Integer seq = kIndicatorInstanceIdVSeqMap.get(indicatorInstanceId);
                             return IndicatorInstanceBiz.indicatorInstance2ResponseRs(indicatorInstanceEntity, def, min, max, seq, indicatorExpressionResponseRs);
                         })
+                        .sorted(Comparator.comparingInt(IndicatorInstanceResponseRs::getSeq))
                         .collect(Collectors.toList());
                 }
                 return IndicatorInstanceBiz.indicatorInstanceCategoryResponseRs(
