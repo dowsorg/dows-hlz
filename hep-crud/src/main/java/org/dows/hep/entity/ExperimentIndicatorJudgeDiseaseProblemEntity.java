@@ -25,30 +25,30 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "ExperimentJudgeIndicatorProblem", title = "实验指标判断判断操作")
-@TableName("experiment_judge_indicator_problem")
-public class ExperimentJudgeIndicatorProblemEntity implements CrudEntity {
+@Schema(name = "ExperimentIndicatorJudgeDiseaseProblem", title = "实验判断指标疾病问题")
+@TableName("experiment_indicator_judge_disease_problem")
+public class ExperimentIndicatorJudgeDiseaseProblemEntity implements CrudEntity {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库ID")
     private Long id;
 
-    @Schema(title = "实验判断问题")
-    private String experimentJudgeIndicatorProblemId;
+    @Schema(title = "实验判断疾病问题分布式ID")
+    private String experimentJudgeDiseaseProblemId;
 
-    @Schema(title = "教师端判断问题分布式ID")
-    private String indicatorJudgeProblemId;
+    @Schema(title = "教师端判断疾病问题ID")
+    private String indicatorJudgeDiseaseProblemId;
 
     @Schema(title = "应用ID")
     private String appId;
 
-    @Schema(title = "实验指标功能点ID")
-    private String experimentFuncId;
+    @Schema(title = "指标功能ID")
+    private String indicatorFuncId;
 
-    @Schema(title = "实验指标分类ID")
-    private String experimentCategoryId;
+    @Schema(title = "指标分类ID")
+    private String indicatorCategoryId;
 
-    @Schema(title = "健康问题名称")
+    @Schema(title = "危险因素名称")
     private String name;
 
     @Schema(title = "分数")
