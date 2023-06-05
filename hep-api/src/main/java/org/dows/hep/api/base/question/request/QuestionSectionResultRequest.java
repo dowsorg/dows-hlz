@@ -1,8 +1,11 @@
 package org.dows.hep.api.base.question.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 /**
 * @description 
@@ -24,7 +27,17 @@ public class QuestionSectionResultRequest{
     private String questionSectionId;
 
     @Schema(title = "答案记录Item")
-    private String questionSectionResultItem;
+    private List<QuestionSectionResultItemRequest> questionSectionResultItem;
+
+
+    // JsonIgnore
+    @Schema(title = "创建者账号ID")
+    @JsonIgnore
+    private String accountId;
+
+    @Schema(title = "创建者Name")
+    @JsonIgnore
+    private String accountName;
 
 
 }

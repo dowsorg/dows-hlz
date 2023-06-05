@@ -51,4 +51,7 @@ public class IndicatorJudgeRiskFactorResponseRs implements Serializable {
 
   @Schema(title = "时间戳")
   private Date dt;
+
+  @Schema(title = "指标公式")
+  private IndicatorExpressionResponseRs indicatorExpressionResponseRs;
 }

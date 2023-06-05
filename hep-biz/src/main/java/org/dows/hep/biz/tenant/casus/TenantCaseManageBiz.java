@@ -71,7 +71,7 @@ public class TenantCaseManageBiz {
         String oriCaseInstanceId = request.getOriCaseInstanceId();
         String targetCaseInstanceName = request.getTargetCaseInstanceName();
         if (StrUtil.isBlank(oriCaseInstanceId) || StrUtil.isBlank(targetCaseInstanceName)) {
-            throw new BizException("数据不存在");
+            throw new BizException(CaseESCEnum.DATA_NULL);
         }
 
         // copy base-info
@@ -218,6 +218,7 @@ public class TenantCaseManageBiz {
                 .guide(request.getGuide())
                 .accountId(request.getAccountId())
                 .accountName(request.getAccountName())
+                .state(request.getState())
                 .build();
 
         String uniqueId = result.getCaseInstanceId();

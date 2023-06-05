@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.dto.QuestionRequestDTO;
+import org.dows.hep.api.base.question.dto.QuestionResultRecordDTO;
 import org.dows.hep.api.base.question.enums.*;
 import org.dows.hep.api.base.question.request.*;
 import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
@@ -73,6 +74,7 @@ public class QuestionInstanceBiz {
 
     /**
      * @param
+     * @param questionResultRecordDTO
      * @return
      * @说明: 克隆
      * @关联表: QuestionInstance, QuestionOptions, QuestionAnswers
@@ -197,6 +199,20 @@ public class QuestionInstanceBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     public QuestionResponse getQuestion(String questionInstanceId) {
+        return getQuestion(questionInstanceId, null);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 根据ID获取详情
+     * @关联表: QuestionInstance, QuestionOptions, QuestionAnswers
+     * @工时: 5H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月18日 上午10:45:07
+     */
+    public QuestionResponse getQuestion(String questionInstanceId, QuestionResultRecordDTO resultRecordDTO) {
         if (questionInstanceId == null) {
             return new QuestionResponse();
         }
@@ -211,7 +227,7 @@ public class QuestionInstanceBiz {
         }
 
         QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(questionTypeEnum);
-        QuestionResponse questionResponse = questionTypeHandler.get(questionInstanceId);
+        QuestionResponse questionResponse = questionTypeHandler.get(questionInstanceId, resultRecordDTO);
         setQuestionCategIds(questionResponse);
         return questionResponse;
     }
