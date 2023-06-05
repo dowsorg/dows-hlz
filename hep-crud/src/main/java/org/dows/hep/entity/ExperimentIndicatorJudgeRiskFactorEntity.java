@@ -12,6 +12,7 @@ import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -52,7 +53,7 @@ public class ExperimentIndicatorJudgeRiskFactorEntity implements CrudEntity {
     private String name;
 
     @Schema(title = "分数")
-    private String point;
+    private BigDecimal point;
 
     @Schema(title = "判断规则")
     private String expression;
