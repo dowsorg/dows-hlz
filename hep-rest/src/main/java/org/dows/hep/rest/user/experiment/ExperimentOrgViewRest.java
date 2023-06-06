@@ -144,7 +144,7 @@ public class ExperimentOrgViewRest {
      */
     @Operation(summary = "基本信息：查看")
     @GetMapping("v1/userExperiment/experimentOrgView/getIndicatorBaseInfo/{indicatorViewBaseInfoId}/{appId}/{experimentPersonId}/{periods}")
-    public Boolean getIndicatorBaseInfo(@PathVariable @Validated String indicatorViewBaseInfoId,
+    public Map<String,Object> getIndicatorBaseInfo(@PathVariable @Validated String indicatorViewBaseInfoId,
                                         @PathVariable @Validated String appId,
                                         @PathVariable @Validated String experimentPersonId,
                                         @PathVariable @Validated String periods

@@ -42,9 +42,6 @@ public class ExperimentIndicatorValEntity {
   @Schema(title = "实验指标ID")
   public String experimentIndicatorInstanceId;
 
-  @Schema(title = "实验人物ID")
-  public String experimentPersonId;
-
   @Schema(title = "当前值")
   private String currentVal;
 
