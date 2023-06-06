@@ -80,8 +80,11 @@ public class FoodMaterialBiz{
         List<FoodMaterialIndicatorEntity> indicators= dao.getSubByLeadId(foodMaterialId,
                 FoodMaterialIndicatorEntity::getId,
                 FoodMaterialIndicatorEntity::getIndicatorInstanceId,
+                FoodMaterialIndicatorEntity::getIndicatorCategoryId,
                 FoodMaterialIndicatorEntity::getExpression,
                 FoodMaterialIndicatorEntity::getExpressionDescr,
+                FoodMaterialIndicatorEntity::getExpressionVars,
+                FoodMaterialIndicatorEntity::getExpressionNames,
                 FoodMaterialIndicatorEntity::getSeq);
         List<FoodMaterialNutrientEntity> nutrients= dao.getSubByLeadIdX(foodMaterialId,
                 FoodMaterialNutrientEntity::getId,

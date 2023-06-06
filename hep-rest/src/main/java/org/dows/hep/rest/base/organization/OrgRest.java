@@ -154,7 +154,7 @@ public class OrgRest {
      */
     @Operation(summary = "删除机构基本信息")
     @DeleteMapping("v1/baseOrg/org/deleteOrgs")
-    public Boolean deleteOrgs(@Nullable @RequestParam Set<String> caseOrgIds,@RequestParam String caseInstanceId,@RequestParam String appId) {
+    public Boolean deleteOrgs(@RequestBody Set<String> caseOrgIds,@RequestParam String caseInstanceId,@RequestParam String appId) {
         return orgBiz.deleteOrgs(caseOrgIds,caseInstanceId,appId);
     }
 
