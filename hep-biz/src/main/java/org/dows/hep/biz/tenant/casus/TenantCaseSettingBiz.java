@@ -5,7 +5,6 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
-import org.dows.hep.api.base.materials.MaterialsESCEnum;
 import org.dows.hep.api.tenant.casus.CaseESCEnum;
 import org.dows.hep.api.tenant.casus.request.CaseSettingRequest;
 import org.dows.hep.api.tenant.casus.response.CaseSettingResponse;
@@ -73,6 +72,11 @@ public class TenantCaseSettingBiz {
         }
 
         CaseSettingEntity result = CaseSettingEntity.builder()
+                .caseSettingId(request.getCaseSettingId())
+                .caseInstanceId(request.getCaseInstanceId())
+                .scoreMode(request.getScoreMode())
+                .allotMode(request.getAllotMode())
+                .ext(request.getExt())
                 .build();
 
         String uniqueId = result.getCaseSettingId();
@@ -81,7 +85,7 @@ public class TenantCaseSettingBiz {
         } else {
             CaseSettingEntity entity = getById(uniqueId);
             if (BeanUtil.isEmpty(entity)) {
-                throw new BizException(MaterialsESCEnum.DATA_NULL);
+                throw new BizException(CaseESCEnum.DATA_NULL);
             }
             result.setId(entity.getId());
         }
