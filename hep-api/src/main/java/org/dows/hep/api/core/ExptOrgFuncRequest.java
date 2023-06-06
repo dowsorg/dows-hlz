@@ -14,11 +14,10 @@ import lombok.NoArgsConstructor;
 @Schema(name = "ExptOrgFunc 对象", title = "学生端机构操作")
 public class ExptOrgFuncRequest extends BaseExptRequest {
 
-    @Schema(title = "机构功能ID")
-    private String caseOrgFunctionId;
 
     @Schema(title = "指标功能点ID")
     private String indicatorFuncId;
+
 
 
 

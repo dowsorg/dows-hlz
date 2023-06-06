@@ -54,14 +54,20 @@ public class EventActionIndicatorEntity implements CrudEntity {
     @Schema(title = "指标id")
     private String indicatorInstanceId;
 
+    @Schema(title = "指标分类ID")
+    private String indicatorCategoryId;
+
     @Schema(title = "表达式")
     private String expression;
 
     @Schema(title = "公式描述")
     private String expressionDescr;
 
-    @Schema(title = "表达式涉及变量")
+    @Schema(title = "参数id列表")
     private String expressionVars;
+
+    @Schema(title = "参数名列表")
+    private String expressionNames;
 
     @Schema(title = "最小值")
     private String expressionMin;

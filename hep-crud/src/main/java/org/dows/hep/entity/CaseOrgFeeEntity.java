@@ -55,7 +55,7 @@ public class CaseOrgFeeEntity implements CrudEntity {
     private String functionName;
 
     @Schema(title = "报销比例")
-    private Object reimburseRatio;
+    private Double reimburseRatio;
 
     @Schema(title = "费用")
     private Double fee;

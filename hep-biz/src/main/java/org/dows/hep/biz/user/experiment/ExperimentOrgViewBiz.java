@@ -8,159 +8,171 @@ import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
-* @description project descr:实验:机构操作-查看指标
-*
-* @author lait.zhang
-* @date 2023年4月23日 上午9:44:34
-*/
+ * @author lait.zhang
+ * @description project descr:实验:机构操作-查看指标
+ * @date 2023年4月23日 上午9:44:34
+ */
 @Service
 @RequiredArgsConstructor
-public class ExperimentOrgViewBiz{
+public class ExperimentOrgViewBiz {
 
     private final OperateOrgFuncService operateOrgFuncService;
     private final OperateOrgFuncSnapService operateOrgFuncSnapService;
     private final ExperimentIndicatorViewPhysicalExamService experimentIndicatorViewPhysicalExamService;
     private final ExperimentIndicatorViewSupportExamService experimentIndicatorViewSupportExamService;
-    private final IndicatorViewBaseInfoDescrService indicatorViewBaseInfoDescrService;
-    private final IndicatorViewBaseInfoDescrRefService indicatorViewBaseInfoDescrRefService;
+    private final ExperimentViewBaseInfoDescrService experimentViewBaseInfoDescrService;
+    private final ExperimentViewBaseInfoDescrRefService experimentViewBaseInfoDescrRefService;
+    private final ExperimentIndicatorValService experimentIndicatorValService;
+    private final ExperimentIndicatorInstanceService experimentIndicatorInstanceService;
+    private final ExperimentViewBaseInfoMonitorService experimentViewBaseInfoMonitorService;
+    private final ExperimentViewBaseInfoSingleService experimentViewBaseInfoSingleService;
+
     /**
-    * @param
-    * @return
-    * @说明: 获取人物基本信息（健管，体检，医院）
-    * @关联表: OperateOrgFunc，OperateOrgFuncSnap
-    * @工时: 6H
-    * @开发者: wuzl
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public OrgPersonBasicResponse getOrgPersonBasic(FindOrgPersonBasicRequest findOrgPersonBasic ) {
+     * @param
+     * @return
+     * @说明: 获取人物基本信息（健管，体检，医院）
+     * @关联表: OperateOrgFunc，OperateOrgFuncSnap
+     * @工时: 6H
+     * @开发者: wuzl
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public OrgPersonBasicResponse getOrgPersonBasic(FindOrgPersonBasicRequest findOrgPersonBasic) {
         return new OrgPersonBasicResponse();
     }
+
     /**
-    * @param
-    * @return
-    * @说明: 监测随访：获取类别，随访表列表
-    * @关联表: indicator_view_monitor_followup,indicator_category
-    * @工时: 6H
-    * @开发者: wuzl
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public List<FollowupDefResponse> listFollowupDef(FindFollowupDefRequest findFollowupDef ) {
+     * @param
+     * @return
+     * @说明: 监测随访：获取类别，随访表列表
+     * @关联表: indicator_view_monitor_followup, indicator_category
+     * @工时: 6H
+     * @开发者: wuzl
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public List<FollowupDefResponse> listFollowupDef(FindFollowupDefRequest findFollowupDef) {
         return new ArrayList<FollowupDefResponse>();
     }
+
     /**
-    * @param
-    * @return
-    * @说明: 监测随访：获取随访表内容
-    * @关联表: indicator_view_monitor_followup，indicator_view_monitor_followup_followup_content,indicator_view_monitor_followup_content_ref
-    * @工时: 6H
-    * @开发者: wuzl
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public FollowupDefResponse getFollowupDef(String indicatorViewMonitorFollowupId ) {
+     * @param
+     * @return
+     * @说明: 监测随访：获取随访表内容
+     * @关联表: indicator_view_monitor_followup，indicator_view_monitor_followup_followup_content,indicator_view_monitor_followup_content_ref
+     * @工时: 6H
+     * @开发者: wuzl
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public FollowupDefResponse getFollowupDef(String indicatorViewMonitorFollowupId) {
         return new FollowupDefResponse();
     }
+
     /**
-    * @param
-    * @return
-    * @说明: 监测随访：保存随访设置，频率，表格
-    * @关联表: OperateFollowupTimer
-    * @工时: 6H
-    * @开发者: wuzl
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public Boolean setFollowup(SetFollowupRequest setFollowup ) {
+     * @param
+     * @return
+     * @说明: 监测随访：保存随访设置，频率，表格
+     * @关联表: OperateFollowupTimer
+     * @工时: 6H
+     * @开发者: wuzl
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public Boolean setFollowup(SetFollowupRequest setFollowup) {
         return Boolean.FALSE;
     }
+
     /**
-    * @param
-    * @return
-    * @说明: 监测随访：获取随访状态，是否可随访
-    * @关联表: OperateFollowupTimer
-    * @工时: 6H
-    * @开发者: wuzl
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public FollowupStateResponse getFollowupState(FindFollowupStateRequest findFollowupState ) {
+     * @param
+     * @return
+     * @说明: 监测随访：获取随访状态，是否可随访
+     * @关联表: OperateFollowupTimer
+     * @工时: 6H
+     * @开发者: wuzl
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public FollowupStateResponse getFollowupState(FindFollowupStateRequest findFollowupState) {
         return new FollowupStateResponse();
     }
+
     /**
-    * @param
-    * @return
-    * @说明: 监测随访：开始随访（保存随访记录）
-    * @关联表: OperateFollowupTimer,OperateOrgFunc,OperateOrgFuncSnap
-    * @工时: 6H
-    * @开发者: wuzl
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public SaveFollowupResponse saveFollowup(SaveFollowupRequest saveFollowup ) {
+     * @param
+     * @return
+     * @说明: 监测随访：开始随访（保存随访记录）
+     * @关联表: OperateFollowupTimer, OperateOrgFunc, OperateOrgFuncSnap
+     * @工时: 6H
+     * @开发者: wuzl
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public SaveFollowupResponse saveFollowup(SaveFollowupRequest saveFollowup) {
         return new SaveFollowupResponse();
     }
+
     /**
-    * @param
-    * @return
-    * @说明: 监测随访：查看随访报告
-    * @关联表: OperateOrgFunc,OperateOrgFuncSnap
-    * @工时: 6H
-    * @开发者: wuzl
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public FollowupReportInfoResponse getFollowUpReport(String operateOrgFuncId ) {
+     * @param
+     * @return
+     * @说明: 监测随访：查看随访报告
+     * @关联表: OperateOrgFunc, OperateOrgFuncSnap
+     * @工时: 6H
+     * @开发者: wuzl
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public FollowupReportInfoResponse getFollowUpReport(String operateOrgFuncId) {
         return new FollowupReportInfoResponse();
     }
+
     /**
-    * @param
-    * @return
-    * @说明: 体格检查+辅助检查：获取检查类别+项目
-    * @关联表: OperateOrgFunc,OperateOrgFuncSnap
-    * @工时: 6H
-    * @开发者: wuzl
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public List<CategsWithStateResponse> listOrgViewCategs(FindOrgViewCategsRequest findOrgViewCategs ) {
+     * @param
+     * @return
+     * @说明: 体格检查+辅助检查：获取检查类别+项目
+     * @关联表: OperateOrgFunc, OperateOrgFuncSnap
+     * @工时: 6H
+     * @开发者: wuzl
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public List<CategsWithStateResponse> listOrgViewCategs(FindOrgViewCategsRequest findOrgViewCategs) {
         return new ArrayList<CategsWithStateResponse>();
     }
+
     /**
-    * @param
-    * @return
-    * @说明: 体格检查+辅助检查：执行检查(开检查单)
-    * @关联表: OperateOrgFunc,OperateOrgFuncSnap
-    * @工时: 6H
-    * @开发者: wuzl
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public SaveOrgViewResponse saveOrgView(SaveOrgViewRequest saveOrgView ) {
+     * @param
+     * @return
+     * @说明: 体格检查+辅助检查：执行检查(开检查单)
+     * @关联表: OperateOrgFunc, OperateOrgFuncSnap
+     * @工时: 6H
+     * @开发者: wuzl
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public SaveOrgViewResponse saveOrgView(SaveOrgViewRequest saveOrgView) {
         return new SaveOrgViewResponse();
     }
+
     /**
-    * @param
-    * @return
-    * @说明: 体格检查+辅助检查：获取最新检查报告
-    * @关联表: OperateOrgFunc,OperateOrgFuncSnap
-    * @工时: 2H
-    * @开发者: jx
-    * @开始时间: 
-    * @创建时间: 2023年6月01日 下午13:44:34
-    */
+     * @param
+     * @return
+     * @说明: 体格检查+辅助检查：获取最新检查报告
+     * @关联表: OperateOrgFunc, OperateOrgFuncSnap
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月01日 下午13:44:34
+     */
     public List<OperateOrgFuncSnapRequest> getOrgViewReport(GetOrgViewReportRequest orgViewReport) {
         List<OperateOrgFuncSnapRequest> requestList = new ArrayList<>();
         //1、获取操作记录
         List<OperateOrgFuncEntity> entityList = operateOrgFuncService.lambdaQuery()
-                .select(OperateOrgFuncEntity::getOperateOrgFuncId,OperateOrgFuncEntity::getDeleted)
+                .select(OperateOrgFuncEntity::getOperateOrgFuncId, OperateOrgFuncEntity::getDeleted)
                 .eq(OperateOrgFuncEntity::getPeriods, orgViewReport.getPeriods())
                 .eq(OperateOrgFuncEntity::getIndicatorFuncId, orgViewReport.getIndicatorFuncId())
                 .eq(OperateOrgFuncEntity::getExperimentPersonId, orgViewReport.getExperimentPersonId())
@@ -168,11 +180,11 @@ public class ExperimentOrgViewBiz{
                 .eq(OperateOrgFuncEntity::getDeleted, false)
                 .list();
         //2、获取操作记录快照
-        if(entityList != null && entityList.size() > 0){
-            entityList.forEach(entity->{
+        if (entityList != null && entityList.size() > 0) {
+            entityList.forEach(entity -> {
                 OperateOrgFuncSnapEntity snapEntity = operateOrgFuncSnapService.lambdaQuery()
-                        .eq(OperateOrgFuncSnapEntity::getOperateOrgFuncId,entity.getOperateOrgFuncId())
-                        .eq(OperateOrgFuncSnapEntity::getDeleted,false)
+                        .eq(OperateOrgFuncSnapEntity::getOperateOrgFuncId, entity.getOperateOrgFuncId())
+                        .eq(OperateOrgFuncSnapEntity::getDeleted, false)
                         .one();
                 OperateOrgFuncSnapRequest snapRequest = OperateOrgFuncSnapRequest.builder()
                         .operateOrgFuncSnapId(snapEntity.getOperateOrgFuncSnapId())
@@ -188,17 +200,17 @@ public class ExperimentOrgViewBiz{
      * @param
      * @return
      * @说明: 体格检查+辅助检查：体格检查+辅助检查保存
-     * @关联表: OperateOrgFunc,OperateOrgFuncSnap
+     * @关联表: OperateOrgFunc, OperateOrgFuncSnap
      * @工时: 6H
      * @开发者: wuzl
      * @开始时间:
      * @创建时间: 2023年5月31日 下午17:14:34
      */
     @DSTransactional
-    public Boolean savePhysiqueAndAuxiliary(List<GetOrgViewReportRequest> reportRequestList,String accountId, String accountName) {
+    public Boolean savePhysiqueAndAuxiliary(List<GetOrgViewReportRequest> reportRequestList, String accountId, String accountName) {
         //1、删除用户以前功能点信息
         List<OperateOrgFuncEntity> entityList = operateOrgFuncService.lambdaQuery()
-                .select(OperateOrgFuncEntity::getId,OperateOrgFuncEntity::getDeleted)
+                .select(OperateOrgFuncEntity::getId, OperateOrgFuncEntity::getDeleted)
                 .eq(OperateOrgFuncEntity::getPeriods, reportRequestList.get(0).getPeriods())
                 .eq(OperateOrgFuncEntity::getIndicatorFuncId, reportRequestList.get(0).getIndicatorFuncId())
                 .eq(OperateOrgFuncEntity::getExperimentPersonId, reportRequestList.get(0).getExperimentPersonId())
@@ -277,7 +289,7 @@ public class ExperimentOrgViewBiz{
         reportRequestList.forEach(reportRequest -> {
             //1、根据ID获取判断规则
             ExperimentIndicatorViewPhysicalExamEntity entity = experimentIndicatorViewPhysicalExamService.lambdaQuery()
-                    .select(ExperimentIndicatorViewPhysicalExamEntity::getExperimentJudgePhysicalExamId,ExperimentIndicatorViewPhysicalExamEntity::getFee)
+                    .select(ExperimentIndicatorViewPhysicalExamEntity::getExperimentJudgePhysicalExamId, ExperimentIndicatorViewPhysicalExamEntity::getFee)
                     .eq(ExperimentIndicatorViewPhysicalExamEntity::getExperimentJudgePhysicalExamId, reportRequest.getExperimentJudgePhysicalExamId())
                     .eq(ExperimentIndicatorViewPhysicalExamEntity::getStatus, true)
                     .one();
@@ -303,7 +315,7 @@ public class ExperimentOrgViewBiz{
         reportRequestList.forEach(reportRequest -> {
             //1、根据ID获取判断规则
             ExperimentIndicatorViewSupportExamEntity entity = experimentIndicatorViewSupportExamService.lambdaQuery()
-                    .select(ExperimentIndicatorViewSupportExamEntity::getExperimentJudgeSupportExamId,ExperimentIndicatorViewSupportExamEntity::getFee)
+                    .select(ExperimentIndicatorViewSupportExamEntity::getExperimentJudgeSupportExamId, ExperimentIndicatorViewSupportExamEntity::getFee)
                     .eq(ExperimentIndicatorViewSupportExamEntity::getExperimentJudgeSupportExamId, reportRequest.getExperimentJudgeSupportExamId())
                     .eq(ExperimentIndicatorViewSupportExamEntity::getStatus, true)
                     .one();
@@ -323,21 +335,63 @@ public class ExperimentOrgViewBiz{
      * @开始时间:
      * @创建时间: 2023年6月02日 下午16:26:34
      */
-    public Boolean getIndicatorBaseInfo(String indicatorViewBaseInfoId,String appId) {
-        //1、根据分布式ID找到指标描述功能点
-        List<IndicatorViewBaseInfoDescrEntity> descrList = indicatorViewBaseInfoDescrService.lambdaQuery()
-                .eq(IndicatorViewBaseInfoDescrEntity::getAppId,appId)
-                .eq(IndicatorViewBaseInfoDescrEntity::getIndicatorViewBaseInfoId,indicatorViewBaseInfoId)
-                .eq(IndicatorViewBaseInfoDescrEntity::getDeleted,false)
+    public Boolean getIndicatorBaseInfo(String indicatorViewBaseInfoId,
+                                        String appId,
+                                        String experimentPersonId,
+                                        String periods
+                                        ) {
+        Map<String,Object> map = new HashMap<>();
+        /**
+         * 描述信息表
+         */
+        //1、根据分布式ID找到指标描述功能点并排序
+        List<ExperimentViewBaseInfoDescrEntity> descrList = experimentViewBaseInfoDescrService.lambdaQuery()
+                .select(ExperimentViewBaseInfoDescrEntity::getExperimentViewBaseInfoDescrId,
+                        ExperimentViewBaseInfoDescrEntity::getName,
+                        ExperimentViewBaseInfoDescrEntity::getSeq)
+                .eq(ExperimentViewBaseInfoDescrEntity::getAppId, appId)
+                .eq(ExperimentViewBaseInfoDescrEntity::getIndicatorViewBaseInfoId, indicatorViewBaseInfoId)
+                .eq(ExperimentViewBaseInfoDescrEntity::getDeleted, false)
                 .list();
-        if(descrList != null && descrList.size() > 0){
-            descrList.forEach(descr->{
-                List<IndicatorViewBaseInfoDescrRefEntity> refList = indicatorViewBaseInfoDescrRefService.lambdaQuery()
-                        .eq(IndicatorViewBaseInfoDescrRefEntity::getIndicatorViewBaseInfoDescId,descr.getIndicatorViewBaseInfoDescId())
-                        .eq(IndicatorViewBaseInfoDescrRefEntity::getDeleted,false)
-                        .list();
+        descrList = descrList.stream().sorted(Comparator.comparing(iteam -> iteam.getSeq())).collect(Collectors.toList());
+        //2、根据功能点找到指标信息并再次排序
+        if (descrList != null && descrList.size() > 0) {
+            descrList.forEach(descr -> {
+                List<ExperimentViewBaseInfoDescrRefEntity> refEntityList = experimentViewBaseInfoDescrRefService.lambdaQuery()
+                    .select(ExperimentViewBaseInfoDescrRefEntity::getExperimentIndicatorInstanceId)
+                    .eq(ExperimentViewBaseInfoDescrRefEntity::getAppId, appId)
+                    .eq(ExperimentViewBaseInfoDescrRefEntity::getExperimentViewBaseInfoDescrId, descr.getExperimentViewBaseInfoDescrId())
+                    .eq(ExperimentViewBaseInfoDescrRefEntity::getDeleted, false)
+                    .list()
+                    .stream().sorted(Comparator.comparing(iteam -> iteam.getSeq())).collect(Collectors.toList());
+                List<ExperimentIndicatorResponse> responseList = new ArrayList<>();
+                if(refEntityList != null && refEntityList.size() > 0){
+                    refEntityList.forEach(refEntity->{
+                        ExperimentIndicatorResponse response = new ExperimentIndicatorResponse();
+                        //2.1、获取指标值
+                        ExperimentIndicatorValEntity valEntity = experimentIndicatorValService.lambdaQuery()
+                                .eq(ExperimentIndicatorValEntity::getDeleted,false)
+                                .eq(ExperimentIndicatorValEntity::getExperimentIndicatorInstanceId,refEntity.getExperimentIndicatorInstanceId())
+                                .eq(ExperimentIndicatorValEntity::getPeriods,periods)
+                                .eq(ExperimentIndicatorValEntity::getExperimentPersonId,experimentPersonId)
+                                .one();
+                        response.setExperimentIndicatorCurrentVal(valEntity.getCurrentVal());
+                        //2.2、获取指标单位
+                        ExperimentIndicatorInstanceEntity instanceEntity = experimentIndicatorInstanceService.lambdaQuery()
+                                .eq(ExperimentIndicatorInstanceEntity::getDeleted,false)
+                                .eq(ExperimentIndicatorInstanceEntity::getExperimentIndicatorInstanceId,refEntity.getExperimentIndicatorInstanceId())
+                                .one();
+                        response.setExperimentIndicatorInstanceName(instanceEntity.getIndicatorName());
+                        response.setUnit(instanceEntity.getUnit());
+                        responseList.add(response);
+                    });
+                }
+                map.put(descr.getName(),responseList);
             });
         }
+        /**
+         * 监测信息表
+         */
         return false;
     }
 

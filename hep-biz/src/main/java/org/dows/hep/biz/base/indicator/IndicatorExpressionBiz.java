@@ -417,8 +417,7 @@ public class IndicatorExpressionBiz{
         if (isValDigital) {
           context.setVariable(conditionNameSplitList.get(i), Double.parseDouble(val));
         } else {
-          val = "'" + val;
-          val = val + "'";
+          val = wrapStrWithDoubleSingleQuotes(val);
           context.setVariable(conditionNameSplitList.get(i), val);
         }
       }
@@ -466,7 +465,7 @@ public class IndicatorExpressionBiz{
     resultNameArray = resultNameList.split(EnumString.COMMA.getStr());
     resultValArray = resultValList.split(EnumString.COMMA.getStr());
     for (int i = 0; i <= resultNameArray.length - 1; i++) {
-      String[] resultNameSpiltArray = resultNameArray[i].split(EnumString.DOLLAR.getStr());
+      String[] resultNameSpiltArray = resultNameArray[i].split(EnumString.SPLIT_DOLLAR.getStr());
       if (StringUtils.equals(principalId, resultValArray[i]) && StringUtils.equals(resultNameSpiltArray[1], EnumString.ZERO.getStr())) {
         log.warn("method IndicatorExpressionBiz.createOrUpdate checkResultExpression can not ref same indicatorInstanceId with current periods");
         throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
@@ -474,7 +473,7 @@ public class IndicatorExpressionBiz{
     }
     /* runsix:can not circular dependency */
     for (int i = 0; i <= resultValArray.length-1; i++) {
-      String[] resultNameSplitArray = resultNameArray[i].split(EnumString.DOLLAR.getStr());
+      String[] resultNameSplitArray = resultNameArray[i].split(EnumString.SPLIT_DOLLAR.getStr());
       String indicatorInstanceId = resultValArray[i];
       String periods = resultNameSplitArray[1];
       if (periods.startsWith(EnumString.UNDERLINE.getStr())) {
@@ -524,32 +523,186 @@ public class IndicatorExpressionBiz{
     }
   }
 
-  private String getConditionExpression(String conditionExpression) {
-    if (StringUtils.isNotBlank(conditionExpression)) {
-      String[] split = conditionExpression.split(EnumString.SPACE.getStr());
-      StringBuffer stringBuffer = new StringBuffer();
-      for (int i = 0; i <= split.length-1; i++) {
-        if (checkNotIndicatorAndDigitalAndMathOperator(split[i])) {
-          stringBuffer.append("'").append(split[i]).append("'");
-        } else {
-          stringBuffer.append(split[i]);
-        }
-        if (i != split.length-1) {
-          stringBuffer.append(EnumString.SPACE.getStr());
+  private static String getConditionExpression(String conditionExpression) {
+    List<String> strList = new ArrayList<>();
+    for (int i = 0; i <= conditionExpression.length()-1;) {
+      if (checkSpace(conditionExpression.substring(i, i+1))) {
+        i++;
+        continue;
+      }
+      if (checkMathSingleOperator(conditionExpression.substring(i, i+1))) {
+        strList.add(conditionExpression.substring(i, i+1));
+        i++;
+        continue;
+      }
+      if (i < conditionExpression.length()-1) {
+        if (checkMathDoubleOperator(conditionExpression.substring(i, i+2))) {
+          strList.add(conditionExpression.substring(i, i+2));
+          i += 2;
+          continue;
         }
       }
-      conditionExpression = stringBuffer.toString();
+      /* runsix:指标 */
+      if (checkIndicator(conditionExpression.substring(i, i+1))) {
+        boolean isComplete = false;
+        for (int j = i+1; j <= conditionExpression.length()-1;) {
+          if (checkSpace(conditionExpression.substring(j, j+1))) {
+            isComplete = true;
+            i += 2;
+            break;
+          }
+          /* runsix:找到$ */
+          if (checkDollar(conditionExpression.substring(j, j+1))) {
+            isComplete = true;
+            /* runsix:下划线，表明是上n期 */
+            if (checkUnderline(conditionExpression.substring(j+1, j+2))) {
+              strList.add(conditionExpression.substring(i, j+3));
+              i = j+3;
+              break;
+            } else {
+              /* runsix:不是下划线，表面是当前期 */
+              strList.add(conditionExpression.substring(i, j+2));
+              i = j+2;
+              break;
+            }
+          } else {
+            j++;
+          }
+        }
+        if (!isComplete) {
+          strList.add(conditionExpression.substring(i));
+          i = conditionExpression.length()-1+1;
+        }
+      } else {
+        /* runsix:如果不是数字，一定是字符串 */
+        if (!checkNumber(conditionExpression.substring(i, i+1))) {
+          boolean isComplete = false;
+          for (int j = i+1; j <= conditionExpression.length()-1; j++) {
+            if (checkSpace(conditionExpression.substring(j, j+1))) {
+              isComplete = true;
+              strList.add(wrapStrWithDoubleSingleQuotes(conditionExpression.substring(i, j)));
+              i = j+1;
+              break;
+            }
+            if (checkMathSingleOperator(conditionExpression.substring(j, j+1))) {
+              isComplete = true;
+              strList.add(wrapStrWithDoubleSingleQuotes(conditionExpression.substring(i, j)));
+              strList.add(conditionExpression.substring(j, j+1));
+              i = j+1;
+              break;
+            }
+            if (j <= conditionExpression.length()-1-1) {
+              if (checkMathDoubleOperator(conditionExpression.substring(j, j+2))) {
+                isComplete = true;
+                strList.add(wrapStrWithDoubleSingleQuotes(conditionExpression.substring(i, j+1)));
+                strList.add(conditionExpression.substring(j, j+2));
+                i = j+2;
+                break;
+              }
+            }
+          }
+          if (!isComplete) {
+            strList.add(wrapStrWithDoubleSingleQuotes(conditionExpression.substring(i)));
+            i = conditionExpression.length()-1+1;
+          }
+        } else {
+          boolean isComplete = false;
+          boolean isNumber = true;
+          /* runsix:如果是数字，看到最后有没有非数字 */
+          for (int j = i+1; j <= conditionExpression.length()-1; j++) {
+            if (checkSpace(conditionExpression.substring(j, j+1))) {
+              if (isNumber) {
+                strList.add(conditionExpression.substring(i, j));
+              } else {
+                strList.add(wrapStrWithDoubleSingleQuotes(conditionExpression.substring(i, j)));
+              }
+              isComplete = true;
+              i = j+1;
+              break;
+            }
+            if (checkMathSingleOperator(conditionExpression.substring(j, j+1))) {
+              if (isNumber) {
+                strList.add(conditionExpression.substring(i, j));
+              } else {
+                strList.add(wrapStrWithDoubleSingleQuotes(conditionExpression.substring(i, j)));
+              }
+              strList.add(conditionExpression.substring(j, j+1));
+              isComplete = true;
+              i = j+1;
+              break;
+            }
+            if (j <= conditionExpression.length()-1-1) {
+              if (checkMathDoubleOperator(conditionExpression.substring(j, j+2))) {
+                if (isNumber) {
+                  strList.add(conditionExpression.substring(i, j));
+                } else {
+                  strList.add(wrapStrWithDoubleSingleQuotes(conditionExpression.substring(i, j)));
+                }
+                strList.add(conditionExpression.substring(j, j+2));
+                isComplete = true;
+                i = j+2;
+                break;
+              }
+            }
+            /* runsix:如果不是数字，说明是字符串 */
+            if (isNumber && !NumberUtils.isCreatable(conditionExpression.substring(j, j+1))) {
+              isNumber = false;
+            }
+          }
+          if (!isComplete) {
+            if (isNumber) {
+              strList.add(conditionExpression.substring(i));
+            } else {
+              strList.add(wrapStrWithDoubleSingleQuotes(conditionExpression.substring(i)));
+            }
+          }
+        }
+      }
     }
-    return conditionExpression;
+    return String.join(EnumString.SPACE.getStr(), strList);
   }
-  private boolean checkNotIndicatorAndDigitalAndMathOperator(String str) {
-    if (str.startsWith(EnumString.JIN.getStr())) {
-      return false;
-    } else if (NumberUtils.isCreatable(str)) {
-      return false;
-    } else if (StringUtils.equalsAnyIgnoreCase(str, "+", "-", "*", "/", "%", "(", ")", ">=", "==", "<=", ">", "<")) {
-      return false;
-    }
-    return true;
+
+  private static String wrapStrWithDoubleSingleQuotes(String str) {
+    StringBuffer stringBuffer = new StringBuffer();
+    stringBuffer.append(EnumString.SINGLE_QUOTES.getStr());
+    stringBuffer.append(str);
+    stringBuffer.append(EnumString.SINGLE_QUOTES.getStr());
+    return stringBuffer.toString();
+  }
+  private static boolean checkNumber(String str) {
+    return NumberUtils.isCreatable(str);
+  }
+
+  private static boolean checkIndicator(String str) {
+    return str.startsWith(EnumString.JIN.getStr());
+  }
+
+  private static boolean checkMathSingleOperator(String str) {
+    return StringUtils.equalsAnyIgnoreCase(str, "+", "-", "*", "/", "%", "(", ")");
+  }
+
+  private static boolean checkMathDoubleOperator(String str) {
+    return StringUtils.equalsAnyIgnoreCase(str, ">=", "==", "<=", ">", "<");
+  }
+
+  private static boolean checkUnderline(String str) {
+    return StringUtils.equalsIgnoreCase(str, EnumString.UNDERLINE.getStr());
+  }
+
+  private static boolean checkDollar(String str) {
+    return StringUtils.equalsIgnoreCase(str, EnumString.SPLIT_DOLLAR.getStr());
+  }
+
+  private static boolean checkSpace(String str) {
+    return StringUtils.equalsIgnoreCase(str, EnumString.SPACE.getStr());
+  }
+
+  /* runsix:TODO 需要删掉，测试使用 */
+  public static void main(String[] args) {
+//    String str = "#indicator0$_1 == 男";
+//    System.out.println(getConditionExpression(str));
+    String str = "indicator0@0";
+    String[] split = str.split("@");
+    System.out.println(split);
   }
 }

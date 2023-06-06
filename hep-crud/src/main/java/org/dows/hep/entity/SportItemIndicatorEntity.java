@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 运动项目关联指标(SportItemIndicator)实体类
@@ -48,14 +48,20 @@ public class SportItemIndicatorEntity implements CrudEntity {
     @Schema(title = "分布式ID")
     private String indicatorInstanceId;
 
+    @Schema(title = "指标分类ID")
+    private String indicatorCategoryId;
+
     @Schema(title = "表达式")
     private String expression;
 
     @Schema(title = "公式描述")
     private String expressionDescr;
 
-    @Schema(title = "表达式涉及变量")
+    @Schema(title = "参数id列表")
     private String expressionVars;
+
+    @Schema(title = "参数名列表")
+    private String expressionNames;
 
     @Schema(title = "最小值")
     private String expressionMin;

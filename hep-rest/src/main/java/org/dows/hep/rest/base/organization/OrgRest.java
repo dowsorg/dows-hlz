@@ -98,7 +98,7 @@ public class OrgRest {
      */
     @Operation(summary = "创建案例机构")
     @PostMapping("v1/baseOrg/org/addOrgnization")
-    public String addOrgnization(@RequestBody AccountOrgRequest request,@RequestParam String caseInstanceId,@RequestParam String ver,@Nullable @RequestParam String caseIdentifier) {
+    public String addOrgnization(@RequestBody AccountOrgRequest request,@RequestParam String caseInstanceId, @Nullable @RequestParam String ver,@Nullable @RequestParam String caseIdentifier) {
         return orgBiz.addOrgnization(request,caseInstanceId,ver,caseIdentifier);
     }
 

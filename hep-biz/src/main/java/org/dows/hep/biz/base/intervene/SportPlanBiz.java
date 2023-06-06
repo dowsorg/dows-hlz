@@ -82,12 +82,25 @@ public class SportPlanBiz{
         List<String> itemIds=ShareUtil.XCollection.map(subRows,SportPlanItemsEntity::getSportItemId);
         Map<String,SportItemEntity> mapItems=daoSportItem.getMapByIds(itemIds,
                 SportItemEntity::getSportItemId,
+                SportItemEntity::getInterveneCategId,
                 SportItemEntity::getStrengthMet,
                 SportItemEntity::getStrengthType);
         List<SportPlanItemVO> vos=ShareUtil.XCollection.map(subRows,i->
                 CopyWrapper.create(SportPlanItemVO::new)
-                        .from(mapItems.get(i.getSportItemId()))
                         .endFrom(i,v->v.setRefId(i.getSportPlanItemsId())));
+        vos.forEach(i-> {
+            SportItemEntity src = mapItems.get(i.getSportItemId());
+            if (null == src) {
+                return;
+            }
+            i.setStrengthMet(src.getStrengthMet()).setStrengthType(src.getStrengthType());
+            CategVO categ = getCategCache().getById(src.getInterveneCategId());
+            if (null == categ) {
+                return;
+            }
+            i.setCategIdLv1(getCategCache().getCategLv1(categ.getCategIdPath(), categ.getCategId()))
+                    .setCategNameLv1(getCategCache().getCategLv1(categ.getCategNamePath(), categ.getCategName()));
+        });
         subRows.clear();
         itemIds.clear();
         mapItems.clear();
@@ -124,6 +137,7 @@ public class SportPlanBiz{
                 .setCategName(categVO.getCategName())
                 .setCategIdPath(categVO.getCategIdPath())
                 .setCategNamePath(categVO.getCategNamePath());
+
 
         List<SportPlanItemsEntity> subrows=ShareUtil.XCollection.map(saveSportPlan.getSportItems(),
                 i->CopyWrapper.create(SportPlanItemsEntity::new)
@@ -184,4 +198,5 @@ public class SportPlanBiz{
                 .setCategNamePath(cacheItem.getCategNamePath());
 
     }
+
 }
