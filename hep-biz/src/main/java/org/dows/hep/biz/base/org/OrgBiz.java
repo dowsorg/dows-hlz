@@ -720,6 +720,10 @@ public class OrgBiz {
                 CaseOrgResponse vo = new CaseOrgResponse();
                 BeanUtils.copyProperties(model, vo);
                 vo.setId(model.getId().toString());
+                //获取机构经纬度
+                AccountOrgGeoResponse orgGeoResponse = accountOrgGeoApi.getAccountOrgInfoByOrgId(model.getOrgId());
+                vo.setOrgLongitude(orgGeoResponse.getOrgLongitude());
+                vo.setOrgLatitude(orgGeoResponse.getOrgLatitude());
                 voList.add(vo);
             });
         }
