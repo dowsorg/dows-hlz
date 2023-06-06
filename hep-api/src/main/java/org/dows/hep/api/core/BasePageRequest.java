@@ -1,5 +1,6 @@
 package org.dows.hep.api.core;
 
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,6 +15,7 @@ import lombok.NoArgsConstructor;
 @Schema(name = "BasePageRequest 对象", title = "分页基类")
 public class BasePageRequest {
     @Schema(title = "应用id")
+    @ApiModelProperty(required = true)
     private String appId;
 
     @Schema(title = "分页大小")

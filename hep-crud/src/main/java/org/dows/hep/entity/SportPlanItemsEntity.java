@@ -51,6 +51,7 @@ public class SportPlanItemsEntity implements CrudEntity {
     @Schema(title = "运动项目名称")
     private String sportItemName;
 
+
     @Schema(title = "运动频次")
     private String frequency;
 

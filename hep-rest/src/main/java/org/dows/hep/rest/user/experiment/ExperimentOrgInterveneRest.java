@@ -3,12 +3,17 @@ package org.dows.hep.rest.user.experiment;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.intervene.response.*;
-import org.dows.hep.api.core.ExptOrgFuncRequest;
+import org.dows.hep.api.core.ExptOperateOrgFuncRequest;
 import org.dows.hep.api.user.experiment.request.*;
-import org.dows.hep.api.user.experiment.response.*;
+import org.dows.hep.api.user.experiment.response.ExptSportPlanResponse;
+import org.dows.hep.api.user.experiment.response.ExptTreatPlanResponse;
+import org.dows.hep.api.user.experiment.response.SaveExptInterveneResponse;
+import org.dows.hep.api.user.experiment.response.SaveExptTreatResponse;
 import org.dows.hep.biz.user.experiment.ExperimentOrgInterveneBiz;
+import org.dows.hep.biz.vo.CalcExptFoodCookbookResult;
 import org.dows.hep.biz.vo.Categ4ExptVO;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -92,45 +97,45 @@ public class ExperimentOrgInterveneRest {
 
     @Operation(summary = "饮食干预：获取学生最新食谱")
     @PostMapping("v1/userExperiment/experimentOrgIntervene/getExptFoodCookbook")
-    public ExptFoodCookbookResponse getExptFoodCookbook(@RequestBody @Validated ExptOrgFuncRequest exptOrgFunc ) {
-        return experimentOrgInterveneBiz.getExptFoodCookbook(exptOrgFunc);
+    public CalcExptFoodCookbookResult getExptFoodCookbook(@RequestBody @Validated ExptOperateOrgFuncRequest exptOperate ) {
+        return experimentOrgInterveneBiz.getExptFoodCookbook(exptOperate);
     }
 
 
     @Operation(summary = "饮食干预：保存学生食谱")
     @PostMapping("v1/userExperiment/experimentOrgIntervene/saveExptFoodCookbook")
-    public SaveExptInterveneResponse saveExptFoodCookbook(@RequestBody @Validated SaveExptFoodRequest saveFood ) {
-        return experimentOrgInterveneBiz.saveExptFoodCookbook(saveFood);
+    public SaveExptInterveneResponse saveExptFoodCookbook(@RequestBody @Validated SaveExptFoodRequest saveFood , HttpServletRequest request ) {
+        return experimentOrgInterveneBiz.saveExptFoodCookbook(saveFood, request);
     }
 
     @Operation(summary = "饮食干预：计算营养统计，膳食宝塔")
     @PostMapping("v1/userExperiment/experimentOrgIntervene/calcExptFoodGraph")
-    public ExptFoodGraphResponse calcExptFoodGraph(@RequestBody @Validated SaveExptFoodRequest saveFood ) {
-        return experimentOrgInterveneBiz.calcExptFoodGraph(saveFood);
+    public CalcExptFoodCookbookResult calcExptFoodGraph(@RequestBody @Validated CalcExptFoodGraphRequest calcFood ) {
+        return experimentOrgInterveneBiz.calcExptFoodGraph(calcFood);
     }
 
     @Operation(summary = "运动干预：获取学生最新运动方案")
     @PostMapping("v1/userExperiment/experimentOrgIntervene/getExptSportPlan")
-    public ExptSportPlanResponse getExptSportPlan(@RequestBody @Validated ExptOrgFuncRequest exptOrgFunc ) {
-        return experimentOrgInterveneBiz.getExptSportPlan(exptOrgFunc);
+    public ExptSportPlanResponse getExptSportPlan(@RequestBody @Validated ExptOperateOrgFuncRequest exptOperate ) {
+        return experimentOrgInterveneBiz.getExptSportPlan(exptOperate);
     }
 
     @Operation(summary = "运动干预：保存学生运动方案")
     @PostMapping("v1/userExperiment/experimentOrgIntervene/saveExptSportPlan")
-    public SaveExptInterveneResponse saveExptSportPlan(@RequestBody @Validated SaveExptSportRequest saveSport ) {
-        return experimentOrgInterveneBiz.saveExptSportPlan(saveSport);
+    public SaveExptInterveneResponse saveExptSportPlan(@RequestBody @Validated SaveExptSportRequest saveSport, HttpServletRequest request ) {
+        return experimentOrgInterveneBiz.saveExptSportPlan(saveSport,request);
     }
 
     @Operation(summary = "治疗干预：获取学生最新保存项目列表")
     @PostMapping("v1/userExperiment/experimentOrgIntervene/getExptTreatPlan")
-    public ExptTreatPlanResponse getExptTreatPlan(@RequestBody @Validated ExptOrgFuncRequest exptOrgFunc){
-        return experimentOrgInterveneBiz.getExptTreatPlan(exptOrgFunc);
+    public ExptTreatPlanResponse getExptTreatPlan(@RequestBody @Validated ExptOperateOrgFuncRequest exptOperate){
+        return experimentOrgInterveneBiz.getExptTreatPlan(exptOperate);
     }
 
     @Operation(summary = "治疗干预：保存治疗方案，生成治疗报告")
     @PostMapping("v1/userExperiment/experimentOrgIntervene/saveExptTreatPlan")
-    public SaveExptTreatResponse saveExptTreatPlan(@RequestBody @Validated SaveExptTreatRequest saveTreat){
-        return experimentOrgInterveneBiz.saveExptTreatPlan(saveTreat);
+    public SaveExptTreatResponse saveExptTreatPlan(@RequestBody @Validated SaveExptTreatRequest saveTreat, HttpServletRequest request){
+        return experimentOrgInterveneBiz.saveExptTreatPlan(saveTreat,request);
     }
     //endregion
 

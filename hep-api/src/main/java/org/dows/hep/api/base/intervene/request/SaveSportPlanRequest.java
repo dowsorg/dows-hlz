@@ -1,5 +1,6 @@
 package org.dows.hep.api.base.intervene.request;
 
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,6 +19,7 @@ import java.util.List;
 @Schema(name = "SaveSportPlan 对象", title = "保存运动方案")
 public class SaveSportPlanRequest{
     @Schema(title = "应用ID")
+    @ApiModelProperty(required = true)
     private String appId;
 
     @Schema(title = "数据库id,新增时为空")
@@ -27,9 +29,11 @@ public class SaveSportPlanRequest{
     private String sportPlanId;
 
     @Schema(title = "运动方案名称")
+    @ApiModelProperty(required = true)
     private String sportPlanName;
 
     @Schema(title = "分类id")
+    @ApiModelProperty(required = true)
     private String interveneCategId;
 
     @Schema(title = "状态 0-启用 1-停用")

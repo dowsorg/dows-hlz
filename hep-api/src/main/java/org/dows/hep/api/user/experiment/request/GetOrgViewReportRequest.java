@@ -46,7 +46,7 @@ public class GetOrgViewReportRequest{
     private String indicatorViewSupportExamId;
 
     @Schema(title = "功能类型  1-基本信息 2-设置随访  3-开始随访 4-一般检查 11-健康问题 12-健康指导 13-疾病问题 14-健管目标 21-饮食干预 22-运动干预  23-自定义干预")
-    private Boolean operateType;
+    private Integer operateType;
 
     @Schema(title = "期数")
     private Integer periods;

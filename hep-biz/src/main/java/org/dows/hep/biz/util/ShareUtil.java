@@ -40,15 +40,15 @@ public class ShareUtil {
         }
 
 
-        public static boolean isAllEmpty(Object... objs) {
+        public static boolean allEmpty(Object... objs) {
             return isEmpty(objs) || Arrays.stream(objs).allMatch(ObjectUtils::isEmpty);
         }
 
-        public static boolean isAnyEmpty(Object... objs) {
+        public static boolean anyEmpty(Object... objs) {
             return isEmpty(objs) || Arrays.stream(objs).anyMatch(ObjectUtils::isEmpty);
         }
 
-        public static boolean isAnyEmpty(Object obj, Supplier func) {
+        public static boolean anyEmpty(Object obj, Supplier func) {
             return isEmpty(obj) || isEmpty(func.get());
         }
 

@@ -3,11 +3,13 @@ package org.dows.hep.biz.base.intervene;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.intervene.request.CalcFoodGraphRequest;
 import org.dows.hep.api.base.intervene.response.FoodGraphResponse;
+import org.dows.hep.api.base.intervene.vo.FoodCookbookDetailVO;
 import org.dows.hep.api.base.intervene.vo.FoodDetailVO;
 import org.dows.hep.api.enums.EnumFoodCalcType;
 import org.dows.hep.api.enums.EnumFoodDetailType;
 import org.dows.hep.api.enums.EnumFoodNutrient;
 import org.dows.hep.api.enums.EnumFoodStatType;
+import org.dows.hep.api.user.experiment.request.CalcExptFoodGraphRequest;
 import org.dows.hep.biz.cache.InterveneCategCache;
 import org.dows.hep.biz.dao.FoodDishesDao;
 import org.dows.hep.biz.dao.FoodMaterialDao;
@@ -77,6 +79,15 @@ public class FoodCalcBiz {
     }
 
     /**
+     * 学生食谱计算
+     * @param calcFoodGraph
+     * @return
+     */
+    public CalcExptFoodCookbookResult calcFoodGraph4Expt(CalcExptFoodGraphRequest calcFoodGraph){
+        return null;
+    }
+
+    /**
      * 按菜肴明细计算营养统计，膳食结构
      * @param details
      * @return
@@ -134,6 +145,15 @@ public class FoodCalcBiz {
                             .endFrom(i, v -> v.setInstanceType(EnumFoodStatType.FOODCateg.getCode()))));
         }
         return rst.setNutrients(nutrients).setStatEnergy(statEnergy);
+    }
+
+    /**
+     * 按学生食谱明细计算营养统计，膳食宝塔，餐次能量统计
+     * @param details
+     * @return
+     */
+    public CalcExptFoodCookbookResult calcFoodGraph4ExptCookbook(List<FoodCookbookDetailVO> details){
+        return null;
     }
 
     /**
