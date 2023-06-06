@@ -16,7 +16,7 @@ import java.util.Date;
 
 /**
  * @author jx
- * @date 2023/6/6 10:57
+ * @date 2023/6/6 15:14
  */
 @Data
 @ToString
@@ -25,23 +25,25 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "ExperimentViewBaseInfoMonitorEntity", title = "实验查看指标基本信息监测表")
-@TableName("experiment_view_base_info_monitor")
-public class ExperimentViewBaseInfoMonitorEntity implements CrudEntity {
+@Schema(name = "ExperimentViewBaseInfoMonitorContentEntity", title = "实验查看指标基本信息监测内容表")
+@TableName("experiment_view_base_info_monitor_content")
+public class ExperimentViewBaseInfoMonitorContentEntity implements CrudEntity {
+
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库ID")
     private Long id;
 
-    @Schema(title = "实验指标基本信息指标监测表分布式ID")
-    private String experimentViewBaseInfoMonitorId;
+    @Schema(title = "实验指标基本信息指标监测表内容分布式ID")
+    private String experimentViewBaseInfoMonitorContentId;
+
 
     @Schema(title = "应用ID")
     private String appId;
 
-    @Schema(title = "教师端查看指标基本信息功能点ID")
-    private String indicatorViewBaseInfoId;
+    @Schema(title = "实验指标基本信息指标监测表分布式ID")
+    private String experimentViewBaseInfoMonitorId;
 
-    @Schema(title = "指标基本信息监测表名称")
+    @Schema(title = "监测内容名称")
     private String name;
 
     @Schema(title = "展示排序")

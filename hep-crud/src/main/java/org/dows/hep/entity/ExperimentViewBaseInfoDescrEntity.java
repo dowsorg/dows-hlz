@@ -25,15 +25,15 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "ExperimentViewBaseInfoDescEntity", title = "实验查看指标基本信息描述表")
-@TableName("experiment_view_base_info_desc")
-public class ExperimentViewBaseInfoDescEntity implements CrudEntity {
+@Schema(name = "ExperimentViewBaseInfoDescrEntity", title = "实验查看指标基本信息描述表")
+@TableName("experiment_view_base_info_descr")
+public class ExperimentViewBaseInfoDescrEntity implements CrudEntity {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库ID")
     private Long id;
 
     @Schema(title = "实验指标基本信息指标描述表分布式ID")
-    private String experimentViewBaseInfoDescId;
+    private String experimentViewBaseInfoDescrId;
 
     @Schema(title = "应用ID")
     private String appId;
@@ -44,14 +44,8 @@ public class ExperimentViewBaseInfoDescEntity implements CrudEntity {
     @Schema(title = "指标基本信息描述表名称")
     private String name;
 
-    @Schema(title = "描述表展示顺序")
-    private Integer descDeq;
-
-    @Schema(title = "指标ID")
-    private String indicatorInstanceId;
-
-    @Schema(title = "指标展示顺序")
-    private Integer indicatorSeq;
+    @Schema(title = "展示顺序")
+    private Integer seq;
 
     @JsonIgnore
     @TableLogic
