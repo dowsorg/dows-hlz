@@ -165,6 +165,30 @@ public class ExperimentOrgViewRest {
     }
 
     /**
+     *
+     * 二级类别：根据指标分类ID获取所有符合条件的数据
+     * @param
+     * @return
+     */
+    @Operation(summary = "二级类别：根据指标分类ID获取所有符合条件的数据")
+    @GetMapping("v1/userExperiment/experimentOrgJudge/getIndicatorViewPhysicalExamByCategoryId/{indicatoryCategoryId}")
+    public List<ExperimentIndicatorJudgePhysicalExamResponse> getIndicatorViewPhysicalExamByCategoryId(@PathVariable String indicatoryCategoryId) {
+        return experimentOrgViewBiz.getIndicatorViewPhysicalExamByCategoryId(indicatoryCategoryId);
+    }
+
+    /**
+     *
+     * 四级类别：根据指标分类ID获取所有符合条件的数据
+     * @param
+     * @return
+     */
+    @Operation(summary = "四级类别：根据指标分类ID获取所有符合条件的数据")
+    @GetMapping("v1/userExperiment/experimentOrgJudge/getIndicatorViewSupportExamByCategoryId/{indicatoryCategoryId}")
+    public List<ExperimentIndicatorJudgeSupportExamResponse> getIndicatorViewSupportExamByCategoryId(@PathVariable String indicatoryCategoryId) {
+        return experimentOrgViewBiz.getIndicatorViewSupportExamByCategoryId(indicatoryCategoryId);
+    }
+
+    /**
      * 体格检查：获取判断结果
      * @param
      * @return

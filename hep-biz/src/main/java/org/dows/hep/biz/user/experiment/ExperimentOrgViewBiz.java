@@ -25,14 +25,10 @@ public class ExperimentOrgViewBiz{
 
     private final OperateOrgFuncService operateOrgFuncService;
     private final OperateOrgFuncSnapService operateOrgFuncSnapService;
-    private final IndicatorViewPhysicalExamService indicatorViewPhysicalExamService;
-    private final IndicatorViewSupportExamService indicatorViewSupportExamService;
+    private final ExperimentIndicatorViewPhysicalExamService experimentIndicatorViewPhysicalExamService;
+    private final ExperimentIndicatorViewSupportExamService experimentIndicatorViewSupportExamService;
     private final IndicatorViewBaseInfoDescrService indicatorViewBaseInfoDescrService;
     private final IndicatorViewBaseInfoDescrRefService indicatorViewBaseInfoDescrRefService;
-    private final IndicatorViewBaseInfoMonitorService indicatorViewBaseInfoMonitorService;
-    private final IndicatorViewBaseInfoMonitorContentService indicatorViewBaseInfoMonitorContentService;
-    private final IndicatorViewBaseInfoMonitorContentRefService indicatorViewBaseInfoMonitorContentRefService;
-    private final IndicatorViewBaseInfoSingleService indicatorViewBaseInfoSingleService;
     /**
     * @param
     * @return
@@ -280,10 +276,10 @@ public class ExperimentOrgViewBiz{
         AtomicReference<Boolean> flag = new AtomicReference<>(true);
         reportRequestList.forEach(reportRequest -> {
             //1、根据ID获取判断规则
-            IndicatorViewPhysicalExamEntity entity = indicatorViewPhysicalExamService.lambdaQuery()
-                    .select(IndicatorViewPhysicalExamEntity::getIndicatorInstanceId,IndicatorViewPhysicalExamEntity::getFee)
-                    .eq(IndicatorViewPhysicalExamEntity::getIndicatorViewPhysicalExamId, reportRequest.getIndicatorViewPhysicalExamId())
-                    .eq(IndicatorViewPhysicalExamEntity::getStatus, true)
+            ExperimentIndicatorViewPhysicalExamEntity entity = experimentIndicatorViewPhysicalExamService.lambdaQuery()
+                    .select(ExperimentIndicatorViewPhysicalExamEntity::getExperimentJudgePhysicalExamId,ExperimentIndicatorViewPhysicalExamEntity::getFee)
+                    .eq(ExperimentIndicatorViewPhysicalExamEntity::getExperimentJudgePhysicalExamId, reportRequest.getExperimentJudgePhysicalExamId())
+                    .eq(ExperimentIndicatorViewPhysicalExamEntity::getStatus, true)
                     .one();
             //todo、根据判断规则判断是否满足条件,将指标值返回
             flag.set(false);
@@ -306,10 +302,10 @@ public class ExperimentOrgViewBiz{
         AtomicReference<Boolean> flag = new AtomicReference<>(true);
         reportRequestList.forEach(reportRequest -> {
             //1、根据ID获取判断规则
-            IndicatorViewSupportExamEntity entity = indicatorViewSupportExamService.lambdaQuery()
-                    .select(IndicatorViewSupportExamEntity::getIndicatorInstanceId,IndicatorViewSupportExamEntity::getFee)
-                    .eq(IndicatorViewSupportExamEntity::getIndicatorViewSupportExamId, reportRequest.getIndicatorViewSupportExamId())
-                    .eq(IndicatorViewSupportExamEntity::getStatus, true)
+            ExperimentIndicatorViewSupportExamEntity entity = experimentIndicatorViewSupportExamService.lambdaQuery()
+                    .select(ExperimentIndicatorViewSupportExamEntity::getExperimentJudgeSupportExamId,ExperimentIndicatorViewSupportExamEntity::getFee)
+                    .eq(ExperimentIndicatorViewSupportExamEntity::getExperimentJudgeSupportExamId, reportRequest.getExperimentJudgeSupportExamId())
+                    .eq(ExperimentIndicatorViewSupportExamEntity::getStatus, true)
                     .one();
             //todo、根据判断规则判断是否满足条件,将指标值返回
             flag.set(false);
@@ -343,5 +339,81 @@ public class ExperimentOrgViewBiz{
             });
         }
         return false;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 二级类别：根据指标分类ID获取所有符合条件的数据
+     * @关联表: experimentIndicatorViewPhysicalExam
+     * @工时: 3H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月05日 下午17:40:34
+     */
+    public List<ExperimentIndicatorJudgePhysicalExamResponse> getIndicatorViewPhysicalExamByCategoryId(String indicatoryCategoryId) {
+        //1、根据指标分类ID获取所有符合条件的数据
+        List<ExperimentIndicatorViewPhysicalExamEntity> entityList = experimentIndicatorViewPhysicalExamService.lambdaQuery()
+                .select(ExperimentIndicatorViewPhysicalExamEntity::getId,
+                        ExperimentIndicatorViewPhysicalExamEntity::getExperimentJudgePhysicalExamId,
+                        ExperimentIndicatorViewPhysicalExamEntity::getIndicatorViewPhysicalExamId,
+                        ExperimentIndicatorViewPhysicalExamEntity::getName,
+                        ExperimentIndicatorViewPhysicalExamEntity::getIndicatorCategoryId)
+                .eq(ExperimentIndicatorViewPhysicalExamEntity::getIndicatorCategoryId, indicatoryCategoryId)
+                .eq(ExperimentIndicatorViewPhysicalExamEntity::getStatus, true)
+                .list();
+        List<ExperimentIndicatorJudgePhysicalExamResponse> responseList = new ArrayList<>();
+        if (entityList != null && entityList.size() > 0) {
+            entityList.forEach(entity -> {
+                ExperimentIndicatorJudgePhysicalExamResponse response = ExperimentIndicatorJudgePhysicalExamResponse
+                        .builder()
+                        .id(entity.getId())
+                        .experimentJudgePhysicalExamId(entity.getExperimentJudgePhysicalExamId())
+                        .indicatorJudgePhysicalExamId(entity.getIndicatorViewPhysicalExamId())
+                        .name(entity.getName())
+                        .indicatorCategoryId(entity.getIndicatorCategoryId())
+                        .build();
+                responseList.add(response);
+            });
+        }
+        return responseList;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 四级类别：根据指标分类ID获取所有符合条件的数据
+     * @关联表: experimentIndicatorViewPhysicalExam
+     * @工时: 3H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月05日 下午17:40:34
+     */
+    public List<ExperimentIndicatorJudgeSupportExamResponse> getIndicatorViewSupportExamByCategoryId(String indicatoryCategoryId) {
+        //1、根据指标分类ID获取所有符合条件的数据
+        List<ExperimentIndicatorViewSupportExamEntity> entityList = experimentIndicatorViewSupportExamService.lambdaQuery()
+                .select(ExperimentIndicatorViewSupportExamEntity::getId,
+                        ExperimentIndicatorViewSupportExamEntity::getExperimentJudgeSupportExamId,
+                        ExperimentIndicatorViewSupportExamEntity::getIndicatorViewSupportExamId,
+                        ExperimentIndicatorViewSupportExamEntity::getName,
+                        ExperimentIndicatorViewSupportExamEntity::getIndicatorCategoryId)
+                .eq(ExperimentIndicatorViewSupportExamEntity::getIndicatorCategoryId, indicatoryCategoryId)
+                .eq(ExperimentIndicatorViewSupportExamEntity::getStatus, true)
+                .list();
+        List<ExperimentIndicatorJudgeSupportExamResponse> responseList = new ArrayList<>();
+        if (entityList != null && entityList.size() > 0) {
+            entityList.forEach(entity -> {
+                ExperimentIndicatorJudgeSupportExamResponse response = ExperimentIndicatorJudgeSupportExamResponse
+                        .builder()
+                        .id(entity.getId())
+                        .experimentJudgeSupportExamId(entity.getExperimentJudgeSupportExamId())
+                        .indicatorJudgeSupportExamId(entity.getIndicatorViewSupportExamId())
+                        .name(entity.getName())
+                        .indicatorCategoryId(entity.getIndicatorCategoryId())
+                        .build();
+                responseList.add(response);
+            });
+        }
+        return responseList;
     }
 }

@@ -24,6 +24,9 @@ public class CaseInstanceRequest{
     @Schema(title = "案例图片")
     private String casePic;
 
+    @Schema(title = "案例地图背景图片")
+    private String caseMapBackground;
+
     @Schema(title = "案例类型")
     private String caseType;
 
