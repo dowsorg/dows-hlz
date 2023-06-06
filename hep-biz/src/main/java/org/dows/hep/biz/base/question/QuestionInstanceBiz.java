@@ -218,7 +218,7 @@ public class QuestionInstanceBiz {
         }
 
         QuestionInstanceEntity questionInstance = getById(questionInstanceId);
-        QuestionTypeEnum questionTypeEnum = Optional.of(questionInstance)
+        QuestionTypeEnum questionTypeEnum = Optional.ofNullable(questionInstance)
                 .map(QuestionInstanceEntity::getQuestionType)
                 .map(QuestionTypeEnum::getByCode)
                 .orElse(null);

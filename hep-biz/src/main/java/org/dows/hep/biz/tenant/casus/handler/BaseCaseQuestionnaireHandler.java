@@ -31,17 +31,13 @@ public abstract class BaseCaseQuestionnaireHandler implements ApplicationContext
 
     @Override
     public String handle(CaseQuestionnaireRequest caseQuestionnaire) {
-        QuestionSectionRequest questionSectionRequest = buildSectionRequest(caseQuestionnaire);
+        QuestionSectionRequest questionSectionRequest = buildQuestionSectionRequest(caseQuestionnaire);
         return questionSectionBiz.saveOrUpdQuestionSection(questionSectionRequest, QuestionSectionAccessAuthEnum.PRIVATE_VIEWING, QuestionSourceEnum.TENANT);
     }
 
     public abstract void init();
 
     public abstract List<String> getQuestionIds(CaseQuestionnaireRequest caseQuestionnaire);
-
-    private QuestionSectionRequest buildSectionRequest(CaseQuestionnaireRequest caseQuestionnaire) {
-        return buildQuestionSectionRequest(caseQuestionnaire);
-    }
 
     private QuestionSectionRequest buildQuestionSectionRequest(CaseQuestionnaireRequest caseQuestionnaire) {
         List<String> questionIds = getQuestionIds(caseQuestionnaire);
