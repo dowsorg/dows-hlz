@@ -351,6 +351,10 @@ public class TenantCaseQuestionnaireBiz {
 
     private List<String> getCategoryIdList(CaseQuestionSearchRequest request) {
         List<String> result = new ArrayList<>();
+        if (StrUtil.isBlank(request.getL1CategId()) || StrUtil.isBlank(request.getL2CategId())) {
+            return result;
+        }
+
         // level-2
         String l2CategoryId = request.getL2CategId();
         if (StrUtil.isNotBlank(l2CategoryId)) {
