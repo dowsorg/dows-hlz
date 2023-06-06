@@ -421,7 +421,9 @@ public class TenantCaseQuestionnaireBiz {
     }
 
     private List<QuestionResponse> filterUsableQuestion(List<QuestionResponse> questionResponses, List<String> existingIds) {
-        Map<String, String> existingIdsMap = existingIds.stream().collect(Collectors.toMap(item -> item, item -> item, (v1, v2) -> v1));
+        Map<String, String> existingIdsMap = existingIds.stream()
+                .filter(StrUtil::isNotBlank)
+                .collect(Collectors.toMap(item -> item, item -> item, (v1, v2) -> v1));
         return questionResponses.stream()
                 .filter(item -> {
                     String questionInstanceId = item.getQuestionInstanceId();
