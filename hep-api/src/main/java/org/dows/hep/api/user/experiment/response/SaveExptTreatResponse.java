@@ -3,6 +3,7 @@ package org.dows.hep.api.user.experiment.response;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 import org.dows.hep.api.user.experiment.vo.ExptOrgFlowReportVO;
 
 /**
@@ -12,6 +13,7 @@ import org.dows.hep.api.user.experiment.vo.ExptOrgFlowReportVO;
 * @date 
 */
 @Data
+@Accessors(chain = true)
 @NoArgsConstructor
 @Schema(name = "SaveExptTreat 对象", title = "治疗干预操作结果")
 public class SaveExptTreatResponse {

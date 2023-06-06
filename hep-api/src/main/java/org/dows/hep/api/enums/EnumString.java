@@ -17,6 +17,8 @@ public enum EnumString {
   APP_ID("3", "hep项目的appId约定为3"),
   SPACE(" ", "单空格"),
   JIN("#", "#"),
+  AT("@", "@"),
+  SINGLE_QUOTES("'", "单引号"),
   ;
   private final String str;
   private final String desc;

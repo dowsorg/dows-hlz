@@ -37,8 +37,16 @@ public class AssertUtil {
     public static <T>  GetOrThrowFunc<T> getNotNull(Optional<T> obj) {
         return msg -> obj.orElseThrow(() -> createException(msg));
     }
+
+    public static void justThrow(String msg,Throwable throwable){
+        throw createException(msg,throwable);
+    }
     static RuntimeException createException(String msg){
         return new BaseException(msg);
+    }
+
+    static RuntimeException createException(String msg,Throwable throwable){
+        return new BaseException(msg,throwable);
     }
 
 }

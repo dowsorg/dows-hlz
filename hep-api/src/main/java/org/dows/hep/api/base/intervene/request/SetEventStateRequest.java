@@ -19,7 +19,7 @@ public class SetEventStateRequest{
     @Schema(title = "事件id")
     private String eventId;
 
-    @Schema(title = "状态 0-启用 1-停用")
+    @Schema(title = "状态 1-启用 0-停用")
     private Integer state;
 
 

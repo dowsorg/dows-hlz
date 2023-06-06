@@ -48,6 +48,7 @@ public class SaveCaseEventRequest{
 
 
     @Schema(title = "分类id")
+    @NotEmpty(message = "事件类别不可为空")
     private String eventCategId;
 
     @Schema(title = "状态 0-启用 1-停用")

@@ -1,6 +1,7 @@
 package org.dows.hep.api.base.intervene.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,12 +30,15 @@ public class FoodMaterialVO {
     private String refId;
 
     @Schema(title = "食材id")
+    @ApiModelProperty(required = true)
     private String foodMaterialId;
 
     @Schema(title = "食材名称")
+    @ApiModelProperty(required = true)
     private String foodMaterialName;
 
     @Schema(title = "重量")
+    @ApiModelProperty(required = true)
     private String weight;
 
 }

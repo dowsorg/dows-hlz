@@ -56,7 +56,7 @@ public class InterveneCategBiz {
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public List<CategVO> listInterveneCateg(FindInterveneCategRequest findInterveneCateg ) {
-        if(ShareUtil.XObject.isAllEmpty(findInterveneCateg.getPid(),findInterveneCateg.getFamily())){
+        if(ShareUtil.XObject.allEmpty(findInterveneCateg.getPid(),findInterveneCateg.getFamily())){
             return Collections.emptyList();
         }
         final String family=findInterveneCateg.getFamily();
@@ -78,7 +78,7 @@ public class InterveneCategBiz {
         final String pid = saveInterveneCateg.getCategPid();
         final String family=ShareUtil.XString.hasLength(pid)?"":saveInterveneCateg.getFamily();
         saveInterveneCateg.setFamily(family);
-        AssertUtil.trueThenThrow(ShareUtil.XObject.isAllEmpty(family,pid))
+        AssertUtil.trueThenThrow(ShareUtil.XObject.allEmpty(family,pid))
                 .throwMessage("未找到父类别参数");
         AssertUtil.trueThenThrow(ShareUtil.XObject.notEmpty(saveInterveneCateg.getCategName())
                 &&saveInterveneCateg.getCategName().contains(getCategCache().getSplitCategPath()))
@@ -121,7 +121,7 @@ public class InterveneCategBiz {
         }
         final String pid=saveInterveneCateg.get(0).getCategPid();
         final String family=ShareUtil.XString.hasLength(pid)?"":saveInterveneCateg.get(0).getFamily();
-        AssertUtil.trueThenThrow(ShareUtil.XObject.isAllEmpty(family,pid))
+        AssertUtil.trueThenThrow(ShareUtil.XObject.allEmpty(family,pid))
                 .throwMessage("未找到父类别参数");
         checkFamily(family);
 

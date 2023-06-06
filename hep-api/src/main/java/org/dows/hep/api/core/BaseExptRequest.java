@@ -1,5 +1,6 @@
 package org.dows.hep.api.core;
 
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,16 +21,12 @@ public class BaseExptRequest extends BasePageRequest {
     private String experimentGroupId;
 
     @Schema(title = "实验人物ID")
+    @ApiModelProperty(required = true)
     private String experimentPersonId;
 
-    @Schema(title = "案例机构ID")
-    private String caseOrgId;
-
-    @Schema(title = "案例人物ID")
-    private String caseAccountId;
-
-    @Schema(title = "案例人物名称")
-    private String caseAccountName;
+    @Schema(title = "实验机构ID")
+    @ApiModelProperty(required = true)
+    private String experimentOrgId;
 
     @Schema(title = "期数")
     private Integer periods;
