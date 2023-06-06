@@ -376,13 +376,13 @@ public class ExperimentOrgViewBiz {
                                 .eq(ExperimentIndicatorValEntity::getDeleted,false)
                                 .eq(ExperimentIndicatorValEntity::getExperimentIndicatorInstanceId,refEntity.getExperimentIndicatorInstanceId())
                                 .eq(ExperimentIndicatorValEntity::getPeriods,periods)
-                                .eq(ExperimentIndicatorValEntity::getExperimentPersonId,experimentPersonId)
                                 .one();
                         response.setExperimentIndicatorCurrentVal(valEntity.getCurrentVal());
                         //2.2、获取指标单位
                         ExperimentIndicatorInstanceEntity instanceEntity = experimentIndicatorInstanceService.lambdaQuery()
                                 .eq(ExperimentIndicatorInstanceEntity::getDeleted,false)
                                 .eq(ExperimentIndicatorInstanceEntity::getExperimentIndicatorInstanceId,refEntity.getExperimentIndicatorInstanceId())
+                                .eq(ExperimentIndicatorInstanceEntity::getExperimentPersonId,experimentPersonId)
                                 .one();
                         response.setExperimentIndicatorInstanceName(instanceEntity.getIndicatorName());
                         response.setType(ViewBaseInfoConstant.DESCR);
@@ -436,13 +436,13 @@ public class ExperimentOrgViewBiz {
                                         .eq(ExperimentIndicatorValEntity::getDeleted,false)
                                         .eq(ExperimentIndicatorValEntity::getExperimentIndicatorInstanceId,contentRef.getExperimentIndicatorInstanceId())
                                         .eq(ExperimentIndicatorValEntity::getPeriods,periods)
-                                        .eq(ExperimentIndicatorValEntity::getExperimentPersonId,experimentPersonId)
                                         .one();
                                 response.setExperimentIndicatorCurrentVal(valEntity.getCurrentVal());
                                 //4.4、获取指标单位
                                 ExperimentIndicatorInstanceEntity instanceEntity = experimentIndicatorInstanceService.lambdaQuery()
                                         .eq(ExperimentIndicatorInstanceEntity::getDeleted,false)
                                         .eq(ExperimentIndicatorInstanceEntity::getExperimentIndicatorInstanceId,contentRef.getExperimentIndicatorInstanceId())
+                                        .eq(ExperimentIndicatorInstanceEntity::getExperimentPersonId,experimentPersonId)
                                         .one();
                                 response.setUnit(instanceEntity.getUnit());
                                 response.setExperimentIndicatorInstanceName(instanceEntity.getIndicatorName());
@@ -462,6 +462,7 @@ public class ExperimentOrgViewBiz {
         /**
          * 单一指标值
          */
+        //5、查看单一指标值
         List<ExperimentViewBaseInfoSingleEntity> singleList = experimentViewBaseInfoSingleService.lambdaQuery()
                 .select(ExperimentViewBaseInfoSingleEntity::getExperimentViewBaseInfoSingleId,
                         ExperimentViewBaseInfoSingleEntity::getSeq,
@@ -475,18 +476,18 @@ public class ExperimentOrgViewBiz {
             List<ExperimentIndicatorResponse> responseList = new ArrayList<>();
             singleList.forEach(single->{
                 ExperimentIndicatorResponse response = new ExperimentIndicatorResponse();
-                //4.3、获取指标值
+                //5.1、获取指标值
                 ExperimentIndicatorValEntity valEntity = experimentIndicatorValService.lambdaQuery()
                         .eq(ExperimentIndicatorValEntity::getDeleted,false)
                         .eq(ExperimentIndicatorValEntity::getExperimentIndicatorInstanceId,single.getExperimentIndicatorInstanceId())
                         .eq(ExperimentIndicatorValEntity::getPeriods,periods)
-                        .eq(ExperimentIndicatorValEntity::getExperimentPersonId,experimentPersonId)
                         .one();
                 response.setExperimentIndicatorCurrentVal(valEntity.getCurrentVal());
-                //4.4、获取指标单位
+                //5.2、获取指标单位
                 ExperimentIndicatorInstanceEntity instanceEntity = experimentIndicatorInstanceService.lambdaQuery()
                         .eq(ExperimentIndicatorInstanceEntity::getDeleted,false)
                         .eq(ExperimentIndicatorInstanceEntity::getExperimentIndicatorInstanceId,single.getExperimentIndicatorInstanceId())
+                        .eq(ExperimentIndicatorInstanceEntity::getExperimentPersonId,experimentPersonId)
                         .one();
                 response.setExperimentIndicatorInstanceName(instanceEntity.getIndicatorName());
                 response.setType(ViewBaseInfoConstant.SINGLE);
