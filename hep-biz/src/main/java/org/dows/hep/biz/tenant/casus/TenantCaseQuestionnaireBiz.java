@@ -266,7 +266,7 @@ public class TenantCaseQuestionnaireBiz {
         }
 
         LambdaQueryWrapper<CaseQuestionnaireEntity> remWrapper = new LambdaQueryWrapper<CaseQuestionnaireEntity>()
-                .eq(CaseQuestionnaireEntity::getCaseQuestionnaireId, ids);
+                .in(CaseQuestionnaireEntity::getCaseQuestionnaireId, ids);
         return caseQuestionnaireService.remove(remWrapper);
     }
 
