@@ -22,6 +22,9 @@ public class QuestionResponse {
     @Schema(title = "题目类型ID")
     private String questionCategId;
 
+    @Schema(title = "题目类别名称")
+    private String questionCategName;
+
     @Schema(title = "问题类型ID数组")
     private String[] questionCategIds;
 

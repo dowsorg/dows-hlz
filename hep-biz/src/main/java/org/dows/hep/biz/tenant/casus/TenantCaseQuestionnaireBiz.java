@@ -1,6 +1,7 @@
 package org.dows.hep.biz.tenant.casus;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -47,7 +48,7 @@ import java.util.stream.Collectors;
 @Service
 public class TenantCaseQuestionnaireBiz {
     private final TenantCaseBaseBiz baseBiz;
-    private final QuestionCategBiz categBiz;
+    private final QuestionCategBiz questionCategBiz;
     private final QuestionSectionBiz questionSectionBiz;
     private final QuestionInstanceBiz questionInstanceBiz;
     private final CaseQuestionnaireService caseQuestionnaireService;
@@ -188,7 +189,27 @@ public class TenantCaseQuestionnaireBiz {
      * @创建时间: 2023年4月17日 下午8:00:11
      */
     public List<QuestionResponse> listUsableQuestionFromSource(CaseQuestionSearchRequest request) {
-        return listUsableQuestionFromSource0(request);
+        List<QuestionResponse> result = listUsableQuestionFromSource0(request);
+        if (CollUtil.isEmpty(result)) {
+            return result;
+        }
+
+        List<String> categIds = result.stream().map(QuestionResponse::getQuestionCategId).toList();
+        List<QuestionCategoryResponse> curs = questionCategBiz.listQuestionCategory(categIds);
+        Map<String, String> pidCollect = curs.stream()
+                .collect(Collectors.toMap(QuestionCategoryResponse::getQuestionCategId, QuestionCategoryResponse::getQuestionCategPid, (v1, v2) -> v1));
+
+        List<QuestionCategoryResponse> parents = questionCategBiz.listParents(categIds);
+        Map<String, String> pNameCollect = parents.stream()
+                .collect(Collectors.toMap(QuestionCategoryResponse::getQuestionCategId, QuestionCategoryResponse::getQuestionCategName, (v1, v2) -> v1));
+
+        result.forEach(item -> {
+            String pid = pidCollect.get(item.getQuestionCategId());
+            String categoryName = pNameCollect.get(pid);
+            item.setQuestionCategName(categoryName);
+            item.setQuestionType(QuestionTypeEnum.getNameByCode(item.getQuestionType()));
+        });
+        return result;
     }
 
     /**
@@ -338,6 +359,8 @@ public class TenantCaseQuestionnaireBiz {
         QuestionSearchRequest questionSearchRequest = QuestionSearchRequest.builder()
                 .categIdList(categoryIdList)
                 .appId(baseBiz.getAppId())
+                .keyword(request.getKeyword())
+                .questionType(request.getQuestionType())
                 .build();
         List<QuestionResponse> questionResponses = questionInstanceBiz.listQuestion(questionSearchRequest);
 
@@ -351,6 +374,10 @@ public class TenantCaseQuestionnaireBiz {
 
     private List<String> getCategoryIdList(CaseQuestionSearchRequest request) {
         List<String> result = new ArrayList<>();
+        if (StrUtil.isBlank(request.getL1CategId()) || StrUtil.isBlank(request.getL2CategId())) {
+            return result;
+        }
+
         // level-2
         String l2CategoryId = request.getL2CategId();
         if (StrUtil.isNotBlank(l2CategoryId)) {
@@ -360,7 +387,7 @@ public class TenantCaseQuestionnaireBiz {
 
         // level-1 convert to level-2
         String l1CategoryId = request.getL1CategId();
-        List<QuestionCategoryResponse> children = categBiz.getChildrenByPid(l1CategoryId, QuestionCategGroupEnum.QUESTION.name());
+        List<QuestionCategoryResponse> children = questionCategBiz.getChildrenByPid(l1CategoryId, QuestionCategGroupEnum.QUESTION.name());
         if (children != null && !children.isEmpty()) {
             List<String> childrenIds = children.stream().map(QuestionCategoryResponse::getQuestionCategId).toList();
             result.addAll(childrenIds);
@@ -394,7 +421,9 @@ public class TenantCaseQuestionnaireBiz {
     }
 
     private List<QuestionResponse> filterUsableQuestion(List<QuestionResponse> questionResponses, List<String> existingIds) {
-        Map<String, String> existingIdsMap = existingIds.stream().collect(Collectors.toMap(item -> item, item -> item, (v1, v2) -> v1));
+        Map<String, String> existingIdsMap = existingIds.stream()
+                .filter(StrUtil::isNotBlank)
+                .collect(Collectors.toMap(item -> item, item -> item, (v1, v2) -> v1));
         return questionResponses.stream()
                 .filter(item -> {
                     String questionInstanceId = item.getQuestionInstanceId();

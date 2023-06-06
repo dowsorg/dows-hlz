@@ -433,7 +433,7 @@ public class OrgBiz {
         //3、获取机构基本信息
         AccountOrgInfoResponse orgInfoResponse = accountOrgApi.getAccountOrgInfoByOrgId(entity.getOrgId());
         orgResponse.setOperationManual(orgInfoResponse.getOperationManual());
-        orgInfoResponse.setIsEnable(orgInfoResponse.getIsEnable());
+        orgResponse.setIsEnable(orgInfoResponse.getIsEnable());
         //4、获取机构地理位置信息
         AccountOrgGeoResponse orgGeoResponse = accountOrgGeoApi.getAccountOrgInfoByOrgId(entity.getOrgId());
         orgResponse.setOrgLongitude(orgGeoResponse.getOrgLongitude());
@@ -720,6 +720,10 @@ public class OrgBiz {
                 CaseOrgResponse vo = new CaseOrgResponse();
                 BeanUtils.copyProperties(model, vo);
                 vo.setId(model.getId().toString());
+                //获取机构经纬度
+                AccountOrgGeoResponse orgGeoResponse = accountOrgGeoApi.getAccountOrgInfoByOrgId(model.getOrgId());
+                vo.setOrgLongitude(orgGeoResponse.getOrgLongitude());
+                vo.setOrgLatitude(orgGeoResponse.getOrgLatitude());
                 voList.add(vo);
             });
         }

@@ -31,6 +31,12 @@ public class CaseOrgResponse {
     @Schema(title = "机构名称")
     private String orgName;
 
+    @Schema(title = "机构经度")
+    private Float orgLongitude;
+
+    @Schema(title = "机构纬度")
+    private Float orgLatitude;
+
     @Schema(title = "操作手册")
     private String handbook;
 }
