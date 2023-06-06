@@ -55,7 +55,7 @@ public class ExperimentParticipatorEntity implements CrudEntity {
     private String experimentOrgNames;
 
     @Schema(title = "实验方案设计ItemId")
-    private String experimentSchemeIds;
+    private String experimentSchemeItemIds;
 
     @Schema(title = "组员账号ID")
     private String accountId;

@@ -39,17 +39,30 @@ public class FoodDishesResponse{
     @Schema(title = "父分类名称路径")
     private String categNamePath;
 
-    @Schema(title = "蛋白质每100g")
+    @Schema(title = "蛋白质")
     private String protein;
 
-    @Schema(title = "碳水每100g")
+    @Schema(title = "碳水")
     private String cho;
 
-    @Schema(title = "脂肪每100g")
+    @Schema(title = "脂肪")
     private String fat;
 
-    @Schema(title = "总能量每100g")
+    @Schema(title = "总能量")
     private String energy;
+
+
+    @Schema(title = "蛋白质每100g")
+    private String proteinScale;
+
+    @Schema(title = "碳水每100g")
+    private String choScale;
+
+    @Schema(title = "脂肪每100g")
+    private String fatScale;
+
+    @Schema(title = "总能量每100g")
+    private String energyScale;
 
     @Schema(title = "食材含量描述")
     private String materialsDesc;

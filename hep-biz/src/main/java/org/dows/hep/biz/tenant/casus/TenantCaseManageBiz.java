@@ -211,6 +211,7 @@ public class TenantCaseManageBiz {
         CaseInstanceEntity result = CaseInstanceEntity.builder()
                 .appId(baseBiz.getAppId())
                 .caseInstanceId(request.getCaseInstanceId())
+                .caseMapBackground(request.getCaseMapBackground())
                 .caseName(request.getCaseName())
                 .casePic(request.getCasePic())
                 .caseType(request.getCaseType())

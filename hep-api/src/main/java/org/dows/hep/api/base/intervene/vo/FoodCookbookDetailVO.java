@@ -1,6 +1,7 @@
 package org.dows.hep.api.base.intervene.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,23 +29,27 @@ public class FoodCookbookDetailVO {
     private String refId;
 
 
-
-    @Schema(title = "进餐时间，早|早加|午|午加|晚|晚加")
+    @Schema(title = "进餐时间，1-早|2-早加|3-午|4-午加|5-晚|6-晚加")
+    @ApiModelProperty(required = true)
     private Integer mealTime;
 
     @Schema(title = "明细类型，1-食材 2-菜肴 ")
+    @ApiModelProperty(required = true)
     private Integer instanceType;
 
     @Schema(title = "主体(食材，菜肴)id")
+    @ApiModelProperty(required = true)
     private String instanceId;
 
     @Schema(title = "菜肴、食材名称")
+    @ApiModelProperty(required = true)
     private String instanceName ;
 
     @Schema(title = "食材含量描述")
     private String materialsDesc;
 
     @Schema(title = "重量")
+    @ApiModelProperty(required = true)
     private String weight;
 
 

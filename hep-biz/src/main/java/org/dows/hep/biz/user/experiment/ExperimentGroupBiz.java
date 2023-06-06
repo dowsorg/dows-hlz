@@ -1,27 +1,19 @@
 package org.dows.hep.biz.user.experiment;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.StrUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
-import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.api.util.ReflectUtil;
-import org.dows.hep.api.base.question.response.QuestionResponse;
-import org.dows.hep.api.base.question.response.QuestionSectionItemResponse;
 import org.dows.hep.api.enums.EnumExperimentParticipator;
 import org.dows.hep.api.exception.ExperimentParticipatorException;
-import org.dows.hep.api.tenant.casus.response.CaseSchemeResponse;
-import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.request.AllotActorRequest;
 import org.dows.hep.api.user.experiment.request.CreateGroupRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentParticipatorRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
-import org.dows.hep.api.user.experiment.response.ExperimentSchemeItemResponse;
 import org.dows.hep.entity.ExperimentActorEntity;
 import org.dows.hep.entity.ExperimentGroupEntity;
 import org.dows.hep.entity.ExperimentOrgEntity;
@@ -32,7 +24,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author lait.zhang
@@ -240,94 +231,6 @@ public class ExperimentGroupBiz {
                 .id(model.getId())
                 .build();
         return experimentParticipatorService.updateById(entity);
-    }
-
-    /**
-     * @param
-     * @return
-     * @author fhb
-     * @description 获取该用户、该实验的方案设计 item
-     * @date 2023/5/30 19:25
-     */
-    public List<ExperimentSchemeItemResponse> listExperimentScheme(String experimentInstanceId) {
-        if (StrUtil.isBlank(experimentInstanceId)) {
-            throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
-        }
-
-//        ExperimentInstanceEntity instance = experimentInstanceService.lambdaQuery()
-//                .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
-//                .one();
-//        if (BeanUtil.isEmpty(instance)) {
-//            throw new BizException(ExperimentESCEnum.DATA_NULL);
-//        }
-//
-//        // 获取方案设计Item 列表
-//        String caseInstanceId = instance.getCaseInstanceId();
-//        CaseSchemeResponse caseSchemeResponse = userCaseSchemeBiz.getCaseSchemeOfCaseInstance(caseInstanceId);
-//        if (BeanUtil.isEmpty(caseSchemeResponse)) {
-//            throw new BizException(ExperimentESCEnum.SCHEME_NOT_NULL);
-//        }
-//
-//        return convertCSR2ESR(caseSchemeResponse);
-        return null;
-    }
-
-    private List<ExperimentSchemeItemResponse> convertCSR2ESR(CaseSchemeResponse caseSchemeResponse) {
-        List<QuestionSectionItemResponse> sectionItemList = caseSchemeResponse.getSectionItemList();
-        if (CollUtil.isEmpty(sectionItemList)) {
-            return new ArrayList<>();
-        }
-
-        ArrayList<ExperimentSchemeItemResponse> result = new ArrayList<>();
-        sectionItemList.forEach(sectionItem -> {
-            QuestionResponse question = sectionItem.getQuestion();
-            String questionSectionItemId = sectionItem.getQuestionSectionItemId();
-            ExperimentSchemeItemResponse itemResponse = buildItemResponse(question, questionSectionItemId);
-            if (BeanUtil.isNotEmpty(itemResponse)) {
-                result.add(itemResponse);
-            }
-        });
-
-        // set video-question
-        Integer containsVideo = caseSchemeResponse.getContainsVideo();
-        if (Objects.nonNull(containsVideo) && containsVideo == 1) {
-            ExperimentSchemeItemResponse itemResponse = new ExperimentSchemeItemResponse();
-            itemResponse.setQuestionSectionItemId("1008610010");
-            itemResponse.setQuestionTitle("上传视频");
-            result.add(itemResponse);
-        }
-
-        return result;
-    }
-
-    private ExperimentSchemeItemResponse buildItemResponse(QuestionResponse question, String questionSectionItemId) {
-        // 判空
-        if (BeanUtil.isEmpty(question)) {
-            return null;
-        }
-
-        // 处理当前结点
-        String questionTitle = question.getQuestionTitle();
-        ExperimentSchemeItemResponse result = new ExperimentSchemeItemResponse();
-        result.setQuestionSectionItemId(questionSectionItemId);
-        result.setQuestionTitle(questionTitle);
-
-
-        // 是否有子类
-        List<QuestionResponse> children = question.getChildren();
-        if (CollUtil.isEmpty(children)) {
-            return result;
-        }
-
-        // 处理子类
-        List<ExperimentSchemeItemResponse> itemList = new ArrayList<>();
-        children.forEach(questionResponse -> {
-            ExperimentSchemeItemResponse itemResponse = buildItemResponse(questionResponse, "");
-            itemList.add(itemResponse);
-        });
-        result.setChildren(itemList);
-
-        return result;
     }
 
 }

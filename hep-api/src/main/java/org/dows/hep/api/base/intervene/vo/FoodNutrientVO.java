@@ -1,6 +1,7 @@
 package org.dows.hep.api.base.intervene.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,9 +25,11 @@ public class FoodNutrientVO {
     @Schema(title = "数据库id")
     private Long id;
     @Schema(title = "营养指标id")
+    @ApiModelProperty(required = true)
     private String indicatorInstanceId;
 
     @Schema(title = "营养成分名称")
+    @ApiModelProperty(required = true)
     private String nutrientName;
 
     @Schema(title = "成分单位")
@@ -36,6 +39,7 @@ public class FoodNutrientVO {
     private String amt;
 
     @Schema(title = "当前值")
+    @ApiModelProperty(required = true)
     private String weight;
     @Schema(title = "排序号")
     private Integer seq;

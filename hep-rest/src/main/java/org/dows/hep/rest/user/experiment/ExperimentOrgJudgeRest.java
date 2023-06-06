@@ -6,11 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.util.JwtUtil;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeHealthManagementGoalRequest;
-import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeHealthProblemRequest;
-import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeRiskFactorRequest;
-import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthGuidanceResponse;
-import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthProblemResponse;
-import org.dows.hep.api.base.indicator.response.IndicatorJudgeRiskFactorResponse;
 import org.dows.hep.api.enums.EnumToken;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
@@ -53,7 +48,7 @@ public class ExperimentOrgJudgeRest {
      */
     @Operation(summary = "获取二级类无报告的判断指标信息")
     @PostMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeRiskFactor")
-    public Map<String,List<IndicatorJudgeRiskFactorResponse>> getIndicatorJudgeRiskFactor(@RequestParam @Validated String indicatorFuncId) {
+    public Map<String,List<ExperimentIndicatorJudgeRiskFactorResponse>> getIndicatorJudgeRiskFactor(@RequestParam @Validated String indicatorFuncId) {
         return experimentOrgJudgeBiz.getIndicatorJudgeRiskFactor(indicatorFuncId);
     }
 
@@ -64,7 +59,7 @@ public class ExperimentOrgJudgeRest {
      */
     @Operation(summary = "isIndicatorJudgeRiskFactor")
     @PostMapping("v1/userExperiment/experimentOrgJudge/isIndicatorJudgeRiskFactor")
-    public Boolean isIndicatorJudgeRiskFactor(@RequestBody @Validated List<CreateIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList)
+    public Boolean isIndicatorJudgeRiskFactor(@RequestBody @Validated List<ExperimentIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList)
     {
         return experimentOrgJudgeBiz.isIndicatorJudgeRiskFactor(judgeRiskFactorRequestList);
     }
@@ -76,7 +71,7 @@ public class ExperimentOrgJudgeRest {
      */
     @Operation(summary = "getJudgeRiskFactorScore")
     @PostMapping("v1/userExperiment/experimentOrgJudge/getJudgeRiskFactorScore")
-    public BigDecimal getJudgeRiskFactorScore(@RequestBody @Validated List<CreateIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList)
+    public BigDecimal getJudgeRiskFactorScore(@RequestBody @Validated List<ExperimentIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList)
     {
         return experimentOrgJudgeBiz.getJudgeRiskFactorScore(judgeRiskFactorRequestList);
     }
@@ -107,32 +102,32 @@ public class ExperimentOrgJudgeRest {
      */
     @Operation(summary = "获取二级类有报告的判断指标信息")
     @PostMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeHealthGuidance")
-    public Map<String,List<IndicatorJudgeHealthGuidanceResponse>> getIndicatorJudgeHealthGuidance(@RequestParam @Validated String indicatorFuncId) {
+    public Map<String,List<ExperimentIndicatorJudgeHealthGuidanceResponse>> getIndicatorJudgeHealthGuidance(@RequestParam @Validated String indicatorFuncId) {
         return experimentOrgJudgeBiz.getIndicatorJudgeHealthGuidance(indicatorFuncId);
     }
 
     /**
      *
-     * 三级类别/四级类别：根据指标分类ID获取所有符合条件的数据
+     * 三级类别：根据指标分类ID获取所有符合条件的数据
      * @param
      * @return
      */
-    @Operation(summary = "三级类别/四级类别：根据指标分类ID获取所有符合条件的数据")
+    @Operation(summary = "三级类别：根据指标分类ID获取所有符合条件的数据")
     @GetMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeHealthProblemByCategoryId/{indicatoryCategoryId}")
-    public List<IndicatorJudgeHealthProblemResponse> getIndicatorJudgeHealthProblemByCategoryId(@PathVariable String indicatoryCategoryId) {
+    public List<ExperimentIndicatorJudgeHealthProblemResponse> getIndicatorJudgeHealthProblemByCategoryId(@PathVariable String indicatoryCategoryId) {
         return experimentOrgJudgeBiz.getIndicatorJudgeHealthProblemByCategoryId(indicatoryCategoryId);
     }
 
     /**
      *
-     * 三级类别/四级类别：判断操作
+     * 四级类别：根据指标分类ID获取所有符合条件的数据
      * @param
      * @return
      */
-    @Operation(summary = "三级类别/四级类别：判断操作")
-    @PostMapping("v1/userExperiment/experimentOrgJudge/isIndicatorJudgeHealthProblem")
-    public Boolean isIndicatorJudgeHealthProblem(@RequestBody @Validated List<CreateIndicatorJudgeHealthProblemRequest> judgeHealthProblemRequest) {
-        return experimentOrgJudgeBiz.isIndicatorJudgeHealthProblem(judgeHealthProblemRequest);
+    @Operation(summary = "四级类别：根据指标分类ID获取所有符合条件的数据")
+    @GetMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeDiseaseProblemByCategoryId/{indicatoryCategoryId}")
+    public List<ExperimentIndicatorJudgeDiseaseProblemResponse> getIndicatorJudgeDiseaseProblemByCategoryId(@PathVariable String indicatoryCategoryId) {
+        return experimentOrgJudgeBiz.getIndicatorJudgeDiseaseProblemByCategoryId(indicatoryCategoryId);
     }
 
     /**

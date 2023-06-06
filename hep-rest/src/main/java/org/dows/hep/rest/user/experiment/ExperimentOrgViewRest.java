@@ -10,10 +10,7 @@ import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.biz.user.experiment.ExperimentOrgViewBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -141,6 +138,17 @@ public class ExperimentOrgViewRest {
     }
 
     /**
+     * 基本信息：查看
+     * @param
+     * @return
+     */
+    @Operation(summary = "基本信息：查看")
+    @GetMapping("v1/userExperiment/experimentOrgView/getIndicatorBaseInfo/{indicatorViewBaseInfoId}/{appId}")
+    public Boolean getIndicatorBaseInfo(@PathVariable @Validated String indicatorViewBaseInfoId,@PathVariable @Validated String appId) {
+        return experimentOrgViewBiz.getIndicatorBaseInfo(indicatorViewBaseInfoId,appId);
+    }
+
+    /**
      * 体格检查+辅助检查：体格检查+辅助检查保存
      * @param
      * @return
@@ -154,6 +162,30 @@ public class ExperimentOrgViewRest {
         String accountId = map.get("accountId").toString();
         String accountName = map.get("accountName").toString();
         return experimentOrgViewBiz.savePhysiqueAndAuxiliary(reportRequestList,accountId,accountName);
+    }
+
+    /**
+     *
+     * 二级类别：根据指标分类ID获取所有符合条件的数据
+     * @param
+     * @return
+     */
+    @Operation(summary = "二级类别：根据指标分类ID获取所有符合条件的数据")
+    @GetMapping("v1/userExperiment/experimentOrgJudge/getIndicatorViewPhysicalExamByCategoryId/{indicatoryCategoryId}")
+    public List<ExperimentIndicatorJudgePhysicalExamResponse> getIndicatorViewPhysicalExamByCategoryId(@PathVariable String indicatoryCategoryId) {
+        return experimentOrgViewBiz.getIndicatorViewPhysicalExamByCategoryId(indicatoryCategoryId);
+    }
+
+    /**
+     *
+     * 四级类别：根据指标分类ID获取所有符合条件的数据
+     * @param
+     * @return
+     */
+    @Operation(summary = "四级类别：根据指标分类ID获取所有符合条件的数据")
+    @GetMapping("v1/userExperiment/experimentOrgJudge/getIndicatorViewSupportExamByCategoryId/{indicatoryCategoryId}")
+    public List<ExperimentIndicatorJudgeSupportExamResponse> getIndicatorViewSupportExamByCategoryId(@PathVariable String indicatoryCategoryId) {
+        return experimentOrgViewBiz.getIndicatorViewSupportExamByCategoryId(indicatoryCategoryId);
     }
 
     /**

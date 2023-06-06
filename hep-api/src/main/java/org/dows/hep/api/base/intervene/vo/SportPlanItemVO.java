@@ -1,6 +1,7 @@
 package org.dows.hep.api.base.intervene.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,9 +28,11 @@ public class SportPlanItemVO {
     private String refId;
 
     @Schema(title = "运动项目id")
+    @ApiModelProperty(required = true)
     private String sportItemId;
 
     @Schema(title = "运动项目名称")
+    @ApiModelProperty(required = true)
     private String sportItemName;
 
     @Schema(title = "一级分类id")
@@ -45,9 +48,11 @@ public class SportPlanItemVO {
     private String strengthType;
 
     @Schema(title = "运动频次")
+    @ApiModelProperty(required = true)
     private String frequency;
 
     @Schema(title = "运动时长")
+    @ApiModelProperty(required = true)
     private String lastTime;
 
 }

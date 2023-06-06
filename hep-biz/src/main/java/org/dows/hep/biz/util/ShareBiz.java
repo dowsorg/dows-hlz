@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.dows.account.util.JwtUtil;
 import org.dows.hep.api.enums.EnumToken;
 import org.dows.hep.biz.vo.LoginContextVO;
+import org.dows.hep.entity.ExperimentInstanceEntity;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -60,6 +61,26 @@ public class ShareBiz {
         return rst.setAccountId(Optional.ofNullable(map.get("accountId")).map(Object::toString).orElse(""))
                 .setAccountName(Optional.ofNullable(map.get("accountName")).map(Object::toString).orElse(""));
 
+    }
+
+    /**
+     * 计算当前游戏期数
+     * @param expt
+     * @return
+     */
+    public static Integer calcPeriod(ExperimentInstanceEntity expt){
+        //TODO calcPeriod
+        return 1;
+    }
+
+    /**
+     * 计算当前游戏内天数
+     * @param expt
+     * @return
+     */
+    public static Integer calcGameDay(ExperimentInstanceEntity expt){
+        //TODO calcGameDay
+        return 1;
     }
 
 }

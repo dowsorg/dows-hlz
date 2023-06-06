@@ -103,7 +103,9 @@ public class TreatItemBiz{
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(saveTreatItem.getInterveneCategId())
                         ||null==(categVO= getCategCache().getById(saveTreatItem.getInterveneCategId())))
                 .throwMessage("类别不存在");
-        final IndicatorFuncEntity funcRow= AssertUtil.getNotNull(indicatorFuncDao.getById(saveTreatItem.getIndicatorFuncId(), IndicatorFuncEntity::getPid))
+        final IndicatorFuncEntity funcRow= AssertUtil.getNotNull(indicatorFuncDao.getById(saveTreatItem.getIndicatorFuncId(),
+                        IndicatorFuncEntity::getPid,
+                        IndicatorFuncEntity::getIndicatorCategoryId))
                 .orElseThrow("功能点不存在");
         AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(saveTreatItem.getIndicators())
                         &&saveTreatItem.getIndicators().stream()
@@ -117,7 +119,7 @@ public class TreatItemBiz{
                 .setCategName(categVO.getCategName())
                 .setCategIdPath(categVO.getCategIdPath())
                 .setCategNamePath(categVO.getCategNamePath())
-                .setIndicatorCategoryId(funcRow.getPid());
+                .setIndicatorCategoryId(funcRow.getIndicatorCategoryId());
 
         List<TreatItemIndicatorEntity> subRows=ShareUtil.XCollection.map(saveTreatItem.getIndicators(),
                 i->CopyWrapper.create(TreatItemIndicatorEntity::new).endFrom(i,v->v.setTreatItemIndicatorId(i.getRefId())));

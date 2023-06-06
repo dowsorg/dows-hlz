@@ -1,6 +1,7 @@
 package org.dows.hep.api.base.intervene.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,13 +29,25 @@ public class InterveneIndicatorVO {
     private String refId;
 
     @Schema(title = "指标id")
+    @ApiModelProperty(required = true)
     private String indicatorInstanceId;
 
+    @Schema(title = "指标分类ID")
+    private String indicatorCategoryId;
+
     @Schema(title = "表达式")
+    @ApiModelProperty(required = true)
     private String expression;
 
     @Schema(title = "表达式描述")
+    @ApiModelProperty(required = true)
     private String expressionDescr;
+
+    @Schema(title = "参数id列表")
+    private String expressionVars;
+
+    @Schema(title = "参数名列表")
+    private String expressionNames;
 
     @Schema(title = "排序号")
     private Integer seq;

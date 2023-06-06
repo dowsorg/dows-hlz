@@ -425,6 +425,7 @@ public class ExperimentManageBiz {
                             .experimentInstanceId(createExperiment.getExperimentInstanceId())
                             .experimentGroupId(model.getExperimentGroupId())
                             .experimentOrgId(orgId)
+                            .appId(createExperiment.getAppId())
                             .experimentOrgName(request.getOrgName())
                             .experimentAccountId(vo.getAccountId())
                             .experimentAccountName(vo.getAccountName())

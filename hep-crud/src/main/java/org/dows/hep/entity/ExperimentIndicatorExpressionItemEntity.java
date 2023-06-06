@@ -33,6 +33,9 @@ public class ExperimentIndicatorExpressionItemEntity {
   @Schema(title = "实验实例ID")
   private String experimentInstanceId;
 
+  @Schema(title = "原始条件")
+  private String conditionRaw;
+
   @Schema(title = "条件")
   private String conditionExpression;
 
@@ -41,6 +44,9 @@ public class ExperimentIndicatorExpressionItemEntity {
 
   @Schema(title = "条件参数数值，以英文逗号分割")
   private String conditionValList;
+
+  @Schema(title = "原始结果")
+  private String resultRaw;
 
   @Schema(title = "结果")
   private String resultExpression;

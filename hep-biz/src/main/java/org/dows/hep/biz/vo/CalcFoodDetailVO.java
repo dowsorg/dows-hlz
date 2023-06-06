@@ -7,7 +7,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.dows.hep.api.base.intervene.vo.FoodDetailVO;
+import org.dows.hep.api.enums.EnumFoodMealTime;
 import org.dows.hep.biz.util.BigDecimalOptional;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author : wuzl
@@ -27,5 +31,10 @@ public class CalcFoodDetailVO extends FoodDetailVO {
     @JsonIgnore
     @Schema(title = "一级类别")
     private String categIdLv1;
+
+    @JsonIgnore
+    @Schema(title = "餐次统计")
+    private final Map<EnumFoodMealTime,CalcFoodMealTimeStatVO> mapMeals=new HashMap<>();
+
 
 }

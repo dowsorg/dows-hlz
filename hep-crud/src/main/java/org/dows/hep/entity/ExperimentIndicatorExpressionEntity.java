@@ -39,6 +39,6 @@ public class ExperimentIndicatorExpressionEntity {
   @Schema(title = "下限")
   private String minIndicatorExpressionItemId;
 
-  @Schema(title = "公式类型，0-条件，1-随机")
+  @Schema(title = "公式类型，0-条件，1-随机, 2-判断指标-危险因素")
   private Integer type;
 }
