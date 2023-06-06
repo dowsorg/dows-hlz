@@ -25,4 +25,10 @@ public class CaseQuestionSearchRequest {
 
     @Schema(title = "知识类别")
     private String l2CategId;
+
+    @Schema(title = "题型")
+    private String questionType;
+
+    @Schema(title = "题目关键字")
+    private String keyword;
 }
