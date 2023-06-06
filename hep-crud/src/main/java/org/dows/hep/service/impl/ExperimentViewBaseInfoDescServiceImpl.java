@@ -10,6 +10,6 @@ import org.springframework.stereotype.Service;
  * @author jx
  * @date 2023/6/6 11:22
  */
-@Service("experimentViewBaseInfoDescServiceI")
+@Service("experimentViewBaseInfoDescService")
 public class ExperimentViewBaseInfoDescServiceImpl extends MybatisCrudServiceImpl<ExperimentViewBaseInfoDescMapper, ExperimentViewBaseInfoDescEntity> implements ExperimentViewBaseInfoDescService {
 }
