@@ -417,8 +417,7 @@ public class IndicatorExpressionBiz{
         if (isValDigital) {
           context.setVariable(conditionNameSplitList.get(i), Double.parseDouble(val));
         } else {
-          val = "'" + val;
-          val = val + "'";
+          val = wrapStrWithDoubleSingleQuotes(val);
           context.setVariable(conditionNameSplitList.get(i), val);
         }
       }
@@ -466,7 +465,7 @@ public class IndicatorExpressionBiz{
     resultNameArray = resultNameList.split(EnumString.COMMA.getStr());
     resultValArray = resultValList.split(EnumString.COMMA.getStr());
     for (int i = 0; i <= resultNameArray.length - 1; i++) {
-      String[] resultNameSpiltArray = resultNameArray[i].split(EnumString.DOLLAR.getStr());
+      String[] resultNameSpiltArray = resultNameArray[i].split(EnumString.SPLIT_DOLLAR.getStr());
       if (StringUtils.equals(principalId, resultValArray[i]) && StringUtils.equals(resultNameSpiltArray[1], EnumString.ZERO.getStr())) {
         log.warn("method IndicatorExpressionBiz.createOrUpdate checkResultExpression can not ref same indicatorInstanceId with current periods");
         throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
@@ -474,7 +473,7 @@ public class IndicatorExpressionBiz{
     }
     /* runsix:can not circular dependency */
     for (int i = 0; i <= resultValArray.length-1; i++) {
-      String[] resultNameSplitArray = resultNameArray[i].split(EnumString.DOLLAR.getStr());
+      String[] resultNameSplitArray = resultNameArray[i].split(EnumString.SPLIT_DOLLAR.getStr());
       String indicatorInstanceId = resultValArray[i];
       String periods = resultNameSplitArray[1];
       if (periods.startsWith(EnumString.UNDERLINE.getStr())) {
@@ -635,9 +634,9 @@ public class IndicatorExpressionBiz{
             if (j <= conditionExpression.length()-1-1) {
               if (checkMathDoubleOperator(conditionExpression.substring(j, j+2))) {
                 if (isNumber) {
-                  strList.add(conditionExpression.substring(i, j+1));
+                  strList.add(conditionExpression.substring(i, j));
                 } else {
-                  strList.add(wrapStrWithDoubleSingleQuotes(conditionExpression.substring(i, j+1)));
+                  strList.add(wrapStrWithDoubleSingleQuotes(conditionExpression.substring(i, j)));
                 }
                 strList.add(conditionExpression.substring(j, j+2));
                 isComplete = true;
@@ -691,7 +690,7 @@ public class IndicatorExpressionBiz{
   }
 
   private static boolean checkDollar(String str) {
-    return StringUtils.equalsIgnoreCase(str, EnumString.DOLLAR.getStr());
+    return StringUtils.equalsIgnoreCase(str, EnumString.SPLIT_DOLLAR.getStr());
   }
 
   private static boolean checkSpace(String str) {
@@ -700,7 +699,10 @@ public class IndicatorExpressionBiz{
 
   /* runsix:TODO 需要删掉，测试使用 */
   public static void main(String[] args) {
-    String str = "#indicator0$_1 == 男";
-    System.out.println(getConditionExpression(str));
+//    String str = "#indicator0$_1 == 男";
+//    System.out.println(getConditionExpression(str));
+    String str = "indicator0@0";
+    String[] split = str.split("@");
+    System.out.println(split);
   }
 }
