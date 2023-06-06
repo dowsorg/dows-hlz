@@ -70,8 +70,11 @@ public class SportItemBiz{
         List<SportItemIndicatorEntity> indicators=dao.getSubByLeadId(sportItemId,
                 SportItemIndicatorEntity::getId,
                 SportItemIndicatorEntity::getIndicatorInstanceId,
+                SportItemIndicatorEntity::getIndicatorCategoryId,
                 SportItemIndicatorEntity::getExpression,
                 SportItemIndicatorEntity::getExpressionDescr,
+                SportItemIndicatorEntity::getExpressionVars,
+                SportItemIndicatorEntity::getExpressionNames,
                 SportItemIndicatorEntity::getSeq);
 
         List<InterveneIndicatorVO> voIndicators=ShareUtil.XCollection.map(indicators,
