@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class QuestionSectionDimensionBiz{
-    private final QuestionDomainBaseBiz baseBiz;
+    private final QuestionBaseBiz baseBiz;
     private final QuestionSectionDimensionService questionSectionDimensionService;
 
     /**

@@ -12,7 +12,7 @@ import org.dows.hep.api.base.question.enums.QuestionESCEnum;
 import org.dows.hep.api.base.question.enums.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.QuestionRequest;
 import org.dows.hep.api.base.question.response.QuestionResponse;
-import org.dows.hep.biz.base.question.QuestionDomainBaseBiz;
+import org.dows.hep.biz.base.question.QuestionBaseBiz;
 import org.dows.hep.entity.QuestionInstanceEntity;
 import org.dows.hep.service.QuestionInstanceService;
 import org.springframework.stereotype.Component;
@@ -29,7 +29,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SubjectiveQuestionTypeHandler implements QuestionTypeHandler {
 
-    private final QuestionDomainBaseBiz baseBiz;
+    private final QuestionBaseBiz baseBiz;
     private final BaseQuestionHandler baseQuestionHandler;
     private final QuestionInstanceService questionInstanceService;
 

@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 
 @RequiredArgsConstructor
 @Service
-public class QuestionDomainBaseBiz {
+public class QuestionBaseBiz {
 
     private static final String LAST_VERSION = "SNAPSHOT";
 
