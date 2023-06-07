@@ -3,24 +3,21 @@ package org.dows.hep.biz.user.experiment;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import lombok.AllArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
-import org.dows.hep.api.base.question.request.QuestionSectionResultRequest;
-import org.dows.hep.api.base.question.response.QuestionSectionResponse;
-import org.dows.hep.api.tenant.casus.CaseESCEnum;
-import org.dows.hep.api.tenant.casus.response.CaseQuestionnaireResponse;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
+import org.dows.hep.api.user.experiment.ExptQuestionnaireStateEnum;
+import org.dows.hep.api.user.experiment.request.ExperimentQuestionnaireItemRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentQuestionnaireRequest;
+import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireItemResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireResponse;
-import org.dows.hep.biz.base.question.QuestionSectionBiz;
-import org.dows.hep.biz.base.question.QuestionSectionResultBiz;
-import org.dows.hep.entity.CaseQuestionnaireEntity;
 import org.dows.hep.entity.ExperimentQuestionnaireEntity;
-import org.dows.hep.service.CaseQuestionnaireService;
 import org.dows.hep.service.ExperimentQuestionnaireService;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * @author fhb
@@ -30,10 +27,8 @@ import java.util.Optional;
 @AllArgsConstructor
 @Service
 public class ExperimentQuestionnaireBiz {
-    private final QuestionSectionResultBiz questionSectionResultBiz;
-    private final QuestionSectionBiz questionSectionBiz;
-    private final CaseQuestionnaireService caseQuestionnaireService;
     private final ExperimentQuestionnaireService experimentQuestionnaireService;
+    private final ExperimentQuestionnaireItemBiz experimentQuestionnaireItemBiz;
 
     /**
      * @param
@@ -57,87 +52,64 @@ public class ExperimentQuestionnaireBiz {
                 .eq(ExperimentQuestionnaireEntity::getExperimentGroupId, experimentAccountId)
                 .oneOpt()
                 .orElseThrow(() -> new BizException(ExperimentESCEnum.QUESTIONNAIRE_NOT_NULL));
+        ExperimentQuestionnaireResponse result = BeanUtil.copyProperties(entity, ExperimentQuestionnaireResponse.class);
 
-        ExperimentQuestionnaireResponse result = new ExperimentQuestionnaireResponse();
-        result.setExperimentQuestionnaireId(entity.getExperimentQuestionnaireId());
-        String caseQuestionnaireId = entity.getCaseQuestionnaireId();
-        String questionSectionResultId = entity.getQuestionSectionResultId();
-        // 无 Result
-        if (StrUtil.isBlank(questionSectionResultId)) {
-            CaseQuestionnaireResponse questionnaireResponse = getCaseQuestionnaireResponse(caseQuestionnaireId);
-            result.setCaseQuestionnaireResponse(questionnaireResponse);
-            return result;
-        }
-        QuestionSectionResponse questionSectionResult = questionSectionResultBiz.getQuestionSectionResult(questionSectionResultId);
-        if (BeanUtil.isEmpty(questionSectionResult)) {
-            CaseQuestionnaireResponse questionnaireResponse = getCaseQuestionnaireResponse(caseQuestionnaireId);
-            result.setCaseQuestionnaireResponse(questionnaireResponse);
-            return result;
-        }
+        List<ExperimentQuestionnaireItemResponse> itemList = experimentQuestionnaireItemBiz.listByQuestionnaireId(entity.getExperimentQuestionnaireId());
+        result.setItemList(itemList);
 
-        // 有 Result
-        CaseQuestionnaireResponse questionnaireResponse = getCaseQuestionnaireResponse(caseQuestionnaireId, questionSectionResult);
-        result.setCaseQuestionnaireResponse(questionnaireResponse);
         return result;
     }
 
     /**
      * @author fhb
-     * @description
-     * @date 2023/6/3 21:02
-     * @param 
-     * @return 
+     * @description 保存
+     * @date 2023/6/7 13:50
+     * @param
+     * @return
      */
-    public Boolean submitQuestionnaire(ExperimentQuestionnaireRequest request) {
+    public Boolean updateScheme(ExperimentQuestionnaireRequest request) {
         if (BeanUtil.isEmpty(request)) {
             throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
         }
-        String experimentSchemeId = Optional.of(request)
-                .map(ExperimentQuestionnaireRequest::getExperimentQuestionnaireId)
-                .orElseThrow(() -> new BizException(ExperimentESCEnum.PARAMS_NON_NULL));
-        QuestionSectionResultRequest questionSectionResultRequest = Optional.of(request)
-                .map(ExperimentQuestionnaireRequest::getQuestionSectionResultRequest)
-                .orElseThrow(() -> new BizException(ExperimentESCEnum.PARAMS_NON_NULL));
 
-        // save or update
-        String questionSectionResultId = questionSectionResultBiz.saveOrUpdQuestionSectionResult(questionSectionResultRequest);
+        checkState(request.getExperimentQuestionnaireId());
+
+        List<ExperimentQuestionnaireItemRequest> itemList = request.getItemList();
+        return experimentQuestionnaireItemBiz.updateBatch(itemList);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 提交
+     * @关联表:
+     * @工时: 2H
+     * @开发者: lait
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    @DSTransactional
+    public Boolean submitScheme(String experimentQuestionnaireId) {
+        if (StrUtil.isBlank(experimentQuestionnaireId)) {
+            throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
+        }
+
+        checkState(experimentQuestionnaireId);
 
         return experimentQuestionnaireService.lambdaUpdate()
-                .eq(ExperimentQuestionnaireEntity::getExperimentQuestionnaireId, experimentSchemeId)
-                .set(ExperimentQuestionnaireEntity::getQuestionSectionResultId, questionSectionResultId)
+                .eq(ExperimentQuestionnaireEntity::getExperimentQuestionnaireId, experimentQuestionnaireId)
+                .set(ExperimentQuestionnaireEntity::getState, ExptQuestionnaireStateEnum.SUBMITTED.getCode())
                 .update();
     }
 
-    private CaseQuestionnaireResponse getCaseQuestionnaireResponse(String caseQuestionnaireId) {
-        return getCaseQuestionnaireResponse0(caseQuestionnaireId, null);
-    }
-
-    private CaseQuestionnaireResponse getCaseQuestionnaireResponse(String caseQuestionnaireId, QuestionSectionResponse questionSectionResult) {
-        return getCaseQuestionnaireResponse0(caseQuestionnaireId, questionSectionResult);
-    }
-
-    private CaseQuestionnaireResponse getCaseQuestionnaireResponse0(String caseQuestionnaireId, QuestionSectionResponse questionSectionResult) {
-        CaseQuestionnaireEntity entity = getById(caseQuestionnaireId);
-        if (BeanUtil.isEmpty(entity)) {
-            throw new BizException(CaseESCEnum.DATA_NULL);
+    private void checkState(String experimentQuestionnaireId) {
+        ExperimentQuestionnaireEntity questionnaireEntity = experimentQuestionnaireService.lambdaQuery()
+                .eq(ExperimentQuestionnaireEntity::getExperimentQuestionnaireId, experimentQuestionnaireId)
+                .oneOpt()
+                .orElseThrow(() -> new BizException(ExperimentESCEnum.SCHEME_NOT_NULL));
+        Integer state = questionnaireEntity.getState();
+        if (Objects.equals(ExptQuestionnaireStateEnum.SUBMITTED.getCode(), state)) {
+            throw new BizException(ExperimentESCEnum.SCHEME_HAS_BEEN_SUBMITTED);
         }
-        CaseQuestionnaireResponse result = BeanUtil.copyProperties(entity, CaseQuestionnaireResponse.class);
-
-        // set question-section
-        String questionSectionId = entity.getQuestionSectionId();
-        if (BeanUtil.isEmpty(questionSectionResult)) {
-            QuestionSectionResponse questionSectionResponse = questionSectionBiz.getQuestionSection(questionSectionId);
-            result.setQuestionSectionResponse(questionSectionResponse);
-        } else {
-            result.setQuestionSectionResponse(questionSectionResult);
-        }
-
-        return result;
-    }
-
-    private CaseQuestionnaireEntity getById(String caseQuestionnaireId) {
-        return caseQuestionnaireService.lambdaQuery()
-                .eq(CaseQuestionnaireEntity::getCaseQuestionnaireId, caseQuestionnaireId)
-                .one();
     }
 }

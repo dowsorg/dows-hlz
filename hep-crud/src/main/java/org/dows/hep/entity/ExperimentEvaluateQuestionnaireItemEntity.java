@@ -21,34 +21,42 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "ExperimentEvaluateQuestionnaire", title = "实验评估问卷")
-@TableName("experiment_evaluate_questionnaire")
-public class ExperimentEvaluateQuestionnaireEntity {
-
+@Schema(name = "ExperimentEvaluateQuestionnaireItem", title = "实验评估问卷item")
+@TableName("experiment_evaluate_questionnaire_item")
+public class ExperimentEvaluateQuestionnaireItemEntity {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库ID")
     private Long id;
 
+    @Schema(title = "item id")
+    private String experimentEvaluateQuestionnaireItemId;
+
+    @Schema(title = "pid")
+    private String experimentEvaluateQuestionnaireItemPid;
+
     @Schema(title = "实验评估问卷ID")
     private String experimentEvaluateQuestionnaireId;
 
-    @Schema(title = "实验实例ID")
-    private String experimentInstanceId;
+    @Schema(title = "问题题目")
+    private String questionTitle;
 
-    @Schema(title = "评估问卷名")
-    private String evaluateQuestionnaireName;
+    @Schema(title = "问题描述")
+    private String questionDescr;
 
-    @Schema(title = "评估问卷描述")
-    private String evaluateQuestionnaireDescr;
+    @Schema(title = "问题选项")
+    private String questionOptions;
 
-    @Schema(title = "评估问卷操作提示")
-    private String operationPrompt;
+    @Schema(title = "问题详解")
+    private String questionDetailedAnswer;
 
-    @Schema(title = "评估问卷对话提示")
-    private String tips;
+    @Schema(title = "正确答案")
+    private String rightValue;
 
-    @Schema(title = "作答人账号ID")
-    private String accountId;
+    @Schema(title = "排序")
+    private String seq;
+
+    @Schema(title = "问题结果")
+    private String questionResult;
 
     @JsonIgnore
     @TableLogic

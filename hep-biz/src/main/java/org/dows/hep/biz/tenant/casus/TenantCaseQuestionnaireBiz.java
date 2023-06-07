@@ -122,6 +122,34 @@ public class TenantCaseQuestionnaireBiz {
     }
 
     /**
+     * @author fhb
+     * @description
+     * @date 2023/6/7 10:32
+     * @param
+     * @return
+     */
+    public List<CaseQuestionnaireResponse> listByIds(List<String> ids) {
+        if (BeanUtil.isEmpty(ids)) {
+            return new ArrayList<>();
+        }
+
+        List<CaseQuestionnaireEntity> list = caseQuestionnaireService.lambdaQuery()
+                .in(CaseQuestionnaireEntity::getCaseQuestionnaireId, ids)
+                .list();
+        List<CaseQuestionnaireResponse> caseQuestionnaireResponses = BeanUtil.copyToList(list, CaseQuestionnaireResponse.class);
+        if (CollUtil.isEmpty(caseQuestionnaireResponses)) {
+            return caseQuestionnaireResponses;
+        }
+
+        caseQuestionnaireResponses.forEach(item -> {
+            String questionSectionId = item.getQuestionSectionId();
+            QuestionSectionResponse questionSection = questionSectionBiz.getQuestionSection(questionSectionId);
+            item.setQuestionSectionResponse(questionSection);
+        });
+        return caseQuestionnaireResponses;
+    }
+
+    /**
      * @param
      * @return
      * @说明: 获取案例问卷

@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
+import org.dows.framework.crud.api.CrudEntity;
 
 import java.util.Date;
 
@@ -21,34 +22,39 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "ExperimentEvaluateQuestionnaire", title = "实验评估问卷")
-@TableName("experiment_evaluate_questionnaire")
-public class ExperimentEvaluateQuestionnaireEntity {
-
+@Schema(name = "ExperimentSchemeItem", title = "实验方案item")
+@TableName("experiment_scheme_item")
+public class ExperimentSchemeItemEntity implements CrudEntity {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库ID")
     private Long id;
 
-    @Schema(title = "实验评估问卷ID")
-    private String experimentEvaluateQuestionnaireId;
+    @Schema(title = "item Id")
+    private String experimentSchemeItemId;
 
-    @Schema(title = "实验实例ID")
-    private String experimentInstanceId;
+    @Schema(title = "item pid")
+    private String experimentSchemeItemPid;
 
-    @Schema(title = "评估问卷名")
-    private String evaluateQuestionnaireName;
+    @Schema(title = "方案设计ID")
+    private String experimentSchemeId;
 
-    @Schema(title = "评估问卷描述")
-    private String evaluateQuestionnaireDescr;
+    @Schema(title = "问题标题")
+    private String questionTitle;
 
-    @Schema(title = "评估问卷操作提示")
-    private String operationPrompt;
+    @Schema(title = "问题描述")
+    private String questionDescr;
 
-    @Schema(title = "评估问卷对话提示")
-    private String tips;
+    @Schema(title = "问题解析")
+    private String questionDetailedAnswer;
 
     @Schema(title = "作答人账号ID")
     private String accountId;
+
+    @Schema(title = "排序")
+    private Integer seq;
+
+    @Schema(title = "答题结果")
+    private String questionResult;
 
     @JsonIgnore
     @TableLogic

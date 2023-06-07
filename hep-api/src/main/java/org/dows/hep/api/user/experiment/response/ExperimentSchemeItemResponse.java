@@ -19,31 +19,25 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(name = "ExperimentSchemeResponse 对象", title = "实验方案设计")
 public class ExperimentSchemeItemResponse {
+    @Schema(title = "item Id")
+    private String experimentSchemeItemId;
 
-    @Schema(title = "itemID")
-    private String questionSectionItemId;
+    @Schema(title = "问题标题")
+    private String questionTitle;
 
-    @Schema(title = "问题")
-    private Question question;
+    @Schema(title = "问题描述")
+    private String questionDescr;
+
+    @Schema(title = "作答人账号ID")
+    private String accountId;
+
+    @Schema(title = "答题结果")
+    private String questionResult;
+
+    @Schema(title = "子")
+    private List<ExperimentSchemeItemResponse> children;
 
     @Schema(title = "是否可以编辑")
     private Boolean canEdit;
-
-    @Data
-    @ToString
-    @Builder
-    @Accessors(chain = true)
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class Question {
-        @Schema(title = "题目ID")
-        private String questionId;
-
-        @Schema(title = "问题标题")
-        private String questionTitle;
-
-        @Schema(title = "子题目")
-        private List<Question> children;
-    }
 
 }
