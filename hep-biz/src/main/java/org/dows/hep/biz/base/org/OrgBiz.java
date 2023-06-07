@@ -667,7 +667,7 @@ public class OrgBiz {
      * @创建时间: 2023/5/05 10:00
      */
     @DSTransactional
-    public Boolean copyPerson(String caseOrgId, String caseInstanceId, String accountId) {
+    public String copyPerson(String caseOrgId, String caseInstanceId, String accountId) {
         //1、机构内人物复制
         //1.1、获取用户信息及简介并创建新用户及简介
         AccountUserResponse accountUser = accountUserApi.getUserByAccountId(accountId);
@@ -710,7 +710,8 @@ public class OrgBiz {
                 .caseOrgId(caseOrgId)
                 .accountId(vo.getAccountId())
                 .build();
-        return casePersonService.save(person);
+        casePersonService.save(person);
+        return vo.getAccountId();
     }
 
     /**
