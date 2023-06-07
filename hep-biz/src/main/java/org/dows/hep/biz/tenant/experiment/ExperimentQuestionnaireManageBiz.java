@@ -52,7 +52,7 @@ public class ExperimentQuestionnaireManageBiz {
         Assert.notEmpty(experimentGroupIds, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
 
         // 期数-机构分组
-        Map<String, Map<String, CaseOrgQuestionnaireResponse>> periodOrgCollect = tenantCaseOrgQuestionnaireBiz.listSelectedQuestionnaires(caseInstanceId);
+        Map<String, Map<String, CaseOrgQuestionnaireResponse>> periodOrgCollect = tenantCaseOrgQuestionnaireBiz.mapSelectedQuestionnaires(caseInstanceId);
         if (CollUtil.isEmpty(periodOrgCollect)) {
             return;
         }

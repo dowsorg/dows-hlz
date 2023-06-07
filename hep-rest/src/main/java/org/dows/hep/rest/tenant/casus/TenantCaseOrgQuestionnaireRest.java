@@ -35,7 +35,7 @@ public class TenantCaseOrgQuestionnaireRest {
      */
     @Operation(summary = "列出未选择的问卷")
     @GetMapping("v1/tenantCasus/caseQuestionnaire/listUnselectedQuestionnaires")
-    public Map<String, List<CaseQuestionnaireResponse>> listUnselectedQuestionnaires(@Validated String caseInstanceId ) {
+    public List<List<CaseQuestionnaireResponse>> listUnselectedQuestionnaires(@Validated String caseInstanceId ) {
         return tenantCaseOrgQuestionnaireBiz.listUnselectedQuestionnaires(caseInstanceId);
     }
 
@@ -46,7 +46,7 @@ public class TenantCaseOrgQuestionnaireRest {
      */
     @Operation(summary = "列出已经选择的问卷")
     @GetMapping("v1/tenantCasus/caseQuestionnaire/listSelectedQuestionnaires")
-    public Map<String, Map<String, CaseOrgQuestionnaireResponse>> listSelectedQuestionnaires(@Validated String caseInstanceId ) {
+    public List<Map<String, CaseOrgQuestionnaireResponse>> listSelectedQuestionnaires(@Validated String caseInstanceId ) {
         return tenantCaseOrgQuestionnaireBiz.listSelectedQuestionnaires(caseInstanceId);
     }
 

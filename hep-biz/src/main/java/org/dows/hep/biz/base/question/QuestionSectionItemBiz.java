@@ -52,7 +52,7 @@ public class QuestionSectionItemBiz {
 
         boolean res = false;
         switch (generationModeEnum) {
-            case SELECT_CLONE -> res = batchSaveSelectCloneMode(itemList, questionSectionId, questionSourceEnum);
+//            case SELECT_CLONE -> res = batchSaveSelectCloneMode(itemList, questionSectionId, questionSourceEnum);
             case SELECT_REF -> res = batchSaveSelectRefMode(itemList, questionSectionId, questionSourceEnum);
             case ADD_NEW -> res = batchSaveOrUpdAddNewMode(itemList, questionSectionId, questionSourceEnum);
             default -> {
