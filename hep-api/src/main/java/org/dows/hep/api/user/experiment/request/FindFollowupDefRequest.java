@@ -29,5 +29,15 @@ public class FindFollowupDefRequest{
     @Schema(title = "期数")
     private Integer periods;
 
+    @Schema(title = "指标功能ID")
+    private String indicatorFuncId;
 
+    @Schema(title = "应用ID")
+    private String appId;
+
+    @Schema(title = "页码")
+    private Integer pageNo;
+
+    @Schema(title = "页数")
+    private Integer pageSize;
 }

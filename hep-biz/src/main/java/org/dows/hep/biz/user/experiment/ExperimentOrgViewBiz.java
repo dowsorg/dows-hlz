@@ -34,6 +34,9 @@ public class ExperimentOrgViewBiz {
     private final ExperimentViewBaseInfoMonitorContentService experimentViewBaseInfoMonitorContentService;
     private final ExperimentViewBaseInfoMonitorContentRefService experimentViewBaseInfoMonitorContentRefService;
     private final ExperimentViewBaseInfoSingleService experimentViewBaseInfoSingleService;
+    private final ExperimentViewMonitorFollowupService experimentViewMonitorFollowupService;
+    private final ExperimentViewMonitorFollowupContentService experimentViewMonitorFollowupContentService;
+    private final ExperimentViewMonitorFollowupContentRefService experimentViewMonitorFollowupContentRefService;
 
     /**
      * @param
@@ -59,8 +62,13 @@ public class ExperimentOrgViewBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public List<FollowupDefResponse> listFollowupDef(FindFollowupDefRequest findFollowupDef) {
-        return new ArrayList<FollowupDefResponse>();
+    public List<ExperimentViewMonitorFollowupEntity> listFollowup(FindFollowupDefRequest findFollowupDef) {
+           //1、获取record记录
+        return experimentViewMonitorFollowupService.lambdaQuery()
+                .eq(ExperimentViewMonitorFollowupEntity::getAppId,findFollowupDef.getAppId())
+                .eq(ExperimentViewMonitorFollowupEntity::getIndicatorFuncId,findFollowupDef.getIndicatorFuncId())
+                .eq(ExperimentViewMonitorFollowupEntity::getDeleted,false)
+                .list();
     }
 
     /**
