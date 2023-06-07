@@ -14,6 +14,7 @@ import org.dows.account.biz.enums.EnumAccountStatusCode;
 import org.dows.account.biz.exception.AccountException;
 import org.dows.account.request.*;
 import org.dows.account.response.*;
+import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.enums.EnumCaseFee;
 import org.dows.hep.api.exception.CaseFeeException;
 import org.dows.hep.api.user.organization.request.CaseOrgRequest;
@@ -666,7 +667,7 @@ public class OrgBiz {
      * @创建时间: 2023/5/05 10:00
      */
     @DSTransactional
-    public Boolean copyPerson(String caseOrgId, String caseInstanceId, String accountId) {
+    public String copyPerson(String caseOrgId, String caseInstanceId, String accountId) {
         //1、机构内人物复制
         //1.1、获取用户信息及简介并创建新用户及简介
         AccountUserResponse accountUser = accountUserApi.getUserByAccountId(accountId);
@@ -709,7 +710,8 @@ public class OrgBiz {
                 .caseOrgId(caseOrgId)
                 .accountId(vo.getAccountId())
                 .build();
-        return casePersonService.save(person);
+        casePersonService.save(person);
+        return vo.getAccountId();
     }
 
     /**
@@ -792,6 +794,27 @@ public class OrgBiz {
                 .appId(appId)
                 .build());
         return person.getCasePersonId();
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 通过案例人物ID获取accountId
+     * @关联表: case_person
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/6/07 14:18
+     */
+    public String getAccountIdByCasePerson(String casePersonId) {
+        CasePersonEntity entity = casePersonService.lambdaQuery()
+                .eq(CasePersonEntity::getCasePersonId, casePersonId)
+                .eq(CasePersonEntity::getDeleted, false)
+                .one();
+        if(entity == null || ReflectUtil.isObjectNull(entity)){
+            throw new AccountException(EnumAccountStatusCode.ACCOUNT_NOT_EXIST_EXCEPTION);
+        }
+        return entity.getAccountId();
     }
 
     /**

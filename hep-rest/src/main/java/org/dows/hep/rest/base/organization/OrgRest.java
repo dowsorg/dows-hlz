@@ -114,6 +114,17 @@ public class OrgRest {
     }
 
     /**
+     * 通过案例人物ID获取accountId
+     * @param
+     * @return
+     */
+    @Operation(summary = "通过案例人物ID获取accountId")
+    @PostMapping("v1/baseOrg/org/getAccountIdByCasePerson")
+    public String getAccountIdByCasePerson(@RequestParam String casePersonId) {
+        return orgBiz.getAccountIdByCasePerson(casePersonId);
+    }
+
+    /**
      * 将自定义人物添加到案例机构中
      * @param
      * @return
@@ -186,6 +197,7 @@ public class OrgRest {
                 appId);
     }
 
+
     /**
      * 同一案例中，人物不能被多个机构共享
      */
@@ -202,7 +214,7 @@ public class OrgRest {
      */
     @Operation(summary = "复制机构人物")
     @PostMapping("v1/baseOrg/org/copyPerson")
-    public Boolean copyPerson(@RequestParam String caseOrgId,
+    public String copyPerson(@RequestParam String caseOrgId,
                                        @RequestParam String caseInstanceId,
                                        @RequestParam String accountId) {
         return orgBiz.copyPerson(caseOrgId,caseInstanceId,accountId);
