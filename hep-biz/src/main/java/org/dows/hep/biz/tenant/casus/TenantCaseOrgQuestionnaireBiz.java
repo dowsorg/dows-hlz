@@ -44,12 +44,12 @@ public class TenantCaseOrgQuestionnaireBiz {
      * @description 列出未选择的问卷
      * @date 2023/5/25 11:43
      */
-    public Map<String, List<CaseQuestionnaireResponse>> listUnselectedQuestionnaires(String caseInstanceId) {
+    public List<List<CaseQuestionnaireResponse>> listUnselectedQuestionnaires(String caseInstanceId) {
         if (StrUtil.isBlank(caseInstanceId)) {
             throw new BizException(CaseESCEnum.PARAMS_NON_NULL);
         }
 
-        Map<String, List<CaseQuestionnaireResponse>> result = new HashMap<>();
+        Map<String, List<CaseQuestionnaireResponse>> result = new LinkedHashMap<>();
         Arrays.stream(CasePeriodsEnum.values()).forEach(item -> {
             result.put(item.getName(), new ArrayList<>());
         });
@@ -69,7 +69,7 @@ public class TenantCaseOrgQuestionnaireBiz {
             }
         });
 
-        return result;
+        return result.values().stream().toList();
     }
 
     /**
@@ -79,13 +79,65 @@ public class TenantCaseOrgQuestionnaireBiz {
      * @description 列出已经选择的问卷
      * @date 2023/5/25 11:43
      */
-    public Map<String, Map<String, CaseOrgQuestionnaireResponse>> listSelectedQuestionnaires(String caseInstanceId) {
+    public List<Map<String, CaseOrgQuestionnaireResponse>> listSelectedQuestionnaires(String caseInstanceId) {
         if (StrUtil.isBlank(caseInstanceId)) {
             throw new BizException(CaseESCEnum.PARAMS_NON_NULL);
         }
 
         // 期数 collect
-        Map<String, Map<String, CaseOrgQuestionnaireResponse>> result = new HashMap<>();
+        Map<String, Map<String, CaseOrgQuestionnaireResponse>> result = new LinkedHashMap<>();
+        Arrays.stream(CasePeriodsEnum.values()).forEach(item -> {
+            result.put(item.getName(), new HashMap<>());
+        });
+
+        List<CaseOrgResponse> orgList = listOrgOfCaseInstance(caseInstanceId);
+        if (Objects.isNull(orgList) || orgList.isEmpty()) {
+            return result.values().stream().toList();
+        }
+
+        // 机构 collect
+        result.forEach((period, orgMap) -> {
+            Map<String, CaseOrgQuestionnaireResponse> orgCollect = new HashMap<>();
+            orgList.forEach(org -> {
+                orgCollect.put(org.getOrgName(), new CaseOrgQuestionnaireResponse());
+            });
+            result.put(period, orgCollect);
+        });
+
+        List<CaseOrgQuestionnaireResponse> orgQuestionnaireList = listByCaseInstanceId(caseInstanceId);
+        if (Objects.isNull(orgQuestionnaireList) || orgQuestionnaireList.isEmpty()) {
+            return result.values().stream().toList();
+        }
+
+        // questionnaire collect
+        Map<String, Map<String, CaseOrgQuestionnaireResponse>> questionnaireCollect = orgQuestionnaireList.stream()
+                .collect(Collectors.groupingBy(CaseOrgQuestionnaireResponse::getPeriods, Collectors.toMap(CaseOrgQuestionnaireResponse::getCaseOrgName, v -> v, (v1, v2) -> v1)));
+        result.forEach((period, orgMap) -> {
+            // 该 period 下的不同机构的问卷
+            Map<String, CaseOrgQuestionnaireResponse> orgCollect = questionnaireCollect.get(period);
+            orgMap.forEach((org, qn) -> {
+                orgMap.replace(org, orgCollect.get(org));
+            });
+            result.replace(period, orgCollect);
+        });
+
+        return result.values().stream().toList();
+    }
+
+    /**
+     * @param
+     * @return
+     * @author fhb
+     * @description 列出已经选择的问卷
+     * @date 2023/5/25 11:43
+     */
+    public Map<String, Map<String, CaseOrgQuestionnaireResponse>> mapSelectedQuestionnaires(String caseInstanceId) {
+        if (StrUtil.isBlank(caseInstanceId)) {
+            throw new BizException(CaseESCEnum.PARAMS_NON_NULL);
+        }
+
+        // 期数 collect
+        Map<String, Map<String, CaseOrgQuestionnaireResponse>> result = new LinkedHashMap<>();
         Arrays.stream(CasePeriodsEnum.values()).forEach(item -> {
             result.put(item.getName(), new HashMap<>());
         });
