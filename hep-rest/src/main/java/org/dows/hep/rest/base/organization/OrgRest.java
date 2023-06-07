@@ -109,7 +109,7 @@ public class OrgRest {
      */
     @Operation(summary = "添加案例机构人物")
     @PostMapping("v1/baseOrg/org/addPerson")
-    public Integer addPerson(@RequestParam Set<String> personIds, @RequestParam String caseInstanceId,@RequestParam String caseOrgId,@RequestParam String appId) {
+    public Integer addPerson(@RequestBody Set<String> personIds, @RequestParam String caseInstanceId,@RequestParam String caseOrgId,@RequestParam String appId) {
         return orgBiz.addPerson(personIds,caseInstanceId,caseOrgId,appId);
     }
 
