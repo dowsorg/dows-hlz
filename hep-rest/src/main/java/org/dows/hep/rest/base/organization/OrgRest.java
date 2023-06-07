@@ -114,6 +114,17 @@ public class OrgRest {
     }
 
     /**
+     * 通过案例人物ID获取accountId
+     * @param
+     * @return
+     */
+    @Operation(summary = "通过案例人物ID获取accountId")
+    @PostMapping("v1/baseOrg/org/getAccountIdByCasePerson")
+    public String getAccountIdByCasePerson(@RequestParam String casePersonId) {
+        return orgBiz.getAccountIdByCasePerson(casePersonId);
+    }
+
+    /**
      * 将自定义人物添加到案例机构中
      * @param
      * @return
@@ -185,6 +196,7 @@ public class OrgRest {
                 new HashSet<>((ArrayList)ids.get("accountIds")),
                 appId);
     }
+
 
     /**
      * 同一案例中，人物不能被多个机构共享
