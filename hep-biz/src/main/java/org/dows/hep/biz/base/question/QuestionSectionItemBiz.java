@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 @Service
 public class QuestionSectionItemBiz {
 
-    private final QuestionDomainBaseBiz baseBiz;
+    private final QuestionBaseBiz baseBiz;
     private final QuestionInstanceBiz questionInstanceBiz;
     private final QuestionSectionItemService questionSectionItemService;
 

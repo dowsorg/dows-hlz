@@ -94,12 +94,18 @@ public class ExperimentQuestionnaireBiz {
             throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
         }
 
+        // check
         checkState(experimentQuestionnaireId);
 
-        return experimentQuestionnaireService.lambdaUpdate()
+        // submit
+        boolean updateRes = experimentQuestionnaireService.lambdaUpdate()
                 .eq(ExperimentQuestionnaireEntity::getExperimentQuestionnaireId, experimentQuestionnaireId)
                 .set(ExperimentQuestionnaireEntity::getState, ExptQuestionnaireStateEnum.SUBMITTED.getCode())
                 .update();
+
+        // todo compute
+
+        return updateRes;
     }
 
     private void checkState(String experimentQuestionnaireId) {

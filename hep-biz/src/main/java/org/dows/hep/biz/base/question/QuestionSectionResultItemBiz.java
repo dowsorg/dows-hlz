@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class QuestionSectionResultItemBiz {
-    private final QuestionDomainBaseBiz baseBiz;
+    private final QuestionBaseBiz baseBiz;
     private final QuestionSectionResultItemService questionSectionResultItemService;
 
     public Boolean saveOrUpdBatch(List<QuestionSectionResultItemRequest> requests, String questionSectionResultId) {

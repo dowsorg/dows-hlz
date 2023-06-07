@@ -16,7 +16,7 @@ import org.dows.hep.api.base.question.request.QuestionRequest;
 import org.dows.hep.api.base.question.response.QuestionOptionWithAnswerResponse;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.biz.base.question.QuestionAnswersBiz;
-import org.dows.hep.biz.base.question.QuestionDomainBaseBiz;
+import org.dows.hep.biz.base.question.QuestionBaseBiz;
 import org.dows.hep.biz.base.question.QuestionOptionsBiz;
 import org.dows.hep.biz.base.question.QuestionScoreBiz;
 import org.dows.hep.entity.QuestionAnswersEntity;
@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SelectQuestionTypeHandler implements QuestionTypeHandler {
 
-    private final QuestionDomainBaseBiz baseBiz;
+    private final QuestionBaseBiz baseBiz;
     private final QuestionInstanceService questionInstanceService;
     private final QuestionOptionsBiz questionOptionsBiz;
     private final QuestionAnswersBiz questionAnswersBiz;

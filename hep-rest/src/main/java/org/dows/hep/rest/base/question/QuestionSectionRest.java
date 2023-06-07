@@ -9,7 +9,7 @@ import org.dows.hep.api.base.question.enums.QuestionSourceEnum;
 import org.dows.hep.api.base.question.request.QuestionSectionDelItemRequest;
 import org.dows.hep.api.base.question.request.QuestionSectionRequest;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
-import org.dows.hep.biz.base.question.QuestionDomainBaseBiz;
+import org.dows.hep.biz.base.question.QuestionBaseBiz;
 import org.dows.hep.biz.base.question.QuestionSectionBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +26,7 @@ import java.util.List;
 @RestController
 @Tag(name = "问题域-问题集[问卷]", description = "问题集[问卷]")
 public class QuestionSectionRest {
-    private final QuestionDomainBaseBiz baseBiz;
+    private final QuestionBaseBiz baseBiz;
     private final QuestionSectionBiz questionSectionBiz;
 
     /**
