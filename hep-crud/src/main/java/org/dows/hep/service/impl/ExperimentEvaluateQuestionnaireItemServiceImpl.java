@@ -1,0 +1,11 @@
+package org.dows.hep.service.impl;
+
+import org.dows.framework.crud.mybatis.MybatisCrudServiceImpl;
+import org.dows.hep.entity.ExperimentEvaluateQuestionnaireItemEntity;
+import org.dows.hep.mapper.ExperimentEvaluateQuestionnaireItemMapper;
+import org.dows.hep.service.ExperimentEvaluateQuestionnaireItemService;
+import org.springframework.stereotype.Service;
+
+@Service("experimentEvaluateQuestionnaireItemService")
+public class ExperimentEvaluateQuestionnaireItemServiceImpl extends MybatisCrudServiceImpl<ExperimentEvaluateQuestionnaireItemMapper, ExperimentEvaluateQuestionnaireItemEntity> implements ExperimentEvaluateQuestionnaireItemService {
+}

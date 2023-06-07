@@ -14,6 +14,7 @@ public enum ExperimentESCEnum implements StatusCode {
     SCHEME_NOT_NULL(42004, "实验方案设计数据为空"),
     NO_AUTHORITY(42005, "没有权限访问"),
     QUESTIONNAIRE_NOT_NULL(42006, "知识答题数据为空"),
+    SCHEME_HAS_BEEN_SUBMITTED(42007, "方案设计重复提交"),
 
     ;
 

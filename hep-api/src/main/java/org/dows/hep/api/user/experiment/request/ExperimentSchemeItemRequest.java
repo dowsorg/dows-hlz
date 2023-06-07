@@ -1,0 +1,29 @@
+package org.dows.hep.api.user.experiment.request;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
+/**
+ * @author fhb
+ * @description
+ * @date 2023/6/3 18:54
+ */
+@Data
+@RequiredArgsConstructor
+@Schema(name = "ExperimentSchemeItemRequest 对象", title = "实验方案设计Item")
+public class ExperimentSchemeItemRequest {
+    @Schema(title = "实验方案设计ID")
+    private String experimentSchemeItemId;
+
+    @Schema(title = "账号ID")
+    private String accountId;
+
+    @Schema(title = "作答答案")
+    private String questionResult;
+
+    @Schema(title = "子")
+    private List<ExperimentSchemeItemRequest> children;
+}

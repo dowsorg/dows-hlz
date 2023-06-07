@@ -42,14 +42,23 @@ public class ExperimentSchemeEntity implements CrudEntity {
     @Schema(title = "实验实列ID")
     private String experimentInstanceId;
 
-    @Schema(title = "案例方案设计ID")
-    private String caseSchemeId;
-
-    @Schema(title = "答题卡ID")
-    private String questionSectionResultId;
-
     @Schema(title = "实验小组ID")
     private String experimentGroupId;
+
+    @Schema(title = "方案名称")
+    private String schemeName;
+
+    @Schema(title = "方案提示")
+    private String schemeTips;
+
+    @Schema(title = "方案说明")
+    private String schemeDescr;
+
+    @Schema(title = "是否包含视频")
+    private Integer containsVideo;
+
+    @Schema(title = "视频题干")
+    private String videoQuestion;
 
     @Schema(title = "方案状态[0:未提交,1:已提交]")
     private Integer state;
