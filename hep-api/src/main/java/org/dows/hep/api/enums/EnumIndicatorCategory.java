@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author runsix
  */
@@ -40,4 +43,16 @@ public enum EnumIndicatorCategory {
 
   private final String code;
   private final String categoryName;
+
+  public static Map<String, String> kCodeVCategoryNameMap = new HashMap<>();
+
+  static {
+    for (EnumIndicatorCategory enumIndicatorCategory : EnumIndicatorCategory.values()) {
+      kCodeVCategoryNameMap.put(enumIndicatorCategory.getCode(), enumIndicatorCategory.getCategoryName());
+    }
+  }
+
+  public static String getCategoryNameByCode(String code) {
+    return kCodeVCategoryNameMap.get(code);
+  }
 }

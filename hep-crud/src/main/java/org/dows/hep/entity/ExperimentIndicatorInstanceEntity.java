@@ -40,6 +40,12 @@ public class ExperimentIndicatorInstanceEntity {
   @Schema(title = "实验实例ID")
   private String experimentInstanceId;
 
+  @Schema(title = "实验人物ID")
+  private String experimentPersonId;
+
+  @Schema(title = "实验小组ID")
+  private String experimentGroupId;
+
   @Schema(title = "指标名称")
   private String indicatorName;
 

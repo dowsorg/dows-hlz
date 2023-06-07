@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author jx
  * @date 2023/6/6 14:27
@@ -23,4 +25,13 @@ public class ExperimentIndicatorResponse {
 
     @Schema(title = "指标单位")
     private String unit;
+
+    @Schema(title = "指标类别")
+    private String type;
+
+    @Schema(title = "内容")
+    private String content;
+
+    @Schema(title = "指标类别")
+    private List<ExperimentIndicatorResponse> indicatorList;
 }

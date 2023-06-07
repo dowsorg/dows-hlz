@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorFuncRequest;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorFuncRequest;
+import org.dows.hep.api.base.indicator.response.IndicatorFuncOrgResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorFuncResponse;
 import org.dows.hep.biz.base.indicator.IndicatorFuncBiz;
 import org.springframework.validation.annotation.Validated;
@@ -47,6 +48,12 @@ public class IndicatorFuncRest {
     @DeleteMapping("v1/baseIndicator/indicatorFunc/delete")
     public void delete(@Validated String indicatorFuncId) {
         indicatorFuncBiz.delete(indicatorFuncId);
+    }
+
+    @Operation(summary = "自定义-机构管理-编辑功能")
+    @GetMapping("v1/baseIndicator/indicatorFunc/getOrgEditFunc")
+    public List<IndicatorFuncOrgResponse> getOrgEditFuncByAppId(@RequestParam @Validated String appId) {
+        return indicatorFuncBiz.getOrgEditFuncByAppId(appId);
     }
 
 //

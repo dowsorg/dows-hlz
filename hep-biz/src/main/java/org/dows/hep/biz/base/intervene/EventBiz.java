@@ -175,11 +175,14 @@ public class EventBiz{
                 EventActionIndicatorEntity::getEventActionId,
                 EventActionIndicatorEntity::getInitFlag,
                 EventActionIndicatorEntity::getIndicatorInstanceId,
+                EventActionIndicatorEntity::getIndicatorCategoryId,
                 EventActionIndicatorEntity::getExpression,
                 EventActionIndicatorEntity::getExpressionDescr,
+                EventActionIndicatorEntity::getExpressionVars,
+                EventActionIndicatorEntity::getExpressionNames,
                 EventActionIndicatorEntity::getSeq);
         final String EMPTYActionId="";
-        Map<String, List<EventIndicatorVO>> mapIndicators = ShareUtil.XCollection.toGroup(rowsIndicator,
+        Map<String, List<EventIndicatorVO>> mapIndicators = ShareUtil.XCollection.groupBy(rowsIndicator,
                 i -> CopyWrapper.create(EventIndicatorVO::new)
                         .endFrom(i, v -> v.setRefId(i.getEventActionIndicatorId())),
                 i -> ShareUtil.XObject.defaultIfNull(i.getEventActionId(), EMPTYActionId));

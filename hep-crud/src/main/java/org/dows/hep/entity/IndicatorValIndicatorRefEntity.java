@@ -10,10 +10,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
+import org.dows.framework.crud.api.CrudEntity;
 
 import java.util.Date;
 
 /**
+ * 指标公式实体关联类
  * @author runsix
  */
 @Data
@@ -23,39 +25,25 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "ExperimentIndicatorVal", title = "实验指标值")
-@TableName("experiment_indicator_val")
-public class ExperimentIndicatorValEntity {
+@Schema(name = "IndicatorValIndicatorRefEntity", title = "指标值与指标关联关系")
+@TableName("indicator_expression_indicator_ref")
+public class IndicatorValIndicatorRefEntity implements CrudEntity {
   @JsonFormat(shape = JsonFormat.Shape.STRING)
   @Schema(title = "主键")
   private Long id;
 
-  @Schema(title = "实验指标值分布式ID")
-  private String experimentIndicatorValId;
+  @Schema(title = "分布式ID")
+  private String indicatorExpressionIndicatorRefId;
 
-  @Schema(title = "案例指标值分布式ID")
-  private String caseIndicatorValId;
+  @Schema(title = "应用ID")
+  private String appId;
 
-  @Schema(title = "实验实例ID")
-  private String experimentInstanceId;
+  @Schema(title = "影响别人的指标分布式ID")
+  private String principalId;
 
-  @Schema(title = "实验指标ID")
-  public String experimentIndicatorInstanceId;
+  @Schema(title = "被影响的指标分布式ID")
+  private String influencedIndicatorInstanceId;
 
-  @Schema(title = "当前值")
-  private String currentVal;
-
-  @Schema(title = "期数")
-  private String periods;
-
-  @Schema(title = "最小值")
-  private String min;
-
-  @Schema(title = "最大值")
-  private String max;
-
-  @Schema(title = "描述")
-  private String descr;
 
   @JsonIgnore
   @TableLogic
