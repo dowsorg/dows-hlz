@@ -56,9 +56,13 @@ public class ExperimentOrgViewRest {
     * @return
     */
     @Operation(summary = "监测随访：获取随访表内容")
-    @GetMapping("v1/userExperiment/experimentOrgView/getFollowupDef")
-    public FollowupDefResponse getFollowupDef(@Validated String indicatorViewMonitorFollowupId) {
-        return experimentOrgViewBiz.getFollowupDef(indicatorViewMonitorFollowupId);
+    @GetMapping("v1/userExperiment/experimentOrgView/getFollowupDef/{experimentViewMonitorFollowupId}/{appId}/{experimentPersonId}/{periods}")
+    public List<ExperimentIndicatorResponse> getFollowupDef(@PathVariable @Validated String experimentViewMonitorFollowupId,
+                                              @PathVariable @Validated String appId,
+                                              @PathVariable @Validated String experimentPersonId,
+                                              @PathVariable @Validated String periods
+                                              ) {
+        return experimentOrgViewBiz.getFollowupDef(experimentViewMonitorFollowupId,appId,experimentPersonId,periods);
     }
 
     /**
