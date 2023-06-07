@@ -278,6 +278,8 @@ public class TenantCaseOrgQuestionnaireBiz {
     private List<CaseOrgResponse> listOrgOfCaseInstance(String caseInstanceId) {
         CaseOrgRequest orgRequest = new CaseOrgRequest();
         orgRequest.setCaseInstanceId(caseInstanceId);
+        orgRequest.setPageNo(1);
+        orgRequest.setPageSize(10);
         IPage<CaseOrgResponse> orgResponse = orgBiz.listOrgnization(orgRequest);
         return orgResponse.getRecords();
     }
