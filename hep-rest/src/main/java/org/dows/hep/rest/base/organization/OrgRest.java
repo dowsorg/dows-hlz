@@ -114,6 +114,19 @@ public class OrgRest {
     }
 
     /**
+     * 将自定义人物添加到案例机构中
+     * @param
+     * @return
+     */
+    @Operation(summary = "将自定义人物添加到案例机构中")
+    @PostMapping("v1/baseOrg/org/addPersonToCaseOrg")
+    public String addPersonToCaseOrg(@RequestParam String personId, @RequestParam String caseInstanceId,@RequestParam String caseOrgId,@RequestParam String appId) {
+        return orgBiz.addPersonToCaseOrg(personId,caseInstanceId,caseOrgId,appId);
+    }
+
+
+
+    /**
      * 获取案例机构人物列表
      */
     @Operation(summary = "获取案例机构人物列表")

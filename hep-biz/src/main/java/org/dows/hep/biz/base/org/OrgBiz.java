@@ -753,6 +753,50 @@ public class OrgBiz {
     /**
      * @param
      * @return
+     * @说明: 将自定义人物添加到案例机构中
+     * @关联表: case_person、account_group
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/6/07 14:18
+     */
+    @DSTransactional
+    public String addPersonToCaseOrg(String personId, String caseInstanceId, String caseOrgId, String appId) {
+        //1、建立人物与案例机构关系
+        String casePersonId = idGenerator.nextIdStr();
+        CasePersonEntity person = CasePersonEntity.builder()
+                .casePersonId(casePersonId)
+                .caseInstanceId(caseInstanceId)
+                .caseOrgId(caseOrgId)
+                .accountId(personId)
+                .build();
+        casePersonService.save(person);
+        //2、建立人物与组关系
+        //2.1、通过案例机构ID找到机构ID
+        CaseOrgEntity entity = caseOrgService.lambdaQuery()
+                .eq(CaseOrgEntity::getCaseOrgId, caseOrgId)
+                .eq(CaseOrgEntity::getDeleted, false)
+                .eq(CaseOrgEntity::getAppId, appId)
+                .one();
+        //2.2、账户实例
+        AccountInstanceResponse instanceResponse = accountInstanceApi.getAccountInstanceByAccountId(personId);
+        //2.3、获取用户ID
+        String userId = accountUserApi.getUserByAccountId(personId).getUserId();
+        String groupId = accountGroupApi.insertAccountGroup(AccountGroupRequest.builder()
+                .groupId(idGenerator.nextIdStr())
+                .orgId(entity.getOrgId())
+                .orgName(entity.getOrgName())
+                .accountId(personId)
+                .accountName(instanceResponse.getAccountName())
+                .userId(userId)
+                .appId(appId)
+                .build());
+        return person.getCasePersonId();
+    }
+
+    /**
+     * @param
+     * @return
      * @说明: 生成 随机机构编码
      */
     public static String createCode(int n) {
