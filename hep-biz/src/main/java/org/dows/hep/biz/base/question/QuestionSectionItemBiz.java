@@ -127,7 +127,7 @@ public class QuestionSectionItemBiz {
         return questionSectionItemService.remove(remWrapper);
     }
 
-    // 选择模式的不可以更新题目，仅可以新增
+    // @Deprecated
     private boolean batchSaveSelectCloneMode(List<QuestionSectionItemRequest> itemRequestList, String questionSectionId, QuestionSourceEnum questionSourceEnum) {
         if (StrUtil.isBlank(questionSectionId)) {
             throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);

@@ -74,7 +74,6 @@ public class QuestionInstanceBiz {
 
     /**
      * @param
-     * @param questionResultRecordDTO
      * @return
      * @说明: 克隆
      * @关联表: QuestionInstance, QuestionOptions, QuestionAnswers
