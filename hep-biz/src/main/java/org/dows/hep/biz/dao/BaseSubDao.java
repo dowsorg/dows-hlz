@@ -349,7 +349,7 @@ public abstract class BaseSubDao<LS extends MybatisCrudService<LE>, LE extends C
      * @param <K>
      */
     public <K> Map<K,List<SE>> getSubGroupByLeadIds(Collection<String> ids, SFunction<SE, K> groupByCol, SFunction<SE, ?>... selectCols){
-        return ShareUtil.XCollection.toGroup(getSubByLeadIds(ids, selectCols),groupByCol);
+        return ShareUtil.XCollection.groupBy(getSubByLeadIds(ids, selectCols),groupByCol);
     }
 
     /**
@@ -362,7 +362,7 @@ public abstract class BaseSubDao<LS extends MybatisCrudService<LE>, LE extends C
      * @param <K>
      */
     public <K> Map<K,List<SE>> getSubGroupByLeadIds(Collection<String> ids, Supplier<Map<K,List<SE>>> mapFactory, SFunction<SE, K> groupByCol, SFunction<SE, ?>... selectCols){
-        return ShareUtil.XCollection.toGroup(getSubByLeadIds(ids, selectCols),mapFactory, Function.identity(), groupByCol,Collectors.toList());
+        return ShareUtil.XCollection.groupBy(getSubByLeadIds(ids, selectCols),mapFactory, Function.identity(), groupByCol,Collectors.toList());
     }
 
 

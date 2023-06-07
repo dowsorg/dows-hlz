@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.dows.hep.api.base.intervene.vo.FoodCookbookDetailVO;
-import org.dows.hep.api.base.intervene.vo.FoodStatVO;
 
 import java.util.List;
 
@@ -29,10 +28,10 @@ public class CalcExptFoodCookbookResult  {
     private List<FoodCookbookDetailVO> details;
 
     @Schema(title = "营养统计")
-    private List<FoodStatVO> statEnergy;
+    private List<CalcFoodStatVO> statEnergy;
 
     @Schema(title = "膳食结构")
-    private List<FoodStatVO>  statCateg;
+    private List<CalcFoodStatVO>  statCateg;
 
     @Schema(title = "餐次能量统计")
     private List<CalcFoodMealTimeStatVO> statMealEnergy;

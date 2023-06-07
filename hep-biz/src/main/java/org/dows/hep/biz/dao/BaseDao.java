@@ -348,7 +348,7 @@ public abstract class BaseDao<S extends MybatisCrudService<E>,E extends CrudEnti
      * @param <K>
      */
     public <K> Map<K,List<E>> getGroupByIds(Collection<String> ids, SFunction<E, K> groupByCol, SFunction<E, ?>... selectCols){
-        return ShareUtil.XCollection.toGroup(getByIds(ids, selectCols),groupByCol);
+        return ShareUtil.XCollection.groupBy(getByIds(ids, selectCols),groupByCol);
     }
     /**
      * 按多逻辑主键获取分组
@@ -360,7 +360,7 @@ public abstract class BaseDao<S extends MybatisCrudService<E>,E extends CrudEnti
      * @param <K>
      */
     public <K> Map<K,List<E>> getGroupByIds(Collection<String> ids, Supplier<Map<K,List<E>>> mapFactory, SFunction<E, K> groupByCol, SFunction<E, ?>... selectCols){
-        return ShareUtil.XCollection.toGroup(getByIds(ids, selectCols),mapFactory,Function.identity(), groupByCol, Collectors.toList());
+        return ShareUtil.XCollection.groupBy(getByIds(ids, selectCols),mapFactory,Function.identity(), groupByCol, Collectors.toList());
     }
 
     //endregion

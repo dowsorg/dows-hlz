@@ -74,8 +74,11 @@ public class TreatItemBiz{
         List<TreatItemIndicatorEntity> indicators=dao.getSubByLeadId(treatItemId,
                 TreatItemIndicatorEntity::getId,
                 TreatItemIndicatorEntity::getIndicatorInstanceId,
+                TreatItemIndicatorEntity::getIndicatorCategoryId,
                 TreatItemIndicatorEntity::getExpression,
                 TreatItemIndicatorEntity::getExpressionDescr,
+                TreatItemIndicatorEntity::getExpressionVars,
+                TreatItemIndicatorEntity::getExpressionNames,
                 TreatItemIndicatorEntity::getSeq);
 
         List<InterveneIndicatorVO> voIndicators=ShareUtil.XCollection.map(indicators,

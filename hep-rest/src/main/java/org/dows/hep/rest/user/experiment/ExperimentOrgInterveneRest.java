@@ -79,6 +79,12 @@ public class ExperimentOrgInterveneRest {
         return experimentOrgInterveneBiz.getSportPlan4Expt(getInfo);
     }
 
+    @Operation(summary = "运动干预：获取数据库运动项目列表")
+    @PostMapping("v1/userExperiment/experimentOrgIntervene/pageSportItem4Expt")
+    public Page<SportItemResponse> pageSportItem4Expt(@RequestBody @Validated FindInterveneList4ExptRequest findSport ){
+        return experimentOrgInterveneBiz.pageSportItem4Expt(findSport);
+    }
+
     @Operation(summary = "治疗干预：获取分类+项目")
     @PostMapping("v1/userExperiment/experimentOrgIntervene/listTreatCateg4Expt")
     public List<Categ4ExptVO> listTreatCateg4Expt(@RequestBody @Validated FindInterveneCateg4ExptRequest findTreat ){

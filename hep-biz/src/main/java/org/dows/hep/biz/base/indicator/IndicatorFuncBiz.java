@@ -6,8 +6,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorFuncRequest;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorFuncRequest;
+import org.dows.hep.api.base.indicator.response.IndicatorFuncOrgItemResponse;
+import org.dows.hep.api.base.indicator.response.IndicatorFuncOrgResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorFuncResponse;
 import org.dows.hep.api.enums.EnumESC;
+import org.dows.hep.api.enums.EnumIndicatorCategory;
 import org.dows.hep.api.enums.EnumRedissonLock;
 import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.api.exception.IndicatorFuncException;
@@ -251,5 +254,49 @@ public class IndicatorFuncBiz{
             log.warn("method IndicatorFuncBiz.delete param indicatorFuncId:{} is illegal", indicatorFuncId);
             throw new IndicatorFuncException(EnumESC.VALIDATE_EXCEPTION);
         }
+    }
+
+    public List<IndicatorFuncOrgResponse> getOrgEditFuncByAppId(String appId) {
+        Set<String> indicatorFuncPidSet = new HashSet<>();
+        indicatorFuncPidSet.add(EnumIndicatorCategory.VIEW_MANAGEMENT.getCode());
+        indicatorFuncPidSet.add(EnumIndicatorCategory.JUDGE_MANAGEMENT.getCode());
+        indicatorFuncPidSet.add(EnumIndicatorCategory.OPERATE_MANAGEMENT.getCode());
+        Map<String, List<IndicatorFuncEntity>> kPidVIndicatorFuncEntityListMap = new HashMap<>();
+        indicatorFuncService.lambdaQuery()
+            .eq(IndicatorFuncEntity::getAppId, appId)
+            .in(IndicatorFuncEntity::getPid, indicatorFuncPidSet)
+            .list()
+            .forEach(indicatorFuncEntity -> {
+                String pid = indicatorFuncEntity.getPid();
+                List<IndicatorFuncEntity> indicatorFuncEntityList = kPidVIndicatorFuncEntityListMap.get(pid);
+                if (Objects.isNull(indicatorFuncEntityList)) {
+                    indicatorFuncEntityList = new ArrayList<>();
+                }
+                indicatorFuncEntityList.add(indicatorFuncEntity);
+                kPidVIndicatorFuncEntityListMap.put(pid, indicatorFuncEntityList);
+            });
+        return indicatorFuncPidSet
+            .stream()
+            .map(indicatorFuncPid -> {
+                List<IndicatorFuncOrgItemResponse> indicatorFuncOrgItemResponseList = new ArrayList<>();
+                List<IndicatorFuncEntity> indicatorFuncEntityList = kPidVIndicatorFuncEntityListMap.get(indicatorFuncPid);
+                if (Objects.isNull(indicatorFuncEntityList)) {
+                    indicatorFuncEntityList = new ArrayList<>();
+                }
+                indicatorFuncEntityList.forEach(indicatorFuncEntity -> {
+                    indicatorFuncOrgItemResponseList.add(
+                        IndicatorFuncOrgItemResponse
+                            .builder()
+                            .name(indicatorFuncEntity.getName())
+                            .indicatorFuncId(indicatorFuncEntity.getIndicatorFuncId())
+                            .build());
+                });
+                return IndicatorFuncOrgResponse
+                    .builder()
+                    .pid(indicatorFuncPid)
+                    .pName(EnumIndicatorCategory.getCategoryNameByCode(indicatorFuncPid))
+                    .indicatorFuncOrgItemResponseList(indicatorFuncOrgItemResponseList)
+                    .build();
+            }).collect(Collectors.toList());
     }
 }
