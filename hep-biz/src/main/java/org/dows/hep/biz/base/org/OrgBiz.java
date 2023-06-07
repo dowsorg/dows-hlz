@@ -580,7 +580,26 @@ public class OrgBiz {
      */
     @DSTransactional
     public Boolean deletePersons(Set<String> caseOrgIds,String caseInstanceId, Set<String> accountIds,String appId) {
-        //1、获取该案例机构对应的机构ID
+        //1、如果是自定义人物，需要删除人物实例
+        Set<String> userIds = new HashSet<>();
+        Set<String> newAccountIds = new HashSet<>();
+        accountIds.forEach(accountId->{
+            AccountInstanceResponse instanceResponse = accountInstanceApi.getAccountInstanceByAccountId(accountId);
+            if(instanceResponse != null && instanceResponse.getSource().equals("机构人物")){
+                userIds.add(accountUserApi.getUserByAccountId(accountId).getUserId());
+                newAccountIds.add(accountId);
+            }
+        });
+        if(newAccountIds != null && newAccountIds.size() > 0){
+            accountInstanceApi.deleteAccountInstanceByAccountIds(accountIds);
+        }
+        if(userIds != null && userIds.size() > 0){
+            userIds.forEach(userId -> {
+                UserExtinfoResponse extinfoResponse = userExtinfoApi.getUserExtinfoByUserId(userId);
+                userExtinfoApi.deleteUserExtinfoById(extinfoResponse.getId());
+            });
+        }
+        //2、获取该案例机构对应的机构ID
         List<CaseOrgEntity> entityList = caseOrgService.lambdaQuery()
                 .in(CaseOrgEntity::getCaseOrgId, caseOrgIds)
                 .eq(CaseOrgEntity::getCaseInstanceId,caseInstanceId)
@@ -591,14 +610,14 @@ public class OrgBiz {
             Set<String> orgIds = new HashSet<>();
             entityList.forEach(entity -> {
                 orgIds.add(entity.getOrgId());
-                //1、删除案例机构下的成员
+                //2.1、删除案例机构下的成员
                 LambdaUpdateWrapper<CasePersonEntity> personWrapper = Wrappers.lambdaUpdate(CasePersonEntity.class);
                 personWrapper.set(CasePersonEntity::getDeleted, true)
                         .eq(CasePersonEntity::getCaseOrgId, entity.getCaseOrgId())
                         .eq(CasePersonEntity::getCaseInstanceId, caseInstanceId);
                 boolean flag1 = casePersonService.update(personWrapper);
             });
-            //2、获取该机构下的成员并删除
+            //2.2、获取该机构下的成员并删除
             for (String orgId : orgIds) {
                 List<AccountGroupResponse> groupResponseList = accountGroupApi.getAccountGroupByOrgId(orgId);
                 if (groupResponseList != null && groupResponseList.size() > 0) {
