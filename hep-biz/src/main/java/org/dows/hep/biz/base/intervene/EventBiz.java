@@ -257,7 +257,8 @@ public class EventBiz{
                 .setCategIdPath(categVO.getCategIdPath())
                 .setCategNamePath(categVO.getCategNamePath())
                 .setCreateAccountId(voLogin.getAccountId())
-                .setCreateAccountName(voLogin.getAccountName());
+                .setCreateAccountName(voLogin.getAccountName())
+                .setTriggerType(triggerType.getCode());
 
         List<EventEvalEntity> rowEvals = ShareUtil.XCollection.map(saveEvent.getEvals(),
                 e -> CopyWrapper.create(EventEvalEntity::new).endFrom(e, v -> v.setEventEvalId(e.getRefId())));

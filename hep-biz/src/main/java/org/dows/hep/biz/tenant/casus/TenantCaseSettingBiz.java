@@ -74,8 +74,8 @@ public class TenantCaseSettingBiz {
         CaseSettingEntity result = CaseSettingEntity.builder()
                 .caseSettingId(request.getCaseSettingId())
                 .caseInstanceId(request.getCaseInstanceId())
-                .scoreMode(request.getScoreMode())
-                .allotMode(request.getAllotMode())
+                .scoreMode(request.getScoreMode().name())
+                .allotMode(request.getAllotMode().name())
                 .ext(request.getExt())
                 .build();
 

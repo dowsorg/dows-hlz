@@ -186,7 +186,8 @@ public class TenantCaseEventBiz {
                 .setCategIdPath(categVO.getCategIdPath())
                 .setCategNamePath(categVO.getCategNamePath())
                 .setCreateAccountId(voLogin.getAccountId())
-                .setCreateAccountName(voLogin.getAccountName());
+                .setCreateAccountName(voLogin.getAccountName())
+                .setTriggerType(triggerType.getCode());
 
         List<CaseEventEvalEntity> rowEvals = ShareUtil.XCollection.map(saveCaseEvent.getEvals(),
                 e -> CopyWrapper.create(CaseEventEvalEntity::new).endFrom(e, v -> v.setCaseEventEvalId(e.getRefId())));

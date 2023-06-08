@@ -26,12 +26,6 @@ public class ShareBiz {
         return BigDecimalUtil.roundDecimal(BigDecimalUtil.tryParseDecimalElseZero(src),NUMBERScale2);
     }
 
-    public static String ensureCategPathSuffix(String src){
-        if(ShareUtil.XObject.isEmpty(src)){
-            return src;
-        }
-        return ShareUtil.XString.eusureEndsWith(src,"/");
-    }
 
     /**
      * 分页输出转换

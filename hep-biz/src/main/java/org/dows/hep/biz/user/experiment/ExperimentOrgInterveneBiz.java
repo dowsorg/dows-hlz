@@ -16,6 +16,7 @@ import org.dows.hep.api.user.experiment.response.ExptSportPlanResponse;
 import org.dows.hep.api.user.experiment.response.ExptTreatPlanResponse;
 import org.dows.hep.api.user.experiment.response.SaveExptInterveneResponse;
 import org.dows.hep.api.user.experiment.response.SaveExptTreatResponse;
+import org.dows.hep.api.user.experiment.vo.ExptTreatPlanItemVO;
 import org.dows.hep.biz.base.intervene.FoodCalc4ExptBiz;
 import org.dows.hep.biz.dao.OperateOrgFuncDao;
 import org.dows.hep.biz.util.*;
@@ -28,6 +29,7 @@ import org.dows.hep.entity.OperateOrgFuncEntity;
 import org.dows.hep.entity.OperateOrgFuncSnapEntity;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -250,6 +252,13 @@ public class ExperimentOrgInterveneBiz{
         OperateOrgFuncSnapEntity rowOrgFuncSnap=new OperateOrgFuncSnapEntity()
                 .setAppId(validator.getAppId())
                 .setSnapTime(dateNow);
+        for(int i=saveTreat.getTreatItems().size()-1;i>=0;i--){
+            ExptTreatPlanItemVO item=saveTreat.getTreatItems().get(i);
+            if(ShareUtil.XObject.notEmpty(item.getId(), true)){
+                continue;
+            }
+            item.setId(getTimestampId(dateNow, i)).setDealFlag(0);
+        }
         ExptTreatPlanResponse snapRst=new ExptTreatPlanResponse().setTreatItems(saveTreat.getTreatItems());
         try{
             rowOrgFuncSnap.setInputJson(JacksonUtil.toJson(snapRst,true));
@@ -308,6 +317,16 @@ public class ExperimentOrgInterveneBiz{
         }
         return operateOrgFuncDao.getCurrentOrgFuncRecord(req.getExperimentPersonId(), req.getExperimentOrgId(),
                 req.getIndicatorFuncId(), req.getPeriods(), cols);
+    }
+
+    private Long getTimestampId(Date dt,int seq){
+        final int mod=10000;
+        return getTimestampPrefix(dt)*mod+seq%mod;
+    }
+
+    private Long getTimestampPrefix(Date dt){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmmss");
+        return Long.valueOf(sdf.format(dt));
     }
 
     //endregion
