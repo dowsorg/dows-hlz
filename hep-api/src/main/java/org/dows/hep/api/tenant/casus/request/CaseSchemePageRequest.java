@@ -28,4 +28,7 @@ public class CaseSchemePageRequest{
     @Schema(title = "类别ID")
     private List<String> categIds;
 
+    @Schema(title = "启用状态")
+    private Integer enabled;
+
 }
