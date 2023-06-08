@@ -34,6 +34,9 @@ public class ExperimentOrgViewBiz {
     private final ExperimentViewBaseInfoMonitorContentService experimentViewBaseInfoMonitorContentService;
     private final ExperimentViewBaseInfoMonitorContentRefService experimentViewBaseInfoMonitorContentRefService;
     private final ExperimentViewBaseInfoSingleService experimentViewBaseInfoSingleService;
+    private final ExperimentViewMonitorFollowupService experimentViewMonitorFollowupService;
+    private final ExperimentViewMonitorFollowupContentService experimentViewMonitorFollowupContentService;
+    private final ExperimentViewMonitorFollowupContentRefService experimentViewMonitorFollowupContentRefService;
 
     /**
      * @param
@@ -59,8 +62,13 @@ public class ExperimentOrgViewBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public List<FollowupDefResponse> listFollowupDef(FindFollowupDefRequest findFollowupDef) {
-        return new ArrayList<FollowupDefResponse>();
+    public List<ExperimentViewMonitorFollowupEntity> listFollowup(FindFollowupDefRequest findFollowupDef) {
+           //1、获取record记录
+        return experimentViewMonitorFollowupService.lambdaQuery()
+                .eq(ExperimentViewMonitorFollowupEntity::getAppId,findFollowupDef.getAppId())
+                .eq(ExperimentViewMonitorFollowupEntity::getIndicatorFuncId,findFollowupDef.getIndicatorFuncId())
+                .eq(ExperimentViewMonitorFollowupEntity::getDeleted,false)
+                .list();
     }
 
     /**
@@ -73,8 +81,58 @@ public class ExperimentOrgViewBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public FollowupDefResponse getFollowupDef(String indicatorViewMonitorFollowupId) {
-        return new FollowupDefResponse();
+    public List<ExperimentIndicatorResponse> getFollowupDef(String experimentViewMonitorFollowupId,String appId,String experimentPersonId,String periods) {
+        //1、根据分布式ID找到监测随访内容并排序
+        List<ExperimentViewMonitorFollowupContentEntity> contentList = experimentViewMonitorFollowupContentService.lambdaQuery()
+                .select(ExperimentViewMonitorFollowupContentEntity::getExperimentViewMonitorFollowupContentId,
+                        ExperimentViewMonitorFollowupContentEntity::getName,
+                        ExperimentViewMonitorFollowupContentEntity::getSeq)
+                .eq(ExperimentViewMonitorFollowupContentEntity::getAppId, appId)
+                .eq(ExperimentViewMonitorFollowupContentEntity::getExperimentViewMonitorFollowupId, experimentViewMonitorFollowupId)
+                .eq(ExperimentViewMonitorFollowupContentEntity::getDeleted, false)
+                .list()
+                .stream().sorted(Comparator.comparing(iteam -> iteam.getSeq())).collect(Collectors.toList());
+        //2、根据监测随访内容ID找到监测随访内容指标ID并再次排序
+        List<ExperimentIndicatorResponse> resultList = new ArrayList<>();
+        if (contentList != null && contentList.size() > 0) {
+            contentList.forEach(content -> {
+                //2.1、根据内容找到对应功能点
+                ExperimentIndicatorResponse result = new ExperimentIndicatorResponse();
+                //2.2、设置项目内容
+                result.setContent(content.getName());
+                List<ExperimentViewMonitorFollowupContentRefEntity> contentRefList = experimentViewMonitorFollowupContentRefService.lambdaQuery()
+                        .eq(ExperimentViewMonitorFollowupContentRefEntity::getExperimentViewMonitorFollowupContentId, content.getExperimentViewMonitorFollowupContentId())
+                        .eq(ExperimentViewMonitorFollowupContentRefEntity::getDeleted, false)
+                        .list()
+                        .stream().sorted(Comparator.comparing(iteam -> iteam.getSeq())).collect(Collectors.toList());
+                if (contentRefList != null && contentRefList.size() > 0) {
+                    List<ExperimentIndicatorResponse> responseList = new ArrayList<>();
+                    contentRefList.forEach(contentRef -> {
+                        ExperimentIndicatorResponse response = new ExperimentIndicatorResponse();
+                        //2.3、获取指标值
+                        ExperimentIndicatorValEntity valEntity = experimentIndicatorValService.lambdaQuery()
+                                .eq(ExperimentIndicatorValEntity::getDeleted, false)
+                                .eq(ExperimentIndicatorValEntity::getExperimentIndicatorInstanceId, contentRef.getExperimentIndicatorInstanceId())
+                                .eq(ExperimentIndicatorValEntity::getPeriods, periods)
+                                .one();
+                        response.setExperimentIndicatorCurrentVal(valEntity.getCurrentVal());
+                        //2.4、获取指标单位
+                        ExperimentIndicatorInstanceEntity instanceEntity = experimentIndicatorInstanceService.lambdaQuery()
+                                .eq(ExperimentIndicatorInstanceEntity::getDeleted, false)
+                                .eq(ExperimentIndicatorInstanceEntity::getExperimentIndicatorInstanceId, contentRef.getExperimentIndicatorInstanceId())
+                                .eq(ExperimentIndicatorInstanceEntity::getExperimentPersonId, experimentPersonId)
+                                .one();
+                        response.setUnit(instanceEntity.getUnit());
+                        response.setExperimentIndicatorInstanceName(instanceEntity.getIndicatorName());
+                        responseList.add(response);
+                    });
+                    //4.5、设置指标值
+                    result.setIndicatorList(responseList);
+                    resultList.add(result);
+                }
+            });
+        }
+        return resultList;
     }
 
     /**

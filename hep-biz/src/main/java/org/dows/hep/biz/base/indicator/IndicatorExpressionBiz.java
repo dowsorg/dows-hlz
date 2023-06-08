@@ -163,7 +163,6 @@ public class IndicatorExpressionBiz{
     });
   }
 
-
   @Transactional(rollbackFor = Exception.class)
   public void createOrUpdate(CreateOrUpdateIndicatorExpressionRequestRs createOrUpdateIndicatorExpressionRequestRs) throws InterruptedException {
     String indicatorExpressionId = createOrUpdateIndicatorExpressionRequestRs.getIndicatorExpressionId();
@@ -522,7 +521,6 @@ public class IndicatorExpressionBiz{
       checkExpression(previousIndicatorInstanceIdList, indicatorInstanceId, indicatorExpressionItemEntityList1);
     }
   }
-
   private static String getConditionExpression(String conditionExpression) {
     List<String> strList = new ArrayList<>();
     for (int i = 0; i <= conditionExpression.length()-1;) {
@@ -661,7 +659,6 @@ public class IndicatorExpressionBiz{
     }
     return String.join(EnumString.SPACE.getStr(), strList);
   }
-
   private static String wrapStrWithDoubleSingleQuotes(String str) {
     StringBuffer stringBuffer = new StringBuffer();
     stringBuffer.append(EnumString.SINGLE_QUOTES.getStr());
@@ -672,27 +669,21 @@ public class IndicatorExpressionBiz{
   private static boolean checkNumber(String str) {
     return NumberUtils.isCreatable(str);
   }
-
   private static boolean checkIndicator(String str) {
     return str.startsWith(EnumString.JIN.getStr());
   }
-
   private static boolean checkMathSingleOperator(String str) {
     return StringUtils.equalsAnyIgnoreCase(str, "+", "-", "*", "/", "%", "(", ")");
   }
-
   private static boolean checkMathDoubleOperator(String str) {
     return StringUtils.equalsAnyIgnoreCase(str, ">=", "==", "<=", ">", "<");
   }
-
   private static boolean checkUnderline(String str) {
     return StringUtils.equalsIgnoreCase(str, EnumString.UNDERLINE.getStr());
   }
-
   private static boolean checkDollar(String str) {
     return StringUtils.equalsIgnoreCase(str, EnumString.SPLIT_DOLLAR.getStr());
   }
-
   private static boolean checkSpace(String str) {
     return StringUtils.equalsIgnoreCase(str, EnumString.SPACE.getStr());
   }

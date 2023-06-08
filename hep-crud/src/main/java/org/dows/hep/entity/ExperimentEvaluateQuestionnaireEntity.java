@@ -35,11 +35,20 @@ public class ExperimentEvaluateQuestionnaireEntity {
     @Schema(title = "实验实例ID")
     private String experimentInstanceId;
 
-    @Schema(title = "评估问卷ID")
-    private String evaluateQuestionnaireId;
+    @Schema(title = "评估问卷名")
+    private String evaluateQuestionnaireName;
 
-    @Schema(title = "答题卡ID")
-    private String questionSectionResultId;
+    @Schema(title = "评估问卷描述")
+    private String evaluateQuestionnaireDescr;
+
+    @Schema(title = "评估问卷操作提示")
+    private String operationPrompt;
+
+    @Schema(title = "评估问卷对话提示")
+    private String tips;
+
+    @Schema(title = "作答人账号ID")
+    private String accountId;
 
     @JsonIgnore
     @TableLogic

@@ -14,6 +14,7 @@ import org.dows.account.biz.enums.EnumAccountStatusCode;
 import org.dows.account.biz.exception.AccountException;
 import org.dows.account.request.*;
 import org.dows.account.response.*;
+import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.enums.EnumCaseFee;
 import org.dows.hep.api.exception.CaseFeeException;
 import org.dows.hep.api.user.organization.request.CaseOrgRequest;
@@ -580,7 +581,26 @@ public class OrgBiz {
      */
     @DSTransactional
     public Boolean deletePersons(Set<String> caseOrgIds,String caseInstanceId, Set<String> accountIds,String appId) {
-        //1、获取该案例机构对应的机构ID
+        //1、如果是自定义人物，需要删除人物实例
+        Set<String> userIds = new HashSet<>();
+        Set<String> newAccountIds = new HashSet<>();
+        accountIds.forEach(accountId->{
+            AccountInstanceResponse instanceResponse = accountInstanceApi.getAccountInstanceByAccountId(accountId);
+            if(instanceResponse != null && instanceResponse.getSource().equals("机构人物")){
+                userIds.add(accountUserApi.getUserByAccountId(accountId).getUserId());
+                newAccountIds.add(accountId);
+            }
+        });
+        if(newAccountIds != null && newAccountIds.size() > 0){
+            accountInstanceApi.deleteAccountInstanceByAccountIds(accountIds);
+        }
+        if(userIds != null && userIds.size() > 0){
+            userIds.forEach(userId -> {
+                UserExtinfoResponse extinfoResponse = userExtinfoApi.getUserExtinfoByUserId(userId);
+                userExtinfoApi.deleteUserExtinfoById(extinfoResponse.getId());
+            });
+        }
+        //2、获取该案例机构对应的机构ID
         List<CaseOrgEntity> entityList = caseOrgService.lambdaQuery()
                 .in(CaseOrgEntity::getCaseOrgId, caseOrgIds)
                 .eq(CaseOrgEntity::getCaseInstanceId,caseInstanceId)
@@ -591,14 +611,14 @@ public class OrgBiz {
             Set<String> orgIds = new HashSet<>();
             entityList.forEach(entity -> {
                 orgIds.add(entity.getOrgId());
-                //1、删除案例机构下的成员
+                //2.1、删除案例机构下的成员
                 LambdaUpdateWrapper<CasePersonEntity> personWrapper = Wrappers.lambdaUpdate(CasePersonEntity.class);
                 personWrapper.set(CasePersonEntity::getDeleted, true)
                         .eq(CasePersonEntity::getCaseOrgId, entity.getCaseOrgId())
                         .eq(CasePersonEntity::getCaseInstanceId, caseInstanceId);
                 boolean flag1 = casePersonService.update(personWrapper);
             });
-            //2、获取该机构下的成员并删除
+            //2.2、获取该机构下的成员并删除
             for (String orgId : orgIds) {
                 List<AccountGroupResponse> groupResponseList = accountGroupApi.getAccountGroupByOrgId(orgId);
                 if (groupResponseList != null && groupResponseList.size() > 0) {
@@ -647,7 +667,7 @@ public class OrgBiz {
      * @创建时间: 2023/5/05 10:00
      */
     @DSTransactional
-    public Boolean copyPerson(String caseOrgId, String caseInstanceId, String accountId) {
+    public String copyPerson(String caseOrgId, String caseInstanceId, String accountId) {
         //1、机构内人物复制
         //1.1、获取用户信息及简介并创建新用户及简介
         AccountUserResponse accountUser = accountUserApi.getUserByAccountId(accountId);
@@ -690,7 +710,8 @@ public class OrgBiz {
                 .caseOrgId(caseOrgId)
                 .accountId(vo.getAccountId())
                 .build();
-        return casePersonService.save(person);
+        casePersonService.save(person);
+        return vo.getAccountId();
     }
 
     /**
@@ -729,6 +750,71 @@ public class OrgBiz {
         }
         pageVo.setRecords(voList);
         return pageVo;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 将自定义人物添加到案例机构中
+     * @关联表: case_person、account_group
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/6/07 14:18
+     */
+    @DSTransactional
+    public String addPersonToCaseOrg(String personId, String caseInstanceId, String caseOrgId, String appId) {
+        //1、建立人物与案例机构关系
+        String casePersonId = idGenerator.nextIdStr();
+        CasePersonEntity person = CasePersonEntity.builder()
+                .casePersonId(casePersonId)
+                .caseInstanceId(caseInstanceId)
+                .caseOrgId(caseOrgId)
+                .accountId(personId)
+                .build();
+        casePersonService.save(person);
+        //2、建立人物与组关系
+        //2.1、通过案例机构ID找到机构ID
+        CaseOrgEntity entity = caseOrgService.lambdaQuery()
+                .eq(CaseOrgEntity::getCaseOrgId, caseOrgId)
+                .eq(CaseOrgEntity::getDeleted, false)
+                .eq(CaseOrgEntity::getAppId, appId)
+                .one();
+        //2.2、账户实例
+        AccountInstanceResponse instanceResponse = accountInstanceApi.getAccountInstanceByAccountId(personId);
+        //2.3、获取用户ID
+        String userId = accountUserApi.getUserByAccountId(personId).getUserId();
+        String groupId = accountGroupApi.insertAccountGroup(AccountGroupRequest.builder()
+                .groupId(idGenerator.nextIdStr())
+                .orgId(entity.getOrgId())
+                .orgName(entity.getOrgName())
+                .accountId(personId)
+                .accountName(instanceResponse.getAccountName())
+                .userId(userId)
+                .appId(appId)
+                .build());
+        return person.getCasePersonId();
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 通过案例人物ID获取accountId
+     * @关联表: case_person
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/6/07 14:18
+     */
+    public String getAccountIdByCasePerson(String casePersonId) {
+        CasePersonEntity entity = casePersonService.lambdaQuery()
+                .eq(CasePersonEntity::getCasePersonId, casePersonId)
+                .eq(CasePersonEntity::getDeleted, false)
+                .one();
+        if(entity == null || ReflectUtil.isObjectNull(entity)){
+            throw new AccountException(EnumAccountStatusCode.ACCOUNT_NOT_EXIST_EXCEPTION);
+        }
+        return entity.getAccountId();
     }
 
     /**

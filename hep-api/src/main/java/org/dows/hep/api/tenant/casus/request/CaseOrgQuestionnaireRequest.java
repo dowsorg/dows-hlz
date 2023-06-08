@@ -16,9 +16,6 @@ public class CaseOrgQuestionnaireRequest {
     @Schema(title = "案例机构问卷ID")
     private String caseOrgQuestionnaireId;
 
-    @Schema(title = "应用ID")
-    private String appId;
-
     @Schema(title = "案例ID")
     private String caseInstanceId;
 

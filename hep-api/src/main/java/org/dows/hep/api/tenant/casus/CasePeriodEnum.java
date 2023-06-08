@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public enum CasePeriodsEnum {
+public enum CasePeriodEnum {
     FIRST(1, "FIRST"),
     SECOND(2, "SECOND"),
     THIRD(3, "THIRD"),

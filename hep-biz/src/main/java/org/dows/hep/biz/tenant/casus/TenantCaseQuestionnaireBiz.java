@@ -18,7 +18,7 @@ import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionItemResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
 import org.dows.hep.api.tenant.casus.CaseESCEnum;
-import org.dows.hep.api.tenant.casus.QuestionSelectModeEnum;
+import org.dows.hep.api.tenant.casus.CaseQuestionSelectModeEnum;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionSearchRequest;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnairePageRequest;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireRequest;
@@ -119,6 +119,34 @@ public class TenantCaseQuestionnaireBiz {
                 .list();
         // convert
         return BeanUtil.copyToList(list, CaseQuestionnaireResponse.class);
+    }
+
+    /**
+     * @author fhb
+     * @description
+     * @date 2023/6/7 10:32
+     * @param
+     * @return
+     */
+    public List<CaseQuestionnaireResponse> listByIds(List<String> ids) {
+        if (BeanUtil.isEmpty(ids)) {
+            return new ArrayList<>();
+        }
+
+        List<CaseQuestionnaireEntity> list = caseQuestionnaireService.lambdaQuery()
+                .in(CaseQuestionnaireEntity::getCaseQuestionnaireId, ids)
+                .list();
+        List<CaseQuestionnaireResponse> caseQuestionnaireResponses = BeanUtil.copyToList(list, CaseQuestionnaireResponse.class);
+        if (CollUtil.isEmpty(caseQuestionnaireResponses)) {
+            return caseQuestionnaireResponses;
+        }
+
+        caseQuestionnaireResponses.forEach(item -> {
+            String questionSectionId = item.getQuestionSectionId();
+            QuestionSectionResponse questionSection = questionSectionBiz.getQuestionSection(questionSectionId);
+            item.setQuestionSectionResponse(questionSection);
+        });
+        return caseQuestionnaireResponses;
     }
 
     /**
@@ -310,7 +338,7 @@ public class TenantCaseQuestionnaireBiz {
         }
 
         // generate question-section
-        QuestionSelectModeEnum addType = request.getAddType();
+        CaseQuestionSelectModeEnum addType = request.getAddType();
         CaseQuestionnaireHandler handler = CaseQuestionnaireFactory.get(addType);
         String questionSectionId = handler.handle(request);
 

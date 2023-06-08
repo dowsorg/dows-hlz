@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class QuestionInstanceBiz {
 
-    private final QuestionDomainBaseBiz baseBiz;
+    private final QuestionBaseBiz baseBiz;
     private final QuestionCategBiz questionCategBiz;
     private final QuestionInstanceService questionInstanceService;
     private final QuestionOptionsService optionsService;
@@ -74,7 +74,6 @@ public class QuestionInstanceBiz {
 
     /**
      * @param
-     * @param questionResultRecordDTO
      * @return
      * @说明: 克隆
      * @关联表: QuestionInstance, QuestionOptions, QuestionAnswers

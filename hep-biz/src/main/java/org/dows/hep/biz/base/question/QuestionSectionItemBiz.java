@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 @Service
 public class QuestionSectionItemBiz {
 
-    private final QuestionDomainBaseBiz baseBiz;
+    private final QuestionBaseBiz baseBiz;
     private final QuestionInstanceBiz questionInstanceBiz;
     private final QuestionSectionItemService questionSectionItemService;
 
@@ -52,7 +52,7 @@ public class QuestionSectionItemBiz {
 
         boolean res = false;
         switch (generationModeEnum) {
-            case SELECT_CLONE -> res = batchSaveSelectCloneMode(itemList, questionSectionId, questionSourceEnum);
+//            case SELECT_CLONE -> res = batchSaveSelectCloneMode(itemList, questionSectionId, questionSourceEnum);
             case SELECT_REF -> res = batchSaveSelectRefMode(itemList, questionSectionId, questionSourceEnum);
             case ADD_NEW -> res = batchSaveOrUpdAddNewMode(itemList, questionSectionId, questionSourceEnum);
             default -> {
@@ -127,7 +127,7 @@ public class QuestionSectionItemBiz {
         return questionSectionItemService.remove(remWrapper);
     }
 
-    // 选择模式的不可以更新题目，仅可以新增
+    // @Deprecated
     private boolean batchSaveSelectCloneMode(List<QuestionSectionItemRequest> itemRequestList, String questionSectionId, QuestionSourceEnum questionSourceEnum) {
         if (StrUtil.isBlank(questionSectionId)) {
             throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);

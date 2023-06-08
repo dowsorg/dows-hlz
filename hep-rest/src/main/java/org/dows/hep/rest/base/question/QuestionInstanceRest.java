@@ -12,7 +12,7 @@ import org.dows.hep.api.base.question.request.QuestionRequest;
 import org.dows.hep.api.base.question.request.QuestionSearchRequest;
 import org.dows.hep.api.base.question.response.QuestionPageResponse;
 import org.dows.hep.api.base.question.response.QuestionResponse;
-import org.dows.hep.biz.base.question.QuestionDomainBaseBiz;
+import org.dows.hep.biz.base.question.QuestionBaseBiz;
 import org.dows.hep.biz.base.question.QuestionInstanceBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +30,7 @@ import java.util.List;
 @Tag(name = "问题域-题目", description = "问题")
 public class QuestionInstanceRest {
     private final QuestionInstanceBiz questionInstanceBiz;
-    private final QuestionDomainBaseBiz baseBiz;
+    private final QuestionBaseBiz baseBiz;
 
     /**
     * 新增和更新
