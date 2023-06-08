@@ -108,9 +108,8 @@ public class MaterialsRest {
     }
 
     /**
-     * @author fhb
-     * @description 下载资料
-     * @date 2023/6/8 11:04
+     * 下载资料
+     *
      * @param
      * @return
      */
@@ -122,9 +121,8 @@ public class MaterialsRest {
 
 
     /**
-     * @author fhb
-     * @description 打包下载资料
-     * @date 2023/6/8 11:04
+     * 打包下载资料
+     *
      * @param
      * @return
      */
