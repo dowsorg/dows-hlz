@@ -107,4 +107,31 @@ public class MaterialsRest {
         return materialsBiz.delMaterials(materialsId);
     }
 
+    /**
+     * @author fhb
+     * @description 下载资料
+     * @date 2023/6/8 11:04
+     * @param
+     * @return
+     */
+    @Operation(summary = "下载资料")
+    @PostMapping("v1/baseMaterials/materials/download")
+    public String download(@RequestParam String materialsId) {
+        return materialsBiz.download(materialsId);
+    }
+
+
+    /**
+     * @author fhb
+     * @description 打包下载资料
+     * @date 2023/6/8 11:04
+     * @param
+     * @return
+     */
+    @Operation(summary = "打包下载资料")
+    @PostMapping("v1/baseMaterials/materials/batchDownload")
+    public String batchDownload(@RequestBody List<String> materialsIds) {
+        return materialsBiz.batchDownload(materialsIds);
+    }
+
 }

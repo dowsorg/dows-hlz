@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.lang.Validator;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -11,6 +12,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.framework.oss.api.OssInfo;
 import org.dows.hep.api.base.materials.MaterialsESCEnum;
 import org.dows.hep.api.base.materials.MaterialsEnabledEnum;
 import org.dows.hep.api.base.materials.request.MaterialsAttachmentRequest;
@@ -20,6 +22,7 @@ import org.dows.hep.api.base.materials.request.MaterialsSearchRequest;
 import org.dows.hep.api.base.materials.response.MaterialsAttachmentResponse;
 import org.dows.hep.api.base.materials.response.MaterialsPageResponse;
 import org.dows.hep.api.base.materials.response.MaterialsResponse;
+import org.dows.hep.biz.base.oss.OSSBiz;
 import org.dows.hep.entity.MaterialsAttachmentEntity;
 import org.dows.hep.entity.MaterialsEntity;
 import org.dows.hep.service.MaterialsAttachmentService;
@@ -41,6 +44,7 @@ public class MaterialsManageBiz {
     private final MaterialsBaseBiz baseBiz;
     private final MaterialsService materialsService;
     private final MaterialsAttachmentService materialsAttachmentService;
+    private final OSSBiz ossBiz;
 
     /**
      * @param
@@ -199,6 +203,30 @@ public class MaterialsManageBiz {
         }
 
         return changeEnabled(materialsId, MaterialsEnabledEnum.DISABLED);
+    }
+
+    /**
+     * Download string.
+     *
+     * @param materialsId the materials id
+     * @return the string
+     */
+    public String download(String materialsId) {
+        return batchDownload(CollUtil.newArrayList(materialsId));
+    }
+
+    /**
+     * Batch download string.
+     *
+     * @param materialsIds the materials ids
+     * @return the string
+     */
+    public String batchDownload(List<String> materialsIds) {
+        List<MaterialsAttachmentEntity> attachments = listAttachmentEntity(materialsIds);
+        Validator.validateNotEmpty(attachments, "资料不存在");
+
+        OssInfo oss = ossBiz.zip(attachments, "学习资料");
+        return oss.getPath();
     }
 
     /**
