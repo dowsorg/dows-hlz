@@ -1,5 +1,6 @@
 package org.dows.hep.api.user.experiment.request;
 
+import cn.hutool.core.date.DateTime;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,8 +21,23 @@ public class SetFollowupRequest{
     @Schema(title = "实验小组id")
     private String experimentGroupId;
 
+    @Schema(title = "指标功能点ID")
+    private String indicatorFuncId;
+
+    @Schema(title = "实验查看指标监测随访分布式ID")
+    private String experimentViewMonitorFollowupId;
+
+    @Schema(title = "实验随访表名称")
+    private String experimentFollowupName;
+
+    @Schema(title = "最近随访时间")
+    private DateTime followupTime;
+
     @Schema(title = "实验人物id")
     private String experimentPersonId;
+
+    @Schema(title = "实验机构ID")
+    private String experimentOrgId;
 
     @Schema(title = "案例机构ID")
     private String caseOrgId;
@@ -41,11 +57,12 @@ public class SetFollowupRequest{
     @Schema(title = "随访表id")
     private String indicatorViewMonitorFollowupId;
 
-    @Schema(title = "游戏内起始天数")
-    private Integer startDay;
+    @Schema(title = "实验截止时间")
+    private DateTime experimentDeadline;
 
     @Schema(title = "随访间隔天数")
     private Integer dueDays;
 
-
+    @Schema(title = "应用ID")
+    private String appId;
 }
