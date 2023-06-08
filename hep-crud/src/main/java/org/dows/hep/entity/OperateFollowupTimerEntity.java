@@ -57,33 +57,26 @@ public class OperateFollowupTimerEntity implements CrudEntity {
     @Schema(title = "指标功能点id")
     private String indicatorFuncId;
 
-
     @Schema(title = "操作人id")
     private String operateAccountId;
 
     @Schema(title = "操作人名")
     private String operateAccountName;
 
-    @Schema(title = "期数")
-    private Integer periods;
+    @Schema(title = "实验随访表id")
+    private String experimentViewMonitorFollowupId;
 
-    @Schema(title = "随访表id")
-    private String indicatorViewMonitorFollowupId;
+    @Schema(title = "实验随访表名称")
+    private String experimentFollowupName;
 
-    @Schema(title = "随访表名称")
-    private String indicatorFollowupName;
-
-    @Schema(title = "游戏内起始天数")
-    private Integer setAtDay;
+    @Schema(title = "实验截止时间")
+    private Date experimentDeadline;
 
     @Schema(title = "随访间隔天数")
     private Integer dueDays;
 
     @Schema(title = "可以随访时间")
-    private Integer todoDay;
-
-    @Schema(title = "上次随访时间")
-    private Integer doneDay;
+    private Date todoTime;
 
     @Schema(title = "最近保存时间")
     private Date setAtTime;
@@ -91,10 +84,8 @@ public class OperateFollowupTimerEntity implements CrudEntity {
     @Schema(title = "最近随访时间")
     private Date followupTime;
 
-    @Schema(title = "本期随访次数")
+    @Schema(title = "实验随访次数")
     private Integer followupTimes;
-
-
 
     @JsonIgnore
     @TableLogic
@@ -105,8 +96,5 @@ public class OperateFollowupTimerEntity implements CrudEntity {
     @TableField(fill = FieldFill.INSERT)
     @Schema(title = "时间戳")
     private Date dt;
-
-
-
 }
 
