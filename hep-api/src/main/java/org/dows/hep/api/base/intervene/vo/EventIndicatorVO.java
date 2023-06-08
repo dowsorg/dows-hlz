@@ -41,7 +41,12 @@ public class EventIndicatorVO {
     private String indicatorInstanceId;
 
     @Schema(title = "指标分类ID")
+    @ApiModelProperty(required = true)
     private String indicatorCategoryId;
+
+    @Schema(title = "指标公式ID")
+    @ApiModelProperty(required = true)
+    private String indicatorExpressionId;
 
     @Schema(title = "表达式")
     @ApiModelProperty(required = true)

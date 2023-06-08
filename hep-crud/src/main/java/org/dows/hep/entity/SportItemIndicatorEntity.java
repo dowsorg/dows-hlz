@@ -51,6 +51,9 @@ public class SportItemIndicatorEntity implements CrudEntity {
     @Schema(title = "指标分类ID")
     private String indicatorCategoryId;
 
+    @Schema(title = "指标公式ID")
+    private String indicatorExpressionId;
+
     @Schema(title = "表达式")
     private String expression;
 
