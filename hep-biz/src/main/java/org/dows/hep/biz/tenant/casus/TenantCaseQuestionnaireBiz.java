@@ -18,7 +18,7 @@ import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionItemResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
 import org.dows.hep.api.tenant.casus.CaseESCEnum;
-import org.dows.hep.api.tenant.casus.QuestionSelectModeEnum;
+import org.dows.hep.api.tenant.casus.CaseQuestionSelectModeEnum;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionSearchRequest;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnairePageRequest;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireRequest;
@@ -338,7 +338,7 @@ public class TenantCaseQuestionnaireBiz {
         }
 
         // generate question-section
-        QuestionSelectModeEnum addType = request.getAddType();
+        CaseQuestionSelectModeEnum addType = request.getAddType();
         CaseQuestionnaireHandler handler = CaseQuestionnaireFactory.get(addType);
         String questionSectionId = handler.handle(request);
 

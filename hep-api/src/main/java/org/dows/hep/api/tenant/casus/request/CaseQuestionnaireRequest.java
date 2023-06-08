@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dows.hep.api.base.question.enums.QuestionTypeEnum;
-import org.dows.hep.api.tenant.casus.QuestionSelectModeEnum;
+import org.dows.hep.api.tenant.casus.CaseQuestionSelectModeEnum;
 
 import java.util.List;
 import java.util.Map;
@@ -36,7 +36,7 @@ public class CaseQuestionnaireRequest{
     private Integer periodSequence;
 
     @Schema(title = "添加方式")
-    private QuestionSelectModeEnum addType;
+    private CaseQuestionSelectModeEnum addType;
 
     @Schema(title = "随机添加方式")
     private List<RandomMode> randomModeList;

@@ -8,7 +8,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.tenant.casus.CaseESCEnum;
-import org.dows.hep.api.tenant.casus.CasePeriodsEnum;
+import org.dows.hep.api.tenant.casus.CasePeriodEnum;
 import org.dows.hep.api.tenant.casus.request.CaseOrgQuestionnaireRequest;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireSearchRequest;
 import org.dows.hep.api.tenant.casus.response.CaseOrgQuestionnaireResponse;
@@ -50,7 +50,7 @@ public class TenantCaseOrgQuestionnaireBiz {
         }
 
         Map<String, List<CaseQuestionnaireResponse>> result = new LinkedHashMap<>();
-        Arrays.stream(CasePeriodsEnum.values()).forEach(item -> {
+        Arrays.stream(CasePeriodEnum.values()).forEach(item -> {
             result.put(item.getName(), new ArrayList<>());
         });
 
@@ -86,7 +86,7 @@ public class TenantCaseOrgQuestionnaireBiz {
 
         // 期数 collect
         Map<String, Map<String, CaseOrgQuestionnaireResponse>> result = new LinkedHashMap<>();
-        Arrays.stream(CasePeriodsEnum.values()).forEach(item -> {
+        Arrays.stream(CasePeriodEnum.values()).forEach(item -> {
             result.put(item.getName(), new HashMap<>());
         });
 
@@ -138,7 +138,7 @@ public class TenantCaseOrgQuestionnaireBiz {
 
         // 期数 collect
         Map<String, Map<String, CaseOrgQuestionnaireResponse>> result = new LinkedHashMap<>();
-        Arrays.stream(CasePeriodsEnum.values()).forEach(item -> {
+        Arrays.stream(CasePeriodEnum.values()).forEach(item -> {
             result.put(item.getName(), new HashMap<>());
         });
 
@@ -249,7 +249,7 @@ public class TenantCaseOrgQuestionnaireBiz {
 
         List<CaseOrgQuestionnaireRequest> result = new ArrayList<>();
         Map<String, List<CaseQuestionnaireResponse>> periodQuestionnaireCollect = orgQuestionnaireList.stream().collect(Collectors.groupingBy(CaseQuestionnaireResponse::getPeriods));
-        Arrays.stream(CasePeriodsEnum.values()).forEach(period -> {
+        Arrays.stream(CasePeriodEnum.values()).forEach(period -> {
             String name = period.getName();
             List<CaseQuestionnaireResponse> questionnaireList = periodQuestionnaireCollect.get(name);
             List<CaseOrgQuestionnaireRequest> request = buildCaseOrgQuestionnaireRequest0(caseInstanceId, name, questionnaireList, orgList);

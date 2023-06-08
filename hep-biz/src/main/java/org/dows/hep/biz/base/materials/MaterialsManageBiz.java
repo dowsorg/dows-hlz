@@ -89,6 +89,7 @@ public class MaterialsManageBiz {
         Page<MaterialsEntity> pageResult = materialsService.lambdaQuery()
                 .eq(MaterialsEntity::getAppId, request.getAppId())
                 .eq(MaterialsEntity::getBizCode, request.getBizCode())
+                .eq(MaterialsEntity::getEnabled, MaterialsEnabledEnum.ENABLED.getCode())
                 .like(BeanUtil.isNotEmpty(request) && StrUtil.isNotBlank(request.getKeyword()), MaterialsEntity::getTitle, request.getKeyword())
                 .orderBy(true, true, MaterialsEntity::getSequence)
                 .page(pageRequest);
