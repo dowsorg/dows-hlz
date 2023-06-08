@@ -175,7 +175,7 @@ public class FoodCalcBiz {
                     break;
             }
         }
-        material.setEnergy(BigDecimalUtil.formatDecimal(boxEnergy.getValue(NUMBERScale2),EMPTYValue));
+        material.setEnergy(BigDecimalUtil.formatRoundDecimal(boxEnergy.getValue(),NUMBERScale2,false,EMPTYValue));
         if(null!=rowEnergy){
             rowEnergy.setWeight(material.getEnergy());
         }
@@ -383,13 +383,13 @@ public class FoodCalcBiz {
             box.add(i.getEnergyOptional().getValue());
         });
         rst.forEach(i->{
-            i.setWeight(BigDecimalUtil.formatDecimal(i.getWeightOptional().getValue(NUMBERScale2),EMPTYValue));
+            i.setWeight(BigDecimalUtil.formatRoundDecimal(i.getWeightOptional().getValue(),NUMBERScale2,false,EMPTYValue));
             i.setEnergy(BigDecimalUtil.formatPercent(i.getEnergyOptional().div(box.getValue()).getValue(), EMPTYValue, NUMBERScale2, true));
         });
         //添加能量汇总
         rst.add((CalcFoodStatVO)new CalcFoodStatVO().setInstanceName(EnumFoodNutrient.ENERGY.getName())
                 .setUnit(EnumFoodNutrient.ENERGY.getUnit())
-                .setWeight(BigDecimalUtil.formatDecimal(box.getValue(NUMBERScale2),EMPTYValue))
+                .setWeight(BigDecimalUtil.formatRoundDecimal(box.getValue(),NUMBERScale2,false,EMPTYValue))
                 .setEnergy(EMPTYValue));
         return rst;
     }
@@ -425,7 +425,7 @@ public class FoodCalcBiz {
         });
         List<CalcFoodStatVO> rst = new ArrayList<>(mapRst.values());
         rst.forEach(i->{
-            i.setWeight(BigDecimalUtil.formatDecimal(i.getWeightOptional().getValue(NUMBERScale2),EMPTYValue));
+            i.setWeight(BigDecimalUtil.formatRoundDecimal(i.getWeightOptional().getValue(),NUMBERScale2,false,EMPTYValue));
         });
         mapRst.clear();
         return rst;

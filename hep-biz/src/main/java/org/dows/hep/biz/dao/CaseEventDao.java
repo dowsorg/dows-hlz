@@ -142,9 +142,7 @@ public class CaseEventDao extends BaseSubDao<CaseEventService, CaseEventEntity, 
         }
         if(!delSub)
             return true;
-        if(!subDao.delByEventId(ids,dftIfSubEmpty) ){
-            return false;
-        }
+        subDao.delByEventId(ids,dftIfSubEmpty);
         subDao.delSubByEventId(ids,dftIfSubEmpty);
         return true;
     }

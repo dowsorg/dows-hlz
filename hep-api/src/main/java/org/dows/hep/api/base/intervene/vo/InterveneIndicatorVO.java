@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
 
 /**
  * @author : wuzl
@@ -33,7 +34,12 @@ public class InterveneIndicatorVO {
     private String indicatorInstanceId;
 
     @Schema(title = "指标分类ID")
+    @ApiModelProperty(required = true)
     private String indicatorCategoryId;
+
+    @Schema(title = "指标公式ID")
+    @ApiModelProperty(required = true)
+    private String indicatorExpressionId;
 
     @Schema(title = "表达式")
     @ApiModelProperty(required = true)
@@ -51,5 +57,8 @@ public class InterveneIndicatorVO {
 
     @Schema(title = "排序号")
     private Integer seq;
+
+    @Schema(title = "表达式详情")
+    private IndicatorExpressionResponseRs expressionInfo;
 
 }

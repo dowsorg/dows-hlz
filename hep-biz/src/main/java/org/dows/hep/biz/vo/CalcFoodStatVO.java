@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.dows.hep.api.base.intervene.vo.FoodStatVO;
-import org.dows.hep.api.enums.EnumFoodMealTime;
 import org.dows.hep.biz.util.BigDecimalOptional;
 
 import java.util.Map;
@@ -31,5 +30,5 @@ public class CalcFoodStatVO  extends FoodStatVO {
 
     @JsonIgnore
     @Schema(title = "餐次统计")
-    private Map<EnumFoodMealTime,CalcFoodMealTimeStatVO> mapMeals;
+    private Map<Integer,CalcFoodMealTimeStatVO> mapMeals;
 }

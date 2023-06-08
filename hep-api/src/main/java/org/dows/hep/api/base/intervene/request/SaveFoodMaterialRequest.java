@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorExpressionRequestRs;
 import org.dows.hep.api.base.intervene.vo.FoodNutrientVO;
 import org.dows.hep.api.base.intervene.vo.InterveneIndicatorVO;
 
@@ -40,11 +41,14 @@ public class SaveFoodMaterialRequest{
     @Schema(title = "状态 0-启用 1-停用")
     private Integer state;
 
-    @Schema(title = "关联指标列表json")
+    @Schema(title = "关联指标列表json，已废弃")
     private List<InterveneIndicatorVO> indicators;
 
     @Schema(title = "营养成分列表json")
     private List<FoodNutrientVO> nutrients;
+
+    @Schema(title = "通用指标列表")
+    private List<CreateOrUpdateIndicatorExpressionRequestRs> indicator;
 
 
 }

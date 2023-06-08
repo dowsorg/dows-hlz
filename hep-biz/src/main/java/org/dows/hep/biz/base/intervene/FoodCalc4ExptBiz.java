@@ -3,17 +3,24 @@ package org.dows.hep.biz.base.intervene;
 import org.dows.hep.api.base.intervene.vo.FoodCookbookDetailVO;
 import org.dows.hep.api.enums.EnumFoodCalcType;
 import org.dows.hep.api.enums.EnumFoodDetailType;
+import org.dows.hep.api.enums.EnumFoodNutrient;
 import org.dows.hep.api.user.experiment.request.CalcExptFoodGraphRequest;
 import org.dows.hep.biz.cache.InterveneCategCache;
+import org.dows.hep.biz.util.BigDecimalOptional;
+import org.dows.hep.biz.util.BigDecimalUtil;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.vo.CalcExptFoodCookbookResult;
 import org.dows.hep.biz.vo.CalcFoodDetailVO;
+import org.dows.hep.biz.vo.CalcFoodMealTimeStatVO;
+import org.dows.hep.biz.vo.CalcFoodStatVO;
+import org.dows.hep.entity.FoodMaterialNutrientEntity;
+import org.dows.hep.entity.IndicatorInstanceEntity;
+import org.dows.hep.entity.IndicatorRuleEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * 学生端 饮食计算
@@ -101,22 +108,22 @@ public class FoodCalc4ExptBiz extends FoodCalcBiz {
      * @param mapMats
      */
     private void calcFoodEnergy(CalcExptFoodCookbookResult rst, Map<String, CalcFoodDetailVO> mapMats){
-       /* List<CalcFoodStatVO> statEnergy=new ArrayList<>();
-        List<CalcFoodMealTimeStatVO> statMealEnergy=new ArrayList<>();
-        rst.setStatEnergy(statEnergy).setStatMealEnergy(statMealEnergy);
+        List<CalcFoodStatVO> statEnergy=new ArrayList<>();
+        rst.setStatEnergy(statEnergy).setStatMealEnergy(Collections.emptyList());
         //fill指标id，单位
-        EnumFoodNutrient.BASENutrients3.forEach(i->statEnergy.add((CalcFoodStatVO) new CalcFoodStatVO().setInstanceName(i.getName()).set));
+        EnumFoodNutrient.BASENutrients3.forEach(i->statEnergy.add(((CalcFoodStatVO) new CalcFoodStatVO().setInstanceName(i.getName())).setMapMeals(new HashMap<>())));
         Map<String, IndicatorInstanceEntity> rowsIndicator=ShareUtil.XCollection.toMap(indicatorInstanceDao.getIndicators4Nutrient(
                 IndicatorInstanceEntity::getIndicatorInstanceId,
                 IndicatorInstanceEntity::getIndicatorName,
                 IndicatorInstanceEntity::getUnit),IndicatorInstanceEntity::getIndicatorName, Function.identity());
         statEnergy.forEach(i->{
             Optional.ofNullable(rowsIndicator.get(i.getInstanceName()))
-                    .ifPresent(v->{
-                        i.setInstanceId(v.getIndicatorInstanceId()).setUnit(v.getUnit());
+                    .ifPresent(rowIndicator->{
+                        i.setInstanceId(rowIndicator.getIndicatorInstanceId()).setUnit(rowIndicator.getUnit());
                         rowsIndicator.remove(i.getInstanceName());
                     });
         });
+        rowsIndicator.remove("能量");
         rowsIndicator.values().forEach(i->statEnergy.add((CalcFoodStatVO)new CalcFoodStatVO()
                 .setInstanceId(i.getIndicatorInstanceId())
                 .setInstanceName(i.getIndicatorName())
@@ -127,7 +134,7 @@ public class FoodCalc4ExptBiz extends FoodCalcBiz {
                 IndicatorRuleEntity::getVariableId,
                 IndicatorRuleEntity::getMin,
                 IndicatorRuleEntity::getMax),IndicatorRuleEntity::getVariableId,Function.identity());
-        statEnergy.forEach(i->Optional.ofNullable(rowsIndicatorRule.get(i.getInstanceId())).ifPresent(v->i.setMin(v.getMin()).setMax(v.getMax())));
+        statEnergy.forEach(i->Optional.ofNullable(rowsIndicatorRule.get(i.getInstanceId())).ifPresent(rowRule->i.setMin(rowRule.getMin()).setMax(rowRule.getMax())));
         rowsIndicator.clear();
         rowsIndicatorRule.clear();
         if(ShareUtil.XCollection.isEmpty(mapMats)){
@@ -146,32 +153,61 @@ public class FoodCalc4ExptBiz extends FoodCalcBiz {
             if (null == voMat || voMat.getWeightOptional().isEmpty()) {
                 return;
             }
-            //营养成分含量=食材重量*每百克营养成分/100克
-            v.forEach(vi -> mapRst.get(vi.getIndicatorInstanceId()).getWeightOptional()
-                    .add(box.setValue(voMat.getWeightOptional().getValue())
-                            .mul(BigDecimalUtil.tryParseDecimalElseZero(vi.getWeight()))
-                            .div(BigDecimalUtil.ONEHundred)
-                            .getValue()));
-
+            v.forEach(rowNutrient ->{
+                CalcFoodStatVO voEnergy=mapEnergy.get(rowNutrient.getIndicatorInstanceId());
+                //营养成分含量=食材重量*每百克营养成分/100克
+                box.setValue(voMat.getWeightOptional().getValue())
+                        .mul(BigDecimalUtil.tryParseDecimalElseZero(rowNutrient.getWeight()))
+                        .div(BigDecimalUtil.ONEHundred);
+                voEnergy.getWeightOptional().add(box.getValue());
+                if(null==voEnergy.getMapMeals()||ShareUtil.XCollection.isEmpty(voMat.getMapMeals())){
+                    return;
+                }
+                voMat.getMapMeals().values().forEach(mealMat->{
+                    box.setValue(mealMat.getWeightOptional().getValue())
+                            .mul(BigDecimalUtil.tryParseDecimalElseZero(rowNutrient.getWeight()))
+                            .div(BigDecimalUtil.ONEHundred);
+                    voEnergy.getMapMeals().computeIfAbsent(mealMat.getMealTime(),key->new CalcFoodMealTimeStatVO().setMealTime(key))
+                            .getWeightOptional().add(box.getValue());
+                });
+            });
         });
         rowsNutrient.clear();
-        mapRst.clear();
+        mapEnergy.clear();
         box.reset();
+        Map<Integer,CalcFoodMealTimeStatVO> mapMealEnergy=new LinkedHashMap<>();
         //计算能量和能量占比
-        rst.forEach(i->{
-            i.getEnergyOptional().setValue(EnumFoodNutrient.of(i.getInstanceName()).calcEnergy(i.getWeightOptional().getValue()));
+        statEnergy.forEach(i->{
+            if(null==i.getMapMeals()){
+                return;
+            }
+            EnumFoodNutrient enumNutrient=EnumFoodNutrient.of(i.getInstanceName());
+            i.getEnergyOptional().setValue(enumNutrient.calcEnergy(i.getWeightOptional().getValue()));
             box.add(i.getEnergyOptional().getValue());
+            i.getMapMeals().values().forEach(mealNutrient->{
+                mapMealEnergy.computeIfAbsent(mealNutrient.getMealTime(),key->new CalcFoodMealTimeStatVO().setMealTime(key))
+                        .getEnergyOptional().add(enumNutrient.calcEnergy(mealNutrient.getWeightOptional().getValue()) );
+            });
         });
-        rst.forEach(i->{
-            i.setWeight(BigDecimalUtil.formatDecimal(i.getWeightOptional().getValue(NUMBERScale2),EMPTYValue));
+        final String totalEnergy=BigDecimalUtil.formatRoundDecimal(box.getValue(),NUMBERScale2,false, EMPTYValue);
+        rst.setEnergy(totalEnergy);
+        //营养成分能量占比
+        statEnergy.forEach(i->{
+            i.setWeight(BigDecimalUtil.formatRoundDecimal(i.getWeightOptional().getValue(),NUMBERScale2,false,EMPTYValue));
             i.setEnergy(BigDecimalUtil.formatPercent(i.getEnergyOptional().div(box.getValue()).getValue(), EMPTYValue, NUMBERScale2, true));
         });
+        //餐次能量占比
+        mapMealEnergy.values().forEach(i->{
+            i.setEnergy(BigDecimalUtil.formatRoundDecimal(i.getEnergyOptional().getValue(),NUMBERScale2,false,EMPTYValue ));
+            i.setEnergyRate(BigDecimalUtil.formatPercent(i.getEnergyOptional().div(box.getValue()).getValue(), EMPTYValue, NUMBERScale2, true));
+        });
         //添加能量汇总
-        rst.add((CalcFoodStatVO)new CalcFoodStatVO().setInstanceName(EnumFoodNutrient.ENERGY.getName())
+        statEnergy.add(EnumFoodNutrient.BASENutrients3.size()-1, (CalcFoodStatVO)new CalcFoodStatVO().setInstanceName(EnumFoodNutrient.ENERGY.getName())
                 .setUnit(EnumFoodNutrient.ENERGY.getUnit())
-                .setWeight(BigDecimalUtil.formatDecimal(box.getValue(NUMBERScale2),EMPTYValue))
+                .setWeight(totalEnergy)
                 .setEnergy(EMPTYValue));
-        return rst;*/
+        rst.setStatMealEnergy(new ArrayList<>( mapMealEnergy.values()));
+
     }
 
 

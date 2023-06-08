@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 事件处理选项影响指标(EventActionIndicator)实体类
@@ -56,6 +56,9 @@ public class EventActionIndicatorEntity implements CrudEntity {
 
     @Schema(title = "指标分类ID")
     private String indicatorCategoryId;
+
+    @Schema(title = "指标公式ID")
+    private String indicatorExpressionId;
 
     @Schema(title = "表达式")
     private String expression;

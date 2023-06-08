@@ -19,6 +19,8 @@ import lombok.experimental.Accessors;
 @Schema(name = "ExptTreatPlanItemVO 对象", title = "治疗方案关联项目")
 public class ExptTreatPlanItemVO {
 
+    @Schema(title = "序号,新增为空,非空该条不可删除, 前端按该值倒序排列")
+    private Long id;
     @Schema(title = "治疗项目ID")
     private String treatItemId;
 
@@ -42,5 +44,10 @@ public class ExptTreatPlanItemVO {
 
     @Schema(title = "用量")
     private String weight;
+
+    @Schema(title = "结算标记 0-未结算 1-已结算,后端专用")
+    private Integer dealFlag;
+
+
 
 }

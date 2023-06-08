@@ -67,4 +67,5 @@ public class FoodMaterialInfoResponse{
     private List<FoodNutrientVO> nutrients;
 
 
+
 }

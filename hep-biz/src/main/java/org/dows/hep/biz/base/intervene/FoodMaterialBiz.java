@@ -7,6 +7,7 @@ import org.dows.hep.api.base.intervene.response.FoodMaterialInfoResponse;
 import org.dows.hep.api.base.intervene.response.FoodMaterialResponse;
 import org.dows.hep.api.base.intervene.vo.FoodNutrientVO;
 import org.dows.hep.api.base.intervene.vo.InterveneIndicatorVO;
+import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
 import org.dows.hep.biz.cache.InterveneCategCache;
 import org.dows.hep.biz.dao.FoodMaterialDao;
 import org.dows.hep.biz.dao.IndicatorInstanceDao;
@@ -39,6 +40,8 @@ public class FoodMaterialBiz{
 
     private final FoodMaterialDao dao;
     private final IndicatorInstanceDao daoIndicator;
+
+    private final IndicatorExpressionBiz indicatorExpressionBiz;
 
     private final FoodCalcBiz foodCalcBiz;
 

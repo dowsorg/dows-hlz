@@ -142,19 +142,29 @@ public class FoodPlanBiz{
                 .setCategNamePath(categVO.getCategNamePath())
                 .setMaterialsDesc(calcMaterialsDesc(rowsMaterial));
         CalcFoodDishesResult calcRst = foodCalcBiz.calcFoodGraph4Dishes(rowsMaterial);
-        Optional.ofNullable(calcRst.getStatEnergy()).ifPresent(i->i.forEach(v->{
-            switch (EnumFoodNutrient.of(v.getInstanceName())){
+
+        final BigDecimal totalWeight=rowsMaterial.stream().map(e->BigDecimalUtil.tryParseDecimalElseZero(e.getWeight()))
+                .reduce(BigDecimal.ZERO,BigDecimalUtil::add);
+        final String EMPTYValue="-";
+        Optional.ofNullable(calcRst.getStatEnergy()).ifPresent(stats->stats.forEach(stat->{
+            final String scale=BigDecimalUtil.formatRoundDecimal(stat.getWeightOptional().mul(BigDecimalUtil.ONEHundred).div(totalWeight).getValue(),
+                    NUMBERScale2, false,EMPTYValue);
+            switch (EnumFoodNutrient.of(stat.getInstanceName())){
                 case PROTEIN:
-                    row.setProtein(v.getWeight());
+                    row.setProtein(stat.getWeight());
+                    row.setProteinScale(scale);
                     break;
                 case FAT:
-                    row.setFat(v.getWeight());
+                    row.setFat(stat.getWeight());
+                    row.setFatScale(scale);
                     break;
                 case CHO:
-                    row.setCho(v.getWeight());
+                    row.setCho(stat.getWeight());
+                    row.setChoScale(scale);
                     break;
                 case ENERGY:
-                    row.setEnergy(v.getWeight());
+                    row.setEnergy(stat.getWeight());
+                    row.setEnergyScale(scale);
                     break;
 
             }
