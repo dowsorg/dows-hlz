@@ -1,5 +1,6 @@
 package org.dows.hep.api.user.experiment.request;
 
+import cn.hutool.core.date.DateTime;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -49,4 +50,10 @@ public class SaveFollowupRequest{
 
     @Schema(title = "操作人名")
     private String operateAccountName;
+
+    @Schema(title = "实验截止时间")
+    private DateTime experimentDeadline;
+
+    @Schema(title = "随访间隔天数")
+    private Integer dueDays;
 }

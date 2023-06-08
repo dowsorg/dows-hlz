@@ -161,7 +161,6 @@ public class ExperimentOrgViewBiz {
                 .eq(OperateFollowupTimerEntity::getExperimentOrgId, setFollowup.getExperimentOrgId())
                 .eq(OperateFollowupTimerEntity::getIndicatorFuncId, setFollowup.getIndicatorFuncId())
                 .eq(OperateFollowupTimerEntity::getExperimentViewMonitorFollowupId, setFollowup.getExperimentViewMonitorFollowupId())
-                .eq(OperateFollowupTimerEntity::getExperimentFollowupName, setFollowup)
                 .eq(OperateFollowupTimerEntity::getDeleted, false)
                 .one();
         //1、判断是否存在该人物的该监测随访表记录，存在直接更新，不存在则插入
@@ -169,16 +168,6 @@ public class ExperimentOrgViewBiz {
             //2、更新
             OperateFollowupTimerEntity entity = OperateFollowupTimerEntity.builder()
                     .id(timerEntity.getId())
-                    .operateFollowupTimerId(timerEntity.getOperateFollowupTimerId())
-                    .appId(timerEntity.getAppId())
-                    .experimentInstanceId(timerEntity.getExperimentInstanceId())
-                    .experimentGroupId(timerEntity.getExperimentGroupId())
-                    .experimentPersonId(timerEntity.getExperimentPersonId())
-                    .experimentOrgId(timerEntity.getExperimentOrgId())
-                    .indicatorFuncId(timerEntity.getIndicatorFuncId())
-                    .experimentViewMonitorFollowupId(timerEntity.getExperimentViewMonitorFollowupId())
-                    .experimentFollowupName(timerEntity.getExperimentFollowupName())
-                    .followupTime(timerEntity.getFollowupTime())
                     .operateAccountId(accountId)
                     .operateAccountName(accountName)
                     .experimentDeadline(setFollowup.getExperimentDeadline())
@@ -236,10 +225,38 @@ public class ExperimentOrgViewBiz {
      * @工时: 6H
      * @开发者: jx
      * @开始时间:
-     * @创建时间: 2023年6月？？号  下午17:29:34
+     * @创建时间: 2023年6月8号  下午18:29:34
      */
-    public Boolean saveFollowup(SaveFollowupRequest saveFollowup) {
-        return null;
+    @DSTransactional
+    public Boolean saveFollowup(SaveFollowupRequest saveFollowup,String accountId,String accountName) {
+        Boolean flag = false;
+        //todo 1、调用夏海接口计算最新指标
+        //2、更新随访频率表
+        OperateFollowupTimerEntity timerEntity = operateFollowupTimerService.lambdaQuery()
+                .eq(OperateFollowupTimerEntity::getAppId, saveFollowup.getAppId())
+                .eq(OperateFollowupTimerEntity::getExperimentInstanceId, saveFollowup.getExperimentInstanceId())
+                .eq(OperateFollowupTimerEntity::getExperimentGroupId, saveFollowup.getExperimentGroupId())
+                .eq(OperateFollowupTimerEntity::getExperimentPersonId, saveFollowup.getExperimentPersonId())
+                .eq(OperateFollowupTimerEntity::getExperimentOrgId, saveFollowup.getExperimentOrgId())
+                .eq(OperateFollowupTimerEntity::getIndicatorFuncId, saveFollowup.getIndicatorFuncId())
+                .eq(OperateFollowupTimerEntity::getExperimentViewMonitorFollowupId, saveFollowup.getExperimentViewMonitorFollowupId())
+                .eq(OperateFollowupTimerEntity::getDeleted, false)
+                .one();
+        if(timerEntity != null && !ReflectUtil.isObjectNull(timerEntity)){
+            OperateFollowupTimerEntity entity = OperateFollowupTimerEntity.builder()
+                    .id(timerEntity.getId())
+                    .operateAccountId(accountId)
+                    .operateAccountName(accountName)
+                    .experimentDeadline(saveFollowup.getExperimentDeadline())
+                    .dueDays(saveFollowup.getDueDays())
+                    .todoTime(TimeUtil.timeProcess(new Date(), saveFollowup.getDueDays()))
+                    .setAtTime(new Date())
+                    .followupTimes(timerEntity.getFollowupTimes() + 1)
+                    .build();
+            flag = operateFollowupTimerService.updateById(entity);
+        }
+        //3、调用savePhysiqueAndAuxiliary接口保存记录
+        return flag;
     }
 
     /**

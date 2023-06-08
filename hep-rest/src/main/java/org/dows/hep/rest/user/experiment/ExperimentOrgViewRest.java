@@ -99,8 +99,13 @@ public class ExperimentOrgViewRest {
     */
     @Operation(summary = "监测随访：开始随访（保存随访记录）")
     @PostMapping("v1/userExperiment/experimentOrgView/saveFollowup")
-    public Boolean saveFollowup(@RequestBody @Validated SaveFollowupRequest saveFollowup ) {
-        return experimentOrgViewBiz.saveFollowup(saveFollowup);
+    public Boolean saveFollowup(@RequestBody @Validated SaveFollowupRequest saveFollowup,HttpServletRequest request) {
+        String token = request.getHeader("token");
+        Map<String, Object> map = JwtUtil.parseJWT(token, EnumToken.PROPERTIES_JWT_KEY.getStr());
+        //1、获取登录账户和名称
+        String accountId = map.get("accountId").toString();
+        String accountName = map.get("accountName").toString();
+        return experimentOrgViewBiz.saveFollowup(saveFollowup,accountId,accountName);
     }
 
     /**
