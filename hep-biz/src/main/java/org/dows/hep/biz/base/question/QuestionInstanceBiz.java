@@ -179,6 +179,7 @@ public class QuestionInstanceBiz {
                 .eq(QuestionInstanceEntity::getVer, baseBiz.getLastVer())
                 .eq(QuestionInstanceEntity::getQuestionInstancePid, baseBiz.getQuestionInstancePid())
                 .eq(QuestionInstanceEntity::getBizCode, QuestionAccessAuthEnum.PUBLIC_VIEWING.name())
+                .eq(questionSearch.getEnabled() != null, QuestionInstanceEntity::getEnabled, questionSearch.getEnabled())
                 .eq(StrUtil.isNotBlank(questionSearch.getQuestionType()), QuestionInstanceEntity::getQuestionType, questionSearch.getQuestionType())
                 .like(StrUtil.isNotBlank(questionSearch.getKeyword()), QuestionInstanceEntity::getQuestionTitle, questionSearch.getKeyword())
                 .in(questionSearch.getCategIdList() != null && !questionSearch.getCategIdList().isEmpty(), QuestionInstanceEntity::getQuestionCategId, questionSearch.getCategIdList())

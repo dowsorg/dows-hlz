@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.enums.QuestionCategGroupEnum;
 import org.dows.hep.api.base.question.enums.QuestionESCEnum;
+import org.dows.hep.api.base.question.enums.QuestionEnabledEnum;
 import org.dows.hep.api.base.question.enums.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.QuestionSearchRequest;
 import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
@@ -391,6 +392,7 @@ public class TenantCaseQuestionnaireBiz {
                 .appId(baseBiz.getAppId())
                 .keyword(request.getKeyword())
                 .questionType(request.getQuestionType())
+                .enabled(QuestionEnabledEnum.ENABLED.getCode())
                 .build();
         List<QuestionResponse> questionResponses = questionInstanceBiz.listQuestion(questionSearchRequest);
 
