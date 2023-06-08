@@ -12,6 +12,7 @@ public enum CaseESCEnum implements StatusCode {
     CANNOT_DEL_REF_DATA(42002, "被引用数据不可删除"),
     CASE_ORG_NON_NULL(42010, "机构数据不能为空"),
     CASE_QUESTIONNAIRE_NON_NULL(42011, "案例下问卷不能为空"),
+    CASE_USABLE_QUESTION_IS_NULL(42012, "可使用题目数量为0"),
 
 
     ;

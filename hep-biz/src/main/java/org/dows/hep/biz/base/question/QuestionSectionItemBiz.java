@@ -73,10 +73,7 @@ public class QuestionSectionItemBiz {
             return new ArrayList<>();
         }
 
-        LambdaQueryWrapper<QuestionSectionItemEntity> queryWrapper = new LambdaQueryWrapper<QuestionSectionItemEntity>()
-                .eq(QuestionSectionItemEntity::getEnabled, QuestionEnabledEnum.ENABLED.getCode())
-                .in(QuestionSectionItemEntity::getQuestionSectionId, questionSectionIds);
-        List<QuestionSectionItemEntity> itemList = questionSectionItemService.list(queryWrapper);
+        List<QuestionSectionItemEntity> itemList = listBySectionIds(questionSectionIds);
         if (itemList == null || itemList.isEmpty()) {
             return new ArrayList<>();
         }
@@ -89,6 +86,20 @@ public class QuestionSectionItemBiz {
                     return itemResponse;
                 })
                 .toList();
+    }
+
+    /**
+     * @author fhb
+     * @description
+     * @date 2023/6/8 14:56
+     * @param
+     * @return
+     */
+    public List<QuestionSectionItemEntity> listBySectionIds(List<String> questionSectionIds) {
+        return questionSectionItemService.lambdaQuery()
+                .eq(QuestionSectionItemEntity::getEnabled, QuestionEnabledEnum.ENABLED.getCode())
+                .in(QuestionSectionItemEntity::getQuestionSectionId, questionSectionIds)
+                .list();
     }
 
     /**
