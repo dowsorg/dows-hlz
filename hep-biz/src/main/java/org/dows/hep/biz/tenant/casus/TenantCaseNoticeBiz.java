@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.enums.QuestionESCEnum;
 import org.dows.hep.api.tenant.casus.CaseESCEnum;
+import org.dows.hep.api.tenant.casus.CasePeriodEnum;
 import org.dows.hep.api.tenant.casus.request.CaseNoticeRequest;
 import org.dows.hep.api.tenant.casus.response.CaseNoticeResponse;
 import org.dows.hep.entity.CaseInstanceEntity;
@@ -71,7 +72,11 @@ public class TenantCaseNoticeBiz {
         }
 
         return entityList.stream()
-                .map(item -> BeanUtil.copyProperties(item, CaseNoticeResponse.class))
+                .map(item -> {
+                    CaseNoticeResponse caseNoticeResponse = BeanUtil.copyProperties(item, CaseNoticeResponse.class);
+                    caseNoticeResponse.setPeriods(CasePeriodEnum.getNameByCode(item.getPeriods()));
+                    return caseNoticeResponse;
+                })
                 .sorted(Comparator.comparingInt(CaseNoticeResponse::getPeriodSequence))
                 .toList();
     }
@@ -160,8 +165,8 @@ public class TenantCaseNoticeBiz {
                 .caseInstanceId(request.getCaseInstanceId())
                 .noticeName(request.getNoticeName())
                 .noticeContent(request.getNoticeContent())
-                .periods(request.getPeriods())
-                .periodSequence(request.getPeriodSequence())
+                .periods(request.getPeriods().getCode())
+                .periodSequence(request.getPeriods().ordinal())
                 .build();
 
         String uniqueId = result.getCaseNoticeId();
