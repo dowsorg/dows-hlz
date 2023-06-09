@@ -14,6 +14,7 @@ import org.dows.sequence.api.IdGenerator;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
                                            "org.dows.rbac.*"})
 @MapperScan(basePackages = {"org.dows.*.mapper"})
 @RequiredArgsConstructor
+@EnableScheduling
 public class HepApplication{
     public static void main(String[] args) {
         SpringApplication.run(HepApplication.class, args);

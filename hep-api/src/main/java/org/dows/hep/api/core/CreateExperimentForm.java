@@ -1,4 +1,4 @@
-package org.dows.hep.form;
+package org.dows.hep.api.core;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
