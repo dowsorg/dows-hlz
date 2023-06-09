@@ -347,11 +347,8 @@ public class TenantCaseOrgQuestionnaireBiz {
         Map<String, CaseOrgQuestionnaireEntity> collect;
         if (Objects.nonNull(orgQuestionnaire) && !orgQuestionnaire.isEmpty()) {
             collect = orgQuestionnaire.stream().collect(Collectors.toMap(CaseOrgQuestionnaireEntity::getCaseQuestionnaireId, v -> v, (v1, v2) -> v1));
-        } else {
-            collect = new HashMap<>();
+            questionnaireList.removeIf(item -> collect.get(item.getCaseQuestionnaireId()) == null);
         }
-
-        questionnaireList.removeIf(item -> collect.get(item.getCaseQuestionnaireId()) == null);
     }
 
     private List<CaseOrgQuestionnaireEntity> listByCaseInstanceId0(String caseInstanceId) {

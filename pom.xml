@@ -23,6 +23,7 @@
         <module>hep-feign</module>
         <module>hep-pojo</module>
         <module>hep-rest</module>
+        <module>hep-snapshot</module>
     </modules>
 
     <properties>

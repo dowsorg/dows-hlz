@@ -18,6 +18,7 @@ import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
 import org.dows.hep.api.tenant.casus.CaseESCEnum;
+import org.dows.hep.api.tenant.casus.CasePeriodEnum;
 import org.dows.hep.api.tenant.casus.CaseQuestionSelectModeEnum;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionSearchRequest;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnairePageRequest;
@@ -121,7 +122,14 @@ public class TenantCaseQuestionnaireBiz {
                 .eq(StrUtil.isNotBlank(request.getCaseInstanceId()), CaseQuestionnaireEntity::getCaseInstanceId, request.getCaseInstanceId())
                 .list();
         // convert
-        return BeanUtil.copyToList(list, CaseQuestionnaireResponse.class);
+        return list.stream()
+                .map(item -> {
+                    CaseQuestionnaireResponse questionnaireResponse = BeanUtil.copyProperties(item, CaseQuestionnaireResponse.class);
+                    questionnaireResponse.setPeriods(CasePeriodEnum.getNameByCode(item.getPeriods()));
+                    return questionnaireResponse;
+                })
+                .sorted(Comparator.comparingInt(CaseQuestionnaireResponse::getPeriodSequence))
+                .toList();
     }
 
     /**
@@ -324,8 +332,8 @@ public class TenantCaseQuestionnaireBiz {
                 .caseQuestionnaireId(request.getCaseQuestionnaireId())
                 .caseInstanceId(request.getCaseInstanceId())
                 .questionSectionName(request.getQuestionSectionName())
-                .periods(request.getPeriods())
-                .periodSequence(request.getPeriodSequence())
+                .periods(request.getPeriods().getCode())
+                .periodSequence(request.getPeriods().ordinal())
                 .addType(request.getAddType().name())
                 .build();
 

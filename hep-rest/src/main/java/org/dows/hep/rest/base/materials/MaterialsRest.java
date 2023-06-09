@@ -118,6 +118,18 @@ public class MaterialsRest {
     }
 
     /**
+     * 删除or批量删除附件
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "删除or批量删除附件")
+    @DeleteMapping("v1/baseMaterials/materials/delMaterialsAttachment")
+    public Boolean delMaterialsAttachment(@RequestBody List<String> attachmentIds) {
+        return materialsBiz.delMaterialsAttachment(attachmentIds);
+    }
+
+    /**
      * 下载资料
      *
      * @param
