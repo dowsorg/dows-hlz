@@ -3,7 +3,6 @@ package org.dows.hep.biz.tenant.experiment;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
@@ -14,12 +13,11 @@ import org.dows.account.response.AccountInstanceResponse;
 import org.dows.account.response.AccountOrgGeoResponse;
 import org.dows.account.response.AccountOrgResponse;
 import org.dows.account.response.AccountUserResponse;
+import org.dows.framework.crud.api.model.PageInfo;
+import org.dows.framework.crud.mybatis.utils.BeanConvert;
 import org.dows.hep.api.enums.EnumExperimentParticipator;
 import org.dows.hep.api.exception.ExperimentParticipatorException;
-import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
-import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
-import org.dows.hep.api.tenant.experiment.request.GroupSettingRequest;
-import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
+import org.dows.hep.api.tenant.experiment.request.*;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.entity.*;
 import org.dows.hep.form.CreateExperimentForm;
@@ -275,10 +273,11 @@ public class ExperimentManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public List<ExperimentListResponse> list() {
-
-
-        return new ArrayList<ExperimentListResponse>();
+    public List<ExperimentListResponse> list(ExperimentQueryRequest experimentQueryRequest) {
+        List<ExperimentInstanceEntity> list = experimentInstanceService.lambdaQuery()
+                .likeLeft(ExperimentInstanceEntity::getExperimentName, experimentQueryRequest.getExperimentName())
+                .likeLeft(ExperimentInstanceEntity::getCaseName, experimentQueryRequest.getCaseNaem()).list();
+        return BeanConvert.beanConvert(list, ExperimentListResponse.class);
     }
 
 
@@ -292,17 +291,20 @@ public class ExperimentManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public IPage<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
+    public PageInfo<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
         Page page = new Page<ExperimentInstanceEntity>();
+        page.setSize(pageExperimentRequest.getPageSize());
         page.setCurrent(pageExperimentRequest.getPageNo());
         page.addOrder(pageExperimentRequest.getDesc() ?
                 OrderItem.desc(pageExperimentRequest.getOrderBy()) : OrderItem.asc(pageExperimentRequest.getOrderBy()));
-        Page page1 = experimentInstanceService.page(page, experimentInstanceService.lambdaQuery()
+        page = experimentInstanceService.page(page, experimentInstanceService.lambdaQuery()
                 .likeLeft(ExperimentInstanceEntity::getExperimentName, pageExperimentRequest.getKeyword())
                 .likeLeft(ExperimentInstanceEntity::getCaseName, pageExperimentRequest.getKeyword())
                 .likeLeft(ExperimentInstanceEntity::getExperimentDescr, pageExperimentRequest.getKeyword()));
-        return page1;
+        PageInfo pageInfo = experimentInstanceService.getPageInfo(page, ExperimentListResponse.class);
+        return pageInfo;
     }
+
 
     /**
      * @param

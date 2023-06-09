@@ -1,10 +1,14 @@
 package org.dows.hep.rest.tenant.experiment;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.framework.crud.api.model.PageInfo;
 import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
+import org.dows.hep.api.tenant.experiment.request.ExperimentQueryRequest;
 import org.dows.hep.api.tenant.experiment.request.GroupSettingRequest;
+import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
 import org.dows.hep.form.CreateExperimentForm;
@@ -88,8 +92,8 @@ public class ExperimentManageRest {
      */
     @Operation(summary = "获取实验列表")
     @GetMapping("v1/tenantExperiment/experimentManage/list")
-    public List<ExperimentListResponse> list() {
-        return experimentManageBiz.list();
+    public List<ExperimentListResponse> list(ExperimentQueryRequest experimentQueryRequest) {
+        return experimentManageBiz.list(experimentQueryRequest);
     }
 
 
@@ -99,10 +103,10 @@ public class ExperimentManageRest {
      * @param
      * @return
      */
-    @Operation(summary = "获取实验列表")
+    @Operation(summary = "分页获取实验列表")
     @GetMapping("v1/tenantExperiment/experimentManage/page")
-    public List<ExperimentListResponse> page() {
-        return experimentManageBiz.list();
+    public PageInfo<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
+        return experimentManageBiz.page(pageExperimentRequest);
     }
 
 }
