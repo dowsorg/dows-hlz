@@ -1,5 +1,6 @@
 package org.dows.hep.api.base.materials.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,7 +27,7 @@ public class MaterialsPageResponse {
     private String descr;
 
     @Schema(title = "创建者姓名")
-    private String accountName;
+    private String userName;
 
     @Schema(title = "上传时间")
     private Date dt;
@@ -36,6 +37,10 @@ public class MaterialsPageResponse {
 
     @Schema(title = "序号")
     private Integer sequence;
+
+    @Schema(title = "账号ID")
+    @JsonIgnore
+    private String accountId;
 
 
 }

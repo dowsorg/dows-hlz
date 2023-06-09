@@ -2,8 +2,6 @@ package org.dows.hep.biz.base.materials;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.date.DateTime;
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.Validator;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
@@ -12,6 +10,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import org.dows.account.request.AccountInstanceRequest;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.oss.api.OssInfo;
 import org.dows.hep.api.base.materials.MaterialsAccessAuthEnum;
@@ -24,7 +23,9 @@ import org.dows.hep.api.base.materials.request.MaterialsSearchRequest;
 import org.dows.hep.api.base.materials.response.MaterialsAttachmentResponse;
 import org.dows.hep.api.base.materials.response.MaterialsPageResponse;
 import org.dows.hep.api.base.materials.response.MaterialsResponse;
+import org.dows.hep.api.base.person.response.PersonInstanceResponse;
 import org.dows.hep.biz.base.oss.OSSBiz;
+import org.dows.hep.biz.base.person.PersonManageBiz;
 import org.dows.hep.entity.MaterialsAttachmentEntity;
 import org.dows.hep.entity.MaterialsEntity;
 import org.dows.hep.service.MaterialsAttachmentService;
@@ -46,6 +47,7 @@ public class MaterialsManageBiz {
     private final MaterialsService materialsService;
     private final MaterialsAttachmentService materialsAttachmentService;
     private final OSSBiz ossBiz;
+    private final PersonManageBiz personManageBiz;
 
     /**
      * @param
@@ -315,6 +317,9 @@ public class MaterialsManageBiz {
                 throw new BizException(MaterialsESCEnum.DATA_NULL);
             }
             result.setId(entity.getId());
+            // 更新不能改变创建者
+            result.setAccountId(null);
+            result.setAccountName(null);
         }
 
         return result;
@@ -413,26 +418,33 @@ public class MaterialsManageBiz {
             return;
         }
 
-        records.forEach(record -> {
-            Date dt = record.getDt();
-            String uploadTime = convertDate2String(dt);
-            record.setUploadTime(uploadTime);
-        });
-    }
-
-    private String convertDate2String(Date date) {
-        if (Objects.isNull(date)) {
-            throw new BizException(MaterialsESCEnum.PARAMS_NON_NULL);
+        Set<String> accountIds = records.stream()
+                .map(MaterialsPageResponse::getAccountId)
+                .collect(Collectors.toSet());
+        AccountInstanceRequest request = AccountInstanceRequest.builder()
+                .accountIds(accountIds)
+                .appId(baseBiz.getAppId())
+                .pageNo(1)
+                .pageSize(10)
+                .build();
+        IPage<PersonInstanceResponse> personInstanceResponseIPage = personManageBiz.listPerson(request);
+        Map<String, String> collect = null;
+        if (personInstanceResponseIPage != null) {
+            List<PersonInstanceResponse> personRecords = personInstanceResponseIPage.getRecords();
+            collect = personRecords.stream().collect(Collectors.toMap(PersonInstanceResponse::getAccountId, PersonInstanceResponse::getUserName, (v1, v2) -> v1));
         }
 
-        DateTime dateTime = DateUtil.date(date);
-        // 年月日
-        String ymd = dateTime.toDateStr();
-        // 星期
-        String week = dateTime.dayOfWeekEnum().toChinese();
-        // 小时：分
-        String time = dateTime.toTimeStr();
-        return ymd + week + " " + time;
+        for (MaterialsPageResponse record: records) {
+            Date dt = record.getDt();
+            String uploadTime = baseBiz.convertDate2String(dt);
+            record.setUploadTime(uploadTime);
+
+            if (collect != null) {
+                String userName = collect.get(record.getAccountId());
+                record.setUserName(userName);
+            }
+        }
+
     }
 
     private String getAccessAuth(String accountId) {
