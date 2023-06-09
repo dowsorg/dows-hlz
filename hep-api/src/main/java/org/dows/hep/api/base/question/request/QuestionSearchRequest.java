@@ -31,4 +31,7 @@ public class QuestionSearchRequest{
 
     @Schema(title = "类别ID集合")
     private List<String> categIdList;
+
+    @Schema(title = "启用状态")
+    private Integer enabled;
 }

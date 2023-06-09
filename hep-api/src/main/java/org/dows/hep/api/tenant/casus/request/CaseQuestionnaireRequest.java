@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dows.hep.api.base.question.enums.QuestionTypeEnum;
+import org.dows.hep.api.tenant.casus.CasePeriodEnum;
 import org.dows.hep.api.tenant.casus.CaseQuestionSelectModeEnum;
 
 import java.util.List;
@@ -30,10 +31,7 @@ public class CaseQuestionnaireRequest{
     private String questionSectionName;
 
     @Schema(title = "答题位置-期数")
-    private String periods;
-
-    @Schema(title = "答题位置-期数排序")
-    private Integer periodSequence;
+    private CasePeriodEnum periods;
 
     @Schema(title = "添加方式")
     private CaseQuestionSelectModeEnum addType;

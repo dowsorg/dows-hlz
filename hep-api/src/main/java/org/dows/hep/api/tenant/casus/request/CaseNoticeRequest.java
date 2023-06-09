@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dows.hep.api.tenant.casus.CasePeriodEnum;
 
 
 /**
@@ -30,9 +31,6 @@ public class CaseNoticeRequest {
     private String noticeContent;
 
     @Schema(title = "期数")
-    private String periods;
-
-    @Schema(title = "期数排序")
-    private Integer periodSequence;
+    private CasePeriodEnum periods;
 
 }

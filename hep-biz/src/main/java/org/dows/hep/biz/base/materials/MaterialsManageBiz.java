@@ -2,17 +2,18 @@ package org.dows.hep.biz.base.materials;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.date.DateTime;
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.Validator;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import org.dows.account.response.AccountInstanceResponse;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.oss.api.OssInfo;
+import org.dows.hep.api.base.materials.MaterialsAccessAuthEnum;
 import org.dows.hep.api.base.materials.MaterialsESCEnum;
 import org.dows.hep.api.base.materials.MaterialsEnabledEnum;
 import org.dows.hep.api.base.materials.request.MaterialsAttachmentRequest;
@@ -23,12 +24,12 @@ import org.dows.hep.api.base.materials.response.MaterialsAttachmentResponse;
 import org.dows.hep.api.base.materials.response.MaterialsPageResponse;
 import org.dows.hep.api.base.materials.response.MaterialsResponse;
 import org.dows.hep.biz.base.oss.OSSBiz;
+import org.dows.hep.biz.base.person.PersonManageBiz;
 import org.dows.hep.entity.MaterialsAttachmentEntity;
 import org.dows.hep.entity.MaterialsEntity;
 import org.dows.hep.service.MaterialsAttachmentService;
 import org.dows.hep.service.MaterialsService;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -45,6 +46,7 @@ public class MaterialsManageBiz {
     private final MaterialsService materialsService;
     private final MaterialsAttachmentService materialsAttachmentService;
     private final OSSBiz ossBiz;
+    private final PersonManageBiz personManageBiz;
 
     /**
      * @param
@@ -56,7 +58,7 @@ public class MaterialsManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    @Transactional
+    @DSTransactional
     public String saveOrUpdMaterials(MaterialsRequest materialsRequest) {
         if (BeanUtil.isEmpty(materialsRequest)) {
             return "";
@@ -88,12 +90,17 @@ public class MaterialsManageBiz {
         if (BeanUtil.isEmpty(request)) {
             return result;
         }
+        boolean isTeacher = baseBiz.isTeacher(request.getAccountId());
 
         Page<MaterialsEntity> pageRequest = new Page<>(request.getPageNo(), request.getPageSize());
         Page<MaterialsEntity> pageResult = materialsService.lambdaQuery()
                 .eq(MaterialsEntity::getAppId, request.getAppId())
                 .eq(MaterialsEntity::getBizCode, request.getBizCode())
                 .eq(MaterialsEntity::getEnabled, MaterialsEnabledEnum.ENABLED.getCode())
+                .and(isTeacher,
+                        i -> i.eq(MaterialsEntity::getAccountId, request.getAccountId())
+                                .or()
+                                .eq(MaterialsEntity::getAccessAuth, MaterialsAccessAuthEnum.ACCESS_AUTH_PUBLIC.name()))
                 .like(BeanUtil.isNotEmpty(request) && StrUtil.isNotBlank(request.getKeyword()), MaterialsEntity::getTitle, request.getKeyword())
                 .orderBy(true, true, MaterialsEntity::getSequence)
                 .page(pageRequest);
@@ -225,7 +232,13 @@ public class MaterialsManageBiz {
         List<MaterialsAttachmentEntity> attachments = listAttachmentEntity(materialsIds);
         Validator.validateNotEmpty(attachments, "资料不存在");
 
-        OssInfo oss = ossBiz.zip(attachments, "学习资料");
+        String fileName = "我的资料";
+        if (attachments.size() == 1) {
+            MaterialsAttachmentEntity materialsAttachmentEntity = attachments.get(0);
+            fileName = materialsAttachmentEntity.getFileName();
+        }
+
+        OssInfo oss = ossBiz.zip(attachments, fileName);
         return oss.getPath();
     }
 
@@ -240,8 +253,8 @@ public class MaterialsManageBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     public Boolean delMaterials(List<String> materialsIds) {
-        if (materialsIds == null || materialsIds.isEmpty()) {
-            return Boolean.FALSE;
+        if (CollUtil.isEmpty(materialsIds)) {
+            throw new BizException(MaterialsESCEnum.PARAMS_NON_NULL);
         }
 
         // remove materials
@@ -257,10 +270,34 @@ public class MaterialsManageBiz {
         return remRes1 && remRes2;
     }
 
+    /**
+     * @param
+     * @return
+     * @说明: 删除or批量删除附件
+     * @关联表: MaterialsAttachment
+     * @工时: 6H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月18日 上午10:45:07
+     */
+    public Boolean delMaterialsAttachment(List<String> attachmentIds) {
+        if (CollUtil.isEmpty(attachmentIds)) {
+            throw new BizException(MaterialsESCEnum.PARAMS_NON_NULL);
+        }
+
+        // remove attachment
+        LambdaQueryWrapper<MaterialsAttachmentEntity> queryWrapper2 = new LambdaQueryWrapper<MaterialsAttachmentEntity>()
+                .in(MaterialsAttachmentEntity::getMaterialsAttachmentId, attachmentIds);
+        return materialsAttachmentService.remove(queryWrapper2);
+    }
+
     private MaterialsEntity convertRequest2Entity(MaterialsRequest request) {
         if (BeanUtil.isEmpty(request)) {
             throw new BizException(MaterialsESCEnum.PARAMS_NON_NULL);
         }
+
+        String accountId = request.getAccountId();
+        String accessAuth = getAccessAuth(accountId);
 
         MaterialsEntity result = MaterialsEntity.builder()
                 .appId(baseBiz.getAppId())
@@ -272,6 +309,7 @@ public class MaterialsManageBiz {
                 .sequence(request.getSequence())
                 .accountId(request.getAccountId())
                 .accountName(request.getAccountName())
+                .accessAuth(accessAuth)
                 .build();
 
         String uniqueId = result.getMaterialsId();
@@ -284,6 +322,9 @@ public class MaterialsManageBiz {
                 throw new BizException(MaterialsESCEnum.DATA_NULL);
             }
             result.setId(entity.getId());
+            // 更新不能改变创建者
+            result.setAccountId(null);
+            result.setAccountName(null);
         }
 
         return result;
@@ -382,26 +423,25 @@ public class MaterialsManageBiz {
             return;
         }
 
-        records.forEach(record -> {
+        for (MaterialsPageResponse record: records) {
             Date dt = record.getDt();
-            String uploadTime = convertDate2String(dt);
+            String uploadTime = baseBiz.convertDate2String(dt);
             record.setUploadTime(uploadTime);
-        });
-    }
-
-    private String convertDate2String(Date date) {
-        if (Objects.isNull(date)) {
-            throw new BizException(MaterialsESCEnum.PARAMS_NON_NULL);
+            AccountInstanceResponse personalInformation = personManageBiz.getPersonalInformation(record.getAccountId(), baseBiz.getAppId());
+            String userName = Optional.ofNullable(personalInformation)
+                    .map(AccountInstanceResponse::getUserName)
+                    .orElse("");
+            record.setUserName(userName);
+            record.setAccountName(userName);
         }
 
-        DateTime dateTime = DateUtil.date(date);
-        // 年月日
-        String ymd = dateTime.toDateStr();
-        // 星期
-        String week = dateTime.dayOfWeekEnum().toChinese();
-        // 小时：分
-        String time = dateTime.toTimeStr();
-        return ymd + week + " " + time;
+    }
+
+    private String getAccessAuth(String accountId) {
+        if (baseBiz.isAdministrator(accountId)) {
+            return MaterialsAccessAuthEnum.ACCESS_AUTH_PUBLIC.name();
+        }
+        return MaterialsAccessAuthEnum.ACCESS_AUTH_PRIVATE.name();
     }
 
 }

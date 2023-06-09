@@ -30,7 +30,7 @@ public class ExperimentSchemeManageBiz {
      * @param
      * @return
      * @author fhb
-     * @description 预生成方案设计试卷
+     * @description 预生成方案设计试卷-分配实验的时候调用
      * @date 2023/6/1 9:33
      */
     public void preHandleExperimentScheme(String experimentInstanceId, String caseInstanceId, List<String> experimentGroupIds) {
@@ -82,7 +82,7 @@ public class ExperimentSchemeManageBiz {
 
     }
 
-    public List<ExperimentSchemeItemEntity> convertToFlatList(QuestionResponse questionResponse) {
+    private List<ExperimentSchemeItemEntity> convertToFlatList(QuestionResponse questionResponse) {
         List<ExperimentSchemeItemEntity> flatList = new ArrayList<>();
         flattenTree(questionResponse, flatList, "0");
         return flatList;

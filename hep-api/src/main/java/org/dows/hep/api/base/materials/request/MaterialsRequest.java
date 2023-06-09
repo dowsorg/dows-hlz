@@ -1,5 +1,6 @@
 package org.dows.hep.api.base.materials.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -37,13 +38,15 @@ public class MaterialsRequest {
     @Schema(title = "序号")
     private Integer sequence;
 
+    @Schema(title = "附件集合")
+    private List<MaterialsAttachmentRequest> materialsAttachments;
+
     @Schema(title = "创建者账号ID")
+    @JsonIgnore
     private String accountId;
 
     @Schema(title = "创建者名")
+    @JsonIgnore
     private String accountName;
-
-    @Schema(title = "附件集合")
-    private List<MaterialsAttachmentRequest> materialsAttachments;
 
 }

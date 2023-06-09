@@ -3,7 +3,6 @@ package org.dows.hep.biz.tenant.experiment;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
@@ -14,12 +13,12 @@ import org.dows.account.response.AccountInstanceResponse;
 import org.dows.account.response.AccountOrgGeoResponse;
 import org.dows.account.response.AccountOrgResponse;
 import org.dows.account.response.AccountUserResponse;
+import org.dows.framework.crud.api.model.PageInfo;
+import org.dows.framework.crud.mybatis.utils.BeanConvert;
 import org.dows.hep.api.enums.EnumExperimentParticipator;
 import org.dows.hep.api.exception.ExperimentParticipatorException;
-import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
-import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
-import org.dows.hep.api.tenant.experiment.request.GroupSettingRequest;
-import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
+import org.dows.hep.api.tenant.experiment.request.*;
+import org.dows.hep.api.core.CreateExperimentForm;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
@@ -34,6 +33,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.dows.hep.biz.base.org.OrgBiz.createCode;
 import static org.dows.hep.biz.base.org.OrgBiz.randomWord;
@@ -156,9 +156,59 @@ public class ExperimentManageBiz {
     }
 
     /**
+     * 回填表单
+     *
+     * @return
+     */
+    public CreateExperimentForm getAllotData(String experimentInstanceId, String appId) {
+        CreateExperimentForm createExperimentForm = new CreateExperimentForm();
+
+        ExperimentInstanceEntity experimentInstance = experimentInstanceService.lambdaQuery()
+                .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
+                .last("limit 1")
+                .getEntity();
+
+        ExperimentParticipatorEntity experimentParticipator = experimentParticipatorService.lambdaQuery()
+                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
+                // todo 查找老师,后面定义为枚举，这里先实现
+                .eq(ExperimentParticipatorEntity::getParticipatorType, 0)
+                .last("limit 1")
+                .getEntity();
+
+        List<ExperimentSettingEntity> experimentSettings = experimentSettingService.lambdaQuery()
+                .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentSettingEntity::getAppId, appId)
+                .list();
+
+        // 处理实验
+        BeanUtil.copyProperties(experimentInstance, createExperimentForm, "teachers", "experimentSetting");
+        // 处理老师
+        AccountInstanceResponse accountInstanceResponse = new AccountInstanceResponse();
+        BeanUtil.copyProperties(experimentParticipator, accountInstanceResponse);
+        // todo 一个实验是否可以有多个老师
+        List<AccountInstanceResponse> teachers = Arrays.asList(accountInstanceResponse);
+        createExperimentForm.setTeachers(teachers);
+        // 处理实验设置
+        ExperimentSetting experimentSetting = new ExperimentSetting();
+        for (ExperimentSettingEntity expSetting : experimentSettings) {
+            String configKey = expSetting.getConfigKey();
+            if (configKey.equals(ExperimentSetting.SandSetting.class.getName())) {
+                ExperimentSetting.SandSetting bean = JSONUtil.toBean(expSetting.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
+                experimentSetting.setSandSetting(bean);
+            }
+            if (configKey.equals(ExperimentSetting.SchemeSetting.class.getName())) {
+                ExperimentSetting.SchemeSetting bean = JSONUtil.toBean(expSetting.getConfigJsonVals(), ExperimentSetting.SchemeSetting.class);
+                experimentSetting.setSchemeSetting(bean);
+            }
+        }
+        createExperimentForm.setExperimentSetting(experimentSetting);
+        return createExperimentForm;
+    }
+
+    /**
      * @param
      * @return
-     * @说明: 实验分组ss
+     * @说明: 实验分组
      * @关联表: experimentGroup, experimentParticipator
      * @工时: 2H
      * @开发者: lait
@@ -166,51 +216,63 @@ public class ExperimentManageBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     @DSTransactional
-    public Boolean grouping(GroupSettingRequest groupSetting,String caseInstanceId) {
-
-        ExperimentGroupEntity experimentGroupEntity = ExperimentGroupEntity.builder()
-                .experimentGroupId(idGenerator.nextIdStr())
-                .experimentInstanceId(groupSetting.getExperimentInstanceId())
-                .groupAlias(groupSetting.getGroupAlias())
-                .memberCount(groupSetting.getMemberCount())
-                .groupNo(groupSetting.getGroupNo())
-                .groupName(groupSetting.getGroupName())
-                .groupAlias(groupSetting.getGroupAlias())
-                .build();
-
-        // 保存实验小组
-        experimentGroupService.saveOrUpdate(experimentGroupEntity);
-        //todo
-        List<ExperimentParticipatorEntity> experimentParticipatorEntityList = new ArrayList<>();
-        List<GroupSettingRequest.ExperimentParticipator> experimentParticipators = groupSetting.getExperimentParticipators();
-        for (GroupSettingRequest.ExperimentParticipator experimentParticipator : experimentParticipators) {
-            ExperimentParticipatorEntity experimentParticipatorEntity = ExperimentParticipatorEntity.builder()
-                    .id(Long.valueOf(experimentParticipator.getId()))
-                    .experimentParticipatorId(idGenerator.nextIdStr())
+    public Boolean grouping(ExperimentGroupSettingRequest experimentGroupSettingRequest, String caseInstanceId) {
+        List<ExperimentGroupSettingRequest.GroupSetting> experimentGroupSettings = experimentGroupSettingRequest.getGroupSettings();
+        List<ExperimentGroupEntity> experimentGroupEntitys = new ArrayList<>();
+        Map<String, List<ExperimentParticipatorEntity>> groupParticipators = new HashMap<>();
+        for (ExperimentGroupSettingRequest.GroupSetting groupSetting : experimentGroupSettings) {
+            ExperimentGroupEntity experimentGroupEntity = ExperimentGroupEntity.builder()
+                    .appId(groupSetting.getAppId())
+                    .experimentGroupId(idGenerator.nextIdStr())
                     .experimentInstanceId(groupSetting.getExperimentInstanceId())
-                    .accountId(experimentParticipator.getParticipatorId())
-                    .accountName(experimentParticipator.getParticipatorName())
+                    .groupAlias(groupSetting.getGroupAlias())
+                    .memberCount(groupSetting.getMemberCount())
                     .groupNo(groupSetting.getGroupNo())
                     .groupName(groupSetting.getGroupName())
-                    .experimentGroupId(experimentGroupEntity.getExperimentGroupId())
-                    .participatorType(2)
                     .build();
-            // 如果是0【第一个人】设置为组长
-            if (experimentParticipator.getSeq() == 0) {
-                experimentParticipatorEntity.setParticipatorType(1);
+            experimentGroupEntitys.add(experimentGroupEntity);
+
+
+            //todo
+            List<ExperimentParticipatorEntity> experimentParticipatorEntityList = new ArrayList<>();
+            List<ExperimentGroupSettingRequest.ExperimentParticipator> experimentParticipators = groupSetting.getExperimentParticipators();
+            for (ExperimentGroupSettingRequest.ExperimentParticipator experimentParticipator : experimentParticipators) {
+                ExperimentParticipatorEntity experimentParticipatorEntity = ExperimentParticipatorEntity.builder()
+                        .experimentParticipatorId(idGenerator.nextIdStr())
+                        .appId(groupSetting.getAppId())
+                        .experimentInstanceId(groupSetting.getExperimentInstanceId())
+                        .accountId(experimentParticipator.getParticipatorId())
+                        .accountName(experimentParticipator.getParticipatorName())
+                        .groupNo(groupSetting.getGroupNo())
+                        .groupName(groupSetting.getGroupName())
+                        .experimentGroupId(experimentGroupEntity.getExperimentGroupId())
+                        .participatorType(2)
+                        .build();
+                // 如果是0【第一个人】设置为组长
+                if (experimentParticipator.getSeq() == 0) {
+                    experimentParticipatorEntity.setParticipatorType(1);
+                }
+                experimentParticipatorEntityList.add(experimentParticipatorEntity);
+                // 记录每组对应的组员
+                groupParticipators.put(experimentGroupEntity.getExperimentGroupId(), experimentParticipatorEntityList);
             }
-            experimentParticipatorEntityList.add(experimentParticipatorEntity);
         }
+
+
         // 判断实验参与人数是否大于该案例得机构数
         List<CaseOrgEntity> entityList = caseOrgService.lambdaQuery()
-                .eq(CaseOrgEntity::getCaseInstanceId,caseInstanceId)
-                .eq(CaseOrgEntity::getDeleted,false)
+                .eq(CaseOrgEntity::getCaseInstanceId, caseInstanceId)
+                .eq(CaseOrgEntity::getDeleted, false)
                 .list();
-        if(entityList == null || experimentParticipatorEntityList.size() > entityList.size()){
+        List<ExperimentParticipatorEntity> collect = groupParticipators.values().stream().flatMap(x -> x.stream()).collect(Collectors.toList());
+        if (collect.size() > entityList.size()) {
             throw new ExperimentParticipatorException(EnumExperimentParticipator.PARTICIPATOR_NUMBER_CANNOT_MORE_THAN_ORG_EXCEPTION);
         }
+        // 保存实验小组
+        experimentGroupService.saveOrUpdateBatch(experimentGroupEntitys);
         // 保存实验参与人[学生]
-        return experimentParticipatorService.saveOrUpdateBatch(experimentParticipatorEntityList);
+        experimentParticipatorService.saveOrUpdateBatch(collect);
+        return true;
     }
 
     /**
@@ -223,10 +285,11 @@ public class ExperimentManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public List<ExperimentListResponse> list() {
-
-
-        return new ArrayList<ExperimentListResponse>();
+    public List<ExperimentListResponse> list(ExperimentQueryRequest experimentQueryRequest) {
+        List<ExperimentInstanceEntity> list = experimentInstanceService.lambdaQuery()
+                .likeLeft(ExperimentInstanceEntity::getExperimentName, experimentQueryRequest.getExperimentName())
+                .likeLeft(ExperimentInstanceEntity::getCaseName, experimentQueryRequest.getCaseNaem()).list();
+        return BeanConvert.beanConvert(list, ExperimentListResponse.class);
     }
 
 
@@ -240,17 +303,20 @@ public class ExperimentManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public IPage<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
+    public PageInfo<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
         Page page = new Page<ExperimentInstanceEntity>();
+        page.setSize(pageExperimentRequest.getPageSize());
         page.setCurrent(pageExperimentRequest.getPageNo());
         page.addOrder(pageExperimentRequest.getDesc() ?
                 OrderItem.desc(pageExperimentRequest.getOrderBy()) : OrderItem.asc(pageExperimentRequest.getOrderBy()));
-        Page page1 = experimentInstanceService.page(page, experimentInstanceService.lambdaQuery()
+        page = experimentInstanceService.page(page, experimentInstanceService.lambdaQuery()
                 .likeLeft(ExperimentInstanceEntity::getExperimentName, pageExperimentRequest.getKeyword())
                 .likeLeft(ExperimentInstanceEntity::getCaseName, pageExperimentRequest.getKeyword())
                 .likeLeft(ExperimentInstanceEntity::getExperimentDescr, pageExperimentRequest.getKeyword()));
-        return page1;
+        PageInfo pageInfo = experimentInstanceService.getPageInfo(page, ExperimentListResponse.class);
+        return pageInfo;
     }
+
 
     /**
      * @param
@@ -285,8 +351,8 @@ public class ExperimentManageBiz {
                     .appId(request.getAppId())
                     .experimentOrgId(model.getOrgId())
                     .experimentOrgName(model.getOrgName())
-                    .experimentAccountId(model.getAccountId())
-                    .experimentAccountName(model.getAccountName())
+                    .accountId(model.getAccountId())
+                    .accountName(model.getAccountName())
                     .periods(request.getPeriods())
                     .build();
             entityList.add(entity);
@@ -325,14 +391,16 @@ public class ExperimentManageBiz {
                 //1.1.1、生成随机code，复制机构基础信息
                 String orgCode = createCode(7);
                 AccountOrgRequest request = new AccountOrgRequest();
-                BeanUtil.copyProperties(orgResponse, request, new String[]{"id","dt"});
+                BeanUtil.copyProperties(orgResponse, request, new String[]{"id", "dt"});
                 request.setOrgCode(orgCode);
                 request.setOperationManual(orgEntity.getHandbook());
                 String orgId = accountOrgApi.createAccountOrg(request);
                 //1.1.2. 创建案例机构实例副本
+                String experimentOrgId = idGenerator.nextIdStr();
                 ExperimentOrgEntity entity = ExperimentOrgEntity.builder()
+                        .experimentOrgId(experimentOrgId)
+                        .orgId(orgId)
                         .appId(createExperiment.getAppId())
-                        .experimentOrgId(orgId)
                         .experimentOrgName(orgEntity.getOrgName())
                         .experimentInstanceId(orgEntity.getCaseInstanceId())
                         .experimentGroupId(model.getExperimentGroupId())
@@ -385,7 +453,7 @@ public class ExperimentManageBiz {
                     UserInstanceResponse userInstanceResponse = userInstanceApi.getUserInstanceByUserId(accountUser.getUserId());
                     UserExtinfoResponse userExtinfoResponse = userExtinfoApi.getUserExtinfoByUserId(accountUser.getUserId());
                     UserInstanceRequest userInstanceRequest = new UserInstanceRequest();
-                    BeanUtils.copyProperties(userInstanceResponse, userInstanceRequest, new String[]{"id", "accountId","dt"});
+                    BeanUtils.copyProperties(userInstanceResponse, userInstanceRequest, new String[]{"id", "accountId", "dt"});
                     String userId = userInstanceApi.insertUserInstance(userInstanceRequest);
                     UserExtinfoRequest userExtinfo = UserExtinfoRequest.builder()
                             .userId(userId)
@@ -424,11 +492,11 @@ public class ExperimentManageBiz {
                             .experimentPersonId(idGenerator.nextIdStr())
                             .experimentInstanceId(createExperiment.getExperimentInstanceId())
                             .experimentGroupId(model.getExperimentGroupId())
-                            .experimentOrgId(orgId)
+                            .experimentOrgId(experimentOrgId)
                             .appId(createExperiment.getAppId())
                             .experimentOrgName(request.getOrgName())
-                            .experimentAccountId(vo.getAccountId())
-                            .experimentAccountName(vo.getAccountName())
+                            .accountId(vo.getAccountId())
+                            .accountName(vo.getAccountName())
                             .casePersonId(personEntity.getCasePersonId())
                             .build();
                     experimentPersonService.save(entity1);
