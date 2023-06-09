@@ -23,4 +23,8 @@ spring:
         include: hep-mysql,hep-mybatis,hep-mvc,hep-oss,hep-apidoc,hep-redisson
         active: dev
 
+    jackson:
+        date-format: yyyy-MM-dd HH:mm:ss
+        time-zone: GMT+8
+
 
