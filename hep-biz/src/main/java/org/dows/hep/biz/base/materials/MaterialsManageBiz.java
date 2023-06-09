@@ -225,7 +225,7 @@ public class MaterialsManageBiz {
         List<MaterialsAttachmentEntity> attachments = listAttachmentEntity(materialsIds);
         Validator.validateNotEmpty(attachments, "资料不存在");
 
-        OssInfo oss = ossBiz.zip(attachments, "学习资料");
+        OssInfo oss = ossBiz.zip(attachments, "资料名称");
         return oss.getPath();
     }
 
