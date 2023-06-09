@@ -252,9 +252,19 @@ public class MaterialsManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public Boolean delMaterials(List<String> materialsIds) {
+    public Boolean delMaterials(List<String> materialsIds, String oriAccountId) {
         if (CollUtil.isEmpty(materialsIds)) {
             throw new BizException(MaterialsESCEnum.PARAMS_NON_NULL);
+        }
+
+        List<MaterialsEntity> materialsEntityList = listByIds(materialsIds);
+        if (CollUtil.isNotEmpty(materialsEntityList)) {
+            List<String> accountIdList = materialsEntityList.stream()
+                    .map(MaterialsEntity::getAccountId)
+                    .toList();
+            accountIdList.forEach(curAccountId -> {
+                checkAuth(oriAccountId, curAccountId);
+            });
         }
 
         // remove materials
@@ -268,6 +278,12 @@ public class MaterialsManageBiz {
         boolean remRes2 = materialsAttachmentService.remove(queryWrapper2);
 
         return remRes1 && remRes2;
+    }
+
+    private List<MaterialsEntity> listByIds(List<String> materialsIds) {
+        return materialsService.lambdaQuery()
+                .in(MaterialsEntity::getMaterialsId, materialsIds)
+                .list();
     }
 
     /**
@@ -324,11 +340,8 @@ public class MaterialsManageBiz {
             // check auth
             String oriAccountId = entity.getAccountId();
             String curAccountId = request.getAccountId();
-            if (!Objects.equals(oriAccountId, curAccountId)) {
-                if (!baseBiz.isAdministrator(curAccountId)) {
-                    throw new BizException(MaterialsESCEnum.NO_AUTH);
-                }
-            }
+            checkAuth(oriAccountId, curAccountId);
+
             result.setId(entity.getId());
             // 更新不能改变创建者以及访问权限
             result.setAccountId(null);
@@ -337,6 +350,14 @@ public class MaterialsManageBiz {
         }
 
         return result;
+    }
+
+    private void checkAuth(String oriAccountId, String curAccountId) {
+        if (!Objects.equals(oriAccountId, curAccountId)) {
+            if (!baseBiz.isAdministrator(curAccountId)) {
+                throw new BizException(MaterialsESCEnum.NO_AUTH);
+            }
+        }
     }
 
     private List<MaterialsAttachmentEntity> convertAttachmentRequest2Entity(List<MaterialsAttachmentRequest> requests, String materialsId) {
