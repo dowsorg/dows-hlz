@@ -41,23 +41,20 @@ public class ExperimentQuestionnaireEntity implements CrudEntity {
     @Schema(title = "实验实列ID")
     private String experimentInstanceId;
 
-    @Schema(title = "实验机构ID")
-    private String experimentOrgId;
-
-    @Schema(title = "案例问卷ID")
-    private String caseQuestionnaireId;
-
-    @Schema(title = "答题卡ID")
-    private String questionSectionResultId;
-
     @Schema(title = "期数|位置")
     private String periods;
+
+    @Schema(title = "实验机构ID")
+    private String experimentOrgId;
 
     @Schema(title = "实验小组ID")
     private String experimentGroupId;
 
     @Schema(title = "实验答题者ID")
     private String experimentAccountId;
+
+    @Schema(title = "案例问卷名")
+    private String questionnaireName;
 
     @Schema(title = "方案状态[0:未开始,1:进行中, 2:已提交]")
     private Integer state;

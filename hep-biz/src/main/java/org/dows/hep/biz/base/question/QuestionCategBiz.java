@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class QuestionCategBiz {
 
-    private final QuestionDomainBaseBiz baseBiz;
+    private final QuestionBaseBiz baseBiz;
     private final QuestionInstanceService questionInstanceService;
     private final QuestionCategoryService questionCategoryService;
 

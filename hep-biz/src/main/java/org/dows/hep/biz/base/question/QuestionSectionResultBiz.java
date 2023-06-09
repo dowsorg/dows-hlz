@@ -26,7 +26,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class QuestionSectionResultBiz {
-    private final QuestionDomainBaseBiz baseBiz;
+    private final QuestionBaseBiz baseBiz;
     private final QuestionSectionResultItemBiz questionSectionResultItemBiz;
     private final QuestionSectionResultService questionSectionResultService;
     private final QuestionSectionBiz questionSectionBiz;

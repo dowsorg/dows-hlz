@@ -9,6 +9,7 @@ import org.dows.hep.api.enums.EnumToken;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.biz.user.experiment.ExperimentOrgViewBiz;
+import org.dows.hep.entity.ExperimentViewMonitorFollowupEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,9 +45,9 @@ public class ExperimentOrgViewRest {
     * @return
     */
     @Operation(summary = "监测随访：获取类别，随访表列表")
-    @PostMapping("v1/userExperiment/experimentOrgView/listFollowupDef")
-    public List<FollowupDefResponse> listFollowupDef(@RequestBody @Validated FindFollowupDefRequest findFollowupDef ) {
-        return experimentOrgViewBiz.listFollowupDef(findFollowupDef);
+    @PostMapping("v1/userExperiment/experimentOrgView/listFollowup")
+    public List<ExperimentViewMonitorFollowupEntity> listFollowup(@RequestBody @Validated FindFollowupDefRequest findFollowupDef ) {
+        return experimentOrgViewBiz.listFollowup(findFollowupDef);
     }
 
     /**
@@ -55,9 +56,13 @@ public class ExperimentOrgViewRest {
     * @return
     */
     @Operation(summary = "监测随访：获取随访表内容")
-    @GetMapping("v1/userExperiment/experimentOrgView/getFollowupDef")
-    public FollowupDefResponse getFollowupDef(@Validated String indicatorViewMonitorFollowupId) {
-        return experimentOrgViewBiz.getFollowupDef(indicatorViewMonitorFollowupId);
+    @GetMapping("v1/userExperiment/experimentOrgView/getFollowupDef/{experimentViewMonitorFollowupId}/{appId}/{experimentPersonId}/{periods}")
+    public List<ExperimentIndicatorResponse> getFollowupDef(@PathVariable @Validated String experimentViewMonitorFollowupId,
+                                              @PathVariable @Validated String appId,
+                                              @PathVariable @Validated String experimentPersonId,
+                                              @PathVariable @Validated String periods
+                                              ) {
+        return experimentOrgViewBiz.getFollowupDef(experimentViewMonitorFollowupId,appId,experimentPersonId,periods);
     }
 
     /**
@@ -67,8 +72,13 @@ public class ExperimentOrgViewRest {
     */
     @Operation(summary = "监测随访：保存随访设置，频率，表格")
     @PostMapping("v1/userExperiment/experimentOrgView/setFollowup")
-    public Boolean setFollowup(@RequestBody @Validated SetFollowupRequest setFollowup ) {
-        return experimentOrgViewBiz.setFollowup(setFollowup);
+    public Boolean setFollowup(@RequestBody @Validated SetFollowupRequest setFollowup,HttpServletRequest request) {
+        String token = request.getHeader("token");
+        Map<String, Object> map = JwtUtil.parseJWT(token, EnumToken.PROPERTIES_JWT_KEY.getStr());
+        //1、获取登录账户和名称
+        String accountId = map.get("accountId").toString();
+        String accountName = map.get("accountName").toString();
+        return experimentOrgViewBiz.setFollowup(setFollowup,accountId,accountName);
     }
 
     /**
@@ -89,8 +99,13 @@ public class ExperimentOrgViewRest {
     */
     @Operation(summary = "监测随访：开始随访（保存随访记录）")
     @PostMapping("v1/userExperiment/experimentOrgView/saveFollowup")
-    public SaveFollowupResponse saveFollowup(@RequestBody @Validated SaveFollowupRequest saveFollowup ) {
-        return experimentOrgViewBiz.saveFollowup(saveFollowup);
+    public Boolean saveFollowup(@RequestBody @Validated SaveFollowupRequest saveFollowup,HttpServletRequest request) {
+        String token = request.getHeader("token");
+        Map<String, Object> map = JwtUtil.parseJWT(token, EnumToken.PROPERTIES_JWT_KEY.getStr());
+        //1、获取登录账户和名称
+        String accountId = map.get("accountId").toString();
+        String accountName = map.get("accountName").toString();
+        return experimentOrgViewBiz.saveFollowup(saveFollowup,accountId,accountName);
     }
 
     /**
@@ -138,14 +153,18 @@ public class ExperimentOrgViewRest {
     }
 
     /**
-     * 基本信息：查看
+     * 查看指标：查看基本信息查看
      * @param
      * @return
      */
-    @Operation(summary = "基本信息：查看")
-    @GetMapping("v1/userExperiment/experimentOrgView/getIndicatorBaseInfo/{indicatorViewBaseInfoId}/{appId}")
-    public Boolean getIndicatorBaseInfo(@PathVariable @Validated String indicatorViewBaseInfoId,@PathVariable @Validated String appId) {
-        return experimentOrgViewBiz.getIndicatorBaseInfo(indicatorViewBaseInfoId,appId);
+    @Operation(summary = "查看指标：查看基本信息查看")
+    @GetMapping("v1/userExperiment/experimentOrgView/getIndicatorBaseInfo/{indicatorViewBaseInfoId}/{appId}/{experimentPersonId}/{periods}")
+    public Map<String,Object> getIndicatorBaseInfo(@PathVariable @Validated String indicatorViewBaseInfoId,
+                                        @PathVariable @Validated String appId,
+                                        @PathVariable @Validated String experimentPersonId,
+                                        @PathVariable @Validated String periods
+                                        ) {
+        return experimentOrgViewBiz.getIndicatorBaseInfo(indicatorViewBaseInfoId,appId,experimentPersonId,periods);
     }
 
     /**
@@ -163,6 +182,18 @@ public class ExperimentOrgViewRest {
         String accountName = map.get("accountName").toString();
         return experimentOrgViewBiz.savePhysiqueAndAuxiliary(reportRequestList,accountId,accountName);
     }
+
+//    /**
+//     *
+//     * ：根据指标分类ID获取所有符合条件的数据
+//     * @param
+//     * @return
+//     */
+//    @Operation(summary = "二级类别：根据指标分类ID获取所有符合条件的数据")
+//    @GetMapping("v1/userExperiment/experimentOrgJudge/getIndicatorViewPhysicalExamByCategoryId/{indicatoryCategoryId}")
+//    public List<ExperimentIndicatorJudgePhysicalExamResponse> getIndicatorViewPhysicalExamByCategoryId(@PathVariable String indicatoryCategoryId) {
+//        return experimentOrgViewBiz.getIndicatorViewPhysicalExamByCategoryId(indicatoryCategoryId);
+//    }
 
     /**
      *

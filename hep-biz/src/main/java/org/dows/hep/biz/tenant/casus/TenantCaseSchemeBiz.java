@@ -88,6 +88,7 @@ public class TenantCaseSchemeBiz {
         Page<CaseSchemeEntity> page = new Page<>(caseSchemePage.getPageNo(), caseSchemePage.getPageSize());
         Page<CaseSchemeEntity> pageResult = caseSchemeService.lambdaQuery()
                 .eq(CaseSchemeEntity::getSource, CaseSchemeSourceEnum.ADMIN.name())
+                .eq(caseSchemePage.getEnabled() != null, CaseSchemeEntity::getEnabled, caseSchemePage.getEnabled())
                 .in(caseSchemePage.getCategIds() != null && !caseSchemePage.getCategIds().isEmpty(), CaseSchemeEntity::getCaseCategId, caseSchemePage.getCategIds())
                 .like(StrUtil.isNotBlank(caseSchemePage.getKeyword()), CaseSchemeEntity::getSchemeName, caseSchemePage.getKeyword())
                 .page(page);

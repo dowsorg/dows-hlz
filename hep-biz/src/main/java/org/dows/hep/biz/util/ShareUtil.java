@@ -153,13 +153,13 @@ public class ShareUtil {
         }
 
 
-        public static <T, K> Map<K,List<T>> toGroup(List<T> src, Function<? super T, ? extends K> keyMapper) {
+        public static <T, K> Map<K,List<T>> groupBy(List<T> src, Function<? super T, ? extends K> keyMapper) {
             return src.stream().collect(Collectors.groupingBy(keyMapper, HashMap::new, Collectors.toList()));
         }
-        public static <T,U, K> Map<K,List<U>> toGroup(List<T> src, Function<? super T, ? extends U> mapper, Function<? super U, ? extends K> keyMapper) {
+        public static <T,U, K> Map<K,List<U>> groupBy(List<T> src, Function<? super T, ? extends U> mapper, Function<? super U, ? extends K> keyMapper) {
             return src.stream().map(mapper).collect(Collectors.groupingBy(keyMapper, HashMap::new, Collectors.toList()));
         }
-        public static <T, K, U,D,A, M extends Map<K, D>> M toGroup(List<T> src, Supplier<M> mapFactory,Function<? super T, ? extends U> mapper,Function<? super U, ? extends K> keyMapper,  Collector<? super U, A, D> downstream){
+        public static <T, K, U,D,A, M extends Map<K, D>> M groupBy(List<T> src, Supplier<M> mapFactory, Function<? super T, ? extends U> mapper, Function<? super U, ? extends K> keyMapper, Collector<? super U, A, D> downstream){
             return src.stream().map(mapper).collect(Collectors.groupingBy(keyMapper,mapFactory,downstream));
         }
 

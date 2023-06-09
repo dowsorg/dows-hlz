@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class QuestionInstanceBiz {
 
-    private final QuestionDomainBaseBiz baseBiz;
+    private final QuestionBaseBiz baseBiz;
     private final QuestionCategBiz questionCategBiz;
     private final QuestionInstanceService questionInstanceService;
     private final QuestionOptionsService optionsService;
@@ -74,7 +74,6 @@ public class QuestionInstanceBiz {
 
     /**
      * @param
-     * @param questionResultRecordDTO
      * @return
      * @说明: 克隆
      * @关联表: QuestionInstance, QuestionOptions, QuestionAnswers
@@ -180,6 +179,7 @@ public class QuestionInstanceBiz {
                 .eq(QuestionInstanceEntity::getVer, baseBiz.getLastVer())
                 .eq(QuestionInstanceEntity::getQuestionInstancePid, baseBiz.getQuestionInstancePid())
                 .eq(QuestionInstanceEntity::getBizCode, QuestionAccessAuthEnum.PUBLIC_VIEWING.name())
+                .eq(questionSearch.getEnabled() != null, QuestionInstanceEntity::getEnabled, questionSearch.getEnabled())
                 .eq(StrUtil.isNotBlank(questionSearch.getQuestionType()), QuestionInstanceEntity::getQuestionType, questionSearch.getQuestionType())
                 .like(StrUtil.isNotBlank(questionSearch.getKeyword()), QuestionInstanceEntity::getQuestionTitle, questionSearch.getKeyword())
                 .in(questionSearch.getCategIdList() != null && !questionSearch.getCategIdList().isEmpty(), QuestionInstanceEntity::getQuestionCategId, questionSearch.getCategIdList())
@@ -218,7 +218,7 @@ public class QuestionInstanceBiz {
         }
 
         QuestionInstanceEntity questionInstance = getById(questionInstanceId);
-        QuestionTypeEnum questionTypeEnum = Optional.of(questionInstance)
+        QuestionTypeEnum questionTypeEnum = Optional.ofNullable(questionInstance)
                 .map(QuestionInstanceEntity::getQuestionType)
                 .map(QuestionTypeEnum::getByCode)
                 .orElse(null);

@@ -101,7 +101,7 @@ public class CaseEventDao extends BaseSubDao<CaseEventService, CaseEventEntity, 
                 .in(ShareUtil.XCollection.notEmpty(req.getIncIds()), getColId(), req.getIncIds())
                 .notIn(ShareUtil.XCollection.notEmpty(req.getExcIds()), getColId(), req.getExcIds())
                 .eq(ShareUtil.XObject.notEmpty(req.getState()), getColState(), req.getState())
-                .eq(ShareUtil.XObject.notEmpty(req.getTriggerType()), CaseEventEntity::getTriggerType, req.getTriggerType())
+                .in(ShareUtil.XObject.notEmpty(req.getTriggerType()), CaseEventEntity::getTriggerType, req.getTriggerType())
                 .select(cols));
     }
 
@@ -142,9 +142,7 @@ public class CaseEventDao extends BaseSubDao<CaseEventService, CaseEventEntity, 
         }
         if(!delSub)
             return true;
-        if(!subDao.delByEventId(ids,dftIfSubEmpty) ){
-            return false;
-        }
+        subDao.delByEventId(ids,dftIfSubEmpty);
         subDao.delSubByEventId(ids,dftIfSubEmpty);
         return true;
     }

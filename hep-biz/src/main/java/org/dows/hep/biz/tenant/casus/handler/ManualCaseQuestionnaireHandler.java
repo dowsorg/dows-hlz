@@ -2,7 +2,7 @@ package org.dows.hep.biz.tenant.casus.handler;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.tenant.casus.QuestionSelectModeEnum;
+import org.dows.hep.api.tenant.casus.CaseQuestionSelectModeEnum;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireRequest;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +15,7 @@ public class ManualCaseQuestionnaireHandler extends BaseCaseQuestionnaireHandler
     @PostConstruct
     @Override
     public void init() {
-        CaseQuestionnaireFactory.register(QuestionSelectModeEnum.MANUAL, this);
+        CaseQuestionnaireFactory.register(CaseQuestionSelectModeEnum.MANUAL, this);
     }
 
     @Override

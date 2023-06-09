@@ -1,6 +1,7 @@
 package org.dows.hep.biz.tenant.casus;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -10,14 +11,15 @@ import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.enums.QuestionCategGroupEnum;
 import org.dows.hep.api.base.question.enums.QuestionESCEnum;
+import org.dows.hep.api.base.question.enums.QuestionEnabledEnum;
 import org.dows.hep.api.base.question.enums.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.QuestionSearchRequest;
 import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
 import org.dows.hep.api.base.question.response.QuestionResponse;
-import org.dows.hep.api.base.question.response.QuestionSectionItemResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
 import org.dows.hep.api.tenant.casus.CaseESCEnum;
-import org.dows.hep.api.tenant.casus.QuestionSelectModeEnum;
+import org.dows.hep.api.tenant.casus.CasePeriodEnum;
+import org.dows.hep.api.tenant.casus.CaseQuestionSelectModeEnum;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionSearchRequest;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnairePageRequest;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireRequest;
@@ -27,11 +29,13 @@ import org.dows.hep.api.tenant.casus.response.CaseQuestionnaireResponse;
 import org.dows.hep.biz.base.question.QuestionCategBiz;
 import org.dows.hep.biz.base.question.QuestionInstanceBiz;
 import org.dows.hep.biz.base.question.QuestionSectionBiz;
+import org.dows.hep.biz.base.question.QuestionSectionItemBiz;
 import org.dows.hep.biz.tenant.casus.handler.CaseQuestionnaireFactory;
 import org.dows.hep.biz.tenant.casus.handler.CaseQuestionnaireHandler;
 import org.dows.hep.entity.CaseInstanceEntity;
 import org.dows.hep.entity.CaseQuestionnaireEntity;
 import org.dows.hep.entity.QuestionSectionEntity;
+import org.dows.hep.entity.QuestionSectionItemEntity;
 import org.dows.hep.service.CaseQuestionnaireService;
 import org.springframework.stereotype.Service;
 
@@ -47,8 +51,9 @@ import java.util.stream.Collectors;
 @Service
 public class TenantCaseQuestionnaireBiz {
     private final TenantCaseBaseBiz baseBiz;
-    private final QuestionCategBiz categBiz;
+    private final QuestionCategBiz questionCategBiz;
     private final QuestionSectionBiz questionSectionBiz;
+    private final QuestionSectionItemBiz questionSectionItemBiz;
     private final QuestionInstanceBiz questionInstanceBiz;
     private final CaseQuestionnaireService caseQuestionnaireService;
 
@@ -117,7 +122,42 @@ public class TenantCaseQuestionnaireBiz {
                 .eq(StrUtil.isNotBlank(request.getCaseInstanceId()), CaseQuestionnaireEntity::getCaseInstanceId, request.getCaseInstanceId())
                 .list();
         // convert
-        return BeanUtil.copyToList(list, CaseQuestionnaireResponse.class);
+        return list.stream()
+                .map(item -> {
+                    CaseQuestionnaireResponse questionnaireResponse = BeanUtil.copyProperties(item, CaseQuestionnaireResponse.class);
+                    questionnaireResponse.setPeriods(CasePeriodEnum.getNameByCode(item.getPeriods()));
+                    return questionnaireResponse;
+                })
+                .sorted(Comparator.comparingInt(CaseQuestionnaireResponse::getPeriodSequence))
+                .toList();
+    }
+
+    /**
+     * @author fhb
+     * @description
+     * @date 2023/6/7 10:32
+     * @param
+     * @return
+     */
+    public List<CaseQuestionnaireResponse> listByIds(List<String> ids) {
+        if (BeanUtil.isEmpty(ids)) {
+            return new ArrayList<>();
+        }
+
+        List<CaseQuestionnaireEntity> list = caseQuestionnaireService.lambdaQuery()
+                .in(CaseQuestionnaireEntity::getCaseQuestionnaireId, ids)
+                .list();
+        List<CaseQuestionnaireResponse> caseQuestionnaireResponses = BeanUtil.copyToList(list, CaseQuestionnaireResponse.class);
+        if (CollUtil.isEmpty(caseQuestionnaireResponses)) {
+            return caseQuestionnaireResponses;
+        }
+
+        caseQuestionnaireResponses.forEach(item -> {
+            String questionSectionId = item.getQuestionSectionId();
+            QuestionSectionResponse questionSection = questionSectionBiz.getQuestionSection(questionSectionId);
+            item.setQuestionSectionResponse(questionSection);
+        });
+        return caseQuestionnaireResponses;
     }
 
     /**
@@ -188,7 +228,27 @@ public class TenantCaseQuestionnaireBiz {
      * @创建时间: 2023年4月17日 下午8:00:11
      */
     public List<QuestionResponse> listUsableQuestionFromSource(CaseQuestionSearchRequest request) {
-        return listUsableQuestionFromSource0(request);
+        List<QuestionResponse> result = listUsableQuestionFromSource0(request);
+        if (CollUtil.isEmpty(result)) {
+            throw new BizException(CaseESCEnum.CASE_USABLE_QUESTION_IS_NULL);
+        }
+
+        List<String> categIds = result.stream().map(QuestionResponse::getQuestionCategId).toList();
+        List<QuestionCategoryResponse> curs = questionCategBiz.listQuestionCategory(categIds);
+        Map<String, String> pidCollect = curs.stream()
+                .collect(Collectors.toMap(QuestionCategoryResponse::getQuestionCategId, QuestionCategoryResponse::getQuestionCategPid, (v1, v2) -> v1));
+
+        List<QuestionCategoryResponse> parents = questionCategBiz.listParents(categIds);
+        Map<String, String> pNameCollect = parents.stream()
+                .collect(Collectors.toMap(QuestionCategoryResponse::getQuestionCategId, QuestionCategoryResponse::getQuestionCategName, (v1, v2) -> v1));
+
+        result.forEach(item -> {
+            String pid = pidCollect.get(item.getQuestionCategId());
+            String categoryName = pNameCollect.get(pid);
+            item.setQuestionCategName(categoryName);
+            item.setQuestionType(QuestionTypeEnum.getNameByCode(item.getQuestionType()));
+        });
+        return result;
     }
 
     /**
@@ -245,7 +305,7 @@ public class TenantCaseQuestionnaireBiz {
         }
 
         LambdaQueryWrapper<CaseQuestionnaireEntity> remWrapper = new LambdaQueryWrapper<CaseQuestionnaireEntity>()
-                .eq(CaseQuestionnaireEntity::getCaseQuestionnaireId, ids);
+                .in(CaseQuestionnaireEntity::getCaseQuestionnaireId, ids);
         return caseQuestionnaireService.remove(remWrapper);
     }
 
@@ -272,8 +332,8 @@ public class TenantCaseQuestionnaireBiz {
                 .caseQuestionnaireId(request.getCaseQuestionnaireId())
                 .caseInstanceId(request.getCaseInstanceId())
                 .questionSectionName(request.getQuestionSectionName())
-                .periods(request.getPeriods())
-                .periodSequence(request.getPeriodSequence())
+                .periods(request.getPeriods().getCode())
+                .periodSequence(request.getPeriods().ordinal())
                 .addType(request.getAddType().name())
                 .build();
 
@@ -289,7 +349,7 @@ public class TenantCaseQuestionnaireBiz {
         }
 
         // generate question-section
-        QuestionSelectModeEnum addType = request.getAddType();
+        CaseQuestionSelectModeEnum addType = request.getAddType();
         CaseQuestionnaireHandler handler = CaseQuestionnaireFactory.get(addType);
         String questionSectionId = handler.handle(request);
 
@@ -338,6 +398,9 @@ public class TenantCaseQuestionnaireBiz {
         QuestionSearchRequest questionSearchRequest = QuestionSearchRequest.builder()
                 .categIdList(categoryIdList)
                 .appId(baseBiz.getAppId())
+                .keyword(request.getKeyword())
+                .questionType(request.getQuestionType())
+                .enabled(QuestionEnabledEnum.ENABLED.getCode())
                 .build();
         List<QuestionResponse> questionResponses = questionInstanceBiz.listQuestion(questionSearchRequest);
 
@@ -351,6 +414,10 @@ public class TenantCaseQuestionnaireBiz {
 
     private List<String> getCategoryIdList(CaseQuestionSearchRequest request) {
         List<String> result = new ArrayList<>();
+        if (StrUtil.isBlank(request.getL1CategId()) || StrUtil.isBlank(request.getL2CategId())) {
+            return result;
+        }
+
         // level-2
         String l2CategoryId = request.getL2CategId();
         if (StrUtil.isNotBlank(l2CategoryId)) {
@@ -360,7 +427,7 @@ public class TenantCaseQuestionnaireBiz {
 
         // level-1 convert to level-2
         String l1CategoryId = request.getL1CategId();
-        List<QuestionCategoryResponse> children = categBiz.getChildrenByPid(l1CategoryId, QuestionCategGroupEnum.QUESTION.name());
+        List<QuestionCategoryResponse> children = questionCategBiz.getChildrenByPid(l1CategoryId, QuestionCategGroupEnum.QUESTION.name());
         if (children != null && !children.isEmpty()) {
             List<String> childrenIds = children.stream().map(QuestionCategoryResponse::getQuestionCategId).toList();
             result.addAll(childrenIds);
@@ -370,31 +437,38 @@ public class TenantCaseQuestionnaireBiz {
     }
 
     private List<String> listQuestionIdOfCaseInstance(String caseInstanceId) {
+        if (StrUtil.isBlank(caseInstanceId)) {
+            return new ArrayList<>();
+        }
+
         // list questionnaire of case-instance
-        LambdaQueryWrapper<CaseQuestionnaireEntity> queryWrapper = new LambdaQueryWrapper<CaseQuestionnaireEntity>()
-                .eq(CaseQuestionnaireEntity::getCaseInstanceId, caseInstanceId);
-        List<CaseQuestionnaireEntity> caseQuestionnaireList = caseQuestionnaireService.list(queryWrapper);
+        List<CaseQuestionnaireEntity> caseQuestionnaireList = caseQuestionnaireService.lambdaQuery()
+                .eq(CaseQuestionnaireEntity::getCaseInstanceId, caseInstanceId)
+                .list();
         if (caseQuestionnaireList == null || caseQuestionnaireList.isEmpty()) {
             return new ArrayList<>();
         }
 
         // list section-item
-        List<String> sectionIdList = caseQuestionnaireList.stream().map(CaseQuestionnaireEntity::getQuestionSectionId).toList();
-        List<QuestionSectionItemResponse> itemResponseList = questionSectionBiz.listQuestionSectionItem(sectionIdList);
-        if (itemResponseList == null || itemResponseList.isEmpty()) {
+        List<String> sectionIdList = caseQuestionnaireList.stream()
+                .map(CaseQuestionnaireEntity::getQuestionSectionId)
+                .toList();
+        List<QuestionSectionItemEntity> entityList = questionSectionItemBiz.listBySectionIds(sectionIdList);
+        if (CollUtil.isEmpty(entityList)) {
             return new ArrayList<>();
         }
 
         // list question-id
-        return itemResponseList.stream()
-                .map(QuestionSectionItemResponse::getQuestion)
-                .map(QuestionResponse::getQuestionInstanceId)
+        return entityList.stream()
+                .map(QuestionSectionItemEntity::getQuestionInstanceId)
                 .distinct()
                 .toList();
     }
 
     private List<QuestionResponse> filterUsableQuestion(List<QuestionResponse> questionResponses, List<String> existingIds) {
-        Map<String, String> existingIdsMap = existingIds.stream().collect(Collectors.toMap(item -> item, item -> item, (v1, v2) -> v1));
+        Map<String, String> existingIdsMap = existingIds.stream()
+                .filter(StrUtil::isNotBlank)
+                .collect(Collectors.toMap(item -> item, item -> item, (v1, v2) -> v1));
         return questionResponses.stream()
                 .filter(item -> {
                     String questionInstanceId = item.getQuestionInstanceId();

@@ -98,7 +98,7 @@ public class OrgRest {
      */
     @Operation(summary = "创建案例机构")
     @PostMapping("v1/baseOrg/org/addOrgnization")
-    public String addOrgnization(@RequestBody AccountOrgRequest request,@RequestParam String caseInstanceId,@RequestParam String ver,@Nullable @RequestParam String caseIdentifier) {
+    public String addOrgnization(@RequestBody AccountOrgRequest request,@RequestParam String caseInstanceId, @Nullable @RequestParam String ver,@Nullable @RequestParam String caseIdentifier) {
         return orgBiz.addOrgnization(request,caseInstanceId,ver,caseIdentifier);
     }
 
@@ -109,9 +109,33 @@ public class OrgRest {
      */
     @Operation(summary = "添加案例机构人物")
     @PostMapping("v1/baseOrg/org/addPerson")
-    public Integer addPerson(@RequestParam Set<String> personIds, @RequestParam String caseInstanceId,@RequestParam String caseOrgId,@RequestParam String appId) {
+    public Integer addPerson(@RequestBody Set<String> personIds, @RequestParam String caseInstanceId,@RequestParam String caseOrgId,@RequestParam String appId) {
         return orgBiz.addPerson(personIds,caseInstanceId,caseOrgId,appId);
     }
+
+    /**
+     * 通过案例人物ID获取accountId
+     * @param
+     * @return
+     */
+    @Operation(summary = "通过案例人物ID获取accountId")
+    @PostMapping("v1/baseOrg/org/getAccountIdByCasePerson")
+    public String getAccountIdByCasePerson(@RequestParam String casePersonId) {
+        return orgBiz.getAccountIdByCasePerson(casePersonId);
+    }
+
+    /**
+     * 将自定义人物添加到案例机构中
+     * @param
+     * @return
+     */
+    @Operation(summary = "将自定义人物添加到案例机构中")
+    @PostMapping("v1/baseOrg/org/addPersonToCaseOrg")
+    public String addPersonToCaseOrg(@RequestParam String personId, @RequestParam String caseInstanceId,@RequestParam String caseOrgId,@RequestParam String appId) {
+        return orgBiz.addPersonToCaseOrg(personId,caseInstanceId,caseOrgId,appId);
+    }
+
+
 
     /**
      * 获取案例机构人物列表
@@ -154,7 +178,7 @@ public class OrgRest {
      */
     @Operation(summary = "删除机构基本信息")
     @DeleteMapping("v1/baseOrg/org/deleteOrgs")
-    public Boolean deleteOrgs(@Nullable @RequestParam Set<String> caseOrgIds,@RequestParam String caseInstanceId,@RequestParam String appId) {
+    public Boolean deleteOrgs(@RequestBody Set<String> caseOrgIds,@RequestParam String caseInstanceId,@RequestParam String appId) {
         return orgBiz.deleteOrgs(caseOrgIds,caseInstanceId,appId);
     }
 
@@ -173,6 +197,7 @@ public class OrgRest {
                 appId);
     }
 
+
     /**
      * 同一案例中，人物不能被多个机构共享
      */
@@ -189,7 +214,7 @@ public class OrgRest {
      */
     @Operation(summary = "复制机构人物")
     @PostMapping("v1/baseOrg/org/copyPerson")
-    public Boolean copyPerson(@RequestParam String caseOrgId,
+    public String copyPerson(@RequestParam String caseOrgId,
                                        @RequestParam String caseInstanceId,
                                        @RequestParam String accountId) {
         return orgBiz.copyPerson(caseOrgId,caseInstanceId,accountId);

@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
-import org.dows.hep.api.tenant.casus.QuestionSelectModeEnum;
+import org.dows.hep.api.tenant.casus.CaseQuestionSelectModeEnum;
 
 /**
 * @description 
@@ -32,10 +32,13 @@ public class CaseQuestionnaireResponse{
     private Integer periodSequence;
 
     @Schema(title = "添加方式")
-    private QuestionSelectModeEnum addType;
+    private CaseQuestionSelectModeEnum addType;
 
     @Schema(title = "问题集ID")
     private String questionSectionId;
+
+    @Schema(title = "题数")
+    private Integer questionCount;
 
     @Schema(title = "问题集合")
     private QuestionSectionResponse questionSectionResponse;

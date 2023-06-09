@@ -29,7 +29,7 @@ public class ExperimentCaseInfoManageBiz {
 
     /**
      * @author fhb
-     * @description 预生成社区基本信息
+     * @description 预生成社区基本信息-分配实验的时候调用
      * @date 2023/6/1 9:33
      * @param
      * @return

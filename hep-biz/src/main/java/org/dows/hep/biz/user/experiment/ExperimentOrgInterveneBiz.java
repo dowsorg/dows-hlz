@@ -16,7 +16,8 @@ import org.dows.hep.api.user.experiment.response.ExptSportPlanResponse;
 import org.dows.hep.api.user.experiment.response.ExptTreatPlanResponse;
 import org.dows.hep.api.user.experiment.response.SaveExptInterveneResponse;
 import org.dows.hep.api.user.experiment.response.SaveExptTreatResponse;
-import org.dows.hep.biz.base.intervene.FoodCalcBiz;
+import org.dows.hep.api.user.experiment.vo.ExptTreatPlanItemVO;
+import org.dows.hep.biz.base.intervene.FoodCalc4ExptBiz;
 import org.dows.hep.biz.dao.OperateOrgFuncDao;
 import org.dows.hep.biz.util.*;
 import org.dows.hep.biz.vo.CalcExptFoodCookbookResult;
@@ -28,6 +29,7 @@ import org.dows.hep.entity.OperateOrgFuncEntity;
 import org.dows.hep.entity.OperateOrgFuncSnapEntity;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -42,7 +44,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ExperimentOrgInterveneBiz{
 
-    private final FoodCalcBiz foodCalcBiz;
+    private final FoodCalc4ExptBiz foodCalc4ExptBiz;
 
     private final OperateOrgFuncDao operateOrgFuncDao;
 
@@ -68,6 +70,9 @@ public class ExperimentOrgInterveneBiz{
         return null;
     }
     public SportPlanInfoResponse getSportPlan4Expt(GetInfo4ExptRequest getInfo) {
+        return null;
+    }
+    public Page<SportItemResponse> pageSportItem4Expt(FindInterveneList4ExptRequest findSport ){
         return null;
     }
     public List<Categ4ExptVO> listTreatCateg4Expt( FindInterveneCateg4ExptRequest findTreat ){
@@ -121,7 +126,7 @@ public class ExperimentOrgInterveneBiz{
         final Optional<OperateFlowEntity> flowOption=flowValidator.checkOrgFlowRunning();
 
         //计算营养统计，膳食宝塔
-        CalcExptFoodCookbookResult snapRst=foodCalcBiz.calcFoodGraph4ExptCookbook(saveFood.getDetails());
+        CalcExptFoodCookbookResult snapRst= foodCalc4ExptBiz.calcFoodGraph4ExptCookbook(saveFood.getDetails());
         snapRst.setDetails(saveFood.getDetails());
         //保存操作记录
         final Date dateNow=new Date();
@@ -153,7 +158,7 @@ public class ExperimentOrgInterveneBiz{
 
     }
     public CalcExptFoodCookbookResult calcExptFoodGraph( CalcExptFoodGraphRequest calcFoodGraph ){
-        return foodCalcBiz.calcFoodGraph4Expt(calcFoodGraph);
+        return foodCalc4ExptBiz.calcFoodGraph4Expt(calcFoodGraph);
     }
 
     public ExptSportPlanResponse getExptSportPlan(ExptOperateOrgFuncRequest exptOperate ){
@@ -247,6 +252,13 @@ public class ExperimentOrgInterveneBiz{
         OperateOrgFuncSnapEntity rowOrgFuncSnap=new OperateOrgFuncSnapEntity()
                 .setAppId(validator.getAppId())
                 .setSnapTime(dateNow);
+        for(int i=saveTreat.getTreatItems().size()-1;i>=0;i--){
+            ExptTreatPlanItemVO item=saveTreat.getTreatItems().get(i);
+            if(ShareUtil.XObject.notEmpty(item.getId(), true)){
+                continue;
+            }
+            item.setId(getTimestampId(dateNow, i)).setDealFlag(0);
+        }
         ExptTreatPlanResponse snapRst=new ExptTreatPlanResponse().setTreatItems(saveTreat.getTreatItems());
         try{
             rowOrgFuncSnap.setInputJson(JacksonUtil.toJson(snapRst,true));
@@ -275,7 +287,7 @@ public class ExperimentOrgInterveneBiz{
             return rst;
         }
         List<OperateOrgFuncSnapEntity> rowOrgFuncSnaps=operateOrgFuncDao.getSubByLeadId(rowOrgFunc.getOperateOrgFuncId(),OperateOrgFuncSnapEntity::getResultJson);
-        if(ShareUtil.XObject.anyEmpty(rowOrgFuncSnaps,()->rowOrgFuncSnaps.get(0).getResultJson())){
+        if(ShareUtil.XObject.anyEmpty(rowOrgFuncSnaps,()->rowOrgFuncSnaps.get(0).getInputJson())){
             return rst;
         }
         try{
@@ -305,6 +317,16 @@ public class ExperimentOrgInterveneBiz{
         }
         return operateOrgFuncDao.getCurrentOrgFuncRecord(req.getExperimentPersonId(), req.getExperimentOrgId(),
                 req.getIndicatorFuncId(), req.getPeriods(), cols);
+    }
+
+    private Long getTimestampId(Date dt,int seq){
+        final int mod=10000;
+        return getTimestampPrefix(dt)*mod+seq%mod;
+    }
+
+    private Long getTimestampPrefix(Date dt){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmmss");
+        return Long.valueOf(sdf.format(dt));
     }
 
     //endregion

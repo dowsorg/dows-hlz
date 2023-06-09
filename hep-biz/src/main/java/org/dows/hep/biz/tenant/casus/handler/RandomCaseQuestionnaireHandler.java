@@ -6,7 +6,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.question.enums.QuestionTypeEnum;
 import org.dows.hep.api.base.question.response.QuestionResponse;
-import org.dows.hep.api.tenant.casus.QuestionSelectModeEnum;
+import org.dows.hep.api.tenant.casus.CaseQuestionSelectModeEnum;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionSearchRequest;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireRequest;
 import org.dows.hep.biz.tenant.casus.TenantCaseQuestionnaireBiz;
@@ -25,7 +25,7 @@ public class RandomCaseQuestionnaireHandler extends BaseCaseQuestionnaireHandler
     @PostConstruct
     @Override
     public void init() {
-        CaseQuestionnaireFactory.register(QuestionSelectModeEnum.RANDOM, this);
+        CaseQuestionnaireFactory.register(CaseQuestionSelectModeEnum.RANDOM, this);
     }
 
     @Override

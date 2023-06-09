@@ -25,7 +25,7 @@ import java.util.List;
 @AllArgsConstructor
 @Service
 public class QuestionDimensionBiz {
-    private final QuestionDomainBaseBiz baseBiz;
+    private final QuestionBaseBiz baseBiz;
     private final QuestionDimensionService questionDimensionService;
 
     /**

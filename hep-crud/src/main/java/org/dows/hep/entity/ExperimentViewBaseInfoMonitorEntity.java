@@ -44,20 +44,8 @@ public class ExperimentViewBaseInfoMonitorEntity implements CrudEntity {
     @Schema(title = "指标基本信息监测表名称")
     private String name;
 
-    @Schema(title = "监测表展示顺序")
-    private Integer monitorSeq;
-
-    @Schema(title = "监测内容名称")
-    private String contentName;
-
-    @Schema(title = "监测内容展示顺序")
-    private Integer contentSeq;
-
-    @Schema(title = "指标ID")
-    private String indicatorInstanceId;
-
-    @Schema(title = "指标展示排序")
-    private Integer indicatorSeq;
+    @Schema(title = "展示排序")
+    private Integer seq;
 
     @JsonIgnore
     @TableLogic

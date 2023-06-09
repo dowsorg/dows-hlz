@@ -3,7 +3,8 @@ package org.dows.hep.api.user.experiment.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.question.request.QuestionSectionResultRequest;
+
+import java.util.List;
 
 @Data
 @RequiredArgsConstructor
@@ -13,5 +14,5 @@ public class ExperimentQuestionnaireRequest {
     private String experimentQuestionnaireId;
 
     @Schema(title = "答题卡")
-    private QuestionSectionResultRequest questionSectionResultRequest;
+    private List<ExperimentQuestionnaireItemRequest> itemList;
 }

@@ -8,7 +8,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.tenant.casus.CaseESCEnum;
-import org.dows.hep.api.tenant.casus.CasePeriodsEnum;
+import org.dows.hep.api.tenant.casus.CasePeriodEnum;
 import org.dows.hep.api.tenant.casus.request.CaseOrgQuestionnaireRequest;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireSearchRequest;
 import org.dows.hep.api.tenant.casus.response.CaseOrgQuestionnaireResponse;
@@ -44,13 +44,13 @@ public class TenantCaseOrgQuestionnaireBiz {
      * @description 列出未选择的问卷
      * @date 2023/5/25 11:43
      */
-    public Map<String, List<CaseQuestionnaireResponse>> listUnselectedQuestionnaires(String caseInstanceId) {
+    public List<List<CaseQuestionnaireResponse>> listUnselectedQuestionnaires(String caseInstanceId) {
         if (StrUtil.isBlank(caseInstanceId)) {
             throw new BizException(CaseESCEnum.PARAMS_NON_NULL);
         }
 
-        Map<String, List<CaseQuestionnaireResponse>> result = new HashMap<>();
-        Arrays.stream(CasePeriodsEnum.values()).forEach(item -> {
+        Map<String, List<CaseQuestionnaireResponse>> result = new LinkedHashMap<>();
+        Arrays.stream(CasePeriodEnum.values()).forEach(item -> {
             result.put(item.getName(), new ArrayList<>());
         });
 
@@ -69,7 +69,7 @@ public class TenantCaseOrgQuestionnaireBiz {
             }
         });
 
-        return result;
+        return result.values().stream().toList();
     }
 
     /**
@@ -79,14 +79,66 @@ public class TenantCaseOrgQuestionnaireBiz {
      * @description 列出已经选择的问卷
      * @date 2023/5/25 11:43
      */
-    public Map<String, Map<String, CaseOrgQuestionnaireResponse>> listSelectedQuestionnaires(String caseInstanceId) {
+    public List<Map<String, CaseOrgQuestionnaireResponse>> listSelectedQuestionnaires(String caseInstanceId) {
         if (StrUtil.isBlank(caseInstanceId)) {
             throw new BizException(CaseESCEnum.PARAMS_NON_NULL);
         }
 
         // 期数 collect
-        Map<String, Map<String, CaseOrgQuestionnaireResponse>> result = new HashMap<>();
-        Arrays.stream(CasePeriodsEnum.values()).forEach(item -> {
+        Map<String, Map<String, CaseOrgQuestionnaireResponse>> result = new LinkedHashMap<>();
+        Arrays.stream(CasePeriodEnum.values()).forEach(item -> {
+            result.put(item.getName(), new HashMap<>());
+        });
+
+        List<CaseOrgResponse> orgList = listOrgOfCaseInstance(caseInstanceId);
+        if (Objects.isNull(orgList) || orgList.isEmpty()) {
+            return result.values().stream().toList();
+        }
+
+        // 机构 collect
+        result.forEach((period, orgMap) -> {
+            Map<String, CaseOrgQuestionnaireResponse> orgCollect = new HashMap<>();
+            orgList.forEach(org -> {
+                orgCollect.put(org.getOrgName(), new CaseOrgQuestionnaireResponse());
+            });
+            result.put(period, orgCollect);
+        });
+
+        List<CaseOrgQuestionnaireResponse> orgQuestionnaireList = listByCaseInstanceId(caseInstanceId);
+        if (Objects.isNull(orgQuestionnaireList) || orgQuestionnaireList.isEmpty()) {
+            return result.values().stream().toList();
+        }
+
+        // questionnaire collect
+        Map<String, Map<String, CaseOrgQuestionnaireResponse>> questionnaireCollect = orgQuestionnaireList.stream()
+                .collect(Collectors.groupingBy(CaseOrgQuestionnaireResponse::getPeriods, Collectors.toMap(CaseOrgQuestionnaireResponse::getCaseOrgName, v -> v, (v1, v2) -> v1)));
+        result.forEach((period, orgMap) -> {
+            // 该 period 下的不同机构的问卷
+            Map<String, CaseOrgQuestionnaireResponse> orgCollect = questionnaireCollect.get(period);
+            orgMap.forEach((org, qn) -> {
+                orgMap.replace(org, orgCollect.get(org));
+            });
+            result.replace(period, orgCollect);
+        });
+
+        return result.values().stream().toList();
+    }
+
+    /**
+     * @param
+     * @return
+     * @author fhb
+     * @description 列出已经选择的问卷
+     * @date 2023/5/25 11:43
+     */
+    public Map<String, Map<String, CaseOrgQuestionnaireResponse>> mapSelectedQuestionnaires(String caseInstanceId) {
+        if (StrUtil.isBlank(caseInstanceId)) {
+            throw new BizException(CaseESCEnum.PARAMS_NON_NULL);
+        }
+
+        // 期数 collect
+        Map<String, Map<String, CaseOrgQuestionnaireResponse>> result = new LinkedHashMap<>();
+        Arrays.stream(CasePeriodEnum.values()).forEach(item -> {
             result.put(item.getName(), new HashMap<>());
         });
 
@@ -197,7 +249,7 @@ public class TenantCaseOrgQuestionnaireBiz {
 
         List<CaseOrgQuestionnaireRequest> result = new ArrayList<>();
         Map<String, List<CaseQuestionnaireResponse>> periodQuestionnaireCollect = orgQuestionnaireList.stream().collect(Collectors.groupingBy(CaseQuestionnaireResponse::getPeriods));
-        Arrays.stream(CasePeriodsEnum.values()).forEach(period -> {
+        Arrays.stream(CasePeriodEnum.values()).forEach(period -> {
             String name = period.getName();
             List<CaseQuestionnaireResponse> questionnaireList = periodQuestionnaireCollect.get(name);
             List<CaseOrgQuestionnaireRequest> request = buildCaseOrgQuestionnaireRequest0(caseInstanceId, name, questionnaireList, orgList);
@@ -278,6 +330,8 @@ public class TenantCaseOrgQuestionnaireBiz {
     private List<CaseOrgResponse> listOrgOfCaseInstance(String caseInstanceId) {
         CaseOrgRequest orgRequest = new CaseOrgRequest();
         orgRequest.setCaseInstanceId(caseInstanceId);
+        orgRequest.setPageNo(1);
+        orgRequest.setPageSize(10);
         IPage<CaseOrgResponse> orgResponse = orgBiz.listOrgnization(orgRequest);
         return orgResponse.getRecords();
     }
@@ -293,11 +347,8 @@ public class TenantCaseOrgQuestionnaireBiz {
         Map<String, CaseOrgQuestionnaireEntity> collect;
         if (Objects.nonNull(orgQuestionnaire) && !orgQuestionnaire.isEmpty()) {
             collect = orgQuestionnaire.stream().collect(Collectors.toMap(CaseOrgQuestionnaireEntity::getCaseQuestionnaireId, v -> v, (v1, v2) -> v1));
-        } else {
-            collect = new HashMap<>();
+            questionnaireList.removeIf(item -> collect.get(item.getCaseQuestionnaireId()) == null);
         }
-
-        questionnaireList.removeIf(item -> collect.get(item.getCaseQuestionnaireId()) == null);
     }
 
     private List<CaseOrgQuestionnaireEntity> listByCaseInstanceId0(String caseInstanceId) {

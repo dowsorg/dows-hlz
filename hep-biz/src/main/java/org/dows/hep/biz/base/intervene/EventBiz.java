@@ -175,11 +175,14 @@ public class EventBiz{
                 EventActionIndicatorEntity::getEventActionId,
                 EventActionIndicatorEntity::getInitFlag,
                 EventActionIndicatorEntity::getIndicatorInstanceId,
+                EventActionIndicatorEntity::getIndicatorCategoryId,
                 EventActionIndicatorEntity::getExpression,
                 EventActionIndicatorEntity::getExpressionDescr,
+                EventActionIndicatorEntity::getExpressionVars,
+                EventActionIndicatorEntity::getExpressionNames,
                 EventActionIndicatorEntity::getSeq);
         final String EMPTYActionId="";
-        Map<String, List<EventIndicatorVO>> mapIndicators = ShareUtil.XCollection.toGroup(rowsIndicator,
+        Map<String, List<EventIndicatorVO>> mapIndicators = ShareUtil.XCollection.groupBy(rowsIndicator,
                 i -> CopyWrapper.create(EventIndicatorVO::new)
                         .endFrom(i, v -> v.setRefId(i.getEventActionIndicatorId())),
                 i -> ShareUtil.XObject.defaultIfNull(i.getEventActionId(), EMPTYActionId));
@@ -254,7 +257,8 @@ public class EventBiz{
                 .setCategIdPath(categVO.getCategIdPath())
                 .setCategNamePath(categVO.getCategNamePath())
                 .setCreateAccountId(voLogin.getAccountId())
-                .setCreateAccountName(voLogin.getAccountName());
+                .setCreateAccountName(voLogin.getAccountName())
+                .setTriggerType(triggerType.getCode());
 
         List<EventEvalEntity> rowEvals = ShareUtil.XCollection.map(saveEvent.getEvals(),
                 e -> CopyWrapper.create(EventEvalEntity::new).endFrom(e, v -> v.setEventEvalId(e.getRefId())));

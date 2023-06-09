@@ -103,11 +103,14 @@ public class TenantCaseEventBiz {
                 CaseEventActionIndicatorEntity::getCaseEventActionId,
                 CaseEventActionIndicatorEntity::getInitFlag,
                 CaseEventActionIndicatorEntity::getIndicatorInstanceId,
+                CaseEventActionIndicatorEntity::getIndicatorCategoryId,
                 CaseEventActionIndicatorEntity::getExpression,
                 CaseEventActionIndicatorEntity::getExpressionDescr,
+                CaseEventActionIndicatorEntity::getExpressionVars,
+                CaseEventActionIndicatorEntity::getExpressionNames,
                 CaseEventActionIndicatorEntity::getSeq);
         final String EMPTYActionId="";
-        Map<String, List<EventIndicatorVO>> mapIndicators = ShareUtil.XCollection.toGroup(rowsIndicator,
+        Map<String, List<EventIndicatorVO>> mapIndicators = ShareUtil.XCollection.groupBy(rowsIndicator,
                 i -> CopyWrapper.create(EventIndicatorVO::new)
                         .endFrom(i, v -> v.setRefId(i.getCaseEventActionIndicatorId())
                                 .setEventActionId(i.getCaseEventActionId())),
@@ -183,7 +186,8 @@ public class TenantCaseEventBiz {
                 .setCategIdPath(categVO.getCategIdPath())
                 .setCategNamePath(categVO.getCategNamePath())
                 .setCreateAccountId(voLogin.getAccountId())
-                .setCreateAccountName(voLogin.getAccountName());
+                .setCreateAccountName(voLogin.getAccountName())
+                .setTriggerType(triggerType.getCode());
 
         List<CaseEventEvalEntity> rowEvals = ShareUtil.XCollection.map(saveCaseEvent.getEvals(),
                 e -> CopyWrapper.create(CaseEventEvalEntity::new).endFrom(e, v -> v.setCaseEventEvalId(e.getRefId())));
