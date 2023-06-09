@@ -29,6 +29,9 @@ public class MaterialsPageResponse {
     @Schema(title = "创建者姓名")
     private String userName;
 
+    @Schema(title = "创建者姓名")
+    private String accountName;
+
     @Schema(title = "上传时间")
     private Date dt;
 

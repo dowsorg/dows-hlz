@@ -17,7 +17,6 @@ import org.dows.hep.api.base.materials.MaterialsEnabledEnum;
 import org.dows.hep.api.base.materials.request.MaterialsPageRequest;
 import org.dows.hep.api.base.materials.response.MaterialsPageResponse;
 import org.dows.hep.api.base.materials.response.MaterialsResponse;
-import org.dows.hep.api.base.person.response.PersonInstanceResponse;
 import org.dows.hep.biz.base.materials.MaterialsBaseBiz;
 import org.dows.hep.biz.base.materials.MaterialsManageBiz;
 import org.dows.hep.biz.base.org.OrgBiz;
@@ -28,9 +27,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 /**
  * @author lait.zhang
@@ -150,31 +147,16 @@ public class UserMaterialsBiz {
             return;
         }
 
-        Set<String> accountIds = records.stream()
-                .map(MaterialsPageResponse::getAccountId)
-                .collect(Collectors.toSet());
-        AccountInstanceRequest request = AccountInstanceRequest.builder()
-                .accountIds(accountIds)
-                .appId(baseBiz.getAppId())
-                .pageNo(1)
-                .pageSize(10)
-                .build();
-        IPage<PersonInstanceResponse> personInstanceResponseIPage = personManageBiz.listPerson(request);
-        Map<String, String> collect = null;
-        if (personInstanceResponseIPage != null) {
-            List<PersonInstanceResponse> personRecords = personInstanceResponseIPage.getRecords();
-            collect = personRecords.stream().collect(Collectors.toMap(PersonInstanceResponse::getAccountId, PersonInstanceResponse::getUserName, (v1, v2) -> v1));
-        }
-
         for (MaterialsPageResponse record: records) {
             Date dt = record.getDt();
             String uploadTime = baseBiz.convertDate2String(dt);
             record.setUploadTime(uploadTime);
-
-            if (collect != null) {
-                String userName = collect.get(record.getAccountId());
-                record.setUserName(userName);
-            }
+            AccountInstanceResponse personalInformation = personManageBiz.getPersonalInformation(record.getAccountId(), baseBiz.getAppId());
+            String userName = Optional.ofNullable(personalInformation)
+                    .map(AccountInstanceResponse::getUserName)
+                    .orElse("");
+            record.setUserName(userName);
+            record.setAccountName(userName);
         }
     }
 

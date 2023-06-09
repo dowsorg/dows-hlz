@@ -10,7 +10,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
-import org.dows.account.request.AccountInstanceRequest;
+import org.dows.account.response.AccountInstanceResponse;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.oss.api.OssInfo;
 import org.dows.hep.api.base.materials.MaterialsAccessAuthEnum;
@@ -23,7 +23,6 @@ import org.dows.hep.api.base.materials.request.MaterialsSearchRequest;
 import org.dows.hep.api.base.materials.response.MaterialsAttachmentResponse;
 import org.dows.hep.api.base.materials.response.MaterialsPageResponse;
 import org.dows.hep.api.base.materials.response.MaterialsResponse;
-import org.dows.hep.api.base.person.response.PersonInstanceResponse;
 import org.dows.hep.biz.base.oss.OSSBiz;
 import org.dows.hep.biz.base.person.PersonManageBiz;
 import org.dows.hep.entity.MaterialsAttachmentEntity;
@@ -418,31 +417,16 @@ public class MaterialsManageBiz {
             return;
         }
 
-        Set<String> accountIds = records.stream()
-                .map(MaterialsPageResponse::getAccountId)
-                .collect(Collectors.toSet());
-        AccountInstanceRequest request = AccountInstanceRequest.builder()
-                .accountIds(accountIds)
-                .appId(baseBiz.getAppId())
-                .pageNo(1)
-                .pageSize(10)
-                .build();
-        IPage<PersonInstanceResponse> personInstanceResponseIPage = personManageBiz.listPerson(request);
-        Map<String, String> collect = null;
-        if (personInstanceResponseIPage != null) {
-            List<PersonInstanceResponse> personRecords = personInstanceResponseIPage.getRecords();
-            collect = personRecords.stream().collect(Collectors.toMap(PersonInstanceResponse::getAccountId, PersonInstanceResponse::getUserName, (v1, v2) -> v1));
-        }
-
         for (MaterialsPageResponse record: records) {
             Date dt = record.getDt();
             String uploadTime = baseBiz.convertDate2String(dt);
             record.setUploadTime(uploadTime);
-
-            if (collect != null) {
-                String userName = collect.get(record.getAccountId());
-                record.setUserName(userName);
-            }
+            AccountInstanceResponse personalInformation = personManageBiz.getPersonalInformation(record.getAccountId(), baseBiz.getAppId());
+            String userName = Optional.ofNullable(personalInformation)
+                    .map(AccountInstanceResponse::getUserName)
+                    .orElse("");
+            record.setUserName(userName);
+            record.setAccountName(userName);
         }
 
     }
