@@ -232,7 +232,13 @@ public class MaterialsManageBiz {
         List<MaterialsAttachmentEntity> attachments = listAttachmentEntity(materialsIds);
         Validator.validateNotEmpty(attachments, "资料不存在");
 
-        OssInfo oss = ossBiz.zip(attachments, "资料名称");
+        String fileName = "我的资料";
+        if (attachments.size() == 1) {
+            MaterialsAttachmentEntity materialsAttachmentEntity = attachments.get(0);
+            fileName = materialsAttachmentEntity.getFileName();
+        }
+
+        OssInfo oss = ossBiz.zip(attachments, fileName);
         return oss.getPath();
     }
 

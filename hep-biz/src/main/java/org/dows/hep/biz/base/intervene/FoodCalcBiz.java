@@ -340,6 +340,10 @@ public class FoodCalcBiz {
                 IndicatorInstanceEntity::getIndicatorInstanceId,
                 IndicatorInstanceEntity::getIndicatorName,
                 IndicatorInstanceEntity::getUnit),IndicatorInstanceEntity::getIndicatorName, Function.identity());
+        if(ShareUtil.XCollection.isEmpty(rowsIndicator)){
+            rst.forEach(i->i.setWeight(EMPTYValue).setEnergy(EMPTYValue));
+            return rst;
+        }
         rst.forEach(i-> Optional.ofNullable( rowsIndicator.get(i.getInstanceName())).ifPresent(v->i.setInstanceId(v.getIndicatorInstanceId()).setUnit(v.getUnit())));
         //fill指标推荐值区间
         List<String> indicatorIds=rowsIndicator.values().stream().map(IndicatorInstanceEntity::getIndicatorInstanceId).collect(Collectors.toList());
@@ -367,11 +371,13 @@ public class FoodCalcBiz {
                 return;
             }
             //营养成分含量=食材重量*每百克营养成分/100克
-            v.forEach(vi -> mapRst.get(vi.getIndicatorInstanceId()).getWeightOptional()
-                    .add(box.setValue(voMat.getWeightOptional().getValue())
-                            .mul(BigDecimalUtil.tryParseDecimalElseZero(vi.getWeight()))
-                            .div(BigDecimalUtil.ONEHundred)
-                            .getValue()));
+            v.forEach(vi -> Optional.ofNullable(mapRst.get(vi.getIndicatorInstanceId()))
+                    .ifPresent(nutrient -> nutrient.getWeightOptional()
+                            .add(box.setValue(voMat.getWeightOptional().getValue())
+                                    .mul(BigDecimalUtil.tryParseDecimalElseZero(vi.getWeight()))
+                                    .div(BigDecimalUtil.ONEHundred)
+                                    .getValue())));
+
 
         });
         rowsNutrient.clear();

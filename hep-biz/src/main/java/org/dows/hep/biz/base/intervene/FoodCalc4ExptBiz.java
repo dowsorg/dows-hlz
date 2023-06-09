@@ -116,6 +116,10 @@ public class FoodCalc4ExptBiz extends FoodCalcBiz {
                 IndicatorInstanceEntity::getIndicatorInstanceId,
                 IndicatorInstanceEntity::getIndicatorName,
                 IndicatorInstanceEntity::getUnit),IndicatorInstanceEntity::getIndicatorName, Function.identity());
+        if(ShareUtil.XCollection.isEmpty(rowsIndicator)){
+            statEnergy.forEach(i->i.setWeight(EMPTYValue).setEnergy(EMPTYValue));
+            return;
+        }
         statEnergy.forEach(i->{
             Optional.ofNullable(rowsIndicator.get(i.getInstanceName()))
                     .ifPresent(rowIndicator->{
@@ -155,6 +159,10 @@ public class FoodCalc4ExptBiz extends FoodCalcBiz {
             }
             v.forEach(rowNutrient ->{
                 CalcFoodStatVO voEnergy=mapEnergy.get(rowNutrient.getIndicatorInstanceId());
+                if(null==voEnergy){
+                    return;
+                }
+
                 //营养成分含量=食材重量*每百克营养成分/100克
                 box.setValue(voMat.getWeightOptional().getValue())
                         .mul(BigDecimalUtil.tryParseDecimalElseZero(rowNutrient.getWeight()))

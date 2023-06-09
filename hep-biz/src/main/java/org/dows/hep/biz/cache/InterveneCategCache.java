@@ -60,7 +60,7 @@ public class InterveneCategCache extends CategCache {
      */
     public List<CategVO> getPrimeCategs(){
         return ensureCache().mapItems.values().stream()
-                .filter(i->i.getMark().equals(1)&& EnumCategFamily.FOODMaterial.getCode().equalsIgnoreCase(i.getFamily()))
+                .filter(i->Integer.valueOf(1).equals( i.getMark())&& EnumCategFamily.FOODMaterial.getCode().equalsIgnoreCase(i.getFamily()))
                 .sorted(Comparator.comparingInt((CategVO a) -> Optional.ofNullable(a.getSeq()).orElse(0)).thenComparingLong(CategVO::getId))
                 .collect(Collectors.toList());
     }
