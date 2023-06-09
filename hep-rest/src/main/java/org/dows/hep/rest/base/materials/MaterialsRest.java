@@ -62,7 +62,9 @@ public class MaterialsRest {
      */
     @Operation(summary = "分页")
     @PostMapping("v1/baseMaterials/materials/pageMaterials")
-    public IPage<MaterialsPageResponse> pageMaterials(@RequestBody @Validated MaterialsPageRequest materialsPageRequest) {
+    public IPage<MaterialsPageResponse> pageMaterials(@RequestBody @Validated MaterialsPageRequest materialsPageRequest, HttpServletRequest request) {
+        String accountId = baseBiz.getAccountId(request);
+        materialsPageRequest.setAccountId(accountId);
         return materialsBiz.pageMaterials(materialsPageRequest);
     }
 

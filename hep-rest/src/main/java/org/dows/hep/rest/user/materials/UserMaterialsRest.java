@@ -3,10 +3,12 @@ package org.dows.hep.rest.user.materials;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.materials.request.MaterialsPageRequest;
 import org.dows.hep.api.base.materials.response.MaterialsPageResponse;
 import org.dows.hep.api.base.materials.response.MaterialsResponse;
+import org.dows.hep.biz.base.materials.MaterialsBaseBiz;
 import org.dows.hep.biz.user.materials.UserMaterialsBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "资料信息", description = "资料信息")
 public class UserMaterialsRest {
     private final UserMaterialsBiz userMaterialsBiz;
+    private final MaterialsBaseBiz baseBiz;
 
     /**
     * 分页
@@ -30,7 +33,9 @@ public class UserMaterialsRest {
     */
     @Operation(summary = "分页")
     @PostMapping("v1/userMaterials/userMaterials/pageMaterials")
-    public IPage<MaterialsPageResponse> pageMaterials(@RequestBody @Validated MaterialsPageRequest materialsPageRequest ) {
+    public IPage<MaterialsPageResponse> pageMaterials(@RequestBody @Validated MaterialsPageRequest materialsPageRequest, HttpServletRequest request) {
+        String accountId = baseBiz.getAccountId(request);
+        materialsPageRequest.setAccountId(accountId);
         return userMaterialsBiz.pageMaterials(materialsPageRequest);
     }
 
