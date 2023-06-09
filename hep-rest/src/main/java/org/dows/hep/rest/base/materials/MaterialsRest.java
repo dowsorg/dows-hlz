@@ -13,6 +13,7 @@ import org.dows.hep.api.base.materials.request.MaterialsRequest;
 import org.dows.hep.api.base.materials.request.MaterialsSearchRequest;
 import org.dows.hep.api.base.materials.response.MaterialsPageResponse;
 import org.dows.hep.api.base.materials.response.MaterialsResponse;
+import org.dows.hep.biz.base.materials.MaterialsBaseBiz;
 import org.dows.hep.biz.base.materials.MaterialsManageBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +37,7 @@ import java.util.List;
 @Tag(name = "资料信息", description = "资料信息")
 public class MaterialsRest {
     private final MaterialsManageBiz materialsBiz;
+    private final MaterialsBaseBiz baseBiz;
 
     /**
     * 新增和更新资料信息
@@ -44,7 +46,11 @@ public class MaterialsRest {
     */
     @Operation(summary = "新增和更新资料信息")
     @PostMapping("v1/baseMaterials/materials/saveOrUpdMaterials")
-    public String saveOrUpdMaterials(@RequestBody @Validated MaterialsRequest materials ) {
+    public String saveOrUpdMaterials(@RequestBody @Validated MaterialsRequest materials, HttpServletRequest request ) {
+        String accountId = baseBiz.getAccountId(request);
+        String accountName = baseBiz.getAccountName(request);
+        materials.setAccountId(accountId);
+        materials.setAccountName(accountName);
         return materialsBiz.saveOrUpdMaterials(materials);
     }
 
