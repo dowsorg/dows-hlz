@@ -321,10 +321,19 @@ public class MaterialsManageBiz {
             if (BeanUtil.isEmpty(entity)) {
                 throw new BizException(MaterialsESCEnum.DATA_NULL);
             }
+            // check auth
+            String oriAccountId = entity.getAccountId();
+            String curAccountId = request.getAccountId();
+            if (!Objects.equals(oriAccountId, curAccountId)) {
+                if (!baseBiz.isAdministrator(curAccountId)) {
+                    throw new BizException(MaterialsESCEnum.NO_AUTH);
+                }
+            }
             result.setId(entity.getId());
-            // 更新不能改变创建者
+            // 更新不能改变创建者以及访问权限
             result.setAccountId(null);
             result.setAccountName(null);
+            result.setAccessAuth(null);
         }
 
         return result;
