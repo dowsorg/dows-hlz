@@ -113,7 +113,7 @@ public class HepOrgOperateBiz {
                 .eq(ExperimentPersonEntity::getDeleted,false)
                 .one();
         //2、根据账户找到对应的机构
-        List<AccountGroupResponse> groupResponseList = accountGroupApi.getAccountGroupListByAccountId(experimentPerson.getExperimentAccountId(), appId);
+        List<AccountGroupResponse> groupResponseList = accountGroupApi.getAccountGroupListByAccountId(experimentPerson.getAccountId(), appId);
         //3、删除该条数据，并将账户添加到新机构
         if (groupResponseList != null && groupResponseList.size() > 0) {
             AccountOrgResponse orgResponse = accountOrgApi.getAccountOrgByOrgId(request.getOrgId(), appId);
@@ -138,7 +138,7 @@ public class HepOrgOperateBiz {
                     .formOrgName(groupResponseList.get(0).getOrgName())
                     .toOrgId(request.getOrgId())
                     .toOrgName(orgResponse.getOrgName())
-                    .experimentAccountName(experimentPerson.getExperimentAccountName())
+                    .experimentAccountName(experimentPerson.getAccountName())
                     .operateAccountId(operateAccountId)
                     .operateAccountName(operateAccountName)
                     .descr(request.getDescr())
