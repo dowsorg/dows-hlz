@@ -68,7 +68,6 @@ public class UserMaterialsBiz {
                         i -> i.eq(MaterialsEntity::getAccountId, callAccountId)
                                 .or()
                                 .eq(MaterialsEntity::getAccessAuth, MaterialsAccessAuthEnum.ACCESS_AUTH_PUBLIC.name()))
-                .eq(StrUtil.isNotBlank(callAccountId), MaterialsEntity::getAccountId, callAccountId)
                 .like(BeanUtil.isNotEmpty(request) && StrUtil.isNotBlank(request.getKeyword()), MaterialsEntity::getTitle, request.getKeyword())
                 .orderBy(true, true, MaterialsEntity::getSequence)
                 .page(pageRequest);
