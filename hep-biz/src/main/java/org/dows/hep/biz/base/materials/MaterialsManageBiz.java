@@ -252,7 +252,7 @@ public class MaterialsManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public Boolean delMaterials(List<String> materialsIds, String oriAccountId) {
+    public Boolean delMaterials(List<String> materialsIds, String curAccountId) {
         if (CollUtil.isEmpty(materialsIds)) {
             throw new BizException(MaterialsESCEnum.PARAMS_NON_NULL);
         }
@@ -262,7 +262,7 @@ public class MaterialsManageBiz {
             List<String> accountIdList = materialsEntityList.stream()
                     .map(MaterialsEntity::getAccountId)
                     .toList();
-            accountIdList.forEach(curAccountId -> {
+            accountIdList.forEach(oriAccountId -> {
                 checkAuth(oriAccountId, curAccountId);
             });
         }
