@@ -43,7 +43,7 @@ public class ExperimentQuestionnaireManageBiz {
      * @param
      * @return
      * @author fhb
-     * @description 预生成知识考点问卷
+     * @description 预生成知识考点问卷-分配实验的时候调用
      * @date 2023/6/3 15:33
      */
     public void preHandleExperimentQuestionnaire(String experimentInstanceId, String caseInstanceId, List<String> experimentGroupIds) {
@@ -113,7 +113,7 @@ public class ExperimentQuestionnaireManageBiz {
         experimentQuestionnaireService.saveBatch(entityList);
     }
 
-    public List<ExperimentQuestionnaireItemEntity> convertToFlatList(QuestionResponse questionResponse) {
+    private List<ExperimentQuestionnaireItemEntity> convertToFlatList(QuestionResponse questionResponse) {
         List<ExperimentQuestionnaireItemEntity> flatList = new ArrayList<>();
         flattenTree(questionResponse, flatList, "0");
         return flatList;
@@ -144,7 +144,7 @@ public class ExperimentQuestionnaireManageBiz {
         }
     }
 
-    public String getOptions(List<QuestionOptionWithAnswerResponse> optionWithAnswerList) {
+    private String getOptions(List<QuestionOptionWithAnswerResponse> optionWithAnswerList) {
         if (CollUtil.isEmpty(optionWithAnswerList)) {
             return "";
         }
@@ -159,7 +159,7 @@ public class ExperimentQuestionnaireManageBiz {
         return JSON.toJSONString(maps);
     }
 
-    public String getRightValues(List<QuestionOptionWithAnswerResponse> optionWithAnswerList) {
+    private String getRightValues(List<QuestionOptionWithAnswerResponse> optionWithAnswerList) {
         if (CollUtil.isEmpty(optionWithAnswerList)) {
             return "";
         }
