@@ -1,13 +1,12 @@
 package org.dows.hep.rest.tenant.experiment;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.crud.api.model.PageInfo;
 import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
 import org.dows.hep.api.tenant.experiment.request.ExperimentQueryRequest;
-import org.dows.hep.api.tenant.experiment.request.GroupSettingRequest;
+import org.dows.hep.api.tenant.experiment.request.ExperimentGroupSettingRequest;
 import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
@@ -80,7 +79,7 @@ public class ExperimentManageRest {
      */
     @Operation(summary = "实验分组")
     @PostMapping("v1/tenantExperiment/experimentManage/grouping")
-    public Boolean grouping(@RequestBody @Validated GroupSettingRequest groupSetting, @RequestParam @Validated String caseInstanceId) {
+    public Boolean grouping(@RequestBody @Validated ExperimentGroupSettingRequest groupSetting, @RequestParam @Validated String caseInstanceId) {
         return experimentManageBiz.grouping(groupSetting, caseInstanceId);
     }
 
