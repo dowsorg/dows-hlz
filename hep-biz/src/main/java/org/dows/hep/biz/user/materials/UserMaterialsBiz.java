@@ -106,10 +106,11 @@ public class UserMaterialsBiz {
         AccountInstanceRequest request = AccountInstanceRequest.builder()
                 .accountId(accountId)
                 .appId("3")
+                .roleName("学生")
                 .pageNo(1)
                 .pageSize(10)
                 .build();
-        IPage<AccountInstanceResponse> accountInstanceResponseIPage = personManageBiz.listTeacherOrStudent(request, accountId);
+        IPage<AccountInstanceResponse> accountInstanceResponseIPage = personManageBiz.listTeacherOrStudent(request, null);
         List<AccountInstanceResponse> records = accountInstanceResponseIPage.getRecords();
         if (CollUtil.isEmpty(records)) {
             return accountId;
@@ -124,7 +125,7 @@ public class UserMaterialsBiz {
                 .pageSize(10)
                 .orgId(accountInstanceResponse.getOrgId())
                 .build();
-        IPage<AccountOrgResponse> accountOrgResponseIPage = orgBiz.listClasss(orgRequest, accountId);
+        IPage<AccountOrgResponse> accountOrgResponseIPage = orgBiz.listClasss(orgRequest, null);
         List<AccountOrgResponse> records1 = accountOrgResponseIPage.getRecords();
         if (CollUtil.isEmpty(records1)) {
             return accountId;
