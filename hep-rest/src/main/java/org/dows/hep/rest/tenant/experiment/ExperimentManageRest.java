@@ -10,7 +10,6 @@ import org.dows.hep.api.tenant.experiment.request.ExperimentGroupSettingRequest;
 import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
-import org.dows.hep.form.CreateExperimentForm;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,11 +39,11 @@ public class ExperimentManageRest {
     }
 
 
-    @Operation(summary = "获取分配实验数据")
-    @PostMapping("v1/tenantExperiment/experimentManage/getAllotData")
-    public CreateExperimentForm getAllotData(String experimentId, String appId) {
-        return experimentManageBiz.getAllotData(experimentId, appId);
-    }
+//    @Operation(summary = "获取分配实验数据")
+//    @PostMapping("v1/tenantExperiment/experimentManage/getAllotData")
+//    public CreateExperimentForm getAllotData(String experimentId, String appId) {
+//        return experimentManageBiz.getAllotData(experimentId, appId);
+//    }
 
     /**
      * 案例机构和人物复制到实验

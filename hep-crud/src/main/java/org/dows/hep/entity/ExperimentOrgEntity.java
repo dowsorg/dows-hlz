@@ -32,11 +32,14 @@ public class ExperimentOrgEntity implements CrudEntity {
     @Schema(title = "主键ID")
     private Long id;
 
+    @Schema(title = "实验机构ID")
+    private String experimentOrgId;
+
     @Schema(title = "应用ID")
     private String appId;
 
-    @Schema(title = "实验机构ID")
-    private String experimentOrgId;
+    @Schema(title = "uim机构ID")
+    private String orgId;
 
     @Schema(title = "实验机构名称")
     private String experimentOrgName;
