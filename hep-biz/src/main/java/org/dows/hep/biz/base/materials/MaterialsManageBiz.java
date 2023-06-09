@@ -105,7 +105,7 @@ public class MaterialsManageBiz {
                 .orderBy(true, true, MaterialsEntity::getSequence)
                 .page(pageRequest);
         result = baseBiz.convertPage(pageResult, MaterialsPageResponse.class);
-        fillResult(result);
+        fillResult(result, request.getAccountId());
         return result;
     }
 
@@ -252,9 +252,19 @@ public class MaterialsManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public Boolean delMaterials(List<String> materialsIds) {
+    public Boolean delMaterials(List<String> materialsIds, String curAccountId) {
         if (CollUtil.isEmpty(materialsIds)) {
             throw new BizException(MaterialsESCEnum.PARAMS_NON_NULL);
+        }
+
+        List<MaterialsEntity> materialsEntityList = listByIds(materialsIds);
+        if (CollUtil.isNotEmpty(materialsEntityList)) {
+            List<String> accountIdList = materialsEntityList.stream()
+                    .map(MaterialsEntity::getAccountId)
+                    .toList();
+            accountIdList.forEach(oriAccountId -> {
+                checkAuth(oriAccountId, curAccountId);
+            });
         }
 
         // remove materials
@@ -268,6 +278,12 @@ public class MaterialsManageBiz {
         boolean remRes2 = materialsAttachmentService.remove(queryWrapper2);
 
         return remRes1 && remRes2;
+    }
+
+    private List<MaterialsEntity> listByIds(List<String> materialsIds) {
+        return materialsService.lambdaQuery()
+                .in(MaterialsEntity::getMaterialsId, materialsIds)
+                .list();
     }
 
     /**
@@ -321,13 +337,38 @@ public class MaterialsManageBiz {
             if (BeanUtil.isEmpty(entity)) {
                 throw new BizException(MaterialsESCEnum.DATA_NULL);
             }
+            // check auth
+            String oriAccountId = entity.getAccountId();
+            String curAccountId = request.getAccountId();
+            checkAuth(oriAccountId, curAccountId);
+
             result.setId(entity.getId());
-            // 更新不能改变创建者
+            // 更新不能改变创建者以及访问权限
             result.setAccountId(null);
             result.setAccountName(null);
+            result.setAccessAuth(null);
         }
 
         return result;
+    }
+
+    private void checkAuth(String oriAccountId, String curAccountId) {
+        if (!Objects.equals(oriAccountId, curAccountId)) {
+            if (!baseBiz.isAdministrator(curAccountId)) {
+                throw new BizException(MaterialsESCEnum.NO_AUTH);
+            }
+        }
+    }
+
+    private boolean getAuth(String oriAccountId, String curAccountId) {
+        if (Objects.equals(oriAccountId, curAccountId)) {
+            return Boolean.TRUE;
+        } else {
+            if (baseBiz.isAdministrator(curAccountId)) {
+                return Boolean.TRUE;
+            }
+        }
+        return Boolean.FALSE;
     }
 
     private List<MaterialsAttachmentEntity> convertAttachmentRequest2Entity(List<MaterialsAttachmentRequest> requests, String materialsId) {
@@ -413,7 +454,7 @@ public class MaterialsManageBiz {
         return materialsService.update(updateWrapper);
     }
 
-    private void fillResult(Page<MaterialsPageResponse> result) {
+    private void fillResult(Page<MaterialsPageResponse> result, String curAccountId) {
         if (BeanUtil.isEmpty(result)) {
             throw new BizException(MaterialsESCEnum.DATA_NULL);
         }
@@ -433,6 +474,7 @@ public class MaterialsManageBiz {
                     .orElse("");
             record.setUserName(userName);
             record.setAccountName(userName);
+            record.setCanExe(getAuth(record.getAccountId(), curAccountId));
         }
 
     }
