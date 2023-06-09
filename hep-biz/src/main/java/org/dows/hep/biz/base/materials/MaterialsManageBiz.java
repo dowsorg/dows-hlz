@@ -322,9 +322,10 @@ public class MaterialsManageBiz {
                 throw new BizException(MaterialsESCEnum.DATA_NULL);
             }
             result.setId(entity.getId());
-            // 更新不能改变创建者
+            // 更新不能改变创建者以及访问权限
             result.setAccountId(null);
             result.setAccountName(null);
+            result.setAccessAuth(null);
         }
 
         return result;
