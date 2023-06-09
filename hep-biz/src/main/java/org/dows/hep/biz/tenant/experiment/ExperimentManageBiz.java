@@ -1,6 +1,7 @@
 package org.dows.hep.biz.tenant.experiment;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
@@ -305,14 +306,21 @@ public class ExperimentManageBiz {
      */
     public PageInfo<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
         Page page = new Page<ExperimentInstanceEntity>();
-        page.setSize(pageExperimentRequest.getPageSize());
-        page.setCurrent(pageExperimentRequest.getPageNo());
-        page.addOrder(pageExperimentRequest.getDesc() ?
-                OrderItem.desc(pageExperimentRequest.getOrderBy()) : OrderItem.asc(pageExperimentRequest.getOrderBy()));
-        page = experimentInstanceService.page(page, experimentInstanceService.lambdaQuery()
-                .likeLeft(ExperimentInstanceEntity::getExperimentName, pageExperimentRequest.getKeyword())
-                .likeLeft(ExperimentInstanceEntity::getCaseName, pageExperimentRequest.getKeyword())
-                .likeLeft(ExperimentInstanceEntity::getExperimentDescr, pageExperimentRequest.getKeyword()));
+        page.setSize(pageExperimentRequest.getPageSize().longValue());
+        page.setCurrent(pageExperimentRequest.getPageNo().longValue());
+        if(StrUtil.isBlank(pageExperimentRequest.getOrderBy())) {
+            page.addOrder(pageExperimentRequest.getDesc() ?
+                    OrderItem.desc(pageExperimentRequest.getOrderBy()) : OrderItem.asc(pageExperimentRequest.getOrderBy()));
+        }
+        if(!StrUtil.isBlank(pageExperimentRequest.getKeyword())) {
+            page = experimentInstanceService.page(page, experimentInstanceService.lambdaQuery()
+                    .likeLeft(ExperimentInstanceEntity::getExperimentName, pageExperimentRequest.getKeyword())
+                    .likeLeft(ExperimentInstanceEntity::getCaseName, pageExperimentRequest.getKeyword())
+                    .likeLeft(ExperimentInstanceEntity::getExperimentDescr, pageExperimentRequest.getKeyword())
+                    .getWrapper());
+        } else {
+            page = experimentInstanceService.page(page, experimentInstanceService.lambdaQuery().getWrapper());
+        }
         PageInfo pageInfo = experimentInstanceService.getPageInfo(page, ExperimentListResponse.class);
         return pageInfo;
     }
