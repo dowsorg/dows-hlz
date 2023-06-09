@@ -175,7 +175,6 @@ public class ExperimentManageBiz {
                 .memberCount(groupSetting.getMemberCount())
                 .groupNo(groupSetting.getGroupNo())
                 .groupName(groupSetting.getGroupName())
-                .groupAlias(groupSetting.getGroupAlias())
                 .build();
 
         // 保存实验小组
@@ -185,8 +184,9 @@ public class ExperimentManageBiz {
         List<GroupSettingRequest.ExperimentParticipator> experimentParticipators = groupSetting.getExperimentParticipators();
         for (GroupSettingRequest.ExperimentParticipator experimentParticipator : experimentParticipators) {
             ExperimentParticipatorEntity experimentParticipatorEntity = ExperimentParticipatorEntity.builder()
-                    .id(Long.valueOf(experimentParticipator.getId()))
+//                    .id(Long.valueOf(experimentParticipator.getId()))
                     .experimentParticipatorId(idGenerator.nextIdStr())
+                    .appId(groupSetting.getAppId())
                     .experimentInstanceId(groupSetting.getExperimentInstanceId())
                     .accountId(experimentParticipator.getParticipatorId())
                     .accountName(experimentParticipator.getParticipatorName())

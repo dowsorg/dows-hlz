@@ -22,6 +22,9 @@ public class GroupSettingRequest{
     @Schema(title = "小组序号")
     private String groupNo;
 
+    @Schema(title = "应用ID")
+    private String appId;
+
     @Schema(title = "小组名称")
     private String groupName;
 
