@@ -41,6 +41,9 @@ public class MaterialsPageResponse {
     @Schema(title = "序号")
     private Integer sequence;
 
+    @Schema(title = "是否又权限操作")
+    private Boolean canExe;
+
     @Schema(title = "账号ID")
     @JsonIgnore
     private String accountId;

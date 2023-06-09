@@ -105,7 +105,7 @@ public class MaterialsManageBiz {
                 .orderBy(true, true, MaterialsEntity::getSequence)
                 .page(pageRequest);
         result = baseBiz.convertPage(pageResult, MaterialsPageResponse.class);
-        fillResult(result);
+        fillResult(result, request.getAccountId());
         return result;
     }
 
@@ -360,6 +360,17 @@ public class MaterialsManageBiz {
         }
     }
 
+    private boolean getAuth(String oriAccountId, String curAccountId) {
+        if (Objects.equals(oriAccountId, curAccountId)) {
+            return Boolean.TRUE;
+        } else {
+            if (baseBiz.isAdministrator(curAccountId)) {
+                return Boolean.TRUE;
+            }
+        }
+        return Boolean.FALSE;
+    }
+
     private List<MaterialsAttachmentEntity> convertAttachmentRequest2Entity(List<MaterialsAttachmentRequest> requests, String materialsId) {
         if (Objects.isNull(requests) || requests.isEmpty() || StrUtil.isBlank(materialsId)) {
             throw new BizException(MaterialsESCEnum.PARAMS_NON_NULL);
@@ -443,7 +454,7 @@ public class MaterialsManageBiz {
         return materialsService.update(updateWrapper);
     }
 
-    private void fillResult(Page<MaterialsPageResponse> result) {
+    private void fillResult(Page<MaterialsPageResponse> result, String curAccountId) {
         if (BeanUtil.isEmpty(result)) {
             throw new BizException(MaterialsESCEnum.DATA_NULL);
         }
@@ -463,6 +474,7 @@ public class MaterialsManageBiz {
                     .orElse("");
             record.setUserName(userName);
             record.setAccountName(userName);
+            record.setCanExe(getAuth(record.getAccountId(), curAccountId));
         }
 
     }
