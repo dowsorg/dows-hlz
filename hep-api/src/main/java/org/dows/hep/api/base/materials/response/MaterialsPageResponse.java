@@ -34,5 +34,8 @@ public class MaterialsPageResponse {
     @Schema(title = "上传时间-eg. 2022年5月3日星期二 17:49")
     private String uploadTime;
 
+    @Schema(title = "序号")
+    private Integer sequence;
+
 
 }
