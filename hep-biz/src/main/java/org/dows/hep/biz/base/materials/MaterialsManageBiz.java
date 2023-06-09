@@ -225,7 +225,7 @@ public class MaterialsManageBiz {
         List<MaterialsAttachmentEntity> attachments = listAttachmentEntity(materialsIds);
         Validator.validateNotEmpty(attachments, "资料不存在");
 
-        OssInfo oss = ossBiz.zip(attachments, "学习资料");
+        OssInfo oss = ossBiz.zip(attachments, "资料名称");
         return oss.getPath();
     }
 
@@ -240,8 +240,8 @@ public class MaterialsManageBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     public Boolean delMaterials(List<String> materialsIds) {
-        if (materialsIds == null || materialsIds.isEmpty()) {
-            return Boolean.FALSE;
+        if (CollUtil.isEmpty(materialsIds)) {
+            throw new BizException(MaterialsESCEnum.PARAMS_NON_NULL);
         }
 
         // remove materials
@@ -255,6 +255,27 @@ public class MaterialsManageBiz {
         boolean remRes2 = materialsAttachmentService.remove(queryWrapper2);
 
         return remRes1 && remRes2;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 删除or批量删除附件
+     * @关联表: MaterialsAttachment
+     * @工时: 6H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月18日 上午10:45:07
+     */
+    public Boolean delMaterialsAttachment(List<String> attachmentIds) {
+        if (CollUtil.isEmpty(attachmentIds)) {
+            throw new BizException(MaterialsESCEnum.PARAMS_NON_NULL);
+        }
+
+        // remove attachment
+        LambdaQueryWrapper<MaterialsAttachmentEntity> queryWrapper2 = new LambdaQueryWrapper<MaterialsAttachmentEntity>()
+                .in(MaterialsAttachmentEntity::getMaterialsAttachmentId, attachmentIds);
+        return materialsAttachmentService.remove(queryWrapper2);
     }
 
     private MaterialsEntity convertRequest2Entity(MaterialsRequest request) {
