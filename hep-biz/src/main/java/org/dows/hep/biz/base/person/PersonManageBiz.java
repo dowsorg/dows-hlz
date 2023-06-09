@@ -14,6 +14,7 @@ import org.dows.account.request.AccountGroupInfoRequest;
 import org.dows.account.request.AccountInstanceRequest;
 import org.dows.account.request.AccountUserRequest;
 import org.dows.account.response.*;
+import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.base.person.request.PersonInstanceRequest;
 import org.dows.hep.api.base.person.response.PersonInstanceResponse;
 import org.dows.hep.api.tenant.casus.request.CasePersonIndicatorFuncRequest;
@@ -277,7 +278,14 @@ public class PersonManageBiz {
      * @开始时间:
      * @创建时间: 2023/4/20 13:46
      */
-    public Boolean resetPwd(AccountInstanceRequest request) {
+    public Boolean resetPwd(String password,AccountInstanceRequest request) {
+        //1、判断与原密码是否相等
+        AccountInstanceResponse instance = accountInstanceApi.getAccountInstanceByAccountName(request.getAccountName(),request.getAppId());
+        if(instance != null && !ReflectUtil.isObjectNull(instance)){
+            if(!instance.getPassword().equals(password)){
+                throw new AccountException(EnumAccountStatusCode.ACCOUNT_PASSWORD_NOT_MATCH_EXCEPTION);
+            }
+        }
         return accountInstanceApi.resetPwd(request);
     }
 
