@@ -20,6 +20,7 @@ import org.dows.hep.api.exception.ExperimentParticipatorException;
 import org.dows.hep.api.tenant.experiment.request.*;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.entity.*;
+import org.dows.hep.form.CreateExperimentForm;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
 import org.dows.user.api.api.UserExtinfoApi;
@@ -151,6 +152,56 @@ public class ExperimentManageBiz {
             experimentSettingService.saveOrUpdate(experimentSettingEntity);
         }
         return experimentInstance.getExperimentInstanceId();
+    }
+
+    /**
+     * 回填表单
+     *
+     * @return
+     */
+    public CreateExperimentForm getAllotData(String experimentInstanceId, String appId) {
+        CreateExperimentForm createExperimentForm = new CreateExperimentForm();
+
+        ExperimentInstanceEntity experimentInstance = experimentInstanceService.lambdaQuery()
+                .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
+                .last("limit 1")
+                .getEntity();
+
+        ExperimentParticipatorEntity experimentParticipator = experimentParticipatorService.lambdaQuery()
+                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
+                // todo 查找老师,后面定义为枚举，这里先实现
+                .eq(ExperimentParticipatorEntity::getParticipatorType, 0)
+                .last("limit 1")
+                .getEntity();
+
+        List<ExperimentSettingEntity> experimentSettings = experimentSettingService.lambdaQuery()
+                .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentSettingEntity::getAppId, appId)
+                .list();
+
+        // 处理实验
+        BeanUtil.copyProperties(experimentInstance, createExperimentForm, "teachers", "experimentSetting");
+        // 处理老师
+        AccountInstanceResponse accountInstanceResponse = new AccountInstanceResponse();
+        BeanUtil.copyProperties(experimentParticipator, accountInstanceResponse);
+        // todo 一个实验是否可以有多个老师
+        List<AccountInstanceResponse> teachers = Arrays.asList(accountInstanceResponse);
+        createExperimentForm.setTeachers(teachers);
+        // 处理实验设置
+        ExperimentSetting experimentSetting = new ExperimentSetting();
+        for (ExperimentSettingEntity expSetting : experimentSettings) {
+            String configKey = expSetting.getConfigKey();
+            if (configKey.equals(ExperimentSetting.SandSetting.class.getName())) {
+                ExperimentSetting.SandSetting bean = JSONUtil.toBean(expSetting.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
+                experimentSetting.setSandSetting(bean);
+            }
+            if (configKey.equals(ExperimentSetting.SchemeSetting.class.getName())) {
+                ExperimentSetting.SchemeSetting bean = JSONUtil.toBean(expSetting.getConfigJsonVals(), ExperimentSetting.SchemeSetting.class);
+                experimentSetting.setSchemeSetting(bean);
+            }
+        }
+        createExperimentForm.setExperimentSetting(experimentSetting);
+        return createExperimentForm;
     }
 
     /**
