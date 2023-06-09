@@ -44,11 +44,11 @@ public class ExperimentSetting {
         // 每期间隔
         private Long interval;
         // 每期时长
-        private Map<Integer,Integer> durationMap;
+        private Map<String,Integer> durationMap;
         // 每期权重
-        private Map<Integer,Float> weightMap;
+        private Map<String,Float> weightMap;
         // 模拟时间周期
-        private Map<Integer,Integer> periodMap;
+        private Map<String,Integer> periodMap;
 
         // 健康指数权重
         private Float healthIndexWeight;

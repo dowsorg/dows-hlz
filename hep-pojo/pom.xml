@@ -9,9 +9,15 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>hep-pojo</artifactId>
     <dependencies>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dows.saas</groupId>
+            <artifactId>hep-api</artifactId>
+        </dependency>
     </dependencies>
-    <build>
-        <plugins>
-        </plugins>
-    </build>
+
 </project>

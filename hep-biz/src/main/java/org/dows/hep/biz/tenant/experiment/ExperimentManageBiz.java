@@ -22,6 +22,7 @@ import org.dows.hep.api.tenant.experiment.request.GroupSettingRequest;
 import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.entity.*;
+import org.dows.hep.form.CreateExperimentForm;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
 import org.dows.user.api.api.UserExtinfoApi;
@@ -96,7 +97,6 @@ public class ExperimentManageBiz {
         // 保存实验实例
         experimentInstanceService.saveOrUpdate(experimentInstance);
 
-        ExperimentSetting experimentSetting = createExperiment.getExperimentSetting();
         List<AccountInstanceResponse> teachers = createExperiment.getTeachers();
         List<ExperimentParticipatorEntity> experimentParticipatorEntityList = new ArrayList<>();
         for (AccountInstanceResponse instance : teachers) {
@@ -108,10 +108,11 @@ public class ExperimentManageBiz {
                     .participatorType(0)
                     .build();
             experimentParticipatorEntityList.add(experimentParticipatorEntity);
+
         }
         // 保存实验参与人
         experimentParticipatorService.saveOrUpdateBatch(experimentParticipatorEntityList);
-
+        ExperimentSetting experimentSetting = createExperiment.getExperimentSetting();
         // 标准模式
         if (null != experimentSetting.getSchemeSetting() && null != experimentSetting.getSandSetting()) {
             ExperimentSettingEntity experimentSettingEntity = ExperimentSettingEntity.builder()
@@ -155,6 +156,57 @@ public class ExperimentManageBiz {
         return experimentInstance.getExperimentInstanceId();
     }
 
+
+    /**
+     * 回填表单
+     *
+     * @return
+     */
+    public CreateExperimentForm getAllotData(String experimentInstanceId, String appId) {
+        CreateExperimentForm createExperimentForm = new CreateExperimentForm();
+
+        ExperimentInstanceEntity experimentInstance = experimentInstanceService.lambdaQuery()
+                .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
+                .last("limit 1")
+                .getEntity();
+
+        ExperimentParticipatorEntity experimentParticipator = experimentParticipatorService.lambdaQuery()
+                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
+                // todo 查找老师,后面定义为枚举，这里先实现
+                .eq(ExperimentParticipatorEntity::getParticipatorType, 0)
+                .last("limit 1")
+                .getEntity();
+
+        List<ExperimentSettingEntity> experimentSettings = experimentSettingService.lambdaQuery()
+                .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentSettingEntity::getAppId, appId)
+                .list();
+
+        // 处理实验
+        BeanUtil.copyProperties(experimentInstance, createExperimentForm, "teachers", "experimentSetting");
+        // 处理老师
+        AccountInstanceResponse accountInstanceResponse = new AccountInstanceResponse();
+        BeanUtil.copyProperties(experimentParticipator, accountInstanceResponse);
+        // todo 一个实验是否可以有多个老师
+        List<AccountInstanceResponse> teachers = Arrays.asList(accountInstanceResponse);
+        createExperimentForm.setTeachers(teachers);
+        // 处理实验设置
+        ExperimentSetting experimentSetting = new ExperimentSetting();
+        for (ExperimentSettingEntity expSetting : experimentSettings) {
+            String configKey = expSetting.getConfigKey();
+            if (configKey.equals(ExperimentSetting.SandSetting.class.getName())) {
+                ExperimentSetting.SandSetting bean = JSONUtil.toBean(expSetting.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
+                experimentSetting.setSandSetting(bean);
+            }
+            if (configKey.equals(ExperimentSetting.SchemeSetting.class.getName())) {
+                ExperimentSetting.SchemeSetting bean = JSONUtil.toBean(expSetting.getConfigJsonVals(), ExperimentSetting.SchemeSetting.class);
+                experimentSetting.setSchemeSetting(bean);
+            }
+        }
+        createExperimentForm.setExperimentSetting(experimentSetting);
+        return createExperimentForm;
+    }
+
     /**
      * @param
      * @return
@@ -166,7 +218,7 @@ public class ExperimentManageBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     @DSTransactional
-    public Boolean grouping(GroupSettingRequest groupSetting,String caseInstanceId) {
+    public Boolean grouping(GroupSettingRequest groupSetting, String caseInstanceId) {
 
         ExperimentGroupEntity experimentGroupEntity = ExperimentGroupEntity.builder()
                 .experimentGroupId(idGenerator.nextIdStr())
@@ -203,10 +255,10 @@ public class ExperimentManageBiz {
         }
         // 判断实验参与人数是否大于该案例得机构数
         List<CaseOrgEntity> entityList = caseOrgService.lambdaQuery()
-                .eq(CaseOrgEntity::getCaseInstanceId,caseInstanceId)
-                .eq(CaseOrgEntity::getDeleted,false)
+                .eq(CaseOrgEntity::getCaseInstanceId, caseInstanceId)
+                .eq(CaseOrgEntity::getDeleted, false)
                 .list();
-        if(entityList == null || experimentParticipatorEntityList.size() > entityList.size()){
+        if (entityList == null || experimentParticipatorEntityList.size() > entityList.size()) {
             throw new ExperimentParticipatorException(EnumExperimentParticipator.PARTICIPATOR_NUMBER_CANNOT_MORE_THAN_ORG_EXCEPTION);
         }
         // 保存实验参与人[学生]
@@ -325,7 +377,7 @@ public class ExperimentManageBiz {
                 //1.1.1、生成随机code，复制机构基础信息
                 String orgCode = createCode(7);
                 AccountOrgRequest request = new AccountOrgRequest();
-                BeanUtil.copyProperties(orgResponse, request, new String[]{"id","dt"});
+                BeanUtil.copyProperties(orgResponse, request, new String[]{"id", "dt"});
                 request.setOrgCode(orgCode);
                 request.setOperationManual(orgEntity.getHandbook());
                 String orgId = accountOrgApi.createAccountOrg(request);
@@ -385,7 +437,7 @@ public class ExperimentManageBiz {
                     UserInstanceResponse userInstanceResponse = userInstanceApi.getUserInstanceByUserId(accountUser.getUserId());
                     UserExtinfoResponse userExtinfoResponse = userExtinfoApi.getUserExtinfoByUserId(accountUser.getUserId());
                     UserInstanceRequest userInstanceRequest = new UserInstanceRequest();
-                    BeanUtils.copyProperties(userInstanceResponse, userInstanceRequest, new String[]{"id", "accountId","dt"});
+                    BeanUtils.copyProperties(userInstanceResponse, userInstanceRequest, new String[]{"id", "accountId", "dt"});
                     String userId = userInstanceApi.insertUserInstance(userInstanceRequest);
                     UserExtinfoRequest userExtinfo = UserExtinfoRequest.builder()
                             .userId(userId)
