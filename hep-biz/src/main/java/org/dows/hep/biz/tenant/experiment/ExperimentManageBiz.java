@@ -18,9 +18,9 @@ import org.dows.framework.crud.mybatis.utils.BeanConvert;
 import org.dows.hep.api.enums.EnumExperimentParticipator;
 import org.dows.hep.api.exception.ExperimentParticipatorException;
 import org.dows.hep.api.tenant.experiment.request.*;
+import org.dows.hep.api.core.CreateExperimentForm;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.entity.*;
-import org.dows.hep.form.CreateExperimentForm;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
 import org.dows.user.api.api.UserExtinfoApi;
@@ -351,8 +351,8 @@ public class ExperimentManageBiz {
                     .appId(request.getAppId())
                     .experimentOrgId(model.getOrgId())
                     .experimentOrgName(model.getOrgName())
-                    .experimentAccountId(model.getAccountId())
-                    .experimentAccountName(model.getAccountName())
+                    .accountId(model.getAccountId())
+                    .accountName(model.getAccountName())
                     .periods(request.getPeriods())
                     .build();
             entityList.add(entity);
@@ -396,9 +396,11 @@ public class ExperimentManageBiz {
                 request.setOperationManual(orgEntity.getHandbook());
                 String orgId = accountOrgApi.createAccountOrg(request);
                 //1.1.2. 创建案例机构实例副本
+                String experimentOrgId = idGenerator.nextIdStr();
                 ExperimentOrgEntity entity = ExperimentOrgEntity.builder()
+                        .experimentOrgId(experimentOrgId)
+                        .orgId(orgId)
                         .appId(createExperiment.getAppId())
-                        .experimentOrgId(orgId)
                         .experimentOrgName(orgEntity.getOrgName())
                         .experimentInstanceId(orgEntity.getCaseInstanceId())
                         .experimentGroupId(model.getExperimentGroupId())
@@ -490,11 +492,11 @@ public class ExperimentManageBiz {
                             .experimentPersonId(idGenerator.nextIdStr())
                             .experimentInstanceId(createExperiment.getExperimentInstanceId())
                             .experimentGroupId(model.getExperimentGroupId())
-                            .experimentOrgId(orgId)
+                            .experimentOrgId(experimentOrgId)
                             .appId(createExperiment.getAppId())
                             .experimentOrgName(request.getOrgName())
-                            .experimentAccountId(vo.getAccountId())
-                            .experimentAccountName(vo.getAccountName())
+                            .accountId(vo.getAccountId())
+                            .accountName(vo.getAccountName())
                             .casePersonId(personEntity.getCasePersonId())
                             .build();
                     experimentPersonService.save(entity1);

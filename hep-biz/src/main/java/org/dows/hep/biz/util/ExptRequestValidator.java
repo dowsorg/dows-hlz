@@ -272,7 +272,7 @@ public class ExptRequestValidator {
     }
     public ExperimentPersonEntity getExperimentPerson(){
         return getExperimentPerson(ExperimentPersonEntity::getExperimentPersonId,
-                ExperimentPersonEntity::getExperimentAccountName,
+                ExperimentPersonEntity::getAccountName,
                 ExperimentPersonEntity::getCasePersonId,
                 ExperimentPersonEntity::getExperimentInstanceId,
                 ExperimentPersonEntity::getExperimentGroupId,

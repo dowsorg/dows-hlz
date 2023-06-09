@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author lait.zhang
@@ -68,7 +69,6 @@ public class UserMaterialsBiz {
                         i -> i.eq(MaterialsEntity::getAccountId, callAccountId)
                                 .or()
                                 .eq(MaterialsEntity::getAccessAuth, MaterialsAccessAuthEnum.ACCESS_AUTH_PUBLIC.name()))
-                .eq(StrUtil.isNotBlank(callAccountId), MaterialsEntity::getAccountId, callAccountId)
                 .like(BeanUtil.isNotEmpty(request) && StrUtil.isNotBlank(request.getKeyword()), MaterialsEntity::getTitle, request.getKeyword())
                 .orderBy(true, true, MaterialsEntity::getSequence)
                 .page(pageRequest);
@@ -105,11 +105,12 @@ public class UserMaterialsBiz {
     private String getTeacherIdOfStudent(String accountId) {
         AccountInstanceRequest request = AccountInstanceRequest.builder()
                 .accountId(accountId)
-                .appId("3")
+                .appId(baseBiz.getAppId())
+                .roleName("学生")
                 .pageNo(1)
                 .pageSize(10)
                 .build();
-        IPage<AccountInstanceResponse> accountInstanceResponseIPage = personManageBiz.listTeacherOrStudent(request, accountId);
+        IPage<AccountInstanceResponse> accountInstanceResponseIPage = personManageBiz.listTeacherOrStudent(request, null);
         List<AccountInstanceResponse> records = accountInstanceResponseIPage.getRecords();
         if (CollUtil.isEmpty(records)) {
             return accountId;
@@ -119,12 +120,12 @@ public class UserMaterialsBiz {
             return accountId;
         }
         AccountOrgRequest orgRequest = AccountOrgRequest.builder()
-                .appId("3")
+                .appId(baseBiz.getAppId())
                 .pageNo(1)
                 .pageSize(10)
                 .orgId(accountInstanceResponse.getOrgId())
                 .build();
-        IPage<AccountOrgResponse> accountOrgResponseIPage = orgBiz.listClasss(orgRequest, accountId);
+        IPage<AccountOrgResponse> accountOrgResponseIPage = orgBiz.listClasss(orgRequest, null);
         List<AccountOrgResponse> records1 = accountOrgResponseIPage.getRecords();
         if (CollUtil.isEmpty(records1)) {
             return accountId;
@@ -136,7 +137,7 @@ public class UserMaterialsBiz {
         return accountOrgResponse.getOwnerAccountId();
     }
 
-    private void fillResult(Page<MaterialsPageResponse> result) {
+    public void fillResult(Page<MaterialsPageResponse> result) {
         if (BeanUtil.isEmpty(result)) {
             throw new BizException(MaterialsESCEnum.DATA_NULL);
         }
@@ -146,11 +147,17 @@ public class UserMaterialsBiz {
             return;
         }
 
-        records.forEach(record -> {
+        for (MaterialsPageResponse record: records) {
             Date dt = record.getDt();
             String uploadTime = baseBiz.convertDate2String(dt);
             record.setUploadTime(uploadTime);
-        });
+            AccountInstanceResponse personalInformation = personManageBiz.getPersonalInformation(record.getAccountId(), baseBiz.getAppId());
+            String userName = Optional.ofNullable(personalInformation)
+                    .map(AccountInstanceResponse::getUserName)
+                    .orElse("");
+            record.setUserName(userName);
+            record.setAccountName(userName);
+        }
     }
 
 
