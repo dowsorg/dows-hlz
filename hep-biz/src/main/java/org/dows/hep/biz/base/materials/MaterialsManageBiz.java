@@ -442,6 +442,7 @@ public class MaterialsManageBiz {
             if (collect != null) {
                 String userName = collect.get(record.getAccountId());
                 record.setUserName(userName);
+                record.setAccountName(userName);
             }
         }
 
