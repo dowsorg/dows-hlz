@@ -316,7 +316,8 @@ public class ExperimentManageBiz {
             page = experimentInstanceService.page(page, experimentInstanceService.lambdaQuery()
                     .likeLeft(ExperimentInstanceEntity::getExperimentName, pageExperimentRequest.getKeyword())
                     .likeLeft(ExperimentInstanceEntity::getCaseName, pageExperimentRequest.getKeyword())
-                    .likeLeft(ExperimentInstanceEntity::getExperimentDescr, pageExperimentRequest.getKeyword()));
+                    .likeLeft(ExperimentInstanceEntity::getExperimentDescr, pageExperimentRequest.getKeyword())
+                    .getWrapper());
         } else {
             page = experimentInstanceService.page(page, experimentInstanceService.lambdaQuery().getWrapper());
         }
