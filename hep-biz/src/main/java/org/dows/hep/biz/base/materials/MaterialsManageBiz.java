@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.Validator;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -13,6 +14,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.oss.api.OssInfo;
+import org.dows.hep.api.base.materials.MaterialsAccessAuthEnum;
 import org.dows.hep.api.base.materials.MaterialsESCEnum;
 import org.dows.hep.api.base.materials.MaterialsEnabledEnum;
 import org.dows.hep.api.base.materials.request.MaterialsAttachmentRequest;
@@ -28,7 +30,6 @@ import org.dows.hep.entity.MaterialsEntity;
 import org.dows.hep.service.MaterialsAttachmentService;
 import org.dows.hep.service.MaterialsService;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -56,7 +57,7 @@ public class MaterialsManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    @Transactional
+    @DSTransactional
     public String saveOrUpdMaterials(MaterialsRequest materialsRequest) {
         if (BeanUtil.isEmpty(materialsRequest)) {
             return "";
@@ -88,12 +89,17 @@ public class MaterialsManageBiz {
         if (BeanUtil.isEmpty(request)) {
             return result;
         }
+        boolean isTeacher = baseBiz.isTeacher(request.getAccountId());
 
         Page<MaterialsEntity> pageRequest = new Page<>(request.getPageNo(), request.getPageSize());
         Page<MaterialsEntity> pageResult = materialsService.lambdaQuery()
                 .eq(MaterialsEntity::getAppId, request.getAppId())
                 .eq(MaterialsEntity::getBizCode, request.getBizCode())
                 .eq(MaterialsEntity::getEnabled, MaterialsEnabledEnum.ENABLED.getCode())
+                .and(isTeacher,
+                        i -> i.eq(MaterialsEntity::getAccountId, request.getAccountId())
+                                .or()
+                                .eq(MaterialsEntity::getAccessAuth, MaterialsAccessAuthEnum.ACCESS_AUTH_PUBLIC.name()))
                 .like(BeanUtil.isNotEmpty(request) && StrUtil.isNotBlank(request.getKeyword()), MaterialsEntity::getTitle, request.getKeyword())
                 .orderBy(true, true, MaterialsEntity::getSequence)
                 .page(pageRequest);
@@ -283,6 +289,9 @@ public class MaterialsManageBiz {
             throw new BizException(MaterialsESCEnum.PARAMS_NON_NULL);
         }
 
+        String accountId = request.getAccountId();
+        String accessAuth = getAccessAuth(accountId);
+
         MaterialsEntity result = MaterialsEntity.builder()
                 .appId(baseBiz.getAppId())
                 .materialsId(request.getMaterialsId())
@@ -293,6 +302,7 @@ public class MaterialsManageBiz {
                 .sequence(request.getSequence())
                 .accountId(request.getAccountId())
                 .accountName(request.getAccountName())
+                .accessAuth(accessAuth)
                 .build();
 
         String uniqueId = result.getMaterialsId();
@@ -423,6 +433,13 @@ public class MaterialsManageBiz {
         // 小时：分
         String time = dateTime.toTimeStr();
         return ymd + week + " " + time;
+    }
+
+    private String getAccessAuth(String accountId) {
+        if (baseBiz.isAdministrator(accountId)) {
+            return MaterialsAccessAuthEnum.ACCESS_AUTH_PUBLIC.name();
+        }
+        return MaterialsAccessAuthEnum.ACCESS_AUTH_PRIVATE.name();
     }
 
 }

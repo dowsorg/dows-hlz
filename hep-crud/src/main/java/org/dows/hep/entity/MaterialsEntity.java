@@ -69,6 +69,9 @@ public class MaterialsEntity implements CrudEntity {
     @Schema(title = "创建者姓名")
     private String accountName;
 
+    @Schema(title = "访问权限")
+    private String accessAuth;
+
     @JsonIgnore
     @TableLogic
     @TableField(fill = FieldFill.INSERT)
