@@ -35,10 +35,7 @@ import org.dows.hep.entity.QuestionDimensionEntity;
 import org.dows.hep.service.EvaluateQuestionnaireService;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -316,11 +313,14 @@ public class EvaluateQuestionnaireBiz {
         if (CollUtil.isEmpty(sectionItemList)) {
             return new ArrayList<>();
         }
-
-        // 获取问题关联的问题集维度ID
         List<QuestionResponse> questionList = sectionItemList.stream()
                 .map(QuestionSectionItemResponse::getQuestion)
                 .toList();
+        if (CollUtil.isEmpty(questionList)) {
+            return new ArrayList<>();
+        }
+
+        // 获取问题关联的问题集维度ID
         List<String> dimensionIdList = questionList.stream()
                 .map(QuestionResponse::getDimensionId)
                 .toList();
