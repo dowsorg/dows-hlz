@@ -21,6 +21,9 @@ public class PageExperimentRequest {
     @Schema(title = "账号ID", description="学生账号ID")
     private String accountId;
 
+    @Schema(title = "实验实例ID", description="实验实例ID")
+    private String experimentInstanceId;
+
     private String orderBy;
     // 默认降序
     private boolean desc = true;

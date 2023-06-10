@@ -43,10 +43,10 @@ public class ExperimentParticipatorBiz {
                     OrderItem.desc(pageExperimentRequest.getOrderBy()) : OrderItem.asc(pageExperimentRequest.getOrderBy()));
         }
 
-        if (!StrUtil.isBlank(pageExperimentRequest.getAccountId())) {
+        if (!StrUtil.isBlank(pageExperimentRequest.getAccountId()) && !StrUtil.isBlank(pageExperimentRequest.getExperimentInstanceId())) {
             page = experimentParticipatorService.page(page, experimentParticipatorService.lambdaQuery()
                     .eq(ExperimentParticipatorEntity::getAccountId, pageExperimentRequest.getAccountId())
-                    .ne(ExperimentParticipatorEntity::getParticipatorType, 0)
+                    .ne(ExperimentParticipatorEntity::getExperimentInstanceId, pageExperimentRequest.getExperimentInstanceId())
                     .getWrapper());
         } else {
             page = page.setTotal(0).setCurrent(0).setSize(0);
