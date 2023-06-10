@@ -306,10 +306,10 @@ public class ExperimentManageBiz {
      */
     public PageInfo<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
         Page page = new Page<ExperimentInstanceEntity>();
-        page.setSize(pageExperimentRequest.getPageSize().longValue());
-        page.setCurrent(pageExperimentRequest.getPageNo().longValue());
+        page.setSize(pageExperimentRequest.getPageSize());
+        page.setCurrent(pageExperimentRequest.getPageNo());
         if(StrUtil.isBlank(pageExperimentRequest.getOrderBy())) {
-            page.addOrder(pageExperimentRequest.getDesc() ?
+            page.addOrder(pageExperimentRequest.isDesc() ?
                     OrderItem.desc(pageExperimentRequest.getOrderBy()) : OrderItem.asc(pageExperimentRequest.getOrderBy()));
         }
         if(!StrUtil.isBlank(pageExperimentRequest.getKeyword())) {

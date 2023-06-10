@@ -14,11 +14,6 @@
     <dependencies>
 
         <dependency>
-            <groupId>org.dows.framework</groupId>
-            <artifactId>sequence-snowflake</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.dows.saas</groupId>
             <artifactId>hep-api</artifactId>
         </dependency>
@@ -27,6 +22,12 @@
             <groupId>org.dows.framework</groupId>
             <artifactId>crud-mybatis</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.dows.framework</groupId>
+            <artifactId>sequence-snowflake</artifactId>
+        </dependency>
+
+
 
         <dependency>
             <groupId>com.zaxxer</groupId>
@@ -45,6 +46,10 @@
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+        </dependency>
 
         <!--异步日志-->
         <dependency>
@@ -60,21 +65,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-undertow</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-devtools</artifactId>
-        </dependency>
+
 
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.0.4</version>
         </dependency>
-
 
         <dependency>
             <groupId>org.redisson</groupId>
