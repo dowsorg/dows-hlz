@@ -23,6 +23,21 @@ public class ExperimentListResponse{
     @Schema(title = "实验实列ID")
     private String experimentInstanceId;
 
+    @Schema(title = "参与者类型[0:教师，1:组长，2：学生]")
+    private Integer participatorType;
+
+    @Schema(title = "参与者序号")
+    private Integer participatorNo;
+
+    @Schema(title = "参与者状态[0: 未准备 1:已准备 2:选择阶段中 3:已选择阶段]")
+    private Integer participatorState;
+
+    @Schema(title = "组名")
+    private String groupName;
+
+    @Schema(title = "组序号")
+    private String groupNo;
+
     @Schema(title = "案例名称[社区名]")
     private String caseName;
 

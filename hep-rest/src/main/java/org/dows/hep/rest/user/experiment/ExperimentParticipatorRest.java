@@ -16,6 +16,8 @@ import org.dows.hep.service.ExperimentGroupService;
 import org.dows.hep.service.ExperimentParticipatorService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -44,8 +46,8 @@ public class ExperimentParticipatorRest {
      * @return
      */
     @Operation(summary = "分页获取实验参与者列表")
-    @GetMapping("v1/tenantExperiment/experimentParticipator/page")
-    public PageInfo<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
+    @PostMapping("v1/tenantExperiment/experimentParticipator/page")
+    public PageInfo<ExperimentListResponse> page(@RequestBody PageExperimentRequest pageExperimentRequest) {
         return experimentParticipatorBiz.page(pageExperimentRequest);
     }
 }
