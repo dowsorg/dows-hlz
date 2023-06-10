@@ -91,7 +91,8 @@ public class ExperimentOrgViewRest {
     @PostMapping("v1/userExperiment/experimentOrgView/delayFollowupTimer")
     public Boolean delayFollowupTimer(@RequestParam @Validate long diffTime,
                                       @RequestParam @Validate String appId,
-                                      @RequestParam @Validated String experimentInstanceId, HttpServletRequest request) {
+                                      @RequestParam @Validated String experimentInstanceId,
+                                      HttpServletRequest request) {
         String token = request.getHeader("token");
         Map<String, Object> map = JwtUtil.parseJWT(token, EnumToken.PROPERTIES_JWT_KEY.getStr());
         //1、获取登录账户和名称
