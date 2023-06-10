@@ -18,6 +18,9 @@ public class PageExperimentRequest {
     @Schema(title = "搜索关键字", description="搜索关键字")
     private String keyword;
 
+    @Schema(title = "账号ID", description="学生账号ID")
+    private String accountId;
+
     private String orderBy;
     // 默认降序
     private boolean desc = true;
