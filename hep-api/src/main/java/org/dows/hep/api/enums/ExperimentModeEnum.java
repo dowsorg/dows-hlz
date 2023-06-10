@@ -12,12 +12,12 @@ public enum ExperimentModeEnum {
 
     ;
     @Getter
-    private int state;
+    private int code;
     @Getter
     private String descr;
 
-    ExperimentModeEnum(int state, String descr) {
-        this.state = state;
+    ExperimentModeEnum(int code, String descr) {
+        this.code = code;
         this.descr = descr;
     }
 }

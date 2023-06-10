@@ -1,8 +1,5 @@
 package org.dows.hep.rest.user.experiment;
 
-import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.metadata.OrderItem;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -10,11 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.api.model.PageInfo;
 import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
+import org.dows.hep.api.user.experiment.request.GetExperimentGroupCaptainRequest;
+import org.dows.hep.api.user.experiment.response.GetExperimentGroupCaptainResponse;
 import org.dows.hep.biz.user.experiment.ExperimentParticipatorBiz;
-import org.dows.hep.entity.ExperimentParticipatorEntity;
-import org.dows.hep.service.ExperimentGroupService;
-import org.dows.hep.service.ExperimentParticipatorService;
-import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -47,5 +42,18 @@ public class ExperimentParticipatorRest {
     @GetMapping("v1/tenantExperiment/experimentParticipator/page")
     public PageInfo<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
         return experimentParticipatorBiz.page(pageExperimentRequest);
+    }
+
+
+    /**
+     * 获取实验列表
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取实验队长信息")
+    @GetMapping("v1/tenantExperiment/experimentParticipator/getCaptain")
+    public GetExperimentGroupCaptainResponse getCaptain(GetExperimentGroupCaptainRequest getExperimentGroupCaptainRequest) {
+        return experimentParticipatorBiz.getExperimentGroupCaptain(getExperimentGroupCaptainRequest);
     }
 }

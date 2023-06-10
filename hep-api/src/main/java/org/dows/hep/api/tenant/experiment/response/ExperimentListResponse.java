@@ -51,7 +51,7 @@ public class ExperimentListResponse{
 
     public String getModelDescr(){
         ExperimentModeEnum experimentModeEnum = Arrays
-                .stream(ExperimentModeEnum.values()).filter(e -> model == e.getState())
+                .stream(ExperimentModeEnum.values()).filter(e -> model == e.getCode())
                 .findFirst().orElse(null);
         if(experimentModeEnum != null){
             return experimentModeEnum.getDescr();
