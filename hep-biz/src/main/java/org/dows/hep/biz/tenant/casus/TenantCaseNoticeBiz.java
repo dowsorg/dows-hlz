@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.enums.QuestionESCEnum;
 import org.dows.hep.api.tenant.casus.CaseESCEnum;
-import org.dows.hep.api.tenant.casus.CasePeriodEnum;
 import org.dows.hep.api.tenant.casus.request.CaseNoticeRequest;
 import org.dows.hep.api.tenant.casus.response.CaseNoticeResponse;
 import org.dows.hep.entity.CaseInstanceEntity;
@@ -72,11 +71,7 @@ public class TenantCaseNoticeBiz {
         }
 
         return entityList.stream()
-                .map(item -> {
-                    CaseNoticeResponse caseNoticeResponse = BeanUtil.copyProperties(item, CaseNoticeResponse.class);
-                    caseNoticeResponse.setPeriods(CasePeriodEnum.getNameByCode(item.getPeriods()));
-                    return caseNoticeResponse;
-                })
+                .map(item -> BeanUtil.copyProperties(item, CaseNoticeResponse.class))
                 .sorted(Comparator.comparingInt(CaseNoticeResponse::getPeriodSequence))
                 .toList();
     }
