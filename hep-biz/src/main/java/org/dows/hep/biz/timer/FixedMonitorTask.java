@@ -36,7 +36,7 @@ public class FixedMonitorTask {
                 List<OperateFollowupTimerEntity> timerEntityList = operateFollowupTimerService.lambdaQuery()
                         .eq(OperateFollowupTimerEntity::getDeleted,false)
                         .eq(OperateFollowupTimerEntity::getExperimentInstanceId,instance.getExperimentInstanceId())
-                        .eq(OperateFollowupTimerEntity::getIsRegister,false)
+                        .eq(OperateFollowupTimerEntity::getIsFollowup,false)
                         .list();
                 if(timerEntityList != null && timerEntityList.size() > 0){
                     timerEntityList.forEach(timerEntity->{
