@@ -4,14 +4,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.dows.hep.api.base.indicator.request.BatchBindReasonIdRequestRs;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorExpressionItemRequestRs;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorExpressionRequestRs;
 import org.dows.hep.api.base.indicator.response.IndicatorExpressionItemResponseRs;
 import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
-import org.dows.hep.api.enums.EnumBoolean;
-import org.dows.hep.api.enums.EnumESC;
-import org.dows.hep.api.enums.EnumRedissonLock;
-import org.dows.hep.api.enums.EnumString;
+import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.IndicatorCategoryException;
 import org.dows.hep.api.exception.IndicatorExpressionException;
 import org.dows.hep.biz.util.RedissonUtil;
@@ -167,8 +165,11 @@ public class IndicatorExpressionBiz{
   public void createOrUpdate(CreateOrUpdateIndicatorExpressionRequestRs createOrUpdateIndicatorExpressionRequestRs) throws InterruptedException {
     String indicatorExpressionId = createOrUpdateIndicatorExpressionRequestRs.getIndicatorExpressionId();
     String principalId = createOrUpdateIndicatorExpressionRequestRs.getPrincipalId();
+    String indicatorExpressionRefId = createOrUpdateIndicatorExpressionRequestRs.getIndicatorExpressionRefId();
+    String reasonId = createOrUpdateIndicatorExpressionRequestRs.getReasonId();
     String appId = createOrUpdateIndicatorExpressionRequestRs.getAppId();
     Integer type = createOrUpdateIndicatorExpressionRequestRs.getType();
+    Integer source = createOrUpdateIndicatorExpressionRequestRs.getSource();
     RLock lock = redissonClient.getLock(RedissonUtil.getLockName(appId, EnumRedissonLock.INDICATOR_EXPRESSION_CREATE_DELETE_UPDATE, indicatorExpressionFieldAppId, appId));
     boolean isLocked = lock.tryLock(leaseTimeIndicatorExpressionCreateDeleteUpdate, TimeUnit.MILLISECONDS);
     if (!isLocked) {
@@ -183,6 +184,9 @@ public class IndicatorExpressionBiz{
       Set<String> dbIndicatorExpressionItemIdSet = new HashSet<>();
       CreateOrUpdateIndicatorExpressionItemRequestRs maxCreateOrUpdateIndicatorExpressionItemRequestRs = createOrUpdateIndicatorExpressionRequestRs.getMaxCreateOrUpdateIndicatorExpressionItemRequestRs();
       CreateOrUpdateIndicatorExpressionItemRequestRs minCreateOrUpdateIndicatorExpressionItemRequestRs = createOrUpdateIndicatorExpressionRequestRs.getMinCreateOrUpdateIndicatorExpressionItemRequestRs();
+      IndicatorExpressionRefEntity indicatorExpressionRefEntity = indicatorExpressionRefService.lambdaQuery()
+          .eq(IndicatorExpressionRefEntity::getIndicatorExpressionRefId, indicatorExpressionRefId)
+          .one();
       if (StringUtils.isBlank(indicatorExpressionId)) {
         indicatorExpressionId = idGenerator.nextIdStr();
         indicatorExpressionEntity = IndicatorExpressionEntity
@@ -190,16 +194,23 @@ public class IndicatorExpressionBiz{
             .indicatorExpressionId(indicatorExpressionId)
             .appId(appId)
             .type(type)
+            .source(source)
             .build();
-        indicatorExpressionRefService.save(IndicatorExpressionRefEntity
+        indicatorExpressionRefEntity = IndicatorExpressionRefEntity
             .builder()
             .indicatorExpressionRefId(idGenerator.nextIdStr())
             .appId(appId)
             .indicatorExpressionId(indicatorExpressionId)
             .principalId(principalId)
-            .build()
-        );
+            .reasonId(reasonId)
+            .build();
       } else {
+        if (Objects.isNull(indicatorExpressionRefEntity)) {
+          log.warn("method IndicatorExpressionBiz.createOrUpdate param createOrUpdateIndicatorExpressionRequestRs indicatorExpressionRefId:{} is illegal", indicatorExpressionRefId);
+          throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
+        } else {
+         indicatorExpressionRefEntity.setPrincipalId(principalId);
+        }
         if (!createOrUpdateIndicatorExpressionItemRequestRsList.isEmpty()) {
           createOrUpdateIndicatorExpressionItemRequestRsList.forEach(createOrUpdateIndicatorExpressionItemRequestRs -> {
             String indicatorExpressionItemId = createOrUpdateIndicatorExpressionItemRequestRs.getIndicatorExpressionItemId();
@@ -351,16 +362,17 @@ public class IndicatorExpressionBiz{
           indicatorExpressionItemEntityList.add(indicatorExpressionItemEntity);
         }
       }
+      indicatorExpressionRefService.saveOrUpdate(indicatorExpressionRefEntity);
       indicatorExpressionService.saveOrUpdate(indicatorExpressionEntity);
       indicatorExpressionItemService.saveOrUpdateBatch(indicatorExpressionItemEntityList);
       Set<String> previousIndicatorInstanceIdList = new HashSet<>();
-      checkExpression(previousIndicatorInstanceIdList, principalId, indicatorExpressionItemEntityList);
+      checkExpression(source, previousIndicatorInstanceIdList, principalId, indicatorExpressionItemEntityList);
     } finally {
       lock.unlock();
     }
   }
 
-  public void checkExpression(Set<String> previousIndicatorInstanceIdList, String principalId, List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList) {
+  public void checkExpression(Integer source, Set<String> previousIndicatorInstanceIdList, String principalId, List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList) {
     indicatorExpressionItemEntityList.forEach(indicatorExpressionItemEntity -> {
       String conditionRaw = indicatorExpressionItemEntity.getConditionRaw();
       String resultRaw = indicatorExpressionItemEntity.getResultRaw();
@@ -369,7 +381,7 @@ public class IndicatorExpressionBiz{
         throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
       }
       checkConditionExpression(indicatorExpressionItemEntity);
-      checkResultExpression(previousIndicatorInstanceIdList, principalId, indicatorExpressionItemEntity);
+      checkResultExpression(source, previousIndicatorInstanceIdList, principalId, indicatorExpressionItemEntity);
     });
   }
 
@@ -440,7 +452,7 @@ public class IndicatorExpressionBiz{
    * 1.can not appear itself & same periods
    * 2.can not circular dependency
    */
-  public void checkResultExpression(Set<String> previousIndicatorInstanceIdList, String principalId, IndicatorExpressionItemEntity indicatorExpressionItemEntity) {
+  public void checkResultExpression(Integer source, Set<String> previousIndicatorInstanceIdList, String principalId, IndicatorExpressionItemEntity indicatorExpressionItemEntity) {
     String resultNameList = indicatorExpressionItemEntity.getResultNameList();
     String resultValList = indicatorExpressionItemEntity.getResultValList();
     String[] resultNameArray = new String[]{};
@@ -463,11 +475,13 @@ public class IndicatorExpressionBiz{
     /* runsix: can not ref same indicatorInstanceId with current periods for example: a = a$0 + 1 */
     resultNameArray = resultNameList.split(EnumString.COMMA.getStr());
     resultValArray = resultValList.split(EnumString.COMMA.getStr());
-    for (int i = 0; i <= resultNameArray.length - 1; i++) {
-      String[] resultNameSpiltArray = resultNameArray[i].split(EnumString.SPLIT_DOLLAR.getStr());
-      if (StringUtils.equals(principalId, resultValArray[i]) && StringUtils.equals(resultNameSpiltArray[1], EnumString.ZERO.getStr())) {
-        log.warn("method IndicatorExpressionBiz.createOrUpdate checkResultExpression can not ref same indicatorInstanceId with current periods");
-        throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
+    if (EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getType().equals(source)) {
+      for (int i = 0; i <= resultNameArray.length - 1; i++) {
+        String[] resultNameSpiltArray = resultNameArray[i].split(EnumString.SPLIT_DOLLAR.getStr());
+        if (StringUtils.equals(principalId, resultValArray[i]) && StringUtils.equals(resultNameSpiltArray[1], EnumString.ZERO.getStr())) {
+          log.warn("method IndicatorExpressionBiz.createOrUpdate checkResultExpression can not ref same indicatorInstanceId with current periods");
+          throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
+        }
       }
     }
     /* runsix:can not circular dependency */
@@ -500,6 +514,7 @@ public class IndicatorExpressionBiz{
         log.warn("method IndicatorExpressionBiz.createOrUpdate checkResultExpression indicatorExpressionId:{} is illegal", indicatorExpressionId);
         continue;
       }
+      Integer source1 = indicatorExpressionEntity.getSource();
       String minIndicatorExpressionItemId = indicatorExpressionEntity.getMinIndicatorExpressionItemId();
       String maxIndicatorExpressionItemId = indicatorExpressionEntity.getMaxIndicatorExpressionItemId();
       Set<String> maxAndMinIndicatorExpressionItemIdSet = new HashSet<>();
@@ -518,7 +533,7 @@ public class IndicatorExpressionBiz{
             .list();
         indicatorExpressionItemEntityList1.addAll(indicatorExpressionItemEntityList2);
       }
-      checkExpression(previousIndicatorInstanceIdList, indicatorInstanceId, indicatorExpressionItemEntityList1);
+      checkExpression(source1, previousIndicatorInstanceIdList, indicatorInstanceId, indicatorExpressionItemEntityList1);
     }
   }
   private static String getConditionExpression(String conditionExpression) {
@@ -695,5 +710,19 @@ public class IndicatorExpressionBiz{
     String str = "indicator0@0";
     String[] split = str.split("@");
     System.out.println(split);
+  }
+
+  /* runsix:TODO */
+  @Transactional(rollbackFor = Exception.class)
+  public void batchBindReasonId(BatchBindReasonIdRequestRs batchBindReasonIdRequestRs) {
+    String appId = batchBindReasonIdRequestRs.getAppId();
+    String reasonId = batchBindReasonIdRequestRs.getReasonId();
+    Integer source = batchBindReasonIdRequestRs.getSource();
+    List<String> indicatorExpressionIdList = batchBindReasonIdRequestRs.getIndicatorExpressionIdList();
+
+  }
+
+  public void checkSourceAndReasonId(String source, String reasonId) {
+
   }
 }

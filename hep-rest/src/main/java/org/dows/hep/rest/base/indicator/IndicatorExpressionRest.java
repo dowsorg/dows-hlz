@@ -3,6 +3,7 @@ package org.dows.hep.rest.base.indicator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.indicator.request.BatchBindReasonIdRequestRs;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorExpressionRequestRs;
 import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,5 +23,11 @@ public class IndicatorExpressionRest {
   @PostMapping("v1/baseIndicator/indicatorExpression/createOrUpdateRs")
   public void createOrUpdate(@RequestBody CreateOrUpdateIndicatorExpressionRequestRs createOrUpdateIndicatorExpressionRequestRs) throws InterruptedException {
     indicatorExpressionBiz.createOrUpdate(createOrUpdateIndicatorExpressionRequestRs);
+  }
+
+  @Operation(summary = "批量绑定公式与产生公式原因")
+  @PostMapping("v1/baseIndicator/indicatorExpression/batchBindReasonId")
+  public void batchBindReasonId(@RequestBody BatchBindReasonIdRequestRs batchBindReasonIdRequestRs) {
+    indicatorExpressionBiz.batchBindReasonId(batchBindReasonIdRequestRs);
   }
 }
