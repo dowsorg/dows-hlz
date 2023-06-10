@@ -209,7 +209,7 @@ public class EvaluateQuestionnaireBiz {
 
         // save or upd questionnaire
         EvaluateQuestionnaireEntity result = EvaluateQuestionnaireEntity.builder()
-                .appId(request.getAppId() == null ? baseBiz.getAppId() : request.getAppId())
+                .appId(baseBiz.getAppId())
                 .evaluateQuestionnaireId(request.getEvaluateQuestionnaireId())
                 .evaluateCategId(request.getEvaluateCategId())
                 .evaluateQuestionnaireName(request.getEvaluateQuestionnaireName())
@@ -246,6 +246,7 @@ public class EvaluateQuestionnaireBiz {
 
     private QuestionSectionRequest evaluateQuestionnaire2QS(EvaluateQuestionnaireRequest request) {
         return QuestionSectionRequest.builder()
+                .questionSectionId(request.getQuestionSectionId())
                 .name(request.getEvaluateQuestionnaireName())
                 .tips(null)
                 .descr(request.getEvaluateQuestionnaireDesc())

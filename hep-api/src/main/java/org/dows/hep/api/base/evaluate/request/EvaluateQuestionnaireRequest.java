@@ -41,6 +41,9 @@ public class EvaluateQuestionnaireRequest {
     @Schema(title = "对话提示")
     private String tips;
 
+    @Schema(title = "问题集ID")
+    private String questionSectionId;
+
     @Schema(title = "问题集合")
     private List<QuestionSectionItemRequest> sectionItemList;
 
@@ -56,9 +59,5 @@ public class EvaluateQuestionnaireRequest {
     @Schema(title = "创建者Name")
     @JsonIgnore
     private String accountName;
-
-    @Schema(title = "appId")
-    @JsonIgnore
-    private String appId;
 
 }
