@@ -72,6 +72,9 @@ public class OperateFollowupTimerEntity implements CrudEntity {
     @Schema(title = "实验截止时间")
     private Date experimentDeadline;
 
+    @Schema(title = "是否挂号")
+    private Boolean isRegister;
+
     @Schema(title = "随访间隔天数")
     private Integer dueDays;
 
