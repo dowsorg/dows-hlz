@@ -251,6 +251,7 @@ public class ExperimentOrgViewBiz {
                     .operateAccountName(accountName)
                     .experimentDeadline(saveFollowup.getExperimentDeadline())
                     .dueDays(saveFollowup.getDueDays())
+                    .isFollowup(true)
                     .todoTime(TimeUtil.timeProcess(new Date(), saveFollowup.getDueDays()))
                     .setAtTime(new Date())
                     .followupTimes(timerEntity.getFollowupTimes() + 1)
