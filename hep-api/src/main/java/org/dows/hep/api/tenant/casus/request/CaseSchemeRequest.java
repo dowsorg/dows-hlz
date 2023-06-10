@@ -49,6 +49,9 @@ public class CaseSchemeRequest{
     @Schema(title = "视频问题题干")
     private String videoQuestion;
 
+    @Schema(title = "问题集ID")
+    private String questionSectionId;
+
     @Schema(title = "问题集合")
     private List<QuestionSectionItemRequest> sectionItemList;
 

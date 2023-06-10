@@ -20,9 +20,6 @@ public class QuestionSectionItemRequest {
     @Schema(title = "itemID")
     private String questionSectionItemId;
 
-    @Schema(title = "问题集ID")
-    private String questionSectionId;
-
     @Schema(title = "状态")
     private Integer enabled;
 

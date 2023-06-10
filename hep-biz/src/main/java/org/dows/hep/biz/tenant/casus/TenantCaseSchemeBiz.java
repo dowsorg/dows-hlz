@@ -100,6 +100,36 @@ public class TenantCaseSchemeBiz {
     }
 
     /**
+     * @author fhb
+     * @description 列出符合条件的方案设计
+     * @date 2023/6/10 13:30
+     * @param
+     * @return
+     */
+    public List<CaseSchemeResponse> listCaseScheme(CaseSchemeSearchRequest caseSchemeSearch) {
+        if (caseSchemeSearch == null) {
+            return new ArrayList<>();
+        }
+
+        // list admin
+        LambdaQueryWrapper<CaseSchemeEntity> queryWrapper = new LambdaQueryWrapper<CaseSchemeEntity>()
+                .eq(StrUtil.isNotBlank(caseSchemeSearch.getSource()), CaseSchemeEntity::getSource, caseSchemeSearch.getSource())
+                .eq(StrUtil.isNotBlank(caseSchemeSearch.getCaseInstanceId()), CaseSchemeEntity::getCaseInstanceId, caseSchemeSearch.getCaseInstanceId())
+                .eq(StrUtil.isNotBlank(caseSchemeSearch.getAppId()), CaseSchemeEntity::getAppId, caseSchemeSearch.getAppId())
+                .in(caseSchemeSearch.getCategIds() != null, CaseSchemeEntity::getCaseCategId, caseSchemeSearch.getCategIds())
+                .like(StrUtil.isNotBlank(caseSchemeSearch.getKeyword()), CaseSchemeEntity::getSchemeName, caseSchemeSearch.getKeyword());
+        List<CaseSchemeEntity> caseSchemeEntityList = caseSchemeService.list(queryWrapper);
+        if (caseSchemeEntityList == null || caseSchemeEntityList.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // convert 2 response
+        return caseSchemeEntityList.stream()
+                .map(item -> BeanUtil.copyProperties(item, CaseSchemeResponse.class))
+                .toList();
+    }
+
+    /**
      * @param
      * @return
      * @说明:
@@ -109,8 +139,9 @@ public class TenantCaseSchemeBiz {
      * @开始时间:
      * @创建时间: 2023年4月17日 下午8:00:11
      */
-    public List<CaseSchemeResponse> listCaseSchemeOfDS(CaseSchemeSearchRequest caseSchemeSearch) {
-        return list(caseSchemeSearch);
+    public List<CaseSchemeResponse> listCaseSchemeOfDataSource(CaseSchemeSearchRequest caseSchemeSearch) {
+        caseSchemeSearch.setSource(CaseSchemeSourceEnum.ADMIN.name());
+        return listCaseScheme(caseSchemeSearch);
     }
 
     /**
@@ -123,8 +154,8 @@ public class TenantCaseSchemeBiz {
      * @开始时间:
      * @创建时间: 2023年5月6日 下午14:00:11
      */
-    public Map<String, List<CaseSchemeResponse>> listSchemeGroupOfDS(CaseSchemeSearchRequest caseSchemeSearch) {
-        List<CaseSchemeResponse> responseList = list(caseSchemeSearch);
+    public Map<String, List<CaseSchemeResponse>> listSchemeGroupOfDataSource(CaseSchemeSearchRequest caseSchemeSearch) {
+        List<CaseSchemeResponse> responseList = listCaseSchemeOfDataSource(caseSchemeSearch);
         if (responseList == null || responseList.isEmpty()) {
             return new HashMap<>();
         }
@@ -307,29 +338,6 @@ public class TenantCaseSchemeBiz {
         result.setQuestionSectionDimensionMap(questionSectionDimensionMap);
     }
 
-    private List<CaseSchemeResponse> list(CaseSchemeSearchRequest caseSchemeSearch) {
-        if (caseSchemeSearch == null) {
-            return new ArrayList<>();
-        }
-
-        // list admin
-        LambdaQueryWrapper<CaseSchemeEntity> queryWrapper = new LambdaQueryWrapper<CaseSchemeEntity>()
-                .eq(StrUtil.isNotBlank(caseSchemeSearch.getSource()), CaseSchemeEntity::getSource, caseSchemeSearch.getSource())
-                .eq(StrUtil.isNotBlank(caseSchemeSearch.getCaseInstanceId()), CaseSchemeEntity::getCaseInstanceId, caseSchemeSearch.getCaseInstanceId())
-                .eq(StrUtil.isNotBlank(caseSchemeSearch.getAppId()), CaseSchemeEntity::getAppId, caseSchemeSearch.getAppId())
-                .in(caseSchemeSearch.getCategIds() != null, CaseSchemeEntity::getCaseCategId, caseSchemeSearch.getCategIds())
-                .like(StrUtil.isNotBlank(caseSchemeSearch.getKeyword()), CaseSchemeEntity::getSchemeName, caseSchemeSearch.getKeyword());
-        List<CaseSchemeEntity> caseSchemeEntityList = caseSchemeService.list(queryWrapper);
-        if (caseSchemeEntityList == null || caseSchemeEntityList.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        // convert 2 response
-        return caseSchemeEntityList.stream()
-                .map(item -> BeanUtil.copyProperties(item, CaseSchemeResponse.class))
-                .toList();
-    }
-
     private CaseSchemeEntity convertRequest2Entity(CaseSchemeRequest request, CaseSchemeSourceEnum caseSchemeSourceEnum, QuestionSourceEnum questionSourceEnum) {
         if (BeanUtil.isEmpty(request)) {
             throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
@@ -381,6 +389,7 @@ public class TenantCaseSchemeBiz {
 
     private QuestionSectionRequest caseScheme2QS(CaseSchemeRequest caseScheme) {
         return QuestionSectionRequest.builder()
+                .questionSectionId(caseScheme.getQuestionSectionId())
                 .name(caseScheme.getSchemeName())
                 .tips(caseScheme.getTips())
                 .descr(caseScheme.getSchemeDescr())

@@ -51,7 +51,7 @@ public class TenantCaseSchemeRest {
     @PostMapping("v1/tenantCasus/caseScheme/listSchemeGroupOfDS")
     public Map<String, List<CaseSchemeResponse>> listSchemeGroupOfDS(@RequestBody @Validated CaseSchemeSearchRequest caseSchemeSearchRequest) {
         caseSchemeSearchRequest.setSource(CaseSchemeSourceEnum.ADMIN.name());
-        return tenantCaseSchemeBiz.listSchemeGroupOfDS(caseSchemeSearchRequest);
+        return tenantCaseSchemeBiz.listSchemeGroupOfDataSource(caseSchemeSearchRequest);
     }
 
     /**
