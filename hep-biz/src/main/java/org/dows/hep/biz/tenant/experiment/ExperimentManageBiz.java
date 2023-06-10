@@ -16,10 +16,10 @@ import org.dows.account.response.AccountOrgResponse;
 import org.dows.account.response.AccountUserResponse;
 import org.dows.framework.crud.api.model.PageInfo;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
+import org.dows.hep.api.core.CreateExperimentForm;
 import org.dows.hep.api.enums.EnumExperimentParticipator;
 import org.dows.hep.api.exception.ExperimentParticipatorException;
 import org.dows.hep.api.tenant.experiment.request.*;
-import org.dows.hep.api.core.CreateExperimentForm;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
@@ -104,6 +104,7 @@ public class ExperimentManageBiz {
             ExperimentParticipatorEntity experimentParticipatorEntity = ExperimentParticipatorEntity.builder()
                     .experimentParticipatorId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentInstance.getExperimentInstanceId())
+                    .experimentName(experimentInstance.getExperimentName())
                     .accountId(instance.getAccountId())
                     .accountName(instance.getAccountName())
                     .participatorType(0)
@@ -308,11 +309,12 @@ public class ExperimentManageBiz {
         Page page = new Page<ExperimentInstanceEntity>();
         page.setSize(pageExperimentRequest.getPageSize());
         page.setCurrent(pageExperimentRequest.getPageNo());
-        if(StrUtil.isBlank(pageExperimentRequest.getOrderBy())) {
+
+        if (StrUtil.isBlank(pageExperimentRequest.getOrderBy())) {
             page.addOrder(pageExperimentRequest.isDesc() ?
                     OrderItem.desc(pageExperimentRequest.getOrderBy()) : OrderItem.asc(pageExperimentRequest.getOrderBy()));
         }
-        if(!StrUtil.isBlank(pageExperimentRequest.getKeyword())) {
+        if (!StrUtil.isBlank(pageExperimentRequest.getKeyword())) {
             page = experimentInstanceService.page(page, experimentInstanceService.lambdaQuery()
                     .likeLeft(ExperimentInstanceEntity::getExperimentName, pageExperimentRequest.getKeyword())
                     .likeLeft(ExperimentInstanceEntity::getCaseName, pageExperimentRequest.getKeyword())
