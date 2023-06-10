@@ -4,7 +4,6 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.dto.QuestionResultRecordDTO;
@@ -86,14 +85,16 @@ public class QuestionSectionBiz {
         List<QuestionSectionItemResponse> itemResponseList = listQuestionSectionItem(List.of(questionSectionEntity.getQuestionSectionId()));
         if (Objects.nonNull(itemResponseList) && !itemResponseList.isEmpty()) {
             questionCount = itemResponseList.size();
-            List<String> questionIds = itemResponseList.stream().map(QuestionSectionItemResponse::getQuestion).map(QuestionResponse::getQuestionInstanceId).toList();
+            List<String> questionIds = itemResponseList.stream()
+                    .map(QuestionSectionItemResponse::getQuestion)
+                    .map(QuestionResponse::getQuestionInstanceId)
+                    .toList();
             struct = questionInstanceBiz.getStruct(questionIds);
         }
-        LambdaUpdateWrapper<QuestionSectionEntity> updateWrapper = new LambdaUpdateWrapper<QuestionSectionEntity>()
+        questionSectionService.lambdaUpdate()
                 .eq(QuestionSectionEntity::getQuestionSectionId, questionSectionEntity.getQuestionSectionId())
                 .set(QuestionSectionEntity::getQuestionSectionStructure, struct)
                 .set(QuestionSectionEntity::getQuestionCount, questionCount);
-        questionSectionService.update(updateWrapper);
 
         return questionSectionEntity.getQuestionSectionId();
     }
