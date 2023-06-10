@@ -172,7 +172,7 @@ public class ExperimentOrgViewBiz {
                     .operateAccountName(accountName)
                     .experimentDeadline(setFollowup.getExperimentDeadline())
                     .dueDays(setFollowup.getDueDays())
-                    .isRegister(false)
+                    .isFollowup(false)
                     .todoTime(TimeUtil.timeProcess(new Date(), setFollowup.getDueDays()))
                     .setAtTime(new Date())
                     .followupTimes(timerEntity.getFollowupTimes() + 1)
@@ -191,7 +191,7 @@ public class ExperimentOrgViewBiz {
                     .experimentViewMonitorFollowupId(setFollowup.getExperimentViewMonitorFollowupId())
                     .experimentFollowupName(setFollowup.getExperimentFollowupName())
                     .followupTime(setFollowup.getFollowupTime())
-                    .isRegister(false)
+                    .isFollowup(false)
                     .operateAccountId(accountId)
                     .operateAccountName(accountName)
                     .experimentDeadline(setFollowup.getExperimentDeadline())
@@ -714,5 +714,35 @@ public class ExperimentOrgViewBiz {
             });
         }
         return responseList;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 监测随访：实验暂停导致时间延后
+     * @关联表: operateFollowupTimer
+     * @工时: 3H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月10日 下午18:30:34
+     */
+    @DSTransactional
+    public Boolean delayFollowupTimer(long diffTime, String appId,String experimentInstanceId, String accountId, String accountName) {
+        List<OperateFollowupTimerEntity> entityList = operateFollowupTimerService.lambdaQuery()
+                .select(OperateFollowupTimerEntity::getId)
+                .eq(OperateFollowupTimerEntity::getAppId, appId)
+                .eq(OperateFollowupTimerEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(OperateFollowupTimerEntity::getIsFollowup, false)
+                .eq(OperateFollowupTimerEntity::getDeleted, false)
+                .list();
+        if(entityList != null && entityList.size() > 0){
+            entityList.forEach(entity->{
+                //1、批量加时间
+                entity.setFollowupTime(TimeUtil.addTimeByLong(entity.getFollowupTime(),diffTime));
+                entity.setOperateAccountId(accountId);
+                entity.setOperateAccountName(accountName);
+            });
+        }
+        return operateFollowupTimerService.updateBatchById(entityList);
     }
 }

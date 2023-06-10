@@ -10,6 +10,7 @@ import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.biz.user.experiment.ExperimentOrgViewBiz;
 import org.dows.hep.entity.ExperimentViewMonitorFollowupEntity;
+import org.simpleframework.xml.core.Validate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -79,6 +80,24 @@ public class ExperimentOrgViewRest {
         String accountId = map.get("accountId").toString();
         String accountName = map.get("accountName").toString();
         return experimentOrgViewBiz.setFollowup(setFollowup,accountId,accountName);
+    }
+
+    /**
+     * 监测随访：实验暂停导致时间延后
+     * @param
+     * @return
+     */
+    @Operation(summary = "监测随访：实验暂停导致时间延后")
+    @PostMapping("v1/userExperiment/experimentOrgView/delayFollowupTimer")
+    public Boolean delayFollowupTimer(@RequestParam @Validate long diffTime,
+                                      @RequestParam @Validate String appId,
+                                      @RequestParam @Validated String experimentInstanceId, HttpServletRequest request) {
+        String token = request.getHeader("token");
+        Map<String, Object> map = JwtUtil.parseJWT(token, EnumToken.PROPERTIES_JWT_KEY.getStr());
+        //1、获取登录账户和名称
+        String accountId = map.get("accountId").toString();
+        String accountName = map.get("accountName").toString();
+        return experimentOrgViewBiz.delayFollowupTimer(diffTime,appId,experimentInstanceId,accountId,accountName);
     }
 
     /**
