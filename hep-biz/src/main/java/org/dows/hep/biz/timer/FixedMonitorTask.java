@@ -1,12 +1,14 @@
-package org.dows.hep.biz.timer;
-
+//package org.dows.hep.biz.timer;
+//
 //import lombok.RequiredArgsConstructor;
+//import org.dows.hep.entity.ExperimentInstanceEntity;
 //import org.dows.hep.entity.OperateFollowupTimerEntity;
+//import org.dows.hep.service.ExperimentInstanceService;
 //import org.dows.hep.service.OperateFollowupTimerService;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
 //import org.springframework.scheduling.annotation.Scheduled;
 //import org.springframework.stereotype.Component;
+//
+//import java.util.List;
 //
 ///**
 // * @author jx
@@ -15,13 +17,29 @@ package org.dows.hep.biz.timer;
 //@Component
 //@RequiredArgsConstructor
 //public class FixedMonitorTask {
-//    Logger logger = LoggerFactory.getLogger(getClass());
 //    private final OperateFollowupTimerService operateFollowupTimerService;
+//    private final ExperimentInstanceService experimentInstanceService;
+//
 //
 //    @Scheduled(cron = "*/15 * * * * ?")
 //    public void execute() {
-//        operateFollowupTimerService.lambdaQuery()
-//                .eq(OperateFollowupTimerEntity::getDeleted,false)
+//        //1、获取正在运行中的实验列表
+//        List<ExperimentInstanceEntity> instanceList = experimentInstanceService.lambdaQuery()
+//                .eq(ExperimentInstanceEntity::getState,1)
+//                .eq(ExperimentInstanceEntity::getDeleted,false)
 //                .list();
+//        if(instanceList != null && instanceList.size() > 0){
+//            instanceList.forEach(instance->{
+//                List<OperateFollowupTimerEntity> timerEntityList = operateFollowupTimerService.lambdaQuery()
+//                        .eq(OperateFollowupTimerEntity::getDeleted,false)
+//                        .eq(OperateFollowupTimerEntity::getExperimentInstanceId,instance.getExperimentInstanceId())
+//                        .list();
+//                if(timerEntityList != null && timerEntityList.size() > 0){
+//                    timerEntityList.forEach(timerEntity->{
+//                        //2、
+//                    });
+//                }
+//            });
+//        }
 //    }
 //}

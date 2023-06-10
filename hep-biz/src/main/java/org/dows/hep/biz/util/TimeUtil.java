@@ -1,5 +1,6 @@
 package org.dows.hep.biz.util;
 
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -16,5 +17,10 @@ public class TimeUtil {
         rightNow.add(Calendar.MINUTE,count);
         Date dt1 = rightNow.getTime();
         return dt1;
+    }
+
+    //2、判断时间先后顺序
+    public static boolean isBeforeTime(Date date1, Date date2) throws ParseException {
+        return date1.before(date2);
     }
 }

@@ -121,8 +121,9 @@ public class MaterialsRest {
      */
     @Operation(summary = "删除or批量删除")
     @DeleteMapping("v1/baseMaterials/materials/delMaterials")
-    public Boolean delMaterials(@RequestBody List<String> materialsId) {
-        return materialsBiz.delMaterials(materialsId);
+    public Boolean delMaterials(@RequestBody List<String> materialsId, HttpServletRequest request) {
+        String accountId = baseBiz.getAccountId(request);
+        return materialsBiz.delMaterials(materialsId, accountId);
     }
 
     /**
