@@ -1,12 +1,15 @@
 package org.dows.hep.biz.base.evaluate;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.evaluate.EvaluateESCEnum;
 import org.dows.hep.api.base.evaluate.EvaluateEnabledEnum;
@@ -21,14 +24,18 @@ import org.dows.hep.api.base.question.enums.QuestionSectionAccessAuthEnum;
 import org.dows.hep.api.base.question.enums.QuestionSectionGenerationModeEnum;
 import org.dows.hep.api.base.question.enums.QuestionSourceEnum;
 import org.dows.hep.api.base.question.request.QuestionSectionRequest;
+import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionDimensionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionItemResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
+import org.dows.hep.biz.base.question.QuestionDimensionBiz;
 import org.dows.hep.biz.base.question.QuestionSectionBiz;
 import org.dows.hep.entity.EvaluateQuestionnaireEntity;
+import org.dows.hep.entity.QuestionDimensionEntity;
 import org.dows.hep.service.EvaluateQuestionnaireService;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -46,6 +53,7 @@ public class EvaluateQuestionnaireBiz {
     private final EvaluateQuestionnaireService evaluateQuestionnaireService;
     private final QuestionSectionBiz questionSectionBiz;
     private final EvaluateCategoryBiz categoryBiz;
+    private final QuestionDimensionBiz questionDimensionBiz;
 
 
     /**
@@ -293,5 +301,58 @@ public class EvaluateQuestionnaireBiz {
                 .eq(EvaluateQuestionnaireEntity::getEvaluateQuestionnaireId, evaluateQuestionnaireId)
                 .set(EvaluateQuestionnaireEntity::getEnabled, evaluateEnabledEnum.getCode());
         return evaluateQuestionnaireService.update(updateWrapper);
+    }
+
+    public List<Question> listQuestionByDimension(String evaluateQuestionnaireId, String questionSectionDimensionId) {
+        if (StrUtil.isBlank(evaluateQuestionnaireId) || StrUtil.isBlank(questionSectionDimensionId)) {
+            throw new BizException(EvaluateESCEnum.PARAMS_NON_NULL);
+        }
+
+        EvaluateQuestionnaireResponse evaluateQuestionnaire = getEvaluateQuestionnaire(evaluateQuestionnaireId, null);
+        if (BeanUtil.isEmpty(evaluateQuestionnaire)) {
+            return new ArrayList<>();
+        }
+        List<QuestionSectionItemResponse> sectionItemList = evaluateQuestionnaire.getSectionItemList();
+        if (CollUtil.isEmpty(sectionItemList)) {
+            return new ArrayList<>();
+        }
+
+        // 获取问题关联的问题集维度ID
+        List<QuestionResponse> questionList = sectionItemList.stream()
+                .map(QuestionSectionItemResponse::getQuestion)
+                .toList();
+        List<String> dimensionIdList = questionList.stream()
+                .map(QuestionResponse::getDimensionId)
+                .toList();
+        List<QuestionDimensionEntity> entityList = questionDimensionBiz.listDimensionByIds(dimensionIdList);
+        if (CollUtil.isEmpty(entityList)) {
+            return new ArrayList<>();
+        }
+        Map<String, String> collect = entityList.stream()
+                .collect(Collectors.toMap(QuestionDimensionEntity::getQuestionInstanceId, QuestionDimensionEntity::getQuestionSectionDimensionId, (v1, v2) -> v1));
+
+
+        List<Question> result = new ArrayList<>();
+        for (int i = 0; i < questionList.size(); i++) {
+            QuestionResponse question = questionList.get(i);
+            Question resultItem = new Question();
+            resultItem.setQuestionInstanceId(question.getQuestionInstanceId());
+            resultItem.setSeq(i);
+            resultItem.setQuestionSectionDimensionId(collect.get(question.getQuestionInstanceId()));
+            result.add(resultItem);
+        }
+
+        result = result.stream()
+                .filter(item -> item.getQuestionSectionDimensionId().equals(questionSectionDimensionId))
+                .toList();
+        return result;
+    }
+
+    @Data
+    @NoArgsConstructor
+    public static class Question {
+        private String questionSectionDimensionId;
+        private String questionInstanceId;
+        private Integer seq;
     }
 }

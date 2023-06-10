@@ -115,6 +115,26 @@ public class QuestionDimensionBiz {
         return result;
     }
 
+    /**
+     * @param
+     * @return
+     * @说明: 根据ID获取维度
+     * @关联表: QuestionDimension, QuestionInstance, QuestionSectionDimension
+     * @工时: 5H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public List<QuestionDimensionEntity> listDimensionByIds(List<String> questionDimensionIds) {
+        if (CollUtil.isEmpty(questionDimensionIds)) {
+            throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
+        }
+
+        return questionDimensionService.lambdaQuery()
+                .in(QuestionDimensionEntity::getQuestionDimensionId, questionDimensionIds)
+                .list();
+    }
+
     private List<QuestionDimensionEntity> listQuestionDimensionEntity(String questionInstanceId) {
         LambdaQueryWrapper<QuestionDimensionEntity> queryWrapper = new LambdaQueryWrapper<QuestionDimensionEntity>()
                 .eq(QuestionDimensionEntity::getQuestionInstanceId, questionInstanceId);
