@@ -41,8 +41,11 @@ public class IndicatorExpressionRefEntity implements CrudEntity {
   @Schema(title = "指标公式分布式ID")
   private String indicatorExpressionId;
 
-  @Schema(title = "公式关联主体的分布式ID")
+  @Schema(title = "承接结果的指标的分布式ID")
   private String principalId;
+
+  @Schema(title = "产生这个指标公式的分布式ID")
+  private String reasonId;
 
   @JsonIgnore
   @TableLogic

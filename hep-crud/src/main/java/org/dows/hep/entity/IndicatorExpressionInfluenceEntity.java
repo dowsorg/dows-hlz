@@ -15,7 +15,7 @@ import org.dows.framework.crud.api.CrudEntity;
 import java.util.Date;
 
 /**
- * 指标公式实体类
+ * 指标公式影响类
  * @author runsix
  */
 @Data
@@ -25,30 +25,27 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "IndicatorExpression", title = "指标公式")
-@TableName("indicator_expression")
-public class IndicatorExpressionEntity implements CrudEntity {
+@Schema(name = "IndicatorExpressionInfluenceEntity", title = "指标公式影响表")
+@TableName("indicator_expression_influence")
+public class IndicatorExpressionInfluenceEntity implements CrudEntity {
   @JsonFormat(shape = JsonFormat.Shape.STRING)
   @Schema(title = "主键")
   private Long id;
 
   @Schema(title = "分布式ID")
-  private String indicatorExpressionId;
+  private String indicatorExpressionInfluenceId;
 
   @Schema(title = "应用ID")
   private String appId;
 
-  @Schema(title = "上限")
-  private String maxIndicatorExpressionItemId;
+  @Schema(title = "指标分布式ID")
+  private String indicatorInstanceId;
 
-  @Schema(title = "下限")
-  private String minIndicatorExpressionItemId;
+  @Schema(title = "这个指标影响其它指标列表，用逗号分割")
+  private String influenceIndicatorInstanceIdList;
 
-  @Schema(title = "公式类型，0-条件，1-随机")
-  private Integer type;
-
-  @Schema(title = "公式来源，详情见EnumIndicatorExpressionSource")
-  private Integer source;
+  @Schema(title = "这个指标被其它指标影响的列表，用逗号分割")
+  private String influencedIndicatorInstanceIdList;
 
   @JsonIgnore
   @TableLogic
