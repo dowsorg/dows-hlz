@@ -7,6 +7,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.dows.hep.api.base.indicator.request.BatchBindReasonIdRequestRs;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorExpressionItemRequestRs;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorExpressionRequestRs;
+import org.dows.hep.api.base.indicator.response.IndicatorCategoryResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorExpressionItemResponseRs;
 import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
 import org.dows.hep.api.enums.*;
@@ -51,11 +52,14 @@ public class IndicatorExpressionBiz{
   private final IndicatorExpressionRefService indicatorExpressionRefService;
   private final IndicatorRuleService indicatorRuleService;
   private final IndicatorExpressionInfluenceService indicatorExpressionInfluenceService;
+  private final IndicatorInstanceService indicatorInstanceService;
+  private final IndicatorCategoryService indicatorCategoryService;
   public static IndicatorExpressionResponseRs indicatorExpression2ResponseRs(
       IndicatorExpressionEntity indicatorExpressionEntity,
       List<IndicatorExpressionItemResponseRs> indicatorExpressionItemResponseRsList,
       IndicatorExpressionItemResponseRs maxIndicatorExpressionItemResponseRs,
-      IndicatorExpressionItemResponseRs minIndicatorExpressionItemResponseRs
+      IndicatorExpressionItemResponseRs minIndicatorExpressionItemResponseRs,
+      IndicatorCategoryResponse indicatorCategoryResponse
       ) {
     if (Objects.isNull(indicatorExpressionEntity)) {
       return null;
@@ -69,6 +73,7 @@ public class IndicatorExpressionBiz{
         .indicatorExpressionId(indicatorExpressionEntity.getIndicatorExpressionId())
         .appId(indicatorExpressionEntity.getAppId())
         .principalId(indicatorExpressionEntity.getPrincipalId())
+        .indicatorCategoryResponse(indicatorCategoryResponse)
         .type(indicatorExpressionEntity.getType())
         .source(indicatorExpressionEntity.getSource())
         .deleted(indicatorExpressionEntity.getDeleted())
@@ -169,7 +174,8 @@ public class IndicatorExpressionBiz{
           indicatorExpressionEntity,
           finalIndicatorExpressionItemResponseRsList,
           kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(maxIndicatorExpressionItemId),
-          kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(minIndicatorExpressionItemId)
+          kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(minIndicatorExpressionItemId),
+          null
       );
       kIndicatorInstanceIdVIndicatorExpressionResponseRsMap.put(indicatorInstanceId, indicatorExpressionResponseRs);
     });
@@ -243,6 +249,34 @@ public class IndicatorExpressionBiz{
               indicatorExpressionItemEntity.getIndicatorExpressionItemId(), IndicatorExpressionItemBiz.indicatorExpressionItem2ResponseRs(indicatorExpressionItemEntity)
           ));
     }
+    Map<String, String> kIndicatorInstanceIdVIndicatorCategoryIdMap = new HashMap<>();
+    Map<String, IndicatorCategoryResponse> kReasonIdVIndicatorCategoryRsMap = new HashMap<>();
+    Map<String, IndicatorCategoryResponse> kIndicatorCategoryIdVIndicatorCategoryRsMap = new HashMap<>();
+    Set<String> indicatorCategoryIdSet = new HashSet<>();
+    indicatorInstanceService.lambdaQuery()
+      .eq(IndicatorInstanceEntity::getAppId, appId)
+      .in(IndicatorInstanceEntity::getIndicatorInstanceId, reasonIdSet)
+      .list()
+      .forEach(indicatorInstanceEntity -> {
+        String indicatorCategoryId = indicatorInstanceEntity.getIndicatorCategoryId();
+        indicatorCategoryIdSet.add(indicatorCategoryId);
+        kIndicatorInstanceIdVIndicatorCategoryIdMap.put(indicatorInstanceEntity.getIndicatorInstanceId(), indicatorInstanceEntity.getIndicatorCategoryId());
+      });
+    if (!indicatorCategoryIdSet.isEmpty()) {
+      indicatorCategoryService.lambdaQuery()
+          .eq(IndicatorCategoryEntity::getAppId, appId)
+          .in(IndicatorCategoryEntity::getIndicatorCategoryId, indicatorCategoryIdSet)
+          .list()
+          .forEach(indicatorCategoryEntity -> {
+            kIndicatorCategoryIdVIndicatorCategoryRsMap.put(
+                indicatorCategoryEntity.getIndicatorCategoryId(),
+                IndicatorCategoryBiz.indicatorCategoryEntity2Response(indicatorCategoryEntity));
+          });
+    }
+    kIndicatorInstanceIdVIndicatorCategoryIdMap.forEach((indicatorInstanceId, indicatorCategoryId) -> {
+      IndicatorCategoryResponse indicatorCategoryResponse = kIndicatorCategoryIdVIndicatorCategoryRsMap.get(indicatorCategoryId);
+      kReasonIdVIndicatorCategoryRsMap.put(indicatorInstanceId, indicatorCategoryResponse);
+    });
     kReasonIdVIndicatorExpressionIdListMap.forEach((reasonId, indicatorExpressionIdList) -> {
       indicatorExpressionIdList.forEach(indicatorExpressionId -> {
         IndicatorExpressionEntity indicatorExpressionEntity = kIndicatorExpressionIdVIndicatorExpressionEntityMap.get(indicatorExpressionId);
@@ -278,7 +312,8 @@ public class IndicatorExpressionBiz{
             indicatorExpressionEntity,
             finalIndicatorExpressionItemResponseRsList,
             kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(maxIndicatorExpressionItemId),
-            kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(minIndicatorExpressionItemId)
+            kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(minIndicatorExpressionItemId),
+            kReasonIdVIndicatorCategoryRsMap.get(reasonId)
         );
         List<IndicatorExpressionResponseRs> indicatorExpressionResponseRsList = kReasonIdVIndicatorExpressionResponseRsListMap.get(reasonId);
         if (Objects.isNull(indicatorExpressionResponseRsList)) {
