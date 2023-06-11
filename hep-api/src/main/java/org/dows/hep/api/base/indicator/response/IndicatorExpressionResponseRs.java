@@ -34,6 +34,9 @@ public class IndicatorExpressionResponseRs implements Serializable {
   @Schema(title = "应用ID")
   private String appId;
 
+  @Schema(title = "承接结果的分布式ID")
+  private String principalId;
+
   @JsonIgnore
   @Schema(title = "逻辑删除")
   private Boolean deleted;
@@ -43,6 +46,9 @@ public class IndicatorExpressionResponseRs implements Serializable {
 
   @Schema(title = "公式类型，0-条件，1-随机")
   private Integer type;
+
+  @Schema(title = "公式来源，详情见EnumIndicatorExpressionSource")
+  private Integer source;
 
   @Schema(title = "指标公式细项列表")
   private List<IndicatorExpressionItemResponseRs> indicatorExpressionItemResponseRsList;

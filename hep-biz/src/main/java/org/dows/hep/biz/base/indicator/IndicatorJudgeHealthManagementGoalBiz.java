@@ -1,8 +1,6 @@
 package org.dows.hep.biz.base.indicator;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -11,10 +9,8 @@ import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthManagementGoalResponseRs;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.exception.IndicatorJudgeHealthManagementGoalException;
-import org.dows.hep.biz.util.RsPageUtil;
 import org.dows.hep.entity.IndicatorFuncEntity;
 import org.dows.hep.entity.IndicatorInstanceEntity;
-import org.dows.hep.entity.IndicatorJudgeHealthManagementGoalEntity;
 import org.dows.hep.entity.IndicatorJudgeHealthManagementGoalEntity;
 import org.dows.hep.service.IndicatorFuncService;
 import org.dows.hep.service.IndicatorInstanceService;
@@ -84,8 +80,8 @@ public class IndicatorJudgeHealthManagementGoalBiz{
                 .list()
                 .forEach(indicatorInstanceEntity -> kIndicatorInstanceIdVIndicatorInstanceMap.put(indicatorInstanceEntity.getIndicatorInstanceId(), indicatorInstanceEntity));
         }
-        Map<String, IndicatorExpressionResponseRs> kIndicatorInstanceIdVIndicatorExpressionResponseRsMap = new HashMap<>();
-        indicatorExpressionBiz.populateKIndicatorExpressionIdVIndicatorExpressionEntityMap(appId, indicatorInstanceIdSet, kIndicatorInstanceIdVIndicatorExpressionResponseRsMap);
+        Map<String, List<IndicatorExpressionResponseRs>> kReasonIdVIndicatorExpressionResponseRsListMap = new HashMap<>();
+        indicatorExpressionBiz.populateKReasonIdVIndicatorExpressionResponseRsListMap(appId, indicatorInstanceIdSet, kReasonIdVIndicatorExpressionResponseRsListMap);
         return indicatorJudgeHealthManagementGoalEntityList
             .stream()
             .map(indicatorJudgeHealthManagementGoalEntity -> {
@@ -96,7 +92,7 @@ public class IndicatorJudgeHealthManagementGoalBiz{
                     null,
                     null,
                     null,
-                    kIndicatorInstanceIdVIndicatorExpressionResponseRsMap.get(indicatorInstanceId)
+                    kReasonIdVIndicatorExpressionResponseRsListMap.get(indicatorInstanceId)
                 );
                 return indicatorJudgeHealthManagementGoal2ResponseRs(indicatorJudgeHealthManagementGoalEntity, indicatorInstanceResponseRs);
             })

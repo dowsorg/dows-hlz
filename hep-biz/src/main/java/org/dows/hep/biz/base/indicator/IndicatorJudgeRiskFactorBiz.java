@@ -47,7 +47,7 @@ public class IndicatorJudgeRiskFactorBiz{
     public static IndicatorJudgeRiskFactorResponseRs indicatorJudgeRiskFactor2ResponseRs(
         IndicatorJudgeRiskFactorEntity indicatorJudgeRiskFactorEntity,
         IndicatorCategoryResponse indicatorCategoryResponse,
-        IndicatorExpressionResponseRs indicatorExpressionResponseRs
+        List<IndicatorExpressionResponseRs> indicatorExpressionResponseRsList
     ) {
         return IndicatorJudgeRiskFactorResponseRs
             .builder()
@@ -62,7 +62,7 @@ public class IndicatorJudgeRiskFactorBiz{
             .resultExplain(indicatorJudgeRiskFactorEntity.getResultExplain())
             .status(indicatorJudgeRiskFactorEntity.getStatus())
             .dt(indicatorJudgeRiskFactorEntity.getDt())
-            .indicatorExpressionResponseRs(indicatorExpressionResponseRs)
+            .indicatorExpressionResponseRsList(indicatorExpressionResponseRsList)
             .build();
     }
 
@@ -92,17 +92,17 @@ public class IndicatorJudgeRiskFactorBiz{
                     indicatorCategoryResponse.getIndicatorCategoryId(), indicatorCategoryResponse
                 ));
         }
-        Map<String, IndicatorExpressionResponseRs> kPrincipalIdVIndicatorExpressionResponseRsMap = new HashMap<>();
-        indicatorExpressionBiz.populateKIndicatorExpressionIdVIndicatorExpressionEntityMap(appId, principalIdSet, kPrincipalIdVIndicatorExpressionResponseRsMap);
+        Map<String, List<IndicatorExpressionResponseRs>> kReasonIdExpressionResponseRsListMap = new HashMap<>();
+        indicatorExpressionBiz.populateKReasonIdVIndicatorExpressionResponseRsListMap(appId, principalIdSet, kReasonIdExpressionResponseRsListMap);
         return indicatorJudgeRiskFactorEntityList
             .stream()
             .map(indicatorJudgeRiskFactorEntity -> {
                 IndicatorCategoryResponse indicatorCategoryResponse = kIndicatorCategoryIdVIndicatorCategoryResponseMap.get(indicatorJudgeRiskFactorEntity.getIndicatorCategoryId());
-                IndicatorExpressionResponseRs indicatorExpressionResponseRs = kPrincipalIdVIndicatorExpressionResponseRsMap.get(indicatorJudgeRiskFactorEntity.getIndicatorJudgeRiskFactorId());
+                List<IndicatorExpressionResponseRs> indicatorExpressionResponseRsList = kReasonIdExpressionResponseRsListMap.get(indicatorJudgeRiskFactorEntity.getIndicatorJudgeRiskFactorId());
                 return indicatorJudgeRiskFactor2ResponseRs(
                     indicatorJudgeRiskFactorEntity,
                     indicatorCategoryResponse,
-                    indicatorExpressionResponseRs
+                    indicatorExpressionResponseRsList
                 );
             })
             .collect(Collectors.toList());

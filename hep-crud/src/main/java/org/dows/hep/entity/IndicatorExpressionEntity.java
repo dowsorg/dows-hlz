@@ -38,6 +38,9 @@ public class IndicatorExpressionEntity implements CrudEntity {
   @Schema(title = "应用ID")
   private String appId;
 
+  @Schema(title = "承接结果的分布式ID")
+  private String principalId;
+
   @Schema(title = "上限")
   private String maxIndicatorExpressionItemId;
 

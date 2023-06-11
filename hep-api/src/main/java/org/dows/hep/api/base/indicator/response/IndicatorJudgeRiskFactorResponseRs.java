@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author runsix
@@ -53,5 +54,5 @@ public class IndicatorJudgeRiskFactorResponseRs implements Serializable {
   private Date dt;
 
   @Schema(title = "指标公式")
-  private IndicatorExpressionResponseRs indicatorExpressionResponseRs;
+  private List<IndicatorExpressionResponseRs> indicatorExpressionResponseRsList;
 }
