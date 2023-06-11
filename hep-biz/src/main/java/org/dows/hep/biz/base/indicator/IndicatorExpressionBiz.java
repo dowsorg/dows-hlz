@@ -855,9 +855,42 @@ public class IndicatorExpressionBiz{
     String reasonId = batchBindReasonIdRequestRs.getReasonId();
     Integer source = batchBindReasonIdRequestRs.getSource();
     List<String> paramIndicatorExpressionIdList = batchBindReasonIdRequestRs.getIndicatorExpressionIdList();
+    if (Objects.isNull(paramIndicatorExpressionIdList)) {
+      paramIndicatorExpressionIdList = new ArrayList<>();
+    }
     checkSourceAndReasonId(source, reasonId);
     Set<String> dbIndicatorExpressionIdSet = new HashSet<>();
-    /* runsix:TODO  */
+    if (!paramIndicatorExpressionIdList.isEmpty()) {
+      indicatorExpressionService.lambdaQuery()
+          .eq(IndicatorExpressionEntity::getAppId, appId)
+          .in(IndicatorExpressionEntity::getIndicatorExpressionId, paramIndicatorExpressionIdList)
+          .list()
+          .forEach(indicatorExpressionEntity -> {
+            dbIndicatorExpressionIdSet.add(indicatorExpressionEntity.getIndicatorExpressionId());
+          });
+    }
+    if (paramIndicatorExpressionIdList.stream().anyMatch(indicatorExpressionId -> !dbIndicatorExpressionIdSet.contains(indicatorExpressionId))) {
+      log.warn("method populateIndicatorExpressionRefEntityList paramIndicatorExpressionIdList:{} is illegal", paramIndicatorExpressionIdList);
+      throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
+    }
+    Map<String, IndicatorExpressionRefEntity> kIndicatorExpressionIdVIndicatorExpressionRefEntityMap = indicatorExpressionRefService.lambdaQuery()
+        .eq(IndicatorExpressionRefEntity::getAppId, appId)
+        .eq(IndicatorExpressionRefEntity::getReasonId, reasonId)
+        .list()
+        .stream().collect(Collectors.toMap(IndicatorExpressionRefEntity::getIndicatorExpressionId, a->a));
+    paramIndicatorExpressionIdList.forEach(indicatorExpressionId -> {
+      IndicatorExpressionRefEntity indicatorExpressionRefEntity = kIndicatorExpressionIdVIndicatorExpressionRefEntityMap.get(indicatorExpressionId);
+      if (Objects.isNull(indicatorExpressionRefEntity)) {
+        indicatorExpressionRefEntity = IndicatorExpressionRefEntity
+            .builder()
+            .indicatorExpressionRefId(idGenerator.nextIdStr())
+            .appId(appId)
+            .indicatorExpressionId(indicatorExpressionId)
+            .reasonId(reasonId)
+            .build();
+      }
+      indicatorExpressionRefEntityList.add(indicatorExpressionRefEntity);
+    });
   }
 
   public void checkSourceAndReasonId(Integer source, String reasonId) {
