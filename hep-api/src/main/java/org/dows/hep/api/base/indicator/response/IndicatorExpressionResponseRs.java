@@ -37,6 +37,9 @@ public class IndicatorExpressionResponseRs implements Serializable {
   @Schema(title = "承接结果的分布式ID")
   private String principalId;
 
+  @Schema(title = "如果结果是指标，则此条存在值")
+  private IndicatorCategoryResponse indicatorCategoryResponse;
+
   @JsonIgnore
   @Schema(title = "逻辑删除")
   private Boolean deleted;
