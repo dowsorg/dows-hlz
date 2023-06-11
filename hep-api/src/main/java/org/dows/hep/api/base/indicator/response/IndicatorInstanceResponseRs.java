@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author runsix
@@ -59,7 +60,7 @@ public class IndicatorInstanceResponseRs implements Serializable {
   private Date dt;
 
   @Schema(title = "指标公式")
-  private IndicatorExpressionResponseRs indicatorExpressionResponseRs;
+  private List<IndicatorExpressionResponseRs> indicatorExpressionResponseRsList;
 
   @Schema(title = "指标默认值")
   private String def;
