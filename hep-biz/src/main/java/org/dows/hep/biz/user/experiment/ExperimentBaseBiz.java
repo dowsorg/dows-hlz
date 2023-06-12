@@ -16,16 +16,6 @@ import java.util.Map;
 @AllArgsConstructor
 @Service
 public class ExperimentBaseBiz {
-//    private final ExperimentInstanceService experimentInstanceService;
-//
-//    public String getCaseInstanceId(String experimentInstanceId) {
-//        return Optional.ofNullable(experimentInstanceService.lambdaQuery()
-//                        .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
-//                        .one())
-//                .map(ExperimentInstanceEntity::getCaseInstanceId)
-//                .orElse("");
-//    }
-
     public String getAccountId(HttpServletRequest request) {
         String token = request.getHeader("token");
         Map<String, Object> map = JwtUtil.parseJWT(token, EnumToken.PROPERTIES_JWT_KEY.getStr());

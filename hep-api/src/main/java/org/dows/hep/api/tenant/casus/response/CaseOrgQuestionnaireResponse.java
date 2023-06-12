@@ -35,7 +35,7 @@ public class CaseOrgQuestionnaireResponse {
     private String caseQuestionnaireId;
 
     @Schema(title = "案例问卷Name")
-    private String caseQuestionnaireName;
+    private String questionSectionName;
 
     @Schema(title = "期数")
     private String periods;

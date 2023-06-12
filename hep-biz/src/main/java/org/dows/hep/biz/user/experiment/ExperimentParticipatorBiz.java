@@ -51,11 +51,9 @@ public class ExperimentParticipatorBiz {
                     .toArray(String[]::new);
             page.addOrder(pageExperimentRequest.getDesc() ? OrderItem.descs(array) : OrderItem.ascs(array));
         }
-//        !StrUtil.isBlank(pageExperimentRequest.getExperimentInstanceId())
         if (!StrUtil.isBlank(pageExperimentRequest.getAccountId())) {
             page = experimentParticipatorService.page(page, experimentParticipatorService.lambdaQuery()
                     .eq(ExperimentParticipatorEntity::getAccountId, pageExperimentRequest.getAccountId())
-                    //.ne(ExperimentParticipatorEntity::getExperimentInstanceId, pageExperimentRequest.getExperimentInstanceId())
                     .getWrapper());
         } else {
             page = page.setTotal(0).setCurrent(0).setSize(0).setRecords(new ArrayList<>());

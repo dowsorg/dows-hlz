@@ -13,14 +13,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
-* @description project descr:实验:实验方案
-*
+* @description project descr:实验:实验方案设计
+* @folder user-hep/实验方案设计
 * @author lait.zhang
 * @date 2023年4月23日 上午9:44:34
 */
 @RequiredArgsConstructor
 @RestController
-@Tag(name = "实验方案", description = "实验方案")
+@Tag(name = "实验方案设计", description = "实验方案设计")
 public class ExperimentSchemeRest {
     private final ExperimentSchemeBiz experimentSchemeBiz;
 
@@ -36,7 +36,7 @@ public class ExperimentSchemeRest {
     }
 
     /**
-     * 提交设计方案
+     * 保存设计方案
      * @param
      * @return
      */

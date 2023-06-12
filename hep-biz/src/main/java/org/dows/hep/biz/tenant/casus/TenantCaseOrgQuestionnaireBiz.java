@@ -1,6 +1,7 @@
 package org.dows.hep.biz.tenant.casus;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -51,7 +52,7 @@ public class TenantCaseOrgQuestionnaireBiz {
 
         Map<String, List<CaseQuestionnaireResponse>> result = new LinkedHashMap<>();
         Arrays.stream(CasePeriodEnum.values()).forEach(item -> {
-            result.put(item.getName(), new ArrayList<>());
+            result.put(item.getCode(), new ArrayList<>());
         });
 
         // 获取案例下问卷
@@ -61,7 +62,8 @@ public class TenantCaseOrgQuestionnaireBiz {
         filterUnselectedQuestionnaire(caseInstanceId, questionnaireList);
 
         // 根据期数分组
-        Map<String, List<CaseQuestionnaireResponse>> periodCollect = questionnaireList.stream().collect(Collectors.groupingBy(CaseQuestionnaireResponse::getPeriods));
+        Map<String, List<CaseQuestionnaireResponse>> periodCollect = questionnaireList.stream()
+                .collect(Collectors.groupingBy(CaseQuestionnaireResponse::getPeriods));
         result.forEach((period, list) -> {
             List<CaseQuestionnaireResponse> responses = periodCollect.get(period);
             if (Objects.nonNull(responses)) {
@@ -84,43 +86,7 @@ public class TenantCaseOrgQuestionnaireBiz {
             throw new BizException(CaseESCEnum.PARAMS_NON_NULL);
         }
 
-        // 期数 collect
-        Map<String, Map<String, CaseOrgQuestionnaireResponse>> result = new LinkedHashMap<>();
-        Arrays.stream(CasePeriodEnum.values()).forEach(item -> {
-            result.put(item.getName(), new HashMap<>());
-        });
-
-        List<CaseOrgResponse> orgList = listOrgOfCaseInstance(caseInstanceId);
-        if (Objects.isNull(orgList) || orgList.isEmpty()) {
-            return result.values().stream().toList();
-        }
-
-        // 机构 collect
-        result.forEach((period, orgMap) -> {
-            Map<String, CaseOrgQuestionnaireResponse> orgCollect = new HashMap<>();
-            orgList.forEach(org -> {
-                orgCollect.put(org.getOrgName(), new CaseOrgQuestionnaireResponse());
-            });
-            result.put(period, orgCollect);
-        });
-
-        List<CaseOrgQuestionnaireResponse> orgQuestionnaireList = listByCaseInstanceId(caseInstanceId);
-        if (Objects.isNull(orgQuestionnaireList) || orgQuestionnaireList.isEmpty()) {
-            return result.values().stream().toList();
-        }
-
-        // questionnaire collect
-        Map<String, Map<String, CaseOrgQuestionnaireResponse>> questionnaireCollect = orgQuestionnaireList.stream()
-                .collect(Collectors.groupingBy(CaseOrgQuestionnaireResponse::getPeriods, Collectors.toMap(CaseOrgQuestionnaireResponse::getCaseOrgName, v -> v, (v1, v2) -> v1)));
-        result.forEach((period, orgMap) -> {
-            // 该 period 下的不同机构的问卷
-            Map<String, CaseOrgQuestionnaireResponse> orgCollect = questionnaireCollect.get(period);
-            orgMap.forEach((org, qn) -> {
-                orgMap.replace(org, orgCollect.get(org));
-            });
-            result.replace(period, orgCollect);
-        });
-
+        Map<String, Map<String, CaseOrgQuestionnaireResponse>> result = mapSelectedQuestionnaires(caseInstanceId);
         return result.values().stream().toList();
     }
 
@@ -139,7 +105,7 @@ public class TenantCaseOrgQuestionnaireBiz {
         // 期数 collect
         Map<String, Map<String, CaseOrgQuestionnaireResponse>> result = new LinkedHashMap<>();
         Arrays.stream(CasePeriodEnum.values()).forEach(item -> {
-            result.put(item.getName(), new HashMap<>());
+            result.put(item.getCode(), new HashMap<>());
         });
 
         List<CaseOrgResponse> orgList = listOrgOfCaseInstance(caseInstanceId);
@@ -151,26 +117,31 @@ public class TenantCaseOrgQuestionnaireBiz {
         result.forEach((period, orgMap) -> {
             Map<String, CaseOrgQuestionnaireResponse> orgCollect = new HashMap<>();
             orgList.forEach(org -> {
-                orgCollect.put(org.getOrgName(), new CaseOrgQuestionnaireResponse());
+                orgCollect.put(org.getCaseOrgId(), new CaseOrgQuestionnaireResponse());
             });
-            result.put(period, orgCollect);
+            result.replace(period, orgCollect);
         });
 
         List<CaseOrgQuestionnaireResponse> orgQuestionnaireList = listByCaseInstanceId(caseInstanceId);
-        if (Objects.isNull(orgQuestionnaireList) || orgQuestionnaireList.isEmpty()) {
+        if (CollUtil.isEmpty(orgQuestionnaireList)) {
             return result;
         }
 
         // questionnaire collect
         Map<String, Map<String, CaseOrgQuestionnaireResponse>> questionnaireCollect = orgQuestionnaireList.stream()
-                .collect(Collectors.groupingBy(CaseOrgQuestionnaireResponse::getPeriods, Collectors.toMap(CaseOrgQuestionnaireResponse::getCaseOrgName, v -> v, (v1, v2) -> v1)));
+                .collect(Collectors.groupingBy(CaseOrgQuestionnaireResponse::getPeriods, Collectors.toMap(CaseOrgQuestionnaireResponse::getCaseOrgId, v -> v, (v1, v2) -> v1)));
         result.forEach((period, orgMap) -> {
             // 该 period 下的不同机构的问卷
             Map<String, CaseOrgQuestionnaireResponse> orgCollect = questionnaireCollect.get(period);
-            orgMap.forEach((org, qn) -> {
-                orgMap.replace(org, orgCollect.get(org));
+            orgList.forEach(org -> {
+                if (CollUtil.isNotEmpty(orgCollect)) {
+                    String caseOrgId = org.getCaseOrgId();
+                    CaseOrgQuestionnaireResponse caseOrgQuestionnaireResponse = orgCollect.get(caseOrgId);
+                    if (BeanUtil.isNotEmpty(caseOrgQuestionnaireResponse)) {
+                        orgMap.replace(caseOrgId, caseOrgQuestionnaireResponse);
+                    }
+                }
             });
-            result.replace(period, orgCollect);
         });
 
         return result;
@@ -185,7 +156,25 @@ public class TenantCaseOrgQuestionnaireBiz {
      */
     public List<CaseOrgQuestionnaireResponse> listByCaseInstanceId(String caseInstanceId) {
         List<CaseOrgQuestionnaireEntity> entityList = listByCaseInstanceId0(caseInstanceId);
-        return BeanUtil.copyToList(entityList, CaseOrgQuestionnaireResponse.class);
+        if (CollUtil.isEmpty(entityList)) {
+            return new ArrayList<>();
+        }
+
+        List<String> questionnaireIdList = entityList.stream()
+                .map(CaseOrgQuestionnaireEntity::getCaseQuestionnaireId)
+                .toList();
+        List<CaseQuestionnaireResponse> caseQuestionnaireResponses = caseQuestionnaireBiz.listByIds(questionnaireIdList);
+        Map<String, String> idMapCollect = caseQuestionnaireResponses.stream()
+                .collect(Collectors.toMap(CaseQuestionnaireResponse::getCaseQuestionnaireId, CaseQuestionnaireResponse::getQuestionSectionName, (v1, v2) -> v1));
+
+        List<CaseOrgQuestionnaireResponse> caseOrgQuestionnaireResponses = BeanUtil.copyToList(entityList, CaseOrgQuestionnaireResponse.class);
+        caseOrgQuestionnaireResponses.forEach(caseOrgQuestionnaireResponse -> {
+            String caseQuestionnaireId = caseOrgQuestionnaireResponse.getCaseQuestionnaireId();
+            String name = idMapCollect.get(caseQuestionnaireId);
+            caseOrgQuestionnaireResponse.setQuestionSectionName(name);
+        });
+
+        return caseOrgQuestionnaireResponses;
     }
 
     /**
@@ -225,7 +214,7 @@ public class TenantCaseOrgQuestionnaireBiz {
 
         // check questionnaire of case
         List<CaseQuestionnaireResponse> caseQuestionnaireList = listCaseQuestionnaire(caseInstanceId);
-        if (Objects.isNull(caseQuestionnaireList) || caseQuestionnaireList.isEmpty()) {
+        if (CollUtil.isEmpty(caseQuestionnaireList)) {
             throw new BizException(CaseESCEnum.CASE_QUESTIONNAIRE_NON_NULL);
         }
 
@@ -243,16 +232,17 @@ public class TenantCaseOrgQuestionnaireBiz {
         orgQuestionnaireService.remove(queryWrapper);
     }
 
-    private List<CaseOrgQuestionnaireRequest> buildCaseOrgQuestionnaireRequest(String caseInstanceId, List<CaseOrgResponse> orgList, List<CaseQuestionnaireResponse> orgQuestionnaireList) {
+    private List<CaseOrgQuestionnaireRequest> buildCaseOrgQuestionnaireRequest(String caseInstanceId, List<CaseOrgResponse> orgList, List<CaseQuestionnaireResponse> caseQuestionnaireList) {
         Assert.notNull(orgList, CaseESCEnum.CASE_ORG_NON_NULL.getDescr());
-        Assert.notNull(orgQuestionnaireList, CaseESCEnum.CASE_QUESTIONNAIRE_NON_NULL.getDescr());
+        Assert.notNull(caseQuestionnaireList, CaseESCEnum.CASE_QUESTIONNAIRE_NON_NULL.getDescr());
 
         List<CaseOrgQuestionnaireRequest> result = new ArrayList<>();
-        Map<String, List<CaseQuestionnaireResponse>> periodQuestionnaireCollect = orgQuestionnaireList.stream().collect(Collectors.groupingBy(CaseQuestionnaireResponse::getPeriods));
+        Map<String, List<CaseQuestionnaireResponse>> periodQuestionnaireCollect = caseQuestionnaireList.stream()
+                .collect(Collectors.groupingBy(CaseQuestionnaireResponse::getPeriods));
         Arrays.stream(CasePeriodEnum.values()).forEach(period -> {
-            String name = period.getName();
-            List<CaseQuestionnaireResponse> questionnaireList = periodQuestionnaireCollect.get(name);
-            List<CaseOrgQuestionnaireRequest> request = buildCaseOrgQuestionnaireRequest0(caseInstanceId, name, questionnaireList, orgList);
+            String periodCode = period.getCode();
+            List<CaseQuestionnaireResponse> questionnaireList = periodQuestionnaireCollect.get(periodCode);
+            List<CaseOrgQuestionnaireRequest> request = buildCaseOrgQuestionnaireRequest0(caseInstanceId, periodCode, questionnaireList, orgList);
             result.addAll(request);
         });
 
@@ -342,13 +332,17 @@ public class TenantCaseOrgQuestionnaireBiz {
         return caseQuestionnaireBiz.listCaseQuestionnaire(searchRequest);
     }
 
-    private void filterUnselectedQuestionnaire(String caseInstanceId, List<CaseQuestionnaireResponse> questionnaireList) {
+    private List<CaseQuestionnaireResponse> filterUnselectedQuestionnaire(String caseInstanceId, List<CaseQuestionnaireResponse> questionnaireList) {
         List<CaseOrgQuestionnaireEntity> orgQuestionnaire = listByCaseInstanceId0(caseInstanceId);
-        Map<String, CaseOrgQuestionnaireEntity> collect;
-        if (Objects.nonNull(orgQuestionnaire) && !orgQuestionnaire.isEmpty()) {
-            collect = orgQuestionnaire.stream().collect(Collectors.toMap(CaseOrgQuestionnaireEntity::getCaseQuestionnaireId, v -> v, (v1, v2) -> v1));
-            questionnaireList.removeIf(item -> collect.get(item.getCaseQuestionnaireId()) == null);
+        if (CollUtil.isNotEmpty(orgQuestionnaire)) {
+            return questionnaireList;
         }
+
+        Map<String, CaseOrgQuestionnaireEntity> collect = orgQuestionnaire.stream()
+                .collect(Collectors.toMap(CaseOrgQuestionnaireEntity::getCaseQuestionnaireId, v -> v, (v1, v2) -> v1));
+        return questionnaireList.stream()
+                .filter(item -> BeanUtil.isEmpty(collect.get(item.getCaseQuestionnaireId())))
+                .toList();
     }
 
     private List<CaseOrgQuestionnaireEntity> listByCaseInstanceId0(String caseInstanceId) {

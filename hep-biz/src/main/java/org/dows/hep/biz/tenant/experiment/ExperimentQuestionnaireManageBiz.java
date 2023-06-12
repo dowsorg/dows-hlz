@@ -83,7 +83,7 @@ public class ExperimentQuestionnaireManageBiz {
                                 .experimentOrgId(org)
                                 .experimentGroupId(groupId)
                                 .experimentAccountId(null)
-                                .questionnaireName(orgQuestionnaire.getCaseQuestionnaireName())
+                                .questionnaireName(orgQuestionnaire.getQuestionSectionName())
                                 .state(ExptQuestionnaireStateEnum.NOT_STARTED.getCode())
                                 .build();
                         entityList.add(entity);

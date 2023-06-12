@@ -18,7 +18,6 @@ import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
 import org.dows.hep.api.tenant.casus.CaseESCEnum;
-import org.dows.hep.api.tenant.casus.CasePeriodEnum;
 import org.dows.hep.api.tenant.casus.CaseQuestionSelectModeEnum;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionSearchRequest;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionnairePageRequest;
@@ -123,11 +122,7 @@ public class TenantCaseQuestionnaireBiz {
                 .list();
         // convert
         return list.stream()
-                .map(item -> {
-                    CaseQuestionnaireResponse questionnaireResponse = BeanUtil.copyProperties(item, CaseQuestionnaireResponse.class);
-                    questionnaireResponse.setPeriods(CasePeriodEnum.getNameByCode(item.getPeriods()));
-                    return questionnaireResponse;
-                })
+                .map(item ->  BeanUtil.copyProperties(item, CaseQuestionnaireResponse.class))
                 .sorted(Comparator.comparingInt(CaseQuestionnaireResponse::getPeriodSequence))
                 .toList();
     }
@@ -140,7 +135,7 @@ public class TenantCaseQuestionnaireBiz {
      * @return
      */
     public List<CaseQuestionnaireResponse> listByIds(List<String> ids) {
-        if (BeanUtil.isEmpty(ids)) {
+        if (CollUtil.isEmpty(ids)) {
             return new ArrayList<>();
         }
 
