@@ -90,8 +90,8 @@ public class ExperimentOrgJudgeRest {
      */
     @Operation(summary = "获取二级类有报告的判断指标信息")
     @PostMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeHealthGuidance")
-    public Map<String,List<ExperimentIndicatorJudgeHealthGuidanceResponse>> getIndicatorJudgeHealthGuidance(@RequestParam @Validated String indicatorFuncId) {
-        return experimentOrgJudgeBiz.getIndicatorJudgeHealthGuidance(indicatorFuncId);
+    public Map<String,List<ExperimentIndicatorJudgeHealthGuidanceResponse>> getIndicatorJudgeHealthGuidance(@RequestParam @Validated String experimentIndicatorFuncId) {
+        return experimentOrgJudgeBiz.getIndicatorJudgeHealthGuidance(experimentIndicatorFuncId);
     }
 
     /**

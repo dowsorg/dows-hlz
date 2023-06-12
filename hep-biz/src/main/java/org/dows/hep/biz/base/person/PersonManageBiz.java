@@ -280,10 +280,12 @@ public class PersonManageBiz {
      */
     public Boolean resetPwd(String oldPassword,AccountInstanceRequest request) {
         //1、判断与原密码是否相等
-        AccountInstanceResponse instance = accountInstanceApi.getAccountInstanceByAccountName(request.getAccountName(),request.getAppId());
-        if(instance != null && !ReflectUtil.isObjectNull(instance)){
-            if(!instance.getPassword().equals(oldPassword)){
-                throw new AccountException(EnumAccountStatusCode.ACCOUNT_PASSWORD_NOT_MATCH_EXCEPTION);
+        if(StringUtils.isNotEmpty(oldPassword)) {
+            AccountInstanceResponse instance = accountInstanceApi.getAccountInstanceByAccountName(request.getAccountName(), request.getAppId());
+            if (instance != null && !ReflectUtil.isObjectNull(instance)) {
+                if (!instance.getPassword().equals(oldPassword)) {
+                    throw new AccountException(EnumAccountStatusCode.ACCOUNT_PASSWORD_NOT_MATCH_EXCEPTION);
+                }
             }
         }
         return accountInstanceApi.resetPwd(request);

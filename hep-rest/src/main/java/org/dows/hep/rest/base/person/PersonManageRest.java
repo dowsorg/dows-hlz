@@ -138,7 +138,7 @@ public class PersonManageRest {
      */
     @Operation(summary = "重置密码")
     @PutMapping("v1/basePerson/person/resetPwd")
-    public Boolean resetPwd(@RequestParam String oldPassword,@RequestBody AccountInstanceRequest request) {
+    public Boolean resetPwd(@Nullable @RequestParam String oldPassword,@RequestBody AccountInstanceRequest request) {
         return personManageBiz.resetPwd(oldPassword,request);
     }
 
