@@ -267,7 +267,7 @@ public class ExperimentManageBiz {
                 .eq(CaseOrgEntity::getDeleted, false)
                 .list();
         List<ExperimentParticipatorEntity> collect = groupParticipators.values().stream().flatMap(x -> x.stream()).collect(Collectors.toList());
-        if (collect.size() <= entityList.size()) {
+        if (collect.size() < entityList.size()) {
             throw new ExperimentParticipatorException(EnumExperimentParticipator.PARTICIPATOR_NUMBER_CANNOT_MORE_THAN_ORG_EXCEPTION);
         }
         // 保存实验小组
