@@ -129,7 +129,7 @@ public class ExperimentOrgJudgeBiz {
      * @开始时间:
      * @创建时间: 2023年5月26日 上午9:49:34
      */
-    public Map<String, List<ExperimentIndicatorJudgeRiskFactorResponse>> getIndicatorJudgeRiskFactor(String indicatorFuncId) {
+    public Map<String, List<ExperimentIndicatorJudgeRiskFactorResponse>> getIndicatorJudgeRiskFactor(String experimentIndicatorFuncId) {
         //1、根据指标功能ID获取所有的分类
         List<ExperimentIndicatorJudgeRiskFactorEntity> entityList = experimentIndicatorJudgeRiskFactorService.lambdaQuery()
                 .select(ExperimentIndicatorJudgeRiskFactorEntity::getId,
@@ -137,7 +137,7 @@ public class ExperimentOrgJudgeBiz {
                         ExperimentIndicatorJudgeRiskFactorEntity::getIndicatorJudgeRiskFactorId,
                         ExperimentIndicatorJudgeRiskFactorEntity::getName,
                         ExperimentIndicatorJudgeRiskFactorEntity::getExperimentIndicatorCategoryId)
-                .eq(ExperimentIndicatorJudgeRiskFactorEntity::getExperimentIndicatorFuncId, indicatorFuncId)
+                .eq(ExperimentIndicatorJudgeRiskFactorEntity::getExperimentIndicatorFuncId, experimentIndicatorFuncId)
                 .eq(ExperimentIndicatorJudgeRiskFactorEntity::getStatus, true)
                 .list();
         List<ExperimentIndicatorJudgeRiskFactorResponse> responseList = new ArrayList<>();
@@ -149,13 +149,13 @@ public class ExperimentOrgJudgeBiz {
                         .experimentJudgeRiskFactorId(entity.getExperimentJudgeRiskFactorId())
                         .indicatorJudgeRiskFactorId(entity.getIndicatorJudgeRiskFactorId())
                         .name(entity.getName())
-                        .indicatorCategoryId(entity.getExperimentIndicatorCategoryId())
+                        .experimentIndicatorCategoryId(entity.getExperimentIndicatorCategoryId())
                         .build();
                 responseList.add(response);
             });
         }
         //2、根据分类ID分组
-        Map<String, List<ExperimentIndicatorJudgeRiskFactorResponse>> categoryList = responseList.stream().collect(Collectors.groupingBy(ExperimentIndicatorJudgeRiskFactorResponse::getIndicatorCategoryId));
+        Map<String, List<ExperimentIndicatorJudgeRiskFactorResponse>> categoryList = responseList.stream().collect(Collectors.groupingBy(ExperimentIndicatorJudgeRiskFactorResponse::getExperimentIndicatorCategoryId));
         return categoryList;
     }
 
