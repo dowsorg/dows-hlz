@@ -417,7 +417,7 @@ public class ExperimentManageBiz {
                             .experimentGroupId(model.getExperimentGroupId())
                             .caseOrgId(orgEntity.getCaseOrgId())
                             .caseOrgName(orgEntity.getOrgName())
-                            .periods(createExperiment.getPeriods())
+//                            .periods(createExperiment.getPeriods())
                             .build();
                     experimentOrgService.save(entity);
                     //1.1.3、创建机构费用明细副本
