@@ -820,6 +820,17 @@ public class IndicatorExpressionBiz{
                 break;
               }
             }
+            if (v1CheckMathDoubleOperator(conditionExpression.substring(j, j+1))) {
+              if (isNumber) {
+                strList.add(conditionExpression.substring(i, j));
+              } else {
+                strList.add(v1WrapStrWithDoubleSingleQuotes(conditionExpression.substring(i, j)));
+              }
+              strList.add(conditionExpression.substring(j, j+1));
+              isComplete = true;
+              i = j+1;
+              break;
+            }
             /* runsix:如果不是数字，说明是字符串 */
             if (isNumber && !NumberUtils.isCreatable(conditionExpression.substring(j, j+1))) {
               isNumber = false;
@@ -831,6 +842,7 @@ public class IndicatorExpressionBiz{
             } else {
               strList.add(v1WrapStrWithDoubleSingleQuotes(conditionExpression.substring(i)));
             }
+            i++;
           }
         }
       }
@@ -1253,7 +1265,6 @@ public class IndicatorExpressionBiz{
     String indicatorExpressionId = createOrUpdateIndicatorExpressionRequestRs.getIndicatorExpressionId();
     String principalId = createOrUpdateIndicatorExpressionRequestRs.getPrincipalId();
     String indicatorExpressionRefId = createOrUpdateIndicatorExpressionRequestRs.getIndicatorExpressionRefId();
-    String reasonId = createOrUpdateIndicatorExpressionRequestRs.getReasonId();
     String appId = createOrUpdateIndicatorExpressionRequestRs.getAppId();
     if (StringUtils.isBlank(indicatorExpressionId)) {
       log.warn("method populateIndicatorExpressionRefEntity indicatorExpressionId is blank");
