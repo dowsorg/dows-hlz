@@ -52,68 +52,77 @@ public enum EvaluateExpressionEnum {
         return listGroup("OPERATOR");
     }
 
-    public static boolean isLimit(String inCode) {
+    // 是否是限定符
+    public static boolean isLimit(String symbol) {
         return listLimitGroup().stream()
-                .anyMatch(item -> item.getCode().equals(inCode));
+                .anyMatch(item -> item.getCode().equals(symbol));
     }
 
-    public static boolean isOperand(String inCode) {
+    // 是否是操作数
+    public static boolean isOperand(String symbol) {
         return listOperandGroup().stream()
-                .anyMatch(item -> item.getCode().equals(inCode));
+                .anyMatch(item -> item.getCode().equals(symbol));
     }
 
-    public static boolean isOperator(String inCode) {
+    // 是否是操作符
+    public static boolean isOperator(String symbol) {
         return listOperatorGroup().stream()
-                .anyMatch(item -> item.getCode().equals(inCode));
+                .anyMatch(item -> item.getCode().equals(symbol));
     }
 
-    public static boolean isLeft(String inCode) {
-        if (LIMIT_LEFT_PARENTHESIS.getCode().equals(inCode)) {
+    // 是否是左限定符
+    public static boolean isLeft(String symbol) {
+        if (LIMIT_LEFT_PARENTHESIS.getCode().equals(symbol)) {
             return Boolean.TRUE;
         }
-        if (LIMIT_LEFT_SQUARE_BRACKETS.getCode().equals(inCode)) {
+        if (LIMIT_LEFT_SQUARE_BRACKETS.getCode().equals(symbol)) {
             return Boolean.TRUE;
         }
         return Boolean.FALSE;
     }
 
-    public static boolean isRight(String inCode) {
-        if (LIMIT_RIGHT_PARENTHESIS.getCode().equals(inCode)) {
+    // 是否是右限定符
+    public static boolean isRight(String symbol) {
+        if (LIMIT_RIGHT_PARENTHESIS.getCode().equals(symbol)) {
             return Boolean.TRUE;
         }
-        if (LIMIT_RIGHT_SQUARE_BRACKETS.getCode().equals(inCode)) {
-            return Boolean.TRUE;
-        }
-        return Boolean.FALSE;
-    }
-
-    public static boolean isBeginOrEnd(String inCode) {
-        if (LIMIT_BEGIN_END.getCode().equals(inCode)) {
+        if (LIMIT_RIGHT_SQUARE_BRACKETS.getCode().equals(symbol)) {
             return Boolean.TRUE;
         }
         return Boolean.FALSE;
     }
 
-    public static boolean isParenthesis(String inCode) {
-        if (EvaluateExpressionEnum.LIMIT_LEFT_PARENTHESIS.getCode().equals(inCode)) {
-            return Boolean.TRUE;
-        }
-        if (EvaluateExpressionEnum.LIMIT_RIGHT_PARENTHESIS.getCode().equals(inCode)) {
-            return Boolean.TRUE;
-        }
-        return Boolean.FALSE;
-    }
-
-    public static boolean isSquareBrackets(String inCode) {
-        if (EvaluateExpressionEnum.LIMIT_LEFT_SQUARE_BRACKETS.getCode().equals(inCode)) {
-            return Boolean.TRUE;
-        }
-        if (EvaluateExpressionEnum.LIMIT_RIGHT_SQUARE_BRACKETS.getCode().equals(inCode)) {
+    // 是否是开始结束限定符号
+    public static boolean isBeginOrEnd(String symbol) {
+        if (LIMIT_BEGIN_END.getCode().equals(symbol)) {
             return Boolean.TRUE;
         }
         return Boolean.FALSE;
     }
 
+    // 是否是圆括号
+    public static boolean isParenthesis(String symbol) {
+        if (EvaluateExpressionEnum.LIMIT_LEFT_PARENTHESIS.getCode().equals(symbol)) {
+            return Boolean.TRUE;
+        }
+        if (EvaluateExpressionEnum.LIMIT_RIGHT_PARENTHESIS.getCode().equals(symbol)) {
+            return Boolean.TRUE;
+        }
+        return Boolean.FALSE;
+    }
+
+    // 是否是方括号
+    public static boolean isSquareBrackets(String symbol) {
+        if (EvaluateExpressionEnum.LIMIT_LEFT_SQUARE_BRACKETS.getCode().equals(symbol)) {
+            return Boolean.TRUE;
+        }
+        if (EvaluateExpressionEnum.LIMIT_RIGHT_SQUARE_BRACKETS.getCode().equals(symbol)) {
+            return Boolean.TRUE;
+        }
+        return Boolean.FALSE;
+    }
+
+    // 是否是兄弟限定符
     public static boolean isBrother(String aCode, String bCode) {
         if (isParenthesis(aCode) && isParenthesis(bCode) && !aCode.equals(bCode)) {
             return Boolean.TRUE;

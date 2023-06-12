@@ -8,7 +8,7 @@ import org.dows.hep.api.base.evaluate.ExperssESCEnum;
 import java.util.LinkedList;
 import java.util.List;
 
-public class ExpressVerifier {
+public class EvaluateExpressVerifier {
     public static void verify(List<String> metaExperssList) {
         if (CollUtil.isEmpty(metaExperssList)) {
             throw new BizException(ExperssESCEnum.EXPRESS_NON_NULL.getDescr());
