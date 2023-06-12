@@ -136,8 +136,8 @@ public class ExperimentOrgJudgeBiz {
                         ExperimentIndicatorJudgeRiskFactorEntity::getExperimentJudgeRiskFactorId,
                         ExperimentIndicatorJudgeRiskFactorEntity::getIndicatorJudgeRiskFactorId,
                         ExperimentIndicatorJudgeRiskFactorEntity::getName,
-                        ExperimentIndicatorJudgeRiskFactorEntity::getIndicatorCategoryId)
-                .eq(ExperimentIndicatorJudgeRiskFactorEntity::getIndicatorFuncId, indicatorFuncId)
+                        ExperimentIndicatorJudgeRiskFactorEntity::getExperimentIndicatorCategoryId)
+                .eq(ExperimentIndicatorJudgeRiskFactorEntity::getExperimentIndicatorFuncId, indicatorFuncId)
                 .eq(ExperimentIndicatorJudgeRiskFactorEntity::getStatus, true)
                 .list();
         List<ExperimentIndicatorJudgeRiskFactorResponse> responseList = new ArrayList<>();
@@ -149,7 +149,7 @@ public class ExperimentOrgJudgeBiz {
                         .experimentJudgeRiskFactorId(entity.getExperimentJudgeRiskFactorId())
                         .indicatorJudgeRiskFactorId(entity.getIndicatorJudgeRiskFactorId())
                         .name(entity.getName())
-                        .indicatorCategoryId(entity.getIndicatorCategoryId())
+                        .indicatorCategoryId(entity.getExperimentIndicatorCategoryId())
                         .build();
                 responseList.add(response);
             });
