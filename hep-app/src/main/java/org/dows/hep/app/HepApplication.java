@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 @EnableScheduling
 public class HepApplication{
     public static void main(String[] args) {
+        System.setProperty("SERVICE_NAME","hep");
         SpringApplication.run(HepApplication.class, args);
     }
     private final IdGenerator idGenerator;
