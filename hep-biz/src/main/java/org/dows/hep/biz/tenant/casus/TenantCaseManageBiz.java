@@ -11,9 +11,12 @@ import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.enums.QuestionESCEnum;
 import org.dows.hep.api.enums.EnumStatus;
 import org.dows.hep.api.tenant.casus.CaseESCEnum;
+import org.dows.hep.api.tenant.casus.CaseQuestionnaireDistributionEnum;
+import org.dows.hep.api.tenant.casus.CaseScoreModeEnum;
 import org.dows.hep.api.tenant.casus.request.CaseInstanceCopyRequest;
 import org.dows.hep.api.tenant.casus.request.CaseInstancePageRequest;
 import org.dows.hep.api.tenant.casus.request.CaseInstanceRequest;
+import org.dows.hep.api.tenant.casus.request.CaseSettingRequest;
 import org.dows.hep.api.tenant.casus.response.CaseInstancePageResponse;
 import org.dows.hep.api.tenant.casus.response.CaseInstanceResponse;
 import org.dows.hep.entity.CaseInstanceEntity;
@@ -35,6 +38,7 @@ public class TenantCaseManageBiz {
     private final TenantCaseNoticeBiz caseNoticeBiz;
     private final TenantCaseSchemeBiz caseSchemeBiz;
     private final TenantCaseQuestionnaireBiz caseQuestionnaireBiz;
+    private final TenantCaseSettingBiz caseSettingBiz;
 
     /**
      * @param
@@ -51,7 +55,7 @@ public class TenantCaseManageBiz {
             return "";
         }
 
-        CaseInstanceEntity caseInstanceEntity = checkBeforeSaveOrUpd(caseInstanceRequest);
+        CaseInstanceEntity caseInstanceEntity = convertRequest2Entity(caseInstanceRequest);
         caseInstanceService.saveOrUpdate(caseInstanceEntity);
 
         return caseInstanceEntity.getCaseInstanceId();
@@ -203,7 +207,7 @@ public class TenantCaseManageBiz {
         return caseInstanceService.remove(queryWrapper);
     }
 
-    private CaseInstanceEntity checkBeforeSaveOrUpd(CaseInstanceRequest request) {
+    private CaseInstanceEntity convertRequest2Entity(CaseInstanceRequest request) {
         if (BeanUtil.isEmpty(request)) {
             throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
         }
@@ -227,6 +231,16 @@ public class TenantCaseManageBiz {
             result.setCaseInstanceId(baseBiz.getIdStr());
             result.setCaseIdentifier(baseBiz.getIdStr());
             result.setVer(baseBiz.getLastVer());
+
+            // set default setting
+            CaseSettingRequest caseSettingRequest = CaseSettingRequest.builder()
+                    .caseInstanceId(result.getCaseInstanceId())
+                    .caseSettingId(null)
+                    .scoreMode(CaseScoreModeEnum.STRICT.name())
+                    .allotMode(CaseQuestionnaireDistributionEnum.RANDOM.name())
+                    .ext(null)
+                    .build();
+            caseSettingBiz.saveOrUpdCaseSetting(caseSettingRequest);
         } else {
             CaseInstanceEntity entity = getById(uniqueId);
             if (BeanUtil.isEmpty(entity)) {

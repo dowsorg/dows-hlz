@@ -48,6 +48,9 @@ public class ExperimentCaseInfoEntity {
     @Schema(title = "社区公告")
     private String notice;
 
+    @Schema(title = "社区答题计分模式")
+    private String scoreMode;
+
     @JsonIgnore
     @TableLogic
     @TableField(fill = FieldFill.INSERT)
