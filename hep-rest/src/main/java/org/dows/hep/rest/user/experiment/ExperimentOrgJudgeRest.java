@@ -53,18 +53,6 @@ public class ExperimentOrgJudgeRest {
     }
 
     /**
-     * 二级-无报告 判断操作
-     * @param
-     * @return
-     */
-    @Operation(summary = "isIndicatorJudgeRiskFactor")
-    @PostMapping("v1/userExperiment/experimentOrgJudge/isIndicatorJudgeRiskFactor")
-    public Boolean isIndicatorJudgeRiskFactor(@RequestBody @Validated List<ExperimentIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList)
-    {
-        return experimentOrgJudgeBiz.isIndicatorJudgeRiskFactor(judgeRiskFactorRequestList);
-    }
-
-    /**
      * 二级-无报告 获取判断得分
      * @param
      * @return
