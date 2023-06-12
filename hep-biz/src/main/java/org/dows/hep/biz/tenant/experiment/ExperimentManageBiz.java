@@ -261,8 +261,16 @@ public class ExperimentManageBiz {
         }
 
 
-        // 判断实验参与人数是否大于该案例得机构数
+        // 判断实验参与人数是否大于该案例得机构数,并且应为已发布的机构
+        Set<String> orgIds = new HashSet<>();
+        List<AccountOrgResponse> orgList = accountOrgApi.getValidAccountOrgList(1);
+        if(orgList != null && orgList.size() > 0) {
+            orgList.forEach(org -> {
+                orgIds.add(org.getOrgId());
+            });
+        }
         List<CaseOrgEntity> entityList = caseOrgService.lambdaQuery()
+                .in(orgIds != null && orgIds.size() > 0,CaseOrgEntity::getOrgId,orgIds)
                 .eq(CaseOrgEntity::getCaseInstanceId, caseInstanceId)
                 .eq(CaseOrgEntity::getDeleted, false)
                 .list();
