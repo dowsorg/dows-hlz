@@ -701,6 +701,9 @@ public class IndicatorExpressionBiz{
   }
   private static String v1GetConditionExpression(String conditionExpression) {
     List<String> strList = new ArrayList<>();
+    if (StringUtils.isBlank(conditionExpression)) {
+      return null;
+    }
     for (int i = 0; i <= conditionExpression.length()-1;) {
       if (v1CheckSpace(conditionExpression.substring(i, i+1))) {
         i++;

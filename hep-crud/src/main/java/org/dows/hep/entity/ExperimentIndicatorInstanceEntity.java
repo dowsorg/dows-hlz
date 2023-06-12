@@ -37,6 +37,9 @@ public class ExperimentIndicatorInstanceEntity {
   @Schema(title = "案例指标ID")
   private String caseIndicatorInstanceId;
 
+  @Schema(title = "基础库指标ID")
+  private String indicatorInstanceId;
+
   @Schema(title = "实验实例ID")
   private String experimentInstanceId;
 
