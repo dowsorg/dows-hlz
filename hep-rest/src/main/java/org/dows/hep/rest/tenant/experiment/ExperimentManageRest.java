@@ -53,8 +53,8 @@ public class ExperimentManageRest {
      */
     @Operation(summary = "案例机构和人物复制到实验")
     @PostMapping("v1/tenantExperiment/experimentManage/copyExperimentPersonAndOrg")
-    public Boolean copyExperimentPersonAndOrg(@RequestBody @Validated CreateExperimentRequest createExperiment) {
-        return experimentManageBiz.copyExperimentPersonAndOrg(createExperiment);
+    public Boolean copyExperimentPersonAndOrg(@RequestBody @Validated List<CreateExperimentRequest> createExperimentList) {
+        return experimentManageBiz.copyExperimentPersonAndOrg(createExperimentList);
     }
 
 

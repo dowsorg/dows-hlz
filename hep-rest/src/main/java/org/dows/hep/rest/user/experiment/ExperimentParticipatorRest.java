@@ -10,6 +10,7 @@ import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.api.user.experiment.request.GetExperimentGroupCaptainRequest;
 import org.dows.hep.api.user.experiment.response.GetExperimentGroupCaptainResponse;
 import org.dows.hep.biz.user.experiment.ExperimentParticipatorBiz;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,14 +36,14 @@ public class ExperimentParticipatorRest {
      */
 
     /**
-     * 获取实验列表
+     * 分页获取实验参与者列表
      *
      * @param
      * @return
      */
     @Operation(summary = "分页获取实验参与者列表")
     @GetMapping("v1/user/experimentParticipator/page")
-    public PageInfo<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
+    public PageInfo<ExperimentListResponse> page(@Validated PageExperimentRequest pageExperimentRequest) {
         return experimentParticipatorBiz.page(pageExperimentRequest);
     }
 

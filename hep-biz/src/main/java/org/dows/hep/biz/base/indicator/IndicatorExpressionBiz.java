@@ -711,12 +711,17 @@ public class IndicatorExpressionBiz{
         i++;
         continue;
       }
-      if (i < conditionExpression.length()-1) {
+      if (i <= conditionExpression.length()-1-1) {
         if (v1CheckMathDoubleOperator(conditionExpression.substring(i, i+2))) {
           strList.add(conditionExpression.substring(i, i+2));
           i += 2;
           continue;
         }
+      }
+      if (v1CheckMathDoubleOperator(conditionExpression.substring(i, i+1))) {
+        strList.add(conditionExpression.substring(i, i+1));
+        i += 1;
+        continue;
       }
       /* runsix:指标 */
       if (v1CheckIndicator(conditionExpression.substring(i, i+1))) {
@@ -820,6 +825,17 @@ public class IndicatorExpressionBiz{
                 break;
               }
             }
+            if (v1CheckMathDoubleOperator(conditionExpression.substring(j, j+1))) {
+              if (isNumber) {
+                strList.add(conditionExpression.substring(i, j));
+              } else {
+                strList.add(v1WrapStrWithDoubleSingleQuotes(conditionExpression.substring(i, j)));
+              }
+              strList.add(conditionExpression.substring(j, j+1));
+              isComplete = true;
+              i = j+1;
+              break;
+            }
             /* runsix:如果不是数字，说明是字符串 */
             if (isNumber && !NumberUtils.isCreatable(conditionExpression.substring(j, j+1))) {
               isNumber = false;
@@ -831,6 +847,7 @@ public class IndicatorExpressionBiz{
             } else {
               strList.add(v1WrapStrWithDoubleSingleQuotes(conditionExpression.substring(i)));
             }
+            i = conditionExpression.length()-1+1;
           }
         }
       }
@@ -933,7 +950,7 @@ public class IndicatorExpressionBiz{
   }
 
   @Transactional(rollbackFor = Exception.class)
-  public void createOrUpdate(CreateOrUpdateIndicatorExpressionRequestRs createOrUpdateIndicatorExpressionRequestRs) throws InterruptedException {
+  public String createOrUpdate(CreateOrUpdateIndicatorExpressionRequestRs createOrUpdateIndicatorExpressionRequestRs) throws InterruptedException {
     String appId = createOrUpdateIndicatorExpressionRequestRs.getAppId();
     Integer source = createOrUpdateIndicatorExpressionRequestRs.getSource();
     String principalId = createOrUpdateIndicatorExpressionRequestRs.getPrincipalId();
@@ -963,6 +980,7 @@ public class IndicatorExpressionBiz{
       checkExpression(source, appId, indicatorExpressionItemEntityList, indicatorExpressionInfluenceEntityAtomicReference, principalId);
       IndicatorExpressionInfluenceEntity indicatorExpressionInfluenceEntity = indicatorExpressionInfluenceEntityAtomicReference.get();
       indicatorExpressionInfluenceService.saveOrUpdate(indicatorExpressionInfluenceEntity);
+      return indicatorExpressionId;
     } finally {
       lock.unlock();
     }
@@ -1253,7 +1271,6 @@ public class IndicatorExpressionBiz{
     String indicatorExpressionId = createOrUpdateIndicatorExpressionRequestRs.getIndicatorExpressionId();
     String principalId = createOrUpdateIndicatorExpressionRequestRs.getPrincipalId();
     String indicatorExpressionRefId = createOrUpdateIndicatorExpressionRequestRs.getIndicatorExpressionRefId();
-    String reasonId = createOrUpdateIndicatorExpressionRequestRs.getReasonId();
     String appId = createOrUpdateIndicatorExpressionRequestRs.getAppId();
     if (StringUtils.isBlank(indicatorExpressionId)) {
       log.warn("method populateIndicatorExpressionRefEntity indicatorExpressionId is blank");

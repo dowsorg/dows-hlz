@@ -21,9 +21,9 @@ public class IndicatorExpressionRest {
 
   @Operation(summary = "创建指标公式")
   @PostMapping("v1/baseIndicator/indicatorExpression/createOrUpdateRs")
-  public void createOrUpdate(@RequestBody CreateOrUpdateIndicatorExpressionRequestRs createOrUpdateIndicatorExpressionRequestRs) throws InterruptedException {
+  public String createOrUpdate(@RequestBody CreateOrUpdateIndicatorExpressionRequestRs createOrUpdateIndicatorExpressionRequestRs) throws InterruptedException {
 //    indicatorExpressionBiz.v1CreateOrUpdate(createOrUpdateIndicatorExpressionRequestRs);
-    indicatorExpressionBiz.createOrUpdate(createOrUpdateIndicatorExpressionRequestRs);
+    return indicatorExpressionBiz.createOrUpdate(createOrUpdateIndicatorExpressionRequestRs);
   }
 
   @Operation(summary = "批量绑定公式与产生公式原因")
