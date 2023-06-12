@@ -33,5 +33,5 @@ public class ExperimentIndicatorJudgeRiskFactorResponse implements Serializable 
     private String name;
 
     @Schema(title = "指标分类ID")
-    private String indicatorCategoryId;
+    private String experimentIndicatorCategoryId;
 }

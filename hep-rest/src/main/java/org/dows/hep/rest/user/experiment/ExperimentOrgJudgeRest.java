@@ -48,20 +48,8 @@ public class ExperimentOrgJudgeRest {
      */
     @Operation(summary = "获取二级类无报告的判断指标信息")
     @PostMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeRiskFactor")
-    public Map<String,List<ExperimentIndicatorJudgeRiskFactorResponse>> getIndicatorJudgeRiskFactor(@RequestParam @Validated String indicatorFuncId) {
-        return experimentOrgJudgeBiz.getIndicatorJudgeRiskFactor(indicatorFuncId);
-    }
-
-    /**
-     * 二级-无报告 判断操作
-     * @param
-     * @return
-     */
-    @Operation(summary = "isIndicatorJudgeRiskFactor")
-    @PostMapping("v1/userExperiment/experimentOrgJudge/isIndicatorJudgeRiskFactor")
-    public Boolean isIndicatorJudgeRiskFactor(@RequestBody @Validated List<ExperimentIndicatorJudgeRiskFactorRequest> judgeRiskFactorRequestList)
-    {
-        return experimentOrgJudgeBiz.isIndicatorJudgeRiskFactor(judgeRiskFactorRequestList);
+    public Map<String,List<ExperimentIndicatorJudgeRiskFactorResponse>> getIndicatorJudgeRiskFactor(@RequestParam @Validated String experimentIndicatorFuncId) {
+        return experimentOrgJudgeBiz.getIndicatorJudgeRiskFactor(experimentIndicatorFuncId);
     }
 
     /**

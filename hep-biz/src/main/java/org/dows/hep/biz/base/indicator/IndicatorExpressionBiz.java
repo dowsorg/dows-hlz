@@ -59,7 +59,8 @@ public class IndicatorExpressionBiz{
       List<IndicatorExpressionItemResponseRs> indicatorExpressionItemResponseRsList,
       IndicatorExpressionItemResponseRs maxIndicatorExpressionItemResponseRs,
       IndicatorExpressionItemResponseRs minIndicatorExpressionItemResponseRs,
-      IndicatorCategoryResponse indicatorCategoryResponse
+      IndicatorCategoryResponse indicatorCategoryResponse,
+      String indicatorExpressionRefId
       ) {
     if (Objects.isNull(indicatorExpressionEntity)) {
       return null;
@@ -70,6 +71,7 @@ public class IndicatorExpressionBiz{
     return IndicatorExpressionResponseRs
         .builder()
         .id(indicatorExpressionEntity.getId())
+        .indicatorExpressionRefId(indicatorExpressionRefId)
         .indicatorExpressionId(indicatorExpressionEntity.getIndicatorExpressionId())
         .appId(indicatorExpressionEntity.getAppId())
         .principalId(indicatorExpressionEntity.getPrincipalId())
@@ -175,6 +177,7 @@ public class IndicatorExpressionBiz{
           finalIndicatorExpressionItemResponseRsList,
           kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(maxIndicatorExpressionItemId),
           kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(minIndicatorExpressionItemId),
+          null,
           null
       );
       kIndicatorInstanceIdVIndicatorExpressionResponseRsMap.put(indicatorInstanceId, indicatorExpressionResponseRs);
@@ -189,6 +192,7 @@ public class IndicatorExpressionBiz{
       return;
     }
     Map<String, List<String>> kReasonIdVIndicatorExpressionIdListMap = new HashMap<>();
+    Map<String, String> kIndicatorExpressionIdVIndicatorExpressionRefIdMap = new HashMap<>();
     Set<String> indicatorExpressionIdSet = new HashSet<>();
     indicatorExpressionRefService.lambdaQuery()
         .eq(IndicatorExpressionRefEntity::getAppId, appId)
@@ -204,6 +208,7 @@ public class IndicatorExpressionBiz{
           }
           indicatorExpressionIdList.add(indicatorExpressionId);
           kReasonIdVIndicatorExpressionIdListMap.put(reasonId, indicatorExpressionIdList);
+          kIndicatorExpressionIdVIndicatorExpressionRefIdMap.put(indicatorExpressionId, indicatorExpressionRefEntity.getIndicatorExpressionRefId());
         });
     Map<String, IndicatorExpressionEntity> kIndicatorExpressionIdVIndicatorExpressionEntityMap = new HashMap<>();
     Map<String, List<IndicatorExpressionItemEntity>> kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap = new HashMap<>();
@@ -313,7 +318,8 @@ public class IndicatorExpressionBiz{
             finalIndicatorExpressionItemResponseRsList,
             kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(maxIndicatorExpressionItemId),
             kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(minIndicatorExpressionItemId),
-            kReasonIdVIndicatorCategoryRsMap.get(reasonId)
+            kReasonIdVIndicatorCategoryRsMap.get(reasonId),
+            kIndicatorExpressionIdVIndicatorExpressionRefIdMap.get(indicatorExpressionId)
         );
         List<IndicatorExpressionResponseRs> indicatorExpressionResponseRsList = kReasonIdVIndicatorExpressionResponseRsListMap.get(reasonId);
         if (Objects.isNull(indicatorExpressionResponseRsList)) {
@@ -701,6 +707,9 @@ public class IndicatorExpressionBiz{
   }
   private static String v1GetConditionExpression(String conditionExpression) {
     List<String> strList = new ArrayList<>();
+    if (StringUtils.isBlank(conditionExpression)) {
+      return null;
+    }
     for (int i = 0; i <= conditionExpression.length()-1;) {
       if (v1CheckSpace(conditionExpression.substring(i, i+1))) {
         i++;
@@ -925,12 +934,13 @@ public class IndicatorExpressionBiz{
       log.warn("method populateIndicatorExpressionRefEntityList paramIndicatorExpressionIdList:{} is illegal", paramIndicatorExpressionIdList);
       throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
     }
+    /* runsix:TODO 这里会重复创建，很神奇 */
     Map<String, IndicatorExpressionRefEntity> kIndicatorExpressionIdVIndicatorExpressionRefEntityMap = indicatorExpressionRefService.lambdaQuery()
         .eq(IndicatorExpressionRefEntity::getAppId, appId)
         .eq(IndicatorExpressionRefEntity::getReasonId, reasonId)
         .list()
         .stream().collect(Collectors.toMap(IndicatorExpressionRefEntity::getIndicatorExpressionId, a->a));
-    paramIndicatorExpressionIdList.forEach(indicatorExpressionId -> {
+    dbIndicatorExpressionIdSet.forEach(indicatorExpressionId -> {
       IndicatorExpressionRefEntity indicatorExpressionRefEntity = kIndicatorExpressionIdVIndicatorExpressionRefEntityMap.get(indicatorExpressionId);
       if (Objects.isNull(indicatorExpressionRefEntity)) {
         indicatorExpressionRefEntity = IndicatorExpressionRefEntity
