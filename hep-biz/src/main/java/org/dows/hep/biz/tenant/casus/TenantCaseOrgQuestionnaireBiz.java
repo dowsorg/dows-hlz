@@ -214,7 +214,7 @@ public class TenantCaseOrgQuestionnaireBiz {
 
         // check questionnaire of case
         List<CaseQuestionnaireResponse> caseQuestionnaireList = listCaseQuestionnaire(caseInstanceId);
-        if (Objects.isNull(caseQuestionnaireList) || caseQuestionnaireList.isEmpty()) {
+        if (CollUtil.isEmpty(caseQuestionnaireList)) {
             throw new BizException(CaseESCEnum.CASE_QUESTIONNAIRE_NON_NULL);
         }
 
@@ -232,16 +232,17 @@ public class TenantCaseOrgQuestionnaireBiz {
         orgQuestionnaireService.remove(queryWrapper);
     }
 
-    private List<CaseOrgQuestionnaireRequest> buildCaseOrgQuestionnaireRequest(String caseInstanceId, List<CaseOrgResponse> orgList, List<CaseQuestionnaireResponse> orgQuestionnaireList) {
+    private List<CaseOrgQuestionnaireRequest> buildCaseOrgQuestionnaireRequest(String caseInstanceId, List<CaseOrgResponse> orgList, List<CaseQuestionnaireResponse> caseQuestionnaireList) {
         Assert.notNull(orgList, CaseESCEnum.CASE_ORG_NON_NULL.getDescr());
-        Assert.notNull(orgQuestionnaireList, CaseESCEnum.CASE_QUESTIONNAIRE_NON_NULL.getDescr());
+        Assert.notNull(caseQuestionnaireList, CaseESCEnum.CASE_QUESTIONNAIRE_NON_NULL.getDescr());
 
         List<CaseOrgQuestionnaireRequest> result = new ArrayList<>();
-        Map<String, List<CaseQuestionnaireResponse>> periodQuestionnaireCollect = orgQuestionnaireList.stream().collect(Collectors.groupingBy(CaseQuestionnaireResponse::getPeriods));
+        Map<String, List<CaseQuestionnaireResponse>> periodQuestionnaireCollect = caseQuestionnaireList.stream()
+                .collect(Collectors.groupingBy(CaseQuestionnaireResponse::getPeriods));
         Arrays.stream(CasePeriodEnum.values()).forEach(period -> {
-            String name = period.getName();
-            List<CaseQuestionnaireResponse> questionnaireList = periodQuestionnaireCollect.get(name);
-            List<CaseOrgQuestionnaireRequest> request = buildCaseOrgQuestionnaireRequest0(caseInstanceId, name, questionnaireList, orgList);
+            String periodCode = period.getCode();
+            List<CaseQuestionnaireResponse> questionnaireList = periodQuestionnaireCollect.get(periodCode);
+            List<CaseOrgQuestionnaireRequest> request = buildCaseOrgQuestionnaireRequest0(caseInstanceId, periodCode, questionnaireList, orgList);
             result.addAll(request);
         });
 
