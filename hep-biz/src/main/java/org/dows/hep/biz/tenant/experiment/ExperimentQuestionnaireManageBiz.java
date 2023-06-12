@@ -15,6 +15,7 @@ import org.dows.hep.biz.tenant.casus.TenantCaseOrgQuestionnaireBiz;
 import org.dows.hep.biz.tenant.casus.TenantCaseQuestionnaireBiz;
 import org.dows.hep.entity.ExperimentQuestionnaireEntity;
 import org.dows.hep.entity.ExperimentQuestionnaireItemEntity;
+import org.dows.hep.service.ExperimentQuestionnaireItemService;
 import org.dows.hep.service.ExperimentQuestionnaireService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,7 @@ public class ExperimentQuestionnaireManageBiz {
     private final TenantCaseOrgQuestionnaireBiz tenantCaseOrgQuestionnaireBiz;
     private final TenantCaseQuestionnaireBiz tenantCaseQuestionnaireBiz;
     private final ExperimentQuestionnaireService experimentQuestionnaireService;
+    private final ExperimentQuestionnaireItemService experimentQuestionnaireItemService;
 
     /**
      * @param
@@ -87,6 +89,7 @@ public class ExperimentQuestionnaireManageBiz {
                         entityList.add(entity);
 
                         // experiment-questionnaire-item
+                        List<ExperimentQuestionnaireItemEntity> localItemList = new ArrayList<>();
                         String caseQuestionnaireId = orgQuestionnaire.getCaseQuestionnaireId();
                         if (CollUtil.isNotEmpty(collect)) {
                             QuestionSectionResponse questionSectionResponse = collect.get(caseQuestionnaireId);
@@ -95,14 +98,16 @@ public class ExperimentQuestionnaireManageBiz {
                                 sectionItemList.forEach(sectionItem -> {
                                     QuestionResponse question = sectionItem.getQuestion();
                                     List<ExperimentQuestionnaireItemEntity> itemEntities = convertToFlatList(question);
-                                    itemEntityList.addAll(itemEntities);
+                                    localItemList.addAll(itemEntities);
                                 });
 
-                                for (int i = 0; i < itemEntityList.size(); i++) {
-                                    ExperimentQuestionnaireItemEntity item = itemEntityList.get(i);
+                                for (int i = 0; i < localItemList.size(); i++) {
+                                    ExperimentQuestionnaireItemEntity item = localItemList.get(i);
                                     item.setSeq(i);
                                     item.setExperimentQuestionnaireId(entity.getExperimentQuestionnaireId());
                                 }
+
+                                itemEntityList.addAll(localItemList);
                             }
                         }
                     });
@@ -111,6 +116,7 @@ public class ExperimentQuestionnaireManageBiz {
         });
 
         experimentQuestionnaireService.saveBatch(entityList);
+        experimentQuestionnaireItemService.saveBatch(itemEntityList);
     }
 
     private List<ExperimentQuestionnaireItemEntity> convertToFlatList(QuestionResponse questionResponse) {
@@ -120,11 +126,10 @@ public class ExperimentQuestionnaireManageBiz {
     }
 
     private void flattenTree(QuestionResponse questionResponse, List<ExperimentQuestionnaireItemEntity> flatList, String pid) {
+        // 处理当前节点
         List<QuestionOptionWithAnswerResponse> optionWithAnswerList = questionResponse.getOptionWithAnswerList();
         String options = getOptions(optionWithAnswerList);
         String rightValues = getRightValues(optionWithAnswerList);
-
-        // 处理当前节点
         ExperimentQuestionnaireItemEntity itemEntity = ExperimentQuestionnaireItemEntity.builder()
                 .experimentQuestionnaireItemId(idGenerator.nextIdStr())
                 .experimentQuestionnaireItemPid(pid)
@@ -138,6 +143,13 @@ public class ExperimentQuestionnaireManageBiz {
                 .questionResult(null)
                 .build();
         flatList.add(itemEntity);
+
+        // 判空
+        List<QuestionResponse> children = questionResponse.getChildren();
+        if (CollUtil.isEmpty(children)) {
+            return;
+        }
+
         // 处理子节点
         for (QuestionResponse child : questionResponse.getChildren()) {
             flattenTree(child, flatList, itemEntity.getExperimentQuestionnaireId());

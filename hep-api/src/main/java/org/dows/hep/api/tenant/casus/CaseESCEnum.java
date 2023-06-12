@@ -13,6 +13,7 @@ public enum CaseESCEnum implements StatusCode {
     CASE_ORG_NON_NULL(42010, "机构数据不能为空"),
     CASE_QUESTIONNAIRE_NON_NULL(42011, "案例下问卷不能为空"),
     CASE_USABLE_QUESTION_IS_NULL(42012, "可使用题目数量为0"),
+    CASE_SCHEME_ALREADY_EXISTS(42013, "案例方案设计已经存在，不可新增");
 
 
     ;
