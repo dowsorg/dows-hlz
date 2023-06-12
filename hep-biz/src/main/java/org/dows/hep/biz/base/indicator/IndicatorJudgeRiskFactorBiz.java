@@ -41,7 +41,6 @@ public class IndicatorJudgeRiskFactorBiz{
     private final IndicatorCategoryService indicatorCategoryService;
     private final IndicatorFuncService indicatorFuncService;
     private final IndicatorJudgeRiskFactorService indicatorJudgeRiskFactorService;
-
     private final IndicatorExpressionBiz indicatorExpressionBiz;
 
     public static IndicatorJudgeRiskFactorResponseRs indicatorJudgeRiskFactor2ResponseRs(
@@ -174,6 +173,76 @@ public class IndicatorJudgeRiskFactorBiz{
             createOrUpdateIndicatorExpressionRequestRs.setPrincipalId(indicatorJudgeRiskFactorId);
         }
         indicatorExpressionBiz.v1CreateOrUpdate(createOrUpdateIndicatorExpressionRequestRs);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void createOrUpdateRsV2(CreateOrUpdateIndicatorJudgeRiskFactorRequestRsV2 createOrUpdateIndicatorJudgeRiskFactorRequestRsV2) throws InterruptedException {
+        IndicatorJudgeRiskFactorEntity indicatorJudgeRiskFactorEntity;
+        String appId = createOrUpdateIndicatorJudgeRiskFactorRequestRsV2.getAppId();
+        String indicatorFuncId = createOrUpdateIndicatorJudgeRiskFactorRequestRsV2.getIndicatorFuncId();
+        if (StringUtils.isNotBlank(indicatorFuncId)) {
+            indicatorFuncService.lambdaQuery()
+                .eq(IndicatorFuncEntity::getAppId, appId)
+                .eq(IndicatorFuncEntity::getIndicatorFuncId, indicatorFuncId)
+                .oneOpt()
+                .orElseThrow(() -> {
+                    log.warn("method IndicatorJudgeRiskFactorBiz.createOrUpdateRs param createOrUpdateIndicatorJudgeRiskFactorRequestRs indicatorFuncId:{} is illegal", indicatorFuncId);
+                    throw new IndicatorJudgeRiskFactorException(EnumESC.VALIDATE_EXCEPTION);
+                });
+        }
+        String indicatorCategoryId = createOrUpdateIndicatorJudgeRiskFactorRequestRsV2.getIndicatorCategoryId();
+        if (StringUtils.isNotBlank(indicatorCategoryId)) {
+            indicatorCategoryService.lambdaQuery()
+                .eq(IndicatorCategoryEntity::getAppId, appId)
+                .eq(IndicatorCategoryEntity::getIndicatorCategoryId, indicatorCategoryId)
+                .oneOpt()
+                .orElseThrow(() -> {
+                    log.warn("method IndicatorJudgeRiskFactorBiz.createOrUpdateRs param createOrUpdateIndicatorJudgeRiskFactorRequestRs indicatorCategoryId:{} is illegal", indicatorCategoryId);
+                    throw new IndicatorJudgeRiskFactorException(EnumESC.VALIDATE_EXCEPTION);
+                });
+        }
+        String indicatorJudgeRiskFactorId = createOrUpdateIndicatorJudgeRiskFactorRequestRsV2.getIndicatorJudgeRiskFactorId();
+        BigDecimal point = BigDecimal.valueOf(createOrUpdateIndicatorJudgeRiskFactorRequestRsV2.getPoint());
+        if (StringUtils.isBlank(indicatorJudgeRiskFactorId)) {
+            indicatorJudgeRiskFactorId = idGenerator.nextIdStr();
+            indicatorJudgeRiskFactorEntity = IndicatorJudgeRiskFactorEntity
+                .builder()
+                .indicatorJudgeRiskFactorId(indicatorJudgeRiskFactorId)
+                .appId(appId)
+                .indicatorFuncId(indicatorFuncId)
+                .name(createOrUpdateIndicatorJudgeRiskFactorRequestRsV2.getName())
+                .indicatorCategoryId(indicatorCategoryId)
+                .point(point)
+                .resultExplain(createOrUpdateIndicatorJudgeRiskFactorRequestRsV2.getResultExplain())
+                .status(createOrUpdateIndicatorJudgeRiskFactorRequestRsV2.getStatus())
+                .build();
+        } else {
+            String finalIndicatorJudgeRiskFactorId = indicatorJudgeRiskFactorId;
+            indicatorJudgeRiskFactorEntity = indicatorJudgeRiskFactorService.lambdaQuery()
+                .eq(IndicatorJudgeRiskFactorEntity::getAppId, appId)
+                .eq(IndicatorJudgeRiskFactorEntity::getIndicatorJudgeRiskFactorId, indicatorJudgeRiskFactorId)
+                .oneOpt()
+                .orElseThrow(() -> {
+                    log.warn("method IndicatorJudgeRiskFactorBiz.createOrUpdateRs param createOrUpdateIndicatorJudgeRiskFactorRequestRs indicatorJudgeRiskFactorId:{} is illegal", finalIndicatorJudgeRiskFactorId);
+                    throw new IndicatorJudgeRiskFactorException(EnumESC.VALIDATE_EXCEPTION);
+                });
+            indicatorJudgeRiskFactorEntity.setName(createOrUpdateIndicatorJudgeRiskFactorRequestRsV2.getName());
+            indicatorJudgeRiskFactorEntity.setStatus(createOrUpdateIndicatorJudgeRiskFactorRequestRsV2.getStatus());
+            indicatorJudgeRiskFactorEntity.setIndicatorCategoryId(indicatorCategoryId);
+            indicatorJudgeRiskFactorEntity.setPoint(point);
+            indicatorJudgeRiskFactorEntity.setExpression(createOrUpdateIndicatorJudgeRiskFactorRequestRsV2.getExpression());
+            indicatorJudgeRiskFactorEntity.setResultExplain(createOrUpdateIndicatorJudgeRiskFactorRequestRsV2.getResultExplain());
+        }
+        indicatorJudgeRiskFactorService.saveOrUpdate(indicatorJudgeRiskFactorEntity);
+        List<String> indicatorExpressionIdList = createOrUpdateIndicatorJudgeRiskFactorRequestRsV2.getIndicatorExpressionIdList();
+        indicatorExpressionBiz.batchBindReasonId(
+            BatchBindReasonIdRequestRs
+                .builder()
+                .reasonId(indicatorJudgeRiskFactorId)
+                .appId(appId)
+                .source(EnumIndicatorExpressionSource.INDICATOR_JUDGE_RISK_FACTOR.getType())
+                .indicatorExpressionIdList(indicatorExpressionIdList)
+                .build());
     }
 
     @Transactional(rollbackFor = Exception.class)
