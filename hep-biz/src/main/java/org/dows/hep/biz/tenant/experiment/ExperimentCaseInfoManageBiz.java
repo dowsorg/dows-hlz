@@ -5,8 +5,10 @@ import com.alibaba.fastjson.JSON;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.tenant.casus.response.CaseInstanceResponse;
 import org.dows.hep.api.tenant.casus.response.CaseNoticeResponse;
+import org.dows.hep.api.tenant.casus.response.CaseSettingResponse;
 import org.dows.hep.biz.tenant.casus.TenantCaseManageBiz;
 import org.dows.hep.biz.tenant.casus.TenantCaseNoticeBiz;
+import org.dows.hep.biz.tenant.casus.TenantCaseSettingBiz;
 import org.dows.hep.entity.ExperimentCaseInfoEntity;
 import org.dows.hep.service.ExperimentCaseInfoService;
 import org.dows.sequence.api.IdGenerator;
@@ -24,6 +26,7 @@ public class ExperimentCaseInfoManageBiz {
 
     private final TenantCaseManageBiz tenantCaseManageBiz;
     private final TenantCaseNoticeBiz tenantCaseNoticeBiz;
+    private final TenantCaseSettingBiz tenantCaseSettingBiz;
 
     private final ExperimentCaseInfoService experimentCaseInfoService;
 
@@ -68,6 +71,13 @@ public class ExperimentCaseInfoManageBiz {
             String noticeStr = JSON.toJSONString(noticeMap);
             entity.setNotice(noticeStr);
         }
+
+        // questionnaire score-mode
+        CaseSettingResponse caseSetting = tenantCaseSettingBiz.getCaseSetting(caseInstanceId);
+        String scoreMode = Optional.ofNullable(caseSetting)
+                .map(CaseSettingResponse::getScoreMode)
+                .orElse(null);
+        entity.setScoreMode(scoreMode);
 
         experimentCaseInfoService.save(entity);
     }
