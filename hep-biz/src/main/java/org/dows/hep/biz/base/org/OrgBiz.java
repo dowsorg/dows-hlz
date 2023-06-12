@@ -105,6 +105,17 @@ public class OrgBiz {
                     .build();
             hepArmService.save(hepArmEntity);
         }
+        if(roleResponse.getRoleName().equals("管理员")) {
+            HepArmEntity hepArmEntity = HepArmEntity
+                    .builder()
+                    .armId(idGenerator.nextIdStr())
+                    .accountId(accountId)
+                    .orgId(orgId)
+                    .tenantId(request.getTenantId())
+                    .appId(request.getAppId())
+                    .build();
+            hepArmService.save(hepArmEntity);
+        }
         return orgId;
     }
 

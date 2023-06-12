@@ -168,7 +168,7 @@ public class ExperimentOrgJudgeBiz {
      * @开始时间:
      * @创建时间: 2023年5月26日 上午11:51:34
      */
-    public Map<String, List<ExperimentIndicatorJudgeHealthGuidanceResponse>> getIndicatorJudgeHealthGuidance(String indicatorFuncId) {
+    public Map<String, List<ExperimentIndicatorJudgeHealthGuidanceResponse>> getIndicatorJudgeHealthGuidance(String experimentIndicatorFuncId) {
         //1、根据指标功能ID获取所有的分类
         List<ExperimentIndicatorJudgeHealthGuidanceEntity> entityList = experimentIndicatorJudgeHealthGuidanceService.lambdaQuery()
                 .select(ExperimentIndicatorJudgeHealthGuidanceEntity::getId,
@@ -176,7 +176,7 @@ public class ExperimentOrgJudgeBiz {
                         ExperimentIndicatorJudgeHealthGuidanceEntity::getIndicatorJudgeHealthGuidanceId,
                         ExperimentIndicatorJudgeHealthGuidanceEntity::getName,
                         ExperimentIndicatorJudgeHealthGuidanceEntity::getIndicatorCategoryId)
-                .eq(ExperimentIndicatorJudgeHealthGuidanceEntity::getIndicatorFuncId, indicatorFuncId)
+                .eq(ExperimentIndicatorJudgeHealthGuidanceEntity::getIndicatorFuncId, experimentIndicatorFuncId)
                 .eq(ExperimentIndicatorJudgeHealthGuidanceEntity::getStatus, true)
                 .list();
         List<ExperimentIndicatorJudgeHealthGuidanceResponse> responseList = new ArrayList<>();

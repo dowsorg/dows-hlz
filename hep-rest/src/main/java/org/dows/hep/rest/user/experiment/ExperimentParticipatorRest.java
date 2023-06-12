@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dows.framework.crud.api.model.PageInfo;
+import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.api.user.experiment.request.GetExperimentGroupCaptainRequest;
@@ -12,8 +12,6 @@ import org.dows.hep.api.user.experiment.response.GetExperimentGroupCaptainRespon
 import org.dows.hep.biz.user.experiment.ExperimentParticipatorBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -43,7 +41,7 @@ public class ExperimentParticipatorRest {
      */
     @Operation(summary = "分页获取实验参与者列表")
     @GetMapping("v1/user/experimentParticipator/page")
-    public PageInfo<ExperimentListResponse> page(@Validated PageExperimentRequest pageExperimentRequest) {
+    public PageResponse<ExperimentListResponse> page(@Validated PageExperimentRequest pageExperimentRequest) {
         return experimentParticipatorBiz.page(pageExperimentRequest);
     }
 
