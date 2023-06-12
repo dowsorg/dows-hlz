@@ -52,7 +52,7 @@ public class IndicatorInstanceBiz{
         String min,
         String max,
         Integer seq,
-        IndicatorExpressionResponseRs indicatorExpressionResponseRs) {
+        List<IndicatorExpressionResponseRs> indicatorExpressionResponseRsList) {
         if (Objects.isNull(indicatorInstanceEntity)) {
             return null;
         }
@@ -71,7 +71,7 @@ public class IndicatorInstanceBiz{
             .rawExpression(indicatorInstanceEntity.getRawExpression())
             .descr(indicatorInstanceEntity.getDescr())
             .dt(indicatorInstanceEntity.getDt())
-            .indicatorExpressionResponseRs(indicatorExpressionResponseRs)
+            .indicatorExpressionResponseRsList(indicatorExpressionResponseRsList)
             .def(def)
             .min(min)
             .max(max)
@@ -451,8 +451,8 @@ public class IndicatorInstanceBiz{
                 indicatorInstanceEntityList.add(indicatorInstanceEntity);
                 kIndicatorCategoryIdVIndicatorInstanceListMap.put(indicatorCategoryId, indicatorInstanceEntityList);
             });
-        Map<String, IndicatorExpressionResponseRs> kPrincipalIdVIndicatorExpressionResponseRsMap = new HashMap<>();
-        indicatorExpressionBiz.populateKIndicatorExpressionIdVIndicatorExpressionEntityMap(appId, indicatorInstanceIdSet, kPrincipalIdVIndicatorExpressionResponseRsMap);
+        Map<String, List<IndicatorExpressionResponseRs>> kReasonIdVIndicatorExpressionResponseRsListMap = new HashMap<>();
+        indicatorExpressionBiz.populateKReasonIdVIndicatorExpressionResponseRsListMap(appId, indicatorInstanceIdSet, kReasonIdVIndicatorExpressionResponseRsListMap);
         Map<String, IndicatorRuleEntity> kIndicatorInstanceIdVIndicatorRuleMap = new HashMap<>();
         populateKIndicatorInstanceIdVIndicatorRuleMap(appId, indicatorInstanceIdSet, kIndicatorInstanceIdVIndicatorRuleMap);
         Map<String, Integer> kIndicatorInstanceIdVSeqMap = new HashMap<>();
@@ -467,7 +467,7 @@ public class IndicatorInstanceBiz{
                     indicatorInstanceResponseRsList = indicatorInstanceEntityList.stream()
                         .map(indicatorInstanceEntity -> {
                             String indicatorInstanceId = indicatorInstanceEntity.getIndicatorInstanceId();
-                            IndicatorExpressionResponseRs indicatorExpressionResponseRs = kPrincipalIdVIndicatorExpressionResponseRsMap.get(indicatorInstanceId);
+                            List<IndicatorExpressionResponseRs> indicatorExpressionResponseRsList = kReasonIdVIndicatorExpressionResponseRsListMap.get(indicatorInstanceId);
                             String def = null;
                             String min = null;
                             String max = null;
@@ -478,7 +478,7 @@ public class IndicatorInstanceBiz{
                                 max = indicatorRuleEntity.getMax();
                             }
                             Integer seq = kIndicatorInstanceIdVSeqMap.get(indicatorInstanceId);
-                            return IndicatorInstanceBiz.indicatorInstance2ResponseRs(indicatorInstanceEntity, def, min, max, seq, indicatorExpressionResponseRs);
+                            return IndicatorInstanceBiz.indicatorInstance2ResponseRs(indicatorInstanceEntity, def, min, max, seq, indicatorExpressionResponseRsList);
                         })
                         .sorted(Comparator.comparingInt(IndicatorInstanceResponseRs::getSeq))
                         .collect(Collectors.toList());

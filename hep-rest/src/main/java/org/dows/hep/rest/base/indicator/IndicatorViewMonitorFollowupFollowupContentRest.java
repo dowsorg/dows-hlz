@@ -18,12 +18,12 @@ public class IndicatorViewMonitorFollowupFollowupContentRest {
   private final IndicatorViewMonitorFollowupFollowupContentBiz indicatorViewMonitorFollowupFollowupContentBiz;
 
   @DeleteMapping("v1/baseIndicator/indicatorViewMonitorFollowupFollowupContent/delete")
-  public void delete(@RequestParam String indicatorViewMonitorFollowupFollowupContentId) throws InterruptedException {
+  public void batchDelete(@RequestParam String indicatorViewMonitorFollowupFollowupContentId) throws InterruptedException {
     indicatorViewMonitorFollowupFollowupContentBiz.delete(indicatorViewMonitorFollowupFollowupContentId);
   }
 
   @DeleteMapping("v1/baseIndicator/indicatorViewMonitorFollowupFollowupContent/batchDelete")
-  public void delete(@RequestBody List<String> indicatorViewMonitorFollowupFollowupContentIdList) throws InterruptedException {
+  public void batchDelete(@RequestBody List<String> indicatorViewMonitorFollowupFollowupContentIdList) throws InterruptedException {
     indicatorViewMonitorFollowupFollowupContentBiz.batchDelete(indicatorViewMonitorFollowupFollowupContentIdList);
   }
 }

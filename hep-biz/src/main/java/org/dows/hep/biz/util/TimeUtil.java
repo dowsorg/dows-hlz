@@ -23,4 +23,13 @@ public class TimeUtil {
     public static boolean isBeforeTime(Date date1, Date date2) throws ParseException {
         return date1.before(date2);
     }
+
+    //3、时间long型相加
+    public static Date addTimeByLong(Date time,long diffTime){
+        long l =time.getTime();
+        l = l + diffTime;
+        Date newTime = new Date();
+        newTime.setTime(l);
+        return newTime;
+    }
 }

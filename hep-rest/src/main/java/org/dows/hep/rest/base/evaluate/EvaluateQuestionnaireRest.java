@@ -97,4 +97,15 @@ public class EvaluateQuestionnaireRest {
     public Boolean deleteEvaluateQuestionnaire(@RequestBody List<String> evaluateQuestionnaireIds ) {
         return evaluateQuestionnaireBiz.deleteEvaluateQuestionnaire(evaluateQuestionnaireIds);
     }
+
+    /**
+     * 根据维度获取题目
+     * @param
+     * @return
+     */
+    @Operation(summary = "根据维度获取题目")
+    @GetMapping("v1/baseEvaluate/evaluateQuestionnaire/listQuestionByDimension")
+    public List<EvaluateQuestionnaireBiz.Question> listQuestionByDimension(@RequestParam String evaluateQuestionnaireId, @RequestParam String questionSectionDimensionId ) {
+        return evaluateQuestionnaireBiz.listQuestionByDimension(evaluateQuestionnaireId, questionSectionDimensionId);
+    }
 }
