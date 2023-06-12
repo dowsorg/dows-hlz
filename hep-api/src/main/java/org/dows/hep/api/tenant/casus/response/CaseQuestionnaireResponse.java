@@ -40,6 +40,9 @@ public class CaseQuestionnaireResponse{
     @Schema(title = "题数")
     private Integer questionCount;
 
+    @Schema(title = "题型结构")
+    private String questionSectionStructure;
+
     @Schema(title = "问题集合")
     private QuestionSectionResponse questionSectionResponse;
 

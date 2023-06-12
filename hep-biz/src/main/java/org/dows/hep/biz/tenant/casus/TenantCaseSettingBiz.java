@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.tenant.casus.CaseESCEnum;
+import org.dows.hep.api.tenant.casus.CaseQuestionnaireDistributionEnum;
+import org.dows.hep.api.tenant.casus.CaseScoreModeEnum;
 import org.dows.hep.api.tenant.casus.request.CaseSettingRequest;
 import org.dows.hep.api.tenant.casus.response.CaseSettingResponse;
 import org.dows.hep.entity.CaseSettingEntity;
@@ -74,14 +76,20 @@ public class TenantCaseSettingBiz {
         CaseSettingEntity result = CaseSettingEntity.builder()
                 .caseSettingId(request.getCaseSettingId())
                 .caseInstanceId(request.getCaseInstanceId())
-                .scoreMode(request.getScoreMode().name())
-                .allotMode(request.getAllotMode().name())
+                .scoreMode(request.getScoreMode())
+                .allotMode(request.getAllotMode())
                 .ext(request.getExt())
                 .build();
 
         String uniqueId = result.getCaseSettingId();
         if (StrUtil.isBlank(uniqueId)) {
             result.setCaseSettingId(baseBiz.getIdStr());
+            if (StrUtil.isBlank(result.getScoreMode())) {
+                result.setScoreMode(CaseScoreModeEnum.STRICT.name());
+            }
+            if (StrUtil.isBlank(result.getAllotMode())) {
+                result.setAllotMode(CaseQuestionnaireDistributionEnum.RANDOM.name());
+            }
         } else {
             CaseSettingEntity entity = getById(uniqueId);
             if (BeanUtil.isEmpty(entity)) {
