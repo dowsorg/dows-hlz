@@ -20,6 +20,7 @@
         <module>hep-biz</module>
         <module>hep-config</module>
         <module>hep-crud</module>
+        <module>hep-event</module>
         <module>hep-feign</module>
         <module>hep-pojo</module>
         <module>hep-rest</module>

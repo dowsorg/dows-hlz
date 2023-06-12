@@ -42,8 +42,8 @@ public class ExperimentParticipatorRest {
      * @return
      */
     @Operation(summary = "分页获取实验参与者列表")
-    @PostMapping("v1/user/experimentParticipator/page")
-    public PageInfo<ExperimentListResponse> page(@RequestBody @Validated PageExperimentRequest pageExperimentRequest) {
+    @GetMapping("v1/user/experimentParticipator/page")
+    public PageInfo<ExperimentListResponse> page(@Validated PageExperimentRequest pageExperimentRequest) {
         return experimentParticipatorBiz.page(pageExperimentRequest);
     }
 
