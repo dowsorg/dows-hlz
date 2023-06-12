@@ -45,8 +45,8 @@ public class ExperimentParticipatorBiz {
         page.setCurrent(pageExperimentRequest.getPageNo());
         page.setSize(pageExperimentRequest.getPageSize());
 
-        String[] array = (String[]) (pageExperimentRequest.getOrder().toArray());
         if (pageExperimentRequest.getOrder() != null) {
+            String[] array = (String[]) (pageExperimentRequest.getOrder().toArray());
             page.addOrder(pageExperimentRequest.getDesc() ?
                     OrderItem.descs(array) : OrderItem.ascs(array));
         }

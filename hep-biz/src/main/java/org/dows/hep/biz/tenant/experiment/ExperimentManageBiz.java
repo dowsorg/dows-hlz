@@ -320,8 +320,8 @@ public class ExperimentManageBiz {
         Page page = new Page<ExperimentInstanceEntity>();
         page.setSize(pageExperimentRequest.getPageSize());
         page.setCurrent(pageExperimentRequest.getPageNo());
-        String[] array = (String[]) (pageExperimentRequest.getOrder().toArray());
         if (pageExperimentRequest.getOrder() != null) {
+            String[] array = (String[]) (pageExperimentRequest.getOrder().toArray());
             page.addOrder(pageExperimentRequest.getDesc() ?
                     OrderItem.descs(array) : OrderItem.ascs(array));
         }
