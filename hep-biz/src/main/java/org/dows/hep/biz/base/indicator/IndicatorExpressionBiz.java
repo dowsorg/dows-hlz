@@ -933,7 +933,7 @@ public class IndicatorExpressionBiz{
         .eq(IndicatorExpressionRefEntity::getReasonId, reasonId)
         .list()
         .stream().collect(Collectors.toMap(IndicatorExpressionRefEntity::getIndicatorExpressionId, a->a));
-    paramIndicatorExpressionIdList.forEach(indicatorExpressionId -> {
+    dbIndicatorExpressionIdSet.forEach(indicatorExpressionId -> {
       IndicatorExpressionRefEntity indicatorExpressionRefEntity = kIndicatorExpressionIdVIndicatorExpressionRefEntityMap.get(indicatorExpressionId);
       if (Objects.isNull(indicatorExpressionRefEntity)) {
         indicatorExpressionRefEntity = IndicatorExpressionRefEntity
