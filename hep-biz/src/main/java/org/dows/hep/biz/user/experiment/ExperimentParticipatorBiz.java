@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
 import org.dows.hep.api.enums.ExperimentStatusCode;
-import org.dows.hep.api.enums.ParticipatorTypeEnum;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
@@ -74,7 +73,7 @@ public class ExperimentParticipatorBiz {
                 .eq(ExperimentParticipatorEntity::getExperimentInstanceId, getExperimentGroupCaptainRequest.getExperimentInstanceId())
                 .eq(ExperimentParticipatorEntity::getExperimentGroupId, getExperimentGroupCaptainRequest.getExperimentGroupId())
                 .eq(ExperimentParticipatorEntity::getAccountId, getExperimentGroupCaptainRequest.getAccountId())
-                .eq(ExperimentParticipatorEntity::getParticipatorType, ParticipatorTypeEnum.CAPTAIN.getCode())
+//                .eq(ExperimentParticipatorEntity::getParticipatorType, getExperimentGroupCaptainRequest.getParticipatorType().getCode())
                 .oneOpt().orElse(null);
         if (experimentParticipatorEntity == null) {
             throw new ExperimentException(ExperimentStatusCode.NOT_CAPTAIN);

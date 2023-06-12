@@ -87,7 +87,7 @@ public class ExperimentParticipatorEntity implements CrudEntity {
     private Integer participatorState;
 
     @Schema(title = "实验者状态[默认未开始状态0~6步]")
-    private Boolean state;
+    private Integer state;
 
 
     @Schema(title = "参与者加入时间")

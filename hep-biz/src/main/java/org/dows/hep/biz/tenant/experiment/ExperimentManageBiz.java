@@ -108,6 +108,7 @@ public class ExperimentManageBiz {
                     .experimentName(experimentInstance.getExperimentName())
                     .accountId(instance.getAccountId())
                     .accountName(instance.getAccountName())
+                    .state(0)
                     .model(experimentInstance.getModel())
                     .participatorType(0)
                     .build();
