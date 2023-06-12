@@ -3,6 +3,7 @@ package org.dows.hep.biz.tenant.experiment;
 import cn.hutool.core.collection.CollUtil;
 import com.alibaba.fastjson.JSON;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.tenant.casus.CaseScoreModeEnum;
 import org.dows.hep.api.tenant.casus.response.CaseInstanceResponse;
 import org.dows.hep.api.tenant.casus.response.CaseNoticeResponse;
 import org.dows.hep.api.tenant.casus.response.CaseSettingResponse;
@@ -76,7 +77,7 @@ public class ExperimentCaseInfoManageBiz {
         CaseSettingResponse caseSetting = tenantCaseSettingBiz.getCaseSetting(caseInstanceId);
         String scoreMode = Optional.ofNullable(caseSetting)
                 .map(CaseSettingResponse::getScoreMode)
-                .orElse(null);
+                .orElse(CaseScoreModeEnum.STRICT.name());
         entity.setScoreMode(scoreMode);
 
         experimentCaseInfoService.save(entity);
