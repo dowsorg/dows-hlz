@@ -1,8 +1,7 @@
 package org.dows.hep.api.tenant.casus.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 /**
 * @description 
@@ -11,6 +10,8 @@ import lombok.NoArgsConstructor;
 * @date 
 */
 @Data
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @Schema(name = "CaseSetting 对象", title = "案例问卷设置Request")
 public class CaseSettingRequest{
