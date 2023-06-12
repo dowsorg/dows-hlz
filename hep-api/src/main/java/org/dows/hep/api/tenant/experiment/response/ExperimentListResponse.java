@@ -49,11 +49,11 @@ public class ExperimentListResponse{
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @Schema(title = "开始时间")
-    private Date startTime;
+    private Date experimentStartTime;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @Schema(title = "结束时间,实验结束时回填")
-    private Date endTime;
+    private Date experimentEndTime;
 
     @Schema(title = "实验状态[默认未开始状态0~6步]")
     private Integer state;

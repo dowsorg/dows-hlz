@@ -51,6 +51,8 @@ public class ExperimentParticipatorEntity implements CrudEntity {
     @Schema(title = "实验名称")
     private String experimentName;
 
+
+
     @Schema(title = "实验机构ID")
     private String experimentOrgIds;
 
@@ -87,15 +89,25 @@ public class ExperimentParticipatorEntity implements CrudEntity {
     @Schema(title = "实验者状态[默认未开始状态0~6步]")
     private Boolean state;
 
-    @JsonIgnore
-    @TableLogic
-    @TableField(fill = FieldFill.INSERT)
-    @Schema(title = "逻辑删除")
-    private Boolean deleted;
+
+    @Schema(title = "参与者加入时间")
+    private Date joinTime;
+
+    @Schema(title = "实验开始时间")
+    private Date experimentStartTime;
+
+    @Schema(title = "实验结束时间")
+    private Date experimentEndTime;
 
     @TableField(fill = FieldFill.INSERT)
     @Schema(title = "时间戳")
     private Date dt;
 
+
+    @JsonIgnore
+    @TableLogic
+    @TableField(fill = FieldFill.INSERT)
+    @Schema(title = "逻辑删除")
+    private Boolean deleted;
 }
 

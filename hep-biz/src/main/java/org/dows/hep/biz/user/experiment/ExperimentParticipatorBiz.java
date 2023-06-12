@@ -46,9 +46,10 @@ public class ExperimentParticipatorBiz {
         page.setSize(pageExperimentRequest.getPageSize());
 
         if (pageExperimentRequest.getOrder() != null) {
-            String[] array = (String[]) (pageExperimentRequest.getOrder().toArray());
-            page.addOrder(pageExperimentRequest.getDesc() ?
-                    OrderItem.descs(array) : OrderItem.ascs(array));
+            String[] array = (String[]) pageExperimentRequest.getOrder().stream()
+                    .map(s -> StrUtil.toUnderlineCase((CharSequence) s))
+                    .toArray(String[]::new);
+            page.addOrder(pageExperimentRequest.getDesc() ? OrderItem.descs(array) : OrderItem.ascs(array));
         }
 //        !StrUtil.isBlank(pageExperimentRequest.getExperimentInstanceId())
         if (!StrUtil.isBlank(pageExperimentRequest.getAccountId())) {
