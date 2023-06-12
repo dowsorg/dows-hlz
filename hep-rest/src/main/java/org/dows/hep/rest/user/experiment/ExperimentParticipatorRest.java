@@ -41,8 +41,8 @@ public class ExperimentParticipatorRest {
      * @return
      */
     @Operation(summary = "分页获取实验参与者列表")
-    @PostMapping("v1/tenantExperiment/experimentParticipator/page")
-    public PageInfo<ExperimentListResponse> page(@RequestBody PageExperimentRequest pageExperimentRequest) {
+    @GetMapping("v1/user/experimentParticipator/page")
+    public PageInfo<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
         return experimentParticipatorBiz.page(pageExperimentRequest);
     }
 
@@ -54,7 +54,7 @@ public class ExperimentParticipatorRest {
      * @return
      */
     @Operation(summary = "获取实验队长信息")
-    @GetMapping("v1/tenantExperiment/experimentParticipator/getCaptain")
+    @GetMapping("v1/user/experimentParticipator/getCaptain")
     public GetExperimentGroupCaptainResponse getCaptain(GetExperimentGroupCaptainRequest getExperimentGroupCaptainRequest) {
         return experimentParticipatorBiz.getExperimentGroupCaptain(getExperimentGroupCaptainRequest);
     }
