@@ -107,6 +107,7 @@ public class ExperimentManageBiz {
                     .experimentName(experimentInstance.getExperimentName())
                     .accountId(instance.getAccountId())
                     .accountName(instance.getAccountName())
+                    .model(experimentInstance.getModel())
                     .participatorType(0)
                     .build();
             experimentParticipatorEntityList.add(experimentParticipatorEntity);

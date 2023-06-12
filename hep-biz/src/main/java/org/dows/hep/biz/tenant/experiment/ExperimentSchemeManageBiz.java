@@ -11,6 +11,7 @@ import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.biz.tenant.casus.TenantCaseSchemeBiz;
 import org.dows.hep.entity.ExperimentSchemeEntity;
 import org.dows.hep.entity.ExperimentSchemeItemEntity;
+import org.dows.hep.service.ExperimentSchemeItemService;
 import org.dows.hep.service.ExperimentSchemeService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class ExperimentSchemeManageBiz {
     private final IdGenerator idGenerator;
     private final TenantCaseSchemeBiz tenantCaseSchemeBiz;
     private final ExperimentSchemeService experimentSchemeService;
+    private final ExperimentSchemeItemService experimentSchemeItemService;
 
     /**
      * @param
@@ -62,24 +64,27 @@ public class ExperimentSchemeManageBiz {
             entityList.add(entity);
 
             // experiment-scheme-item
+            List<ExperimentSchemeItemEntity> localItemList = new ArrayList<>();
             List<QuestionSectionItemResponse> sectionItemList = caseScheme.getSectionItemList();
             if (CollUtil.isNotEmpty(sectionItemList)) {
                 sectionItemList.forEach(sectionItem -> {
                     QuestionResponse question = sectionItem.getQuestion();
                     List<ExperimentSchemeItemEntity> itemEntities = convertToFlatList(question);
-                    itemEntityList.addAll(itemEntities);
+                    localItemList.addAll(itemEntities);
                 });
 
-                for (int i = 0; i < itemEntityList.size(); i++) {
-                    ExperimentSchemeItemEntity item = itemEntityList.get(i);
+                for (int i = 0; i < localItemList.size(); i++) {
+                    ExperimentSchemeItemEntity item = localItemList.get(i);
                     item.setSeq(i);
                     item.setExperimentSchemeId(entity.getExperimentSchemeId());
                 }
+
+                itemEntityList.addAll(localItemList);
             }
         });
 
         experimentSchemeService.saveBatch(entityList);
-
+        experimentSchemeItemService.saveBatch(itemEntityList);
     }
 
     private List<ExperimentSchemeItemEntity> convertToFlatList(QuestionResponse questionResponse) {
@@ -102,6 +107,13 @@ public class ExperimentSchemeManageBiz {
                 .questionResult(null)
                 .build();
         flatList.add(itemEntity);
+
+        // 判空
+        List<QuestionResponse> children = questionResponse.getChildren();
+        if (CollUtil.isEmpty(children)) {
+            return;
+        }
+
         // 处理子节点
         for (QuestionResponse child : questionResponse.getChildren()) {
             flattenTree(child, flatList, itemEntity.getExperimentSchemeItemId());
