@@ -7,7 +7,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.api.model.PageInfo;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
+import org.dows.hep.api.enums.ExperimentStatusCode;
 import org.dows.hep.api.enums.ParticipatorTypeEnum;
+import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.api.user.experiment.request.GetExperimentGroupCaptainRequest;
@@ -48,11 +50,11 @@ public class ExperimentParticipatorBiz {
             page.addOrder(pageExperimentRequest.isDesc() ?
                     OrderItem.desc(pageExperimentRequest.getOrderBy()) : OrderItem.asc(pageExperimentRequest.getOrderBy()));
         }
-
-        if (!StrUtil.isBlank(pageExperimentRequest.getAccountId()) && !StrUtil.isBlank(pageExperimentRequest.getExperimentInstanceId())) {
+//        !StrUtil.isBlank(pageExperimentRequest.getExperimentInstanceId())
+        if (!StrUtil.isBlank(pageExperimentRequest.getAccountId())) {
             page = experimentParticipatorService.page(page, experimentParticipatorService.lambdaQuery()
                     .eq(ExperimentParticipatorEntity::getAccountId, pageExperimentRequest.getAccountId())
-                    .ne(ExperimentParticipatorEntity::getExperimentInstanceId, pageExperimentRequest.getExperimentInstanceId())
+                    //.ne(ExperimentParticipatorEntity::getExperimentInstanceId, pageExperimentRequest.getExperimentInstanceId())
                     .getWrapper());
         } else {
             page = page.setTotal(0).setCurrent(0).setSize(0).setRecords(new ArrayList<>());
@@ -76,7 +78,8 @@ public class ExperimentParticipatorBiz {
                 .eq(ExperimentParticipatorEntity::getParticipatorType, ParticipatorTypeEnum.CAPTAIN.getCode())
                 .oneOpt().orElse(null);
         if (experimentParticipatorEntity == null) {
-            return null;
+            throw new ExperimentException(ExperimentStatusCode.NOT_CAPTAIN);
+//            return null;
         }
         return BeanConvert.beanConvert(experimentParticipatorEntity, GetExperimentGroupCaptainResponse.class);
     }
