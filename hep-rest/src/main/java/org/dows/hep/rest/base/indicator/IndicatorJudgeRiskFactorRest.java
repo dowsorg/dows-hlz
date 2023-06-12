@@ -31,6 +31,12 @@ public class IndicatorJudgeRiskFactorRest {
         indicatorJudgeRiskFactorBiz.createOrUpdateRs(createOrUpdateIndicatorJudgeRiskFactorRequestRs);
     }
 
+    @Operation(summary = "v2Rs创建或保存查看指标危险因素类")
+    @PostMapping("v2/baseIndicator/indicatorJudgeRiskFactor/createOrUpdateRs")
+    public void createOrUpdateRsV2(@RequestBody @Validated CreateOrUpdateIndicatorJudgeRiskFactorRequestRsV2 createOrUpdateIndicatorJudgeRiskFactorRequestRsV2) throws InterruptedException {
+        indicatorJudgeRiskFactorBiz.createOrUpdateRsV2(createOrUpdateIndicatorJudgeRiskFactorRequestRsV2);
+    }
+
     @Operation(summary = "Rs批量删除")
     @DeleteMapping("v1/baseIndicator/indicatorJudgeRiskFactor/batchDeleteRs")
     public void batchDeleteRs(@RequestBody List<String> indicatorJudgeRiskFactorIdList) {

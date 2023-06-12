@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.enums.EnumExperimentParticipator;
+import org.dows.hep.api.enums.ParticipatorTypeEnum;
 import org.dows.hep.api.exception.ExperimentParticipatorException;
 import org.dows.hep.api.user.experiment.request.AllotActorRequest;
 import org.dows.hep.api.user.experiment.request.CreateGroupRequest;
@@ -58,14 +59,32 @@ public class ExperimentGroupBiz {
      */
     @DSTransactional
     public Boolean createGroup(CreateGroupRequest createGroup) {
-        ExperimentGroupEntity experimentGroupEntity = ExperimentGroupEntity.builder()
-                .groupName(createGroup.getGroupName())
-                .build();
-        boolean update = experimentGroupService.lambdaUpdate()
+
+        //todo 判断这个实验是存在的，这个小组是存在的，并绑定在这个实验上的否则不能创建
+        List<ExperimentGroupEntity> list = experimentGroupService.lambdaQuery()
+                .eq(ExperimentGroupEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
+                .eq(ExperimentGroupEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
+                .list();
+        // todo 并且这个的账号是队长
+        ExperimentParticipatorEntity experimentParticipatorEntity = experimentParticipatorService.lambdaQuery()
+                .eq(ExperimentParticipatorEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
+                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
+                .eq(ExperimentParticipatorEntity::getDeleted, false)
+                .eq(ExperimentParticipatorEntity::getParticipatorType, ParticipatorTypeEnum.CAPTAIN.getCode())
+                .oneOpt().orElse(null);
+
+        if (list.size() == 0) {
+            throw new RuntimeException("当前实验不存在该小组");
+        }
+        if(experimentParticipatorEntity == null){
+            throw new RuntimeException("该账号不是实验队长，无法创建队名!");
+        }
+        return experimentGroupService.lambdaUpdate()
                 .eq(ExperimentGroupEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
                 .eq(ExperimentGroupEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
-                .update(experimentGroupEntity);
-        return update;
+                .update(ExperimentGroupEntity.builder()
+                        .groupName(createGroup.getGroupName())
+                        .build());
     }
 
     /**
@@ -80,7 +99,7 @@ public class ExperimentGroupBiz {
      */
     public Boolean actorRole(AllotActorRequest allotActorRequest) {
         List<ExperimentActorEntity> experimentActorEntityList = new ArrayList<>();
-        allotActorRequest.getActorOrgMap().forEach((accountInfo,orgs)->{
+        allotActorRequest.getActorOrgMap().forEach((accountInfo, orgs) -> {
             for (AllotActorRequest.CaseOrgInfo org : orgs) {
                 ExperimentActorEntity experimentActorEntity = ExperimentActorEntity.builder()
                         .experimentActorId(idGenerator.nextIdStr())
@@ -92,12 +111,12 @@ public class ExperimentGroupBiz {
 
                         .build();
                 // 扮演类型[0:问题，1:机构]
-                if(1==1){
+                if (1 == 1) {
 //                    experimentActorEntity.setActorId(org.getPrincipalId());
 //                    experimentActorEntity.setActorType();
                 }
                 // 如果是[0:教师，1:组长，2：学生]
-                if(1==1){
+                if (1 == 1) {
                     experimentActorEntity.setParticipatorType(2);
                 }
                 experimentActorEntityList.add(experimentActorEntity);
@@ -120,15 +139,15 @@ public class ExperimentGroupBiz {
      */
     public List<ExperimentGroupResponse> listGroup(String experimentInstanceId) {
         List<ExperimentGroupEntity> entities = experimentGroupService.lambdaQuery()
-                .eq(ExperimentGroupEntity::getExperimentInstanceId,experimentInstanceId)
-                .eq(ExperimentGroupEntity::getDeleted,false)
+                .eq(ExperimentGroupEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentGroupEntity::getDeleted, false)
                 .list();
         //复制属性
         List<ExperimentGroupResponse> experimentGroupResponse = new ArrayList<>();
-        if(entities != null && entities.size() > 0){
-            entities.forEach(entity->{
+        if (entities != null && entities.size() > 0) {
+            entities.forEach(entity -> {
                 ExperimentGroupResponse response = new ExperimentGroupResponse();
-                BeanUtil.copyProperties(entity,response);
+                BeanUtil.copyProperties(entity, response);
                 experimentGroupResponse.add(response);
             });
         }
@@ -166,16 +185,16 @@ public class ExperimentGroupBiz {
      */
     public List<ExperimentParticipatorResponse> listGroupMembers(String experimentGroupId, String experimentInstanceId) {
         List<ExperimentParticipatorEntity> entities = experimentParticipatorService.lambdaQuery()
-                .eq(ExperimentParticipatorEntity::getExperimentGroupId,experimentGroupId)
-                .eq(ExperimentParticipatorEntity::getExperimentInstanceId,experimentInstanceId)
-                .eq(ExperimentParticipatorEntity::getDeleted,false)
+                .eq(ExperimentParticipatorEntity::getExperimentGroupId, experimentGroupId)
+                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentParticipatorEntity::getDeleted, false)
                 .list();
         //复制属性
         List<ExperimentParticipatorResponse> experimentParticipatorResponses = new ArrayList<>();
-        if(entities != null && entities.size() > 0){
-            entities.forEach(entity->{
+        if (entities != null && entities.size() > 0) {
+            entities.forEach(entity -> {
                 ExperimentParticipatorResponse response = new ExperimentParticipatorResponse();
-                BeanUtil.copyProperties(entity,response);
+                BeanUtil.copyProperties(entity, response);
                 experimentParticipatorResponses.add(response);
             });
         }
@@ -194,10 +213,10 @@ public class ExperimentGroupBiz {
      */
     public List<ExperimentOrgEntity> listExperimentGroupOrg(String experimentGroupId, String experimentInstanceId, String periods) {
         List<ExperimentOrgEntity> entities = experimentOrgService.lambdaQuery()
-                .eq(ExperimentOrgEntity::getExperimentGroupId,experimentGroupId)
-                .eq(ExperimentOrgEntity::getExperimentInstanceId,experimentInstanceId)
-                .eq(ExperimentOrgEntity::getPeriods,periods)
-                .eq(ExperimentOrgEntity::getDeleted,false)
+                .eq(ExperimentOrgEntity::getExperimentGroupId, experimentGroupId)
+                .eq(ExperimentOrgEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentOrgEntity::getPeriods, periods)
+                .eq(ExperimentOrgEntity::getDeleted, false)
                 .list();
         return entities;
     }
@@ -215,13 +234,13 @@ public class ExperimentGroupBiz {
     @DSTransactional
     public Boolean allotGroupMembers(ExperimentParticipatorRequest request) {
         ExperimentParticipatorEntity model = experimentParticipatorService.lambdaQuery()
-                .eq(ExperimentParticipatorEntity::getExperimentParticipatorId,request.getExperimentParticipatorId())
-                .eq(ExperimentParticipatorEntity::getAppId,request.getAppId())
-                .eq(ExperimentParticipatorEntity::getExperimentGroupId,request.getExperimentGroupId())
-                .eq(ExperimentParticipatorEntity::getExperimentInstanceId,request.getExperimentInstanceId())
-                .eq(ExperimentParticipatorEntity::getDeleted,false)
+                .eq(ExperimentParticipatorEntity::getExperimentParticipatorId, request.getExperimentParticipatorId())
+                .eq(ExperimentParticipatorEntity::getAppId, request.getAppId())
+                .eq(ExperimentParticipatorEntity::getExperimentGroupId, request.getExperimentGroupId())
+                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, request.getExperimentInstanceId())
+                .eq(ExperimentParticipatorEntity::getDeleted, false)
                 .one();
-        if(model == null || ReflectUtil.isObjectNull(model)){
+        if (model == null || ReflectUtil.isObjectNull(model)) {
             throw new ExperimentParticipatorException(EnumExperimentParticipator.PARTICIPATOR_NOT_EXIST_EXCEPTION);
         }
         ExperimentParticipatorEntity entity = ExperimentParticipatorEntity.builder()

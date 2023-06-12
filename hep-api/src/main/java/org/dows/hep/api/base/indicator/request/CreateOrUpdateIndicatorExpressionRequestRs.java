@@ -28,13 +28,20 @@ public class CreateOrUpdateIndicatorExpressionRequestRs implements Serializable 
   @Schema(title = "指标公式与主体关联关系分布式ID")
   private String indicatorExpressionRefId;
 
+  @Schema(title = "产生这个指标公式的分布式ID")
+  private String reasonId;
+
   @Schema(title = "应用ID")
   @ApiModelProperty(required = true)
   private String appId;
 
   @Schema(title = "公式类型，0-条件公式，1-随机公式")
-  @ApiModelProperty(required = true, value = "公式类型，0-条件公式，1-随机公式, 2-危险因素")
+  @ApiModelProperty(required = true, value = "公式类型，0-条件公式，1-随机公式")
   private Integer type;
+
+  @Schema(title = "公式来源")
+  @ApiModelProperty(required = true)
+  private Integer source;
 
   @Schema(title = "指标公式细项")
   @ApiModelProperty(required = true)

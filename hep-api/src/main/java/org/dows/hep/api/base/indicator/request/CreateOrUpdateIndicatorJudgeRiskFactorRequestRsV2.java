@@ -1,6 +1,6 @@
-package org.dows.hep.api.base.indicator.response;
+package org.dows.hep.api.base.indicator.request;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,7 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -18,41 +17,41 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class IndicatorJudgeRiskFactorResponseRs implements Serializable {
-  @JsonFormat(shape = JsonFormat.Shape.STRING)
-  @Schema(title = "主键")
-  private Long id;
-
+public class CreateOrUpdateIndicatorJudgeRiskFactorRequestRsV2 implements Serializable {
   @Schema(title = "分布式ID")
   private String indicatorJudgeRiskFactorId;
 
   @Schema(title = "应用ID")
+  @ApiModelProperty(required = true)
   private String appId;
 
   @Schema(title = "指标功能ID")
+  @ApiModelProperty(required = true)
   private String indicatorFuncId;
 
   @Schema(title = "危险因素名称")
   private String name;
 
   @Schema(title = "危险因素类别")
-  private IndicatorCategoryResponse indicatorCategoryResponse;
+  @ApiModelProperty(required = true)
+  private String indicatorCategoryId;
 
   @Schema(title = "分数")
+  @ApiModelProperty(required = true)
   private Double point;
 
   @Schema(title = "判断规则")
+  @ApiModelProperty(required = true)
   private String expression;
 
   @Schema(title = "结果说明")
   private String resultExplain;
 
   @Schema(title = "0-禁用，1-启用")
+  @ApiModelProperty(required = true)
   private Integer status;
 
-  @Schema(title = "时间戳")
-  private Date dt;
-
-  @Schema(title = "指标公式")
-  private List<IndicatorExpressionResponseRs> indicatorExpressionResponseRsList;
+  @Schema(title = "公式Id列表")
+  @ApiModelProperty(required = true)
+  private List<String> indicatorExpressionIdList;
 }

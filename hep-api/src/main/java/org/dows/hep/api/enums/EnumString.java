@@ -19,6 +19,11 @@ public enum EnumString {
   JIN("#", "#"),
   AT("@", "@"),
   SINGLE_QUOTES("'", "单引号"),
+  INDICATOR_EXPRESSION_START("#", "指标公式变量第一个字符"),
+  INDICATOR_EXPRESSION_SPLIT("\\$", "指标公式扩展点分割符"),
+  INDICATOR_EXPRESSION_INPUT("@", "用户输入量第一个字符"),
+  INDICATOR_EXPRESSION_LIST_SPLIT(",", "列表分割符"),
+
   ;
   private final String str;
   private final String desc;

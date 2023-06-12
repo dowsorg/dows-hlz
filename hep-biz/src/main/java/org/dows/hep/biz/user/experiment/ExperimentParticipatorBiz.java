@@ -6,12 +6,18 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.api.model.PageInfo;
+import org.dows.framework.crud.mybatis.utils.BeanConvert;
+import org.dows.hep.api.enums.ParticipatorTypeEnum;
 import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
+import org.dows.hep.api.user.experiment.request.GetExperimentGroupCaptainRequest;
+import org.dows.hep.api.user.experiment.response.GetExperimentGroupCaptainResponse;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.service.ExperimentGroupService;
 import org.dows.hep.service.ExperimentParticipatorService;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -49,9 +55,29 @@ public class ExperimentParticipatorBiz {
                     .ne(ExperimentParticipatorEntity::getExperimentInstanceId, pageExperimentRequest.getExperimentInstanceId())
                     .getWrapper());
         } else {
-            page = page.setTotal(0).setCurrent(0).setSize(0);
+            page = page.setTotal(0).setCurrent(0).setSize(0).setRecords(new ArrayList<>());
         }
         PageInfo pageInfo = experimentParticipatorService.getPageInfo(page, ExperimentListResponse.class);
         return pageInfo;
+    }
+
+    /**
+     * 获取实验小组长
+     *
+     * @param getExperimentGroupCaptainRequest
+     * @return
+     */
+    public GetExperimentGroupCaptainResponse getExperimentGroupCaptain(GetExperimentGroupCaptainRequest getExperimentGroupCaptainRequest) {
+
+        ExperimentParticipatorEntity experimentParticipatorEntity = experimentParticipatorService.lambdaQuery()
+                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, getExperimentGroupCaptainRequest.getExperimentInstanceId())
+                .eq(ExperimentParticipatorEntity::getExperimentGroupId, getExperimentGroupCaptainRequest.getExperimentGroupId())
+                .eq(ExperimentParticipatorEntity::getAccountId, getExperimentGroupCaptainRequest.getAccountId())
+                .eq(ExperimentParticipatorEntity::getParticipatorType, ParticipatorTypeEnum.CAPTAIN.getCode())
+                .oneOpt().orElse(null);
+        if (experimentParticipatorEntity == null) {
+            return null;
+        }
+        return BeanConvert.beanConvert(experimentParticipatorEntity, GetExperimentGroupCaptainResponse.class);
     }
 }
