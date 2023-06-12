@@ -63,6 +63,14 @@ public class TenantCaseSchemeBiz {
             return "";
         }
 
+        // check is exists
+        if (CaseSchemeSourceEnum.TENANT.equals(caseSchemeSourceEnum)) {
+            CaseSchemeEntity oriCaseSchemeEntity = getByInstanceId(caseScheme.getCaseInstanceId());
+            if (BeanUtil.isEmpty(oriCaseSchemeEntity)) {
+                throw new BizException(CaseESCEnum.CASE_SCHEME_ALREADY_EXISTS.getDescr());
+            }
+        }
+
         CaseSchemeEntity caseSchemeEntity = convertRequest2Entity(caseScheme, caseSchemeSourceEnum, questionSourceEnum);
         caseSchemeService.saveOrUpdate(caseSchemeEntity);
 
