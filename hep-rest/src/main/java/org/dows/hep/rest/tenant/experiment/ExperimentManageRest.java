@@ -3,10 +3,10 @@ package org.dows.hep.rest.tenant.experiment;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.framework.crud.api.model.PageInfo;
+import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
-import org.dows.hep.api.tenant.experiment.request.ExperimentQueryRequest;
 import org.dows.hep.api.tenant.experiment.request.ExperimentGroupSettingRequest;
+import org.dows.hep.api.tenant.experiment.request.ExperimentQueryRequest;
 import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
@@ -103,7 +103,7 @@ public class ExperimentManageRest {
      */
     @Operation(summary = "分页获取实验列表")
     @GetMapping("v1/tenantExperiment/experimentManage/page")
-    public PageInfo<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
+    public PageResponse<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
         return experimentManageBiz.page(pageExperimentRequest);
     }
 

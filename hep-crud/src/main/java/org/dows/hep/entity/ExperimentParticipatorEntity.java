@@ -67,7 +67,7 @@ public class ExperimentParticipatorEntity implements CrudEntity {
     private String accountName;
 
     @Schema(title = "组名")
-    private String groupName;
+    private String groupAlias;
 
     @Schema(title = "组序号")
     private String groupNo;

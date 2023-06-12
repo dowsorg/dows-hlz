@@ -15,19 +15,22 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(name = "GroupSetting 对象", title = "小组设置")
 public class ExperimentGroupSettingRequest {
+    @Schema(title = "应用ID")
+    private String appId;
+    @Schema(title = "实验实列ID")
+    private String experimentInstanceId;
+    @Schema(title = "实验名称")
+    private String experimentName;
+    @Schema(title = "实验模式[0:标准模式，1:沙盘模式，2:方案设计模式]")
+    private Integer model;
     @Schema(title = "实验小组设置")
     public List<GroupSetting> groupSettings;
 
     @Data
     public static class GroupSetting {
-        @Schema(title = "实验实列ID")
-        private String experimentInstanceId;
 
         @Schema(title = "小组序号")
         private String groupNo;
-
-        @Schema(title = "应用ID")
-        private String appId;
 
         @Schema(title = "小组名称")
         private String groupName;
@@ -41,8 +44,6 @@ public class ExperimentGroupSettingRequest {
         @Schema(title = "参与者对象")
         private List<ExperimentParticipator> experimentParticipators;
 
-        @Schema(title = "参与者Json对象")
-        private String experimentParticipator;
     }
 
 

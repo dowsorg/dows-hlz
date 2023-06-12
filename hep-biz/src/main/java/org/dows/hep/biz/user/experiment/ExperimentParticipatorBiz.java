@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dows.framework.crud.api.model.PageInfo;
+import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
 import org.dows.hep.api.enums.ExperimentStatusCode;
 import org.dows.hep.api.enums.ParticipatorTypeEnum;
@@ -40,15 +40,15 @@ public class ExperimentParticipatorBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public PageInfo<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
+    public PageResponse<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
         Page page = new Page<ExperimentParticipatorEntity>();
-        page.setSize(pageExperimentRequest.getPageSize());
         page.setCurrent(pageExperimentRequest.getPageNo());
+        page.setSize(pageExperimentRequest.getPageSize());
 
-
-        if (StrUtil.isBlank(pageExperimentRequest.getOrderBy())) {
-            page.addOrder(pageExperimentRequest.isDesc() ?
-                    OrderItem.desc(pageExperimentRequest.getOrderBy()) : OrderItem.asc(pageExperimentRequest.getOrderBy()));
+        String[] array = (String[]) (pageExperimentRequest.getOrder().toArray());
+        if (pageExperimentRequest.getOrder() != null) {
+            page.addOrder(pageExperimentRequest.getDesc() ?
+                    OrderItem.descs(array) : OrderItem.ascs(array));
         }
 //        !StrUtil.isBlank(pageExperimentRequest.getExperimentInstanceId())
         if (!StrUtil.isBlank(pageExperimentRequest.getAccountId())) {
@@ -59,7 +59,7 @@ public class ExperimentParticipatorBiz {
         } else {
             page = page.setTotal(0).setCurrent(0).setSize(0).setRecords(new ArrayList<>());
         }
-        PageInfo pageInfo = experimentParticipatorService.getPageInfo(page, ExperimentListResponse.class);
+        PageResponse pageInfo = experimentParticipatorService.getPageInfo(page, ExperimentListResponse.class);
         return pageInfo;
     }
 

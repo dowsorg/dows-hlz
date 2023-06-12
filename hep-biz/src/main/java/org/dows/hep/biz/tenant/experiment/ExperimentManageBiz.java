@@ -14,7 +14,7 @@ import org.dows.account.response.AccountInstanceResponse;
 import org.dows.account.response.AccountOrgGeoResponse;
 import org.dows.account.response.AccountOrgResponse;
 import org.dows.account.response.AccountUserResponse;
-import org.dows.framework.crud.api.model.PageInfo;
+import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
 import org.dows.hep.api.core.CreateExperimentForm;
 import org.dows.hep.api.enums.EnumExperimentParticipator;
@@ -225,9 +225,9 @@ public class ExperimentManageBiz {
         Map<String, List<ExperimentParticipatorEntity>> groupParticipators = new HashMap<>();
         for (ExperimentGroupSettingRequest.GroupSetting groupSetting : experimentGroupSettings) {
             ExperimentGroupEntity experimentGroupEntity = ExperimentGroupEntity.builder()
-                    .appId(groupSetting.getAppId())
+                    .appId(experimentGroupSettingRequest.getAppId())
                     .experimentGroupId(idGenerator.nextIdStr())
-                    .experimentInstanceId(groupSetting.getExperimentInstanceId())
+                    .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
                     .groupAlias(groupSetting.getGroupAlias())
                     .memberCount(groupSetting.getMemberCount())
                     .groupNo(groupSetting.getGroupNo())
@@ -242,12 +242,14 @@ public class ExperimentManageBiz {
             for (ExperimentGroupSettingRequest.ExperimentParticipator experimentParticipator : experimentParticipators) {
                 ExperimentParticipatorEntity experimentParticipatorEntity = ExperimentParticipatorEntity.builder()
                         .experimentParticipatorId(idGenerator.nextIdStr())
-                        .appId(groupSetting.getAppId())
-                        .experimentInstanceId(groupSetting.getExperimentInstanceId())
+                        .appId(experimentGroupSettingRequest.getAppId())
+                        .model(experimentGroupSettingRequest.getModel())
+                        .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
+                        .experimentName(experimentGroupSettingRequest.getExperimentName())
                         .accountId(experimentParticipator.getParticipatorId())
                         .accountName(experimentParticipator.getParticipatorName())
                         .groupNo(groupSetting.getGroupNo())
-                        .groupName(groupSetting.getGroupName())
+                        .groupAlias(groupSetting.getGroupAlias())
                         .experimentGroupId(experimentGroupEntity.getExperimentGroupId())
                         .participatorType(2)
                         .build();
@@ -265,13 +267,13 @@ public class ExperimentManageBiz {
         // 判断实验参与人数是否大于该案例得机构数,并且应为已发布的机构
         Set<String> orgIds = new HashSet<>();
         List<AccountOrgResponse> orgList = accountOrgApi.getValidAccountOrgList(1);
-        if(orgList != null && orgList.size() > 0) {
+        if (orgList != null && orgList.size() > 0) {
             orgList.forEach(org -> {
                 orgIds.add(org.getOrgId());
             });
         }
         List<CaseOrgEntity> entityList = caseOrgService.lambdaQuery()
-                .in(orgIds != null && orgIds.size() > 0,CaseOrgEntity::getOrgId,orgIds)
+                .in(orgIds != null && orgIds.size() > 0, CaseOrgEntity::getOrgId, orgIds)
                 .eq(CaseOrgEntity::getCaseInstanceId, caseInstanceId)
                 .eq(CaseOrgEntity::getDeleted, false)
                 .list();
@@ -314,14 +316,14 @@ public class ExperimentManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public PageInfo<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
+    public PageResponse<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
         Page page = new Page<ExperimentInstanceEntity>();
         page.setSize(pageExperimentRequest.getPageSize());
         page.setCurrent(pageExperimentRequest.getPageNo());
-
-        if (StrUtil.isBlank(pageExperimentRequest.getOrderBy())) {
-            page.addOrder(pageExperimentRequest.isDesc() ?
-                    OrderItem.desc(pageExperimentRequest.getOrderBy()) : OrderItem.asc(pageExperimentRequest.getOrderBy()));
+        String[] array = (String[]) (pageExperimentRequest.getOrder().toArray());
+        if (pageExperimentRequest.getOrder() != null) {
+            page.addOrder(pageExperimentRequest.getDesc() ?
+                    OrderItem.descs(array) : OrderItem.ascs(array));
         }
         if (!StrUtil.isBlank(pageExperimentRequest.getKeyword())) {
             page = experimentInstanceService.page(page, experimentInstanceService.lambdaQuery()
@@ -332,7 +334,7 @@ public class ExperimentManageBiz {
         } else {
             page = experimentInstanceService.page(page, experimentInstanceService.lambdaQuery().getWrapper());
         }
-        PageInfo pageInfo = experimentInstanceService.getPageInfo(page, ExperimentListResponse.class);
+        PageResponse pageInfo = experimentInstanceService.getPageInfo(page, ExperimentListResponse.class);
         return pageInfo;
     }
 
