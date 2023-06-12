@@ -1113,6 +1113,7 @@ public class IndicatorExpressionBiz{
     String appId = createOrUpdateIndicatorExpressionRequestRs.getAppId();
     Integer type = createOrUpdateIndicatorExpressionRequestRs.getType();
     Integer source = createOrUpdateIndicatorExpressionRequestRs.getSource();
+    String principalId = createOrUpdateIndicatorExpressionRequestRs.getPrincipalId();
     IndicatorExpressionEntity indicatorExpressionEntity = null;
     if (StringUtils.isBlank(indicatorExpressionId)) {
       indicatorExpressionId = idGenerator.nextIdStr();
@@ -1120,6 +1121,7 @@ public class IndicatorExpressionBiz{
           .builder()
           .indicatorExpressionId(indicatorExpressionId)
           .appId(appId)
+          .principalId(principalId)
           .type(type)
           .source(source)
           .build();
