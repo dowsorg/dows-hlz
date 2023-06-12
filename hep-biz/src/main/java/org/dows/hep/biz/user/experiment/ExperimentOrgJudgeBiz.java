@@ -175,8 +175,8 @@ public class ExperimentOrgJudgeBiz {
                         ExperimentIndicatorJudgeHealthGuidanceEntity::getExperimentJudgeHealthGuidanceId,
                         ExperimentIndicatorJudgeHealthGuidanceEntity::getIndicatorJudgeHealthGuidanceId,
                         ExperimentIndicatorJudgeHealthGuidanceEntity::getName,
-                        ExperimentIndicatorJudgeHealthGuidanceEntity::getIndicatorCategoryId)
-                .eq(ExperimentIndicatorJudgeHealthGuidanceEntity::getIndicatorFuncId, experimentIndicatorFuncId)
+                        ExperimentIndicatorJudgeHealthGuidanceEntity::getExperimentIndicatorCategoryId)
+                .eq(ExperimentIndicatorJudgeHealthGuidanceEntity::getExperimentIndicatorFuncId, experimentIndicatorFuncId)
                 .eq(ExperimentIndicatorJudgeHealthGuidanceEntity::getStatus, true)
                 .list();
         List<ExperimentIndicatorJudgeHealthGuidanceResponse> responseList = new ArrayList<>();
@@ -188,13 +188,13 @@ public class ExperimentOrgJudgeBiz {
                         .experimentJudgeHealthGuidanceId(entity.getExperimentJudgeHealthGuidanceId())
                         .indicatorJudgeHealthGuidanceId(entity.getIndicatorJudgeHealthGuidanceId())
                         .name(entity.getName())
-                        .indicatorCategoryId(entity.getIndicatorCategoryId())
+                        .experimentIndicatorCategoryId(entity.getExperimentIndicatorCategoryId())
                         .build();
                 responseList.add(response);
             });
         }
         //2、根据分类ID分组
-        Map<String, List<ExperimentIndicatorJudgeHealthGuidanceResponse>> categoryList = responseList.stream().collect(Collectors.groupingBy(ExperimentIndicatorJudgeHealthGuidanceResponse::getIndicatorCategoryId));
+        Map<String, List<ExperimentIndicatorJudgeHealthGuidanceResponse>> categoryList = responseList.stream().collect(Collectors.groupingBy(ExperimentIndicatorJudgeHealthGuidanceResponse::getExperimentIndicatorCategoryId));
         return categoryList;
     }
 
