@@ -725,8 +725,20 @@ public class OrgBiz {
      * @创建时间: 2023/5/06 10:00
      */
     public IPage<CaseOrgResponse> listOrgnization(CaseOrgRequest request) {
+        //1、实验的时候获取已发布的机构,案例获取全部，不需要传status
+        Set<String> orgIds = new HashSet<>();
+        if(request.getStatus() != null && request.getStatus() == 1) {
+            List<AccountOrgResponse> orgList = accountOrgApi.getValidAccountOrgList(request.getStatus());
+            if(orgList != null && orgList.size() > 0) {
+                orgList.forEach(org -> {
+                    orgIds.add(org.getOrgId());
+                });
+            }
+        }
+        //2、查询
         LambdaQueryWrapper<CaseOrgEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(StringUtils.isNotEmpty(request.getOrgId()), CaseOrgEntity::getOrgId, request.getOrgId())
+                .in(orgIds != null && orgIds.size() > 0,CaseOrgEntity::getOrgId,orgIds)
                 .like(StringUtils.isNotEmpty(request.getOrgName()), CaseOrgEntity::getOrgName, request.getOrgName())
                 .eq(StringUtils.isNotEmpty(request.getCaseInstanceId()), CaseOrgEntity::getCaseInstanceId, request.getCaseInstanceId())
                 .orderByDesc(CaseOrgEntity::getDt);

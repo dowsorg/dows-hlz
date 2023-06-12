@@ -19,6 +19,9 @@ public class CaseOrgRequest {
     @Schema(title = "应用ID")
     private String appId;
 
+    @Schema(title = "状态")
+    private Integer status;
+
     @Schema(title = "案例机构ID")
     private String caseOrgId;
 
