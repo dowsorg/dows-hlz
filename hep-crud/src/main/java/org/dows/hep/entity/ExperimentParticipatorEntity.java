@@ -72,6 +72,9 @@ public class ExperimentParticipatorEntity implements CrudEntity {
     @Schema(title = "组序号")
     private String groupNo;
 
+    @Schema(title = "实验模式[0:标准模式，1:沙盘模式，2:方案设计模式]")
+    private Integer model;
+
     @Schema(title = "参与者序号")
     private Integer participatorNo;
 

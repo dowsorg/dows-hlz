@@ -26,6 +26,9 @@ public class ExperimentListResponse{
     @Schema(title = "参与者类型[0:教师，1:组长，2：学生]")
     private Integer participatorType;
 
+    @Schema(title = "参与者类型描述[0:教师，1:组长，2：学生]")
+    private String participatorTypeDescr;
+
     @Schema(title = "参与者序号")
     private Integer participatorNo;
 
