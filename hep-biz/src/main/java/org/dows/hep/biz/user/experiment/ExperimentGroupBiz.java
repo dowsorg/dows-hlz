@@ -8,7 +8,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.enums.EnumExperimentParticipator;
+import org.dows.hep.api.enums.ExperimentStatusCode;
 import org.dows.hep.api.enums.ParticipatorTypeEnum;
+import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.exception.ExperimentParticipatorException;
 import org.dows.hep.api.user.experiment.request.AllotActorRequest;
 import org.dows.hep.api.user.experiment.request.CreateGroupRequest;
@@ -74,10 +76,10 @@ public class ExperimentGroupBiz {
                 .oneOpt().orElse(null);
 
         if (list.size() == 0) {
-            throw new RuntimeException("当前实验不存在该小组");
+            throw new ExperimentException(ExperimentStatusCode.NO_EXIST_GROUP_ID);
         }
         if(experimentParticipatorEntity == null){
-            throw new RuntimeException("该账号不是实验队长，无法创建队名!");
+            throw new ExperimentException(ExperimentStatusCode.NOT_CAPTAIN);
         }
         return experimentGroupService.lambdaUpdate()
                 .eq(ExperimentGroupEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
