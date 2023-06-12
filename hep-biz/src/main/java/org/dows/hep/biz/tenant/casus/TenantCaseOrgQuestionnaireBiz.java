@@ -86,49 +86,7 @@ public class TenantCaseOrgQuestionnaireBiz {
             throw new BizException(CaseESCEnum.PARAMS_NON_NULL);
         }
 
-        // 期数 collect
-        Map<String, Map<String, CaseOrgQuestionnaireResponse>> result = new LinkedHashMap<>();
-        Arrays.stream(CasePeriodEnum.values()).forEach(item -> {
-            result.put(item.getCode(), new HashMap<>());
-        });
-
-        List<CaseOrgResponse> orgList = listOrgOfCaseInstance(caseInstanceId);
-        if (Objects.isNull(orgList) || orgList.isEmpty()) {
-            return result.values().stream().toList();
-        }
-
-        // 机构 collect
-        result.forEach((period, orgMap) -> {
-            Map<String, CaseOrgQuestionnaireResponse> orgCollect = new HashMap<>();
-            orgList.forEach(org -> {
-                orgCollect.put(org.getCaseOrgId(), new CaseOrgQuestionnaireResponse());
-            });
-            result.replace(period, orgCollect);
-        });
-
-        List<CaseOrgQuestionnaireResponse> orgQuestionnaireList = listByCaseInstanceId(caseInstanceId);
-        if (CollUtil.isEmpty(orgQuestionnaireList)) {
-            return result.values().stream().toList();
-        }
-
-        // questionnaire collect
-        Map<String, Map<String, CaseOrgQuestionnaireResponse>> questionnaireCollect = orgQuestionnaireList.stream()
-                .collect(Collectors.groupingBy(CaseOrgQuestionnaireResponse::getPeriods, Collectors.toMap(CaseOrgQuestionnaireResponse::getCaseOrgId, v -> v, (v1, v2) -> v1)));
-        result.forEach((period, orgMap) -> {
-            // 该 period 下的不同机构的问卷
-            Map<String, CaseOrgQuestionnaireResponse> orgCollect = questionnaireCollect.get(period);
-            orgList.forEach(org -> {
-                if (CollUtil.isNotEmpty(orgCollect)) {
-                    String caseOrgId = org.getCaseOrgId();
-                    CaseOrgQuestionnaireResponse caseOrgQuestionnaireResponse = orgCollect.get(caseOrgId);
-                    if (BeanUtil.isNotEmpty(caseOrgQuestionnaireResponse)) {
-                        orgMap.replace(caseOrgId, caseOrgQuestionnaireResponse);
-                    }
-                }
-            });
-
-        });
-
+        Map<String, Map<String, CaseOrgQuestionnaireResponse>> result = mapSelectedQuestionnaires(caseInstanceId);
         return result.values().stream().toList();
     }
 
@@ -147,7 +105,7 @@ public class TenantCaseOrgQuestionnaireBiz {
         // 期数 collect
         Map<String, Map<String, CaseOrgQuestionnaireResponse>> result = new LinkedHashMap<>();
         Arrays.stream(CasePeriodEnum.values()).forEach(item -> {
-            result.put(item.getName(), new HashMap<>());
+            result.put(item.getCode(), new HashMap<>());
         });
 
         List<CaseOrgResponse> orgList = listOrgOfCaseInstance(caseInstanceId);
@@ -159,26 +117,31 @@ public class TenantCaseOrgQuestionnaireBiz {
         result.forEach((period, orgMap) -> {
             Map<String, CaseOrgQuestionnaireResponse> orgCollect = new HashMap<>();
             orgList.forEach(org -> {
-                orgCollect.put(org.getOrgId(), new CaseOrgQuestionnaireResponse());
+                orgCollect.put(org.getCaseOrgId(), new CaseOrgQuestionnaireResponse());
             });
-            result.put(period, orgCollect);
+            result.replace(period, orgCollect);
         });
 
         List<CaseOrgQuestionnaireResponse> orgQuestionnaireList = listByCaseInstanceId(caseInstanceId);
-        if (Objects.isNull(orgQuestionnaireList) || orgQuestionnaireList.isEmpty()) {
+        if (CollUtil.isEmpty(orgQuestionnaireList)) {
             return result;
         }
 
         // questionnaire collect
         Map<String, Map<String, CaseOrgQuestionnaireResponse>> questionnaireCollect = orgQuestionnaireList.stream()
-                .collect(Collectors.groupingBy(CaseOrgQuestionnaireResponse::getPeriods, Collectors.toMap(CaseOrgQuestionnaireResponse::getCaseOrgName, v -> v, (v1, v2) -> v1)));
+                .collect(Collectors.groupingBy(CaseOrgQuestionnaireResponse::getPeriods, Collectors.toMap(CaseOrgQuestionnaireResponse::getCaseOrgId, v -> v, (v1, v2) -> v1)));
         result.forEach((period, orgMap) -> {
             // 该 period 下的不同机构的问卷
             Map<String, CaseOrgQuestionnaireResponse> orgCollect = questionnaireCollect.get(period);
-            orgMap.forEach((org, qn) -> {
-                orgMap.replace(org, orgCollect.get(org));
+            orgList.forEach(org -> {
+                if (CollUtil.isNotEmpty(orgCollect)) {
+                    String caseOrgId = org.getCaseOrgId();
+                    CaseOrgQuestionnaireResponse caseOrgQuestionnaireResponse = orgCollect.get(caseOrgId);
+                    if (BeanUtil.isNotEmpty(caseOrgQuestionnaireResponse)) {
+                        orgMap.replace(caseOrgId, caseOrgQuestionnaireResponse);
+                    }
+                }
             });
-            result.replace(period, orgCollect);
         });
 
         return result;
