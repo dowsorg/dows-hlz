@@ -711,12 +711,17 @@ public class IndicatorExpressionBiz{
         i++;
         continue;
       }
-      if (i < conditionExpression.length()-1) {
+      if (i <= conditionExpression.length()-1-1) {
         if (v1CheckMathDoubleOperator(conditionExpression.substring(i, i+2))) {
           strList.add(conditionExpression.substring(i, i+2));
           i += 2;
           continue;
         }
+      }
+      if (v1CheckMathDoubleOperator(conditionExpression.substring(i, i+1))) {
+        strList.add(conditionExpression.substring(i, i+1));
+        i += 1;
+        continue;
       }
       /* runsix:指标 */
       if (v1CheckIndicator(conditionExpression.substring(i, i+1))) {
@@ -842,7 +847,7 @@ public class IndicatorExpressionBiz{
             } else {
               strList.add(v1WrapStrWithDoubleSingleQuotes(conditionExpression.substring(i)));
             }
-            i++;
+            i = conditionExpression.length()-1+1;
           }
         }
       }
@@ -945,7 +950,7 @@ public class IndicatorExpressionBiz{
   }
 
   @Transactional(rollbackFor = Exception.class)
-  public void createOrUpdate(CreateOrUpdateIndicatorExpressionRequestRs createOrUpdateIndicatorExpressionRequestRs) throws InterruptedException {
+  public String createOrUpdate(CreateOrUpdateIndicatorExpressionRequestRs createOrUpdateIndicatorExpressionRequestRs) throws InterruptedException {
     String appId = createOrUpdateIndicatorExpressionRequestRs.getAppId();
     Integer source = createOrUpdateIndicatorExpressionRequestRs.getSource();
     String principalId = createOrUpdateIndicatorExpressionRequestRs.getPrincipalId();
@@ -975,6 +980,7 @@ public class IndicatorExpressionBiz{
       checkExpression(source, appId, indicatorExpressionItemEntityList, indicatorExpressionInfluenceEntityAtomicReference, principalId);
       IndicatorExpressionInfluenceEntity indicatorExpressionInfluenceEntity = indicatorExpressionInfluenceEntityAtomicReference.get();
       indicatorExpressionInfluenceService.saveOrUpdate(indicatorExpressionInfluenceEntity);
+      return indicatorExpressionId;
     } finally {
       lock.unlock();
     }
