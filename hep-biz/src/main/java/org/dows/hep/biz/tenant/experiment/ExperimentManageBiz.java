@@ -17,6 +17,7 @@ import org.dows.account.response.AccountUserResponse;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
 import org.dows.hep.api.core.CreateExperimentForm;
+import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.EnumExperimentParticipator;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.exception.ExperimentParticipatorException;
@@ -233,6 +234,7 @@ public class ExperimentManageBiz {
                     .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
                     .groupAlias(groupSetting.getGroupAlias())
                     .memberCount(groupSetting.getMemberCount())
+                    .groupState(EnumExperimentGroupStatus.GROUP_RENAME.getCode())
                     .groupNo(groupSetting.getGroupNo())
                     .groupName(groupSetting.getGroupName())
                     .build();
