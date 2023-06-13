@@ -54,11 +54,7 @@ public class ExperimentSchemeBiz {
             throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
         }
 
-        ExperimentSchemeEntity entity = experimentSchemeService.lambdaQuery()
-                .eq(ExperimentSchemeEntity::getExperimentInstanceId, experimentInstanceId)
-                .eq(ExperimentSchemeEntity::getExperimentGroupId, experimentGroupId)
-                .oneOpt()
-                .orElseThrow(() -> new BizException(ExperimentESCEnum.SCHEME_NOT_NULL));
+        ExperimentSchemeEntity entity = getScheme(experimentInstanceId, experimentGroupId);
         ExperimentSchemeResponse result = BeanUtil.copyProperties(entity, ExperimentSchemeResponse.class);
 
         List<ExperimentSchemeItemResponse> itemList = experimentSchemeItemBiz.listBySchemeId(entity.getExperimentSchemeId());
@@ -83,6 +79,9 @@ public class ExperimentSchemeBiz {
         }
 
         // update
+        handleExperimentSchemeItem(request);
+
+        // handle begin-time
         handleExperimentScheme(request);
 
         // handle group-status
@@ -271,7 +270,7 @@ public class ExperimentSchemeBiz {
         return tree;
     }
 
-    private void handleExperimentScheme(ExperimentAllotSchemeRequest request) {
+    private void handleExperimentSchemeItem(ExperimentAllotSchemeRequest request) {
         List<ExperimentAllotSchemeRequest.ParticipatorWithScheme> allotList = request.getAllotList();
         allotList.forEach(allotScheme -> {
             String accountId = allotScheme.getAccountId();
@@ -284,11 +283,34 @@ public class ExperimentSchemeBiz {
         });
     }
 
+    private void handleExperimentScheme(ExperimentAllotSchemeRequest request) {
+        String experimentInstanceId = request.getExperimentInstanceId();
+        String experimentGroupId = request.getExperimentGroupId();
+        ExperimentSchemeEntity scheme = getScheme(experimentInstanceId, experimentGroupId);
+        if (BeanUtil.isEmpty(scheme)) {
+            throw new BizException(ExperimentESCEnum.DATA_NULL);
+        }
+
+        ExperimentSchemeEntity result = ExperimentSchemeEntity.builder()
+                .beginTime(new Date())
+                .id(scheme.getId())
+                .build();
+        experimentSchemeService.updateById(result);
+    }
+
     private Boolean handleGroupStatus(String experimentGroupId, EnumExperimentGroupStatus groupStatus) {
         LambdaUpdateWrapper<ExperimentGroupEntity> updateWrapper = new LambdaUpdateWrapper<ExperimentGroupEntity>()
                 .eq(ExperimentGroupEntity::getExperimentGroupId, experimentGroupId)
                 .set(ExperimentGroupEntity::getGroupState, groupStatus.getCode());
         return experimentGroupService.update(updateWrapper);
+    }
+
+    private ExperimentSchemeEntity getScheme(String experimentInstanceId, String experimentGroupId) {
+        return experimentSchemeService.lambdaQuery()
+                .eq(ExperimentSchemeEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentSchemeEntity::getExperimentGroupId, experimentGroupId)
+                .oneOpt()
+                .orElseThrow(() -> new BizException(ExperimentESCEnum.SCHEME_NOT_NULL));
     }
 
     private ExperimentSchemeEntity getById(String experimentSchemeId) {

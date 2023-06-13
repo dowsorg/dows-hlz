@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.user.experiment.request.ExperimentAllotSchemeRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeResponse;
+import org.dows.hep.api.user.experiment.response.ExperimentSchemeSettingResponse;
 import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,6 +46,17 @@ public class ExperimentSchemeRest {
     @PostMapping("v1/userExperiment/experimentScheme/allotSchemeMembers")
     public Boolean allotGroupMembers(@RequestBody @Validated ExperimentAllotSchemeRequest request) {
         return experimentSchemeBiz.allotSchemeMembers(request);
+    }
+
+    /**
+     * 获取方案设计时间信息
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取方案设计时间信息")
+    @GetMapping("v1/userExperiment/experimentScheme/getSchemeDuration")
+    public ExperimentSchemeSettingResponse getSchemeDuration(String experimentSchemeId) {
+        return experimentSchemeBiz.getSchemeDuration(experimentSchemeId);
     }
 
     /**
