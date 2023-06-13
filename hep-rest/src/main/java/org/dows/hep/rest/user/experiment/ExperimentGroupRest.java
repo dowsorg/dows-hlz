@@ -13,10 +13,7 @@ import org.dows.hep.biz.user.experiment.ExperimentBaseBiz;
 import org.dows.hep.biz.user.experiment.ExperimentGroupBiz;
 import org.dows.hep.entity.ExperimentOrgEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -101,6 +98,17 @@ public class ExperimentGroupRest {
     @PostMapping("v1/userExperiment/experimentGroup/allotGroupMembers")
     public Boolean allotGroupMembers(@RequestBody @Validated ExperimentParticipatorRequest request) {
         return experimentGroupBiz.allotGroupMembers(request);
+    }
+
+    /**
+     * 根据小组ID获取小组信息
+     * @param
+     * @return
+     */
+    @Operation(summary = "根据小组ID获取小组信息")
+    @GetMapping("v1/userExperiment/experimentGroup/getGroupInfoByExperimentId/{experimentGroupId}/{experimentGInstanceId}")
+    public ExperimentGroupResponse getGroupInfoByExperimentId(@PathVariable @Validated String experimentGroupId,@PathVariable @Validated String experimentGInstanceId) {
+        return experimentGroupBiz.getGroupInfoByExperimentId(experimentGroupId,experimentGInstanceId);
     }
 
 }

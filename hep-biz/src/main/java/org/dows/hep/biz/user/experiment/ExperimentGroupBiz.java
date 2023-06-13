@@ -256,4 +256,34 @@ public class ExperimentGroupBiz {
         return experimentParticipatorService.updateById(entity);
     }
 
+
+    /**
+     * @param
+     * @return
+     * @说明: 根据小组ID获取小组信息
+     * @关联表: experiment_group
+     * @工时: 0.5H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月13日 上午11:02:07
+     */
+    public ExperimentGroupResponse getGroupInfoByExperimentId(String experimentGroupId,String experimentGInstanceId) {
+        ExperimentGroupEntity groupEntity = experimentGroupService.lambdaQuery()
+                .eq(ExperimentGroupEntity::getExperimentGroupId,experimentGroupId)
+                .eq(ExperimentGroupEntity::getExperimentInstanceId,experimentGInstanceId)
+                .eq(ExperimentGroupEntity::getDeleted,false)
+                .oneOpt().orElse(null);
+        if(groupEntity == null) {
+            throw new ExperimentException(ExperimentStatusCode.NO_EXIST_GROUP_ID);
+        }
+        ExperimentGroupResponse groupResponse = ExperimentGroupResponse.builder()
+                .experimentGroupId(groupEntity.getExperimentGroupId())
+                .experimentInstanceId(groupEntity.getExperimentInstanceId())
+                .groupNo(groupEntity.getGroupNo())
+                .groupName(groupEntity.getGroupName())
+                .groupAlias(groupEntity.getGroupAlias())
+                .groupState(groupEntity.getState())
+                .build();
+        return groupResponse;
+    }
 }
