@@ -42,8 +42,8 @@ public class SportItemRest {
     */
     @Operation(summary = "获取运动项目详细信息")
     @GetMapping("v1/baseIntervene/sportItem/getSportItem")
-    public SportItemInfoResponse getSportItem(@Validated String sportItemId) {
-        return sportItemBiz.getSportItem(sportItemId);
+    public SportItemInfoResponse getSportItem(@Validated String appId,@Validated String sportItemId) {
+        return sportItemBiz.getSportItem(appId, sportItemId);
     }
 
     /**

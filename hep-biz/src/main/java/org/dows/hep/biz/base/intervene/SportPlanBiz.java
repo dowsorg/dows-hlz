@@ -67,7 +67,7 @@ public class SportPlanBiz{
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public SportPlanInfoResponse getSportPlan(String sportPlanId ) {
+    public SportPlanInfoResponse getSportPlan(String appId, String sportPlanId ) {
         SportPlanEntity row= AssertUtil.getNotNull(dao.getById(sportPlanId))
                 .orElseThrow("运动方案不存在或已删除，请刷新");
 

@@ -79,8 +79,8 @@ public class EventRest {
     */
     @Operation(summary = "获取事件详细信息")
     @GetMapping("v1/baseIntervene/event/getEvent")
-    public EventInfoResponse getEvent(@Validated String eventId) {
-        return eventBiz.getEvent(eventId);
+    public EventInfoResponse getEvent(@Validated String appId,  @Validated String eventId) {
+        return eventBiz.getEvent(appId,eventId);
     }
 
     /**

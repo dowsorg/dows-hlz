@@ -47,8 +47,8 @@ public class TenantCaseEventRest {
     */
     @Operation(summary = "获取人物事件详细")
     @GetMapping("v1/tenantCasus/caseEvent/getCaseEvent")
-    public CaseEventInfoResponse getCaseEvent(@Validated String caseEventId) {
-        return tenantCaseEventBiz.getCaseEvent(caseEventId);
+    public CaseEventInfoResponse getCaseEvent( @Validated String appId,  @Validated String caseEventId) {
+        return tenantCaseEventBiz.getCaseEvent(appId,caseEventId);
     }
 
     /**

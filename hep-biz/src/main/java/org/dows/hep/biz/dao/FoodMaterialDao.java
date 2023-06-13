@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import jakarta.annotation.Resource;
 import org.dows.hep.api.base.intervene.request.FindFoodRequest;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
@@ -14,7 +15,6 @@ import org.dows.hep.entity.FoodMaterialNutrientEntity;
 import org.dows.hep.service.FoodMaterialIndicatorService;
 import org.dows.hep.service.FoodMaterialNutrientService;
 import org.dows.hep.service.FoodMaterialService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,8 +35,11 @@ public class FoodMaterialDao extends BaseSubDao<FoodMaterialService,FoodMaterial
         super("食材不存在或已删除,请刷新");
     }
 
-    @Autowired
+    @Resource
     protected FoodMaterialNutrientService subServiceX;
+
+    @Resource
+    protected IndicatorExpressionRefDao expressionRefDao;
 
     //region override
 
@@ -109,6 +112,14 @@ public class FoodMaterialDao extends BaseSubDao<FoodMaterialService,FoodMaterial
         AssertUtil.falseThenThrow(coreTranSave(lead,indicators,nutrients,false, true,false))
                 .throwMessage(failedSaveMessage );
         return true;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public boolean tranSaveWithExpressions(FoodMaterialEntity lead, List<FoodMaterialNutrientEntity> nutrients,List<String> expressionIds){
+        AssertUtil.falseThenThrow(coreTranSave(lead,null,nutrients,false, true,defaultUseLogicId))
+                .throwMessage(failedSaveMessage );
+
+        return expressionRefDao.tranUpdateReasonId(lead.getFoodMaterialId(),expressionIds);
     }
 
 

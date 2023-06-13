@@ -4,7 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.dows.hep.api.base.intervene.vo.InterveneIndicatorVO;
+import org.dows.hep.api.base.intervene.vo.IndicatorExpressionVO;
 
 import java.util.List;
 
@@ -48,8 +48,8 @@ public class SaveSportItemRequest{
     @Schema(title = "状态 0-启用 1-停用")
     private Integer state;
 
-    @Schema(title = "关联指标json对象")
-    private List<InterveneIndicatorVO> indicators;
+    @Schema(title = "指标公式列表(公式source=4)")
+    private List<IndicatorExpressionVO> expresssions;
 
 
 }
