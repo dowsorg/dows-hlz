@@ -232,7 +232,7 @@ public class ExperimentManageBiz {
                     .groupAlias(groupSetting.getGroupAlias())
                     .memberCount(groupSetting.getMemberCount())
                     .groupNo(groupSetting.getGroupNo())
-                    .groupName(groupSetting.getGroupName())
+                    //.groupName(groupSetting.getGroupName())
                     .build();
             experimentGroupEntitys.add(experimentGroupEntity);
 
