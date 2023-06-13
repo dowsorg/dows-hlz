@@ -317,6 +317,32 @@ public class ExperimentOrgJudgeBiz {
         return totalAmount;
     }
 
+
+    /**
+     * @param
+     * @return
+     * @说明: 二级-无报告 获取判断得分
+     * @关联表: indicatorJudgeHealthGuidance
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月13日 下午14:02:34
+     */
+    public BigDecimal getJudgeHealthGuidanceScore(List<ExperimentIndicatorJudgeHealthGuidanceRequest> judgeHealthGuidanceRequestList) {
+        BigDecimal totalAmount = new BigDecimal(0);
+        judgeHealthGuidanceRequestList.forEach(judgeRiskFactorRequest -> {
+            //1、根据ID获取判断规则
+            ExperimentIndicatorJudgeHealthGuidanceEntity entity = experimentIndicatorJudgeHealthGuidanceService.lambdaQuery()
+                    .select(ExperimentIndicatorJudgeHealthGuidanceEntity::getExperimentJudgeHealthGuidanceId)
+                    .eq(ExperimentIndicatorJudgeHealthGuidanceEntity::getExperimentJudgeHealthGuidanceId, judgeRiskFactorRequest.getExperimentJudgeHealthGuidanceId())
+                    .eq(ExperimentIndicatorJudgeHealthGuidanceEntity::getStatus, true)
+                    .one();
+            //todo、根据判断规则判断是否满足条件,满足则加分
+            totalAmount.add(entity.getPoint());
+        });
+        return totalAmount;
+    }
+
     /**
      * @param
      * @return

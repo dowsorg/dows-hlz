@@ -83,6 +83,18 @@ public class ExperimentOrgJudgeRest {
     }
 
     /**
+     * 二级-有报告 获取判断得分
+     * @param
+     * @return
+     */
+    @Operation(summary = "getJudgeHealthGuidanceScore")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/getJudgeHealthGuidanceScore")
+    public BigDecimal getJudgeHealthGuidanceScore(@RequestBody @Validated List<ExperimentIndicatorJudgeHealthGuidanceRequest> judgeHealthGuidanceRequestList)
+    {
+        return experimentOrgJudgeBiz.getJudgeHealthGuidanceScore(judgeHealthGuidanceRequestList);
+    }
+
+    /**
      *
      * 获取二级类有报告的判断指标信息
      *
