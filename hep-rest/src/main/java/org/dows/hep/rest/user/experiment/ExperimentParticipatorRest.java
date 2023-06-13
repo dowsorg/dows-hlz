@@ -47,14 +47,14 @@ public class ExperimentParticipatorRest {
 
 
     /**
-     * 获取实验列表
+     * 获取实验参与者角色
      *
      * @param
      * @return
      */
-    @Operation(summary = "获取实验队长信息")
-    @GetMapping("v1/user/experimentParticipator/getCaptain")
-    public GetExperimentGroupCaptainResponse getCaptain(GetExperimentGroupCaptainRequest getExperimentGroupCaptainRequest) {
-        return experimentParticipatorBiz.getExperimentGroupCaptain(getExperimentGroupCaptainRequest);
+    @Operation(summary = "获取实验参与者角色")
+    @GetMapping("v1/user/experimentParticipator/getExperimentGroupRole")
+    public GetExperimentGroupCaptainResponse getExperimentGroupRole(GetExperimentGroupCaptainRequest getExperimentGroupCaptainRequest) {
+        return experimentParticipatorBiz.getExperimentGroupRole(getExperimentGroupCaptainRequest);
     }
 }
