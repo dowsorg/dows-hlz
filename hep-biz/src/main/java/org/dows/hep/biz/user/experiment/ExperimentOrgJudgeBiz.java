@@ -358,6 +358,7 @@ public class ExperimentOrgJudgeBiz {
                 .eq(OperateOrgFuncEntity::getPeriods, operateOrgFuncRequest.get(0).getPeriods())
                 .eq(OperateOrgFuncEntity::getIndicatorFuncId, operateOrgFuncRequest.get(0).getIndicatorFuncId())
                 .eq(OperateOrgFuncEntity::getExperimentPersonId, operateOrgFuncRequest.get(0).getExperimentPersonId())
+                .eq(OperateOrgFuncEntity::getExperimentInstanceId,operateOrgFuncRequest.get(0).getExperimentInstanceId())
                 .eq(OperateOrgFuncEntity::getAppId, operateOrgFuncRequest.get(0).getAppId())
                 .eq(OperateOrgFuncEntity::getDeleted, false)
                 .list();
