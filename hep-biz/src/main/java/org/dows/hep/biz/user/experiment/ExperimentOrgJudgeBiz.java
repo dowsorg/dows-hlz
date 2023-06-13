@@ -243,15 +243,15 @@ public class ExperimentOrgJudgeBiz {
      * @开始时间:
      * @创建时间: 2023年6月05日 下午17:22:34
      */
-    public List<ExperimentIndicatorJudgeDiseaseProblemResponse> getIndicatorJudgeDiseaseProblemByCategoryId(String indicatoryCategoryId) {
+    public List<ExperimentIndicatorJudgeDiseaseProblemResponse> getIndicatorJudgeDiseaseProblemByCategoryIds(Set<String> experimentIndicatoryCategoryIds) {
         //1、根据指标分类ID获取所有符合条件的数据
         List<ExperimentIndicatorJudgeDiseaseProblemEntity> entityList = experimentIndicatorJudgeDiseaseProblemService.lambdaQuery()
                 .select(ExperimentIndicatorJudgeDiseaseProblemEntity::getId,
                         ExperimentIndicatorJudgeDiseaseProblemEntity::getExperimentJudgeDiseaseProblemId,
                         ExperimentIndicatorJudgeDiseaseProblemEntity::getIndicatorJudgeDiseaseProblemId,
                         ExperimentIndicatorJudgeDiseaseProblemEntity::getName,
-                        ExperimentIndicatorJudgeDiseaseProblemEntity::getIndicatorCategoryId)
-                .eq(ExperimentIndicatorJudgeDiseaseProblemEntity::getIndicatorCategoryId, indicatoryCategoryId)
+                        ExperimentIndicatorJudgeDiseaseProblemEntity::getExperimentIndicatorCategoryId)
+                .in(ExperimentIndicatorJudgeDiseaseProblemEntity::getExperimentIndicatorCategoryId, experimentIndicatoryCategoryIds)
                 .eq(ExperimentIndicatorJudgeDiseaseProblemEntity::getStatus, true)
                 .list();
         List<ExperimentIndicatorJudgeDiseaseProblemResponse> responseList = new ArrayList<>();
@@ -263,7 +263,7 @@ public class ExperimentOrgJudgeBiz {
                         .experimentJudgeDiseaseProblemId(entity.getExperimentJudgeDiseaseProblemId())
                         .indicatorJudgeDiseaseProblemId(entity.getIndicatorJudgeDiseaseProblemId())
                         .name(entity.getName())
-                        .indicatorCategoryId(entity.getIndicatorCategoryId())
+                        .indicatorCategoryId(entity.getExperimentIndicatorCategoryId())
                         .build();
                 responseList.add(response);
             });

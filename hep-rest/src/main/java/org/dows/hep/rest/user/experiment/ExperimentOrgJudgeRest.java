@@ -114,9 +114,9 @@ public class ExperimentOrgJudgeRest {
      * @return
      */
     @Operation(summary = "四级类别：根据指标分类ID获取所有符合条件的数据")
-    @GetMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeDiseaseProblemByCategoryId/{indicatoryCategoryId}")
-    public List<ExperimentIndicatorJudgeDiseaseProblemResponse> getIndicatorJudgeDiseaseProblemByCategoryId(@PathVariable String indicatoryCategoryId) {
-        return experimentOrgJudgeBiz.getIndicatorJudgeDiseaseProblemByCategoryId(indicatoryCategoryId);
+    @PostMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeDiseaseProblemByCategoryIds")
+    public List<ExperimentIndicatorJudgeDiseaseProblemResponse> getIndicatorJudgeDiseaseProblemByCategoryIds(@RequestBody Set<String> experimentIndicatoryCategoryIds) {
+        return experimentOrgJudgeBiz.getIndicatorJudgeDiseaseProblemByCategoryIds(experimentIndicatoryCategoryIds);
     }
 
     /**
