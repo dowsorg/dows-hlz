@@ -71,6 +71,7 @@ public class ExperimentManageBiz {
     private final AccountOrgApi accountOrgApi;
     private final AccountOrgGeoApi accountOrgGeoApi;
     private final CaseOrgFeeService caseOrgFeeService;
+    private final ExperimentSchemeManageBiz experimentSchemeManageBiz;
 
 //    private final
 

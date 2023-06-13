@@ -22,7 +22,10 @@ import org.dows.hep.entity.ExperimentActorEntity;
 import org.dows.hep.entity.ExperimentGroupEntity;
 import org.dows.hep.entity.ExperimentOrgEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
-import org.dows.hep.service.*;
+import org.dows.hep.service.ExperimentActorService;
+import org.dows.hep.service.ExperimentGroupService;
+import org.dows.hep.service.ExperimentOrgService;
+import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
@@ -47,9 +50,6 @@ public class ExperimentGroupBiz {
     private final IdGenerator idGenerator;
 
     private final ExperimentOrgService experimentOrgService;
-
-    private final ExperimentInstanceService experimentInstanceService;
-
     /**
      * @param
      * @return
@@ -258,7 +258,6 @@ public class ExperimentGroupBiz {
                 .build();
         return experimentParticipatorService.updateById(entity);
     }
-
 
     /**
      * @param
