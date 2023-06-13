@@ -226,6 +226,23 @@ public class TenantCaseOrgQuestionnaireBiz {
         return saveOrUpdOrgQuestionnaire(requestList);
     }
 
+    /**
+     * @author fhb
+     * @description
+     * @date 2023/6/13 10:26
+     * @param
+     * @return
+     */
+    public boolean delByIds(List<String> caseOrgQuestionnaireIds) {
+        if (CollUtil.isEmpty(caseOrgQuestionnaireIds)) {
+            throw new BizException(CaseESCEnum.PARAMS_NON_NULL);
+        }
+
+        LambdaQueryWrapper<CaseOrgQuestionnaireEntity> remWrapper = new LambdaQueryWrapper<CaseOrgQuestionnaireEntity>()
+                .in(CaseOrgQuestionnaireEntity::getCaseOrgQuestionnaireId, caseOrgQuestionnaireIds);
+        return orgQuestionnaireService.remove(remWrapper);
+    }
+
     private void clean(String caseInstanceId) {
         LambdaQueryWrapper<CaseOrgQuestionnaireEntity> queryWrapper = new LambdaQueryWrapper<CaseOrgQuestionnaireEntity>()
                 .eq(CaseOrgQuestionnaireEntity::getCaseInstanceId, caseInstanceId);

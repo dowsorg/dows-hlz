@@ -8,10 +8,7 @@ import org.dows.hep.api.tenant.casus.response.CaseOrgQuestionnaireResponse;
 import org.dows.hep.api.tenant.casus.response.CaseQuestionnaireResponse;
 import org.dows.hep.biz.tenant.casus.TenantCaseOrgQuestionnaireBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -70,5 +67,16 @@ public class TenantCaseOrgQuestionnaireRest {
     @GetMapping("v1/tenantCasus/caseQuestionnaire/autoGenerate")
     public Boolean autoGenerate(@Validated String caseInstanceId ) {
         return tenantCaseOrgQuestionnaireBiz.autoGenerate(caseInstanceId);
+    }
+
+    /**
+     * 删除案例机构问卷
+     * @param
+     * @return
+     */
+    @Operation(summary = "删除案例机构问卷")
+    @DeleteMapping("v1/tenantCasus/caseQuestionnaire/delOrgQuestionnaire")
+    public Boolean delOrgQuestionnaire(@RequestBody List<String> ids ) {
+        return tenantCaseOrgQuestionnaireBiz.delByIds(ids);
     }
 }
