@@ -222,7 +222,7 @@ public class ExperimentGroupBiz {
         List<ExperimentOrgEntity> entities = experimentOrgService.lambdaQuery()
                 .eq(ExperimentOrgEntity::getExperimentGroupId, experimentGroupId)
                 .eq(ExperimentOrgEntity::getExperimentInstanceId, experimentInstanceId)
-                .eq(ExperimentOrgEntity::getPeriods, periods)
+//                .eq(ExperimentOrgEntity::getPeriods, periods)
                 .eq(ExperimentOrgEntity::getDeleted, false)
                 .list();
         return entities;
