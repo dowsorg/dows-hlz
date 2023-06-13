@@ -40,6 +40,7 @@ public class ExperimentParticipatorBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     public PageResponse<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
+        //1、查询参与者参加的实验列表
         Page page = new Page<ExperimentParticipatorEntity>();
         page.setCurrent(pageExperimentRequest.getPageNo());
         page.setSize(pageExperimentRequest.getPageSize());
@@ -58,6 +59,19 @@ public class ExperimentParticipatorBiz {
             page = page.setTotal(0).setCurrent(0).setSize(0).setRecords(new ArrayList<>());
         }
         PageResponse pageInfo = experimentParticipatorService.getPageInfo(page, ExperimentListResponse.class);
+//        //2、判断是否已经到达开始时间，到达开始时间更改状态
+//        List<ExperimentListResponse> listResponses = pageInfo.getList();
+//        listResponses.forEach(entity->{
+//            try {
+//                if(TimeUtil.isBeforeTime(entity.getExperimentStartTime(),new Date())){
+//                    experimentParticipatorService.lambdaQuery()
+//                            .eq(ExperimentParticipatorEntity::getExperimentInstanceId,entity.getExperimentInstanceId())
+//                            .eq()
+//                }
+//            } catch (ParseException e) {
+//                e.printStackTrace();
+//            }
+//        });
         return pageInfo;
     }
 
