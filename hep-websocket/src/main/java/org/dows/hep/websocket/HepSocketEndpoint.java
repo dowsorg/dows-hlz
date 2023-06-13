@@ -14,7 +14,7 @@ import java.util.Map;
  * http://www.jsons.cn/websocket/
  */
 @Slf4j
-@WebSocketEndpoint()
+@WebSocketEndpoint(path="/hep")
 public class HepSocketEndpoint {
 
 
