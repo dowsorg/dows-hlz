@@ -3,7 +3,9 @@ package org.dows.hep.biz.user.experiment;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
@@ -90,7 +92,15 @@ public class ExperimentGroupBiz {
         if(experimentParticipatorEntity == null){
             throw new ExperimentException(ExperimentStatusCode.NOT_CAPTAIN);
         }
-        return experimentGroupService.lambdaUpdate()
+        // 更改小组状态
+        LambdaUpdateWrapper<ExperimentGroupEntity> groupWrapper = Wrappers.lambdaUpdate(ExperimentGroupEntity.class);
+        groupWrapper.set(ExperimentGroupEntity::getGroupState, 1)
+                .eq(ExperimentGroupEntity::getExperimentGroupId, createGroup.getExperimentInstanceId())
+                .eq(ExperimentGroupEntity::getExperimentInstanceId,createGroup.getExperimentInstanceId())
+                .eq(ExperimentGroupEntity::getDeleted,false);
+        experimentGroupService.update(groupWrapper);
+        // 更新组名
+         return experimentGroupService.lambdaUpdate()
                 .eq(ExperimentGroupEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
                 .eq(ExperimentGroupEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
                 .update(ExperimentGroupEntity.builder()
@@ -305,7 +315,7 @@ public class ExperimentGroupBiz {
                 .groupNo(groupEntity.getGroupNo())
                 .groupName(groupEntity.getGroupName())
                 .groupAlias(groupEntity.getGroupAlias())
-                .groupState(groupEntity.getState())
+                .groupState(groupEntity.getGroupState())
                 .build();
         return groupResponse;
     }

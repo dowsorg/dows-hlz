@@ -1,14 +1,17 @@
 package org.dows.hep.biz.dao;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.IndicatorExpressionRefEntity;
 import org.dows.hep.service.IndicatorExpressionRefService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -19,10 +22,12 @@ import java.util.Map;
 @Component
 public class IndicatorExpressionRefDao extends BaseDao<IndicatorExpressionRefService, IndicatorExpressionRefEntity> {
     public IndicatorExpressionRefDao(){
-        super("指标公式关联不存在");
+        super("表达式关联主体不存在");
 
     }
 
+    @Autowired
+    protected IndicatorExpressionDao indicatorExpressionDao;
     @Override
     protected SFunction<IndicatorExpressionRefEntity, String> getColId() {
         return IndicatorExpressionRefEntity::getIndicatorExpressionRefId;
@@ -56,6 +61,53 @@ public class IndicatorExpressionRefDao extends BaseDao<IndicatorExpressionRefSer
                 .throwMessage(failUpdateReasonIdMessage);
         return true;
     }
+
+    @Transactional(rollbackFor = Exception.class)
+    public boolean tranDeleteByExpressionId(List<String> ids){
+        AssertUtil.falseThenThrow(delByExpressionId(ids,false))
+                .throwMessage("表达式关联主体不存在");
+        indicatorExpressionDao.tranDelete(ids,true);
+        return true;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public boolean tranDeleteByReasonId(List<String> ids){
+        AssertUtil.falseThenThrow(delByReasonId(ids,false))
+                .throwMessage("表达式关联主体不存在");
+        List<String> expressionIds=ShareUtil.XCollection.map(this.getByReasonId(null,ids,IndicatorExpressionRefEntity::getIndicatorExpressionId),
+                IndicatorExpressionRefEntity::getIndicatorExpressionId);
+        if(ShareUtil.XObject.notEmpty(expressionIds)){
+            indicatorExpressionDao.tranDelete(expressionIds,true);
+        }
+        return true;
+    }
+
+
+    //endregion
+
+    //region retrieve
+    public List<IndicatorExpressionRefEntity> getByReasonId(String appId,String reasonId,SFunction<IndicatorExpressionRefEntity,?>... cols){
+        if (ShareUtil.XObject.isEmpty(reasonId)) {
+            return Collections.emptyList();
+        }
+        return service.lambdaQuery()
+                .eq(ShareUtil.XObject.notEmpty(appId),IndicatorExpressionRefEntity::getAppId,appId)
+                .eq(IndicatorExpressionRefEntity::getReasonId,reasonId)
+                .select(cols)
+                .list();
+    }
+    public List<IndicatorExpressionRefEntity> getByReasonId(String appId,Collection<String> reasonIds,SFunction<IndicatorExpressionRefEntity,?>... cols){
+        if (ShareUtil.XObject.isEmpty(reasonIds)) {
+            return Collections.emptyList();
+        }
+        final boolean oneFlag=reasonIds.size()==1;
+        return service.lambdaQuery()
+                .eq(ShareUtil.XObject.notEmpty(appId),IndicatorExpressionRefEntity::getAppId,appId)
+                .eq(oneFlag, IndicatorExpressionRefEntity::getReasonId,reasonIds.iterator().next())
+                .in(!oneFlag, IndicatorExpressionRefEntity::getReasonId,reasonIds)
+                .select(cols)
+                .list();
+    }
     //endregion
 
     //region save
@@ -64,7 +116,7 @@ public class IndicatorExpressionRefDao extends BaseDao<IndicatorExpressionRefSer
             return true;
         }
         final boolean oneFlag = expressionIds.size() == 1;
-        return service.update(service.lambdaUpdate()
+        return service.update(Wrappers.<IndicatorExpressionRefEntity>lambdaUpdate()
                 .set(IndicatorExpressionRefEntity::getReasonId, reasonId)
                 .eq(oneFlag, IndicatorExpressionRefEntity::getIndicatorExpressionId, expressionIds.iterator().next())
                 .in(!oneFlag, IndicatorExpressionRefEntity::getIndicatorExpressionId, expressionIds));
@@ -80,4 +132,35 @@ public class IndicatorExpressionRefDao extends BaseDao<IndicatorExpressionRefSer
         return rst;
     }
     //endregion
+
+    //region delete
+    public boolean delByReasonId(String reasonId,boolean dftIfEmpty){
+        if (ShareUtil.XObject.isEmpty(reasonId)) {
+            return dftIfEmpty;
+        }
+        return service.remove(Wrappers.<IndicatorExpressionRefEntity>lambdaQuery()
+                .eq(IndicatorExpressionRefEntity::getReasonId,reasonId));
+    }
+    public boolean delByReasonId(List<String> ids,boolean dftIfEmpty){
+        if (ShareUtil.XObject.isEmpty(ids)) {
+            return dftIfEmpty;
+        }
+        final boolean oneFlag = ids.size() == 1;
+        return service.remove(Wrappers.<IndicatorExpressionRefEntity>lambdaQuery()
+                .eq(oneFlag, IndicatorExpressionRefEntity::getReasonId, ids.get(0))
+                .in(!oneFlag, IndicatorExpressionRefEntity::getReasonId, ids));
+    }
+    public boolean delByExpressionId(List<String> ids, boolean dftIfEmpty) {
+        if (ShareUtil.XObject.isEmpty(ids)) {
+            return dftIfEmpty;
+        }
+        final boolean oneFlag = ids.size() == 1;
+        return service.remove(Wrappers.<IndicatorExpressionRefEntity>lambdaQuery()
+                .eq(oneFlag, IndicatorExpressionRefEntity::getIndicatorExpressionId, ids.get(0))
+                .in(!oneFlag, IndicatorExpressionRefEntity::getIndicatorExpressionId, ids));
+    }
+
+    //endregion
+
+
 }

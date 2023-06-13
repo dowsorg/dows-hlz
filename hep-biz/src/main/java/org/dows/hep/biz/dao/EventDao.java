@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import jakarta.annotation.Resource;
 import org.dows.hep.api.base.intervene.request.FindEventRequest;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
@@ -15,6 +14,7 @@ import org.dows.hep.entity.EventEntity;
 import org.dows.hep.entity.EventEvalEntity;
 import org.dows.hep.service.EventEvalService;
 import org.dows.hep.service.EventService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,10 +35,10 @@ public class EventDao extends BaseSubDao<EventService, EventEntity, EventEvalSer
         super("突发事件不存在或已删除,请刷新");
     }
 
-    @Resource
+    @Autowired
     protected EventActionDao subDao;
 
-    @Resource
+    @Autowired
     protected IndicatorExpressionRefDao expressionRefDao;
 
 

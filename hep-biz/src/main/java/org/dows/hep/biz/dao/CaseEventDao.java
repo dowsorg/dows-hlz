@@ -12,6 +12,7 @@ import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.CaseEventEvalService;
 import org.dows.hep.service.CaseEventService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,10 +33,10 @@ public class CaseEventDao extends BaseSubDao<CaseEventService, CaseEventEntity, 
         super("突发事件不存在或已删除,请刷新");
     }
 
-    @Resource
+    @Autowired
     protected CaseEventActionDao subDao;
 
-    @Resource
+    @Autowired
     protected IndicatorExpressionRefDao expressionRefDao;
 
 

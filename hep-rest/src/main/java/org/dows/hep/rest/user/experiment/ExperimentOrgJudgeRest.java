@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
 * @description project descr:实验:机构操作-判断指标
@@ -82,6 +83,18 @@ public class ExperimentOrgJudgeRest {
     }
 
     /**
+     * 二级-有报告 获取判断得分
+     * @param
+     * @return
+     */
+    @Operation(summary = "getJudgeHealthGuidanceScore")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/getJudgeHealthGuidanceScore")
+    public BigDecimal getJudgeHealthGuidanceScore(@RequestBody @Validated List<ExperimentIndicatorJudgeHealthGuidanceRequest> judgeHealthGuidanceRequestList)
+    {
+        return experimentOrgJudgeBiz.getJudgeHealthGuidanceScore(judgeHealthGuidanceRequestList);
+    }
+
+    /**
      *
      * 获取二级类有报告的判断指标信息
      *
@@ -101,9 +114,9 @@ public class ExperimentOrgJudgeRest {
      * @return
      */
     @Operation(summary = "三级类别：根据指标分类ID获取所有符合条件的数据")
-    @GetMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeHealthProblemByCategoryId/{indicatoryCategoryId}")
-    public List<ExperimentIndicatorJudgeHealthProblemResponse> getIndicatorJudgeHealthProblemByCategoryId(@PathVariable String indicatoryCategoryId) {
-        return experimentOrgJudgeBiz.getIndicatorJudgeHealthProblemByCategoryId(indicatoryCategoryId);
+    @PostMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeHealthProblemByCategoryIds")
+    public List<ExperimentIndicatorJudgeHealthProblemResponse> getIndicatorJudgeHealthProblemByCategoryIds(@RequestBody Set<String> experimentIndicatoryCategoryIds) {
+        return experimentOrgJudgeBiz.getIndicatorJudgeHealthProblemByCategoryIds(experimentIndicatoryCategoryIds);
     }
 
     /**
@@ -113,9 +126,9 @@ public class ExperimentOrgJudgeRest {
      * @return
      */
     @Operation(summary = "四级类别：根据指标分类ID获取所有符合条件的数据")
-    @GetMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeDiseaseProblemByCategoryId/{indicatoryCategoryId}")
-    public List<ExperimentIndicatorJudgeDiseaseProblemResponse> getIndicatorJudgeDiseaseProblemByCategoryId(@PathVariable String indicatoryCategoryId) {
-        return experimentOrgJudgeBiz.getIndicatorJudgeDiseaseProblemByCategoryId(indicatoryCategoryId);
+    @PostMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeDiseaseProblemByCategoryIds")
+    public List<ExperimentIndicatorJudgeDiseaseProblemResponse> getIndicatorJudgeDiseaseProblemByCategoryIds(@RequestBody Set<String> experimentIndicatoryCategoryIds) {
+        return experimentOrgJudgeBiz.getIndicatorJudgeDiseaseProblemByCategoryIds(experimentIndicatoryCategoryIds);
     }
 
     /**

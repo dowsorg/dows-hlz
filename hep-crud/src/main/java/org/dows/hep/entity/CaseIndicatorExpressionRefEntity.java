@@ -42,13 +42,7 @@ public class CaseIndicatorExpressionRefEntity implements CrudEntity {
   private String appId;
 
   @Schema(title = "案例指标公式分布式ID")
-  private String caseIndicatorExpressionId;
-
-  @Schema(title = "指标公式分布式ID")
   private String indicatorExpressionId;
-
-  @Schema(title = "案例产生这个指标公式的分布式ID")
-  private String caseReasonId;
 
   @Schema(title = "产生这个指标公式的分布式ID")
   private String reasonId;
