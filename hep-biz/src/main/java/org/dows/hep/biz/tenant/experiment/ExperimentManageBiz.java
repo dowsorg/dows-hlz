@@ -274,7 +274,6 @@ public class ExperimentManageBiz {
 
         List<ExperimentSettingEntity> experimentSettings = experimentSettingService.lambdaQuery()
                 .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
-                .eq(ExperimentSettingEntity::getAppId, appId)
                 .list();
 
         // 处理实验
@@ -385,8 +384,7 @@ public class ExperimentManageBiz {
 
         // 预处理方案设计
         String experimentInstanceId = experimentGroupSettingRequest.getExperimentInstanceId();
-        String appId = experimentGroupSettingRequest.getAppId();
-        CreateExperimentForm allotData = getAllotData(experimentInstanceId, appId);
+        CreateExperimentForm allotData = getAllotData(experimentInstanceId, null);
         ExperimentSetting experimentSetting = allotData.getExperimentSetting();
         ExperimentSetting.SchemeSetting schemeSetting = Optional.ofNullable(experimentSetting)
                 .map(ExperimentSetting::getSchemeSetting)
