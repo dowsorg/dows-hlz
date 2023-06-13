@@ -11,6 +11,7 @@ import org.dows.hep.api.base.intervene.vo.IndicatorExpressionVO;
 import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
 import org.dows.hep.biz.cache.InterveneCategCache;
 import org.dows.hep.biz.dao.FoodMaterialDao;
+import org.dows.hep.biz.dao.IndicatorExpressionRefDao;
 import org.dows.hep.biz.dao.IndicatorInstanceDao;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.CopyWrapper;
@@ -41,6 +42,8 @@ public class FoodMaterialBiz{
 
     private final FoodMaterialDao dao;
     private final IndicatorInstanceDao daoIndicator;
+
+    private final IndicatorExpressionRefDao daoExpressionRef;
 
     private final IndicatorExpressionBiz indicatorExpressionBiz;
 
@@ -176,7 +179,7 @@ public class FoodMaterialBiz{
      * @return
      */
     public Boolean delRefIndicator(DelRefIndicatorRequest delRefIndicator ) {
-        return dao.tranDeleteSub(delRefIndicator.getIds(),"关联指标不存在或已删除");
+        return daoExpressionRef.tranDeleteByExpressionId(delRefIndicator.getIds());
     }
 
     /**

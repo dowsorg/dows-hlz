@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import jakarta.annotation.Resource;
 import org.dows.hep.api.base.intervene.request.FindTreatRequest;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
@@ -13,6 +12,7 @@ import org.dows.hep.entity.TreatItemEntity;
 import org.dows.hep.entity.TreatItemIndicatorEntity;
 import org.dows.hep.service.TreatItemIndicatorService;
 import org.dows.hep.service.TreatItemService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +31,7 @@ public class TreatItemDao extends BaseSubDao<TreatItemService,TreatItemEntity,Tr
         super("干预项目不存在或已删除,请刷新");
     }
 
-    @Resource
+    @Autowired
     protected IndicatorExpressionRefDao expressionRefDao;
 
 
