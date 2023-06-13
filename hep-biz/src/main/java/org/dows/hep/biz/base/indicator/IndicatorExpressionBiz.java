@@ -259,7 +259,7 @@ public class IndicatorExpressionBiz{
           ));
     }
     Map<String, String> kIndicatorInstanceIdVIndicatorCategoryIdMap = new HashMap<>();
-    Map<String, IndicatorCategoryResponse> kReasonIdVIndicatorCategoryRsMap = new HashMap<>();
+    Map<String, IndicatorCategoryResponse> kPrincipalIdVIndicatorCategoryRsMap = new HashMap<>();
     Map<String, IndicatorCategoryResponse> kIndicatorCategoryIdVIndicatorCategoryRsMap = new HashMap<>();
     Set<String> indicatorCategoryIdSet = new HashSet<>();
     if (!principalIdSet.isEmpty()) {
@@ -286,7 +286,7 @@ public class IndicatorExpressionBiz{
     }
     kIndicatorInstanceIdVIndicatorCategoryIdMap.forEach((indicatorInstanceId, indicatorCategoryId) -> {
       IndicatorCategoryResponse indicatorCategoryResponse = kIndicatorCategoryIdVIndicatorCategoryRsMap.get(indicatorCategoryId);
-      kReasonIdVIndicatorCategoryRsMap.put(indicatorInstanceId, indicatorCategoryResponse);
+      kPrincipalIdVIndicatorCategoryRsMap.put(indicatorInstanceId, indicatorCategoryResponse);
     });
     kReasonIdVIndicatorExpressionIdListMap.forEach((reasonId, indicatorExpressionIdList) -> {
       indicatorExpressionIdList.forEach(indicatorExpressionId -> {
@@ -324,7 +324,7 @@ public class IndicatorExpressionBiz{
             finalIndicatorExpressionItemResponseRsList,
             kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(maxIndicatorExpressionItemId),
             kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(minIndicatorExpressionItemId),
-            kReasonIdVIndicatorCategoryRsMap.get(reasonId),
+            kPrincipalIdVIndicatorCategoryRsMap.get(indicatorExpressionEntity.getPrincipalId()),
             kIndicatorExpressionIdVIndicatorExpressionRefIdMap.get(indicatorExpressionId)
         );
         List<IndicatorExpressionResponseRs> indicatorExpressionResponseRsList = kReasonIdVIndicatorExpressionResponseRsListMap.get(reasonId);
