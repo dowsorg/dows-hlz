@@ -287,6 +287,7 @@ public class ExperimentOrgJudgeBiz {
                 .eq(ExperimentPersonPropertyEntity::getExperimentPersonId, experimentPersonId)
                 .eq(ExperimentPersonPropertyEntity::getDeleted, false)
                 .set(ExperimentPersonPropertyEntity::getInsuranceState, isPurchase);
+        //todo 扣费
         return experimentPersonPropertyService.update(updateWrapper);
     }
 
