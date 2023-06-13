@@ -100,6 +100,7 @@ public class ExperimentManageBiz {
     @DSTransactional
     public String allot(CreateExperimentRequest createExperiment) {
         ExperimentInstanceEntity experimentInstance = ExperimentInstanceEntity.builder()
+                .appId(createExperiment.getAppId())
                 .experimentInstanceId(idGenerator.nextIdStr())
                 .startTime(createExperiment.getStartTime())
                 .experimentName(createExperiment.getExperimentName())
