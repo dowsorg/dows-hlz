@@ -26,7 +26,7 @@ import java.util.Date;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(name = "CaseIndicatorExpressionEntity", title = "案例指标公式")
-@TableName("indicator_expression")
+@TableName("case_indicator_expression")
 public class CaseIndicatorExpressionEntity implements CrudEntity {
   @JsonFormat(shape = JsonFormat.Shape.STRING)
   @Schema(title = "主键")
@@ -46,12 +46,6 @@ public class CaseIndicatorExpressionEntity implements CrudEntity {
 
   @Schema(title = "承接结果的分布式ID")
   private String principalId;
-
-  @Schema(title = "案例上限")
-  private String caseMaxIndicatorExpressionItemId;
-
-  @Schema(title = "案例下限")
-  private String caseMinIndicatorExpressionItemId;
 
   @Schema(title = "上限")
   private String maxIndicatorExpressionItemId;

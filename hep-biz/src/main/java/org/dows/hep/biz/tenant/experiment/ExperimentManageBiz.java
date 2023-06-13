@@ -253,6 +253,7 @@ public class ExperimentManageBiz {
                         .accountName(experimentParticipator.getParticipatorName())
                         .groupNo(groupSetting.getGroupNo())
                         .groupAlias(groupSetting.getGroupAlias())
+                        .state(0)
                         .experimentGroupId(experimentGroupEntity.getExperimentGroupId())
                         .participatorType(2)
                         .build();

@@ -1,6 +1,7 @@
 package org.dows.hep.biz.user.experiment;
 
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
@@ -8,17 +9,24 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
 import org.dows.hep.api.enums.ExperimentStatusCode;
+import org.dows.hep.api.enums.ParticipatorTypeEnum;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.api.user.experiment.request.GetExperimentGroupCaptainRequest;
 import org.dows.hep.api.user.experiment.response.GetExperimentGroupCaptainResponse;
+import org.dows.hep.biz.util.TimeUtil;
+import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.service.ExperimentGroupService;
+import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentParticipatorService;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -28,6 +36,8 @@ public class ExperimentParticipatorBiz {
     private final ExperimentParticipatorService experimentParticipatorService;
     // 实验小组
     private final ExperimentGroupService experimentGroupService;
+    // 实验实例
+    private final ExperimentInstanceService experimentInstanceService;
 
     /**
      * @param
@@ -40,6 +50,27 @@ public class ExperimentParticipatorBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     public PageResponse<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
+        //1、判断是否已经到达开始时间，到达开始时间更改状态
+        List<ExperimentParticipatorEntity> participatorEntities = experimentParticipatorService.lambdaQuery()
+                .eq(ExperimentParticipatorEntity::getAccountId, pageExperimentRequest.getAccountId())
+                .list();
+        participatorEntities.forEach(entity->{
+            try {
+                if(TimeUtil.isBeforeTime(entity.getExperimentStartTime(),new Date())){
+                    LambdaUpdateWrapper<ExperimentParticipatorEntity> participatorWrapper = new LambdaUpdateWrapper<ExperimentParticipatorEntity>()
+                            .eq(ExperimentParticipatorEntity::getExperimentInstanceId, entity.getExperimentInstanceId())
+                            .set(ExperimentParticipatorEntity::getState, 1);
+                    experimentParticipatorService.update(participatorWrapper);
+                    LambdaUpdateWrapper<ExperimentInstanceEntity> instanceWrapper = new LambdaUpdateWrapper<ExperimentInstanceEntity>()
+                            .eq(ExperimentInstanceEntity::getExperimentInstanceId, entity.getExperimentInstanceId())
+                            .set(ExperimentInstanceEntity::getState, 1);
+                    experimentInstanceService.update(instanceWrapper);
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        });
+        //2、查询参与者参加的实验列表
         Page page = new Page<ExperimentParticipatorEntity>();
         page.setCurrent(pageExperimentRequest.getPageNo());
         page.setSize(pageExperimentRequest.getPageSize());
@@ -67,7 +98,7 @@ public class ExperimentParticipatorBiz {
      * @param getExperimentGroupCaptainRequest
      * @return
      */
-    public GetExperimentGroupCaptainResponse getExperimentGroupCaptain(GetExperimentGroupCaptainRequest getExperimentGroupCaptainRequest) {
+    public GetExperimentGroupCaptainResponse getExperimentGroupRole(GetExperimentGroupCaptainRequest getExperimentGroupCaptainRequest) {
 
         ExperimentParticipatorEntity experimentParticipatorEntity = experimentParticipatorService.lambdaQuery()
                 .eq(ExperimentParticipatorEntity::getExperimentInstanceId, getExperimentGroupCaptainRequest.getExperimentInstanceId())
@@ -80,5 +111,25 @@ public class ExperimentParticipatorBiz {
 //            return null;
         }
         return BeanConvert.beanConvert(experimentParticipatorEntity, GetExperimentGroupCaptainResponse.class);
+    }
+
+    /**
+     * @author fhb
+     * @description 是否是组长
+     * @date 2023/6/13 10:48
+     * @param
+     * @return
+     */
+    public Boolean isCaptain(String experimentInstanceId, String experimentGroupId, String accountId) {
+        Long count = experimentParticipatorService.lambdaQuery()
+                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentParticipatorEntity::getExperimentGroupId, experimentGroupId)
+                .eq(ExperimentParticipatorEntity::getAccountId, accountId)
+                .eq(ExperimentParticipatorEntity::getParticipatorType, ParticipatorTypeEnum.CAPTAIN.getCode())
+                .count();
+        if (count == null || count == 0) {
+            return Boolean.FALSE;
+        }
+        return Boolean.TRUE;
     }
 }
