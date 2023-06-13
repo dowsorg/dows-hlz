@@ -63,6 +63,9 @@ public class ExperimentSchemeEntity implements CrudEntity {
     @Schema(title = "方案状态[0:未提交,1:已提交]")
     private Integer state;
 
+    @Schema(title = "开始时间")
+    private Date beginTime;
+
     @Schema(title = "方案设计")
     private String schemeSetting;
 
