@@ -25,6 +25,7 @@
         <module>hep-pojo</module>
         <module>hep-rest</module>
         <module>hep-snapshot</module>
+        <module>hep-websocket</module>
     </modules>
 
     <properties>
@@ -84,6 +85,12 @@
                 <version>1.0.0-SNAPSHOT</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.dows.saas</groupId>
+                <artifactId>hep-websocket</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+
             <!--uim包-->
             <dependency>
                 <groupId>org.dows.cloud</groupId>
@@ -100,6 +107,8 @@
                 <artifactId>rbac-biz</artifactId>
                 <version>20230418-SNAPSHOT</version>
             </dependency>
+
+
 
         </dependencies>
     </dependencyManagement>

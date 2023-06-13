@@ -47,10 +47,10 @@ public class ExperimentSetting {
         @Schema(title = "期数",requiredMode = Schema.RequiredMode.REQUIRED)
         private Integer periods;
         // 每期间隔
-        @Schema(title = "每期间隔",requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(title = "每期间隔/秒",requiredMode = Schema.RequiredMode.REQUIRED)
         private Long interval;
         // 每期时长
-        @Schema(title = "每期时长",requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(title = "每期时长/分钟",requiredMode = Schema.RequiredMode.REQUIRED)
         private Map<String,Integer> durationMap;
         // 每期权重
         @Schema(title = "每期权重",requiredMode = Schema.RequiredMode.REQUIRED)

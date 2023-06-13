@@ -19,6 +19,11 @@ import org.dows.framework.crud.mybatis.utils.BeanConvert;
 import org.dows.hep.api.core.CreateExperimentForm;
 import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.EnumExperimentParticipator;
+import org.dows.hep.api.enums.ExperimentModeEnum;
+import org.dows.hep.api.enums.ExperimentStateEnum;
+import org.dows.hep.api.event.ExperimentEvent;
+import org.dows.hep.api.event.StartEvent;
+import org.dows.hep.api.event.SuspendEvent;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.exception.ExperimentParticipatorException;
 import org.dows.hep.api.tenant.experiment.request.*;
@@ -34,6 +39,7 @@ import org.dows.user.api.request.UserInstanceRequest;
 import org.dows.user.api.response.UserExtinfoResponse;
 import org.dows.user.api.response.UserInstanceResponse;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -59,6 +65,8 @@ public class ExperimentManageBiz {
     private final ExperimentParticipatorService experimentParticipatorService;
     // 实验小组
     private final ExperimentGroupService experimentGroupService;
+    // 实验计时器
+    private final ExperimentTimerService experimentTimerService;
     private final IdGenerator idGenerator;
     private final AccountGroupApi accountGroupApi;
     private final ExperimentPersonService experimentPersonService;
@@ -75,7 +83,8 @@ public class ExperimentManageBiz {
     private final ExperimentSchemeManageBiz experimentSchemeManageBiz;
     private final ExperimentGroupBiz experimentGroupBiz;
 
-//    private final
+    // 事件发布
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     /**
      * @param
@@ -118,9 +127,11 @@ public class ExperimentManageBiz {
                     .build();
             experimentParticipatorEntityList.add(experimentParticipatorEntity);
         }
-        // 保存实验参与人
+        // 保存实验参与人(教师/实验指导员等)
         experimentParticipatorService.saveOrUpdateBatch(experimentParticipatorEntityList);
 
+
+        List<ExperimentTimerEntity> experimentTimerEntities = new ArrayList<>();
         // 标准模式
         if (null != experimentSetting.getSchemeSetting() && null != experimentSetting.getSandSetting()) {
             ExperimentSettingEntity experimentSettingEntity = ExperimentSettingEntity.builder()
@@ -132,6 +143,7 @@ public class ExperimentManageBiz {
             // 保存方案设计
             experimentSettingService.saveOrUpdate(experimentSettingEntity);
 
+
             experimentSettingEntity = ExperimentSettingEntity.builder()
                     .experimentSettingId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentInstance.getExperimentInstanceId())
@@ -140,6 +152,8 @@ public class ExperimentManageBiz {
                     .build();
             // 保存沙盘设计
             experimentSettingService.saveOrUpdate(experimentSettingEntity);
+            // 设置实验计时器
+            buildPeriods(experimentInstance, experimentSetting, experimentTimerEntities);
             // 沙盘模式
         } else if (null != experimentSetting.getSandSetting()) {
             ExperimentSettingEntity experimentSettingEntity = ExperimentSettingEntity.builder()
@@ -150,7 +164,9 @@ public class ExperimentManageBiz {
                     .build();
             //保存沙盘设计
             experimentSettingService.saveOrUpdate(experimentSettingEntity);
-            // 方案设计模式i
+            // 设置实验计时器
+            buildPeriods(experimentInstance, experimentSetting, experimentTimerEntities);
+            // 方案设计模式
         } else if (null != experimentSetting.getSchemeSetting()) {
             ExperimentSettingEntity experimentSettingEntity = ExperimentSettingEntity.builder()
                     .experimentSettingId(idGenerator.nextIdStr())
@@ -160,8 +176,68 @@ public class ExperimentManageBiz {
                     .build();
             // 保存方案设计
             experimentSettingService.saveOrUpdate(experimentSettingEntity);
+            // 设置实验计时器
+            buildPeriods(experimentInstance, experimentSetting, experimentTimerEntities);
         }
+        // 保存实验计时器
+        experimentTimerService.saveBatch(experimentTimerEntities);
         return experimentInstance.getExperimentInstanceId();
+    }
+
+    /**
+     * 构建期数对应的计时器
+     *
+     * @param experimentInstance
+     * @param experimentSetting
+     * @param experimentTimerEntities
+     */
+    private void buildPeriods(ExperimentInstanceEntity experimentInstance, ExperimentSetting experimentSetting,
+                              List<ExperimentTimerEntity> experimentTimerEntities) {
+        ExperimentSetting.SandSetting sandSetting = experimentSetting.getSandSetting();
+        // 获取总期数，生成每期的计时器
+        Integer periodCount = sandSetting.getPeriods();
+        // 每期间隔/秒*1000
+        Long interval = sandSetting.getInterval() * 1000;
+        // 每期时长/分钟
+        Map<String, Integer> durationMap = sandSetting.getDurationMap();
+        // 开始时间，如果是标准模式，那么需要减去方案设计截止时间
+        long startTime = experimentInstance.getStartTime().getTime();
+        // 方案设计截止时间
+        long time1 = experimentSetting.getSchemeSetting().getSchemeEndTime().getTime();
+
+
+        // 一期开始时间=实验开始时间-方案设计时间,第一期没有间隔时间
+        long pst = 0L;
+        // 定义一期结束时间
+        long pet = 0L;
+        if (experimentInstance.getModel() == ExperimentModeEnum.STANDARD.getCode()) {
+            // 如果是标准模式，一期开始时间=实验开始时间-方案设计时间,第一期没有间隔时间
+            pst = startTime - time1;
+        } else {
+            pst = startTime;
+        }
+
+        List<Integer> periods = durationMap.keySet().stream()
+                .map(p -> Integer.valueOf(p)).sorted().collect(Collectors.toList());
+        if (periodCount != periods.size()) {
+            throw new ExperimentException("分配实验异常,期数与期数时间设置不匹配");
+        }
+        for (Integer period : periods) {
+            // 一期结束时间 = 一期开始时间 + 一期持续时间
+            pet = pst + durationMap.get(period + "") * 60 * 1000;
+            ExperimentTimerEntity experimentTimerEntity = ExperimentTimerEntity.builder()
+                    .experimentInstanceId(experimentInstance.getExperimentInstanceId())
+                    .experimentTimerId(idGenerator.nextIdStr())
+                    .periods(period)
+                    .model(ExperimentModeEnum.STANDARD.getCode())
+                    .state(ExperimentStateEnum.UNBEGIN.getState())
+                    .startTime(pst)
+                    .endTime(pet)
+                    .build();
+            experimentTimerEntities.add(experimentTimerEntity);
+            // 下一期开始时间 = 上一期结束时间+间隔时间
+            pst = pet + interval;
+        }
     }
 
     /**
@@ -238,7 +314,7 @@ public class ExperimentManageBiz {
                     .memberCount(groupSetting.getMemberCount())
                     .groupState(EnumExperimentGroupStatus.GROUP_RENAME.getCode())
                     .groupNo(groupSetting.getGroupNo())
-                    .groupName(groupSetting.getGroupName())
+                    //.groupName(groupSetting.getGroupName())
                     .build();
             experimentGroupEntitys.add(experimentGroupEntity);
 
@@ -574,5 +650,20 @@ public class ExperimentManageBiz {
             });
         });
         return true;
+    }
+
+    /**
+     * 发布开始/暂停事件
+     *
+     * @param experimentRestartRequest
+     */
+    public void restart(ExperimentRestartRequest experimentRestartRequest) {
+        ExperimentEvent experimentEvent;
+        if(experimentRestartRequest.getPaused()) {
+            experimentEvent = new SuspendEvent(experimentRestartRequest);
+        } else {
+            experimentEvent = new StartEvent(experimentRestartRequest);
+        }
+        applicationEventPublisher.publishEvent(experimentEvent);
     }
 }

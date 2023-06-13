@@ -4,10 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.crud.api.model.PageResponse;
-import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
-import org.dows.hep.api.tenant.experiment.request.ExperimentGroupSettingRequest;
-import org.dows.hep.api.tenant.experiment.request.ExperimentQueryRequest;
-import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
+import org.dows.hep.api.tenant.experiment.request.*;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
 import org.springframework.validation.annotation.Validated;
@@ -106,5 +103,19 @@ public class ExperimentManageRest {
     public PageResponse<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
         return experimentManageBiz.page(pageExperimentRequest);
     }
+
+
+    /**
+     * 获取实验列表
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "开始/暂停实验")
+    @PostMapping("v1/tenantExperiment/experimentManage/restart")
+    public void restart(@RequestBody @Validated ExperimentRestartRequest experimentRestartRequest) {
+        experimentManageBiz.restart(experimentRestartRequest);
+    }
+
 
 }
