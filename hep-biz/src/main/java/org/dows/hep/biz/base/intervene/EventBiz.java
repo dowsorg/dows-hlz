@@ -3,15 +3,17 @@ package org.dows.hep.biz.base.intervene;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
 import org.dows.hep.api.base.intervene.request.*;
 import org.dows.hep.api.base.intervene.response.EventInfoResponse;
 import org.dows.hep.api.base.intervene.response.EventResponse;
-import org.dows.hep.api.base.intervene.vo.EventActionVO;
-import org.dows.hep.api.base.intervene.vo.EventEvalVO;
-import org.dows.hep.api.base.intervene.vo.EventIndicatorVO;
+import org.dows.hep.api.base.intervene.vo.EventActionInfoVO;
+import org.dows.hep.api.base.intervene.vo.IndicatorExpressionVO;
 import org.dows.hep.api.enums.EnumCategFamily;
 import org.dows.hep.api.enums.EnumEventTriggerSpan;
 import org.dows.hep.api.enums.EnumEventTriggerType;
+import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
+import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
 import org.dows.hep.biz.cache.EventCategCache;
 import org.dows.hep.biz.dao.EnumCheckCategPolicy;
 import org.dows.hep.biz.dao.EventActionDao;
@@ -23,7 +25,9 @@ import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.vo.CategVO;
 import org.dows.hep.biz.vo.LoginContextVO;
-import org.dows.hep.entity.*;
+import org.dows.hep.entity.EventActionEntity;
+import org.dows.hep.entity.EventCategEntity;
+import org.dows.hep.entity.EventEntity;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
@@ -45,6 +49,8 @@ public class EventBiz{
     private final EventDao eventDao;
 
     private final EventActionDao eventActionDao;
+
+    private final IndicatorExpressionBiz indicatorExpressionBiz;
 
     private final IdGenerator idGenerator;
 
@@ -157,47 +163,41 @@ public class EventBiz{
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public EventInfoResponse getEvent(String eventId ) {
+    public EventInfoResponse getEvent(String appId,  String eventId) {
         EventEntity row = AssertUtil.getNotNull(eventDao.getById(eventId))
                 .orElseThrow("突发事件不存在或已删除，请刷新");
-        List<EventEvalEntity> rowsEval = eventDao.getSubByLeadId(eventId,
-                EventEvalEntity::getId,
-                EventEvalEntity::getEventEvalId,
-                EventEvalEntity::getExpression,
-                EventEvalEntity::getExpressionDescr);
         List<EventActionEntity> rowsAction = eventActionDao.getByEventId(eventId,
                 EventActionEntity::getId,
                 EventActionEntity::getEventActionId,
                 EventActionEntity::getActionDesc);
-        List<EventActionIndicatorEntity> rowsIndicator = eventActionDao.getSubByEventId(eventId,
-                EventActionIndicatorEntity::getId,
-                EventActionIndicatorEntity::getEventActionIndicatorId,
-                EventActionIndicatorEntity::getEventActionId,
-                EventActionIndicatorEntity::getInitFlag,
-                EventActionIndicatorEntity::getIndicatorInstanceId,
-                EventActionIndicatorEntity::getIndicatorCategoryId,
-                EventActionIndicatorEntity::getExpression,
-                EventActionIndicatorEntity::getExpressionDescr,
-                EventActionIndicatorEntity::getExpressionVars,
-                EventActionIndicatorEntity::getExpressionNames,
-                EventActionIndicatorEntity::getSeq);
-        final String EMPTYActionId="";
-        Map<String, List<EventIndicatorVO>> mapIndicators = ShareUtil.XCollection.groupBy(rowsIndicator,
-                i -> CopyWrapper.create(EventIndicatorVO::new)
-                        .endFrom(i, v -> v.setRefId(i.getEventActionIndicatorId())),
-                i -> ShareUtil.XObject.defaultIfNull(i.getEventActionId(), EMPTYActionId));
-        List<EventEvalVO> vosEval = ShareUtil.XCollection.map(rowsEval,
-                i -> CopyWrapper.create(EventEvalVO::new).endFrom(i, v -> v.setRefId(i.getEventEvalId())));
-        List<EventIndicatorVO> vosIndicator = mapIndicators.getOrDefault(EMPTYActionId, Collections.emptyList());
-        List<EventActionVO> vosAction = ShareUtil.XCollection.map(rowsAction,
-                i -> CopyWrapper.create(EventActionVO::new)
+        //fill 公式
+        Set<String> reasonIds=new HashSet<>(rowsAction.size()+1);
+        reasonIds.add(eventId);
+        rowsAction.forEach(i->reasonIds.add(i.getEventActionId()));
+        Map<String, List<IndicatorExpressionResponseRs>> mapExressions=ShareBiz.getExpressionsByReasonIds(indicatorExpressionBiz,appId,reasonIds);
+
+        List<IndicatorExpressionResponseRs> conditions=new ArrayList<>();
+        List<IndicatorExpressionResponseRs> effects=new ArrayList<>();
+        mapExressions.getOrDefault(eventId,Collections.emptyList())
+                .forEach(i->{
+                    switch (EnumIndicatorExpressionSource.of( i.getSource())){
+                        case EMERGENCY_TRIGGER_CONDITION:
+                            conditions.add(i);
+                            break;
+                        case EMERGENCY_INFLUENCE_INDICATOR:
+                            effects.add(i);
+                            break;
+                    }
+                });
+        List<EventActionInfoVO> vosAction = ShareUtil.XCollection.map(rowsAction,
+                i -> CopyWrapper.create(EventActionInfoVO::new)
                         .endFrom(i, v -> v.setRefId(i.getEventActionId())
-                                .setIndicators(mapIndicators.get(i.getEventActionId()))));
-        mapIndicators.clear();
+                                .setActionExpresssions(mapExressions.get(i.getEventActionId()))));
+        mapExressions.clear();
         return CopyWrapper.create(EventInfoResponse::new)
                 .endFrom(refreshCateg(row))
-                .setEvals(vosEval)
-                .setIndicators(vosIndicator)
+                .setConditionExpresssions(conditions)
+                .setEffectExpresssions(effects)
                 .setActions(vosAction);
 
     }
@@ -222,35 +222,34 @@ public class EventBiz{
                         || null == (categVO = getCategCache().getById(saveEvent.getEventCategId())))
                 .throwMessage("事件类别不存在");
         EnumEventTriggerType triggerType=EnumEventTriggerType.of(saveEvent.getTriggerType());
-        AssertUtil.trueThenThrow(triggerType==EnumEventTriggerType.CONDITION&&ShareUtil.XCollection.notEmpty(saveEvent.getIndicators()))
+        AssertUtil.trueThenThrow(triggerType==EnumEventTriggerType.CONDITION&&ShareUtil.XCollection.notEmpty(saveEvent.getEffectExpresssions()))
                         .throwMessage("条件触发时不支持定义影响的指标");
-        AssertUtil.trueThenThrow(triggerType!=EnumEventTriggerType.CONDITION&&ShareUtil.XCollection.notEmpty(saveEvent.getEvals()))
+        AssertUtil.trueThenThrow(triggerType!=EnumEventTriggerType.CONDITION&&ShareUtil.XCollection.notEmpty(saveEvent.getConditionExpresssionIds()))
                 .throwMessage("时间触发时不支持定义触发条件");
         AssertUtil.trueThenThrow(triggerType!=EnumEventTriggerType.CONDITION&& EnumEventTriggerSpan.of(saveEvent.getTriggerSpan())==EnumEventTriggerSpan.NONE)
                 .throwMessage("请选择正确的触发时间段");
 
         //重复指标检查
-        AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(saveEvent.getIndicators())
-                        && saveEvent.getIndicators().stream()
-                        .map(EventIndicatorVO::getIndicatorInstanceId)
+        AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(saveEvent.getEffectExpresssions())
+                        && saveEvent.getEffectExpresssions().stream()
+                        .map(IndicatorExpressionVO::getIndicatorInstanceId)
                         .collect(Collectors.toSet())
-                        .size() < saveEvent.getIndicators().size())
+                        .size() < saveEvent.getEffectExpresssions().size())
                 .throwMessage("存在重复的影响指标，请检查");
-        LinkedHashMap<EventActionEntity, List<EventActionIndicatorEntity>> mapActions = new LinkedHashMap<>();
         saveEvent.setActions(ShareUtil.XObject.defaultIfNull(saveEvent.getActions(), new ArrayList<>()));
         saveEvent.getActions().forEach(item -> {
-            List<EventActionIndicatorEntity> indicators = ShareUtil.XCollection.map(item.getIndicators(),
-                    e -> CopyWrapper.create(EventActionIndicatorEntity::new).endFrom(e, v -> v.setEventActionIndicatorId(e.getRefId()).setInitFlag(false)));
-            AssertUtil.trueThenThrow(indicators.stream().map(EventActionIndicatorEntity::getIndicatorInstanceId).collect(Collectors.toSet()).size() < indicators.size())
+            AssertUtil.trueThenThrow(ShareUtil.XObject.notEmpty(item.getActionExpresssions())&&item.getActionExpresssions().stream()
+                            .map(IndicatorExpressionVO::getIndicatorInstanceId)
+                            .collect(Collectors.toSet()).size() < item.getActionExpresssions().size())
                     .throwMessage(String.format("措施\"%s\"存在重复的关联指标", item.getActionDesc()));
-            mapActions.put(CopyWrapper.create(EventActionEntity::new).endFrom(item, v -> v.setEventActionId(item.getRefId())), indicators);
+
         });
-        if (ShareUtil.XCollection.notEmpty(saveEvent.getIndicators())) {
-            mapActions.put(null, ShareUtil.XCollection.map(saveEvent.getIndicators(),
-                    e -> CopyWrapper.create(EventActionIndicatorEntity::new).endFrom(e, v -> v.setEventActionIndicatorId(e.getRefId()).setInitFlag(true))));
-        }
 
         //build po
+        if(ShareUtil.XObject.isEmpty(saveEvent.getEventId())){
+            saveEvent.setEventId(idGenerator.nextIdStr());
+        }
+        saveEvent.getActions().forEach(i->i.setRefId(ShareUtil.XString.defaultIfEmpty(i.getRefId(),()->idGenerator.nextIdStr())));
         EventEntity row = CopyWrapper.create(EventEntity::new)
                 .endFrom(saveEvent)
                 .setCategName(categVO.getCategName())
@@ -259,10 +258,30 @@ public class EventBiz{
                 .setCreateAccountId(voLogin.getAccountId())
                 .setCreateAccountName(voLogin.getAccountName())
                 .setTriggerType(triggerType.getCode());
+        List<EventActionEntity> rowActions=ShareUtil.XCollection.map(saveEvent.getActions(), i->
+                CopyWrapper.create(EventActionEntity::new)
+                        .endFrom(i)
+                        .setEventActionId(i.getRefId()));
 
-        List<EventEvalEntity> rowEvals = ShareUtil.XCollection.map(saveEvent.getEvals(),
-                e -> CopyWrapper.create(EventEvalEntity::new).endFrom(e, v -> v.setEventEvalId(e.getRefId())));
-        return eventDao.tranSave(row, rowEvals, mapActions);
+        //expression
+        final String eventId=row.getEventId();
+        Map<String,List<String>> mapExpressions=new HashMap<>();
+        if(ShareUtil.XObject.notEmpty(saveEvent.getConditionExpresssionIds())){
+            mapExpressions.computeIfAbsent(eventId, key->new ArrayList<>()).addAll(saveEvent.getConditionExpresssionIds());
+        }
+        if(ShareUtil.XObject.notEmpty(saveEvent.getEffectExpresssions())) {
+            List<String> dst=mapExpressions.computeIfAbsent(eventId, key -> new ArrayList<>());
+            saveEvent.getEffectExpresssions().forEach(i ->dst.add(i.getIndicatorExpressionId()));
+        }
+        saveEvent.getActions().forEach(i->{
+            if(ShareUtil.XObject.isEmpty(i.getActionExpresssions())){
+                return;
+            }
+            List<String> dst= mapExpressions.computeIfAbsent(i.getRefId(), key->new ArrayList<>());
+            i.getActionExpresssions().forEach(vo->dst.add(vo.getIndicatorExpressionId()));
+        });
+
+        return eventDao.tranSave(row, rowActions, mapExpressions);
     }
     /**
     * @param

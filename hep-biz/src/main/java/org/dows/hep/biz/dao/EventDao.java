@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import jakarta.annotation.Resource;
 import org.dows.hep.api.base.intervene.request.FindEventRequest;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
@@ -14,12 +15,12 @@ import org.dows.hep.entity.EventEntity;
 import org.dows.hep.entity.EventEvalEntity;
 import org.dows.hep.service.EventEvalService;
 import org.dows.hep.service.EventService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author : wuzl
@@ -34,8 +35,11 @@ public class EventDao extends BaseSubDao<EventService, EventEntity, EventEvalSer
         super("突发事件不存在或已删除,请刷新");
     }
 
-    @Autowired
+    @Resource
     protected EventActionDao subDao;
+
+    @Resource
+    protected IndicatorExpressionRefDao expressionRefDao;
 
 
     //region override
@@ -111,9 +115,16 @@ public class EventDao extends BaseSubDao<EventService, EventEntity, EventEvalSer
 
     @Transactional(rollbackFor = Exception.class)
     public boolean tranSave(EventEntity lead, List<EventEvalEntity> subs, LinkedHashMap<EventActionEntity,List<EventActionIndicatorEntity>> subsX) {
-        AssertUtil.falseThenThrow(coreTranSave(lead, subs, subsX, false, true))
+        AssertUtil.falseThenThrow(coreTranSave(lead, subs, subsX, false, defaultUseLogicId))
                 .throwMessage(failedSaveMessage);
         return true;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public boolean tranSave(EventEntity lead, List<EventActionEntity> actions, Map<String,List<String>> mapExpressions) {
+        AssertUtil.falseThenThrow(coreTranSave(lead, actions,  defaultUseLogicId))
+                .throwMessage(failedSaveMessage);
+        return expressionRefDao.tranUpdateReasonId(mapExpressions);
     }
 
     //region save
@@ -123,6 +134,12 @@ public class EventDao extends BaseSubDao<EventService, EventEntity, EventEvalSer
             return false;
         }
         return subDao.saveOrUpdateBatch(lead.getEventId(),subsX,useLogicId,true);
+    }
+    protected boolean coreTranSave(EventEntity lead, List<EventActionEntity> actions, boolean useLogicId) {
+        if (!saveOrUpdate(lead, useLogicId)) {
+            return false;
+        }
+        return subDao.saveOrUpdateBatch(actions,useLogicId,true);
     }
 
 

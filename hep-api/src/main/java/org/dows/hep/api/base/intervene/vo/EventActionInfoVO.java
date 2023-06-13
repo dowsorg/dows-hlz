@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
 
 import java.util.List;
 
@@ -19,8 +20,8 @@ import java.util.List;
 @Accessors(chain = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(name = "EventActionVO 对象", title = "事件处理措施")
-public class EventActionVO {
+@Schema(name = "EventActionInfoVO 对象", title = "事件处理措施")
+public class EventActionInfoVO {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库id,新增时为空")
     private Long id;
@@ -32,6 +33,6 @@ public class EventActionVO {
     private String actionDesc;
 
 
-    @Schema(title = "处理措施影响指标公式列表(公式source=9)")
-    private List<IndicatorExpressionVO> actionExpresssions;
+    @Schema(title = "处理措施影响指标列表(公式source=9)")
+    private List<IndicatorExpressionResponseRs> actionExpresssions;
 }

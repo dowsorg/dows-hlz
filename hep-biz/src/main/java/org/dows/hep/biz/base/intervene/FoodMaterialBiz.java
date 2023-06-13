@@ -2,11 +2,12 @@ package org.dows.hep.biz.base.intervene;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
 import org.dows.hep.api.base.intervene.request.*;
 import org.dows.hep.api.base.intervene.response.FoodMaterialInfoResponse;
 import org.dows.hep.api.base.intervene.response.FoodMaterialResponse;
 import org.dows.hep.api.base.intervene.vo.FoodNutrientVO;
-import org.dows.hep.api.base.intervene.vo.InterveneIndicatorVO;
+import org.dows.hep.api.base.intervene.vo.IndicatorExpressionVO;
 import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
 import org.dows.hep.biz.cache.InterveneCategCache;
 import org.dows.hep.biz.dao.FoodMaterialDao;
@@ -17,7 +18,6 @@ import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.vo.CategVO;
 import org.dows.hep.entity.FoodMaterialEntity;
-import org.dows.hep.entity.FoodMaterialIndicatorEntity;
 import org.dows.hep.entity.FoodMaterialNutrientEntity;
 import org.dows.hep.entity.IndicatorInstanceEntity;
 import org.springframework.stereotype.Service;
@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -76,19 +77,11 @@ public class FoodMaterialBiz{
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public FoodMaterialInfoResponse getFoodMaterial(String foodMaterialId ) {
+    public FoodMaterialInfoResponse getFoodMaterial(String appId, String foodMaterialId ) {
         FoodMaterialEntity row=AssertUtil.getNotNull(dao.getById(foodMaterialId))
                 .orElseThrow("食材不存在");
 
-        List<FoodMaterialIndicatorEntity> indicators= dao.getSubByLeadId(foodMaterialId,
-                FoodMaterialIndicatorEntity::getId,
-                FoodMaterialIndicatorEntity::getIndicatorInstanceId,
-                FoodMaterialIndicatorEntity::getIndicatorCategoryId,
-                FoodMaterialIndicatorEntity::getExpression,
-                FoodMaterialIndicatorEntity::getExpressionDescr,
-                FoodMaterialIndicatorEntity::getExpressionVars,
-                FoodMaterialIndicatorEntity::getExpressionNames,
-                FoodMaterialIndicatorEntity::getSeq);
+
         List<FoodMaterialNutrientEntity> nutrients= dao.getSubByLeadIdX(foodMaterialId,
                 FoodMaterialNutrientEntity::getId,
                 FoodMaterialNutrientEntity::getIndicatorInstanceId,
@@ -110,15 +103,13 @@ public class FoodMaterialBiz{
         }
         defNutrients.clear();
         mapExists.clear();
-        List<InterveneIndicatorVO> voIndicators=ShareUtil.XCollection.map(indicators,
-                i->CopyWrapper.create(InterveneIndicatorVO::new)
-                        .endFrom(i,v->v.setRefId(i.getFoodMaterialIndicatorId())));
         List<FoodNutrientVO> voNutrients=ShareUtil.XCollection.map(nutrients,
                 i->CopyWrapper.create(FoodNutrientVO::new).endFrom(i));
+        List<IndicatorExpressionResponseRs> expressions=ShareBiz.getExpressionsByReasonId(indicatorExpressionBiz,appId,foodMaterialId);
         return CopyWrapper.create(FoodMaterialInfoResponse::new)
                 .endFrom(refreshCateg(row))
-                .setIndicators(voIndicators)
-                .setNutrients(voNutrients);
+                .setNutrients(voNutrients)
+                .setExpresssions(expressions);
 
     }
     /**
@@ -140,11 +131,11 @@ public class FoodMaterialBiz{
                         ||null==(categVO=getCategCache().getById(saveFoodMaterial.getInterveneCategId())))
                 .throwMessage("食材类别不存在");
 
-        AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(saveFoodMaterial.getIndicators())
-                        &&saveFoodMaterial.getIndicators().stream()
-                        .map(InterveneIndicatorVO::getIndicatorInstanceId)
+        AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(saveFoodMaterial.getExpresssions())
+                        &&saveFoodMaterial.getExpresssions().stream()
+                        .map(IndicatorExpressionVO::getIndicatorInstanceId)
                         .collect(Collectors.toSet())
-                        .size()<saveFoodMaterial.getIndicators().size())
+                        .size()<saveFoodMaterial.getExpresssions().size())
                 .throwMessage("存在重复的关联指标，请检查");
 
         FoodMaterialEntity row=CopyWrapper.create(FoodMaterialEntity::new)
@@ -154,12 +145,13 @@ public class FoodMaterialBiz{
                 .setCategNamePath(categVO.getCategNamePath());
 
         //TODO checkExists
-        List<FoodMaterialIndicatorEntity> rowIndicators=ShareUtil.XCollection.map(saveFoodMaterial.getIndicators(),
-                i->CopyWrapper.create(FoodMaterialIndicatorEntity::new).endFrom(i,v->v.setFoodMaterialIndicatorId(i.getRefId())));
         List<FoodMaterialNutrientEntity> rowNutrients=ShareUtil.XCollection.map(saveFoodMaterial.getNutrients(),
                 i->CopyWrapper.create(FoodMaterialNutrientEntity::new).endFrom(i));
         foodCalcBiz.calcFoodEnergy(row,rowNutrients);
-        return dao.tranSave(row,rowIndicators,rowNutrients);
+        List<String> expressionIds=new ArrayList<>();
+        Optional.ofNullable(saveFoodMaterial.getExpresssions())
+            .ifPresent(i->i.forEach(expression-> expressionIds.add(expression.getIndicatorExpressionId())));
+        return dao.tranSaveWithExpressions(row,rowNutrients, expressionIds);
 
     }
     /**

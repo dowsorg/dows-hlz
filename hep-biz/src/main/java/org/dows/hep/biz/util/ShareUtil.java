@@ -71,6 +71,9 @@ public class ShareUtil {
         public static String defaultIfEmpty(String src, String dft) {
             return StringUtils.hasLength(src) ? src : dft;
         }
+        public static String defaultIfEmpty(String src, Supplier<String> dftSupplier) {
+            return StringUtils.hasLength(src) ? src : dftSupplier.get();
+        }
 
         public static String defaultIfEmpty(String src, String... dftValues) {
             if (StringUtils.hasLength(src) || null == dftValues || dftValues.length == 0) {

@@ -5,18 +5,19 @@ import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import jakarta.annotation.Resource;
 import org.dows.hep.api.tenant.casus.request.FindCaseEventRequest;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.CaseEventEvalService;
 import org.dows.hep.service.CaseEventService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author : wuzl
@@ -31,8 +32,12 @@ public class CaseEventDao extends BaseSubDao<CaseEventService, CaseEventEntity, 
         super("突发事件不存在或已删除,请刷新");
     }
 
-    @Autowired
+    @Resource
     protected CaseEventActionDao subDao;
+
+    @Resource
+    protected IndicatorExpressionRefDao expressionRefDao;
+
 
 
     //region override
@@ -115,6 +120,13 @@ public class CaseEventDao extends BaseSubDao<CaseEventService, CaseEventEntity, 
     }
 
     @Transactional(rollbackFor = Exception.class)
+    public boolean tranSave(CaseEventEntity lead, List<CaseEventActionEntity> actions, Map<String,List<String>> mapExpressions,boolean caseFlag) {
+        AssertUtil.falseThenThrow(coreTranSave(lead, actions,  defaultUseLogicId))
+                .throwMessage(failedSaveMessage);
+        return caseFlag? expressionRefDao.tranUpdateReasonId(mapExpressions): expressionRefDao.tranUpdateReasonId(mapExpressions);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
     public boolean tranSaveBatch(List<CaseEventEntity> events, List<CaseEventEvalEntity> evals,  List<CaseEventActionEntity> actions,List<CaseEventActionIndicatorEntity> indicators ) {
         this.tranSaveBatch(events,evals,false);
         subDao.tranSaveBatch(actions,indicators,true);
@@ -128,6 +140,12 @@ public class CaseEventDao extends BaseSubDao<CaseEventService, CaseEventEntity, 
             return false;
         }
         return subDao.saveOrUpdateBatch(lead.getCaseEventId(),subsX,useLogicId,true);
+    }
+    protected boolean coreTranSave(CaseEventEntity lead, List<CaseEventActionEntity> actions, boolean useLogicId) {
+        if (!saveOrUpdate(lead, useLogicId)) {
+            return false;
+        }
+        return subDao.saveOrUpdateBatch(actions,useLogicId,true);
     }
 
     //endregion

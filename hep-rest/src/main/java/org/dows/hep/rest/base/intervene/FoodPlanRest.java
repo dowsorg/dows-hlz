@@ -54,8 +54,8 @@ public class FoodPlanRest {
     */
     @Operation(summary = "获取菜肴信息")
     @GetMapping("v1/baseIntervene/foodPlan/getFoodDishes")
-    public FoodDishesInfoResponse getFoodDishes(@Validated String foodDishesId) {
-        return foodPlanBiz.getFoodDishes(foodDishesId);
+    public FoodDishesInfoResponse getFoodDishes(@Validated String appId, @Validated String foodDishesId) {
+        return foodPlanBiz.getFoodDishes(appId, foodDishesId);
     }
 
     /**
@@ -121,8 +121,8 @@ public class FoodPlanRest {
     */
     @Operation(summary = "获取菜谱详细信息")
     @GetMapping("v1/baseIntervene/foodPlan/getFoodCookbook")
-    public FoodCookBookInfoResponse getFoodCookbook(@Validated String foodCookbookId) {
-        return foodPlanBiz.getFoodCookbook(foodCookbookId);
+    public FoodCookBookInfoResponse getFoodCookbook(@Validated String appId, @Validated String foodCookbookId) {
+        return foodPlanBiz.getFoodCookbook(appId, foodCookbookId);
     }
 
     /**

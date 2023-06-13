@@ -42,8 +42,8 @@ public class FoodMaterialRest {
     */
     @Operation(summary = "获取食材详细信息")
     @GetMapping("v1/baseIntervene/foodMaterial/getFoodMaterial")
-    public FoodMaterialInfoResponse getFoodMaterial(@Validated String foodMaterialId) {
-        return foodMaterialBiz.getFoodMaterial(foodMaterialId);
+    public FoodMaterialInfoResponse getFoodMaterial(@Validated String appId,  @Validated String foodMaterialId) {
+        return foodMaterialBiz.getFoodMaterial(appId, foodMaterialId);
     }
 
     /**
