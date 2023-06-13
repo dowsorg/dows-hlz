@@ -509,6 +509,18 @@ public class PersonManageBiz {
         if (count3 == 0) {
             flag = false;
         }
+        //4、转移机构表更换负责人
+        List<HepArmEntity> entityList = hepArmService.lambdaQuery()
+                .in(HepArmEntity::getOrgId,request.getOrgIds())
+                .eq(HepArmEntity::getDeleted,false)
+                .eq(HepArmEntity::getAccountId,ownId)
+                .list();
+        if(entityList != null && entityList.size() > 0){
+            entityList.forEach(entity->{
+                entity.setAccountId(request.getAccountId());
+            });
+            hepArmService.updateBatchById(entityList);
+        }
         return flag;
     }
 

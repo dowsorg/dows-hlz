@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -23,6 +24,10 @@ public class ExperimentGroupSettingRequest {
     private String experimentName;
     @Schema(title = "实验模式[0:标准模式，1:沙盘模式，2:方案设计模式]")
     private Integer model;
+
+    @Schema(title = "实验开始时间")
+    private Date startTime;
+
     @Schema(title = "实验小组设置")
     public List<GroupSetting> groupSettings;
 

@@ -2,6 +2,8 @@ package org.dows.hep.api.tenant.experiment.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dows.hep.api.enums.ExperimentModeEnum;
@@ -17,7 +19,9 @@ import java.util.Date;
 * @date 
 */
 @Data
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 @Schema(name = "ExperimentList 对象", title = "实验列表")
 public class ExperimentListResponse{
     @Schema(title = "实验实列ID")
@@ -49,11 +53,11 @@ public class ExperimentListResponse{
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @Schema(title = "开始时间")
-    private Date startTime;
+    private Date experimentStartTime;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @Schema(title = "结束时间,实验结束时回填")
-    private Date endTime;
+    private Date experimentEndTime;
 
     @Schema(title = "实验状态[默认未开始状态0~6步]")
     private Integer state;

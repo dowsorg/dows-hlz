@@ -18,6 +18,7 @@ import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
 import org.dows.hep.api.core.CreateExperimentForm;
 import org.dows.hep.api.enums.EnumExperimentParticipator;
+import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.exception.ExperimentParticipatorException;
 import org.dows.hep.api.tenant.experiment.request.*;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
@@ -107,6 +108,7 @@ public class ExperimentManageBiz {
                     .experimentName(experimentInstance.getExperimentName())
                     .accountId(instance.getAccountId())
                     .accountName(instance.getAccountName())
+                    .state(0)
                     .model(experimentInstance.getModel())
                     .participatorType(0)
                     .build();
@@ -246,6 +248,7 @@ public class ExperimentManageBiz {
                         .model(experimentGroupSettingRequest.getModel())
                         .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
                         .experimentName(experimentGroupSettingRequest.getExperimentName())
+                        .experimentStartTime(experimentGroupSettingRequest.getStartTime())
                         .accountId(experimentParticipator.getParticipatorId())
                         .accountName(experimentParticipator.getParticipatorName())
                         .groupNo(groupSetting.getGroupNo())
@@ -321,18 +324,23 @@ public class ExperimentManageBiz {
         page.setSize(pageExperimentRequest.getPageSize());
         page.setCurrent(pageExperimentRequest.getPageNo());
         if (pageExperimentRequest.getOrder() != null) {
-            String[] array = (String[]) (pageExperimentRequest.getOrder().toArray());
-            page.addOrder(pageExperimentRequest.getDesc() ?
-                    OrderItem.descs(array) : OrderItem.ascs(array));
+            String[] array = (String[]) pageExperimentRequest.getOrder().stream()
+                    .map(s -> StrUtil.toUnderlineCase((CharSequence) s))
+                    .toArray(String[]::new);
+            page.addOrder(pageExperimentRequest.getDesc() ? OrderItem.descs(array) : OrderItem.ascs(array));
         }
-        if (!StrUtil.isBlank(pageExperimentRequest.getKeyword())) {
-            page = experimentInstanceService.page(page, experimentInstanceService.lambdaQuery()
-                    .likeLeft(ExperimentInstanceEntity::getExperimentName, pageExperimentRequest.getKeyword())
-                    .likeLeft(ExperimentInstanceEntity::getCaseName, pageExperimentRequest.getKeyword())
-                    .likeLeft(ExperimentInstanceEntity::getExperimentDescr, pageExperimentRequest.getKeyword())
-                    .getWrapper());
-        } else {
-            page = experimentInstanceService.page(page, experimentInstanceService.lambdaQuery().getWrapper());
+        try {
+            if (!StrUtil.isBlank(pageExperimentRequest.getKeyword())) {
+                page = experimentInstanceService.page(page, experimentInstanceService.lambdaQuery()
+                        .likeLeft(ExperimentInstanceEntity::getExperimentName, pageExperimentRequest.getKeyword())
+                        .likeLeft(ExperimentInstanceEntity::getCaseName, pageExperimentRequest.getKeyword())
+                        .likeLeft(ExperimentInstanceEntity::getExperimentDescr, pageExperimentRequest.getKeyword())
+                        .getWrapper());
+            } else {
+                page = experimentInstanceService.page(page, experimentInstanceService.lambdaQuery().getWrapper());
+            }
+        } catch (Exception e) {
+            throw new ExperimentException(e.getCause().getMessage());
         }
         PageResponse pageInfo = experimentInstanceService.getPageInfo(page, ExperimentListResponse.class);
         return pageInfo;
