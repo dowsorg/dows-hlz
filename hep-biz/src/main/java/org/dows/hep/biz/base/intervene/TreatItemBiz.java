@@ -9,6 +9,7 @@ import org.dows.hep.api.base.intervene.response.TreatItemResponse;
 import org.dows.hep.api.base.intervene.vo.IndicatorExpressionVO;
 import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
 import org.dows.hep.biz.cache.InterveneCategCache;
+import org.dows.hep.biz.dao.IndicatorExpressionRefDao;
 import org.dows.hep.biz.dao.IndicatorFuncDao;
 import org.dows.hep.biz.dao.TreatItemDao;
 import org.dows.hep.biz.util.AssertUtil;
@@ -38,6 +39,7 @@ public class TreatItemBiz{
     private final TreatItemDao dao;
     private final IndicatorFuncDao indicatorFuncDao;
 
+    private final IndicatorExpressionRefDao daoExpressionRef;
     private final IndicatorExpressionBiz indicatorExpressionBiz;
 
     protected InterveneCategCache getCategCache(){
@@ -75,7 +77,6 @@ public class TreatItemBiz{
     public TreatItemInfoResponse infoTreatItem(String appId, String treatItemId ) {
         TreatItemEntity row=AssertUtil.getNotNull(dao.getById(treatItemId))
                 .orElseThrow("干预项目不存在");
-
         List<IndicatorExpressionResponseRs> expressions=ShareBiz.getExpressionsByReasonId(indicatorExpressionBiz,appId,treatItemId);
         return CopyWrapper.create(TreatItemInfoResponse::new)
                 .endFrom(refreshCateg(row))
@@ -142,7 +143,7 @@ public class TreatItemBiz{
      * @return
      */
     public Boolean delRefIndicator(DelRefIndicatorRequest delRefIndicator ) {
-        return dao.tranDeleteSub(delRefIndicator.getIds(),"关联指标不存在或已删除");
+        return daoExpressionRef.tranDeleteByExpressionId(delRefIndicator.getIds());
     }
 
     /**

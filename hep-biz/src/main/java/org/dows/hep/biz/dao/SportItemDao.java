@@ -32,7 +32,7 @@ public class SportItemDao extends BaseSubDao<SportItemService,SportItemEntity,Sp
    }
 
     @Autowired
-    protected IndicatorExpressionRefDao expressionRefDao;
+    protected IndicatorExpressionRefDao indicatorExpressionRefDao;
 
     //region override
 
@@ -113,7 +113,16 @@ public class SportItemDao extends BaseSubDao<SportItemService,SportItemEntity,Sp
         AssertUtil.falseThenThrow(coreTranSave(lead,null,false, defaultUseLogicId))
                 .throwMessage(failedSaveMessage );
 
-        return expressionRefDao.tranUpdateReasonId(lead.getSportItemId(),expressionIds);
+        return indicatorExpressionRefDao.tranUpdateReasonId(lead.getSportItemId(),expressionIds);
+    }
+
+    @Override
+    protected boolean coreTranDelete(List<String> ids, boolean delSub, boolean dftIfSubEmpty) {
+        if(!super.coreTranDelete(ids, false, dftIfSubEmpty)){
+            return false;
+        }
+        indicatorExpressionRefDao.tranDeleteByReasonId(ids);
+        return true;
     }
 
 }
