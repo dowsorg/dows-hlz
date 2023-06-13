@@ -37,7 +37,7 @@ public class ExperimentSchemeManageBiz {
      * @description 预生成方案设计试卷-分配实验的时候调用
      * @date 2023/6/1 9:33
      */
-    public void preHandleExperimentScheme(String experimentInstanceId, String caseInstanceId, List<String> experimentGroupIds) {
+    public void preHandleExperimentScheme(String experimentInstanceId, String caseInstanceId, List<String> experimentGroupIds, String schemeSetting) {
         Assert.notNull(experimentInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
         Assert.notNull(caseInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
         Assert.notEmpty(experimentGroupIds, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
@@ -62,6 +62,7 @@ public class ExperimentSchemeManageBiz {
                     .containsVideo(caseScheme.getContainsVideo())
                     .videoQuestion(caseScheme.getVideoQuestion())
                     .state(0)
+                    .schemeSetting(schemeSetting)
                     .build();
             entityList.add(entity);
 

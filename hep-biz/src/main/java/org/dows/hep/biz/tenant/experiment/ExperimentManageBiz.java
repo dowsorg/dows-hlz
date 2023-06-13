@@ -294,12 +294,22 @@ public class ExperimentManageBiz {
         experimentGroupService.saveOrUpdateBatch(experimentGroupEntitys);
         // 保存实验参与人[学生]
         experimentParticipatorService.saveOrUpdateBatch(collect);
+
         // 预处理方案设计
-        List<String> groupIds = experimentGroupEntitys.stream()
-                .map(ExperimentGroupEntity::getExperimentGroupId)
-                .toList();
         String experimentInstanceId = experimentGroupSettingRequest.getExperimentInstanceId();
-        experimentSchemeManageBiz.preHandleExperimentScheme(experimentInstanceId, caseInstanceId, groupIds);
+        String appId = experimentGroupSettingRequest.getAppId();
+        CreateExperimentForm allotData = getAllotData(experimentInstanceId, appId);
+        ExperimentSetting experimentSetting = allotData.getExperimentSetting();
+        ExperimentSetting.SchemeSetting schemeSetting = Optional.ofNullable(experimentSetting)
+                .map(ExperimentSetting::getSchemeSetting)
+                .orElse(null);
+        if (BeanUtil.isNotEmpty(schemeSetting)) {
+            List<String> groupIds = experimentGroupEntitys.stream()
+                    .map(ExperimentGroupEntity::getExperimentGroupId)
+                    .toList();
+            String settingStr = JSONUtil.toJsonStr(schemeSetting);
+            experimentSchemeManageBiz.preHandleExperimentScheme(experimentInstanceId, caseInstanceId, groupIds, settingStr);
+        }
 
         return true;
     }
