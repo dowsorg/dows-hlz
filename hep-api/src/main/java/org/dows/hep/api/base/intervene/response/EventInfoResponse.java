@@ -5,9 +5,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import org.dows.hep.api.base.intervene.vo.EventActionVO;
-import org.dows.hep.api.base.intervene.vo.EventEvalVO;
-import org.dows.hep.api.base.intervene.vo.EventIndicatorVO;
+import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
+import org.dows.hep.api.base.intervene.vo.EventActionInfoVO;
 
 import java.util.List;
 
@@ -69,13 +68,16 @@ public class EventInfoResponse{
     @Schema(title = "触发时间段 1-前期 2-中期 3-后期")
     private String triggerSpan;
 
-    @Schema(title = "事件影响指标列表,仅限时间触发triggerType>0时有值")
-    private List<EventIndicatorVO> indicators;
-    @Schema(title = "事件触发条件列表,仅限条件触发triggerType=0时有值")
-    private List<EventEvalVO> evals;
 
     @Schema(title = "事件处理措施列表")
-    private List<EventActionVO> actions;
+    private List<EventActionInfoVO> actions;
+
+    @Schema(title = "事件触发条件列表(公式source=7),仅限条件触发triggerType=0时有值")
+    private List<IndicatorExpressionResponseRs> conditionExpresssions;
+
+    @Schema(title = "事件影响指标列表(公式source=8),仅限时间触发triggerType>0时有值")
+    private List<IndicatorExpressionResponseRs> effectExpresssions;
+
 
 
 }

@@ -2,10 +2,12 @@ package org.dows.hep.biz.base.intervene;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
 import org.dows.hep.api.base.intervene.request.*;
 import org.dows.hep.api.base.intervene.response.SportItemInfoResponse;
 import org.dows.hep.api.base.intervene.response.SportItemResponse;
-import org.dows.hep.api.base.intervene.vo.InterveneIndicatorVO;
+import org.dows.hep.api.base.intervene.vo.IndicatorExpressionVO;
+import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
 import org.dows.hep.biz.cache.InterveneCategCache;
 import org.dows.hep.biz.dao.SportItemDao;
 import org.dows.hep.biz.util.AssertUtil;
@@ -14,10 +16,11 @@ import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.vo.CategVO;
 import org.dows.hep.entity.SportItemEntity;
-import org.dows.hep.entity.SportItemIndicatorEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -31,6 +34,8 @@ import java.util.stream.Collectors;
 public class SportItemBiz{
 
     private final SportItemDao dao;
+
+    private final IndicatorExpressionBiz indicatorExpressionBiz;
 
     protected InterveneCategCache getCategCache(){
         return InterveneCategCache.Instance;
@@ -63,26 +68,13 @@ public class SportItemBiz{
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public SportItemInfoResponse getSportItem(String sportItemId ) {
+    public SportItemInfoResponse getSportItem(String appId, String sportItemId ) {
         SportItemEntity row=AssertUtil.getNotNull(dao.getById(sportItemId))
                 .orElseThrow("运动项目不存在");
 
-        List<SportItemIndicatorEntity> indicators=dao.getSubByLeadId(sportItemId,
-                SportItemIndicatorEntity::getId,
-                SportItemIndicatorEntity::getIndicatorInstanceId,
-                SportItemIndicatorEntity::getIndicatorCategoryId,
-                SportItemIndicatorEntity::getExpression,
-                SportItemIndicatorEntity::getExpressionDescr,
-                SportItemIndicatorEntity::getExpressionVars,
-                SportItemIndicatorEntity::getExpressionNames,
-                SportItemIndicatorEntity::getSeq);
-
-        List<InterveneIndicatorVO> voIndicators=ShareUtil.XCollection.map(indicators,
-                i->CopyWrapper.create(InterveneIndicatorVO::new)
-                        .endFrom(i,v->v.setRefId(i.getSportItemIndicatorId())));
+        List<IndicatorExpressionResponseRs> expressions=ShareBiz.getExpressionsByReasonId(indicatorExpressionBiz,appId,sportItemId);
         return CopyWrapper.create(SportItemInfoResponse::new).endFrom(refreshCateg(row))
-                .setIndicators(voIndicators);
-
+                .setExpresssions(expressions);
     }
     /**
     * @param
@@ -98,27 +90,29 @@ public class SportItemBiz{
         AssertUtil.trueThenThrow(ShareUtil.XObject.notEmpty(saveSportItem.getSportItemId())
                         && dao.getById(saveSportItem.getSportItemId(), SportItemEntity::getSportItemId).isEmpty())
                 .throwMessage("运动项目不存在");
-        CategVO categVO=null;
+        CategVO categVO = null;
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(saveSportItem.getInterveneCategId())
-                        ||null==(categVO= getCategCache().getById(saveSportItem.getInterveneCategId())))
+                        || null == (categVO = getCategCache().getById(saveSportItem.getInterveneCategId())))
                 .throwMessage("类别不存在");
 
-        AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(saveSportItem.getIndicators())
-                        &&saveSportItem.getIndicators().stream()
-                        .map(InterveneIndicatorVO::getIndicatorInstanceId)
+        AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(saveSportItem.getExpresssions())
+                        && saveSportItem.getExpresssions().stream()
+                        .map(IndicatorExpressionVO::getIndicatorInstanceId)
                         .collect(Collectors.toSet())
-                        .size()<saveSportItem.getIndicators().size())
+                        .size() < saveSportItem.getExpresssions().size())
                 .throwMessage("存在重复的关联指标，请检查");
 
-        SportItemEntity row= CopyWrapper.create(SportItemEntity::new)
+        SportItemEntity row = CopyWrapper.create(SportItemEntity::new)
                 .endFrom(saveSportItem)
                 .setCategName(categVO.getCategName())
                 .setCategIdPath(categVO.getCategIdPath())
                 .setCategNamePath(categVO.getCategNamePath());
 
-        List<SportItemIndicatorEntity> subRows=ShareUtil.XCollection.map(saveSportItem.getIndicators(),
-                i->CopyWrapper.create(SportItemIndicatorEntity::new).endFrom(i,v->v.setSportItemIndicatorId(i.getRefId())));
-        return dao.tranSave(row,subRows,false);
+        List<String> expressionIds = new ArrayList<>();
+        Optional.ofNullable(saveSportItem.getExpresssions())
+                .ifPresent(i -> i.forEach(expression -> expressionIds.add(expression.getIndicatorExpressionId())));
+
+        return dao.tranSaveWithExpressions(row, expressionIds);
     }
     /**
     * @param
