@@ -28,6 +28,11 @@
         </dependency>
 
 
+        <dependency>
+            <groupId>org.dows.saas</groupId>
+            <artifactId>hep-websocket</artifactId>
+        </dependency>
+
 
         <dependency>
             <groupId>com.zaxxer</groupId>
@@ -76,6 +81,10 @@
         <dependency>
             <groupId>org.redisson</groupId>
             <artifactId>redisson-spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
 
     </dependencies>

@@ -15,4 +15,8 @@ import org.springframework.stereotype.Component;
 public class SuspendHandler extends AbstractEventHandler implements EventHandler {
 
 
+    @Override
+    public void exec(Object obj) {
+        EventHandler.super.exec(obj);
+    }
 }

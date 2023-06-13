@@ -28,10 +28,6 @@ public class ExperimentAllotSchemeRequest {
     @NoArgsConstructor
     public static class ParticipatorWithScheme {
         @NotBlank
-        @Schema(title = "实验参与者ID")
-        private String experimentParticipatorId;
-
-        @NotBlank
         @Schema(title = "参赛者账号ID")
         private String accountId;
 

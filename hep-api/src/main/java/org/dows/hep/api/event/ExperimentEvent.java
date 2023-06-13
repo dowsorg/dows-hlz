@@ -1,4 +1,4 @@
-package org.dows.hep.event;
+package org.dows.hep.api.event;
 
 import lombok.Getter;
 import lombok.Setter;

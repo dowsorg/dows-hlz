@@ -2,18 +2,22 @@ package org.dows.hep.biz.user.experiment;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.AllArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.enums.EnumExperimentGroupStatus;
+import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.request.ExperimentAllotSchemeRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeItemRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeItemResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeResponse;
+import org.dows.hep.api.user.experiment.response.ExperimentSchemeSettingResponse;
 import org.dows.hep.entity.ExperimentGroupEntity;
 import org.dows.hep.entity.ExperimentSchemeEntity;
 import org.dows.hep.service.ExperimentGroupService;
@@ -50,11 +54,7 @@ public class ExperimentSchemeBiz {
             throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
         }
 
-        ExperimentSchemeEntity entity = experimentSchemeService.lambdaQuery()
-                .eq(ExperimentSchemeEntity::getExperimentInstanceId, experimentInstanceId)
-                .eq(ExperimentSchemeEntity::getExperimentGroupId, experimentGroupId)
-                .oneOpt()
-                .orElseThrow(() -> new BizException(ExperimentESCEnum.SCHEME_NOT_NULL));
+        ExperimentSchemeEntity entity = getScheme(experimentInstanceId, experimentGroupId);
         ExperimentSchemeResponse result = BeanUtil.copyProperties(entity, ExperimentSchemeResponse.class);
 
         List<ExperimentSchemeItemResponse> itemList = experimentSchemeItemBiz.listBySchemeId(entity.getExperimentSchemeId());
@@ -66,11 +66,98 @@ public class ExperimentSchemeBiz {
     }
 
     /**
+     * @param
+     * @return
+     * @author fhb
+     * @description 分配给方案设计成员
+     * @date 2023/6/13 15:27
+     */
+    @DSTransactional
+    public Boolean allotSchemeMembers(ExperimentAllotSchemeRequest request) {
+        if (BeanUtil.isEmpty(request)) {
+            throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
+        }
+
+        // update
+        handleExperimentSchemeItem(request);
+
+        // handle begin-time
+        handleExperimentScheme(request);
+
+        // handle group-status
+        handleGroupStatus(request.getExperimentGroupId(), EnumExperimentGroupStatus.SCHEMA);
+
+        return Boolean.TRUE;
+    }
+
+    /**
+     * @author fhb
+     * @description 返回方案设计剩余作答时间和截止时间
+     * @date 2023/6/13 17:32
+     * @param
+     * @return
+     */
+    public ExperimentSchemeSettingResponse getSchemeDuration(String experimentSchemeId) {
+        // 开始时间
+        ExperimentSchemeEntity entity = getById(experimentSchemeId);
+        Date schemeBeginTime = Optional.of(entity)
+                .map(ExperimentSchemeEntity::getBeginTime)
+                .orElseThrow(() -> new BizException(ExperimentESCEnum.DATA_NULL));
+        // 持续时间
+        ExperimentSetting.SchemeSetting schemeSetting = getSchemeSetting(experimentSchemeId);
+        Long duration = Optional.of(schemeSetting)
+                .map(ExperimentSetting.SchemeSetting::getDuration)
+                .orElseThrow(() -> new BizException(ExperimentESCEnum.SCHEME_SETTING_IS_ERROR));
+        // 截止时间
+        Date schemeEndTime = Optional.of(schemeSetting)
+                .map(ExperimentSetting.SchemeSetting::getSchemeEndTime)
+                .orElseThrow(() -> new BizException(ExperimentESCEnum.SCHEME_SETTING_IS_ERROR));
+
+        // 相对与开始时间的结束时间
+        Date endTime = DateUtil.offsetMinute(schemeBeginTime, duration.intValue());
+        long finalEndTime = getNearDate(schemeEndTime, endTime).getTime();
+
+        // check
+        ExperimentSchemeSettingResponse result = new ExperimentSchemeSettingResponse();
+        long current = DateUtil.current();
+        if (current >= finalEndTime) {
+            result.setSchemeEndTime(String.valueOf(finalEndTime));
+            result.setRemainingTime(String.valueOf(0));
+            return result;
+        }
+        result.setSchemeEndTime(String.valueOf(finalEndTime));
+        result.setRemainingTime(String.valueOf(finalEndTime - current));
+        return result;
+    }
+
+    /**
+     * @author fhb
+     * @description 获取方案设计设置
+     * @date 2023/6/13 17:14
+     * @param
+     * @return
+     */
+    public ExperimentSetting.SchemeSetting getSchemeSetting(String experimentSchemeId) {
+        if (StrUtil.isBlank(experimentSchemeId)) {
+            throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
+        }
+
+        ExperimentSchemeEntity entity = getById(experimentSchemeId);
+        String schemeSetting = Optional.ofNullable(entity)
+                .map(ExperimentSchemeEntity::getSchemeSetting)
+                .orElse(null);
+        if (StrUtil.isBlank(schemeSetting)) {
+            return null;
+        }
+        return JSONUtil.toBean(schemeSetting, ExperimentSetting.SchemeSetting.class);
+    }
+
+    /**
+     * @param
+     * @return
      * @author fhb
      * @description 保存
      * @date 2023/6/7 13:50
-     * @param
-     * @return
      */
     public Boolean updateScheme(ExperimentSchemeRequest request) {
         if (BeanUtil.isEmpty(request)) {
@@ -122,28 +209,6 @@ public class ExperimentSchemeBiz {
         Boolean res2 = handleGroupStatus(experimentGroupId, EnumExperimentGroupStatus.WAIT_SCHEMA);
 
         return res1 && res2;
-    }
-
-    /**
-     * @author fhb
-     * @description 分配给方案设计成员
-     * @date 2023/6/13 15:27
-     * @param
-     * @return
-     */
-    @DSTransactional
-    public Boolean allotSchemeMembers(ExperimentAllotSchemeRequest request) {
-        if (BeanUtil.isEmpty(request)) {
-            throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
-        }
-
-        // update
-        handleExperimentScheme(request);
-
-        // handle group-status
-        handleGroupStatus(request.getExperimentGroupId(), EnumExperimentGroupStatus.SCHEMA);
-
-        return Boolean.TRUE;
     }
 
     private void checkState(String request) {
@@ -205,7 +270,7 @@ public class ExperimentSchemeBiz {
         return tree;
     }
 
-    private void handleExperimentScheme(ExperimentAllotSchemeRequest request) {
+    private void handleExperimentSchemeItem(ExperimentAllotSchemeRequest request) {
         List<ExperimentAllotSchemeRequest.ParticipatorWithScheme> allotList = request.getAllotList();
         allotList.forEach(allotScheme -> {
             String accountId = allotScheme.getAccountId();
@@ -218,10 +283,44 @@ public class ExperimentSchemeBiz {
         });
     }
 
+    private void handleExperimentScheme(ExperimentAllotSchemeRequest request) {
+        String experimentInstanceId = request.getExperimentInstanceId();
+        String experimentGroupId = request.getExperimentGroupId();
+        ExperimentSchemeEntity scheme = getScheme(experimentInstanceId, experimentGroupId);
+        if (BeanUtil.isEmpty(scheme)) {
+            throw new BizException(ExperimentESCEnum.DATA_NULL);
+        }
+
+        ExperimentSchemeEntity result = ExperimentSchemeEntity.builder()
+                .beginTime(new Date())
+                .id(scheme.getId())
+                .build();
+        experimentSchemeService.updateById(result);
+    }
+
     private Boolean handleGroupStatus(String experimentGroupId, EnumExperimentGroupStatus groupStatus) {
         LambdaUpdateWrapper<ExperimentGroupEntity> updateWrapper = new LambdaUpdateWrapper<ExperimentGroupEntity>()
                 .eq(ExperimentGroupEntity::getExperimentGroupId, experimentGroupId)
                 .set(ExperimentGroupEntity::getGroupState, groupStatus.getCode());
         return experimentGroupService.update(updateWrapper);
+    }
+
+    private ExperimentSchemeEntity getScheme(String experimentInstanceId, String experimentGroupId) {
+        return experimentSchemeService.lambdaQuery()
+                .eq(ExperimentSchemeEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentSchemeEntity::getExperimentGroupId, experimentGroupId)
+                .oneOpt()
+                .orElseThrow(() -> new BizException(ExperimentESCEnum.SCHEME_NOT_NULL));
+    }
+
+    private ExperimentSchemeEntity getById(String experimentSchemeId) {
+        return experimentSchemeService.lambdaQuery()
+                .eq(ExperimentSchemeEntity::getExperimentSchemeId, experimentSchemeId)
+                .oneOpt()
+                .orElse(null);
+    }
+
+    private static Date getNearDate(Date schemeEndTime, Date endTime) {
+        return DateUtil.compare(schemeEndTime, endTime) > 0 ? endTime : schemeEndTime;
     }
 }

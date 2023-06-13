@@ -32,7 +32,8 @@ public class TreatItemDao extends BaseSubDao<TreatItemService,TreatItemEntity,Tr
     }
 
     @Autowired
-    protected IndicatorExpressionRefDao expressionRefDao;
+    protected IndicatorExpressionRefDao indicatorExpressionRefDao;
+
 
 
 
@@ -100,6 +101,15 @@ public class TreatItemDao extends BaseSubDao<TreatItemService,TreatItemEntity,Tr
         AssertUtil.falseThenThrow(coreTranSave(lead,null,false, defaultUseLogicId))
                 .throwMessage(failedSaveMessage );
 
-        return expressionRefDao.tranUpdateReasonId(lead.getTreatItemId(),expressionIds);
+        return indicatorExpressionRefDao.tranUpdateReasonId(lead.getTreatItemId(),expressionIds);
+    }
+
+    @Override
+    protected boolean coreTranDelete(List<String> ids, boolean delSub, boolean dftIfSubEmpty) {
+        if(!super.coreTranDelete(ids, false, dftIfSubEmpty)){
+            return false;
+        }
+        indicatorExpressionRefDao.tranDeleteByReasonId(ids);
+        return true;
     }
 }
