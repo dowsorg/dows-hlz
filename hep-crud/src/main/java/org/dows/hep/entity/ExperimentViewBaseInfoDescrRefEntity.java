@@ -41,8 +41,8 @@ public class ExperimentViewBaseInfoDescrRefEntity implements CrudEntity {
     @Schema(title = "指标描述表ID")
     private String experimentViewBaseInfoDescrId;
 
-    @Schema(title = "指标ID")
-    private String experimentIndicatorInstanceId;
+    @Schema(title = "基础库指标ID")
+    private String indicatorInstanceId;
 
     @Schema(title = "展示排序")
     private Integer seq;

@@ -29,6 +29,9 @@ public class ExperimentIndicatorResponse {
     @Schema(title = "指标类别")
     private String type;
 
+    @Schema(title = "展示排序")
+    private Integer seq;
+
     @Schema(title = "内容")
     private String content;
 
