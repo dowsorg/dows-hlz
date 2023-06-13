@@ -14,4 +14,7 @@ import lombok.NoArgsConstructor;
 public class ExperimentIndicatorJudgeRiskFactorRequest {
     @Schema(title = "实验判断危险因素分布式ID")
     String experimentJudgeRiskFactorId;
+
+    @Schema(title = "实验人物ID")
+    private String experimentPersonId;
 }

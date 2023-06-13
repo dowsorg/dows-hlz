@@ -15,4 +15,7 @@ public class ExperimentIndicatorJudgeHealthGuidanceRequest {
 
     @Schema(title = "实验判断健康指导分布式ID")
     private String experimentJudgeHealthGuidanceId;
+
+    @Schema(title = "实验人物ID")
+    private String experimentPersonId;
 }
