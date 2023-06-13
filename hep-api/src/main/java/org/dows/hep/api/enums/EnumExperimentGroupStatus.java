@@ -17,6 +17,6 @@ public enum EnumExperimentGroupStatus {
   WAIT_ALL_GROUP_ASSIGN(5, "所有小组机构分配结束"),
   COUNT_DOWN(6, "倒计时"),
   ;
-  private Integer code;
-  private String descr;
+  private final Integer code;
+  private final String descr;
 }
