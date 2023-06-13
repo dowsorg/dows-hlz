@@ -95,6 +95,21 @@ public class ExperimentOrgJudgeRest {
     }
 
     /**
+     * 二级-有报告 获取报告
+     * @param
+     * @return
+     */
+    @Operation(summary = "getJudgeHealthGuidanceReport")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/getJudgeHealthGuidanceReport")
+    public Map<String,Object> getJudgeHealthGuidanceReport(@RequestParam @Validated String experimentPersonId,
+                                                           @RequestParam @Validated String experimentInstanceId,
+                                                           @RequestParam @Validated String experimentGroupId,
+                                                           @RequestParam @Validated String periods)
+    {
+        return experimentOrgJudgeBiz.getJudgeHealthGuidanceReport(experimentPersonId,experimentInstanceId,experimentGroupId,periods);
+    }
+
+    /**
      *
      * 获取二级类有报告的判断指标信息
      *

@@ -317,6 +317,21 @@ public class ExperimentOrgJudgeBiz {
         return totalAmount;
     }
 
+    /**
+     * @param
+     * @return
+     * @说明: 二级-有报告 获取报告
+     * @关联表: ???
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月13日 下午15:43:34
+     */
+    public Map<String, Object> getJudgeHealthGuidanceReport(String experimentPersonId,String experimentInstanceId,String experimentGroupId,String periods) {
+        //todo 获取报告
+        return null;
+    }
+
 
     /**
      * @param
