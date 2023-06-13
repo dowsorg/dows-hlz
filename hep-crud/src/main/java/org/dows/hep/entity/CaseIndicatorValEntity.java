@@ -48,29 +48,8 @@ public class CaseIndicatorValEntity implements CrudEntity {
     @Schema(title = "案例指标ID")
     private String caseIndicatorInstanceId;
 
-    @Schema(title = "指标ID")
-    private String indicatorInstanceId;
-
     @Schema(title = "案例当前值")
-    private String caseCurrentVal;
-
-    @Schema(title = "当前值")
     private String currentVal;
-
-    @Schema(title = "最小值")
-    private String caseMin;
-
-    @Schema(title = "最大值")
-    private String caseMax;
-
-    @Schema(title = "默认值")
-    private String caseDef;
-
-    @Schema(title = "描述")
-    private String caseDescr;
-
-    @Schema(title = "期数")
-    private String casePeriods;
 
     @Schema(title = "最小值")
     private String min;

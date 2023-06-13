@@ -26,7 +26,7 @@ import java.util.Date;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(name = "CaseIndicatorExpressionInfluenceEntity", title = "案例指标公式影响表")
-@TableName("indicator_expression_influence")
+@TableName("case_indicator_expression_influence")
 public class CaseIndicatorExpressionInfluenceEntity implements CrudEntity {
   @JsonFormat(shape = JsonFormat.Shape.STRING)
   @Schema(title = "主键")
@@ -41,17 +41,8 @@ public class CaseIndicatorExpressionInfluenceEntity implements CrudEntity {
   @Schema(title = "应用ID")
   private String appId;
 
-  @Schema(title = "案例指标分布式ID")
-  private String caseIndicatorInstanceId;
-
   @Schema(title = "指标分布式ID")
   private String indicatorInstanceId;
-
-  @Schema(title = "案例这个指标影响其它指标列表，用逗号分割")
-  private String caseInfluenceIndicatorInstanceIdList;
-
-  @Schema(title = "案例这个指标被其它指标影响的列表，用逗号分割")
-  private String caseInfluencedIndicatorInstanceIdList;
 
   @Schema(title = "这个指标影响其它指标列表，用逗号分割")
   private String influenceIndicatorInstanceIdList;
