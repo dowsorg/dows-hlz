@@ -34,6 +34,8 @@ public class ExperimentSetting {
         // 评分截止时间
         @Schema(title = "评分截止时间",requiredMode = Schema.RequiredMode.REQUIRED)
         private Date scoreEndTime;
+        @Schema(title = "审核截止时间",requiredMode = Schema.RequiredMode.REQUIRED)
+        private Date auditEndTime;
 
     }
 
@@ -68,6 +70,8 @@ public class ExperimentSetting {
         // 医疗占比权重
         @Schema(title = "医疗占比权重",requiredMode = Schema.RequiredMode.REQUIRED)
         private Float medicalRatioWeight;
+        @Schema(title = "操作准确度权重",requiredMode = Schema.RequiredMode.REQUIRED)
+        private Float operateRightWeight;
     }
 
 }
