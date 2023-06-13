@@ -14,6 +14,7 @@ import org.dows.account.response.AccountInstanceResponse;
 import org.dows.account.response.AccountOrgGeoResponse;
 import org.dows.account.response.AccountOrgResponse;
 import org.dows.account.response.AccountUserResponse;
+import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
 import org.dows.hep.api.core.CreateExperimentForm;
@@ -29,6 +30,7 @@ import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.exception.ExperimentParticipatorException;
 import org.dows.hep.api.tenant.experiment.request.*;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
+import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.biz.user.experiment.ExperimentGroupBiz;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
@@ -259,14 +261,16 @@ public class ExperimentManageBiz {
         ExperimentInstanceEntity experimentInstance = experimentInstanceService.lambdaQuery()
                 .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
                 .last("limit 1")
-                .getEntity();
+                .oneOpt()
+                .orElseThrow(() -> new BizException(ExperimentESCEnum.DATA_NULL));
 
         ExperimentParticipatorEntity experimentParticipator = experimentParticipatorService.lambdaQuery()
                 .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
                 // todo 查找老师,后面定义为枚举，这里先实现
                 .eq(ExperimentParticipatorEntity::getParticipatorType, 0)
                 .last("limit 1")
-                .getEntity();
+                .oneOpt()
+                .orElseThrow(() -> new BizException(ExperimentESCEnum.DATA_NULL));
 
         List<ExperimentSettingEntity> experimentSettings = experimentSettingService.lambdaQuery()
                 .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)

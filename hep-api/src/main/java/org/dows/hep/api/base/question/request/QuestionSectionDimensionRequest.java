@@ -24,7 +24,7 @@ public class QuestionSectionDimensionRequest{
     @Schema(title = "内容")
     private String dimensionContent;
 
-    @Schema(title = "分数")
+    @Schema(title = "分数最大值")
     private Float score;
 
 }
