@@ -541,7 +541,7 @@ public class ExperimentManageBiz {
                             .orgId(orgId)
                             .appId(createExperiment.getAppId())
                             .experimentOrgName(orgEntity.getOrgName())
-                            .experimentInstanceId(orgEntity.getCaseInstanceId())
+                            .experimentInstanceId(createExperiment.getExperimentInstanceId())
                             .experimentGroupId(model.getExperimentGroupId())
                             .caseOrgId(orgEntity.getCaseOrgId())
                             .caseOrgName(orgEntity.getOrgName())
