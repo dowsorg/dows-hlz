@@ -42,7 +42,7 @@ public class ExperimentSchemeRest {
      * @return
      */
     @Operation(summary = "分配方案设计")
-    @PostMapping("v1/userExperiment/experimentGroup/allotSchemeMembers")
+    @PostMapping("v1/userExperiment/experimentScheme/allotSchemeMembers")
     public Boolean allotGroupMembers(@RequestBody @Validated ExperimentAllotSchemeRequest request) {
         return experimentSchemeBiz.allotSchemeMembers(request);
     }
