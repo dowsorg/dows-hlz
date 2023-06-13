@@ -45,22 +45,13 @@ public class CaseIndicatorCategoryEntity implements CrudEntity {
     @Schema(title = "应用ID")
     private String appId;
 
-    @Schema(title = "案例父ID")
-    private String casePid;
-
     @Schema(title = "父ID")
     private String pid;
 
     @Schema(title = "案例分类名称")
-    private String caseCategoryName;
-
-    @Schema(title = "分类名称")
     private String categoryName;
 
     @Schema(title = "案例展示顺序")
-    private Integer caseSeq;
-
-    @Schema(title = "展示顺序")
     private Integer seq;
 
     @JsonIgnore

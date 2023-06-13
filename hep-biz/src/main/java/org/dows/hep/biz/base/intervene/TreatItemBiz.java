@@ -2,11 +2,14 @@ package org.dows.hep.biz.base.intervene;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
 import org.dows.hep.api.base.intervene.request.*;
 import org.dows.hep.api.base.intervene.response.TreatItemInfoResponse;
 import org.dows.hep.api.base.intervene.response.TreatItemResponse;
-import org.dows.hep.api.base.intervene.vo.InterveneIndicatorVO;
+import org.dows.hep.api.base.intervene.vo.IndicatorExpressionVO;
+import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
 import org.dows.hep.biz.cache.InterveneCategCache;
+import org.dows.hep.biz.dao.IndicatorExpressionRefDao;
 import org.dows.hep.biz.dao.IndicatorFuncDao;
 import org.dows.hep.biz.dao.TreatItemDao;
 import org.dows.hep.biz.util.AssertUtil;
@@ -16,10 +19,11 @@ import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.vo.CategVO;
 import org.dows.hep.entity.IndicatorFuncEntity;
 import org.dows.hep.entity.TreatItemEntity;
-import org.dows.hep.entity.TreatItemIndicatorEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -34,6 +38,9 @@ public class TreatItemBiz{
 
     private final TreatItemDao dao;
     private final IndicatorFuncDao indicatorFuncDao;
+
+    private final IndicatorExpressionRefDao daoExpressionRef;
+    private final IndicatorExpressionBiz indicatorExpressionBiz;
 
     protected InterveneCategCache getCategCache(){
         return InterveneCategCache.Instance;
@@ -67,26 +74,13 @@ public class TreatItemBiz{
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public TreatItemInfoResponse infoTreatItem(String treatItemId ) {
+    public TreatItemInfoResponse infoTreatItem(String appId, String treatItemId ) {
         TreatItemEntity row=AssertUtil.getNotNull(dao.getById(treatItemId))
                 .orElseThrow("干预项目不存在");
-
-        List<TreatItemIndicatorEntity> indicators=dao.getSubByLeadId(treatItemId,
-                TreatItemIndicatorEntity::getId,
-                TreatItemIndicatorEntity::getIndicatorInstanceId,
-                TreatItemIndicatorEntity::getIndicatorCategoryId,
-                TreatItemIndicatorEntity::getExpression,
-                TreatItemIndicatorEntity::getExpressionDescr,
-                TreatItemIndicatorEntity::getExpressionVars,
-                TreatItemIndicatorEntity::getExpressionNames,
-                TreatItemIndicatorEntity::getSeq);
-
-        List<InterveneIndicatorVO> voIndicators=ShareUtil.XCollection.map(indicators,
-                i->CopyWrapper.create(InterveneIndicatorVO::new)
-                        .endFrom(i,v->v.setRefId(i.getTreatItemIndicatorId())));
+        List<IndicatorExpressionResponseRs> expressions=ShareBiz.getExpressionsByReasonId(indicatorExpressionBiz,appId,treatItemId);
         return CopyWrapper.create(TreatItemInfoResponse::new)
                 .endFrom(refreshCateg(row))
-                .setIndicators(voIndicators);
+                .setExpresssions(expressions);
     }
     /**
     * @param
@@ -110,11 +104,11 @@ public class TreatItemBiz{
                         IndicatorFuncEntity::getPid,
                         IndicatorFuncEntity::getIndicatorCategoryId))
                 .orElseThrow("功能点不存在");
-        AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(saveTreatItem.getIndicators())
-                        &&saveTreatItem.getIndicators().stream()
-                        .map(InterveneIndicatorVO::getIndicatorInstanceId)
+        AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(saveTreatItem.getExpresssions())
+                        &&saveTreatItem.getExpresssions().stream()
+                        .map(IndicatorExpressionVO::getIndicatorInstanceId)
                         .collect(Collectors.toSet())
-                        .size()<saveTreatItem.getIndicators().size())
+                        .size()<saveTreatItem.getExpresssions().size())
                 .throwMessage("存在重复的关联指标，请检查");
 
         TreatItemEntity row= CopyWrapper.create(TreatItemEntity::new)
@@ -124,9 +118,10 @@ public class TreatItemBiz{
                 .setCategNamePath(categVO.getCategNamePath())
                 .setIndicatorCategoryId(funcRow.getIndicatorCategoryId());
 
-        List<TreatItemIndicatorEntity> subRows=ShareUtil.XCollection.map(saveTreatItem.getIndicators(),
-                i->CopyWrapper.create(TreatItemIndicatorEntity::new).endFrom(i,v->v.setTreatItemIndicatorId(i.getRefId())));
-        return dao.tranSave(row,subRows,false);
+        List<String> expressionIds = new ArrayList<>();
+        Optional.ofNullable(saveTreatItem.getExpresssions())
+                .ifPresent(i -> i.forEach(expression -> expressionIds.add(expression.getIndicatorExpressionId())));
+        return dao.tranSaveWithExpressions(row, expressionIds);
     }
     /**
     * @param
@@ -148,7 +143,7 @@ public class TreatItemBiz{
      * @return
      */
     public Boolean delRefIndicator(DelRefIndicatorRequest delRefIndicator ) {
-        return dao.tranDeleteSub(delRefIndicator.getIds(),"关联指标不存在或已删除");
+        return daoExpressionRef.tranDeleteByExpressionId(delRefIndicator.getIds());
     }
 
     /**

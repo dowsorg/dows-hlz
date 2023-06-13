@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapp
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.util.ReflectUtil;
+import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.EnumExperimentParticipator;
 import org.dows.hep.api.enums.ExperimentStatusCode;
 import org.dows.hep.api.enums.ParticipatorTypeEnum;
@@ -21,7 +22,10 @@ import org.dows.hep.entity.ExperimentActorEntity;
 import org.dows.hep.entity.ExperimentGroupEntity;
 import org.dows.hep.entity.ExperimentOrgEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
-import org.dows.hep.service.*;
+import org.dows.hep.service.ExperimentActorService;
+import org.dows.hep.service.ExperimentGroupService;
+import org.dows.hep.service.ExperimentOrgService;
+import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
@@ -46,9 +50,6 @@ public class ExperimentGroupBiz {
     private final IdGenerator idGenerator;
 
     private final ExperimentOrgService experimentOrgService;
-
-    private final ExperimentInstanceService experimentInstanceService;
-
     /**
      * @param
      * @return
@@ -67,10 +68,12 @@ public class ExperimentGroupBiz {
                 .eq(ExperimentGroupEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
                 .eq(ExperimentGroupEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
                 .list();
+
         // todo 并且这个的账号是队长
         ExperimentParticipatorEntity experimentParticipatorEntity = experimentParticipatorService.lambdaQuery()
                 .eq(ExperimentParticipatorEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
                 .eq(ExperimentParticipatorEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
+                .eq(ExperimentParticipatorEntity::getAccountId,createGroup.getAccountId())
                 .eq(ExperimentParticipatorEntity::getDeleted, false)
                 .eq(ExperimentParticipatorEntity::getParticipatorType, ParticipatorTypeEnum.CAPTAIN.getCode())
                 .oneOpt().orElse(null);
@@ -81,10 +84,12 @@ public class ExperimentGroupBiz {
         if(experimentParticipatorEntity == null){
             throw new ExperimentException(ExperimentStatusCode.NOT_CAPTAIN);
         }
-        return experimentGroupService.lambdaUpdate()
+        // 更新组名
+         return experimentGroupService.lambdaUpdate()
                 .eq(ExperimentGroupEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
                 .eq(ExperimentGroupEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
                 .update(ExperimentGroupEntity.builder()
+                        .groupState(EnumExperimentGroupStatus.ASSIGN_FUNC.getCode())
                         .groupName(createGroup.getGroupName())
                         .build());
     }
@@ -254,4 +259,33 @@ public class ExperimentGroupBiz {
         return experimentParticipatorService.updateById(entity);
     }
 
+    /**
+     * @param
+     * @return
+     * @说明: 根据小组ID获取小组信息
+     * @关联表: experiment_group
+     * @工时: 0.5H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月13日 上午11:02:07
+     */
+    public ExperimentGroupResponse getGroupInfoByExperimentId(String experimentGroupId,String experimentGInstanceId) {
+        ExperimentGroupEntity groupEntity = experimentGroupService.lambdaQuery()
+                .eq(ExperimentGroupEntity::getExperimentGroupId,experimentGroupId)
+                .eq(ExperimentGroupEntity::getExperimentInstanceId,experimentGInstanceId)
+                .eq(ExperimentGroupEntity::getDeleted,false)
+                .oneOpt().orElse(null);
+        if(groupEntity == null) {
+            throw new ExperimentException(ExperimentStatusCode.NO_EXIST_GROUP_ID);
+        }
+        ExperimentGroupResponse groupResponse = ExperimentGroupResponse.builder()
+                .experimentGroupId(groupEntity.getExperimentGroupId())
+                .experimentInstanceId(groupEntity.getExperimentInstanceId())
+                .groupNo(groupEntity.getGroupNo())
+                .groupName(groupEntity.getGroupName())
+                .groupAlias(groupEntity.getGroupAlias())
+                .groupState(groupEntity.getGroupState())
+                .build();
+        return groupResponse;
+    }
 }

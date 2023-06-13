@@ -2,6 +2,8 @@ package org.dows.hep.biz.tenant.experiment;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.response.QuestionResponse;
@@ -35,7 +37,7 @@ public class ExperimentSchemeManageBiz {
      * @description 预生成方案设计试卷-分配实验的时候调用
      * @date 2023/6/1 9:33
      */
-    public void preHandleExperimentScheme(String experimentInstanceId, String caseInstanceId, List<String> experimentGroupIds) {
+    public void preHandleExperimentScheme(String experimentInstanceId, String caseInstanceId, List<String> experimentGroupIds, String schemeSetting) {
         Assert.notNull(experimentInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
         Assert.notNull(caseInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
         Assert.notEmpty(experimentGroupIds, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
@@ -60,11 +62,28 @@ public class ExperimentSchemeManageBiz {
                     .containsVideo(caseScheme.getContainsVideo())
                     .videoQuestion(caseScheme.getVideoQuestion())
                     .state(0)
+                    .schemeSetting(schemeSetting)
                     .build();
             entityList.add(entity);
 
             // experiment-scheme-item
             List<ExperimentSchemeItemEntity> localItemList = new ArrayList<>();
+            // set video-item
+            Integer containsVideo = caseScheme.getContainsVideo();
+            if (containsVideo != null && containsVideo == 1) {
+                String videoQuestion = caseScheme.getVideoQuestion();
+                JSONObject jsonObject = JSON.parseObject(videoQuestion);
+                String title = jsonObject.getString("title");
+                String content = jsonObject.getString("content");
+                ExperimentSchemeItemEntity videoItem = ExperimentSchemeItemEntity.builder()
+                        .experimentSchemeItemId(idGenerator.nextIdStr())
+                        .experimentSchemeItemPid("0")
+                        .questionTitle(title)
+                        .questionDescr(content)
+                        .build();
+                localItemList.add(videoItem);
+            }
+            // set question-item
             List<QuestionSectionItemResponse> sectionItemList = caseScheme.getSectionItemList();
             if (CollUtil.isNotEmpty(sectionItemList)) {
                 sectionItemList.forEach(sectionItem -> {
@@ -72,15 +91,14 @@ public class ExperimentSchemeManageBiz {
                     List<ExperimentSchemeItemEntity> itemEntities = convertToFlatList(question);
                     localItemList.addAll(itemEntities);
                 });
-
-                for (int i = 0; i < localItemList.size(); i++) {
-                    ExperimentSchemeItemEntity item = localItemList.get(i);
-                    item.setSeq(i);
-                    item.setExperimentSchemeId(entity.getExperimentSchemeId());
-                }
-
-                itemEntityList.addAll(localItemList);
             }
+            // sort
+            for (int i = 0; i < localItemList.size(); i++) {
+                ExperimentSchemeItemEntity item = localItemList.get(i);
+                item.setSeq(i);
+                item.setExperimentSchemeId(entity.getExperimentSchemeId());
+            }
+            itemEntityList.addAll(localItemList);
         });
 
         experimentSchemeService.saveBatch(entityList);

@@ -34,8 +34,8 @@ public class FoodNutientRest {
     */
     @Operation(summary = "获取营养关键指标")
     @GetMapping("v1/baseIntervene/foodNutient/listFoodNutient")
-    public List<FoodNutientResponse> listFoodNutient() {
-        return foodNutientBiz.listFoodNutient();
+    public List<FoodNutientResponse> listFoodNutient(@Validated String appId) {
+        return foodNutientBiz.listFoodNutient(appId);
     }
 
     /**

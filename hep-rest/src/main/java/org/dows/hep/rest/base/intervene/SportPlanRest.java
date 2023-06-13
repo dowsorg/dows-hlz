@@ -42,8 +42,8 @@ public class SportPlanRest {
     */
     @Operation(summary = "获取运动方案信息")
     @GetMapping("v1/baseIntervene/sportPlan/getSportPlan")
-    public SportPlanInfoResponse getSportPlan(@Validated String sportPlanId) {
-        return sportPlanBiz.getSportPlan(sportPlanId);
+    public SportPlanInfoResponse getSportPlan(@Validated String appId,  @Validated String sportPlanId) {
+        return sportPlanBiz.getSportPlan(appId, sportPlanId);
     }
 
     /**

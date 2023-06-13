@@ -2,21 +2,16 @@ package org.dows.hep.rest.user.experiment;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.user.experiment.request.CreateGroupRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentParticipatorRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
-import org.dows.hep.api.user.experiment.response.ExperimentSchemeItemResponse;
-import org.dows.hep.biz.user.experiment.ExperimentBaseBiz;
 import org.dows.hep.biz.user.experiment.ExperimentGroupBiz;
+import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
 import org.dows.hep.entity.ExperimentOrgEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -30,7 +25,7 @@ import java.util.List;
 @RestController
 @Tag(name = "实验小组", description = "实验小组")
 public class ExperimentGroupRest {
-    private final ExperimentBaseBiz baseBiz;
+    private final ExperimentSchemeBiz experimentSchemeBiz;
     private final ExperimentGroupBiz experimentGroupBiz;
 
     /**
@@ -55,19 +50,6 @@ public class ExperimentGroupRest {
                                                             @RequestParam @Validated String experimentInstanceId,
                                                             @RequestParam @Validated String periods) {
         return experimentGroupBiz.listExperimentGroupOrg(experimentGroupId,experimentInstanceId,periods);
-    }
-
-    /**
-     * 获取该用户、该实验的方案设计 item 题目
-     * @param
-     * @return
-     */
-    @Operation(summary = "获取该用户、该实验的方案设计 item")
-    @PostMapping("v1/userExperiment/experimentGroup/listExperimentScheme")
-    public List<ExperimentSchemeItemResponse> listExperimentScheme(HttpServletRequest request, String experimentInstanceId) {
-        String accountId = baseBiz.getAccountId(request);
-//        return experimentGroupBiz.listExperimentScheme(accountId, experimentInstanceId);
-        return null;
     }
 
     /**
@@ -101,6 +83,17 @@ public class ExperimentGroupRest {
     @PostMapping("v1/userExperiment/experimentGroup/allotGroupMembers")
     public Boolean allotGroupMembers(@RequestBody @Validated ExperimentParticipatorRequest request) {
         return experimentGroupBiz.allotGroupMembers(request);
+    }
+
+    /**
+     * 根据小组ID获取小组信息
+     * @param
+     * @return
+     */
+    @Operation(summary = "根据小组ID获取小组信息")
+    @GetMapping("v1/userExperiment/experimentGroup/getGroupInfoByExperimentId/{experimentGroupId}/{experimentGInstanceId}")
+    public ExperimentGroupResponse getGroupInfoByExperimentId(@PathVariable @Validated String experimentGroupId,@PathVariable @Validated String experimentGInstanceId) {
+        return experimentGroupBiz.getGroupInfoByExperimentId(experimentGroupId,experimentGInstanceId);
     }
 
 }

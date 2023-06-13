@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author : wuzl
@@ -36,6 +37,9 @@ public class EventDao extends BaseSubDao<EventService, EventEntity, EventEvalSer
 
     @Autowired
     protected EventActionDao subDao;
+
+    @Autowired
+    protected IndicatorExpressionRefDao expressionRefDao;
 
 
     //region override
@@ -111,9 +115,16 @@ public class EventDao extends BaseSubDao<EventService, EventEntity, EventEvalSer
 
     @Transactional(rollbackFor = Exception.class)
     public boolean tranSave(EventEntity lead, List<EventEvalEntity> subs, LinkedHashMap<EventActionEntity,List<EventActionIndicatorEntity>> subsX) {
-        AssertUtil.falseThenThrow(coreTranSave(lead, subs, subsX, false, true))
+        AssertUtil.falseThenThrow(coreTranSave(lead, subs, subsX, false, defaultUseLogicId))
                 .throwMessage(failedSaveMessage);
         return true;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public boolean tranSave(EventEntity lead, List<EventActionEntity> actions, Map<String,List<String>> mapExpressions) {
+        AssertUtil.falseThenThrow(coreTranSave(lead, actions,  defaultUseLogicId))
+                .throwMessage(failedSaveMessage);
+        return expressionRefDao.tranUpdateReasonId(mapExpressions);
     }
 
     //region save
@@ -123,6 +134,12 @@ public class EventDao extends BaseSubDao<EventService, EventEntity, EventEvalSer
             return false;
         }
         return subDao.saveOrUpdateBatch(lead.getEventId(),subsX,useLogicId,true);
+    }
+    protected boolean coreTranSave(EventEntity lead, List<EventActionEntity> actions, boolean useLogicId) {
+        if (!saveOrUpdate(lead, useLogicId)) {
+            return false;
+        }
+        return subDao.saveOrUpdateBatch(actions,useLogicId,true);
     }
 
 

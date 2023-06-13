@@ -3,12 +3,15 @@ package org.dows.hep.api.enums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Arrays;
+
 /**
  * @author runsix
  */
 @AllArgsConstructor
 @Getter
 public enum EnumIndicatorExpressionSource {
+  NONE(0,""),
   INDICATOR_MANAGEMENT(1, "指标管理"),
   INDICATOR_JUDGE_RISK_FACTOR(2, "判断指标-危险因素"),
   INDICATOR_OPERATOR_INGREDIENT(3, "操作指标-食材"),
@@ -22,4 +25,11 @@ public enum EnumIndicatorExpressionSource {
 
   private final Integer type;
   private final String name;
+
+  public static EnumIndicatorExpressionSource of(Integer code){
+    return Arrays.stream(EnumIndicatorExpressionSource.values())
+            .filter(i->i.getType().equals(code))
+            .findFirst()
+            .orElse(NONE);
+  }
 }

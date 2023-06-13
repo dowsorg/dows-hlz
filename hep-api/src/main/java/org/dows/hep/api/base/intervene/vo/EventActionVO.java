@@ -31,6 +31,7 @@ public class EventActionVO {
     @Schema(title = "处理措施描述")
     private String actionDesc;
 
-    @Schema(title = "处理措施影响指标列表")
-    private List<EventIndicatorVO> indicators;
+
+    @Schema(title = "处理措施影响指标公式列表(公式source=9)")
+    private List<IndicatorExpressionVO> actionExpresssions;
 }

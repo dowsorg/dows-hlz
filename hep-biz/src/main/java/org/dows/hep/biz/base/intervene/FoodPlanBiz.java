@@ -79,7 +79,7 @@ public class FoodPlanBiz{
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public FoodDishesInfoResponse getFoodDishes(String foodDishesId ) {
+    public FoodDishesInfoResponse getFoodDishes(String appId,String foodDishesId ) {
         FoodDishesEntity row= AssertUtil.getNotNull(daoDishes.getById(foodDishesId))
                 .orElseThrow("菜肴不存在或已删除，请刷新");
 
@@ -235,7 +235,7 @@ public class FoodPlanBiz{
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public FoodCookBookInfoResponse getFoodCookbook(String foodCookbookId ) {
+    public FoodCookBookInfoResponse getFoodCookbook(String appId, String foodCookbookId ) {
         FoodCookbookEntity row= AssertUtil.getNotNull(daoCookbook.getById(foodCookbookId))
                 .orElseThrow("食谱不存在或已删除，请刷新");
 
@@ -429,7 +429,7 @@ public class FoodPlanBiz{
         StringBuilder sb=new StringBuilder();
         for(FoodDishesMaterialEntity item:details){
             if(sb.length()>0){
-                sb.append(" ");
+                sb.append("  ");
             }
             sb.append(String.format("%s%sg",item.getFoodMaterialName(),
                     BigDecimalOptional.valueOf(item.getWeight())

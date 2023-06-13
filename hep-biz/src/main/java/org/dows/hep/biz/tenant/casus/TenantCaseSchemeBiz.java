@@ -66,7 +66,7 @@ public class TenantCaseSchemeBiz {
         // check is exists
         if (CaseSchemeSourceEnum.TENANT.equals(caseSchemeSourceEnum)) {
             CaseSchemeEntity oriCaseSchemeEntity = getByInstanceId(caseScheme.getCaseInstanceId());
-            if (BeanUtil.isEmpty(oriCaseSchemeEntity)) {
+            if (BeanUtil.isNotEmpty(oriCaseSchemeEntity)) {
                 throw new BizException(CaseESCEnum.CASE_SCHEME_ALREADY_EXISTS.getDescr());
             }
         }

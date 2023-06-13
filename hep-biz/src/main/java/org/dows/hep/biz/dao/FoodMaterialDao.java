@@ -38,6 +38,10 @@ public class FoodMaterialDao extends BaseSubDao<FoodMaterialService,FoodMaterial
     @Autowired
     protected FoodMaterialNutrientService subServiceX;
 
+    @Autowired
+    protected IndicatorExpressionRefDao indicatorExpressionRefDao;
+
+
     //region override
 
     @Override
@@ -109,6 +113,14 @@ public class FoodMaterialDao extends BaseSubDao<FoodMaterialService,FoodMaterial
         AssertUtil.falseThenThrow(coreTranSave(lead,indicators,nutrients,false, true,false))
                 .throwMessage(failedSaveMessage );
         return true;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public boolean tranSaveWithExpressions(FoodMaterialEntity lead, List<FoodMaterialNutrientEntity> nutrients,List<String> expressionIds){
+        AssertUtil.falseThenThrow(coreTranSave(lead,null,nutrients,false, true,defaultUseLogicId))
+                .throwMessage(failedSaveMessage );
+
+        return indicatorExpressionRefDao.tranUpdateReasonId(lead.getFoodMaterialId(),expressionIds);
     }
 
 
@@ -191,6 +203,7 @@ public class FoodMaterialDao extends BaseSubDao<FoodMaterialService,FoodMaterial
         }
         if(delSub) {
             delSubByLeadIdX(ids, dftIfSubEmpty);
+            indicatorExpressionRefDao.tranDeleteByReasonId(ids);
         }
         return true;
     }

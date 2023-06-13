@@ -481,7 +481,7 @@ public class ExperimentOrgViewBiz {
      * @开始时间:
      * @创建时间: 2023年6月02日 下午16:26:34
      */
-    public Map<String, Object> getIndicatorBaseInfo(String indicatorViewBaseInfoId,
+    public Map<String, Object> getIndicatorBaseInfo(String experimentIndicatorViewBaseInfoId,
                                                     String appId,
                                                     String experimentPersonId,
                                                     String periods
@@ -496,7 +496,7 @@ public class ExperimentOrgViewBiz {
                         ExperimentViewBaseInfoDescrEntity::getName,
                         ExperimentViewBaseInfoDescrEntity::getSeq)
                 .eq(ExperimentViewBaseInfoDescrEntity::getAppId, appId)
-                .eq(ExperimentViewBaseInfoDescrEntity::getIndicatorViewBaseInfoId, indicatorViewBaseInfoId)
+                .eq(ExperimentViewBaseInfoDescrEntity::getExperimentindicatorViewBaseInfoId, experimentIndicatorViewBaseInfoId)
                 .eq(ExperimentViewBaseInfoDescrEntity::getDeleted, false)
                 .list();
         descrList = descrList.stream().sorted(Comparator.comparing(iteam -> iteam.getSeq())).collect(Collectors.toList());
@@ -544,7 +544,7 @@ public class ExperimentOrgViewBiz {
                         ExperimentViewBaseInfoMonitorEntity::getName,
                         ExperimentViewBaseInfoMonitorEntity::getSeq)
                 .eq(ExperimentViewBaseInfoMonitorEntity::getAppId, appId)
-                .eq(ExperimentViewBaseInfoMonitorEntity::getIndicatorViewBaseInfoId, indicatorViewBaseInfoId)
+                .eq(ExperimentViewBaseInfoMonitorEntity::getExperimentIndicatorViewBaseInfoId, experimentIndicatorViewBaseInfoId)
                 .eq(ExperimentViewBaseInfoMonitorEntity::getDeleted, false)
                 .list()
                 .stream().sorted(Comparator.comparing(iteam -> iteam.getSeq())).collect(Collectors.toList());
@@ -611,7 +611,7 @@ public class ExperimentOrgViewBiz {
                         ExperimentViewBaseInfoSingleEntity::getSeq,
                         ExperimentViewBaseInfoSingleEntity::getSeq)
                 .eq(ExperimentViewBaseInfoSingleEntity::getAppId, appId)
-                .eq(ExperimentViewBaseInfoSingleEntity::getIndicatorViewBaseInfoId, indicatorViewBaseInfoId)
+                .eq(ExperimentViewBaseInfoSingleEntity::getExperimentIndicatorViewBaseInfoId, experimentIndicatorViewBaseInfoId)
                 .eq(ExperimentViewBaseInfoSingleEntity::getDeleted, false)
                 .list()
                 .stream().sorted(Comparator.comparing(iteam -> iteam.getSeq())).collect(Collectors.toList());

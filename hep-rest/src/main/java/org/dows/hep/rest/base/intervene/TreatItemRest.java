@@ -42,8 +42,8 @@ public class TreatItemRest {
     */
     @Operation(summary = "获取治疗项目信息")
     @GetMapping("v1/baseIntervene/treatItem/infoTreatItem")
-    public TreatItemInfoResponse infoTreatItem( @Validated String treatItemId ) {
-        return treatItemBiz.infoTreatItem(treatItemId);
+    public TreatItemInfoResponse infoTreatItem(@Validated String appId, @Validated String treatItemId ) {
+        return treatItemBiz.infoTreatItem(appId, treatItemId);
     }
 
     /**

@@ -6,12 +6,17 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.dows.hep.api.base.intervene.request.FindSportRequest;
+import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.SportItemEntity;
 import org.dows.hep.entity.SportItemIndicatorEntity;
 import org.dows.hep.service.SportItemIndicatorService;
 import org.dows.hep.service.SportItemService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * @author : wuzl
@@ -25,6 +30,9 @@ public class SportItemDao extends BaseSubDao<SportItemService,SportItemEntity,Sp
     public SportItemDao() {
        super("运动项目不存在或已删除，请刷新");
    }
+
+    @Autowired
+    protected IndicatorExpressionRefDao indicatorExpressionRefDao;
 
     //region override
 
@@ -98,6 +106,23 @@ public class SportItemDao extends BaseSubDao<SportItemService,SportItemEntity,Sp
                 .eq(ShareUtil.XObject.notEmpty(req.getState()), getColState(), req.getState())
                 .select(cols));
 
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public boolean tranSaveWithExpressions(SportItemEntity lead,  List<String> expressionIds){
+        AssertUtil.falseThenThrow(coreTranSave(lead,null,false, defaultUseLogicId))
+                .throwMessage(failedSaveMessage );
+
+        return indicatorExpressionRefDao.tranUpdateReasonId(lead.getSportItemId(),expressionIds);
+    }
+
+    @Override
+    protected boolean coreTranDelete(List<String> ids, boolean delSub, boolean dftIfSubEmpty) {
+        if(!super.coreTranDelete(ids, false, dftIfSubEmpty)){
+            return false;
+        }
+        indicatorExpressionRefDao.tranDeleteByReasonId(ids);
+        return true;
     }
 
 }

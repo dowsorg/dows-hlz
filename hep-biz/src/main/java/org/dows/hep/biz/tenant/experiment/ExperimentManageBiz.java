@@ -17,6 +17,7 @@ import org.dows.account.response.AccountUserResponse;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
 import org.dows.hep.api.core.CreateExperimentForm;
+import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.EnumExperimentParticipator;
 import org.dows.hep.api.enums.ExperimentModeEnum;
 import org.dows.hep.api.enums.ExperimentStateEnum;
@@ -27,6 +28,7 @@ import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.exception.ExperimentParticipatorException;
 import org.dows.hep.api.tenant.experiment.request.*;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
+import org.dows.hep.biz.user.experiment.ExperimentGroupBiz;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -78,6 +80,8 @@ public class ExperimentManageBiz {
     private final AccountOrgApi accountOrgApi;
     private final AccountOrgGeoApi accountOrgGeoApi;
     private final CaseOrgFeeService caseOrgFeeService;
+    private final ExperimentSchemeManageBiz experimentSchemeManageBiz;
+    private final ExperimentGroupBiz experimentGroupBiz;
 
     // 事件发布
     private final ApplicationEventPublisher applicationEventPublisher;
@@ -117,6 +121,7 @@ public class ExperimentManageBiz {
                     .experimentName(experimentInstance.getExperimentName())
                     .accountId(instance.getAccountId())
                     .accountName(instance.getAccountName())
+                    .state(0)
                     .model(experimentInstance.getModel())
                     .participatorType(0)
                     .build();
@@ -307,6 +312,7 @@ public class ExperimentManageBiz {
                     .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
                     .groupAlias(groupSetting.getGroupAlias())
                     .memberCount(groupSetting.getMemberCount())
+                    .groupState(EnumExperimentGroupStatus.GROUP_RENAME.getCode())
                     .groupNo(groupSetting.getGroupNo())
                     //.groupName(groupSetting.getGroupName())
                     .build();
@@ -328,6 +334,7 @@ public class ExperimentManageBiz {
                         .accountName(experimentParticipator.getParticipatorName())
                         .groupNo(groupSetting.getGroupNo())
                         .groupAlias(groupSetting.getGroupAlias())
+                        .state(0)
                         .experimentGroupId(experimentGroupEntity.getExperimentGroupId())
                         .participatorType(2)
                         .build();
@@ -363,6 +370,23 @@ public class ExperimentManageBiz {
         experimentGroupService.saveOrUpdateBatch(experimentGroupEntitys);
         // 保存实验参与人[学生]
         experimentParticipatorService.saveOrUpdateBatch(collect);
+
+        // 预处理方案设计
+        String experimentInstanceId = experimentGroupSettingRequest.getExperimentInstanceId();
+        String appId = experimentGroupSettingRequest.getAppId();
+        CreateExperimentForm allotData = getAllotData(experimentInstanceId, appId);
+        ExperimentSetting experimentSetting = allotData.getExperimentSetting();
+        ExperimentSetting.SchemeSetting schemeSetting = Optional.ofNullable(experimentSetting)
+                .map(ExperimentSetting::getSchemeSetting)
+                .orElse(null);
+        if (BeanUtil.isNotEmpty(schemeSetting)) {
+            List<String> groupIds = experimentGroupEntitys.stream()
+                    .map(ExperimentGroupEntity::getExperimentGroupId)
+                    .toList();
+            String settingStr = JSONUtil.toJsonStr(schemeSetting);
+            experimentSchemeManageBiz.preHandleExperimentScheme(experimentInstanceId, caseInstanceId, groupIds, settingStr);
+        }
+
         return true;
     }
 

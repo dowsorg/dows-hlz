@@ -6,13 +6,17 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.dows.hep.api.base.intervene.request.FindTreatRequest;
+import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
-import org.dows.hep.entity.FoodMaterialEntity;
 import org.dows.hep.entity.TreatItemEntity;
 import org.dows.hep.entity.TreatItemIndicatorEntity;
 import org.dows.hep.service.TreatItemIndicatorService;
 import org.dows.hep.service.TreatItemService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * @author : wuzl
@@ -26,6 +30,10 @@ public class TreatItemDao extends BaseSubDao<TreatItemService,TreatItemEntity,Tr
     public TreatItemDao() {
         super("干预项目不存在或已删除,请刷新");
     }
+
+    @Autowired
+    protected IndicatorExpressionRefDao indicatorExpressionRefDao;
+
 
 
 
@@ -86,5 +94,22 @@ public class TreatItemDao extends BaseSubDao<TreatItemService,TreatItemEntity,Tr
                 .notIn(ShareUtil.XCollection.notEmpty(req.getExcIds()), getColId(), req.getExcIds())
                 .eq(ShareUtil.XObject.notEmpty(req.getState()), getColState(), req.getState())
                 .select(cols));
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public boolean tranSaveWithExpressions(TreatItemEntity lead, List<String> expressionIds){
+        AssertUtil.falseThenThrow(coreTranSave(lead,null,false, defaultUseLogicId))
+                .throwMessage(failedSaveMessage );
+
+        return indicatorExpressionRefDao.tranUpdateReasonId(lead.getTreatItemId(),expressionIds);
+    }
+
+    @Override
+    protected boolean coreTranDelete(List<String> ids, boolean delSub, boolean dftIfSubEmpty) {
+        if(!super.coreTranDelete(ids, false, dftIfSubEmpty)){
+            return false;
+        }
+        indicatorExpressionRefDao.tranDeleteByReasonId(ids);
+        return true;
     }
 }

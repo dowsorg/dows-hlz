@@ -4,13 +4,15 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.servlet.http.HttpServletRequest;
 import org.dows.account.util.JwtUtil;
+import org.dows.framework.crud.api.CrudContextHolder;
+import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
 import org.dows.hep.api.enums.EnumToken;
+import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
 import org.dows.hep.biz.vo.LoginContextVO;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 
 import java.math.BigDecimal;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -76,5 +78,33 @@ public class ShareBiz {
         //TODO calcGameDay
         return 1;
     }
+
+    //region 获取公式
+    public static List<IndicatorExpressionResponseRs> getExpressionsByReasonId(IndicatorExpressionBiz indicatorExpressionBiz, String appId,String reasonId) {
+        if (ShareUtil.XObject.isEmpty(reasonId)) {
+            return Collections.emptyList();
+        }
+        indicatorExpressionBiz = Optional.ofNullable(indicatorExpressionBiz).orElseGet(() -> CrudContextHolder.getBean(IndicatorExpressionBiz.class));
+        Map<String, List<IndicatorExpressionResponseRs>> map = new HashMap<>(1);
+        Set<String> reasonIds = new HashSet<>();
+        reasonIds.add(reasonId);
+        indicatorExpressionBiz.populateKReasonIdVIndicatorExpressionResponseRsListMap(appId, reasonIds, map);
+        List<IndicatorExpressionResponseRs> rst = map.getOrDefault(reasonId, Collections.emptyList());
+        rst.sort(Comparator.comparingLong(IndicatorExpressionResponseRs::getId));
+        reasonIds.clear();
+        map.clear();
+        return rst;
+    }
+    public static Map<String, List<IndicatorExpressionResponseRs>> getExpressionsByReasonIds(IndicatorExpressionBiz indicatorExpressionBiz, String appId, Set<String> reasonIds){
+        if(ShareUtil.XObject.isEmpty(reasonIds)){
+            return Collections.emptyMap();
+        }
+        indicatorExpressionBiz=Optional.ofNullable(indicatorExpressionBiz).orElseGet(()-> CrudContextHolder.getBean(IndicatorExpressionBiz.class));
+        Map<String, List<IndicatorExpressionResponseRs>> rst=new HashMap<>(reasonIds.size());
+        indicatorExpressionBiz.populateKReasonIdVIndicatorExpressionResponseRsListMap(appId,reasonIds,rst);
+        rst.values().forEach(i->i.sort(Comparator.comparingLong(IndicatorExpressionResponseRs::getId)));
+        return rst;
+    }
+    //endreigon
 
 }

@@ -43,10 +43,10 @@ public class ExperimentIndicatorJudgeHealthGuidanceEntity implements CrudEntity 
     private String appId;
 
     @Schema(title = "指标功能ID")
-    private String indicatorFuncId;
+    private String experimentIndicatorFuncId;
 
     @Schema(title = "指标分类ID")
-    private String indicatorCategoryId;
+    private String experimentIndicatorCategoryId;
 
     @Schema(title = "危险因素名称")
     private String name;

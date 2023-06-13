@@ -32,7 +32,7 @@ public class FoodNutientBiz{
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public List<FoodNutientResponse> listFoodNutient() {
+    public List<FoodNutientResponse> listFoodNutient(String appId) {
         List<IndicatorInstanceEntity> rows = dao.getIndicators4Nutrient(IndicatorInstanceEntity::getId,
                 IndicatorInstanceEntity::getIndicatorInstanceId,
                 IndicatorInstanceEntity::getIndicatorName,

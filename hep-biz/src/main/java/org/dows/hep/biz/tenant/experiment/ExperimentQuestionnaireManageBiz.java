@@ -92,6 +92,7 @@ public class ExperimentQuestionnaireManageBiz {
                         List<ExperimentQuestionnaireItemEntity> localItemList = new ArrayList<>();
                         String caseQuestionnaireId = orgQuestionnaire.getCaseQuestionnaireId();
                         if (CollUtil.isNotEmpty(collect)) {
+                            // set item
                             QuestionSectionResponse questionSectionResponse = collect.get(caseQuestionnaireId);
                             List<QuestionSectionItemResponse> sectionItemList = questionSectionResponse.getSectionItemList();
                             if (CollUtil.isNotEmpty(sectionItemList)) {
@@ -100,15 +101,14 @@ public class ExperimentQuestionnaireManageBiz {
                                     List<ExperimentQuestionnaireItemEntity> itemEntities = convertToFlatList(question);
                                     localItemList.addAll(itemEntities);
                                 });
-
-                                for (int i = 0; i < localItemList.size(); i++) {
-                                    ExperimentQuestionnaireItemEntity item = localItemList.get(i);
-                                    item.setSeq(i);
-                                    item.setExperimentQuestionnaireId(entity.getExperimentQuestionnaireId());
-                                }
-
-                                itemEntityList.addAll(localItemList);
                             }
+                            // sort
+                            for (int i = 0; i < localItemList.size(); i++) {
+                                ExperimentQuestionnaireItemEntity item = localItemList.get(i);
+                                item.setSeq(i);
+                                item.setExperimentQuestionnaireId(entity.getExperimentQuestionnaireId());
+                            }
+                            itemEntityList.addAll(localItemList);
                         }
                     });
                 }
