@@ -21,6 +21,7 @@ import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.EnumExperimentParticipator;
 import org.dows.hep.api.enums.ExperimentModeEnum;
 import org.dows.hep.api.enums.ExperimentStateEnum;
+import org.dows.hep.api.event.AllotEvent;
 import org.dows.hep.api.event.ExperimentEvent;
 import org.dows.hep.api.event.StartEvent;
 import org.dows.hep.api.event.SuspendEvent;
@@ -181,6 +182,9 @@ public class ExperimentManageBiz {
         }
         // 保存实验计时器
         experimentTimerService.saveBatch(experimentTimerEntities);
+
+        // 发布实验分配事件
+        applicationEventPublisher.publishEvent(new AllotEvent(experimentTimerEntities));
         return experimentInstance.getExperimentInstanceId();
     }
 
@@ -202,17 +206,19 @@ public class ExperimentManageBiz {
         Map<String, Integer> durationMap = sandSetting.getDurationMap();
         // 开始时间，如果是标准模式，那么需要减去方案设计截止时间
         long startTime = experimentInstance.getStartTime().getTime();
-        // 方案设计截止时间
-        long time1 = experimentSetting.getSchemeSetting().getSchemeEndTime().getTime();
-
 
         // 一期开始时间=实验开始时间-方案设计时间,第一期没有间隔时间
         long pst = 0L;
         // 定义一期结束时间
         long pet = 0L;
         if (experimentInstance.getModel() == ExperimentModeEnum.STANDARD.getCode()) {
-            // 如果是标准模式，一期开始时间=实验开始时间-方案设计时间,第一期没有间隔时间
-            pst = startTime - time1;
+            ExperimentSetting.SchemeSetting schemeSetting = experimentSetting.getSchemeSetting();
+            if(schemeSetting != null) {
+                // 方案设计截止时间
+                long time1 = schemeSetting.getSchemeEndTime().getTime();
+                // 如果是标准模式，一期开始时间=实验开始时间-方案设计时间,第一期没有间隔时间
+                pst = startTime - time1;
+            }
         } else {
             pst = startTime;
         }
@@ -659,7 +665,7 @@ public class ExperimentManageBiz {
      */
     public void restart(ExperimentRestartRequest experimentRestartRequest) {
         ExperimentEvent experimentEvent;
-        if(experimentRestartRequest.getPaused()) {
+        if (experimentRestartRequest.getPaused()) {
             experimentEvent = new SuspendEvent(experimentRestartRequest);
         } else {
             experimentEvent = new StartEvent(experimentRestartRequest);
