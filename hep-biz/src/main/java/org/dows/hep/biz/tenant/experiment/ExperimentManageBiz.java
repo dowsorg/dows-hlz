@@ -259,14 +259,14 @@ public class ExperimentManageBiz {
         ExperimentInstanceEntity experimentInstance = experimentInstanceService.lambdaQuery()
                 .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
                 .last("limit 1")
-                .getEntity();
+                .one();
 
         ExperimentParticipatorEntity experimentParticipator = experimentParticipatorService.lambdaQuery()
                 .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
                 // todo 查找老师,后面定义为枚举，这里先实现
                 .eq(ExperimentParticipatorEntity::getParticipatorType, 0)
                 .last("limit 1")
-                .getEntity();
+                .one();
 
         List<ExperimentSettingEntity> experimentSettings = experimentSettingService.lambdaQuery()
                 .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
