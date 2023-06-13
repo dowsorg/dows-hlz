@@ -65,6 +65,17 @@ public class ExperimentSchemeManageBiz {
 
             // experiment-scheme-item
             List<ExperimentSchemeItemEntity> localItemList = new ArrayList<>();
+            // set video-item
+            Integer containsVideo = caseScheme.getContainsVideo();
+            if (containsVideo != null && containsVideo == 1) {
+                ExperimentSchemeItemEntity videoItem = ExperimentSchemeItemEntity.builder()
+                        .experimentSchemeItemId(idGenerator.nextIdStr())
+                        .experimentSchemeItemPid("0")
+                        .questionTitle(caseScheme.getVideoQuestion())
+                        .build();
+                localItemList.add(videoItem);
+            }
+            // set question-item
             List<QuestionSectionItemResponse> sectionItemList = caseScheme.getSectionItemList();
             if (CollUtil.isNotEmpty(sectionItemList)) {
                 sectionItemList.forEach(sectionItem -> {
@@ -72,15 +83,14 @@ public class ExperimentSchemeManageBiz {
                     List<ExperimentSchemeItemEntity> itemEntities = convertToFlatList(question);
                     localItemList.addAll(itemEntities);
                 });
-
-                for (int i = 0; i < localItemList.size(); i++) {
-                    ExperimentSchemeItemEntity item = localItemList.get(i);
-                    item.setSeq(i);
-                    item.setExperimentSchemeId(entity.getExperimentSchemeId());
-                }
-
-                itemEntityList.addAll(localItemList);
             }
+            // sort
+            for (int i = 0; i < localItemList.size(); i++) {
+                ExperimentSchemeItemEntity item = localItemList.get(i);
+                item.setSeq(i);
+                item.setExperimentSchemeId(entity.getExperimentSchemeId());
+            }
+            itemEntityList.addAll(localItemList);
         });
 
         experimentSchemeService.saveBatch(entityList);

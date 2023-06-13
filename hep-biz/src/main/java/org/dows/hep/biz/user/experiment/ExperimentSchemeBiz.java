@@ -15,8 +15,7 @@ import org.dows.hep.entity.ExperimentSchemeEntity;
 import org.dows.hep.service.ExperimentSchemeService;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @author lait.zhang
@@ -54,7 +53,8 @@ public class ExperimentSchemeBiz {
 
         List<ExperimentSchemeItemResponse> itemList = experimentSchemeItemBiz.listBySchemeId(entity.getExperimentSchemeId());
         setAuthority(itemList, experimentInstanceId, experimentGroupId, accountId);
-        result.setItemList(itemList);
+        List<ExperimentSchemeItemResponse> itemTreeList = convertList2Tree(itemList);
+        result.setItemList(itemTreeList);
 
         return result;
     }
@@ -145,5 +145,32 @@ public class ExperimentSchemeBiz {
                 }
             }
         });
+    }
+
+    private List<ExperimentSchemeItemResponse> convertList2Tree(List<ExperimentSchemeItemResponse> nodes) {
+        Map<String, ExperimentSchemeItemResponse> nodeMap = new HashMap<>();
+
+        // 构建节点映射，方便根据id查找节点
+        for (ExperimentSchemeItemResponse node : nodes) {
+            nodeMap.put(node.getExperimentSchemeItemId(), node);
+        }
+
+        List<ExperimentSchemeItemResponse> tree = new ArrayList<>();
+
+        // 遍历节点列表，将每个节点放入对应父节点的children中
+        for (ExperimentSchemeItemResponse node : nodes) {
+            String parentId = node.getExperimentSchemeItemPid();
+            if ("0".equals(parentId)) {
+                // 根节点
+                tree.add(node);
+            } else {
+                ExperimentSchemeItemResponse parent = nodeMap.get(parentId);
+                if (parent != null) {
+                    parent.getChildren().add(node);
+                }
+            }
+        }
+
+        return tree;
     }
 }

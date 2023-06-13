@@ -1,19 +1,23 @@
 package org.dows.hep.biz.user.experiment;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.enums.EnumExperimentParticipator;
 import org.dows.hep.api.enums.ExperimentStatusCode;
 import org.dows.hep.api.enums.ParticipatorTypeEnum;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.exception.ExperimentParticipatorException;
+import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.request.AllotActorRequest;
 import org.dows.hep.api.user.experiment.request.CreateGroupRequest;
+import org.dows.hep.api.user.experiment.request.ExperimentAllotSchemeRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentParticipatorRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
@@ -21,7 +25,10 @@ import org.dows.hep.entity.ExperimentActorEntity;
 import org.dows.hep.entity.ExperimentGroupEntity;
 import org.dows.hep.entity.ExperimentOrgEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
-import org.dows.hep.service.*;
+import org.dows.hep.service.ExperimentActorService;
+import org.dows.hep.service.ExperimentGroupService;
+import org.dows.hep.service.ExperimentOrgService;
+import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
@@ -47,7 +54,7 @@ public class ExperimentGroupBiz {
 
     private final ExperimentOrgService experimentOrgService;
 
-    private final ExperimentInstanceService experimentInstanceService;
+    private final ExperimentSchemeItemBiz experimentSchemeItemBiz;
 
     /**
      * @param
@@ -256,6 +263,22 @@ public class ExperimentGroupBiz {
         return experimentParticipatorService.updateById(entity);
     }
 
+    @DSTransactional
+    public Boolean allotSchemeMembers(ExperimentAllotSchemeRequest request) {
+        if (BeanUtil.isEmpty(request)) {
+            throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
+        }
+
+        // update participator
+//        List<ExperimentParticipatorEntity> entity = convertRequest2Entity(request);
+//        boolean res1 = experimentParticipatorService.updateBatchById(entity);
+
+        // update
+        handleExperimentScheme(request);
+
+        return Boolean.TRUE;
+    }
+
 
     /**
      * @param
@@ -286,4 +309,47 @@ public class ExperimentGroupBiz {
                 .build();
         return groupResponse;
     }
+
+    private void handleExperimentScheme(ExperimentAllotSchemeRequest request) {
+        List<ExperimentAllotSchemeRequest.ParticipatorWithScheme> allotList = request.getAllotList();
+        allotList.forEach(allotScheme -> {
+            String accountId = allotScheme.getAccountId();
+            List<String> experimentSchemeIds = allotScheme.getExperimentSchemeIds();
+            if (CollUtil.isNotEmpty(experimentSchemeIds)) {
+                experimentSchemeIds.forEach(experimentSchemeId -> {
+                    experimentSchemeItemBiz.updateAccount(experimentSchemeId, accountId);
+                });
+            }
+        });
+    }
+
+//    private List<ExperimentParticipatorEntity> convertRequest2Entity(ExperimentAllotSchemeRequest request) {
+//        List<ExperimentParticipatorEntity> result = new ArrayList<>();
+//
+//        // list ori
+//        List<ExperimentAllotSchemeRequest.ParticipatorWithScheme> allotList = request.getAllotList();
+//        List<String> experimentParticipatorIds = allotList.stream()
+//                .map(ExperimentAllotSchemeRequest.ParticipatorWithScheme::getExperimentParticipatorId)
+//                .toList();
+//        List<ExperimentParticipatorEntity> list = experimentParticipatorService.lambdaQuery()
+//                .in(ExperimentParticipatorEntity::getExperimentParticipatorId, experimentParticipatorIds)
+//                .list();
+//        if (CollUtil.isEmpty(list)) {
+//            throw new BizException(ExperimentESCEnum.DATA_NULL);
+//        }
+//        Map<String, Long> collect = list.stream()
+//                .collect(Collectors.toMap(ExperimentParticipatorEntity::getExperimentParticipatorId, ExperimentParticipatorEntity::getId));
+//
+//        allotList.forEach(allotScheme -> {
+//            List<String> idList = allotScheme.getExperimentSchemeIds();
+//            String idStr = String.join(",", idList);
+//            ExperimentParticipatorEntity entity = ExperimentParticipatorEntity.builder()
+//                    .id(collect.get(allotScheme.getExperimentParticipatorId()))
+//                    .experimentSchemeItemIds(idStr)
+//                    .build();
+//            result.add(entity);
+//        });
+//
+//        return result;
+//    }
 }

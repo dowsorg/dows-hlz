@@ -1,6 +1,8 @@
 package org.dows.hep.api.user.experiment.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
@@ -12,6 +14,8 @@ import java.util.List;
  * @date 2023/6/3 18:54
  */
 @Data
+@Builder
+@AllArgsConstructor
 @RequiredArgsConstructor
 @Schema(name = "ExperimentSchemeItemRequest 对象", title = "实验方案设计Item")
 public class ExperimentSchemeItemRequest {

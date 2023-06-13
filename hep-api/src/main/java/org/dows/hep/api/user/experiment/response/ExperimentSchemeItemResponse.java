@@ -1,5 +1,6 @@
 package org.dows.hep.api.user.experiment.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
@@ -34,10 +35,14 @@ public class ExperimentSchemeItemResponse {
     @Schema(title = "答题结果")
     private String questionResult;
 
+    @Schema(title = "是否可以编辑")
+    private Boolean canEdit;
+
     @Schema(title = "子")
     private List<ExperimentSchemeItemResponse> children;
 
-    @Schema(title = "是否可以编辑")
-    private Boolean canEdit;
+    @Schema(title = "item pid")
+    @JsonIgnore
+    private String experimentSchemeItemPid;
 
 }

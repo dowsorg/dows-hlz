@@ -1,7 +1,6 @@
 package org.dows.hep.biz.user.experiment;
 
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -14,7 +13,6 @@ import org.dows.hep.api.enums.ParticipatorTypeEnum;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
-import org.dows.hep.api.user.experiment.request.ExperimentAllotSchemeRequest;
 import org.dows.hep.api.user.experiment.request.GetExperimentGroupCaptainRequest;
 import org.dows.hep.api.user.experiment.response.GetExperimentGroupCaptainResponse;
 import org.dows.hep.biz.util.TimeUtil;
@@ -133,11 +131,6 @@ public class ExperimentParticipatorBiz {
         if (count == null || count == 0) {
             return Boolean.FALSE;
         }
-        return Boolean.TRUE;
-    }
-
-    @DSTransactional
-    public Boolean allotSchemeMembers(List<ExperimentAllotSchemeRequest> requests) {
         return Boolean.TRUE;
     }
 }
