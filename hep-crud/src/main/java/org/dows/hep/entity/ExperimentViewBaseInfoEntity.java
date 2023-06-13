@@ -16,7 +16,7 @@ import java.util.Date;
 
 /**
  * @author jx
- * @date 2023/6/6 10:57
+ * @date 2023/6/13 16:41
  */
 @Data
 @ToString
@@ -25,27 +25,25 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "ExperimentViewBaseInfoMonitorEntity", title = "实验查看指标基本信息监测表")
-@TableName("experiment_view_base_info_monitor")
-public class ExperimentViewBaseInfoMonitorEntity implements CrudEntity {
+@Schema(name = "ExperimentViewBaseInfo", title = "实验查看指标基本信息表")
+@TableName("experiment_view_base_info")
+public class ExperimentViewBaseInfoEntity implements CrudEntity {
+
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库ID")
     private Long id;
 
-    @Schema(title = "实验指标基本信息指标监测表分布式ID")
-    private String experimentViewBaseInfoMonitorId;
+    @Schema(title = "实验查看指标基本信息分布式ID")
+    private String experimentIndicatorViewBaseInfoId;
+
+    @Schema(title = "案例查看指标基本信息分布式ID")
+    private String indicatorViewBaseInfoId;
 
     @Schema(title = "应用ID")
     private String appId;
 
-    @Schema(title = "实验查看指标基本信息功能点ID")
-    private String experimentIndicatorViewBaseInfoId;
-
-    @Schema(title = "指标基本信息监测表名称")
-    private String name;
-
-    @Schema(title = "展示排序")
-    private Integer seq;
+    @Schema(title = "实验指标功能点ID")
+    private String experimentIndicatorFuncId;
 
     @JsonIgnore
     @TableLogic

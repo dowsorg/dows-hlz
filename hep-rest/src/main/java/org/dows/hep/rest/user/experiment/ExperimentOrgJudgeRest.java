@@ -95,6 +95,21 @@ public class ExperimentOrgJudgeRest {
     }
 
     /**
+     * 二级-有报告 获取报告
+     * @param
+     * @return
+     */
+    @Operation(summary = "getJudgeHealthGuidanceReport")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/getJudgeHealthGuidanceReport")
+    public Map<String,Object> getJudgeHealthGuidanceReport(@RequestParam @Validated String experimentPersonId,
+                                                           @RequestParam @Validated String experimentInstanceId,
+                                                           @RequestParam @Validated String experimentGroupId,
+                                                           @RequestParam @Validated String periods)
+    {
+        return experimentOrgJudgeBiz.getJudgeHealthGuidanceReport(experimentPersonId,experimentInstanceId,experimentGroupId,periods);
+    }
+
+    /**
      *
      * 获取二级类有报告的判断指标信息
      *
@@ -117,6 +132,18 @@ public class ExperimentOrgJudgeRest {
     @PostMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeHealthProblemByCategoryIds")
     public List<ExperimentIndicatorJudgeHealthProblemResponse> getIndicatorJudgeHealthProblemByCategoryIds(@RequestBody Set<String> experimentIndicatoryCategoryIds) {
         return experimentOrgJudgeBiz.getIndicatorJudgeHealthProblemByCategoryIds(experimentIndicatoryCategoryIds);
+    }
+
+    /**
+     *
+     * 三级类别：获取判断得分
+     * @param
+     * @return
+     */
+    @Operation(summary = "三级类别：获取判断得分")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeHealthProblemScore")
+    public BigDecimal getIndicatorJudgeHealthProblemScore(@RequestBody @Validated List<ExperimentIndicatorJudgeHealthProblemRequest> judgeHealthProblemRequestList) {
+        return experimentOrgJudgeBiz.getIndicatorJudgeHealthProblemScore(judgeHealthProblemRequestList);
     }
 
     /**

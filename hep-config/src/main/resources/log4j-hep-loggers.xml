@@ -7,13 +7,16 @@
     </AsyncRoot>
     <AsyncLogger name="org.dows" level="INFO" includeLocation="true">
         <appender-ref ref="FILE-INFO"/>
-        <appender-ref ref="FILE-ERROR"/>
     </AsyncLogger>
     <AsyncLogger name="com.zaxxer.hikari.pool.ProxyStatement" level="INFO" additivity="false" includeLocation="true">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE-INFO"/>
     </AsyncLogger>
     <AsyncLogger name="org.springframework" level="INFO" additivity="false" includeLocation="true">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE-INFO"/>
+    </AsyncLogger>
+    <AsyncLogger name="com.baomidou" level="INFO" includeLocation="true">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE-INFO"/>
     </AsyncLogger>

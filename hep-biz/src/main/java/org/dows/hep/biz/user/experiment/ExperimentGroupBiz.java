@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapp
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.util.ReflectUtil;
+import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.EnumExperimentParticipator;
 import org.dows.hep.api.enums.ExperimentStatusCode;
 import org.dows.hep.api.enums.ParticipatorTypeEnum;
@@ -21,7 +22,10 @@ import org.dows.hep.entity.ExperimentActorEntity;
 import org.dows.hep.entity.ExperimentGroupEntity;
 import org.dows.hep.entity.ExperimentOrgEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
-import org.dows.hep.service.*;
+import org.dows.hep.service.ExperimentActorService;
+import org.dows.hep.service.ExperimentGroupService;
+import org.dows.hep.service.ExperimentOrgService;
+import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
@@ -46,9 +50,6 @@ public class ExperimentGroupBiz {
     private final IdGenerator idGenerator;
 
     private final ExperimentOrgService experimentOrgService;
-
-    private final ExperimentInstanceService experimentInstanceService;
-
     /**
      * @param
      * @return
@@ -83,10 +84,12 @@ public class ExperimentGroupBiz {
         if(experimentParticipatorEntity == null){
             throw new ExperimentException(ExperimentStatusCode.NOT_CAPTAIN);
         }
-        return experimentGroupService.lambdaUpdate()
+        // 更新组名
+         return experimentGroupService.lambdaUpdate()
                 .eq(ExperimentGroupEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
                 .eq(ExperimentGroupEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
                 .update(ExperimentGroupEntity.builder()
+                        .groupState(EnumExperimentGroupStatus.ASSIGN_FUNC.getCode())
                         .groupName(createGroup.getGroupName())
                         .build());
     }
@@ -256,7 +259,6 @@ public class ExperimentGroupBiz {
         return experimentParticipatorService.updateById(entity);
     }
 
-
     /**
      * @param
      * @return
@@ -282,7 +284,7 @@ public class ExperimentGroupBiz {
                 .groupNo(groupEntity.getGroupNo())
                 .groupName(groupEntity.getGroupName())
                 .groupAlias(groupEntity.getGroupAlias())
-                .groupState(groupEntity.getState())
+                .groupState(groupEntity.getGroupState())
                 .build();
         return groupResponse;
     }

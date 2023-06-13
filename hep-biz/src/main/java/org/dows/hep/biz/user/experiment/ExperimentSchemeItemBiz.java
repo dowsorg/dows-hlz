@@ -2,6 +2,7 @@ package org.dows.hep.biz.user.experiment;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.AllArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
@@ -57,6 +58,20 @@ public class ExperimentSchemeItemBiz {
         setId(itemEntityList);
 
         return experimentSchemeItemService.updateBatchById(itemEntityList);
+    }
+
+    /**
+     * @author fhb
+     * @description 更新答题者
+     * @date 2023/6/13 13:47
+     * @param
+     * @return
+     */
+    public void updateAccount(String experimentSchemeId, String accountId) {
+        LambdaUpdateWrapper<ExperimentSchemeItemEntity> updateWrapper = new LambdaUpdateWrapper<ExperimentSchemeItemEntity>()
+                .set(ExperimentSchemeItemEntity::getAccountId, accountId)
+                .eq(ExperimentSchemeItemEntity::getExperimentSchemeId, experimentSchemeId);
+        experimentSchemeItemService.update(updateWrapper);
     }
 
     private List<ExperimentSchemeItemEntity> convertToFlatList(List<ExperimentSchemeItemRequest> itemList) {

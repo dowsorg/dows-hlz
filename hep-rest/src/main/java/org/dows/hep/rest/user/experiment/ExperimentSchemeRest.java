@@ -3,6 +3,7 @@ package org.dows.hep.rest.user.experiment;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.user.experiment.request.ExperimentAllotSchemeRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeResponse;
 import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
@@ -25,14 +26,25 @@ public class ExperimentSchemeRest {
     private final ExperimentSchemeBiz experimentSchemeBiz;
 
     /**
-    * 获取设计方案
+    * 获取方案设计
     * @param
     * @return
     */
-    @Operation(summary = "获取设计方案")
+    @Operation(summary = "获取方案设计")
     @GetMapping("v1/userExperiment/experimentScheme/getScheme")
     public ExperimentSchemeResponse getScheme(String experimentInstanceId, String experimentGroupId, String accountId ) {
         return experimentSchemeBiz.getScheme(experimentInstanceId, experimentGroupId, accountId);
+    }
+
+    /**
+     * 分配方案设计
+     * @param
+     * @return
+     */
+    @Operation(summary = "分配方案设计")
+    @PostMapping("v1/userExperiment/experimentScheme/allotSchemeMembers")
+    public Boolean allotGroupMembers(@RequestBody @Validated ExperimentAllotSchemeRequest request) {
+        return experimentSchemeBiz.allotSchemeMembers(request);
     }
 
     /**

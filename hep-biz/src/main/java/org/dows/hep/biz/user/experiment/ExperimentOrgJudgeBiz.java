@@ -317,6 +317,21 @@ public class ExperimentOrgJudgeBiz {
         return totalAmount;
     }
 
+    /**
+     * @param
+     * @return
+     * @说明: 二级-有报告 获取报告
+     * @关联表: ???
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月13日 下午15:43:34
+     */
+    public Map<String, Object> getJudgeHealthGuidanceReport(String experimentPersonId,String experimentInstanceId,String experimentGroupId,String periods) {
+        //todo 获取报告
+        return null;
+    }
+
 
     /**
      * @param
@@ -336,6 +351,31 @@ public class ExperimentOrgJudgeBiz {
                     .select(ExperimentIndicatorJudgeHealthGuidanceEntity::getExperimentJudgeHealthGuidanceId)
                     .eq(ExperimentIndicatorJudgeHealthGuidanceEntity::getExperimentJudgeHealthGuidanceId, judgeRiskFactorRequest.getExperimentJudgeHealthGuidanceId())
                     .eq(ExperimentIndicatorJudgeHealthGuidanceEntity::getStatus, true)
+                    .one();
+            //todo、根据判断规则判断是否满足条件,满足则加分
+            totalAmount.add(entity.getPoint());
+        });
+        return totalAmount;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 三级类别：获取判断得分
+     * @关联表: experimentIndicatorJudgeHealthProblem
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月13日 下午15:56:34
+     */
+    public BigDecimal getIndicatorJudgeHealthProblemScore(List<ExperimentIndicatorJudgeHealthProblemRequest> judgeHealthProblemRequestList) {
+        BigDecimal totalAmount = new BigDecimal(0);
+        judgeHealthProblemRequestList.forEach(judgeRiskFactorRequest -> {
+            //1、根据ID获取判断规则
+            ExperimentIndicatorJudgeHealthProblemEntity entity = experimentIndicatorJudgeHealthProblemService.lambdaQuery()
+                    .select(ExperimentIndicatorJudgeHealthProblemEntity::getExperimentJudgeHealthProblemId)
+                    .eq(ExperimentIndicatorJudgeHealthProblemEntity::getExperimentJudgeHealthProblemId, judgeRiskFactorRequest.getExperimentJudgeHealthProblemId())
+                    .eq(ExperimentIndicatorJudgeHealthProblemEntity::getStatus, true)
                     .one();
             //todo、根据判断规则判断是否满足条件,满足则加分
             totalAmount.add(entity.getPoint());
