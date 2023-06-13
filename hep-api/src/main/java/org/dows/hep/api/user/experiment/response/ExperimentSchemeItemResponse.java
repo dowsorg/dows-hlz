@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -39,7 +40,7 @@ public class ExperimentSchemeItemResponse {
     private Boolean canEdit;
 
     @Schema(title = "子")
-    private List<ExperimentSchemeItemResponse> children;
+    private List<ExperimentSchemeItemResponse> children = new ArrayList<>();
 
     @Schema(title = "item pid")
     @JsonIgnore

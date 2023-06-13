@@ -136,6 +136,18 @@ public class ExperimentOrgJudgeRest {
 
     /**
      *
+     * 三级类别：获取判断得分
+     * @param
+     * @return
+     */
+    @Operation(summary = "三级类别：获取判断得分")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeHealthProblemScore")
+    public BigDecimal getIndicatorJudgeHealthProblemScore(@RequestBody @Validated List<ExperimentIndicatorJudgeHealthProblemRequest> judgeHealthProblemRequestList) {
+        return experimentOrgJudgeBiz.getIndicatorJudgeHealthProblemScore(judgeHealthProblemRequestList);
+    }
+
+    /**
+     *
      * 四级类别：根据指标分类ID获取所有符合条件的数据
      * @param
      * @return

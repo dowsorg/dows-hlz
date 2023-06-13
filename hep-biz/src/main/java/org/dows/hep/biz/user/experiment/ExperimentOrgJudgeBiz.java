@@ -361,6 +361,31 @@ public class ExperimentOrgJudgeBiz {
     /**
      * @param
      * @return
+     * @说明: 三级类别：获取判断得分
+     * @关联表: experimentIndicatorJudgeHealthProblem
+     * @工时: 2H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月13日 下午15:56:34
+     */
+    public BigDecimal getIndicatorJudgeHealthProblemScore(List<ExperimentIndicatorJudgeHealthProblemRequest> judgeHealthProblemRequestList) {
+        BigDecimal totalAmount = new BigDecimal(0);
+        judgeHealthProblemRequestList.forEach(judgeRiskFactorRequest -> {
+            //1、根据ID获取判断规则
+            ExperimentIndicatorJudgeHealthProblemEntity entity = experimentIndicatorJudgeHealthProblemService.lambdaQuery()
+                    .select(ExperimentIndicatorJudgeHealthProblemEntity::getExperimentJudgeHealthProblemId)
+                    .eq(ExperimentIndicatorJudgeHealthProblemEntity::getExperimentJudgeHealthProblemId, judgeRiskFactorRequest.getExperimentJudgeHealthProblemId())
+                    .eq(ExperimentIndicatorJudgeHealthProblemEntity::getStatus, true)
+                    .one();
+            //todo、根据判断规则判断是否满足条件,满足则加分
+            totalAmount.add(entity.getPoint());
+        });
+        return totalAmount;
+    }
+
+    /**
+     * @param
+     * @return
      * @说明: 直接判断 赋值
      * @关联表: experimentPersonHealthManagementGoal
      * @工时: 2H
