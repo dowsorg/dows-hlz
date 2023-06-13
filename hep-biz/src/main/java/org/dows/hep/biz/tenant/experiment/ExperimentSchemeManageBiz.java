@@ -2,6 +2,8 @@ package org.dows.hep.biz.tenant.experiment;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.response.QuestionResponse;
@@ -68,10 +70,15 @@ public class ExperimentSchemeManageBiz {
             // set video-item
             Integer containsVideo = caseScheme.getContainsVideo();
             if (containsVideo != null && containsVideo == 1) {
+                String videoQuestion = caseScheme.getVideoQuestion();
+                JSONObject jsonObject = JSON.parseObject(videoQuestion);
+                String title = jsonObject.getString("title");
+                String content = jsonObject.getString("content");
                 ExperimentSchemeItemEntity videoItem = ExperimentSchemeItemEntity.builder()
                         .experimentSchemeItemId(idGenerator.nextIdStr())
                         .experimentSchemeItemPid("0")
-                        .questionTitle(caseScheme.getVideoQuestion())
+                        .questionTitle(title)
+                        .questionDescr(content)
                         .build();
                 localItemList.add(videoItem);
             }
