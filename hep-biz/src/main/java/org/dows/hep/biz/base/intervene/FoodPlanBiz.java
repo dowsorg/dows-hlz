@@ -429,7 +429,7 @@ public class FoodPlanBiz{
         StringBuilder sb=new StringBuilder();
         for(FoodDishesMaterialEntity item:details){
             if(sb.length()>0){
-                sb.append(" ");
+                sb.append("  ");
             }
             sb.append(String.format("%s%sg",item.getFoodMaterialName(),
                     BigDecimalOptional.valueOf(item.getWeight())

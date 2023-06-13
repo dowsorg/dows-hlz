@@ -9,6 +9,7 @@ import org.dows.hep.api.base.intervene.response.SportItemResponse;
 import org.dows.hep.api.base.intervene.vo.IndicatorExpressionVO;
 import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
 import org.dows.hep.biz.cache.InterveneCategCache;
+import org.dows.hep.biz.dao.IndicatorExpressionRefDao;
 import org.dows.hep.biz.dao.SportItemDao;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.CopyWrapper;
@@ -36,6 +37,8 @@ public class SportItemBiz{
     private final SportItemDao dao;
 
     private final IndicatorExpressionBiz indicatorExpressionBiz;
+
+    private final IndicatorExpressionRefDao daoExpressionRef;
 
     protected InterveneCategCache getCategCache(){
         return InterveneCategCache.Instance;
@@ -135,7 +138,7 @@ public class SportItemBiz{
      * @return
      */
     public Boolean delRefIndicator(DelRefIndicatorRequest delRefIndicator ) {
-        return dao.tranDeleteSub(delRefIndicator.getIds(),"关联指标不存在或已删除");
+        return daoExpressionRef.tranDeleteByExpressionId(delRefIndicator.getIds());
     }
 
     /**
