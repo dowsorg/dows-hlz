@@ -40,35 +40,8 @@ public class CaseIndicatorExpressionItemEntity implements CrudEntity {
   @Schema(title = "应用ID")
   private String appId;
 
-  @Schema(title = "案例分布式ID")
-  private String caseIndicatorExpressionId;
-
   @Schema(title = "分布式ID")
   private String indicatorExpressionId;
-
-  @Schema(title = "原始条件")
-  private String caseConditionRaw;
-
-  @Schema(title = "条件")
-  private String caseConditionExpression;
-
-  @Schema(title = "条件参数名字，以英文逗号分割")
-  private String caseConditionNameList;
-
-  @Schema(title = "条件参数数值，以英文逗号分割")
-  private String caseConditionValList;
-
-  @Schema(title = "原始结果")
-  private String caseResultRaw;
-
-  @Schema(title = "结果")
-  private String caseResultExpression;
-
-  @Schema(title = "结果参数名字，以英文逗号分割")
-  private String caseResultNameList;
-
-  @Schema(title = "结果参数数值，以英文逗号分割")
-  private String caseResultValList;
 
   @Schema(title = "原始条件")
   private String conditionRaw;

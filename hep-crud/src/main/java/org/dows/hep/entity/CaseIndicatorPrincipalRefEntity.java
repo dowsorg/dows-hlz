@@ -33,11 +33,8 @@ public class CaseIndicatorPrincipalRefEntity {
   @Schema(title = "分布式id")
   private String caseIndicatorPrincipalRefId;
 
-  @Schema(title = "分布式id")
+  @Schema(title = "主体id")
   private String principalId;
-
-  @Schema(title = "案例指标ID")
-  private String caseIndicatorInstanceId;
 
   @Schema(title = "数据库指标ID")
   private String indicatorInstanceId;
