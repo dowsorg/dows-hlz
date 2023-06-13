@@ -4,11 +4,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.user.experiment.request.CreateGroupRequest;
-import org.dows.hep.api.user.experiment.request.ExperimentAllotSchemeRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentParticipatorRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
-import org.dows.hep.api.user.experiment.response.ExperimentSchemeResponse;
 import org.dows.hep.biz.user.experiment.ExperimentGroupBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
 import org.dows.hep.entity.ExperimentOrgEntity;
@@ -85,28 +83,6 @@ public class ExperimentGroupRest {
     @PostMapping("v1/userExperiment/experimentGroup/allotGroupMembers")
     public Boolean allotGroupMembers(@RequestBody @Validated ExperimentParticipatorRequest request) {
         return experimentGroupBiz.allotGroupMembers(request);
-    }
-
-    /**
-     * 获取方案设计列表
-     * @param
-     * @return
-     */
-    @Operation(summary = "获取方案设计列表")
-    @GetMapping("v1/userExperiment/experimentGroup/listSchemeItem")
-    public ExperimentSchemeResponse listSchemeItem(String experimentInstanceId, String experimentGroupId, String accountId) {
-        return experimentSchemeBiz.getScheme(experimentInstanceId, experimentGroupId, accountId);
-    }
-
-    /**
-     * 分配方案设计
-     * @param
-     * @return
-     */
-    @Operation(summary = "分配方案设计")
-    @PostMapping("v1/userExperiment/experimentGroup/allotSchemeMembers")
-    public Boolean allotGroupMembers(@RequestBody @Validated ExperimentAllotSchemeRequest request) {
-        return experimentGroupBiz.allotSchemeMembers(request);
     }
 
     /**
