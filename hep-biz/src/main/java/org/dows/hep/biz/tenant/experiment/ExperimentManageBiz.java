@@ -233,6 +233,7 @@ public class ExperimentManageBiz {
             // 一期结束时间 = 一期开始时间 + 一期持续时间
             pet = pst + durationMap.get(period + "") * 60 * 1000;
             ExperimentTimerEntity experimentTimerEntity = ExperimentTimerEntity.builder()
+                    .appId(experimentInstance.getAppId())
                     .experimentInstanceId(experimentInstance.getExperimentInstanceId())
                     .experimentTimerId(idGenerator.nextIdStr())
                     .periods(period)
