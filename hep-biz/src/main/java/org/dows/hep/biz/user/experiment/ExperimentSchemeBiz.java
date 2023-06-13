@@ -16,6 +16,7 @@ import org.dows.hep.service.ExperimentSchemeService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author lait.zhang
@@ -27,6 +28,7 @@ import java.util.List;
 public class ExperimentSchemeBiz {
     private final ExperimentSchemeService experimentSchemeService;
     private final ExperimentSchemeItemBiz experimentSchemeItemBiz;
+    private final ExperimentParticipatorBiz experimentParticipatorBiz;
 
     /**
      * @param
@@ -51,7 +53,7 @@ public class ExperimentSchemeBiz {
         ExperimentSchemeResponse result = BeanUtil.copyProperties(entity, ExperimentSchemeResponse.class);
 
         List<ExperimentSchemeItemResponse> itemList = experimentSchemeItemBiz.listBySchemeId(entity.getExperimentSchemeId());
-        setAuthority(itemList, accountId);
+        setAuthority(itemList, experimentInstanceId, experimentGroupId, accountId);
         result.setItemList(itemList);
 
         return result;
@@ -86,12 +88,26 @@ public class ExperimentSchemeBiz {
      * @创建时间: 2023年4月23日 上午9:44:34
      */
     @DSTransactional
-    public Boolean submitScheme(String experimentSchemeId) {
-        if (StrUtil.isBlank(experimentSchemeId)) {
+    public Boolean submitScheme(String experimentInstanceId, String experimentGroupId, String accountId) {
+        if (StrUtil.isBlank(experimentInstanceId) || StrUtil.isBlank(experimentGroupId)) {
             throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
         }
 
+        // check scheme
+        ExperimentSchemeResponse scheme = getScheme(experimentInstanceId, experimentGroupId, accountId);
+        String experimentSchemeId = Optional.of(scheme)
+                .map(ExperimentSchemeResponse::getExperimentSchemeId)
+                .orElse(null);
+        if (StrUtil.isBlank(experimentSchemeId)) {
+            throw new BizException(ExperimentESCEnum.SCHEME_NOT_NULL);
+        }
         checkState(experimentSchemeId);
+
+        // check auth
+        Boolean isCaptain = experimentParticipatorBiz.isCaptain(experimentInstanceId, experimentGroupId, accountId);
+        if (!isCaptain) {
+            throw new BizException(ExperimentESCEnum.NO_AUTHORITY);
+        }
 
         return experimentSchemeService.lambdaUpdate()
                 .eq(ExperimentSchemeEntity::getExperimentSchemeId, experimentSchemeId)
@@ -110,17 +126,23 @@ public class ExperimentSchemeBiz {
         }
     }
 
-    private void setAuthority(List<ExperimentSchemeItemResponse> itemList, String accountId) {
+    private void setAuthority(List<ExperimentSchemeItemResponse> itemList, String experimentInstanceId, String experimentGroupId, String accountId) {
         if (CollUtil.isEmpty(itemList)) {
             return;
         }
 
+        Boolean isCaptain = experimentParticipatorBiz.isCaptain(experimentInstanceId, experimentGroupId, accountId);
+
         itemList.forEach(item -> {
-            String accountId1 = item.getAccountId();
-            if (accountId.equals(accountId1)) {
+            if (isCaptain) {
                 item.setCanEdit(Boolean.TRUE);
             } else {
-                item.setCanEdit(Boolean.FALSE);
+                String accountId1 = item.getAccountId();
+                if (accountId.equals(accountId1)) {
+                    item.setCanEdit(Boolean.TRUE);
+                } else {
+                    item.setCanEdit(Boolean.FALSE);
+                }
             }
         });
     }

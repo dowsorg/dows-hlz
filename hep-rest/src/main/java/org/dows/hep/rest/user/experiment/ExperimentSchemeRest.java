@@ -53,8 +53,8 @@ public class ExperimentSchemeRest {
     */
     @Operation(summary = "提交设计方案")
     @GetMapping("v1/userExperiment/experimentScheme/submitScheme")
-    public Boolean submitScheme(@RequestBody @Validated String experimentSchemeId ) {
-        return experimentSchemeBiz.submitScheme(experimentSchemeId);
+    public Boolean submitScheme(String experimentInstanceId, String experimentGroupId, String accountId) {
+        return experimentSchemeBiz.submitScheme(experimentInstanceId, experimentGroupId, accountId);
     }
 
 

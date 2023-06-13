@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
 import org.dows.hep.api.enums.ExperimentStatusCode;
+import org.dows.hep.api.enums.ParticipatorTypeEnum;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
@@ -80,5 +81,25 @@ public class ExperimentParticipatorBiz {
 //            return null;
         }
         return BeanConvert.beanConvert(experimentParticipatorEntity, GetExperimentGroupCaptainResponse.class);
+    }
+
+    /**
+     * @author fhb
+     * @description 是否是组长
+     * @date 2023/6/13 10:48
+     * @param
+     * @return
+     */
+    public Boolean isCaptain(String experimentInstanceId, String experimentGroupId, String accountId) {
+        Long count = experimentParticipatorService.lambdaQuery()
+                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentParticipatorEntity::getExperimentGroupId, experimentGroupId)
+                .eq(ExperimentParticipatorEntity::getAccountId, accountId)
+                .eq(ExperimentParticipatorEntity::getParticipatorType, ParticipatorTypeEnum.CAPTAIN.getCode())
+                .count();
+        if (count == null || count == 0) {
+            return Boolean.FALSE;
+        }
+        return Boolean.TRUE;
     }
 }
