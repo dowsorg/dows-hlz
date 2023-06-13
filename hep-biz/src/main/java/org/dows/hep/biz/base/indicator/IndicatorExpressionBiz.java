@@ -221,7 +221,9 @@ public class IndicatorExpressionBiz{
           .in(IndicatorExpressionEntity::getIndicatorExpressionId, indicatorExpressionIdSet)
           .list()
           .forEach(indicatorExpressionEntity -> {
-            principalIdSet.add(indicatorExpressionEntity.getPrincipalId());
+            if (Objects.nonNull(indicatorExpressionEntity.getPrincipalId())) {
+              principalIdSet.add(indicatorExpressionEntity.getPrincipalId());
+            }
             kIndicatorExpressionIdVIndicatorExpressionEntityMap.put(
                 indicatorExpressionEntity.getIndicatorExpressionId(), indicatorExpressionEntity);
             String maxIndicatorExpressionItemId = indicatorExpressionEntity.getMaxIndicatorExpressionItemId();
