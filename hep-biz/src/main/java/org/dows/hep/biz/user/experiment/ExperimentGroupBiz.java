@@ -67,10 +67,12 @@ public class ExperimentGroupBiz {
                 .eq(ExperimentGroupEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
                 .eq(ExperimentGroupEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
                 .list();
+
         // todo 并且这个的账号是队长
         ExperimentParticipatorEntity experimentParticipatorEntity = experimentParticipatorService.lambdaQuery()
                 .eq(ExperimentParticipatorEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
                 .eq(ExperimentParticipatorEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
+                .eq(ExperimentParticipatorEntity::getAccountId,createGroup.getAccountId())
                 .eq(ExperimentParticipatorEntity::getDeleted, false)
                 .eq(ExperimentParticipatorEntity::getParticipatorType, ParticipatorTypeEnum.CAPTAIN.getCode())
                 .oneOpt().orElse(null);
