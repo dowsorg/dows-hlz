@@ -1,4 +1,6 @@
-package org.dows.hep.event;
+package org.dows.hep.api.event;
+
+import lombok.Getter;
 
 import java.io.Serializable;
 import java.time.Clock;
@@ -11,6 +13,9 @@ import java.time.Clock;
  * 3.停止相关的任务和事件的计时器
  */
 public class SuspendEvent extends ExperimentEvent implements Serializable {
+
+    @Getter
+    private EventName eventName = EventName.suspendEvent;
 
     public SuspendEvent(Object source) {
         super(source);

@@ -1,6 +1,6 @@
-package org.dows.hep.event;
+package org.dows.hep.api.event;
 
-import lombok.Data;
+import lombok.Getter;
 
 import java.io.Serializable;
 import java.time.Clock;
@@ -13,6 +13,10 @@ import java.time.Clock;
  * 3.恢复相关的任务，事件等的定时器
  */
 public class StartEvent extends ExperimentEvent implements Serializable {
+
+    @Getter
+    private EventName eventName = EventName.startEvent;
+
     public StartEvent(Object source) {
         super(source);
     }
