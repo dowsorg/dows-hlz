@@ -11,10 +11,7 @@ import org.dows.hep.service.*;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -208,15 +205,15 @@ public class ExperimentOrgJudgeBiz {
      * @开始时间:
      * @创建时间: 2023年5月26日 下午13:56:34
      */
-    public List<ExperimentIndicatorJudgeHealthProblemResponse> getIndicatorJudgeHealthProblemByCategoryId(String indicatoryCategoryId) {
+    public List<ExperimentIndicatorJudgeHealthProblemResponse> getIndicatorJudgeHealthProblemByCategoryIds(Set<String> experimentIndicatoryCategoryIds) {
         //1、根据指标分类ID获取所有符合条件的数据
         List<ExperimentIndicatorJudgeHealthProblemEntity> entityList = experimentIndicatorJudgeHealthProblemService.lambdaQuery()
                 .select(ExperimentIndicatorJudgeHealthProblemEntity::getId,
                         ExperimentIndicatorJudgeHealthProblemEntity::getExperimentJudgeHealthProblemId,
                         ExperimentIndicatorJudgeHealthProblemEntity::getIndicatorJudgeHealthProblemId,
                         ExperimentIndicatorJudgeHealthProblemEntity::getName,
-                        ExperimentIndicatorJudgeHealthProblemEntity::getIndicatorCategoryId)
-                .eq(ExperimentIndicatorJudgeHealthProblemEntity::getIndicatorCategoryId, indicatoryCategoryId)
+                        ExperimentIndicatorJudgeHealthProblemEntity::getExperimentIndicatorCategoryId)
+                .in(ExperimentIndicatorJudgeHealthProblemEntity::getExperimentIndicatorCategoryId, experimentIndicatoryCategoryIds)
                 .eq(ExperimentIndicatorJudgeHealthProblemEntity::getStatus, true)
                 .list();
         List<ExperimentIndicatorJudgeHealthProblemResponse> responseList = new ArrayList<>();
@@ -228,7 +225,7 @@ public class ExperimentOrgJudgeBiz {
                         .experimentJudgeHealthProblemId(entity.getExperimentJudgeHealthProblemId())
                         .indicatorJudgeHealthProblemId(entity.getIndicatorJudgeHealthProblemId())
                         .name(entity.getName())
-                        .indicatorCategoryId(entity.getIndicatorCategoryId())
+                        .indicatorCategoryId(entity.getExperimentIndicatorCategoryId())
                         .build();
                 responseList.add(response);
             });

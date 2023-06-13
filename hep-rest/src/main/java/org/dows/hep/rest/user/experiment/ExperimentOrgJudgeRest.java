@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
 * @description project descr:实验:机构操作-判断指标
@@ -101,9 +102,9 @@ public class ExperimentOrgJudgeRest {
      * @return
      */
     @Operation(summary = "三级类别：根据指标分类ID获取所有符合条件的数据")
-    @GetMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeHealthProblemByCategoryId/{indicatoryCategoryId}")
-    public List<ExperimentIndicatorJudgeHealthProblemResponse> getIndicatorJudgeHealthProblemByCategoryId(@PathVariable String indicatoryCategoryId) {
-        return experimentOrgJudgeBiz.getIndicatorJudgeHealthProblemByCategoryId(indicatoryCategoryId);
+    @PostMapping("v1/userExperiment/experimentOrgJudge/getIndicatorJudgeHealthProblemByCategoryIds")
+    public List<ExperimentIndicatorJudgeHealthProblemResponse> getIndicatorJudgeHealthProblemByCategoryIds(@RequestBody Set<String> experimentIndicatoryCategoryIds) {
+        return experimentOrgJudgeBiz.getIndicatorJudgeHealthProblemByCategoryIds(experimentIndicatoryCategoryIds);
     }
 
     /**
