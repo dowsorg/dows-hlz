@@ -322,6 +322,7 @@ public class TenantCaseOrgQuestionnaireBiz {
         orgRequest.setCaseInstanceId(caseInstanceId);
         orgRequest.setPageNo(1);
         orgRequest.setPageSize(10);
+        orgRequest.setStatus(1);
         IPage<CaseOrgResponse> orgResponse = orgBiz.listOrgnization(orgRequest);
         return orgResponse.getRecords();
     }
