@@ -489,6 +489,7 @@ public class ExperimentOrgViewBiz {
         Map<String, Object> map = new HashMap<>();
         /**
          * 描述信息表
+         *
          */
         //1、根据分布式ID找到指标描述功能点并排序
         List<ExperimentViewBaseInfoDescrEntity> descrList = experimentViewBaseInfoDescrService.lambdaQuery()
@@ -496,7 +497,7 @@ public class ExperimentOrgViewBiz {
                         ExperimentViewBaseInfoDescrEntity::getName,
                         ExperimentViewBaseInfoDescrEntity::getSeq)
                 .eq(ExperimentViewBaseInfoDescrEntity::getAppId, appId)
-                .eq(ExperimentViewBaseInfoDescrEntity::getExperimentindicatorViewBaseInfoId, experimentIndicatorViewBaseInfoId)
+                .eq(ExperimentViewBaseInfoDescrEntity::getExperimentIndicatorViewBaseInfoId, experimentIndicatorViewBaseInfoId)
                 .eq(ExperimentViewBaseInfoDescrEntity::getDeleted, false)
                 .list();
         descrList = descrList.stream().sorted(Comparator.comparing(iteam -> iteam.getSeq())).collect(Collectors.toList());
@@ -504,31 +505,34 @@ public class ExperimentOrgViewBiz {
         if (descrList != null && descrList.size() > 0) {
             descrList.forEach(descr -> {
                 List<ExperimentViewBaseInfoDescrRefEntity> refEntityList = experimentViewBaseInfoDescrRefService.lambdaQuery()
-                        .select(ExperimentViewBaseInfoDescrRefEntity::getExperimentIndicatorInstanceId)
+                        .select(ExperimentViewBaseInfoDescrRefEntity::getIndicatorInstanceId,
+                                ExperimentViewBaseInfoDescrRefEntity::getSeq)
                         .eq(ExperimentViewBaseInfoDescrRefEntity::getAppId, appId)
                         .eq(ExperimentViewBaseInfoDescrRefEntity::getExperimentViewBaseInfoDescrId, descr.getExperimentViewBaseInfoDescrId())
                         .eq(ExperimentViewBaseInfoDescrRefEntity::getDeleted, false)
-                        .list()
-                        .stream().sorted(Comparator.comparing(iteam -> iteam.getSeq())).collect(Collectors.toList());
+                        .list().stream().sorted(Comparator.comparing(iteam -> iteam.getSeq())).collect(Collectors.toList());
                 List<ExperimentIndicatorResponse> responseList = new ArrayList<>();
                 if (refEntityList != null && refEntityList.size() > 0) {
                     refEntityList.forEach(refEntity -> {
                         ExperimentIndicatorResponse response = new ExperimentIndicatorResponse();
+                        // todo 通过数据库指标实例和experimentPersonId获取experimentIndicatorInstanceId,先假设数据
+                        String experimentIndicatorInstanceId = "010101";
                         //2.1、获取指标值
                         ExperimentIndicatorValEntity valEntity = experimentIndicatorValService.lambdaQuery()
                                 .eq(ExperimentIndicatorValEntity::getDeleted, false)
-                                .eq(ExperimentIndicatorValEntity::getExperimentIndicatorInstanceId, refEntity.getExperimentIndicatorInstanceId())
+                                .eq(ExperimentIndicatorValEntity::getExperimentIndicatorInstanceId, experimentIndicatorInstanceId)
                                 .eq(ExperimentIndicatorValEntity::getPeriods, periods)
                                 .one();
                         response.setExperimentIndicatorCurrentVal(valEntity.getCurrentVal());
                         //2.2、获取指标单位
                         ExperimentIndicatorInstanceEntity instanceEntity = experimentIndicatorInstanceService.lambdaQuery()
                                 .eq(ExperimentIndicatorInstanceEntity::getDeleted, false)
-                                .eq(ExperimentIndicatorInstanceEntity::getExperimentIndicatorInstanceId, refEntity.getExperimentIndicatorInstanceId())
+                                .eq(ExperimentIndicatorInstanceEntity::getExperimentIndicatorInstanceId, experimentIndicatorInstanceId)
                                 .eq(ExperimentIndicatorInstanceEntity::getExperimentPersonId, experimentPersonId)
                                 .one();
                         response.setExperimentIndicatorInstanceName(instanceEntity.getIndicatorName());
                         response.setType(ViewBaseInfoConstant.DESCR);
+                        response.setSeq(refEntity.getSeq());
                         responseList.add(response);
                     });
                 }
@@ -574,17 +578,19 @@ public class ExperimentOrgViewBiz {
                             List<ExperimentIndicatorResponse> responseList = new ArrayList<>();
                             contentRefList.forEach(contentRef -> {
                                 ExperimentIndicatorResponse response = new ExperimentIndicatorResponse();
+                                // todo 通过数据库指标实例和experimentPersonId获取experimentIndicatorInstanceId,先假设数据
+                                String experimentIndicatorInstanceId = "010102";
                                 //4.3、获取指标值
                                 ExperimentIndicatorValEntity valEntity = experimentIndicatorValService.lambdaQuery()
                                         .eq(ExperimentIndicatorValEntity::getDeleted, false)
-                                        .eq(ExperimentIndicatorValEntity::getExperimentIndicatorInstanceId, contentRef.getExperimentIndicatorInstanceId())
+                                        .eq(ExperimentIndicatorValEntity::getExperimentIndicatorInstanceId, experimentIndicatorInstanceId)
                                         .eq(ExperimentIndicatorValEntity::getPeriods, periods)
                                         .one();
                                 response.setExperimentIndicatorCurrentVal(valEntity.getCurrentVal());
                                 //4.4、获取指标单位
                                 ExperimentIndicatorInstanceEntity instanceEntity = experimentIndicatorInstanceService.lambdaQuery()
                                         .eq(ExperimentIndicatorInstanceEntity::getDeleted, false)
-                                        .eq(ExperimentIndicatorInstanceEntity::getExperimentIndicatorInstanceId, contentRef.getExperimentIndicatorInstanceId())
+                                        .eq(ExperimentIndicatorInstanceEntity::getExperimentIndicatorInstanceId, experimentIndicatorInstanceId)
                                         .eq(ExperimentIndicatorInstanceEntity::getExperimentPersonId, experimentPersonId)
                                         .one();
                                 response.setUnit(instanceEntity.getUnit());
@@ -594,6 +600,7 @@ public class ExperimentOrgViewBiz {
                             //4.5、设置指标值
                             result.setIndicatorList(responseList);
                             result.setType(ViewBaseInfoConstant.MONITOR);
+                            result.setSeq(content.getSeq());
                             resultList.add(result);
                         }
                     });
@@ -608,7 +615,6 @@ public class ExperimentOrgViewBiz {
         //5、查看单一指标值
         List<ExperimentViewBaseInfoSingleEntity> singleList = experimentViewBaseInfoSingleService.lambdaQuery()
                 .select(ExperimentViewBaseInfoSingleEntity::getExperimentViewBaseInfoSingleId,
-                        ExperimentViewBaseInfoSingleEntity::getSeq,
                         ExperimentViewBaseInfoSingleEntity::getSeq)
                 .eq(ExperimentViewBaseInfoSingleEntity::getAppId, appId)
                 .eq(ExperimentViewBaseInfoSingleEntity::getExperimentIndicatorViewBaseInfoId, experimentIndicatorViewBaseInfoId)
@@ -619,24 +625,27 @@ public class ExperimentOrgViewBiz {
             List<ExperimentIndicatorResponse> responseList = new ArrayList<>();
             singleList.forEach(single -> {
                 ExperimentIndicatorResponse response = new ExperimentIndicatorResponse();
+                // todo 通过数据库指标实例和experimentPersonId获取experimentIndicatorInstanceId,先假设数据
+                String experimentIndicatorInstanceId = "010103";
                 //5.1、获取指标值
                 ExperimentIndicatorValEntity valEntity = experimentIndicatorValService.lambdaQuery()
                         .eq(ExperimentIndicatorValEntity::getDeleted, false)
-                        .eq(ExperimentIndicatorValEntity::getExperimentIndicatorInstanceId, single.getExperimentIndicatorInstanceId())
+                        .eq(ExperimentIndicatorValEntity::getExperimentIndicatorInstanceId, experimentIndicatorInstanceId)
                         .eq(ExperimentIndicatorValEntity::getPeriods, periods)
                         .one();
                 response.setExperimentIndicatorCurrentVal(valEntity.getCurrentVal());
                 //5.2、获取指标单位
                 ExperimentIndicatorInstanceEntity instanceEntity = experimentIndicatorInstanceService.lambdaQuery()
                         .eq(ExperimentIndicatorInstanceEntity::getDeleted, false)
-                        .eq(ExperimentIndicatorInstanceEntity::getExperimentIndicatorInstanceId, single.getExperimentIndicatorInstanceId())
+                        .eq(ExperimentIndicatorInstanceEntity::getExperimentIndicatorInstanceId, experimentIndicatorInstanceId)
                         .eq(ExperimentIndicatorInstanceEntity::getExperimentPersonId, experimentPersonId)
                         .one();
                 response.setExperimentIndicatorInstanceName(instanceEntity.getIndicatorName());
                 response.setType(ViewBaseInfoConstant.SINGLE);
+                response.setSeq(single.getSeq());
                 responseList.add(response);
             });
-            map.put("single", responseList);
+            map.put("单一表", responseList);
         }
         return map;
     }

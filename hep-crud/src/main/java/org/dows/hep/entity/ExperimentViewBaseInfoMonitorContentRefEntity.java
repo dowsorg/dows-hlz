@@ -43,8 +43,8 @@ public class ExperimentViewBaseInfoMonitorContentRefEntity implements CrudEntity
     @Schema(title = "实验指标基本信息指标监测表内容分布式ID")
     private String experimentViewBaseInfoMonitorContentId;
 
-    @Schema(title = "实验指标ID")
-    private String experimentIndicatorInstanceId;
+    @Schema(title = "基础库指标ID")
+    private String indicatorInstanceId;
 
     @Schema(title = "展示排序")
     private Integer seq;

@@ -180,9 +180,9 @@ public class ExperimentOrgViewRest {
     @Operation(summary = "查看指标：查看基本信息查看")
     @GetMapping("v1/userExperiment/experimentOrgView/getIndicatorBaseInfo/{experimentIndicatorViewBaseInfoId}/{appId}/{experimentPersonId}/{periods}")
     public Map<String,Object> getIndicatorBaseInfo(@PathVariable @Validated String experimentIndicatorViewBaseInfoId,
-                                        @PathVariable @Validated String appId,
-                                        @PathVariable @Validated String experimentPersonId,
-                                        @PathVariable @Validated String periods
+                                                   @PathVariable @Validated String appId,
+                                                   @PathVariable @Validated String experimentPersonId,
+                                                   @PathVariable @Validated String periods
                                         ) {
         return experimentOrgViewBiz.getIndicatorBaseInfo(experimentIndicatorViewBaseInfoId,appId,experimentPersonId,periods);
     }
