@@ -42,6 +42,9 @@ public class ExperimentListResponse{
     @Schema(title = "组名")
     private String groupName;
 
+    @Schema(title = "实验小组ID")
+    private String experimentGroupId;
+
     @Schema(title = "组序号")
     private String groupNo;
 
