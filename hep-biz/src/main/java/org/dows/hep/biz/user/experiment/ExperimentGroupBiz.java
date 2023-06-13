@@ -2,13 +2,12 @@ package org.dows.hep.biz.user.experiment;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.util.ReflectUtil;
+import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.EnumExperimentParticipator;
 import org.dows.hep.api.enums.ExperimentStatusCode;
 import org.dows.hep.api.enums.ParticipatorTypeEnum;
@@ -85,18 +84,12 @@ public class ExperimentGroupBiz {
         if(experimentParticipatorEntity == null){
             throw new ExperimentException(ExperimentStatusCode.NOT_CAPTAIN);
         }
-        // 更改小组状态
-        LambdaUpdateWrapper<ExperimentGroupEntity> groupWrapper = Wrappers.lambdaUpdate(ExperimentGroupEntity.class);
-        groupWrapper.set(ExperimentGroupEntity::getGroupState, 1)
-                .eq(ExperimentGroupEntity::getExperimentGroupId, createGroup.getExperimentInstanceId())
-                .eq(ExperimentGroupEntity::getExperimentInstanceId,createGroup.getExperimentInstanceId())
-                .eq(ExperimentGroupEntity::getDeleted,false);
-        experimentGroupService.update(groupWrapper);
         // 更新组名
          return experimentGroupService.lambdaUpdate()
                 .eq(ExperimentGroupEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
                 .eq(ExperimentGroupEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
                 .update(ExperimentGroupEntity.builder()
+                        .groupState(EnumExperimentGroupStatus.ASSIGN_FUNC.getCode())
                         .groupName(createGroup.getGroupName())
                         .build());
     }
