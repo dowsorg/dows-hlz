@@ -259,7 +259,7 @@ public class ExperimentGroupBiz {
                     .id(model.getId())
                     .build();
             entityList.add(entity);
-            //1、更新组状态为等待其他机构分配完成
+            //1、更新组状态为等待其他小组分配完成
             experimentGroupService.lambdaUpdate()
                     .eq(ExperimentGroupEntity::getExperimentGroupId, request.getExperimentGroupId())
                     .eq(ExperimentGroupEntity::getExperimentInstanceId, request.getExperimentInstanceId())
