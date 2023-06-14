@@ -1043,6 +1043,15 @@ public class IndicatorExpressionBiz{
       String conditionValList = indicatorExpressionItemEntity.getConditionValList();
       if (StringUtils.isBlank(conditionNameList)) {
         if (StringUtils.isBlank(conditionValList)) {
+          StandardEvaluationContext context = new StandardEvaluationContext();
+          String conditionExpression = indicatorExpressionItemEntity.getConditionExpression();
+          ExpressionParser parser2 = new SpelExpressionParser();
+          Expression expression = parser2.parseExpression(conditionExpression);
+          String conditionExpressionResult = expression.getValue(context, String.class);
+          if(!StringUtils.equalsIgnoreCase(conditionExpressionResult, EnumBoolean.TRUE.getCode().toString()) && !StringUtils.equalsIgnoreCase(conditionExpressionResult, EnumBoolean.FALSE.getCode().toString())) {
+            log.warn("method checkConditionExpression result:{} is not boolean", conditionExpressionResult);
+            throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
+          }
           return;
         } else {
           log.warn("method IndicatorExpressionBiz.createOrUpdate checkConditionExpression name & val number is not same");
