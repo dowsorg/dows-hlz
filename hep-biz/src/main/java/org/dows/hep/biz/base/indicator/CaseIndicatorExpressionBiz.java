@@ -133,7 +133,7 @@ public class CaseIndicatorExpressionBiz {
               principalIdSet.add(indicatorExpressionEntity.getPrincipalId());
             }
             kIndicatorExpressionIdVIndicatorExpressionEntityMap.put(
-                indicatorExpressionEntity.getIndicatorExpressionId(), indicatorExpressionEntity);
+                indicatorExpressionEntity.getCaseIndicatorExpressionId(), indicatorExpressionEntity);
             String maxIndicatorExpressionItemId = indicatorExpressionEntity.getMaxIndicatorExpressionItemId();
             String minIndicatorExpressionItemId = indicatorExpressionEntity.getMinIndicatorExpressionItemId();
             if (StringUtils.isNotBlank(maxIndicatorExpressionItemId)) {

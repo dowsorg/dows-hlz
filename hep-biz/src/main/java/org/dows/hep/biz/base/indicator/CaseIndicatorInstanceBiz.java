@@ -88,6 +88,22 @@ public class CaseIndicatorInstanceBiz {
         .forEach(caseIndicatorRuleEntity -> kCaseIndicatorInstanceIdVCaseIndicatorRuleMap.put(caseIndicatorRuleEntity.getVariableId(), caseIndicatorRuleEntity));
   }
 
+  public void populateKCaseIndicatorInstanceIdVSeqMap(String appId, Set<String> indicatorInstanceIdSet, Map<String, Integer> kCaseIndicatorInstanceIdVSeqMap) {
+    if (Objects.isNull(kCaseIndicatorInstanceIdVSeqMap)) {
+      log.warn("method CaseIndicatorInstanceBiz.populateKCaseIndicatorInstanceIdVSeqMap param kCaseIndicatorInstanceIdVSeqMap is null");
+      return;
+    }
+    if (Objects.isNull(indicatorInstanceIdSet) || indicatorInstanceIdSet.isEmpty()) {
+      return;
+    }
+    caseIndicatorCategoryRefService.lambdaQuery()
+        .eq(CaseIndicatorCategoryRefEntity::getAppId, appId)
+        .in(CaseIndicatorCategoryRefEntity::getIndicatorInstanceId, indicatorInstanceIdSet)
+        .list()
+        .forEach(indicatorCategoryRefEntity -> kCaseIndicatorInstanceIdVSeqMap.put(indicatorCategoryRefEntity.getIndicatorInstanceId(), indicatorCategoryRefEntity.getSeq()));
+  }
+
+
   public static String convertConditionValList2Case(
       Map<String, String> kIndicatorInstanceIdVCaseIndicatorInstanceIdMap,
       String conditionValList) {
@@ -437,6 +453,7 @@ public class CaseIndicatorInstanceBiz {
         });
     populateKCaseIndicatorInstanceIdVIndicatorRuleMap(appId, caseIndicatorInstanceIdSet, kCaseIndicatorInstanceIdVCaseIndicatorRuleMap);
     caseIndicatorExpressionBiz.populateKCaseReasonIdVCaseIndicatorExpressionResponseRsListMap(appId, caseIndicatorInstanceIdSet, kCaseIndicatorInstanceIdVCaseIndicatorExpressionResponseRsListMap);
+    populateKCaseIndicatorInstanceIdVSeqMap(appId, caseIndicatorInstanceIdSet, kCaseIndicatorInstanceIdVSeqMap);
     kCaseIndicatorCategoryIdVCaseIndicatorInstanceIdSetMap.forEach((caseIndicatorCategoryId, caseIndicatorInstanceIdSet0) -> {
       List<CaseIndicatorInstanceResponseRs> caseIndicatorInstanceResponseRsList = caseIndicatorInstanceIdSet0
           .stream()
