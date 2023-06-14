@@ -19,6 +19,7 @@ import java.util.List;
 @Builder
 public class BatchCreateOrUpdateCaseOrgModuleRequestRs implements Serializable {
   @Schema(title = "机构分布式ID")
+  @ApiModelProperty(required = true)
   private String caseOrgId;
 
   @Schema(title = "案例机构模块列表")

@@ -228,6 +228,7 @@ public class CaseIndicatorInstanceBiz {
             .caseIndicatorCategoryRefId(idGenerator.nextIdStr())
             .indicatorCategoryId(indicatorCategoryId)
             .appId(appId)
+            .seq(seq)
             .indicatorCategoryId(caseIndicatorCategoryId)
             .indicatorInstanceId(caseIndicatorInstanceId)
             .seq(seqIndicatorInstance)
@@ -431,6 +432,7 @@ public class CaseIndicatorInstanceBiz {
     List<CaseIndicatorCategoryEntity> caseIndicatorCategoryEntityList = caseIndicatorCategoryService.lambdaQuery()
         .eq(CaseIndicatorCategoryEntity::getAppId, appId)
         .in(CaseIndicatorCategoryEntity::getCaseIndicatorCategoryId, indicatorCategoryIdSet)
+        .orderByAsc(CaseIndicatorCategoryEntity::getSeq)
         .list();
     if (caseIndicatorCategoryEntityList.isEmpty()) {
       return new ArrayList<>();
@@ -482,6 +484,7 @@ public class CaseIndicatorInstanceBiz {
         .map(caseIndicatorCategoryEntity -> {
           String caseIndicatorCategoryId = caseIndicatorCategoryEntity.getCaseIndicatorCategoryId();
           List<CaseIndicatorInstanceResponseRs> caseIndicatorInstanceResponseRsList = kCaseIndicatorCategoryIdVCaseIndicatorInstanceResponseRsListMap.get(caseIndicatorCategoryId);
+          caseIndicatorInstanceResponseRsList.sort(Comparator.comparing(CaseIndicatorInstanceResponseRs::getSeq));
           return CaseIndicatorCategoryBiz.caseIndicatorCategory2ResponseRs(
               caseIndicatorCategoryEntity, caseIndicatorInstanceResponseRsList);
         }).collect(Collectors.toList());
