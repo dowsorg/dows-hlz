@@ -2,7 +2,6 @@ package org.dows.hep.service;
 
 import org.dows.framework.crud.mybatis.MybatisCrudService;
 import org.dows.hep.entity.CaseIndicatorCategoryPrincipalRefEntity;
-import org.dows.hep.entity.CaseIndicatorPrincipalRefEntity;
 
 
 /**

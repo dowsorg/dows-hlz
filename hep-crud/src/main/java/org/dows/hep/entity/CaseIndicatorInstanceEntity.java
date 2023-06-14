@@ -7,7 +7,6 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
@@ -39,6 +38,9 @@ public class CaseIndicatorInstanceEntity {
 
   @Schema(title = "应用ID")
   private String appId;
+
+  @Schema(title = "主体id")
+  private String principalId;
 
   @Schema(title = "指标分类ID")
   private String indicatorCategoryId;

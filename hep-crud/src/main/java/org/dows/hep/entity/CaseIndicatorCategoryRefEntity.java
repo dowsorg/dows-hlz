@@ -39,9 +39,6 @@ public class CaseIndicatorCategoryRefEntity implements CrudEntity {
     @Schema(title = "案例分布式ID")
     private String caseIndicatorCategoryRefId;
 
-    @Schema(title = "分布式ID")
-    private String indicatorCategoryRefId;
-
     @Schema(title = "应用ID")
     private String appId;
 

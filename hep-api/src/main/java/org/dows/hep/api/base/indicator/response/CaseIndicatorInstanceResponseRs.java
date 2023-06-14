@@ -29,6 +29,9 @@ public class CaseIndicatorInstanceResponseRs implements Serializable {
   @Schema(title = "应用ID")
   private String appId;
 
+  @Schema(title = "主体id")
+  private String principal;
+
   @Schema(title = "指标分类ID")
   private String indicatorCategoryId;
 
