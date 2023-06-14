@@ -16,7 +16,7 @@ public class CaseOrgModuleFuncRefRest {
   private final CaseOrgModuleFuncRefBiz caseOrgModuleFuncRefBiz;
 
   @Operation(summary = "单个删除机构模块的")
-  @DeleteMapping("v1/caseIndicator/caseOrgModule/delete")
+  @DeleteMapping("v1/caseIndicator/caseOrgModuleFuncRef/delete")
   public void delete(@RequestParam String caseOrgModuleFuncRefId) {
     caseOrgModuleFuncRefBiz.delete(caseOrgModuleFuncRefId);
   }
