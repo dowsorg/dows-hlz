@@ -1,10 +1,16 @@
 package org.dows.hep.biz.base.tags;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.hep.api.base.tags.request.TagsInstanceRequest;
 import org.dows.hep.api.base.tags.response.TagsInstanceResponse;
+import org.dows.hep.api.exception.ExperimentException;
+import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.entity.TagsInstanceEntity;
 import org.dows.hep.service.TagsInstanceService;
@@ -83,5 +89,40 @@ public class TagsManageBiz {
                 .status(instanceEntity.getStatus())
                 .build();
         return response;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 分页获取标签列表
+     * @关联表: TagsInstance
+     * @工时: 1H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月14日 下午17:48:34
+     */
+    public PageResponse<TagsInstanceResponse> page(PageExperimentRequest pageExperimentRequest) {
+        Page page = new Page<TagsInstanceEntity>();
+        page.setSize(pageExperimentRequest.getPageSize());
+        page.setCurrent(pageExperimentRequest.getPageNo());
+        if (pageExperimentRequest.getOrder() != null) {
+            String[] array = (String[]) pageExperimentRequest.getOrder().stream()
+                    .map(s -> StrUtil.toUnderlineCase((CharSequence) s))
+                    .toArray(String[]::new);
+            page.addOrder(pageExperimentRequest.getDesc() ? OrderItem.descs(array) : OrderItem.ascs(array));
+        }
+        try {
+            if (!StrUtil.isBlank(pageExperimentRequest.getKeyword())) {
+                page = tagsInstanceService.page(page, tagsInstanceService.lambdaQuery()
+                        .like(TagsInstanceEntity::getName, pageExperimentRequest.getKeyword())
+                        .getWrapper());
+            } else {
+                page = tagsInstanceService.page(page, tagsInstanceService.lambdaQuery().getWrapper());
+            }
+        } catch (Exception e) {
+            throw new ExperimentException(e.getCause().getMessage());
+        }
+        PageResponse pageInfo = tagsInstanceService.getPageInfo(page, TagsInstanceResponse.class);
+        return pageInfo;
     }
 }
