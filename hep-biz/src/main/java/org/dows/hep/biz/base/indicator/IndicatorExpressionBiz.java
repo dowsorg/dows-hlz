@@ -1297,7 +1297,7 @@ public class IndicatorExpressionBiz{
       AtomicReference<IndicatorExpressionRefEntity> indicatorExpressionRefEntityAtomicReference
       ) {
     String indicatorExpressionId = createOrUpdateIndicatorExpressionRequestRs.getIndicatorExpressionId();
-    String principalId = createOrUpdateIndicatorExpressionRequestRs.getPrincipalId();
+    String reasonId = createOrUpdateIndicatorExpressionRequestRs.getReasonId();
     String indicatorExpressionRefId = createOrUpdateIndicatorExpressionRequestRs.getIndicatorExpressionRefId();
     String appId = createOrUpdateIndicatorExpressionRequestRs.getAppId();
     if (StringUtils.isBlank(indicatorExpressionId)) {
@@ -1311,7 +1311,7 @@ public class IndicatorExpressionBiz{
           .indicatorExpressionRefId(idGenerator.nextIdStr())
           .appId(appId)
           .indicatorExpressionId(indicatorExpressionId)
-          .reasonId(principalId)
+          .reasonId(reasonId)
           .build();
     } else {
       indicatorExpressionRefEntity = indicatorExpressionRefService.lambdaQuery()
@@ -1322,7 +1322,7 @@ public class IndicatorExpressionBiz{
             log.warn("method populateIndicatorExpressionRefEntity indicatorExpressionRefId:{} is illegal", indicatorExpressionRefId);
             throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
           });
-      indicatorExpressionRefEntity.setReasonId(principalId);
+      indicatorExpressionRefEntity.setReasonId(reasonId);
     }
     indicatorExpressionRefEntityAtomicReference.set(indicatorExpressionRefEntity);
     createOrUpdateIndicatorExpressionRequestRs.setIndicatorExpressionRefId(indicatorExpressionRefId);

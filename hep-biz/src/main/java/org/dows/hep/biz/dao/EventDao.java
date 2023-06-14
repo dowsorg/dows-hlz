@@ -9,7 +9,6 @@ import org.dows.hep.api.base.intervene.request.FindEventRequest;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.EventActionEntity;
-import org.dows.hep.entity.EventActionIndicatorEntity;
 import org.dows.hep.entity.EventEntity;
 import org.dows.hep.entity.EventEvalEntity;
 import org.dows.hep.service.EventEvalService;
@@ -18,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.LinkedHashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -39,7 +38,7 @@ public class EventDao extends BaseSubDao<EventService, EventEntity, EventEvalSer
     protected EventActionDao subDao;
 
     @Autowired
-    protected IndicatorExpressionRefDao expressionRefDao;
+    protected IndicatorExpressionRefDao indicatorExpressionRefDao;
 
 
     //region override
@@ -113,28 +112,18 @@ public class EventDao extends BaseSubDao<EventService, EventEntity, EventEvalSer
 
 
 
-    @Transactional(rollbackFor = Exception.class)
-    public boolean tranSave(EventEntity lead, List<EventEvalEntity> subs, LinkedHashMap<EventActionEntity,List<EventActionIndicatorEntity>> subsX) {
-        AssertUtil.falseThenThrow(coreTranSave(lead, subs, subsX, false, defaultUseLogicId))
-                .throwMessage(failedSaveMessage);
-        return true;
-    }
+
 
     @Transactional(rollbackFor = Exception.class)
     public boolean tranSave(EventEntity lead, List<EventActionEntity> actions, Map<String,List<String>> mapExpressions) {
         AssertUtil.falseThenThrow(coreTranSave(lead, actions,  defaultUseLogicId))
                 .throwMessage(failedSaveMessage);
-        return expressionRefDao.tranUpdateReasonId(mapExpressions);
+        return indicatorExpressionRefDao.tranUpdateReasonId(mapExpressions);
     }
 
     //region save
 
-    protected boolean coreTranSave(EventEntity lead, List<EventEvalEntity> subs, LinkedHashMap<EventActionEntity,List<EventActionIndicatorEntity>> subsX, boolean delSubBefore,  boolean useLogicId) {
-        if (!super.coreTranSave(lead, subs, delSubBefore, useLogicId)) {
-            return false;
-        }
-        return subDao.saveOrUpdateBatch(lead.getEventId(),subsX,useLogicId,true);
-    }
+
     protected boolean coreTranSave(EventEntity lead, List<EventActionEntity> actions, boolean useLogicId) {
         if (!saveOrUpdate(lead, useLogicId)) {
             return false;
@@ -150,13 +139,18 @@ public class EventDao extends BaseSubDao<EventService, EventEntity, EventEvalSer
     //region delete
     @Override
     protected boolean coreTranDelete(List<String> ids, boolean delSub, boolean dftIfSubEmpty) {
-        if(!super.coreTranDelete(ids, delSub, dftIfSubEmpty)){
+        List<String> actionIds=delSub?ShareUtil.XCollection.map(subDao.getByEventIds(ids, EventActionEntity::getEventActionId),
+                EventActionEntity::getEventActionId): Collections.emptyList();
+
+        if(!super.coreTranDelete(ids, false, dftIfSubEmpty)){
             return false;
         }
         if(!delSub)
             return true;
         subDao.delByEventId(ids,dftIfSubEmpty);
-        subDao.delSubByEventId(ids,dftIfSubEmpty);
+        //subDao.delSubByEventId(ids,dftIfSubEmpty);
+        ids.addAll(actionIds);
+        indicatorExpressionRefDao.tranDeleteByReasonId(ids);
         return true;
     }
     //endregion

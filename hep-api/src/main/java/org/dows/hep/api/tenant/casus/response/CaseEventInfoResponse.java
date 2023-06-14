@@ -5,8 +5,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.dows.hep.api.base.indicator.response.CaseIndicatorExpressionResponseRs;
 import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
-import org.dows.hep.api.base.intervene.vo.EventActionInfoVO;
+import org.dows.hep.api.base.intervene.vo.CaseEventActionInfoVO;
 
 import java.util.List;
 
@@ -81,12 +82,12 @@ public class CaseEventInfoResponse{
 
 
     @Schema(title = "事件处理措施列表")
-    private List<EventActionInfoVO> actions;
+    private List<CaseEventActionInfoVO> actions;
 
     @Schema(title = "事件触发条件列表(公式source=7),仅限条件触发triggerType=0时有值")
-    private List<IndicatorExpressionResponseRs> conditionExpresssions;
+    private List<CaseIndicatorExpressionResponseRs> conditionExpresssions;
 
     @Schema(title = "事件影响指标列表(公式source=8),仅限时间触发triggerType>0时有值")
-    private List<IndicatorExpressionResponseRs> effectExpresssions;
+    private List<CaseIndicatorExpressionResponseRs> effectExpresssions;
 
 }

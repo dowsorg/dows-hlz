@@ -1,7 +1,7 @@
 package org.dows.hep.service;
 
 import org.dows.framework.crud.mybatis.MybatisCrudService;
-import org.dows.hep.entity.CaseOrgModuleFuncRefEntity;
+import org.dows.hep.entity.CaseOrgModuleEntity;
 
 
 /**
@@ -10,7 +10,7 @@ import org.dows.hep.entity.CaseOrgModuleFuncRefEntity;
  * @author lait
  * @since 2023-04-21 10:31:40
  */
-public interface CaseModuleFuncRefService extends MybatisCrudService<CaseOrgModuleFuncRefEntity> {
+public interface CaseOrgModuleService extends MybatisCrudService<CaseOrgModuleEntity> {
 
 }
 

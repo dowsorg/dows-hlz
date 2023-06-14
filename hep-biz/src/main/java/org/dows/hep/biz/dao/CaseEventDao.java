@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import jakarta.annotation.Resource;
 import org.dows.hep.api.tenant.casus.request.FindCaseEventRequest;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
@@ -16,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.LinkedHashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +36,7 @@ public class CaseEventDao extends BaseSubDao<CaseEventService, CaseEventEntity, 
     protected CaseEventActionDao subDao;
 
     @Autowired
-    protected IndicatorExpressionRefDao expressionRefDao;
+    protected CaseIndicatorExpressionRefDao caseIndicatorExpressionRefDao;
 
 
 
@@ -113,20 +112,15 @@ public class CaseEventDao extends BaseSubDao<CaseEventService, CaseEventEntity, 
 
 
 
-    @Transactional(rollbackFor = Exception.class)
-    public boolean tranSave(CaseEventEntity lead, List<CaseEventEvalEntity> subs, LinkedHashMap<CaseEventActionEntity,List<CaseEventActionIndicatorEntity>> subsX) {
-        AssertUtil.falseThenThrow(coreTranSave(lead, subs, subsX, false, true))
-                .throwMessage(failedSaveMessage);
-        return true;
-    }
+
 
     @Transactional(rollbackFor = Exception.class)
-    public boolean tranSave(CaseEventEntity lead, List<CaseEventActionEntity> actions, Map<String,List<String>> mapExpressions,boolean caseFlag) {
+    public boolean tranSave(CaseEventEntity lead, List<CaseEventActionEntity> actions, Map<String,List<String>> mapExpressions) {
         AssertUtil.falseThenThrow(coreTranSave(lead, actions,  defaultUseLogicId))
                 .throwMessage(failedSaveMessage);
-        return caseFlag? expressionRefDao.tranUpdateReasonId(mapExpressions): expressionRefDao.tranUpdateReasonId(mapExpressions);
-    }
+        return caseIndicatorExpressionRefDao.tranUpdateReasonId(mapExpressions);
 
+    }
     @Transactional(rollbackFor = Exception.class)
     public boolean tranSaveBatch(List<CaseEventEntity> events, List<CaseEventEvalEntity> evals,  List<CaseEventActionEntity> actions,List<CaseEventActionIndicatorEntity> indicators ) {
         this.tranSaveBatch(events,evals,false);
@@ -136,12 +130,7 @@ public class CaseEventDao extends BaseSubDao<CaseEventService, CaseEventEntity, 
 
     //region save
 
-    protected boolean coreTranSave(CaseEventEntity lead, List<CaseEventEvalEntity> subs, LinkedHashMap<CaseEventActionEntity,List<CaseEventActionIndicatorEntity>> subsX, boolean delSubBefore,  boolean useLogicId) {
-        if (!super.coreTranSave(lead, subs, delSubBefore, useLogicId)) {
-            return false;
-        }
-        return subDao.saveOrUpdateBatch(lead.getCaseEventId(),subsX,useLogicId,true);
-    }
+
     protected boolean coreTranSave(CaseEventEntity lead, List<CaseEventActionEntity> actions, boolean useLogicId) {
         if (!saveOrUpdate(lead, useLogicId)) {
             return false;
@@ -156,13 +145,16 @@ public class CaseEventDao extends BaseSubDao<CaseEventService, CaseEventEntity, 
     //region delete
     @Override
     protected boolean coreTranDelete(List<String> ids, boolean delSub, boolean dftIfSubEmpty) {
-        if(!super.coreTranDelete(ids, delSub, dftIfSubEmpty)){
+        List<String> actionIds=delSub?ShareUtil.XCollection.map(subDao.getByEventIds(ids, CaseEventActionEntity::getCaseEventActionId),
+                CaseEventActionEntity::getCaseEventActionId): Collections.emptyList();
+        if(!super.coreTranDelete(ids, false, dftIfSubEmpty)){
             return false;
         }
         if(!delSub)
             return true;
         subDao.delByEventId(ids,dftIfSubEmpty);
-        subDao.delSubByEventId(ids,dftIfSubEmpty);
+        ids.addAll(actionIds);
+        caseIndicatorExpressionRefDao.tranDeleteByReasonId(ids);
         return true;
     }
     //endregion

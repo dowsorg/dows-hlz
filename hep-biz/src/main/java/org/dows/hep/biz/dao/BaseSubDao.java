@@ -163,6 +163,7 @@ public abstract class BaseSubDao<LS extends MybatisCrudService<LE>, LE extends C
      * @return
      */
     protected boolean coreTranSaveBatch(List<LE> leads, List<SE> subs,boolean useLogicId,boolean dftIfLeadEmpty){
+        useLogicId=true;
         if(!saveOrUpdateBatch(leads,useLogicId,dftIfLeadEmpty)){
             return false;
         }

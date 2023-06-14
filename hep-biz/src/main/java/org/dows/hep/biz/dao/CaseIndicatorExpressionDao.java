@@ -1,0 +1,65 @@
+package org.dows.hep.biz.dao;
+
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
+import org.dows.hep.entity.CaseIndicatorExpressionEntity;
+import org.dows.hep.entity.CaseIndicatorExpressionItemEntity;
+import org.dows.hep.service.CaseIndicatorExpressionItemService;
+import org.dows.hep.service.CaseIndicatorExpressionService;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author : wuzl
+ * @date : 2023/6/13 10:36
+ */
+@Component
+public class CaseIndicatorExpressionDao extends BaseSubDao<CaseIndicatorExpressionService,CaseIndicatorExpressionEntity, CaseIndicatorExpressionItemService, CaseIndicatorExpressionItemEntity> {
+
+    public CaseIndicatorExpressionDao(){
+        super("表达式不存在或已删除");
+    }
+
+    @Override
+    protected SFunction<CaseIndicatorExpressionEntity, String> getColCateg() {
+        return null;
+    }
+
+    @Override
+    protected SFunction<CaseIndicatorExpressionEntity, String> getColId() {
+        return CaseIndicatorExpressionEntity::getCaseIndicatorExpressionId;
+    }
+
+    @Override
+    protected SFunction<String, ?> setColId(CaseIndicatorExpressionEntity item) {
+        return item::setCaseIndicatorExpressionId;
+    }
+
+    @Override
+    protected SFunction<CaseIndicatorExpressionEntity, Integer> getColState() {
+        return null;
+    }
+
+    @Override
+    protected SFunction<Integer, ?> setColState(CaseIndicatorExpressionEntity item) {
+        return null;
+    }
+
+    @Override
+    protected SFunction<CaseIndicatorExpressionItemEntity, String> getColLeadId() {
+        return CaseIndicatorExpressionItemEntity::getIndicatorExpressionId;
+    }
+
+    @Override
+    protected SFunction<String, ?> setColLeadId(CaseIndicatorExpressionItemEntity item) {
+        return item::setIndicatorExpressionId;
+    }
+
+    @Override
+    protected SFunction<CaseIndicatorExpressionItemEntity, String> getColSubId() {
+        return CaseIndicatorExpressionItemEntity::getCaseIndicatorExpressionItemId;
+    }
+
+    @Override
+    protected SFunction<String, ?> setColSubId(CaseIndicatorExpressionItemEntity item) {
+        return item::setCaseIndicatorExpressionItemId;
+    }
+}

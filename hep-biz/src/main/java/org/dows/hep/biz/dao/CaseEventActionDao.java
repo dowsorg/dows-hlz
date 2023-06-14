@@ -130,6 +130,18 @@ public class CaseEventActionDao extends BaseSubDao<CaseEventActionService, CaseE
                 .select(cols)
                 .list();
     }
+    public List<CaseEventActionEntity> getByEventIds(List<String> eventIds, SFunction<CaseEventActionEntity,?>...cols){
+        if (ShareUtil.XObject.isEmpty(eventIds)) {
+            return Collections.emptyList();
+        }
+        final boolean oneFlag=eventIds.size()==1;
+        return service.lambdaQuery()
+                .eq(oneFlag, CaseEventActionEntity::getCaseEventId,eventIds.iterator().next())
+                .in(!oneFlag, CaseEventActionEntity::getCaseEventId,eventIds)
+                .orderByAsc(CaseEventActionEntity::getCaseEventId)
+                .select(cols)
+                .list();
+    }
     //获取事件措施影响指标列表
     public List<CaseEventActionIndicatorEntity> getSubByEventId(String eventId,SFunction<CaseEventActionIndicatorEntity,?>...cols){
         if (ShareUtil.XObject.isEmpty(eventId)) {
