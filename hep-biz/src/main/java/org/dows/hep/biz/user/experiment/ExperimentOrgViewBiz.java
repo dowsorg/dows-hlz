@@ -698,15 +698,15 @@ public class ExperimentOrgViewBiz {
      * @开始时间:
      * @创建时间: 2023年6月05日 下午17:40:34
      */
-    public List<ExperimentIndicatorJudgeSupportExamResponse> getIndicatorViewSupportExamByCategoryId(String indicatoryCategoryId) {
+    public List<ExperimentIndicatorJudgeSupportExamResponse> getIndicatorViewSupportExamByCategoryIds(Set<String> experimentIndicatoryCategoryIds) {
         //1、根据指标分类ID获取所有符合条件的数据
         List<ExperimentIndicatorViewSupportExamEntity> entityList = experimentIndicatorViewSupportExamService.lambdaQuery()
                 .select(ExperimentIndicatorViewSupportExamEntity::getId,
                         ExperimentIndicatorViewSupportExamEntity::getExperimentJudgeSupportExamId,
                         ExperimentIndicatorViewSupportExamEntity::getIndicatorViewSupportExamId,
                         ExperimentIndicatorViewSupportExamEntity::getName,
-                        ExperimentIndicatorViewSupportExamEntity::getIndicatorCategoryId)
-                .eq(ExperimentIndicatorViewSupportExamEntity::getIndicatorCategoryId, indicatoryCategoryId)
+                        ExperimentIndicatorViewSupportExamEntity::getExperimentIndicatorCategoryId)
+                .in(ExperimentIndicatorViewSupportExamEntity::getExperimentIndicatorCategoryId, experimentIndicatoryCategoryIds)
                 .eq(ExperimentIndicatorViewSupportExamEntity::getStatus, true)
                 .list();
         List<ExperimentIndicatorJudgeSupportExamResponse> responseList = new ArrayList<>();
@@ -718,7 +718,7 @@ public class ExperimentOrgViewBiz {
                         .experimentJudgeSupportExamId(entity.getExperimentJudgeSupportExamId())
                         .indicatorJudgeSupportExamId(entity.getIndicatorViewSupportExamId())
                         .name(entity.getName())
-                        .indicatorCategoryId(entity.getIndicatorCategoryId())
+                        .indicatorCategoryId(entity.getExperimentIndicatorCategoryId())
                         .build();
                 responseList.add(response);
             });
