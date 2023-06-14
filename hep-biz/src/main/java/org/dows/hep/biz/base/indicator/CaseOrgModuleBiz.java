@@ -49,6 +49,7 @@ public class CaseOrgModuleBiz {
         .caseOrgModuleId(caseOrgModuleEntity.getCaseOrgModuleId())
         .appId(caseOrgModuleEntity.getAppId())
         .name(caseOrgModuleEntity.getName())
+        .seq(caseOrgModuleEntity.getSeq())
         .caseOrgModuleFuncRefResponseRsList(caseOrgModuleFuncRefResponseRsList)
         .build();
   }
@@ -58,6 +59,7 @@ public class CaseOrgModuleBiz {
     List<CaseOrgModuleFuncRefEntity> caseOrgModuleFuncRefEntityList = new ArrayList<>();
     String appId = batchCreateOrUpdateCaseOrgModuleRequestRs.getAppId();
     String caseOrgId = batchCreateOrUpdateCaseOrgModuleRequestRs.getCaseOrgId();
+
     List<CreateOrUpdateCaseOrgModuleRequestRs> createOrUpdateCaseOrgModuleRequestRsList = batchCreateOrUpdateCaseOrgModuleRequestRs.getCreateOrUpdateCaseOrgModuleRequestRsList();
     Set<String> paramCaseOrgModuleIdSet = new HashSet<>();
     Set<String> dbCaseOrgModuleIdSet = new HashSet<>();
@@ -129,6 +131,7 @@ public class CaseOrgModuleBiz {
     }
     createOrUpdateCaseOrgModuleRequestRsList.forEach(createOrUpdateCaseOrgModuleRequestRs -> {
       CaseOrgModuleEntity caseOrgModuleEntity = null;
+      Integer seq = createOrUpdateCaseOrgModuleRequestRs.getSeq();
       String caseOrgModuleId = createOrUpdateCaseOrgModuleRequestRs.getCaseOrgModuleId();
       String name = createOrUpdateCaseOrgModuleRequestRs.getName();
       if (StringUtils.isBlank(caseOrgModuleId)) {
@@ -139,6 +142,7 @@ public class CaseOrgModuleBiz {
             .appId(appId)
             .caseOrgId(caseOrgId)
             .name(name)
+            .seq(seq)
             .build();
       } else {
         caseOrgModuleEntity = kCaseOrgModuleIdVCaseOrgModuleEntityMap.get(caseOrgModuleId);
@@ -147,6 +151,7 @@ public class CaseOrgModuleBiz {
           throw new CaseOrgModuleException(EnumESC.VALIDATE_EXCEPTION);
         }
         caseOrgModuleEntity.setName(name);
+        caseOrgModuleEntity.setSeq(seq);
       }
       caseOrgModuleEntityList.add(caseOrgModuleEntity);
       List<CreateOrUpdateCaseOrgModuleFuncRefRequestRs> createOrUpdateCaseOrgModuleFuncRefRequestRsList = createOrUpdateCaseOrgModuleRequestRs.getCreateOrUpdateCaseOrgModuleFuncRefRequestRsList();
@@ -208,6 +213,7 @@ public class CaseOrgModuleBiz {
     List<CaseOrgModuleEntity> caseOrgModuleEntityList = caseOrgModuleService.lambdaQuery()
         .eq(CaseOrgModuleEntity::getAppId, appId)
         .eq(CaseOrgModuleEntity::getCaseOrgId, caseOrgId)
+        .orderByAsc(CaseOrgModuleEntity::getSeq)
         .list()
         .stream()
         .peek(caseOrgModuleEntity -> caseOrgModuleIdSet.add(caseOrgModuleEntity.getCaseOrgModuleId()))

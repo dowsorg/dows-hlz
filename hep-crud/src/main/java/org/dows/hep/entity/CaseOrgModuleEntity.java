@@ -43,6 +43,9 @@ public class CaseOrgModuleEntity implements CrudEntity {
   @Schema(title = "模块名称")
   private String name;
 
+  @Schema(title = "顺序")
+  private Integer seq;
+
   @JsonIgnore
   @TableLogic
   @TableField(fill = FieldFill.INSERT)
