@@ -30,5 +30,5 @@ public class CaseOrgModuleResponseRs implements Serializable {
   private String name;
 
   @Schema(title = "功能点响应列表")
-  private List<IndicatorFuncResponse> indicatorFuncResponseList;
+  private List<CaseOrgModuleFuncRefResponseRs> caseOrgModuleFuncRefResponseRsList;
 }

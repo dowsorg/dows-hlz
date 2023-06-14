@@ -1,22 +1,29 @@
 package org.dows.hep.biz.base.indicator;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.BatchCreateOrUpdateCaseOrgModuleRequestRs;
+import org.dows.hep.api.base.indicator.request.CreateOrUpdateCaseOrgModuleFuncRefRequestRs;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateCaseOrgModuleRequestRs;
+import org.dows.hep.api.base.indicator.response.CaseOrgModuleFuncRefResponseRs;
 import org.dows.hep.api.base.indicator.response.CaseOrgModuleResponseRs;
+import org.dows.hep.api.base.indicator.response.IndicatorFuncResponse;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.exception.CaseOrgModuleException;
 import org.dows.hep.entity.CaseOrgModuleEntity;
 import org.dows.hep.entity.CaseOrgModuleFuncRefEntity;
+import org.dows.hep.entity.IndicatorFuncEntity;
 import org.dows.hep.service.CaseOrgModuleFuncRefService;
 import org.dows.hep.service.CaseOrgModuleService;
+import org.dows.hep.service.IndicatorFuncService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author runsix
@@ -28,6 +35,23 @@ public class CaseOrgModuleBiz {
   private final CaseOrgModuleService caseOrgModuleService;
   private final CaseOrgModuleFuncRefService caseOrgModuleFuncRefService;
   private final IdGenerator idGenerator;
+  private final IndicatorFuncService indicatorFuncService;
+  private final CaseOrgModuleFuncRefBiz caseOrgModuleFuncRefBiz;
+  public static CaseOrgModuleResponseRs caseOrgModule2ResponseRs(
+      CaseOrgModuleEntity caseOrgModuleEntity,
+      List<CaseOrgModuleFuncRefResponseRs> caseOrgModuleFuncRefResponseRsList
+  ) {
+    if (Objects.isNull(caseOrgModuleEntity)) {
+      return null;
+    }
+    return CaseOrgModuleResponseRs
+        .builder()
+        .caseOrgModuleId(caseOrgModuleEntity.getCaseOrgModuleId())
+        .appId(caseOrgModuleEntity.getAppId())
+        .name(caseOrgModuleEntity.getName())
+        .caseOrgModuleFuncRefResponseRsList(caseOrgModuleFuncRefResponseRsList)
+        .build();
+  }
   @Transactional(rollbackFor = Exception.class)
   public void batchCreateOrUpdate(BatchCreateOrUpdateCaseOrgModuleRequestRs batchCreateOrUpdateCaseOrgModuleRequestRs) {
     List<CaseOrgModuleEntity> caseOrgModuleEntityList = new ArrayList<>();
@@ -41,15 +65,29 @@ public class CaseOrgModuleBiz {
     Set<String> paramCaseOrgModuleFuncRefIdSet = new HashSet<>();
     Set<String> dbCaseOrgModuleFuncRefIdSet = new HashSet<>();
     Map<String, CaseOrgModuleFuncRefEntity> kCaseOrgModuleFuncRefIdVCaseOrgModuleFuncRefEntityMap = new HashMap<>();
+    Set<String> paramIndicatorFuncIdSet = new HashSet<>();
+    Set<String> dbIndicatorFuncIdSet = new HashSet<>();
     createOrUpdateCaseOrgModuleRequestRsList.forEach(createOrUpdateCaseOrgModuleRequestRs -> {
       String caseOrgModuleId = createOrUpdateCaseOrgModuleRequestRs.getCaseOrgModuleId();
       if (StringUtils.isNotBlank(caseOrgModuleId)) {
         paramCaseOrgModuleIdSet.add(caseOrgModuleId);
       }
-      List<String> caseOrgModuleFuncRefIdList = createOrUpdateCaseOrgModuleRequestRs.getCaseOrgModuleFuncRefIdList();
-      if (Objects.nonNull(caseOrgModuleFuncRefIdList) && !caseOrgModuleFuncRefIdList.isEmpty()) {
-        paramCaseOrgModuleFuncRefIdSet.addAll(caseOrgModuleFuncRefIdList);
+      List<CreateOrUpdateCaseOrgModuleFuncRefRequestRs> createOrUpdateCaseOrgModuleFuncRefRequestRsList = createOrUpdateCaseOrgModuleRequestRs.getCreateOrUpdateCaseOrgModuleFuncRefRequestRsList();
+      if (Objects.isNull(createOrUpdateCaseOrgModuleFuncRefRequestRsList) || createOrUpdateCaseOrgModuleFuncRefRequestRsList.isEmpty()) {
+        return;
       }
+      createOrUpdateCaseOrgModuleFuncRefRequestRsList.forEach(createOrUpdateCaseOrgModuleFuncRefRequestRs -> {
+        String caseOrgModuleFuncRefId = createOrUpdateCaseOrgModuleFuncRefRequestRs.getCaseOrgModuleFuncRefId();
+        if (StringUtils.isNotBlank(caseOrgModuleFuncRefId)) {
+          paramCaseOrgModuleFuncRefIdSet.add(caseOrgModuleFuncRefId);
+        }
+        String indicatorFuncId = createOrUpdateCaseOrgModuleFuncRefRequestRs.getIndicatorFuncId();
+        if (StringUtils.isBlank(indicatorFuncId)) {
+          log.warn("CaseOrgModuleBiz.batchCreateOrUpdate param indicatorFuncId is blank is illegal");
+          throw new CaseOrgModuleException(EnumESC.VALIDATE_EXCEPTION);
+        }
+        paramIndicatorFuncIdSet.add(indicatorFuncId);
+      });
     });
     if (!paramCaseOrgModuleIdSet.isEmpty()) {
       caseOrgModuleService.lambdaQuery()
@@ -77,6 +115,18 @@ public class CaseOrgModuleBiz {
         throw new CaseOrgModuleException(EnumESC.VALIDATE_EXCEPTION);
       }
     }
+    if (!paramIndicatorFuncIdSet.isEmpty()) {
+      indicatorFuncService.lambdaQuery()
+          .in(IndicatorFuncEntity::getIndicatorFuncId, paramIndicatorFuncIdSet)
+          .list()
+          .forEach(indicatorFuncEntity -> {
+            dbIndicatorFuncIdSet.add(indicatorFuncEntity.getIndicatorFuncId());
+          });
+      if (paramIndicatorFuncIdSet.stream().anyMatch(indicatorFuncId -> !dbIndicatorFuncIdSet.contains(indicatorFuncId))) {
+        log.warn("CaseOrgModuleBiz.batchCreateOrUpdate param paramIndicatorFuncIdSet:{} is illegal", paramIndicatorFuncIdSet);
+        throw new CaseOrgModuleException(EnumESC.VALIDATE_EXCEPTION);
+      }
+    }
     createOrUpdateCaseOrgModuleRequestRsList.forEach(createOrUpdateCaseOrgModuleRequestRs -> {
       CaseOrgModuleEntity caseOrgModuleEntity = null;
       String caseOrgModuleId = createOrUpdateCaseOrgModuleRequestRs.getCaseOrgModuleId();
@@ -99,23 +149,32 @@ public class CaseOrgModuleBiz {
         caseOrgModuleEntity.setName(name);
       }
       caseOrgModuleEntityList.add(caseOrgModuleEntity);
-      List<String> caseOrgModuleFuncRefIdList = createOrUpdateCaseOrgModuleRequestRs.getCaseOrgModuleFuncRefIdList();
-      if (Objects.isNull(caseOrgModuleFuncRefIdList)) {
+      List<CreateOrUpdateCaseOrgModuleFuncRefRequestRs> createOrUpdateCaseOrgModuleFuncRefRequestRsList = createOrUpdateCaseOrgModuleRequestRs.getCreateOrUpdateCaseOrgModuleFuncRefRequestRsList();
+      if (Objects.isNull(createOrUpdateCaseOrgModuleFuncRefRequestRsList) || createOrUpdateCaseOrgModuleFuncRefRequestRsList.isEmpty()) {
         return;
       }
       String finalCaseOrgModuleId = caseOrgModuleId;
-      caseOrgModuleFuncRefIdList.forEach(caseOrgModuleFuncRefId -> {
-        CaseOrgModuleFuncRefEntity caseOrgModuleFuncRefEntity = kCaseOrgModuleFuncRefIdVCaseOrgModuleFuncRefEntityMap.get(caseOrgModuleFuncRefId);
-//        if (Objects.isNull(caseOrgModuleFuncRefEntity)) {
-//          caseOrgModuleFuncRefEntity = CaseOrgModuleFuncRefEntity
-//              .builder()
-//              .caseOrgModuleFuncRefId(idGenerator.nextIdStr())
-//              .appId(appId)
-//              .caseOrgModuleId(finalCaseOrgModuleId)
-//              .indicatorFuncId()
-//              .build();
-//        }
-
+      createOrUpdateCaseOrgModuleFuncRefRequestRsList.forEach(createOrUpdateCaseOrgModuleFuncRefRequestRs -> {
+        String caseOrgModuleFuncRefId = createOrUpdateCaseOrgModuleFuncRefRequestRs.getCaseOrgModuleFuncRefId();
+        String indicatorFuncId = createOrUpdateCaseOrgModuleFuncRefRequestRs.getIndicatorFuncId();
+        CaseOrgModuleFuncRefEntity caseOrgModuleFuncRefEntity = null;
+        if (StringUtils.isBlank(caseOrgModuleFuncRefId)) {
+          caseOrgModuleFuncRefId = idGenerator.nextIdStr();
+          caseOrgModuleFuncRefEntity = CaseOrgModuleFuncRefEntity
+              .builder()
+              .caseOrgModuleFuncRefId(caseOrgModuleFuncRefId)
+              .appId(appId)
+              .caseOrgModuleId(finalCaseOrgModuleId)
+              .indicatorFuncId(indicatorFuncId)
+              .build();
+        } else {
+          CaseOrgModuleFuncRefEntity caseOrgModuleFuncRefEntity1 = kCaseOrgModuleFuncRefIdVCaseOrgModuleFuncRefEntityMap.get(caseOrgModuleFuncRefId);
+          if (Objects.isNull(caseOrgModuleFuncRefEntity1)) {
+            log.warn("CaseOrgModuleBiz.batchCreateOrUpdate param caseOrgModuleFuncRefId:{} is illegal", caseOrgModuleFuncRefId);
+            throw new CaseOrgModuleException(EnumESC.VALIDATE_EXCEPTION);
+          }
+        }
+        caseOrgModuleFuncRefEntityList.add(caseOrgModuleFuncRefEntity);
       });
     });
     caseOrgModuleService.saveOrUpdateBatch(caseOrgModuleEntityList);
@@ -124,10 +183,83 @@ public class CaseOrgModuleBiz {
 
   @Transactional(rollbackFor = Exception.class)
   public void delete(String caseOrgModuleId) {
+    boolean isRemove = caseOrgModuleService.remove(
+        new LambdaQueryWrapper<CaseOrgModuleEntity>()
+            .eq(CaseOrgModuleEntity::getCaseOrgModuleId, caseOrgModuleId)
+    );
+    if (!isRemove) {
+      log.warn("method CaseOrgModuleBiz.delete param caseOrgModuleId:{} is illegal", caseOrgModuleId);
+      throw new CaseOrgModuleException(EnumESC.VALIDATE_EXCEPTION);
+    }
+    caseOrgModuleFuncRefService.remove(
+        new LambdaQueryWrapper<CaseOrgModuleFuncRefEntity>()
+            .eq(CaseOrgModuleFuncRefEntity::getCaseOrgModuleId, caseOrgModuleId)
+    );
   }
 
 
   public List<CaseOrgModuleResponseRs> getByCaseOrgId(String appId, String caseOrgId) {
-    return null;
+    List<CaseOrgModuleResponseRs> caseOrgModuleResponseRsList = new ArrayList<>();
+    Set<String> caseOrgModuleIdSet = new HashSet<>();
+    Map<String, List<CaseOrgModuleFuncRefResponseRs>> kCaseOrgModuleIdVCaseOrgModuleFuncRefResponseRsListMap = new HashMap<>();
+    Map<String, List<CaseOrgModuleFuncRefEntity>> kCaseOrgModuleIdVCaseOrgModuleFuncRefEntityListMap = new HashMap<>();
+    Set<String> indicatorFuncIdSet = new HashSet<>();
+    Map<String, IndicatorFuncResponse> kIndicatorFuncIdVIndicatorFuncResponseMap = new HashMap<>();
+    List<CaseOrgModuleEntity> caseOrgModuleEntityList = caseOrgModuleService.lambdaQuery()
+        .eq(CaseOrgModuleEntity::getAppId, appId)
+        .eq(CaseOrgModuleEntity::getCaseOrgId, caseOrgId)
+        .list()
+        .stream()
+        .peek(caseOrgModuleEntity -> caseOrgModuleIdSet.add(caseOrgModuleEntity.getCaseOrgModuleId()))
+        .collect(Collectors.toList());
+    if (!caseOrgModuleIdSet.isEmpty()) {
+      caseOrgModuleFuncRefService.lambdaQuery()
+          .eq(CaseOrgModuleFuncRefEntity::getAppId, appId)
+          .in(CaseOrgModuleFuncRefEntity::getCaseOrgModuleId, caseOrgModuleIdSet)
+          .list()
+          .forEach(caseOrgModuleFuncRefEntity -> {
+            String indicatorFuncId = caseOrgModuleFuncRefEntity.getIndicatorFuncId();
+            indicatorFuncIdSet.add(indicatorFuncId);
+            String caseOrgModuleId = caseOrgModuleFuncRefEntity.getCaseOrgModuleId();
+            List<CaseOrgModuleFuncRefEntity> caseOrgModuleFuncRefEntityList = kCaseOrgModuleIdVCaseOrgModuleFuncRefEntityListMap.get(caseOrgModuleId);
+            if (Objects.isNull(caseOrgModuleFuncRefEntityList)) {
+              caseOrgModuleFuncRefEntityList = new ArrayList<>();
+            }
+            caseOrgModuleFuncRefEntityList.add(caseOrgModuleFuncRefEntity);
+            kCaseOrgModuleIdVCaseOrgModuleFuncRefEntityListMap.put(caseOrgModuleId, caseOrgModuleFuncRefEntityList);
+          });
+    }
+    if (!indicatorFuncIdSet.isEmpty()) {
+      indicatorFuncService.lambdaQuery()
+          .eq(IndicatorFuncEntity::getAppId, appId)
+          .in(IndicatorFuncEntity::getIndicatorFuncId, indicatorFuncIdSet)
+          .list()
+          .forEach(indicatorFuncEntity -> {
+            IndicatorFuncResponse indicatorFuncResponse = IndicatorFuncBiz.indicatorFunc2Response(indicatorFuncEntity);
+            kIndicatorFuncIdVIndicatorFuncResponseMap.put(indicatorFuncEntity.getIndicatorFuncId(), indicatorFuncResponse);
+          });
+    }
+    kCaseOrgModuleIdVCaseOrgModuleFuncRefEntityListMap.forEach((caseOrgModuleId, caseOrgModuleFuncRefEntityList) -> {
+      if (Objects.isNull(caseOrgModuleFuncRefEntityList)) {
+        return;
+      }
+      caseOrgModuleFuncRefEntityList.forEach(caseOrgModuleFuncRefEntity -> {
+        List<CaseOrgModuleFuncRefResponseRs> caseOrgModuleFuncRefResponseRsList = kCaseOrgModuleIdVCaseOrgModuleFuncRefResponseRsListMap.get(caseOrgModuleId);
+        if (Objects.isNull(caseOrgModuleFuncRefResponseRsList)) {
+          caseOrgModuleFuncRefResponseRsList = new ArrayList<>();
+        }
+        String indicatorFuncId = caseOrgModuleFuncRefEntity.getIndicatorFuncId();
+        CaseOrgModuleFuncRefResponseRs caseOrgModuleFuncRefResponseRs = caseOrgModuleFuncRefBiz.caseOrgModuleFuncRef2ResponseRs(caseOrgModuleFuncRefEntity, kIndicatorFuncIdVIndicatorFuncResponseMap.get(indicatorFuncId));
+        caseOrgModuleFuncRefResponseRsList.add(caseOrgModuleFuncRefResponseRs);
+        kCaseOrgModuleIdVCaseOrgModuleFuncRefResponseRsListMap.put(caseOrgModuleId, caseOrgModuleFuncRefResponseRsList);
+      });
+    });
+    caseOrgModuleEntityList.forEach(caseOrgModuleEntity -> {
+      String caseOrgModuleId = caseOrgModuleEntity.getCaseOrgModuleId();
+      List<CaseOrgModuleFuncRefResponseRs> caseOrgModuleFuncRefResponseRsList = kCaseOrgModuleIdVCaseOrgModuleFuncRefResponseRsListMap.get(caseOrgModuleId);
+      CaseOrgModuleResponseRs caseOrgModuleResponseRs = CaseOrgModuleBiz.caseOrgModule2ResponseRs(caseOrgModuleEntity, caseOrgModuleFuncRefResponseRsList);
+      caseOrgModuleResponseRsList.add(caseOrgModuleResponseRs);
+    });
+    return caseOrgModuleResponseRsList;
   }
 }
