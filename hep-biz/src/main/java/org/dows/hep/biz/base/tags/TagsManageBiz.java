@@ -1,0 +1,59 @@
+package org.dows.hep.biz.base.tags;
+
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
+import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.tags.request.TagsInstanceRequest;
+import org.dows.hep.entity.TagsInstanceEntity;
+import org.dows.hep.service.TagsInstanceService;
+import org.dows.sequence.api.IdGenerator;
+import org.springframework.stereotype.Service;
+
+/**
+ * @author jx
+ * @date 2023/6/14 15:25
+ */
+@Service
+@RequiredArgsConstructor
+public class TagsManageBiz {
+
+    private final TagsInstanceService tagsInstanceService;
+
+    private final IdGenerator idGenerator;
+    /**
+     * @param
+     * @return
+     * @说明: 新增标签
+     * @关联表: TagsInstance
+     * @工时: 1H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月14日 下午15:26:34
+     */
+    @DSTransactional
+    public Boolean insertOrUpdateTags(TagsInstanceRequest manageRequest) {
+        Boolean flag = false;
+        if(manageRequest.getId() != null){
+            TagsInstanceEntity manageEntity = TagsInstanceEntity
+                    .builder()
+                    .id(manageRequest.getId())
+                    .tagsId(manageRequest.getTagsId())
+                    .appId(manageRequest.getAppId())
+                    .name(manageRequest.getName())
+                    .tagsCategoryId(manageRequest.getTagsCategoryId())
+                    .status(manageRequest.getStatus())
+                    .build();
+            flag = tagsInstanceService.updateById(manageEntity);
+        }else{
+            TagsInstanceEntity manageEntity = TagsInstanceEntity
+                    .builder()
+                    .tagsId(idGenerator.nextIdStr())
+                    .appId(manageRequest.getAppId())
+                    .name(manageRequest.getName())
+                    .tagsCategoryId(manageRequest.getTagsCategoryId())
+                    .status(manageRequest.getStatus())
+                    .build();
+            flag = tagsInstanceService.save(manageEntity);
+        }
+        return flag;
+    }
+}
