@@ -115,7 +115,7 @@ public class IndicatorInstanceBiz{
 
     public void populateKIndicatorInstanceIdVIndicatorRuleMap(String appId, Set<String> indicatorInstanceIdSet, Map<String, IndicatorRuleEntity> kIndicatorInstanceIdVIndicatorRuleMap) {
         if (Objects.isNull(kIndicatorInstanceIdVIndicatorRuleMap)) {
-            log.warn("method IndicatorInstanceBiz.populateKIndicatorInstanceIdVDefMap param kIndicatorInstanceIdVDefMap is null");
+            log.warn("method IndicatorInstanceBiz.populateKIndicatorInstanceIdVDefMap param kIndicatorInstanceIdVIndicatorRuleMap is null");
             return;
         }
         if (Objects.isNull(indicatorInstanceIdSet) || indicatorInstanceIdSet.isEmpty()) {

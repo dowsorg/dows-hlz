@@ -1,0 +1,64 @@
+package org.dows.hep.api.base.indicator.response;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+
+/**
+ * @author runsix
+ */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Schema(name = "CaseIndicatorExpressionResponseRs", title = "指标公式响应")
+public class CaseIndicatorExpressionResponseRs implements Serializable {
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
+  @Schema(title = "主键")
+  private Long id;
+
+  @Schema(title = "分布式ID")
+  private String indicatorExpressionId;
+
+  @Schema(title = "指标公式与主体关联关系分布式ID")
+  private String indicatorExpressionRefId;
+
+  @Schema(title = "应用ID")
+  private String appId;
+
+  @Schema(title = "承接结果的分布式ID")
+  private String principalId;
+
+  @Schema(title = "如果结果是指标，则此条存在值")
+  private CaseIndicatorCategoryResponse caseIndicatorCategoryResponse;
+
+  @JsonIgnore
+  @Schema(title = "逻辑删除")
+  private Boolean deleted;
+
+  @Schema(title = "时间戳")
+  private Date dt;
+
+  @Schema(title = "公式类型，0-条件，1-随机")
+  private Integer type;
+
+  @Schema(title = "公式来源，详情见EnumIndicatorExpressionSource")
+  private Integer source;
+
+  @Schema(title = "指标公式细项列表")
+  private List<CaseIndicatorExpressionItemResponseRs> caseIndicatorExpressionItemResponseRsList;
+
+  @Schema(title = "上限")
+  private CaseIndicatorExpressionItemResponseRs caseMaxIndicatorExpressionItemResponseRs;
+
+  @Schema(title = "下限")
+  private CaseIndicatorExpressionItemResponseRs caseMinIndicatorExpressionItemResponseRs;
+}
