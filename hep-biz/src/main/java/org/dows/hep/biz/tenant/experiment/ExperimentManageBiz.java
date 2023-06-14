@@ -519,7 +519,6 @@ public class ExperimentManageBiz {
                     .list();
             List<AccountInstanceResponse> teachers = createExperiment.getTeachers();
             entityList.forEach(model -> {
-                if (teachers != null && teachers.size() > 0) {
                     //1.1、根据案例机构复制案例机构
                     CaseOrgEntity orgEntity = caseOrgService.lambdaQuery()
                             .eq(CaseOrgEntity::getCaseOrgId, createExperiment.getCaseOrgId())
@@ -585,61 +584,64 @@ public class ExperimentManageBiz {
                             .build();
                     accountOrgGeoApi.insertOrgGeo(geoRequest);
                     Set<String> experimentAccountIds = new HashSet<>();
-                    for (AccountInstanceResponse teacher : teachers) {
-                        //2、案例人物复制一份到实验中
-                        //2.1、获取用户信息及简介并创建新用户及简介
-                        AccountUserResponse accountUser = accountUserApi.getUserByAccountId(teacher.getAccountId());
-                        UserInstanceResponse userInstanceResponse = userInstanceApi.getUserInstanceByUserId(accountUser.getUserId());
-                        UserExtinfoResponse userExtinfoResponse = userExtinfoApi.getUserExtinfoByUserId(accountUser.getUserId());
-                        UserInstanceRequest userInstanceRequest = new UserInstanceRequest();
-                        BeanUtils.copyProperties(userInstanceResponse, userInstanceRequest, new String[]{"id", "accountId", "dt"});
-                        String userId = userInstanceApi.insertUserInstance(userInstanceRequest);
-                        UserExtinfoRequest userExtinfo = UserExtinfoRequest.builder()
-                                .userId(userId)
-                                .intro(userExtinfoResponse.getIntro())
-                                .build();
-                        String extinfoId = userExtinfoApi.insertUserExtinfo(userExtinfo);
-                        //2.2、获取该账户的所有信息
-                        AccountInstanceResponse accountInstanceResponse = accountInstanceApi.getAccountInstanceByAccountId(teacher.getAccountId());
-                        //2.3、复制账户信息
-                        AccountInstanceRequest accountInstanceRequest = AccountInstanceRequest.builder()
-                                .appId(accountInstanceResponse.getAppId())
-                                .avatar(accountInstanceResponse.getAvatar())
-                                .status(accountInstanceResponse.getStatus())
-                                .source("实验人物")
-                                .principalType(accountInstanceResponse.getPrincipalType())
-                                .identifier(createCode(7))
-                                .accountName(randomWord(6))
-                                .build();
-                        AccountInstanceResponse vo = accountInstanceApi.createAccountInstance(accountInstanceRequest);
-                        //2.4、创建账户和用户之间的关联关系
-                        AccountUserRequest accountUserRequest = AccountUserRequest.builder()
-                                .accountId(vo.getAccountId())
-                                .userId(userId)
-                                .appId(accountInstanceResponse.getAppId())
-                                .tentantId(accountInstanceResponse.getTenantId()).build();
-                        this.accountUserApi.createAccountUser(accountUserRequest);
-                        //2.5、获取案例人物ID
-                        CasePersonEntity personEntity = casePersonService
-                                .lambdaQuery()
-                                .eq(CasePersonEntity::getCaseOrgId, createExperiment.getCaseOrgId())
-                                .eq(CasePersonEntity::getAccountId, teacher.getAccountId())
-                                .eq(CasePersonEntity::getDeleted, false)
-                                .one();
-                        //2.6、添加新人物到实验中
-                        ExperimentPersonEntity entity1 = ExperimentPersonEntity.builder()
-                                .experimentPersonId(idGenerator.nextIdStr())
-                                .experimentInstanceId(createExperiment.getExperimentInstanceId())
-                                .experimentGroupId(model.getExperimentGroupId())
-                                .experimentOrgId(experimentOrgId)
-                                .appId(createExperiment.getAppId())
-                                .experimentOrgName(request.getOrgName())
-                                .accountId(vo.getAccountId())
-                                .accountName(vo.getAccountName())
-                                .casePersonId(personEntity.getCasePersonId())
-                                .build();
-                        experimentPersonService.save(entity1);
-                        experimentAccountIds.add(vo.getAccountId());
+                    //1、虚拟人物不为空则复制
+                    if (teachers != null && teachers.size() > 0) {
+                        for (AccountInstanceResponse teacher : teachers) {
+                            //2、案例人物复制一份到实验中
+                            //2.1、获取用户信息及简介并创建新用户及简介
+                            AccountUserResponse accountUser = accountUserApi.getUserByAccountId(teacher.getAccountId());
+                            UserInstanceResponse userInstanceResponse = userInstanceApi.getUserInstanceByUserId(accountUser.getUserId());
+                            UserExtinfoResponse userExtinfoResponse = userExtinfoApi.getUserExtinfoByUserId(accountUser.getUserId());
+                            UserInstanceRequest userInstanceRequest = new UserInstanceRequest();
+                            BeanUtils.copyProperties(userInstanceResponse, userInstanceRequest, new String[]{"id", "accountId", "dt"});
+                            String userId = userInstanceApi.insertUserInstance(userInstanceRequest);
+                            UserExtinfoRequest userExtinfo = UserExtinfoRequest.builder()
+                                    .userId(userId)
+                                    .intro(userExtinfoResponse.getIntro())
+                                    .build();
+                            String extinfoId = userExtinfoApi.insertUserExtinfo(userExtinfo);
+                            //2.2、获取该账户的所有信息
+                            AccountInstanceResponse accountInstanceResponse = accountInstanceApi.getAccountInstanceByAccountId(teacher.getAccountId());
+                            //2.3、复制账户信息
+                            AccountInstanceRequest accountInstanceRequest = AccountInstanceRequest.builder()
+                                    .appId(accountInstanceResponse.getAppId())
+                                    .avatar(accountInstanceResponse.getAvatar())
+                                    .status(accountInstanceResponse.getStatus())
+                                    .source("实验人物")
+                                    .principalType(accountInstanceResponse.getPrincipalType())
+                                    .identifier(createCode(7))
+                                    .accountName(randomWord(6))
+                                    .build();
+                            AccountInstanceResponse vo = accountInstanceApi.createAccountInstance(accountInstanceRequest);
+                            //2.4、创建账户和用户之间的关联关系
+                            AccountUserRequest accountUserRequest = AccountUserRequest.builder()
+                                    .accountId(vo.getAccountId())
+                                    .userId(userId)
+                                    .appId(accountInstanceResponse.getAppId())
+                                    .tentantId(accountInstanceResponse.getTenantId()).build();
+                            this.accountUserApi.createAccountUser(accountUserRequest);
+                            //2.5、获取案例人物ID
+                            CasePersonEntity personEntity = casePersonService
+                                    .lambdaQuery()
+                                    .eq(CasePersonEntity::getCaseOrgId, createExperiment.getCaseOrgId())
+                                    .eq(CasePersonEntity::getAccountId, teacher.getAccountId())
+                                    .eq(CasePersonEntity::getDeleted, false)
+                                    .one();
+                            //2.6、添加新人物到实验中
+                            ExperimentPersonEntity entity1 = ExperimentPersonEntity.builder()
+                                    .experimentPersonId(idGenerator.nextIdStr())
+                                    .experimentInstanceId(createExperiment.getExperimentInstanceId())
+                                    .experimentGroupId(model.getExperimentGroupId())
+                                    .experimentOrgId(experimentOrgId)
+                                    .appId(createExperiment.getAppId())
+                                    .experimentOrgName(request.getOrgName())
+                                    .accountId(vo.getAccountId())
+                                    .accountName(vo.getAccountName())
+                                    .casePersonId(personEntity.getCasePersonId())
+                                    .build();
+                            experimentPersonService.save(entity1);
+                            experimentAccountIds.add(vo.getAccountId());
+                        }
                     }
                     //2.7、复制人物到新建的小组
                     experimentAccountIds.forEach(accountId -> {
@@ -656,7 +658,6 @@ public class ExperimentManageBiz {
                         accountGroupApi.insertAccountGroupNotCheck(request1);
                     });
                     experimentAccountIds = new HashSet<>();
-                }
             });
         });
         return true;

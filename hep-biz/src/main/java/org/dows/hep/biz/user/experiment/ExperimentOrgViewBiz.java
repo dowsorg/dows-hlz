@@ -200,7 +200,7 @@ public class ExperimentOrgViewBiz {
                     .dueDays(setFollowup.getDueDays())
                     .todoTime(TimeUtil.timeProcess(new Date(), setFollowup.getDueDays()))
                     .setAtTime(new Date())
-                    .followupTimes(timerEntity.getFollowupTimes() == null ? 1 : timerEntity.getFollowupTimes() + 1)
+                    .followupTimes(timerEntity != null && timerEntity.getFollowupTimes() != null ? timerEntity.getFollowupTimes() + 1 : 1)
                     .build();
             flag = operateFollowupTimerService.save(entity);
         }

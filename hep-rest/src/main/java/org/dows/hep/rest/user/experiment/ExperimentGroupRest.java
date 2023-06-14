@@ -80,8 +80,8 @@ public class ExperimentGroupRest {
      */
     @Operation(summary = "分配小组成员")
     @PostMapping("v1/userExperiment/experimentGroup/allotGroupMembers")
-    public Boolean allotGroupMembers(@RequestBody @Validated ExperimentParticipatorRequest request) {
-        return experimentGroupBiz.allotGroupMembers(request);
+    public Boolean allotGroupMembers(@RequestBody @Validated List<ExperimentParticipatorRequest> participatorList) {
+        return experimentGroupBiz.allotGroupMembers(participatorList);
     }
 
     /**

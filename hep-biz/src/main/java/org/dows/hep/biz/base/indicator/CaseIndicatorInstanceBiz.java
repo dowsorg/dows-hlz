@@ -443,7 +443,7 @@ public class CaseIndicatorInstanceBiz {
           String caseIndicatorInstanceId = caseIndicatorInstanceEntity.getCaseIndicatorInstanceId();
           caseIndicatorInstanceIdSet.add(caseIndicatorInstanceId);
           String indicatorCategoryId = caseIndicatorInstanceEntity.getIndicatorCategoryId();
-          Set<String> caseIndicatorInstanceIdSet1 = kCaseIndicatorCategoryIdVCaseIndicatorInstanceIdSetMap.get(caseIndicatorInstanceId);
+          Set<String> caseIndicatorInstanceIdSet1 = kCaseIndicatorCategoryIdVCaseIndicatorInstanceIdSetMap.get(indicatorCategoryId);
           if (Objects.isNull(caseIndicatorInstanceIdSet1)) {
             caseIndicatorInstanceIdSet1 = new HashSet<>();
           }
