@@ -1043,8 +1043,11 @@ public class IndicatorExpressionBiz{
       String conditionValList = indicatorExpressionItemEntity.getConditionValList();
       if (StringUtils.isBlank(conditionNameList)) {
         if (StringUtils.isBlank(conditionValList)) {
-          StandardEvaluationContext context = new StandardEvaluationContext();
           String conditionExpression = indicatorExpressionItemEntity.getConditionExpression();
+          if (StringUtils.isBlank(conditionExpression)) {
+            return;
+          }
+          StandardEvaluationContext context = new StandardEvaluationContext();
           ExpressionParser parser2 = new SpelExpressionParser();
           Expression expression = parser2.parseExpression(conditionExpression);
           String conditionExpressionResult = expression.getValue(context, String.class);
