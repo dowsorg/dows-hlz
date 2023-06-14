@@ -152,12 +152,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
 //                .setViewName("forward:/swagger-ui/index.html");
 //    }
 
-
-    /**
-     * 增加头参数解析
-     *
-     * @param resolvers
-     */
 //    @Override
 //    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
 //        resolvers.add(new HeaderArgumentResolver());
