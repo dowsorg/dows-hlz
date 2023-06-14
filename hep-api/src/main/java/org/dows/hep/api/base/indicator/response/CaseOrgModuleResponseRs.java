@@ -29,6 +29,9 @@ public class CaseOrgModuleResponseRs implements Serializable {
   @Schema(title = "模块名称")
   private String name;
 
+  @Schema(title = "顺序")
+  private Integer seq;
+
   @Schema(title = "功能点响应列表")
   private List<CaseOrgModuleFuncRefResponseRs> caseOrgModuleFuncRefResponseRsList;
 }
