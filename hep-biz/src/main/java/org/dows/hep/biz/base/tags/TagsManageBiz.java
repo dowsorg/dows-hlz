@@ -2,7 +2,10 @@ package org.dows.hep.biz.base.tags;
 
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import lombok.RequiredArgsConstructor;
+import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.tags.request.TagsInstanceRequest;
+import org.dows.hep.api.base.tags.response.TagsInstanceResponse;
+import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.entity.TagsInstanceEntity;
 import org.dows.hep.service.TagsInstanceService;
 import org.dows.sequence.api.IdGenerator;
@@ -55,5 +58,30 @@ public class TagsManageBiz {
             flag = tagsInstanceService.save(manageEntity);
         }
         return flag;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 新增标签
+     * @关联表: TagsInstance
+     * @工时: 1H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月14日 下午15:26:34
+     */
+    public TagsInstanceResponse getTagsByTagsId(String tagsId) {
+        TagsInstanceEntity instanceEntity = tagsInstanceService.lambdaQuery()
+                .eq(TagsInstanceEntity::getTagsId,tagsId)
+                .eq(TagsInstanceEntity::getDeleted,false)
+                .oneOpt()
+                .orElseThrow(() -> new BizException(ExperimentESCEnum.DATA_NULL));
+        TagsInstanceResponse response = TagsInstanceResponse.builder()
+                .appId(instanceEntity.getAppId())
+                .name(instanceEntity.getName())
+                .tagsCategoryId(instanceEntity.getTagsCategoryId())
+                .status(instanceEntity.getStatus())
+                .build();
+        return response;
     }
 }

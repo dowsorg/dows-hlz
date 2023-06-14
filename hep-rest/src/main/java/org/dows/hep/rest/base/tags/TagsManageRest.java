@@ -4,11 +4,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.tags.request.TagsInstanceRequest;
+import org.dows.hep.api.base.tags.response.TagsInstanceResponse;
 import org.dows.hep.biz.base.tags.TagsManageBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author jx
@@ -29,5 +28,16 @@ public class TagsManageRest {
     @PostMapping("v1/baseTags/tagsManage/insertOrUpdateTags")
     public Boolean insertOrUpdateTags(@RequestBody @Validated TagsInstanceRequest manageRequest) {
         return tagsManageBiz.insertOrUpdateTags(manageRequest);
+    }
+
+    /**
+     * 查询标签
+     * @param
+     * @return
+     */
+    @Operation(summary = "查询标签")
+    @GetMapping("v1/baseTags/tagsManage/getTagsByTagsId/{tagsId}")
+    public TagsInstanceResponse getTagsByTagsId(@PathVariable @Validated String tagsId) {
+        return tagsManageBiz.getTagsByTagsId(tagsId);
     }
 }
