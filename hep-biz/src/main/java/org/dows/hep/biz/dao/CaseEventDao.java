@@ -121,12 +121,19 @@ public class CaseEventDao extends BaseSubDao<CaseEventService, CaseEventEntity, 
         return caseIndicatorExpressionRefDao.tranUpdateReasonId(mapExpressions);
 
     }
+
     @Transactional(rollbackFor = Exception.class)
     public boolean tranSaveBatch(List<CaseEventEntity> events, List<CaseEventEvalEntity> evals,  List<CaseEventActionEntity> actions,List<CaseEventActionIndicatorEntity> indicators ) {
         this.tranSaveBatch(events,evals,false);
         subDao.tranSaveBatch(actions,indicators,true);
         return true;
     }
+    /*@Transactional(rollbackFor = Exception.class)
+    public boolean tranSaveBatch(List<> List<CaseIndicatorExpressionRefEntity> expressionRefs, List<CaseIndicatorExpressionEntity> expressions, List<CaseIndicatorExpressionItemEntity> expressionItems) {
+        this.saveOrUpdateBatch(expressionRefs,defaultUseLogicId,true);
+        caseIndicatorExpressionDao.tranSaveBatch(expressions,expressionItems,true);
+        return true;
+    }*/
 
     //region save
 
@@ -135,7 +142,7 @@ public class CaseEventDao extends BaseSubDao<CaseEventService, CaseEventEntity, 
         if (!saveOrUpdate(lead, useLogicId)) {
             return false;
         }
-        return subDao.saveOrUpdateBatch(actions,useLogicId,true);
+        return subDao.saveOrUpdateBatch(lead.getCaseEventId(), actions,useLogicId,true);
     }
 
     //endregion

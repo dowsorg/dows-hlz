@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
-import org.dows.hep.entity.CaseIndicatorExpressionRefEntity;
+import org.dows.hep.entity.*;
 import org.dows.hep.service.CaseIndicatorExpressionRefService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -79,6 +79,13 @@ public class CaseIndicatorExpressionRefDao extends BaseDao<CaseIndicatorExpressi
         if(ShareUtil.XObject.notEmpty(expressionIds)){
             caseIndicatorExpressionDao.tranDelete(expressionIds,true);
         }
+        return true;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public boolean tranSaveBatch(List<CaseIndicatorExpressionRefEntity> expressionRefs, List<CaseIndicatorExpressionEntity> expressions, List<CaseIndicatorExpressionItemEntity> expressionItems) {
+        this.saveOrUpdateBatch(expressionRefs,defaultUseLogicId,true);
+        caseIndicatorExpressionDao.tranSaveBatch(expressions,expressionItems,true);
         return true;
     }
 

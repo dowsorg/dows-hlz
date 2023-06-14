@@ -128,7 +128,7 @@ public class EventDao extends BaseSubDao<EventService, EventEntity, EventEvalSer
         if (!saveOrUpdate(lead, useLogicId)) {
             return false;
         }
-        return subDao.saveOrUpdateBatch(actions,useLogicId,true);
+        return subDao.saveOrUpdateBatch(lead.getEventId(), actions,useLogicId,true);
     }
 
 
