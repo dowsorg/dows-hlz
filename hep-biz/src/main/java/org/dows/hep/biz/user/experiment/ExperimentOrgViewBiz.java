@@ -71,7 +71,7 @@ public class ExperimentOrgViewBiz {
         //1、获取record记录
         return experimentViewMonitorFollowupService.lambdaQuery()
                 .eq(ExperimentViewMonitorFollowupEntity::getAppId, findFollowupDef.getAppId())
-                .eq(ExperimentViewMonitorFollowupEntity::getIndicatorFuncId, findFollowupDef.getIndicatorFuncId())
+                .eq(ExperimentViewMonitorFollowupEntity::getExperimentIndicatorFuncId, findFollowupDef.getIndicatorFuncId())
                 .eq(ExperimentViewMonitorFollowupEntity::getDeleted, false)
                 .list();
     }
