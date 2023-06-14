@@ -355,8 +355,8 @@ public class CaseIndicatorInstanceBiz {
               .appId(appId)
               .casePrincipalId(kIndicatorInstanceIdVCaseIndicatorInstanceIdMap.get(principalId))
               .principalId(principalId)
-              .maxIndicatorExpressionItemId(maxIndicatorExpressionItemId)
-              .minIndicatorExpressionItemId(minIndicatorExpressionItemId)
+              .maxIndicatorExpressionItemId(maxCaseIndicatorExpressionItemId)
+              .minIndicatorExpressionItemId(minCaseIndicatorExpressionItemId)
               .type(type)
               .source(source)
               .build());
