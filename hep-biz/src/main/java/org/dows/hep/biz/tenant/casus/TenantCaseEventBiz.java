@@ -3,9 +3,9 @@ package org.dows.hep.biz.tenant.casus;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
+import org.dows.hep.api.base.indicator.response.CaseIndicatorExpressionResponseRs;
 import org.dows.hep.api.base.intervene.request.DelRefItemRequest;
-import org.dows.hep.api.base.intervene.vo.EventActionInfoVO;
+import org.dows.hep.api.base.intervene.vo.CaseEventActionInfoVO;
 import org.dows.hep.api.base.intervene.vo.IndicatorExpressionVO;
 import org.dows.hep.api.enums.EnumEventTriggerSpan;
 import org.dows.hep.api.enums.EnumEventTriggerType;
@@ -17,19 +17,20 @@ import org.dows.hep.api.tenant.casus.request.FindCaseEventRequest;
 import org.dows.hep.api.tenant.casus.request.SaveCaseEventRequest;
 import org.dows.hep.api.tenant.casus.response.CaseEventInfoResponse;
 import org.dows.hep.api.tenant.casus.response.CaseEventResponse;
+import org.dows.hep.biz.base.indicator.CaseIndicatorExpressionBiz;
 import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
 import org.dows.hep.biz.cache.EventCategCache;
-import org.dows.hep.biz.dao.CaseEventActionDao;
-import org.dows.hep.biz.dao.CaseEventDao;
-import org.dows.hep.biz.dao.EventActionDao;
-import org.dows.hep.biz.dao.EventDao;
+import org.dows.hep.biz.dao.*;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.vo.CategVO;
 import org.dows.hep.biz.vo.LoginContextVO;
-import org.dows.hep.entity.*;
+import org.dows.hep.entity.CaseEventActionEntity;
+import org.dows.hep.entity.CaseEventEntity;
+import org.dows.hep.entity.EventActionEntity;
+import org.dows.hep.entity.EventEntity;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
@@ -49,6 +50,10 @@ public class TenantCaseEventBiz {
     private final CaseEventDao caseEventDao;
 
     private final CaseEventActionDao caseEventActionDao;
+
+    private final CaseIndicatorExpressionRefDao caseIndicatorExpressionRefDao;
+
+    private final CaseIndicatorExpressionBiz caseIndicatorExpressionBiz;
 
     private final EventDao eventDao;
 
@@ -101,10 +106,10 @@ public class TenantCaseEventBiz {
         Set<String> reasonIds=new HashSet<>(rowsAction.size()+1);
         reasonIds.add(caseEventId);
         rowsAction.forEach(i->reasonIds.add(i.getCaseEventActionId()));
-        Map<String, List<IndicatorExpressionResponseRs>> mapExressions=ShareBiz.getExpressionsByReasonIds(indicatorExpressionBiz,appId,reasonIds);
+        Map<String, List<CaseIndicatorExpressionResponseRs>> mapExressions=ShareBiz.getCaseExpressionsByReasonIds(caseIndicatorExpressionBiz,appId,reasonIds);
 
-        List<IndicatorExpressionResponseRs> conditions=new ArrayList<>();
-        List<IndicatorExpressionResponseRs> effects=new ArrayList<>();
+        List<CaseIndicatorExpressionResponseRs> conditions=new ArrayList<>();
+        List<CaseIndicatorExpressionResponseRs> effects=new ArrayList<>();
         mapExressions.getOrDefault(caseEventId,Collections.emptyList())
                 .forEach(i->{
                     switch (EnumIndicatorExpressionSource.of( i.getSource())){
@@ -116,8 +121,8 @@ public class TenantCaseEventBiz {
                             break;
                     }
                 });
-        List<EventActionInfoVO> vosAction = ShareUtil.XCollection.map(rowsAction,
-                i -> CopyWrapper.create(EventActionInfoVO::new)
+        List<CaseEventActionInfoVO> vosAction = ShareUtil.XCollection.map(rowsAction,
+                i -> CopyWrapper.create(CaseEventActionInfoVO::new)
                         .endFrom(i, v -> v.setRefId(i.getCaseEventId())
                                 .setActionExpresssions(mapExressions.get(i.getCaseEventId()))));
         mapExressions.clear();
@@ -207,7 +212,7 @@ public class TenantCaseEventBiz {
             List<String> dst= mapExpressions.computeIfAbsent(i.getRefId(), key->new ArrayList<>());
             i.getActionExpresssions().forEach(vo->dst.add(vo.getIndicatorExpressionId()));
         });
-        return caseEventDao.tranSave(row, rowActions, mapExpressions,ShareUtil.XObject.notEmpty(saveCaseEvent.getCaseInstanceId()));
+        return caseEventDao.tranSave(row, rowActions, mapExpressions);
     }
 
     /**
@@ -276,7 +281,7 @@ public class TenantCaseEventBiz {
      * @return
      */
     public Boolean delRefEval(DelRefItemRequest delRefItemRequest ) {
-        return caseEventDao.tranDeleteSub(delRefItemRequest.getIds(),"条件不存在或已删除");
+        return caseIndicatorExpressionRefDao.tranDeleteByExpressionId(delRefItemRequest.getIds());
     }
 
     /**
@@ -285,7 +290,7 @@ public class TenantCaseEventBiz {
      * @return
      */
     public Boolean delRefAction(DelRefItemRequest delRefItemRequest){
-        return caseEventActionDao.tranDelete(delRefItemRequest.getIds(),true);
+        return caseIndicatorExpressionRefDao.tranDeleteByReasonId(delRefItemRequest.getIds());
     }
 
     /**
@@ -295,7 +300,7 @@ public class TenantCaseEventBiz {
      */
 
     public Boolean delRefEventIndicator(DelRefItemRequest delRefItemRequest){
-        return caseEventActionDao.tranDeleteSub(delRefItemRequest.getIds(),"关联指标不存在或已删除");
+        return caseIndicatorExpressionRefDao.tranDeleteByExpressionId(delRefItemRequest.getIds());
     }
 
     /**
@@ -305,7 +310,7 @@ public class TenantCaseEventBiz {
      */
 
     public Boolean delRefActionIndicator(DelRefItemRequest delRefItemRequest){
-        return caseEventActionDao.tranDeleteSub(delRefItemRequest.getIds(),"关联指标不存在或已删除");
+        return caseIndicatorExpressionRefDao.tranDeleteByExpressionId(delRefItemRequest.getIds());
     }
 
     /**

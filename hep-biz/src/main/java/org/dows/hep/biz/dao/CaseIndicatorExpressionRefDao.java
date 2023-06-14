@@ -4,8 +4,8 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
-import org.dows.hep.entity.IndicatorExpressionRefEntity;
-import org.dows.hep.service.IndicatorExpressionRefService;
+import org.dows.hep.entity.CaseIndicatorExpressionRefEntity;
+import org.dows.hep.service.CaseIndicatorExpressionRefService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,31 +20,31 @@ import java.util.Map;
  * @date : 2023/6/12 15:57
  */
 @Component
-public class IndicatorExpressionRefDao extends BaseDao<IndicatorExpressionRefService, IndicatorExpressionRefEntity> {
-    public IndicatorExpressionRefDao(){
+public class CaseIndicatorExpressionRefDao extends BaseDao<CaseIndicatorExpressionRefService, CaseIndicatorExpressionRefEntity> {
+    public CaseIndicatorExpressionRefDao(){
         super("表达式关联主体不存在");
 
     }
 
     @Autowired
-    protected IndicatorExpressionDao indicatorExpressionDao;
+    protected CaseIndicatorExpressionDao caseIndicatorExpressionDao;
     @Override
-    protected SFunction<IndicatorExpressionRefEntity, String> getColId() {
-        return IndicatorExpressionRefEntity::getIndicatorExpressionRefId;
+    protected SFunction<CaseIndicatorExpressionRefEntity, String> getColId() {
+        return CaseIndicatorExpressionRefEntity::getCaseIndicatorExpressionRefId;
     }
 
     @Override
-    protected SFunction<String, ?> setColId(IndicatorExpressionRefEntity item) {
-        return item::setIndicatorExpressionRefId;
+    protected SFunction<String, ?> setColId(CaseIndicatorExpressionRefEntity item) {
+        return item::setCaseIndicatorExpressionRefId;
     }
 
     @Override
-    protected SFunction<IndicatorExpressionRefEntity, Integer> getColState() {
+    protected SFunction<CaseIndicatorExpressionRefEntity, Integer> getColState() {
         return null;
     }
 
     @Override
-    protected SFunction<Integer, ?> setColState(IndicatorExpressionRefEntity item) {
+    protected SFunction<Integer, ?> setColState(CaseIndicatorExpressionRefEntity item) {
         return null;
     }
     //region tran
@@ -66,18 +66,18 @@ public class IndicatorExpressionRefDao extends BaseDao<IndicatorExpressionRefSer
     public boolean tranDeleteByExpressionId(List<String> ids){
         AssertUtil.falseThenThrow(delByExpressionId(ids,false))
                 .throwMessage("表达式关联主体不存在");
-        indicatorExpressionDao.tranDelete(ids,true);
+        caseIndicatorExpressionDao.tranDelete(ids,true);
         return true;
     }
 
     @Transactional(rollbackFor = Exception.class)
     public boolean tranDeleteByReasonId(List<String> ids){
-        List<String> expressionIds=ShareUtil.XCollection.map(this.getByReasonId(null,ids,IndicatorExpressionRefEntity::getIndicatorExpressionId),
-                IndicatorExpressionRefEntity::getIndicatorExpressionId);
+        List<String> expressionIds=ShareUtil.XCollection.map(this.getByReasonId(null,ids,CaseIndicatorExpressionRefEntity::getIndicatorExpressionId),
+                CaseIndicatorExpressionRefEntity::getIndicatorExpressionId);
         AssertUtil.falseThenThrow(delByReasonId(ids,false))
                 .throwMessage("表达式关联主体不存在");
         if(ShareUtil.XObject.notEmpty(expressionIds)){
-            indicatorExpressionDao.tranDelete(expressionIds,true);
+            caseIndicatorExpressionDao.tranDelete(expressionIds,true);
         }
         return true;
     }
@@ -86,25 +86,25 @@ public class IndicatorExpressionRefDao extends BaseDao<IndicatorExpressionRefSer
     //endregion
 
     //region retrieve
-    public List<IndicatorExpressionRefEntity> getByReasonId(String appId,String reasonId,SFunction<IndicatorExpressionRefEntity,?>... cols){
+    public List<CaseIndicatorExpressionRefEntity> getByReasonId(String appId,String reasonId,SFunction<CaseIndicatorExpressionRefEntity,?>... cols){
         if (ShareUtil.XObject.isEmpty(reasonId)) {
             return Collections.emptyList();
         }
         return service.lambdaQuery()
-                .eq(ShareUtil.XObject.notEmpty(appId),IndicatorExpressionRefEntity::getAppId,appId)
-                .eq(IndicatorExpressionRefEntity::getReasonId,reasonId)
+                .eq(ShareUtil.XObject.notEmpty(appId),CaseIndicatorExpressionRefEntity::getAppId,appId)
+                .eq(CaseIndicatorExpressionRefEntity::getReasonId,reasonId)
                 .select(cols)
                 .list();
     }
-    public List<IndicatorExpressionRefEntity> getByReasonId(String appId,Collection<String> reasonIds,SFunction<IndicatorExpressionRefEntity,?>... cols){
+    public List<CaseIndicatorExpressionRefEntity> getByReasonId(String appId,Collection<String> reasonIds,SFunction<CaseIndicatorExpressionRefEntity,?>... cols){
         if (ShareUtil.XObject.isEmpty(reasonIds)) {
             return Collections.emptyList();
         }
         final boolean oneFlag=reasonIds.size()==1;
         return service.lambdaQuery()
-                .eq(ShareUtil.XObject.notEmpty(appId),IndicatorExpressionRefEntity::getAppId,appId)
-                .eq(oneFlag, IndicatorExpressionRefEntity::getReasonId,reasonIds.iterator().next())
-                .in(!oneFlag, IndicatorExpressionRefEntity::getReasonId,reasonIds)
+                .eq(ShareUtil.XObject.notEmpty(appId),CaseIndicatorExpressionRefEntity::getAppId,appId)
+                .eq(oneFlag, CaseIndicatorExpressionRefEntity::getReasonId,reasonIds.iterator().next())
+                .in(!oneFlag, CaseIndicatorExpressionRefEntity::getReasonId,reasonIds)
                 .select(cols)
                 .list();
     }
@@ -116,10 +116,10 @@ public class IndicatorExpressionRefDao extends BaseDao<IndicatorExpressionRefSer
             return true;
         }
         final boolean oneFlag = expressionIds.size() == 1;
-        return service.update(Wrappers.<IndicatorExpressionRefEntity>lambdaUpdate()
-                .set(IndicatorExpressionRefEntity::getReasonId, reasonId)
-                .eq(oneFlag, IndicatorExpressionRefEntity::getIndicatorExpressionId, expressionIds.iterator().next())
-                .in(!oneFlag, IndicatorExpressionRefEntity::getIndicatorExpressionId, expressionIds));
+        return service.update(Wrappers.<CaseIndicatorExpressionRefEntity>lambdaUpdate()
+                .set(CaseIndicatorExpressionRefEntity::getReasonId, reasonId)
+                .eq(oneFlag, CaseIndicatorExpressionRefEntity::getIndicatorExpressionId, expressionIds.iterator().next())
+                .in(!oneFlag, CaseIndicatorExpressionRefEntity::getIndicatorExpressionId, expressionIds));
     }
     public boolean updateReasonId(Map<String, List<String>> mapReasonId){
         if(ShareUtil.XObject.isEmpty(mapReasonId)){
@@ -138,26 +138,26 @@ public class IndicatorExpressionRefDao extends BaseDao<IndicatorExpressionRefSer
         if (ShareUtil.XObject.isEmpty(reasonId)) {
             return dftIfEmpty;
         }
-        return service.remove(Wrappers.<IndicatorExpressionRefEntity>lambdaQuery()
-                .eq(IndicatorExpressionRefEntity::getReasonId,reasonId));
+        return service.remove(Wrappers.<CaseIndicatorExpressionRefEntity>lambdaQuery()
+                .eq(CaseIndicatorExpressionRefEntity::getReasonId,reasonId));
     }
     public boolean delByReasonId(List<String> ids,boolean dftIfEmpty){
         if (ShareUtil.XObject.isEmpty(ids)) {
             return dftIfEmpty;
         }
         final boolean oneFlag = ids.size() == 1;
-        return service.remove(Wrappers.<IndicatorExpressionRefEntity>lambdaQuery()
-                .eq(oneFlag, IndicatorExpressionRefEntity::getReasonId, ids.get(0))
-                .in(!oneFlag, IndicatorExpressionRefEntity::getReasonId, ids));
+        return service.remove(Wrappers.<CaseIndicatorExpressionRefEntity>lambdaQuery()
+                .eq(oneFlag, CaseIndicatorExpressionRefEntity::getReasonId, ids.get(0))
+                .in(!oneFlag, CaseIndicatorExpressionRefEntity::getReasonId, ids));
     }
     public boolean delByExpressionId(List<String> ids, boolean dftIfEmpty) {
         if (ShareUtil.XObject.isEmpty(ids)) {
             return dftIfEmpty;
         }
         final boolean oneFlag = ids.size() == 1;
-        return service.remove(Wrappers.<IndicatorExpressionRefEntity>lambdaQuery()
-                .eq(oneFlag, IndicatorExpressionRefEntity::getIndicatorExpressionId, ids.get(0))
-                .in(!oneFlag, IndicatorExpressionRefEntity::getIndicatorExpressionId, ids));
+        return service.remove(Wrappers.<CaseIndicatorExpressionRefEntity>lambdaQuery()
+                .eq(oneFlag, CaseIndicatorExpressionRefEntity::getIndicatorExpressionId, ids.get(0))
+                .in(!oneFlag, CaseIndicatorExpressionRefEntity::getIndicatorExpressionId, ids));
     }
 
     //endregion
