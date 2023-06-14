@@ -49,8 +49,9 @@ public class PersonStatiscRest {
      */
     @Operation(summary = "获取实验机构")
     @PostMapping("v1/basePerson/personManage/listExperimentOrgs")
-    public List<AccountOrgResponse> listExperimentOrgs(@RequestParam @Validated String experimentInstanceId) {
-        return personStatiscBiz.listExperimentOrgs(experimentInstanceId);
+    public List<AccountOrgResponse> listExperimentOrgs(@RequestParam @Validated String experimentInstanceId,
+                                                       @RequestParam @Validated String experimentGroupId) {
+        return personStatiscBiz.listExperimentOrgs(experimentInstanceId,experimentGroupId);
     }
 
     /**

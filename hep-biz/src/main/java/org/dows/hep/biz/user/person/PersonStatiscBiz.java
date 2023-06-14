@@ -92,11 +92,12 @@ public class PersonStatiscBiz {
      * @开始时间:
      * @创建时间: 2023年5月8日 上午13:57:34
      */
-    public List<AccountOrgResponse> listExperimentOrgs(String experimentInstanceId) {
+    public List<AccountOrgResponse> listExperimentOrgs(String experimentInstanceId,String experimentGroupId) {
         List<AccountOrgResponse> orgResponses = new ArrayList<>();
         //1、根据实验找到案例机构ID
         List<ExperimentOrgEntity> experimentOrgList = experimentOrgService.lambdaQuery()
                 .eq(ExperimentOrgEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentOrgEntity::getExperimentGroupId, experimentGroupId)
                 .eq(ExperimentOrgEntity::getDeleted, false)
                 .list();
         if (experimentOrgList != null && experimentOrgList.size() > 0) {
