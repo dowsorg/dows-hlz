@@ -47,9 +47,8 @@ public class ExperimentGroupRest {
     @Operation(summary = "获取某个实验中某个小组的机构列表")
     @PostMapping("v1/userExperiment/experimentGroup/listExperimentGroupOrg")
     public List<ExperimentOrgEntity> listExperimentGroupOrg(@RequestParam @Validated String experimentGroupId,
-                                                            @RequestParam @Validated String experimentInstanceId,
-                                                            @RequestParam @Validated String periods) {
-        return experimentGroupBiz.listExperimentGroupOrg(experimentGroupId,experimentInstanceId,periods);
+                                                            @RequestParam @Validated String experimentInstanceId) {
+        return experimentGroupBiz.listExperimentGroupOrg(experimentGroupId,experimentInstanceId);
     }
 
     /**

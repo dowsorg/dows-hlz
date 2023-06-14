@@ -41,7 +41,7 @@ public class ExperimentIndicatorViewPhysicalExamEntity implements CrudEntity {
     private String indicatorViewPhysicalExamId;
 
     @Schema(title = "指标功能ID")
-    private String indicatorFuncId;
+    private String experimentIndicatorFuncId;
 
     @Schema(title = "应用ID")
     private String appId;
@@ -50,7 +50,7 @@ public class ExperimentIndicatorViewPhysicalExamEntity implements CrudEntity {
     private String name;
 
     @Schema(title = "体格检查类别")
-    private String indicatorCategoryId;
+    private String experimentIndicatorCategoryId;
 
     @Schema(title = "费用")
     private BigDecimal fee;

@@ -218,7 +218,7 @@ public class ExperimentGroupBiz {
      * @开始时间:
      * @创建时间: 2023年5月9日 下午13:34:07
      */
-    public List<ExperimentOrgEntity> listExperimentGroupOrg(String experimentGroupId, String experimentInstanceId, String periods) {
+    public List<ExperimentOrgEntity> listExperimentGroupOrg(String experimentGroupId, String experimentInstanceId) {
         List<ExperimentOrgEntity> entities = experimentOrgService.lambdaQuery()
                 .eq(ExperimentOrgEntity::getExperimentGroupId, experimentGroupId)
                 .eq(ExperimentOrgEntity::getExperimentInstanceId, experimentInstanceId)

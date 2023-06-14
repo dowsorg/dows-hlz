@@ -660,15 +660,15 @@ public class ExperimentOrgViewBiz {
      * @开始时间:
      * @创建时间: 2023年6月05日 下午17:40:34
      */
-    public List<ExperimentIndicatorJudgePhysicalExamResponse> getIndicatorViewPhysicalExamByCategoryId(String indicatoryCategoryId) {
+    public List<ExperimentIndicatorJudgePhysicalExamResponse> getIndicatorViewPhysicalExamByCategoryIds(Set<String> experimentIndicatoryCategoryIds) {
         //1、根据指标分类ID获取所有符合条件的数据
         List<ExperimentIndicatorViewPhysicalExamEntity> entityList = experimentIndicatorViewPhysicalExamService.lambdaQuery()
                 .select(ExperimentIndicatorViewPhysicalExamEntity::getId,
                         ExperimentIndicatorViewPhysicalExamEntity::getExperimentJudgePhysicalExamId,
                         ExperimentIndicatorViewPhysicalExamEntity::getIndicatorViewPhysicalExamId,
                         ExperimentIndicatorViewPhysicalExamEntity::getName,
-                        ExperimentIndicatorViewPhysicalExamEntity::getIndicatorCategoryId)
-                .eq(ExperimentIndicatorViewPhysicalExamEntity::getIndicatorCategoryId, indicatoryCategoryId)
+                        ExperimentIndicatorViewPhysicalExamEntity::getExperimentIndicatorCategoryId)
+                .in(ExperimentIndicatorViewPhysicalExamEntity::getExperimentIndicatorCategoryId, experimentIndicatoryCategoryIds)
                 .eq(ExperimentIndicatorViewPhysicalExamEntity::getStatus, true)
                 .list();
         List<ExperimentIndicatorJudgePhysicalExamResponse> responseList = new ArrayList<>();
@@ -680,7 +680,7 @@ public class ExperimentOrgViewBiz {
                         .experimentJudgePhysicalExamId(entity.getExperimentJudgePhysicalExamId())
                         .indicatorJudgePhysicalExamId(entity.getIndicatorViewPhysicalExamId())
                         .name(entity.getName())
-                        .indicatorCategoryId(entity.getIndicatorCategoryId())
+                        .indicatorCategoryId(entity.getExperimentIndicatorCategoryId())
                         .build();
                 responseList.add(response);
             });
@@ -698,15 +698,15 @@ public class ExperimentOrgViewBiz {
      * @开始时间:
      * @创建时间: 2023年6月05日 下午17:40:34
      */
-    public List<ExperimentIndicatorJudgeSupportExamResponse> getIndicatorViewSupportExamByCategoryId(String indicatoryCategoryId) {
+    public List<ExperimentIndicatorJudgeSupportExamResponse> getIndicatorViewSupportExamByCategoryIds(Set<String> experimentIndicatoryCategoryIds) {
         //1、根据指标分类ID获取所有符合条件的数据
         List<ExperimentIndicatorViewSupportExamEntity> entityList = experimentIndicatorViewSupportExamService.lambdaQuery()
                 .select(ExperimentIndicatorViewSupportExamEntity::getId,
                         ExperimentIndicatorViewSupportExamEntity::getExperimentJudgeSupportExamId,
                         ExperimentIndicatorViewSupportExamEntity::getIndicatorViewSupportExamId,
                         ExperimentIndicatorViewSupportExamEntity::getName,
-                        ExperimentIndicatorViewSupportExamEntity::getIndicatorCategoryId)
-                .eq(ExperimentIndicatorViewSupportExamEntity::getIndicatorCategoryId, indicatoryCategoryId)
+                        ExperimentIndicatorViewSupportExamEntity::getExperimentIndicatorCategoryId)
+                .in(ExperimentIndicatorViewSupportExamEntity::getExperimentIndicatorCategoryId, experimentIndicatoryCategoryIds)
                 .eq(ExperimentIndicatorViewSupportExamEntity::getStatus, true)
                 .list();
         List<ExperimentIndicatorJudgeSupportExamResponse> responseList = new ArrayList<>();
@@ -718,7 +718,7 @@ public class ExperimentOrgViewBiz {
                         .experimentJudgeSupportExamId(entity.getExperimentJudgeSupportExamId())
                         .indicatorJudgeSupportExamId(entity.getIndicatorViewSupportExamId())
                         .name(entity.getName())
-                        .indicatorCategoryId(entity.getIndicatorCategoryId())
+                        .indicatorCategoryId(entity.getExperimentIndicatorCategoryId())
                         .build();
                 responseList.add(response);
             });

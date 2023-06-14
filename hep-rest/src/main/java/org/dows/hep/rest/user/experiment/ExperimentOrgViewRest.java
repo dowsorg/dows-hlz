@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
 * @description project descr:实验:机构操作-查看指标
@@ -222,9 +223,9 @@ public class ExperimentOrgViewRest {
      * @return
      */
     @Operation(summary = "二级类别：根据指标分类ID获取所有符合条件的数据")
-    @GetMapping("v1/userExperiment/experimentOrgJudge/getIndicatorViewPhysicalExamByCategoryId/{indicatoryCategoryId}")
-    public List<ExperimentIndicatorJudgePhysicalExamResponse> getIndicatorViewPhysicalExamByCategoryId(@PathVariable String indicatoryCategoryId) {
-        return experimentOrgViewBiz.getIndicatorViewPhysicalExamByCategoryId(indicatoryCategoryId);
+    @PostMapping("v1/userExperiment/experimentOrgJudge/getIndicatorViewPhysicalExamByCategoryIds")
+    public List<ExperimentIndicatorJudgePhysicalExamResponse> getIndicatorViewPhysicalExamByCategoryIds(@RequestBody Set<String> experimentIndicatoryCategoryIds) {
+        return experimentOrgViewBiz.getIndicatorViewPhysicalExamByCategoryIds(experimentIndicatoryCategoryIds);
     }
 
     /**
@@ -234,9 +235,9 @@ public class ExperimentOrgViewRest {
      * @return
      */
     @Operation(summary = "四级类别：根据指标分类ID获取所有符合条件的数据")
-    @GetMapping("v1/userExperiment/experimentOrgJudge/getIndicatorViewSupportExamByCategoryId/{indicatoryCategoryId}")
-    public List<ExperimentIndicatorJudgeSupportExamResponse> getIndicatorViewSupportExamByCategoryId(@PathVariable String indicatoryCategoryId) {
-        return experimentOrgViewBiz.getIndicatorViewSupportExamByCategoryId(indicatoryCategoryId);
+    @PostMapping("v1/userExperiment/experimentOrgJudge/getIndicatorViewSupportExamByCategoryIds")
+    public List<ExperimentIndicatorJudgeSupportExamResponse> getIndicatorViewSupportExamByCategoryIds(@RequestBody Set<String> experimentIndicatoryCategoryIds) {
+        return experimentOrgViewBiz.getIndicatorViewSupportExamByCategoryIds(experimentIndicatoryCategoryIds);
     }
 
     /**
