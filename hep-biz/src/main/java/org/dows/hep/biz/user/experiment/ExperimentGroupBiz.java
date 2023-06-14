@@ -84,7 +84,7 @@ public class ExperimentGroupBiz {
         if(experimentParticipatorEntity == null){
             throw new ExperimentException(ExperimentStatusCode.NOT_CAPTAIN);
         }
-        // 更新组名
+        // 更新组名和状态
          return experimentGroupService.lambdaUpdate()
                 .eq(ExperimentGroupEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
                 .eq(ExperimentGroupEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
@@ -259,6 +259,13 @@ public class ExperimentGroupBiz {
                     .id(model.getId())
                     .build();
             entityList.add(entity);
+            //1、更新组状态为等待其他机构分配完成
+            experimentGroupService.lambdaUpdate()
+                    .eq(ExperimentGroupEntity::getExperimentGroupId, request.getExperimentGroupId())
+                    .eq(ExperimentGroupEntity::getExperimentInstanceId, request.getExperimentInstanceId())
+                    .update(ExperimentGroupEntity.builder()
+                            .groupState(EnumExperimentGroupStatus.WAIT_ALL_GROUP_ASSIGN.getCode())
+                            .build());
         });
         return experimentParticipatorService.updateBatchById(entityList);
     }
