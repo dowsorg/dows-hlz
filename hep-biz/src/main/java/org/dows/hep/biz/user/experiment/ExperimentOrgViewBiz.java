@@ -114,17 +114,19 @@ public class ExperimentOrgViewBiz {
                     List<ExperimentIndicatorResponse> responseList = new ArrayList<>();
                     contentRefList.forEach(contentRef -> {
                         ExperimentIndicatorResponse response = new ExperimentIndicatorResponse();
+                        //todo 根据indicatorInstanceId和experimentPersonId获取experimentIndicatorInstanceId，先假设experimentIndicatorInstanceId字段
+                        String experimentIndicatorInstanceId = "010101";
                         //2.3、获取指标值
                         ExperimentIndicatorValEntity valEntity = experimentIndicatorValService.lambdaQuery()
                                 .eq(ExperimentIndicatorValEntity::getDeleted, false)
-                                .eq(ExperimentIndicatorValEntity::getExperimentIndicatorInstanceId, contentRef.getExperimentIndicatorInstanceId())
+                                .eq(ExperimentIndicatorValEntity::getExperimentIndicatorInstanceId, experimentIndicatorInstanceId)
                                 .eq(ExperimentIndicatorValEntity::getPeriods, periods)
                                 .one();
                         response.setExperimentIndicatorCurrentVal(valEntity.getCurrentVal());
                         //2.4、获取指标单位
                         ExperimentIndicatorInstanceEntity instanceEntity = experimentIndicatorInstanceService.lambdaQuery()
                                 .eq(ExperimentIndicatorInstanceEntity::getDeleted, false)
-                                .eq(ExperimentIndicatorInstanceEntity::getExperimentIndicatorInstanceId, contentRef.getExperimentIndicatorInstanceId())
+                                .eq(ExperimentIndicatorInstanceEntity::getExperimentIndicatorInstanceId, experimentIndicatorInstanceId)
                                 .eq(ExperimentIndicatorInstanceEntity::getExperimentPersonId, experimentPersonId)
                                 .one();
                         response.setUnit(instanceEntity.getUnit());
