@@ -1,6 +1,7 @@
 package org.dows.hep.api.user.experiment.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,9 +20,11 @@ import java.util.List;
 @RequiredArgsConstructor
 @Schema(name = "ExperimentSchemeItemRequest 对象", title = "实验方案设计Item")
 public class ExperimentSchemeItemRequest {
+    @NotBlank
     @Schema(title = "实验方案设计ID")
     private String experimentSchemeItemId;
 
+    @NotBlank
     @Schema(title = "账号ID")
     private String accountId;
 
