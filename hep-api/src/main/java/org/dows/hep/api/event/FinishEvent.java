@@ -1,5 +1,7 @@
 package org.dows.hep.api.event;
 
+import lombok.Getter;
+
 import java.io.Serializable;
 import java.time.Clock;
 
@@ -9,6 +11,8 @@ import java.time.Clock;
  * 2.汇总，排名计算等
  */
 public class FinishEvent extends ExperimentEvent implements Serializable {
+    @Getter
+    private EventName eventName = EventName.finishEvent;
     public FinishEvent(Object source) {
         super(source);
     }

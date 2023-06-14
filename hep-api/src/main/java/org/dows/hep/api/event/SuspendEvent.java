@@ -16,7 +16,6 @@ public class SuspendEvent extends ExperimentEvent implements Serializable {
 
     @Getter
     private EventName eventName = EventName.suspendEvent;
-
     public SuspendEvent(Object source) {
         super(source);
     }

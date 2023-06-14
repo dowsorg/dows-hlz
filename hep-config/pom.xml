@@ -17,7 +17,14 @@
             <groupId>org.dows.saas</groupId>
             <artifactId>hep-api</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.dows.saas</groupId>
+            <artifactId>hep-websocket</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.dows.saas</groupId>
+            <artifactId>hep-event</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.dows.framework</groupId>
             <artifactId>crud-mybatis</artifactId>
@@ -28,10 +35,7 @@
         </dependency>
 
 
-        <dependency>
-            <groupId>org.dows.saas</groupId>
-            <artifactId>hep-websocket</artifactId>
-        </dependency>
+
 
 
         <dependency>

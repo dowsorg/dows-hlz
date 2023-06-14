@@ -1,6 +1,9 @@
 package org.dows.hep.event.handler;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.event.EventName;
 import org.springframework.stereotype.Component;
 
 /**
@@ -10,9 +13,11 @@ import org.springframework.stereotype.Component;
  * 2.服务端记录/更新实验暂停时间，ExperimentTimer
  * 3.停止相关的任务和事件的计时器
  */
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class SuspendHandler extends AbstractEventHandler implements EventHandler {
+
 
 
     @Override
