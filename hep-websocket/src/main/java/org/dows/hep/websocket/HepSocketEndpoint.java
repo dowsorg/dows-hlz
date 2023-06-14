@@ -1,5 +1,8 @@
 package org.dows.hep.websocket;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONUtil;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -28,17 +31,17 @@ public class HepSocketEndpoint {
     }
 
     @OnOpen
-    public void onOpen(NettySession nettySession, HttpHeaders headers, @RequestParam String req, @RequestParam MultiValueMap reqMap, @PathVariable String arg, @PathVariable Map pathMap) {
-        System.out.println("new connection");
+    public void onOpen(NettySession nettySession, HttpHeaders headers, @RequestParam String req, @RequestParam Map reqMap, @PathVariable String arg, @PathVariable Map pathMap) {
+        log.info("new connection");
+        OnlineAccount onlineAccount = JSONUtil.toBean(JSONUtil.toJsonStr(reqMap), OnlineAccount.class);
         // 保存当前会话账号
-        HepClientManager.saveUser(nettySession.channel(), nettySession.getAttribute("nick"), arg);
-
-        System.out.println(req);
+        HepClientManager.saveUser(nettySession.channel(), onlineAccount);
     }
 
     @OnClose
     public void onClose(NettySession nettySession) throws IOException {
-        System.out.println("one connection closed");
+        HepClientManager.removeChannel(nettySession.channel());
+        log.info("one connection closed");
     }
 
     @OnError
@@ -49,12 +52,12 @@ public class HepSocketEndpoint {
     @OnMessage
     public void onMessage(NettySession nettySession, String message) {
         System.out.println(message);
-        // 确定收到具体用户的信息，处理业务逻辑,确认收到所有上线用户消息，开始广播
+        // 确定收到具体用户的信息，处理业务逻辑
         //AccountInfo accountInfo = HepClientManager.getAccountInfo(nettySession.channel());
         //
         //HepClientManager.broadCastInfo();
 
-        nettySession.sendText("Hello Netty!");
+        nettySession.sendText("hep starting......");
     }
 
 //    @OnBinary

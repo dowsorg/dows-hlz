@@ -201,6 +201,9 @@ public class ExperimentManageBiz {
     private void buildPeriods(ExperimentInstanceEntity experimentInstance, ExperimentSetting experimentSetting,
                               List<ExperimentTimerEntity> experimentTimerEntities) {
         ExperimentSetting.SandSetting sandSetting = experimentSetting.getSandSetting();
+        if(null == sandSetting ){
+            throw new BizException("沙盘模式，sandSetting为不能为空!");
+        }
         // 获取总期数，生成每期的计时器
         Integer periodCount = sandSetting.getPeriods();
         // 每期间隔/秒*1000
