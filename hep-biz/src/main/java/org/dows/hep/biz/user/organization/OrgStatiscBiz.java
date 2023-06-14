@@ -1,6 +1,7 @@
 package org.dows.hep.biz.user.organization;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.enums.ExperimentStatusCode;
@@ -130,9 +131,10 @@ public class OrgStatiscBiz{
             throw new ExperimentException(ExperimentStatusCode.NOT_MATCH_CASE);
         }
         //2、根据案例ID找到地图
-        return caseInstanceService.lambdaQuery()
+        String caseMapBackGround = caseInstanceService.lambdaQuery()
                 .eq(CaseInstanceEntity::getAppId,appId)
                 .eq(CaseInstanceEntity::getCaseInstanceId,experimentInstanceEntity.getCaseInstanceId())
                 .one().getCaseMapBackground();
+        return StringUtils.isNotEmpty(caseMapBackGround) ? caseMapBackGround : "";
     }
 }
