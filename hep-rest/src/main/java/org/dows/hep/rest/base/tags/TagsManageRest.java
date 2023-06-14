@@ -4,9 +4,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.crud.api.model.PageResponse;
+import org.dows.hep.api.base.tags.request.PageTagsRequest;
 import org.dows.hep.api.base.tags.request.TagsInstanceRequest;
 import org.dows.hep.api.base.tags.response.TagsInstanceResponse;
-import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
 import org.dows.hep.biz.base.tags.TagsManageBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -50,7 +50,7 @@ public class TagsManageRest {
      */
     @Operation(summary = "分页获取标签列表")
     @PostMapping("v1/baseTags/tagsManage/page")
-    public PageResponse<TagsInstanceResponse> page(PageExperimentRequest pageExperimentRequest) {
-        return tagsManageBiz.page(pageExperimentRequest);
+    public PageResponse<TagsInstanceResponse> page(PageTagsRequest pageTagsRequest) {
+        return tagsManageBiz.page(pageTagsRequest);
     }
 }

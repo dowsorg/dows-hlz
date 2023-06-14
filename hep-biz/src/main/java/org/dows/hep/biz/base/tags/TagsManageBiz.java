@@ -7,10 +7,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.crud.api.model.PageResponse;
+import org.dows.hep.api.base.tags.request.PageTagsRequest;
 import org.dows.hep.api.base.tags.request.TagsInstanceRequest;
 import org.dows.hep.api.base.tags.response.TagsInstanceResponse;
 import org.dows.hep.api.exception.ExperimentException;
-import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.entity.TagsInstanceEntity;
 import org.dows.hep.service.TagsInstanceService;
@@ -101,20 +101,20 @@ public class TagsManageBiz {
      * @开始时间:
      * @创建时间: 2023年6月14日 下午17:48:34
      */
-    public PageResponse<TagsInstanceResponse> page(PageExperimentRequest pageExperimentRequest) {
+    public PageResponse<TagsInstanceResponse> page(PageTagsRequest pageTagsRequest) {
         Page page = new Page<TagsInstanceEntity>();
-        page.setSize(pageExperimentRequest.getPageSize());
-        page.setCurrent(pageExperimentRequest.getPageNo());
-        if (pageExperimentRequest.getOrder() != null) {
-            String[] array = (String[]) pageExperimentRequest.getOrder().stream()
+        page.setSize(pageTagsRequest.getPageSize());
+        page.setCurrent(pageTagsRequest.getPageNo());
+        if (pageTagsRequest.getOrder() != null) {
+            String[] array = (String[]) pageTagsRequest.getOrder().stream()
                     .map(s -> StrUtil.toUnderlineCase((CharSequence) s))
                     .toArray(String[]::new);
-            page.addOrder(pageExperimentRequest.getDesc() ? OrderItem.descs(array) : OrderItem.ascs(array));
+            page.addOrder(pageTagsRequest.getDesc() ? OrderItem.descs(array) : OrderItem.ascs(array));
         }
         try {
-            if (!StrUtil.isBlank(pageExperimentRequest.getKeyword())) {
+            if (!StrUtil.isBlank(pageTagsRequest.getKeyword())) {
                 page = tagsInstanceService.page(page, tagsInstanceService.lambdaQuery()
-                        .like(TagsInstanceEntity::getName, pageExperimentRequest.getKeyword())
+                        .like(TagsInstanceEntity::getName, pageTagsRequest.getKeyword())
                         .getWrapper());
             } else {
                 page = tagsInstanceService.page(page, tagsInstanceService.lambdaQuery().getWrapper());
