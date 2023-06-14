@@ -32,6 +32,7 @@ public class CaseOrgModuleBiz {
   public void batchCreateOrUpdate(BatchCreateOrUpdateCaseOrgModuleRequestRs batchCreateOrUpdateCaseOrgModuleRequestRs) {
     List<CaseOrgModuleEntity> caseOrgModuleEntityList = new ArrayList<>();
     List<CaseOrgModuleFuncRefEntity> caseOrgModuleFuncRefEntityList = new ArrayList<>();
+    String appId = batchCreateOrUpdateCaseOrgModuleRequestRs.getAppId();
     String caseOrgId = batchCreateOrUpdateCaseOrgModuleRequestRs.getCaseOrgId();
     List<CreateOrUpdateCaseOrgModuleRequestRs> createOrUpdateCaseOrgModuleRequestRsList = batchCreateOrUpdateCaseOrgModuleRequestRs.getCreateOrUpdateCaseOrgModuleRequestRsList();
     Set<String> paramCaseOrgModuleIdSet = new HashSet<>();
@@ -85,7 +86,8 @@ public class CaseOrgModuleBiz {
         caseOrgModuleEntity = CaseOrgModuleEntity
             .builder()
             .caseOrgModuleId(caseOrgModuleId)
-            .appId(caseOrgId)
+            .appId(appId)
+            .caseOrgId(caseOrgId)
             .name(name)
             .build();
       } else {
@@ -101,15 +103,19 @@ public class CaseOrgModuleBiz {
       if (Objects.isNull(caseOrgModuleFuncRefIdList)) {
         return;
       }
+      String finalCaseOrgModuleId = caseOrgModuleId;
       caseOrgModuleFuncRefIdList.forEach(caseOrgModuleFuncRefId -> {
         CaseOrgModuleFuncRefEntity caseOrgModuleFuncRefEntity = kCaseOrgModuleFuncRefIdVCaseOrgModuleFuncRefEntityMap.get(caseOrgModuleFuncRefId);
-        if (Objects.isNull(caseOrgModuleFuncRefEntity)) {
-          /* runsix:TODO  */
-          caseOrgModuleFuncRefEntity = CaseOrgModuleFuncRefEntity
-              .builder()
+//        if (Objects.isNull(caseOrgModuleFuncRefEntity)) {
+//          caseOrgModuleFuncRefEntity = CaseOrgModuleFuncRefEntity
+//              .builder()
+//              .caseOrgModuleFuncRefId(idGenerator.nextIdStr())
+//              .appId(appId)
+//              .caseOrgModuleId(finalCaseOrgModuleId)
+//              .indicatorFuncId()
+//              .build();
+//        }
 
-              .build();
-        }
       });
     });
     caseOrgModuleService.saveOrUpdateBatch(caseOrgModuleEntityList);
