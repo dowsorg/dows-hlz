@@ -4,10 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.CaseCreateCopyToPersonRequestRs;
-import org.dows.hep.api.base.indicator.response.IndicatorExpressionItemResponseRs;
-import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
-import org.dows.hep.api.base.indicator.response.IndicatorInstanceCategoryResponseRs;
-import org.dows.hep.api.base.indicator.response.IndicatorInstanceResponseRs;
+import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.enums.EnumIndicatorCategory;
 import org.dows.hep.api.enums.EnumIndicatorRuleType;
 import org.dows.hep.api.enums.EnumString;
@@ -29,6 +26,7 @@ import java.util.stream.Collectors;
 public class CaseIndicatorInstanceBiz {
   private final IdGenerator idGenerator;
   private final IndicatorInstanceBiz indicatorInstanceBiz;
+  private final CaseIndicatorExpressionBiz caseIndicatorExpressionBiz;
   private final CaseIndicatorCategoryService caseIndicatorCategoryService;
   private final CaseIndicatorCategoryRefService caseIndicatorCategoryRefService;
   private final CaseIndicatorRuleService caseIndicatorRuleService;
@@ -37,8 +35,74 @@ public class CaseIndicatorInstanceBiz {
   private final CaseIndicatorExpressionItemService caseIndicatorExpressionItemService;
   private final CaseIndicatorExpressionRefService caseIndicatorExpressionRefService;
   private final CaseIndicatorExpressionInfluenceService caseIndicatorExpressionInfluenceService;
-  private final CaseIndicatorExpressionBiz caseIndicatorExpressionBiz;
   private final CaseIndicatorPrincipalRefService caseIndicatorPrincipalRefService;
+  private final CaseIndicatorCategoryPrincipalRefService caseIndicatorCategoryPrincipalRefService;
+
+  public static CaseIndicatorInstanceResponseRs caseIndicatorInstance2ResponseRs(
+    CaseIndicatorInstanceEntity caseIndicatorInstanceEntity,
+    List<CaseIndicatorExpressionResponseRs> caseIndicatorExpressionResponseRsList,
+    String def,
+    String min,
+    String max,
+    Integer seq
+  ) {
+    if (Objects.isNull(caseIndicatorInstanceEntity)) {
+      return null;
+    }
+    if (Objects.isNull(caseIndicatorExpressionResponseRsList)) {
+      caseIndicatorExpressionResponseRsList = new ArrayList<>();
+    }
+    return CaseIndicatorInstanceResponseRs
+        .builder()
+        .id(caseIndicatorInstanceEntity.getId())
+        .indicatorInstanceId(caseIndicatorInstanceEntity.getCaseIndicatorInstanceId())
+        .appId(caseIndicatorInstanceEntity.getAppId())
+        .indicatorCategoryId(caseIndicatorInstanceEntity.getIndicatorCategoryId())
+        .indicatorName(caseIndicatorInstanceEntity.getIndicatorName())
+        .displayByPercent(caseIndicatorInstanceEntity.getDisplayByPercent())
+        .unit(caseIndicatorInstanceEntity.getUnit())
+        .core(caseIndicatorInstanceEntity.getCore())
+        .food(caseIndicatorInstanceEntity.getFood())
+        .descr(caseIndicatorInstanceEntity.getDescr())
+        .dt(caseIndicatorInstanceEntity.getDt())
+        .caseIndicatorExpressionResponseRsList(caseIndicatorExpressionResponseRsList)
+        .def(def)
+        .min(min)
+        .max(max)
+        .seq(seq)
+        .build();
+  }
+
+  public void populateKCaseIndicatorInstanceIdVIndicatorRuleMap(String appId, Set<String> caseIndicatorInstanceIdSet, Map<String, CaseIndicatorRuleEntity> kCaseIndicatorInstanceIdVCaseIndicatorRuleMap) {
+    if (Objects.isNull(kCaseIndicatorInstanceIdVCaseIndicatorRuleMap)) {
+      log.warn("method CaseIndicatorInstanceBiz.populateKIndicatorInstanceIdVIndicatorRuleMap param kCaseIndicatorInstanceIdVCaseIndicatorRuleMap is null");
+      return;
+    }
+    if (Objects.isNull(caseIndicatorInstanceIdSet) || caseIndicatorInstanceIdSet.isEmpty()) {
+      return;
+    }
+    caseIndicatorRuleService.lambdaQuery()
+        .eq(CaseIndicatorRuleEntity::getAppId, appId)
+        .in(CaseIndicatorRuleEntity::getVariableId, caseIndicatorInstanceIdSet)
+        .list()
+        .forEach(caseIndicatorRuleEntity -> kCaseIndicatorInstanceIdVCaseIndicatorRuleMap.put(caseIndicatorRuleEntity.getVariableId(), caseIndicatorRuleEntity));
+  }
+
+  public void populateKCaseIndicatorInstanceIdVSeqMap(String appId, Set<String> indicatorInstanceIdSet, Map<String, Integer> kCaseIndicatorInstanceIdVSeqMap) {
+    if (Objects.isNull(kCaseIndicatorInstanceIdVSeqMap)) {
+      log.warn("method CaseIndicatorInstanceBiz.populateKCaseIndicatorInstanceIdVSeqMap param kCaseIndicatorInstanceIdVSeqMap is null");
+      return;
+    }
+    if (Objects.isNull(indicatorInstanceIdSet) || indicatorInstanceIdSet.isEmpty()) {
+      return;
+    }
+    caseIndicatorCategoryRefService.lambdaQuery()
+        .eq(CaseIndicatorCategoryRefEntity::getAppId, appId)
+        .in(CaseIndicatorCategoryRefEntity::getIndicatorInstanceId, indicatorInstanceIdSet)
+        .list()
+        .forEach(indicatorCategoryRefEntity -> kCaseIndicatorInstanceIdVSeqMap.put(indicatorCategoryRefEntity.getIndicatorInstanceId(), indicatorCategoryRefEntity.getSeq()));
+  }
+
 
   public static String convertConditionValList2Case(
       Map<String, String> kIndicatorInstanceIdVCaseIndicatorInstanceIdMap,
@@ -85,8 +149,12 @@ public class CaseIndicatorInstanceBiz {
     if (Objects.isNull(influencedIndicatorInstanceIdSet)) {
       influencedIndicatorInstanceIdSet = new HashSet<>();
     }
-    influencedIndicatorInstanceIdSet.addAll(Arrays.stream(conditionValList.split(EnumString.COMMA.getStr())).collect(Collectors.toSet()));
-    influenceIndicatorInstanceIdSet.addAll(Arrays.stream(resultValList.split(EnumString.COMMA.getStr())).collect(Collectors.toSet()));
+    if (StringUtils.isNotBlank(conditionValList)) {
+      influencedIndicatorInstanceIdSet.addAll(Arrays.stream(conditionValList.split(EnumString.COMMA.getStr())).collect(Collectors.toSet()));
+    }
+    if (StringUtils.isNotBlank(resultValList)) {
+      influenceIndicatorInstanceIdSet.addAll(Arrays.stream(resultValList.split(EnumString.COMMA.getStr())).collect(Collectors.toSet()));
+    }
     kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap.put(indicatorInstanceId, influenceIndicatorInstanceIdSet);
     kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.put(indicatorInstanceId, influencedIndicatorInstanceIdSet);
   }
@@ -105,6 +173,7 @@ public class CaseIndicatorInstanceBiz {
     List<CaseIndicatorExpressionRefEntity> caseIndicatorExpressionRefEntityList = new ArrayList<>();
     List<CaseIndicatorExpressionInfluenceEntity> caseIndicatorExpressionInfluenceEntityList = new ArrayList<>();
     List<CaseIndicatorPrincipalRefEntity> caseIndicatorPrincipalRefEntityList = new ArrayList<>();
+    List<CaseIndicatorCategoryPrincipalRefEntity> caseIndicatorCategoryPrincipalRefEntityList = new ArrayList<>();
     Map<String, String> kIndicatorInstanceIdVCaseIndicatorInstanceIdMap = new HashMap<>();
     Map<String, Set<String>> kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap = new HashMap<>();
     Map<String, Set<String>> kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap = new HashMap<>();
@@ -136,6 +205,7 @@ public class CaseIndicatorInstanceBiz {
             .caseIndicatorInstanceId(caseIndicatorInstanceId)
             .indicatorInstanceId(indicatorInstanceId)
             .appId(appId)
+            .indicatorCategoryId(caseIndicatorCategoryId)
             .indicatorName(indicatorName)
             .displayByPercent(displayByPercent)
             .unit(unit)
@@ -171,6 +241,13 @@ public class CaseIndicatorInstanceBiz {
           .pid(EnumIndicatorCategory.INDICATOR_MANAGEMENT.getCode())
           .categoryName(categoryName)
           .seq(seq)
+          .build());
+      caseIndicatorCategoryPrincipalRefEntityList.add(CaseIndicatorCategoryPrincipalRefEntity
+          .builder()
+              .caseIndicatorCategoryPrincipalRefId(idGenerator.nextIdStr())
+              .principalId(casePersonId)
+              .indicatorCategoryId(caseIndicatorCategoryId)
+              .appId(appId)
           .build());
     });
     indicatorInstanceCategoryResponseRsList.forEach(indicatorInstanceCategoryResponseRs -> {
@@ -209,7 +286,7 @@ public class CaseIndicatorInstanceBiz {
             String resultNameList = indicatorExpressionItemResponseRs.getResultNameList();
             String resultValList = convertResultValList2Case(kIndicatorInstanceIdVCaseIndicatorInstanceIdMap, indicatorExpressionItemResponseRs.getResultValList());
             Integer seqIndicatorExpressionItem = indicatorExpressionItemResponseRs.getSeq();
-            caseIndicatorExpressionItemEntityList.add(caseIndicatorExpressionBiz.indicatorExpressionItemResponseRs2Case(
+            caseIndicatorExpressionItemEntityList.add(caseIndicatorExpressionBiz.caseIndicatorExpressionItemResponseRs2Case(
                 caseIndicatorExpressionItemId, indicatorExpressionItemId, appId, caseIndicatorExpressionId, conditionRaw,
                 conditionExpression, conditionNameList, conditionValList, resultRaw, resultExpression, resultNameList, resultValList, seqIndicatorExpressionItem));
             populateInfluenceMap(
@@ -235,8 +312,8 @@ public class CaseIndicatorInstanceBiz {
           String minResultNameList = minIndicatorExpressionItemResponseRs.getResultNameList();
           String minResultValList = convertResultValList2Case(kIndicatorInstanceIdVCaseIndicatorInstanceIdMap, minIndicatorExpressionItemResponseRs.getResultValList());
           Integer minSeqIndicatorExpressionItem = minIndicatorExpressionItemResponseRs.getSeq();
-          caseIndicatorExpressionItemEntityList.add(caseIndicatorExpressionBiz.indicatorExpressionItemResponseRs2Case(
-              minCaseIndicatorExpressionItemId, minIndicatorExpressionItemId, appId, caseIndicatorExpressionId, minConditionRaw,
+          caseIndicatorExpressionItemEntityList.add(caseIndicatorExpressionBiz.caseIndicatorExpressionItemResponseRs2Case(
+              minCaseIndicatorExpressionItemId, minIndicatorExpressionItemId, appId, null, minConditionRaw,
               minConditionExpression, minConditionNameList, minConditionValList, minResultRaw, minResultExpression, minResultNameList, minResultValList, minSeqIndicatorExpressionItem));
           populateInfluenceMap(
               kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap,
@@ -260,8 +337,8 @@ public class CaseIndicatorInstanceBiz {
           String maxResultNameList = maxIndicatorExpressionItemResponseRs.getResultNameList();
           String maxResultValList = convertResultValList2Case(kIndicatorInstanceIdVCaseIndicatorInstanceIdMap, maxIndicatorExpressionItemResponseRs.getResultValList());
           Integer maxSeqIndicatorExpressionItem = maxIndicatorExpressionItemResponseRs.getSeq();
-          caseIndicatorExpressionItemEntityList.add(caseIndicatorExpressionBiz.indicatorExpressionItemResponseRs2Case(
-              maxCaseIndicatorExpressionItemId, maxIndicatorExpressionItemId, appId, caseIndicatorExpressionId, maxConditionRaw,
+          caseIndicatorExpressionItemEntityList.add(caseIndicatorExpressionBiz.caseIndicatorExpressionItemResponseRs2Case(
+              maxCaseIndicatorExpressionItemId, maxIndicatorExpressionItemId, appId, null, maxConditionRaw,
               maxConditionExpression, maxConditionNameList, maxConditionValList, maxResultRaw, maxResultExpression, maxResultNameList, maxResultValList, maxSeqIndicatorExpressionItem));
           populateInfluenceMap(
               kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap,
@@ -293,6 +370,25 @@ public class CaseIndicatorInstanceBiz {
         });
       });
     });
+    kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap.forEach((indicatorInstanceId, influenceIndicatorInstanceIdSet) -> {
+      Set<String> influencedIndicatorInstanceIdSet = kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.get(indicatorInstanceId);
+      String influenceIndicatorInstanceIdList = null;
+      String influencedIndicatorInstanceIdList = null;
+      if (Objects.nonNull(influenceIndicatorInstanceIdSet)) {
+        influenceIndicatorInstanceIdList = String.join(EnumString.COMMA.getStr(), influenceIndicatorInstanceIdSet);
+      }
+      if (Objects.nonNull(influencedIndicatorInstanceIdSet)) {
+        influencedIndicatorInstanceIdList = String.join(EnumString.COMMA.getStr(), influencedIndicatorInstanceIdSet);
+      }
+      caseIndicatorExpressionInfluenceEntityList.add(CaseIndicatorExpressionInfluenceEntity
+          .builder()
+              .caseIndicatorExpressionInfluenceId(idGenerator.nextIdStr())
+              .appId(appId)
+              .indicatorInstanceId(indicatorInstanceId)
+              .influenceIndicatorInstanceIdList(influenceIndicatorInstanceIdList)
+              .influencedIndicatorInstanceIdList(influencedIndicatorInstanceIdList)
+          .build());
+    });
     kIndicatorInstanceIdVCaseIndicatorInstanceIdMap.values().forEach(caseIndicatorInstanceId -> {
       caseIndicatorPrincipalRefEntityList.add(CaseIndicatorPrincipalRefEntity
           .builder()
@@ -311,5 +407,83 @@ public class CaseIndicatorInstanceBiz {
     caseIndicatorExpressionRefService.saveOrUpdateBatch(caseIndicatorExpressionRefEntityList);
     caseIndicatorExpressionInfluenceService.saveOrUpdateBatch(caseIndicatorExpressionInfluenceEntityList);
     caseIndicatorPrincipalRefService.saveOrUpdateBatch(caseIndicatorPrincipalRefEntityList);
+    caseIndicatorCategoryPrincipalRefService.saveOrUpdateBatch(caseIndicatorCategoryPrincipalRefEntityList);
+  }
+
+  public List<CaseIndicatorInstanceCategoryResponseRs> getByPersonIdAndAppId(String personId, String appId) {
+    Map<String, List<CaseIndicatorInstanceResponseRs>> kCaseIndicatorCategoryIdVCaseIndicatorInstanceResponseRsListMap = new HashMap<>();
+    Map<String, Set<String>> kCaseIndicatorCategoryIdVCaseIndicatorInstanceIdSetMap = new HashMap<>();
+    Map<String, CaseIndicatorInstanceEntity> kCaseIndicatorInstanceIdVCaseIndicatorInstanceMap = new HashMap<>();
+    Map<String, CaseIndicatorRuleEntity> kCaseIndicatorInstanceIdVCaseIndicatorRuleMap = new HashMap<>();
+    Map<String, List<CaseIndicatorExpressionResponseRs>> kCaseIndicatorInstanceIdVCaseIndicatorExpressionResponseRsListMap = new HashMap<>();
+    Map<String, Integer> kCaseIndicatorInstanceIdVSeqMap = new HashMap<>();
+    Set<String> caseIndicatorInstanceIdSet = new HashSet<>();
+    Set<String> indicatorCategoryIdSet = caseIndicatorCategoryPrincipalRefService.lambdaQuery()
+        .eq(CaseIndicatorCategoryPrincipalRefEntity::getAppId, appId)
+        .eq(CaseIndicatorCategoryPrincipalRefEntity::getPrincipalId, personId)
+        .list()
+        .stream()
+        .map(CaseIndicatorCategoryPrincipalRefEntity::getIndicatorCategoryId)
+        .collect(Collectors.toSet());
+    if (indicatorCategoryIdSet.isEmpty()) {
+      return new ArrayList<>();
+    }
+    List<CaseIndicatorCategoryEntity> caseIndicatorCategoryEntityList = caseIndicatorCategoryService.lambdaQuery()
+        .eq(CaseIndicatorCategoryEntity::getAppId, appId)
+        .in(CaseIndicatorCategoryEntity::getCaseIndicatorCategoryId, indicatorCategoryIdSet)
+        .list();
+    if (caseIndicatorCategoryEntityList.isEmpty()) {
+      return new ArrayList<>();
+    }
+    caseIndicatorInstanceService.lambdaQuery()
+        .eq(CaseIndicatorInstanceEntity::getAppId, appId)
+        .in(CaseIndicatorInstanceEntity::getIndicatorCategoryId, indicatorCategoryIdSet)
+        .list()
+        .forEach(caseIndicatorInstanceEntity -> {
+          String caseIndicatorInstanceId = caseIndicatorInstanceEntity.getCaseIndicatorInstanceId();
+          caseIndicatorInstanceIdSet.add(caseIndicatorInstanceId);
+          String indicatorCategoryId = caseIndicatorInstanceEntity.getIndicatorCategoryId();
+          Set<String> caseIndicatorInstanceIdSet1 = kCaseIndicatorCategoryIdVCaseIndicatorInstanceIdSetMap.get(caseIndicatorInstanceId);
+          if (Objects.isNull(caseIndicatorInstanceIdSet1)) {
+            caseIndicatorInstanceIdSet1 = new HashSet<>();
+          }
+          caseIndicatorInstanceIdSet1.add(caseIndicatorInstanceId);
+          kCaseIndicatorCategoryIdVCaseIndicatorInstanceIdSetMap.put(indicatorCategoryId, caseIndicatorInstanceIdSet1);
+          kCaseIndicatorInstanceIdVCaseIndicatorInstanceMap.put(caseIndicatorInstanceId, caseIndicatorInstanceEntity);
+        });
+    populateKCaseIndicatorInstanceIdVIndicatorRuleMap(appId, caseIndicatorInstanceIdSet, kCaseIndicatorInstanceIdVCaseIndicatorRuleMap);
+    caseIndicatorExpressionBiz.populateKCaseReasonIdVCaseIndicatorExpressionResponseRsListMap(appId, caseIndicatorInstanceIdSet, kCaseIndicatorInstanceIdVCaseIndicatorExpressionResponseRsListMap);
+    populateKCaseIndicatorInstanceIdVSeqMap(appId, caseIndicatorInstanceIdSet, kCaseIndicatorInstanceIdVSeqMap);
+    kCaseIndicatorCategoryIdVCaseIndicatorInstanceIdSetMap.forEach((caseIndicatorCategoryId, caseIndicatorInstanceIdSet0) -> {
+      List<CaseIndicatorInstanceResponseRs> caseIndicatorInstanceResponseRsList = caseIndicatorInstanceIdSet0
+          .stream()
+          .map(caseIndicatorInstanceId -> {
+            CaseIndicatorInstanceEntity caseIndicatorInstanceEntity = kCaseIndicatorInstanceIdVCaseIndicatorInstanceMap.get(caseIndicatorInstanceId);
+            List<CaseIndicatorExpressionResponseRs> caseIndicatorExpressionResponseRsList = kCaseIndicatorInstanceIdVCaseIndicatorExpressionResponseRsListMap.get(caseIndicatorInstanceId);
+            CaseIndicatorRuleEntity caseIndicatorRuleEntity = kCaseIndicatorInstanceIdVCaseIndicatorRuleMap.get(caseIndicatorInstanceId);
+            String def = null;
+            String min = null;
+            String max = null;
+            if (Objects.nonNull(caseIndicatorRuleEntity)) {
+              def = caseIndicatorRuleEntity.getDef();
+              min = caseIndicatorRuleEntity.getMin();
+              max = caseIndicatorRuleEntity.getMax();
+            }
+            Integer seq = kCaseIndicatorInstanceIdVSeqMap.get(caseIndicatorInstanceId);
+            return caseIndicatorInstance2ResponseRs(
+                caseIndicatorInstanceEntity,
+                caseIndicatorExpressionResponseRsList,
+                def, min, max, seq);
+          }).collect(Collectors.toList());
+      kCaseIndicatorCategoryIdVCaseIndicatorInstanceResponseRsListMap.put(caseIndicatorCategoryId, caseIndicatorInstanceResponseRsList);
+    });
+    return caseIndicatorCategoryEntityList
+        .stream()
+        .map(caseIndicatorCategoryEntity -> {
+          String caseIndicatorCategoryId = caseIndicatorCategoryEntity.getCaseIndicatorCategoryId();
+          List<CaseIndicatorInstanceResponseRs> caseIndicatorInstanceResponseRsList = kCaseIndicatorCategoryIdVCaseIndicatorInstanceResponseRsListMap.get(caseIndicatorCategoryId);
+          return CaseIndicatorCategoryBiz.caseIndicatorCategory2ResponseRs(
+              caseIndicatorCategoryEntity, caseIndicatorInstanceResponseRsList);
+        }).collect(Collectors.toList());
   }
 }

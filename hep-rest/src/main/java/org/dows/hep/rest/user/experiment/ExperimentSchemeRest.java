@@ -2,6 +2,7 @@ package org.dows.hep.rest.user.experiment;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.user.experiment.request.ExperimentAllotSchemeRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeRequest;
@@ -33,7 +34,7 @@ public class ExperimentSchemeRest {
     */
     @Operation(summary = "获取方案设计")
     @GetMapping("v1/userExperiment/experimentScheme/getScheme")
-    public ExperimentSchemeResponse getScheme(String experimentInstanceId, String experimentGroupId, String accountId ) {
+    public ExperimentSchemeResponse getScheme(@NotBlank String experimentInstanceId, @NotBlank String experimentGroupId, @NotBlank String accountId ) {
         return experimentSchemeBiz.getScheme(experimentInstanceId, experimentGroupId, accountId);
     }
 
@@ -55,7 +56,7 @@ public class ExperimentSchemeRest {
      */
     @Operation(summary = "获取方案设计时间信息")
     @GetMapping("v1/userExperiment/experimentScheme/getSchemeDuration")
-    public ExperimentSchemeSettingResponse getSchemeDuration(String experimentSchemeId) {
+    public ExperimentSchemeSettingResponse getSchemeDuration(@NotBlank String experimentSchemeId) {
         return experimentSchemeBiz.getSchemeDuration(experimentSchemeId);
     }
 
@@ -77,7 +78,7 @@ public class ExperimentSchemeRest {
     */
     @Operation(summary = "提交设计方案")
     @GetMapping("v1/userExperiment/experimentScheme/submitScheme")
-    public Boolean submitScheme(String experimentInstanceId, String experimentGroupId, String accountId) {
+    public Boolean submitScheme(@NotBlank String experimentInstanceId, @NotBlank String experimentGroupId, @NotBlank String accountId) {
         return experimentSchemeBiz.submitScheme(experimentInstanceId, experimentGroupId, accountId);
     }
 

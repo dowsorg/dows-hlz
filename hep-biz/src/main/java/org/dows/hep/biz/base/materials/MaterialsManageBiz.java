@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dows.account.response.AccountInstanceResponse;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.oss.api.OssInfo;
@@ -39,6 +40,7 @@ import java.util.stream.Collectors;
  * @description project descr:资料中心:资料信息管理
  * @date 2023年4月18日 上午10:45:07
  */
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class MaterialsManageBiz {
@@ -468,10 +470,15 @@ public class MaterialsManageBiz {
             Date dt = record.getDt();
             String uploadTime = baseBiz.convertDate2String(dt);
             record.setUploadTime(uploadTime);
-            AccountInstanceResponse personalInformation = personManageBiz.getPersonalInformation(record.getAccountId(), baseBiz.getAppId());
-            String userName = Optional.ofNullable(personalInformation)
-                    .map(AccountInstanceResponse::getUserName)
-                    .orElse("");
+            String userName = "ERROR";
+            try {
+                AccountInstanceResponse personalInformation = personManageBiz.getPersonalInformation(record.getAccountId(), baseBiz.getAppId());
+                userName = Optional.ofNullable(personalInformation)
+                        .map(AccountInstanceResponse::getUserName)
+                        .orElse("");
+            } catch (Exception e) {
+                log.error("资料中心获取创建人基本信息异常");
+            }
             record.setUserName(userName);
             record.setAccountName(userName);
             record.setCanExe(getAuth(record.getAccountId(), curAccountId));

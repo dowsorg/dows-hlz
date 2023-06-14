@@ -40,6 +40,9 @@ public class CaseIndicatorInstanceEntity {
   @Schema(title = "应用ID")
   private String appId;
 
+  @Schema(title = "指标分类ID")
+  private String indicatorCategoryId;
+
   @Schema(title = "指标名称")
   private String indicatorName;
 

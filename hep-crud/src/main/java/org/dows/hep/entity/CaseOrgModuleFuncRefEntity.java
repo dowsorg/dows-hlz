@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
+import org.dows.framework.crud.api.CrudEntity;
 
 import java.util.Date;
 
@@ -23,24 +24,24 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "CaseIndicatorPrincipalRefEntity", title = "案例库指标实体关联关系")
-@TableName("case_indicator_principal_ref")
-public class CaseIndicatorPrincipalRefEntity {
+@Schema(name = "CaseModuleFuncRefEntity", title = "案例模块功能点绑定关系")
+@TableName("case_org_module_func_ref")
+public class CaseOrgModuleFuncRefEntity implements CrudEntity {
   @JsonFormat(shape = JsonFormat.Shape.STRING)
   @Schema(title = "数据库ID")
   private Long id;
 
-  @Schema(title = "分布式id")
-  private String caseIndicatorPrincipalRefId;
-
-  @Schema(title = "主体id")
-  private String principalId;
-
-  @Schema(title = "指标ID")
-  private String indicatorInstanceId;
+  @Schema(title = "分布式ID")
+  private String caseOrgModuleFuncRefId;
 
   @Schema(title = "应用ID")
   private String appId;
+
+  @Schema(title = "分布式ID")
+  private String caseOrgModuleId;
+
+  @Schema(title = "功能点分布式ID")
+  private String indicatorFuncId;
 
   @JsonIgnore
   @TableLogic
