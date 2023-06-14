@@ -42,14 +42,14 @@ public class ExperimentViewMonitorFollowupEntity implements CrudEntity {
     @Schema(title = "应用ID")
     private String appId;
 
-    @Schema(title = "指标功能ID")
-    private String indicatorFuncId;
+    @Schema(title = "实验指标功能ID")
+    private String experimentIndicatorFuncId;
 
     @Schema(title = "指标监测随访类表名称")
     private String name;
 
-    @Schema(title = "监测随访表类别Id")
-    private String indicatorCategoryId;
+    @Schema(title = "实验监测随访表类别Id")
+    private String experimentIndicatorCategoryId;
 
     @Schema(title = "0-禁用，1-启用")
     private Boolean status;

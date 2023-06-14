@@ -42,8 +42,8 @@ public class ExperimentViewMonitorFollowupContentRefEntity implements CrudEntity
     @Schema(title = "实验查看指标监测随访内容分布式ID")
     private String experimentViewMonitorFollowupContentId;
 
-    @Schema(title = "实验指标ID")
-    private String experimentIndicatorInstanceId;
+    @Schema(title = "指标ID")
+    private String indicatorInstanceId;
 
     @Schema(title = "展示顺序")
     private Integer seq;

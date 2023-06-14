@@ -185,7 +185,7 @@ public class IndicatorExpressionBiz{
   }
   public void populateKReasonIdVIndicatorExpressionResponseRsListMap(String appId, Set<String> reasonIdSet, Map<String, List<IndicatorExpressionResponseRs>> kReasonIdVIndicatorExpressionResponseRsListMap) {
     if (Objects.isNull(kReasonIdVIndicatorExpressionResponseRsListMap)) {
-      log.warn("method IndicatorInstanceBiz.populateKIndicatorExpressionIdVIndicatorExpressionEntityMap param kIndicatorInstanceIdVIndicatorExpressionResponseRsMap is null");
+      log.warn("method IndicatorExpressionBiz.populateKIndicatorExpressionIdVIndicatorExpressionEntityMap param kIndicatorInstanceIdVIndicatorExpressionResponseRsMap is null");
       return;
     }
     if (Objects.isNull(reasonIdSet) || reasonIdSet.isEmpty()) {
@@ -1043,6 +1043,18 @@ public class IndicatorExpressionBiz{
       String conditionValList = indicatorExpressionItemEntity.getConditionValList();
       if (StringUtils.isBlank(conditionNameList)) {
         if (StringUtils.isBlank(conditionValList)) {
+          String conditionExpression = indicatorExpressionItemEntity.getConditionExpression();
+          if (StringUtils.isBlank(conditionExpression)) {
+            return;
+          }
+          StandardEvaluationContext context = new StandardEvaluationContext();
+          ExpressionParser parser2 = new SpelExpressionParser();
+          Expression expression = parser2.parseExpression(conditionExpression);
+          String conditionExpressionResult = expression.getValue(context, String.class);
+          if(!StringUtils.equalsIgnoreCase(conditionExpressionResult, EnumBoolean.TRUE.getCode().toString()) && !StringUtils.equalsIgnoreCase(conditionExpressionResult, EnumBoolean.FALSE.getCode().toString())) {
+            log.warn("method checkConditionExpression result:{} is not boolean", conditionExpressionResult);
+            throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
+          }
           return;
         } else {
           log.warn("method IndicatorExpressionBiz.createOrUpdate checkConditionExpression name & val number is not same");
@@ -1285,7 +1297,7 @@ public class IndicatorExpressionBiz{
       AtomicReference<IndicatorExpressionRefEntity> indicatorExpressionRefEntityAtomicReference
       ) {
     String indicatorExpressionId = createOrUpdateIndicatorExpressionRequestRs.getIndicatorExpressionId();
-    String principalId = createOrUpdateIndicatorExpressionRequestRs.getPrincipalId();
+    String reasonId = createOrUpdateIndicatorExpressionRequestRs.getReasonId();
     String indicatorExpressionRefId = createOrUpdateIndicatorExpressionRequestRs.getIndicatorExpressionRefId();
     String appId = createOrUpdateIndicatorExpressionRequestRs.getAppId();
     if (StringUtils.isBlank(indicatorExpressionId)) {
@@ -1299,7 +1311,7 @@ public class IndicatorExpressionBiz{
           .indicatorExpressionRefId(idGenerator.nextIdStr())
           .appId(appId)
           .indicatorExpressionId(indicatorExpressionId)
-          .reasonId(principalId)
+          .reasonId(reasonId)
           .build();
     } else {
       indicatorExpressionRefEntity = indicatorExpressionRefService.lambdaQuery()
@@ -1310,7 +1322,7 @@ public class IndicatorExpressionBiz{
             log.warn("method populateIndicatorExpressionRefEntity indicatorExpressionRefId:{} is illegal", indicatorExpressionRefId);
             throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
           });
-      indicatorExpressionRefEntity.setReasonId(principalId);
+      indicatorExpressionRefEntity.setReasonId(reasonId);
     }
     indicatorExpressionRefEntityAtomicReference.set(indicatorExpressionRefEntity);
     createOrUpdateIndicatorExpressionRequestRs.setIndicatorExpressionRefId(indicatorExpressionRefId);

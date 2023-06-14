@@ -21,7 +21,7 @@ public class DelRefItemRequest {
     @Schema(title = "应用ID")
     @ApiModelProperty(required = true)
     private String appId;
-    @Schema(title = "分布式refId列表")
+    @Schema(title = "indicatorExpressionId 表达式ID列表")
     @ApiModelProperty(required = true)
     private List<String> ids;
 

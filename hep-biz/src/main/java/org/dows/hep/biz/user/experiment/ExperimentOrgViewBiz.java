@@ -71,7 +71,7 @@ public class ExperimentOrgViewBiz {
         //1、获取record记录
         return experimentViewMonitorFollowupService.lambdaQuery()
                 .eq(ExperimentViewMonitorFollowupEntity::getAppId, findFollowupDef.getAppId())
-                .eq(ExperimentViewMonitorFollowupEntity::getIndicatorFuncId, findFollowupDef.getIndicatorFuncId())
+                .eq(ExperimentViewMonitorFollowupEntity::getExperimentIndicatorFuncId, findFollowupDef.getIndicatorFuncId())
                 .eq(ExperimentViewMonitorFollowupEntity::getDeleted, false)
                 .list();
     }
@@ -114,17 +114,19 @@ public class ExperimentOrgViewBiz {
                     List<ExperimentIndicatorResponse> responseList = new ArrayList<>();
                     contentRefList.forEach(contentRef -> {
                         ExperimentIndicatorResponse response = new ExperimentIndicatorResponse();
+                        //todo 根据indicatorInstanceId和experimentPersonId获取experimentIndicatorInstanceId，先假设experimentIndicatorInstanceId字段
+                        String experimentIndicatorInstanceId = "010101";
                         //2.3、获取指标值
                         ExperimentIndicatorValEntity valEntity = experimentIndicatorValService.lambdaQuery()
                                 .eq(ExperimentIndicatorValEntity::getDeleted, false)
-                                .eq(ExperimentIndicatorValEntity::getExperimentIndicatorInstanceId, contentRef.getExperimentIndicatorInstanceId())
+                                .eq(ExperimentIndicatorValEntity::getExperimentIndicatorInstanceId, experimentIndicatorInstanceId)
                                 .eq(ExperimentIndicatorValEntity::getPeriods, periods)
                                 .one();
                         response.setExperimentIndicatorCurrentVal(valEntity.getCurrentVal());
                         //2.4、获取指标单位
                         ExperimentIndicatorInstanceEntity instanceEntity = experimentIndicatorInstanceService.lambdaQuery()
                                 .eq(ExperimentIndicatorInstanceEntity::getDeleted, false)
-                                .eq(ExperimentIndicatorInstanceEntity::getExperimentIndicatorInstanceId, contentRef.getExperimentIndicatorInstanceId())
+                                .eq(ExperimentIndicatorInstanceEntity::getExperimentIndicatorInstanceId, experimentIndicatorInstanceId)
                                 .eq(ExperimentIndicatorInstanceEntity::getExperimentPersonId, experimentPersonId)
                                 .one();
                         response.setUnit(instanceEntity.getUnit());
@@ -198,7 +200,7 @@ public class ExperimentOrgViewBiz {
                     .dueDays(setFollowup.getDueDays())
                     .todoTime(TimeUtil.timeProcess(new Date(), setFollowup.getDueDays()))
                     .setAtTime(new Date())
-                    .followupTimes(timerEntity.getFollowupTimes() + 1)
+                    .followupTimes(timerEntity != null && timerEntity.getFollowupTimes() != null ? timerEntity.getFollowupTimes() + 1 : 1)
                     .build();
             flag = operateFollowupTimerService.save(entity);
         }
@@ -698,15 +700,15 @@ public class ExperimentOrgViewBiz {
      * @开始时间:
      * @创建时间: 2023年6月05日 下午17:40:34
      */
-    public List<ExperimentIndicatorJudgeSupportExamResponse> getIndicatorViewSupportExamByCategoryId(String indicatoryCategoryId) {
+    public List<ExperimentIndicatorJudgeSupportExamResponse> getIndicatorViewSupportExamByCategoryIds(Set<String> experimentIndicatoryCategoryIds) {
         //1、根据指标分类ID获取所有符合条件的数据
         List<ExperimentIndicatorViewSupportExamEntity> entityList = experimentIndicatorViewSupportExamService.lambdaQuery()
                 .select(ExperimentIndicatorViewSupportExamEntity::getId,
                         ExperimentIndicatorViewSupportExamEntity::getExperimentJudgeSupportExamId,
                         ExperimentIndicatorViewSupportExamEntity::getIndicatorViewSupportExamId,
                         ExperimentIndicatorViewSupportExamEntity::getName,
-                        ExperimentIndicatorViewSupportExamEntity::getIndicatorCategoryId)
-                .eq(ExperimentIndicatorViewSupportExamEntity::getIndicatorCategoryId, indicatoryCategoryId)
+                        ExperimentIndicatorViewSupportExamEntity::getExperimentIndicatorCategoryId)
+                .in(ExperimentIndicatorViewSupportExamEntity::getExperimentIndicatorCategoryId, experimentIndicatoryCategoryIds)
                 .eq(ExperimentIndicatorViewSupportExamEntity::getStatus, true)
                 .list();
         List<ExperimentIndicatorJudgeSupportExamResponse> responseList = new ArrayList<>();
@@ -718,7 +720,7 @@ public class ExperimentOrgViewBiz {
                         .experimentJudgeSupportExamId(entity.getExperimentJudgeSupportExamId())
                         .indicatorJudgeSupportExamId(entity.getIndicatorViewSupportExamId())
                         .name(entity.getName())
-                        .indicatorCategoryId(entity.getIndicatorCategoryId())
+                        .indicatorCategoryId(entity.getExperimentIndicatorCategoryId())
                         .build();
                 responseList.add(response);
             });

@@ -272,15 +272,21 @@ public class ExperimentSchemeBiz {
 
     private void handleExperimentSchemeItem(ExperimentAllotSchemeRequest request) {
         List<ExperimentAllotSchemeRequest.ParticipatorWithScheme> allotList = request.getAllotList();
+        List<ExperimentSchemeItemRequest> itemList = new ArrayList<>();
         allotList.forEach(allotScheme -> {
             String accountId = allotScheme.getAccountId();
             List<String> experimentSchemeIds = allotScheme.getExperimentSchemeIds();
             if (CollUtil.isNotEmpty(experimentSchemeIds)) {
-                experimentSchemeIds.forEach(experimentSchemeId -> {
-                    experimentSchemeItemBiz.updateAccount(experimentSchemeId, accountId);
+                experimentSchemeIds.forEach(experimentSchemeItemId -> {
+                    ExperimentSchemeItemRequest itemRequest = ExperimentSchemeItemRequest.builder()
+                            .experimentSchemeItemId(experimentSchemeItemId)
+                            .accountId(accountId)
+                            .build();
+                    itemList.add(itemRequest);
                 });
             }
         });
+        experimentSchemeItemBiz.updateAccount(itemList);
     }
 
     private void handleExperimentScheme(ExperimentAllotSchemeRequest request) {

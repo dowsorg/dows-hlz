@@ -67,11 +67,32 @@ public class ExperimentSchemeItemBiz {
      * @param
      * @return
      */
-    public void updateAccount(String experimentSchemeId, String accountId) {
+    public void updateAccount(String experimentSchemeItemId, String accountId) {
         LambdaUpdateWrapper<ExperimentSchemeItemEntity> updateWrapper = new LambdaUpdateWrapper<ExperimentSchemeItemEntity>()
                 .set(ExperimentSchemeItemEntity::getAccountId, accountId)
-                .eq(ExperimentSchemeItemEntity::getExperimentSchemeId, experimentSchemeId);
+                .eq(ExperimentSchemeItemEntity::getExperimentSchemeItemId, experimentSchemeItemId);
         experimentSchemeItemService.update(updateWrapper);
+    }
+
+    public void updateAccount(List<ExperimentSchemeItemRequest> itemList) {
+        List<String> itemIdList = itemList.stream().map(ExperimentSchemeItemRequest::getExperimentSchemeItemId).toList();
+        List<ExperimentSchemeItemEntity> list = experimentSchemeItemService.lambdaQuery()
+                .in(ExperimentSchemeItemEntity::getExperimentSchemeItemId, itemIdList)
+                .list();
+        if (CollUtil.isEmpty(list)) {
+            throw new BizException(ExperimentESCEnum.DATA_NULL);
+        }
+
+        Map<String, Long> collect = list.stream().collect(Collectors.toMap(ExperimentSchemeItemEntity::getExperimentSchemeItemId, ExperimentSchemeItemEntity::getId));
+        ArrayList<ExperimentSchemeItemEntity> result = new ArrayList<>();
+        itemList.forEach(item -> {
+            ExperimentSchemeItemEntity resultItem = ExperimentSchemeItemEntity.builder()
+                    .id(collect.get(item.getExperimentSchemeItemId()))
+                    .accountId(item.getAccountId())
+                    .build();
+            result.add(resultItem);
+        });
+        experimentSchemeItemService.updateBatchById(result);
     }
 
     private List<ExperimentSchemeItemEntity> convertToFlatList(List<ExperimentSchemeItemRequest> itemList) {

@@ -40,8 +40,8 @@ public class ExperimentIndicatorViewSupportExamEntity implements CrudEntity {
     @Schema(title = "教师端查看指标辅助检查ID")
     private String indicatorViewSupportExamId;
 
-    @Schema(title = "指标功能ID")
-    private String indicatorFuncId;
+    @Schema(title = "实验指标功能ID")
+    private String experimentIndicatorFuncId;
 
     @Schema(title = "应用ID")
     private String appId;
@@ -49,8 +49,8 @@ public class ExperimentIndicatorViewSupportExamEntity implements CrudEntity {
     @Schema(title = "体格检查名称")
     private String name;
 
-    @Schema(title = "体格检查类别")
-    private String indicatorCategoryId;
+    @Schema(title = "实验体格检查类别")
+    private String experimentIndicatorCategoryId;
 
     @Schema(title = "费用")
     private BigDecimal fee;

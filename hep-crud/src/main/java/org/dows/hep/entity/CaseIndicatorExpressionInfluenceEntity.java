@@ -35,9 +35,6 @@ public class CaseIndicatorExpressionInfluenceEntity implements CrudEntity {
   @Schema(title = "案例分布式ID")
   private String caseIndicatorExpressionInfluenceId;
 
-  @Schema(title = "分布式ID")
-  private String indicatorExpressionInfluenceId;
-
   @Schema(title = "应用ID")
   private String appId;
 

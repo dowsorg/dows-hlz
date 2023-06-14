@@ -36,7 +36,7 @@ public class CaseIndicatorPrincipalRefEntity {
   @Schema(title = "主体id")
   private String principalId;
 
-  @Schema(title = "数据库指标ID")
+  @Schema(title = "指标ID")
   private String indicatorInstanceId;
 
   @Schema(title = "应用ID")
