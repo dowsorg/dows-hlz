@@ -173,8 +173,8 @@ public class CaseOrgModuleBiz {
               .indicatorFuncId(indicatorFuncId)
               .build();
         } else {
-          CaseOrgModuleFuncRefEntity caseOrgModuleFuncRefEntity1 = kCaseOrgModuleFuncRefIdVCaseOrgModuleFuncRefEntityMap.get(caseOrgModuleFuncRefId);
-          if (Objects.isNull(caseOrgModuleFuncRefEntity1)) {
+          caseOrgModuleFuncRefEntity = kCaseOrgModuleFuncRefIdVCaseOrgModuleFuncRefEntityMap.get(caseOrgModuleFuncRefId);
+          if (Objects.isNull(caseOrgModuleFuncRefEntity)) {
             log.warn("CaseOrgModuleBiz.batchCreateOrUpdate param caseOrgModuleFuncRefId:{} is illegal", caseOrgModuleFuncRefId);
             throw new CaseOrgModuleException(EnumESC.VALIDATE_EXCEPTION);
           }
