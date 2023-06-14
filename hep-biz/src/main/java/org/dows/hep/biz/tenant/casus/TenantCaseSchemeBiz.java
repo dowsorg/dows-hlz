@@ -28,10 +28,7 @@ import org.dows.hep.entity.CaseSchemeEntity;
 import org.dows.hep.service.CaseSchemeService;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -61,14 +58,6 @@ public class TenantCaseSchemeBiz {
     public String saveOrUpdCaseScheme(CaseSchemeRequest caseScheme, CaseSchemeSourceEnum caseSchemeSourceEnum, QuestionSourceEnum questionSourceEnum) {
         if (caseScheme == null) {
             return "";
-        }
-
-        // check is exists
-        if (CaseSchemeSourceEnum.TENANT.equals(caseSchemeSourceEnum)) {
-            CaseSchemeEntity oriCaseSchemeEntity = getByInstanceId(caseScheme.getCaseInstanceId());
-            if (BeanUtil.isNotEmpty(oriCaseSchemeEntity)) {
-                throw new BizException(CaseESCEnum.CASE_SCHEME_ALREADY_EXISTS.getDescr());
-            }
         }
 
         CaseSchemeEntity caseSchemeEntity = convertRequest2Entity(caseScheme, caseSchemeSourceEnum, questionSourceEnum);
@@ -379,6 +368,19 @@ public class TenantCaseSchemeBiz {
         String uniqueId = result.getCaseSchemeId();
         if (StrUtil.isBlank(uniqueId)) {
             result.setCaseSchemeId(baseBiz.getIdStr());
+            // check is exists
+            if (CaseSchemeSourceEnum.TENANT.equals(caseSchemeSourceEnum)) {
+                CaseSchemeEntity oriCaseSchemeEntity = getByInstanceId(request.getCaseInstanceId());
+                if (BeanUtil.isNotEmpty(oriCaseSchemeEntity)) {
+                    String oriAddType = oriCaseSchemeEntity.getAddType();
+                    String curAddType = request.getAddType();
+                    if (StrUtil.equals(oriAddType, curAddType)) {
+                        throw new BizException(CaseESCEnum.CASE_SCHEME_ALREADY_EXISTS.getDescr());
+                    } else {
+                        delCaseScheme(List.of(oriCaseSchemeEntity.getCaseSchemeId()));
+                    }
+                }
+            }
         } else {
             CaseSchemeEntity entity = getById(uniqueId);
             if (BeanUtil.isEmpty(entity)) {
