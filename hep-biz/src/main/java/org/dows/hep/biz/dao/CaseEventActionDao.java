@@ -80,6 +80,20 @@ public class CaseEventActionDao extends BaseSubDao<CaseEventActionService, CaseE
 
 
     //region save
+    public boolean saveOrUpdateBatch(String eventId, List<CaseEventActionEntity> actions, boolean useLogicId, boolean dftIfEmpty){
+        if(ShareUtil.XObject.isEmpty(actions)) {
+            return dftIfEmpty;
+        }
+        for(CaseEventActionEntity item:actions){
+            if (ShareUtil.XObject.isEmpty(item.getCaseEventId())) {
+                item.setCaseEventId(eventId);
+            }
+            if (ShareUtil.XObject.isEmpty(getColId().apply(item))) {
+                setColId(item).apply(idGenerator.nextIdStr());
+            }
+        }
+        return saveOrUpdateBatch(actions,useLogicId,dftIfEmpty);
+    }
     public boolean saveOrUpdateBatch(String eventId, LinkedHashMap<CaseEventActionEntity,List<CaseEventActionIndicatorEntity>> actions, boolean useLogicId, boolean dftIfEmpty){
         if(ShareUtil.XObject.isEmpty(actions)) {
             return dftIfEmpty;

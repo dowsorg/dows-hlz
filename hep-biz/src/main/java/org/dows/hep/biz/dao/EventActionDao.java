@@ -80,6 +80,20 @@ public class EventActionDao extends BaseSubDao<EventActionService, EventActionEn
 
 
     //region save
+    public boolean saveOrUpdateBatch(String eventId, List<EventActionEntity> actions, boolean useLogicId, boolean dftIfEmpty){
+        if(ShareUtil.XObject.isEmpty(actions)) {
+            return dftIfEmpty;
+        }
+        for(EventActionEntity item:actions){
+            if (ShareUtil.XObject.isEmpty(item.getEventId())) {
+                item.setEventId(eventId);
+            }
+            if (ShareUtil.XObject.isEmpty(getColId().apply(item))) {
+                setColId(item).apply(idGenerator.nextIdStr());
+            }
+        }
+        return saveOrUpdateBatch(actions,useLogicId,dftIfEmpty);
+    }
     public boolean saveOrUpdateBatch(String eventId, LinkedHashMap<EventActionEntity,List<EventActionIndicatorEntity>> actions, boolean useLogicId, boolean dftIfEmpty){
         if(ShareUtil.XObject.isEmpty(actions)) {
             return dftIfEmpty;
