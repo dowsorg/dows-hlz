@@ -49,7 +49,7 @@ public class TagsManageRest {
      * @return
      */
     @Operation(summary = "分页获取标签列表")
-    @PostMapping("v1/baseTags/tagsManage/page")
+    @GetMapping("v1/baseTags/tagsManage/page")
     public PageResponse<TagsInstanceResponse> page(PageTagsRequest pageTagsRequest) {
         return tagsManageBiz.page(pageTagsRequest);
     }
