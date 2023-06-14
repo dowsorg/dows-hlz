@@ -93,7 +93,7 @@ public class PersonStatiscBiz {
      * @开始时间:
      * @创建时间: 2023年5月8日 上午13:57:34
      */
-    public List<AccountOrgResponse> listExperimentOrgs(String experimentInstanceId,String experimentGroupId) {
+    public List<AccountOrgResponse> listExperimentOrgs(String experimentInstanceId, String experimentGroupId) {
         List<AccountOrgResponse> orgResponses = new ArrayList<>();
         //1、根据实验找到案例机构ID
         List<ExperimentOrgEntity> experimentOrgList = experimentOrgService.lambdaQuery()
@@ -148,8 +148,21 @@ public class PersonStatiscBiz {
                 experimentParticipatorResponse.setGroupName(groupEntity.getGroupName());
             }
         }
-        //2、获取参与者负责机构
-        experimentParticipatorResponse.setExperimentOrgIds(Arrays.asList(participatorEntity.getExperimentOrgIds()));
+        //2、获取参与者负责的uim机构
+        List<String> experimentOrgIds = Arrays.asList(participatorEntity.getExperimentOrgIds());
+        List<String> orgIds = new ArrayList<>();
+        if (experimentOrgIds != null && experimentOrgIds.size() > 0) {
+            experimentOrgIds.forEach(experimentOrgId -> {
+                ExperimentOrgEntity orgEntity = experimentOrgService.lambdaQuery()
+                        .eq(ExperimentOrgEntity::getExperimentOrgId, experimentOrgId)
+                        .eq(ExperimentOrgEntity::getDeleted, false)
+                        .one();
+                if(orgEntity != null){
+                    orgIds.add(orgEntity.getOrgId());
+                }
+            });
+        }
+        experimentParticipatorResponse.setOrgIds(orgIds);
         //3、根据账号ID找到头像
         AccountInstanceResponse instanceResponse = accountInstanceApi.getAccountInstanceByAccountId(participatorEntity.getAccountId());
         experimentParticipatorResponse.setAvatar(instanceResponse.getAvatar());
