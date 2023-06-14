@@ -48,9 +48,10 @@ public class PersonStatiscRest {
      * @创建时间: 2023年5月8日 下午15:40:34
      */
     @Operation(summary = "获取实验机构")
-    @PostMapping("v1/basePerson/personManage/countExperimentOrgs")
-    public List<AccountOrgResponse> countExperimentOrgs(@RequestParam @Validated String experimentInstanceId) {
-        return personStatiscBiz.countExperimentOrgs(experimentInstanceId);
+    @PostMapping("v1/basePerson/personManage/listExperimentOrgs")
+    public List<AccountOrgResponse> listExperimentOrgs(@RequestParam @Validated String experimentInstanceId,
+                                                       @RequestParam @Validated String experimentGroupId) {
+        return personStatiscBiz.listExperimentOrgs(experimentInstanceId,experimentGroupId);
     }
 
     /**

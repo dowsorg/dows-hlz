@@ -85,40 +85,34 @@ public class PersonStatiscBiz {
     /**
      * @param
      * @return
-     * @说明: 获取案例机构
-     * @关联表: case_person、case_org
+     * @说明: 获取实验机构
+     * @关联表: experiment_org、account_org_geo
      * @工时: 1H
      * @开发者: jx
      * @开始时间:
      * @创建时间: 2023年5月8日 上午13:57:34
      */
-    public List<AccountOrgResponse> countExperimentOrgs(String experimentInstanceId) {
+    public List<AccountOrgResponse> listExperimentOrgs(String experimentInstanceId,String experimentGroupId) {
         List<AccountOrgResponse> orgResponses = new ArrayList<>();
         //1、根据实验找到案例机构ID
         List<ExperimentOrgEntity> experimentOrgList = experimentOrgService.lambdaQuery()
                 .eq(ExperimentOrgEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentOrgEntity::getExperimentGroupId, experimentGroupId)
                 .eq(ExperimentOrgEntity::getDeleted, false)
                 .list();
         if (experimentOrgList != null && experimentOrgList.size() > 0) {
-            //2、获取案例中的已经被开启的机构
-            List<CaseOrgEntity> orgList = caseOrgService.lambdaQuery()
-                    .eq(CaseOrgEntity::getCaseOrgId, experimentOrgList.get(0).getCaseOrgId())
-                    .eq(CaseOrgEntity::getDeleted, false)
-                    .list();
-            //3、获取机构的经纬度信息
-            if (orgList != null && orgList.size() > 0) {
-                orgList.forEach(org -> {
-                    AccountOrgResponse orgResponse = AccountOrgResponse
-                            .builder()
-                            .orgId(org.getCaseOrgId())
-                            .orgName(org.getOrgName())
-                            .build();
-                    AccountOrgGeoResponse orgGeo = accountOrgGeoApi.getAccountOrgInfoByOrgId(org.getOrgId());
-                    orgResponse.setOrgLatitude(orgGeo.getOrgLatitude());
-                    orgResponse.setOrgLongitude(orgGeo.getOrgLongitude());
-                    orgResponses.add(orgResponse);
-                });
-            }
+            //2、获取机构的经纬度信息
+            experimentOrgList.forEach(org -> {
+                AccountOrgResponse orgResponse = AccountOrgResponse
+                        .builder()
+                        .orgId(org.getOrgId())
+                        .build();
+                AccountOrgGeoResponse orgGeo = accountOrgGeoApi.getAccountOrgInfoByOrgId(org.getOrgId());
+                orgResponse.setOrgLatitude(orgGeo.getOrgLatitude());
+                orgResponse.setOrgLongitude(orgGeo.getOrgLongitude());
+                orgResponse.setOrgName(orgGeo.getOrgName());
+                orgResponses.add(orgResponse);
+            });
         }
         return orgResponses;
     }

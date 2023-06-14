@@ -10,7 +10,8 @@ public enum ExperimentStatusCode implements StatusCode {
     NO_EXIST_EXPERIMENT(0, "不存在的实验"),
 
     NO_EXIST_GROUP_ID(1,"当前实验不存在该小组"),
-    NOT_CAPTAIN(1, "该账号不是实验队长，无法创建队名!"),
+    NOT_CAPTAIN(2, "该账号不是实验队长，无法创建队名!"),
+    NOT_MATCH_CASE(3, "没有找到实验对应的案例!"),
 
 
 
