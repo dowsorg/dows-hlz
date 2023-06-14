@@ -26,6 +26,6 @@ public class CreateOrUpdateCaseOrgModuleRequestRs implements Serializable {
   @Schema(title = "模块名称")
   private String name;
 
-  @Schema(title = "功能点列表")
-  private List<String> caseOrgModuleFuncRefIdList;
+  @Schema(title = "创建或修改功能关联关系列表")
+  private List<CreateOrUpdateCaseOrgModuleFuncRefRequestRs> createOrUpdateCaseOrgModuleFuncRefRequestRsList;
 }

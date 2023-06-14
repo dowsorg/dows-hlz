@@ -221,7 +221,7 @@ public class IndicatorFuncBiz{
             .collect(Collectors.toList());
     }
 
-    private static IndicatorFuncResponse indicatorFunc2Response(IndicatorFuncEntity indicatorFuncEntity) {
+    public static IndicatorFuncResponse indicatorFunc2Response(IndicatorFuncEntity indicatorFuncEntity) {
         if (Objects.isNull(indicatorFuncEntity)) {
             return null;
         }
