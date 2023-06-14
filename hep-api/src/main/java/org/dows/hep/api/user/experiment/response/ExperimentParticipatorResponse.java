@@ -50,4 +50,7 @@ public class ExperimentParticipatorResponse {
     @Schema(title = "实验成员")
     private List<AccountInstanceResponse> participators;
 
+    @Schema(title = "实验机构ID")
+    private List<String> experimentOrgIds;
+
 }

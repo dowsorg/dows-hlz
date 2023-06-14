@@ -13,6 +13,7 @@ import org.dows.hep.service.*;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -147,7 +148,9 @@ public class PersonStatiscBiz {
                 experimentParticipatorResponse.setGroupName(groupEntity.getGroupName());
             }
         }
-        //2、根据账号ID找到头像
+        //2、获取参与者负责机构
+        experimentParticipatorResponse.setExperimentOrgIds(Arrays.asList(participatorEntity.getExperimentOrgIds()));
+        //3、根据账号ID找到头像
         AccountInstanceResponse instanceResponse = accountInstanceApi.getAccountInstanceByAccountId(participatorEntity.getAccountId());
         experimentParticipatorResponse.setAvatar(instanceResponse.getAvatar());
         return experimentParticipatorResponse;
