@@ -980,11 +980,12 @@ public class IndicatorExpressionBiz{
       throw new IndicatorCategoryException(EnumESC.SYSTEM_BUSY_PLEASE_OPERATOR_INDICATOR_CATEGORY_LATER);
     }
     try {
+      AtomicReference<Boolean> changeAtomicReference = new AtomicReference<>(false);
       AtomicReference<IndicatorExpressionEntity> indicatorExpressionEntityAtomicReference = new AtomicReference<>();
       List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = new ArrayList<>();
       AtomicReference<IndicatorExpressionRefEntity> indicatorExpressionRefEntityAtomicReference = new AtomicReference<>();
       AtomicReference<IndicatorExpressionInfluenceEntity> indicatorExpressionInfluenceEntityAtomicReference = new AtomicReference<>();
-      populateIndicatorExpressionEntity(createOrUpdateIndicatorExpressionRequestRs, indicatorExpressionEntityAtomicReference);
+      populateIndicatorExpressionEntity(changeAtomicReference, createOrUpdateIndicatorExpressionRequestRs, indicatorExpressionEntityAtomicReference);
       IndicatorExpressionEntity indicatorExpressionEntity = indicatorExpressionEntityAtomicReference.get();
       String indicatorExpressionId = indicatorExpressionEntity.getIndicatorExpressionId();
       if (EnumIndicatorExpressionType.CONDITION.getType().equals(type)) {
@@ -997,8 +998,8 @@ public class IndicatorExpressionBiz{
       }
       populateIndicatorExpressionRefEntity(createOrUpdateIndicatorExpressionRequestRs, indicatorExpressionRefEntityAtomicReference);
       IndicatorExpressionRefEntity indicatorExpressionRefEntity = indicatorExpressionRefEntityAtomicReference.get();
-      populateMinIndicatorExpressionItemId(minCreateOrUpdateIndicatorExpressionItemRequestRs, indicatorExpressionEntity, indicatorExpressionItemEntityList);
-      populateMaxIndicatorExpressionItemId(maxCreateOrUpdateIndicatorExpressionItemRequestRs, indicatorExpressionEntity, indicatorExpressionItemEntityList);
+      populateMinIndicatorExpressionItemId(changeAtomicReference.get(), minCreateOrUpdateIndicatorExpressionItemRequestRs, indicatorExpressionEntity, indicatorExpressionItemEntityList);
+      populateMaxIndicatorExpressionItemId(changeAtomicReference.get(), maxCreateOrUpdateIndicatorExpressionItemRequestRs, indicatorExpressionEntity, indicatorExpressionItemEntityList);
       indicatorExpressionService.saveOrUpdate(indicatorExpressionEntity);
       indicatorExpressionItemService.saveOrUpdateBatch(indicatorExpressionItemEntityList);
       indicatorExpressionRefService.saveOrUpdate(indicatorExpressionRefEntity);
@@ -1161,6 +1162,7 @@ public class IndicatorExpressionBiz{
   }
 
   public void populateIndicatorExpressionEntity(
+      AtomicReference<Boolean> changeAtomicReference,
       CreateOrUpdateIndicatorExpressionRequestRs createOrUpdateIndicatorExpressionRequestRs,
       AtomicReference<IndicatorExpressionEntity> indicatorExpressionEntityAtomicReference
       ) {
@@ -1190,7 +1192,11 @@ public class IndicatorExpressionBiz{
             log.warn("indicatorExpressionId:{} is illegal", finalIndicatorExpressionId);
             throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
           });
-      indicatorExpressionEntity.setType(type);
+      Integer dbType = indicatorExpressionEntity.getType();
+      if (!dbType.equals(type)) {
+        changeAtomicReference.set(true);
+        indicatorExpressionEntity.setType(type);
+      }
     }
     indicatorExpressionEntityAtomicReference.set(indicatorExpressionEntity);
     createOrUpdateIndicatorExpressionRequestRs.setIndicatorExpressionId(indicatorExpressionId);
@@ -1337,6 +1343,7 @@ public class IndicatorExpressionBiz{
     createOrUpdateIndicatorExpressionRequestRs.setIndicatorExpressionRefId(indicatorExpressionRefId);
   }
   public void populateMinIndicatorExpressionItemId(
+      Boolean changeType,
       CreateOrUpdateIndicatorExpressionItemRequestRs minCreateOrUpdateIndicatorExpressionItemRequestRs,
       IndicatorExpressionEntity indicatorExpressionEntity,
       List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList
@@ -1373,6 +1380,10 @@ public class IndicatorExpressionBiz{
               log.warn("method populateMinIndicatorExpressionItemId param minCreateOrUpdateIndicatorExpressionItemRequestRs indicatorExpressionItemId:{} is illegal", finalIndicatorExpressionItemId);
               throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
             });
+        if (changeType) {
+          indicatorExpressionItemId = idGenerator.nextIdStr();
+          indicatorExpressionItemEntity.setIndicatorExpressionItemId(indicatorExpressionItemId);
+        }
         indicatorExpressionItemEntity.setResultRaw(resultRaw);
         indicatorExpressionItemEntity.setResultExpression(resultExpression);
         indicatorExpressionItemEntity.setResultNameList(resultNameList);
@@ -1383,6 +1394,7 @@ public class IndicatorExpressionBiz{
     }
   }
   public void populateMaxIndicatorExpressionItemId(
+      Boolean changeType,
       CreateOrUpdateIndicatorExpressionItemRequestRs maxCreateOrUpdateIndicatorExpressionItemRequestRs,
       IndicatorExpressionEntity indicatorExpressionEntity,
       List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList
@@ -1419,6 +1431,10 @@ public class IndicatorExpressionBiz{
               log.warn("method populateMaxIndicatorExpressionItemId param maxCreateOrUpdateIndicatorExpressionItemRequestRs indicatorExpressionItemId:{} is illegal", finalIndicatorExpressionItemId);
               throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
             });
+        if (changeType) {
+          indicatorExpressionItemId = idGenerator.nextIdStr();
+          indicatorExpressionItemEntity.setIndicatorExpressionItemId(indicatorExpressionItemId);
+        }
         indicatorExpressionItemEntity.setResultRaw(resultRaw);
         indicatorExpressionItemEntity.setResultExpression(resultExpression);
         indicatorExpressionItemEntity.setResultNameList(resultNameList);

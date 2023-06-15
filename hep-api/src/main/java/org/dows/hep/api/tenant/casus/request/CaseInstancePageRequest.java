@@ -27,4 +27,7 @@ public class CaseInstancePageRequest{
     @Schema(title = "关键字")
     private String keyword;
 
+    @Schema(title = "案例状态[0:未发布|1:发布]")
+    private Integer state;
+
 }
