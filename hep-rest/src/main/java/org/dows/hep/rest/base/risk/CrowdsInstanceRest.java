@@ -11,6 +11,8 @@ import org.dows.hep.biz.base.risk.CrowdsInstanceBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Set;
+
 /**
  * @author jx
  * @date 2023/6/15 14:00
@@ -37,5 +39,11 @@ public class CrowdsInstanceRest {
     @GetMapping("v1/baseRisk/crowds/getCrowdsByCrowdsId/{crowdsId}")
     public CrowdsInstanceResponse getCrowdsByCrowdsId(@PathVariable @Validated String crowdsId){
         return crowdsInstanceBiz.getCrowdsByCrowdsId(crowdsId);
+    }
+
+    @Operation(summary = "删除人群类别")
+    @DeleteMapping("v1/baseRisk/crowds/batchDelCrowds")
+    public Boolean batchDelCrowds(@RequestBody @Validated Set<String> crowdsIds){
+        return crowdsInstanceBiz.batchDelCrowds(crowdsIds);
     }
 }

@@ -2,6 +2,7 @@ package org.dows.hep.biz.base.risk;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,8 @@ import org.dows.hep.entity.TagsInstanceEntity;
 import org.dows.hep.service.CrowdsInstanceService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
+
+import java.util.Set;
 
 /**
  * @author jx
@@ -131,5 +134,24 @@ public class CrowdsInstanceBiz {
                 .odds(instanceEntity.getOdds())
                 .build();
         return response;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 删除人群类别
+     * @关联表:
+     * @工时: 1H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月15日 下午16:02:34
+     */
+    @DSTransactional
+    public Boolean batchDelCrowds(Set<String> crowdsIds) {
+        LambdaUpdateWrapper<CrowdsInstanceEntity> updateWrapper = new LambdaUpdateWrapper<CrowdsInstanceEntity>()
+                .in(CrowdsInstanceEntity::getCrowdsId, crowdsIds)
+                .eq(CrowdsInstanceEntity::getDeleted, false)
+                .set(CrowdsInstanceEntity::getDeleted, true);
+        return crowdsInstanceService.update(updateWrapper);
     }
 }
