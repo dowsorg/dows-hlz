@@ -38,6 +38,9 @@ public class AssertUtil {
         return msg -> obj.orElseThrow(() -> createException(msg));
     }
 
+    public static void justThrow(String msg){
+        throw createException(msg);
+    }
     public static void justThrow(String msg,Throwable throwable){
         throw createException(msg,throwable);
     }
