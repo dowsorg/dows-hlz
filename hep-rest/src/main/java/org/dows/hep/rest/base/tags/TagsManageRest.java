@@ -11,6 +11,8 @@ import org.dows.hep.biz.base.tags.TagsManageBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Set;
+
 /**
  * @author jx
  * @date 2023/6/14 15:22
@@ -52,5 +54,16 @@ public class TagsManageRest {
     @GetMapping("v1/baseTags/tagsManage/page")
     public PageResponse<TagsInstanceResponse> page(PageTagsRequest pageTagsRequest) {
         return tagsManageBiz.page(pageTagsRequest);
+    }
+
+    /**
+     * 删除标签
+     * @param
+     * @return
+     */
+    @Operation(summary = "删除标签")
+    @GetMapping("v1/baseTags/tagsManage/batchDelTags")
+    public Boolean batchDelTags(@RequestBody @Validated Set<String> tagsIds) {
+        return tagsManageBiz.batchDelTags(tagsIds);
     }
 }

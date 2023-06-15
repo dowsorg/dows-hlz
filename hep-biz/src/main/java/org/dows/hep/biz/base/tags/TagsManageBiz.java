@@ -2,6 +2,7 @@ package org.dows.hep.biz.base.tags;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,8 @@ import org.dows.hep.service.TagsInstanceService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+
 /**
  * @author jx
  * @date 2023/6/14 15:25
@@ -28,6 +31,7 @@ public class TagsManageBiz {
     private final TagsInstanceService tagsInstanceService;
 
     private final IdGenerator idGenerator;
+
     /**
      * @param
      * @return
@@ -41,7 +45,7 @@ public class TagsManageBiz {
     @DSTransactional
     public Boolean insertOrUpdateTags(TagsInstanceRequest manageRequest) {
         Boolean flag = false;
-        if(manageRequest.getId() != null){
+        if (manageRequest.getId() != null) {
             TagsInstanceEntity manageEntity = TagsInstanceEntity
                     .builder()
                     .id(manageRequest.getId())
@@ -52,7 +56,7 @@ public class TagsManageBiz {
                     .status(manageRequest.getStatus())
                     .build();
             flag = tagsInstanceService.updateById(manageEntity);
-        }else{
+        } else {
             TagsInstanceEntity manageEntity = TagsInstanceEntity
                     .builder()
                     .tagsId(idGenerator.nextIdStr())
@@ -78,8 +82,8 @@ public class TagsManageBiz {
      */
     public TagsInstanceResponse getTagsByTagsId(String tagsId) {
         TagsInstanceEntity instanceEntity = tagsInstanceService.lambdaQuery()
-                .eq(TagsInstanceEntity::getTagsId,tagsId)
-                .eq(TagsInstanceEntity::getDeleted,false)
+                .eq(TagsInstanceEntity::getTagsId, tagsId)
+                .eq(TagsInstanceEntity::getDeleted, false)
                 .oneOpt()
                 .orElseThrow(() -> new BizException(ExperimentESCEnum.DATA_NULL));
         TagsInstanceResponse response = TagsInstanceResponse.builder()
@@ -124,5 +128,23 @@ public class TagsManageBiz {
         }
         PageResponse pageInfo = tagsInstanceService.getPageInfo(page, TagsInstanceResponse.class);
         return pageInfo;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 删除标签
+     * @关联表: TagsInstance
+     * @工时: 1H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月15日 上午9:19:34
+     */
+    public Boolean batchDelTags(Set<String> tagsIds) {
+        LambdaUpdateWrapper<TagsInstanceEntity> updateWrapper = new LambdaUpdateWrapper<TagsInstanceEntity>()
+                .in(TagsInstanceEntity::getTagsId, tagsIds)
+                .eq(TagsInstanceEntity::getDeleted, false)
+                .set(TagsInstanceEntity::getDeleted, true);
+        return tagsInstanceService.update(updateWrapper);
     }
 }
