@@ -54,9 +54,6 @@ public class RiskModelEntity implements CrudEntity {
     @Schema(title = "0-禁用，1-启用")
     private Integer status;
 
-    @Schema(title = "分数表达式")
-    private String expression;
-
     @JsonIgnore
     @TableLogic
     @TableField(fill = FieldFill.INSERT)
