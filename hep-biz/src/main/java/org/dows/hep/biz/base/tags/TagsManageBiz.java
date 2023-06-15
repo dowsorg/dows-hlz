@@ -140,11 +140,31 @@ public class TagsManageBiz {
      * @开始时间:
      * @创建时间: 2023年6月15日 上午9:19:34
      */
+    @DSTransactional
     public Boolean batchDelTags(Set<String> tagsIds) {
         LambdaUpdateWrapper<TagsInstanceEntity> updateWrapper = new LambdaUpdateWrapper<TagsInstanceEntity>()
                 .in(TagsInstanceEntity::getTagsId, tagsIds)
                 .eq(TagsInstanceEntity::getDeleted, false)
                 .set(TagsInstanceEntity::getDeleted, true);
+        return tagsInstanceService.update(updateWrapper);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 更新标签
+     * @关联表: TagsInstance
+     * @工时: 1H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月15日 上午10:02:34
+     */
+    @DSTransactional
+    public Boolean updateTagsByTagsId(Integer status,String tagsId) {
+        LambdaUpdateWrapper<TagsInstanceEntity> updateWrapper = new LambdaUpdateWrapper<TagsInstanceEntity>()
+                .eq(TagsInstanceEntity::getTagsId, tagsId)
+                .eq(TagsInstanceEntity::getDeleted, false)
+                .set(TagsInstanceEntity::getStatus, status);
         return tagsInstanceService.update(updateWrapper);
     }
 }
