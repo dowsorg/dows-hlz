@@ -6,11 +6,13 @@ import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.hep.api.base.risk.request.CrowdsInstanceRequest;
 import org.dows.hep.api.base.risk.request.PageCrowdsRequest;
 import org.dows.hep.api.base.risk.response.CrowdsInstanceResponse;
 import org.dows.hep.api.exception.ExperimentException;
+import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.entity.CrowdsInstanceEntity;
 import org.dows.hep.entity.TagsInstanceEntity;
 import org.dows.hep.service.CrowdsInstanceService;
@@ -102,5 +104,32 @@ public class CrowdsInstanceBiz {
         }
         PageResponse pageInfo = crowdsInstanceService.getPageInfo(page, CrowdsInstanceResponse.class);
         return pageInfo;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 查询人群类别
+     * @关联表:
+     * @工时: 1H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月15日 下午15:48:34
+     */
+    public CrowdsInstanceResponse getCrowdsByCrowdsId(String crowdsId) {
+        CrowdsInstanceEntity instanceEntity = crowdsInstanceService.lambdaQuery()
+                .eq(CrowdsInstanceEntity::getCrowdsId, crowdsId)
+                .eq(CrowdsInstanceEntity::getDeleted, false)
+                .oneOpt()
+                .orElseThrow(() -> new BizException(ExperimentESCEnum.DATA_NULL));
+        CrowdsInstanceResponse response = CrowdsInstanceResponse.builder()
+                .id(instanceEntity.getId())
+                .crowdsId(instanceEntity.getCrowdsId())
+                .appId(instanceEntity.getAppId())
+                .name(instanceEntity.getName())
+                .crowdsFormulaId(instanceEntity.getCrowdsFormulaId())
+                .odds(instanceEntity.getOdds())
+                .build();
+        return response;
     }
 }

@@ -90,6 +90,8 @@ public class TagsManageBiz {
                 .oneOpt()
                 .orElseThrow(() -> new BizException(ExperimentESCEnum.DATA_NULL));
         TagsInstanceResponse response = TagsInstanceResponse.builder()
+                .id(instanceEntity.getId())
+                .tagsId(instanceEntity.getTagsId())
                 .appId(instanceEntity.getAppId())
                 .name(instanceEntity.getName())
                 .tagsFormulaId(instanceEntity.getTagsFormulaId())
