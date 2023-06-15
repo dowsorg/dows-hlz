@@ -28,7 +28,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author lait.zhang
@@ -153,15 +152,7 @@ public class UserMaterialsBiz {
             Date dt = record.getDt();
             String uploadTime = baseBiz.convertDate2String(dt);
             record.setUploadTime(uploadTime);
-            String userName = "ERROR";
-            try {
-                AccountInstanceResponse personalInformation = personManageBiz.getPersonalInformation(record.getAccountId(), baseBiz.getAppId());
-                userName = Optional.ofNullable(personalInformation)
-                        .map(AccountInstanceResponse::getUserName)
-                        .orElse("");
-            } catch (Exception e) {
-                log.error("资料中心获取创建人基本信息异常");
-            }
+            String userName = baseBiz.getUserName(record.getAccountId());
             record.setUserName(userName);
             record.setAccountName(userName);
         }

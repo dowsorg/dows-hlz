@@ -6,24 +6,29 @@ import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dows.account.api.AccountRoleApi;
+import org.dows.account.response.AccountInstanceResponse;
 import org.dows.account.response.AccountRoleResponse;
 import org.dows.account.util.JwtUtil;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.materials.MaterialsESCEnum;
 import org.dows.hep.api.base.materials.MaterialsRoleEnum;
 import org.dows.hep.api.enums.EnumToken;
+import org.dows.hep.biz.base.person.PersonManageBiz;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class MaterialsBaseBiz {
-    private final AccountRoleApi accountRoleApi;
     private static final String LAST_VERSION = "SNAPSHOT";
 
+    private final AccountRoleApi accountRoleApi;
+    private final PersonManageBiz personManageBiz;
     private final IdGenerator idGenerator;
 
     public String getAppId() {
@@ -103,6 +108,19 @@ public class MaterialsBaseBiz {
             return Boolean.TRUE;
         }
         return Boolean.FALSE;
+    }
+
+    public String getUserName(String accountId) {
+        String userName = "ERROR";
+        try {
+            AccountInstanceResponse personalInformation = personManageBiz.getPersonalInformation(accountId, getAppId());
+            userName = Optional.ofNullable(personalInformation)
+                    .map(AccountInstanceResponse::getUserName)
+                    .orElse("");
+        } catch (Exception e) {
+            log.error("资料中心获取创建人基本信息异常");
+        }
+        return userName;
     }
 
     public String convertDate2String(Date date) {
