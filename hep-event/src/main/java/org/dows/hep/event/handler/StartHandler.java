@@ -28,9 +28,8 @@ public class StartHandler extends AbstractEventHandler implements EventHandler{
 
     @Override
     public void exec(Object obj) {
-
         //todo 定时器
-        log.info("开启调度....");
+        log.info("开启定时....");
         ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfos();
 
         Set<Channel> channels = userInfos.keySet();
@@ -38,8 +37,6 @@ public class StartHandler extends AbstractEventHandler implements EventHandler{
         for (Channel channel : channels) {
             HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, obj);
         }
-
-
     }
 
 

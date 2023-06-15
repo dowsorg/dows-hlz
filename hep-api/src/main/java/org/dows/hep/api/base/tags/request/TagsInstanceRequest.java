@@ -16,6 +16,9 @@ public class TagsInstanceRequest {
     @Schema(title = "数据库ID")
     private Long id;
 
+    @Schema(title = "标签公式ID")
+    private String tagsFormulaId;
+
     @Schema(title = "标签分布式ID")
     private String tagsId;
 

@@ -17,6 +17,9 @@ import lombok.NoArgsConstructor;
 @Schema(name = "TagsInstanceResponse 对象", title = "标签实例response")
 public class TagsInstanceResponse {
 
+    @Schema(title = "标签公式ID")
+    private String tagsFormulaId;
+
     @Schema(title = "标签分布式ID")
     private String tagsId;
 
