@@ -15,10 +15,12 @@ import org.dows.account.biz.exception.AccountException;
 import org.dows.account.request.*;
 import org.dows.account.response.*;
 import org.dows.framework.api.util.ReflectUtil;
+import org.dows.hep.api.base.indicator.request.CaseCreateCopyToPersonRequestRs;
 import org.dows.hep.api.enums.EnumCaseFee;
 import org.dows.hep.api.exception.CaseFeeException;
 import org.dows.hep.api.user.organization.request.CaseOrgRequest;
 import org.dows.hep.api.user.organization.response.CaseOrgResponse;
+import org.dows.hep.biz.base.indicator.CaseIndicatorInstanceBiz;
 import org.dows.hep.entity.CaseOrgEntity;
 import org.dows.hep.entity.CaseOrgFeeEntity;
 import org.dows.hep.entity.CasePersonEntity;
@@ -60,6 +62,7 @@ public class OrgBiz {
     private final UserExtinfoApi userExtinfoApi;
     private final HepArmService hepArmService;
     private final AccountRoleApi accountRoleApi;
+    private final CaseIndicatorInstanceBiz caseIndicatorInstanceBiz;
 
     /**
      * @param
@@ -712,7 +715,6 @@ public class OrgBiz {
                 .appId(accountInstanceResponse.getAppId())
                 .tentantId(accountInstanceResponse.getTenantId()).build();
         this.accountUserApi.createAccountUser(accountUserRequest);
-        //todo 复制指标信息和突发事件
         //2、机构与人物关系复制一份
         String casePersonId = idGenerator.nextIdStr();
         CasePersonEntity person = CasePersonEntity.builder()
@@ -722,6 +724,12 @@ public class OrgBiz {
                 .accountId(vo.getAccountId())
                 .build();
         casePersonService.save(person);
+        //3、复制指标
+        caseIndicatorInstanceBiz.copyToPerson(CaseCreateCopyToPersonRequestRs
+                .builder()
+                .appId(accountInstanceResponse.getAppId())
+                .casePersonId(vo.getAccountId())
+                .build());
         return vo.getAccountId();
     }
 
