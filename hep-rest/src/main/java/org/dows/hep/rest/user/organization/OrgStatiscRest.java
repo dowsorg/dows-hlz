@@ -38,6 +38,19 @@ public class OrgStatiscRest {
     }
 
     /**
+     * 获取实验地图
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取实验地图")
+    @GetMapping("v1/userOrganization/orgStatisc/getCaseInstanceMapByExperimentId/{experimentInstanceId}/{appId}")
+    public String getCaseInstanceMapByExperimentId(@PathVariable @Validated String experimentInstanceId,
+                                                            @PathVariable @Validated String appId
+                                                            ) {
+        return orgStatiscBiz.getCaseInstanceMapByExperimentId(experimentInstanceId,appId);
+    }
+
+    /**
     * 获取性别分类
     * @param
     * @return

@@ -1,16 +1,23 @@
 package org.dows.hep.biz.user.organization;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.util.ReflectUtil;
+import org.dows.hep.api.enums.ExperimentStatusCode;
+import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.user.organization.request.AgeRatioRequest;
 import org.dows.hep.api.user.organization.request.GenderRatioRequest;
 import org.dows.hep.api.user.organization.response.CaseOrgResponse;
 import org.dows.hep.api.user.organization.response.NormalDataResponse;
 import org.dows.hep.api.user.organization.response.NormalDataResponseResponse;
+import org.dows.hep.entity.CaseInstanceEntity;
 import org.dows.hep.entity.CaseOrgEntity;
+import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentOrgEntity;
+import org.dows.hep.service.CaseInstanceService;
 import org.dows.hep.service.CaseOrgService;
+import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentOrgService;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +36,10 @@ public class OrgStatiscBiz{
     private final CaseOrgService caseOrgService;
 
     private final ExperimentOrgService experimentOrgService;
+
+    private final ExperimentInstanceService experimentInstanceService;
+
+    private final CaseInstanceService caseInstanceService;
     /**
     * @param
     * @return
@@ -97,5 +108,33 @@ public class OrgStatiscBiz{
             }
         }
         return orgResponse;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 获取实验地图
+     * @关联表: case_instance、experiment_instance
+     * @工时: 0.5H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月14日 下午14:45:34
+     */
+    public String getCaseInstanceMapByExperimentId(String experimentInstanceId,String appId) {
+        //1、根据实验ID找到对应的案例ID
+        ExperimentInstanceEntity experimentInstanceEntity = experimentInstanceService.lambdaQuery()
+                .eq(ExperimentInstanceEntity::getExperimentInstanceId,experimentInstanceId)
+                .eq(ExperimentInstanceEntity::getAppId,appId)
+                .eq(ExperimentInstanceEntity::getDeleted,false)
+                .one();
+        if(experimentInstanceEntity == null){
+            throw new ExperimentException(ExperimentStatusCode.NOT_MATCH_CASE);
+        }
+        //2、根据案例ID找到地图
+        String caseMapBackGround = caseInstanceService.lambdaQuery()
+                .eq(CaseInstanceEntity::getAppId,appId)
+                .eq(CaseInstanceEntity::getCaseInstanceId,experimentInstanceEntity.getCaseInstanceId())
+                .one().getCaseMapBackground();
+        return StringUtils.isNotEmpty(caseMapBackGround) ? caseMapBackGround : "";
     }
 }

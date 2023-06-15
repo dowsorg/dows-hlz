@@ -84,7 +84,7 @@ public class ExperimentGroupBiz {
         if(experimentParticipatorEntity == null){
             throw new ExperimentException(ExperimentStatusCode.NOT_CAPTAIN);
         }
-        // 更新组名
+        // 更新组名和状态
          return experimentGroupService.lambdaUpdate()
                 .eq(ExperimentGroupEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
                 .eq(ExperimentGroupEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
@@ -239,24 +239,35 @@ public class ExperimentGroupBiz {
      * @创建时间: 2023年5月8日 上10:13:07
      */
     @DSTransactional
-    public Boolean allotGroupMembers(ExperimentParticipatorRequest request) {
-        ExperimentParticipatorEntity model = experimentParticipatorService.lambdaQuery()
-                .eq(ExperimentParticipatorEntity::getExperimentParticipatorId, request.getExperimentParticipatorId())
-                .eq(ExperimentParticipatorEntity::getAppId, request.getAppId())
-                .eq(ExperimentParticipatorEntity::getExperimentGroupId, request.getExperimentGroupId())
-                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, request.getExperimentInstanceId())
-                .eq(ExperimentParticipatorEntity::getDeleted, false)
-                .one();
-        if (model == null || ReflectUtil.isObjectNull(model)) {
-            throw new ExperimentParticipatorException(EnumExperimentParticipator.PARTICIPATOR_NOT_EXIST_EXCEPTION);
-        }
-        ExperimentParticipatorEntity entity = ExperimentParticipatorEntity.builder()
-                .experimentOrgIds(request.getExperimentOrgIds())
-                .experimentOrgNames(request.getExperimentOrgNames())
-                .participatorState(3)
-                .id(model.getId())
-                .build();
-        return experimentParticipatorService.updateById(entity);
+    public Boolean allotGroupMembers(List<ExperimentParticipatorRequest> participatorList) {
+        List<ExperimentParticipatorEntity> entityList = new ArrayList<>();
+        participatorList.forEach(request->{
+            ExperimentParticipatorEntity model = experimentParticipatorService.lambdaQuery()
+                    .eq(ExperimentParticipatorEntity::getExperimentParticipatorId, request.getExperimentParticipatorId())
+                    .eq(ExperimentParticipatorEntity::getAppId, request.getAppId())
+                    .eq(ExperimentParticipatorEntity::getExperimentGroupId, request.getExperimentGroupId())
+                    .eq(ExperimentParticipatorEntity::getExperimentInstanceId, request.getExperimentInstanceId())
+                    .eq(ExperimentParticipatorEntity::getDeleted, false)
+                    .one();
+            if (model == null || ReflectUtil.isObjectNull(model)) {
+                throw new ExperimentParticipatorException(EnumExperimentParticipator.PARTICIPATOR_NOT_EXIST_EXCEPTION);
+            }
+            ExperimentParticipatorEntity entity = ExperimentParticipatorEntity.builder()
+                    .experimentOrgIds(request.getExperimentOrgIds())
+                    .experimentOrgNames(request.getExperimentOrgNames())
+                    .participatorState(3)
+                    .id(model.getId())
+                    .build();
+            entityList.add(entity);
+            //1、更新组状态为等待其他小组分配完成
+            experimentGroupService.lambdaUpdate()
+                    .eq(ExperimentGroupEntity::getExperimentGroupId, request.getExperimentGroupId())
+                    .eq(ExperimentGroupEntity::getExperimentInstanceId, request.getExperimentInstanceId())
+                    .update(ExperimentGroupEntity.builder()
+                            .groupState(EnumExperimentGroupStatus.WAIT_ALL_GROUP_ASSIGN.getCode())
+                            .build());
+        });
+        return experimentParticipatorService.updateBatchById(entityList);
     }
 
     /**

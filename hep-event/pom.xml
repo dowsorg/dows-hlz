@@ -16,6 +16,11 @@
             <artifactId>hep-biz</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.dows.saas</groupId>
+            <artifactId>hep-websocket</artifactId>
+        </dependency>
+
 
     </dependencies>
 </project>

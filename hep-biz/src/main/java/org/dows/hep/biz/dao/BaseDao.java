@@ -192,6 +192,7 @@ public abstract class BaseDao<S extends MybatisCrudService<E>,E extends CrudEnti
      */
 
     public boolean saveOrUpdateBatch(Collection<E> items,boolean useLogicId,boolean dftIfEmpty){
+        useLogicId=true;
         if(ShareUtil.XObject.isEmpty(items)){
             return dftIfEmpty;
         }

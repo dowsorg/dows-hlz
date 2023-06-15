@@ -80,6 +80,20 @@ public class CaseEventActionDao extends BaseSubDao<CaseEventActionService, CaseE
 
 
     //region save
+    public boolean saveOrUpdateBatch(String eventId, List<CaseEventActionEntity> actions, boolean useLogicId, boolean dftIfEmpty){
+        if(ShareUtil.XObject.isEmpty(actions)) {
+            return dftIfEmpty;
+        }
+        for(CaseEventActionEntity item:actions){
+            if (ShareUtil.XObject.isEmpty(item.getCaseEventId())) {
+                item.setCaseEventId(eventId);
+            }
+            if (ShareUtil.XObject.isEmpty(getColId().apply(item))) {
+                setColId(item).apply(idGenerator.nextIdStr());
+            }
+        }
+        return saveOrUpdateBatch(actions,useLogicId,dftIfEmpty);
+    }
     public boolean saveOrUpdateBatch(String eventId, LinkedHashMap<CaseEventActionEntity,List<CaseEventActionIndicatorEntity>> actions, boolean useLogicId, boolean dftIfEmpty){
         if(ShareUtil.XObject.isEmpty(actions)) {
             return dftIfEmpty;
@@ -127,6 +141,18 @@ public class CaseEventActionDao extends BaseSubDao<CaseEventActionService, CaseE
         return service.lambdaQuery()
                 .eq(CaseEventActionEntity::getCaseEventId,eventId)
                 .orderByAsc(CaseEventActionEntity::getId)
+                .select(cols)
+                .list();
+    }
+    public List<CaseEventActionEntity> getByEventIds(List<String> eventIds, SFunction<CaseEventActionEntity,?>...cols){
+        if (ShareUtil.XObject.isEmpty(eventIds)) {
+            return Collections.emptyList();
+        }
+        final boolean oneFlag=eventIds.size()==1;
+        return service.lambdaQuery()
+                .eq(oneFlag, CaseEventActionEntity::getCaseEventId,eventIds.iterator().next())
+                .in(!oneFlag, CaseEventActionEntity::getCaseEventId,eventIds)
+                .orderByAsc(CaseEventActionEntity::getCaseEventId)
                 .select(cols)
                 .list();
     }

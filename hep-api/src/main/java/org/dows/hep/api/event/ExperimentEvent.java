@@ -1,15 +1,12 @@
 package org.dows.hep.api.event;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.context.ApplicationEvent;
 
 import java.time.Clock;
 
 public abstract class ExperimentEvent extends ApplicationEvent {
-    @Setter
-    @Getter
-    protected EventName eventName;
+
+    public abstract EventName getEventName();
 
     public ExperimentEvent(Object source) {
         super(source);

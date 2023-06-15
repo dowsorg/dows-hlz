@@ -15,10 +15,7 @@ import org.dows.hep.api.enums.EnumEventTriggerType;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
 import org.dows.hep.biz.cache.EventCategCache;
-import org.dows.hep.biz.dao.EnumCheckCategPolicy;
-import org.dows.hep.biz.dao.EventActionDao;
-import org.dows.hep.biz.dao.EventCategDao;
-import org.dows.hep.biz.dao.EventDao;
+import org.dows.hep.biz.dao.*;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.ShareBiz;
@@ -49,6 +46,8 @@ public class EventBiz{
     private final EventDao eventDao;
 
     private final EventActionDao eventActionDao;
+
+    private final IndicatorExpressionRefDao indicatorExpressionRefDao;
 
     private final IndicatorExpressionBiz indicatorExpressionBiz;
 
@@ -316,7 +315,7 @@ public class EventBiz{
      * @return
      */
     public Boolean delRefEval(DelRefItemRequest delRefItemRequest ) {
-        return eventDao.tranDeleteSub(delRefItemRequest.getIds(),"条件不存在或已删除");
+        return indicatorExpressionRefDao.tranDeleteByExpressionId(delRefItemRequest.getIds());
     }
 
     /**
@@ -325,7 +324,7 @@ public class EventBiz{
      * @return
      */
     public Boolean delRefAction(DelRefItemRequest delRefItemRequest){
-        return eventActionDao.tranDelete(delRefItemRequest.getIds(),true);
+        return indicatorExpressionRefDao.tranDeleteByReasonId(delRefItemRequest.getIds());
     }
 
     /**
@@ -335,7 +334,7 @@ public class EventBiz{
      */
 
     public Boolean delRefEventIndicator(DelRefItemRequest delRefItemRequest){
-        return eventActionDao.tranDeleteSub(delRefItemRequest.getIds(),"关联指标不存在或已删除");
+        return indicatorExpressionRefDao.tranDeleteByExpressionId(delRefItemRequest.getIds());
     }
 
     /**
@@ -345,7 +344,7 @@ public class EventBiz{
      */
 
     public Boolean delRefActionIndicator(DelRefItemRequest delRefItemRequest){
-        return eventActionDao.tranDeleteSub(delRefItemRequest.getIds(),"关联指标不存在或已删除");
+        return indicatorExpressionRefDao.tranDeleteByExpressionId(delRefItemRequest.getIds());
     }
 
     /**

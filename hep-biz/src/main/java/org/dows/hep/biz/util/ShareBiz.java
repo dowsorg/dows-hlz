@@ -5,8 +5,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.servlet.http.HttpServletRequest;
 import org.dows.account.util.JwtUtil;
 import org.dows.framework.crud.api.CrudContextHolder;
+import org.dows.hep.api.base.indicator.response.CaseIndicatorExpressionResponseRs;
 import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
 import org.dows.hep.api.enums.EnumToken;
+import org.dows.hep.biz.base.indicator.CaseIndicatorExpressionBiz;
 import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
 import org.dows.hep.biz.vo.LoginContextVO;
 import org.dows.hep.entity.ExperimentInstanceEntity;
@@ -80,6 +82,31 @@ public class ShareBiz {
     }
 
     //region 获取公式
+    public static List<CaseIndicatorExpressionResponseRs> getCaseExpressionsByReasonId(CaseIndicatorExpressionBiz indicatorExpressionBiz, String appId, String reasonId) {
+        if (ShareUtil.XObject.isEmpty(reasonId)) {
+            return Collections.emptyList();
+        }
+        indicatorExpressionBiz = Optional.ofNullable(indicatorExpressionBiz).orElseGet(() -> CrudContextHolder.getBean(CaseIndicatorExpressionBiz.class));
+        Map<String, List<CaseIndicatorExpressionResponseRs>> map = new HashMap<>(1);
+        Set<String> reasonIds = new HashSet<>();
+        reasonIds.add(reasonId);
+        indicatorExpressionBiz.populateKCaseReasonIdVCaseIndicatorExpressionResponseRsListMap(appId, reasonIds, map);
+        List<CaseIndicatorExpressionResponseRs> rst = map.getOrDefault(reasonId, Collections.emptyList());
+        rst.sort(Comparator.comparingLong(CaseIndicatorExpressionResponseRs::getId));
+        reasonIds.clear();
+        map.clear();
+        return rst;
+    }
+    public static Map<String, List<CaseIndicatorExpressionResponseRs>> getCaseExpressionsByReasonIds(CaseIndicatorExpressionBiz indicatorExpressionBiz, String appId, Set<String> reasonIds){
+        if(ShareUtil.XObject.isEmpty(reasonIds)){
+            return Collections.emptyMap();
+        }
+        indicatorExpressionBiz=Optional.ofNullable(indicatorExpressionBiz).orElseGet(()-> CrudContextHolder.getBean(CaseIndicatorExpressionBiz.class));
+        Map<String, List<CaseIndicatorExpressionResponseRs>> rst=new HashMap<>(reasonIds.size());
+        indicatorExpressionBiz.populateKCaseReasonIdVCaseIndicatorExpressionResponseRsListMap(appId,reasonIds,rst);
+        rst.values().forEach(i->i.sort(Comparator.comparingLong(CaseIndicatorExpressionResponseRs::getId)));
+        return rst;
+    }
     public static List<IndicatorExpressionResponseRs> getExpressionsByReasonId(IndicatorExpressionBiz indicatorExpressionBiz, String appId,String reasonId) {
         if (ShareUtil.XObject.isEmpty(reasonId)) {
             return Collections.emptyList();

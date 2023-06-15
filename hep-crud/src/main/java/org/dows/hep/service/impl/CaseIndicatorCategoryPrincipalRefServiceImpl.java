@@ -2,11 +2,8 @@ package org.dows.hep.service.impl;
 
 import org.dows.framework.crud.mybatis.MybatisCrudServiceImpl;
 import org.dows.hep.entity.CaseIndicatorCategoryPrincipalRefEntity;
-import org.dows.hep.entity.CaseIndicatorPrincipalRefEntity;
 import org.dows.hep.mapper.CaseIndicatorCategoryPrincipalRefMapper;
-import org.dows.hep.mapper.CaseIndicatorPrincipalRefMapper;
 import org.dows.hep.service.CaseIndicatorCategoryPrincipalRefService;
-import org.dows.hep.service.CaseIndicatorPrincipalRefService;
 import org.springframework.stereotype.Service;
 
 
