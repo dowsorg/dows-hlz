@@ -998,8 +998,8 @@ public class IndicatorExpressionBiz{
       }
       populateIndicatorExpressionRefEntity(createOrUpdateIndicatorExpressionRequestRs, indicatorExpressionRefEntityAtomicReference);
       IndicatorExpressionRefEntity indicatorExpressionRefEntity = indicatorExpressionRefEntityAtomicReference.get();
-      populateMinIndicatorExpressionItemId(changeAtomicReference.get(), minCreateOrUpdateIndicatorExpressionItemRequestRs, indicatorExpressionEntity, indicatorExpressionItemEntityList);
-      populateMaxIndicatorExpressionItemId(changeAtomicReference.get(), maxCreateOrUpdateIndicatorExpressionItemRequestRs, indicatorExpressionEntity, indicatorExpressionItemEntityList);
+      populateMinIndicatorExpressionItemId(changeAtomicReference.get(), minCreateOrUpdateIndicatorExpressionItemRequestRs, indicatorExpressionEntityAtomicReference, indicatorExpressionItemEntityList);
+      populateMaxIndicatorExpressionItemId(changeAtomicReference.get(), maxCreateOrUpdateIndicatorExpressionItemRequestRs, indicatorExpressionEntityAtomicReference, indicatorExpressionItemEntityList);
       indicatorExpressionService.saveOrUpdate(indicatorExpressionEntity);
       indicatorExpressionItemService.saveOrUpdateBatch(indicatorExpressionItemEntityList);
       indicatorExpressionRefService.saveOrUpdate(indicatorExpressionRefEntity);
@@ -1345,7 +1345,7 @@ public class IndicatorExpressionBiz{
   public void populateMinIndicatorExpressionItemId(
       Boolean changeType,
       CreateOrUpdateIndicatorExpressionItemRequestRs minCreateOrUpdateIndicatorExpressionItemRequestRs,
-      IndicatorExpressionEntity indicatorExpressionEntity,
+      AtomicReference<IndicatorExpressionEntity> indicatorExpressionEntityAtomicReference,
       List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList
   ) {
     if (Objects.isNull(minCreateOrUpdateIndicatorExpressionItemRequestRs)) {
@@ -1389,14 +1389,16 @@ public class IndicatorExpressionBiz{
         indicatorExpressionItemEntity.setResultNameList(resultNameList);
         indicatorExpressionItemEntity.setResultValList(resultValList);
       }
+      IndicatorExpressionEntity indicatorExpressionEntity = indicatorExpressionEntityAtomicReference.get();
       indicatorExpressionEntity.setMinIndicatorExpressionItemId(indicatorExpressionItemId);
+      indicatorExpressionEntityAtomicReference.set(indicatorExpressionEntity);
       indicatorExpressionItemEntityList.add(indicatorExpressionItemEntity);
     }
   }
   public void populateMaxIndicatorExpressionItemId(
       Boolean changeType,
       CreateOrUpdateIndicatorExpressionItemRequestRs maxCreateOrUpdateIndicatorExpressionItemRequestRs,
-      IndicatorExpressionEntity indicatorExpressionEntity,
+      AtomicReference<IndicatorExpressionEntity> indicatorExpressionEntityAtomicReference,
       List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList
   ) {
     if (Objects.isNull(maxCreateOrUpdateIndicatorExpressionItemRequestRs)) {
@@ -1440,7 +1442,9 @@ public class IndicatorExpressionBiz{
         indicatorExpressionItemEntity.setResultNameList(resultNameList);
         indicatorExpressionItemEntity.setResultValList(resultValList);
       }
+      IndicatorExpressionEntity indicatorExpressionEntity = indicatorExpressionEntityAtomicReference.get();
       indicatorExpressionEntity.setMaxIndicatorExpressionItemId(indicatorExpressionItemId);
+      indicatorExpressionEntityAtomicReference.set(indicatorExpressionEntity);
       indicatorExpressionItemEntityList.add(indicatorExpressionItemEntity);
     }
   }
