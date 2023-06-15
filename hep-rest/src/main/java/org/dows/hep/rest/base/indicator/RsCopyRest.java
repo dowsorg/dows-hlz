@@ -24,8 +24,8 @@ public class RsCopyRest {
     rsCopyBiz.rsCopyViewIndicator(copyViewIndicatorRequestRs);
   }
 
-  @Operation(summary = "复制操作指标到实验")
-  @PostMapping("v1/experimentIndicator/viewIndicator/rsCopy")
+  @Operation(summary = "判断操作指标到实验")
+  @PostMapping("v1/experimentIndicator/judgeIndicator/rsCopy")
   public void rsCopyJudgeIndicator(JudgeViewIndicatorRequestRs judgeViewIndicatorRequestRs) {
     rsCopyBiz.rsCopyJudgeIndicator(judgeViewIndicatorRequestRs);
   }
