@@ -2,6 +2,7 @@ package org.dows.hep.biz.tenant.experiment;
 
 import cn.hutool.core.collection.CollUtil;
 import com.alibaba.fastjson.JSON;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.tenant.casus.CaseScoreModeEnum;
 import org.dows.hep.api.tenant.casus.response.CaseInstanceResponse;
@@ -62,12 +63,12 @@ public class ExperimentCaseInfoManageBiz {
         // case-notice
         List<CaseNoticeResponse> caseNoticeResponses = tenantCaseNoticeBiz.listCaseNotice(caseInstanceId);
         if (CollUtil.isNotEmpty(caseNoticeResponses)) {
-            Map<Integer, Object> noticeMap = new HashMap<>();
+            Map<String, CaseNotice> noticeMap = new HashMap<>();
             caseNoticeResponses.forEach(caseNotice -> {
-                Map<String, String> notice = new HashMap<>();
-                notice.put("noticeName", caseNotice.getNoticeName());
-                notice.put("noticeContent", caseNotice.getNoticeContent());
-                noticeMap.put(caseNotice.getPeriodSequence(), notice);
+                CaseNotice notice = new CaseNotice();
+                notice.setNoticeName( caseNotice.getNoticeName());
+                notice.setNoticeContent(caseNotice.getNoticeContent());
+                noticeMap.put(String.valueOf(caseNotice.getPeriodSequence()), notice);
             });
             String noticeStr = JSON.toJSONString(noticeMap);
             entity.setNotice(noticeStr);
@@ -81,5 +82,11 @@ public class ExperimentCaseInfoManageBiz {
         entity.setScoreMode(scoreMode);
 
         experimentCaseInfoService.save(entity);
+    }
+
+    @Data
+    public static class CaseNotice {
+        private String noticeName;
+        private String noticeContent;
     }
 }
