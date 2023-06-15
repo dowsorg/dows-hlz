@@ -26,13 +26,13 @@ public class ExperimentPausedInterceptor implements HandlerInterceptor {
         /**
          * 如果实验是暂停,并且是学生端所有的请求接口，v1/user打头的url都是学生端
          */
-        ExperimentContext experimentContext = ExperimentContext.getExperimentContext(request.getHeader("ExperimentId"));
-        if (experimentContext == null) {
-            return false;
-        }
-        if (experimentContext.getState() == ExperimentStateEnum.SUSPEND && request.getRequestURI().contains("v1/user")) {
-            return false;
-        }
+//        ExperimentContext experimentContext = ExperimentContext.getExperimentContext(request.getHeader("ExperimentId"));
+//        if (experimentContext == null) {
+//            return false;
+//        }
+//        if (experimentContext.getState() == ExperimentStateEnum.SUSPEND && request.getRequestURI().contains("v1/user")) {
+//            return false;
+//        }
         return true;
     }
 
