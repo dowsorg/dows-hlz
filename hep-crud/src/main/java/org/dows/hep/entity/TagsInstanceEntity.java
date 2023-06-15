@@ -42,6 +42,9 @@ public class TagsInstanceEntity implements CrudEntity {
     @Schema(title = "标签名称")
     private String name;
 
+    @Schema(title = "标签公式ID")
+    private String tagsFormulaId;
+
     @Schema(title = "标签分类ID")
     private String tagsCategoryId;
 
