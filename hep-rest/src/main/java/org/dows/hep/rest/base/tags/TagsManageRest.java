@@ -62,7 +62,7 @@ public class TagsManageRest {
      * @return
      */
     @Operation(summary = "删除标签")
-    @GetMapping("v1/baseTags/tagsManage/batchDelTags")
+    @DeleteMapping("v1/baseTags/tagsManage/batchDelTags")
     public Boolean batchDelTags(@RequestBody @Validated Set<String> tagsIds) {
         return tagsManageBiz.batchDelTags(tagsIds);
     }
