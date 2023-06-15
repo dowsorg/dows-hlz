@@ -9,17 +9,21 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.crud.api.model.PageResponse;
+import org.dows.hep.api.base.indicator.request.BatchBindReasonIdRequestRs;
+import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
 import org.dows.hep.api.base.tags.request.PageTagsRequest;
 import org.dows.hep.api.base.tags.request.TagsInstanceRequest;
 import org.dows.hep.api.base.tags.response.TagsInstanceResponse;
+import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
+import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
 import org.dows.hep.entity.TagsInstanceEntity;
 import org.dows.hep.service.TagsInstanceService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author jx
@@ -30,8 +34,9 @@ import java.util.Set;
 public class TagsManageBiz {
 
     private final TagsInstanceService tagsInstanceService;
-
     private final IdGenerator idGenerator;
+    private final IndicatorExpressionBiz indicatorExpressionBiz;
+
 
     /**
      * @param
@@ -46,11 +51,12 @@ public class TagsManageBiz {
     @DSTransactional
     public Boolean insertOrUpdateTags(TagsInstanceRequest manageRequest) {
         Boolean flag = false;
-        if (manageRequest.getId() != null) {
+        String tagsId = manageRequest.getTagsId();
+        if (tagsId != null) {
             TagsInstanceEntity manageEntity = TagsInstanceEntity
                     .builder()
                     .id(manageRequest.getId())
-                    .tagsId(manageRequest.getTagsId())
+                    .tagsId(tagsId)
                     .appId(manageRequest.getAppId())
                     .name(manageRequest.getName())
                     .tagsFormulaId(manageRequest.getTagsFormulaId())
@@ -59,9 +65,10 @@ public class TagsManageBiz {
                     .build();
             flag = tagsInstanceService.updateById(manageEntity);
         } else {
+            tagsId = idGenerator.nextIdStr();
             TagsInstanceEntity manageEntity = TagsInstanceEntity
                     .builder()
-                    .tagsId(idGenerator.nextIdStr())
+                    .tagsId(tagsId)
                     .appId(manageRequest.getAppId())
                     .name(manageRequest.getName())
                     .tagsFormulaId(manageRequest.getTagsFormulaId())
@@ -70,6 +77,15 @@ public class TagsManageBiz {
                     .build();
             flag = tagsInstanceService.save(manageEntity);
         }
+        List<String> indicatorExpressionIdList = new ArrayList<>();
+        indicatorExpressionIdList.add(manageRequest.getTagsFormulaId());
+        indicatorExpressionBiz.batchBindReasonId(BatchBindReasonIdRequestRs
+            .builder()
+            .reasonId(tagsId)
+            .appId(manageRequest.getAppId())
+            .source(EnumIndicatorExpressionSource.LABEL_MANAGEMENT.getType())
+            .indicatorExpressionIdList(indicatorExpressionIdList)
+            .build());
         return flag;
     }
 
@@ -89,15 +105,20 @@ public class TagsManageBiz {
                 .eq(TagsInstanceEntity::getDeleted, false)
                 .oneOpt()
                 .orElseThrow(() -> new BizException(ExperimentESCEnum.DATA_NULL));
+        String appId = instanceEntity.getAppId();
+        Set<String> indicatorInstanceIdSet = new HashSet<>();
+        indicatorInstanceIdSet.add(instanceEntity.getTagsId());
+        Map<String, List<IndicatorExpressionResponseRs>> kReasonIdVIndicatorExpressionResponseRsListMap = new HashMap<>();
+        indicatorExpressionBiz.populateKReasonIdVIndicatorExpressionResponseRsListMap(appId, indicatorInstanceIdSet, kReasonIdVIndicatorExpressionResponseRsListMap);
+        List<IndicatorExpressionResponseRs> indicatorExpressionResponseRs = kReasonIdVIndicatorExpressionResponseRsListMap.get(instanceEntity.getTagsId());
         TagsInstanceResponse response = TagsInstanceResponse.builder()
-                .id(instanceEntity.getId())
-                .tagsId(instanceEntity.getTagsId())
-                .appId(instanceEntity.getAppId())
-                .name(instanceEntity.getName())
-                .tagsFormulaId(instanceEntity.getTagsFormulaId())
-                .tagsCategoryId(instanceEntity.getTagsCategoryId())
-                .status(instanceEntity.getStatus())
-                .build();
+            .appId(instanceEntity.getAppId())
+            .name(instanceEntity.getName())
+            .tagsFormulaId(instanceEntity.getTagsFormulaId())
+            .tagsCategoryId(instanceEntity.getTagsCategoryId())
+            .status(instanceEntity.getStatus())
+            .indicatorExpressionResponseRsList(indicatorExpressionResponseRs)
+            .build();
         return response;
     }
 
@@ -112,6 +133,7 @@ public class TagsManageBiz {
      * @创建时间: 2023年6月14日 下午17:48:34
      */
     public PageResponse<TagsInstanceResponse> page(PageTagsRequest pageTagsRequest) {
+        String appId = pageTagsRequest.getAppId();
         Page page = new Page<TagsInstanceEntity>();
         page.setSize(pageTagsRequest.getPageSize());
         page.setCurrent(pageTagsRequest.getPageNo());
@@ -122,10 +144,10 @@ public class TagsManageBiz {
             page.addOrder(pageTagsRequest.getDesc() ? OrderItem.descs(array) : OrderItem.ascs(array));
         }
         try {
-            if (!StrUtil.isBlank(pageTagsRequest.getKeyword()) || (pageTagsRequest.getTagsCategoryIds() != null && pageTagsRequest.getTagsCategoryIds().size() > 0)) {
+            if (!StrUtil.isBlank(pageTagsRequest.getKeyword()) || !StrUtil.isBlank(pageTagsRequest.getTagsCategoryIds())) {
                 page = tagsInstanceService.page(page, tagsInstanceService.lambdaQuery()
                         .like(StringUtils.isNotEmpty(pageTagsRequest.getKeyword()),TagsInstanceEntity::getName, pageTagsRequest.getKeyword())
-                        .in(pageTagsRequest.getTagsCategoryIds() != null && pageTagsRequest.getTagsCategoryIds().size() > 0,TagsInstanceEntity::getTagsCategoryId, pageTagsRequest.getTagsCategoryIds())
+                        .in(StringUtils.isNotEmpty(pageTagsRequest.getTagsCategoryIds()),TagsInstanceEntity::getTagsCategoryId,Arrays.asList(pageTagsRequest.getTagsCategoryIds().split(",")))
                         .getWrapper());
             } else {
                 page = tagsInstanceService.page(page, tagsInstanceService.lambdaQuery().getWrapper());
@@ -133,7 +155,22 @@ public class TagsManageBiz {
         } catch (Exception e) {
             throw new ExperimentException(e.getCause().getMessage());
         }
+        Set<String> indicatorInstanceIdSet = new HashSet<>();
+        Map<String, List<IndicatorExpressionResponseRs>> kReasonIdVIndicatorExpressionResponseRsListMap = new HashMap<>();
         PageResponse pageInfo = tagsInstanceService.getPageInfo(page, TagsInstanceResponse.class);
+        List<TagsInstanceResponse> tagsInstanceResponseList = pageInfo.getList();
+        if (Objects.nonNull(tagsInstanceResponseList) && !tagsInstanceResponseList.isEmpty()) {
+            tagsInstanceResponseList.forEach(tagsInstanceResponse -> {
+                indicatorInstanceIdSet.add(tagsInstanceResponse.getTagsId());
+            });
+            indicatorExpressionBiz.populateKReasonIdVIndicatorExpressionResponseRsListMap(appId, indicatorInstanceIdSet, kReasonIdVIndicatorExpressionResponseRsListMap);
+            tagsInstanceResponseList.forEach(tagsInstanceResponse -> {
+                String tagsId = tagsInstanceResponse.getTagsId();
+                List<IndicatorExpressionResponseRs> indicatorExpressionResponseRsList = kReasonIdVIndicatorExpressionResponseRsListMap.get(tagsId);
+                tagsInstanceResponse.setIndicatorExpressionResponseRsList(indicatorExpressionResponseRsList);
+            });
+        }
+        pageInfo.setList(tagsInstanceResponseList);
         return pageInfo;
     }
 
@@ -167,7 +204,7 @@ public class TagsManageBiz {
      * @创建时间: 2023年6月15日 上午10:02:34
      */
     @DSTransactional
-    public Boolean updateTagsByTagsId(Integer status, String tagsId) {
+    public Boolean updateTagsByTagsId(Integer status,String tagsId) {
         LambdaUpdateWrapper<TagsInstanceEntity> updateWrapper = new LambdaUpdateWrapper<TagsInstanceEntity>()
                 .eq(TagsInstanceEntity::getTagsId, tagsId)
                 .eq(TagsInstanceEntity::getDeleted, false)
