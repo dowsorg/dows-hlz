@@ -2,8 +2,13 @@ package org.dows.hep.biz.user.experiment;
 
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.intervene.request.FindFoodRequest;
+import org.dows.hep.api.base.intervene.request.FindInterveneCategRequest;
+import org.dows.hep.api.base.intervene.request.FindSportRequest;
 import org.dows.hep.api.base.intervene.response.*;
 import org.dows.hep.api.base.intervene.vo.FoodCookbookDetailVO;
 import org.dows.hep.api.base.intervene.vo.SportPlanItemVO;
@@ -17,11 +22,12 @@ import org.dows.hep.api.user.experiment.response.ExptTreatPlanResponse;
 import org.dows.hep.api.user.experiment.response.SaveExptInterveneResponse;
 import org.dows.hep.api.user.experiment.response.SaveExptTreatResponse;
 import org.dows.hep.api.user.experiment.vo.ExptTreatPlanItemVO;
-import org.dows.hep.biz.base.intervene.FoodCalc4ExptBiz;
+import org.dows.hep.biz.base.intervene.*;
 import org.dows.hep.biz.dao.OperateOrgFuncDao;
 import org.dows.hep.biz.util.*;
 import org.dows.hep.biz.vo.CalcExptFoodCookbookResult;
 import org.dows.hep.biz.vo.Categ4ExptVO;
+import org.dows.hep.biz.vo.CategVO;
 import org.dows.hep.biz.vo.LoginContextVO;
 import org.dows.hep.entity.IndicatorFuncEntity;
 import org.dows.hep.entity.OperateFlowEntity;
@@ -50,30 +56,49 @@ public class ExperimentOrgInterveneBiz{
 
 
     //region 快照数据查询
-    public List<Categ4ExptVO> listInterveneCateg4Expt(FindInterveneCateg4ExptRequest findCateg ) {
-        return null;
+    private final InterveneCategBiz interveneCategBiz;
+    private final FoodPlanBiz foodPlanBiz;
+    private final FoodMaterialBiz foodMaterialBiz;
+
+    private final SportPlanBiz sportPlanBiz;
+
+    private final SportItemBiz sportItemBiz;
+
+    public List<Categ4ExptVO> listInterveneCateg4Expt(FindInterveneCateg4ExptRequest findCateg ) throws JsonProcessingException {
+        FindInterveneCategRequest castReq=CopyWrapper.create(FindInterveneCategRequest::new).endFrom(findCateg);
+        List<CategVO> items=interveneCategBiz.listInterveneCateg(castReq);
+        if(ShareUtil.XObject.isEmpty(items)){
+            return Collections.emptyList();
+        }
+        return JacksonUtil.deepCopy(items, true,new TypeReference<>() {});
+
     }
 
     public Page<FoodCookBookResponse> pageFoodCookbook4Expt(FindInterveneList4ExptRequest findFood ){
-        return null;
+        FindFoodRequest castReq=CopyWrapper.create(FindFoodRequest::new).endFrom(findFood);
+        return foodPlanBiz.pageFoodCookbook(castReq);
     }
     public FoodCookBookInfoResponse getFoodCookbook4Expt(GetInfo4ExptRequest getInfo) {
-        return null;
+        return foodPlanBiz.getFoodCookbook(getInfo.getAppId(),getInfo.getInstanceId());
     }
     public Page<FoodDishesResponse> pageFoodDishes4Expt(FindInterveneList4ExptRequest findFood ) {
-        return null;
+        FindFoodRequest castReq=CopyWrapper.create(FindFoodRequest::new).endFrom(findFood);
+        return foodPlanBiz.pageFoodDishes(castReq);
     }
     public Page<FoodMaterialResponse> pageFoodMaterial4Expt( FindInterveneList4ExptRequest findFood ) {
-        return null;
+        FindFoodRequest castReq=CopyWrapper.create(FindFoodRequest::new).endFrom(findFood);
+        return foodMaterialBiz.pageFoodMaterial(castReq);
     }
     public Page<SportPlanResponse> pageSportPlan4Expt(FindInterveneList4ExptRequest findSport ){
-        return null;
+        FindSportRequest castReq=CopyWrapper.create(FindSportRequest::new).endFrom(findSport);
+        return sportPlanBiz.pageSportPlan(castReq);
     }
     public SportPlanInfoResponse getSportPlan4Expt(GetInfo4ExptRequest getInfo) {
-        return null;
+        return sportPlanBiz.getSportPlan(getInfo.getAppId(),getInfo.getInstanceId());
     }
     public Page<SportItemResponse> pageSportItem4Expt(FindInterveneList4ExptRequest findSport ){
-        return null;
+        FindSportRequest castReq=CopyWrapper.create(FindSportRequest::new).endFrom(findSport);
+        return sportItemBiz.pageSportItem(castReq);
     }
     public List<Categ4ExptVO> listTreatCateg4Expt( FindInterveneCateg4ExptRequest findTreat ){
         return null;

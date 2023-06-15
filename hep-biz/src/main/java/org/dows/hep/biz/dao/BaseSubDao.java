@@ -255,7 +255,7 @@ public abstract class BaseSubDao<LS extends MybatisCrudService<LE>, LE extends C
      * @param cols
      * @return
      */
-    public Optional<SE> getBubBySubPk(String subPk,SFunction<SE,?>... cols) {
+    public Optional<SE> getSubBySubPk(String subPk, SFunction<SE,?>... cols) {
         if (ShareUtil.XObject.isEmpty(subPk)) {
             return Optional.empty();
         }
@@ -271,7 +271,7 @@ public abstract class BaseSubDao<LS extends MybatisCrudService<LE>, LE extends C
      * @param cols
      * @return
      */
-    public Optional<SE> getBubBySubId(String subId,SFunction<SE,?>... cols){
+    public Optional<SE> getSubBySubId(String subId, SFunction<SE,?>... cols){
         if(ShareUtil.XObject.isEmpty(subId)){
             return Optional.empty();
         }

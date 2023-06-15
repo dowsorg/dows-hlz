@@ -18,7 +18,6 @@ import org.dows.hep.api.tenant.casus.request.SaveCaseEventRequest;
 import org.dows.hep.api.tenant.casus.response.CaseEventInfoResponse;
 import org.dows.hep.api.tenant.casus.response.CaseEventResponse;
 import org.dows.hep.biz.base.indicator.CaseIndicatorExpressionBiz;
-import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
 import org.dows.hep.biz.cache.EventCategCache;
 import org.dows.hep.biz.dao.*;
 import org.dows.hep.biz.util.AssertUtil;
@@ -27,10 +26,7 @@ import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.vo.CategVO;
 import org.dows.hep.biz.vo.LoginContextVO;
-import org.dows.hep.entity.CaseEventActionEntity;
-import org.dows.hep.entity.CaseEventEntity;
-import org.dows.hep.entity.EventActionEntity;
-import org.dows.hep.entity.EventEntity;
+import org.dows.hep.entity.*;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
@@ -53,13 +49,21 @@ public class TenantCaseEventBiz {
 
     private final CaseIndicatorExpressionRefDao caseIndicatorExpressionRefDao;
 
+    private final CaseIndicatorExpressionDao caseIndicatorExpressionDao;
+
+    private final CaseIndicatorInstanceDao caseIndicatorInstanceDao;
+
     private final CaseIndicatorExpressionBiz caseIndicatorExpressionBiz;
 
     private final EventDao eventDao;
 
     private final EventActionDao eventActionDao;
 
-    private final IndicatorExpressionBiz indicatorExpressionBiz;
+    private final IndicatorExpressionRefDao indicatorExpressionRefDao;
+
+    private final IndicatorExpressionDao indicatorExpressionDao;
+
+    private final IndicatorInstanceDao indicatorInstanceDao;
 
     private final IdGenerator idGenerator;
 
@@ -95,24 +99,24 @@ public class TenantCaseEventBiz {
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public CaseEventInfoResponse getCaseEvent(String appId,  String caseEventId ) {
-        CaseEventEntity row= AssertUtil.getNotNull(caseEventDao.getById(caseEventId))
+        CaseEventEntity row = AssertUtil.getNotNull(caseEventDao.getById(caseEventId))
                 .orElseThrow("人物事件不存在或已删除，请刷新");
-        List<CaseEventActionEntity> rowsAction= caseEventActionDao.getByEventId(caseEventId,
+        List<CaseEventActionEntity> rowsAction = caseEventActionDao.getByEventId(caseEventId,
                 CaseEventActionEntity::getId,
                 CaseEventActionEntity::getCaseEventActionId,
                 CaseEventActionEntity::getActionDesc);
 
         //fill 公式
-        Set<String> reasonIds=new HashSet<>(rowsAction.size()+1);
+        Set<String> reasonIds = new HashSet<>(rowsAction.size() + 1);
         reasonIds.add(caseEventId);
-        rowsAction.forEach(i->reasonIds.add(i.getCaseEventActionId()));
-        Map<String, List<CaseIndicatorExpressionResponseRs>> mapExressions=ShareBiz.getCaseExpressionsByReasonIds(caseIndicatorExpressionBiz,appId,reasonIds);
+        rowsAction.forEach(i -> reasonIds.add(i.getCaseEventActionId()));
+        Map<String, List<CaseIndicatorExpressionResponseRs>> mapExressions = ShareBiz.getCaseExpressionsByReasonIds(caseIndicatorExpressionBiz, appId, reasonIds);
 
-        List<CaseIndicatorExpressionResponseRs> conditions=new ArrayList<>();
-        List<CaseIndicatorExpressionResponseRs> effects=new ArrayList<>();
-        mapExressions.getOrDefault(caseEventId,Collections.emptyList())
-                .forEach(i->{
-                    switch (EnumIndicatorExpressionSource.of( i.getSource())){
+        List<CaseIndicatorExpressionResponseRs> conditions = new ArrayList<>();
+        List<CaseIndicatorExpressionResponseRs> effects = new ArrayList<>();
+        mapExressions.getOrDefault(caseEventId, Collections.emptyList())
+                .forEach(i -> {
+                    switch (EnumIndicatorExpressionSource.of(i.getSource())) {
                         case EMERGENCY_TRIGGER_CONDITION:
                             conditions.add(i);
                             break;
@@ -223,17 +227,40 @@ public class TenantCaseEventBiz {
      */
     public Boolean copyCaseEvent(CopyCaseEventRequest saveCaseEvent , HttpServletRequest request) {
         LoginContextVO voLogin = ShareBiz.getLoginUser(request);
+        final String appId = saveCaseEvent.getAppId();
         final List<String> eventIds = saveCaseEvent.getIds();
-        List<EventEntity> rowsEvent = eventDao.getByIds(eventIds);
-        AssertUtil.trueThenThrow(ShareUtil.XCollection.isEmpty(rowsEvent))
-                .throwMessage("数据库事件不存在或已删除");
-        List<EventActionEntity> rowsAction = eventActionDao.getByEventIds(eventIds);
-
         final String personId = saveCaseEvent.getPersonId();
         final String personName = saveCaseEvent.getPersonName();
         final String caseInstanceId = saveCaseEvent.getCaseInstanceId();
+        List<EventEntity> rowsEvent = eventDao.getByIds(eventIds);
+        AssertUtil.trueThenThrow(ShareUtil.XCollection.isEmpty(rowsEvent))
+                .throwMessage("数据库事件不存在或已删除");
+
+        List<IndicatorExpressionRefEntity> rowsExpressionRef = indicatorExpressionRefDao.getByReasonId(appId, eventIds);
+        List<String> expressionIds = ShareUtil.XCollection.map(rowsExpressionRef, IndicatorExpressionRefEntity::getIndicatorExpressionId);
+        List<IndicatorExpressionEntity> rowsExpression = indicatorExpressionDao.getByIds(expressionIds);
+        List<String> indicatorIds = rowsExpression.stream().map(IndicatorExpressionEntity::getPrincipalId).filter(ShareUtil.XObject::notEmpty).collect(Collectors.toList());
+        Map<String, String> mapIndicatorId = ShareUtil.XCollection.toMap(caseIndicatorInstanceDao.getByPersonId(appId, personId,
+                        CaseIndicatorInstanceEntity::getIndicatorInstanceId,
+                        CaseIndicatorInstanceEntity::getCaseIndicatorInstanceId),
+                CaseIndicatorInstanceEntity::getIndicatorInstanceId, CaseIndicatorInstanceEntity::getCaseIndicatorInstanceId);
+        indicatorIds.forEach(i -> {
+            if (mapIndicatorId.containsKey(i)) {
+                return;
+            }
+            String notExistsIndicator = indicatorInstanceDao.getById(i, IndicatorInstanceEntity::getIndicatorName)
+                    .map(IndicatorInstanceEntity::getIndicatorName).orElse("id:".concat(i));
+            AssertUtil.justThrow(String.format("人物未定义关联指标[%s]", notExistsIndicator));
+        });
+        mapIndicatorId.put("", "");
+        mapIndicatorId.put(null, "");
+        List<IndicatorExpressionItemEntity> rowsExpressionItem = indicatorExpressionDao.getSubByLeadIds(expressionIds);
+        List<EventActionEntity> rowsAction = eventActionDao.getByEventIds(eventIds);
         Map<String, String> mapEventIds = new HashMap<>();
-        Map<String, String> mapEventActionIds = new HashMap<>();
+        Map<String, String> mapExpressionId = new HashMap<>();
+        Map<String, String> mapExpresionItemId = new HashMap<>();
+        mapExpresionItemId.put("", "");
+        mapExpresionItemId.put(null, "");
         List<CaseEventEntity> rowsCaseEvent = ShareUtil.XCollection.map(rowsEvent, i ->
                 CopyWrapper.create(CaseEventEntity::new)
                         .endFrom(i)
@@ -242,23 +269,47 @@ public class TenantCaseEventBiz {
                         .setPersonName(personName)
                         .setCreateAccountId(voLogin.getAccountId())
                         .setCreateAccountName(voLogin.getAccountName())
-                        .setId(null)
                         .setState(EnumStatus.ENABLE.getCode())
                         .setEventId(i.getEventId())
                         .setCaseEventName(i.getEventName())
                         .setCaseEventId(mapEventIds.computeIfAbsent(i.getEventId(), v -> idGenerator.nextIdStr()))
+                        .setId(null)
         );
         List<CaseEventActionEntity> rowsCaseAction = ShareUtil.XCollection.map(rowsAction, i ->
                 CopyWrapper.create(CaseEventActionEntity::new)
                         .endFrom(i)
+                        .setCaseEventId(mapEventIds.get(i.getEventId()))
+                        .setCaseEventActionId(idGenerator.nextIdStr())
                         .setId(null)
-                        .setCaseEventId(mapEventIds.computeIfAbsent(i.getEventId(), v -> idGenerator.nextIdStr()))
-                        .setCaseEventActionId(mapEventActionIds.computeIfAbsent(i.getEventActionId(), v -> idGenerator.nextIdStr()))
         );
-
+        List<CaseIndicatorExpressionRefEntity> rowsCaseExpressionRef = ShareUtil.XCollection.map(rowsExpressionRef, i ->
+                CopyWrapper.create(CaseIndicatorExpressionRefEntity::new)
+                        .endFrom(i)
+                        .setIndicatorExpressionRefId(i.getIndicatorExpressionRefId())
+                        .setCaseIndicatorExpressionRefId(idGenerator.nextIdStr())
+                        .setId(null)
+        );
+        List<CaseIndicatorExpressionEntity> rowsCaseExpression = ShareUtil.XCollection.map(rowsExpression, i ->
+                CopyWrapper.create(CaseIndicatorExpressionEntity::new)
+                        .endFrom(i)
+                        .setCasePrincipalId(mapIndicatorId.get(i.getPrincipalId()))
+                        .setMaxIndicatorExpressionItemId(mapExpresionItemId.computeIfAbsent(i.getMaxIndicatorExpressionItemId(), v -> idGenerator.nextIdStr()))
+                        .setMinIndicatorExpressionItemId(mapExpresionItemId.computeIfAbsent(i.getMinIndicatorExpressionItemId(), v -> idGenerator.nextIdStr()))
+                        .setCaseIndicatorExpressionId(mapExpressionId.computeIfAbsent(i.getIndicatorExpressionId(), v -> idGenerator.nextIdStr()))
+                        .setId(null)
+        );
+        List<CaseIndicatorExpressionItemEntity> rowsCaseExpressionItem = ShareUtil.XCollection.map(rowsExpressionItem, i ->
+                CopyWrapper.create(CaseIndicatorExpressionItemEntity::new)
+                        .endFrom(i)
+                        .setIndicatorExpressionId(mapExpressionId.get(i.getIndicatorExpressionId()))
+                        .setCaseIndicatorExpressionItemId(mapExpresionItemId.computeIfAbsent(i.getIndicatorExpressionItemId(), v -> idGenerator.nextIdStr()))
+                        .setId(null)
+        );
+        mapIndicatorId.clear();
         mapEventIds.clear();
-        mapEventActionIds.clear();
-        return caseEventDao.tranSaveBatch(rowsCaseEvent, null, rowsCaseAction, null);
+        mapExpressionId.clear();
+        mapExpresionItemId.clear();
+        return caseEventDao.tranSaveBatch(rowsCaseEvent, rowsCaseAction, rowsCaseExpressionRef, rowsCaseExpression,rowsCaseExpressionItem);
     }
 
     /**

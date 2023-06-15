@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
+import org.dows.framework.crud.api.CrudEntity;
 
 import java.util.Date;
 
@@ -25,7 +26,7 @@ import java.util.Date;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(name = "CaseIndicatorInstanceEntity", title = "案例库指标")
 @TableName("case_indicator_instance")
-public class CaseIndicatorInstanceEntity {
+public class CaseIndicatorInstanceEntity implements CrudEntity {
   @JsonFormat(shape = JsonFormat.Shape.STRING)
   @Schema(title = "数据库ID")
   private Long id;

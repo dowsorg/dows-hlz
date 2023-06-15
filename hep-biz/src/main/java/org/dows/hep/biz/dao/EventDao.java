@@ -148,7 +148,6 @@ public class EventDao extends BaseSubDao<EventService, EventEntity, EventEvalSer
         if(!delSub)
             return true;
         subDao.delByEventId(ids,dftIfSubEmpty);
-        //subDao.delSubByEventId(ids,dftIfSubEmpty);
         ids.addAll(actionIds);
         indicatorExpressionRefDao.tranDeleteByReasonId(ids);
         return true;

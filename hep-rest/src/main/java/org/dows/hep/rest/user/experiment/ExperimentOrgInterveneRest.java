@@ -1,6 +1,7 @@
 package org.dows.hep.rest.user.experiment;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,7 +40,7 @@ public class ExperimentOrgInterveneRest {
     //region 快照数据查询
     @Operation(summary = "获取干预类别：获取数据库食谱，菜肴，食材，运动项目等类别")
     @PostMapping("v1/userExperiment/experimentOrgIntervene/listInterveneCateg4Expt")
-    public List<Categ4ExptVO> listInterveneCateg4Expt(@RequestBody @Validated FindInterveneCateg4ExptRequest findCateg ) {
+    public List<Categ4ExptVO> listInterveneCateg4Expt(@RequestBody @Validated FindInterveneCateg4ExptRequest findCateg ) throws JsonProcessingException {
         return experimentOrgInterveneBiz.listInterveneCateg4Expt(findCateg);
     }
 
