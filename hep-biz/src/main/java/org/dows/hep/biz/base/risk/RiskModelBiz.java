@@ -4,6 +4,7 @@ import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateRiskModelRequestRs;
+import org.dows.hep.api.base.risk.response.RiskModelResponse;
 import org.dows.hep.entity.RiskModelEntity;
 import org.dows.hep.service.RiskModelService;
 import org.dows.sequence.api.IdGenerator;
@@ -33,9 +34,9 @@ public class RiskModelBiz {
      * @创建时间: 2023年6月15日 下午17:53:34
      */
     @DSTransactional
-    public Boolean createOrUpdateRs(CreateOrUpdateRiskModelRequestRs createOrUpdateRiskModelRequestRs) {
+    public Boolean createOrUpdateRiskModel(CreateOrUpdateRiskModelRequestRs createOrUpdateRiskModelRequestRs) {
         Boolean flag = false;
-        if(createOrUpdateRiskModelRequestRs.getId() != null){
+        if (createOrUpdateRiskModelRequestRs.getId() != null) {
             //1、新增
             RiskModelEntity modelEntity = RiskModelEntity
                     .builder()
@@ -61,5 +62,33 @@ public class RiskModelBiz {
             flag = riskModelService.save(modelEntity);
         }
         return flag;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 查询风险模型
+     * @关联表:
+     * @工时: 1H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月15日 下午19:02:34
+     */
+    public RiskModelResponse getRiskModelByRiskModelId(String riskModelId) {
+        RiskModelEntity riskModelEntity = riskModelService.lambdaQuery()
+                .eq(RiskModelEntity::getRiskModelId, riskModelId)
+                .eq(RiskModelEntity::getDeleted, false)
+                .one();
+        //1、复制属性
+        RiskModelResponse modelResponse = RiskModelResponse
+                .builder()
+                .id(riskModelEntity.getId())
+                .riskModelId(riskModelEntity.getRiskModelId())
+                .name(riskModelEntity.getName())
+                .riskDeathProbability(riskModelEntity.getRiskDeathProbability())
+                .crowdsCategoryId(riskModelEntity.getCrowdsCategoryId())
+                .status(riskModelEntity.getStatus())
+                .build();
+        return modelResponse;
     }
 }

@@ -4,11 +4,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateRiskModelRequestRs;
+import org.dows.hep.api.base.risk.response.RiskModelResponse;
 import org.dows.hep.biz.base.risk.RiskModelBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
 * @description project descr:风险:风险模型
@@ -23,8 +22,14 @@ public class RiskModelRest {
     private final RiskModelBiz riskModelBiz;
 
     @Operation(summary = "创建或更新风险模型")
-    @PostMapping("v1/baseRisk/riskModel/createOrUpdateRs")
-    public Boolean createOrUpdateRs(@RequestBody @Validated CreateOrUpdateRiskModelRequestRs createOrUpdateRiskModelRequestRs) {
-        return riskModelBiz.createOrUpdateRs(createOrUpdateRiskModelRequestRs);
+    @PostMapping("v1/baseRisk/riskModel/createOrUpdateRiskModel")
+    public Boolean createOrUpdateRiskModel(@RequestBody @Validated CreateOrUpdateRiskModelRequestRs createOrUpdateRiskModelRequestRs) {
+        return riskModelBiz.createOrUpdateRiskModel(createOrUpdateRiskModelRequestRs);
+    }
+
+    @Operation(summary = "查询风险模型")
+    @GetMapping("v1/baseRisk/riskModel/getRiskModel/{riskModelId}")
+    public RiskModelResponse getRiskModelByRiskModelId(@PathVariable @Validated String riskModelId) {
+        return riskModelBiz.getRiskModelByRiskModelId(riskModelId);
     }
 }
