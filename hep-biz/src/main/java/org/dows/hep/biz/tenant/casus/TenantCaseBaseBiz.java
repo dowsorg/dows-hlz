@@ -4,22 +4,27 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.dows.account.api.AccountRoleApi;
+import org.dows.account.response.AccountInstanceResponse;
+import org.dows.account.response.AccountRoleResponse;
 import org.dows.account.util.JwtUtil;
+import org.dows.hep.api.base.materials.MaterialsRoleEnum;
 import org.dows.hep.api.enums.EnumToken;
+import org.dows.hep.biz.base.person.PersonManageBiz;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TenantCaseBaseBiz {
     private static final String LAST_VERSION = "SNAPSHOT";
-
     private final IdGenerator idGenerator;
+    private final AccountRoleApi accountRoleApi;
+    private final PersonManageBiz personManageBiz;
 
     public String getAppId() {
         return "3";
@@ -69,6 +74,30 @@ public class TenantCaseBaseBiz {
         String token = request.getHeader("token");
         Map<String, Object> map = JwtUtil.parseJWT(token, EnumToken.PROPERTIES_JWT_KEY.getStr());
         return map.get("accountName").toString();
+    }
+
+    public boolean isAdministrator(String accountId) {
+        AccountRoleResponse role = accountRoleApi.getAccountRoleByPrincipalId(accountId);
+        String roleCode = Optional.ofNullable(role)
+                .map(AccountRoleResponse::getRoleCode)
+                .orElse("");
+        if (MaterialsRoleEnum.ADMIN.name().equals(roleCode)) {
+            return Boolean.TRUE;
+        }
+        return Boolean.FALSE;
+    }
+
+    public String getUserName(String accountId) {
+        String userName = "ERROR";
+        try {
+            AccountInstanceResponse personalInformation = personManageBiz.getPersonalInformation(accountId, getAppId());
+            userName = Optional.ofNullable(personalInformation)
+                    .map(AccountInstanceResponse::getUserName)
+                    .orElse("");
+        } catch (Exception e) {
+            log.error("案例列表获取创建人基本信息异常");
+        }
+        return userName;
     }
 
 }
