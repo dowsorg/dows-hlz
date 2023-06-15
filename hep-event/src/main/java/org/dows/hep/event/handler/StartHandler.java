@@ -6,10 +6,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.uim.AccountInfo;
 import org.dows.hep.api.event.EventName;
+import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
+import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
+import org.dows.hep.entity.ExperimentTimerEntity;
 import org.dows.hep.websocket.HepClientManager;
 import org.dows.hep.websocket.proto.MessageCode;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
@@ -23,19 +27,31 @@ import java.util.concurrent.ConcurrentMap;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class StartHandler extends AbstractEventHandler implements EventHandler{
+public class StartHandler extends AbstractEventHandler implements EventHandler<ExperimentRestartRequest>{
 
+
+    private final ExperimentTimerBiz experimentTimerBiz;
 
     @Override
-    public void exec(Object obj) {
+    public void exec(ExperimentRestartRequest experimentRestartRequest) {
         //todo 定时器
         log.info("开启定时....");
+
+        List<ExperimentTimerEntity> currentPeriods = experimentTimerBiz.getCurrentPeriods(experimentRestartRequest);
+
+        for (ExperimentTimerEntity currentPeriod : currentPeriods) {
+            if(currentPeriod.getPeriods() == experimentRestartRequest.getPeriods()){
+
+            }
+        }
+
+
         ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfos();
 
         Set<Channel> channels = userInfos.keySet();
 
         for (Channel channel : channels) {
-            HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, obj);
+            HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, experimentRestartRequest);
         }
     }
 
