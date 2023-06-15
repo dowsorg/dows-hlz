@@ -1,6 +1,7 @@
 package org.dows.hep.biz.base.risk;
 
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateRiskModelRequestRs;
@@ -9,6 +10,8 @@ import org.dows.hep.entity.RiskModelEntity;
 import org.dows.hep.service.RiskModelService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
+
+import java.util.Set;
 
 /**
  * @author jx
@@ -90,5 +93,24 @@ public class RiskModelBiz {
                 .status(riskModelEntity.getStatus())
                 .build();
         return modelResponse;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 查询风险模型
+     * @关联表:
+     * @工时: 1H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月15日 下午19:17:34
+     */
+    @DSTransactional
+    public Boolean batchDelRiskModels(Set<String> riskModelIds) {
+        LambdaUpdateWrapper<RiskModelEntity> updateWrapper = new LambdaUpdateWrapper<RiskModelEntity>()
+                .in(RiskModelEntity::getRiskModelId, riskModelIds)
+                .eq(RiskModelEntity::getDeleted, false)
+                .set(RiskModelEntity::getDeleted, true);
+        return riskModelService.update(updateWrapper);
     }
 }

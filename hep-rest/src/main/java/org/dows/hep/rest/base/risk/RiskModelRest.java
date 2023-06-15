@@ -9,6 +9,8 @@ import org.dows.hep.biz.base.risk.RiskModelBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Set;
+
 /**
 * @description project descr:风险:风险模型
 *
@@ -31,5 +33,11 @@ public class RiskModelRest {
     @GetMapping("v1/baseRisk/riskModel/getRiskModel/{riskModelId}")
     public RiskModelResponse getRiskModelByRiskModelId(@PathVariable @Validated String riskModelId) {
         return riskModelBiz.getRiskModelByRiskModelId(riskModelId);
+    }
+
+    @Operation(summary = "删除风险模型")
+    @DeleteMapping("v1/baseRisk/riskModel/batchDelRiskModels")
+    public Boolean batchDelRiskModels(@RequestBody @Validated Set<String> riskModelIds) {
+        return riskModelBiz.batchDelRiskModels(riskModelIds);
     }
 }
