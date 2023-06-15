@@ -122,10 +122,10 @@ public class TagsManageBiz {
             page.addOrder(pageTagsRequest.getDesc() ? OrderItem.descs(array) : OrderItem.ascs(array));
         }
         try {
-            if (!StrUtil.isBlank(pageTagsRequest.getKeyword()) || !StrUtil.isBlank(pageTagsRequest.getTagsCategoryId())) {
+            if (!StrUtil.isBlank(pageTagsRequest.getKeyword()) || (pageTagsRequest.getTagsCategoryIds() != null && pageTagsRequest.getTagsCategoryIds().size() > 0)) {
                 page = tagsInstanceService.page(page, tagsInstanceService.lambdaQuery()
                         .like(StringUtils.isNotEmpty(pageTagsRequest.getKeyword()),TagsInstanceEntity::getName, pageTagsRequest.getKeyword())
-                        .like(StringUtils.isNotEmpty(pageTagsRequest.getTagsCategoryId()),TagsInstanceEntity::getTagsCategoryId, pageTagsRequest.getTagsCategoryId())
+                        .in(pageTagsRequest.getTagsCategoryIds() != null && pageTagsRequest.getTagsCategoryIds().size() > 0,TagsInstanceEntity::getTagsCategoryId, pageTagsRequest.getTagsCategoryIds())
                         .getWrapper());
             } else {
                 page = tagsInstanceService.page(page, tagsInstanceService.lambdaQuery().getWrapper());
