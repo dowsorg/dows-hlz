@@ -1,0 +1,16 @@
+package org.dows.hep.api.user.experiment;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@AllArgsConstructor
+@Getter
+public enum ExptReviewStateEnum {
+    NOT_SUBMITTED(0, "未提交"),
+    UNREVIEWED(1, "待审批"),
+    REVIEWED(2, "已审批"),
+    ;
+
+    private final Integer code;
+    private final String name;
+}
