@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 实验计数计时器(ExperimentTimer)实体类
@@ -69,15 +69,20 @@ public class ExperimentTimerEntity implements CrudEntity {
     @Schema(title = "是否暂停")
     private Boolean paused;
 
+    @Schema(title = "暂停开始时间")
+    private Date pauseStartTime;
+    @Schema(title = "暂停结束时间")
+    private Date pauseEndTime;
+
+    @TableField(fill = FieldFill.INSERT)
+    @Schema(title = "时间戳")
+    private Date dt;
+
     @JsonIgnore
     @TableLogic
     @TableField(fill = FieldFill.INSERT)
     @Schema(title = "逻辑删除")
     private Boolean deleted;
-
-    @TableField(fill = FieldFill.INSERT)
-    @Schema(title = "时间戳")
-    private Date dt;
 
 }
 

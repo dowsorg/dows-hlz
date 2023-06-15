@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.apache.logging.log4j.core.config.plugins.validation.constraints.NotBlank;
 
+import java.util.Date;
+
 @Data
 @Schema(name = "ExperimentRestartRequest 对象", title = "/暂停实验")
 public class ExperimentRestartRequest {
@@ -22,4 +24,8 @@ public class ExperimentRestartRequest {
     @NotBlank(message = "状态不可为空")
     @Schema(title = "是否暂停状态(true,false)",requiredMode = Schema.RequiredMode.REQUIRED)
     private Boolean paused;
+
+    @NotBlank(message = "暂停或开始的当前时间不可为空")
+    @Schema(title = "暂停或开始的当前时间",requiredMode = Schema.RequiredMode.REQUIRED)
+    private Date currentTime;
 }
