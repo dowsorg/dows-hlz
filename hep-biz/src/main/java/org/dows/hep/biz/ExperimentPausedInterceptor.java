@@ -24,9 +24,9 @@ public class ExperimentPausedInterceptor implements HandlerInterceptor {
         /**
          * 如果实验是暂停,并且是学生端所有的请求接口，v1/user打头的url都是学生端
          */
-        if (experimentTimerBiz.getExperimentState() && request.getRequestURI().contains("v1/user")) {
-            return false;
-        }
+//        if (experimentTimerBiz.getExperimentState() && request.getRequestURI().contains("v1/user")) {
+//            return false;
+//        }
         return HandlerInterceptor.super.preHandle(request, response, handler);
     }
 
