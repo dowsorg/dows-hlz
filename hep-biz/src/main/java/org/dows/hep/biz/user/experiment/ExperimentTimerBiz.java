@@ -8,38 +8,49 @@ import org.dows.hep.service.ExperimentTimerService;
 import org.springframework.stereotype.Service;
 
 /**
-* @description project descr:实验:实验计时器
-*
-* @author lait.zhang
-* @date 2023年4月23日 上午9:44:34
-*/
+ * @author lait.zhang
+ * @description project descr:实验:实验计时器
+ * @date 2023年4月23日 上午9:44:34
+ */
 @RequiredArgsConstructor
 @Service
-public class ExperimentTimerBiz{
+public class ExperimentTimerBiz {
 
     private final ExperimentTimerService experimentTimerService;
 
 
     /**
-    * @param
-    * @return
-    * @说明: 获取实验倒计时
-    * @关联表: 
-    * @工时: 2H
-    * @开发者: lait
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
-    public CountDownResponse countdown(String experimentInstanceId ) {
+     * @param
+     * @return
+     * @说明: 获取实验倒计时
+     * @关联表:
+     * @工时: 2H
+     * @开发者: lait
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    public CountDownResponse countdown(String experimentInstanceId) {
 
         ExperimentTimerEntity experimentTimerEntity = experimentTimerService.lambdaQuery()
                 .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
                 .oneOpt()
                 .orElse(null);
 
-        if(experimentTimerEntity == null){
+        if (experimentTimerEntity == null) {
 
         }
-        return BeanConvert.beanConvert(experimentTimerEntity,CountDownResponse.class);
+        return BeanConvert.beanConvert(experimentTimerEntity, CountDownResponse.class);
+    }
+
+
+    /**
+     * 获取实验开始或暂停状态
+     *
+     * @return
+     */
+    public boolean getExperimentState() {
+
+        // todo 查询实验开始或暂停或结束,可直接差数据库
+        return true;
     }
 }

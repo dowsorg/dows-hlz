@@ -17,6 +17,9 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import lombok.SneakyThrows;
 import org.dows.framework.api.web.ResponseWrapperHandler;
+import org.dows.hep.biz.ExperimentPausedInterceptor;
+import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -25,6 +28,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -40,6 +44,9 @@ import java.util.List;
 @EnableWebMvc
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
+
+    @Autowired
+    private ExperimentTimerBiz experimentTimerBiz;
     @Bean
     public ResponseWrapperHandler responseWrapperHandler() {
         return new ResponseWrapperHandler();
@@ -158,11 +165,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
 //    }
 //
 //
-//    @Override
-//    public void addInterceptors(InterceptorRegistry registry) {
-//        //registry.addInterceptor();
-//        registry.addInterceptor(new HeaderInterceptor());
-//    }
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        //registry.addInterceptor();
+        registry.addInterceptor(new ExperimentPausedInterceptor(experimentTimerBiz));
+    }
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // 静态资源访问路径和存放路径配置(本地磁盘图片映射)
