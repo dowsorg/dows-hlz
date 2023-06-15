@@ -1,5 +1,6 @@
 package org.dows.hep.biz.base.indicator;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -970,6 +971,7 @@ public class IndicatorExpressionBiz{
     String appId = createOrUpdateIndicatorExpressionRequestRs.getAppId();
     Integer source = createOrUpdateIndicatorExpressionRequestRs.getSource();
     String principalId = createOrUpdateIndicatorExpressionRequestRs.getPrincipalId();
+    Integer type = createOrUpdateIndicatorExpressionRequestRs.getType();
     CreateOrUpdateIndicatorExpressionItemRequestRs minCreateOrUpdateIndicatorExpressionItemRequestRs = createOrUpdateIndicatorExpressionRequestRs.getMinCreateOrUpdateIndicatorExpressionItemRequestRs();
     CreateOrUpdateIndicatorExpressionItemRequestRs maxCreateOrUpdateIndicatorExpressionItemRequestRs = createOrUpdateIndicatorExpressionRequestRs.getMaxCreateOrUpdateIndicatorExpressionItemRequestRs();
     RLock lock = redissonClient.getLock(RedissonUtil.getLockName(appId, EnumRedissonLock.INDICATOR_EXPRESSION_CREATE_DELETE_UPDATE, indicatorExpressionFieldAppId, appId));
@@ -985,7 +987,14 @@ public class IndicatorExpressionBiz{
       populateIndicatorExpressionEntity(createOrUpdateIndicatorExpressionRequestRs, indicatorExpressionEntityAtomicReference);
       IndicatorExpressionEntity indicatorExpressionEntity = indicatorExpressionEntityAtomicReference.get();
       String indicatorExpressionId = indicatorExpressionEntity.getIndicatorExpressionId();
-      populateIndicatorExpressionItemEntityList(createOrUpdateIndicatorExpressionRequestRs, indicatorExpressionItemEntityList, indicatorExpressionId);
+      if (EnumIndicatorExpressionType.CONDITION.getType().equals(type)) {
+        populateIndicatorExpressionItemEntityList(createOrUpdateIndicatorExpressionRequestRs, indicatorExpressionItemEntityList, indicatorExpressionId);
+      } else if (EnumIndicatorExpressionType.RANDOM.getType().equals(type)){
+        indicatorExpressionItemService.remove(
+            new LambdaQueryWrapper<IndicatorExpressionItemEntity>()
+                .eq(IndicatorExpressionItemEntity::getIndicatorExpressionId, indicatorExpressionId)
+        );
+      }
       populateIndicatorExpressionRefEntity(createOrUpdateIndicatorExpressionRequestRs, indicatorExpressionRefEntityAtomicReference);
       IndicatorExpressionRefEntity indicatorExpressionRefEntity = indicatorExpressionRefEntityAtomicReference.get();
       populateMinIndicatorExpressionItemId(minCreateOrUpdateIndicatorExpressionItemRequestRs, indicatorExpressionEntity, indicatorExpressionItemEntityList);
@@ -1172,7 +1181,6 @@ public class IndicatorExpressionBiz{
           .source(source)
           .build();
     } else {
-      /* runsix:目前不允许修改 */
       String finalIndicatorExpressionId = indicatorExpressionId;
       indicatorExpressionEntity = indicatorExpressionService.lambdaQuery()
           .eq(IndicatorExpressionEntity::getAppId, appId)
@@ -1182,6 +1190,7 @@ public class IndicatorExpressionBiz{
             log.warn("indicatorExpressionId:{} is illegal", finalIndicatorExpressionId);
             throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
           });
+      indicatorExpressionEntity.setType(type);
     }
     indicatorExpressionEntityAtomicReference.set(indicatorExpressionEntity);
     createOrUpdateIndicatorExpressionRequestRs.setIndicatorExpressionId(indicatorExpressionId);
