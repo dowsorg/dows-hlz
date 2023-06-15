@@ -1,29 +1,11 @@
 package org.dows.hep.config;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.deser.std.DateDeserializers;
-import com.fasterxml.jackson.databind.ser.std.DateSerializer;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
-import lombok.SneakyThrows;
 import org.dows.framework.api.web.ResponseWrapperHandler;
 import org.dows.hep.biz.ExperimentPausedInterceptor;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -32,21 +14,10 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.math.BigInteger;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.List;
-
 @EnableWebMvc
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    @Autowired
-    private ExperimentTimerBiz experimentTimerBiz;
     @Bean
     public ResponseWrapperHandler responseWrapperHandler() {
         return new ResponseWrapperHandler();
@@ -159,7 +130,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 //                .setViewName("forward:/swagger-ui/index.html");
 //    }
 
-//    @Override
+    //    @Override
 //    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
 //        resolvers.add(new HeaderArgumentResolver());
 //    }
@@ -168,8 +139,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         //registry.addInterceptor();
-        registry.addInterceptor(new ExperimentPausedInterceptor(experimentTimerBiz));
+        registry.addInterceptor(new ExperimentPausedInterceptor());
     }
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // 静态资源访问路径和存放路径配置(本地磁盘图片映射)

@@ -15,11 +15,11 @@ import org.springframework.web.servlet.ModelAndView;
 @Slf4j
 public class ExperimentPausedInterceptor implements HandlerInterceptor {
 
-    private ExperimentManageBiz experimentManageBiz;
+/*    private ExperimentManageBiz experimentManageBiz;
 
     public ExperimentPausedInterceptor(ExperimentManageBiz experimentManageBiz) {
         this.experimentManageBiz = experimentManageBiz;
-    }
+    }*/
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
