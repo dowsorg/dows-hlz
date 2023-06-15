@@ -1,10 +1,18 @@
 package org.dows.hep.biz.base.risk;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.hep.api.base.risk.request.CrowdsInstanceRequest;
+import org.dows.hep.api.base.risk.request.PageCrowdsRequest;
+import org.dows.hep.api.base.risk.response.CrowdsInstanceResponse;
+import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.entity.CrowdsInstanceEntity;
+import org.dows.hep.entity.TagsInstanceEntity;
 import org.dows.hep.service.CrowdsInstanceService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
@@ -59,5 +67,40 @@ public class CrowdsInstanceBiz {
             flag = crowdsInstanceService.save(crowdsEntity);
         }
         return flag;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 分页获取人群类别
+     * @关联表:
+     * @工时: 4H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月15日 下午15:13:34
+     */
+    public PageResponse<CrowdsInstanceResponse> page(PageCrowdsRequest pageCrowdsRequest) {
+        Page page = new Page<TagsInstanceEntity>();
+        page.setSize(pageCrowdsRequest.getPageSize());
+        page.setCurrent(pageCrowdsRequest.getPageNo());
+        if (pageCrowdsRequest.getOrder() != null) {
+            String[] array = (String[]) pageCrowdsRequest.getOrder().stream()
+                    .map(s -> StrUtil.toUnderlineCase((CharSequence) s))
+                    .toArray(String[]::new);
+            page.addOrder(pageCrowdsRequest.getDesc() ? OrderItem.descs(array) : OrderItem.ascs(array));
+        }
+        try {
+            if (!StrUtil.isBlank(pageCrowdsRequest.getKeyword())) {
+                page = crowdsInstanceService.page(page, crowdsInstanceService.lambdaQuery()
+                        .like(CrowdsInstanceEntity::getName, pageCrowdsRequest.getKeyword())
+                        .getWrapper());
+            } else {
+                page = crowdsInstanceService.page(page, crowdsInstanceService.lambdaQuery().getWrapper());
+            }
+        } catch (Exception e) {
+            throw new ExperimentException(e.getCause().getMessage());
+        }
+        PageResponse pageInfo = crowdsInstanceService.getPageInfo(page, CrowdsInstanceResponse.class);
+        return pageInfo;
     }
 }
