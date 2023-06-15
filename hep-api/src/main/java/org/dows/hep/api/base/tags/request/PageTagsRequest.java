@@ -14,6 +14,9 @@ import java.util.Set;
 @Schema(title = "标签 分页请求")
 public class PageTagsRequest extends PageRequest {
 
+    @Schema(title = "应用ID")
+    private String appId;
+
     @Schema(title = "搜索关键字", description = "搜索关键字")
     private String keyword;
 

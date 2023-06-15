@@ -8,6 +8,7 @@ import org.dows.hep.api.base.indicator.request.*;
 import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.IndicatorInstanceException;
+import org.dows.hep.api.exception.IndicatorViewBaseInfoException;
 import org.dows.hep.biz.util.RedissonUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
@@ -36,7 +37,11 @@ import java.util.stream.Collectors;
 public class IndicatorInstanceBiz{
     @Value("${redisson.lock.lease-time.teacher.indicator-instance-create-delete-update:5000}")
     private Integer leaseTimeIndicatorInstanceCreateDeleteUpdate;
+
+    @Value("${redisson.lock.lease-time.teacher.indicator-batch-update-core-food:5000}")
+    private Integer leaseTimeIndicatorBatchUpdateCoreFood;
     private final String indicatorInstanceFieldPid = "pid";
+    private final String indicatorInstanceFieldAppId = "appId";
     private final IdGenerator idGenerator;
     private final RedissonClient redissonClient;
     private final IndicatorInstanceService indicatorInstanceService;
@@ -292,61 +297,79 @@ public class IndicatorInstanceBiz{
 
 
     @Transactional(rollbackFor = Exception.class)
-    public void batchUpdateCore(BatchUpdateCoreRequestRs batchUpdateCoreRequestRs) {
-        List<IndicatorInstanceEntity> indicatorInstanceEntityList = new ArrayList<>();
-        List<String> dbIndicatorInstanceIdList = new ArrayList<>();
+    public void batchUpdateCore(BatchUpdateCoreRequestRs batchUpdateCoreRequestRs) throws InterruptedException {
         String appId = batchUpdateCoreRequestRs.getAppId();
-        List<String> paramIndicatorInstanceIdList = batchUpdateCoreRequestRs.getIndicatorInstanceIdList();
-        indicatorInstanceService.lambdaQuery()
-            .eq(IndicatorInstanceEntity::getAppId, appId)
-            .list()
-            .forEach(indicatorInstanceEntity -> {
-                indicatorInstanceEntityList.add(indicatorInstanceEntity);
-                dbIndicatorInstanceIdList.add(indicatorInstanceEntity.getIndicatorInstanceId());
-            });
-        if (
-            paramIndicatorInstanceIdList.stream().anyMatch(indicatorInstanceId -> !dbIndicatorInstanceIdList.contains(indicatorInstanceId))
-        ) {
-            log.warn("method IndicatorInstanceBiz.batchUpdateCore param batchUpdateCoreRequestRs paramIndicatorInstanceIdList:{} is illegal", paramIndicatorInstanceIdList);
+        RLock lock = redissonClient.getLock(RedissonUtil.getLockName(appId, EnumRedissonLock.INDICATOR_BATCH_UPDATE_CORE_FOOD, indicatorInstanceFieldAppId, appId));
+        boolean isLocked = lock.tryLock(leaseTimeIndicatorBatchUpdateCoreFood, TimeUnit.MILLISECONDS);
+        if (!isLocked) {
+            throw new IndicatorViewBaseInfoException(EnumESC.SYSTEM_BUSY_PLEASE_OPERATOR_INDICATOR_VIEW_BASE_INFO_LATER);
         }
-        indicatorInstanceEntityList.forEach(indicatorInstanceEntity -> {
-            String indicatorInstanceId = indicatorInstanceEntity.getIndicatorInstanceId();
-            if (paramIndicatorInstanceIdList.contains(indicatorInstanceId)) {
-                indicatorInstanceEntity.setCore(EnumStatus.ENABLE.getCode());
-            } else {
-                indicatorInstanceEntity.setCore(EnumStatus.DISABLE.getCode());
+        try {
+            List<IndicatorInstanceEntity> indicatorInstanceEntityList = new ArrayList<>();
+            List<String> dbIndicatorInstanceIdList = new ArrayList<>();
+            List<String> paramIndicatorInstanceIdList = batchUpdateCoreRequestRs.getIndicatorInstanceIdList();
+            indicatorInstanceService.lambdaQuery()
+                .eq(IndicatorInstanceEntity::getAppId, appId)
+                .list()
+                .forEach(indicatorInstanceEntity -> {
+                    indicatorInstanceEntityList.add(indicatorInstanceEntity);
+                    dbIndicatorInstanceIdList.add(indicatorInstanceEntity.getIndicatorInstanceId());
+                });
+            if (
+                paramIndicatorInstanceIdList.stream().anyMatch(indicatorInstanceId -> !dbIndicatorInstanceIdList.contains(indicatorInstanceId))
+            ) {
+                log.warn("method IndicatorInstanceBiz.batchUpdateCore param batchUpdateCoreRequestRs paramIndicatorInstanceIdList:{} is illegal", paramIndicatorInstanceIdList);
             }
-        });
-        indicatorInstanceService.saveOrUpdateBatch(indicatorInstanceEntityList);
+            indicatorInstanceEntityList.forEach(indicatorInstanceEntity -> {
+                String indicatorInstanceId = indicatorInstanceEntity.getIndicatorInstanceId();
+                if (paramIndicatorInstanceIdList.contains(indicatorInstanceId)) {
+                    indicatorInstanceEntity.setCore(EnumStatus.ENABLE.getCode());
+                } else {
+                    indicatorInstanceEntity.setCore(EnumStatus.DISABLE.getCode());
+                }
+            });
+            indicatorInstanceService.saveOrUpdateBatch(indicatorInstanceEntityList);
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void batchUpdateFood(BatchUpdateFoodRequestRs batchUpdateFoodRequestRs) {
-        List<IndicatorInstanceEntity> indicatorInstanceEntityList = new ArrayList<>();
-        List<String> dbIndicatorInstanceIdList = new ArrayList<>();
+    public void batchUpdateFood(BatchUpdateFoodRequestRs batchUpdateFoodRequestRs) throws InterruptedException {
         String appId = batchUpdateFoodRequestRs.getAppId();
-        List<String> paramIndicatorInstanceIdList = batchUpdateFoodRequestRs.getIndicatorInstanceIdList();
-        indicatorInstanceService.lambdaQuery()
-            .eq(IndicatorInstanceEntity::getAppId, appId)
-            .list()
-            .forEach(indicatorInstanceEntity -> {
-                indicatorInstanceEntityList.add(indicatorInstanceEntity);
-                dbIndicatorInstanceIdList.add(indicatorInstanceEntity.getIndicatorInstanceId());
-            });
-        if (
-            paramIndicatorInstanceIdList.stream().anyMatch(indicatorInstanceId -> !dbIndicatorInstanceIdList.contains(indicatorInstanceId))
-        ) {
-            log.warn("method IndicatorInstanceBiz.batchUpdateFood param batchUpdateCoreRequestRs paramIndicatorInstanceIdList:{} is illegal", paramIndicatorInstanceIdList);
+        RLock lock = redissonClient.getLock(RedissonUtil.getLockName(appId, EnumRedissonLock.INDICATOR_BATCH_UPDATE_CORE_FOOD, indicatorInstanceFieldAppId, appId));
+        boolean isLocked = lock.tryLock(leaseTimeIndicatorBatchUpdateCoreFood, TimeUnit.MILLISECONDS);
+        if (!isLocked) {
+            throw new IndicatorViewBaseInfoException(EnumESC.SYSTEM_BUSY_PLEASE_OPERATOR_INDICATOR_VIEW_BASE_INFO_LATER);
         }
-        indicatorInstanceEntityList.forEach(indicatorInstanceEntity -> {
-            String indicatorInstanceId = indicatorInstanceEntity.getIndicatorInstanceId();
-            if (paramIndicatorInstanceIdList.contains(indicatorInstanceId)) {
-                indicatorInstanceEntity.setFood(EnumStatus.ENABLE.getCode());
-            } else {
-                indicatorInstanceEntity.setFood(EnumStatus.DISABLE.getCode());
+        try {
+            List<IndicatorInstanceEntity> indicatorInstanceEntityList = new ArrayList<>();
+            List<String> dbIndicatorInstanceIdList = new ArrayList<>();
+            List<String> paramIndicatorInstanceIdList = batchUpdateFoodRequestRs.getIndicatorInstanceIdList();
+            indicatorInstanceService.lambdaQuery()
+                .eq(IndicatorInstanceEntity::getAppId, appId)
+                .list()
+                .forEach(indicatorInstanceEntity -> {
+                    indicatorInstanceEntityList.add(indicatorInstanceEntity);
+                    dbIndicatorInstanceIdList.add(indicatorInstanceEntity.getIndicatorInstanceId());
+                });
+            if (
+                paramIndicatorInstanceIdList.stream().anyMatch(indicatorInstanceId -> !dbIndicatorInstanceIdList.contains(indicatorInstanceId))
+            ) {
+                log.warn("method IndicatorInstanceBiz.batchUpdateFood param batchUpdateCoreRequestRs paramIndicatorInstanceIdList:{} is illegal", paramIndicatorInstanceIdList);
             }
-        });
-        indicatorInstanceService.saveOrUpdateBatch(indicatorInstanceEntityList);
+            indicatorInstanceEntityList.forEach(indicatorInstanceEntity -> {
+                String indicatorInstanceId = indicatorInstanceEntity.getIndicatorInstanceId();
+                if (paramIndicatorInstanceIdList.contains(indicatorInstanceId)) {
+                    indicatorInstanceEntity.setFood(EnumStatus.ENABLE.getCode());
+                } else {
+                    indicatorInstanceEntity.setFood(EnumStatus.DISABLE.getCode());
+                }
+            });
+            indicatorInstanceService.saveOrUpdateBatch(indicatorInstanceEntityList);
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Transactional(rollbackFor = Exception.class)
