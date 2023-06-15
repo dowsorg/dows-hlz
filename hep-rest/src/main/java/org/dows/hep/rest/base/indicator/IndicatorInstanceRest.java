@@ -40,13 +40,13 @@ public class IndicatorInstanceRest {
 
     @Operation(summary = "批量设置关键指标")
     @PutMapping("v1/baseIndicator/indicatorInstance/batchUpdateCore")
-    public void batchUpdateCore(@RequestBody BatchUpdateCoreRequestRs batchUpdateCoreRequestRs) {
+    public void batchUpdateCore(@RequestBody BatchUpdateCoreRequestRs batchUpdateCoreRequestRs) throws InterruptedException {
         indicatorInstanceBiz.batchUpdateCore(batchUpdateCoreRequestRs);
     }
 
     @Operation(summary = "批量设置饮食关键指标")
     @PutMapping("v1/baseIndicator/indicatorInstance/batchUpdateFood")
-    public void batchUpdateFood(@RequestBody BatchUpdateFoodRequestRs batchUpdateFoodRequestRs) {
+    public void batchUpdateFood(@RequestBody BatchUpdateFoodRequestRs batchUpdateFoodRequestRs) throws InterruptedException {
         indicatorInstanceBiz.batchUpdateFood(batchUpdateFoodRequestRs);
     }
 
