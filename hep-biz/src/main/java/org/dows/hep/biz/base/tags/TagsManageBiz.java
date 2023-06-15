@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
@@ -89,6 +90,8 @@ public class TagsManageBiz {
                 .oneOpt()
                 .orElseThrow(() -> new BizException(ExperimentESCEnum.DATA_NULL));
         TagsInstanceResponse response = TagsInstanceResponse.builder()
+                .id(instanceEntity.getId())
+                .tagsId(instanceEntity.getTagsId())
                 .appId(instanceEntity.getAppId())
                 .name(instanceEntity.getName())
                 .tagsFormulaId(instanceEntity.getTagsFormulaId())
@@ -119,9 +122,10 @@ public class TagsManageBiz {
             page.addOrder(pageTagsRequest.getDesc() ? OrderItem.descs(array) : OrderItem.ascs(array));
         }
         try {
-            if (!StrUtil.isBlank(pageTagsRequest.getKeyword())) {
+            if (!StrUtil.isBlank(pageTagsRequest.getKeyword()) || !StrUtil.isBlank(pageTagsRequest.getTagsCategoryId())) {
                 page = tagsInstanceService.page(page, tagsInstanceService.lambdaQuery()
-                        .like(TagsInstanceEntity::getName, pageTagsRequest.getKeyword())
+                        .like(StringUtils.isNotEmpty(pageTagsRequest.getKeyword()),TagsInstanceEntity::getName, pageTagsRequest.getKeyword())
+                        .like(StringUtils.isNotEmpty(pageTagsRequest.getTagsCategoryId()),TagsInstanceEntity::getTagsCategoryId, pageTagsRequest.getTagsCategoryId())
                         .getWrapper());
             } else {
                 page = tagsInstanceService.page(page, tagsInstanceService.lambdaQuery().getWrapper());
@@ -163,7 +167,7 @@ public class TagsManageBiz {
      * @创建时间: 2023年6月15日 上午10:02:34
      */
     @DSTransactional
-    public Boolean updateTagsByTagsId(Integer status,String tagsId) {
+    public Boolean updateTagsByTagsId(Integer status, String tagsId) {
         LambdaUpdateWrapper<TagsInstanceEntity> updateWrapper = new LambdaUpdateWrapper<TagsInstanceEntity>()
                 .eq(TagsInstanceEntity::getTagsId, tagsId)
                 .eq(TagsInstanceEntity::getDeleted, false)

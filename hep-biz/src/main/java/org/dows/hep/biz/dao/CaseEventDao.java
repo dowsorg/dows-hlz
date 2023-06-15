@@ -40,6 +40,7 @@ public class CaseEventDao extends BaseSubDao<CaseEventService, CaseEventEntity, 
 
 
 
+
     //region override
 
     @Override
@@ -122,18 +123,15 @@ public class CaseEventDao extends BaseSubDao<CaseEventService, CaseEventEntity, 
 
     }
 
+
     @Transactional(rollbackFor = Exception.class)
-    public boolean tranSaveBatch(List<CaseEventEntity> events, List<CaseEventEvalEntity> evals,  List<CaseEventActionEntity> actions,List<CaseEventActionIndicatorEntity> indicators ) {
-        this.tranSaveBatch(events,evals,false);
-        subDao.tranSaveBatch(actions,indicators,true);
+    public boolean tranSaveBatch(List<CaseEventEntity> events,List<CaseEventActionEntity> actions,
+                                 List<CaseIndicatorExpressionRefEntity> expressionRefs, List<CaseIndicatorExpressionEntity> expressions, List<CaseIndicatorExpressionItemEntity> expressionItems) {
+        this.tranSaveBatch(events);
+        subDao.tranSaveBatch(actions,null,true);
+        caseIndicatorExpressionRefDao.tranSaveBatch(expressionRefs,expressions,expressionItems);
         return true;
     }
-    /*@Transactional(rollbackFor = Exception.class)
-    public boolean tranSaveBatch(List<> List<CaseIndicatorExpressionRefEntity> expressionRefs, List<CaseIndicatorExpressionEntity> expressions, List<CaseIndicatorExpressionItemEntity> expressionItems) {
-        this.saveOrUpdateBatch(expressionRefs,defaultUseLogicId,true);
-        caseIndicatorExpressionDao.tranSaveBatch(expressions,expressionItems,true);
-        return true;
-    }*/
 
     //region save
 

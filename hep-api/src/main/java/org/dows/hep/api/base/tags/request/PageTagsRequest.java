@@ -14,4 +14,7 @@ public class PageTagsRequest extends PageRequest {
 
     @Schema(title = "搜索关键字", description = "搜索关键字")
     private String keyword;
+
+    @Schema(title = "标签分类ID", description = "标签分类ID")
+    private String tagsCategoryId;
 }

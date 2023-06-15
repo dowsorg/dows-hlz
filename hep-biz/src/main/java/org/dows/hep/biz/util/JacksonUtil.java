@@ -59,17 +59,30 @@ public class JacksonUtil {
         }
         return (onlyFields?s_onlyFieldsMapper:s_commonMapper).writeValueAsString(obj);
     }
-    public static <T> T fromJson(String json, Class<T> clz) throws JsonProcessingException, JsonMappingException {
+    public static <T> T fromJson(String json, Class<T> clz) throws JsonProcessingException {
         if(ObjectUtils.isEmpty(json)){
             return null;
         }
         return s_commonMapper.readValue(json, clz);
     }
-    public static <T> T fromJson(String json, TypeReference<T> typeReference) throws JsonProcessingException, JsonMappingException {
+    public static <T> T fromJson(String json, TypeReference<T> type) throws JsonProcessingException {
         if(ObjectUtils.isEmpty(json)){
             return null;
         }
-        return s_commonMapper.readValue(json, typeReference);
+        return s_commonMapper.readValue(json, type);
+    }
+
+    public static <T> T deepCopy(Object obj,boolean onlyFields, Class<T> clz) throws JsonProcessingException{
+        if(ObjectUtils.isEmpty(obj)){
+            return null;
+        }
+        return fromJson(toJson(obj,onlyFields),clz);
+    }
+    public static <T> T deepCopy(Object obj,boolean onlyFields, TypeReference<T> type) throws JsonProcessingException {
+        if(ObjectUtils.isEmpty(obj)){
+            return null;
+        }
+        return fromJson(toJson(obj, onlyFields), type);
     }
     //endreigon
 }
