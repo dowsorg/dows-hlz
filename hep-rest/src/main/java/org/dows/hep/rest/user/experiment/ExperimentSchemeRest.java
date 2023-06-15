@@ -2,12 +2,14 @@ package org.dows.hep.rest.user.experiment;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.user.experiment.request.ExperimentAllotSchemeRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeSettingResponse;
+import org.dows.hep.biz.user.experiment.ExperimentBaseBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Tag(name = "实验方案设计", description = "实验方案设计")
 public class ExperimentSchemeRest {
+    private final ExperimentBaseBiz baseBiz;
     private final ExperimentSchemeBiz experimentSchemeBiz;
 
     /**
@@ -34,7 +37,8 @@ public class ExperimentSchemeRest {
     */
     @Operation(summary = "获取方案设计")
     @GetMapping("v1/userExperiment/experimentScheme/getScheme")
-    public ExperimentSchemeResponse getScheme(@NotBlank String experimentInstanceId, @NotBlank String experimentGroupId, @NotBlank String accountId ) {
+    public ExperimentSchemeResponse getScheme(@NotBlank String experimentInstanceId, @NotBlank String experimentGroupId, HttpServletRequest request) {
+        String accountId = baseBiz.getAccountId(request);
         return experimentSchemeBiz.getScheme(experimentInstanceId, experimentGroupId, accountId);
     }
 
@@ -67,8 +71,9 @@ public class ExperimentSchemeRest {
      */
     @Operation(summary = "保存设计方案")
     @PostMapping("v1/userExperiment/experimentScheme/updateScheme")
-    public Boolean updateScheme(@RequestBody @Validated ExperimentSchemeRequest request ) {
-        return experimentSchemeBiz.updateScheme(request);
+    public Boolean updateScheme(@RequestBody @Validated ExperimentSchemeRequest experimentSchemeRequest, HttpServletRequest request) {
+        String accountId = baseBiz.getAccountId(request);
+        return experimentSchemeBiz.updateScheme(experimentSchemeRequest, accountId);
     }
 
     /**
@@ -78,7 +83,8 @@ public class ExperimentSchemeRest {
     */
     @Operation(summary = "提交设计方案")
     @GetMapping("v1/userExperiment/experimentScheme/submitScheme")
-    public Boolean submitScheme(@NotBlank String experimentInstanceId, @NotBlank String experimentGroupId, @NotBlank String accountId) {
+    public Boolean submitScheme(@NotBlank String experimentInstanceId, @NotBlank String experimentGroupId, HttpServletRequest request) {
+        String accountId = baseBiz.getAccountId(request);
         return experimentSchemeBiz.submitScheme(experimentInstanceId, experimentGroupId, accountId);
     }
 
