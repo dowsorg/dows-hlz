@@ -32,7 +32,7 @@ public class CrowdsInstanceRest {
 
     @Operation(summary = "分页获取人群类别")
     @GetMapping("v1/baseRisk/crowds/page")
-    public PageResponse<CrowdsInstanceResponse> page(@Validated PageCrowdsRequest pageCrowdsRequest){
+    public PageResponse<CrowdsInstanceResponse> page(PageCrowdsRequest pageCrowdsRequest){
         return crowdsInstanceBiz.page(pageCrowdsRequest);
     }
 }
