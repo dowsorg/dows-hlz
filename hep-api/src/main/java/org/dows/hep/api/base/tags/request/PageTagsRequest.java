@@ -21,5 +21,5 @@ public class PageTagsRequest extends PageRequest {
     private String keyword;
 
     @Schema(title = "标签分类ID集合", description = "标签分类ID集合")
-    private Set<String> tagsCategoryIds;
+    private String tagsCategoryIds;
 }

@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
@@ -143,9 +144,10 @@ public class TagsManageBiz {
             page.addOrder(pageTagsRequest.getDesc() ? OrderItem.descs(array) : OrderItem.ascs(array));
         }
         try {
-            if (!StrUtil.isBlank(pageTagsRequest.getKeyword())) {
+            if (!StrUtil.isBlank(pageTagsRequest.getKeyword()) || !StrUtil.isBlank(pageTagsRequest.getTagsCategoryIds())) {
                 page = tagsInstanceService.page(page, tagsInstanceService.lambdaQuery()
-                        .like(TagsInstanceEntity::getName, pageTagsRequest.getKeyword())
+                        .like(StringUtils.isNotEmpty(pageTagsRequest.getKeyword()),TagsInstanceEntity::getName, pageTagsRequest.getKeyword())
+                        .in(StringUtils.isNotEmpty(pageTagsRequest.getTagsCategoryIds()),TagsInstanceEntity::getTagsCategoryId,Arrays.asList(pageTagsRequest.getTagsCategoryIds().split(",")))
                         .getWrapper());
             } else {
                 page = tagsInstanceService.page(page, tagsInstanceService.lambdaQuery().getWrapper());
