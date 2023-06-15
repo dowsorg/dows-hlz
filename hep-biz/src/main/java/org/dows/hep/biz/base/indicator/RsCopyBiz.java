@@ -16,9 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class RsCopyBiz {
   @Transactional(rollbackFor = Exception.class)
   public void rsCopyViewIndicator(CopyViewIndicatorRequestRs copyViewIndicatorRequestRs) {
+
   }
 
   @Transactional(rollbackFor = Exception.class)
   public void rsCopyJudgeIndicator(JudgeViewIndicatorRequestRs judgeViewIndicatorRequestRs) {
+
   }
 }

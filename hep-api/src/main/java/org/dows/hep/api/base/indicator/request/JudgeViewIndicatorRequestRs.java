@@ -19,4 +19,7 @@ import java.io.Serializable;
 public class JudgeViewIndicatorRequestRs implements Serializable {
   @Schema(title = "应用ID")
   private String appId;
+
+  @Schema(title = "实验id")
+  private String experimentInstanceId;
 }
