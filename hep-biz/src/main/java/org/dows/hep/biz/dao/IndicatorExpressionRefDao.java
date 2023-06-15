@@ -65,7 +65,7 @@ public class IndicatorExpressionRefDao extends BaseDao<IndicatorExpressionRefSer
     @Transactional(rollbackFor = Exception.class)
     public boolean tranDeleteByExpressionId(List<String> ids){
         AssertUtil.falseThenThrow(delByExpressionId(ids,false))
-                .throwMessage("表达式关联主体不存在");
+                .throwMessage("表达式不存在");
         indicatorExpressionDao.tranDelete(ids,true);
         return true;
     }
@@ -74,11 +74,12 @@ public class IndicatorExpressionRefDao extends BaseDao<IndicatorExpressionRefSer
     public boolean tranDeleteByReasonId(List<String> ids){
         List<String> expressionIds=ShareUtil.XCollection.map(this.getByReasonId(null,ids,IndicatorExpressionRefEntity::getIndicatorExpressionId),
                 IndicatorExpressionRefEntity::getIndicatorExpressionId);
+        if(ShareUtil.XObject.isEmpty(expressionIds)){
+            return true;
+        }
         AssertUtil.falseThenThrow(delByReasonId(ids,false))
                 .throwMessage("表达式关联主体不存在");
-        if(ShareUtil.XObject.notEmpty(expressionIds)){
-            indicatorExpressionDao.tranDelete(expressionIds,true);
-        }
+        indicatorExpressionDao.tranDelete(expressionIds,true);
         return true;
     }
 
