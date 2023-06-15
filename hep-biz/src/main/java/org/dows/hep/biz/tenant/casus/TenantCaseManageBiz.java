@@ -109,6 +109,7 @@ public class TenantCaseManageBiz {
         Page<CaseInstanceEntity> pageRequest = new Page<>(caseInstancePageRequest.getPageNo(), caseInstancePageRequest.getPageSize());
         Page<CaseInstanceEntity> pageResult = caseInstanceService.lambdaQuery()
                 .eq(caseInstancePageRequest.getAppId() != null, CaseInstanceEntity::getAppId, caseInstancePageRequest.getAppId())
+                .eq(caseInstancePageRequest.getState() != null, CaseInstanceEntity::getState, caseInstancePageRequest.getState())
                 .like(StrUtil.isNotBlank(caseInstancePageRequest.getKeyword()), CaseInstanceEntity::getCaseName, caseInstancePageRequest.getKeyword())
                 .page(pageRequest);
         return baseBiz.convertPage(pageResult, CaseInstancePageResponse.class);

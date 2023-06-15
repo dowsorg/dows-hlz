@@ -3,6 +3,8 @@ package org.dows.hep.rest.user.experiment;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.tenant.casus.CasePeriodEnum;
+import org.dows.hep.biz.tenant.experiment.ExperimentCaseInfoManageBiz;
 import org.dows.hep.biz.user.experiment.ExperimentCaseInfoBiz;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -49,8 +51,8 @@ public class ExperimentCaseInfoRest {
      */
     @Operation(summary = "获取社区公告")
     @GetMapping("v1/userExperiment/experimentCaseInfo/getNotice")
-    public String getNotice(@RequestParam String experimentInstanceId) {
-        return experimentCaseInfoBiz.getNotice(experimentInstanceId);
+    public ExperimentCaseInfoManageBiz.CaseNotice getNotice(@RequestParam("experimentInstanceId") String experimentInstanceId, @RequestParam("period") CasePeriodEnum period) {
+        return experimentCaseInfoBiz.getNotice(experimentInstanceId, period);
     }
 
 }
