@@ -8,10 +8,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.crud.api.model.PageResponse;
+import org.dows.hep.api.base.indicator.request.BatchBindReasonIdRequestRs;
 import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
 import org.dows.hep.api.base.tags.request.PageTagsRequest;
 import org.dows.hep.api.base.tags.request.TagsInstanceRequest;
 import org.dows.hep.api.base.tags.response.TagsInstanceResponse;
+import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
@@ -31,9 +33,9 @@ import java.util.*;
 public class TagsManageBiz {
 
     private final TagsInstanceService tagsInstanceService;
-
     private final IdGenerator idGenerator;
     private final IndicatorExpressionBiz indicatorExpressionBiz;
+
 
     /**
      * @param
@@ -48,11 +50,12 @@ public class TagsManageBiz {
     @DSTransactional
     public Boolean insertOrUpdateTags(TagsInstanceRequest manageRequest) {
         Boolean flag = false;
-        if (manageRequest.getId() != null) {
+        String tagsId = manageRequest.getTagsId();
+        if (tagsId != null) {
             TagsInstanceEntity manageEntity = TagsInstanceEntity
                     .builder()
                     .id(manageRequest.getId())
-                    .tagsId(manageRequest.getTagsId())
+                    .tagsId(tagsId)
                     .appId(manageRequest.getAppId())
                     .name(manageRequest.getName())
                     .tagsFormulaId(manageRequest.getTagsFormulaId())
@@ -61,9 +64,10 @@ public class TagsManageBiz {
                     .build();
             flag = tagsInstanceService.updateById(manageEntity);
         } else {
+            tagsId = idGenerator.nextIdStr();
             TagsInstanceEntity manageEntity = TagsInstanceEntity
                     .builder()
-                    .tagsId(idGenerator.nextIdStr())
+                    .tagsId(tagsId)
                     .appId(manageRequest.getAppId())
                     .name(manageRequest.getName())
                     .tagsFormulaId(manageRequest.getTagsFormulaId())
@@ -72,6 +76,15 @@ public class TagsManageBiz {
                     .build();
             flag = tagsInstanceService.save(manageEntity);
         }
+        List<String> indicatorExpressionIdList = new ArrayList<>();
+        indicatorExpressionIdList.add(manageRequest.getTagsFormulaId());
+        indicatorExpressionBiz.batchBindReasonId(BatchBindReasonIdRequestRs
+            .builder()
+            .reasonId(tagsId)
+            .appId(manageRequest.getAppId())
+            .source(EnumIndicatorExpressionSource.LABEL_MANAGEMENT.getType())
+            .indicatorExpressionIdList(indicatorExpressionIdList)
+            .build());
         return flag;
     }
 
