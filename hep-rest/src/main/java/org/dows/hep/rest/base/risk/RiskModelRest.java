@@ -40,4 +40,11 @@ public class RiskModelRest {
     public Boolean batchDelRiskModels(@RequestBody @Validated Set<String> riskModelIds) {
         return riskModelBiz.batchDelRiskModels(riskModelIds);
     }
+
+    @Operation(summary = "更新风险模型状态")
+    @PutMapping("v1/baseRisk/riskModel/updateRiskModelStatus")
+    public Boolean updateRiskModelStatus(@RequestParam @Validated String riskModelId,
+                                         @RequestParam @Validated Integer status) {
+        return riskModelBiz.updateRiskModelStatus(riskModelId,status);
+    }
 }

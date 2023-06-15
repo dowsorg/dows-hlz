@@ -113,4 +113,23 @@ public class RiskModelBiz {
                 .set(RiskModelEntity::getDeleted, true);
         return riskModelService.update(updateWrapper);
     }
+
+    /**
+     * @param
+     * @return
+     * @说明: 更新风险模型状态
+     * @关联表:
+     * @工时: 1H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月15日 下午19:41:34
+     */
+    @DSTransactional
+    public Boolean updateRiskModelStatus(String riskModelId, Integer status) {
+        LambdaUpdateWrapper<RiskModelEntity> updateWrapper = new LambdaUpdateWrapper<RiskModelEntity>()
+                .eq(RiskModelEntity::getRiskModelId, riskModelId)
+                .eq(RiskModelEntity::getDeleted, false)
+                .set(RiskModelEntity::getStatus, status);
+        return riskModelService.update(updateWrapper);
+    }
 }
