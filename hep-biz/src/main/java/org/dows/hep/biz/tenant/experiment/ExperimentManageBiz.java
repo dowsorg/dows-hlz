@@ -181,7 +181,7 @@ public class ExperimentManageBiz {
             // 保存方案设计
             experimentSettingService.saveOrUpdate(experimentSettingEntity);
             // 设置实验计时器
-            buildPeriods(experimentInstance, experimentSetting, experimentTimerEntities);
+//            buildPeriods(experimentInstance, experimentSetting, experimentTimerEntities);
         }
         // 保存实验计时器
         experimentTimerService.saveBatch(experimentTimerEntities);
