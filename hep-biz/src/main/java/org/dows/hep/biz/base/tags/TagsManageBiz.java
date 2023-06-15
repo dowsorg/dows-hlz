@@ -52,6 +52,7 @@ public class TagsManageBiz {
                     .tagsId(manageRequest.getTagsId())
                     .appId(manageRequest.getAppId())
                     .name(manageRequest.getName())
+                    .tagsFormulaId(manageRequest.getTagsFormulaId())
                     .tagsCategoryId(manageRequest.getTagsCategoryId())
                     .status(manageRequest.getStatus())
                     .build();
@@ -62,6 +63,7 @@ public class TagsManageBiz {
                     .tagsId(idGenerator.nextIdStr())
                     .appId(manageRequest.getAppId())
                     .name(manageRequest.getName())
+                    .tagsFormulaId(manageRequest.getTagsFormulaId())
                     .tagsCategoryId(manageRequest.getTagsCategoryId())
                     .status(manageRequest.getStatus())
                     .build();
@@ -89,6 +91,7 @@ public class TagsManageBiz {
         TagsInstanceResponse response = TagsInstanceResponse.builder()
                 .appId(instanceEntity.getAppId())
                 .name(instanceEntity.getName())
+                .tagsFormulaId(instanceEntity.getTagsFormulaId())
                 .tagsCategoryId(instanceEntity.getTagsCategoryId())
                 .status(instanceEntity.getStatus())
                 .build();
