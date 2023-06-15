@@ -15,9 +15,11 @@ import org.dows.account.request.AccountInstanceRequest;
 import org.dows.account.request.AccountUserRequest;
 import org.dows.account.response.*;
 import org.dows.framework.api.util.ReflectUtil;
+import org.dows.hep.api.base.indicator.request.CaseCreateCopyToPersonRequestRs;
 import org.dows.hep.api.base.person.request.PersonInstanceRequest;
 import org.dows.hep.api.base.person.response.PersonInstanceResponse;
 import org.dows.hep.api.tenant.casus.request.CasePersonIndicatorFuncRequest;
+import org.dows.hep.biz.base.indicator.CaseIndicatorInstanceBiz;
 import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.entity.CasePersonIndicatorFuncEntity;
 import org.dows.hep.entity.HepArmEntity;
@@ -65,6 +67,8 @@ public class PersonManageBiz {
     private final CasePersonIndicatorFuncService casePersonIndicatorFuncService;
 
     private final HepArmService hepArmService;
+
+    private final CaseIndicatorInstanceBiz caseIndicatorInstanceBiz;
 
     /**
      * @param
@@ -249,7 +253,12 @@ public class PersonManageBiz {
                 .appId(accountInstanceResponse.getAppId())
                 .tentantId(accountInstanceResponse.getTenantId()).build();
         this.accountUserApi.createAccountUser(accountUserRequest);
-        //todo 复制指标信息和突发事件
+        //5、复制指标
+        caseIndicatorInstanceBiz.copyToPerson(CaseCreateCopyToPersonRequestRs
+                .builder()
+                .appId(accountInstanceResponse.getAppId())
+                .casePersonId(vo.getAccountId())
+                .build());
         return PersonInstanceResponse.builder().accountId(vo.getAccountId())
                 .build();
     }
@@ -651,6 +660,12 @@ public class PersonManageBiz {
                 .appId(request.getAppId())
                 .tentantId(request.getTenantId()).build();
         this.accountUserApi.createAccountUser(accountUserRequest);
+        //6、复制指标
+        caseIndicatorInstanceBiz.copyToPerson(CaseCreateCopyToPersonRequestRs
+                .builder()
+                .appId(request.getAppId())
+                .casePersonId(vo.getAccountId())
+                .build());
         return PersonInstanceResponse.builder().accountId(vo.getAccountId())
                 .build();
     }

@@ -1,7 +1,21 @@
 package org.dows.hep.api.event;
 
+import lombok.Getter;
+
 public enum EventName {
-    startEvent,
-    finishEvent,
-    suspendEvent;
+    startEvent("startHandler"),
+    finishEvent("finishHandler"),
+    suspendEvent("suspendHandler"),
+
+    allotEvent("allotHandler"),
+
+    ;
+
+
+    @Getter
+    String handler;
+
+    EventName(String handler) {
+        this.handler = handler;
+    }
 }

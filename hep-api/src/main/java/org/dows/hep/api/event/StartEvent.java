@@ -1,5 +1,6 @@
 package org.dows.hep.api.event;
 
+
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -14,9 +15,9 @@ import java.time.Clock;
  */
 public class StartEvent extends ExperimentEvent implements Serializable {
 
+
     @Getter
     private EventName eventName = EventName.startEvent;
-
     public StartEvent(Object source) {
         super(source);
     }

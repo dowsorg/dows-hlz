@@ -35,7 +35,6 @@ public class CaseIndicatorInstanceBiz {
   private final CaseIndicatorExpressionItemService caseIndicatorExpressionItemService;
   private final CaseIndicatorExpressionRefService caseIndicatorExpressionRefService;
   private final CaseIndicatorExpressionInfluenceService caseIndicatorExpressionInfluenceService;
-  private final CaseIndicatorPrincipalRefService caseIndicatorPrincipalRefService;
   private final CaseIndicatorCategoryPrincipalRefService caseIndicatorCategoryPrincipalRefService;
 
   public static CaseIndicatorInstanceResponseRs caseIndicatorInstance2ResponseRs(
@@ -57,6 +56,7 @@ public class CaseIndicatorInstanceBiz {
         .id(caseIndicatorInstanceEntity.getId())
         .indicatorInstanceId(caseIndicatorInstanceEntity.getCaseIndicatorInstanceId())
         .appId(caseIndicatorInstanceEntity.getAppId())
+        .principal(caseIndicatorInstanceEntity.getPrincipalId())
         .indicatorCategoryId(caseIndicatorInstanceEntity.getIndicatorCategoryId())
         .indicatorName(caseIndicatorInstanceEntity.getIndicatorName())
         .displayByPercent(caseIndicatorInstanceEntity.getDisplayByPercent())
@@ -172,7 +172,6 @@ public class CaseIndicatorInstanceBiz {
     List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList = new ArrayList<>();
     List<CaseIndicatorExpressionRefEntity> caseIndicatorExpressionRefEntityList = new ArrayList<>();
     List<CaseIndicatorExpressionInfluenceEntity> caseIndicatorExpressionInfluenceEntityList = new ArrayList<>();
-    List<CaseIndicatorPrincipalRefEntity> caseIndicatorPrincipalRefEntityList = new ArrayList<>();
     List<CaseIndicatorCategoryPrincipalRefEntity> caseIndicatorCategoryPrincipalRefEntityList = new ArrayList<>();
     Map<String, String> kIndicatorInstanceIdVCaseIndicatorInstanceIdMap = new HashMap<>();
     Map<String, Set<String>> kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap = new HashMap<>();
@@ -205,6 +204,7 @@ public class CaseIndicatorInstanceBiz {
             .caseIndicatorInstanceId(caseIndicatorInstanceId)
             .indicatorInstanceId(indicatorInstanceId)
             .appId(appId)
+            .principalId(casePersonId)
             .indicatorCategoryId(caseIndicatorCategoryId)
             .indicatorName(indicatorName)
             .displayByPercent(displayByPercent)
@@ -245,10 +245,10 @@ public class CaseIndicatorInstanceBiz {
           .build());
       caseIndicatorCategoryPrincipalRefEntityList.add(CaseIndicatorCategoryPrincipalRefEntity
           .builder()
-              .caseIndicatorCategoryPrincipalRefId(idGenerator.nextIdStr())
-              .principalId(casePersonId)
-              .indicatorCategoryId(caseIndicatorCategoryId)
-              .appId(appId)
+          .caseIndicatorCategoryPrincipalRefId(idGenerator.nextIdStr())
+          .principalId(casePersonId)
+          .indicatorCategoryId(caseIndicatorCategoryId)
+          .appId(appId)
           .build());
     });
     indicatorInstanceCategoryResponseRsList.forEach(indicatorInstanceCategoryResponseRs -> {
@@ -390,15 +390,6 @@ public class CaseIndicatorInstanceBiz {
               .influencedIndicatorInstanceIdList(influencedIndicatorInstanceIdList)
           .build());
     });
-    kIndicatorInstanceIdVCaseIndicatorInstanceIdMap.values().forEach(caseIndicatorInstanceId -> {
-      caseIndicatorPrincipalRefEntityList.add(CaseIndicatorPrincipalRefEntity
-          .builder()
-          .caseIndicatorPrincipalRefId(idGenerator.nextIdStr())
-          .principalId(casePersonId)
-          .indicatorInstanceId(caseIndicatorInstanceId)
-          .appId(appId)
-          .build());
-    });
     caseIndicatorCategoryService.saveOrUpdateBatch(caseIndicatorCategoryEntityList);
     caseIndicatorCategoryRefService.saveOrUpdateBatch(caseIndicatorCategoryRefEntityList);
     caseIndicatorRuleService.saveOrUpdateBatch(caseIndicatorRuleEntityList);
@@ -407,7 +398,6 @@ public class CaseIndicatorInstanceBiz {
     caseIndicatorExpressionItemService.saveOrUpdateBatch(caseIndicatorExpressionItemEntityList);
     caseIndicatorExpressionRefService.saveOrUpdateBatch(caseIndicatorExpressionRefEntityList);
     caseIndicatorExpressionInfluenceService.saveOrUpdateBatch(caseIndicatorExpressionInfluenceEntityList);
-    caseIndicatorPrincipalRefService.saveOrUpdateBatch(caseIndicatorPrincipalRefEntityList);
     caseIndicatorCategoryPrincipalRefService.saveOrUpdateBatch(caseIndicatorCategoryPrincipalRefEntityList);
   }
 

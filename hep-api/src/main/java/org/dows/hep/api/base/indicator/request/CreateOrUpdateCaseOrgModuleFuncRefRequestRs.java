@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * @author runsix
  */
@@ -13,11 +15,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Schema(name = "CaseCreateCopyToPersonRequestRs对象", title = "创建复制人物指标去人物")
-public class CaseCreateCopyToPersonRequestRs {
+public class CreateOrUpdateCaseOrgModuleFuncRefRequestRs implements Serializable {
+  @Schema(title = "分布式ID")
+  private String caseOrgModuleFuncRefId;
+
   @Schema(title = "应用ID")
   private String appId;
 
-  @Schema(title = "案例人物")
-  private String casePersonId;
+  @Schema(title = "分布式ID")
+  private String caseOrgModuleId;
+
+  @Schema(title = "功能点分布式ID")
+  private String indicatorFuncId;
 }

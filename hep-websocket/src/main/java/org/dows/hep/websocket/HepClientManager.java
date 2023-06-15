@@ -1,6 +1,7 @@
 package org.dows.hep.websocket;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +23,7 @@ public class HepClientManager {
     // 在线用户总数
     private static AtomicInteger accountCount = new AtomicInteger(0);
 
-    private static ConcurrentMap<String, ConcurrentMap<Channel, AccountInfo>> onlineAccount = new ConcurrentHashMap<>();
+    private static ConcurrentMap<String, ConcurrentMap<Channel, AccountInfo>> ONLINE_ACCOUNT = new ConcurrentHashMap<>();
 
     // 设备集合  key 房间号 value：设备集合
     private static ConcurrentMap<String, List<String>> equipments = new ConcurrentHashMap<>();
@@ -30,32 +31,30 @@ public class HepClientManager {
     /**
      * 保存用户身份信息
      *
-     * @param channel 通道
-     * @param nick    用户
-     * @param room    房间数据
+     * @param channel
+     * @param onlineAccount
      * @return
      */
-    public static AccountInfo saveUser(Channel channel, String nick, String room) {
+    public static AccountInfo saveUser(Channel channel, OnlineAccount onlineAccount) {
         String addr = NettyUtil.parseChannelRemoteAddr(channel);
         // 判断通道状态是否正常
         if (!channel.isActive()) {
-            log.error("channel is not active, address: {}, nick: {}", addr, nick);
+            log.error("channel is not active, accountInfo:{}", addr, JSONUtil.toJsonStr(onlineAccount));
             return null;
         }
         // 添加当前用户身份信息到通道数据
         //channel.attr(USER_ROOM_IN_SESSION_ATTRIBUTE_ATTR).set(room);
         //channel.attr(USER_NAME_IN_SESSION_ATTRIBUTE_ATTR).set(nick);
-        // 增加一个认证用户
+        // 增加一个用户数
         accountCount.incrementAndGet();
-        // 保存通讯
         AccountInfo accountInfo = new AccountInfo();
-        accountInfo.setAccountName(nick);
+        accountInfo.setAccountName(onlineAccount.getAccountId());
         // 保存用户到指定房间数据
-        if (onlineAccount.get(room) == null) {
+        if (ONLINE_ACCOUNT.get(onlineAccount.getExperimentId()) == null) {
             ConcurrentMap<Channel, AccountInfo> userInfoConcurrentMap = new ConcurrentHashMap<>();
-            onlineAccount.put(room, userInfoConcurrentMap);
+            ONLINE_ACCOUNT.put(onlineAccount.getExperimentId(), userInfoConcurrentMap);
         }
-        onlineAccount.get(room).put(channel, accountInfo);
+        ONLINE_ACCOUNT.get(onlineAccount.getExperimentId()).put(channel, accountInfo);
         // 返回数据
         return accountInfo;
     }
@@ -108,9 +107,9 @@ public class HepClientManager {
             channel.close();
             // 获取通道房间数据
             String room = getRoomIdFromSession(channel);
-            AccountInfo userInfo = onlineAccount.get(room).get(channel);
+            AccountInfo userInfo = ONLINE_ACCOUNT.get(room).get(channel);
             if (userInfo != null) {
-                AccountInfo tmp = onlineAccount.get(room).remove(channel);
+                AccountInfo tmp = ONLINE_ACCOUNT.get(room).remove(channel);
                 if (tmp != null && tmp.getAuth()) {
                     // 减去一个认证用户
                     accountCount.decrementAndGet();
@@ -131,9 +130,9 @@ public class HepClientManager {
         if (!StrUtil.isBlank(message)) {
             try {
                 rwLock.readLock().lock();
-                Set<Channel> keySet = onlineAccount.get(room).keySet();
+                Set<Channel> keySet = ONLINE_ACCOUNT.get(room).keySet();
                 for (Channel ch : keySet) {
-                    AccountInfo accountInfo = onlineAccount.get(room).get(ch);
+                    AccountInfo accountInfo = ONLINE_ACCOUNT.get(room).get(ch);
                     if (accountInfo == null || !accountInfo.getAuth()) {
                         continue;
                     }
@@ -152,7 +151,7 @@ public class HepClientManager {
         try {
             rwLock.readLock().lock();
             // 获取所有的通道发送数据
-            Collection<ConcurrentMap<Channel, AccountInfo>> collection = onlineAccount.values();
+            Collection<ConcurrentMap<Channel, AccountInfo>> collection = ONLINE_ACCOUNT.values();
             for (ConcurrentMap<Channel, AccountInfo> userInfos : collection) {
                 Set<Channel> keySet = userInfos.keySet();
                 for (Channel ch : keySet) {
@@ -176,9 +175,9 @@ public class HepClientManager {
         try {
             rwLock.readLock().lock();
             // 获取所有的通道发送数据
-            Set<Channel> keySet = onlineAccount.get(room).keySet();
+            Set<Channel> keySet = ONLINE_ACCOUNT.get(room).keySet();
             for (Channel ch : keySet) {
-                AccountInfo accountInfo = onlineAccount.get(room).get(ch);
+                AccountInfo accountInfo = ONLINE_ACCOUNT.get(room).get(ch);
                 if (accountInfo == null || !accountInfo.getAuth()) {
                     continue;
                 }
@@ -197,7 +196,7 @@ public class HepClientManager {
             rwLock.readLock().lock();
             log.info("broadCastPing userCount: {}", accountCount.intValue());
             // 获取所有的通道发送数据
-            Collection<ConcurrentMap<Channel, AccountInfo>> collection = onlineAccount.values();
+            Collection<ConcurrentMap<Channel, AccountInfo>> collection = ONLINE_ACCOUNT.values();
             for (ConcurrentMap<Channel, AccountInfo> accountInfos : collection) {
                 Set<Channel> keySet = accountInfos.keySet();
                 for (Channel ch : keySet) {
@@ -237,7 +236,7 @@ public class HepClientManager {
      */
     public static void scanNotActiveChannel() {
         // 所有通道
-        Collection<ConcurrentMap<Channel, AccountInfo>> collection = onlineAccount.values();
+        Collection<ConcurrentMap<Channel, AccountInfo>> collection = ONLINE_ACCOUNT.values();
         for (ConcurrentMap<Channel, AccountInfo> accountInfos : collection) {
             Set<Channel> keySet = accountInfos.keySet();
             for (Channel ch : keySet) {
@@ -265,7 +264,7 @@ public class HepClientManager {
      */
     public static AccountInfo getAccountInfo(Channel channel) {
         String room = getRoomIdFromSession(channel);
-        return onlineAccount.get(room).get(channel);
+        return ONLINE_ACCOUNT.get(room).get(channel);
     }
 
     /**
@@ -275,7 +274,7 @@ public class HepClientManager {
      */
     public static ConcurrentMap<Channel, AccountInfo> getUserInfos() {
         ConcurrentMap<Channel, AccountInfo> userInfos = new ConcurrentHashMap<>();
-        Collection<ConcurrentMap<Channel, AccountInfo>> collection = onlineAccount.values();
+        Collection<ConcurrentMap<Channel, AccountInfo>> collection = ONLINE_ACCOUNT.values();
         for (ConcurrentMap<Channel, AccountInfo> userInfoConcurrentMap : collection) {
             userInfos.putAll(userInfoConcurrentMap);
         }
@@ -297,7 +296,7 @@ public class HepClientManager {
      * @return
      */
     public static int getAuthUserCount(String room) {
-        return onlineAccount.get(room).size();
+        return ONLINE_ACCOUNT.get(room).size();
     }
 
     /**

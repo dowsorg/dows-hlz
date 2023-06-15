@@ -10,16 +10,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
-import org.dows.framework.crud.api.CrudEntity;
 
 import java.util.Date;
 
-/**
- * 指标分类与指标关联关系(IndicatorCategoryRef)实体类
- *
- * @author lait
- * @since 2023-04-24 10:23:45
- */
 @SuppressWarnings("serial")
 @Data
 @ToString
@@ -28,28 +21,33 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "CaseIndicatorCategoryRefEntity", title = "指标分类与指标关联关系")
-@TableName("case_indicator_category_ref")
-public class CaseIndicatorCategoryRefEntity implements CrudEntity {
-
+@Schema(name = "ExperimentSchemeScoreItem", title = "实验方案得分Item")
+@TableName("experiment_scheme_score_item")
+public class ExperimentSchemeScoreItemEntity {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Schema(title = "主键")
+    @Schema(title = "数据库ID")
     private Long id;
 
-    @Schema(title = "案例分布式ID")
-    private String caseIndicatorCategoryRefId;
+    @Schema(title = "方案设计评分ItemId")
+    private String experimentSchemeScoreItemId;
 
-    @Schema(title = "应用ID")
-    private String appId;
+    @Schema(title = "方案设计评分ID")
+    private String experimentSchemeScoreId;
 
-    @Schema(title = "指标类别分布式ID")
-    private String indicatorCategoryId;
+    @Schema(title = "维度名")
+    private String dimensionName;
 
-    @Schema(title = "分布式ID")
-    private String indicatorInstanceId;
+    @Schema(title = "维度说明")
+    private String dimensionContent;
 
-    @Schema(title = "展示顺序")
-    private Integer seq;
+    @Schema(title = "最小得分限制")
+    private String minScore;
+
+    @Schema(title = "最大得分限制")
+    private String maxScore;
+
+    @Schema(title = "最终得分")
+    private String score;
 
     @JsonIgnore
     @TableLogic
@@ -60,6 +58,4 @@ public class CaseIndicatorCategoryRefEntity implements CrudEntity {
     @TableField(fill = FieldFill.INSERT)
     @Schema(title = "时间戳")
     private Date dt;
-
 }
-

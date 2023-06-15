@@ -31,7 +31,6 @@ import org.dows.hep.api.exception.ExperimentParticipatorException;
 import org.dows.hep.api.tenant.experiment.request.*;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
-import org.dows.hep.biz.user.experiment.ExperimentGroupBiz;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -83,8 +82,9 @@ public class ExperimentManageBiz {
     private final AccountOrgApi accountOrgApi;
     private final AccountOrgGeoApi accountOrgGeoApi;
     private final CaseOrgFeeService caseOrgFeeService;
+    //
     private final ExperimentSchemeManageBiz experimentSchemeManageBiz;
-    private final ExperimentGroupBiz experimentGroupBiz;
+    private final ExperimentCaseInfoManageBiz experimentCaseInfoManageBiz;
 
     // 事件发布
     private final ApplicationEventPublisher applicationEventPublisher;
@@ -201,6 +201,9 @@ public class ExperimentManageBiz {
     private void buildPeriods(ExperimentInstanceEntity experimentInstance, ExperimentSetting experimentSetting,
                               List<ExperimentTimerEntity> experimentTimerEntities) {
         ExperimentSetting.SandSetting sandSetting = experimentSetting.getSandSetting();
+        if(null == sandSetting ){
+            throw new BizException("沙盘模式，sandSetting为不能为空!");
+        }
         // 获取总期数，生成每期的计时器
         Integer periodCount = sandSetting.getPeriods();
         // 每期间隔/秒*1000
@@ -382,6 +385,7 @@ public class ExperimentManageBiz {
         // 保存实验参与人[学生]
         experimentParticipatorService.saveOrUpdateBatch(collect);
 
+        // todo 后续移到事件监听中
         // 预处理方案设计
         String experimentInstanceId = experimentGroupSettingRequest.getExperimentInstanceId();
         CreateExperimentForm allotData = getAllotData(experimentInstanceId, null);
@@ -396,6 +400,8 @@ public class ExperimentManageBiz {
             String settingStr = JSONUtil.toJsonStr(schemeSetting);
             experimentSchemeManageBiz.preHandleExperimentScheme(experimentInstanceId, caseInstanceId, groupIds, settingStr);
         }
+        // 预处理基础信息
+        experimentCaseInfoManageBiz.preHandleCaseInfo(experimentInstanceId, caseInstanceId);
 
         return true;
     }
