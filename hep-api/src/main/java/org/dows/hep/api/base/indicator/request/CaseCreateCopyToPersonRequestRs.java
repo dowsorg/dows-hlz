@@ -1,6 +1,8 @@
 package org.dows.hep.api.base.indicator.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,6 +11,8 @@ import lombok.NoArgsConstructor;
  */
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Schema(name = "CaseCreateCopyToPersonRequestRs对象", title = "创建复制人物指标去人物")
 public class CaseCreateCopyToPersonRequestRs {
   @Schema(title = "应用ID")
