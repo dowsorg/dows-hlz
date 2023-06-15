@@ -48,8 +48,11 @@ public class QuestionSectionDimensionEntity implements CrudEntity {
     @Schema(title = "内容")
     private String dimensionContent;
 
-    @Schema(title = "分数")
-    private Float score;
+    @Schema(title = "分数最小值")
+    private Float minScore;
+
+    @Schema(title = "分数最大值")
+    private Float maxScore;
 
     @JsonIgnore
     @TableLogic
