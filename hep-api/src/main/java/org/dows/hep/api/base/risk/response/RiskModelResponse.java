@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
+
+import java.util.List;
 
 /**
 * @description 
@@ -39,4 +42,7 @@ public class RiskModelResponse{
 
     @Schema(title = "0-禁用，1-启用")
     private Integer status;
+
+    @Schema(title = "指标公式")
+    private List<IndicatorExpressionResponseRs> indicatorExpressionResponseRsList;
 }

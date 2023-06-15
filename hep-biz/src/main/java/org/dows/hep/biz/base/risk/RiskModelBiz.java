@@ -1,17 +1,25 @@
 package org.dows.hep.biz.base.risk;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateRiskModelRequestRs;
+import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
+import org.dows.hep.api.base.risk.request.PageRiskModelRequest;
 import org.dows.hep.api.base.risk.response.RiskModelResponse;
+import org.dows.hep.api.exception.ExperimentException;
+import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
 import org.dows.hep.entity.RiskModelEntity;
 import org.dows.hep.service.RiskModelService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author jx
@@ -25,6 +33,8 @@ public class RiskModelBiz {
     private final RiskModelService riskModelService;
 
     private final IdGenerator idGenerator;
+
+    private final IndicatorExpressionBiz indicatorExpressionBiz;
 
     /**
      * @param
@@ -131,5 +141,56 @@ public class RiskModelBiz {
                 .eq(RiskModelEntity::getDeleted, false)
                 .set(RiskModelEntity::getStatus, status);
         return riskModelService.update(updateWrapper);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 分页获取风险模型列表
+     * @关联表:
+     * @工时: 1H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月15日 下午19:50:34
+     */
+    public PageResponse<RiskModelResponse> page(PageRiskModelRequest pageRiskModelRequest) {
+        String appId = pageRiskModelRequest.getAppId();
+        Page page = new Page<RiskModelEntity>();
+        page.setSize(pageRiskModelRequest.getPageSize());
+        page.setCurrent(pageRiskModelRequest.getPageNo());
+        if (pageRiskModelRequest.getOrder() != null) {
+            String[] array = (String[]) pageRiskModelRequest.getOrder().stream()
+                    .map(s -> StrUtil.toUnderlineCase((CharSequence) s))
+                    .toArray(String[]::new);
+            page.addOrder(pageRiskModelRequest.getDesc() ? OrderItem.descs(array) : OrderItem.ascs(array));
+        }
+        try {
+            if (!StrUtil.isBlank(pageRiskModelRequest.getKeyword())) {
+                page = riskModelService.page(page, riskModelService.lambdaQuery()
+                        .like(RiskModelEntity::getName, pageRiskModelRequest.getKeyword())
+                        .getWrapper());
+            } else {
+                page = riskModelService.page(page, riskModelService.lambdaQuery().getWrapper());
+            }
+        } catch (Exception e) {
+            throw new ExperimentException(e.getCause().getMessage());
+        }
+        Set<String> indicatorInstanceIdSet = new HashSet<>();
+        Map<String, List<IndicatorExpressionResponseRs>> kReasonIdVIndicatorExpressionResponseRsListMap = new HashMap<>();
+        PageResponse pageInfo = riskModelService.getPageInfo(page, RiskModelResponse.class);
+        List<RiskModelResponse> riskModelResponseList = pageInfo.getList();
+        if (Objects.nonNull(riskModelResponseList) && !riskModelResponseList.isEmpty()) {
+            riskModelResponseList.forEach(riskModelResponse -> {
+                indicatorInstanceIdSet.add(riskModelResponse.getRiskModelId());
+            });
+            indicatorExpressionBiz.populateKReasonIdVIndicatorExpressionResponseRsListMap(appId, indicatorInstanceIdSet, kReasonIdVIndicatorExpressionResponseRsListMap);
+            riskModelResponseList.forEach(riskModelResponse -> {
+                String riskModelId = riskModelResponse.getRiskModelId();
+                List<IndicatorExpressionResponseRs> indicatorExpressionResponseRsList = kReasonIdVIndicatorExpressionResponseRsListMap.get(riskModelId);
+                riskModelResponse.setIndicatorExpressionResponseRsList(indicatorExpressionResponseRsList);
+            });
+        }
+        pageInfo.setList(riskModelResponseList);
+        return pageInfo;
     }
 }

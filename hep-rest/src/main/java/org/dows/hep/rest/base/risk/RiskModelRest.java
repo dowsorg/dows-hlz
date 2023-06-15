@@ -3,11 +3,14 @@ package org.dows.hep.rest.base.risk;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateRiskModelRequestRs;
+import org.dows.hep.api.base.risk.request.PageRiskModelRequest;
 import org.dows.hep.api.base.risk.response.RiskModelResponse;
 import org.dows.hep.biz.base.risk.RiskModelBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Set;
 
 /**
@@ -45,5 +48,11 @@ public class RiskModelRest {
     public Boolean updateRiskModelStatus(@RequestParam @Validated String riskModelId,
                                          @RequestParam @Validated Integer status) {
         return riskModelBiz.updateRiskModelStatus(riskModelId,status);
+    }
+
+    @Operation(summary = "分页获取风险模型列表")
+    @GetMapping("v1/baseRisk/riskModel/page")
+    public PageResponse<RiskModelResponse> page(PageRiskModelRequest pageRiskModelRequest) {
+        return riskModelBiz.page(pageRiskModelRequest);
     }
 }
