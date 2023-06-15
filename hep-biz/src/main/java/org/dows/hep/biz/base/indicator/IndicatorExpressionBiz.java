@@ -1433,7 +1433,7 @@ public class IndicatorExpressionBiz{
             });
         if (changeType) {
           indicatorExpressionItemId = idGenerator.nextIdStr();
-          indicatorExpressionItemEntity.setIndicatorExpressionItemId(idGenerator.nextIdStr());
+          indicatorExpressionItemEntity.setIndicatorExpressionItemId(indicatorExpressionItemId);
         }
         indicatorExpressionItemEntity.setResultRaw(resultRaw);
         indicatorExpressionItemEntity.setResultExpression(resultExpression);
