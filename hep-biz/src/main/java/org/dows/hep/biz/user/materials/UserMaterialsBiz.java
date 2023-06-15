@@ -163,7 +163,6 @@ public class UserMaterialsBiz {
                 log.error("资料中心获取创建人基本信息异常");
             }
             record.setUserName(userName);
-            record.setUserName(userName);
             record.setAccountName(userName);
         }
     }
