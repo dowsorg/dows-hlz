@@ -82,7 +82,7 @@ public class ExperimentSchemeBiz {
         handleExperimentSchemeItem(request);
 
         // handle begin-time
-        handleExperimentScheme(request);
+        handleExperimentSchemeBeginTime(request);
 
         // handle group-status
         handleGroupStatus(request.getExperimentGroupId(), EnumExperimentGroupStatus.SCHEMA);
@@ -165,6 +165,8 @@ public class ExperimentSchemeBiz {
         }
 
         checkState(request.getExperimentSchemeId());
+//        checkUpdateAuth()
+
 
         List<ExperimentSchemeItemRequest> itemList = request.getItemList();
         return experimentSchemeItemBiz.updateBatch(itemList);
@@ -289,7 +291,7 @@ public class ExperimentSchemeBiz {
         experimentSchemeItemBiz.updateAccount(itemList);
     }
 
-    private void handleExperimentScheme(ExperimentAllotSchemeRequest request) {
+    private void handleExperimentSchemeBeginTime(ExperimentAllotSchemeRequest request) {
         String experimentInstanceId = request.getExperimentInstanceId();
         String experimentGroupId = request.getExperimentGroupId();
         ExperimentSchemeEntity scheme = getScheme(experimentInstanceId, experimentGroupId);
