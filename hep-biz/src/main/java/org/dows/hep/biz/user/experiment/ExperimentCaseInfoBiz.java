@@ -1,5 +1,6 @@
 package org.dows.hep.biz.user.experiment;
 
+import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import lombok.AllArgsConstructor;
@@ -55,7 +56,8 @@ public class ExperimentCaseInfoBiz {
     public ExperimentCaseInfoManageBiz.CaseNotice getNotice(String experimentInstanceId, CasePeriodEnum period) {
         String caseInfo = getCaseInfo(experimentInstanceId, ExperimentCaseInfoEntity::getNotice, ExperimentCaseInfoEntity::getNotice);
         Map periodMap = JSONUtil.toBean(caseInfo, HashMap.class);
-        return  (ExperimentCaseInfoManageBiz.CaseNotice) periodMap.get(String.valueOf(period.ordinal()));
+        JSONObject object = (JSONObject) periodMap.get(String.valueOf(period.ordinal()));
+        return JSONUtil.toBean(object, ExperimentCaseInfoManageBiz.CaseNotice.class);
     }
 
     private String getCaseInfo(String experimentInstanceId, SFunction<ExperimentCaseInfoEntity, ?> sfunction, Function<ExperimentCaseInfoEntity, String> function) {
