@@ -2,10 +2,14 @@ package org.dows.hep.biz.user.experiment;
 
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
+import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.user.experiment.response.CountDownResponse;
 import org.dows.hep.entity.ExperimentTimerEntity;
+import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentTimerService;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * @author lait.zhang
@@ -17,6 +21,7 @@ import org.springframework.stereotype.Service;
 public class ExperimentTimerBiz {
 
     private final ExperimentTimerService experimentTimerService;
+    private final ExperimentInstanceService experimentInstanceService;
 
 
     /**
@@ -44,13 +49,18 @@ public class ExperimentTimerBiz {
 
 
     /**
-     * 获取实验开始或暂停状态
+     * 获取当前实验期数定时器
      *
+     * @param experimentRestartRequest
      * @return
      */
-    public boolean getExperimentState() {
-
-        // todo 查询实验开始或暂停或结束,可直接差数据库
-        return true;
+    public List<ExperimentTimerEntity> getCurrentPeriods(ExperimentRestartRequest experimentRestartRequest) {
+        List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
+                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentRestartRequest.getExperimentInstanceId())
+                .eq(ExperimentTimerEntity::getAppId, experimentRestartRequest.getAppId())
+                .list();
+        return list;
     }
+
+
 }

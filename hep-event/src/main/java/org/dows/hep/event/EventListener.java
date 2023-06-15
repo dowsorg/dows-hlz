@@ -15,7 +15,7 @@ import java.util.Map;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-@EnableAsync
+//@EnableAsync
 public class EventListener implements ApplicationListener<ExperimentEvent> {
 
     private final Map<String, EventHandler> eventHandlerMap;
@@ -27,7 +27,7 @@ public class EventListener implements ApplicationListener<ExperimentEvent> {
      * @param experimentEvent
      */
     @Override
-    @Async
+//    @Async
     public void onApplicationEvent(ExperimentEvent experimentEvent) {
         log.info("触发事件：{}", experimentEvent.getEventName().getHandler());
         String eventName = experimentEvent.getEventName().getHandler();
