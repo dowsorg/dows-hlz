@@ -2,16 +2,14 @@ package org.dows.hep.biz.user.experiment;
 
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
-import org.dows.hep.api.enums.ExperimentStateEnum;
-import org.dows.hep.api.exception.ExperimentException;
+import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.user.experiment.response.CountDownResponse;
-import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentTimerEntity;
 import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentTimerService;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author lait.zhang
@@ -49,6 +47,20 @@ public class ExperimentTimerBiz {
         return BeanConvert.beanConvert(experimentTimerEntity, CountDownResponse.class);
     }
 
+
+    /**
+     * 获取当前实验期数定时器
+     *
+     * @param experimentRestartRequest
+     * @return
+     */
+    public List<ExperimentTimerEntity> getCurrentPeriods(ExperimentRestartRequest experimentRestartRequest) {
+        List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
+                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentRestartRequest.getExperimentInstanceId())
+                .eq(ExperimentTimerEntity::getAppId, experimentRestartRequest.getAppId())
+                .list();
+        return list;
+    }
 
 
 }

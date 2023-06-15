@@ -31,6 +31,7 @@ public class SuspendHandler extends AbstractEventHandler implements EventHandler
     public void exec(ExperimentRestartRequest experimentRestartRequest) {
         //todo 暂停定时器
         log.info("暂停定时器....");
+
         // 设置当前实验上下文信息
         ExperimentContext experimentContext = new ExperimentContext();
         experimentContext.setExperimentId(experimentRestartRequest.getExperimentInstanceId());
