@@ -425,6 +425,28 @@ public class ExperimentManageBiz {
 
 
     /**
+     * 获取实验开始或暂停状态
+     *
+     * @return
+     */
+    public ExperimentStateEnum getExperimentState(String experimentInstanceId) {
+
+        ExperimentInstanceEntity experimentInstanceEntity = experimentInstanceService.lambdaQuery()
+                .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
+                .oneOpt()
+                .orElse(null);
+        if (experimentInstanceEntity == null) {
+            throw new ExperimentException("不存在的该实验!");
+        }
+        Integer state = experimentInstanceEntity.getState();
+        ExperimentStateEnum experimentStateEnum = Arrays.stream(ExperimentStateEnum.values()).filter(e -> e.getState() == state)
+                .findFirst().orElse(null);
+        // todo 查询实验开始或暂停或结束,可直接差数据库
+        return experimentStateEnum;
+    }
+
+
+    /**
      * @param
      * @return
      * @说明: 分页实验列表

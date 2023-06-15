@@ -2,9 +2,9 @@ package org.dows.hep.event.handler;
 
 import org.dows.hep.api.event.EventName;
 
-public interface EventHandler {
+public interface EventHandler<T> {
 
-    default void exec(Object obj) {
+    default void exec(T obj) {
 
     }
 }
