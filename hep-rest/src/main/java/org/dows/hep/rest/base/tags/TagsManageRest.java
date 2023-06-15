@@ -66,4 +66,16 @@ public class TagsManageRest {
     public Boolean batchDelTags(@RequestBody @Validated Set<String> tagsIds) {
         return tagsManageBiz.batchDelTags(tagsIds);
     }
+
+    /**
+     * 更新标签
+     * @param
+     * @return
+     */
+    @Operation(summary = "更新标签")
+    @PutMapping("v1/baseTags/tagsManage/updateTagsByTagsId")
+    public Boolean updateTagsByTagsId(@RequestParam @Validated Integer status,
+                                      @RequestParam @Validated String tagsId) {
+        return tagsManageBiz.updateTagsByTagsId(status,tagsId);
+    }
 }
