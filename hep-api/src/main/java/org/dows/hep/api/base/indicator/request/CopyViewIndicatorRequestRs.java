@@ -19,4 +19,10 @@ import java.io.Serializable;
 public class CopyViewIndicatorRequestRs implements Serializable {
   @Schema(title = "应用ID")
   private String appId;
+
+  @Schema(title = "实验id")
+  private String experimentInstanceId;
+
+  @Schema(title = "案例ID")
+  private String caseInstanceId;
 }
