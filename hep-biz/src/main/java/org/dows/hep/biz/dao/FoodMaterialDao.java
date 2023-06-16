@@ -96,7 +96,7 @@ public class FoodMaterialDao extends BaseSubDao<FoodMaterialService,FoodMaterial
     @Override
     public IPage<FoodMaterialEntity> pageByCondition(FindFoodRequest req, SFunction<FoodMaterialEntity, ?>... cols) {
         Page<FoodMaterialEntity> page = Page.of(req.getPageNo(), req.getPageSize());
-        page.addOrder(OrderItem.asc("id"));
+        page.addOrder(OrderItem.asc("categ_name_path"),OrderItem.asc("energy"));
         return service.page(page, Wrappers.<FoodMaterialEntity>lambdaQuery()
                 .in(ShareUtil.XCollection.notEmpty(req.getCategIdLv1()), FoodMaterialEntity::getInterveneCategId, req.getCategIdLv1())
                 .like(ShareUtil.XString.hasLength(req.getKeywords()), FoodMaterialEntity::getFoodMaterialName, req.getKeywords())

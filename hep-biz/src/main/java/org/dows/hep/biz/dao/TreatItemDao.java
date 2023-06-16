@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -112,4 +113,16 @@ public class TreatItemDao extends BaseSubDao<TreatItemService,TreatItemEntity,Tr
         indicatorExpressionRefDao.tranDeleteByReasonId(ids);
         return true;
     }
+
+    public List<TreatItemEntity> getByIndicatorFuncId(String appId, String indicatorFuncId, Collection<String> categIds,
+                                                      SFunction<TreatItemEntity,?>... cols){
+        return service.lambdaQuery()
+                .eq(ShareUtil.XObject.notEmpty(appId),TreatItemEntity::getAppId,appId)
+                .eq(TreatItemEntity::getIndicatorFuncId, indicatorFuncId)
+                .orderByAsc(TreatItemEntity::getInterveneCategId, TreatItemEntity::getId)
+                .select(cols)
+                .list();
+
+    }
+
 }
