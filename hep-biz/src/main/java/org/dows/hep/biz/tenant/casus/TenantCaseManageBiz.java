@@ -1,13 +1,16 @@
 package org.dows.hep.biz.tenant.casus;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.hep.api.base.materials.MaterialsESCEnum;
 import org.dows.hep.api.base.question.enums.QuestionESCEnum;
 import org.dows.hep.api.enums.EnumStatus;
 import org.dows.hep.api.tenant.casus.CaseESCEnum;
@@ -30,6 +33,7 @@ import java.util.List;
  * @description project descr:案例:案例管理
  * @date 2023年4月23日 上午9:44:34
  */
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class TenantCaseManageBiz {
@@ -106,13 +110,42 @@ public class TenantCaseManageBiz {
             return new Page<>();
         }
 
+        String accountId = caseInstancePageRequest.getAccountId();
+        boolean isAdmin = baseBiz.isAdministrator(accountId);
         Page<CaseInstanceEntity> pageRequest = new Page<>(caseInstancePageRequest.getPageNo(), caseInstancePageRequest.getPageSize());
         Page<CaseInstanceEntity> pageResult = caseInstanceService.lambdaQuery()
+                .eq(!isAdmin, CaseInstanceEntity::getAccountId, accountId)
                 .eq(caseInstancePageRequest.getAppId() != null, CaseInstanceEntity::getAppId, caseInstancePageRequest.getAppId())
                 .eq(caseInstancePageRequest.getState() != null, CaseInstanceEntity::getState, caseInstancePageRequest.getState())
                 .like(StrUtil.isNotBlank(caseInstancePageRequest.getKeyword()), CaseInstanceEntity::getCaseName, caseInstancePageRequest.getKeyword())
                 .page(pageRequest);
-        return baseBiz.convertPage(pageResult, CaseInstancePageResponse.class);
+        Page<CaseInstancePageResponse> result = baseBiz.convertPage(pageResult, CaseInstancePageResponse.class);
+        fillResult(result, caseInstancePageRequest.getAccountId());
+        return result;
+    }
+
+    private void fillResult(Page<CaseInstancePageResponse> result, String requestAccountId) {
+        if (BeanUtil.isEmpty(result)) {
+            throw new BizException(MaterialsESCEnum.DATA_NULL);
+        }
+
+        List<CaseInstancePageResponse> records = result.getRecords();
+        if (CollUtil.isEmpty(records)) {
+            return;
+        }
+
+        // set userName
+        for (CaseInstancePageResponse record: records) {
+            String accountId = record.getAccountId();
+            String userName = baseBiz.getUserName(accountId);
+            record.setUserName(userName);
+
+            if (requestAccountId.equals(accountId)) {
+                record.setCanOperate(Boolean.TRUE);
+            } else {
+                record.setCanOperate(Boolean.FALSE);
+            }
+        }
     }
 
     /**

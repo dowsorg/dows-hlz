@@ -41,13 +41,13 @@ public class ExperimentSchemeScoreItemEntity {
     private String dimensionContent;
 
     @Schema(title = "最小得分限制")
-    private String minScore;
+    private Float minScore;
 
     @Schema(title = "最大得分限制")
-    private String maxScore;
+    private Float maxScore;
 
     @Schema(title = "最终得分")
-    private String score;
+    private Float score;
 
     @JsonIgnore
     @TableLogic

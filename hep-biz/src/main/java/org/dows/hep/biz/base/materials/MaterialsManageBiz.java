@@ -11,7 +11,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dows.account.response.AccountInstanceResponse;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.oss.api.OssInfo;
 import org.dows.hep.api.base.materials.MaterialsAccessAuthEnum;
@@ -470,15 +469,7 @@ public class MaterialsManageBiz {
             Date dt = record.getDt();
             String uploadTime = baseBiz.convertDate2String(dt);
             record.setUploadTime(uploadTime);
-            String userName = "ERROR";
-            try {
-                AccountInstanceResponse personalInformation = personManageBiz.getPersonalInformation(record.getAccountId(), baseBiz.getAppId());
-                userName = Optional.ofNullable(personalInformation)
-                        .map(AccountInstanceResponse::getUserName)
-                        .orElse("");
-            } catch (Exception e) {
-                log.error("资料中心获取创建人基本信息异常");
-            }
+            String userName = baseBiz.getUserName(record.getAccountId());
             record.setUserName(userName);
             record.setAccountName(userName);
             record.setCanExe(getAuth(record.getAccountId(), curAccountId));

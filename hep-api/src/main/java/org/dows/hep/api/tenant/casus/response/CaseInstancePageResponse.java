@@ -25,12 +25,21 @@ public class CaseInstancePageResponse {
     @Schema(title = "案例图片")
     private String casePic;
 
+    @Schema(title = "账号ID")
+    private String accountId;
+
     @Schema(title = "创建者姓名")
     private String accountName;
+
+    @Schema(title = "账号名")
+    private String userName;
 
     @Schema(title = "案例状态[0:发布|1:关闭]")
     private Integer state;
 
     @Schema(title = "创建时间")
     private Date dt;
+
+    @Schema(title = "是否可以操作")
+    private boolean canOperate;
 }
