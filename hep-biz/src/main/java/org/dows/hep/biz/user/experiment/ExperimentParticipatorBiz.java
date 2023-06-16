@@ -51,27 +51,7 @@ public class ExperimentParticipatorBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     public PageResponse<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
-        //1、判断是否已经到达开始时间，到达开始时间更改状态
-        List<ExperimentParticipatorEntity> participatorEntities = experimentParticipatorService.lambdaQuery()
-                .eq(ExperimentParticipatorEntity::getAccountId, pageExperimentRequest.getAccountId())
-                .list();
-        participatorEntities.forEach(entity->{
-            try {
-                if(TimeUtil.isBeforeTime(entity.getExperimentStartTime(),new Date())){
-                    LambdaUpdateWrapper<ExperimentParticipatorEntity> participatorWrapper = new LambdaUpdateWrapper<ExperimentParticipatorEntity>()
-                            .eq(ExperimentParticipatorEntity::getExperimentInstanceId, entity.getExperimentInstanceId())
-                            .set(ExperimentParticipatorEntity::getState, 1);
-                    experimentParticipatorService.update(participatorWrapper);
-                    LambdaUpdateWrapper<ExperimentInstanceEntity> instanceWrapper = new LambdaUpdateWrapper<ExperimentInstanceEntity>()
-                            .eq(ExperimentInstanceEntity::getExperimentInstanceId, entity.getExperimentInstanceId())
-                            .set(ExperimentInstanceEntity::getState, 1);
-                    experimentInstanceService.update(instanceWrapper);
-                }
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-        });
-        //2、查询参与者参加的实验列表
+        //查询参与者参加的实验列表
         Page page = new Page<ExperimentParticipatorEntity>();
         page.setCurrent(pageExperimentRequest.getPageNo());
         page.setSize(pageExperimentRequest.getPageSize());
@@ -83,8 +63,10 @@ public class ExperimentParticipatorBiz {
             page.addOrder(pageExperimentRequest.getDesc() ? OrderItem.descs(array) : OrderItem.ascs(array));
         }
         if (!StrUtil.isBlank(pageExperimentRequest.getAccountId())) {
+
             page = experimentParticipatorService.page(page, experimentParticipatorService.lambdaQuery()
                     .eq(ExperimentParticipatorEntity::getAccountId, pageExperimentRequest.getAccountId())
+                    .orderByDesc(ExperimentParticipatorEntity::getExperimentStartTime)
                     .getWrapper());
         } else {
             page = page.setTotal(0).setCurrent(0).setSize(0).setRecords(new ArrayList<>());

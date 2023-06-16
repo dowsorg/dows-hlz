@@ -99,7 +99,7 @@ public class ExperimentTimerBiz {
 
         List<ExperimentTimerEntity> collect = list.stream().filter(t -> t.getPauseCount() == 0).collect(Collectors.toList());
         List<ExperimentTimerEntity> collect1 = collect.stream()
-                .filter(e -> e.getStartTime() >= System.currentTimeMillis() && System.currentTimeMillis() <= e.getEndTime())
+                .filter(e -> e.getStartTime() <= System.currentTimeMillis() && System.currentTimeMillis() <= e.getEndTime())
                 .collect(Collectors.toList());
         if (collect1.size() > 1) {
             log.error("获取实验期数异常,当前时间存在多个期数,请检查期数配置");
