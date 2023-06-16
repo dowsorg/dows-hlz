@@ -9,12 +9,15 @@ import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionItemResponse;
 import org.dows.hep.api.tenant.casus.response.CaseSchemeResponse;
+import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.biz.tenant.casus.TenantCaseSchemeBiz;
 import org.dows.hep.entity.ExperimentSchemeEntity;
 import org.dows.hep.entity.ExperimentSchemeItemEntity;
+import org.dows.hep.entity.ExperimentSettingEntity;
 import org.dows.hep.service.ExperimentSchemeItemService;
 import org.dows.hep.service.ExperimentSchemeService;
+import org.dows.hep.service.ExperimentSettingService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -28,6 +31,7 @@ public class ExperimentSchemeManageBiz {
     private final TenantCaseSchemeBiz tenantCaseSchemeBiz;
     private final ExperimentSchemeService experimentSchemeService;
     private final ExperimentSchemeItemService experimentSchemeItemService;
+    private final ExperimentSettingService experimentSettingService;
 
     /**
      * @param
@@ -36,6 +40,12 @@ public class ExperimentSchemeManageBiz {
      * @description 预生成方案设计试卷-分配实验的时候调用
      * @date 2023/6/1 9:33
      */
+    public void preHandleExperimentScheme(String experimentInstanceId, String caseInstanceId) {
+        List<String> experimentGroupIds = baseBiz.listExperimentGroupIds(experimentInstanceId);
+        String settingStr = getSchemeSetting(experimentInstanceId);
+        preHandleExperimentScheme(experimentInstanceId, caseInstanceId, experimentGroupIds, settingStr);
+    }
+
     public void preHandleExperimentScheme(String experimentInstanceId, String caseInstanceId, List<String> experimentGroupIds, String schemeSetting) {
         Assert.notNull(experimentInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
         Assert.notNull(caseInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
@@ -102,6 +112,20 @@ public class ExperimentSchemeManageBiz {
 
         experimentSchemeService.saveBatch(entityList);
         experimentSchemeItemService.saveBatch(itemEntityList);
+    }
+
+    private String getSchemeSetting(String experimentInstanceId) {
+        String settingStr = "";
+        List<ExperimentSettingEntity> experimentSettings = experimentSettingService.lambdaQuery()
+                .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
+                .list();
+        for (ExperimentSettingEntity expSetting : experimentSettings) {
+            String configKey = expSetting.getConfigKey();
+            if (ExperimentSetting.SchemeSetting.class.getName().equals(configKey)) {
+                settingStr = expSetting.getConfigJsonVals();
+            }
+        }
+        return settingStr;
     }
 
     private List<ExperimentSchemeItemEntity> convertToFlatList(QuestionResponse questionResponse) {

@@ -47,6 +47,11 @@ public class ExperimentQuestionnaireManageBiz {
      * @description 预生成知识考点问卷-分配实验的时候调用
      * @date 2023/6/3 15:33
      */
+    public void preHandleExperimentQuestionnaire(String experimentInstanceId, String caseInstanceId) {
+        List<String> experimentGroupIds = baseBiz.listExperimentGroupIds(experimentInstanceId);
+        preHandleExperimentQuestionnaire(experimentInstanceId, caseInstanceId, experimentGroupIds);
+    }
+
     public void preHandleExperimentQuestionnaire(String experimentInstanceId, String caseInstanceId, List<String> experimentGroupIds) {
         Assert.notNull(experimentInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
         Assert.notNull(caseInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
