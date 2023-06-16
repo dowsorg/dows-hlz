@@ -14,6 +14,7 @@ import org.dows.hep.api.base.question.enums.QuestionESCEnum;
 import org.dows.hep.api.base.question.enums.QuestionEnabledEnum;
 import org.dows.hep.api.base.question.enums.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.QuestionSearchRequest;
+import org.dows.hep.api.base.question.request.QuestionSectionDelItemRequest;
 import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
@@ -315,6 +316,23 @@ public class TenantCaseQuestionnaireBiz {
      * @创建时间: 2023年4月17日 下午8:00:11
      */
     public Boolean delQuestionnaireItem(String questionSectionId, String questionSectionItemId) {
+        QuestionSectionDelItemRequest request = new QuestionSectionDelItemRequest();
+        request.setQuestionSectionId(questionSectionId);
+        request.setQuestionSectionItemIds(List.of(questionSectionItemId));
+        return questionSectionBiz.delSectionQuestion(request);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 禁用案例问卷item
+     * @关联表: caseQuestionnaire
+     * @工时: 3H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月17日 下午8:00:11
+     */
+    public Boolean disableQuestionnaireItem(String questionSectionId, String questionSectionItemId) {
         return questionSectionBiz.disabledSectionQuestion(questionSectionId, questionSectionItemId);
     }
 

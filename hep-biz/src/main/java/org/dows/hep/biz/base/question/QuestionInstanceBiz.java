@@ -461,7 +461,7 @@ public class QuestionInstanceBiz {
     }
 
     // 映射
-    public QuestionRequestDTO convertRequest2DTO(QuestionRequest request, QuestionAccessAuthEnum accessAuthEnum, QuestionSourceEnum questionSource) {
+    private QuestionRequestDTO convertRequest2DTO(QuestionRequest request, QuestionAccessAuthEnum accessAuthEnum, QuestionSourceEnum questionSource) {
         if (BeanUtil.isEmpty(request)) {
             throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
         }
