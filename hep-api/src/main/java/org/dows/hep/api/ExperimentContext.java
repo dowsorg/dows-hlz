@@ -3,8 +3,7 @@ package org.dows.hep.api;
 import lombok.Data;
 import org.dows.hep.api.enums.ExperimentStateEnum;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Data
@@ -27,6 +26,12 @@ public class ExperimentContext {
     public static ExperimentContext get() {
         ExperimentContext experimentContext = ContextThreadLocal.get();
         return experimentContext;
+    }
+
+    public static List<ExperimentContext> getMap() {
+        List<ExperimentContext> contextList = new ArrayList<>();
+        contextList.addAll(ExperimentContextMap.values());
+        return contextList;
     }
 
     public static void remove() {
