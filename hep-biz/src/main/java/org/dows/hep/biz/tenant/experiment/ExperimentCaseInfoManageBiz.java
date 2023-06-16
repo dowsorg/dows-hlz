@@ -13,7 +13,6 @@ import org.dows.hep.biz.tenant.casus.TenantCaseNoticeBiz;
 import org.dows.hep.biz.tenant.casus.TenantCaseSettingBiz;
 import org.dows.hep.entity.ExperimentCaseInfoEntity;
 import org.dows.hep.service.ExperimentCaseInfoService;
-import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -24,8 +23,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class ExperimentCaseInfoManageBiz {
-    private final IdGenerator idGenerator;
-
+    private final ExperimentManageBaseBiz baseBiz;
     private final TenantCaseManageBiz tenantCaseManageBiz;
     private final TenantCaseNoticeBiz tenantCaseNoticeBiz;
     private final TenantCaseSettingBiz tenantCaseSettingBiz;
@@ -41,7 +39,7 @@ public class ExperimentCaseInfoManageBiz {
      */
     public void preHandleCaseInfo(String experimentInstanceId, String caseInstanceId) {
         ExperimentCaseInfoEntity entity = ExperimentCaseInfoEntity.builder()
-                .experimentCaseInfoId(idGenerator.nextIdStr())
+                .experimentCaseInfoId(baseBiz.getIdStr())
                 .experimentInstanceId(experimentInstanceId)
                 .build();
 

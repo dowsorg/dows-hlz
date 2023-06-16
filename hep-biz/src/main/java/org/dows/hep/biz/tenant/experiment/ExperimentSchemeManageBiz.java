@@ -15,7 +15,6 @@ import org.dows.hep.entity.ExperimentSchemeEntity;
 import org.dows.hep.entity.ExperimentSchemeItemEntity;
 import org.dows.hep.service.ExperimentSchemeItemService;
 import org.dows.hep.service.ExperimentSchemeService;
-import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -25,7 +24,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ExperimentSchemeManageBiz {
-    private final IdGenerator idGenerator;
+    private final ExperimentManageBaseBiz baseBiz;
     private final TenantCaseSchemeBiz tenantCaseSchemeBiz;
     private final ExperimentSchemeService experimentSchemeService;
     private final ExperimentSchemeItemService experimentSchemeItemService;
@@ -54,7 +53,7 @@ public class ExperimentSchemeManageBiz {
         experimentGroupIds.forEach(groupId -> {
             // experiment-scheme
             ExperimentSchemeEntity entity = ExperimentSchemeEntity.builder()
-                    .experimentSchemeId(idGenerator.nextIdStr())
+                    .experimentSchemeId(baseBiz.getIdStr())
                     .experimentInstanceId(experimentInstanceId)
                     .experimentGroupId(groupId)
                     .schemeName(caseScheme.getSchemeName())
@@ -76,7 +75,7 @@ public class ExperimentSchemeManageBiz {
                 String title = jsonObject.getString("title");
                 String content = jsonObject.getString("content");
                 ExperimentSchemeItemEntity videoItem = ExperimentSchemeItemEntity.builder()
-                        .experimentSchemeItemId(idGenerator.nextIdStr())
+                        .experimentSchemeItemId(baseBiz.getIdStr())
                         .experimentSchemeItemPid("0")
                         .questionTitle(title)
                         .questionDescr(content)
@@ -114,7 +113,7 @@ public class ExperimentSchemeManageBiz {
     private void flattenTree(QuestionResponse questionResponse, List<ExperimentSchemeItemEntity> flatList, String pid) {
         // 处理当前节点
         ExperimentSchemeItemEntity itemEntity = ExperimentSchemeItemEntity.builder()
-                .experimentSchemeItemId(idGenerator.nextIdStr())
+                .experimentSchemeItemId(baseBiz.getIdStr())
                 .experimentSchemeItemPid(pid)
                 .experimentSchemeId(null)
                 .questionTitle(questionResponse.getQuestionTitle())
