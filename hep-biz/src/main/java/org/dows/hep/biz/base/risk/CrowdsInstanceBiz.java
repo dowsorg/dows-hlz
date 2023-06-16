@@ -9,18 +9,22 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.crud.api.model.PageResponse;
+import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
 import org.dows.hep.api.base.risk.request.CrowdsInstanceRequest;
 import org.dows.hep.api.base.risk.request.PageCrowdsRequest;
 import org.dows.hep.api.base.risk.response.CrowdsInstanceResponse;
+import org.dows.hep.api.base.tags.response.TagsInstanceResponse;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
+import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
+import org.dows.hep.biz.base.indicator.IndicatorInstanceBiz;
 import org.dows.hep.entity.CrowdsInstanceEntity;
 import org.dows.hep.entity.TagsInstanceEntity;
 import org.dows.hep.service.CrowdsInstanceService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author jx
@@ -33,6 +37,7 @@ public class CrowdsInstanceBiz {
     private final CrowdsInstanceService crowdsInstanceService;
 
     private final IdGenerator idGenerator;
+    private final IndicatorExpressionBiz indicatorExpressionBiz;
 
     /**
      * @param
@@ -105,7 +110,23 @@ public class CrowdsInstanceBiz {
         } catch (Exception e) {
             throw new ExperimentException(e.getCause().getMessage());
         }
+        String appId = pageCrowdsRequest.getAppId();
+        Set<String> indicatorInstanceIdSet = new HashSet<>();
+        Map<String, List<IndicatorExpressionResponseRs>> kReasonIdVIndicatorExpressionResponseRsListMap = new HashMap<>();
         PageResponse pageInfo = crowdsInstanceService.getPageInfo(page, CrowdsInstanceResponse.class);
+        List<CrowdsInstanceResponse> crowdsInstanceResponseList = pageInfo.getList();
+        if (Objects.nonNull(crowdsInstanceResponseList) && !crowdsInstanceResponseList.isEmpty()) {
+            crowdsInstanceResponseList.forEach(crowsInstanceResponse -> {
+                indicatorInstanceIdSet.add(crowsInstanceResponse.getCrowdsId());
+            });
+            indicatorExpressionBiz.populateKReasonIdVIndicatorExpressionResponseRsListMap(appId, indicatorInstanceIdSet, kReasonIdVIndicatorExpressionResponseRsListMap);
+            crowdsInstanceResponseList.forEach(crowsInstanceResponse -> {
+                String crowdsId = crowsInstanceResponse.getCrowdsId();
+                List<IndicatorExpressionResponseRs> indicatorExpressionResponseRsList = kReasonIdVIndicatorExpressionResponseRsListMap.get(crowdsId);
+                crowsInstanceResponse.setIndicatorExpressionResponseRsList(indicatorExpressionResponseRsList);
+            });
+        }
+        pageInfo.setList(crowdsInstanceResponseList);
         return pageInfo;
     }
 
@@ -125,6 +146,12 @@ public class CrowdsInstanceBiz {
                 .eq(CrowdsInstanceEntity::getDeleted, false)
                 .oneOpt()
                 .orElseThrow(() -> new BizException(ExperimentESCEnum.DATA_NULL));
+        String appId = instanceEntity.getAppId();
+        Set<String> indicatorInstanceIdSet = new HashSet<>();
+        indicatorInstanceIdSet.add(instanceEntity.getCrowdsId());
+        Map<String, List<IndicatorExpressionResponseRs>> kReasonIdVIndicatorExpressionResponseRsListMap = new HashMap<>();
+        indicatorExpressionBiz.populateKReasonIdVIndicatorExpressionResponseRsListMap(appId, indicatorInstanceIdSet, kReasonIdVIndicatorExpressionResponseRsListMap);
+        List<IndicatorExpressionResponseRs> indicatorExpressionResponseRsList = kReasonIdVIndicatorExpressionResponseRsListMap.get(instanceEntity.getCrowdsId());
         CrowdsInstanceResponse response = CrowdsInstanceResponse.builder()
                 .id(instanceEntity.getId())
                 .crowdsId(instanceEntity.getCrowdsId())
@@ -132,6 +159,7 @@ public class CrowdsInstanceBiz {
                 .name(instanceEntity.getName())
                 .crowdsFormulaId(instanceEntity.getCrowdsFormulaId())
                 .deathProbability(instanceEntity.getDeathProbability())
+                .indicatorExpressionResponseRsList(indicatorExpressionResponseRsList)
                 .build();
         return response;
     }
