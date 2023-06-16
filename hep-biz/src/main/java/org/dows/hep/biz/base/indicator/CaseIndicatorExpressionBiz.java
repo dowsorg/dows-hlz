@@ -3,11 +3,13 @@ package org.dows.hep.biz.base.indicator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.dows.hep.api.base.indicator.request.CaseCreateOrUpdateIndicatorExpressionRequestRs;
 import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -243,5 +245,10 @@ public class CaseIndicatorExpressionBiz {
         kReasonIdVIndicatorExpressionResponseRsListMap.put(reasonId, caseIndicatorExpressionResponseRsList);
       });
     });
+  }
+
+  @Transactional(rollbackFor = Exception.class)
+  public String createOrUpdate(CaseCreateOrUpdateIndicatorExpressionRequestRs caseCreateOrUpdateIndicatorExpressionRequestRs) {
+    return null;
   }
 }
