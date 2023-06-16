@@ -26,6 +26,7 @@
         <module>hep-rest</module>
         <module>hep-snapshot</module>
         <module>hep-websocket</module>
+        <module>hep-job</module>
     </modules>
 
     <properties>

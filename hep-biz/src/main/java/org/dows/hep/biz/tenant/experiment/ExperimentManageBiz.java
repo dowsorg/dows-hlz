@@ -210,20 +210,21 @@ public class ExperimentManageBiz {
         Long interval = sandSetting.getInterval() * 1000;
         // 每期时长/分钟
         Map<String, Integer> durationMap = sandSetting.getDurationMap();
-        // 开始时间，如果是标准模式，那么需要减去方案设计截止时间
+        // 实验开始时间
         long startTime = experimentInstance.getStartTime().getTime();
 
         // 一期开始时间=实验开始时间-方案设计时间,第一期没有间隔时间
         long pst = 0L;
         // 定义一期结束时间
         long pet = 0L;
+        // 如果是标准模式，那么沙盘期数 需要减去方案设计截止时间
         if (experimentInstance.getModel() == ExperimentModeEnum.STANDARD.getCode()) {
             ExperimentSetting.SchemeSetting schemeSetting = experimentSetting.getSchemeSetting();
             if(schemeSetting != null) {
                 // 方案设计截止时间
                 long time1 = schemeSetting.getSchemeEndTime().getTime();
-                // 如果是标准模式，一期开始时间=实验开始时间-方案设计时间,第一期没有间隔时间
-                pst = startTime - time1;
+                // 如果是标准模式，一期开始时间 = 方案设计截止时间 - 实验开始时间,第一期没有间隔时间 + 间隔时间
+                pst = time1 - startTime +  interval;
             }
         } else {
             pst = startTime;
