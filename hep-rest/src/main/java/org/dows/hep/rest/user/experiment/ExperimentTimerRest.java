@@ -4,13 +4,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.user.experiment.response.CountDownResponse;
+import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
-import org.dows.hep.entity.ExperimentTimerEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 /**
  * @author lait.zhang
@@ -42,9 +40,9 @@ public class ExperimentTimerRest {
      * @param
      * @return
      */
-    @Operation(summary = "获取实验间隔")
+    @Operation(summary = "获取当前实验期数信息[每期开始，结束，间隔等]及当前所在期数")
     @GetMapping("v1/userExperiment/experimentTimer/periods")
-    public List<ExperimentTimerEntity> periods(String appId, String experimentInstanceId) {
+    public ExperimentPeriodsResonse periods(String appId, String experimentInstanceId) {
         return experimentTimerBiz.getExperimentPeriods(appId, experimentInstanceId);
     }
 
