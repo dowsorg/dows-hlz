@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dows.account.request.AccountInstanceRequest;
 import org.dows.account.request.AccountOrgRequest;
 import org.dows.account.response.AccountInstanceResponse;
@@ -27,13 +28,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author lait.zhang
  * @description project descr:资料中心:资料信息
  * @date 2023年4月23日 上午9:44:34
  */
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class UserMaterialsBiz {
@@ -151,10 +152,7 @@ public class UserMaterialsBiz {
             Date dt = record.getDt();
             String uploadTime = baseBiz.convertDate2String(dt);
             record.setUploadTime(uploadTime);
-            AccountInstanceResponse personalInformation = personManageBiz.getPersonalInformation(record.getAccountId(), baseBiz.getAppId());
-            String userName = Optional.ofNullable(personalInformation)
-                    .map(AccountInstanceResponse::getUserName)
-                    .orElse("");
+            String userName = baseBiz.getUserName(record.getAccountId());
             record.setUserName(userName);
             record.setAccountName(userName);
         }

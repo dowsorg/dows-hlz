@@ -67,14 +67,14 @@ public class ExperimentSchemeItemBiz {
      * @param
      * @return
      */
-    public void updateAccount(String experimentSchemeItemId, String accountId) {
+    public void setAccountId(String experimentSchemeItemId, String accountId) {
         LambdaUpdateWrapper<ExperimentSchemeItemEntity> updateWrapper = new LambdaUpdateWrapper<ExperimentSchemeItemEntity>()
                 .set(ExperimentSchemeItemEntity::getAccountId, accountId)
                 .eq(ExperimentSchemeItemEntity::getExperimentSchemeItemId, experimentSchemeItemId);
         experimentSchemeItemService.update(updateWrapper);
     }
 
-    public void updateAccount(List<ExperimentSchemeItemRequest> itemList) {
+    public void setAccountId(List<ExperimentSchemeItemRequest> itemList) {
         List<String> itemIdList = itemList.stream().map(ExperimentSchemeItemRequest::getExperimentSchemeItemId).toList();
         List<ExperimentSchemeItemEntity> list = experimentSchemeItemService.lambdaQuery()
                 .in(ExperimentSchemeItemEntity::getExperimentSchemeItemId, itemIdList)

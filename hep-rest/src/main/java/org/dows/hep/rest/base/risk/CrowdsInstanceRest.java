@@ -9,10 +9,8 @@ import org.dows.hep.api.base.risk.request.PageCrowdsRequest;
 import org.dows.hep.api.base.risk.response.CrowdsInstanceResponse;
 import org.dows.hep.biz.base.risk.CrowdsInstanceBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import java.util.Set;
 
 /**
  * @author jx
@@ -32,7 +30,19 @@ public class CrowdsInstanceRest {
 
     @Operation(summary = "分页获取人群类别")
     @GetMapping("v1/baseRisk/crowds/page")
-    public PageResponse<CrowdsInstanceResponse> page(@Validated PageCrowdsRequest pageCrowdsRequest){
+    public PageResponse<CrowdsInstanceResponse> page(PageCrowdsRequest pageCrowdsRequest){
         return crowdsInstanceBiz.page(pageCrowdsRequest);
+    }
+
+    @Operation(summary = "查询人群类别")
+    @GetMapping("v1/baseRisk/crowds/getCrowdsByCrowdsId/{crowdsId}")
+    public CrowdsInstanceResponse getCrowdsByCrowdsId(@PathVariable @Validated String crowdsId){
+        return crowdsInstanceBiz.getCrowdsByCrowdsId(crowdsId);
+    }
+
+    @Operation(summary = "删除人群类别")
+    @DeleteMapping("v1/baseRisk/crowds/batchDelCrowds")
+    public Boolean batchDelCrowds(@RequestBody @Validated Set<String> crowdsIds){
+        return crowdsInstanceBiz.batchDelCrowds(crowdsIds);
     }
 }

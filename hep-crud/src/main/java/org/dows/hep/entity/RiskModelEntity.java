@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 风险模型(RiskModel)实体类
@@ -42,14 +42,14 @@ public class RiskModelEntity implements CrudEntity {
     @Schema(title = "应用ID")
     private String appId;
 
-    @Schema(title = "分布式ID")
-    private String riskCategoryId;
-
     @Schema(title = "模型名称")
     private String name;
 
     @Schema(title = "死亡概率")
     private Integer riskDeathProbability;
+
+    @Schema(title = "人群类别ID")
+    private String crowdsCategoryId;
 
     @Schema(title = "0-禁用，1-启用")
     private Integer status;

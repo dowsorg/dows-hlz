@@ -63,7 +63,9 @@ public class TenantCaseManageRest {
     */
     @Operation(summary = "分页")
     @PostMapping("v1/tenantCasus/caseManage/pageCaseInstance")
-    public IPage<CaseInstancePageResponse> pageCaseInstance(@RequestBody @Validated CaseInstancePageRequest caseInstancePage ) {
+    public IPage<CaseInstancePageResponse> pageCaseInstance(@RequestBody @Validated CaseInstancePageRequest caseInstancePage, HttpServletRequest request) {
+        String accountId = baseBiz.getAccountId(request);
+        caseInstancePage.setAccountId(accountId);
         return tenantCaseManageBiz.pageCaseInstance(caseInstancePage);
     }
 

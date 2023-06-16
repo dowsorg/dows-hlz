@@ -45,11 +45,17 @@ public enum EnumIndicatorCategory {
   private final String categoryName;
 
   public static Map<String, String> kCodeVCategoryNameMap = new HashMap<>();
+  public static Map<String, EnumIndicatorCategory> kCodeVEnumIndicatorCategoryMap = new HashMap<>();
 
   static {
     for (EnumIndicatorCategory enumIndicatorCategory : EnumIndicatorCategory.values()) {
       kCodeVCategoryNameMap.put(enumIndicatorCategory.getCode(), enumIndicatorCategory.getCategoryName());
+      kCodeVEnumIndicatorCategoryMap.put(enumIndicatorCategory.getCode(), enumIndicatorCategory);
     }
+  }
+
+  public static EnumIndicatorCategory getByCode(String code) {
+    return kCodeVEnumIndicatorCategoryMap.get(code);
   }
 
   public static String getCategoryNameByCode(String code) {

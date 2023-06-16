@@ -1,5 +1,6 @@
 package org.dows.hep.api.tenant.casus.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,5 +30,9 @@ public class CaseInstancePageRequest{
 
     @Schema(title = "案例状态[0:未发布|1:发布]")
     private Integer state;
+
+    @Schema(title = "账号ID")
+    @JsonIgnore
+    private String accountId;
 
 }
