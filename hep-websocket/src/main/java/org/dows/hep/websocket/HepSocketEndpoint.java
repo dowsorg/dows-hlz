@@ -1,7 +1,5 @@
 package org.dows.hep.websocket;
 
-import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.timeout.IdleStateEvent;
