@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
@@ -14,15 +15,13 @@ import org.dows.hep.api.base.question.enums.QuestionESCEnum;
 import org.dows.hep.api.base.question.enums.QuestionEnabledEnum;
 import org.dows.hep.api.base.question.enums.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.QuestionSearchRequest;
+import org.dows.hep.api.base.question.request.QuestionSectionDelItemRequest;
 import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
 import org.dows.hep.api.tenant.casus.CaseESCEnum;
 import org.dows.hep.api.tenant.casus.CaseQuestionSelectModeEnum;
-import org.dows.hep.api.tenant.casus.request.CaseQuestionSearchRequest;
-import org.dows.hep.api.tenant.casus.request.CaseQuestionnairePageRequest;
-import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireRequest;
-import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireSearchRequest;
+import org.dows.hep.api.tenant.casus.request.*;
 import org.dows.hep.api.tenant.casus.response.CaseQuestionnairePageResponse;
 import org.dows.hep.api.tenant.casus.response.CaseQuestionnaireResponse;
 import org.dows.hep.biz.base.question.QuestionCategBiz;
@@ -314,7 +313,43 @@ public class TenantCaseQuestionnaireBiz {
      * @开始时间:
      * @创建时间: 2023年4月17日 下午8:00:11
      */
-    public Boolean delQuestionnaireItem(String questionSectionId, String questionSectionItemId) {
+    public Boolean delQuestionnaireItem(CaseQuestionnaireDelItemRequest caseRequest) {
+        String caseQuestionnaireId = caseRequest.getCaseQuestionnaireId();
+        String questionSectionId = caseRequest.getQuestionSectionId();
+        String questionSectionItemId = caseRequest.getQuestionSectionItemId();
+
+        QuestionSectionDelItemRequest request = new QuestionSectionDelItemRequest();
+        request.setQuestionSectionId(questionSectionId);
+        request.setQuestionSectionItemIds(List.of(questionSectionItemId));
+        Boolean res1 = questionSectionBiz.delSectionQuestion(request);
+
+        QuestionSectionEntity sectionEntity = questionSectionBiz.getById(questionSectionId);
+        Integer questionCount = Optional.of(sectionEntity)
+                .map(QuestionSectionEntity::getQuestionCount)
+                .orElse(0);
+        String questionStruct = Optional.of(sectionEntity)
+                .map(QuestionSectionEntity::getQuestionSectionStructure)
+                .orElse("");
+        LambdaUpdateWrapper<CaseQuestionnaireEntity> updateWrapper = new LambdaUpdateWrapper<CaseQuestionnaireEntity>()
+                .eq(CaseQuestionnaireEntity::getCaseQuestionnaireId, caseQuestionnaireId)
+                .set(CaseQuestionnaireEntity::getQuestionCount, questionCount)
+                .set(CaseQuestionnaireEntity::getQuestionSectionStructure, questionStruct);
+        boolean res2 = caseQuestionnaireService.update(updateWrapper);
+
+        return res1 && res2;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 禁用案例问卷item
+     * @关联表: caseQuestionnaire
+     * @工时: 3H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月17日 下午8:00:11
+     */
+    public Boolean disableQuestionnaireItem(String questionSectionId, String questionSectionItemId) {
         return questionSectionBiz.disabledSectionQuestion(questionSectionId, questionSectionItemId);
     }
 

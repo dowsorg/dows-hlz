@@ -1,6 +1,7 @@
 package org.dows.hep.biz.base.question;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -256,7 +257,10 @@ public class QuestionSectionBiz {
             return false;
         }
 
-        return questionSectionItemBiz.enabledSectionQuestion(questionSectionId, questionSectionItemId);
+        Boolean res1 = questionSectionItemBiz.enabledSectionQuestion(questionSectionId, questionSectionItemId);
+        boolean res2 = resetQuestionStruct(questionSectionId);
+
+        return res1 && res2;
     }
 
     /**
@@ -274,7 +278,10 @@ public class QuestionSectionBiz {
             return false;
         }
 
-        return questionSectionItemBiz.disabledSectionQuestion(questionSectionId, questionSectionItemId);
+        Boolean res1 = questionSectionItemBiz.disabledSectionQuestion(questionSectionId, questionSectionItemId);
+        boolean res2 = resetQuestionStruct(questionSectionId);
+
+        return res1 && res2;
     }
 
     /**
@@ -287,6 +294,7 @@ public class QuestionSectionBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
+    @DSTransactional
     public Boolean delSectionQuestion(QuestionSectionDelItemRequest request) {
         if (BeanUtil.isEmpty(request)) {
             throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
@@ -294,8 +302,10 @@ public class QuestionSectionBiz {
 
         String questionSectionId = request.getQuestionSectionId();
         List<String> questionSectionItemIds = request.getQuestionSectionItemIds();
-        questionSectionItemBiz.delBatch(questionSectionId, questionSectionItemIds);
-        return Boolean.FALSE;
+        boolean res1 = questionSectionItemBiz.delBatch(questionSectionId, questionSectionItemIds);
+        boolean res2 = resetQuestionStruct(questionSectionId);
+
+        return res1 && res2;
     }
 
     private QuestionSectionEntity convertRequest2Entity(QuestionSectionRequest request, QuestionSectionAccessAuthEnum questionSectionAccessAuthEnum, QuestionSourceEnum questionSourceEnum) {
@@ -328,5 +338,25 @@ public class QuestionSectionBiz {
         }
 
         return result;
+    }
+
+    private boolean resetQuestionStruct(String questionSectionId) {
+        String struct = "";
+        int questionCount = 0;
+        List<QuestionSectionItemResponse> sectionItemList = listQuestionSectionItem(List.of(questionSectionId));
+        if (CollUtil.isNotEmpty(sectionItemList)) {
+            List<String> questionInstanceIdList = sectionItemList.stream()
+                    .map(QuestionSectionItemResponse::getQuestion)
+                    .map(QuestionResponse::getQuestionInstanceId)
+                    .toList();
+            struct = questionInstanceBiz.getStruct(questionInstanceIdList);
+            questionCount = sectionItemList.size();
+        }
+
+        LambdaUpdateWrapper<QuestionSectionEntity> updateWrapper = new LambdaUpdateWrapper<QuestionSectionEntity>()
+                .eq(QuestionSectionEntity::getQuestionSectionId, questionSectionId)
+                .set(QuestionSectionEntity::getQuestionSectionStructure, struct)
+                .set(QuestionSectionEntity::getQuestionCount, questionCount);
+        return questionSectionService.update(updateWrapper);
     }
 }

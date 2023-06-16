@@ -112,6 +112,8 @@ public class TagsManageBiz {
         indicatorExpressionBiz.populateKReasonIdVIndicatorExpressionResponseRsListMap(appId, indicatorInstanceIdSet, kReasonIdVIndicatorExpressionResponseRsListMap);
         List<IndicatorExpressionResponseRs> indicatorExpressionResponseRs = kReasonIdVIndicatorExpressionResponseRsListMap.get(instanceEntity.getTagsId());
         TagsInstanceResponse response = TagsInstanceResponse.builder()
+            .id(instanceEntity.getId())
+            .tagsId(instanceEntity.getTagsId())
             .appId(instanceEntity.getAppId())
             .name(instanceEntity.getName())
             .tagsFormulaId(instanceEntity.getTagsFormulaId())

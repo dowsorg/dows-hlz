@@ -12,9 +12,11 @@ import org.dows.hep.api.tenant.experiment.response.ExperimentSchemeScoreResponse
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.ExptReviewStateEnum;
 import org.dows.hep.biz.tenant.casus.TenantCaseSchemeBiz;
+import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.entity.ExperimentSchemeEntity;
 import org.dows.hep.entity.ExperimentSchemeScoreEntity;
 import org.dows.hep.entity.ExperimentSchemeScoreItemEntity;
+import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.hep.service.ExperimentSchemeScoreItemService;
 import org.dows.hep.service.ExperimentSchemeScoreService;
 import org.dows.hep.service.ExperimentSchemeService;
@@ -35,14 +37,26 @@ public class ExperimentSchemeScoreManageBiz {
     private final TenantCaseSchemeBiz tenantCaseSchemeBiz;
     private final ExperimentSchemeScoreService experimentSchemeScoreService;
     private final ExperimentSchemeScoreItemService experimentSchemeScoreItemService;
+    private final ExperimentParticipatorService experimentParticipatorService;
 
     /**
+     * @param
+     * @return
      * @author fhb
      * @description 必须在 `ExperimentSchemeManageBiz` 之后执行
      * @date 2023/6/15 20:36
-     * @param
-     * @return 
      */
+    public void preHandleExperimentSchemeScore(String experimentInstanceId, String caseInstanceId) {
+        List<String> viewAccountIds = experimentParticipatorService.lambdaQuery()
+                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentParticipatorEntity::getParticipatorType, 0)
+                .list()
+                .stream()
+                .map(ExperimentParticipatorEntity::getAccountId)
+                .toList();
+        preHandleExperimentSchemeScore(experimentInstanceId, caseInstanceId, viewAccountIds);
+    }
+
     public void preHandleExperimentSchemeScore(String experimentInstanceId, String caseInstanceId, List<String> viewAccountIds) {
         Assert.notNull(experimentInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
         Assert.notNull(caseInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());

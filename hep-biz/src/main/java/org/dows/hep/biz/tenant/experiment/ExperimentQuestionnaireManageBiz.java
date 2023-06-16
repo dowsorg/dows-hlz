@@ -17,7 +17,6 @@ import org.dows.hep.entity.ExperimentQuestionnaireEntity;
 import org.dows.hep.entity.ExperimentQuestionnaireItemEntity;
 import org.dows.hep.service.ExperimentQuestionnaireItemService;
 import org.dows.hep.service.ExperimentQuestionnaireService;
-import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -35,7 +34,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ExperimentQuestionnaireManageBiz {
-    private final IdGenerator idGenerator;
+    private final ExperimentManageBaseBiz baseBiz;
     private final TenantCaseOrgQuestionnaireBiz tenantCaseOrgQuestionnaireBiz;
     private final TenantCaseQuestionnaireBiz tenantCaseQuestionnaireBiz;
     private final ExperimentQuestionnaireService experimentQuestionnaireService;
@@ -48,6 +47,11 @@ public class ExperimentQuestionnaireManageBiz {
      * @description 预生成知识考点问卷-分配实验的时候调用
      * @date 2023/6/3 15:33
      */
+    public void preHandleExperimentQuestionnaire(String experimentInstanceId, String caseInstanceId) {
+        List<String> experimentGroupIds = baseBiz.listExperimentGroupIds(experimentInstanceId);
+        preHandleExperimentQuestionnaire(experimentInstanceId, caseInstanceId, experimentGroupIds);
+    }
+
     public void preHandleExperimentQuestionnaire(String experimentInstanceId, String caseInstanceId, List<String> experimentGroupIds) {
         Assert.notNull(experimentInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
         Assert.notNull(caseInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
@@ -77,7 +81,7 @@ public class ExperimentQuestionnaireManageBiz {
                     orgCollect.forEach((org, orgQuestionnaire) -> {
                         // experiment-questionnaire
                         ExperimentQuestionnaireEntity entity = ExperimentQuestionnaireEntity.builder()
-                                .experimentQuestionnaireId(idGenerator.nextIdStr())
+                                .experimentQuestionnaireId(baseBiz.getIdStr())
                                 .experimentInstanceId(experimentInstanceId)
                                 .periods(period)
                                 .experimentOrgId(org)
@@ -131,7 +135,7 @@ public class ExperimentQuestionnaireManageBiz {
         String options = getOptions(optionWithAnswerList);
         String rightValues = getRightValues(optionWithAnswerList);
         ExperimentQuestionnaireItemEntity itemEntity = ExperimentQuestionnaireItemEntity.builder()
-                .experimentQuestionnaireItemId(idGenerator.nextIdStr())
+                .experimentQuestionnaireItemId(baseBiz.getIdStr())
                 .experimentQuestionnaireItemPid(pid)
                 .experimentQuestionnaireId(null)
                 .questionTitle(questionResponse.getQuestionTitle())
