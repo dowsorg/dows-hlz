@@ -942,11 +942,16 @@ public class IndicatorExpressionBiz{
       throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
     }
     /* runsix:TODO 这里会重复创建，很神奇 */
-    Map<String, IndicatorExpressionRefEntity> kIndicatorExpressionIdVIndicatorExpressionRefEntityMap = indicatorExpressionRefService.lambdaQuery()
-        .eq(IndicatorExpressionRefEntity::getAppId, appId)
-        .eq(IndicatorExpressionRefEntity::getReasonId, reasonId)
-        .list()
-        .stream().collect(Collectors.toMap(IndicatorExpressionRefEntity::getIndicatorExpressionId, a->a));
+    Map<String, IndicatorExpressionRefEntity> kIndicatorExpressionIdVIndicatorExpressionRefEntityMap = new HashMap<>();
+    if (!paramIndicatorExpressionIdList.isEmpty()) {
+      indicatorExpressionRefService.lambdaQuery()
+          .eq(IndicatorExpressionRefEntity::getAppId, appId)
+          .in(IndicatorExpressionRefEntity::getIndicatorExpressionId, paramIndicatorExpressionIdList)
+          .list()
+          .forEach(indicatorExpressionRefEntity -> {
+            kIndicatorExpressionIdVIndicatorExpressionRefEntityMap.put(indicatorExpressionRefEntity.getIndicatorExpressionId(), indicatorExpressionRefEntity);
+          });
+    }
     dbIndicatorExpressionIdSet.forEach(indicatorExpressionId -> {
       IndicatorExpressionRefEntity indicatorExpressionRefEntity = kIndicatorExpressionIdVIndicatorExpressionRefEntityMap.get(indicatorExpressionId);
       if (Objects.isNull(indicatorExpressionRefEntity)) {

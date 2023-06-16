@@ -29,8 +29,8 @@ import java.util.Date;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(name = "ExperimentIndicatorViewBaseInfoSingleEntity", title = "指标基本信息单一指标")
-@TableName("experiment_indicator_view_base_info_single")
-public class ExperimentIndicatorViewBaseInfoSingleEntity implements CrudEntity {
+@TableName("experiment_indicator_view_base_info_single_rs")
+public class ExperimentIndicatorViewBaseInfoSingleRsEntity implements CrudEntity {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "主键")

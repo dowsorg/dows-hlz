@@ -28,8 +28,8 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "IndicatorViewBaseInfoMonitor", title = "指标基本信息监测表")
-@TableName("indicator_view_base_info_monitor")
+@Schema(name = "ExperimentIndicatorViewBaseInfoMonitorRsEntity", title = "指标基本信息监测表")
+@TableName("indicator_view_base_info_monitor_rs")
 public class ExperimentIndicatorViewBaseInfoMonitorRsEntity implements CrudEntity {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
