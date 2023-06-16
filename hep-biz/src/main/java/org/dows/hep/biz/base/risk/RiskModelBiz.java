@@ -105,6 +105,12 @@ public class RiskModelBiz {
                 .eq(RiskModelEntity::getRiskModelId, riskModelId)
                 .eq(RiskModelEntity::getDeleted, false)
                 .one();
+        String appId = riskModelEntity.getAppId();
+        Set<String> indicatorInstanceIdSet = new HashSet<>();
+        indicatorInstanceIdSet.add(riskModelEntity.getRiskModelId());
+        Map<String, List<IndicatorExpressionResponseRs>> kReasonIdVIndicatorExpressionResponseRsListMap = new HashMap<>();
+        indicatorExpressionBiz.populateKReasonIdVIndicatorExpressionResponseRsListMap(appId, indicatorInstanceIdSet, kReasonIdVIndicatorExpressionResponseRsListMap);
+        List<IndicatorExpressionResponseRs> indicatorExpressionResponseRs = kReasonIdVIndicatorExpressionResponseRsListMap.get(riskModelEntity.getRiskModelId());
         //1、复制属性
         RiskModelResponse modelResponse = RiskModelResponse
                 .builder()
@@ -113,6 +119,7 @@ public class RiskModelBiz {
                 .name(riskModelEntity.getName())
                 .riskDeathProbability(riskModelEntity.getRiskDeathProbability())
                 .crowdsCategoryId(riskModelEntity.getCrowdsCategoryId())
+                .indicatorExpressionResponseRsList(indicatorExpressionResponseRs)
                 .status(riskModelEntity.getStatus())
                 .build();
         return modelResponse;
