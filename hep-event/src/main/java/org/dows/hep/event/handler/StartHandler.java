@@ -41,7 +41,7 @@ public class StartHandler extends AbstractEventHandler implements EventHandler<E
         List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerBiz.getCurrentPeriods(experimentRestartRequest);
         // 找出当前期数计时器集合
         List<ExperimentTimerEntity> collect = experimentTimerEntityList.stream()
-                .filter(t -> t.getPeriods() == experimentRestartRequest.getPeriods())
+                .filter(t -> t.getPeriod() == experimentRestartRequest.getPeriods())
                 .collect(Collectors.toList());
         //暂停次数为最大的
         ExperimentTimerEntity updateExperimentTimer = collect.stream()
@@ -65,6 +65,7 @@ public class StartHandler extends AbstractEventHandler implements EventHandler<E
         updateExperimentTimer.setEndTime(updateExperimentTimer.getEndTime() + duration);
         // 设置暂停结束时间
         updateExperimentTimer.setPauseEndTime(updateExperimentTimer.getPauseStartTime());
+        updateExperimentTimer.setPeriodInterval(updateExperimentTimer.getPeriodInterval());
         // 加入待更新集合
         updateExperimentTimerEntities.add(updateExperimentTimer);
         // 剔除当前期数
@@ -72,7 +73,7 @@ public class StartHandler extends AbstractEventHandler implements EventHandler<E
         if (experimentTimerEntityList.size() > 0) {
             // 从新排序，确保当前期数后的期数自增
             experimentTimerEntityList = experimentTimerEntityList.stream()
-                    .sorted(Comparator.comparingInt(ExperimentTimerEntity::getPeriods))
+                    .sorted(Comparator.comparingInt(ExperimentTimerEntity::getPeriod))
                     .collect(Collectors.toList());
             for (ExperimentTimerEntity currentPeriod : experimentTimerEntityList) {
                 // 重新设置当前期数的下一期开始时间，结束时间等

@@ -2,6 +2,7 @@ package org.dows.hep.biz.user.experiment;
 
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
+import org.dows.hep.api.enums.ExperimentStateEnum;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.user.experiment.response.CountDownResponse;
 import org.dows.hep.entity.ExperimentTimerEntity;
@@ -10,6 +11,7 @@ import org.dows.hep.service.ExperimentTimerService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author lait.zhang
@@ -72,6 +74,26 @@ public class ExperimentTimerBiz {
     public boolean saveOrUpdateBatch(List<ExperimentTimerEntity> updateExperimentTimerEntities) {
         boolean b = experimentTimerService.saveOrUpdateBatch(updateExperimentTimerEntities);
         return b;
+    }
+
+
+    /**
+     * 获取当前实验期数间隔
+     *
+     * @param appId
+     * @param experimentInstanceId
+     * @return
+     */
+    public List<ExperimentTimerEntity> getExperimentPeriods(String appId, String experimentInstanceId) {
+        List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
+                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentTimerEntity::getAppId, appId)
+                //.eq(ExperimentTimerEntity::getModel, 2) // 沙盘模式
+                .ne(ExperimentTimerEntity::getState, ExperimentStateEnum.FINISH.getState())
+                .list();
+
+        List<ExperimentTimerEntity> collect = list.stream().filter(t -> t.getPauseCount() == 0).collect(Collectors.toList());
+        return collect;
     }
 
 

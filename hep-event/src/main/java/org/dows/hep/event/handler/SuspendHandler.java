@@ -45,7 +45,7 @@ public class SuspendHandler extends AbstractEventHandler implements EventHandler
 
         // 找出当前期数计时器集合
         List<ExperimentTimerEntity> collect = experimentTimerEntityList.stream()
-                .filter(t -> t.getPeriods() == experimentRestartRequest.getPeriods())
+                .filter(t -> t.getPeriod() == experimentRestartRequest.getPeriods())
                 .collect(Collectors.toList());
         //暂停次数为最大的
         ExperimentTimerEntity experimentTimerEntity = collect.stream()
@@ -62,7 +62,8 @@ public class SuspendHandler extends AbstractEventHandler implements EventHandler
                 .experimentInstanceId(experimentTimerEntity.getExperimentInstanceId())
                 .startTime(experimentTimerEntity.getStartTime())
                 .endTime(experimentTimerEntity.getEndTime())
-                .periods(experimentTimerEntity.getPeriods())
+                .period(experimentTimerEntity.getPeriod())
+                .periodInterval(experimentTimerEntity.getPeriodInterval())
                 .appId(experimentTimerEntity.getAppId())
                 .model(experimentTimerEntity.getModel())
                 .state(experimentTimerEntity.getState())

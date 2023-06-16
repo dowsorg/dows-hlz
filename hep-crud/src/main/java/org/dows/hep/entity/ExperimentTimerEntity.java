@@ -54,8 +54,11 @@ public class ExperimentTimerEntity implements CrudEntity {
     @Schema(title = "实验结束时间[如果有暂停，需加暂停时长]")
     private Long endTime;
 
+    @Schema(title = "实验每期间隔：秒")
+    private Long periodInterval;
+
     @Schema(title = "期数[根据期数生成对应的计时记录]")
-    private Integer periods;
+    private Integer period;
 
     @Schema(title = "实验模式[0:标准模式，1:沙盘模式，2:方案设计模式]")
     private Integer model;
