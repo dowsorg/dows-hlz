@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
+
+import java.util.List;
 
 /**
  * @author jx
@@ -34,4 +37,7 @@ public class CrowdsInstanceResponse {
 
     @Schema(title = "人群公式ID")
     private String crowdsFormulaId;
+
+    @Schema(title = "指标公式")
+    private List<IndicatorExpressionResponseRs> indicatorExpressionResponseRsList;
 }
