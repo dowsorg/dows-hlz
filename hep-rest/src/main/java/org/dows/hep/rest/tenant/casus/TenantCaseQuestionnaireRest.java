@@ -114,7 +114,7 @@ public class TenantCaseQuestionnaireRest {
     @Operation(summary = "删除案例问卷Item")
     @DeleteMapping("v1/tenantCasus/caseQuestionnaire/delQuestionnaireItem")
     public Boolean delQuestionnaireItem(@RequestBody CaseQuestionnaireDelItemRequest request) {
-        return tenantCaseQuestionnaireBiz.delQuestionnaireItem(request.getQuestionSectionId(), request.getQuestionSectionItemId());
+        return tenantCaseQuestionnaireBiz.delQuestionnaireItem(request);
     }
 
 

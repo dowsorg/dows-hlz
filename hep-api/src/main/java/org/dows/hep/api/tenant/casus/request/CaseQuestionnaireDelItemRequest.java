@@ -13,6 +13,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CaseQuestionnaireDelItemRequest {
 
+    @Schema(title = "案例问卷ID")
+    private String caseQuestionnaireId;
+
     @Schema(title = "试卷ID")
     private String questionSectionId;
 
