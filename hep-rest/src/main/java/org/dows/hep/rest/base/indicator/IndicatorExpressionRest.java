@@ -5,10 +5,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.BatchBindReasonIdRequestRs;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorExpressionRequestRs;
+import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
 import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author runsix
@@ -30,5 +31,11 @@ public class IndicatorExpressionRest {
   @PostMapping("v1/baseIndicator/indicatorExpression/batchBindReasonId")
   public void batchBindReasonId(@RequestBody BatchBindReasonIdRequestRs batchBindReasonIdRequestRs) {
     indicatorExpressionBiz.batchBindReasonId(batchBindReasonIdRequestRs);
+  }
+
+  @Operation(summary = "根据公式id查询出所有")
+  @GetMapping("v1/baseIndicator/indicatorExpression/get")
+  public IndicatorExpressionResponseRs get(@RequestParam String indicatorExpressionId) {
+    return indicatorExpressionBiz.get(indicatorExpressionId);
   }
 }

@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
+
+import java.util.List;
 
 /**
  * @author jx
@@ -16,6 +19,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Schema(name = "TagsInstanceResponse 对象", title = "标签实例response")
 public class TagsInstanceResponse {
+
+    @Schema(title = "数据库ID")
+    private Long id;
 
     @Schema(title = "标签公式ID")
     private String tagsFormulaId;
@@ -34,4 +40,7 @@ public class TagsInstanceResponse {
 
     @Schema(title = "0-禁用，1-启用")
     private Integer status;
+
+    @Schema(title = "指标公式")
+    private List<IndicatorExpressionResponseRs> indicatorExpressionResponseRsList;
 }

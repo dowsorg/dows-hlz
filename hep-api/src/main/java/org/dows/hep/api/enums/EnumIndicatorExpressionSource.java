@@ -21,6 +21,9 @@ public enum EnumIndicatorExpressionSource {
   EMERGENCY_TRIGGER_CONDITION(7, "突发事件-触发条件"),
   EMERGENCY_INFLUENCE_INDICATOR(8, "突发事件-影响指标"),
   EMERGENCY_ACTION_INFLUENCE_INDICATOR(9, "突发事件-措施影响指标"),
+  LABEL_MANAGEMENT(10, "标签管理"),
+  RISK_MODEL(11, "风险模型"),
+  DEATH_MODEL(12, "死亡模型"),
   ;
 
   private final Integer type;

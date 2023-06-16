@@ -1,6 +1,7 @@
 package org.dows.hep.biz.base.question;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
@@ -12,10 +13,7 @@ import org.dows.hep.entity.QuestionSectionDimensionEntity;
 import org.dows.hep.service.QuestionSectionDimensionService;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -45,7 +43,7 @@ public class QuestionSectionDimensionBiz{
             return Boolean.FALSE;
         }
 
-        List<QuestionSectionDimensionEntity> entityList = checkBeforeSaveOrUpd(questionSectionDimensionList, questionSectionId);
+        List<QuestionSectionDimensionEntity> entityList = convertRequest2Entity(questionSectionDimensionList, questionSectionId);
         return questionSectionDimensionService.saveOrUpdateBatch(entityList);
     }
 
@@ -122,10 +120,12 @@ public class QuestionSectionDimensionBiz{
         return questionSectionDimensionService.getOne(queryWrapper);
     }
 
-    private List<QuestionSectionDimensionEntity> checkBeforeSaveOrUpd(List<QuestionSectionDimensionRequest> request, String questionSectionId) {
+    private List<QuestionSectionDimensionEntity> convertRequest2Entity(List<QuestionSectionDimensionRequest> request, String questionSectionId) {
         if (Objects.isNull(request) || request.isEmpty() || StrUtil.isBlank(questionSectionId)) {
             throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
         }
+        // check score
+        checkDimensionScore(request);
 
         List<QuestionSectionDimensionEntity> result = new ArrayList<>();
         request.forEach(item -> {
@@ -134,7 +134,8 @@ public class QuestionSectionDimensionBiz{
                     .questionSectionDimensionId(item.getQuestionSectionDimensionId())
                     .dimensionName(item.getDimensionName())
                     .dimensionContent(item.getDimensionContent())
-                    .score(item.getScore())
+                    .minScore(item.getMinScore())
+                    .maxScore(item.getMaxScore())
                     .build();
             result.add(instance);
         });
@@ -163,5 +164,64 @@ public class QuestionSectionDimensionBiz{
         }
 
         return result;
+    }
+
+    private void checkDimensionScore(List<QuestionSectionDimensionRequest> requests) {
+        if (CollUtil.isEmpty(requests)) {
+            return;
+        }
+
+        // 空则设默认值
+        requests.forEach(request -> {
+            request.setMinScore(request.getMinScore() == null ? 0.0f : request.getMinScore());
+            request.setMaxScore(request.getMaxScore() == null ? 0.0f : request.getMaxScore());
+        });
+
+        // 分组
+        Map<String, List<QuestionSectionDimensionRequest>> collect = requests.stream().collect(Collectors.groupingBy(QuestionSectionDimensionRequest::getDimensionName));
+
+        // 判别没有交集
+        collect.forEach((name, contentList) -> {
+            float[][] scores = new float[contentList.size()][];
+            for (int i = 0; i < contentList.size(); i++) {
+                float minScore = contentList.get(i).getMinScore();
+                float maxScore = contentList.get(i).getMaxScore();
+                float[] arr = new float[]{minScore, maxScore};
+                scores[i] = arr;
+            }
+            boolean hasIntersection = hasIntersection(scores);
+            if (hasIntersection) {
+                throw new BizException(QuestionESCEnum.QUESTION_SECTION_DIMENSION_SCORE_RANGE_ERROR);
+            }
+        });
+    }
+
+    // 是否有交集
+    public static boolean hasIntersection(float[][] intervals) {
+        if (intervals == null || intervals.length <= 1) {
+            return false;
+        }
+
+        // 按照起始点进行升序排序
+        Arrays.sort(intervals, Comparator.comparingDouble(a -> a[0]));
+
+        for (int i = 1; i < intervals.length; i++) {
+            float[] prevInterval = intervals[i - 1];
+            float[] currInterval = intervals[i];
+
+            // 判断是否有交集
+            if (currInterval[0] <= prevInterval[1]) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static void main(String[] args) {
+//        float[][] intervals = {{0.0f, 2.0f}, {1.2f, 5.3f}, {3.4f, 8.9f}};
+        float[][] intervals = {{0.0f, 2.0f}, {3.4f, 8.9f}};
+        boolean hasIntersection = hasIntersection(intervals);
+        System.out.println("Has intersection: " + hasIntersection);
     }
 }

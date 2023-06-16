@@ -324,6 +324,7 @@ public class EventBiz{
      * @return
      */
     public Boolean delRefAction(DelRefItemRequest delRefItemRequest){
+        eventActionDao.tranDelete(delRefItemRequest.getIds());
         return indicatorExpressionRefDao.tranDeleteByReasonId(delRefItemRequest.getIds());
     }
 
