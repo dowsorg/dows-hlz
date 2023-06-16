@@ -253,6 +253,7 @@ public class IndicatorInstanceBiz{
                 throw new IndicatorInstanceException(EnumESC.VALIDATE_EXCEPTION);
             });
         String appId = indicatorInstanceEntity.getAppId();
+        String indicatorCategoryId = indicatorInstanceEntity.getIndicatorCategoryId();
         IndicatorCategoryRefEntity indicatorCategoryRefEntity = indicatorCategoryRefService.lambdaQuery()
             .eq(IndicatorCategoryRefEntity::getIndicatorInstanceId, indicatorInstanceId)
             .oneOpt()
@@ -278,6 +279,18 @@ public class IndicatorInstanceBiz{
                 new LambdaQueryWrapper<IndicatorCategoryRefEntity>()
                     .eq(IndicatorCategoryRefEntity::getIndicatorInstanceId, indicatorInstanceId)
             );
+            AtomicInteger atomicInteger = new AtomicInteger(1);
+            List<IndicatorCategoryRefEntity> indicatorCategoryRefEntityList = indicatorCategoryRefService.lambdaQuery()
+                .eq(IndicatorCategoryRefEntity::getAppId, appId)
+                .eq(IndicatorCategoryRefEntity::getIndicatorCategoryId, indicatorCategoryId)
+                .orderByAsc(IndicatorCategoryRefEntity::getSeq)
+                .list()
+                .stream()
+                .peek(indicatorCategoryRefEntity1 -> {
+                    indicatorCategoryRefEntity1.setSeq(atomicInteger.getAndIncrement());
+                })
+                .collect(Collectors.toList());
+            indicatorCategoryRefService.saveOrUpdateBatch(indicatorCategoryRefEntityList);
             if (!isRemovedIndicatorCategoryRef) {
                 log.warn("方法deleteIndicatorInstance对indicatorInstanceId：{}的IndicatorCategoryRef删除失败", indicatorInstanceId);
                 throw new IndicatorInstanceException(EnumESC.VALIDATE_EXCEPTION);
