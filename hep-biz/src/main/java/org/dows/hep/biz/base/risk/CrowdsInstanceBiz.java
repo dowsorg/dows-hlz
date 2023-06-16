@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.hep.api.base.indicator.request.BatchBindReasonIdRequestRs;
@@ -56,7 +57,7 @@ public class CrowdsInstanceBiz {
         String crowdsId = crowdsInstanceRequest.getCrowdsId();
         String appId = crowdsInstanceRequest.getAppId();
         //1、更新
-        if (crowdsInstanceRequest.getId() != null) {
+        if (StringUtils.isNotBlank(crowdsId)) {
             CrowdsInstanceEntity crowdsEntity = CrowdsInstanceEntity
                     .builder()
                     .id(crowdsInstanceRequest.getId())
