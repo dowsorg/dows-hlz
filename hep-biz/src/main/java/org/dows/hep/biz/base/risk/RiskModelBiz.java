@@ -8,10 +8,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.api.model.PageResponse;
+import org.dows.hep.api.base.indicator.request.BatchBindReasonIdRequestRs;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateRiskModelRequestRs;
 import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
 import org.dows.hep.api.base.risk.request.PageRiskModelRequest;
 import org.dows.hep.api.base.risk.response.RiskModelResponse;
+import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
 import org.dows.hep.entity.RiskModelEntity;
@@ -49,12 +51,13 @@ public class RiskModelBiz {
     @DSTransactional
     public Boolean createOrUpdateRiskModel(CreateOrUpdateRiskModelRequestRs createOrUpdateRiskModelRequestRs) {
         Boolean flag = false;
+        String riskModelId = createOrUpdateRiskModelRequestRs.getRiskModelId();
         if (createOrUpdateRiskModelRequestRs.getId() != null) {
             //1、新增
             RiskModelEntity modelEntity = RiskModelEntity
                     .builder()
                     .id(createOrUpdateRiskModelRequestRs.getId())
-                    .riskModelId(createOrUpdateRiskModelRequestRs.getRiskModelId())
+                    .riskModelId(riskModelId)
                     .appId(createOrUpdateRiskModelRequestRs.getAppId())
                     .name(createOrUpdateRiskModelRequestRs.getName())
                     .riskDeathProbability(createOrUpdateRiskModelRequestRs.getRiskDeathProbability())
@@ -74,6 +77,16 @@ public class RiskModelBiz {
                     .build();
             flag = riskModelService.save(modelEntity);
         }
+
+        List<String> indicatorExpressionIdList = new ArrayList<>();
+        indicatorExpressionIdList.addAll(createOrUpdateRiskModelRequestRs.getRiskModelFormulaIds());
+        indicatorExpressionBiz.batchBindReasonId(BatchBindReasonIdRequestRs
+                .builder()
+                .reasonId(riskModelId)
+                .appId(createOrUpdateRiskModelRequestRs.getAppId())
+                .source(EnumIndicatorExpressionSource.RISK_MODEL.getType())
+                .indicatorExpressionIdList(indicatorExpressionIdList)
+                .build());
         return flag;
     }
 
@@ -92,6 +105,12 @@ public class RiskModelBiz {
                 .eq(RiskModelEntity::getRiskModelId, riskModelId)
                 .eq(RiskModelEntity::getDeleted, false)
                 .one();
+        String appId = riskModelEntity.getAppId();
+        Set<String> indicatorInstanceIdSet = new HashSet<>();
+        indicatorInstanceIdSet.add(riskModelEntity.getRiskModelId());
+        Map<String, List<IndicatorExpressionResponseRs>> kReasonIdVIndicatorExpressionResponseRsListMap = new HashMap<>();
+        indicatorExpressionBiz.populateKReasonIdVIndicatorExpressionResponseRsListMap(appId, indicatorInstanceIdSet, kReasonIdVIndicatorExpressionResponseRsListMap);
+        List<IndicatorExpressionResponseRs> indicatorExpressionResponseRs = kReasonIdVIndicatorExpressionResponseRsListMap.get(riskModelEntity.getRiskModelId());
         //1、复制属性
         RiskModelResponse modelResponse = RiskModelResponse
                 .builder()
@@ -100,6 +119,7 @@ public class RiskModelBiz {
                 .name(riskModelEntity.getName())
                 .riskDeathProbability(riskModelEntity.getRiskDeathProbability())
                 .crowdsCategoryId(riskModelEntity.getCrowdsCategoryId())
+                .indicatorExpressionResponseRsList(indicatorExpressionResponseRs)
                 .status(riskModelEntity.getStatus())
                 .build();
         return modelResponse;

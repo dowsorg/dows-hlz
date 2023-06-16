@@ -25,9 +25,9 @@ public class CrowdsInstanceRequest {
     @Schema(title = "人群类别名称")
     private String name;
 
-    @Schema(title = "概率")
-    private Integer odds;
+    @Schema(title = "死亡概率")
+    private Integer deathProbability;
 
     @Schema(title = "人群公式ID")
-    private Integer crowdsFormulaId;
+    private String crowdsFormulaId;
 }

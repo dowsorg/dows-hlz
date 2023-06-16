@@ -6,13 +6,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.uim.AccountInfo;
 import org.dows.hep.api.ExperimentContext;
 import org.dows.hep.api.enums.ExperimentStateEnum;
+import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
+import org.dows.hep.entity.ExperimentTimerEntity;
 import org.dows.hep.websocket.HepClientManager;
 import org.dows.hep.websocket.proto.MessageCode;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 /**
  * todo
@@ -32,19 +38,56 @@ public class SuspendHandler extends AbstractEventHandler implements EventHandler
         //todo 暂停定时器
         log.info("暂停定时器....");
 
-        // 设置当前实验上下文信息
-        ExperimentContext experimentContext = new ExperimentContext();
-        experimentContext.setExperimentId(experimentRestartRequest.getExperimentInstanceId());
-        experimentContext.setState(ExperimentStateEnum.SUSPEND);
-        ExperimentContext.set(experimentContext);
+        // 待更新集合
+        List<ExperimentTimerEntity> updateExperimentTimerEntities = new ArrayList<>();
+        // 查询实验期数
+        List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerBiz.getCurrentPeriods(experimentRestartRequest);
 
-        // 通知客户端
-        ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfos();
-        Set<Channel> channels = userInfos.keySet();
-        for (Channel channel : channels) {
-            HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, experimentRestartRequest);
+        // 找出当前期数计时器集合
+        List<ExperimentTimerEntity> collect = experimentTimerEntityList.stream()
+                .filter(t -> t.getPeriod() == experimentRestartRequest.getPeriods())
+                .collect(Collectors.toList());
+        //暂停次数为最大的
+        ExperimentTimerEntity experimentTimerEntity = collect.stream()
+                .max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount))
+                .orElse(null);
+        if (experimentTimerEntity == null) {
+            throw new ExperimentException("实验计时器不存在！");
         }
+        if(experimentTimerEntity.getPaused()){
+            throw new ExperimentException("当前实验已暂停，请勿重复执行暂停！");
+        }
+        ExperimentTimerEntity addExperimentTimer = ExperimentTimerEntity.builder()
+                .experimentTimerId(idGenerator.nextIdStr())
+                .experimentInstanceId(experimentTimerEntity.getExperimentInstanceId())
+                .startTime(experimentTimerEntity.getStartTime())
+                .endTime(experimentTimerEntity.getEndTime())
+                .period(experimentTimerEntity.getPeriod())
+                .periodInterval(experimentTimerEntity.getPeriodInterval())
+                .appId(experimentTimerEntity.getAppId())
+                .model(experimentTimerEntity.getModel())
+                .state(experimentTimerEntity.getState())
+                .pauseCount(experimentTimerEntity.getPauseCount() + 1)
+                .paused(true)
+                .pauseStartTime(experimentRestartRequest.getCurrentTime())
+                .build();
+        updateExperimentTimerEntities.add(addExperimentTimer);
+        // 保存或更新实验计时器
+        boolean b = experimentTimerBiz.saveOrUpdateBatch(updateExperimentTimerEntities);
 
+        if (b) {
+            // 设置当前实验上下文信息
+            ExperimentContext experimentContext = new ExperimentContext();
+            experimentContext.setExperimentId(experimentRestartRequest.getExperimentInstanceId());
+            experimentContext.setState(ExperimentStateEnum.SUSPEND);
+            ExperimentContext.set(experimentContext);
 
+            // 通知客户端
+            ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfos();
+            Set<Channel> channels = userInfos.keySet();
+            for (Channel channel : channels) {
+                HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, experimentRestartRequest);
+            }
+        }
     }
 }

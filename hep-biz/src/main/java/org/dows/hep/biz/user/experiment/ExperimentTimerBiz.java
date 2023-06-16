@@ -1,21 +1,27 @@
 package org.dows.hep.biz.user.experiment;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
+import org.dows.hep.api.enums.ExperimentStateEnum;
+import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.user.experiment.response.CountDownResponse;
+import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
 import org.dows.hep.entity.ExperimentTimerEntity;
 import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentTimerService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author lait.zhang
  * @description project descr:实验:实验计时器
  * @date 2023年4月23日 上午9:44:34
  */
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class ExperimentTimerBiz {
@@ -60,6 +66,58 @@ public class ExperimentTimerBiz {
                 .eq(ExperimentTimerEntity::getAppId, experimentRestartRequest.getAppId())
                 .list();
         return list;
+    }
+
+
+    /**
+     * 更新定时器
+     *
+     * @param updateExperimentTimerEntities
+     * @return
+     */
+    public boolean saveOrUpdateBatch(List<ExperimentTimerEntity> updateExperimentTimerEntities) {
+        boolean b = experimentTimerService.saveOrUpdateBatch(updateExperimentTimerEntities);
+        return b;
+    }
+
+
+    /**
+     * 获取当前实验期数信息[每期开始，结束，间隔等]
+     *
+     * @param appId
+     * @param experimentInstanceId
+     * @return
+     */
+    public ExperimentPeriodsResonse getExperimentPeriods(String appId, String experimentInstanceId) {
+
+        List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
+                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentTimerEntity::getAppId, appId)
+                //.eq(ExperimentTimerEntity::getModel, 2) // 沙盘模式
+                .ne(ExperimentTimerEntity::getState, ExperimentStateEnum.FINISH.getState())
+                .list();
+
+        List<ExperimentTimerEntity> collect = list.stream().filter(t -> t.getPauseCount() == 0).collect(Collectors.toList());
+        List<ExperimentTimerEntity> collect1 = collect.stream()
+                .filter(e -> e.getStartTime() >= System.currentTimeMillis() && System.currentTimeMillis() <= e.getEndTime())
+                .collect(Collectors.toList());
+        if (collect1.size() > 1) {
+            log.error("获取实验期数异常,当前时间存在多个期数,请检查期数配置");
+            throw new ExperimentException("获取实验期数异常,当前时间存在多个期数,请检查期数配置");
+        } else if (collect1.size() == 0) {
+            log.error("获取实验期数异常,当前时间不存在对应的实验期数");
+            throw new ExperimentException("获取实验期数异常,当前时间不存在对应的实验期数");
+        } else {
+            ExperimentTimerEntity experimentTimerEntity = collect1.get(0);
+
+            ExperimentPeriodsResonse experimentPeriodsResonse = new ExperimentPeriodsResonse();
+            experimentPeriodsResonse.setCurrentPeriod(experimentTimerEntity.getPeriod());
+            experimentPeriodsResonse.setExperimentInstanceId(experimentTimerEntity.getExperimentInstanceId());
+            List<ExperimentPeriodsResonse.ExperimentPeriods> experimentPeriods = BeanConvert
+                    .beanConvert(collect, ExperimentPeriodsResonse.ExperimentPeriods.class);
+            experimentPeriodsResonse.setExperimentPeriods(experimentPeriods);
+            return experimentPeriodsResonse;
+        }
     }
 
 

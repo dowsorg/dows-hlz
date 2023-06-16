@@ -341,6 +341,7 @@ public class TenantCaseEventBiz {
      * @return
      */
     public Boolean delRefAction(DelRefItemRequest delRefItemRequest){
+        caseEventActionDao.tranDelete(delRefItemRequest.getIds());
         return caseIndicatorExpressionRefDao.tranDeleteByReasonId(delRefItemRequest.getIds());
     }
 

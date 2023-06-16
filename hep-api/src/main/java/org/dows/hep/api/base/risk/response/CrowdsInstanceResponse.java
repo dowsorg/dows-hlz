@@ -33,5 +33,5 @@ public class CrowdsInstanceResponse {
     private Integer deathProbability;
 
     @Schema(title = "人群公式ID")
-    private Integer crowdsFormulaId;
+    private String crowdsFormulaId;
 }
