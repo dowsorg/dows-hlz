@@ -66,9 +66,10 @@ public class RiskModelBiz {
                     .build();
             flag = riskModelService.updateById(modelEntity);
         } else {
+            riskModelId = idGenerator.nextIdStr();
             RiskModelEntity modelEntity = RiskModelEntity
                     .builder()
-                    .riskModelId(idGenerator.nextIdStr())
+                    .riskModelId(riskModelId)
                     .appId(createOrUpdateRiskModelRequestRs.getAppId())
                     .name(createOrUpdateRiskModelRequestRs.getName())
                     .riskDeathProbability(createOrUpdateRiskModelRequestRs.getRiskDeathProbability())
