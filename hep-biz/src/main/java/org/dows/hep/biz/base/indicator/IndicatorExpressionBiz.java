@@ -962,6 +962,8 @@ public class IndicatorExpressionBiz{
             .indicatorExpressionId(indicatorExpressionId)
             .reasonId(reasonId)
             .build();
+      } else {
+        indicatorExpressionRefEntity.setReasonId(reasonId);
       }
       indicatorExpressionRefEntityList.add(indicatorExpressionRefEntity);
     });
