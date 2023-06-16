@@ -24,7 +24,10 @@ public class QuestionSectionDimensionRequest{
     @Schema(title = "内容")
     private String dimensionContent;
 
+    @Schema(title = "分数最小值")
+    private Float minScore;
+
     @Schema(title = "分数最大值")
-    private Float score;
+    private Float maxScore;
 
 }

@@ -4,8 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 /**
 * @description 
 *
@@ -31,6 +29,9 @@ public class QuestionSectionDimensionResponse{
     @Schema(title = "内容")
     private String dimensionContent;
 
-    @Schema(title = "分数")
-    private BigDecimal score;
+    @Schema(title = "分数最小值")
+    private Float minScore;
+
+    @Schema(title = "分数最大值")
+    private Float maxScore;
 }

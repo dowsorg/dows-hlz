@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author runsix
@@ -18,6 +19,10 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class CreateOrUpdateRiskModelRequestRs implements Serializable {
+
+  @Schema(title = "主键")
+  private Long id;
+
   @Schema(title = "风险模型ID")
   private String riskModelId;
 
@@ -27,7 +32,7 @@ public class CreateOrUpdateRiskModelRequestRs implements Serializable {
 
   @Schema(title = "分布式ID")
   @ApiModelProperty(required = true)
-  private String riskCategoryId;
+  private String crowdsCategoryId;
 
   @Schema(title = "模型名称")
   @ApiModelProperty(required = true)
@@ -36,6 +41,12 @@ public class CreateOrUpdateRiskModelRequestRs implements Serializable {
   @ApiModelProperty(required = true)
   @Schema(title = "0-禁用，1-启用")
   private Integer status;
+
+  @Schema(title = "死亡概率")
+  private Integer riskDeathProbability;
+
+  @Schema(title = "风险模型类别ID")
+  private Set<String> riskModelFormulaIds;
 
   @Schema(title = "死亡模型列表")
   @ApiModelProperty(required = true)

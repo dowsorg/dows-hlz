@@ -241,7 +241,8 @@ public class ExperimentManageBiz {
                     .appId(experimentInstance.getAppId())
                     .experimentInstanceId(experimentInstance.getExperimentInstanceId())
                     .experimentTimerId(idGenerator.nextIdStr())
-                    .periods(period)
+                    .periodInterval(interval)
+                    .period(period)
                     .model(ExperimentModeEnum.STANDARD.getCode())
                     .state(ExperimentStateEnum.UNBEGIN.getState())
                     .startTime(pst)
@@ -421,6 +422,28 @@ public class ExperimentManageBiz {
                 .likeLeft(ExperimentInstanceEntity::getExperimentName, experimentQueryRequest.getExperimentName())
                 .likeLeft(ExperimentInstanceEntity::getCaseName, experimentQueryRequest.getCaseNaem()).list();
         return BeanConvert.beanConvert(list, ExperimentListResponse.class);
+    }
+
+
+    /**
+     * 获取实验开始或暂停状态
+     *
+     * @return
+     */
+    public ExperimentStateEnum getExperimentState(String experimentInstanceId) {
+
+        ExperimentInstanceEntity experimentInstanceEntity = experimentInstanceService.lambdaQuery()
+                .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
+                .oneOpt()
+                .orElse(null);
+        if (experimentInstanceEntity == null) {
+            throw new ExperimentException("不存在的该实验!");
+        }
+        Integer state = experimentInstanceEntity.getState();
+        ExperimentStateEnum experimentStateEnum = Arrays.stream(ExperimentStateEnum.values()).filter(e -> e.getState() == state)
+                .findFirst().orElse(null);
+        // todo 查询实验开始或暂停或结束,可直接差数据库
+        return experimentStateEnum;
     }
 
 
