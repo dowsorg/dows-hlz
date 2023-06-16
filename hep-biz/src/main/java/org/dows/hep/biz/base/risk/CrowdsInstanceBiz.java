@@ -131,7 +131,7 @@ public class CrowdsInstanceBiz {
                 .appId(instanceEntity.getAppId())
                 .name(instanceEntity.getName())
                 .crowdsFormulaId(instanceEntity.getCrowdsFormulaId())
-                .odds(instanceEntity.getDeathProbability())
+                .deathProbability(instanceEntity.getDeathProbability())
                 .build();
         return response;
     }
