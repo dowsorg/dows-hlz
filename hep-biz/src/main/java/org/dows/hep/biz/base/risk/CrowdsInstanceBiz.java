@@ -56,7 +56,7 @@ public class CrowdsInstanceBiz {
                     .appId(crowdsInstanceRequest.getAppId())
                     .name(crowdsInstanceRequest.getName())
                     .crowdsFormulaId(crowdsInstanceRequest.getCrowdsFormulaId())
-                    .deathProbability(crowdsInstanceRequest.getOdds())
+                    .deathProbability(crowdsInstanceRequest.getDeathProbability())
                     .build();
             flag = crowdsInstanceService.updateById(crowdsEntity);
         } else {
@@ -67,7 +67,7 @@ public class CrowdsInstanceBiz {
                     .appId(crowdsInstanceRequest.getAppId())
                     .name(crowdsInstanceRequest.getName())
                     .crowdsFormulaId(crowdsInstanceRequest.getCrowdsFormulaId())
-                    .deathProbability(crowdsInstanceRequest.getOdds())
+                    .deathProbability(crowdsInstanceRequest.getDeathProbability())
                     .build();
             flag = crowdsInstanceService.save(crowdsEntity);
         }
