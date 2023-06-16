@@ -88,13 +88,13 @@ public class ExperimentOrgInterveneRest {
 
     @Operation(summary = "治疗干预：获取分类+项目")
     @PostMapping("v1/userExperiment/experimentOrgIntervene/listTreatCateg4Expt")
-    public List<Categ4ExptVO> listTreatCateg4Expt(@RequestBody @Validated FindInterveneCateg4ExptRequest findTreat ){
+    public List<Categ4ExptVO> listTreatCateg4Expt(@RequestBody @Validated FindInterveneCateg4ExptRequest findTreat ) throws JsonProcessingException {
         return experimentOrgInterveneBiz.listTreatCateg4Expt(findTreat);
     }
 
     @Operation(summary = "治疗干预：按多id获取数据库项目列表")
     @PostMapping("v1/userExperiment/experimentOrgIntervene/listTreatItem4Expt")
-    public ExptTreatPlanResponse listTreatItem4Expt(@RequestBody @Validated FindTreatList4ExptRequest findTreat ){
+    public List<TreatItemResponse> listTreatItem4Expt(@RequestBody @Validated FindTreatList4ExptRequest findTreat ){
         return experimentOrgInterveneBiz.listTreatItem4Expt(findTreat);
     }
     //endregion
