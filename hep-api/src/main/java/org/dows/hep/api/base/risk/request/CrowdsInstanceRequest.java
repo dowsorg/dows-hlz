@@ -29,5 +29,5 @@ public class CrowdsInstanceRequest {
     private Integer odds;
 
     @Schema(title = "人群公式ID")
-    private Integer crowdsFormulaId;
+    private String crowdsFormulaId;
 }

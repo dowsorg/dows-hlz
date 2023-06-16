@@ -46,7 +46,7 @@ public class CrowdsInstanceEntity implements CrudEntity {
     private Integer deathProbability;
 
     @Schema(title = "人群公式ID")
-    private Integer crowdsFormulaId;
+    private String crowdsFormulaId;
 
     @JsonIgnore
     @TableLogic
