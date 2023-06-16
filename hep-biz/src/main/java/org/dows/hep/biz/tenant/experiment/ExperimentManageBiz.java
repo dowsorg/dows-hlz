@@ -22,10 +22,7 @@ import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.EnumExperimentParticipator;
 import org.dows.hep.api.enums.ExperimentModeEnum;
 import org.dows.hep.api.enums.ExperimentStateEnum;
-import org.dows.hep.api.event.AllotEvent;
-import org.dows.hep.api.event.ExperimentEvent;
-import org.dows.hep.api.event.StartEvent;
-import org.dows.hep.api.event.SuspendEvent;
+import org.dows.hep.api.event.*;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.exception.ExperimentParticipatorException;
 import org.dows.hep.api.tenant.experiment.request.*;
@@ -82,10 +79,6 @@ public class ExperimentManageBiz {
     private final AccountOrgApi accountOrgApi;
     private final AccountOrgGeoApi accountOrgGeoApi;
     private final CaseOrgFeeService caseOrgFeeService;
-    //
-    private final ExperimentSchemeManageBiz experimentSchemeManageBiz;
-    private final ExperimentCaseInfoManageBiz experimentCaseInfoManageBiz;
-
     // 事件发布
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -386,25 +379,11 @@ public class ExperimentManageBiz {
         experimentGroupService.saveOrUpdateBatch(experimentGroupEntitys);
         // 保存实验参与人[学生]
         experimentParticipatorService.saveOrUpdateBatch(collect);
-
-        // todo 后续移到事件监听中
-        // 预处理方案设计
-        String experimentInstanceId = experimentGroupSettingRequest.getExperimentInstanceId();
-        CreateExperimentForm allotData = getAllotData(experimentInstanceId, null);
-        ExperimentSetting experimentSetting = allotData.getExperimentSetting();
-        ExperimentSetting.SchemeSetting schemeSetting = Optional.ofNullable(experimentSetting)
-                .map(ExperimentSetting::getSchemeSetting)
-                .orElse(null);
-        if (BeanUtil.isNotEmpty(schemeSetting)) {
-            List<String> groupIds = experimentGroupEntitys.stream()
-                    .map(ExperimentGroupEntity::getExperimentGroupId)
-                    .toList();
-            String settingStr = JSONUtil.toJsonStr(schemeSetting);
-            experimentSchemeManageBiz.preHandleExperimentScheme(experimentInstanceId, caseInstanceId, groupIds, settingStr);
-        }
-        // 预处理基础信息
-        experimentCaseInfoManageBiz.preHandleCaseInfo(experimentInstanceId, caseInstanceId);
-
+        // 发布实验分组事件
+        applicationEventPublisher.publishEvent(new GroupEvent(ExperimentInitializeRequest.builder()
+                .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
+                .caseInstanceId(caseInstanceId)
+                .build()));
         return true;
     }
 

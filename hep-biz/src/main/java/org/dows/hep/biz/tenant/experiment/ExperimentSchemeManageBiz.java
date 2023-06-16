@@ -32,6 +32,7 @@ public class ExperimentSchemeManageBiz {
     private final ExperimentSchemeService experimentSchemeService;
     private final ExperimentSchemeItemService experimentSchemeItemService;
     private final ExperimentSettingService experimentSettingService;
+    private final ExperimentSchemeScoreBiz experimentSchemeScoreBiz;
 
     /**
      * @param
@@ -43,10 +44,14 @@ public class ExperimentSchemeManageBiz {
     public void preHandleExperimentScheme(String experimentInstanceId, String caseInstanceId) {
         List<String> experimentGroupIds = baseBiz.listExperimentGroupIds(experimentInstanceId);
         String settingStr = getSchemeSetting(experimentInstanceId);
+        // 预设置方案设计
         preHandleExperimentScheme(experimentInstanceId, caseInstanceId, experimentGroupIds, settingStr);
+
+        // 预设置方案设计评分表
+        experimentSchemeScoreBiz.preHandleExperimentSchemeScore(experimentInstanceId, caseInstanceId);
     }
 
-    public void preHandleExperimentScheme(String experimentInstanceId, String caseInstanceId, List<String> experimentGroupIds, String schemeSetting) {
+    private void preHandleExperimentScheme(String experimentInstanceId, String caseInstanceId, List<String> experimentGroupIds, String schemeSetting) {
         Assert.notNull(experimentInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
         Assert.notNull(caseInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
         Assert.notEmpty(experimentGroupIds, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
@@ -77,6 +82,15 @@ public class ExperimentSchemeManageBiz {
 
             // experiment-scheme-item
             List<ExperimentSchemeItemEntity> localItemList = new ArrayList<>();
+            // set question-item
+            List<QuestionSectionItemResponse> sectionItemList = caseScheme.getSectionItemList();
+            if (CollUtil.isNotEmpty(sectionItemList)) {
+                sectionItemList.forEach(sectionItem -> {
+                    QuestionResponse question = sectionItem.getQuestion();
+                    List<ExperimentSchemeItemEntity> itemEntities = convertToFlatList(question);
+                    localItemList.addAll(itemEntities);
+                });
+            }
             // set video-item
             Integer containsVideo = caseScheme.getContainsVideo();
             if (containsVideo != null && containsVideo == 1) {
@@ -91,15 +105,6 @@ public class ExperimentSchemeManageBiz {
                         .questionDescr(content)
                         .build();
                 localItemList.add(videoItem);
-            }
-            // set question-item
-            List<QuestionSectionItemResponse> sectionItemList = caseScheme.getSectionItemList();
-            if (CollUtil.isNotEmpty(sectionItemList)) {
-                sectionItemList.forEach(sectionItem -> {
-                    QuestionResponse question = sectionItem.getQuestion();
-                    List<ExperimentSchemeItemEntity> itemEntities = convertToFlatList(question);
-                    localItemList.addAll(itemEntities);
-                });
             }
             // sort
             for (int i = 0; i < localItemList.size(); i++) {

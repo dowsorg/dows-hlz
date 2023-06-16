@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class ExperimentSchemeScoreManageBiz {
+public class ExperimentSchemeScoreBiz {
     private final ExperimentManageBaseBiz baseBiz;
     private final ExperimentSchemeService experimentSchemeService;
     private final TenantCaseSchemeBiz tenantCaseSchemeBiz;
@@ -57,7 +57,7 @@ public class ExperimentSchemeScoreManageBiz {
         preHandleExperimentSchemeScore(experimentInstanceId, caseInstanceId, viewAccountIds);
     }
 
-    public void preHandleExperimentSchemeScore(String experimentInstanceId, String caseInstanceId, List<String> viewAccountIds) {
+    private void preHandleExperimentSchemeScore(String experimentInstanceId, String caseInstanceId, List<String> viewAccountIds) {
         Assert.notNull(experimentInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
         Assert.notNull(caseInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
         Assert.notEmpty(viewAccountIds, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());

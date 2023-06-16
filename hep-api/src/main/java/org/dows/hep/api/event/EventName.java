@@ -6,8 +6,8 @@ public enum EventName {
     startEvent("startHandler"),
     finishEvent("finishHandler"),
     suspendEvent("suspendHandler"),
-
     allotEvent("allotHandler"),
+    groupEvent("groupEvent"),
 
     ;
 
