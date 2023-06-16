@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author runsix
@@ -43,6 +44,9 @@ public class CreateOrUpdateRiskModelRequestRs implements Serializable {
 
   @Schema(title = "死亡概率")
   private Integer riskDeathProbability;
+
+  @Schema(title = "风险模型类别ID")
+  private Set<String> riskModelFormulaIds;
 
   @Schema(title = "死亡模型列表")
   @ApiModelProperty(required = true)
