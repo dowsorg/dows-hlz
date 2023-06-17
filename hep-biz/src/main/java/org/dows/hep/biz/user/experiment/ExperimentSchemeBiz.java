@@ -10,19 +10,19 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.AllArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.enums.EnumExperimentGroupStatus;
+import org.dows.hep.api.event.ExptSchemeSyncEvent;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.ExptSchemeStateEnum;
 import org.dows.hep.api.user.experiment.request.ExperimentAllotSchemeRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeItemRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeRequest;
-import org.dows.hep.api.user.experiment.response.ExperimentSchemeItemResponse;
-import org.dows.hep.api.user.experiment.response.ExperimentSchemeResponse;
-import org.dows.hep.api.user.experiment.response.ExperimentSchemeSettingResponse;
+import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.entity.ExperimentGroupEntity;
 import org.dows.hep.entity.ExperimentSchemeEntity;
 import org.dows.hep.service.ExperimentGroupService;
 import org.dows.hep.service.ExperimentSchemeService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -40,9 +40,12 @@ public class ExperimentSchemeBiz {
     private final ExperimentGroupService experimentGroupService;
     private final ExperimentSchemeItemBiz experimentSchemeItemBiz;
     private final ExperimentParticipatorBiz experimentParticipatorBiz;
+    private final ExperimentGroupBiz experimentGroupBiz;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     /**
      * @param
+     * @param needAuth
      * @return
      * @说明: 获取实验方案
      * @关联表:
@@ -51,7 +54,7 @@ public class ExperimentSchemeBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public ExperimentSchemeResponse getScheme(String experimentInstanceId, String experimentGroupId, String accountId) {
+    public ExperimentSchemeResponse getScheme(String experimentInstanceId, String experimentGroupId, String accountId, boolean needAuth) {
         if (StrUtil.isBlank(experimentGroupId) || StrUtil.isBlank(experimentInstanceId)) {
             throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
         }
@@ -60,7 +63,9 @@ public class ExperimentSchemeBiz {
         ExperimentSchemeResponse result = BeanUtil.copyProperties(entity, ExperimentSchemeResponse.class);
 
         List<ExperimentSchemeItemResponse> itemList = experimentSchemeItemBiz.listBySchemeId(entity.getExperimentSchemeId());
-        setAuthority(itemList, experimentInstanceId, experimentGroupId, accountId);
+        if (needAuth) {
+            setAuthority(itemList, experimentInstanceId, experimentGroupId, accountId);
+        }
         List<ExperimentSchemeItemResponse> itemTreeList = convertList2Tree(itemList);
         result.setItemList(itemTreeList);
 
@@ -144,11 +149,16 @@ public class ExperimentSchemeBiz {
             throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
         }
 
-        cannotOperateAfterSubmit(request.getExperimentSchemeId());
+        // check
+        ExperimentSchemeEntity schemeEntity = cannotOperateAfterSubmit(request.getExperimentSchemeId());
         filterIfNoPermission(request, submitAccountId);
-
+        // update
         List<ExperimentSchemeItemRequest> itemList = request.getItemList();
-        return experimentSchemeItemBiz.updateBatch(itemList);
+        boolean res1 = experimentSchemeItemBiz.updateBatch(itemList);
+        // sync
+        boolean res2 = syncResult(schemeEntity);
+
+        return res1 && res2;
     }
 
     /**
@@ -194,7 +204,7 @@ public class ExperimentSchemeBiz {
         return entity.getExperimentSchemeId();
     }
 
-    private void cannotOperateAfterSubmit(String experimentSchemeId) {
+    private ExperimentSchemeEntity cannotOperateAfterSubmit(String experimentSchemeId) {
         ExperimentSchemeEntity entity = getById(experimentSchemeId);
         if (BeanUtil.isEmpty(entity)) {
             throw new BizException(ExperimentESCEnum.SCHEME_NOT_NULL);
@@ -203,6 +213,7 @@ public class ExperimentSchemeBiz {
         if (Objects.equals(state, ExptSchemeStateEnum.SUBMITTED.getCode())) {
             throw new BizException(ExperimentESCEnum.SCHEME_HAS_BEEN_SUBMITTED);
         }
+        return entity;
     }
 
     private void checkIsCaptain(String experimentInstanceId, String experimentGroupId, String accountId) {
@@ -360,5 +371,21 @@ public class ExperimentSchemeBiz {
             return null;
         }
         return JSONUtil.toBean(schemeSetting, ExperimentSetting.SchemeSetting.class);
+    }
+
+    private boolean syncResult(ExperimentSchemeEntity schemeEntity) {
+        String experimentInstanceId = schemeEntity.getExperimentInstanceId();
+        String experimentGroupId = schemeEntity.getExperimentGroupId();
+        List<ExperimentParticipatorResponse> groupMembers = experimentGroupBiz.listGroupMembers(experimentGroupId, experimentInstanceId);
+        List<String> accountIds = groupMembers.stream()
+                .map(ExperimentParticipatorResponse::getAccountId)
+                .toList();
+        ExperimentSchemeResponse scheme = getScheme(experimentInstanceId, experimentGroupId, null, false);
+        applicationEventPublisher.publishEvent(new ExptSchemeSyncEvent(ExptSchemeSyncResponse.builder()
+                .accountIds(accountIds)
+                .experimentSchemeResponse(scheme)
+                .build()));
+
+        return Boolean.TRUE;
     }
 }

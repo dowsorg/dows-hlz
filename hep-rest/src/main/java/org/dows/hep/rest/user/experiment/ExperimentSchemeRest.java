@@ -39,7 +39,7 @@ public class ExperimentSchemeRest {
     @GetMapping("v1/userExperiment/experimentScheme/getScheme")
     public ExperimentSchemeResponse getScheme(@NotBlank String experimentInstanceId, @NotBlank String experimentGroupId, HttpServletRequest request) {
         String accountId = baseBiz.getAccountId(request);
-        return experimentSchemeBiz.getScheme(experimentInstanceId, experimentGroupId, accountId);
+        return experimentSchemeBiz.getScheme(experimentInstanceId, experimentGroupId, accountId, true);
     }
 
     /**

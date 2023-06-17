@@ -8,6 +8,7 @@ public enum EventName {
     suspendEvent("suspendHandler"),
     allotEvent("allotHandler"),
     groupEvent("groupEvent"),
+    exptSchemeSyncEvent("exptSchemeSyncEvent"),
 
     ;
 
