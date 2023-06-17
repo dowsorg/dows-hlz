@@ -36,7 +36,7 @@ public class ExperimentTimerJob{
 //                .list();
         List<ExperimentContext> instanceEntities = ExperimentContext.getMap();
         instanceEntities.forEach(entity -> {
-            if (entity.getState().equals(ExperimentStateEnum.UNBEGIN.getState())) {
+            if (entity.getState().getDescr().equals(ExperimentStateEnum.UNBEGIN.getDescr())) {
                 LambdaUpdateWrapper<ExperimentParticipatorEntity> participatorWrapper = new LambdaUpdateWrapper<ExperimentParticipatorEntity>()
                         .eq(ExperimentParticipatorEntity::getExperimentInstanceId, entity.getExperimentId())
                         .set(ExperimentParticipatorEntity::getState, ExperimentStateEnum.ONGOING.getState());
