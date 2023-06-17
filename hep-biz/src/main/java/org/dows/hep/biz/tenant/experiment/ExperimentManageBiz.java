@@ -392,7 +392,6 @@ public class ExperimentManageBiz {
         experimentContext.setExperimentName(experimentGroupSettingRequest.getExperimentName());
         experimentContext.setState(ExperimentStateEnum.UNBEGIN);
         ExperimentContext.set(experimentContext);
-        System.out.println(ExperimentContext.getMap());
         return true;
     }
 
