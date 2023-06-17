@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.hep.api.base.indicator.request.BatchBindReasonIdRequestRs;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateRiskModelRequestRs;
@@ -52,7 +53,7 @@ public class RiskModelBiz {
     public Boolean createOrUpdateRiskModel(CreateOrUpdateRiskModelRequestRs createOrUpdateRiskModelRequestRs) {
         Boolean flag = false;
         String riskModelId = createOrUpdateRiskModelRequestRs.getRiskModelId();
-        if (createOrUpdateRiskModelRequestRs.getId() != null) {
+        if (StringUtils.isNotBlank(riskModelId)) {
             //1、新增
             RiskModelEntity modelEntity = RiskModelEntity
                     .builder()
