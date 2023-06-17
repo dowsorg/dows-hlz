@@ -7,7 +7,7 @@ public enum EventName {
     finishEvent("finishHandler"),
     suspendEvent("suspendHandler"),
     allotEvent("allotHandler"),
-    groupEvent("groupEvent"),
+    groupEvent("groupHandler"),
     exptSchemeSyncEvent("exptSchemeSyncEvent"),
 
     ;
