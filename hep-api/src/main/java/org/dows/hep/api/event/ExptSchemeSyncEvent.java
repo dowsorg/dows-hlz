@@ -7,7 +7,7 @@ import java.time.Clock;
 
 public class ExptSchemeSyncEvent extends ExperimentEvent implements Serializable {
     @Getter
-    private EventName eventName = EventName.groupEvent;
+    private EventName eventName = EventName.exptSchemeSyncEvent;
 
 
     public ExptSchemeSyncEvent(Object source) {

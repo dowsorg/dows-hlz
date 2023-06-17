@@ -67,6 +67,9 @@ public class ExperimentQuestionnaireManageBiz {
                 .flatMap(item -> item.values().stream())
                 .map(CaseOrgQuestionnaireResponse::getCaseQuestionnaireId)
                 .toList();
+        if (CollUtil.isEmpty(caseQuestionnaireIds)) {
+            return;
+        }
         List<CaseQuestionnaireResponse> caseQuestionnaireResponses = tenantCaseQuestionnaireBiz.listByIds(caseQuestionnaireIds);
         Map<String, QuestionSectionResponse> collect = caseQuestionnaireResponses.stream()
                 .collect(Collectors.toMap(CaseQuestionnaireResponse::getCaseQuestionnaireId, CaseQuestionnaireResponse::getQuestionSectionResponse));
