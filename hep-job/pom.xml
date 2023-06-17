@@ -8,6 +8,11 @@
     </parent>
     <artifactId>hep-job</artifactId>
 
-
+    <dependencies>
+        <dependency>
+            <groupId>org.dows.saas</groupId>
+            <artifactId>hep-biz</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>

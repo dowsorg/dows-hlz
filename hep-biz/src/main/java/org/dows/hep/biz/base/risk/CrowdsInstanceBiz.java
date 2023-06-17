@@ -7,13 +7,16 @@ import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.crud.api.model.PageResponse;
+import org.dows.hep.api.base.indicator.request.BatchBindReasonIdRequestRs;
 import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
 import org.dows.hep.api.base.risk.request.CrowdsInstanceRequest;
 import org.dows.hep.api.base.risk.request.PageCrowdsRequest;
 import org.dows.hep.api.base.risk.response.CrowdsInstanceResponse;
 import org.dows.hep.api.base.tags.response.TagsInstanceResponse;
+import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
@@ -35,7 +38,6 @@ import java.util.*;
 @Slf4j
 public class CrowdsInstanceBiz {
     private final CrowdsInstanceService crowdsInstanceService;
-
     private final IdGenerator idGenerator;
     private final IndicatorExpressionBiz indicatorExpressionBiz;
 
@@ -52,8 +54,10 @@ public class CrowdsInstanceBiz {
     @DSTransactional
     public Boolean insertOrUpdateCrows(CrowdsInstanceRequest crowdsInstanceRequest) {
         Boolean flag = false;
+        String crowdsId = crowdsInstanceRequest.getCrowdsId();
+        String appId = crowdsInstanceRequest.getAppId();
         //1、更新
-        if (crowdsInstanceRequest.getId() != null) {
+        if (StringUtils.isNotBlank(crowdsId)) {
             CrowdsInstanceEntity crowdsEntity = CrowdsInstanceEntity
                     .builder()
                     .id(crowdsInstanceRequest.getId())
@@ -65,10 +69,11 @@ public class CrowdsInstanceBiz {
                     .build();
             flag = crowdsInstanceService.updateById(crowdsEntity);
         } else {
+            crowdsId = idGenerator.nextIdStr();
             //2、插入
             CrowdsInstanceEntity crowdsEntity = CrowdsInstanceEntity
                     .builder()
-                    .crowdsId(idGenerator.nextIdStr())
+                    .crowdsId(crowdsId)
                     .appId(crowdsInstanceRequest.getAppId())
                     .name(crowdsInstanceRequest.getName())
                     .crowdsFormulaId(crowdsInstanceRequest.getCrowdsFormulaId())
@@ -76,6 +81,15 @@ public class CrowdsInstanceBiz {
                     .build();
             flag = crowdsInstanceService.save(crowdsEntity);
         }
+        List<String> indicatorExpressionIdList = new ArrayList<>();
+        indicatorExpressionIdList.add(crowdsInstanceRequest.getCrowdsFormulaId());
+        indicatorExpressionBiz.batchBindReasonId(BatchBindReasonIdRequestRs
+            .builder()
+                .reasonId(crowdsId)
+                .appId(appId)
+                .source(EnumIndicatorExpressionSource.RISK_MODEL.getType())
+                .indicatorExpressionIdList(indicatorExpressionIdList)
+            .build());
         return flag;
     }
 

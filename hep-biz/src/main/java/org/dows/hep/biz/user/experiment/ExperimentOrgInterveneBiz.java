@@ -13,6 +13,7 @@ import org.dows.hep.api.base.intervene.response.*;
 import org.dows.hep.api.base.intervene.vo.FoodCookbookDetailVO;
 import org.dows.hep.api.base.intervene.vo.SportPlanItemVO;
 import org.dows.hep.api.core.ExptOperateOrgFuncRequest;
+import org.dows.hep.api.enums.EnumCategFamily;
 import org.dows.hep.api.enums.EnumExptOperateType;
 import org.dows.hep.api.enums.EnumFoodDetailType;
 import org.dows.hep.api.enums.EnumFoodMealTime;
@@ -24,15 +25,13 @@ import org.dows.hep.api.user.experiment.response.SaveExptTreatResponse;
 import org.dows.hep.api.user.experiment.vo.ExptTreatPlanItemVO;
 import org.dows.hep.biz.base.intervene.*;
 import org.dows.hep.biz.dao.OperateOrgFuncDao;
+import org.dows.hep.biz.dao.TreatItemDao;
 import org.dows.hep.biz.util.*;
 import org.dows.hep.biz.vo.CalcExptFoodCookbookResult;
 import org.dows.hep.biz.vo.Categ4ExptVO;
 import org.dows.hep.biz.vo.CategVO;
 import org.dows.hep.biz.vo.LoginContextVO;
-import org.dows.hep.entity.IndicatorFuncEntity;
-import org.dows.hep.entity.OperateFlowEntity;
-import org.dows.hep.entity.OperateOrgFuncEntity;
-import org.dows.hep.entity.OperateOrgFuncSnapEntity;
+import org.dows.hep.entity.*;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -63,6 +62,7 @@ public class ExperimentOrgInterveneBiz{
     private final SportPlanBiz sportPlanBiz;
 
     private final SportItemBiz sportItemBiz;
+    private final TreatItemDao treatItemDao;
 
     public List<Categ4ExptVO> listInterveneCateg4Expt(FindInterveneCateg4ExptRequest findCateg ) throws JsonProcessingException {
         FindInterveneCategRequest castReq=CopyWrapper.create(FindInterveneCategRequest::new).endFrom(findCateg);
@@ -100,10 +100,54 @@ public class ExperimentOrgInterveneBiz{
         FindSportRequest castReq=CopyWrapper.create(FindSportRequest::new).endFrom(findSport);
         return sportItemBiz.pageSportItem(castReq);
     }
-    public List<Categ4ExptVO> listTreatCateg4Expt( FindInterveneCateg4ExptRequest findTreat ){
-        return null;
+    public List<Categ4ExptVO> listTreatCateg4Expt( FindInterveneCateg4ExptRequest findTreat ) throws JsonProcessingException {
+        FindInterveneCategRequest castReq=CopyWrapper.create(FindInterveneCategRequest::new).endFrom(findTreat);
+        List<CategVO> items=interveneCategBiz.listInterveneCateg(castReq);
+        if(ShareUtil.XObject.isEmpty(items)){
+            return Collections.emptyList();
+        }
+        List<Categ4ExptVO> rst= JacksonUtil.deepCopy(items, true,new TypeReference<>() {});
+        Map<String,Categ4ExptVO> mapLeaf=getLeafMap(rst);
+        if(ShareUtil.XObject.isEmpty(mapLeaf)){
+            return rst;
+        }
+        final String indicatorFuncId=findTreat.getFamily().substring(EnumCategFamily.TreatItem.getCode().length());
+        Map<String,List<Categ4ExptVO>> mapTreats=ShareUtil.XCollection.groupBy(treatItemDao.getByIndicatorFuncId(findTreat.getAppId(),indicatorFuncId,
+                mapLeaf.size()<=200?mapLeaf.keySet():null,
+                TreatItemEntity::getInterveneCategId,
+                TreatItemEntity::getTreatItemId,
+                TreatItemEntity::getTreatItemName),row->Categ4ExptVO.builder()
+                .categId(row.getTreatItemId())
+                .categName(row.getTreatItemName())
+                .categPid(row.getInterveneCategId())
+                .build(),  Categ4ExptVO::getCategId);
+        mapLeaf.entrySet().forEach(i->{
+            i.getValue().setChilds(mapTreats.get(i.getKey()));
+        });
+        return rst;
+
     }
-    public ExptTreatPlanResponse listTreatItem4Expt( FindTreatList4ExptRequest findTreat ){
+    Map<String,Categ4ExptVO>  getLeafMap(List<Categ4ExptVO> categs){
+        if(ShareUtil.XCollection.isEmpty(categs)){
+            return Collections.emptyMap();
+        }
+        Map<String,Categ4ExptVO> rst=new HashMap<>();
+        categs.forEach(i->fillLeafMap(rst,i));
+        return rst;
+    }
+    void fillLeafMap(Map<String,Categ4ExptVO> dst,Categ4ExptVO categ){
+        if(ShareUtil.XObject.isEmpty(categ)){
+            return;
+        }
+        if(ShareUtil.XCollection.isEmpty(categ.getChilds())){
+            dst.put(categ.getCategId(),categ);
+            return;
+        }
+        for(Categ4ExptVO item:categ.getChilds()) {
+            fillLeafMap(dst, item);
+        }
+    }
+    public List<TreatItemResponse>  listTreatItem4Expt( FindTreatList4ExptRequest findTreat ){
         return null;
     }
 

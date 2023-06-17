@@ -17,12 +17,16 @@ import org.dows.account.response.AccountUserResponse;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
+import org.dows.hep.api.ExperimentContext;
 import org.dows.hep.api.core.CreateExperimentForm;
 import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.EnumExperimentParticipator;
 import org.dows.hep.api.enums.ExperimentModeEnum;
 import org.dows.hep.api.enums.ExperimentStateEnum;
-import org.dows.hep.api.event.*;
+import org.dows.hep.api.event.AllotEvent;
+import org.dows.hep.api.event.ExperimentEvent;
+import org.dows.hep.api.event.StartEvent;
+import org.dows.hep.api.event.SuspendEvent;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.exception.ExperimentParticipatorException;
 import org.dows.hep.api.tenant.experiment.request.*;
@@ -184,7 +188,6 @@ public class ExperimentManageBiz {
         // 保存实验计时器
         experimentTimerService.saveBatch(experimentTimerEntities);
 
-
         // 发布实验分配事件
         applicationEventPublisher.publishEvent(new AllotEvent(experimentTimerEntities));
         return experimentInstance.getExperimentInstanceId();
@@ -200,7 +203,7 @@ public class ExperimentManageBiz {
     private void buildPeriods(ExperimentInstanceEntity experimentInstance, ExperimentSetting experimentSetting,
                               List<ExperimentTimerEntity> experimentTimerEntities) {
         ExperimentSetting.SandSetting sandSetting = experimentSetting.getSandSetting();
-        if (null == sandSetting) {
+        if(null == sandSetting ){
             throw new BizException("沙盘模式，sandSetting为不能为空!");
         }
         // 获取总期数，生成每期的计时器
@@ -219,11 +222,11 @@ public class ExperimentManageBiz {
         // 如果是标准模式，那么沙盘期数 需要减去方案设计截止时间
         if (experimentInstance.getModel() == ExperimentModeEnum.STANDARD.getCode()) {
             ExperimentSetting.SchemeSetting schemeSetting = experimentSetting.getSchemeSetting();
-            if (schemeSetting != null) {
+            if(schemeSetting != null) {
                 // 方案设计截止时间
                 long time1 = schemeSetting.getSchemeEndTime().getTime();
                 // 如果是标准模式，一期开始时间 = 方案设计截止时间 - 实验开始时间,第一期没有间隔时间 + 间隔时间
-                pst = time1 - startTime + interval;
+                pst = time1 - startTime +  interval;
             }
         } else {
             pst = startTime;
@@ -385,7 +388,18 @@ public class ExperimentManageBiz {
         experimentGroupService.saveOrUpdateBatch(experimentGroupEntitys);
         // 保存实验参与人[学生]
         experimentParticipatorService.saveOrUpdateBatch(collect);
+        // 发布实验分组事件
+        applicationEventPublisher.publishEvent(new GroupEvent(ExperimentInitializeRequest.builder()
+                .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
+                .caseInstanceId(caseInstanceId)
+                .build()));
 
+        // 将实验Id和名称set进去
+        ExperimentContext experimentContext = new ExperimentContext();
+        experimentContext.setExperimentId(experimentGroupSettingRequest.getExperimentInstanceId());
+        experimentContext.setExperimentName(experimentGroupSettingRequest.getExperimentName());
+        experimentContext.setState(ExperimentStateEnum.UNBEGIN);
+        ExperimentContext.set(experimentContext);
         // todo 后续移到事件监听中
         // 预处理方案设计
         String experimentInstanceId = experimentGroupSettingRequest.getExperimentInstanceId();
@@ -427,11 +441,11 @@ public class ExperimentManageBiz {
 
 
     /**
-     * 获取实验是否已经开始
+     * 获取实验开始或暂停状态
      *
      * @return
      */
-    public ExperimentStateEnum getExperimentStarted(String appId, String experimentInstanceId) {
+    public ExperimentStateEnum getExperimentState(String appId,String experimentInstanceId) {
 
         ExperimentInstanceEntity experimentInstanceEntity = experimentInstanceService.lambdaQuery()
                 .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)

@@ -15,7 +15,7 @@ import org.dows.hep.api.core.BaseExptRequest;
 
 public class FindInterveneCateg4ExptRequest extends BaseExptRequest {
 
-    @Schema(title = "治疗项目根类别 [treat.item:指标功能点id] ")
+    @Schema(title = "根类别 food.material-食材类别；sport.item-运动项目类别  treat.item:指标功能点id -自定义治疗项目...")
     private String family;
 
     @Schema(title = "父类别")
