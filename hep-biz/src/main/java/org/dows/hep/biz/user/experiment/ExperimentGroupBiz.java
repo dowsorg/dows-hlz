@@ -11,6 +11,7 @@ import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.EnumExperimentParticipator;
 import org.dows.hep.api.enums.ExperimentStatusCode;
 import org.dows.hep.api.enums.ParticipatorTypeEnum;
+import org.dows.hep.api.event.GroupMemberAllotEvent;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.exception.ExperimentParticipatorException;
 import org.dows.hep.api.user.experiment.request.AllotActorRequest;
@@ -27,6 +28,7 @@ import org.dows.hep.service.ExperimentGroupService;
 import org.dows.hep.service.ExperimentOrgService;
 import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.sequence.api.IdGenerator;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -50,6 +52,9 @@ public class ExperimentGroupBiz {
     private final IdGenerator idGenerator;
 
     private final ExperimentOrgService experimentOrgService;
+
+    private final ApplicationEventPublisher applicationEventPublisher;
+
     /**
      * @param
      * @return
@@ -73,7 +78,7 @@ public class ExperimentGroupBiz {
         ExperimentParticipatorEntity experimentParticipatorEntity = experimentParticipatorService.lambdaQuery()
                 .eq(ExperimentParticipatorEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
                 .eq(ExperimentParticipatorEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
-                .eq(ExperimentParticipatorEntity::getAccountId,createGroup.getAccountId())
+                .eq(ExperimentParticipatorEntity::getAccountId, createGroup.getAccountId())
                 .eq(ExperimentParticipatorEntity::getDeleted, false)
                 .eq(ExperimentParticipatorEntity::getParticipatorType, ParticipatorTypeEnum.CAPTAIN.getCode())
                 .oneOpt().orElse(null);
@@ -81,11 +86,11 @@ public class ExperimentGroupBiz {
         if (list.size() == 0) {
             throw new ExperimentException(ExperimentStatusCode.NO_EXIST_GROUP_ID);
         }
-        if(experimentParticipatorEntity == null){
+        if (experimentParticipatorEntity == null) {
             throw new ExperimentException(ExperimentStatusCode.NOT_CAPTAIN);
         }
         // 更新组名和状态
-         return experimentGroupService.lambdaUpdate()
+        return experimentGroupService.lambdaUpdate()
                 .eq(ExperimentGroupEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
                 .eq(ExperimentGroupEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
                 .update(ExperimentGroupEntity.builder()
@@ -241,7 +246,7 @@ public class ExperimentGroupBiz {
     @DSTransactional
     public Boolean allotGroupMembers(List<ExperimentParticipatorRequest> participatorList) {
         List<ExperimentParticipatorEntity> entityList = new ArrayList<>();
-        participatorList.forEach(request->{
+        participatorList.forEach(request -> {
             ExperimentParticipatorEntity model = experimentParticipatorService.lambdaQuery()
                     .eq(ExperimentParticipatorEntity::getExperimentParticipatorId, request.getExperimentParticipatorId())
                     .eq(ExperimentParticipatorEntity::getAppId, request.getAppId())
@@ -267,6 +272,10 @@ public class ExperimentGroupBiz {
                             .groupState(EnumExperimentGroupStatus.WAIT_ALL_GROUP_ASSIGN.getCode())
                             .build());
         });
+
+        // todo 发布事件，计数小组是否分配到齐，是否都分配好
+        applicationEventPublisher.publishEvent(new GroupMemberAllotEvent(participatorList));
+
         return experimentParticipatorService.updateBatchById(entityList);
     }
 
@@ -280,13 +289,13 @@ public class ExperimentGroupBiz {
      * @开始时间:
      * @创建时间: 2023年6月13日 上午11:02:07
      */
-    public ExperimentGroupResponse getGroupInfoByExperimentId(String experimentGroupId,String experimentGInstanceId) {
+    public ExperimentGroupResponse getGroupInfoByExperimentId(String experimentGroupId, String experimentGInstanceId) {
         ExperimentGroupEntity groupEntity = experimentGroupService.lambdaQuery()
-                .eq(ExperimentGroupEntity::getExperimentGroupId,experimentGroupId)
-                .eq(ExperimentGroupEntity::getExperimentInstanceId,experimentGInstanceId)
-                .eq(ExperimentGroupEntity::getDeleted,false)
+                .eq(ExperimentGroupEntity::getExperimentGroupId, experimentGroupId)
+                .eq(ExperimentGroupEntity::getExperimentInstanceId, experimentGInstanceId)
+                .eq(ExperimentGroupEntity::getDeleted, false)
                 .oneOpt().orElse(null);
-        if(groupEntity == null) {
+        if (groupEntity == null) {
             throw new ExperimentException(ExperimentStatusCode.NO_EXIST_GROUP_ID);
         }
         ExperimentGroupResponse groupResponse = ExperimentGroupResponse.builder()

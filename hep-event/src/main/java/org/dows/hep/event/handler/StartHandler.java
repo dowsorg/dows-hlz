@@ -11,10 +11,7 @@ import org.dows.hep.websocket.HepClientManager;
 import org.dows.hep.websocket.proto.MessageCode;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
@@ -33,64 +30,91 @@ public class StartHandler extends AbstractEventHandler implements EventHandler<E
 
     @Override
     public void exec(ExperimentRestartRequest experimentRestartRequest) {
-        //todo 定时器
-        log.info("执行开始操作....");
         // 待更新集合
         List<ExperimentTimerEntity> updateExperimentTimerEntities = new ArrayList<>();
         // 查询实验期数
         List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerBiz.getCurrentPeriods(experimentRestartRequest);
-        // 找出当前期数计时器集合
-        List<ExperimentTimerEntity> collect = experimentTimerEntityList.stream()
-                .filter(t -> t.getPeriod() == experimentRestartRequest.getPeriods())
-                .collect(Collectors.toList());
-        //暂停次数为最大的
-        ExperimentTimerEntity updateExperimentTimer = collect.stream()
-                .max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount))
-                .orElse(null);
-        if (updateExperimentTimer == null) {
-            throw new ExperimentException("实验计时器不存在！");
-        }
 
-        if (!updateExperimentTimer.getPaused()) {
-            throw new ExperimentException("当前实验已开始，请勿重复执行开始！");
-        }
-        // 暂停开始时间
-        long pst = updateExperimentTimer.getPauseStartTime().getTime();
-        // 持续时间 = 暂停结束时间 - 暂停开始时间
-        long duration = experimentRestartRequest.getCurrentTime().getTime() - pst;
-        // 设当前期数的暂停时长
-        updateExperimentTimer.setDuration(duration);
-        updateExperimentTimer.setPaused(false);
-        // 本期结束时间 = 元本期结束时间+暂停时间
-        updateExperimentTimer.setEndTime(updateExperimentTimer.getEndTime() + duration);
-        // 设置暂停结束时间
-        updateExperimentTimer.setPauseEndTime(updateExperimentTimer.getPauseStartTime());
-        updateExperimentTimer.setPeriodInterval(updateExperimentTimer.getPeriodInterval());
-        // 加入待更新集合
-        updateExperimentTimerEntities.add(updateExperimentTimer);
-        // 剔除当前期数
-        experimentTimerEntityList.removeAll(collect);
-        if (experimentTimerEntityList.size() > 0) {
-            // 从新排序，确保当前期数后的期数自增
-            experimentTimerEntityList = experimentTimerEntityList.stream()
-                    .sorted(Comparator.comparingInt(ExperimentTimerEntity::getPeriod))
+        if (null == experimentRestartRequest.getPeriods()) {
+            Map<Integer, List<ExperimentTimerEntity>> collect = experimentTimerEntityList.stream()
+                    .collect(Collectors.groupingBy(ExperimentTimerEntity::getPeriod));
+            collect.forEach((k,v)->{
+                ExperimentTimerEntity experimentTimerEntity = v.stream()
+                        .max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount))
+                        .orElse(null);
+                if(experimentTimerEntity != null){
+                    // 暂停开始时间
+                    long pst = experimentTimerEntity.getPauseStartTime().getTime();
+                    // 持续时间 = 暂停结束时间 - 暂停开始时间
+                    long duration = experimentRestartRequest.getCurrentTime().getTime() - pst;
+                    experimentTimerEntity.setStartTime(experimentRestartRequest.getCurrentTime().getTime());
+                    experimentTimerEntity.setEndTime(experimentTimerEntity.getEndTime() + duration);
+                    experimentTimerEntity.setDuration(duration);
+                    experimentTimerEntity.setPaused(experimentRestartRequest.getPaused());
+                    experimentTimerEntity.setPauseEndTime(experimentRestartRequest.getCurrentTime());
+                    updateExperimentTimerEntities.add(experimentTimerEntity);
+                }
+            });
+            experimentTimerBiz.saveOrUpdateBatch(updateExperimentTimerEntities);
+        } else {
+            //todo 定时器
+            log.info("执行开始操作....");
+
+            // 找出当前期数计时器集合
+            List<ExperimentTimerEntity> collect = experimentTimerEntityList.stream()
+                    .filter(t -> t.getPeriod() == experimentRestartRequest.getPeriods())
                     .collect(Collectors.toList());
-            for (ExperimentTimerEntity currentPeriod : experimentTimerEntityList) {
-                // 重新设置当前期数的下一期开始时间，结束时间等
-                currentPeriod.setStartTime(currentPeriod.getStartTime() + duration);
-                currentPeriod.setEndTime(currentPeriod.getEndTime() + duration);
+            //暂停次数为最大的
+            ExperimentTimerEntity updateExperimentTimer = collect.stream()
+                    .max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount))
+                    .orElse(null);
+            if (updateExperimentTimer == null) {
+                throw new ExperimentException("实验计时器不存在！");
             }
+
+            if (!updateExperimentTimer.getPaused()) {
+                throw new ExperimentException("当前实验已开始，请勿重复执行开始！");
+            }
+            // 暂停开始时间
+            long pst = updateExperimentTimer.getPauseStartTime().getTime();
+            // 持续时间 = 暂停结束时间 - 暂停开始时间
+            long duration = experimentRestartRequest.getCurrentTime().getTime() - pst;
+            // 设当前期数的暂停时长
+            updateExperimentTimer.setDuration(duration);
+            updateExperimentTimer.setPaused(false);
+            // 本期结束时间 = 元本期结束时间+暂停时间
+            updateExperimentTimer.setEndTime(updateExperimentTimer.getEndTime() + duration);
+            // 设置暂停结束时间
+            updateExperimentTimer.setPauseEndTime(updateExperimentTimer.getPauseStartTime());
+            updateExperimentTimer.setPeriodInterval(updateExperimentTimer.getPeriodInterval());
             // 加入待更新集合
-            updateExperimentTimerEntities.addAll(experimentTimerEntityList);
-        }
-        // 批量更新期数定时器
-        boolean b = experimentTimerBiz.saveOrUpdateBatch(updateExperimentTimerEntities);
-        if (b) {
-            // 通知客户端
-            ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfos();
-            Set<Channel> channels = userInfos.keySet();
-            for (Channel channel : channels) {
-                HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, experimentRestartRequest);
+            updateExperimentTimerEntities.add(updateExperimentTimer);
+            // 剔除当前期数
+            experimentTimerEntityList.removeAll(collect);
+            if (experimentTimerEntityList.size() > 0) {
+                // 从新排序，确保当前期数后的期数自增
+                experimentTimerEntityList = experimentTimerEntityList.stream()
+                        .sorted(Comparator.comparingInt(ExperimentTimerEntity::getPeriod))
+                        .collect(Collectors.toList());
+                for (ExperimentTimerEntity currentPeriod : experimentTimerEntityList) {
+                    if (currentPeriod.getPeriod() >= experimentRestartRequest.getPeriods()) {
+                        // 重新设置当前期数的下一期开始时间，结束时间等
+                        currentPeriod.setStartTime(currentPeriod.getStartTime() + duration);
+                        currentPeriod.setEndTime(currentPeriod.getEndTime() + duration);
+                    }
+                }
+                // 加入待更新集合
+                updateExperimentTimerEntities.addAll(experimentTimerEntityList);
+            }
+            // 批量更新期数定时器
+            boolean b = experimentTimerBiz.saveOrUpdateBatch(updateExperimentTimerEntities);
+            if (b) {
+                // 通知客户端
+                ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfos();
+                Set<Channel> channels = userInfos.keySet();
+                for (Channel channel : channels) {
+                    HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, experimentRestartRequest);
+                }
             }
         }
     }

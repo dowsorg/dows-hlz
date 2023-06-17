@@ -9,6 +9,10 @@ public enum EventName {
 
     allotEvent("allotHandler"),
 
+    createGroupEvent("createGroupHandler"),
+
+    groupMemberAllotEvent("groupMemberAllotHandler"),
+
     ;
 
 

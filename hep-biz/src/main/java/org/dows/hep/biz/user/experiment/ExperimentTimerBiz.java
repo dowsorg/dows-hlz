@@ -106,10 +106,10 @@ public class ExperimentTimerBiz {
             throw new ExperimentException("获取实验期数异常,当前时间存在多个期数,请检查期数配置");
         } else if (collect1.size() == 0) {
             log.error("获取实验期数异常,当前时间不存在对应的实验期数");
-            throw new ExperimentException("获取实验期数异常,当前时间不存在对应的实验期数");
+            throw new ExperimentException("获取实验期数异常,当前时间不存在对应的实验期数,或该实验已结束");
         } else {
+            // 获取当前期数
             ExperimentTimerEntity experimentTimerEntity = collect1.get(0);
-
             ExperimentPeriodsResonse experimentPeriodsResonse = new ExperimentPeriodsResonse();
             experimentPeriodsResonse.setCurrentPeriod(experimentTimerEntity.getPeriod());
             experimentPeriodsResonse.setExperimentInstanceId(experimentTimerEntity.getExperimentInstanceId());

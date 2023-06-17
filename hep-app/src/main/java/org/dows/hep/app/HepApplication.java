@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 @EnableScheduling
 public class HepApplication{
     public static void main(String[] args) {
+        //TimeZone.setDefault(TimeZone.getTimeZone("GMT+8"));
         System.setProperty("SERVICE_NAME","hep");
         SpringApplication.run(HepApplication.class, args);
     }

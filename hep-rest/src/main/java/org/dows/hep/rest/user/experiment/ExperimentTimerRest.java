@@ -3,11 +3,16 @@ package org.dows.hep.rest.user.experiment;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.enums.ExperimentStateEnum;
+import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.user.experiment.response.CountDownResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
+import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -20,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "实验计时器", description = "实验计时器")
 public class ExperimentTimerRest {
     private final ExperimentTimerBiz experimentTimerBiz;
+    private final ExperimentManageBiz experimentManageBiz;
 
     /**
      * 获取实验倒计时
@@ -44,6 +50,30 @@ public class ExperimentTimerRest {
     @GetMapping("v1/userExperiment/experimentTimer/periods")
     public ExperimentPeriodsResonse periods(String appId, String experimentInstanceId) {
         return experimentTimerBiz.getExperimentPeriods(appId, experimentInstanceId);
+    }
+
+    /**
+     * 获取实验每期时间
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取当前实验状态")
+    @GetMapping("v1/userExperiment/experimentTimer/getExperimentState")
+    public ExperimentStateEnum getExperimentStarted(String appId, String experimentInstanceId) {
+        return experimentManageBiz.getExperimentStarted(appId, experimentInstanceId);
+    }
+
+    /**
+     * 获取实验列表
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "开始/暂停实验")
+    @PostMapping("v1/userExperiment/experimentTimer/restart")
+    public void restart(@RequestBody @Validated ExperimentRestartRequest experimentRestartRequest) {
+        experimentManageBiz.restart(experimentRestartRequest);
     }
 
 

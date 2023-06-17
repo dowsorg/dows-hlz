@@ -9,10 +9,13 @@ import java.io.Serializable;
  */
 public class AllotEvent extends ExperimentEvent implements Serializable {
 
+
     @Getter
     private EventName eventName = EventName.allotEvent;
 
     public AllotEvent(Object source) {
         super(source);
     }
+
+
 }
