@@ -49,6 +49,9 @@ public class ExperimentOrgModuleRsEntity implements CrudEntity {
   @Schema(title = "功能点分布式ID数组")
   private String indicatorFuncIdArray;
 
+  @Schema(title = "功能点分布式ID类别数组")
+  private String indicatorCategoryIdArray;
+
   @Schema(title = "顺序")
   private Integer seq;
 

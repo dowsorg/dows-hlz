@@ -51,9 +51,6 @@ public class ExperimentIndicatorViewBaseInfoRsEntity implements CrudEntity {
     @Schema(title = "应用ID")
     private String appId;
 
-    @Schema(title = "指标功能ID")
-    private String indicatorFuncId;
-
     @JsonIgnore
     @TableLogic
     @TableField(fill = FieldFill.INSERT)

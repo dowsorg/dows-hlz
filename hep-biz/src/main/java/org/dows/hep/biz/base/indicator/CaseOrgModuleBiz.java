@@ -162,6 +162,7 @@ public class CaseOrgModuleBiz {
       createOrUpdateCaseOrgModuleFuncRefRequestRsList.forEach(createOrUpdateCaseOrgModuleFuncRefRequestRs -> {
         String caseOrgModuleFuncRefId = createOrUpdateCaseOrgModuleFuncRefRequestRs.getCaseOrgModuleFuncRefId();
         String indicatorFuncId = createOrUpdateCaseOrgModuleFuncRefRequestRs.getIndicatorFuncId();
+        Integer seq1 = createOrUpdateCaseOrgModuleFuncRefRequestRs.getSeq();
         CaseOrgModuleFuncRefEntity caseOrgModuleFuncRefEntity = null;
         if (StringUtils.isBlank(caseOrgModuleFuncRefId)) {
           caseOrgModuleFuncRefId = idGenerator.nextIdStr();
@@ -171,6 +172,7 @@ public class CaseOrgModuleBiz {
               .appId(appId)
               .caseOrgModuleId(finalCaseOrgModuleId)
               .indicatorFuncId(indicatorFuncId)
+              .seq(seq1)
               .build();
         } else {
           caseOrgModuleFuncRefEntity = kCaseOrgModuleFuncRefIdVCaseOrgModuleFuncRefEntityMap.get(caseOrgModuleFuncRefId);

@@ -43,6 +43,9 @@ public class CaseOrgModuleFuncRefEntity implements CrudEntity {
   @Schema(title = "功能点分布式ID")
   private String indicatorFuncId;
 
+  @Schema(title = "顺序")
+  private Integer seq;
+
   @JsonIgnore
   @TableLogic
   @TableField(fill = FieldFill.INSERT)

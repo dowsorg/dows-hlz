@@ -2,6 +2,7 @@ package org.dows.hep.biz.base.indicator;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.CopyViewIndicatorRequestRs;
 import org.dows.hep.api.base.indicator.request.JudgeViewIndicatorRequestRs;
 import org.dows.hep.api.enums.EnumESC;
@@ -25,6 +26,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RsCopyBiz {
   private final IdGenerator idGenerator;
+  private final ExperimentOrgService experimentOrgService;
+  private final ExperimentOrgModuleRsService experimentOrgModuleRsService;
   private final CaseInstanceService caseInstanceService;
   private final CaseOrgService caseOrgService;
   private final CaseOrgModuleService caseOrgModuleService;
@@ -57,9 +60,18 @@ public class RsCopyBiz {
 
   @Transactional(rollbackFor = Exception.class)
   public void rsCopyViewIndicator(CopyViewIndicatorRequestRs copyViewIndicatorRequestRs) {
+    List<ExperimentOrgModuleRsEntity> experimentOrgModuleRsEntityList = new ArrayList<>();
+    List<ExperimentOrgEntity> experimentOrgEntityList = new ArrayList<>();
+    List<CaseOrgModuleEntity> caseOrgModuleEntityList = new ArrayList<>();
     String appId = copyViewIndicatorRequestRs.getAppId();
     String caseInstanceId = copyViewIndicatorRequestRs.getCaseInstanceId();
     String experimentInstanceId = copyViewIndicatorRequestRs.getExperimentInstanceId();
+    Map<String, ExperimentOrgEntity> kExperimentOrgIdVExperimentOrgEntityMap = new HashMap<>();
+    Map<String, List<ExperimentOrgEntity>> kExperimentIdVExperimentOrgEntityListMap = new HashMap<>();
+    Map<String, List<ExperimentOrgEntity>> kCaseOrgIdVExperimentOrgEntityListMap = new HashMap<>();
+    Map<String, String> kExperimentIndicatorFuncIdVIndicatorFuncIdMap = new HashMap<>();
+    Map<String, Integer> kExperimentIndicatorFuncIdVSeq = new HashMap<>();
+    Map<String, String> kExperimentIndicatorFuncIdVIndicatorCategoryIdMap = new HashMap<>();
     caseInstanceService.lambdaQuery()
         .eq(CaseInstanceEntity::getCaseInstanceId, caseInstanceId)
         .oneOpt()
@@ -80,11 +92,19 @@ public class RsCopyBiz {
       throw new RsCopyException(EnumESC.VALIDATE_EXCEPTION);
     }
     Map<String, CaseOrgModuleEntity> kCaseOrgModuleIdVCaseOrgModuleEntityMap = new HashMap<>();
+    Map<String, List<CaseOrgModuleEntity>> kCaseOrgIdVCaseOrgModuleEntityListMap = new HashMap<>();
     caseOrgModuleService.lambdaQuery()
         .eq(CaseOrgModuleEntity::getAppId, appId)
         .in(CaseOrgModuleEntity::getCaseOrgId, caseOrgIdSet)
         .list()
         .forEach(caseOrgModuleEntity -> {
+          List<CaseOrgModuleEntity> caseOrgModuleEntityList1 = kCaseOrgIdVCaseOrgModuleEntityListMap.get(caseOrgModuleEntity.getCaseOrgId());
+          if (Objects.isNull(caseOrgModuleEntityList1)) {
+            caseOrgModuleEntityList1 = new ArrayList<>();
+          }
+          caseOrgModuleEntityList1.add(caseOrgModuleEntity);
+          kCaseOrgIdVCaseOrgModuleEntityListMap.put(caseOrgModuleEntity.getCaseOrgId(), caseOrgModuleEntityList1);
+          caseOrgModuleEntityList.add(caseOrgModuleEntity);
           kCaseOrgModuleIdVCaseOrgModuleEntityMap.put(caseOrgModuleEntity.getCaseOrgModuleId(), caseOrgModuleEntity);
         });
     Set<String> caseOrgModuleIdSet = kCaseOrgModuleIdVCaseOrgModuleEntityMap.keySet();
@@ -93,17 +113,52 @@ public class RsCopyBiz {
       throw new RsCopyException(EnumESC.VALIDATE_EXCEPTION);
     }
     Set<String> indicatorFuncIdSet = new HashSet<>();
+    Map<String, Map<String, Integer>> kIndicatorFuncIdVKCaseOrgModuleIdVSeqMap = new HashMap<>();
+    Map<String, List<String>> kIndicatorFuncIdVCaseOrgModuleIdList = new HashMap<>();
     caseOrgModuleFuncRefService.lambdaQuery()
         .eq(CaseOrgModuleFuncRefEntity::getAppId, appId)
         .in(CaseOrgModuleFuncRefEntity::getCaseOrgModuleId, caseOrgModuleIdSet)
         .list()
         .forEach(caseOrgModuleFuncRefEntity -> {
-          indicatorFuncIdSet.add(caseOrgModuleFuncRefEntity.getIndicatorFuncId());
+          String indicatorFuncId = caseOrgModuleFuncRefEntity.getIndicatorFuncId();
+          indicatorFuncIdSet.add(indicatorFuncId);
+          List<String> caseOrgModuleIdList = kIndicatorFuncIdVCaseOrgModuleIdList.get(indicatorFuncId);
+          if (Objects.isNull(caseOrgModuleIdList)) {
+            caseOrgModuleIdList = new ArrayList<>();
+          }
+          caseOrgModuleIdList.add(caseOrgModuleFuncRefEntity.getCaseOrgModuleId());
+          kIndicatorFuncIdVCaseOrgModuleIdList.put(indicatorFuncId, caseOrgModuleIdList);
+          Map<String, Integer> aMap = new HashMap<>();
+          aMap.put(caseOrgModuleFuncRefEntity.getCaseOrgModuleId(), caseOrgModuleFuncRefEntity.getSeq());
+          kIndicatorFuncIdVKCaseOrgModuleIdVSeqMap.put(indicatorFuncId, aMap);
         });
     if (indicatorFuncIdSet.isEmpty()) {
       log.warn("method RsCopyBiz.rsCopyViewIndicator has no indicatorFunc");
       throw new RsCopyException(EnumESC.VALIDATE_EXCEPTION);
     }
+    experimentOrgService.lambdaQuery()
+      .eq(ExperimentOrgEntity::getAppId, appId)
+      .eq(ExperimentOrgEntity::getExperimentInstanceId, experimentInstanceId)
+      .list()
+      .forEach(experimentOrgEntity -> {
+        String caseOrgId = experimentOrgEntity.getCaseOrgId();
+        List<ExperimentOrgEntity> experimentOrgEntityList1 = kCaseOrgIdVExperimentOrgEntityListMap.get(caseOrgId);
+        if (Objects.isNull(experimentOrgEntityList1)) {
+          experimentOrgEntityList1 = new ArrayList<>();
+        }
+        experimentOrgEntityList1.add(experimentOrgEntity);
+        kCaseOrgIdVExperimentOrgEntityListMap.put(caseOrgId, experimentOrgEntityList1);
+        experimentOrgEntityList.add(experimentOrgEntity);
+        String experimentOrgId = experimentOrgEntity.getExperimentOrgId();
+        kExperimentOrgIdVExperimentOrgEntityMap.put(experimentOrgId, experimentOrgEntity);
+        List<ExperimentOrgEntity> experimentOrgEntityList0 = kExperimentIdVExperimentOrgEntityListMap.get(experimentInstanceId);
+        if (Objects.isNull(experimentOrgEntityList0)) {
+          experimentOrgEntityList0 = new ArrayList<>();
+        }
+        experimentOrgEntityList0.add(experimentOrgEntity);
+        kExperimentIdVExperimentOrgEntityListMap.put(experimentInstanceId, experimentOrgEntityList0);
+      });
+    Map<String, List<String>> kCaseOrgModuleIdVExperimentIndicatorFuncIdListMap = new HashMap<>();
     Map<String, IndicatorFuncEntity> kIndicatorFuncIdVIndicatorFuncEntityMap = new HashMap<>();
     /* runsix: view*/
     Set<String> funcIndicatorViewBaseInfoIdSet = new HashSet<>();
@@ -178,7 +233,6 @@ public class RsCopyBiz {
     Map<String, List<IndicatorViewBaseInfoMonitorContentEntity>> kIVBIMIdVIVBIMContentEntityListMap = new HashMap<>();
     Set<String> iVBIMContentIdSet = new HashSet<>();
     Map<String, List<IndicatorViewBaseInfoMonitorContentRefEntity>> kIVBIMContentIdVIVBIMContentRefEntityListMap = new HashMap<>();
-
     if (!funcIndicatorViewBaseInfoIdSet.isEmpty()) {
       indicatorViewBaseInfoService.lambdaQuery()
           .eq(IndicatorViewBaseInfoEntity::getAppId, appId)
@@ -292,6 +346,20 @@ public class RsCopyBiz {
     }
     kBaseInfoIdVBaseInfoMap.forEach((indicatorViewBaseInfoId, indicatorViewBaseInfoEntity) -> {
       String experimentIndicatorViewBaseInfoId = idGenerator.nextIdStr();
+      String indicatorFuncId = indicatorViewBaseInfoEntity.getIndicatorFuncId();
+      kExperimentIndicatorFuncIdVIndicatorFuncIdMap.put(experimentIndicatorViewBaseInfoId, indicatorFuncId);
+      List<String> caseOrgModuleIdList = kIndicatorFuncIdVCaseOrgModuleIdList.get(indicatorFuncId);
+      if (Objects.nonNull(caseOrgModuleIdList)) {
+        caseOrgModuleIdList.forEach(caseOrgModuleId -> {
+          List<String> experimentIndicatorFuncIdList = kCaseOrgModuleIdVExperimentIndicatorFuncIdListMap.get(caseOrgModuleId);
+          if (Objects.isNull(experimentIndicatorFuncIdList)) {
+            experimentIndicatorFuncIdList = new ArrayList<>();
+          }
+          experimentIndicatorFuncIdList.add(experimentIndicatorViewBaseInfoId);
+          kCaseOrgModuleIdVExperimentIndicatorFuncIdListMap.put(caseOrgModuleId, experimentIndicatorFuncIdList);
+          kExperimentIndicatorFuncIdVIndicatorCategoryIdMap.put(experimentIndicatorViewBaseInfoId, EnumIndicatorCategory.VIEW_MANAGEMENT_BASE_INFO.getCode());
+        });
+      }
       ExperimentIndicatorViewBaseInfoRsEntity experimentIndicatorViewBaseInfoRsEntity = ExperimentIndicatorViewBaseInfoRsEntity
           .builder()
           .experimentIndicatorViewBaseInfoId(experimentIndicatorViewBaseInfoId)
@@ -299,7 +367,6 @@ public class RsCopyBiz {
           .experimentId(experimentInstanceId)
           .caseId(caseInstanceId)
           .appId(appId)
-          .indicatorFuncId(idGenerator.nextIdStr())
           .build();
       experimentIndicatorViewBaseInfoRsEntityList.add(experimentIndicatorViewBaseInfoRsEntity);
       /* runsix:查看指标-基本信息-指标描述表 */
@@ -439,11 +506,68 @@ public class RsCopyBiz {
       /* runsix:查看指标-基本信息-单一指标表 */
     });
     /* runsix:查看指标-基本信息 */
+    /* runsix:复制机构功能模块以及功能点 */
+    caseOrgEntityList.forEach(caseOrgEntity -> {
+      String caseOrgId = caseOrgEntity.getCaseOrgId();
+      List<CaseOrgModuleEntity> caseOrgModuleEntityList1 = kCaseOrgIdVCaseOrgModuleEntityListMap.get(caseOrgId);
+      if (Objects.nonNull(caseOrgModuleEntityList1) && !caseOrgModuleEntityList1.isEmpty()) {
+        caseOrgModuleEntityList1.forEach(caseOrgModuleEntity -> {
+          String caseOrgId1 = caseOrgModuleEntity.getCaseOrgId();
+          List<ExperimentOrgEntity> experimentOrgEntityList1 = kCaseOrgIdVExperimentOrgEntityListMap.get(caseOrgId1);
+          if (Objects.nonNull(experimentOrgEntityList1) && !experimentOrgEntityList1.isEmpty()) {
+            experimentOrgEntityList1.forEach(experimentOrgEntity1 -> {
+              String experimentOrgModuleId = idGenerator.nextIdStr();
+              String caseOrgModuleId = caseOrgModuleEntity.getCaseOrgModuleId();
+              String indicatorFuncIdArray = null;
+              String indicatorCategoryIdArray = null;
+              List<String> experimentIndicatorFuncIdList = kCaseOrgModuleIdVExperimentIndicatorFuncIdListMap.get(caseOrgModuleId);
+              if (Objects.nonNull(experimentIndicatorFuncIdList) && !experimentIndicatorFuncIdList.isEmpty()) {
+                experimentIndicatorFuncIdList.sort(Comparator.comparingInt(experimentIndicatorFuncId -> {
+                  String indicatorFuncId = kExperimentIndicatorFuncIdVIndicatorFuncIdMap.get(experimentIndicatorFuncId);
+                  if (StringUtils.isBlank(indicatorFuncId)) {
+                    return 0;
+                  }
+                  Map<String, Integer> aMap = kIndicatorFuncIdVKCaseOrgModuleIdVSeqMap.get(indicatorFuncId);
+                  if (Objects.isNull(aMap)) {
+                    return 0;
+                  }
+                  return aMap.get(caseOrgModuleId);
+                }));
+                indicatorFuncIdArray = String.join(EnumString.COMMA.getStr(), experimentIndicatorFuncIdList);
+                List<String> indicatorCategoryIdList = new ArrayList<>();
+                experimentIndicatorFuncIdList.forEach(experimentIndicatorFuncId -> {
+                  String indicatorCategoryId = kExperimentIndicatorFuncIdVIndicatorCategoryIdMap.get(experimentIndicatorFuncId);
+                  if (StringUtils.isBlank(indicatorCategoryId)) {
+                    indicatorCategoryId = "被删除";
+                  }
+                  indicatorCategoryIdList.add(indicatorCategoryId);
+                });
+                indicatorCategoryIdArray = String.join(EnumString.COMMA.getStr(), indicatorCategoryIdList);
+              }
 
+              ExperimentOrgModuleRsEntity experimentOrgModuleRsEntity = ExperimentOrgModuleRsEntity
+                  .builder()
+                  .experimentOrgModuleId(experimentOrgModuleId)
+                  .caseOrgModuleId(caseOrgModuleId)
+                  .appId(appId)
+                  .orgId(experimentOrgEntity1.getOrgId())
+                  .name(caseOrgModuleEntity.getName())
+                  .indicatorFuncIdArray(indicatorFuncIdArray)
+                  .indicatorCategoryIdArray(indicatorCategoryIdArray)
+                  .seq(caseOrgModuleEntity.getSeq())
+                  .build();
+              experimentOrgModuleRsEntityList.add(experimentOrgModuleRsEntity);
+            });
+          }
+        });
+      }
+    });
+    /* runsix:复制机构功能模块以及功能点 */
     experimentIndicatorViewBaseInfoRsService.saveOrUpdateBatch(experimentIndicatorViewBaseInfoRsEntityList);
     experimentIndicatorViewBaseInfoDescrRsService.saveOrUpdateBatch(experimentIndicatorViewBaseInfoDescRsEntityList);
     experimentIndicatorViewBaseInfoMonitorRsService.saveOrUpdateBatch(experimentIndicatorViewBaseInfoMonitorRsEntityList);
     experimentIndicatorViewBaseInfoSingleRsService.saveOrUpdateBatch(experimentIndicatorViewBaseInfoSingleRsEntityList);
+    experimentOrgModuleRsService.saveOrUpdateBatch(experimentOrgModuleRsEntityList);
   }
 
   @Transactional(rollbackFor = Exception.class)
