@@ -71,6 +71,9 @@ public class ExperimentQuestionnaireManageBiz {
             return;
         }
         List<CaseQuestionnaireResponse> caseQuestionnaireResponses = tenantCaseQuestionnaireBiz.listByIds(caseQuestionnaireIds);
+        if (CollUtil.isEmpty(caseQuestionnaireResponses)) {
+            return;
+        }
         Map<String, QuestionSectionResponse> collect = caseQuestionnaireResponses.stream()
                 .collect(Collectors.toMap(CaseQuestionnaireResponse::getCaseQuestionnaireId, CaseQuestionnaireResponse::getQuestionSectionResponse));
 
