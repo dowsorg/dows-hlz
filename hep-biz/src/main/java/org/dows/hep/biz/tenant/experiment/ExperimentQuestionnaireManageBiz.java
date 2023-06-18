@@ -26,6 +26,7 @@ import org.springframework.util.Assert;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -84,10 +85,10 @@ public class ExperimentQuestionnaireManageBiz {
         // 为每个小组分配试卷
         List<ExperimentQuestionnaireEntity> entityList = new ArrayList<>();
         List<ExperimentQuestionnaireItemEntity> itemEntityList = new ArrayList<>();
-        experimentGroupIds.forEach(groupId -> {
-            periodOrgCollect.forEach((period, orgCollect) -> {
-                if (!orgCollect.isEmpty()) {
-                    orgCollect.forEach((org, orgQuestionnaire) -> {
+        experimentGroupIds.forEach(groupId -> periodOrgCollect.forEach((period, orgCollect) -> {
+            if (!orgCollect.isEmpty()) {
+                orgCollect.forEach((org, orgQuestionnaire) -> {
+                    if (BeanUtil.isNotEmpty(orgQuestionnaire)) {
                         // experiment-questionnaire
                         ExperimentQuestionnaireEntity entity = ExperimentQuestionnaireEntity.builder()
                                 .experimentQuestionnaireId(baseBiz.getIdStr())
@@ -102,33 +103,32 @@ public class ExperimentQuestionnaireManageBiz {
                         entityList.add(entity);
 
                         // experiment-questionnaire-item
-                        List<ExperimentQuestionnaireItemEntity> localItemList = new ArrayList<>();
-                        String caseQuestionnaireId = orgQuestionnaire.getCaseQuestionnaireId();
                         if (CollUtil.isNotEmpty(collect)) {
-                            // set item
-                            QuestionSectionResponse questionSectionResponse = collect.get(caseQuestionnaireId);
-                            if (BeanUtil.isNotEmpty(questionSectionResponse)) {
-                                List<QuestionSectionItemResponse> sectionItemList = questionSectionResponse.getSectionItemList();
-                                if (CollUtil.isNotEmpty(sectionItemList)) {
-                                    sectionItemList.forEach(sectionItem -> {
-                                        QuestionResponse question = sectionItem.getQuestion();
-                                        List<ExperimentQuestionnaireItemEntity> itemEntities = convertToFlatList(question);
-                                        localItemList.addAll(itemEntities);
-                                    });
-                                }
-                                // sort
-                                for (int i = 0; i < localItemList.size(); i++) {
-                                    ExperimentQuestionnaireItemEntity item = localItemList.get(i);
-                                    item.setSeq(i);
-                                    item.setExperimentQuestionnaireId(entity.getExperimentQuestionnaireId());
-                                }
-                                itemEntityList.addAll(localItemList);
+                            List<ExperimentQuestionnaireItemEntity> localItemList = new ArrayList<>();
+                            // set questionnaire-item
+                            QuestionSectionResponse questionSectionResponse = collect.get(orgQuestionnaire.getCaseQuestionnaireId());
+                            List<QuestionSectionItemResponse> sectionItemList = Optional.ofNullable(questionSectionResponse)
+                                    .map(QuestionSectionResponse::getSectionItemList)
+                                    .orElse(new ArrayList<>());
+                            if (CollUtil.isNotEmpty(sectionItemList)) {
+                                sectionItemList.forEach(sectionItem -> {
+                                    QuestionResponse question = sectionItem.getQuestion();
+                                    List<ExperimentQuestionnaireItemEntity> itemEntities = convertToFlatList(question);
+                                    localItemList.addAll(itemEntities);
+                                });
                             }
+                            // sort
+                            for (int i = 0; i < localItemList.size(); i++) {
+                                ExperimentQuestionnaireItemEntity item = localItemList.get(i);
+                                item.setSeq(i);
+                                item.setExperimentQuestionnaireId(entity.getExperimentQuestionnaireId());
+                            }
+                            itemEntityList.addAll(localItemList);
                         }
-                    });
-                }
-            });
-        });
+                    }
+                });
+            }
+        }));
 
         experimentQuestionnaireService.saveBatch(entityList);
         experimentQuestionnaireItemService.saveBatch(itemEntityList);
