@@ -1,7 +1,10 @@
 package org.dows.hep.biz.tenant.experiment;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.question.response.QuestionOptionWithAnswerResponse;
 import org.dows.hep.api.base.question.response.QuestionResponse;
@@ -21,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -66,6 +68,7 @@ public class ExperimentQuestionnaireManageBiz {
                 .stream()
                 .flatMap(item -> item.values().stream())
                 .map(CaseOrgQuestionnaireResponse::getCaseQuestionnaireId)
+                .filter(StrUtil::isNotBlank)
                 .toList();
         if (CollUtil.isEmpty(caseQuestionnaireIds)) {
             return;
@@ -104,21 +107,23 @@ public class ExperimentQuestionnaireManageBiz {
                         if (CollUtil.isNotEmpty(collect)) {
                             // set item
                             QuestionSectionResponse questionSectionResponse = collect.get(caseQuestionnaireId);
-                            List<QuestionSectionItemResponse> sectionItemList = questionSectionResponse.getSectionItemList();
-                            if (CollUtil.isNotEmpty(sectionItemList)) {
-                                sectionItemList.forEach(sectionItem -> {
-                                    QuestionResponse question = sectionItem.getQuestion();
-                                    List<ExperimentQuestionnaireItemEntity> itemEntities = convertToFlatList(question);
-                                    localItemList.addAll(itemEntities);
-                                });
+                            if (BeanUtil.isNotEmpty(questionSectionResponse)) {
+                                List<QuestionSectionItemResponse> sectionItemList = questionSectionResponse.getSectionItemList();
+                                if (CollUtil.isNotEmpty(sectionItemList)) {
+                                    sectionItemList.forEach(sectionItem -> {
+                                        QuestionResponse question = sectionItem.getQuestion();
+                                        List<ExperimentQuestionnaireItemEntity> itemEntities = convertToFlatList(question);
+                                        localItemList.addAll(itemEntities);
+                                    });
+                                }
+                                // sort
+                                for (int i = 0; i < localItemList.size(); i++) {
+                                    ExperimentQuestionnaireItemEntity item = localItemList.get(i);
+                                    item.setSeq(i);
+                                    item.setExperimentQuestionnaireId(entity.getExperimentQuestionnaireId());
+                                }
+                                itemEntityList.addAll(localItemList);
                             }
-                            // sort
-                            for (int i = 0; i < localItemList.size(); i++) {
-                                ExperimentQuestionnaireItemEntity item = localItemList.get(i);
-                                item.setSeq(i);
-                                item.setExperimentQuestionnaireId(entity.getExperimentQuestionnaireId());
-                            }
-                            itemEntityList.addAll(localItemList);
                         }
                     });
                 }
@@ -171,14 +176,14 @@ public class ExperimentQuestionnaireManageBiz {
             return "";
         }
 
-        ArrayList<Map> maps = new ArrayList<>();
+        List<Option> options = new ArrayList<>();
         optionWithAnswerList.forEach(item -> {
-            Map<String, String> map = new HashMap<>();
-            map.put("title", item.getOptionTitle());
-            map.put("value", item.getOptionValue());
-            maps.add(map);
+            Option option = new Option();
+            option.setTitle(item.getOptionTitle());
+            option.setValue(item.getOptionValue());
+            options.add(option);
         });
-        return JSON.toJSONString(maps);
+        return JSON.toJSONString(options);
     }
 
     private String getRightValues(List<QuestionOptionWithAnswerResponse> optionWithAnswerList) {
@@ -186,9 +191,21 @@ public class ExperimentQuestionnaireManageBiz {
             return "";
         }
 
-        return optionWithAnswerList.stream()
-                .filter(QuestionOptionWithAnswerResponse::getRightAnswer)
-                .map(QuestionOptionWithAnswerResponse::getOptionTitle)
-                .collect(Collectors.joining(","));
+        List<Option> options = new ArrayList<>();
+        optionWithAnswerList.forEach(item -> {
+            if (item.getRightAnswer() != null && item.getRightAnswer() == Boolean.TRUE) {
+                Option option = new Option();
+                option.setTitle(item.getOptionTitle());
+                option.setValue(item.getOptionValue());
+                options.add(option);
+            }
+        });
+        return JSON.toJSONString(options);
+    }
+
+    @Data
+    public static class Option {
+        private String title;
+        private String value;
     }
 }
