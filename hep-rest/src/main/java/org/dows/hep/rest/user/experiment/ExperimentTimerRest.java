@@ -61,7 +61,7 @@ public class ExperimentTimerRest {
     @Operation(summary = "获取当前实验状态")
     @GetMapping("v1/userExperiment/experimentTimer/getExperimentState")
     public ExperimentStateEnum getExperimentStarted(String appId, String experimentInstanceId) {
-        return experimentManageBiz.getExperimentStarted(appId, experimentInstanceId);
+        return experimentManageBiz.getExperimentState(appId, experimentInstanceId);
     }
 
     /**
