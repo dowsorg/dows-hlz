@@ -5,7 +5,7 @@ import lombok.Getter;
 public enum EventName {
     startEvent("startHandler"),
     finishEvent("finishHandler"),
-    suspendEvent("suspendHandler"),
+    suspendEvent("c"),
     allotEvent("allotHandler"),
     groupEvent("groupHandler"),
     exptSchemeSyncEvent("exptSchemeSyncHandler"),
