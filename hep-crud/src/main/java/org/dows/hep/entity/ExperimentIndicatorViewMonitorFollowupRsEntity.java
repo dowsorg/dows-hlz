@@ -15,10 +15,10 @@ import org.dows.framework.crud.api.CrudEntity;
 import java.util.Date;
 
 /**
- * 指标基本信息描述表(IndicatorViewBaseInfoDescr)实体类
+ * 查看指标监测随访类(IndicatorViewMonitorFollowup)实体类
  *
  * @author lait
- * @since 2023-04-28 10:26:25
+ * @since 2023-04-28 10:26:33
  */
 @SuppressWarnings("serial")
 @Data
@@ -28,37 +28,34 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "ExperimentIndicatorViewBaseInfoDescrRsEntity", title = "指标基本信息描述表")
-@TableName("experiment_indicator_view_base_info_descr_rs")
-public class ExperimentIndicatorViewBaseInfoDescrRsEntity implements CrudEntity {
+@Schema(name = "ExperimentIndicatorViewMonitorFollowupRsEntity", title = "查看指标监测随访类")
+@TableName("experiment_indicator_view_monitor_followup_rs")
+public class ExperimentIndicatorViewMonitorFollowupRsEntity implements CrudEntity {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "主键")
     private Long id;
 
     @Schema(title = "分布式ID")
-    private String experimentIndicatorViewBaseInfoDescId;
+    private String experimentIndicatorViewMonitorFollowupId;
 
     @Schema(title = "分布式ID")
-    private String indicatorViewBaseInfoDescId;
+    private String indicatorViewMonitorFollowupId;
 
     @Schema(title = "应用ID")
     private String appId;
 
-    @Schema(title = "分布式ID")
-    private String indicatorViewBaseInfoId;
+    @Schema(title = "指标功能ID")
+    private String indicatorFuncId;
 
-    @Schema(title = "指标基本信息描述表名称")
+    @Schema(title = "指标监测随访类表名称")
     private String name;
 
-    @Schema(title = "展示顺序")
-    private Integer seq;
+    @Schema(title = "监测随访表类别Id")
+    private String indicatorCategoryId;
 
-    @Schema(title = "指标id列表")
-    private String indicatorInstanceIdArray;
-
-    @Schema(title = "指标名称列表")
-    private String indicatorInstanceNameArray;
+    @Schema(title = "0-禁用，1-启用")
+    private Integer status;
 
     @JsonIgnore
     @TableLogic

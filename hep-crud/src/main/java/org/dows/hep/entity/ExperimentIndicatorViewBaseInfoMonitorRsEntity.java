@@ -29,7 +29,7 @@ import java.util.Date;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(name = "ExperimentIndicatorViewBaseInfoMonitorRsEntity", title = "指标基本信息监测表")
-@TableName("indicator_view_base_info_monitor_rs")
+@TableName("experiment_indicator_view_base_info_monitor_rs")
 public class ExperimentIndicatorViewBaseInfoMonitorRsEntity implements CrudEntity {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
@@ -41,6 +41,12 @@ public class ExperimentIndicatorViewBaseInfoMonitorRsEntity implements CrudEntit
 
     @Schema(title = "分布式ID")
     private String indicatorViewBaseInfoMonitorId;
+
+    @Schema(title = "实验id")
+    private String experimentId;
+
+    @Schema(title = "案例id")
+    private String caseId;
 
     @Schema(title = "分布式ID")
     private String indicatorViewBaseInfoId;
@@ -55,13 +61,14 @@ public class ExperimentIndicatorViewBaseInfoMonitorRsEntity implements CrudEntit
     private Integer seq;
 
     @Schema(title = "基本信息监测随访随访内容名称")
-    private String indicatorViewMonitorFollowupFollowupContentNameArray;
-
-    @Schema(title = "基本信息监测随访随访内容指标名称, #号分隔不同随访内容，','分隔单个随访内容")
-    private String indicatorViewMonitorFollowupContentRefNameArray;
+    private String ivbimContentNameArray;
 
     @Schema(title = "基本信息监测随访随访内容指标id, #号分隔不同随访内容，','分隔单个随访内容")
-    private String indicatorViewMonitorFollowupContentRefIndicatorInstanceIdArray;
+    private String ivbimContentRefIndicatorInstanceIdArray;
+
+    @Schema(title = "基本信息监测随访随访内容指标名称, #号分隔不同随访内容，','分隔单个随访内容")
+    private String ivbimContentRefIndicatorInstanceNameArray;
+
 
     @JsonIgnore
     @TableLogic
