@@ -14,6 +14,8 @@ public enum EventName {
 
     groupMemberAllotEvent("groupMemberAllotHandler"),
 
+    teamName("teamNameHandler"),
+
     ;
 
 
