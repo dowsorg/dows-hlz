@@ -389,13 +389,6 @@ public class ExperimentManageBiz {
                 .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
                 .caseInstanceId(caseInstanceId)
                 .build()));
-
-        // 将实验Id和名称set进去
-//        ExperimentContext experimentContext = new ExperimentContext();
-//        experimentContext.setExperimentId(experimentGroupSettingRequest.getExperimentInstanceId());
-//        experimentContext.setExperimentName(experimentGroupSettingRequest.getExperimentName());
-//        experimentContext.setState(ExperimentStateEnum.UNBEGIN);
-//        ExperimentContext.set(experimentContext);
         // todo 后续移到事件监听中
 //        // 预处理方案设计
 //        String experimentInstanceId = experimentGroupSettingRequest.getExperimentInstanceId();
