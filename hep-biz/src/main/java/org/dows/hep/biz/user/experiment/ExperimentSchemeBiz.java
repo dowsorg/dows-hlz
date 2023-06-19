@@ -86,7 +86,7 @@ public class ExperimentSchemeBiz {
         }
 
         // update
-        handleExperimentSchemeItem(request);
+        handleExperimentSchemeAccount(request);
 
         // handle begin-time
         handleExperimentSchemeBeginTime(request);
@@ -298,7 +298,7 @@ public class ExperimentSchemeBiz {
         return tree;
     }
 
-    private void handleExperimentSchemeItem(ExperimentAllotSchemeRequest request) {
+    private void handleExperimentSchemeAccount(ExperimentAllotSchemeRequest request) {
         List<ExperimentAllotSchemeRequest.ParticipatorWithScheme> allotList = request.getAllotList();
         List<ExperimentSchemeItemRequest> itemList = new ArrayList<>();
         allotList.forEach(allotScheme -> {
