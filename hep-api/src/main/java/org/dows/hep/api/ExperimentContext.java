@@ -18,6 +18,8 @@ public class ExperimentContext {
     private ExperimentStateEnum state;
     private List<ExperimentGroup> experimentGroups;
 
+    private Integer groupCount;
+
     public static void set(ExperimentContext experimentContext) {
         //ContextThreadLocal.set(experimentContext);
         ExperimentContextMap.put(experimentContext.getExperimentId(), experimentContext);

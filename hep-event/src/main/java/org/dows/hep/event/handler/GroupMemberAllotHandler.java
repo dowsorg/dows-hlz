@@ -1,9 +1,13 @@
 package org.dows.hep.event.handler;
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.ExperimentContext;
+import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.user.experiment.request.ExperimentParticipatorRequest;
+import org.dows.hep.entity.ExperimentGroupEntity;
+import org.dows.hep.service.ExperimentGroupService;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -17,23 +21,25 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 public class GroupMemberAllotHandler extends AbstractEventHandler implements EventHandler<List<ExperimentParticipatorRequest>> {
 
+    private final ExperimentGroupService experimentGroupService;
+
     private int groupSize = 0;
 
     private AtomicInteger atomicInteger = new AtomicInteger(0);
+
     @Override
     public void exec(List<ExperimentParticipatorRequest> experimentParticipatorRequests) {
-        // todo 从ExperimentContext 取该实验的人员信息
         int amount = atomicInteger.incrementAndGet();
-        if(groupSize !=0) {
-            // 先计数
-            ExperimentContext experimentContext = ExperimentContext.getExperimentContext("实验id");
-            groupSize = experimentContext.getExperimentGroups().size();
+        // 先计数
+        ExperimentContext experimentContext = ExperimentContext.getExperimentContext(experimentParticipatorRequests.get(0).getExperimentInstanceId());
+        groupSize = experimentContext.getGroupCount();
+        if (amount == groupSize) {
+            LambdaUpdateWrapper<ExperimentGroupEntity> groupWrapper = new LambdaUpdateWrapper<ExperimentGroupEntity>()
+                    .eq(ExperimentGroupEntity::getExperimentInstanceId, experimentParticipatorRequests.get(0).getExperimentInstanceId())
+                    .set(ExperimentGroupEntity::getGroupState, EnumExperimentGroupStatus.COUNT_DOWN.getCode());
+            experimentGroupService.update(groupWrapper);
+            // todo 发送websocket消息，进入倒计时
+            log.info("开始倒计时进入实验....");
         }
-        if(amount == groupSize){
-            //todo 定时器
-            log.info("开启调度....");
-        }
-
-
     }
 }
