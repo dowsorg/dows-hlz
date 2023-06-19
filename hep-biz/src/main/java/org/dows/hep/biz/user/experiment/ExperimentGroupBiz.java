@@ -96,7 +96,7 @@ public class ExperimentGroupBiz {
                 .eq(ExperimentGroupEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
                 .eq(ExperimentGroupEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
                 .update(ExperimentGroupEntity.builder()
-                        .groupState(EnumExperimentGroupStatus.ASSIGN_FUNC.getCode())
+                        .groupState(EnumExperimentGroupStatus.ASSIGN_DEPARTMENT.getCode())
                         .groupName(createGroup.getGroupName())
                         .build());
     }
