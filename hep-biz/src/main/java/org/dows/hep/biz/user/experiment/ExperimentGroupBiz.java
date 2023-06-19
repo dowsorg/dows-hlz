@@ -275,11 +275,12 @@ public class ExperimentGroupBiz {
                             .groupState(EnumExperimentGroupStatus.WAIT_ALL_GROUP_ASSIGN.getCode())
                             .build());
         });
-
+        final boolean b = experimentParticipatorService.updateBatchById(entityList);
         // 发布事件，计数小组是否分配到齐，是否都分配好
         applicationEventPublisher.publishEvent(new GroupMemberAllotEvent(participatorList));
+//        applicationEventPublisher.publishEvent(new StartEvent());
 
-        return experimentParticipatorService.updateBatchById(entityList);
+        return b;
     }
 
     /**

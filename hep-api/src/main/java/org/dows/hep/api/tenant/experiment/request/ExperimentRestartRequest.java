@@ -1,13 +1,18 @@
 package org.dows.hep.api.tenant.experiment.request;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.apache.logging.log4j.core.config.plugins.validation.constraints.NotBlank;
 
 import java.util.Date;
 
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Schema(name = "ExperimentRestartRequest 对象", title = "/暂停实验")
 public class ExperimentRestartRequest {
     @NotBlank(message = "应用ID不允许为空")

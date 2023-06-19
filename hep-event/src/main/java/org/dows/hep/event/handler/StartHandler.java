@@ -48,7 +48,7 @@ public class StartHandler extends AbstractEventHandler implements EventHandler<E
                     long pst = experimentTimerEntity.getPauseStartTime().getTime();
                     // 持续时间 = 暂停结束时间 - 暂停开始时间
                     long duration = experimentRestartRequest.getCurrentTime().getTime() - pst;
-                    experimentTimerEntity.setStartTime(experimentRestartRequest.getCurrentTime().getTime());
+                    experimentTimerEntity.setStartTime(experimentRestartRequest.getCurrentTime().getTime()+ duration);
                     experimentTimerEntity.setEndTime(experimentTimerEntity.getEndTime() + duration);
                     experimentTimerEntity.setDuration(duration);
                     // 修改实验状态，真正开始实验
