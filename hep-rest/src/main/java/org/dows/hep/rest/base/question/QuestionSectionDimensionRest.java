@@ -7,6 +7,7 @@ import org.dows.hep.api.base.question.response.QuestionSectionDimensionResponse;
 import org.dows.hep.biz.base.question.QuestionSectionDimensionBiz;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -41,7 +42,7 @@ public class QuestionSectionDimensionRest {
     */
     @Operation(summary = "删除or批量删除")
     @DeleteMapping("v1/baseQuestion/questionSectionDimension/delQuestionSectionDimension")
-    public Boolean delQuestionSectionDimension(List<String> questionSectionDimensionIds ) {
+    public Boolean delQuestionSectionDimension(@RequestBody List<String> questionSectionDimensionIds ) {
         return questionSectionDimensionBiz.delQuestionSectionDimension(questionSectionDimensionIds);
     }
 
