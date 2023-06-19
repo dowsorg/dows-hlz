@@ -11,7 +11,7 @@ import org.dows.hep.service.ExperimentGroupService;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 小组成员分配机构处理器
@@ -25,15 +25,21 @@ public class GroupMemberAllotHandler extends AbstractEventHandler implements Eve
 
     private int groupSize = 0;
 
-    private AtomicInteger atomicInteger = new AtomicInteger(0);
+    private static ConcurrentHashMap concurrentHashMap = new ConcurrentHashMap();
 
     @Override
     public void exec(List<ExperimentParticipatorRequest> experimentParticipatorRequests) {
-        int amount = atomicInteger.incrementAndGet();
         // 先计数
         ExperimentContext experimentContext = ExperimentContext.getExperimentContext(experimentParticipatorRequests.get(0).getExperimentInstanceId());
         groupSize = experimentContext.getGroupCount();
-        if (amount == groupSize) {
+        if(concurrentHashMap.containsKey(experimentParticipatorRequests.get(0).getExperimentInstanceId())){
+            Integer count = (Integer) concurrentHashMap.get(experimentParticipatorRequests.get(0).getExperimentInstanceId());
+            count++;
+            concurrentHashMap.put(experimentParticipatorRequests.get(0).getExperimentInstanceId(),count);
+        }else{
+            concurrentHashMap.put(experimentParticipatorRequests.get(0).getExperimentInstanceId(),1);
+        }
+        if ((Integer) concurrentHashMap.get(experimentParticipatorRequests.get(0).getExperimentInstanceId()) == groupSize) {
             LambdaUpdateWrapper<ExperimentGroupEntity> groupWrapper = new LambdaUpdateWrapper<ExperimentGroupEntity>()
                     .eq(ExperimentGroupEntity::getExperimentInstanceId, experimentParticipatorRequests.get(0).getExperimentInstanceId())
                     .set(ExperimentGroupEntity::getGroupState, EnumExperimentGroupStatus.COUNT_DOWN.getCode());
