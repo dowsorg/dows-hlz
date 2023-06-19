@@ -77,7 +77,7 @@ public class GroupMemberAllotHandler extends AbstractEventHandler implements Eve
             Set<Channel> channels = userInfos.keySet();
             for (Channel channel : channels) {
                 if (accountIds.contains(userInfos.get(channel).getAccountName())) {
-                    HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, experimentInstanceId);
+                    HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, "机构分配完成！！！");
                 }
             }
             log.info("开始倒计时进入实验....");
