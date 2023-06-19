@@ -393,7 +393,7 @@ public class ExperimentManageBiz {
         experimentContext.setExperimentName(experimentGroupSettingRequest.getExperimentName());
         experimentContext.setState(ExperimentStateEnum.UNBEGIN);
         ExperimentContext.set(experimentContext);
-
+        // todo 后续移到事件监听中
         // 发布实验分组事件
         applicationEventPublisher.publishEvent(new GroupEvent(ExperimentInitializeRequest.builder()
                 .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
