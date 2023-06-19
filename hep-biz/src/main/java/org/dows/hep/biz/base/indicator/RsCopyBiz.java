@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.RsCopyExperimentRequestRs;
 import org.dows.hep.api.base.indicator.request.JudgeViewIndicatorRequestRs;
+import org.dows.hep.api.base.indicator.request.RsCopyPersonIndicatorRequestRs;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.enums.EnumIndicatorCategory;
 import org.dows.hep.api.enums.EnumString;
@@ -35,6 +36,13 @@ public class RsCopyBiz {
   private final CaseOrgModuleFuncRefService caseOrgModuleFuncRefService;
   private final IndicatorFuncService indicatorFuncService;
   private final IndicatorInstanceService indicatorInstanceService;
+  /* runsix:indicator */
+  private final ExperimentIndicatorInstanceRsService experimentIndicatorInstanceRsService;
+  private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
+  private final CasePersonService casePersonService;
+  private final ExperimentPersonService experimentPersonService;
+  private final CaseIndicatorInstanceService caseIndicatorInstanceService;
+  private final CaseIndicatorRuleService caseIndicatorRuleService;
   /* runsix:view */
   private final IndicatorViewBaseInfoService indicatorViewBaseInfoService;
   private final ExperimentIndicatorViewBaseInfoRsService experimentIndicatorViewBaseInfoRsService;
@@ -711,8 +719,125 @@ public class RsCopyBiz {
     experimentIndicatorViewPhysicalExamRsService.saveOrUpdateBatch(experimentIndicatorViewPhysicalExamRsEntityList);
   }
 
+  /**
+   * TODO 这里可能因为uim有大问题, CasePersonEntity的account_id才跟指标绑定
+   * 数据库添加的人物，account_id是数据库人物管理通过uim传过来的，在case_indicator_instance绑定的principal_id
+   * 自定义添加的人物，account_id是在uim新增人物，然后uim传过来的
+   * 1.先查出实验人物
+   * 2.根据实验人物查出案例人物
+   * 3.根据案例人物查出案例人物的account_id
+   * 4.根据案例人物的account_id查出案例指标
+   * runsix method process
+   * 1.ExperimentIndicatorInstanceRsEntity
+   * 2.ExperimentIndicatorValRsEntity
+  */
   @Transactional(rollbackFor = Exception.class)
-  public void rsCopyJudgeIndicator(JudgeViewIndicatorRequestRs judgeViewIndicatorRequestRs) {
-
+  public void rsCopyPersonIndicator(RsCopyPersonIndicatorRequestRs rsCopyPersonIndicatorRequestRs) {
+    List<ExperimentIndicatorInstanceRsEntity> experimentIndicatorInstanceRsEntityList = new ArrayList<>();
+//    List<ExperimentIndicatorValRsEntity> experimentIndicatorValRsEntityList = new ArrayList<>();
+    String experimentInstanceId = rsCopyPersonIndicatorRequestRs.getExperimentInstanceId();
+    String caseInstanceId = rsCopyPersonIndicatorRequestRs.getCaseInstanceId();
+    String appId = rsCopyPersonIndicatorRequestRs.getAppId();
+    Set<String> experimentPersonIdSet = new HashSet<>();
+    Set<String> casePersonIdSet = new HashSet<>();
+    Set<String> principalIdSet = new HashSet<>();
+    Map<String, ExperimentPersonEntity> kExperimentPersonIdVExperimentPersonEntityMap = new HashMap<>();
+    Map<String, List<CaseIndicatorInstanceEntity>> kPrincipalIdVCaseIndicatorInstanceEntityListMap = new HashMap<>();
+    Set<String> caseIndicatorInstanceIdSet = new HashSet<>();
+    Map<String, CaseIndicatorRuleEntity> kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap = new HashMap<>();
+    Map<String, String> kCasePersonIdVAccountIdMap = new HashMap<>();
+    experimentPersonService.lambdaQuery()
+      .eq(ExperimentPersonEntity::getAppId, appId)
+      .eq(ExperimentPersonEntity::getExperimentInstanceId, experimentInstanceId)
+      .list()
+      .forEach(experimentPersonEntity -> {
+        casePersonIdSet.add(experimentPersonEntity.getCasePersonId());
+        experimentPersonIdSet.add(experimentPersonEntity.getExperimentPersonId());
+        kExperimentPersonIdVExperimentPersonEntityMap.put(experimentPersonEntity.getExperimentPersonId(), experimentPersonEntity);
+      });
+    if (experimentPersonIdSet.isEmpty() || casePersonIdSet.isEmpty()) {
+      log.warn("method rsCopyPersonIndicator experimentInstanceId:{} has no person", experimentInstanceId);
+      throw new RsCopyException(EnumESC.VALIDATE_EXCEPTION);
+    }
+    casePersonService.lambdaQuery()
+      .in(CasePersonEntity::getCasePersonId, casePersonIdSet)
+      .list()
+      .forEach(casePersonEntity -> {
+        kCasePersonIdVAccountIdMap.put(casePersonEntity.getCasePersonId(), casePersonEntity.getAccountId());
+        principalIdSet.add(casePersonEntity.getAccountId());
+      });
+    if (principalIdSet.isEmpty()) {
+      log.warn("method rsCopyPersonIndicator principalIdSet:is empty");
+      throw new RsCopyException(EnumESC.VALIDATE_EXCEPTION);
+    }
+    /* runsix:defined by yourself */
+    caseIndicatorInstanceService.lambdaQuery()
+      .eq(CaseIndicatorInstanceEntity::getAppId, appId)
+      .in(CaseIndicatorInstanceEntity::getPrincipalId, principalIdSet)
+      .list()
+      .forEach(caseIndicatorInstanceEntity -> {
+        caseIndicatorInstanceIdSet.add(caseIndicatorInstanceEntity.getCaseIndicatorInstanceId());
+        List<CaseIndicatorInstanceEntity> caseIndicatorInstanceEntityList = kPrincipalIdVCaseIndicatorInstanceEntityListMap.get(caseIndicatorInstanceEntity.getPrincipalId());
+        if (Objects.isNull(caseIndicatorInstanceEntityList)) {
+          caseIndicatorInstanceEntityList = new ArrayList<>();
+        }
+        caseIndicatorInstanceEntityList.add(caseIndicatorInstanceEntity);
+        kPrincipalIdVCaseIndicatorInstanceEntityListMap.put(caseIndicatorInstanceEntity.getPrincipalId(), caseIndicatorInstanceEntityList);
+      });
+    if (caseIndicatorInstanceIdSet.isEmpty()) {
+      log.warn("method rsCopyPersonIndicator caseInstanceId:{} has no indicator", caseInstanceId);
+      throw new RsCopyException(EnumESC.VALIDATE_EXCEPTION);
+    }
+    caseIndicatorRuleService.lambdaQuery()
+      .eq(CaseIndicatorRuleEntity::getAppId, appId)
+      .in(CaseIndicatorRuleEntity::getVariableId, caseIndicatorInstanceIdSet)
+      .list()
+      .forEach(caseIndicatorRuleEntity -> {
+        kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap.put(caseIndicatorRuleEntity.getVariableId(), caseIndicatorRuleEntity);
+      });
+    kExperimentPersonIdVExperimentPersonEntityMap.forEach((experimentPersonId, experimentPersonEntity) -> {
+      String experimentIndicatorInstanceId = idGenerator.nextIdStr();
+      String casePersonId = experimentPersonEntity.getCasePersonId();
+      String accountId = kCasePersonIdVAccountIdMap.get(casePersonId);
+      List<CaseIndicatorInstanceEntity> caseIndicatorInstanceEntityList = kPrincipalIdVCaseIndicatorInstanceEntityListMap.get(accountId);
+      if (Objects.isNull(caseIndicatorInstanceEntityList)) {
+        log.warn("method rsCopyPersonIndicator casePersonId:{}, accountId:{} has no indicator", casePersonId, accountId);
+        throw new RsCopyException(EnumESC.VALIDATE_EXCEPTION);
+      }
+      caseIndicatorInstanceEntityList.forEach(caseIndicatorInstanceEntity -> {
+        String min = null;
+        String max = null;
+        String def = null;
+        CaseIndicatorRuleEntity caseIndicatorRuleEntity = kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap.get(caseIndicatorInstanceEntity.getCaseIndicatorInstanceId());
+        if (Objects.nonNull(caseIndicatorRuleEntity)) {
+          min = caseIndicatorRuleEntity.getMin();
+          max = caseIndicatorRuleEntity.getMax();
+          def = caseIndicatorRuleEntity.getDef();
+        }
+        experimentIndicatorInstanceRsEntityList.add(
+            ExperimentIndicatorInstanceRsEntity
+                .builder()
+                .experimentIndicatorInstanceId(experimentIndicatorInstanceId)
+                .caseIndicatorInstanceId(caseIndicatorInstanceEntity.getCaseIndicatorInstanceId())
+                .indicatorInstanceId(caseIndicatorInstanceEntity.getIndicatorInstanceId())
+                .experimentId(experimentInstanceId)
+                .caseId(caseInstanceId)
+                .experimentPersonId(experimentPersonId)
+                .indicatorName(caseIndicatorInstanceEntity.getIndicatorName())
+                .displayByPercent(caseIndicatorInstanceEntity.getDisplayByPercent())
+                .unit(caseIndicatorInstanceEntity.getUnit())
+                .core(caseIndicatorInstanceEntity.getCore())
+                .food(caseIndicatorInstanceEntity.getFood())
+                .descr(caseIndicatorInstanceEntity.getDescr())
+                .min(min)
+                .max(max)
+                .def(def)
+                .experimentIndicatorExpressionId(null)
+                .build()
+        );
+      });
+    });
+    experimentIndicatorInstanceRsService.saveOrUpdateBatch(experimentIndicatorInstanceRsEntityList);
+//    experimentIndicatorValRsService.saveOrUpdateBatch(experimentIndicatorValRsEntityList);
   }
 }
