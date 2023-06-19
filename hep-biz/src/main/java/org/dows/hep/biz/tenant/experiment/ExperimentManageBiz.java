@@ -17,6 +17,7 @@ import org.dows.account.response.AccountUserResponse;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
+import org.dows.hep.api.ExperimentContext;
 import org.dows.hep.api.core.CreateExperimentForm;
 import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.EnumExperimentParticipator;
@@ -389,6 +390,13 @@ public class ExperimentManageBiz {
                 .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
                 .caseInstanceId(caseInstanceId)
                 .build()));
+
+        // 将实验Id和名称set进去
+        ExperimentContext experimentContext = new ExperimentContext();
+        experimentContext.setExperimentId(experimentGroupSettingRequest.getExperimentInstanceId());
+        experimentContext.setExperimentName(experimentGroupSettingRequest.getExperimentName());
+        experimentContext.setState(ExperimentStateEnum.UNBEGIN);
+        ExperimentContext.set(experimentContext);
         // todo 后续移到事件监听中
 //        // 预处理方案设计
 //        String experimentInstanceId = experimentGroupSettingRequest.getExperimentInstanceId();
