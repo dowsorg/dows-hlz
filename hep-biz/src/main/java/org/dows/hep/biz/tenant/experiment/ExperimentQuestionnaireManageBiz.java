@@ -149,6 +149,8 @@ public class ExperimentQuestionnaireManageBiz {
                 .experimentQuestionnaireItemId(baseBiz.getIdStr())
                 .experimentQuestionnaireItemPid(pid)
                 .experimentQuestionnaireId(null)
+                .questionCateg(questionResponse.getQuestionCategName())
+                .questionType(questionResponse.getQuestionType())
                 .questionTitle(questionResponse.getQuestionTitle())
                 .questionDescr(questionResponse.getQuestionDescr())
                 .questionOptions(options)

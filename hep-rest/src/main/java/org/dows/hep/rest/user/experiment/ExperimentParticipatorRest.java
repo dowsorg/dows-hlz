@@ -5,11 +5,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.api.model.PageResponse;
+import org.dows.hep.api.enums.ExperimentStateEnum;
 import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.api.user.experiment.request.GetExperimentGroupCaptainRequest;
+import org.dows.hep.api.user.experiment.response.ExperimentStateResponse;
 import org.dows.hep.api.user.experiment.response.GetExperimentGroupCaptainResponse;
+import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
 import org.dows.hep.biz.user.experiment.ExperimentParticipatorBiz;
+import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,6 +25,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class ExperimentParticipatorRest {
     // 实验参与者
     private final ExperimentParticipatorBiz experimentParticipatorBiz;
+
+    private final ExperimentTimerBiz experimentTimerBiz;
+
+    private final ExperimentManageBiz experimentManageBiz;
 
     /**
      * @param
@@ -57,4 +65,16 @@ public class ExperimentParticipatorRest {
     public GetExperimentGroupCaptainResponse getExperimentGroupRole(GetExperimentGroupCaptainRequest getExperimentGroupCaptainRequest) {
         return experimentParticipatorBiz.getExperimentGroupRole(getExperimentGroupCaptainRequest);
     }
+
+
+//    /**
+//     * 进入实验
+//     */
+//    @Operation(summary = "获取实验参与者角色")
+//    @GetMapping("v1/user/experimentParticipator/getExperimentState")
+//    public ExperimentStateResponse enterExperiment(String appId, String experimentInstanceId) {
+//        ExperimentStateEnum experimentState = experimentManageBiz.getExperimentState(appId, experimentInstanceId);
+//        //return experimentTimerBiz.getCurrentPeriods(getExperimentGroupCaptainRequest);
+//    }
+
 }

@@ -115,4 +115,10 @@ public class ExperimentParticipatorBiz {
         }
         return Boolean.TRUE;
     }
+
+
+    /**
+     * 进入实验
+     */
+//    enterExperiment
 }
