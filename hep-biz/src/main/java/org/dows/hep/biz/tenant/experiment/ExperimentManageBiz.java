@@ -17,7 +17,6 @@ import org.dows.account.response.AccountUserResponse;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
-import org.dows.hep.api.ExperimentContext;
 import org.dows.hep.api.core.CreateExperimentForm;
 import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.EnumExperimentParticipator;
@@ -81,10 +80,6 @@ public class ExperimentManageBiz {
     private final AccountOrgApi accountOrgApi;
     private final AccountOrgGeoApi accountOrgGeoApi;
     private final CaseOrgFeeService caseOrgFeeService;
-    //
-    private final ExperimentSchemeManageBiz experimentSchemeManageBiz;
-    private final ExperimentCaseInfoManageBiz experimentCaseInfoManageBiz;
-
     // 事件发布
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -387,20 +382,28 @@ public class ExperimentManageBiz {
         experimentGroupService.saveOrUpdateBatch(experimentGroupEntitys);
         // 保存实验参与人[学生]
         experimentParticipatorService.saveOrUpdateBatch(collect);
-
-
-        // 将实验Id和名称set进去
-        ExperimentContext experimentContext = new ExperimentContext();
-        experimentContext.setExperimentId(experimentGroupSettingRequest.getExperimentInstanceId());
-        experimentContext.setExperimentName(experimentGroupSettingRequest.getExperimentName());
-        experimentContext.setState(ExperimentStateEnum.UNBEGIN);
-        ExperimentContext.set(experimentContext);
-        // todo 后续移到事件监听中
         // 发布实验分组事件
         applicationEventPublisher.publishEvent(new GroupEvent(ExperimentInitializeRequest.builder()
                 .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
                 .caseInstanceId(caseInstanceId)
                 .build()));
+        // todo 后续移到事件监听中
+//        // 预处理方案设计
+//        String experimentInstanceId = experimentGroupSettingRequest.getExperimentInstanceId();
+//        CreateExperimentForm allotData = getAllotData(experimentInstanceId, null);
+//        ExperimentSetting experimentSetting = allotData.getExperimentSetting();
+//        ExperimentSetting.SchemeSetting schemeSetting = Optional.ofNullable(experimentSetting)
+//                .map(ExperimentSetting::getSchemeSetting)
+//                .orElse(null);
+//        if (BeanUtil.isNotEmpty(schemeSetting)) {
+//            List<String> groupIds = experimentGroupEntitys.stream()
+//                    .map(ExperimentGroupEntity::getExperimentGroupId)
+//                    .toList();
+//            String settingStr = JSONUtil.toJsonStr(schemeSetting);
+//            experimentSchemeManageBiz.preHandleExperimentScheme(experimentInstanceId, caseInstanceId, groupIds, settingStr);
+//        }
+//        // 预处理基础信息
+//        experimentCaseInfoManageBiz.preHandleCaseInfo(experimentInstanceId, caseInstanceId);
         // 发布实验分配小组事件
         applicationEventPublisher.publishEvent(new CreateGroupEvent(experimentGroupSettingRequest));
         return true;
