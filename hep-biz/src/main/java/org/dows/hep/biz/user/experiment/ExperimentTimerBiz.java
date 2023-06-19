@@ -112,7 +112,7 @@ public class ExperimentTimerBiz {
             StringBuilder stringBuilder = new StringBuilder();
             list.stream().forEach(k->{
                 stringBuilder.append(k.getPeriod()).append("期开始时间：")
-                        .append(DateUtil.date(k.getPauseStartTime()))
+                        .append(DateUtil.date(k.getStartTime()))
                         .append(" ");
             });
             throw new ExperimentException("获取实验期数异常,当前时间不存在对应的实验期数,当前实验期数信息：" + stringBuilder);
