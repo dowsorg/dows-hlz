@@ -1,32 +1,28 @@
-package org.dows.hep.entity;
+package org.dows.hep.api.base.indicator.response;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import lombok.experimental.Accessors;
-import org.dows.framework.crud.api.CrudEntity;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author runsix
  */
 @Data
-@ToString
-@Builder
-@Accessors(chain = true)
-@AllArgsConstructor
 @NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "ExperimentOrgModuleRsEntity", title = "实验机构模块")
-@TableName("experiment_org_module_rs")
-public class ExperimentOrgModuleRsEntity implements CrudEntity {
+@AllArgsConstructor
+@Builder
+public class ExperimentOrgModuleRsResponse implements Serializable {
   @JsonFormat(shape = JsonFormat.Shape.STRING)
   @Schema(title = "数据库ID")
   private Long id;
@@ -46,14 +42,8 @@ public class ExperimentOrgModuleRsEntity implements CrudEntity {
   @Schema(title = "模块名称")
   private String name;
 
-  @Schema(title = "功能点分布式ID数组")
-  private String indicatorFuncIdArray;
-
-  @Schema(title = "功能点名称数组")
-  private String indicatorFuncNameArray;
-
-  @Schema(title = "功能点分布式ID类别数组")
-  private String indicatorCategoryIdArray;
+  @Schema(title = "功能点列表")
+  private List<ExperimentIndicatorFuncRsResponse> experimentIndicatorFuncRsResponseList;
 
   @Schema(title = "顺序")
   private Integer seq;
