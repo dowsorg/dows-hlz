@@ -3,10 +3,10 @@ package org.dows.hep.rest.user.experiment;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.enums.ExperimentStateEnum;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.user.experiment.response.CountDownResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
+import org.dows.hep.api.user.experiment.response.ExperimentStateResponse;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import org.springframework.validation.annotation.Validated;
@@ -60,7 +60,7 @@ public class ExperimentTimerRest {
      */
     @Operation(summary = "获取当前实验状态")
     @GetMapping("v1/userExperiment/experimentTimer/getExperimentState")
-    public ExperimentStateEnum getExperimentStarted(String appId, String experimentInstanceId) {
+    public ExperimentStateResponse getExperimentStarted(String appId, String experimentInstanceId) {
         return experimentManageBiz.getExperimentState(appId, experimentInstanceId);
     }
 
