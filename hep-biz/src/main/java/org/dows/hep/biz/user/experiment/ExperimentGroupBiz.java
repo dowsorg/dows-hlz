@@ -255,7 +255,8 @@ public class ExperimentGroupBiz {
                     .eq(ExperimentParticipatorEntity::getExperimentGroupId, request.getExperimentGroupId())
                     .eq(ExperimentParticipatorEntity::getExperimentInstanceId, request.getExperimentInstanceId())
                     .eq(ExperimentParticipatorEntity::getDeleted, false)
-                    .one();
+                    .oneOpt()
+                    .orElse(null);
             if (model == null || ReflectUtil.isObjectNull(model)) {
                 throw new ExperimentParticipatorException(EnumExperimentParticipator.PARTICIPATOR_NOT_EXIST_EXCEPTION);
             }
@@ -275,7 +276,7 @@ public class ExperimentGroupBiz {
                             .build());
         });
 
-        // todo 发布事件，计数小组是否分配到齐，是否都分配好
+        // 发布事件，计数小组是否分配到齐，是否都分配好
         applicationEventPublisher.publishEvent(new GroupMemberAllotEvent(participatorList));
 
         return experimentParticipatorService.updateBatchById(entityList);

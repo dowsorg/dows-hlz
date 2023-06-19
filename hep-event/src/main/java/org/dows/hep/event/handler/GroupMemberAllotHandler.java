@@ -9,11 +9,14 @@ import org.dows.hep.api.ExperimentContext;
 import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.user.experiment.request.ExperimentParticipatorRequest;
 import org.dows.hep.entity.ExperimentGroupEntity;
+import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.service.ExperimentGroupService;
+import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.hep.websocket.HepClientManager;
 import org.dows.hep.websocket.proto.MessageCode;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,35 +32,53 @@ public class GroupMemberAllotHandler extends AbstractEventHandler implements Eve
 
     private final ExperimentGroupService experimentGroupService;
 
+    private final ExperimentParticipatorService experimentParticipatorService;
+
     private int groupSize = 0;
 
     private static ConcurrentHashMap concurrentHashMap = new ConcurrentHashMap();
 
     @Override
-    public void exec(List<ExperimentParticipatorRequest> experimentParticipatorRequests) {
+    public void exec(List<ExperimentParticipatorRequest> participatorRequestList) {
+        String experimentInstanceId = participatorRequestList.get(0).getExperimentInstanceId();
         // 先计数
-        ExperimentContext experimentContext = ExperimentContext.getExperimentContext(experimentParticipatorRequests.get(0).getExperimentInstanceId());
+        ExperimentContext experimentContext = ExperimentContext.getExperimentContext(experimentInstanceId);
         groupSize = experimentContext.getGroupCount();
-        if(concurrentHashMap.containsKey(experimentParticipatorRequests.get(0).getExperimentInstanceId())){
-            Integer count = (Integer) concurrentHashMap.get(experimentParticipatorRequests.get(0).getExperimentInstanceId());
+        if (concurrentHashMap.containsKey(experimentInstanceId)) {
+            Integer count = (Integer) concurrentHashMap.get(experimentInstanceId);
             count++;
-            concurrentHashMap.put(experimentParticipatorRequests.get(0).getExperimentInstanceId(),count);
-        }else{
-            concurrentHashMap.put(experimentParticipatorRequests.get(0).getExperimentInstanceId(),1);
+            concurrentHashMap.put(experimentInstanceId, count);
+        } else {
+            concurrentHashMap.put(experimentInstanceId, 1);
         }
-        if ((Integer) concurrentHashMap.get(experimentParticipatorRequests.get(0).getExperimentInstanceId()) == groupSize) {
+        if ((Integer) concurrentHashMap.get(experimentInstanceId) == groupSize) {
             // 更新实验所有小组状态
             LambdaUpdateWrapper<ExperimentGroupEntity> groupWrapper = new LambdaUpdateWrapper<ExperimentGroupEntity>()
-                    .eq(ExperimentGroupEntity::getExperimentInstanceId, experimentParticipatorRequests.get(0).getExperimentInstanceId())
+                    .eq(ExperimentGroupEntity::getExperimentInstanceId, experimentInstanceId)
                     .set(ExperimentGroupEntity::getGroupState, EnumExperimentGroupStatus.COUNT_DOWN.getCode());
             experimentGroupService.update(groupWrapper);
             // 清除实验数据
-            concurrentHashMap.remove(experimentParticipatorRequests.get(0).getExperimentInstanceId());
+            concurrentHashMap.remove(experimentInstanceId);
+            // 查询到对应的accountId
+            Set<String> accountIds = new HashSet<>();
+            participatorRequestList.forEach(participator->{
+                List<ExperimentParticipatorEntity> participatorList = experimentParticipatorService.lambdaQuery()
+                        .eq(ExperimentParticipatorEntity::getExperimentInstanceId,experimentInstanceId)
+                        .eq(ExperimentParticipatorEntity::getDeleted,false)
+                        .list();
+                participatorList.forEach(participator1->{
+                    accountIds.add(participator1.getAccountId());
+                });
+            });
             // 通知实验所有小组
             ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfos();
+
+            // 过滤数据，只给学生发websocket
             Set<Channel> channels = userInfos.keySet();
             for (Channel channel : channels) {
-                HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, experimentParticipatorRequests.get(0).getExperimentInstanceId());
+                if (accountIds.contains(userInfos.get(channel).getAccountName())) {
+                    HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, experimentInstanceId);
+                }
             }
             log.info("开始倒计时进入实验....");
         }
