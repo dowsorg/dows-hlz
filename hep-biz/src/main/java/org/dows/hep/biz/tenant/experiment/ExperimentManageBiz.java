@@ -220,7 +220,10 @@ public class ExperimentManageBiz {
                 // 如果是标准模式，一期开始时间 = 方案设计截止时间 - 实验开始时间,第一期没有间隔时间 + 间隔时间
                 //pst = time1 - startTime +  interval;
                 // 如果是标准模式，一期开始时间 = 方案设计截止时间 + 间隔时间
-                pst = time1 + interval;
+                //pst = time1 + interval;
+                // 如果是标准模式，一期开始时间 = 实验开始时间 + 方案设计时长结束时间 + 间隔时间
+                long duration = schemeSetting.getDuration() * 60 * 1000;
+                pst = startTime + duration + interval;
             }
         } else {
             pst = startTime;
