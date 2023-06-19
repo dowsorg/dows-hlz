@@ -50,7 +50,8 @@ public class OrgRest {
      */
     @Operation(summary = "创建班级")
     @PostMapping("v1/baseOrg/org/addClass")
-    public String addClass(@RequestBody AccountOrgRequest request, @RequestParam String accountId, HttpServletRequest servletRequest) {
+    public String addClass(@RequestBody AccountOrgRequest request,
+                           @RequestParam String accountId, HttpServletRequest servletRequest) {
         String token = servletRequest.getHeader("token");
         Map<String, Object> map = JwtUtil.parseJWT(token, EnumToken.PROPERTIES_JWT_KEY.getStr());
         //1、获取登录账户和角色
@@ -98,7 +99,10 @@ public class OrgRest {
      */
     @Operation(summary = "创建案例机构")
     @PostMapping("v1/baseOrg/org/addOrgnization")
-    public String addOrgnization(@RequestBody AccountOrgRequest request,@RequestParam String caseInstanceId, @Nullable @RequestParam String ver,@Nullable @RequestParam String caseIdentifier) {
+    public String addOrgnization(@RequestBody AccountOrgRequest request,
+                                 @RequestParam String caseInstanceId,
+                                 @Nullable @RequestParam String ver,
+                                 @Nullable @RequestParam String caseIdentifier) {
         return orgBiz.addOrgnization(request,caseInstanceId,ver,caseIdentifier);
     }
 
@@ -109,7 +113,10 @@ public class OrgRest {
      */
     @Operation(summary = "添加案例机构人物")
     @PostMapping("v1/baseOrg/org/addPerson")
-    public Integer addPerson(@RequestBody Set<String> personIds, @RequestParam String caseInstanceId,@RequestParam String caseOrgId,@RequestParam String appId) {
+    public Integer addPerson(@RequestBody Set<String> personIds,
+                             @RequestParam String caseInstanceId,
+                             @RequestParam String caseOrgId,
+                             @RequestParam String appId) {
         return orgBiz.addPerson(personIds,caseInstanceId,caseOrgId,appId);
     }
 
@@ -131,7 +138,10 @@ public class OrgRest {
      */
     @Operation(summary = "将自定义人物添加到案例机构中")
     @PostMapping("v1/baseOrg/org/addPersonToCaseOrg")
-    public String addPersonToCaseOrg(@RequestParam String personId, @RequestParam String caseInstanceId,@RequestParam String caseOrgId,@RequestParam String appId) {
+    public String addPersonToCaseOrg(@RequestParam String personId,
+                                     @RequestParam String caseInstanceId,
+                                     @RequestParam String caseOrgId,
+                                     @RequestParam String appId) {
         return orgBiz.addPersonToCaseOrg(personId,caseInstanceId,caseOrgId,appId);
     }
 
@@ -142,7 +152,8 @@ public class OrgRest {
      */
     @Operation(summary = "获取案例机构人物列表")
     @PostMapping("v1/baseOrg/org/listPerson")
-    public IPage<AccountGroupResponse> listPerson(@RequestBody AccountGroupRequest request,@RequestParam String caseOrgId) {
+    public IPage<AccountGroupResponse> listPerson(@RequestBody AccountGroupRequest request,
+                                                  @RequestParam String caseOrgId) {
         return orgBiz.listPerson(request,caseOrgId);
     }
 
@@ -151,7 +162,8 @@ public class OrgRest {
      */
     @Operation(summary = "查看机构基本信息")
     @GetMapping("v1/baseOrg/org/getOrg/{caseOrgId}/{appId}")
-    public AccountOrgResponse getOrg(@PathVariable String caseOrgId,@PathVariable String appId) {
+    public AccountOrgResponse getOrg(@PathVariable String caseOrgId,
+                                     @PathVariable String appId) {
         return orgBiz.getOrg(caseOrgId,appId);
     }
 
@@ -160,7 +172,10 @@ public class OrgRest {
      */
     @Operation(summary = "编辑机构基本信息")
     @PostMapping("v1/baseOrg/org/editOrg")
-    public Boolean editOrg(@RequestBody AccountOrgRequest request,@RequestParam String caseOrgId,@Nullable @RequestParam String ver,@Nullable @RequestParam String caseIdentifier) {
+    public Boolean editOrg(@RequestBody AccountOrgRequest request,
+                           @RequestParam String caseOrgId,
+                           @Nullable @RequestParam String ver,
+                           @Nullable @RequestParam String caseIdentifier) {
         return orgBiz.editOrg(request,caseOrgId,ver,caseIdentifier);
     }
 
@@ -169,7 +184,9 @@ public class OrgRest {
      */
     @Operation(summary = "判断机构名称是否重复")
     @GetMapping("v1/baseOrg/org/checkOrg")
-    public Boolean checkOrg(@RequestParam String orgCode,@RequestParam String appId,@RequestParam String orgName) {
+    public Boolean checkOrg(@RequestParam String orgCode,
+                            @RequestParam String appId,
+                            @RequestParam String orgName) {
         return orgBiz.checkOrg(orgCode,appId,orgName);
     }
 
@@ -178,7 +195,9 @@ public class OrgRest {
      */
     @Operation(summary = "删除机构基本信息")
     @DeleteMapping("v1/baseOrg/org/deleteOrgs")
-    public Boolean deleteOrgs(@RequestBody Set<String> caseOrgIds,@RequestParam String caseInstanceId,@RequestParam String appId) {
+    public Boolean deleteOrgs(@RequestBody Set<String> caseOrgIds,
+                              @RequestParam String caseInstanceId,
+                              @RequestParam String appId) {
         return orgBiz.deleteOrgs(caseOrgIds,caseInstanceId,appId);
     }
 
@@ -204,8 +223,8 @@ public class OrgRest {
     @Operation(summary = "同一案例中，人物不能被多个机构共享")
     @PostMapping("v1/baseOrg/org/checkInstancePerson")
     public Boolean checkInstancePerson(@RequestParam String caseOrgId,
-                                 @RequestParam String caseInstanceId,
-                                 @RequestParam String accountId) {
+                                       @RequestParam String caseInstanceId,
+                                       @RequestParam String accountId) {
         return orgBiz.checkInstancePerson(caseOrgId,caseInstanceId,accountId);
     }
 
@@ -215,8 +234,8 @@ public class OrgRest {
     @Operation(summary = "复制机构人物")
     @PostMapping("v1/baseOrg/org/copyPerson")
     public String copyPerson(@RequestParam String caseOrgId,
-                                       @RequestParam String caseInstanceId,
-                                       @RequestParam String accountId) {
+                             @RequestParam String caseInstanceId,
+                             @RequestParam String accountId) {
         return orgBiz.copyPerson(caseOrgId,caseInstanceId,accountId);
     }
 }
