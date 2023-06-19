@@ -17,7 +17,6 @@ import org.dows.account.response.AccountUserResponse;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
-import org.dows.hep.api.ExperimentContext;
 import org.dows.hep.api.core.CreateExperimentForm;
 import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.EnumExperimentParticipator;
@@ -81,10 +80,6 @@ public class ExperimentManageBiz {
     private final AccountOrgApi accountOrgApi;
     private final AccountOrgGeoApi accountOrgGeoApi;
     private final CaseOrgFeeService caseOrgFeeService;
-    //
-    private final ExperimentSchemeManageBiz experimentSchemeManageBiz;
-    private final ExperimentCaseInfoManageBiz experimentCaseInfoManageBiz;
-
     // 事件发布
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -200,7 +195,7 @@ public class ExperimentManageBiz {
     private void buildPeriods(ExperimentInstanceEntity experimentInstance, ExperimentSetting experimentSetting,
                               List<ExperimentTimerEntity> experimentTimerEntities) {
         ExperimentSetting.SandSetting sandSetting = experimentSetting.getSandSetting();
-        if(null == sandSetting ){
+        if (null == sandSetting) {
             throw new BizException("沙盘模式，sandSetting为不能为空!");
         }
         // 获取总期数，生成每期的计时器
@@ -219,11 +214,16 @@ public class ExperimentManageBiz {
         // 如果是标准模式，那么沙盘期数 需要减去方案设计截止时间
         if (experimentInstance.getModel() == ExperimentModeEnum.STANDARD.getCode()) {
             ExperimentSetting.SchemeSetting schemeSetting = experimentSetting.getSchemeSetting();
-            if(schemeSetting != null) {
+            if (schemeSetting != null) {
                 // 方案设计截止时间
                 long time1 = schemeSetting.getSchemeEndTime().getTime();
                 // 如果是标准模式，一期开始时间 = 方案设计截止时间 - 实验开始时间,第一期没有间隔时间 + 间隔时间
-                pst = time1 - startTime +  interval;
+                //pst = time1 - startTime +  interval;
+                // 如果是标准模式，一期开始时间 = 方案设计截止时间 + 间隔时间
+                //pst = time1 + interval;
+                // 如果是标准模式，一期开始时间 = 实验开始时间 + 方案设计时长结束时间 + 间隔时间
+                long duration = schemeSetting.getDuration() * 60 * 1000;
+                pst = startTime + duration + interval;
             }
         } else {
             pst = startTime;
@@ -390,13 +390,6 @@ public class ExperimentManageBiz {
                 .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
                 .caseInstanceId(caseInstanceId)
                 .build()));
-
-        // 将实验Id和名称set进去
-        ExperimentContext experimentContext = new ExperimentContext();
-        experimentContext.setExperimentId(experimentGroupSettingRequest.getExperimentInstanceId());
-        experimentContext.setExperimentName(experimentGroupSettingRequest.getExperimentName());
-        experimentContext.setState(ExperimentStateEnum.UNBEGIN);
-        ExperimentContext.set(experimentContext);
         // todo 后续移到事件监听中
 //        // 预处理方案设计
 //        String experimentInstanceId = experimentGroupSettingRequest.getExperimentInstanceId();
@@ -442,7 +435,7 @@ public class ExperimentManageBiz {
      *
      * @return
      */
-    public ExperimentStateEnum getExperimentState(String appId,String experimentInstanceId) {
+    public ExperimentStateEnum getExperimentState(String appId, String experimentInstanceId) {
 
         ExperimentInstanceEntity experimentInstanceEntity = experimentInstanceService.lambdaQuery()
                 .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)

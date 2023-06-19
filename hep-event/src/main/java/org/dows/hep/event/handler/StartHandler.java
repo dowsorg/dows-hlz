@@ -4,6 +4,7 @@ import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.uim.AccountInfo;
+import org.dows.hep.api.enums.ExperimentStateEnum;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.entity.ExperimentTimerEntity;
@@ -50,6 +51,8 @@ public class StartHandler extends AbstractEventHandler implements EventHandler<E
                     experimentTimerEntity.setStartTime(experimentRestartRequest.getCurrentTime().getTime());
                     experimentTimerEntity.setEndTime(experimentTimerEntity.getEndTime() + duration);
                     experimentTimerEntity.setDuration(duration);
+                    // 修改实验状态，真正开始实验
+                    experimentTimerEntity.setState(ExperimentStateEnum.ONGOING.getState());
                     experimentTimerEntity.setPaused(experimentRestartRequest.getPaused());
                     experimentTimerEntity.setPauseEndTime(experimentRestartRequest.getCurrentTime());
                     updateExperimentTimerEntities.add(experimentTimerEntity);

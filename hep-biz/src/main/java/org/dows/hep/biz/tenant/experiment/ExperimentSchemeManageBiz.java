@@ -2,6 +2,7 @@ package org.dows.hep.biz.tenant.experiment;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import lombok.RequiredArgsConstructor;
@@ -44,9 +45,12 @@ public class ExperimentSchemeManageBiz {
     public void preHandleExperimentScheme(String experimentInstanceId, String caseInstanceId) {
         List<String> experimentGroupIds = baseBiz.listExperimentGroupIds(experimentInstanceId);
         String settingStr = getSchemeSetting(experimentInstanceId);
+        // 不是方案设计模式就退出
+        if (StrUtil.isEmpty(settingStr)) {
+            return;
+        }
         // 预设置方案设计
         preHandleExperimentScheme(experimentInstanceId, caseInstanceId, experimentGroupIds, settingStr);
-
         // 预设置方案设计评分表
         experimentSchemeScoreBiz.preHandleExperimentSchemeScore(experimentInstanceId, caseInstanceId);
     }
@@ -59,7 +63,7 @@ public class ExperimentSchemeManageBiz {
         // 案例下方案设计
         CaseSchemeResponse caseScheme = tenantCaseSchemeBiz.getCaseSchemeByInstanceId(caseInstanceId);
         if (BeanUtil.isEmpty(caseScheme)) {
-            throw new BizException(ExperimentESCEnum.DATA_NULL);
+            throw new BizException(ExperimentESCEnum.SCHEME_NOT_NULL);
         }
 
         // 为每个小组分配试卷

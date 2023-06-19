@@ -1,7 +1,10 @@
 package org.dows.hep.biz.tenant.experiment;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.question.response.QuestionOptionWithAnswerResponse;
 import org.dows.hep.api.base.question.response.QuestionResponse;
@@ -21,9 +24,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -66,11 +69,15 @@ public class ExperimentQuestionnaireManageBiz {
                 .stream()
                 .flatMap(item -> item.values().stream())
                 .map(CaseOrgQuestionnaireResponse::getCaseQuestionnaireId)
+                .filter(StrUtil::isNotBlank)
                 .toList();
         if (CollUtil.isEmpty(caseQuestionnaireIds)) {
             return;
         }
         List<CaseQuestionnaireResponse> caseQuestionnaireResponses = tenantCaseQuestionnaireBiz.listByIds(caseQuestionnaireIds);
+        if (CollUtil.isEmpty(caseQuestionnaireResponses)) {
+            return;
+        }
         Map<String, QuestionSectionResponse> collect = caseQuestionnaireResponses.stream()
                 .collect(Collectors.toMap(CaseQuestionnaireResponse::getCaseQuestionnaireId, CaseQuestionnaireResponse::getQuestionSectionResponse));
 
@@ -78,10 +85,10 @@ public class ExperimentQuestionnaireManageBiz {
         // 为每个小组分配试卷
         List<ExperimentQuestionnaireEntity> entityList = new ArrayList<>();
         List<ExperimentQuestionnaireItemEntity> itemEntityList = new ArrayList<>();
-        experimentGroupIds.forEach(groupId -> {
-            periodOrgCollect.forEach((period, orgCollect) -> {
-                if (!orgCollect.isEmpty()) {
-                    orgCollect.forEach((org, orgQuestionnaire) -> {
+        experimentGroupIds.forEach(groupId -> periodOrgCollect.forEach((period, orgCollect) -> {
+            if (!orgCollect.isEmpty()) {
+                orgCollect.forEach((org, orgQuestionnaire) -> {
+                    if (BeanUtil.isNotEmpty(orgQuestionnaire)) {
                         // experiment-questionnaire
                         ExperimentQuestionnaireEntity entity = ExperimentQuestionnaireEntity.builder()
                                 .experimentQuestionnaireId(baseBiz.getIdStr())
@@ -96,12 +103,13 @@ public class ExperimentQuestionnaireManageBiz {
                         entityList.add(entity);
 
                         // experiment-questionnaire-item
-                        List<ExperimentQuestionnaireItemEntity> localItemList = new ArrayList<>();
-                        String caseQuestionnaireId = orgQuestionnaire.getCaseQuestionnaireId();
                         if (CollUtil.isNotEmpty(collect)) {
-                            // set item
-                            QuestionSectionResponse questionSectionResponse = collect.get(caseQuestionnaireId);
-                            List<QuestionSectionItemResponse> sectionItemList = questionSectionResponse.getSectionItemList();
+                            List<ExperimentQuestionnaireItemEntity> localItemList = new ArrayList<>();
+                            // set questionnaire-item
+                            QuestionSectionResponse questionSectionResponse = collect.get(orgQuestionnaire.getCaseQuestionnaireId());
+                            List<QuestionSectionItemResponse> sectionItemList = Optional.ofNullable(questionSectionResponse)
+                                    .map(QuestionSectionResponse::getSectionItemList)
+                                    .orElse(new ArrayList<>());
                             if (CollUtil.isNotEmpty(sectionItemList)) {
                                 sectionItemList.forEach(sectionItem -> {
                                     QuestionResponse question = sectionItem.getQuestion();
@@ -117,10 +125,10 @@ public class ExperimentQuestionnaireManageBiz {
                             }
                             itemEntityList.addAll(localItemList);
                         }
-                    });
-                }
-            });
-        });
+                    }
+                });
+            }
+        }));
 
         experimentQuestionnaireService.saveBatch(entityList);
         experimentQuestionnaireItemService.saveBatch(itemEntityList);
@@ -168,14 +176,14 @@ public class ExperimentQuestionnaireManageBiz {
             return "";
         }
 
-        ArrayList<Map> maps = new ArrayList<>();
+        List<Option> options = new ArrayList<>();
         optionWithAnswerList.forEach(item -> {
-            Map<String, String> map = new HashMap<>();
-            map.put("title", item.getOptionTitle());
-            map.put("value", item.getOptionValue());
-            maps.add(map);
+            Option option = new Option();
+            option.setTitle(item.getOptionTitle());
+            option.setValue(item.getOptionValue());
+            options.add(option);
         });
-        return JSON.toJSONString(maps);
+        return JSON.toJSONString(options);
     }
 
     private String getRightValues(List<QuestionOptionWithAnswerResponse> optionWithAnswerList) {
@@ -183,9 +191,21 @@ public class ExperimentQuestionnaireManageBiz {
             return "";
         }
 
-        return optionWithAnswerList.stream()
-                .filter(QuestionOptionWithAnswerResponse::getRightAnswer)
-                .map(QuestionOptionWithAnswerResponse::getOptionTitle)
-                .collect(Collectors.joining(","));
+        List<Option> options = new ArrayList<>();
+        optionWithAnswerList.forEach(item -> {
+            if (item.getRightAnswer() != null && item.getRightAnswer() == Boolean.TRUE) {
+                Option option = new Option();
+                option.setTitle(item.getOptionTitle());
+                option.setValue(item.getOptionValue());
+                options.add(option);
+            }
+        });
+        return JSON.toJSONString(options);
+    }
+
+    @Data
+    public static class Option {
+        private String title;
+        private String value;
     }
 }

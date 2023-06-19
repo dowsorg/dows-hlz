@@ -47,6 +47,8 @@ public class SuspendHandler extends AbstractEventHandler implements EventHandler
             // todo 更新所有计时器时间
             for (ExperimentTimerEntity experimentTimerEntity : experimentTimerEntityList) {
                 ExperimentTimerEntity updExperimentTimerEntity = new ExperimentTimerEntity();
+                updExperimentTimerEntity.setId(experimentTimerEntity.getId());
+                updExperimentTimerEntity.setExperimentTimerId(experimentTimerEntity.getExperimentTimerId());
                 updExperimentTimerEntity.setPauseCount(experimentTimerEntity.getPauseCount() + 1);
                 updExperimentTimerEntity.setExperimentInstanceId(experimentTimerEntity.getExperimentInstanceId());
                 updExperimentTimerEntity.setPeriodInterval(experimentTimerEntity.getPeriodInterval());
@@ -109,6 +111,7 @@ public class SuspendHandler extends AbstractEventHandler implements EventHandler
                 }
             }
         }
+
 
     }
 }

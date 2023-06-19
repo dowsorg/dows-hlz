@@ -1,7 +1,7 @@
 package org.dows.hep.api.event;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 
@@ -12,13 +12,11 @@ import java.io.Serializable;
 //@Component
 public class GroupMemberAllotEvent extends ExperimentEvent implements Serializable {
 
+    @Getter
+    private EventName eventName = EventName.groupMemberAllotEvent;
+
 
     public GroupMemberAllotEvent(Object source) {
         super(source);
-    }
-
-    @Override
-    public EventName getEventName() {
-        return null;
     }
 }
