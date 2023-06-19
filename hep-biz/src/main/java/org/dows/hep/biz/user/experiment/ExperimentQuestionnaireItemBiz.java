@@ -43,7 +43,7 @@ public class ExperimentQuestionnaireItemBiz {
 
     /**
      * @author fhb
-     * @description 批量更新
+     * @description 保存知识答题 Item
      * @date 2023/6/7 14:35
      * @param
      * @return
