@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.Response;
 import org.dows.framework.api.exceptions.BaseException;
 import org.dows.framework.api.i18n.UnifiedMessageSource;
+import org.dows.framework.api.status.CommonStatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
@@ -38,7 +39,7 @@ public class GlobalExceptionAdvice {
     if (e.getStatusCode() != null) {
       return Response.failed(e.getStatusCode());
     }
-    return Response.failed(getMessage(e));
+    return Response.failed(CommonStatusCode.FAILED.getCode(),getMessage(e));
   }
 
   @ExceptionHandler(value = Exception.class)
@@ -48,7 +49,7 @@ public class GlobalExceptionAdvice {
     if (e.getStatusCode() != null) {
       return Response.failed(e.getStatusCode());
     }
-    return Response.failed(getMessage(e));
+    return Response.failed(CommonStatusCode.FAILED.getCode(),getMessage(e));
   }
 
   /**

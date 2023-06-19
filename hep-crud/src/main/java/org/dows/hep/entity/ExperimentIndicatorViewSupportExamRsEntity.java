@@ -12,13 +12,14 @@ import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * 指标基本信息描述表(IndicatorViewBaseInfoDescr)实体类
+ * 查看指标辅助检查类(IndicatorViewSupportExam)实体类
  *
  * @author lait
- * @since 2023-04-28 10:26:25
+ * @since 2023-04-28 10:26:44
  */
 @SuppressWarnings("serial")
 @Data
@@ -28,37 +29,46 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "ExperimentIndicatorViewBaseInfoDescrRsEntity", title = "指标基本信息描述表")
-@TableName("experiment_indicator_view_base_info_descr_rs")
-public class ExperimentIndicatorViewBaseInfoDescrRsEntity implements CrudEntity {
+@Schema(name = "ExperimentIndicatorViewSupportExamRsEntity", title = "查看指标辅助检查类")
+@TableName("experiment_indicator_view_support_exam_rs")
+public class ExperimentIndicatorViewSupportExamRsEntity implements CrudEntity {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "主键")
     private Long id;
 
     @Schema(title = "分布式ID")
-    private String experimentIndicatorViewBaseInfoDescId;
+    private String experimentIndicatorViewSupportExamId;
 
     @Schema(title = "分布式ID")
-    private String indicatorViewBaseInfoDescId;
+    private String indicatorViewSupportExamId;
+
+    @Schema(title = "实验id")
+    private String experimentId;
+
+    @Schema(title = "案例id")
+    private String caseId;
 
     @Schema(title = "应用ID")
     private String appId;
 
-    @Schema(title = "分布式ID")
-    private String indicatorViewBaseInfoId;
-
-    @Schema(title = "指标基本信息描述表名称")
+    @Schema(title = "辅助检查名称")
     private String name;
 
-    @Schema(title = "展示顺序")
-    private Integer seq;
+    @Schema(title = "费用")
+    private BigDecimal fee;
 
-    @Schema(title = "指标id列表")
-    private String indicatorInstanceIdArray;
+    @Schema(title = "关联指标")
+    private String indicatorInstanceId;
 
-    @Schema(title = "指标名称列表")
-    private String indicatorInstanceNameArray;
+    @Schema(title = "关联指标名称")
+    private String indicatorInstanceName;
+
+    @Schema(title = "结果解析")
+    private String resultAnalysis;
+
+    @Schema(title = "0-禁用，1-启用")
+    private Integer status;
 
     @JsonIgnore
     @TableLogic

@@ -12,13 +12,14 @@ import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * 查看指标基本信息类(IndicatorViewBaseInfo)实体类
+ * 查看指标体格检查类(IndicatorViewPhysicalExam)实体类
  *
  * @author lait
- * @since 2023-04-28 10:26:23
+ * @since 2023-04-28 10:26:42
  */
 @SuppressWarnings("serial")
 @Data
@@ -28,19 +29,19 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "ExperimentIndicatorViewBaseInfoRsEntity", title = "查看指标基本信息类")
-@TableName("experiment_indicator_view_base_info_rs")
-public class ExperimentIndicatorViewBaseInfoRsEntity implements CrudEntity {
+@Schema(name = "ExperimentIndicatorViewPhysicalExamRsEntity", title = "查看指标体格检查类")
+@TableName("experiment_indicator_view_physical_exam_rs")
+public class ExperimentIndicatorViewPhysicalExamRsEntity implements CrudEntity {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "主键")
     private Long id;
 
     @Schema(title = "分布式ID")
-    private String experimentIndicatorViewBaseInfoId;
+    private String experimentIndicatorViewPhysicalExamId;
 
     @Schema(title = "分布式ID")
-    private String indicatorViewBaseInfoId;
+    private String indicatorViewPhysicalExamId;
 
     @Schema(title = "实验id")
     private String experimentId;
@@ -51,8 +52,23 @@ public class ExperimentIndicatorViewBaseInfoRsEntity implements CrudEntity {
     @Schema(title = "应用ID")
     private String appId;
 
-    @Schema(title = "名称")
+    @Schema(title = "体格检查名称")
     private String name;
+
+    @Schema(title = "费用")
+    private BigDecimal fee;
+
+    @Schema(title = "关联指标")
+    private String indicatorInstanceId;
+
+    @Schema(title = "关联指标名称")
+    private String indicatorInstanceName;
+
+    @Schema(title = "结果解析")
+    private String resultAnalysis;
+
+    @Schema(title = "0-禁用，1-启用")
+    private Integer status;
 
     @JsonIgnore
     @TableLogic
