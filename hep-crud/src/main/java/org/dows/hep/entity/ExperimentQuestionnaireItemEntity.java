@@ -37,6 +37,12 @@ public class ExperimentQuestionnaireItemEntity {
     @Schema(title = "实验知识答题Id")
     private String experimentQuestionnaireId;
 
+    @Schema(title = "问题类别")
+    private String questionCateg;
+
+    @Schema(title = "问题类型")
+    private String questionType;
+
     @Schema(title = "问题题目")
     private String questionTitle;
 
