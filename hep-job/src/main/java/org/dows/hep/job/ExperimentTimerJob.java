@@ -29,11 +29,6 @@ public class ExperimentTimerJob{
     @Scheduled(cron = "*/30 * * * * ?")
     public void execute() {
         //1、判断实验是否到时间，到时间则更新状态
-//        List<ExperimentInstanceEntity> instanceEntities = experimentInstanceService.lambdaQuery()
-//                .eq(ExperimentInstanceEntity::getAppId, 3)
-//                .eq(ExperimentInstanceEntity::getDeleted,false)
-//                .eq(ExperimentInstanceEntity::getState, ExperimentStateEnum.UNBEGIN.getState())
-//                .list();
         List<ExperimentContext> instanceEntities = ExperimentContext.getMap();
         instanceEntities.forEach(entity -> {
             if (entity.getState().getDescr().equals(ExperimentStateEnum.UNBEGIN.getDescr())) {
