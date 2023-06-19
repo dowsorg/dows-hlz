@@ -28,6 +28,7 @@ import org.dows.hep.api.exception.ExperimentParticipatorException;
 import org.dows.hep.api.tenant.experiment.request.*;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
+import org.dows.hep.api.user.experiment.response.ExperimentStateResponse;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -195,7 +196,7 @@ public class ExperimentManageBiz {
     private void buildPeriods(ExperimentInstanceEntity experimentInstance, ExperimentSetting experimentSetting,
                               List<ExperimentTimerEntity> experimentTimerEntities) {
         ExperimentSetting.SandSetting sandSetting = experimentSetting.getSandSetting();
-        if(null == sandSetting ){
+        if (null == sandSetting) {
             throw new BizException("沙盘模式，sandSetting为不能为空!");
         }
         // 获取总期数，生成每期的计时器
@@ -214,11 +215,16 @@ public class ExperimentManageBiz {
         // 如果是标准模式，那么沙盘期数 需要减去方案设计截止时间
         if (experimentInstance.getModel() == ExperimentModeEnum.STANDARD.getCode()) {
             ExperimentSetting.SchemeSetting schemeSetting = experimentSetting.getSchemeSetting();
-            if(schemeSetting != null) {
+            if (schemeSetting != null) {
                 // 方案设计截止时间
                 long time1 = schemeSetting.getSchemeEndTime().getTime();
                 // 如果是标准模式，一期开始时间 = 方案设计截止时间 - 实验开始时间,第一期没有间隔时间 + 间隔时间
-                pst = time1 - startTime +  interval;
+                //pst = time1 - startTime +  interval;
+                // 如果是标准模式，一期开始时间 = 方案设计截止时间 + 间隔时间
+                pst = time1 + interval;
+                // 如果是标准模式，一期开始时间 = 实验开始时间 + 方案设计时长结束时间 + 间隔时间
+                //long duration = schemeSetting.getDuration() * 60 * 1000;
+                //pst = startTime + duration + interval;
             }
         } else {
             pst = startTime;
@@ -386,22 +392,6 @@ public class ExperimentManageBiz {
                 .caseInstanceId(caseInstanceId)
                 .build()));
         // todo 后续移到事件监听中
-//        // 预处理方案设计
-//        String experimentInstanceId = experimentGroupSettingRequest.getExperimentInstanceId();
-//        CreateExperimentForm allotData = getAllotData(experimentInstanceId, null);
-//        ExperimentSetting experimentSetting = allotData.getExperimentSetting();
-//        ExperimentSetting.SchemeSetting schemeSetting = Optional.ofNullable(experimentSetting)
-//                .map(ExperimentSetting::getSchemeSetting)
-//                .orElse(null);
-//        if (BeanUtil.isNotEmpty(schemeSetting)) {
-//            List<String> groupIds = experimentGroupEntitys.stream()
-//                    .map(ExperimentGroupEntity::getExperimentGroupId)
-//                    .toList();
-//            String settingStr = JSONUtil.toJsonStr(schemeSetting);
-//            experimentSchemeManageBiz.preHandleExperimentScheme(experimentInstanceId, caseInstanceId, groupIds, settingStr);
-//        }
-//        // 预处理基础信息
-//        experimentCaseInfoManageBiz.preHandleCaseInfo(experimentInstanceId, caseInstanceId);
         // 发布实验分配小组事件
         applicationEventPublisher.publishEvent(new CreateGroupEvent(experimentGroupSettingRequest));
         return true;
@@ -430,17 +420,20 @@ public class ExperimentManageBiz {
      *
      * @return
      */
-    public ExperimentStateEnum getExperimentState(String appId,String experimentInstanceId) {
+    public ExperimentStateResponse getExperimentState(String appId, String experimentInstanceId) {
+
+        ExperimentStateResponse experimentStateResponse = new ExperimentStateResponse();
 
         ExperimentInstanceEntity experimentInstanceEntity = experimentInstanceService.lambdaQuery()
                 .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
                 .eq(ExperimentInstanceEntity::getAppId, appId)
-                .ge(ExperimentInstanceEntity::getStartTime, LocalDateTime.now())
+                //.ge(ExperimentInstanceEntity::getStartTime, LocalDateTime.now())
                 .oneOpt()
                 .orElse(null);
         if (experimentInstanceEntity == null) {
             throw new ExperimentException("不存在的该实验!");
         }
+
         Integer state = experimentInstanceEntity.getState();
         ExperimentStateEnum experimentStateEnum = Arrays.stream(ExperimentStateEnum.values()).filter(e -> e.getState() == state)
                 .findFirst().orElse(null);
@@ -451,8 +444,12 @@ public class ExperimentManageBiz {
             experimentRestartRequest.setCurrentTime(new Date());
             applicationEventPublisher.publishEvent(new SuspendEvent(experimentRestartRequest));
         }
+        experimentStateResponse.setExperimentStateEnum(experimentStateEnum);
+        experimentStateResponse.setExperimentInstanceId(experimentInstanceEntity.getExperimentInstanceId());
+        experimentStateResponse.setExperimentStartTime(experimentInstanceEntity.getStartTime());
         // todo 查询实验开始或暂停或结束,可直接差数据库
-        return experimentStateEnum;
+//        return experimentStateEnum;
+        return experimentStateResponse;
     }
 
 

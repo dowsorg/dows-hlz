@@ -15,8 +15,8 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Schema(name = "CopyViewIndicatorRequestRs", title = "复制查看指标到实验需要的请求参数")
-public class CopyViewIndicatorRequestRs implements Serializable {
+@Schema(name = "RsCopyExperimentRequestRs", title = "复制查看指标到实验需要的请求参数")
+public class RsCopyExperimentRequestRs implements Serializable {
   @Schema(title = "应用ID")
   private String appId;
 

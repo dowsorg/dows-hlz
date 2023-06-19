@@ -1,5 +1,7 @@
 package org.dows.hep.biz.user.experiment;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
@@ -14,6 +16,7 @@ import org.dows.hep.service.ExperimentTimerService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -106,7 +109,13 @@ public class ExperimentTimerBiz {
             throw new ExperimentException("获取实验期数异常,当前时间存在多个期数,请检查期数配置");
         } else if (collect1.size() == 0) {
             log.error("获取实验期数异常,当前时间不存在对应的实验期数");
-            throw new ExperimentException("获取实验期数异常,当前时间不存在对应的实验期数,或该实验已结束");
+            StringBuilder stringBuilder = new StringBuilder();
+            list.stream().forEach(k->{
+                stringBuilder.append(k.getPeriod()).append("期开始时间：")
+                        .append(DateUtil.date(k.getStartTime()))
+                        .append(" ");
+            });
+            throw new ExperimentException("获取实验期数异常,当前时间不存在对应的实验期数,当前实验期数信息：" + stringBuilder);
         } else {
             // 获取当前期数
             ExperimentTimerEntity experimentTimerEntity = collect1.get(0);

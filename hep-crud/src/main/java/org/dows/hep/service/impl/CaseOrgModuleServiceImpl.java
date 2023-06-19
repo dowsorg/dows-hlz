@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
  * @since 2023-04-21 10:31:40
  */
 @Service("caseOrgModuleService")
-public class CaseOrgOrgModuleServiceImpl extends MybatisCrudServiceImpl<CaseModuleMapper, CaseOrgModuleEntity> implements CaseOrgModuleService {
+public class CaseOrgModuleServiceImpl extends MybatisCrudServiceImpl<CaseModuleMapper, CaseOrgModuleEntity> implements CaseOrgModuleService {
 
 }
 

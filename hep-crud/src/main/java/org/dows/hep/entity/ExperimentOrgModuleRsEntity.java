@@ -24,24 +24,36 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "CaseModuleFuncRefEntity", title = "案例模块功能点绑定关系")
-@TableName("case_org_module_func_ref")
-public class CaseOrgModuleFuncRefEntity implements CrudEntity {
+@Schema(name = "ExperimentOrgModuleRsEntity", title = "实验机构模块")
+@TableName("experiment_org_module_rs")
+public class ExperimentOrgModuleRsEntity implements CrudEntity {
   @JsonFormat(shape = JsonFormat.Shape.STRING)
   @Schema(title = "数据库ID")
   private Long id;
 
   @Schema(title = "分布式ID")
-  private String caseOrgModuleFuncRefId;
-
-  @Schema(title = "应用ID")
-  private String appId;
+  private String experimentOrgModuleId;
 
   @Schema(title = "分布式ID")
   private String caseOrgModuleId;
 
-  @Schema(title = "功能点分布式ID")
-  private String indicatorFuncId;
+  @Schema(title = "应用ID")
+  private String appId;
+
+  @Schema(title = "机构分布式ID")
+  private String orgId;
+
+  @Schema(title = "模块名称")
+  private String name;
+
+  @Schema(title = "功能点分布式ID数组")
+  private String indicatorFuncIdArray;
+
+  @Schema(title = "功能点名称数组")
+  private String indicatorFuncNameArray;
+
+  @Schema(title = "功能点分布式ID类别数组")
+  private String indicatorCategoryIdArray;
 
   @Schema(title = "顺序")
   private Integer seq;
