@@ -89,6 +89,8 @@ public class ExperimentGroupBiz {
         if (experimentParticipatorEntity == null) {
             throw new ExperimentException(ExperimentStatusCode.NOT_CAPTAIN);
         }
+        // 发送websocket消息给组员
+//        applicationEventPublisher.publishEvent(new TeamNameEvent(createGroup));
         // 更新组名和状态
         return experimentGroupService.lambdaUpdate()
                 .eq(ExperimentGroupEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
