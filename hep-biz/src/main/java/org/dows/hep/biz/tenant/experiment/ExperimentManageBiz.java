@@ -427,7 +427,7 @@ public class ExperimentManageBiz {
         ExperimentInstanceEntity experimentInstanceEntity = experimentInstanceService.lambdaQuery()
                 .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
                 .eq(ExperimentInstanceEntity::getAppId, appId)
-                .ge(ExperimentInstanceEntity::getStartTime, LocalDateTime.now())
+                //.ge(ExperimentInstanceEntity::getStartTime, LocalDateTime.now())
                 .oneOpt()
                 .orElse(null);
         if (experimentInstanceEntity == null) {
