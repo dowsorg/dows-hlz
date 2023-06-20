@@ -25,4 +25,7 @@ public class RsCopyPersonIndicatorRequestRs implements Serializable {
 
   @Schema(title = "案例ID")
   private String caseInstanceId;
+
+  @Schema(title = "实验期数")
+  private Integer periods;
 }

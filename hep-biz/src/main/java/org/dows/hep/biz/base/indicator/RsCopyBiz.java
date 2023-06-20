@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -734,7 +735,7 @@ public class RsCopyBiz {
   @Transactional(rollbackFor = Exception.class)
   public void rsCopyPersonIndicator(RsCopyPersonIndicatorRequestRs rsCopyPersonIndicatorRequestRs) {
     List<ExperimentIndicatorInstanceRsEntity> experimentIndicatorInstanceRsEntityList = new ArrayList<>();
-//    List<ExperimentIndicatorValRsEntity> experimentIndicatorValRsEntityList = new ArrayList<>();
+    List<ExperimentIndicatorValRsEntity> experimentIndicatorValRsEntityList = new ArrayList<>();
     String experimentInstanceId = rsCopyPersonIndicatorRequestRs.getExperimentInstanceId();
     String caseInstanceId = rsCopyPersonIndicatorRequestRs.getCaseInstanceId();
     String appId = rsCopyPersonIndicatorRequestRs.getAppId();
@@ -746,6 +747,7 @@ public class RsCopyBiz {
     Set<String> caseIndicatorInstanceIdSet = new HashSet<>();
     Map<String, CaseIndicatorRuleEntity> kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap = new HashMap<>();
     Map<String, String> kCasePersonIdVAccountIdMap = new HashMap<>();
+    Integer maxPeriods = rsCopyPersonIndicatorRequestRs.getPeriods();
     experimentPersonService.lambdaQuery()
       .eq(ExperimentPersonEntity::getAppId, appId)
       .eq(ExperimentPersonEntity::getExperimentInstanceId, experimentInstanceId)
@@ -796,7 +798,6 @@ public class RsCopyBiz {
         kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap.put(caseIndicatorRuleEntity.getVariableId(), caseIndicatorRuleEntity);
       });
     kExperimentPersonIdVExperimentPersonEntityMap.forEach((experimentPersonId, experimentPersonEntity) -> {
-      String experimentIndicatorInstanceId = idGenerator.nextIdStr();
       String casePersonId = experimentPersonEntity.getCasePersonId();
       String accountId = kCasePersonIdVAccountIdMap.get(casePersonId);
       List<CaseIndicatorInstanceEntity> caseIndicatorInstanceEntityList = kPrincipalIdVCaseIndicatorInstanceEntityListMap.get(accountId);
@@ -817,7 +818,7 @@ public class RsCopyBiz {
         experimentIndicatorInstanceRsEntityList.add(
             ExperimentIndicatorInstanceRsEntity
                 .builder()
-                .experimentIndicatorInstanceId(experimentIndicatorInstanceId)
+                .experimentIndicatorInstanceId(idGenerator.nextIdStr())
                 .caseIndicatorInstanceId(caseIndicatorInstanceEntity.getCaseIndicatorInstanceId())
                 .indicatorInstanceId(caseIndicatorInstanceEntity.getIndicatorInstanceId())
                 .experimentId(experimentInstanceId)
@@ -837,7 +838,25 @@ public class RsCopyBiz {
         );
       });
     });
+    experimentIndicatorInstanceRsEntityList.forEach(experimentIndicatorInstanceRsEntity -> {
+      for (int i = 1; i <= maxPeriods; i++) {
+        experimentIndicatorValRsEntityList.add(
+            ExperimentIndicatorValRsEntity
+                .builder()
+                .experimentIndicatorValId(idGenerator.nextIdStr())
+                .experimentId(experimentInstanceId)
+                .caseId(caseInstanceId)
+                .indicatorInstanceId(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId())
+                .currentVal(experimentIndicatorInstanceRsEntity.getDef())
+                .periods(i)
+                .min(experimentIndicatorInstanceRsEntity.getMin())
+                .max(experimentIndicatorInstanceRsEntity.getMax())
+                .descr(experimentIndicatorInstanceRsEntity.getDescr())
+                .build()
+        );
+      }
+    });
     experimentIndicatorInstanceRsService.saveOrUpdateBatch(experimentIndicatorInstanceRsEntityList);
-//    experimentIndicatorValRsService.saveOrUpdateBatch(experimentIndicatorValRsEntityList);
+    experimentIndicatorValRsService.saveOrUpdateBatch(experimentIndicatorValRsEntityList);
   }
 }

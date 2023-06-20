@@ -46,7 +46,7 @@ public class ExperimentIndicatorValRsEntity {
   private String currentVal;
 
   @Schema(title = "期数")
-  private String periods;
+  private Integer periods;
 
   @Schema(title = "最小值")
   private String min;
