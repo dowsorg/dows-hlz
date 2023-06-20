@@ -19,7 +19,7 @@ public class ExperimentQuestionnaireItemRequest {
     private String experimentSchemeItemId;
 
     @Schema(title = "作答答案-选项id逗号连接")
-    private String questionResult;
+    private List<String> questionResult;
 
     @Schema(title = "子")
     private List<ExperimentQuestionnaireItemRequest> children;

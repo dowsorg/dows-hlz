@@ -2,9 +2,11 @@ package org.dows.hep.biz.user.experiment;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.json.JSONUtil;
 import lombok.AllArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
+import org.dows.hep.api.user.experiment.dto.ExptQuestionnaireOptionDTO;
 import org.dows.hep.api.user.experiment.request.ExperimentQuestionnaireItemRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireItemResponse;
 import org.dows.hep.entity.ExperimentQuestionnaireItemEntity;
@@ -28,25 +30,35 @@ public class ExperimentQuestionnaireItemBiz {
     private final ExperimentQuestionnaireItemService experimentQuestionnaireItemService;
 
     /**
+     * @param
+     * @return
      * @author fhb
      * @description 列出知识答题
      * @date 2023/6/7 14:28
-     * @param
-     * @return
      */
     public List<ExperimentQuestionnaireItemResponse> listByQuestionnaireId(String questionnaireId) {
         List<ExperimentQuestionnaireItemEntity> entityList = experimentQuestionnaireItemService.lambdaQuery()
                 .eq(ExperimentQuestionnaireItemEntity::getExperimentQuestionnaireId, questionnaireId)
                 .list();
-        return BeanUtil.copyToList(entityList, ExperimentQuestionnaireItemResponse.class);
+        return entityList.stream()
+                .map(entity -> {
+                    ExperimentQuestionnaireItemResponse resultItem = BeanUtil.copyProperties(entity, ExperimentQuestionnaireItemResponse.class);
+                    List<ExptQuestionnaireOptionDTO> optionList = convertOptStr2OptionList(entity.getQuestionOptions());
+                    List<String> results = convertResultStr2ResultList(entity.getQuestionResult());
+
+                    resultItem.setQuestionOptionList(optionList);
+                    resultItem.setQuestionResult(results);
+                    return resultItem;
+                })
+                .toList();
     }
 
     /**
+     * @param
+     * @return
      * @author fhb
      * @description 保存知识答题 Item
      * @date 2023/6/7 14:35
-     * @param
-     * @return
      */
     public Boolean updateBatch(List<ExperimentQuestionnaireItemRequest> itemList) {
         if (CollUtil.isEmpty(itemList)) {
@@ -71,7 +83,7 @@ public class ExperimentQuestionnaireItemBiz {
         // 处理当前结点
         ExperimentQuestionnaireItemEntity itemEntity = ExperimentQuestionnaireItemEntity.builder()
                 .experimentQuestionnaireItemId(node.getExperimentSchemeItemId())
-                .questionResult(node.getQuestionResult())
+                .questionResult(String.join(",", node.getQuestionResult()))
                 .build();
         flatList.add(itemEntity);
 
@@ -97,5 +109,13 @@ public class ExperimentQuestionnaireItemBiz {
         itemEntityList.forEach(item -> {
             item.setId(collect.get(item.getExperimentQuestionnaireItemId()));
         });
+    }
+
+    private List<String> convertResultStr2ResultList(String questionResult) {
+        return List.of(questionResult.split(","));
+    }
+
+    private List<ExptQuestionnaireOptionDTO> convertOptStr2OptionList(String questionOptions) {
+        return JSONUtil.toList(questionOptions, ExptQuestionnaireOptionDTO.class);
     }
 }
