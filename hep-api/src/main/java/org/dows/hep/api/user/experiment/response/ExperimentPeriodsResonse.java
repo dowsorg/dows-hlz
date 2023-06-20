@@ -2,7 +2,9 @@ package org.dows.hep.api.user.experiment.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import org.dows.hep.api.enums.ExperimentModeEnum;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -44,6 +46,8 @@ public class ExperimentPeriodsResonse {
         @Schema(title = "实验模式[0:标准模式，1:沙盘模式，2:方案设计模式]")
         private Integer model;
 
+        private String modelDescr;
+
         @Schema(title = "暂停次数[每次暂停++]")
         private Integer pauseCount;
 
@@ -57,6 +61,17 @@ public class ExperimentPeriodsResonse {
         private Date pauseStartTime;
         @Schema(title = "暂停结束时间")
         private Date pauseEndTime;
+
+
+        public String getModelDescr(){
+            final ExperimentModeEnum experimentModeEnum = Arrays.stream(ExperimentModeEnum.values())
+                    .filter(e -> e.getCode() == model)
+                    .findFirst().orElse(null);
+            if(experimentModeEnum != null){
+                return experimentModeEnum.getDescr();
+            }
+            return null;
+        }
     }
 
 }

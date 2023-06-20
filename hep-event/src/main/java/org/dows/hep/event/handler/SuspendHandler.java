@@ -47,8 +47,7 @@ public class SuspendHandler extends AbstractEventHandler implements EventHandler
             // todo 更新所有计时器时间
             for (ExperimentTimerEntity experimentTimerEntity : experimentTimerEntityList) {
                 ExperimentTimerEntity updExperimentTimerEntity = new ExperimentTimerEntity();
-                updExperimentTimerEntity.setId(experimentTimerEntity.getId());
-                updExperimentTimerEntity.setExperimentTimerId(experimentTimerEntity.getExperimentTimerId());
+                updExperimentTimerEntity.setExperimentTimerId(idGenerator.nextIdStr());
                 updExperimentTimerEntity.setPauseCount(experimentTimerEntity.getPauseCount() + 1);
                 updExperimentTimerEntity.setExperimentInstanceId(experimentTimerEntity.getExperimentInstanceId());
                 updExperimentTimerEntity.setPeriodInterval(experimentTimerEntity.getPeriodInterval());
@@ -56,6 +55,8 @@ public class SuspendHandler extends AbstractEventHandler implements EventHandler
                 updExperimentTimerEntity.setAppId(experimentTimerEntity.getAppId());
                 updExperimentTimerEntity.setModel(experimentTimerEntity.getModel());
                 updExperimentTimerEntity.setState(experimentTimerEntity.getState());
+                updExperimentTimerEntity.setStartTime(experimentTimerEntity.getStartTime());
+                updExperimentTimerEntity.setEndTime(experimentTimerEntity.getEndTime());
                 updExperimentTimerEntity.setPauseStartTime(experimentRestartRequest.getCurrentTime());
                 updExperimentTimerEntity.setPaused(experimentRestartRequest.getPaused());
                 updateExperimentTimerEntities.add(updExperimentTimerEntity);
