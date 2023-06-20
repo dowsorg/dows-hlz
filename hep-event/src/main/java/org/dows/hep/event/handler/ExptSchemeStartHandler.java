@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.framework.api.Response;
 import org.dows.framework.api.uim.AccountInfo;
 import org.dows.hep.api.WsMessageResponse;
 import org.dows.hep.api.enums.EnumWebSocketType;
@@ -43,11 +44,14 @@ public class ExptSchemeStartHandler extends AbstractEventHandler implements Even
             AccountInfo accountInfo = entry.getValue();
             if (accountIdSet.contains(accountInfo.getAccountName())) {
                 Channel channel = entry.getKey();
+                Response<WsMessageResponse> response = new Response<>();
                 WsMessageResponse result = WsMessageResponse.builder()
                         .type(EnumWebSocketType.EXPT_SCHEME_START)
                         .data(EnumWebSocketType.EXPT_SCHEME_START.name())
                         .build();
-                HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, result);
+                response.setStatus(Boolean.TRUE);
+                response.setData(result);
+                HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, response);
             }
         }
     }
