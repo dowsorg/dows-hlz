@@ -63,8 +63,8 @@ public class ExperimentIndicatorViewBaseInfoDescRsEntity implements CrudEntity {
     @Schema(title = "指标id列表")
     private String indicatorInstanceIdArray;
 
-    @Schema(title = "指标名称列表")
-    private String indicatorInstanceNameArray;
+//    @Schema(title = "指标名称列表")
+//    private String indicatorInstanceNameArray;
 
     @JsonIgnore
     @TableLogic

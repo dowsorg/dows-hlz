@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.RsCopyExperimentRequestRs;
+import org.dows.hep.api.base.indicator.request.RsCopyPersonIndicatorRequestRs;
 import org.dows.hep.biz.base.indicator.RsCopyBiz;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,5 +23,11 @@ public class RsCopyRest {
   @PostMapping("v1/experimentIndicator/experiment/rsCopy")
   public void rsCopyExperiment(RsCopyExperimentRequestRs rsCopyExperimentRequestRs) {
     rsCopyBiz.rsCopyExperiment(rsCopyExperimentRequestRs);
+  }
+
+  @Operation(summary = "复制人物指标")
+  @PostMapping("v1/experimentIndicator/personIndicator/rsCopy")
+  public void rsCopyPersonIndicator(RsCopyPersonIndicatorRequestRs rsCopyPersonIndicatorRequestRs) {
+    rsCopyBiz.rsCopyPersonIndicator(rsCopyPersonIndicatorRequestRs);
   }
 }
