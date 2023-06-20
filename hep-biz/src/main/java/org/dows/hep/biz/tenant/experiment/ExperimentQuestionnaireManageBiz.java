@@ -73,7 +73,7 @@ public class ExperimentQuestionnaireManageBiz {
                 .list();
         for (ExperimentSettingEntity expSetting : experimentSettings) {
             String configKey = expSetting.getConfigKey();
-            if (ExperimentSetting.SchemeSetting.class.getName().equals(configKey)) {
+            if (ExperimentSetting.SandSetting.class.getName().equals(configKey)) {
                 sandSetting = expSetting.getConfigJsonVals();
             }
         }
