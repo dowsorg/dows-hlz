@@ -15,6 +15,7 @@ public class ExptInitHandler extends AbstractEventHandler implements EventHandle
     private final ExperimentCaseInfoManageBiz experimentCaseInfoManageBiz;
     private final ExperimentSchemeManageBiz experimentSchemeManageBiz;
     private final ExperimentQuestionnaireManageBiz experimentQuestionnaireManageBiz;
+
     @Override
     public void exec(ExptInitEventSource request) {
         String experimentInstanceId = request.getExperimentInstanceId();

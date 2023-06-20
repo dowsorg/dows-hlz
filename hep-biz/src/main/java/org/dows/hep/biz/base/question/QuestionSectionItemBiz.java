@@ -78,6 +78,7 @@ public class QuestionSectionItemBiz {
             return new ArrayList<>();
         }
 
+        // todo batch search
         return itemList.stream()
                 .map(item -> {
                     QuestionSectionItemResponse itemResponse = BeanUtil.copyProperties(item, QuestionSectionItemResponse.class);
