@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.dows.hep.api.tenant.casus.CasePeriodEnum;
 
 @Data
 @Builder
@@ -18,10 +17,6 @@ public class ExptQuestionnaireSearchRequest {
     @NotBlank
     @Schema(title = "实验ID")
     private String experimentInstanceId;
-
-    @NotBlank
-    @Schema(title = "期数")
-    private CasePeriodEnum periods;
 
     @NotBlank
     @Schema(title = "实验机构ID")

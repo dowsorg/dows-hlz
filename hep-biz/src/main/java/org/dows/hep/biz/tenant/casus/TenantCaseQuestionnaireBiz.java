@@ -363,7 +363,7 @@ public class TenantCaseQuestionnaireBiz {
                 .caseInstanceId(request.getCaseInstanceId())
                 .questionSectionName(request.getQuestionSectionName())
                 .periods(request.getPeriods().getCode())
-                .periodSequence(request.getPeriods().ordinal())
+                .periodSequence(request.getPeriods().getSeq())
                 .addType(request.getAddType().name())
                 .build();
 
