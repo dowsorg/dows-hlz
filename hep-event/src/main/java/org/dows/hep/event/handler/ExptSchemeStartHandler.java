@@ -44,13 +44,11 @@ public class ExptSchemeStartHandler extends AbstractEventHandler implements Even
             AccountInfo accountInfo = entry.getValue();
             if (accountIdSet.contains(accountInfo.getAccountName())) {
                 Channel channel = entry.getKey();
-                Response<WsMessageResponse> response = new Response<>();
                 WsMessageResponse result = WsMessageResponse.builder()
                         .type(EnumWebSocketType.EXPT_SCHEME_START)
                         .data(EnumWebSocketType.EXPT_SCHEME_START.name())
                         .build();
-                response.setStatus(Boolean.TRUE);
-                response.setData(result);
+                Response<WsMessageResponse> response = Response.ok(result);
                 HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, response);
             }
         }

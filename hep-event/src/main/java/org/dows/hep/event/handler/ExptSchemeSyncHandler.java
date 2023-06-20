@@ -41,13 +41,11 @@ public class ExptSchemeSyncHandler extends AbstractEventHandler implements Event
             AccountInfo accountInfo = entry.getValue();
             if (accountIdSet.contains(accountInfo.getAccountName())) {
                 Channel channel = entry.getKey();
-                Response<WsMessageResponse> response = new Response<>();
                 WsMessageResponse result = WsMessageResponse.builder()
                         .type(EnumWebSocketType.EXPT_SCHEME_SYNC)
                         .data(experimentSchemeResponse)
                         .build();
-                response.setStatus(Boolean.TRUE);
-                response.setData(result);
+                Response<WsMessageResponse> response = Response.ok(result);
                 HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, response);
             }
         }
