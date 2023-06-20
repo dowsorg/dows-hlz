@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
+import org.dows.hep.api.user.experiment.dto.ExptQuestionnaireOptionDTO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,11 +37,11 @@ public class ExperimentQuestionnaireItemResponse {
     @Schema(title = "问题描述")
     private String questionDescr;
 
-    @Schema(title = "问题选项")
-    private String questionOptions;
+    @Schema(title = "选项列表")
+    private List<ExptQuestionnaireOptionDTO> questionOptionList;
 
-    @Schema(title = "问题答案")
-    private String questionResult;
+    @Schema(title = "问题答案-存id")
+    private List<String> questionResult;
 
     @Schema(title = "子")
     private List<ExperimentQuestionnaireItemResponse> children = new ArrayList<>();

@@ -4,7 +4,6 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.question.response.QuestionOptionWithAnswerResponse;
 import org.dows.hep.api.base.question.response.QuestionResponse;
@@ -14,6 +13,7 @@ import org.dows.hep.api.tenant.casus.response.CaseOrgQuestionnaireResponse;
 import org.dows.hep.api.tenant.casus.response.CaseQuestionnaireResponse;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.ExptQuestionnaireStateEnum;
+import org.dows.hep.api.user.experiment.dto.ExptQuestionnaireOptionDTO;
 import org.dows.hep.biz.tenant.casus.TenantCaseOrgQuestionnaireBiz;
 import org.dows.hep.biz.tenant.casus.TenantCaseQuestionnaireBiz;
 import org.dows.hep.entity.ExperimentQuestionnaireEntity;
@@ -178,12 +178,13 @@ public class ExperimentQuestionnaireManageBiz {
             return "";
         }
 
-        List<Option> options = new ArrayList<>();
+        List<ExptQuestionnaireOptionDTO> options = new ArrayList<>();
         optionWithAnswerList.forEach(item -> {
-            Option option = new Option();
-            option.setId(item.getQuestionOptionsId());
-            option.setTitle(item.getOptionTitle());
-            option.setValue(item.getOptionValue());
+            ExptQuestionnaireOptionDTO option = ExptQuestionnaireOptionDTO.builder()
+                    .id(item.getQuestionOptionsId())
+                    .title(item.getOptionTitle())
+                    .value(item.getOptionValue())
+                    .build();
             options.add(option);
         });
         return JSON.toJSONString(options);
@@ -194,24 +195,17 @@ public class ExperimentQuestionnaireManageBiz {
             return "";
         }
 
-        List<Option> options = new ArrayList<>();
+        List<ExptQuestionnaireOptionDTO> options = new ArrayList<>();
         optionWithAnswerList.forEach(item -> {
             if (item.getRightAnswer() != null && item.getRightAnswer() == Boolean.TRUE) {
-                Option option = new Option();
-                option.setId(item.getQuestionOptionsId());
-                option.setTitle(item.getOptionTitle());
-                option.setValue(item.getOptionValue());
+                ExptQuestionnaireOptionDTO option = ExptQuestionnaireOptionDTO.builder()
+                        .id(item.getQuestionOptionsId())
+                        .title(item.getOptionTitle())
+                        .value(item.getOptionValue())
+                        .build();
                 options.add(option);
             }
         });
         return JSON.toJSONString(options);
-    }
-
-    @Data
-    public static class Option {
-        // 标识符
-        private String id;
-        private String title;
-        private String value;
     }
 }
