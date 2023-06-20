@@ -1,14 +1,15 @@
 package org.dows.hep.job;
 
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.ExperimentContext;
 import org.dows.hep.api.enums.ExperimentStateEnum;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
+import org.dows.hep.entity.ExperimentTimerEntity;
 import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentParticipatorService;
+import org.dows.hep.service.ExperimentTimerService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -26,20 +27,26 @@ public class ExperimentTimerJob{
 
     private final ExperimentParticipatorService experimentParticipatorService;
 
+    private final ExperimentTimerService experimentTimerService;
+
     @Scheduled(cron = "*/30 * * * * ?")
     public void execute() {
         //1、判断实验是否到时间，到时间则更新状态
         List<ExperimentContext> instanceEntities = ExperimentContext.getMap();
         instanceEntities.forEach(entity -> {
             if (entity.getState().getDescr().equals(ExperimentStateEnum.UNBEGIN.getDescr())) {
-                LambdaUpdateWrapper<ExperimentParticipatorEntity> participatorWrapper = new LambdaUpdateWrapper<ExperimentParticipatorEntity>()
+                experimentParticipatorService.lambdaUpdate()
                         .eq(ExperimentParticipatorEntity::getExperimentInstanceId, entity.getExperimentId())
-                        .set(ExperimentParticipatorEntity::getState, ExperimentStateEnum.ONGOING.getState());
-                experimentParticipatorService.update(participatorWrapper);
-                LambdaUpdateWrapper<ExperimentInstanceEntity> instanceWrapper = new LambdaUpdateWrapper<ExperimentInstanceEntity>()
+                        .eq(ExperimentParticipatorEntity::getDeleted, false)
+                        .set(ExperimentParticipatorEntity::getState,ExperimentStateEnum.PREPARE.getState()).update();
+                experimentInstanceService.lambdaUpdate()
                         .eq(ExperimentInstanceEntity::getExperimentInstanceId, entity.getExperimentId())
-                        .set(ExperimentInstanceEntity::getState,ExperimentStateEnum.ONGOING.getState());
-                experimentInstanceService.update(instanceWrapper);
+                        .eq(ExperimentInstanceEntity::getDeleted, false)
+                        .set(ExperimentInstanceEntity::getState,ExperimentStateEnum.PREPARE.getState()).update();
+                experimentTimerService.lambdaUpdate()
+                        .eq(ExperimentTimerEntity::getExperimentInstanceId, entity.getExperimentId())
+                        .eq(ExperimentTimerEntity::getDeleted, false)
+                        .set(ExperimentTimerEntity::getState,ExperimentStateEnum.PREPARE.getState()).update();
             }
         });
     }
