@@ -17,4 +17,11 @@ public class ExperimentStateResponse {
     private Date experimentStartTime;
     @Schema(title = "实验实例ID")
     private String experimentInstanceId;
+    @Schema(title = "倒计时时间")
+    private Long countDownTime;
+
+    public Long getCountDownTime() {
+        countDownTime = experimentStartTime.getTime() - System.currentTimeMillis();
+        return countDownTime;
+    }
 }
