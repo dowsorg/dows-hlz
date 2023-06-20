@@ -58,7 +58,8 @@ public class StartHandler extends AbstractEventHandler implements EventHandler<E
                     updateExperimentTimerEntities.add(experimentTimerEntity);
                 }
             });
-            experimentTimerBiz.saveOrUpdateExperimentTimeExperimentState(updateExperimentTimerEntities);
+            experimentTimerBiz.saveOrUpdateExperimentTimeExperimentState(experimentRestartRequest.getExperimentInstanceId(),
+                    updateExperimentTimerEntities,ExperimentStateEnum.PREPARE);
         } else {
             //todo 定时器
             log.info("执行开始操作....");
@@ -110,7 +111,8 @@ public class StartHandler extends AbstractEventHandler implements EventHandler<E
                 updateExperimentTimerEntities.addAll(experimentTimerEntityList);
             }
             // 批量更新期数定时器
-            boolean b = experimentTimerBiz.saveOrUpdateExperimentTimeExperimentState(updateExperimentTimerEntities);
+            boolean b = experimentTimerBiz.saveOrUpdateExperimentTimeExperimentState(experimentRestartRequest.getExperimentInstanceId(),
+                    updateExperimentTimerEntities,ExperimentStateEnum.ONGOING);
             if (b) {
                 // 通知客户端
                 ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfos();

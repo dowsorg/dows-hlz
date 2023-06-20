@@ -1,6 +1,7 @@
 package org.dows.hep.biz.user.experiment;
 
 import cn.hutool.core.date.DateUtil;
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
@@ -9,8 +10,11 @@ import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.user.experiment.response.CountDownResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
+import org.dows.hep.entity.ExperimentInstanceEntity;
+import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.entity.ExperimentTimerEntity;
 import org.dows.hep.service.ExperimentInstanceService;
+import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.hep.service.ExperimentTimerService;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +33,7 @@ public class ExperimentTimerBiz {
 
     private final ExperimentTimerService experimentTimerService;
     private final ExperimentInstanceService experimentInstanceService;
+    private final ExperimentParticipatorService experimentParticipatorService;
 
 
     /**
@@ -71,13 +76,24 @@ public class ExperimentTimerBiz {
 
 
     /**
-     * 更新定时器
+     * 更新定时器及实验状态（experimentInstance,experimentParticipator）
      *
      * @param updateExperimentTimerEntities
      * @return
      */
-    public boolean saveOrUpdateExperimentTimeExperimentState(List<ExperimentTimerEntity> updateExperimentTimerEntities) {
+    @DSTransactional
+    public boolean saveOrUpdateExperimentTimeExperimentState(String experimentInstanceId,List<ExperimentTimerEntity> updateExperimentTimerEntities,ExperimentStateEnum experimentStateEnum) {
         boolean b = experimentTimerService.saveOrUpdateBatch(updateExperimentTimerEntities);
+        boolean update = experimentInstanceService.lambdaUpdate().eq(ExperimentInstanceEntity::getExperimentInstanceId, "")
+                .set(ExperimentInstanceEntity::getState, experimentStateEnum.getState())
+                .update();
+        boolean update1 = experimentParticipatorService.lambdaUpdate().eq(ExperimentParticipatorEntity::getExperimentInstanceId, "")
+                .set(ExperimentParticipatorEntity::getState, experimentStateEnum.getState())
+                .update();
+
+        if(!b || !update || !update1){
+            throw new ExperimentException(" 更新定时器及实验状态发生异常！");
+        }
         return b;
     }
 

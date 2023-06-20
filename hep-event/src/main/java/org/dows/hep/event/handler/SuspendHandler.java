@@ -62,7 +62,8 @@ public class SuspendHandler extends AbstractEventHandler implements EventHandler
                 updateExperimentTimerEntities.add(updExperimentTimerEntity);
             }
             // 保存或更新实验计时器
-            boolean b = experimentTimerBiz.saveOrUpdateExperimentTimeExperimentState(updateExperimentTimerEntities);
+            boolean b = experimentTimerBiz.saveOrUpdateExperimentTimeExperimentState(experimentRestartRequest.getExperimentInstanceId(),
+                    updateExperimentTimerEntities,ExperimentStateEnum.PREPARE);
 
         } else {
             // 找出当前期数计时器集合
@@ -96,7 +97,8 @@ public class SuspendHandler extends AbstractEventHandler implements EventHandler
                     .build();
             updateExperimentTimerEntities.add(addExperimentTimer);
             // 保存或更新实验计时器
-            boolean b = experimentTimerBiz.saveOrUpdateExperimentTimeExperimentState(updateExperimentTimerEntities);
+            boolean b = experimentTimerBiz.saveOrUpdateExperimentTimeExperimentState(experimentRestartRequest.getExperimentInstanceId(),
+                    updateExperimentTimerEntities,ExperimentStateEnum.SUSPEND);
             if (b) {
                 // 设置当前实验上下文信息
                 ExperimentContext experimentContext = new ExperimentContext();
