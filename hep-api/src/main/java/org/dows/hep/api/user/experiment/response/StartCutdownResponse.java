@@ -9,7 +9,7 @@ import org.dows.hep.api.enums.EnumWebSocketType;
  */
 @Data
 public class StartCutdownResponse {
-    EnumWebSocketType enumWebSocketType;
+    EnumWebSocketType type;
 
-    ExperimentPeriodsResonse experimentPeriodsResonse;
+    ExperimentPeriodsResonse data;
 }

@@ -96,8 +96,8 @@ public class GroupMemberAllotHandler extends AbstractEventHandler implements Eve
             for (Channel channel : channels) {
                 if (accountIds.contains(userInfos.get(channel).getAccountName())) {
                     StartCutdownResponse startCutdownResponse = new StartCutdownResponse();
-                    startCutdownResponse.setEnumWebSocketType(EnumWebSocketType.START_EXPERIMENT_COUNTDOWN);
-                    startCutdownResponse.setExperimentPeriodsResonse(periodsResonse);
+                    startCutdownResponse.setType(EnumWebSocketType.START_EXPERIMENT_COUNTDOWN);
+                    startCutdownResponse.setData(periodsResonse);
                     Response<StartCutdownResponse> ok = Response.ok(startCutdownResponse);
                     HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, ok);
                 }
