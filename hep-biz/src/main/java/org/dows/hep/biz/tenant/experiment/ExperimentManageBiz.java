@@ -441,6 +441,7 @@ public class ExperimentManageBiz {
             ExperimentRestartRequest experimentRestartRequest = new ExperimentRestartRequest();
             experimentRestartRequest.setExperimentInstanceId(experimentInstanceId);
             experimentRestartRequest.setPaused(true);
+            experimentRestartRequest.setAppId(appId);
             experimentRestartRequest.setCurrentTime(new Date());
             applicationEventPublisher.publishEvent(new SuspendEvent(experimentRestartRequest));
         }

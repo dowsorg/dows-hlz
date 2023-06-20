@@ -11,6 +11,7 @@ public class ExperimentPeriodsResonse {
 
     @Schema(title = "实验实列ID")
     private String experimentInstanceId;
+
     @Schema(title = "当前期数")
     private Integer currentPeriod;
 
