@@ -10,18 +10,24 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.AllArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.enums.EnumExperimentGroupStatus;
+import org.dows.hep.api.event.ExptSchemeStartEvent;
+import org.dows.hep.api.event.ExptSchemeSubmittedEvent;
 import org.dows.hep.api.event.ExptSchemeSyncEvent;
+import org.dows.hep.api.event.source.ExptSchemeStartEventSource;
+import org.dows.hep.api.event.source.ExptSchemeSubmittedEventSource;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.ExptSchemeStateEnum;
-import org.dows.hep.api.user.experiment.request.ExperimentAllotSchemeRequest;
+import org.dows.hep.api.user.experiment.request.ExperimentSchemeAllotRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeItemRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeRequest;
+import org.dows.hep.api.event.source.ExptSchemeSyncEventSource;
 import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.entity.ExperimentGroupEntity;
 import org.dows.hep.entity.ExperimentSchemeEntity;
 import org.dows.hep.service.ExperimentGroupService;
 import org.dows.hep.service.ExperimentSchemeService;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -54,7 +60,10 @@ public class ExperimentSchemeBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public ExperimentSchemeResponse getScheme(String experimentInstanceId, String experimentGroupId, String accountId, boolean needAuth) {
+    public ExperimentSchemeResponse getScheme(String experimentInstanceId,
+                                              String experimentGroupId,
+                                              String accountId,
+                                              boolean needAuth) {
         if (StrUtil.isBlank(experimentGroupId) || StrUtil.isBlank(experimentInstanceId)) {
             throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
         }
@@ -80,7 +89,7 @@ public class ExperimentSchemeBiz {
      * @date 2023/6/13 15:27
      */
     @DSTransactional
-    public Boolean allotSchemeMembers(ExperimentAllotSchemeRequest request) {
+    public Boolean allotSchemeMembers(ExperimentSchemeAllotRequest request) {
         if (BeanUtil.isEmpty(request)) {
             throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
         }
@@ -94,15 +103,18 @@ public class ExperimentSchemeBiz {
         // handle group-status
         handleGroupStatus(request.getExperimentGroupId(), EnumExperimentGroupStatus.SCHEMA);
 
+        // sync start
+        syncStart(request.getExperimentInstanceId(), request.getExperimentGroupId());
+
         return Boolean.TRUE;
     }
 
     /**
+     * @param
+     * @return
      * @author fhb
      * @description 返回方案设计剩余作答时间和截止时间
      * @date 2023/6/13 17:32
-     * @param
-     * @return
      */
     public ExperimentSchemeSettingResponse getSchemeDuration(String experimentSchemeId) {
         // 开始时间
@@ -156,9 +168,9 @@ public class ExperimentSchemeBiz {
         List<ExperimentSchemeItemRequest> itemList = request.getItemList();
         boolean res1 = experimentSchemeItemBiz.updateBatch(itemList);
         // sync
-        boolean res2 = syncResult(schemeEntity);
+        syncResult(schemeEntity.getExperimentInstanceId(), schemeEntity.getExperimentGroupId());
 
-        return res1 && res2;
+        return res1;
     }
 
     /**
@@ -188,6 +200,9 @@ public class ExperimentSchemeBiz {
                 .set(ExperimentSchemeEntity::getState, 1) // 1-已提交
                 .update();
         boolean res2 = handleGroupStatus(experimentGroupId, EnumExperimentGroupStatus.WAIT_SCHEMA);
+
+        // sync submitted
+        syncSubmitted(experimentInstanceId, experimentGroupId);
 
         return res1 && res2;
     }
@@ -290,7 +305,7 @@ public class ExperimentSchemeBiz {
             } else {
                 ExperimentSchemeItemResponse parent = nodeMap.get(parentId);
                 if (parent != null) {
-                    parent.getChildren().add(node);
+                    parent.addChild(node);
                 }
             }
         }
@@ -298,8 +313,8 @@ public class ExperimentSchemeBiz {
         return tree;
     }
 
-    private void handleExperimentSchemeAccount(ExperimentAllotSchemeRequest request) {
-        List<ExperimentAllotSchemeRequest.ParticipatorWithScheme> allotList = request.getAllotList();
+    private void handleExperimentSchemeAccount(ExperimentSchemeAllotRequest request) {
+        List<ExperimentSchemeAllotRequest.ParticipatorWithScheme> allotList = request.getAllotList();
         List<ExperimentSchemeItemRequest> itemList = new ArrayList<>();
         allotList.forEach(allotScheme -> {
             String accountId = allotScheme.getAccountId();
@@ -317,7 +332,7 @@ public class ExperimentSchemeBiz {
         experimentSchemeItemBiz.setAccountId(itemList);
     }
 
-    private void handleExperimentSchemeBeginTime(ExperimentAllotSchemeRequest request) {
+    private void handleExperimentSchemeBeginTime(ExperimentSchemeAllotRequest request) {
         String experimentInstanceId = request.getExperimentInstanceId();
         String experimentGroupId = request.getExperimentGroupId();
         ExperimentSchemeEntity scheme = getScheme(experimentInstanceId, experimentGroupId);
@@ -373,19 +388,39 @@ public class ExperimentSchemeBiz {
         return JSONUtil.toBean(schemeSetting, ExperimentSetting.SchemeSetting.class);
     }
 
-    private boolean syncResult(ExperimentSchemeEntity schemeEntity) {
-        String experimentInstanceId = schemeEntity.getExperimentInstanceId();
-        String experimentGroupId = schemeEntity.getExperimentGroupId();
+    @NotNull
+    private List<String> listGroupAccountId(String experimentInstanceId, String experimentGroupId) {
         List<ExperimentParticipatorResponse> groupMembers = experimentGroupBiz.listGroupMembers(experimentGroupId, experimentInstanceId);
-        List<String> accountIds = groupMembers.stream()
+        return groupMembers.stream()
                 .map(ExperimentParticipatorResponse::getAccountId)
                 .toList();
-        ExperimentSchemeResponse scheme = getScheme(experimentInstanceId, experimentGroupId, null, false);
-        applicationEventPublisher.publishEvent(new ExptSchemeSyncEvent(ExptSchemeSyncResponse.builder()
-                .accountIds(accountIds)
-                .experimentSchemeResponse(scheme)
-                .build()));
+    }
 
-        return Boolean.TRUE;
+    private void syncStart(String experimentInstanceId, String experimentGroupId) {
+        List<String> accountIds = listGroupAccountId(experimentInstanceId, experimentGroupId);
+        applicationEventPublisher.publishEvent(new ExptSchemeStartEvent(
+                ExptSchemeStartEventSource.builder()
+                        .accountIds(accountIds)
+                        .build()
+        ));
+    }
+
+    private void syncResult(String experimentInstanceId, String experimentGroupId) {
+        List<String> accountIds = listGroupAccountId(experimentInstanceId, experimentGroupId);
+        ExperimentSchemeResponse scheme = getScheme(experimentInstanceId, experimentGroupId, null, false);
+        applicationEventPublisher.publishEvent(new ExptSchemeSyncEvent(
+                ExptSchemeSyncEventSource.builder()
+                        .accountIds(accountIds)
+                        .experimentSchemeResponse(scheme)
+                        .build()));
+    }
+
+    private void syncSubmitted(String experimentInstanceId, String experimentGroupId) {
+        List<String> accountIds = listGroupAccountId(experimentInstanceId, experimentGroupId);
+        applicationEventPublisher.publishEvent(new ExptSchemeSubmittedEvent(
+                ExptSchemeSubmittedEventSource.builder()
+                        .accountIds(accountIds)
+                        .build()
+        ));
     }
 }

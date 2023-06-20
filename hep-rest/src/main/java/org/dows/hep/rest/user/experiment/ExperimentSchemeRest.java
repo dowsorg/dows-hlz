@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.user.experiment.request.ExperimentAllotSchemeRequest;
+import org.dows.hep.api.user.experiment.request.ExperimentSchemeAllotRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeSettingResponse;
@@ -49,7 +49,7 @@ public class ExperimentSchemeRest {
      */
     @Operation(summary = "分配方案设计")
     @PostMapping("v1/userExperiment/experimentScheme/allotSchemeMembers")
-    public Boolean allotGroupMembers(@RequestBody @Validated ExperimentAllotSchemeRequest request) {
+    public Boolean allotGroupMembers(@RequestBody @Validated ExperimentSchemeAllotRequest request) {
         return experimentSchemeBiz.allotSchemeMembers(request);
     }
 

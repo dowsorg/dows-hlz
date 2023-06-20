@@ -46,4 +46,7 @@ public class ExperimentSchemeItemResponse {
     @JsonIgnore
     private String experimentSchemeItemPid;
 
+    public void addChild(ExperimentSchemeItemResponse child) {
+        this.children.add(child);
+    }
 }

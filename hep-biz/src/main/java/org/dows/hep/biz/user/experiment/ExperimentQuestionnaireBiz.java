@@ -19,8 +19,7 @@ import org.dows.hep.entity.ExperimentQuestionnaireEntity;
 import org.dows.hep.service.ExperimentQuestionnaireService;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author fhb
@@ -87,12 +86,8 @@ public class ExperimentQuestionnaireBiz {
      * @description
      * @date 2023/6/3 20:53
      */
-    public ExperimentQuestionnaireResponse getQuestionnaire(String experimentInstanceId, String periods, String experimentOrgId, String experimentGroupId, String experimentAccountId) {
-        Assert.notNull(experimentInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
-        Assert.notNull(periods, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
-        Assert.notNull(experimentOrgId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
-        Assert.notNull(experimentGroupId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
-        Assert.notNull(experimentAccountId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
+    public ExperimentQuestionnaireResponse getQuestionnaire(ExptQuestionnaireSearchRequest request) {
+        Assert.notNull(request, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
 
         // 根据实验id、期数、小组id， 机构id 获取知识答题
         ExperimentQuestionnaireEntity entity = experimentQuestionnaireService.lambdaQuery()
@@ -106,7 +101,10 @@ public class ExperimentQuestionnaireBiz {
         ExperimentQuestionnaireResponse result = BeanUtil.copyProperties(entity, ExperimentQuestionnaireResponse.class);
 
         List<ExperimentQuestionnaireItemResponse> itemList = experimentQuestionnaireItemBiz.listByQuestionnaireId(entity.getExperimentQuestionnaireId());
-        result.setItemList(itemList);
+        List<ExperimentQuestionnaireItemResponse> itemTreeList = convertList2Tree(itemList);
+        List<ExperimentQuestionnaireResponse.ExptCategQuestionnaireItem> categItemList = ExperimentQuestionnaireResponse.convertItemList2CategItemList(itemTreeList);
+        result.setItemList(itemTreeList);
+        result.setCategItemList(categItemList);
 
         return result;
     }
@@ -148,7 +146,7 @@ public class ExperimentQuestionnaireBiz {
         }
 
         // check
-        checkState(experimentQuestionnaireId);
+        cannotOperateAfterSubmit(experimentQuestionnaireId, accountId);
 
         // submit
         boolean updateRes = experimentQuestionnaireService.lambdaUpdate()
@@ -161,11 +159,19 @@ public class ExperimentQuestionnaireBiz {
         return updateRes;
     }
 
-    private void checkState(String experimentQuestionnaireId) {
+    private void cannotOperateAfterSubmit(String experimentQuestionnaireId, String submitAccountId) {
         ExperimentQuestionnaireEntity questionnaireEntity = experimentQuestionnaireService.lambdaQuery()
                 .eq(ExperimentQuestionnaireEntity::getExperimentQuestionnaireId, experimentQuestionnaireId)
                 .oneOpt()
                 .orElseThrow(() -> new BizException(ExperimentESCEnum.SCHEME_NOT_NULL));
+
+        // check auth
+        String experimentAccountId = questionnaireEntity.getExperimentAccountId();
+        if (!Objects.equals(experimentAccountId, submitAccountId)) {
+            throw new BizException(ExperimentESCEnum.NO_AUTHORITY);
+        }
+
+        // check state
         Integer state = questionnaireEntity.getState();
         if (Objects.equals(ExptQuestionnaireStateEnum.SUBMITTED.getCode(), state)) {
             throw new BizException(ExperimentESCEnum.SCHEME_HAS_BEEN_SUBMITTED);

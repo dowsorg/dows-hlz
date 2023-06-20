@@ -11,7 +11,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @Schema(name = "ExperimentAllotSchemeRequest 对象", title = "分配方案")
-public class ExperimentAllotSchemeRequest {
+public class ExperimentSchemeAllotRequest {
     @NotBlank
     @Schema(title = "实验ID")
     private String experimentInstanceId;

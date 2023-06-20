@@ -1,9 +1,11 @@
 package org.dows.hep.api.user.experiment.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,6 +24,12 @@ public class ExperimentQuestionnaireItemResponse {
     @Schema(title = "item id")
     private String experimentQuestionnaireItemId;
 
+    @Schema(title = "问题类别")
+    private String questionCateg;
+
+    @Schema(title = "问题类型")
+    private String questionType;
+
     @Schema(title = "问题题目")
     private String questionTitle;
 
@@ -35,6 +43,14 @@ public class ExperimentQuestionnaireItemResponse {
     private String questionResult;
 
     @Schema(title = "子")
-    private List<ExperimentQuestionnaireItemResponse> children;
+    private List<ExperimentQuestionnaireItemResponse> children = new ArrayList<>();
+
+    @Schema(title = "item pid")
+    @JsonIgnore
+    private String experimentQuestionnaireItemPid;
+
+    public void addChild(ExperimentQuestionnaireItemResponse child) {
+        this.children.add(child);
+    }
 
 }

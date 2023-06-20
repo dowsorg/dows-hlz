@@ -7,13 +7,14 @@ public enum EventName {
     finishEvent("finishHandler"),
     suspendEvent("suspendHandler"),
     allotEvent("allotHandler"),
-    groupEvent("groupHandler"),
+    exptInitEvent("exptInitHandler"),
+    exptQuestionnaireAllotEvent("exptQuestionnaireAllotHandler"),
+    exptQuestionnaireSubmittedEvent("exptQuestionnaireSubmittedHandler"),
+    exptSchemeStartEvent("exptSchemeStartHandler"),
+    exptSchemeSubmittedEvent("exptSchemeSubmittedHandler"),
     exptSchemeSyncEvent("exptSchemeSyncHandler"),
-
     createGroupEvent("createGroupHandler"),
-
     groupMemberAllotEvent("groupMemberAllotHandler"),
-
     teamName("teamNameHandler"),
 
     ;

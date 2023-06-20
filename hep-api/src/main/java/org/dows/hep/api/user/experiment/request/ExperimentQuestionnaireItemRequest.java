@@ -18,7 +18,7 @@ public class ExperimentQuestionnaireItemRequest {
     @Schema(title = "实验方案设计ID")
     private String experimentSchemeItemId;
 
-    @Schema(title = "作答答案")
+    @Schema(title = "作答答案-选项id逗号连接")
     private String questionResult;
 
     @Schema(title = "子")

@@ -181,6 +181,7 @@ public class ExperimentQuestionnaireManageBiz {
         List<Option> options = new ArrayList<>();
         optionWithAnswerList.forEach(item -> {
             Option option = new Option();
+            option.setId(item.getQuestionOptionsId());
             option.setTitle(item.getOptionTitle());
             option.setValue(item.getOptionValue());
             options.add(option);
@@ -197,6 +198,7 @@ public class ExperimentQuestionnaireManageBiz {
         optionWithAnswerList.forEach(item -> {
             if (item.getRightAnswer() != null && item.getRightAnswer() == Boolean.TRUE) {
                 Option option = new Option();
+                option.setId(item.getQuestionOptionsId());
                 option.setTitle(item.getOptionTitle());
                 option.setValue(item.getOptionValue());
                 options.add(option);
@@ -207,6 +209,8 @@ public class ExperimentQuestionnaireManageBiz {
 
     @Data
     public static class Option {
+        // 标识符
+        private String id;
         private String title;
         private String value;
     }
