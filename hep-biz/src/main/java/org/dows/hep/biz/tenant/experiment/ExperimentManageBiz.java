@@ -19,13 +19,11 @@ import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
 import org.dows.hep.api.core.CreateExperimentForm;
 import org.dows.hep.api.enums.EnumExperimentGroupStatus;
-import org.dows.hep.api.enums.EnumExperimentParticipator;
 import org.dows.hep.api.enums.ExperimentModeEnum;
 import org.dows.hep.api.enums.ExperimentStateEnum;
 import org.dows.hep.api.event.*;
 import org.dows.hep.api.event.source.ExptInitEventSource;
 import org.dows.hep.api.exception.ExperimentException;
-import org.dows.hep.api.exception.ExperimentParticipatorException;
 import org.dows.hep.api.tenant.experiment.request.*;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
@@ -129,19 +127,22 @@ public class ExperimentManageBiz {
         // 保存实验参与人(教师/实验指导员等)
         experimentParticipatorService.saveOrUpdateBatch(experimentParticipatorEntityList);
 
-
+        ExperimentSetting.SchemeSetting schemeSetting = experimentSetting.getSchemeSetting();
+        ExperimentSetting.SandSetting sandSetting = experimentSetting.getSandSetting();
         List<ExperimentTimerEntity> experimentTimerEntities = new ArrayList<>();
         // 标准模式
-        if (null != experimentSetting.getSchemeSetting() && null != experimentSetting.getSandSetting()) {
+        if (null != schemeSetting && null != sandSetting) {
+            // 验证时间
+            schemeSetting.validateTime(createExperiment.getStartTime());
             ExperimentSettingEntity experimentSettingEntity = ExperimentSettingEntity.builder()
                     .experimentSettingId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentInstance.getExperimentInstanceId())
                     .configKey(experimentSetting.getSchemeSetting().getClass().getName())
                     .configJsonVals(JSONUtil.toJsonStr(experimentSetting.getSchemeSetting()))
                     .build();
+
             // 保存方案设计
             experimentSettingService.saveOrUpdate(experimentSettingEntity);
-
 
             experimentSettingEntity = ExperimentSettingEntity.builder()
                     .experimentSettingId(idGenerator.nextIdStr())
@@ -154,19 +155,22 @@ public class ExperimentManageBiz {
             // 设置实验计时器
             buildPeriods(experimentInstance, experimentSetting, experimentTimerEntities);
             // 沙盘模式
-        } else if (null != experimentSetting.getSandSetting()) {
+        } else if (null != sandSetting) {
             ExperimentSettingEntity experimentSettingEntity = ExperimentSettingEntity.builder()
                     .experimentSettingId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentInstance.getExperimentInstanceId())
                     .configKey(experimentSetting.getSandSetting().getClass().getName())
                     .configJsonVals(JSONUtil.toJsonStr(experimentSetting.getSandSetting()))
                     .build();
+
             //保存沙盘设计
             experimentSettingService.saveOrUpdate(experimentSettingEntity);
             // 设置实验计时器
             buildPeriods(experimentInstance, experimentSetting, experimentTimerEntities);
             // 方案设计模式
-        } else if (null != experimentSetting.getSchemeSetting()) {
+        } else if (null != schemeSetting) {
+            // 验证时间
+            schemeSetting.validateTime(createExperiment.getStartTime());
             ExperimentSettingEntity experimentSettingEntity = ExperimentSettingEntity.builder()
                     .experimentSettingId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentInstance.getExperimentInstanceId())
@@ -373,26 +377,26 @@ public class ExperimentManageBiz {
                 orgIds.add(org.getOrgId());
             });
         }
-        List<CaseOrgEntity> entityList = caseOrgService.lambdaQuery()
-                .in(orgIds != null && orgIds.size() > 0, CaseOrgEntity::getOrgId, orgIds)
-                .eq(CaseOrgEntity::getCaseInstanceId, caseInstanceId)
-                .eq(CaseOrgEntity::getDeleted, false)
-                .list();
-        // 判断是否已发布,未发布的机构移除
-        Iterator<CaseOrgEntity> it = entityList.iterator();
-        while(it.hasNext()){
-            CaseOrgEntity orgEntity = it.next();
-            AccountOrgResponse orgResponse = accountOrgApi
-                    .getAccountOrgByOrgId(orgEntity.getOrgId(),experimentGroupSettingRequest.getAppId());
-            if(orgResponse.getStatus() == 0){
-                it.remove();
-            }
-        }
+//        List<CaseOrgEntity> entityList = caseOrgService.lambdaQuery()
+//                .in(orgIds != null && orgIds.size() > 0, CaseOrgEntity::getOrgId, orgIds)
+//                .eq(CaseOrgEntity::getCaseInstanceId, caseInstanceId)
+//                .eq(CaseOrgEntity::getDeleted, false)
+//                .list();
+//        // 判断是否已发布,未发布的机构移除
+//        Iterator<CaseOrgEntity> it = entityList.iterator();
+//        while(it.hasNext()){
+//            CaseOrgEntity orgEntity = it.next();
+//            AccountOrgResponse orgResponse = accountOrgApi
+//                    .getAccountOrgByOrgId(orgEntity.getOrgId(),experimentGroupSettingRequest.getAppId());
+//            if(orgResponse.getStatus() == 0){
+//                it.remove();
+//            }
+//        }
 
         List<ExperimentParticipatorEntity> collect = groupParticipators.values().stream().flatMap(x -> x.stream()).collect(Collectors.toList());
-        if (collect.size() > entityList.size()) {
-            throw new ExperimentParticipatorException(EnumExperimentParticipator.PARTICIPATOR_NUMBER_CANNOT_MORE_THAN_ORG_EXCEPTION);
-        }
+//        if (collect.size() > entityList.size()) {
+//            throw new ExperimentParticipatorException(EnumExperimentParticipator.PARTICIPATOR_NUMBER_CANNOT_MORE_THAN_ORG_EXCEPTION);
+//        }
         // 保存实验小组
         experimentGroupService.saveOrUpdateBatch(experimentGroupEntitys);
         // 保存实验参与人[学生]

@@ -1,7 +1,9 @@
 package org.dows.hep.api.tenant.experiment.request;
 
+import cn.hutool.core.date.DateUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import org.dows.hep.api.exception.ExperimentException;
 
 import java.util.Date;
 import java.util.Map;
@@ -15,6 +17,8 @@ public class ExperimentSetting {
 
     @Schema(title = "key对应的json配置")
     private SandSetting sandSetting;
+
+
 
 
     /**
@@ -36,6 +40,21 @@ public class ExperimentSetting {
         private Date scoreEndTime;
         @Schema(title = "审核截止时间",requiredMode = Schema.RequiredMode.REQUIRED)
         private Date auditEndTime;
+
+        // 验证时间
+        public void validateTime(Date startDate){
+            if(schemeEndTime != null && scoreEndTime!= null && auditEndTime != null){
+                if(startDate.getTime() >= schemeEndTime.getTime()){
+                    throw new ExperimentException("实验开始时间不能大于设计截止时间");
+                }
+                if(schemeEndTime.getTime() >= scoreEndTime.getTime()){
+                    throw new ExperimentException("方案设计解释时间不能大于评分截止时间");
+                }
+                if(scoreEndTime.getTime() >= auditEndTime.getTime()){
+                    throw new ExperimentException("评分截止时间不能大于审核截止时间");
+                }
+            }
+        }
 
     }
 
@@ -72,6 +91,7 @@ public class ExperimentSetting {
         private Float medicalRatioWeight;
         @Schema(title = "操作准确度权重",requiredMode = Schema.RequiredMode.REQUIRED)
         private Float operateRightWeight;
+
     }
 
 }
