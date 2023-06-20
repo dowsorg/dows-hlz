@@ -15,6 +15,7 @@ import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentTimerService;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -100,11 +101,23 @@ public class ExperimentTimerBiz {
                 .ne(ExperimentTimerEntity::getState, ExperimentStateEnum.FINISH.getState())
                 .list();
 
-        List<ExperimentTimerEntity> collect = list.stream().filter(t -> t.getPauseCount() == 0).collect(Collectors.toList());
-        List<ExperimentTimerEntity> collect1 = collect.stream()
+        //List<ExperimentTimerEntity> collect = list.stream().filter(t -> t.getPauseCount() == 0).collect(Collectors.toList());
+        ExperimentTimerEntity experimentTimerEntity = list.stream()
                 .filter(e -> e.getStartTime() <= System.currentTimeMillis() && System.currentTimeMillis() <= e.getEndTime())
-                .collect(Collectors.toList());
-        if (collect1.size() > 1) {
+                .max(Comparator.comparingLong(ExperimentTimerEntity::getStartTime)).orElse(null);
+//        List<ExperimentTimerEntity> collect1 = experimentTimerEntity1
+//                .collect(Collectors.toList()).ma;
+        if(null == experimentTimerEntity){
+            log.error("获取实验期数异常,当前时间不存在对应的实验期数");
+            StringBuilder stringBuilder = new StringBuilder();
+            list.stream().forEach(k->{
+                stringBuilder.append(k.getPeriod()).append("期开始时间：")
+                        .append(DateUtil.date(k.getStartTime()))
+                        .append(" ");
+            });
+            throw new ExperimentException("获取实验期数异常,当前时间不存在对应的实验期数,当前实验期数信息：" + stringBuilder);
+        }
+       /* if (collect1.size() > 1) {
             log.error("获取实验期数异常,当前时间存在多个期数,请检查期数配置");
             throw new ExperimentException("获取实验期数异常,当前时间存在多个期数,请检查期数配置");
         } else if (collect1.size() == 0) {
@@ -116,17 +129,19 @@ public class ExperimentTimerBiz {
                         .append(" ");
             });
             throw new ExperimentException("获取实验期数异常,当前时间不存在对应的实验期数,当前实验期数信息：" + stringBuilder);
-        } else {
+        } else*/
+
             // 获取当前期数
-            ExperimentTimerEntity experimentTimerEntity = collect1.get(0);
+            //ExperimentTimerEntity experimentTimerEntity = collect1.get(0);
             ExperimentPeriodsResonse experimentPeriodsResonse = new ExperimentPeriodsResonse();
             experimentPeriodsResonse.setCurrentPeriod(experimentTimerEntity.getPeriod());
             experimentPeriodsResonse.setExperimentInstanceId(experimentTimerEntity.getExperimentInstanceId());
+
             List<ExperimentPeriodsResonse.ExperimentPeriods> experimentPeriods = BeanConvert
-                    .beanConvert(collect, ExperimentPeriodsResonse.ExperimentPeriods.class);
+                    .beanConvert(list, ExperimentPeriodsResonse.ExperimentPeriods.class);
             experimentPeriodsResonse.setExperimentPeriods(experimentPeriods);
             return experimentPeriodsResonse;
-        }
+
     }
 
 

@@ -49,9 +49,11 @@ public class GroupMemberAllotHandler extends AbstractEventHandler implements Eve
     @Override
     public void exec(List<ExperimentParticipatorRequest> participatorRequestList) {
         String experimentInstanceId = participatorRequestList.get(0).getExperimentInstanceId();
+        String appId = participatorRequestList.get(0).getAppId();
+        ExperimentPeriodsResonse periodsResonse = experimentTimerBiz.getExperimentPeriods(appId,experimentInstanceId);
         // 先计数
         startHandler.exec(ExperimentRestartRequest.builder()
-                .appId("3")
+                .appId(appId)
                 .experimentInstanceId(experimentInstanceId)
                 .paused(false)
                 .currentTime(new Date())
@@ -93,7 +95,7 @@ public class GroupMemberAllotHandler extends AbstractEventHandler implements Eve
             Set<Channel> channels = userInfos.keySet();
             for (Channel channel : channels) {
                 if (accountIds.contains(userInfos.get(channel).getAccountName())) {
-                    ExperimentPeriodsResonse periodsResonse = experimentTimerBiz.getExperimentPeriods("3",experimentInstanceId);
+
                     StartCutdownResponse startCutdownResponse = new StartCutdownResponse();
                     startCutdownResponse.setEnumWebSocketType(EnumWebSocketType.START_EXPERIMENT_COUNTDOWN);
                     startCutdownResponse.setExperimentPeriodsResonse(periodsResonse);
