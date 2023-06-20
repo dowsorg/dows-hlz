@@ -378,8 +378,19 @@ public class ExperimentManageBiz {
                 .eq(CaseOrgEntity::getCaseInstanceId, caseInstanceId)
                 .eq(CaseOrgEntity::getDeleted, false)
                 .list();
+        // 判断是否已发布,未发布的机构移除
+        Iterator<CaseOrgEntity> it = entityList.iterator();
+        while(it.hasNext()){
+            CaseOrgEntity orgEntity = it.next();
+            AccountOrgResponse orgResponse = accountOrgApi
+                    .getAccountOrgByOrgId(orgEntity.getOrgId(),experimentGroupSettingRequest.getAppId());
+            if(orgResponse.getStatus() == 0){
+                it.remove();
+            }
+        }
+
         List<ExperimentParticipatorEntity> collect = groupParticipators.values().stream().flatMap(x -> x.stream()).collect(Collectors.toList());
-        if (collect.size() < entityList.size()) {
+        if (collect.size() > entityList.size()) {
             throw new ExperimentParticipatorException(EnumExperimentParticipator.PARTICIPATOR_NUMBER_CANNOT_MORE_THAN_ORG_EXCEPTION);
         }
         // 保存实验小组
