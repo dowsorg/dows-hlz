@@ -64,6 +64,9 @@ public class SuspendHandler extends AbstractEventHandler implements EventHandler
             // 保存或更新实验计时器
             boolean b = experimentTimerBiz.saveOrUpdateExperimentTimeExperimentState(experimentRestartRequest.getExperimentInstanceId(),
                     updateExperimentTimerEntities,ExperimentStateEnum.PREPARE);
+            //1、更改缓存
+            ExperimentContext experimentContext = ExperimentContext.getExperimentContext(experimentRestartRequest.getExperimentInstanceId());
+            experimentContext.setState(ExperimentStateEnum.PREPARE);
 
         } else {
             // 找出当前期数计时器集合

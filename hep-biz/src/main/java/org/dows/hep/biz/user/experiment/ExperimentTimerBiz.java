@@ -84,10 +84,10 @@ public class ExperimentTimerBiz {
     @DSTransactional
     public boolean saveOrUpdateExperimentTimeExperimentState(String experimentInstanceId,List<ExperimentTimerEntity> updateExperimentTimerEntities,ExperimentStateEnum experimentStateEnum) {
         boolean b = experimentTimerService.saveOrUpdateBatch(updateExperimentTimerEntities);
-        boolean update = experimentInstanceService.lambdaUpdate().eq(ExperimentInstanceEntity::getExperimentInstanceId, "")
+        boolean update = experimentInstanceService.lambdaUpdate().eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
                 .set(ExperimentInstanceEntity::getState, experimentStateEnum.getState())
                 .update();
-        boolean update1 = experimentParticipatorService.lambdaUpdate().eq(ExperimentParticipatorEntity::getExperimentInstanceId, "")
+        boolean update1 = experimentParticipatorService.lambdaUpdate().eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
                 .set(ExperimentParticipatorEntity::getState, experimentStateEnum.getState())
                 .update();
 

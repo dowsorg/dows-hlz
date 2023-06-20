@@ -34,7 +34,7 @@ public class ExperimentTimerJob{
         //1、判断实验是否到时间，到时间则更新状态
         List<ExperimentContext> instanceEntities = ExperimentContext.getMap();
         instanceEntities.forEach(entity -> {
-            if (entity.getState().getDescr().equals(ExperimentStateEnum.UNBEGIN.getDescr())) {
+            if (entity.getState() == ExperimentStateEnum.UNBEGIN) {
                 experimentParticipatorService.lambdaUpdate()
                         .eq(ExperimentParticipatorEntity::getExperimentInstanceId, entity.getExperimentId())
                         .eq(ExperimentParticipatorEntity::getDeleted, false)

@@ -4,6 +4,7 @@ import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.uim.AccountInfo;
+import org.dows.hep.api.ExperimentContext;
 import org.dows.hep.api.enums.ExperimentStateEnum;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
@@ -59,7 +60,10 @@ public class StartHandler extends AbstractEventHandler implements EventHandler<E
                 }
             });
             experimentTimerBiz.saveOrUpdateExperimentTimeExperimentState(experimentRestartRequest.getExperimentInstanceId(),
-                    updateExperimentTimerEntities,ExperimentStateEnum.PREPARE);
+                    updateExperimentTimerEntities,ExperimentStateEnum.ONGOING);
+            //1、更改缓存
+            ExperimentContext experimentContext = ExperimentContext.getExperimentContext(experimentRestartRequest.getExperimentInstanceId());
+            experimentContext.setState(ExperimentStateEnum.ONGOING);
         } else {
             //todo 定时器
             log.info("执行开始操作....");

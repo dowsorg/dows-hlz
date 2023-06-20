@@ -452,7 +452,7 @@ public class ExperimentManageBiz {
         Integer state = experimentInstanceEntity.getState();
         ExperimentStateEnum experimentStateEnum = Arrays.stream(ExperimentStateEnum.values()).filter(e -> e.getState() == state)
                 .findFirst().orElse(null);
-        if (experimentStateEnum == ExperimentStateEnum.ONGOING) {
+        if (experimentStateEnum == ExperimentStateEnum.PREPARE) {
             ExperimentRestartRequest experimentRestartRequest = new ExperimentRestartRequest();
             experimentRestartRequest.setExperimentInstanceId(experimentInstanceId);
             experimentRestartRequest.setPaused(true);
@@ -461,7 +461,7 @@ public class ExperimentManageBiz {
             applicationEventPublisher.publishEvent(new SuspendEvent(experimentRestartRequest));
         }
         //experimentInstanceEntity.setState(ExperimentStateEnum.SUSPEND.getState());
-        experimentInstanceService.lambdaUpdate().update(experimentInstanceEntity);
+//        experimentInstanceService.lambdaUpdate().update(experimentInstanceEntity);
         experimentStateResponse.setExperimentStateEnum(experimentStateEnum);
         experimentStateResponse.setExperimentInstanceId(experimentInstanceEntity.getExperimentInstanceId());
         experimentStateResponse.setExperimentStartTime(experimentInstanceEntity.getStartTime());
