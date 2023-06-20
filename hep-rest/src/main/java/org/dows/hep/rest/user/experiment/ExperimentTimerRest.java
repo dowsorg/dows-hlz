@@ -3,6 +3,7 @@ package org.dows.hep.rest.user.experiment;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.user.experiment.response.CountDownResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
@@ -15,7 +16,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author lait.zhang
@@ -42,12 +45,17 @@ public class ExperimentTimerRest {
         CountDownResponse countDownResponse = new CountDownResponse();
         ExperimentPeriodsResonse experimentPeriods = experimentTimerBiz.getExperimentPeriods(appId, experimentInstanceId);
         List<ExperimentPeriodsResonse.ExperimentPeriods> experimentPeriods1 = experimentPeriods.getExperimentPeriods();
-        for (ExperimentPeriodsResonse.ExperimentPeriods experimentPeriod : experimentPeriods1) {
-            if (experimentPeriod.getPeriod() == experimentPeriods.getCurrentPeriod()) {
-                countDownResponse.setSandTime(System.currentTimeMillis() - experimentPeriod.getStartTime());
-                break;
-            }
-        }
+        Integer currentPeriod = experimentPeriods.getCurrentPeriod();
+        ExperimentPeriodsResonse.ExperimentPeriods experimentPeriods2 = experimentPeriods1.stream()
+                .filter(e -> e.getPeriod() == currentPeriod)
+                .max(Comparator.comparingInt(ExperimentPeriodsResonse.ExperimentPeriods::getPauseCount))
+                .orElse(null);
+
+        if(experimentPeriods2 != null){
+            countDownResponse.setSandTime(experimentPeriods2.getStartTime()-System.currentTimeMillis());
+        } /*else {
+            throw new ExperimentException("期数异常");
+        }*/
         return countDownResponse;
     }
 
