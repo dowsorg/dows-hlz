@@ -17,6 +17,7 @@ public enum ExperimentESCEnum implements StatusCode {
     SCHEME_HAS_BEEN_SUBMITTED(42007, "方案设计重复提交"),
     SCHEME_SETTING_IS_ERROR(42008, "方案设计设置数据错误"),
 
+
     ;
 
     private final Integer code;
