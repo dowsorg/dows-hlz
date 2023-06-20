@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
-import org.dows.hep.api.base.question.enums.QuestionSectionGenerationModeEnum;
+import org.dows.hep.api.base.question.QuestionSectionGenerationModeEnum;
 
 import java.util.List;
 

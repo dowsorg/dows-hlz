@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.materials.MaterialsESCEnum;
-import org.dows.hep.api.base.question.enums.QuestionESCEnum;
+import org.dows.hep.api.base.question.QuestionESCEnum;
 import org.dows.hep.api.enums.EnumStatus;
 import org.dows.hep.api.tenant.casus.CaseESCEnum;
 import org.dows.hep.api.tenant.casus.CaseQuestionnaireDistributionEnum;

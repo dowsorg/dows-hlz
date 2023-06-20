@@ -3,7 +3,7 @@ package org.dows.hep.api.tenant.casus.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.dows.hep.api.base.question.enums.QuestionTypeEnum;
+import org.dows.hep.api.base.question.QuestionTypeEnum;
 import org.dows.hep.api.tenant.casus.CasePeriodEnum;
 import org.dows.hep.api.tenant.casus.CaseQuestionSelectModeEnum;
 

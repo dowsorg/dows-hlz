@@ -6,7 +6,7 @@ import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.dto.QuestionResultRecordDTO;
-import org.dows.hep.api.base.question.enums.QuestionESCEnum;
+import org.dows.hep.api.base.question.QuestionESCEnum;
 import org.dows.hep.api.base.question.request.QuestionSectionResultItemRequest;
 import org.dows.hep.api.base.question.request.QuestionSectionResultRequest;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;

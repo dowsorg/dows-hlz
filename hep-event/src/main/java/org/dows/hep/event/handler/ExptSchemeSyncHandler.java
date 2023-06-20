@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.framework.api.Response;
 import org.dows.framework.api.uim.AccountInfo;
 import org.dows.hep.api.enums.EnumWebSocketType;
 import org.dows.hep.api.WsMessageResponse;
@@ -44,7 +45,8 @@ public class ExptSchemeSyncHandler extends AbstractEventHandler implements Event
                         .type(EnumWebSocketType.EXPT_SCHEME_SYNC)
                         .data(experimentSchemeResponse)
                         .build();
-                HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, result);
+                Response<WsMessageResponse> response = Response.ok(result);
+                HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, response);
             }
         }
     }

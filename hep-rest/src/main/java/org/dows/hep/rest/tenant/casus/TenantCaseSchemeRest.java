@@ -3,7 +3,7 @@ package org.dows.hep.rest.tenant.casus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.question.enums.QuestionSourceEnum;
+import org.dows.hep.api.base.question.QuestionSourceEnum;
 import org.dows.hep.api.tenant.casus.CaseSchemeSourceEnum;
 import org.dows.hep.api.tenant.casus.request.CaseSchemeRequest;
 import org.dows.hep.api.tenant.casus.request.CaseSchemeSearchRequest;
