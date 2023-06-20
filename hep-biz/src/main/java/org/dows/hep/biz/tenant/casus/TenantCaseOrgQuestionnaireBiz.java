@@ -267,7 +267,7 @@ public class TenantCaseOrgQuestionnaireBiz {
 
     private List<CaseOrgQuestionnaireRequest> buildCaseOrgQuestionnaireRequest0(String caseInstanceId, CasePeriodEnum period, List<CaseQuestionnaireResponse> questionnaireList, List<CaseOrgResponse> orgList) {
         Assert.notNull(orgList, CaseESCEnum.CASE_ORG_NON_NULL.getDescr());
-        if (questionnaireList.isEmpty()) {
+        if (CollUtil.isEmpty(questionnaireList)) {
             return new ArrayList<>();
         }
 
@@ -276,8 +276,8 @@ public class TenantCaseOrgQuestionnaireBiz {
 
         List<CaseOrgQuestionnaireRequest> result = new ArrayList<>();
         for (CaseOrgResponse org : orgList) {
-            CaseQuestionnaireResponse pop = questionnaireStack.pop();
-            if (BeanUtil.isEmpty(pop)) {
+            CaseQuestionnaireResponse top = questionnaireStack.poll();
+            if (BeanUtil.isEmpty(top)) {
                 break;
             }
 
@@ -285,7 +285,7 @@ public class TenantCaseOrgQuestionnaireBiz {
             request.setCaseQuestionnaireId(baseBiz.getIdStr());
             request.setCaseInstanceId(caseInstanceId);
             request.setCaseOrgId(org.getCaseOrgId());
-            request.setCaseQuestionnaireId(pop.getCaseQuestionnaireId());
+            request.setCaseQuestionnaireId(top.getCaseQuestionnaireId());
             request.setPeriods(period);
             result.add(request);
         }
