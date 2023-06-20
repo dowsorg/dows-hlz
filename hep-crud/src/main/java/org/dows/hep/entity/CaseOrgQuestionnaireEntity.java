@@ -54,6 +54,9 @@ public class CaseOrgQuestionnaireEntity implements CrudEntity {
     @Schema(title = "期数")
     private String periods;
 
+    @Schema(title = "期数排序")
+    private Integer periodSequence;
+
     @JsonIgnore
     @TableLogic
     @TableField(fill = FieldFill.INSERT)

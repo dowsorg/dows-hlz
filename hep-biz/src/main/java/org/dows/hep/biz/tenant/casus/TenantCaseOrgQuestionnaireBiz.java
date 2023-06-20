@@ -244,9 +244,9 @@ public class TenantCaseOrgQuestionnaireBiz {
     }
 
     private void clean(String caseInstanceId) {
-        LambdaQueryWrapper<CaseOrgQuestionnaireEntity> queryWrapper = new LambdaQueryWrapper<CaseOrgQuestionnaireEntity>()
+        LambdaQueryWrapper<CaseOrgQuestionnaireEntity> remWrapper = new LambdaQueryWrapper<CaseOrgQuestionnaireEntity>()
                 .eq(CaseOrgQuestionnaireEntity::getCaseInstanceId, caseInstanceId);
-        orgQuestionnaireService.remove(queryWrapper);
+        orgQuestionnaireService.remove(remWrapper);
     }
 
     private List<CaseOrgQuestionnaireRequest> buildCaseOrgQuestionnaireRequest(String caseInstanceId, List<CaseOrgResponse> orgList, List<CaseQuestionnaireResponse> caseQuestionnaireList) {
@@ -257,16 +257,15 @@ public class TenantCaseOrgQuestionnaireBiz {
         Map<String, List<CaseQuestionnaireResponse>> periodQuestionnaireCollect = caseQuestionnaireList.stream()
                 .collect(Collectors.groupingBy(CaseQuestionnaireResponse::getPeriods));
         Arrays.stream(CasePeriodEnum.values()).forEach(period -> {
-            String periodCode = period.getCode();
-            List<CaseQuestionnaireResponse> questionnaireList = periodQuestionnaireCollect.get(periodCode);
-            List<CaseOrgQuestionnaireRequest> request = buildCaseOrgQuestionnaireRequest0(caseInstanceId, periodCode, questionnaireList, orgList);
+            List<CaseQuestionnaireResponse> questionnaireList = periodQuestionnaireCollect.get(period.getCode());
+            List<CaseOrgQuestionnaireRequest> request = buildCaseOrgQuestionnaireRequest0(caseInstanceId, period, questionnaireList, orgList);
             result.addAll(request);
         });
 
         return result;
     }
 
-    private List<CaseOrgQuestionnaireRequest> buildCaseOrgQuestionnaireRequest0(String caseInstanceId, String period, List<CaseQuestionnaireResponse> questionnaireList, List<CaseOrgResponse> orgList) {
+    private List<CaseOrgQuestionnaireRequest> buildCaseOrgQuestionnaireRequest0(String caseInstanceId, CasePeriodEnum period, List<CaseQuestionnaireResponse> questionnaireList, List<CaseOrgResponse> orgList) {
         Assert.notNull(orgList, CaseESCEnum.CASE_ORG_NON_NULL.getDescr());
         if (questionnaireList.isEmpty()) {
             return new ArrayList<>();
@@ -308,7 +307,8 @@ public class TenantCaseOrgQuestionnaireBiz {
                     .caseInstanceId(request.getCaseInstanceId())
                     .caseOrgId(request.getCaseOrgId())
                     .caseQuestionnaireId(request.getCaseQuestionnaireId())
-                    .periods(request.getPeriods())
+                    .periods(request.getPeriods().getCode())
+                    .periodSequence(request.getPeriods().getSeq())
                     .build();
 
             String uniqueId = result.getCaseOrgQuestionnaireId();
