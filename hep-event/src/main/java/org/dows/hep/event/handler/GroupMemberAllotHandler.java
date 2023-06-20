@@ -50,6 +50,12 @@ public class GroupMemberAllotHandler extends AbstractEventHandler implements Eve
     public void exec(List<ExperimentParticipatorRequest> participatorRequestList) {
         String experimentInstanceId = participatorRequestList.get(0).getExperimentInstanceId();
         // 先计数
+        startHandler.exec(ExperimentRestartRequest.builder()
+                .appId("3")
+                .experimentInstanceId(experimentInstanceId)
+                .paused(false)
+                .currentTime(new Date())
+                .build());
         ExperimentContext experimentContext = ExperimentContext.getExperimentContext(experimentInstanceId);
         groupSize = experimentContext.getGroupCount();
         if (concurrentHashMap.containsKey(experimentInstanceId)) {
@@ -78,12 +84,7 @@ public class GroupMemberAllotHandler extends AbstractEventHandler implements Eve
                     accountIds.add(participator1.getAccountId());
                 });
             });
-            startHandler.exec(ExperimentRestartRequest.builder()
-                    .appId("3")
-                    .experimentInstanceId(experimentInstanceId)
-                    .paused(false)
-                    .currentTime(new Date())
-                    .build());
+
 
             // 通知实验所有小组
             ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfos();
