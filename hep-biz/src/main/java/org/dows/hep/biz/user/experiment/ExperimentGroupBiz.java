@@ -278,8 +278,15 @@ public class ExperimentGroupBiz {
         final boolean b = experimentParticipatorService.updateBatchById(entityList);
         // 发布事件，计数小组是否分配到齐，是否都分配好
         applicationEventPublisher.publishEvent(new GroupMemberAllotEvent(participatorList));
-//        applicationEventPublisher.publishEvent(new StartEvent());
-
+        //        applicationEventPublisher.publishEvent(new StartEvent());
+        // 分配试卷事件
+        if (b) {
+//            applicationEventPublisher.publishEvent(new ExptQuestionnaireAllotEvent(
+//                    ExptQuestionnaireAllotEventSource.builder()
+//                            .experimentInstanceId(entityList.get(0).getExperimentInstanceId())
+//                            .experimentGroupId(entityList.get(0).getExperimentGroupId())
+//                            .build()));
+        }
         return b;
     }
 

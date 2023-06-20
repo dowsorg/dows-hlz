@@ -2,7 +2,7 @@ package org.dows.hep.event.handler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dows.hep.api.tenant.experiment.request.ExperimentInitializeRequest;
+import org.dows.hep.api.event.source.ExptInitEventSource;
 import org.dows.hep.biz.tenant.experiment.ExperimentCaseInfoManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentQuestionnaireManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentSchemeManageBiz;
@@ -11,12 +11,12 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class GroupHandler extends AbstractEventHandler implements EventHandler<ExperimentInitializeRequest> {
+public class ExptInitHandler extends AbstractEventHandler implements EventHandler<ExptInitEventSource> {
     private final ExperimentCaseInfoManageBiz experimentCaseInfoManageBiz;
     private final ExperimentSchemeManageBiz experimentSchemeManageBiz;
     private final ExperimentQuestionnaireManageBiz experimentQuestionnaireManageBiz;
     @Override
-    public void exec(ExperimentInitializeRequest request) {
+    public void exec(ExptInitEventSource request) {
         String experimentInstanceId = request.getExperimentInstanceId();
         String caseInstanceId = request.getCaseInstanceId();
 

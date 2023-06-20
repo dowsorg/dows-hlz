@@ -7,7 +7,7 @@ import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.AllArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
-import org.dows.hep.api.base.question.enums.QuestionESCEnum;
+import org.dows.hep.api.base.question.QuestionESCEnum;
 import org.dows.hep.api.base.question.request.QuestionDimensionRequest;
 import org.dows.hep.api.base.question.response.QuestionDimensionResponse;
 import org.dows.hep.entity.QuestionDimensionEntity;

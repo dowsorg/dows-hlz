@@ -4,7 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.question.enums.QuestionTypeEnum;
+import org.dows.hep.api.base.question.QuestionTypeEnum;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.api.tenant.casus.CaseQuestionSelectModeEnum;
 import org.dows.hep.api.tenant.casus.request.CaseQuestionSearchRequest;

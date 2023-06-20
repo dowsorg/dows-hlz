@@ -23,6 +23,7 @@ import org.dows.hep.api.enums.EnumExperimentParticipator;
 import org.dows.hep.api.enums.ExperimentModeEnum;
 import org.dows.hep.api.enums.ExperimentStateEnum;
 import org.dows.hep.api.event.*;
+import org.dows.hep.api.event.source.ExptInitEventSource;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.exception.ExperimentParticipatorException;
 import org.dows.hep.api.tenant.experiment.request.*;
@@ -42,7 +43,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -387,7 +387,7 @@ public class ExperimentManageBiz {
         // 保存实验参与人[学生]
         experimentParticipatorService.saveOrUpdateBatch(collect);
         // 发布实验分组事件
-        applicationEventPublisher.publishEvent(new GroupEvent(ExperimentInitializeRequest.builder()
+        applicationEventPublisher.publishEvent(new ExptInitEvent(ExptInitEventSource.builder()
                 .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
                 .caseInstanceId(caseInstanceId)
                 .build()));
@@ -441,6 +441,7 @@ public class ExperimentManageBiz {
             ExperimentRestartRequest experimentRestartRequest = new ExperimentRestartRequest();
             experimentRestartRequest.setExperimentInstanceId(experimentInstanceId);
             experimentRestartRequest.setPaused(true);
+            experimentRestartRequest.setAppId(appId);
             experimentRestartRequest.setCurrentTime(new Date());
             applicationEventPublisher.publishEvent(new SuspendEvent(experimentRestartRequest));
         }

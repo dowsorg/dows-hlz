@@ -3,7 +3,7 @@ package org.dows.hep.api.base.question.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
-import org.dows.hep.api.base.question.enums.QuestionTypeEnum;
+import org.dows.hep.api.base.question.QuestionTypeEnum;
 import org.dows.hep.api.base.question.request.QuestionRequest;
 
 /**

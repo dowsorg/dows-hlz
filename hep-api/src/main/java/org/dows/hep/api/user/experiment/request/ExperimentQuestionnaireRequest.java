@@ -10,7 +10,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Schema(name = "ExperimentQuestionnaireRequest 对象", title = "实验知识答题")
 public class ExperimentQuestionnaireRequest {
-    @Schema(title = "实验方案设计ID")
+    @Schema(title = "实验知识答题ID")
     private String experimentQuestionnaireId;
 
     @Schema(title = "答题卡")

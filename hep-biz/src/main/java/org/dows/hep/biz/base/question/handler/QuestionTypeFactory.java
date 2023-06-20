@@ -1,6 +1,6 @@
 package org.dows.hep.biz.base.question.handler;
 
-import org.dows.hep.api.base.question.enums.QuestionTypeEnum;
+import org.dows.hep.api.base.question.QuestionTypeEnum;
 
 import java.util.HashMap;
 import java.util.Map;

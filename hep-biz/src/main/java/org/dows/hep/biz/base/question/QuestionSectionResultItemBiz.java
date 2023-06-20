@@ -5,7 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.dto.QuestionResultRecordDTO;
-import org.dows.hep.api.base.question.enums.QuestionESCEnum;
+import org.dows.hep.api.base.question.QuestionESCEnum;
 import org.dows.hep.api.base.question.request.QuestionSectionResultItemRequest;
 import org.dows.hep.entity.QuestionSectionResultItemEntity;
 import org.dows.hep.service.QuestionSectionResultItemService;
