@@ -374,6 +374,7 @@ public class OrgBiz {
 //            ids.add(sb.toString());
 //        });
         //3、uim中将人物放到对应小组
+        /* runsix: TODO 优化 for http */
         for (String personId : personIds) {
             AccountInstanceResponse instanceResponse = accountInstanceApi.getAccountInstanceByAccountId(personId);
             AccountOrgResponse orgResponse = accountOrgApi.getAccountOrgByOrgId(entity.getOrgId(), appId);
@@ -593,6 +594,7 @@ public class OrgBiz {
      * @开始时间:
      * @创建时间: 2023/5/05 10:00
      */
+    /* runsix: TODO 优化这里是删除机构绑定人物的，有问题 */
     @DSTransactional
     public Boolean deletePersons(Set<String> caseOrgIds,String caseInstanceId, Set<String> accountIds,String appId) {
         //1、如果是自定义人物，需要删除人物实例
