@@ -3,7 +3,6 @@ package org.dows.hep.rest.user.experiment;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.user.experiment.response.CountDownResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author lait.zhang
@@ -51,8 +49,8 @@ public class ExperimentTimerRest {
                 .max(Comparator.comparingInt(ExperimentPeriodsResonse.ExperimentPeriods::getPauseCount))
                 .orElse(null);
 
-        if(experimentPeriods2 != null){
-            countDownResponse.setSandTime(experimentPeriods2.getStartTime()-System.currentTimeMillis());
+        if (experimentPeriods2 != null) {
+            countDownResponse.setSandTime(experimentPeriods2.getStartTime() - System.currentTimeMillis() + experimentPeriods2.getPeriodInterval());
         } /*else {
             throw new ExperimentException("期数异常");
         }*/
