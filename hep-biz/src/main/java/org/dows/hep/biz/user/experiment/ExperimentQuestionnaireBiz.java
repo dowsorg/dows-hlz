@@ -98,7 +98,7 @@ public class ExperimentQuestionnaireBiz {
         // 根据实验id、期数、小组id， 机构id 获取知识答题
         ExperimentQuestionnaireEntity entity = experimentQuestionnaireService.lambdaQuery()
                 .eq(ExperimentQuestionnaireEntity::getExperimentInstanceId, request.getExperimentInstanceId())
-                .eq(ExperimentQuestionnaireEntity::getPeriods, currentPeriod)
+                .eq(ExperimentQuestionnaireEntity::getPeriodSequence, currentPeriod)
                 .eq(ExperimentQuestionnaireEntity::getExperimentOrgId, request.getExperimentOrgId())
                 .eq(ExperimentQuestionnaireEntity::getExperimentGroupId, request.getExperimentGroupId())
                 .eq(ExperimentQuestionnaireEntity::getExperimentAccountId,  request.getExperimentAccountId())

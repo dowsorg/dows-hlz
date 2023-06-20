@@ -66,8 +66,8 @@ public class ExperimentIndicatorViewBaseInfoMonitorRsEntity implements CrudEntit
     @Schema(title = "基本信息监测随访随访内容指标id, #号分隔不同随访内容，','分隔单个随访内容")
     private String ivbimContentRefIndicatorInstanceIdArray;
 
-    @Schema(title = "基本信息监测随访随访内容指标名称, #号分隔不同随访内容，','分隔单个随访内容")
-    private String ivbimContentRefIndicatorInstanceNameArray;
+//    @Schema(title = "基本信息监测随访随访内容指标名称, #号分隔不同随访内容，','分隔单个随访内容")
+//    private String ivbimContentRefIndicatorInstanceNameArray;
 
 
     @JsonIgnore

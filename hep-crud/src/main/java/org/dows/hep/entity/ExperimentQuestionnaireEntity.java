@@ -44,6 +44,9 @@ public class ExperimentQuestionnaireEntity implements CrudEntity {
     @Schema(title = "期数|位置")
     private String periods;
 
+    @Schema(title = "期数排序")
+    private Integer periodSequence;
+
     @Schema(title = "实验机构ID")
     private String experimentOrgId;
 

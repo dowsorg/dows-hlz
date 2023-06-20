@@ -61,9 +61,6 @@ public class ExperimentIndicatorViewPhysicalExamRsEntity implements CrudEntity {
     @Schema(title = "关联指标")
     private String indicatorInstanceId;
 
-    @Schema(title = "关联指标名称")
-    private String indicatorInstanceName;
-
     @Schema(title = "结果解析")
     private String resultAnalysis;
 
