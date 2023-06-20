@@ -129,19 +129,22 @@ public class ExperimentManageBiz {
         // 保存实验参与人(教师/实验指导员等)
         experimentParticipatorService.saveOrUpdateBatch(experimentParticipatorEntityList);
 
-
+        ExperimentSetting.SchemeSetting schemeSetting = experimentSetting.getSchemeSetting();
+        ExperimentSetting.SandSetting sandSetting = experimentSetting.getSandSetting();
         List<ExperimentTimerEntity> experimentTimerEntities = new ArrayList<>();
         // 标准模式
-        if (null != experimentSetting.getSchemeSetting() && null != experimentSetting.getSandSetting()) {
+        if (null != schemeSetting && null != sandSetting) {
+            // 验证时间
+            schemeSetting.validateTime(createExperiment.getStartTime());
             ExperimentSettingEntity experimentSettingEntity = ExperimentSettingEntity.builder()
                     .experimentSettingId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentInstance.getExperimentInstanceId())
                     .configKey(experimentSetting.getSchemeSetting().getClass().getName())
                     .configJsonVals(JSONUtil.toJsonStr(experimentSetting.getSchemeSetting()))
                     .build();
+
             // 保存方案设计
             experimentSettingService.saveOrUpdate(experimentSettingEntity);
-
 
             experimentSettingEntity = ExperimentSettingEntity.builder()
                     .experimentSettingId(idGenerator.nextIdStr())
@@ -154,19 +157,22 @@ public class ExperimentManageBiz {
             // 设置实验计时器
             buildPeriods(experimentInstance, experimentSetting, experimentTimerEntities);
             // 沙盘模式
-        } else if (null != experimentSetting.getSandSetting()) {
+        } else if (null != sandSetting) {
             ExperimentSettingEntity experimentSettingEntity = ExperimentSettingEntity.builder()
                     .experimentSettingId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentInstance.getExperimentInstanceId())
                     .configKey(experimentSetting.getSandSetting().getClass().getName())
                     .configJsonVals(JSONUtil.toJsonStr(experimentSetting.getSandSetting()))
                     .build();
+
             //保存沙盘设计
             experimentSettingService.saveOrUpdate(experimentSettingEntity);
             // 设置实验计时器
             buildPeriods(experimentInstance, experimentSetting, experimentTimerEntities);
             // 方案设计模式
-        } else if (null != experimentSetting.getSchemeSetting()) {
+        } else if (null != schemeSetting) {
+            // 验证时间
+            schemeSetting.validateTime(createExperiment.getStartTime());
             ExperimentSettingEntity experimentSettingEntity = ExperimentSettingEntity.builder()
                     .experimentSettingId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentInstance.getExperimentInstanceId())
