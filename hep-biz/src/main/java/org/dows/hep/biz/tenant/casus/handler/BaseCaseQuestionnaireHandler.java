@@ -1,10 +1,10 @@
 package org.dows.hep.biz.tenant.casus.handler;
 
 import cn.hutool.core.bean.BeanUtil;
-import org.dows.hep.api.base.question.enums.QuestionEnabledEnum;
-import org.dows.hep.api.base.question.enums.QuestionSectionAccessAuthEnum;
-import org.dows.hep.api.base.question.enums.QuestionSectionGenerationModeEnum;
-import org.dows.hep.api.base.question.enums.QuestionSourceEnum;
+import org.dows.hep.api.base.question.QuestionEnabledEnum;
+import org.dows.hep.api.base.question.QuestionSectionAccessAuthEnum;
+import org.dows.hep.api.base.question.QuestionSectionGenerationModeEnum;
+import org.dows.hep.api.base.question.QuestionSourceEnum;
 import org.dows.hep.api.base.question.request.QuestionRequest;
 import org.dows.hep.api.base.question.request.QuestionSectionItemRequest;
 import org.dows.hep.api.base.question.request.QuestionSectionRequest;

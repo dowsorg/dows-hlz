@@ -1,4 +1,4 @@
-package org.dows.hep.api.base.question.enums;
+package org.dows.hep.api.base.question;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

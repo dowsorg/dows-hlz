@@ -3,7 +3,7 @@ package org.dows.hep.api.base.question.response;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.dows.hep.api.base.question.enums.QuestionSectionGenerationModeEnum;
+import org.dows.hep.api.base.question.QuestionSectionGenerationModeEnum;
 
 import java.util.List;
 import java.util.Map;
