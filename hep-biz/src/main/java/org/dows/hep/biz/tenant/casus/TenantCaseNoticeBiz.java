@@ -161,7 +161,7 @@ public class TenantCaseNoticeBiz {
                 .noticeName(request.getNoticeName())
                 .noticeContent(request.getNoticeContent())
                 .periods(request.getPeriods().getCode())
-                .periodSequence(request.getPeriods().ordinal())
+                .periodSequence(request.getPeriods().getSeq())
                 .build();
 
         String uniqueId = result.getCaseNoticeId();
