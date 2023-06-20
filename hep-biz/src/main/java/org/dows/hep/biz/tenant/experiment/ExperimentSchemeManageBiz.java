@@ -43,12 +43,13 @@ public class ExperimentSchemeManageBiz {
      * @date 2023/6/1 9:33
      */
     public void preHandleExperimentScheme(String experimentInstanceId, String caseInstanceId) {
-        List<String> experimentGroupIds = baseBiz.listExperimentGroupIds(experimentInstanceId);
         String settingStr = getSchemeSetting(experimentInstanceId);
-        // 不是方案设计模式就退出
+        // 没有包含方案设计模式就退出
         if (StrUtil.isEmpty(settingStr)) {
             return;
         }
+
+        List<String> experimentGroupIds = baseBiz.listExperimentGroupIds(experimentInstanceId);
         // 预设置方案设计
         preHandleExperimentScheme(experimentInstanceId, caseInstanceId, experimentGroupIds, settingStr);
         // 预设置方案设计评分表
