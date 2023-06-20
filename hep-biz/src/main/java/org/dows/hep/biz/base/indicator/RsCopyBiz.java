@@ -427,7 +427,6 @@ public class RsCopyBiz {
               .name(name)
               .seq(seq)
               .indicatorInstanceIdArray(indicatorInstanceIdArray)
-              .indicatorInstanceNameArray(indicatorInstanceNameArray)
               .build();
           experimentIndicatorViewBaseInfoDescRsEntityList.add(experimentIndicatorViewBaseInfoDescRsEntity);
         });
@@ -490,7 +489,6 @@ public class RsCopyBiz {
               .seq(seq)
               .ivbimContentNameArray(ivbimContentNameArray)
               .ivbimContentRefIndicatorInstanceIdArray(ivbimContentRefIndicatorInstanceIdArray)
-              .ivbimContentRefIndicatorInstanceNameArray(ivbimContentRefIndicatorInstanceNameArray)
               .build();
           experimentIndicatorViewBaseInfoMonitorRsEntityList.add(experimentIndicatorViewBaseInfoMonitorRsEntity);
         });
@@ -516,7 +514,6 @@ public class RsCopyBiz {
               .appId(appId)
               .indicatorViewBaseInfoId(experimentIndicatorViewBaseInfoId)
               .indicatorInstanceId(indicatorInstanceId)
-              .indicatorInstanceName(indicatorInstanceName)
               .seq(indicatorViewBaseInfoSingleEntity.getSeq())
               .build();
           experimentIndicatorViewBaseInfoSingleRsEntityList.add(experimentIndicatorViewBaseInfoSingleRsEntity);
@@ -558,11 +555,6 @@ public class RsCopyBiz {
         String name = indicatorViewPhysicalExamEntity.getName();
         BigDecimal fee = indicatorViewPhysicalExamEntity.getFee();
         String indicatorInstanceId = indicatorViewPhysicalExamEntity.getIndicatorInstanceId();
-        String indicatorName = null;
-        IndicatorInstanceEntity indicatorInstanceEntity = kIndicatorInstanceIdVIndicatorInstanceEntityMap.get(indicatorInstanceId);
-        if (Objects.nonNull(indicatorInstanceEntity)) {
-          indicatorName = indicatorInstanceEntity.getIndicatorName();
-        }
         String resultAnalysis = indicatorViewPhysicalExamEntity.getResultAnalysis();
         Integer status = indicatorViewPhysicalExamEntity.getStatus();
         ExperimentIndicatorViewPhysicalExamRsEntity experimentIndicatorViewPhysicalExamRsEntity = ExperimentIndicatorViewPhysicalExamRsEntity
@@ -575,7 +567,6 @@ public class RsCopyBiz {
             .name(name)
             .fee(fee)
             .indicatorInstanceId(indicatorInstanceId)
-            .indicatorInstanceName(indicatorName)
             .resultAnalysis(resultAnalysis)
             .status(status)
             .build();
@@ -614,11 +605,6 @@ public class RsCopyBiz {
         String name = indicatorViewSupportExamEntity.getName();
         BigDecimal fee = indicatorViewSupportExamEntity.getFee();
         String indicatorInstanceId = indicatorViewSupportExamEntity.getIndicatorInstanceId();
-        String indicatorName = null;
-        IndicatorInstanceEntity indicatorInstanceEntity = kIndicatorInstanceIdVIndicatorInstanceEntityMap.get(indicatorInstanceId);
-        if (Objects.nonNull(indicatorInstanceEntity)) {
-          indicatorName = indicatorInstanceEntity.getIndicatorName();
-        }
         String resultAnalysis = indicatorViewSupportExamEntity.getResultAnalysis();
         Integer status = indicatorViewSupportExamEntity.getStatus();
         ExperimentIndicatorViewSupportExamRsEntity experimentIndicatorViewSupportExamRsEntity = ExperimentIndicatorViewSupportExamRsEntity
@@ -631,7 +617,6 @@ public class RsCopyBiz {
             .name(name)
             .fee(fee)
             .indicatorInstanceId(indicatorInstanceId)
-            .indicatorInstanceName(indicatorName)
             .resultAnalysis(resultAnalysis)
             .status(status)
             .build();
