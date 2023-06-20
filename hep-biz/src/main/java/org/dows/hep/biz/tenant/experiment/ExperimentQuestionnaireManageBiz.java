@@ -9,6 +9,7 @@ import org.dows.hep.api.base.question.response.QuestionOptionWithAnswerResponse;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionItemResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
+import org.dows.hep.api.tenant.casus.CasePeriodEnum;
 import org.dows.hep.api.tenant.casus.response.CaseOrgQuestionnaireResponse;
 import org.dows.hep.api.tenant.casus.response.CaseQuestionnaireResponse;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
@@ -94,6 +95,7 @@ public class ExperimentQuestionnaireManageBiz {
                                 .experimentQuestionnaireId(baseBiz.getIdStr())
                                 .experimentInstanceId(experimentInstanceId)
                                 .periods(period)
+                                .periodSequence(CasePeriodEnum.getByCode(period).getSeq())
                                 .experimentOrgId(org)
                                 .experimentGroupId(groupId)
                                 .experimentAccountId(null)
