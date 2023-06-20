@@ -7,9 +7,11 @@ import lombok.Getter;
  */
 public enum ExperimentStateEnum {
     UNBEGIN(0, "未开始"),
-    ONGOING(1, "进行中"),
-    SUSPEND(2, "暂停中"),
-    FINISH(3, "已结束"),
+
+    PREPARE(1, "准备中"),
+    ONGOING(2, "进行中"),
+    SUSPEND(3, "暂停中"),
+    FINISH(4, "已结束"),
 
     ;
     @Getter
