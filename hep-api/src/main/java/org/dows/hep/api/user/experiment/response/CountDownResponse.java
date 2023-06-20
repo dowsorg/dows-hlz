@@ -14,13 +14,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "CountDown 对象", title = "时间")
 public class CountDownResponse{
-    @Schema(title = "沙盘时间")
+    @Schema(title = "沙盘实验倒计时时间")
     private Long sandTime;
 
     @Schema(title = "沙盘时间单位")
     private String sandTimeUnit;
 
-    @Schema(title = "方案时间")
+    @Schema(title = "方案设计倒计时时间")
     private Long schemeTime;
 
     @Schema(title = "方案时间单位")

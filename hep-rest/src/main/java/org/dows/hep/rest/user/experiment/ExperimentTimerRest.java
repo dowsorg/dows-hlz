@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 /**
  * @author lait.zhang
  * @description project descr:实验:实验计时器
@@ -35,8 +37,18 @@ public class ExperimentTimerRest {
      */
     @Operation(summary = "获取实验倒计时")
     @GetMapping("v1/userExperiment/experimentTimer/countdown")
-    public CountDownResponse countdown(@Validated String experimentInstanceId) {
-        return experimentTimerBiz.countdown(experimentInstanceId);
+    public CountDownResponse countdown(String appId, String experimentInstanceId) {
+
+        CountDownResponse countDownResponse = new CountDownResponse();
+        ExperimentPeriodsResonse experimentPeriods = experimentTimerBiz.getExperimentPeriods(appId, experimentInstanceId);
+        List<ExperimentPeriodsResonse.ExperimentPeriods> experimentPeriods1 = experimentPeriods.getExperimentPeriods();
+        for (ExperimentPeriodsResonse.ExperimentPeriods experimentPeriod : experimentPeriods1) {
+            if (experimentPeriod.getPeriod() == experimentPeriods.getCurrentPeriod()) {
+                countDownResponse.setSandTime(System.currentTimeMillis() - experimentPeriod.getStartTime());
+                break;
+            }
+        }
+        return countDownResponse;
     }
 
 

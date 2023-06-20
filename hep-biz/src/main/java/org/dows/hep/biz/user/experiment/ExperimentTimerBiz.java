@@ -76,7 +76,7 @@ public class ExperimentTimerBiz {
      * @param updateExperimentTimerEntities
      * @return
      */
-    public boolean saveOrUpdateBatch(List<ExperimentTimerEntity> updateExperimentTimerEntities) {
+    public boolean saveOrUpdateExperimentTimeExperimentState(List<ExperimentTimerEntity> updateExperimentTimerEntities) {
         boolean b = experimentTimerService.saveOrUpdateBatch(updateExperimentTimerEntities);
         return b;
     }
