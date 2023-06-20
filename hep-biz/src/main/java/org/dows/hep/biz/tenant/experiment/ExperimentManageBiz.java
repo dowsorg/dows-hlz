@@ -460,12 +460,25 @@ public class ExperimentManageBiz {
             experimentRestartRequest.setCurrentTime(new Date());
             applicationEventPublisher.publishEvent(new SuspendEvent(experimentRestartRequest));
         }
+        //experimentInstanceEntity.setState(ExperimentStateEnum.SUSPEND.getState());
+        experimentInstanceService.lambdaUpdate().update(experimentInstanceEntity);
         experimentStateResponse.setExperimentStateEnum(experimentStateEnum);
         experimentStateResponse.setExperimentInstanceId(experimentInstanceEntity.getExperimentInstanceId());
         experimentStateResponse.setExperimentStartTime(experimentInstanceEntity.getStartTime());
         // todo 查询实验开始或暂停或结束,可直接差数据库
 //        return experimentStateEnum;
         return experimentStateResponse;
+    }
+
+
+    /**
+     * 更新实验状态
+     */
+    public void updateExperimentState(String experimentInstanceId){
+
+
+
+
     }
 
 
