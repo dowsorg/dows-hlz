@@ -4,14 +4,16 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import lombok.AllArgsConstructor;
-import org.dows.hep.api.tenant.casus.CasePeriodEnum;
-import org.dows.hep.biz.tenant.experiment.ExperimentCaseInfoManageBiz;
+import org.dows.framework.api.exceptions.BizException;
+import org.dows.hep.api.user.experiment.ExperimentESCEnum;
+import org.dows.hep.api.user.experiment.dto.ExptCaseNoticeDTO;
+import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
 import org.dows.hep.entity.ExperimentCaseInfoEntity;
 import org.dows.hep.service.ExperimentCaseInfoService;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -22,7 +24,9 @@ import java.util.function.Function;
 @AllArgsConstructor
 @Service
 public class ExperimentCaseInfoBiz {
+    private final ExperimentBaseBiz baseBiz;
     private final ExperimentCaseInfoService experimentCaseInfoService;
+    private final ExperimentTimerBiz experimentTimerBiz;
 
     /**
      * @author fhb
@@ -53,11 +57,16 @@ public class ExperimentCaseInfoBiz {
      * @param
      * @return
      */
-    public ExperimentCaseInfoManageBiz.CaseNotice getNotice(String experimentInstanceId, CasePeriodEnum period) {
+    public ExptCaseNoticeDTO getNotice(String experimentInstanceId) {
+        ExperimentPeriodsResonse experimentPeriods = experimentTimerBiz.getExperimentPeriods(baseBiz.getAppId(), experimentInstanceId);
+        Integer currentPeriod = Optional.ofNullable(experimentPeriods)
+                .map(ExperimentPeriodsResonse::getCurrentPeriod)
+                .orElseThrow(() -> new BizException(ExperimentESCEnum.PERIOD_NON_NULL));
+
         String caseInfo = getCaseInfo(experimentInstanceId, ExperimentCaseInfoEntity::getNotice, ExperimentCaseInfoEntity::getNotice);
-        Map periodMap = JSONUtil.toBean(caseInfo, HashMap.class);
-        JSONObject object = (JSONObject) periodMap.get(String.valueOf(period.ordinal()));
-        return JSONUtil.toBean(object, ExperimentCaseInfoManageBiz.CaseNotice.class);
+        HashMap periodMap = JSONUtil.toBean(caseInfo, HashMap.class);
+        JSONObject object = (JSONObject) periodMap.get(String.valueOf(currentPeriod));
+        return JSONUtil.toBean(object, ExptCaseNoticeDTO.class);
     }
 
     private String getCaseInfo(String experimentInstanceId, SFunction<ExperimentCaseInfoEntity, ?> sfunction, Function<ExperimentCaseInfoEntity, String> function) {

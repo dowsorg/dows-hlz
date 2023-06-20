@@ -13,6 +13,7 @@ import org.dows.hep.api.user.experiment.request.ExperimentQuestionnaireItemReque
 import org.dows.hep.api.user.experiment.request.ExperimentQuestionnaireRequest;
 import org.dows.hep.api.user.experiment.request.ExptQuestionnaireAllotRequest;
 import org.dows.hep.api.user.experiment.request.ExptQuestionnaireSearchRequest;
+import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
 import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireItemResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireResponse;
 import org.dows.hep.entity.ExperimentQuestionnaireEntity;
@@ -31,6 +32,7 @@ import java.util.*;
 public class ExperimentQuestionnaireBiz {
     private final ExperimentQuestionnaireService experimentQuestionnaireService;
     private final ExperimentQuestionnaireItemBiz experimentQuestionnaireItemBiz;
+    private final ExperimentTimerBiz experimentTimerBiz;
 
     /**
      * @param
@@ -88,11 +90,15 @@ public class ExperimentQuestionnaireBiz {
      */
     public ExperimentQuestionnaireResponse getQuestionnaire(ExptQuestionnaireSearchRequest request) {
         Assert.notNull(request, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
+        ExperimentPeriodsResonse experimentPeriods = experimentTimerBiz.getExperimentPeriods("3", request.getExperimentInstanceId());
+        Integer currentPeriod = Optional.ofNullable(experimentPeriods)
+                .map(ExperimentPeriodsResonse::getCurrentPeriod)
+                .orElseThrow(() -> new BizException(ExperimentESCEnum.PERIOD_NON_NULL));
 
         // 根据实验id、期数、小组id， 机构id 获取知识答题
         ExperimentQuestionnaireEntity entity = experimentQuestionnaireService.lambdaQuery()
                 .eq(ExperimentQuestionnaireEntity::getExperimentInstanceId, request.getExperimentInstanceId())
-                .eq(ExperimentQuestionnaireEntity::getPeriods, request.getPeriods().getCode())
+                .eq(ExperimentQuestionnaireEntity::getPeriods, currentPeriod)
                 .eq(ExperimentQuestionnaireEntity::getExperimentOrgId, request.getExperimentOrgId())
                 .eq(ExperimentQuestionnaireEntity::getExperimentGroupId, request.getExperimentGroupId())
                 .eq(ExperimentQuestionnaireEntity::getExperimentAccountId,  request.getExperimentAccountId())

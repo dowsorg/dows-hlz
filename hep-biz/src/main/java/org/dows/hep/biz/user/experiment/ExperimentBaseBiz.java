@@ -16,6 +16,9 @@ import java.util.Map;
 @AllArgsConstructor
 @Service
 public class ExperimentBaseBiz {
+    public String getAppId() {
+        return "3";
+    }
     public String getAccountId(HttpServletRequest request) {
         String token = request.getHeader("token");
         Map<String, Object> map = JwtUtil.parseJWT(token, EnumToken.PROPERTIES_JWT_KEY.getStr());
