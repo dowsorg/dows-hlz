@@ -10,7 +10,7 @@ public enum EnumWebSocketType {
     // 实验-方案设计-已提交
     EXPT_SCHEME_SUBMITTED,
 
-    // 开始时间倒计时
+    // 开始实验倒计时
     START_EXPERIMENT_COUNTDOWN
     ;
 }
