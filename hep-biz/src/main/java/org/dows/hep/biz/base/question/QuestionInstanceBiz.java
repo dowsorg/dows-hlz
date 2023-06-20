@@ -229,8 +229,11 @@ public class QuestionInstanceBiz {
 
         QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(questionTypeEnum);
         QuestionResponse questionResponse = questionTypeHandler.get(questionInstanceId, resultRecordDTO);
-        setQuestionCategIds(questionResponse);
-        setQuestionCategName(questionResponse);
+        String questionCategId = questionResponse.getQuestionCategId();
+        if (StrUtil.isNotBlank(questionCategId)) {
+            setQuestionCategIds(questionResponse);
+            setQuestionCategName(questionResponse);
+        }
         return questionResponse;
     }
 
