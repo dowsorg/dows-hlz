@@ -2,7 +2,6 @@ package org.dows.hep.event.handler;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import io.netty.channel.Channel;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.Response;
@@ -13,6 +12,7 @@ import org.dows.hep.api.enums.EnumWebSocketType;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentParticipatorRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
+import org.dows.hep.api.user.experiment.response.StartCutdownResponse;
 import org.dows.hep.entity.ExperimentGroupEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.service.ExperimentGroupService;
@@ -95,22 +95,14 @@ public class GroupMemberAllotHandler extends AbstractEventHandler implements Eve
             Set<Channel> channels = userInfos.keySet();
             for (Channel channel : channels) {
                 if (accountIds.contains(userInfos.get(channel).getAccountName())) {
-
                     StartCutdownResponse startCutdownResponse = new StartCutdownResponse();
-                    startCutdownResponse.setEnumWebSocketType(EnumWebSocketType.START_EXPERIMENT_COUNTDOWN);
-                    startCutdownResponse.setExperimentPeriodsResonse(periodsResonse);
+                    startCutdownResponse.setType(EnumWebSocketType.START_EXPERIMENT_COUNTDOWN);
+                    startCutdownResponse.setData(periodsResonse);
                     Response<StartCutdownResponse> ok = Response.ok(startCutdownResponse);
                     HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, ok);
                 }
             }
             log.info("开始倒计时进入实验....");
         }
-    }
-
-    @Data
-    public static class StartCutdownResponse{
-        EnumWebSocketType enumWebSocketType;
-
-        ExperimentPeriodsResonse experimentPeriodsResonse;
     }
 }

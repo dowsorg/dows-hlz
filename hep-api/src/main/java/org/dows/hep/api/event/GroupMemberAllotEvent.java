@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
+import java.time.Clock;
 
 /**
  * 小组成员分配机构处理器
@@ -18,5 +19,9 @@ public class GroupMemberAllotEvent extends ExperimentEvent implements Serializab
 
     public GroupMemberAllotEvent(Object source) {
         super(source);
+    }
+
+    public GroupMemberAllotEvent(Object source, Clock clock) {
+        super(source, clock);
     }
 }
