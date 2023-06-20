@@ -20,6 +20,7 @@ import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.biz.base.question.handler.QuestionTypeFactory;
 import org.dows.hep.biz.base.question.handler.QuestionTypeHandler;
 import org.dows.hep.entity.QuestionAnswersEntity;
+import org.dows.hep.entity.QuestionCategoryEntity;
 import org.dows.hep.entity.QuestionInstanceEntity;
 import org.dows.hep.entity.QuestionOptionsEntity;
 import org.dows.hep.service.QuestionAnswersService;
@@ -229,6 +230,7 @@ public class QuestionInstanceBiz {
         QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(questionTypeEnum);
         QuestionResponse questionResponse = questionTypeHandler.get(questionInstanceId, resultRecordDTO);
         setQuestionCategIds(questionResponse);
+        setQuestionCategName(questionResponse);
         return questionResponse;
     }
 
@@ -655,6 +657,12 @@ public class QuestionInstanceBiz {
         String questionCategId = questionResponse.getQuestionCategId();
         String[] parentIds = questionCategBiz.getFullPathIds(questionCategId, QuestionCategGroupEnum.QUESTION.name());
         questionResponse.setQuestionCategIds(parentIds);
+    }
+
+    private void setQuestionCategName(QuestionResponse questionResponse) {
+        String questionCategId = questionResponse.getQuestionCategId();
+        QuestionCategoryEntity categ = questionCategBiz.getById(questionCategId);
+        questionResponse.setQuestionCategName(categ.getQuestionCategName());
     }
 
     private boolean changeEnable(String questionInstanceId, QuestionEnabledEnum questionEnabledEnum) {
