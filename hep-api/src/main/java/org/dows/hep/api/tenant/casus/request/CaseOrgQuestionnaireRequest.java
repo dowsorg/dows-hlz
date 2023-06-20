@@ -3,6 +3,7 @@ package org.dows.hep.api.tenant.casus.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dows.hep.api.tenant.casus.CasePeriodEnum;
 
 /**
  * @author fhb
@@ -26,5 +27,5 @@ public class CaseOrgQuestionnaireRequest {
     private String caseQuestionnaireId;
 
     @Schema(title = "期数")
-    private String periods;
+    private CasePeriodEnum periods;
 }

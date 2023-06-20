@@ -57,8 +57,8 @@ public class ExperimentIndicatorViewBaseInfoSingleRsEntity implements CrudEntity
     @Schema(title = "指标ID")
     private String indicatorInstanceId;
 
-    @Schema(title = "指标名称")
-    private String indicatorInstanceName;
+//    @Schema(title = "指标名称")
+//    private String indicatorInstanceName;
 
     @Schema(title = "展示顺序")
     private Integer seq;

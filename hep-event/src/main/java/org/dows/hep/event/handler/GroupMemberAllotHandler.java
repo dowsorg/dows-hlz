@@ -21,12 +21,10 @@ import org.dows.hep.websocket.HepClientManager;
 import org.dows.hep.websocket.proto.MessageCode;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 /**
  * 小组成员分配机构处理器
@@ -51,6 +49,14 @@ public class GroupMemberAllotHandler extends AbstractEventHandler implements Eve
         String experimentInstanceId = participatorRequestList.get(0).getExperimentInstanceId();
         String appId = participatorRequestList.get(0).getAppId();
         ExperimentPeriodsResonse periodsResonse = experimentTimerBiz.getExperimentPeriods(appId,experimentInstanceId);
+        // 获取第一期的最大pauseCount
+        List<ExperimentPeriodsResonse.ExperimentPeriods> periods = periodsResonse.getExperimentPeriods();
+        periods = periods.stream().filter((ExperimentPeriodsResonse.ExperimentPeriods experimentPeriods) ->
+                experimentPeriods.getPeriod() == 1)
+                .collect(Collectors.toList());
+        List<ExperimentPeriodsResonse.ExperimentPeriods> newList = periods.stream().sorted(Comparator.comparing(ExperimentPeriodsResonse.ExperimentPeriods::getPauseCount).reversed()).collect(Collectors.toList());
+        ExperimentPeriodsResonse.ExperimentPeriods periods1 = newList.get(0);
+
         // 先计数
         startHandler.exec(ExperimentRestartRequest.builder()
                 .appId(appId)
@@ -96,8 +102,10 @@ public class GroupMemberAllotHandler extends AbstractEventHandler implements Eve
             for (Channel channel : channels) {
                 if (accountIds.contains(userInfos.get(channel).getAccountName())) {
                     StartCutdownResponse startCutdownResponse = new StartCutdownResponse();
-                    startCutdownResponse.setEnumWebSocketType(EnumWebSocketType.START_EXPERIMENT_COUNTDOWN);
-                    startCutdownResponse.setExperimentPeriodsResonse(periodsResonse);
+                    startCutdownResponse.setType(EnumWebSocketType.START_EXPERIMENT_COUNTDOWN);
+                    startCutdownResponse.setModelDescr(periods1.getModelDescr());
+                    startCutdownResponse.setExperimentInstanceId(periods1.getExperimentInstanceId());
+                    startCutdownResponse.setPeriodInterval(periods1.getPeriodInterval());
                     Response<StartCutdownResponse> ok = Response.ok(startCutdownResponse);
                     HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, ok);
                 }

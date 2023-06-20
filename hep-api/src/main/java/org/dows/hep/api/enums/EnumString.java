@@ -23,6 +23,7 @@ public enum EnumString {
   INDICATOR_EXPRESSION_SPLIT("\\$", "指标公式扩展点分割符"),
   INDICATOR_EXPRESSION_INPUT("@", "用户输入量第一个字符"),
   INDICATOR_EXPRESSION_LIST_SPLIT(",", "列表分割符"),
+  PERIOD_FIRST("1", "实验第一期"),
 
   ;
   private final String str;
