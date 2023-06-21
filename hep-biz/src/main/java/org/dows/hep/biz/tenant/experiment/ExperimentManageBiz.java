@@ -21,6 +21,7 @@ import org.dows.hep.api.core.CreateExperimentForm;
 import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.ExperimentModeEnum;
 import org.dows.hep.api.enums.ExperimentStateEnum;
+import org.dows.hep.api.enums.ParticipatorTypeEnum;
 import org.dows.hep.api.event.*;
 import org.dows.hep.api.event.source.ExptInitEventSource;
 import org.dows.hep.api.exception.ExperimentException;
@@ -80,6 +81,7 @@ public class ExperimentManageBiz {
     private final AccountOrgApi accountOrgApi;
     private final AccountOrgGeoApi accountOrgGeoApi;
     private final CaseOrgFeeService caseOrgFeeService;
+    private final ExperimentQuestionnaireManageBiz experimentQuestionnaireManageBiz;
     // 事件发布
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -96,6 +98,7 @@ public class ExperimentManageBiz {
      */
     @DSTransactional
     public String allot(CreateExperimentRequest createExperiment) {
+
         ExperimentInstanceEntity experimentInstance = ExperimentInstanceEntity.builder()
                 .appId(createExperiment.getAppId())
                 .experimentInstanceId(idGenerator.nextIdStr())
@@ -104,6 +107,8 @@ public class ExperimentManageBiz {
                 .experimentDescr(createExperiment.getExperimentDescr())
                 .model(createExperiment.getModel())
                 .state(0)
+                //todo 填充分配人，当前登录账号获取用户名
+                .appointor(createExperiment.getAppointor())
                 .caseInstanceId(createExperiment.getCaseInstanceId())
                 .caseName(createExperiment.getCaseName())
                 .build();
@@ -120,9 +125,9 @@ public class ExperimentManageBiz {
                     .experimentName(experimentInstance.getExperimentName())
                     .accountId(instance.getAccountId())
                     .accountName(instance.getAccountName())
-                    .state(0)
+                    .state(ExperimentStateEnum.UNBEGIN.getState())
                     .model(experimentInstance.getModel())
-                    .participatorType(0)
+                    .participatorType(ParticipatorTypeEnum.TEACHER.getCode())
                     .build();
             experimentParticipatorEntityList.add(experimentParticipatorEntity);
         }
@@ -188,7 +193,7 @@ public class ExperimentManageBiz {
         experimentTimerService.saveBatch(experimentTimerEntities);
 
         // 发布实验分配事件
-        applicationEventPublisher.publishEvent(new AllotEvent(experimentTimerEntities));
+        //applicationEventPublisher.publishEvent(new AllotEvent(experimentTimerEntities));
         return experimentInstance.getExperimentInstanceId();
     }
 
@@ -384,6 +389,9 @@ public class ExperimentManageBiz {
 
         // 复制人物与机构到实验中
         applicationEventPublisher.publishEvent(new CopyExperimentPersonAndOrgEvent(experimentGroupSettingRequest));
+
+        // 发布实验init事件
+        experimentQuestionnaireManageBiz.preHandleExperimentQuestionnaire(experimentGroupSettingRequest.getExperimentInstanceId(), caseInstanceId);
         return true;
     }
 

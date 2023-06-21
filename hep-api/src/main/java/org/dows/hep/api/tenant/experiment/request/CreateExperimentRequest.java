@@ -43,6 +43,9 @@ public class CreateExperimentRequest{
     @Schema(title = "实验说明")
     private String experimentDescr;
 
+    @Schema(title = "实验分配者，当前登录账号的用户名")
+    private String appointor;
+
     @Schema(title = "开始时间")
     private Date startTime;
 

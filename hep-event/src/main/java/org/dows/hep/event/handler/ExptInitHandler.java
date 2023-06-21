@@ -26,6 +26,6 @@ public class ExptInitHandler extends AbstractEventHandler implements EventHandle
         // 初始化实验 `方案设计` 数据
         experimentSchemeManageBiz.preHandleExperimentScheme(experimentInstanceId, caseInstanceId);
         // 初始化实验 `知识答题` 数据
-        experimentQuestionnaireManageBiz.preHandleExperimentQuestionnaire(experimentInstanceId, caseInstanceId);
+//        experimentQuestionnaireManageBiz.preHandleExperimentQuestionnaire(experimentInstanceId, caseInstanceId);
     }
 }
