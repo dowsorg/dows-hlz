@@ -4,16 +4,14 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.account.api.*;
 import org.dows.account.request.*;
-import org.dows.account.response.AccountInstanceResponse;
-import org.dows.account.response.AccountOrgGeoResponse;
-import org.dows.account.response.AccountOrgResponse;
-import org.dows.account.response.AccountUserResponse;
+import org.dows.account.response.*;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
@@ -28,6 +26,9 @@ import org.dows.hep.api.tenant.experiment.request.*;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.response.ExperimentStateResponse;
+import org.dows.hep.api.user.organization.request.CaseOrgRequest;
+import org.dows.hep.api.user.organization.response.CaseOrgResponse;
+import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -82,6 +83,7 @@ public class ExperimentManageBiz {
     // 事件发布
     private final ApplicationEventPublisher applicationEventPublisher;
 
+    private final OrgBiz orgBiz;
     /**
      * @param
      * @return
@@ -377,26 +379,8 @@ public class ExperimentManageBiz {
                 orgIds.add(org.getOrgId());
             });
         }
-//        List<CaseOrgEntity> entityList = caseOrgService.lambdaQuery()
-//                .in(orgIds != null && orgIds.size() > 0, CaseOrgEntity::getOrgId, orgIds)
-//                .eq(CaseOrgEntity::getCaseInstanceId, caseInstanceId)
-//                .eq(CaseOrgEntity::getDeleted, false)
-//                .list();
-//        // 判断是否已发布,未发布的机构移除
-//        Iterator<CaseOrgEntity> it = entityList.iterator();
-//        while(it.hasNext()){
-//            CaseOrgEntity orgEntity = it.next();
-//            AccountOrgResponse orgResponse = accountOrgApi
-//                    .getAccountOrgByOrgId(orgEntity.getOrgId(),experimentGroupSettingRequest.getAppId());
-//            if(orgResponse.getStatus() == 0){
-//                it.remove();
-//            }
-//        }
 
         List<ExperimentParticipatorEntity> collect = groupParticipators.values().stream().flatMap(x -> x.stream()).collect(Collectors.toList());
-//        if (collect.size() > entityList.size()) {
-//            throw new ExperimentParticipatorException(EnumExperimentParticipator.PARTICIPATOR_NUMBER_CANNOT_MORE_THAN_ORG_EXCEPTION);
-//        }
         // 保存实验小组
         experimentGroupService.saveOrUpdateBatch(experimentGroupEntitys);
         // 保存实验参与人[学生]
@@ -406,9 +390,49 @@ public class ExperimentManageBiz {
                 .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
                 .caseInstanceId(caseInstanceId)
                 .build()));
-        // todo 后续移到事件监听中
         // 发布实验分配小组事件
         applicationEventPublisher.publishEvent(new CreateGroupEvent(experimentGroupSettingRequest));
+
+        // 复制人物与机构到实验中
+        ExperimentInstanceEntity experimentInstanceEntity = experimentInstanceService.lambdaQuery()
+                .eq(ExperimentInstanceEntity::getExperimentInstanceId,experimentGroupSettingRequest.getExperimentInstanceId())
+                .eq(ExperimentInstanceEntity::getDeleted,false)
+                .one();
+        IPage<CaseOrgResponse> caseOrgResponseIPage = orgBiz.listOrgnization(CaseOrgRequest.builder().pageNo(1).pageSize(10)
+                .caseInstanceId(experimentInstanceEntity.getCaseInstanceId())
+                .status(1)
+                .build());
+        List<CaseOrgResponse> responseList = caseOrgResponseIPage.getRecords();
+        List<CreateExperimentRequest> requestList = new ArrayList<>();
+        if(responseList != null && responseList.size() > 0){
+            responseList.forEach(response->{
+                //1、通过案例机构ID找到机构ID下面的人物
+                IPage<AccountGroupResponse> groupResponseIPage =orgBiz.listPerson(AccountGroupRequest.builder()
+                        .status(1)
+                        .appId(experimentGroupSettingRequest.getAppId())
+                        .pageNo(1)
+                        .pageSize(10)
+                        .build(),response.getCaseOrgId());
+                List<AccountGroupResponse> accountGroupResponses = groupResponseIPage.getRecords();
+                List<AccountInstanceResponse> instanceResponses = new ArrayList<>();
+                if(accountGroupResponses != null && accountGroupResponses.size() > 0){
+                    accountGroupResponses.forEach(accountGroup->{
+                        AccountInstanceResponse instanceResponse = AccountInstanceResponse.builder()
+                                .accountId(accountGroup.getAccountId())
+                                .build();
+                        instanceResponses.add(instanceResponse);
+                    });
+                }
+                CreateExperimentRequest request = CreateExperimentRequest.builder()
+                        .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
+                        .caseOrgId(response.getCaseOrgId())
+                        .appId(experimentGroupSettingRequest.getAppId())
+                        .teachers(instanceResponses)
+                        .build();
+                requestList.add(request);
+            });
+        }
+        applicationEventPublisher.publishEvent(new CopyExperimentPersonAndOrgEvent(requestList));
         return true;
     }
 

@@ -1,6 +1,8 @@
 package org.dows.hep.api.tenant.experiment.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dows.account.response.AccountInstanceResponse;
@@ -15,6 +17,8 @@ import java.util.List;
  * @date
  */
 @Data
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @Schema(name = "CreateExperiment 对象", title = "创建实验对象")
 public class CreateExperimentRequest{
