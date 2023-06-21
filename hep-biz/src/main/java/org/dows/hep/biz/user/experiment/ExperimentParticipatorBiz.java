@@ -58,7 +58,7 @@ public class ExperimentParticipatorBiz {
         // todo 是否是管理员，如果是管理员，则查询所有记录，如果是老师，根据accountId查询自己的分配的实验列表，如果是学生根据accountId查询自己参与的实验
         AccountRoleResponse accountRoleByPrincipalId = accountRoleApi.getAccountRoleByPrincipalId(pageExperimentRequest.getAccountId());
 
-        String roleName = accountRoleByPrincipalId.getRoleName();
+        String roleCode = accountRoleByPrincipalId.getRoleCode();
 
         if (pageExperimentRequest.getOrder() != null) {
             String[] array = (String[]) pageExperimentRequest.getOrder().stream()
@@ -66,7 +66,7 @@ public class ExperimentParticipatorBiz {
                     .toArray(String[]::new);
             page.addOrder(pageExperimentRequest.getDesc() ? OrderItem.descs(array) : OrderItem.ascs(array));
         }
-        if (roleName.equals("ADMIN")) {
+        if (roleCode.equals("ADMIN")) {
             QueryWrapper<ExperimentParticipatorEntity> queryWrapper = new QueryWrapper();
             queryWrapper.select(EntityUtil.distinctColumn(ExperimentParticipatorEntity.class, "experimentInstanceId"));
             queryWrapper.likeLeft("experiment_name", pageExperimentRequest.getKeyword());
