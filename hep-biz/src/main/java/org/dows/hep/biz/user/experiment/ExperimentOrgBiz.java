@@ -6,10 +6,12 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.account.api.AccountUserApi;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.entity.ExperimentPersonEntity;
 import org.dows.hep.service.ExperimentPersonService;
+import org.dows.user.api.api.UserInstanceApi;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +29,10 @@ import java.util.List;
 @Service
 public class ExperimentOrgBiz{
     private final ExperimentPersonService experimentPersonService;
+
+    private final AccountUserApi accountUserApi;
+
+    private final UserInstanceApi userInstanceApi;
     /**
     * @param
     * @return
@@ -130,6 +136,10 @@ public class ExperimentOrgBiz{
             ExperimentPersonResponse person = new ExperimentPersonResponse();
             BeanUtil.copyProperties(entity,person);
             person.setId(entity.getId().toString());
+            // 1、获取用户姓名
+            String userId = accountUserApi.getUserByAccountId(entity.getAccountId()).getUserId();
+            String userName = userInstanceApi.getUserInstanceByUserId(userId).getName();
+            person.setName(userName);
             responseList.add(person);
         }
         voPage.setRecords(responseList);
