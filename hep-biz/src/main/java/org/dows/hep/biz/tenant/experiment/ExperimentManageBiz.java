@@ -369,17 +369,6 @@ public class ExperimentManageBiz {
                 groupParticipators.put(experimentGroupEntity.getExperimentGroupId(), experimentParticipatorEntityList);
             }
         }
-
-
-        // 判断实验参与人数是否大于该案例得机构数,并且应为已发布的机构
-        Set<String> orgIds = new HashSet<>();
-        List<AccountOrgResponse> orgList = accountOrgApi.getValidAccountOrgList(1);
-        if (orgList != null && orgList.size() > 0) {
-            orgList.forEach(org -> {
-                orgIds.add(org.getOrgId());
-            });
-        }
-
         List<ExperimentParticipatorEntity> collect = groupParticipators.values().stream().flatMap(x -> x.stream()).collect(Collectors.toList());
         // 保存实验小组
         experimentGroupService.saveOrUpdateBatch(experimentGroupEntitys);
@@ -394,45 +383,7 @@ public class ExperimentManageBiz {
         applicationEventPublisher.publishEvent(new CreateGroupEvent(experimentGroupSettingRequest));
 
         // 复制人物与机构到实验中
-        ExperimentInstanceEntity experimentInstanceEntity = experimentInstanceService.lambdaQuery()
-                .eq(ExperimentInstanceEntity::getExperimentInstanceId,experimentGroupSettingRequest.getExperimentInstanceId())
-                .eq(ExperimentInstanceEntity::getDeleted,false)
-                .one();
-        IPage<CaseOrgResponse> caseOrgResponseIPage = orgBiz.listOrgnization(CaseOrgRequest.builder().pageNo(1).pageSize(10)
-                .caseInstanceId(experimentInstanceEntity.getCaseInstanceId())
-                .status(1)
-                .build());
-        List<CaseOrgResponse> responseList = caseOrgResponseIPage.getRecords();
-        List<CreateExperimentRequest> requestList = new ArrayList<>();
-        if(responseList != null && responseList.size() > 0){
-            responseList.forEach(response->{
-                //1、通过案例机构ID找到机构ID下面的人物
-                IPage<AccountGroupResponse> groupResponseIPage =orgBiz.listPerson(AccountGroupRequest.builder()
-                        .status(1)
-                        .appId(experimentGroupSettingRequest.getAppId())
-                        .pageNo(1)
-                        .pageSize(10)
-                        .build(),response.getCaseOrgId());
-                List<AccountGroupResponse> accountGroupResponses = groupResponseIPage.getRecords();
-                List<AccountInstanceResponse> instanceResponses = new ArrayList<>();
-                if(accountGroupResponses != null && accountGroupResponses.size() > 0){
-                    accountGroupResponses.forEach(accountGroup->{
-                        AccountInstanceResponse instanceResponse = AccountInstanceResponse.builder()
-                                .accountId(accountGroup.getAccountId())
-                                .build();
-                        instanceResponses.add(instanceResponse);
-                    });
-                }
-                CreateExperimentRequest request = CreateExperimentRequest.builder()
-                        .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
-                        .caseOrgId(response.getCaseOrgId())
-                        .appId(experimentGroupSettingRequest.getAppId())
-                        .teachers(instanceResponses)
-                        .build();
-                requestList.add(request);
-            });
-        }
-        applicationEventPublisher.publishEvent(new CopyExperimentPersonAndOrgEvent(requestList));
+        applicationEventPublisher.publishEvent(new CopyExperimentPersonAndOrgEvent(experimentGroupSettingRequest));
         return true;
     }
 
