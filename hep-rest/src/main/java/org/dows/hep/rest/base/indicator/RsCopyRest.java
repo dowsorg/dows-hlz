@@ -19,13 +19,13 @@ public class RsCopyRest {
   private final RsCopyBiz rsCopyBiz;
 
   /* runsix:TODO 别动我的 */
-  @Operation(summary = "复制查看指标到实验")
-  @PostMapping("v1/experimentIndicator/experiment/rsCopy")
-  public void rsCopyExperiment(RsCopyExperimentRequestRs rsCopyExperimentRequestRs) {
-    rsCopyBiz.rsCopyExperiment(rsCopyExperimentRequestRs);
+  @Operation(summary = "复制功能点到实验")
+  @PostMapping("v1/experimentIndicator/indicatorFunc/rsCopy")
+  public void rsCopyIndicatorFunc(RsCopyExperimentRequestRs rsCopyExperimentRequestRs) {
+    rsCopyBiz.rsCopyIndicatorFunc(rsCopyExperimentRequestRs);
   }
 
-  @Operation(summary = "复制人物指标")
+  @Operation(summary = "复制人物指标以及人物指标到公式到实验")
   @PostMapping("v1/experimentIndicator/personIndicator/rsCopy")
   public void rsCopyPersonIndicator(RsCopyPersonIndicatorRequestRs rsCopyPersonIndicatorRequestRs) {
     rsCopyBiz.rsCopyPersonIndicator(rsCopyPersonIndicatorRequestRs);
