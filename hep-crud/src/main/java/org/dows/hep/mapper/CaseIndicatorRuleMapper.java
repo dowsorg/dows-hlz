@@ -3,7 +3,6 @@ package org.dows.hep.mapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.dows.framework.crud.mybatis.MybatisCrudMapper;
 import org.dows.hep.entity.CaseIndicatorRuleEntity;
-import org.dows.hep.entity.CaseIndicatorValEntity;
 
 /**
  * 指标值(IndicatorVal)表数据库访问层

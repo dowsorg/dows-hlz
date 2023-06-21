@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.RsCopyExperimentRequestRs;
-import org.dows.hep.api.base.indicator.request.JudgeViewIndicatorRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyPersonIndicatorRequestRs;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.enums.EnumIndicatorCategory;
@@ -18,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -69,9 +67,17 @@ public class RsCopyBiz {
   private final IndicatorJudgeHealthProblemService indicatorJudgeHealthProblemService;
   private final IndicatorJudgeHealthGuidanceService indicatorJudgeHealthGuidanceService;
   private final IndicatorJudgeDiseaseProblemService indicatorJudgeDiseaseProblemService;
+  private final CaseIndicatorExpressionRefService caseIndicatorExpressionRefService;
+  private final ExperimentIndicatorExpressionRefRsService experimentIndicatorExpressionRefRsService;
+  private final CaseIndicatorExpressionService caseIndicatorExpressionService;
+  private final ExperimentIndicatorExpressionRsService experimentIndicatorExpressionRsService;
+  private final CaseIndicatorExpressionInfluenceService caseIndicatorExpressionInfluenceService;
+  private final ExperimentIndicatorExpressionInfluenceRsService experimentIndicatorExpressionInfluenceRsService;
+  private final CaseIndicatorExpressionItemService caseIndicatorExpressionItemService;
+  private final ExperimentIndicatorExpressionItemRsService experimentIndicatorExpressionItemRsService;
 
   @Transactional(rollbackFor = Exception.class)
-  public void rsCopyExperiment(RsCopyExperimentRequestRs rsCopyExperimentRequestRs) {
+  public void rsCopyIndicatorFunc(RsCopyExperimentRequestRs rsCopyExperimentRequestRs) {
     List<ExperimentOrgModuleRsEntity> experimentOrgModuleRsEntityList = new ArrayList<>();
     List<IndicatorViewPhysicalExamEntity> indicatorViewPhysicalExamEntityList = new ArrayList<>();
     List<ExperimentIndicatorViewPhysicalExamRsEntity> experimentIndicatorViewPhysicalExamRsEntityList = new ArrayList<>();
@@ -499,11 +505,9 @@ public class RsCopyBiz {
       if (Objects.nonNull(indicatorViewBaseInfoSingleEntityList) && !indicatorViewBaseInfoSingleEntityList.isEmpty()) {
         indicatorViewBaseInfoSingleEntityList.forEach(indicatorViewBaseInfoSingleEntity -> {
           String indicatorInstanceId = null;
-          String indicatorInstanceName = null;
           IndicatorInstanceEntity indicatorInstanceEntity = kIndicatorInstanceIdVIndicatorInstanceEntityMap.get(indicatorViewBaseInfoSingleEntity.getIndicatorInstanceId());
           if (Objects.nonNull(indicatorInstanceEntity)) {
             indicatorInstanceId = indicatorInstanceEntity.getIndicatorInstanceId();
-            indicatorInstanceName = indicatorInstanceEntity.getIndicatorName();
           }
           ExperimentIndicatorViewBaseInfoSingleRsEntity experimentIndicatorViewBaseInfoSingleRsEntity = ExperimentIndicatorViewBaseInfoSingleRsEntity
               .builder()
@@ -721,6 +725,13 @@ public class RsCopyBiz {
   public void rsCopyPersonIndicator(RsCopyPersonIndicatorRequestRs rsCopyPersonIndicatorRequestRs) {
     List<ExperimentIndicatorInstanceRsEntity> experimentIndicatorInstanceRsEntityList = new ArrayList<>();
     List<ExperimentIndicatorValRsEntity> experimentIndicatorValRsEntityList = new ArrayList<>();
+    List<ExperimentIndicatorExpressionRefRsEntity> experimentIndicatorExpressionRefRsEntityList = new ArrayList<>();
+    List<ExperimentIndicatorExpressionRsEntity> experimentIndicatorExpressionRsEntityList = new ArrayList<>();
+    List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList = new ArrayList<>();
+    List<ExperimentIndicatorExpressionInfluenceRsEntity> experimentIndicatorExpressionInfluenceRsEntityList = new ArrayList<>();
+    Map<String, Map<String, String>> kExperimentPersonIdVKCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap = new HashMap<>();
+    Map<String, String> kExperimentIndicatorInstanceIdVExperimentPersonIdMap = new HashMap<>();
+    Map<String, CaseIndicatorExpressionItemEntity> kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap = new HashMap<>();
     String experimentInstanceId = rsCopyPersonIndicatorRequestRs.getExperimentInstanceId();
     String caseInstanceId = rsCopyPersonIndicatorRequestRs.getCaseInstanceId();
     String appId = rsCopyPersonIndicatorRequestRs.getAppId();
@@ -732,6 +743,7 @@ public class RsCopyBiz {
     Set<String> caseIndicatorInstanceIdSet = new HashSet<>();
     Map<String, CaseIndicatorRuleEntity> kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap = new HashMap<>();
     Map<String, String> kCasePersonIdVAccountIdMap = new HashMap<>();
+    Map<String, List<String>> kCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdListMap = new HashMap<>();
     Integer maxPeriods = rsCopyPersonIndicatorRequestRs.getPeriods();
     experimentPersonService.lambdaQuery()
       .eq(ExperimentPersonEntity::getAppId, appId)
@@ -791,6 +803,7 @@ public class RsCopyBiz {
         throw new RsCopyException(EnumESC.VALIDATE_EXCEPTION);
       }
       caseIndicatorInstanceEntityList.forEach(caseIndicatorInstanceEntity -> {
+        String caseIndicatorInstanceId = caseIndicatorInstanceEntity.getCaseIndicatorInstanceId();
         String min = null;
         String max = null;
         String def = null;
@@ -800,10 +813,24 @@ public class RsCopyBiz {
           max = caseIndicatorRuleEntity.getMax();
           def = caseIndicatorRuleEntity.getDef();
         }
+        String experimentIndicatorInstanceId = idGenerator.nextIdStr();
+        List<String> experimentIndicatorInstanceIdList = kCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdListMap.get(caseIndicatorInstanceId);
+        if (Objects.isNull(experimentIndicatorInstanceIdList)) {
+          experimentIndicatorInstanceIdList = new ArrayList<>();
+        }
+        experimentIndicatorInstanceIdList.add(experimentIndicatorInstanceId);
+        kCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdListMap.put(caseIndicatorInstanceId, experimentIndicatorInstanceIdList);
+        Map<String, String> kCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap = kExperimentPersonIdVKCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.get(experimentPersonId);
+        if (Objects.isNull(kCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap)) {
+          kCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap = new HashMap<>();
+        }
+        kCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.put(caseIndicatorInstanceId, experimentIndicatorInstanceId);
+        kExperimentPersonIdVKCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.put(experimentPersonId, kCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap);
+        kExperimentIndicatorInstanceIdVExperimentPersonIdMap.put(experimentIndicatorInstanceId, experimentPersonId);
         experimentIndicatorInstanceRsEntityList.add(
             ExperimentIndicatorInstanceRsEntity
                 .builder()
-                .experimentIndicatorInstanceId(idGenerator.nextIdStr())
+                .experimentIndicatorInstanceId(experimentIndicatorInstanceId)
                 .caseIndicatorInstanceId(caseIndicatorInstanceEntity.getCaseIndicatorInstanceId())
                 .indicatorInstanceId(caseIndicatorInstanceEntity.getIndicatorInstanceId())
                 .experimentId(experimentInstanceId)
@@ -841,7 +868,224 @@ public class RsCopyBiz {
         );
       }
     });
+    Map<String, List<String>> kCaseReasonIdVIndicatorExpressionIdListMap = new HashMap<>();
+    Set<String> caseIndicatorExpressionIdSet = new HashSet<>();
+    if (!caseIndicatorInstanceIdSet.isEmpty()) {
+      caseIndicatorExpressionRefService.lambdaQuery()
+          .eq(CaseIndicatorExpressionRefEntity::getAppId, appId)
+          .in(CaseIndicatorExpressionRefEntity::getReasonId, caseIndicatorInstanceIdSet)
+          .list()
+          .forEach(caseIndicatorExpressionRefEntity -> {
+            caseIndicatorExpressionIdSet.add(caseIndicatorExpressionRefEntity.getIndicatorExpressionId());
+            String reasonId = caseIndicatorExpressionRefEntity.getReasonId();
+            List<String> indicatorExpressionIdList = kCaseReasonIdVIndicatorExpressionIdListMap.get(reasonId);
+            if (Objects.isNull(indicatorExpressionIdList)) {
+              indicatorExpressionIdList = new ArrayList<>();
+            }
+            indicatorExpressionIdList.add(caseIndicatorExpressionRefEntity.getIndicatorExpressionId());
+            kCaseReasonIdVIndicatorExpressionIdListMap.put(reasonId, indicatorExpressionIdList);
+          });
+    }
+    Map<String, CaseIndicatorExpressionEntity> kCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap = new HashMap<>();
+    Map<String, List<CaseIndicatorExpressionItemEntity>> kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap = new HashMap<>();
+    Map<String, CaseIndicatorExpressionInfluenceEntity> kCaseIndicatorInstanceIdVCaseIndicatorExpressionInfluenceEntityMap = new HashMap<>();
+    if (!caseIndicatorExpressionIdSet.isEmpty()) {
+      caseIndicatorExpressionService.lambdaQuery()
+          .eq(CaseIndicatorExpressionEntity::getAppId, appId)
+          .in(CaseIndicatorExpressionEntity::getIndicatorExpressionId, caseIndicatorExpressionIdSet)
+          .list()
+          .forEach(caseIndicatorExpressionEntity -> {
+            kCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap.put(caseIndicatorExpressionEntity.getCaseIndicatorExpressionId(), caseIndicatorExpressionEntity);
+          });
+      caseIndicatorExpressionItemService.lambdaQuery()
+          .eq(CaseIndicatorExpressionItemEntity::getAppId, appId)
+          .in(CaseIndicatorExpressionItemEntity::getIndicatorExpressionId, caseIndicatorExpressionIdSet)
+          .list()
+          .forEach(caseIndicatorExpressionItemEntity -> {
+            kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.put(caseIndicatorExpressionItemEntity.getCaseIndicatorExpressionItemId(), caseIndicatorExpressionItemEntity);
+            String indicatorExpressionId = caseIndicatorExpressionItemEntity.getIndicatorExpressionId();
+            List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList = kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap.get(indicatorExpressionId);
+            if (Objects.isNull(caseIndicatorExpressionItemEntityList)) {
+              caseIndicatorExpressionItemEntityList = new ArrayList<>();
+            }
+            caseIndicatorExpressionItemEntityList.add(caseIndicatorExpressionItemEntity);
+            kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap.put(indicatorExpressionId, caseIndicatorExpressionItemEntityList);
+          });
+      caseIndicatorExpressionInfluenceService.lambdaQuery()
+          .eq(CaseIndicatorExpressionInfluenceEntity::getAppId, appId)
+          .in(CaseIndicatorExpressionInfluenceEntity::getIndicatorInstanceId, caseIndicatorExpressionIdSet)
+          .list()
+          .forEach(caseIndicatorExpressionInfluenceEntity -> {
+            kCaseIndicatorInstanceIdVCaseIndicatorExpressionInfluenceEntityMap.put(caseIndicatorExpressionInfluenceEntity.getIndicatorInstanceId(), caseIndicatorExpressionInfluenceEntity);
+          });
+    }
+    caseIndicatorInstanceIdSet.forEach(caseIndicatorInstanceId -> {
+      List<String> experimentIndicatorInstanceIdList = kCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdListMap.get(caseIndicatorInstanceId);
+      if (Objects.isNull(experimentIndicatorInstanceIdList) || experimentIndicatorInstanceIdList.isEmpty()) {
+        log.warn("caseIndicatorInstanceId:{} has no experimentIndicatorInstanceIdList",  caseIndicatorInstanceId);
+        throw new RsCopyException(EnumESC.VALIDATE_EXCEPTION);
+      }
+      experimentIndicatorInstanceIdList.forEach(experimentIndicatorInstanceId -> {
+        String experimentPersonId = kExperimentIndicatorInstanceIdVExperimentPersonIdMap.get(experimentIndicatorInstanceId);
+        if (Objects.isNull(experimentPersonId)) {
+          log.warn("1");
+          return;
+        }
+        String experimentIndicatorExpressionRefId = idGenerator.nextIdStr();
+        List<String> caseIndicatorExpressionIdList = kCaseReasonIdVIndicatorExpressionIdListMap.get(caseIndicatorInstanceId);
+        if (Objects.isNull(caseIndicatorExpressionIdList) || caseIndicatorExpressionIdList.isEmpty()) {
+          log.warn("2");
+          return;
+        }
+        caseIndicatorExpressionIdList.forEach(caseIndicatorExpressionId -> {
+          CaseIndicatorExpressionEntity caseIndicatorExpressionEntity = kCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap.get(caseIndicatorExpressionId);
+          if (Objects.isNull(caseIndicatorExpressionEntity)) {
+            log.warn("3");
+            return;
+          }
+          String experimentIndicatorExpressionId = idGenerator.nextIdStr();
+          String caseMaxIndicatorExpressionItemId = caseIndicatorExpressionEntity.getMaxIndicatorExpressionItemId();
+          CaseIndicatorExpressionItemEntity maxCaseIndicatorExpressionItemEntity = kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get(caseMaxIndicatorExpressionItemId);
+          String maxIndicatorExpressionItemId = idGenerator.nextIdStr();
+          ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity = getExperimentIndicatorExpressionItemRsEntity(
+              kExperimentPersonIdVKCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap,
+              maxCaseIndicatorExpressionItemEntity,
+              experimentPersonId,
+              experimentInstanceId,
+              caseInstanceId,
+              appId,
+              experimentIndicatorExpressionId
+          );
+          experimentIndicatorExpressionItemRsEntityList.add(maxExperimentIndicatorExpressionItemRsEntity);
+          String caseMinIndicatorExpressionItemId = caseIndicatorExpressionEntity.getMinIndicatorExpressionItemId();
+          CaseIndicatorExpressionItemEntity minCaseIndicatorExpressionItemEntity = kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get(caseMinIndicatorExpressionItemId);
+          String minIndicatorExpressionItemId = idGenerator.nextIdStr();
+          ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity = getExperimentIndicatorExpressionItemRsEntity(
+              kExperimentPersonIdVKCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap,
+              minCaseIndicatorExpressionItemEntity,
+              experimentPersonId,
+              experimentInstanceId,
+              caseInstanceId,
+              appId,
+              experimentIndicatorExpressionId
+          );
+          experimentIndicatorExpressionItemRsEntityList.add(minExperimentIndicatorExpressionItemRsEntity);
+          List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList = kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap.get(caseIndicatorExpressionId);
+          if (Objects.isNull(caseIndicatorExpressionItemEntityList) || caseIndicatorExpressionItemEntityList.isEmpty()) {
+            return;
+          }
+          caseIndicatorExpressionItemEntityList.forEach(caseIndicatorExpressionItemEntity -> {
+            ExperimentIndicatorExpressionItemRsEntity experimentIndicatorExpressionItemRsEntity = getExperimentIndicatorExpressionItemRsEntity(
+                kExperimentPersonIdVKCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap,
+                caseIndicatorExpressionItemEntity,
+                experimentPersonId,
+                experimentInstanceId,
+                caseInstanceId,
+                appId,
+                experimentIndicatorExpressionId
+            );
+            experimentIndicatorExpressionItemRsEntityList.add(experimentIndicatorExpressionItemRsEntity);
+          });
+          ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity = ExperimentIndicatorExpressionRsEntity
+              .builder()
+              .experimentIndicatorExpressionId(experimentIndicatorExpressionId)
+              .caseIndicatorExpressionId(caseIndicatorExpressionId)
+              .experimentId(experimentInstanceId)
+              .caseId(caseInstanceId)
+              .principalId(experimentIndicatorInstanceId)
+              .reasonId(experimentIndicatorInstanceId)
+              .maxIndicatorExpressionItemId(maxIndicatorExpressionItemId)
+              .minIndicatorExpressionItemId(minIndicatorExpressionItemId)
+              .type(caseIndicatorExpressionEntity.getType())
+              .source(caseIndicatorExpressionEntity.getSource())
+              .build();
+          experimentIndicatorExpressionRsEntityList.add(experimentIndicatorExpressionRsEntity);
+        });
+        ExperimentIndicatorExpressionRefRsEntity experimentIndicatorExpressionRefRsEntity = ExperimentIndicatorExpressionRefRsEntity
+            .builder()
+            .experimentIndicatorExpressionRefId(experimentIndicatorExpressionRefId)
+            .experimentId(experimentInstanceId)
+            .caseId(caseInstanceId)
+            .appId(appId)
+            .indicatorExpressionId(experimentIndicatorInstanceId)
+            .reasonId(experimentIndicatorInstanceId)
+            .build();
+        experimentIndicatorExpressionRefRsEntityList.add(experimentIndicatorExpressionRefRsEntity);
+      });
+    });
     experimentIndicatorInstanceRsService.saveOrUpdateBatch(experimentIndicatorInstanceRsEntityList);
     experimentIndicatorValRsService.saveOrUpdateBatch(experimentIndicatorValRsEntityList);
+    experimentIndicatorExpressionRefRsService.saveOrUpdateBatch(experimentIndicatorExpressionRefRsEntityList);
+    experimentIndicatorExpressionRsService.saveOrUpdateBatch(experimentIndicatorExpressionRsEntityList);
+    experimentIndicatorExpressionItemRsService.saveOrUpdateBatch(experimentIndicatorExpressionItemRsEntityList);
+    experimentIndicatorExpressionInfluenceRsService.saveOrUpdateBatch(experimentIndicatorExpressionInfluenceRsEntityList);
+  }
+
+  private String getExperimentIndicatorInstanceIdByCaseIndicatorInstanceId(String caseIndicatorInstanceId, String experimentPersonId, Map<String, Map<String, String>> kExperimentPersonIdVKCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap) {
+    if (Objects.isNull(kExperimentPersonIdVKCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap)) {
+      return null;
+    }
+    Map<String, String> kCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap = kExperimentPersonIdVKCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.get(experimentPersonId);
+    if (Objects.isNull(kCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap)) {
+      return null;
+    }
+    return kCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.get(caseIndicatorInstanceId);
+  }
+
+  private ExperimentIndicatorExpressionItemRsEntity getExperimentIndicatorExpressionItemRsEntity(
+      Map<String, Map<String, String>> kExperimentPersonIdVKCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap,
+      CaseIndicatorExpressionItemEntity caseIndicatorExpressionItemEntity,
+      String experimentPersonId,
+      String experimentInstanceId,
+      String caseInstanceId,
+      String appId,
+      String experimentIndicatorExpressionId
+      ) {
+    String experimentIndicatorExpressionItemId = idGenerator.nextIdStr();
+    String caseConditionValList = caseIndicatorExpressionItemEntity.getConditionValList();
+    String experimentConditionValList = null;
+    if (StringUtils.isNotBlank(caseConditionValList)) {
+      List<String> caseConditionValListSplit = Arrays.stream(caseConditionValList.split(EnumString.COMMA.getStr())).collect(Collectors.toList());
+      List<String> experimentConditionValListSplit = new ArrayList<>();
+      caseConditionValListSplit.forEach(caseIndicatorInstanceId1 -> {
+        String experimentIndicatorInstanceId1 = getExperimentIndicatorInstanceIdByCaseIndicatorInstanceId(caseIndicatorInstanceId1, experimentPersonId, kExperimentPersonIdVKCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap);
+        if (StringUtils.isNotBlank(experimentIndicatorInstanceId1)) {
+          experimentConditionValListSplit.add(experimentIndicatorInstanceId1);
+        }
+      });
+      experimentConditionValList = String.join(EnumString.COMMA.getStr(), experimentConditionValListSplit);
+    }
+    String caseResultValList = caseIndicatorExpressionItemEntity.getResultValList();
+    String experimentResultValList = null;
+    if (StringUtils.isNotBlank(caseResultValList)) {
+      List<String> caseResultValListSplit = Arrays.stream(caseResultValList.split(EnumString.COMMA.getStr())).collect(Collectors.toList());
+      List<String> experimentResultValListSplit = new ArrayList<>();
+      caseResultValListSplit.forEach(caseIndicatorInstanceId1 -> {
+        String experimentIndicatorInstanceId1 = getExperimentIndicatorInstanceIdByCaseIndicatorInstanceId(caseIndicatorInstanceId1, experimentPersonId, kExperimentPersonIdVKCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap);
+        if (StringUtils.isNotBlank(experimentIndicatorInstanceId1)) {
+          experimentResultValListSplit.add(experimentIndicatorInstanceId1);
+        }
+      });
+      experimentResultValList = String.join(EnumString.COMMA.getStr(), experimentResultValListSplit);
+    }
+    ExperimentIndicatorExpressionItemRsEntity experimentIndicatorExpressionItemRsEntity = ExperimentIndicatorExpressionItemRsEntity
+        .builder()
+        .experimentIndicatorExpressionItemId(experimentIndicatorExpressionItemId)
+        .caseIndicatorExpressionItemId(caseIndicatorExpressionItemEntity.getCaseIndicatorExpressionItemId())
+        .experimentId(experimentInstanceId)
+        .caseId(caseInstanceId)
+        .appId(appId)
+        .indicatorExpressionId(experimentIndicatorExpressionId)
+        .conditionRaw(caseIndicatorExpressionItemEntity.getConditionRaw())
+        .conditionExpression(caseIndicatorExpressionItemEntity.getConditionExpression())
+        .conditionNameList(caseIndicatorExpressionItemEntity.getConditionNameList())
+        .conditionValList(experimentConditionValList)
+        .resultRaw(caseIndicatorExpressionItemEntity.getResultRaw())
+        .resultExpression(caseIndicatorExpressionItemEntity.getResultExpression())
+        .resultNameList(caseIndicatorExpressionItemEntity.getResultNameList())
+        .resultValList(experimentResultValList)
+        .seq(caseIndicatorExpressionItemEntity.getSeq())
+        .build();
+    return experimentIndicatorExpressionItemRsEntity;
   }
 }

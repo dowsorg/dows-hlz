@@ -726,12 +726,6 @@ public class OrgBiz {
                 .accountId(vo.getAccountId())
                 .build();
         casePersonService.save(person);
-        //3、复制指标
-        caseIndicatorInstanceBiz.copyToPerson(CaseCreateCopyToPersonRequestRs
-                .builder()
-                .appId(accountInstanceResponse.getAppId())
-                .casePersonId(vo.getAccountId())
-                .build());
         return vo.getAccountId();
     }
 
