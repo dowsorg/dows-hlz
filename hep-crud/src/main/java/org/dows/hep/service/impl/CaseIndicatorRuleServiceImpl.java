@@ -2,11 +2,8 @@ package org.dows.hep.service.impl;
 
 import org.dows.framework.crud.mybatis.MybatisCrudServiceImpl;
 import org.dows.hep.entity.CaseIndicatorRuleEntity;
-import org.dows.hep.entity.CaseIndicatorValEntity;
 import org.dows.hep.mapper.CaseIndicatorRuleMapper;
-import org.dows.hep.mapper.CaseIndicatorValMapper;
 import org.dows.hep.service.CaseIndicatorRuleService;
-import org.dows.hep.service.CaseIndicatorValService;
 import org.springframework.stereotype.Service;
 
 
