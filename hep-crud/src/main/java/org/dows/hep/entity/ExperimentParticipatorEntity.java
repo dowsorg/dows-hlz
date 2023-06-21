@@ -63,6 +63,10 @@ public class ExperimentParticipatorEntity implements CrudEntity {
 
     @Schema(title = "组员账号名")
     private String accountName;
+
+    @Schema(title = "案例名称")
+    private String caseInstanceName;
+
     @Schema(title = "组名")
     private String groupName;
     @Schema(title = "小组别名")

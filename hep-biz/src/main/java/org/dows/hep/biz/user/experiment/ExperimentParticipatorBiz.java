@@ -2,7 +2,6 @@ package org.dows.hep.biz.user.experiment;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
@@ -19,18 +18,13 @@ import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.api.user.experiment.request.GetExperimentGroupCaptainRequest;
 import org.dows.hep.api.user.experiment.response.GetExperimentGroupCaptainResponse;
 import org.dows.hep.biz.util.EntityUtil;
-import org.dows.hep.biz.util.TimeUtil;
-import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.service.ExperimentGroupService;
 import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentParticipatorService;
 import org.springframework.stereotype.Service;
 
-import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 
 @Slf4j
@@ -64,7 +58,7 @@ public class ExperimentParticipatorBiz {
         // todo 是否是管理员，如果是管理员，则查询所有记录，如果是老师，根据accountId查询自己的分配的实验列表，如果是学生根据accountId查询自己参与的实验
         AccountRoleResponse accountRoleByPrincipalId = accountRoleApi.getAccountRoleByPrincipalId(pageExperimentRequest.getAccountId());
 
-        String roleName = accountRoleByPrincipalId.getRoleName();
+        String roleCode = accountRoleByPrincipalId.getRoleCode();
 
         if (pageExperimentRequest.getOrder() != null) {
             String[] array = (String[]) pageExperimentRequest.getOrder().stream()
@@ -72,7 +66,7 @@ public class ExperimentParticipatorBiz {
                     .toArray(String[]::new);
             page.addOrder(pageExperimentRequest.getDesc() ? OrderItem.descs(array) : OrderItem.ascs(array));
         }
-        if(roleName.equals("ADMIN")){
+        if(roleCode.equals("ADMIN")){
             QueryWrapper<ExperimentParticipatorEntity> queryWrapper = new QueryWrapper();
             queryWrapper.select(EntityUtil.distinctColumn(ExperimentParticipatorEntity.class,"experimentInstanceId"));
             queryWrapper.likeLeft("experiment_name", pageExperimentRequest.getKeyword());
