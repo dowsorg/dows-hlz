@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.CaseCreateCopyToPersonRequestRs;
 import org.dows.hep.api.base.indicator.response.CaseIndicatorInstanceCategoryResponseRs;
-import org.dows.hep.api.base.indicator.response.IndicatorInstanceCategoryResponseRs;
 import org.dows.hep.biz.base.indicator.CaseIndicatorInstanceBiz;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,8 +21,8 @@ public class CaseIndicatorInstanceRest {
 
   @Operation(summary = "复制数据库指标管理给人物")
   @PostMapping("v1/caseIndicator/indicatorInstance/copy")
-  public void copyToPerson(@RequestBody CaseCreateCopyToPersonRequestRs caseCreateCopyToPersonRequestRs) {
-    caseIndicatorInstanceBiz.copyToPerson(caseCreateCopyToPersonRequestRs);
+  public void copyPersonIndicatorInstance(@RequestBody CaseCreateCopyToPersonRequestRs caseCreateCopyToPersonRequestRs) {
+    caseIndicatorInstanceBiz.copyPersonIndicatorInstance(caseCreateCopyToPersonRequestRs);
   }
 
   @Operation(summary = "根据人物id和appId查询出所有的指标")

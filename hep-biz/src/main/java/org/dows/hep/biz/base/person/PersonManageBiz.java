@@ -254,7 +254,7 @@ public class PersonManageBiz {
                 .tentantId(accountInstanceResponse.getTenantId()).build();
         this.accountUserApi.createAccountUser(accountUserRequest);
         //5、复制指标
-        caseIndicatorInstanceBiz.copyToPerson(CaseCreateCopyToPersonRequestRs
+        caseIndicatorInstanceBiz.copyPersonIndicatorInstance(CaseCreateCopyToPersonRequestRs
                 .builder()
                 .appId(accountInstanceResponse.getAppId())
                 .casePersonId(vo.getAccountId())
@@ -660,12 +660,6 @@ public class PersonManageBiz {
                 .appId(request.getAppId())
                 .tentantId(request.getTenantId()).build();
         this.accountUserApi.createAccountUser(accountUserRequest);
-        //6、复制指标
-        caseIndicatorInstanceBiz.copyToPerson(CaseCreateCopyToPersonRequestRs
-                .builder()
-                .appId(request.getAppId())
-                .casePersonId(vo.getAccountId())
-                .build());
         return PersonInstanceResponse.builder().accountId(vo.getAccountId())
                 .build();
     }
