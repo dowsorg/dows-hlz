@@ -47,6 +47,9 @@ public class ExperimentTimerJob{
                         .eq(ExperimentTimerEntity::getExperimentInstanceId, entity.getExperimentId())
                         .eq(ExperimentTimerEntity::getDeleted, false)
                         .set(ExperimentTimerEntity::getState,ExperimentStateEnum.PREPARE.getState()).update();
+                //1、更改缓存
+                ExperimentContext experimentContext = ExperimentContext.getExperimentContext(entity.getExperimentId());
+                experimentContext.setState(ExperimentStateEnum.PREPARE);
             }
         });
     }
