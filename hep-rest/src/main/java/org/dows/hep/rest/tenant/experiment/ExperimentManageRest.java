@@ -7,6 +7,7 @@ import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.hep.api.tenant.experiment.request.*;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
+import org.dows.hep.biz.user.experiment.ExperimentParticipatorBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +23,7 @@ import java.util.List;
 @Tag(name = "实验管理", description = "实验管理")
 public class ExperimentManageRest {
     private final ExperimentManageBiz experimentManageBiz;
+    private final ExperimentParticipatorBiz experimentParticipatorBiz;
 
     /**
      * 分配实验
@@ -101,7 +103,9 @@ public class ExperimentManageRest {
     @Operation(summary = "分页获取实验列表")
     @GetMapping("v1/tenantExperiment/experimentManage/page")
     public PageResponse<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
-        return experimentManageBiz.page(pageExperimentRequest);
+        //return experimentManageBiz.page(pageExperimentRequest);
+        return experimentParticipatorBiz.pageByRole(pageExperimentRequest);
+
     }
 
 

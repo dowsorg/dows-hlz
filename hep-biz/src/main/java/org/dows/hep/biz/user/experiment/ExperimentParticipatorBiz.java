@@ -1,11 +1,14 @@
 package org.dows.hep.biz.user.experiment;
 
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.account.api.AccountRoleApi;
+import org.dows.account.response.AccountRoleResponse;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
 import org.dows.hep.api.enums.ExperimentStatusCode;
@@ -15,6 +18,7 @@ import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.api.user.experiment.request.GetExperimentGroupCaptainRequest;
 import org.dows.hep.api.user.experiment.response.GetExperimentGroupCaptainResponse;
+import org.dows.hep.biz.util.EntityUtil;
 import org.dows.hep.biz.util.TimeUtil;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
@@ -39,6 +43,55 @@ public class ExperimentParticipatorBiz {
     private final ExperimentGroupService experimentGroupService;
     // 实验实例
     private final ExperimentInstanceService experimentInstanceService;
+
+    private final AccountRoleApi accountRoleApi;
+
+    /**
+     * @param
+     * @return
+     * @说明: 学生端分页实验列表
+     * @关联表: ExperimentInstance
+     * @工时: 2H
+     * @开发者: lait
+     * @开始时间:
+     * @创建时间: 2023年4月18日 上午10:45:07
+     */
+    public PageResponse<ExperimentListResponse> pageByRole(PageExperimentRequest pageExperimentRequest) {
+        //查询参与者参加的实验列表
+        Page page = new Page<ExperimentParticipatorEntity>();
+        page.setCurrent(pageExperimentRequest.getPageNo());
+        page.setSize(pageExperimentRequest.getPageSize());
+        // todo 是否是管理员，如果是管理员，则查询所有记录，如果是老师，根据accountId查询自己的分配的实验列表，如果是学生根据accountId查询自己参与的实验
+        AccountRoleResponse accountRoleByPrincipalId = accountRoleApi.getAccountRoleByPrincipalId(pageExperimentRequest.getAccountId());
+
+        String roleName = accountRoleByPrincipalId.getRoleName();
+
+        if (pageExperimentRequest.getOrder() != null) {
+            String[] array = (String[]) pageExperimentRequest.getOrder().stream()
+                    .map(s -> StrUtil.toUnderlineCase((CharSequence) s))
+                    .toArray(String[]::new);
+            page.addOrder(pageExperimentRequest.getDesc() ? OrderItem.descs(array) : OrderItem.ascs(array));
+        }
+        if(roleName.equals("ADMIN")){
+            QueryWrapper<ExperimentParticipatorEntity> queryWrapper = new QueryWrapper();
+            queryWrapper.select(EntityUtil.distinctColumn(ExperimentParticipatorEntity.class,"experimentInstanceId"));
+            queryWrapper.likeLeft("experiment_name", pageExperimentRequest.getKeyword());
+            page = experimentParticipatorService.page(page,queryWrapper);
+
+        } else {
+            if (!StrUtil.isBlank(pageExperimentRequest.getAccountId())) {
+
+                page = experimentParticipatorService.page(page, experimentParticipatorService.lambdaQuery()
+                        .eq(ExperimentParticipatorEntity::getAccountId, pageExperimentRequest.getAccountId())
+                        .orderByDesc(ExperimentParticipatorEntity::getExperimentStartTime)
+                        .getWrapper());
+            } else {
+                page = page.setTotal(0).setCurrent(0).setSize(0).setRecords(new ArrayList<>());
+            }
+        }
+        PageResponse pageInfo = experimentParticipatorService.getPageInfo(page, ExperimentListResponse.class);
+        return pageInfo;
+    }
 
     /**
      * @param
