@@ -4,14 +4,16 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.account.api.*;
 import org.dows.account.request.*;
-import org.dows.account.response.*;
+import org.dows.account.response.AccountInstanceResponse;
+import org.dows.account.response.AccountOrgGeoResponse;
+import org.dows.account.response.AccountOrgResponse;
+import org.dows.account.response.AccountUserResponse;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
@@ -26,8 +28,6 @@ import org.dows.hep.api.tenant.experiment.request.*;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.response.ExperimentStateResponse;
-import org.dows.hep.api.user.organization.request.CaseOrgRequest;
-import org.dows.hep.api.user.organization.response.CaseOrgResponse;
 import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
@@ -374,7 +374,7 @@ public class ExperimentManageBiz {
         experimentGroupService.saveOrUpdateBatch(experimentGroupEntitys);
         // 保存实验参与人[学生]
         experimentParticipatorService.saveOrUpdateBatch(collect);
-        // 发布实验分组事件
+        // 发布实验init事件
         applicationEventPublisher.publishEvent(new ExptInitEvent(ExptInitEventSource.builder()
                 .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
                 .caseInstanceId(caseInstanceId)
