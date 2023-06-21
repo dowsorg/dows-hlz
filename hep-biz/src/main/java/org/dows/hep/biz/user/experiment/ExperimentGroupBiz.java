@@ -284,8 +284,8 @@ public class ExperimentGroupBiz {
         if (b) {
             applicationEventPublisher.publishEvent(new ExptQuestionnaireAllotEvent(
                     ExptQuestionnaireAllotEventSource.builder()
-                            .experimentInstanceId(entityList.get(0).getExperimentInstanceId())
-                            .experimentGroupId(entityList.get(0).getExperimentGroupId())
+                            .experimentInstanceId(participatorList.get(0).getExperimentInstanceId())
+                            .experimentGroupId(participatorList.get(0).getExperimentGroupId())
                             .build()));
         }
         return b;
