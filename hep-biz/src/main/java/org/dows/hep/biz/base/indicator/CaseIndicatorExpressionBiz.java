@@ -131,8 +131,8 @@ public class CaseIndicatorExpressionBiz {
           .in(CaseIndicatorExpressionEntity::getCaseIndicatorExpressionId, indicatorExpressionIdSet)
           .list()
           .forEach(indicatorExpressionEntity -> {
-            if (Objects.nonNull(indicatorExpressionEntity.getPrincipalId())) {
-              principalIdSet.add(indicatorExpressionEntity.getPrincipalId());
+            if (Objects.nonNull(indicatorExpressionEntity.getCasePrincipalId())) {
+              principalIdSet.add(indicatorExpressionEntity.getCasePrincipalId());
             }
             kIndicatorExpressionIdVIndicatorExpressionEntityMap.put(
                 indicatorExpressionEntity.getCaseIndicatorExpressionId(), indicatorExpressionEntity);
@@ -162,10 +162,10 @@ public class CaseIndicatorExpressionBiz {
     if (!maxAndMinIndicatorExpressionItemIdSet.isEmpty()) {
       caseIndicatorExpressionItemService.lambdaQuery()
           .eq(CaseIndicatorExpressionItemEntity::getAppId, appId)
-          .in(CaseIndicatorExpressionItemEntity::getIndicatorExpressionItemId, maxAndMinIndicatorExpressionItemIdSet)
+          .in(CaseIndicatorExpressionItemEntity::getCaseIndicatorExpressionItemId, maxAndMinIndicatorExpressionItemIdSet)
           .list()
           .forEach(indicatorExpressionItemEntity -> kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.put(
-              indicatorExpressionItemEntity.getIndicatorExpressionItemId(), CaseIndicatorExpressionItemBiz.caseIndicatorExpressionItem2ResponseRs(indicatorExpressionItemEntity)
+              indicatorExpressionItemEntity.getCaseIndicatorExpressionItemId(), CaseIndicatorExpressionItemBiz.caseIndicatorExpressionItem2ResponseRs(indicatorExpressionItemEntity)
           ));
     }
     Map<String, String> kIndicatorInstanceIdVIndicatorCategoryIdMap = new HashMap<>();
@@ -180,7 +180,7 @@ public class CaseIndicatorExpressionBiz {
           .forEach(indicatorInstanceEntity -> {
             String indicatorCategoryId = indicatorInstanceEntity.getIndicatorCategoryId();
             indicatorCategoryIdSet.add(indicatorCategoryId);
-            kIndicatorInstanceIdVIndicatorCategoryIdMap.put(indicatorInstanceEntity.getIndicatorInstanceId(), indicatorInstanceEntity.getIndicatorCategoryId());
+            kIndicatorInstanceIdVIndicatorCategoryIdMap.put(indicatorInstanceEntity.getCaseIndicatorInstanceId(), indicatorInstanceEntity.getIndicatorCategoryId());
           });
       if (!indicatorCategoryIdSet.isEmpty()) {
         caseIndicatorCategoryService.lambdaQuery()

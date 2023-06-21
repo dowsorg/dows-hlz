@@ -39,8 +39,6 @@ public class ExperimentSchemeScoreBiz {
     private final ExperimentSchemeScoreItemService experimentSchemeScoreItemService;
     private final ExperimentParticipatorService experimentParticipatorService;
 
-    private final String MIMETIC_ADMIN_ACCOUNT_ID = "1001010086";
-
     /**
      * @param
      * @return
@@ -56,7 +54,6 @@ public class ExperimentSchemeScoreBiz {
                 .stream()
                 .map(ExperimentParticipatorEntity::getAccountId)
                 .toList());
-        viewAccountIds.add(MIMETIC_ADMIN_ACCOUNT_ID);
         preHandleExperimentSchemeScore(experimentInstanceId, caseInstanceId, viewAccountIds);
     }
 

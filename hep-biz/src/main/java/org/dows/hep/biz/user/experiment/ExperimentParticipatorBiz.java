@@ -43,7 +43,7 @@ public class ExperimentParticipatorBiz {
     /**
      * @param
      * @return
-     * @说明: 学生端分页实验列表
+     * @说明: 管理端根据角色获取实验列表
      * @关联表: ExperimentInstance
      * @工时: 2H
      * @开发者: lait
@@ -58,7 +58,7 @@ public class ExperimentParticipatorBiz {
         // todo 是否是管理员，如果是管理员，则查询所有记录，如果是老师，根据accountId查询自己的分配的实验列表，如果是学生根据accountId查询自己参与的实验
         AccountRoleResponse accountRoleByPrincipalId = accountRoleApi.getAccountRoleByPrincipalId(pageExperimentRequest.getAccountId());
 
-        String roleCode = accountRoleByPrincipalId.getRoleCode();
+        String roleName = accountRoleByPrincipalId.getRoleName();
 
         if (pageExperimentRequest.getOrder() != null) {
             String[] array = (String[]) pageExperimentRequest.getOrder().stream()
@@ -66,11 +66,11 @@ public class ExperimentParticipatorBiz {
                     .toArray(String[]::new);
             page.addOrder(pageExperimentRequest.getDesc() ? OrderItem.descs(array) : OrderItem.ascs(array));
         }
-        if(roleCode.equals("ADMIN")){
+        if (roleName.equals("ADMIN")) {
             QueryWrapper<ExperimentParticipatorEntity> queryWrapper = new QueryWrapper();
-            queryWrapper.select(EntityUtil.distinctColumn(ExperimentParticipatorEntity.class,"experimentInstanceId"));
+            queryWrapper.select(EntityUtil.distinctColumn(ExperimentParticipatorEntity.class, "experimentInstanceId"));
             queryWrapper.likeLeft("experiment_name", pageExperimentRequest.getKeyword());
-            page = experimentParticipatorService.page(page,queryWrapper);
+            page = experimentParticipatorService.page(page, queryWrapper);
 
         } else {
             if (!StrUtil.isBlank(pageExperimentRequest.getAccountId())) {
@@ -122,6 +122,37 @@ public class ExperimentParticipatorBiz {
         return pageInfo;
     }
 
+
+    /**
+     * @param
+     * @return
+     * @说明: 教师端获取团队信息（实验参与者分组）
+     * @关联表: ExperimentInstance
+     * @工时: 2H
+     * @开发者: lait
+     * @开始时间:
+     * @创建时间: 2023年4月18日 上午10:45:07
+     */
+    public PageResponse<ExperimentListResponse> pageByGroupName(PageExperimentRequest pageExperimentRequest) {
+        //查询参与者参加的实验列表
+        Page page = new Page<ExperimentParticipatorEntity>();
+        page.setCurrent(pageExperimentRequest.getPageNo());
+        page.setSize(pageExperimentRequest.getPageSize());
+
+        page = experimentParticipatorService.page(page, experimentParticipatorService.lambdaQuery()
+                .select(ExperimentParticipatorEntity::getGroupNo, ExperimentParticipatorEntity::getGroupAlias,
+                        ExperimentParticipatorEntity::getGroupName, ExperimentParticipatorEntity::getAccountName,
+                        ExperimentParticipatorEntity::getState)
+                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, pageExperimentRequest.getExperimentInstanceId())
+                .groupBy(ExperimentParticipatorEntity::getGroupNo, ExperimentParticipatorEntity::getGroupAlias,
+                        ExperimentParticipatorEntity::getGroupName, ExperimentParticipatorEntity::getAccountName,
+                        ExperimentParticipatorEntity::getState)
+                .getWrapper());
+        PageResponse pageInfo = experimentParticipatorService.getPageInfo(page, ExperimentListResponse.class);
+        return pageInfo;
+    }
+
+
     /**
      * 获取实验小组长
      *
@@ -144,11 +175,11 @@ public class ExperimentParticipatorBiz {
     }
 
     /**
+     * @param
+     * @return
      * @author fhb
      * @description 是否是组长
      * @date 2023/6/13 10:48
-     * @param
-     * @return
      */
     public Boolean isCaptain(String experimentInstanceId, String experimentGroupId, String accountId) {
         Long count = experimentParticipatorService.lambdaQuery()

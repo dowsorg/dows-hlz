@@ -114,17 +114,17 @@ public class ExperimentQuestionnaireManageBiz {
                 String period = entry.getKey();
                 Map<String, CaseOrgQuestionnaireResponse> orgCollect = entry.getValue();
                 if (CollUtil.isEmpty(orgCollect)) {
-                    break;
+                    continue;
                 }
 
                 for (Map.Entry<String, CaseOrgQuestionnaireResponse> orgCollectEntry : orgCollect.entrySet()) {
                     String org = orgCollectEntry.getKey();
                     CaseOrgQuestionnaireResponse orgQuestionnaire = orgCollectEntry.getValue();
                     if (BeanUtil.isEmpty(orgQuestionnaire)) {
-                        break;
+                        continue;
                     }
                     if (CollUtil.isEmpty(idMapQuestionSection)) {
-                        break;
+                        continue;
                     }
 
                     String exptOrgId = caseOrgMapExptOrg.get(experimentInstanceId + groupId + org);
