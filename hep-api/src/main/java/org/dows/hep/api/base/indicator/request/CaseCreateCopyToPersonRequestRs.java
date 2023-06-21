@@ -18,6 +18,6 @@ public class CaseCreateCopyToPersonRequestRs {
   @Schema(title = "应用ID")
   private String appId;
 
-  @Schema(title = "案例人物")
-  private String casePersonId;
+  @Schema(title = "指标主体id，数据库人物管理的时候，这个是uim的account_id")
+  private String principalId;
 }

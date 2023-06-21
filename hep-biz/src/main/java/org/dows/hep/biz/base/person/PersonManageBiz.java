@@ -257,7 +257,7 @@ public class PersonManageBiz {
         caseIndicatorInstanceBiz.copyPersonIndicatorInstance(CaseCreateCopyToPersonRequestRs
                 .builder()
                 .appId(accountInstanceResponse.getAppId())
-                .casePersonId(vo.getAccountId())
+                .principalId(vo.getAccountId())
                 .build());
         return PersonInstanceResponse.builder().accountId(vo.getAccountId())
                 .build();
@@ -660,6 +660,11 @@ public class PersonManageBiz {
                 .appId(request.getAppId())
                 .tentantId(request.getTenantId()).build();
         this.accountUserApi.createAccountUser(accountUserRequest);
+        caseIndicatorInstanceBiz.copyPersonIndicatorInstance(CaseCreateCopyToPersonRequestRs
+            .builder()
+            .appId(request.getAppId())
+            .principalId(vo.getAccountId())
+            .build());
         return PersonInstanceResponse.builder().accountId(vo.getAccountId())
                 .build();
     }

@@ -163,7 +163,7 @@ public class CaseIndicatorInstanceBiz {
   @Transactional(rollbackFor = Exception.class)
   public void copyPersonIndicatorInstance(CaseCreateCopyToPersonRequestRs caseCreateCopyToPersonRequestRs) {
     String appId = caseCreateCopyToPersonRequestRs.getAppId();
-    String casePersonId = caseCreateCopyToPersonRequestRs.getCasePersonId();
+    String casePersonId = caseCreateCopyToPersonRequestRs.getPrincipalId();
     Set<String> indicatorInstanceIdSet = new HashSet<>();
     List<IndicatorInstanceCategoryResponseRs> indicatorInstanceCategoryResponseRsList = indicatorInstanceBiz.getByAppId(appId);
     List<CaseIndicatorCategoryEntity> caseIndicatorCategoryEntityList = new ArrayList<>();
