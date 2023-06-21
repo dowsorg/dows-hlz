@@ -77,7 +77,9 @@ public class ExperimentManageRest {
      */
     @Operation(summary = "实验分组")
     @PostMapping("v1/tenantExperiment/experimentManage/grouping")
-    public Boolean grouping(@RequestBody @Validated ExperimentGroupSettingRequest groupSetting, @RequestParam @Validated String caseInstanceId) {
+    public Boolean grouping(@RequestBody @Validated ExperimentGroupSettingRequest groupSetting,
+                            @RequestParam @Validated String caseInstanceId
+                            ) {
         return experimentManageBiz.grouping(groupSetting, caseInstanceId);
     }
 

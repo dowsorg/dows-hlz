@@ -29,6 +29,7 @@ import org.dows.hep.api.tenant.experiment.request.*;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.response.ExperimentStateResponse;
+import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -80,9 +81,11 @@ public class ExperimentManageBiz {
     private final AccountOrgApi accountOrgApi;
     private final AccountOrgGeoApi accountOrgGeoApi;
     private final CaseOrgFeeService caseOrgFeeService;
+    private final ExperimentQuestionnaireManageBiz experimentQuestionnaireManageBiz;
     // 事件发布
     private final ApplicationEventPublisher applicationEventPublisher;
 
+    private final OrgBiz orgBiz;
     /**
      * @param
      * @return
@@ -371,48 +374,24 @@ public class ExperimentManageBiz {
                 groupParticipators.put(experimentGroupEntity.getExperimentGroupId(), experimentParticipatorEntityList);
             }
         }
-
-
-        // 判断实验参与人数是否大于该案例得机构数,并且应为已发布的机构
-        Set<String> orgIds = new HashSet<>();
-        List<AccountOrgResponse> orgList = accountOrgApi.getValidAccountOrgList(1);
-        if (orgList != null && orgList.size() > 0) {
-            orgList.forEach(org -> {
-                orgIds.add(org.getOrgId());
-            });
-        }
-//        List<CaseOrgEntity> entityList = caseOrgService.lambdaQuery()
-//                .in(orgIds != null && orgIds.size() > 0, CaseOrgEntity::getOrgId, orgIds)
-//                .eq(CaseOrgEntity::getCaseInstanceId, caseInstanceId)
-//                .eq(CaseOrgEntity::getDeleted, false)
-//                .list();
-//        // 判断是否已发布,未发布的机构移除
-//        Iterator<CaseOrgEntity> it = entityList.iterator();
-//        while(it.hasNext()){
-//            CaseOrgEntity orgEntity = it.next();
-//            AccountOrgResponse orgResponse = accountOrgApi
-//                    .getAccountOrgByOrgId(orgEntity.getOrgId(),experimentGroupSettingRequest.getAppId());
-//            if(orgResponse.getStatus() == 0){
-//                it.remove();
-//            }
-//        }
-
         List<ExperimentParticipatorEntity> collect = groupParticipators.values().stream().flatMap(x -> x.stream()).collect(Collectors.toList());
-//        if (collect.size() > entityList.size()) {
-//            throw new ExperimentParticipatorException(EnumExperimentParticipator.PARTICIPATOR_NUMBER_CANNOT_MORE_THAN_ORG_EXCEPTION);
-//        }
         // 保存实验小组
         experimentGroupService.saveOrUpdateBatch(experimentGroupEntitys);
         // 保存实验参与人[学生]
         experimentParticipatorService.saveOrUpdateBatch(collect);
-        // 发布实验分组事件
+        // 发布实验init事件
         applicationEventPublisher.publishEvent(new ExptInitEvent(ExptInitEventSource.builder()
                 .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
                 .caseInstanceId(caseInstanceId)
                 .build()));
-        // todo 后续移到事件监听中
         // 发布实验分配小组事件
         applicationEventPublisher.publishEvent(new CreateGroupEvent(experimentGroupSettingRequest));
+
+        // 复制人物与机构到实验中
+        applicationEventPublisher.publishEvent(new CopyExperimentPersonAndOrgEvent(experimentGroupSettingRequest));
+
+        // 发布实验init事件
+        experimentQuestionnaireManageBiz.preHandleExperimentQuestionnaire(experimentGroupSettingRequest.getExperimentInstanceId(), caseInstanceId);
         return true;
     }
 

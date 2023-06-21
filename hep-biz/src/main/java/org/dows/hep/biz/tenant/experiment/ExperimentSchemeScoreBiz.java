@@ -39,6 +39,8 @@ public class ExperimentSchemeScoreBiz {
     private final ExperimentSchemeScoreItemService experimentSchemeScoreItemService;
     private final ExperimentParticipatorService experimentParticipatorService;
 
+    private final String MIMETIC_ADMIN_ACCOUNT_ID = "1001010086";
+
     /**
      * @param
      * @return
@@ -47,13 +49,14 @@ public class ExperimentSchemeScoreBiz {
      * @date 2023/6/15 20:36
      */
     public void preHandleExperimentSchemeScore(String experimentInstanceId, String caseInstanceId) {
-        List<String> viewAccountIds = experimentParticipatorService.lambdaQuery()
+        List<String> viewAccountIds = new ArrayList<>(experimentParticipatorService.lambdaQuery()
                 .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
                 .eq(ExperimentParticipatorEntity::getParticipatorType, 0)
                 .list()
                 .stream()
                 .map(ExperimentParticipatorEntity::getAccountId)
-                .toList();
+                .toList());
+        viewAccountIds.add(MIMETIC_ADMIN_ACCOUNT_ID);
         preHandleExperimentSchemeScore(experimentInstanceId, caseInstanceId, viewAccountIds);
     }
 

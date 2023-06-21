@@ -172,7 +172,7 @@ public class IndicatorJudgeRiskFactorBiz{
             createOrUpdateIndicatorExpressionRequestRs.setSource(EnumIndicatorExpressionSource.INDICATOR_JUDGE_RISK_FACTOR.getType());
             createOrUpdateIndicatorExpressionRequestRs.setPrincipalId(indicatorJudgeRiskFactorId);
         }
-        indicatorExpressionBiz.v1CreateOrUpdate(createOrUpdateIndicatorExpressionRequestRs);
+        indicatorExpressionBiz.createOrUpdate(createOrUpdateIndicatorExpressionRequestRs);
     }
 
     @Transactional(rollbackFor = Exception.class)

@@ -1,6 +1,8 @@
 package org.dows.hep.api.user.organization.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,6 +11,8 @@ import lombok.NoArgsConstructor;
  * @date 2023/5/6 11:31
  */
 @Data
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @Schema(name = "CaseOrg 对象", title = "案例机构")
 public class CaseOrgRequest {
