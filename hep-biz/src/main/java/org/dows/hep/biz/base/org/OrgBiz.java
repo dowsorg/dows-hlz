@@ -399,6 +399,11 @@ public class OrgBiz {
                     .caseOrgId(caseOrgId)
                     .accountId(personId)
                     .build();
+            caseIndicatorInstanceBiz.copyPersonIndicatorInstance(CaseCreateCopyToPersonRequestRs
+                .builder()
+                .appId(appId)
+                .principalId(personId)
+                .build());
             casePersonService.save(person);
         }
         return count;
