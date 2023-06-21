@@ -80,6 +80,7 @@ public class ExperimentManageBiz {
     private final AccountOrgApi accountOrgApi;
     private final AccountOrgGeoApi accountOrgGeoApi;
     private final CaseOrgFeeService caseOrgFeeService;
+    private final ExperimentQuestionnaireManageBiz experimentQuestionnaireManageBiz;
     // 事件发布
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -384,6 +385,9 @@ public class ExperimentManageBiz {
 
         // 复制人物与机构到实验中
         applicationEventPublisher.publishEvent(new CopyExperimentPersonAndOrgEvent(experimentGroupSettingRequest));
+
+        // 发布实验init事件
+        experimentQuestionnaireManageBiz.preHandleExperimentQuestionnaire(experimentGroupSettingRequest.getExperimentInstanceId(), caseInstanceId);
         return true;
     }
 
