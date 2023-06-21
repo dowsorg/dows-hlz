@@ -109,6 +109,20 @@ public class ExperimentManageRest {
         return experimentParticipatorBiz.pageByRole(pageExperimentRequest);
 
     }
+    /**
+     * 获取实验列表
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "分页获取实验列表")
+    @GetMapping("v1/tenantExperiment/experimentManage/pageByGroupName")
+    public PageResponse<ExperimentListResponse> pageByGroupName(PageExperimentRequest pageExperimentRequest) {
+        return experimentParticipatorBiz.pageByGroupName(pageExperimentRequest);
+
+    }
+
+
 
 
     /**
