@@ -82,7 +82,7 @@ public class ExperimentTimerBiz {
      * @return
      */
     @DSTransactional
-    public boolean saveOrUpdateExperimentTimeExperimentState(String experimentInstanceId,List<ExperimentTimerEntity> updateExperimentTimerEntities,ExperimentStateEnum experimentStateEnum) {
+    public boolean saveOrUpdateExperimentTimeExperimentState(String experimentInstanceId, List<ExperimentTimerEntity> updateExperimentTimerEntities, ExperimentStateEnum experimentStateEnum) {
         boolean b = experimentTimerService.saveOrUpdateBatch(updateExperimentTimerEntities);
         boolean update = experimentInstanceService.lambdaUpdate().eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
                 .set(ExperimentInstanceEntity::getState, experimentStateEnum.getState())
@@ -91,7 +91,7 @@ public class ExperimentTimerBiz {
                 .set(ExperimentParticipatorEntity::getState, experimentStateEnum.getState())
                 .update();
 
-        if(!b || !update || !update1){
+        if (!b || !update || !update1) {
             throw new ExperimentException(" 更新定时器及实验状态发生异常！");
         }
         return b;
@@ -120,40 +120,26 @@ public class ExperimentTimerBiz {
                 .max(Comparator.comparingLong(ExperimentTimerEntity::getStartTime)).orElse(null);
 //        List<ExperimentTimerEntity> collect1 = experimentTimerEntity1
 //                .collect(Collectors.toList()).ma;
-        if(null == experimentTimerEntity){
+        if (null == experimentTimerEntity) {
             log.error("获取实验期数异常,当前时间不存在对应的实验期数");
             StringBuilder stringBuilder = new StringBuilder();
-            list.stream().forEach(k->{
+            list.stream().forEach(k -> {
                 stringBuilder.append(k.getPeriod()).append("期开始时间：")
                         .append(DateUtil.date(k.getStartTime()))
                         .append(" ");
             });
             throw new ExperimentException("获取实验期数异常,当前时间不存在对应的实验期数,当前实验期数信息：" + stringBuilder);
         }
-       /* if (collect1.size() > 1) {
-            log.error("获取实验期数异常,当前时间存在多个期数,请检查期数配置");
-            throw new ExperimentException("获取实验期数异常,当前时间存在多个期数,请检查期数配置");
-        } else if (collect1.size() == 0) {
-            log.error("获取实验期数异常,当前时间不存在对应的实验期数");
-            StringBuilder stringBuilder = new StringBuilder();
-            list.stream().forEach(k->{
-                stringBuilder.append(k.getPeriod()).append("期开始时间：")
-                        .append(DateUtil.date(k.getStartTime()))
-                        .append(" ");
-            });
-            throw new ExperimentException("获取实验期数异常,当前时间不存在对应的实验期数,当前实验期数信息：" + stringBuilder);
-        } else*/
+        // 获取当前期数
+        //ExperimentTimerEntity experimentTimerEntity = collect1.get(0);
+        ExperimentPeriodsResonse experimentPeriodsResonse = new ExperimentPeriodsResonse();
+        experimentPeriodsResonse.setCurrentPeriod(experimentTimerEntity.getPeriod());
+        experimentPeriodsResonse.setExperimentInstanceId(experimentTimerEntity.getExperimentInstanceId());
 
-            // 获取当前期数
-            //ExperimentTimerEntity experimentTimerEntity = collect1.get(0);
-            ExperimentPeriodsResonse experimentPeriodsResonse = new ExperimentPeriodsResonse();
-            experimentPeriodsResonse.setCurrentPeriod(experimentTimerEntity.getPeriod());
-            experimentPeriodsResonse.setExperimentInstanceId(experimentTimerEntity.getExperimentInstanceId());
-
-            List<ExperimentPeriodsResonse.ExperimentPeriods> experimentPeriods = BeanConvert
-                    .beanConvert(list, ExperimentPeriodsResonse.ExperimentPeriods.class);
-            experimentPeriodsResonse.setExperimentPeriods(experimentPeriods);
-            return experimentPeriodsResonse;
+        List<ExperimentPeriodsResonse.ExperimentPeriods> experimentPeriods = BeanConvert
+                .beanConvert(list, ExperimentPeriodsResonse.ExperimentPeriods.class);
+        experimentPeriodsResonse.setExperimentPeriods(experimentPeriods);
+        return experimentPeriodsResonse;
 
     }
 }

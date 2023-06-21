@@ -10,10 +10,7 @@ import org.dows.hep.api.user.experiment.response.ExperimentStateResponse;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Comparator;
 import java.util.List;
@@ -94,5 +91,17 @@ public class ExperimentTimerRest {
         experimentManageBiz.restart(experimentRestartRequest);
     }
 
-
+    /**
+     * 获取实验期数
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取实验期数")
+    @PostMapping("v1/userExperiment/experimentTimer/getExperimentPeriods")
+    public void getExperimentPeriods(@RequestParam @Validated String appId,
+                                     @RequestParam @Validated String experimentInstanceId
+                                     ) {
+        experimentTimerBiz.getExperimentPeriods(appId,experimentInstanceId);
+    }
 }
