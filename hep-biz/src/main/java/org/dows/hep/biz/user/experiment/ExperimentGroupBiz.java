@@ -11,7 +11,9 @@ import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.EnumExperimentParticipator;
 import org.dows.hep.api.enums.ExperimentStatusCode;
 import org.dows.hep.api.enums.ParticipatorTypeEnum;
+import org.dows.hep.api.event.ExptQuestionnaireAllotEvent;
 import org.dows.hep.api.event.GroupMemberAllotEvent;
+import org.dows.hep.api.event.source.ExptQuestionnaireAllotEventSource;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.exception.ExperimentParticipatorException;
 import org.dows.hep.api.user.experiment.request.AllotActorRequest;
@@ -280,11 +282,11 @@ public class ExperimentGroupBiz {
         applicationEventPublisher.publishEvent(new GroupMemberAllotEvent(participatorList));
         // 分配试卷事件
         if (b) {
-//            applicationEventPublisher.publishEvent(new ExptQuestionnaireAllotEvent(
-//                    ExptQuestionnaireAllotEventSource.builder()
-//                            .experimentInstanceId(entityList.get(0).getExperimentInstanceId())
-//                            .experimentGroupId(entityList.get(0).getExperimentGroupId())
-//                            .build()));
+            applicationEventPublisher.publishEvent(new ExptQuestionnaireAllotEvent(
+                    ExptQuestionnaireAllotEventSource.builder()
+                            .experimentInstanceId(entityList.get(0).getExperimentInstanceId())
+                            .experimentGroupId(entityList.get(0).getExperimentGroupId())
+                            .build()));
         }
         return b;
     }
