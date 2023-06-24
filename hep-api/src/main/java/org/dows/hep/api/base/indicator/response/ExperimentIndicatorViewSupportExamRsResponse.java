@@ -17,12 +17,12 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ExperimentIndicatorViewPhysicalExamRsResponse implements Serializable {
+public class ExperimentIndicatorViewSupportExamRsResponse implements Serializable {
   @Schema(title = "分布式ID")
-  private String experimentIndicatorViewPhysicalExamId;
+  private String experimentIndicatorViewSupportExamId;
 
   @Schema(title = "分布式ID")
-  private String indicatorViewPhysicalExamId;
+  private String indicatorViewSupportExamId;
 
   @Schema(title = "实验id")
   private String experimentId;
@@ -48,12 +48,9 @@ public class ExperimentIndicatorViewPhysicalExamRsResponse implements Serializab
   @Schema(title = "0-禁用，1-启用")
   private Integer status;
 
-  @Schema(title = "第一层目录id")
-  private String indicatorCategoryId;
+  @Schema(title = "目录id列表")
+  private String indicatorCategoryIdArray;
 
-  @Schema(title = "第一层目录名称")
-  private String indicatorCategoryName;
-
-  @Schema(title = "第一层目录创建时间")
-  private Date indicatorCategoryDt;
+  @Schema(title = "目录名称列表")
+  private String indicatorCategoryNameArray;
 }

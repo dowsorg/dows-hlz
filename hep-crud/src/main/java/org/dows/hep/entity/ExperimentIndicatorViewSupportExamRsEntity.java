@@ -52,6 +52,9 @@ public class ExperimentIndicatorViewSupportExamRsEntity implements CrudEntity {
     @Schema(title = "应用ID")
     private String appId;
 
+    @Schema(title = "功能点id")
+    private String indicatorFuncId;
+
     @Schema(title = "辅助检查名称")
     private String name;
 
@@ -77,5 +80,10 @@ public class ExperimentIndicatorViewSupportExamRsEntity implements CrudEntity {
     @Schema(title = "时间戳")
     private Date dt;
 
+    @Schema(title = "目录id列表")
+    private String indicatorCategoryIdArray;
+
+    @Schema(title = "目录名称列表")
+    private String indicatorCategoryNameArray;
 }
 
