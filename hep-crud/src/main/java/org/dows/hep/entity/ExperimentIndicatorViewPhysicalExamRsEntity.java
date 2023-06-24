@@ -52,6 +52,9 @@ public class ExperimentIndicatorViewPhysicalExamRsEntity implements CrudEntity {
     @Schema(title = "应用ID")
     private String appId;
 
+    @Schema(title = "功能点id")
+    private String indicatorFuncId;
+
     @Schema(title = "体格检查名称")
     private String name;
 
@@ -77,5 +80,13 @@ public class ExperimentIndicatorViewPhysicalExamRsEntity implements CrudEntity {
     @Schema(title = "时间戳")
     private Date dt;
 
+    @Schema(title = "第一层目录id")
+    private String indicatorCategoryId;
+
+    @Schema(title = "第一层目录名称")
+    private String indicatorCategoryName;
+
+    @Schema(title = "第一层目录创建时间")
+    private Date indicatorCategoryDt;
 }
 
