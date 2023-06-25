@@ -144,6 +144,7 @@ public class ExperimentParticipatorBiz {
                         ExperimentParticipatorEntity::getGroupName, ExperimentParticipatorEntity::getAccountName,
                         ExperimentParticipatorEntity::getState)
                 .eq(ExperimentParticipatorEntity::getExperimentInstanceId, pageExperimentRequest.getExperimentInstanceId())
+                .isNotNull(ExperimentParticipatorEntity::getGroupNo)
                 .groupBy(ExperimentParticipatorEntity::getGroupNo, ExperimentParticipatorEntity::getGroupAlias,
                         ExperimentParticipatorEntity::getGroupName, ExperimentParticipatorEntity::getAccountName,
                         ExperimentParticipatorEntity::getState)
