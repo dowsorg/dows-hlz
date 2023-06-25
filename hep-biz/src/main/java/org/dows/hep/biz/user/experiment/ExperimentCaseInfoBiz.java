@@ -69,6 +69,17 @@ public class ExperimentCaseInfoBiz {
         return JSONUtil.toBean(object, ExptCaseNoticeDTO.class);
     }
 
+    /**
+     * @author fhb
+     * @description 获取知识答题得分模式 嘎嘎写代码
+     * @date 2023/5/31 18:03
+     * @param
+     * @return
+     */
+    public String getQuestionnaireScoreMode(String experimentInstanceId) {
+        return getCaseInfo(experimentInstanceId, ExperimentCaseInfoEntity::getScoreMode, ExperimentCaseInfoEntity::getScoreMode);
+    }
+
     private String getCaseInfo(String experimentInstanceId, SFunction<ExperimentCaseInfoEntity, ?> sfunction, Function<ExperimentCaseInfoEntity, String> function) {
         return experimentCaseInfoService.lambdaQuery()
                 .select(sfunction)
