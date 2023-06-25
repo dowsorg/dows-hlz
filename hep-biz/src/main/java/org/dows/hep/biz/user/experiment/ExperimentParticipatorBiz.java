@@ -140,14 +140,9 @@ public class ExperimentParticipatorBiz {
         page.setSize(pageExperimentRequest.getPageSize());
 
         page = experimentParticipatorService.page(page, experimentParticipatorService.lambdaQuery()
-                .select(ExperimentParticipatorEntity::getGroupNo, ExperimentParticipatorEntity::getGroupAlias,
-                        ExperimentParticipatorEntity::getGroupName, ExperimentParticipatorEntity::getAccountName,
-                        ExperimentParticipatorEntity::getState)
                 .eq(ExperimentParticipatorEntity::getExperimentInstanceId, pageExperimentRequest.getExperimentInstanceId())
-                .groupBy(ExperimentParticipatorEntity::getGroupNo, ExperimentParticipatorEntity::getGroupAlias,
-                        ExperimentParticipatorEntity::getGroupName, ExperimentParticipatorEntity::getAccountName,
-                        ExperimentParticipatorEntity::getState)
                 .getWrapper());
+
         PageResponse pageInfo = experimentParticipatorService.getPageInfo(page, ExperimentListResponse.class);
         return pageInfo;
     }

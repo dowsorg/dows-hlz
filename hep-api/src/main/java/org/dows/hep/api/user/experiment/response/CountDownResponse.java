@@ -14,6 +14,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "CountDown 对象", title = "时间")
 public class CountDownResponse{
+    @Schema(title = "沙盘持续时间")
+    private Float sandDuration;
     @Schema(title = "沙盘实验倒计时时间")
     private Long sandTime;
 

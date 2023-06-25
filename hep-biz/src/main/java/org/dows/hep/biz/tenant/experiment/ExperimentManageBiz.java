@@ -106,7 +106,7 @@ public class ExperimentManageBiz {
                 .experimentName(createExperiment.getExperimentName())
                 .experimentDescr(createExperiment.getExperimentDescr())
                 .model(createExperiment.getModel())
-                .state(0)
+                .state(ExperimentStateEnum.UNBEGIN.getState())
                 //todo 填充分配人，当前登录账号获取用户名
                 .appointor(createExperiment.getAppointor())
                 .caseInstanceId(createExperiment.getCaseInstanceId())
@@ -196,6 +196,9 @@ public class ExperimentManageBiz {
         //applicationEventPublisher.publishEvent(new AllotEvent(experimentTimerEntities));
         return experimentInstance.getExperimentInstanceId();
     }
+
+
+
 
     /**
      * 构建期数对应的计时器
