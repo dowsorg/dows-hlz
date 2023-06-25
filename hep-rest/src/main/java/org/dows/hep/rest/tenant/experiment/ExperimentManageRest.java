@@ -37,13 +37,6 @@ public class ExperimentManageRest {
         return experimentManageBiz.allot(createExperiment);
     }
 
-
-//    @Operation(summary = "获取分配实验数据")
-//    @PostMapping("v1/tenantExperiment/experimentManage/getAllotData")
-//    public CreateExperimentForm getAllotData(String experimentId, String appId) {
-//        return experimentManageBiz.getAllotData(experimentId, appId);
-//    }
-
     /**
      * 案例机构和人物复制到实验
      *
@@ -105,8 +98,7 @@ public class ExperimentManageRest {
     @Operation(summary = "分页获取实验列表")
     @GetMapping("v1/tenantExperiment/experimentManage/page")
     public PageResponse<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
-        //return experimentManageBiz.page(pageExperimentRequest);
-        return experimentParticipatorBiz.pageByRole(pageExperimentRequest);
+        return experimentManageBiz.pageByRole(pageExperimentRequest);
 
     }
     /**

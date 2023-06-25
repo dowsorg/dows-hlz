@@ -5,6 +5,7 @@ import org.dows.framework.crud.api.CrudEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,8 +41,20 @@ public class EntityUtil {
                 stringBuilder.append(" " + underlineCase + ",");
             }
         }
-        return stringBuilder.deleteCharAt(stringBuilder.length() - 1).toString();
 
+        //StringBuilder拆分为数组
+        int index = -1;
+        List<String> list = Arrays.asList(stringBuilder.toString().split(","));
+        for(int i = 0; i< list.size(); i++){
+            if(list.get(i).startsWith("DISTINCT")){
+                index = i;
+                break;
+            }
+        }
+        Collections.swap(list,index,0);
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.join(",", list));
+        return sb.toString();
     }
 
     public static void main(String[] args) {
