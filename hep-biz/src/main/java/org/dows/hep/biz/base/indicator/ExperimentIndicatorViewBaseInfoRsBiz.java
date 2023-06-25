@@ -48,7 +48,7 @@ public class ExperimentIndicatorViewBaseInfoRsBiz {
     Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
     String appId = experimentIndicatorViewBaseInfoRsEntity.getAppId();
     String experimentId = experimentIndicatorViewBaseInfoRsEntity.getExperimentId();
-    /* runsix:TODO 等张亮那边弄好 */
+    /* runsix: TODO 等张亮那边弄好 */
 //    ExperimentPeriodsResonse experimentPeriods = experimentTimerBiz.getExperimentPeriods(appId, experimentId);
 //    if (Objects.isNull(experimentPeriods)) {
 //      log.warn("method ExperimentIndicatorViewBaseInfoRsBiz.get experimentTimerBiz.getExperimentPeriods experimentId:{} is illegal", experimentId);
