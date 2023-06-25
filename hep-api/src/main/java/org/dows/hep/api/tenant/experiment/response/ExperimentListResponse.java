@@ -76,6 +76,15 @@ public class ExperimentListResponse{
     @Schema(title = "实验模式描述[0:标准模式，1:沙盘模式，2:方案设计模式]")
     private String modelDescr;
 
+    @Schema(title = "分配人名字")
+    private String appointorName;
+
+    @Schema(title = "开始时间")
+    private Date startTime;
+
+    @Schema(title = "参与者")
+    private String participators;
+
     public String getModelDescr(){
         ExperimentModeEnum experimentModeEnum = Arrays
                 .stream(ExperimentModeEnum.values()).filter(e -> model == e.getCode())
