@@ -8,9 +8,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dows.hep.api.enums.ExperimentModeEnum;
 import org.dows.hep.api.enums.ExperimentStateEnum;
+import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 /**
 * @description 
@@ -44,6 +46,7 @@ public class ExperimentListResponse{
 
     @Schema(title = "实验小组ID")
     private String experimentGroupId;
+
     @Schema(title = "小组别名")
     private String groupAlias;
 
@@ -85,15 +88,22 @@ public class ExperimentListResponse{
     @Schema(title = "参与者")
     private String participators;
 
+    @Schema(title = "参与者基本信息")
+    private List<ExperimentParticipatorResponse> participatorList;
+
     public String getModelDescr(){
-        ExperimentModeEnum experimentModeEnum = Arrays
-                .stream(ExperimentModeEnum.values()).filter(e -> model == e.getCode())
-                .findFirst().orElse(null);
-        if(experimentModeEnum != null){
-            return experimentModeEnum.getDescr();
-        } else {
-            throw new RuntimeException("实验模式不存在");
+        String str = "";
+        if(model != null) {
+            ExperimentModeEnum experimentModeEnum = Arrays
+                    .stream(ExperimentModeEnum.values()).filter(e -> model == e.getCode())
+                    .findFirst().orElse(null);
+            if (experimentModeEnum != null) {
+                str = experimentModeEnum.getDescr();
+            } else {
+                throw new RuntimeException("实验模式不存在");
+            }
         }
+        return str;
     }
 
 
