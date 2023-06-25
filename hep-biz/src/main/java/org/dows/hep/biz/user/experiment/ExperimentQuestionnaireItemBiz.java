@@ -2,6 +2,7 @@ package org.dows.hep.biz.user.experiment;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import lombok.AllArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
@@ -112,10 +113,16 @@ public class ExperimentQuestionnaireItemBiz {
     }
 
     private List<String> convertResultStr2ResultList(String questionResult) {
+        if (StrUtil.isBlank(questionResult)) {
+            return new ArrayList<>();
+        }
         return List.of(questionResult.split(","));
     }
 
     private List<ExptQuestionnaireOptionDTO> convertOptStr2OptionList(String questionOptions) {
+        if (StrUtil.isBlank(questionOptions)) {
+            return new ArrayList<>();
+        }
         return JSONUtil.toList(questionOptions, ExptQuestionnaireOptionDTO.class);
     }
 }
