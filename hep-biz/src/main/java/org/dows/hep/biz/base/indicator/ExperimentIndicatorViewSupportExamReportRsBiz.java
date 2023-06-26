@@ -2,11 +2,9 @@ package org.dows.hep.biz.base.indicator;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dows.hep.api.base.indicator.request.ExperimentPhysicalExamCheckRequestRs;
-import org.dows.hep.api.base.indicator.response.ExperimentPhysicalExamReportResponseRs;
-import org.dows.hep.api.enums.EnumESC;
+import org.dows.hep.api.base.indicator.request.ExperimentSupportExamCheckRequestRs;
+import org.dows.hep.api.base.indicator.response.ExperimentSupportExamReportResponseRs;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
-import org.dows.hep.api.exception.ExperimentIndicatorViewPhysicalExamRsException;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -22,9 +20,9 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
-  private final ExperimentIndicatorViewPhysicalExamReportRsService experimentIndicatorViewPhysicalExamReportRsService;
-  private final ExperimentIndicatorViewPhysicalExamRsService experimentIndicatorViewPhysicalExamRsService;
+public class ExperimentIndicatorViewSupportExamReportRsBiz {
+  private final ExperimentIndicatorViewSupportExamReportRsService experimentIndicatorViewSupportExamReportRsService;
+  private final ExperimentIndicatorViewSupportExamRsService experimentIndicatorViewSupportExamRsService;
   private final ExperimentIndicatorInstanceRsService experimentIndicatorInstanceRsService;
   private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
   private final IdGenerator idGenerator;
@@ -33,40 +31,40 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
   private final ExperimentIndicatorExpressionItemRsService experimentIndicatorExpressionItemRsService;
   private final ExperimentIndicatorExpressionInfluenceRsService experimentIndicatorExpressionInfluenceRsService;
 
-  public static ExperimentPhysicalExamReportResponseRs experimentPhysicalExamReport2ResponseRs(ExperimentIndicatorViewPhysicalExamReportRsEntity experimentIndicatorViewPhysicalExamReportRsEntity) {
-    if (Objects.isNull(experimentIndicatorViewPhysicalExamReportRsEntity)) {
+  public static ExperimentSupportExamReportResponseRs experimentSupportExamReport2ResponseRs(ExperimentIndicatorViewSupportExamReportRsEntity experimentIndicatorViewSupportExamReportRsEntity) {
+    if (Objects.isNull(experimentIndicatorViewSupportExamReportRsEntity)) {
       return null;
     }
-    return ExperimentPhysicalExamReportResponseRs
+    return ExperimentSupportExamReportResponseRs
         .builder()
-        .name(experimentIndicatorViewPhysicalExamReportRsEntity.getName())
-        .fee(experimentIndicatorViewPhysicalExamReportRsEntity.getFee())
-        .currentVal(experimentIndicatorViewPhysicalExamReportRsEntity.getCurrentVal())
-        .unit(experimentIndicatorViewPhysicalExamReportRsEntity.getUnit())
-        .resultExplain(experimentIndicatorViewPhysicalExamReportRsEntity.getResultExplain())
+        .name(experimentIndicatorViewSupportExamReportRsEntity.getName())
+        .fee(experimentIndicatorViewSupportExamReportRsEntity.getFee())
+        .currentVal(experimentIndicatorViewSupportExamReportRsEntity.getCurrentVal())
+        .unit(experimentIndicatorViewSupportExamReportRsEntity.getUnit())
+        .resultExplain(experimentIndicatorViewSupportExamReportRsEntity.getResultExplain())
         .build();
   }
   @Transactional(rollbackFor = Exception.class)
-  public void physicalExamCheck(ExperimentPhysicalExamCheckRequestRs experimentPhysicalExamCheckRequestRs) {
-    List<ExperimentIndicatorViewPhysicalExamReportRsEntity> experimentIndicatorViewPhysicalExamReportRsEntityList = new ArrayList<>();
+  public void supportExamCheck(ExperimentSupportExamCheckRequestRs experimentSupportExamCheckRequestRs) {
+    List<ExperimentIndicatorViewSupportExamReportRsEntity> experimentIndicatorViewSupportExamReportRsEntityList = new ArrayList<>();
     /* runsix:TODO 这个期数后期根据张亮接口拿 */
     Integer period = 1;
-    String experimentPersonId = experimentPhysicalExamCheckRequestRs.getExperimentPersonId();
-    String indicatorFuncId = experimentPhysicalExamCheckRequestRs.getIndicatorFuncId();
-    List<String> experimentIndicatorViewPhysicalExamIdList = experimentPhysicalExamCheckRequestRs.getExperimentIndicatorViewPhysicalExamIdList();
-    String appId = experimentPhysicalExamCheckRequestRs.getAppId();
-    String experimentId = experimentPhysicalExamCheckRequestRs.getExperimentId();
+    String experimentPersonId = experimentSupportExamCheckRequestRs.getExperimentPersonId();
+    String indicatorFuncId = experimentSupportExamCheckRequestRs.getIndicatorFuncId();
+    List<String> experimentIndicatorViewSupportExamIdList = experimentSupportExamCheckRequestRs.getExperimentIndicatorViewSupportExamIdList();
+    String appId = experimentSupportExamCheckRequestRs.getAppId();
+    String experimentId = experimentSupportExamCheckRequestRs.getExperimentId();
     String resultExplain = null;
-    Map<String, ExperimentIndicatorViewPhysicalExamRsEntity> kExperimentIndicatorViewPhysicalExamIdVExperimentIndicatorViewPhysicalExamRsEntityMap = new HashMap<>();
+    Map<String, ExperimentIndicatorViewSupportExamRsEntity> kExperimentIndicatorViewSupportExamIdVExperimentIndicatorViewSupportExamRsEntityMap = new HashMap<>();
     Set<String> indicatorInstanceIdSet = new HashSet<>();
-    if (!experimentIndicatorViewPhysicalExamIdList.isEmpty()) {
-      experimentIndicatorViewPhysicalExamRsService.lambdaQuery()
-          .eq(ExperimentIndicatorViewPhysicalExamRsEntity::getAppId, appId)
-          .in(ExperimentIndicatorViewPhysicalExamRsEntity::getExperimentIndicatorViewPhysicalExamId, experimentIndicatorViewPhysicalExamIdList)
+    if (!experimentIndicatorViewSupportExamIdList.isEmpty()) {
+      experimentIndicatorViewSupportExamRsService.lambdaQuery()
+          .eq(ExperimentIndicatorViewSupportExamRsEntity::getAppId, appId)
+          .in(ExperimentIndicatorViewSupportExamRsEntity::getExperimentIndicatorViewSupportExamId, experimentIndicatorViewSupportExamIdList)
           .list()
-          .forEach(experimentIndicatorViewPhysicalExamRsEntity -> {
-            indicatorInstanceIdSet.add(experimentIndicatorViewPhysicalExamRsEntity.getIndicatorInstanceId());
-            kExperimentIndicatorViewPhysicalExamIdVExperimentIndicatorViewPhysicalExamRsEntityMap.put(experimentIndicatorViewPhysicalExamRsEntity.getExperimentIndicatorViewPhysicalExamId(), experimentIndicatorViewPhysicalExamRsEntity);
+          .forEach(experimentIndicatorViewSupportExamRsEntity -> {
+            indicatorInstanceIdSet.add(experimentIndicatorViewSupportExamRsEntity.getIndicatorInstanceId());
+            kExperimentIndicatorViewSupportExamIdVExperimentIndicatorViewSupportExamRsEntityMap.put(experimentIndicatorViewSupportExamRsEntity.getExperimentIndicatorViewSupportExamId(), experimentIndicatorViewSupportExamRsEntity);
           });
     }
     Map<String, ExperimentIndicatorInstanceRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap = new HashMap<>();
@@ -138,8 +136,8 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
       experimentIndicatorExpressionItemRsEntityList.sort(Comparator.comparingInt(ExperimentIndicatorExpressionItemRsEntity::getSeq));
     });
     /* runsix:TODO 公式解析放到后面 */
-    kExperimentIndicatorViewPhysicalExamIdVExperimentIndicatorViewPhysicalExamRsEntityMap.forEach((experimentIndicatorViewPhysicalExamId, experimentIndicatorViewPhysicalExamRsEntity) -> {
-      String indicatorInstanceId = experimentIndicatorViewPhysicalExamRsEntity.getIndicatorInstanceId();
+    kExperimentIndicatorViewSupportExamIdVExperimentIndicatorViewSupportExamRsEntityMap.forEach((experimentIndicatorViewSupportExamId, experimentIndicatorViewSupportExamRsEntity) -> {
+      String indicatorInstanceId = experimentIndicatorViewSupportExamRsEntity.getIndicatorInstanceId();
       String currentVal = null;
       String unit = null;
       ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(indicatorInstanceId);
@@ -150,38 +148,38 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
       if (Objects.nonNull(experimentIndicatorInstanceRsEntity)) {
         unit = experimentIndicatorInstanceRsEntity.getUnit();
       }
-      experimentIndicatorViewPhysicalExamReportRsEntityList.add(
-          ExperimentIndicatorViewPhysicalExamReportRsEntity
+      experimentIndicatorViewSupportExamReportRsEntityList.add(
+          ExperimentIndicatorViewSupportExamReportRsEntity
               .builder()
-              .experimentIndicatorViewPhysicalExamReportId(idGenerator.nextIdStr())
+              .experimentIndicatorViewSupportExamReportId(idGenerator.nextIdStr())
               .experimentId(experimentId)
               .appId(appId)
               .period(period)
               .indicatorFuncId(indicatorFuncId)
               .experimentPersonId(experimentPersonId)
-              .name(experimentIndicatorViewPhysicalExamRsEntity.getName())
-              .fee(experimentIndicatorViewPhysicalExamRsEntity.getFee())
+              .name(experimentIndicatorViewSupportExamRsEntity.getName())
+              .fee(experimentIndicatorViewSupportExamRsEntity.getFee())
               .currentVal(currentVal)
               .unit(unit)
               .resultExplain(resultExplain)
               .build()
       );
     });
-    experimentIndicatorViewPhysicalExamReportRsService.saveOrUpdateBatch(experimentIndicatorViewPhysicalExamReportRsEntityList);
+    experimentIndicatorViewSupportExamReportRsService.saveOrUpdateBatch(experimentIndicatorViewSupportExamReportRsEntityList);
   }
 
-  public List<ExperimentPhysicalExamReportResponseRs> get(String appId, String experimentId, String indicatorFuncId, String experimentPersonId) {
+  public List<ExperimentSupportExamReportResponseRs> get(String appId, String experimentId, String indicatorFuncId, String experimentPersonId) {
     /* runsix:TODO 期数当前写死为1,后期从张亮获取 */
     Integer period = 1;
-    return experimentIndicatorViewPhysicalExamReportRsService.lambdaQuery()
-        .eq(ExperimentIndicatorViewPhysicalExamReportRsEntity::getAppId, appId)
-        .eq(ExperimentIndicatorViewPhysicalExamReportRsEntity::getExperimentId, experimentId)
-        .eq(ExperimentIndicatorViewPhysicalExamReportRsEntity::getIndicatorFuncId, indicatorFuncId)
-        .eq(ExperimentIndicatorViewPhysicalExamReportRsEntity::getExperimentPersonId, experimentPersonId)
-        .orderByDesc(ExperimentIndicatorViewPhysicalExamReportRsEntity::getDt)
+    return experimentIndicatorViewSupportExamReportRsService.lambdaQuery()
+        .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getAppId, appId)
+        .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getExperimentId, experimentId)
+        .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getIndicatorFuncId, indicatorFuncId)
+        .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getExperimentPersonId, experimentPersonId)
+        .orderByDesc(ExperimentIndicatorViewSupportExamReportRsEntity::getDt)
         .list()
         .stream()
-        .map(ExperimentIndicatorViewPhysicalExamReportRsBiz::experimentPhysicalExamReport2ResponseRs)
+        .map(ExperimentIndicatorViewSupportExamReportRsBiz::experimentSupportExamReport2ResponseRs)
         .collect(Collectors.toList());
   }
 }
