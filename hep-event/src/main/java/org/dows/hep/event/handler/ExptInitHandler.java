@@ -1,31 +1,111 @@
 package org.dows.hep.event.handler;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dows.hep.api.event.source.ExptInitEventSource;
+import org.dows.account.request.AccountGroupRequest;
+import org.dows.account.response.AccountGroupResponse;
+import org.dows.account.response.AccountInstanceResponse;
+import org.dows.hep.api.ExperimentContext;
+import org.dows.hep.api.enums.ExperimentStateEnum;
+import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
+import org.dows.hep.api.tenant.experiment.request.ExperimentGroupSettingRequest;
+import org.dows.hep.api.user.organization.request.CaseOrgRequest;
+import org.dows.hep.api.user.organization.response.CaseOrgResponse;
+import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentCaseInfoManageBiz;
+import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentQuestionnaireManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentSchemeManageBiz;
+import org.dows.hep.entity.ExperimentInstanceEntity;
+import org.dows.hep.service.ExperimentInstanceService;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class ExptInitHandler extends AbstractEventHandler implements EventHandler<ExptInitEventSource> {
+public class ExptInitHandler extends AbstractEventHandler implements EventHandler<ExperimentGroupSettingRequest> {
     private final ExperimentCaseInfoManageBiz experimentCaseInfoManageBiz;
     private final ExperimentSchemeManageBiz experimentSchemeManageBiz;
     private final ExperimentQuestionnaireManageBiz experimentQuestionnaireManageBiz;
-
+    private final OrgBiz orgBiz;
+    private final ExperimentManageBiz experimentManageBiz;
+    //todo 记得优化@jx
+    // 实验实例
+    private final ExperimentInstanceService experimentInstanceService;
     @Override
-    public void exec(ExptInitEventSource request) {
+    public void exec(ExperimentGroupSettingRequest request) {
         String experimentInstanceId = request.getExperimentInstanceId();
         String caseInstanceId = request.getCaseInstanceId();
-
+        // 初始化实验 `设置小组` 个数
+        createGroupEvent(request);
+        // 初始化实验 `复制机构和人物`
+        copyExperimentPersonAndOrgEvent(request);
         // 初始化实验 `社区基本信息`
         experimentCaseInfoManageBiz.preHandleCaseInfo(experimentInstanceId, caseInstanceId);
         // 初始化实验 `方案设计` 数据
         experimentSchemeManageBiz.preHandleExperimentScheme(experimentInstanceId, caseInstanceId);
         // 初始化实验 `知识答题` 数据
-//        experimentQuestionnaireManageBiz.preHandleExperimentQuestionnaire(experimentInstanceId, caseInstanceId);
+        // experimentQuestionnaireManageBiz.preHandleExperimentQuestionnaire(experimentInstanceId, caseInstanceId);
+
+    }
+
+
+    public void  createGroupEvent(ExperimentGroupSettingRequest experimentGroupSettingRequest){
+        ExperimentContext experimentContext = new ExperimentContext();
+        experimentContext.setExperimentId(experimentGroupSettingRequest.getExperimentInstanceId());
+        experimentContext.setExperimentName(experimentGroupSettingRequest.getExperimentName());
+        experimentContext.setState(ExperimentStateEnum.UNBEGIN);
+        //设置小组个数
+        experimentContext.setGroupCount(experimentGroupSettingRequest.getGroupSettings().size());
+        ExperimentContext.set(experimentContext);
+    }
+    /**
+     *
+     */
+    public void copyExperimentPersonAndOrgEvent( ExperimentGroupSettingRequest experimentGroupSettingRequest){
+        // 复制人物与机构到实验中
+        ExperimentInstanceEntity experimentInstanceEntity = experimentInstanceService.lambdaQuery()
+                .eq(ExperimentInstanceEntity::getExperimentInstanceId,experimentGroupSettingRequest.getExperimentInstanceId())
+                .eq(ExperimentInstanceEntity::getDeleted,false)
+                .one();
+        IPage<CaseOrgResponse> caseOrgResponseIPage = orgBiz.listOrgnization(CaseOrgRequest.builder().pageNo(1).pageSize(10)
+                .caseInstanceId(experimentInstanceEntity.getCaseInstanceId())
+                .status(1)
+                .build());
+        List<CaseOrgResponse> responseList = caseOrgResponseIPage.getRecords();
+        List<CreateExperimentRequest> requestList = new ArrayList<>();
+        if(responseList != null && responseList.size() > 0){
+            responseList.forEach(response->{
+                //1、通过案例机构ID找到机构ID下面的人物
+                IPage<AccountGroupResponse> groupResponseIPage =orgBiz.listPerson(AccountGroupRequest.builder()
+                        .status(1)
+                        .appId(experimentGroupSettingRequest.getAppId())
+                        .pageNo(1)
+                        .pageSize(999)
+                        .build(),response.getCaseOrgId());
+                List<AccountGroupResponse> accountGroupResponses = groupResponseIPage.getRecords();
+                List<AccountInstanceResponse> instanceResponses = new ArrayList<>();
+                if(accountGroupResponses != null && accountGroupResponses.size() > 0){
+                    accountGroupResponses.forEach(accountGroup->{
+                        AccountInstanceResponse instanceResponse = AccountInstanceResponse.builder()
+                                .accountId(accountGroup.getAccountId())
+                                .build();
+                        instanceResponses.add(instanceResponse);
+                    });
+                }
+                CreateExperimentRequest request = CreateExperimentRequest.builder()
+                        .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
+                        .caseOrgId(response.getCaseOrgId())
+                        .appId(experimentGroupSettingRequest.getAppId())
+                        .teachers(instanceResponses)
+                        .build();
+                requestList.add(request);
+            });
+        }
+        experimentManageBiz.copyExperimentPersonAndOrg(requestList);
     }
 }

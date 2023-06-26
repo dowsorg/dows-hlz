@@ -33,6 +33,7 @@ import org.dows.user.api.request.UserInstanceRequest;
 import org.dows.user.api.response.UserExtinfoResponse;
 import org.dows.user.api.response.UserInstanceResponse;
 import org.springframework.beans.BeanUtils;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -292,7 +293,7 @@ public class PersonManageBiz {
         if(StringUtils.isNotEmpty(oldPassword)) {
             AccountInstanceResponse instance = accountInstanceApi.getAccountInstanceByAccountName(request.getAccountName(), request.getAppId());
             if (instance != null && !ReflectUtil.isObjectNull(instance)) {
-                if (!instance.getPassword().equals(oldPassword)) {
+                if (!new BCryptPasswordEncoder().matches(oldPassword,instance.getPassword())) {
                     throw new AccountException(EnumAccountStatusCode.ACCOUNT_PASSWORD_NOT_MATCH_EXCEPTION);
                 }
             }

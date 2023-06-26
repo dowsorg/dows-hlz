@@ -65,4 +65,16 @@ public class ExperimentQuestionnaireRest {
         String accountId = baseBiz.getAccountId(request);
         return experimentQuestionnaireBiz.submitQuestionnaire(experimentQuestionnaireId, accountId);
     }
+
+    /**
+     * 批量提交知识答题
+     * @param
+     * @return
+     */
+    @Operation(summary = "批量提交知识答题")
+    @PostMapping("v1/userExperiment/experimentQuestionnaire/batchSubmitQuestionnaire")
+    public Boolean batchSubmitQuestionnaire(@NotBlank String experimentQuestionnaireId, HttpServletRequest request) {
+        String accountId = baseBiz.getAccountId(request);
+        return experimentQuestionnaireBiz.submitQuestionnaire(experimentQuestionnaireId, accountId);
+    }
 }

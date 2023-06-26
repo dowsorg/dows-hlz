@@ -33,6 +33,9 @@ public class ExperimentIndicatorViewSupportExamRsResponse implements Serializabl
   @Schema(title = "应用ID")
   private String appId;
 
+  @Schema(title = "功能点id")
+  private String indicatorFuncId;
+
   @Schema(title = "体格检查名称")
   private String name;
 

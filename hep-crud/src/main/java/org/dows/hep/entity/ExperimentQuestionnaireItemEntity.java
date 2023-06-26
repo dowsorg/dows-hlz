@@ -64,6 +64,9 @@ public class ExperimentQuestionnaireItemEntity {
     @Schema(title = "问题答案")
     private String questionResult;
 
+    @Schema(title = "得分等级 0-错误 1-对一半 2-全对")
+    private Integer scoreGrade;
+
     @JsonIgnore
     @TableLogic
     @TableField(fill = FieldFill.INSERT)

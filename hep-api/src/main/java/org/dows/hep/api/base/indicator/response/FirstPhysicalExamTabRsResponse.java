@@ -28,5 +28,5 @@ public class FirstPhysicalExamTabRsResponse implements Serializable {
   private Date indicatorCategoryDt;
 
   @Schema(title = "查看指标-二级类-无报告-体格检查列表")
-  private List<ExperimentIndicatorViewPhysicalExamRsResponse> experimentIndicatorViewPhysicalExamRsResponseList;
+  private List<ExperimentIndicatorViewPhysicalExamRsResponse> children;
 }

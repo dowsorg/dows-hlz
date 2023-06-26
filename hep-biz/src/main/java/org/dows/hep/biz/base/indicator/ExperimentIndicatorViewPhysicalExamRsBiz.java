@@ -6,7 +6,6 @@ import org.dows.hep.api.base.indicator.response.ExperimentIndicatorViewPhysicalE
 import org.dows.hep.api.base.indicator.response.FirstPhysicalExamTabRsResponse;
 import org.dows.hep.entity.ExperimentIndicatorViewPhysicalExamRsEntity;
 import org.dows.hep.service.ExperimentIndicatorViewPhysicalExamRsService;
-import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -32,6 +31,7 @@ public class ExperimentIndicatorViewPhysicalExamRsBiz {
         .experimentId(experimentIndicatorViewPhysicalExamRsEntity.getExperimentId())
         .caseId(experimentIndicatorViewPhysicalExamRsEntity.getCaseId())
         .appId(experimentIndicatorViewPhysicalExamRsEntity.getAppId())
+        .indicatorFuncId(experimentIndicatorViewPhysicalExamRsEntity.getIndicatorFuncId())
         .name(experimentIndicatorViewPhysicalExamRsEntity.getName())
         .fee(experimentIndicatorViewPhysicalExamRsEntity.getFee())
         .indicatorInstanceId(experimentIndicatorViewPhysicalExamRsEntity.getIndicatorInstanceId())
@@ -59,15 +59,15 @@ public class ExperimentIndicatorViewPhysicalExamRsBiz {
                 .indicatorCategoryId(indicatorCategoryId)
                 .indicatorCategoryName(indicatorCategoryName)
                 .indicatorCategoryDt(indicatorCategoryDt)
-                .experimentIndicatorViewPhysicalExamRsResponseList(new ArrayList<>())
+                .children(new ArrayList<>())
                 .build();
           }
-          List<ExperimentIndicatorViewPhysicalExamRsResponse> experimentIndicatorViewPhysicalExamRsResponseList = firstPhysicalExamTabRsResponse.getExperimentIndicatorViewPhysicalExamRsResponseList();
+          List<ExperimentIndicatorViewPhysicalExamRsResponse> experimentIndicatorViewPhysicalExamRsResponseList = firstPhysicalExamTabRsResponse.getChildren();
           if (Objects.isNull(experimentIndicatorViewPhysicalExamRsResponseList)) {
             experimentIndicatorViewPhysicalExamRsResponseList = new ArrayList<>();
           }
           experimentIndicatorViewPhysicalExamRsResponseList.add(experimentIndicatorViewPhysicalExamRs2Response(experimentIndicatorViewPhysicalExamRsEntity));
-          firstPhysicalExamTabRsResponse.setExperimentIndicatorViewPhysicalExamRsResponseList(experimentIndicatorViewPhysicalExamRsResponseList);
+          firstPhysicalExamTabRsResponse.setChildren(experimentIndicatorViewPhysicalExamRsResponseList);
           kIndicatorCategoryIdVFirstPhysicalExamTabRsResponseMap.put(indicatorCategoryId, firstPhysicalExamTabRsResponse);
         });
     return kIndicatorCategoryIdVFirstPhysicalExamTabRsResponseMap.values().stream()

@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -16,6 +17,7 @@ import org.dows.account.response.*;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
+import org.dows.hep.api.ExperimentContext;
 import org.dows.hep.api.core.CreateExperimentForm;
 import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.ExperimentModeEnum;
@@ -28,7 +30,11 @@ import org.dows.hep.api.tenant.experiment.request.*;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.response.ExperimentStateResponse;
+import org.dows.hep.api.user.organization.request.CaseOrgRequest;
+import org.dows.hep.api.user.organization.response.CaseOrgResponse;
 import org.dows.hep.biz.base.org.OrgBiz;
+import org.dows.hep.biz.base.person.PersonManageBiz;
+import org.dows.hep.biz.timer.ExperimentBeginTimerTask;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -86,7 +92,13 @@ public class ExperimentManageBiz {
 
     private final AccountRoleApi accountRoleApi;
 
-    private final OrgBiz orgBiz;
+
+
+    private final Timer timer;
+
+    private final ExperimentBeginTimerTask experimentBeginTimerTask;
+
+    private final PersonManageBiz personManageBiz;
 
     /**
      * @param
@@ -99,8 +111,10 @@ public class ExperimentManageBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     @DSTransactional
-    public String allot(CreateExperimentRequest createExperiment) {
-
+    public String allot(CreateExperimentRequest createExperiment,String accountId) {
+        // 根据登录ID获取账户名和用户名
+        AccountInstanceResponse instanceResponse = personManageBiz.getPersonalInformation(accountId,createExperiment.getAppId());
+        // 填充数据
         ExperimentInstanceEntity experimentInstance = ExperimentInstanceEntity.builder()
                 .appId(createExperiment.getAppId())
                 .experimentInstanceId(idGenerator.nextIdStr())
@@ -108,11 +122,11 @@ public class ExperimentManageBiz {
                 .experimentName(createExperiment.getExperimentName())
                 .experimentDescr(createExperiment.getExperimentDescr())
                 .model(createExperiment.getModel())
-                .state(0)
-                //todo 填充分配人，当前登录账号获取用户名
-                .appointor(createExperiment.getAppointor())
+                .state(ExperimentStateEnum.UNBEGIN.getState())
+                .appointor(instanceResponse.getAccountName())
                 .caseInstanceId(createExperiment.getCaseInstanceId())
                 .caseName(createExperiment.getCaseName())
+                .appointorName(instanceResponse.getUserName())
                 .build();
         // 保存实验实例
         experimentInstanceService.saveOrUpdate(experimentInstance);
@@ -198,6 +212,7 @@ public class ExperimentManageBiz {
         //applicationEventPublisher.publishEvent(new AllotEvent(experimentTimerEntities));
         return experimentInstance.getExperimentInstanceId();
     }
+
 
     /**
      * 构建期数对应的计时器
@@ -330,7 +345,7 @@ public class ExperimentManageBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     @DSTransactional
-    public Boolean grouping(ExperimentGroupSettingRequest experimentGroupSettingRequest, String caseInstanceId) {
+    public Boolean grouping(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
         List<ExperimentGroupSettingRequest.GroupSetting> experimentGroupSettings = experimentGroupSettingRequest.getGroupSettings();
         List<ExperimentGroupEntity> experimentGroupEntitys = new ArrayList<>();
         Map<String, List<ExperimentParticipatorEntity>> groupParticipators = new HashMap<>();
@@ -379,21 +394,21 @@ public class ExperimentManageBiz {
         List<ExperimentParticipatorEntity> collect = groupParticipators.values().stream().flatMap(x -> x.stream()).collect(Collectors.toList());
         // 保存实验小组
         experimentGroupService.saveOrUpdateBatch(experimentGroupEntitys);
+
         // 保存实验参与人[学生]
         experimentParticipatorService.saveOrUpdateBatch(collect);
+        //
+        experimentQuestionnaireManageBiz.preHandleExperimentQuestionnaire(experimentGroupSettingRequest.getExperimentInstanceId(),
+                experimentGroupSettingRequest.getCaseInstanceId());
+        /**
+         * 设定定时任务
+         * todo 设定一个TimeTask,通过timer到时间执行一次，考虑重启情况，写数据库，针对出现的情况，更具时间重新schedule,先用事件处理，后期优化
+         */
+        Long delay = experimentGroupSettingRequest.getStartTime().getTime() - System.currentTimeMillis();
+        //timer.schedule(experimentBeginTimerTask, delay);
         // 发布实验init事件
-        applicationEventPublisher.publishEvent(new ExptInitEvent(ExptInitEventSource.builder()
-                .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
-                .caseInstanceId(caseInstanceId)
-                .build()));
-        // 发布实验分配小组事件
-        applicationEventPublisher.publishEvent(new CreateGroupEvent(experimentGroupSettingRequest));
+        applicationEventPublisher.publishEvent(new ExptInitEvent(experimentGroupSettingRequest));
 
-        // 复制人物与机构到实验中
-        applicationEventPublisher.publishEvent(new CopyExperimentPersonAndOrgEvent(experimentGroupSettingRequest));
-
-        // 发布实验init事件
-        experimentQuestionnaireManageBiz.preHandleExperimentQuestionnaire(experimentGroupSettingRequest.getExperimentInstanceId(), caseInstanceId);
         return true;
     }
 
@@ -441,6 +456,7 @@ public class ExperimentManageBiz {
             ExperimentRestartRequest experimentRestartRequest = new ExperimentRestartRequest();
             experimentRestartRequest.setExperimentInstanceId(experimentInstanceId);
             experimentRestartRequest.setPaused(true);
+            experimentRestartRequest.setModel(experimentInstanceEntity.getModel());
             experimentRestartRequest.setAppId(appId);
             experimentRestartRequest.setCurrentTime(new Date());
             applicationEventPublisher.publishEvent(new SuspendEvent(experimentRestartRequest));
@@ -544,6 +560,9 @@ public class ExperimentManageBiz {
         }
         return experimentPersonService.saveOrUpdateBatch(entityList);
     }
+
+
+
 
     /**
      * @param
@@ -770,14 +789,14 @@ public class ExperimentManageBiz {
         PageResponse pageInfo = experimentInstanceService.getPageInfo(page, ExperimentListResponse.class);
         // 获取参与教师
         List<ExperimentListResponse> listResponses = pageInfo.getList();
-        if(listResponses != null && listResponses.size() > 0){
-            listResponses.forEach(response->{
+        if (listResponses != null && listResponses.size() > 0) {
+            listResponses.forEach(response -> {
                 List<ExperimentParticipatorEntity> participatorList = experimentParticipatorService.lambdaQuery()
-                        .eq(ExperimentParticipatorEntity::getExperimentInstanceId,response.getExperimentInstanceId())
+                        .eq(ExperimentParticipatorEntity::getExperimentInstanceId, response.getExperimentInstanceId())
                         .isNull(ExperimentParticipatorEntity::getExperimentGroupId)
                         .list();
                 StringBuilder sb = new StringBuilder();
-                if(participatorList != null && participatorList.size() > 0){
+                if (participatorList != null && participatorList.size() > 0) {
                     participatorList.forEach(participator -> {
                         sb.append(participator.getAccountName()).append(",");
                     });

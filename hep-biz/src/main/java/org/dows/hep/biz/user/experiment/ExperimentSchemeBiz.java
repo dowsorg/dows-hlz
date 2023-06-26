@@ -25,6 +25,7 @@ import org.dows.hep.api.event.source.ExptSchemeSyncEventSource;
 import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.entity.ExperimentGroupEntity;
 import org.dows.hep.entity.ExperimentSchemeEntity;
+import org.dows.hep.entity.ExperimentSchemeItemEntity;
 import org.dows.hep.service.ExperimentGroupService;
 import org.dows.hep.service.ExperimentSchemeService;
 import org.jetbrains.annotations.NotNull;
@@ -144,7 +145,7 @@ public class ExperimentSchemeBiz {
             result.setRemainingTime(String.valueOf(0));
             return result;
         }
-        result.setSchemeEndTime(String.valueOf(finalEndTime));
+        result.setSchemeEndTime(String.valueOf(schemeEndTime));
         result.setRemainingTime(String.valueOf(finalEndTime - current));
         return result;
     }
@@ -156,7 +157,39 @@ public class ExperimentSchemeBiz {
      * @description 保存
      * @date 2023/6/7 13:50
      */
-    public Boolean updateScheme(ExperimentSchemeRequest request, String submitAccountId) {
+    public Boolean updateScheme(String experimentSchemeItemId, String questionResult, String submitAccountId) {
+        if (StrUtil.isBlank(experimentSchemeItemId) || StrUtil.isBlank(questionResult) || StrUtil.isBlank(submitAccountId)) {
+            throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
+        }
+
+        ExperimentSchemeItemEntity schemeItem = getSchemeItem(experimentSchemeItemId);
+        String experimentSchemeId = Optional.ofNullable(schemeItem)
+                .map(ExperimentSchemeItemEntity::getExperimentSchemeId)
+                .orElse("");
+        String itemAccountId = Optional.ofNullable(schemeItem)
+                .map(ExperimentSchemeItemEntity::getAccountId)
+                .orElse("");
+        // check
+        ExperimentSchemeEntity schemeEntity = cannotOperateAfterSubmit(experimentSchemeId);
+        if (!submitAccountId.equals(itemAccountId)) {
+            throw new BizException(ExperimentESCEnum.NO_AUTHORITY);
+        }
+        // update
+        boolean res1 = experimentSchemeItemBiz.update(experimentSchemeItemId, questionResult);
+        // sync
+        syncResult(schemeEntity.getExperimentInstanceId(), schemeEntity.getExperimentGroupId());
+
+        return res1;
+    }
+
+    /**
+     * @param
+     * @return
+     * @author fhb
+     * @description 批量保存
+     * @date 2023/6/7 13:50
+     */
+    public Boolean updateSchemeBatch(ExperimentSchemeRequest request, String submitAccountId) {
         if (BeanUtil.isEmpty(request)) {
             throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
         }
@@ -270,18 +303,14 @@ public class ExperimentSchemeBiz {
             return;
         }
 
-        Boolean isCaptain = experimentParticipatorBiz.isCaptain(experimentInstanceId, experimentGroupId, accountId);
+//        Boolean isCaptain = experimentParticipatorBiz.isCaptain(experimentInstanceId, experimentGroupId, accountId);
 
         itemList.forEach(item -> {
-            if (isCaptain) {
+            String accountId1 = item.getAccountId();
+            if (accountId.equals(accountId1)) {
                 item.setCanEdit(Boolean.TRUE);
             } else {
-                String accountId1 = item.getAccountId();
-                if (accountId.equals(accountId1)) {
-                    item.setCanEdit(Boolean.TRUE);
-                } else {
-                    item.setCanEdit(Boolean.FALSE);
-                }
+                item.setCanEdit(Boolean.FALSE);
             }
         });
     }
@@ -329,7 +358,7 @@ public class ExperimentSchemeBiz {
                 });
             }
         });
-        experimentSchemeItemBiz.setAccountId(itemList);
+        experimentSchemeItemBiz.setAccountIdBatch(itemList);
     }
 
     private void handleExperimentSchemeBeginTime(ExperimentSchemeAllotRequest request) {
@@ -422,5 +451,9 @@ public class ExperimentSchemeBiz {
                         .accountIds(accountIds)
                         .build()
         ));
+    }
+
+    private ExperimentSchemeItemEntity getSchemeItem(String experimentSchemeItemId) {
+        return experimentSchemeItemBiz.getById(experimentSchemeItemId);
     }
 }

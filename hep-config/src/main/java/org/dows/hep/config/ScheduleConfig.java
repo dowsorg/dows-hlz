@@ -1,6 +1,5 @@
 package org.dows.hep.config;
 
-import cn.hutool.core.util.StrUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,10 +9,8 @@ import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
-import org.springframework.scheduling.support.CronTrigger;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
+import java.util.Timer;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -21,12 +18,21 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Configuration
 @EnableScheduling
 public class ScheduleConfig implements SchedulingConfigurer {
+
+
+    @Bean
+    public Timer timer() {
+        return new Timer();
+    }
+
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
+
+
         /*taskRegistrar.addFixedDelayTask(() -> {
             // 定时任务的具体逻辑
         }, 1000);*/
-        taskRegistrar.addTriggerTask(
+       /* taskRegistrar.addTriggerTask(
                 //1.添加任务内容(Runnable)
                 () -> System.out.println("执行动态定时任务: " + LocalDateTime.now().toLocalTime()),
                 //2.设置执行周期(Trigger)
@@ -42,7 +48,7 @@ public class ScheduleConfig implements SchedulingConfigurer {
                     return instant;
                 }
         );
-        taskRegistrar.setScheduler(taskScheduler());
+        taskRegistrar.setScheduler(taskScheduler());*/
     }
 
     @Bean

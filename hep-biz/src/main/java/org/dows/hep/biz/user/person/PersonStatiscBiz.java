@@ -106,6 +106,7 @@ public class PersonStatiscBiz {
             experimentOrgList.forEach(org -> {
                 AccountOrgResponse orgResponse = AccountOrgResponse
                         .builder()
+                        .experimentOrgId(org.getExperimentOrgId())
                         .orgId(org.getOrgId())
                         .build();
                 AccountOrgGeoResponse orgGeo = accountOrgGeoApi.getAccountOrgInfoByOrgId(org.getOrgId());

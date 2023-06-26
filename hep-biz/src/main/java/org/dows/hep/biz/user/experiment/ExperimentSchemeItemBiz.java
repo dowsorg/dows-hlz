@@ -2,6 +2,7 @@ package org.dows.hep.biz.user.experiment;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.AllArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
@@ -29,11 +30,11 @@ public class ExperimentSchemeItemBiz {
     private final ExperimentSchemeItemService experimentSchemeItemService;
 
     /**
+     * @param
+     * @return
      * @author fhb
      * @description 列出方案设计 item
      * @date 2023/6/7 13:51
-     * @param
-     * @return
      */
     public List<ExperimentSchemeItemResponse> listBySchemeId(String schemeId) {
         List<ExperimentSchemeItemEntity> entityList = experimentSchemeItemService.lambdaQuery()
@@ -43,11 +44,29 @@ public class ExperimentSchemeItemBiz {
     }
 
     /**
+     * @param
+     * @return
      * @author fhb
      * @description 保存方案设计 Item
      * @date 2023/6/7 13:51
+     */
+    public Boolean update(String experimentSchemeItemId, String questionResult) {
+        if (StrUtil.isBlank(experimentSchemeItemId) || StrUtil.isBlank(questionResult)) {
+            throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
+        }
+
+        LambdaUpdateWrapper<ExperimentSchemeItemEntity> updateWrapper = new LambdaUpdateWrapper<ExperimentSchemeItemEntity>()
+                .eq(ExperimentSchemeItemEntity::getExperimentSchemeItemId, experimentSchemeItemId)
+                .set(ExperimentSchemeItemEntity::getQuestionResult, questionResult);
+        return experimentSchemeItemService.update(updateWrapper);
+    }
+
+    /**
      * @param
      * @return
+     * @author fhb
+     * @description 保存方案设计 Item
+     * @date 2023/6/7 13:51
      */
     public Boolean updateBatch(List<ExperimentSchemeItemRequest> itemList) {
         if (CollUtil.isEmpty(itemList)) {
@@ -61,11 +80,11 @@ public class ExperimentSchemeItemBiz {
     }
 
     /**
+     * @param
+     * @return
      * @author fhb
      * @description 更新答题者
      * @date 2023/6/13 13:47
-     * @param
-     * @return
      */
     public void setAccountId(String experimentSchemeItemId, String accountId) {
         LambdaUpdateWrapper<ExperimentSchemeItemEntity> updateWrapper = new LambdaUpdateWrapper<ExperimentSchemeItemEntity>()
@@ -74,7 +93,14 @@ public class ExperimentSchemeItemBiz {
         experimentSchemeItemService.update(updateWrapper);
     }
 
-    public void setAccountId(List<ExperimentSchemeItemRequest> itemList) {
+    /**
+     * @param
+     * @return
+     * @author fhb
+     * @description 批量更新答题者
+     * @date 2023/6/13 13:47
+     */
+    public void setAccountIdBatch(List<ExperimentSchemeItemRequest> itemList) {
         List<String> itemIdList = itemList.stream().map(ExperimentSchemeItemRequest::getExperimentSchemeItemId).toList();
         List<ExperimentSchemeItemEntity> list = experimentSchemeItemService.lambdaQuery()
                 .in(ExperimentSchemeItemEntity::getExperimentSchemeItemId, itemIdList)
@@ -93,6 +119,20 @@ public class ExperimentSchemeItemBiz {
             result.add(resultItem);
         });
         experimentSchemeItemService.updateBatchById(result);
+    }
+
+    /**
+     * @auth fhb
+     * @description 根据id获取 scheme-item
+     * @date 2023/6/26 11:16
+     * @param experimentSchemeItemId itemId
+     * @return org.dows.hep.entity.ExperimentSchemeItemEntity
+     */
+    public ExperimentSchemeItemEntity getById(String experimentSchemeItemId) {
+        return experimentSchemeItemService.lambdaQuery()
+                .eq(ExperimentSchemeItemEntity::getExperimentSchemeItemId, experimentSchemeItemId)
+                .oneOpt()
+                .orElse(null);
     }
 
     private List<ExperimentSchemeItemEntity> convertToFlatList(List<ExperimentSchemeItemRequest> itemList) {

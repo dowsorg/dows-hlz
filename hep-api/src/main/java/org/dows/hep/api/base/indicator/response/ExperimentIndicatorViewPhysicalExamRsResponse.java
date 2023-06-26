@@ -36,6 +36,9 @@ public class ExperimentIndicatorViewPhysicalExamRsResponse implements Serializab
   @Schema(title = "体格检查名称")
   private String name;
 
+  @Schema(title = "功能点id")
+  private String indicatorFuncId;
+
   @Schema(title = "费用")
   private BigDecimal fee;
 

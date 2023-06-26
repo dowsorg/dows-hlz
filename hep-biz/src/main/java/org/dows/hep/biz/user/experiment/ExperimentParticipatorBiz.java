@@ -6,7 +6,9 @@ import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.account.api.AccountInstanceApi;
 import org.dows.account.api.AccountRoleApi;
+import org.dows.account.response.AccountInstanceResponse;
 import org.dows.account.response.AccountRoleResponse;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
@@ -16,6 +18,7 @@ import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.api.user.experiment.request.GetExperimentGroupCaptainRequest;
+import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
 import org.dows.hep.api.user.experiment.response.GetExperimentGroupCaptainResponse;
 import org.dows.hep.biz.util.EntityUtil;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
@@ -25,6 +28,7 @@ import org.dows.hep.service.ExperimentParticipatorService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 @Slf4j
@@ -39,6 +43,8 @@ public class ExperimentParticipatorBiz {
     private final ExperimentInstanceService experimentInstanceService;
 
     private final AccountRoleApi accountRoleApi;
+
+    private final AccountInstanceApi accountInstanceApi;
 
     /**
      * @param
@@ -135,20 +141,44 @@ public class ExperimentParticipatorBiz {
      */
     public PageResponse<ExperimentListResponse> pageByGroupName(PageExperimentRequest pageExperimentRequest) {
         //查询参与者参加的实验列表
-        Page page = new Page<ExperimentParticipatorEntity>();
+        Page page = new Page<ExperimentListResponse>();
         page.setCurrent(pageExperimentRequest.getPageNo());
         page.setSize(pageExperimentRequest.getPageSize());
 
         page = experimentParticipatorService.page(page, experimentParticipatorService.lambdaQuery()
-                .select(ExperimentParticipatorEntity::getGroupNo, ExperimentParticipatorEntity::getGroupAlias,
+                .select(ExperimentParticipatorEntity::getGroupNo, ExperimentParticipatorEntity::getExperimentGroupId,
+                        ExperimentParticipatorEntity::getGroupAlias,
                         ExperimentParticipatorEntity::getGroupName, ExperimentParticipatorEntity::getAccountName,
                         ExperimentParticipatorEntity::getState)
                 .eq(ExperimentParticipatorEntity::getExperimentInstanceId, pageExperimentRequest.getExperimentInstanceId())
-                .groupBy(ExperimentParticipatorEntity::getGroupNo, ExperimentParticipatorEntity::getGroupAlias,
-                        ExperimentParticipatorEntity::getGroupName, ExperimentParticipatorEntity::getAccountName,
-                        ExperimentParticipatorEntity::getState)
+                .isNotNull(ExperimentParticipatorEntity::getGroupNo)
+                .groupBy(ExperimentParticipatorEntity::getGroupNo)
                 .getWrapper());
         PageResponse pageInfo = experimentParticipatorService.getPageInfo(page, ExperimentListResponse.class);
+        // 获取小组参与者
+        List<ExperimentListResponse> list = pageInfo.getList();
+        if(list != null && list.size() > 0){
+            list.forEach(response->{
+                List<ExperimentParticipatorEntity> participatorEntityList = experimentParticipatorService.lambdaQuery()
+                        .eq(ExperimentParticipatorEntity::getExperimentGroupId,response.getExperimentGroupId())
+                        .list();
+                List<ExperimentParticipatorResponse> participatorResponseList = new ArrayList<>();
+                // 获取参与者账号及头像
+                if(participatorEntityList != null && participatorEntityList.size() > 0){
+                    participatorEntityList.forEach(participatorEntity ->{
+                        AccountInstanceResponse instanceResponse = accountInstanceApi.getPersonalInformationByAccountId(participatorEntity.getAccountId(),"3");
+                        ExperimentParticipatorResponse participatorResponse = ExperimentParticipatorResponse
+                                .builder()
+                                .accountName(participatorEntity.getAccountName())
+                                .avatar(instanceResponse != null ? instanceResponse.getAvatar() : "")
+                                .build();
+                        participatorResponseList.add(participatorResponse);
+                    });
+                }
+                response.setParticipatorList(participatorResponseList);
+            });
+        }
+        pageInfo.setList(list);
         return pageInfo;
     }
 

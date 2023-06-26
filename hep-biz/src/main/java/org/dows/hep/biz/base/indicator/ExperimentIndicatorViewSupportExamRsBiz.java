@@ -34,6 +34,7 @@ public class ExperimentIndicatorViewSupportExamRsBiz {
         .experimentId(experimentIndicatorViewSupportExamRsEntity.getExperimentId())
         .caseId(experimentIndicatorViewSupportExamRsEntity.getCaseId())
         .appId(experimentIndicatorViewSupportExamRsEntity.getAppId())
+        .indicatorFuncId(experimentIndicatorViewSupportExamRsEntity.getIndicatorFuncId())
         .name(experimentIndicatorViewSupportExamRsEntity.getName())
         .fee(experimentIndicatorViewSupportExamRsEntity.getFee())
         .indicatorInstanceId(experimentIndicatorViewSupportExamRsEntity.getIndicatorInstanceId())
@@ -68,15 +69,15 @@ public class ExperimentIndicatorViewSupportExamRsBiz {
                 .builder()
                 .indicatorCategoryId(thirdIndicatorCategoryId)
                 .indicatorCategoryName(thirdIndicatorCategoryName)
-                .experimentIndicatorViewSupportExamRsResponseList(new ArrayList<>())
+                .children(new ArrayList<>())
                 .build();
           }
-          List<ExperimentIndicatorViewSupportExamRsResponse> experimentIndicatorViewSupportExamRsResponseList = thirdSupportExamTabRsResponse.getExperimentIndicatorViewSupportExamRsResponseList();
+          List<ExperimentIndicatorViewSupportExamRsResponse> experimentIndicatorViewSupportExamRsResponseList = thirdSupportExamTabRsResponse.getChildren();
           if (Objects.isNull(experimentIndicatorViewSupportExamRsResponseList)) {
             experimentIndicatorViewSupportExamRsResponseList = new ArrayList<>();
           }
           experimentIndicatorViewSupportExamRsResponseList.add(experimentIndicatorViewSupportExamRs2Response(experimentIndicatorViewSupportExamRsEntity));
-          thirdSupportExamTabRsResponse.setExperimentIndicatorViewSupportExamRsResponseList(experimentIndicatorViewSupportExamRsResponseList);
+          thirdSupportExamTabRsResponse.setChildren(experimentIndicatorViewSupportExamRsResponseList);
           kIndicatorCategoryIdVThirdSupportExamTabRsResponseMap.put(thirdIndicatorCategoryId, thirdSupportExamTabRsResponse);
           SecondSupportExamTabRsResponse secondSupportExamTabRsResponse = kIndicatorCategoryIdVSecondSupportExamTabRsResponseMap.get(secondIndicatorCategoryId);
           if (Objects.isNull(secondSupportExamTabRsResponse)) {
@@ -84,15 +85,15 @@ public class ExperimentIndicatorViewSupportExamRsBiz {
                 .builder()
                 .indicatorCategoryId(secondIndicatorCategoryId)
                 .indicatorCategoryName(secondIndicatorCategoryName)
-                .thirdSupportExamTabRsResponseList(new ArrayList<>())
+                .children(new ArrayList<>())
                 .build();
           }
-          List<ThirdSupportExamTabRsResponse> thirdSupportExamTabRsResponseList = secondSupportExamTabRsResponse.getThirdSupportExamTabRsResponseList();
+          List<ThirdSupportExamTabRsResponse> thirdSupportExamTabRsResponseList = secondSupportExamTabRsResponse.getChildren();
           if (Objects.isNull(thirdSupportExamTabRsResponseList)) {
             thirdSupportExamTabRsResponseList = new ArrayList<>();
           }
           thirdSupportExamTabRsResponseList.add(thirdSupportExamTabRsResponse);
-          secondSupportExamTabRsResponse.setThirdSupportExamTabRsResponseList(thirdSupportExamTabRsResponseList);
+          secondSupportExamTabRsResponse.setChildren(thirdSupportExamTabRsResponseList);
           kIndicatorCategoryIdVSecondSupportExamTabRsResponseMap.put(secondIndicatorCategoryId, secondSupportExamTabRsResponse);
           FirstSupportExamTabRsResponse firstSupportExamTabRsResponse = kIndicatorCategoryIdVFirstSupportExamTabRsResponseMap.get(firstIndicatorCategoryId);
           if (Objects.isNull(firstSupportExamTabRsResponse)) {
@@ -100,23 +101,23 @@ public class ExperimentIndicatorViewSupportExamRsBiz {
                 .builder()
                 .indicatorCategoryId(firstIndicatorCategoryId)
                 .indicatorCategoryName(firstIndicatorCategoryName)
-                .secondSupportExamTabRsResponseList(new ArrayList<>())
+                .children(new ArrayList<>())
                 .build();
           }
-          List<SecondSupportExamTabRsResponse> secondSupportExamTabRsResponseList = firstSupportExamTabRsResponse.getSecondSupportExamTabRsResponseList();
+          List<SecondSupportExamTabRsResponse> secondSupportExamTabRsResponseList = firstSupportExamTabRsResponse.getChildren();
           if (Objects.isNull(secondSupportExamTabRsResponseList)) {
             secondSupportExamTabRsResponseList = new ArrayList<>();
           }
           secondSupportExamTabRsResponseList.add(secondSupportExamTabRsResponse);
-          firstSupportExamTabRsResponse.setSecondSupportExamTabRsResponseList(secondSupportExamTabRsResponseList);
+          firstSupportExamTabRsResponse.setChildren(secondSupportExamTabRsResponseList);
           kIndicatorCategoryIdVFirstSupportExamTabRsResponseMap.put(firstIndicatorCategoryId, firstSupportExamTabRsResponse);
         });
     kIndicatorCategoryIdVFirstSupportExamTabRsResponseMap.forEach((firstId, firstRs) -> {
-      List<SecondSupportExamTabRsResponse> secondSupportExamTabRsResponseList = firstRs.getSecondSupportExamTabRsResponseList();
+      List<SecondSupportExamTabRsResponse> secondSupportExamTabRsResponseList = firstRs.getChildren();
       secondSupportExamTabRsResponseList.forEach(secondSupportExamTabRsResponse -> {
-        List<ThirdSupportExamTabRsResponse> thirdSupportExamTabRsResponseList = secondSupportExamTabRsResponse.getThirdSupportExamTabRsResponseList();
+        List<ThirdSupportExamTabRsResponse> thirdSupportExamTabRsResponseList = secondSupportExamTabRsResponse.getChildren();
         thirdSupportExamTabRsResponseList.forEach(thirdSupportExamTabRsResponse -> {
-          thirdSupportExamTabRsResponse.getExperimentIndicatorViewSupportExamRsResponseList().sort(Comparator.comparing(ExperimentIndicatorViewSupportExamRsResponse::getName));
+          thirdSupportExamTabRsResponse.getChildren().sort(Comparator.comparing(ExperimentIndicatorViewSupportExamRsResponse::getName));
         });
         thirdSupportExamTabRsResponseList.sort(Comparator.comparing(ThirdSupportExamTabRsResponse::getIndicatorCategoryName));
       });

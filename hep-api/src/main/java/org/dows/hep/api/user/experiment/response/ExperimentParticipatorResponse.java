@@ -1,6 +1,8 @@
 package org.dows.hep.api.user.experiment.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dows.account.response.AccountInstanceResponse;
@@ -13,6 +15,8 @@ import java.util.List;
 * @date 
 */
 @Data
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @Schema(name = "ExperimentGroup 对象", title = "实验小组信息")
 public class ExperimentParticipatorResponse {

@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.uim.AccountInfo;
 import org.dows.hep.api.ExperimentContext;
+import org.dows.hep.api.enums.ExperimentModeEnum;
 import org.dows.hep.api.enums.ExperimentStateEnum;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
@@ -36,14 +37,15 @@ public class SuspendHandler extends AbstractEventHandler implements EventHandler
     @Override
     public void exec(ExperimentRestartRequest experimentRestartRequest) {
         //todo 暂停定时器
-        log.info("暂停定时器....");
+        log.info("暂停计时器....");
 
         // 待更新集合
         List<ExperimentTimerEntity> updateExperimentTimerEntities = new ArrayList<>();
         // 查询实验期数列表
         List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerBiz.getCurrentPeriods(experimentRestartRequest);
 
-        if (experimentRestartRequest.getPeriods() == null) {
+        /*if (experimentRestartRequest.getPeriods() == null) {*/
+        if (experimentRestartRequest.getModel() == ExperimentModeEnum.STANDARD.getCode()) {
             // todo 更新所有计时器时间
             for (ExperimentTimerEntity experimentTimerEntity : experimentTimerEntityList) {
                 ExperimentTimerEntity updExperimentTimerEntity = new ExperimentTimerEntity();
@@ -68,7 +70,7 @@ public class SuspendHandler extends AbstractEventHandler implements EventHandler
             ExperimentContext experimentContext = ExperimentContext.getExperimentContext(experimentRestartRequest.getExperimentInstanceId());
             experimentContext.setState(ExperimentStateEnum.PREPARE);
 
-        } else {
+        } else if(experimentRestartRequest.getModel() == ExperimentModeEnum.SAND.getCode()) {
             // 找出当前期数计时器集合
             List<ExperimentTimerEntity> collect = experimentTimerEntityList.stream()
                     .filter(t -> t.getPeriod() == experimentRestartRequest.getPeriods())
