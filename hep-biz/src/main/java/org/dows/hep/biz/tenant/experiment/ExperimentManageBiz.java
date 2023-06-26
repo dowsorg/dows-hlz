@@ -5,7 +5,6 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -17,22 +16,20 @@ import org.dows.account.response.*;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
-import org.dows.hep.api.ExperimentContext;
 import org.dows.hep.api.core.CreateExperimentForm;
 import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.ExperimentModeEnum;
 import org.dows.hep.api.enums.ExperimentStateEnum;
 import org.dows.hep.api.enums.ParticipatorTypeEnum;
-import org.dows.hep.api.event.*;
-import org.dows.hep.api.event.source.ExptInitEventSource;
+import org.dows.hep.api.event.ExperimentEvent;
+import org.dows.hep.api.event.ExptInitEvent;
+import org.dows.hep.api.event.StartEvent;
+import org.dows.hep.api.event.SuspendEvent;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.*;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.response.ExperimentStateResponse;
-import org.dows.hep.api.user.organization.request.CaseOrgRequest;
-import org.dows.hep.api.user.organization.response.CaseOrgResponse;
-import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.biz.base.person.PersonManageBiz;
 import org.dows.hep.biz.timer.ExperimentBeginTimerTask;
 import org.dows.hep.entity.*;
@@ -93,10 +90,9 @@ public class ExperimentManageBiz {
     private final AccountRoleApi accountRoleApi;
 
 
-
     private final Timer timer;
 
-    private final ExperimentBeginTimerTask experimentBeginTimerTask;
+    //private final ExperimentBeginTimerTask experimentBeginTimerTask;
 
     private final PersonManageBiz personManageBiz;
 
@@ -111,9 +107,9 @@ public class ExperimentManageBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     @DSTransactional
-    public String allot(CreateExperimentRequest createExperiment,String accountId) {
+    public String allot(CreateExperimentRequest createExperiment, String accountId) {
         // 根据登录ID获取账户名和用户名
-        AccountInstanceResponse instanceResponse = personManageBiz.getPersonalInformation(accountId,createExperiment.getAppId());
+        AccountInstanceResponse instanceResponse = personManageBiz.getPersonalInformation(accountId, createExperiment.getAppId());
         // 填充数据
         ExperimentInstanceEntity experimentInstance = ExperimentInstanceEntity.builder()
                 .appId(createExperiment.getAppId())
@@ -403,7 +399,14 @@ public class ExperimentManageBiz {
          * todo 设定一个TimeTask,通过timer到时间执行一次，考虑重启情况，写数据库，针对出现的情况，更具时间重新schedule,先用事件处理，后期优化
          */
         Long delay = experimentGroupSettingRequest.getStartTime().getTime() - System.currentTimeMillis();
-        //timer.schedule(experimentBeginTimerTask, delay);
+        if (delay < 0) {
+            throw new ExperimentException("实验已经开始");
+        }
+        ExperimentBeginTimerTask experimentBeginTimerTask = new ExperimentBeginTimerTask(
+                experimentInstanceService, experimentParticipatorService,
+                experimentTimerService, applicationEventPublisher, experimentGroupSettingRequest);
+
+        timer.schedule(experimentBeginTimerTask, delay);
         // 发布实验init事件
         applicationEventPublisher.publishEvent(new ExptInitEvent(experimentGroupSettingRequest));
 
@@ -450,7 +453,7 @@ public class ExperimentManageBiz {
         Integer state = experimentInstanceEntity.getState();
         ExperimentStateEnum experimentStateEnum = Arrays.stream(ExperimentStateEnum.values()).filter(e -> e.getState() == state)
                 .findFirst().orElse(null);
-        if (experimentStateEnum == ExperimentStateEnum.PREPARE) {
+       /* if (experimentStateEnum == ExperimentStateEnum.PREPARE) {
             ExperimentRestartRequest experimentRestartRequest = new ExperimentRestartRequest();
             experimentRestartRequest.setExperimentInstanceId(experimentInstanceId);
             experimentRestartRequest.setPaused(true);
@@ -458,7 +461,7 @@ public class ExperimentManageBiz {
             experimentRestartRequest.setAppId(appId);
             experimentRestartRequest.setCurrentTime(new Date());
             applicationEventPublisher.publishEvent(new SuspendEvent(experimentRestartRequest));
-        }
+        }*/
         //experimentInstanceEntity.setState(ExperimentStateEnum.SUSPEND.getState());
 //        experimentInstanceService.lambdaUpdate().update(experimentInstanceEntity);
         experimentStateResponse.setExperimentStateEnum(experimentStateEnum);
@@ -558,8 +561,6 @@ public class ExperimentManageBiz {
         }
         return experimentPersonService.saveOrUpdateBatch(entityList);
     }
-
-
 
 
     /**
