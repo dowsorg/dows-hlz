@@ -40,17 +40,17 @@ public class ExptInitHandler extends AbstractEventHandler implements EventHandle
     public void exec(ExperimentGroupSettingRequest request) {
         String experimentInstanceId = request.getExperimentInstanceId();
         String caseInstanceId = request.getCaseInstanceId();
-
+        // 初始化实验 `设置小组` 个数
+        createGroupEvent(request);
+        // 初始化实验 `复制机构和人物`
+        copyExperimentPersonAndOrgEvent(request);
         // 初始化实验 `社区基本信息`
         experimentCaseInfoManageBiz.preHandleCaseInfo(experimentInstanceId, caseInstanceId);
         // 初始化实验 `方案设计` 数据
         experimentSchemeManageBiz.preHandleExperimentScheme(experimentInstanceId, caseInstanceId);
         // 初始化实验 `知识答题` 数据
         // experimentQuestionnaireManageBiz.preHandleExperimentQuestionnaire(experimentInstanceId, caseInstanceId);
-        // 初始化实验 `设置小组` 个数
-        createGroupEvent(request);
-        // 初始化实验 `复制机构和人物`
-        copyExperimentPersonAndOrgEvent(request);
+
     }
 
 
