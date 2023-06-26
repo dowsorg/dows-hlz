@@ -203,7 +203,7 @@ public class ExperimentTimerBiz {
 
         List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
                 .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
-                .eq(ExperimentTimerEntity::getAppId, appId)
+                //.eq(ExperimentTimerEntity::getAppId, appId)
                 //.eq(ExperimentTimerEntity::getModel, 2) // 沙盘模式
                 .ne(ExperimentTimerEntity::getState, ExperimentStateEnum.FINISH.getState())
                 .list();

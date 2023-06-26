@@ -1,6 +1,7 @@
 package org.dows.hep.biz.tenant.experiment;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
@@ -32,6 +33,7 @@ import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.response.ExperimentStateResponse;
 import org.dows.hep.biz.base.person.PersonManageBiz;
 import org.dows.hep.biz.timer.ExperimentBeginTimerTask;
+import org.dows.hep.biz.timer.ExperimentTaskScheduler;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -43,6 +45,7 @@ import org.dows.user.api.response.UserExtinfoResponse;
 import org.dows.user.api.response.UserInstanceResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -90,9 +93,7 @@ public class ExperimentManageBiz {
     private final AccountRoleApi accountRoleApi;
 
 
-    private final Timer timer;
-
-    //private final ExperimentBeginTimerTask experimentBeginTimerTask;
+    private final ExperimentTaskScheduler experimentTaskScheduler;
 
     private final PersonManageBiz personManageBiz;
 
@@ -400,13 +401,13 @@ public class ExperimentManageBiz {
          */
         Long delay = experimentGroupSettingRequest.getStartTime().getTime() - System.currentTimeMillis();
         if (delay < 0) {
-            throw new ExperimentException("实验已经开始");
+            throw new ExperimentException("实验时间设置错误,实验开始时间小于当前时间!");
         }
         ExperimentBeginTimerTask experimentBeginTimerTask = new ExperimentBeginTimerTask(
                 experimentInstanceService, experimentParticipatorService,
                 experimentTimerService, applicationEventPublisher, experimentGroupSettingRequest);
 
-        timer.schedule(experimentBeginTimerTask, delay);
+        experimentTaskScheduler.schedule(experimentBeginTimerTask,experimentGroupSettingRequest.getStartTime());
         // 发布实验init事件
         applicationEventPublisher.publishEvent(new ExptInitEvent(experimentGroupSettingRequest));
 

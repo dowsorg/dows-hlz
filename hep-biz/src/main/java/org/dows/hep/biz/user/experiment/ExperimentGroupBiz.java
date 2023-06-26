@@ -250,10 +250,11 @@ public class ExperimentGroupBiz {
     @DSTransactional
     public Boolean allotGroupMembers(List<ExperimentParticipatorRequest> participatorList) {
         List<ExperimentParticipatorEntity> entityList = new ArrayList<>();
+        // todo 后面改调，批量查，批量更新
         participatorList.forEach(request -> {
             ExperimentParticipatorEntity model = experimentParticipatorService.lambdaQuery()
                     .eq(ExperimentParticipatorEntity::getExperimentParticipatorId, request.getExperimentParticipatorId())
-                    .eq(ExperimentParticipatorEntity::getAppId, request.getAppId())
+                    .eq(ExperimentParticipatorEntity::getAppId, null == request.getAppId() ? "3" : request.getAppId())
                     .eq(ExperimentParticipatorEntity::getExperimentGroupId, request.getExperimentGroupId())
                     .eq(ExperimentParticipatorEntity::getExperimentInstanceId, request.getExperimentInstanceId())
                     .eq(ExperimentParticipatorEntity::getDeleted, false)

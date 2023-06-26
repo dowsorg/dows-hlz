@@ -7,31 +7,32 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Data
-public class ExperimentContext {
-    private static ThreadLocal<ExperimentContext> ContextThreadLocal = new ThreadLocal<>();
-    private static Map<String, ExperimentContext> ExperimentContextMap = new ConcurrentHashMap<>();
+public class HepContext {
+    private static ThreadLocal<HepContext> ContextThreadLocal = new ThreadLocal<>();
+    private static Map<String, HepContext> ExperimentContextMap = new ConcurrentHashMap<>();
 
-
+    private String appId;
     private String experimentId;
     private String experimentName;
+    private Integer periods;
     // 实验状态
     private ExperimentStateEnum state;
     private List<ExperimentGroup> experimentGroups;
 
     private Integer groupCount;
 
-    public static void set(ExperimentContext experimentContext) {
+    public static void set(HepContext hepContext) {
         //ContextThreadLocal.set(experimentContext);
-        ExperimentContextMap.put(experimentContext.getExperimentId(), experimentContext);
+        ExperimentContextMap.put(hepContext.getExperimentId(), hepContext);
     }
 
-    public static ExperimentContext get() {
-        ExperimentContext experimentContext = ContextThreadLocal.get();
-        return experimentContext;
+    public static HepContext get() {
+        HepContext hepContext = ContextThreadLocal.get();
+        return hepContext;
     }
 
-    public static List<ExperimentContext> getMap() {
-        List<ExperimentContext> contextList = new ArrayList<>();
+    public static List<HepContext> getMap() {
+        List<HepContext> contextList = new ArrayList<>();
         contextList.addAll(ExperimentContextMap.values());
         return contextList;
     }
@@ -41,7 +42,12 @@ public class ExperimentContext {
     }
 
 
-    public static ExperimentContext getExperimentContext(String experimentId) {
+    public static HepContext getExperimentContext(String experimentId) {
+       /* HepContext hepContext = ExperimentContextMap.get(experimentId);
+        if(hepContext == null){
+            hepContext = new HepContext();
+        }
+        return hepContext;*/
         return ExperimentContextMap.get(experimentId);
     }
 

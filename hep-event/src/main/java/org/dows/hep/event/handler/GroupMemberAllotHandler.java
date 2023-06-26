@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.Response;
 import org.dows.framework.api.uim.AccountInfo;
-import org.dows.hep.api.ExperimentContext;
+import org.dows.hep.api.HepContext;
 import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.EnumWebSocketType;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
@@ -64,8 +64,11 @@ public class GroupMemberAllotHandler extends AbstractEventHandler implements Eve
                 .paused(false)
                 .currentTime(new Date())
                 .build());
-        ExperimentContext experimentContext = ExperimentContext.getExperimentContext(experimentInstanceId);
-        groupSize = experimentContext.getGroupCount();
+        /**
+         * todo 这里的逻辑有问题，需要调整
+         */
+       /* HepContext hepContext = HepContext.getExperimentContext(experimentInstanceId);
+        groupSize = hepContext.getGroupCount();*/
         if (concurrentHashMap.containsKey(experimentInstanceId)) {
             Integer count = (Integer) concurrentHashMap.get(experimentInstanceId);
             count++;

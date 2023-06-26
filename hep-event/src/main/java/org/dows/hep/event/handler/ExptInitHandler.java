@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.account.request.AccountGroupRequest;
 import org.dows.account.response.AccountGroupResponse;
 import org.dows.account.response.AccountInstanceResponse;
-import org.dows.hep.api.ExperimentContext;
+import org.dows.hep.api.HepContext;
 import org.dows.hep.api.enums.ExperimentStateEnum;
 import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
 import org.dows.hep.api.tenant.experiment.request.ExperimentGroupSettingRequest;
@@ -53,15 +53,19 @@ public class ExptInitHandler extends AbstractEventHandler implements EventHandle
         experimentQuestionnaireManageBiz.preHandleExperimentQuestionnaire(experimentInstanceId, caseInstanceId);
     }
 
-
+    /**
+     * todo 如果实验重启，这里在其他地方就获取不到，需要调整
+     *
+     * @param experimentGroupSettingRequest
+     */
     public void createGroupEvent(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
-        ExperimentContext experimentContext = new ExperimentContext();
-        experimentContext.setExperimentId(experimentGroupSettingRequest.getExperimentInstanceId());
-        experimentContext.setExperimentName(experimentGroupSettingRequest.getExperimentName());
-        experimentContext.setState(ExperimentStateEnum.UNBEGIN);
+        HepContext hepContext = new HepContext();
+        hepContext.setExperimentId(experimentGroupSettingRequest.getExperimentInstanceId());
+        hepContext.setExperimentName(experimentGroupSettingRequest.getExperimentName());
+        hepContext.setState(ExperimentStateEnum.UNBEGIN);
         //设置小组个数
-        experimentContext.setGroupCount(experimentGroupSettingRequest.getGroupSettings().size());
-        ExperimentContext.set(experimentContext);
+        hepContext.setGroupCount(experimentGroupSettingRequest.getGroupSettings().size());
+        HepContext.set(hepContext);
     }
 
     /**
