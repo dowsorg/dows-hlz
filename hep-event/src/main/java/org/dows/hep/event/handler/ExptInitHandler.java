@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.account.request.AccountGroupRequest;
 import org.dows.account.response.AccountGroupResponse;
 import org.dows.account.response.AccountInstanceResponse;
-import org.dows.hep.api.HepContext;
+import org.dows.hep.api.ExperimentContext;
 import org.dows.hep.api.base.evaluate.EvaluateEnabledEnum;
 import org.dows.hep.api.enums.ExperimentStateEnum;
 import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
@@ -60,13 +60,13 @@ public class ExptInitHandler extends AbstractEventHandler implements EventHandle
      * @param experimentGroupSettingRequest
      */
     public void createGroupEvent(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
-        HepContext hepContext = new HepContext();
-        hepContext.setExperimentId(experimentGroupSettingRequest.getExperimentInstanceId());
-        hepContext.setExperimentName(experimentGroupSettingRequest.getExperimentName());
-        hepContext.setState(ExperimentStateEnum.UNBEGIN);
+        ExperimentContext experimentContext = new ExperimentContext();
+        experimentContext.setExperimentId(experimentGroupSettingRequest.getExperimentInstanceId());
+        experimentContext.setExperimentName(experimentGroupSettingRequest.getExperimentName());
+        experimentContext.setState(ExperimentStateEnum.UNBEGIN);
         //设置小组个数
-        hepContext.setGroupCount(experimentGroupSettingRequest.getGroupSettings().size());
-        HepContext.set(hepContext);
+        experimentContext.setGroupCount(experimentGroupSettingRequest.getGroupSettings().size());
+        ExperimentContext.set(experimentContext);
     }
 
     /**

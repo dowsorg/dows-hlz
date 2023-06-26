@@ -2,7 +2,7 @@ package org.dows.hep.biz.timer;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dows.hep.api.HepContext;
+import org.dows.hep.api.ExperimentContext;
 import org.dows.hep.api.enums.ExperimentStateEnum;
 import org.dows.hep.api.event.SuspendEvent;
 import org.dows.hep.api.exception.ExperimentException;
@@ -51,7 +51,7 @@ public class ExperimentBeginTimerTask implements Runnable {
          */
 
         //1、判断实验是否到时间，到时间则更新状态
-        List<HepContext> instanceEntities = HepContext.getMap();
+        List<ExperimentContext> instanceEntities = ExperimentContext.getMap();
         instanceEntities.forEach(entity -> {
             if (entity.getState() == ExperimentStateEnum.UNBEGIN) {
                 experimentParticipatorService.lambdaUpdate()
@@ -67,8 +67,8 @@ public class ExperimentBeginTimerTask implements Runnable {
                         .eq(ExperimentTimerEntity::getDeleted, false)
                         .set(ExperimentTimerEntity::getState, ExperimentStateEnum.PREPARE.getState()).update();
                 //1、更改缓存
-                HepContext hepContext = HepContext.getExperimentContext(entity.getExperimentId());
-                hepContext.setState(ExperimentStateEnum.PREPARE);
+                ExperimentContext experimentContext = ExperimentContext.getExperimentContext(entity.getExperimentId());
+                experimentContext.setState(ExperimentStateEnum.PREPARE);
             }
         });
 

@@ -7,9 +7,9 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Data
-public class HepContext {
-    private static ThreadLocal<HepContext> ContextThreadLocal = new ThreadLocal<>();
-    private static Map<String, HepContext> ExperimentContextMap = new ConcurrentHashMap<>();
+public class ExperimentContext {
+    private static ThreadLocal<ExperimentContext> ContextThreadLocal = new ThreadLocal<>();
+    private static Map<String, ExperimentContext> ExperimentContextMap = new ConcurrentHashMap<>();
 
     private String appId;
     private String experimentId;
@@ -21,18 +21,18 @@ public class HepContext {
 
     private Integer groupCount;
 
-    public static void set(HepContext hepContext) {
+    public static void set(ExperimentContext experimentContext) {
         //ContextThreadLocal.set(experimentContext);
-        ExperimentContextMap.put(hepContext.getExperimentId(), hepContext);
+        ExperimentContextMap.put(experimentContext.getExperimentId(), experimentContext);
     }
 
-    public static HepContext get() {
-        HepContext hepContext = ContextThreadLocal.get();
-        return hepContext;
+    public static ExperimentContext get() {
+        ExperimentContext experimentContext = ContextThreadLocal.get();
+        return experimentContext;
     }
 
-    public static List<HepContext> getMap() {
-        List<HepContext> contextList = new ArrayList<>();
+    public static List<ExperimentContext> getMap() {
+        List<ExperimentContext> contextList = new ArrayList<>();
         contextList.addAll(ExperimentContextMap.values());
         return contextList;
     }
@@ -42,7 +42,7 @@ public class HepContext {
     }
 
 
-    public static HepContext getExperimentContext(String experimentId) {
+    public static ExperimentContext getExperimentContext(String experimentId) {
        /* HepContext hepContext = ExperimentContextMap.get(experimentId);
         if(hepContext == null){
             hepContext = new HepContext();
