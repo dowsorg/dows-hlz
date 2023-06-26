@@ -12,6 +12,7 @@ import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -54,6 +55,12 @@ public class SportItemEntity implements CrudEntity {
     @Schema(title = "分类名称")
     private String categName;
 
+    @Schema(title = "一级分类id")
+    private String categIdLv1;
+
+    @Schema(title = "一级分类名称")
+    private String categNameLv1;
+
     @Schema(title = "分布id路径")
     private String categIdPath;
 
@@ -61,7 +68,7 @@ public class SportItemEntity implements CrudEntity {
     private String categNamePath;
 
     @Schema(title = "运动强度(MET)")
-    private String strengthMet;
+    private BigDecimal strengthMet;
 
     @Schema(title = "运动强度类别")
     private String strengthType;

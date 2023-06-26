@@ -4,6 +4,7 @@ import org.apache.poi.ss.formula.functions.T;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
@@ -22,6 +23,8 @@ public abstract class BaseLocalCache<T> {
     protected volatile LocalDateTime expireAt;
     protected volatile LocalDateTime refreshLockAt;
     protected static final int COMMONRefreshLockMinutes=5;
+
+    protected final ReentrantLock lock=new ReentrantLock();
     protected BaseLocalCache(LocalDateTime expireAt) {
         this(expireAt, ChronoUnit.MINUTES.between(LocalDateTime.now(), expireAt), COMMONRefreshLockMinutes);
     }
@@ -62,13 +65,17 @@ public abstract class BaseLocalCache<T> {
     public boolean tryRefresh(){
         if(null!=refreshLockAt&& LocalDateTime.now().compareTo(refreshLockAt)<0)
             return false;
-        synchronized (this){
+        lock.lock();
+        try{
             if(null!=refreshLockAt&&LocalDateTime.now().compareTo(refreshLockAt)<0)
                 return false;
             this.refreshLockAt=LocalDateTime.now().plusMinutes(refreshLockMinutes);
             this.coreRefresh();
             return true;
+        }finally {
+            lock.unlock();
         }
+
     }
     public void refresh(){
        coreRefresh();
@@ -93,10 +100,13 @@ public abstract class BaseLocalCache<T> {
     protected T ensureCache(){
         if(null!=cache&&!isExpired())
             return cache;
-        synchronized (this) {
+        lock.lock();
+        try{
             if (null != cache && !isExpired())
                 return cache;
             return coreRefresh();
+        }finally {
+            lock.unlock();
         }
     }
 }

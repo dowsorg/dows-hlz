@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 /**
  * 分页基类
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
  * @date : 2023/5/29 16:16
  */
 @Data
+@Accessors(chain = true)
 @NoArgsConstructor
 @Schema(name = "BasePageRequest 对象", title = "分页基类")
 public class BasePageRequest {

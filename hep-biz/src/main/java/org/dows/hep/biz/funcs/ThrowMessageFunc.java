@@ -8,4 +8,5 @@ package org.dows.hep.biz.funcs;
 public interface ThrowMessageFunc {
 
     void throwMessage(String msg);
+
 }

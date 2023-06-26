@@ -4,15 +4,13 @@ import org.dows.hep.api.base.intervene.request.CalcFoodGraphRequest;
 import org.dows.hep.api.base.intervene.response.FoodGraphResponse;
 import org.dows.hep.api.base.intervene.vo.FoodDetailVO;
 import org.dows.hep.api.enums.*;
-import org.dows.hep.biz.cache.InterveneCategCache;
+import org.dows.hep.biz.cache.CategCache;
+import org.dows.hep.biz.cache.CategCacheFactory;
 import org.dows.hep.biz.dao.FoodDishesDao;
 import org.dows.hep.biz.dao.FoodMaterialDao;
 import org.dows.hep.biz.dao.IndicatorInstanceDao;
 import org.dows.hep.biz.dao.IndicatorRuleDao;
-import org.dows.hep.biz.util.BigDecimalOptional;
-import org.dows.hep.biz.util.BigDecimalUtil;
-import org.dows.hep.biz.util.CopyWrapper;
-import org.dows.hep.biz.util.ShareUtil;
+import org.dows.hep.biz.util.*;
 import org.dows.hep.biz.vo.*;
 import org.dows.hep.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,8 +42,8 @@ public class FoodCalcBiz {
     protected static final int NUMBERScale2=2;
     protected static final String EMPTYValue="-";
 
-    protected InterveneCategCache getCategCache(){
-        return InterveneCategCache.Instance;
+    protected CategCache getCategCache(){
+        return CategCacheFactory.FOODMaterial.getCache() ;
     }
 
     //region 计算入口
@@ -64,13 +62,14 @@ public class FoodCalcBiz {
         if (ShareUtil.XCollection.isEmpty(calcFoodGraph.getDetails())) {
             return rst;
         }
-        Map<String, CalcFoodDetailVO> mapMatWeights = calcMaterialWeight4Graph(calcFoodGraph.getDetails());
+        final String appId=calcFoodGraph.getAppId();
+        Map<String, CalcFoodDetailVO> mapMatWeights = calcMaterialWeight4Graph(appId, calcFoodGraph.getDetails());
         if (ShareUtil.XObject.isEmpty(mapMatWeights)) {
             return rst;
         }
         EnumFoodCalcType calcType = EnumFoodCalcType.of(calcFoodGraph.getCalcType());
-        List<CalcFoodStatVO> statEnergy = calcType.calcEnergy() ? calcFoodEnergy(mapMatWeights) : null;
-        List<CalcFoodStatVO> statCateg = calcType.calcCateg() ? calcFoodCateg(mapMatWeights) : null;
+        List<CalcFoodStatVO> statEnergy = calcType.calcEnergy() ? calcFoodEnergy(appId,mapMatWeights) : null;
+        List<CalcFoodStatVO> statCateg = calcType.calcCateg() ? calcFoodCateg(appId,mapMatWeights) : null;
         return new FoodGraphResponse().setCalcType(calcFoodGraph.getCalcType())
                 .setStatEnergy(statEnergy)
                 .setStatCateg(statCateg);
@@ -81,17 +80,17 @@ public class FoodCalcBiz {
      * @param details
      * @return
      */
-    public CalcFoodDishesResult calcFoodGraph4Dishes(List<FoodDishesMaterialEntity> details){
+    public CalcFoodDishesResult calcFoodGraph4Dishes(String appId,List<FoodDishesMaterialEntity> details){
         CalcFoodDishesResult rst=new CalcFoodDishesResult();
         if(ShareUtil.XCollection.isEmpty(details)){
             return rst;
         }
-        Map<String, CalcFoodDetailVO> mapMatWeights = calcMaterialWeight4Dishes(details);
+        Map<String, CalcFoodDetailVO> mapMatWeights = calcMaterialWeight4Dishes(appId,details);
         if (ShareUtil.XObject.isEmpty(mapMatWeights)) {
             return rst;
         }
-        List<CalcFoodStatVO> statEnergy = calcFoodEnergy(mapMatWeights);
-        List<CalcFoodStatVO> statCateg = calcFoodCateg(mapMatWeights);
+        List<CalcFoodStatVO> statEnergy = calcFoodEnergy(appId,mapMatWeights);
+        List<CalcFoodStatVO> statCateg = calcFoodCateg(appId,mapMatWeights);
         List<FoodDishesNutrientEntity> nutrients = new ArrayList<>();
         if (ShareUtil.XCollection.notEmpty(statEnergy)) {
             statEnergy.forEach(i ->
@@ -111,17 +110,17 @@ public class FoodCalcBiz {
      * @param details
      * @return
      */
-    public CalcFoodCookbookResult calcFoodGraph4Cookbook(List<FoodCookbookDetailEntity> details) {
+    public CalcFoodCookbookResult calcFoodGraph4Cookbook(String appId,List<FoodCookbookDetailEntity> details) {
         CalcFoodCookbookResult rst=new CalcFoodCookbookResult();
         if (ShareUtil.XCollection.isEmpty(details)) {
             return rst;
         }
-        Map<String, CalcFoodDetailVO> mapMatWeights = calcMaterialWeight4Cookbook(details);
+        Map<String, CalcFoodDetailVO> mapMatWeights = calcMaterialWeight4Cookbook(appId, details);
         if (ShareUtil.XObject.isEmpty(mapMatWeights)) {
             return rst;
         }
-        List<CalcFoodStatVO> statEnergy = calcFoodEnergy(mapMatWeights);
-        List<CalcFoodStatVO> statCateg = calcFoodCateg(mapMatWeights);
+        List<CalcFoodStatVO> statEnergy = calcFoodEnergy(appId, mapMatWeights);
+        List<CalcFoodStatVO> statCateg = calcFoodCateg(appId, mapMatWeights);
         List<FoodCookbookNutrientEntity> nutrients = new ArrayList<>();
         if (ShareUtil.XCollection.notEmpty(statEnergy)) {
             statEnergy.forEach(i ->
@@ -143,13 +142,13 @@ public class FoodCalcBiz {
      * @param material
      * @param nutrients
      */
-    public void calcFoodEnergy(FoodMaterialEntity material, List<FoodMaterialNutrientEntity> nutrients){
+    public void calcFoodEnergy(String appId,FoodMaterialEntity material, List<FoodMaterialNutrientEntity> nutrients){
         Map<EnumFoodNutrient, String> baseNutrients=ShareUtil.XCollection.toMap(indicatorInstanceDao.getIndicators4Nutrient(EnumFoodNutrient.BASENutrientNames4,
                 IndicatorInstanceEntity::getIndicatorInstanceId,
                 IndicatorInstanceEntity::getIndicatorName),i-> EnumFoodNutrient.of(i.getIndicatorName()), IndicatorInstanceEntity::getIndicatorInstanceId);
         FoodMaterialNutrientEntity rowEnergy=null;
         BigDecimalOptional boxEnergy=BigDecimalOptional.create();
-        material.setProtein(EMPTYValue).setFat(EMPTYValue).setCho(EMPTYValue).setEnergy(EMPTYValue);
+        material.setProtein(null).setFat(null).setCho(null).setEnergy(null);
         for(FoodMaterialNutrientEntity item:nutrients){
             EnumFoodNutrient nutrientType=EnumFoodNutrient.of(item.getNutrientName());
             String nutrientId= baseNutrients.get(nutrientType);
@@ -160,24 +159,24 @@ public class FoodCalcBiz {
                 rowEnergy=item;
                 continue;
             }
-            final BigDecimal val=BigDecimalUtil.tryParseDecimalElseZero(item.getWeight());
+            final BigDecimal val= ShareBiz.fixDecimalWithScale(item.getWeight());
             boxEnergy.add(nutrientType.calcEnergy(val));
             item.setWeight(BigDecimalUtil.formatRoundDecimal(val, NUMBERScale2,false, EMPTYValue));
             switch (nutrientType){
                 case PROTEIN:
-                    material.setProtein(item.getWeight());
+                    material.setProtein(val);
                     break;
                 case FAT:
-                    material.setFat(item.getWeight());
+                    material.setFat(val);
                     break;
                 case CHO:
-                    material.setCho(item.getWeight());
+                    material.setCho(val);
                     break;
             }
         }
-        material.setEnergy(BigDecimalUtil.formatRoundDecimal(boxEnergy.getValue(),NUMBERScale2,false,EMPTYValue));
+        material.setEnergy(boxEnergy.getValue(NUMBERScale2));
         if(null!=rowEnergy){
-            rowEnergy.setWeight(material.getEnergy());
+            rowEnergy.setWeight(BigDecimalUtil.formatDecimal(material.getEnergy(),EMPTYValue));
         }
         baseNutrients.clear();
     }
@@ -185,16 +184,16 @@ public class FoodCalcBiz {
     //endregion
 
     //region 汇总食材重量
-    protected Map<String,CalcFoodDetailVO> calcMaterialWeight4Dishes(List<FoodDishesMaterialEntity> details){
+    protected Map<String,CalcFoodDetailVO> calcMaterialWeight4Dishes(String appId,List<FoodDishesMaterialEntity> details){
         Map<String,CalcFoodDetailVO> rst=new HashMap<>();
         if(ShareUtil.XCollection.isEmpty(details)){
             return rst;
         }
-        calcMaterialWeight(rst, details, FoodDishesMaterialEntity::getFoodMaterialId,FoodDishesMaterialEntity::getFoodMaterialName, FoodDishesMaterialEntity::getWeight);
+        calcMaterialWeight(appId, rst, details, FoodDishesMaterialEntity::getFoodMaterialId,FoodDishesMaterialEntity::getFoodMaterialName, FoodDishesMaterialEntity::getWeight);
         return rst;
     }
 
-    protected Map<String, CalcFoodDetailVO> calcMaterialWeight4Cookbook(List<FoodCookbookDetailEntity> details){
+    protected Map<String, CalcFoodDetailVO> calcMaterialWeight4Cookbook(String appId,List<FoodCookbookDetailEntity> details){
         Map<String,CalcFoodDetailVO> rst=new HashMap<>();
         if(ShareUtil.XCollection.isEmpty(details)){
             return rst;
@@ -211,13 +210,13 @@ public class FoodCalcBiz {
                     break;
             }
         });
-        calcMaterialWeight(rst, mats, FoodCookbookDetailEntity::getInstanceId, FoodCookbookDetailEntity::getInstanceName, FoodCookbookDetailEntity::getWeight);
-        calcMaterialWeight4Dishes(rst, dishes, FoodCookbookDetailEntity::getInstanceId, FoodCookbookDetailEntity::getWeight);
+        calcMaterialWeight(appId, rst, mats, FoodCookbookDetailEntity::getInstanceId, FoodCookbookDetailEntity::getInstanceName, FoodCookbookDetailEntity::getWeight);
+        calcMaterialWeight4Dishes(appId,rst, dishes, FoodCookbookDetailEntity::getInstanceId, FoodCookbookDetailEntity::getWeight);
         mats.clear();
         dishes.clear();
         return rst;
     }
-    protected Map<String, CalcFoodDetailVO> calcMaterialWeight4Graph(List<FoodDetailVO> details){
+    protected Map<String, CalcFoodDetailVO> calcMaterialWeight4Graph(String appId,List<FoodDetailVO> details){
         Map<String,CalcFoodDetailVO> rst=new HashMap<>();
         if(ShareUtil.XCollection.isEmpty(details)){
             return rst;
@@ -234,17 +233,17 @@ public class FoodCalcBiz {
                     break;
             }
         });
-        calcMaterialWeight(rst, mats, FoodDetailVO::getInstanceId, FoodDetailVO::getInstanceName, FoodDetailVO::getWeight);
-        calcMaterialWeight4Dishes(rst, dishes, FoodDetailVO::getInstanceId, FoodDetailVO::getWeight);
+        calcMaterialWeight(appId,rst, mats, FoodDetailVO::getInstanceId, FoodDetailVO::getInstanceName, FoodDetailVO::getWeight);
+        calcMaterialWeight4Dishes(appId,rst, dishes, FoodDetailVO::getInstanceId, FoodDetailVO::getWeight);
         mats.clear();
         dishes.clear();
         return rst;
     }
 
-    protected <T> void calcMaterialWeight(Map<String, CalcFoodDetailVO> dst,List<T> src,Function<T,String> getMaterialId,Function<T,String> getMaterialName, Function<T,String> getMaterialWeight){
-        calcMaterialWeight(dst,src,getMaterialId,getMaterialName,getMaterialWeight,null);
+    protected <T> void calcMaterialWeight(String appId,Map<String, CalcFoodDetailVO> dst,List<T> src,Function<T,String> getMaterialId,Function<T,String> getMaterialName, Function<T,String> getMaterialWeight){
+        calcMaterialWeight(appId,dst,src,getMaterialId,getMaterialName,getMaterialWeight,null);
     }
-    protected <T> void calcMaterialWeight(Map<String, CalcFoodDetailVO> dst,List<T> src,Function<T,String> getMaterialId,Function<T,String> getMaterialName, Function<T,String> getMaterialWeight,Function<T,Integer> getMealTime) {
+    protected <T> void calcMaterialWeight(String appId, Map<String, CalcFoodDetailVO> dst,List<T> src,Function<T,String> getMaterialId,Function<T,String> getMaterialName, Function<T,String> getMaterialWeight,Function<T,Integer> getMealTime) {
         if(ShareUtil.XCollection.isEmpty(src)){
             return;
         }
@@ -276,10 +275,10 @@ public class FoodCalcBiz {
      * @param getDishWeight
      * @param <T>
      */
-    protected <T> void calcMaterialWeight4Dishes(Map<String, CalcFoodDetailVO> dst, List<T> src, Function<T,String> getDishId, Function<T,String> getDishWeight){
-        calcMaterialWeight4Dishes(dst,src,getDishId,getDishWeight,null);
+    protected <T> void calcMaterialWeight4Dishes(String appId, Map<String, CalcFoodDetailVO> dst, List<T> src, Function<T,String> getDishId, Function<T,String> getDishWeight){
+        calcMaterialWeight4Dishes(appId, dst,src,getDishId,getDishWeight,null);
     }
-    protected <T> void calcMaterialWeight4Dishes(Map<String, CalcFoodDetailVO> dst, List<T> src, Function<T,String> getDishId, Function<T,String> getDishWeight,Function<T,Integer> getMealTime){
+    protected <T> void calcMaterialWeight4Dishes(String appId, Map<String, CalcFoodDetailVO> dst, List<T> src, Function<T,String> getDishId, Function<T,String> getDishWeight,Function<T,Integer> getMealTime){
         if(ShareUtil.XCollection.isEmpty(src)){
             return;
         }
@@ -332,7 +331,7 @@ public class FoodCalcBiz {
      * @param mapMats
      * @return
      */
-    protected List<CalcFoodStatVO> calcFoodEnergy(Map<String, CalcFoodDetailVO> mapMats){
+    protected List<CalcFoodStatVO> calcFoodEnergy(String appId, Map<String, CalcFoodDetailVO> mapMats){
         List<CalcFoodStatVO> rst=new ArrayList<>();
         //fill指标id，单位
         EnumFoodNutrient.BASENutrients3.forEach(i->rst.add((CalcFoodStatVO) new CalcFoodStatVO().setInstanceName(i.getName())));
@@ -393,7 +392,9 @@ public class FoodCalcBiz {
             i.setEnergy(BigDecimalUtil.formatPercent(i.getEnergyOptional().div(box.getValue()).getValue(), EMPTYValue, NUMBERScale2, true));
         });
         //添加能量汇总
-        rst.add((CalcFoodStatVO)new CalcFoodStatVO().setInstanceName(EnumFoodNutrient.ENERGY.getName())
+        CalcFoodStatVO energyVo=new CalcFoodStatVO();
+        energyVo.getWeightOptional().setValue(box.getValue());
+        rst.add((CalcFoodStatVO)energyVo.setInstanceName(EnumFoodNutrient.ENERGY.getName())
                 .setUnit(EnumFoodNutrient.ENERGY.getUnit())
                 .setWeight(BigDecimalUtil.formatRoundDecimal(box.getValue(),NUMBERScale2,false,EMPTYValue))
                 .setEnergy(EMPTYValue));
@@ -405,21 +406,24 @@ public class FoodCalcBiz {
      * @param mapMats
      * @return
      */
-    protected List<CalcFoodStatVO> calcFoodCateg(Map<String, CalcFoodDetailVO> mapMats) {
-        Map<String, CalcFoodStatVO> mapRst = ShareUtil.XCollection.toMap(getCategCache().getPrimeCategs(),
+    protected List<CalcFoodStatVO> calcFoodCateg(String appId, Map<String, CalcFoodDetailVO> mapMats) {
+        Map<String, CalcFoodStatVO> mapRst = ShareUtil.XCollection.toMap(CategCacheFactory.getPrimeCategs(appId),
                 LinkedHashMap::new, CategVO::getCategId, i -> {
                     CalcFoodStatVO dst = new CalcFoodStatVO();
                     dst.setInstanceId(i.getCategId()).setInstanceName(i.getCategName());
                     Optional.ofNullable(i.getExtend()).ifPresent(v -> dst.setUnit(v.getUnit()).setMin(v.getMin()).setMax(v.getMax()));
                     return dst;
                 }, false);
-        List<FoodMaterialEntity> rowsMaterial = foodMaterialDao.getByIds(mapMats.keySet(), FoodMaterialEntity::getFoodMaterialId, FoodMaterialEntity::getInterveneCategId);
+        List<FoodMaterialEntity> rowsMaterial = foodMaterialDao.getByIds(mapMats.keySet(),
+                FoodMaterialEntity::getAppId,
+                FoodMaterialEntity::getFoodMaterialId,
+                FoodMaterialEntity::getInterveneCategId);
         rowsMaterial.forEach(i -> {
-            CategVO cacheCateg = getCategCache().getById(i.getInterveneCategId());
+            CategVO cacheCateg = getCategCache().getById(i.getAppId(), i.getInterveneCategId());
             if (null == cacheCateg) {
                 return;
             }
-            mapMats.get(i.getFoodMaterialId()).setCategIdLv1(getCategCache().getCategLv1(cacheCateg.getCategIdPath(), cacheCateg.getCategId()));
+            mapMats.get(i.getFoodMaterialId()).setCategIdLv1(cacheCateg.getCategIdLv1());
         });
         rowsMaterial.clear();
         mapMats.values().forEach(i -> {
