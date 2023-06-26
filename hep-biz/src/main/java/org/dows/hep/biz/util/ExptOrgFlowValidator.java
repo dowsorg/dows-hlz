@@ -19,6 +19,20 @@ import java.util.Optional;
  */
 public class ExptOrgFlowValidator {
 
+    /**
+     *
+     * @param appId
+     * @param experimentInstanceId 实验id
+     * @param experimentOrgId 机构id
+     * @param experimentPersonId 实验人物id
+     */
+    private ExptOrgFlowValidator(String appId,String experimentInstanceId, String experimentOrgId,String experimentPersonId){
+        this.appId=appId;
+        this.experimentOrgId=experimentOrgId;
+        this.experimentPersonId=experimentPersonId;
+
+    }
+
     private ExptOrgFlowValidator(BaseExptRequest req){
         this.appId=req.getAppId();
         this.experimentOrgId=req.getExperimentOrgId();
