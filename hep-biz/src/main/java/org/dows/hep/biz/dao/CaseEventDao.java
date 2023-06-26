@@ -2,7 +2,6 @@ package org.dows.hep.biz.dao;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.dows.hep.api.tenant.casus.request.FindCaseEventRequest;
@@ -99,16 +98,17 @@ public class CaseEventDao extends BaseSubDao<CaseEventService, CaseEventEntity, 
         final String keyWords = req.getKeywords();
         Page<CaseEventEntity> page = Page.of(req.getPageNo(), req.getPageSize());
         page.addOrder(OrderItem.asc("id"));
-        return service.page(page, Wrappers.<CaseEventEntity>lambdaQuery()
+        return service.lambdaQuery()
+                .eq(ShareUtil.XObject.notEmpty(req.getAppId()), CaseEventEntity::getAppId,req.getAppId())
                 .eq(CaseEventEntity::getPersonId, req.getPersonId())
-                //.likeRight(ShareUtil.XString.hasLength(categId), CaseEventEntity::getCategIdPath, categId)
                 .like(ShareUtil.XString.hasLength(keyWords), CaseEventEntity::getCaseEventName, keyWords)
                 .in(ShareUtil.XCollection.notEmpty(req.getCategIdLv1()), CaseEventEntity::getEventCategId, req.getCategIdLv1())
                 .in(ShareUtil.XCollection.notEmpty(req.getIncIds()), getColId(), req.getIncIds())
                 .notIn(ShareUtil.XCollection.notEmpty(req.getExcIds()), getColId(), req.getExcIds())
                 .eq(ShareUtil.XObject.notEmpty(req.getState()), getColState(), req.getState())
                 .in(ShareUtil.XObject.notEmpty(req.getTriggerType()), CaseEventEntity::getTriggerType, req.getTriggerType())
-                .select(cols));
+                .select(cols)
+                .page(page);
     }
 
 

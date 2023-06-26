@@ -3,6 +3,7 @@ package org.dows.hep.biz.dao;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.enums.EnumCategFamily;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.InterveneCategoryEntity;
@@ -59,8 +60,11 @@ public class InterveneCategDao extends BaseDao<InterveneCategoryService,Interven
         return item::setSeq;
     }
 
-    public List<InterveneCategoryEntity> getAll(){
+
+    public List<InterveneCategoryEntity> getByFamily(EnumCategFamily family){
         return service.lambdaQuery()
+                .eq(!family.isDynamic(),InterveneCategoryEntity::getFamily,family.getCode())
+                .likeRight(family.isDynamic(),InterveneCategoryEntity::getFamily,family.getCode())
                 .orderByAsc(InterveneCategoryEntity::getFamily,InterveneCategoryEntity::getCategPid,
                         InterveneCategoryEntity::getSeq,InterveneCategoryEntity::getId)
                 .list();

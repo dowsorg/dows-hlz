@@ -4,11 +4,15 @@ package org.dows.hep.biz.util;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.google.common.collect.Lists;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -23,34 +27,43 @@ import java.util.stream.Collectors;
 public class ShareUtil {
     public static class XObject {
 
-        public static boolean notEmpty(Number obj, boolean zeroAsEmpty) {
-            return !isEmpty(obj, zeroAsEmpty);
-        }
-
         public static boolean notEmpty(Object obj) {
             return !isEmpty(obj);
         }
 
-        public static boolean isEmpty(Number obj, boolean zeroAsEmpty) {
-            return ObjectUtils.isEmpty(obj) || zeroAsEmpty && obj.equals(0);
+        public static boolean notEmpty(Number obj, boolean zeroAsEmpty) {
+            return !isEmpty(obj, zeroAsEmpty);
         }
 
         public static boolean isEmpty(Object obj) {
             return ObjectUtils.isEmpty(obj);
         }
 
+        public static boolean isEmpty(Number obj, boolean zeroAsEmpty) {
+            return ObjectUtils.isEmpty(obj) || zeroAsEmpty && obj.equals(0);
+        }
+
 
         public static boolean allEmpty(Object... objs) {
-            return isEmpty(objs) || Arrays.stream(objs).allMatch(ObjectUtils::isEmpty);
+            if(isEmpty(objs)) return true;
+            for(Object item:objs){
+                if(notEmpty(item)) return false;
+            }
+            return true;
         }
 
         public static boolean anyEmpty(Object... objs) {
-            return isEmpty(objs) || Arrays.stream(objs).anyMatch(ObjectUtils::isEmpty);
+            if(isEmpty(objs)) return true;
+            for(Object item:objs){
+                if(isEmpty(item)) return true;
+            }
+            return false;
         }
 
         public static boolean anyEmpty(Object obj, Supplier func) {
             return isEmpty(obj) || isEmpty(func.get());
         }
+
 
         public static <T> T defaultIfNull(T object, T defaultValue) {
             return ObjectUtil.defaultIfNull(object, defaultValue);
@@ -128,6 +141,11 @@ public class ShareUtil {
             return CollectionUtils.isEmpty(map);
         }
 
+        public static <T> List<List<T>> split(List<T> src,int splitNum){
+            int size=(src.size()+splitNum-1)/splitNum;
+            return Lists.partition(src, size).stream().map(ArrayList::new).collect(Collectors.toList());
+        }
+
         public static <T, R> List<R> map(Iterable<T> collection,  Function<? super T, ? extends R> func) {
             return CollUtil.map(collection, func, true);
         }
@@ -182,6 +200,25 @@ public class ShareUtil {
         public static boolean contains(T[] array, T value) {
             return ArrayUtil.contains(array, value);
         }
+
+    }
+
+    public static class XDate {
+        static final ZoneId DFTTimeZone = ZoneId.systemDefault();
+
+        public static LocalDateTime localDT4UnixTS(long ts, boolean secondFlag) {
+            return LocalDateTime.ofInstant(secondFlag ? Instant.ofEpochSecond(ts) : Instant.ofEpochMilli(ts), DFTTimeZone);
+        }
+        public static long localDT2UnixTS(LocalDateTime dt, boolean secondFlag) {
+            return secondFlag ? dt.atZone(DFTTimeZone).toEpochSecond() : dt.atZone(DFTTimeZone).toInstant().toEpochMilli();
+        }
+        public static LocalDateTime localDT4Date(Date dt) {
+            return dt.toInstant().atZone(DFTTimeZone).toLocalDateTime();
+        }
+        public static Date localDT2Date(LocalDateTime dt) {
+            return Date.from(dt.atZone(DFTTimeZone).toInstant());
+        }
+
 
     }
 

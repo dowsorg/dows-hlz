@@ -96,14 +96,16 @@ public class FoodMaterialDao extends BaseSubDao<FoodMaterialService,FoodMaterial
     @Override
     public IPage<FoodMaterialEntity> pageByCondition(FindFoodRequest req, SFunction<FoodMaterialEntity, ?>... cols) {
         Page<FoodMaterialEntity> page = Page.of(req.getPageNo(), req.getPageSize());
-        page.addOrder(OrderItem.asc("categ_name_path"),OrderItem.asc("energy"));
-        return service.page(page, Wrappers.<FoodMaterialEntity>lambdaQuery()
-                .in(ShareUtil.XCollection.notEmpty(req.getCategIdLv1()), FoodMaterialEntity::getInterveneCategId, req.getCategIdLv1())
+        page.addOrder(OrderItem.asc("categ_name_lv1"),OrderItem.asc("energy"));
+        return service.lambdaQuery()
+                .eq(ShareUtil.XObject.notEmpty(req.getAppId()), FoodMaterialEntity::getAppId,req.getAppId())
+                .in(ShareUtil.XCollection.notEmpty(req.getCategIdLv1()), FoodMaterialEntity::getCategIdLv1, req.getCategIdLv1())
                 .like(ShareUtil.XString.hasLength(req.getKeywords()), FoodMaterialEntity::getFoodMaterialName, req.getKeywords())
                 .in(ShareUtil.XCollection.notEmpty(req.getIncIds()), getColId(), req.getIncIds())
                 .notIn(ShareUtil.XCollection.notEmpty(req.getExcIds()), getColId(), req.getExcIds())
                 .eq(ShareUtil.XObject.notEmpty(req.getState()), getColState(), req.getState())
-                .select(cols));
+                .select(cols)
+                .page(page);
     }
 
 

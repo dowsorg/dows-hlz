@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 操作事件记录(OperateEvent)实体类
@@ -39,32 +39,59 @@ public class OperateEventEntity implements CrudEntity {
     @Schema(title = "操作事件ID")
     private String operateEventId;
 
-    @Schema(title = "实验实列ID")
+    @Schema(title = "应用ID")
+    private String appId;
+
+    @Schema(title = "实验实例id")
     private String experimentInstanceId;
 
     @Schema(title = "实验小组ID")
     private String experimentGroupId;
 
+    @Schema(title = "实验机构ID")
+    private String experimentOrgId;
+
     @Schema(title = "实验人物id")
     private String experimentPersonId;
 
-    @Schema(title = "案例机构ID")
-    private String caseOrgId;
-
-    @Schema(title = "事件名称")
-    private String eventName;
-
-    @Schema(title = "事件时间")
-    private Date eventTime;
-
-    @Schema(title = "操作账号ID")
-    private String accountId;
-
-    @Schema(title = "操作人员名称")
-    private String accountName;
-
     @Schema(title = "期数")
     private Integer periods;
+
+    @Schema(title = "实验事件ID")
+    private String experimentEventId;
+
+    @Schema(title = "案例事件ID")
+    private String caseEventId;
+
+    @Schema(title = "触发类型 0-条件触发 1-第一期 2-第二期...5-第5期")
+    private Integer triggerType;
+
+    @Schema(title = "事件内容")
+    private String eventJson;
+
+    @Schema(title = "事件处理内容")
+    private String actionJson;
+
+    @Schema(title = "触发时间")
+    private Date triggerTime;
+
+    @Schema(title = "触发游戏内天数")
+    private Integer triggerGameDay;
+
+    @Schema(title = "处理时间")
+    private Date actionTime;
+
+    @Schema(title = "处理游戏内天数")
+    private Integer actionGameDay;
+
+    @Schema(title = "操作人ID")
+    private String actionAccountId;
+
+    @Schema(title = "操作人名")
+    private String actionAccountName;
+
+    @Schema(title = "事件状态 0-初始 1-已触发 2-用户已处理 3-系统已取消")
+    private Integer state;
 
     @JsonIgnore
     @TableLogic

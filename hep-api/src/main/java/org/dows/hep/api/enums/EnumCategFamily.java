@@ -11,6 +11,7 @@ import lombok.Getter;
 @Getter
 public enum EnumCategFamily {
 
+    NONE("",""),
     FOODMaterial("food.material","食材类别"),
     FOODDishes("food.dishes","菜肴类别"),
     FOODCookBook("food.cookbook","菜谱类别"),
@@ -39,7 +40,7 @@ public enum EnumCategFamily {
                 return item;
             }
         }
-        return null;
+        return NONE;
     }
 
 

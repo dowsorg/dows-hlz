@@ -18,7 +18,8 @@ import org.dows.hep.api.tenant.casus.request.SaveCaseEventRequest;
 import org.dows.hep.api.tenant.casus.response.CaseEventInfoResponse;
 import org.dows.hep.api.tenant.casus.response.CaseEventResponse;
 import org.dows.hep.biz.base.indicator.CaseIndicatorExpressionBiz;
-import org.dows.hep.biz.cache.EventCategCache;
+import org.dows.hep.biz.cache.CategCache;
+import org.dows.hep.biz.cache.CategCacheFactory;
 import org.dows.hep.biz.dao.*;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.CopyWrapper;
@@ -67,8 +68,8 @@ public class TenantCaseEventBiz {
 
     private final IdGenerator idGenerator;
 
-    protected EventCategCache getCategCache(){
-        return EventCategCache.Instance;
+    protected CategCache getCategCache(){
+        return CategCacheFactory.EVENT.getCache();
     }
 
     /**
@@ -83,9 +84,7 @@ public class TenantCaseEventBiz {
     */
     public Page<CaseEventResponse> pageCaseEvent(FindCaseEventRequest findEvent ) {
         return ShareBiz.buildPage(caseEventDao.pageByCondition(findEvent), i-> CopyWrapper.create(CaseEventResponse::new)
-                .endFrom( refreshCateg(i) )
-                .setCategIdLv1(getCategCache().getCategLv1(i.getCategIdPath() ,i.getEventCategId()))
-                .setCategNameLv1(getCategCache().getCategLv1(i.getCategNamePath() ,i.getCategName())));
+                .endFrom( refreshCateg(i) ));
 
     }
     /**
@@ -147,21 +146,22 @@ public class TenantCaseEventBiz {
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean saveCaseEvent(SaveCaseEventRequest saveCaseEvent , HttpServletRequest request) {
-        LoginContextVO voLogin=ShareBiz.getLoginUser(request);
+        final String appId = saveCaseEvent.getAppId();
+        LoginContextVO voLogin = ShareBiz.getLoginUser(request);
         //TODO checkLogin
         AssertUtil.trueThenThrow(ShareUtil.XObject.notEmpty(saveCaseEvent.getCaseEventId())
                         && caseEventDao.getById(saveCaseEvent.getCaseEventId(), CaseEventEntity::getId).isEmpty())
                 .throwMessage("人物事件不存在或已删除");
         CategVO categVO = null;
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(saveCaseEvent.getEventCategId())
-                        || null == (categVO = getCategCache().getById(saveCaseEvent.getEventCategId())))
+                        || null == (categVO = getCategCache().getById(appId, saveCaseEvent.getEventCategId())))
                 .throwMessage("事件类别不存在");
-        EnumEventTriggerType triggerType=EnumEventTriggerType.of(saveCaseEvent.getTriggerType());
-        AssertUtil.trueThenThrow(triggerType==EnumEventTriggerType.CONDITION&&ShareUtil.XCollection.notEmpty(saveCaseEvent.getEffectExpresssions()))
+        EnumEventTriggerType triggerType = EnumEventTriggerType.of(saveCaseEvent.getTriggerType());
+        AssertUtil.trueThenThrow(triggerType == EnumEventTriggerType.CONDITION && ShareUtil.XCollection.notEmpty(saveCaseEvent.getEffectExpresssions()))
                 .throwMessage("条件触发时不支持定义影响的指标");
-        AssertUtil.trueThenThrow(triggerType!=EnumEventTriggerType.CONDITION&&ShareUtil.XCollection.notEmpty(saveCaseEvent.getConditionExpresssionIds()))
+        AssertUtil.trueThenThrow(triggerType != EnumEventTriggerType.CONDITION && ShareUtil.XCollection.notEmpty(saveCaseEvent.getConditionExpresssionIds()))
                 .throwMessage("时间触发时不支持定义触发条件");
-        AssertUtil.trueThenThrow(triggerType!=EnumEventTriggerType.CONDITION&& EnumEventTriggerSpan.of(saveCaseEvent.getTriggerSpan())==EnumEventTriggerSpan.NONE)
+        AssertUtil.trueThenThrow(triggerType != EnumEventTriggerType.CONDITION && EnumEventTriggerSpan.of(saveCaseEvent.getTriggerSpan()) == EnumEventTriggerSpan.NONE)
                 .throwMessage("请选择正确的触发时间段");
 
 
@@ -174,7 +174,7 @@ public class TenantCaseEventBiz {
                 .throwMessage("存在重复的影响指标，请检查");
         saveCaseEvent.setActions(ShareUtil.XObject.defaultIfNull(saveCaseEvent.getActions(), new ArrayList<>()));
         saveCaseEvent.getActions().forEach(item -> {
-            AssertUtil.trueThenThrow(ShareUtil.XObject.notEmpty(item.getActionExpresssions())&&item.getActionExpresssions().stream()
+            AssertUtil.trueThenThrow(ShareUtil.XObject.notEmpty(item.getActionExpresssions()) && item.getActionExpresssions().stream()
                             .map(IndicatorExpressionVO::getIndicatorInstanceId)
                             .collect(Collectors.toSet()).size() < item.getActionExpresssions().size())
                     .throwMessage(String.format("措施\"%s\"存在重复的关联指标", item.getActionDesc()));
@@ -182,39 +182,41 @@ public class TenantCaseEventBiz {
         });
 
         //build po
-        if(ShareUtil.XObject.isEmpty(saveCaseEvent.getCaseEventId())){
+        if (ShareUtil.XObject.isEmpty(saveCaseEvent.getCaseEventId())) {
             saveCaseEvent.setCaseEventId(idGenerator.nextIdStr());
         }
-        saveCaseEvent.getActions().forEach(i->i.setRefId(ShareUtil.XString.defaultIfEmpty(i.getRefId(),()->idGenerator.nextIdStr())));
+        saveCaseEvent.getActions().forEach(i -> i.setRefId(ShareUtil.XString.defaultIfEmpty(i.getRefId(), () -> idGenerator.nextIdStr())));
         CaseEventEntity row = CopyWrapper.create(CaseEventEntity::new)
                 .endFrom(saveCaseEvent)
                 .setCategName(categVO.getCategName())
                 .setCategIdPath(categVO.getCategIdPath())
                 .setCategNamePath(categVO.getCategNamePath())
+                .setCategIdLv1(categVO.getCategIdLv1())
+                .setCategNameLv1(categVO.getCategNameLv1())
                 .setCreateAccountId(voLogin.getAccountId())
                 .setCreateAccountName(voLogin.getAccountName())
                 .setTriggerType(triggerType.getCode());
-        List<CaseEventActionEntity> rowActions=ShareUtil.XCollection.map(saveCaseEvent.getActions(), i->
+        List<CaseEventActionEntity> rowActions = ShareUtil.XCollection.map(saveCaseEvent.getActions(), i ->
                 CopyWrapper.create(CaseEventActionEntity::new)
                         .endFrom(i)
                         .setCaseEventActionId(i.getRefId()));
 
         //expression
-        final String caseEventId=row.getCaseEventId();
-        Map<String,List<String>> mapExpressions=new HashMap<>();
-        if(ShareUtil.XObject.notEmpty(saveCaseEvent.getConditionExpresssionIds())){
-            mapExpressions.computeIfAbsent(caseEventId, key->new ArrayList<>()).addAll(saveCaseEvent.getConditionExpresssionIds());
+        final String caseEventId = row.getCaseEventId();
+        Map<String, List<String>> mapExpressions = new HashMap<>();
+        if (ShareUtil.XObject.notEmpty(saveCaseEvent.getConditionExpresssionIds())) {
+            mapExpressions.computeIfAbsent(caseEventId, key -> new ArrayList<>()).addAll(saveCaseEvent.getConditionExpresssionIds());
         }
-        if(ShareUtil.XObject.notEmpty(saveCaseEvent.getEffectExpresssions())) {
-            List<String> dst=mapExpressions.computeIfAbsent(caseEventId, key -> new ArrayList<>());
-            saveCaseEvent.getEffectExpresssions().forEach(i ->dst.add(i.getIndicatorExpressionId()));
+        if (ShareUtil.XObject.notEmpty(saveCaseEvent.getEffectExpresssions())) {
+            List<String> dst = mapExpressions.computeIfAbsent(caseEventId, key -> new ArrayList<>());
+            saveCaseEvent.getEffectExpresssions().forEach(i -> dst.add(i.getIndicatorExpressionId()));
         }
-        saveCaseEvent.getActions().forEach(i->{
-            if(ShareUtil.XObject.isEmpty(i.getActionExpresssions())){
+        saveCaseEvent.getActions().forEach(i -> {
+            if (ShareUtil.XObject.isEmpty(i.getActionExpresssions())) {
                 return;
             }
-            List<String> dst= mapExpressions.computeIfAbsent(i.getRefId(), key->new ArrayList<>());
-            i.getActionExpresssions().forEach(vo->dst.add(vo.getIndicatorExpressionId()));
+            List<String> dst = mapExpressions.computeIfAbsent(i.getRefId(), key -> new ArrayList<>());
+            i.getActionExpresssions().forEach(vo -> dst.add(vo.getIndicatorExpressionId()));
         });
         return caseEventDao.tranSave(row, rowActions, mapExpressions);
     }
@@ -374,13 +376,15 @@ public class TenantCaseEventBiz {
         if (ShareUtil.XObject.isEmpty(src.getEventCategId())) {
             return src;
         }
-        CategVO cacheItem = getCategCache().getById(src.getEventCategId());
+        CategVO cacheItem = getCategCache().getById(src.getAppId(), src.getEventCategId());
         if (null == cacheItem) {
             return src;
         }
         return src.setCategName(cacheItem.getCategName())
                 .setCategIdPath(cacheItem.getCategIdPath())
-                .setCategNamePath(cacheItem.getCategNamePath());
+                .setCategNamePath(cacheItem.getCategNamePath())
+                .setCategIdLv1(cacheItem.getCategIdLv1())
+                .setCategNameLv1(cacheItem.getCategNameLv1());
 
     }
 }
