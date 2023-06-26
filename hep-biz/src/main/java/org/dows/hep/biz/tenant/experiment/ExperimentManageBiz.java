@@ -29,6 +29,7 @@ import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.response.ExperimentStateResponse;
 import org.dows.hep.biz.base.org.OrgBiz;
+import org.dows.hep.biz.base.person.PersonManageBiz;
 import org.dows.hep.biz.timer.ExperimentBeginTimerTask;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
@@ -93,6 +94,8 @@ public class ExperimentManageBiz {
 
     private final ExperimentBeginTimerTask experimentBeginTimerTask;
 
+    private final PersonManageBiz personManageBiz;
+
     /**
      * @param
      * @return
@@ -104,8 +107,10 @@ public class ExperimentManageBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     @DSTransactional
-    public String allot(CreateExperimentRequest createExperiment) {
-
+    public String allot(CreateExperimentRequest createExperiment,String accountId) {
+        // 根据登录ID获取账户名和用户名
+        AccountInstanceResponse instanceResponse = personManageBiz.getPersonalInformation(accountId,createExperiment.getAppId());
+        // 填充数据
         ExperimentInstanceEntity experimentInstance = ExperimentInstanceEntity.builder()
                 .appId(createExperiment.getAppId())
                 .experimentInstanceId(idGenerator.nextIdStr())
@@ -114,10 +119,10 @@ public class ExperimentManageBiz {
                 .experimentDescr(createExperiment.getExperimentDescr())
                 .model(createExperiment.getModel())
                 .state(ExperimentStateEnum.UNBEGIN.getState())
-                //todo 填充分配人，当前登录账号获取用户名
-                .appointor(createExperiment.getAppointor())
+                .appointor(instanceResponse.getAccountName())
                 .caseInstanceId(createExperiment.getCaseInstanceId())
                 .caseName(createExperiment.getCaseName())
+                .appointorName(instanceResponse.getUserName())
                 .build();
         // 保存实验实例
         experimentInstanceService.saveOrUpdate(experimentInstance);
