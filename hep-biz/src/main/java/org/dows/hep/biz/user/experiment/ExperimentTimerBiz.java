@@ -172,15 +172,21 @@ public class ExperimentTimerBiz {
     @DSTransactional
     public boolean saveOrUpdateExperimentTimeExperimentState(String experimentInstanceId, List<ExperimentTimerEntity> updateExperimentTimerEntities, ExperimentStateEnum experimentStateEnum) {
         boolean b = experimentTimerService.saveOrUpdateBatch(updateExperimentTimerEntities);
+        if (!b) {
+            throw new ExperimentException(" 更新计时器实验状态发生异常！");
+        }
         boolean update = experimentInstanceService.lambdaUpdate().eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
                 .set(ExperimentInstanceEntity::getState, experimentStateEnum.getState())
                 .update();
+        if (!update) {
+            throw new ExperimentException(" 更新实验实例状态发生异常！");
+        }
         boolean update1 = experimentParticipatorService.lambdaUpdate().eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
                 .set(ExperimentParticipatorEntity::getState, experimentStateEnum.getState())
                 .update();
 
-        if (!b || !update || !update1) {
-            throw new ExperimentException(" 更新定时器及实验状态发生异常！");
+        if (!update1) {
+            throw new ExperimentException(" 更新实验参与者实验状态发生异常！");
         }
         return b;
     }
