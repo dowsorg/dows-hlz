@@ -177,7 +177,7 @@ public class ExperimentQuestionnaireBiz {
      * @创建时间: 2023年4月23日 上午9:44:34
      */
     @DSTransactional
-    public Boolean batchSubmitQuestionnaire(String experimentInstanceId, String period) {
+    public Boolean submitQuestionnaireBatch(String experimentInstanceId, String period) {
         if (StrUtil.isBlank(experimentInstanceId) || StrUtil.isBlank(period)) {
             throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
         }
