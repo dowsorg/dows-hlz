@@ -127,7 +127,7 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
         boolean exceptionFlag=false;
         if(ShareUtil.XCollection.notEmpty(triggeredEvents)) {
             try {
-                ExperimentEventBiz.Instance().saveTriggeredTimeEvent(triggeredEvents);
+                ExperimentEventRules.Instance().saveTriggeredTimeEvent(triggeredEvents);
             } catch (Exception ex) {
                 groups.forEach(i -> i.setTriggeredTime(null));
                 failCounter.incrementAndGet();

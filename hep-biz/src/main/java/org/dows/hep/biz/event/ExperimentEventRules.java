@@ -13,13 +13,13 @@ import java.util.List;
  * @date : 2023/6/22 22:17
  */
 @Component
-public class ExperimentEventBiz {
-    private static volatile  ExperimentEventBiz s_instance;
-    public static ExperimentEventBiz Instance(){
+public class ExperimentEventRules {
+    private static volatile ExperimentEventRules s_instance;
+    public static ExperimentEventRules Instance(){
         return s_instance;
     }
 
-    private ExperimentEventBiz(){
+    private ExperimentEventRules(){
         s_instance=this;
     }
 
