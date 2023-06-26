@@ -20,7 +20,7 @@ import java.util.List;
 public class ExperimentIndicatorJudgeHealthGuidanceRsRest {
   private final ExperimentIndicatorJudgeHealthGuidanceRsBiz experimentIndicatorJudgeHealthGuidanceRsBiz;
 
-  @Operation(summary = "根据功能点id查询出所有的判断操作-危险因素")
+  @Operation(summary = "根据功能点id查询出所有的判断操作-健康指导")
   @GetMapping("v1/userExperiment/healthGuidance/get")
   public List<FirstHealthGuidanceTabRsResponse> get(
       @RequestParam String indicatorFuncId

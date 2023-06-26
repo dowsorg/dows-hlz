@@ -24,5 +24,5 @@ public class FirstHealthGuidanceTabRsResponse implements Serializable {
   private String indicatorCategoryName;
 
   @Schema(title = "健康指导列表")
-  private List<ExperimentIndicatorJudgeHealthGuidanceRsResponse> experimentIndicatorJudgeHealthGuidanceRsResponseList;
+  private List<ExperimentIndicatorJudgeHealthGuidanceRsResponse> children;
 }

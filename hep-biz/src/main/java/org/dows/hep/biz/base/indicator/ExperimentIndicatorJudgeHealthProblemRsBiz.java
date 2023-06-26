@@ -64,15 +64,15 @@ public class ExperimentIndicatorJudgeHealthProblemRsBiz {
                 .builder()
                 .indicatorCategoryId(secondIndicatorCategoryId)
                 .indicatorCategoryName(secondIndicatorCategoryName)
-                .experimentIndicatorJudgeHealthProblemRsResponseList(new ArrayList<>())
+                .children(new ArrayList<>())
                 .build();
           }
-          List<ExperimentIndicatorJudgeHealthProblemRsResponse> experimentIndicatorJudgeHealthProblemRsResponseList = secondHealthProblemTabRsResponse.getExperimentIndicatorJudgeHealthProblemRsResponseList();
+          List<ExperimentIndicatorJudgeHealthProblemRsResponse> experimentIndicatorJudgeHealthProblemRsResponseList = secondHealthProblemTabRsResponse.getChildren();
           if (Objects.isNull(experimentIndicatorJudgeHealthProblemRsResponseList)) {
             experimentIndicatorJudgeHealthProblemRsResponseList = new ArrayList<>();
           }
           experimentIndicatorJudgeHealthProblemRsResponseList.add(experimentIndicatorJudgeHealthProblemRs2Response(experimentIndicatorJudgeHealthProblemRsEntity));
-          secondHealthProblemTabRsResponse.setExperimentIndicatorJudgeHealthProblemRsResponseList(experimentIndicatorJudgeHealthProblemRsResponseList);
+          secondHealthProblemTabRsResponse.setChildren(experimentIndicatorJudgeHealthProblemRsResponseList);
           kIndicatorCategoryIdVSecondHealthProblemTabRsResponseMap.put(secondIndicatorCategoryId, secondHealthProblemTabRsResponse);
           FirstHealthProblemTabRsResponse firstHealthProblemTabRsResponse = kIndicatorCategoryIdVFirstHealthProblemTabRsResponseMap.get(firstIndicatorCategoryId);
           if (Objects.isNull(firstHealthProblemTabRsResponse)) {
@@ -80,21 +80,21 @@ public class ExperimentIndicatorJudgeHealthProblemRsBiz {
                 .builder()
                 .indicatorCategoryId(firstIndicatorCategoryId)
                 .indicatorCategoryName(firstIndicatorCategoryName)
-                .secondHealthProblemTabRsResponseList(new ArrayList<>())
+                .children(new ArrayList<>())
                 .build();
           }
-          List<SecondHealthProblemTabRsResponse> secondHealthProblemTabRsResponseList = firstHealthProblemTabRsResponse.getSecondHealthProblemTabRsResponseList();
+          List<SecondHealthProblemTabRsResponse> secondHealthProblemTabRsResponseList = firstHealthProblemTabRsResponse.getChildren();
           if (Objects.isNull(secondHealthProblemTabRsResponseList)) {
             secondHealthProblemTabRsResponseList = new ArrayList<>();
           }
           secondHealthProblemTabRsResponseList.add(secondHealthProblemTabRsResponse);
-          firstHealthProblemTabRsResponse.setSecondHealthProblemTabRsResponseList(secondHealthProblemTabRsResponseList);
+          firstHealthProblemTabRsResponse.setChildren(secondHealthProblemTabRsResponseList);
           kIndicatorCategoryIdVFirstHealthProblemTabRsResponseMap.put(firstIndicatorCategoryId, firstHealthProblemTabRsResponse);
         });
     kIndicatorCategoryIdVFirstHealthProblemTabRsResponseMap.forEach((firstId, firstRs) -> {
-      List<SecondHealthProblemTabRsResponse> secondHealthProblemTabRsResponseList = firstRs.getSecondHealthProblemTabRsResponseList();
+      List<SecondHealthProblemTabRsResponse> secondHealthProblemTabRsResponseList = firstRs.getChildren();
       secondHealthProblemTabRsResponseList.forEach(secondHealthProblemTabRsResponse -> {
-        List<ExperimentIndicatorJudgeHealthProblemRsResponse> experimentIndicatorJudgeHealthProblemRsResponseList = secondHealthProblemTabRsResponse.getExperimentIndicatorJudgeHealthProblemRsResponseList();
+        List<ExperimentIndicatorJudgeHealthProblemRsResponse> experimentIndicatorJudgeHealthProblemRsResponseList = secondHealthProblemTabRsResponse.getChildren();
         experimentIndicatorJudgeHealthProblemRsResponseList.sort(Comparator.comparing(ExperimentIndicatorJudgeHealthProblemRsResponse::getName));
       });
       secondHealthProblemTabRsResponseList.sort(Comparator.comparing(SecondHealthProblemTabRsResponse::getIndicatorCategoryName));
