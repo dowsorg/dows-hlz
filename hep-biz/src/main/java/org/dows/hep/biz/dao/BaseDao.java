@@ -40,6 +40,9 @@ public abstract class BaseDao<S extends MybatisCrudService<E>,E extends CrudEnti
 
     //region virtual
 
+    protected SFunction<E,String> getColAppId(){
+        return null;
+    }
     /**
      * get 逻辑主键
      * @return
@@ -277,6 +280,16 @@ public abstract class BaseDao<S extends MybatisCrudService<E>,E extends CrudEnti
                 .select(cols)
                 .oneOpt();
     }
+    public Optional<E> getByPk(String appId, Long pk, SFunction<E,?>... cols){
+        if(ShareUtil.XObject.isEmpty(pk)){
+            return Optional.empty();
+        }
+        return service.lambdaQuery()
+                .eq(null!=getColAppId()&&ShareUtil.XObject.notEmpty(appId),getColAppId(),appId)
+                .eq(E::getId,pk)
+                .select(cols)
+                .oneOpt();
+    }
 
     /**
      * 按逻辑主键查询
@@ -289,6 +302,16 @@ public abstract class BaseDao<S extends MybatisCrudService<E>,E extends CrudEnti
             return Optional.empty();
         }
         return service.lambdaQuery()
+                .eq(getColId(),id)
+                .select(cols)
+                .oneOpt();
+    }
+    public Optional<E> getById(String appId, String id, SFunction<E,?>... cols){
+        if(ShareUtil.XObject.isEmpty(id)){
+            return Optional.empty();
+        }
+        return service.lambdaQuery()
+                .eq(null!=getColAppId()&&ShareUtil.XObject.notEmpty(appId),getColAppId(),appId)
                 .eq(getColId(),id)
                 .select(cols)
                 .oneOpt();
@@ -307,6 +330,19 @@ public abstract class BaseDao<S extends MybatisCrudService<E>,E extends CrudEnti
         }
         final boolean oneFlag=ids.size()==1;
         return service.lambdaQuery()
+                .eq(oneFlag, getColId(),ids.iterator().next())
+                .in(!oneFlag, getColId(),ids)
+                .orderByAsc(getColId())
+                .select(cols)
+                .list();
+    }
+    public List<E> getByIds(String appId, Collection<String> ids,SFunction<E,?>... cols){
+        if(ShareUtil.XObject.isEmpty(ids)){
+            return Collections.emptyList();
+        }
+        final boolean oneFlag=ids.size()==1;
+        return service.lambdaQuery()
+                .eq(null!=getColAppId()&&ShareUtil.XObject.notEmpty(appId),getColAppId(),appId)
                 .eq(oneFlag, getColId(),ids.iterator().next())
                 .in(!oneFlag, getColId(),ids)
                 .orderByAsc(getColId())

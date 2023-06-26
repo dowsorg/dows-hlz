@@ -14,7 +14,8 @@ import org.dows.hep.api.enums.EnumEventTriggerSpan;
 import org.dows.hep.api.enums.EnumEventTriggerType;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
-import org.dows.hep.biz.cache.EventCategCache;
+import org.dows.hep.biz.cache.CategCache;
+import org.dows.hep.biz.cache.CategCacheFactory;
 import org.dows.hep.biz.dao.*;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.CopyWrapper;
@@ -56,8 +57,8 @@ public class EventBiz{
     private final EnumCategFamily evencategFamily =EnumCategFamily.EVENT;
 
 
-    protected EventCategCache getCategCache(){
-        return EventCategCache.Instance;
+    protected CategCache getCategCache(){
+        return CategCacheFactory.EVENT.getCache();
     }
 
     /**
@@ -71,9 +72,9 @@ public class EventBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public List<CategVO> listEventCateg(FindEventCategRequest findEventCateg ) {
-
+        final String appId=findEventCateg.getAppId();
         final String pid=ShareUtil.XString.defaultIfEmpty(findEventCateg.getPid(), evencategFamily.getCode());
-        return getCategCache().getByParentId(pid, Optional.ofNullable(findEventCateg.getWithChild()).orElse(0)>0);
+        return getCategCache().getByParentId(appId,pid, Optional.ofNullable(findEventCateg.getWithChild()).orElse(0)>0);
 
     }
     /**
@@ -90,8 +91,9 @@ public class EventBiz{
         if(ShareUtil.XObject.isEmpty(saveEventCateg)){
             return false;
         }
+        final String appId=saveEventCateg.get(0).getAppId();
         final String pid=saveEventCateg.get(0).getCategPid();
-        CategVO parent = ShareUtil.XObject.defaultIfNull(getCategCache().getById(pid),new CategVO());
+        CategVO parent = ShareUtil.XObject.defaultIfNull(getCategCache().getById(appId, pid),new CategVO());
         AssertUtil.trueThenThrow(ShareUtil.XString.hasLength(pid) && ShareUtil.XObject.isEmpty(parent.getCategIdPath()))
                 .throwMessage("父类别不存在");
         List<EventCategEntity> rows=ShareUtil.XCollection.map(saveEventCateg, i-> {
@@ -103,8 +105,8 @@ public class EventBiz{
                     .setFamily(evencategFamily.getCode())
                     .setEventCategId(i.getCategId())
                     .setCategPid(pid)
-                    .setCategIdPath(getCategCache().getCategPath(parent.getCategIdPath(), i.getCategId()))
-                    .setCategNamePath(getCategCache().getCategPath(parent.getCategNamePath(), i.getCategName()));
+                    .setCategIdPath(getCategCache().buildCategPath(parent.getCategIdPath(), i.getCategId()))
+                    .setCategNamePath(getCategCache().buildCategPath(parent.getCategNamePath(), i.getCategName()));
         });
 
         eventCategDao.tranSaveBatch(rows);
@@ -122,10 +124,11 @@ public class EventBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean delEventCateg(DelEventCategRequest delEventCateg ) {
+        final String appId= delEventCateg.getAppId();
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(delEventCateg.getIds()))
                 .throwMessage("缺少必要参数");
         delEventCateg.getIds().forEach(i -> {
-            AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(getCategCache().getByParentId(i, true)))
+            AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(getCategCache().getByParentId(appId, i, true)))
                     .throwMessage("类别包含子级类别，不可删除");
             AssertUtil.trueThenThrow(EnumCheckCategPolicy.EVENT.checkCategRef(i))
                     .throwMessage("类别已被引用，不可删除");
@@ -146,10 +149,8 @@ public class EventBiz{
     */
     public Page<EventResponse> pageEvent(FindEventRequest findEvent ) {
 
-        return ShareBiz.buildPage(eventDao.pageByCondition(findEvent),i-> CopyWrapper.create(EventResponse::new)
-                .endFrom( refreshCateg(i) )
-                .setCategIdLv1(getCategCache().getCategLv1(i.getCategIdPath() ,i.getEventCategId()))
-                .setCategNameLv1(getCategCache().getCategLv1(i.getCategNamePath() ,i.getCategName())));
+        return ShareBiz.buildPage(eventDao.pageByCondition(findEvent),i->
+                CopyWrapper.create(EventResponse::new).endFrom( refreshCateg(i)));
 
     }
     /**
@@ -211,6 +212,7 @@ public class EventBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean saveEvent(SaveEventRequest saveEvent, HttpServletRequest request) {
+        final String appId=saveEvent.getAppId();
         LoginContextVO voLogin=ShareBiz.getLoginUser(request);
         //TODO checkLogin
         AssertUtil.trueThenThrow(ShareUtil.XObject.notEmpty(saveEvent.getEventId())
@@ -218,7 +220,7 @@ public class EventBiz{
                 .throwMessage("突发事件不存在或已删除");
         CategVO categVO = null;
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(saveEvent.getEventCategId())
-                        || null == (categVO = getCategCache().getById(saveEvent.getEventCategId())))
+                        || null == (categVO = getCategCache().getById(appId,saveEvent.getEventCategId())))
                 .throwMessage("事件类别不存在");
         EnumEventTriggerType triggerType=EnumEventTriggerType.of(saveEvent.getTriggerType());
         AssertUtil.trueThenThrow(triggerType==EnumEventTriggerType.CONDITION&&ShareUtil.XCollection.notEmpty(saveEvent.getEffectExpresssions()))
@@ -254,6 +256,8 @@ public class EventBiz{
                 .setCategName(categVO.getCategName())
                 .setCategIdPath(categVO.getCategIdPath())
                 .setCategNamePath(categVO.getCategNamePath())
+                .setCategIdLv1(categVO.getCategIdLv1())
+                .setCategNameLv1(categVO.getCategNameLv1())
                 .setCreateAccountId(voLogin.getAccountId())
                 .setCreateAccountName(voLogin.getAccountName())
                 .setTriggerType(triggerType.getCode());
@@ -357,13 +361,15 @@ public class EventBiz{
         if (ShareUtil.XObject.isEmpty(src.getEventCategId())) {
             return src;
         }
-        CategVO cacheItem = getCategCache().getById(src.getEventCategId());
+        CategVO cacheItem = getCategCache().getById(src.getAppId(), src.getEventCategId());
         if (null == cacheItem) {
             return src;
         }
         return src.setCategName(cacheItem.getCategName())
                 .setCategIdPath(cacheItem.getCategIdPath())
-                .setCategNamePath(cacheItem.getCategNamePath());
+                .setCategNamePath(cacheItem.getCategNamePath())
+                .setCategIdLv1(cacheItem.getCategIdLv1())
+                .setCategNameLv1(cacheItem.getCategNameLv1());
 
     }
 }

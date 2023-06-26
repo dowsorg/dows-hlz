@@ -2,7 +2,6 @@ package org.dows.hep.biz.dao;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.dows.hep.api.base.intervene.request.FindSportRequest;
@@ -97,14 +96,16 @@ public class SportItemDao extends BaseSubDao<SportItemService,SportItemEntity,Sp
     public IPage<SportItemEntity> pageByCondition(FindSportRequest req, SFunction<SportItemEntity,?>... cols) {
 
         Page<SportItemEntity> page=Page.of(req.getPageNo(),req.getPageSize());
-        page.addOrder(OrderItem.asc("categ_name_path"),OrderItem.asc("strength_met"));
-        return service.page(page,Wrappers.<SportItemEntity>lambdaQuery()
+        page.addOrder(OrderItem.asc("categ_name_lv1"),OrderItem.asc("strength_met"));
+        return service.lambdaQuery()
+                .eq(ShareUtil.XObject.notEmpty(req.getAppId()), SportItemEntity::getAppId,req.getAppId())
                 .in(ShareUtil.XCollection.notEmpty(req.getCategIdLv1()), SportItemEntity::getInterveneCategId, req.getCategIdLv1())
                 .like(ShareUtil.XString.hasLength(req.getKeywords()), SportItemEntity::getSportItemName,req.getKeywords())
                 .in(ShareUtil.XCollection.notEmpty(req.getIncIds()), getColId(), req.getIncIds())
                 .notIn(ShareUtil.XCollection.notEmpty(req.getExcIds()), getColId(), req.getExcIds())
                 .eq(ShareUtil.XObject.notEmpty(req.getState()), getColState(), req.getState())
-                .select(cols));
+                .select(cols)
+                .page(page);
 
     }
 

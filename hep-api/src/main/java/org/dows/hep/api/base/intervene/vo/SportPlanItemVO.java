@@ -9,6 +9,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
+import java.math.BigDecimal;
+
 /**
  * @author : wuzl
  * @date : 2023/5/4 17:40
@@ -42,7 +44,7 @@ public class SportPlanItemVO {
     private String categNameLv1;
 
     @Schema(title = "运动强度(MET)")
-    private String strengthMet;
+    private BigDecimal strengthMet;
 
     @Schema(title = "运动强度类别")
     private String strengthType;

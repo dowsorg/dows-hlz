@@ -7,8 +7,10 @@ import org.dows.hep.api.base.intervene.request.*;
 import org.dows.hep.api.base.intervene.response.TreatItemInfoResponse;
 import org.dows.hep.api.base.intervene.response.TreatItemResponse;
 import org.dows.hep.api.base.intervene.vo.IndicatorExpressionVO;
+import org.dows.hep.api.enums.EnumExptOperateType;
 import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
-import org.dows.hep.biz.cache.InterveneCategCache;
+import org.dows.hep.biz.cache.CategCache;
+import org.dows.hep.biz.cache.CategCacheFactory;
 import org.dows.hep.biz.dao.IndicatorExpressionRefDao;
 import org.dows.hep.biz.dao.IndicatorFuncDao;
 import org.dows.hep.biz.dao.TreatItemDao;
@@ -42,8 +44,8 @@ public class TreatItemBiz{
     private final IndicatorExpressionRefDao daoExpressionRef;
     private final IndicatorExpressionBiz indicatorExpressionBiz;
 
-    protected InterveneCategCache getCategCache(){
-        return InterveneCategCache.Instance;
+    protected CategCache getCategCache(){
+        return CategCacheFactory.TreatItem.getCache();
     }
     /**
     * @param
@@ -56,11 +58,8 @@ public class TreatItemBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Page<TreatItemResponse> pageTreatItem(FindTreatRequest findTreat ) {
-        findTreat.setCategIdLv1(getCategCache().getLeafIds(findTreat.getCategIdLv1()));
-        return ShareBiz.buildPage(dao.pageByCondition(findTreat), i -> CopyWrapper.create(TreatItemResponse::new)
-                .endFrom(refreshCateg(i))
-                .setCategIdLv1(getCategCache().getCategLv1(i.getCategIdPath(), i.getInterveneCategId()))
-                .setCategNameLv1(getCategCache().getCategLv1(i.getCategNamePath(), i.getCategName())));
+        return ShareBiz.buildPage(dao.pageByCondition(findTreat), i ->
+                CopyWrapper.create(TreatItemResponse::new).endFrom(refreshCateg(i)));
 
     }
 
@@ -93,17 +92,23 @@ public class TreatItemBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean saveTreatItem(SaveTreatItemRequest saveTreatItem ) {
+        final String appId=saveTreatItem.getAppId();
         AssertUtil.trueThenThrow(ShareUtil.XObject.notEmpty(saveTreatItem.getTreatItemId())
                         && dao.getById(saveTreatItem.getTreatItemId(), TreatItemEntity::getTreatItemId).isEmpty())
                 .throwMessage("干预项目不存在");
         CategVO categVO=null;
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(saveTreatItem.getInterveneCategId())
-                        ||null==(categVO= getCategCache().getById(saveTreatItem.getInterveneCategId())))
+                        ||null==(categVO= getCategCache().getById(appId,saveTreatItem.getInterveneCategId())))
                 .throwMessage("类别不存在");
         final IndicatorFuncEntity funcRow= AssertUtil.getNotNull(indicatorFuncDao.getById(saveTreatItem.getIndicatorFuncId(),
                         IndicatorFuncEntity::getPid,
                         IndicatorFuncEntity::getIndicatorCategoryId))
                 .orElseThrow("功能点不存在");
+        EnumExptOperateType operateType=EnumExptOperateType.ofCategId(funcRow.getIndicatorCategoryId());
+        AssertUtil.trueThenThrow(operateType==EnumExptOperateType.NONE)
+                .throwMessage("未知的功能点类别");
+        AssertUtil.trueThenThrow(operateType.getCategLayer()>0&&!categVO.getLayer().equals(operateType.getCategLayer()))
+                .throwMessage(String.format("请选择到第%s级类别", operateType.getCategLayer()));
         AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(saveTreatItem.getExpresssions())
                         &&saveTreatItem.getExpresssions().stream()
                         .map(IndicatorExpressionVO::getIndicatorInstanceId)
@@ -111,11 +116,14 @@ public class TreatItemBiz{
                         .size()<saveTreatItem.getExpresssions().size())
                 .throwMessage("存在重复的关联指标，请检查");
 
+
         TreatItemEntity row= CopyWrapper.create(TreatItemEntity::new)
                 .endFrom(saveTreatItem)
                 .setCategName(categVO.getCategName())
                 .setCategIdPath(categVO.getCategIdPath())
                 .setCategNamePath(categVO.getCategNamePath())
+                .setCategIdLv1(categVO.getCategIdLv1())
+                .setCategNameLv1(categVO.getCategNameLv1())
                 .setIndicatorCategoryId(funcRow.getIndicatorCategoryId());
 
         List<String> expressionIds = new ArrayList<>();
@@ -164,13 +172,15 @@ public class TreatItemBiz{
         if (ShareUtil.XObject.isEmpty(src.getInterveneCategId())) {
             return src;
         }
-        CategVO cacheItem = getCategCache().getById(src.getInterveneCategId());
+        CategVO cacheItem = getCategCache().getById(src.getAppId(), src.getInterveneCategId());
         if (null == cacheItem) {
             return src;
         }
         return src.setCategName(cacheItem.getCategName())
                 .setCategIdPath(cacheItem.getCategIdPath())
-                .setCategNamePath(cacheItem.getCategNamePath());
+                .setCategNamePath(cacheItem.getCategNamePath())
+                .setCategIdLv1(cacheItem.getCategIdLv1())
+                .setCategNameLv1(cacheItem.getCategNameLv1());
 
     }
 }
