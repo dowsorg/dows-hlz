@@ -190,7 +190,7 @@ public class ExperimentQuestionnaireBiz {
                 .set(ExperimentQuestionnaireEntity::getState, ExptQuestionnaireStateEnum.SUBMITTED.getCode())
                 .update();
 
-        // todo compute
+        // compute
         experimentQuestionnaireScoreBiz.setExptQuestionnaireScore(experimentInstanceId, period);
 
         return updateRes;
