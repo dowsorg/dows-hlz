@@ -747,7 +747,7 @@ public class RsCopyBiz {
               experimentIndicatorFuncIdList.add(hgExperimentIndicatorFuncId);
             }
             kCaseOrgModuleIdVExperimentIndicatorFuncIdListMap.put(caseOrgModuleId, experimentIndicatorFuncIdList);
-            kExperimentIndicatorFuncIdVIndicatorCategoryIdMap.put(hgExperimentIndicatorFuncId, EnumIndicatorCategory.JUDGE_MANAGEMENT_HEALTH_PROBLEM.getCode());
+            kExperimentIndicatorFuncIdVIndicatorCategoryIdMap.put(hgExperimentIndicatorFuncId, EnumIndicatorCategory.JUDGE_MANAGEMENT_HEALTH_GUIDANCE.getCode());
             kExperimentIndicatorFuncIdVIndicatorFuncNameMap.put(hgExperimentIndicatorFuncId, name);
           });
         }

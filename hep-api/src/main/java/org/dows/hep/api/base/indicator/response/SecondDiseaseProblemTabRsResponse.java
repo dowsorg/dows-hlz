@@ -24,5 +24,5 @@ public class SecondDiseaseProblemTabRsResponse implements Serializable {
   private String indicatorCategoryName;
 
   @Schema(title = "第三层目录列表")
-  private List<ThirdDiseaseProblemTabRsResponse> thirdDiseaseProblemTabRsResponseList;
+  private List<ThirdDiseaseProblemTabRsResponse> children;
 }
