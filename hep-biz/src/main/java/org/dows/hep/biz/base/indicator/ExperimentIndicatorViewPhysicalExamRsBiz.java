@@ -32,6 +32,7 @@ public class ExperimentIndicatorViewPhysicalExamRsBiz {
         .experimentId(experimentIndicatorViewPhysicalExamRsEntity.getExperimentId())
         .caseId(experimentIndicatorViewPhysicalExamRsEntity.getCaseId())
         .appId(experimentIndicatorViewPhysicalExamRsEntity.getAppId())
+        .indicatorFuncId(experimentIndicatorViewPhysicalExamRsEntity.getIndicatorFuncId())
         .name(experimentIndicatorViewPhysicalExamRsEntity.getName())
         .fee(experimentIndicatorViewPhysicalExamRsEntity.getFee())
         .indicatorInstanceId(experimentIndicatorViewPhysicalExamRsEntity.getIndicatorInstanceId())

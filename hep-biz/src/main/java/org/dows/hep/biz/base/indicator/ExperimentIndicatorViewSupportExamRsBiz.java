@@ -34,6 +34,7 @@ public class ExperimentIndicatorViewSupportExamRsBiz {
         .experimentId(experimentIndicatorViewSupportExamRsEntity.getExperimentId())
         .caseId(experimentIndicatorViewSupportExamRsEntity.getCaseId())
         .appId(experimentIndicatorViewSupportExamRsEntity.getAppId())
+        .indicatorFuncId(experimentIndicatorViewSupportExamRsEntity.getIndicatorFuncId())
         .name(experimentIndicatorViewSupportExamRsEntity.getName())
         .fee(experimentIndicatorViewSupportExamRsEntity.getFee())
         .indicatorInstanceId(experimentIndicatorViewSupportExamRsEntity.getIndicatorInstanceId())

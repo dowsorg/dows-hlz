@@ -6,11 +6,15 @@ import lombok.RequiredArgsConstructor;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.hep.api.tenant.experiment.request.*;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
+import org.dows.hep.api.user.experiment.response.CountDownResponse;
+import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
 import org.dows.hep.biz.user.experiment.ExperimentParticipatorBiz;
+import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -24,7 +28,22 @@ import java.util.List;
 public class ExperimentManageRest {
     private final ExperimentManageBiz experimentManageBiz;
     private final ExperimentParticipatorBiz experimentParticipatorBiz;
+    private final ExperimentTimerBiz experimentTimerBiz;
 
+    /**
+     * 获取实验倒计时
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取租户端实验倒计时")
+    @GetMapping("v1/tenantExperiment/experimentTimer/countdown")
+    public CountDownResponse countdown(String appId, String experimentInstanceId) {
+
+        CountDownResponse countdown = experimentTimerBiz.countdown(experimentInstanceId);
+
+        return countdown;
+    }
     /**
      * 分配实验
      *
@@ -36,13 +55,6 @@ public class ExperimentManageRest {
     public String allot(@RequestBody @Validated CreateExperimentRequest createExperiment) {
         return experimentManageBiz.allot(createExperiment);
     }
-
-
-//    @Operation(summary = "获取分配实验数据")
-//    @PostMapping("v1/tenantExperiment/experimentManage/getAllotData")
-//    public CreateExperimentForm getAllotData(String experimentId, String appId) {
-//        return experimentManageBiz.getAllotData(experimentId, appId);
-//    }
 
     /**
      * 案例机构和人物复制到实验
@@ -105,8 +117,7 @@ public class ExperimentManageRest {
     @Operation(summary = "分页获取实验列表")
     @GetMapping("v1/tenantExperiment/experimentManage/page")
     public PageResponse<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
-        //return experimentManageBiz.page(pageExperimentRequest);
-        return experimentParticipatorBiz.pageByRole(pageExperimentRequest);
+        return experimentManageBiz.pageByRole(pageExperimentRequest);
 
     }
     /**

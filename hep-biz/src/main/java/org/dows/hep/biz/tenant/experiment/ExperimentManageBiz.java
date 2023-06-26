@@ -4,16 +4,15 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.account.api.*;
 import org.dows.account.request.*;
-import org.dows.account.response.AccountInstanceResponse;
-import org.dows.account.response.AccountOrgGeoResponse;
-import org.dows.account.response.AccountOrgResponse;
-import org.dows.account.response.AccountUserResponse;
+import org.dows.account.response.*;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
@@ -85,7 +84,10 @@ public class ExperimentManageBiz {
     // 事件发布
     private final ApplicationEventPublisher applicationEventPublisher;
 
+    private final AccountRoleApi accountRoleApi;
+
     private final OrgBiz orgBiz;
+
     /**
      * @param
      * @return
@@ -106,7 +108,7 @@ public class ExperimentManageBiz {
                 .experimentName(createExperiment.getExperimentName())
                 .experimentDescr(createExperiment.getExperimentDescr())
                 .model(createExperiment.getModel())
-                .state(0)
+                .state(ExperimentStateEnum.UNBEGIN.getState())
                 //todo 填充分配人，当前登录账号获取用户名
                 .appointor(createExperiment.getAppointor())
                 .caseInstanceId(createExperiment.getCaseInstanceId())
@@ -196,6 +198,9 @@ public class ExperimentManageBiz {
         //applicationEventPublisher.publishEvent(new AllotEvent(experimentTimerEntities));
         return experimentInstance.getExperimentInstanceId();
     }
+
+
+
 
     /**
      * 构建期数对应的计时器
@@ -457,9 +462,7 @@ public class ExperimentManageBiz {
     /**
      * 更新实验状态
      */
-    public void updateExperimentState(String experimentInstanceId){
-
-
+    public void updateExperimentState(String experimentInstanceId) {
 
 
     }
@@ -723,5 +726,70 @@ public class ExperimentManageBiz {
             experimentEvent = new StartEvent(experimentRestartRequest);
         }
         applicationEventPublisher.publishEvent(experimentEvent);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 管理端根据角色获取实验列表
+     * @关联表: ExperimentInstance
+     * @工时: 2H
+     * @开发者: lait
+     * @开始时间:
+     * @创建时间: 2023年4月18日 上午10:45:07
+     */
+    public PageResponse<ExperimentListResponse> pageByRole(PageExperimentRequest pageExperimentRequest) {
+        //查询参与者参加的实验列表
+        Page page = new Page<ExperimentListResponse>();
+        page.setCurrent(pageExperimentRequest.getPageNo());
+        page.setSize(pageExperimentRequest.getPageSize());
+        // todo 是否是管理员，如果是管理员，则查询所有记录，如果是老师，根据accountId查询自己的分配的实验列表，如果是学生根据accountId查询自己参与的实验
+        AccountRoleResponse accountRoleByPrincipalId = accountRoleApi.getAccountRoleByPrincipalId(pageExperimentRequest.getAccountId());
+        String roleCode = accountRoleByPrincipalId.getRoleCode();
+        if (pageExperimentRequest.getOrder() != null) {
+            String[] array = (String[]) pageExperimentRequest.getOrder().stream()
+                    .map(s -> StrUtil.toUnderlineCase((CharSequence) s))
+                    .toArray(String[]::new);
+            page.addOrder(pageExperimentRequest.getDesc() ? OrderItem.descs(array) : OrderItem.ascs(array));
+        }
+        if (roleCode.equals("ADMIN")) {
+            QueryWrapper<ExperimentInstanceEntity> queryWrapper = new QueryWrapper();
+            if (StringUtils.isNotEmpty(pageExperimentRequest.getKeyword())) {
+                queryWrapper.like("experiment_name", pageExperimentRequest.getKeyword())
+                        .or().like("case_name", pageExperimentRequest.getKeyword())
+                        .or().like("appointor_name", pageExperimentRequest.getKeyword());
+            }
+            page = experimentInstanceService.page(page, queryWrapper);
+        } else {
+            if (roleCode.equals("TEACHER")) {
+                page = experimentInstanceService.page(page, experimentInstanceService.lambdaQuery()
+                        .eq(ExperimentInstanceEntity::getAppointor, accountRoleByPrincipalId.getPrincipalName())
+                        .orderByDesc(ExperimentInstanceEntity::getStartTime)
+                        .getWrapper());
+            } else {
+                page = page.setTotal(0).setCurrent(0).setSize(0).setRecords(new ArrayList<>());
+            }
+        }
+        PageResponse pageInfo = experimentInstanceService.getPageInfo(page, ExperimentListResponse.class);
+        // 获取参与教师
+        List<ExperimentListResponse> listResponses = pageInfo.getList();
+        if(listResponses != null && listResponses.size() > 0){
+            listResponses.forEach(response->{
+                List<ExperimentParticipatorEntity> participatorList = experimentParticipatorService.lambdaQuery()
+                        .eq(ExperimentParticipatorEntity::getExperimentInstanceId,response.getExperimentInstanceId())
+                        .isNull(ExperimentParticipatorEntity::getExperimentGroupId)
+                        .list();
+                StringBuilder sb = new StringBuilder();
+                if(participatorList != null && participatorList.size() > 0){
+                    participatorList.forEach(participator -> {
+                        sb.append(participator.getAccountName()).append(",");
+                    });
+                }
+                String str = sb.substring(0, sb.length() - 1);
+                response.setParticipators(str);
+            });
+        }
+        pageInfo.setList(listResponses);
+        return pageInfo;
     }
 }
