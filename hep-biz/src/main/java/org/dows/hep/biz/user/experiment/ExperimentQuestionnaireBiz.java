@@ -5,7 +5,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.ExptQuestionnaireStateEnum;
@@ -27,12 +27,13 @@ import java.util.*;
  * @description
  * @date 2023/6/3 20:43
  */
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Service
 public class ExperimentQuestionnaireBiz {
     private final ExperimentQuestionnaireService experimentQuestionnaireService;
     private final ExperimentQuestionnaireItemBiz experimentQuestionnaireItemBiz;
     private final ExperimentTimerBiz experimentTimerBiz;
+    private final ExperimentQuestionnaireScoreBiz experimentQuestionnaireScoreBiz;
 
     /**
      * @param
@@ -161,6 +162,36 @@ public class ExperimentQuestionnaireBiz {
                 .update();
 
         // todo compute
+
+        return updateRes;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 批量提交
+     * @关联表:
+     * @工时: 2H
+     * @开发者: lait
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
+    @DSTransactional
+    public Boolean batchSubmitQuestionnaire(String experimentInstanceId, String period) {
+        if (StrUtil.isBlank(experimentInstanceId) || StrUtil.isBlank(period)) {
+            throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
+        }
+        Integer periodSeq = Integer.valueOf(period);
+
+        // submit
+        boolean updateRes = experimentQuestionnaireService.lambdaUpdate()
+                .eq(ExperimentQuestionnaireEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentQuestionnaireEntity::getPeriodSequence, periodSeq)
+                .set(ExperimentQuestionnaireEntity::getState, ExptQuestionnaireStateEnum.SUBMITTED.getCode())
+                .update();
+
+        // compute
+        experimentQuestionnaireScoreBiz.setExptQuestionnaireScore(experimentInstanceId, period);
 
         return updateRes;
     }

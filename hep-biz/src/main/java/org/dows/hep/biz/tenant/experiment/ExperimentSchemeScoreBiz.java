@@ -47,13 +47,13 @@ public class ExperimentSchemeScoreBiz {
      * @date 2023/6/15 20:36
      */
     public void preHandleExperimentSchemeScore(String experimentInstanceId, String caseInstanceId) {
-        List<String> viewAccountIds = experimentParticipatorService.lambdaQuery()
+        List<String> viewAccountIds = new ArrayList<>(experimentParticipatorService.lambdaQuery()
                 .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
                 .eq(ExperimentParticipatorEntity::getParticipatorType, 0)
                 .list()
                 .stream()
                 .map(ExperimentParticipatorEntity::getAccountId)
-                .toList();
+                .toList());
         preHandleExperimentSchemeScore(experimentInstanceId, caseInstanceId, viewAccountIds);
     }
 

@@ -62,6 +62,9 @@ public class ExperimentQuestionnaireEntity implements CrudEntity {
     @Schema(title = "方案状态[0:未开始,1:进行中, 2:已提交]")
     private Integer state;
 
+    @Schema(title = "得分")
+    private Float score;
+
     @JsonIgnore
     @TableLogic
     @TableField(fill = FieldFill.INSERT)

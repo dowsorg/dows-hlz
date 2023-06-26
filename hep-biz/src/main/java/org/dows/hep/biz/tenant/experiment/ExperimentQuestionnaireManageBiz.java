@@ -18,19 +18,19 @@ import org.dows.hep.api.user.experiment.ExptQuestionnaireStateEnum;
 import org.dows.hep.api.user.experiment.dto.ExptQuestionnaireOptionDTO;
 import org.dows.hep.biz.tenant.casus.TenantCaseOrgQuestionnaireBiz;
 import org.dows.hep.biz.tenant.casus.TenantCaseQuestionnaireBiz;
+import org.dows.hep.entity.ExperimentOrgEntity;
 import org.dows.hep.entity.ExperimentQuestionnaireEntity;
 import org.dows.hep.entity.ExperimentQuestionnaireItemEntity;
 import org.dows.hep.entity.ExperimentSettingEntity;
+import org.dows.hep.service.ExperimentOrgService;
 import org.dows.hep.service.ExperimentQuestionnaireItemService;
 import org.dows.hep.service.ExperimentQuestionnaireService;
 import org.dows.hep.service.ExperimentSettingService;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -47,6 +47,7 @@ public class ExperimentQuestionnaireManageBiz {
     private final ExperimentQuestionnaireService experimentQuestionnaireService;
     private final ExperimentQuestionnaireItemService experimentQuestionnaireItemService;
     private final ExperimentSettingService experimentSettingService;
+    private final ExperimentOrgService experimentOrgService;
 
     /**
      * @param
@@ -85,11 +86,94 @@ public class ExperimentQuestionnaireManageBiz {
         Assert.notNull(caseInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
         Assert.notEmpty(experimentGroupIds, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
 
-        // 期数-机构分组
+        // 期数-机构-机构问卷关联体
         Map<String, Map<String, CaseOrgQuestionnaireResponse>> periodOrgCollect = tenantCaseOrgQuestionnaireBiz.mapSelectedQuestionnaires(caseInstanceId);
         if (CollUtil.isEmpty(periodOrgCollect)) {
             return;
         }
+
+        // 获取问卷
+        Map<String, QuestionSectionResponse> idMapQuestionSection = getQuestionSectionMap(periodOrgCollect);
+        if (CollUtil.isEmpty(idMapQuestionSection)) {
+            return;
+        }
+
+        // 案例机构映射实验机构
+        Map<String, String> caseOrgMapExptOrg = caseOrgMapExptOrg(experimentInstanceId, experimentGroupIds);
+        if (CollUtil.isEmpty(caseOrgMapExptOrg)) {
+            return;
+        }
+
+        // 为每个小组分配试卷
+        List<ExperimentQuestionnaireEntity> entityList = new ArrayList<>();
+        List<ExperimentQuestionnaireItemEntity> itemEntityList = new ArrayList<>();
+
+        for (String groupId : experimentGroupIds) {
+
+            for (Map.Entry<String, Map<String, CaseOrgQuestionnaireResponse>> entry : periodOrgCollect.entrySet()) {
+                String period = entry.getKey();
+                Map<String, CaseOrgQuestionnaireResponse> orgCollect = entry.getValue();
+                if (CollUtil.isEmpty(orgCollect)) {
+                    continue;
+                }
+
+                for (Map.Entry<String, CaseOrgQuestionnaireResponse> orgCollectEntry : orgCollect.entrySet()) {
+                    String org = orgCollectEntry.getKey();
+                    CaseOrgQuestionnaireResponse orgQuestionnaire = orgCollectEntry.getValue();
+                    if (BeanUtil.isEmpty(orgQuestionnaire)) {
+                        continue;
+                    }
+                    if (CollUtil.isEmpty(idMapQuestionSection)) {
+                        continue;
+                    }
+
+                    String exptOrgId = caseOrgMapExptOrg.get(experimentInstanceId + groupId + org);
+                    // experiment-questionnaire
+                    ExperimentQuestionnaireEntity entity = ExperimentQuestionnaireEntity.builder()
+                            .experimentQuestionnaireId(baseBiz.getIdStr())
+                            .experimentInstanceId(experimentInstanceId)
+                            .periods(period)
+                            .periodSequence(CasePeriodEnum.getByCode(period).getSeq())
+                            .experimentOrgId(exptOrgId)
+                            .experimentGroupId(groupId)
+                            .experimentAccountId(null)
+                            .questionnaireName(orgQuestionnaire.getQuestionSectionName())
+                            .state(ExptQuestionnaireStateEnum.NOT_STARTED.getCode())
+                            .build();
+                    entityList.add(entity);
+
+                    // experiment-questionnaire-item
+                    List<ExperimentQuestionnaireItemEntity> localItemList = new ArrayList<>();
+                    // set questionnaire-item
+                    QuestionSectionResponse questionSectionResponse = idMapQuestionSection.get(orgQuestionnaire.getCaseQuestionnaireId());
+                    List<QuestionSectionItemResponse> sectionItemList = Optional.ofNullable(questionSectionResponse)
+                            .map(QuestionSectionResponse::getSectionItemList)
+                            .orElse(new ArrayList<>());
+                    if (CollUtil.isNotEmpty(sectionItemList)) {
+                        sectionItemList.forEach(sectionItem -> {
+                            QuestionResponse question = sectionItem.getQuestion();
+                            List<ExperimentQuestionnaireItemEntity> itemEntities = convertToFlatList(question);
+                            localItemList.addAll(itemEntities);
+                        });
+                    }
+                    // sort
+                    for (int i = 0; i < localItemList.size(); i++) {
+                        ExperimentQuestionnaireItemEntity item = localItemList.get(i);
+                        item.setSeq(i);
+                        item.setExperimentQuestionnaireId(entity.getExperimentQuestionnaireId());
+                    }
+                    itemEntityList.addAll(localItemList);
+
+                }
+            }
+        }
+
+        experimentQuestionnaireService.saveBatch(entityList);
+        experimentQuestionnaireItemService.saveBatch(itemEntityList);
+    }
+
+    @Nullable
+    private Map<String, QuestionSectionResponse> getQuestionSectionMap(Map<String, Map<String, CaseOrgQuestionnaireResponse>> periodOrgCollect) {
         List<String> caseQuestionnaireIds = periodOrgCollect.values()
                 .stream()
                 .flatMap(item -> item.values().stream())
@@ -97,67 +181,33 @@ public class ExperimentQuestionnaireManageBiz {
                 .filter(StrUtil::isNotBlank)
                 .toList();
         if (CollUtil.isEmpty(caseQuestionnaireIds)) {
-            return;
+            return null;
         }
         List<CaseQuestionnaireResponse> caseQuestionnaireResponses = tenantCaseQuestionnaireBiz.listByIds(caseQuestionnaireIds);
         if (CollUtil.isEmpty(caseQuestionnaireResponses)) {
-            return;
+            return null;
         }
         Map<String, QuestionSectionResponse> collect = caseQuestionnaireResponses.stream()
                 .collect(Collectors.toMap(CaseQuestionnaireResponse::getCaseQuestionnaireId, CaseQuestionnaireResponse::getQuestionSectionResponse));
+        return collect;
+    }
 
+    private Map<String, String> caseOrgMapExptOrg(String experimentInstanceId, List<String> experimentGroupIds) {
+        Map<String, String> result = new HashMap<>();
+        List<ExperimentOrgEntity> list = experimentOrgService.lambdaQuery()
+                .eq(ExperimentOrgEntity::getExperimentInstanceId, experimentInstanceId)
+                .in(ExperimentOrgEntity::getExperimentGroupId, experimentGroupIds)
+                .list();
+        list.forEach(item -> {
+            String itemExptInstanceId = item.getExperimentInstanceId();
+            String itemExptGroupId = item.getExperimentGroupId();
+            String caseOrgId = item.getCaseOrgId();
+            String key = itemExptInstanceId + itemExptGroupId + caseOrgId;
+            String exptOrgId = item.getExperimentOrgId();
+            result.put(key, exptOrgId);
+        });
 
-        // 为每个小组分配试卷
-        List<ExperimentQuestionnaireEntity> entityList = new ArrayList<>();
-        List<ExperimentQuestionnaireItemEntity> itemEntityList = new ArrayList<>();
-        experimentGroupIds.forEach(groupId -> periodOrgCollect.forEach((period, orgCollect) -> {
-            if (!orgCollect.isEmpty()) {
-                orgCollect.forEach((org, orgQuestionnaire) -> {
-                    if (BeanUtil.isNotEmpty(orgQuestionnaire)) {
-                        // experiment-questionnaire
-                        ExperimentQuestionnaireEntity entity = ExperimentQuestionnaireEntity.builder()
-                                .experimentQuestionnaireId(baseBiz.getIdStr())
-                                .experimentInstanceId(experimentInstanceId)
-                                .periods(period)
-                                .periodSequence(CasePeriodEnum.getByCode(period).getSeq())
-                                .experimentOrgId(org)
-                                .experimentGroupId(groupId)
-                                .experimentAccountId(null)
-                                .questionnaireName(orgQuestionnaire.getQuestionSectionName())
-                                .state(ExptQuestionnaireStateEnum.NOT_STARTED.getCode())
-                                .build();
-                        entityList.add(entity);
-
-                        // experiment-questionnaire-item
-                        if (CollUtil.isNotEmpty(collect)) {
-                            List<ExperimentQuestionnaireItemEntity> localItemList = new ArrayList<>();
-                            // set questionnaire-item
-                            QuestionSectionResponse questionSectionResponse = collect.get(orgQuestionnaire.getCaseQuestionnaireId());
-                            List<QuestionSectionItemResponse> sectionItemList = Optional.ofNullable(questionSectionResponse)
-                                    .map(QuestionSectionResponse::getSectionItemList)
-                                    .orElse(new ArrayList<>());
-                            if (CollUtil.isNotEmpty(sectionItemList)) {
-                                sectionItemList.forEach(sectionItem -> {
-                                    QuestionResponse question = sectionItem.getQuestion();
-                                    List<ExperimentQuestionnaireItemEntity> itemEntities = convertToFlatList(question);
-                                    localItemList.addAll(itemEntities);
-                                });
-                            }
-                            // sort
-                            for (int i = 0; i < localItemList.size(); i++) {
-                                ExperimentQuestionnaireItemEntity item = localItemList.get(i);
-                                item.setSeq(i);
-                                item.setExperimentQuestionnaireId(entity.getExperimentQuestionnaireId());
-                            }
-                            itemEntityList.addAll(localItemList);
-                        }
-                    }
-                });
-            }
-        }));
-
-        experimentQuestionnaireService.saveBatch(entityList);
-        experimentQuestionnaireItemService.saveBatch(itemEntityList);
+        return result;
     }
 
     private List<ExperimentQuestionnaireItemEntity> convertToFlatList(QuestionResponse questionResponse) {
