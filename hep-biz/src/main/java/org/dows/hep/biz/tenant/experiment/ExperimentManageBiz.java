@@ -29,6 +29,7 @@ import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.response.ExperimentStateResponse;
 import org.dows.hep.biz.base.org.OrgBiz;
+import org.dows.hep.biz.timer.ExperimentBeginTimerTask;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -87,6 +88,10 @@ public class ExperimentManageBiz {
     private final AccountRoleApi accountRoleApi;
 
     private final OrgBiz orgBiz;
+
+    private final Timer timer;
+
+    private final ExperimentBeginTimerTask experimentBeginTimerTask;
 
     /**
      * @param
@@ -198,8 +203,6 @@ public class ExperimentManageBiz {
         //applicationEventPublisher.publishEvent(new AllotEvent(experimentTimerEntities));
         return experimentInstance.getExperimentInstanceId();
     }
-
-
 
 
     /**
@@ -382,8 +385,16 @@ public class ExperimentManageBiz {
         List<ExperimentParticipatorEntity> collect = groupParticipators.values().stream().flatMap(x -> x.stream()).collect(Collectors.toList());
         // 保存实验小组
         experimentGroupService.saveOrUpdateBatch(experimentGroupEntitys);
+
         // 保存实验参与人[学生]
         experimentParticipatorService.saveOrUpdateBatch(collect);
+
+        // 设定定时任务
+        Long delay = experimentGroupSettingRequest.getStartTime().getTime() - System.currentTimeMillis();
+        //todo 设定一个TimeTask,通过timer到时间执行一次，考虑重启情况，写数据库，针对出现的情况，更具时间重新schedule
+        timer.schedule(experimentBeginTimerTask, delay);
+
+
         // 发布实验init事件
         applicationEventPublisher.publishEvent(new ExptInitEvent(ExptInitEventSource.builder()
                 .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
@@ -444,6 +455,7 @@ public class ExperimentManageBiz {
             ExperimentRestartRequest experimentRestartRequest = new ExperimentRestartRequest();
             experimentRestartRequest.setExperimentInstanceId(experimentInstanceId);
             experimentRestartRequest.setPaused(true);
+            experimentRestartRequest.setModel(experimentInstanceEntity.getModel());
             experimentRestartRequest.setAppId(appId);
             experimentRestartRequest.setCurrentTime(new Date());
             applicationEventPublisher.publishEvent(new SuspendEvent(experimentRestartRequest));
@@ -773,14 +785,14 @@ public class ExperimentManageBiz {
         PageResponse pageInfo = experimentInstanceService.getPageInfo(page, ExperimentListResponse.class);
         // 获取参与教师
         List<ExperimentListResponse> listResponses = pageInfo.getList();
-        if(listResponses != null && listResponses.size() > 0){
-            listResponses.forEach(response->{
+        if (listResponses != null && listResponses.size() > 0) {
+            listResponses.forEach(response -> {
                 List<ExperimentParticipatorEntity> participatorList = experimentParticipatorService.lambdaQuery()
-                        .eq(ExperimentParticipatorEntity::getExperimentInstanceId,response.getExperimentInstanceId())
+                        .eq(ExperimentParticipatorEntity::getExperimentInstanceId, response.getExperimentInstanceId())
                         .isNull(ExperimentParticipatorEntity::getExperimentGroupId)
                         .list();
                 StringBuilder sb = new StringBuilder();
-                if(participatorList != null && participatorList.size() > 0){
+                if (participatorList != null && participatorList.size() > 0) {
                     participatorList.forEach(participator -> {
                         sb.append(participator.getAccountName()).append(",");
                     });
