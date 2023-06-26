@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -16,6 +17,7 @@ import org.dows.account.response.*;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
+import org.dows.hep.api.ExperimentContext;
 import org.dows.hep.api.core.CreateExperimentForm;
 import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.ExperimentModeEnum;
@@ -28,6 +30,8 @@ import org.dows.hep.api.tenant.experiment.request.*;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.response.ExperimentStateResponse;
+import org.dows.hep.api.user.organization.request.CaseOrgRequest;
+import org.dows.hep.api.user.organization.response.CaseOrgResponse;
 import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.biz.timer.ExperimentBeginTimerTask;
 import org.dows.hep.entity.*;
@@ -87,7 +91,7 @@ public class ExperimentManageBiz {
 
     private final AccountRoleApi accountRoleApi;
 
-    private final OrgBiz orgBiz;
+
 
     private final Timer timer;
 
@@ -336,7 +340,7 @@ public class ExperimentManageBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     @DSTransactional
-    public Boolean grouping(ExperimentGroupSettingRequest experimentGroupSettingRequest, String caseInstanceId) {
+    public Boolean grouping(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
         List<ExperimentGroupSettingRequest.GroupSetting> experimentGroupSettings = experimentGroupSettingRequest.getGroupSettings();
         List<ExperimentGroupEntity> experimentGroupEntitys = new ArrayList<>();
         Map<String, List<ExperimentParticipatorEntity>> groupParticipators = new HashMap<>();
@@ -388,26 +392,18 @@ public class ExperimentManageBiz {
 
         // 保存实验参与人[学生]
         experimentParticipatorService.saveOrUpdateBatch(collect);
-
-        // 设定定时任务
+        //
+        experimentQuestionnaireManageBiz.preHandleExperimentQuestionnaire(experimentGroupSettingRequest.getExperimentInstanceId(),
+                experimentGroupSettingRequest.getCaseInstanceId());
+        /**
+         * 设定定时任务
+         * todo 设定一个TimeTask,通过timer到时间执行一次，考虑重启情况，写数据库，针对出现的情况，更具时间重新schedule,先用事件处理，后期优化
+         */
         Long delay = experimentGroupSettingRequest.getStartTime().getTime() - System.currentTimeMillis();
-        //todo 设定一个TimeTask,通过timer到时间执行一次，考虑重启情况，写数据库，针对出现的情况，更具时间重新schedule
-        timer.schedule(experimentBeginTimerTask, delay);
-
-
+        //timer.schedule(experimentBeginTimerTask, delay);
         // 发布实验init事件
-        applicationEventPublisher.publishEvent(new ExptInitEvent(ExptInitEventSource.builder()
-                .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
-                .caseInstanceId(caseInstanceId)
-                .build()));
-        // 发布实验分配小组事件
-        applicationEventPublisher.publishEvent(new CreateGroupEvent(experimentGroupSettingRequest));
+        applicationEventPublisher.publishEvent(new ExptInitEvent(experimentGroupSettingRequest));
 
-        // 复制人物与机构到实验中
-        applicationEventPublisher.publishEvent(new CopyExperimentPersonAndOrgEvent(experimentGroupSettingRequest));
-
-        // 发布实验init事件
-        experimentQuestionnaireManageBiz.preHandleExperimentQuestionnaire(experimentGroupSettingRequest.getExperimentInstanceId(), caseInstanceId);
         return true;
     }
 
@@ -559,6 +555,9 @@ public class ExperimentManageBiz {
         }
         return experimentPersonService.saveOrUpdateBatch(entityList);
     }
+
+
+
 
     /**
      * @param
