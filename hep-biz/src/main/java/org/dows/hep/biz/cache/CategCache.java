@@ -35,6 +35,7 @@ public class CategCache extends BaseLocalCache<CategCache.CacheData> implements 
             return vCache;
         }
         src.forEach(i->{
+            i.setAppId(Optional.ofNullable(i.getAppId()).orElse(""));
             i.setCategPid(Optional.ofNullable(i.getCategPid()).orElse(""));
             vCache.mapItems.computeIfAbsent(i.getAppId(),k-> new ConcurrentHashMap<>())
                     .put(fixKey(i.getCategId()),i);
@@ -44,7 +45,7 @@ public class CategCache extends BaseLocalCache<CategCache.CacheData> implements 
         });
         StringBuilder sbId=new StringBuilder();
         StringBuilder sbName=new StringBuilder();
-
+        int[] layer=new int[1];
         src.forEach(i-> {
             //设置父子关联
             i.setChilds(Optional.ofNullable(vCache.mapGroups.get(i.getAppId()))
@@ -52,28 +53,28 @@ public class CategCache extends BaseLocalCache<CategCache.CacheData> implements 
                     .orElse(null)) ;
             sbId.setLength(0);
             sbName.setLength(0);
-            int layer=0;
+            layer[0]=0;
             CategVO parent = getParent(vCache, sbId, sbName, i,layer);
             i.setCategIdPath(sbId.toString())
                     .setCategNamePath(sbName.toString())
                     .setFamily(parent.getFamily())
                     .setCategIdLv1(parent.getCategId())
                     .setCategNameLv1(parent.getCategName())
-                    .setLayer(layer);
+                    .setLayer(layer[0]);
         });
         src.clear();
         //TODO 分布式处理
         return vCache;
     }
     //填充父级路径
-    protected CategVO getParent(CacheData cache, StringBuilder sbId, StringBuilder sbName, CategVO child,int layer) {
+    protected CategVO getParent(CacheData cache, StringBuilder sbId, StringBuilder sbName, CategVO child,int[] layer) {
 
         if (ShareUtil.XObject.isEmpty(child)) {
             return null;
         }
         sbId.insert(0, String.format("%s%s", child.getCategId(), SPLITCategPath));
         sbName.insert(0, String.format("%s%s", child.getCategName(), SPLITCategPath));
-        layer++;
+        layer[0]++;
         CategVO parent =Optional.ofNullable(cache.mapItems.get(child.getAppId()))
                 .map(map->map.get(child.getCategPid()))
                 .orElse(null) ;
