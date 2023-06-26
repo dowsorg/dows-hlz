@@ -13,10 +13,7 @@ import org.dows.hep.api.user.experiment.response.ExperimentSchemeSettingResponse
 import org.dows.hep.biz.user.experiment.ExperimentBaseBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
 * @description project descr:实验:实验方案设计
@@ -95,7 +92,7 @@ public class ExperimentSchemeRest {
     * @return
     */
     @Operation(summary = "提交设计方案")
-    @GetMapping("v1/userExperiment/experimentScheme/submitScheme")
+    @PutMapping("v1/userExperiment/experimentScheme/submitScheme")
     public Boolean submitScheme(@NotBlank String experimentInstanceId, @NotBlank String experimentGroupId, HttpServletRequest request) {
         String accountId = baseBiz.getAccountId(request);
         return experimentSchemeBiz.submitScheme(experimentInstanceId, experimentGroupId, accountId);

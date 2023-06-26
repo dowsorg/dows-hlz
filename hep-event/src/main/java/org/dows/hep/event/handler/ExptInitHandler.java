@@ -7,6 +7,7 @@ import org.dows.account.request.AccountGroupRequest;
 import org.dows.account.response.AccountGroupResponse;
 import org.dows.account.response.AccountInstanceResponse;
 import org.dows.hep.api.HepContext;
+import org.dows.hep.api.base.evaluate.EvaluateEnabledEnum;
 import org.dows.hep.api.enums.ExperimentStateEnum;
 import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
 import org.dows.hep.api.tenant.experiment.request.ExperimentGroupSettingRequest;
@@ -79,7 +80,7 @@ public class ExptInitHandler extends AbstractEventHandler implements EventHandle
                 .one();
         IPage<CaseOrgResponse> caseOrgResponseIPage = orgBiz.listOrgnization(CaseOrgRequest.builder().pageNo(1).pageSize(10)
                 .caseInstanceId(experimentInstanceEntity.getCaseInstanceId())
-                .status(1)
+                .status(EvaluateEnabledEnum.ENABLED.getCode())
                 .build());
         List<CaseOrgResponse> responseList = caseOrgResponseIPage.getRecords();
         List<CreateExperimentRequest> requestList = new ArrayList<>();
@@ -87,7 +88,7 @@ public class ExptInitHandler extends AbstractEventHandler implements EventHandle
             responseList.forEach(response -> {
                 //1、通过案例机构ID找到机构ID下面的人物
                 IPage<AccountGroupResponse> groupResponseIPage = orgBiz.listPerson(AccountGroupRequest.builder()
-                        .status(1)
+                        .status(EvaluateEnabledEnum.ENABLED.getCode())
                         .appId(experimentGroupSettingRequest.getAppId())
                         .pageNo(1)
                         .pageSize(999)

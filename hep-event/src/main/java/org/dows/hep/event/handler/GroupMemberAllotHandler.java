@@ -60,6 +60,7 @@ public class GroupMemberAllotHandler extends AbstractEventHandler implements Eve
         // 先计数
         startHandler.exec(ExperimentRestartRequest.builder()
                 .appId(appId)
+                .model(periods1.getModel())
                 .experimentInstanceId(experimentInstanceId)
                 .paused(false)
                 .currentTime(new Date())

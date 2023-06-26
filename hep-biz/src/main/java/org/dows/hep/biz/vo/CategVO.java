@@ -27,6 +27,9 @@ public class CategVO {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库id")
     private Long id;
+
+    @Schema(title = "应用id")
+    private String appId;
     @Schema(title = "根类别")
     private String family;
 
@@ -38,6 +41,12 @@ public class CategVO {
 
     @Schema(title = "类别名称")
     private String categName;
+
+    @Schema(title = "一级分类id")
+    private String categIdLv1;
+
+    @Schema(title = "一级分类名称")
+    private String categNameLv1;
 
     @Schema(title = "父类别路径")
     private String categIdPath;
@@ -54,7 +63,8 @@ public class CategVO {
     @Schema(title = "排序号")
     private Integer seq;
 
-
+    @Schema(title = "层级")
+    private Integer layer;
 
     @Schema(title = "子类别json")
     private List<CategVO> childs;
