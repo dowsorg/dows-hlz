@@ -57,6 +57,7 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
     String appId = experimentPhysicalExamCheckRequestRs.getAppId();
     String experimentId = experimentPhysicalExamCheckRequestRs.getExperimentId();
     String resultExplain = null;
+
     Map<String, ExperimentIndicatorViewPhysicalExamRsEntity> kExperimentIndicatorViewPhysicalExamIdVExperimentIndicatorViewPhysicalExamRsEntityMap = new HashMap<>();
     Set<String> indicatorInstanceIdSet = new HashSet<>();
     if (!experimentIndicatorViewPhysicalExamIdList.isEmpty()) {

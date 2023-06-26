@@ -29,6 +29,9 @@ public class ExperimentSupportExamCheckRequestRs implements Serializable {
   @Schema(title = "功能点id")
   private String indicatorFuncId;
 
+  @Schema(title = "机构id")
+  private String experimentOrgId;
+
   @Schema(title = "辅助检查id")
   private List<String> experimentIndicatorViewSupportExamIdList;
 

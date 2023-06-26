@@ -27,7 +27,12 @@ public class ExperimentIndicatorViewPhysicalExamReportRsRest {
 
   @Operation(summary = "根据实验人物id和功能点id查找体格报告")
   @GetMapping("v1/userExperiment/physicalExamReport/get")
-  public List<ExperimentPhysicalExamReportResponseRs> get(@RequestParam String appId, @RequestParam String experimentId, @RequestParam String indicatorFuncId, @RequestParam String experimentPersonId) {
-    return experimentIndicatorViewPhysicalExamReportRsBiz.get(appId, experimentId, indicatorFuncId, experimentPersonId);
+  public List<ExperimentPhysicalExamReportResponseRs> get(
+      @RequestParam String appId,
+      @RequestParam String experimentId,
+      @RequestParam String indicatorFuncId,
+      @RequestParam String experimentPersonId,
+      @RequestParam String experimentOrgId) {
+    return experimentIndicatorViewPhysicalExamReportRsBiz.get(appId, experimentId, indicatorFuncId, experimentPersonId, experimentOrgId);
   }
 }
