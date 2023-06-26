@@ -66,9 +66,13 @@ public class ExperimentTimerBiz {
         if (experimentSettingEntity1 != null) {
             ExperimentSetting.SchemeSetting schemeSetting =
                     JSONUtil.toBean(experimentSettingEntity1.getConfigJsonVals(), ExperimentSetting.SchemeSetting.class);
-            // 方案设计倒计时
-            Long schemeTime = schemeSetting.getSchemeEndTime().getTime() - System.currentTimeMillis();
-            countDownResponse.setSchemeTime(schemeTime);
+            if (System.currentTimeMillis() > schemeSetting.getSchemeEndTime().getTime()) {
+                countDownResponse.setSchemeTime(0L);
+            } else {
+                // 方案设计倒计时
+                Long schemeTime = schemeSetting.getSchemeEndTime().getTime() - System.currentTimeMillis();
+                countDownResponse.setSchemeTime(schemeTime);
+            }
         }
 
         ExperimentSettingEntity experimentSettingEntity2 = list.stream().filter(e -> e.getConfigKey().equals(ExperimentSetting.SandSetting.class))
