@@ -24,5 +24,5 @@ public class ThirdSupportExamTabRsResponse implements Serializable {
   private String indicatorCategoryName;
 
   @Schema(title = "查看指标-四级类-无报告-辅助检查列表")
-  private List<ExperimentIndicatorViewSupportExamRsResponse> experimentIndicatorViewSupportExamRsResponseList;
+  private List<ExperimentIndicatorViewSupportExamRsResponse> children;
 }

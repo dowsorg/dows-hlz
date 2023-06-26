@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.user.experiment.request.ExperimentScheme1Request;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeAllotRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeResponse;
@@ -65,6 +66,18 @@ public class ExperimentSchemeRest {
     }
 
     /**
+     * 保存设计方案-单个保存
+     * @param
+     * @return
+     */
+    @Operation(summary = "保存设计方案item-单个保存")
+    @PostMapping("v1/userExperiment/experimentScheme/updateSchemeItem")
+    public Boolean updateSchemeItem(@RequestBody @Validated ExperimentScheme1Request experimentSchemeRequest, HttpServletRequest request) {
+        String accountId = baseBiz.getAccountId(request);
+        return experimentSchemeBiz.updateScheme(experimentSchemeRequest.getExperimentSchemeItemId(), experimentSchemeRequest.getQuestionResult(), accountId);
+    }
+
+    /**
      * 保存设计方案
      * @param
      * @return
@@ -73,7 +86,7 @@ public class ExperimentSchemeRest {
     @PostMapping("v1/userExperiment/experimentScheme/updateScheme")
     public Boolean updateScheme(@RequestBody @Validated ExperimentSchemeRequest experimentSchemeRequest, HttpServletRequest request) {
         String accountId = baseBiz.getAccountId(request);
-        return experimentSchemeBiz.updateScheme(experimentSchemeRequest, accountId);
+        return experimentSchemeBiz.updateSchemeBatch(experimentSchemeRequest, accountId);
     }
 
     /**

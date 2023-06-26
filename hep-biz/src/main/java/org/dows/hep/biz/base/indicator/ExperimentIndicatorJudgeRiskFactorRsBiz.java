@@ -60,19 +60,19 @@ public class ExperimentIndicatorJudgeRiskFactorRsBiz {
                 .builder()
                 .indicatorCategoryId(firstIndicatorCategoryId)
                 .indicatorCategoryName(firstIndicatorCategoryName)
-                .experimentIndicatorJudgeRiskFactorRsResponseList(new ArrayList<>())
+                .children(new ArrayList<>())
                 .build();
           }
-          List<ExperimentIndicatorJudgeRiskFactorRsResponse> experimentIndicatorJudgeRiskFactorRsResponseList = firstRiskFactorTabRsResponse.getExperimentIndicatorJudgeRiskFactorRsResponseList();
+          List<ExperimentIndicatorJudgeRiskFactorRsResponse> experimentIndicatorJudgeRiskFactorRsResponseList = firstRiskFactorTabRsResponse.getChildren();
           if (Objects.isNull(experimentIndicatorJudgeRiskFactorRsResponseList)) {
             experimentIndicatorJudgeRiskFactorRsResponseList = new ArrayList<>();
           }
           experimentIndicatorJudgeRiskFactorRsResponseList.add(experimentIndicatorJudgeRiskFactorRs2Response(experimentIndicatorJudgeRiskFactorRsEntity));
-          firstRiskFactorTabRsResponse.setExperimentIndicatorJudgeRiskFactorRsResponseList(experimentIndicatorJudgeRiskFactorRsResponseList);
+          firstRiskFactorTabRsResponse.setChildren(experimentIndicatorJudgeRiskFactorRsResponseList);
           kIndicatorCategoryIdVFirstRiskFactorTabRsResponseMap.put(firstIndicatorCategoryId, firstRiskFactorTabRsResponse);
         });
     kIndicatorCategoryIdVFirstRiskFactorTabRsResponseMap.forEach((firstId, firstRs) -> {
-      List<ExperimentIndicatorJudgeRiskFactorRsResponse> experimentIndicatorJudgeRiskFactorRsResponseList = firstRs.getExperimentIndicatorJudgeRiskFactorRsResponseList();
+      List<ExperimentIndicatorJudgeRiskFactorRsResponse> experimentIndicatorJudgeRiskFactorRsResponseList = firstRs.getChildren();
       experimentIndicatorJudgeRiskFactorRsResponseList.sort(Comparator.comparing(ExperimentIndicatorJudgeRiskFactorRsResponse::getName));
     });
     return kIndicatorCategoryIdVFirstRiskFactorTabRsResponseMap.values()

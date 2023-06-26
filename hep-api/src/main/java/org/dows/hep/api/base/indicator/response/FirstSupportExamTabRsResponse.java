@@ -24,5 +24,5 @@ public class FirstSupportExamTabRsResponse implements Serializable {
   private String indicatorCategoryName;
 
   @Schema(title = "第二层目录列表")
-  private List<SecondSupportExamTabRsResponse> secondSupportExamTabRsResponseList;
+  private List<SecondSupportExamTabRsResponse> children;
 }
