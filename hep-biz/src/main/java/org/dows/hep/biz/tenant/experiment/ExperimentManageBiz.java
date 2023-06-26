@@ -397,9 +397,7 @@ public class ExperimentManageBiz {
 
         // 保存实验参与人[学生]
         experimentParticipatorService.saveOrUpdateBatch(collect);
-        //
-        experimentQuestionnaireManageBiz.preHandleExperimentQuestionnaire(experimentGroupSettingRequest.getExperimentInstanceId(),
-                experimentGroupSettingRequest.getCaseInstanceId());
+
         /**
          * 设定定时任务
          * todo 设定一个TimeTask,通过timer到时间执行一次，考虑重启情况，写数据库，针对出现的情况，更具时间重新schedule,先用事件处理，后期优化
