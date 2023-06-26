@@ -44,6 +44,9 @@ public class ExptOrgFlowValidator {
     public static ExptOrgFlowValidator create(BaseExptRequest req){
         return new ExptOrgFlowValidator(req);
     }
+    public static ExptOrgFlowValidator create(String appId,String experimentInstanceId, String experimentOrgId,String experimentPersonId){
+        return new ExptOrgFlowValidator(appId,experimentInstanceId,experimentOrgId,experimentPersonId);
+    }
     //endregion
 
     //region fileds
