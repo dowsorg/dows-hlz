@@ -65,9 +65,13 @@ public class RsCopyBiz {
   /* runsix:todo wuzhilin */
   /* runsix:judge */
   private final IndicatorJudgeRiskFactorService indicatorJudgeRiskFactorService;
+  private final ExperimentIndicatorJudgeRiskFactorRsService experimentIndicatorJudgeRiskFactorRsService;
   private final IndicatorJudgeHealthProblemService indicatorJudgeHealthProblemService;
+  private final ExperimentIndicatorJudgeHealthGuidanceRsService experimentIndicatorJudgeHealthGuidanceRsService;
   private final IndicatorJudgeHealthGuidanceService indicatorJudgeHealthGuidanceService;
+  private final ExperimentIndicatorJudgeHealthProblemRsService experimentIndicatorJudgeHealthProblemRsService;
   private final IndicatorJudgeDiseaseProblemService indicatorJudgeDiseaseProblemService;
+  private final ExperimentIndicatorJudgeDiseaseProblemRsService experimentIndicatorJudgeDiseaseProblemRsService;
   private final CaseIndicatorExpressionRefService caseIndicatorExpressionRefService;
   private final ExperimentIndicatorExpressionRefRsService experimentIndicatorExpressionRefRsService;
   private final CaseIndicatorExpressionService caseIndicatorExpressionService;
@@ -84,6 +88,14 @@ public class RsCopyBiz {
     List<ExperimentIndicatorViewPhysicalExamRsEntity> experimentIndicatorViewPhysicalExamRsEntityList = new ArrayList<>();
     List<IndicatorViewSupportExamEntity> indicatorViewSupportExamEntityList = new ArrayList<>();
     List<ExperimentIndicatorViewSupportExamRsEntity> experimentIndicatorViewSupportExamRsEntityList = new ArrayList<>();
+    List<ExperimentIndicatorJudgeRiskFactorRsEntity> experimentIndicatorJudgeRiskFactorRsEntityList = new ArrayList<>();
+    List<IndicatorJudgeRiskFactorEntity> indicatorJudgeRiskFactorEntityList = new ArrayList<>();
+    List<ExperimentIndicatorJudgeHealthGuidanceRsEntity> experimentIndicatorJudgeHealthGuidanceRsEntityList = new ArrayList<>();
+    List<IndicatorJudgeHealthGuidanceEntity> indicatorJudgeHealthGuidanceEntityList = new ArrayList<>();
+    List<ExperimentIndicatorJudgeHealthProblemRsEntity> experimentIndicatorJudgeHealthProblemRsEntityList = new ArrayList<>();
+    List<IndicatorJudgeHealthProblemEntity> indicatorJudgeHealthProblemEntityList = new ArrayList<>();
+    List<ExperimentIndicatorJudgeDiseaseProblemRsEntity> experimentIndicatorJudgeDiseaseProblemRsEntityList = new ArrayList<>();
+    List<IndicatorJudgeDiseaseProblemEntity> indicatorJudgeDiseaseProblemEntityList = new ArrayList<>();
     String appId = rsCopyExperimentRequestRs.getAppId();
     String caseInstanceId = rsCopyExperimentRequestRs.getCaseInstanceId();
     String experimentInstanceId = rsCopyExperimentRequestRs.getExperimentInstanceId();
@@ -569,7 +581,9 @@ public class RsCopyBiz {
             if (Objects.isNull(experimentIndicatorFuncIdList)) {
               experimentIndicatorFuncIdList = new ArrayList<>();
             }
-            experimentIndicatorFuncIdList.add(peExperimentIndicatorFuncId);
+            if (!experimentIndicatorFuncIdList.contains(peExperimentIndicatorFuncId)) {
+              experimentIndicatorFuncIdList.add(peExperimentIndicatorFuncId);
+            }
             kCaseOrgModuleIdVExperimentIndicatorFuncIdListMap.put(caseOrgModuleId, experimentIndicatorFuncIdList);
             kExperimentIndicatorFuncIdVIndicatorCategoryIdMap.put(peExperimentIndicatorFuncId, EnumIndicatorCategory.VIEW_MANAGEMENT_NO_REPORT_TWO_LEVEL.getCode());
             kExperimentIndicatorFuncIdVIndicatorFuncNameMap.put(peExperimentIndicatorFuncId, name);
@@ -584,7 +598,7 @@ public class RsCopyBiz {
         String indicatorCategoryId = null;
         String indicatorCategoryName = null;
         Date indicatorCategoryDt = null;
-        IndicatorCategoryEntity indicatorCategoryEntity = kIndicatorCategoryIdVIndicatorCategoryEntityMap.get(indicatorCategoryId);
+        IndicatorCategoryEntity indicatorCategoryEntity = kIndicatorCategoryIdVIndicatorCategoryEntityMap.get(indicatorViewPhysicalExamEntity.getIndicatorCategoryId());
         if (Objects.nonNull(indicatorCategoryEntity)) {
           indicatorCategoryId = indicatorCategoryEntity.getIndicatorCategoryId();
           indicatorCategoryName = indicatorCategoryEntity.getCategoryName();
@@ -597,6 +611,7 @@ public class RsCopyBiz {
             .experimentId(experimentInstanceId)
             .caseId(caseInstanceId)
             .appId(appId)
+            .indicatorFuncId(peExperimentIndicatorFuncId)
             .name(name1)
             .fee(fee)
             .indicatorInstanceId(indicatorInstanceId)
@@ -641,7 +656,9 @@ public class RsCopyBiz {
             if (Objects.isNull(experimentIndicatorFuncIdList)) {
               experimentIndicatorFuncIdList = new ArrayList<>();
             }
-            experimentIndicatorFuncIdList.add(seExperimentIndicatorFuncId);
+            if (!experimentIndicatorFuncIdList.contains(seExperimentIndicatorFuncId)) {
+              experimentIndicatorFuncIdList.add(seExperimentIndicatorFuncId);
+            }
             kCaseOrgModuleIdVExperimentIndicatorFuncIdListMap.put(caseOrgModuleId, experimentIndicatorFuncIdList);
             kExperimentIndicatorFuncIdVIndicatorCategoryIdMap.put(seExperimentIndicatorFuncId, EnumIndicatorCategory.VIEW_MANAGEMENT_NO_REPORT_FOUR_LEVEL.getCode());
             kExperimentIndicatorFuncIdVIndicatorFuncNameMap.put(seExperimentIndicatorFuncId, name);
@@ -680,6 +697,7 @@ public class RsCopyBiz {
             .experimentId(experimentInstanceId)
             .caseId(caseInstanceId)
             .appId(appId)
+            .indicatorFuncId(seExperimentIndicatorFuncId)
             .name(name1)
             .fee(fee)
             .indicatorInstanceId(indicatorInstanceId)
@@ -694,11 +712,242 @@ public class RsCopyBiz {
     /* runsix:查看指标-辅助检查-四级类-无报告 */
     /* runsix:TODO 判断指标-危险因素-二级类-无报告（有公式） */
     /* runsix:TODO 判断指标-危险因素-二级类-无报告（有公式） */
-    /* runsix:判断指标-健康问题-三级类-无报告（无公式） */
-    /* runsix:判断指标-健康问题-三级类-无报告（无公式） */
     /* runsix:判断指标-健康指导-二级类-有报告（无公式） */
+    Map<String, String> kIndicatorFuncIdVHGExperimentIndicatorFuncIdMap = new HashMap<>();
+    if (!funcIndicatorJudgeHealthGuidanceIdSet.isEmpty()) {
+      indicatorJudgeHealthGuidanceService.lambdaQuery()
+          .eq(IndicatorJudgeHealthGuidanceEntity::getAppId, appId)
+          .in(IndicatorJudgeHealthGuidanceEntity::getIndicatorFuncId, funcIndicatorJudgeHealthGuidanceIdSet)
+          .list()
+          .forEach(indicatorJudgeHealthGuidanceEntity -> {
+            indicatorJudgeHealthGuidanceEntityList.add(indicatorJudgeHealthGuidanceEntity);
+            String indicatorFuncId = indicatorJudgeHealthGuidanceEntity.getIndicatorFuncId();
+            String hgExperimentIndicatorFuncId = kIndicatorFuncIdVHGExperimentIndicatorFuncIdMap.get(indicatorFuncId);
+            if (StringUtils.isBlank(hgExperimentIndicatorFuncId)) {
+              kIndicatorFuncIdVHGExperimentIndicatorFuncIdMap.put(indicatorFuncId, idGenerator.nextIdStr());
+            }
+          });
+    }
+    if (!indicatorJudgeHealthGuidanceEntityList.isEmpty()) {
+      indicatorJudgeHealthGuidanceEntityList.forEach(indicatorJudgeHealthGuidanceEntity -> {
+        String experimentIndicatorJudgeHealthGuidanceId = idGenerator.nextIdStr();
+        String indicatorFuncId = indicatorJudgeHealthGuidanceEntity.getIndicatorFuncId();
+        IndicatorFuncEntity indicatorFuncEntity = kIndicatorFuncIdVIndicatorFuncEntityMap.get(indicatorFuncId);
+        String name = indicatorFuncEntity.getName();
+        String hgExperimentIndicatorFuncId = kIndicatorFuncIdVHGExperimentIndicatorFuncIdMap.get(indicatorFuncId);
+        kExperimentIndicatorFuncIdVIndicatorFuncIdMap.put(hgExperimentIndicatorFuncId, indicatorFuncId);
+        List<String> caseOrgModuleIdList = kIndicatorFuncIdVCaseOrgModuleIdList.get(indicatorFuncId);
+        if (Objects.nonNull(caseOrgModuleIdList)) {
+          caseOrgModuleIdList.forEach(caseOrgModuleId -> {
+            List<String> experimentIndicatorFuncIdList = kCaseOrgModuleIdVExperimentIndicatorFuncIdListMap.get(caseOrgModuleId);
+            if (Objects.isNull(experimentIndicatorFuncIdList)) {
+              experimentIndicatorFuncIdList = new ArrayList<>();
+            }
+            if (!experimentIndicatorFuncIdList.contains(hgExperimentIndicatorFuncId)) {
+              experimentIndicatorFuncIdList.add(hgExperimentIndicatorFuncId);
+            }
+            kCaseOrgModuleIdVExperimentIndicatorFuncIdListMap.put(caseOrgModuleId, experimentIndicatorFuncIdList);
+            kExperimentIndicatorFuncIdVIndicatorCategoryIdMap.put(hgExperimentIndicatorFuncId, EnumIndicatorCategory.JUDGE_MANAGEMENT_HEALTH_PROBLEM.getCode());
+            kExperimentIndicatorFuncIdVIndicatorFuncNameMap.put(hgExperimentIndicatorFuncId, name);
+          });
+        }
+        String indicatorJudgeHealthGuidanceId = indicatorJudgeHealthGuidanceEntity.getIndicatorJudgeHealthGuidanceId();
+        String name1 = indicatorJudgeHealthGuidanceEntity.getName();
+        BigDecimal point = indicatorJudgeHealthGuidanceEntity.getPoint();
+        String resultExplain = indicatorJudgeHealthGuidanceEntity.getResultExplain();
+        Integer status = indicatorJudgeHealthGuidanceEntity.getStatus();
+        String indicatorCategoryIdArray = null;
+        List<String> indicatorCategoryIdList = new ArrayList<>();
+        String indicatorCategoryNameArray = null;
+        List<String> indicatorCategoryNameList = new ArrayList<>();
+        String firstIndicatorCategoryId = indicatorJudgeHealthGuidanceEntity.getIndicatorCategoryId();
+        indicatorCategoryIdList.add(firstIndicatorCategoryId);
+        IndicatorCategoryEntity firstIndicatorCategoryEntity = kIndicatorCategoryIdVIndicatorCategoryEntityMap.get(firstIndicatorCategoryId);
+        if (Objects.nonNull(firstIndicatorCategoryEntity)) {
+          indicatorCategoryNameList.add(firstIndicatorCategoryEntity.getCategoryName());
+        }
+        indicatorCategoryIdArray = String.join(EnumString.COMMA.getStr(), indicatorCategoryIdList);
+        indicatorCategoryNameArray = String.join(EnumString.COMMA.getStr(), indicatorCategoryNameList);
+        ExperimentIndicatorJudgeHealthGuidanceRsEntity experimentIndicatorJudgeHealthGuidanceRsEntity = ExperimentIndicatorJudgeHealthGuidanceRsEntity
+            .builder()
+            .experimentIndicatorJudgeHealthGuidanceId(experimentIndicatorJudgeHealthGuidanceId)
+            .indicatorJudgeHealthGuidanceId(indicatorJudgeHealthGuidanceId)
+            .experimentId(experimentInstanceId)
+            .caseId(caseInstanceId)
+            .appId(appId)
+            .indicatorFuncId(hgExperimentIndicatorFuncId)
+            .name(name1)
+            .point(point)
+            .resultExplain(resultExplain)
+            .status(status)
+            .indicatorCategoryIdArray(indicatorCategoryIdArray)
+            .indicatorCategoryNameArray(indicatorCategoryNameArray)
+            .build();
+        experimentIndicatorJudgeHealthGuidanceRsEntityList.add(experimentIndicatorJudgeHealthGuidanceRsEntity);
+      });
+    }
     /* runsix:判断指标-健康指导-二级类-有报告（无公式） */
+    /* runsix:判断指标-健康问题-三级类-无报告（无公式） */
+    Map<String, String> kIndicatorFuncIdVHPExperimentIndicatorFuncIdMap = new HashMap<>();
+    if (!funcIndicatorJudgeHealthProblemIdSet.isEmpty()) {
+      indicatorJudgeHealthProblemService.lambdaQuery()
+          .eq(IndicatorJudgeHealthProblemEntity::getAppId, appId)
+          .in(IndicatorJudgeHealthProblemEntity::getIndicatorFuncId, funcIndicatorJudgeHealthProblemIdSet)
+          .list()
+          .forEach(indicatorJudgeHealthProblemEntity -> {
+            indicatorJudgeHealthProblemEntityList.add(indicatorJudgeHealthProblemEntity);
+            String indicatorFuncId = indicatorJudgeHealthProblemEntity.getIndicatorFuncId();
+            String hpExperimentIndicatorFuncId = kIndicatorFuncIdVHPExperimentIndicatorFuncIdMap.get(indicatorFuncId);
+            if (StringUtils.isBlank(hpExperimentIndicatorFuncId)) {
+              kIndicatorFuncIdVHPExperimentIndicatorFuncIdMap.put(indicatorFuncId, idGenerator.nextIdStr());
+            }
+          });
+    }
+    if (!indicatorJudgeHealthProblemEntityList.isEmpty()) {
+      indicatorJudgeHealthProblemEntityList.forEach(indicatorJudgeHealthProblemEntity -> {
+        String experimentIndicatorJudgeHealthProblemId = idGenerator.nextIdStr();
+        String indicatorFuncId = indicatorJudgeHealthProblemEntity.getIndicatorFuncId();
+        IndicatorFuncEntity indicatorFuncEntity = kIndicatorFuncIdVIndicatorFuncEntityMap.get(indicatorFuncId);
+        String name = indicatorFuncEntity.getName();
+        String hpExperimentIndicatorFuncId = kIndicatorFuncIdVHPExperimentIndicatorFuncIdMap.get(indicatorFuncId);
+        kExperimentIndicatorFuncIdVIndicatorFuncIdMap.put(hpExperimentIndicatorFuncId, indicatorFuncId);
+        List<String> caseOrgModuleIdList = kIndicatorFuncIdVCaseOrgModuleIdList.get(indicatorFuncId);
+        if (Objects.nonNull(caseOrgModuleIdList)) {
+          caseOrgModuleIdList.forEach(caseOrgModuleId -> {
+            List<String> experimentIndicatorFuncIdList = kCaseOrgModuleIdVExperimentIndicatorFuncIdListMap.get(caseOrgModuleId);
+            if (Objects.isNull(experimentIndicatorFuncIdList)) {
+              experimentIndicatorFuncIdList = new ArrayList<>();
+            }
+            if (!experimentIndicatorFuncIdList.contains(hpExperimentIndicatorFuncId)) {
+              experimentIndicatorFuncIdList.add(hpExperimentIndicatorFuncId);
+            }
+            kCaseOrgModuleIdVExperimentIndicatorFuncIdListMap.put(caseOrgModuleId, experimentIndicatorFuncIdList);
+            kExperimentIndicatorFuncIdVIndicatorCategoryIdMap.put(hpExperimentIndicatorFuncId, EnumIndicatorCategory.JUDGE_MANAGEMENT_HEALTH_PROBLEM.getCode());
+            kExperimentIndicatorFuncIdVIndicatorFuncNameMap.put(hpExperimentIndicatorFuncId, name);
+          });
+        }
+        String indicatorJudgeHealthProblemId = indicatorJudgeHealthProblemEntity.getIndicatorJudgeHealthProblemId();
+        String name1 = indicatorJudgeHealthProblemEntity.getName();
+        BigDecimal point = indicatorJudgeHealthProblemEntity.getPoint();
+        String resultExplain = indicatorJudgeHealthProblemEntity.getResultExplain();
+        Integer status = indicatorJudgeHealthProblemEntity.getStatus();
+        String indicatorCategoryIdArray = null;
+        List<String> indicatorCategoryIdList = new ArrayList<>();
+        String indicatorCategoryNameArray = null;
+        List<String> indicatorCategoryNameList = new ArrayList<>();
+        String secondIndicatorCategoryId = indicatorJudgeHealthProblemEntity.getIndicatorCategoryId();
+        String firstIndicatorCategoryId = kIndicatorCategoryIdVParentIndicatorCategoryIdMap.get(secondIndicatorCategoryId);
+        indicatorCategoryIdList.add(firstIndicatorCategoryId);
+        indicatorCategoryIdList.add(secondIndicatorCategoryId);
+        IndicatorCategoryEntity firstIndicatorCategoryEntity = kIndicatorCategoryIdVIndicatorCategoryEntityMap.get(firstIndicatorCategoryId);
+        IndicatorCategoryEntity secondIndicatorCategoryEntity = kIndicatorCategoryIdVIndicatorCategoryEntityMap.get(secondIndicatorCategoryId);
+        if (Objects.nonNull(firstIndicatorCategoryEntity) && Objects.nonNull(secondIndicatorCategoryEntity)) {
+          indicatorCategoryNameList.add(firstIndicatorCategoryEntity.getCategoryName());
+          indicatorCategoryNameList.add(secondIndicatorCategoryEntity.getCategoryName());
+        }
+        indicatorCategoryIdArray = String.join(EnumString.COMMA.getStr(), indicatorCategoryIdList);
+        indicatorCategoryNameArray = String.join(EnumString.COMMA.getStr(), indicatorCategoryNameList);
+        ExperimentIndicatorJudgeHealthProblemRsEntity experimentIndicatorJudgeHealthProblemRsEntity = ExperimentIndicatorJudgeHealthProblemRsEntity
+            .builder()
+            .experimentIndicatorJudgeHealthProblemId(experimentIndicatorJudgeHealthProblemId)
+            .indicatorJudgeHealthProblemId(indicatorJudgeHealthProblemId)
+            .experimentId(experimentInstanceId)
+            .caseId(caseInstanceId)
+            .appId(appId)
+            .indicatorFuncId(hpExperimentIndicatorFuncId)
+            .name(name1)
+            .point(point)
+            .resultExplain(resultExplain)
+            .status(status)
+            .indicatorCategoryIdArray(indicatorCategoryIdArray)
+            .indicatorCategoryNameArray(indicatorCategoryNameArray)
+            .build();
+        experimentIndicatorJudgeHealthProblemRsEntityList.add(experimentIndicatorJudgeHealthProblemRsEntity);
+      });
+    }
+    /* runsix:判断指标-健康问题-三级类-无报告（无公式） */
     /* runsix:判断指标-疾病问题-四级类-无报告（无公式） */
+    Map<String, String> kIndicatorFuncIdVDPExperimentIndicatorFuncIdMap = new HashMap<>();
+    if (!funcIndicatorJudgeDiseaseProblemIdSet.isEmpty()) {
+      indicatorJudgeDiseaseProblemService.lambdaQuery()
+          .eq(IndicatorJudgeDiseaseProblemEntity::getAppId, appId)
+          .in(IndicatorJudgeDiseaseProblemEntity::getIndicatorFuncId, funcIndicatorJudgeDiseaseProblemIdSet)
+          .list()
+          .forEach(indicatorJudgeDiseaseProblemEntity -> {
+            indicatorJudgeDiseaseProblemEntityList.add(indicatorJudgeDiseaseProblemEntity);
+            String indicatorFuncId = indicatorJudgeDiseaseProblemEntity.getIndicatorFuncId();
+            String dpExperimentIndicatorFuncId = kIndicatorFuncIdVDPExperimentIndicatorFuncIdMap.get(indicatorFuncId);
+            if (StringUtils.isBlank(dpExperimentIndicatorFuncId)) {
+              kIndicatorFuncIdVDPExperimentIndicatorFuncIdMap.put(indicatorFuncId, idGenerator.nextIdStr());
+            }
+          });
+    }
+    if (!indicatorJudgeDiseaseProblemEntityList.isEmpty()) {
+      indicatorJudgeDiseaseProblemEntityList.forEach(indicatorJudgeDiseaseProblemEntity -> {
+        String experimentIndicatorJudgeDiseaseProblemId = idGenerator.nextIdStr();
+        String indicatorFuncId = indicatorJudgeDiseaseProblemEntity.getIndicatorFuncId();
+        IndicatorFuncEntity indicatorFuncEntity = kIndicatorFuncIdVIndicatorFuncEntityMap.get(indicatorFuncId);
+        String name = indicatorFuncEntity.getName();
+        String dpExperimentIndicatorFuncId = kIndicatorFuncIdVDPExperimentIndicatorFuncIdMap.get(indicatorFuncId);
+        kExperimentIndicatorFuncIdVIndicatorFuncIdMap.put(dpExperimentIndicatorFuncId, indicatorFuncId);
+        List<String> caseOrgModuleIdList = kIndicatorFuncIdVCaseOrgModuleIdList.get(indicatorFuncId);
+        if (Objects.nonNull(caseOrgModuleIdList)) {
+          caseOrgModuleIdList.forEach(caseOrgModuleId -> {
+            List<String> experimentIndicatorFuncIdList = kCaseOrgModuleIdVExperimentIndicatorFuncIdListMap.get(caseOrgModuleId);
+            if (Objects.isNull(experimentIndicatorFuncIdList)) {
+              experimentIndicatorFuncIdList = new ArrayList<>();
+            }
+            if (!experimentIndicatorFuncIdList.contains(dpExperimentIndicatorFuncId)) {
+              experimentIndicatorFuncIdList.add(dpExperimentIndicatorFuncId);
+            }
+            kCaseOrgModuleIdVExperimentIndicatorFuncIdListMap.put(caseOrgModuleId, experimentIndicatorFuncIdList);
+            kExperimentIndicatorFuncIdVIndicatorCategoryIdMap.put(dpExperimentIndicatorFuncId, EnumIndicatorCategory.JUDGE_MANAGEMENT_DISEASE_PROBLEM.getCode());
+            kExperimentIndicatorFuncIdVIndicatorFuncNameMap.put(dpExperimentIndicatorFuncId, name);
+          });
+        }
+        String indicatorJudgeDiseaseProblemId = indicatorJudgeDiseaseProblemEntity.getIndicatorJudgeDiseaseProblemId();
+        String name1 = indicatorJudgeDiseaseProblemEntity.getName();
+        BigDecimal point = indicatorJudgeDiseaseProblemEntity.getPoint();
+        String resultExplain = indicatorJudgeDiseaseProblemEntity.getResultExplain();
+        Integer status = indicatorJudgeDiseaseProblemEntity.getStatus();
+        String indicatorCategoryIdArray = null;
+        List<String> indicatorCategoryIdList = new ArrayList<>();
+        String indicatorCategoryNameArray = null;
+        List<String> indicatorCategoryNameList = new ArrayList<>();
+        String thirdIndicatorCategoryId = indicatorJudgeDiseaseProblemEntity.getIndicatorCategoryId();
+        String secondIndicatorCategoryId = kIndicatorCategoryIdVParentIndicatorCategoryIdMap.get(thirdIndicatorCategoryId);
+        String firstIndicatorCategoryId = kIndicatorCategoryIdVParentIndicatorCategoryIdMap.get(secondIndicatorCategoryId);
+        indicatorCategoryIdList.add(firstIndicatorCategoryId);
+        indicatorCategoryIdList.add(secondIndicatorCategoryId);
+        indicatorCategoryIdList.add(thirdIndicatorCategoryId);
+        IndicatorCategoryEntity firstIndicatorCategoryEntity = kIndicatorCategoryIdVIndicatorCategoryEntityMap.get(firstIndicatorCategoryId);
+        IndicatorCategoryEntity secondIndicatorCategoryEntity = kIndicatorCategoryIdVIndicatorCategoryEntityMap.get(secondIndicatorCategoryId);
+        IndicatorCategoryEntity thirdIndicatorCategoryEntity = kIndicatorCategoryIdVIndicatorCategoryEntityMap.get(thirdIndicatorCategoryId);
+        if (Objects.nonNull(firstIndicatorCategoryEntity) && Objects.nonNull(secondIndicatorCategoryEntity) && Objects.nonNull(thirdIndicatorCategoryEntity)) {
+          indicatorCategoryNameList.add(firstIndicatorCategoryEntity.getCategoryName());
+          indicatorCategoryNameList.add(secondIndicatorCategoryEntity.getCategoryName());
+          indicatorCategoryNameList.add(thirdIndicatorCategoryEntity.getCategoryName());
+        }
+        indicatorCategoryIdArray = String.join(EnumString.COMMA.getStr(), indicatorCategoryIdList);
+        indicatorCategoryNameArray = String.join(EnumString.COMMA.getStr(), indicatorCategoryNameList);
+        ExperimentIndicatorJudgeDiseaseProblemRsEntity experimentIndicatorJudgeDiseaseProblemRsEntity = ExperimentIndicatorJudgeDiseaseProblemRsEntity
+            .builder()
+            .experimentIndicatorJudgeDiseaseProblemId(experimentIndicatorJudgeDiseaseProblemId)
+            .indicatorJudgeDiseaseProblemId(indicatorJudgeDiseaseProblemId)
+            .experimentId(experimentInstanceId)
+            .caseId(caseInstanceId)
+            .appId(appId)
+            .indicatorFuncId(dpExperimentIndicatorFuncId)
+            .name(name1)
+            .point(point)
+            .resultExplain(resultExplain)
+            .status(status)
+            .indicatorCategoryIdArray(indicatorCategoryIdArray)
+            .indicatorCategoryNameArray(indicatorCategoryNameArray)
+            .build();
+        experimentIndicatorJudgeDiseaseProblemRsEntityList.add(experimentIndicatorJudgeDiseaseProblemRsEntity);
+      });
+    }
     /* runsix:判断指标-疾病问题-四级类-无报告（无公式） */
     /* runsix:复制机构功能模块以及功能点 */
     caseOrgEntityList.forEach(caseOrgEntity -> {
@@ -771,6 +1020,11 @@ public class RsCopyBiz {
     experimentIndicatorViewBaseInfoMonitorRsService.saveOrUpdateBatch(experimentIndicatorViewBaseInfoMonitorRsEntityList);
     experimentIndicatorViewBaseInfoSingleRsService.saveOrUpdateBatch(experimentIndicatorViewBaseInfoSingleRsEntityList);
     experimentIndicatorViewPhysicalExamRsService.saveOrUpdateBatch(experimentIndicatorViewPhysicalExamRsEntityList);
+    experimentIndicatorViewSupportExamRsService.saveOrUpdateBatch(experimentIndicatorViewSupportExamRsEntityList);
+    experimentIndicatorJudgeRiskFactorRsService.saveOrUpdateBatch(experimentIndicatorJudgeRiskFactorRsEntityList);
+    experimentIndicatorJudgeHealthGuidanceRsService.saveOrUpdateBatch(experimentIndicatorJudgeHealthGuidanceRsEntityList);
+    experimentIndicatorJudgeHealthProblemRsService.saveOrUpdateBatch(experimentIndicatorJudgeHealthProblemRsEntityList);
+    experimentIndicatorJudgeDiseaseProblemRsService.saveOrUpdateBatch(experimentIndicatorJudgeDiseaseProblemRsEntityList);
   }
 
   /**
