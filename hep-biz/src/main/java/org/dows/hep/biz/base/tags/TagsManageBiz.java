@@ -11,11 +11,13 @@ import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.hep.api.base.indicator.request.BatchBindReasonIdRequestRs;
 import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
+import org.dows.hep.api.base.tags.TagsEnum;
 import org.dows.hep.api.base.tags.request.PageTagsRequest;
 import org.dows.hep.api.base.tags.request.TagsInstanceRequest;
 import org.dows.hep.api.base.tags.response.TagsInstanceResponse;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.exception.ExperimentException;
+import org.dows.hep.api.exception.TagsException;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
 import org.dows.hep.entity.TagsInstanceEntity;
@@ -65,6 +67,14 @@ public class TagsManageBiz {
                     .build();
             flag = tagsInstanceService.updateById(manageEntity);
         } else {
+            // 判断是否已经该标签名称
+            List<TagsInstanceEntity> instanceEntityList = tagsInstanceService.lambdaQuery()
+                    .eq(TagsInstanceEntity::getName,manageRequest.getName())
+                    .eq(TagsInstanceEntity::getAppId,manageRequest.getAppId())
+                    .list();
+            if(instanceEntityList != null && instanceEntityList.size() > 0){
+                throw new TagsException(TagsEnum.TAGS_NAME_IS_REPEAT);
+            }
             tagsId = idGenerator.nextIdStr();
             TagsInstanceEntity manageEntity = TagsInstanceEntity
                     .builder()
