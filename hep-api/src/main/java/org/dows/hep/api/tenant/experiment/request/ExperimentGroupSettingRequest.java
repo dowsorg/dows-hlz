@@ -18,6 +18,9 @@ import java.util.List;
 public class ExperimentGroupSettingRequest {
     @Schema(title = "应用ID",requiredMode = Schema.RequiredMode.REQUIRED)
     private String appId;
+
+    @Schema(title = "案列ID",requiredMode = Schema.RequiredMode.REQUIRED)
+    private  String caseInstanceId;
     @Schema(title = "实验实列ID",requiredMode = Schema.RequiredMode.REQUIRED)
     private String experimentInstanceId;
     @Schema(title = "实验名称",requiredMode = Schema.RequiredMode.REQUIRED)

@@ -2,20 +2,22 @@ package org.dows.hep.rest.tenant.experiment;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.dows.account.util.JwtUtil;
 import org.dows.framework.crud.api.model.PageResponse;
+import org.dows.hep.api.enums.EnumToken;
 import org.dows.hep.api.tenant.experiment.request.*;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.api.user.experiment.response.CountDownResponse;
-import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
 import org.dows.hep.biz.user.experiment.ExperimentParticipatorBiz;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author lait.zhang
@@ -52,8 +54,12 @@ public class ExperimentManageRest {
      */
     @Operation(summary = "分配实验")
     @PostMapping("v1/tenantExperiment/experimentManage/allot")
-    public String allot(@RequestBody @Validated CreateExperimentRequest createExperiment) {
-        return experimentManageBiz.allot(createExperiment);
+    public String allot(@RequestBody @Validated CreateExperimentRequest createExperiment, HttpServletRequest request) {
+        String token = request.getHeader("token");
+        Map<String, Object> map = JwtUtil.parseJWT(token, EnumToken.PROPERTIES_JWT_KEY.getStr());
+        //1、获取登录账ID
+        String accountId = map.get("accountId").toString();
+        return experimentManageBiz.allot(createExperiment,accountId);
     }
 
     /**
@@ -89,10 +95,8 @@ public class ExperimentManageRest {
      */
     @Operation(summary = "实验分组")
     @PostMapping("v1/tenantExperiment/experimentManage/grouping")
-    public Boolean grouping(@RequestBody @Validated ExperimentGroupSettingRequest groupSetting,
-                            @RequestParam @Validated String caseInstanceId
-                            ) {
-        return experimentManageBiz.grouping(groupSetting, caseInstanceId);
+    public Boolean grouping(@RequestBody @Validated ExperimentGroupSettingRequest groupSetting) {
+        return experimentManageBiz.grouping(groupSetting);
     }
 
     /**
@@ -118,7 +122,6 @@ public class ExperimentManageRest {
     @GetMapping("v1/tenantExperiment/experimentManage/page")
     public PageResponse<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
         return experimentManageBiz.pageByRole(pageExperimentRequest);
-
     }
     /**
      * 获取实验列表

@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 实验实列(ExperimentInstance)实体类
@@ -65,6 +65,9 @@ public class ExperimentInstanceEntity implements CrudEntity {
 
     @Schema(title = "实验状态[默认未开始状态0~6步][0-未开始 1-已开始 2-暂停]")
     private Integer state;
+
+    @Schema(title = "分配人姓名")
+    private String appointorName;
 
     @JsonIgnore
     @TableLogic

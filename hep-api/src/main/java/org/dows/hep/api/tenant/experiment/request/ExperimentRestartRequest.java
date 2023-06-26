@@ -23,7 +23,7 @@ public class ExperimentRestartRequest {
     @Schema(title = "实验实列ID", requiredMode = Schema.RequiredMode.REQUIRED)
     private String experimentInstanceId;
 
-    @Schema(title = "实验模式")
+    @Schema(title = "实验模式", requiredMode = Schema.RequiredMode.REQUIRED)
     private Integer model;
 
     @NotBlank(message = "实验期数不允许为空")
