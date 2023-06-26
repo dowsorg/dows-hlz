@@ -60,19 +60,19 @@ public class ExperimentIndicatorJudgeHealthGuidanceRsBiz {
                 .builder()
                 .indicatorCategoryId(firstIndicatorCategoryId)
                 .indicatorCategoryName(firstIndicatorCategoryName)
-                .experimentIndicatorJudgeHealthGuidanceRsResponseList(new ArrayList<>())
+                .children(new ArrayList<>())
                 .build();
           }
-          List<ExperimentIndicatorJudgeHealthGuidanceRsResponse> experimentIndicatorJudgeHealthGuidanceRsResponseList = firstHealthGuidanceTabRsResponse.getExperimentIndicatorJudgeHealthGuidanceRsResponseList();
+          List<ExperimentIndicatorJudgeHealthGuidanceRsResponse> experimentIndicatorJudgeHealthGuidanceRsResponseList = firstHealthGuidanceTabRsResponse.getChildren();
           if (Objects.isNull(experimentIndicatorJudgeHealthGuidanceRsResponseList)) {
             experimentIndicatorJudgeHealthGuidanceRsResponseList = new ArrayList<>();
           }
           experimentIndicatorJudgeHealthGuidanceRsResponseList.add(experimentIndicatorJudgeHealthGuidanceRs2Response(experimentIndicatorJudgeHealthGuidanceRsEntity));
-          firstHealthGuidanceTabRsResponse.setExperimentIndicatorJudgeHealthGuidanceRsResponseList(experimentIndicatorJudgeHealthGuidanceRsResponseList);
+          firstHealthGuidanceTabRsResponse.setChildren(experimentIndicatorJudgeHealthGuidanceRsResponseList);
           kIndicatorCategoryIdVFirstHealthGuidanceTabRsResponseMap.put(firstIndicatorCategoryId, firstHealthGuidanceTabRsResponse);
         });
     kIndicatorCategoryIdVFirstHealthGuidanceTabRsResponseMap.forEach((firstId, firstRs) -> {
-      List<ExperimentIndicatorJudgeHealthGuidanceRsResponse> experimentIndicatorJudgeHealthGuidanceRsResponseList = firstRs.getExperimentIndicatorJudgeHealthGuidanceRsResponseList();
+      List<ExperimentIndicatorJudgeHealthGuidanceRsResponse> experimentIndicatorJudgeHealthGuidanceRsResponseList = firstRs.getChildren();
       experimentIndicatorJudgeHealthGuidanceRsResponseList.sort(Comparator.comparing(ExperimentIndicatorJudgeHealthGuidanceRsResponse::getName));
     });
     return kIndicatorCategoryIdVFirstHealthGuidanceTabRsResponseMap.values()

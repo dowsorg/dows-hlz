@@ -84,15 +84,15 @@ public class ExperimentIndicatorJudgeDiseaseProblemRsBiz {
                 .builder()
                 .indicatorCategoryId(secondIndicatorCategoryId)
                 .indicatorCategoryName(secondIndicatorCategoryName)
-                .thirdDiseaseProblemTabRsResponseList(new ArrayList<>())
+                .children(new ArrayList<>())
                 .build();
           }
-          List<ThirdDiseaseProblemTabRsResponse> thirdDiseaseProblemTabRsResponseList = secondDiseaseProblemTabRsResponse.getThirdDiseaseProblemTabRsResponseList();
+          List<ThirdDiseaseProblemTabRsResponse> thirdDiseaseProblemTabRsResponseList = secondDiseaseProblemTabRsResponse.getChildren();
           if (Objects.isNull(thirdDiseaseProblemTabRsResponseList)) {
             thirdDiseaseProblemTabRsResponseList = new ArrayList<>();
           }
           thirdDiseaseProblemTabRsResponseList.add(thirdDiseaseProblemTabRsResponse);
-          secondDiseaseProblemTabRsResponse.setThirdDiseaseProblemTabRsResponseList(thirdDiseaseProblemTabRsResponseList);
+          secondDiseaseProblemTabRsResponse.setChildren(thirdDiseaseProblemTabRsResponseList);
           kIndicatorCategoryIdVSecondDiseaseProblemTabRsResponseMap.put(secondIndicatorCategoryId, secondDiseaseProblemTabRsResponse);
           FirstDiseaseProblemTabRsResponse firstDiseaseProblemTabRsResponse = kIndicatorCategoryIdVFirstDiseaseProblemTabRsResponseMap.get(firstIndicatorCategoryId);
           if (Objects.isNull(firstDiseaseProblemTabRsResponse)) {
@@ -100,21 +100,21 @@ public class ExperimentIndicatorJudgeDiseaseProblemRsBiz {
                 .builder()
                 .indicatorCategoryId(firstIndicatorCategoryId)
                 .indicatorCategoryName(firstIndicatorCategoryName)
-                .secondDiseaseProblemTabRsResponseList(new ArrayList<>())
+                .children(new ArrayList<>())
                 .build();
           }
-          List<SecondDiseaseProblemTabRsResponse> secondDiseaseProblemTabRsResponseList = firstDiseaseProblemTabRsResponse.getSecondDiseaseProblemTabRsResponseList();
+          List<SecondDiseaseProblemTabRsResponse> secondDiseaseProblemTabRsResponseList = firstDiseaseProblemTabRsResponse.getChildren();
           if (Objects.isNull(secondDiseaseProblemTabRsResponseList)) {
             secondDiseaseProblemTabRsResponseList = new ArrayList<>();
           }
           secondDiseaseProblemTabRsResponseList.add(secondDiseaseProblemTabRsResponse);
-          firstDiseaseProblemTabRsResponse.setSecondDiseaseProblemTabRsResponseList(secondDiseaseProblemTabRsResponseList);
+          firstDiseaseProblemTabRsResponse.setChildren(secondDiseaseProblemTabRsResponseList);
           kIndicatorCategoryIdVFirstDiseaseProblemTabRsResponseMap.put(firstIndicatorCategoryId, firstDiseaseProblemTabRsResponse);
         });
     kIndicatorCategoryIdVFirstDiseaseProblemTabRsResponseMap.forEach((firstId, firstRs) -> {
-      List<SecondDiseaseProblemTabRsResponse> secondDiseaseProblemTabRsResponseList = firstRs.getSecondDiseaseProblemTabRsResponseList();
+      List<SecondDiseaseProblemTabRsResponse> secondDiseaseProblemTabRsResponseList = firstRs.getChildren();
       secondDiseaseProblemTabRsResponseList.forEach(secondDiseaseProblemTabRsResponse -> {
-        List<ThirdDiseaseProblemTabRsResponse> thirdDiseaseProblemTabRsResponseList = secondDiseaseProblemTabRsResponse.getThirdDiseaseProblemTabRsResponseList();
+        List<ThirdDiseaseProblemTabRsResponse> thirdDiseaseProblemTabRsResponseList = secondDiseaseProblemTabRsResponse.getChildren();
         thirdDiseaseProblemTabRsResponseList.forEach(thirdDiseaseProblemTabRsResponse -> {
           thirdDiseaseProblemTabRsResponse.getExperimentIndicatorJudgeDiseaseProblemRsResponseList().sort(Comparator.comparing(ExperimentIndicatorJudgeDiseaseProblemRsResponse::getName));
         });

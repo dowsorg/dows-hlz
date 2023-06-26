@@ -24,5 +24,5 @@ public class FirstRiskFactorTabRsResponse implements Serializable {
   private String indicatorCategoryName;
 
   @Schema(title = "危险因素列表")
-  private List<ExperimentIndicatorJudgeRiskFactorRsResponse> experimentIndicatorJudgeRiskFactorRsResponseList;
+  private List<ExperimentIndicatorJudgeRiskFactorRsResponse> children;
 }
