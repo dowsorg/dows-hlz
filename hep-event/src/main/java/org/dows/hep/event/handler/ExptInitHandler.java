@@ -8,7 +8,6 @@ import org.dows.account.response.AccountGroupResponse;
 import org.dows.account.response.AccountInstanceResponse;
 import org.dows.hep.api.ExperimentContext;
 import org.dows.hep.api.enums.ExperimentStateEnum;
-import org.dows.hep.api.event.source.ExptInitEventSource;
 import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
 import org.dows.hep.api.tenant.experiment.request.ExperimentGroupSettingRequest;
 import org.dows.hep.api.user.organization.request.CaseOrgRequest;
@@ -28,7 +27,7 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class ExptInitHandler extends AbstractEventHandler implements EventHandler<ExptInitEventSource> {
+public class ExptInitHandler extends AbstractEventHandler implements EventHandler<ExperimentGroupSettingRequest> {
     private final ExperimentCaseInfoManageBiz experimentCaseInfoManageBiz;
     private final ExperimentSchemeManageBiz experimentSchemeManageBiz;
     private final ExperimentQuestionnaireManageBiz experimentQuestionnaireManageBiz;
@@ -38,7 +37,7 @@ public class ExptInitHandler extends AbstractEventHandler implements EventHandle
     // 实验实例
     private final ExperimentInstanceService experimentInstanceService;
     @Override
-    public void exec(ExptInitEventSource request) {
+    public void exec(ExperimentGroupSettingRequest request) {
         String experimentInstanceId = request.getExperimentInstanceId();
         String caseInstanceId = request.getCaseInstanceId();
 
@@ -47,11 +46,15 @@ public class ExptInitHandler extends AbstractEventHandler implements EventHandle
         // 初始化实验 `方案设计` 数据
         experimentSchemeManageBiz.preHandleExperimentScheme(experimentInstanceId, caseInstanceId);
         // 初始化实验 `知识答题` 数据
-//        experimentQuestionnaireManageBiz.preHandleExperimentQuestionnaire(experimentInstanceId, caseInstanceId);
+        // experimentQuestionnaireManageBiz.preHandleExperimentQuestionnaire(experimentInstanceId, caseInstanceId);
+        // 初始化实验 `设置小组` 个数
+        createGroupEvent(request);
+        // 初始化实验 `复制机构和人物`
+        copyExperimentPersonAndOrgEvent(request);
     }
 
 
-    public void  createGroupEvent(ExperimentGroupSettingRequest experimentGroupSettingRequest ){
+    public void  createGroupEvent(ExperimentGroupSettingRequest experimentGroupSettingRequest){
         ExperimentContext experimentContext = new ExperimentContext();
         experimentContext.setExperimentId(experimentGroupSettingRequest.getExperimentInstanceId());
         experimentContext.setExperimentName(experimentGroupSettingRequest.getExperimentName());
@@ -82,7 +85,7 @@ public class ExptInitHandler extends AbstractEventHandler implements EventHandle
                         .status(1)
                         .appId(experimentGroupSettingRequest.getAppId())
                         .pageNo(1)
-                        .pageSize(10)
+                        .pageSize(999)
                         .build(),response.getCaseOrgId());
                 List<AccountGroupResponse> accountGroupResponses = groupResponseIPage.getRecords();
                 List<AccountInstanceResponse> instanceResponses = new ArrayList<>();
