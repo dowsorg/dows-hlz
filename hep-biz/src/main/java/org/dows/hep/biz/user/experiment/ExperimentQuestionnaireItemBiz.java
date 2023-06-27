@@ -84,7 +84,7 @@ public class ExperimentQuestionnaireItemBiz {
     private void flattenTree(ExperimentQuestionnaireItemRequest node, List<ExperimentQuestionnaireItemEntity> flatList) {
         // 处理当前结点
         ExperimentQuestionnaireItemEntity itemEntity = ExperimentQuestionnaireItemEntity.builder()
-                .experimentQuestionnaireItemId(node.getExperimentSchemeItemId())
+                .experimentQuestionnaireItemId(node.getExperimentQuestionnaireItemId())
                 .questionResult(String.join(",", node.getQuestionResult()))
                 .build();
         flatList.add(itemEntity);
