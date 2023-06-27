@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author runsix
@@ -15,7 +16,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PhysicalExamCheckRequestRs implements Serializable {
+public class ExperimentSupportExamCheckRequestRs implements Serializable {
   @Schema(title = "实验id")
   private String experimentId;
 
@@ -28,7 +29,10 @@ public class PhysicalExamCheckRequestRs implements Serializable {
   @Schema(title = "功能点id")
   private String indicatorFuncId;
 
-  @Schema(title = "体格检查id")
-  private String experimentIndicatorViewPhysicalExamId;
+  @Schema(title = "机构id")
+  private String experimentOrgId;
+
+  @Schema(title = "辅助检查id")
+  private List<String> experimentIndicatorViewSupportExamIdList;
 
 }
