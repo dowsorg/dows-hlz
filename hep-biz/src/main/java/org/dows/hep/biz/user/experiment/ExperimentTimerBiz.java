@@ -1,6 +1,7 @@
 package org.dows.hep.biz.user.experiment;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.lang.Assert;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +46,39 @@ public class ExperimentTimerBiz {
     private final ExperimentSettingService experimentSettingService;
 
 
+
+    /**
+     * 获取当前实验期数信息[每期开始，结束，间隔等]
+     *
+     * @param experimentInstanceId
+     * @return
+     */
+    public CountDownResponse userCountdown(String experimentInstanceId) {
+        // 获取当前期数
+        CountDownResponse countDownResponse = new CountDownResponse();
+
+        List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
+                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentTimerEntity::getState,ExperimentStateEnum.ONGOING.getState())
+                //.eq(ExperimentTimerEntity::getModel, 2) // 沙盘模式
+                //.ne(ExperimentTimerEntity::getState, ExperimentStateEnum.FINISH.getState())
+                .list();
+
+        long ct = System.currentTimeMillis();
+
+        ExperimentTimerEntity experimentTimerEntity1 = list.stream()
+                .min(Comparator.comparingLong(ExperimentTimerEntity::getStartTime))
+                .orElse(null);
+        Assert.isNull(experimentTimerEntity1,()->new ExperimentException("实验计时器不存在进行中状态"));
+        if(ct<experimentTimerEntity1.getStartTime()){
+            ct = experimentTimerEntity1.getStartTime()-ct;
+            countDownResponse.setCountdown(ct);
+        }
+
+        return countDownResponse;
+
+    }
+
     /**
      * @param
      * @return
@@ -55,7 +89,7 @@ public class ExperimentTimerBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public CountDownResponse countdown(String experimentInstanceId) {
+    public CountDownResponse tenantCountdown(String experimentInstanceId) {
         CountDownResponse countDownResponse = new CountDownResponse();
 
         List<ExperimentSettingEntity> list = experimentSettingService.lambdaQuery()
@@ -238,24 +272,6 @@ public class ExperimentTimerBiz {
         List<ExperimentPeriodsResonse.ExperimentPeriods> experimentPeriods = BeanConvert
                 .beanConvert(list, ExperimentPeriodsResonse.ExperimentPeriods.class);
         experimentPeriodsResonse.setExperimentPeriods(experimentPeriods);
-
-
-
-
-
-        /*List<ExperimentPeriodsResonse.ExperimentPeriods> experimentPeriods1 = experimentPeriods.getExperimentPeriods();
-        Integer currentPeriod = experimentPeriods.getCurrentPeriod();
-        ExperimentPeriodsResonse.ExperimentPeriods experimentPeriods2 = experimentPeriods1.stream()
-                .filter(e -> e.getPeriod() == currentPeriod)
-                .max(Comparator.comparingInt(ExperimentPeriodsResonse.ExperimentPeriods::getPauseCount))
-                .orElse(null);
-
-        if (experimentPeriods2 != null) {
-            // 每期间隔
-            countDownResponse.setCountdown(experimentPeriods2.getPeriodInterval());
-            countDownResponse.setSandTime(experimentPeriods2.getStartTime() - System.currentTimeMillis());
-        }*/
-
 
         return experimentPeriodsResonse;
 

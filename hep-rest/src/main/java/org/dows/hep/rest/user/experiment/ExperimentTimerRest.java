@@ -37,9 +37,7 @@ public class ExperimentTimerRest {
     @GetMapping("v1/userExperiment/experimentTimer/countdown")
     public CountDownResponse countdown(String appId, String experimentInstanceId) {
 
-        CountDownResponse countDownResponse = new CountDownResponse();
-        ExperimentPeriodsResonse experimentPeriods = experimentTimerBiz.getExperimentPeriods(appId, experimentInstanceId);
-
+        CountDownResponse countDownResponse = experimentTimerBiz.userCountdown(experimentInstanceId);
         return countDownResponse;
     }
 
