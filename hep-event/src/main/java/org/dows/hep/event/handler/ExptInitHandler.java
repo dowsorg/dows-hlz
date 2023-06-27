@@ -54,7 +54,11 @@ public class ExptInitHandler extends AbstractEventHandler implements EventHandle
         experimentQuestionnaireManageBiz.preHandleExperimentQuestionnaire(experimentInstanceId, caseInstanceId);
     }
 
-
+    /**
+     * todo 如果实验重启，这里在其他地方就获取不到，需要调整
+     *
+     * @param experimentGroupSettingRequest
+     */
     public void createGroupEvent(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
         ExperimentContext experimentContext = new ExperimentContext();
         experimentContext.setExperimentId(experimentGroupSettingRequest.getExperimentInstanceId());

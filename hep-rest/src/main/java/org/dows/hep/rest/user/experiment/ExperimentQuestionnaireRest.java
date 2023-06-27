@@ -11,10 +11,7 @@ import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireResponse
 import org.dows.hep.biz.base.evaluate.EvaluateBaseBiz;
 import org.dows.hep.biz.user.experiment.ExperimentQuestionnaireBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author lait.zhang
@@ -60,7 +57,7 @@ public class ExperimentQuestionnaireRest {
      * @return
      */
     @Operation(summary = "提交知识答题")
-    @GetMapping("v1/userExperiment/experimentQuestionnaire/submitQuestionnaire")
+    @PutMapping("v1/userExperiment/experimentQuestionnaire/submitQuestionnaire")
     public Boolean submitQuestionnaire(@NotBlank String experimentQuestionnaireId, HttpServletRequest request) {
         String accountId = baseBiz.getAccountId(request);
         return experimentQuestionnaireBiz.submitQuestionnaire(experimentQuestionnaireId, accountId);

@@ -11,9 +11,10 @@ public class ExperimentContext {
     private static ThreadLocal<ExperimentContext> ContextThreadLocal = new ThreadLocal<>();
     private static Map<String, ExperimentContext> ExperimentContextMap = new ConcurrentHashMap<>();
 
-
+    private String appId;
     private String experimentId;
     private String experimentName;
+    private Integer periods;
     // 实验状态
     private ExperimentStateEnum state;
     private List<ExperimentGroup> experimentGroups;
@@ -42,6 +43,11 @@ public class ExperimentContext {
 
 
     public static ExperimentContext getExperimentContext(String experimentId) {
+       /* HepContext hepContext = ExperimentContextMap.get(experimentId);
+        if(hepContext == null){
+            hepContext = new HepContext();
+        }
+        return hepContext;*/
         return ExperimentContextMap.get(experimentId);
     }
 

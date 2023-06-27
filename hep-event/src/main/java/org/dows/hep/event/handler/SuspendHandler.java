@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.uim.AccountInfo;
 import org.dows.hep.api.ExperimentContext;
-import org.dows.hep.api.enums.ExperimentModeEnum;
 import org.dows.hep.api.enums.ExperimentStateEnum;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
@@ -45,7 +44,7 @@ public class SuspendHandler extends AbstractEventHandler implements EventHandler
         List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerBiz.getCurrentPeriods(experimentRestartRequest);
 
         /*if (experimentRestartRequest.getPeriods() == null) {*/
-        if (experimentRestartRequest.getModel() == ExperimentModeEnum.STANDARD.getCode()) {
+        if (experimentRestartRequest.getPeriods() == null) {
             // todo 更新所有计时器时间
             for (ExperimentTimerEntity experimentTimerEntity : experimentTimerEntityList) {
                 ExperimentTimerEntity updExperimentTimerEntity = new ExperimentTimerEntity();
@@ -67,10 +66,13 @@ public class SuspendHandler extends AbstractEventHandler implements EventHandler
             boolean b = experimentTimerBiz.saveOrUpdateExperimentTimeExperimentState(experimentRestartRequest.getExperimentInstanceId(),
                     updateExperimentTimerEntities,ExperimentStateEnum.PREPARE);
             //1、更改缓存
-            ExperimentContext experimentContext = ExperimentContext.getExperimentContext(experimentRestartRequest.getExperimentInstanceId());
-            experimentContext.setState(ExperimentStateEnum.PREPARE);
+            /**
+             * todo 需要调整
+             */
+            /*HepContext hepContext = HepContext.getExperimentContext(experimentRestartRequest.getExperimentInstanceId());
+            hepContext.setState(ExperimentStateEnum.PREPARE);*/
 
-        } else if(experimentRestartRequest.getModel() == ExperimentModeEnum.SAND.getCode()) {
+        } else /*if(experimentRestartRequest.getModel() == ExperimentModeEnum.SAND.getCode())*/ {
             // 找出当前期数计时器集合
             List<ExperimentTimerEntity> collect = experimentTimerEntityList.stream()
                     .filter(t -> t.getPeriod() == experimentRestartRequest.getPeriods())

@@ -3,9 +3,6 @@ package org.dows.hep.biz;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.dows.hep.api.ExperimentContext;
-import org.dows.hep.api.enums.ExperimentStateEnum;
-import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -26,6 +23,11 @@ public class ExperimentPausedInterceptor implements HandlerInterceptor {
         /**
          * 如果实验是暂停,并且是学生端所有的请求接口，v1/user打头的url都是学生端
          */
+        String token = request.getHeader("token");
+        String appId = request.getHeader("appId");
+        String experimentId = request.getHeader("experimentId");
+
+        //HepContext hepContext = HepContext.getExperimentContext(token);
 //        ExperimentContext experimentContext = ExperimentContext.getExperimentContext(request.getHeader("ExperimentId"));
 //        if (experimentContext == null) {
 //            return false;

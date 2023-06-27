@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author lait.zhang
@@ -250,10 +251,11 @@ public class ExperimentGroupBiz {
     @DSTransactional
     public Boolean allotGroupMembers(List<ExperimentParticipatorRequest> participatorList) {
         List<ExperimentParticipatorEntity> entityList = new ArrayList<>();
+        // todo 后面改调，批量查，批量更新
         participatorList.forEach(request -> {
             ExperimentParticipatorEntity model = experimentParticipatorService.lambdaQuery()
                     .eq(ExperimentParticipatorEntity::getExperimentParticipatorId, request.getExperimentParticipatorId())
-                    .eq(ExperimentParticipatorEntity::getAppId, request.getAppId())
+                    //.eq(ExperimentParticipatorEntity::getAppId, null == request.getAppId() ? "3" : request.getAppId())
                     .eq(ExperimentParticipatorEntity::getExperimentGroupId, request.getExperimentGroupId())
                     .eq(ExperimentParticipatorEntity::getExperimentInstanceId, request.getExperimentInstanceId())
                     .eq(ExperimentParticipatorEntity::getDeleted, false)
@@ -269,7 +271,10 @@ public class ExperimentGroupBiz {
                     .id(model.getId())
                     .build();
             entityList.add(entity);
-            //1、更新组状态为等待其他小组分配完成
+            /**
+             *  todo 更新组状态为等待其他小组分配完成
+             *  小组状态 [0-新建（待重新命名） 1-编队中 （分配成员角色） 2-编队完成 3-已锁定 4-已解散]
+             */
             experimentGroupService.lambdaUpdate()
                     .eq(ExperimentGroupEntity::getExperimentGroupId, request.getExperimentGroupId())
                     .eq(ExperimentGroupEntity::getExperimentInstanceId, request.getExperimentInstanceId())
@@ -278,17 +283,29 @@ public class ExperimentGroupBiz {
                             .build());
         });
         boolean b = experimentParticipatorService.updateBatchById(entityList);
-        // 发布事件，计数小组是否分配到齐，是否都分配好
-        applicationEventPublisher.publishEvent(new GroupMemberAllotEvent(participatorList));
-        // 分配试卷事件
-        if (b) {
+        if (!b) {
+            return false;
+        }
+        List<ExperimentGroupEntity> list = experimentGroupService.lambdaQuery()
+                .eq(ExperimentGroupEntity::getExperimentInstanceId, participatorList.get(0).getExperimentInstanceId())
+                .list();
+        List<ExperimentGroupEntity> collect = list.stream()
+                .filter(e -> e.getGroupState() == EnumExperimentGroupStatus.WAIT_ALL_GROUP_ASSIGN.getCode())
+                .collect(Collectors.toList());
+        // 所有小组准备完成
+        if (list.size() == collect.size()) {
+            // 发布事件，计数小组是否分配到齐，是否都分配好
+            applicationEventPublisher.publishEvent(new GroupMemberAllotEvent(participatorList));
+            /**
+             * todo 分配试卷事件，可以合并后面需要优化//
+             */
             applicationEventPublisher.publishEvent(new ExptQuestionnaireAllotEvent(
                     ExptQuestionnaireAllotEventSource.builder()
                             .experimentInstanceId(participatorList.get(0).getExperimentInstanceId())
                             .experimentGroupId(participatorList.get(0).getExperimentGroupId())
                             .build()));
         }
-        return b;
+        return true;
     }
 
     /**
