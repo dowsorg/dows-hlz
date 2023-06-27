@@ -43,8 +43,8 @@ public class BaseManulCache <K,V>{
 
     protected void onRemoval(K key,  V value,  RemovalCause cause){
         if(ShareUtil.XObject.isEmpty(value)) return;
-        if(value instanceof ICacheClear clearable){
-            clearable.clear();
+        if(value instanceof ICacheClear ){
+            ((ICacheClear)value).clear();
         }
     }
     @Data
