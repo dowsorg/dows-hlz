@@ -24,15 +24,15 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "ExperimentIndicatorViewPhysicalExamReportRsEntity", title = "查看指标体格检查类")
-@TableName("experiment_indicator_view_physical_exam_report_rs")
-public class ExperimentIndicatorViewPhysicalExamReportRsEntity {
+@Schema(name = "ExperimentIndicatorViewSupportExamReportRsEntity", title = "查看指标辅助2检查类")
+@TableName("experiment_indicator_view_support_exam_report_rs")
+public class ExperimentIndicatorViewSupportExamReportRsEntity {
   @JsonFormat(shape = JsonFormat.Shape.STRING)
   @Schema(title = "主键")
   private Long id;
 
   @Schema(title = "分布式ID")
-  private String experimentIndicatorViewPhysicalExamReportId;
+  private String experimentIndicatorViewSupportExamReportId;
 
   @Schema(title = "实验id")
   private String experimentId;

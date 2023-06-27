@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 
-import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -24,15 +23,15 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "ExperimentIndicatorViewPhysicalExamReportRsEntity", title = "查看指标体格检查类")
-@TableName("experiment_indicator_view_physical_exam_report_rs")
-public class ExperimentIndicatorViewPhysicalExamReportRsEntity {
+@Schema(name = "ExperimentIndicatorJudgeHealthProblemReportRsEntity", title = "查看指标健康问题报告类")
+@TableName("experiment_indicator_judge_health_problem_report_rs")
+public class ExperimentIndicatorJudgeHealthProblemReportRsEntity {
   @JsonFormat(shape = JsonFormat.Shape.STRING)
   @Schema(title = "主键")
   private Long id;
 
   @Schema(title = "分布式ID")
-  private String experimentIndicatorViewPhysicalExamReportId;
+  private String experimentIndicatorJudgeHealthProblemReportId;
 
   @Schema(title = "实验id")
   private String experimentId;
@@ -52,20 +51,17 @@ public class ExperimentIndicatorViewPhysicalExamReportRsEntity {
   @Schema(title = "挂号流水号")
   private String operateFlowId;
 
-  @Schema(title = "体格检查名称")
+  @Schema(title = "健康问题名称")
   private String name;
 
-  @Schema(title = "体格检查费用")
-  private BigDecimal fee;
+  @Schema(title = "保存次数")
+  private Integer count;
 
-  @Schema(title = "当前人物指标值")
-  private String currentVal;
+  @Schema(title = "健康问题id")
+  private String experimentIndicatorJudgeHealthProblemId;
 
-  @Schema(title = "指标单位")
-  private String unit;
-
-  @Schema(title = "结果解读（这里是指标的结果值，并非体格检查配置的）")
-  private String resultExplain;
+  @Schema(title = "目录名称列表")
+  private String indicatorCategoryNameArray;
 
   @JsonIgnore
   @TableLogic

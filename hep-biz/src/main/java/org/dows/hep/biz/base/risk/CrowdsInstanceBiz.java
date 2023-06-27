@@ -12,15 +12,15 @@ import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.hep.api.base.indicator.request.BatchBindReasonIdRequestRs;
 import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
+import org.dows.hep.api.base.risk.RiskEnum;
 import org.dows.hep.api.base.risk.request.CrowdsInstanceRequest;
 import org.dows.hep.api.base.risk.request.PageCrowdsRequest;
 import org.dows.hep.api.base.risk.response.CrowdsInstanceResponse;
-import org.dows.hep.api.base.tags.response.TagsInstanceResponse;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.exception.ExperimentException;
+import org.dows.hep.api.exception.RiskCategoryException;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
-import org.dows.hep.biz.base.indicator.IndicatorInstanceBiz;
 import org.dows.hep.entity.CrowdsInstanceEntity;
 import org.dows.hep.entity.TagsInstanceEntity;
 import org.dows.hep.service.CrowdsInstanceService;
@@ -69,6 +69,14 @@ public class CrowdsInstanceBiz {
                     .build();
             flag = crowdsInstanceService.updateById(crowdsEntity);
         } else {
+            // 判断是否已经存在该人群类别名称
+            List<CrowdsInstanceEntity> crowdsInstanceEntityList = crowdsInstanceService.lambdaQuery()
+                    .eq(CrowdsInstanceEntity::getName,crowdsInstanceRequest.getName())
+                    .eq(CrowdsInstanceEntity::getDeleted,false)
+                    .list();
+            if(crowdsInstanceEntityList != null && crowdsInstanceEntityList.size() > 0){
+                throw new RiskCategoryException(RiskEnum.CROWDS_CAN_NOT_REPEAT);
+            }
             crowdsId = idGenerator.nextIdStr();
             //2、插入
             CrowdsInstanceEntity crowdsEntity = CrowdsInstanceEntity

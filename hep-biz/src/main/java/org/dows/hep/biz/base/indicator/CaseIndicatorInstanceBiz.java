@@ -315,56 +315,56 @@ public class CaseIndicatorInstanceBiz {
                 resultValList
                 );
           });
+          String minCaseIndicatorExpressionItemId = null;
+          String maxCaseIndicatorExpressionItemId = null;
           IndicatorExpressionItemResponseRs minIndicatorExpressionItemResponseRs = indicatorExpressionResponseRs.getMinIndicatorExpressionItemResponseRs();
-          if (Objects.isNull(minIndicatorExpressionItemResponseRs)) {
-            return;
+          if (Objects.nonNull(minIndicatorExpressionItemResponseRs)) {
+            String minIndicatorExpressionItemId = minIndicatorExpressionItemResponseRs.getIndicatorExpressionItemId();
+            minCaseIndicatorExpressionItemId = idGenerator.nextIdStr();
+            String minConditionRaw = minIndicatorExpressionItemResponseRs.getConditionRaw();
+            String minConditionExpression = minIndicatorExpressionItemResponseRs.getConditionExpression();
+            String minConditionNameList = minIndicatorExpressionItemResponseRs.getConditionNameList();
+            String minConditionValList = convertConditionValList2Case(kIndicatorInstanceIdVCaseIndicatorInstanceIdMap, minIndicatorExpressionItemResponseRs.getConditionValList());
+            String minResultRaw = minIndicatorExpressionItemResponseRs.getResultRaw();
+            String minResultExpression = minIndicatorExpressionItemResponseRs.getResultExpression();
+            String minResultNameList = minIndicatorExpressionItemResponseRs.getResultNameList();
+            String minResultValList = convertResultValList2Case(kIndicatorInstanceIdVCaseIndicatorInstanceIdMap, minIndicatorExpressionItemResponseRs.getResultValList());
+            Integer minSeqIndicatorExpressionItem = minIndicatorExpressionItemResponseRs.getSeq();
+            caseIndicatorExpressionItemEntityList.add(caseIndicatorExpressionBiz.caseIndicatorExpressionItemResponseRs2Case(
+                minCaseIndicatorExpressionItemId, minIndicatorExpressionItemId, appId, null, minConditionRaw,
+                minConditionExpression, minConditionNameList, minConditionValList, minResultRaw, minResultExpression, minResultNameList, minResultValList, minSeqIndicatorExpressionItem));
+            populateInfluenceMap(
+                kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap,
+                kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap,
+                caseIndicatorInstanceId,
+                minConditionValList,
+                minResultValList
+            );
           }
-          String minIndicatorExpressionItemId = minIndicatorExpressionItemResponseRs.getIndicatorExpressionItemId();
-          String minCaseIndicatorExpressionItemId = idGenerator.nextIdStr();
-          String minConditionRaw = minIndicatorExpressionItemResponseRs.getConditionRaw();
-          String minConditionExpression = minIndicatorExpressionItemResponseRs.getConditionExpression();
-          String minConditionNameList = minIndicatorExpressionItemResponseRs.getConditionNameList();
-          String minConditionValList = convertConditionValList2Case(kIndicatorInstanceIdVCaseIndicatorInstanceIdMap, minIndicatorExpressionItemResponseRs.getConditionValList());
-          String minResultRaw = minIndicatorExpressionItemResponseRs.getResultRaw();
-          String minResultExpression = minIndicatorExpressionItemResponseRs.getResultExpression();
-          String minResultNameList = minIndicatorExpressionItemResponseRs.getResultNameList();
-          String minResultValList = convertResultValList2Case(kIndicatorInstanceIdVCaseIndicatorInstanceIdMap, minIndicatorExpressionItemResponseRs.getResultValList());
-          Integer minSeqIndicatorExpressionItem = minIndicatorExpressionItemResponseRs.getSeq();
-          caseIndicatorExpressionItemEntityList.add(caseIndicatorExpressionBiz.caseIndicatorExpressionItemResponseRs2Case(
-              minCaseIndicatorExpressionItemId, minIndicatorExpressionItemId, appId, null, minConditionRaw,
-              minConditionExpression, minConditionNameList, minConditionValList, minResultRaw, minResultExpression, minResultNameList, minResultValList, minSeqIndicatorExpressionItem));
-          populateInfluenceMap(
-              kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap,
-              kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap,
-              caseIndicatorInstanceId,
-              minConditionValList,
-              minResultValList
-          );
           IndicatorExpressionItemResponseRs maxIndicatorExpressionItemResponseRs = indicatorExpressionResponseRs.getMaxIndicatorExpressionItemResponseRs();
-          if (Objects.isNull(maxIndicatorExpressionItemResponseRs)) {
-            return;
+          if (Objects.nonNull(maxIndicatorExpressionItemResponseRs)) {
+            String maxIndicatorExpressionItemId = maxIndicatorExpressionItemResponseRs.getIndicatorExpressionItemId();
+            maxCaseIndicatorExpressionItemId = idGenerator.nextIdStr();
+            String maxConditionRaw = maxIndicatorExpressionItemResponseRs.getConditionRaw();
+            String maxConditionExpression = maxIndicatorExpressionItemResponseRs.getConditionExpression();
+            String maxConditionNameList = maxIndicatorExpressionItemResponseRs.getConditionNameList();
+            String maxConditionValList = convertConditionValList2Case(kIndicatorInstanceIdVCaseIndicatorInstanceIdMap, maxIndicatorExpressionItemResponseRs.getConditionValList());
+            String maxResultRaw = maxIndicatorExpressionItemResponseRs.getResultRaw();
+            String maxResultExpression = maxIndicatorExpressionItemResponseRs.getResultExpression();
+            String maxResultNameList = maxIndicatorExpressionItemResponseRs.getResultNameList();
+            String maxResultValList = convertResultValList2Case(kIndicatorInstanceIdVCaseIndicatorInstanceIdMap, maxIndicatorExpressionItemResponseRs.getResultValList());
+            Integer maxSeqIndicatorExpressionItem = maxIndicatorExpressionItemResponseRs.getSeq();
+            caseIndicatorExpressionItemEntityList.add(caseIndicatorExpressionBiz.caseIndicatorExpressionItemResponseRs2Case(
+                maxCaseIndicatorExpressionItemId, maxIndicatorExpressionItemId, appId, null, maxConditionRaw,
+                maxConditionExpression, maxConditionNameList, maxConditionValList, maxResultRaw, maxResultExpression, maxResultNameList, maxResultValList, maxSeqIndicatorExpressionItem));
+            populateInfluenceMap(
+                kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap,
+                kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap,
+                caseIndicatorInstanceId,
+                maxConditionValList,
+                maxResultValList
+            );
           }
-          String maxIndicatorExpressionItemId = maxIndicatorExpressionItemResponseRs.getIndicatorExpressionItemId();
-          String maxCaseIndicatorExpressionItemId = idGenerator.nextIdStr();
-          String maxConditionRaw = maxIndicatorExpressionItemResponseRs.getConditionRaw();
-          String maxConditionExpression = maxIndicatorExpressionItemResponseRs.getConditionExpression();
-          String maxConditionNameList = maxIndicatorExpressionItemResponseRs.getConditionNameList();
-          String maxConditionValList = convertConditionValList2Case(kIndicatorInstanceIdVCaseIndicatorInstanceIdMap, maxIndicatorExpressionItemResponseRs.getConditionValList());
-          String maxResultRaw = maxIndicatorExpressionItemResponseRs.getResultRaw();
-          String maxResultExpression = maxIndicatorExpressionItemResponseRs.getResultExpression();
-          String maxResultNameList = maxIndicatorExpressionItemResponseRs.getResultNameList();
-          String maxResultValList = convertResultValList2Case(kIndicatorInstanceIdVCaseIndicatorInstanceIdMap, maxIndicatorExpressionItemResponseRs.getResultValList());
-          Integer maxSeqIndicatorExpressionItem = maxIndicatorExpressionItemResponseRs.getSeq();
-          caseIndicatorExpressionItemEntityList.add(caseIndicatorExpressionBiz.caseIndicatorExpressionItemResponseRs2Case(
-              maxCaseIndicatorExpressionItemId, maxIndicatorExpressionItemId, appId, null, maxConditionRaw,
-              maxConditionExpression, maxConditionNameList, maxConditionValList, maxResultRaw, maxResultExpression, maxResultNameList, maxResultValList, maxSeqIndicatorExpressionItem));
-          populateInfluenceMap(
-              kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap,
-              kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap,
-              caseIndicatorInstanceId,
-              maxConditionValList,
-              maxResultValList
-          );
           caseIndicatorExpressionEntityList.add(CaseIndicatorExpressionEntity
               .builder()
               .caseIndicatorExpressionId(caseIndicatorExpressionId)
@@ -379,11 +379,11 @@ public class CaseIndicatorInstanceBiz {
               .build());
           caseIndicatorExpressionRefEntityList.add(CaseIndicatorExpressionRefEntity
               .builder()
-                  .caseIndicatorExpressionRefId(caseIndicatorExpressionRefId)
-                  .indicatorExpressionRefId(indicatorExpressionRefId)
-                  .appId(appId)
-                  .indicatorExpressionId(caseIndicatorExpressionId)
-                  .reasonId(caseIndicatorInstanceId)
+              .caseIndicatorExpressionRefId(caseIndicatorExpressionRefId)
+              .indicatorExpressionRefId(indicatorExpressionRefId)
+              .appId(appId)
+              .indicatorExpressionId(caseIndicatorExpressionId)
+              .reasonId(caseIndicatorInstanceId)
               .build());
         });
       });
