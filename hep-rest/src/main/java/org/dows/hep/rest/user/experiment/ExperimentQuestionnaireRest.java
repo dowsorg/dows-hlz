@@ -33,8 +33,8 @@ public class ExperimentQuestionnaireRest {
      * @return
      */
     @Operation(summary = "获取实验知识答题")
-    @GetMapping("v1/userExperiment/experimentQuestionnaire/getQuestionnaire")
-    public ExperimentQuestionnaireResponse getQuestionnaire(ExptQuestionnaireSearchRequest searchRequest, HttpServletRequest request) {
+    @PostMapping("v1/userExperiment/experimentQuestionnaire/getQuestionnaire")
+    public ExperimentQuestionnaireResponse getQuestionnaire(@RequestBody ExptQuestionnaireSearchRequest searchRequest, HttpServletRequest request) {
         searchRequest.setExperimentAccountId(baseBiz.getAccountId(request));
         return experimentQuestionnaireBiz.getQuestionnaire(searchRequest);
     }

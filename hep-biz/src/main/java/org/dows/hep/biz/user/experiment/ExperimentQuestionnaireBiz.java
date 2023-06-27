@@ -104,7 +104,10 @@ public class ExperimentQuestionnaireBiz {
                 .eq(ExperimentQuestionnaireEntity::getExperimentGroupId, request.getExperimentGroupId())
                 .eq(ExperimentQuestionnaireEntity::getExperimentAccountId,  request.getExperimentAccountId())
                 .oneOpt()
-                .orElseThrow(() -> new BizException(ExperimentESCEnum.QUESTIONNAIRE_NOT_NULL));
+                .orElse(null);
+        if (BeanUtil.isEmpty(entity)) {
+            return new ExperimentQuestionnaireResponse();
+        }
         ExperimentQuestionnaireResponse result = BeanUtil.copyProperties(entity, ExperimentQuestionnaireResponse.class);
 
         List<ExperimentQuestionnaireItemResponse> itemList = experimentQuestionnaireItemBiz.listByQuestionnaireId(entity.getExperimentQuestionnaireId());
