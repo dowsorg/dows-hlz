@@ -76,9 +76,6 @@ public class ExperimentIndicatorInstanceRsEntity {
   @Schema(title = "默认值")
   private String def;
 
-  @Schema(title = "实验指标表达式分布式ID")
-  private String experimentIndicatorExpressionId;
-
   @JsonIgnore
   @TableLogic
   @TableField(fill = FieldFill.INSERT)

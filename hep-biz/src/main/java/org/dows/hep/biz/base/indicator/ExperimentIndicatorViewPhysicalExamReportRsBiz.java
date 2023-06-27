@@ -74,6 +74,7 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
 //    String operateFlowId = exptOrgFlowValidator.getOperateFlowId();
     Map<String, ExperimentIndicatorViewPhysicalExamRsEntity> kExperimentIndicatorViewPhysicalExamIdVExperimentIndicatorViewPhysicalExamRsEntityMap = new HashMap<>();
     Set<String> indicatorInstanceIdSet = new HashSet<>();
+    Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
     if (!experimentIndicatorViewPhysicalExamIdList.isEmpty()) {
       experimentIndicatorViewPhysicalExamRsService.lambdaQuery()
           .eq(ExperimentIndicatorViewPhysicalExamRsEntity::getAppId, appId)
@@ -96,11 +97,12 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
           .in(ExperimentIndicatorInstanceRsEntity::getIndicatorInstanceId, indicatorInstanceIdSet)
           .list()
           .forEach(experimentIndicatorInstanceRsEntity -> {
+            experimentIndicatorInstanceIdSet.add(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
             kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.put(
                 experimentIndicatorInstanceRsEntity.getIndicatorInstanceId(), experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
           });
       experimentIndicatorInstanceRsService.lambdaQuery()
-          .in(ExperimentIndicatorInstanceRsEntity::getExperimentIndicatorInstanceId, indicatorInstanceIdSet)
+          .in(ExperimentIndicatorInstanceRsEntity::getIndicatorInstanceId, indicatorInstanceIdSet)
           .list()
           .forEach(experimentIndicatorInstanceRsEntity -> {
             kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.put(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId(), experimentIndicatorInstanceRsEntity);
@@ -113,8 +115,10 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
           .forEach(experimentIndicatorValRsEntity -> {
             kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(experimentIndicatorValRsEntity.getIndicatorInstanceId(), experimentIndicatorValRsEntity);
           });
+    }
+    if (!experimentIndicatorInstanceIdSet.isEmpty()) {
       experimentIndicatorExpressionRefRsService.lambdaQuery()
-          .in(ExperimentIndicatorExpressionRefRsEntity::getReasonId, indicatorInstanceIdSet)
+          .in(ExperimentIndicatorExpressionRefRsEntity::getReasonId, experimentIndicatorInstanceIdSet)
           .list()
           .forEach(experimentIndicatorExpressionRefRsEntity -> {
             String reasonId = experimentIndicatorExpressionRefRsEntity.getReasonId();
