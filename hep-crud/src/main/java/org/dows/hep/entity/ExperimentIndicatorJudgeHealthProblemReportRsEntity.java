@@ -48,13 +48,20 @@ public class ExperimentIndicatorJudgeHealthProblemReportRsEntity {
   @Schema(title = "实验人物id")
   private String experimentPersonId;
 
+  @Schema(title = "挂号流水号")
+  private String operateFlowId;
+
   @Schema(title = "健康问题名称")
   private String name;
 
+  @Schema(title = "保存次数")
+  private Integer count;
+
+  @Schema(title = "健康问题id")
+  private String experimentIndicatorJudgeHealthProblemId;
+
   @Schema(title = "目录名称列表")
   private String indicatorCategoryNameArray;
-
-
 
   @JsonIgnore
   @TableLogic

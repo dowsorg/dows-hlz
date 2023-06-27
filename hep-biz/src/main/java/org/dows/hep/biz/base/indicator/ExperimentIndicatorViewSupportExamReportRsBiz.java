@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.base.indicator.request.ExperimentSupportExamCheckRequestRs;
 import org.dows.hep.api.base.indicator.response.ExperimentSupportExamReportResponseRs;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
+import org.dows.hep.biz.util.ExptOrgFlowValidator;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -54,7 +55,11 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
     List<String> experimentIndicatorViewSupportExamIdList = experimentSupportExamCheckRequestRs.getExperimentIndicatorViewSupportExamIdList();
     String appId = experimentSupportExamCheckRequestRs.getAppId();
     String experimentId = experimentSupportExamCheckRequestRs.getExperimentId();
+    String experimentOrgId = experimentSupportExamCheckRequestRs.getExperimentOrgId();
     String resultExplain = null;
+    ExptOrgFlowValidator exptOrgFlowValidator = ExptOrgFlowValidator.create(appId, experimentId, experimentOrgId, experimentPersonId);
+    exptOrgFlowValidator.checkOrgFlow(true);
+    String operateFlowId = exptOrgFlowValidator.getOperateFlowId();
     Map<String, ExperimentIndicatorViewSupportExamRsEntity> kExperimentIndicatorViewSupportExamIdVExperimentIndicatorViewSupportExamRsEntityMap = new HashMap<>();
     Set<String> indicatorInstanceIdSet = new HashSet<>();
     if (!experimentIndicatorViewSupportExamIdList.isEmpty()) {
@@ -157,6 +162,7 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
               .period(period)
               .indicatorFuncId(indicatorFuncId)
               .experimentPersonId(experimentPersonId)
+              .operateFlowId(operateFlowId)
               .name(experimentIndicatorViewSupportExamRsEntity.getName())
               .fee(experimentIndicatorViewSupportExamRsEntity.getFee())
               .currentVal(currentVal)
@@ -168,14 +174,19 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
     experimentIndicatorViewSupportExamReportRsService.saveOrUpdateBatch(experimentIndicatorViewSupportExamReportRsEntityList);
   }
 
-  public List<ExperimentSupportExamReportResponseRs> get(String appId, String experimentId, String indicatorFuncId, String experimentPersonId) {
+  public List<ExperimentSupportExamReportResponseRs> get(String appId, String experimentId, String indicatorFuncId, String experimentPersonId, String experimentOrgId) {
     /* runsix:TODO 期数当前写死为1,后期从张亮获取 */
     Integer period = 1;
+    ExptOrgFlowValidator exptOrgFlowValidator = ExptOrgFlowValidator.create(appId, experimentId, experimentOrgId, experimentPersonId);
+    exptOrgFlowValidator.checkOrgFlow(true);
+    String operateFlowId = exptOrgFlowValidator.getOperateFlowId();
     return experimentIndicatorViewSupportExamReportRsService.lambdaQuery()
         .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getAppId, appId)
         .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getExperimentId, experimentId)
+        .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getPeriod, period)
         .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getIndicatorFuncId, indicatorFuncId)
         .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getExperimentPersonId, experimentPersonId)
+        .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getOperateFlowId, operateFlowId)
         .orderByDesc(ExperimentIndicatorViewSupportExamReportRsEntity::getDt)
         .list()
         .stream()

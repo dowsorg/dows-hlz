@@ -49,6 +49,9 @@ public class ExperimentIndicatorViewSupportExamReportRsEntity {
   @Schema(title = "实验人物id")
   private String experimentPersonId;
 
+  @Schema(title = "挂号流水号")
+  private String operateFlowId;
+
   @Schema(title = "体格检查名称")
   private String name;
 
