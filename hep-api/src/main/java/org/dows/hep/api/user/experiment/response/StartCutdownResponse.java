@@ -15,7 +15,7 @@ public class StartCutdownResponse {
     @Schema(title = "实验实列ID")
     private String experimentInstanceId;
 
-    @Schema(title = "每期时长")
+    @Schema(title = "每期间隔/倒计时时间")
     private Long periodInterval;
 
     @Schema(title = "实验模式")

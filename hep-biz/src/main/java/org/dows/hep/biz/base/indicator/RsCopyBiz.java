@@ -1321,17 +1321,17 @@ public class RsCopyBiz {
               .source(caseIndicatorExpressionEntity.getSource())
               .build();
           experimentIndicatorExpressionRsEntityList.add(experimentIndicatorExpressionRsEntity);
+          ExperimentIndicatorExpressionRefRsEntity experimentIndicatorExpressionRefRsEntity = ExperimentIndicatorExpressionRefRsEntity
+              .builder()
+              .experimentIndicatorExpressionRefId(experimentIndicatorExpressionRefId)
+              .experimentId(experimentInstanceId)
+              .caseId(caseInstanceId)
+              .appId(appId)
+              .indicatorExpressionId(experimentIndicatorExpressionId)
+              .reasonId(experimentIndicatorInstanceId)
+              .build();
+          experimentIndicatorExpressionRefRsEntityList.add(experimentIndicatorExpressionRefRsEntity);
         });
-        ExperimentIndicatorExpressionRefRsEntity experimentIndicatorExpressionRefRsEntity = ExperimentIndicatorExpressionRefRsEntity
-            .builder()
-            .experimentIndicatorExpressionRefId(experimentIndicatorExpressionRefId)
-            .experimentId(experimentInstanceId)
-            .caseId(caseInstanceId)
-            .appId(appId)
-            .indicatorExpressionId(experimentIndicatorInstanceId)
-            .reasonId(experimentIndicatorInstanceId)
-            .build();
-        experimentIndicatorExpressionRefRsEntityList.add(experimentIndicatorExpressionRefRsEntity);
       });
     });
     experimentIndicatorInstanceRsService.saveOrUpdateBatch(experimentIndicatorInstanceRsEntityList);
