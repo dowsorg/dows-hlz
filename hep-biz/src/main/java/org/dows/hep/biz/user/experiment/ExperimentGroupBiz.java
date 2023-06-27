@@ -295,6 +295,9 @@ public class ExperimentGroupBiz {
         // 所有小组准备完成
         if (list.size() == collect.size()) {
             // 发布事件，计数小组是否分配到齐，是否都分配好
+            /**
+             * todo 该处应该为发布一个事件，名称为 开始实验事件，在该事件中处理通知客户端和（分配试卷？？？？应该提前完成？）
+             */
             applicationEventPublisher.publishEvent(new GroupMemberAllotEvent(participatorList));
             /**
              * todo 分配试卷事件，可以合并后面需要优化//

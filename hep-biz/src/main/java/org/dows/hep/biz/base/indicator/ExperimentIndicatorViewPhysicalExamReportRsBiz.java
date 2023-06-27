@@ -74,6 +74,7 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
 //    String operateFlowId = exptOrgFlowValidator.getOperateFlowId();
     Map<String, ExperimentIndicatorViewPhysicalExamRsEntity> kExperimentIndicatorViewPhysicalExamIdVExperimentIndicatorViewPhysicalExamRsEntityMap = new HashMap<>();
     Set<String> indicatorInstanceIdSet = new HashSet<>();
+    Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
     if (!experimentIndicatorViewPhysicalExamIdList.isEmpty()) {
       experimentIndicatorViewPhysicalExamRsService.lambdaQuery()
           .eq(ExperimentIndicatorViewPhysicalExamRsEntity::getAppId, appId)
@@ -96,11 +97,12 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
           .in(ExperimentIndicatorInstanceRsEntity::getIndicatorInstanceId, indicatorInstanceIdSet)
           .list()
           .forEach(experimentIndicatorInstanceRsEntity -> {
+            experimentIndicatorInstanceIdSet.add(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
             kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.put(
                 experimentIndicatorInstanceRsEntity.getIndicatorInstanceId(), experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
           });
       experimentIndicatorInstanceRsService.lambdaQuery()
-          .in(ExperimentIndicatorInstanceRsEntity::getExperimentIndicatorInstanceId, indicatorInstanceIdSet)
+          .in(ExperimentIndicatorInstanceRsEntity::getIndicatorInstanceId, indicatorInstanceIdSet)
           .list()
           .forEach(experimentIndicatorInstanceRsEntity -> {
             kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.put(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId(), experimentIndicatorInstanceRsEntity);
@@ -108,13 +110,15 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
       experimentIndicatorValRsService.lambdaQuery()
           .eq(ExperimentIndicatorValRsEntity::getExperimentId, experimentId)
           .eq(ExperimentIndicatorValRsEntity::getPeriods, period)
-          .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, indicatorInstanceIdSet)
+          .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
           .list()
           .forEach(experimentIndicatorValRsEntity -> {
             kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(experimentIndicatorValRsEntity.getIndicatorInstanceId(), experimentIndicatorValRsEntity);
           });
+    }
+    if (!experimentIndicatorInstanceIdSet.isEmpty()) {
       experimentIndicatorExpressionRefRsService.lambdaQuery()
-          .in(ExperimentIndicatorExpressionRefRsEntity::getReasonId, indicatorInstanceIdSet)
+          .in(ExperimentIndicatorExpressionRefRsEntity::getReasonId, experimentIndicatorInstanceIdSet)
           .list()
           .forEach(experimentIndicatorExpressionRefRsEntity -> {
             String reasonId = experimentIndicatorExpressionRefRsEntity.getReasonId();
@@ -295,8 +299,8 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
       }
       String currentVal = null;
       String unit = null;
-      ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(indicatorInstanceId);
-      ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.get(indicatorInstanceId);
+      ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
+      ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.get(experimentIndicatorInstanceId);
       if (Objects.nonNull(experimentIndicatorValRsEntity)) {
         currentVal = experimentIndicatorValRsEntity.getCurrentVal();
       }
@@ -327,9 +331,11 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
   public List<ExperimentPhysicalExamReportResponseRs> get(String appId, String experimentId, String indicatorFuncId, String experimentPersonId, String experimentOrgId) {
     /* runsix:TODO 期数当前写死为1,后期从张亮获取 */
     Integer period = 1;
-    ExptOrgFlowValidator exptOrgFlowValidator = ExptOrgFlowValidator.create(appId, experimentId, experimentOrgId, experimentPersonId);
-    exptOrgFlowValidator.checkOrgFlow(true);
-    String operateFlowId = exptOrgFlowValidator.getOperateFlowId();
+    /* runsix:TODO 以后找吴治霖 */
+    String operateFlowId = "1";
+//    ExptOrgFlowValidator exptOrgFlowValidator = ExptOrgFlowValidator.create(appId, experimentId, experimentOrgId, experimentPersonId);
+//    exptOrgFlowValidator.checkOrgFlow(true);
+//    String operateFlowId = exptOrgFlowValidator.getOperateFlowId();
     return experimentIndicatorViewPhysicalExamReportRsService.lambdaQuery()
         .eq(ExperimentIndicatorViewPhysicalExamReportRsEntity::getAppId, appId)
         .eq(ExperimentIndicatorViewPhysicalExamReportRsEntity::getExperimentId, experimentId)

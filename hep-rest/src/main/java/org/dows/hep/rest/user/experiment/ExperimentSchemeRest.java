@@ -10,6 +10,7 @@ import org.dows.hep.api.user.experiment.request.ExperimentSchemeAllotRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeSettingResponse;
+import org.dows.hep.api.user.experiment.response.ExperimentSchemeStateResponse;
 import org.dows.hep.biz.user.experiment.ExperimentBaseBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
 import org.springframework.validation.annotation.Validated;
@@ -38,6 +39,17 @@ public class ExperimentSchemeRest {
     public ExperimentSchemeResponse getScheme(@NotBlank String experimentInstanceId, @NotBlank String experimentGroupId, HttpServletRequest request) {
         String accountId = baseBiz.getAccountId(request);
         return experimentSchemeBiz.getScheme(experimentInstanceId, experimentGroupId, accountId, true);
+    }
+
+    /**
+     * 获取方案设计状态
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取方案设计状态")
+    @GetMapping("v1/userExperiment/experimentScheme/getSchemeState")
+    public ExperimentSchemeStateResponse getSchemeState(@NotBlank String experimentInstanceId, @NotBlank String experimentGroupId) {
+        return experimentSchemeBiz.getSchemeState(experimentInstanceId, experimentGroupId);
     }
 
     /**
