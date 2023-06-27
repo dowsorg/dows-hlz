@@ -245,7 +245,7 @@ public class ExperimentQuestionnaireManageBiz {
 
         // 处理子节点
         for (QuestionResponse child : questionResponse.getChildren()) {
-            flattenTree(child, flatList, itemEntity.getExperimentQuestionnaireId());
+            flattenTree(child, flatList, itemEntity.getExperimentQuestionnaireItemId());
         }
     }
 
