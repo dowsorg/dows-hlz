@@ -22,7 +22,6 @@ import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.hep.service.ExperimentSettingService;
 import org.dows.hep.service.ExperimentTimerService;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -46,7 +45,6 @@ public class ExperimentTimerBiz {
     private final ExperimentSettingService experimentSettingService;
 
 
-
     /**
      * 获取当前实验期数信息[每期开始，结束，间隔等]
      *
@@ -59,24 +57,28 @@ public class ExperimentTimerBiz {
 
         List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
                 .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
-                .eq(ExperimentTimerEntity::getState,ExperimentStateEnum.ONGOING.getState())
+                .eq(ExperimentTimerEntity::getState, ExperimentStateEnum.ONGOING.getState())
                 //.eq(ExperimentTimerEntity::getModel, 2) // 沙盘模式
                 //.ne(ExperimentTimerEntity::getState, ExperimentStateEnum.FINISH.getState())
                 .list();
 
         long ct = System.currentTimeMillis();
 
-        ExperimentTimerEntity experimentTimerEntity1 = list.stream()
-                .min(Comparator.comparingLong(ExperimentTimerEntity::getStartTime))
-                .orElse(null);
-        Assert.isNull(experimentTimerEntity1,()->new ExperimentException("实验计时器不存在进行中状态"));
-        if(ct<experimentTimerEntity1.getStartTime()){
-            ct = experimentTimerEntity1.getStartTime()-ct;
-            countDownResponse.setCountdown(ct);
+        for (int i = 0; i < list.size(); i++) {
+            ExperimentTimerEntity pre = list.get(i);
+            ExperimentTimerEntity next;
+            if(i == list.size()-1){
+                countDownResponse.setCountdown(0L);
+                break;
+            }
+            next = list.get(i + 1);
+            if (ct >= pre.getEndTime() && ct < next.getStartTime()){
+                ct = next.getStartTime() - ct;
+                countDownResponse.setCountdown(ct);
+                break;
+            }
         }
-
         return countDownResponse;
-
     }
 
     /**
@@ -131,7 +133,7 @@ public class ExperimentTimerBiz {
                 Integer duration = durationMap.get(s);
                 Integer period = periodMap.get(s);
                 totalDay += period;
-                double mockRate = Double.valueOf(period) / Double.valueOf(duration*60);
+                double mockRate = Double.valueOf(period) / Double.valueOf(duration * 60);
                 mockRateMap.put(s, mockRate);
             }
 
@@ -158,9 +160,9 @@ public class ExperimentTimerBiz {
                     Long second = ct / 1000;
                     // 获取比例
                     Double aFloat = mockRateMap.get(experimentTimerEntity.getPeriod() + "");
-                    Double day = second/60 * aFloat;
+                    Double day = second * aFloat;
                     Integer period = experimentTimerEntity.getPeriod();
-                    if(period>1) {
+                    if (period > 1) {
                         for (int i = 1; i <= period; i++) {
                             Integer integer = periodMap.get(i + "");
                             day += integer;
@@ -173,15 +175,6 @@ public class ExperimentTimerBiz {
         }
 
         return countDownResponse;
-      /*  ExperimentTimerEntity experimentTimerEntity = experimentTimerService.lambdaQuery()
-                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
-                .oneOpt()
-                .orElse(null);
-
-        if (experimentTimerEntity == null) {
-
-        }
-        return BeanConvert.beanConvert(experimentTimerEntity, CountDownResponse.class);*/
     }
 
 
