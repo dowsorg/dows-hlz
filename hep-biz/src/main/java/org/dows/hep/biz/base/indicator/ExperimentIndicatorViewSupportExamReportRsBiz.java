@@ -2,17 +2,29 @@ package org.dows.hep.biz.base.indicator;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.dows.hep.api.base.indicator.request.ExperimentSupportExamCheckRequestRs;
 import org.dows.hep.api.base.indicator.request.ExperimentSupportExamCheckRequestRs;
 import org.dows.hep.api.base.indicator.response.ExperimentSupportExamReportResponseRs;
+import org.dows.hep.api.base.indicator.response.ExperimentSupportExamReportResponseRs;
+import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
+import org.dows.hep.api.enums.EnumString;
+import org.dows.hep.api.exception.ExperimentIndicatorViewSupportExamReportRsException;
 import org.dows.hep.biz.util.ExptOrgFlowValidator;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
+import org.springframework.expression.Expression;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -56,12 +68,14 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
     String appId = experimentSupportExamCheckRequestRs.getAppId();
     String experimentId = experimentSupportExamCheckRequestRs.getExperimentId();
     String experimentOrgId = experimentSupportExamCheckRequestRs.getExperimentOrgId();
-    String resultExplain = null;
-    ExptOrgFlowValidator exptOrgFlowValidator = ExptOrgFlowValidator.create(appId, experimentId, experimentOrgId, experimentPersonId);
-    exptOrgFlowValidator.checkOrgFlow(true);
-    String operateFlowId = exptOrgFlowValidator.getOperateFlowId();
+    /* runsix:TODO 等吴治霖弄好 */
+    String operateFlowId = "1";
+//    ExptOrgFlowValidator exptOrgFlowValidator = ExptOrgFlowValidator.create(appId, experimentId, experimentOrgId, experimentPersonId);
+//    exptOrgFlowValidator.checkOrgFlow(true);
+//    String operateFlowId = exptOrgFlowValidator.getOperateFlowId();
     Map<String, ExperimentIndicatorViewSupportExamRsEntity> kExperimentIndicatorViewSupportExamIdVExperimentIndicatorViewSupportExamRsEntityMap = new HashMap<>();
     Set<String> indicatorInstanceIdSet = new HashSet<>();
+    Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
     if (!experimentIndicatorViewSupportExamIdList.isEmpty()) {
       experimentIndicatorViewSupportExamRsService.lambdaQuery()
           .eq(ExperimentIndicatorViewSupportExamRsEntity::getAppId, appId)
@@ -75,10 +89,21 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
     Map<String, ExperimentIndicatorInstanceRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap = new HashMap<>();
     Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = new HashMap<>();
     Map<String, List<String>> kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionIdListMap = new HashMap<>();
+    Map<String, ExperimentIndicatorExpressionRsEntity> kExperimentIndicatorInstanceIdVSourceExperimentIndicatorExpressionRsEntityMap = new HashMap<>();
+    Map<String, String> kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap = new HashMap<>();
     Set<String> experimentIndicatorExpressionIdSet = new HashSet<>();
     if (!indicatorInstanceIdSet.isEmpty()) {
       experimentIndicatorInstanceRsService.lambdaQuery()
-          .in(ExperimentIndicatorInstanceRsEntity::getExperimentIndicatorInstanceId, indicatorInstanceIdSet)
+          .eq(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonId)
+          .in(ExperimentIndicatorInstanceRsEntity::getIndicatorInstanceId, indicatorInstanceIdSet)
+          .list()
+          .forEach(experimentIndicatorInstanceRsEntity -> {
+            experimentIndicatorInstanceIdSet.add(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
+            kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.put(
+                experimentIndicatorInstanceRsEntity.getIndicatorInstanceId(), experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
+          });
+      experimentIndicatorInstanceRsService.lambdaQuery()
+          .in(ExperimentIndicatorInstanceRsEntity::getIndicatorInstanceId, indicatorInstanceIdSet)
           .list()
           .forEach(experimentIndicatorInstanceRsEntity -> {
             kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.put(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId(), experimentIndicatorInstanceRsEntity);
@@ -86,13 +111,15 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
       experimentIndicatorValRsService.lambdaQuery()
           .eq(ExperimentIndicatorValRsEntity::getExperimentId, experimentId)
           .eq(ExperimentIndicatorValRsEntity::getPeriods, period)
-          .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, indicatorInstanceIdSet)
+          .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
           .list()
           .forEach(experimentIndicatorValRsEntity -> {
             kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(experimentIndicatorValRsEntity.getIndicatorInstanceId(), experimentIndicatorValRsEntity);
           });
+    }
+    if (!experimentIndicatorInstanceIdSet.isEmpty()) {
       experimentIndicatorExpressionRefRsService.lambdaQuery()
-          .in(ExperimentIndicatorExpressionRefRsEntity::getReasonId, indicatorInstanceIdSet)
+          .in(ExperimentIndicatorExpressionRefRsEntity::getReasonId, experimentIndicatorInstanceIdSet)
           .list()
           .forEach(experimentIndicatorExpressionRefRsEntity -> {
             String reasonId = experimentIndicatorExpressionRefRsEntity.getReasonId();
@@ -116,6 +143,7 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
           .list()
           .forEach(experimentIndicatorExpressionRsEntity -> {
             sourceExperimentIndicatorExpressionIdSet.add(experimentIndicatorExpressionRsEntity.getExperimentIndicatorExpressionId());
+            kExperimentIndicatorInstanceIdVSourceExperimentIndicatorExpressionRsEntityMap.put(experimentIndicatorExpressionRsEntity.getPrincipalId(), experimentIndicatorExpressionRsEntity);
             kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap.put(experimentIndicatorExpressionRsEntity.getExperimentIndicatorExpressionId(), experimentIndicatorExpressionRsEntity);
           });
     }
@@ -143,10 +171,137 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
     /* runsix:TODO 公式解析放到后面 */
     kExperimentIndicatorViewSupportExamIdVExperimentIndicatorViewSupportExamRsEntityMap.forEach((experimentIndicatorViewSupportExamId, experimentIndicatorViewSupportExamRsEntity) -> {
       String indicatorInstanceId = experimentIndicatorViewSupportExamRsEntity.getIndicatorInstanceId();
+      String experimentIndicatorInstanceId = kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.get(indicatorInstanceId);
+      if (Objects.isNull(experimentIndicatorInstanceId)) {
+        log.error("ExperimentIndicatorViewSupportExamReportRsBiz.supportExamCheck indicatorInstanceId:{} mapped no experimentIndicatorInstanceId", indicatorInstanceId);
+        throw new ExperimentIndicatorViewSupportExamReportRsException(EnumESC.VALIDATE_EXCEPTION);
+      }
+      ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity = kExperimentIndicatorInstanceIdVSourceExperimentIndicatorExpressionRsEntityMap.get(experimentIndicatorInstanceId);
+      if (Objects.isNull(experimentIndicatorExpressionRsEntity)) {
+        log.error("ExperimentIndicatorViewSupportExamReportRsBiz.supportExamCheck experimentIndicatorInstanceId:{} has no ExperimentIndicatorExpressionRsEntity", experimentIndicatorInstanceId);
+        throw new ExperimentIndicatorViewSupportExamReportRsException(EnumESC.VALIDATE_EXCEPTION);
+      }
+      String experimentIndicatorExpressionId = experimentIndicatorExpressionRsEntity.getExperimentIndicatorExpressionId();
+      List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList = kIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap.get(experimentIndicatorExpressionId);
+      AtomicReference<String> atomicReferenceResultExplain = new AtomicReference<>();
+      if (Objects.nonNull(experimentIndicatorExpressionItemRsEntityList)) {
+        for (ExperimentIndicatorExpressionItemRsEntity experimentIndicatorExpressionItemRsEntity : experimentIndicatorExpressionItemRsEntityList) {
+          String conditionExpression = experimentIndicatorExpressionItemRsEntity.getConditionExpression();
+          String conditionNameList = experimentIndicatorExpressionItemRsEntity.getConditionNameList();
+          String conditionValList = experimentIndicatorExpressionItemRsEntity.getConditionValList();
+          String resultExpression = experimentIndicatorExpressionItemRsEntity.getResultExpression();
+          String resultNameList = experimentIndicatorExpressionItemRsEntity.getResultNameList();
+          String resultValList = experimentIndicatorExpressionItemRsEntity.getResultValList();
+          if (StringUtils.isBlank(conditionExpression)) {
+            if (StringUtils.isBlank(resultExpression)) {
+              log.error("ExperimentIndicatorViewSupportExamReportRsBiz.supportExamCheck experimentIndicatorExpressionItemId:{} is illegal, conditionExpression && resultExpression is blank", experimentIndicatorExpressionItemRsEntity.getExperimentIndicatorExpressionItemId());
+              throw new ExperimentIndicatorViewSupportExamReportRsException(EnumESC.VALIDATE_EXCEPTION);
+            } else {
+              if (StringUtils.isBlank(resultNameList)) {
+                atomicReferenceResultExplain.set(resultExpression);
+              } else {
+                StandardEvaluationContext context = new StandardEvaluationContext();
+                List<String> resultNameListSplit = Arrays.stream(resultNameList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr())).collect(Collectors.toList());
+                List<String> resultValListSplit = Arrays.stream(resultValList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr())).collect(Collectors.toList());
+                for (int i = 0; i <= resultNameListSplit.size()-1; i++) {
+                  ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(resultValListSplit.get(i));
+                  String val = experimentIndicatorValRsEntity.getCurrentVal();
+                  boolean isValDigital = NumberUtils.isCreatable(val);
+                  if (isValDigital) {
+                    context.setVariable(resultNameListSplit.get(i), Double.parseDouble(val));
+                  } else {
+                    context.setVariable(resultNameListSplit.get(i), val);
+                  }
+                }
+                ExpressionParser parser = new SpelExpressionParser();
+                Expression expression = parser.parseExpression(resultExpression);
+                String resultExpressionResult = expression.getValue(context, String.class);
+                atomicReferenceResultExplain.set(resultExpressionResult);
+              }
+            }
+          } else {
+            if (StringUtils.isBlank(resultExpression)) {
+              // do nothing
+            } else {
+              if (StringUtils.isBlank(conditionNameList)) {
+                StandardEvaluationContext context = new StandardEvaluationContext();
+                ExpressionParser parser = new SpelExpressionParser();
+                Expression expression = parser.parseExpression(conditionExpression);
+                Boolean condition = expression.getValue(context, Boolean.class);
+                if (condition) {
+                  if (StringUtils.isBlank(resultNameList)) {
+                    atomicReferenceResultExplain.set(resultExpression);
+                  } else {
+                    StandardEvaluationContext context1 = new StandardEvaluationContext();
+                    List<String> resultNameListSplit = Arrays.stream(resultNameList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr())).collect(Collectors.toList());
+                    List<String> resultValListSplit = Arrays.stream(resultValList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr())).collect(Collectors.toList());
+                    for (int i = 0; i <= resultNameListSplit.size()-1; i++) {
+                      ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(resultValListSplit.get(i));
+                      String val = experimentIndicatorValRsEntity.getCurrentVal();
+                      boolean isValDigital = NumberUtils.isCreatable(val);
+                      if (isValDigital) {
+                        context1.setVariable(resultNameListSplit.get(i), Double.parseDouble(val));
+                      } else {
+                        context1.setVariable(resultNameListSplit.get(i), val);
+                      }
+                    }
+                    ExpressionParser parser1 = new SpelExpressionParser();
+                    Expression expression1 = parser1.parseExpression(resultExpression);
+                    String resultExpressionResult = expression1.getValue(context1, String.class);
+                    atomicReferenceResultExplain.set(resultExpressionResult);
+                  }
+                }
+              } else {
+                StandardEvaluationContext context = new StandardEvaluationContext();
+                List<String> conditionNameListSpilt = Arrays.stream(conditionNameList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr())).collect(Collectors.toList());
+                List<String> conditionValListSpilt = Arrays.stream(conditionValList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr())).collect(Collectors.toList());
+                for (int i = 0; i <= conditionValListSpilt.size()-1; i++) {
+                  ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(conditionValListSpilt.get(i));
+                  String val = experimentIndicatorValRsEntity.getCurrentVal();
+                  boolean isValDigital = NumberUtils.isCreatable(val);
+                  if (isValDigital) {
+                    context.setVariable(conditionNameListSpilt.get(i), Double.parseDouble(val));
+                  } else {
+                    val = v1WrapStrWithDoubleSingleQuotes(val);
+                    context.setVariable(conditionNameListSpilt.get(i), val);
+                  }
+                }
+                String conditionExpression1 = experimentIndicatorExpressionItemRsEntity.getConditionExpression();
+                ExpressionParser parser1 = new SpelExpressionParser();
+                Expression expression = parser1.parseExpression(conditionExpression1);
+                Boolean condition = expression.getValue(context, Boolean.class);
+                if (condition) {
+                  if (StringUtils.isBlank(resultNameList)) {
+                    atomicReferenceResultExplain.set(resultExpression);
+                  } else {
+                    StandardEvaluationContext context1 = new StandardEvaluationContext();
+                    List<String> resultNameListSplit = Arrays.stream(resultNameList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr())).collect(Collectors.toList());
+                    List<String> resultValListSplit = Arrays.stream(resultValList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr())).collect(Collectors.toList());
+                    for (int i = 0; i <= resultNameListSplit.size()-1; i++) {
+                      ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(resultValListSplit.get(i));
+                      String val = experimentIndicatorValRsEntity.getCurrentVal();
+                      boolean isValDigital = NumberUtils.isCreatable(val);
+                      if (isValDigital) {
+                        context1.setVariable(resultNameListSplit.get(i), Double.parseDouble(val));
+                      } else {
+                        context1.setVariable(resultNameListSplit.get(i), val);
+                      }
+                    }
+                    ExpressionParser parser2 = new SpelExpressionParser();
+                    Expression expression2 = parser2.parseExpression(resultExpression);
+                    String resultExpressionResult = expression2.getValue(context1, String.class);
+                    atomicReferenceResultExplain.set(resultExpressionResult);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
       String currentVal = null;
       String unit = null;
-      ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(indicatorInstanceId);
-      ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.get(indicatorInstanceId);
+      ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
+      ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.get(experimentIndicatorInstanceId);
       if (Objects.nonNull(experimentIndicatorValRsEntity)) {
         currentVal = experimentIndicatorValRsEntity.getCurrentVal();
       }
@@ -167,7 +322,7 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
               .fee(experimentIndicatorViewSupportExamRsEntity.getFee())
               .currentVal(currentVal)
               .unit(unit)
-              .resultExplain(resultExplain)
+              .resultExplain(atomicReferenceResultExplain.get())
               .build()
       );
     });
@@ -177,9 +332,11 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
   public List<ExperimentSupportExamReportResponseRs> get(String appId, String experimentId, String indicatorFuncId, String experimentPersonId, String experimentOrgId) {
     /* runsix:TODO 期数当前写死为1,后期从张亮获取 */
     Integer period = 1;
-    ExptOrgFlowValidator exptOrgFlowValidator = ExptOrgFlowValidator.create(appId, experimentId, experimentOrgId, experimentPersonId);
-    exptOrgFlowValidator.checkOrgFlow(true);
-    String operateFlowId = exptOrgFlowValidator.getOperateFlowId();
+    /* runsix:TODO 以后找吴治霖 */
+    String operateFlowId = "1";
+//    ExptOrgFlowValidator exptOrgFlowValidator = ExptOrgFlowValidator.create(appId, experimentId, experimentOrgId, experimentPersonId);
+//    exptOrgFlowValidator.checkOrgFlow(true);
+//    String operateFlowId = exptOrgFlowValidator.getOperateFlowId();
     return experimentIndicatorViewSupportExamReportRsService.lambdaQuery()
         .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getAppId, appId)
         .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getExperimentId, experimentId)
@@ -192,5 +349,13 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
         .stream()
         .map(ExperimentIndicatorViewSupportExamReportRsBiz::experimentSupportExamReport2ResponseRs)
         .collect(Collectors.toList());
+  }
+
+  private static String v1WrapStrWithDoubleSingleQuotes(String str) {
+    StringBuffer stringBuffer = new StringBuffer();
+    stringBuffer.append(EnumString.SINGLE_QUOTES.getStr());
+    stringBuffer.append(str);
+    stringBuffer.append(EnumString.SINGLE_QUOTES.getStr());
+    return stringBuffer.toString();
   }
 }
