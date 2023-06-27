@@ -710,8 +710,81 @@ public class RsCopyBiz {
       });
     }
     /* runsix:查看指标-辅助检查-四级类-无报告 */
-    /* runsix:TODO 判断指标-危险因素-二级类-无报告（有公式） */
-    /* runsix:TODO 判断指标-危险因素-二级类-无报告（有公式） */
+    /* runsix:判断指标-危险因素-二级类-无报告（有公式） */
+    Map<String, String> kIndicatorFuncIdVRFExperimentIndicatorFuncIdMap = new HashMap<>();
+    if (!funcIndicatorJudgeRiskFactorIdSet.isEmpty()) {
+      indicatorJudgeRiskFactorService.lambdaQuery()
+          .eq(IndicatorJudgeRiskFactorEntity::getAppId, appId)
+          .in(IndicatorJudgeRiskFactorEntity::getIndicatorFuncId, funcIndicatorJudgeRiskFactorIdSet)
+          .list()
+          .forEach(indicatorJudgeRiskFactorEntity -> {
+            indicatorJudgeRiskFactorEntityList.add(indicatorJudgeRiskFactorEntity);
+            String indicatorFuncId = indicatorJudgeRiskFactorEntity.getIndicatorFuncId();
+            String rfExperimentIndicatorFuncId = kIndicatorFuncIdVRFExperimentIndicatorFuncIdMap.get(indicatorFuncId);
+            if (StringUtils.isBlank(rfExperimentIndicatorFuncId)) {
+              kIndicatorFuncIdVRFExperimentIndicatorFuncIdMap.put(indicatorFuncId, idGenerator.nextIdStr());
+            }
+          });
+    }
+    if (!indicatorJudgeRiskFactorEntityList.isEmpty()) {
+      indicatorJudgeRiskFactorEntityList.forEach(indicatorJudgeRiskFactorEntity -> {
+        String experimentIndicatorJudgeRiskFactorId = idGenerator.nextIdStr();
+        String indicatorFuncId = indicatorJudgeRiskFactorEntity.getIndicatorFuncId();
+        IndicatorFuncEntity indicatorFuncEntity = kIndicatorFuncIdVIndicatorFuncEntityMap.get(indicatorFuncId);
+        String name = indicatorFuncEntity.getName();
+        String rfExperimentIndicatorFuncId = kIndicatorFuncIdVRFExperimentIndicatorFuncIdMap.get(indicatorFuncId);
+        kExperimentIndicatorFuncIdVIndicatorFuncIdMap.put(rfExperimentIndicatorFuncId, indicatorFuncId);
+        List<String> caseOrgModuleIdList = kIndicatorFuncIdVCaseOrgModuleIdList.get(indicatorFuncId);
+        if (Objects.nonNull(caseOrgModuleIdList)) {
+          caseOrgModuleIdList.forEach(caseOrgModuleId -> {
+            List<String> experimentIndicatorFuncIdList = kCaseOrgModuleIdVExperimentIndicatorFuncIdListMap.get(caseOrgModuleId);
+            if (Objects.isNull(experimentIndicatorFuncIdList)) {
+              experimentIndicatorFuncIdList = new ArrayList<>();
+            }
+            if (!experimentIndicatorFuncIdList.contains(rfExperimentIndicatorFuncId)) {
+              experimentIndicatorFuncIdList.add(rfExperimentIndicatorFuncId);
+            }
+            kCaseOrgModuleIdVExperimentIndicatorFuncIdListMap.put(caseOrgModuleId, experimentIndicatorFuncIdList);
+            kExperimentIndicatorFuncIdVIndicatorCategoryIdMap.put(rfExperimentIndicatorFuncId, EnumIndicatorCategory.JUDGE_MANAGEMENT_RISK_FACTOR.getCode());
+            kExperimentIndicatorFuncIdVIndicatorFuncNameMap.put(rfExperimentIndicatorFuncId, name);
+          });
+        }
+        String indicatorJudgeRiskFactorId = indicatorJudgeRiskFactorEntity.getIndicatorJudgeRiskFactorId();
+        String name1 = indicatorJudgeRiskFactorEntity.getName();
+        BigDecimal point = indicatorJudgeRiskFactorEntity.getPoint();
+        String resultExplain = indicatorJudgeRiskFactorEntity.getResultExplain();
+        Integer status = indicatorJudgeRiskFactorEntity.getStatus();
+        String indicatorCategoryIdArray = null;
+        List<String> indicatorCategoryIdList = new ArrayList<>();
+        String indicatorCategoryNameArray = null;
+        List<String> indicatorCategoryNameList = new ArrayList<>();
+        String firstIndicatorCategoryId = indicatorJudgeRiskFactorEntity.getIndicatorCategoryId();
+        indicatorCategoryIdList.add(firstIndicatorCategoryId);
+        IndicatorCategoryEntity firstIndicatorCategoryEntity = kIndicatorCategoryIdVIndicatorCategoryEntityMap.get(firstIndicatorCategoryId);
+        if (Objects.nonNull(firstIndicatorCategoryEntity)) {
+          indicatorCategoryNameList.add(firstIndicatorCategoryEntity.getCategoryName());
+        }
+        indicatorCategoryIdArray = String.join(EnumString.COMMA.getStr(), indicatorCategoryIdList);
+        indicatorCategoryNameArray = String.join(EnumString.COMMA.getStr(), indicatorCategoryNameList);
+        ExperimentIndicatorJudgeRiskFactorRsEntity experimentIndicatorJudgeRiskFactorRsEntity = ExperimentIndicatorJudgeRiskFactorRsEntity
+            .builder()
+            .experimentIndicatorJudgeRiskFactorId(experimentIndicatorJudgeRiskFactorId)
+            .indicatorJudgeRiskFactorId(indicatorJudgeRiskFactorId)
+            .experimentId(experimentInstanceId)
+            .caseId(caseInstanceId)
+            .appId(appId)
+            .indicatorFuncId(rfExperimentIndicatorFuncId)
+            .name(name1)
+            .point(point)
+            .resultExplain(resultExplain)
+            .status(status)
+            .indicatorCategoryIdArray(indicatorCategoryIdArray)
+            .indicatorCategoryNameArray(indicatorCategoryNameArray)
+            .build();
+        experimentIndicatorJudgeRiskFactorRsEntityList.add(experimentIndicatorJudgeRiskFactorRsEntity);
+      });
+    }
+    /* runsix:判断指标-危险因素-二级类-无报告（有公式） */
     /* runsix:判断指标-健康指导-二级类-有报告（无公式） */
     Map<String, String> kIndicatorFuncIdVHGExperimentIndicatorFuncIdMap = new HashMap<>();
     if (!funcIndicatorJudgeHealthGuidanceIdSet.isEmpty()) {
