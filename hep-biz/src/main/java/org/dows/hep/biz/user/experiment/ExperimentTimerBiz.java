@@ -160,7 +160,7 @@ public class ExperimentTimerBiz {
     public List<ExperimentTimerEntity> getCurrentPeriods(ExperimentRestartRequest experimentRestartRequest) {
         List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
                 .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentRestartRequest.getExperimentInstanceId())
-                .eq(ExperimentTimerEntity::getAppId, experimentRestartRequest.getAppId())
+                //.eq(ExperimentTimerEntity::getAppId, experimentRestartRequest.getAppId())
                 .list();
         return list;
     }
@@ -178,13 +178,15 @@ public class ExperimentTimerBiz {
         if (!b) {
             throw new ExperimentException(" 更新计时器实验状态发生异常！");
         }
-        boolean update = experimentInstanceService.lambdaUpdate().eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
+        boolean update = experimentInstanceService.lambdaUpdate()
+                .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
                 .set(ExperimentInstanceEntity::getState, experimentStateEnum.getState())
                 .update();
         if (!update) {
             throw new ExperimentException(" 更新实验实例状态发生异常！");
         }
-        boolean update1 = experimentParticipatorService.lambdaUpdate().eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
+        boolean update1 = experimentParticipatorService.lambdaUpdate()
+                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
                 .set(ExperimentParticipatorEntity::getState, experimentStateEnum.getState())
                 .update();
 
@@ -236,6 +238,25 @@ public class ExperimentTimerBiz {
         List<ExperimentPeriodsResonse.ExperimentPeriods> experimentPeriods = BeanConvert
                 .beanConvert(list, ExperimentPeriodsResonse.ExperimentPeriods.class);
         experimentPeriodsResonse.setExperimentPeriods(experimentPeriods);
+
+
+
+
+
+        /*List<ExperimentPeriodsResonse.ExperimentPeriods> experimentPeriods1 = experimentPeriods.getExperimentPeriods();
+        Integer currentPeriod = experimentPeriods.getCurrentPeriod();
+        ExperimentPeriodsResonse.ExperimentPeriods experimentPeriods2 = experimentPeriods1.stream()
+                .filter(e -> e.getPeriod() == currentPeriod)
+                .max(Comparator.comparingInt(ExperimentPeriodsResonse.ExperimentPeriods::getPauseCount))
+                .orElse(null);
+
+        if (experimentPeriods2 != null) {
+            // 每期间隔
+            countDownResponse.setCountdown(experimentPeriods2.getPeriodInterval());
+            countDownResponse.setSandTime(experimentPeriods2.getStartTime() - System.currentTimeMillis());
+        }*/
+
+
         return experimentPeriodsResonse;
 
     }

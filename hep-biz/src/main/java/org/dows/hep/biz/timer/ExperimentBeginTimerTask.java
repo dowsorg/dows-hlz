@@ -13,6 +13,7 @@ import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.entity.ExperimentTimerEntity;
 import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentParticipatorService;
+import org.dows.hep.service.ExperimentSettingService;
 import org.dows.hep.service.ExperimentTimerService;
 import org.springframework.context.ApplicationEventPublisher;
 
@@ -33,6 +34,8 @@ public class ExperimentBeginTimerTask implements Runnable {
     private final ExperimentInstanceService experimentInstanceService;
     // 实验参与者
     private final ExperimentParticipatorService experimentParticipatorService;
+    // 实验设置
+    private final ExperimentSettingService experimentSettingService;
     // 实验计时器
     private final ExperimentTimerService experimentTimerService;
 
