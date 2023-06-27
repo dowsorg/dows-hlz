@@ -90,7 +90,7 @@ public class ExperimentSchemeBiz {
         ExperimentSchemeStateResponse result = new ExperimentSchemeStateResponse();
         ExperimentSchemeEntity entity = getScheme(experimentInstanceId, experimentGroupId);
         if (BeanUtil.isEmpty(entity)) {
-            result.setStateCode("-1");
+            result.setStateCode(-1);
             result.setStateDescr("方案设计不存在");
             return result;
         }
@@ -98,12 +98,12 @@ public class ExperimentSchemeBiz {
         Integer state = entity.getState();
         ExptSchemeStateEnum stateEnum = ExptSchemeStateEnum.getByCode(state);
         if (BeanUtil.isEmpty(stateEnum)) {
-            result.setStateCode("-1");
+            result.setStateCode(-1);
             result.setStateDescr("方案设计状态异常");
             return result;
         }
 
-        result.setStateCode(String.valueOf(stateEnum.getCode()));
+        result.setStateCode(stateEnum.getCode());
         result.setStateDescr(stateEnum.getName());
         return result;
     }

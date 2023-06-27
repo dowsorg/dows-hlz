@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 public class ExperimentSchemeStateResponse {
 
     @Schema(title = "方案设计状态码")
-    private String stateCode;
+    private Integer stateCode;
 
     @Schema(title = "方案设计状态描述")
     private String stateDescr;
