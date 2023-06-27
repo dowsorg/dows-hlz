@@ -107,8 +107,9 @@ public class ExperimentSettingCollection implements ICacheClear {
         if(ShareUtil.XObject.isEmpty(setting)){
             return null;
         }
+        double totalSeconds=setting.endSecond-setting.startSecond;
         double totalDays=setting.getEndGameDay()-setting.getStartGameDay()+1;
-        double rate=Math.min(1,(rawSeconds-setting.startSecond)/totalDays);
+        double rate=Math.min(1,(rawSeconds-setting.startSecond)/totalSeconds);
         return setting.getStartGameDay()-1+(int)Math.ceil(rate*totalDays);
     }
 
