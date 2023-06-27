@@ -1,13 +1,14 @@
 package org.dows.hep.biz.user.experiment;
 
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeHealthManagementGoalRequest;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
+import org.dows.hep.biz.util.TimeUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
+import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -28,8 +29,10 @@ public class ExperimentOrgJudgeBiz {
     private final ExperimentIndicatorJudgeDiseaseProblemService experimentIndicatorJudgeDiseaseProblemService;
     private final ExperimentPersonPropertyService experimentPersonPropertyService;
     private final IndicatorJudgeHealthManagementGoalService indicatorJudgeHealthManagementGoalService;
+    private final ExperimentPersonInsuranceService experimentPersonInsuranceService;
     private final OperateOrgFuncService operateOrgFuncService;
     private final OperateOrgFuncSnapService operateOrgFuncSnapService;
+    private final IdGenerator idGenerator;
 
     /**
      * @param
@@ -279,22 +282,30 @@ public class ExperimentOrgJudgeBiz {
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
-     * @创建时间: 2023年5月26日 下午16:11:34
+     * @创建时间: 2023年6月27日 下午18:29:34
      */
     @DSTransactional
-    public Boolean isPurchaseInsure(String isPurchase, String experimentPersonId) {
-        LambdaUpdateWrapper<ExperimentPersonPropertyEntity> updateWrapper = new LambdaUpdateWrapper<ExperimentPersonPropertyEntity>()
-                .eq(ExperimentPersonPropertyEntity::getExperimentPersonId, experimentPersonId)
-                .eq(ExperimentPersonPropertyEntity::getDeleted, false)
-                .set(ExperimentPersonPropertyEntity::getInsuranceState, isPurchase);
-        //todo 扣费
-        return experimentPersonPropertyService.update(updateWrapper);
+    public Boolean isPurchaseInsure(ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest) {
+        ExperimentPersonInsuranceEntity experimentPersonInsuranceEntity = ExperimentPersonInsuranceEntity
+                .builder()
+                .experimentPersonInsuranceId(idGenerator.nextIdStr())
+                .appId(experimentPersonInsuranceRequest.getAppId())
+                .experimentPersonId(experimentPersonInsuranceRequest.getExperimentPersonId())
+                .experimentInstanceId(experimentPersonInsuranceRequest.getExperimentInstanceId())
+                .experimentGroupId(experimentPersonInsuranceRequest.getExperimentGroupId())
+                .periods(experimentPersonInsuranceRequest.getPeriods())
+                .operateOrgId(experimentPersonInsuranceRequest.getOperateOrgId())
+                .reimburseRatio(experimentPersonInsuranceRequest.getReimburseRatio())
+                .indate(new Date())
+                .expdate(TimeUtil.addDays(new Date(),365))
+                .build();
+        return experimentPersonInsuranceService.save(experimentPersonInsuranceEntity);
     }
 
 
     /**
      * @param
-     * @return
+     * @return;9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999988
      * @说明: 二级-无报告 获取判断得分
      * @关联表: indicatorJudgeRiskFactor
      * @工时: 2H

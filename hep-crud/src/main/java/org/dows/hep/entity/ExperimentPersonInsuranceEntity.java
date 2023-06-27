@@ -15,12 +15,9 @@ import org.dows.framework.crud.api.CrudEntity;
 import java.util.Date;
 
 /**
- * 实验人物数据(ExperimentPersonProperty)实体类
- *
- * @author lait
- * @since 2023-04-28 10:25:36
+ * @author jx
+ * @date 2023/6/27 16:59
  */
-@SuppressWarnings("serial")
 @Data
 @ToString
 @Builder
@@ -28,34 +25,43 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "ExperimentPersonProperty", title = "实验人物数据")
-@TableName("experiment_person_property")
-public class ExperimentPersonPropertyEntity implements CrudEntity {
+@Schema(name = "ExperimentPersonInsurance", title = "保险购买记录表")
+@TableName("experiment_person_insurance")
+public class ExperimentPersonInsuranceEntity implements CrudEntity {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库ID")
     private Long id;
 
+    @Schema(title = "实验人物保险ID")
+    private String experimentPersonInsuranceId;
+
     @Schema(title = "应用ID")
     private String appId;
 
-    @Schema(title = "实验人物id")
-    private String experimentPersonPropertyId;
-
-    @Schema(title = "实验人物id")
+    @Schema(title = "实验人物ID")
     private String experimentPersonId;
 
-    @Schema(title = "挂号状态 0-未挂号 1-已挂号")
-    private Boolean flowState;
+    @Schema(title = "实验实例ID")
+    private String experimentInstanceId;
 
-    @Schema(title = "保险状态 0-未购买 1-已购买")
-    private Boolean insuranceState;
+    @Schema(title = "实验小组ID")
+    private String experimentGroupId;
 
-    @Schema(title = "购买保险id")
-    private String experimentPersonCostId;
+    @Schema(title = "实验期数")
+    private String periods;
 
-    @Schema(title = "挂号机构id")
-    private String flowExperimentOrgId;
+    @Schema(title = "购买保险机构ID")
+    private String operateOrgId;
+
+    @Schema(title = "报销比例")
+    private Double reimburseRatio;
+
+    @Schema(title = "保险生效时间")
+    private Date indate;
+
+    @Schema(title = "保险失效时间")
+    private Date expdate;
 
     @JsonIgnore
     @TableLogic
@@ -66,6 +72,4 @@ public class ExperimentPersonPropertyEntity implements CrudEntity {
     @TableField(fill = FieldFill.INSERT)
     @Schema(title = "时间戳")
     private Date dt;
-
 }
-
