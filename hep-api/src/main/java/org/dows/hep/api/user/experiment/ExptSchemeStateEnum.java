@@ -3,6 +3,9 @@ package org.dows.hep.api.user.experiment;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 @AllArgsConstructor
 @Getter
 public enum ExptSchemeStateEnum {
@@ -12,4 +15,11 @@ public enum ExptSchemeStateEnum {
 
     private final Integer code;
     private final String name;
+
+    public static ExptSchemeStateEnum getByCode(Integer code) {
+        return Arrays.stream(values())
+                .filter(item -> Objects.equals(item.getCode(), code))
+                .findFirst()
+                .orElse(null);
+    }
 }

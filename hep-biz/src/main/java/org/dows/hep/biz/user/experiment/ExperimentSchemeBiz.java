@@ -82,6 +82,32 @@ public class ExperimentSchemeBiz {
         return result;
     }
 
+    public ExperimentSchemeStateResponse getSchemeState(String experimentInstanceId, String experimentGroupId) {
+        if (StrUtil.isBlank(experimentGroupId) || StrUtil.isBlank(experimentInstanceId)) {
+            throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
+        }
+
+        ExperimentSchemeStateResponse result = new ExperimentSchemeStateResponse();
+        ExperimentSchemeEntity entity = getScheme(experimentInstanceId, experimentGroupId);
+        if (BeanUtil.isEmpty(entity)) {
+            result.setStateCode("-1");
+            result.setStateDescr("方案设计不存在");
+            return result;
+        }
+
+        Integer state = entity.getState();
+        ExptSchemeStateEnum stateEnum = ExptSchemeStateEnum.getByCode(state);
+        if (BeanUtil.isEmpty(stateEnum)) {
+            result.setStateCode("-1");
+            result.setStateDescr("方案设计状态异常");
+            return result;
+        }
+
+        result.setStateCode(String.valueOf(stateEnum.getCode()));
+        result.setStateDescr(stateEnum.getName());
+        return result;
+    }
+
     /**
      * @param
      * @return
