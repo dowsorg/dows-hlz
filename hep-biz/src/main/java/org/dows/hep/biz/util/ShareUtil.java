@@ -154,7 +154,9 @@ public class ShareUtil {
             return CollUtil.map(collection, func, ignoreNull);
         }
 
-
+        public static <T, K> Map<K, T> toMap(List<T> src, Function<? super T, ? extends K> keyMapper) {
+            return toMap(src, keyMapper, Function.identity(), false);
+        }
         public static <T, K, U> Map<K, U> toMap(List<T> src, Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
            return toMap(src, keyMapper, valueMapper, false);
         }

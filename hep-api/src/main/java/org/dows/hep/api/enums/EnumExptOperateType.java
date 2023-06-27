@@ -65,7 +65,7 @@ public enum EnumExptOperateType {
             return EnumExptOperateType.NONE;
         }
         return Arrays.stream(EnumExptOperateType.values())
-                .filter(i->i.getIndicatorCateg().equals(categ))
+                .filter(i->categ.equals(i.getIndicatorCateg()))
                 .findFirst()
                 .orElse(EnumExptOperateType.NONE);
     }
