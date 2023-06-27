@@ -40,6 +40,9 @@ public class CaseIndicatorInstanceEntity implements CrudEntity {
   @Schema(title = "应用ID")
   private String appId;
 
+  @Schema(title = "案例人物id")
+  private String casePersonId;
+
   @Schema(title = "主体id")
   private String principalId;
 
