@@ -44,8 +44,9 @@ public class ExperimentQuestionnaireItemBiz {
         return entityList.stream()
                 .map(entity -> {
                     ExperimentQuestionnaireItemResponse resultItem = BeanUtil.copyProperties(entity, ExperimentQuestionnaireItemResponse.class);
-                    List<ExptQuestionnaireOptionDTO> optionList = convertOptStr2OptionList(entity.getQuestionOptions());
                     List<String> results = convertResultStr2ResultList(entity.getQuestionResult());
+                    List<ExptQuestionnaireOptionDTO> optionList = convertOptStr2OptionList(entity.getQuestionOptions());
+                    mergeOptionsAndResults(optionList, results);
 
                     resultItem.setQuestionOptionList(optionList);
                     resultItem.setQuestionResult(results);
@@ -124,5 +125,17 @@ public class ExperimentQuestionnaireItemBiz {
             return new ArrayList<>();
         }
         return JSONUtil.toList(questionOptions, ExptQuestionnaireOptionDTO.class);
+    }
+
+    private void mergeOptionsAndResults(List<ExptQuestionnaireOptionDTO> options, List<String> results) {
+        if (CollUtil.isEmpty(options) || CollUtil.isEmpty(results)) {
+            return;
+        }
+
+        options.forEach(option -> {
+            if (results.contains(option.getId())) {
+                option.setChoose(Boolean.TRUE);
+            }
+        });
     }
 }
