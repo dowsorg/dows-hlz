@@ -47,6 +47,8 @@ public class ExperimentTimerRest {
                 .orElse(null);
 
         if (experimentPeriods2 != null) {
+            // 每期间隔
+            countDownResponse.setCountdown(experimentPeriods2.getPeriodInterval());
             countDownResponse.setSandTime(experimentPeriods2.getStartTime() - System.currentTimeMillis() + experimentPeriods2.getPeriodInterval());
         } /*else {
             throw new ExperimentException("期数异常");

@@ -21,6 +21,7 @@ import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.hep.service.ExperimentSettingService;
 import org.dows.hep.service.ExperimentTimerService;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -60,7 +61,7 @@ public class ExperimentTimerBiz {
         List<ExperimentSettingEntity> list = experimentSettingService.lambdaQuery()
                 .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
                 .list();
-        ExperimentSettingEntity experimentSettingEntity1 = list.stream().filter(e -> e.getConfigKey().equals(ExperimentSetting.SchemeSetting.class))
+        ExperimentSettingEntity experimentSettingEntity1 = list.stream().filter(e -> e.getConfigKey().equals(ExperimentSetting.SchemeSetting.class.getName()))
                 .findFirst()
                 .orElse(null);
         if (experimentSettingEntity1 != null) {
@@ -75,13 +76,13 @@ public class ExperimentTimerBiz {
             }
         }
 
-        ExperimentSettingEntity experimentSettingEntity2 = list.stream().filter(e -> e.getConfigKey().equals(ExperimentSetting.SandSetting.class))
+        ExperimentSettingEntity experimentSettingEntity2 = list.stream().filter(e -> e.getConfigKey().equals(ExperimentSetting.SandSetting.class.getName()))
                 .findFirst()
                 .orElse(null);
 
         if (experimentSettingEntity2 != null) {
             ExperimentSetting.SandSetting sandSetting =
-                    JSONUtil.toBean(experimentSettingEntity1.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
+                    JSONUtil.toBean(experimentSettingEntity2.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
             // 沙盘期数展示
             // 每期持续时长
             Map<String, Integer> durationMap = sandSetting.getDurationMap();
@@ -90,13 +91,13 @@ public class ExperimentTimerBiz {
             // 对set排序一下
             List<String> keys = periodMap.keySet().stream().sorted().collect(Collectors.toList());
             // 每期对应的mock比列
-            Map<String, Float> mockRateMap = new HashMap<>();
+            Map<String, Double> mockRateMap = new HashMap<>();
             int totalDay = 0;
             for (String s : keys) {
                 Integer duration = durationMap.get(s);
                 Integer period = periodMap.get(s);
                 totalDay += period;
-                float mockRate = period / duration;
+                double mockRate = Double.valueOf(period) / Double.valueOf(duration*60);
                 mockRateMap.put(s, mockRate);
             }
 
@@ -111,23 +112,25 @@ public class ExperimentTimerBiz {
 
             for (ExperimentTimerEntity experimentTimerEntity : experimentTimerEntityList) {
                 if (experimentTimerEntity.getState() == ExperimentStateEnum.FINISH.getState()) {
-                    countDownResponse.setSandDuration(Float.valueOf(totalDay));
+                    countDownResponse.setSandDuration(Double.valueOf(totalDay));
                     break;
                 } else if (experimentTimerEntity.getState() == ExperimentStateEnum.UNBEGIN.getState()) {
-                    countDownResponse.setSandDuration(0F);
+                    countDownResponse.setSandDuration(0D);
                     break;
                 } else if (experimentTimerEntity.getState() == ExperimentStateEnum.ONGOING.getState()) {
                     // 当前时间戳-当前期数开始时间 = 相对时间
                     Long ct = System.currentTimeMillis() - experimentTimerEntity.getStartTime();
-                    // 将ct转换为分钟数
-                    Long minute = ct / 1000 / 60;
+                    // 将ct转换为秒  .. day/duration = rate
+                    Long second = ct / 1000;
                     // 获取比例
-                    Float aFloat = mockRateMap.get(experimentTimerEntity.getPeriod() + "");
-                    float day = minute * aFloat;
+                    Double aFloat = mockRateMap.get(experimentTimerEntity.getPeriod() + "");
+                    Double day = second/60 * aFloat;
                     Integer period = experimentTimerEntity.getPeriod();
-                    for (int i = 1; i <= period; i++) {
-                        Integer integer = periodMap.get(i + "");
-                        day += integer;
+                    if(period>1) {
+                        for (int i = 1; i <= period; i++) {
+                            Integer integer = periodMap.get(i + "");
+                            day += integer;
+                        }
                     }
                     countDownResponse.setSandDuration(day);
                     break;
