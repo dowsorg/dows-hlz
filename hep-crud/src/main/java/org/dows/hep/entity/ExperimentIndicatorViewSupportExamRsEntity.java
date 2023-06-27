@@ -52,9 +52,6 @@ public class ExperimentIndicatorViewSupportExamRsEntity implements CrudEntity {
     @Schema(title = "应用ID")
     private String appId;
 
-    @Schema(title = "挂号流水号")
-    private String operateFlowId;
-
     @Schema(title = "功能点id")
     private String indicatorFuncId;
 
