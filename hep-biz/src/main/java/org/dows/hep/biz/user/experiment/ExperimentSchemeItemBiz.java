@@ -153,6 +153,9 @@ public class ExperimentSchemeItemBiz {
         flatList.add(itemEntity);
 
         // 处理子节点
+        if (CollUtil.isEmpty(node.getChildren())) {
+            return;
+        }
         for (ExperimentSchemeItemRequest child : node.getChildren()) {
             flattenTree(child, flatList);
         }

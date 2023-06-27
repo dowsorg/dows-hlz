@@ -181,16 +181,15 @@ public class ExperimentOrgJudgeRest {
     }
 
     /**
-     * 是否购买保险
+     * 购买保险
      * @param
      * @return
      */
-    @Operation(summary = "是否购买保险")
+    @Operation(summary = "购买保险")
     @PostMapping("v1/userExperiment/experimentOrgJudge/isPurchaseInsure")
-    public Boolean isPurchaseInsure(@RequestParam @Validated String isPurchase,
-                                    @RequestParam @Validated String experimentPersonId)
+    public Boolean isPurchaseInsure(@RequestBody @Validated ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest)
     {
-        return experimentOrgJudgeBiz.isPurchaseInsure(isPurchase,experimentPersonId);
+        return experimentOrgJudgeBiz.isPurchaseInsure(experimentPersonInsuranceRequest);
     }
 
     /**

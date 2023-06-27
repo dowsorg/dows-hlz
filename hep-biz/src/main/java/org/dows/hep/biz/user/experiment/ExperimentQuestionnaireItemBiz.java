@@ -82,14 +82,18 @@ public class ExperimentQuestionnaireItemBiz {
     }
 
     private void flattenTree(ExperimentQuestionnaireItemRequest node, List<ExperimentQuestionnaireItemEntity> flatList) {
+        String questionResult = CollUtil.isEmpty(node.getQuestionResult()) ? "" : String.join(",", node.getQuestionResult());
         // 处理当前结点
         ExperimentQuestionnaireItemEntity itemEntity = ExperimentQuestionnaireItemEntity.builder()
-                .experimentQuestionnaireItemId(node.getExperimentSchemeItemId())
-                .questionResult(String.join(",", node.getQuestionResult()))
+                .experimentQuestionnaireItemId(node.getExperimentQuestionnaireItemId())
+                .questionResult(questionResult)
                 .build();
         flatList.add(itemEntity);
 
         // 处理子节点
+        if (CollUtil.isEmpty(node.getChildren())) {
+            return;
+        }
         for (ExperimentQuestionnaireItemRequest child : node.getChildren()) {
             flattenTree(child, flatList);
         }

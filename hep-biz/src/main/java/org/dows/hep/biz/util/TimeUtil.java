@@ -1,6 +1,8 @@
 package org.dows.hep.biz.util;
 
 import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -31,5 +33,14 @@ public class TimeUtil {
         Date newTime = new Date();
         newTime.setTime(l);
         return newTime;
+    }
+
+    //4、 时间加天数
+    public static Date addDays(Date time,int count) {
+        Date date = new Date();
+        LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate minusDayTime = localDate.plusDays(count);
+        Date plusDay = Date.from(minusDayTime.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+        return plusDay;
     }
 }
