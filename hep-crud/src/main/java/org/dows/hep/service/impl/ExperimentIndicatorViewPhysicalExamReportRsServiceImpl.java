@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
  * @author lait
  * @since 2023-04-28 10:31:15
  */
-@Service("experimentIndicatorViewPhysicalExamRecordRsService")
+@Service("experimentIndicatorViewPhysicalExamReportRsService")
 public class ExperimentIndicatorViewPhysicalExamReportRsServiceImpl extends MybatisCrudServiceImpl<ExperimentIndicatorViewPhysicalExamReportRsMapper, ExperimentIndicatorViewPhysicalExamReportRsEntity> implements ExperimentIndicatorViewPhysicalExamReportRsService {
 
 }
