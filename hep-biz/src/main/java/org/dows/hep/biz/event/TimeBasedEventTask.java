@@ -185,7 +185,7 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
         }
         double rate=randomInteger(minRate, maxRate)/100d;
         int triggerSeconds=periodSetting.getStartSecond()+(int) (rate*(periodSetting.getEndSecond()-periodSetting.getStartSecond()));
-        int gameDay=periodSetting.getStartGameDay()-1+(int)(rate*(periodSetting.getEndGameDay()-periodSetting.getStartGameDay()+1));
+        int gameDay=periodSetting.getStartGameDay()-1+(int)Math.ceil(rate*(periodSetting.getEndGameDay()-periodSetting.getStartGameDay()+1));
         return new ExperimentTimePoint()
                 .setRealTime(exptCollection.getStartTime().plusSeconds(triggerSeconds))
                 .setGameDay(gameDay);
