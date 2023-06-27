@@ -870,6 +870,164 @@ public class IndicatorExpressionBiz{
     }
     return String.join(EnumString.SPACE.getStr(), strList);
   }
+  private static String v1GetResultExpression(String conditionExpression) {
+    List<String> strList = new ArrayList<>();
+    if (StringUtils.isBlank(conditionExpression)) {
+      return null;
+    }
+    for (int i = 0; i <= conditionExpression.length()-1;) {
+      if (v1CheckSpace(conditionExpression.substring(i, i+1))) {
+        i++;
+        continue;
+      }
+      if (v1CheckMathSingleOperator(conditionExpression.substring(i, i+1))) {
+        strList.add(conditionExpression.substring(i, i+1));
+        i++;
+        continue;
+      }
+      if (i <= conditionExpression.length()-1-1) {
+        if (v1CheckMathDoubleOperator(conditionExpression.substring(i, i+2))) {
+          strList.add(conditionExpression.substring(i, i+2));
+          i += 2;
+          continue;
+        }
+      }
+      if (v1CheckMathDoubleOperator(conditionExpression.substring(i, i+1))) {
+        strList.add(conditionExpression.substring(i, i+1));
+        i += 1;
+        continue;
+      }
+      /* runsix:指标 */
+      if (v1CheckIndicator(conditionExpression.substring(i, i+1))) {
+        boolean isComplete = false;
+        for (int j = i+1; j <= conditionExpression.length()-1;) {
+          if (v1CheckSpace(conditionExpression.substring(j, j+1))) {
+            isComplete = true;
+            i += 2;
+            break;
+          }
+          /* runsix:找到$ */
+          if (v1CheckDollar(conditionExpression.substring(j, j+1))) {
+            isComplete = true;
+            /* runsix:下划线，表明是上n期 */
+            if (v1CheckUnderline(conditionExpression.substring(j+1, j+2))) {
+              strList.add(conditionExpression.substring(i, j+3));
+              i = j+3;
+              break;
+            } else {
+              /* runsix:不是下划线，表面是当前期 */
+              strList.add(conditionExpression.substring(i, j+2));
+              i = j+2;
+              break;
+            }
+          } else {
+            j++;
+          }
+        }
+        if (!isComplete) {
+          strList.add(conditionExpression.substring(i));
+          i = conditionExpression.length()-1+1;
+        }
+      } else {
+        /* runsix:如果不是数字，一定是字符串 */
+        if (!v1CheckNumber(conditionExpression.substring(i, i+1))) {
+          boolean isComplete = false;
+          for (int j = i+1; j <= conditionExpression.length()-1; j++) {
+            if (v1CheckSpace(conditionExpression.substring(j, j+1))) {
+              isComplete = true;
+              strList.add(conditionExpression.substring(i, j));
+              i = j+1;
+              break;
+            }
+            if (v1CheckMathSingleOperator(conditionExpression.substring(j, j+1))) {
+              isComplete = true;
+              strList.add(conditionExpression.substring(i, j));
+              strList.add(conditionExpression.substring(j, j+1));
+              i = j+1;
+              break;
+            }
+            if (j <= conditionExpression.length()-1-1) {
+              if (v1CheckMathDoubleOperator(conditionExpression.substring(j, j+2))) {
+                isComplete = true;
+                strList.add(conditionExpression.substring(i, j));
+                strList.add(conditionExpression.substring(j, j+2));
+                i = j+2;
+                break;
+              }
+            }
+          }
+          if (!isComplete) {
+            strList.add(conditionExpression.substring(i));
+            i = conditionExpression.length()-1+1;
+          }
+        } else {
+          boolean isComplete = false;
+          boolean isNumber = true;
+          /* runsix:如果是数字，看到最后有没有非数字 */
+          for (int j = i+1; j <= conditionExpression.length()-1; j++) {
+            if (v1CheckSpace(conditionExpression.substring(j, j+1))) {
+              if (isNumber) {
+                strList.add(conditionExpression.substring(i, j));
+              } else {
+                strList.add(conditionExpression.substring(i, j));
+              }
+              isComplete = true;
+              i = j+1;
+              break;
+            }
+            if (v1CheckMathSingleOperator(conditionExpression.substring(j, j+1))) {
+              if (isNumber) {
+                strList.add(conditionExpression.substring(i, j));
+              } else {
+                strList.add(conditionExpression.substring(i, j));
+              }
+              strList.add(conditionExpression.substring(j, j+1));
+              isComplete = true;
+              i = j+1;
+              break;
+            }
+            if (j <= conditionExpression.length()-1-1) {
+              if (v1CheckMathDoubleOperator(conditionExpression.substring(j, j+2))) {
+                if (isNumber) {
+                  strList.add(conditionExpression.substring(i, j));
+                } else {
+                  strList.add(conditionExpression.substring(i, j));
+                }
+                strList.add(conditionExpression.substring(j, j+2));
+                isComplete = true;
+                i = j+2;
+                break;
+              }
+            }
+            if (v1CheckMathDoubleOperator(conditionExpression.substring(j, j+1))) {
+              if (isNumber) {
+                strList.add(conditionExpression.substring(i, j));
+              } else {
+                strList.add(conditionExpression.substring(i, j));
+              }
+              strList.add(conditionExpression.substring(j, j+1));
+              isComplete = true;
+              i = j+1;
+              break;
+            }
+            /* runsix:如果不是数字，说明是字符串 */
+            if (isNumber && !NumberUtils.isCreatable(conditionExpression.substring(j, j+1))) {
+              isNumber = false;
+            }
+          }
+          if (!isComplete) {
+            if (isNumber) {
+              strList.add(conditionExpression.substring(i));
+            } else {
+              strList.add(conditionExpression.substring(i));
+            }
+            i = conditionExpression.length()-1+1;
+          }
+        }
+      }
+    }
+    return String.join(EnumString.SPACE.getStr(), strList);
+  }
   private static String v1WrapStrWithDoubleSingleQuotes(String str) {
     StringBuffer stringBuffer = new StringBuffer();
     stringBuffer.append(EnumString.SINGLE_QUOTES.getStr());
@@ -1220,7 +1378,8 @@ public class IndicatorExpressionBiz{
     String conditionValList = createOrUpdateIndicatorExpressionItemRequestRs.getConditionValList();
     String resultRaw = createOrUpdateIndicatorExpressionItemRequestRs.getResultRaw();
     String resultExpression = createOrUpdateIndicatorExpressionItemRequestRs.getResultExpression();
-    resultExpression = v1GetConditionExpression(resultExpression);
+    /* runsix: */
+    resultExpression = v1GetResultExpression(resultExpression);
     String resultNameList = createOrUpdateIndicatorExpressionItemRequestRs.getResultNameList();
     String resultValList = createOrUpdateIndicatorExpressionItemRequestRs.getResultValList();
     Integer seq = createOrUpdateIndicatorExpressionItemRequestRs.getSeq();

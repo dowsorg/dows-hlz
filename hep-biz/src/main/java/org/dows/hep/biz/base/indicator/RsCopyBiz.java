@@ -1163,7 +1163,6 @@ public class RsCopyBiz {
                 .min(min)
                 .max(max)
                 .def(def)
-                .experimentIndicatorExpressionId(null)
                 .build()
         );
       });
@@ -1210,7 +1209,7 @@ public class RsCopyBiz {
     if (!caseIndicatorExpressionIdSet.isEmpty()) {
       caseIndicatorExpressionService.lambdaQuery()
           .eq(CaseIndicatorExpressionEntity::getAppId, appId)
-          .in(CaseIndicatorExpressionEntity::getIndicatorExpressionId, caseIndicatorExpressionIdSet)
+          .in(CaseIndicatorExpressionEntity::getCaseIndicatorExpressionId, caseIndicatorExpressionIdSet)
           .list()
           .forEach(caseIndicatorExpressionEntity -> {
             kCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap.put(caseIndicatorExpressionEntity.getCaseIndicatorExpressionId(), caseIndicatorExpressionEntity);
@@ -1274,7 +1273,9 @@ public class RsCopyBiz {
               appId,
               experimentIndicatorExpressionId
           );
-          experimentIndicatorExpressionItemRsEntityList.add(maxExperimentIndicatorExpressionItemRsEntity);
+          if (Objects.nonNull(maxExperimentIndicatorExpressionItemRsEntity)) {
+            experimentIndicatorExpressionItemRsEntityList.add(maxExperimentIndicatorExpressionItemRsEntity);
+          }
           String caseMinIndicatorExpressionItemId = caseIndicatorExpressionEntity.getMinIndicatorExpressionItemId();
           CaseIndicatorExpressionItemEntity minCaseIndicatorExpressionItemEntity = kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get(caseMinIndicatorExpressionItemId);
           String minIndicatorExpressionItemId = idGenerator.nextIdStr();
@@ -1287,7 +1288,9 @@ public class RsCopyBiz {
               appId,
               experimentIndicatorExpressionId
           );
-          experimentIndicatorExpressionItemRsEntityList.add(minExperimentIndicatorExpressionItemRsEntity);
+          if (Objects.nonNull(minExperimentIndicatorExpressionItemRsEntity)) {
+            experimentIndicatorExpressionItemRsEntityList.add(minExperimentIndicatorExpressionItemRsEntity);
+          }
           List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList = kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap.get(caseIndicatorExpressionId);
           if (Objects.isNull(caseIndicatorExpressionItemEntityList) || caseIndicatorExpressionItemEntityList.isEmpty()) {
             return;
@@ -1318,17 +1321,17 @@ public class RsCopyBiz {
               .source(caseIndicatorExpressionEntity.getSource())
               .build();
           experimentIndicatorExpressionRsEntityList.add(experimentIndicatorExpressionRsEntity);
+          ExperimentIndicatorExpressionRefRsEntity experimentIndicatorExpressionRefRsEntity = ExperimentIndicatorExpressionRefRsEntity
+              .builder()
+              .experimentIndicatorExpressionRefId(experimentIndicatorExpressionRefId)
+              .experimentId(experimentInstanceId)
+              .caseId(caseInstanceId)
+              .appId(appId)
+              .indicatorExpressionId(experimentIndicatorExpressionId)
+              .reasonId(experimentIndicatorInstanceId)
+              .build();
+          experimentIndicatorExpressionRefRsEntityList.add(experimentIndicatorExpressionRefRsEntity);
         });
-        ExperimentIndicatorExpressionRefRsEntity experimentIndicatorExpressionRefRsEntity = ExperimentIndicatorExpressionRefRsEntity
-            .builder()
-            .experimentIndicatorExpressionRefId(experimentIndicatorExpressionRefId)
-            .experimentId(experimentInstanceId)
-            .caseId(caseInstanceId)
-            .appId(appId)
-            .indicatorExpressionId(experimentIndicatorInstanceId)
-            .reasonId(experimentIndicatorInstanceId)
-            .build();
-        experimentIndicatorExpressionRefRsEntityList.add(experimentIndicatorExpressionRefRsEntity);
       });
     });
     experimentIndicatorInstanceRsService.saveOrUpdateBatch(experimentIndicatorInstanceRsEntityList);
@@ -1359,6 +1362,9 @@ public class RsCopyBiz {
       String appId,
       String experimentIndicatorExpressionId
       ) {
+    if (Objects.isNull(caseIndicatorExpressionItemEntity)) {
+      return null;
+    }
     String experimentIndicatorExpressionItemId = idGenerator.nextIdStr();
     String caseConditionValList = caseIndicatorExpressionItemEntity.getConditionValList();
     String experimentConditionValList = null;
