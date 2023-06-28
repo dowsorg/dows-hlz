@@ -80,6 +80,9 @@ public class RsCopyBiz {
   private final ExperimentIndicatorExpressionInfluenceRsService experimentIndicatorExpressionInfluenceRsService;
   private final CaseIndicatorExpressionItemService caseIndicatorExpressionItemService;
   private final ExperimentIndicatorExpressionItemRsService experimentIndicatorExpressionItemRsService;
+  private final IndicatorExpressionRefService indicatorExpressionRefService;
+  private final IndicatorExpressionService indicatorExpressionService;
+  private final IndicatorExpressionItemService indicatorExpressionItemService;
 
   @Transactional(rollbackFor = Exception.class)
   public void rsCopyIndicatorFunc(RsCopyExperimentRequestRs rsCopyExperimentRequestRs) {
@@ -96,6 +99,9 @@ public class RsCopyBiz {
     List<IndicatorJudgeHealthProblemEntity> indicatorJudgeHealthProblemEntityList = new ArrayList<>();
     List<ExperimentIndicatorJudgeDiseaseProblemRsEntity> experimentIndicatorJudgeDiseaseProblemRsEntityList = new ArrayList<>();
     List<IndicatorJudgeDiseaseProblemEntity> indicatorJudgeDiseaseProblemEntityList = new ArrayList<>();
+    List<ExperimentIndicatorExpressionRefRsEntity> experimentIndicatorExpressionRefRsEntityList = new ArrayList<>();
+    List<ExperimentIndicatorExpressionRsEntity> experimentIndicatorExpressionRsEntityList = new ArrayList<>();
+    List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList = new ArrayList<>();
     String appId = rsCopyExperimentRequestRs.getAppId();
     String caseInstanceId = rsCopyExperimentRequestRs.getCaseInstanceId();
     String experimentInstanceId = rsCopyExperimentRequestRs.getExperimentInstanceId();
@@ -712,12 +718,14 @@ public class RsCopyBiz {
     /* runsix:查看指标-辅助检查-四级类-无报告 */
     /* runsix:判断指标-危险因素-二级类-无报告（有公式） */
     Map<String, String> kIndicatorFuncIdVRFExperimentIndicatorFuncIdMap = new HashMap<>();
+    Set<String> indicatorJudgeRiskFactorIdSet = new HashSet<>();
     if (!funcIndicatorJudgeRiskFactorIdSet.isEmpty()) {
       indicatorJudgeRiskFactorService.lambdaQuery()
           .eq(IndicatorJudgeRiskFactorEntity::getAppId, appId)
           .in(IndicatorJudgeRiskFactorEntity::getIndicatorFuncId, funcIndicatorJudgeRiskFactorIdSet)
           .list()
           .forEach(indicatorJudgeRiskFactorEntity -> {
+            indicatorJudgeRiskFactorIdSet.add(indicatorJudgeRiskFactorEntity.getIndicatorJudgeRiskFactorId());
             indicatorJudgeRiskFactorEntityList.add(indicatorJudgeRiskFactorEntity);
             String indicatorFuncId = indicatorJudgeRiskFactorEntity.getIndicatorFuncId();
             String rfExperimentIndicatorFuncId = kIndicatorFuncIdVRFExperimentIndicatorFuncIdMap.get(indicatorFuncId);
@@ -726,6 +734,57 @@ public class RsCopyBiz {
             }
           });
     }
+    Map<String, List<IndicatorExpressionItemEntity>> kReasonIdVIndicatorExpressionItemEntityListMap = new HashMap<>();
+    Map<String, IndicatorExpressionEntity> kIndicatorExpressionIdVIndicatorExpressionEntityMap = new HashMap<>();
+    Map<String, String> kReasonIdVIndicatorExpressionIdMap = new HashMap<>();
+    Set<String> riskFactorIndicatorExpressionIdSet = new HashSet<>();
+    if (!indicatorJudgeRiskFactorIdSet.isEmpty()) {
+      indicatorExpressionRefService.lambdaQuery()
+          .eq(IndicatorExpressionRefEntity::getAppId, appId)
+          .in(IndicatorExpressionRefEntity::getReasonId, indicatorJudgeRiskFactorIdSet)
+          .list()
+          .forEach(indicatorExpressionRefEntity -> {
+            String reasonId = indicatorExpressionRefEntity.getReasonId();
+            String indicatorExpressionId = indicatorExpressionRefEntity.getIndicatorExpressionId();
+            riskFactorIndicatorExpressionIdSet.add(indicatorExpressionId);
+            kReasonIdVIndicatorExpressionIdMap.put(reasonId, indicatorExpressionId);
+          });
+    }
+    if (!riskFactorIndicatorExpressionIdSet.isEmpty()) {
+      indicatorExpressionService.lambdaQuery()
+          .eq(IndicatorExpressionEntity::getAppId, appId)
+          .in(IndicatorExpressionEntity::getIndicatorExpressionId, riskFactorIndicatorExpressionIdSet)
+          .list()
+          .forEach(indicatorExpressionEntity -> {
+            kIndicatorExpressionIdVIndicatorExpressionEntityMap.put(indicatorExpressionEntity.getIndicatorExpressionId(), indicatorExpressionEntity);
+          });
+    }
+    Map<String, List<IndicatorExpressionItemEntity>> kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap = new HashMap<>();
+    if (!riskFactorIndicatorExpressionIdSet.isEmpty()) {
+      indicatorExpressionItemService.lambdaQuery()
+          .eq(IndicatorExpressionItemEntity::getAppId, appId)
+          .in(IndicatorExpressionItemEntity::getIndicatorExpressionId, riskFactorIndicatorExpressionIdSet)
+          .list()
+          .forEach(indicatorExpressionItemEntity -> {
+            String indicatorExpressionId = indicatorExpressionItemEntity.getIndicatorExpressionId();
+            List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.get(indicatorExpressionId);
+            if (Objects.isNull(indicatorExpressionItemEntityList)) {
+              indicatorExpressionItemEntityList = new ArrayList<>();
+            }
+            indicatorExpressionItemEntityList.add(indicatorExpressionItemEntity);
+            kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.put(indicatorExpressionId, indicatorExpressionItemEntityList);
+          });
+    }
+    /* runsix:sort */
+    kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.forEach((indicatorExpressionId, indicatorExpressionItemEntityList) -> {
+      indicatorExpressionItemEntityList.sort(Comparator.comparingInt(IndicatorExpressionItemEntity::getSeq));
+    });
+    kReasonIdVIndicatorExpressionIdMap.forEach((reasonId, indicatorExpressionId) -> {
+      List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.get(indicatorExpressionId);
+      if (Objects.nonNull(indicatorExpressionItemEntityList)) {
+        kReasonIdVIndicatorExpressionItemEntityListMap.put(reasonId, indicatorExpressionItemEntityList);
+      }
+    });
     if (!indicatorJudgeRiskFactorEntityList.isEmpty()) {
       indicatorJudgeRiskFactorEntityList.forEach(indicatorJudgeRiskFactorEntity -> {
         String experimentIndicatorJudgeRiskFactorId = idGenerator.nextIdStr();
@@ -782,6 +841,61 @@ public class RsCopyBiz {
             .indicatorCategoryNameArray(indicatorCategoryNameArray)
             .build();
         experimentIndicatorJudgeRiskFactorRsEntityList.add(experimentIndicatorJudgeRiskFactorRsEntity);
+        String experimentIndicatorExpressionId = idGenerator.nextIdStr();
+        String indicatorExpressionId = kReasonIdVIndicatorExpressionIdMap.get(indicatorJudgeRiskFactorId);
+        List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = kReasonIdVIndicatorExpressionItemEntityListMap.get(indicatorJudgeRiskFactorId);
+        if (Objects.nonNull(indicatorExpressionItemEntityList) && !indicatorExpressionItemEntityList.isEmpty()) {
+          indicatorExpressionItemEntityList.forEach(indicatorExpressionItemEntity -> {
+            ExperimentIndicatorExpressionItemRsEntity experimentIndicatorExpressionItemRsEntity = ExperimentIndicatorExpressionItemRsEntity
+                .builder()
+                .experimentIndicatorExpressionItemId(idGenerator.nextIdStr())
+                .indicatorExpressionItemId(indicatorExpressionItemEntity.getIndicatorExpressionItemId())
+                .experimentId(experimentInstanceId)
+                .caseId(caseInstanceId)
+                .appId(appId)
+                .indicatorExpressionId(experimentIndicatorExpressionId)
+                .conditionRaw(indicatorExpressionItemEntity.getConditionRaw())
+                .conditionExpression(indicatorExpressionItemEntity.getConditionExpression())
+                .conditionNameList(indicatorExpressionItemEntity.getConditionNameList())
+                .conditionValList(indicatorExpressionItemEntity.getConditionValList())
+                .resultRaw(indicatorExpressionItemEntity.getResultRaw())
+                .resultExpression(indicatorExpressionItemEntity.getResultExpression())
+                .resultNameList(indicatorExpressionItemEntity.getResultNameList())
+                .resultValList(indicatorExpressionItemEntity.getResultValList())
+                .seq(indicatorExpressionItemEntity.getSeq())
+                .build();
+            experimentIndicatorExpressionItemRsEntityList.add(experimentIndicatorExpressionItemRsEntity);
+          });
+        }
+        /* runsix:riskFactor does not need principalId */
+        Integer type = null;
+        Integer source = null;
+        IndicatorExpressionEntity indicatorExpressionEntity = kIndicatorExpressionIdVIndicatorExpressionEntityMap.get(indicatorExpressionId);
+        if (Objects.nonNull(indicatorExpressionEntity)) {
+          type = indicatorExpressionEntity.getType();
+          source = indicatorExpressionEntity.getSource();
+        }
+        ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity = ExperimentIndicatorExpressionRsEntity
+            .builder()
+            .experimentIndicatorExpressionId(experimentIndicatorExpressionId)
+            .indicatorExpressionId(indicatorExpressionId)
+            .experimentId(experimentInstanceId)
+            .caseId(caseInstanceId)
+            .reasonId(experimentIndicatorJudgeRiskFactorId)
+            .type(type)
+            .source(source)
+            .build();
+        experimentIndicatorExpressionRsEntityList.add(experimentIndicatorExpressionRsEntity);
+        ExperimentIndicatorExpressionRefRsEntity experimentIndicatorExpressionRefRsEntity = ExperimentIndicatorExpressionRefRsEntity
+            .builder()
+            .experimentIndicatorExpressionRefId(idGenerator.nextIdStr())
+            .experimentId(experimentInstanceId)
+            .caseId(caseInstanceId)
+            .appId(appId)
+            .indicatorExpressionId(experimentIndicatorExpressionId)
+            .reasonId(experimentIndicatorJudgeRiskFactorId)
+            .build();
+        experimentIndicatorExpressionRefRsEntityList.add(experimentIndicatorExpressionRefRsEntity);
       });
     }
     /* runsix:判断指标-危险因素-二级类-无报告（有公式） */
@@ -1098,6 +1212,9 @@ public class RsCopyBiz {
     experimentIndicatorJudgeHealthGuidanceRsService.saveOrUpdateBatch(experimentIndicatorJudgeHealthGuidanceRsEntityList);
     experimentIndicatorJudgeHealthProblemRsService.saveOrUpdateBatch(experimentIndicatorJudgeHealthProblemRsEntityList);
     experimentIndicatorJudgeDiseaseProblemRsService.saveOrUpdateBatch(experimentIndicatorJudgeDiseaseProblemRsEntityList);
+    experimentIndicatorExpressionRefRsService.saveOrUpdateBatch(experimentIndicatorExpressionRefRsEntityList);
+    experimentIndicatorExpressionRsService.saveOrUpdateBatch(experimentIndicatorExpressionRsEntityList);
+    experimentIndicatorExpressionItemRsService.saveOrUpdateBatch(experimentIndicatorExpressionItemRsEntityList);
   }
 
   /**
