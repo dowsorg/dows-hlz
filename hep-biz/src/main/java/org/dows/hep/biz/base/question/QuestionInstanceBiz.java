@@ -1,6 +1,7 @@
 package org.dows.hep.biz.base.question;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -127,14 +128,14 @@ public class QuestionInstanceBiz {
             }
         }
 
-        Page<QuestionInstanceEntity> pageRequest = new Page<>(request.getPageNo(), request.getPageSize());
+        Page<QuestionInstanceEntity> pageRequest = request.getPage();
         Page<QuestionInstanceEntity> pageResult = questionInstanceService.lambdaQuery()
-                .eq(QuestionInstanceEntity::getAppId, request.getAppId())
+                .eq(QuestionInstanceEntity::getAppId, baseBiz.getAppId())
                 .eq(QuestionInstanceEntity::getVer, baseBiz.getLastVer())
                 .eq(QuestionInstanceEntity::getQuestionInstancePid, baseBiz.getQuestionInstancePid())
                 .eq(QuestionInstanceEntity::getBizCode, QuestionAccessAuthEnum.PUBLIC_VIEWING.name())
-                .in(request.getQuestionType() != null && !request.getQuestionType().isEmpty(), QuestionInstanceEntity::getQuestionType, request.getQuestionType())
-                .in(!categoryIdList.isEmpty(), QuestionInstanceEntity::getQuestionCategId, categoryIdList)
+                .in(CollUtil.isNotEmpty(request.getQuestionType()), QuestionInstanceEntity::getQuestionType, request.getQuestionType())
+                .in(CollUtil.isNotEmpty(categoryIdList), QuestionInstanceEntity::getQuestionCategId, categoryIdList)
                 .like(StrUtil.isNotBlank(request.getKeyword()), QuestionInstanceEntity::getQuestionTitle, request.getKeyword())
                 .page(pageRequest);
         Page<QuestionPageResponse> result = baseBiz.convertPage(pageResult, QuestionPageResponse.class);
