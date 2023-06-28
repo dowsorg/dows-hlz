@@ -193,6 +193,18 @@ public class ExperimentOrgJudgeRest {
     }
 
     /**
+     * 每期计算支出费用
+     * @param
+     * @return
+     */
+    @Operation(summary = "每期计算支出费用")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/calculatePeriodsFee")
+    public BigDecimal calculatePeriodsFee(@RequestBody @Validated ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest)
+    {
+        return experimentOrgJudgeBiz.calculatePeriodsFee(experimentPersonInsuranceRequest);
+    }
+
+    /**
      * 直接判断 判断范围是否满足公式
      * @param
      * @return

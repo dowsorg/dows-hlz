@@ -12,6 +12,7 @@ import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -53,6 +54,9 @@ public class ExperimentPersonInsuranceEntity implements CrudEntity {
 
     @Schema(title = "购买保险机构ID")
     private String operateOrgId;
+
+    @Schema(title = "保险金额")
+    private BigDecimal insuranceAmount;
 
     @Schema(title = "报销比例")
     private Double reimburseRatio;
