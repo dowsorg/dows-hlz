@@ -68,6 +68,9 @@ public class ExperimentTimerBiz {
             ExperimentTimerEntity next;
             if (i == list.size() - 1) {
                 countDownResponse.setCountdown(0L);
+                countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
+                countDownResponse.setModel(pre.getModel());
+                countDownResponse.setPeriod(pre.getPeriod());
                 break;
             }
             next = list.get(i + 1);
@@ -79,20 +82,20 @@ public class ExperimentTimerBiz {
 
 
                 break;
-
             } else if (ct <= pre.getStartTime()) { // 开始之前
                 countDownResponse.setCountdown(pre.getStartTime() - ct);
                 countDownResponse.setModel(pre.getModel());
                 countDownResponse.setPeriod(pre.getPeriod());
                 break;
             } else if (ct >= pre.getStartTime()) { //  开始之后
-                Double duration = Double.valueOf(pre.getEndTime() - ct);
-                if (ct >= next.getStartTime()) {
-                    duration = Double.valueOf(next.getEndTime() - ct);
-                }
-                countDownResponse.setSandDuration(duration);
+                countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
                 countDownResponse.setModel(pre.getModel());
                 countDownResponse.setPeriod(pre.getPeriod());
+
+                if (ct >= next.getStartTime()) {
+                    countDownResponse.setSandDuration(Double.valueOf(next.getEndTime() - ct));
+                    countDownResponse.setPeriod(next.getPeriod());
+                }
                 break;
             }
         }
