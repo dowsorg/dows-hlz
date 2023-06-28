@@ -85,7 +85,7 @@ public class ExperimentInsuranceBiz {
     /**
      * @param
      * @return
-     * @说明: 每期计算医疗占比
+     * @说明: 每期单人计算医疗占比
      * @关联表: experimentPersonInsurance
      * @工时: 4H
      * @开发者: jx
@@ -105,19 +105,19 @@ public class ExperimentInsuranceBiz {
         //2、获取保险购买期间的所有消费记录
         BigDecimal totalPay = new BigDecimal(0);
         if (insuranceEntityList != null && insuranceEntityList.size() > 0) {
-            insuranceEntityList.forEach(insurance -> {
+            for (ExperimentPersonInsuranceEntity insurance : insuranceEntityList) {
                 Date startTime = insurance.getIndate();
                 Date endTime = insurance.getExpdate();
                 //3、todo 获取这段时间的消费记录(包括医疗支出和挂号)
-                BigDecimal periodsFund = new BigDecimal(1222222.00);
-                totalPay.add(periodsFund.multiply(BigDecimal.valueOf(insurance.getReimburseRatio())).add(insurance.getInsuranceAmount()));
-            });
+                BigDecimal periodsFund = new BigDecimal(122.00);
+                totalPay = totalPay.add(periodsFund.multiply(BigDecimal.valueOf(insurance.getReimburseRatio())).add(insurance.getInsuranceAmount()));
+            }
         }
         //3、计算每期医疗占比，并保存进数据库，todo personFund为用户总金额
         BigDecimal personFund = new BigDecimal(22222);
-        BigDecimal per = totalPay.divide(personFund);
+        BigDecimal per = totalPay.divide(personFund,BigDecimal.ROUND_CEILING);
         //3.1、计算得分
-        BigDecimal newPer = new BigDecimal(1).subtract(experimentPersonInsuranceRequest.getPer());
+        BigDecimal newPer = new BigDecimal(1).subtract(per);
         ExperimentPersonMedicalResultEntity resultEntity = ExperimentPersonMedicalResultEntity.builder()
                 .experimentPersonMedicalResultId(idGenerator.nextIdStr())
                 .appId(experimentPersonInsuranceRequest.getAppId())
@@ -125,6 +125,7 @@ public class ExperimentInsuranceBiz {
                 .experimentInstanceId(experimentPersonInsuranceRequest.getExperimentInstanceId())
                 .experimentGroupId(experimentPersonInsuranceRequest.getExperimentGroupId())
                 .medicalPer(per)
+                .periods(experimentPersonInsuranceRequest.getPeriods())
                 .medicalScore(newPer.multiply(new BigDecimal(100)))
                 .build();
         experimentPersonMedicalResultService.save(resultEntity);

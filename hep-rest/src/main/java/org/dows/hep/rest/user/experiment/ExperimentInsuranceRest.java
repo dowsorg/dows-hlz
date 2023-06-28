@@ -35,11 +35,11 @@ public class ExperimentInsuranceRest {
     }
 
     /**
-     * 每期计算医疗占比
+     * 每期单人计算医疗占比
      * @param
      * @return
      */
-    @Operation(summary = "每期计算支出费用")
+    @Operation(summary = "每期单人计算医疗占比")
     @PostMapping("v1/userExperiment/experimentOrgJudge/calculatePeriodsFee")
     public BigDecimal calculatePeriodsFee(@RequestBody @Validated ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest)
     {
