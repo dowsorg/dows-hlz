@@ -41,7 +41,8 @@ public class SuspendHandler extends AbstractEventHandler implements EventHandler
         // 待更新集合
         List<ExperimentTimerEntity> updateExperimentTimerEntities = new ArrayList<>();
         // 查询实验期数列表
-        List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerBiz.getCurrentPeriods(experimentRestartRequest);
+        List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerBiz
+                .getCurrentPeriods(experimentRestartRequest.getExperimentInstanceId());
 
         /*if (experimentRestartRequest.getPeriods() == null) {*/
         if (experimentRestartRequest.getPeriods() == null) {

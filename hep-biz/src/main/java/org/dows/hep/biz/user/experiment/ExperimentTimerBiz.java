@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
 import org.dows.hep.api.enums.ExperimentStateEnum;
 import org.dows.hep.api.exception.ExperimentException;
-import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.response.CountDownResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
@@ -191,13 +190,14 @@ public class ExperimentTimerBiz {
 
     /**
      * 获取当前实验期数定时器
+     * ExperimentRestartRequest experimentRestartRequest
      *
-     * @param experimentRestartRequest
+     * @param experimentInstanceId
      * @return
      */
-    public List<ExperimentTimerEntity> getCurrentPeriods(ExperimentRestartRequest experimentRestartRequest) {
+    public List<ExperimentTimerEntity> getCurrentPeriods(String experimentInstanceId) {
         List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
-                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentRestartRequest.getExperimentInstanceId())
+                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
                 //.eq(ExperimentTimerEntity::getAppId, experimentRestartRequest.getAppId())
                 .list();
         return list;

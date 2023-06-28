@@ -10,9 +10,12 @@ import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentParticipatorRequest;
 import org.dows.hep.api.user.experiment.request.ExptQuestionnaireAllotRequest;
 import org.dows.hep.api.user.experiment.response.StartCutdownResponse;
+import org.dows.hep.biz.timer.ExperimentRankingTimerTask;
+import org.dows.hep.biz.timer.ExperimentTaskScheduler;
 import org.dows.hep.biz.user.experiment.ExperimentQuestionnaireBiz;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
+import org.dows.hep.entity.ExperimentTimerEntity;
 import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.hep.websocket.HepClientManager;
 import org.dows.hep.websocket.proto.MessageCode;
@@ -32,6 +35,7 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
     private final ExperimentParticipatorService experimentParticipatorService;
     private final ExperimentQuestionnaireBiz experimentQuestionnaireBiz;
     private final ExperimentTimerBiz experimentTimerBiz;
+    private final ExperimentTaskScheduler experimentTaskScheduler;
     private final StartHandler startHandler;
 
 
@@ -57,7 +61,7 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
         // 通知客户端
         wsNotice(participatorRequestList, experimentInstanceId);
         // 设置rankingTimerTask
-        setRankingTimerTask(experimentInstanceId);
+        //setRankingTimerTask(experimentInstanceId);
     }
 
     /**
@@ -138,11 +142,5 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
         }
     }
 
-    /**
-     * todo
-     * 设置rankingTimerTask
-     */
-    private void setRankingTimerTask(String experimentInstanceId) {
-        //experimentTimerBiz.getExperimentPeriods("",experimentInstanceId);
-    }
+
 }
