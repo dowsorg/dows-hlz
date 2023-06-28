@@ -33,9 +33,6 @@ public class ExperimentIndicatorExpressionRefRsEntity {
   @Schema(title = "分布式ID")
   private String experimentIndicatorExpressionRefId;
 
-  @Schema(title = "分布式ID")
-  private String caseIndicatorExpressionRefId;
-
   @Schema(title = "实验id")
   private String experimentId;
 
