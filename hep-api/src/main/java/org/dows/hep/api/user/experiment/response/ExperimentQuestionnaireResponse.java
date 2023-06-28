@@ -25,6 +25,7 @@ public class ExperimentQuestionnaireResponse {
     @Schema(title = "案例问卷名")
     private String questionnaireName;
 
+    @Deprecated
     @Schema(title = "知识答题试卷-全部item")
     private List<ExperimentQuestionnaireItemResponse> itemList;
 

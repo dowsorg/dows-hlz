@@ -1,6 +1,8 @@
 package org.dows.hep.biz.base.question;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
@@ -67,16 +69,57 @@ public class QuestionCategBiz {
     }
 
     /**
-     * @param
-     * @return
      * @author fhb
-     * @description
+     * @description 获取 `pid` 所有的 `下一级children`
      * @date 2023/5/11 21:22
      */
-    public List<QuestionCategoryResponse> getChildrenByPid(String pid, String categoryGroup) {
+    public List<QuestionCategoryResponse> getTreeChildrenByPid(String pid, String categoryGroup) {
         List<QuestionCategoryResponse> result = new ArrayList<>();
         List<QuestionCategoryResponse> listInGroup = listInGroup(categoryGroup);
         convertList2TreeList(listInGroup, pid, result);
+        return result;
+    }
+
+    /**
+     * @author fhb
+     * @description 批量获取 `pid集合` 所有的 `下一级children`
+     * @date 2023/5/11 21:22
+     */
+    public List<QuestionCategoryResponse> listChildrenByPid(List<String> pids, String categoryGroup) {
+        Assert.notEmpty(pids, "查询子类类别时，pid不能为空");
+        Assert.notNull(categoryGroup, "查询类别时，类别分组不能为空");
+
+        List<QuestionCategoryResponse> listInGroup = listInGroup(categoryGroup);
+        if (CollUtil.isEmpty(listInGroup)) {
+            return new ArrayList<>();
+        }
+
+       return listInGroup.stream()
+                .filter(item -> pids.contains(item.getQuestionCategPid()))
+                .toList();
+    }
+
+    /**
+     * @author fhb
+     * @description 批量获取 `pid集合` 所有的 `下一级children`
+     * @date 2023/5/11 21:22
+     */
+    public List<QuestionCategoryResponse> listTreeChildrenByPid(List<String> pids, String categoryGroup) {
+        Assert.notEmpty(pids, "查询子类类别时，pid不能为空");
+        Assert.notNull(categoryGroup, "查询类别时，类别分组不能为空");
+
+        List<QuestionCategoryResponse> result = new ArrayList<>();
+
+        // 获取该分组下所有类别
+        List<QuestionCategoryResponse> listInGroup = listInGroup(categoryGroup);
+        if (CollUtil.isEmpty(listInGroup)) {
+            return result;
+        }
+
+        // convertList 2 TreeList
+        pids.forEach(pid -> {
+            convertList2TreeList(listInGroup, pid, result);
+        });
         return result;
     }
 
@@ -87,8 +130,8 @@ public class QuestionCategBiz {
      * @description 递归获取该类目的全路径 
      * @date 2023/5/11 21:22
      */
-    public List<QuestionCategoryResponse> getFullPath(String id, String categoryGroup) {
-        return getParents0(id, categoryGroup);
+    public List<QuestionCategoryResponse> listFullPath(String id, String categoryGroup) {
+        return listParents0(id, categoryGroup);
     }
 
     /**
@@ -98,8 +141,8 @@ public class QuestionCategBiz {
      * @description 获取该类目的全路径 id 数组
      * @date 2023/5/11 21:22
      */
-    public String[] getFullPathIds(String id, String categoryGroup) {
-        List<QuestionCategoryResponse> arrayList = getParents0(id, categoryGroup);
+    public String[] listFullPathIds(String id, String categoryGroup) {
+        List<QuestionCategoryResponse> arrayList = listParents0(id, categoryGroup);
         if (arrayList.isEmpty()) {
             return new String[0];
         }
@@ -273,7 +316,6 @@ public class QuestionCategBiz {
         String questionCategId = result.getQuestionCategId();
         if (StrUtil.isBlank(questionCategId)) {
             result.setQuestionCategId(baseBiz.getIdStr());
-//            result.setSequence(baseBiz.getSequence(() -> getLastSequence(request.getQuestionCategGroup())));
             if (StrUtil.isBlank(result.getQuestionCategPid())) {
                 result.setQuestionCategPid(baseBiz.getQuestionInstancePid());
             }
@@ -317,7 +359,7 @@ public class QuestionCategBiz {
     }
 
     @NotNull
-    private ArrayList<QuestionCategoryResponse> getParents0(String id, String categoryGroup) {
+    private List<QuestionCategoryResponse> listParents0(String id, String categoryGroup) {
         if (StrUtil.isBlank(id) || StrUtil.isBlank(categoryGroup)) {
             return new ArrayList<>();
         }
