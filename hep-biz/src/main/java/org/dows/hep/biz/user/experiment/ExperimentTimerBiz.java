@@ -59,6 +59,8 @@ public class ExperimentTimerBiz {
                 //.eq(ExperimentTimerEntity::getModel, 2) // 沙盘模式
                 //.ne(ExperimentTimerEntity::getState, ExperimentStateEnum.FINISH.getState())
                 .list();
+        list = list.stream().sorted(Comparator.comparingInt(ExperimentTimerEntity::getPeriod))
+                .collect(Collectors.toList());
 
         long ct = System.currentTimeMillis();
 
@@ -82,7 +84,7 @@ public class ExperimentTimerBiz {
 
 
                 break;
-            } else if (ct <= pre.getStartTime()) { // 开始之前
+            } else if (ct <= pre.getStartTime()) { // 小组分配结束
                 countDownResponse.setCountdown(pre.getStartTime() - ct);
                 countDownResponse.setModel(pre.getModel());
                 countDownResponse.setPeriod(pre.getPeriod());
@@ -96,7 +98,7 @@ public class ExperimentTimerBiz {
                     countDownResponse.setSandDuration(Double.valueOf(next.getEndTime() - ct));
                     countDownResponse.setPeriod(next.getPeriod());
                 }
-                break;
+
             }
         }
         return countDownResponse;
