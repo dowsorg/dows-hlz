@@ -17,6 +17,8 @@ public enum EventName {
     groupMemberAllotEvent("groupMemberAllotHandler"),
     teamName("teamNameHandler"),
     copyExperimentPersonAndOrgEvent("copyExperimentPersonAndOrgHandler"),
+
+    experimentReadyEvent("experimentReadyHandler"),
     ;
 
 

@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
 import org.dows.hep.api.enums.ExperimentStateEnum;
 import org.dows.hep.api.exception.ExperimentException;
-import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.response.CountDownResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
@@ -74,12 +73,18 @@ public class ExperimentTimerBiz {
             if (ct >= pre.getEndTime() && ct < next.getStartTime()) {
                 ct = next.getStartTime() - ct;
                 countDownResponse.setCountdown(ct);
+                // todo 兜底计算，在两期之间计算上一期数据
+
                 break;
             } else if (ct <= pre.getStartTime()) {
                 countDownResponse.setCountdown(pre.getStartTime() - ct);
+                countDownResponse.setModel(pre.getModel());
+                countDownResponse.setPeriod(pre.getPeriod());
                 break;
-            } else if(ct >= pre.getStartTime()){
+            } else if (ct >= pre.getStartTime()) {
                 countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
+                countDownResponse.setModel(pre.getModel());
+                countDownResponse.setPeriod(pre.getPeriod());
                 break;
             }
         }
@@ -185,13 +190,14 @@ public class ExperimentTimerBiz {
 
     /**
      * 获取当前实验期数定时器
+     * ExperimentRestartRequest experimentRestartRequest
      *
-     * @param experimentRestartRequest
+     * @param experimentInstanceId
      * @return
      */
-    public List<ExperimentTimerEntity> getCurrentPeriods(ExperimentRestartRequest experimentRestartRequest) {
+    public List<ExperimentTimerEntity> getCurrentPeriods(String experimentInstanceId) {
         List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
-                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentRestartRequest.getExperimentInstanceId())
+                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
                 //.eq(ExperimentTimerEntity::getAppId, experimentRestartRequest.getAppId())
                 .list();
         return list;

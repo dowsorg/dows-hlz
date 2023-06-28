@@ -34,7 +34,8 @@ public class StartHandler extends AbstractEventHandler implements EventHandler<E
         // 待更新集合
         List<ExperimentTimerEntity> updateExperimentTimerEntities = new ArrayList<>();
         // 查询实验期数
-        List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerBiz.getCurrentPeriods(experimentRestartRequest);
+        List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerBiz
+                .getCurrentPeriods(experimentRestartRequest.getExperimentInstanceId());
         // 方案设计模式不需要设计时器，只有标准模式或沙盘模式才需要设计时器//null == experimentRestartRequest.getPeriods() &&
         if (null == experimentRestartRequest.getPeriods()) {
 
