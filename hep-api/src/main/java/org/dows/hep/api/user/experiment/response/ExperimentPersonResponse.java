@@ -18,6 +18,9 @@ public class ExperimentPersonResponse {
     @Schema(title = "应用ID")
     private String appId;
 
+    @Schema(title = "头像")
+    private String avatar;
+
     @Schema(title = "实验人物id")
     private String experimentPersonId;
 
