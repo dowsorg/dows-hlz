@@ -168,9 +168,9 @@ public class ExperimentInsuranceBiz {
                 .list();
         BigDecimal totalScore = new BigDecimal(0);
         if (resultEntityList != null && resultEntityList.size() > 0) {
-            resultEntityList.forEach(result -> {
-                totalScore.add(result.getMedicalScore());
-            });
+            for(ExperimentPersonMedicalResultEntity result : resultEntityList) {
+                totalScore = totalScore.add(result.getMedicalScore());
+            }
         }
         return totalScore.divide(new BigDecimal(resultEntityList.size()));
     }
