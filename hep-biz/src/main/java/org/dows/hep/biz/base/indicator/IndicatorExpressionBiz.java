@@ -1633,12 +1633,11 @@ public class IndicatorExpressionBiz{
       indicatorExpressionItemResponseRs1.setSeq(-1);
       indicatorExpressionItemResponseRsList.add(indicatorExpressionItemResponseRs1);
     } else if (indicatorExpressionItemResponseRsList.size() == 1) {
-      indicatorExpressionItemResponseRsList.addAll(indicatorExpressionItemResponseRsList);
       IndicatorExpressionItemResponseRs indicatorExpressionItemResponseRs0 = new IndicatorExpressionItemResponseRs();
       indicatorExpressionItemResponseRs0.setSeq(Integer.MAX_VALUE);
       indicatorExpressionItemResponseRsList.add(indicatorExpressionItemResponseRs0);
     } else {
-      indicatorExpressionItemResponseRsList.addAll(indicatorExpressionItemResponseRsList);
+      // do nothing
     }
     /* runsix: */
     String minIndicatorExpressionItemId = indicatorExpressionEntity.getMinIndicatorExpressionItemId();
