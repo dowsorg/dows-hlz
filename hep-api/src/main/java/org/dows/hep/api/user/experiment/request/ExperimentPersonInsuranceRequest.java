@@ -40,6 +40,9 @@ public class ExperimentPersonInsuranceRequest {
     @Schema(title = "报销比例")
     private Double reimburseRatio;
 
+    @Schema(title = "保险金额")
+    private BigDecimal insuranceAmount;
+
     @Schema(title = "保险生效时间")
     private Date indate;
 

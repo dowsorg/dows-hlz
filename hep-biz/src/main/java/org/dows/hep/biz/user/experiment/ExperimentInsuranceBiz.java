@@ -2,10 +2,15 @@ package org.dows.hep.biz.user.experiment;
 
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import lombok.RequiredArgsConstructor;
+import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.user.experiment.request.ExperimentPersonInsuranceRequest;
 import org.dows.hep.biz.util.TimeUtil;
+import org.dows.hep.entity.CaseOrgFeeEntity;
+import org.dows.hep.entity.ExperimentOrgEntity;
 import org.dows.hep.entity.ExperimentPersonInsuranceEntity;
 import org.dows.hep.entity.ExperimentPersonMedicalResultEntity;
+import org.dows.hep.service.CaseOrgFeeService;
+import org.dows.hep.service.ExperimentOrgService;
 import org.dows.hep.service.ExperimentPersonInsuranceService;
 import org.dows.hep.service.ExperimentPersonMedicalResultService;
 import org.dows.sequence.api.IdGenerator;
@@ -28,6 +33,8 @@ public class ExperimentInsuranceBiz {
 
     private final ExperimentPersonMedicalResultService experimentPersonMedicalResultService;
     private final ExperimentPersonInsuranceService experimentPersonInsuranceService;
+    private final ExperimentOrgService experimentOrgService;
+    private final CaseOrgFeeService caseOrgFeeService;
     private final IdGenerator idGenerator;
 
     /**
@@ -42,6 +49,22 @@ public class ExperimentInsuranceBiz {
      */
     @DSTransactional
     public Boolean isPurchaseInsure(ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest) {
+        //1、通过机构获取报销比例
+        ExperimentOrgEntity orgEntity = experimentOrgService.lambdaQuery()
+                .eq(ExperimentOrgEntity::getExperimentOrgId, experimentPersonInsuranceRequest.getOperateOrgId())
+                .eq(ExperimentOrgEntity::getDeleted, false)
+                .one();
+        Double reimburseRatio = 0.0d;
+        if (orgEntity != null && !ReflectUtil.isObjectNull(orgEntity)) {
+            CaseOrgFeeEntity feeEntity = caseOrgFeeService.lambdaQuery()
+                    .eq(CaseOrgFeeEntity::getCaseOrgId, orgEntity.getCaseOrgId())
+                    .eq(CaseOrgFeeEntity::getFeeCode, "BXF")
+                    .eq(CaseOrgFeeEntity::getDeleted, false)
+                    .one();
+            if (feeEntity != null && !ReflectUtil.isObjectNull(feeEntity)) {
+                reimburseRatio = feeEntity.getReimburseRatio();
+            }
+        }
         ExperimentPersonInsuranceEntity experimentPersonInsuranceEntity = ExperimentPersonInsuranceEntity
                 .builder()
                 .experimentPersonInsuranceId(idGenerator.nextIdStr())
@@ -51,9 +74,10 @@ public class ExperimentInsuranceBiz {
                 .experimentGroupId(experimentPersonInsuranceRequest.getExperimentGroupId())
                 .periods(experimentPersonInsuranceRequest.getPeriods())
                 .operateOrgId(experimentPersonInsuranceRequest.getOperateOrgId())
-                .reimburseRatio(experimentPersonInsuranceRequest.getReimburseRatio())
+                .insuranceAmount(experimentPersonInsuranceRequest.getInsuranceAmount())
+                .reimburseRatio(reimburseRatio)
                 .indate(new Date())
-                .expdate(TimeUtil.addDays(new Date(),365))
+                .expdate(TimeUtil.addDays(new Date(), 365))
                 .build();
         return experimentPersonInsuranceService.save(experimentPersonInsuranceEntity);
     }
@@ -72,15 +96,15 @@ public class ExperimentInsuranceBiz {
     public BigDecimal calculatePeriodsFee(ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest) {
         //1、获取该期数的保险购买记录
         List<ExperimentPersonInsuranceEntity> insuranceEntityList = experimentPersonInsuranceService.lambdaQuery()
-                .eq(ExperimentPersonInsuranceEntity::getExperimentPersonId,experimentPersonInsuranceRequest.getExperimentPersonId())
-                .eq(ExperimentPersonInsuranceEntity::getExperimentInstanceId,experimentPersonInsuranceRequest.getExperimentInstanceId())
-                .eq(ExperimentPersonInsuranceEntity::getExperimentGroupId,experimentPersonInsuranceRequest.getExperimentGroupId())
-                .eq(ExperimentPersonInsuranceEntity::getPeriods,experimentPersonInsuranceRequest.getPeriods())
-                .eq(ExperimentPersonInsuranceEntity::getDeleted,false)
+                .eq(ExperimentPersonInsuranceEntity::getExperimentPersonId, experimentPersonInsuranceRequest.getExperimentPersonId())
+                .eq(ExperimentPersonInsuranceEntity::getExperimentInstanceId, experimentPersonInsuranceRequest.getExperimentInstanceId())
+                .eq(ExperimentPersonInsuranceEntity::getExperimentGroupId, experimentPersonInsuranceRequest.getExperimentGroupId())
+                .eq(ExperimentPersonInsuranceEntity::getPeriods, experimentPersonInsuranceRequest.getPeriods())
+                .eq(ExperimentPersonInsuranceEntity::getDeleted, false)
                 .list();
         //2、获取保险购买期间的所有消费记录
         BigDecimal totalPay = new BigDecimal(0);
-        if(insuranceEntityList != null && insuranceEntityList.size() > 0){
+        if (insuranceEntityList != null && insuranceEntityList.size() > 0) {
             insuranceEntityList.forEach(insurance -> {
                 Date startTime = insurance.getIndate();
                 Date endTime = insurance.getExpdate();
@@ -136,13 +160,13 @@ public class ExperimentInsuranceBiz {
      */
     public BigDecimal calculatePeriodsGroupScore(ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest) {
         List<ExperimentPersonMedicalResultEntity> resultEntityList = experimentPersonMedicalResultService.lambdaQuery()
-                .eq(ExperimentPersonMedicalResultEntity::getExperimentInstanceId,experimentPersonInsuranceRequest.getExperimentInstanceId())
-                .eq(ExperimentPersonMedicalResultEntity::getExperimentGroupId,experimentPersonInsuranceRequest.getExperimentGroupId())
-                .eq(ExperimentPersonMedicalResultEntity::getPeriods,experimentPersonInsuranceRequest.getPeriods())
-                .eq(ExperimentPersonMedicalResultEntity::getDeleted,false)
+                .eq(ExperimentPersonMedicalResultEntity::getExperimentInstanceId, experimentPersonInsuranceRequest.getExperimentInstanceId())
+                .eq(ExperimentPersonMedicalResultEntity::getExperimentGroupId, experimentPersonInsuranceRequest.getExperimentGroupId())
+                .eq(ExperimentPersonMedicalResultEntity::getPeriods, experimentPersonInsuranceRequest.getPeriods())
+                .eq(ExperimentPersonMedicalResultEntity::getDeleted, false)
                 .list();
         BigDecimal totalScore = new BigDecimal(0);
-        if(resultEntityList != null && resultEntityList.size() > 0){
+        if (resultEntityList != null && resultEntityList.size() > 0) {
             resultEntityList.forEach(result -> {
                 totalScore.add(result.getMedicalScore());
             });
@@ -160,22 +184,22 @@ public class ExperimentInsuranceBiz {
      * @开始时间:
      * @创建时间: 2023年6月28日 上午11:27:34
      */
-    public Map<String,BigDecimal> calculatePeriodsTotalScore(ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest) {
-        Map<String,BigDecimal> resultMap = new HashMap<>();
+    public Map<String, BigDecimal> calculatePeriodsTotalScore(ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest) {
+        Map<String, BigDecimal> resultMap = new HashMap<>();
         Map<String, List<ExperimentPersonMedicalResultEntity>> map = experimentPersonMedicalResultService.lambdaQuery()
-                .eq(ExperimentPersonMedicalResultEntity::getExperimentInstanceId,experimentPersonInsuranceRequest.getExperimentInstanceId())
-                .eq(ExperimentPersonMedicalResultEntity::getDeleted,false)
+                .eq(ExperimentPersonMedicalResultEntity::getExperimentInstanceId, experimentPersonInsuranceRequest.getExperimentInstanceId())
+                .eq(ExperimentPersonMedicalResultEntity::getDeleted, false)
                 .list()
                 .stream().collect(Collectors.groupingBy(ExperimentPersonMedicalResultEntity::getPeriods));
-        for(Map.Entry<String, List<ExperimentPersonMedicalResultEntity>> entry : map.entrySet()){
+        for (Map.Entry<String, List<ExperimentPersonMedicalResultEntity>> entry : map.entrySet()) {
             BigDecimal totalScore = new BigDecimal(0);
             List<ExperimentPersonMedicalResultEntity> resultEntityList = entry.getValue();
-            if(resultEntityList != null && resultEntityList.size() > 0){
+            if (resultEntityList != null && resultEntityList.size() > 0) {
                 resultEntityList.forEach(result -> {
                     totalScore.add(result.getMedicalScore());
                 });
                 BigDecimal avgScore = totalScore.divide(new BigDecimal(resultEntityList.size()));
-                resultMap.put(entry.getKey(),avgScore);
+                resultMap.put(entry.getKey(), avgScore);
             }
         }
         return resultMap;
