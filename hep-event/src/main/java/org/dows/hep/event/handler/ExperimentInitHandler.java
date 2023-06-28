@@ -30,6 +30,9 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 实验初始化
+ */
 @Slf4j
 @RequiredArgsConstructor
 @Component

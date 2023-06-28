@@ -62,6 +62,7 @@ public class ExperimentTimerBiz {
 
         long ct = System.currentTimeMillis();
 
+
         for (int i = 0; i < list.size(); i++) {
             ExperimentTimerEntity pre = list.get(i);
             ExperimentTimerEntity next;
@@ -77,7 +78,6 @@ public class ExperimentTimerBiz {
                 // todo 兜底计算，在两期之间计算上一期数据,异步
 
 
-
                 break;
 
             } else if (ct <= pre.getStartTime()) { // 开始之前
@@ -86,7 +86,11 @@ public class ExperimentTimerBiz {
                 countDownResponse.setPeriod(pre.getPeriod());
                 break;
             } else if (ct >= pre.getStartTime()) { //  开始之后
-                countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
+                Double duration = Double.valueOf(pre.getEndTime() - ct);
+                if (ct >= next.getStartTime()) {
+                    duration = Double.valueOf(next.getEndTime() - ct);
+                }
+                countDownResponse.setSandDuration(duration);
                 countDownResponse.setModel(pre.getModel());
                 countDownResponse.setPeriod(pre.getPeriod());
                 break;
