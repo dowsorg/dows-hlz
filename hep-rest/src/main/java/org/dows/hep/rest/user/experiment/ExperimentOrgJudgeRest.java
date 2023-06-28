@@ -217,6 +217,18 @@ public class ExperimentOrgJudgeRest {
     }
 
     /**
+     * 每期小组的平均医疗得分
+     * @param
+     * @return
+     */
+    @Operation(summary = "每期小组的平均医疗得分")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/calculatePeriodsGroupScore")
+    public BigDecimal calculatePeriodsGroupScore(@RequestBody @Validated ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest)
+    {
+        return experimentOrgJudgeBiz.calculatePeriodsGroupScore(experimentPersonInsuranceRequest);
+    }
+
+    /**
      * 直接判断 判断范围是否满足公式
      * @param
      * @return

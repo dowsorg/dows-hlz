@@ -32,6 +32,7 @@ public class ExperimentOrgJudgeBiz {
     private final ExperimentPersonInsuranceService experimentPersonInsuranceService;
     private final OperateOrgFuncService operateOrgFuncService;
     private final OperateOrgFuncSnapService operateOrgFuncSnapService;
+    private final ExperimentPersonMedicalResultService experimentPersonMedicalResultService;
     private final IdGenerator idGenerator;
 
     /**
@@ -523,9 +524,21 @@ public class ExperimentOrgJudgeBiz {
                 totalPay.add(periodsFund.multiply(BigDecimal.valueOf(insurance.getReimburseRatio())).add(insurance.getInsuranceAmount()));
             });
         }
-        //3、计算每期医疗占比,todo personFund为用户总金额
+        //3、计算每期医疗占比，并保存进数据库，todo personFund为用户总金额
         BigDecimal personFund = new BigDecimal(22222);
         BigDecimal per = totalPay.divide(personFund);
+        //3.1、计算得分
+        BigDecimal newPer = new BigDecimal(1).subtract(experimentPersonInsuranceRequest.getPer());
+        ExperimentPersonMedicalResultEntity resultEntity = ExperimentPersonMedicalResultEntity.builder()
+                .experimentPersonMedicalResultId(idGenerator.nextIdStr())
+                .appId(experimentPersonInsuranceRequest.getAppId())
+                .experimentPersonId(experimentPersonInsuranceRequest.getExperimentPersonId())
+                .experimentInstanceId(experimentPersonInsuranceRequest.getExperimentInstanceId())
+                .experimentGroupId(experimentPersonInsuranceRequest.getExperimentGroupId())
+                .medicalPer(per)
+                .medicalScore(newPer.multiply(new BigDecimal(100)))
+                .build();
+        experimentPersonMedicalResultService.save(resultEntity);
         //4、todo 用户总金额扣除这部分费用
         personFund.subtract(totalPay);
         return per;
@@ -544,5 +557,32 @@ public class ExperimentOrgJudgeBiz {
     public BigDecimal calculatePeriodsScore(ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest) {
         BigDecimal per = new BigDecimal(1).subtract(experimentPersonInsuranceRequest.getPer());
         return per.multiply(new BigDecimal(100));
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 每期小组的平均医疗得分
+     * @关联表: experimentPersonInsurance
+     * @工时: 4H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月28日 上午11:15:34
+     */
+    public BigDecimal calculatePeriodsGroupScore(ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest) {
+        List<ExperimentPersonMedicalResultEntity> resultEntityList = experimentPersonMedicalResultService.lambdaQuery()
+                .eq(ExperimentPersonMedicalResultEntity::getExperimentPersonId,experimentPersonInsuranceRequest.getExperimentPersonId())
+                .eq(ExperimentPersonMedicalResultEntity::getExperimentInstanceId,experimentPersonInsuranceRequest.getExperimentInstanceId())
+                .eq(ExperimentPersonMedicalResultEntity::getExperimentGroupId,experimentPersonInsuranceRequest.getExperimentGroupId())
+                .eq(ExperimentPersonMedicalResultEntity::getPeriods,experimentPersonInsuranceRequest.getPeriods())
+                .eq(ExperimentPersonMedicalResultEntity::getDeleted,false)
+                .list();
+        BigDecimal totalScore = new BigDecimal(0);
+        if(resultEntityList != null && resultEntityList.size() > 0){
+            resultEntityList.forEach(result -> {
+                totalScore.add(result.getMedicalScore());
+            });
+        }
+        return totalScore.divide(new BigDecimal(resultEntityList.size()));
     }
 }
