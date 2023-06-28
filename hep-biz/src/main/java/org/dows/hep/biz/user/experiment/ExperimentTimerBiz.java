@@ -1,6 +1,7 @@
 package org.dows.hep.biz.user.experiment;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.lang.Assert;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,6 @@ import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.hep.service.ExperimentSettingService;
 import org.dows.hep.service.ExperimentTimerService;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -46,6 +46,42 @@ public class ExperimentTimerBiz {
 
 
     /**
+     * 获取当前实验期数信息[每期开始，结束，间隔等]
+     *
+     * @param experimentInstanceId
+     * @return
+     */
+    public CountDownResponse userCountdown(String experimentInstanceId) {
+        // 获取当前期数
+        CountDownResponse countDownResponse = new CountDownResponse();
+
+        List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
+                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentTimerEntity::getState, ExperimentStateEnum.ONGOING.getState())
+                //.eq(ExperimentTimerEntity::getModel, 2) // 沙盘模式
+                //.ne(ExperimentTimerEntity::getState, ExperimentStateEnum.FINISH.getState())
+                .list();
+
+        long ct = System.currentTimeMillis();
+
+        for (int i = 0; i < list.size(); i++) {
+            ExperimentTimerEntity pre = list.get(i);
+            ExperimentTimerEntity next;
+            if(i == list.size()-1){
+                countDownResponse.setCountdown(0L);
+                break;
+            }
+            next = list.get(i + 1);
+            if (ct >= pre.getEndTime() && ct < next.getStartTime()){
+                ct = next.getStartTime() - ct;
+                countDownResponse.setCountdown(ct);
+                break;
+            }
+        }
+        return countDownResponse;
+    }
+
+    /**
      * @param
      * @return
      * @说明: 获取实验倒计时
@@ -55,7 +91,7 @@ public class ExperimentTimerBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public CountDownResponse countdown(String experimentInstanceId) {
+    public CountDownResponse tenantCountdown(String experimentInstanceId) {
         CountDownResponse countDownResponse = new CountDownResponse();
 
         List<ExperimentSettingEntity> list = experimentSettingService.lambdaQuery()
@@ -97,7 +133,7 @@ public class ExperimentTimerBiz {
                 Integer duration = durationMap.get(s);
                 Integer period = periodMap.get(s);
                 totalDay += period;
-                double mockRate = Double.valueOf(period) / Double.valueOf(duration*60);
+                double mockRate = Double.valueOf(period) / Double.valueOf(duration * 60);
                 mockRateMap.put(s, mockRate);
             }
 
@@ -124,9 +160,9 @@ public class ExperimentTimerBiz {
                     Long second = ct / 1000;
                     // 获取比例
                     Double aFloat = mockRateMap.get(experimentTimerEntity.getPeriod() + "");
-                    Double day = second/60 * aFloat;
+                    Double day = second * aFloat;
                     Integer period = experimentTimerEntity.getPeriod();
-                    if(period>1) {
+                    if (period > 1) {
                         for (int i = 1; i <= period; i++) {
                             Integer integer = periodMap.get(i + "");
                             day += integer;
@@ -139,15 +175,6 @@ public class ExperimentTimerBiz {
         }
 
         return countDownResponse;
-      /*  ExperimentTimerEntity experimentTimerEntity = experimentTimerService.lambdaQuery()
-                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
-                .oneOpt()
-                .orElse(null);
-
-        if (experimentTimerEntity == null) {
-
-        }
-        return BeanConvert.beanConvert(experimentTimerEntity, CountDownResponse.class);*/
     }
 
 
@@ -160,7 +187,7 @@ public class ExperimentTimerBiz {
     public List<ExperimentTimerEntity> getCurrentPeriods(ExperimentRestartRequest experimentRestartRequest) {
         List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
                 .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentRestartRequest.getExperimentInstanceId())
-                .eq(ExperimentTimerEntity::getAppId, experimentRestartRequest.getAppId())
+                //.eq(ExperimentTimerEntity::getAppId, experimentRestartRequest.getAppId())
                 .list();
         return list;
     }
@@ -178,13 +205,15 @@ public class ExperimentTimerBiz {
         if (!b) {
             throw new ExperimentException(" 更新计时器实验状态发生异常！");
         }
-        boolean update = experimentInstanceService.lambdaUpdate().eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
+        boolean update = experimentInstanceService.lambdaUpdate()
+                .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
                 .set(ExperimentInstanceEntity::getState, experimentStateEnum.getState())
                 .update();
         if (!update) {
             throw new ExperimentException(" 更新实验实例状态发生异常！");
         }
-        boolean update1 = experimentParticipatorService.lambdaUpdate().eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
+        boolean update1 = experimentParticipatorService.lambdaUpdate()
+                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
                 .set(ExperimentParticipatorEntity::getState, experimentStateEnum.getState())
                 .update();
 
@@ -236,6 +265,7 @@ public class ExperimentTimerBiz {
         List<ExperimentPeriodsResonse.ExperimentPeriods> experimentPeriods = BeanConvert
                 .beanConvert(list, ExperimentPeriodsResonse.ExperimentPeriods.class);
         experimentPeriodsResonse.setExperimentPeriods(experimentPeriods);
+
         return experimentPeriodsResonse;
 
     }

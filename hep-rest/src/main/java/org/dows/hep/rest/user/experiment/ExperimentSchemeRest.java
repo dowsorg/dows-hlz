@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.user.experiment.request.ExperimentScheme1Request;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeAllotRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeRequest;
+import org.dows.hep.api.user.experiment.request.ExperimentSchemeSubmitRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeSettingResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeStateResponse;
@@ -105,9 +106,10 @@ public class ExperimentSchemeRest {
     */
     @Operation(summary = "提交设计方案")
     @PutMapping("v1/userExperiment/experimentScheme/submitScheme")
-    public Boolean submitScheme(@NotBlank String experimentInstanceId, @NotBlank String experimentGroupId, HttpServletRequest request) {
+    public Boolean submitScheme(@RequestBody @Validated ExperimentSchemeSubmitRequest submitRequest, HttpServletRequest request) {
         String accountId = baseBiz.getAccountId(request);
-        return experimentSchemeBiz.submitScheme(experimentInstanceId, experimentGroupId, accountId);
+        submitRequest.setAccountId(accountId);
+         return experimentSchemeBiz.submitScheme(submitRequest);
     }
 
 

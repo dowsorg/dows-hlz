@@ -3,7 +3,6 @@ package org.dows.hep.rest.user.experiment;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.user.experiment.request.ExperimentQuestionnaireRequest;
 import org.dows.hep.api.user.experiment.request.ExptQuestionnaireSearchRequest;
@@ -11,7 +10,9 @@ import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireResponse
 import org.dows.hep.biz.base.evaluate.EvaluateBaseBiz;
 import org.dows.hep.biz.user.experiment.ExperimentQuestionnaireBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author lait.zhang
@@ -49,17 +50,5 @@ public class ExperimentQuestionnaireRest {
     public Boolean updateQuestionnaire(@RequestBody @Validated ExperimentQuestionnaireRequest eqRequest, HttpServletRequest request) {
         String accountId = baseBiz.getAccountId(request);
         return experimentQuestionnaireBiz.updateQuestionnaire(eqRequest, accountId);
-    }
-
-    /**
-     * 提交知识答题
-     * @param
-     * @return
-     */
-    @Operation(summary = "提交知识答题")
-    @PutMapping("v1/userExperiment/experimentQuestionnaire/submitQuestionnaire")
-    public Boolean submitQuestionnaire(@NotBlank String experimentQuestionnaireId, HttpServletRequest request) {
-        String accountId = baseBiz.getAccountId(request);
-        return experimentQuestionnaireBiz.submitQuestionnaire(experimentQuestionnaireId, accountId);
     }
 }
