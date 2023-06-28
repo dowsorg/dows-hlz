@@ -1,7 +1,6 @@
 package org.dows.hep.biz.user.experiment;
 
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.lang.Assert;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import lombok.RequiredArgsConstructor;
@@ -67,14 +66,20 @@ public class ExperimentTimerBiz {
         for (int i = 0; i < list.size(); i++) {
             ExperimentTimerEntity pre = list.get(i);
             ExperimentTimerEntity next;
-            if(i == list.size()-1){
+            if (i == list.size() - 1) {
                 countDownResponse.setCountdown(0L);
                 break;
             }
             next = list.get(i + 1);
-            if (ct >= pre.getEndTime() && ct < next.getStartTime()){
+            if (ct >= pre.getEndTime() && ct < next.getStartTime()) {
                 ct = next.getStartTime() - ct;
                 countDownResponse.setCountdown(ct);
+                break;
+            } else if (ct <= pre.getStartTime()) {
+                countDownResponse.setCountdown(pre.getStartTime() - ct);
+                break;
+            } else if(ct >= pre.getStartTime()){
+                countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
                 break;
             }
         }

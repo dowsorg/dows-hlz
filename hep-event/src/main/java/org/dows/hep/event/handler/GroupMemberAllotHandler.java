@@ -47,7 +47,7 @@ public class GroupMemberAllotHandler extends AbstractEventHandler implements Eve
     public void exec(List<ExperimentParticipatorRequest> participatorRequestList) {
         String experimentInstanceId = participatorRequestList.get(0).getExperimentInstanceId();
         String appId = participatorRequestList.get(0).getAppId();
-        ExperimentPeriodsResonse periodsResonse = experimentTimerBiz.getExperimentPeriods(appId,experimentInstanceId);
+        /*ExperimentPeriodsResonse periodsResonse = experimentTimerBiz.getExperimentPeriods(appId,experimentInstanceId);
         // 获取第一期的最大pauseCount
         List<ExperimentPeriodsResonse.ExperimentPeriods> periods = periodsResonse.getExperimentPeriods();
         periods = periods.stream()
@@ -56,12 +56,12 @@ public class GroupMemberAllotHandler extends AbstractEventHandler implements Eve
         List<ExperimentPeriodsResonse.ExperimentPeriods> newList = periods.stream()
                 .sorted(Comparator.comparing(ExperimentPeriodsResonse.ExperimentPeriods::getPauseCount).reversed())
                 .collect(Collectors.toList());
-        ExperimentPeriodsResonse.ExperimentPeriods periods1 = newList.get(0);
+        ExperimentPeriodsResonse.ExperimentPeriods periods1 = newList.get(0);*/
 
         //
         startHandler.exec(ExperimentRestartRequest.builder()
                 .appId(appId)
-                .model(periods1.getModel())
+                //.model(periods1.getModel())
                 .experimentInstanceId(experimentInstanceId)
                 .paused(false)
                 .currentTime(new Date())
@@ -108,9 +108,9 @@ public class GroupMemberAllotHandler extends AbstractEventHandler implements Eve
                 if (accountIds.contains(userInfos.get(channel).getAccountName())) {
                     StartCutdownResponse startCutdownResponse = new StartCutdownResponse();
                     startCutdownResponse.setType(EnumWebSocketType.START_EXPERIMENT_COUNTDOWN);
-                    startCutdownResponse.setModelDescr(periods1.getModelDescr());
-                    startCutdownResponse.setExperimentInstanceId(periods1.getExperimentInstanceId());
-                    startCutdownResponse.setPeriodInterval(periods1.getPeriodInterval());
+                    //startCutdownResponse.setModelDescr(periods1.getModelDescr());
+                    startCutdownResponse.setExperimentInstanceId(experimentInstanceId);
+                    //startCutdownResponse.setPeriodInterval(periods1.getPeriodInterval());
                     Response<StartCutdownResponse> ok = Response.ok(startCutdownResponse);
                     HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, ok);
                 }
