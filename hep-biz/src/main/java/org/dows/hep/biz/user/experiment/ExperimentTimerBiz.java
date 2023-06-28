@@ -89,15 +89,11 @@ public class ExperimentTimerBiz {
                 countDownResponse.setModel(pre.getModel());
                 countDownResponse.setPeriod(pre.getPeriod());
                 break;
-            } else if (ct >= pre.getStartTime()) { //  开始之后
+            } else if (ct >= pre.getStartTime() && ct <= pre.getEndTime()) { //  开始之后
                 countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
                 countDownResponse.setModel(pre.getModel());
                 countDownResponse.setPeriod(pre.getPeriod());
-
-                if (ct >= next.getStartTime()) {
-                    countDownResponse.setSandDuration(Double.valueOf(next.getEndTime() - ct));
-                    countDownResponse.setPeriod(next.getPeriod());
-                }
+                break;
 
             }
         }
