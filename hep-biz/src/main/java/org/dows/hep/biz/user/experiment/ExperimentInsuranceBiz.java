@@ -196,9 +196,9 @@ public class ExperimentInsuranceBiz {
             BigDecimal totalScore = new BigDecimal(0);
             List<ExperimentPersonMedicalResultEntity> resultEntityList = entry.getValue();
             if (resultEntityList != null && resultEntityList.size() > 0) {
-                resultEntityList.forEach(result -> {
-                    totalScore.add(result.getMedicalScore());
-                });
+                    for(ExperimentPersonMedicalResultEntity result : resultEntityList) {
+                        totalScore = totalScore.add(result.getMedicalScore());
+                    }
                 BigDecimal avgScore = totalScore.divide(new BigDecimal(resultEntityList.size()));
                 resultMap.put(entry.getKey(), avgScore);
             }
