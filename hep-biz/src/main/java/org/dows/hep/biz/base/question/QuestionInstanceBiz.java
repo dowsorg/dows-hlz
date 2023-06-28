@@ -120,7 +120,7 @@ public class QuestionInstanceBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     public IPage<QuestionPageResponse> pageQuestion(QuestionPageRequest request) {
-        List<String> categoryIdList = getCategoryIdList(request);
+        List<String> categoryIdList = listCategoryIdList(request);
         if (categoryIdList.isEmpty()) {
             List<String> l1CategIdList = request.getL1CategIdList();
             if (Objects.nonNull(l1CategIdList) && !l1CategIdList.isEmpty()) {
@@ -128,7 +128,6 @@ public class QuestionInstanceBiz {
             }
         }
 
-        Page<QuestionInstanceEntity> pageRequest = request.getPage();
         Page<QuestionInstanceEntity> pageResult = questionInstanceService.lambdaQuery()
                 .eq(QuestionInstanceEntity::getAppId, baseBiz.getAppId())
                 .eq(QuestionInstanceEntity::getVer, baseBiz.getLastVer())
@@ -137,31 +136,9 @@ public class QuestionInstanceBiz {
                 .in(CollUtil.isNotEmpty(request.getQuestionType()), QuestionInstanceEntity::getQuestionType, request.getQuestionType())
                 .in(CollUtil.isNotEmpty(categoryIdList), QuestionInstanceEntity::getQuestionCategId, categoryIdList)
                 .like(StrUtil.isNotBlank(request.getKeyword()), QuestionInstanceEntity::getQuestionTitle, request.getKeyword())
-                .page(pageRequest);
+                .page(request.getPage());
         Page<QuestionPageResponse> result = baseBiz.convertPage(pageResult, QuestionPageResponse.class);
         fillResult(result);
-        return result;
-    }
-
-    private List<String> getCategoryIdList(QuestionPageRequest request) {
-        List<String> l1CategIdList = request.getL1CategIdList();
-        List<String> l2CategIdList = request.getL2CategIdList();
-
-        List<String> result = new ArrayList<>();
-        if (l2CategIdList != null && !l2CategIdList.isEmpty()) {
-            result.addAll(l2CategIdList);
-            return result;
-        }
-        if (l1CategIdList != null && !l1CategIdList.isEmpty()) {
-            l1CategIdList.forEach(l1CategoryId -> {
-                List<QuestionCategoryResponse> children = questionCategBiz.getChildrenByPid(l1CategoryId, QuestionCategGroupEnum.QUESTION.name());
-                if (children != null && !children.isEmpty()) {
-                    List<String> childrenIds = children.stream().map(QuestionCategoryResponse::getQuestionCategId).toList();
-                    result.addAll(childrenIds);
-                }
-            });
-        }
-
         return result;
     }
 
@@ -175,7 +152,7 @@ public class QuestionInstanceBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public List<QuestionResponse> listQuestion(QuestionSearchRequest questionSearch ) {
+    public List<QuestionResponse> listQuestion(QuestionSearchRequest questionSearch) {
         List<QuestionInstanceEntity> entityList = questionInstanceService.lambdaQuery()
                 .eq(QuestionInstanceEntity::getAppId, questionSearch.getAppId())
                 .eq(QuestionInstanceEntity::getVer, baseBiz.getLastVer())
@@ -309,8 +286,8 @@ public class QuestionInstanceBiz {
      * @开发者: fhb
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
-    */
-    public Boolean enabledQuestion(String questionInstanceId ) {
+     */
+    public Boolean enabledQuestion(String questionInstanceId) {
         if (StrUtil.isBlank(questionInstanceId)) {
             return false;
         }
@@ -319,16 +296,16 @@ public class QuestionInstanceBiz {
     }
 
     /**
-    * @param
-    * @return
-    * @说明: 禁用
-    * @关联表: QuestionInstance,QuestionOptions,QuestionAnswers
-    * @工时: 3H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月18日 上午10:45:07
-    */
-    public Boolean disabledQuestion(String questionInstanceId ) {
+     * @param
+     * @return
+     * @说明: 禁用
+     * @关联表: QuestionInstance, QuestionOptions, QuestionAnswers
+     * @工时: 3H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月18日 上午10:45:07
+     */
+    public Boolean disabledQuestion(String questionInstanceId) {
         if (StrUtil.isBlank(questionInstanceId)) {
             return false;
         }
@@ -375,7 +352,7 @@ public class QuestionInstanceBiz {
 
         LambdaQueryWrapper<QuestionInstanceEntity> leftQueryWrapper = new LambdaQueryWrapper<QuestionInstanceEntity>()
                 .eq(QuestionInstanceEntity::getQuestionInstanceId, leftQuestionInstanceId);
-        LambdaQueryWrapper<QuestionInstanceEntity>rightQueryWrapper = new LambdaQueryWrapper<QuestionInstanceEntity>()
+        LambdaQueryWrapper<QuestionInstanceEntity> rightQueryWrapper = new LambdaQueryWrapper<QuestionInstanceEntity>()
                 .eq(QuestionInstanceEntity::getQuestionInstanceId, rightQuestionInstanceId);
         QuestionInstanceEntity left = questionInstanceService.getOne(leftQueryWrapper);
         QuestionInstanceEntity right = questionInstanceService.getOne(rightQueryWrapper);
@@ -659,7 +636,7 @@ public class QuestionInstanceBiz {
 
     private void setQuestionCategIds(QuestionResponse questionResponse) {
         String questionCategId = questionResponse.getQuestionCategId();
-        String[] parentIds = questionCategBiz.getFullPathIds(questionCategId, QuestionCategGroupEnum.QUESTION.name());
+        String[] parentIds = questionCategBiz.listFullPathIds(questionCategId, QuestionCategGroupEnum.QUESTION.name());
         questionResponse.setQuestionCategIds(parentIds);
     }
 
@@ -674,5 +651,28 @@ public class QuestionInstanceBiz {
                 .eq(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceId)
                 .set(QuestionInstanceEntity::getEnabled, questionEnabledEnum.getCode());
         return questionInstanceService.update(updateWrapper);
+    }
+
+    private List<String> listCategoryIdList(QuestionPageRequest request) {
+        List<String> l1CategIdList = request.getL1CategIdList();
+        List<String> l2CategIdList = request.getL2CategIdList();
+
+        List<String> result = new ArrayList<>();
+        // 如果有2级则只查询二级
+        if (CollUtil.isNotEmpty(l2CategIdList)) {
+            return l2CategIdList;
+        }
+        // 如果有1级则查询1级所有的2级子类
+        if (CollUtil.isNotEmpty(l1CategIdList)) {
+            List<QuestionCategoryResponse> children = questionCategBiz.listTreeChildrenByPid(l1CategIdList, QuestionCategGroupEnum.QUESTION.name());
+            if (CollUtil.isNotEmpty(children)) {
+                List<String> childrenIds = children.stream()
+                        .map(QuestionCategoryResponse::getQuestionCategId)
+                        .toList();
+                result.addAll(childrenIds);
+            }
+        }
+
+        return result;
     }
 }

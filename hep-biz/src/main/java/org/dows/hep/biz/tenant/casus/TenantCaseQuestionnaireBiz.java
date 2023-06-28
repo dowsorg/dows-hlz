@@ -457,7 +457,7 @@ public class TenantCaseQuestionnaireBiz {
 
         // level-1 convert to level-2
         String l1CategoryId = request.getL1CategId();
-        List<QuestionCategoryResponse> children = questionCategBiz.getChildrenByPid(l1CategoryId, QuestionCategGroupEnum.QUESTION.name());
+        List<QuestionCategoryResponse> children = questionCategBiz.getTreeChildrenByPid(l1CategoryId, QuestionCategGroupEnum.QUESTION.name());
         if (children != null && !children.isEmpty()) {
             List<String> childrenIds = children.stream().map(QuestionCategoryResponse::getQuestionCategId).toList();
             result.addAll(childrenIds);
