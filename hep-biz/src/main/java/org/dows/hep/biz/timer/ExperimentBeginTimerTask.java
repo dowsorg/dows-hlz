@@ -1,5 +1,6 @@
 package org.dows.hep.biz.timer;
 
+import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.ExperimentContext;
@@ -54,24 +55,30 @@ public class ExperimentBeginTimerTask implements Runnable {
         if (experimentInstanceEntity == null) {
             throw new ExperimentException("不存在该实验!");
         }
-
+        log.info("执行开始任务,查询到实验实例:{}", JSONUtil.toJsonStr(experimentInstanceEntity));
         //1、判断实验是否到时间，到时间则更新状态
         if (experimentInstanceEntity.getState() == ExperimentStateEnum.UNBEGIN.getState()) {
-            experimentParticipatorService.lambdaUpdate()
-                    .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceEntity.getExperimentInstanceId())
-                    .eq(ExperimentParticipatorEntity::getDeleted, false)
-                    .set(ExperimentParticipatorEntity::getState, ExperimentStateEnum.PREPARE.getState()).update();
+
             experimentInstanceService.lambdaUpdate()
                     .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceEntity.getExperimentInstanceId())
                     .eq(ExperimentInstanceEntity::getDeleted, false)
-                    .set(ExperimentInstanceEntity::getState, ExperimentStateEnum.PREPARE.getState()).update();
+                    .set(ExperimentInstanceEntity::getState, ExperimentStateEnum.PREPARE.getState())
+                    .update();
+            experimentInstanceEntity.setState(ExperimentStateEnum.PREPARE.getState());
+
+            experimentParticipatorService.lambdaUpdate()
+                    .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceEntity.getExperimentInstanceId())
+                    .eq(ExperimentParticipatorEntity::getDeleted, false)
+                    .set(ExperimentParticipatorEntity::getState, ExperimentStateEnum.PREPARE.getState())
+                    .update();
             experimentTimerService.lambdaUpdate()
                     .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceEntity.getExperimentInstanceId())
                     .eq(ExperimentTimerEntity::getDeleted, false)
-                    .set(ExperimentTimerEntity::getState, ExperimentStateEnum.PREPARE.getState()).update();
+                    .set(ExperimentTimerEntity::getState, ExperimentStateEnum.PREPARE.getState())
+                    .update();
             //1、更改缓存
-            ExperimentContext experimentContext = ExperimentContext.getExperimentContext(experimentInstanceEntity.getExperimentInstanceId());
-            experimentContext.setState(ExperimentStateEnum.PREPARE);
+            /*ExperimentContext experimentContext = ExperimentContext.getExperimentContext(experimentInstanceEntity.getExperimentInstanceId());
+            experimentContext.setState(ExperimentStateEnum.PREPARE);*/
         }
 
         /**
