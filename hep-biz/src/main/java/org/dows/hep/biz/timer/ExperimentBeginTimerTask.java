@@ -6,20 +6,17 @@ import org.dows.hep.api.ExperimentContext;
 import org.dows.hep.api.enums.ExperimentStateEnum;
 import org.dows.hep.api.event.SuspendEvent;
 import org.dows.hep.api.exception.ExperimentException;
-import org.dows.hep.api.tenant.experiment.request.ExperimentGroupSettingRequest;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.entity.ExperimentTimerEntity;
 import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentParticipatorService;
-import org.dows.hep.service.ExperimentSettingService;
 import org.dows.hep.service.ExperimentTimerService;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 
 /**
  * 实验开始任务
@@ -59,26 +56,23 @@ public class ExperimentBeginTimerTask implements Runnable {
         }
 
         //1、判断实验是否到时间，到时间则更新状态
-        List<ExperimentContext> instanceEntities = ExperimentContext.getMap();
-        instanceEntities.forEach(entity -> {
-            if (entity.getState() == ExperimentStateEnum.UNBEGIN) {
-                experimentParticipatorService.lambdaUpdate()
-                        .eq(ExperimentParticipatorEntity::getExperimentInstanceId, entity.getExperimentId())
-                        .eq(ExperimentParticipatorEntity::getDeleted, false)
-                        .set(ExperimentParticipatorEntity::getState, ExperimentStateEnum.PREPARE.getState()).update();
-                experimentInstanceService.lambdaUpdate()
-                        .eq(ExperimentInstanceEntity::getExperimentInstanceId, entity.getExperimentId())
-                        .eq(ExperimentInstanceEntity::getDeleted, false)
-                        .set(ExperimentInstanceEntity::getState, ExperimentStateEnum.PREPARE.getState()).update();
-                experimentTimerService.lambdaUpdate()
-                        .eq(ExperimentTimerEntity::getExperimentInstanceId, entity.getExperimentId())
-                        .eq(ExperimentTimerEntity::getDeleted, false)
-                        .set(ExperimentTimerEntity::getState, ExperimentStateEnum.PREPARE.getState()).update();
-                //1、更改缓存
-                ExperimentContext experimentContext = ExperimentContext.getExperimentContext(entity.getExperimentId());
-                experimentContext.setState(ExperimentStateEnum.PREPARE);
-            }
-        });
+        if (experimentInstanceEntity.getState() == ExperimentStateEnum.UNBEGIN.getState()) {
+            experimentParticipatorService.lambdaUpdate()
+                    .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceEntity.getExperimentInstanceId())
+                    .eq(ExperimentParticipatorEntity::getDeleted, false)
+                    .set(ExperimentParticipatorEntity::getState, ExperimentStateEnum.PREPARE.getState()).update();
+            experimentInstanceService.lambdaUpdate()
+                    .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceEntity.getExperimentInstanceId())
+                    .eq(ExperimentInstanceEntity::getDeleted, false)
+                    .set(ExperimentInstanceEntity::getState, ExperimentStateEnum.PREPARE.getState()).update();
+            experimentTimerService.lambdaUpdate()
+                    .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceEntity.getExperimentInstanceId())
+                    .eq(ExperimentTimerEntity::getDeleted, false)
+                    .set(ExperimentTimerEntity::getState, ExperimentStateEnum.PREPARE.getState()).update();
+            //1、更改缓存
+            ExperimentContext experimentContext = ExperimentContext.getExperimentContext(experimentInstanceEntity.getExperimentInstanceId());
+            experimentContext.setState(ExperimentStateEnum.PREPARE);
+        }
 
         /**
          * 当前实验状态为准备中时则发布实验暂停事件
