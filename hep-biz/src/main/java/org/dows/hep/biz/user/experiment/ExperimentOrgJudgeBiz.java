@@ -495,7 +495,7 @@ public class ExperimentOrgJudgeBiz {
     /**
      * @param
      * @return
-     * @说明: 每期计算支出费用
+     * @说明: 每期计算医疗占比
      * @关联表: experimentPersonInsurance
      * @工时: 4H
      * @开发者: jx
@@ -523,10 +523,26 @@ public class ExperimentOrgJudgeBiz {
                 totalPay.add(periodsFund.multiply(BigDecimal.valueOf(insurance.getReimburseRatio())).add(insurance.getInsuranceAmount()));
             });
         }
-        //4、todo 用户总金额扣除这部分费用
+        //3、计算每期医疗占比,todo personFund为用户总金额
         BigDecimal personFund = new BigDecimal(22222);
+        BigDecimal per = totalPay.divide(personFund);
+        //4、todo 用户总金额扣除这部分费用
         personFund.subtract(totalPay);
-        return totalPay;
+        return per;
     }
 
+    /**
+     * @param
+     * @return
+     * @说明: 每期计算支出费用
+     * @关联表: experimentPersonInsurance
+     * @工时: 4H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月28日 上午09:30:34
+     */
+    public BigDecimal calculatePeriodsScore(ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest) {
+        BigDecimal per = new BigDecimal(1).subtract(experimentPersonInsuranceRequest.getPer());
+        return per.multiply(new BigDecimal(100));
+    }
 }
