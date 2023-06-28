@@ -50,13 +50,15 @@ public class GroupMemberAllotHandler extends AbstractEventHandler implements Eve
         ExperimentPeriodsResonse periodsResonse = experimentTimerBiz.getExperimentPeriods(appId,experimentInstanceId);
         // 获取第一期的最大pauseCount
         List<ExperimentPeriodsResonse.ExperimentPeriods> periods = periodsResonse.getExperimentPeriods();
-        periods = periods.stream().filter((ExperimentPeriodsResonse.ExperimentPeriods experimentPeriods) ->
-                experimentPeriods.getPeriod() == 1)
+        periods = periods.stream()
+                .filter((ExperimentPeriodsResonse.ExperimentPeriods experimentPeriods) -> experimentPeriods.getPeriod() == 1)
                 .collect(Collectors.toList());
-        List<ExperimentPeriodsResonse.ExperimentPeriods> newList = periods.stream().sorted(Comparator.comparing(ExperimentPeriodsResonse.ExperimentPeriods::getPauseCount).reversed()).collect(Collectors.toList());
+        List<ExperimentPeriodsResonse.ExperimentPeriods> newList = periods.stream()
+                .sorted(Comparator.comparing(ExperimentPeriodsResonse.ExperimentPeriods::getPauseCount).reversed())
+                .collect(Collectors.toList());
         ExperimentPeriodsResonse.ExperimentPeriods periods1 = newList.get(0);
 
-        // 先计数
+        //
         startHandler.exec(ExperimentRestartRequest.builder()
                 .appId(appId)
                 .model(periods1.getModel())

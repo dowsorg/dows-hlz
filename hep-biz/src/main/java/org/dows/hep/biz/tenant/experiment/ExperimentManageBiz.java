@@ -2,6 +2,7 @@ package org.dows.hep.biz.tenant.experiment;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
@@ -34,6 +35,7 @@ import org.dows.hep.api.user.experiment.response.ExperimentStateResponse;
 import org.dows.hep.biz.base.person.PersonManageBiz;
 import org.dows.hep.biz.timer.ExperimentBeginTimerTask;
 import org.dows.hep.biz.timer.ExperimentTaskScheduler;
+import org.dows.hep.biz.util.PeriodsTimerUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -45,7 +47,6 @@ import org.dows.user.api.response.UserExtinfoResponse;
 import org.dows.user.api.response.UserInstanceResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -173,7 +174,7 @@ public class ExperimentManageBiz {
             // 保存沙盘设计
             experimentSettingService.saveOrUpdate(experimentSettingEntity);
             // 设置实验计时器
-            buildPeriods(experimentInstance, experimentSetting, experimentTimerEntities);
+            PeriodsTimerUtil.buildPeriods(experimentInstance, experimentSetting, experimentTimerEntities,idGenerator);
             // 沙盘模式
         } else if (null != sandSetting) {
             ExperimentSettingEntity experimentSettingEntity = ExperimentSettingEntity.builder()
@@ -186,7 +187,7 @@ public class ExperimentManageBiz {
             //保存沙盘设计
             experimentSettingService.saveOrUpdate(experimentSettingEntity);
             // 设置实验计时器
-            buildPeriods(experimentInstance, experimentSetting, experimentTimerEntities);
+            PeriodsTimerUtil.buildPeriods(experimentInstance, experimentSetting, experimentTimerEntities,idGenerator);
             // 方案设计模式
         } else if (null != schemeSetting) {
             // 验证时间
@@ -211,125 +212,8 @@ public class ExperimentManageBiz {
     }
 
 
-    /**
-     * 构建期数对应的计时器
-     *
-     * @param experimentInstance
-     * @param experimentSetting
-     * @param experimentTimerEntities
-     */
-    private void buildPeriods(ExperimentInstanceEntity experimentInstance, ExperimentSetting experimentSetting,
-                              List<ExperimentTimerEntity> experimentTimerEntities) {
-        ExperimentSetting.SandSetting sandSetting = experimentSetting.getSandSetting();
-        if (null == sandSetting) {
-            throw new BizException("沙盘模式，sandSetting为不能为空!");
-        }
-        // 获取总期数，生成每期的计时器
-        Integer periodCount = sandSetting.getPeriods();
-        // 每期间隔/秒*1000
-        Long interval = sandSetting.getInterval() * 1000;
-        // 每期时长/分钟
-        Map<String, Integer> durationMap = sandSetting.getDurationMap();
-        // 实验开始时间
-        long startTime = experimentInstance.getStartTime().getTime();
 
-        // 一期开始时间=实验开始时间-方案设计时间,第一期没有间隔时间
-        long pst = 0L;
-        // 定义一期结束时间
-        long pet = 0L;
-        // 如果是标准模式，那么沙盘期数 需要减去方案设计截止时间
-        if (experimentInstance.getModel() == ExperimentModeEnum.STANDARD.getCode()) {
-            ExperimentSetting.SchemeSetting schemeSetting = experimentSetting.getSchemeSetting();
-            if (schemeSetting != null) {
-                // 方案设计截止时间
-                long time1 = schemeSetting.getSchemeEndTime().getTime();
-                // 如果是标准模式，一期开始时间 = 方案设计截止时间 - 实验开始时间,第一期没有间隔时间 + 间隔时间
-                //pst = time1 - startTime +  interval;
-                // 如果是标准模式，一期开始时间 = 方案设计截止时间 + 间隔时间
-                pst = time1 + interval;
-                // 如果是标准模式，一期开始时间 = 实验开始时间 + 方案设计时长结束时间 + 间隔时间
-                //long duration = schemeSetting.getDuration() * 60 * 1000;
-                //pst = startTime + duration + interval;
-            }
-        } else {
-            pst = startTime;
-        }
 
-        List<Integer> periods = durationMap.keySet().stream()
-                .map(p -> Integer.valueOf(p)).sorted().collect(Collectors.toList());
-        if (periodCount != periods.size()) {
-            throw new ExperimentException("分配实验异常,期数与期数时间设置不匹配");
-        }
-        for (Integer period : periods) {
-            // 一期结束时间 = 一期开始时间 + 一期持续时间
-            pet = pst + durationMap.get(period + "") * 60 * 1000;
-            ExperimentTimerEntity experimentTimerEntity = ExperimentTimerEntity.builder()
-                    .appId(experimentInstance.getAppId())
-                    .experimentInstanceId(experimentInstance.getExperimentInstanceId())
-                    .experimentTimerId(idGenerator.nextIdStr())
-                    .periodInterval(interval)
-                    .period(period)
-                    .model(ExperimentModeEnum.STANDARD.getCode())
-                    .state(ExperimentStateEnum.UNBEGIN.getState())
-                    .startTime(pst)
-                    .endTime(pet)
-                    .build();
-            experimentTimerEntities.add(experimentTimerEntity);
-            // 下一期开始时间 = 上一期结束时间+间隔时间
-            pst = pet + interval;
-        }
-    }
-
-    /**
-     * 回填表单
-     *
-     * @return
-     */
-    public CreateExperimentForm getAllotData(String experimentInstanceId, String appId) {
-        CreateExperimentForm createExperimentForm = new CreateExperimentForm();
-
-        ExperimentInstanceEntity experimentInstance = experimentInstanceService.lambdaQuery()
-                .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
-                .last("limit 1")
-                .oneOpt()
-                .orElseThrow(() -> new BizException(ExperimentESCEnum.DATA_NULL));
-
-        ExperimentParticipatorEntity experimentParticipator = experimentParticipatorService.lambdaQuery()
-                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
-                // todo 查找老师,后面定义为枚举，这里先实现
-                .eq(ExperimentParticipatorEntity::getParticipatorType, 0)
-                .last("limit 1")
-                .oneOpt()
-                .orElseThrow(() -> new BizException(ExperimentESCEnum.DATA_NULL));
-
-        List<ExperimentSettingEntity> experimentSettings = experimentSettingService.lambdaQuery()
-                .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
-                .list();
-
-        // 处理实验
-        BeanUtil.copyProperties(experimentInstance, createExperimentForm, "teachers", "experimentSetting");
-        // 处理老师
-        AccountInstanceResponse accountInstanceResponse = new AccountInstanceResponse();
-        BeanUtil.copyProperties(experimentParticipator, accountInstanceResponse);
-        // todo 一个实验是否可以有多个老师
-        List<AccountInstanceResponse> teachers = Arrays.asList(accountInstanceResponse);
-        createExperimentForm.setTeachers(teachers);
-        // 处理实验设置
-        ExperimentSetting experimentSetting = new ExperimentSetting();
-        for (ExperimentSettingEntity expSetting : experimentSettings) {
-            String configKey = expSetting.getConfigKey();
-            if (configKey.equals(ExperimentSetting.SandSetting.class.getName())) {
-                ExperimentSetting.SandSetting bean = JSONUtil.toBean(expSetting.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
-                experimentSetting.setSandSetting(bean);
-            }
-            if (configKey.equals(ExperimentSetting.SchemeSetting.class.getName())) {
-                ExperimentSetting.SchemeSetting bean = JSONUtil.toBean(expSetting.getConfigJsonVals(), ExperimentSetting.SchemeSetting.class);
-                experimentSetting.setSchemeSetting(bean);
-            }
-        }
-        createExperimentForm.setExperimentSetting(experimentSetting);
-        return createExperimentForm;
-    }
 
     /**
      * @param
@@ -404,14 +288,65 @@ public class ExperimentManageBiz {
             throw new ExperimentException("实验时间设置错误,实验开始时间小于当前时间!");
         }
         ExperimentBeginTimerTask experimentBeginTimerTask = new ExperimentBeginTimerTask(
-                experimentInstanceService, experimentParticipatorService,
-                experimentTimerService, applicationEventPublisher, experimentGroupSettingRequest);
+                experimentInstanceService, experimentParticipatorService, experimentSettingService,
+                experimentTimerService,applicationEventPublisher, experimentGroupSettingRequest);
 
         experimentTaskScheduler.schedule(experimentBeginTimerTask,experimentGroupSettingRequest.getStartTime());
         // 发布实验init事件
         applicationEventPublisher.publishEvent(new ExptInitEvent(experimentGroupSettingRequest));
 
         return true;
+    }
+
+    /**
+     * 回填表单
+     *
+     * @return
+     */
+    public CreateExperimentForm getAllotData(String experimentInstanceId, String appId) {
+        CreateExperimentForm createExperimentForm = new CreateExperimentForm();
+
+        ExperimentInstanceEntity experimentInstance = experimentInstanceService.lambdaQuery()
+                .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
+                .last("limit 1")
+                .oneOpt()
+                .orElseThrow(() -> new BizException(ExperimentESCEnum.DATA_NULL));
+
+        ExperimentParticipatorEntity experimentParticipator = experimentParticipatorService.lambdaQuery()
+                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
+                // todo 查找老师,后面定义为枚举，这里先实现
+                .eq(ExperimentParticipatorEntity::getParticipatorType, 0)
+                .last("limit 1")
+                .oneOpt()
+                .orElseThrow(() -> new BizException(ExperimentESCEnum.DATA_NULL));
+
+        List<ExperimentSettingEntity> experimentSettings = experimentSettingService.lambdaQuery()
+                .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
+                .list();
+
+        // 处理实验
+        BeanUtil.copyProperties(experimentInstance, createExperimentForm, "teachers", "experimentSetting");
+        // 处理老师
+        AccountInstanceResponse accountInstanceResponse = new AccountInstanceResponse();
+        BeanUtil.copyProperties(experimentParticipator, accountInstanceResponse);
+        // todo 一个实验是否可以有多个老师
+        List<AccountInstanceResponse> teachers = Arrays.asList(accountInstanceResponse);
+        createExperimentForm.setTeachers(teachers);
+        // 处理实验设置
+        ExperimentSetting experimentSetting = new ExperimentSetting();
+        for (ExperimentSettingEntity expSetting : experimentSettings) {
+            String configKey = expSetting.getConfigKey();
+            if (configKey.equals(ExperimentSetting.SandSetting.class.getName())) {
+                ExperimentSetting.SandSetting bean = JSONUtil.toBean(expSetting.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
+                experimentSetting.setSandSetting(bean);
+            }
+            if (configKey.equals(ExperimentSetting.SchemeSetting.class.getName())) {
+                ExperimentSetting.SchemeSetting bean = JSONUtil.toBean(expSetting.getConfigJsonVals(), ExperimentSetting.SchemeSetting.class);
+                experimentSetting.setSchemeSetting(bean);
+            }
+        }
+        createExperimentForm.setExperimentSetting(experimentSetting);
+        return createExperimentForm;
     }
 
     /**
@@ -448,8 +383,52 @@ public class ExperimentManageBiz {
                 .oneOpt()
                 .orElse(null);
         if (experimentInstanceEntity == null) {
-            throw new ExperimentException("不存在的该实验!");
+            throw new ExperimentException("不存在的实验!");
         }
+       /* List<ExperimentSettingEntity> list = experimentSettingService.lambdaQuery()
+                .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
+                .list();
+        ExperimentSettingEntity experimentSettingEntity1 = list.stream().filter(e -> e.getConfigKey().equals(ExperimentSetting.SchemeSetting.class.getName()))
+                .findFirst()
+                .orElse(null);
+        ExperimentSettingEntity experimentSettingEntity2 = list.stream().filter(e -> e.getConfigKey().equals(ExperimentSetting.SandSetting.class.getName()))
+                .findFirst()
+                .orElse(null);*/
+        /**
+         * 标准模式
+         */
+        /*if (experimentInstanceEntity.getModel().equals(ExperimentModeEnum.STANDARD.getCode())) {
+            Assert.isNull(experimentSettingEntity1, "SchemeSetting not setting");
+            Assert.isNull(experimentSettingEntity2, "SandSetting not setting");
+            ExperimentSetting.SchemeSetting schemeSetting =
+                    JSONUtil.toBean(experimentSettingEntity1.getConfigJsonVals(), ExperimentSetting.SchemeSetting.class);
+            ExperimentSetting.SandSetting sandSetting =
+                    JSONUtil.toBean(experimentSettingEntity1.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
+        }
+        if (experimentInstanceEntity.getModel().equals(ExperimentModeEnum.SAND.getCode())) {
+            ExperimentSetting.SandSetting sandSetting =
+                    JSONUtil.toBean(experimentSettingEntity1.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
+        }
+        if (experimentInstanceEntity.getModel().equals(ExperimentModeEnum.SCHEME.getCode())) {
+            ExperimentSetting.SchemeSetting schemeSetting =
+                    JSONUtil.toBean(experimentSettingEntity1.getConfigJsonVals(), ExperimentSetting.SchemeSetting.class);
+        }*/
+
+        // 计算实验开始时间
+        /*Date startTime = experimentInstanceEntity.getStartTime();
+        int compare = DateUtil.compare(DateUtil.date(), startTime);
+        // 实验已经开始
+        if (compare > 0) {
+            // 更新实验、参与者状态为准备中
+            experimentInstanceService.lambdaUpdate()
+                    .eq(ExperimentInstanceEntity::getExperimentInstanceId,experimentInstanceId)
+                    .set(ExperimentInstanceEntity::getState, ExperimentStateEnum.PREPARE.getState())
+                    .update();
+            experimentParticipatorService.lambdaUpdate()
+                    .eq(ExperimentParticipatorEntity::getExperimentInstanceId,experimentInstanceId)
+                    .set(ExperimentParticipatorEntity::getState, ExperimentStateEnum.PREPARE.getState())
+                    .update();
+        }*/
 
         Integer state = experimentInstanceEntity.getState();
         ExperimentStateEnum experimentStateEnum = Arrays.stream(ExperimentStateEnum.values()).filter(e -> e.getState() == state)
