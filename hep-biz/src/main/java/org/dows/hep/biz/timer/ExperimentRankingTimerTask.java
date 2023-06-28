@@ -12,8 +12,12 @@ import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 @RequiredArgsConstructor
 public class ExperimentRankingTimerTask implements Runnable {
 
+    // 计时器
     private final ExperimentTimerBiz experimentTimerBiz;
+    // 实验ID
     private final String experimentInstanceId;
+    // 期数
+    private final Integer period;
     @Override
     public void run() {
 

@@ -70,18 +70,22 @@ public class ExperimentTimerBiz {
                 break;
             }
             next = list.get(i + 1);
+            // 两期之间
             if (ct >= pre.getEndTime() && ct < next.getStartTime()) {
                 ct = next.getStartTime() - ct;
                 countDownResponse.setCountdown(ct);
-                // todo 兜底计算，在两期之间计算上一期数据
+                // todo 兜底计算，在两期之间计算上一期数据,异步
+
+
 
                 break;
-            } else if (ct <= pre.getStartTime()) {
+
+            } else if (ct <= pre.getStartTime()) { // 开始之前
                 countDownResponse.setCountdown(pre.getStartTime() - ct);
                 countDownResponse.setModel(pre.getModel());
                 countDownResponse.setPeriod(pre.getPeriod());
                 break;
-            } else if (ct >= pre.getStartTime()) {
+            } else if (ct >= pre.getStartTime()) { //  开始之后
                 countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
                 countDownResponse.setModel(pre.getModel());
                 countDownResponse.setPeriod(pre.getPeriod());

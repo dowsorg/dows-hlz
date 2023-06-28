@@ -7,7 +7,7 @@ public enum EventName {
     finishEvent("finishHandler"),
     suspendEvent("suspendHandler"),
     allotEvent("allotHandler"),
-    exptInitEvent("exptInitHandler"),
+    experimentInitEvent("experimentInitHandler"),
     exptQuestionnaireAllotEvent("exptQuestionnaireAllotHandler"),
     exptQuestionnaireSubmittedEvent("exptQuestionnaireSubmittedHandler"),
     exptSchemeStartEvent("exptSchemeStartHandler"),

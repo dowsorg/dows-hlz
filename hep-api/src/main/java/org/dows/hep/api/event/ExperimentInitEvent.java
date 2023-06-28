@@ -13,7 +13,7 @@ import java.time.Clock;
  **/
 public class ExperimentInitEvent extends ExperimentEvent implements Serializable {
     @Getter
-    private EventName eventName = EventName.exptInitEvent;
+    private EventName eventName = EventName.experimentInitEvent;
 
     public ExperimentInitEvent(Object source) {
         super(source);
