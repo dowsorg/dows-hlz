@@ -305,7 +305,7 @@ public class ExperimentOrgJudgeBiz {
 
     /**
      * @param
-     * @return;9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999988
+     * @return;
      * @说明: 二级-无报告 获取判断得分
      * @关联表: indicatorJudgeRiskFactor
      * @工时: 2H
@@ -490,5 +490,59 @@ public class ExperimentOrgJudgeBiz {
             snapList.add(snapEntity);
         });
         return operateOrgFuncSnapService.saveBatch(snapList);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 每期计算医疗占比
+     * @关联表: experimentPersonInsurance
+     * @工时: 4H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月28日 上午09:30:34
+     */
+    @DSTransactional
+    public BigDecimal calculatePeriodsFee(ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest) {
+        //1、获取该期数的保险购买记录
+       List<ExperimentPersonInsuranceEntity> insuranceEntityList = experimentPersonInsuranceService.lambdaQuery()
+                .eq(ExperimentPersonInsuranceEntity::getExperimentPersonId,experimentPersonInsuranceRequest.getExperimentPersonId())
+                .eq(ExperimentPersonInsuranceEntity::getExperimentInstanceId,experimentPersonInsuranceRequest.getExperimentInstanceId())
+                .eq(ExperimentPersonInsuranceEntity::getExperimentGroupId,experimentPersonInsuranceRequest.getExperimentGroupId())
+                .eq(ExperimentPersonInsuranceEntity::getPeriods,experimentPersonInsuranceRequest.getPeriods())
+                .eq(ExperimentPersonInsuranceEntity::getDeleted,false)
+                .list();
+       //2、获取保险购买期间的所有消费记录
+        BigDecimal totalPay = new BigDecimal(0);
+        if(insuranceEntityList != null && insuranceEntityList.size() > 0){
+            insuranceEntityList.forEach(insurance -> {
+                Date startTime = insurance.getIndate();
+                Date endTime = insurance.getExpdate();
+                //3、todo 获取这段时间的消费记录(包括医疗支出和挂号)
+                BigDecimal periodsFund = new BigDecimal(1222222.00);
+                totalPay.add(periodsFund.multiply(BigDecimal.valueOf(insurance.getReimburseRatio())).add(insurance.getInsuranceAmount()));
+            });
+        }
+        //3、计算每期医疗占比,todo personFund为用户总金额
+        BigDecimal personFund = new BigDecimal(22222);
+        BigDecimal per = totalPay.divide(personFund);
+        //4、todo 用户总金额扣除这部分费用
+        personFund.subtract(totalPay);
+        return per;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 每期计算支出费用
+     * @关联表: experimentPersonInsurance
+     * @工时: 4H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月28日 上午09:30:34
+     */
+    public BigDecimal calculatePeriodsScore(ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest) {
+        BigDecimal per = new BigDecimal(1).subtract(experimentPersonInsuranceRequest.getPer());
+        return per.multiply(new BigDecimal(100));
     }
 }

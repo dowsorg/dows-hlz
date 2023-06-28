@@ -193,6 +193,30 @@ public class ExperimentOrgJudgeRest {
     }
 
     /**
+     * 每期计算医疗占比
+     * @param
+     * @return
+     */
+    @Operation(summary = "每期计算支出费用")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/calculatePeriodsFee")
+    public BigDecimal calculatePeriodsFee(@RequestBody @Validated ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest)
+    {
+        return experimentOrgJudgeBiz.calculatePeriodsFee(experimentPersonInsuranceRequest);
+    }
+
+    /**
+     * 每期医疗占比得分
+     * @param
+     * @return
+     */
+    @Operation(summary = "每期医疗占比得分")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/calculatePeriodsScore")
+    public BigDecimal calculatePeriodsScore(@RequestBody @Validated ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest)
+    {
+        return experimentOrgJudgeBiz.calculatePeriodsScore(experimentPersonInsuranceRequest);
+    }
+
+    /**
      * 直接判断 判断范围是否满足公式
      * @param
      * @return

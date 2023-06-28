@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -20,6 +21,9 @@ public class ExperimentPersonInsuranceRequest {
 
     @Schema(title = "实验人物ID")
     private String experimentPersonId;
+
+    @Schema(title = "医疗占比")
+    private BigDecimal per;
 
     @Schema(title = "实验实例ID")
     private String experimentInstanceId;
