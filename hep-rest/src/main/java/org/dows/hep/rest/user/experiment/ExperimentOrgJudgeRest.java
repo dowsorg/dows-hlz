@@ -229,6 +229,18 @@ public class ExperimentOrgJudgeRest {
     }
 
     /**
+     * 每期医疗占比得分的平均值
+     * @param
+     * @return
+     */
+    @Operation(summary = "每期医疗占比得分的平均值")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/calculatePeriodsTotalScore")
+    public Map<String,BigDecimal> calculatePeriodsTotalScore(@RequestBody @Validated ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest)
+    {
+        return experimentOrgJudgeBiz.calculatePeriodsTotalScore(experimentPersonInsuranceRequest);
+    }
+
+    /**
      * 直接判断 判断范围是否满足公式
      * @param
      * @return

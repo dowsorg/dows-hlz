@@ -571,7 +571,6 @@ public class ExperimentOrgJudgeBiz {
      */
     public BigDecimal calculatePeriodsGroupScore(ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest) {
         List<ExperimentPersonMedicalResultEntity> resultEntityList = experimentPersonMedicalResultService.lambdaQuery()
-                .eq(ExperimentPersonMedicalResultEntity::getExperimentPersonId,experimentPersonInsuranceRequest.getExperimentPersonId())
                 .eq(ExperimentPersonMedicalResultEntity::getExperimentInstanceId,experimentPersonInsuranceRequest.getExperimentInstanceId())
                 .eq(ExperimentPersonMedicalResultEntity::getExperimentGroupId,experimentPersonInsuranceRequest.getExperimentGroupId())
                 .eq(ExperimentPersonMedicalResultEntity::getPeriods,experimentPersonInsuranceRequest.getPeriods())
@@ -584,5 +583,36 @@ public class ExperimentOrgJudgeBiz {
             });
         }
         return totalScore.divide(new BigDecimal(resultEntityList.size()));
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 每期医疗占比得分的平均值
+     * @关联表: experimentPersonInsurance
+     * @工时: 4H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月28日 上午11:27:34
+     */
+    public Map<String,BigDecimal> calculatePeriodsTotalScore(ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest) {
+        Map<String,BigDecimal> resultMap = new HashMap<>();
+        Map<String, List<ExperimentPersonMedicalResultEntity>> map = experimentPersonMedicalResultService.lambdaQuery()
+                .eq(ExperimentPersonMedicalResultEntity::getExperimentInstanceId,experimentPersonInsuranceRequest.getExperimentInstanceId())
+                .eq(ExperimentPersonMedicalResultEntity::getDeleted,false)
+                .list()
+                .stream().collect(Collectors.groupingBy(ExperimentPersonMedicalResultEntity::getPeriods));
+        for(Map.Entry<String, List<ExperimentPersonMedicalResultEntity>> entry : map.entrySet()){
+            BigDecimal totalScore = new BigDecimal(0);
+            List<ExperimentPersonMedicalResultEntity> resultEntityList = entry.getValue();
+            if(resultEntityList != null && resultEntityList.size() > 0){
+                resultEntityList.forEach(result -> {
+                    totalScore.add(result.getMedicalScore());
+                });
+                BigDecimal avgScore = totalScore.divide(new BigDecimal(resultEntityList.size()));
+                resultMap.put(entry.getKey(),avgScore);
+            }
+        }
+        return resultMap;
     }
 }
