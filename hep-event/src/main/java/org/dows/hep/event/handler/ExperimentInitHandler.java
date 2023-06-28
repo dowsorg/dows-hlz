@@ -18,8 +18,13 @@ import org.dows.hep.biz.tenant.experiment.ExperimentCaseInfoManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentQuestionnaireManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentSchemeManageBiz;
+import org.dows.hep.biz.timer.ExperimentBeginTimerTask;
+import org.dows.hep.biz.timer.ExperimentTaskScheduler;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.service.ExperimentInstanceService;
+import org.dows.hep.service.ExperimentParticipatorService;
+import org.dows.hep.service.ExperimentTimerService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -28,7 +33,7 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class ExptInitHandler extends AbstractEventHandler implements EventHandler<ExperimentGroupSettingRequest> {
+public class ExperimentInitHandler extends AbstractEventHandler implements EventHandler<ExperimentGroupSettingRequest> {
     private final ExperimentCaseInfoManageBiz experimentCaseInfoManageBiz;
     private final ExperimentSchemeManageBiz experimentSchemeManageBiz;
     private final ExperimentQuestionnaireManageBiz experimentQuestionnaireManageBiz;
@@ -38,10 +43,21 @@ public class ExptInitHandler extends AbstractEventHandler implements EventHandle
     // 实验实例
     private final ExperimentInstanceService experimentInstanceService;
 
+    // 实验参与者
+    private final ExperimentParticipatorService experimentParticipatorService;
+    // 实验计时器
+    private final ExperimentTimerService experimentTimerService;
+
+    private final ApplicationEventPublisher applicationEventPublisher;
+
+    private final ExperimentTaskScheduler experimentTaskScheduler;
+
     @Override
     public void exec(ExperimentGroupSettingRequest request) {
         String experimentInstanceId = request.getExperimentInstanceId();
         String caseInstanceId = request.getCaseInstanceId();
+        // 设置实验开始定时器
+        setExperimentBeginTimerTask(request);
         // 初始化实验 `设置小组` 个数
         createGroupEvent(request);
         // 初始化实验 `复制机构和人物`
@@ -52,6 +68,23 @@ public class ExptInitHandler extends AbstractEventHandler implements EventHandle
         experimentSchemeManageBiz.preHandleExperimentScheme(experimentInstanceId, caseInstanceId);
         // 初始化实验 `知识答题` 数据
         experimentQuestionnaireManageBiz.preHandleExperimentQuestionnaire(experimentInstanceId, caseInstanceId);
+    }
+
+    /**
+     * 实验开始定时器
+     *
+     * @param experimentGroupSettingRequest
+     */
+    public void setExperimentBeginTimerTask(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
+        ExperimentBeginTimerTask experimentBeginTimerTask = new ExperimentBeginTimerTask(
+                experimentInstanceService, experimentParticipatorService, experimentTimerService, applicationEventPublisher,
+                experimentGroupSettingRequest.getExperimentInstanceId());
+
+        /**
+         * 设定定时任务
+         * todo 设定一个TimeTask,通过timer到时间执行一次，考虑重启情况，写数据库，针对出现的情况，更具时间重新schedule,先用事件处理，后期优化
+         */
+        experimentTaskScheduler.schedule(experimentBeginTimerTask, experimentGroupSettingRequest.getStartTime());
     }
 
     /**
@@ -70,7 +103,7 @@ public class ExptInitHandler extends AbstractEventHandler implements EventHandle
     }
 
     /**
-     *
+     * copy 实验人物计事件
      */
     public void copyExperimentPersonAndOrgEvent(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
         // 复制人物与机构到实验中

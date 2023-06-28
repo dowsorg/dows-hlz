@@ -34,16 +34,12 @@ public class ExperimentBeginTimerTask implements Runnable {
     private final ExperimentInstanceService experimentInstanceService;
     // 实验参与者
     private final ExperimentParticipatorService experimentParticipatorService;
-    // 实验设置
-    private final ExperimentSettingService experimentSettingService;
     // 实验计时器
     private final ExperimentTimerService experimentTimerService;
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    private final ExperimentGroupSettingRequest experimentGroupSettingRequest;
-
-
+    private final String experimentInstanceId;
 
     @Override
     public void run() {
@@ -52,6 +48,15 @@ public class ExperimentBeginTimerTask implements Runnable {
          * 实验开始时更新实验相关（ExperimentInstance,ExperimentTimer,ExperimentParticitor）状态为准备中
          * 触发实验暂停事件，并根据实验模式确定新增ExperimentTimer的暂停计时器的暂停开始时间
          */
+        ExperimentInstanceEntity experimentInstanceEntity = experimentInstanceService.lambdaQuery()
+                .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
+                //.eq(ExperimentInstanceEntity::getAppId, experimentGroupSettingRequest.getAppId())
+                //.ge(ExperimentInstanceEntity::getStartTime, LocalDateTime.now())
+                .oneOpt()
+                .orElse(null);
+        if (experimentInstanceEntity == null) {
+            throw new ExperimentException("不存在该实验!");
+        }
 
         //1、判断实验是否到时间，到时间则更新状态
         List<ExperimentContext> instanceEntities = ExperimentContext.getMap();
@@ -75,28 +80,20 @@ public class ExperimentBeginTimerTask implements Runnable {
             }
         });
 
-
-        ExperimentInstanceEntity experimentInstanceEntity = experimentInstanceService.lambdaQuery()
-                .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentGroupSettingRequest.getExperimentInstanceId())
-                .eq(ExperimentInstanceEntity::getAppId, experimentGroupSettingRequest.getAppId())
-                //.ge(ExperimentInstanceEntity::getStartTime, LocalDateTime.now())
-                .oneOpt()
+        /**
+         * 当前实验状态为准备中时则发布实验暂停事件
+         */
+        ExperimentStateEnum experimentStateEnum = Arrays.stream(ExperimentStateEnum.values())
+                .filter(e -> e.getState() == experimentInstanceEntity.getState())
+                .findFirst()
                 .orElse(null);
-        if (experimentInstanceEntity == null) {
-            throw new ExperimentException("不存在的该实验!");
-        }
-
-        Integer state = experimentInstanceEntity.getState();
-        ExperimentStateEnum experimentStateEnum = Arrays.stream(ExperimentStateEnum.values()).filter(e -> e.getState() == state)
-                .findFirst().orElse(null);
-
         if (experimentStateEnum == ExperimentStateEnum.PREPARE) {
             ExperimentRestartRequest experimentRestartRequest = new ExperimentRestartRequest();
-            experimentRestartRequest.setExperimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId());
+            experimentRestartRequest.setExperimentInstanceId(experimentInstanceId);
             experimentRestartRequest.setPaused(true);
             //experimentRestartRequest.setPeriods(experimentInstanceEntity);
             experimentRestartRequest.setModel(experimentInstanceEntity.getModel());
-            experimentRestartRequest.setAppId(experimentGroupSettingRequest.getAppId());
+            //experimentRestartRequest.setAppId(experimentGroupSettingRequest.getAppId());
             experimentRestartRequest.setCurrentTime(new Date());
             applicationEventPublisher.publishEvent(new SuspendEvent(experimentRestartRequest));
         }

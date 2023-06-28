@@ -12,6 +12,7 @@ import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.entity.ExperimentPersonEntity;
 import org.dows.hep.service.ExperimentPersonService;
 import org.dows.user.api.api.UserInstanceApi;
+import org.dows.user.api.response.UserInstanceResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -138,7 +139,10 @@ public class ExperimentOrgBiz{
             person.setId(entity.getId().toString());
             // 1、获取用户姓名
             String userId = accountUserApi.getUserByAccountId(entity.getAccountId()).getUserId();
-            String userName = userInstanceApi.getUserInstanceByUserId(userId).getName();
+            UserInstanceResponse instanceResponse = userInstanceApi.getUserInstanceByUserId(userId);
+            String userName = instanceResponse.getName();
+            // 2、获取用户头像
+            person.setAvatar(instanceResponse.getAvatar());
             person.setName(userName);
             responseList.add(person);
         }

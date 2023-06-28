@@ -17,7 +17,7 @@ import java.util.Date;
 
 /**
  * @author jx
- * @date 2023/6/27 16:59
+ * @date 2023/6/28 11:02
  */
 @Data
 @ToString
@@ -26,16 +26,15 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "ExperimentPersonInsurance", title = "保险购买记录表")
-@TableName("experiment_person_insurance")
-public class ExperimentPersonInsuranceEntity implements CrudEntity {
-
+@Schema(name = "ExperimentPersonMedicalResult", title = "实验人物医疗花费记录")
+@TableName("experiment_person_medical_result")
+public class ExperimentPersonMedicalResultEntity implements CrudEntity {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库ID")
     private Long id;
 
-    @Schema(title = "实验人物保险ID")
-    private String experimentPersonInsuranceId;
+    @Schema(title = "实验人物医疗结果ID")
+    private String experimentPersonMedicalResultId;
 
     @Schema(title = "应用ID")
     private String appId;
@@ -49,23 +48,14 @@ public class ExperimentPersonInsuranceEntity implements CrudEntity {
     @Schema(title = "实验小组ID")
     private String experimentGroupId;
 
-    @Schema(title = "实验期数")
+    @Schema(title = "期数")
     private String periods;
 
-    @Schema(title = "购买保险机构ID")
-    private String operateOrgId;
+    @Schema(title = "医疗占比")
+    private BigDecimal medicalPer;
 
-    @Schema(title = "保险金额")
-    private BigDecimal insuranceAmount;
-
-    @Schema(title = "报销比例")
-    private Double reimburseRatio;
-
-    @Schema(title = "保险生效时间")
-    private Date indate;
-
-    @Schema(title = "保险失效时间")
-    private Date expdate;
+    @Schema(title = "医疗得分")
+    private BigDecimal medicalScore;
 
     @JsonIgnore
     @TableLogic
