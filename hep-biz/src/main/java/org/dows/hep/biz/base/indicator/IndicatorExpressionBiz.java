@@ -313,10 +313,10 @@ public class IndicatorExpressionBiz{
           indicatorExpressionItemResponseRs1.setSeq(-1);
           finalIndicatorExpressionItemResponseRsList.add(indicatorExpressionItemResponseRs1);
         } else if (indicatorExpressionItemResponseRsList.size() == 1) {
-          IndicatorExpressionItemResponseRs indicatorExpressionItemResponseRs0 = new IndicatorExpressionItemResponseRs();
-          indicatorExpressionItemResponseRs0.setSeq(-1);
-          finalIndicatorExpressionItemResponseRsList.add(indicatorExpressionItemResponseRs0);
           finalIndicatorExpressionItemResponseRsList.addAll(indicatorExpressionItemResponseRsList);
+          IndicatorExpressionItemResponseRs indicatorExpressionItemResponseRs0 = new IndicatorExpressionItemResponseRs();
+          indicatorExpressionItemResponseRs0.setSeq(Integer.MAX_VALUE);
+          finalIndicatorExpressionItemResponseRsList.add(indicatorExpressionItemResponseRs0);
         } else {
           finalIndicatorExpressionItemResponseRsList.addAll(indicatorExpressionItemResponseRsList);
         }
