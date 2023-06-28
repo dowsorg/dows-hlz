@@ -313,10 +313,10 @@ public class IndicatorExpressionBiz{
           indicatorExpressionItemResponseRs1.setSeq(-1);
           finalIndicatorExpressionItemResponseRsList.add(indicatorExpressionItemResponseRs1);
         } else if (indicatorExpressionItemResponseRsList.size() == 1) {
-          IndicatorExpressionItemResponseRs indicatorExpressionItemResponseRs0 = new IndicatorExpressionItemResponseRs();
-          indicatorExpressionItemResponseRs0.setSeq(-1);
-          finalIndicatorExpressionItemResponseRsList.add(indicatorExpressionItemResponseRs0);
           finalIndicatorExpressionItemResponseRsList.addAll(indicatorExpressionItemResponseRsList);
+          IndicatorExpressionItemResponseRs indicatorExpressionItemResponseRs0 = new IndicatorExpressionItemResponseRs();
+          indicatorExpressionItemResponseRs0.setSeq(Integer.MAX_VALUE);
+          finalIndicatorExpressionItemResponseRsList.add(indicatorExpressionItemResponseRs0);
         } else {
           finalIndicatorExpressionItemResponseRsList.addAll(indicatorExpressionItemResponseRsList);
         }
@@ -1625,6 +1625,21 @@ public class IndicatorExpressionBiz{
         .stream()
         .map(IndicatorExpressionItemBiz::indicatorExpressionItem2ResponseRs)
         .collect(Collectors.toList());
+    if (indicatorExpressionItemResponseRsList.size() == 0) {
+      IndicatorExpressionItemResponseRs indicatorExpressionItemResponseRs0 = new IndicatorExpressionItemResponseRs();
+      indicatorExpressionItemResponseRs0.setSeq(-2);
+      indicatorExpressionItemResponseRsList.add(indicatorExpressionItemResponseRs0);
+      IndicatorExpressionItemResponseRs indicatorExpressionItemResponseRs1 = new IndicatorExpressionItemResponseRs();
+      indicatorExpressionItemResponseRs1.setSeq(-1);
+      indicatorExpressionItemResponseRsList.add(indicatorExpressionItemResponseRs1);
+    } else if (indicatorExpressionItemResponseRsList.size() == 1) {
+      IndicatorExpressionItemResponseRs indicatorExpressionItemResponseRs0 = new IndicatorExpressionItemResponseRs();
+      indicatorExpressionItemResponseRs0.setSeq(Integer.MAX_VALUE);
+      indicatorExpressionItemResponseRsList.add(indicatorExpressionItemResponseRs0);
+    } else {
+      // do nothing
+    }
+    /* runsix: */
     String minIndicatorExpressionItemId = indicatorExpressionEntity.getMinIndicatorExpressionItemId();
     String maxIndicatorExpressionItemId = indicatorExpressionEntity.getMaxIndicatorExpressionItemId();
     Set<String> maxAndMinIndicatorExpressionItemIdSet = new HashSet<>();
