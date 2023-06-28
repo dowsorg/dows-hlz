@@ -74,12 +74,18 @@ public class ExperimentTimerBiz {
             if (ct >= pre.getEndTime() && ct < next.getStartTime()) {
                 ct = next.getStartTime() - ct;
                 countDownResponse.setCountdown(ct);
+                // todo 兜底计算，在两期之间计算上一期数据
+
                 break;
             } else if (ct <= pre.getStartTime()) {
                 countDownResponse.setCountdown(pre.getStartTime() - ct);
+                countDownResponse.setModel(pre.getModel());
+                countDownResponse.setPeriod(pre.getPeriod());
                 break;
-            } else if(ct >= pre.getStartTime()){
+            } else if (ct >= pre.getStartTime()) {
                 countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
+                countDownResponse.setModel(pre.getModel());
+                countDownResponse.setPeriod(pre.getPeriod());
                 break;
             }
         }

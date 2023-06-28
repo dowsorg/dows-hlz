@@ -54,7 +54,7 @@ public class SuspendHandler extends AbstractEventHandler implements EventHandler
                 updExperimentTimerEntity.setExperimentInstanceId(experimentTimerEntity.getExperimentInstanceId());
                 updExperimentTimerEntity.setPeriodInterval(experimentTimerEntity.getPeriodInterval());
                 updExperimentTimerEntity.setPeriod(experimentTimerEntity.getPeriod());
-                updExperimentTimerEntity.setAppId(experimentTimerEntity.getAppId());
+                //updExperimentTimerEntity.setAppId(experimentTimerEntity.getAppId());
                 updExperimentTimerEntity.setModel(experimentTimerEntity.getModel());
                 updExperimentTimerEntity.setState(experimentTimerEntity.getState());
                 updExperimentTimerEntity.setStartTime(experimentTimerEntity.getStartTime());
