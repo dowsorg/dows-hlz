@@ -34,6 +34,27 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
 
   private final ExperimentIndicatorViewMonitorFollowupReportRsService experimentIndicatorViewMonitorFollowupReportRsService;
 
+  public static ExperimentIndicatorViewMonitorFollowupPlanRsResponse experimentIndicatorViewMonitorFollowupPlanRs2Response(ExperimentIndicatorViewMonitorFollowupPlanRsEntity experimentIndicatorViewMonitorFollowupPlanRsEntity) {
+    if (Objects.isNull(experimentIndicatorViewMonitorFollowupPlanRsEntity)) {
+      return null;
+    };
+    return ExperimentIndicatorViewMonitorFollowupPlanRsResponse
+        .builder()
+        .experimentIndicatorViewMonitorFollowupPlanId(experimentIndicatorViewMonitorFollowupPlanRsEntity.getExperimentIndicatorViewMonitorFollowupPlanId())
+        .experimentId(experimentIndicatorViewMonitorFollowupPlanRsEntity.getExperimentId())
+        .caseId(experimentIndicatorViewMonitorFollowupPlanRsEntity.getCaseId())
+        .appId(experimentIndicatorViewMonitorFollowupPlanRsEntity.getAppId())
+        .period(experimentIndicatorViewMonitorFollowupPlanRsEntity.getPeriod())
+        .indicatorFuncId(experimentIndicatorViewMonitorFollowupPlanRsEntity.getIndicatorFuncId())
+        .experimentPersonId(experimentIndicatorViewMonitorFollowupPlanRsEntity.getExperimentPersonId())
+        .operateFlowId(experimentIndicatorViewMonitorFollowupPlanRsEntity.getOperateFlowId())
+        .intervalDay(experimentIndicatorViewMonitorFollowupPlanRsEntity.getIntervalDay())
+        .experimentIndicatorViewMonitorFollowupPlanId(experimentIndicatorViewMonitorFollowupPlanRsEntity.getExperimentIndicatorViewMonitorFollowupId())
+        .deleted(experimentIndicatorViewMonitorFollowupPlanRsEntity.getDeleted())
+        .dt(experimentIndicatorViewMonitorFollowupPlanRsEntity.getDt())
+        .build();
+  }
+
   @Transactional(rollbackFor = Exception.class)
   public void monitorFollowupCheck(ExperimentMonitorFollowupCheckRequestRs experimentMonitorFollowupCheckRequestRs) {
     ExperimentIndicatorViewMonitorFollowupReportRsEntity experimentIndicatorViewMonitorFollowupReportRsEntity = null;
@@ -150,6 +171,7 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
         .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getPeriod, period)
         .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getExperimentPersonId, experimentPersonId)
         .one();
+    experimentIndicatorViewMonitorFollowupPlanRsResponse = experimentIndicatorViewMonitorFollowupPlanRs2Response(experimentIndicatorViewMonitorFollowupPlanRsEntity);
     Map<String, ExperimentIndicatorInstanceRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap = new HashMap<>();
     Map<String, String> kExperimentIndicatorInstanceIdVValMap = new HashMap<>();
     Map<String, String> kInstanceIdVExperimentIndicatorInstanceIdMap = new HashMap<>();
