@@ -56,6 +56,7 @@ public class RsCopyBiz {
   private final IndicatorViewBaseInfoSingleService indicatorViewBaseInfoSingleService;
   private final ExperimentIndicatorViewBaseInfoSingleRsService experimentIndicatorViewBaseInfoSingleRsService;
   private final IndicatorViewMonitorFollowupService indicatorViewMonitorFollowupService;
+  private final ExperimentIndicatorViewMonitorFollowupRsService experimentIndicatorViewMonitorFollowupRsService;
   private final IndicatorViewMonitorFollowupFollowupContentService indicatorViewMonitorFollowupFollowupContentService;
   private final IndicatorViewMonitorFollowupContentRefService indicatorViewMonitorFollowupContentRefService;
   private final IndicatorViewPhysicalExamService indicatorViewPhysicalExamService;
@@ -87,6 +88,8 @@ public class RsCopyBiz {
   @Transactional(rollbackFor = Exception.class)
   public void rsCopyIndicatorFunc(RsCopyExperimentRequestRs rsCopyExperimentRequestRs) {
     List<ExperimentOrgModuleRsEntity> experimentOrgModuleRsEntityList = new ArrayList<>();
+    List<IndicatorViewMonitorFollowupEntity> indicatorViewMonitorFollowupEntityList = new ArrayList<>();
+    List<ExperimentIndicatorViewMonitorFollowupRsEntity> experimentIndicatorViewMonitorFollowupRsEntityList = new ArrayList<>();
     List<IndicatorViewPhysicalExamEntity> indicatorViewPhysicalExamEntityList = new ArrayList<>();
     List<ExperimentIndicatorViewPhysicalExamRsEntity> experimentIndicatorViewPhysicalExamRsEntityList = new ArrayList<>();
     List<IndicatorViewSupportExamEntity> indicatorViewSupportExamEntityList = new ArrayList<>();
@@ -431,8 +434,6 @@ public class RsCopyBiz {
           Integer seq = indicatorViewBaseInfoDescrEntity.getSeq();
           String indicatorInstanceIdArray = null;
           List<String> indicatorInstanceIdList = new ArrayList<>();
-          String indicatorInstanceNameArray = null;
-          List<String> indicatorInstanceNameList = new ArrayList<>();
           List<IndicatorViewBaseInfoDescrRefEntity> indicatorViewBaseInfoDescrRefEntityList = kBaseInfoDescrIdVBaseInfoDescrRefListMap.get(indicatorViewBaseInfoDescId);
           if (Objects.nonNull(indicatorViewBaseInfoDescrRefEntityList) && !indicatorViewBaseInfoDescrRefEntityList.isEmpty()) {
             indicatorViewBaseInfoDescrRefEntityList.forEach(indicatorViewBaseInfoDescrRefEntity -> {
@@ -440,15 +441,11 @@ public class RsCopyBiz {
               IndicatorInstanceEntity indicatorInstanceEntity = kIndicatorInstanceIdVIndicatorInstanceEntityMap.get(indicatorInstanceId);
               if (Objects.nonNull(indicatorInstanceEntity)) {
                 indicatorInstanceIdList.add(indicatorInstanceId);
-                indicatorInstanceNameList.add(indicatorInstanceEntity.getIndicatorName());
               }
             });
           }
           if (!indicatorInstanceIdList.isEmpty()) {
             indicatorInstanceIdArray = String.join(EnumString.COMMA.getStr(), indicatorInstanceIdList);
-          }
-          if (!indicatorInstanceNameList.isEmpty()) {
-            indicatorInstanceNameArray = String.join(EnumString.COMMA.getStr(), indicatorInstanceNameList);
           }
           ExperimentIndicatorViewBaseInfoDescRsEntity experimentIndicatorViewBaseInfoDescRsEntity = ExperimentIndicatorViewBaseInfoDescRsEntity
               .builder()
@@ -477,8 +474,6 @@ public class RsCopyBiz {
           List<String> ivbimContentNameList = new ArrayList<>();
           String ivbimContentRefIndicatorInstanceIdArray = null;
           List<String> ivbimContentRefIndicatorInstanceIdList = new ArrayList<>();
-          String ivbimContentRefIndicatorInstanceNameArray = null;
-          List<String> ivbimContentRefIndicatorInstanceNameList = new ArrayList<>();
           List<IndicatorViewBaseInfoMonitorContentEntity> indicatorViewBaseInfoMonitorContentEntityList = kIVBIMIdVIVBIMContentEntityListMap.get(indicatorViewBaseInfoMonitorId);
           if (Objects.nonNull(indicatorViewBaseInfoMonitorContentEntityList) && !indicatorViewBaseInfoMonitorContentEntityList.isEmpty()) {
             indicatorViewBaseInfoMonitorContentEntityList.forEach(indicatorViewBaseInfoMonitorContentEntity -> {
@@ -487,8 +482,6 @@ public class RsCopyBiz {
               String indicatorViewBaseInfoMonitorContentId = indicatorViewBaseInfoMonitorContentEntity.getIndicatorViewBaseInfoMonitorContentId();
               List<IndicatorViewBaseInfoMonitorContentRefEntity> indicatorViewBaseInfoMonitorContentRefEntityList = kIVBIMContentIdVIVBIMContentRefEntityListMap.get(indicatorViewBaseInfoMonitorContentId);
               if (Objects.nonNull(indicatorViewBaseInfoMonitorContentRefEntityList) && !indicatorViewBaseInfoMonitorContentRefEntityList.isEmpty()) {
-                String singelIvbimContentRefIndicatorInstanceNameArray = null;
-                List<String> singleIvbimContentRefIndicatorInstanceNameList = new ArrayList<>();
                 String singleIvbimContentRefIndicatorInstanceIdArray = null;
                 List<String> signleIvbimContentRefIndicatorInstanceIdList = new ArrayList<>();
                 indicatorViewBaseInfoMonitorContentRefEntityList.forEach(indicatorViewBaseInfoMonitorContentRefEntity -> {
@@ -496,19 +489,15 @@ public class RsCopyBiz {
                   IndicatorInstanceEntity indicatorInstanceEntity = kIndicatorInstanceIdVIndicatorInstanceEntityMap.get(indicatorInstanceId);
                   if (Objects.nonNull(indicatorInstanceEntity)) {
                     signleIvbimContentRefIndicatorInstanceIdList.add(indicatorInstanceId);
-                    singleIvbimContentRefIndicatorInstanceNameList.add(indicatorInstanceEntity.getIndicatorName());
                   }
                 });
                 singleIvbimContentRefIndicatorInstanceIdArray = String.join(EnumString.COMMA.getStr(), signleIvbimContentRefIndicatorInstanceIdList);
                 ivbimContentRefIndicatorInstanceIdList.add(singleIvbimContentRefIndicatorInstanceIdArray);
-                singelIvbimContentRefIndicatorInstanceNameArray = String.join(EnumString.COMMA.getStr(), singleIvbimContentRefIndicatorInstanceNameList);
-                ivbimContentRefIndicatorInstanceNameList.add(singelIvbimContentRefIndicatorInstanceNameArray);
               }
 
             });
             ivbimContentNameArray = String.join(EnumString.COMMA.getStr(), ivbimContentNameList);
             ivbimContentRefIndicatorInstanceIdArray = String.join(EnumString.JIN.getStr(), ivbimContentRefIndicatorInstanceIdList);
-            ivbimContentRefIndicatorInstanceNameArray = String.join(EnumString.JIN.getStr(), ivbimContentRefIndicatorInstanceNameList);
 
           }
           ExperimentIndicatorViewBaseInfoMonitorRsEntity experimentIndicatorViewBaseInfoMonitorRsEntity = ExperimentIndicatorViewBaseInfoMonitorRsEntity
@@ -554,8 +543,130 @@ public class RsCopyBiz {
       /* runsix:查看指标-基本信息-单一指标表 */
     });
     /* runsix:查看指标-基本信息 */
-    /* runsix:TODO 监测随访 暂时使用姜霞的 */
-    /* runsix:TODO 监测随访 暂时使用姜霞的 */
+    /* runsix:查看指标-监测随访 */
+    Map<String, String> kIndicatorFuncIdVMFExperimentIndicatorFuncIdMap = new HashMap<>();
+    Map<String, IndicatorViewMonitorFollowupEntity> kIndicatorViewMonitorFollowupIdVIndicatorViewMonitorFollowupEntityMap = new HashMap<>();
+    Set<String> indicatorViewMonitorFollowupIdSet = new HashSet<>();
+    if (!funcIndicatorViewMonitorFollowupIdSet.isEmpty()) {
+      indicatorViewMonitorFollowupService.lambdaQuery()
+          .eq(IndicatorViewMonitorFollowupEntity::getAppId, appId)
+          .in(IndicatorViewMonitorFollowupEntity::getIndicatorFuncId, funcIndicatorViewMonitorFollowupIdSet)
+          .list()
+          .forEach(indicatorViewMonitorFollowupEntity -> {
+            indicatorViewMonitorFollowupIdSet.add(indicatorViewMonitorFollowupEntity.getIndicatorViewMonitorFollowupId());
+            indicatorViewMonitorFollowupEntityList.add(indicatorViewMonitorFollowupEntity);
+            kIndicatorViewMonitorFollowupIdVIndicatorViewMonitorFollowupEntityMap.put(indicatorViewMonitorFollowupEntity.getIndicatorViewMonitorFollowupId(), indicatorViewMonitorFollowupEntity);
+            String indicatorFuncId = indicatorViewMonitorFollowupEntity.getIndicatorFuncId();
+            String mfExperimentIndicatorFuncId = kIndicatorFuncIdVMFExperimentIndicatorFuncIdMap.get(indicatorFuncId);
+            if (StringUtils.isBlank(mfExperimentIndicatorFuncId)) {
+              kIndicatorFuncIdVMFExperimentIndicatorFuncIdMap.put(indicatorFuncId, idGenerator.nextIdStr());
+            }
+          });
+    }
+    Map<String, List<IndicatorViewMonitorFollowupFollowupContentEntity>> kIndicatorViewMonitorFollowupIdVIndicatorViewMonitorFollowupFollowupContentEntityListMap = new HashMap<>();
+    Map<String, IndicatorViewMonitorFollowupFollowupContentEntity> kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupFollowupContentEntityMap = new HashMap<>();
+    Set<String> indicatorViewMonitorFollowupFollowupContentIdSet = new HashSet<>();
+    if (!indicatorViewMonitorFollowupIdSet.isEmpty()) {
+      indicatorViewMonitorFollowupFollowupContentService.lambdaQuery()
+          .eq(IndicatorViewMonitorFollowupFollowupContentEntity::getAppId, appId)
+          .in(IndicatorViewMonitorFollowupFollowupContentEntity::getIndicatorViewMonitorFollowupId, indicatorViewMonitorFollowupIdSet)
+          .list()
+          .forEach(indicatorViewMonitorFollowupFollowupContentEntity -> {
+            String indicatorViewMonitorFollowupId = indicatorViewMonitorFollowupFollowupContentEntity.getIndicatorViewMonitorFollowupId();
+            String indicatorViewMonitorFollowupFollowupContentId = indicatorViewMonitorFollowupFollowupContentEntity.getIndicatorViewMonitorFollowupFollowupContentId();
+            indicatorViewMonitorFollowupFollowupContentIdSet.add(indicatorViewMonitorFollowupFollowupContentId);
+            List<IndicatorViewMonitorFollowupFollowupContentEntity> indicatorViewMonitorFollowupFollowupContentEntityList = kIndicatorViewMonitorFollowupIdVIndicatorViewMonitorFollowupFollowupContentEntityListMap.get(indicatorViewMonitorFollowupId);
+            if (Objects.isNull(indicatorViewMonitorFollowupFollowupContentEntityList)) {
+              indicatorViewMonitorFollowupFollowupContentEntityList = new ArrayList<>();
+            }
+            indicatorViewMonitorFollowupFollowupContentEntityList.add(indicatorViewMonitorFollowupFollowupContentEntity);
+            kIndicatorViewMonitorFollowupIdVIndicatorViewMonitorFollowupFollowupContentEntityListMap.put(indicatorViewMonitorFollowupId, indicatorViewMonitorFollowupFollowupContentEntityList);
+            kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupFollowupContentEntityMap.put(indicatorViewMonitorFollowupFollowupContentId, indicatorViewMonitorFollowupFollowupContentEntity);
+          });
+      /* runsix:sort */
+      kIndicatorViewMonitorFollowupIdVIndicatorViewMonitorFollowupFollowupContentEntityListMap.forEach((indicatorViewMonitorFollowupId, indicatorViewMonitorFollowupFollowupContentEntityList) -> {
+        indicatorViewMonitorFollowupFollowupContentEntityList.sort(Comparator.comparingInt(IndicatorViewMonitorFollowupFollowupContentEntity::getSeq));
+      });
+    }
+    Map<String, IndicatorViewMonitorFollowupContentRefEntity> kIndicatorViewMonitorFollowupContentRefIdVIndicatorViewMonitorFollowupContentRefEntityMap = new HashMap<>();
+    Map<String, List<IndicatorViewMonitorFollowupContentRefEntity>> kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupContentRefEntityListMap = new HashMap<>();
+    if (!indicatorViewMonitorFollowupFollowupContentIdSet.isEmpty()) {
+      indicatorViewMonitorFollowupContentRefService.lambdaQuery()
+          .eq(IndicatorViewMonitorFollowupContentRefEntity::getAppId, appId)
+          .in(IndicatorViewMonitorFollowupContentRefEntity::getIndicatorViewMonitorFollowupFollowupContentId, indicatorViewMonitorFollowupFollowupContentIdSet)
+          .list()
+          .forEach(indicatorViewMonitorFollowupContentRefEntity -> {
+            String indicatorViewMonitorFollowupContentRefId = indicatorViewMonitorFollowupContentRefEntity.getIndicatorViewMonitorFollowupContentRefId();
+            String indicatorViewMonitorFollowupFollowupContentId = indicatorViewMonitorFollowupContentRefEntity.getIndicatorViewMonitorFollowupFollowupContentId();
+            kIndicatorViewMonitorFollowupContentRefIdVIndicatorViewMonitorFollowupContentRefEntityMap.put(indicatorViewMonitorFollowupContentRefId, indicatorViewMonitorFollowupContentRefEntity);
+            List<IndicatorViewMonitorFollowupContentRefEntity> indicatorViewMonitorFollowupContentRefEntityList = kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupContentRefEntityListMap.get(indicatorViewMonitorFollowupFollowupContentId);
+            if (Objects.isNull(indicatorViewMonitorFollowupContentRefEntityList)) {
+              indicatorViewMonitorFollowupContentRefEntityList = new ArrayList<>();
+            }
+            indicatorViewMonitorFollowupContentRefEntityList.add(indicatorViewMonitorFollowupContentRefEntity);
+            kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupContentRefEntityListMap.put(indicatorViewMonitorFollowupFollowupContentId, indicatorViewMonitorFollowupContentRefEntityList);
+          });
+    }
+    indicatorViewMonitorFollowupEntityList.forEach(indicatorViewMonitorFollowupEntity -> {
+      String experimentIndicatorViewMonitorFollowupId = idGenerator.nextIdStr();
+      String indicatorViewMonitorFollowupId = indicatorViewMonitorFollowupEntity.getIndicatorViewMonitorFollowupId();
+      String indicatorFuncId = indicatorViewMonitorFollowupEntity.getIndicatorFuncId();
+      String name = indicatorViewMonitorFollowupEntity.getName();
+      String mfExperimentIndicatorFuncId = kIndicatorFuncIdVMFExperimentIndicatorFuncIdMap.get(indicatorFuncId);
+      String indicatorCategoryId = null;
+      String indicatorCategoryName = null;
+      String ivmfContentNameArray = null;
+      String ivmfContentRefIndicatorInstanceIdArray = null;
+      IndicatorCategoryEntity indicatorCategoryEntity = kIndicatorCategoryIdVIndicatorCategoryEntityMap.get(indicatorViewMonitorFollowupEntity.getIndicatorCategoryId());
+      if (Objects.nonNull(indicatorCategoryEntity)) {
+        indicatorCategoryId = indicatorCategoryEntity.getIndicatorCategoryId();
+        indicatorCategoryName = indicatorCategoryEntity.getCategoryName();
+      }
+      String ivbimContentNameArray = null;
+      List<String> ivbimContentNameList = new ArrayList<>();
+      String ivbimContentRefIndicatorInstanceIdArray = null;
+      List<String> ivbimContentRefIndicatorInstanceIdList = new ArrayList<>();
+      List<IndicatorViewMonitorFollowupFollowupContentEntity> indicatorViewMonitorFollowupFollowupContentEntityList = kIndicatorViewMonitorFollowupIdVIndicatorViewMonitorFollowupFollowupContentEntityListMap.get(indicatorViewMonitorFollowupId);
+      if (Objects.nonNull(indicatorViewMonitorFollowupFollowupContentEntityList) && !indicatorViewMonitorFollowupFollowupContentEntityList.isEmpty()) {
+        indicatorViewMonitorFollowupFollowupContentEntityList.forEach(indicatorViewMonitorFollowupFollowupContentEntity -> {
+          String indicatorViewMonitorFollowupFollowupContentId = indicatorViewMonitorFollowupFollowupContentEntity.getIndicatorViewMonitorFollowupFollowupContentId();
+          String name1 = indicatorViewMonitorFollowupFollowupContentEntity.getName();
+          ivbimContentNameList.add(name1);
+          List<IndicatorViewMonitorFollowupContentRefEntity> indicatorViewMonitorFollowupContentRefEntityList = kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupContentRefEntityListMap.get(indicatorViewMonitorFollowupFollowupContentId);
+          if (Objects.nonNull(indicatorViewMonitorFollowupContentRefEntityList) && !indicatorViewMonitorFollowupContentRefEntityList.isEmpty()) {
+            String singleIvbimContentRefIndicatorInstanceIdArray = null;
+            List<String> signleIvbimContentRefIndicatorInstanceIdList = new ArrayList<>();
+            indicatorViewMonitorFollowupContentRefEntityList.forEach(indicatorViewMonitorFollowupContentRefEntity -> {
+              String indicatorInstanceId = indicatorViewMonitorFollowupContentRefEntity.getIndicatorInstanceId();
+              IndicatorInstanceEntity indicatorInstanceEntity = kIndicatorInstanceIdVIndicatorInstanceEntityMap.get(indicatorInstanceId);
+              if (Objects.nonNull(indicatorInstanceEntity)) {
+                signleIvbimContentRefIndicatorInstanceIdList.add(indicatorInstanceId);
+              }
+            });
+            singleIvbimContentRefIndicatorInstanceIdArray = String.join(EnumString.COMMA.getStr(), signleIvbimContentRefIndicatorInstanceIdList);
+            ivbimContentRefIndicatorInstanceIdList.add(singleIvbimContentRefIndicatorInstanceIdArray);
+          }
+        });
+        ivbimContentNameArray = String.join(EnumString.COMMA.getStr(), ivbimContentNameList);
+        ivbimContentRefIndicatorInstanceIdArray = String.join(EnumString.JIN.getStr(), ivbimContentRefIndicatorInstanceIdList);
+      }
+      ExperimentIndicatorViewMonitorFollowupRsEntity experimentIndicatorViewMonitorFollowupRsEntity = ExperimentIndicatorViewMonitorFollowupRsEntity
+          .builder()
+          .experimentIndicatorViewMonitorFollowupId(experimentIndicatorViewMonitorFollowupId)
+          .indicatorViewMonitorFollowupId(indicatorViewMonitorFollowupEntity.getIndicatorViewMonitorFollowupId())
+          .experimentId(experimentInstanceId)
+          .caseId(caseInstanceId)
+          .appId(appId)
+          .indicatorFuncId(mfExperimentIndicatorFuncId)
+          .name(name)
+          .indicatorCategoryId(indicatorCategoryId)
+          .indicatorCategoryName(indicatorCategoryName)
+          .ivmfContentNameArray(ivbimContentNameArray)
+          .ivmfContentRefIndicatorInstanceIdArray(ivbimContentRefIndicatorInstanceIdArray)
+          .build();
+      experimentIndicatorViewMonitorFollowupRsEntityList.add(experimentIndicatorViewMonitorFollowupRsEntity);
+    });
+    /* runsix:查看指标-监测随访 */
     /* runsix:查看指标-体格检查-二级类-无报告 */
     Map<String, String> kIndicatorFuncIdVPEExperimentIndicatorFuncIdMap = new HashMap<>();
     if (!funcIndicatorViewPhysicalExamIdSet.isEmpty()) {
@@ -1206,6 +1317,7 @@ public class RsCopyBiz {
     experimentIndicatorViewBaseInfoDescrRsService.saveOrUpdateBatch(experimentIndicatorViewBaseInfoDescRsEntityList);
     experimentIndicatorViewBaseInfoMonitorRsService.saveOrUpdateBatch(experimentIndicatorViewBaseInfoMonitorRsEntityList);
     experimentIndicatorViewBaseInfoSingleRsService.saveOrUpdateBatch(experimentIndicatorViewBaseInfoSingleRsEntityList);
+    experimentIndicatorViewMonitorFollowupRsService.saveOrUpdateBatch(experimentIndicatorViewMonitorFollowupRsEntityList);
     experimentIndicatorViewPhysicalExamRsService.saveOrUpdateBatch(experimentIndicatorViewPhysicalExamRsEntityList);
     experimentIndicatorViewSupportExamRsService.saveOrUpdateBatch(experimentIndicatorViewSupportExamRsEntityList);
     experimentIndicatorJudgeRiskFactorRsService.saveOrUpdateBatch(experimentIndicatorJudgeRiskFactorRsEntityList);
