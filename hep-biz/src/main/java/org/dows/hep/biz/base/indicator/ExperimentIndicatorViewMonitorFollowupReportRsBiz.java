@@ -287,10 +287,11 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
             .name(experimentIndicatorViewMonitorFollowupReportRsEntity.getName())
             .experimentIndicatorViewMonitorFollowupFollowupContentRsResponseList(experimentIndicatorViewMonitorFollowupFollowupContentRsResponseList)
             .build();
-        experimentIndicatorViewMonitorFollowupRsResponseList.add(experimentIndicatorViewMonitorFollowupRsResponse);
+        List<ExperimentIndicatorViewMonitorFollowupRsResponse> reportExperimentIndicatorViewMonitorFollowupRsResponseList = new ArrayList<>();
+        reportExperimentIndicatorViewMonitorFollowupRsResponseList.add(experimentIndicatorViewMonitorFollowupRsResponse);
         experimentIndicatorViewMonitorFollowupReportRsResponse = ExperimentIndicatorViewMonitorFollowupReportRsResponse
             .builder()
-            .experimentIndicatorViewMonitorFollowupRsResponseList(experimentIndicatorViewMonitorFollowupRsResponseList)
+            .experimentIndicatorViewMonitorFollowupRsResponseList(reportExperimentIndicatorViewMonitorFollowupRsResponseList)
             .build();
       }
     }
