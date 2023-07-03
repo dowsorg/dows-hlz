@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.AllArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.enums.EnumExperimentGroupStatus;
+import org.dows.hep.api.enums.ExperimentStateEnum;
 import org.dows.hep.api.event.ExptSchemeStartEvent;
 import org.dows.hep.api.event.ExptSchemeSubmittedEvent;
 import org.dows.hep.api.event.ExptSchemeSyncEvent;
@@ -25,11 +26,9 @@ import org.dows.hep.api.user.experiment.request.ExperimentSchemeRequest;
 import org.dows.hep.api.event.source.ExptSchemeSyncEventSource;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeSubmitRequest;
 import org.dows.hep.api.user.experiment.response.*;
-import org.dows.hep.entity.ExperimentGroupEntity;
-import org.dows.hep.entity.ExperimentSchemeEntity;
-import org.dows.hep.entity.ExperimentSchemeItemEntity;
-import org.dows.hep.entity.ExperimentSettingEntity;
+import org.dows.hep.entity.*;
 import org.dows.hep.service.ExperimentGroupService;
+import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentSchemeService;
 import org.dows.hep.service.ExperimentSettingService;
 import org.jetbrains.annotations.NotNull;
@@ -48,11 +47,12 @@ import java.util.stream.Collectors;
 @Service
 public class ExperimentSchemeBiz {
     private final ExperimentSchemeService experimentSchemeService;
+    private final ExperimentGroupBiz experimentGroupBiz;
     private final ExperimentGroupService experimentGroupService;
+    private final ExperimentSettingService experimentSettingService;
+    private final ExperimentInstanceService experimentInstanceService;
     private final ExperimentSchemeItemBiz experimentSchemeItemBiz;
     private final ExperimentParticipatorBiz experimentParticipatorBiz;
-    private final ExperimentGroupBiz experimentGroupBiz;
-    private final ExperimentSettingService experimentSettingService;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     /**
@@ -268,6 +268,7 @@ public class ExperimentSchemeBiz {
             handleGroupStatus(experimentGroupId, EnumExperimentGroupStatus.ASSIGN_DEPARTMENT);
         } else {
             handleGroupStatus(experimentGroupId, EnumExperimentGroupStatus.WAIT_SCHEMA);
+            handleExptStatus(experimentInstanceId, ExperimentStateEnum.FINISH);
         }
 
         // sync submitted
@@ -417,6 +418,13 @@ public class ExperimentSchemeBiz {
                 .eq(ExperimentGroupEntity::getExperimentGroupId, experimentGroupId)
                 .set(ExperimentGroupEntity::getGroupState, groupStatus.getCode());
         return experimentGroupService.update(updateWrapper);
+    }
+
+    private Boolean handleExptStatus(String experimentInstanceId, ExperimentStateEnum experimentStateEnum) {
+        LambdaUpdateWrapper<ExperimentInstanceEntity> updateWrapper = new LambdaUpdateWrapper<ExperimentInstanceEntity>()
+                .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
+                .set(ExperimentInstanceEntity::getState, experimentStateEnum.getState());
+        return experimentInstanceService.update(updateWrapper);
     }
 
     private ExperimentSchemeEntity getScheme(String experimentInstanceId, String experimentGroupId) {
