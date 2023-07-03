@@ -1,4 +1,4 @@
-package org.dows.hep.biz.config;
+package org.dows.hep.config;
 
 import org.apache.shardingsphere.elasticjob.reg.base.CoordinatorRegistryCenter;
 import org.apache.shardingsphere.elasticjob.reg.zookeeper.ZookeeperConfiguration;
