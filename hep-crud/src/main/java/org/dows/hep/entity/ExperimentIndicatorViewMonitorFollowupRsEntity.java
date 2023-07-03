@@ -42,6 +42,12 @@ public class ExperimentIndicatorViewMonitorFollowupRsEntity implements CrudEntit
     @Schema(title = "分布式ID")
     private String indicatorViewMonitorFollowupId;
 
+    @Schema(title = "实验id")
+    private String experimentId;
+
+    @Schema(title = "案例id")
+    private String caseId;
+
     @Schema(title = "应用ID")
     private String appId;
 
@@ -51,11 +57,17 @@ public class ExperimentIndicatorViewMonitorFollowupRsEntity implements CrudEntit
     @Schema(title = "指标监测随访类表名称")
     private String name;
 
-    @Schema(title = "监测随访表类别Id")
+    @Schema(title = "第一层目录id")
     private String indicatorCategoryId;
 
-    @Schema(title = "0-禁用，1-启用")
-    private Integer status;
+    @Schema(title = "第一层目录名称")
+    private String indicatorCategoryName;
+
+    @Schema(title = "监测随访内容名称")
+    private String ivmfContentNameArray;
+
+    @Schema(title = "监测随访随访内容指标id, #号分隔不同随访内容，','分隔单个随访内容")
+    private String ivmfContentRefIndicatorInstanceIdArray;
 
     @JsonIgnore
     @TableLogic

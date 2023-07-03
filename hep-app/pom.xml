@@ -8,7 +8,20 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>hep-app</artifactId>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.apache.zookeeper</groupId>
+                <artifactId>zookeeper</artifactId>
+                <version>3.8.1</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.dows.saas</groupId>
             <artifactId>hep-rest</artifactId>
