@@ -48,6 +48,9 @@ public class CreateOrUpdateIndicatorInstanceRequestRs implements Serializable {
   @ApiModelProperty(required = true)
   private Integer food;
 
+  @Schema(title = "指标类型")
+  private Integer type;
+
   @Schema(title = "最小值")
   private String min;
 

@@ -3,6 +3,9 @@ package org.dows.hep.api.enums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author runsix
  */
@@ -16,6 +19,14 @@ public enum EnumIndicatorType {
   WEIGHT(4, "体重"),
   ;
 
+  public final static Map<Integer, EnumIndicatorType> kTypeVEnumIndicatorTypeMap = new HashMap<>();
+
   private final Integer type;
   private final String desc;
+
+  static {
+    for (EnumIndicatorType enumIndicatorType:EnumIndicatorType.values()) {
+      kTypeVEnumIndicatorTypeMap.put(enumIndicatorType.getType(), enumIndicatorType);
+    }
+  }
 }
