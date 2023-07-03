@@ -17,12 +17,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class ExperimentIndicatorViewMonitorFollowupReportRsResponse implements Serializable {
-  @Schema(title = "指标基本信息-监测随访表id")
-  private String experimentIndicatorViewMonitorFollowupId;
-
-  @Schema(title = "指标基本信息-监测随访表名称")
-  private String name;
-
   @Schema(title = "监测随访表响应")
   private List<ExperimentIndicatorViewMonitorFollowupRsResponse> experimentIndicatorViewMonitorFollowupRsResponseList;
 }
