@@ -220,16 +220,17 @@ public class QuestionCategBiz {
     }
 
     private Boolean isReferenced(List<String> ids) {
-        if (ids == null || ids.isEmpty()) {
+        if (CollUtil.isEmpty(ids)) {
             return Boolean.FALSE;
         }
 
         List<QuestionInstanceEntity> list = questionInstanceService.lambdaQuery()
                 .in(QuestionInstanceEntity::getQuestionCategId, ids)
                 .list();
-        if (list != null && !list.isEmpty()) {
+        if (CollUtil.isNotEmpty(list)) {
             return Boolean.TRUE;
         }
+
         return Boolean.FALSE;
     }
 
