@@ -10,5 +10,25 @@ package org.dows.hep.biz.user.experiment;
  */
 public class ExperimentReportBiz {
 
+    /**
+     * 获取实验小组报告
+     */
+    public void hepGetByGroupId(){
+
+    }
+
+    /**
+     * 分页获取实验报告列表
+     */
+    public void hepPage(){
+
+    }
+
+    /**
+     * 获取用户实验报告
+     */
+    public void hepGetByAccountId(){
+
+    }
 
 }

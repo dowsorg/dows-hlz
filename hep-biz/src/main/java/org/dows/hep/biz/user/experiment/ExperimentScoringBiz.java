@@ -13,5 +13,40 @@ package org.dows.hep.biz.user.experiment;
  */
 public class ExperimentScoringBiz {
 
+    /**
+     * 健康指数分数计算
+     */
+    public void hepHealthIndexScoring(){
+
+    }
+
+    /**
+     * 知识考点分数得分
+     */
+    public void hepKnowledgeScoring(){
+
+    }
+
+    /**
+     * 医疗占比得分
+     */
+    public void hepTreatmentPercentScoring(){
+
+    }
+
+    /**
+     * 操作准确度得分
+     */
+    public void hepOperateRightScoring(){
+
+    }
+
+    /**
+     * 总分
+     */
+    public void hepTotalScoring(){
+
+    }
+
 
 }
