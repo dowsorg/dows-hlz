@@ -609,29 +609,46 @@ public class RsCopyBiz {
     }
     indicatorViewMonitorFollowupEntityList.forEach(indicatorViewMonitorFollowupEntity -> {
       String experimentIndicatorViewMonitorFollowupId = idGenerator.nextIdStr();
-      String indicatorViewMonitorFollowupId = indicatorViewMonitorFollowupEntity.getIndicatorViewMonitorFollowupId();
       String indicatorFuncId = indicatorViewMonitorFollowupEntity.getIndicatorFuncId();
+      IndicatorFuncEntity indicatorFuncEntity = kIndicatorFuncIdVIndicatorFuncEntityMap.get(indicatorFuncId);
+      String indicatorFuncEntityName = indicatorFuncEntity.getName();
+      String peExperimentIndicatorFuncId = kIndicatorFuncIdVMFExperimentIndicatorFuncIdMap.get(indicatorFuncId);
+      kExperimentIndicatorFuncIdVIndicatorFuncIdMap.put(peExperimentIndicatorFuncId, indicatorFuncId);
+      List<String> caseOrgModuleIdList = kIndicatorFuncIdVCaseOrgModuleIdList.get(indicatorFuncId);
+      if (Objects.nonNull(caseOrgModuleIdList)) {
+        caseOrgModuleIdList.forEach(caseOrgModuleId -> {
+          List<String> experimentIndicatorFuncIdList = kCaseOrgModuleIdVExperimentIndicatorFuncIdListMap.get(caseOrgModuleId);
+          if (Objects.isNull(experimentIndicatorFuncIdList)) {
+            experimentIndicatorFuncIdList = new ArrayList<>();
+          }
+          if (!experimentIndicatorFuncIdList.contains(peExperimentIndicatorFuncId)) {
+            experimentIndicatorFuncIdList.add(peExperimentIndicatorFuncId);
+          }
+          kCaseOrgModuleIdVExperimentIndicatorFuncIdListMap.put(caseOrgModuleId, experimentIndicatorFuncIdList);
+          kExperimentIndicatorFuncIdVIndicatorCategoryIdMap.put(peExperimentIndicatorFuncId, EnumIndicatorCategory.VIEW_MANAGEMENT_MONITOR_FOLLOWUP.getCode());
+          kExperimentIndicatorFuncIdVIndicatorFuncNameMap.put(peExperimentIndicatorFuncId, indicatorFuncEntityName);
+        });
+      }
+      String indicatorViewMonitorFollowupId = indicatorViewMonitorFollowupEntity.getIndicatorViewMonitorFollowupId();
       String name = indicatorViewMonitorFollowupEntity.getName();
       String mfExperimentIndicatorFuncId = kIndicatorFuncIdVMFExperimentIndicatorFuncIdMap.get(indicatorFuncId);
       String indicatorCategoryId = null;
       String indicatorCategoryName = null;
-      String ivmfContentNameArray = null;
-      String ivmfContentRefIndicatorInstanceIdArray = null;
       IndicatorCategoryEntity indicatorCategoryEntity = kIndicatorCategoryIdVIndicatorCategoryEntityMap.get(indicatorViewMonitorFollowupEntity.getIndicatorCategoryId());
       if (Objects.nonNull(indicatorCategoryEntity)) {
         indicatorCategoryId = indicatorCategoryEntity.getIndicatorCategoryId();
         indicatorCategoryName = indicatorCategoryEntity.getCategoryName();
       }
-      String ivbimContentNameArray = null;
-      List<String> ivbimContentNameList = new ArrayList<>();
-      String ivbimContentRefIndicatorInstanceIdArray = null;
-      List<String> ivbimContentRefIndicatorInstanceIdList = new ArrayList<>();
+      String ivmfContentNameArray = null;
+      List<String> ivmfContentNameList = new ArrayList<>();
+      String ivmfContentRefIndicatorInstanceIdArray = null;
+      List<String> ivmfContentRefIndicatorInstanceIdList = new ArrayList<>();
       List<IndicatorViewMonitorFollowupFollowupContentEntity> indicatorViewMonitorFollowupFollowupContentEntityList = kIndicatorViewMonitorFollowupIdVIndicatorViewMonitorFollowupFollowupContentEntityListMap.get(indicatorViewMonitorFollowupId);
       if (Objects.nonNull(indicatorViewMonitorFollowupFollowupContentEntityList) && !indicatorViewMonitorFollowupFollowupContentEntityList.isEmpty()) {
         indicatorViewMonitorFollowupFollowupContentEntityList.forEach(indicatorViewMonitorFollowupFollowupContentEntity -> {
           String indicatorViewMonitorFollowupFollowupContentId = indicatorViewMonitorFollowupFollowupContentEntity.getIndicatorViewMonitorFollowupFollowupContentId();
           String name1 = indicatorViewMonitorFollowupFollowupContentEntity.getName();
-          ivbimContentNameList.add(name1);
+          ivmfContentNameList.add(name1);
           List<IndicatorViewMonitorFollowupContentRefEntity> indicatorViewMonitorFollowupContentRefEntityList = kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupContentRefEntityListMap.get(indicatorViewMonitorFollowupFollowupContentId);
           if (Objects.nonNull(indicatorViewMonitorFollowupContentRefEntityList) && !indicatorViewMonitorFollowupContentRefEntityList.isEmpty()) {
             String singleIvbimContentRefIndicatorInstanceIdArray = null;
@@ -644,11 +661,11 @@ public class RsCopyBiz {
               }
             });
             singleIvbimContentRefIndicatorInstanceIdArray = String.join(EnumString.COMMA.getStr(), signleIvbimContentRefIndicatorInstanceIdList);
-            ivbimContentRefIndicatorInstanceIdList.add(singleIvbimContentRefIndicatorInstanceIdArray);
+            ivmfContentRefIndicatorInstanceIdList.add(singleIvbimContentRefIndicatorInstanceIdArray);
           }
         });
-        ivbimContentNameArray = String.join(EnumString.COMMA.getStr(), ivbimContentNameList);
-        ivbimContentRefIndicatorInstanceIdArray = String.join(EnumString.JIN.getStr(), ivbimContentRefIndicatorInstanceIdList);
+        ivmfContentNameArray = String.join(EnumString.COMMA.getStr(), ivmfContentNameList);
+        ivmfContentRefIndicatorInstanceIdArray = String.join(EnumString.JIN.getStr(), ivmfContentRefIndicatorInstanceIdList);
       }
       ExperimentIndicatorViewMonitorFollowupRsEntity experimentIndicatorViewMonitorFollowupRsEntity = ExperimentIndicatorViewMonitorFollowupRsEntity
           .builder()
@@ -661,8 +678,8 @@ public class RsCopyBiz {
           .name(name)
           .indicatorCategoryId(indicatorCategoryId)
           .indicatorCategoryName(indicatorCategoryName)
-          .ivmfContentNameArray(ivbimContentNameArray)
-          .ivmfContentRefIndicatorInstanceIdArray(ivbimContentRefIndicatorInstanceIdArray)
+          .ivmfContentNameArray(ivmfContentNameArray)
+          .ivmfContentRefIndicatorInstanceIdArray(ivmfContentRefIndicatorInstanceIdArray)
           .build();
       experimentIndicatorViewMonitorFollowupRsEntityList.add(experimentIndicatorViewMonitorFollowupRsEntity);
     });

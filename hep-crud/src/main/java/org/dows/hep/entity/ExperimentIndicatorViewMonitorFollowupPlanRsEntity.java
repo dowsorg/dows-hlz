@@ -37,14 +37,11 @@ public class ExperimentIndicatorViewMonitorFollowupPlanRsEntity implements Seria
   @Schema(title = "实验id")
   private String experimentId;
 
-  @Schema(title = "案例id")
-  private String caseId;
-
   @Schema(title = "应用ID")
   private String appId;
 
   @Schema(title = "期数")
-  private Integer period;
+  private Integer periods;
 
   @Schema(title = "功能点id")
   private String indicatorFuncId;

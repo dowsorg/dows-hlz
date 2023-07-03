@@ -42,14 +42,13 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
         .builder()
         .experimentIndicatorViewMonitorFollowupPlanId(experimentIndicatorViewMonitorFollowupPlanRsEntity.getExperimentIndicatorViewMonitorFollowupPlanId())
         .experimentId(experimentIndicatorViewMonitorFollowupPlanRsEntity.getExperimentId())
-        .caseId(experimentIndicatorViewMonitorFollowupPlanRsEntity.getCaseId())
         .appId(experimentIndicatorViewMonitorFollowupPlanRsEntity.getAppId())
-        .period(experimentIndicatorViewMonitorFollowupPlanRsEntity.getPeriod())
+        .period(experimentIndicatorViewMonitorFollowupPlanRsEntity.getPeriods())
         .indicatorFuncId(experimentIndicatorViewMonitorFollowupPlanRsEntity.getIndicatorFuncId())
         .experimentPersonId(experimentIndicatorViewMonitorFollowupPlanRsEntity.getExperimentPersonId())
         .operateFlowId(experimentIndicatorViewMonitorFollowupPlanRsEntity.getOperateFlowId())
         .intervalDay(experimentIndicatorViewMonitorFollowupPlanRsEntity.getIntervalDay())
-        .experimentIndicatorViewMonitorFollowupPlanId(experimentIndicatorViewMonitorFollowupPlanRsEntity.getExperimentIndicatorViewMonitorFollowupId())
+        .experimentIndicatorViewMonitorFollowupId(experimentIndicatorViewMonitorFollowupPlanRsEntity.getExperimentIndicatorViewMonitorFollowupId())
         .deleted(experimentIndicatorViewMonitorFollowupPlanRsEntity.getDeleted())
         .dt(experimentIndicatorViewMonitorFollowupPlanRsEntity.getDt())
         .build();
@@ -65,8 +64,33 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
     String appId = experimentMonitorFollowupCheckRequestRs.getAppId();
     String experimentId = experimentMonitorFollowupCheckRequestRs.getExperimentId();
     String indicatorViewMonitorFollowupId = experimentMonitorFollowupCheckRequestRs.getIndicatorViewMonitorFollowupId();
+    Integer intervalDay = experimentMonitorFollowupCheckRequestRs.getIntervalDay();
+    /* runsix:TODO 等吴治霖弄好 */
+    String operateFlowId = "1";
+    ExperimentIndicatorViewMonitorFollowupPlanRsEntity experimentIndicatorViewMonitorFollowupPlanRsEntity = experimentIndicatorViewMonitorFollowupPlanRsService.lambdaQuery()
+        .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getAppId, appId)
+        .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getExperimentId, experimentId)
+        .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getPeriods, period)
+        .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getIndicatorFuncId, indicatorFuncId)
+        .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getExperimentPersonId, experimentPersonId)
+        .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getExperimentIndicatorViewMonitorFollowupId, indicatorViewMonitorFollowupId)
+        .one();
+    if (Objects.isNull(experimentIndicatorViewMonitorFollowupPlanRsEntity)) {
+      experimentIndicatorViewMonitorFollowupPlanRsService.saveOrUpdate(ExperimentIndicatorViewMonitorFollowupPlanRsEntity
+          .builder()
+              .experimentIndicatorViewMonitorFollowupPlanId(idGenerator.nextIdStr())
+              .experimentId(experimentId)
+              .appId(appId)
+              .periods(period)
+              .indicatorFuncId(indicatorFuncId)
+              .experimentPersonId(experimentPersonId)
+              .operateFlowId(operateFlowId)
+              .intervalDay(intervalDay)
+              .experimentIndicatorViewMonitorFollowupId(indicatorViewMonitorFollowupId)
+          .build());
+    }
     ExperimentIndicatorViewMonitorFollowupRsEntity experimentIndicatorViewMonitorFollowupRsEntity = experimentIndicatorViewMonitorFollowupRsService.lambdaQuery()
-        .eq(ExperimentIndicatorViewMonitorFollowupRsEntity::getIndicatorViewMonitorFollowupId, indicatorViewMonitorFollowupId)
+        .eq(ExperimentIndicatorViewMonitorFollowupRsEntity::getExperimentIndicatorViewMonitorFollowupId, indicatorViewMonitorFollowupId)
         .oneOpt()
         .orElseThrow(() -> {
           log.error("ExperimentIndicatorViewMonitorFollowupReportRsBiz.monitorFollowupCheck param ExperimentMonitorFollowupCheckRequestRs indicatorViewMonitorFollowupId:{} is illegal", indicatorViewMonitorFollowupId);
@@ -132,9 +156,7 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
       indicatorCurrentValArrayList.add(indicatorCurrentValArrayInside);
     }
     indicatorCurrentValArray = String.join(EnumString.JIN.getStr(), indicatorCurrentValArrayList);
-    /* runsix:TODO 等吴治霖弄好 */
-    String operateFlowId = "1";
-    ExperimentIndicatorViewMonitorFollowupReportRsEntity
+    experimentIndicatorViewMonitorFollowupReportRsEntity = ExperimentIndicatorViewMonitorFollowupReportRsEntity
         .builder()
         .experimentIndicatorViewMonitorFollowupReportId(idGenerator.nextIdStr())
         .experimentId(experimentId)
@@ -168,7 +190,7 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
     List<ExperimentIndicatorViewMonitorFollowupRsResponse> experimentIndicatorViewMonitorFollowupRsResponseList = new ArrayList<>();
     ExperimentIndicatorViewMonitorFollowupReportRsResponse experimentIndicatorViewMonitorFollowupReportRsResponse = null;
     ExperimentIndicatorViewMonitorFollowupPlanRsEntity experimentIndicatorViewMonitorFollowupPlanRsEntity = experimentIndicatorViewMonitorFollowupPlanRsService.lambdaQuery()
-        .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getPeriod, period)
+        .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getPeriods, period)
         .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getExperimentPersonId, experimentPersonId)
         .one();
     experimentIndicatorViewMonitorFollowupPlanRsResponse = experimentIndicatorViewMonitorFollowupPlanRs2Response(experimentIndicatorViewMonitorFollowupPlanRsEntity);
