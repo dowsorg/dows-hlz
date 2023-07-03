@@ -27,9 +27,6 @@ public class ExperimentIndicatorViewMonitorFollowupPlanRsResponse implements Ser
   @Schema(title = "实验id")
   private String experimentId;
 
-  @Schema(title = "案例id")
-  private String caseId;
-
   @Schema(title = "应用ID")
   private String appId;
 

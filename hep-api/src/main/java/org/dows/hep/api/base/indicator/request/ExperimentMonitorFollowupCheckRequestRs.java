@@ -34,4 +34,6 @@ public class ExperimentMonitorFollowupCheckRequestRs implements Serializable {
   @Schema(title = "监测随访id")
   private String indicatorViewMonitorFollowupId;
 
+  @Schema(title = "间隔天数")
+  private Integer intervalDay;
 }

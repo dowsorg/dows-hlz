@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class RsCopyRest {
   private final RsCopyBiz rsCopyBiz;
 
-  /* runsix:TODO 别动我的 */
   @Operation(summary = "复制功能点到实验")
   @PostMapping("v1/experimentIndicator/indicatorFunc/rsCopy")
   public void rsCopyIndicatorFunc(RsCopyExperimentRequestRs rsCopyExperimentRequestRs) {
