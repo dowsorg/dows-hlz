@@ -159,7 +159,7 @@ public class TenantCaseCategoryBiz {
         // get referenced id
         Boolean referenced = isReferenced(ids);
         if (referenced) {
-            throw new BizException(CaseESCEnum.CANNOT_DEL_REF_DATA);
+            throw new BizException("该类别下有数据，不能删除");
         }
 
         // del self

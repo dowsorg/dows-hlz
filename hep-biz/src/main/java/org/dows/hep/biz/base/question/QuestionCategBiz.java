@@ -7,7 +7,6 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
-import org.dows.hep.api.base.question.QuestionESCEnum;
 import org.dows.hep.api.base.question.request.QuestionCategoryRequest;
 import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
 import org.dows.hep.api.tenant.casus.CaseESCEnum;
@@ -202,7 +201,7 @@ public class QuestionCategBiz {
         // check referenced
         Boolean referenced = isReferenced(ids);
         if (referenced) {
-            throw new BizException(QuestionESCEnum.CANNOT_DEL_REF_DATA);
+            throw new BizException("该类别下有数据，不能删除");
         }
 
         // del self
