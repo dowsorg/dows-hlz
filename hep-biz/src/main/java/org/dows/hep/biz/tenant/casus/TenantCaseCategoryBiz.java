@@ -1,16 +1,20 @@
 package org.dows.hep.biz.tenant.casus;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.hep.api.tenant.casus.CaseCategoryGroupEnum;
 import org.dows.hep.api.tenant.casus.CaseESCEnum;
 import org.dows.hep.api.tenant.casus.request.CaseCategoryRequest;
 import org.dows.hep.api.tenant.casus.response.CaseCategoryResponse;
 import org.dows.hep.entity.CaseCategoryEntity;
+import org.dows.hep.entity.CaseSchemeEntity;
 import org.dows.hep.service.CaseCategoryService;
+import org.dows.hep.service.CaseSchemeService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +31,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TenantCaseCategoryBiz {
     private final CaseCategoryService caseCategoryService;
+    private final CaseSchemeService caseSchemeService;
     private final TenantCaseBaseBiz baseBiz;
 
     /**
@@ -49,19 +54,19 @@ public class TenantCaseCategoryBiz {
     }
 
     /**
-     * @author fhb
-     * @description dude, go optimize yourself
-     * @date 2023/5/24 11:25
      * @param
      * @return
+     * @author fhb
+     * @description 批量新增和更新
+     * @date 2023/5/24 11:25
      */
     public boolean batchSaveOrUpd(List<CaseCategoryRequest> list) {
         if (Objects.isNull(list) || list.isEmpty()) {
             return Boolean.FALSE;
         }
 
-        list.forEach(this::saveOrUpdateCaseCategory);
-        return Boolean.TRUE;
+        List<CaseCategoryEntity> entityList = convertRequestList2EntityList(list);
+        return caseCategoryService.saveOrUpdateBatch(entityList);
     }
 
     /**
@@ -117,7 +122,7 @@ public class TenantCaseCategoryBiz {
      * @date 2023/5/11 21:22
      */
     public List<CaseCategoryResponse> getParents(String id, String categoryGroup) {
-        return getParents0(id, categoryGroup);
+        return listParents0(id, categoryGroup);
     }
 
     /**
@@ -128,7 +133,7 @@ public class TenantCaseCategoryBiz {
      * @date 2023/5/11 21:22
      */
     public String[] getParentIds(String id, String categoryGroup) {
-        List<CaseCategoryResponse> arrayList = getParents0(id, categoryGroup);
+        List<CaseCategoryResponse> arrayList = listParents0(id, categoryGroup);
         if (arrayList.isEmpty()) {
             return new String[0];
         }
@@ -147,14 +152,14 @@ public class TenantCaseCategoryBiz {
      */
     @Transactional
     public Boolean delByIds(List<String> ids) {
-        if (Objects.isNull(ids)) {
-            return false;
+        if (CollUtil.isEmpty(ids)) {
+            return Boolean.FALSE;
         }
 
         // get referenced id
         Boolean referenced = isReferenced(ids);
         if (referenced) {
-            throw new BizException("被引用类目不可删除");
+            throw new BizException("该类别下有数据，不能删除");
         }
 
         // del self
@@ -199,7 +204,52 @@ public class TenantCaseCategoryBiz {
         return result;
     }
 
+    private List<CaseCategoryEntity> convertRequestList2EntityList(List<CaseCategoryRequest> requestList) {
+        if (CollUtil.isEmpty(requestList)) {
+            throw new BizException(CaseESCEnum.PARAMS_NON_NULL);
+        }
+
+        List<CaseCategoryEntity> entityList = listEntityInGroup(CaseCategoryGroupEnum.CASE_SCHEME.name());
+        Map<String, CaseCategoryEntity> idMapEntity = entityList.stream()
+                .collect(Collectors.toMap(CaseCategoryEntity::getCaseCategId, item -> item));
+
+        List<CaseCategoryEntity> result = new ArrayList<>();
+        requestList.forEach(request -> {
+            CaseCategoryEntity resultItem = CaseCategoryEntity.builder()
+                    .appId(baseBiz.getAppId())
+                    .caseCategId(request.getCaseCategId())
+                    .caseCategName(request.getCaseCategName())
+                    .caseCategGroup(request.getCaseCategGroup())
+                    .sequence(request.getSequence())
+                    .build();
+
+            String caseCategId = resultItem.getCaseCategId();
+            // 新增 or 更新
+            if (StrUtil.isBlank(caseCategId)) {
+                resultItem.setCaseCategId(baseBiz.getIdStr());
+                if (StrUtil.isBlank(resultItem.getCaseCategPid())) {
+                    resultItem.setCaseCategPid(baseBiz.getCaseCategoryPid());
+                }
+            } else {
+                CaseCategoryEntity oriEntity = idMapEntity.get(caseCategId);
+                if (BeanUtil.isEmpty(oriEntity)) {
+                    throw new BizException(CaseESCEnum.DATA_NULL);
+                }
+                resultItem.setId(oriEntity.getId());
+            }
+
+            result.add(resultItem);
+        });
+
+        return result;
+    }
+
     private List<CaseCategoryResponse> listInGroup(String categGroup) {
+        List<CaseCategoryEntity> entityList = listEntityInGroup(categGroup);
+        return BeanUtil.copyToList(entityList, CaseCategoryResponse.class);
+    }
+
+    private List<CaseCategoryEntity> listEntityInGroup(String categGroup) {
         if (StrUtil.isBlank(categGroup)) {
             return new ArrayList<>();
         }
@@ -207,66 +257,10 @@ public class TenantCaseCategoryBiz {
         return caseCategoryService.lambdaQuery()
                 .eq(CaseCategoryEntity::getCaseCategGroup, categGroup)
                 .orderBy(true, true, CaseCategoryEntity::getSequence)
-                .list()
-                .stream()
-                .map(item -> BeanUtil.copyProperties(item, CaseCategoryResponse.class))
-                .toList();
+                .list();
     }
 
-    private void convertList2TreeList(List<CaseCategoryResponse> sources, String pid, List<CaseCategoryResponse> target) {
-        // list children
-        List<CaseCategoryResponse> children = listChildren(sources, item -> pid.equals(item.getCaseCategPid()));
-
-        // add target
-        target.addAll(children);
-
-        // handle children
-        target.forEach(item -> traverse(item, sources));
-    }
-
-    private void traverse(CaseCategoryResponse node, List<CaseCategoryResponse> sources) {
-        // 判空
-        boolean isBack = checkNull(node, sources);
-        if (isBack) {
-            return;
-        }
-
-        // 处理当前节点
-        handleCurrentNode(node, sources);
-
-        // 处理子节点
-        handleChildrenNode(node, sources);
-    }
-
-    private boolean checkNull(CaseCategoryResponse currentNode, List<CaseCategoryResponse> sources) {
-        List<CaseCategoryResponse> children = listChildren(sources, item -> currentNode.getCaseCategId().equals(item.getCaseCategPid()));
-        if (children.isEmpty()) {
-            return Boolean.TRUE;
-        }
-
-        return Boolean.FALSE;
-    }
-
-    private static List<CaseCategoryResponse> listChildren(List<CaseCategoryResponse> sources, Predicate<CaseCategoryResponse> predicate) {
-        return sources.stream()
-                .filter(predicate)
-                .toList();
-    }
-
-    private void handleCurrentNode(CaseCategoryResponse currentNode, List<CaseCategoryResponse> sources) {
-        List<CaseCategoryResponse> children = listChildren(sources, item -> currentNode.getCaseCategId().equals(item.getCaseCategPid()));
-        currentNode.setChildren(children);
-    }
-
-
-    private void handleChildrenNode(CaseCategoryResponse currentNode, List<CaseCategoryResponse> sources) {
-        List<CaseCategoryResponse> children = currentNode.getChildren();
-        for (CaseCategoryResponse cNode : children) {
-            traverse(cNode, sources);
-        }
-    }
-
-    private ArrayList<CaseCategoryResponse> getParents0(String id, String categoryGroup) {
+    private List<CaseCategoryResponse> listParents0(String id, String categoryGroup) {
         if (StrUtil.isBlank(id) || StrUtil.isBlank(categoryGroup)) {
             return new ArrayList<>();
         }
@@ -286,6 +280,50 @@ public class TenantCaseCategoryBiz {
         getCcrList(id, idCollect, result);
         Collections.reverse(result);
         return result;
+    }
+
+    private void convertList2TreeList(List<CaseCategoryResponse> sources, String pid, List<CaseCategoryResponse> target) {
+        // list children
+        List<CaseCategoryResponse> children = listChildren(sources, item -> pid.equals(item.getCaseCategPid()));
+
+        // add target
+        target.addAll(children);
+
+        // handle children
+        target.forEach(item -> traverse(item, sources));
+    }
+
+    private void traverse(CaseCategoryResponse node, List<CaseCategoryResponse> sources) {
+        // 判空
+        List<CaseCategoryResponse> children = listChildren(sources, item -> node.getCaseCategId().equals(item.getCaseCategPid()));
+        if (children.isEmpty()) {
+            return;
+        }
+
+        // 处理当前节点
+        handleCurrentNode(node, sources);
+
+        // 处理子节点
+        handleChildrenNode(node, sources);
+    }
+
+    private static List<CaseCategoryResponse> listChildren(List<CaseCategoryResponse> sources, Predicate<CaseCategoryResponse> predicate) {
+        return sources.stream()
+                .filter(predicate)
+                .toList();
+    }
+
+    private void handleCurrentNode(CaseCategoryResponse currentNode, List<CaseCategoryResponse> sources) {
+        List<CaseCategoryResponse> children = listChildren(sources, item -> currentNode.getCaseCategId().equals(item.getCaseCategPid()));
+        currentNode.setChildren(children);
+    }
+
+
+    private void handleChildrenNode(CaseCategoryResponse currentNode, List<CaseCategoryResponse> sources) {
+        List<CaseCategoryResponse> children = currentNode.getChildren();
+        for (CaseCategoryResponse cNode : children) {
+            traverse(cNode, sources);
+        }
     }
 
     private void getCcrList(String id, Map<String, CaseCategoryResponse> idCollect, ArrayList<CaseCategoryResponse> result) {
@@ -308,10 +346,16 @@ public class TenantCaseCategoryBiz {
     }
 
     private Boolean isReferenced(List<String> ids) {
-        if (ids == null || ids.isEmpty()) {
+        if (CollUtil.isEmpty(ids)) {
             return Boolean.FALSE;
         }
 
+        List<CaseSchemeEntity> list = caseSchemeService.lambdaQuery()
+                .in(CaseSchemeEntity::getCaseCategId, ids)
+                .list();
+        if (CollUtil.isNotEmpty(list)) {
+            return Boolean.TRUE;
+        }
 
         return Boolean.FALSE;
     }

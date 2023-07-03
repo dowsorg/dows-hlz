@@ -7,7 +7,6 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
-import org.dows.hep.api.base.question.QuestionESCEnum;
 import org.dows.hep.api.base.question.request.QuestionCategoryRequest;
 import org.dows.hep.api.base.question.response.QuestionCategoryResponse;
 import org.dows.hep.api.tenant.casus.CaseESCEnum;
@@ -15,7 +14,6 @@ import org.dows.hep.entity.QuestionCategoryEntity;
 import org.dows.hep.entity.QuestionInstanceEntity;
 import org.dows.hep.service.QuestionCategoryService;
 import org.dows.hep.service.QuestionInstanceService;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -196,14 +194,14 @@ public class QuestionCategBiz {
      */
     @Transactional
     public Boolean delByIds(List<String> ids) {
-        if (Objects.isNull(ids)) {
-            return false;
+        if (CollUtil.isEmpty(ids)) {
+            return Boolean.FALSE;
         }
 
-        // get referenced id
+        // check referenced
         Boolean referenced = isReferenced(ids);
         if (referenced) {
-            throw new BizException(QuestionESCEnum.CANNOT_DEL_FER_DATA);
+            throw new BizException("该类别下有数据，不能删除");
         }
 
         // del self
@@ -217,86 +215,6 @@ public class QuestionCategBiz {
         boolean remRes2 = questionCategoryService.remove(remWrapper);
 
         return remRes1 && remRes2;
-    }
-
-    private Boolean isReferenced(List<String> ids) {
-        if (ids == null || ids.isEmpty()) {
-            return Boolean.FALSE;
-        }
-
-        List<QuestionInstanceEntity> list = questionInstanceService.lambdaQuery()
-                .in(QuestionInstanceEntity::getQuestionCategId, ids)
-                .list();
-        if (list != null && !list.isEmpty()) {
-            return Boolean.TRUE;
-        }
-        return Boolean.FALSE;
-    }
-
-    private List<QuestionCategoryResponse> listInGroup(String questionCategGroup) {
-        if (StrUtil.isBlank(questionCategGroup)) {
-            return new ArrayList<>();
-        }
-
-        return questionCategoryService.lambdaQuery()
-                .eq(QuestionCategoryEntity::getQuestionCategGroup, questionCategGroup)
-                .orderBy(true, true, QuestionCategoryEntity::getSequence)
-                .list()
-                .stream()
-                .map(item -> BeanUtil.copyProperties(item, QuestionCategoryResponse.class))
-                .toList();
-    }
-
-    private void convertList2TreeList(List<QuestionCategoryResponse> sources, String pid, List<QuestionCategoryResponse> target) {
-        // list children
-        List<QuestionCategoryResponse> children = listChildren(sources, item -> pid.equals(item.getQuestionCategPid()));
-
-        // add target
-        target.addAll(children);
-
-        // handle children
-        target.forEach(item -> traverse(item, sources));
-    }
-
-    private void traverse(QuestionCategoryResponse node, List<QuestionCategoryResponse> sources) {
-        // 判空
-        boolean isBack = checkNull(node, sources);
-        if (isBack) {
-            return;
-        }
-
-        // 处理当前节点
-        handleCurrentNode(node, sources);
-
-        // 处理子节点
-        handleChildrenNode(node, sources);
-    }
-
-    private boolean checkNull(QuestionCategoryResponse currentNode, List<QuestionCategoryResponse> sources) {
-        List<QuestionCategoryResponse> children = listChildren(sources, item -> currentNode.getQuestionCategId().equals(item.getQuestionCategPid()));
-        if (children.isEmpty()) {
-            return Boolean.TRUE;
-        }
-
-        return Boolean.FALSE;
-    }
-
-    private void handleCurrentNode(QuestionCategoryResponse currentNode, List<QuestionCategoryResponse> sources) {
-        List<QuestionCategoryResponse> children = listChildren(sources, item -> currentNode.getQuestionCategId().equals(item.getQuestionCategPid()));
-        currentNode.setChildren(children);
-    }
-
-    private List<QuestionCategoryResponse> listChildren(List<QuestionCategoryResponse> sources, Predicate<QuestionCategoryResponse> predicate) {
-        return sources.stream()
-                .filter(predicate)
-                .toList();
-    }
-
-    private void handleChildrenNode(QuestionCategoryResponse currentNode, List<QuestionCategoryResponse> sources) {
-        List<QuestionCategoryResponse> children = currentNode.getChildren();
-        for (QuestionCategoryResponse cNode : children) {
-            traverse(cNode, sources);
-        }
     }
 
     private QuestionCategoryEntity convertRequest2Entity(QuestionCategoryRequest request) {
@@ -329,14 +247,83 @@ public class QuestionCategBiz {
         return result;
     }
 
-    private Integer getLastSequence(String categoryGroup) {
+    private List<QuestionCategoryResponse> listInGroup(String questionCategGroup) {
+        if (StrUtil.isBlank(questionCategGroup)) {
+            return new ArrayList<>();
+        }
+
         return questionCategoryService.lambdaQuery()
-                .eq(QuestionCategoryEntity::getQuestionCategGroup, categoryGroup)
-                .orderByDesc(QuestionCategoryEntity::getSequence)
-                .last("limit 1")
-                .oneOpt()
-                .map(QuestionCategoryEntity::getSequence)
-                .orElse(0);
+                .eq(QuestionCategoryEntity::getQuestionCategGroup, questionCategGroup)
+                .orderBy(true, true, QuestionCategoryEntity::getSequence)
+                .list()
+                .stream()
+                .map(item -> BeanUtil.copyProperties(item, QuestionCategoryResponse.class))
+                .toList();
+    }
+
+    private List<QuestionCategoryResponse> listParents0(String id, String categoryGroup) {
+        if (StrUtil.isBlank(id) || StrUtil.isBlank(categoryGroup)) {
+            return new ArrayList<>();
+        }
+
+        // list all in group
+        List<QuestionCategoryResponse> listInGroup = listInGroup(categoryGroup);
+        if (listInGroup == null || listInGroup.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // convert list 2 collect
+        Map<String, QuestionCategoryResponse> idCollect = listInGroup.stream()
+                .collect(Collectors.toMap(QuestionCategoryResponse::getQuestionCategId, v -> v, (v1, v2) -> v1));
+
+        // get parents
+        ArrayList<QuestionCategoryResponse> result = new ArrayList<>();
+        getQcrpList(id, idCollect, result);
+        Collections.reverse(result);
+        return result;
+    }
+
+    private void convertList2TreeList(List<QuestionCategoryResponse> sources, String pid, List<QuestionCategoryResponse> target) {
+        // list children
+        List<QuestionCategoryResponse> children = listChildren(sources, item -> pid.equals(item.getQuestionCategPid()));
+
+        // add target
+        target.addAll(children);
+
+        // handle children
+        target.forEach(item -> traverse(item, sources));
+    }
+
+    private void traverse(QuestionCategoryResponse node, List<QuestionCategoryResponse> sources) {
+        // 判空
+        List<QuestionCategoryResponse> children = listChildren(sources, item -> node.getQuestionCategId().equals(item.getQuestionCategPid()));
+        if (children.isEmpty()) {
+            return;
+        }
+
+        // 处理当前节点
+        handleCurrentNode(node, sources);
+
+        // 处理子节点
+        handleChildrenNode(node, sources);
+    }
+
+    private List<QuestionCategoryResponse> listChildren(List<QuestionCategoryResponse> sources, Predicate<QuestionCategoryResponse> predicate) {
+        return sources.stream()
+                .filter(predicate)
+                .toList();
+    }
+
+    private void handleCurrentNode(QuestionCategoryResponse currentNode, List<QuestionCategoryResponse> sources) {
+        List<QuestionCategoryResponse> children = listChildren(sources, item -> currentNode.getQuestionCategId().equals(item.getQuestionCategPid()));
+        currentNode.setChildren(children);
+    }
+
+    private void handleChildrenNode(QuestionCategoryResponse currentNode, List<QuestionCategoryResponse> sources) {
+        List<QuestionCategoryResponse> children = currentNode.getChildren();
+        for (QuestionCategoryResponse cNode : children) {
+            traverse(cNode, sources);
+        }
     }
 
     private void getQcrpList(String id, Map<String, QuestionCategoryResponse> idCollect, ArrayList<QuestionCategoryResponse> result) {
@@ -358,26 +345,28 @@ public class QuestionCategBiz {
         getQcrpList(questionCategPid, idCollect, result);
     }
 
-    @NotNull
-    private List<QuestionCategoryResponse> listParents0(String id, String categoryGroup) {
-        if (StrUtil.isBlank(id) || StrUtil.isBlank(categoryGroup)) {
-            return new ArrayList<>();
+    private Boolean isReferenced(List<String> ids) {
+        if (CollUtil.isEmpty(ids)) {
+            return Boolean.FALSE;
         }
 
-        // list all in group
-        List<QuestionCategoryResponse> listInGroup = listInGroup(categoryGroup);
-        if (listInGroup == null || listInGroup.isEmpty()) {
-            return new ArrayList<>();
+        List<QuestionInstanceEntity> list = questionInstanceService.lambdaQuery()
+                .in(QuestionInstanceEntity::getQuestionCategId, ids)
+                .list();
+        if (CollUtil.isNotEmpty(list)) {
+            return Boolean.TRUE;
         }
 
-        // convert list 2 collect
-        Map<String, QuestionCategoryResponse> idCollect = listInGroup.stream()
-                .collect(Collectors.toMap(QuestionCategoryResponse::getQuestionCategId, v -> v, (v1, v2) -> v1));
+        return Boolean.FALSE;
+    }
 
-        // get parents
-        ArrayList<QuestionCategoryResponse> result = new ArrayList<>();
-        getQcrpList(id, idCollect, result);
-        Collections.reverse(result);
-        return result;
+    private Integer getLastSequence(String categoryGroup) {
+        return questionCategoryService.lambdaQuery()
+                .eq(QuestionCategoryEntity::getQuestionCategGroup, categoryGroup)
+                .orderByDesc(QuestionCategoryEntity::getSequence)
+                .last("limit 1")
+                .oneOpt()
+                .map(QuestionCategoryEntity::getSequence)
+                .orElse(0);
     }
 }

@@ -419,7 +419,7 @@ public class QuestionInstanceBiz {
         // check
         boolean canRemove = checkCanRemove(questionInstanceIds);
         if (!canRemove) {
-            throw new BizException(QuestionESCEnum.CANNOT_DEL_FER_DATA);
+            throw new BizException(QuestionESCEnum.CANNOT_DEL_REF_DATA);
         }
 
         // rem instance

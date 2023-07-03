@@ -62,16 +62,14 @@ public class QuestionSectionDimensionBiz{
             return new ArrayList<>();
         }
 
-        LambdaQueryWrapper<QuestionSectionDimensionEntity> queryWrapper = new LambdaQueryWrapper<QuestionSectionDimensionEntity>()
-                .eq(QuestionSectionDimensionEntity::getQuestionSectionId, questionSectionId);
-        List<QuestionSectionDimensionEntity> entityList = questionSectionDimensionService.list(queryWrapper);
+        List<QuestionSectionDimensionEntity> entityList = questionSectionDimensionService.lambdaQuery()
+                .eq(QuestionSectionDimensionEntity::getQuestionSectionId, questionSectionId)
+                .list();
         if (entityList == null || entityList.isEmpty()) {
             return new ArrayList<>();
         }
 
-        return entityList.stream()
-                .map(item -> BeanUtil.copyProperties(item, QuestionSectionDimensionResponse.class))
-                .toList();
+        return BeanUtil.copyToList(entityList, QuestionSectionDimensionResponse.class);
     }
 
     /**
@@ -216,12 +214,5 @@ public class QuestionSectionDimensionBiz{
         }
 
         return false;
-    }
-
-    public static void main(String[] args) {
-//        float[][] intervals = {{0.0f, 2.0f}, {1.2f, 5.3f}, {3.4f, 8.9f}};
-        float[][] intervals = {{0.0f, 2.0f}, {3.4f, 8.9f}};
-        boolean hasIntersection = hasIntersection(intervals);
-        System.out.println("Has intersection: " + hasIntersection);
     }
 }
