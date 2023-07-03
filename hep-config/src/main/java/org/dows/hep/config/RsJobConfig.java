@@ -1,4 +1,4 @@
-package org.dows.hep.biz.config;
+package org.dows.hep.config;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
