@@ -61,6 +61,9 @@ public class CaseIndicatorInstanceEntity implements CrudEntity {
   @Schema(title = "0-非饮食关键指标，1-饮食关键指标")
   private Integer food;
 
+  @Schema(title = "类型，0代表非基础指标可以删除，其它均不可删除")
+  private Integer type;
+
   @Schema(title = "描述")
   private String descr;
 

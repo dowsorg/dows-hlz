@@ -47,6 +47,7 @@ public class HepApplication{
     @PostConstruct
     @Transactional(rollbackFor = Exception.class)
     public void init() throws InterruptedException {
+        /* runsix:init IndicatorCategory */
         Map<String, IndicatorCategoryEntity> kIndicatorCategoryIdVIndicatorCategoryMap = new HashMap<>();
         indicatorCategoryService.list()
             .forEach(indicatorCategoryEntity -> kIndicatorCategoryIdVIndicatorCategoryMap.put(
@@ -73,6 +74,7 @@ public class HepApplication{
             }
         }
         indicatorCategoryService.saveOrUpdateBatch(indicatorCategoryEntityList);
+        /* runsix:init  */
         List<String> indicatorCategoryIdList = indicatorFuncService.lambdaQuery()
             .eq(IndicatorFuncEntity::getAppId, EnumString.APP_ID.getStr())
             .eq(IndicatorFuncEntity::getPid, EnumIndicatorCategory.OPERATE_MANAGEMENT.getCode())
