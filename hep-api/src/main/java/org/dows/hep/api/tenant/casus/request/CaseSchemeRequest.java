@@ -31,7 +31,6 @@ public class CaseSchemeRequest{
     private String schemeName;
 
     @Schema(title = "类别ID")
-    @NotBlank(message = "方案类别不能为空")
     private String caseCategId;
 
     @Schema(title = "状态[0-关闭|1-启用]")
