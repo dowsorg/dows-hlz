@@ -1,7 +1,7 @@
 package org.dows.hep.api;
 
 import lombok.Data;
-import org.dows.hep.api.enums.ExperimentStateEnum;
+import org.dows.hep.api.enums.EnumExperimentState;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,7 +16,7 @@ public class ExperimentContext {
     private String experimentName;
     private Integer periods;
     // 实验状态
-    private ExperimentStateEnum state;
+    private EnumExperimentState state;
     private List<ExperimentGroup> experimentGroups;
 
     private Integer groupCount;

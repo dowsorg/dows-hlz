@@ -1,8 +1,6 @@
 package org.dows.hep.biz.tenant.experiment;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
@@ -20,9 +18,8 @@ import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
 import org.dows.hep.api.core.CreateExperimentForm;
 import org.dows.hep.api.enums.EnumExperimentGroupStatus;
-import org.dows.hep.api.enums.ExperimentModeEnum;
-import org.dows.hep.api.enums.ExperimentStateEnum;
-import org.dows.hep.api.enums.ParticipatorTypeEnum;
+import org.dows.hep.api.enums.EnumExperimentState;
+import org.dows.hep.api.enums.EnumParticipatorType;
 import org.dows.hep.api.event.ExperimentEvent;
 import org.dows.hep.api.event.ExperimentInitEvent;
 import org.dows.hep.api.event.StartEvent;
@@ -115,7 +112,7 @@ public class ExperimentManageBiz {
                 .experimentName(createExperiment.getExperimentName())
                 .experimentDescr(createExperiment.getExperimentDescr())
                 .model(createExperiment.getModel())
-                .state(ExperimentStateEnum.UNBEGIN.getState())
+                .state(EnumExperimentState.UNBEGIN.getState())
                 .appointor(instanceResponse.getAccountName())
                 .caseInstanceId(createExperiment.getCaseInstanceId())
                 .caseName(createExperiment.getCaseName())
@@ -134,9 +131,9 @@ public class ExperimentManageBiz {
                     .experimentName(experimentInstance.getExperimentName())
                     .accountId(instance.getAccountId())
                     .accountName(instance.getAccountName())
-                    .state(ExperimentStateEnum.UNBEGIN.getState())
+                    .state(EnumExperimentState.UNBEGIN.getState())
                     .model(experimentInstance.getModel())
-                    .participatorType(ParticipatorTypeEnum.TEACHER.getCode())
+                    .participatorType(EnumParticipatorType.TEACHER.getCode())
                     .build();
             experimentParticipatorEntityList.add(experimentParticipatorEntity);
         }
@@ -254,13 +251,13 @@ public class ExperimentManageBiz {
                         .accountName(experimentParticipator.getParticipatorName())
                         .groupNo(groupSetting.getGroupNo())
                         .groupAlias(groupSetting.getGroupAlias())
-                        .state(ExperimentStateEnum.UNBEGIN.getState())
+                        .state(EnumExperimentState.UNBEGIN.getState())
                         .experimentGroupId(experimentGroupEntity.getExperimentGroupId())
-                        .participatorType(ParticipatorTypeEnum.STUDENT.getCode())
+                        .participatorType(EnumParticipatorType.STUDENT.getCode())
                         .build();
                 // 如果是0【第一个人】设置为组长
                 if (experimentParticipator.getSeq() == 0) {
-                    experimentParticipatorEntity.setParticipatorType(ParticipatorTypeEnum.CAPTAIN.getCode());
+                    experimentParticipatorEntity.setParticipatorType(EnumParticipatorType.CAPTAIN.getCode());
                 }
                 experimentParticipatorEntityList.add(experimentParticipatorEntity);
                 // 记录每组对应的组员
@@ -396,7 +393,7 @@ public class ExperimentManageBiz {
             ExperimentSetting.SchemeSetting schemeSetting =
                     JSONUtil.toBean(experimentSettingEntity1.getConfigJsonVals(), ExperimentSetting.SchemeSetting.class);
         }*/
-        ExperimentStateEnum experimentStateEnum = Arrays.stream(ExperimentStateEnum.values())
+        EnumExperimentState enumExperimentState = Arrays.stream(EnumExperimentState.values())
                 .filter(e -> e.getState() == experimentInstanceEntity.getState())
                 .findFirst().orElse(null);
 
@@ -430,7 +427,7 @@ public class ExperimentManageBiz {
         }*/
         //experimentInstanceEntity.setState(ExperimentStateEnum.SUSPEND.getState());
 //        experimentInstanceService.lambdaUpdate().update(experimentInstanceEntity);
-        experimentStateResponse.setExperimentStateEnum(experimentStateEnum);
+        experimentStateResponse.setEnumExperimentState(enumExperimentState);
         experimentStateResponse.setExperimentInstanceId(experimentInstanceEntity.getExperimentInstanceId());
         experimentStateResponse.setExperimentStartTime(experimentInstanceEntity.getStartTime());
         // todo 查询实验开始或暂停或结束,可直接差数据库

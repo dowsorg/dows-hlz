@@ -11,7 +11,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.AllArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.enums.EnumExperimentGroupStatus;
-import org.dows.hep.api.enums.ExperimentStateEnum;
+import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.event.ExptSchemeStartEvent;
 import org.dows.hep.api.event.ExptSchemeSubmittedEvent;
 import org.dows.hep.api.event.ExptSchemeSyncEvent;
@@ -268,7 +268,7 @@ public class ExperimentSchemeBiz {
             handleGroupStatus(experimentGroupId, EnumExperimentGroupStatus.ASSIGN_DEPARTMENT);
         } else {
             handleGroupStatus(experimentGroupId, EnumExperimentGroupStatus.WAIT_SCHEMA);
-            handleExptStatus(experimentInstanceId, ExperimentStateEnum.FINISH);
+            handleExptStatus(experimentInstanceId, EnumExperimentState.FINISH);
         }
 
         // sync submitted
@@ -420,10 +420,10 @@ public class ExperimentSchemeBiz {
         return experimentGroupService.update(updateWrapper);
     }
 
-    private Boolean handleExptStatus(String experimentInstanceId, ExperimentStateEnum experimentStateEnum) {
+    private Boolean handleExptStatus(String experimentInstanceId, EnumExperimentState enumExperimentState) {
         LambdaUpdateWrapper<ExperimentInstanceEntity> updateWrapper = new LambdaUpdateWrapper<ExperimentInstanceEntity>()
                 .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
-                .set(ExperimentInstanceEntity::getState, experimentStateEnum.getState());
+                .set(ExperimentInstanceEntity::getState, enumExperimentState.getState());
         return experimentInstanceService.update(updateWrapper);
     }
 

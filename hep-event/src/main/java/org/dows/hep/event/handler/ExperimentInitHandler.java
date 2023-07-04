@@ -8,7 +8,7 @@ import org.dows.account.response.AccountGroupResponse;
 import org.dows.account.response.AccountInstanceResponse;
 import org.dows.hep.api.ExperimentContext;
 import org.dows.hep.api.base.evaluate.EvaluateEnabledEnum;
-import org.dows.hep.api.enums.ExperimentStateEnum;
+import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
 import org.dows.hep.api.tenant.experiment.request.ExperimentGroupSettingRequest;
 import org.dows.hep.api.user.organization.request.CaseOrgRequest;
@@ -99,7 +99,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
         ExperimentContext experimentContext = new ExperimentContext();
         experimentContext.setExperimentId(experimentGroupSettingRequest.getExperimentInstanceId());
         experimentContext.setExperimentName(experimentGroupSettingRequest.getExperimentName());
-        experimentContext.setState(ExperimentStateEnum.UNBEGIN);
+        experimentContext.setState(EnumExperimentState.UNBEGIN);
         //设置小组个数
         experimentContext.setGroupCount(experimentGroupSettingRequest.getGroupSettings().size());
         ExperimentContext.set(experimentContext);

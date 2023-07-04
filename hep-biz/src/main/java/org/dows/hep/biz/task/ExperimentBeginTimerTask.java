@@ -3,7 +3,7 @@ package org.dows.hep.biz.task;
 import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dows.hep.api.enums.ExperimentStateEnum;
+import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.event.SuspendEvent;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
@@ -56,24 +56,24 @@ public class ExperimentBeginTimerTask implements Runnable {
         }
         log.info("执行开始任务,查询到实验实例:{}", JSONUtil.toJsonStr(experimentInstanceEntity));
         //1、判断实验是否到时间，到时间则更新状态
-        if (experimentInstanceEntity.getState() == ExperimentStateEnum.UNBEGIN.getState()) {
+        if (experimentInstanceEntity.getState() == EnumExperimentState.UNBEGIN.getState()) {
 
             experimentInstanceService.lambdaUpdate()
                     .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceEntity.getExperimentInstanceId())
                     .eq(ExperimentInstanceEntity::getDeleted, false)
-                    .set(ExperimentInstanceEntity::getState, ExperimentStateEnum.PREPARE.getState())
+                    .set(ExperimentInstanceEntity::getState, EnumExperimentState.PREPARE.getState())
                     .update();
-            experimentInstanceEntity.setState(ExperimentStateEnum.PREPARE.getState());
+            experimentInstanceEntity.setState(EnumExperimentState.PREPARE.getState());
 
             experimentParticipatorService.lambdaUpdate()
                     .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceEntity.getExperimentInstanceId())
                     .eq(ExperimentParticipatorEntity::getDeleted, false)
-                    .set(ExperimentParticipatorEntity::getState, ExperimentStateEnum.PREPARE.getState())
+                    .set(ExperimentParticipatorEntity::getState, EnumExperimentState.PREPARE.getState())
                     .update();
             experimentTimerService.lambdaUpdate()
                     .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceEntity.getExperimentInstanceId())
                     .eq(ExperimentTimerEntity::getDeleted, false)
-                    .set(ExperimentTimerEntity::getState, ExperimentStateEnum.PREPARE.getState())
+                    .set(ExperimentTimerEntity::getState, EnumExperimentState.PREPARE.getState())
                     .update();
             //1、更改缓存
             /*ExperimentContext experimentContext = ExperimentContext.getExperimentContext(experimentInstanceEntity.getExperimentInstanceId());
@@ -83,11 +83,11 @@ public class ExperimentBeginTimerTask implements Runnable {
         /**
          * 当前实验状态为准备中时则发布实验暂停事件
          */
-        ExperimentStateEnum experimentStateEnum = Arrays.stream(ExperimentStateEnum.values())
+        EnumExperimentState enumExperimentState = Arrays.stream(EnumExperimentState.values())
                 .filter(e -> e.getState() == experimentInstanceEntity.getState())
                 .findFirst()
                 .orElse(null);
-        if (experimentStateEnum == ExperimentStateEnum.PREPARE) {
+        if (enumExperimentState == EnumExperimentState.PREPARE) {
             ExperimentRestartRequest experimentRestartRequest = new ExperimentRestartRequest();
             experimentRestartRequest.setExperimentInstanceId(experimentInstanceId);
             experimentRestartRequest.setPaused(true);

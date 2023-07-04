@@ -266,6 +266,7 @@ public class TenantCaseEventBiz {
         List<CaseEventEntity> rowsCaseEvent = ShareUtil.XCollection.map(rowsEvent, i ->
                 CopyWrapper.create(CaseEventEntity::new)
                         .endFrom(i)
+                        .setDt(new Date())
                         .setCaseInstanceId(caseInstanceId)
                         .setPersonId(personId)
                         .setPersonName(personName)

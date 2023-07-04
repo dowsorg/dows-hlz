@@ -1,8 +1,8 @@
 package org.dows.hep.biz.util;
 
 import org.dows.framework.api.exceptions.BizException;
-import org.dows.hep.api.enums.ExperimentModeEnum;
-import org.dows.hep.api.enums.ExperimentStateEnum;
+import org.dows.hep.api.enums.EnumExperimentMode;
+import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.entity.ExperimentInstanceEntity;
@@ -42,7 +42,7 @@ public class PeriodsTimerUtil {
         // 定义一期结束时间
         long pet = 0L;
         // 如果是标准模式，那么沙盘期数 需要减去方案设计截止时间
-        if (experimentInstance.getModel() == ExperimentModeEnum.STANDARD.getCode()) {
+        if (experimentInstance.getModel() == EnumExperimentMode.STANDARD.getCode()) {
             ExperimentSetting.SchemeSetting schemeSetting = experimentSetting.getSchemeSetting();
             if (schemeSetting != null) {
                 // 方案设计截止时间
@@ -73,8 +73,8 @@ public class PeriodsTimerUtil {
                     .experimentTimerId(idGenerator.nextIdStr())
                     .periodInterval(interval)
                     .period(period)
-                    .model(ExperimentModeEnum.STANDARD.getCode())
-                    .state(ExperimentStateEnum.UNBEGIN.getState())
+                    .model(EnumExperimentMode.STANDARD.getCode())
+                    .state(EnumExperimentState.UNBEGIN.getState())
                     .startTime(pst)
                     .endTime(pet)
                     .build();

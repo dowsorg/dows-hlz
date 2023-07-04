@@ -34,7 +34,7 @@ public class ExperimentSettingCollection implements ICacheClear {
     private LocalDateTime startTime;
 
     @Schema(title = "初始沙盒结束秒数")
-    private Integer rawEndSeconds;
+    private int rawEndSeconds;
     @Schema(title = "累计暂停秒数")
     private long cntPauseSeconds;
     @Schema(title = "上一次累计暂停秒数")

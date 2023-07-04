@@ -2,6 +2,9 @@ package org.dows.hep.biz.user.experiment;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.annotation.CalcCode;
+import org.dows.hep.api.enums.EnumCalcCode;
+import org.dows.hep.service.ExperimentScoringService;
 import org.springframework.stereotype.Component;
 
 /**
@@ -23,46 +26,51 @@ public class ExperimentScoringBiz {
 
     private final ExperimentSettingBiz experimentSettingBiz;
 
+    private final ExperimentScoringService experimentScoringService;
 
     /**
      * 健康指数分数计算
      */
-/*    public void hepHealthIndexScoring(String experimentInstanceId){
-        experimentSettingBiz.getCalcRule(experimentInstanceId);
+    @CalcCode(code = EnumCalcCode.hepHealthIndexCalculator)
+    public void hepHealthIndexScoring(String experimentInstanceId, String peroid) {
+        //experimentSettingBiz.getCalcRule(experimentInstanceId);
         //
 
-expeirimentScoreBiz.save();
+
     }
 
-    *//**
+    /**
      * 知识考点分数得分
-     *//*
-
-    public void hepKnowledgeScoring(){
-        experimentSettingBiz.getCalcRule(experimentInstanceId);
+     */
+    @CalcCode(code = EnumCalcCode.hepKnowledgeCalculator)
+    public void hepKnowledgeScoring() {
+        //experimentSettingBiz.getCalcRule(experimentInstanceId);
         //todo logic clac
 
     }
 
-    *//**
+    /**
      * 医疗占比得分
-     *//*
-    public void hepTreatmentPercentScoring(){
-        experimentSettingBiz.getCalcRule(experimentInstanceId);
+     */
+    @CalcCode(code = EnumCalcCode.hepTreatmentPercentCalculator)
+    public void hepTreatmentPercentScoring() {
+        //experimentSettingBiz.getCalcRule(experimentInstanceId);
     }
 
-    *//**
+    /**
      * 操作准确度得分
-     *//*
-    public void hepOperateRightScoring(){
-        experimentSettingBiz.getCalcRule(experimentInstanceId);
+     */
+    @CalcCode(code = EnumCalcCode.hepOperateRightCalculator)
+    public void hepOperateRightScoring() {
+        //experimentSettingBiz.getCalcRule(experimentInstanceId);
 
-    }*/
+    }
 
     /**
      * 总分
      */
-    public void hepTotalScoring(){
+    @CalcCode(code = EnumCalcCode.hepTotalScoreCalculator)
+    public void hepTotalScoring() {
 
     }
 

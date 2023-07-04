@@ -76,7 +76,7 @@ public class ShareBiz {
         final LocalDateTime ldt=ShareUtil.XDate.localDT4Date(dt);
         final ExperimentCacheKey key=new ExperimentCacheKey().setAppId(appId).setExperimentInstanceId(experimentInstanceId);
         ExperimentTimePoint timePoint= ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(key,ldt,true);
-        return Optional.ofNullable(timePoint).map(ExperimentTimePoint::getGameDay).orElse(null);
+        return Optional.ofNullable(timePoint).map(ExperimentTimePoint::getGameDay).orElse(-1);
     }
 
     //region 获取公式

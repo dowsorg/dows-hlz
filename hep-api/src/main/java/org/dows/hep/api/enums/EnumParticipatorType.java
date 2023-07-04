@@ -5,7 +5,7 @@ import lombok.Getter;
 /**
  * 参与者类型
  */
-public enum ParticipatorTypeEnum {
+public enum EnumParticipatorType {
 
     TEACHER(0,"老师"),
 
@@ -18,7 +18,7 @@ public enum ParticipatorTypeEnum {
     private int code;
     @Getter
     private String descr;
-    ParticipatorTypeEnum(int code, String descr) {
+    EnumParticipatorType(int code, String descr) {
         this.code = code;
         this.descr = descr;
     }
