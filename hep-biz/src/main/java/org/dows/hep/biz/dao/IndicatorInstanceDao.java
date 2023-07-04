@@ -3,6 +3,8 @@ package org.dows.hep.biz.dao;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import org.dows.hep.entity.IndicatorInstanceEntity;
 import org.dows.hep.service.IndicatorInstanceService;
+import org.dows.hep.service.snapshot.SnapIndicatorInstanceService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -40,6 +42,9 @@ public class IndicatorInstanceDao extends BaseDao<IndicatorInstanceService, Indi
         return null;
     }
 
+
+    @Autowired
+    protected SnapIndicatorInstanceService snapIndicatorInstanceService;
     /**
      * 获取所有营养成分
      * @param cols
