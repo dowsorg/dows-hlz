@@ -3,6 +3,7 @@ package org.dows.hep.rest.base.indicator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.indicator.request.RsCopyCrowdsAndRiskModelRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyExperimentRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyPersonIndicatorRequestRs;
 import org.dows.hep.biz.base.indicator.RsCopyBiz;
@@ -28,5 +29,11 @@ public class RsCopyRest {
   @PostMapping("v1/experimentIndicator/personIndicator/rsCopy")
   public void rsCopyPersonIndicator(RsCopyPersonIndicatorRequestRs rsCopyPersonIndicatorRequestRs) {
     rsCopyBiz.rsCopyPersonIndicator(rsCopyPersonIndicatorRequestRs);
+  }
+
+  @Operation(summary = "复制人群类型以及死亡原因以及公式到实验")
+  @PostMapping("v1/experimentIndicator/crowdsAndRiskModel/rsCopy")
+  public void rsCopyCrowdsAndRiskModel(RsCopyCrowdsAndRiskModelRequestRs rsCopyCrowdsAndRiskModelRequestRs) {
+    rsCopyBiz.rsCopyCrowdsAndRiskModel(rsCopyCrowdsAndRiskModelRequestRs);
   }
 }

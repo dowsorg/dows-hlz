@@ -86,7 +86,7 @@ public class RiskModelBiz {
                 .builder()
                 .reasonId(riskModelId)
                 .appId(createOrUpdateRiskModelRequestRs.getAppId())
-                .source(EnumIndicatorExpressionSource.RISK_MODEL.getType())
+                .source(EnumIndicatorExpressionSource.CROWDS.getType())
                 .indicatorExpressionIdList(indicatorExpressionIdList)
                 .build());
         return flag;

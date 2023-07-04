@@ -15,12 +15,10 @@ import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
 import org.dows.hep.api.base.risk.request.CrowdsInstanceRequest;
 import org.dows.hep.api.base.risk.request.PageCrowdsRequest;
 import org.dows.hep.api.base.risk.response.CrowdsInstanceResponse;
-import org.dows.hep.api.base.tags.response.TagsInstanceResponse;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
-import org.dows.hep.biz.base.indicator.IndicatorInstanceBiz;
 import org.dows.hep.entity.CrowdsInstanceEntity;
 import org.dows.hep.entity.TagsInstanceEntity;
 import org.dows.hep.service.CrowdsInstanceService;
@@ -87,7 +85,7 @@ public class CrowdsInstanceBiz {
             .builder()
                 .reasonId(crowdsId)
                 .appId(appId)
-                .source(EnumIndicatorExpressionSource.RISK_MODEL.getType())
+                .source(EnumIndicatorExpressionSource.CROWDS.getType())
                 .indicatorExpressionIdList(indicatorExpressionIdList)
             .build());
         return flag;

@@ -137,6 +137,7 @@ public class IndicatorInstanceBiz{
     public void createOrUpdateRs(CreateOrUpdateIndicatorInstanceRequestRs createOrUpdateIndicatorInstanceRequestRs) throws InterruptedException {
         String indicatorInstanceId = createOrUpdateIndicatorInstanceRequestRs.getIndicatorInstanceId();
         String indicatorCategoryId = createOrUpdateIndicatorInstanceRequestRs.getIndicatorCategoryId();
+        Integer type = createOrUpdateIndicatorInstanceRequestRs.getType();
         String appId = createOrUpdateIndicatorInstanceRequestRs.getAppId();
         indicatorCategoryService.lambdaQuery()
             .eq(IndicatorCategoryEntity::getAppId, appId)
@@ -169,6 +170,7 @@ public class IndicatorInstanceBiz{
                 .unit(unit)
                 .core(core)
                 .food(food)
+                .type(type)
                 .build();
             AtomicInteger seqAtomicInteger = new AtomicInteger(1);
             indicatorCategoryRefService.lambdaQuery()
