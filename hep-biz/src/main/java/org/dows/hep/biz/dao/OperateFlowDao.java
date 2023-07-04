@@ -88,7 +88,7 @@ public class OperateFlowDao extends BaseSubDao<OperateFlowService, OperateFlowEn
                 .eq(OperateFlowEntity::getExperimentPersonId,experimentPersonId)
                 .eq(OperateFlowEntity::getExperimentOrgId,experimentOrgId)
                 .eq(ShareUtil.XObject.notEmpty(periods, true),OperateFlowEntity::getPeriods,periods)
-                .orderByDesc(OperateFlowEntity::getId)
+                .orderByDesc(OperateFlowEntity::getPeriods, OperateFlowEntity::getId)
                 .select(cols)
                 .last("limit 1")
                 .oneOpt();

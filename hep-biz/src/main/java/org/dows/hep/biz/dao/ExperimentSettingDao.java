@@ -47,7 +47,7 @@ public class ExperimentSettingDao extends BaseDao<ExperimentSettingService, Expe
     public List<ExperimentSettingEntity> getByExperimentId(String appId,String experimentId,String configKey,
                                                            SFunction<ExperimentSettingEntity,?>... cols){
         return service.lambdaQuery()
-                .eq(getColAppId(),appId)
+                .eq(ShareUtil.XObject.notEmpty(appId), getColAppId(),appId)
                 .eq(ExperimentSettingEntity::getExperimentInstanceId,experimentId)
                 .eq(ShareUtil.XObject.notEmpty(configKey), ExperimentSettingEntity::getConfigKey,configKey)
                 .select(cols)

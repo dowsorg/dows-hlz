@@ -3,6 +3,7 @@ package org.dows.hep.rest.user.experiment;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
 * @description project descr:实验:机构操作
+* @folder user-hep/机构操作
 *
 * @author lait.zhang
 * @date 2023年4月23日 上午9:44:34
@@ -54,8 +56,8 @@ public class ExperimentOrgRest {
     */
     @Operation(summary = "挂号：医院，体检中心")
     @PostMapping("v1/userExperiment/experimentOrg/startOrgFlow")
-    public Boolean startOrgFlow(@RequestBody @Validated StartOrgFlowRequest startOrgFlow ) {
-        return experimentOrgBiz.startOrgFlow(startOrgFlow);
+    public Boolean startOrgFlow(@RequestBody @Validated StartOrgFlowRequest startOrgFlow, HttpServletRequest request ) {
+        return experimentOrgBiz.startOrgFlow(startOrgFlow, request);
     }
 
     /**

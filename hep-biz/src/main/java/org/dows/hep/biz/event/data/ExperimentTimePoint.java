@@ -23,7 +23,7 @@ public class ExperimentTimePoint {
     @Schema(title = "期数")
     private Integer period;
 
-    @Schema(title = "累计暂停时间")
+    @Schema(title = "累计暂停秒数")
     private Long cntPauseSeconds;
     @Schema(title = "现实时间")
     private LocalDateTime realTime;

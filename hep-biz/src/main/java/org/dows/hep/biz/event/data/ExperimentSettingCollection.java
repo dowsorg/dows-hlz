@@ -141,6 +141,9 @@ public class ExperimentSettingCollection implements ICacheClear {
         @Schema(title = "结束游戏天数")
         private Integer endGameDay;
 
+        @Schema(title = "间隔秒数")
+        private Integer dueSecond;
+
 
 
     }

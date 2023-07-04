@@ -1,6 +1,7 @@
 package org.dows.hep.biz.util;
 
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
+import lombok.Getter;
 import org.dows.framework.crud.api.CrudContextHolder;
 import org.dows.hep.api.core.BaseExptRequest;
 import org.dows.hep.api.core.ExptOrgFuncRequest;
@@ -40,81 +41,58 @@ public class ExptRequestValidator {
 
     //region fields
     //应用ID
+    @Getter
     private String appId;
     //实验实例ID
+    @Getter
     private String experimentInstanceId;
     //实验小组ID
+    @Getter
     private String experimentGroupId;
     //实验人物ID
+    @Getter
     private String experimentPersonId;
     //实验机构ID
+    @Getter
     private String experimentOrgId;
     //期数
+    @Getter
     private Integer periods;
 
     //指标功能点ID
+    @Getter
     private String indicatorFuncId;
 
     //功能点类别ID
+    @Getter
     private String indicatorCategoryId;
 
     //案例ID
+    @Getter
     private String caseInstanceId;
 
     //案例机构ID
+    @Getter
     private String caseOrgId;
     //案例人物ID
+    @Getter
     private String casePersonId;
 
-    private Optional<ExperimentInstanceEntity> exptInstance;
+    @Getter
+    private Optional<ExperimentInstanceEntity> cachedExptInstance;
 
-    private Optional<ExperimentGroupEntity> exptGroup;
-    private Optional<ExperimentPersonEntity> exptPerson;
-    private Optional<ExperimentOrgEntity> exptOrg;
+    @Getter
+    private Optional<ExperimentGroupEntity> cachedExptGroup;
+    @Getter
+    private Optional<ExperimentPersonEntity> cachedExptPerson;
+    @Getter
+    private Optional<ExperimentOrgEntity> cachedExptOrg;
 
-    private Optional<IndicatorFuncEntity> exptOrgFunc;
+    @Getter
+    private Optional<IndicatorFuncEntity> cachedExptOrgFunc;
     //endregion
 
 
-
-    //region getId
-    public String getAppId(){
-        return this.appId;
-    }
-
-    public String getExperimentInstanceId(){
-        return this.experimentInstanceId;
-    }
-    public String getExperimentGroupId(){
-        return this.experimentGroupId;
-    }
-    public String getExperimentPersonId(){
-        return this.experimentPersonId;
-    }
-    public String getExperimentOrgId(){
-        return this.experimentOrgId;
-    }
-    public Integer getPeriods(){
-        return this.periods;
-    }
-
-    public String getIndicatorFuncId(){
-        return this.indicatorFuncId;
-    }
-    public String getIndicatorCategoryId(){
-        return this.indicatorCategoryId;
-    }
-    public String getCaseInstanceId(){
-        return this.caseInstanceId;
-    }
-    public String getCaseOrgId(){
-        return this.caseOrgId;
-    }
-    public String getCasePersonId(){
-        return this.casePersonId;
-    }
-
-    //endregion
 
     //region checkMulti
     public ExptRequestValidator checkValued(){
@@ -160,15 +138,15 @@ public class ExptRequestValidator {
     public ExperimentInstanceEntity getExperimentInstance(SFunction<ExperimentInstanceEntity,?>... cols){
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(experimentInstanceId))
                 .throwMessage("未找到实验ID");
-        if(null==exptInstance) {
-            exptInstance = CrudContextHolder.getBean(ExperimentInstanceService.class)
+        if(null== cachedExptInstance) {
+            cachedExptInstance = CrudContextHolder.getBean(ExperimentInstanceService.class)
                     .lambdaQuery()
                     .eq(ShareUtil.XObject.notEmpty(this.appId),ExperimentInstanceEntity::getAppId,appId)
                     .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
                     .select(cols)
                     .oneOpt();
         }
-        ExperimentInstanceEntity rst= AssertUtil.getNotNull(exptInstance).orElseThrow("未找到实验实例");
+        ExperimentInstanceEntity rst= AssertUtil.getNotNull(cachedExptInstance).orElseThrow("未找到实验实例");
         if(ShareUtil.XObject.isEmpty(caseInstanceId)&&ShareUtil.XObject.notEmpty(rst.getCaseInstanceId())){
             caseInstanceId=rst.getCaseInstanceId();
         }
@@ -202,15 +180,15 @@ public class ExptRequestValidator {
     public ExperimentGroupEntity getExperimentGroup(SFunction<ExperimentGroupEntity,?>... cols){
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(experimentGroupId))
                 .throwMessage("未找到实验小组ID");
-        if(null==exptGroup) {
-            exptGroup = CrudContextHolder.getBean(ExperimentGroupService.class)
+        if(null== cachedExptGroup) {
+            cachedExptGroup = CrudContextHolder.getBean(ExperimentGroupService.class)
                     .lambdaQuery()
                     .eq(ShareUtil.XObject.notEmpty(this.appId),ExperimentGroupEntity::getAppId,appId)
                     .eq(ExperimentGroupEntity::getExperimentGroupId, experimentGroupId)
                     .select(cols)
                     .oneOpt();
         }
-        ExperimentGroupEntity rst=AssertUtil.getNotNull(exptGroup).orElseThrow("未找到实验小组");
+        ExperimentGroupEntity rst=AssertUtil.getNotNull(cachedExptGroup).orElseThrow("未找到实验小组");
         if(ShareUtil.XObject.isEmpty(experimentInstanceId)&&ShareUtil.XObject.notEmpty(rst.getExperimentInstanceId())){
             experimentInstanceId=rst.getExperimentInstanceId();
         }
@@ -239,15 +217,15 @@ public class ExptRequestValidator {
     public ExperimentOrgEntity getExperimentOrg(SFunction<ExperimentOrgEntity,?>... cols){
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(experimentPersonId))
                 .throwMessage("未找到实验人物ID");
-        if(null==exptOrg) {
-            exptOrg = CrudContextHolder.getBean(ExperimentOrgService.class)
+        if(null== cachedExptOrg) {
+            cachedExptOrg = CrudContextHolder.getBean(ExperimentOrgService.class)
                     .lambdaQuery()
                     .eq(ShareUtil.XObject.notEmpty(this.appId),ExperimentOrgEntity::getAppId,appId)
                     .eq(ExperimentOrgEntity::getExperimentOrgId, experimentOrgId)
                     .select(cols)
                     .oneOpt();
         }
-        ExperimentOrgEntity rst=AssertUtil.getNotNull(exptOrg).orElseThrow("未找到实验机构");
+        ExperimentOrgEntity rst=AssertUtil.getNotNull(cachedExptOrg).orElseThrow("未找到实验机构");
         if(ShareUtil.XObject.isEmpty(experimentInstanceId)&&ShareUtil.XObject.notEmpty(rst.getExperimentInstanceId())){
             experimentInstanceId=rst.getExperimentInstanceId();
         }
@@ -281,15 +259,15 @@ public class ExptRequestValidator {
     public ExperimentPersonEntity getExperimentPerson(SFunction<ExperimentPersonEntity,?>... cols){
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(experimentPersonId))
                 .throwMessage("未找到实验人物ID");
-        if(null==exptPerson) {
-            exptPerson = CrudContextHolder.getBean(ExperimentPersonService.class)
+        if(null== cachedExptPerson) {
+            cachedExptPerson = CrudContextHolder.getBean(ExperimentPersonService.class)
                     .lambdaQuery()
                     .eq(ShareUtil.XObject.notEmpty(this.appId),ExperimentPersonEntity::getAppId,appId)
                     .eq(ExperimentPersonEntity::getExperimentPersonId, experimentPersonId)
                     .select(cols)
                     .oneOpt();
         }
-        ExperimentPersonEntity rst=AssertUtil.getNotNull(exptPerson).orElseThrow("未找到实验人物");
+        ExperimentPersonEntity rst=AssertUtil.getNotNull(cachedExptPerson).orElseThrow("未找到实验人物");
         if(ShareUtil.XObject.isEmpty(experimentInstanceId) &&ShareUtil.XObject.notEmpty(rst.getExperimentInstanceId())){
             experimentInstanceId=rst.getExperimentInstanceId();
         }
@@ -325,15 +303,15 @@ public class ExptRequestValidator {
     public IndicatorFuncEntity getIndicatorFunc(SFunction<IndicatorFuncEntity,?>... cols){
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(indicatorFuncId))
                 .throwMessage("未找到机构功能ID");
-        if(null==exptOrgFunc){
-            exptOrgFunc=CrudContextHolder.getBean(IndicatorFuncService.class)
+        if(null== cachedExptOrgFunc){
+            cachedExptOrgFunc =CrudContextHolder.getBean(IndicatorFuncService.class)
                     .lambdaQuery()
                     .eq(ShareUtil.XObject.notEmpty(this.appId),IndicatorFuncEntity::getAppId,appId)
                     .eq(IndicatorFuncEntity::getIndicatorFuncId, indicatorFuncId)
                     .select(cols)
                     .oneOpt();
         }
-        IndicatorFuncEntity rst=AssertUtil.getNotNull(exptOrgFunc).orElseThrow("未找到机构功能");
+        IndicatorFuncEntity rst=AssertUtil.getNotNull(cachedExptOrgFunc).orElseThrow("未找到机构功能");
         if(ShareUtil.XObject.isEmpty(indicatorCategoryId)&&ShareUtil.XObject.notEmpty(rst.getIndicatorCategoryId())){
             indicatorCategoryId=rst.getIndicatorCategoryId();
         }

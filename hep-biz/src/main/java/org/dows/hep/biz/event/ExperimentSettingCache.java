@@ -6,6 +6,7 @@ import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.biz.cache.BaseLoadingCache;
 import org.dows.hep.biz.dao.ExperimentSettingDao;
@@ -69,7 +70,7 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
         RangeMap<Integer,Integer> mapPeriodSeconds= TreeRangeMap.create();
 
         final Integer periods=sandSetting.getPeriods();
-        final Integer interval=sandSetting.getInterval().intValue()/1000;
+        final Integer interval=sandSetting.getInterval().intValue();// sandSetting.getInterval().intValue()/1000
         int startSeconds,startDay;
         int endSeconds=0;
         int endDay=0;
@@ -109,7 +110,7 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
             return getTimePointByRealTime(cached,key,dt,fillGameDay);
         }catch (Exception ex){
             log.error(String.format("ExperimentSettingCache.getTimePointByRealTimeSilence expt:%s dt:%s fillGameDay:%s",key,dt,fillGameDay) ,ex);
-            return new ExperimentTimePoint();
+            return null;
         }
     }
     public static ExperimentTimePoint getTimePointByRealTime(ExperimentSettingCollection cached,  ExperimentCacheKey key,LocalDateTime dt,boolean fillGameDay) {
@@ -166,13 +167,14 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
 
     @Override
     protected ExperimentSettingCollection cotinueLoad(ExperimentCacheKey key, ExperimentSettingCollection curVal) {
-        if(ShareUtil.XObject.isEmpty(curVal.getStartTime())){
-            List<ExperimentTimerEntity> rowsTimer=experimentTimerDao.getByExperimentId(key.getAppId(), key.getExperimentInstanceId(),
-                    1, ExperimentTimerEntity::getStartTime,ExperimentTimerEntity::getPauseCount);
+        if(ShareUtil.XObject.isEmpty(curVal.getStartTime())) {
+            List<ExperimentTimerEntity> rowsTimer = experimentTimerDao.getByExperimentId(key.getAppId(), key.getExperimentInstanceId(),
+                    1, ExperimentTimerEntity::getStartTime, ExperimentTimerEntity::getPauseCount, ExperimentTimerEntity::getState);
             curVal.setStartTime(rowsTimer.stream()
+                    .filter(i -> i.getState() >= EnumExperimentState.ONGOING.getState())
                     .max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount))
                     .map(ExperimentTimerEntity::getStartTime)
-                    .map(i->ShareUtil.XDate.localDT4UnixTS(i,false))
+                    .map(i -> ShareUtil.XDate.localDT4UnixTS(i, false))
                     .orElse(null));
 
         }

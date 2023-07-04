@@ -25,6 +25,10 @@ public class ExperimentCacheKey {
     @Schema(title = "实验实例id")
     private String experimentInstanceId;
 
+    public static ExperimentCacheKey create(String appId,String experimentInstanceId){
+        return new ExperimentCacheKey(appId,experimentInstanceId);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

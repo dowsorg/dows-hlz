@@ -4,20 +4,30 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.account.api.AccountUserApi;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
+import org.dows.hep.biz.dao.OperateFlowDao;
+import org.dows.hep.biz.event.ExperimentSettingCache;
+import org.dows.hep.biz.event.data.ExperimentCacheKey;
+import org.dows.hep.biz.event.data.ExperimentTimePoint;
+import org.dows.hep.biz.util.*;
+import org.dows.hep.biz.vo.LoginContextVO;
 import org.dows.hep.entity.ExperimentPersonEntity;
+import org.dows.hep.entity.OperateFlowEntity;
+import org.dows.hep.entity.OperateFlowSnapEntity;
 import org.dows.hep.service.ExperimentPersonService;
 import org.dows.user.api.api.UserInstanceApi;
 import org.dows.user.api.response.UserInstanceResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.*;
 
 /**
 * @description project descr:实验:机构操作
@@ -34,6 +44,8 @@ public class ExperimentOrgBiz{
     private final AccountUserApi accountUserApi;
 
     private final UserInstanceApi userInstanceApi;
+
+    private final OperateFlowDao operateFlowDao;
     /**
     * @param
     * @return
@@ -57,8 +69,53 @@ public class ExperimentOrgBiz{
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public Boolean startOrgFlow(StartOrgFlowRequest startOrgFlow ) {
-        return Boolean.FALSE;
+    public Boolean startOrgFlow(StartOrgFlowRequest startOrgFlow, HttpServletRequest request ) {
+        ExptRequestValidator validator=ExptRequestValidator.create(startOrgFlow);
+        validator.checkExperimentPerson()
+                .checkExperimentOrg()
+                .checkExperimentInstance();
+        //校验登录
+        LoginContextVO voLogin= ShareBiz.getLoginUser(request);
+        //校验挂号
+        final LocalDateTime ldtNow=LocalDateTime.now();
+        final Date dateNow=ShareUtil.XDate.localDT2Date(ldtNow);
+        ExperimentTimePoint timePoint= ExperimentSettingCache.Instance().getTimePointByRealTime(ExperimentCacheKey.create(validator.getAppId(), validator.getExperimentInstanceId()),
+                ldtNow,true);
+        ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator);
+        OperateFlowEntity  rowFlow=flowValidator.getOrgFlow(false);
+        AssertUtil.trueThenThrow(flowValidator.ifOrgFlowRunning(rowFlow,timePoint.getPeriod()))
+                .throwMessage("当前已挂过号，无需重复操作");
+        //TODO 检验资金,扣费
+        BigDecimal asset=BigDecimal.ZERO;
+        BigDecimal refund=BigDecimal.ZERO;
+        Double ghf= flowValidator.getOrgFee4Ghf().orElse(-1d);
+        AssertUtil.trueThenThrow(ghf<=0)
+                .throwMessage("未找到有效的挂号费设置");
+        rowFlow=createRowOrgFlow(validator)
+                .setPeriods(timePoint.getPeriod())
+                .setOperateAccountId(voLogin.getAccountId())
+                .setOperateAccountName(voLogin.getAccountName())
+                .setFee(BigDecimalUtil.valueOf(ghf))
+                .setAsset(asset)
+                .setRefund(refund)
+                .setStartTime(dateNow)
+                .setOperateTime(dateNow)
+                .setOperateGameDay(timePoint.getGameDay());
+        OperateFlowSnapEntity rowFlowSnap=OperateFlowSnapEntity.builder()
+                .appId(validator.getAppId())
+                .build();
+        return operateFlowDao.tranSave(rowFlow, Arrays.asList(rowFlowSnap),false);
+    }
+    private OperateFlowEntity createRowOrgFlow(ExptRequestValidator req){
+        return OperateFlowEntity.builder()
+                .appId(req.getAppId())
+                .experimentInstanceId(req.getExperimentInstanceId())
+                .experimentGroupId(req.getExperimentGroupId())
+                .experimentOrgId(req.getExperimentOrgId())
+                .experimentPersonId(req.getExperimentPersonId())
+                .periods(req.getPeriods())
+                .flowName(req.getCachedExptOrg().get().getCaseOrgName().concat("挂号"))
+                .build();
     }
     /**
     * @param
