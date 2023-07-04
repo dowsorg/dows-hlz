@@ -23,7 +23,6 @@ public class ExperimentScoringBiz {
 
     private final ExperimentSettingBiz experimentSettingBiz;
 
-    private final ExpeirimentScoreBiz expeirimentScoreBiz;
 
     /**
      * 健康指数分数计算
