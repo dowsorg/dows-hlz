@@ -139,6 +139,8 @@ public class ExperimentQuestionnaireItemBiz {
         options.forEach(option -> {
             if (results.contains(option.getId())) {
                 option.setChoose(Boolean.TRUE);
+            } else {
+                option.setChoose(Boolean.FALSE);
             }
         });
     }
