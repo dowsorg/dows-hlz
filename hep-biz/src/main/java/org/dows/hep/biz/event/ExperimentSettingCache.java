@@ -109,7 +109,7 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
             return getTimePointByRealTime(cached,key,dt,fillGameDay);
         }catch (Exception ex){
             log.error(String.format("ExperimentSettingCache.getTimePointByRealTimeSilence expt:%s dt:%s fillGameDay:%s",key,dt,fillGameDay) ,ex);
-            return null;
+            return new ExperimentTimePoint();
         }
     }
     public static ExperimentTimePoint getTimePointByRealTime(ExperimentSettingCollection cached,  ExperimentCacheKey key,LocalDateTime dt,boolean fillGameDay) {
@@ -168,7 +168,7 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
     protected ExperimentSettingCollection cotinueLoad(ExperimentCacheKey key, ExperimentSettingCollection curVal) {
         if(ShareUtil.XObject.isEmpty(curVal.getStartTime())){
             List<ExperimentTimerEntity> rowsTimer=experimentTimerDao.getByExperimentId(key.getAppId(), key.getExperimentInstanceId(),
-                    1, ExperimentTimerEntity::getStartTime);
+                    1, ExperimentTimerEntity::getStartTime,ExperimentTimerEntity::getPauseCount);
             curVal.setStartTime(rowsTimer.stream()
                     .max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount))
                     .map(ExperimentTimerEntity::getStartTime)
