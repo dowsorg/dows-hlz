@@ -15,11 +15,11 @@ import lombok.Getter;
  */
 public enum EnumCalcCode {
 
-    HEALTH_INDEX_CALC(0, "健康指数计算"),
-    KNOWLEDGE_CALC(1, "知识考点计算"),
-    TREATMENT_PERCENT_CALC(2, "医疗占比计算"),
-    OPERATE_RIGHT_CALC(3, "操作准确度计算"),
-    TOTAL_SCORE_CALC(4, "总分计算"),
+    hepHealthIndexCalculator(0, "健康指数计算"),
+    hepKnowledgeCalculator(1, "知识考点计算"),
+    hepTreatmentPercentCalculator(2, "医疗占比计算"),
+    hepOperateRightCalculator(3, "操作准确度计算"),
+    hepTotalScoreCalculator(4, "总分计算"),
     ;
 
     @Getter
