@@ -25,7 +25,7 @@ public class RsCopyRest {
     rsCopyBiz.rsCopyIndicatorFunc(rsCopyExperimentRequestRs);
   }
 
-  @Operation(summary = "复制人物指标以及人物指标到公式到实验")
+  @Operation(summary = "复制人物指标以及人物指标的公式到实验")
   @PostMapping("v1/experimentIndicator/personIndicator/rsCopy")
   public void rsCopyPersonIndicator(RsCopyPersonIndicatorRequestRs rsCopyPersonIndicatorRequestRs) {
     rsCopyBiz.rsCopyPersonIndicator(rsCopyPersonIndicatorRequestRs);
