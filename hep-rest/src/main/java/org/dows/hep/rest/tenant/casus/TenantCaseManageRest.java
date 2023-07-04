@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.tenant.casus.CaseSourceEnum;
 import org.dows.hep.api.tenant.casus.request.CaseInstanceCopyRequest;
 import org.dows.hep.api.tenant.casus.request.CaseInstancePageRequest;
 import org.dows.hep.api.tenant.casus.request.CaseInstanceRequest;
@@ -42,7 +43,7 @@ public class TenantCaseManageRest {
         String accountName = baseBiz.getAccountName(request);
         caseInstance.setAccountId(accountId);
         caseInstance.setAccountName(accountName);
-        return tenantCaseManageBiz.saveOrUpdCaseInstance(caseInstance);
+        return tenantCaseManageBiz.saveOrUpdCaseInstance(caseInstance, CaseSourceEnum.TENANT);
     }
 
     /**
