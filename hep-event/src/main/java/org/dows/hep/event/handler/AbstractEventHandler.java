@@ -21,16 +21,15 @@ public abstract class AbstractEventHandler {
     protected IdGenerator idGenerator;
 
 
-
     @Autowired
     // 实验实例
-    protected  ExperimentInstanceService experimentInstanceService;
+    protected ExperimentInstanceService experimentInstanceService;
     @Autowired
     // 实验参与者
-    protected  ExperimentParticipatorService experimentParticipatorService;
+    protected ExperimentParticipatorService experimentParticipatorService;
     @Autowired
     // 实验计时器
-    protected  ExperimentTimerService experimentTimerService;
+    protected ExperimentTimerService experimentTimerService;
     @Autowired
     protected ExperimentScoreCalculator experimentScoreCalculator;
 }

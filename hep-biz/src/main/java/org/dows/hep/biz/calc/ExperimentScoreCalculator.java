@@ -21,6 +21,7 @@ public class ExperimentScoreCalculator {
     private final Map<String, Calculatable> calculatableMap;
 
 
+
     public void calc(ExperimentScoreCalcRequest experimentScoreCalcRequest) {
         List<EnumCalcCode> enumCalcCodes = experimentScoreCalcRequest.getEnumCalcCodes();
         if (enumCalcCodes == null || enumCalcCodes.size() == 0) {
