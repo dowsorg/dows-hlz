@@ -31,4 +31,13 @@ public class ExperimentReportBiz {
 
     }
 
+
+    /**
+     * 分成报告
+     */
+    public void hepGenReport(){
+
+    }
+
+
 }
