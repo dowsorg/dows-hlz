@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.dows.hep.api.base.intervene.request.FindFoodRequest;
+import org.dows.hep.biz.snapshot.*;
+import org.dows.hep.biz.snapshot.converters.FoodMaterialLamdaConverter;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.FoodMaterialEntity;
@@ -14,6 +16,7 @@ import org.dows.hep.entity.FoodMaterialNutrientEntity;
 import org.dows.hep.service.FoodMaterialIndicatorService;
 import org.dows.hep.service.FoodMaterialNutrientService;
 import org.dows.hep.service.FoodMaterialService;
+import org.dows.hep.service.snapshot.SnapFoodMaterialService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +43,9 @@ public class FoodMaterialDao extends BaseSubDao<FoodMaterialService,FoodMaterial
 
     @Autowired
     protected IndicatorExpressionRefDao indicatorExpressionRefDao;
+
+    @Autowired
+    protected SnapFoodMaterialService snapFoodMaterialService;
 
 
     //region override
@@ -97,14 +103,14 @@ public class FoodMaterialDao extends BaseSubDao<FoodMaterialService,FoodMaterial
     public IPage<FoodMaterialEntity> pageByCondition(FindFoodRequest req, SFunction<FoodMaterialEntity, ?>... cols) {
         Page<FoodMaterialEntity> page = Page.of(req.getPageNo(), req.getPageSize());
         page.addOrder(OrderItem.asc("categ_name_lv1"),OrderItem.asc("energy"));
-        return service.lambdaQuery()
+        return SnapshotReadAdapter.create(EnumSnapshotType.FOODMaterial,service,snapFoodMaterialService, FoodMaterialLamdaConverter.Instance())
+                .selectAs(cols)
                 .eq(ShareUtil.XObject.notEmpty(req.getAppId()), FoodMaterialEntity::getAppId,req.getAppId())
                 .in(ShareUtil.XCollection.notEmpty(req.getCategIdLv1()), FoodMaterialEntity::getCategIdLv1, req.getCategIdLv1())
                 .like(ShareUtil.XString.hasLength(req.getKeywords()), FoodMaterialEntity::getFoodMaterialName, req.getKeywords())
                 .in(ShareUtil.XCollection.notEmpty(req.getIncIds()), getColId(), req.getIncIds())
                 .notIn(ShareUtil.XCollection.notEmpty(req.getExcIds()), getColId(), req.getExcIds())
                 .eq(ShareUtil.XObject.notEmpty(req.getState()), getColState(), req.getState())
-                .select(cols)
                 .page(page);
     }
 

@@ -22,10 +22,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author : wuzl
@@ -117,6 +114,8 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
     }
     public static ExperimentTimePoint getTimePointByRealTime(ExperimentSettingCollection cached,  ExperimentCacheKey key,LocalDateTime dt,boolean fillGameDay) {
         ExperimentTimePoint rst = new ExperimentTimePoint().setRealTime(dt);
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(cached.getMapPeriod()))
+                .throwMessage("未找到实验时间设置");
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(cached.getStartTime()))
                 .throwMessage("未找到实验开始时间");
         LocalDateTime now = LocalDateTime.now();
@@ -136,7 +135,7 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
 
         }
         ExperimentTimerEntity rowTime = AssertUtil.getNotNull(s_instance.experimentTimerDao.getCurPeriodByExperimentId(key.getAppId(), key.getExperimentInstanceId(),
-                        ShareUtil.XDate.localDT2UnixTS(rawEndTime, true),
+                        ShareUtil.XDate.localDT2UnixTS(rawEndTime, false),
                         ExperimentTimerEntity::getPeriod,
                         ExperimentTimerEntity::getStartTime,
                         ExperimentTimerEntity::getEndTime))
@@ -144,7 +143,11 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
         rst.setPeriod(rowTime.getPeriod());
         ExperimentSettingCollection.ExperimentPeriodSetting setting = AssertUtil.getNotNull(cached.getSettingByPeriod(rst.getPeriod()))
                 .orElseThrow(String.format("未找到实验第%s期设置", rst.getPeriod()));
-        rst.setCntPauseSeconds(rowTime.getEndTime() / 1000 - ShareUtil.XDate.localDT2UnixTS(cached.getStartTime().plusSeconds(setting.getEndSecond()), true));
+        long pausingSeconds=0;
+        if(Optional.ofNullable( rowTime.getPaused()).orElse(false)){
+            pausingSeconds=(ShareUtil.XDate.localDT2UnixTS(dt,false)- rowTime.getPauseStartTime().getTime())/1000;
+        }
+        rst.setCntPauseSeconds(pausingSeconds+rowTime.getEndTime() / 1000 - ShareUtil.XDate.localDT2UnixTS(cached.getStartTime().plusSeconds(setting.getEndSecond()), true));
         if (!fillGameDay || ShareUtil.XObject.isEmpty(rst.getCntPauseSeconds())) {
             return rst;
         }
