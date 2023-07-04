@@ -3,10 +3,12 @@ package org.dows.hep.biz.base.indicator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.dows.hep.api.base.indicator.request.RsCopyCrowdsAndRiskModelRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyExperimentRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyPersonIndicatorRequestRs;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.enums.EnumIndicatorCategory;
+import org.dows.hep.api.enums.EnumStatus;
 import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.api.exception.RsCopyException;
 import org.dows.hep.entity.*;
@@ -84,6 +86,10 @@ public class RsCopyBiz {
   private final IndicatorExpressionRefService indicatorExpressionRefService;
   private final IndicatorExpressionService indicatorExpressionService;
   private final IndicatorExpressionItemService indicatorExpressionItemService;
+  private final CrowdsInstanceService crowdsInstanceService;
+  private final RiskModelService riskModelService;
+  private final ExperimentCrowdsInstanceRsService experimentCrowdsInstanceRsService;
+  private final ExperimentRiskModelRsService experimentRiskModelRsService;
 
   @Transactional(rollbackFor = Exception.class)
   public void rsCopyIndicatorFunc(RsCopyExperimentRequestRs rsCopyExperimentRequestRs) {
@@ -1730,5 +1736,143 @@ public class RsCopyBiz {
         .seq(caseIndicatorExpressionItemEntity.getSeq())
         .build();
     return experimentIndicatorExpressionItemRsEntity;
+  }
+
+  @Transactional(rollbackFor = Exception.class)
+  public void rsCopyCrowdsAndRiskModel(RsCopyCrowdsAndRiskModelRequestRs rsCopyCrowdsAndRiskModelRequestRs) {
+    List<ExperimentCrowdsInstanceRsEntity> experimentCrowdsInstanceRsEntityList = new ArrayList<>();
+    List<ExperimentRiskModelRsEntity> experimentRiskModelRsEntityList = new ArrayList<>();
+    List<ExperimentIndicatorExpressionRefRsEntity> experimentIndicatorExpressionRefRsEntityList = new ArrayList<>();
+    List<ExperimentIndicatorExpressionRsEntity> experimentIndicatorExpressionRsEntityList = new ArrayList<>();
+    List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList = new ArrayList<>();
+    String appId = rsCopyCrowdsAndRiskModelRequestRs.getAppId();
+    String experimentInstanceId = rsCopyCrowdsAndRiskModelRequestRs.getExperimentInstanceId();
+    Map<String, CrowdsInstanceEntity> kCrowdsIdVCrowdsInstanceEntityMap = new HashMap<>();
+    Set<String> crowdsIdSet = new HashSet<>();
+    crowdsInstanceService.lambdaQuery()
+        .eq(CrowdsInstanceEntity::getAppId, appId)
+        .list()
+        .forEach(crowdsInstanceEntity -> {
+          String crowdsId = crowdsInstanceEntity.getCrowdsId();
+          crowdsIdSet.add(crowdsId);
+          kCrowdsIdVCrowdsInstanceEntityMap.put(crowdsId, crowdsInstanceEntity);
+        });
+    Map<String, RiskModelEntity> kRiskModelIdVRiskModelEntityMap = new HashMap<>();
+    Set<String> riskModelIdSet = new HashSet<>();
+    riskModelService.lambdaQuery()
+        .eq(RiskModelEntity::getAppId, appId)
+        .eq(RiskModelEntity::getStatus, EnumStatus.ENABLE.getCode())
+        .list()
+        .forEach(riskModelEntity -> {
+          String riskModelId = riskModelEntity.getRiskModelId();
+          riskModelIdSet.add(riskModelId);
+          kRiskModelIdVRiskModelEntityMap.put(riskModelId, riskModelEntity);
+        });
+    Set<String> reasonIdSet = new HashSet<>();
+    reasonIdSet.addAll(crowdsIdSet);
+    reasonIdSet.addAll(riskModelIdSet);
+    Map<String, Set<String>> kReasonIdVIndicatorExpressionIdSetMap = new HashMap<>();
+    Set<String> indicatorExpressionIdSet = new HashSet<>();
+    if (!reasonIdSet.isEmpty()) {
+      indicatorExpressionRefService.lambdaQuery()
+          .eq(IndicatorExpressionRefEntity::getAppId, appId)
+          .in(IndicatorExpressionRefEntity::getReasonId, reasonIdSet)
+          .list()
+          .forEach(indicatorExpressionRefEntity -> {
+            String reasonId = indicatorExpressionRefEntity.getReasonId();
+            String indicatorExpressionId = indicatorExpressionRefEntity.getIndicatorExpressionId();
+            indicatorExpressionIdSet.add(indicatorExpressionId);
+            Set<String> indicatorExpressionIdSet1 = kReasonIdVIndicatorExpressionIdSetMap.get(reasonId);
+            if (Objects.isNull(indicatorExpressionIdSet1)) {
+              indicatorExpressionIdSet1 = new HashSet<>();
+            }
+            indicatorExpressionIdSet1.add(indicatorExpressionId);
+            kReasonIdVIndicatorExpressionIdSetMap.put(reasonId, indicatorExpressionIdSet1);
+          });
+    }
+    Map<String, IndicatorExpressionEntity> kIndicatorExpressionIdVIndicatorExpressionEntityMap = new HashMap<>();
+    Map<String, List<IndicatorExpressionItemEntity>> kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap = new HashMap<>();
+    if (!indicatorExpressionIdSet.isEmpty()) {
+      indicatorExpressionService.lambdaQuery()
+          .eq(IndicatorExpressionEntity::getAppId, appId)
+          .in(IndicatorExpressionEntity::getIndicatorExpressionId, indicatorExpressionIdSet)
+          .list()
+          .forEach(indicatorExpressionEntity -> {
+            String indicatorExpressionId = indicatorExpressionEntity.getIndicatorExpressionId();
+            kIndicatorExpressionIdVIndicatorExpressionEntityMap.put(indicatorExpressionId, indicatorExpressionEntity);
+          });
+      indicatorExpressionItemService.lambdaQuery()
+          .eq(IndicatorExpressionItemEntity::getAppId, appId)
+          .in(IndicatorExpressionItemEntity::getIndicatorExpressionId, indicatorExpressionIdSet)
+          .list()
+          .forEach(indicatorExpressionItemEntity -> {
+            String indicatorExpressionId = indicatorExpressionItemEntity.getIndicatorExpressionId();
+            List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.get(indicatorExpressionId);
+            if (!indicatorExpressionItemEntityList.isEmpty()) {
+              indicatorExpressionItemEntityList = new ArrayList<>();
+            }
+            indicatorExpressionItemEntityList.add(indicatorExpressionItemEntity);
+            kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.put(indicatorExpressionId, indicatorExpressionItemEntityList);
+          });
+    }
+    Map<String, String> kCrowdsInstanceIdVExperimentCrowsInstanceIdMap = new HashMap<>();
+    kCrowdsIdVCrowdsInstanceEntityMap.forEach((crowdsId, crowdsInstanceEntity) -> {
+      String experimentCrowdsId = idGenerator.nextIdStr();
+      kCrowdsInstanceIdVExperimentCrowsInstanceIdMap.put(crowdsId, experimentCrowdsId);
+      experimentCrowdsInstanceRsEntityList.add(ExperimentCrowdsInstanceRsEntity
+          .builder()
+          .experimentCrowdsId(experimentCrowdsId)
+          .crowdsId(crowdsId)
+          .experimentId(experimentInstanceId)
+          .appId(appId)
+          .name(crowdsInstanceEntity.getName())
+          .deathProbability(crowdsInstanceEntity.getDeathProbability())
+          .build());
+    });
+    Map<String, String> kRiskModelIdVExperimentRiskModelIdMap = new HashMap<>();
+    kRiskModelIdVRiskModelEntityMap.forEach((riskModelId, riskModelEntity) -> {
+      String experimentRiskModelId = idGenerator.nextIdStr();
+      String crowdsCategoryId = riskModelEntity.getCrowdsCategoryId();
+      String experimentCrowdsInstanceId = kCrowdsInstanceIdVExperimentCrowsInstanceIdMap.get(crowdsCategoryId);
+      kRiskModelIdVExperimentRiskModelIdMap.put(riskModelId, experimentRiskModelId);
+      experimentRiskModelRsEntityList.add(ExperimentRiskModelRsEntity
+          .builder()
+              .experimentRiskModelId(experimentRiskModelId)
+              .riskModelId(riskModelId)
+              .experimentId(experimentInstanceId)
+              .appId(appId)
+              .name(riskModelEntity.getName())
+              .riskDeathProbability(riskModelEntity.getRiskDeathProbability())
+              .crowdsCategoryId(experimentCrowdsInstanceId)
+              .status(riskModelEntity.getStatus())
+          .build());
+    });
+    if (!experimentCrowdsInstanceRsEntityList.isEmpty()) {
+      experimentCrowdsInstanceRsService.saveOrUpdateBatch(experimentCrowdsInstanceRsEntityList);
+    }
+    if (!experimentRiskModelRsEntityList.isEmpty()) {
+      experimentRiskModelRsService.saveOrUpdateBatch(experimentRiskModelRsEntityList);
+    }
+    if (!experimentIndicatorExpressionRefRsEntityList.isEmpty()) {
+      experimentIndicatorExpressionRefRsService.saveOrUpdateBatch(experimentIndicatorExpressionRefRsEntityList);
+    }
+    if (!experimentIndicatorExpressionRsEntityList.isEmpty()) {
+      experimentIndicatorExpressionRsService.saveOrUpdateBatch(experimentIndicatorExpressionRsEntityList);
+    }
+    if (!experimentIndicatorExpressionItemRsEntityList.isEmpty()) {
+      experimentIndicatorExpressionItemRsService.saveOrUpdateBatch(experimentIndicatorExpressionItemRsEntityList);
+    }
+  }
+
+  public static void rsCopyIndicatorExpression(
+      Set<String> reasonIdSet,
+      List<ExperimentIndicatorExpressionRefRsEntity> experimentIndicatorExpressionRefRsEntityList,
+      List<ExperimentIndicatorExpressionRsEntity> experimentIndicatorExpressionRsEntityList,
+      List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList
+  ) {
+    if (Objects.isNull(reasonIdSet) || reasonIdSet.isEmpty()) {
+      return;
+    }
+
   }
 }
