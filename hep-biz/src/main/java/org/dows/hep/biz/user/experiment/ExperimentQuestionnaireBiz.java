@@ -180,16 +180,15 @@ public class ExperimentQuestionnaireBiz {
      * @创建时间: 2023年4月23日 上午9:44:34
      */
     @DSTransactional
-    public Boolean submitQuestionnaireBatch(String experimentInstanceId, String period) {
-        if (StrUtil.isBlank(experimentInstanceId) || StrUtil.isBlank(period)) {
+    public Boolean submitQuestionnaireBatch(String experimentInstanceId, Integer period) {
+        if (StrUtil.isBlank(experimentInstanceId) || period == null) {
             throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
         }
-        Integer periodSeq = Integer.valueOf(period);
 
         // submit
         boolean updateRes = experimentQuestionnaireService.lambdaUpdate()
                 .eq(ExperimentQuestionnaireEntity::getExperimentInstanceId, experimentInstanceId)
-                .eq(ExperimentQuestionnaireEntity::getPeriodSequence, periodSeq)
+                .eq(ExperimentQuestionnaireEntity::getPeriodSequence, period)
                 .set(ExperimentQuestionnaireEntity::getState, ExptQuestionnaireStateEnum.SUBMITTED.getCode())
                 .update();
 
