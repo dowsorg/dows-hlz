@@ -1,6 +1,7 @@
 package org.dows.hep.api.tenant.casus.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -19,9 +20,11 @@ public class CaseInstanceRequest{
     private String caseInstanceId;
 
     @Schema(title = "案例名称")
+    @NotBlank(message = "社区名称不能为空")
     private String caseName;
 
     @Schema(title = "案例图片")
+    @NotBlank(message = "社区图示不能为空")
     private String casePic;
 
     @Schema(title = "案例地图背景图片")
