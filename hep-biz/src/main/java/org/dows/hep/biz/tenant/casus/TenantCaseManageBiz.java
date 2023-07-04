@@ -12,10 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.materials.MaterialsESCEnum;
 import org.dows.hep.api.base.question.QuestionESCEnum;
-import org.dows.hep.api.enums.EnumStatus;
-import org.dows.hep.api.tenant.casus.CaseESCEnum;
-import org.dows.hep.api.tenant.casus.CaseQuestionnaireDistributionEnum;
-import org.dows.hep.api.tenant.casus.CaseScoreModeEnum;
+import org.dows.hep.api.tenant.casus.*;
 import org.dows.hep.api.tenant.casus.request.CaseInstanceCopyRequest;
 import org.dows.hep.api.tenant.casus.request.CaseInstancePageRequest;
 import org.dows.hep.api.tenant.casus.request.CaseInstanceRequest;
@@ -54,27 +51,27 @@ public class TenantCaseManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public String saveOrUpdCaseInstance(CaseInstanceRequest caseInstanceRequest) {
+    public String saveOrUpdCaseInstance(CaseInstanceRequest caseInstanceRequest, CaseSourceEnum source) {
         if (BeanUtil.isEmpty(caseInstanceRequest)) {
             return "";
         }
 
-        CaseInstanceEntity caseInstanceEntity = convertRequest2Entity(caseInstanceRequest);
+        CaseInstanceEntity caseInstanceEntity = convertRequest2Entity(caseInstanceRequest, source);
         caseInstanceService.saveOrUpdate(caseInstanceEntity);
 
         return caseInstanceEntity.getCaseInstanceId();
     }
 
     /**
-    * @param
-    * @return
-    * @说明: 复制
-    * @关联表: caseInstance
-    * @工时: 8H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
+     * @param
+     * @return
+     * @说明: 复制
+     * @关联表: caseInstance
+     * @工时: 8H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
     public String copyCaseInstance(CaseInstanceCopyRequest request) {
         String oriCaseInstanceId = request.getOriCaseInstanceId();
         String targetCaseInstanceName = request.getTargetCaseInstanceName();
@@ -105,59 +102,37 @@ public class TenantCaseManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public IPage<CaseInstancePageResponse> pageCaseInstance(CaseInstancePageRequest caseInstancePageRequest ) {
-        if (BeanUtil.isEmpty(caseInstancePageRequest)) {
-            return new Page<>();
-        }
-
+    public IPage<CaseInstancePageResponse> pageCaseInstance(CaseInstancePageRequest caseInstancePageRequest) {
         String accountId = caseInstancePageRequest.getAccountId();
         boolean isAdmin = baseBiz.isAdministrator(accountId);
-        Page<CaseInstanceEntity> pageRequest = new Page<>(caseInstancePageRequest.getPageNo(), caseInstancePageRequest.getPageSize());
         Page<CaseInstanceEntity> pageResult = caseInstanceService.lambdaQuery()
-                .eq(!isAdmin, CaseInstanceEntity::getAccountId, accountId)
                 .eq(caseInstancePageRequest.getAppId() != null, CaseInstanceEntity::getAppId, caseInstancePageRequest.getAppId())
                 .eq(caseInstancePageRequest.getState() != null, CaseInstanceEntity::getState, caseInstancePageRequest.getState())
                 .like(StrUtil.isNotBlank(caseInstancePageRequest.getKeyword()), CaseInstanceEntity::getCaseName, caseInstancePageRequest.getKeyword())
-                .page(pageRequest);
+                .and(!isAdmin, wrapper -> {
+                    // 教师可以看到自己的以及管理员已经发布的
+                    wrapper.eq(CaseInstanceEntity::getAccountId, accountId)
+                            .or(wrapper1 -> {
+                                wrapper1.eq(CaseInstanceEntity::getSource, CaseSourceEnum.ADMIN.name())
+                                        .eq(CaseInstanceEntity::getShared, CaseSharedEnum.SHARED.getCode());
+                            });
+                })
+                .page(caseInstancePageRequest.getPage());
         Page<CaseInstancePageResponse> result = baseBiz.convertPage(pageResult, CaseInstancePageResponse.class);
         fillResult(result, caseInstancePageRequest.getAccountId());
         return result;
     }
 
-    private void fillResult(Page<CaseInstancePageResponse> result, String requestAccountId) {
-        if (BeanUtil.isEmpty(result)) {
-            throw new BizException(MaterialsESCEnum.DATA_NULL);
-        }
-
-        List<CaseInstancePageResponse> records = result.getRecords();
-        if (CollUtil.isEmpty(records)) {
-            return;
-        }
-
-        // set userName
-        for (CaseInstancePageResponse record: records) {
-            String accountId = record.getAccountId();
-            String userName = baseBiz.getUserName(accountId);
-            record.setUserName(userName);
-
-            if (requestAccountId.equals(accountId)) {
-                record.setCanOperate(Boolean.TRUE);
-            } else {
-                record.setCanOperate(Boolean.FALSE);
-            }
-        }
-    }
-
     /**
-    * @param
-    * @return
-    * @说明: 获取案例详情
-    * @关联表: caseInstance
-    * @工时: 4H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月23日 上午9:44:34
-    */
+     * @param
+     * @return
+     * @说明: 获取案例详情
+     * @关联表: caseInstance
+     * @工时: 4H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月23日 上午9:44:34
+     */
     public CaseInstanceResponse getCaseInstance(String caseInstanceId) {
         CaseInstanceResponse result = new CaseInstanceResponse();
         if (StrUtil.isBlank(caseInstanceId)) {
@@ -200,7 +175,7 @@ public class TenantCaseManageBiz {
             return false;
         }
 
-        return changeEnable(caseInstanceId, EnumStatus.ENABLE);
+        return changeEnable(caseInstanceId, CaseEnabledEnum.ENABLED);
     }
 
     /**
@@ -218,7 +193,7 @@ public class TenantCaseManageBiz {
             return false;
         }
 
-        return changeEnable(caseInstanceId, EnumStatus.DISABLE);
+        return changeEnable(caseInstanceId, CaseEnabledEnum.DISABLED);
     }
 
     /**
@@ -232,8 +207,8 @@ public class TenantCaseManageBiz {
      * @创建时间: 2023年4月23日 上午9:44:34
      */
     public Boolean delCaseInstance(List<String> caseInstanceIds) {
-        if (caseInstanceIds == null || caseInstanceIds.isEmpty()) {
-            return Boolean.FALSE;
+        if (CollUtil.isEmpty(caseInstanceIds)) {
+            throw new BizException(CaseESCEnum.PARAMS_NON_NULL);
         }
 
         LambdaQueryWrapper<CaseInstanceEntity> queryWrapper = new LambdaQueryWrapper<CaseInstanceEntity>()
@@ -241,9 +216,18 @@ public class TenantCaseManageBiz {
         return caseInstanceService.remove(queryWrapper);
     }
 
-    private CaseInstanceEntity convertRequest2Entity(CaseInstanceRequest request) {
+    private CaseInstanceEntity convertRequest2Entity(CaseInstanceRequest request, CaseSourceEnum sourceEnum) {
         if (BeanUtil.isEmpty(request)) {
             throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
+        }
+
+        String accountId = request.getAccountId();
+        boolean isAdmin = baseBiz.isAdministrator(accountId);
+        Integer shared = CaseSharedEnum.PRIVATE.getCode();
+        String source = sourceEnum.name();
+        if (isAdmin) {
+            shared = CaseSharedEnum.SHARED.getCode();
+            source = CaseSourceEnum.ADMIN.name();
         }
 
         CaseInstanceEntity result = CaseInstanceEntity.builder()
@@ -257,6 +241,8 @@ public class TenantCaseManageBiz {
                 .guide(request.getGuide())
                 .accountId(request.getAccountId())
                 .accountName(request.getAccountName())
+                .source(source)
+                .shared(shared)
                 .state(request.getState())
                 .build();
 
@@ -299,10 +285,35 @@ public class TenantCaseManageBiz {
         return newEntity;
     }
 
-    private boolean changeEnable(String caseInstanceId, EnumStatus enable) {
+    private boolean changeEnable(String caseInstanceId, CaseEnabledEnum enable) {
         LambdaUpdateWrapper<CaseInstanceEntity> updateWrapper = new LambdaUpdateWrapper<CaseInstanceEntity>()
                 .eq(CaseInstanceEntity::getCaseInstanceId, caseInstanceId)
                 .set(CaseInstanceEntity::getState, enable.getCode());
         return caseInstanceService.update(updateWrapper);
+    }
+
+    private void fillResult(Page<CaseInstancePageResponse> result, String requestAccountId) {
+        if (BeanUtil.isEmpty(result)) {
+            throw new BizException(MaterialsESCEnum.DATA_NULL);
+        }
+
+        List<CaseInstancePageResponse> records = result.getRecords();
+        if (CollUtil.isEmpty(records)) {
+            return;
+        }
+
+        // set userName,
+        // todo 提供批量查询userName的接口
+        for (CaseInstancePageResponse record : records) {
+            String accountId = record.getAccountId();
+            String userName = baseBiz.getUserName(accountId);
+            record.setUserName(userName);
+
+            if (requestAccountId.equals(accountId)) {
+                record.setCanOperate(Boolean.TRUE);
+            } else {
+                record.setCanOperate(Boolean.FALSE);
+            }
+        }
     }
 }

@@ -60,12 +60,6 @@ public class CaseInstanceEntity implements CrudEntity {
     @Schema(title = "指导描述")
     private String guide;
 
-    @Schema(title = "创建者账号Id")
-    private String accountId;
-
-    @Schema(title = "创建者姓名")
-    private String accountName;
-
     @Schema(title = "案例状态[0:未发布|1:发布]")
     private Integer state;
 
@@ -74,6 +68,18 @@ public class CaseInstanceEntity implements CrudEntity {
 
     @Schema(title = "版本号")
     private String ver;
+
+    @Schema(title = "创建者账号Id")
+    private String accountId;
+
+    @Schema(title = "创建者姓名")
+    private String accountName;
+
+    @Schema(title = "是否分享 0-不分享 1-分享")
+    private Integer shared;
+
+    @Schema(title = "来源")
+    private String source;
 
     @JsonIgnore
     @TableLogic
