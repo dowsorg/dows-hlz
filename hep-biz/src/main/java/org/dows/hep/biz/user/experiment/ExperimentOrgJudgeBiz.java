@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeHealthManagementGoalRequest;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
-import org.dows.hep.biz.util.TimeUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -32,6 +31,7 @@ public class ExperimentOrgJudgeBiz {
     private final ExperimentPersonInsuranceService experimentPersonInsuranceService;
     private final OperateOrgFuncService operateOrgFuncService;
     private final OperateOrgFuncSnapService operateOrgFuncSnapService;
+    private final ExperimentPersonMedicalResultService experimentPersonMedicalResultService;
     private final IdGenerator idGenerator;
 
     /**
@@ -274,38 +274,10 @@ public class ExperimentOrgJudgeBiz {
         return responseList;
     }
 
-    /**
-     * @param
-     * @return
-     * @说明: 是否购买保险
-     * @关联表: experimentPersonProperty
-     * @工时: 2H
-     * @开发者: jx
-     * @开始时间:
-     * @创建时间: 2023年6月27日 下午18:29:34
-     */
-    @DSTransactional
-    public Boolean isPurchaseInsure(ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest) {
-        ExperimentPersonInsuranceEntity experimentPersonInsuranceEntity = ExperimentPersonInsuranceEntity
-                .builder()
-                .experimentPersonInsuranceId(idGenerator.nextIdStr())
-                .appId(experimentPersonInsuranceRequest.getAppId())
-                .experimentPersonId(experimentPersonInsuranceRequest.getExperimentPersonId())
-                .experimentInstanceId(experimentPersonInsuranceRequest.getExperimentInstanceId())
-                .experimentGroupId(experimentPersonInsuranceRequest.getExperimentGroupId())
-                .periods(experimentPersonInsuranceRequest.getPeriods())
-                .operateOrgId(experimentPersonInsuranceRequest.getOperateOrgId())
-                .reimburseRatio(experimentPersonInsuranceRequest.getReimburseRatio())
-                .indate(new Date())
-                .expdate(TimeUtil.addDays(new Date(),365))
-                .build();
-        return experimentPersonInsuranceService.save(experimentPersonInsuranceEntity);
-    }
-
 
     /**
      * @param
-     * @return;9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999988
+     * @return;
      * @说明: 二级-无报告 获取判断得分
      * @关联表: indicatorJudgeRiskFactor
      * @工时: 2H

@@ -1,6 +1,7 @@
 package org.dows.hep.biz.tenant.casus;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -77,18 +78,12 @@ public class TenantCaseSchemeBiz {
      * @创建时间: 2023年4月17日 下午8:00:11
      */
     public IPage<CaseSchemePageResponse> pageCaseScheme(CaseSchemePageRequest caseSchemePage) {
-        if (BeanUtil.isEmpty(caseSchemePage)) {
-            return new Page<>();
-        }
-
-        // page
-        Page<CaseSchemeEntity> page = new Page<>(caseSchemePage.getPageNo(), caseSchemePage.getPageSize());
         Page<CaseSchemeEntity> pageResult = caseSchemeService.lambdaQuery()
                 .eq(CaseSchemeEntity::getSource, CaseSchemeSourceEnum.ADMIN.name())
                 .eq(caseSchemePage.getEnabled() != null, CaseSchemeEntity::getEnabled, caseSchemePage.getEnabled())
-                .in(caseSchemePage.getCategIds() != null && !caseSchemePage.getCategIds().isEmpty(), CaseSchemeEntity::getCaseCategId, caseSchemePage.getCategIds())
+                .in(CollUtil.isNotEmpty(caseSchemePage.getCategIds()), CaseSchemeEntity::getCaseCategId, caseSchemePage.getCategIds())
                 .like(StrUtil.isNotBlank(caseSchemePage.getKeyword()), CaseSchemeEntity::getSchemeName, caseSchemePage.getKeyword())
-                .page(page);
+                .page(caseSchemePage.getPage());
 
         // convert
         Page<CaseSchemePageResponse> result = baseBiz.convertPage(pageResult, CaseSchemePageResponse.class);
@@ -419,7 +414,7 @@ public class TenantCaseSchemeBiz {
 
     private void fillPageResponse(Page<CaseSchemePageResponse> result) {
         List<CaseSchemePageResponse> records = result.getRecords();
-        if (records != null && !records.isEmpty()) {
+        if (CollUtil.isNotEmpty(records)) {
             List<String> categIds = records.stream()
                     .map(CaseSchemePageResponse::getCaseCategId)
                     .toList();

@@ -46,7 +46,7 @@ public class QuestionCategoryRest {
     @Operation(summary = "根据 groupCode 查询所有类目")
     @GetMapping("v1/baseQuestion/questionCategory/listByCategoryGroup")
     public List<QuestionCategoryResponse> listByCategoryGroup(String categoryGroup) {
-        return questionCategBiz.getChildrenByPid("0", categoryGroup);
+        return questionCategBiz.getTreeChildrenByPid("0", categoryGroup);
     }
 
     /**

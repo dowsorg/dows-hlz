@@ -12,8 +12,8 @@ import org.dows.account.response.AccountInstanceResponse;
 import org.dows.account.response.AccountRoleResponse;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
-import org.dows.hep.api.enums.ExperimentStatusCode;
-import org.dows.hep.api.enums.ParticipatorTypeEnum;
+import org.dows.hep.api.enums.EnumExperimentStatusCode;
+import org.dows.hep.api.enums.EnumParticipatorType;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
@@ -198,7 +198,7 @@ public class ExperimentParticipatorBiz {
 //                .eq(ExperimentParticipatorEntity::getParticipatorType, getExperimentGroupCaptainRequest.getParticipatorType().getCode())
                 .oneOpt().orElse(null);
         if (experimentParticipatorEntity == null) {
-            throw new ExperimentException(ExperimentStatusCode.NOT_CAPTAIN);
+            throw new ExperimentException(EnumExperimentStatusCode.NOT_CAPTAIN);
 //            return null;
         }
         return BeanConvert.beanConvert(experimentParticipatorEntity, GetExperimentGroupCaptainResponse.class);
@@ -216,7 +216,7 @@ public class ExperimentParticipatorBiz {
                 .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
                 .eq(ExperimentParticipatorEntity::getExperimentGroupId, experimentGroupId)
                 .eq(ExperimentParticipatorEntity::getAccountId, accountId)
-                .eq(ExperimentParticipatorEntity::getParticipatorType, ParticipatorTypeEnum.CAPTAIN.getCode())
+                .eq(ExperimentParticipatorEntity::getParticipatorType, EnumParticipatorType.CAPTAIN.getCode())
                 .count();
         if (count == null || count == 0) {
             return Boolean.FALSE;

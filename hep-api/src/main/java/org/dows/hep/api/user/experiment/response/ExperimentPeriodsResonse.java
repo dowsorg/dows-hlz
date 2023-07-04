@@ -2,7 +2,7 @@ package org.dows.hep.api.user.experiment.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import org.dows.hep.api.enums.ExperimentModeEnum;
+import org.dows.hep.api.enums.EnumExperimentMode;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -64,11 +64,11 @@ public class ExperimentPeriodsResonse {
 
 
         public String getModelDescr(){
-            final ExperimentModeEnum experimentModeEnum = Arrays.stream(ExperimentModeEnum.values())
+            final EnumExperimentMode enumExperimentMode = Arrays.stream(EnumExperimentMode.values())
                     .filter(e -> e.getCode() == model)
                     .findFirst().orElse(null);
-            if(experimentModeEnum != null){
-                return experimentModeEnum.getDescr();
+            if(enumExperimentMode != null){
+                return enumExperimentMode.getDescr();
             }
             return null;
         }

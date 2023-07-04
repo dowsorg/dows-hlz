@@ -1,0 +1,31 @@
+
+---
+#开发环境
+spring:
+  config:
+    activate:
+      on-profile: dev
+elasticjob:
+  reg-center:
+    server-lists: 192.168.1.60:2181
+    namespace: dev-dows-hep
+---
+#测试环境
+spring:
+  config:
+    activate:
+      on-profile: test
+elasticjob:
+  reg-center:
+    server-lists: 192.168.1.60:2281
+    namespace: test-dows-hep
+---
+#预发布环境
+spring:
+  config:
+    activate:
+      on-profile: staging
+elasticjob:
+  reg-center:
+    server-lists: 192.168.1.60:2381
+    namespace: staging-dows-hep

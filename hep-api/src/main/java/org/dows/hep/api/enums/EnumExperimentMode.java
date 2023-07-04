@@ -5,7 +5,7 @@ import lombok.Getter;
 /**
  * 实验模式
  */
-public enum ExperimentModeEnum {
+public enum EnumExperimentMode {
     SCHEME(0, "设计模式"),
     SAND(1, "沙盘模式"),
     STANDARD(2, "标准模式"),
@@ -16,7 +16,7 @@ public enum ExperimentModeEnum {
     @Getter
     private String descr;
 
-    ExperimentModeEnum(int code, String descr) {
+    EnumExperimentMode(int code, String descr) {
         this.code = code;
         this.descr = descr;
     }

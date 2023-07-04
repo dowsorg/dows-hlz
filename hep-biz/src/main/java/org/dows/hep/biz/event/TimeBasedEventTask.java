@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.api.CrudContextHolder;
 import org.dows.hep.api.enums.EnumEventTriggerSpan;
 import org.dows.hep.api.enums.EnumExperimentEventState;
-import org.dows.hep.api.enums.ExperimentStateEnum;
+import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.biz.dao.ExperimentEventDao;
 import org.dows.hep.biz.dao.ExperimentInstanceDao;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
@@ -77,12 +77,12 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
             logError("call", "missExperiment");
             return RUNCode4Fail;
         }
-        if(experimentState.equals(ExperimentStateEnum.SUSPEND.getState())){
+        if(experimentState.equals(EnumExperimentState.SUSPEND.getState())){
             logInfo("call", "pausedExperiment");
             raiseScheduler(DELAYSeconds4Pause);
             return RUNCode4Silence;
         }
-        if(experimentState.equals(ExperimentStateEnum.FINISH.getState())){
+        if(experimentState.equals(EnumExperimentState.FINISH.getState())){
             logInfo("call", "finishedExperiment");
             return RUNCode4Silence;
         }

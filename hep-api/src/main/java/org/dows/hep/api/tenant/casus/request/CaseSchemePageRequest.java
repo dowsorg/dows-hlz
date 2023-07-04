@@ -3,6 +3,7 @@ package org.dows.hep.api.tenant.casus.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dows.hep.api.BasePageRequest;
 
 import java.util.List;
 
@@ -15,13 +16,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @Schema(name = "CaseSchemePage 对象", title = "关键字聚合")
-public class CaseSchemePageRequest{
-    @Schema(title = "页数")
-    private Integer pageNo;
-
-    @Schema(title = "页大小")
-    private Integer pageSize;
-
+public class CaseSchemePageRequest extends BasePageRequest {
     @Schema(title = "关键字")
     private String keyword;
 

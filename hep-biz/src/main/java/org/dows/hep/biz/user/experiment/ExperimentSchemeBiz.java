@@ -3,6 +3,7 @@ package org.dows.hep.biz.user.experiment;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
@@ -10,6 +11,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.AllArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.enums.EnumExperimentGroupStatus;
+import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.event.ExptSchemeStartEvent;
 import org.dows.hep.api.event.ExptSchemeSubmittedEvent;
 import org.dows.hep.api.event.ExptSchemeSyncEvent;
@@ -22,12 +24,13 @@ import org.dows.hep.api.user.experiment.request.ExperimentSchemeAllotRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeItemRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeRequest;
 import org.dows.hep.api.event.source.ExptSchemeSyncEventSource;
+import org.dows.hep.api.user.experiment.request.ExperimentSchemeSubmitRequest;
 import org.dows.hep.api.user.experiment.response.*;
-import org.dows.hep.entity.ExperimentGroupEntity;
-import org.dows.hep.entity.ExperimentSchemeEntity;
-import org.dows.hep.entity.ExperimentSchemeItemEntity;
+import org.dows.hep.entity.*;
 import org.dows.hep.service.ExperimentGroupService;
+import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentSchemeService;
+import org.dows.hep.service.ExperimentSettingService;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -44,10 +47,12 @@ import java.util.stream.Collectors;
 @Service
 public class ExperimentSchemeBiz {
     private final ExperimentSchemeService experimentSchemeService;
+    private final ExperimentGroupBiz experimentGroupBiz;
     private final ExperimentGroupService experimentGroupService;
+    private final ExperimentSettingService experimentSettingService;
+    private final ExperimentInstanceService experimentInstanceService;
     private final ExperimentSchemeItemBiz experimentSchemeItemBiz;
     private final ExperimentParticipatorBiz experimentParticipatorBiz;
-    private final ExperimentGroupBiz experimentGroupBiz;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     /**
@@ -243,10 +248,11 @@ public class ExperimentSchemeBiz {
      * @创建时间: 2023年4月23日 上午9:44:34
      */
     @DSTransactional
-    public Boolean submitScheme(String experimentInstanceId, String experimentGroupId, String accountId) {
-        if (StrUtil.isBlank(experimentInstanceId) || StrUtil.isBlank(experimentGroupId)) {
-            throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
-        }
+    public Boolean submitScheme(ExperimentSchemeSubmitRequest submitRequest) {
+        Assert.notNull(submitRequest, "提交方案设计请求参数不能为空");
+        String experimentInstanceId = submitRequest.getExperimentInstanceId();
+        String experimentGroupId = submitRequest.getExperimentGroupId();
+        String accountId = submitRequest.getAccountId();
 
         // check submit status
         String experimentSchemeId = cannotOperateAfterSubmit(experimentInstanceId, experimentGroupId);
@@ -258,12 +264,17 @@ public class ExperimentSchemeBiz {
                 .eq(ExperimentSchemeEntity::getExperimentSchemeId, experimentSchemeId)
                 .set(ExperimentSchemeEntity::getState, 1) // 1-已提交
                 .update();
-        boolean res2 = handleGroupStatus(experimentGroupId, EnumExperimentGroupStatus.WAIT_SCHEMA);
+        if (containsSandSetting(experimentInstanceId)) {
+            handleGroupStatus(experimentGroupId, EnumExperimentGroupStatus.ASSIGN_DEPARTMENT);
+        } else {
+            handleGroupStatus(experimentGroupId, EnumExperimentGroupStatus.WAIT_SCHEMA);
+            handleExptStatus(experimentInstanceId, EnumExperimentState.FINISH);
+        }
 
         // sync submitted
         syncSubmitted(experimentInstanceId, experimentGroupId);
 
-        return res1 && res2;
+        return res1;
     }
 
     private String cannotOperateAfterSubmit(String experimentInstanceId, String experimentGroupId) {
@@ -409,6 +420,13 @@ public class ExperimentSchemeBiz {
         return experimentGroupService.update(updateWrapper);
     }
 
+    private Boolean handleExptStatus(String experimentInstanceId, EnumExperimentState enumExperimentState) {
+        LambdaUpdateWrapper<ExperimentInstanceEntity> updateWrapper = new LambdaUpdateWrapper<ExperimentInstanceEntity>()
+                .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
+                .set(ExperimentInstanceEntity::getState, enumExperimentState.getState());
+        return experimentInstanceService.update(updateWrapper);
+    }
+
     private ExperimentSchemeEntity getScheme(String experimentInstanceId, String experimentGroupId) {
         return experimentSchemeService.lambdaQuery()
                 .eq(ExperimentSchemeEntity::getExperimentInstanceId, experimentInstanceId)
@@ -481,5 +499,22 @@ public class ExperimentSchemeBiz {
 
     private ExperimentSchemeItemEntity getSchemeItem(String experimentSchemeItemId) {
         return experimentSchemeItemBiz.getById(experimentSchemeItemId);
+    }
+
+    private boolean containsSandSetting(String experimentInstanceId) {
+        String sandSetting = "";
+        List<ExperimentSettingEntity> experimentSettings = experimentSettingService.lambdaQuery()
+                .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
+                .list();
+        for (ExperimentSettingEntity expSetting : experimentSettings) {
+            String configKey = expSetting.getConfigKey();
+            if (ExperimentSetting.SandSetting.class.getName().equals(configKey)) {
+                sandSetting = expSetting.getConfigJsonVals();
+            }
+        }
+        if (StrUtil.isNotBlank(sandSetting)) {
+            return Boolean.TRUE;
+        }
+        return Boolean.FALSE;
     }
 }

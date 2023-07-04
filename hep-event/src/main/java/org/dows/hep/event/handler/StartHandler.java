@@ -4,7 +4,7 @@ import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.uim.AccountInfo;
-import org.dows.hep.api.enums.ExperimentStateEnum;
+import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.entity.ExperimentTimerEntity;
@@ -34,7 +34,8 @@ public class StartHandler extends AbstractEventHandler implements EventHandler<E
         // 待更新集合
         List<ExperimentTimerEntity> updateExperimentTimerEntities = new ArrayList<>();
         // 查询实验期数
-        List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerBiz.getCurrentPeriods(experimentRestartRequest);
+        List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerBiz
+                .getCurrentPeriods(experimentRestartRequest.getExperimentInstanceId());
         // 方案设计模式不需要设计时器，只有标准模式或沙盘模式才需要设计时器//null == experimentRestartRequest.getPeriods() &&
         if (null == experimentRestartRequest.getPeriods()) {
 
@@ -53,14 +54,14 @@ public class StartHandler extends AbstractEventHandler implements EventHandler<E
                     experimentTimerEntity.setEndTime(experimentTimerEntity.getEndTime() + duration);
                     experimentTimerEntity.setDuration(duration);
                     // 修改实验状态，真正开始实验
-                    experimentTimerEntity.setState(ExperimentStateEnum.ONGOING.getState());
+                    experimentTimerEntity.setState(EnumExperimentState.ONGOING.getState());
                     experimentTimerEntity.setPaused(experimentRestartRequest.getPaused());
                     experimentTimerEntity.setPauseEndTime(experimentRestartRequest.getCurrentTime());
                     updateExperimentTimerEntities.add(experimentTimerEntity);
                 }
             });
             experimentTimerBiz.saveOrUpdateExperimentTimeExperimentState(experimentRestartRequest.getExperimentInstanceId(),
-                    updateExperimentTimerEntities, ExperimentStateEnum.ONGOING);
+                    updateExperimentTimerEntities, EnumExperimentState.ONGOING);
             //1、更改缓存
             /**
              * todo 需要调整
@@ -119,7 +120,7 @@ public class StartHandler extends AbstractEventHandler implements EventHandler<E
             }
             // 批量更新期数定时器
             boolean b = experimentTimerBiz.saveOrUpdateExperimentTimeExperimentState(experimentRestartRequest.getExperimentInstanceId(),
-                    updateExperimentTimerEntities, ExperimentStateEnum.ONGOING);
+                    updateExperimentTimerEntities, EnumExperimentState.ONGOING);
             if (b) {
                 // 通知客户端
                 ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfos();

@@ -533,6 +533,9 @@ public class CaseIndicatorInstanceBiz {
         .map(caseIndicatorCategoryEntity -> {
           String caseIndicatorCategoryId = caseIndicatorCategoryEntity.getCaseIndicatorCategoryId();
           List<CaseIndicatorInstanceResponseRs> caseIndicatorInstanceResponseRsList = kCaseIndicatorCategoryIdVCaseIndicatorInstanceResponseRsListMap.get(caseIndicatorCategoryId);
+          if (Objects.isNull(caseIndicatorInstanceResponseRsList)) {
+            caseIndicatorInstanceResponseRsList = new ArrayList<>();
+          }
           caseIndicatorInstanceResponseRsList.sort(Comparator.comparing(CaseIndicatorInstanceResponseRs::getSeq));
           return CaseIndicatorCategoryBiz.caseIndicatorCategory2ResponseRs(
               caseIndicatorCategoryEntity, caseIndicatorInstanceResponseRsList);

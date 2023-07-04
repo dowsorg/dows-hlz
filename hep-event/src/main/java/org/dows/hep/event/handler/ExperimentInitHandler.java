@@ -8,7 +8,7 @@ import org.dows.account.response.AccountGroupResponse;
 import org.dows.account.response.AccountInstanceResponse;
 import org.dows.hep.api.ExperimentContext;
 import org.dows.hep.api.base.evaluate.EvaluateEnabledEnum;
-import org.dows.hep.api.enums.ExperimentStateEnum;
+import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
 import org.dows.hep.api.tenant.experiment.request.ExperimentGroupSettingRequest;
 import org.dows.hep.api.user.organization.request.CaseOrgRequest;
@@ -18,17 +18,25 @@ import org.dows.hep.biz.tenant.experiment.ExperimentCaseInfoManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentQuestionnaireManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentSchemeManageBiz;
+import org.dows.hep.biz.task.ExperimentBeginTimerTask;
+import org.dows.hep.biz.task.ExperimentTaskScheduler;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.service.ExperimentInstanceService;
+import org.dows.hep.service.ExperimentParticipatorService;
+import org.dows.hep.service.ExperimentTimerService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 实验初始化
+ */
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class ExptInitHandler extends AbstractEventHandler implements EventHandler<ExperimentGroupSettingRequest> {
+public class ExperimentInitHandler extends AbstractEventHandler implements EventHandler<ExperimentGroupSettingRequest> {
     private final ExperimentCaseInfoManageBiz experimentCaseInfoManageBiz;
     private final ExperimentSchemeManageBiz experimentSchemeManageBiz;
     private final ExperimentQuestionnaireManageBiz experimentQuestionnaireManageBiz;
@@ -38,10 +46,21 @@ public class ExptInitHandler extends AbstractEventHandler implements EventHandle
     // 实验实例
     private final ExperimentInstanceService experimentInstanceService;
 
+    // 实验参与者
+    private final ExperimentParticipatorService experimentParticipatorService;
+    // 实验计时器
+    private final ExperimentTimerService experimentTimerService;
+
+    private final ApplicationEventPublisher applicationEventPublisher;
+
+    private final ExperimentTaskScheduler experimentTaskScheduler;
+
     @Override
     public void exec(ExperimentGroupSettingRequest request) {
         String experimentInstanceId = request.getExperimentInstanceId();
         String caseInstanceId = request.getCaseInstanceId();
+        // 设置实验开始定时器
+        setExperimentBeginTimerTask(request);
         // 初始化实验 `设置小组` 个数
         createGroupEvent(request);
         // 初始化实验 `复制机构和人物`
@@ -55,6 +74,23 @@ public class ExptInitHandler extends AbstractEventHandler implements EventHandle
     }
 
     /**
+     * 实验开始定时器
+     *
+     * @param experimentGroupSettingRequest
+     */
+    public void setExperimentBeginTimerTask(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
+        ExperimentBeginTimerTask experimentBeginTimerTask = new ExperimentBeginTimerTask(
+                experimentInstanceService, experimentParticipatorService, experimentTimerService, applicationEventPublisher,
+                experimentGroupSettingRequest.getExperimentInstanceId());
+
+        /**
+         * 设定定时任务
+         * todo 设定一个TimeTask,通过timer到时间执行一次，考虑重启情况，写数据库，针对出现的情况，更具时间重新schedule,先用事件处理，后期优化
+         */
+        experimentTaskScheduler.schedule(experimentBeginTimerTask, experimentGroupSettingRequest.getStartTime());
+    }
+
+    /**
      * todo 如果实验重启，这里在其他地方就获取不到，需要调整
      *
      * @param experimentGroupSettingRequest
@@ -63,14 +99,14 @@ public class ExptInitHandler extends AbstractEventHandler implements EventHandle
         ExperimentContext experimentContext = new ExperimentContext();
         experimentContext.setExperimentId(experimentGroupSettingRequest.getExperimentInstanceId());
         experimentContext.setExperimentName(experimentGroupSettingRequest.getExperimentName());
-        experimentContext.setState(ExperimentStateEnum.UNBEGIN);
+        experimentContext.setState(EnumExperimentState.UNBEGIN);
         //设置小组个数
         experimentContext.setGroupCount(experimentGroupSettingRequest.getGroupSettings().size());
         ExperimentContext.set(experimentContext);
     }
 
     /**
-     *
+     * copy 实验人物计事件
      */
     public void copyExperimentPersonAndOrgEvent(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
         // 复制人物与机构到实验中

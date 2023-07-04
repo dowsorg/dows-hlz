@@ -5,13 +5,13 @@ import lombok.Getter;
 /**
  * 实验状态
  */
-public enum ExperimentStateEnum {
+public enum EnumExperimentState {
     UNBEGIN(0, "未开始"),
-
     PREPARE(1, "准备中"),
     ONGOING(2, "进行中"),
     SUSPEND(3, "暂停中"),
-    FINISH(4, "已结束"),
+    SCORING(4,"算分中"),
+    FINISH(5, "已结束"),
 
     ;
     @Getter
@@ -19,7 +19,7 @@ public enum ExperimentStateEnum {
     @Getter
     private String descr;
 
-    ExperimentStateEnum(int state, String descr) {
+    EnumExperimentState(int state, String descr) {
         this.state = state;
         this.descr = descr;
     }
