@@ -246,7 +246,7 @@ public class QuestionInstanceBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     public String getStruct(List<String> idList) {
-        if (idList == null || idList.isEmpty()) {
+        if (CollUtil.isEmpty(idList)) {
             return "";
         }
 
@@ -412,7 +412,7 @@ public class QuestionInstanceBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     public Boolean delQuestion(List<String> questionInstanceIds) {
-        if (questionInstanceIds == null || questionInstanceIds.isEmpty()) {
+        if (CollUtil.isEmpty(questionInstanceIds)) {
             return Boolean.FALSE;
         }
 

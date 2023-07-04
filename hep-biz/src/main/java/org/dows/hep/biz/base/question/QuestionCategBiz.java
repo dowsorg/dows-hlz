@@ -175,7 +175,7 @@ public class QuestionCategBiz {
      * @return
      */
     public List<QuestionCategoryResponse> listQuestionCategory(List<String> categIds) {
-        if (categIds == null || categIds.isEmpty()) {
+        if (CollUtil.isEmpty(categIds)) {
             return new ArrayList<>();
         }
 
