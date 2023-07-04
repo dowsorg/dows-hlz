@@ -7,6 +7,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.hep.api.base.question.QuestionTypeEnum;
 import org.dows.hep.api.tenant.casus.CaseScoreModeEnum;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.dto.ExptQuestionnaireOptionDTO;
@@ -114,18 +115,31 @@ public class ExperimentQuestionnaireScoreBiz {
             return zeroScore;
         }
 
+        List<ExperimentQuestionnaireItemEntity> selectQuestionTypeList = itemList.stream()
+                .filter(item -> {
+                    String questionType = item.getQuestionType();
+                    return QuestionTypeEnum.isSelect(questionType);
+                })
+                .toList();
+        if (CollUtil.isEmpty(selectQuestionTypeList)) {
+            return zeroScore;
+        }
+
         // get unit-score
-        int totalNum = itemList.size();
+        int totalNum = selectQuestionTypeList.size();
         float unitScore = (float) NumberUtil.div(fullScore, totalNum);
 
         // get right-num
         int allRightNum = 0;
         int halfRightNum = 0;
-        for (ExperimentQuestionnaireItemEntity item : itemList) {
-            int scoreGrade = item.getScoreGrade();
-            if (scoreGrade == SCORE_GRADE_ALL_RIGHT) {
+        for (ExperimentQuestionnaireItemEntity item : selectQuestionTypeList) {
+            Integer scoreGrade = item.getScoreGrade();
+            if (scoreGrade == null) {
+                continue;
+            }
+            if (scoreGrade.equals(SCORE_GRADE_ALL_RIGHT)) {
                 allRightNum += 1;
-            } else if (scoreGrade == SCORE_GRADE_HALF_RIGHT) {
+            } else if (scoreGrade.equals(SCORE_GRADE_HALF_RIGHT)) {
                 halfRightNum += 1;
             }
         }
@@ -158,14 +172,14 @@ public class ExperimentQuestionnaireScoreBiz {
             String rightValue = item.getRightValue();
             List<ExptQuestionnaireOptionDTO> rightValueList = JSONUtil.toList(rightValue, ExptQuestionnaireOptionDTO.class);
             if (CollUtil.isEmpty(rightValueList)) {
-                break;
+                continue;
             }
             List<String> rightIdList = rightValueList.stream().map(ExptQuestionnaireOptionDTO::getId).toList();
 
             // question result
             String questionResult = item.getQuestionResult();
             if (StrUtil.isBlank(questionResult)) {
-                break;
+                continue;
             }
             String[] resultArr = questionResult.split(",");
             List<String> resultIdList = List.of(resultArr);
@@ -174,11 +188,9 @@ public class ExperimentQuestionnaireScoreBiz {
             List<String> commonElements = findCommonElements(rightIdList, resultIdList);
             if (commonElements.size() == rightIdList.size()) {
                 scoreGrade = SCORE_GRADE_ALL_RIGHT;
-            }
-            if (commonElements.size() > 0) {
+            } else if (commonElements.size() > 0) {
                 scoreGrade = SCORE_GRADE_HALF_RIGHT;
-            }
-            if (commonElements.size() == 0) {
+            } else if (commonElements.size() == 0) {
                 scoreGrade = SCORE_GRADE_ALL_ERROR;
             }
 
@@ -202,9 +214,5 @@ public class ExperimentQuestionnaireScoreBiz {
         Set<String> set2 = new HashSet<>(list2);
         set1.retainAll(set2);
         return new ArrayList<>(set1);
-    }
-
-    public static void main(String[] args) {
-        System.out.println(NumberUtil.div(10, 3, 2));
     }
 }
