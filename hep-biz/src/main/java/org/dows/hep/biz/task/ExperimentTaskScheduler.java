@@ -44,6 +44,28 @@ public class ExperimentTaskScheduler {
         futureMap.put(cron, future);
     }
 
+    /**
+     * 移除定时任务
+     *
+     * @param runnable
+     * @return
+     */
+    public Object remove(Runnable runnable) {
+        ScheduledFuture scheduledFuture = futureMap.get(runnable);
+        if (scheduledFuture != null) {
+            // 取消定时任务
+            scheduledFuture.cancel(true);
+            // 如果任务取消需要消耗点时间
+            boolean cancelled = scheduledFuture.isCancelled();
+            while (!cancelled) {
+                scheduledFuture.cancel(true);
+                log.info("定时任务取消中:{}", runnable);
+            }
+            // 最后从队列中删除
+            futureMap.remove(runnable);
+        }
+        return null;
+    }
 
     /**
      * 移除定时任务

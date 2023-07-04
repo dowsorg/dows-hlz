@@ -4,7 +4,6 @@ import cn.hutool.core.util.StrUtil;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
@@ -12,8 +11,8 @@ import org.springframework.core.type.AnnotationMetadata;
 /**
  * 计算器注册
  */
-@Configuration
-public class CalcBeanRegister implements ImportBeanDefinitionRegistrar, EnvironmentAware {
+//@Configuration
+public class CalcRegister implements ImportBeanDefinitionRegistrar, EnvironmentAware {
     private Environment environment;
 
     @Override
