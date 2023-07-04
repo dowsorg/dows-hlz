@@ -22,6 +22,21 @@ public enum QuestionTypeEnum {
 
     private final static Map<String, QuestionTypeEnum> codeMap = new LinkedHashMap<>();
 
+    // 是否是选择题
+    public static boolean isSelect(String code) {
+        if (code == null) {
+            return false;
+        }
+
+        if (RADIO_SELECT.getCode().equals(code)) {
+            return true;
+        }
+        if (MULTIPLE_SELECT.getCode().equals(code)) {
+            return true;
+        }
+        return false;
+    }
+
     public static QuestionTypeEnum getByCode(String code) {
         QuestionTypeEnum questionTypeEnum = codeMap.get(code);
         if (questionTypeEnum == null) {
