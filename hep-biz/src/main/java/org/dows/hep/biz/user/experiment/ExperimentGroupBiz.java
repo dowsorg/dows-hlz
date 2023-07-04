@@ -76,14 +76,14 @@ public class ExperimentGroupBiz {
                 .eq(ExperimentParticipatorEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
                 .eq(ExperimentParticipatorEntity::getAccountId, createGroup.getAccountId())
                 .eq(ExperimentParticipatorEntity::getDeleted, false)
-                .eq(ExperimentParticipatorEntity::getParticipatorType, ParticipatorTypeEnum.CAPTAIN.getCode())
+                .eq(ExperimentParticipatorEntity::getParticipatorType, EnumParticipatorType.CAPTAIN.getCode())
                 .oneOpt().orElse(null);
 
         if (list.size() == 0) {
-            throw new ExperimentException(ExperimentStatusCode.NO_EXIST_GROUP_ID);
+            throw new ExperimentException(EnumExperimentStatusCode.NO_EXIST_GROUP_ID);
         }
         if (experimentParticipatorEntity == null) {
-            throw new ExperimentException(ExperimentStatusCode.NOT_CAPTAIN);
+            throw new ExperimentException(EnumExperimentStatusCode.NOT_CAPTAIN);
         }
         // 发送websocket消息给组员
 //        applicationEventPublisher.publishEvent(new TeamNameEvent(createGroup));
@@ -250,7 +250,7 @@ public class ExperimentGroupBiz {
         ExperimentInstanceEntity experimentInstanceEntity = experimentInstanceService.lambdaQuery()
                 .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
                 .oneOpt().orElseThrow(() -> new ExperimentException("实验不存在"));
-        if (experimentInstanceEntity.getState() == ExperimentStateEnum.UNBEGIN.getState()) {
+        if (experimentInstanceEntity.getState() == EnumExperimentState.UNBEGIN.getState()) {
             throw new ExperimentException("实验未开始，不能分配小组成员");
         }
         List<ExperimentParticipatorEntity> entityList = new ArrayList<>();
@@ -325,7 +325,7 @@ public class ExperimentGroupBiz {
                 .eq(ExperimentGroupEntity::getDeleted, false)
                 .oneOpt().orElse(null);
         if (groupEntity == null) {
-            throw new ExperimentException(ExperimentStatusCode.NO_EXIST_GROUP_ID);
+            throw new ExperimentException(EnumExperimentStatusCode.NO_EXIST_GROUP_ID);
         }
         ExperimentGroupResponse groupResponse = ExperimentGroupResponse.builder()
                 .experimentGroupId(groupEntity.getExperimentGroupId())

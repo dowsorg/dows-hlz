@@ -6,8 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.dows.hep.api.enums.ExperimentModeEnum;
-import org.dows.hep.api.enums.ExperimentStateEnum;
+import org.dows.hep.api.enums.EnumExperimentMode;
+import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
 
 import java.util.Arrays;
@@ -94,11 +94,11 @@ public class ExperimentListResponse{
     public String getModelDescr(){
         String str = "";
         if(model != null) {
-            ExperimentModeEnum experimentModeEnum = Arrays
-                    .stream(ExperimentModeEnum.values()).filter(e -> model == e.getCode())
+            EnumExperimentMode enumExperimentMode = Arrays
+                    .stream(EnumExperimentMode.values()).filter(e -> model == e.getCode())
                     .findFirst().orElse(null);
-            if (experimentModeEnum != null) {
-                str = experimentModeEnum.getDescr();
+            if (enumExperimentMode != null) {
+                str = enumExperimentMode.getDescr();
             } else {
                 throw new RuntimeException("实验模式不存在");
             }
@@ -108,8 +108,8 @@ public class ExperimentListResponse{
 
 
     public String getStateDescr(){
-        ExperimentStateEnum experimentModeEnum = Arrays
-                .stream(ExperimentStateEnum.values()).filter(e -> state == e.getState())
+        EnumExperimentState experimentModeEnum = Arrays
+                .stream(EnumExperimentState.values()).filter(e -> state == e.getState())
                 .findFirst().orElse(null);
         if(experimentModeEnum != null){
             return experimentModeEnum.getDescr();

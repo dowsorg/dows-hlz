@@ -6,7 +6,7 @@ import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
-import org.dows.hep.api.enums.ExperimentStateEnum;
+import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.response.CountDownResponse;
@@ -55,7 +55,7 @@ public class ExperimentTimerBiz {
 
         List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
                 .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
-                .eq(ExperimentTimerEntity::getState, ExperimentStateEnum.ONGOING.getState())
+                .eq(ExperimentTimerEntity::getState, EnumExperimentState.ONGOING.getState())
                 //.eq(ExperimentTimerEntity::getModel, 2) // 沙盘模式
                 //.ne(ExperimentTimerEntity::getState, ExperimentStateEnum.FINISH.getState())
                 .list();
@@ -166,13 +166,13 @@ public class ExperimentTimerBiz {
                     .list();
 
             for (ExperimentTimerEntity experimentTimerEntity : experimentTimerEntityList) {
-                if (experimentTimerEntity.getState() == ExperimentStateEnum.FINISH.getState()) {
+                if (experimentTimerEntity.getState() == EnumExperimentState.FINISH.getState()) {
                     countDownResponse.setSandDuration(Double.valueOf(totalDay));
                     break;
-                } else if (experimentTimerEntity.getState() == ExperimentStateEnum.UNBEGIN.getState()) {
+                } else if (experimentTimerEntity.getState() == EnumExperimentState.UNBEGIN.getState()) {
                     countDownResponse.setSandDuration(0D);
                     break;
-                } else if (experimentTimerEntity.getState() == ExperimentStateEnum.ONGOING.getState()) {
+                } else if (experimentTimerEntity.getState() == EnumExperimentState.ONGOING.getState()) {
                     // 当前时间戳-当前期数开始时间 = 相对时间
                     Long ct = System.currentTimeMillis() - experimentTimerEntity.getStartTime();
                     // 将ct转换为秒  .. day/duration = rate
@@ -220,21 +220,21 @@ public class ExperimentTimerBiz {
      * @return
      */
     @DSTransactional
-    public boolean saveOrUpdateExperimentTimeExperimentState(String experimentInstanceId, List<ExperimentTimerEntity> updateExperimentTimerEntities, ExperimentStateEnum experimentStateEnum) {
+    public boolean saveOrUpdateExperimentTimeExperimentState(String experimentInstanceId, List<ExperimentTimerEntity> updateExperimentTimerEntities, EnumExperimentState enumExperimentState) {
         boolean b = experimentTimerService.saveOrUpdateBatch(updateExperimentTimerEntities);
         if (!b) {
             throw new ExperimentException(" 更新计时器实验状态发生异常！");
         }
         boolean update = experimentInstanceService.lambdaUpdate()
                 .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
-                .set(ExperimentInstanceEntity::getState, experimentStateEnum.getState())
+                .set(ExperimentInstanceEntity::getState, enumExperimentState.getState())
                 .update();
         if (!update) {
             throw new ExperimentException(" 更新实验实例状态发生异常！");
         }
         boolean update1 = experimentParticipatorService.lambdaUpdate()
                 .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
-                .set(ExperimentParticipatorEntity::getState, experimentStateEnum.getState())
+                .set(ExperimentParticipatorEntity::getState, enumExperimentState.getState())
                 .update();
 
         if (!update1) {
@@ -257,7 +257,7 @@ public class ExperimentTimerBiz {
                 .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
                 //.eq(ExperimentTimerEntity::getAppId, appId)
                 //.eq(ExperimentTimerEntity::getModel, 2) // 沙盘模式
-                .ne(ExperimentTimerEntity::getState, ExperimentStateEnum.FINISH.getState())
+                .ne(ExperimentTimerEntity::getState, EnumExperimentState.FINISH.getState())
                 .list();
 
         //List<ExperimentTimerEntity> collect = list.stream().filter(t -> t.getPauseCount() == 0).collect(Collectors.toList());

@@ -6,7 +6,7 @@ import org.dows.framework.api.StatusCode;
 /**
  * 实验状态
  */
-public enum ExperimentStatusCode implements StatusCode {
+public enum EnumExperimentStatusCode implements StatusCode {
     NO_EXIST_EXPERIMENT(0, "不存在的实验"),
 
     NO_EXIST_GROUP_ID(1,"当前实验不存在该小组"),
@@ -21,7 +21,7 @@ public enum ExperimentStatusCode implements StatusCode {
     @Getter
     private String descr;
 
-    ExperimentStatusCode(Integer code, String descr) {
+    EnumExperimentStatusCode(Integer code, String descr) {
         this.code = code;
         this.descr = descr;
     }

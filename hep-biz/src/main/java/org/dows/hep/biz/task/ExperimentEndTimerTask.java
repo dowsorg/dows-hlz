@@ -3,7 +3,7 @@ package org.dows.hep.biz.task;
 import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dows.hep.api.enums.ExperimentStateEnum;
+import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.biz.score.ScoreCalc;
 import org.dows.hep.entity.ExperimentInstanceEntity;
@@ -55,18 +55,18 @@ public class ExperimentEndTimerTask implements Runnable {
         experimentInstanceService.lambdaUpdate()
                 .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceEntity.getExperimentInstanceId())
                 .eq(ExperimentInstanceEntity::getDeleted, false)
-                .set(ExperimentInstanceEntity::getState, ExperimentStateEnum.FINISH.getState())
+                .set(ExperimentInstanceEntity::getState, EnumExperimentState.FINISH.getState())
                 .update();
 
         experimentParticipatorService.lambdaUpdate()
                 .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceEntity.getExperimentInstanceId())
                 .eq(ExperimentParticipatorEntity::getDeleted, false)
-                .set(ExperimentParticipatorEntity::getState, ExperimentStateEnum.FINISH.getState())
+                .set(ExperimentParticipatorEntity::getState, EnumExperimentState.FINISH.getState())
                 .update();
         experimentTimerService.lambdaUpdate()
                 .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceEntity.getExperimentInstanceId())
                 .eq(ExperimentTimerEntity::getDeleted, false)
-                .set(ExperimentTimerEntity::getState, ExperimentStateEnum.FINISH.getState())
+                .set(ExperimentTimerEntity::getState, EnumExperimentState.FINISH.getState())
                 .update();
 
         //todo 计算总排行
