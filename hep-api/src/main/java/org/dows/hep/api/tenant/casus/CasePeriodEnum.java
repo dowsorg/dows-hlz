@@ -2,9 +2,10 @@ package org.dows.hep.api.tenant.casus;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.dows.framework.api.exceptions.BizException;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @AllArgsConstructor
 @Getter
@@ -19,11 +20,16 @@ public enum CasePeriodEnum {
     private final String name;
     private final Integer seq;
 
+    private static final Map<String, CasePeriodEnum> codeMap = new LinkedHashMap<>();
+
     public static CasePeriodEnum getByCode(String code) {
-        return Arrays.stream(CasePeriodEnum.values())
-                .filter(item -> item.getCode().equals(code))
-                .findFirst()
-                .orElseThrow(() -> new BizException(CaseESCEnum.DATA_NULL));
+        CasePeriodEnum casePeriodEnum = codeMap.get(code);
+        if (casePeriodEnum == null) {
+            Arrays.stream(CasePeriodEnum.values())
+                    .forEach(item -> codeMap.put(item.getCode(), item));
+            casePeriodEnum = codeMap.get(code);
+        }
+        return casePeriodEnum;
     }
 
 }
