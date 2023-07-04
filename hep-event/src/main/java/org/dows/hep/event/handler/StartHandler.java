@@ -7,6 +7,8 @@ import org.dows.framework.api.uim.AccountInfo;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
+import org.dows.hep.biz.task.ExperimentEndTimerTask;
+import org.dows.hep.biz.task.ExperimentPeroidTimerTask;
 import org.dows.hep.entity.ExperimentTimerEntity;
 import org.dows.hep.websocket.HepClientManager;
 import org.dows.hep.websocket.proto.MessageCode;
@@ -36,12 +38,14 @@ public class StartHandler extends AbstractEventHandler implements EventHandler<E
         // 查询实验期数
         List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerBiz
                 .getCurrentPeriods(experimentRestartRequest.getExperimentInstanceId());
+
+        // 按期数分组
+        Map<Integer, List<ExperimentTimerEntity>> experimentTimerMap = experimentTimerEntityList.stream()
+                .collect(Collectors.groupingBy(ExperimentTimerEntity::getPeriod));
+
         // 方案设计模式不需要设计时器，只有标准模式或沙盘模式才需要设计时器//null == experimentRestartRequest.getPeriods() &&
         if (null == experimentRestartRequest.getPeriods()) {
-
-            Map<Integer, List<ExperimentTimerEntity>> collect = experimentTimerEntityList.stream()
-                    .collect(Collectors.groupingBy(ExperimentTimerEntity::getPeriod));
-            collect.forEach((k, v) -> {
+            experimentTimerMap.forEach((k, v) -> {
                 ExperimentTimerEntity experimentTimerEntity = v.stream()
                         .max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount))
                         .orElse(null);
@@ -68,7 +72,7 @@ public class StartHandler extends AbstractEventHandler implements EventHandler<E
              */
             /*HepContext hepContext = HepContext.getExperimentContext(experimentRestartRequest.getExperimentInstanceId());
             hepContext.setState(ExperimentStateEnum.ONGOING);*/
-        } else/* if(experimentRestartRequest.getModel() == ExperimentModeEnum.SAND.getCode())*/{
+        } else/* if(experimentRestartRequest.getModel() == ExperimentModeEnum.SAND.getCode())*/ {
             //todo 计时器
             log.info("执行开始操作....");
 
@@ -121,6 +125,7 @@ public class StartHandler extends AbstractEventHandler implements EventHandler<E
             // 批量更新期数定时器
             boolean b = experimentTimerBiz.saveOrUpdateExperimentTimeExperimentState(experimentRestartRequest.getExperimentInstanceId(),
                     updateExperimentTimerEntities, EnumExperimentState.ONGOING);
+
             if (b) {
                 // 通知客户端
                 ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfos();
@@ -130,6 +135,27 @@ public class StartHandler extends AbstractEventHandler implements EventHandler<E
                 }
             }
         }
+
+        /**
+         * 重设实验结束任务
+         */
+        for (ExperimentTimerEntity updateExperimentTimerEntity : updateExperimentTimerEntities) {
+
+        }
+        ExperimentEndTimerTask experimentEndTimerTask = new ExperimentEndTimerTask(experimentInstanceService,
+                experimentParticipatorService, experimentTimerService, experimentScoreCalculator,
+                experimentRestartRequest.getExperimentInstanceId());
+        //experimentTaskScheduler.reset(experimentEndTimerTask, );
+        /**
+         * 重设每期结束任务
+         */
+        for (ExperimentTimerEntity updateExperimentTimerEntity : updateExperimentTimerEntities) {
+            ExperimentPeroidTimerTask experimentPeroidTimerTask = new ExperimentPeroidTimerTask(experimentTimerBiz,
+                    experimentRestartRequest.getExperimentInstanceId(), updateExperimentTimerEntity.getPeriod());
+
+            //xperimentTaskScheduler.reset(experimentPeroidTimerTask, );
+        }
+
     }
 
 

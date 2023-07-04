@@ -41,7 +41,7 @@ public class ExperimentQuestionnaireScoreBiz {
 
     private String scoreMode;
 
-    public void setExptQuestionnaireScore(String experimentInstanceId, Integer period) {
+    public void calculateExptQuestionnaireScore(String experimentInstanceId, Integer period) {
         Assert.notBlank(experimentInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
         Assert.notNull(period, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
         setScoreMode(experimentInstanceId);

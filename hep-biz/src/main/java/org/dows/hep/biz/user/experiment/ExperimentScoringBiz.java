@@ -28,19 +28,10 @@ public class ExperimentScoringBiz {
 
     private final ExperimentScoringService experimentScoringService;
 
-    /**
-     * 健康指数分数计算
-     */
-    @CalcCode(code = EnumCalcCode.hepHealthIndexCalculator)
-    public void hepHealthIndexScoring(String experimentInstanceId, String peroid) {
-        //experimentSettingBiz.getCalcRule(experimentInstanceId);
-        //
 
-
-    }
 
     /**
-     * 知识考点分数得分
+     * 知识考点分数得分，并存表
      */
     @CalcCode(code = EnumCalcCode.hepKnowledgeCalculator)
     public void hepKnowledgeScoring() {
@@ -50,7 +41,7 @@ public class ExperimentScoringBiz {
     }
 
     /**
-     * 医疗占比得分
+     * 医疗占比得分，并存表
      */
     @CalcCode(code = EnumCalcCode.hepTreatmentPercentCalculator)
     public void hepTreatmentPercentScoring() {
@@ -58,7 +49,7 @@ public class ExperimentScoringBiz {
     }
 
     /**
-     * 操作准确度得分
+     * 操作准确度得分，并存表
      */
     @CalcCode(code = EnumCalcCode.hepOperateRightCalculator)
     public void hepOperateRightScoring() {
@@ -67,7 +58,7 @@ public class ExperimentScoringBiz {
     }
 
     /**
-     * 总分
+     * 总分，并存表
      */
     @CalcCode(code = EnumCalcCode.hepTotalScoreCalculator)
     public void hepTotalScoring() {

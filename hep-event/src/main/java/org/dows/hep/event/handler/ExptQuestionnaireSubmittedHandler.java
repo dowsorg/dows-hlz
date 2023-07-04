@@ -22,7 +22,7 @@ public class ExptQuestionnaireSubmittedHandler extends AbstractEventHandler impl
     @Override
     public void exec(ExptQuestionnaireSubmittedEventSource obj) {
         String experimentQuestionnaireId = obj.getExperimentQuestionnaireId();
-        String accountId = obj.getAccountId();
-        experimentQuestionnaireBiz.submitQuestionnaire(experimentQuestionnaireId, accountId);
+        Integer periods = obj.getPeriods();
+        experimentQuestionnaireBiz.submitQuestionnaireBatch(experimentQuestionnaireId, periods);
     }
 }

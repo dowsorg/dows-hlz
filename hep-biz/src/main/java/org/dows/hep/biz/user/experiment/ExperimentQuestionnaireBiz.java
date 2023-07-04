@@ -139,35 +139,35 @@ public class ExperimentQuestionnaireBiz {
         return experimentQuestionnaireItemBiz.updateBatch(itemList);
     }
 
-    /**
-     * @param
-     * @return
-     * @说明: 提交
-     * @关联表:
-     * @工时: 2H
-     * @开发者: lait
-     * @开始时间:
-     * @创建时间: 2023年4月23日 上午9:44:34
-     */
-    @DSTransactional
-    public Boolean submitQuestionnaire(String experimentQuestionnaireId, String accountId) {
-        if (StrUtil.isBlank(experimentQuestionnaireId) || StrUtil.isBlank(accountId)) {
-            throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
-        }
-
-        // check
-        cannotOperateAfterSubmit(experimentQuestionnaireId, accountId);
-
-        // submit
-        boolean updateRes = experimentQuestionnaireService.lambdaUpdate()
-                .eq(ExperimentQuestionnaireEntity::getExperimentQuestionnaireId, experimentQuestionnaireId)
-                .set(ExperimentQuestionnaireEntity::getState, ExptQuestionnaireStateEnum.SUBMITTED.getCode())
-                .update();
-
-        // todo compute
-
-        return updateRes;
-    }
+//    /**
+//     * @param
+//     * @return
+//     * @说明: 提交
+//     * @关联表:
+//     * @工时: 2H
+//     * @开发者: lait
+//     * @开始时间:
+//     * @创建时间: 2023年4月23日 上午9:44:34
+//     */
+//    @DSTransactional
+//    public Boolean submitQuestionnaire(String experimentQuestionnaireId, String accountId) {
+//        if (StrUtil.isBlank(experimentQuestionnaireId) || StrUtil.isBlank(accountId)) {
+//            throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
+//        }
+//
+//        // check
+//        cannotOperateAfterSubmit(experimentQuestionnaireId, accountId);
+//
+//        // submit
+//        boolean updateRes = experimentQuestionnaireService.lambdaUpdate()
+//                .eq(ExperimentQuestionnaireEntity::getExperimentQuestionnaireId, experimentQuestionnaireId)
+//                .set(ExperimentQuestionnaireEntity::getState, ExptQuestionnaireStateEnum.SUBMITTED.getCode())
+//                .update();
+//
+//        // todo compute
+//
+//        return updateRes;
+//    }
 
     /**
      * @param
@@ -193,7 +193,7 @@ public class ExperimentQuestionnaireBiz {
                 .update();
 
         // compute
-        experimentQuestionnaireScoreBiz.setExptQuestionnaireScore(experimentInstanceId, period);
+//        experimentQuestionnaireScoreBiz.calculateExptQuestionnaireScore(experimentInstanceId, period);
 
         return updateRes;
     }

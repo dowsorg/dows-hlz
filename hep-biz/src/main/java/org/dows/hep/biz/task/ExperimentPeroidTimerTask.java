@@ -10,7 +10,7 @@ import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class ExperimentRankingTimerTask implements Runnable {
+public class ExperimentPeroidTimerTask implements Runnable {
 
     // 计时器
     private final ExperimentTimerBiz experimentTimerBiz;

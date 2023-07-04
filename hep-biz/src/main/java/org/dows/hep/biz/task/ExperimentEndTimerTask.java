@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.exception.ExperimentException;
-import org.dows.hep.biz.score.ScoreCalc;
+import org.dows.hep.biz.calc.ExperimentScoreCalculator;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.entity.ExperimentTimerEntity;
@@ -29,7 +29,7 @@ public class ExperimentEndTimerTask implements Runnable {
     // 实验计时器
     private final ExperimentTimerService experimentTimerService;
     //
-    private final ScoreCalc scoreCalc;
+    private final ExperimentScoreCalculator experimentScoreCalculator;
 
     private final String experimentInstanceId;
 
@@ -42,8 +42,6 @@ public class ExperimentEndTimerTask implements Runnable {
          */
         ExperimentInstanceEntity experimentInstanceEntity = experimentInstanceService.lambdaQuery()
                 .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
-                //.eq(ExperimentInstanceEntity::getAppId, experimentGroupSettingRequest.getAppId())
-                //.ge(ExperimentInstanceEntity::getStartTime, LocalDateTime.now())
                 .oneOpt()
                 .orElse(null);
         if (experimentInstanceEntity == null) {
