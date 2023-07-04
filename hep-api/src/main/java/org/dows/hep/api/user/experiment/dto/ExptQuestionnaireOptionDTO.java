@@ -28,5 +28,5 @@ public class ExptQuestionnaireOptionDTO {
     private String value;
 
     @Schema(title = "是否选中")
-    private boolean choose = false;
+    private boolean choose ;
 }
