@@ -1,8 +1,7 @@
 package org.dows.hep.biz.calc;
 
-import org.dows.hep.api.annotation.CalcCode;
-import org.dows.hep.api.enums.EnumCalcCode;
+import org.springframework.stereotype.Component;
 
-@CalcCode(code= EnumCalcCode.OPERATE_RIGHT_CALC)
-public class HepOperateRightCalcultor  implements Calculatable{
+@Component("hepOperateRightCalculator")
+public class HepOperateRightCalcultor implements Calculatable {
 }
