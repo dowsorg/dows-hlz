@@ -113,15 +113,14 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
             return null;
         }
     }
-    public static ExperimentTimePoint getTimePointByRealTime(ExperimentSettingCollection cached,  ExperimentCacheKey key,LocalDateTime dt,boolean fillGameDay) {
-        ExperimentTimePoint rst = new ExperimentTimePoint().setRealTime(dt);
+    public static ExperimentTimePoint getTimePointByRealTime(ExperimentSettingCollection cached,  ExperimentCacheKey key,LocalDateTime dtNow,boolean fillGameDay) {
+        ExperimentTimePoint rst = new ExperimentTimePoint().setRealTime(dtNow);
         AssertUtil.trueThenThrow(ShareUtil.XObject.anyEmpty(cached, cached.getMapPeriod()))
                 .throwMessage("未找到实验时间设置");
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(cached.getStartTime()))
                 .throwMessage("未找到实验开始时间");
-        final LocalDateTime now = LocalDateTime.now();
-        final Long nowTs=ShareUtil.XDate.localDT2UnixTS(now, false);
-        if (now.isBefore(cached.getStartTime())) {
+        final Long nowTs=ShareUtil.XDate.localDT2UnixTS(dtNow, false);
+        if (dtNow.isBefore(cached.getStartTime())) {
             return rst.setPeriod(1)
                     .setGameDay(1)
                     .setCntPauseSeconds(0L)
@@ -153,13 +152,13 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
                 .orElseThrow(String.format("未找到实验第%s期设置", rst.getPeriod()));
         long pausingSeconds=0;
         if(Optional.ofNullable( rowTime.getPaused()).orElse(false)){
-            pausingSeconds=(ShareUtil.XDate.localDT2UnixTS(dt,false)- rowTime.getPauseStartTime().getTime())/1000;
+            pausingSeconds=(nowTs- rowTime.getPauseStartTime().getTime())/1000;
         }
         rst.setCntPauseSeconds(pausingSeconds+rowTime.getEndTime() / 1000 - ShareUtil.XDate.localDT2UnixTS(cached.getStartTime().plusSeconds(setting.getEndSecond()), true));
         if (!fillGameDay || ShareUtil.XObject.isEmpty(rst.getCntPauseSeconds())) {
             return rst;
         }
-        Integer rawSeconds = (int) (Duration.between(cached.getStartTime(), dt).toSeconds() + 1 - rst.getCntPauseSeconds());
+        Integer rawSeconds = (int) (Duration.between(cached.getStartTime(), dtNow).toSeconds() + 1 - rst.getCntPauseSeconds());
         return rst.setGameDay(cached.getGameDayByRawSeconds(rawSeconds,rst.getPeriod()));
 
     }
