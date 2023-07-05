@@ -3,7 +3,6 @@ package org.dows.hep.biz.task;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dows.hep.biz.user.experiment.ExperimentQuestionnaireBiz;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 
 /**
@@ -15,7 +14,8 @@ public class ExperimentPeroidTimerTask implements Runnable {
 
     // 计时器
     private final ExperimentTimerBiz experimentTimerBiz;
-    private final ExperimentQuestionnaireBiz experimentQuestionnaireBiz;
+//    // 实验问卷
+//    private final ExperimentQuestionnaireBiz experimentQuestionnaireBiz;
     // 实验ID
     private final String experimentInstanceId;
     // 期数
@@ -23,6 +23,6 @@ public class ExperimentPeroidTimerTask implements Runnable {
     @Override
     public void run() {
         // 提交本期问卷(需要在算分之前)
-        experimentQuestionnaireBiz.submitQuestionnaireBatch(experimentInstanceId, period);
+//        experimentQuestionnaireBiz.submitQuestionnaireBatch(experimentInstanceId, period);
     }
 }
