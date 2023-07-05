@@ -167,7 +167,6 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
     kIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap.forEach((indicatorExpressionId, experimentIndicatorExpressionItemRsEntityList) -> {
       experimentIndicatorExpressionItemRsEntityList.sort(Comparator.comparingInt(ExperimentIndicatorExpressionItemRsEntity::getSeq));
     });
-    /* runsix:TODO 公式解析放到后面 */
     kExperimentIndicatorViewPhysicalExamIdVExperimentIndicatorViewPhysicalExamRsEntityMap.forEach((experimentIndicatorViewPhysicalExamId, experimentIndicatorViewPhysicalExamRsEntity) -> {
       String indicatorInstanceId = experimentIndicatorViewPhysicalExamRsEntity.getIndicatorInstanceId();
       String experimentIndicatorInstanceId = kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.get(indicatorInstanceId);

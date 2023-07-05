@@ -156,7 +156,7 @@ public class HepApplication{
                     .build());
                 case HEALTH_POINT -> createOrUpdateIndicatorInstanceRequestRsList.add(CreateOrUpdateIndicatorInstanceRequestRs
                     .builder()
-                    .indicatorCategoryId(EnumIndicatorCategory.INDICATOR_MANAGEMENT_BASE_INFO.getCode())
+                    .indicatorCategoryId(EnumIndicatorCategory.INDICATOR_MANAGEMENT_HEALTH.getCode())
                     .appId(EnumString.APP_ID.getStr())
                     .indicatorName(EnumIndicatorType.HEALTH_POINT.getDesc())
                     .displayByPercent(EnumStatus.DISABLE.getCode())
