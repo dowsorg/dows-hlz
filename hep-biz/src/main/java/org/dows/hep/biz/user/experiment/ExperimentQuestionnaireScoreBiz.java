@@ -57,8 +57,6 @@ public class ExperimentQuestionnaireScoreBiz {
         if (CollUtil.isEmpty(questionnaireList)) {
             return;
         }
-        Map<String, Long> questionnaireIdMapId = questionnaireList.stream()
-                .collect(Collectors.toMap(ExperimentQuestionnaireEntity::getExperimentQuestionnaireId, ExperimentQuestionnaireEntity::getId));
 
         // list expt-questionnaire item
         List<String> exptQuestionnaireIdList = questionnaireList.stream()
@@ -72,10 +70,12 @@ public class ExperimentQuestionnaireScoreBiz {
         checkItemRight(itemEntityList);
 
         // compute
+        Map<String, Long> questionnaireIdMapId = questionnaireList.stream()
+                .collect(Collectors.toMap(ExperimentQuestionnaireEntity::getExperimentQuestionnaireId, ExperimentQuestionnaireEntity::getId));
         Map<String, List<ExperimentQuestionnaireItemEntity>> collect = itemEntityList.stream()
                 .collect(Collectors.groupingBy(ExperimentQuestionnaireItemEntity::getExperimentQuestionnaireId));
         collect.forEach((k, v) -> {
-            Float score = computeScore(v);
+            Float score = computeScore(v).floatValue();
             ExperimentQuestionnaireEntity entity = ExperimentQuestionnaireEntity.builder()
                     .id(questionnaireIdMapId.get(k))
                     .score(score)
@@ -108,9 +108,10 @@ public class ExperimentQuestionnaireScoreBiz {
     }
 
     // 计分，在得出结果默认10位小数
-    private Float computeScore(List<ExperimentQuestionnaireItemEntity> itemList) {
-        float zeroScore = 0.00f;
-        float fullScore = 100.00F;
+    private BigDecimal computeScore(List<ExperimentQuestionnaireItemEntity> itemList) {
+        BigDecimal zeroScore = BigDecimal.valueOf(0.00);
+        BigDecimal fullScore = BigDecimal.valueOf(100.00);
+        int scale = 2;
         if (CollUtil.isEmpty(itemList)) {
             return zeroScore;
         }
@@ -128,7 +129,7 @@ public class ExperimentQuestionnaireScoreBiz {
 
         // get unit-score
         int totalNum = selectQuestionTypeList.size();
-        float unitScore = (float) NumberUtil.div(fullScore, totalNum);
+        BigDecimal unitScore = NumberUtil.div(fullScore, totalNum);
 
         // get right-num
         int allRightNum = 0;
@@ -156,10 +157,13 @@ public class ExperimentQuestionnaireScoreBiz {
             return zeroScore;
         }
         if (CaseScoreModeEnum.STRICT.name().equals(this.scoreMode)) {
-            return allRightNum * unitScore;
+            return NumberUtil.round(NumberUtil.mul(allRightNum, unitScore), scale);
         }
         if (CaseScoreModeEnum.HALF.name().equals(this.scoreMode)) {
-            return allRightNum * unitScore + halfRightNum * (float) NumberUtil.div(unitScore, 2);
+            BigDecimal tAllRightScore = NumberUtil.mul(allRightNum, unitScore);
+            BigDecimal tHalfUnitScore = NumberUtil.div(unitScore, scale);
+            BigDecimal tHalfRightScore = NumberUtil.mul(halfRightNum, tHalfUnitScore);
+            return NumberUtil.round(NumberUtil.add(tAllRightScore, tHalfRightScore), scale);
         }
         return zeroScore;
     }
@@ -169,15 +173,17 @@ public class ExperimentQuestionnaireScoreBiz {
         for (ExperimentQuestionnaireItemEntity item : itemList) {
             Integer scoreGrade = SCORE_GRADE_DEFAULT;
 
-            // right value
+            // list right_value_id
             String rightValue = item.getRightValue();
             List<ExptQuestionnaireOptionDTO> rightValueList = JSONUtil.toList(rightValue, ExptQuestionnaireOptionDTO.class);
             if (CollUtil.isEmpty(rightValueList)) {
                 continue;
             }
-            List<String> rightIdList = rightValueList.stream().map(ExptQuestionnaireOptionDTO::getId).toList();
+            List<String> rightIdList = rightValueList.stream()
+                    .map(ExptQuestionnaireOptionDTO::getId)
+                    .toList();
 
-            // question result
+            // list question_result
             String questionResult = item.getQuestionResult();
             if (StrUtil.isBlank(questionResult)) {
                 continue;
