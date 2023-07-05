@@ -17,9 +17,12 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class ExperimentTotalRankItemResponse implements Serializable {
-  @Schema(title = "期数")
-  private Integer periods;
+  @Schema(title = "实验小组名称")
+  private String experimentGroupName;
 
-  @Schema(title = "每一期的详情列表")
+  @Schema(title = "总分")
+  private String allPeriodsTotalScore;
+
+  @Schema(title = "每期总分列表")
   private List<ExperimentTotalRankGroupItemResponse> experimentTotalRankGroupItemResponseList;
 }

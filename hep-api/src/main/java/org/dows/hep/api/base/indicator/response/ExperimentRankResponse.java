@@ -23,6 +23,6 @@ public class ExperimentRankResponse implements Serializable {
   @Schema(title = "实验排行榜列表")
   private List<ExperimentRankItemResponse> experimentRankItemResponseList;
 
-  @Schema(title = "实验排行榜总分")
-  private ExperimentTotalRankResponse experimentTotalRankResponse;
+  @Schema(title = "实验总分排行榜列表")
+  private List<ExperimentTotalRankItemResponse> experimentTotalRankItemResponseList;
 }
