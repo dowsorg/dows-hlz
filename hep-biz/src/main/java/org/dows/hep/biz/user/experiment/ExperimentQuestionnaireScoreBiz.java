@@ -15,6 +15,7 @@ import org.dows.hep.entity.ExperimentQuestionnaireEntity;
 import org.dows.hep.entity.ExperimentQuestionnaireItemEntity;
 import org.dows.hep.service.ExperimentQuestionnaireItemService;
 import org.dows.hep.service.ExperimentQuestionnaireService;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -99,6 +100,34 @@ public class ExperimentQuestionnaireScoreBiz {
             return BigDecimal.ZERO;
         }
 
+        return calculateScoreAverageOfGroup(list);
+    }
+
+    public Map<String, BigDecimal> listExptQuestionnaireScore(String experimentInstanceId, Integer period) {
+        Assert.notBlank(experimentInstanceId, "获取实验知识答题分数，实验ID不能为空");
+        Assert.notNull(period, "获取实验知识答题分数，实验期数不能为空");
+
+        List<ExperimentQuestionnaireEntity> list = experimentQuestionnaireService.lambdaQuery()
+                .eq(ExperimentQuestionnaireEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentQuestionnaireEntity::getPeriodSequence, period)
+                .list();
+        if (CollUtil.isEmpty(list)) {
+            return new HashMap<>();
+        }
+
+        Map<String, BigDecimal> result = new HashMap<>();
+        // 根据 `实验小组` 进行分组
+        Map<String, List<ExperimentQuestionnaireEntity>> groupCollect = list.stream()
+                .collect(Collectors.groupingBy(ExperimentQuestionnaireEntity::getExperimentGroupId));
+        groupCollect.forEach((k, v) -> {
+            BigDecimal averageScore = calculateScoreAverageOfGroup(v);
+            result.put(k, averageScore);
+        });
+        return result;
+    }
+
+    @NotNull
+    private static BigDecimal calculateScoreAverageOfGroup(List<ExperimentQuestionnaireEntity> list) {
         double average = list.stream()
                 .map(ExperimentQuestionnaireEntity::getScore)
                 .mapToDouble(Float::doubleValue)
