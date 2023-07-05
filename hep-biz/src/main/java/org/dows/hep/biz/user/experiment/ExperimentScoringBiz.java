@@ -42,7 +42,7 @@ public class ExperimentScoringBiz {
 
     private final ExperimentScoringService experimentScoringService;
 
-    private void saveOrUpd(String experimentInstanceId, Integer period) {
+    public void saveOrUpd(String experimentInstanceId, Integer period) {
         // 获取该实验的实验小组
         List<ExperimentGroupResponse> experimentGroupResponses = experimentGroupBiz.listGroup(experimentInstanceId);
         if (CollUtil.isEmpty(experimentGroupResponses)) {
