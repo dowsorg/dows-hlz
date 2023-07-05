@@ -2,7 +2,8 @@ package org.dows.hep.config;
 
 import org.dows.framework.api.web.ResponseWrapperHandler;
 import org.dows.hep.biz.ExperimentPausedInterceptor;
-import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
+import org.dows.hep.biz.ExperimentResubmitInterceptor;
+import org.dows.hep.biz.cache.LocalCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +19,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
+    @Autowired
+    private LocalCache localCache;
     @Bean
     public ResponseWrapperHandler responseWrapperHandler() {
         return new ResponseWrapperHandler();
@@ -140,6 +143,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         //registry.addInterceptor();
         registry.addInterceptor(new ExperimentPausedInterceptor());
+        registry.addInterceptor(new ExperimentResubmitInterceptor(localCache));
     }
 
     @Override
