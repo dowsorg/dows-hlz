@@ -3,7 +3,7 @@ package org.dows.hep.rest.user.person;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.account.response.AccountOrgResponse;
+import org.dows.hep.api.user.experiment.response.ExperimentOrgResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
 import org.dows.hep.biz.user.person.PersonStatiscBiz;
 import org.springframework.validation.annotation.Validated;
@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
+ * @folder user
  * @author jx
  * @date 2023/5/8 13:31
  */
@@ -49,8 +50,8 @@ public class PersonStatiscRest {
      */
     @Operation(summary = "获取实验机构")
     @PostMapping("v1/basePerson/personManage/listExperimentOrgs")
-    public List<AccountOrgResponse> listExperimentOrgs(@RequestParam @Validated String experimentInstanceId,
-                                                       @RequestParam @Validated String experimentGroupId) {
+    public List<ExperimentOrgResponse> listExperimentOrgs(@RequestParam @Validated String experimentInstanceId,
+                                                          @RequestParam @Validated String experimentGroupId) {
         return personStatiscBiz.listExperimentOrgs(experimentInstanceId,experimentGroupId);
     }
 

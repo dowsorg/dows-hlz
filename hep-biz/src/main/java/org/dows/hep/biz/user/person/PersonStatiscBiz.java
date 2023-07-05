@@ -5,9 +5,12 @@ import org.dows.account.api.AccountInstanceApi;
 import org.dows.account.api.AccountOrgGeoApi;
 import org.dows.account.response.AccountInstanceResponse;
 import org.dows.account.response.AccountOrgGeoResponse;
-import org.dows.account.response.AccountOrgResponse;
 import org.dows.framework.api.util.ReflectUtil;
+import org.dows.hep.api.user.experiment.response.ExperimentOrgResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
+import org.dows.hep.biz.dao.CaseOrgFeeDao;
+import org.dows.hep.biz.util.CopyWrapper;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.springframework.stereotype.Service;
@@ -15,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author jx
@@ -37,6 +41,8 @@ public class PersonStatiscBiz {
     private final ExperimentGroupService experimentGroupService;
 
     private final ExperimentOrgService experimentOrgService;
+
+    private final CaseOrgFeeDao caseOrgFeeDao;
 
     /**
      * @param
@@ -93,8 +99,8 @@ public class PersonStatiscBiz {
      * @开始时间:
      * @创建时间: 2023年5月8日 上午13:57:34
      */
-    public List<AccountOrgResponse> listExperimentOrgs(String experimentInstanceId, String experimentGroupId) {
-        List<AccountOrgResponse> orgResponses = new ArrayList<>();
+    public List<ExperimentOrgResponse> listExperimentOrgs(String experimentInstanceId, String experimentGroupId) {
+        List<ExperimentOrgResponse> orgResponses = new ArrayList<>();
         //1、根据实验找到案例机构ID
         List<ExperimentOrgEntity> experimentOrgList = experimentOrgService.lambdaQuery()
                 .eq(ExperimentOrgEntity::getExperimentInstanceId, experimentInstanceId)
@@ -104,11 +110,11 @@ public class PersonStatiscBiz {
         if (experimentOrgList != null && experimentOrgList.size() > 0) {
             //2、获取机构的经纬度信息
             experimentOrgList.forEach(org -> {
-                AccountOrgResponse orgResponse = AccountOrgResponse
-                        .builder()
-                        .experimentOrgId(org.getExperimentOrgId())
-                        .orgId(org.getOrgId())
-                        .build();
+                ExperimentOrgResponse orgResponse = (ExperimentOrgResponse) new ExperimentOrgResponse()
+                        .setHandbook(org.getHandbook())
+                        .setExperimentOrgId(org.getExperimentOrgId())
+                        .setOrgId(org.getOrgId());
+
                 AccountOrgGeoResponse orgGeo = accountOrgGeoApi.getAccountOrgInfoByOrgId(org.getOrgId());
                 orgResponse.setOrgLatitude(orgGeo.getOrgLatitude());
                 orgResponse.setOrgLongitude(orgGeo.getOrgLongitude());
@@ -116,6 +122,20 @@ public class PersonStatiscBiz {
                 orgResponses.add(orgResponse);
             });
         }
+        List<String> orgIds= ShareUtil.XCollection.map(orgResponses, ExperimentOrgResponse::getOrgId);
+        List<CaseOrgFeeEntity> rowsFee=caseOrgFeeDao.getFeeList(orgIds,
+                CaseOrgFeeEntity::getCaseOrgId,
+                CaseOrgFeeEntity::getFeeCode,
+                CaseOrgFeeEntity::getFeeName,
+                CaseOrgFeeEntity::getFee,
+                CaseOrgFeeEntity::getReimburseRatio
+                );
+        Map<String,List<ExperimentOrgResponse.ExperimentOrgFeeResponse>> mapFee=ShareUtil.XCollection.groupBy(rowsFee,
+                i-> CopyWrapper.create(ExperimentOrgResponse.ExperimentOrgFeeResponse::new).endFrom(i),
+                ExperimentOrgResponse.ExperimentOrgFeeResponse::getCaseOrgId);
+        orgResponses.forEach(i->i.setFeeList(mapFee.get(i.getOrgId())));
+        rowsFee.clear();
+        mapFee.clear();
         return orgResponses;
     }
 

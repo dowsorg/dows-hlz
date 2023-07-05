@@ -82,6 +82,8 @@ public class ExperimentOrgBiz{
         final Date dateNow=ShareUtil.XDate.localDT2Date(ldtNow);
         ExperimentTimePoint timePoint= ExperimentSettingCache.Instance().getTimePointByRealTime(ExperimentCacheKey.create(validator.getAppId(), validator.getExperimentInstanceId()),
                 ldtNow,true);
+        AssertUtil.trueThenThrow(timePoint.getGameState()== EnumExperimentState.UNBEGIN)
+                .throwMessage("当前实验还未进入沙盘");
         AssertUtil.trueThenThrow(timePoint.getGameState()== EnumExperimentState.FINISH)
                 .throwMessage("当前实验已结束");
         ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator);
