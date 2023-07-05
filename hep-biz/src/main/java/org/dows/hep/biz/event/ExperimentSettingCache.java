@@ -174,7 +174,7 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
 
     @Override
     protected ExperimentSettingCollection cotinueLoad(ExperimentCacheKey key, ExperimentSettingCollection curVal) {
-        if(ShareUtil.XObject.notEmpty(curVal)){
+        if(ShareUtil.XObject.isEmpty(curVal)){
             return curVal;
         }
         if(ShareUtil.XObject.isEmpty(curVal.getStartTime())) {
