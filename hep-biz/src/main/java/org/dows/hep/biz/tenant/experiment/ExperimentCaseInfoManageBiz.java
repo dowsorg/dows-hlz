@@ -31,11 +31,11 @@ public class ExperimentCaseInfoManageBiz {
     private final ExperimentCaseInfoService experimentCaseInfoService;
 
     /**
+     * @param experimentInstanceId - 实验实例ID
+     * @param caseInstanceId       - 案例实例ID
      * @author fhb
      * @description 预生成社区基本信息-分配实验的时候调用
-     * @date 2023/6/1 9:33
-     * @param
-     * @return
+     * @date 2023/7/5 17:15
      */
     public void preHandleCaseInfo(String experimentInstanceId, String caseInstanceId) {
         ExperimentCaseInfoEntity entity = ExperimentCaseInfoEntity.builder()

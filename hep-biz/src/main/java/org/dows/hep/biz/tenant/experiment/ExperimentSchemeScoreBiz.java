@@ -40,8 +40,6 @@ public class ExperimentSchemeScoreBiz {
     private final ExperimentParticipatorService experimentParticipatorService;
 
     /**
-     * 预处理实验 `方案设计` 得分
-     *
      * @param experimentInstanceId - 实验实例ID
      * @param caseInstanceId       - 案例实例ID
      * @author fhb

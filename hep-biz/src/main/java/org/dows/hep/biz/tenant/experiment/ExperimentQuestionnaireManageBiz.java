@@ -48,8 +48,6 @@ public class ExperimentQuestionnaireManageBiz {
     private final ExperimentOrgService experimentOrgService;
 
     /**
-     * 预处理实验 `知识答题`
-     *
      * @param experimentInstanceId - 实验实例ID
      * @param caseInstanceId       - 案例实例ID
      * @author fhb
