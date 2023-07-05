@@ -7,6 +7,7 @@ import org.dows.hep.api.base.indicator.request.CaseCreateCopyToPersonRequestRs;
 import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.enums.EnumIndicatorCategory;
 import org.dows.hep.api.enums.EnumIndicatorRuleType;
+import org.dows.hep.api.enums.EnumIndicatorType;
 import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
@@ -37,6 +38,8 @@ public class CaseIndicatorInstanceBiz {
   private final CaseIndicatorExpressionRefService caseIndicatorExpressionRefService;
   private final CaseIndicatorExpressionInfluenceService caseIndicatorExpressionInfluenceService;
   private final CaseIndicatorCategoryPrincipalRefService caseIndicatorCategoryPrincipalRefService;
+
+  private final CasePersonService casePersonService;
 
   public static CaseIndicatorInstanceResponseRs caseIndicatorInstance2ResponseRs(
     CaseIndicatorInstanceEntity caseIndicatorInstanceEntity,
@@ -542,5 +545,28 @@ public class CaseIndicatorInstanceBiz {
           return CaseIndicatorCategoryBiz.caseIndicatorCategory2ResponseRs(
               caseIndicatorCategoryEntity, caseIndicatorInstanceResponseRsList);
         }).collect(Collectors.toList());
+  }
+  public String getHealthPoint(String casePersonId) {
+    String healthPoint = "1";
+    CasePersonEntity casePersonEntity = casePersonService.lambdaQuery()
+        .eq(CasePersonEntity::getCasePersonId, casePersonId)
+        .one();
+    if (Objects.nonNull(casePersonEntity)) {
+      String accountId = casePersonEntity.getAccountId();
+      CaseIndicatorInstanceEntity caseIndicatorInstanceEntity = caseIndicatorInstanceService.lambdaQuery()
+          .eq(CaseIndicatorInstanceEntity::getPrincipalId, accountId)
+          .eq(CaseIndicatorInstanceEntity::getType, EnumIndicatorType.HEALTH_POINT.getType())
+          .one();
+      if (Objects.nonNull(caseIndicatorInstanceEntity)) {
+        String caseIndicatorInstanceId = caseIndicatorInstanceEntity.getCaseIndicatorInstanceId();
+        CaseIndicatorRuleEntity caseIndicatorRuleEntity = caseIndicatorRuleService.lambdaQuery()
+            .eq(CaseIndicatorRuleEntity::getVariableId, caseIndicatorInstanceId)
+            .one();
+        if (Objects.nonNull(caseIndicatorRuleEntity)) {
+          healthPoint = caseIndicatorRuleEntity.getDef();
+        }
+      }
+    }
+    return healthPoint;
   }
 }

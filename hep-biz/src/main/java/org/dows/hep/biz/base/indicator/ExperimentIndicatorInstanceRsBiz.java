@@ -21,7 +21,7 @@ public class ExperimentIndicatorInstanceRsBiz {
   private final ExperimentIndicatorInstanceRsService experimentIndicatorInstanceRsService;
   private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
   public String getHealthPoint(Integer periods, String experimentPersonId) {
-    String healthPoint = "0";
+    String healthPoint = "1";
     ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = experimentIndicatorInstanceRsService.lambdaQuery()
         .eq(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonId)
         .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.HEALTH_POINT.getType())
