@@ -150,8 +150,8 @@ public class StartHandler extends AbstractEventHandler implements EventHandler<E
          * 重设每期结束任务
          */
         for (ExperimentTimerEntity updateExperimentTimerEntity : updateExperimentTimerEntities) {
-            ExperimentPeroidTimerTask experimentPeroidTimerTask = new ExperimentPeroidTimerTask(experimentTimerBiz,
-                    experimentRestartRequest.getExperimentInstanceId(), updateExperimentTimerEntity.getPeriod());
+//            ExperimentPeroidTimerTask experimentPeroidTimerTask = new ExperimentPeroidTimerTask(experimentTimerBiz,
+//                    experimentRestartRequest.getExperimentInstanceId(), updateExperimentTimerEntity.getPeriod());
 
             //xperimentTaskScheduler.reset(experimentPeroidTimerTask, );
         }

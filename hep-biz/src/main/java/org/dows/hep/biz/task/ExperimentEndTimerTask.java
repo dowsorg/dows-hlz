@@ -3,6 +3,8 @@ package org.dows.hep.biz.task;
 import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.calc.ExperimentScoreCalcRequest;
+import org.dows.hep.api.enums.EnumCalcCode;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.biz.calc.ExperimentScoreCalculator;
@@ -12,6 +14,8 @@ import org.dows.hep.entity.ExperimentTimerEntity;
 import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.hep.service.ExperimentTimerService;
+
+import java.util.List;
 
 /**
  * 实验结束任务
@@ -68,10 +72,10 @@ public class ExperimentEndTimerTask implements Runnable {
                 .update();
 
         //todo 计算总排行
-        //scoreCalc.calc();
-
-
-
-
+        ExperimentScoreCalcRequest experimentScoreCalcRequest = new ExperimentScoreCalcRequest();
+        experimentScoreCalcRequest.setExperimentInstanceId(experimentInstanceId);
+        experimentScoreCalcRequest.setEnumCalcCodes(List.of(EnumCalcCode.hepTotalScoreCalculator));
+        //todo 根据条件计算总排行
+        experimentScoreCalculator.calc(experimentScoreCalcRequest);
     }
 }
