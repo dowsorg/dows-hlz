@@ -88,6 +88,9 @@ public class ExperimentSettingCollection implements ICacheClear {
      * @return
      */
     public Integer getGameDayByRawSeconds(Integer rawSeconds){
+        return getGameDayByRawSeconds(rawSeconds,null);
+    }
+    public Integer getGameDayByRawSeconds(Integer rawSeconds,Integer period){
         if(rawSeconds.equals(0)){
             return 1;
         }
@@ -101,14 +104,17 @@ public class ExperimentSettingCollection implements ICacheClear {
             }
             return setting.endGameDay;
         }
-        ExperimentPeriodSetting setting=Optional.ofNullable(getPeriodByRawSeconds(rawSeconds))
+        if(ShareUtil.XObject.isEmpty(period, true)){
+            period=getPeriodByRawSeconds(rawSeconds);
+        }
+        ExperimentPeriodSetting setting=Optional.ofNullable(period)
                 .map(this::getSettingByPeriod)
                 .orElse(null);
         if(ShareUtil.XObject.isEmpty(setting)){
             return null;
         }
-        double totalSeconds=setting.endSecond-setting.startSecond;
-        double totalDays=setting.getEndGameDay()-setting.getStartGameDay()+1;
+        double totalSeconds=setting.getTotalSeconds();
+        double totalDays=setting.getTotalDays();
         double rate=Math.min(1,(rawSeconds-setting.startSecond)/totalSeconds);
         return setting.getStartGameDay()-1+(int)Math.ceil(rate*totalDays);
     }
@@ -142,8 +148,15 @@ public class ExperimentSettingCollection implements ICacheClear {
         private Integer endGameDay;
 
         @Schema(title = "间隔秒数")
-        private Integer dueSecond;
+        private Integer dueSeconds;
 
+
+        public Integer getTotalSeconds(){
+            return endSecond-startSecond;
+        }
+        public Integer getTotalDays(){
+            return endGameDay-startGameDay+1;
+        }
 
 
     }

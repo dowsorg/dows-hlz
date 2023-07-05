@@ -187,6 +187,19 @@ public class ExperimentOrgBiz{
                 .orderByDesc(ExperimentPersonEntity::getDt);
         Page<ExperimentPersonEntity> page = new Page<>(personRequest.getPageNo(), personRequest.getPageSize());
         IPage<ExperimentPersonEntity> entityIPage = experimentPersonService.page(page, queryWrapper);
+
+        //获取人物挂号状态
+        ExperimentTimePoint timePoint=ExperimentSettingCache.Instance().getTimePointByRealTime(ExperimentCacheKey.create(personRequest.getAppId(),personRequest.getExperimentInstanceId()),
+                LocalDateTime.now(), false);
+        final Integer period=timePoint.getPeriod();
+        List<String> personIds=ShareUtil.XCollection.map(entityIPage.getRecords(),ExperimentPersonEntity::getExperimentPersonId);
+        List<OperateFlowEntity> rowsFlow=operateFlowDao.getCurrentFlowList(personRequest.getExperimentOrgId(),personIds,period,
+                OperateFlowEntity::getExperimentPersonId,
+                OperateFlowEntity::getOperateFlowId,
+                OperateFlowEntity::getPeriods);
+        Map<String,OperateFlowEntity> mapFlow=ShareUtil.XCollection.toMap(rowsFlow, OperateFlowEntity::getExperimentPersonId);
+
+
         //复制
         IPage<ExperimentPersonResponse> voPage = new Page<>();
         BeanUtils.copyProperties(entityIPage, voPage, new String[]{"records"});
@@ -201,7 +214,14 @@ public class ExperimentOrgBiz{
             // 2、获取用户头像
             person.setAvatar(instanceResponse.getAvatar());
             person.setName(userName);
+            //设置挂号状态
+            OperateFlowEntity rowFlow=mapFlow.get(person.getExperimentPersonId());
+            if(null!=rowFlow){
+                person.setOperateFlowId(rowFlow.getOperateFlowId());
+                person.setFlowPeriod(rowFlow.getPeriods());
+            }
             responseList.add(person);
+
         }
         voPage.setRecords(responseList);
         return voPage;

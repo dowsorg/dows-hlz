@@ -47,4 +47,10 @@ public class ExperimentPersonResponse {
 
     @Schema(title = "期数")
     private Integer periods;
+
+    @Schema(title = "当前挂号流水号,为空-未挂号 非空-已挂号")
+    private String operateFlowId;
+
+    @Schema(title = "挂号流水所在期数,为空或0-未挂号 >0-已挂号")
+    private Integer flowPeriod;
 }
