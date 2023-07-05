@@ -48,11 +48,13 @@ public class ExperimentQuestionnaireManageBiz {
     private final ExperimentOrgService experimentOrgService;
 
     /**
-     * @param
-     * @return
+     * 预处理实验 `知识答题`
+     *
+     * @param experimentInstanceId - 实验实例ID
+     * @param caseInstanceId       - 案例实例ID
      * @author fhb
      * @description 预生成知识考点问卷-分配实验的时候调用
-     * @date 2023/6/3 15:33
+     * @date 2023/7/5 17:15
      */
     public void preHandleExperimentQuestionnaire(String experimentInstanceId, String caseInstanceId) {
         // 没有包含沙盘模式就退出

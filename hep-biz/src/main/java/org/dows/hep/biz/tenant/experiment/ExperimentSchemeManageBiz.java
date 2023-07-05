@@ -34,7 +34,10 @@ public class ExperimentSchemeManageBiz {
     private final ExperimentSchemeScoreBiz experimentSchemeScoreBiz;
 
     /**
-     * @param e
+     * 预生成方案设计试卷-分配实验的时候调用
+     *
+     * @param experimentInstanceId - 实验实例ID
+     * @param caseInstanceId       - 案例实例ID
      * @author fhb
      * @description 预生成方案设计试卷-分配实验的时候调用
      * @date 2023/6/1 9:33
