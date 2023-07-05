@@ -69,6 +69,7 @@ public class MaterialQuestionTypeHandler implements QuestionTypeHandler {
         // handle children
         List<QuestionRequest> children = qr0.getChildren();
         for (QuestionRequest qr : children) {
+            qr.setQuestionCategId(qr0.getQuestionCategId());
             String questionType = qr.getQuestionType();
             QuestionTypeEnum questionTypeEnum = QuestionTypeEnum.getByCode(questionType);
             QuestionRequestDTO itemDto = QuestionRequestDTO.builder()

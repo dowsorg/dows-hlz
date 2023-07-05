@@ -115,6 +115,7 @@ public class ExperimentQuestionnaireScoreBiz {
             return zeroScore;
         }
 
+        // 过滤出选择题
         List<ExperimentQuestionnaireItemEntity> selectQuestionTypeList = itemList.stream()
                 .filter(item -> {
                     String questionType = item.getQuestionType();
