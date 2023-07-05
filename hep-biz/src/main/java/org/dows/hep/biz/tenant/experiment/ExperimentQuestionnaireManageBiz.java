@@ -12,20 +12,18 @@ import org.dows.hep.api.base.question.response.QuestionSectionResponse;
 import org.dows.hep.api.tenant.casus.CasePeriodEnum;
 import org.dows.hep.api.tenant.casus.response.CaseOrgQuestionnaireResponse;
 import org.dows.hep.api.tenant.casus.response.CaseQuestionnaireResponse;
-import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.ExptQuestionnaireStateEnum;
 import org.dows.hep.api.user.experiment.dto.ExptQuestionnaireOptionDTO;
 import org.dows.hep.biz.tenant.casus.TenantCaseOrgQuestionnaireBiz;
 import org.dows.hep.biz.tenant.casus.TenantCaseQuestionnaireBiz;
+import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
 import org.dows.hep.entity.ExperimentOrgEntity;
 import org.dows.hep.entity.ExperimentQuestionnaireEntity;
 import org.dows.hep.entity.ExperimentQuestionnaireItemEntity;
-import org.dows.hep.entity.ExperimentSettingEntity;
 import org.dows.hep.service.ExperimentOrgService;
 import org.dows.hep.service.ExperimentQuestionnaireItemService;
 import org.dows.hep.service.ExperimentQuestionnaireService;
-import org.dows.hep.service.ExperimentSettingService;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -46,7 +44,7 @@ public class ExperimentQuestionnaireManageBiz {
     private final TenantCaseQuestionnaireBiz tenantCaseQuestionnaireBiz;
     private final ExperimentQuestionnaireService experimentQuestionnaireService;
     private final ExperimentQuestionnaireItemService experimentQuestionnaireItemService;
-    private final ExperimentSettingService experimentSettingService;
+    private final ExperimentSettingBiz experimentSettingBiz;
     private final ExperimentOrgService experimentOrgService;
 
     /**
@@ -58,27 +56,12 @@ public class ExperimentQuestionnaireManageBiz {
      */
     public void preHandleExperimentQuestionnaire(String experimentInstanceId, String caseInstanceId) {
         // 没有包含沙盘模式就退出
-        String sandSetting = getSandSetting(experimentInstanceId);
-        if (StrUtil.isBlank(sandSetting)) {
+        if (!experimentSettingBiz.containsSand(experimentInstanceId)) {
             return;
         }
 
         List<String> experimentGroupIds = baseBiz.listExperimentGroupIds(experimentInstanceId);
         preHandleExperimentQuestionnaire(experimentInstanceId, caseInstanceId, experimentGroupIds);
-    }
-
-    private String getSandSetting(String experimentInstanceId) {
-        String sandSetting = "";
-        List<ExperimentSettingEntity> experimentSettings = experimentSettingService.lambdaQuery()
-                .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
-                .list();
-        for (ExperimentSettingEntity expSetting : experimentSettings) {
-            String configKey = expSetting.getConfigKey();
-            if (ExperimentSetting.SandSetting.class.getName().equals(configKey)) {
-                sandSetting = expSetting.getConfigJsonVals();
-            }
-        }
-        return sandSetting;
     }
 
     private void preHandleExperimentQuestionnaire(String experimentInstanceId, String caseInstanceId, List<String> experimentGroupIds) {
