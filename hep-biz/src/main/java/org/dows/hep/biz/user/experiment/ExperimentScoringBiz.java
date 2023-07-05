@@ -228,7 +228,7 @@ public class ExperimentScoringBiz {
                 Double currentTotalScore = atomicReferenceAllPeriodsTotalScore.get();
                 String totalScore = experimentScoringEntity.getTotalScore();
                 Float weight = kPeriodVWeightMap.get(period.toString());
-                currentTotalScore =+ Double.parseDouble(totalScore)*weight;
+                currentTotalScore += Double.parseDouble(totalScore)*weight/100;
                 atomicReferenceAllPeriodsTotalScore.set(currentTotalScore);
             });
             experimentTotalRankGroupItemResponseList.add(ExperimentTotalRankGroupItemResponse
