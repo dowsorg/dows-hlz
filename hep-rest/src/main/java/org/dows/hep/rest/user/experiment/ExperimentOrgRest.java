@@ -1,6 +1,6 @@
 package org.dows.hep.rest.user.experiment;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,7 +45,7 @@ public class ExperimentOrgRest {
      */
     @Operation(summary = "获取实验人物列表")
     @PostMapping("v1/userExperiment/experimentOrg/pageExperimentPersons")
-    public IPage<ExperimentPersonResponse> pageExperimentPersons(@RequestBody @Validated ExperimentPersonRequest personRequest) {
+    public Page<ExperimentPersonResponse> pageExperimentPersons(@RequestBody @Validated ExperimentPersonRequest personRequest) {
         return experimentOrgBiz.pageExperimentPersons(personRequest);
     }
 

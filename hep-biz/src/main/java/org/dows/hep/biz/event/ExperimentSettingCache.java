@@ -115,32 +115,40 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
     }
     public static ExperimentTimePoint getTimePointByRealTime(ExperimentSettingCollection cached,  ExperimentCacheKey key,LocalDateTime dt,boolean fillGameDay) {
         ExperimentTimePoint rst = new ExperimentTimePoint().setRealTime(dt);
-        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(cached.getMapPeriod()))
+        AssertUtil.trueThenThrow(ShareUtil.XObject.anyEmpty(cached, cached.getMapPeriod()))
                 .throwMessage("未找到实验时间设置");
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(cached.getStartTime()))
                 .throwMessage("未找到实验开始时间");
-        LocalDateTime now = LocalDateTime.now();
+        final LocalDateTime now = LocalDateTime.now();
+        final Long nowTs=ShareUtil.XDate.localDT2UnixTS(now, false);
         if (now.isBefore(cached.getStartTime())) {
             return rst.setPeriod(1)
                     .setGameDay(1)
-                    .setCntPauseSeconds(0L);
+                    .setCntPauseSeconds(0L)
+                    .setGameState(EnumExperimentState.UNBEGIN);
         }
         Optional<ExperimentTimerEntity> rowTimeOpt = s_instance.experimentTimerDao.getCurPeriodByExperimentId(key.getAppId(), key.getExperimentInstanceId(),
-                ShareUtil.XDate.localDT2UnixTS(now, false),
+                nowTs,
                 ExperimentTimerEntity::getPeriod,
                 ExperimentTimerEntity::getStartTime,
                 ExperimentTimerEntity::getEndTime);
         if(rowTimeOpt.isEmpty()) {
             List<ExperimentTimerEntity> rowsTime = s_instance.experimentTimerDao.getByExperimentId(key.getAppId(), key.getExperimentInstanceId(), cached.getPeriods(),
-                    ExperimentTimerEntity::getStartTime, ExperimentTimerEntity::getEndTime);
-            if (ShareUtil.XObject.notEmpty(rowsTime)
-                    && rowsTime.get(0).getStartTime() <= ShareUtil.XDate.localDT2UnixTS(now, false)) {
+                    ExperimentTimerEntity::getPeriod,
+                    ExperimentTimerEntity::getStartTime,
+                    ExperimentTimerEntity::getEndTime);
+            if (ShareUtil.XObject.notEmpty(rowsTime) && rowsTime.get(0).getStartTime() <= nowTs) {
                 rowTimeOpt = Optional.of(rowsTime.get(0));
             }
         }
         AssertUtil.getNotNull(rowTimeOpt).orElseThrow("未找到当前实验计时器");
         final ExperimentTimerEntity rowTime=rowTimeOpt.get();
         rst.setPeriod(rowTime.getPeriod());
+        if(cached.getPeriods().equals(rowTime.getPeriod())&&rowTime.getEndTime()<=nowTs){
+            rst.setGameState(EnumExperimentState.FINISH);
+        } else {
+            rst.setGameState(EnumExperimentState.ONGOING);
+        }
         ExperimentSettingCollection.ExperimentPeriodSetting setting = AssertUtil.getNotNull(cached.getSettingByPeriod(rst.getPeriod()))
                 .orElseThrow(String.format("未找到实验第%s期设置", rst.getPeriod()));
         long pausingSeconds=0;
@@ -160,12 +168,16 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
 
     @Override
     protected boolean isCompleted(ExperimentSettingCollection val) {
-        return ShareUtil.XObject.notEmpty(val.getStartTime())
+        return ShareUtil.XObject.notEmpty(val)
+                &ShareUtil.XObject.notEmpty(val.getStartTime())
                 &ShareUtil.XObject.notEmpty(val.getMapPeriod());
     }
 
     @Override
     protected ExperimentSettingCollection cotinueLoad(ExperimentCacheKey key, ExperimentSettingCollection curVal) {
+        if(ShareUtil.XObject.notEmpty(curVal)){
+            return curVal;
+        }
         if(ShareUtil.XObject.isEmpty(curVal.getStartTime())) {
             List<ExperimentTimerEntity> rowsTimer = experimentTimerDao.getByExperimentId(key.getAppId(), key.getExperimentInstanceId(),
                     1, ExperimentTimerEntity::getStartTime, ExperimentTimerEntity::getPauseCount, ExperimentTimerEntity::getState);
