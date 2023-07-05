@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.poi.ss.formula.functions.T;
+import org.dows.hep.api.base.indicator.request.RsCalculateCompetitivePointRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCalculateHealthPointRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCalculateMoneyPointRequestRs;
+import org.dows.hep.api.base.indicator.response.GroupCompetitivePointRsResponse;
+import org.dows.hep.api.base.indicator.response.RsCalculateCompetitivePointRsResponse;
 import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
@@ -213,7 +215,7 @@ public class RsCalculateBiz {
   public void rsCalculateMoneyPoint(RsCalculateMoneyPointRequestRs rsCalculateMoneyPointRequestRs) {
   }
   @Transactional(rollbackFor = Exception.class)
-  public void rsCalculateHealthPoint(RsCalculateHealthPointRequestRs rsCalculateHealthPointRequestRs) {
+  public void rsCalculateHealthPointDev(RsCalculateHealthPointRequestRs rsCalculateHealthPointRequestRs) {
     Map<String, ExperimentCrowdsInstanceRsEntity> kExperimentPersonIdVExperimentCrowdsInstanceRsEntityMap = new HashMap();
     Map<String, List<ExperimentRiskModelRsEntity>> kExperimentCrowdsIdVExperimentRiskModelRsEntityListMap = new HashMap<>();
     Map<String, List<ExperimentIndicatorExpressionRsEntity>> kExperimentRiskModelIdVExperimentIndicatorExpressionRsEntityListMap = new HashMap<>();
@@ -303,5 +305,20 @@ public class RsCalculateBiz {
     stringBuffer.append(str);
     stringBuffer.append(EnumString.SINGLE_QUOTES.getStr());
     return stringBuffer.toString();
+  }
+
+  public RsCalculateCompetitivePointRsResponse rsCalculateCompetitivePoint(RsCalculateCompetitivePointRequestRs rsCalculateCompetitivePointRequestRs) {
+    List<GroupCompetitivePointRsResponse> groupCompetitivePointRsResponseList = new ArrayList<>();
+    String experimentId = rsCalculateCompetitivePointRequestRs.getExperimentId();
+    Integer periods = rsCalculateCompetitivePointRequestRs.getPeriods();
+    /* runsix:TODO  */
+    return RsCalculateCompetitivePointRsResponse
+        .builder()
+        .groupCompetitivePointRsResponseList(groupCompetitivePointRsResponseList)
+        .build();
+  }
+
+  public void rsCalculateHealthPoint() {
+
   }
 }

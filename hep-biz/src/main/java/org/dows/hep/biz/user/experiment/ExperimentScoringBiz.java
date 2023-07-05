@@ -2,21 +2,28 @@ package org.dows.hep.biz.user.experiment;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.annotation.CalcCode;
+import org.dows.hep.api.base.indicator.response.ExperimentRankGroupItemResponse;
+import org.dows.hep.api.base.indicator.response.ExperimentRankItemResponse;
+import org.dows.hep.api.base.indicator.response.ExperimentRankResponse;
 import org.dows.hep.api.enums.EnumCalcCode;
+import org.dows.hep.api.enums.EnumESC;
+import org.dows.hep.api.exception.ExperimentScoringException;
+import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
+import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
 import org.dows.hep.entity.ExperimentScoringEntity;
+import org.dows.hep.entity.ExperimentSettingEntity;
 import org.dows.hep.service.ExperimentScoringService;
+import org.dows.hep.service.ExperimentSettingService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -39,8 +46,10 @@ public class ExperimentScoringBiz {
     private final ExperimentQuestionnaireScoreBiz experimentQuestionnaireScoreBiz;
     private final IdGenerator idGenerator;
     private final ExperimentSettingBiz experimentSettingBiz;
+    private final ExperimentSettingService experimentSettingService;
 
     private final ExperimentScoringService experimentScoringService;
+    private final ExperimentTimerBiz experimentTimerBiz;
 
     public void saveOrUpd(String experimentInstanceId, Integer period) {
         // 获取该实验的实验小组
@@ -136,5 +145,92 @@ public class ExperimentScoringBiz {
 
     }
 
-
+    public ExperimentRankResponse getRank(String experimentId) {
+        Map<Integer, ExperimentRankItemResponse> kPeriodVExperimentRankItemResponseMap = new HashMap<>();
+        List<ExperimentRankItemResponse> experimentRankItemResponseList = new ArrayList<>();
+        ExperimentSettingEntity experimentSettingEntity = experimentSettingService.lambdaQuery()
+            .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentId)
+            .eq(ExperimentSettingEntity::getConfigKey, ExperimentSetting.SandSetting.class.getName())
+            .oneOpt()
+            .orElseThrow(() -> {
+                log.error("experimentId:{} has no sandSetting", experimentId);
+                throw new ExperimentScoringException(EnumESC.VALIDATE_EXCEPTION);
+            });
+        ExperimentSetting.SandSetting sandSetting = JSONUtil.toBean(experimentSettingEntity.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
+        Integer periods = sandSetting.getPeriods();
+        for (int i = 1; i <= periods; i++) {
+            ExperimentRankItemResponse experimentRankItemResponse = ExperimentRankItemResponse
+                .builder()
+                .periods(i)
+                .experimentRankGroupItemResponseList(new ArrayList<>())
+                .build();
+            kPeriodVExperimentRankItemResponseMap.put(i, experimentRankItemResponse);
+        }
+        Map<Integer, Map<String, ExperimentScoringEntity>> kPeriodVKExperimentGroupIdVExperimentScoringEntityMap = new HashMap<>();
+        experimentScoringService.lambdaQuery()
+            .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
+            .list()
+            .forEach(experimentScoringEntity -> {
+                String experimentGroupId = experimentScoringEntity.getExperimentGroupId();
+                Integer periods1 = experimentScoringEntity.getPeriods();
+                Map<String, ExperimentScoringEntity> kExperimentGroupIdVExperimentScoringEntityMap = kPeriodVKExperimentGroupIdVExperimentScoringEntityMap.get(periods1);
+                if (Objects.isNull(kExperimentGroupIdVExperimentScoringEntityMap)) {
+                    kExperimentGroupIdVExperimentScoringEntityMap = new HashMap<>();
+                }
+                ExperimentScoringEntity experimentScoringEntity1 = kExperimentGroupIdVExperimentScoringEntityMap.get(experimentGroupId);
+                if (Objects.isNull(experimentScoringEntity1)) {
+                    kExperimentGroupIdVExperimentScoringEntityMap.put(experimentGroupId, experimentScoringEntity);
+                } else {
+                    Integer scoringCount = experimentScoringEntity.getScoringCount();
+                    Integer scoringCount1 = experimentScoringEntity1.getScoringCount();
+                    if (scoringCount > scoringCount1) {
+                        kExperimentGroupIdVExperimentScoringEntityMap.put(experimentGroupId, experimentScoringEntity);
+                    }
+                }
+                kPeriodVKExperimentGroupIdVExperimentScoringEntityMap.put(periods1, kExperimentGroupIdVExperimentScoringEntityMap);
+            });
+        kPeriodVKExperimentGroupIdVExperimentScoringEntityMap.forEach((period, kExperimentGroupIdVExperimentScoringEntityMap) -> {
+            ExperimentRankItemResponse experimentRankItemResponse = kPeriodVExperimentRankItemResponseMap.get(period);
+            List<ExperimentRankGroupItemResponse> experimentRankGroupItemResponseList = experimentRankItemResponse.getExperimentRankGroupItemResponseList();
+            kExperimentGroupIdVExperimentScoringEntityMap.forEach((experimentGroupId, experimentScoringEntity) -> {
+                experimentRankGroupItemResponseList.add(ExperimentRankGroupItemResponse
+                    .builder()
+                    .experimentGroupName(experimentScoringEntity.getExperimentGroupName())
+                    .healthIndexScore(experimentScoringEntity.getHealthIndexScore())
+                    .knowledgeScore(experimentScoringEntity.getKnowledgeScore())
+                    .treatmentPercentScore(experimentScoringEntity.getTreatmentPercentScore())
+                    .totalScore(experimentScoringEntity.getTotalScore())
+                    .periods(experimentScoringEntity.getPeriods())
+                    .build());
+            });
+            experimentRankGroupItemResponseList.sort(Comparator.comparing(ExperimentRankGroupItemResponse::getTotalScore));
+            experimentRankItemResponse.setExperimentRankGroupItemResponseList(experimentRankGroupItemResponseList);
+            kPeriodVExperimentRankItemResponseMap.put(period, experimentRankItemResponse);
+        });
+        /* runsix:sort */
+        kPeriodVExperimentRankItemResponseMap.forEach((period, experimentRankItemResponse) -> {
+            experimentRankItemResponseList.add(experimentRankItemResponse);
+        });
+        experimentRankItemResponseList.sort(Comparator.comparingInt(ExperimentRankItemResponse::getPeriods));
+        experimentRankItemResponseList.forEach(experimentRankItemResponse -> {
+            List<ExperimentRankGroupItemResponse> experimentRankGroupItemResponseList = experimentRankItemResponse.getExperimentRankGroupItemResponseList();
+            if (Objects.nonNull(experimentRankGroupItemResponseList)) {
+                experimentRankGroupItemResponseList.sort((a, b) -> {
+                    double result = Double.parseDouble(a.getTotalScore()) - Double.parseDouble(b.getTotalScore());
+                    if (0 == result) {
+                        return 0;
+                    } else if (result > 0) {
+                        return -1;
+                    } else {
+                        return 1;
+                    }
+                });
+                experimentRankItemResponse.setExperimentRankGroupItemResponseList(experimentRankGroupItemResponseList);
+            }
+        });
+        return ExperimentRankResponse
+            .builder()
+            .experimentRankItemResponseList(experimentRankItemResponseList)
+            .build();
+    }
 }
