@@ -146,14 +146,7 @@ public class ExperimentScoringBiz {
 
     public ExperimentRankResponse getRank(String experimentId) {
         List<ExperimentRankItemResponse> experimentRankItemResponseList = new ArrayList<>();
-        ExperimentTotalRankResponse experimentTotalRankResponse = ExperimentTotalRankResponse
-            .builder()
-            .experimentTotalRankItemResponseList(new ArrayList<>())
-            .experimentAllPeriodTotalRankResponse(ExperimentAllPeriodTotalRankResponse
-                .builder()
-                .experimentTotalRankGroupItemResponseList(new ArrayList<>())
-                .build())
-            .build();
+        List<ExperimentTotalRankItemResponse> experimentTotalRankItemResponseList = new ArrayList<>();
         Map<Integer, ExperimentRankItemResponse> kPeriodVExperimentRankItemResponseMap = new HashMap<>();
         ExperimentSettingEntity experimentSettingEntity = experimentSettingService.lambdaQuery()
             .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentId)
@@ -217,8 +210,7 @@ public class ExperimentScoringBiz {
             });
         /* runsix:算所有期数得分 */
         kExperimentGroupIdVKPeriodVExperimentScoringEntityMap.forEach((experimentGroupId, kPeriodVExperimentScoringEntityMap) -> {
-            ExperimentAllPeriodTotalRankResponse experimentAllPeriodTotalRankResponse1 = experimentTotalRankResponse.getExperimentAllPeriodTotalRankResponse();
-            List<ExperimentTotalRankGroupItemResponse> experimentTotalRankGroupItemResponseList = experimentAllPeriodTotalRankResponse1.getExperimentTotalRankGroupItemResponseList();
+            List<ExperimentTotalRankGroupItemResponse> experimentTotalRankGroupItemResponseList = new ArrayList<>();
             AtomicReference<String> atomicReferenceExperimentGroupName = new AtomicReference<>();
             AtomicReference<Double> atomicReferenceAllPeriodsTotalScore = new AtomicReference<>(0D);
             kPeriodVExperimentScoringEntityMap.forEach((period, experimentScoringEntity) -> {
@@ -230,19 +222,22 @@ public class ExperimentScoringBiz {
                 Float weight = kPeriodVWeightMap.get(period.toString());
                 currentTotalScore += Double.parseDouble(totalScore)*weight/100;
                 atomicReferenceAllPeriodsTotalScore.set(currentTotalScore);
+                experimentTotalRankGroupItemResponseList.add(ExperimentTotalRankGroupItemResponse
+                    .builder()
+                    .totalScore(experimentScoringEntity.getTotalScore())
+                    .periods(period)
+                    .build());
             });
-            experimentTotalRankGroupItemResponseList.add(ExperimentTotalRankGroupItemResponse
+            experimentTotalRankGroupItemResponseList.sort(Comparator.comparing(ExperimentTotalRankGroupItemResponse::getPeriods));
+            experimentTotalRankItemResponseList.add(ExperimentTotalRankItemResponse
                 .builder()
                 .experimentGroupName(atomicReferenceExperimentGroupName.get())
-                .totalScore(atomicReferenceAllPeriodsTotalScore.get().toString())
+                .allPeriodsTotalScore(atomicReferenceAllPeriodsTotalScore.get().toString())
+                .experimentTotalRankGroupItemResponseList(experimentTotalRankGroupItemResponseList)
                 .build());
-            experimentAllPeriodTotalRankResponse1.setExperimentTotalRankGroupItemResponseList(experimentTotalRankGroupItemResponseList);
         });
         /* runsix:算每期列表 */
         kPeriodVKExperimentGroupIdVExperimentScoringEntityMap.forEach((period, kExperimentGroupIdVExperimentScoringEntityMap) -> {
-            /* runsix:每一期总分列表数据 */
-            List<ExperimentTotalRankItemResponse> experimentTotalRankItemResponseList = experimentTotalRankResponse.getExperimentTotalRankItemResponseList();
-            List<ExperimentTotalRankGroupItemResponse> experimentTotalRankGroupItemResponseList = new ArrayList<>();
             /* runsix:12345期数据 */
             ExperimentRankItemResponse experimentRankItemResponse = kPeriodVExperimentRankItemResponseMap.get(period);
             List<ExperimentRankGroupItemResponse> experimentRankGroupItemResponseList = experimentRankItemResponse.getExperimentRankGroupItemResponseList();
@@ -256,23 +251,11 @@ public class ExperimentScoringBiz {
                     .totalScore(experimentScoringEntity.getTotalScore())
                     .periods(experimentScoringEntity.getPeriods())
                     .build());
-                experimentTotalRankGroupItemResponseList.add(ExperimentTotalRankGroupItemResponse
-                    .builder()
-                    .experimentGroupName(experimentScoringEntity.getExperimentGroupName())
-                    .totalScore(experimentScoringEntity.getTotalScore())
-                    .periods(experimentScoringEntity.getPeriods())
-                    .build());
+
             });
             experimentRankGroupItemResponseList.sort(Comparator.comparing(ExperimentRankGroupItemResponse::getTotalScore));
             experimentRankItemResponse.setExperimentRankGroupItemResponseList(experimentRankGroupItemResponseList);
             kPeriodVExperimentRankItemResponseMap.put(period, experimentRankItemResponse);
-            ExperimentTotalRankItemResponse experimentTotalRankItemResponse = ExperimentTotalRankItemResponse
-                .builder()
-                .periods(period)
-                .experimentTotalRankGroupItemResponseList(experimentTotalRankGroupItemResponseList)
-                .build();
-            experimentTotalRankItemResponseList.add(experimentTotalRankItemResponse);
-            experimentTotalRankResponse.setExperimentTotalRankItemResponseList(experimentTotalRankItemResponseList);
         });
         /* runsix:sort */
         kPeriodVExperimentRankItemResponseMap.forEach((period, experimentRankItemResponse) -> {
@@ -286,26 +269,18 @@ public class ExperimentScoringBiz {
         });
 
         /* runsix:sort */
-        List<ExperimentTotalRankItemResponse> experimentTotalRankItemResponseList = experimentTotalRankResponse.getExperimentTotalRankItemResponseList();
-        experimentTotalRankItemResponseList.sort(Comparator.comparingInt(ExperimentTotalRankItemResponse::getPeriods));
+        experimentTotalRankItemResponseList.sort(Comparator.comparing(a -> Double.parseDouble(a.getAllPeriodsTotalScore())));
+        Collections.reverse(experimentTotalRankItemResponseList);
         experimentTotalRankItemResponseList.forEach(experimentTotalRankItemResponse -> {
             List<ExperimentTotalRankGroupItemResponse> experimentTotalRankGroupItemResponseList = experimentTotalRankItemResponse.getExperimentTotalRankGroupItemResponseList();
-            experimentTotalRankGroupItemResponseList.sort(Comparator.comparing(ExperimentTotalRankGroupItemResponse::getTotalScore));
-            Collections.reverse(experimentTotalRankGroupItemResponseList);
+            experimentTotalRankGroupItemResponseList.sort(Comparator.comparingInt(ExperimentTotalRankGroupItemResponse::getPeriods));
             experimentTotalRankItemResponse.setExperimentTotalRankGroupItemResponseList(experimentTotalRankGroupItemResponseList);
         });
-        experimentTotalRankResponse.setExperimentTotalRankItemResponseList(experimentTotalRankItemResponseList);
-        ExperimentAllPeriodTotalRankResponse experimentAllPeriodTotalRankResponse = experimentTotalRankResponse.getExperimentAllPeriodTotalRankResponse();
-        List<ExperimentTotalRankGroupItemResponse> experimentTotalRankGroupItemResponseList = experimentAllPeriodTotalRankResponse.getExperimentTotalRankGroupItemResponseList();
-        experimentTotalRankGroupItemResponseList.sort(Comparator.comparing(ExperimentTotalRankGroupItemResponse::getTotalScore));
-        Collections.reverse(experimentTotalRankGroupItemResponseList);
-        experimentAllPeriodTotalRankResponse.setExperimentTotalRankGroupItemResponseList(experimentTotalRankGroupItemResponseList);
-        experimentTotalRankResponse.setExperimentAllPeriodTotalRankResponse(experimentAllPeriodTotalRankResponse);
         return ExperimentRankResponse
             .builder()
             .totalPeriod(totalPeriods)
             .experimentRankItemResponseList(experimentRankItemResponseList)
-            .experimentTotalRankResponse(experimentTotalRankResponse)
+            .experimentTotalRankItemResponseList(experimentTotalRankItemResponseList)
             .build();
     }
 }
