@@ -1,5 +1,6 @@
 package org.dows.hep.biz.base.person;
 
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -175,16 +176,18 @@ public class PersonManageBiz {
         //3、修改用户功能点
         List<CasePersonIndicatorFuncRequest> funcList = request.getEntityList();
         List<CasePersonIndicatorFuncEntity> entities = new ArrayList<>();
-        funcList.forEach(func -> {
-            CasePersonIndicatorFuncEntity casePersonIndicatorFuncEntity = casePersonIndicatorFuncService.lambdaQuery()
-                    .eq(CasePersonIndicatorFuncEntity::getCasePersonIndicatorFuncId, func.getCasePersonIndicatorFuncId())
-                    .eq(CasePersonIndicatorFuncEntity::getDeleted, false)
-                    .one();
-            CasePersonIndicatorFuncEntity entity = new CasePersonIndicatorFuncEntity();
-            BeanUtils.copyProperties(func, entity);
-            entity.setId(casePersonIndicatorFuncEntity.getId());
-            entities.add(entity);
-        });
+        if (CollUtil.isNotEmpty(funcList)) {
+            funcList.forEach(func -> {
+                CasePersonIndicatorFuncEntity casePersonIndicatorFuncEntity = casePersonIndicatorFuncService.lambdaQuery()
+                        .eq(CasePersonIndicatorFuncEntity::getCasePersonIndicatorFuncId, func.getCasePersonIndicatorFuncId())
+                        .eq(CasePersonIndicatorFuncEntity::getDeleted, false)
+                        .one();
+                CasePersonIndicatorFuncEntity entity = new CasePersonIndicatorFuncEntity();
+                BeanUtils.copyProperties(func, entity);
+                entity.setId(casePersonIndicatorFuncEntity.getId());
+                entities.add(entity);
+            });
+        }
         return casePersonIndicatorFuncService.updateBatchById(entities);
     }
 

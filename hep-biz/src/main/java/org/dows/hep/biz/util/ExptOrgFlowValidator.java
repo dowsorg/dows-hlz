@@ -1,14 +1,18 @@
 package org.dows.hep.biz.util;
 
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
+import lombok.Getter;
 import org.dows.framework.crud.api.CrudContextHolder;
-import org.dows.hep.api.core.BaseExptRequest;
 import org.dows.hep.api.enums.EnumOrgFeeType;
 import org.dows.hep.biz.dao.CaseOrgFeeDao;
 import org.dows.hep.biz.dao.OperateFlowDao;
+import org.dows.hep.biz.event.ExperimentSettingCache;
+import org.dows.hep.biz.event.data.ExperimentCacheKey;
+import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.entity.CaseOrgFeeEntity;
 import org.dows.hep.entity.OperateFlowEntity;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,65 +30,56 @@ public class ExptOrgFlowValidator {
      * @param experimentOrgId 机构id
      * @param experimentPersonId 实验人物id
      */
-    private ExptOrgFlowValidator(String appId,String experimentInstanceId, String experimentOrgId,String experimentPersonId){
+    private ExptOrgFlowValidator(String appId,String experimentInstanceId, String experimentOrgId,String experimentPersonId,String caseOrgId){
         this.appId=appId;
+        this.experimentInstanceId=experimentInstanceId;
         this.experimentOrgId=experimentOrgId;
         this.experimentPersonId=experimentPersonId;
+        this.caseOrgId=caseOrgId;
 
     }
 
-    private ExptOrgFlowValidator(BaseExptRequest req){
-        this.appId=req.getAppId();
-        this.experimentOrgId=req.getExperimentOrgId();
-        this.experimentPersonId=req.getExperimentPersonId();
-        this.periods=req.getPeriods();
-    }
+
 
     //region create
-    public static ExptOrgFlowValidator create(BaseExptRequest req){
-        return new ExptOrgFlowValidator(req);
+    public static ExptOrgFlowValidator create(ExptRequestValidator req){
+        return new ExptOrgFlowValidator(req.getAppId(),req.getExperimentInstanceId(),req.getExperimentOrgId(),req.getExperimentPersonId(),req.getCaseOrgId());
     }
-    public static ExptOrgFlowValidator create(String appId,String experimentInstanceId, String experimentOrgId,String experimentPersonId){
-        return new ExptOrgFlowValidator(appId,experimentInstanceId,experimentOrgId,experimentPersonId);
+
+    public static ExptOrgFlowValidator create(String appId,String experimentInstanceId, String experimentOrgId,String experimentPersonId,String caseOrgId){
+        return new ExptOrgFlowValidator(appId, experimentInstanceId, experimentOrgId, experimentPersonId, caseOrgId);
     }
+
     //endregion
 
     //region fileds
     //应用ID
+    @Getter
     private String appId;
+    //实验id
+    @Getter
+    private String experimentInstanceId;
     //实验人物ID
+    @Getter
     private String experimentPersonId;
     //实验机构ID
+    @Getter
     private String experimentOrgId;
-    //期数
-    private Integer periods;
+    //案例机构ID
+    @Getter
+    private String caseOrgId;
+
     //挂号流程id
+    @Getter
     private String operateFlowId;
 
+
     private List<CaseOrgFeeEntity> exptFeeList;
+
 
     private Optional<OperateFlowEntity> exptFlow;
     //endregion
 
-    //region getId
-    public String getAppId(){
-        return this.appId;
-    }
-
-    public String getExperimentPersonId(){
-        return this.experimentPersonId;
-    }
-    public String getExperimentOrgId(){
-        return this.experimentOrgId;
-    }
-    public Integer getPeriods(){
-        return this.periods;
-    }
-
-    public String getOperateFlowId() {
-        return this.operateFlowId;
-    }
-    //endregion
 
     //region orgFee
 
@@ -127,11 +122,11 @@ public class ExptOrgFlowValidator {
                 CaseOrgFeeEntity::getReimburseRatio);
     }
     public List<CaseOrgFeeEntity> getOrgFeeList(boolean assertNotEmpty, SFunction<CaseOrgFeeEntity,?>... cols){
-        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(experimentOrgId))
-                .throwMessage("未找到实验机构ID");
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(caseOrgId))
+                .throwMessage("未找到案例机构ID");
         if(null==exptFeeList){
             exptFeeList= CrudContextHolder.getBean(CaseOrgFeeDao.class)
-                    .getFeeList(experimentOrgId, cols);
+                    .getFeeList(caseOrgId, cols);
         }
         AssertUtil.trueThenThrow(assertNotEmpty&&ShareUtil.XObject.isEmpty(this.exptFeeList ))
                 .throwMessage("未找到机构费用设置");
@@ -157,9 +152,15 @@ public class ExptOrgFlowValidator {
      * @return
      */
     public boolean ifOrgFlowRunning(){
-        return Optional.ofNullable( getOrgFlow(false))
-                .filter(i->null==i.getEndTime())
-                .isPresent();
+        ExperimentTimePoint timePoint= ExperimentSettingCache.Instance().getTimePointByRealTime(ExperimentCacheKey.create(this.appId, this.experimentInstanceId),
+                LocalDateTime.now(),false);
+
+        return ifOrgFlowRunning(getOrgFlow(false), timePoint.getPeriod());
+    }
+    public boolean ifOrgFlowRunning(OperateFlowEntity rowFlow,int curPeriod){
+        return null!=rowFlow
+                &&null==rowFlow.getEndTime()
+                &&curPeriod<= rowFlow.getPeriods();
     }
     public ExptOrgFlowValidator checkOrgFlow(boolean assertNotEmpty){
         getOrgFlow(assertNotEmpty);
@@ -174,6 +175,7 @@ public class ExptOrgFlowValidator {
                 OperateFlowEntity::getOperateFlowId,
                 OperateFlowEntity::getStartTime,
                 OperateFlowEntity::getEndTime,
+                OperateFlowEntity::getPeriods,
                 OperateFlowEntity::getTotalSteps,
                 OperateFlowEntity::getDoneSteps);
     }
@@ -184,7 +186,7 @@ public class ExptOrgFlowValidator {
                 .throwMessage("未找到实验人物ID");
         if(null==exptFlow){
             exptFlow=CrudContextHolder.getBean(OperateFlowDao.class)
-                    .getCurrrentFlow(experimentPersonId, experimentOrgId, periods, cols);
+                    .getCurrrentFlow(experimentPersonId, experimentOrgId, null, cols);
         }
         AssertUtil.trueThenThrow(assertNotEmpty&&exptFlow.isEmpty())
                 .throwMessage("未找到挂号记录");

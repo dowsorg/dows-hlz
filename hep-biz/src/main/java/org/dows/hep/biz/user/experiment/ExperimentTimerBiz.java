@@ -6,9 +6,8 @@ import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
-import org.dows.hep.api.enums.ExperimentStateEnum;
+import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.exception.ExperimentException;
-import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.response.CountDownResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
@@ -45,6 +44,63 @@ public class ExperimentTimerBiz {
 
 
     /**
+     * 获取当前实验期数信息[每期开始，结束，间隔等]
+     *
+     * @param experimentInstanceId
+     * @return
+     */
+    public CountDownResponse userCountdown(String experimentInstanceId) {
+        // 获取当前期数
+        CountDownResponse countDownResponse = new CountDownResponse();
+
+        List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
+                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentTimerEntity::getState, EnumExperimentState.ONGOING.getState())
+                //.eq(ExperimentTimerEntity::getModel, 2) // 沙盘模式
+                //.ne(ExperimentTimerEntity::getState, ExperimentStateEnum.FINISH.getState())
+                .list();
+        list = list.stream().sorted(Comparator.comparingInt(ExperimentTimerEntity::getPeriod))
+                .collect(Collectors.toList());
+
+        long ct = System.currentTimeMillis();
+
+
+        for (int i = 0; i < list.size(); i++) {
+            ExperimentTimerEntity pre = list.get(i);
+            ExperimentTimerEntity next;
+            if (i == list.size() - 1) {
+                countDownResponse.setCountdown(0L);
+                countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
+                countDownResponse.setModel(pre.getModel());
+                countDownResponse.setPeriod(pre.getPeriod());
+                break;
+            }
+            next = list.get(i + 1);
+            // 两期之间
+            if (ct >= pre.getEndTime() && ct < next.getStartTime()) {
+                ct = next.getStartTime() - ct;
+                countDownResponse.setCountdown(ct);
+                // todo 兜底计算，在两期之间计算上一期数据,异步
+
+
+                break;
+            } else if (ct <= pre.getStartTime()) { // 小组分配结束
+                countDownResponse.setCountdown(pre.getStartTime() - ct);
+                countDownResponse.setModel(pre.getModel());
+                countDownResponse.setPeriod(pre.getPeriod());
+                break;
+            } else if (ct >= pre.getStartTime() && ct <= pre.getEndTime()) { //  开始之后
+                countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
+                countDownResponse.setModel(pre.getModel());
+                countDownResponse.setPeriod(pre.getPeriod());
+                break;
+
+            }
+        }
+        return countDownResponse;
+    }
+
+    /**
      * @param
      * @return
      * @说明: 获取实验倒计时
@@ -54,13 +110,13 @@ public class ExperimentTimerBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public CountDownResponse countdown(String experimentInstanceId) {
+    public CountDownResponse tenantCountdown(String experimentInstanceId) {
         CountDownResponse countDownResponse = new CountDownResponse();
 
         List<ExperimentSettingEntity> list = experimentSettingService.lambdaQuery()
                 .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
                 .list();
-        ExperimentSettingEntity experimentSettingEntity1 = list.stream().filter(e -> e.getConfigKey().equals(ExperimentSetting.SchemeSetting.class))
+        ExperimentSettingEntity experimentSettingEntity1 = list.stream().filter(e -> e.getConfigKey().equals(ExperimentSetting.SchemeSetting.class.getName()))
                 .findFirst()
                 .orElse(null);
         if (experimentSettingEntity1 != null) {
@@ -75,13 +131,13 @@ public class ExperimentTimerBiz {
             }
         }
 
-        ExperimentSettingEntity experimentSettingEntity2 = list.stream().filter(e -> e.getConfigKey().equals(ExperimentSetting.SandSetting.class))
+        ExperimentSettingEntity experimentSettingEntity2 = list.stream().filter(e -> e.getConfigKey().equals(ExperimentSetting.SandSetting.class.getName()))
                 .findFirst()
                 .orElse(null);
 
         if (experimentSettingEntity2 != null) {
             ExperimentSetting.SandSetting sandSetting =
-                    JSONUtil.toBean(experimentSettingEntity1.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
+                    JSONUtil.toBean(experimentSettingEntity2.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
             // 沙盘期数展示
             // 每期持续时长
             Map<String, Integer> durationMap = sandSetting.getDurationMap();
@@ -90,13 +146,13 @@ public class ExperimentTimerBiz {
             // 对set排序一下
             List<String> keys = periodMap.keySet().stream().sorted().collect(Collectors.toList());
             // 每期对应的mock比列
-            Map<String, Float> mockRateMap = new HashMap<>();
+            Map<String, Double> mockRateMap = new HashMap<>();
             int totalDay = 0;
             for (String s : keys) {
                 Integer duration = durationMap.get(s);
                 Integer period = periodMap.get(s);
                 totalDay += period;
-                float mockRate = period / duration;
+                double mockRate = Double.valueOf(period) / Double.valueOf(duration * 60);
                 mockRateMap.put(s, mockRate);
             }
 
@@ -110,24 +166,26 @@ public class ExperimentTimerBiz {
                     .list();
 
             for (ExperimentTimerEntity experimentTimerEntity : experimentTimerEntityList) {
-                if (experimentTimerEntity.getState() == ExperimentStateEnum.FINISH.getState()) {
-                    countDownResponse.setSandDuration(Float.valueOf(totalDay));
+                if (experimentTimerEntity.getState() == EnumExperimentState.FINISH.getState()) {
+                    countDownResponse.setSandDuration(Double.valueOf(totalDay));
                     break;
-                } else if (experimentTimerEntity.getState() == ExperimentStateEnum.UNBEGIN.getState()) {
-                    countDownResponse.setSandDuration(0F);
+                } else if (experimentTimerEntity.getState() == EnumExperimentState.UNBEGIN.getState()) {
+                    countDownResponse.setSandDuration(0D);
                     break;
-                } else if (experimentTimerEntity.getState() == ExperimentStateEnum.ONGOING.getState()) {
+                } else if (experimentTimerEntity.getState() == EnumExperimentState.ONGOING.getState()) {
                     // 当前时间戳-当前期数开始时间 = 相对时间
                     Long ct = System.currentTimeMillis() - experimentTimerEntity.getStartTime();
-                    // 将ct转换为分钟数
-                    Long minute = ct / 1000 / 60;
+                    // 将ct转换为秒  .. day/duration = rate
+                    Long second = ct / 1000;
                     // 获取比例
-                    Float aFloat = mockRateMap.get(experimentTimerEntity.getPeriod() + "");
-                    float day = minute * aFloat;
+                    Double aFloat = mockRateMap.get(experimentTimerEntity.getPeriod() + "");
+                    Double day = second * aFloat;
                     Integer period = experimentTimerEntity.getPeriod();
-                    for (int i = 1; i <= period; i++) {
-                        Integer integer = periodMap.get(i + "");
-                        day += integer;
+                    if (period > 1) {
+                        for (int i = 1; i <= period; i++) {
+                            Integer integer = periodMap.get(i + "");
+                            day += integer;
+                        }
                     }
                     countDownResponse.setSandDuration(day);
                     break;
@@ -136,28 +194,20 @@ public class ExperimentTimerBiz {
         }
 
         return countDownResponse;
-      /*  ExperimentTimerEntity experimentTimerEntity = experimentTimerService.lambdaQuery()
-                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
-                .oneOpt()
-                .orElse(null);
-
-        if (experimentTimerEntity == null) {
-
-        }
-        return BeanConvert.beanConvert(experimentTimerEntity, CountDownResponse.class);*/
     }
 
 
     /**
      * 获取当前实验期数定时器
+     * ExperimentRestartRequest experimentRestartRequest
      *
-     * @param experimentRestartRequest
+     * @param experimentInstanceId
      * @return
      */
-    public List<ExperimentTimerEntity> getCurrentPeriods(ExperimentRestartRequest experimentRestartRequest) {
+    public List<ExperimentTimerEntity> getCurrentPeriods(String experimentInstanceId) {
         List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
-                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentRestartRequest.getExperimentInstanceId())
-                .eq(ExperimentTimerEntity::getAppId, experimentRestartRequest.getAppId())
+                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
+                //.eq(ExperimentTimerEntity::getAppId, experimentRestartRequest.getAppId())
                 .list();
         return list;
     }
@@ -170,19 +220,21 @@ public class ExperimentTimerBiz {
      * @return
      */
     @DSTransactional
-    public boolean saveOrUpdateExperimentTimeExperimentState(String experimentInstanceId, List<ExperimentTimerEntity> updateExperimentTimerEntities, ExperimentStateEnum experimentStateEnum) {
+    public boolean saveOrUpdateExperimentTimeExperimentState(String experimentInstanceId, List<ExperimentTimerEntity> updateExperimentTimerEntities, EnumExperimentState enumExperimentState) {
         boolean b = experimentTimerService.saveOrUpdateBatch(updateExperimentTimerEntities);
         if (!b) {
             throw new ExperimentException(" 更新计时器实验状态发生异常！");
         }
-        boolean update = experimentInstanceService.lambdaUpdate().eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
-                .set(ExperimentInstanceEntity::getState, experimentStateEnum.getState())
+        boolean update = experimentInstanceService.lambdaUpdate()
+                .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
+                .set(ExperimentInstanceEntity::getState, enumExperimentState.getState())
                 .update();
         if (!update) {
             throw new ExperimentException(" 更新实验实例状态发生异常！");
         }
-        boolean update1 = experimentParticipatorService.lambdaUpdate().eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
-                .set(ExperimentParticipatorEntity::getState, experimentStateEnum.getState())
+        boolean update1 = experimentParticipatorService.lambdaUpdate()
+                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
+                .set(ExperimentParticipatorEntity::getState, enumExperimentState.getState())
                 .update();
 
         if (!update1) {
@@ -203,9 +255,9 @@ public class ExperimentTimerBiz {
 
         List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
                 .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
-                .eq(ExperimentTimerEntity::getAppId, appId)
+                //.eq(ExperimentTimerEntity::getAppId, appId)
                 //.eq(ExperimentTimerEntity::getModel, 2) // 沙盘模式
-                .ne(ExperimentTimerEntity::getState, ExperimentStateEnum.FINISH.getState())
+                .ne(ExperimentTimerEntity::getState, EnumExperimentState.FINISH.getState())
                 .list();
 
         //List<ExperimentTimerEntity> collect = list.stream().filter(t -> t.getPauseCount() == 0).collect(Collectors.toList());
@@ -233,6 +285,7 @@ public class ExperimentTimerBiz {
         List<ExperimentPeriodsResonse.ExperimentPeriods> experimentPeriods = BeanConvert
                 .beanConvert(list, ExperimentPeriodsResonse.ExperimentPeriods.class);
         experimentPeriodsResonse.setExperimentPeriods(experimentPeriods);
+
         return experimentPeriodsResonse;
 
     }

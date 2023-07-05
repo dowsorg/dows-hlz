@@ -17,5 +17,5 @@ import lombok.Data;
 @Schema(name = "ExptQuestionnaireSubmittedEventSource 对象", title = "实验知识答题提交事件-事件源")
 public class ExptQuestionnaireSubmittedEventSource {
     private String experimentQuestionnaireId;
-    private String accountId;
+    private Integer periods;
 }

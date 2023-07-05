@@ -40,9 +40,9 @@ public class ExperimentManageRest {
      */
     @Operation(summary = "获取租户端实验倒计时")
     @GetMapping("v1/tenantExperiment/experimentTimer/countdown")
-    public CountDownResponse countdown(String appId, String experimentInstanceId) {
+    public CountDownResponse countdown(@RequestParam String experimentInstanceId) {
 
-        CountDownResponse countdown = experimentTimerBiz.countdown(experimentInstanceId);
+        CountDownResponse countdown = experimentTimerBiz.tenantCountdown(experimentInstanceId);
 
         return countdown;
     }
@@ -129,7 +129,7 @@ public class ExperimentManageRest {
      * @param
      * @return
      */
-    @Operation(summary = "分页获取实验列表")
+    @Operation(summary = "根据组名分页获取实验列表")
     @GetMapping("v1/tenantExperiment/experimentManage/pageByGroupName")
     public PageResponse<ExperimentListResponse> pageByGroupName(PageExperimentRequest pageExperimentRequest) {
         return experimentParticipatorBiz.pageByGroupName(pageExperimentRequest);

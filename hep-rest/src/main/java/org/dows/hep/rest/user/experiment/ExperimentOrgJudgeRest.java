@@ -181,19 +181,6 @@ public class ExperimentOrgJudgeRest {
     }
 
     /**
-     * 是否购买保险
-     * @param
-     * @return
-     */
-    @Operation(summary = "是否购买保险")
-    @PostMapping("v1/userExperiment/experimentOrgJudge/isPurchaseInsure")
-    public Boolean isPurchaseInsure(@RequestParam @Validated String isPurchase,
-                                    @RequestParam @Validated String experimentPersonId)
-    {
-        return experimentOrgJudgeBiz.isPurchaseInsure(isPurchase,experimentPersonId);
-    }
-
-    /**
      * 直接判断 判断范围是否满足公式
      * @param
      * @return

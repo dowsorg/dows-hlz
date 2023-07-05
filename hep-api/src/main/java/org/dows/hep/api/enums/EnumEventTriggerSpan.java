@@ -16,7 +16,7 @@ public enum EnumEventTriggerSpan {
     NONE("0","NA"),
     FRONT("1","前期"),
     MIDDLE("2","中期"),
-    TAIL("3","后期"),
+    BACK("3","后期"),
     ;
     private String code;
     private String name;

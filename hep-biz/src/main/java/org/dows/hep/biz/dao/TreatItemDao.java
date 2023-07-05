@@ -2,7 +2,6 @@ package org.dows.hep.biz.dao;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.dows.hep.api.base.intervene.request.FindTreatRequest;
@@ -87,14 +86,16 @@ public class TreatItemDao extends BaseSubDao<TreatItemService,TreatItemEntity,Tr
     public IPage<TreatItemEntity> pageByCondition(FindTreatRequest req, SFunction<TreatItemEntity, ?>... cols) {
         Page<TreatItemEntity> page=Page.of(req.getPageNo(),req.getPageSize());
         page.addOrder(OrderItem.asc("id"));
-        return service.page(page, Wrappers.<TreatItemEntity>lambdaQuery()
+        return  service.lambdaQuery()
+                .eq(ShareUtil.XObject.notEmpty(req.getAppId()), TreatItemEntity::getAppId,req.getAppId())
                 .eq(TreatItemEntity::getIndicatorFuncId, req.getIndicatorFuncId())
-                .in(ShareUtil.XCollection.notEmpty(req.getCategIdLv1()), TreatItemEntity::getInterveneCategId, req.getCategIdLv1())
+                .in(ShareUtil.XCollection.notEmpty(req.getCategIdLv1()), TreatItemEntity::getCategIdLv1, req.getCategIdLv1())
                 .like(ShareUtil.XString.hasLength(req.getKeywords()), TreatItemEntity::getTreatItemName, req.getKeywords())
                 .in(ShareUtil.XCollection.notEmpty(req.getIncIds()), getColId(), req.getIncIds())
                 .notIn(ShareUtil.XCollection.notEmpty(req.getExcIds()), getColId(), req.getExcIds())
                 .eq(ShareUtil.XObject.notEmpty(req.getState()), getColState(), req.getState())
-                .select(cols));
+                .select(cols)
+                .page(page);
     }
 
     @Transactional(rollbackFor = Exception.class)

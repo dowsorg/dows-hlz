@@ -1,13 +1,13 @@
 package org.dows.hep.biz.user.experiment;
 
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorJudgeHealthManagementGoalRequest;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
+import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -28,8 +28,11 @@ public class ExperimentOrgJudgeBiz {
     private final ExperimentIndicatorJudgeDiseaseProblemService experimentIndicatorJudgeDiseaseProblemService;
     private final ExperimentPersonPropertyService experimentPersonPropertyService;
     private final IndicatorJudgeHealthManagementGoalService indicatorJudgeHealthManagementGoalService;
+    private final ExperimentPersonInsuranceService experimentPersonInsuranceService;
     private final OperateOrgFuncService operateOrgFuncService;
     private final OperateOrgFuncSnapService operateOrgFuncSnapService;
+    private final ExperimentPersonMedicalResultService experimentPersonMedicalResultService;
+    private final IdGenerator idGenerator;
 
     /**
      * @param
@@ -271,30 +274,10 @@ public class ExperimentOrgJudgeBiz {
         return responseList;
     }
 
-    /**
-     * @param
-     * @return
-     * @说明: 是否购买保险
-     * @关联表: experimentPersonProperty
-     * @工时: 2H
-     * @开发者: jx
-     * @开始时间:
-     * @创建时间: 2023年5月26日 下午16:11:34
-     */
-    @DSTransactional
-    public Boolean isPurchaseInsure(String isPurchase, String experimentPersonId) {
-        LambdaUpdateWrapper<ExperimentPersonPropertyEntity> updateWrapper = new LambdaUpdateWrapper<ExperimentPersonPropertyEntity>()
-                .eq(ExperimentPersonPropertyEntity::getExperimentPersonId, experimentPersonId)
-                .eq(ExperimentPersonPropertyEntity::getDeleted, false)
-                .set(ExperimentPersonPropertyEntity::getInsuranceState, isPurchase);
-        //todo 扣费
-        return experimentPersonPropertyService.update(updateWrapper);
-    }
-
 
     /**
      * @param
-     * @return
+     * @return;
      * @说明: 二级-无报告 获取判断得分
      * @关联表: indicatorJudgeRiskFactor
      * @工时: 2H

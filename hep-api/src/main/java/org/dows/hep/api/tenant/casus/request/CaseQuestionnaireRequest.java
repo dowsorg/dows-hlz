@@ -1,6 +1,7 @@
 package org.dows.hep.api.tenant.casus.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
@@ -34,6 +35,7 @@ public class CaseQuestionnaireRequest{
     private CasePeriodEnum periods;
 
     @Schema(title = "添加方式")
+    @NotNull(message = "添加方式不能为空")
     private CaseQuestionSelectModeEnum addType;
 
     @Schema(title = "随机添加方式")

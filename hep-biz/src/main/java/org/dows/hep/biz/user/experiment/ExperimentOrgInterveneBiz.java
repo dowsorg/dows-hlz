@@ -191,11 +191,11 @@ public class ExperimentOrgInterveneBiz{
         //校验登录
         LoginContextVO voLogin= ShareBiz.getLoginUser(request);
         //校验挂号
-        ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(saveFood);
+        ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator);
         final Optional<OperateFlowEntity> flowOption=flowValidator.checkOrgFlowRunning();
 
         //计算营养统计，膳食宝塔
-        CalcExptFoodCookbookResult snapRst= foodCalc4ExptBiz.calcFoodGraph4ExptCookbook(saveFood.getDetails());
+        CalcExptFoodCookbookResult snapRst= foodCalc4ExptBiz.calcFoodGraph4ExptCookbook(validator.getAppId(), saveFood.getDetails());
         snapRst.setDetails(saveFood.getDetails());
         //保存操作记录
         final Date dateNow=new Date();
@@ -205,7 +205,7 @@ public class ExperimentOrgInterveneBiz{
                 .setOperateAccountId(voLogin.getAccountId())
                 .setOperateAccountName(voLogin.getAccountName())
                 .setOperateTime(dateNow)
-                .setOperateGameDay(ShareBiz.calcGameDay(validator.getExperimentInstance()))
+                .setOperateGameDay(ShareBiz.calcGameDay(validator.getAppId(), validator.getExperimentInstanceId(),dateNow))
                 .setOperateFlowId(flowValidator.getOperateFlowId())
                 .setReportFlag(operateType.getReportFuncFlag()?1:0)
                 .setReportLabel("饮食干预")
@@ -251,7 +251,7 @@ public class ExperimentOrgInterveneBiz{
         //校验登录
         LoginContextVO voLogin= ShareBiz.getLoginUser(request);
         //校验挂号
-        ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(saveSport);
+        ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator);
         final Optional<OperateFlowEntity> flowOption=flowValidator.checkOrgFlowRunning();
 
         //保存操作记录
@@ -262,7 +262,7 @@ public class ExperimentOrgInterveneBiz{
                 .setOperateAccountId(voLogin.getAccountId())
                 .setOperateAccountName(voLogin.getAccountName())
                 .setOperateTime(dateNow)
-                .setOperateGameDay(ShareBiz.calcGameDay(validator.getExperimentInstance()))
+                .setOperateGameDay(ShareBiz.calcGameDay(validator.getAppId(), validator.getExperimentInstanceId(),dateNow))
                 .setOperateFlowId(flowValidator.getOperateFlowId())
                 .setReportFlag(operateType.getReportFuncFlag()?1:0)
                 .setReportLabel("运动干预")
@@ -301,7 +301,7 @@ public class ExperimentOrgInterveneBiz{
         //校验登录
         LoginContextVO voLogin= ShareBiz.getLoginUser(request);
         //校验挂号
-        ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(saveTreat);
+        ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator);
         final Optional<OperateFlowEntity> flowOption=flowValidator.checkOrgFlowRunning();
         //保存操作记录
         final Date dateNow=new Date();
@@ -312,7 +312,7 @@ public class ExperimentOrgInterveneBiz{
                 .setOperateAccountId(voLogin.getAccountId())
                 .setOperateAccountName(voLogin.getAccountName())
                 .setOperateTime(dateNow)
-                .setOperateGameDay(ShareBiz.calcGameDay(validator.getExperimentInstance()))
+                .setOperateGameDay(ShareBiz.calcGameDay(validator.getAppId(), validator.getExperimentInstanceId(),dateNow))
                 .setOperateFlowId(flowValidator.getOperateFlowId())
                 .setReportFlag(operateType.getReportFuncFlag()?1:0)
                 .setReportLabel(defOrgFunc.getName())
@@ -355,7 +355,7 @@ public class ExperimentOrgInterveneBiz{
         if(null==rowOrgFunc){
             return rst;
         }
-        List<OperateOrgFuncSnapEntity> rowOrgFuncSnaps=operateOrgFuncDao.getSubByLeadId(rowOrgFunc.getOperateOrgFuncId(),OperateOrgFuncSnapEntity::getResultJson);
+        List<OperateOrgFuncSnapEntity> rowOrgFuncSnaps=operateOrgFuncDao.getSubByLeadId(rowOrgFunc.getOperateOrgFuncId(),OperateOrgFuncSnapEntity::getInputJson);
         if(ShareUtil.XObject.anyEmpty(rowOrgFuncSnaps,()->rowOrgFuncSnaps.get(0).getInputJson())){
             return rst;
         }

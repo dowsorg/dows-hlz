@@ -1,6 +1,7 @@
 package org.dows.hep.api.user.experiment.response;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,6 +26,7 @@ public class ExperimentQuestionnaireResponse {
     @Schema(title = "案例问卷名")
     private String questionnaireName;
 
+    @Deprecated
     @Schema(title = "知识答题试卷-全部item")
     private List<ExperimentQuestionnaireItemResponse> itemList;
 
@@ -47,6 +49,7 @@ public class ExperimentQuestionnaireResponse {
         }
 
         Map<String, List<ExperimentQuestionnaireItemResponse>> collect = itemList.stream()
+                .filter(item -> StrUtil.isNotBlank(item.getQuestionCateg()))
                 .collect(Collectors.groupingBy(ExperimentQuestionnaireItemResponse::getQuestionCateg));
         if (CollUtil.isEmpty(collect)) {
             return new ArrayList<>();

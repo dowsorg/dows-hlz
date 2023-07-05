@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 实验机构通知(ExperimentOrgNotice)实体类
@@ -36,11 +36,11 @@ public class ExperimentOrgNoticeEntity implements CrudEntity {
     @Schema(title = "数据库ID")
     private Long id;
 
-    @Schema(title = "应用ID")
-    private String appId;
-
     @Schema(title = "机构通知id")
     private String experimentOrgNoticeId;
+
+    @Schema(title = "应用ID")
+    private String appId;
 
     @Schema(title = "实验实例id")
     private String experimentInstanceId;
@@ -48,29 +48,35 @@ public class ExperimentOrgNoticeEntity implements CrudEntity {
     @Schema(title = "实验小组id")
     private String experimentGroupId;
 
+    @Schema(title = "实验机构id")
+    private String experimentOrgId;
+
     @Schema(title = "实验人物id")
     private String experimentPersonId;
-
-    @Schema(title = "案例机构ID")
-    private String caseOrgId;
-
-    @Schema(title = "案例账号ID")
-    private String caseAccountId;
-
-    @Schema(title = "账号名称")
-    private String caseAccountName;
 
     @Schema(title = "期数")
     private Integer periods;
 
+    @Schema(title = "游戏内天数")
+    private Integer gameDay;
+
     @Schema(title = "通知类型 1-人物转移 2-检测随访 3-突发事件")
-    private Boolean noticeType;
+    private Boolean noticeSrcType;
 
     @Schema(title = "通知来源id，转移，随访操作id，事件id")
     private String noticeSrcId;
 
+    @Schema(title = "通知标题")
+    private String title;
+
     @Schema(title = "通知内容")
     private String content;
+
+    @Schema(title = "通知状态，0-未读 1-已读")
+    private Integer readState;
+
+    @Schema(title = "处理状态，0-无需处理 1-待处理 2-已处理")
+    private Integer actionState;
 
     @JsonIgnore
     @TableLogic

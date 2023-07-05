@@ -20,11 +20,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class ScheduleConfig implements SchedulingConfigurer {
 
 
-    @Bean
-    public Timer timer() {
-        return new Timer();
-    }
-
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
 
@@ -52,7 +47,7 @@ public class ScheduleConfig implements SchedulingConfigurer {
     }
 
     @Bean
-    public TaskScheduler taskScheduler() {
+    public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
         ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
         taskScheduler.setPoolSize(10);
         taskScheduler.setThreadNamePrefix("hep-taskScheduler-");

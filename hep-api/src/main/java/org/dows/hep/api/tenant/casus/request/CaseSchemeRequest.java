@@ -2,6 +2,7 @@ package org.dows.hep.api.tenant.casus.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dows.hep.api.base.question.request.QuestionSectionDimensionRequest;
@@ -26,6 +27,7 @@ public class CaseSchemeRequest{
     private String caseInstanceId;
 
     @Schema(title = "方案名称")
+    @NotBlank(message = "方案名称不能为空")
     private String schemeName;
 
     @Schema(title = "类别ID")
@@ -35,9 +37,11 @@ public class CaseSchemeRequest{
     private Integer enabled;
 
     @Schema(title = "方案提示")
+    @NotBlank(message = "方案提示不能为空")
     private String tips;
 
     @Schema(title = "方案说明")
+    @NotBlank(message = "方案说明不能为空")
     private String schemeDescr;
 
     @Schema(title = "添加方式")
@@ -57,6 +61,9 @@ public class CaseSchemeRequest{
 
     @Schema(title = "维度集合")
     private List<QuestionSectionDimensionRequest> questionSectionDimensionList;
+
+
+    // JsonIgnore
 
     @Schema(title = "创建者账号ID")
     @JsonIgnore

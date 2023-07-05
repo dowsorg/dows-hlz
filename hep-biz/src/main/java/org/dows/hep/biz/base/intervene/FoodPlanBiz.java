@@ -15,7 +15,8 @@ import org.dows.hep.api.enums.EnumFoodDetailType;
 import org.dows.hep.api.enums.EnumFoodMealTime;
 import org.dows.hep.api.enums.EnumFoodNutrient;
 import org.dows.hep.api.enums.EnumFoodStatType;
-import org.dows.hep.biz.cache.InterveneCategCache;
+import org.dows.hep.biz.cache.CategCache;
+import org.dows.hep.biz.cache.CategCacheFactory;
 import org.dows.hep.biz.dao.FoodCookbookDao;
 import org.dows.hep.biz.dao.FoodDishesDao;
 import org.dows.hep.biz.util.*;
@@ -45,11 +46,13 @@ public class FoodPlanBiz{
 
     private final FoodCalcBiz foodCalcBiz;
 
-    protected InterveneCategCache getCategCache(){
-        return InterveneCategCache.Instance;
+    protected CategCache getCategDishesCache(){
+        return CategCacheFactory.FOODDishes.getCache();
     }
 
-
+    protected CategCache getCategCookbookCache(){
+        return CategCacheFactory.FOODCookBook.getCache();
+    }
 
 
     /**
@@ -63,11 +66,8 @@ public class FoodPlanBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Page<FoodDishesResponse> pageFoodDishes(FindFoodRequest findFood ) {
-        findFood.setCategIdLv1( getCategCache().getLeafIds(findFood.getCategIdLv1()));
-        return ShareBiz.buildPage(daoDishes.pageByCondition(findFood), i-> CopyWrapper.create(FoodDishesResponse::new)
-                .endFrom(refreshCateg(i))
-                .setCategIdLv1(getCategCache().getCategLv1(i.getCategIdPath() ,i.getInterveneCategId()))
-                .setCategNameLv1(getCategCache().getCategLv1(i.getCategNamePath() ,i.getCategName())));
+        return ShareBiz.buildPage(daoDishes.pageByCondition(findFood), i->
+                CopyWrapper.create(FoodDishesResponse::new).endFrom(refreshCateg(i)));
     }
     /**
     * @param
@@ -118,12 +118,13 @@ public class FoodPlanBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean saveFoodDishes(SaveFoodDishesRequest saveFoodDishes ) {
+        final String appId=saveFoodDishes.getAppId();
         AssertUtil.trueThenThrow(ShareUtil.XObject.notEmpty(saveFoodDishes.getFoodDishesId())
                         && daoDishes.getById(saveFoodDishes.getFoodDishesId(), FoodDishesEntity::getFoodDishesId).isEmpty())
                 .throwMessage("菜肴不存在或已删除，请刷新");
         CategVO categVO=null;
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(saveFoodDishes.getInterveneCategId())
-                        ||null==(categVO= getCategCache().getById(saveFoodDishes.getInterveneCategId())))
+                        ||null==(categVO= getCategDishesCache().getById(appId, saveFoodDishes.getInterveneCategId())))
                 .throwMessage("类别不存在");
         AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(saveFoodDishes.getMaterials())
                         &&saveFoodDishes.getMaterials().stream()
@@ -140,30 +141,31 @@ public class FoodPlanBiz{
                 .setCategName(categVO.getCategName())
                 .setCategIdPath(categVO.getCategIdPath())
                 .setCategNamePath(categVO.getCategNamePath())
+                .setCategIdLv1(categVO.getCategIdLv1())
+                .setCategNameLv1(categVO.getCategNameLv1())
                 .setMaterialsDesc(calcMaterialsDesc(rowsMaterial));
-        CalcFoodDishesResult calcRst = foodCalcBiz.calcFoodGraph4Dishes(rowsMaterial);
+        CalcFoodDishesResult calcRst = foodCalcBiz.calcFoodGraph4Dishes(appId,rowsMaterial);
 
         final BigDecimal totalWeight=rowsMaterial.stream().map(e->BigDecimalUtil.tryParseDecimalElseZero(e.getWeight()))
                 .reduce(BigDecimal.ZERO,BigDecimalUtil::add);
-        final String EMPTYValue="-";
         Optional.ofNullable(calcRst.getStatEnergy()).ifPresent(stats->stats.forEach(stat->{
-            final String scale=BigDecimalUtil.formatRoundDecimal(stat.getWeightOptional().mul(BigDecimalUtil.ONEHundred).div(totalWeight).getValue(),
-                    NUMBERScale2, false,EMPTYValue);
+            final BigDecimal weight=stat.getWeightOptional().getValue(NUMBERScale2);
+            final BigDecimal scale=stat.getWeightOptional().mul(BigDecimalUtil.ONEHundred).div(totalWeight).getValue(NUMBERScale2);
             switch (EnumFoodNutrient.of(stat.getInstanceName())){
                 case PROTEIN:
-                    row.setProtein(stat.getWeight());
+                    row.setProtein(weight);
                     row.setProteinScale(scale);
                     break;
                 case FAT:
-                    row.setFat(stat.getWeight());
+                    row.setFat(weight);
                     row.setFatScale(scale);
                     break;
                 case CHO:
-                    row.setCho(stat.getWeight());
+                    row.setCho(weight);
                     row.setChoScale(scale);
                     break;
                 case ENERGY:
-                    row.setEnergy(stat.getWeight());
+                    row.setEnergy(weight);
                     row.setEnergyScale(scale);
                     break;
 
@@ -218,11 +220,8 @@ public class FoodPlanBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Page<FoodCookBookResponse> pageFoodCookbook(FindFoodRequest findFood ) {
-        findFood.setCategIdLv1(getCategCache().getLeafIds(findFood.getCategIdLv1()));
         return ShareBiz.buildPage(daoCookbook.pageByCondition(findFood), i-> CopyWrapper.create(FoodCookBookResponse::new)
-                .endFrom(refreshCateg(i))
-                .setCategIdLv1(getCategCache().getCategLv1(i.getCategIdPath() ,i.getInterveneCategId()))
-                .setCategNameLv1(getCategCache().getCategLv1(i.getCategNamePath() ,i.getCategName())));
+                .endFrom(refreshCateg(i)));
 
     }
     /**
@@ -274,12 +273,13 @@ public class FoodPlanBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean saveFoodCookbook(SaveFoodCookbookRequest saveFoodCookbook ) {
+        final String appId=saveFoodCookbook.getAppId();
         AssertUtil.trueThenThrow(ShareUtil.XObject.notEmpty(saveFoodCookbook.getFoodCookbookId())
                         && daoCookbook.getById(saveFoodCookbook.getFoodCookbookId(), FoodCookbookEntity::getFoodCookbookId).isEmpty())
                 .throwMessage("食谱不存在或已删除，请刷新");
         CategVO categVO = null;
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(saveFoodCookbook.getInterveneCategId())
-                        || null == (categVO = getCategCache().getById(saveFoodCookbook.getInterveneCategId())))
+                        || null == (categVO = getCategCookbookCache().getById(appId,saveFoodCookbook.getInterveneCategId())))
                 .throwMessage("类别不存在");
         saveFoodCookbook.setDetails(ShareUtil.XObject.defaultIfNull(saveFoodCookbook.getDetails(), Collections.emptyList()));
         Map<EnumFoodMealTime, List<String>> mapDetails = new HashMap<>();
@@ -310,23 +310,26 @@ public class FoodPlanBiz{
                 .endFrom(saveFoodCookbook)
                 .setCategName(categVO.getCategName())
                 .setCategIdPath(categVO.getCategIdPath())
-                .setCategNamePath(categVO.getCategNamePath());
+                .setCategNamePath(categVO.getCategNamePath())
+                .setCategIdLv1(categVO.getCategIdLv1())
+                .setCategNameLv1(categVO.getCategNameLv1());
         List<FoodCookbookDetailEntity> rowsDetail = ShareUtil.XCollection.map(saveFoodCookbook.getDetails(),
                 i -> CopyWrapper.create(FoodCookbookDetailEntity::new).endFrom(i, v -> v.setFoodCookbookDetailId(i.getRefId())));
-        CalcFoodCookbookResult calcRst = foodCalcBiz.calcFoodGraph4Cookbook(rowsDetail);
+        CalcFoodCookbookResult calcRst = foodCalcBiz.calcFoodGraph4Cookbook(appId,rowsDetail);
         Optional.ofNullable(calcRst.getStatEnergy()).ifPresent(i->i.forEach(v->{
+            final BigDecimal weight=v.getWeightOptional().getValue(NUMBERScale2);
             switch (EnumFoodNutrient.of(v.getInstanceName())){
                 case PROTEIN:
-                    row.setProtein(v.getWeight());
+                    row.setProtein(weight);
                     break;
                 case FAT:
-                    row.setFat(v.getWeight());
+                    row.setFat(weight);
                     break;
                 case CHO:
-                    row.setCho(v.getWeight());
+                    row.setCho(weight);
                     break;
                 case ENERGY:
-                    row.setEnergy(v.getWeight());
+                    row.setEnergy(weight);
                     break;
 
             }
@@ -379,14 +382,15 @@ public class FoodPlanBiz{
         if (ShareUtil.XObject.isEmpty(src.getInterveneCategId())) {
             return src;
         }
-        CategVO cacheItem = getCategCache().getById(src.getInterveneCategId());
+        CategVO cacheItem = getCategDishesCache().getById(src.getAppId(), src.getInterveneCategId());
         if (null == cacheItem) {
             return src;
         }
         return src.setCategName(cacheItem.getCategName())
                 .setCategIdPath(cacheItem.getCategIdPath())
-                .setCategNamePath(cacheItem.getCategNamePath());
-
+                .setCategNamePath(cacheItem.getCategNamePath())
+                .setCategIdLv1(cacheItem.getCategIdLv1())
+                .setCategNameLv1(cacheItem.getCategNameLv1());
     }
     /**
      * 获取缓存最新分类信息
@@ -397,13 +401,15 @@ public class FoodPlanBiz{
         if (ShareUtil.XObject.isEmpty(src.getInterveneCategId())) {
             return src;
         }
-        CategVO cacheItem = getCategCache().getById(src.getInterveneCategId());
+        CategVO cacheItem = getCategCookbookCache().getById(src.getAppId(), src.getInterveneCategId());
         if (null == cacheItem) {
             return src;
         }
         return src.setCategName(cacheItem.getCategName())
                 .setCategIdPath(cacheItem.getCategIdPath())
-                .setCategNamePath(cacheItem.getCategNamePath());
+                .setCategNamePath(cacheItem.getCategNamePath())
+                .setCategIdLv1(cacheItem.getCategIdLv1())
+                .setCategNameLv1(cacheItem.getCategNameLv1());
 
     }
     //endregion

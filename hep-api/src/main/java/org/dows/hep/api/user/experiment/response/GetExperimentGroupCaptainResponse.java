@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.dows.hep.api.enums.ParticipatorTypeEnum;
+import org.dows.hep.api.enums.EnumParticipatorType;
 
 import java.util.Arrays;
 
@@ -69,11 +69,11 @@ public class GetExperimentGroupCaptainResponse {
 
 
     public String getParticipatorTypeDescr() {
-        ParticipatorTypeEnum participatorTypeEnum = Arrays.stream(ParticipatorTypeEnum.values())
+        EnumParticipatorType enumParticipatorType = Arrays.stream(EnumParticipatorType.values())
                 .filter(pt -> pt.getCode() == participatorType).findFirst().orElse(null);
 
-        if (participatorTypeEnum != null) {
-            return participatorTypeEnum.getDescr();
+        if (enumParticipatorType != null) {
+            return enumParticipatorType.getDescr();
         }
         return null;
     }

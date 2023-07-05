@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dows.hep.api.BasePageRequest;
 
 /**
 * @description 
@@ -14,13 +15,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Schema(name = "CaseInstancePage 对象", title = "分页请求Request")
-public class CaseInstancePageRequest{
-
-    @Schema(title = "pageNo")
-    private Long pageNo;
-
-    @Schema(title = "pageSize")
-    private Long pageSize;
+public class CaseInstancePageRequest extends BasePageRequest {
 
     @Schema(title = "应用ID")
     private String appId;

@@ -8,22 +8,21 @@ import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.user.experiment.request.ExperimentScheme1Request;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeAllotRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeRequest;
+import org.dows.hep.api.user.experiment.request.ExperimentSchemeSubmitRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeSettingResponse;
+import org.dows.hep.api.user.experiment.response.ExperimentSchemeStateResponse;
 import org.dows.hep.biz.user.experiment.ExperimentBaseBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
-* @description project descr:实验:实验方案设计
-* @folder user-hep/实验方案设计
-* @author lait.zhang
-* @date 2023年4月23日 上午9:44:34
-*/
+ * @author lait.zhang
+ * @description project descr:实验:实验方案设计
+ * @folder user-hep/实验方案设计
+ * @date 2023年4月23日 上午9:44:34
+ */
 @RequiredArgsConstructor
 @RestController
 @Tag(name = "实验方案设计", description = "实验方案设计")
@@ -32,10 +31,11 @@ public class ExperimentSchemeRest {
     private final ExperimentSchemeBiz experimentSchemeBiz;
 
     /**
-    * 获取方案设计
-    * @param
-    * @return
-    */
+     * 获取方案设计
+     *
+     * @param
+     * @return
+     */
     @Operation(summary = "获取方案设计")
     @GetMapping("v1/userExperiment/experimentScheme/getScheme")
     public ExperimentSchemeResponse getScheme(@NotBlank String experimentInstanceId, @NotBlank String experimentGroupId, HttpServletRequest request) {
@@ -44,7 +44,20 @@ public class ExperimentSchemeRest {
     }
 
     /**
+     * 获取方案设计状态
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取方案设计状态")
+    @GetMapping("v1/userExperiment/experimentScheme/getSchemeState")
+    public ExperimentSchemeStateResponse getSchemeState(@NotBlank String experimentInstanceId, @NotBlank String experimentGroupId) {
+        return experimentSchemeBiz.getSchemeState(experimentInstanceId, experimentGroupId);
+    }
+
+    /**
      * 分配方案设计
+     *
      * @param
      * @return
      */
@@ -56,6 +69,7 @@ public class ExperimentSchemeRest {
 
     /**
      * 获取方案设计时间信息
+     *
      * @param
      * @return
      */
@@ -67,6 +81,7 @@ public class ExperimentSchemeRest {
 
     /**
      * 保存设计方案-单个保存
+     *
      * @param
      * @return
      */
@@ -79,6 +94,7 @@ public class ExperimentSchemeRest {
 
     /**
      * 保存设计方案
+     *
      * @param
      * @return
      */
@@ -90,15 +106,17 @@ public class ExperimentSchemeRest {
     }
 
     /**
-    * 提交设计方案
-    * @param
-    * @return
-    */
+     * 提交设计方案
+     *
+     * @param
+     * @return
+     */
     @Operation(summary = "提交设计方案")
-    @GetMapping("v1/userExperiment/experimentScheme/submitScheme")
-    public Boolean submitScheme(@NotBlank String experimentInstanceId, @NotBlank String experimentGroupId, HttpServletRequest request) {
+    @PutMapping("v1/userExperiment/experimentScheme/submitScheme")
+    public Boolean submitScheme(@RequestBody @Validated ExperimentSchemeSubmitRequest submitRequest, HttpServletRequest request) {
         String accountId = baseBiz.getAccountId(request);
-        return experimentSchemeBiz.submitScheme(experimentInstanceId, experimentGroupId, accountId);
+        submitRequest.setAccountId(accountId);
+        return experimentSchemeBiz.submitScheme(submitRequest);
     }
 
 

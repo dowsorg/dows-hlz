@@ -3,6 +3,7 @@ package org.dows.hep.api.user.experiment.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dows.hep.api.core.BaseExptRequest;
 
 /**
 * @description 
@@ -13,24 +14,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Schema(name = "StartOrgFlow 对象", title = "机构挂号")
-public class StartOrgFlowRequest{
-    @Schema(title = "实验小组id")
-    private String experimentGroupId;
+public class StartOrgFlowRequest extends BaseExptRequest {
 
-    @Schema(title = "实验人物id")
-    private String experimentPersonId;
-
-    @Schema(title = "案例机构id")
-    private String caseOrgId;
-
-    @Schema(title = "操作人id")
-    private String operateAccountId;
-
-    @Schema(title = "操作人名")
-    private String operateAccountName;
-
-    @Schema(title = "期数")
-    private Integer periods;
 
 
 }

@@ -104,7 +104,10 @@ public class ExperimentQuestionnaireBiz {
                 .eq(ExperimentQuestionnaireEntity::getExperimentGroupId, request.getExperimentGroupId())
                 .eq(ExperimentQuestionnaireEntity::getExperimentAccountId,  request.getExperimentAccountId())
                 .oneOpt()
-                .orElseThrow(() -> new BizException(ExperimentESCEnum.QUESTIONNAIRE_NOT_NULL));
+                .orElse(null);
+        if (BeanUtil.isEmpty(entity)) {
+            return new ExperimentQuestionnaireResponse();
+        }
         ExperimentQuestionnaireResponse result = BeanUtil.copyProperties(entity, ExperimentQuestionnaireResponse.class);
 
         List<ExperimentQuestionnaireItemResponse> itemList = experimentQuestionnaireItemBiz.listByQuestionnaireId(entity.getExperimentQuestionnaireId());
@@ -136,35 +139,35 @@ public class ExperimentQuestionnaireBiz {
         return experimentQuestionnaireItemBiz.updateBatch(itemList);
     }
 
-    /**
-     * @param
-     * @return
-     * @说明: 提交
-     * @关联表:
-     * @工时: 2H
-     * @开发者: lait
-     * @开始时间:
-     * @创建时间: 2023年4月23日 上午9:44:34
-     */
-    @DSTransactional
-    public Boolean submitQuestionnaire(String experimentQuestionnaireId, String accountId) {
-        if (StrUtil.isBlank(experimentQuestionnaireId) || StrUtil.isBlank(accountId)) {
-            throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
-        }
-
-        // check
-        cannotOperateAfterSubmit(experimentQuestionnaireId, accountId);
-
-        // submit
-        boolean updateRes = experimentQuestionnaireService.lambdaUpdate()
-                .eq(ExperimentQuestionnaireEntity::getExperimentQuestionnaireId, experimentQuestionnaireId)
-                .set(ExperimentQuestionnaireEntity::getState, ExptQuestionnaireStateEnum.SUBMITTED.getCode())
-                .update();
-
-        // todo compute
-
-        return updateRes;
-    }
+//    /**
+//     * @param
+//     * @return
+//     * @说明: 提交
+//     * @关联表:
+//     * @工时: 2H
+//     * @开发者: lait
+//     * @开始时间:
+//     * @创建时间: 2023年4月23日 上午9:44:34
+//     */
+//    @DSTransactional
+//    public Boolean submitQuestionnaire(String experimentQuestionnaireId, String accountId) {
+//        if (StrUtil.isBlank(experimentQuestionnaireId) || StrUtil.isBlank(accountId)) {
+//            throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
+//        }
+//
+//        // check
+//        cannotOperateAfterSubmit(experimentQuestionnaireId, accountId);
+//
+//        // submit
+//        boolean updateRes = experimentQuestionnaireService.lambdaUpdate()
+//                .eq(ExperimentQuestionnaireEntity::getExperimentQuestionnaireId, experimentQuestionnaireId)
+//                .set(ExperimentQuestionnaireEntity::getState, ExptQuestionnaireStateEnum.SUBMITTED.getCode())
+//                .update();
+//
+//        // todo compute
+//
+//        return updateRes;
+//    }
 
     /**
      * @param
@@ -177,21 +180,20 @@ public class ExperimentQuestionnaireBiz {
      * @创建时间: 2023年4月23日 上午9:44:34
      */
     @DSTransactional
-    public Boolean submitQuestionnaireBatch(String experimentInstanceId, String period) {
-        if (StrUtil.isBlank(experimentInstanceId) || StrUtil.isBlank(period)) {
+    public Boolean submitQuestionnaireBatch(String experimentInstanceId, Integer period) {
+        if (StrUtil.isBlank(experimentInstanceId) || period == null) {
             throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
         }
-        Integer periodSeq = Integer.valueOf(period);
 
         // submit
         boolean updateRes = experimentQuestionnaireService.lambdaUpdate()
                 .eq(ExperimentQuestionnaireEntity::getExperimentInstanceId, experimentInstanceId)
-                .eq(ExperimentQuestionnaireEntity::getPeriodSequence, periodSeq)
+                .eq(ExperimentQuestionnaireEntity::getPeriodSequence, period)
                 .set(ExperimentQuestionnaireEntity::getState, ExptQuestionnaireStateEnum.SUBMITTED.getCode())
                 .update();
 
         // compute
-        experimentQuestionnaireScoreBiz.setExptQuestionnaireScore(experimentInstanceId, period);
+//        experimentQuestionnaireScoreBiz.calculateExptQuestionnaireScore(experimentInstanceId, period);
 
         return updateRes;
     }

@@ -5,20 +5,26 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
-* @description 
-*
-* @author 
-* @date 
-*/
+ * @author
+ * @description
+ * @date
+ */
 @Data
 @NoArgsConstructor
 @Schema(name = "CountDown 对象", title = "时间")
-public class CountDownResponse{
+public class CountDownResponse {
+    @Schema(title = "实验实例ID")
+    private String experimentInstanceId;
+    @Schema(title = "模式")
+    private Integer model;
+    @Schema(title = "期数")
+    private Integer period;
     @Schema(title = "沙盘持续时间")
-    private Float sandDuration;
-    @Schema(title = "沙盘实验倒计时时间")
+    private Double sandDuration;
+    @Schema(title = "沙盘实验时长")
     private Long sandTime;
-
+    @Schema(title = "沙盘实验倒计时时间")
+    private Long countdown;
     @Schema(title = "沙盘时间单位")
     private String sandTimeUnit;
 

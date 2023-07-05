@@ -10,10 +10,13 @@ import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
 import org.dows.hep.api.enums.EnumToken;
 import org.dows.hep.biz.base.indicator.CaseIndicatorExpressionBiz;
 import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
+import org.dows.hep.biz.event.ExperimentSettingCache;
+import org.dows.hep.biz.event.data.ExperimentCacheKey;
+import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.vo.LoginContextVO;
-import org.dows.hep.entity.ExperimentInstanceEntity;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 
@@ -61,24 +64,19 @@ public class ShareBiz {
 
     }
 
-    /**
-     * 计算当前游戏期数
-     * @param expt
-     * @return
-     */
-    public static Integer calcPeriod(ExperimentInstanceEntity expt){
-        //TODO calcPeriod
-        return 1;
-    }
 
     /**
      * 计算当前游戏内天数
-     * @param expt
+     * @param appId
+     * @param experimentInstanceId
+     * @param dt
      * @return
      */
-    public static Integer calcGameDay(ExperimentInstanceEntity expt){
-        //TODO calcGameDay
-        return 1;
+    public static Integer calcGameDay(String appId, String experimentInstanceId, Date dt){
+        final LocalDateTime ldt=ShareUtil.XDate.localDT4Date(dt);
+        final ExperimentCacheKey key=new ExperimentCacheKey().setAppId(appId).setExperimentInstanceId(experimentInstanceId);
+        ExperimentTimePoint timePoint= ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(key,ldt,true);
+        return Optional.ofNullable(timePoint).map(ExperimentTimePoint::getGameDay).orElse(-1);
     }
 
     //region 获取公式

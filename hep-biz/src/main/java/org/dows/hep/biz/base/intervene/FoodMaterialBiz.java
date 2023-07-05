@@ -9,7 +9,8 @@ import org.dows.hep.api.base.intervene.response.FoodMaterialResponse;
 import org.dows.hep.api.base.intervene.vo.FoodNutrientVO;
 import org.dows.hep.api.base.intervene.vo.IndicatorExpressionVO;
 import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
-import org.dows.hep.biz.cache.InterveneCategCache;
+import org.dows.hep.biz.cache.CategCache;
+import org.dows.hep.biz.cache.CategCacheFactory;
 import org.dows.hep.biz.dao.FoodMaterialDao;
 import org.dows.hep.biz.dao.IndicatorExpressionRefDao;
 import org.dows.hep.biz.dao.IndicatorInstanceDao;
@@ -49,8 +50,8 @@ public class FoodMaterialBiz{
 
     private final FoodCalcBiz foodCalcBiz;
 
-    protected InterveneCategCache getCategCache(){
-        return InterveneCategCache.Instance;
+    protected CategCache getCategCache(){
+        return CategCacheFactory.FOODMaterial.getCache();
     }
 
     /**
@@ -64,11 +65,8 @@ public class FoodMaterialBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Page<FoodMaterialResponse> pageFoodMaterial(FindFoodRequest findFood ) {
-        findFood.setCategIdLv1(getCategCache().getLeafIds(findFood.getCategIdLv1()));
-        return ShareBiz.buildPage(dao.pageByCondition(findFood), i -> CopyWrapper.create(FoodMaterialResponse::new)
-                .endFrom(refreshCateg(i))
-                .setCategIdLv1(getCategCache().getCategLv1(i.getCategIdPath(), i.getInterveneCategId()))
-                .setCategNameLv1(getCategCache().getCategLv1(i.getCategNamePath(), i.getCategName())));
+        return ShareBiz.buildPage(dao.pageByCondition(findFood), i ->
+                CopyWrapper.create(FoodMaterialResponse::new).endFrom(refreshCateg(i)));
     }
     /**
     * @param
@@ -126,13 +124,16 @@ public class FoodMaterialBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean saveFoodMaterial(SaveFoodMaterialRequest saveFoodMaterial ) {
+        final String appId=saveFoodMaterial.getAppId();
         AssertUtil.trueThenThrow(ShareUtil.XObject.notEmpty(saveFoodMaterial.getFoodMaterialId())
                         && dao.getById(saveFoodMaterial.getFoodMaterialId(),FoodMaterialEntity::getFoodMaterialId).isEmpty())
                 .throwMessage("食材不存在");
         CategVO categVO=null;
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(saveFoodMaterial.getInterveneCategId())
-                        ||null==(categVO=getCategCache().getById(saveFoodMaterial.getInterveneCategId())))
+                        ||null==(categVO=getCategCache().getById(appId, saveFoodMaterial.getInterveneCategId())))
                 .throwMessage("食材类别不存在");
+        AssertUtil.trueThenThrow(categVO.getLayer()!=2)
+                .throwMessage("请选择到第二级类别");
 
         AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(saveFoodMaterial.getExpresssions())
                         &&saveFoodMaterial.getExpresssions().stream()
@@ -145,12 +146,14 @@ public class FoodMaterialBiz{
                 .endFrom(saveFoodMaterial)
                 .setCategName(categVO.getCategName())
                 .setCategIdPath(categVO.getCategIdPath())
-                .setCategNamePath(categVO.getCategNamePath());
+                .setCategNamePath(categVO.getCategNamePath())
+                .setCategIdLv1(categVO.getCategIdLv1())
+                .setCategNameLv1(categVO.getCategNameLv1());
 
         //TODO checkExists
         List<FoodMaterialNutrientEntity> rowNutrients=ShareUtil.XCollection.map(saveFoodMaterial.getNutrients(),
                 i->CopyWrapper.create(FoodMaterialNutrientEntity::new).endFrom(i));
-        foodCalcBiz.calcFoodEnergy(row,rowNutrients);
+        foodCalcBiz.calcFoodEnergy(appId,row,rowNutrients);
         List<String> expressionIds=new ArrayList<>();
         Optional.ofNullable(saveFoodMaterial.getExpresssions())
             .ifPresent(i->i.forEach(expression-> expressionIds.add(expression.getIndicatorExpressionId())));
@@ -201,13 +204,15 @@ public class FoodMaterialBiz{
         if (ShareUtil.XObject.isEmpty(src.getInterveneCategId())) {
             return src;
         }
-        CategVO cacheItem = getCategCache().getById(src.getInterveneCategId());
+        CategVO cacheItem = getCategCache().getById(src.getAppId(), src.getInterveneCategId());
         if (null == cacheItem) {
             return src;
         }
         return src.setCategName(cacheItem.getCategName())
                 .setCategIdPath(cacheItem.getCategIdPath())
-                .setCategNamePath(cacheItem.getCategNamePath());
+                .setCategNamePath(cacheItem.getCategNamePath())
+                .setCategIdLv1(cacheItem.getCategIdLv1())
+                .setCategNameLv1(cacheItem.getCategNameLv1());
 
     }
 

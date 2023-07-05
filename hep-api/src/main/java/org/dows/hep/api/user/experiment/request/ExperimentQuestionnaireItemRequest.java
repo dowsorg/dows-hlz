@@ -15,10 +15,10 @@ import java.util.List;
 @RequiredArgsConstructor
 @Schema(name = "ExperimentQuestionnaireItemRequest 对象", title = "实验方案设计Item")
 public class ExperimentQuestionnaireItemRequest {
-    @Schema(title = "实验方案设计ID")
-    private String experimentSchemeItemId;
+    @Schema(title = "item id")
+    private String experimentQuestionnaireItemId;
 
-    @Schema(title = "作答答案-选项id逗号连接")
+    @Schema(title = "作答答案")
     private List<String> questionResult;
 
     @Schema(title = "子")

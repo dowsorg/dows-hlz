@@ -4,7 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.util.ReflectUtil;
-import org.dows.hep.api.enums.ExperimentStatusCode;
+import org.dows.hep.api.enums.EnumExperimentStatusCode;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.user.organization.request.AgeRatioRequest;
 import org.dows.hep.api.user.organization.request.GenderRatioRequest;
@@ -128,7 +128,7 @@ public class OrgStatiscBiz{
                 .eq(ExperimentInstanceEntity::getDeleted,false)
                 .one();
         if(experimentInstanceEntity == null){
-            throw new ExperimentException(ExperimentStatusCode.NOT_MATCH_CASE);
+            throw new ExperimentException(EnumExperimentStatusCode.NOT_MATCH_CASE);
         }
         //2、根据案例ID找到地图
         String caseMapBackGround = caseInstanceService.lambdaQuery()

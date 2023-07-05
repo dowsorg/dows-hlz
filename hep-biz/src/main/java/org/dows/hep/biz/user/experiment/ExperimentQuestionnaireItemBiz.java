@@ -44,8 +44,9 @@ public class ExperimentQuestionnaireItemBiz {
         return entityList.stream()
                 .map(entity -> {
                     ExperimentQuestionnaireItemResponse resultItem = BeanUtil.copyProperties(entity, ExperimentQuestionnaireItemResponse.class);
-                    List<ExptQuestionnaireOptionDTO> optionList = convertOptStr2OptionList(entity.getQuestionOptions());
                     List<String> results = convertResultStr2ResultList(entity.getQuestionResult());
+                    List<ExptQuestionnaireOptionDTO> optionList = convertOptStr2OptionList(entity.getQuestionOptions());
+                    mergeOptionsAndResults(optionList, results);
 
                     resultItem.setQuestionOptionList(optionList);
                     resultItem.setQuestionResult(results);
@@ -81,14 +82,18 @@ public class ExperimentQuestionnaireItemBiz {
     }
 
     private void flattenTree(ExperimentQuestionnaireItemRequest node, List<ExperimentQuestionnaireItemEntity> flatList) {
+        String questionResult = CollUtil.isEmpty(node.getQuestionResult()) ? "" : String.join(",", node.getQuestionResult());
         // 处理当前结点
         ExperimentQuestionnaireItemEntity itemEntity = ExperimentQuestionnaireItemEntity.builder()
-                .experimentQuestionnaireItemId(node.getExperimentSchemeItemId())
-                .questionResult(String.join(",", node.getQuestionResult()))
+                .experimentQuestionnaireItemId(node.getExperimentQuestionnaireItemId())
+                .questionResult(questionResult)
                 .build();
         flatList.add(itemEntity);
 
         // 处理子节点
+        if (CollUtil.isEmpty(node.getChildren())) {
+            return;
+        }
         for (ExperimentQuestionnaireItemRequest child : node.getChildren()) {
             flattenTree(child, flatList);
         }
@@ -124,5 +129,19 @@ public class ExperimentQuestionnaireItemBiz {
             return new ArrayList<>();
         }
         return JSONUtil.toList(questionOptions, ExptQuestionnaireOptionDTO.class);
+    }
+
+    private void mergeOptionsAndResults(List<ExptQuestionnaireOptionDTO> options, List<String> results) {
+        if (CollUtil.isEmpty(options) || CollUtil.isEmpty(results)) {
+            return;
+        }
+
+        options.forEach(option -> {
+            if (results.contains(option.getId())) {
+                option.setChoose(Boolean.TRUE);
+            } else {
+                option.setChoose(Boolean.FALSE);
+            }
+        });
     }
 }

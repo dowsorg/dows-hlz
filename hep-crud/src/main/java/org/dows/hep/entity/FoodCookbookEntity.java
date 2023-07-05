@@ -12,6 +12,7 @@ import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -54,6 +55,12 @@ public class FoodCookbookEntity implements CrudEntity {
     @Schema(title = "分类名称")
     private String categName;
 
+    @Schema(title = "一级分类id")
+    private String categIdLv1;
+
+    @Schema(title = "一级分类名称")
+    private String categNameLv1;
+
     @Schema(title = "分布id路径")
     private String categIdPath;
 
@@ -61,16 +68,16 @@ public class FoodCookbookEntity implements CrudEntity {
     private String categNamePath;
 
     @Schema(title = "蛋白质每100g")
-    private String protein;
+    private BigDecimal protein;
 
     @Schema(title = "碳水每100g")
-    private String cho;
+    private BigDecimal cho;
 
     @Schema(title = "脂肪每100g")
-    private String fat;
+    private BigDecimal fat;
 
     @Schema(title = "总能量每100g")
-    private String energy;
+    private BigDecimal energy;
 
     @Schema(title = "蛋白质能量占比")
     private String proteinEnergy;

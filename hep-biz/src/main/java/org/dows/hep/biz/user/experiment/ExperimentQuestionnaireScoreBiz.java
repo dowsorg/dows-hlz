@@ -2,10 +2,12 @@ package org.dows.hep.biz.user.experiment;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.hep.api.base.question.QuestionTypeEnum;
 import org.dows.hep.api.tenant.casus.CaseScoreModeEnum;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.dto.ExptQuestionnaireOptionDTO;
@@ -13,8 +15,10 @@ import org.dows.hep.entity.ExperimentQuestionnaireEntity;
 import org.dows.hep.entity.ExperimentQuestionnaireItemEntity;
 import org.dows.hep.service.ExperimentQuestionnaireItemService;
 import org.dows.hep.service.ExperimentQuestionnaireService;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -39,10 +43,9 @@ public class ExperimentQuestionnaireScoreBiz {
 
     private String scoreMode;
 
-    public void setExptQuestionnaireScore(String experimentInstanceId, String period) {
+    public void calculateExptQuestionnaireScore(String experimentInstanceId, Integer period) {
         Assert.notBlank(experimentInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
-        Assert.notBlank(period, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
-        Integer periodSeq = Integer.valueOf(period);
+        Assert.notNull(period, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
         setScoreMode(experimentInstanceId);
 
         List<ExperimentQuestionnaireEntity> result = new ArrayList<>();
@@ -50,13 +53,11 @@ public class ExperimentQuestionnaireScoreBiz {
         // list expt-questionnaire
         List<ExperimentQuestionnaireEntity> questionnaireList = experimentQuestionnaireService.lambdaQuery()
                 .eq(ExperimentQuestionnaireEntity::getExperimentInstanceId, experimentInstanceId)
-                .eq(ExperimentQuestionnaireEntity::getPeriodSequence, periodSeq)
+                .eq(ExperimentQuestionnaireEntity::getPeriodSequence, period)
                 .list();
         if (CollUtil.isEmpty(questionnaireList)) {
             return;
         }
-        Map<String, Long> questionnaireIdMapId = questionnaireList.stream()
-                .collect(Collectors.toMap(ExperimentQuestionnaireEntity::getExperimentQuestionnaireId, ExperimentQuestionnaireEntity::getId));
 
         // list expt-questionnaire item
         List<String> exptQuestionnaireIdList = questionnaireList.stream()
@@ -70,10 +71,12 @@ public class ExperimentQuestionnaireScoreBiz {
         checkItemRight(itemEntityList);
 
         // compute
+        Map<String, Long> questionnaireIdMapId = questionnaireList.stream()
+                .collect(Collectors.toMap(ExperimentQuestionnaireEntity::getExperimentQuestionnaireId, ExperimentQuestionnaireEntity::getId));
         Map<String, List<ExperimentQuestionnaireItemEntity>> collect = itemEntityList.stream()
                 .collect(Collectors.groupingBy(ExperimentQuestionnaireItemEntity::getExperimentQuestionnaireId));
         collect.forEach((k, v) -> {
-            Float score = computeScore(v);
+            Float score = computeScore(v).floatValue();
             ExperimentQuestionnaireEntity entity = ExperimentQuestionnaireEntity.builder()
                     .id(questionnaireIdMapId.get(k))
                     .score(score)
@@ -84,24 +87,90 @@ public class ExperimentQuestionnaireScoreBiz {
         experimentQuestionnaireService.updateBatchById(result);
     }
 
-    private Float computeScore(List<ExperimentQuestionnaireItemEntity> itemList) {
+    public BigDecimal getExptQuestionnaireScore(String experimentInstanceId, Integer period, String groupId) {
+        Assert.notBlank(experimentInstanceId, "获取实验知识答题分数，实验ID不能为空");
+        Assert.notNull(period, "获取实验知识答题分数，实验期数不能为空");
+
+        List<ExperimentQuestionnaireEntity> list = experimentQuestionnaireService.lambdaQuery()
+                .eq(ExperimentQuestionnaireEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentQuestionnaireEntity::getPeriodSequence, period)
+                .eq(ExperimentQuestionnaireEntity::getExperimentGroupId, groupId)
+                .list();
+        if (CollUtil.isEmpty(list)) {
+            return BigDecimal.ZERO;
+        }
+
+        return calculateScoreAverageOfGroup(list);
+    }
+
+    public Map<String, BigDecimal> listExptQuestionnaireScore(String experimentInstanceId, Integer period) {
+        Assert.notBlank(experimentInstanceId, "获取实验知识答题分数，实验ID不能为空");
+        Assert.notNull(period, "获取实验知识答题分数，实验期数不能为空");
+
+        List<ExperimentQuestionnaireEntity> list = experimentQuestionnaireService.lambdaQuery()
+                .eq(ExperimentQuestionnaireEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentQuestionnaireEntity::getPeriodSequence, period)
+                .list();
+        if (CollUtil.isEmpty(list)) {
+            return new HashMap<>();
+        }
+
+        Map<String, BigDecimal> result = new HashMap<>();
+        // 根据 `实验小组` 进行分组
+        Map<String, List<ExperimentQuestionnaireEntity>> groupCollect = list.stream()
+                .collect(Collectors.groupingBy(ExperimentQuestionnaireEntity::getExperimentGroupId));
+        groupCollect.forEach((k, v) -> {
+            BigDecimal averageScore = calculateScoreAverageOfGroup(v);
+            result.put(k, averageScore);
+        });
+        return result;
+    }
+
+    @NotNull
+    private static BigDecimal calculateScoreAverageOfGroup(List<ExperimentQuestionnaireEntity> list) {
+        double average = list.stream()
+                .map(ExperimentQuestionnaireEntity::getScore)
+                .mapToDouble(Float::doubleValue)
+                .average()
+                .orElse(0.00);
+        return BigDecimal.valueOf(average);
+    }
+
+    // 计分，在得出结果默认10位小数
+    private BigDecimal computeScore(List<ExperimentQuestionnaireItemEntity> itemList) {
+        BigDecimal zeroScore = BigDecimal.valueOf(0.00);
+        BigDecimal fullScore = BigDecimal.valueOf(100.00);
+        int scale = 2;
         if (CollUtil.isEmpty(itemList)) {
-            return 0.0f;
+            return zeroScore;
+        }
+
+        // 过滤出选择题
+        List<ExperimentQuestionnaireItemEntity> selectQuestionTypeList = itemList.stream()
+                .filter(item -> {
+                    String questionType = item.getQuestionType();
+                    return QuestionTypeEnum.isSelect(questionType);
+                })
+                .toList();
+        if (CollUtil.isEmpty(selectQuestionTypeList)) {
+            return zeroScore;
         }
 
         // get unit-score
-        float fullScore = 100.00F;
-        int totalNum = itemList.size();
-        float unitScore = fullScore / totalNum;
+        int totalNum = selectQuestionTypeList.size();
+        BigDecimal unitScore = NumberUtil.div(fullScore, totalNum);
 
         // get right-num
         int allRightNum = 0;
         int halfRightNum = 0;
-        for (ExperimentQuestionnaireItemEntity item : itemList) {
-            int scoreGrade = item.getScoreGrade();
-            if (scoreGrade == SCORE_GRADE_ALL_RIGHT) {
+        for (ExperimentQuestionnaireItemEntity item : selectQuestionTypeList) {
+            Integer scoreGrade = item.getScoreGrade();
+            if (scoreGrade == null) {
+                continue;
+            }
+            if (scoreGrade.equals(SCORE_GRADE_ALL_RIGHT)) {
                 allRightNum += 1;
-            } else if (scoreGrade == SCORE_GRADE_HALF_RIGHT) {
+            } else if (scoreGrade.equals(SCORE_GRADE_HALF_RIGHT)) {
                 halfRightNum += 1;
             }
         }
@@ -113,13 +182,19 @@ public class ExperimentQuestionnaireScoreBiz {
         if (allRightNum == totalNum) {
             return fullScore;
         }
+        if (allRightNum == 0 && halfRightNum == 0) {
+            return zeroScore;
+        }
         if (CaseScoreModeEnum.STRICT.name().equals(this.scoreMode)) {
-            return allRightNum * unitScore;
+            return NumberUtil.round(NumberUtil.mul(allRightNum, unitScore), scale);
         }
         if (CaseScoreModeEnum.HALF.name().equals(this.scoreMode)) {
-            return allRightNum * unitScore + halfRightNum * (unitScore / 2);
+            BigDecimal tAllRightScore = NumberUtil.mul(allRightNum, unitScore);
+            BigDecimal tHalfUnitScore = NumberUtil.div(unitScore, scale);
+            BigDecimal tHalfRightScore = NumberUtil.mul(halfRightNum, tHalfUnitScore);
+            return NumberUtil.round(NumberUtil.add(tAllRightScore, tHalfRightScore), scale);
         }
-        return 0.0f;
+        return zeroScore;
     }
 
     private void checkItemRight(List<ExperimentQuestionnaireItemEntity> itemList) {
@@ -127,18 +202,20 @@ public class ExperimentQuestionnaireScoreBiz {
         for (ExperimentQuestionnaireItemEntity item : itemList) {
             Integer scoreGrade = SCORE_GRADE_DEFAULT;
 
-            // right value
+            // list right_value_id
             String rightValue = item.getRightValue();
             List<ExptQuestionnaireOptionDTO> rightValueList = JSONUtil.toList(rightValue, ExptQuestionnaireOptionDTO.class);
             if (CollUtil.isEmpty(rightValueList)) {
-                break;
+                continue;
             }
-            List<String> rightIdList = rightValueList.stream().map(ExptQuestionnaireOptionDTO::getId).toList();
+            List<String> rightIdList = rightValueList.stream()
+                    .map(ExptQuestionnaireOptionDTO::getId)
+                    .toList();
 
-            // question result
+            // list question_result
             String questionResult = item.getQuestionResult();
             if (StrUtil.isBlank(questionResult)) {
-                break;
+                continue;
             }
             String[] resultArr = questionResult.split(",");
             List<String> resultIdList = List.of(resultArr);
@@ -147,11 +224,9 @@ public class ExperimentQuestionnaireScoreBiz {
             List<String> commonElements = findCommonElements(rightIdList, resultIdList);
             if (commonElements.size() == rightIdList.size()) {
                 scoreGrade = SCORE_GRADE_ALL_RIGHT;
-            }
-            if (commonElements.size() > 0) {
+            } else if (commonElements.size() > 0) {
                 scoreGrade = SCORE_GRADE_HALF_RIGHT;
-            }
-            if (commonElements.size() == 0) {
+            } else if (commonElements.size() == 0) {
                 scoreGrade = SCORE_GRADE_ALL_ERROR;
             }
 
@@ -170,7 +245,7 @@ public class ExperimentQuestionnaireScoreBiz {
         this.scoreMode = experimentCaseInfoBiz.getQuestionnaireScoreMode(experimentInstanceId);
     }
 
-    public static List<String> findCommonElements(List<String> list1, List<String> list2) {
+    private static List<String> findCommonElements(List<String> list1, List<String> list2) {
         Set<String> set1 = new HashSet<>(list1);
         Set<String> set2 = new HashSet<>(list2);
         set1.retainAll(set2);

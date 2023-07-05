@@ -1,5 +1,6 @@
 package org.dows.hep.api.user.experiment.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,4 +27,8 @@ public class ExptQuestionnaireOptionDTO {
 
     @Schema(title = "选项值")
     private String value;
+
+    @Schema(title = "是否选中")
+    @JsonIgnore
+    private boolean choose ;
 }

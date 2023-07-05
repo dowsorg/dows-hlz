@@ -7,13 +7,8 @@ import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapp
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.util.ReflectUtil;
-import org.dows.hep.api.enums.EnumExperimentGroupStatus;
-import org.dows.hep.api.enums.EnumExperimentParticipator;
-import org.dows.hep.api.enums.ExperimentStatusCode;
-import org.dows.hep.api.enums.ParticipatorTypeEnum;
-import org.dows.hep.api.event.ExptQuestionnaireAllotEvent;
-import org.dows.hep.api.event.GroupMemberAllotEvent;
-import org.dows.hep.api.event.source.ExptQuestionnaireAllotEventSource;
+import org.dows.hep.api.enums.*;
+import org.dows.hep.api.event.ExperimentReadyEvent;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.exception.ExperimentParticipatorException;
 import org.dows.hep.api.user.experiment.request.AllotActorRequest;
@@ -21,20 +16,15 @@ import org.dows.hep.api.user.experiment.request.CreateGroupRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentParticipatorRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
-import org.dows.hep.entity.ExperimentActorEntity;
-import org.dows.hep.entity.ExperimentGroupEntity;
-import org.dows.hep.entity.ExperimentOrgEntity;
-import org.dows.hep.entity.ExperimentParticipatorEntity;
-import org.dows.hep.service.ExperimentActorService;
-import org.dows.hep.service.ExperimentGroupService;
-import org.dows.hep.service.ExperimentOrgService;
-import org.dows.hep.service.ExperimentParticipatorService;
+import org.dows.hep.entity.*;
+import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author lait.zhang
@@ -49,7 +39,11 @@ public class ExperimentGroupBiz {
 
     private final ExperimentParticipatorService experimentParticipatorService;
 
+    private final ExperimentSettingService experimentSettingService;
+
     private final ExperimentActorService experimentActorService;
+
+    private final ExperimentInstanceService experimentInstanceService;
 
     private final IdGenerator idGenerator;
 
@@ -82,14 +76,14 @@ public class ExperimentGroupBiz {
                 .eq(ExperimentParticipatorEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
                 .eq(ExperimentParticipatorEntity::getAccountId, createGroup.getAccountId())
                 .eq(ExperimentParticipatorEntity::getDeleted, false)
-                .eq(ExperimentParticipatorEntity::getParticipatorType, ParticipatorTypeEnum.CAPTAIN.getCode())
+                .eq(ExperimentParticipatorEntity::getParticipatorType, EnumParticipatorType.CAPTAIN.getCode())
                 .oneOpt().orElse(null);
 
         if (list.size() == 0) {
-            throw new ExperimentException(ExperimentStatusCode.NO_EXIST_GROUP_ID);
+            throw new ExperimentException(EnumExperimentStatusCode.NO_EXIST_GROUP_ID);
         }
         if (experimentParticipatorEntity == null) {
-            throw new ExperimentException(ExperimentStatusCode.NOT_CAPTAIN);
+            throw new ExperimentException(EnumExperimentStatusCode.NOT_CAPTAIN);
         }
         // 发送websocket消息给组员
 //        applicationEventPublisher.publishEvent(new TeamNameEvent(createGroup));
@@ -249,11 +243,22 @@ public class ExperimentGroupBiz {
      */
     @DSTransactional
     public Boolean allotGroupMembers(List<ExperimentParticipatorRequest> participatorList) {
+        /**
+         * todo 优化一下参数结构@jx
+         */
+        String experimentInstanceId = participatorList.get(0).getExperimentInstanceId();
+        ExperimentInstanceEntity experimentInstanceEntity = experimentInstanceService.lambdaQuery()
+                .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
+                .oneOpt().orElseThrow(() -> new ExperimentException("实验不存在"));
+        if (experimentInstanceEntity.getState() == EnumExperimentState.UNBEGIN.getState()) {
+            throw new ExperimentException("实验未开始，不能分配小组成员");
+        }
         List<ExperimentParticipatorEntity> entityList = new ArrayList<>();
+        // todo 后面改调，批量查，批量更新
         participatorList.forEach(request -> {
             ExperimentParticipatorEntity model = experimentParticipatorService.lambdaQuery()
                     .eq(ExperimentParticipatorEntity::getExperimentParticipatorId, request.getExperimentParticipatorId())
-                    .eq(ExperimentParticipatorEntity::getAppId, request.getAppId())
+                    //.eq(ExperimentParticipatorEntity::getAppId, null == request.getAppId() ? "3" : request.getAppId())
                     .eq(ExperimentParticipatorEntity::getExperimentGroupId, request.getExperimentGroupId())
                     .eq(ExperimentParticipatorEntity::getExperimentInstanceId, request.getExperimentInstanceId())
                     .eq(ExperimentParticipatorEntity::getDeleted, false)
@@ -269,7 +274,10 @@ public class ExperimentGroupBiz {
                     .id(model.getId())
                     .build();
             entityList.add(entity);
-            //1、更新组状态为等待其他小组分配完成
+            /**
+             *  todo 更新组状态为等待其他小组分配完成
+             *  小组状态 [0-新建（待重新命名） 1-编队中 （分配成员角色） 2-编队完成 3-已锁定 4-已解散]
+             */
             experimentGroupService.lambdaUpdate()
                     .eq(ExperimentGroupEntity::getExperimentGroupId, request.getExperimentGroupId())
                     .eq(ExperimentGroupEntity::getExperimentInstanceId, request.getExperimentInstanceId())
@@ -278,17 +286,26 @@ public class ExperimentGroupBiz {
                             .build());
         });
         boolean b = experimentParticipatorService.updateBatchById(entityList);
-        // 发布事件，计数小组是否分配到齐，是否都分配好
-        applicationEventPublisher.publishEvent(new GroupMemberAllotEvent(participatorList));
-        // 分配试卷事件
-        if (b) {
-            applicationEventPublisher.publishEvent(new ExptQuestionnaireAllotEvent(
-                    ExptQuestionnaireAllotEventSource.builder()
-                            .experimentInstanceId(participatorList.get(0).getExperimentInstanceId())
-                            .experimentGroupId(participatorList.get(0).getExperimentGroupId())
-                            .build()));
+        if (!b) {
+            return false;
         }
-        return b;
+        /**
+         * 查询当前实验所有小组并判断状态
+         */
+        List<ExperimentGroupEntity> list = experimentGroupService.lambdaQuery()
+                .eq(ExperimentGroupEntity::getExperimentInstanceId, experimentInstanceId)
+                .list();
+        List<ExperimentGroupEntity> collect = list.stream()
+                .filter(e -> e.getGroupState() == EnumExperimentGroupStatus.WAIT_ALL_GROUP_ASSIGN.getCode())
+                .collect(Collectors.toList());
+        /**
+         * 所有小组准备完成发布事件，计数小组是否分配到齐，是否都分配好，如果都分配好，发布实验就绪事件
+         */
+        if (list.size() == collect.size()) {
+            applicationEventPublisher.publishEvent(new ExperimentReadyEvent(participatorList));
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -308,7 +325,7 @@ public class ExperimentGroupBiz {
                 .eq(ExperimentGroupEntity::getDeleted, false)
                 .oneOpt().orElse(null);
         if (groupEntity == null) {
-            throw new ExperimentException(ExperimentStatusCode.NO_EXIST_GROUP_ID);
+            throw new ExperimentException(EnumExperimentStatusCode.NO_EXIST_GROUP_ID);
         }
         ExperimentGroupResponse groupResponse = ExperimentGroupResponse.builder()
                 .experimentGroupId(groupEntity.getExperimentGroupId())

@@ -37,20 +37,7 @@ public class ExperimentTimerRest {
     @GetMapping("v1/userExperiment/experimentTimer/countdown")
     public CountDownResponse countdown(String appId, String experimentInstanceId) {
 
-        CountDownResponse countDownResponse = new CountDownResponse();
-        ExperimentPeriodsResonse experimentPeriods = experimentTimerBiz.getExperimentPeriods(appId, experimentInstanceId);
-        List<ExperimentPeriodsResonse.ExperimentPeriods> experimentPeriods1 = experimentPeriods.getExperimentPeriods();
-        Integer currentPeriod = experimentPeriods.getCurrentPeriod();
-        ExperimentPeriodsResonse.ExperimentPeriods experimentPeriods2 = experimentPeriods1.stream()
-                .filter(e -> e.getPeriod() == currentPeriod)
-                .max(Comparator.comparingInt(ExperimentPeriodsResonse.ExperimentPeriods::getPauseCount))
-                .orElse(null);
-
-        if (experimentPeriods2 != null) {
-            countDownResponse.setSandTime(experimentPeriods2.getStartTime() - System.currentTimeMillis() + experimentPeriods2.getPeriodInterval());
-        } /*else {
-            throw new ExperimentException("期数异常");
-        }*/
+        CountDownResponse countDownResponse = experimentTimerBiz.userCountdown(experimentInstanceId);
         return countDownResponse;
     }
 
