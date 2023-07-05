@@ -205,6 +205,7 @@ public class CaseIndicatorInstanceBiz {
         String unit = indicatorInstanceResponseRs.getUnit();
         Integer core = indicatorInstanceResponseRs.getCore();
         Integer food = indicatorInstanceResponseRs.getFood();
+        Integer type = indicatorInstanceResponseRs.getType();
         String descr = indicatorInstanceResponseRs.getDescr();
         String def = indicatorInstanceResponseRs.getDef();
         String min = indicatorInstanceResponseRs.getMin();
@@ -222,6 +223,7 @@ public class CaseIndicatorInstanceBiz {
             .unit(unit)
             .core(core)
             .food(food)
+            .type(type)
             .descr(descr)
             .build());
         caseIndicatorRuleEntityList.add(CaseIndicatorRuleEntity

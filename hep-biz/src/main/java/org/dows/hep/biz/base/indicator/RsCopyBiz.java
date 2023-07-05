@@ -1484,6 +1484,7 @@ public class RsCopyBiz {
                 .unit(caseIndicatorInstanceEntity.getUnit())
                 .core(caseIndicatorInstanceEntity.getCore())
                 .food(caseIndicatorInstanceEntity.getFood())
+                .type(caseIndicatorInstanceEntity.getType())
                 .descr(caseIndicatorInstanceEntity.getDescr())
                 .min(min)
                 .max(max)
@@ -1915,14 +1916,13 @@ public class RsCopyBiz {
           .forEach(indicatorExpressionItemEntity -> {
             String indicatorExpressionId = indicatorExpressionItemEntity.getIndicatorExpressionId();
             List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.get(indicatorExpressionId);
-            if (!indicatorExpressionItemEntityList.isEmpty()) {
+            if (Objects.isNull(indicatorExpressionItemEntityList)) {
               indicatorExpressionItemEntityList = new ArrayList<>();
             }
             indicatorExpressionItemEntityList.add(indicatorExpressionItemEntity);
             kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.put(indicatorExpressionId, indicatorExpressionItemEntityList);
           });
     }
-    Map<String, IndicatorExpressionItemEntity> kMinOrMaxIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap = new HashMap<>();
     List<IndicatorExpressionItemEntity> minOrMaxIndicatorExpressionItemEntityList = new ArrayList<>();
     if (!minAndMaxIndicatorExpressionItemIdSet.isEmpty()) {
       indicatorExpressionItemService.lambdaQuery()
@@ -1931,7 +1931,6 @@ public class RsCopyBiz {
           .list()
           .forEach(indicatorExpressionItemEntity -> {
             minOrMaxIndicatorExpressionItemEntityList.add(indicatorExpressionItemEntity);
-            kMinOrMaxIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap.put(indicatorExpressionItemEntity.getIndicatorExpressionItemId(), indicatorExpressionItemEntity);
           });
     }
     Map<String, String> kMinOrMaxIndicatorExpressionItemEntityIdVExperimentIndicatorExpressionItemIdMap = new HashMap<>();
