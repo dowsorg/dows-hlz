@@ -28,21 +28,6 @@ public class ExperimentScoringBiz {
 
     private final ExperimentScoringService experimentScoringService;
 
-/*    private final Map<String, Calculatable> calculatableMap;
-
-
-    public void calc(ExperimentScoreCalcRequest experimentScoreCalcRequest) {
-        List<EnumCalcCode> enumCalcCodes = experimentScoreCalcRequest.getEnumCalcCodes();
-        if (enumCalcCodes == null || enumCalcCodes.size() == 0) {
-            throw new ExperimentException("实验分数计算器集合为空");
-        }
-        for (EnumCalcCode enumCalcCode : enumCalcCodes) {
-            Calculatable calculatable = calculatableMap.get(enumCalcCode);
-            if(calculatable != null){
-                calculatable.calc(experimentScoreCalcRequest);
-            }
-        }
-    }*/
 
     /**
      * 健康指数分数计算，并存表

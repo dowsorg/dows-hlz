@@ -5,10 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.calc.ExperimentScoreCalcRequest;
 import org.dows.hep.api.enums.EnumCalcCode;
 import org.dows.hep.api.exception.ExperimentException;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 /**
  * 排行榜计算
@@ -20,6 +22,7 @@ public class ExperimentScoreCalculator {
 
     private final Map<String, Calculatable> calculatableMap;
 
+    private final ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
 
     public void calc(ExperimentScoreCalcRequest experimentScoreCalcRequest) {
@@ -30,9 +33,12 @@ public class ExperimentScoreCalculator {
         for (EnumCalcCode enumCalcCode : enumCalcCodes) {
             Calculatable calculatable = calculatableMap.get(enumCalcCode);
             if (calculatable != null) {
-                calculatable.calc(experimentScoreCalcRequest.getExperimentInstanceId(),
-                        experimentScoreCalcRequest.getExperimentGroupId(),
-                        experimentScoreCalcRequest.getPeriod());
+                // 交由线程执行
+                threadPoolTaskExecutor.execute(() -> {
+                    calculatable.calc(experimentScoreCalcRequest.getExperimentInstanceId(),
+                            experimentScoreCalcRequest.getExperimentGroupId(),
+                            experimentScoreCalcRequest.getPeriod());
+                });
             }
         }
     }

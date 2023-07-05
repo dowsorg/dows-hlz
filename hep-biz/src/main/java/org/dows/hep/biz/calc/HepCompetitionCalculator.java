@@ -4,10 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.calc.ExperimentScoreCalcRequest;
 import org.springframework.stereotype.Component;
+
+/**
+ * 健康指数得分OR竞赛得分
+ */
 @Slf4j
 @RequiredArgsConstructor
 @Component("hepHealthIndexCalculator")
-public class HepHealthIndexCalculator implements Calculatable {
+public class HepCompetitionCalculator implements Calculatable {
 
 
     @Override
