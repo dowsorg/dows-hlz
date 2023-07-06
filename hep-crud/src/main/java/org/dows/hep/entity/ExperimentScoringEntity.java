@@ -48,11 +48,11 @@ public class ExperimentScoringEntity implements CrudEntity {
     @Schema(title = "实验小组名称")
     private String experimentGroupName;
 
-    @Schema(title = "健康指数分数")
-    private String healthIndexScore;
-
     @Schema(title = "知识考点分数")
     private String knowledgeScore;
+
+    @Schema(title = "健康指数分数")
+    private String healthIndexScore;
 
     @Schema(title = "医疗占比分数")
     private String treatmentPercentScore;
