@@ -114,7 +114,8 @@ public class SuspendHandler extends AbstractEventHandler implements EventHandler
                 experimentContext.setExperimentId(experimentRestartRequest.getExperimentInstanceId());
                 experimentContext.setState(EnumExperimentState.SUSPEND);
                 ExperimentContext.set(experimentContext);
-
+                // 重置定时任务
+                experimentTaskScheduler.resetSchedule();
                 // 通知客户端
                 ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfos();
                 Set<Channel> channels = userInfos.keySet();

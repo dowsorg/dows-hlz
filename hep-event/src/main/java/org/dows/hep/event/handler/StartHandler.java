@@ -164,7 +164,7 @@ public class StartHandler extends AbstractEventHandler implements EventHandler<E
                 experimentParticipatorService, experimentTimerService, experimentScoreCalculator,
                 experimentRestartRequest.getExperimentInstanceId());
 
-        experimentTaskScheduler.reset(experimentEndTimerTask, DateUtil.date(lastPeriods.getEndTime()));
+        experimentTaskScheduler.schedule(experimentEndTimerTask, DateUtil.date(lastPeriods.getEndTime()));
         /**
          * 每小组重设每期结束任务
          */
@@ -176,7 +176,7 @@ public class StartHandler extends AbstractEventHandler implements EventHandler<E
                         experimentRestartRequest.getExperimentInstanceId(),
                         experimentGroupRespons.getExperimentGroupId(),
                         updateExperimentTimerEntity.getPeriod());
-                experimentTaskScheduler.reset(experimentPeroidTimerTask, DateUtil.date(updateExperimentTimerEntity.getEndTime()));
+                experimentTaskScheduler.schedule(experimentPeroidTimerTask, DateUtil.date(updateExperimentTimerEntity.getEndTime()));
             }
         }
     }
