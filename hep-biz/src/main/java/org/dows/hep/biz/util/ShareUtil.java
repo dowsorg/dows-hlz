@@ -5,7 +5,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.google.common.collect.Lists;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -199,7 +198,7 @@ public class ShareUtil {
             return !isEmpty(array);
         }
 
-        public static boolean contains(T[] array, T value) {
+        public static <T> boolean contains(T[] array, T value) {
             return ArrayUtil.contains(array, value);
         }
 
