@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.RsCopyCrowdsAndRiskModelRequestRs;
-import org.dows.hep.api.base.indicator.request.RsCopyExperimentRequestRs;
+import org.dows.hep.api.base.indicator.request.RsCopyIndicatorFuncRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyPersonIndicatorRequestRs;
 import org.dows.hep.biz.base.indicator.RsCopyBiz;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,8 +21,8 @@ public class RsCopyRest {
 
   @Operation(summary = "复制功能点到实验")
   @PostMapping("v1/experimentIndicator/indicatorFunc/rsCopy")
-  public void rsCopyIndicatorFunc(RsCopyExperimentRequestRs rsCopyExperimentRequestRs) {
-    rsCopyBiz.rsCopyIndicatorFunc(rsCopyExperimentRequestRs);
+  public void rsCopyIndicatorFunc(RsCopyIndicatorFuncRequestRs rsCopyIndicatorFuncRequestRs) {
+    rsCopyBiz.rsCopyIndicatorFunc(rsCopyIndicatorFuncRequestRs);
   }
 
   @Operation(summary = "复制人物指标以及人物指标的公式到实验")
