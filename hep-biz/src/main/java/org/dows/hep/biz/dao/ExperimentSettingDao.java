@@ -26,12 +26,12 @@ public class ExperimentSettingDao extends BaseDao<ExperimentSettingService, Expe
 
     @Override
     protected SFunction<ExperimentSettingEntity, String> getColId() {
-        return null;
+        return ExperimentSettingEntity::getExperimentSettingId;
     }
 
     @Override
     protected SFunction<String, ?> setColId(ExperimentSettingEntity item) {
-        return null;
+        return item::setExperimentSettingId;
     }
 
     @Override

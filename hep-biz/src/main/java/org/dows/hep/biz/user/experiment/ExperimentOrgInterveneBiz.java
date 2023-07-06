@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.intervene.request.FindFoodRequest;
 import org.dows.hep.api.base.intervene.request.FindInterveneCategRequest;
 import org.dows.hep.api.base.intervene.request.FindSportRequest;
+import org.dows.hep.api.base.intervene.request.FindTreatRequest;
 import org.dows.hep.api.base.intervene.response.*;
 import org.dows.hep.api.base.intervene.vo.FoodCookbookDetailVO;
 import org.dows.hep.api.base.intervene.vo.SportPlanItemVO;
@@ -25,6 +26,7 @@ import org.dows.hep.api.user.experiment.response.SaveExptTreatResponse;
 import org.dows.hep.api.user.experiment.vo.ExptTreatPlanItemVO;
 import org.dows.hep.biz.base.intervene.*;
 import org.dows.hep.biz.dao.OperateOrgFuncDao;
+import org.dows.hep.biz.dao.SportItemDao;
 import org.dows.hep.biz.dao.TreatItemDao;
 import org.dows.hep.biz.util.*;
 import org.dows.hep.biz.vo.CalcExptFoodCookbookResult;
@@ -62,6 +64,10 @@ public class ExperimentOrgInterveneBiz{
     private final SportPlanBiz sportPlanBiz;
 
     private final SportItemBiz sportItemBiz;
+
+    private final TreatItemBiz treatItemBiz;
+
+    private final SportItemDao sportItemDao;
     private final TreatItemDao treatItemDao;
 
     public List<Categ4ExptVO> listInterveneCateg4Expt(FindInterveneCateg4ExptRequest findCateg ) throws JsonProcessingException {
@@ -100,7 +106,37 @@ public class ExperimentOrgInterveneBiz{
         FindSportRequest castReq=CopyWrapper.create(FindSportRequest::new).endFrom(findSport);
         return sportItemBiz.pageSportItem(castReq);
     }
+
+    public List<Categ4ExptVO> listSportCateg4Expt(FindInterveneCateg4ExptRequest findSport ) throws JsonProcessingException{
+        findSport.setWithChild(1);
+        FindInterveneCategRequest castReq=CopyWrapper.create(FindInterveneCategRequest::new).endFrom(findSport);
+        List<CategVO> items=interveneCategBiz.listInterveneCateg(castReq);
+        if(ShareUtil.XObject.isEmpty(items)){
+            return Collections.emptyList();
+        }
+        List<Categ4ExptVO> rst= JacksonUtil.deepCopy(items, true,new TypeReference<>() {});
+        Map<String,Categ4ExptVO> mapLeaf=getLeafMap(rst);
+        if(ShareUtil.XObject.isEmpty(mapLeaf)){
+            return rst;
+        }
+        FindSportRequest findReq=FindSportRequest.builder()
+                .appId(findSport.getAppId())
+                .build();
+        Map<String,List<Categ4ExptVO>> mapItems=ShareUtil.XCollection.groupBy(sportItemDao.listByCondition (findReq,
+                SportItemEntity::getInterveneCategId,
+                SportItemEntity::getSportItemId,
+                SportItemEntity::getSportItemName),row->Categ4ExptVO.builder()
+                .categId(row.getSportItemId())
+                .categName(row.getSportItemName())
+                .categPid(row.getInterveneCategId())
+                .build(),  Categ4ExptVO::getCategPid);
+        mapLeaf.entrySet().forEach(i->{
+            i.getValue().setChilds(mapItems.get(i.getKey()));
+        });
+        return rst;
+    }
     public List<Categ4ExptVO> listTreatCateg4Expt( FindInterveneCateg4ExptRequest findTreat ) throws JsonProcessingException {
+        findTreat.setWithChild(1);
         FindInterveneCategRequest castReq=CopyWrapper.create(FindInterveneCategRequest::new).endFrom(findTreat);
         List<CategVO> items=interveneCategBiz.listInterveneCateg(castReq);
         if(ShareUtil.XObject.isEmpty(items)){
@@ -120,7 +156,7 @@ public class ExperimentOrgInterveneBiz{
                 .categId(row.getTreatItemId())
                 .categName(row.getTreatItemName())
                 .categPid(row.getInterveneCategId())
-                .build(),  Categ4ExptVO::getCategId);
+                .build(),  Categ4ExptVO::getCategPid);
         mapLeaf.entrySet().forEach(i->{
             i.getValue().setChilds(mapTreats.get(i.getKey()));
         });
@@ -148,7 +184,13 @@ public class ExperimentOrgInterveneBiz{
         }
     }
     public List<TreatItemResponse>  listTreatItem4Expt( FindTreatList4ExptRequest findTreat ){
-        return null;
+        FindTreatRequest castReq=FindTreatRequest.builder()
+                .incIds(findTreat.getIncIds())
+                .appId(findTreat.getAppId())
+                .pageSize(1)
+                .pageNo(Optional.ofNullable(findTreat.getIncIds()).map(List::size).orElse(10))
+                .build();
+        return treatItemBiz.pageTreatItem(castReq).getRecords();
     }
 
     //endregion

@@ -39,7 +39,6 @@ public class SnapshotManager implements ISnapshotWriter, ApplicationContextAware
                 return;
             }
             List<ISnapshotDbWriter> writers=map.values().stream()
-                    .filter(ISnapshotDbWriter::manulFlag)
                     .sorted(Comparator.comparingInt(i->i.getSnapshotType().getWriteOrder()))
                     .collect(Collectors.toList());
             s_writers=writers;
