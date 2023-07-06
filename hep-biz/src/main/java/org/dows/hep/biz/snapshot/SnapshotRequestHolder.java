@@ -21,10 +21,13 @@ public class SnapshotRequestHolder {
     }
     public static boolean hasSnapshotRequest(){
         HttpServletRequest request=getHttpRequest();
-        return ShareUtil.XObject.notEmpty(request.getAttribute(ATTRKeyExperimentId));
+        return null!=request&&ShareUtil.XObject.notEmpty(request.getAttribute(ATTRKeyExperimentId));
     }
 
     public static String getRefExperimentId(EnumSnapshotType snapshotType){
+        if(!hasSnapshotRequest()){
+            return null;
+        }
         HttpServletRequest request=getHttpRequest();
         String refExperimentId=(String)request.getAttribute(snapshotType.getCode());
         if(ShareUtil.XObject.notEmpty(refExperimentId)){

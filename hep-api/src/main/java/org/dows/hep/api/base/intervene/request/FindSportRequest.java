@@ -2,6 +2,8 @@ package org.dows.hep.api.base.intervene.request;
 
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,7 +16,9 @@ import java.util.List;
 * @date 
 */
 @Data
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 @Schema(name = "FindSport 对象", title = "查询条件")
 public class FindSportRequest{
 

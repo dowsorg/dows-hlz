@@ -32,6 +32,9 @@ public class ExperimentPausedInterceptor implements HandlerInterceptor {
 //        if (experimentContext == null) {
 //            return false;
 //        }
+//        if (experimentContext.getState() == ExperimentStateEnum.SUSPEND && request.getRequestURI().contains("v1/user/ddf")) {
+//            return true;
+//        }
 //        if (experimentContext.getState() == ExperimentStateEnum.SUSPEND && request.getRequestURI().contains("v1/user")) {
 //            return false;
 //        }

@@ -44,6 +44,7 @@ public class RsCalculateBiz {
   private final ExperimentIndicatorInstanceRsService experimentIndicatorInstanceRsService;
   private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
   private final ExperimentPersonService experimentPersonService;
+
   @Transactional(rollbackFor = Exception.class)
   public void rsCalculateHealthPointOld(RsCalculateHealthScoreRequestRs rsCalculateHealthScoreRequestRs) {
     /* runsix:TODO populate */

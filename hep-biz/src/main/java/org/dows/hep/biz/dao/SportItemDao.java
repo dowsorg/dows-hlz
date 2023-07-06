@@ -109,6 +109,19 @@ public class SportItemDao extends BaseSubDao<SportItemService,SportItemEntity,Sp
 
     }
 
+    public List<SportItemEntity> listByCondition(FindSportRequest req, SFunction<SportItemEntity,?>... cols) {
+        return service.lambdaQuery()
+                .eq(ShareUtil.XObject.notEmpty(req.getAppId()), SportItemEntity::getAppId,req.getAppId())
+                .in(ShareUtil.XCollection.notEmpty(req.getCategIdLv1()), SportItemEntity::getInterveneCategId, req.getCategIdLv1())
+                .like(ShareUtil.XString.hasLength(req.getKeywords()), SportItemEntity::getSportItemName,req.getKeywords())
+                .in(ShareUtil.XCollection.notEmpty(req.getIncIds()), getColId(), req.getIncIds())
+                .notIn(ShareUtil.XCollection.notEmpty(req.getExcIds()), getColId(), req.getExcIds())
+                .eq(ShareUtil.XObject.notEmpty(req.getState()), getColState(), req.getState())
+                .orderByAsc(SportItemEntity::getCategNameLv1,SportItemEntity::getStrengthMet)
+                .select(cols)
+                .list();
+    }
+
     @Transactional(rollbackFor = Exception.class)
     public boolean tranSaveWithExpressions(SportItemEntity lead,  List<String> expressionIds){
         AssertUtil.falseThenThrow(coreTranSave(lead,null,false, defaultUseLogicId))
