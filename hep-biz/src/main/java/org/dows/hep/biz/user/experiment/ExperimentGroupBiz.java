@@ -88,13 +88,24 @@ public class ExperimentGroupBiz {
         // 发送websocket消息给组员
 //        applicationEventPublisher.publishEvent(new TeamNameEvent(createGroup));
         // 更新组名和状态
-        return experimentGroupService.lambdaUpdate()
-                .eq(ExperimentGroupEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
-                .eq(ExperimentGroupEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
-                .update(ExperimentGroupEntity.builder()
-                        .groupState(EnumExperimentGroupStatus.ASSIGN_DEPARTMENT.getCode())
-                        .groupName(createGroup.getGroupName())
-                        .build());
+        if (experimentParticipatorEntity.getModel() == EnumExperimentMode.SCHEME.getCode()) {
+            return experimentGroupService.lambdaUpdate()
+                    .eq(ExperimentGroupEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
+                    .eq(ExperimentGroupEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
+                    .update(ExperimentGroupEntity.builder()
+                            .groupState(EnumExperimentGroupStatus.ASSIGN_FUNC.getCode())
+                            .groupName(createGroup.getGroupName())
+                            .build());
+        } /*else if (experimentParticipatorEntity.getModel() == EnumExperimentMode.SAND.getCode()) {
+            return experimentGroupService.lambdaUpdate()
+                    .eq(ExperimentGroupEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
+                    .eq(ExperimentGroupEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
+                    .update(ExperimentGroupEntity.builder()
+                            .groupState(EnumExperimentGroupStatus.ASSIGN_DEPARTMENT.getCode())
+                            .groupName(createGroup.getGroupName())
+                            .build());
+        }*/
+        return false;
     }
 
     /**
