@@ -4,11 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.dows.hep.api.base.indicator.request.RsCalculateCompetitivePointRequestRs;
-import org.dows.hep.api.base.indicator.request.RsCalculateHealthPointRequestRs;
-import org.dows.hep.api.base.indicator.request.RsCalculateMoneyPointRequestRs;
-import org.dows.hep.api.base.indicator.response.GroupCompetitivePointRsResponse;
-import org.dows.hep.api.base.indicator.response.RsCalculateCompetitivePointRsResponse;
+import org.apache.poi.ss.formula.functions.T;
+import org.dows.hep.api.base.indicator.request.RsCalculateCompetitiveScoreRequestRs;
+import org.dows.hep.api.base.indicator.request.RsCalculateHealthScoreRequestRs;
+import org.dows.hep.api.base.indicator.request.RsCalculateMoneyScoreRequestRs;
+import org.dows.hep.api.base.indicator.response.GroupCompetitiveScoreRsResponse;
+import org.dows.hep.api.base.indicator.response.GroupMoneyScoreRsResponse;
+import org.dows.hep.api.base.indicator.response.RsCalculateCompetitiveScoreRsResponse;
+import org.dows.hep.api.base.indicator.response.RsCalculateMoneyScoreRsResponse;
+import org.dows.hep.api.enums.EnumIndicatorType;
 import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
@@ -19,6 +23,8 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -37,13 +43,14 @@ public class RsCalculateBiz {
   private final ExperimentIndicatorExpressionItemRsService experimentIndicatorExpressionItemRsService;
   private final ExperimentIndicatorInstanceRsService experimentIndicatorInstanceRsService;
   private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
+  private final ExperimentPersonService experimentPersonService;
   @Transactional(rollbackFor = Exception.class)
-  public void rsCalculateHealthPointOld(RsCalculateHealthPointRequestRs rsCalculateHealthPointRequestRs) {
+  public void rsCalculateHealthPointOld(RsCalculateHealthScoreRequestRs rsCalculateHealthScoreRequestRs) {
     /* runsix:TODO populate */
     Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = new HashMap<>();
-    String appId = rsCalculateHealthPointRequestRs.getAppId();
-    String experimentId = rsCalculateHealthPointRequestRs.getExperimentId();
-    List<String> experimentPersonIdList = rsCalculateHealthPointRequestRs.getExperimentPersonIdList();
+    String appId = rsCalculateHealthScoreRequestRs.getAppId();
+    String experimentId = rsCalculateHealthScoreRequestRs.getExperimentId();
+    List<String> experimentPersonIdList = rsCalculateHealthScoreRequestRs.getExperimentPersonIdList();
     Map<String, ExperimentCrowdsInstanceRsEntity> kExperimentCrowdsIdVExperimentCrowdsInstanceRsEntityMap = new HashMap<>();
     List<ExperimentCrowdsInstanceRsEntity> experimentCrowdsInstanceRsEntityList = new ArrayList<>();
     List<String> experimentCrowdsIdList = new ArrayList<>();
@@ -212,10 +219,15 @@ public class RsCalculateBiz {
   }
 
   @Transactional(rollbackFor = Exception.class)
-  public void rsCalculateMoneyPoint(RsCalculateMoneyPointRequestRs rsCalculateMoneyPointRequestRs) {
+  public RsCalculateMoneyScoreRsResponse rsCalculateMoneyScore(RsCalculateMoneyScoreRequestRs rsCalculateMoneyScoreRequestRs) {
+    List<GroupMoneyScoreRsResponse> groupMoneyScoreRsResponseList = new ArrayList<>();
+    return RsCalculateMoneyScoreRsResponse
+        .builder()
+        .groupMoneyScoreRsResponseList(groupMoneyScoreRsResponseList)
+        .build();
   }
   @Transactional(rollbackFor = Exception.class)
-  public void rsCalculateHealthPointDev(RsCalculateHealthPointRequestRs rsCalculateHealthPointRequestRs) {
+  public void rsCalculateHealthPointDev(RsCalculateHealthScoreRequestRs rsCalculateHealthScoreRequestRs) {
     Map<String, ExperimentCrowdsInstanceRsEntity> kExperimentPersonIdVExperimentCrowdsInstanceRsEntityMap = new HashMap();
     Map<String, List<ExperimentRiskModelRsEntity>> kExperimentCrowdsIdVExperimentRiskModelRsEntityListMap = new HashMap<>();
     Map<String, List<ExperimentIndicatorExpressionRsEntity>> kExperimentRiskModelIdVExperimentIndicatorExpressionRsEntityListMap = new HashMap<>();
@@ -307,18 +319,145 @@ public class RsCalculateBiz {
     return stringBuffer.toString();
   }
 
-  public RsCalculateCompetitivePointRsResponse rsCalculateCompetitivePoint(RsCalculateCompetitivePointRequestRs rsCalculateCompetitivePointRequestRs) {
-    List<GroupCompetitivePointRsResponse> groupCompetitivePointRsResponseList = new ArrayList<>();
-    String experimentId = rsCalculateCompetitivePointRequestRs.getExperimentId();
-    Integer periods = rsCalculateCompetitivePointRequestRs.getPeriods();
-    /* runsix:TODO  */
-    return RsCalculateCompetitivePointRsResponse
+  public RsCalculateCompetitiveScoreRsResponse rsCalculateCompetitiveScore(RsCalculateCompetitiveScoreRequestRs rsCalculateCompetitiveScoreRequestRs) {
+    List<GroupCompetitiveScoreRsResponse> groupCompetitiveScoreRsResponseList = new ArrayList<>();
+    String experimentId = rsCalculateCompetitiveScoreRequestRs.getExperimentId();
+    Integer periods = rsCalculateCompetitiveScoreRequestRs.getPeriods();
+    Map<String, BigDecimal> kExperimentGroupIdVGroupCompetitiveScoreMap = new HashMap<>();
+
+    Set<String> experimentPersonIdSet = new HashSet<>();
+    Map<String, String> kExperimentPersonIdVCasePersonIdMap = new HashMap<>();
+    Map<String, List<ExperimentPersonEntity>> kExperimentGroupIdVExperimentPersonEntityListMap = new HashMap<>();
+    experimentPersonService.lambdaQuery()
+        .eq(ExperimentPersonEntity::getExperimentInstanceId, experimentId)
+        .list()
+        .forEach(experimentPersonEntity -> {
+          String experimentPersonId = experimentPersonEntity.getExperimentPersonId();
+          experimentPersonIdSet.add(experimentPersonId);
+
+          String casePersonId = experimentPersonEntity.getCasePersonId();
+          kExperimentPersonIdVCasePersonIdMap.put(experimentPersonId, casePersonId);
+
+          String experimentGroupId = experimentPersonEntity.getExperimentGroupId();
+          List<ExperimentPersonEntity> experimentPersonEntityList = kExperimentGroupIdVExperimentPersonEntityListMap.get(experimentGroupId);
+          if (Objects.isNull(experimentPersonEntityList)) {
+            experimentPersonEntityList = new ArrayList<>();
+          }
+          experimentPersonEntityList.add(experimentPersonEntity);
+          kExperimentGroupIdVExperimentPersonEntityListMap.put(experimentGroupId, experimentPersonEntityList);
+        });
+    AtomicInteger groupExperimentPersonSizeAtomicInteger = new AtomicInteger(0);
+    kExperimentGroupIdVExperimentPersonEntityListMap.forEach((ekExperimentGroupIdVExperimentPersonEntityListMap, experimentPersonEntityList) -> {
+      if (groupExperimentPersonSizeAtomicInteger.get() != 0) {
+        groupExperimentPersonSizeAtomicInteger.set(experimentPersonEntityList.size());
+      }
+    });
+
+    Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
+    Map<String, String> kExperimentIndicatorInstanceIdVExperimentPersonIdMap = new HashMap<>();
+    Map<String, ExperimentIndicatorInstanceRsEntity> kExperimentPersonIdVHealthExperimentIndicatorInstanceRsEntityMap = new HashMap<>();
+    if (!experimentPersonIdSet.isEmpty()) {
+      experimentIndicatorInstanceRsService.lambdaQuery()
+          .eq(ExperimentIndicatorInstanceRsEntity::getExperimentId, experimentId)
+          .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.HEALTH_POINT.getType())
+          .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdSet)
+          .list()
+          .forEach(experimentIndicatorInstanceRsEntity -> {
+            String experimentIndicatorInstanceId = experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId();
+            experimentIndicatorInstanceIdSet.add(experimentIndicatorInstanceId);
+
+            String experimentPersonId = experimentIndicatorInstanceRsEntity.getExperimentPersonId();
+            kExperimentIndicatorInstanceIdVExperimentPersonIdMap.put(experimentIndicatorInstanceId, experimentPersonId);
+
+            kExperimentPersonIdVHealthExperimentIndicatorInstanceRsEntityMap.put(experimentPersonId, experimentIndicatorInstanceRsEntity);
+          });
+    }
+
+    Map<String, ExperimentIndicatorValRsEntity> kHealthExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = new HashMap<>();
+    Map<String, BigDecimal> kCasePersonIdVMinHealthScoreMap = new HashMap<>();
+    Map<String, BigDecimal> kCasePersonIdVMaxHealthScoreMap = new HashMap<>();
+    if (!experimentIndicatorInstanceIdSet.isEmpty()) {
+      experimentIndicatorValRsService.lambdaQuery()
+          .eq(ExperimentIndicatorValRsEntity::getExperimentId, experimentId)
+          .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
+          .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
+          .list()
+          .forEach(experimentIndicatorValRsEntity -> {
+            String indicatorInstanceId = experimentIndicatorValRsEntity.getIndicatorInstanceId();
+            kHealthExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(indicatorInstanceId, experimentIndicatorValRsEntity);
+
+            String currentVal = experimentIndicatorValRsEntity.getCurrentVal();
+            BigDecimal currentBigDecimal = BigDecimal.valueOf(Double.parseDouble(currentVal));
+            String experimentPersonId = kExperimentIndicatorInstanceIdVExperimentPersonIdMap.get(indicatorInstanceId);
+            if (StringUtils.isNotBlank(experimentPersonId)) {
+              String casePersonId = kExperimentPersonIdVCasePersonIdMap.get(experimentPersonId);
+              if (StringUtils.isNotBlank(casePersonId)) {
+                BigDecimal minBigDecimal = kCasePersonIdVMinHealthScoreMap.get(casePersonId);
+                if (Objects.isNull(minBigDecimal)) {
+                  minBigDecimal = currentBigDecimal;
+                } else {
+                  if (currentBigDecimal.compareTo(minBigDecimal) < 0) {
+                    minBigDecimal = currentBigDecimal;
+                  }
+                }
+                kCasePersonIdVMinHealthScoreMap.put(casePersonId, minBigDecimal);
+
+                BigDecimal maxBigDecimal = kCasePersonIdVMaxHealthScoreMap.get(casePersonId);
+                if (Objects.isNull(maxBigDecimal)) {
+                  maxBigDecimal = currentBigDecimal;
+                } else {
+                  if (currentBigDecimal.compareTo(maxBigDecimal) > 0) {
+                    maxBigDecimal = currentBigDecimal;
+                  }
+                }
+                kCasePersonIdVMaxHealthScoreMap.put(casePersonId, maxBigDecimal);
+              }
+            }
+          });
+    }
+
+    kExperimentGroupIdVExperimentPersonEntityListMap.forEach((experimentGroupId, experimentPersonEntityList) -> {
+      AtomicReference<BigDecimal> atomicReferenceTotalHealthScore = new AtomicReference<>(BigDecimal.ZERO);
+      experimentPersonEntityList.forEach(experimentPersonEntity -> {
+        String experimentPersonId = experimentPersonEntity.getExperimentPersonId();
+        String casePersonId = experimentPersonEntity.getCasePersonId();
+        BigDecimal minHealthScore = kCasePersonIdVMinHealthScoreMap.get(casePersonId);
+        BigDecimal maxHealthScore = kCasePersonIdVMaxHealthScoreMap.get(casePersonId);
+        ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = kExperimentPersonIdVHealthExperimentIndicatorInstanceRsEntityMap.get(experimentPersonId);
+        String defHealthScore = experimentIndicatorInstanceRsEntity.getDef();
+        String healthExperimentIndicatorInstanceId = experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId();
+        ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kHealthExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(healthExperimentIndicatorInstanceId);
+        String currentHealthScore = experimentIndicatorValRsEntity.getCurrentVal();
+        BigDecimal resultHealthScore = rsCalculateCompetitiveScore(BigDecimal.valueOf(Double.parseDouble(currentHealthScore)), BigDecimal.valueOf(Double.parseDouble(defHealthScore)), minHealthScore, maxHealthScore);
+        BigDecimal lastHealthScore = atomicReferenceTotalHealthScore.get();
+        atomicReferenceTotalHealthScore.set(lastHealthScore.add(resultHealthScore));
+      });
+      kExperimentGroupIdVGroupCompetitiveScoreMap.put(experimentGroupId, atomicReferenceTotalHealthScore.get().divide(BigDecimal.valueOf(groupExperimentPersonSizeAtomicInteger.get()), 2, RoundingMode.DOWN));
+    });
+    kExperimentGroupIdVGroupCompetitiveScoreMap.forEach((experimentGroupId, groupCompetitiveScore) -> {
+      groupCompetitiveScoreRsResponseList.add(GroupCompetitiveScoreRsResponse
+          .builder()
+          .experimentGroupId(experimentGroupId)
+          .groupCompetitiveScore(groupCompetitiveScore)
+          .build());
+    });
+    return RsCalculateCompetitiveScoreRsResponse
         .builder()
-        .groupCompetitivePointRsResponseList(groupCompetitivePointRsResponseList)
+        .groupCompetitiveScoreRsResponseList(groupCompetitiveScoreRsResponseList)
         .build();
   }
 
-  public void rsCalculateHealthPoint() {
+  private BigDecimal rsCalculateCompetitiveScore(BigDecimal currentHealthScore, BigDecimal defHealthScore, BigDecimal minHealthScore, BigDecimal maxHealthScore) {
+    BigDecimal resultBigDecimal = null;
+    if (currentHealthScore.compareTo(defHealthScore) >= 0) {
+      resultBigDecimal = (currentHealthScore.subtract(defHealthScore).divide(maxHealthScore.subtract(defHealthScore), 2, RoundingMode.DOWN).multiply(BigDecimal.valueOf(100-60))).add(BigDecimal.valueOf(60));
+    } else {
+      resultBigDecimal = currentHealthScore.subtract(minHealthScore).divide(defHealthScore.subtract(minHealthScore), 2, RoundingMode.DOWN).multiply(BigDecimal.valueOf(60));
+    }
+    return resultBigDecimal;
+  }
+
+  public void rsCalculateHealthScore() {
 
   }
 }
