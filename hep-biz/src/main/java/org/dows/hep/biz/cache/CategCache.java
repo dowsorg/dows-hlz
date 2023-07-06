@@ -84,9 +84,15 @@ public class CategCache extends BaseLocalCache<CategCache.CacheData> implements 
         return getParent(cache,sbId, sbName, parent,layer);
     }
     protected Optional<Map<String,List<CategVO>>> getMapGroup(String appId){
+        if(ShareUtil.XObject.isEmpty(appId)){
+            return Optional.empty();
+        }
         return Optional.ofNullable( ensureCache().mapGroups.get(appId));
     }
     protected Optional<Map<String,CategVO>> getMapItems(String appId){
+        if(ShareUtil.XObject.isEmpty(appId)){
+            return Optional.empty();
+        }
         return Optional.ofNullable( ensureCache().mapItems.get(appId));
     }
     //endregion

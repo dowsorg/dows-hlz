@@ -5,7 +5,7 @@ package org.dows.hep.biz.snapshot;
  * @date : 2023/6/27 14:34
  */
 public interface ISnapshotDbWriter<T> extends ISnapshotWriter {
-    default boolean autoInjectFlag() {
+    default boolean autoWriteFlag() {
         return true;
     }
     EnumSnapshotType getSnapshotType();

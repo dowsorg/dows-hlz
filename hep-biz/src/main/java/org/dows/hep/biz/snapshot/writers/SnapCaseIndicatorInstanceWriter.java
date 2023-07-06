@@ -2,10 +2,10 @@ package org.dows.hep.biz.snapshot.writers;
 
 import org.dows.hep.biz.snapshot.BaseSnapshotFullTableWriter;
 import org.dows.hep.biz.snapshot.EnumSnapshotType;
-import org.dows.hep.entity.FoodMaterialEntity;
-import org.dows.hep.entity.snapshot.SnapFoodMaterialEntity;
-import org.dows.hep.service.FoodMaterialService;
-import org.dows.hep.service.snapshot.SnapFoodMaterialService;
+import org.dows.hep.entity.CaseIndicatorInstanceEntity;
+import org.dows.hep.entity.snapshot.SnapCaseIndicatorInstanceEntity;
+import org.dows.hep.service.CaseIndicatorInstanceService;
+import org.dows.hep.service.snapshot.SnapCaseIndicatorInstanceService;
 import org.springframework.stereotype.Service;
 
 /**
@@ -13,8 +13,8 @@ import org.springframework.stereotype.Service;
  * @date : 2023/7/2 12:14
  */
 @Service
-public class SnapCaseIndicatorInstanceWriter extends BaseSnapshotFullTableWriter<FoodMaterialEntity, FoodMaterialService, SnapFoodMaterialEntity, SnapFoodMaterialService> {
+public class SnapCaseIndicatorInstanceWriter extends BaseSnapshotFullTableWriter<CaseIndicatorInstanceEntity, CaseIndicatorInstanceService, SnapCaseIndicatorInstanceEntity, SnapCaseIndicatorInstanceService> {
     public SnapCaseIndicatorInstanceWriter() {
-        super(EnumSnapshotType.FOODMaterial, SnapFoodMaterialEntity::new);
+        super(EnumSnapshotType.CASEIndicatorInstance, SnapCaseIndicatorInstanceEntity::new);
     }
 }
