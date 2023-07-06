@@ -61,8 +61,8 @@ public class ExperimentManageRest {
         Map<String, Object> map = JwtUtil.parseJWT(token, EnumToken.PROPERTIES_JWT_KEY.getStr());
         //1、获取登录账ID
         String accountId = map.get("accountId").toString();
-        return "";
-        //return experimentManageBiz.allot(createExperiment,accountId);
+        //return "";
+        return experimentManageBiz.allot(createExperiment,accountId);
     }
 
     /**
