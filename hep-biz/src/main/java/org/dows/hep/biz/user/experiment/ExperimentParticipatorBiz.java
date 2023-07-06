@@ -115,13 +115,24 @@ public class ExperimentParticipatorBiz {
                     .toArray(String[]::new);
             page.addOrder(pageExperimentRequest.getDesc() ? OrderItem.descs(array) : OrderItem.ascs(array));
         }
-        if (!StrUtil.isBlank(pageExperimentRequest.getAccountId())) {
 
+        if (!StrUtil.isBlank(pageExperimentRequest.getAccountId()) && !StrUtil.isBlank(pageExperimentRequest.getExperimentInstanceId())) {// 查询当前用户进行的实验
+            page = experimentParticipatorService.page(page, experimentParticipatorService.lambdaQuery()
+                    .eq(ExperimentParticipatorEntity::getAccountId, pageExperimentRequest.getAccountId())
+                    .eq(ExperimentParticipatorEntity::getExperimentInstanceId, pageExperimentRequest.getExperimentInstanceId())
+                    .orderByDesc(ExperimentParticipatorEntity::getExperimentStartTime)
+                    .getWrapper());
+        } else if (!StrUtil.isBlank(pageExperimentRequest.getAccountId())) { // 分页查询用户所参与的实验
             page = experimentParticipatorService.page(page, experimentParticipatorService.lambdaQuery()
                     .eq(ExperimentParticipatorEntity::getAccountId, pageExperimentRequest.getAccountId())
                     .orderByDesc(ExperimentParticipatorEntity::getExperimentStartTime)
                     .getWrapper());
-        } else {
+        } else if (!StrUtil.isBlank(pageExperimentRequest.getExperimentInstanceId())) { // 查询该实验的参与者
+            page = experimentParticipatorService.page(page, experimentParticipatorService.lambdaQuery()
+                    .eq(ExperimentParticipatorEntity::getExperimentInstanceId, pageExperimentRequest.getExperimentInstanceId())
+                    .orderByDesc(ExperimentParticipatorEntity::getExperimentStartTime)
+                    .getWrapper());
+        } else {//
             page = page.setTotal(0).setCurrent(0).setSize(0).setRecords(new ArrayList<>());
         }
         PageResponse pageInfo = experimentParticipatorService.getPageInfo(page, ExperimentListResponse.class);
@@ -157,16 +168,16 @@ public class ExperimentParticipatorBiz {
         PageResponse pageInfo = experimentParticipatorService.getPageInfo(page, ExperimentListResponse.class);
         // 获取小组参与者
         List<ExperimentListResponse> list = pageInfo.getList();
-        if(list != null && list.size() > 0){
-            list.forEach(response->{
+        if (list != null && list.size() > 0) {
+            list.forEach(response -> {
                 List<ExperimentParticipatorEntity> participatorEntityList = experimentParticipatorService.lambdaQuery()
-                        .eq(ExperimentParticipatorEntity::getExperimentGroupId,response.getExperimentGroupId())
+                        .eq(ExperimentParticipatorEntity::getExperimentGroupId, response.getExperimentGroupId())
                         .list();
                 List<ExperimentParticipatorResponse> participatorResponseList = new ArrayList<>();
                 // 获取参与者账号及头像
-                if(participatorEntityList != null && participatorEntityList.size() > 0){
-                    participatorEntityList.forEach(participatorEntity ->{
-                        AccountInstanceResponse instanceResponse = accountInstanceApi.getPersonalInformationByAccountId(participatorEntity.getAccountId(),"3");
+                if (participatorEntityList != null && participatorEntityList.size() > 0) {
+                    participatorEntityList.forEach(participatorEntity -> {
+                        AccountInstanceResponse instanceResponse = accountInstanceApi.getPersonalInformationByAccountId(participatorEntity.getAccountId(), "3");
                         ExperimentParticipatorResponse participatorResponse = ExperimentParticipatorResponse
                                 .builder()
                                 .accountName(participatorEntity.getAccountName())

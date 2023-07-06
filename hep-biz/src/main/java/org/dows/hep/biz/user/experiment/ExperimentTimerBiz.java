@@ -68,8 +68,9 @@ public class ExperimentTimerBiz {
         for (int i = 0; i < list.size(); i++) {
             ExperimentTimerEntity pre = list.get(i);
             ExperimentTimerEntity next;
+            // 最后一期
             if (i == list.size() - 1) {
-                countDownResponse.setCountdown(0L);
+                countDownResponse.setCountdown(pre.getStartTime() - ct);
                 countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
                 countDownResponse.setModel(pre.getModel());
                 countDownResponse.setPeriod(pre.getPeriod());

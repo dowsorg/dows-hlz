@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.RsCopyCrowdsAndRiskModelRequestRs;
-import org.dows.hep.api.base.indicator.request.RsCopyExperimentRequestRs;
+import org.dows.hep.api.base.indicator.request.RsCopyIndicatorFuncRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyPersonIndicatorRequestRs;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.enums.EnumIndicatorCategory;
@@ -92,7 +92,7 @@ public class RsCopyBiz {
   private final ExperimentRiskModelRsService experimentRiskModelRsService;
 
   @Transactional(rollbackFor = Exception.class)
-  public void rsCopyIndicatorFunc(RsCopyExperimentRequestRs rsCopyExperimentRequestRs) {
+  public void rsCopyIndicatorFunc(RsCopyIndicatorFuncRequestRs rsCopyIndicatorFuncRequestRs) {
     List<ExperimentOrgModuleRsEntity> experimentOrgModuleRsEntityList = new ArrayList<>();
     List<IndicatorViewMonitorFollowupEntity> indicatorViewMonitorFollowupEntityList = new ArrayList<>();
     List<ExperimentIndicatorViewMonitorFollowupRsEntity> experimentIndicatorViewMonitorFollowupRsEntityList = new ArrayList<>();
@@ -111,9 +111,9 @@ public class RsCopyBiz {
     List<ExperimentIndicatorExpressionRefRsEntity> experimentIndicatorExpressionRefRsEntityList = new ArrayList<>();
     List<ExperimentIndicatorExpressionRsEntity> experimentIndicatorExpressionRsEntityList = new ArrayList<>();
     List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList = new ArrayList<>();
-    String appId = rsCopyExperimentRequestRs.getAppId();
-    String caseInstanceId = rsCopyExperimentRequestRs.getCaseInstanceId();
-    String experimentInstanceId = rsCopyExperimentRequestRs.getExperimentInstanceId();
+    String appId = rsCopyIndicatorFuncRequestRs.getAppId();
+    String caseInstanceId = rsCopyIndicatorFuncRequestRs.getCaseInstanceId();
+    String experimentInstanceId = rsCopyIndicatorFuncRequestRs.getExperimentInstanceId();
     Map<String, ExperimentOrgEntity> kExperimentOrgIdVExperimentOrgEntityMap = new HashMap<>();
     Map<String, List<ExperimentOrgEntity>> kExperimentIdVExperimentOrgEntityListMap = new HashMap<>();
     Map<String, List<ExperimentOrgEntity>> kCaseOrgIdVExperimentOrgEntityListMap = new HashMap<>();
