@@ -214,6 +214,26 @@ public class ExperimentTimerBiz {
 
 
     /**
+     * 根据实验状态获取最后期数的计时器
+     *
+     * @param experimentInstanceId
+     * @return
+     */
+    public ExperimentTimerEntity getLastPeriods(String experimentInstanceId, EnumExperimentState enumExperimentState) {
+        List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
+                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
+                .ne(ExperimentTimerEntity::getState, enumExperimentState.getState())
+                //.eq(ExperimentTimerEntity::getAppId, experimentRestartRequest.getAppId())
+                .list();
+        ExperimentTimerEntity experimentTimerEntity = list.stream()
+                .max(Comparator.comparingInt(ExperimentTimerEntity::getPeriod))
+                .get();
+
+        return experimentTimerEntity;
+    }
+
+
+    /**
      * 更新定时器及实验状态（experimentInstance,experimentParticipator）
      *
      * @param updateExperimentTimerEntities
