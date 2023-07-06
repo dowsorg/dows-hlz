@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Getter
@@ -20,16 +20,14 @@ public enum CasePeriodEnum {
     private final String name;
     private final Integer seq;
 
-    private static final Map<String, CasePeriodEnum> codeMap = new LinkedHashMap<>();
+    private static final Map<String, CasePeriodEnum> cacheByCode;
+
+    static {
+        cacheByCode = Arrays.stream(CasePeriodEnum.values()).collect(Collectors.toMap(CasePeriodEnum::getCode, item -> item));
+    }
 
     public static CasePeriodEnum getByCode(String code) {
-        CasePeriodEnum casePeriodEnum = codeMap.get(code);
-        if (casePeriodEnum == null) {
-            Arrays.stream(CasePeriodEnum.values())
-                    .forEach(item -> codeMap.put(item.getCode(), item));
-            casePeriodEnum = codeMap.get(code);
-        }
-        return casePeriodEnum;
+        return cacheByCode.get(code);
     }
 
 }
