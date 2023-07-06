@@ -86,6 +86,12 @@ public class ExperimentOrgInterveneRest {
         return experimentOrgInterveneBiz.pageSportItem4Expt(findSport);
     }
 
+    @Operation(summary = "运动干预：获取分类+项目")
+    @PostMapping("v1/userExperiment/experimentOrgIntervene/listSportCateg4Expt")
+    public List<Categ4ExptVO> listSportCateg4Expt(@RequestBody @Validated FindInterveneCateg4ExptRequest findSport ) throws JsonProcessingException{
+        return experimentOrgInterveneBiz.listSportCateg4Expt(findSport);
+    }
+
     @Operation(summary = "治疗干预：获取分类+项目")
     @PostMapping("v1/userExperiment/experimentOrgIntervene/listTreatCateg4Expt")
     public List<Categ4ExptVO> listTreatCateg4Expt(@RequestBody @Validated FindInterveneCateg4ExptRequest findTreat ) throws JsonProcessingException {

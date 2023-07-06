@@ -10,6 +10,8 @@ import org.dows.hep.service.OperateFlowService;
 import org.dows.hep.service.OperateFlowSnapService;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -92,5 +94,32 @@ public class OperateFlowDao extends BaseSubDao<OperateFlowService, OperateFlowEn
                 .select(cols)
                 .last("limit 1")
                 .oneOpt();
+    }
+
+    /**
+     * 按人物列表获取挂号状态
+     * @param experimentOrgId
+     * @param experimentPersonIds
+     * @param periods
+     * @param cols
+     * @return
+     */
+
+    public List<OperateFlowEntity> getCurrentFlowList(String experimentOrgId,List<String> experimentPersonIds,Integer periods,
+                                                      SFunction<OperateFlowEntity,?>... cols){
+        if(ShareUtil.XObject.isEmpty(experimentPersonIds)){
+            return Collections.emptyList();
+        }
+        final boolean oneFlag=experimentPersonIds.size()==1;
+        return service.lambdaQuery()
+                .select(cols)
+                .eq(OperateFlowEntity::getExperimentOrgId,experimentOrgId)
+                .eq(oneFlag, OperateFlowEntity::getExperimentPersonId,experimentPersonIds.iterator().next())
+                .in(!oneFlag, OperateFlowEntity::getExperimentPersonId,experimentPersonIds)
+                .ge(ShareUtil.XObject.notEmpty(periods, true),OperateFlowEntity::getPeriods,periods)
+                .isNull(OperateFlowEntity::getEndTime)
+                .orderByDesc(OperateFlowEntity::getPeriods, OperateFlowEntity::getId)
+                .select(cols)
+                .list();
     }
 }

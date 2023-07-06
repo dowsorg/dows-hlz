@@ -55,10 +55,10 @@ public class SportItemBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Page<SportItemResponse> pageSportItem(FindSportRequest findSport ) {
-        return ShareBiz.buildPage(dao.pageByCondition(findSport),  i->
+        return ShareBiz.buildPage(dao.pageByCondition(findSport), i ->
                 CopyWrapper.create(SportItemResponse::new).endFrom(refreshCateg(i)));
 
-   }
+    }
     /**
     * @param
     * @return

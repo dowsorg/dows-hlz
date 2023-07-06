@@ -55,7 +55,7 @@ public class ExperimentTimerDao extends BaseDao<ExperimentTimerService, Experime
     public List<ExperimentTimerEntity> getByExperimentId(String appId,String experimentId,Integer period,
                                                          SFunction<ExperimentTimerEntity,?>... cols){
         return service.lambdaQuery()
-                .eq(ShareUtil.XObject.notEmpty(appId), ExperimentTimerEntity::getAppId,appId)
+                //.eq(ShareUtil.XObject.notEmpty(appId), ExperimentTimerEntity::getAppId,appId)
                 .eq(ExperimentTimerEntity::getExperimentInstanceId,experimentId)
                 .eq(ShareUtil.XObject.notEmpty(period),ExperimentTimerEntity::getPeriod,period)
                 .orderByDesc(ExperimentTimerEntity::getStartTime, ExperimentTimerEntity::getPauseCount)
@@ -76,7 +76,7 @@ public class ExperimentTimerDao extends BaseDao<ExperimentTimerService, Experime
     public Optional<ExperimentTimerEntity> getCurPeriodByExperimentId(String appId, String experimentId, Long timeStamp,
                                                                       SFunction<ExperimentTimerEntity,?>... cols) {
         return service.lambdaQuery()
-                .eq(ShareUtil.XObject.notEmpty(appId), ExperimentTimerEntity::getAppId, appId)
+                //.eq(ShareUtil.XObject.notEmpty(appId), ExperimentTimerEntity::getAppId, appId)
                 .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentId)
                 .le(ExperimentTimerEntity::getStartTime, timeStamp)
                 .ge(ExperimentTimerEntity::getEndTime, timeStamp)

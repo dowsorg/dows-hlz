@@ -59,6 +59,9 @@ public class ExperimentOrgEntity implements CrudEntity {
     @Schema(title = "期数")
     private Integer periods;
 
+    @Schema(title = "操作手册")
+    private String handbook;
+
     @JsonIgnore
     @TableLogic
     @TableField(fill = FieldFill.INSERT)

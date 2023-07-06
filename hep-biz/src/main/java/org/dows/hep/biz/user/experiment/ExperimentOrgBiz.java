@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.account.api.AccountUserApi;
+import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.biz.dao.OperateFlowDao;
@@ -81,10 +82,14 @@ public class ExperimentOrgBiz{
         final Date dateNow=ShareUtil.XDate.localDT2Date(ldtNow);
         ExperimentTimePoint timePoint= ExperimentSettingCache.Instance().getTimePointByRealTime(ExperimentCacheKey.create(validator.getAppId(), validator.getExperimentInstanceId()),
                 ldtNow,true);
+        AssertUtil.trueThenThrow(timePoint.getGameState()== EnumExperimentState.UNBEGIN)
+                .throwMessage("当前实验还未进入沙盘");
+        AssertUtil.trueThenThrow(timePoint.getGameState()== EnumExperimentState.FINISH)
+                .throwMessage("当前实验已结束");
         ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator);
         OperateFlowEntity  rowFlow=flowValidator.getOrgFlow(false);
         AssertUtil.trueThenThrow(flowValidator.ifOrgFlowRunning(rowFlow,timePoint.getPeriod()))
-                .throwMessage("当前已挂过号，无需重复操作");
+                .throwMessage("当前已挂过号");
         //TODO 检验资金,扣费
         BigDecimal asset=BigDecimal.ZERO;
         BigDecimal refund=BigDecimal.ZERO;
@@ -180,15 +185,28 @@ public class ExperimentOrgBiz{
      * @开始时间:
      * @创建时间: 2023年5月10日 上午10:11:34
      */
-    public IPage<ExperimentPersonResponse> pageExperimentPersons(ExperimentPersonRequest personRequest) {
+    public Page<ExperimentPersonResponse> pageExperimentPersons(ExperimentPersonRequest personRequest) {
         List<ExperimentPersonResponse> responseList = new ArrayList<>();
         LambdaQueryWrapper<ExperimentPersonEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ExperimentPersonEntity::getExperimentOrgId, personRequest.getExperimentOrgId())
                 .orderByDesc(ExperimentPersonEntity::getDt);
         Page<ExperimentPersonEntity> page = new Page<>(personRequest.getPageNo(), personRequest.getPageSize());
         IPage<ExperimentPersonEntity> entityIPage = experimentPersonService.page(page, queryWrapper);
+
+        //获取人物挂号状态
+        ExperimentTimePoint timePoint=ExperimentSettingCache.Instance().getTimePointByRealTime(ExperimentCacheKey.create(personRequest.getAppId(),personRequest.getExperimentInstanceId()),
+                LocalDateTime.now(), false);
+        final Integer period=timePoint.getPeriod();
+        List<String> personIds=ShareUtil.XCollection.map(entityIPage.getRecords(),ExperimentPersonEntity::getExperimentPersonId);
+        List<OperateFlowEntity> rowsFlow=operateFlowDao.getCurrentFlowList(personRequest.getExperimentOrgId(),personIds,period,
+                OperateFlowEntity::getExperimentPersonId,
+                OperateFlowEntity::getOperateFlowId,
+                OperateFlowEntity::getPeriods);
+        Map<String,OperateFlowEntity> mapFlow=ShareUtil.XCollection.toMap(rowsFlow, OperateFlowEntity::getExperimentPersonId);
+
+
         //复制
-        IPage<ExperimentPersonResponse> voPage = new Page<>();
+        Page<ExperimentPersonResponse> voPage = new Page<>();
         BeanUtils.copyProperties(entityIPage, voPage, new String[]{"records"});
         for(ExperimentPersonEntity entity : entityIPage.getRecords()){
             ExperimentPersonResponse person = new ExperimentPersonResponse();
@@ -201,7 +219,14 @@ public class ExperimentOrgBiz{
             // 2、获取用户头像
             person.setAvatar(instanceResponse.getAvatar());
             person.setName(userName);
+            //设置挂号状态
+            OperateFlowEntity rowFlow=mapFlow.get(person.getExperimentPersonId());
+            if(null!=rowFlow){
+                person.setOperateFlowId(rowFlow.getOperateFlowId());
+                person.setFlowPeriod(rowFlow.getPeriods());
+            }
             responseList.add(person);
+
         }
         voPage.setRecords(responseList);
         return voPage;

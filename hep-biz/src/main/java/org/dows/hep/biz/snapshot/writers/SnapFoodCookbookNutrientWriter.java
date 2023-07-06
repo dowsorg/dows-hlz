@@ -2,10 +2,10 @@ package org.dows.hep.biz.snapshot.writers;
 
 import org.dows.hep.biz.snapshot.BaseSnapshotFullTableWriter;
 import org.dows.hep.biz.snapshot.EnumSnapshotType;
-import org.dows.hep.entity.FoodMaterialEntity;
-import org.dows.hep.entity.snapshot.SnapFoodMaterialEntity;
-import org.dows.hep.service.FoodMaterialService;
-import org.dows.hep.service.snapshot.SnapFoodMaterialService;
+import org.dows.hep.entity.FoodCookbookNutrientEntity;
+import org.dows.hep.entity.snapshot.SnapFoodCookbookNutrientEntity;
+import org.dows.hep.service.FoodCookbookNutrientService;
+import org.dows.hep.service.snapshot.SnapFoodCookbookNutrientService;
 import org.springframework.stereotype.Service;
 
 /**
@@ -13,8 +13,8 @@ import org.springframework.stereotype.Service;
  * @date : 2023/7/2 12:14
  */
 @Service
-public class SnapFoodCookbookNutrientWriter extends BaseSnapshotFullTableWriter<FoodMaterialEntity, FoodMaterialService, SnapFoodMaterialEntity, SnapFoodMaterialService> {
+public class SnapFoodCookbookNutrientWriter extends BaseSnapshotFullTableWriter<FoodCookbookNutrientEntity, FoodCookbookNutrientService, SnapFoodCookbookNutrientEntity, SnapFoodCookbookNutrientService> {
     public SnapFoodCookbookNutrientWriter() {
-        super(EnumSnapshotType.FOODMaterial, SnapFoodMaterialEntity::new);
+        super(EnumSnapshotType.FOODCookbookNutrient , SnapFoodCookbookNutrientEntity::new);
     }
 }

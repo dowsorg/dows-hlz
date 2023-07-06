@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.dows.hep.api.enums.EnumExperimentState;
 
 import java.time.LocalDateTime;
 
@@ -29,5 +30,8 @@ public class ExperimentTimePoint {
     private LocalDateTime realTime;
     @Schema(title = "游戏内天数")
     private Integer gameDay;
+
+    @Schema(title = "游戏状态")
+    private EnumExperimentState gameState;
 
 }

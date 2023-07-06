@@ -572,6 +572,7 @@ public class ExperimentManageBiz {
                         .experimentGroupId(model.getExperimentGroupId())
                         .caseOrgId(orgEntity.getCaseOrgId())
                         .caseOrgName(orgEntity.getOrgName())
+                        .handbook(orgEntity.getHandbook())
 //                            .periods(createExperiment.getPeriods())
                         .build();
                 experimentOrgService.save(entity);

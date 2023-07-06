@@ -69,5 +69,14 @@ public class CaseOrgFeeDao extends BaseDao<CaseOrgFeeService, CaseOrgFeeEntity>{
                 .list();
     }
 
+    public List<CaseOrgFeeEntity> getFeeList(List<String> orgIds,SFunction<CaseOrgFeeEntity,?>... cols){
+        final boolean oneFlag=orgIds.size()==1;
+        return service.lambdaQuery()
+                .eq(oneFlag, CaseOrgFeeEntity::getCaseOrgId, orgIds.iterator().next())
+                .in(!oneFlag, CaseOrgFeeEntity::getCaseOrgId, orgIds)
+                .select(cols)
+                .list();
+    }
+
 
 }

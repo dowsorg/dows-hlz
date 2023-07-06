@@ -35,7 +35,7 @@ public class ExptOrgFlowValidator {
         this.experimentInstanceId=experimentInstanceId;
         this.experimentOrgId=experimentOrgId;
         this.experimentPersonId=experimentPersonId;
-        this.caseOrgId=caseOrgId;
+        this.uimOrgId =caseOrgId;
 
     }
 
@@ -43,11 +43,11 @@ public class ExptOrgFlowValidator {
 
     //region create
     public static ExptOrgFlowValidator create(ExptRequestValidator req){
-        return new ExptOrgFlowValidator(req.getAppId(),req.getExperimentInstanceId(),req.getExperimentOrgId(),req.getExperimentPersonId(),req.getCaseOrgId());
+        return new ExptOrgFlowValidator(req.getAppId(),req.getExperimentInstanceId(),req.getExperimentOrgId(),req.getExperimentPersonId(),req.getUimOrgId());
     }
 
-    public static ExptOrgFlowValidator create(String appId,String experimentInstanceId, String experimentOrgId,String experimentPersonId,String caseOrgId){
-        return new ExptOrgFlowValidator(appId, experimentInstanceId, experimentOrgId, experimentPersonId, caseOrgId);
+    public static ExptOrgFlowValidator create(String appId,String experimentInstanceId, String experimentOrgId,String experimentPersonId,String uimOrgId){
+        return new ExptOrgFlowValidator(appId, experimentInstanceId, experimentOrgId, experimentPersonId, uimOrgId);
     }
 
     //endregion
@@ -65,9 +65,9 @@ public class ExptOrgFlowValidator {
     //实验机构ID
     @Getter
     private String experimentOrgId;
-    //案例机构ID
+    //uim机构ID
     @Getter
-    private String caseOrgId;
+    private String uimOrgId;
 
     //挂号流程id
     @Getter
@@ -122,11 +122,11 @@ public class ExptOrgFlowValidator {
                 CaseOrgFeeEntity::getReimburseRatio);
     }
     public List<CaseOrgFeeEntity> getOrgFeeList(boolean assertNotEmpty, SFunction<CaseOrgFeeEntity,?>... cols){
-        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(caseOrgId))
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(uimOrgId))
                 .throwMessage("未找到案例机构ID");
         if(null==exptFeeList){
             exptFeeList= CrudContextHolder.getBean(CaseOrgFeeDao.class)
-                    .getFeeList(caseOrgId, cols);
+                    .getFeeList(uimOrgId, cols);
         }
         AssertUtil.trueThenThrow(assertNotEmpty&&ShareUtil.XObject.isEmpty(this.exptFeeList ))
                 .throwMessage("未找到机构费用设置");

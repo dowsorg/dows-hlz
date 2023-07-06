@@ -164,5 +164,17 @@ public class CaseEventDao extends BaseSubDao<CaseEventService, CaseEventEntity, 
     }
     //endregion
 
+    public List<CaseEventEntity> getCaseEventsByPersons(List<String> personIds,SFunction<CaseEventEntity,?>...cols){
+        if(ShareUtil.XObject.isEmpty(personIds)){
+            return Collections.emptyList();
+        }
+        final boolean oneFlag=personIds.size()==1;
+        return service.lambdaQuery()
+                .eq(oneFlag, CaseEventEntity::getPersonId,personIds.iterator().next())
+                .in(!oneFlag, CaseEventEntity::getPersonId,personIds)
+                .select(cols)
+                .list();
+    }
+
 
 }

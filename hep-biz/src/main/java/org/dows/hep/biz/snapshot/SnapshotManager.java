@@ -39,7 +39,6 @@ public class SnapshotManager implements ISnapshotWriter, ApplicationContextAware
                 return;
             }
             List<ISnapshotDbWriter> writers=map.values().stream()
-                    .filter(ISnapshotDbWriter::autoInjectFlag)
                     .sorted(Comparator.comparingInt(i->i.getSnapshotType().getWriteOrder()))
                     .collect(Collectors.toList());
             s_writers=writers;
@@ -51,10 +50,31 @@ public class SnapshotManager implements ISnapshotWriter, ApplicationContextAware
 
     @Override
     public boolean write(SnapshotRequest req) {
+       return write(req, false);
+    }
+
+    public boolean write(SnapshotRequest req,boolean incManual) {
         boolean rst=true;
         List<ISnapshotDbWriter> writers=s_writers;
         for(ISnapshotDbWriter item:writers){
+            if(!incManual&&item.manulFlag()){
+                continue;
+            }
             rst&=item.write(req);
+        }
+        return rst;
+    }
+    public boolean write(SnapshotRequest req,EnumSnapshotType snapshotType,EnumSnapshotType...snapshotTypes){
+        boolean rst=true;
+        List<ISnapshotDbWriter> writers=s_writers;
+        EnumSnapshotType itemSnapType;
+        for(ISnapshotDbWriter item:writers){
+            itemSnapType=item.getSnapshotType();
+            if(snapshotType==itemSnapType
+                    ||ShareUtil.XObject.notEmpty(snapshotTypes) &&ShareUtil.XArray.contains(snapshotTypes,itemSnapType))
+            {
+                rst&=item.write(req);
+            }
         }
         return rst;
     }
@@ -62,6 +82,14 @@ public class SnapshotManager implements ISnapshotWriter, ApplicationContextAware
     @DSTransactional
     public boolean writeWithTran(SnapshotRequest req){
         return write(req);
+    }
+    @DSTransactional
+    public boolean writeWithTran(SnapshotRequest req,boolean incManual){
+        return write(req, incManual);
+    }
+    @DSTransactional
+    public boolean writeWithTran(SnapshotRequest req,EnumSnapshotType snapshotType,EnumSnapshotType...snapshotTypes) {
+        return write(req,snapshotType,snapshotTypes);
     }
 
 

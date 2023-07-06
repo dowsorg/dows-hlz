@@ -1,5 +1,6 @@
 package org.dows.hep.biz.user.experiment;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
@@ -64,6 +65,9 @@ public class ExperimentCaseInfoBiz {
                 .orElseThrow(() -> new BizException(ExperimentESCEnum.PERIOD_NON_NULL));
 
         String caseInfo = getCaseInfo(experimentInstanceId, ExperimentCaseInfoEntity::getNotice, ExperimentCaseInfoEntity::getNotice);
+        if (StrUtil.isBlank(caseInfo)) {
+            return new ExptCaseNoticeDTO();
+        }
         HashMap periodMap = JSONUtil.toBean(caseInfo, HashMap.class);
         JSONObject object = (JSONObject) periodMap.get(String.valueOf(currentPeriod));
         return JSONUtil.toBean(object, ExptCaseNoticeDTO.class);

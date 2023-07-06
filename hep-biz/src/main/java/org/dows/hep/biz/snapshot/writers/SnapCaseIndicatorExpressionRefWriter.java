@@ -15,6 +15,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class SnapCaseIndicatorExpressionRefWriter extends BaseSnapshotFullTableWriter<CaseIndicatorExpressionRefEntity, CaseIndicatorExpressionRefService, SnapCaseIndicatorExpressionRefEntity, SnapCaseIndicatorExpressionRefService> {
     public SnapCaseIndicatorExpressionRefWriter() {
-        super(EnumSnapshotType.FOODMaterial, SnapCaseIndicatorExpressionRefEntity::new);
+        super(EnumSnapshotType.CASEIndicatorExpressionRef, SnapCaseIndicatorExpressionRefEntity::new);
     }
 }

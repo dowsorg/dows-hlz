@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Getter
@@ -17,15 +17,13 @@ public enum ExptSchemeStateEnum {
     private final Integer code;
     private final String name;
 
-    private static final Map<Integer, ExptSchemeStateEnum> codeMap = new LinkedHashMap<>();
+    private static final Map<Integer, ExptSchemeStateEnum> cacheByCode;
+
+    static {
+        cacheByCode = Arrays.stream(ExptSchemeStateEnum.values()).collect(Collectors.toMap(ExptSchemeStateEnum::getCode, item -> item));
+    }
 
     public static ExptSchemeStateEnum getByCode(Integer code) {
-        ExptSchemeStateEnum exptSchemeStateEnum = codeMap.get(code);
-        if (exptSchemeStateEnum == null) {
-            Arrays.stream(ExptSchemeStateEnum.values())
-                    .forEach(item -> codeMap.put(item.getCode(), item));
-            exptSchemeStateEnum = codeMap.get(code);
-        }
-        return exptSchemeStateEnum;
+        return cacheByCode.get(code);
     }
 }

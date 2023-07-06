@@ -123,7 +123,8 @@ public class SuspendHandler extends AbstractEventHandler implements EventHandler
                 }
             }
         }
-
+        // 重置定时任务
+        experimentTaskScheduler.resetSchedule();
 
     }
 }

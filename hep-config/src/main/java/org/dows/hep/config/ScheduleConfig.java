@@ -3,16 +3,10 @@ package org.dows.hep.config;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
-
-import java.util.Timer;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ThreadPoolExecutor;
 
 @Slf4j
 @Configuration
@@ -56,33 +50,5 @@ public class ScheduleConfig implements SchedulingConfigurer {
 
     }
 
-    /**
-     * 线程池 执行定时定时任务
-     *
-     * @return
-     */
-    @Bean("taskExecutor")
-    public Executor taskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        //表示线程池核心线程，正常情况下开启的线程数量。
-        executor.setCorePoolSize(3);
-        //配置队列大小
-        executor.setQueueCapacity(2);
-        //当核心线程都在跑任务，还有多余的任务会存到此处。
-        executor.setMaxPoolSize(5);
-        //非核心线程的超时时长，超长后会被回收。
-        executor.setKeepAliveSeconds(60);
-        //配置线程池前缀
-        executor.setThreadNamePrefix("HepThreadPool-");
-        //用来设置线程池关闭的时候等待所有任务都完成再继续销毁其他的Bean
-        executor.setWaitForTasksToCompleteOnShutdown(true);
-        //配置拒绝策略
-        executor.setRejectedExecutionHandler((Runnable r, ThreadPoolExecutor exe) -> {
-            log.warn("HepThreadPool-当前任务线程池队列已满!");
-        });
-        //初始化线程池
-        executor.initialize();
-        return executor;
 
-    }
 }

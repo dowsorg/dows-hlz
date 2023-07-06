@@ -71,9 +71,9 @@ public class ExptRequestValidator {
     @Getter
     private String caseInstanceId;
 
-    //案例机构ID
+    //uim机构ID
     @Getter
-    private String caseOrgId;
+    private String uimOrgId;
     //案例人物ID
     @Getter
     private String casePersonId;
@@ -211,6 +211,7 @@ public class ExptRequestValidator {
                 ExperimentOrgEntity::getExperimentOrgName,
                 ExperimentOrgEntity::getExperimentInstanceId,
                 ExperimentOrgEntity::getExperimentGroupId,
+                ExperimentOrgEntity::getOrgId,
                 ExperimentOrgEntity::getCaseOrgId,
                 ExperimentOrgEntity::getCaseOrgName);
     }
@@ -232,8 +233,8 @@ public class ExptRequestValidator {
         if(ShareUtil.XObject.isEmpty(experimentGroupId)&&ShareUtil.XObject.notEmpty(rst.getExperimentGroupId())){
             experimentGroupId=rst.getExperimentGroupId();
         }
-        if(ShareUtil.XObject.isEmpty(caseOrgId)&&ShareUtil.XObject.notEmpty(rst.getCaseOrgId())){
-            caseOrgId=rst.getCaseOrgId();
+        if(ShareUtil.XObject.isEmpty(uimOrgId)&&ShareUtil.XObject.notEmpty(rst.getOrgId())){
+            uimOrgId =rst.getOrgId();
         }
         return rst;
     }

@@ -142,6 +142,7 @@ public class InterveneCategBiz {
             }
             return CopyWrapper.create(InterveneCategoryEntity::new)
                     .endFrom(i)
+                    .setAppId(appId)
                     .setFamily(family)
                     .setCategPid(pid)
                     .setInterveneCategoryId(i.getCategId())

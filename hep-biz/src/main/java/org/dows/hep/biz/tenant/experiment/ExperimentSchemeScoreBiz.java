@@ -40,8 +40,8 @@ public class ExperimentSchemeScoreBiz {
     private final ExperimentParticipatorService experimentParticipatorService;
 
     /**
-     * @param
-     * @return
+     * @param experimentInstanceId - 实验实例ID
+     * @param caseInstanceId       - 案例实例ID
      * @author fhb
      * @description 必须在 `ExperimentSchemeManageBiz` 之后执行
      * @date 2023/6/15 20:36
@@ -120,11 +120,11 @@ public class ExperimentSchemeScoreBiz {
     }
 
     /**
+     * @param
+     * @return
      * @author fhb
      * @description 获取方案设计评分表
      * @date 2023/6/15 21:35
-     * @param
-     * @return
      */
     public List<ExperimentSchemeScoreResponse> listSchemeScore(String experimentSchemeId, String reviewAccountId) {
         Assert.notNull(experimentSchemeId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());

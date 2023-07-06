@@ -68,8 +68,9 @@ public class ExperimentTimerBiz {
         for (int i = 0; i < list.size(); i++) {
             ExperimentTimerEntity pre = list.get(i);
             ExperimentTimerEntity next;
+            // 最后一期
             if (i == list.size() - 1) {
-                countDownResponse.setCountdown(0L);
+                countDownResponse.setCountdown(pre.getStartTime() - ct);
                 countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
                 countDownResponse.setModel(pre.getModel());
                 countDownResponse.setPeriod(pre.getPeriod());
@@ -210,6 +211,26 @@ public class ExperimentTimerBiz {
                 //.eq(ExperimentTimerEntity::getAppId, experimentRestartRequest.getAppId())
                 .list();
         return list;
+    }
+
+
+    /**
+     * 根据实验状态获取最后期数的计时器
+     *
+     * @param experimentInstanceId
+     * @return
+     */
+    public ExperimentTimerEntity getLastPeriods(String experimentInstanceId, EnumExperimentState enumExperimentState) {
+        List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
+                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
+                .ne(ExperimentTimerEntity::getState, enumExperimentState.getState())
+                //.eq(ExperimentTimerEntity::getAppId, experimentRestartRequest.getAppId())
+                .list();
+        ExperimentTimerEntity experimentTimerEntity = list.stream()
+                .max(Comparator.comparingInt(ExperimentTimerEntity::getPeriod))
+                .get();
+
+        return experimentTimerEntity;
     }
 
 
