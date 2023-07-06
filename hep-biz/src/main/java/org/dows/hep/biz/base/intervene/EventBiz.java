@@ -102,6 +102,7 @@ public class EventBiz{
             }
             return CopyWrapper.create(EventCategEntity::new)
                     .endFrom(i)
+                    .setAppId(appId)
                     .setFamily(evencategFamily.getCode())
                     .setEventCategId(i.getCategId())
                     .setCategPid(pid)

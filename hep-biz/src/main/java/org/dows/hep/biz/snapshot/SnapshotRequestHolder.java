@@ -25,6 +25,9 @@ public class SnapshotRequestHolder {
     }
 
     public static String getRefExperimentId(EnumSnapshotType snapshotType){
+        if(!hasSnapshotRequest()){
+            return null;
+        }
         HttpServletRequest request=getHttpRequest();
         String refExperimentId=(String)request.getAttribute(snapshotType.getCode());
         if(ShareUtil.XObject.notEmpty(refExperimentId)){

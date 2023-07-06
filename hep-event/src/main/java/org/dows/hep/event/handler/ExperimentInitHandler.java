@@ -1,18 +1,26 @@
 package org.dows.hep.event.handler;
 
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.dows.account.request.AccountGroupRequest;
 import org.dows.account.response.AccountGroupResponse;
 import org.dows.account.response.AccountInstanceResponse;
 import org.dows.hep.api.ExperimentContext;
 import org.dows.hep.api.base.evaluate.EvaluateEnabledEnum;
+import org.dows.hep.api.base.indicator.request.RsCopyCrowdsAndRiskModelRequestRs;
+import org.dows.hep.api.base.indicator.request.RsCopyIndicatorFuncRequestRs;
+import org.dows.hep.api.base.indicator.request.RsCopyPersonIndicatorRequestRs;
 import org.dows.hep.api.enums.EnumExperimentState;
+import org.dows.hep.api.exception.ExperimentInitHanlderException;
 import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
 import org.dows.hep.api.tenant.experiment.request.ExperimentGroupSettingRequest;
+import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.organization.request.CaseOrgRequest;
 import org.dows.hep.api.user.organization.response.CaseOrgResponse;
+import org.dows.hep.biz.base.indicator.RsCopyBiz;
 import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentCaseInfoManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
@@ -21,14 +29,18 @@ import org.dows.hep.biz.tenant.experiment.ExperimentSchemeManageBiz;
 import org.dows.hep.biz.task.ExperimentBeginTimerTask;
 import org.dows.hep.biz.task.ExperimentTaskScheduler;
 import org.dows.hep.entity.ExperimentInstanceEntity;
+import org.dows.hep.entity.ExperimentSettingEntity;
 import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentParticipatorService;
+import org.dows.hep.service.ExperimentSettingService;
 import org.dows.hep.service.ExperimentTimerService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 实验初始化
@@ -54,9 +66,12 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
     private final ApplicationEventPublisher applicationEventPublisher;
 
     private final ExperimentTaskScheduler experimentTaskScheduler;
+    private final RsCopyBiz rsCopyBiz;
 
-    @Override
-    public void exec(ExperimentGroupSettingRequest request) {
+    private final ExperimentSettingService experimentSettingService;
+
+//    @Override
+    public void execOld(ExperimentGroupSettingRequest request) {
         String experimentInstanceId = request.getExperimentInstanceId();
         String caseInstanceId = request.getCaseInstanceId();
         // 设置实验开始定时器
@@ -71,6 +86,71 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
         experimentSchemeManageBiz.preHandleExperimentScheme(experimentInstanceId, caseInstanceId);
         // 初始化实验 `知识答题` 数据
         experimentQuestionnaireManageBiz.preHandleExperimentQuestionnaire(experimentInstanceId, caseInstanceId);
+    }
+
+    @Override
+    public void exec(ExperimentGroupSettingRequest request) {
+        String experimentInstanceId = request.getExperimentInstanceId();
+        String caseInstanceId = request.getCaseInstanceId();
+        ExperimentInstanceEntity experimentInstanceEntity = experimentInstanceService.lambdaQuery()
+            .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
+            .oneOpt()
+            .orElseThrow(() -> {
+                log.error("实验id:{} 在数据库不存在", experimentInstanceId);
+                throw new ExperimentInitHanlderException(String.format("初始化实验前端传过来的id:%s 对应的实验不存在", experimentInstanceId));
+            });
+        String appId = experimentInstanceEntity.getAppId();
+        List<ExperimentSettingEntity> experimentSettingEntityList = experimentSettingService.lambdaQuery()
+            .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
+            .list();
+        AtomicReference<ExperimentSetting.SandSetting> sandSettingAtomicReference = new AtomicReference<>();
+        AtomicBoolean hasSchemeSettingAtomicBoolean  = new AtomicBoolean(Boolean.FALSE);
+        AtomicBoolean hasSandSettingAtomicBoolean  = new AtomicBoolean(Boolean.FALSE);
+        experimentSettingEntityList.forEach(experimentSettingEntity -> {
+            if (StringUtils.equals(ExperimentSetting.SchemeSetting.class.getName(), experimentSettingEntity.getConfigKey())) {
+                hasSchemeSettingAtomicBoolean.set(Boolean.TRUE);
+            } else if (StringUtils.equals(ExperimentSetting.SandSetting.class.getName(), experimentSettingEntity.getConfigKey())) {
+                hasSandSettingAtomicBoolean.set(Boolean.TRUE);
+                sandSettingAtomicReference.set(JSONUtil.toBean(experimentSettingEntity.getConfigJsonVals(), ExperimentSetting.SandSetting.class));
+            }
+        });
+        // 设置实验开始定时器
+        setExperimentBeginTimerTask(request);
+        // 初始化实验 `设置小组` 个数
+        createGroupEvent(request);
+        // 初始化实验 `复制机构和人物`
+        copyExperimentPersonAndOrgEvent(request);
+        // 初始化实验 `社区基本信息`
+        experimentCaseInfoManageBiz.preHandleCaseInfo(experimentInstanceId, caseInstanceId);
+        // 初始化实验 `方案设计` 数据
+        experimentSchemeManageBiz.preHandleExperimentScheme(experimentInstanceId, caseInstanceId);
+        // 初始化实验 `知识答题` 数据
+        experimentQuestionnaireManageBiz.preHandleExperimentQuestionnaire(experimentInstanceId, caseInstanceId);
+        /* runsix:初始化实验 '复制人物指标以及人物指标的公式到实验' */
+        if (hasSandSettingAtomicBoolean.get()) {
+            ExperimentSetting.SandSetting sandSetting = sandSettingAtomicReference.get();
+            Integer periods = sandSetting.getPeriods();
+            rsCopyBiz.rsCopyPersonIndicator(RsCopyPersonIndicatorRequestRs
+              .builder()
+              .appId(appId)
+              .experimentInstanceId(experimentInstanceId)
+              .caseInstanceId(caseInstanceId)
+              .periods(periods)
+              .build());
+          /* runsix:初始化实验 '复制人群类型以及死亡原因以及公式到实验' */
+          rsCopyBiz.rsCopyCrowdsAndRiskModel(RsCopyCrowdsAndRiskModelRequestRs
+              .builder()
+              .appId(appId)
+              .experimentInstanceId(experimentInstanceId)
+              .build());
+          /* runsix:初始化实验 '复制功能点到实验' */
+          rsCopyBiz.rsCopyIndicatorFunc(RsCopyIndicatorFuncRequestRs
+              .builder()
+              .appId(appId)
+              .experimentInstanceId(experimentInstanceId)
+              .caseInstanceId(caseInstanceId)
+              .build());
+        }
     }
 
     /**
