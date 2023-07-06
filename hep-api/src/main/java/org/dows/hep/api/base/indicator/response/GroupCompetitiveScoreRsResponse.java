@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.List;
+import java.math.BigDecimal;
 
 /**
  * @author runsix
@@ -16,7 +16,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RsCalculateCompetitivePointRsResponse implements Serializable {
-  @Schema(title = "小组竞争性得分列表")
-  List<GroupCompetitivePointRsResponse> groupCompetitivePointRsResponseList;
+public class GroupCompetitiveScoreRsResponse implements Serializable {
+  @Schema(title = "小组id")
+  private String experimentGroupId;
+
+  @Schema(title = "小组竞争性健康指数得分")
+  private BigDecimal groupCompetitiveScore;
 }

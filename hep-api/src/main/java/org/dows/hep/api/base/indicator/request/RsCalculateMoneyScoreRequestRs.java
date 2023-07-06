@@ -15,7 +15,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RsCalculateCompetitivePointRequestRs implements Serializable {
+public class RsCalculateMoneyScoreRequestRs implements Serializable {
   @Schema(title = "实验id")
   private String experimentId;
 

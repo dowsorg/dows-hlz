@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author runsix
@@ -15,10 +16,13 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RsCalculateMoneyPointRequestRs implements Serializable {
+public class RsCalculateHealthScoreRequestRs implements Serializable {
   @Schema(title = "appId")
   private String appId;
 
+  @Schema(title = "实验id")
+  private String experimentId;
+
   @Schema(title = "实验人物id")
-  private String experimentPersonId;
+  private List<String> experimentPersonIdList;
 }
