@@ -39,7 +39,7 @@ public class SnapshotManager implements ISnapshotWriter, ApplicationContextAware
                 return;
             }
             List<ISnapshotDbWriter> writers=map.values().stream()
-                    .filter(ISnapshotDbWriter::autoInjectFlag)
+                    .filter(ISnapshotDbWriter::autoWriteFlag)
                     .sorted(Comparator.comparingInt(i->i.getSnapshotType().getWriteOrder()))
                     .collect(Collectors.toList());
             s_writers=writers;
@@ -51,6 +51,15 @@ public class SnapshotManager implements ISnapshotWriter, ApplicationContextAware
 
     @Override
     public boolean write(SnapshotRequest req) {
+        boolean rst=true;
+        List<ISnapshotDbWriter> writers=s_writers;
+        for(ISnapshotDbWriter item:writers){
+            rst&=item.write(req);
+        }
+        return rst;
+    }
+
+    public boolean write(SnapshotRequest req,boolean inc) {
         boolean rst=true;
         List<ISnapshotDbWriter> writers=s_writers;
         for(ISnapshotDbWriter item:writers){

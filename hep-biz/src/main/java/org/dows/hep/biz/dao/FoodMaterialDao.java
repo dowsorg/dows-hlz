@@ -6,8 +6,6 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.dows.hep.api.base.intervene.request.FindFoodRequest;
-import org.dows.hep.biz.snapshot.*;
-import org.dows.hep.biz.snapshot.converters.FoodMaterialLamdaConverter;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.FoodMaterialEntity;
@@ -103,8 +101,8 @@ public class FoodMaterialDao extends BaseSubDao<FoodMaterialService,FoodMaterial
     public IPage<FoodMaterialEntity> pageByCondition(FindFoodRequest req, SFunction<FoodMaterialEntity, ?>... cols) {
         Page<FoodMaterialEntity> page = Page.of(req.getPageNo(), req.getPageSize());
         page.addOrder(OrderItem.asc("categ_name_lv1"),OrderItem.asc("energy"));
-        return SnapshotReadAdapter.create(EnumSnapshotType.FOODMaterial,service,snapFoodMaterialService, FoodMaterialLamdaConverter.Instance())
-                .selectAs(cols)
+        return service.lambdaQuery()
+                .select(cols)
                 .eq(ShareUtil.XObject.notEmpty(req.getAppId()), FoodMaterialEntity::getAppId,req.getAppId())
                 .in(ShareUtil.XCollection.notEmpty(req.getCategIdLv1()), FoodMaterialEntity::getCategIdLv1, req.getCategIdLv1())
                 .like(ShareUtil.XString.hasLength(req.getKeywords()), FoodMaterialEntity::getFoodMaterialName, req.getKeywords())
