@@ -70,7 +70,7 @@ public class ExperimentScoringBiz {
         BigDecimal finalKnowledgeScore = knowledgeScore.multiply(knowledgeWeight);
         BigDecimal finalHealthIndexScore = healthIndexScore.multiply(healthIndexWeight);
         BigDecimal finalMedicalRatioScoreScore = medicalRatioScore.multiply(medicalRatioWeight);
-        return finalKnowledgeScore.add(finalHealthIndexScore).add(finalMedicalRatioScoreScore);
+        return finalKnowledgeScore.add(finalHealthIndexScore).add(finalMedicalRatioScoreScore).divide(BigDecimal.valueOf(100), 2, RoundingMode.DOWN);
     }
 
     @Transactional(rollbackFor = Exception.class)
