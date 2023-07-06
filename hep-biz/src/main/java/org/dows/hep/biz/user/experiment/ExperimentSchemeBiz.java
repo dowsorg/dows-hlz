@@ -87,6 +87,14 @@ public class ExperimentSchemeBiz {
         return result;
     }
 
+    /**
+     * @param experimentInstanceId - 实验实例ID
+     * @param experimentGroupId - 实验小组ID
+     * @return org.dows.hep.api.user.experiment.response.ExperimentSchemeStateResponse
+     * @author fhb
+     * @description 获取方案设计状态
+     * @date 2023/7/6 17:51
+     */
     public ExperimentSchemeStateResponse getSchemeState(String experimentInstanceId, String experimentGroupId) {
         if (StrUtil.isBlank(experimentGroupId) || StrUtil.isBlank(experimentInstanceId)) {
             throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);

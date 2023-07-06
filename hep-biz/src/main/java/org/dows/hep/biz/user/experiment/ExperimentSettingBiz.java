@@ -105,6 +105,38 @@ public class ExperimentSettingBiz {
         return Boolean.FALSE;
     }
 
+    /**
+     * 根据实验实例ID获取实验是否包含 `沙盘` 模式
+     *
+     * @param exptInstanceId - 实验实例ID
+     * @return boolean
+     * @date 2023/7/5 15:24
+     */
+    public boolean containsSandAndScheme(String exptInstanceId) {
+        List<ExperimentSettingEntity> settingList = listExptSetting(exptInstanceId);
+        if (CollUtil.isEmpty(settingList)) {
+            return Boolean.FALSE;
+        }
+
+        int size = settingList.size();
+        if (size == 1) {
+            return Boolean.FALSE;
+        }
+
+        boolean containsSand = Boolean.FALSE;
+        boolean containsScheme = Boolean.FALSE;
+        for (ExperimentSettingEntity settingEntity : settingList) {
+            String configKey = settingEntity.getConfigKey();
+            if (ExperimentSetting.SandSetting.class.getName().equals(configKey)) {
+                containsSand = Boolean.TRUE;
+            }
+            if (ExperimentSetting.SchemeSetting.class.getName().equals(configKey)) {
+                containsScheme = Boolean.TRUE;
+            }
+        }
+        return containsSand && containsScheme;
+    }
+
     private ExperimentSettingEntity getSchemeSetting0(String exptInstanceId) {
         List<ExperimentSettingEntity> settingList = listExptSetting(exptInstanceId);
         if (CollUtil.isEmpty(settingList)) {
