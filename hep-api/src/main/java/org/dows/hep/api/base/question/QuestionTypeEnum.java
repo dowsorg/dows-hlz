@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Getter
@@ -20,7 +20,11 @@ public enum QuestionTypeEnum {
     private final String code;
     private final String name;
 
-    private final static Map<String, QuestionTypeEnum> codeMap = new LinkedHashMap<>();
+    private static final Map<String, QuestionTypeEnum> cacheByCode;
+
+    static {
+        cacheByCode = Arrays.stream(QuestionTypeEnum.values()).collect(Collectors.toMap(QuestionTypeEnum::getCode, item -> item));
+    }
 
     // 是否是选择题
     public static boolean isSelect(String code) {
@@ -38,13 +42,7 @@ public enum QuestionTypeEnum {
     }
 
     public static QuestionTypeEnum getByCode(String code) {
-        QuestionTypeEnum questionTypeEnum = codeMap.get(code);
-        if (questionTypeEnum == null) {
-            Arrays.stream(QuestionTypeEnum.values())
-                    .forEach(item -> codeMap.put(item.getCode(), item));
-            questionTypeEnum = codeMap.get(code);
-        }
-        return questionTypeEnum;
+        return cacheByCode.get(code);
     }
 
     public static String getNameByCode(String code) {
