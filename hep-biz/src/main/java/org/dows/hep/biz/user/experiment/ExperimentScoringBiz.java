@@ -293,6 +293,9 @@ public class ExperimentScoringBiz {
 
     }
 
+
+//    public
+
     public ExperimentRankResponse getRank(String experimentId) {
         List<ExperimentRankItemResponse> experimentRankItemResponseList = new ArrayList<>();
         List<ExperimentTotalRankItemResponse> experimentTotalRankItemResponseList = new ArrayList<>();
