@@ -82,11 +82,13 @@ public class ExperimentIndicatorViewBaseInfoRsBiz {
         .list();
     experimentIndicatorViewBaseInfoDescRsEntityList.forEach(experimentIndicatorViewBaseInfoDescRsEntity -> {
       String indicatorInstanceIdArray = experimentIndicatorViewBaseInfoDescRsEntity.getIndicatorInstanceIdArray();
+      String name = experimentIndicatorViewBaseInfoDescRsEntity.getName();
       List<ExperimentIndicatorInstanceRsResponse> experimentIndicatorInstanceRsResponseList = new ArrayList<>();
       populateExperimentIndicatorInstanceRsResponseList(experimentIndicatorInstanceRsResponseList, indicatorInstanceIdArray,
           kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap, kInstanceIdVExperimentIndicatorInstanceIdMap, kExperimentIndicatorInstanceIdVValMap);
       experimentIndicatorViewBaseInfoDescrRsResponseList.add(ExperimentIndicatorViewBaseInfoDescrRsResponse
           .builder()
+          .name(name)
           .experimentIndicatorInstanceRsResponseList(experimentIndicatorInstanceRsResponseList)
           .build());
     });
