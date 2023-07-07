@@ -3,11 +3,14 @@ package org.dows.hep.rest.user.experiment;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.indicator.response.ExperimentGraphRankResponse;
 import org.dows.hep.api.base.indicator.response.ExperimentRankResponse;
 import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author runsix
@@ -22,5 +25,15 @@ public class ExperimentScoringRest {
   @GetMapping("v1/userExperiment/experimentScore/getRank")
   public ExperimentRankResponse getRank(@RequestParam String experimentId) {
     return experimentScoringBiz.getRank(experimentId);
+  }
+
+  @Operation(summary = "实验每一期图标排行榜")
+  @GetMapping("v1/userExperiment/experimentScore/getGraphRank")
+  public ExperimentGraphRankResponse getPeriodGraphRank(
+      @RequestParam String appId,
+      @RequestParam String experimentId,
+      @RequestParam(required = false) Integer period
+      ) throws ExecutionException, InterruptedException {
+    return experimentScoringBiz.getGraphRank(appId, experimentId, period);
   }
 }
