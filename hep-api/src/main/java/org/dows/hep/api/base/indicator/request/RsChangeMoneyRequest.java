@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * @author runsix
@@ -29,5 +30,5 @@ public class RsChangeMoneyRequest implements Serializable {
   private Integer periods;
 
   @Schema(title = "金钱变化值")
-  private Double moneyChange;
+  private BigDecimal moneyChange;
 }

@@ -50,7 +50,7 @@ public class ExperimentIndicatorInstanceRsBiz {
     String experimentId = rsChangeMoneyRequest.getExperimentId();
     String experimentPersonId = rsChangeMoneyRequest.getExperimentPersonId();
     Integer periods = rsChangeMoneyRequest.getPeriods();
-    Double moneyChange = rsChangeMoneyRequest.getMoneyChange();
+    BigDecimal moneyChange = rsChangeMoneyRequest.getMoneyChange();
     if (Objects.isNull(periods)) {
       ExperimentPeriodsResonse experimentPeriods = experimentTimerBiz.getExperimentPeriods(appId, experimentId);
       if (Objects.nonNull(experimentPeriods) && Objects.nonNull(experimentPeriods.getCurrentPeriod())) {
@@ -71,7 +71,7 @@ public class ExperimentIndicatorInstanceRsBiz {
     String min = experimentIndicatorValRsEntity.getMin();
     String max = experimentIndicatorValRsEntity.getMax();
     String moneyCurrentVal = experimentIndicatorValRsEntity.getCurrentVal();
-    BigDecimal newMoneyCurrentVal = BigDecimal.valueOf(Double.parseDouble(moneyCurrentVal)).add(BigDecimal.valueOf(moneyChange));
+    BigDecimal newMoneyCurrentVal = BigDecimal.valueOf(Double.parseDouble(moneyCurrentVal)).add(moneyChange);
     if (newMoneyCurrentVal.compareTo(BigDecimal.valueOf(Double.parseDouble(min))) < 0) {
       newMoneyCurrentVal = BigDecimal.valueOf(Double.parseDouble(min));
     } else if (newMoneyCurrentVal.compareTo(BigDecimal.valueOf(Double.parseDouble(max))) > 0) {

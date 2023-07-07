@@ -93,7 +93,7 @@ public class TagsManageBiz {
             .builder()
             .reasonId(tagsId)
             .appId(manageRequest.getAppId())
-            .source(EnumIndicatorExpressionSource.LABEL_MANAGEMENT.getType())
+            .source(EnumIndicatorExpressionSource.LABEL_MANAGEMENT.getSource())
             .indicatorExpressionIdList(indicatorExpressionIdList)
             .build());
         return flag;

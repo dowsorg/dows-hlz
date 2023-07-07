@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author runsix
@@ -26,13 +29,30 @@ public enum EnumIndicatorExpressionSource {
   RISK_MODEL(12, "死亡模型"),
   ;
 
-  private final Integer type;
+  private final Integer source;
   private final String name;
+
+  public final static Map<Integer, EnumIndicatorExpressionSource> kTypeVEnumIndicatorExpressionSourceMap = new HashMap<>();
+
+  static {
+    for (EnumIndicatorExpressionSource enumIndicatorExpressionSource : EnumIndicatorExpressionSource.values()) {
+      kTypeVEnumIndicatorExpressionSourceMap.put(
+          enumIndicatorExpressionSource.getSource(), enumIndicatorExpressionSource
+      );
+    }
+  }
 
   public static EnumIndicatorExpressionSource of(Integer code){
     return Arrays.stream(EnumIndicatorExpressionSource.values())
-            .filter(i->i.getType().equals(code))
+            .filter(i->i.getSource().equals(code))
             .findFirst()
             .orElse(NONE);
+  }
+
+  public static EnumIndicatorExpressionSource getBySource(Integer source) {
+    if (Objects.isNull(source)) {
+      return null;
+    }
+    return kTypeVEnumIndicatorExpressionSourceMap.get(source);
   }
 }
