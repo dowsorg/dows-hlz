@@ -16,5 +16,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class ExperimentIndicatorViewBaseInfoDescrRsResponse implements Serializable {
+  private String name;
   private List<ExperimentIndicatorInstanceRsResponse> experimentIndicatorInstanceRsResponseList;
 }
