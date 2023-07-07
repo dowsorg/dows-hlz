@@ -1,7 +1,5 @@
 package org.dows.hep.biz.user.experiment;
 
-import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +12,7 @@ import org.dows.hep.api.enums.EnumCalcCode;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.exception.ExperimentScoringException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
-import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
+import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
 import org.dows.hep.biz.base.indicator.RsCalculateBiz;
 import org.dows.hep.entity.ExperimentGroupEntity;
 import org.dows.hep.entity.ExperimentScoringEntity;
@@ -62,7 +60,7 @@ public class ExperimentScoringBiz {
     private final ExperimentGroupService experimentGroupService;
     private final RsCalculateBiz rsCalculateBiz;
 
-    private BigDecimal getTotalScore(
+    private BigDecimal getWeightTotalScore(
         BigDecimal knowledgeWeight, BigDecimal knowledgeScore,
         BigDecimal healthIndexWeight, BigDecimal healthIndexScore,
         BigDecimal medicalRatioWeight, BigDecimal medicalRatioScore
@@ -70,7 +68,7 @@ public class ExperimentScoringBiz {
         BigDecimal finalKnowledgeScore = knowledgeScore.multiply(knowledgeWeight);
         BigDecimal finalHealthIndexScore = healthIndexScore.multiply(healthIndexWeight);
         BigDecimal finalMedicalRatioScoreScore = medicalRatioScore.multiply(medicalRatioWeight);
-        return finalKnowledgeScore.add(finalHealthIndexScore).add(finalMedicalRatioScoreScore);
+        return finalKnowledgeScore.add(finalHealthIndexScore).add(finalMedicalRatioScoreScore).divide(BigDecimal.valueOf(100), 2, RoundingMode.DOWN);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -213,6 +211,8 @@ public class ExperimentScoringBiz {
             experimentGroupEntityList.forEach(experimentGroupEntity -> {
                 String experimentGroupId = experimentGroupEntity.getExperimentGroupId();
                 String groupName = experimentGroupEntity.getGroupName();
+                String groupNo = experimentGroupEntity.getGroupNo();
+                String groupAlias = experimentGroupEntity.getGroupAlias();
                 BigDecimal questionnaireScoreBigDecimal = questionnaireScoreMap.get(experimentGroupId);
                 if (Objects.isNull(questionnaireScoreBigDecimal)) {
                     questionnaireScoreBigDecimal = BigDecimal.ZERO;
@@ -225,7 +225,7 @@ public class ExperimentScoringBiz {
                 if (Objects.isNull(groupIdVGroupMoneyScoreBigDecimal)) {
                     groupIdVGroupMoneyScoreBigDecimal = BigDecimal.ZERO;
                 }
-                BigDecimal totalScoreBigDecimal = getTotalScore(
+                BigDecimal totalScoreBigDecimal = getWeightTotalScore(
                     BigDecimal.valueOf(knowledgeWeightAtomicReference.get()), questionnaireScoreBigDecimal,
                     BigDecimal.valueOf(healthIndexWeightAtomicReference.get()), groupCompetitiveScoreBigDecimal,
                     BigDecimal.valueOf(medicalRatioWeightAtomicReference.get()), groupIdVGroupMoneyScoreBigDecimal
@@ -235,7 +235,9 @@ public class ExperimentScoringBiz {
                     .experimentScoringId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentInstanceId)
                     .experimentGroupId(experimentGroupId)
+                    .experimentGroupNo(groupNo)
                     .experimentGroupName(groupName)
+                    .experimentGroupAlias(groupAlias)
                     .knowledgeScore(questionnaireScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
                     .healthIndexScore(groupCompetitiveScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
                     .treatmentPercentScore(groupIdVGroupMoneyScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
@@ -290,6 +292,9 @@ public class ExperimentScoringBiz {
     public void hepTotalScoring() {
 
     }
+
+
+//    public
 
     public ExperimentRankResponse getRank(String experimentId) {
         List<ExperimentRankItemResponse> experimentRankItemResponseList = new ArrayList<>();
@@ -428,6 +433,91 @@ public class ExperimentScoringBiz {
             .totalPeriod(totalPeriods)
             .experimentRankItemResponseList(experimentRankItemResponseList)
             .experimentTotalRankItemResponseList(experimentTotalRankItemResponseList)
+            .build();
+    }
+
+    public ExperimentGraphRankResponse getGraphRank(String appId, String experimentId, Integer period) throws ExecutionException, InterruptedException {
+        if (Objects.isNull(period)) {
+            ExperimentPeriodsResonse experimentPeriods = experimentTimerBiz.getExperimentPeriods(appId, experimentId);
+            if (Objects.nonNull(experimentPeriods) && Objects.nonNull(experimentPeriods.getCurrentPeriod())) {
+                period = experimentPeriods.getCurrentPeriod();
+            } else {
+                period = 1;
+            }
+        }
+        Map<String, ExperimentGroupEntity> kExperimentGroupIdVExperimentGroupEntityMap = experimentGroupService.lambdaQuery()
+            .eq(ExperimentGroupEntity::getExperimentInstanceId, experimentId)
+            .list()
+            .stream()
+            .collect(Collectors.toMap(ExperimentGroupEntity::getExperimentGroupId, a->a));
+
+        AtomicReference<Float> knowledgeWeightAtomicReference = new AtomicReference<>(0F);
+        AtomicReference<Float> healthIndexWeightAtomicReference = new AtomicReference<>(0F);
+        AtomicReference<Float> medicalRatioWeightAtomicReference = new AtomicReference<>(0F);
+        CompletableFuture<Void> populateWeightCF = getPopulateWeightCF(knowledgeWeightAtomicReference, healthIndexWeightAtomicReference, medicalRatioWeightAtomicReference, experimentId);
+        populateWeightCF.get();
+
+        Map<String, ExperimentScoringEntity> kExperimentGroupIdVExperimentScoringEntityMap = new HashMap<>();
+        experimentScoringService.lambdaQuery()
+            .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
+            .eq(ExperimentScoringEntity::getPeriods, period)
+            .list()
+            .forEach(experimentScoringEntity -> {
+                String experimentGroupId = experimentScoringEntity.getExperimentGroupId();
+                ExperimentScoringEntity experimentScoringEntity1 = kExperimentGroupIdVExperimentScoringEntityMap.get(experimentGroupId);
+                if (Objects.isNull(experimentScoringEntity1)) {
+                    kExperimentGroupIdVExperimentScoringEntityMap.put(experimentGroupId, experimentScoringEntity);
+                } else {
+                    Integer scoringCount = experimentScoringEntity.getScoringCount();
+                    Integer scoringCount1 = experimentScoringEntity1.getScoringCount();
+                    if (scoringCount > scoringCount1) {
+                        kExperimentGroupIdVExperimentScoringEntityMap.put(experimentGroupId, experimentScoringEntity);
+                    }
+                }
+            });
+
+        Map<String, ExperimentGraphRankGroupResponse> kExperimentGroupIdVExperimentGraphRankGroupResponseMap = new HashMap<>();
+        kExperimentGroupIdVExperimentGroupEntityMap.forEach((experimentGroupId, experimentGroupEntity) -> {
+            String knowledgeScore = "0";
+            String percentKnowledgeScore = "0";
+            String healthIndexScore = "0";
+            String percentHealthIndexScore = "0";
+            String treatmentPercentScore = "0";
+            String percentTreatmentPercentScore = "0";
+            String totalScore = "0";
+            ExperimentScoringEntity experimentScoringEntity = kExperimentGroupIdVExperimentScoringEntityMap.get(experimentGroupId);
+            if (Objects.nonNull(experimentScoringEntity)) {
+                totalScore = experimentScoringEntity.getTotalScore();
+                knowledgeScore = experimentScoringEntity.getKnowledgeScore();
+                percentKnowledgeScore = BigDecimal.valueOf(Double.parseDouble(knowledgeScore)).multiply(BigDecimal.valueOf(knowledgeWeightAtomicReference.get())).divide(BigDecimal.valueOf(100), 2, RoundingMode.DOWN).divide(BigDecimal.valueOf(Double.parseDouble(totalScore)), 2, RoundingMode.DOWN).toString();
+                healthIndexScore = experimentScoringEntity.getHealthIndexScore();
+                percentHealthIndexScore = BigDecimal.valueOf(Double.parseDouble(healthIndexScore)).multiply(BigDecimal.valueOf(healthIndexWeightAtomicReference.get())).divide(BigDecimal.valueOf(100), 2, RoundingMode.DOWN).divide(BigDecimal.valueOf(Double.parseDouble(totalScore)), 2, RoundingMode.DOWN).toString();
+                treatmentPercentScore = experimentScoringEntity.getTreatmentPercentScore();
+                percentTreatmentPercentScore = BigDecimal.valueOf(Double.parseDouble(treatmentPercentScore)).multiply(BigDecimal.valueOf(medicalRatioWeightAtomicReference.get())).divide(BigDecimal.valueOf(100), 2, RoundingMode.DOWN).divide(BigDecimal.valueOf(Double.parseDouble(totalScore)), 2, RoundingMode.DOWN).toString();
+            }
+            ExperimentGraphRankGroupResponse experimentGraphRankGroupResponse = ExperimentGraphRankGroupResponse
+                .builder()
+                .experimentGroupId(experimentGroupEntity.getExperimentGroupId())
+                .experimentGroupNo(experimentGroupEntity.getGroupNo())
+                .experimentGroupAlias(experimentGroupEntity.getGroupAlias())
+                .experimentGroupName(experimentGroupEntity.getGroupName())
+                .percentKnowledgeScore(percentKnowledgeScore)
+                .percentHealthIndexScore(percentHealthIndexScore)
+                .percentTreatmentPercentScore(percentTreatmentPercentScore)
+                .totalScore(totalScore)
+                .build();
+            kExperimentGroupIdVExperimentGraphRankGroupResponseMap.put(experimentGroupId, experimentGraphRankGroupResponse);
+        });
+        List<ExperimentGraphRankGroupResponse> experimentGraphRankGroupResponseList = new ArrayList<>();
+        kExperimentGroupIdVExperimentGraphRankGroupResponseMap.forEach((experimentGroupId, experimentGraphRankGroupResponse) -> {
+            experimentGraphRankGroupResponseList.add(experimentGraphRankGroupResponse);
+        });
+        experimentGraphRankGroupResponseList.sort(Comparator.comparing(ExperimentGraphRankGroupResponse::getTotalScore));
+        Collections.reverse(experimentGraphRankGroupResponseList);
+        return ExperimentGraphRankResponse
+            .builder()
+            .periods(period)
+            .experimentGraphRankGroupResponseList(experimentGraphRankGroupResponseList)
             .build();
     }
 }

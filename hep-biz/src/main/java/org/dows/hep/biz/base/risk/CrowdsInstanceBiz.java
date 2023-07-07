@@ -95,7 +95,7 @@ public class CrowdsInstanceBiz {
             .builder()
                 .reasonId(crowdsId)
                 .appId(appId)
-                .source(EnumIndicatorExpressionSource.CROWDS.getType())
+                .source(EnumIndicatorExpressionSource.CROWDS.getSource())
                 .indicatorExpressionIdList(indicatorExpressionIdList)
             .build());
         return flag;
