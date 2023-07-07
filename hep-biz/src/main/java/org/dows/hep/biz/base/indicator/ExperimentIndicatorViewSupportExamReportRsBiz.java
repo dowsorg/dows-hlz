@@ -5,14 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.dows.hep.api.base.indicator.request.ExperimentSupportExamCheckRequestRs;
-import org.dows.hep.api.base.indicator.request.ExperimentSupportExamCheckRequestRs;
-import org.dows.hep.api.base.indicator.response.ExperimentSupportExamReportResponseRs;
+import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
 import org.dows.hep.api.base.indicator.response.ExperimentSupportExamReportResponseRs;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.api.exception.ExperimentIndicatorViewSupportExamReportRsException;
-import org.dows.hep.biz.util.ExptOrgFlowValidator;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -23,6 +21,7 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -43,6 +42,7 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
   private final ExperimentIndicatorExpressionRsService experimentIndicatorExpressionRsService;
   private final ExperimentIndicatorExpressionItemRsService experimentIndicatorExpressionItemRsService;
   private final ExperimentIndicatorExpressionInfluenceRsService experimentIndicatorExpressionInfluenceRsService;
+  private final ExperimentIndicatorInstanceRsBiz experimentIndicatorInstanceRsBiz;
 
   public static ExperimentSupportExamReportResponseRs experimentSupportExamReport2ResponseRs(ExperimentIndicatorViewSupportExamReportRsEntity experimentIndicatorViewSupportExamReportRsEntity) {
     if (Objects.isNull(experimentIndicatorViewSupportExamReportRsEntity)) {
@@ -73,6 +73,7 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
 //    ExptOrgFlowValidator exptOrgFlowValidator = ExptOrgFlowValidator.create(appId, experimentId, experimentOrgId, experimentPersonId);
 //    exptOrgFlowValidator.checkOrgFlow(true);
 //    String operateFlowId = exptOrgFlowValidator.getOperateFlowId();
+    AtomicReference<BigDecimal> moneyChangeAtomicReference = new AtomicReference<>(BigDecimal.ZERO);
     Map<String, ExperimentIndicatorViewSupportExamRsEntity> kExperimentIndicatorViewSupportExamIdVExperimentIndicatorViewSupportExamRsEntityMap = new HashMap<>();
     Set<String> indicatorInstanceIdSet = new HashSet<>();
     Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
@@ -82,6 +83,9 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
           .in(ExperimentIndicatorViewSupportExamRsEntity::getExperimentIndicatorViewSupportExamId, experimentIndicatorViewSupportExamIdList)
           .list()
           .forEach(experimentIndicatorViewSupportExamRsEntity -> {
+            BigDecimal fee = experimentIndicatorViewSupportExamRsEntity.getFee();
+            BigDecimal currentFee = moneyChangeAtomicReference.get();
+            moneyChangeAtomicReference.set(currentFee.subtract(fee));
             indicatorInstanceIdSet.add(experimentIndicatorViewSupportExamRsEntity.getIndicatorInstanceId());
             kExperimentIndicatorViewSupportExamIdVExperimentIndicatorViewSupportExamRsEntityMap.put(experimentIndicatorViewSupportExamRsEntity.getExperimentIndicatorViewSupportExamId(), experimentIndicatorViewSupportExamRsEntity);
           });
@@ -138,7 +142,7 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
     if (!experimentIndicatorExpressionIdSet.isEmpty()) {
       experimentIndicatorExpressionRsService.lambdaQuery()
           .eq(ExperimentIndicatorExpressionRsEntity::getExperimentId, experimentId)
-          .eq(ExperimentIndicatorExpressionRsEntity::getSource, EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getType())
+          .eq(ExperimentIndicatorExpressionRsEntity::getSource, EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource())
           .in(ExperimentIndicatorExpressionRsEntity::getExperimentIndicatorExpressionId, experimentIndicatorExpressionIdSet)
           .list()
           .forEach(experimentIndicatorExpressionRsEntity -> {
@@ -326,6 +330,14 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
               .build()
       );
     });
+    experimentIndicatorInstanceRsBiz.changeMoney(RsChangeMoneyRequest
+        .builder()
+        .appId(appId)
+        .experimentId(experimentId)
+        .experimentPersonId(experimentPersonId)
+        .periods(period)
+        .moneyChange(moneyChangeAtomicReference.get())
+        .build());
     experimentIndicatorViewSupportExamReportRsService.saveOrUpdateBatch(experimentIndicatorViewSupportExamReportRsEntityList);
   }
 
