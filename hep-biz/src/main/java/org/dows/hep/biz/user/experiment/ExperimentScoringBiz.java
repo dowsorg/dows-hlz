@@ -452,6 +452,8 @@ public class ExperimentScoringBiz {
         AtomicReference<Float> healthIndexWeightAtomicReference = new AtomicReference<>(0F);
         AtomicReference<Float> medicalRatioWeightAtomicReference = new AtomicReference<>(0F);
         CompletableFuture<Void> populateWeightCF = getPopulateWeightCF(knowledgeWeightAtomicReference, healthIndexWeightAtomicReference, medicalRatioWeightAtomicReference, experimentId);
+        populateWeightCF.get();
+
         Map<String, ExperimentScoringEntity> kExperimentGroupIdVExperimentScoringEntityMap = new HashMap<>();
         experimentScoringService.lambdaQuery()
             .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
@@ -472,7 +474,6 @@ public class ExperimentScoringBiz {
             });
 
         Map<String, ExperimentGraphRankGroupResponse> kExperimentGroupIdVExperimentGraphRankGroupResponseMap = new HashMap<>();
-        populateWeightCF.get();
         kExperimentGroupIdVExperimentGroupEntityMap.forEach((experimentGroupId, experimentGroupEntity) -> {
             String knowledgeScore = "0";
             String percentKnowledgeScore = "0";
