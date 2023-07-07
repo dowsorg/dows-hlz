@@ -43,6 +43,7 @@ public class SportPlanItemVO {
     @Schema(title = "一级分类名称")
     private String categNameLv1;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "运动强度(MET)")
     private BigDecimal strengthMet;
 
