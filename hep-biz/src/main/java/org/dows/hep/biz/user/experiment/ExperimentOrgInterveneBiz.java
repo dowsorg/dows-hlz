@@ -108,6 +108,8 @@ public class ExperimentOrgInterveneBiz{
     }
 
     public List<Categ4ExptVO> listSportCateg4Expt(FindInterveneCateg4ExptRequest findSport ) throws JsonProcessingException{
+        final String family=EnumCategFamily.SPORTItem.getCode();
+        findSport.setFamily(family);
         findSport.setWithChild(1);
         FindInterveneCategRequest castReq=CopyWrapper.create(FindInterveneCategRequest::new).endFrom(findSport);
         List<CategVO> items=interveneCategBiz.listInterveneCateg(castReq);
@@ -233,8 +235,8 @@ public class ExperimentOrgInterveneBiz{
         //校验登录
         LoginContextVO voLogin= ShareBiz.getLoginUser(request);
         //校验挂号
-        ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator);
-        final Optional<OperateFlowEntity> flowOption=flowValidator.checkOrgFlowRunning();
+        ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator)
+                .checkOrgFlow(false);
 
         //计算营养统计，膳食宝塔
         CalcExptFoodCookbookResult snapRst= foodCalc4ExptBiz.calcFoodGraph4ExptCookbook(validator.getAppId(), saveFood.getDetails());
@@ -293,8 +295,8 @@ public class ExperimentOrgInterveneBiz{
         //校验登录
         LoginContextVO voLogin= ShareBiz.getLoginUser(request);
         //校验挂号
-        ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator);
-        final Optional<OperateFlowEntity> flowOption=flowValidator.checkOrgFlowRunning();
+        ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator)
+                .checkOrgFlow(false);
 
         //保存操作记录
         final Date dateNow=new Date();
@@ -385,8 +387,8 @@ public class ExperimentOrgInterveneBiz{
 
     private <T> T getExptSnapData(ExptOperateOrgFuncRequest exptOperate,boolean checkIndicatorFunc, Class<T> clazz, Supplier<T> creator){
         T rst=creator.get();
-        ExptRequestValidator validator=ExptRequestValidator.create(exptOperate);
-        validator.checkExperimentPerson()
+        ExptRequestValidator validator=ExptRequestValidator.create(exptOperate)
+                .checkExperimentPerson()
                 .checkExperimentOrg()
                 .checkExperimentInstance();
         if(checkIndicatorFunc){
