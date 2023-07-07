@@ -651,7 +651,7 @@ public class IndicatorExpressionBiz{
     /* runsix: can not ref same indicatorInstanceId with current periods for example: a = a$0 + 1 */
     resultNameArray = resultNameList.split(EnumString.COMMA.getStr());
     resultValArray = resultValList.split(EnumString.COMMA.getStr());
-    if (EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getType().equals(source)) {
+    if (EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource().equals(source)) {
       for (int i = 0; i <= resultNameArray.length - 1; i++) {
         String[] resultNameSpiltArray = resultNameArray[i].split(EnumString.SPLIT_DOLLAR.getStr());
         if (StringUtils.equals(principalId, resultValArray[i]) && StringUtils.equals(resultNameSpiltArray[1], EnumString.ZERO.getStr())) {
@@ -1178,7 +1178,7 @@ public class IndicatorExpressionBiz{
 
   /* runsix:只检查指标管理里面的公式 */
   public void checkExpression(Integer source, String appId, List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList, AtomicReference<IndicatorExpressionInfluenceEntity> indicatorExpressionInfluenceEntityAtomicReference, String principalId) {
-    if (EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getType().equals(source)) {
+    if (EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource().equals(source)) {
       Set<String> newInfluencedIndicatorInstanceIdSet = new HashSet<>();
       IndicatorExpressionInfluenceEntity indicatorExpressionInfluenceEntity = indicatorExpressionInfluenceService.lambdaQuery()
           .eq(IndicatorExpressionInfluenceEntity::getAppId, appId)
@@ -1213,7 +1213,7 @@ public class IndicatorExpressionBiz{
 
   /* runsix:TODO 指标相关关联数据先不进去 */
   public void checkConditionExpression(Integer source, IndicatorExpressionItemEntity indicatorExpressionItemEntity) {
-    if (EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getType().equals(source)) {
+    if (EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource().equals(source)) {
       String conditionNameList = indicatorExpressionItemEntity.getConditionNameList();
       String conditionValList = indicatorExpressionItemEntity.getConditionValList();
       if (StringUtils.isBlank(conditionNameList)) {
@@ -1285,7 +1285,7 @@ public class IndicatorExpressionBiz{
 
   /* runsix:TODO 指标相关关联数据先不进去 */
   public void checkResultExpression(Integer source, IndicatorExpressionItemEntity indicatorExpressionItemEntity, Set<String> newInfluencedIndicatorInstanceIdSet, String principalId,  AtomicReference<IndicatorExpressionInfluenceEntity> atomicReference) {
-    if (EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getType().equals(source)) {
+    if (EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource().equals(source)) {
       String resultNameList = indicatorExpressionItemEntity.getResultNameList();
       String resultValList = indicatorExpressionItemEntity.getResultValList();
       String appId = indicatorExpressionItemEntity.getAppId();

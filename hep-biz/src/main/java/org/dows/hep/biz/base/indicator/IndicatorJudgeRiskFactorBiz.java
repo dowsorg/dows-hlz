@@ -169,7 +169,7 @@ public class IndicatorJudgeRiskFactorBiz{
         CreateOrUpdateIndicatorExpressionRequestRs createOrUpdateIndicatorExpressionRequestRs = createOrUpdateIndicatorJudgeRiskFactorRequestRs.getCreateOrUpdateIndicatorExpressionRequestRs();
         if (Objects.nonNull(createOrUpdateIndicatorExpressionRequestRs)) {
             createOrUpdateIndicatorExpressionRequestRs.setType(EnumIndicatorExpressionType.CONDITION.getType());
-            createOrUpdateIndicatorExpressionRequestRs.setSource(EnumIndicatorExpressionSource.INDICATOR_JUDGE_RISK_FACTOR.getType());
+            createOrUpdateIndicatorExpressionRequestRs.setSource(EnumIndicatorExpressionSource.INDICATOR_JUDGE_RISK_FACTOR.getSource());
             createOrUpdateIndicatorExpressionRequestRs.setPrincipalId(indicatorJudgeRiskFactorId);
         }
         indicatorExpressionBiz.createOrUpdate(createOrUpdateIndicatorExpressionRequestRs);
@@ -240,7 +240,7 @@ public class IndicatorJudgeRiskFactorBiz{
                 .builder()
                 .reasonId(indicatorJudgeRiskFactorId)
                 .appId(appId)
-                .source(EnumIndicatorExpressionSource.INDICATOR_JUDGE_RISK_FACTOR.getType())
+                .source(EnumIndicatorExpressionSource.INDICATOR_JUDGE_RISK_FACTOR.getSource())
                 .indicatorExpressionIdList(indicatorExpressionIdList)
                 .build());
     }
