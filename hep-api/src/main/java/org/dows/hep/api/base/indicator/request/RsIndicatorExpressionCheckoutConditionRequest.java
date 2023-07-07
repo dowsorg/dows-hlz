@@ -19,6 +19,9 @@ public class RsIndicatorExpressionCheckoutConditionRequest implements Serializab
   @Schema(title = "指标公式产生类型")
   private Integer source;
 
+  @Schema(title = "指标公式域")
+  private Integer field;
+
   @Schema(title = "原始条件")
   private String conditionRaw;
 
