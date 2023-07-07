@@ -15,22 +15,22 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RsIndicatorExpressionCheckoutConditionRequest implements Serializable {
+public class RsIndicatorExpressionCheckoutResultRequest implements Serializable {
   @Schema(title = "指标公式产生类型")
   private Integer source;
 
   @Schema(title = "指标公式域")
   private Integer field;
 
-  @Schema(title = "原始条件")
-  private String conditionRaw;
+  @Schema(title = "原始结果")
+  private String resultRaw;
 
-  @Schema(title = "条件")
-  private String conditionExpression;
+  @Schema(title = "结果")
+  private String resultExpression;
 
-  @Schema(title = "条件参数名字，以英文逗号分割")
-  private String conditionNameList;
+  @Schema(title = "结果参数名字，以英文逗号分割")
+  private String resultNameList;
 
-  @Schema(title = "条件参数数值，以英文逗号分割")
-  private String conditionValList;
+  @Schema(title = "结果参数数值，以英文逗号分割")
+  private String resultValList;
 }
