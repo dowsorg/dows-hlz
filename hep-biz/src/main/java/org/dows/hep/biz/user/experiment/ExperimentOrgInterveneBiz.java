@@ -368,10 +368,10 @@ public class ExperimentOrgInterveneBiz{
                 .setSnapTime(dateNow);
         for(int i=saveTreat.getTreatItems().size()-1;i>=0;i--){
             ExptTreatPlanItemVO item=saveTreat.getTreatItems().get(i);
-            if(ShareUtil.XObject.notEmpty(item.getId(), true)){
+            if(ShareUtil.XObject.notEmpty(item.getItemId(), true)){
                 continue;
             }
-            item.setId(getTimestampId(dateNow, i)).setDealFlag(0);
+            item.setItemId(getTimestampId(dateNow,saveTreat.getTreatItems().size()-1-i)).setDealFlag(0);
         }
         ExptTreatPlanResponse snapRst=new ExptTreatPlanResponse().setTreatItems(saveTreat.getTreatItems());
         try{
