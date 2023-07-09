@@ -15,6 +15,7 @@ import java.util.Objects;
 public enum EnumIndicatorExpressionField {
   DATABASE(0, "数据库"),
   CASE(1, "案例库"),
+  EXPERIMENT(2, "实验域"),
   ;
   private final Integer field;
   private final String desc;
