@@ -113,7 +113,6 @@ public class ExperimentIndicatorJudgeHealthGuidanceReportRsBiz {
     /* runsix:TODO 期数当前写死为1,后期从张亮获取 */
     Integer period = 1;
     String operateFlowId = "1";
-    experimentPersonId = "1";
 //    ExptOrgFlowValidator exptOrgFlowValidator = ExptOrgFlowValidator.create(appId, experimentId, experimentOrgId, experimentPersonId);
 //    exptOrgFlowValidator.checkOrgFlow(true);
 //    String operateFlowId = exptOrgFlowValidator.getOperateFlowId();

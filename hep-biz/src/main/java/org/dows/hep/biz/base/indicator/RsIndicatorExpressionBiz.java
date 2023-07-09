@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RsIndicatorExpressionBiz {
   private final IndicatorRuleService indicatorRuleService;
+  private final RsExperimentIndicatorInstanceBiz rsExperimentIndicatorInstanceBiz;
 
   private static String wrapStrWithDoubleSingleQuotes(String str) {
     return EnumString.SINGLE_QUOTES.getStr() +
@@ -256,6 +258,12 @@ public class RsIndicatorExpressionBiz {
 //    if (Objects.isNull(kExperimentPersonIdVKExperimentIndicatorExpressionIdVAtomicBooleanMap) || kExperimentPersonIdVKExperimentIndicatorExpressionIdVAtomicBooleanMap.isEmpty()) {
 //      return;
 //    }
+//    Set<String> experimentPersonIdSet = kExperimentPersonIdVKExperimentIndicatorExpressionIdVAtomicBooleanMap.keySet();
+//    Map<String, Map<String, String>> kExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap = new HashMap<>();
+//    CompletableFuture<Void> populateKExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMapByExperimentPersonIdSetCF = CompletableFuture.runAsync(() -> {
+//      rsExperimentIndicatorInstanceBiz.populateKExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMapByExperimentPersonIdSet(
+//          kExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap, experimentPersonIdSet);
+//    });
 //    kExperimentPersonIdVKExperimentIndicatorExpressionIdVAtomicBooleanMap.forEach((experimentPersonId, kExperimentIndicatorExpressionIdVAtomicBooleanMap) -> {
 //      if (Objects.isNull(kExperimentIndicatorExpressionIdVAtomicBooleanMap) || kExperimentIndicatorExpressionIdVAtomicBooleanMap.isEmpty()) {
 //        return;
