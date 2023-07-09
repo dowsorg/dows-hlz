@@ -189,8 +189,8 @@ public class ExperimentOrgInterveneBiz{
         FindTreatRequest castReq=FindTreatRequest.builder()
                 .incIds(findTreat.getIncIds())
                 .appId(findTreat.getAppId())
-                .pageSize(1)
-                .pageNo(Optional.ofNullable(findTreat.getIncIds()).map(List::size).orElse(10))
+                .pageSize(Optional.ofNullable(findTreat.getIncIds()).map(List::size).orElse(10))
+                .pageNo(1)
                 .build();
         return treatItemBiz.pageTreatItem(castReq).getRecords();
     }
