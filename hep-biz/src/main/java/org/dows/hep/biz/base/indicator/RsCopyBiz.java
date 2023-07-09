@@ -1316,19 +1316,21 @@ public class RsCopyBiz {
                 indicatorFuncNameArray = String.join(EnumString.COMMA.getStr(), indicatorFuncNameList);
                 indicatorCategoryIdArray = String.join(EnumString.COMMA.getStr(), indicatorCategoryIdList);
               }
-              ExperimentOrgModuleRsEntity experimentOrgModuleRsEntity = ExperimentOrgModuleRsEntity
-                  .builder()
-                  .experimentOrgModuleId(experimentOrgModuleId)
-                  .caseOrgModuleId(caseOrgModuleId)
-                  .appId(appId)
-                  .orgId(experimentOrgEntity1.getExperimentOrgId())
-                  .name(caseOrgModuleEntity.getName())
-                  .indicatorFuncIdArray(indicatorFuncIdArray)
-                  .indicatorFuncNameArray(indicatorFuncNameArray)
-                  .indicatorCategoryIdArray(indicatorCategoryIdArray)
-                  .seq(caseOrgModuleEntity.getSeq())
-                  .build();
-              experimentOrgModuleRsEntityList.add(experimentOrgModuleRsEntity);
+              if (StringUtils.isNotBlank(indicatorFuncIdArray)) {
+                ExperimentOrgModuleRsEntity experimentOrgModuleRsEntity = ExperimentOrgModuleRsEntity
+                    .builder()
+                    .experimentOrgModuleId(experimentOrgModuleId)
+                    .caseOrgModuleId(caseOrgModuleId)
+                    .appId(appId)
+                    .orgId(experimentOrgEntity1.getExperimentOrgId())
+                    .name(caseOrgModuleEntity.getName())
+                    .indicatorFuncIdArray(indicatorFuncIdArray)
+                    .indicatorFuncNameArray(indicatorFuncNameArray)
+                    .indicatorCategoryIdArray(indicatorCategoryIdArray)
+                    .seq(caseOrgModuleEntity.getSeq())
+                    .build();
+                experimentOrgModuleRsEntityList.add(experimentOrgModuleRsEntity);
+              }
             });
           }
         });
