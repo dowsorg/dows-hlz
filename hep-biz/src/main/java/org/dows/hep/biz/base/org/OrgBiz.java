@@ -236,8 +236,8 @@ public class OrgBiz {
     public IPage<AccountOrgResponse> listClasss(AccountOrgRequest request,String accountId) {
         //1、如果是教师，只能查看该教师下面的班级
         if(StringUtils.isNotEmpty(accountId)){
-          List<String>  split = Arrays.asList(accountId.split(","));
-          List<HepArmEntity> armList = hepArmService.lambdaQuery().in(HepArmEntity::getAccountId,split)
+          List<String>  newId = Arrays.asList(accountId.split(","));
+          List<HepArmEntity> armList = hepArmService.lambdaQuery().in(HepArmEntity::getAccountId,newId)
                   .eq(HepArmEntity::getDeleted,false)
                   .list();
           Set<String> ids = new HashSet<>();
