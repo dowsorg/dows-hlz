@@ -176,6 +176,7 @@ public class ExperimentParticipatorBiz {
                         .one();
                 response.setGroupNo(groupEntity.getGroupNo());
                 response.setGroupAlias(groupEntity.getGroupAlias());
+                response.setGroupName(groupEntity.getGroupName());
                 response.setGroupState(groupEntity.getGroupState());
                 response.setGroupStateStr(response.getGroupStateDescr());
                 List<ExperimentParticipatorEntity> participatorEntityList = experimentParticipatorService.lambdaQuery()
