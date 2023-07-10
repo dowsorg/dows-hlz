@@ -765,8 +765,10 @@ public class ExperimentManageBiz {
                         sb.append(participator.getAccountName()).append(",");
                     });
                 }
-                String str = sb.substring(0, sb.length() - 1);
-                response.setParticipators(str);
+                if(StringUtils.isNotEmpty(sb)) {
+                    String str = sb.substring(0, sb.length() - 1);
+                    response.setParticipators(str);
+                }
             });
         }
         pageInfo.setList(listResponses);
