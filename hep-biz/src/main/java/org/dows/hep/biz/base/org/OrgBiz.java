@@ -15,7 +15,6 @@ import org.dows.account.biz.exception.AccountException;
 import org.dows.account.request.*;
 import org.dows.account.response.*;
 import org.dows.framework.api.util.ReflectUtil;
-import org.dows.hep.api.base.indicator.request.CaseCreateCopyToPersonRequestRs;
 import org.dows.hep.api.enums.EnumCaseFee;
 import org.dows.hep.api.exception.CaseFeeException;
 import org.dows.hep.api.user.organization.request.CaseOrgRequest;
@@ -237,7 +236,8 @@ public class OrgBiz {
     public IPage<AccountOrgResponse> listClasss(AccountOrgRequest request,String accountId) {
         //1、如果是教师，只能查看该教师下面的班级
         if(StringUtils.isNotEmpty(accountId)){
-          List<HepArmEntity> armList = hepArmService.lambdaQuery().eq(HepArmEntity::getAccountId,accountId)
+          List<String>  newId = Arrays.asList(accountId.split(","));
+          List<HepArmEntity> armList = hepArmService.lambdaQuery().in(HepArmEntity::getAccountId,newId)
                   .eq(HepArmEntity::getDeleted,false)
                   .list();
           Set<String> ids = new HashSet<>();

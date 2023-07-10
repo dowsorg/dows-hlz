@@ -21,6 +21,7 @@ import org.dows.hep.api.user.experiment.request.GetExperimentGroupCaptainRequest
 import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
 import org.dows.hep.api.user.experiment.response.GetExperimentGroupCaptainResponse;
 import org.dows.hep.biz.util.EntityUtil;
+import org.dows.hep.entity.ExperimentGroupEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.service.ExperimentGroupService;
 import org.dows.hep.service.ExperimentInstanceService;
@@ -157,19 +158,26 @@ public class ExperimentParticipatorBiz {
         page.setSize(pageExperimentRequest.getPageSize());
 
         page = experimentParticipatorService.page(page, experimentParticipatorService.lambdaQuery()
-                .select(ExperimentParticipatorEntity::getGroupNo, ExperimentParticipatorEntity::getExperimentGroupId,
-                        ExperimentParticipatorEntity::getGroupAlias,
-                        ExperimentParticipatorEntity::getGroupName, ExperimentParticipatorEntity::getAccountName,
-                        ExperimentParticipatorEntity::getState)
+                .select(ExperimentParticipatorEntity::getExperimentGroupId)
                 .eq(ExperimentParticipatorEntity::getExperimentInstanceId, pageExperimentRequest.getExperimentInstanceId())
-                .isNotNull(ExperimentParticipatorEntity::getGroupNo)
-                .groupBy(ExperimentParticipatorEntity::getGroupNo)
+                .isNotNull(ExperimentParticipatorEntity::getExperimentGroupId)
+                .groupBy(ExperimentParticipatorEntity::getExperimentGroupId)
                 .getWrapper());
         PageResponse pageInfo = experimentParticipatorService.getPageInfo(page, ExperimentListResponse.class);
         // 获取小组参与者
         List<ExperimentListResponse> list = pageInfo.getList();
         if (list != null && list.size() > 0) {
             list.forEach(response -> {
+                //获取小组组名和状态
+                ExperimentGroupEntity groupEntity = experimentGroupService.lambdaQuery()
+                        .eq(ExperimentGroupEntity::getExperimentGroupId,response.getExperimentGroupId())
+                        .eq(ExperimentGroupEntity::getExperimentInstanceId,pageExperimentRequest.getExperimentInstanceId())
+                        .eq(ExperimentGroupEntity::getDeleted,false)
+                        .one();
+                response.setGroupNo(groupEntity.getGroupNo());
+                response.setGroupAlias(groupEntity.getGroupAlias());
+                response.setGroupState(groupEntity.getGroupState());
+                response.setGroupStateStr(response.getGroupStateDescr());
                 List<ExperimentParticipatorEntity> participatorEntityList = experimentParticipatorService.lambdaQuery()
                         .eq(ExperimentParticipatorEntity::getExperimentGroupId, response.getExperimentGroupId())
                         .list();

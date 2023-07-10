@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dows.hep.api.enums.EnumExperimentGroupState;
 import org.dows.hep.api.enums.EnumExperimentMode;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
@@ -43,6 +44,12 @@ public class ExperimentListResponse{
 
     @Schema(title = "组名")
     private String groupName;
+
+    @Schema(title = "小组状态 [0-新建（待重新命名） 1-编队中 （分配成员角色） 2-编队完成 3-已锁定 4-已解散]")
+    private Integer groupState;
+
+    @Schema(title = "小组状态 [0-新建（待重新命名） 1-编队中 （分配成员角色） 2-编队完成 3-已锁定 4-已解散]")
+    private String groupStateStr;
 
     @Schema(title = "实验小组ID")
     private String experimentGroupId;
@@ -108,14 +115,33 @@ public class ExperimentListResponse{
 
 
     public String getStateDescr(){
-        EnumExperimentState experimentModeEnum = Arrays
-                .stream(EnumExperimentState.values()).filter(e -> state == e.getState())
-                .findFirst().orElse(null);
-        if(experimentModeEnum != null){
-            return experimentModeEnum.getDescr();
-        } else {
-            throw new RuntimeException("实验状态不存在");
+        String str = "";
+        if(state != null) {
+            EnumExperimentState experimentModeEnum = Arrays
+                    .stream(EnumExperimentState.values()).filter(e -> state == e.getState())
+                    .findFirst().orElse(null);
+            if (experimentModeEnum != null) {
+                str = experimentModeEnum.getDescr();
+            } else {
+                throw new RuntimeException("实验状态不存在");
+            }
         }
+        return str;
+    }
+
+    public String getGroupStateDescr(){
+        String str = "";
+        if(groupState != null) {
+            EnumExperimentGroupState experimentModeEnum = Arrays
+                    .stream(EnumExperimentGroupState.values()).filter(e -> groupState == e.getState())
+                    .findFirst().orElse(null);
+            if (experimentModeEnum != null) {
+                str = experimentModeEnum.getDescr();
+            } else {
+                throw new RuntimeException("小组状态不存在");
+            }
+        }
+        return str;
     }
 
 }
