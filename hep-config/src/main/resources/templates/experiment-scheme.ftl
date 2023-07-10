@@ -105,28 +105,28 @@
     </style>
 </head>
 <body>
-<div id="header-right" class="bold" style="font-size:16px;">${baseInfo.title}</div>
+<div id="header-right" class="bold" style="font-size:16px;">${baseInfo.title!""}</div>
 <div id="footer">
-    <div align="center" style="font-size:14px;">${baseInfo.copyRight} <span id="pages"> / </span></div>
+    <div align="center" style="font-size:14px;">${baseInfo.copyRight!""} <span id="pages"> / </span></div>
 </div>
 <div class="page">
     <div class="text-right"><img src="data:image/jpg;base64,${baseInfo.logoImg}"/></div>
     <div align="center">
-        <div class="pageTitle " style="margin-top:60px">${baseInfo.title}</div>
+        <div class="pageTitle " style="margin-top:60px">${baseInfo.title!""}</div>
         <div class="pageTitle " style="margin-top:38px">方案设计</div>
-        <img src="data:image/jpg;base64,${coverImg}" style="width: 760px;margin-top:38px"/>
+        <img src="data:image/jpg;base64,${baseInfo.coverImg!""}" style="width: 760px;margin-top:38px"/>
     </div>
     <div align="right">
-        <div class="groupDiv">组数：第${groupInfo.groupNo}组</div>
-        <div class="groupDiv">组名：${groupInfo.groupName}</div>
+        <div class="groupDiv">组数：第${groupInfo.groupNo!""}组</div>
+        <div class="groupDiv">组名：${groupInfo.groupName!""}</div>
         <div class="groupDiv">成员：<#list groupInfo.groupMembers as item>${item}<#if item_has_next>、</#if></#list></div>
-        <div class="groupDiv">实验社区：${groupInfo.caseName}</div>
+        <div class="groupDiv">实验社区：${groupInfo.caseName!""}</div>
         <div class="groupDiv">实验日期：<#if groupInfo.exptStartDate??>${groupInfo.exptStartDate?string("yyyy-MM-dd")}</#if></div>
     </div>
 </div>
 <div class="pageNext"></div>
     <div class="page">
-        <#if reportFlag>
+        <#if scoreInfo.show>
             <div class="font-blue bold" style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">一、实验总得分</div>
             <table class="wd-700 text-center" align="center">
                 <tr class="background-singular-blue">
@@ -135,24 +135,24 @@
                 </tr>
                 <tr class="background-even-blue">
                     <td>${scoreInfo.score?string("0.##")}</td>
-                    <td>${scoreInfo.rank}</td>
+                    <td>${scoreInfo.rank!0}</td>
                 </tr>
             </table>
             <div class="font-blue bold" style="font-size:18px;margin-top:50px;margin-bottom:25px" align="center">二、方案设计报告</div>
         </#if>
         <div class="designContent">
             <div class="intro">
-                <div class="introTitle">${schemeInfo.schemeName}</div>
-                <div class="introTitle">${schemeInfo.schemeTips}</div>
-                <div class="introContent">${schemeInfo.schemeDescr}</div>
+                <div class="introTitle">${schemeInfo.schemeName!""}</div>
+                <div class="introTitle">${schemeInfo.schemeTips!""}</div>
+                <div class="introContent">${schemeInfo.schemeDescr!""}</div>
             </div>
             <div class="quesiton">
                 <#if questionInfos??>
                 <#list questionInfos as item>
                 <div>
                     <div class="planQuestion">
-                        <div class="title">${item_index+1}. ${item.questionTitle}</div>
-                        <div class="info">${item.questionDescr}</div>
+                        <div class="title">${item_index+1}. ${item.questionTitle!""}</div>
+                        <div class="info">${item.questionDescr!""}</div>
                         <#if !item.children??>
                              <div class="answerContent">${item.questionResult!"未作答"}</div>
                         </#if>
@@ -161,8 +161,8 @@
                     <#list item.children as subItem>
                     <div>
                         <div class="planQuestion">
-                            <div class="title isSub">${item_index+1}.${subItem_index+1} ${subItem.questionTitle}</div>
-                            <div class="info">${subItem.questionDescr}</div>
+                            <div class="title isSub">${item_index+1}.${subItem_index+1} ${subItem.questionTitle!""}</div>
+                            <div class="info">${subItem.questionDescr!""}</div>
                             <#if !subItem.children??>
                                 <div class="answerContent">${subItem.questionResult!"未作答"}</div>
                             </#if>
@@ -171,8 +171,8 @@
                         <#list subItem.children as subSubItem>
                             <div>
                                 <div class="planQuestion">
-                                    <div class="title isSubSub">${item_index+1}.${subItem_index+1}.${subSubItem_index+1} ${subSubItem.questionTitle}</div>
-                                    <div class="info">${subSubItem.questionDescr}</div>
+                                    <div class="title isSubSub">${item_index+1}.${subItem_index+1}.${subSubItem_index+1} ${subSubItem.questionTitle!""}</div>
+                                    <div class="info">${subSubItem.questionDescr!""}</div>
                                     <#if !subSubItem.children??>
                                         <div class="answerContent">${subSubItem.questionResult!"未作答"}</div>
                                     </#if>

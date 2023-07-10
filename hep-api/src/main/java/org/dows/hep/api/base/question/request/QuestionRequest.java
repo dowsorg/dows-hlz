@@ -2,6 +2,8 @@ package org.dows.hep.api.base.question.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.Accessors;
@@ -26,10 +28,11 @@ public class QuestionRequest {
     private String questionInstanceId;
 
     @Schema(title = "题目类型ID")
+    @NotBlank(message = "题目类别不能为空")
     private String questionCategId;
 
     @Schema(title = "题目答题类型[RADIO_SELECT:单选题|MULTIPLE_SELECT:多选题|JUDGMENT:判断题|SUBJECTIVE:主观题|MATERIAL:材料题]")
-    @NotBlank
+    @NotBlank(message = "选择题型不能为空")
     private String questionType;
 
     @Schema(title = "维度ID-单维度情况")
@@ -39,6 +42,7 @@ public class QuestionRequest {
     private List<String> dimensionIds;
 
     @Schema(title = "问题标题")
+    @NotBlank(message = "问题标题不能为空")
     private String questionTitle;
 
     @Schema(title = "问题描述")
@@ -48,6 +52,8 @@ public class QuestionRequest {
     private Integer enabled;
 
     @Schema(title = "答案解析")
+    @Min(0)
+    @Max(300)
     private String detailedAnswer;
 
     @Schema(title = "选项和答案集合")

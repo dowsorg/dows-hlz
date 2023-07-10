@@ -37,11 +37,11 @@ public class FindSoftProperties {
     private String exptSandReportTitle = "";
 
     // 总预览模板路径
-    private String exptOverviewFtl = "pdf/templates/experiment-overview.ftl";
+    private String exptOverviewFtl = "experiment-overview.ftl";
     // 方案设计模板路径
-    private String exptSchemeFtl = "pdf/templates/experiment-scheme.ftl";
+    private String exptSchemeFtl = "experiment-scheme.ftl";
     // 沙盘模板路径
-    private String exptSandFtl = "pdf/templates/experiment-sand.ftl";
+    private String exptSandFtl = "experiment-sand.ftl";
 
 
 }
