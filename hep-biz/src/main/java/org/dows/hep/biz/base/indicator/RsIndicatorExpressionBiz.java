@@ -40,6 +40,7 @@ public class RsIndicatorExpressionBiz {
   private final IndicatorRuleService indicatorRuleService;
   private final RsExperimentIndicatorInstanceBiz rsExperimentIndicatorInstanceBiz;
   private final ExperimentIndicatorExpressionItemRsService experimentIndicatorExpressionItemRsService;
+  private final String RESULT_DROP = "";
 
 
   public void populateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap(
@@ -96,8 +97,8 @@ public class RsIndicatorExpressionBiz {
           } else {
             try {
               checkConditionNameAndValSize(conditionNameList, conditionValList);
-              List<String> conditionNameSplitList = getConditionNameSplitListByConditionNameList(conditionNameList);
-              List<String> conditionValSplitList = getConditionValArrayByConditionValList(conditionValList);
+              List<String> conditionNameSplitList = getConditionNameSplitList(conditionNameList);
+              List<String> conditionValSplitList = getConditionValSplitList(conditionValList);
               StandardEvaluationContext context = new StandardEvaluationContext();
               boolean needParse = true;
               for (int i = 0; i <= conditionNameSplitList.size() - 1; i++) {
@@ -183,8 +184,8 @@ public class RsIndicatorExpressionBiz {
         log.error("RsIndicatorExpressionBiz.checkCondition.checkConditionNameAndValSize conditionNameList is not blank but conditionValList is blank");
         throw new RsIndicatorExpressionException("检查指标公式条件-检查条件参数名列表以及参数值列表有误，条件参数名列表为空，但是条件值列表不为空");
       } else {
-        List<String> conditionNameSplitList = getConditionNameSplitListByConditionNameList(conditionNameList);
-        List<String> conditionValSplitList = getConditionValArrayByConditionValList(conditionValList);
+        List<String> conditionNameSplitList = getConditionNameSplitList(conditionNameList);
+        List<String> conditionValSplitList = getConditionValSplitList(conditionValList);
         if (conditionNameSplitList.size() != conditionValSplitList.size()) {
           log.error("RsIndicatorExpressionBiz.checkCondition.checkConditionNameAndValSize conditionNameList size:{}, conditionValList size:{}, is not same", conditionNameSplitList.size(), conditionValSplitList.size());
           throw new RsIndicatorExpressionException("检查指标公式条件-检查条件参数名列表以及参数值列表有误，条件参数名列表与条件值列表不一致");
@@ -411,24 +412,213 @@ public class RsIndicatorExpressionBiz {
     populateKExperimentPersonIdVKExperimentIndicatorExpressionIdVResultBooleanMapCF.get();
   }
 
-//  private void ePIECondition
+  private String ePIEResultUsingExperimentIndicatorInstanceId(
+      ExperimentIndicatorExpressionItemRsEntity experimentIndicatorExpressionItemRsEntity,
+      Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap
+  ) {
+    try {
+      String resultExpression = experimentIndicatorExpressionItemRsEntity.getResultExpression();
+      String resultNameList = experimentIndicatorExpressionItemRsEntity.getResultNameList();
+      List<String> resultNameSplitList = getResultNameSplitList(resultNameList);
+      String resultValList = experimentIndicatorExpressionItemRsEntity.getResultValList();
+      List<String> resultValSplitList = getResultValSplitList(resultValList);
+      StandardEvaluationContext context = new StandardEvaluationContext();
+      ExpressionParser parser = new SpelExpressionParser();
+      Expression expression = parser.parseExpression(resultExpression);
+      if (StringUtils.isBlank(resultExpression)) {
+        return RESULT_DROP;
+      }
+      for (int i = 0; i <= resultNameSplitList.size() - 1; i++) {
+        String experimentIndicatorInstanceId = resultValSplitList.get(i);
+        ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
+        if (Objects.isNull(experimentIndicatorValRsEntity) || StringUtils.isBlank(experimentIndicatorValRsEntity.getCurrentVal())) {
+          return RESULT_DROP;
+        }
+        String currentVal = experimentIndicatorValRsEntity.getCurrentVal();
+        boolean isValDigital = NumberUtils.isCreatable(currentVal);
+        if (isValDigital) {
+          context.setVariable(resultNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(currentVal)).setScale(2, RoundingMode.DOWN));
+        } else {
+          context.setVariable(resultNameSplitList.get(i), currentVal);
+        }
+      }
+      return expression.getValue(context, String.class);
+    } catch(Exception e) {
+      log.error("RsIndicatorExpressionBiz.ePIEResultUsingExperimentIndicatorInstanceId", e);
+      return RESULT_DROP;
+    }
+  }
 
-  private void ePIEResultSingle(
+  private String ePIEResultUsingIndicatorInstanceId(
+      ExperimentIndicatorExpressionItemRsEntity experimentIndicatorExpressionItemRsEntity,
+      Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
+      Map<String, String> kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap
+  ) {
+    try {
+      String resultExpression = experimentIndicatorExpressionItemRsEntity.getResultExpression();
+      String resultNameList = experimentIndicatorExpressionItemRsEntity.getResultNameList();
+      List<String> resultNameSplitList = getResultNameSplitList(resultNameList);
+      String resultValList = experimentIndicatorExpressionItemRsEntity.getResultValList();
+      List<String> resultValSplitList = getResultValSplitList(resultValList);
+      StandardEvaluationContext context = new StandardEvaluationContext();
+      ExpressionParser parser = new SpelExpressionParser();
+      Expression expression = parser.parseExpression(resultExpression);
+      if (StringUtils.isBlank(resultExpression)) {
+        return RESULT_DROP;
+      }
+      for (int i = 0; i <= resultNameSplitList.size() - 1; i++) {
+        String indicatorInstanceId = resultValSplitList.get(i);
+        String experimentIndicatorInstanceId = kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.get(indicatorInstanceId);
+        if (StringUtils.isBlank(experimentIndicatorInstanceId)) {
+          return RESULT_DROP;
+        }
+        ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
+        if (Objects.isNull(experimentIndicatorValRsEntity) || StringUtils.isBlank(experimentIndicatorValRsEntity.getCurrentVal())) {
+          return RESULT_DROP;
+        }
+        String currentVal = experimentIndicatorValRsEntity.getCurrentVal();
+        boolean isValDigital = NumberUtils.isCreatable(currentVal);
+        if (isValDigital) {
+          context.setVariable(resultNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(currentVal)).setScale(2, RoundingMode.DOWN));
+        } else {
+          context.setVariable(resultNameSplitList.get(i), currentVal);
+        }
+      }
+      return expression.getValue(context, String.class);
+    } catch(Exception e) {
+      log.error("RsIndicatorExpressionBiz.ePIEResultUsingExperimentIndicatorInstanceId", e);
+      return RESULT_DROP;
+    }
+  }
+
+  private boolean ePIEConditionUsingExperimentIndicatorInstanceId(
+      ExperimentIndicatorExpressionItemRsEntity experimentIndicatorExpressionItemRsEntity,
+      Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap
+      ) {
+    try {
+      String conditionExpression = experimentIndicatorExpressionItemRsEntity.getConditionExpression();
+      String conditionNameList = experimentIndicatorExpressionItemRsEntity.getConditionNameList();
+      List<String> conditionNameSplitList = getConditionNameSplitList(conditionNameList);
+      String conditionValList = experimentIndicatorExpressionItemRsEntity.getConditionValList();
+      List<String> conditionValSplitList = getConditionValSplitList(conditionValList);
+      StandardEvaluationContext context = new StandardEvaluationContext();
+      ExpressionParser parser = new SpelExpressionParser();
+      Expression expression = parser.parseExpression(conditionExpression);
+      if (StringUtils.isBlank(conditionExpression)) {
+        return true;
+      }
+      for (int i = 0; i <= conditionNameSplitList.size() - 1; i++) {
+        String experimentIndicatorInstanceId = conditionValSplitList.get(i);
+        ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
+        if (Objects.isNull(experimentIndicatorValRsEntity) || StringUtils.isBlank(experimentIndicatorValRsEntity.getCurrentVal())) {
+          return false;
+        }
+        String currentVal = experimentIndicatorValRsEntity.getCurrentVal();
+        boolean isValDigital = NumberUtils.isCreatable(currentVal);
+        if (isValDigital) {
+          context.setVariable(conditionNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(currentVal)).setScale(2, RoundingMode.DOWN));
+        } else {
+          context.setVariable(conditionNameSplitList.get(i), currentVal);
+        }
+      }
+      return Boolean.TRUE.equals(expression.getValue(context, Boolean.class));
+    } catch(Exception e) {
+      log.error("RsIndicatorExpressionBiz.ePIEConditionUsingExperimentIndicatorInstanceId", e);
+      return false;
+    }
+  }
+
+  private boolean ePIEConditionUsingIndicatorInstanceId(
+      ExperimentIndicatorExpressionItemRsEntity experimentIndicatorExpressionItemRsEntity,
+      Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
+      Map<String, String> kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap
+  ) {
+    try {
+      String conditionExpression = experimentIndicatorExpressionItemRsEntity.getConditionExpression();
+      String conditionNameList = experimentIndicatorExpressionItemRsEntity.getConditionNameList();
+      List<String> conditionNameSplitList = getConditionNameSplitList(conditionNameList);
+      String conditionValList = experimentIndicatorExpressionItemRsEntity.getConditionValList();
+      List<String> conditionValSplitList = getConditionValSplitList(conditionValList);
+      StandardEvaluationContext context = new StandardEvaluationContext();
+      ExpressionParser parser = new SpelExpressionParser();
+      Expression expression = parser.parseExpression(conditionExpression);
+      if (StringUtils.isBlank(conditionExpression)) {
+        return true;
+      }
+      for (int i = 0; i <= conditionNameSplitList.size() - 1; i++) {
+        String indicatorInstanceId = conditionValSplitList.get(i);
+        String experimentIndicatorInstanceId = kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.get(indicatorInstanceId);
+        if (StringUtils.isBlank(experimentIndicatorInstanceId)) {
+          return false;
+        }
+        ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
+        if (Objects.isNull(experimentIndicatorValRsEntity) || StringUtils.isBlank(experimentIndicatorValRsEntity.getCurrentVal())) {
+          return false;
+        }
+        String currentVal = experimentIndicatorValRsEntity.getCurrentVal();
+        boolean isValDigital = NumberUtils.isCreatable(currentVal);
+        if (isValDigital) {
+          context.setVariable(conditionNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(currentVal)).setScale(2, RoundingMode.DOWN));
+        } else {
+          context.setVariable(conditionNameSplitList.get(i), currentVal);
+        }
+      }
+      return Boolean.TRUE.equals(expression.getValue(context, Boolean.class));
+    } catch(Exception e) {
+      log.error("RsIndicatorExpressionBiz.ePIEConditionUsingIndicatorInstanceId", e);
+      return false;
+    }
+  }
+
+  private void handleParsedResult(
+      ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity,
+      ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity,
+      ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity
+  ) {
+    Integer source = experimentIndicatorExpressionRsEntity.getSource();
+
+  }
+
+  /**
+   * runsix method process
+   * 实验解析指标公式-解析ExperimentIndicatorExpressionItemRsEntity单条结果
+   * 1.按顺序解析每一个公式
+   * 2.如果条件不满足，不解析结果，继续下一个
+   * 3.如果一个公式有结果就跳出
+   * 4.处理解析后的结果
+  */
+  private void ePIEResultUsingExperimentIndicatorInstanceIdCombine(
+      Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
       ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity,
       List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList,
       ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity,
       ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity
       ) {
+    AtomicReference<String> resultAtomicReference = new AtomicReference<>();
+    /* runsix:1.按顺序解析每一个公式 */
+    experimentIndicatorExpressionItemRsEntityList.sort(Comparator.comparingInt(ExperimentIndicatorExpressionItemRsEntity::getSeq));
     for (int i = 0; i <= experimentIndicatorExpressionItemRsEntityList.size()-1; i++) {
       ExperimentIndicatorExpressionItemRsEntity experimentIndicatorExpressionItemRsEntity = experimentIndicatorExpressionItemRsEntityList.get(i);
-      String conditionExpression = experimentIndicatorExpressionItemRsEntity.getConditionExpression();
-      String conditionNameList = experimentIndicatorExpressionItemRsEntity.getConditionNameList();
-      String conditionValList = experimentIndicatorExpressionItemRsEntity.getConditionValList();
-      String resultExpression = experimentIndicatorExpressionItemRsEntity.getResultExpression();
-      String resultNameList = experimentIndicatorExpressionItemRsEntity.getResultNameList();
-      String resultValList = experimentIndicatorExpressionItemRsEntity.getResultValList();
 
+      boolean parsedCondition = ePIEConditionUsingExperimentIndicatorInstanceId(experimentIndicatorExpressionItemRsEntity, kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap);
+      /* runsix:2.如果条件不满足，不解析结果，继续下一个 */
+      if (!parsedCondition) {
+        continue;
+      }
+
+      /* runsix:3.如果一个公式有结果就跳出 */
+      String parsedResult = ePIEResultUsingExperimentIndicatorInstanceId(experimentIndicatorExpressionItemRsEntity, kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap);
+      if (RESULT_DROP.equals(parsedResult)) {
+        continue;
+      }
+
+      /* runsix:4.处理解析后的结果 */
+      handleParsedResult(
+          experimentIndicatorExpressionRsEntity, minExperimentIndicatorExpressionItemRsEntity, maxExperimentIndicatorExpressionItemRsEntity
+      );
+      break;
     }
+
   }
 
   /* runsix:TODO  */
@@ -487,17 +677,31 @@ public class RsIndicatorExpressionBiz {
     }
   }
 
-  private List<String> getConditionNameSplitListByConditionNameList(String conditionNameList) {
+  private List<String> getConditionNameSplitList(String conditionNameList) {
     if (StringUtils.isBlank(conditionNameList)) {
       return new ArrayList<>();
     }
     return Arrays.stream(conditionNameList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr())).collect(Collectors.toList());
   }
 
-  private List<String> getConditionValArrayByConditionValList(String conditionValList) {
+  private List<String> getConditionValSplitList(String conditionValList) {
     if (StringUtils.isBlank(conditionValList)) {
       return new ArrayList<>();
     }
     return Arrays.stream(conditionValList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr())).collect(Collectors.toList());
+  }
+
+  private List<String> getResultNameSplitList(String resultNameList) {
+    if (StringUtils.isBlank(resultNameList)) {
+      return new ArrayList<>();
+    }
+    return Arrays.stream(resultNameList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr())).collect(Collectors.toList());
+  }
+
+  private List<String> getResultValSplitList(String resultValList) {
+    if (StringUtils.isBlank(resultValList)) {
+      return new ArrayList<>();
+    }
+    return Arrays.stream(resultValList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr())).collect(Collectors.toList());
   }
 }
