@@ -63,8 +63,11 @@ public class ExptSchemeReportModel implements IExptReportModel {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class ScoreInfo {
+        @Schema(title = "是否展示此块信息")
+        private boolean show;
+
         @Schema(title = "排名")
-        private Integer ranking;
+        private int ranking;
 
         @Schema(title = "小组得分")
         private Float score;

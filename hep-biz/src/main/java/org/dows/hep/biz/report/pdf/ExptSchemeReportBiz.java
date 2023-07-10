@@ -215,6 +215,7 @@ public class ExptSchemeReportBiz implements ExptReportBiz {
     // todo 获取得分信息
     private ExptSchemeReportModel.ScoreInfo generateScoreInfo(String exptGroupId) {
         return ExptSchemeReportModel.ScoreInfo.builder()
+                .show(Boolean.TRUE)
                 .score(0.0f)
                 .ranking(1)
                 .build();
