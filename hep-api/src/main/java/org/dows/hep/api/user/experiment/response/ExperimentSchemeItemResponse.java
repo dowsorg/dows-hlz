@@ -21,6 +21,9 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(name = "ExperimentSchemeResponse 对象", title = "实验方案设计")
 public class ExperimentSchemeItemResponse {
+    @Schema(title = "方案设计ID")
+    private String experimentSchemeId;
+
     @Schema(title = "item Id")
     private String experimentSchemeItemId;
 

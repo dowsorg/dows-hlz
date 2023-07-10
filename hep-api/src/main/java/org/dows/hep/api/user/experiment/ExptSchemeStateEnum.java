@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 public enum ExptSchemeStateEnum {
     NOT_SUBMITTED(0, "未提交"),
     SUBMITTED(1, "已提交"),
+    SCORED(2, "已评分")
     ;
 
     private final Integer code;

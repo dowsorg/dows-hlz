@@ -87,6 +87,59 @@ public class ExperimentSchemeBiz {
         return result;
     }
 
+    /**
+     * @param experimentInstanceId - 实验实例ID
+     * @return org.dows.hep.api.user.experiment.response.ExperimentSchemeResponse
+     * @author fhb
+     * @description 列出方案设计
+     * @date 2023/7/9 15:07
+     */
+    public List<ExperimentSchemeResponse> listScheme(String experimentInstanceId) {
+        if (StrUtil.isBlank(experimentInstanceId)) {
+            throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
+        }
+
+        List<ExperimentSchemeResponse> result = new ArrayList<>();
+
+        // list scheme
+        List<ExperimentSchemeEntity> schemeList = experimentSchemeService.lambdaQuery()
+                .eq(ExperimentSchemeEntity::getExperimentInstanceId, experimentInstanceId)
+                .list();
+        if (CollUtil.isEmpty(schemeList)) {
+            return result;
+        }
+
+        // list scheme-item
+        List<String> schemeIdList = schemeList.stream()
+                .map(ExperimentSchemeEntity::getExperimentSchemeId)
+                .toList();
+        List<ExperimentSchemeItemResponse> schemeItemResponseList = experimentSchemeItemBiz.listBySchemeIds(schemeIdList);
+        if (CollUtil.isEmpty(schemeItemResponseList)) {
+            return result;
+        }
+
+        // result
+        List<ExperimentSchemeResponse> schemeResponseList = BeanUtil.copyToList(schemeList, ExperimentSchemeResponse.class);
+        Map<String, List<ExperimentSchemeItemResponse>> collect = schemeItemResponseList.stream().collect(Collectors.groupingBy(ExperimentSchemeItemResponse::getExperimentSchemeId));
+        schemeResponseList.forEach(schemeResponse -> {
+            String experimentSchemeId = schemeResponse.getExperimentSchemeId();
+            List<ExperimentSchemeItemResponse> schemeItem = collect.get(experimentSchemeId);
+            List<ExperimentSchemeItemResponse> itemTreeList = convertList2Tree(schemeItem);
+            schemeResponse.setItemList(itemTreeList);
+            result.add(schemeResponse);
+        });
+
+        return result;
+    }
+
+    /**
+     * @param experimentInstanceId - 实验实例ID
+     * @param experimentGroupId - 实验小组ID
+     * @return org.dows.hep.api.user.experiment.response.ExperimentSchemeStateResponse
+     * @author fhb
+     * @description 获取方案设计状态
+     * @date 2023/7/6 17:51
+     */
     public ExperimentSchemeStateResponse getSchemeState(String experimentInstanceId, String experimentGroupId) {
         if (StrUtil.isBlank(experimentGroupId) || StrUtil.isBlank(experimentInstanceId)) {
             throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
@@ -446,6 +499,7 @@ public class ExperimentSchemeBiz {
         return DateUtil.compare(schemeEndTime, endTime) > 0 ? endTime : schemeEndTime;
     }
 
+    // todo 后续改为调用 exptSettingBiz
     private ExperimentSetting.SchemeSetting getSchemeSetting(String experimentSchemeId) {
         if (StrUtil.isBlank(experimentSchemeId)) {
             throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
@@ -501,6 +555,7 @@ public class ExperimentSchemeBiz {
         return experimentSchemeItemBiz.getById(experimentSchemeItemId);
     }
 
+    // todo 后续改为使用 exptSettingBiz 调用
     private boolean containsSandSetting(String experimentInstanceId) {
         String sandSetting = "";
         List<ExperimentSettingEntity> experimentSettings = experimentSettingService.lambdaQuery()

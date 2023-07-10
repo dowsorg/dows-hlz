@@ -18,6 +18,12 @@ public class ExperimentSchemeResponse {
     @Schema(title = "实验方案设计ID")
     private String experimentSchemeId;
 
+    @Schema(title = "实验实列ID")
+    private String experimentInstanceId;
+
+    @Schema(title = "实验小组ID")
+    private String experimentGroupId;
+
     @Schema(title = "方案名称")
     private String schemeName;
 

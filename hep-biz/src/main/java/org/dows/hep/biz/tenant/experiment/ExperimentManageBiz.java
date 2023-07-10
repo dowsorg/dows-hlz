@@ -666,6 +666,7 @@ public class ExperimentManageBiz {
                                 .experimentOrgName(request.getOrgName())
                                 .accountId(vo.getAccountId())
                                 .accountName(vo.getAccountName())
+                                .userName(userInstanceResponse.getName())
                                 .casePersonId(personEntity.getCasePersonId())
                                 .build();
                         experimentPersonService.save(entity1);
@@ -738,6 +739,7 @@ public class ExperimentManageBiz {
                         .or().like("case_name", pageExperimentRequest.getKeyword())
                         .or().like("appointor_name", pageExperimentRequest.getKeyword());
             }
+            queryWrapper.orderByDesc("start_time");
             page = experimentInstanceService.page(page, queryWrapper);
         } else {
             if (roleCode.equals("TEACHER")) {
@@ -764,8 +766,10 @@ public class ExperimentManageBiz {
                         sb.append(participator.getAccountName()).append(",");
                     });
                 }
-                String str = sb.substring(0, sb.length() - 1);
-                response.setParticipators(str);
+                if(StringUtils.isNotEmpty(sb)) {
+                    String str = sb.substring(0, sb.length() - 1);
+                    response.setParticipators(str);
+                }
             });
         }
         pageInfo.setList(listResponses);

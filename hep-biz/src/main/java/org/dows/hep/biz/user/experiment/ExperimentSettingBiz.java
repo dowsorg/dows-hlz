@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
+import org.dows.hep.api.user.experiment.ExptSettingModeEnum;
 import org.dows.hep.entity.ExperimentSettingEntity;
 import org.dows.hep.service.ExperimentSettingService;
 import org.springframework.stereotype.Service;
@@ -103,6 +104,64 @@ public class ExperimentSettingBiz {
             return Boolean.TRUE;
         }
         return Boolean.FALSE;
+    }
+
+    /**
+     * 根据实验实例ID获取实验是否包含 `沙盘` 模式
+     *
+     * @param exptInstanceId - 实验实例ID
+     * @return boolean
+     * @date 2023/7/5 15:24
+     */
+    public boolean containsSandAndScheme(String exptInstanceId) {
+        List<ExperimentSettingEntity> settingList = listExptSetting(exptInstanceId);
+        if (CollUtil.isEmpty(settingList)) {
+            return Boolean.FALSE;
+        }
+
+        int size = settingList.size();
+        if (size == 1) {
+            return Boolean.FALSE;
+        }
+
+        boolean containsSand = Boolean.FALSE;
+        boolean containsScheme = Boolean.FALSE;
+        for (ExperimentSettingEntity settingEntity : settingList) {
+            String configKey = settingEntity.getConfigKey();
+            if (ExperimentSetting.SandSetting.class.getName().equals(configKey)) {
+                containsSand = Boolean.TRUE;
+            }
+            if (ExperimentSetting.SchemeSetting.class.getName().equals(configKey)) {
+                containsScheme = Boolean.TRUE;
+            }
+        }
+        return containsSand && containsScheme;
+    }
+
+    public ExptSettingModeEnum getExptSettingMode(String exptInstanceId) {
+        List<ExperimentSettingEntity> settingList = listExptSetting(exptInstanceId);
+        if (CollUtil.isEmpty(settingList)) {
+            throw new BizException("获取实验设置时，查询实验设置数据为空");
+        }
+
+        boolean containsSand = Boolean.FALSE;
+        boolean containsScheme = Boolean.FALSE;
+        for (ExperimentSettingEntity settingEntity : settingList) {
+            String configKey = settingEntity.getConfigKey();
+            if (ExperimentSetting.SandSetting.class.getName().equals(configKey)) {
+                containsSand = Boolean.TRUE;
+            }
+            if (ExperimentSetting.SchemeSetting.class.getName().equals(configKey)) {
+                containsScheme = Boolean.TRUE;
+            }
+        }
+
+        if (containsScheme && containsSand) {
+            return ExptSettingModeEnum.SAND_SCHEME;
+        } else if (containsScheme) {
+            return ExptSettingModeEnum.SCHEME;
+        }
+        return ExptSettingModeEnum.SAND;
     }
 
     private ExperimentSettingEntity getSchemeSetting0(String exptInstanceId) {
