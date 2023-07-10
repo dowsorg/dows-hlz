@@ -3,6 +3,7 @@ package org.dows.hep.biz.user.experiment;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.util.ReflectUtil;
+import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.user.experiment.request.ExperimentPersonInsuranceRequest;
 import org.dows.hep.biz.util.TimeUtil;
 import org.dows.hep.entity.CaseOrgFeeEntity;
@@ -226,6 +227,9 @@ public class ExperimentInsuranceBiz {
                 .eq(ExperimentPersonInsuranceEntity::getOperateOrgId, experimentPersonInsuranceRequest.getOperateOrgId())
                 .eq(ExperimentPersonInsuranceEntity::getDeleted, false)
                 .one();
+        if(entity == null || ReflectUtil.isObjectNull(entity)){
+            throw new ExperimentException("该保险不存在");
+        }
         //判断过期时间
         return TimeUtil.isBeforeTime(new Date(),entity.getExpdate());
     }
