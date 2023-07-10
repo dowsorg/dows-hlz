@@ -158,10 +158,9 @@ public class ExperimentParticipatorBiz {
         page.setSize(pageExperimentRequest.getPageSize());
 
         page = experimentParticipatorService.page(page, experimentParticipatorService.lambdaQuery()
-                .select(ExperimentParticipatorEntity::getGroupNo, ExperimentParticipatorEntity::getExperimentGroupId)
+                .select(ExperimentParticipatorEntity::getExperimentGroupId)
                 .eq(ExperimentParticipatorEntity::getExperimentInstanceId, pageExperimentRequest.getExperimentInstanceId())
-                .isNotNull(ExperimentParticipatorEntity::getGroupNo)
-                .groupBy(ExperimentParticipatorEntity::getGroupNo)
+                .isNotNull(ExperimentParticipatorEntity::getExperimentGroupId)
                 .groupBy(ExperimentParticipatorEntity::getExperimentGroupId)
                 .getWrapper());
         PageResponse pageInfo = experimentParticipatorService.getPageInfo(page, ExperimentListResponse.class);
@@ -172,8 +171,10 @@ public class ExperimentParticipatorBiz {
                 //获取小组组名和状态
                 ExperimentGroupEntity groupEntity = experimentGroupService.lambdaQuery()
                         .eq(ExperimentGroupEntity::getExperimentGroupId,response.getExperimentGroupId())
+                        .eq(ExperimentGroupEntity::getExperimentInstanceId,pageExperimentRequest.getExperimentInstanceId())
                         .eq(ExperimentGroupEntity::getDeleted,false)
                         .one();
+                response.setGroupNo(groupEntity.getGroupNo());
                 response.setGroupAlias(groupEntity.getGroupAlias());
                 response.setGroupState(groupEntity.getGroupState());
                 response.setGroupStateStr(response.getGroupStateDescr());
