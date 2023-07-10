@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 @Data
 public class FindSoftProperties {
 
+    // base info
     private String name = "软件名称";
     private String version = "1.0.0";
     private String copyRight = "©  &CYear findsoft 上海哲寻信息科技有限公司";

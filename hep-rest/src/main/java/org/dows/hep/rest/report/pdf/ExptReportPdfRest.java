@@ -55,12 +55,15 @@ public class ExptReportPdfRest {
     public ExptReportVO exportGroupReport(@RequestParam String experimentInstanceId, @RequestParam String experimentGroupId) {
         // 获取实验信息
         ExperimentInstanceEntity exptEntity = checkExpt(experimentInstanceId);
+        String zipPath = SystemConstant.PDF_REPORT_ZIP_PATH + exptEntity.getId() + SystemConstant.SPLIT_UNDER_LINE + exptEntity.getExperimentName() + SystemConstant.SPLIT_UNDER_LINE + experimentGroupId + SystemConstant.SUFFIX_ZIP;
 
         /*todo 分布式锁*/
         RLock lock = redissonClient.getLock(RedisKeyConst.HM_LOCK_REPORT + experimentGroupId);
         try {
             if (lock.tryLock(-1, 10, TimeUnit.SECONDS)) {
-                return generatePdf(experimentInstanceId, experimentGroupId);
+                ExptReportVO exptReportVO = generatePdf(experimentInstanceId, experimentGroupId);
+                toZip(exptReportVO, zipPath);
+                return exptReportVO;
             } else {
                 throw new BizException("报告生成中");
             }
@@ -77,23 +80,26 @@ public class ExptReportPdfRest {
 
     @Operation(summary = "导出实验pdf报告")
     @GetMapping(value = "/v1/report/pdf/exportExptReport")
-    public String exportExptReport(@RequestParam String experimentInstanceId) {
+    public ExptReportVO exportExptReport(@RequestParam String experimentInstanceId) {
         // 获取实验信息
         ExperimentInstanceEntity exptEntity = checkExpt(experimentInstanceId);
+        String zipPath = SystemConstant.PDF_REPORT_ZIP_PATH + exptEntity.getId() + SystemConstant.SPLIT_UNDER_LINE + exptEntity.getExperimentName() + SystemConstant.SUFFIX_ZIP;
+        // 如果已经存在直接返回
+        File zipFile = new File(zipPath);
+        if (zipFile.exists()) {
+            return ExptReportVO.builder()
+                    .zipPath(zipPath)
+                    .groupReportList(new ArrayList<>())
+                    .build();
+        }
 
         /*todo 分布式锁*/
         RLock lock = redissonClient.getLock(RedisKeyConst.HM_LOCK_REPORT + experimentInstanceId);
-        String zipPath = "upload" + File.separator + "report" + File.separator + exptEntity.getId() + SystemConstant.SPLIT_UNDER_LINE + exptEntity.getExperimentName() + SystemConstant.SUFFIX_ZIP;
-        File zipFile = new File(zipPath);
-        if (zipFile.exists()) {
-            return zipPath.replace("\\", "/");
-        }
-
         try {
             if (lock.tryLock(-1, 30, TimeUnit.SECONDS)) {
                 ExptReportVO exptReportVO = generatePdf(experimentInstanceId, null);
                 toZip(exptReportVO, zipPath);
-                return zipPath.replace("\\", "/");
+                return exptReportVO;
             } else {
                 throw new BizException("报告生成中");
             }
@@ -105,7 +111,7 @@ public class ExptReportPdfRest {
             }
         }
 
-        return zipPath.replace("\\", "/");
+        return ExptReportVO.emptyVO();
     }
 
     private ExperimentInstanceEntity checkExpt(String experimentInstanceId) {
@@ -188,5 +194,6 @@ public class ExptReportPdfRest {
                 }
             }
         }
+        reportVO.setZipPath(zipPath);
     }
 }

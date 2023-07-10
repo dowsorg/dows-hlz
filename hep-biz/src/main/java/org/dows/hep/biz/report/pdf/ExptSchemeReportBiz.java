@@ -311,7 +311,8 @@ public class ExptSchemeReportBiz implements ExptReportBiz {
 
         // todo 换成可配置的
         String fileName = "第" + groupEntity.getGroupNo() + "组" + SystemConstant.SPLIT_UNDER_LINE + exptInfo.getExperimentName() + SystemConstant.SPLIT_UNDER_LINE + "方案设计报告" + SystemConstant.SUFFIX_PDF;
-        File homeDirFile = new File("upload" + File.separator + "report" + File.separator);
+        File homeDirFile = new File(SystemConstant.PDF_REPORT_PATH);
+        homeDirFile.mkdirs();
         return new File(homeDirFile, fileName);
     }
 
