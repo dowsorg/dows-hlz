@@ -58,8 +58,6 @@
         <dependency>
             <groupId>org.jboss.xnio</groupId>
             <artifactId>xnio-api</artifactId>
-            <version>3.8.8.Final</version>
-            <scope>compile</scope>
         </dependency>
 
     </dependencies>
