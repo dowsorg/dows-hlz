@@ -695,6 +695,7 @@ public class RsCopyBiz {
     if (!funcIndicatorViewPhysicalExamIdSet.isEmpty()) {
       indicatorViewPhysicalExamService.lambdaQuery()
           .eq(IndicatorViewPhysicalExamEntity::getAppId, appId)
+          .eq(IndicatorViewPhysicalExamEntity::getStatus, EnumStatus.ENABLE.getCode())
           .in(IndicatorViewPhysicalExamEntity::getIndicatorFuncId, funcIndicatorViewPhysicalExamIdSet)
           .list()
           .forEach(indicatorViewPhysicalExamEntity -> {
@@ -770,6 +771,7 @@ public class RsCopyBiz {
     if (!funcIndicatorViewSupportExamIdSet.isEmpty()) {
       indicatorViewSupportExamService.lambdaQuery()
           .eq(IndicatorViewSupportExamEntity::getAppId, appId)
+          .eq(IndicatorViewSupportExamEntity::getStatus, EnumStatus.ENABLE.getCode())
           .in(IndicatorViewSupportExamEntity::getIndicatorFuncId, funcIndicatorViewSupportExamIdSet)
           .list()
           .forEach(indicatorViewSupportExamEntity -> {
@@ -856,6 +858,7 @@ public class RsCopyBiz {
     if (!funcIndicatorJudgeRiskFactorIdSet.isEmpty()) {
       indicatorJudgeRiskFactorService.lambdaQuery()
           .eq(IndicatorJudgeRiskFactorEntity::getAppId, appId)
+          .eq(IndicatorJudgeRiskFactorEntity::getStatus, EnumStatus.ENABLE.getCode())
           .in(IndicatorJudgeRiskFactorEntity::getIndicatorFuncId, funcIndicatorJudgeRiskFactorIdSet)
           .list()
           .forEach(indicatorJudgeRiskFactorEntity -> {
@@ -1038,6 +1041,7 @@ public class RsCopyBiz {
     if (!funcIndicatorJudgeHealthGuidanceIdSet.isEmpty()) {
       indicatorJudgeHealthGuidanceService.lambdaQuery()
           .eq(IndicatorJudgeHealthGuidanceEntity::getAppId, appId)
+          .eq(IndicatorJudgeHealthGuidanceEntity::getStatus, EnumStatus.ENABLE.getCode())
           .in(IndicatorJudgeHealthGuidanceEntity::getIndicatorFuncId, funcIndicatorJudgeHealthGuidanceIdSet)
           .list()
           .forEach(indicatorJudgeHealthGuidanceEntity -> {
@@ -1113,6 +1117,7 @@ public class RsCopyBiz {
     if (!funcIndicatorJudgeHealthProblemIdSet.isEmpty()) {
       indicatorJudgeHealthProblemService.lambdaQuery()
           .eq(IndicatorJudgeHealthProblemEntity::getAppId, appId)
+          .eq(IndicatorJudgeHealthProblemEntity::getStatus, EnumStatus.ENABLE.getCode())
           .in(IndicatorJudgeHealthProblemEntity::getIndicatorFuncId, funcIndicatorJudgeHealthProblemIdSet)
           .list()
           .forEach(indicatorJudgeHealthProblemEntity -> {
