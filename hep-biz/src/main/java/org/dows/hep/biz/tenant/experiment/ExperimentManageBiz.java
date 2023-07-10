@@ -739,6 +739,7 @@ public class ExperimentManageBiz {
                         .or().like("case_name", pageExperimentRequest.getKeyword())
                         .or().like("appointor_name", pageExperimentRequest.getKeyword());
             }
+            queryWrapper.orderByDesc("start_time");
             page = experimentInstanceService.page(page, queryWrapper);
         } else {
             if (roleCode.equals("TEACHER")) {
