@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.constant.RedisKeyConst;
 import org.dows.hep.api.constant.SystemConstant;
-import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.report.pdf.ExptGroupReportVO;
 import org.dows.hep.api.report.pdf.ExptReportVO;
 import org.dows.hep.api.user.experiment.ExptSettingModeEnum;
@@ -35,6 +34,7 @@ import java.util.zip.ZipOutputStream;
 /**
  * @author fhb
  * @version 1.0
+ * @folder report/pdf
  * @description 报告管理-pdf形式
  * @date 2023/7/6 16:38
  **/
@@ -120,9 +120,9 @@ public class ExptReportPdfRest {
                 .oneOpt()
                 .orElseThrow(() -> new BizException("实验不存在"));
         Integer state = exptInstance.getState();
-        if (state < EnumExperimentState.FINISH.getState()) {
-            throw new BizException("实验还未结束，请等待");
-        }
+//        if (state < EnumExperimentState.FINISH.getState()) {
+//            throw new BizException("实验还未结束，请等待");
+//        }
         return exptInstance;
     }
 
