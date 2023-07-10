@@ -17,6 +17,7 @@ import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -204,5 +205,28 @@ public class ExperimentInsuranceBiz {
             }
         }
         return resultMap;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 获取保险状态
+     * @关联表: experimentPersonInsurance
+     * @工时: 4H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年6月28日 上午11:27:34
+     */
+    public Boolean checkInsureStatus(ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest) throws ParseException {
+        ExperimentPersonInsuranceEntity entity = experimentPersonInsuranceService.lambdaQuery()
+                .eq(ExperimentPersonInsuranceEntity::getExperimentPersonId,experimentPersonInsuranceRequest.getExperimentPersonId())
+                .eq(ExperimentPersonInsuranceEntity::getExperimentInstanceId, experimentPersonInsuranceRequest.getExperimentInstanceId())
+                .eq(ExperimentPersonInsuranceEntity::getExperimentGroupId, experimentPersonInsuranceRequest.getExperimentGroupId())
+                .eq(ExperimentPersonInsuranceEntity::getPeriods, experimentPersonInsuranceRequest.getPeriods())
+                .eq(ExperimentPersonInsuranceEntity::getOperateOrgId, experimentPersonInsuranceRequest.getOperateOrgId())
+                .eq(ExperimentPersonInsuranceEntity::getDeleted, false)
+                .one();
+        //判断过期时间
+        return TimeUtil.isBeforeTime(new Date(),entity.getExpdate());
     }
 }

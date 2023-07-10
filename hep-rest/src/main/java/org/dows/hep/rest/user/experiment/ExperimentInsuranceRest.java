@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.util.Map;
 
 /**
@@ -32,6 +33,17 @@ public class ExperimentInsuranceRest {
     public Boolean isPurchaseInsure(@RequestBody @Validated ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest)
     {
         return experimentInsuranceBiz.isPurchaseInsure(experimentPersonInsuranceRequest);
+    }
+
+    /**
+     * 获取保险状态
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取保险状态")
+    @PostMapping("v1/userExperiment/experimentOrgJudge/checkInsureStatus")
+    public Boolean checkInsureStatus(@RequestBody @Validated ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest) throws ParseException {
+        return experimentInsuranceBiz.checkInsureStatus(experimentPersonInsuranceRequest);
     }
 
     /**
