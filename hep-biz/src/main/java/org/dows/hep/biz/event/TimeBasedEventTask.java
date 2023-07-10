@@ -69,23 +69,23 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
             logError("call", "missSetting");
             return RUNCode4Fail;
         }
-        if(null==exptColl.getStartTime()){
-            logError("call", "notStartExperiment");
-            raiseScheduler(DELAYSeconds4Pause);
-            return RUNCode4Silence;
-        }
         Integer experimentState=loadExperimentState();
         if(ShareUtil.XObject.isEmpty(experimentState)){
             logError("call", "missExperiment");
             return RUNCode4Fail;
+        }
+        if(experimentState.equals(EnumExperimentState.FINISH.getState())){
+            logInfo("call", "finishedExperiment");
+            return RUNCode4Silence;
         }
         if(experimentState.equals(EnumExperimentState.SUSPEND.getState())){
             logInfo("call", "pausedExperiment");
             raiseScheduler(DELAYSeconds4Pause);
             return RUNCode4Silence;
         }
-        if(experimentState.equals(EnumExperimentState.FINISH.getState())){
-            logInfo("call", "finishedExperiment");
+        if(null==exptColl.getStartTime()){
+            logError("call", "notStartExperiment");
+            raiseScheduler(DELAYSeconds4Pause);
             return RUNCode4Silence;
         }
         TimeBasedEventCollection eventColl=TimeBasedEventCache.Instance().caffineCache().get(experimentKey,this::loadEvents);
