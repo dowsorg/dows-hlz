@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
+import org.dows.hep.api.user.experiment.ExptSettingModeEnum;
 import org.dows.hep.entity.ExperimentSettingEntity;
 import org.dows.hep.service.ExperimentSettingService;
 import org.springframework.stereotype.Service;
@@ -135,6 +136,32 @@ public class ExperimentSettingBiz {
             }
         }
         return containsSand && containsScheme;
+    }
+
+    public ExptSettingModeEnum getExptSettingMode(String exptInstanceId) {
+        List<ExperimentSettingEntity> settingList = listExptSetting(exptInstanceId);
+        if (CollUtil.isEmpty(settingList)) {
+            throw new BizException("获取实验设置时，查询实验设置数据为空");
+        }
+
+        boolean containsSand = Boolean.FALSE;
+        boolean containsScheme = Boolean.FALSE;
+        for (ExperimentSettingEntity settingEntity : settingList) {
+            String configKey = settingEntity.getConfigKey();
+            if (ExperimentSetting.SandSetting.class.getName().equals(configKey)) {
+                containsSand = Boolean.TRUE;
+            }
+            if (ExperimentSetting.SchemeSetting.class.getName().equals(configKey)) {
+                containsScheme = Boolean.TRUE;
+            }
+        }
+
+        if (containsScheme && containsSand) {
+            return ExptSettingModeEnum.SAND_SCHEME;
+        } else if (containsScheme) {
+            return ExptSettingModeEnum.SCHEME;
+        }
+        return ExptSettingModeEnum.SAND;
     }
 
     private ExperimentSettingEntity getSchemeSetting0(String exptInstanceId) {

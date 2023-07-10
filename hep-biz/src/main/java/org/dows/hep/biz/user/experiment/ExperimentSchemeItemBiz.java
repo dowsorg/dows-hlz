@@ -44,6 +44,24 @@ public class ExperimentSchemeItemBiz {
     }
 
     /**
+     * @param schemeIdList - 实验`方案设计id` 集合
+     * @return java.util.List<org.dows.hep.api.user.experiment.response.ExperimentSchemeItemResponse>
+     * @author fhb
+     * @description 批量列出方案设计 item
+     * @date 2023/7/9 15:46
+     */
+    public List<ExperimentSchemeItemResponse> listBySchemeIds(List<String> schemeIdList) {
+        if (CollUtil.isEmpty(schemeIdList)) {
+            return new ArrayList<>();
+        }
+
+        List<ExperimentSchemeItemEntity> entityList = experimentSchemeItemService.lambdaQuery()
+                .in(ExperimentSchemeItemEntity::getExperimentSchemeId, schemeIdList)
+                .list();
+        return BeanUtil.copyToList(entityList, ExperimentSchemeItemResponse.class);
+    }
+
+    /**
      * @param
      * @return
      * @author fhb

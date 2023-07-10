@@ -175,13 +175,15 @@
             <td>第四期</td>
             <td>第五期</td>
         </tr>
+        <#list peroidWeights as peroidWeight>
         <tr class="background-even-blue">
-            <td>${peroidWeight.one}</td>
-            <td>${peroidWeight.tow}</td>
-            <td>${peroidWeight.three}</td>
-            <td>${peroidWeight.foure}</td>
-            <td>${peroidWeight.five}</td>
+            <td>${peroidWeight.one!""}</td>
+            <td>${peroidWeight.tow!""}</td>
+            <td>${peroidWeight.three!""}</td>
+            <td>${peroidWeight.foure!""}</td>
+            <td>${peroidWeight.five!""}</td>
         </tr>
+        </#list>
     </table>
     <div style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">评分权重</div>
     <table class="wd-700 text-center" align="center">
@@ -231,11 +233,11 @@
         <tr class="background-even-blue">
             <td rowspan="${ib.groupSize!0}">${ib.deathReason}</td>
             <td rowspan="${ib.groupSize!0}">${ib.deathProbability}</td>
-            <td>${npc.riskFactor}</td>
-            <td>${npc.indicator}</td>
-            <td>${npc.dangerScore}</td>
-            <td rowspan="${ib.groupSize!0}">${npc.combinationDangerScore}</td>
-            <td rowspan="${ib.groupSize!0}">${npc.deathScore}</td>
+            <td>${ib.riskFactor}</td>
+            <td>${ib.indicator}</td>
+            <td>${ib.dangerScore}</td>
+            <td rowspan="${ib.groupSize!0}">${ib.combinationDangerScore}</td>
+            <td rowspan="${ib.groupSize!0}">${ib.deathScore}</td>
         </tr>
         </#list>
     </table>
@@ -272,9 +274,9 @@
         </tr>
         <#list npc.serviceLogs as serviceLog>
         <tr class="background-even-blue">
-            <td>${serviceLog.dt}</td>
-            <td>${serviceLog.descr}</td>
-            <td>${serviceLog.lable}</td>
+            <td>${serviceLog.dt!""}</td>
+            <td>${serviceLog.descr!""}</td>
+            <td>${serviceLog.lable!""}</td>
         </tr>
         </#list>
     </table>
@@ -289,9 +291,9 @@
     <div>
         <div style="font-size:18px;margin-top:25px;margin-bottom:25px;">${pq.questionContent}</div>
         <div>你的答案</div>
-        <div>${pq.userAnswer!""}</div>
+        <div>${pq.userAnswer!"无"}</div>
         <div>参考答案</div>
-        <div>${pq.rightAnswer!""}</div>
+        <div>${pq.rightAnswer!"无"}</div>
         <div>解析</div>
         <div>${pq.analysis!"无"}</div>
     </div>
