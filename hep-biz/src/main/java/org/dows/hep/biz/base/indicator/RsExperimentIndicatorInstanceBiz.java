@@ -34,6 +34,7 @@ public class RsExperimentIndicatorInstanceBiz {
             String experimentPersonId = experimentIndicatorInstanceRsEntity.getExperimentPersonId();
             String indicatorInstanceId = experimentIndicatorInstanceRsEntity.getIndicatorInstanceId();
             String experimentIndicatorInstanceId = experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId();
+
             Map<String, String> kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap = kExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.get(experimentPersonId);
             if (Objects.isNull(kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap)) {
               kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap = new HashMap<>();

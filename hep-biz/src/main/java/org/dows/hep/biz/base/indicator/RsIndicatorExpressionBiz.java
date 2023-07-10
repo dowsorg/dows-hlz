@@ -12,6 +12,7 @@ import org.dows.hep.entity.ExperimentIndicatorExpressionItemRsEntity;
 import org.dows.hep.entity.ExperimentIndicatorExpressionRsEntity;
 import org.dows.hep.entity.ExperimentIndicatorValRsEntity;
 import org.dows.hep.entity.IndicatorRuleEntity;
+import org.dows.hep.service.ExperimentIndicatorExpressionItemRsService;
 import org.dows.hep.service.IndicatorRuleService;
 import org.springframework.expression.EvaluationException;
 import org.springframework.expression.Expression;
@@ -25,7 +26,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -38,6 +39,111 @@ import java.util.stream.Collectors;
 public class RsIndicatorExpressionBiz {
   private final IndicatorRuleService indicatorRuleService;
   private final RsExperimentIndicatorInstanceBiz rsExperimentIndicatorInstanceBiz;
+  private final ExperimentIndicatorExpressionItemRsService experimentIndicatorExpressionItemRsService;
+
+
+  public void populateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap(
+      Map<String, List<ExperimentIndicatorExpressionItemRsEntity>> kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap,
+      Set<String> experimentIndicatorExpressionIdSet) {
+    if (Objects.isNull(kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap)) {
+      return;
+    }
+    if (Objects.isNull(experimentIndicatorExpressionIdSet) || experimentIndicatorExpressionIdSet.isEmpty()) {
+      return;
+    }
+    experimentIndicatorExpressionItemRsService.lambdaQuery()
+        .in(ExperimentIndicatorExpressionItemRsEntity::getIndicatorExpressionItemId)
+        .list()
+        .forEach(experimentIndicatorExpressionItemRsEntity -> {
+          String experimentIndicatorExpressionId = experimentIndicatorExpressionItemRsEntity.getIndicatorExpressionId();
+          List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList = kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap.get(experimentIndicatorExpressionId);
+          if (Objects.isNull(experimentIndicatorExpressionItemRsEntityList)) {
+            experimentIndicatorExpressionItemRsEntityList = new ArrayList<>();
+          }
+          experimentIndicatorExpressionItemRsEntityList.add(experimentIndicatorExpressionItemRsEntity);
+          kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap.put(experimentIndicatorExpressionId, experimentIndicatorExpressionItemRsEntityList);
+        });
+  }
+
+  public void populateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap(
+      Map<String, Map<String, Boolean>> kExperimentPersonIdVKExperimentIndicatorExpressionIdVResultBooleanMap,
+      Map<String, List<ExperimentIndicatorExpressionItemRsEntity>> kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap,
+      Map<String, Map<String, String>> kExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap,
+      Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap
+  ) {
+    if (Objects.isNull(kExperimentPersonIdVKExperimentIndicatorExpressionIdVResultBooleanMap)
+        || Objects.isNull(kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap)
+        || Objects.isNull(kExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap)
+        || Objects.isNull(kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap)
+    ) {
+      return;
+    }
+    kExperimentPersonIdVKExperimentIndicatorExpressionIdVResultBooleanMap.forEach((experimentPersonId, kExperimentIndicatorExpressionIdVAtomicBooleanMap) -> {
+      if (Objects.isNull(kExperimentIndicatorExpressionIdVAtomicBooleanMap) || kExperimentIndicatorExpressionIdVAtomicBooleanMap.isEmpty()) {
+        return;
+      }
+      kExperimentIndicatorExpressionIdVAtomicBooleanMap.forEach((experimentIndicatorExpressionId, resultBoolean) -> {
+        List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList = kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap.get(experimentIndicatorExpressionId);
+        if (Objects.isNull(experimentIndicatorExpressionItemRsEntityList) || experimentIndicatorExpressionItemRsEntityList.isEmpty()) {
+          resultBoolean = Boolean.FALSE;
+        } else {
+          ExperimentIndicatorExpressionItemRsEntity experimentIndicatorExpressionItemRsEntity = experimentIndicatorExpressionItemRsEntityList.get(0);
+          String conditionExpression = experimentIndicatorExpressionItemRsEntity.getConditionExpression();
+          String conditionNameList = experimentIndicatorExpressionItemRsEntity.getConditionNameList();
+          String conditionValList = experimentIndicatorExpressionItemRsEntity.getConditionValList();
+          if (StringUtils.isAllBlank(conditionExpression, conditionNameList, conditionValList)) {
+            resultBoolean = Boolean.FALSE;
+          } else {
+            try {
+              checkConditionNameAndValSize(conditionNameList, conditionValList);
+              List<String> conditionNameSplitList = getConditionNameSplitListByConditionNameList(conditionNameList);
+              List<String> conditionValSplitList = getConditionValArrayByConditionValList(conditionValList);
+              StandardEvaluationContext context = new StandardEvaluationContext();
+              boolean needParse = true;
+              for (int i = 0; i <= conditionNameSplitList.size() - 1; i++) {
+                String indicatorInstanceId = conditionValSplitList.get(i);
+                Map<String, String> kIndicatorInstanceIdVExperimentIndicatorInstanceId = kExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.get(experimentPersonId);
+                if (Objects.isNull(kIndicatorInstanceIdVExperimentIndicatorInstanceId) || Objects.isNull(kIndicatorInstanceIdVExperimentIndicatorInstanceId.get(indicatorInstanceId))) {
+                  log.error("experimentPersonId:{}, indicatorInstanceId:{} has no experimentIndicatorInstanceId", experimentPersonId, indicatorInstanceId);
+                  resultBoolean = Boolean.FALSE;
+                  needParse = false;
+                  break;
+                } else {
+                  String experimentIndicatorInstanceId = kIndicatorInstanceIdVExperimentIndicatorInstanceId.get(indicatorInstanceId);
+                  ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
+                  if (Objects.isNull(experimentIndicatorValRsEntity)) {
+                    resultBoolean = Boolean.FALSE;
+                    needParse = false;
+                    break;
+                  } else {
+                    String currentVal = experimentIndicatorValRsEntity.getCurrentVal();
+                    boolean isValDigital = NumberUtils.isCreatable(currentVal);
+                    if (isValDigital) {
+                      context.setVariable(conditionNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(currentVal)));
+                    } else {
+                      context.setVariable(conditionNameSplitList.get(i), currentVal);
+                    }
+                  }
+                }
+              }
+              if (!needParse) {
+                return;
+              }
+              ExpressionParser parser = new SpelExpressionParser();
+              Expression expression = parser.parseExpression(conditionExpression);
+              Boolean conditionResult = expression.getValue(context, Boolean.class);
+              resultBoolean = Boolean.TRUE.equals(conditionResult);
+            } catch (Throwable throwable) {
+              log.error("experimentIndicatorExpressionId:{}, checkConditionNameAndValSize failed", experimentIndicatorExpressionId);
+              resultBoolean = Boolean.FALSE;
+            }
+          }
+        }
+        kExperimentIndicatorExpressionIdVAtomicBooleanMap.put(experimentIndicatorExpressionId, resultBoolean);
+        kExperimentPersonIdVKExperimentIndicatorExpressionIdVResultBooleanMap.put(experimentPersonId, kExperimentIndicatorExpressionIdVAtomicBooleanMap);
+      });
+    });
+  }
 
   private static String wrapStrWithDoubleSingleQuotes(String str) {
     return EnumString.SINGLE_QUOTES.getStr() +
@@ -252,78 +358,78 @@ public class RsIndicatorExpressionBiz {
   }
 
   /* runsix:indicatorExpression is just a condition  */
-//  private void epIEConditionList(
-//      Map<String, Map<String, AtomicBoolean>> kExperimentPersonIdVKExperimentIndicatorExpressionIdVAtomicBooleanMap
-//  ) {
-//    if (Objects.isNull(kExperimentPersonIdVKExperimentIndicatorExpressionIdVAtomicBooleanMap) || kExperimentPersonIdVKExperimentIndicatorExpressionIdVAtomicBooleanMap.isEmpty()) {
-//      return;
-//    }
-//    Set<String> experimentPersonIdSet = kExperimentPersonIdVKExperimentIndicatorExpressionIdVAtomicBooleanMap.keySet();
-//    Map<String, Map<String, String>> kExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap = new HashMap<>();
-//    CompletableFuture<Void> populateKExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMapByExperimentPersonIdSetCF = CompletableFuture.runAsync(() -> {
-//      rsExperimentIndicatorInstanceBiz.populateKExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMapByExperimentPersonIdSet(
-//          kExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap, experimentPersonIdSet);
-//    });
-//    kExperimentPersonIdVKExperimentIndicatorExpressionIdVAtomicBooleanMap.forEach((experimentPersonId, kExperimentIndicatorExpressionIdVAtomicBooleanMap) -> {
-//      if (Objects.isNull(kExperimentIndicatorExpressionIdVAtomicBooleanMap) || kExperimentIndicatorExpressionIdVAtomicBooleanMap.isEmpty()) {
-//        return;
-//      }
-//      kExperimentIndicatorExpressionIdVAtomicBooleanMap.forEach((experimentIndicatorExpressionId, atomicBoolean) -> {
-//        List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList = kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap.get(experimentIndicatorExpressionId);
-//        if (Objects.isNull(experimentIndicatorExpressionItemRsEntityList) || experimentIndicatorExpressionItemRsEntityList.isEmpty()) {
-//          atomicBoolean.set(Boolean.FALSE);
-//        } else {
-//          ExperimentIndicatorExpressionItemRsEntity experimentIndicatorExpressionItemRsEntity = experimentIndicatorExpressionItemRsEntityList.get(0);
-//          String conditionExpression = experimentIndicatorExpressionItemRsEntity.getConditionExpression();
-//          String conditionNameList = experimentIndicatorExpressionItemRsEntity.getConditionNameList();
-//          String conditionValList = experimentIndicatorExpressionItemRsEntity.getConditionValList();
-//          if (StringUtils.isAllBlank(conditionExpression, conditionNameList, conditionValList)) {
-//            atomicBoolean.set(Boolean.FALSE);
-//          } else {
-//            try {
-//              checkConditionNameAndValSize(conditionNameList, conditionValList);
-//              List<String> conditionNameSplitList = getConditionNameSplitListByConditionNameList(conditionNameList);
-//              List<String> conditionValSplitList = getConditionValArrayByConditionValList(conditionValList);
-//              StandardEvaluationContext context = new StandardEvaluationContext();
-//              for (int i = 0; i <= conditionNameSplitList.size()-1; i++) {
-//                String indicatorInstanceId = conditionValSplitList.get(i);
-//                Map<String, String> kIndicatorInstanceIdVExperimentIndicatorInstanceId = kExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.get(experimentPersonId);
-//                if (Objects.isNull(kIndicatorInstanceIdVExperimentIndicatorInstanceId) || Objects.isNull(kIndicatorInstanceIdVExperimentIndicatorInstanceId.get(indicatorInstanceId))) {
-//                  log.error("experimentPersonId:{}, indicatorInstanceId:{} has no experimentIndicatorInstanceId", experimentPersonId, indicatorInstanceId);
-//                  atomicBoolean.set(Boolean.FALSE);
-//                  break;
-//                } else {
-//                  String experimentIndicatorInstanceId = kIndicatorInstanceIdVExperimentIndicatorInstanceId.get(indicatorInstanceId);
-//                  ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValMap.get(experimentIndicatorInstanceId);
-//                  if (Objects.isNull(experimentIndicatorValRsEntity)) {
-//                    atomicBoolean.set(Boolean.FALSE);
-//                    break;
-//                  } else {
-//                    String currentVal = experimentIndicatorValRsEntity.getCurrentVal();
-//                    boolean isValDigital = NumberUtils.isCreatable(currentVal);
-//                    if (isValDigital) {
-//                      context.setVariable(conditionNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(currentVal)));
-//                    } else {
-//                      context.setVariable(conditionNameSplitList.get(i), currentVal);
-//                    }
-//                  }
-//                }
-//              }
-//              ExpressionParser parser = new SpelExpressionParser();
-//              Expression expression = parser.parseExpression(conditionExpression);
-//              Boolean conditionResult = expression.getValue(context, Boolean.class);
-//              atomicBoolean.set(Boolean.TRUE.equals(conditionResult));
-//            } catch (Throwable throwable) {
-//              log.error("experimentIndicatorExpressionId:{}, checkConditionNameAndValSize failed", experimentIndicatorExpressionId);
-//              atomicBoolean.set(Boolean.FALSE);
-//            }
-//          }
-//        }
-//        kExperimentIndicatorExpressionIdVAtomicBooleanMap.put(experimentIndicatorExpressionId, atomicBoolean);
-//        kExperimentPersonIdVKExperimentIndicatorExpressionIdVAtomicBooleanMap.put(experimentPersonId, kExperimentIndicatorExpressionIdVAtomicBooleanMap);
-//      });
-//    });
-//  }
+  private void ePIEConditionType(
+      Map<String, Map<String, Boolean>> kExperimentPersonIdVKExperimentIndicatorExpressionIdVResultBooleanMap,
+      Integer period
+  ) throws ExecutionException, InterruptedException {
+    if (Objects.isNull(kExperimentPersonIdVKExperimentIndicatorExpressionIdVResultBooleanMap) || kExperimentPersonIdVKExperimentIndicatorExpressionIdVResultBooleanMap.isEmpty()) {
+      return;
+    }
+    Set<String> experimentPersonIdSet = new HashSet<>();
+    Set<String> experimentIndicatorExpressionIdSet = new HashSet<>();
+    kExperimentPersonIdVKExperimentIndicatorExpressionIdVResultBooleanMap.forEach((experimentPersonId, kExperimentIndicatorExpressionIdVResultBooleanMap) -> {
+      experimentPersonIdSet.add(experimentPersonId);
+      kExperimentIndicatorExpressionIdVResultBooleanMap.forEach((experimentIndicatorExpressionId, resultBoolean) -> {
+        experimentIndicatorExpressionIdSet.add(experimentIndicatorExpressionId);
+      });
+    });
+
+    Map<String, Map<String, String>> kExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap = new HashMap<>();
+    CompletableFuture<Void> populateKExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMapByExperimentPersonIdSetCF = CompletableFuture.runAsync(() -> {
+      rsExperimentIndicatorInstanceBiz.populateKExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMapByExperimentPersonIdSet(
+          kExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap, experimentPersonIdSet);
+    });
+    populateKExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMapByExperimentPersonIdSetCF.get();
+
+    Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
+    kExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.values().forEach(IndicatorInstanceIdVExperimentIndicatorInstanceIdMap -> {
+      if (Objects.nonNull(IndicatorInstanceIdVExperimentIndicatorInstanceIdMap)) {
+        IndicatorInstanceIdVExperimentIndicatorInstanceIdMap.values().stream().filter(StringUtils::isNotBlank).forEach(experimentIndicatorInstanceIdSet::add);
+      }
+    });
+    Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = new HashMap<>();
+    CompletableFuture<Void> populateKExperimentIndicatorInstanceIdVExperimentIndicatorValMapCF = CompletableFuture.runAsync(() -> {
+      rsExperimentIndicatorInstanceBiz.populateKExperimentIndicatorInstanceIdVExperimentIndicatorValMap(
+          kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap, period, experimentIndicatorInstanceIdSet);
+    });
+    populateKExperimentIndicatorInstanceIdVExperimentIndicatorValMapCF.get();
+
+    Map<String, List<ExperimentIndicatorExpressionItemRsEntity>> kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap = new HashMap<>();
+    CompletableFuture<Void> populateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMapCF = CompletableFuture.runAsync(() -> {
+      populateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap(kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap, experimentIndicatorExpressionIdSet);
+    });
+    populateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMapCF.get();
+
+    CompletableFuture<Void> populateKExperimentPersonIdVKExperimentIndicatorExpressionIdVResultBooleanMapCF = CompletableFuture.runAsync(() -> {
+      populateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap(
+          kExperimentPersonIdVKExperimentIndicatorExpressionIdVResultBooleanMap,
+          kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap,
+          kExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap,
+          kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap
+      );
+    });
+    populateKExperimentPersonIdVKExperimentIndicatorExpressionIdVResultBooleanMapCF.get();
+  }
+
+//  private void ePIECondition
+
+  private void ePIEResultSingle(
+      ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity,
+      List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList,
+      ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity,
+      ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity
+      ) {
+    for (int i = 0; i <= experimentIndicatorExpressionItemRsEntityList.size()-1; i++) {
+      ExperimentIndicatorExpressionItemRsEntity experimentIndicatorExpressionItemRsEntity = experimentIndicatorExpressionItemRsEntityList.get(i);
+      String conditionExpression = experimentIndicatorExpressionItemRsEntity.getConditionExpression();
+      String conditionNameList = experimentIndicatorExpressionItemRsEntity.getConditionNameList();
+      String conditionValList = experimentIndicatorExpressionItemRsEntity.getConditionValList();
+      String resultExpression = experimentIndicatorExpressionItemRsEntity.getResultExpression();
+      String resultNameList = experimentIndicatorExpressionItemRsEntity.getResultNameList();
+      String resultValList = experimentIndicatorExpressionItemRsEntity.getResultValList();
+
+    }
+  }
 
   /* runsix:TODO  */
   private void ePIEIndicatorManagement(Map<ExperimentIndicatorExpressionRsEntity, AtomicReference> kExperimentIndicatorExpressionRsEntityVAtomicReferenceMap) {
@@ -339,7 +445,11 @@ public class RsIndicatorExpressionBiz {
   }
 
   /* runsix:now it is just a condition */
-  private void ePIECrowds() {
+  private void ePIECrowds(
+      Map<String, Map<String, Boolean>> kExperimentPersonIdVKExperimentIndicatorExpressionIdVResultBooleanMap,
+      Integer period
+  ) throws ExecutionException, InterruptedException {
+    ePIEConditionType(kExperimentPersonIdVKExperimentIndicatorExpressionIdVResultBooleanMap, period);
   }
 
   /* runsix:TODO  */
@@ -358,7 +468,7 @@ public class RsIndicatorExpressionBiz {
     switch (enumIndicatorExpressionSource) {
       case INDICATOR_MANAGEMENT -> ePIEIndicatorManagement(new HashMap<>());
       case INDICATOR_JUDGE_RISK_FACTOR -> ePIEIndicatorJudgeRiskFactor();
-      case CROWDS -> ePIECrowds();
+//      case CROWDS -> ePIECrowds();
     }
   }
 
