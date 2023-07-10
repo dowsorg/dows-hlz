@@ -6,6 +6,7 @@ import org.dows.hep.entity.CasePersonEntity;
 import org.dows.hep.service.CasePersonService;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -41,7 +42,7 @@ public class CasePersonDao extends BaseDao<CasePersonService, CasePersonEntity> 
         return null;
     }
 
-    public List<CasePersonEntity> getByAccountIds(List<String> accountIds,SFunction<CasePersonEntity,?>... cols){
+    public List<CasePersonEntity> getByAccountIds(Collection<String> accountIds,SFunction<CasePersonEntity,?>... cols){
         if(ShareUtil.XObject.isEmpty(accountIds)){
             return Collections.emptyList();
         }
@@ -52,7 +53,7 @@ public class CasePersonDao extends BaseDao<CasePersonService, CasePersonEntity> 
                 .select(cols)
                 .list();
     }
-    public List<CasePersonEntity> getByPersonIds(List<String> personIds,SFunction<CasePersonEntity,?>... cols){
+    public List<CasePersonEntity> getByPersonIds(Collection<String> personIds, SFunction<CasePersonEntity,?>... cols){
         if(ShareUtil.XObject.isEmpty(personIds)){
             return Collections.emptyList();
         }

@@ -182,8 +182,8 @@ public class ExptOrgFlowValidator {
     public OperateFlowEntity getOrgFlow(boolean assertNotEmpty,SFunction<OperateFlowEntity,?>... cols){
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(experimentPersonId))
                 .throwMessage("未找到实验人物ID");
-        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(experimentPersonId))
-                .throwMessage("未找到实验人物ID");
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(experimentOrgId))
+                .throwMessage("未找到实验机构ID");
         if(null==exptFlow){
             exptFlow=CrudContextHolder.getBean(OperateFlowDao.class)
                     .getCurrrentFlow(experimentPersonId, experimentOrgId, null, cols);

@@ -85,4 +85,8 @@ public abstract class BaseSnapshotWriter<T> implements ISnapshotDbWriter<T> {
         String str=String.format("%s.%s type:%s %s",this.getClass().getName(), func,getSnapshotType().getName(),String.format(Optional.ofNullable(msg).orElse(""), args));
         log.error(str,ex);
     }
+    protected void logInfo(String func, String msg,Object... args){
+        String str=String.format("%s.%s type:%s %s",this.getClass().getName(), func,getSnapshotType().getName(),String.format(Optional.ofNullable(msg).orElse(""), args));
+        log.info(str);
+    }
 }

@@ -1,10 +1,12 @@
 package org.dows.hep.rest.user.experiment;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.core.BaseExptRequest;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.biz.user.experiment.ExperimentOrgBiz;
@@ -67,8 +69,19 @@ public class ExperimentOrgRest {
     */
     @Operation(summary = "获取机构通知列表")
     @PostMapping("v1/userExperiment/experimentOrg/pageOrgNotice")
-    public OrgNoticeResponse pageOrgNotice(@RequestBody @Validated FindOrgNoticeRequest findOrgNotice ) {
+    public Page<OrgNoticeResponse> pageOrgNotice(@RequestBody @Validated BaseExptRequest findOrgNotice ) {
         return experimentOrgBiz.pageOrgNotice(findOrgNotice);
+    }
+
+    @Operation(summary = "获取机构通知详情（主要是事件操作提示+处理措施列表）")
+    @PostMapping("v1/userExperiment/experimentOrg/getOrgNotice")
+    public OrgNoticeResponse getOrgNotice(FindOrgNoticeRequest findOrgNotice) throws JsonProcessingException{
+        return experimentOrgBiz.getOrgNotice(findOrgNotice);
+    }
+    @Operation(summary = "处理突发事件")
+    @PostMapping("v1/userExperiment/experimentOrg/saveOrgNoticeAction")
+    public OrgNoticeResponse saveOrgNoticeAction(SaveNoticeActionRequest saveNoticeAction, HttpServletRequest request) throws JsonProcessingException{
+        return experimentOrgBiz.saveOrgNoticeAction(saveNoticeAction,request);
     }
 
     /**

@@ -18,7 +18,7 @@ public class EventScheduler {
     }
     private EventScheduler(int coreSize){
         ScheduledThreadPoolExecutor executor=new ScheduledThreadPoolExecutor(coreSize,
-                new ThreadFactoryBuilder().setNameFormat("EventScheduler-%d").build(),
+                new ThreadFactoryBuilder().setNameFormat("eventScheduler-%d").build(),
                 new ThreadPoolAbortPolicy());
         executor.setRemoveOnCancelPolicy(true);
         scheduledExecutor=executor;

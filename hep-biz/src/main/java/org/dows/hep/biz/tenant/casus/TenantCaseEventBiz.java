@@ -209,7 +209,12 @@ public class TenantCaseEventBiz {
         }
         if (ShareUtil.XObject.notEmpty(saveCaseEvent.getEffectExpresssions())) {
             List<String> dst = mapExpressions.computeIfAbsent(caseEventId, key -> new ArrayList<>());
-            saveCaseEvent.getEffectExpresssions().forEach(i -> dst.add(i.getIndicatorExpressionId()));
+            saveCaseEvent.getEffectExpresssions().forEach(i -> {
+                if(ShareUtil.XObject.isEmpty(i.getIndicatorExpressionId())){
+                    return;
+                }
+                dst.add(i.getIndicatorExpressionId());
+            });
         }
         saveCaseEvent.getActions().forEach(i -> {
             if (ShareUtil.XObject.isEmpty(i.getActionExpresssions())) {
