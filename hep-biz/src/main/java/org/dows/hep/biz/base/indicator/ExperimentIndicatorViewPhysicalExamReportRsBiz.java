@@ -340,6 +340,32 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
     experimentIndicatorViewPhysicalExamReportRsService.saveOrUpdateBatch(experimentIndicatorViewPhysicalExamReportRsEntityList);
   }
 
+  /**
+   * runsix method process
+   * 1.change money
+   * 2.save reportList
+  */
+  @Transactional(rollbackFor = Exception.class)
+  public void v2PhysicalExamCheck(ExperimentPhysicalExamCheckRequestRs experimentPhysicalExamCheckRequestRs) {
+    List<ExperimentIndicatorViewPhysicalExamReportRsEntity> experimentIndicatorViewPhysicalExamReportRsEntityList = new ArrayList<>();
+    /* runsix:TODO 这个期数后期根据张亮接口拿 */
+    Integer period = 1;
+    String appId = experimentPhysicalExamCheckRequestRs.getAppId();
+    String experimentId = experimentPhysicalExamCheckRequestRs.getExperimentId();
+    String experimentPersonId = experimentPhysicalExamCheckRequestRs.getExperimentPersonId();
+    String indicatorFuncId = experimentPhysicalExamCheckRequestRs.getIndicatorFuncId();
+
+//    experimentIndicatorInstanceRsBiz.changeMoney(RsChangeMoneyRequest
+//        .builder()
+//        .appId(appId)
+//        .experimentId(experimentId)
+//        .experimentPersonId(experimentPersonId)
+//        .periods(period)
+//        .moneyChange(moneyChangeAtomicReference.get())
+//        .build());
+    experimentIndicatorViewPhysicalExamReportRsService.saveOrUpdateBatch(experimentIndicatorViewPhysicalExamReportRsEntityList);
+  }
+
   public List<ExperimentPhysicalExamReportResponseRs> get(String appId, String experimentId, String indicatorFuncId, String experimentPersonId, String experimentOrgId) {
     /* runsix:TODO 期数当前写死为1,后期从张亮获取 */
     Integer period = 1;

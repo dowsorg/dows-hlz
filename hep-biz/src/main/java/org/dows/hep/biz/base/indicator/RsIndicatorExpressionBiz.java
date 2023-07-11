@@ -8,11 +8,9 @@ import org.dows.hep.api.base.indicator.request.RsIndicatorExpressionCheckoutCond
 import org.dows.hep.api.base.indicator.request.RsIndicatorExpressionCheckoutResultRequest;
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.RsIndicatorExpressionException;
-import org.dows.hep.entity.ExperimentIndicatorExpressionItemRsEntity;
-import org.dows.hep.entity.ExperimentIndicatorExpressionRsEntity;
-import org.dows.hep.entity.ExperimentIndicatorValRsEntity;
-import org.dows.hep.entity.IndicatorRuleEntity;
+import org.dows.hep.entity.*;
 import org.dows.hep.service.ExperimentIndicatorExpressionItemRsService;
+import org.dows.hep.service.ExperimentIndicatorInstanceRsService;
 import org.dows.hep.service.IndicatorRuleService;
 import org.springframework.expression.EvaluationException;
 import org.springframework.expression.Expression;
@@ -41,6 +39,7 @@ public class RsIndicatorExpressionBiz {
   private final RsExperimentIndicatorInstanceBiz rsExperimentIndicatorInstanceBiz;
   private final ExperimentIndicatorExpressionItemRsService experimentIndicatorExpressionItemRsService;
   private final String RESULT_DROP = "";
+  private final ExperimentIndicatorInstanceRsService experimentIndicatorInstanceRsService;
 
 
   public void populateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap(
@@ -570,24 +569,110 @@ public class RsIndicatorExpressionBiz {
     }
   }
 
-  private void handleParsedResult(
+  /**
+   * runsix method process
+   * only handle digit
+  */
+  private void minAndMaxHandle(
+      AtomicReference<String> resultAtomicReference,
+      ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity,
+      ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity
+  ) {
+    String result = resultAtomicReference.get();
+    if (StringUtils.isBlank(result)) {
+      return;
+    }
+    if (!NumberUtils.isCreatable(result)) {
+      return;
+    }
+    try {
+      String min = minExperimentIndicatorExpressionItemRsEntity.getResultRaw();
+      if (NumberUtils.isCreatable(min) && BigDecimal.valueOf(Double.parseDouble(result)).compareTo(BigDecimal.valueOf(Double.parseDouble(min))) < 0) {
+        result = min;
+      }
+      String max = maxExperimentIndicatorExpressionItemRsEntity.getResultRaw();
+      if (NumberUtils.isCreatable(max) && BigDecimal.valueOf(Double.parseDouble(result)).compareTo(BigDecimal.valueOf(Double.parseDouble(min))) > 0) {
+        result = max;
+      }
+      resultAtomicReference.set(result);
+    } catch (Exception e) {
+      log.error("RsIndicatorExpressionBiz.minAndMaxHandle", e);
+      return;
+    }
+  }
+
+  /**
+   * runsix method process
+   * 1.如果解析的结果是空，则将结果赋值为指标默认值
+   * 2.上下限处理
+  */
+  private void physicalExamHandleParsedResult(
+      AtomicReference<String> resultAtomicReference,
       ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity,
       ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity,
       ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity
   ) {
-    Integer source = experimentIndicatorExpressionRsEntity.getSource();
+    String result = resultAtomicReference.get();
+    /* runsix:1.如果解析的结果是空，则将结果赋值为指标默认值 */
+    if (StringUtils.isBlank(result)) {
+      /* runsix: TODO must optimize */
+      String principalId = experimentIndicatorExpressionRsEntity.getPrincipalId();
+      ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = experimentIndicatorInstanceRsService.lambdaQuery()
+          .eq(ExperimentIndicatorInstanceRsEntity::getExperimentIndicatorInstanceId, principalId)
+          .one();
+      if (Objects.isNull(experimentIndicatorInstanceRsEntity)) {
+        resultAtomicReference.set("");
+      } else {
+        resultAtomicReference.set(experimentIndicatorInstanceRsEntity.getDef());
+      }
+    }
+    /* runsix:2.上下限处理 */
+    minAndMaxHandle(resultAtomicReference, minExperimentIndicatorExpressionItemRsEntity, maxExperimentIndicatorExpressionItemRsEntity);
+  }
 
+  private void supportExamHandleParsedResult(
+      AtomicReference<String> resultAtomicReference,
+      ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity,
+      ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity,
+      ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity
+  ) {
+
+  }
+
+  private void handleParsedResult(
+      AtomicReference<String> resultAtomicReference,
+      Integer scene,
+      ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity,
+      ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity,
+      ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity
+  ) {
+    EnumIndicatorExpressionScene enumIndicatorExpressionScene = EnumIndicatorExpressionScene.getBySence(scene);
+    /* runsix:如果公式使用场景不明确，不做特殊处理，直接返回 */
+    if (Objects.isNull(enumIndicatorExpressionScene)) {
+      return;
+    }
+    switch (enumIndicatorExpressionScene) {
+      case PHYSICAL_EXAM -> physicalExamHandleParsedResult(
+          resultAtomicReference, experimentIndicatorExpressionRsEntity, minExperimentIndicatorExpressionItemRsEntity, maxExperimentIndicatorExpressionItemRsEntity
+      );
+      case SUPPORT_EXAM -> supportExamHandleParsedResult(
+          resultAtomicReference, experimentIndicatorExpressionRsEntity, minExperimentIndicatorExpressionItemRsEntity, maxExperimentIndicatorExpressionItemRsEntity
+      );
+      default -> {
+        /* runsix:如果公式使用场景不明确，不做特殊处理，直接返回 */
+        return;
+      }
+    }
   }
 
   /**
    * runsix method process
    * 实验解析指标公式-解析ExperimentIndicatorExpressionItemRsEntity单条结果
    * 1.按顺序解析每一个公式
-   * 2.如果条件不满足，不解析结果，继续下一个
-   * 3.如果一个公式有结果就跳出
-   * 4.处理解析后的结果
+   * 2.处理解析后的结果
   */
-  private void ePIEResultUsingExperimentIndicatorInstanceIdCombine(
+  private void ePIEResultUsingExperimentIndicatorInstanceIdCombineWithHandle(
+      Integer scene,
       Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
       ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity,
       List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList,
@@ -599,26 +684,43 @@ public class RsIndicatorExpressionBiz {
     experimentIndicatorExpressionItemRsEntityList.sort(Comparator.comparingInt(ExperimentIndicatorExpressionItemRsEntity::getSeq));
     for (int i = 0; i <= experimentIndicatorExpressionItemRsEntityList.size()-1; i++) {
       ExperimentIndicatorExpressionItemRsEntity experimentIndicatorExpressionItemRsEntity = experimentIndicatorExpressionItemRsEntityList.get(i);
-
-      boolean parsedCondition = ePIEConditionUsingExperimentIndicatorInstanceId(experimentIndicatorExpressionItemRsEntity, kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap);
-      /* runsix:2.如果条件不满足，不解析结果，继续下一个 */
-      if (!parsedCondition) {
-        continue;
-      }
-
-      /* runsix:3.如果一个公式有结果就跳出 */
-      String parsedResult = ePIEResultUsingExperimentIndicatorInstanceId(experimentIndicatorExpressionItemRsEntity, kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap);
-      if (RESULT_DROP.equals(parsedResult)) {
-        continue;
-      }
-
-      /* runsix:4.处理解析后的结果 */
-      handleParsedResult(
-          experimentIndicatorExpressionRsEntity, minExperimentIndicatorExpressionItemRsEntity, maxExperimentIndicatorExpressionItemRsEntity
+      boolean hasResult = ePIEResultUsingExperimentIndicatorInstanceIdCombineWithoutHandle(
+          resultAtomicReference, kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap, experimentIndicatorExpressionItemRsEntity
       );
-      break;
+      if (hasResult) {
+        /* runsix:2.处理解析后的结果 */
+        handleParsedResult(
+            resultAtomicReference, scene, experimentIndicatorExpressionRsEntity, minExperimentIndicatorExpressionItemRsEntity, maxExperimentIndicatorExpressionItemRsEntity
+        );
+        break;
+      }
+    }
+  }
+
+  /**
+   * runsix method process
+   * 1.解析条件
+   * 2.如果条件不满足，不解析结果，继续下一个
+   * 3.如果一个公式有结果就跳出
+  */
+  private boolean ePIEResultUsingExperimentIndicatorInstanceIdCombineWithoutHandle(
+      AtomicReference<String> resultAtomicReference,
+      Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
+      ExperimentIndicatorExpressionItemRsEntity experimentIndicatorExpressionItemRsEntity
+  ) {
+    boolean parsedCondition = ePIEConditionUsingExperimentIndicatorInstanceId(experimentIndicatorExpressionItemRsEntity, kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap);
+    /* runsix:2.如果条件不满足，不解析结果，继续下一个 */
+    if (!parsedCondition) {
+      return false;
     }
 
+    /* runsix:3.如果一个公式有结果就跳出 */
+    String parsedResult = ePIEResultUsingExperimentIndicatorInstanceId(experimentIndicatorExpressionItemRsEntity, kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap);
+    if (RESULT_DROP.equals(parsedResult)) {
+      return false;
+    }
+    resultAtomicReference.set(parsedResult);
+    return true;
   }
 
   /* runsix:TODO  */

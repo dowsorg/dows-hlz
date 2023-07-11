@@ -17,11 +17,11 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class ExperimentPhysicalExamCheckRequestRs implements Serializable {
-  @Schema(title = "实验id")
-  private String experimentId;
-
   @Schema(title = "应用ID")
   private String appId;
+
+  @Schema(title = "实验id")
+  private String experimentId;
 
   @Schema(title = "实验人物id")
   private String experimentPersonId;
