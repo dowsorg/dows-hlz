@@ -137,6 +137,9 @@ public class ExperimentParticipatorBiz {
             page = page.setTotal(0).setCurrent(0).setSize(0).setRecords(new ArrayList<>());
         }
         PageResponse pageInfo = experimentParticipatorService.getPageInfo(page, ExperimentListResponse.class);
+        if(pageInfo.getList() == null || pageInfo.getList().size() == 0){
+            pageInfo.setList(new ArrayList());
+        }
         return pageInfo;
     }
 
