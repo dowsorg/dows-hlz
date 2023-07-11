@@ -1,10 +1,9 @@
 package org.dows.hep.biz.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import org.dows.hep.api.base.intervene.vo.CaseEventActionInfoVO;
+import org.dows.hep.api.user.experiment.vo.ExptOrgEventActionVO;
 
 import java.util.List;
 
@@ -13,7 +12,6 @@ import java.util.List;
  * @date : 2023/6/17 23:08
  */
 @Data
-@Builder
 @Accessors(chain = true)
 public class ExperimentEventJson {
     @Schema(title = "案例事件ID")
@@ -46,5 +44,7 @@ public class ExperimentEventJson {
     private String triggerSpan;
 
     @Schema(title = "事件处理措施列表")
-    private List<CaseEventActionInfoVO> actions;
+    private List<ExptOrgEventActionVO> actions;
+
+
 }

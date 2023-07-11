@@ -371,7 +371,7 @@ public class ExperimentOrgInterveneBiz{
             if(ShareUtil.XObject.notEmpty(item.getItemId(), true)){
                 continue;
             }
-            item.setItemId(getTimestampId(dateNow,saveTreat.getTreatItems().size()-1-i)).setDealFlag(0);
+            item.setItemId(getTimestampId(dateNow,saveTreat.getTreatItems().size()-i)).setDealFlag(0);
         }
         ExptTreatPlanResponse snapRst=new ExptTreatPlanResponse().setTreatItems(saveTreat.getTreatItems());
         try{

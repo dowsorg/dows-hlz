@@ -122,7 +122,7 @@ public class TenantCaseQuestionnaireBiz {
         // convert
         return list.stream()
                 .map(item ->  BeanUtil.copyProperties(item, CaseQuestionnaireResponse.class))
-                .sorted(Comparator.comparingInt(CaseQuestionnaireResponse::getPeriodSequence))
+                .sorted(Comparator.comparingInt(CaseQuestionnaireResponse::getPeriodSequence).thenComparing(Comparator.comparing(CaseQuestionnaireResponse::getDt).reversed()))
                 .toList();
     }
 

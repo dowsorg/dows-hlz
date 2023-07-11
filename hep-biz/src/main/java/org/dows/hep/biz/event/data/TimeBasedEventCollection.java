@@ -82,7 +82,9 @@ public class TimeBasedEventCollection implements ICacheClear {
             return;
         }
         eventGroups.forEach(i->{
-            if(ShareUtil.XObject.isEmpty(i.getEventItems())) return;
+            if(ShareUtil.XObject.isEmpty(i.getEventItems())) {
+                return;
+            }
             i.getEventItems().clear();
         });
         eventGroups.clear();
@@ -108,6 +110,8 @@ public class TimeBasedEventCollection implements ICacheClear {
         @Schema(title = "初始待触发时间")
         private LocalDateTime rawTriggeringTime;
 
+        @Schema(title = "已触发时间")
+        private volatile Integer triggeredPeriod;
         @Schema(title = "已触发时间")
         private volatile LocalDateTime triggeredTime;
 

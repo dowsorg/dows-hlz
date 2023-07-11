@@ -55,7 +55,7 @@ public class ExptReportPdfRest {
     public ExptReportVO exportGroupReport(@RequestParam String experimentInstanceId, @RequestParam String experimentGroupId) {
         // 获取实验信息
         ExperimentInstanceEntity exptEntity = checkExpt(experimentInstanceId);
-        String zipPath = SystemConstant.PDF_REPORT_ZIP_PATH + exptEntity.getId() + SystemConstant.SPLIT_UNDER_LINE + exptEntity.getExperimentName() + SystemConstant.SPLIT_UNDER_LINE + experimentGroupId + SystemConstant.SUFFIX_ZIP;
+        String zipPath = SystemConstant.PDF_REPORT_PATH + exptEntity.getId() + SystemConstant.SPLIT_UNDER_LINE + exptEntity.getExperimentName() + SystemConstant.SPLIT_UNDER_LINE + experimentGroupId + SystemConstant.SUFFIX_ZIP;
 
         /*todo 分布式锁*/
         RLock lock = redissonClient.getLock(RedisKeyConst.HM_LOCK_REPORT + experimentGroupId);
@@ -83,7 +83,7 @@ public class ExptReportPdfRest {
     public ExptReportVO exportExptReport(@RequestParam String experimentInstanceId) {
         // 获取实验信息
         ExperimentInstanceEntity exptEntity = checkExpt(experimentInstanceId);
-        String zipPath = SystemConstant.PDF_REPORT_ZIP_PATH + exptEntity.getId() + SystemConstant.SPLIT_UNDER_LINE + exptEntity.getExperimentName() + SystemConstant.SUFFIX_ZIP;
+        String zipPath = SystemConstant.PDF_REPORT_PATH + exptEntity.getId() + SystemConstant.SPLIT_UNDER_LINE + exptEntity.getExperimentName() + SystemConstant.SUFFIX_ZIP;
         // 如果已经存在直接返回
         File zipFile = new File(zipPath);
         if (zipFile.exists()) {

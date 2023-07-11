@@ -1,10 +1,13 @@
 package org.dows.hep.api.tenant.casus.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
 import org.dows.hep.api.tenant.casus.CaseQuestionSelectModeEnum;
+
+import java.util.Date;
 
 /**
 * @description 
@@ -45,5 +48,9 @@ public class CaseQuestionnaireResponse{
 
     @Schema(title = "问题集合")
     private QuestionSectionResponse questionSectionResponse;
+
+    @JsonIgnore
+    @Schema(title = "时间戳")
+    private Date dt;
 
 }

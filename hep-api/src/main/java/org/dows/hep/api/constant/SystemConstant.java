@@ -14,5 +14,5 @@ public class SystemConstant {
     public static final String SUFFIX_ZIP=".zip";
     public static final String PDF_REPORT_PATH = "upload" + File.separator + "report" + File.separator;
     public static final String PDF_REPORT_TMP_PATH = "upload" + File.separator + "reportTmp" + File.separator;
-    public static final String PDF_REPORT_ZIP_PATH = "upload" + File.separator + "report" + File.separator + "zip" + File.separator;
+//    public static final String PDF_REPORT_ZIP_PATH = "upload" + File.separator + "report" + File.separator + "zip" + File.separator;
 }
