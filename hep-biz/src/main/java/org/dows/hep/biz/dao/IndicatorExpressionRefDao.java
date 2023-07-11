@@ -113,6 +113,9 @@ public class IndicatorExpressionRefDao extends BaseDao<IndicatorExpressionRefSer
 
     //region save
     public boolean updateReasonId(String reasonId, Collection<String> expressionIds) {
+        if(ShareUtil.XObject.notEmpty(expressionIds)){
+            expressionIds.removeIf(ShareUtil.XObject::isEmpty);
+        }
         if(ShareUtil.XObject.isEmpty(expressionIds)){
             return true;
         }
@@ -128,6 +131,9 @@ public class IndicatorExpressionRefDao extends BaseDao<IndicatorExpressionRefSer
         }
         boolean rst=true;
         for(Map.Entry<String,List<String>> item: mapReasonId.entrySet()){
+            if(ShareUtil.XObject.isEmpty(item.getValue())){
+                continue;
+            }
             rst&=updateReasonId(item.getKey(),item.getValue());
         }
         return rst;
