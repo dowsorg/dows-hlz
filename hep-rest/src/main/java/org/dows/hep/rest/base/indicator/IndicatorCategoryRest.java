@@ -58,32 +58,4 @@ public class IndicatorCategoryRest {
         ) {
         return indicatorCategoryBiz.getByPid(appId, pid);
     }
-
-//    @PostMapping("v1/baseIndicator/indicatorCategory/createIndicatorCategory")
-//    public void createIndicatorCategory(@RequestBody @Validated CreateIndicatorCategoryRequest createIndicatorCategory) throws InterruptedException {
-//        indicatorCategoryBiz.createIndicatorCategory(createIndicatorCategory);
-//    }
-//
-//    @PutMapping("v1/baseIndicator/indicatorCategory/updateIndicatorCategory")
-//    public void updateIndicatorCategory(@Validated UpdateIndicatorCategoryRequest updateIndicatorCategory ) {
-//        indicatorCategoryBiz.updateIndicatorCategory(updateIndicatorCategory);
-//    }
-//
-//
-//    @GetMapping("v1/baseIndicator/indicatorCategory/getIndicatorCategory")
-//    public IndicatorCategoryResponse getIndicatorCategory(@Validated String indicatorCategoryId) {
-//        return indicatorCategoryBiz.getIndicatorCategory(indicatorCategoryId);
-//    }
-//
-//    @GetMapping("v1/baseIndicator/indicatorCategory/listIndicatorCategory")
-//    public List<IndicatorCategoryResponse> listIndicatorCategory(@Validated String appId, @Validated Long pid, @Validated String indicatorCategoryId, @Validated String categoryCode, @Validated String categoryName) {
-//        return indicatorCategoryBiz.listIndicatorCategory(appId,pid,indicatorCategoryId,categoryCode,categoryName);
-//    }
-//
-//    @PostMapping("v1/baseIndicator/indicatorCategory/sync")
-//    public void sync(@RequestBody @Validated String appId ) {
-//        indicatorCategoryBiz.sync(appId);
-//    }
-
-
 }

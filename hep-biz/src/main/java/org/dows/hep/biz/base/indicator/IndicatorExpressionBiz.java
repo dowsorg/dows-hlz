@@ -69,6 +69,7 @@ public class IndicatorExpressionBiz{
     if (Objects.isNull(indicatorExpressionItemResponseRsList)) {
       indicatorExpressionItemResponseRsList = new ArrayList<>();
     }
+    indicatorExpressionItemResponseRsList.sort(Comparator.comparingInt(IndicatorExpressionItemResponseRs::getSeq));
     return IndicatorExpressionResponseRs
         .builder()
         .id(indicatorExpressionEntity.getId())
@@ -837,6 +838,9 @@ public class IndicatorExpressionBiz{
     Integer type = createOrUpdateIndicatorExpressionRequestRs.getType();
     CreateOrUpdateIndicatorExpressionItemRequestRs minCreateOrUpdateIndicatorExpressionItemRequestRs = createOrUpdateIndicatorExpressionRequestRs.getMinCreateOrUpdateIndicatorExpressionItemRequestRs();
     CreateOrUpdateIndicatorExpressionItemRequestRs maxCreateOrUpdateIndicatorExpressionItemRequestRs = createOrUpdateIndicatorExpressionRequestRs.getMaxCreateOrUpdateIndicatorExpressionItemRequestRs();
+
+    /* runsix:如果以前存在公式，现在清空条件结果否则上下限 TODO */
+
     RLock lock = redissonClient.getLock(RedissonUtil.getLockName(appId, EnumRedissonLock.INDICATOR_EXPRESSION_CREATE_DELETE_UPDATE, indicatorExpressionFieldAppId, appId));
     boolean isLocked = lock.tryLock(leaseTimeIndicatorExpressionCreateDeleteUpdate, TimeUnit.MILLISECONDS);
     if (!isLocked) {
@@ -1341,7 +1345,6 @@ public class IndicatorExpressionBiz{
         indicatorExpressionItemResponseRs0.setSeq(Integer.MAX_VALUE);
       }
       indicatorExpressionItemResponseRsList.add(indicatorExpressionItemResponseRs0);
-      indicatorExpressionItemResponseRsList.sort(Comparator.comparingInt(IndicatorExpressionItemResponseRs::getSeq));
     } else {
       // do nothing
     }
