@@ -769,6 +769,15 @@ public class IndicatorExpressionBiz{
   /* runsix:TODO */
   @Transactional(rollbackFor = Exception.class)
   public void batchBindReasonId(BatchBindReasonIdRequestRs batchBindReasonIdRequestRs) {
+    List<String> indicatorExpressionIdList = batchBindReasonIdRequestRs.getIndicatorExpressionIdList();
+    if (Objects.isNull(indicatorExpressionIdList)) {
+      return;
+    }
+    List<String> filteredIndicatorExpressionIdList = indicatorExpressionIdList.stream().filter(StringUtils::isNotBlank).collect(Collectors.toList());
+    if (filteredIndicatorExpressionIdList.isEmpty()) {
+      return;
+    }
+    batchBindReasonIdRequestRs.setIndicatorExpressionIdList(filteredIndicatorExpressionIdList);
     List<IndicatorExpressionRefEntity> indicatorExpressionRefEntityList = new ArrayList<>();
     populateIndicatorExpressionRefEntityList(indicatorExpressionRefEntityList, batchBindReasonIdRequestRs);
     indicatorExpressionRefService.saveOrUpdateBatch(indicatorExpressionRefEntityList);
@@ -838,9 +847,6 @@ public class IndicatorExpressionBiz{
     Integer type = createOrUpdateIndicatorExpressionRequestRs.getType();
     CreateOrUpdateIndicatorExpressionItemRequestRs minCreateOrUpdateIndicatorExpressionItemRequestRs = createOrUpdateIndicatorExpressionRequestRs.getMinCreateOrUpdateIndicatorExpressionItemRequestRs();
     CreateOrUpdateIndicatorExpressionItemRequestRs maxCreateOrUpdateIndicatorExpressionItemRequestRs = createOrUpdateIndicatorExpressionRequestRs.getMaxCreateOrUpdateIndicatorExpressionItemRequestRs();
-
-    /* runsix:如果以前存在公式，现在清空条件结果否则上下限 TODO */
-
     RLock lock = redissonClient.getLock(RedissonUtil.getLockName(appId, EnumRedissonLock.INDICATOR_EXPRESSION_CREATE_DELETE_UPDATE, indicatorExpressionFieldAppId, appId));
     boolean isLocked = lock.tryLock(leaseTimeIndicatorExpressionCreateDeleteUpdate, TimeUnit.MILLISECONDS);
     if (!isLocked) {
