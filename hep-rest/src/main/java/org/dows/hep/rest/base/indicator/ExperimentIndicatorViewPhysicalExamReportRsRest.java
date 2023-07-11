@@ -25,6 +25,12 @@ public class ExperimentIndicatorViewPhysicalExamReportRsRest {
     experimentIndicatorViewPhysicalExamReportRsBiz.physicalExamCheck(experimentPhysicalExamCheckRequestRs);
   }
 
+  @Operation(summary = "实验人物和在这个机构功能点下的体格检查报告")
+  @PostMapping("v2/userExperiment/physicalExamReport/check")
+  public void v2PhysicalExamCheck(@RequestBody ExperimentPhysicalExamCheckRequestRs experimentPhysicalExamCheckRequestRs) {
+    experimentIndicatorViewPhysicalExamReportRsBiz.v2PhysicalExamCheck(experimentPhysicalExamCheckRequestRs);
+  }
+
   @Operation(summary = "根据实验人物id和功能点id查找体格报告")
   @GetMapping("v1/userExperiment/physicalExamReport/get")
   public List<ExperimentPhysicalExamReportResponseRs> get(
