@@ -6,6 +6,7 @@ import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
+import org.dows.hep.api.enums.EnumExperimentMode;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
@@ -130,9 +131,11 @@ public class ExperimentTimerBiz {
                 Long schemeTime = schemeSetting.getSchemeEndTime().getTime() - System.currentTimeMillis();
                 countDownResponse.setSchemeTime(schemeTime);
             }
+            countDownResponse.setModel(EnumExperimentMode.SCHEME.getCode());
         }
 
-        ExperimentSettingEntity experimentSettingEntity2 = list.stream().filter(e -> e.getConfigKey().equals(ExperimentSetting.SandSetting.class.getName()))
+        ExperimentSettingEntity experimentSettingEntity2 = list.stream()
+                .filter(e -> e.getConfigKey().equals(ExperimentSetting.SandSetting.class.getName()))
                 .findFirst()
                 .orElse(null);
 
@@ -159,6 +162,7 @@ public class ExperimentTimerBiz {
 
             countDownResponse.setSandTime(Long.valueOf(totalDay));
             countDownResponse.setSandTimeUnit("天");
+            countDownResponse.setModel(EnumExperimentMode.SAND.getCode());
 
             // 如果沙盘未开始，直接返回0,或大于结束如果开始，则返回对应的持续时间
             // 获取当前期数
@@ -193,7 +197,10 @@ public class ExperimentTimerBiz {
                 }
             }
         }
-
+        // 如果都不为空，则为标准模式
+        if (experimentSettingEntity1 != null && experimentSettingEntity2 != null) {
+            countDownResponse.setModel(EnumExperimentMode.STANDARD.getCode());
+        }
         return countDownResponse;
     }
 
