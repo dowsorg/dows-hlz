@@ -3,11 +3,13 @@ package org.dows.hep.biz.cache;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author : wuzl
  * @date : 2023/6/18 23:23
  */
+@Slf4j
 public abstract class BaseLoadingCache <K,V> extends BaseManulCache<K,V>{
 
     //region .ctor
@@ -23,7 +25,7 @@ public abstract class BaseLoadingCache <K,V> extends BaseManulCache<K,V>{
 
     @Override
     protected Cache<K, V> coreBuild(Caffeine<K, V> builder) {
-        return builder.removalListener(this::onRemoval).build(this::load);
+        return builder.removalListener(this::onRemoval).build(this::wrapLoad);
     }
     //endregion
 
@@ -53,15 +55,27 @@ public abstract class BaseLoadingCache <K,V> extends BaseManulCache<K,V>{
         }
         return rst;
     }
+    protected V wrapLoad(K key){
+        try{
+            return load(key);
+        }catch (Exception ex){
+            return exceptionally(key, ex);
+        }
+    }
     //endregion
 
     //region virtual
     protected abstract V load(K key);
+
+    protected V exceptionally(K key,Exception ex){
+        log.error(String.format("%s.load key:%s", getClass().getName(),key),ex);
+        return null;
+    }
     protected boolean isCompleted(V val){
         return null!=val;
     }
     protected V cotinueLoad(K key,V curVal){
-        return load(key);
+        return curVal;
     }
     //endregion
 

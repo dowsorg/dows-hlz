@@ -1,19 +1,21 @@
 package org.dows.hep.biz.event;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.dows.hep.api.enums.EnumWebSocketType;
+import org.dows.hep.api.event.EventName;
+import org.dows.hep.api.user.experiment.response.OrgNoticeResponse;
 import org.dows.hep.biz.dao.ExperimentEventDao;
 import org.dows.hep.biz.user.experiment.ExperimentOrgNoticeBiz;
+import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentEventEntity;
 import org.dows.hep.entity.ExperimentIndicatorValEntity;
 import org.dows.hep.entity.ExperimentOrgNoticeEntity;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @author : wuzl
@@ -35,6 +37,9 @@ public class ExperimentEventRules {
 
     @Autowired
     private ExperimentOrgNoticeBiz experimentOrgNoticeBiz;
+
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
 
     //region facade
     public boolean saveTriggeredTimeEvent(List<ExperimentEventEntity> events,boolean saveIndicators) throws JsonProcessingException {
@@ -67,7 +72,22 @@ public class ExperimentEventRules {
         if(saveIndicators){
 
         }
-        return experimentEventDao.tranUpdateTriggered(saveEvents,()-> saveTriggeredTimeEventX(rowsNotice,rowsIndicatorVal));
+        boolean rst= experimentEventDao.tranUpdateTriggered(saveEvents,()-> saveTriggeredTimeEventX(rowsNotice,rowsIndicatorVal));
+        if(rst){
+            //发送webSocket
+            List<OrgNoticeResponse> notices=new ArrayList<>();
+            for(ExperimentOrgNoticeEntity item:rowsNotice ){
+                notices.add(experimentOrgNoticeBiz.CreateOrgNoticeResponse(item));
+            }
+            final String experimentId=rowsNotice.get(0).getExperimentInstanceId();
+            final Set<String> accountIds=ShareBiz.getAccountIdsByGroupAndOrgId(experimentId, rowsNotice,
+                    ExperimentOrgNoticeEntity::getExperimentGroupId,ExperimentOrgNoticeEntity::getExperimentOrgId);
+            if(ShareUtil.XObject.notEmpty(accountIds)) {
+                ShareBiz.publishWebSocketEvent(applicationEventPublisher, EventName.exptEventTriggeredHandler, EnumWebSocketType.EVENT_TRIGGERED, experimentId,
+                        accountIds, notices);
+            }
+        }
+        return rst;
     }
     boolean saveTriggeredTimeEventX(List<ExperimentOrgNoticeEntity> notices,List<ExperimentIndicatorValEntity> indicatorVals){
         experimentOrgNoticeBiz.add(notices);
@@ -98,7 +118,7 @@ public class ExperimentEventRules {
         return experimentEventDao.tranUpdateAcction(saveEvent, () -> saveActionEventX(saveNotice, null));
     }
     boolean saveActionEventX(ExperimentOrgNoticeEntity notice,List<ExperimentIndicatorValEntity> indicatorVals){
-        experimentOrgNoticeBiz.add(notice);
+        experimentOrgNoticeBiz.update(notice);
         return true;
     }
 
