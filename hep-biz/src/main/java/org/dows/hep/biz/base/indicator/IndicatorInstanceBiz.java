@@ -255,6 +255,10 @@ public class IndicatorInstanceBiz{
                 log.warn("方法deleteIndicatorInstance的参数indicatorInstanceId：{}，不存在", indicatorInstanceId);
                 throw new IndicatorInstanceException(EnumESC.VALIDATE_EXCEPTION);
             });
+        EnumIndicatorType enumIndicatorType = EnumIndicatorType.kTypeVEnumIndicatorTypeMap.get(indicatorInstanceEntity.getType());
+        if (Objects.nonNull(enumIndicatorType) && !EnumIndicatorType.USER_CREATED.getType().equals(enumIndicatorType.getType())) {
+            throw new IndicatorInstanceException(EnumESC.SYSTEM_INDICATOR_INSTANCE_CANNOT_DELETE);
+        }
         String appId = indicatorInstanceEntity.getAppId();
         String indicatorCategoryId = indicatorInstanceEntity.getIndicatorCategoryId();
         IndicatorCategoryRefEntity indicatorCategoryRefEntity = indicatorCategoryRefService.lambdaQuery()

@@ -223,9 +223,16 @@ public class CaseIndicatorExpressionBiz {
           finalIndicatorExpressionItemResponseRsList.add(caseIndicatorExpressionItemResponseRs1);
         } else if (indicatorExpressionItemResponseRsList.size() == 1) {
           CaseIndicatorExpressionItemResponseRs caseIndicatorExpressionItemResponseRs0 = new CaseIndicatorExpressionItemResponseRs();
-          caseIndicatorExpressionItemResponseRs0.setSeq(-1);
-          finalIndicatorExpressionItemResponseRsList.add(caseIndicatorExpressionItemResponseRs0);
+          CaseIndicatorExpressionItemResponseRs indicatorExpressionItemResponseRs = indicatorExpressionItemResponseRsList.get(0);
+          Integer seq = indicatorExpressionItemResponseRs.getSeq();
+          if (Integer.MAX_VALUE == seq) {
+            caseIndicatorExpressionItemResponseRs0.setSeq(0);
+          } else {
+            caseIndicatorExpressionItemResponseRs0.setSeq(Integer.MAX_VALUE);
+          }
           finalIndicatorExpressionItemResponseRsList.addAll(indicatorExpressionItemResponseRsList);
+          finalIndicatorExpressionItemResponseRsList.add(caseIndicatorExpressionItemResponseRs0);
+          finalIndicatorExpressionItemResponseRsList.sort(Comparator.comparingInt(CaseIndicatorExpressionItemResponseRs::getSeq));
         } else {
           finalIndicatorExpressionItemResponseRsList.addAll(indicatorExpressionItemResponseRsList);
         }

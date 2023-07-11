@@ -6,10 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.*;
 import org.dows.hep.api.base.indicator.response.IndicatorCategoryResponse;
-import org.dows.hep.api.enums.EnumBoolean;
-import org.dows.hep.api.enums.EnumESC;
-import org.dows.hep.api.enums.EnumRedissonLock;
-import org.dows.hep.api.enums.EnumString;
+import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.IndicatorCategoryException;
 import org.dows.hep.biz.util.RedissonUtil;
 import org.dows.hep.entity.IndicatorCategoryEntity;
@@ -220,6 +217,10 @@ public class IndicatorCategoryBiz{
     */
     @Transactional(rollbackFor = Exception.class)
     public void delete(String indicatorCategoryId) {
+        EnumIndicatorCategory enumIndicatorCategory = EnumIndicatorCategory.kCodeVEnumIndicatorCategoryMap.get(indicatorCategoryId);
+        if (Objects.nonNull(enumIndicatorCategory) && EnumStatus.ENABLE.getCode().equals(enumIndicatorCategory.getCannotDelete())) {
+            throw new IndicatorCategoryException(EnumESC.SYSTEM_INDICATOR_CATEGORY_CANNOT_DELETE);
+        }
         boolean isRefByIndicatorCategory = indicatorCategoryService.lambdaQuery()
             .eq(IndicatorCategoryEntity::getPid, indicatorCategoryId)
             .exists();
