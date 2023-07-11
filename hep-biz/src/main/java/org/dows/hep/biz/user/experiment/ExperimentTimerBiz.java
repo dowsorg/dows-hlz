@@ -182,21 +182,25 @@ public class ExperimentTimerBiz {
                     break;
                 } else if (experimentTimerEntity.getState() == EnumExperimentState.ONGOING.getState()) {
                     // 当前时间戳-当前期数开始时间 = 相对时间
-                    Long ct = System.currentTimeMillis() - experimentTimerEntity.getStartTime();
-                    // 将ct转换为秒  .. day/duration = rate
-                    Long second = ct / 1000;
-                    // 获取比例
-                    Double aFloat = mockRateMap.get(experimentTimerEntity.getPeriod() + "");
-                    Double day = second * aFloat;
-                    Integer period = experimentTimerEntity.getPeriod();
-                    if (period > 1) {
-                        for (int i = 1; i <= period; i++) {
-                            Integer integer = periodMap.get(i + "");
-                            day += integer;
+                    Long sct = System.currentTimeMillis();
+                    if (sct >= experimentTimerEntity.getStartTime() && sct <= experimentTimerEntity.getEndTime()) {
+                        countDownResponse.setPeriod(experimentTimerEntity.getPeriod());
+                        Long ct = sct - experimentTimerEntity.getStartTime();
+                        // 将ct转换为秒  .. day/duration = rate
+                        Long second = ct / 1000;
+                        // 获取比例
+                        Double aFloat = mockRateMap.get(experimentTimerEntity.getPeriod() + "");
+                        Double day = second * aFloat;
+                        Integer period = experimentTimerEntity.getPeriod();
+                        if (period > 1) {
+                            for (int i = 1; i <= period; i++) {
+                                Integer integer = periodMap.get(i + "");
+                                day += integer;
+                            }
                         }
+                        countDownResponse.setSandDuration(day);
+                        break;
                     }
-                    countDownResponse.setSandDuration(day);
-                    break;
                 }
             }
         }
