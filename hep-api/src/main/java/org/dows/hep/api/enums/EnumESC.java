@@ -18,7 +18,10 @@ public enum EnumESC implements StatusCode {
     SYSTEM_BUSY_PLEASE_OPERATOR_INDICATOR_INSTANCE_LATER(50104, "系统繁忙，请稍后重新操作指标类别"),
     SYSTEM_BUSY_PLEASE_OPERATOR_INDICATOR_FUNC_LATER(50105, "系统繁忙，请稍后重新操作指标功能"),
     SYSTEM_BUSY_PLEASE_OPERATOR_INDICATOR_VIEW_BASE_INFO_LATER(50106, "系统繁忙，请稍后重新操作查看指标基本信息"),
-    SYSTEM_BUSY_PLEASE_OPERATOR_INDICATOR_VIEW_MONITOR_FOLLOWUP_LATER(50107, "系统繁忙，请稍后重新操作查看指标监测随访");
+    SYSTEM_BUSY_PLEASE_OPERATOR_INDICATOR_VIEW_MONITOR_FOLLOWUP_LATER(50107, "系统繁忙，请稍后重新操作查看指标监测随访"),
+    SYSTEM_INDICATOR_INSTANCE_CANNOT_DELETE(50108, "系统自带指标，不允许删除"),
+    SYSTEM_INDICATOR_CATEGORY_CANNOT_DELETE(50109, "系统自带目录，不允许删除"),
+    ;
     private final Integer code;
     private final String descr;
 }

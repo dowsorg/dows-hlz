@@ -167,6 +167,19 @@ public class HepApplication{
                     .min("1")
                     .max("100")
                     .build());
+                case AGE -> createOrUpdateIndicatorInstanceRequestRsList.add(CreateOrUpdateIndicatorInstanceRequestRs
+                    .builder()
+                    .indicatorCategoryId(EnumIndicatorCategory.INDICATOR_MANAGEMENT_BASE_INFO.getCode())
+                    .appId(EnumString.APP_ID.getStr())
+                    .indicatorName(EnumIndicatorType.AGE.getDesc())
+                    .displayByPercent(EnumStatus.DISABLE.getCode())
+                    .def("30")
+                    .core(EnumStatus.ENABLE.getCode())
+                    .food(EnumStatus.DISABLE.getCode())
+                    .type(EnumIndicatorType.AGE.getType())
+                    .min("1")
+                    .max("200")
+                    .build());
                 default ->
                     log.error("必须初始化指标类型枚举不存在，type:{}, desc:{}", enumIndicatorType.getType(), enumIndicatorType.getDesc());
             }

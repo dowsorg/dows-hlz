@@ -160,6 +160,9 @@ public class ExperimentTimerBiz {
                 mockRateMap.put(s, mockRate);
             }
 
+            countDownResponse.setDurationMap(durationMap);
+            countDownResponse.setMockRateMap(mockRateMap);
+            countDownResponse.setPeriodMap(periodMap);
             countDownResponse.setSandTime(Long.valueOf(totalDay));
             countDownResponse.setSandTimeUnit("天");
             countDownResponse.setModel(EnumExperimentMode.SAND.getCode());
