@@ -7,11 +7,13 @@ import lombok.Getter;
  * @date 2023/7/10 16:22
  */
 public enum EnumExperimentGroupState {
-    CREATE_GROUP(0, "新建（待重新命名)"),
-    ASSIGN_MEMBER_ROLE(1, "分配成员角色"),
-    ASSIGN_FINISH(2, "分配完成"),
-    LOCK_IN(3, "已锁定"),
-    DISBAND_FINISH(4, "已解散"),
+    GROUP_RENAME(0, "团队命名"),
+    ASSIGN_FUNC(1, "分配方案设计目录"),
+    SCHEMA(2, "小组进行方案设计"),
+    WAIT_SCHEMA(3, "小组完成方案设计"),
+    ASSIGN_DEPARTMENT(4, "机构分配"),
+    WAIT_ALL_GROUP_ASSIGN(5, "所有小组机构分配结束"),
+    COUNT_DOWN(6, "倒计时"),
             ;
     @Getter
     private int state;
