@@ -23,6 +23,7 @@ import java.util.Map;
 
 /**
  * @author lait.zhang
+ * @folder tenant-hep/实验管理
  * @description project descr:实验:实验管理
  * @date 2023年4月23日 上午9:44:34
  */
@@ -68,7 +69,7 @@ public class ExperimentManageRest {
     }
 
     /**
-     * 分配实验
+     * 获取实验分配信息
      *
      * @param
      * @return
@@ -131,7 +132,7 @@ public class ExperimentManageRest {
 
 
     /**
-     * 获取实验列表
+     * 分页获取实验列表
      *
      * @param
      * @return
@@ -143,7 +144,7 @@ public class ExperimentManageRest {
     }
 
     /**
-     * 获取实验列表
+     * 根据组名分页获取实验列表
      *
      * @param
      * @return
@@ -157,7 +158,7 @@ public class ExperimentManageRest {
 
 
     /**
-     * 获取实验列表
+     * 开始/暂停实验
      *
      * @param
      * @return
