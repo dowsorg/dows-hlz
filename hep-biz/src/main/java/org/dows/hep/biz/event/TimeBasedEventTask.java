@@ -101,26 +101,33 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
             raiseScheduler(DELAYSeconds4Fail);
             return RUNCode4Fail;
         }
+        if(timePoint.getGameState()==EnumExperimentState.FINISH){
+            logInfo("call", "finishedExperiment");
+            return RUNCode4Silence;
+        }
         exptColl.setPauseSeconds(timePoint.getCntPauseSeconds());
         eventColl.setNextTriggerTime(calcTriggeringTime(dtNow, exptColl,eventColl));
         List<List<TimeBasedEventCollection.TimeBasedEventGroup>> groups=eventColl.splitGroups(CONCURRENTNum);
-        AtomicInteger runCounter=new AtomicInteger(groups.size());
-        AtomicInteger failCounter=new AtomicInteger();
-        AtomicInteger saveCounter=new AtomicInteger();
+        final RunStat runStat=new RunStat(groups.size());
         groups.forEach(i->{
-            CompletableFuture.runAsync(()->runEventGroup(i,timePoint,eventColl,runCounter,failCounter,saveCounter), EventExecutor.Instance().getThreadPool());
+            CompletableFuture.runAsync(()->runEventGroup(i,timePoint,eventColl,runStat), EventExecutor.Instance().getThreadPool())
+                    .exceptionally(ex-> {
+                        logError(ex, "runEventGroup", "caseEventIds:%s", String.join(",",
+                                ShareUtil.XCollection.map(i, TimeBasedEventCollection.TimeBasedEventGroup::getCaseEventId)));
+                        return null;
+                    });
         });
         return RUNCode4Succ;
     }
-    void runEventGroup(List<TimeBasedEventCollection.TimeBasedEventGroup> groups, ExperimentTimePoint timePoint, TimeBasedEventCollection eventColl,
-                       AtomicInteger runCounter,AtomicInteger failCounter,AtomicInteger saveCounter){
+    void runEventGroup(List<TimeBasedEventCollection.TimeBasedEventGroup> groups, ExperimentTimePoint timePoint, TimeBasedEventCollection eventColl, RunStat runStat){
         List<ExperimentEventEntity> triggeredEvents=new ArrayList<>();
         List<TimeBasedEventCollection.TimeBasedEventGroup> triggeredGroups=new ArrayList<>();
         LocalDateTime triggerTime=timePoint.getRealTime();
         for(TimeBasedEventCollection.TimeBasedEventGroup group:groups ) {
+            runStat.todoCounter.addAndGet(group.getEventItems().size());
             if (null == group.getTriggeringTime()
-                    || triggerTime.isBefore(group.getTriggeringTime())
-                    || null != group.getTriggeredTime()) {
+                    || null != group.getTriggeredTime()
+                    || triggerTime.isBefore(group.getTriggeringTime())) {
                 continue;
             }
             group.setTriggeredTime(triggerTime).setTriggeredPeriod(timePoint.getPeriod());
@@ -137,32 +144,33 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
         if(ShareUtil.XCollection.notEmpty(triggeredEvents)) {
             try {
                 ExperimentEventRules.Instance().saveTriggeredTimeEvent(triggeredEvents,true);
-                saveCounter.getAndAdd(triggeredEvents.size());
+                runStat.doneCounter.addAndGet(triggeredEvents.size());
             } catch (Exception ex) {
                 groups.forEach(i -> i.setTriggeredTime(null).setTriggeredPeriod(null));
-                logError("runEventGroup", "eventIds:%s",
+                logError(ex, "runEventGroup fail.", "eventIds:%s",
                         String.join(",",ShareUtil.XCollection.map(triggeredEvents,ExperimentEventEntity::getExperimentEventId)));
-                failCounter.incrementAndGet();
+                runStat.failTheadCounter.incrementAndGet();
                 exceptionFlag=true;
             }
         }
         if(!exceptionFlag) {
             eventColl.removeGroups(triggeredGroups);
         }
-        if(runCounter.decrementAndGet()>0) {
+        if(runStat.theadCounter.decrementAndGet()>0) {
             return;
         }
-        if(failCounter.get()>0){
-            raiseScheduler(DELAYSeconds4Fail);
-            return;
+        final LocalDateTime nextTime = eventColl.getNextTriggerTime();
+        long delay = -1;
+        runStat.todoCounter.addAndGet(-runStat.doneCounter.get());
+        if(runStat.failTheadCounter.get()>0){
+            raiseScheduler(delay=DELAYSeconds4Fail);
+        } else {
+            if (null != nextTime) {
+                raiseScheduler(delay = Duration.between(LocalDateTime.now(), nextTime).toSeconds() + 2);
+            }
         }
-        final LocalDateTime nextTime=eventColl.getNextTriggerTime();
-        long delay=-1;
-        if(null!= nextTime) {
-            delay = Duration.between(LocalDateTime.now(), nextTime).toSeconds() + 2;
-            raiseScheduler(delay);
-        }
-        logInfo("runEventGroup", "cntTriggered:%s next:%s delay:%s", saveCounter.get(),nextTime,delay);
+        logInfo("runEventGroup", "next:%s delay:%s failThread:%s done:%s todo:%s", nextTime,delay,
+                runStat.failTheadCounter.get(),runStat.doneCounter.get(),runStat.todoCounter.get());
     }
 
     void raiseScheduler(long delaySeconds){
@@ -299,6 +307,17 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
         return ThreadLocalRandom.current().nextInt(min,max);
     }
     //endregion
+
+    public static class RunStat {
+        public RunStat(Integer threadSize){
+            theadCounter=new AtomicInteger(threadSize);
+        }
+        public final AtomicInteger theadCounter;
+        public final AtomicInteger failTheadCounter=new AtomicInteger();
+        public final AtomicInteger doneCounter=new AtomicInteger();
+
+        public final AtomicInteger todoCounter=new AtomicInteger();
+    }
 
 
 }
