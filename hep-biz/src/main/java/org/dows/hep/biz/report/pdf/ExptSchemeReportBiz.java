@@ -4,6 +4,10 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.itextpdf.commons.utils.Base64;
+import com.itextpdf.styledxmlparser.jsoup.Jsoup;
+import com.itextpdf.styledxmlparser.jsoup.nodes.Document;
+import com.itextpdf.styledxmlparser.jsoup.nodes.Element;
+import com.itextpdf.styledxmlparser.jsoup.select.Elements;
 import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +17,7 @@ import org.dows.hep.api.constant.SystemConstant;
 import org.dows.hep.api.report.pdf.*;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeItemResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeResponse;
+import org.dows.hep.biz.base.oss.OSSBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentSchemeScoreBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
 import org.dows.hep.entity.ExperimentGroupEntity;
@@ -24,6 +29,7 @@ import org.dows.hep.service.ExperimentParticipatorService;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,6 +50,7 @@ public class ExptSchemeReportBiz implements ExptReportBiz {
     private final FindSoftProperties findSoftProperties;
     private final ExperimentSchemeScoreBiz experimentSchemeScoreBiz;
     private final ExperimentSchemeBiz experimentSchemeBiz;
+    private final OSSBiz ossBiz;
     private final ExperimentInstanceService experimentInstanceService;
     private final ExperimentParticipatorService experimentParticipatorService;
     private final ExperimentGroupService experimentGroupService;
@@ -264,8 +271,8 @@ public class ExptSchemeReportBiz implements ExptReportBiz {
             List<ExptSchemeReportModel.QuestionInfo> children = convertQuestionChildren(question.getChildren());
             ExptSchemeReportModel.QuestionInfo resultItem = ExptSchemeReportModel.QuestionInfo.builder()
                     .questionTitle(question.getQuestionTitle())
-                    .questionDescr(question.getQuestionDescr())
-                    .questionResult(question.getQuestionResult())
+                    .questionDescr(convertImg2Base64(question.getQuestionDescr()))
+                    .questionResult(convertImg2Base64(question.getQuestionResult()))
                     .children(children)
                     .build();
             result.add(resultItem);
@@ -285,14 +292,39 @@ public class ExptSchemeReportBiz implements ExptReportBiz {
             List<ExptSchemeReportModel.QuestionInfo> itemTargetChildren = convertQuestionChildren(itemOriChildren);
             ExptSchemeReportModel.QuestionInfo resultItem = ExptSchemeReportModel.QuestionInfo.builder()
                     .questionTitle(oriChild.getQuestionTitle())
-                    .questionDescr(oriChild.getQuestionDescr())
-                    .questionResult(oriChild.getQuestionResult())
+                    .questionDescr(convertImg2Base64(oriChild.getQuestionDescr()))
+                    .questionResult(convertImg2Base64(oriChild.getQuestionResult()))
                     .children(itemTargetChildren)
                     .build();
             result.add(resultItem);
         });
 
         return result;
+    }
+
+    private String convertImg2Base64(String text) {
+        if (StrUtil.isBlank(text)) {
+            return text;
+        }
+
+        Document doc = Jsoup.parse(text);
+        Elements imgTags = doc.select("img");
+
+        // 替换值并打印
+        for (Element imgTag : imgTags) {
+            String src = imgTag.attr("src");
+            imgTag.attr("src", getImgBase64(src));
+        }
+
+        // 返回替换后的文本
+        return doc.body().html();
+    }
+
+    private String getImgBase64(String pathName) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+//        ossBiz.downloadByPath(outputStream, pathName);
+        byte[] byteArray = outputStream.toByteArray();
+        return Base64.encodeBytes(byteArray);
     }
 
     private File getFile(String exptGroupId) {
