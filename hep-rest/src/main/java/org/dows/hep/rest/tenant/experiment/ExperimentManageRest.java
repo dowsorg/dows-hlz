@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.dows.account.util.JwtUtil;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.hep.api.annotation.Resubmit;
+import org.dows.hep.api.core.CreateExperimentForm;
 import org.dows.hep.api.enums.EnumToken;
 import org.dows.hep.api.tenant.experiment.request.*;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
@@ -47,6 +48,7 @@ public class ExperimentManageRest {
 
         return countdown;
     }
+
     /**
      * 分配实验
      *
@@ -62,8 +64,21 @@ public class ExperimentManageRest {
         //1、获取登录账ID
         String accountId = map.get("accountId").toString();
         //return "";
-        return experimentManageBiz.allot(createExperiment,accountId);
+        return experimentManageBiz.allot(createExperiment, accountId);
     }
+
+    /**
+     * 分配实验
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取实验分配信息")
+    @GetMapping("v1/tenantExperiment/experimentManage/getAllotData")
+    public CreateExperimentForm getAllotData(String experimentInstanceId) {
+        return experimentManageBiz.getAllotData(experimentInstanceId, "");
+    }
+
 
     /**
      * 案例机构和人物复制到实验
@@ -126,6 +141,7 @@ public class ExperimentManageRest {
     public PageResponse<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
         return experimentManageBiz.pageByRole(pageExperimentRequest);
     }
+
     /**
      * 获取实验列表
      *
@@ -138,8 +154,6 @@ public class ExperimentManageRest {
         return experimentParticipatorBiz.pageByGroupName(pageExperimentRequest);
 
     }
-
-
 
 
     /**
