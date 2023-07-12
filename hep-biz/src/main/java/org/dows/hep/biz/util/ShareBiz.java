@@ -8,12 +8,19 @@ import org.dows.framework.crud.api.CrudContextHolder;
 import org.dows.hep.api.base.indicator.response.CaseIndicatorExpressionResponseRs;
 import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
 import org.dows.hep.api.enums.EnumToken;
+import org.dows.hep.api.enums.EnumWebSocketType;
+import org.dows.hep.api.event.CommonExperimentEvent;
+import org.dows.hep.api.event.CommonWebSocketEventSource;
+import org.dows.hep.api.event.EventName;
 import org.dows.hep.biz.base.indicator.CaseIndicatorExpressionBiz;
 import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
+import org.dows.hep.biz.dao.ExperimentParticipatorDao;
 import org.dows.hep.biz.event.ExperimentSettingCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.vo.LoginContextVO;
+import org.dows.hep.entity.ExperimentParticipatorEntity;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -131,5 +138,82 @@ public class ShareBiz {
         return rst;
     }
     //endreigon
+
+
+
+    //region
+
+    /**
+     * 按小组id获取账户
+     * @param experimentInstanceId
+     * @param experimentGroupIds
+     * @return
+     */
+    public static Set<String> getAccountIdsByGroupId(String experimentInstanceId, Set<String> experimentGroupIds) {
+        return ShareUtil.XCollection.toSet(CrudContextHolder.getBean(ExperimentParticipatorDao.class).getAccountIdsByGroupId(experimentInstanceId, experimentGroupIds,
+                ExperimentParticipatorEntity::getAccountId), ExperimentParticipatorEntity::getAccountId);
+    }
+
+
+    /**
+     * 按小组和分配机构id获取账户
+     * @param experimentInstanceId
+     * @param src
+     * @param funcGroupId
+     * @param funcOrgId
+     * @return
+     * @param <T>
+     */
+    public static <T> Set<String> getAccountIdsByGroupAndOrgId(String experimentInstanceId, List<T> src,Function<T,String> funcGroupId, Function<T,String> funcOrgId){
+        Set<String> groupIds=ShareUtil.XCollection.toSet(src, funcGroupId);
+        List<ExperimentParticipatorEntity> rowsParticipator=CrudContextHolder.getBean(ExperimentParticipatorDao.class).getAccountIdsByGroupId(experimentInstanceId, groupIds,
+                ExperimentParticipatorEntity::getAccountId,
+                ExperimentParticipatorEntity::getExperimentGroupId,
+                ExperimentParticipatorEntity::getExperimentOrgIds);
+        Set<String> rst=new HashSet<>();
+        final String format="%s|%s";
+        Set<String> groupXOrgIds=ShareUtil.XCollection.toSet(src, i->String.format(format, funcGroupId.apply(i),funcOrgId.apply(i)));
+
+        rowsParticipator.forEach(i->{
+            if(ShareUtil.XObject.isEmpty(i.getExperimentOrgIds())){
+                rst.add(i.getAccountId());
+                return;
+            }
+            String groupId=i.getExperimentGroupId();
+            String[] orgIds=i.getExperimentOrgIds().split(",");
+            for(String orgId:orgIds){
+                if(groupXOrgIds.contains(String.format(format,groupId,orgId))){
+                    rst.add(i.getAccountId());
+                    return;
+                }
+            }
+        });
+        return rst;
+
+    }
+
+
+    /**
+     * 发布webSocket事件
+     * @param applicationEventPublisher
+     * @param eventName
+     * @param socketType
+     * @param experimentId
+     * @param clientIds
+     * @param data
+     * @param <T>
+     */
+
+    public static <T> void publishWebSocketEvent(ApplicationEventPublisher applicationEventPublisher, EventName eventName, EnumWebSocketType socketType,String experimentId,Set<String> clientIds,T data) {
+        if(ShareUtil.XObject.anyEmpty(experimentId,clientIds)){
+            return;
+        }
+        CommonWebSocketEventSource eventSource = new CommonWebSocketEventSource(socketType)
+                .setExperimentInstanceId(experimentId)
+                .setData(data)
+                .setClientIds(clientIds);
+        applicationEventPublisher.publishEvent(CommonExperimentEvent.create(eventName, eventSource));
+    }
+    //endregion
 
 }

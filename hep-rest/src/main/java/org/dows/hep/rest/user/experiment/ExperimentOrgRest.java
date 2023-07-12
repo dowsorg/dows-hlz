@@ -75,12 +75,12 @@ public class ExperimentOrgRest {
 
     @Operation(summary = "获取机构通知详情（主要是事件操作提示+处理措施列表）")
     @PostMapping("v1/userExperiment/experimentOrg/getOrgNotice")
-    public OrgNoticeResponse getOrgNotice(FindOrgNoticeRequest findOrgNotice) throws JsonProcessingException{
+    public OrgNoticeResponse getOrgNotice(@RequestBody @Validated FindOrgNoticeRequest findOrgNotice) throws JsonProcessingException{
         return experimentOrgBiz.getOrgNotice(findOrgNotice);
     }
     @Operation(summary = "处理突发事件")
     @PostMapping("v1/userExperiment/experimentOrg/saveOrgNoticeAction")
-    public OrgNoticeResponse saveOrgNoticeAction(SaveNoticeActionRequest saveNoticeAction, HttpServletRequest request) throws JsonProcessingException{
+    public OrgNoticeResponse saveOrgNoticeAction(@RequestBody @Validated SaveNoticeActionRequest saveNoticeAction, HttpServletRequest request) throws JsonProcessingException{
         return experimentOrgBiz.saveOrgNoticeAction(saveNoticeAction,request);
     }
 

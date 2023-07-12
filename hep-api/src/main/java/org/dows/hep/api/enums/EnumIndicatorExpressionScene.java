@@ -3,7 +3,6 @@ package org.dows.hep.api.enums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -31,10 +30,10 @@ public enum EnumIndicatorExpressionScene {
     }
   }
 
-  public static EnumIndicatorExpressionScene getBySence(Integer sence) {
-    if (Objects.isNull(sence)) {
+  public static EnumIndicatorExpressionScene getByScene(Integer scene) {
+    if (Objects.isNull(scene)) {
       return null;
     }
-    return kTypeVEnumIndicatorExpressionSourceMap.get(sence);
+    return kTypeVEnumIndicatorExpressionSourceMap.get(scene);
   }
 }

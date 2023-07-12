@@ -88,9 +88,10 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
             raiseScheduler(DELAYSeconds4Pause);
             return RUNCode4Silence;
         }
-        TimeBasedEventCollection eventColl=TimeBasedEventCache.Instance().caffineCache().get(experimentKey,this::loadEvents);
+        TimeBasedEventCollection eventColl=TimeBasedEventCache.Instance().caffineCache().get(experimentKey,k->loadEvents(k,exptColl.getPeriods()) );
         if(ShareUtil.XObject.isEmpty(eventColl.getEventGroups()) ){
             logInfo("call", "emptyEvents");
+            TimeBasedEventCache.Instance().caffineCache().invalidate(experimentKey);
             return RUNCode4Silence;
         }
         LocalDateTime dtNow=LocalDateTime.now();
@@ -214,11 +215,11 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
     }
 
 
-    TimeBasedEventCollection loadEvents(ExperimentCacheKey experimentKey){
+    TimeBasedEventCollection loadEvents(ExperimentCacheKey experimentKey,Integer maxPeriod){
         TimeBasedEventCollection rst=new TimeBasedEventCollection()
                 .setExperimentInstanceId(experimentKey.getExperimentInstanceId());
         List<ExperimentEventEntity> rowsEvent=getExperimentEventDao().getTimeEventByExperimentId(experimentKey.getAppId(), experimentKey.getExperimentInstanceId(),
-                null, EnumExperimentEventState.INIT.getCode(),
+                null, maxPeriod,EnumExperimentEventState.INIT.getCode(),
                 ExperimentEventEntity::getId,
                 ExperimentEventEntity::getAppId,
                 ExperimentEventEntity::getExperimentEventId,

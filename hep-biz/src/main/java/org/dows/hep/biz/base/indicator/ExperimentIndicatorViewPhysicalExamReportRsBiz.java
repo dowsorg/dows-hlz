@@ -8,6 +8,7 @@ import org.dows.hep.api.base.indicator.request.ExperimentPhysicalExamCheckReques
 import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
 import org.dows.hep.api.base.indicator.response.ExperimentPhysicalExamReportResponseRs;
 import org.dows.hep.api.enums.EnumESC;
+import org.dows.hep.api.enums.EnumIndicatorExpressionField;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.api.exception.ExperimentIndicatorViewPhysicalExamReportRsException;
@@ -43,6 +44,7 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
   private final ExperimentIndicatorExpressionItemRsService experimentIndicatorExpressionItemRsService;
   private final ExperimentIndicatorExpressionInfluenceRsService experimentIndicatorExpressionInfluenceRsService;
   private final ExperimentIndicatorInstanceRsBiz experimentIndicatorInstanceRsBiz;
+  private RsIndicatorExpressionBiz rsIndicatorExpressionBiz;
 
   public static ExperimentPhysicalExamReportResponseRs experimentPhysicalExamReport2ResponseRs(ExperimentIndicatorViewPhysicalExamReportRsEntity experimentIndicatorViewPhysicalExamReportRsEntity) {
     if (Objects.isNull(experimentIndicatorViewPhysicalExamReportRsEntity)) {
@@ -354,7 +356,10 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
     String experimentId = experimentPhysicalExamCheckRequestRs.getExperimentId();
     String experimentPersonId = experimentPhysicalExamCheckRequestRs.getExperimentPersonId();
     String indicatorFuncId = experimentPhysicalExamCheckRequestRs.getIndicatorFuncId();
-
+    String experimentOrgId = experimentPhysicalExamCheckRequestRs.getExperimentOrgId();
+    List<String> experimentIndicatorViewPhysicalExamIdList = experimentPhysicalExamCheckRequestRs.getExperimentIndicatorViewPhysicalExamIdList();
+    /* runsix:TODO !!! */
+//    rsIndicatorExpressionBiz.parseIndicatorExpression();
 //    experimentIndicatorInstanceRsBiz.changeMoney(RsChangeMoneyRequest
 //        .builder()
 //        .appId(appId)

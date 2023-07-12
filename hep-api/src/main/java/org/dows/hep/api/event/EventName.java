@@ -19,6 +19,7 @@ public enum EventName {
     copyExperimentPersonAndOrgEvent("copyExperimentPersonAndOrgHandler"),
 
     experimentReadyEvent("experimentReadyHandler"),
+    exptEventTriggeredHandler("exptEventTriggeredHandler"),
     ;
 
 

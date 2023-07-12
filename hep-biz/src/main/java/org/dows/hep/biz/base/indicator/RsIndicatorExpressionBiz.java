@@ -160,6 +160,15 @@ public class RsIndicatorExpressionBiz {
     return enumIndicatorExpressionField;
   }
 
+  private EnumIndicatorExpressionScene checkScene(Integer scene) {
+    EnumIndicatorExpressionScene enumIndicatorExpressionScene = EnumIndicatorExpressionScene.getByScene(scene);
+    if (Objects.isNull(enumIndicatorExpressionScene)) {
+      log.error("RsIndicatorExpressionBiz.checkScene scene:{} is illegal", scene);
+      throw new RsIndicatorExpressionException("检查指标公式-指标公式域只能是数据库、案例库或实验域");
+    }
+    return enumIndicatorExpressionScene;
+  }
+
   private EnumIndicatorExpressionSource checkSource(Integer source) {
     EnumIndicatorExpressionSource enumIndicatorExpressionSource = EnumIndicatorExpressionSource.getBySource(source);
     if (Objects.isNull(enumIndicatorExpressionSource)) {
@@ -646,7 +655,7 @@ public class RsIndicatorExpressionBiz {
       ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity,
       ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity
   ) {
-    EnumIndicatorExpressionScene enumIndicatorExpressionScene = EnumIndicatorExpressionScene.getBySence(scene);
+    EnumIndicatorExpressionScene enumIndicatorExpressionScene = EnumIndicatorExpressionScene.getByScene(scene);
     /* runsix:如果公式使用场景不明确，不做特殊处理，直接返回 */
     if (Objects.isNull(enumIndicatorExpressionScene)) {
       return;
@@ -671,7 +680,7 @@ public class RsIndicatorExpressionBiz {
    * 1.按顺序解析每一个公式
    * 2.处理解析后的结果
   */
-  private void ePIEResultUsingExperimentIndicatorInstanceIdCombineWithHandle(
+  public void ePIEResultUsingExperimentIndicatorInstanceIdCombineWithHandle(
       Integer scene,
       Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
       ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity,
@@ -724,12 +733,22 @@ public class RsIndicatorExpressionBiz {
   }
 
   /* runsix:TODO  */
-  private void ePIEIndicatorManagement(Map<ExperimentIndicatorExpressionRsEntity, AtomicReference> kExperimentIndicatorExpressionRsEntityVAtomicReferenceMap) {
-    if (Objects.isNull(kExperimentIndicatorExpressionRsEntityVAtomicReferenceMap) || kExperimentIndicatorExpressionRsEntityVAtomicReferenceMap.isEmpty()) {
-      return;
-    }
-    Set<ExperimentIndicatorExpressionRsEntity> experimentIndicatorExpressionRsEntitySet = kExperimentIndicatorExpressionRsEntityVAtomicReferenceMap.keySet();
-
+  private void ePIEIndicatorManagement(
+      Integer scene,
+      Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
+      ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity,
+      List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList,
+      ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity,
+      ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity
+  ) {
+    ePIEResultUsingExperimentIndicatorInstanceIdCombineWithHandle(
+        scene,
+        kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
+        experimentIndicatorExpressionRsEntity,
+        experimentIndicatorExpressionItemRsEntityList,
+        minExperimentIndicatorExpressionItemRsEntity,
+        maxExperimentIndicatorExpressionItemRsEntity
+        );
   }
 
   /* runsix:TODO 这个可以留到下个版本做 */
@@ -755,10 +774,24 @@ public class RsIndicatorExpressionBiz {
   }
 
   /* runsix:TODO  */
-  private void experimentParseIndicatorExpression(Integer source) {
+  private void experimentParseIndicatorExpression(
+      Integer source, Integer scene,
+      Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
+      ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity,
+      List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList,
+      ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity,
+      ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity
+      ) {
     EnumIndicatorExpressionSource enumIndicatorExpressionSource = checkSource(source);
     switch (enumIndicatorExpressionSource) {
-      case INDICATOR_MANAGEMENT -> ePIEIndicatorManagement(new HashMap<>());
+      case INDICATOR_MANAGEMENT -> ePIEIndicatorManagement(
+          scene,
+          kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
+          experimentIndicatorExpressionRsEntity,
+          experimentIndicatorExpressionItemRsEntityList,
+          minExperimentIndicatorExpressionItemRsEntity,
+          maxExperimentIndicatorExpressionItemRsEntity
+          );
       case INDICATOR_JUDGE_RISK_FACTOR -> ePIEIndicatorJudgeRiskFactor();
 //      case CROWDS -> ePIECrowds();
     }
@@ -766,12 +799,27 @@ public class RsIndicatorExpressionBiz {
 
 
 
-  public void parseIndicatorExpression(Integer field, Integer source) {
+  public void parseIndicatorExpression(
+      Integer field, Integer source, Integer scene,
+      Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
+      ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity,
+      List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList,
+      ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity,
+      ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity
+      ) {
     EnumIndicatorExpressionField enumIndicatorExpressionField = checkField(field);
+    EnumIndicatorExpressionScene enumIndicatorExpressionScene = checkScene(scene);
     switch (enumIndicatorExpressionField) {
       case DATABASE -> databaseParseIndicatorExpression();
       case CASE -> caseParseIndicatorExpression();
-      case EXPERIMENT -> experimentParseIndicatorExpression(source);
+      case EXPERIMENT -> experimentParseIndicatorExpression(
+          source, scene,
+          kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
+          experimentIndicatorExpressionRsEntity,
+          experimentIndicatorExpressionItemRsEntityList,
+          minExperimentIndicatorExpressionItemRsEntity,
+          maxExperimentIndicatorExpressionItemRsEntity
+          );
       default -> {
         log.error("RsIndicatorExpressionBiz.parseIndicatorExpression field:{} is illegal", field);
         throw new RsIndicatorExpressionException(String.format("解析公式-公式域只能是数据库、案例库或实验域，field:%s", field));
