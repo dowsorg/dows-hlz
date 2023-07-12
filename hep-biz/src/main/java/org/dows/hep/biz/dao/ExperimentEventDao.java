@@ -59,7 +59,7 @@ public class ExperimentEventDao extends BaseDao<ExperimentEventService, Experime
                 .list();
     }
 
-    public List<ExperimentEventEntity> getTimeEventByExperimentId(String appId,String experimentId,String experimentPersonId,Integer state,
+    public List<ExperimentEventEntity> getTimeEventByExperimentId(String appId,String experimentId,String experimentPersonId,Integer maxPeriod, Integer state,
                                                          SFunction<ExperimentEventEntity,?>... cols){
         return service.lambdaQuery()
                 .eq(ExperimentEventEntity::getAppId, appId)
@@ -67,6 +67,7 @@ public class ExperimentEventDao extends BaseDao<ExperimentEventService, Experime
                 .eq(ShareUtil.XObject.notEmpty(experimentPersonId),ExperimentEventEntity::getExperimentPersonId,experimentPersonId)
                 .eq(ShareUtil.XObject.notEmpty(state),ExperimentEventEntity::getState,state)
                 .gt(ExperimentEventEntity::getTriggerType, 0)
+                .le(ExperimentEventEntity::getTriggerType,maxPeriod)
                 .orderByAsc(ExperimentEventEntity::getCasePersonId,ExperimentEventEntity::getCaseEventId)
                 .select(cols)
                 .list();

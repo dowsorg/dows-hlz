@@ -96,7 +96,7 @@ public class ExperimentGroupBiz {
                             .groupState(EnumExperimentGroupStatus.ASSIGN_FUNC.getCode())
                             .groupName(createGroup.getGroupName())
                             .build());
-        } /*else if (experimentParticipatorEntity.getModel() == EnumExperimentMode.SAND.getCode()) {
+        } else if (experimentParticipatorEntity.getModel() == EnumExperimentMode.SAND.getCode()) {
             return experimentGroupService.lambdaUpdate()
                     .eq(ExperimentGroupEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
                     .eq(ExperimentGroupEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
@@ -104,7 +104,7 @@ public class ExperimentGroupBiz {
                             .groupState(EnumExperimentGroupStatus.ASSIGN_DEPARTMENT.getCode())
                             .groupName(createGroup.getGroupName())
                             .build());
-        }*/
+        }
         return false;
     }
 

@@ -87,6 +87,7 @@ public class TagsManageBiz {
                     .build();
             flag = tagsInstanceService.save(manageEntity);
         }
+
         List<String> indicatorExpressionIdList = new ArrayList<>();
         indicatorExpressionIdList.add(manageRequest.getTagsFormulaId());
         indicatorExpressionBiz.batchBindReasonId(BatchBindReasonIdRequestRs

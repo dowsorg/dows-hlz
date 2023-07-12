@@ -5,7 +5,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.google.common.collect.Lists;
-import org.checkerframework.checker.units.qual.K;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -154,7 +153,7 @@ public class ShareUtil {
             return CollUtil.map(collection, func, ignoreNull);
         }
 
-        public static <T,R> Set<R> toSet(List<T> src,Function<? super T, ? extends R> mapper ){
+        public static <T,R> Set<R> toSet(Collection<T> src,Function<? super T, ? extends R> mapper ){
             return src.stream().map(mapper).collect(Collectors.toSet());
         }
         public static <T, K> Map<K, T> toMap(List<T> src, Function<? super T, ? extends K> keyMapper) {

@@ -282,6 +282,15 @@ public class HepClientManager {
     }
 
     /**
+     * 按实验id获取实验下的在线用户
+     * @param experimentId
+     * @return
+     */
+    public static ConcurrentMap<Channel, AccountInfo> getUserInfosByExperimentId(String experimentId){
+        return ONLINE_ACCOUNT.getOrDefault(experimentId, new ConcurrentHashMap<>());
+    }
+
+    /**
      * 获取在线人数信息
      *
      * @return

@@ -23,9 +23,6 @@ import org.dows.hep.biz.event.ExperimentEventRules;
 import org.dows.hep.biz.event.ExperimentSettingCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
-import org.dows.hep.biz.snapshot.EnumSnapshotType;
-import org.dows.hep.biz.snapshot.SnapshotManager;
-import org.dows.hep.biz.snapshot.SnapshotRequest;
 import org.dows.hep.biz.util.*;
 import org.dows.hep.biz.vo.ExperimentEventBox;
 import org.dows.hep.biz.vo.ExperimentOrgNoticeBox;
@@ -62,6 +59,8 @@ public class ExperimentOrgBiz{
     private final ExperimentOrgNoticeDao experimentOrgNoticeDao;
 
     private final ExperimentEventDao experimentEventDao;
+
+    private final ExperimentOrgNoticeBiz experimentOrgNoticeBiz;
     /**
     * @param
     * @return
@@ -188,7 +187,7 @@ public class ExperimentOrgBiz{
                 ExperimentOrgNoticeEntity::getActionState,
                 ExperimentOrgNoticeEntity::getEventActions
         )).orElseThrow("未找到机构通知信息");
-        return buildOrgNotice(ExperimentOrgNoticeBox.create(rowNotice));
+        return experimentOrgNoticeBiz.CreateOrgNoticeResponse(rowNotice);
     }
 
     /**
@@ -217,6 +216,7 @@ public class ExperimentOrgBiz{
                 ExperimentOrgNoticeEntity::getGameDay,
                 ExperimentOrgNoticeEntity::getNoticeTime,
                 ExperimentOrgNoticeEntity::getNoticeSrcType,
+                ExperimentOrgNoticeEntity::getNoticeSrcId,
                 ExperimentOrgNoticeEntity::getTitle,
                 ExperimentOrgNoticeEntity::getContent,
                 ExperimentOrgNoticeEntity::getTips,
@@ -229,7 +229,7 @@ public class ExperimentOrgBiz{
         AssertUtil.trueThenThrow(!EnumExperimentOrgNoticeType.EVENTTriggered.getCode().equals(rowNotice.getNoticeSrcType())
                 ||ShareUtil.XObject.isEmpty(rowNotice.getNoticeSrcId()))
                 .throwMessage("未找到突发事件id");
-        ExperimentEventEntity rowEvent=AssertUtil.getNotNull(experimentEventDao.getById(rowNotice.getExperimentOrgNoticeId(),
+        ExperimentEventEntity rowEvent=AssertUtil.getNotNull(experimentEventDao.getById(rowNotice.getNoticeSrcId(),
                 ExperimentEventEntity::getId,
                 ExperimentEventEntity::getExperimentEventId,
                 ExperimentEventEntity::getState
@@ -237,13 +237,19 @@ public class ExperimentOrgBiz{
         ExperimentOrgNoticeBox noticeBox=ExperimentOrgNoticeBox.create(rowNotice);
         List<ExptOrgNoticeActionVO> actions=noticeBox.fromActionsJson(true);
         Map<String,ExptOrgNoticeActionVO> mapAction=ShareUtil.XCollection.toMap(actions, ExptOrgNoticeActionVO::getCaseEventActionId);
-        final int actedFlag=1;
-        saveNoticeAction.getActions().forEach(i->{
-            ExptOrgNoticeActionVO vAction=mapAction.get(i.getCaseEventActionId());
-            AssertUtil.falseThenThrow(null==vAction)
-                    .throwMessage(String.format("未找到处理措施[%s]的定义", i.getActionDesc()));
-            vAction.setActedFlag(Optional.ofNullable(i.getActedFlag()).orElse(0)>0?1:0);
-        });
+        boolean actedFlag=false;
+        for(ExptOrgNoticeActionVO item:saveNoticeAction.getActions()){
+            ExptOrgNoticeActionVO vAction=mapAction.get(item.getCaseEventActionId());
+            AssertUtil.trueThenThrow(null==vAction)
+                    .throwMessage(String.format("未找到处理措施[%s]的定义", item.getActionDesc()));
+            vAction.setActedFlag(Optional.ofNullable(item.getActedFlag()).orElse(0)>0?1:0);
+            if(vAction.getActedFlag()>0){
+                actedFlag=true;
+            }
+        }
+        AssertUtil.falseThenThrow(actedFlag)
+                .throwMessage("请选择事件处理措施");
+
         noticeBox.toActionsJson(true);
         rowNotice.setActionState(EnumEventActionState.DONE.getCode())
                 .setReadState(1);
@@ -251,7 +257,7 @@ public class ExperimentOrgBiz{
         final Date dateNow=ShareUtil.XDate.localDT2Date(ldtNow);
         ExperimentTimePoint timePoint=validator.getTimePoint(true, ldtNow, true);
         ExperimentEventBox eventBox=ExperimentEventBox.create(rowEvent);
-        eventBox.setActionJsonData(noticeBox.getJsonData()).toEventJson(true);
+        eventBox.setActionJsonData(noticeBox.getJsonData()).toActionJson(true);
         rowEvent.setActionAccountId(voLogin.getAccountId())
                 .setActionAccountName(voLogin.getAccountName())
                 .setActionTime(dateNow)
@@ -261,20 +267,10 @@ public class ExperimentOrgBiz{
         if(!ExperimentEventRules.Instance().saveActionEvent(rowEvent, rowNotice)){
             return null;
         }
-        return buildOrgNotice(noticeBox);
+        return experimentOrgNoticeBiz.CreateOrgNoticeResponse(noticeBox);
 
     }
-    OrgNoticeResponse buildOrgNotice(ExperimentOrgNoticeBox noticeBox) throws JsonProcessingException{
-        if(ShareUtil.XObject.isEmpty(noticeBox)){
-            return null;
-        }
-        OrgNoticeResponse rst= CopyWrapper.create(OrgNoticeResponse::new)
-                .endFrom(noticeBox.getEntity());
-        if(noticeBox.isEventNotice()) {
-            rst.setActions(noticeBox.fromActionsJson(false));
-        }
-        return rst;
-    }
+
     /**
     * @param
     * @return

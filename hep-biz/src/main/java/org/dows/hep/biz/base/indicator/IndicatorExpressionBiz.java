@@ -69,6 +69,7 @@ public class IndicatorExpressionBiz{
     if (Objects.isNull(indicatorExpressionItemResponseRsList)) {
       indicatorExpressionItemResponseRsList = new ArrayList<>();
     }
+    indicatorExpressionItemResponseRsList.sort(Comparator.comparingInt(IndicatorExpressionItemResponseRs::getSeq));
     return IndicatorExpressionResponseRs
         .builder()
         .id(indicatorExpressionEntity.getId())
@@ -768,6 +769,15 @@ public class IndicatorExpressionBiz{
   /* runsix:TODO */
   @Transactional(rollbackFor = Exception.class)
   public void batchBindReasonId(BatchBindReasonIdRequestRs batchBindReasonIdRequestRs) {
+    List<String> indicatorExpressionIdList = batchBindReasonIdRequestRs.getIndicatorExpressionIdList();
+    if (Objects.isNull(indicatorExpressionIdList)) {
+      return;
+    }
+    List<String> filteredIndicatorExpressionIdList = indicatorExpressionIdList.stream().filter(StringUtils::isNotBlank).collect(Collectors.toList());
+    if (filteredIndicatorExpressionIdList.isEmpty()) {
+      return;
+    }
+    batchBindReasonIdRequestRs.setIndicatorExpressionIdList(filteredIndicatorExpressionIdList);
     List<IndicatorExpressionRefEntity> indicatorExpressionRefEntityList = new ArrayList<>();
     populateIndicatorExpressionRefEntityList(indicatorExpressionRefEntityList, batchBindReasonIdRequestRs);
     indicatorExpressionRefService.saveOrUpdateBatch(indicatorExpressionRefEntityList);
@@ -1341,7 +1351,6 @@ public class IndicatorExpressionBiz{
         indicatorExpressionItemResponseRs0.setSeq(Integer.MAX_VALUE);
       }
       indicatorExpressionItemResponseRsList.add(indicatorExpressionItemResponseRs0);
-      indicatorExpressionItemResponseRsList.sort(Comparator.comparingInt(IndicatorExpressionItemResponseRs::getSeq));
     } else {
       // do nothing
     }

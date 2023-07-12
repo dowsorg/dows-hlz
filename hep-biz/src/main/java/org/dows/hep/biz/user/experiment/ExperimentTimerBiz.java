@@ -160,6 +160,9 @@ public class ExperimentTimerBiz {
                 mockRateMap.put(s, mockRate);
             }
 
+            countDownResponse.setDurationMap(durationMap);
+            countDownResponse.setMockRateMap(mockRateMap);
+            countDownResponse.setPeriodMap(periodMap);
             countDownResponse.setSandTime(Long.valueOf(totalDay));
             countDownResponse.setSandTimeUnit("天");
             countDownResponse.setModel(EnumExperimentMode.SAND.getCode());
@@ -178,22 +181,27 @@ public class ExperimentTimerBiz {
                     countDownResponse.setSandDuration(0D);
                     break;
                 } else if (experimentTimerEntity.getState() == EnumExperimentState.ONGOING.getState()) {
-                    // 当前时间戳-当前期数开始时间 = 相对时间
-                    Long ct = System.currentTimeMillis() - experimentTimerEntity.getStartTime();
-                    // 将ct转换为秒  .. day/duration = rate
-                    Long second = ct / 1000;
-                    // 获取比例
-                    Double aFloat = mockRateMap.get(experimentTimerEntity.getPeriod() + "");
-                    Double day = second * aFloat;
-                    Integer period = experimentTimerEntity.getPeriod();
-                    if (period > 1) {
-                        for (int i = 1; i <= period; i++) {
-                            Integer integer = periodMap.get(i + "");
-                            day += integer;
+                    Long sct = System.currentTimeMillis();
+                    if (sct >= experimentTimerEntity.getStartTime() && sct <= experimentTimerEntity.getEndTime()) {
+                        countDownResponse.setPeriod(experimentTimerEntity.getPeriod());
+                        // 当前时间戳-当前期数开始时间 = 相对时间（持续了多久）
+                        Long ct = sct - experimentTimerEntity.getStartTime();
+                        // 将ct转换为秒  .. day/duration = rate
+                        Long second = ct / 1000;
+                        // 获取比例
+                        Double aFloat = mockRateMap.get(experimentTimerEntity.getPeriod() + "");
+                        Double day = second * aFloat;
+                        Integer period = experimentTimerEntity.getPeriod();
+                        if (period > 1) {
+                            for (int i = 1; i <= period; i++) {
+                                Integer integer = periodMap.get(i + "");
+                                day += integer;
+                            }
                         }
+                        countDownResponse.setSandDurationSecond(second);
+                        countDownResponse.setSandDuration(day);
+                        break;
                     }
-                    countDownResponse.setSandDuration(day);
-                    break;
                 }
             }
         }
