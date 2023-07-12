@@ -112,6 +112,7 @@ public class PersonStatiscBiz {
             experimentOrgList.forEach(org -> {
                 ExperimentOrgResponse orgResponse = (ExperimentOrgResponse) new ExperimentOrgResponse()
                         .setHandbook(org.getHandbook())
+                        .setCaseOrgId(org.getCaseOrgId())
                         .setExperimentOrgId(org.getExperimentOrgId())
                         .setOrgId(org.getOrgId());
 

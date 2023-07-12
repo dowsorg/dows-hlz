@@ -204,7 +204,7 @@ public class ExperimentOrgBiz{
 
         ExptRequestValidator validator=ExptRequestValidator.create(saveNoticeAction);
         validator.checkExperimentOrg()
-                .checkExperimentInstance();
+                .checkExperimentInstanceId();
         //校验登录
         LoginContextVO voLogin= ShareBiz.getLoginUser(request);
         ExperimentOrgNoticeEntity rowNotice= AssertUtil.getNotNull(experimentOrgNoticeDao.getById(saveNoticeAction.getExperimentOrgNoticeId(),
