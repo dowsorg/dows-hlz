@@ -4,8 +4,8 @@ mybatis-plus:
     field-strategy: 2
     db-config:
       id-type: AUTO
-      insert-strategy: not_empty
-      update-strategy: not_empty
+      insert-strategy: not_null
+      update-strategy: not_null
       # 表统一加前缀
     #      table-prefix:
     banner: false
