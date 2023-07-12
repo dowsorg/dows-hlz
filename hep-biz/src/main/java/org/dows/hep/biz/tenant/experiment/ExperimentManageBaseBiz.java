@@ -37,7 +37,11 @@ public class ExperimentManageBaseBiz {
     }
 
     public List<String> listExperimentGroupIds(String experimentInstanceId) {
-        List<ExperimentGroupResponse> experimentGroupResponses = experimentGroupBiz.listGroup(experimentInstanceId);
+        List<ExperimentGroupResponse> experimentGroupResponses = listExptGroup(experimentInstanceId);
         return experimentGroupResponses.stream().map(ExperimentGroupResponse::getExperimentGroupId).toList();
+    }
+
+    public List<ExperimentGroupResponse> listExptGroup(String exptInstanceId) {
+        return experimentGroupBiz.listGroup(exptInstanceId);
     }
 }

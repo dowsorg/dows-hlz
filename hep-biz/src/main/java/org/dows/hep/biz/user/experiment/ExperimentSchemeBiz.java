@@ -315,7 +315,7 @@ public class ExperimentSchemeBiz {
 
         boolean res1 = experimentSchemeService.lambdaUpdate()
                 .eq(ExperimentSchemeEntity::getExperimentSchemeId, experimentSchemeId)
-                .set(ExperimentSchemeEntity::getState, 1) // 1-已提交
+                .set(ExperimentSchemeEntity::getState, ExptSchemeStateEnum.SUBMITTED.getCode()) // 1-已提交
                 .update();
         if (containsSandSetting(experimentInstanceId)) {
             handleGroupStatus(experimentGroupId, EnumExperimentGroupStatus.ASSIGN_DEPARTMENT);
