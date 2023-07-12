@@ -23,6 +23,9 @@ public class CountDownResponse {
     private Integer period;
     @Schema(title = "沙盘持续时间")
     private Double sandDuration;
+    @Schema(title = "沙盘持续时间(秒)")
+    private Long sandDurationSecond;
+
     @Schema(title = "沙盘实验时长")
     private Long sandTime;
     @Schema(title = "沙盘实验倒计时时间")
