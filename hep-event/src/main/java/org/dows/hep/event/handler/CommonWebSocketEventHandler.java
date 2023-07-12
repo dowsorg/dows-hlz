@@ -8,6 +8,7 @@ import org.dows.hep.api.event.CommonWebSocketEventSource;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.websocket.HepClientManager;
 import org.dows.hep.websocket.proto.MessageCode;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.Set;
@@ -17,7 +18,8 @@ import java.util.concurrent.ConcurrentMap;
  * @author : wuzl
  * @date : 2023/7/11 11:54
  */
-public abstract class CommonWebSocketEventHandler<T> extends AbstractEventHandler implements EventHandler<CommonWebSocketEventSource<T>> {
+@Component
+public class CommonWebSocketEventHandler<T> extends AbstractEventHandler implements EventHandler<CommonWebSocketEventSource<T>> {
 
     @Override
     public void exec(CommonWebSocketEventSource<T> obj) {
