@@ -4,8 +4,8 @@ mybatis-plus:
     field-strategy: 2
     db-config:
       id-type: AUTO
-      insert-strategy: not_empty
-      update-strategy: not_empty
+      insert-strategy: not_null
+      update-strategy: not_null
 #      如果字段为空，在更新的时候会忽略掉，存在问题，所以改成了ignored，即是什么就更新为什么，为null就更新为null
 #      update-strategy: not_empty
       # 表统一加前缀
