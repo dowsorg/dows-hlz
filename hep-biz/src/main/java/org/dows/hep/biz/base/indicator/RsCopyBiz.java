@@ -11,6 +11,7 @@ import org.dows.hep.api.enums.EnumIndicatorCategory;
 import org.dows.hep.api.enums.EnumStatus;
 import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.api.exception.RsCopyException;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -214,7 +215,8 @@ public class RsCopyBiz {
     Set<String> funcIndicatorViewMonitorFollowupIdSet = new HashSet<>();
     Set<String> funcIndicatorViewPhysicalExamIdSet = new HashSet<>();
     Set<String> funcIndicatorViewSupportExamIdSet = new HashSet<>();
-    /* runsix:operate TODO wuzhilin */
+    /* 操作指标 by wuzl */
+    Set<String> funcOperateIdSet=new HashSet<>();
     /* runsix:judge */
     Set<String> funcIndicatorJudgeRiskFactorIdSet = new HashSet<>();
     Set<String> funcIndicatorJudgeHealthProblemIdSet = new HashSet<>();
@@ -230,32 +232,39 @@ public class RsCopyBiz {
           String indicatorCategoryId = indicatorFuncEntity.getIndicatorCategoryId();
           /* runsix:TODO wuzhilin那边剩余的 */
           switch (EnumIndicatorCategory.getByCode(indicatorCategoryId)) {
-            case VIEW_MANAGEMENT_BASE_INFO:
-              funcIndicatorViewBaseInfoIdSet.add(indicatorFuncId);
-              break;
-            case VIEW_MANAGEMENT_MONITOR_FOLLOWUP:
-              funcIndicatorViewMonitorFollowupIdSet.add(indicatorFuncId);
-              break;
-            case VIEW_MANAGEMENT_NO_REPORT_TWO_LEVEL:
-              funcIndicatorViewPhysicalExamIdSet.add(indicatorFuncId);
-              break;
-            case VIEW_MANAGEMENT_NO_REPORT_FOUR_LEVEL:
-              funcIndicatorViewSupportExamIdSet.add(indicatorFuncId);
-              break;
-            case JUDGE_MANAGEMENT_RISK_FACTOR:
-              funcIndicatorJudgeRiskFactorIdSet.add(indicatorFuncId);
-              break;
-            case JUDGE_MANAGEMENT_HEALTH_PROBLEM:
-              funcIndicatorJudgeHealthProblemIdSet.add(indicatorFuncId);
-              break;
-            case JUDGE_MANAGEMENT_HEALTH_GUIDANCE:
-              funcIndicatorJudgeHealthGuidanceIdSet.add(indicatorFuncId);
-              break;
-            case JUDGE_MANAGEMENT_DISEASE_PROBLEM:
-              funcIndicatorJudgeDiseaseProblemIdSet.add(indicatorFuncId);
-              break;
-            default:
-              log.error("RsCopyBiz.rsCopyViewIndicator indicatorCategoryId:{} is illegal", indicatorCategoryId);
+              case VIEW_MANAGEMENT_BASE_INFO:
+                  funcIndicatorViewBaseInfoIdSet.add(indicatorFuncId);
+                  break;
+              case VIEW_MANAGEMENT_MONITOR_FOLLOWUP:
+                  funcIndicatorViewMonitorFollowupIdSet.add(indicatorFuncId);
+                  break;
+              case VIEW_MANAGEMENT_NO_REPORT_TWO_LEVEL:
+                  funcIndicatorViewPhysicalExamIdSet.add(indicatorFuncId);
+                  break;
+              case VIEW_MANAGEMENT_NO_REPORT_FOUR_LEVEL:
+                  funcIndicatorViewSupportExamIdSet.add(indicatorFuncId);
+                  break;
+              case JUDGE_MANAGEMENT_RISK_FACTOR:
+                  funcIndicatorJudgeRiskFactorIdSet.add(indicatorFuncId);
+                  break;
+              case JUDGE_MANAGEMENT_HEALTH_PROBLEM:
+                  funcIndicatorJudgeHealthProblemIdSet.add(indicatorFuncId);
+                  break;
+              case JUDGE_MANAGEMENT_HEALTH_GUIDANCE:
+                  funcIndicatorJudgeHealthGuidanceIdSet.add(indicatorFuncId);
+                  break;
+              case JUDGE_MANAGEMENT_DISEASE_PROBLEM:
+                  funcIndicatorJudgeDiseaseProblemIdSet.add(indicatorFuncId);
+                  break;
+              //操作指标 by wuzl
+              case OPERATE_MANAGEMENT_INTERVENE_DIET:
+              case OPERATE_MANAGEMENT_INTERVENE_SPORTS:
+              case OPERATE_MANAGEMENT_INTERVENE_PSYCHOLOGY:
+              case OPERATE_MANAGEMENT_INTERVENE_TREATMENT:
+                  funcOperateIdSet.add(indicatorFuncId);
+                  break;
+              default:
+                  log.error("RsCopyBiz.rsCopyViewIndicator indicatorCategoryId:{} is illegal", indicatorCategoryId);
           }
         });
     Map<String, IndicatorInstanceEntity> kIndicatorInstanceIdVIndicatorInstanceEntityMap = new HashMap<>();
@@ -274,6 +283,26 @@ public class RsCopyBiz {
           kIndicatorCategoryIdVIndicatorCategoryEntityMap.put(indicatorCategoryEntity.getIndicatorCategoryId(), indicatorCategoryEntity);
           kIndicatorCategoryIdVParentIndicatorCategoryIdMap.put(indicatorCategoryEntity.getIndicatorCategoryId(), indicatorCategoryEntity.getPid());
         });
+      /* 操作指标 by wuzl */
+      funcOperateIdSet.forEach( indicatorFuncId->{
+          List<String> caseOrgModuleIdList = kIndicatorFuncIdVCaseOrgModuleIdList.get(indicatorFuncId);
+          if(ShareUtil.XCollection.isEmpty(caseOrgModuleIdList)){
+              return;
+          }
+          kExperimentIndicatorFuncIdVIndicatorFuncIdMap.put(indicatorFuncId,indicatorFuncId);
+          caseOrgModuleIdList.forEach(caseOrgModuleId->{
+              List<String> experimentIndicatorFuncIdList= kCaseOrgModuleIdVExperimentIndicatorFuncIdListMap.computeIfAbsent(caseOrgModuleId, k->new ArrayList<>());
+              if(!experimentIndicatorFuncIdList.contains(indicatorFuncId)){
+                  experimentIndicatorFuncIdList.add(indicatorFuncId );
+              }
+              IndicatorFuncEntity indicatorFuncEntity= kIndicatorFuncIdVIndicatorFuncEntityMap.get(indicatorFuncId);
+              kExperimentIndicatorFuncIdVIndicatorCategoryIdMap.put(indicatorFuncId, indicatorFuncEntity.getIndicatorCategoryId());
+              kExperimentIndicatorFuncIdVIndicatorFuncNameMap.put(indicatorFuncId, indicatorFuncEntity.getName());
+          });
+      });
+
+
+
     /* runsix:查看指标-基本信息 */
     /* runsix:查看指标-基本信息-指标描述表 */
     List<ExperimentIndicatorViewBaseInfoRsEntity> experimentIndicatorViewBaseInfoRsEntityList = new ArrayList<>();
