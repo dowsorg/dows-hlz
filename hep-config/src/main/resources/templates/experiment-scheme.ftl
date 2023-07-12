@@ -153,7 +153,7 @@
                     <div class="planQuestion">
                         <div class="title">${item_index+1}. ${item.questionTitle!""}</div>
                         <div class="info">${item.questionDescr!""}</div>
-                        <#if !item.children??>
+                        <#if item.children?size == 0>
                              <div class="answerContent">${item.questionResult!"未作答"}</div>
                         </#if>
                     </div>
@@ -163,7 +163,7 @@
                         <div class="planQuestion">
                             <div class="title isSub">${item_index+1}.${subItem_index+1} ${subItem.questionTitle!""}</div>
                             <div class="info">${subItem.questionDescr!""}</div>
-                            <#if !subItem.children??>
+                            <#if subItem.children?size==0>
                                 <div class="answerContent">${subItem.questionResult!"未作答"}</div>
                             </#if>
                         </div>
@@ -173,7 +173,7 @@
                                 <div class="planQuestion">
                                     <div class="title isSubSub">${item_index+1}.${subItem_index+1}.${subSubItem_index+1} ${subSubItem.questionTitle!""}</div>
                                     <div class="info">${subSubItem.questionDescr!""}</div>
-                                    <#if !subSubItem.children??>
+                                    <#if subSubItem.children?size==0>
                                         <div class="answerContent">${subSubItem.questionResult!"未作答"}</div>
                                     </#if>
                                 </div>
