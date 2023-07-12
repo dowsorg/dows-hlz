@@ -11,6 +11,7 @@ import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionItemResponse;
 import org.dows.hep.api.tenant.casus.response.CaseSchemeResponse;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
+import org.dows.hep.api.user.experiment.ExptSchemeStateEnum;
 import org.dows.hep.biz.tenant.casus.TenantCaseSchemeBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
 import org.dows.hep.entity.ExperimentSchemeEntity;
@@ -78,7 +79,7 @@ public class ExperimentSchemeManageBiz {
                     .schemeDescr(caseScheme.getSchemeDescr())
                     .containsVideo(caseScheme.getContainsVideo())
                     .videoQuestion(caseScheme.getVideoQuestion())
-                    .state(0)
+                    .state(ExptSchemeStateEnum.NOT_SUBMITTED.getCode())
                     .schemeSetting(schemeSetting)
                     .build();
             entityList.add(entity);

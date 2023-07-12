@@ -9,8 +9,11 @@ import org.dows.hep.api.tenant.casus.response.CaseSchemeResponse;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSchemeScoreRequest;
 import org.dows.hep.api.tenant.experiment.response.ExperimentSchemeScoreItemResponse;
 import org.dows.hep.api.tenant.experiment.response.ExperimentSchemeScoreResponse;
+import org.dows.hep.api.tenant.experiment.response.ExptSchemeGroupReviewResponse;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.ExptReviewStateEnum;
+import org.dows.hep.api.user.experiment.ExptSchemeStateEnum;
+import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
 import org.dows.hep.biz.tenant.casus.TenantCaseSchemeBiz;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.entity.ExperimentSchemeEntity;
@@ -33,8 +36,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ExperimentSchemeScoreBiz {
     private final ExperimentManageBaseBiz baseBiz;
-    private final ExperimentSchemeService experimentSchemeService;
     private final TenantCaseSchemeBiz tenantCaseSchemeBiz;
+    private final ExperimentSchemeService experimentSchemeService;
     private final ExperimentSchemeScoreService experimentSchemeScoreService;
     private final ExperimentSchemeScoreItemService experimentSchemeScoreItemService;
     private final ExperimentParticipatorService experimentParticipatorService;
@@ -57,66 +60,65 @@ public class ExperimentSchemeScoreBiz {
         preHandleExperimentSchemeScore(experimentInstanceId, caseInstanceId, viewAccountIds);
     }
 
-    private void preHandleExperimentSchemeScore(String experimentInstanceId, String caseInstanceId, List<String> viewAccountIds) {
-        Assert.notNull(experimentInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
-        Assert.notNull(caseInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
-        Assert.notEmpty(viewAccountIds, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
-
-        // 获取该案例 `caseInstanceId` 下方案设计
-        CaseSchemeResponse caseScheme = tenantCaseSchemeBiz.getCaseSchemeByInstanceId(caseInstanceId);
-        if (BeanUtil.isEmpty(caseScheme)) {
-            throw new BizException(ExperimentESCEnum.SCHEME_NOT_NULL);
+    /**
+     * @param exptInstanceId - 实验实例ID
+     * @param reviewAccountId - 评审账号ID
+     * @return java.util.List<org.dows.hep.api.tenant.experiment.response.ExptSchemeGroupReviewResponse>
+     * @author fhb
+     * @description
+     * @date 2023/7/12 16:37
+     */
+    public List<ExptSchemeGroupReviewResponse> listSchemeGroupReview(String exptInstanceId, String reviewAccountId) {
+        // 获取实验下 `exptInstanceId` 小组信息
+        List<ExperimentGroupResponse> exptGroupList = baseBiz.listExptGroup(exptInstanceId);
+        if (CollUtil.isEmpty(exptGroupList)) {
+            throw new BizException("获取方案设计报告的小组列表时，小组信息为空");
         }
 
-        // 获取该实验下 `experimentInstanceId` 所有的方案设计
+        // 获取该实验下 `exptInstanceId` 方案设计
         List<ExperimentSchemeEntity> schemeList = experimentSchemeService.lambdaQuery()
-                .eq(ExperimentSchemeEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentSchemeEntity::getExperimentInstanceId, exptInstanceId)
                 .list();
         if (CollUtil.isEmpty(schemeList)) {
-            return;
+            throw new BizException("获取方案设计报告的小组列表时，方案设计数据为空");
         }
+        // schemeId list
+        List<String> schemeIdList = schemeList.stream()
+                .map(ExperimentSchemeEntity::getExperimentSchemeId)
+                .toList();
+        // 获取 `exptInstanceId` && `reviewAccountId` 下所有的方案设计评分
+        List<ExperimentSchemeScoreEntity> schemeScoreList = experimentSchemeScoreService.lambdaQuery()
+                .in(ExperimentSchemeScoreEntity::getExperimentSchemeId, schemeIdList)
+                .eq(ExperimentSchemeScoreEntity::getReviewAccountId, reviewAccountId)
+                .list();
 
-        // 预生成评分表 `experimentSchemeScore`
-        List<ExperimentSchemeScoreEntity> scoreList = new ArrayList<>();
-        viewAccountIds.forEach(accountId -> {
-            schemeList.forEach(scheme -> {
-                ExperimentSchemeScoreEntity scoreEntity = ExperimentSchemeScoreEntity.builder()
-                        .experimentSchemeScoreId(baseBiz.getIdStr())
-                        .experimentSchemeId(scheme.getExperimentSchemeId())
-                        .caseSchemeId(caseScheme.getCaseSchemeId())
-                        .reviewAccountId(accountId)
-                        .reviewScore(0.0f)
-                        .reviewDt(null)
-                        .reviewState(ExptReviewStateEnum.NOT_SUBMITTED.getCode())
-                        .build();
-                scoreList.add(scoreEntity);
-            });
+        // group-id map expt-scheme
+        Map<String, ExperimentSchemeEntity> groupIdMapExptScheme = schemeList.stream()
+                .collect(Collectors.toMap(ExperimentSchemeEntity::getExperimentGroupId, item -> item));
+        // scheme-id map scheme-score
+        Map<String, ExperimentSchemeScoreEntity> schemeIdMapSchemeScore = schemeScoreList.stream()
+                .collect(Collectors.toMap(ExperimentSchemeScoreEntity::getExperimentSchemeId, item -> item, (v1, v2) -> v1));
+
+        // build result
+        List<ExptSchemeGroupReviewResponse> result = new ArrayList<>();
+        exptGroupList.forEach(group -> {
+            ExperimentSchemeEntity schemeEntity = groupIdMapExptScheme.get(group.getExperimentGroupId());
+            Assert.notNull(schemeEntity, "获取方案设计报告的小组列表时: 小组的方案设计数据为空");
+            ExperimentSchemeScoreEntity schemeScoreEntity = schemeIdMapSchemeScore.get(schemeEntity.getExperimentSchemeId());
+            ExptSchemeGroupReviewResponse resultItem = ExptSchemeGroupReviewResponse.builder()
+                    .exptGroupId(group.getExperimentGroupId())
+                    .exptGroupName(group.getGroupName())
+                    .exptGroupAliasName(group.getGroupAlias())
+                    .groupNo(group.getGroupNo())
+                    .exptSchemeStateCode(schemeEntity.getState())
+                    .exptSchemeStateName(ExptSchemeStateEnum.getByCode(schemeEntity.getState()).getName())
+                    .reviewDt(schemeScoreEntity != null ? schemeScoreEntity.getReviewDt() : null)
+                    .reviewScore(schemeScoreEntity != null ? schemeScoreEntity.getReviewScore() : null)
+                    .build();
+            result.add(resultItem);
         });
-        experimentSchemeScoreService.saveBatch(scoreList);
 
-        // 获取该案例下 `caseInstanceId` 所有评分维度
-        List<QuestionSectionDimensionResponse> dimensionList = caseScheme.getQuestionSectionDimensionList();
-        if (CollUtil.isEmpty(dimensionList)) {
-            return;
-        }
-
-        // 预生成评分详细表 `experimentSchemeScoreItem`
-        List<ExperimentSchemeScoreItemEntity> itemList = new ArrayList<>();
-        scoreList.forEach(score -> {
-            dimensionList.forEach(dimension -> {
-                ExperimentSchemeScoreItemEntity itemEntity = ExperimentSchemeScoreItemEntity.builder()
-                        .experimentSchemeScoreItemId(baseBiz.getIdStr())
-                        .experimentSchemeScoreId(score.getExperimentSchemeScoreId())
-                        .dimensionName(dimension.getDimensionName())
-                        .dimensionContent(dimension.getDimensionContent())
-                        .minScore(dimension.getMinScore())
-                        .maxScore(dimension.getMaxScore())
-                        .score(0.0f)
-                        .build();
-                itemList.add(itemEntity);
-            });
-        });
-        experimentSchemeScoreItemService.saveBatch(itemList);
+        return result;
     }
 
     /**
@@ -200,6 +202,68 @@ public class ExperimentSchemeScoreBiz {
             itemEntityList.add(itemEntity);
         });
         return experimentSchemeScoreItemService.updateBatchById(itemEntityList);
+    }
+
+    private void preHandleExperimentSchemeScore(String experimentInstanceId, String caseInstanceId, List<String> viewAccountIds) {
+        Assert.notNull(experimentInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
+        Assert.notNull(caseInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
+        Assert.notEmpty(viewAccountIds, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
+
+        // 获取该案例 `caseInstanceId` 下方案设计
+        CaseSchemeResponse caseScheme = tenantCaseSchemeBiz.getCaseSchemeByInstanceId(caseInstanceId);
+        if (BeanUtil.isEmpty(caseScheme)) {
+            throw new BizException(ExperimentESCEnum.SCHEME_NOT_NULL);
+        }
+
+        // 获取该实验下 `experimentInstanceId` 所有的方案设计
+        List<ExperimentSchemeEntity> schemeList = experimentSchemeService.lambdaQuery()
+                .eq(ExperimentSchemeEntity::getExperimentInstanceId, experimentInstanceId)
+                .list();
+        if (CollUtil.isEmpty(schemeList)) {
+            return;
+        }
+
+        // 预生成评分表 `experimentSchemeScore`
+        List<ExperimentSchemeScoreEntity> scoreList = new ArrayList<>();
+        viewAccountIds.forEach(accountId -> {
+            schemeList.forEach(scheme -> {
+                ExperimentSchemeScoreEntity scoreEntity = ExperimentSchemeScoreEntity.builder()
+                        .experimentSchemeScoreId(baseBiz.getIdStr())
+                        .experimentSchemeId(scheme.getExperimentSchemeId())
+                        .caseSchemeId(caseScheme.getCaseSchemeId())
+                        .reviewAccountId(accountId)
+                        .reviewScore(0.0f)
+                        .reviewDt(null)
+                        .reviewState(ExptReviewStateEnum.NOT_SUBMITTED.getCode())
+                        .build();
+                scoreList.add(scoreEntity);
+            });
+        });
+        experimentSchemeScoreService.saveBatch(scoreList);
+
+        // 获取该案例下 `caseInstanceId` 所有评分维度
+        List<QuestionSectionDimensionResponse> dimensionList = caseScheme.getQuestionSectionDimensionList();
+        if (CollUtil.isEmpty(dimensionList)) {
+            return;
+        }
+
+        // 预生成评分详细表 `experimentSchemeScoreItem`
+        List<ExperimentSchemeScoreItemEntity> itemList = new ArrayList<>();
+        scoreList.forEach(score -> {
+            dimensionList.forEach(dimension -> {
+                ExperimentSchemeScoreItemEntity itemEntity = ExperimentSchemeScoreItemEntity.builder()
+                        .experimentSchemeScoreItemId(baseBiz.getIdStr())
+                        .experimentSchemeScoreId(score.getExperimentSchemeScoreId())
+                        .dimensionName(dimension.getDimensionName())
+                        .dimensionContent(dimension.getDimensionContent())
+                        .minScore(dimension.getMinScore())
+                        .maxScore(dimension.getMaxScore())
+                        .score(0.0f)
+                        .build();
+                itemList.add(itemEntity);
+            });
+        });
+        experimentSchemeScoreItemService.saveBatch(itemList);
     }
 
     private ExperimentSchemeScoreEntity getSchemeScore(String experimentSchemeScoreId) {
