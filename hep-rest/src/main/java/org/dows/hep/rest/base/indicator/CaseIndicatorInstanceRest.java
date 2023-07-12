@@ -42,8 +42,8 @@ public class CaseIndicatorInstanceRest {
     }
 
     @Operation(summary = "更新NPC人物指标的值或默认值或描述")
-    @GetMapping("v1/caseIndicator/indicatorInstance/updateNpcIndicatorValue")
-    public boolean updateNpcIndicatorValue(@Validated UpdateIndicatorValueRequest updateIndicatorValueRequest) {
+    @PostMapping("v1/caseIndicator/indicatorInstance/updateNpcIndicatorValue")
+    public boolean updateNpcIndicatorValue(@RequestBody @Validated UpdateIndicatorValueRequest updateIndicatorValueRequest) {
         return caseIndicatorInstanceBiz.updateNpcIndicatorValue(updateIndicatorValueRequest);
     }
 
