@@ -116,6 +116,7 @@ public class ExperimentManageBiz {
                 .appointor(instanceResponse.getAccountName())
                 .caseInstanceId(createExperiment.getCaseInstanceId())
                 .caseName(createExperiment.getCaseName())
+                .casePic(createExperiment.getCasePic())
                 .appointorName(instanceResponse.getUserName())
                 .build();
         // 保存实验实例
