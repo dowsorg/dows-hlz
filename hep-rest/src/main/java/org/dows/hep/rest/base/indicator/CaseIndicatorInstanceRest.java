@@ -17,7 +17,7 @@ import java.util.List;
  */
 @RequiredArgsConstructor
 @RestController
-@Tag(name = "案例指标实例", description = "案例指标实例")
+@Tag(name = "案例管理", description = "案例管理")
 public class CaseIndicatorInstanceRest {
     private final CaseIndicatorInstanceBiz caseIndicatorInstanceBiz;
 

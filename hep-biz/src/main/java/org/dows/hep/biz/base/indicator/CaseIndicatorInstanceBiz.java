@@ -588,7 +588,7 @@ public class CaseIndicatorInstanceBiz {
      */
     public boolean updateNpcIndicatorValue(UpdateIndicatorValueRequest updateIndicatorValueRequest) {
         CaseIndicatorInstanceEntity caseIndicatorInstanceEntity = caseIndicatorInstanceService.lambdaQuery()
-                .eq(CaseIndicatorInstanceEntity::getCaseIndicatorInstanceId, updateIndicatorValueRequest.getCaseIndicatorInstanceId())
+                //.eq(CaseIndicatorInstanceEntity::getCaseIndicatorInstanceId, updateIndicatorValueRequest.getCaseIndicatorInstanceId())
                 .eq(CaseIndicatorInstanceEntity::getIndicatorInstanceId, updateIndicatorValueRequest.getIndicatorInstanceId())
                 .eq(CaseIndicatorInstanceEntity::getPrincipalId, updateIndicatorValueRequest.getPrincipal())
                 .eq(CaseIndicatorInstanceEntity::getIndicatorName, updateIndicatorValueRequest.getIndicatorName())
