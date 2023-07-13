@@ -12,6 +12,7 @@ import org.dows.hep.api.enums.EnumToken;
 import org.dows.hep.api.tenant.experiment.request.*;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.api.tenant.experiment.response.ExptSchemeGroupReviewResponse;
+import org.dows.hep.api.tenant.experiment.vo.ExptSchemeScoreReviewVO;
 import org.dows.hep.api.user.experiment.response.CountDownResponse;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentSchemeScoreBiz;
@@ -162,21 +163,6 @@ public class ExperimentManageRest {
     }
 
     /**
-     * 获取方案设计评分小组列表
-     *
-     * @param
-     * @return
-     */
-    @Operation(summary = "获取方案设计评分小组列表")
-    @GetMapping("v1/tenantExperiment/experimentManage/listSchemeGroupReview")
-    public List<ExptSchemeGroupReviewResponse> listSchemeGroupReview(@RequestParam("exptInstanceId") String exptInstanceId, HttpServletRequest request) {
-        String accountId = baseBiz.getAccountId(request);
-        return experimentSchemeScoreBiz.listSchemeGroupReview(exptInstanceId, accountId);
-
-    }
-
-
-    /**
      * 开始/暂停实验
      *
      * @param
@@ -188,5 +174,42 @@ public class ExperimentManageRest {
         experimentManageBiz.restart(experimentRestartRequest);
     }
 
+    /**
+     * 获取方案设计评分小组列表
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取方案设计评分小组列表")
+    @GetMapping("v1/tenantExperiment/experimentManage/listSchemeGroupReview")
+    public List<ExptSchemeGroupReviewResponse> listSchemeGroupReview(@RequestParam("exptInstanceId") String exptInstanceId, HttpServletRequest request) {
+        String accountId = baseBiz.getAccountId(request);
+        return experimentSchemeScoreBiz.listSchemeGroupReview(exptInstanceId, accountId);
+    }
 
+    /**
+     * 获取方案设计评分详情
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取方案设计评分详情")
+    @GetMapping("v1/tenantExperiment/experimentManage/getSchemeReviewDetail")
+    public ExptSchemeScoreReviewVO getSchemeReviewDetail(@RequestParam("exptInstanceId") String exptInstanceId, @RequestParam("exptGroupId") String exptGroupId, HttpServletRequest request) {
+        String accountId = baseBiz.getAccountId(request);
+        return experimentSchemeScoreBiz.getSchemeScoreReview(exptInstanceId, accountId, exptGroupId);
+    }
+
+    /**
+     * 提交方案设计评分详情
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "提交方案设计评分详情")
+    @PostMapping("v1/tenantExperiment/experimentManage/submitSchemeScore")
+    public Boolean submitSchemeScore(@RequestBody @Validated ExperimentSchemeScoreRequest schemeScoreRequest, HttpServletRequest request) {
+        String accountId = baseBiz.getAccountId(request);
+        return experimentSchemeScoreBiz.submitSchemeScore(schemeScoreRequest, accountId);
+    }
 }
