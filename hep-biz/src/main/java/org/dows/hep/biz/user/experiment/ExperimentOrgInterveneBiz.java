@@ -28,6 +28,7 @@ import org.dows.hep.biz.base.intervene.*;
 import org.dows.hep.biz.dao.OperateOrgFuncDao;
 import org.dows.hep.biz.dao.SportItemDao;
 import org.dows.hep.biz.dao.TreatItemDao;
+import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.util.*;
 import org.dows.hep.biz.vo.CalcExptFoodCookbookResult;
 import org.dows.hep.biz.vo.Categ4ExptVO;
@@ -37,6 +38,7 @@ import org.dows.hep.entity.*;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -205,8 +207,8 @@ public class ExperimentOrgInterveneBiz{
     public SaveExptInterveneResponse saveExptFoodCookbook(SaveExptFoodRequest saveFood, HttpServletRequest request) {
         ExptRequestValidator validator=ExptRequestValidator.create(saveFood);
         validator.checkExperimentPerson()
-                .checkExperimentOrg()
-                .checkExperimentInstance();
+                .checkExperimentOrgId()
+                .checkExperimentInstanceId();
         saveFood.setDetails(ShareUtil.XObject.defaultIfNull(saveFood.getDetails(), Collections.emptyList()));
         //按餐次校验重复食材或菜肴
         Map<EnumFoodMealTime, List<String>> mapDetails = new HashMap<>();
@@ -231,11 +233,15 @@ public class ExperimentOrgInterveneBiz{
         });
         mapDetails.clear();
 
+
         //校验操作类型
         final EnumExptOperateType operateType=EnumExptOperateType.INTERVENEFood;
         //校验登录
         LoginContextVO voLogin= ShareBiz.getLoginUser(request);
         //校验挂号
+        final LocalDateTime ldtNow=LocalDateTime.now();
+        final Date dateNow=ShareUtil.XDate.localDT2Date(ldtNow);
+        ExperimentTimePoint timePoint=validator.getTimePoint(true, ldtNow, true);
         ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator)
                 .checkOrgFlow(false);
 
@@ -243,14 +249,15 @@ public class ExperimentOrgInterveneBiz{
         CalcExptFoodCookbookResult snapRst= foodCalc4ExptBiz.calcFoodGraph4ExptCookbook(validator.getAppId(), saveFood.getDetails());
         snapRst.setDetails(saveFood.getDetails());
         //保存操作记录
-        final Date dateNow=new Date();
+
         OperateOrgFuncEntity rowOrgFunc= createRowOrgFunc(validator)
                 .setIndicatorCategoryId(operateType.getIndicatorCateg().getCode())
                 .setOperateType(operateType.getCode())
                 .setOperateAccountId(voLogin.getAccountId())
                 .setOperateAccountName(voLogin.getAccountName())
                 .setOperateTime(dateNow)
-                .setOperateGameDay(ShareBiz.calcGameDay(validator.getAppId(), validator.getExperimentInstanceId(),dateNow))
+                .setOperateGameDay(timePoint.getGameDay())
+                .setPeriods(timePoint.getPeriod())
                 .setOperateFlowId(flowValidator.getOperateFlowId())
                 .setReportFlag(operateType.getReportFuncFlag()?1:0)
                 .setReportLabel("饮食干预")
@@ -281,8 +288,8 @@ public class ExperimentOrgInterveneBiz{
     public SaveExptInterveneResponse saveExptSportPlan(SaveExptSportRequest saveSport, HttpServletRequest request ) {
         ExptRequestValidator validator=ExptRequestValidator.create(saveSport);
         validator.checkExperimentPerson()
-                .checkExperimentOrg()
-                .checkExperimentInstance();
+                .checkExperimentOrgId()
+                .checkExperimentInstanceId();
 
         saveSport.setSportItems(ShareUtil.XObject.defaultIfNull(saveSport.getSportItems(), Collections.emptyList()));
         AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(saveSport.getSportItems())
@@ -296,18 +303,21 @@ public class ExperimentOrgInterveneBiz{
         //校验登录
         LoginContextVO voLogin= ShareBiz.getLoginUser(request);
         //校验挂号
+        final LocalDateTime ldtNow=LocalDateTime.now();
+        final Date dateNow=ShareUtil.XDate.localDT2Date(ldtNow);
+        ExperimentTimePoint timePoint=validator.getTimePoint(true, ldtNow, true);
         ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator)
                 .checkOrgFlow(false);
 
         //保存操作记录
-        final Date dateNow=new Date();
         OperateOrgFuncEntity rowOrgFunc= createRowOrgFunc(validator)
                 .setIndicatorCategoryId(operateType.getIndicatorCateg().getCode())
                 .setOperateType(operateType.getCode())
                 .setOperateAccountId(voLogin.getAccountId())
                 .setOperateAccountName(voLogin.getAccountName())
                 .setOperateTime(dateNow)
-                .setOperateGameDay(ShareBiz.calcGameDay(validator.getAppId(), validator.getExperimentInstanceId(),dateNow))
+                .setOperateGameDay(timePoint.getGameDay())
+                .setPeriods(timePoint.getPeriod())
                 .setOperateFlowId(flowValidator.getOperateFlowId())
                 .setReportFlag(operateType.getReportFuncFlag()?1:0)
                 .setReportLabel("运动干预")
@@ -334,8 +344,8 @@ public class ExperimentOrgInterveneBiz{
     public SaveExptTreatResponse saveExptTreatPlan( SaveExptTreatRequest saveTreat, HttpServletRequest request){
         ExptRequestValidator validator=ExptRequestValidator.create(saveTreat);
         validator.checkExperimentPerson()
-                .checkExperimentOrg()
-                .checkExperimentInstance()
+                .checkExperimentOrgId()
+                .checkExperimentInstanceId()
                 .checkIndicatorFunc();
 
         saveTreat.setTreatItems(ShareUtil.XObject.defaultIfNull(saveTreat.getTreatItems(), Collections.emptyList()));
@@ -346,10 +356,13 @@ public class ExperimentOrgInterveneBiz{
         //校验登录
         LoginContextVO voLogin= ShareBiz.getLoginUser(request);
         //校验挂号
-        ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator);
-        final Optional<OperateFlowEntity> flowOption=flowValidator.checkOrgFlowRunning();
+        final LocalDateTime ldtNow=LocalDateTime.now();
+        final Date dateNow=ShareUtil.XDate.localDT2Date(ldtNow);
+        ExperimentTimePoint timePoint=validator.getTimePoint(true, ldtNow, true);
+        ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator)
+                .requireOrgFlowRunning(timePoint.getPeriod());
         //保存操作记录
-        final Date dateNow=new Date();
+
         IndicatorFuncEntity defOrgFunc=validator.getIndicatorFunc();
         OperateOrgFuncEntity rowOrgFunc= createRowOrgFunc(validator)
                 .setIndicatorCategoryId(operateType.getIndicatorCateg().getCode())
@@ -357,7 +370,7 @@ public class ExperimentOrgInterveneBiz{
                 .setOperateAccountId(voLogin.getAccountId())
                 .setOperateAccountName(voLogin.getAccountName())
                 .setOperateTime(dateNow)
-                .setOperateGameDay(ShareBiz.calcGameDay(validator.getAppId(), validator.getExperimentInstanceId(),dateNow))
+                .setOperateGameDay(timePoint.getGameDay())
                 .setOperateFlowId(flowValidator.getOperateFlowId())
                 .setReportFlag(operateType.getReportFuncFlag()?1:0)
                 .setReportLabel(defOrgFunc.getName())
