@@ -231,19 +231,4 @@ public class ExperimentIndicatorInstanceRsBiz {
         }
         return statList;
     }
-
-    /**
-     * @param
-     * @return
-     * @说明: 实验疾病类别统计
-     * @关联表: experiment_indicator_instance、case_indicator_instance、case_indicator_rule、experiment_person
-     * @工时: 3H
-     * @开发者: jx
-     * @开始时间:
-     * @创建时间: 2023/7/13 13:51
-     */
-    public List<EchartsDataResonse> statDiseaseRate(ExperimentIndicatorInstanceRequest experimentIndicatorInstanceRequest) {
-          //1、
-          return null;
-    }
 }
