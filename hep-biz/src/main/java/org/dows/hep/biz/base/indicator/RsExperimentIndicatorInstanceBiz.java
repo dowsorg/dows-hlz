@@ -2,6 +2,7 @@ package org.dows.hep.biz.base.indicator;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.entity.ExperimentIndicatorInstanceRsEntity;
 import org.dows.hep.entity.ExperimentIndicatorValRsEntity;
 import org.dows.hep.service.ExperimentIndicatorInstanceRsService;
@@ -20,7 +21,7 @@ public class RsExperimentIndicatorInstanceBiz {
   private final ExperimentIndicatorInstanceRsService experimentIndicatorInstanceRsService;
   private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
 
-  public void populateKExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMapByExperimentPersonIdSet(
+  public void populateKExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap(
       Map<String, Map<String, String>> kExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap,
       Set<String> experimentPersonIdSet) {
     if (Objects.isNull(kExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap)) {
@@ -45,6 +46,50 @@ public class RsExperimentIndicatorInstanceBiz {
     }
   }
 
+  public void populateKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap(
+      Map<String, String> kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap,
+      String experimentPersonId,
+      Set<String> indicatorInstanceIdSet
+      ) {
+    if (Objects.isNull(kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap)) {
+      return ;
+    }
+    if (StringUtils.isBlank(experimentPersonId)) {
+      return;
+    }
+    experimentIndicatorInstanceRsService.lambdaQuery()
+        .eq(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonId)
+        .in(Objects.nonNull(indicatorInstanceIdSet) && !indicatorInstanceIdSet.isEmpty(), ExperimentIndicatorInstanceRsEntity::getIndicatorInstanceId, indicatorInstanceIdSet)
+        .list()
+        .forEach(experimentIndicatorInstanceRsEntity -> {
+          kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.put(
+              experimentIndicatorInstanceRsEntity.getIndicatorInstanceId(), experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId()
+          );
+        });
+  }
+
+  public void populateKIndicatorInstanceIdVExperimentIndicatorInstanceMap(
+      Map<String, ExperimentIndicatorInstanceRsEntity> kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap,
+      String experimentPersonId,
+      Set<String> indicatorInstanceIdSet
+  ) {
+    if (Objects.isNull(kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap)) {
+      return ;
+    }
+    if (StringUtils.isBlank(experimentPersonId)) {
+      return;
+    }
+    experimentIndicatorInstanceRsService.lambdaQuery()
+        .eq(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonId)
+        .in(Objects.nonNull(indicatorInstanceIdSet) && !indicatorInstanceIdSet.isEmpty(), ExperimentIndicatorInstanceRsEntity::getIndicatorInstanceId, indicatorInstanceIdSet)
+        .list()
+        .forEach(experimentIndicatorInstanceRsEntity -> {
+          kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.put(
+              experimentIndicatorInstanceRsEntity.getIndicatorInstanceId(), experimentIndicatorInstanceRsEntity
+          );
+        });
+  }
+
   public void populateKExperimentIndicatorInstanceIdVExperimentIndicatorValMap(
       Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
       Integer period,
@@ -66,6 +111,26 @@ public class RsExperimentIndicatorInstanceBiz {
         .forEach(experimentIndicatorValRsEntity -> {
           String experimentIndicatorInstanceId = experimentIndicatorValRsEntity.getIndicatorInstanceId();
           kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(experimentIndicatorInstanceId, experimentIndicatorValRsEntity);
+        });
+  }
+
+  public void populateKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(
+      Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
+      Integer period,
+      Set<String> experimentIndicatorInstanceIdSet) {
+    if (Objects.isNull(experimentIndicatorInstanceIdSet) || experimentIndicatorInstanceIdSet.isEmpty()) {
+      return;
+    }
+    if (Objects.isNull(period)) {
+      return;
+    }
+    experimentIndicatorValRsService.lambdaQuery()
+        .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
+        .list()
+        .forEach(experimentIndicatorValRsEntity -> {
+          kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(
+              experimentIndicatorValRsEntity.getIndicatorInstanceId(), experimentIndicatorValRsEntity
+          );
         });
   }
 }

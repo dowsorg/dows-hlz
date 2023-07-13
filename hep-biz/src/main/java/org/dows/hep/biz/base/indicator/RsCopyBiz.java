@@ -1596,7 +1596,7 @@ public class RsCopyBiz {
           String experimentIndicatorExpressionId = idGenerator.nextIdStr();
           String caseMaxIndicatorExpressionItemId = caseIndicatorExpressionEntity.getMaxIndicatorExpressionItemId();
           CaseIndicatorExpressionItemEntity maxCaseIndicatorExpressionItemEntity = kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get(caseMaxIndicatorExpressionItemId);
-          String maxIndicatorExpressionItemId = idGenerator.nextIdStr();
+          String maxIndicatorExpressionItemId = null;
           ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity = getExperimentIndicatorExpressionItemRsEntity(
               kExperimentPersonIdVKCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap,
               maxCaseIndicatorExpressionItemEntity,
@@ -1608,10 +1608,11 @@ public class RsCopyBiz {
           );
           if (Objects.nonNull(maxExperimentIndicatorExpressionItemRsEntity)) {
             experimentIndicatorExpressionItemRsEntityList.add(maxExperimentIndicatorExpressionItemRsEntity);
+            maxIndicatorExpressionItemId = maxExperimentIndicatorExpressionItemRsEntity.getExperimentIndicatorExpressionItemId();
           }
           String caseMinIndicatorExpressionItemId = caseIndicatorExpressionEntity.getMinIndicatorExpressionItemId();
           CaseIndicatorExpressionItemEntity minCaseIndicatorExpressionItemEntity = kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get(caseMinIndicatorExpressionItemId);
-          String minIndicatorExpressionItemId = idGenerator.nextIdStr();
+          String minIndicatorExpressionItemId = null;
           ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity = getExperimentIndicatorExpressionItemRsEntity(
               kExperimentPersonIdVKCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap,
               minCaseIndicatorExpressionItemEntity,
@@ -1623,6 +1624,7 @@ public class RsCopyBiz {
           );
           if (Objects.nonNull(minExperimentIndicatorExpressionItemRsEntity)) {
             experimentIndicatorExpressionItemRsEntityList.add(minExperimentIndicatorExpressionItemRsEntity);
+            minIndicatorExpressionItemId = minExperimentIndicatorExpressionItemRsEntity.getExperimentIndicatorExpressionItemId();
           }
           List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList = kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap.get(caseIndicatorExpressionId);
           if (Objects.isNull(caseIndicatorExpressionItemEntityList) || caseIndicatorExpressionItemEntityList.isEmpty()) {
