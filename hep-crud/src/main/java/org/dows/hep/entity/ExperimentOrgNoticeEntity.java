@@ -72,6 +72,11 @@ public class ExperimentOrgNoticeEntity implements CrudEntity {
     @Schema(title = "通知来源id，转移，随访操作id，事件id")
     private String noticeSrcId;
 
+    @Schema(title = "uid人物id")
+    private String accountId;
+
+    @Schema(title = "人物头像")
+    private String avatar;
     @Schema(title = "通知标题")
     private String title;
 

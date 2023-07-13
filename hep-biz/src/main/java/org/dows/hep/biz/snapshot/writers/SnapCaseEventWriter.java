@@ -108,6 +108,7 @@ public class SnapCaseEventWriter extends BaseSnapshotWriter<SnapCaseEventWriter.
                     .setExperimentInstanceId(req.getExperimentInstanceId())
                     .setCasePersonId(rowEvent.getPersonId())
                     .setCaseEventId(rowEvent.getCaseEventId())
+                    .setAccountId(i.getAccountId())
                     .setPersonName(i.getUserName())
                     .setTriggerType(rowEvent.getTriggerType())
                     .setTriggerSpan(rowEvent.getTriggerSpan())

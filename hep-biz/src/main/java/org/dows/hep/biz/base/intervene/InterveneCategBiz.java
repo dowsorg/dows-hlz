@@ -125,6 +125,8 @@ public class InterveneCategBiz {
             return false;
         }
         final String appId=saveInterveneCateg.get(0).getAppId();
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(appId))
+                .throwMessage("appId不可为空");
         final String pid=saveInterveneCateg.get(0).getCategPid();
         final String family=saveInterveneCateg.get(0).getFamily();
         final EnumCategFamily enumFamily=checkFamily(family);

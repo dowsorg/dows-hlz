@@ -140,11 +140,17 @@ public class ExptOrgFlowValidator {
      * 校验需要挂号且已挂号
      * @return
      */
-    public Optional<OperateFlowEntity> checkOrgFlowRunning(){
+    public ExptOrgFlowValidator requireOrgFlowRunning() {
+        ExperimentTimePoint timePoint= ExperimentSettingCache.Instance().getTimePointByRealTime(ExperimentCacheKey.create(this.appId, this.experimentInstanceId),
+                LocalDateTime.now(),false);
+        return requireOrgFlowRunning(timePoint.getPeriod());
+    }
+    public ExptOrgFlowValidator requireOrgFlowRunning(int curPeriod){
         Optional<Double> regFeeOption=getOrgFee4Ghf();
-        AssertUtil.trueThenThrow(regFeeOption.isPresent()&&!ifOrgFlowRunning())
+        OperateFlowEntity orgFlow= getOrgFlow(false);
+        AssertUtil.trueThenThrow(regFeeOption.isPresent()&&!ifOrgFlowRunning(orgFlow,curPeriod))
                 .throwMessage("请先挂号");
-        return this.exptFlow;
+        return this;
     }
 
     /**
@@ -157,7 +163,7 @@ public class ExptOrgFlowValidator {
 
         return ifOrgFlowRunning(getOrgFlow(false), timePoint.getPeriod());
     }
-    public boolean ifOrgFlowRunning(OperateFlowEntity rowFlow,int curPeriod){
+    public static boolean ifOrgFlowRunning(OperateFlowEntity rowFlow,int curPeriod){
         return null!=rowFlow
                 &&null==rowFlow.getEndTime()
                 &&curPeriod<= rowFlow.getPeriods();

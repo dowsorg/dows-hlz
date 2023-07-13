@@ -235,6 +235,7 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
                 ExperimentEventEntity::getExperimentGroupId,
                 ExperimentEventEntity::getExperimentOrgId,
                 ExperimentEventEntity::getExperimentPersonId,
+                ExperimentEventEntity::getAccountId,
                 ExperimentEventEntity::getPersonName,
                 ExperimentEventEntity::getPeriods,
                 ExperimentEventEntity::getCasePersonId,

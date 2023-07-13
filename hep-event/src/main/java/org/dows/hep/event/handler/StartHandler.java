@@ -9,6 +9,7 @@ import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
+import org.dows.hep.biz.event.EventScheduler;
 import org.dows.hep.biz.task.ExperimentEndTimerTask;
 import org.dows.hep.biz.task.ExperimentPeroidTimerTask;
 import org.dows.hep.entity.ExperimentTimerEntity;
@@ -142,6 +143,8 @@ public class StartHandler extends AbstractEventHandler implements EventHandler<E
         }
         // 重置定时任务
         resetTimeTask(experimentRestartRequest, updateExperimentTimerEntities, experimentGroupResponses);
+        // 突发事件检测
+        EventScheduler.Instance().scheduleTimeBasedEvent(null,experimentRestartRequest.getExperimentInstanceId(),5);
 
     }
 

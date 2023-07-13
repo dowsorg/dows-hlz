@@ -50,6 +50,7 @@ public class ExperimentOrgNoticeDao extends BaseDao<ExperimentOrgNoticeService,E
                 .eq(ShareUtil.XObject.notEmpty(req.getAppId()), ExperimentOrgNoticeEntity::getAppId, req.getAppId())
                 .eq(ExperimentOrgNoticeEntity::getExperimentOrgId, req.getExperimentOrgId())
                 .eq(ExperimentOrgNoticeEntity::getExperimentGroupId, req.getExperimentGroupId())
+                .eq(ShareUtil.XObject.notEmpty(req.getExperimentPersonId()),ExperimentOrgNoticeEntity::getExperimentPersonId,req.getExperimentPersonId())
                 .select(cols)
                 .page(page);
     }

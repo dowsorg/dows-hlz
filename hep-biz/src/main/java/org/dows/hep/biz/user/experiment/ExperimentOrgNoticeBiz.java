@@ -2,6 +2,9 @@ package org.dows.hep.biz.user.experiment;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.dows.account.api.AccountInstanceApi;
+import org.dows.account.response.AccountInstanceResponse;
 import org.dows.hep.api.enums.EnumEventActionState;
 import org.dows.hep.api.enums.EnumExperimentOrgNoticeType;
 import org.dows.hep.api.user.experiment.response.OrgNoticeResponse;
@@ -28,9 +31,12 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ExperimentOrgNoticeBiz {
 
     private final ExperimentOrgNoticeService experimentOrgNoticeService;
+
+    private final AccountInstanceApi accountInstanceApi;
     private final IdGenerator idGenerator;
 
     //region save
@@ -72,6 +78,7 @@ public class ExperimentOrgNoticeBiz {
                 .setExperimentGroupId(src.getExperimentGroupId())
                 .setExperimentOrgId(src.getExperimentOrgId())
                 .setExperimentPersonId(src.getExperimentPersonId())
+                .setAccountId(src.getAccountId())
                 .setPersonName(src.getPersonName())
                 .setPeriods(src.getTriggeredPeriod())
                 .setGameDay(src.getTriggerGameDay())
@@ -86,7 +93,7 @@ public class ExperimentOrgNoticeBiz {
         ExperimentOrgNoticeBox.create(rst)
                 .setJsonData(createNoticeAction(eventBox))
                 .toActionsJson(true);
-        return rst;
+        return fillAvatar(rst);
     }
 
     public List<ExptOrgNoticeActionVO> createNoticeAction(ExperimentEventBox src) throws JsonProcessingException {
@@ -95,6 +102,26 @@ public class ExperimentOrgNoticeBiz {
                 CopyWrapper.create(ExptOrgNoticeActionVO::new).endFrom(i).setActedFlag(0)) ;
     }
     //endregion
+
+    /**
+     * 填充人物头像
+     * @param src
+     * @return
+     */
+    public ExperimentOrgNoticeEntity fillAvatar(ExperimentOrgNoticeEntity src){
+        try {
+            if (ShareUtil.XObject.isEmpty(src.getAccountId())) {
+                return src;
+            }
+            AccountInstanceResponse accounInstance = accountInstanceApi.getAccountInstanceByAccountId(src.getAccountId());
+            if (ShareUtil.XObject.notEmpty(accounInstance)) {
+                src.setAvatar(accounInstance.getAvatar());
+            }
+        }catch (Exception ex){
+            log.error(String.format("ExperimentOrgNoticeBiz.fillAvatar accountId:%s",src.getAccountId()),ex);
+        }
+        return src;
+    }
 
     //region response
     public OrgNoticeResponse CreateOrgNoticeResponse(ExperimentOrgNoticeEntity notice) throws JsonProcessingException{
