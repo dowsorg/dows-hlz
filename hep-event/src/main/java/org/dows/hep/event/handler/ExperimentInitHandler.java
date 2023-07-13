@@ -29,8 +29,7 @@ import org.dows.hep.biz.tenant.experiment.ExperimentCaseInfoManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentQuestionnaireManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentSchemeManageBiz;
-import org.dows.hep.biz.task.ExperimentBeginTimerTask;
-import org.dows.hep.biz.task.ExperimentTaskScheduler;
+import org.dows.hep.biz.task.ExperimentBeginTask;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentSettingEntity;
 import org.dows.hep.service.ExperimentInstanceService;
@@ -68,7 +67,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    private final ExperimentTaskScheduler experimentTaskScheduler;
+
     private final RsCopyBiz rsCopyBiz;
 
     private final ExperimentSettingService experimentSettingService;
@@ -164,7 +163,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
      * @param experimentGroupSettingRequest
      */
     public void setExperimentBeginTimerTask(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
-        ExperimentBeginTimerTask experimentBeginTimerTask = new ExperimentBeginTimerTask(
+        ExperimentBeginTask experimentBeginTask = new ExperimentBeginTask(
                 experimentInstanceService, experimentParticipatorService, experimentTimerService, applicationEventPublisher,
                 experimentGroupSettingRequest.getExperimentInstanceId());
 
@@ -172,7 +171,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
          * 设定定时任务
          * todo 设定一个TimeTask,通过timer到时间执行一次，考虑重启情况，写数据库，针对出现的情况，更具时间重新schedule,先用事件处理，后期优化
          */
-        experimentTaskScheduler.schedule(experimentBeginTimerTask, experimentGroupSettingRequest.getStartTime());
+        taskScheduler.schedule(experimentBeginTask, experimentGroupSettingRequest.getStartTime());
     }
 
     /**

@@ -263,7 +263,9 @@ public class ExperimentTimerBiz {
      * @return
      */
     @DSTransactional
-    public boolean saveOrUpdateExperimentTimeExperimentState(String experimentInstanceId, List<ExperimentTimerEntity> updateExperimentTimerEntities, EnumExperimentState enumExperimentState) {
+    public boolean saveOrUpdateExperimentTimeExperimentState(String experimentInstanceId,
+                                                             List<ExperimentTimerEntity> updateExperimentTimerEntities,
+                                                             EnumExperimentState enumExperimentState) {
         boolean b = experimentTimerService.saveOrUpdateBatch(updateExperimentTimerEntities);
         if (!b) {
             throw new ExperimentException(" 更新计时器实验状态发生异常！");
@@ -294,21 +296,21 @@ public class ExperimentTimerBiz {
      * @param experimentInstanceId
      * @return
      */
-    public ExperimentPeriodsResonse getExperimentPeriods(String appId, String experimentInstanceId) {
+    public ExperimentPeriodsResonse getExperimentCurrentPeriods(String appId, String experimentInstanceId) {
 
         List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
                 .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
                 //.eq(ExperimentTimerEntity::getAppId, appId)
                 //.eq(ExperimentTimerEntity::getModel, 2) // 沙盘模式
-                .ne(ExperimentTimerEntity::getState, EnumExperimentState.FINISH.getState())
+                //.ne(ExperimentTimerEntity::getState, EnumExperimentState.FINISH.getState())
                 .list();
 
         //List<ExperimentTimerEntity> collect = list.stream().filter(t -> t.getPauseCount() == 0).collect(Collectors.toList());
         ExperimentTimerEntity experimentTimerEntity = list.stream()
                 .filter(e -> e.getStartTime() <= System.currentTimeMillis() && System.currentTimeMillis() <= e.getEndTime())
-                .max(Comparator.comparingLong(ExperimentTimerEntity::getStartTime)).orElse(null);
-//        List<ExperimentTimerEntity> collect1 = experimentTimerEntity1
-//                .collect(Collectors.toList()).ma;
+                .max(Comparator.comparingLong(ExperimentTimerEntity::getStartTime))
+                .orElse(null);
+
         if (null == experimentTimerEntity) {
             log.error("获取实验期数异常,当前时间不存在对应的实验期数");
             StringBuilder stringBuilder = new StringBuilder();
@@ -331,5 +333,28 @@ public class ExperimentTimerBiz {
 
         return experimentPeriodsResonse;
 
+    }
+
+    /**
+     * 获取实验每一期的开始时间和结束时间
+     *
+     * @param experimentInstanceId
+     */
+    public Map<Integer, ExperimentTimerEntity> getExperimentPeriodsStartAnsEndTime(String experimentInstanceId) {
+        Map<Integer, ExperimentTimerEntity> map = new HashMap<>();
+        List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
+                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
+                .orderByAsc(ExperimentTimerEntity::getPeriod)
+                .list();
+        Map<Integer, List<ExperimentTimerEntity>> collect = list.stream()
+                .collect(Collectors.groupingBy(ExperimentTimerEntity::getPeriod));
+        // 找出每期暂停次数最大的为准
+        collect.forEach((k, v) -> {
+            ExperimentTimerEntity experimentTimerEntity = v.stream()
+                    .max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount))
+                    .get();
+            map.put(k, experimentTimerEntity);
+        });
+        return map;
     }
 }

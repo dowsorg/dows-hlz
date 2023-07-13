@@ -10,10 +10,13 @@ import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 
+/**
+ * 任务调度器
+ */
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class ExperimentTaskScheduler {
+public class TaskScheduler {
 
     private final ThreadPoolTaskScheduler threadPoolTaskScheduler;
 
