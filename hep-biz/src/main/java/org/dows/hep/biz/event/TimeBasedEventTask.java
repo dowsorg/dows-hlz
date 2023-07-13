@@ -101,10 +101,10 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
             raiseScheduler(DELAYSeconds4Fail);
             return RUNCode4Fail;
         }
-        if(timePoint.getGameState()==EnumExperimentState.FINISH){
+        /*if(timePoint.getGameState()==EnumExperimentState.FINISH){
             logInfo("call", "finishedExperiment");
             return RUNCode4Silence;
-        }
+        }*/
         exptColl.setPauseSeconds(timePoint.getCntPauseSeconds());
         eventColl.setNextTriggerTime(calcTriggeringTime(dtNow, exptColl,eventColl));
         List<List<TimeBasedEventCollection.TimeBasedEventGroup>> groups=eventColl.splitGroups(CONCURRENTNum);

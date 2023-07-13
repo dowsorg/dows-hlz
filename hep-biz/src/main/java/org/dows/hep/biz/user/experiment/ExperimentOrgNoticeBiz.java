@@ -20,8 +20,7 @@ import org.dows.hep.service.ExperimentOrgNoticeService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author : wuzl
@@ -70,6 +69,9 @@ public class ExperimentOrgNoticeBiz {
     //region create
     //突发事件通知
     public ExperimentOrgNoticeEntity createNotice(ExperimentEventEntity src) throws JsonProcessingException {
+        return createNotice(src, new HashMap<>());
+    }
+    public ExperimentOrgNoticeEntity createNotice(ExperimentEventEntity src,Map<String,String> mapAvatar) throws JsonProcessingException {
         ExperimentEventBox eventBox = ExperimentEventBox.create(src);
         ExperimentEventJson eventData = eventBox.fromEventJsonOrDefault(false);
         ExperimentOrgNoticeEntity rst = new ExperimentOrgNoticeEntity()
@@ -93,7 +95,7 @@ public class ExperimentOrgNoticeBiz {
         ExperimentOrgNoticeBox.create(rst)
                 .setJsonData(createNoticeAction(eventBox))
                 .toActionsJson(true);
-        return fillAvatar(rst);
+        return fillAvatar(mapAvatar, rst);
     }
 
     public List<ExptOrgNoticeActionVO> createNoticeAction(ExperimentEventBox src) throws JsonProcessingException {
@@ -108,15 +110,22 @@ public class ExperimentOrgNoticeBiz {
      * @param src
      * @return
      */
-    public ExperimentOrgNoticeEntity fillAvatar(ExperimentOrgNoticeEntity src){
+    public ExperimentOrgNoticeEntity fillAvatar(Map<String,String> mapAvatar, ExperimentOrgNoticeEntity src){
         try {
-            if (ShareUtil.XObject.isEmpty(src.getAccountId())) {
+            final String accountId=src.getAccountId();
+            if (ShareUtil.XObject.isEmpty(accountId)) {
                 return src;
             }
-            AccountInstanceResponse accounInstance = accountInstanceApi.getAccountInstanceByAccountId(src.getAccountId());
-            if (ShareUtil.XObject.notEmpty(accounInstance)) {
-                src.setAvatar(accounInstance.getAvatar());
+            String avatar=mapAvatar.get(accountId);
+            if(ShareUtil.XObject.isEmpty(avatar)){
+                avatar= Optional.ofNullable(accountInstanceApi.getAccountInstanceByAccountId(src.getAccountId()))
+                        .map(AccountInstanceResponse::getAvatar)
+                        .orElse(null);
+                if(ShareUtil.XObject.notEmpty(avatar)){
+                    mapAvatar.put(accountId,avatar);
+                }
             }
+            src.setAvatar(avatar);
         }catch (Exception ex){
             log.error(String.format("ExperimentOrgNoticeBiz.fillAvatar accountId:%s",src.getAccountId()),ex);
         }

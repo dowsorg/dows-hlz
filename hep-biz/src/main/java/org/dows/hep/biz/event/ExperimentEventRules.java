@@ -59,10 +59,11 @@ public class ExperimentEventRules {
                 ExperimentEventEntity::getEventJson);
         //事件触发通知
         List<ExperimentOrgNoticeEntity> rowsNotice=new ArrayList<>();
+        final Map<String,String> mapAvatar=new HashMap<>();
         for(ExperimentEventEntity item:events){
             Optional.ofNullable(mapEvents.get(item.getExperimentEventId()))
                     .ifPresent(finded->item.setEventJson(finded.getEventJson()));
-            rowsNotice.add(experimentOrgNoticeBiz.createNotice(item));
+            rowsNotice.add(experimentOrgNoticeBiz.createNotice(item,mapAvatar));
         }
         eventIds.clear();
         mapEvents.clear();
