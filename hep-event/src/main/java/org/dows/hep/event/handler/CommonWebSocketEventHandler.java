@@ -1,6 +1,7 @@
 package org.dows.hep.event.handler;
 
 import io.netty.channel.Channel;
+import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.Response;
 import org.dows.framework.api.uim.AccountInfo;
 import org.dows.hep.api.WsMessageResponse;
@@ -10,6 +11,7 @@ import org.dows.hep.websocket.HepClientManager;
 import org.dows.hep.websocket.proto.MessageCode;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
@@ -19,6 +21,7 @@ import java.util.concurrent.ConcurrentMap;
  * @date : 2023/7/11 11:54
  */
 @Component
+@Slf4j
 public class CommonWebSocketEventHandler<T> extends AbstractEventHandler implements EventHandler<CommonWebSocketEventSource<T>> {
 
     @Override
@@ -43,15 +46,18 @@ public class CommonWebSocketEventHandler<T> extends AbstractEventHandler impleme
                 .build();
         Response<WsMessageResponse> wsPack=Response.ok(wsMsg);
         final Set<String> clientIds=src.getClientIds();
-        int cnt=0;
+        Set<String> sended=new HashSet<>();
         for(Map.Entry<Channel, AccountInfo> item : clients.entrySet()){
             if(!clientIds.contains(item.getValue().getAccountName())){
                 continue;
             }
+            sended.add(item.getValue().getAccountName());
             HepClientManager.sendInfo(item.getKey(), MessageCode.MESS_CODE, wsPack);
-            cnt++;
+
         }
-        return cnt;
+        log.info(String.format("CommonWebSocketEventHandler.sendWebSocketData total:%s sended:%s sendedIds:%",
+                clientIds.size(),sended.size(),String.join(",", sended)));
+        return sended.size();
 
     }
 }

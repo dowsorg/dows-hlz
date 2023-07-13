@@ -29,6 +29,7 @@ public class BaseSnapshotFullTableWriter<ST,SS extends MybatisCrudService<ST>, E
     public List<ST> readSource(SnapshotRequest req) {
         return sourceService.query()
                 .eq("app_id", req.getAppId())
+                .eq(snapshotType.isFilterState(),"state","1")
                 .orderByAsc("id")
                 .list();
     }
