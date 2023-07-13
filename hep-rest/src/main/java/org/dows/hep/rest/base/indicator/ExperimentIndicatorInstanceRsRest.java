@@ -35,7 +35,7 @@ public class ExperimentIndicatorInstanceRsRest {
     experimentIndicatorInstanceRsBiz.changeMoney(rsChangeMoneyRequest);
   }
 
-  @Operation(summary = "实验人物年龄段统计")
+  @Operation(summary = "实验体检人次统计")
   @PostMapping("v1/experimentIndicator/ageRate/stat")
   public List<EchartsDataResonse> statAgeRate(@RequestBody ExperimentIndicatorInstanceRequest experimentIndicatorInstanceRequest) {
     return experimentIndicatorInstanceRsBiz.statAgeRate(experimentIndicatorInstanceRequest);
@@ -45,5 +45,11 @@ public class ExperimentIndicatorInstanceRsRest {
   @PostMapping("v1/experimentIndicator/genderRate/stat")
   public List<EchartsDataResonse> statGenderRate(@RequestBody ExperimentIndicatorInstanceRequest experimentIndicatorInstanceRequest) {
     return experimentIndicatorInstanceRsBiz.statGenderRate(experimentIndicatorInstanceRequest);
+  }
+
+  @Operation(summary = "实验疾病类别统计")
+  @PostMapping("v1/experimentIndicator/diseaseRate/stat")
+  public List<EchartsDataResonse> statDiseaseRate(@RequestBody ExperimentIndicatorInstanceRequest experimentIndicatorInstanceRequest) {
+    return experimentIndicatorInstanceRsBiz.statDiseaseRate(experimentIndicatorInstanceRequest);
   }
 }

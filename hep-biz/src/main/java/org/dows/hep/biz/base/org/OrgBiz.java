@@ -636,7 +636,8 @@ public class OrgBiz {
                 LambdaUpdateWrapper<CasePersonEntity> personWrapper = Wrappers.lambdaUpdate(CasePersonEntity.class);
                 personWrapper.set(CasePersonEntity::getDeleted, true)
                         .eq(CasePersonEntity::getCaseOrgId, entity.getCaseOrgId())
-                        .eq(CasePersonEntity::getCaseInstanceId, caseInstanceId);
+                        .eq(CasePersonEntity::getCaseInstanceId, caseInstanceId)
+                        .in(CasePersonEntity::getCasePersonId,accountIds);
                 boolean flag1 = casePersonService.update(personWrapper);
             });
             //2.2、获取该机构下的成员并删除
