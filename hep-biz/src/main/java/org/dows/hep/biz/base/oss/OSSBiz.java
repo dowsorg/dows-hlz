@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ZipUtil;
+import jakarta.xml.bind.DatatypeConverter;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.oss.api.OssInfo;
 import org.dows.framework.oss.api.S3OssClient;
@@ -11,7 +12,10 @@ import org.dows.hep.entity.MaterialsAttachmentEntity;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -55,4 +59,31 @@ public class OSSBiz {
 
         return oss;
     }
+
+
+    public String getBase64(String fileName) {
+        String file = ossClient.getBasePath();
+        if (ossClient.getBasePath().startsWith("/")) {
+            file += File.separator + fileName;
+        } else {
+            file += "/" + fileName;
+        }
+        String base64 = null;
+        try {
+            base64 = DatatypeConverter.printBase64Binary(Files.readAllBytes(Paths.get(file)));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return base64;
+    }
+
+/*    public static void main(String[] args) {
+        String base64 = null;
+        try {
+            base64 = DatatypeConverter.printBase64Binary(Files.readAllBytes(Paths.get("E:\\temps\\1.png")));
+            System.out.println(base64);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }*/
 }
