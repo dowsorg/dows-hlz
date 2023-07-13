@@ -9,9 +9,7 @@ import org.dows.hep.api.base.indicator.request.RsIndicatorExpressionCheckoutResu
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.RsIndicatorExpressionException;
 import org.dows.hep.entity.*;
-import org.dows.hep.service.ExperimentIndicatorExpressionItemRsService;
-import org.dows.hep.service.ExperimentIndicatorInstanceRsService;
-import org.dows.hep.service.IndicatorRuleService;
+import org.dows.hep.service.*;
 import org.springframework.expression.EvaluationException;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
@@ -41,6 +39,9 @@ public class RsIndicatorExpressionBiz {
   private final String RESULT_DROP = "";
   private final ExperimentIndicatorInstanceRsService experimentIndicatorInstanceRsService;
 
+  private final ExperimentIndicatorExpressionRefRsService experimentIndicatorExpressionRefRsService;
+  private final ExperimentIndicatorExpressionRsService experimentIndicatorExpressionRsService;
+
 
   public void populateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap(
       Map<String, List<ExperimentIndicatorExpressionItemRsEntity>> kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap,
@@ -52,7 +53,7 @@ public class RsIndicatorExpressionBiz {
       return;
     }
     experimentIndicatorExpressionItemRsService.lambdaQuery()
-        .in(ExperimentIndicatorExpressionItemRsEntity::getIndicatorExpressionItemId)
+        .in(ExperimentIndicatorExpressionItemRsEntity::getIndicatorExpressionId, experimentIndicatorExpressionIdSet)
         .list()
         .forEach(experimentIndicatorExpressionItemRsEntity -> {
           String experimentIndicatorExpressionId = experimentIndicatorExpressionItemRsEntity.getIndicatorExpressionId();
@@ -385,7 +386,7 @@ public class RsIndicatorExpressionBiz {
 
     Map<String, Map<String, String>> kExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap = new HashMap<>();
     CompletableFuture<Void> populateKExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMapByExperimentPersonIdSetCF = CompletableFuture.runAsync(() -> {
-      rsExperimentIndicatorInstanceBiz.populateKExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMapByExperimentPersonIdSet(
+      rsExperimentIndicatorInstanceBiz.populateKExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap(
           kExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap, experimentPersonIdSet);
     });
     populateKExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMapByExperimentPersonIdSetCF.get();
@@ -681,14 +682,13 @@ public class RsIndicatorExpressionBiz {
    * 2.处理解析后的结果
   */
   public void ePIEResultUsingExperimentIndicatorInstanceIdCombineWithHandle(
-      Integer scene,
+      Integer scene, AtomicReference<String> resultAtomicReference,
       Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
       ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity,
       List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList,
       ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity,
       ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity
       ) {
-    AtomicReference<String> resultAtomicReference = new AtomicReference<>();
     /* runsix:1.按顺序解析每一个公式 */
     experimentIndicatorExpressionItemRsEntityList.sort(Comparator.comparingInt(ExperimentIndicatorExpressionItemRsEntity::getSeq));
     for (int i = 0; i <= experimentIndicatorExpressionItemRsEntityList.size()-1; i++) {
@@ -703,6 +703,11 @@ public class RsIndicatorExpressionBiz {
         );
         break;
       }
+    }
+    /* runsix:如果没有结果，看情况出炉 */
+    String result = resultAtomicReference.get();
+    if (StringUtils.isBlank(result)) {
+      /* runsix:TODO  */
     }
   }
 
@@ -732,9 +737,8 @@ public class RsIndicatorExpressionBiz {
     return true;
   }
 
-  /* runsix:TODO  */
   private void ePIEIndicatorManagement(
-      Integer scene,
+      Integer scene, AtomicReference<String> resultAtomicReference,
       Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
       ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity,
       List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList,
@@ -742,7 +746,7 @@ public class RsIndicatorExpressionBiz {
       ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity
   ) {
     ePIEResultUsingExperimentIndicatorInstanceIdCombineWithHandle(
-        scene,
+        scene, resultAtomicReference,
         kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
         experimentIndicatorExpressionRsEntity,
         experimentIndicatorExpressionItemRsEntityList,
@@ -775,7 +779,7 @@ public class RsIndicatorExpressionBiz {
 
   /* runsix:TODO  */
   private void experimentParseIndicatorExpression(
-      Integer source, Integer scene,
+      Integer source, Integer scene, AtomicReference<String> resultAtomicReference,
       Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
       ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity,
       List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList,
@@ -786,6 +790,7 @@ public class RsIndicatorExpressionBiz {
     switch (enumIndicatorExpressionSource) {
       case INDICATOR_MANAGEMENT -> ePIEIndicatorManagement(
           scene,
+          resultAtomicReference,
           kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
           experimentIndicatorExpressionRsEntity,
           experimentIndicatorExpressionItemRsEntityList,
@@ -797,10 +802,28 @@ public class RsIndicatorExpressionBiz {
     }
   }
 
-
+  public void populateKExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap(
+      Map<String, ExperimentIndicatorExpressionItemRsEntity> kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap,
+      Set<String> experimentIndicatorExpressionItemIdSet
+  ) {
+    if (Objects.isNull(kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap)
+        || Objects.isNull(experimentIndicatorExpressionItemIdSet) || experimentIndicatorExpressionItemIdSet.isEmpty()
+    ) {
+      return;
+    }
+    experimentIndicatorExpressionItemRsService.lambdaQuery()
+        .in(ExperimentIndicatorExpressionItemRsEntity::getExperimentIndicatorExpressionItemId, experimentIndicatorExpressionItemIdSet)
+        .list()
+        .forEach(experimentIndicatorExpressionItemRsEntity -> {
+          kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.put(
+              experimentIndicatorExpressionItemRsEntity.getExperimentIndicatorExpressionItemId(), experimentIndicatorExpressionItemRsEntity
+          );
+        });
+  }
 
   public void parseIndicatorExpression(
       Integer field, Integer source, Integer scene,
+      AtomicReference<String> resultAtomicReference,
       Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
       ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity,
       List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList,
@@ -813,7 +836,7 @@ public class RsIndicatorExpressionBiz {
       case DATABASE -> databaseParseIndicatorExpression();
       case CASE -> caseParseIndicatorExpression();
       case EXPERIMENT -> experimentParseIndicatorExpression(
-          source, scene,
+          source, scene, resultAtomicReference,
           kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
           experimentIndicatorExpressionRsEntity,
           experimentIndicatorExpressionItemRsEntityList,
@@ -825,6 +848,69 @@ public class RsIndicatorExpressionBiz {
         throw new RsIndicatorExpressionException(String.format("解析公式-公式域只能是数据库、案例库或实验域，field:%s", field));
       }
     }
+  }
+
+  public void populateKExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap(
+      Map<String, ExperimentIndicatorExpressionRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap,
+      Set<String> experimentIndicatorInstanceIdSet
+  ) {
+    if (Objects.isNull(kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap)) {
+      return;
+    }
+    if (Objects.isNull(experimentIndicatorInstanceIdSet) || experimentIndicatorInstanceIdSet.isEmpty()) {
+      return;
+    }
+    Set<String> experimentIndicatorExpressionIdSet = new HashSet<>();
+    Map<String, String> kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionIdMap = new HashMap<>();
+    experimentIndicatorExpressionRefRsService.lambdaQuery()
+        .in(ExperimentIndicatorExpressionRefRsEntity::getReasonId, experimentIndicatorInstanceIdSet)
+        .list()
+        .forEach(experimentIndicatorExpressionRefRsEntity -> {
+          experimentIndicatorExpressionIdSet.add(experimentIndicatorExpressionRefRsEntity.getIndicatorExpressionId());
+          kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionIdMap.put(
+              experimentIndicatorExpressionRefRsEntity.getReasonId(), experimentIndicatorExpressionRefRsEntity.getIndicatorExpressionId()
+          );
+        });
+    if (experimentIndicatorInstanceIdSet.isEmpty()) {
+      return;
+    }
+    Map<String, ExperimentIndicatorExpressionRsEntity> kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap = new HashMap<>();
+    experimentIndicatorExpressionRsService.lambdaQuery()
+        .in(ExperimentIndicatorExpressionRsEntity::getExperimentIndicatorExpressionId, experimentIndicatorExpressionIdSet)
+        .list()
+        .forEach(experimentIndicatorExpressionRsEntity -> {
+          kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap.put(experimentIndicatorExpressionRsEntity.getExperimentIndicatorExpressionId(), experimentIndicatorExpressionRsEntity);
+        });
+    kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionIdMap.forEach((experimentIndicatorInstanceId, experimentIndicatorExpressionId) -> {
+      ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity = kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap.get(experimentIndicatorExpressionId);
+      if (Objects.nonNull(experimentIndicatorExpressionRsEntity)) {
+        kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap.put(experimentIndicatorInstanceId, experimentIndicatorExpressionRsEntity);
+      }
+    });
+  }
+
+  public void populateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap(
+      Map<String, List<ExperimentIndicatorExpressionItemRsEntity>> kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap,
+      Set<String> experimentIndicatorExpressionIdSet
+  ) {
+    if (Objects.isNull(kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap)
+        || Objects.isNull(experimentIndicatorExpressionIdSet)
+        || experimentIndicatorExpressionIdSet.isEmpty()
+    ) {
+      return;
+    }
+    experimentIndicatorExpressionItemRsService.lambdaQuery()
+        .in(ExperimentIndicatorExpressionItemRsEntity::getIndicatorExpressionId, experimentIndicatorExpressionIdSet)
+        .list()
+        .forEach(experimentIndicatorExpressionItemRsEntity -> {
+          String experimentIndicatorExpressionId = experimentIndicatorExpressionItemRsEntity.getIndicatorExpressionId();
+          List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList = kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap.get(experimentIndicatorExpressionId);
+          if (Objects.isNull(experimentIndicatorExpressionItemRsEntityList)) {
+            experimentIndicatorExpressionItemRsEntityList = new ArrayList<>();
+          }
+          experimentIndicatorExpressionItemRsEntityList.add(experimentIndicatorExpressionItemRsEntity);
+          kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap.put(experimentIndicatorExpressionId, experimentIndicatorExpressionItemRsEntityList);
+        });
   }
 
   private List<String> getConditionNameSplitList(String conditionNameList) {
