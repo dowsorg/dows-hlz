@@ -588,18 +588,18 @@ public class CaseIndicatorInstanceBiz {
      */
     public boolean updateNpcIndicatorValue(UpdateIndicatorValueRequest updateIndicatorValueRequest) {
         CaseIndicatorInstanceEntity caseIndicatorInstanceEntity = caseIndicatorInstanceService.lambdaQuery()
-                .eq(CaseIndicatorInstanceEntity::getCaseIndicatorInstanceId, updateIndicatorValueRequest.getCaseIndicatorInstanceId())
-                .eq(CaseIndicatorInstanceEntity::getIndicatorInstanceId, updateIndicatorValueRequest.getIndicatorInstanceId())
+                //.eq(CaseIndicatorInstanceEntity::getCaseIndicatorInstanceId, updateIndicatorValueRequest.getCaseIndicatorInstanceId())
+                .eq(CaseIndicatorInstanceEntity::getCaseIndicatorInstanceId, updateIndicatorValueRequest.getIndicatorInstanceId())
                 .eq(CaseIndicatorInstanceEntity::getPrincipalId, updateIndicatorValueRequest.getPrincipal())
                 .eq(CaseIndicatorInstanceEntity::getIndicatorName, updateIndicatorValueRequest.getIndicatorName())
                 .oneOpt()
                 .orElse(null);
-        Assert.isNull(caseIndicatorInstanceEntity,
+        Assert.notNull(caseIndicatorInstanceEntity,
                 () -> new ExperimentException("案例人物指标[case_indicator_instance]中不存在[" + updateIndicatorValueRequest.getIndicatorName() + "]指标"));
 
         boolean update = caseIndicatorRuleService.lambdaUpdate()
                 .set(CaseIndicatorRuleEntity::getDef, updateIndicatorValueRequest.getIndicatorValue())
-                .eq(CaseIndicatorRuleEntity::getVariableId, updateIndicatorValueRequest.getCaseIndicatorInstanceId())
+                .eq(CaseIndicatorRuleEntity::getVariableId, caseIndicatorInstanceEntity.getCaseIndicatorInstanceId())
                 .update();
         return update;
     }

@@ -11,8 +11,11 @@ import org.dows.hep.api.core.CreateExperimentForm;
 import org.dows.hep.api.enums.EnumToken;
 import org.dows.hep.api.tenant.experiment.request.*;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
+import org.dows.hep.api.tenant.experiment.response.ExptSchemeGroupReviewResponse;
 import org.dows.hep.api.user.experiment.response.CountDownResponse;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
+import org.dows.hep.biz.tenant.experiment.ExperimentSchemeScoreBiz;
+import org.dows.hep.biz.user.experiment.ExperimentBaseBiz;
 import org.dows.hep.biz.user.experiment.ExperimentParticipatorBiz;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import org.springframework.validation.annotation.Validated;
@@ -31,9 +34,11 @@ import java.util.Map;
 @RestController
 @Tag(name = "实验管理", description = "实验管理")
 public class ExperimentManageRest {
+    private final ExperimentBaseBiz baseBiz;
     private final ExperimentManageBiz experimentManageBiz;
     private final ExperimentParticipatorBiz experimentParticipatorBiz;
     private final ExperimentTimerBiz experimentTimerBiz;
+    private final ExperimentSchemeScoreBiz experimentSchemeScoreBiz;
 
     /**
      * 获取实验倒计时
@@ -153,6 +158,20 @@ public class ExperimentManageRest {
     @GetMapping("v1/tenantExperiment/experimentManage/pageByGroupName")
     public PageResponse<ExperimentListResponse> pageByGroupName(PageExperimentRequest pageExperimentRequest) {
         return experimentParticipatorBiz.pageByGroupName(pageExperimentRequest);
+
+    }
+
+    /**
+     * 获取方案设计评分小组列表
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取方案设计评分小组列表")
+    @GetMapping("v1/tenantExperiment/experimentManage/listSchemeGroupReview")
+    public List<ExptSchemeGroupReviewResponse> listSchemeGroupReview(@RequestParam("exptInstanceId") String exptInstanceId, HttpServletRequest request) {
+        String accountId = baseBiz.getAccountId(request);
+        return experimentSchemeScoreBiz.listSchemeGroupReview(exptInstanceId, accountId);
 
     }
 

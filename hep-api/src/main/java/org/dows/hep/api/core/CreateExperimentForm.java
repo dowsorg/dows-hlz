@@ -34,6 +34,9 @@ public class CreateExperimentForm {
     @Schema(title = "案例名称")
     private String caseName;
 
+    @Schema(title = "案例图片")
+    private String casePic;
+
     @Schema(title = "实验名称")
     private String experimentName;
 

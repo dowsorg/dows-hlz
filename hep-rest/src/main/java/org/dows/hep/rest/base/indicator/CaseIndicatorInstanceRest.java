@@ -17,7 +17,7 @@ import java.util.List;
  */
 @RequiredArgsConstructor
 @RestController
-@Tag(name = "案例指标实例", description = "案例指标实例")
+@Tag(name = "案例管理", description = "案例管理")
 public class CaseIndicatorInstanceRest {
     private final CaseIndicatorInstanceBiz caseIndicatorInstanceBiz;
 
@@ -42,8 +42,8 @@ public class CaseIndicatorInstanceRest {
     }
 
     @Operation(summary = "更新NPC人物指标的值或默认值或描述")
-    @GetMapping("v1/caseIndicator/indicatorInstance/updateNpcIndicatorValue")
-    public boolean updateNpcIndicatorValue(@Validated UpdateIndicatorValueRequest updateIndicatorValueRequest) {
+    @PutMapping("v1/caseIndicator/indicatorInstance/updateNpcIndicatorValue")
+    public boolean updateNpcIndicatorValue(@RequestBody @Validated UpdateIndicatorValueRequest updateIndicatorValueRequest) {
         return caseIndicatorInstanceBiz.updateNpcIndicatorValue(updateIndicatorValueRequest);
     }
 
