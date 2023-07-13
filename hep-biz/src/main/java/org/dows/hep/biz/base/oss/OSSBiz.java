@@ -74,9 +74,7 @@ public class OSSBiz {
     public String getBase64(String fileName) {
         String file = ossClient.getBasePath();
         if (ossClient.getBasePath().startsWith("/")) {
-            file += File.separator + fileName;
-        } else {
-            file += "/" + fileName;
+            file += fileName;
         }
         String base64 = null;
         try {
