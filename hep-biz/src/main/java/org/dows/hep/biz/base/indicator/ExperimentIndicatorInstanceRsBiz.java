@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -137,24 +139,29 @@ public class ExperimentIndicatorInstanceRsBiz {
             Integer age4 = 0;
             Integer age5 = 0;
             for(ExperimentIndicatorInstanceRsEntity indicatorInstanceRsEntity : indicatorInstanceRsEntities){
-                //2.5、判断属于某个区间
-                if(EchartsUtils.inNumRange(Integer.parseInt(indicatorInstanceRsEntity.getDef()),"[0,6]")){
-                    age1+=1;
-                }
-                if(EchartsUtils.inNumRange(Integer.parseInt(indicatorInstanceRsEntity.getDef()),"[7,17]")){
-                    age2+=1;
-                }
-                if(EchartsUtils.inNumRange(Integer.parseInt(indicatorInstanceRsEntity.getDef()),"[18,40]")){
-                    age3+=1;
-                }
-                if(EchartsUtils.inNumRange(Integer.parseInt(indicatorInstanceRsEntity.getDef()),"[41,59]")){
-                    age4+=1;
-                }
-                if(EchartsUtils.inNumRange(Integer.parseInt(indicatorInstanceRsEntity.getDef()),"[60,)")){
-                    age5+=1;
+                //2.5、判断是否为数字
+                Pattern pattern = Pattern.compile("[0-9]*");
+                Matcher isNum = pattern.matcher(indicatorInstanceRsEntity.getDef());
+                if(isNum.matches()) {
+                    //2.6、判断属于某个区间
+                    if (EchartsUtils.inNumRange(Integer.parseInt(indicatorInstanceRsEntity.getDef()), "[0,6]")) {
+                        age1 += 1;
+                    }
+                    if (EchartsUtils.inNumRange(Integer.parseInt(indicatorInstanceRsEntity.getDef()), "[7,17]")) {
+                        age2 += 1;
+                    }
+                    if (EchartsUtils.inNumRange(Integer.parseInt(indicatorInstanceRsEntity.getDef()), "[18,40]")) {
+                        age3 += 1;
+                    }
+                    if (EchartsUtils.inNumRange(Integer.parseInt(indicatorInstanceRsEntity.getDef()), "[41,59]")) {
+                        age4 += 1;
+                    }
+                    if (EchartsUtils.inNumRange(Integer.parseInt(indicatorInstanceRsEntity.getDef()), "[60,)")) {
+                        age5 += 1;
+                    }
                 }
             }
-            //2.6、计算比例
+            //2.7、计算比例
             EchartsDataResonse stat1 = new EchartsDataResonse("0-6岁儿童", Long.valueOf(sum), String.format("%.2f", (float) (long)age1 / sum));
             EchartsDataResonse stat2 = new EchartsDataResonse("7-17岁少年", Long.valueOf(sum), String.format("%.2f", (float) (long) age2 / sum));
             EchartsDataResonse stat3 = new EchartsDataResonse("18-40岁青年", Long.valueOf(sum), String.format("%.2f", (float) (long) age3 / sum));
