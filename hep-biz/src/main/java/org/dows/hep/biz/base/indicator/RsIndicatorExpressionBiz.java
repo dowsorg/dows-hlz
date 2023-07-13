@@ -41,7 +41,71 @@ public class RsIndicatorExpressionBiz {
 
   private final ExperimentIndicatorExpressionRefRsService experimentIndicatorExpressionRefRsService;
   private final ExperimentIndicatorExpressionRsService experimentIndicatorExpressionRsService;
+  private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
 
+  public void populateKExperimentPersonIdVKExperimentIndicatorInstanceIdVExperimentIndicatorValMap(
+      Map<String, Map<String, ExperimentIndicatorValRsEntity>> kExperimentPersonIdVKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
+      Set<String> experimentPersonIdSet,
+      Integer period
+  ) {
+    if (Objects.isNull(kExperimentPersonIdVKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap)
+        || Objects.isNull(experimentPersonIdSet) || experimentPersonIdSet.isEmpty()
+    ) {
+      return;
+    }
+    if (Objects.isNull(period)) {
+      /* runsix:TODO 等张亮期数接口 */
+      period = 1;
+    }
+    experimentPersonIdSet.forEach(experimentPersonId -> {
+      kExperimentPersonIdVKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(
+          experimentPersonId, new HashMap<>()
+      );
+    });
+
+    Map<String, Set<String>> kExperimentPersonIdVExperimentIndicatorInstanceIdSetMap = new HashMap<>();
+    Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
+    experimentIndicatorInstanceRsService.lambdaQuery()
+        .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdSet)
+        .list()
+        .forEach(experimentIndicatorInstanceRsEntity -> {
+          experimentIndicatorInstanceIdSet.add(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
+
+          String experimentPersonId = experimentIndicatorInstanceRsEntity.getExperimentPersonId();
+          Set<String> experimentIndicatorInstanceIdSet0 = kExperimentPersonIdVExperimentIndicatorInstanceIdSetMap.get(experimentPersonId);
+          if (Objects.isNull(experimentIndicatorInstanceIdSet0)) {
+            experimentIndicatorInstanceIdSet0 = new HashSet<>();
+          }
+          experimentIndicatorInstanceIdSet0.add(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
+          kExperimentPersonIdVExperimentIndicatorInstanceIdSetMap.put(experimentPersonId, experimentIndicatorInstanceIdSet0);
+        });
+
+    Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = new HashMap<>();
+    if (experimentIndicatorInstanceIdSet.isEmpty()) {
+      return;
+    }
+    experimentIndicatorValRsService.lambdaQuery()
+      .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
+      .list()
+      .forEach(experimentIndicatorValRsEntity -> {
+        kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(experimentIndicatorValRsEntity.getIndicatorInstanceId(), experimentIndicatorValRsEntity);
+    });
+
+
+    kExperimentPersonIdVExperimentIndicatorInstanceIdSetMap.forEach((experimentPersonId, experimentIndicatorInstanceIdSet1) -> {
+      Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap0 = kExperimentPersonIdVKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentPersonId);
+      experimentIndicatorInstanceIdSet1.forEach(experimentIndicatorInstanceId -> {
+        ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
+        if (Objects.nonNull(experimentIndicatorValRsEntity)) {
+          kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap0.put(experimentIndicatorInstanceId, experimentIndicatorValRsEntity);
+        }
+      });
+
+      kExperimentPersonIdVKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(
+          experimentPersonId, kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap0
+      );
+    });
+  }
 
   public void populateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap(
       Map<String, List<ExperimentIndicatorExpressionItemRsEntity>> kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap,
@@ -63,6 +127,27 @@ public class RsIndicatorExpressionBiz {
           }
           experimentIndicatorExpressionItemRsEntityList.add(experimentIndicatorExpressionItemRsEntity);
           kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap.put(experimentIndicatorExpressionId, experimentIndicatorExpressionItemRsEntityList);
+        });
+  }
+
+  public void populateKExperimentReasonIdVExperimentIndicatorExpressionRefListMap(
+      Map<String, List<ExperimentIndicatorExpressionRefRsEntity>> kExperimentReasonIdVExperimentIndicatorExpressionRefListMap,
+      Set<String> reasonIdSet
+  ) {
+    if (Objects.isNull(kExperimentReasonIdVExperimentIndicatorExpressionRefListMap) || Objects.isNull(reasonIdSet) || reasonIdSet.isEmpty()) {
+      return;
+    }
+    experimentIndicatorExpressionRefRsService.lambdaQuery()
+        .in(ExperimentIndicatorExpressionRefRsEntity::getReasonId, reasonIdSet)
+        .list()
+        .forEach(experimentIndicatorExpressionRefRsEntity -> {
+          String reasonId = experimentIndicatorExpressionRefRsEntity.getReasonId();
+          List<ExperimentIndicatorExpressionRefRsEntity> experimentIndicatorExpressionRefRsEntityList = kExperimentReasonIdVExperimentIndicatorExpressionRefListMap.get(reasonId);
+          if (Objects.isNull(experimentIndicatorExpressionRefRsEntityList)) {
+            experimentIndicatorExpressionRefRsEntityList = new ArrayList<>();
+          }
+          experimentIndicatorExpressionRefRsEntityList.add(experimentIndicatorExpressionRefRsEntity);
+          kExperimentReasonIdVExperimentIndicatorExpressionRefListMap.put(reasonId, experimentIndicatorExpressionRefRsEntityList);
         });
   }
 
@@ -640,6 +725,15 @@ public class RsIndicatorExpressionBiz {
     minAndMaxHandle(resultAtomicReference, minExperimentIndicatorExpressionItemRsEntity, maxExperimentIndicatorExpressionItemRsEntity);
   }
 
+  private void riskModelHandleParsedResult(
+      AtomicReference<String> resultAtomicReference,
+      ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity,
+      ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity,
+      ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity
+  ) {
+
+  }
+
   private void supportExamHandleParsedResult(
       AtomicReference<String> resultAtomicReference,
       ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity,
@@ -666,6 +760,9 @@ public class RsIndicatorExpressionBiz {
           resultAtomicReference, experimentIndicatorExpressionRsEntity, minExperimentIndicatorExpressionItemRsEntity, maxExperimentIndicatorExpressionItemRsEntity
       );
       case SUPPORT_EXAM -> supportExamHandleParsedResult(
+          resultAtomicReference, experimentIndicatorExpressionRsEntity, minExperimentIndicatorExpressionItemRsEntity, maxExperimentIndicatorExpressionItemRsEntity
+      );
+      case RISK_MODEL -> riskModelHandleParsedResult(
           resultAtomicReference, experimentIndicatorExpressionRsEntity, minExperimentIndicatorExpressionItemRsEntity, maxExperimentIndicatorExpressionItemRsEntity
       );
       default -> {
@@ -708,6 +805,11 @@ public class RsIndicatorExpressionBiz {
     String result = resultAtomicReference.get();
     if (StringUtils.isBlank(result)) {
       /* runsix:TODO  */
+      if (NumberUtils.isCreatable(result)) {
+        resultAtomicReference.set("0");
+      } else {
+        resultAtomicReference.set("");
+      }
     }
   }
 
@@ -761,10 +863,15 @@ public class RsIndicatorExpressionBiz {
 
   /* runsix:now it is just a condition */
   private void ePIECrowds(
-      Map<String, Map<String, Boolean>> kExperimentPersonIdVKExperimentIndicatorExpressionIdVResultBooleanMap,
-      Integer period
-  ) throws ExecutionException, InterruptedException {
-    ePIEConditionType(kExperimentPersonIdVKExperimentIndicatorExpressionIdVResultBooleanMap, period);
+      AtomicReference<String> resultAtomicReference,
+      ExperimentIndicatorExpressionItemRsEntity experimentIndicatorExpressionItemRsEntity,
+      Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap
+  ) {
+    boolean result = ePIEConditionUsingExperimentIndicatorInstanceId(
+        experimentIndicatorExpressionItemRsEntity,
+        kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap
+    );
+    resultAtomicReference.set(String.valueOf(result));
   }
 
   /* runsix:TODO  */
@@ -798,8 +905,32 @@ public class RsIndicatorExpressionBiz {
           maxExperimentIndicatorExpressionItemRsEntity
           );
       case INDICATOR_JUDGE_RISK_FACTOR -> ePIEIndicatorJudgeRiskFactor();
-//      case CROWDS -> ePIECrowds();
+      case CROWDS -> ePIECrowds(resultAtomicReference, experimentIndicatorExpressionItemRsEntityList.get(0), kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap);
+      case RISK_MODEL -> ePIERiskModel(scene,
+          resultAtomicReference,
+          kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
+          experimentIndicatorExpressionRsEntity,
+          experimentIndicatorExpressionItemRsEntityList,
+          minExperimentIndicatorExpressionItemRsEntity,
+          maxExperimentIndicatorExpressionItemRsEntity);
+      default -> {
+        log.error("RsIndicatorExpressionBiz.experimentParseIndicatorExpression source:{} is illegal", source);
+        throw new RsIndicatorExpressionException("公式来源不合法");
+      }
     }
+  }
+
+  /* runsix:目前计算危险模型与指标管理的指标一样 */
+  private void ePIERiskModel(Integer scene, AtomicReference<String> resultAtomicReference, Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap, ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity, List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList, ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity, ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity) {
+    ePIEIndicatorManagement(
+        scene,
+        resultAtomicReference,
+        kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
+        experimentIndicatorExpressionRsEntity,
+        experimentIndicatorExpressionItemRsEntityList,
+        minExperimentIndicatorExpressionItemRsEntity,
+        maxExperimentIndicatorExpressionItemRsEntity
+    );
   }
 
   public void populateKExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap(
@@ -913,6 +1044,66 @@ public class RsIndicatorExpressionBiz {
         });
   }
 
+  public void populateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap(
+      Map<String, ExperimentIndicatorExpressionRsEntity> kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap,
+      Set<String> experimentIndicatorExpressionIdSet
+  ) {
+    if (Objects.isNull(kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap)
+        || Objects.isNull(experimentIndicatorExpressionIdSet) || experimentIndicatorExpressionIdSet.isEmpty()
+    ) {
+      return;
+    }
+    experimentIndicatorExpressionRsService.lambdaQuery()
+        .in(ExperimentIndicatorExpressionRsEntity::getExperimentIndicatorExpressionId, experimentIndicatorExpressionIdSet)
+        .list()
+        .forEach(experimentIndicatorExpressionRsEntity -> {
+          kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap.put(experimentIndicatorExpressionRsEntity.getExperimentIndicatorExpressionId(), experimentIndicatorExpressionRsEntity);
+        });
+  }
+
+  public void populateKExperimentPersonIdVHealthExperimentIndicatorValRsEntityMap(
+      Map<String, ExperimentIndicatorValRsEntity> kExperimentPersonIdVHealthExperimentIndicatorValRsEntityMap,
+      Set<String> experimentPersonIdSet,
+      Integer periods
+  ) {
+    if (Objects.isNull(kExperimentPersonIdVHealthExperimentIndicatorValRsEntityMap) || Objects.isNull(experimentPersonIdSet) || experimentPersonIdSet.isEmpty()) {
+      return;
+    }
+    if (Objects.isNull(periods)) {
+      /* runsix:TODO 以后改为当前期的 */
+      periods = 1;
+    }
+    Set<String> healthExperimentIndicatorInstanceIdSet = new HashSet<>();
+    Map<String, String> kExperimentPersonIdVHealthExperimentIndicatorInstanceIdMap = new HashMap<>();
+    experimentIndicatorInstanceRsService.lambdaQuery()
+        .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.HEALTH_POINT.getType())
+        .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdSet)
+        .list()
+        .forEach(experimentIndicatorInstanceRsEntity -> {
+          healthExperimentIndicatorInstanceIdSet.add(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
+          kExperimentPersonIdVHealthExperimentIndicatorInstanceIdMap.put(
+              experimentIndicatorInstanceRsEntity.getExperimentPersonId(), experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId()
+          );
+        });
+    if (healthExperimentIndicatorInstanceIdSet.isEmpty()) {
+      return;
+    }
+    Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = new HashMap<>();
+    experimentIndicatorValRsService.lambdaQuery()
+        .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
+        .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, healthExperimentIndicatorInstanceIdSet)
+        .list()
+        .forEach(experimentIndicatorValRsEntity -> {
+          kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(experimentIndicatorValRsEntity.getIndicatorInstanceId(), experimentIndicatorValRsEntity);
+        });
+    kExperimentPersonIdVHealthExperimentIndicatorInstanceIdMap.forEach((experimentPersonId, healthExperimentIndicatorInstanceId) -> {
+      ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(healthExperimentIndicatorInstanceId);
+      if (Objects.nonNull(experimentIndicatorValRsEntity)) {
+        kExperimentPersonIdVHealthExperimentIndicatorValRsEntityMap.put(experimentPersonId, experimentIndicatorValRsEntity);
+      }
+    });
+  }
+
   private List<String> getConditionNameSplitList(String conditionNameList) {
     if (StringUtils.isBlank(conditionNameList)) {
       return new ArrayList<>();
@@ -939,5 +1130,13 @@ public class RsIndicatorExpressionBiz {
       return new ArrayList<>();
     }
     return Arrays.stream(resultValList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr())).collect(Collectors.toList());
+  }
+
+  public static void main(String[] args) {
+    StandardEvaluationContext context = new StandardEvaluationContext();
+    ExpressionParser parser = new SpelExpressionParser();
+    Expression expression = parser.parseExpression("'大于70kg，有点胖'");
+    String result = expression.getValue(context, String.class);
+    log.error(result);
   }
 }
