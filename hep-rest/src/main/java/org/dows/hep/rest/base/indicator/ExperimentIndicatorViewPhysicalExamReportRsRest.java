@@ -9,6 +9,7 @@ import org.dows.hep.biz.base.indicator.ExperimentIndicatorViewPhysicalExamReport
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author runsix
@@ -27,7 +28,7 @@ public class ExperimentIndicatorViewPhysicalExamReportRsRest {
 
   @Operation(summary = "实验人物和在这个机构功能点下的体格检查报告")
   @PostMapping("v2/userExperiment/physicalExamReport/check")
-  public void v2PhysicalExamCheck(@RequestBody ExperimentPhysicalExamCheckRequestRs experimentPhysicalExamCheckRequestRs) {
+  public void v2PhysicalExamCheck(@RequestBody ExperimentPhysicalExamCheckRequestRs experimentPhysicalExamCheckRequestRs) throws ExecutionException, InterruptedException {
     experimentIndicatorViewPhysicalExamReportRsBiz.v2PhysicalExamCheck(experimentPhysicalExamCheckRequestRs);
   }
 
