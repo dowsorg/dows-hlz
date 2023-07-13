@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -28,6 +29,15 @@ public class OSSBiz {
         OssInfo info = ossClient.upLoad(is, fileName, false);
         info.setPath("/hepapi/" + fileName);
         return info;
+    }
+
+    /**
+     * @param os - 输出流
+     * @param fileName - 目标文件
+     * @date 2023/7/13 14:40
+     */
+    public void downloadByPath(OutputStream os, String fileName) {
+        ossClient.downLoad(os, fileName);
     }
 
     /**
@@ -64,9 +74,7 @@ public class OSSBiz {
     public String getBase64(String fileName) {
         String file = ossClient.getBasePath();
         if (ossClient.getBasePath().startsWith("/")) {
-            file += File.separator + fileName;
-        } else {
-            file += "/" + fileName;
+            file += fileName;
         }
         String base64 = null;
         try {

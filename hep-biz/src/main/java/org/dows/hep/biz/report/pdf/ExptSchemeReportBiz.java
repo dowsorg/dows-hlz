@@ -29,7 +29,6 @@ import org.dows.hep.service.ExperimentParticipatorService;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -313,18 +312,12 @@ public class ExptSchemeReportBiz implements ExptReportBiz {
         // 替换值并打印
         for (Element imgTag : imgTags) {
             String src = imgTag.attr("src");
-            imgTag.attr("src", getImgBase64(src));
+            src = src.replace("/hepapi/", "");
+            imgTag.attr("src", ossBiz.getBase64(src));
         }
 
         // 返回替换后的文本
         return doc.body().html();
-    }
-
-    private String getImgBase64(String pathName) {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-//        ossBiz.downloadByPath(outputStream, pathName);
-        byte[] byteArray = outputStream.toByteArray();
-        return Base64.encodeBytes(byteArray);
     }
 
     private File getFile(String exptGroupId) {
