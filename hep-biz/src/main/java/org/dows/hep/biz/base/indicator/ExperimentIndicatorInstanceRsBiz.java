@@ -116,8 +116,7 @@ public class ExperimentIndicatorInstanceRsBiz {
                 .orderByDesc(ExperimentPersonEntity::getDt);
         List<ExperimentPersonEntity> personEntities = experimentPersonService.list(queryWrapper);
         //2、查询上述人物在实验人物指标表中的指标信息
-        //2.1、计算百分比
-        //2.2、先获取上述人物的年龄数据总数
+        //2.1、先获取上述人物的年龄数据总数
         List<String> personIdList= personEntities.stream().map(e -> e.getExperimentPersonId()).collect(Collectors.toList());
         List<ExperimentIndicatorInstanceRsEntity> indicatorInstanceRsEntities = experimentIndicatorInstanceRsService.lambdaQuery()
                 .eq(ExperimentIndicatorInstanceRsEntity::getType,EnumIndicatorType.AGE)
@@ -125,37 +124,37 @@ public class ExperimentIndicatorInstanceRsBiz {
                 .eq(ExperimentIndicatorInstanceRsEntity::getDeleted,false)
                 .list();
         if(indicatorInstanceRsEntities == null || indicatorInstanceRsEntities.size() == 0){
-            //2.3、年龄段为空赋值0
+            //2.2、年龄段为空赋值0
             List<String> ageList = Arrays.asList(new String[]{"0-6岁儿童","7-17岁少年","18-40岁青年","41-59岁中年","60岁以上老年"});
             statList = EchartsUtils.fillEmptydata(statList,ageList);
         }else{
-            //2.4、计算年龄数据总数
+            //2.3、计算年龄数据总数
             int sum = indicatorInstanceRsEntities.size();
-            //2.5、计算每个阶段人数比例
+            //2.4、计算每个阶段人数比例
             Integer age1 = 0;
             Integer age2 = 0;
             Integer age3 = 0;
             Integer age4 = 0;
             Integer age5 = 0;
             for(ExperimentIndicatorInstanceRsEntity indicatorInstanceRsEntity : indicatorInstanceRsEntities){
-                //2.6、判断属于某个区间
+                //2.5、判断属于某个区间
                 if(EchartsUtils.inNumRange(Integer.parseInt(indicatorInstanceRsEntity.getDef()),"[0,6]")){
                     age1+=1;
                 }
                 if(EchartsUtils.inNumRange(Integer.parseInt(indicatorInstanceRsEntity.getDef()),"[7,17]")){
-                    age2=1;
+                    age2+=1;
                 }
                 if(EchartsUtils.inNumRange(Integer.parseInt(indicatorInstanceRsEntity.getDef()),"[18,40]")){
-                    age3=1;
+                    age3+=1;
                 }
                 if(EchartsUtils.inNumRange(Integer.parseInt(indicatorInstanceRsEntity.getDef()),"[41,59]")){
-                    age4=1;
+                    age4+=1;
                 }
                 if(EchartsUtils.inNumRange(Integer.parseInt(indicatorInstanceRsEntity.getDef()),"[60,)")){
-                    age5=1;
+                    age5+=1;
                 }
             }
-            //2.7、计算比例
+            //2.6、计算比例
             EchartsDataResonse stat1 = new EchartsDataResonse("0-6岁儿童", Long.valueOf(sum), String.format("%.2f", (float) (long)age1 / sum));
             EchartsDataResonse stat2 = new EchartsDataResonse("7-17岁少年", Long.valueOf(sum), String.format("%.2f", (float) (long) age2 / sum));
             EchartsDataResonse stat3 = new EchartsDataResonse("18-40岁青年", Long.valueOf(sum), String.format("%.2f", (float) (long) age3 / sum));
