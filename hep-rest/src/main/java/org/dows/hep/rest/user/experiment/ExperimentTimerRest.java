@@ -41,6 +41,19 @@ public class ExperimentTimerRest {
         return countDownResponse;
     }
 
+    /**
+     * 获取实验倒计时
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取实验进度条倒计时")
+    @GetMapping("v1/tenantExperiment/experimentTimer/progress")
+    public CountDownResponse progress(@RequestParam String experimentInstanceId) {
+        CountDownResponse countdown = experimentTimerBiz.tenantCountdown(experimentInstanceId);
+        return countdown;
+    }
+
 
     /**
      * 获取实验每期时间

@@ -75,6 +75,7 @@ public class ExperimentTimerBiz {
                 countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
                 countDownResponse.setModel(pre.getModel());
                 countDownResponse.setPeriod(pre.getPeriod());
+                countDownResponse.setState(pre.getState());
                 break;
             }
             next = list.get(i + 1);
@@ -90,11 +91,13 @@ public class ExperimentTimerBiz {
                 countDownResponse.setCountdown(pre.getStartTime() - ct);
                 countDownResponse.setModel(pre.getModel());
                 countDownResponse.setPeriod(pre.getPeriod());
+                countDownResponse.setState(pre.getState());
                 break;
             } else if (ct >= pre.getStartTime() && ct <= pre.getEndTime()) { //  开始之后
                 countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
                 countDownResponse.setModel(pre.getModel());
                 countDownResponse.setPeriod(pre.getPeriod());
+                countDownResponse.setState(pre.getState());
                 break;
 
             }
@@ -118,7 +121,8 @@ public class ExperimentTimerBiz {
         List<ExperimentSettingEntity> list = experimentSettingService.lambdaQuery()
                 .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
                 .list();
-        ExperimentSettingEntity experimentSettingEntity1 = list.stream().filter(e -> e.getConfigKey().equals(ExperimentSetting.SchemeSetting.class.getName()))
+        ExperimentSettingEntity experimentSettingEntity1 = list.stream()
+                .filter(e -> e.getConfigKey().equals(ExperimentSetting.SchemeSetting.class.getName()))
                 .findFirst()
                 .orElse(null);
         if (experimentSettingEntity1 != null) {
@@ -176,9 +180,11 @@ public class ExperimentTimerBiz {
             for (ExperimentTimerEntity experimentTimerEntity : experimentTimerEntityList) {
                 if (experimentTimerEntity.getState() == EnumExperimentState.FINISH.getState()) {
                     countDownResponse.setSandDuration(Double.valueOf(totalDay));
+                    countDownResponse.setState(experimentTimerEntity.getState());
                     break;
                 } else if (experimentTimerEntity.getState() == EnumExperimentState.UNBEGIN.getState()) {
                     countDownResponse.setSandDuration(0D);
+                    countDownResponse.setState(experimentTimerEntity.getState());
                     break;
                 } else if (experimentTimerEntity.getState() == EnumExperimentState.ONGOING.getState()) {
                     Long sct = System.currentTimeMillis();
@@ -200,6 +206,7 @@ public class ExperimentTimerBiz {
                         }
                         countDownResponse.setSandDurationSecond(second);
                         countDownResponse.setSandDuration(day);
+                        countDownResponse.setState(experimentTimerEntity.getState());
                         break;
                     }
                 }
