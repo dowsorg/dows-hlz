@@ -2,6 +2,8 @@ package org.dows.hep.biz.user.experiment;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
+import org.dows.framework.api.util.ReflectUtil;
+import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.user.experiment.request.ExperimentIndicatorInstanceRequest;
 import org.dows.hep.api.user.experiment.response.EchartsDataResonse;
 import org.dows.hep.entity.ExperimentPersonEntity;
@@ -67,6 +69,9 @@ public class ExperimentPersonTagsBiz {
                         .eq(TagsInstanceEntity::getTagsId, next.getKey())
                         .eq(TagsInstanceEntity::getDeleted, false)
                         .one();
+                if(instanceEntity == null || ReflectUtil.isObjectNull(instanceEntity)){
+                    throw new ExperimentException("id为" + next.getKey() + "标签不存在");
+                }
                 EchartsDataResonse stat = new EchartsDataResonse(instanceEntity.getName(), Long.valueOf(personList.size()), String.format("%.2f", (float) (long) next.getValue().size() / tagsEntities.size()));
                 statList.add(stat);
             }
