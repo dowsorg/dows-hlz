@@ -120,6 +120,7 @@ public class ExptReportPdfRest {
                 .oneOpt()
                 .orElseThrow(() -> new BizException("实验不存在"));
         Integer state = exptInstance.getState();
+        // TODO 测试结束后，放开注释
 //        if (state < EnumExperimentState.FINISH.getState()) {
 //            throw new BizException("实验还未结束，请等待");
 //        }
