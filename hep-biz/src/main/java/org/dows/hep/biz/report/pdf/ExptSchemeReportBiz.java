@@ -319,6 +319,13 @@ public class ExptSchemeReportBiz implements ExptReportBiz {
         // 返回替换后的文本
         return doc.body().html();
     }
+//
+//    private String getBase64(String pathName) {
+//        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+//        ossBiz.downloadByPath(outputStream, pathName);
+//        byte[] byteArray = outputStream.toByteArray();
+//        return Base64.encodeBytes(byteArray);
+//    }
 
     private File getFile(String exptGroupId) {
         ExperimentInstanceEntity exptInfo = this.exptInfo;

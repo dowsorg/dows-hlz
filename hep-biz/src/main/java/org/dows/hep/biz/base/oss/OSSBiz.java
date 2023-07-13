@@ -32,12 +32,13 @@ public class OSSBiz {
     }
 
     /**
-     * @param os - 输出流
-     * @param fileName - 目标文件
+     * @param os       - 输出流
+     * @param pathName - 目标文件
      * @date 2023/7/13 14:40
      */
-    public void downloadByPath(OutputStream os, String fileName) {
-        ossClient.downLoad(os, fileName);
+    public void downloadByPath(OutputStream os, String pathName) {
+        pathName = pathName.replace("/hepapi/", "");
+        ossClient.downLoad(os, pathName);
     }
 
     /**
