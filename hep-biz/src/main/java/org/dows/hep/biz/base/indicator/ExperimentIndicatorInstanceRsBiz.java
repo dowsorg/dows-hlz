@@ -98,7 +98,7 @@ public class ExperimentIndicatorInstanceRsBiz {
     /**
      * @param
      * @return
-     * @说明: 实验人物年龄段统计
+     * @说明: 实验体检人次统计
      * @关联表: experiment_indicator_instance、case_indicator_instance、case_indicator_rule、experiment_person
      * @工时: 3H
      * @开发者: jx
@@ -230,5 +230,20 @@ public class ExperimentIndicatorInstanceRsBiz {
             statList = EchartsUtils.sum100(statList);
         }
         return statList;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 实验疾病类别统计
+     * @关联表: experiment_indicator_instance、case_indicator_instance、case_indicator_rule、experiment_person
+     * @工时: 3H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/7/13 13:51
+     */
+    public List<EchartsDataResonse> statDiseaseRate(ExperimentIndicatorInstanceRequest experimentIndicatorInstanceRequest) {
+          //1、
+          return null;
     }
 }

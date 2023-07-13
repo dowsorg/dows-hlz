@@ -38,7 +38,8 @@ public class CountDownResponse {
 
     @Schema(title = "方案时间单位")
     private String schemeTimeUnit;
-
+    @Schema(title = "实验状态")
+    private Integer state;
     /**
      * 用于前端计算
      */
