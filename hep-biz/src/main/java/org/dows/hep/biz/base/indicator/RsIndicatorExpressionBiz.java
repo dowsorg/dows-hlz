@@ -53,7 +53,7 @@ public class RsIndicatorExpressionBiz {
       return;
     }
     experimentIndicatorExpressionItemRsService.lambdaQuery()
-        .in(ExperimentIndicatorExpressionItemRsEntity::getIndicatorExpressionItemId)
+        .in(ExperimentIndicatorExpressionItemRsEntity::getIndicatorExpressionId, experimentIndicatorExpressionIdSet)
         .list()
         .forEach(experimentIndicatorExpressionItemRsEntity -> {
           String experimentIndicatorExpressionId = experimentIndicatorExpressionItemRsEntity.getIndicatorExpressionId();
@@ -703,6 +703,11 @@ public class RsIndicatorExpressionBiz {
         );
         break;
       }
+    }
+    /* runsix:如果没有结果，看情况出炉 */
+    String result = resultAtomicReference.get();
+    if (StringUtils.isBlank(result)) {
+      /* runsix:TODO  */
     }
   }
 

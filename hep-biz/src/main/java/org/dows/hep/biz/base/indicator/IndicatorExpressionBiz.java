@@ -55,6 +55,8 @@ public class IndicatorExpressionBiz{
   private final IndicatorExpressionInfluenceService indicatorExpressionInfluenceService;
   private final IndicatorInstanceService indicatorInstanceService;
   private final IndicatorCategoryService indicatorCategoryService;
+
+  private final RsIndicatorExpressionBiz rsIndicatorExpressionBiz;
   public static IndicatorExpressionResponseRs indicatorExpression2ResponseRs(
       IndicatorExpressionEntity indicatorExpressionEntity,
       List<IndicatorExpressionItemResponseRs> indicatorExpressionItemResponseRsList,
@@ -635,13 +637,13 @@ public class IndicatorExpressionBiz{
           for (int j = i+1; j <= conditionExpression.length()-1; j++) {
             if (v1CheckSpace(conditionExpression.substring(j, j+1))) {
               isComplete = true;
-              strList.add(conditionExpression.substring(i, j));
+              strList.add(v1WrapStrWithDoubleSingleQuotes(conditionExpression.substring(i, j)));
               i = j+1;
               break;
             }
             if (v1CheckMathSingleOperator(conditionExpression.substring(j, j+1))) {
               isComplete = true;
-              strList.add(conditionExpression.substring(i, j));
+              strList.add(v1WrapStrWithDoubleSingleQuotes(conditionExpression.substring(i, j)));
               strList.add(conditionExpression.substring(j, j+1));
               i = j+1;
               break;
@@ -649,7 +651,7 @@ public class IndicatorExpressionBiz{
             if (j <= conditionExpression.length()-1-1) {
               if (v1CheckMathDoubleOperator(conditionExpression.substring(j, j+2))) {
                 isComplete = true;
-                strList.add(conditionExpression.substring(i, j));
+                strList.add(v1WrapStrWithDoubleSingleQuotes(conditionExpression.substring(i, j)));
                 strList.add(conditionExpression.substring(j, j+2));
                 i = j+2;
                 break;
@@ -657,7 +659,7 @@ public class IndicatorExpressionBiz{
             }
           }
           if (!isComplete) {
-            strList.add(conditionExpression.substring(i));
+            strList.add(v1WrapStrWithDoubleSingleQuotes(conditionExpression.substring(i)));
             i = conditionExpression.length()-1+1;
           }
         } else {
@@ -669,7 +671,7 @@ public class IndicatorExpressionBiz{
               if (isNumber) {
                 strList.add(conditionExpression.substring(i, j));
               } else {
-                strList.add(conditionExpression.substring(i, j));
+                strList.add(v1WrapStrWithDoubleSingleQuotes(conditionExpression.substring(i, j)));
               }
               isComplete = true;
               i = j+1;
@@ -679,7 +681,7 @@ public class IndicatorExpressionBiz{
               if (isNumber) {
                 strList.add(conditionExpression.substring(i, j));
               } else {
-                strList.add(conditionExpression.substring(i, j));
+                strList.add(v1WrapStrWithDoubleSingleQuotes(conditionExpression.substring(i, j)));
               }
               strList.add(conditionExpression.substring(j, j+1));
               isComplete = true;
@@ -691,7 +693,7 @@ public class IndicatorExpressionBiz{
                 if (isNumber) {
                   strList.add(conditionExpression.substring(i, j));
                 } else {
-                  strList.add(conditionExpression.substring(i, j));
+                  strList.add(v1WrapStrWithDoubleSingleQuotes(conditionExpression.substring(i, j)));
                 }
                 strList.add(conditionExpression.substring(j, j+2));
                 isComplete = true;
@@ -703,7 +705,7 @@ public class IndicatorExpressionBiz{
               if (isNumber) {
                 strList.add(conditionExpression.substring(i, j));
               } else {
-                strList.add(conditionExpression.substring(i, j));
+                strList.add(v1WrapStrWithDoubleSingleQuotes(conditionExpression.substring(i, j)));
               }
               strList.add(conditionExpression.substring(j, j+1));
               isComplete = true;
@@ -719,7 +721,7 @@ public class IndicatorExpressionBiz{
             if (isNumber) {
               strList.add(conditionExpression.substring(i));
             } else {
-              strList.add(conditionExpression.substring(i));
+              strList.add(v1WrapStrWithDoubleSingleQuotes(conditionExpression.substring(i)));
             }
             i = conditionExpression.length()-1+1;
           }
@@ -1088,8 +1090,8 @@ public class IndicatorExpressionBiz{
     if (StringUtils.isAllBlank(conditionExpression, resultExpression)) {
       return;
     }
-    resultExpression = v1GetResultExpression(resultExpression);
     conditionExpression = v1GetConditionExpression(conditionExpression);
+    resultExpression = v1GetResultExpression(resultExpression);
     String resultNameList = createOrUpdateIndicatorExpressionItemRequestRs.getResultNameList();
     String resultValList = createOrUpdateIndicatorExpressionItemRequestRs.getResultValList();
     Integer seq = createOrUpdateIndicatorExpressionItemRequestRs.getSeq();
