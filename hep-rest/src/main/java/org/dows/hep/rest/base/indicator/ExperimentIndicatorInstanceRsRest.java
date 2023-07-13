@@ -40,4 +40,10 @@ public class ExperimentIndicatorInstanceRsRest {
   public List<EchartsDataResonse> statAgeRate(@RequestBody ExperimentIndicatorInstanceRequest experimentIndicatorInstanceRequest) {
     return experimentIndicatorInstanceRsBiz.statAgeRate(experimentIndicatorInstanceRequest);
   }
+
+  @Operation(summary = "实验人物性别统计")
+  @PostMapping("v1/experimentIndicator/genderRate/stat")
+  public List<EchartsDataResonse> statGenderRate(@RequestBody ExperimentIndicatorInstanceRequest experimentIndicatorInstanceRequest) {
+    return experimentIndicatorInstanceRsBiz.statGenderRate(experimentIndicatorInstanceRequest);
+  }
 }
