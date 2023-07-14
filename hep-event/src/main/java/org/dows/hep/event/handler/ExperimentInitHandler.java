@@ -172,6 +172,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
          * todo 设定一个TimeTask,通过timer到时间执行一次，考虑重启情况，写数据库，针对出现的情况，更具时间重新schedule,先用事件处理，后期优化
          */
         taskScheduler.schedule(experimentBeginTask, experimentGroupSettingRequest.getStartTime());
+
     }
 
     /**
