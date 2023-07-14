@@ -92,7 +92,9 @@ public class ExperimentIndicatorViewSupportExamRsBiz {
           if (Objects.isNull(thirdSupportExamTabRsResponseList)) {
             thirdSupportExamTabRsResponseList = new ArrayList<>();
           }
-          thirdSupportExamTabRsResponseList.add(thirdSupportExamTabRsResponse);
+          if (thirdSupportExamTabRsResponseList.stream().map(ThirdSupportExamTabRsResponse::getIndicatorCategoryId).noneMatch(a -> a.equals(thirdIndicatorCategoryId))) {
+            thirdSupportExamTabRsResponseList.add(thirdSupportExamTabRsResponse);
+          }
           secondSupportExamTabRsResponse.setChildren(thirdSupportExamTabRsResponseList);
           kIndicatorCategoryIdVSecondSupportExamTabRsResponseMap.put(secondIndicatorCategoryId, secondSupportExamTabRsResponse);
           FirstSupportExamTabRsResponse firstSupportExamTabRsResponse = kIndicatorCategoryIdVFirstSupportExamTabRsResponseMap.get(firstIndicatorCategoryId);
@@ -108,7 +110,9 @@ public class ExperimentIndicatorViewSupportExamRsBiz {
           if (Objects.isNull(secondSupportExamTabRsResponseList)) {
             secondSupportExamTabRsResponseList = new ArrayList<>();
           }
-          secondSupportExamTabRsResponseList.add(secondSupportExamTabRsResponse);
+          if (secondSupportExamTabRsResponseList.stream().map(SecondSupportExamTabRsResponse::getIndicatorCategoryId).noneMatch(a -> a.equals(secondIndicatorCategoryId))) {
+            secondSupportExamTabRsResponseList.add(secondSupportExamTabRsResponse);
+          }
           firstSupportExamTabRsResponse.setChildren(secondSupportExamTabRsResponseList);
           kIndicatorCategoryIdVFirstSupportExamTabRsResponseMap.put(firstIndicatorCategoryId, firstSupportExamTabRsResponse);
         });
