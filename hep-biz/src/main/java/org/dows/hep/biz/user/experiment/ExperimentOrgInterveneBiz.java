@@ -94,6 +94,8 @@ public class ExperimentOrgInterveneBiz{
         return foodPlanBiz.pageFoodDishes(castReq);
     }
     public Page<FoodMaterialResponse> pageFoodMaterial4Expt( FindInterveneList4ExptRequest findFood ) {
+       // SnapshotRequestHolder.setSnapshotRequest(findFood.getAppId(),findFood.getExperimentInstanceId());
+
         FindFoodRequest castReq=CopyWrapper.create(FindFoodRequest::new).endFrom(findFood);
         return foodMaterialBiz.pageFoodMaterial(castReq);
     }
@@ -344,7 +346,7 @@ public class ExperimentOrgInterveneBiz{
     public SaveExptTreatResponse saveExptTreatPlan( SaveExptTreatRequest saveTreat, HttpServletRequest request){
         ExptRequestValidator validator=ExptRequestValidator.create(saveTreat);
         validator.checkExperimentPerson()
-                .checkExperimentOrgId()
+                .checkExperimentOrg()
                 .checkExperimentInstanceId()
                 .checkIndicatorFunc();
 
