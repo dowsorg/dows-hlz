@@ -63,6 +63,9 @@ public class ExperimentEventEntity implements CrudEntity {
     @Schema(title = "案例事件ID")
     private String caseEventId;
 
+    @Schema(title = "uim人物ID")
+    private String accountId;
+
     @Schema(title = "人物名称")
     private String personName;
 

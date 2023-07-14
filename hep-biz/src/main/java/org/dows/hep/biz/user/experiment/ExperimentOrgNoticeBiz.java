@@ -2,6 +2,9 @@ package org.dows.hep.biz.user.experiment;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.dows.account.api.AccountInstanceApi;
+import org.dows.account.response.AccountInstanceResponse;
 import org.dows.hep.api.enums.EnumEventActionState;
 import org.dows.hep.api.enums.EnumExperimentOrgNoticeType;
 import org.dows.hep.api.user.experiment.response.OrgNoticeResponse;
@@ -17,8 +20,7 @@ import org.dows.hep.service.ExperimentOrgNoticeService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author : wuzl
@@ -28,9 +30,12 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ExperimentOrgNoticeBiz {
 
     private final ExperimentOrgNoticeService experimentOrgNoticeService;
+
+    private final AccountInstanceApi accountInstanceApi;
     private final IdGenerator idGenerator;
 
     //region save
@@ -64,6 +69,9 @@ public class ExperimentOrgNoticeBiz {
     //region create
     //突发事件通知
     public ExperimentOrgNoticeEntity createNotice(ExperimentEventEntity src) throws JsonProcessingException {
+        return createNotice(src, new HashMap<>());
+    }
+    public ExperimentOrgNoticeEntity createNotice(ExperimentEventEntity src,Map<String,String> mapAvatar) throws JsonProcessingException {
         ExperimentEventBox eventBox = ExperimentEventBox.create(src);
         ExperimentEventJson eventData = eventBox.fromEventJsonOrDefault(false);
         ExperimentOrgNoticeEntity rst = new ExperimentOrgNoticeEntity()
@@ -72,6 +80,7 @@ public class ExperimentOrgNoticeBiz {
                 .setExperimentGroupId(src.getExperimentGroupId())
                 .setExperimentOrgId(src.getExperimentOrgId())
                 .setExperimentPersonId(src.getExperimentPersonId())
+                .setAccountId(src.getAccountId())
                 .setPersonName(src.getPersonName())
                 .setPeriods(src.getTriggeredPeriod())
                 .setGameDay(src.getTriggerGameDay())
@@ -86,7 +95,7 @@ public class ExperimentOrgNoticeBiz {
         ExperimentOrgNoticeBox.create(rst)
                 .setJsonData(createNoticeAction(eventBox))
                 .toActionsJson(true);
-        return rst;
+        return fillAvatar(mapAvatar, rst);
     }
 
     public List<ExptOrgNoticeActionVO> createNoticeAction(ExperimentEventBox src) throws JsonProcessingException {
@@ -95,6 +104,33 @@ public class ExperimentOrgNoticeBiz {
                 CopyWrapper.create(ExptOrgNoticeActionVO::new).endFrom(i).setActedFlag(0)) ;
     }
     //endregion
+
+    /**
+     * 填充人物头像
+     * @param src
+     * @return
+     */
+    public ExperimentOrgNoticeEntity fillAvatar(Map<String,String> mapAvatar, ExperimentOrgNoticeEntity src){
+        try {
+            final String accountId=src.getAccountId();
+            if (ShareUtil.XObject.isEmpty(accountId)) {
+                return src;
+            }
+            String avatar=mapAvatar.get(accountId);
+            if(ShareUtil.XObject.isEmpty(avatar)){
+                avatar= Optional.ofNullable(accountInstanceApi.getAccountInstanceByAccountId(src.getAccountId()))
+                        .map(AccountInstanceResponse::getAvatar)
+                        .orElse(null);
+                if(ShareUtil.XObject.notEmpty(avatar)){
+                    mapAvatar.put(accountId,avatar);
+                }
+            }
+            src.setAvatar(avatar);
+        }catch (Exception ex){
+            log.error(String.format("ExperimentOrgNoticeBiz.fillAvatar accountId:%s",src.getAccountId()),ex);
+        }
+        return src;
+    }
 
     //region response
     public OrgNoticeResponse CreateOrgNoticeResponse(ExperimentOrgNoticeEntity notice) throws JsonProcessingException{

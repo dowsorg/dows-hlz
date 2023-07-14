@@ -35,7 +35,7 @@ public class ExperimentIndicatorInstanceRsRest {
     experimentIndicatorInstanceRsBiz.changeMoney(rsChangeMoneyRequest);
   }
 
-  @Operation(summary = "实验人物年龄段统计")
+  @Operation(summary = "实验体检人次统计")
   @PostMapping("v1/experimentIndicator/ageRate/stat")
   public List<EchartsDataResonse> statAgeRate(@RequestBody ExperimentIndicatorInstanceRequest experimentIndicatorInstanceRequest) {
     return experimentIndicatorInstanceRsBiz.statAgeRate(experimentIndicatorInstanceRequest);

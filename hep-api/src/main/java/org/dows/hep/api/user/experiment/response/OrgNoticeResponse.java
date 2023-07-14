@@ -29,6 +29,9 @@ public class OrgNoticeResponse{
     @Schema(title = "人物名称")
     private String personName;
 
+    @Schema(title = "人物头像")
+    private String avatar;
+
     @Schema(title = "期数")
     private Integer periods;
 

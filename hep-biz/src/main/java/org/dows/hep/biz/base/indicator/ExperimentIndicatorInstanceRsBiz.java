@@ -98,7 +98,7 @@ public class ExperimentIndicatorInstanceRsBiz {
     /**
      * @param
      * @return
-     * @说明: 实验人物年龄段统计
+     * @说明: 实验体检人次统计
      * @关联表: experiment_indicator_instance、case_indicator_instance、case_indicator_rule、experiment_person
      * @工时: 3H
      * @开发者: jx

@@ -92,6 +92,8 @@ public class EventBiz{
             return false;
         }
         final String appId=saveEventCateg.get(0).getAppId();
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(appId))
+                .throwMessage("appId不可为空");
         final String pid=saveEventCateg.get(0).getCategPid();
         CategVO parent = ShareUtil.XObject.defaultIfNull(getCategCache().getById(appId, pid),new CategVO());
         AssertUtil.trueThenThrow(ShareUtil.XString.hasLength(pid) && ShareUtil.XObject.isEmpty(parent.getCategIdPath()))

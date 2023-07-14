@@ -2,11 +2,14 @@ package org.dows.hep.biz.snapshot.writers;
 
 import org.dows.hep.biz.snapshot.BaseSnapshotFullTableWriter;
 import org.dows.hep.biz.snapshot.EnumSnapshotType;
+import org.dows.hep.biz.snapshot.SnapshotRequest;
 import org.dows.hep.entity.CaseIndicatorInstanceEntity;
 import org.dows.hep.entity.snapshot.SnapCaseIndicatorInstanceEntity;
 import org.dows.hep.service.CaseIndicatorInstanceService;
 import org.dows.hep.service.snapshot.SnapCaseIndicatorInstanceService;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * @author : wuzl
@@ -16,5 +19,10 @@ import org.springframework.stereotype.Service;
 public class SnapCaseIndicatorInstanceWriter extends BaseSnapshotFullTableWriter<CaseIndicatorInstanceEntity, CaseIndicatorInstanceService, SnapCaseIndicatorInstanceEntity, SnapCaseIndicatorInstanceService> {
     public SnapCaseIndicatorInstanceWriter() {
         super(EnumSnapshotType.CASEIndicatorInstance, SnapCaseIndicatorInstanceEntity::new);
+    }
+
+    @Override
+    public List<CaseIndicatorInstanceEntity> readSource(SnapshotRequest req) {
+        return null;
     }
 }

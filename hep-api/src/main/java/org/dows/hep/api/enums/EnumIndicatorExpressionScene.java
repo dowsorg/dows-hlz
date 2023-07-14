@@ -15,6 +15,7 @@ import java.util.Objects;
 public enum EnumIndicatorExpressionScene {
   PHYSICAL_EXAM(3, "体格检查"),
   SUPPORT_EXAM(4, "辅助检查"),
+  RISK_MODEL(5, "死亡模型"),
   ;
 
   private final Integer scene;
