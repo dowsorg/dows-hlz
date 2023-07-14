@@ -87,7 +87,9 @@ public class ExperimentIndicatorJudgeHealthProblemRsBiz {
           if (Objects.isNull(secondHealthProblemTabRsResponseList)) {
             secondHealthProblemTabRsResponseList = new ArrayList<>();
           }
-          secondHealthProblemTabRsResponseList.add(secondHealthProblemTabRsResponse);
+          if (secondHealthProblemTabRsResponseList.stream().map(SecondHealthProblemTabRsResponse::getIndicatorCategoryId).noneMatch(a -> a.equals(secondIndicatorCategoryId))) {
+            secondHealthProblemTabRsResponseList.add(secondHealthProblemTabRsResponse);
+          }
           firstHealthProblemTabRsResponse.setChildren(secondHealthProblemTabRsResponseList);
           kIndicatorCategoryIdVFirstHealthProblemTabRsResponseMap.put(firstIndicatorCategoryId, firstHealthProblemTabRsResponse);
         });

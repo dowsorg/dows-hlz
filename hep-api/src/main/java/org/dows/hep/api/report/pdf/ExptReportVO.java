@@ -29,6 +29,9 @@ public class ExptReportVO {
     @Schema(title = "压缩包路径")
     private String zipPath;
 
+    @Schema(title = "压缩名")
+    private String zipName;
+
     public static ExptReportVO emptyVO() {
         return ExptReportVO.builder()
                 .groupReportList(new ArrayList<>())

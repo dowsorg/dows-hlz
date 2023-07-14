@@ -92,6 +92,10 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
         if(ShareUtil.XObject.isEmpty(eventColl.getEventGroups()) ){
             logInfo("call", "emptyEvents");
             TimeBasedEventCache.Instance().caffineCache().invalidate(experimentKey);
+            //debug
+            if(experimentKey.equals("356157388262346752")){
+                raiseScheduler(DELAYSeconds4Pause);
+            }
             return RUNCode4Silence;
         }
         LocalDateTime dtNow=LocalDateTime.now();
@@ -101,11 +105,16 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
             raiseScheduler(DELAYSeconds4Fail);
             return RUNCode4Fail;
         }
-        /*if(timePoint.getGameState()==EnumExperimentState.FINISH){
-            logInfo("call", "finishedExperiment");
-            return RUNCode4Silence;
+        //debug
+        if(experimentKey.equals("356157388262346752")){
+
+        }else {
+            if (timePoint.getGameState() == EnumExperimentState.FINISH) {
+                logInfo("call", "finishedExperiment");
+                return RUNCode4Silence;
+            }
         }
-        */
+
         exptColl.setPauseSeconds(timePoint.getCntPauseSeconds());
         eventColl.setNextTriggerTime(calcTriggeringTime(dtNow, exptColl,eventColl));
         List<List<TimeBasedEventCollection.TimeBasedEventGroup>> groups=eventColl.splitGroups(CONCURRENTNum);
@@ -147,11 +156,19 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
                 ExperimentEventRules.Instance().saveTriggeredTimeEvent(triggeredEvents,true);
                 runStat.doneCounter.addAndGet(triggeredEvents.size());
             } catch (Exception ex) {
-                groups.forEach(i -> i.setTriggeredTime(null).setTriggeredPeriod(null));
-                logError(ex, "runEventGroup fail.", "eventIds:%s",
-                        String.join(",",ShareUtil.XCollection.map(triggeredEvents,ExperimentEventEntity::getExperimentEventId)));
+                groups.forEach(i -> {
+                    if (i.getRetryTimes().incrementAndGet() <= 3) {
+                        i.setTriggeredTime(null).setTriggeredPeriod(null);
+                    } else {
+                        eventColl.removeGroup(i);
+                        logError("runEventGroup maxRetry.", "eventIds:%s",
+                                String.join(",", ShareUtil.XCollection.map(i.getEventItems(), ExperimentEventEntity::getExperimentEventId)));
+                    }
+                });
+               logError(ex, "runEventGroup fail.", "eventIds:%s",
+                        String.join(",", ShareUtil.XCollection.map(triggeredEvents, ExperimentEventEntity::getExperimentEventId)));
                 runStat.failTheadCounter.incrementAndGet();
-                exceptionFlag=true;
+                exceptionFlag = true;
             }
         }
         if(!exceptionFlag) {

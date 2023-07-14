@@ -81,7 +81,7 @@ public class OSSBiz {
         try {
             base64 = DatatypeConverter.printBase64Binary(Files.readAllBytes(Paths.get(file)));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return "";
         }
         return base64;
     }
