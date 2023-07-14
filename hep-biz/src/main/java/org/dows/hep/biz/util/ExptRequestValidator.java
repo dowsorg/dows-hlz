@@ -328,7 +328,7 @@ public class ExptRequestValidator {
                 IndicatorFuncEntity::getName);
     }
     public IndicatorFuncEntity getIndicatorFunc(SFunction<IndicatorFuncEntity,?>... cols){
-        checkIndicatorFunc();
+        checkIndicatorFuncId();
         if(null== cachedExptOrgFunc){
             cachedExptOrgFunc =CrudContextHolder.getBean(IndicatorFuncService.class)
                     .lambdaQuery()
