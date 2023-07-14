@@ -8,6 +8,7 @@ import jakarta.xml.bind.DatatypeConverter;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.oss.api.OssInfo;
 import org.dows.framework.oss.api.S3OssClient;
+import org.dows.framework.oss.minio.MinioOssClient;
 import org.dows.hep.entity.MaterialsAttachmentEntity;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +25,9 @@ import java.util.List;
 public class OSSBiz {
 
     private final S3OssClient ossClient;
+
+    // 直接使用minio
+    private final MinioOssClient minioOssClient;
 
     public OssInfo upload(InputStream is, String fileName) {
         OssInfo info = ossClient.upLoad(is, fileName, false);
