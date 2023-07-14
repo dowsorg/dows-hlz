@@ -25,7 +25,7 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 //@Component
-public class ExperimentEndTimerTask implements Runnable {
+public class ExperimentFinishTask implements Runnable {
     // 实验实例
     private final ExperimentInstanceService experimentInstanceService;
     // 实验参与者

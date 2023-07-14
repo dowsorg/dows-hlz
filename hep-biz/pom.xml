@@ -23,6 +23,11 @@
             <groupId>org.dows.saas</groupId>
             <artifactId>hep-crud</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.dows.saas</groupId>
+            <artifactId>hep-websocket</artifactId>
+        </dependency>
+
         <!--uim包-->
         <dependency>
             <groupId>org.dows.cloud</groupId>
@@ -63,13 +68,13 @@
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>html2pdf</artifactId>
-            <version>4.0.2</version>
         </dependency>
 
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
         </dependency>
+
 
     </dependencies>
 

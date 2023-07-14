@@ -126,7 +126,32 @@ public class HepClientManager {
      *
      * @param message
      */
-    public static void broadcastMess(int uid, String nick, String room, String message) {
+    public static void broadcastMsg(int uid, String nick, String room, String message) {
+        if (!StrUtil.isBlank(message)) {
+            try {
+                rwLock.readLock().lock();
+                Set<Channel> keySet = ONLINE_ACCOUNT.get(room).keySet();
+                for (Channel ch : keySet) {
+                    AccountInfo accountInfo = ONLINE_ACCOUNT.get(room).get(ch);
+                    if (accountInfo == null || !accountInfo.getAuth()) {
+                        continue;
+                    }
+                    ch.writeAndFlush(new TextWebSocketFrame(MessageProto.buildMessProto(uid, nick, message)));
+                }
+            } finally {
+                rwLock.readLock().unlock();
+            }
+        }
+    }
+
+    /**
+     * 广播事件消息
+     * @param uid
+     * @param nick
+     * @param room
+     * @param message
+     */
+    public static void broadcastEventMsg(int uid, String nick, String room, String message) {
         if (!StrUtil.isBlank(message)) {
             try {
                 rwLock.readLock().lock();
@@ -147,7 +172,7 @@ public class HepClientManager {
     /**
      * 广播系统消息
      */
-    public static void broadCastInfo(int code, Object mess) {
+    public static void broadcastSysMsg(int code, Object mess) {
         try {
             rwLock.readLock().lock();
             // 获取所有的通道发送数据
@@ -171,7 +196,7 @@ public class HepClientManager {
     /**
      * 广播系统消息
      */
-    public static void broadCastInfo(int code, String room, Object mess) {
+    public static void broadcastSysMsg(int code, String room, Object mess) {
         try {
             rwLock.readLock().lock();
             // 获取所有的通道发送数据

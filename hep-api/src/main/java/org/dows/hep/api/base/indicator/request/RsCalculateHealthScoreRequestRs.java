@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Set;
 
 /**
  * @author runsix
@@ -23,6 +23,9 @@ public class RsCalculateHealthScoreRequestRs implements Serializable {
   @Schema(title = "实验id")
   private String experimentId;
 
+  @Schema(title = "期数")
+  private Integer periods;
+
   @Schema(title = "实验人物id")
-  private List<String> experimentPersonIdList;
+  private Set<String> experimentPersonIdSet;
 }

@@ -10,8 +10,8 @@ import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
 import org.dows.hep.biz.event.EventScheduler;
-import org.dows.hep.biz.task.ExperimentEndTimerTask;
-import org.dows.hep.biz.task.ExperimentPeroidTimerTask;
+import org.dows.hep.biz.task.ExperimentFinishTask;
+import org.dows.hep.biz.task.ExperimentCalcTask;
 import org.dows.hep.entity.ExperimentTimerEntity;
 import org.dows.hep.websocket.HepClientManager;
 import org.dows.hep.websocket.proto.MessageCode;
@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class StartHandler extends AbstractEventHandler implements EventHandler<ExperimentRestartRequest> {
+public class ExperimentStartHandler extends AbstractEventHandler implements EventHandler<ExperimentRestartRequest> {
 
 
     @Override
@@ -163,23 +163,23 @@ public class StartHandler extends AbstractEventHandler implements EventHandler<E
         ExperimentTimerEntity lastPeriods = experimentTimerBiz
                 .getLastPeriods(experimentRestartRequest.getExperimentInstanceId(), EnumExperimentState.FINISH);
 
-        ExperimentEndTimerTask experimentEndTimerTask = new ExperimentEndTimerTask(experimentInstanceService,
+        ExperimentFinishTask experimentFinishTask = new ExperimentFinishTask(experimentInstanceService,
                 experimentParticipatorService, experimentTimerService, experimentScoreCalculator,
                 experimentRestartRequest.getExperimentInstanceId());
 
-        experimentTaskScheduler.schedule(experimentEndTimerTask, DateUtil.date(lastPeriods.getEndTime()));
+        taskScheduler.schedule(experimentFinishTask, DateUtil.date(lastPeriods.getEndTime()));
         /**
          * 每小组重设每期结束任务
          */
         for (ExperimentGroupResponse experimentGroupRespons : experimentGroupResponses) {
             for (ExperimentTimerEntity updateExperimentTimerEntity : updateExperimentTimerEntities) {
-                ExperimentPeroidTimerTask experimentPeroidTimerTask = new ExperimentPeroidTimerTask(
+                ExperimentCalcTask experimentCalcTask = new ExperimentCalcTask(
                         experimentTimerBiz,
                         experimentScoreCalculator,
                         experimentRestartRequest.getExperimentInstanceId(),
                         experimentGroupRespons.getExperimentGroupId(),
                         updateExperimentTimerEntity.getPeriod());
-                experimentTaskScheduler.schedule(experimentPeroidTimerTask, DateUtil.date(updateExperimentTimerEntity.getEndTime()));
+                taskScheduler.schedule(experimentCalcTask, DateUtil.date(updateExperimentTimerEntity.getEndTime()));
             }
         }
     }

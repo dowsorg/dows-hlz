@@ -59,7 +59,7 @@ public class ExperimentCaseInfoBiz {
      * @return
      */
     public ExptCaseNoticeDTO getNotice(String experimentInstanceId) {
-        ExperimentPeriodsResonse experimentPeriods = experimentTimerBiz.getExperimentPeriods(baseBiz.getAppId(), experimentInstanceId);
+        ExperimentPeriodsResonse experimentPeriods = experimentTimerBiz.getExperimentCurrentPeriods(baseBiz.getAppId(), experimentInstanceId);
         Integer currentPeriod = Optional.ofNullable(experimentPeriods)
                 .map(ExperimentPeriodsResonse::getCurrentPeriod)
                 .orElseThrow(() -> new BizException(ExperimentESCEnum.PERIOD_NON_NULL));

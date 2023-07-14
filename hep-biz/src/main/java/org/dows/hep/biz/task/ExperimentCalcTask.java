@@ -10,11 +10,12 @@ import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import java.util.List;
 
 /**
+ * 实验计算任务
  * ranking 排行/分数计算任务
  */
 @Slf4j
 @RequiredArgsConstructor
-public class ExperimentPeroidTimerTask implements Runnable {
+public class ExperimentCalcTask implements Runnable {
 
     // 计时器
     private final ExperimentTimerBiz experimentTimerBiz;

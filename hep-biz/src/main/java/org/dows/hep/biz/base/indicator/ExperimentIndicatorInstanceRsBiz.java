@@ -66,7 +66,7 @@ public class ExperimentIndicatorInstanceRsBiz {
         Integer periods = rsChangeMoneyRequest.getPeriods();
         BigDecimal moneyChange = rsChangeMoneyRequest.getMoneyChange();
         if (Objects.isNull(periods)) {
-            ExperimentPeriodsResonse experimentPeriods = experimentTimerBiz.getExperimentPeriods(appId, experimentId);
+            ExperimentPeriodsResonse experimentPeriods = experimentTimerBiz.getExperimentCurrentPeriods(appId, experimentId);
             if (Objects.nonNull(experimentPeriods) && Objects.nonNull(experimentPeriods.getCurrentPeriod())) {
                 periods = experimentPeriods.getCurrentPeriod();
             } else {

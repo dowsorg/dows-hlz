@@ -12,6 +12,8 @@ import org.dows.hep.biz.base.indicator.RsCalculateBiz;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.concurrent.ExecutionException;
+
 /**
  * @author runsix
  */
@@ -22,21 +24,15 @@ public class RsCalculateRest {
   private final RsCalculateBiz rsCalculateBiz;
 
   @Operation(summary = "计算健康指数")
-  @PostMapping("v1/experimentIndicator/healthScoreDev/calculate")
-  public void rsCalculateHealthScoreDev(RsCalculateHealthScoreRequestRs rsCalculateHealthScoreRequestRs) {
-    rsCalculateBiz.rsCalculateHealthPointDev(rsCalculateHealthScoreRequestRs);
+  @PostMapping("v1/experimentIndicator/healthScore/calculate")
+  public void rsCalculateHealthScore(RsCalculateHealthScoreRequestRs rsCalculateHealthScoreRequestRs) throws ExecutionException, InterruptedException {
+    rsCalculateBiz.rsCalculateHealthScore(rsCalculateHealthScoreRequestRs);
   }
 
   @Operation(summary = "计算医疗占比")
   @PostMapping("v1/experimentIndicator/moneyScore/calculate")
   public RsCalculateMoneyScoreRsResponse rsCalculateMoneyScore(RsCalculateMoneyScoreRequestRs rsCalculateMoneyScoreRequestRs) {
     return rsCalculateBiz.rsCalculateMoneyScore(rsCalculateMoneyScoreRequestRs);
-  }
-
-  @Operation(summary = "计算健康指数")
-  @PostMapping("v1/experimentIndicator/healthScore/calculate")
-  public void rsCalculateHealthScore(RsCalculateHealthScoreRequestRs rsCalculateHealthScoreRequestRs) {
-    rsCalculateBiz.rsCalculateHealthScore();
   }
 
   @Operation(summary = "计算出实验小组的竞争性得分")

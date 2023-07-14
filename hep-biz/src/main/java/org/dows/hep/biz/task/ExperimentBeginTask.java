@@ -26,7 +26,7 @@ import java.util.Date;
 @Slf4j
 @RequiredArgsConstructor
 //@Component
-public class ExperimentBeginTimerTask implements Runnable {
+public class ExperimentBeginTask implements Runnable {
     // 实验实例
     private final ExperimentInstanceService experimentInstanceService;
     // 实验参与者

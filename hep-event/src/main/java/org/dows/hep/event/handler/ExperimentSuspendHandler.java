@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class SuspendHandler extends AbstractEventHandler implements EventHandler<ExperimentRestartRequest> {
+public class ExperimentSuspendHandler extends AbstractEventHandler implements EventHandler<ExperimentRestartRequest> {
 
 
     @Override
@@ -124,7 +124,7 @@ public class SuspendHandler extends AbstractEventHandler implements EventHandler
             }
         }
         // 重置定时任务
-        experimentTaskScheduler.resetSchedule();
+        taskScheduler.resetSchedule();
 
     }
 }
