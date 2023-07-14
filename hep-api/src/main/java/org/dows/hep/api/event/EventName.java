@@ -3,10 +3,10 @@ package org.dows.hep.api.event;
 import lombok.Getter;
 
 public enum EventName {
-    startEvent("startHandler"),
-    finishEvent("finishHandler"),
-    suspendEvent("suspendHandler"),
-    allotEvent("allotHandler"),
+    startEvent("experimentStartHandler"),
+    finishEvent("experimentFinishHandler"),
+    suspendEvent("experimentSuspendHandler"),
+//    allotEvent("allotHandler"),
     experimentInitEvent("experimentInitHandler"),
     exptQuestionnaireAllotEvent("exptQuestionnaireAllotHandler"),
     exptQuestionnaireSubmittedEvent("exptQuestionnaireSubmittedHandler"),
