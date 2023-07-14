@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class AppRestartListener implements ApplicationListener<ApplicationStartedEvent> {
+public class ApplicationRestartedListener implements ApplicationListener<ApplicationStartedEvent> {
     private final ExperimentTaskScheduleService experimentTaskScheduleService;
 
     @Override
