@@ -6,8 +6,6 @@ import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.event.ExperimentEvent;
 import org.dows.hep.event.handler.EventHandler;
 import org.springframework.context.ApplicationListener;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -16,7 +14,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Component
 //@EnableAsync
-public class EventListener implements ApplicationListener<ExperimentEvent> {
+public class ExperimentEventListener implements ApplicationListener<ExperimentEvent> {
 
     private final Map<String, EventHandler> eventHandlerMap;
 
