@@ -1,19 +1,21 @@
 package org.dows.hep.biz.noticer;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.notify.NoticeParams;
 import org.dows.hep.api.notify.Notifiable;
+import org.springframework.stereotype.Component;
 
 /**
  * 期数结束消息通知器
  */
-public class PeriodEndNoticer implements Notifiable {
-    @Override
-    public String genMsg(NoticeParams noticeParams) {
-        return null;
-    }
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class PeriodEndNoticer extends AbstractPeriodNoticer implements Notifiable {
 
     @Override
-    public void notice() {
-
+    public void notice(NoticeParams noticeParams) {
+        doNotice(noticeParams);
     }
 }

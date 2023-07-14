@@ -1,5 +1,6 @@
 package org.dows.hep.api.notify;
 
+import lombok.Builder;
 import lombok.Data;
 import org.dows.hep.api.enums.EnumNoticeType;
 
@@ -10,6 +11,7 @@ import java.util.List;
  * 通知参数
  */
 @Data
+@Builder
 public class NoticeParams {
     // 待通知的用户列表
     private List<String> accountId;

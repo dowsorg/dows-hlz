@@ -1,7 +1,9 @@
 package org.dows.hep.api.notify;
 
 public interface Notifiable {
-    String genMsg(NoticeParams noticeParams);
+    //String genMsg(NoticeParams noticeParams);
 
-    void notice();
+    default void notice(NoticeParams noticeParams) {
+
+    }
 }

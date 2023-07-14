@@ -1,17 +1,20 @@
 package org.dows.hep.event.handler;
 
+import cn.hutool.core.date.DateUtil;
 import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.Response;
 import org.dows.framework.api.uim.AccountInfo;
+import org.dows.hep.api.enums.EnumNoticeType;
 import org.dows.hep.api.enums.EnumWebSocketType;
-import org.dows.hep.api.notify.Notifiable;
 import org.dows.hep.api.notify.NoticeParams;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentParticipatorRequest;
 import org.dows.hep.api.user.experiment.request.ExptQuestionnaireAllotRequest;
 import org.dows.hep.api.user.experiment.response.StartCutdownResponse;
+import org.dows.hep.biz.noticer.PeriodEndNoticer;
+import org.dows.hep.biz.noticer.PeriodStartNoticer;
 import org.dows.hep.biz.task.ExperimentNoticeTask;
 import org.dows.hep.biz.user.experiment.ExperimentQuestionnaireBiz;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
@@ -21,7 +24,6 @@ import org.dows.hep.websocket.HepClientManager;
 import org.dows.hep.websocket.proto.MessageCode;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 
@@ -36,7 +38,8 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
     private final ExperimentParticipatorService experimentParticipatorService;
     private final ExperimentQuestionnaireBiz experimentQuestionnaireBiz;
     private final ExperimentStartHandler experimentStartHandler;
-    private final List<Notifiable> notifiables;
+    private final PeriodStartNoticer periodStartNoticer;
+    private final PeriodEndNoticer periodEndNoticer;
 
 
     /**
@@ -77,21 +80,24 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
 
         Map<Integer, ExperimentTimerEntity> experimentPeriodsStartAnsEndTime =
                 experimentTimerBiz.getExperimentPeriodsStartAnsEndTime(experimentInstanceId);
-
+        int periods = experimentPeriodsStartAnsEndTime.size();
         experimentPeriodsStartAnsEndTime.forEach((k, v) -> {
-            Long startTime = v.getStartTime();
-            Long endTime = v.getEndTime();
-            // 期数绑定的通知列表
-            for (Notifiable notifiable : notifiables) {
+            NoticeParams noticeParams = NoticeParams.builder()
+                    .experimentInstanceId(experimentInstanceId)
+                    .experimentGroupId(experimentGroupId)
+                    .startTime(DateUtil.date(v.getStartTime()))
+                    .endTime(DateUtil.date(v.getEndTime()))
+                    .currentPeriod(v.getPeriod())
+                    .periods(periods)
+                    .noticeType(EnumNoticeType.BoardCastSysEvent)
+                    .build();
+            // 期数开始通知任务
+            ExperimentNoticeTask experimentPeriodStartNoticeTask = new ExperimentNoticeTask(periodStartNoticer, noticeParams);
+            taskScheduler.schedule(experimentPeriodStartNoticeTask, new Date(v.getStartTime()));
+            // 期数结束通知任务
+            ExperimentNoticeTask experimentPeriodEndNoticeTask = new ExperimentNoticeTask(periodEndNoticer, noticeParams);
+            taskScheduler.schedule(experimentPeriodEndNoticeTask, new Date(v.getEndTime()));
 
-                NoticeParams noticeParams = new NoticeParams();
-                noticeParams.setExperimentInstanceId(experimentInstanceId);
-                noticeParams.setExperimentGroupId(experimentGroupId);
-                //noticeParams.setAccountId();
-                ExperimentNoticeTask experimentNoticeTask = new ExperimentNoticeTask(notifiable, noticeParams);
-                taskScheduler.schedule(experimentNoticeTask, new Date(startTime));
-                //taskScheduler.schedule(experimentNoticeTask, new Date(endTime));
-            }
         });
     }
 
