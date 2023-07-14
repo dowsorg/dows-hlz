@@ -331,20 +331,18 @@ public class ExptSchemeReportBiz implements ExptReportBiz {
         // 替换值并打印
         for (Element imgTag : imgTags) {
             String src = imgTag.attr("src");
-            src = src.replace("/hepapi/", "");
-            imgTag.attr("src", ossBiz.getBase64(src));
+            imgTag.attr("src", getBase64(src));
         }
 
         // 返回替换后的文本
         return doc.body().html();
     }
-//
-//    private String getBase64(String pathName) {
-//        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-//        ossBiz.downloadByPath(outputStream, pathName);
-//        byte[] byteArray = outputStream.toByteArray();
-//        return Base64.encodeBytes(byteArray);
-//    }
+
+    private String getBase64(String src) {
+        String fileName = src.replace("/hepapi/", "");
+        String base64 = ossBiz.getBase64(fileName);
+        return "data:image/jpeg;base64," + base64;
+    }
 
     private File getTempFile(String exptGroupId, ExperimentReportData experimentReportData) {
         ExperimentInstanceEntity exptInfo = experimentReportData.getExptInfo();

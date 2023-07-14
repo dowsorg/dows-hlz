@@ -43,7 +43,7 @@ public class ExptReportPdfRest {
     private final ExptSchemeReportBiz exptSchemeReportBiz;
     private final ExptSandReportBiz exptSandReportBiz;
     private final ExptOverviewReportBiz exptOverviewReportBiz;
-
+    private final OSSReportBiz ossReportBiz;
 
     @Operation(summary = "导出小组实验pdf报告")
     @GetMapping(value = "/v1/report/pdf/exportGroupReport")
@@ -79,8 +79,8 @@ public class ExptReportPdfRest {
 
     @Operation(summary = "导出实验pdf报告")
     @GetMapping(value = "/v1/report/pdf/exportExptReport")
-    public ExptReportVO exportExptReport(@RequestParam String experimentInstanceId) {
-        // 获取实验信息
+    public ExptReportVO exportExptReport(@RequestParam String experimentInstanceId) throws InterruptedException {
+        // check
         ExperimentInstanceEntity exptEntity = checkExpt(experimentInstanceId);
 
         String fileName = exptEntity.getId() + SystemConstant.SPLIT_UNDER_LINE + exptEntity.getExperimentName() + SystemConstant.SUFFIX_ZIP;
