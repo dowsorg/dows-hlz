@@ -83,12 +83,14 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
             Long endTime = v.getEndTime();
             // 期数绑定的通知列表
             for (Notifiable notifiable : notifiables) {
+
                 NoticeParams noticeParams = new NoticeParams();
                 noticeParams.setExperimentInstanceId(experimentInstanceId);
                 noticeParams.setExperimentGroupId(experimentGroupId);
                 //noticeParams.setAccountId();
                 ExperimentNoticeTask experimentNoticeTask = new ExperimentNoticeTask(notifiable, noticeParams);
-                //taskScheduler.schedule(experimentNoticeTask, new Date());
+                taskScheduler.schedule(experimentNoticeTask, new Date(startTime));
+                //taskScheduler.schedule(experimentNoticeTask, new Date(endTime));
             }
         });
     }
