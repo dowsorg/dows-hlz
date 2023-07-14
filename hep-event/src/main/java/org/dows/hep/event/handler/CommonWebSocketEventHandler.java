@@ -30,34 +30,39 @@ public class CommonWebSocketEventHandler<T> extends AbstractEventHandler impleme
     }
 
     public static <T> int sendWebSocketData(CommonWebSocketEventSource<T> src){
-        if(ShareUtil.XObject.isEmpty(src)){
-            return -1;
-        }
-        if(ShareUtil.XObject.anyEmpty(src.getExperimentInstanceId(),src.getClientIds())){
-            return -1;
-        }
-        ConcurrentMap<Channel, AccountInfo> clients= HepClientManager.getUserInfosByExperimentId(src.getExperimentInstanceId());
-        if(ShareUtil.XObject.isEmpty(clients)){
-            return -1;
-        }
-        WsMessageResponse wsMsg= WsMessageResponse.builder()
-                .type(src.getSocketType())
-                .data(src.getData())
-                .build();
-        Response<WsMessageResponse> wsPack=Response.ok(wsMsg);
-        final Set<String> clientIds=src.getClientIds();
-        Set<String> sended=new HashSet<>();
-        for(Map.Entry<Channel, AccountInfo> item : clients.entrySet()){
-            if(!clientIds.contains(item.getValue().getAccountName())){
-                continue;
+        try {
+            if (ShareUtil.XObject.isEmpty(src)) {
+                return -1;
             }
-            sended.add(item.getValue().getAccountName());
-            HepClientManager.sendInfo(item.getKey(), MessageCode.MESS_CODE, wsPack);
+            if (ShareUtil.XObject.anyEmpty(src.getExperimentInstanceId(), src.getClientIds())) {
+                return -1;
+            }
+            ConcurrentMap<Channel, AccountInfo> clients = HepClientManager.getUserInfosByExperimentId(src.getExperimentInstanceId());
+            if (ShareUtil.XObject.isEmpty(clients)) {
+                return -1;
+            }
+            WsMessageResponse wsMsg = WsMessageResponse.builder()
+                    .type(src.getSocketType())
+                    .data(src.getData())
+                    .build();
+            Response<WsMessageResponse> wsPack = Response.ok(wsMsg);
+            final Set<String> clientIds = src.getClientIds();
+            Set<String> sended = new HashSet<>();
+            for (Map.Entry<Channel, AccountInfo> item : clients.entrySet()) {
+                if (!clientIds.contains(item.getValue().getAccountName())) {
+                    continue;
+                }
+                sended.add(item.getValue().getAccountName());
+                HepClientManager.sendInfo(item.getKey(), MessageCode.MESS_CODE, wsPack);
 
+            }
+            log.info(String.format("CommonWebSocketEventHandler.sendWebSocketData total:%s sended:%s sendedIds:%s",
+                    clientIds.size(), sended.size(), String.join(",", sended)));
+            return sended.size();
+        }catch (Exception ex){
+            log.error("CommonWebSocketEventHandler.sendWebSocketData fail.",ex);
+            return -1;
         }
-        log.info(String.format("CommonWebSocketEventHandler.sendWebSocketData total:%s sended:%s sendedIds:%",
-                clientIds.size(),sended.size(),String.join(",", sended)));
-        return sended.size();
 
     }
 }
