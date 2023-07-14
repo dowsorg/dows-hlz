@@ -12,6 +12,7 @@ import org.dows.hep.api.user.experiment.ExptSettingModeEnum;
 import org.dows.hep.biz.report.pdf.ExptOverviewReportBiz;
 import org.dows.hep.biz.report.pdf.ExptSandReportBiz;
 import org.dows.hep.biz.report.pdf.ExptSchemeReportBiz;
+import org.dows.hep.biz.report.pdf.OSSReportBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.service.ExperimentInstanceService;
@@ -21,15 +22,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 /**
  * @author fhb
@@ -55,14 +50,18 @@ public class ExptReportPdfRest {
     public ExptReportVO exportGroupReport(@RequestParam String experimentInstanceId, @RequestParam String experimentGroupId) {
         // 获取实验信息
         ExperimentInstanceEntity exptEntity = checkExpt(experimentInstanceId);
-        String zipPath = SystemConstant.PDF_REPORT_PATH + exptEntity.getId() + SystemConstant.SPLIT_UNDER_LINE + exptEntity.getExperimentName() + SystemConstant.SPLIT_UNDER_LINE + experimentGroupId + SystemConstant.SUFFIX_ZIP;
+
+        String fileName = exptEntity.getId() + SystemConstant.SPLIT_UNDER_LINE + exptEntity.getExperimentName() + SystemConstant.SPLIT_UNDER_LINE + experimentGroupId + SystemConstant.SUFFIX_ZIP;
+        String zipPath = SystemConstant.PDF_REPORT_TMP_PATH + fileName;
 
         /*todo 分布式锁*/
         RLock lock = redissonClient.getLock(RedisKeyConst.HM_LOCK_REPORT + experimentGroupId);
         try {
             if (lock.tryLock(-1, 10, TimeUnit.SECONDS)) {
                 ExptReportVO exptReportVO = generatePdf(experimentInstanceId, experimentGroupId);
-                toZip(exptReportVO, zipPath);
+                exptReportVO.setZipPath(zipPath);
+                exptReportVO.setZipName(fileName);
+                ossReportBiz.upload(exptReportVO);
                 return exptReportVO;
             } else {
                 throw new BizException("报告生成中");
@@ -83,22 +82,18 @@ public class ExptReportPdfRest {
     public ExptReportVO exportExptReport(@RequestParam String experimentInstanceId) {
         // 获取实验信息
         ExperimentInstanceEntity exptEntity = checkExpt(experimentInstanceId);
-        String zipPath = SystemConstant.PDF_REPORT_PATH + exptEntity.getId() + SystemConstant.SPLIT_UNDER_LINE + exptEntity.getExperimentName() + SystemConstant.SUFFIX_ZIP;
-        // 如果已经存在直接返回
-        File zipFile = new File(zipPath);
-        if (zipFile.exists()) {
-            return ExptReportVO.builder()
-                    .zipPath(zipPath)
-                    .groupReportList(new ArrayList<>())
-                    .build();
-        }
+
+        String fileName = exptEntity.getId() + SystemConstant.SPLIT_UNDER_LINE + exptEntity.getExperimentName() + SystemConstant.SUFFIX_ZIP;
+        String zipPath = SystemConstant.PDF_REPORT_TMP_PATH + fileName;
 
         /*todo 分布式锁*/
         RLock lock = redissonClient.getLock(RedisKeyConst.HM_LOCK_REPORT + experimentInstanceId);
         try {
             if (lock.tryLock(-1, 30, TimeUnit.SECONDS)) {
                 ExptReportVO exptReportVO = generatePdf(experimentInstanceId, null);
-                toZip(exptReportVO, zipPath);
+                exptReportVO.setZipPath(zipPath);
+                exptReportVO.setZipName(fileName);
+                ossReportBiz.upload(exptReportVO);
                 return exptReportVO;
             } else {
                 throw new BizException("报告生成中");
@@ -157,44 +152,5 @@ public class ExptReportPdfRest {
         }
 
         return result;
-    }
-
-    private void toZip(ExptReportVO reportVO, String zipPath) {
-        byte[] buf = new byte[1024];
-        ZipOutputStream zos = null;
-        try {
-            FileOutputStream out = new FileOutputStream(zipPath);
-            zos = new ZipOutputStream(out);
-
-            List<ExptGroupReportVO> groupReportList = reportVO.getGroupReportList();
-            for (ExptGroupReportVO groupReportVO : groupReportList) {
-                Integer exptGroupNo = groupReportVO.getExptGroupNo();
-                List<String> paths = groupReportVO.getPaths();
-
-                String groupDirName = "第" + exptGroupNo + "组";
-                for (String path : paths) {
-                    File file = new File(path);
-                    zos.putNextEntry(new ZipEntry(groupDirName + "/" + file.getName()));
-                    int len;
-                    FileInputStream in = new FileInputStream(file);
-                    while ((len = in.read(buf)) != -1) {
-                        zos.write(buf, 0, len);
-                    }
-                    zos.closeEntry();
-                    in.close();
-                }
-            }
-        } catch (IOException e1) {
-            throw new RuntimeException("zip error: ", e1);
-        } finally {
-            if (zos != null) {
-                try {
-                    zos.close();
-                } catch (IOException e2) {
-                    throw new RuntimeException("zip close error: ", e2);
-                }
-            }
-        }
-        reportVO.setZipPath(zipPath);
     }
 }

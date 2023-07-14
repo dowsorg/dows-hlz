@@ -28,7 +28,14 @@ public class ExptGroupReportVO {
     private Integer exptGroupNo;
 
     @Schema(title = "文件路径")
-    private List<String> paths;
+    private List<ReportFile> paths;
+
+    @Data
+    @Builder
+    public static class ReportFile {
+        private String name;
+        private String path;
+    }
 
     public static ExptGroupReportVO emptyVO() {
         return ExptGroupReportVO.builder()
