@@ -27,7 +27,7 @@ public class OSSBiz {
     private final S3OssClient ossClient;
 
     // 直接使用minio
-    private final MinioOssClient minioOssClient;
+    //private final MinioOssClient minioOssClient;
 
     public OssInfo upload(InputStream is, String fileName) {
         OssInfo info = ossClient.upLoad(is, fileName, false);
