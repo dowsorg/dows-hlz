@@ -1,6 +1,7 @@
 package org.dows.hep.biz.task;
 
 import cn.hutool.core.date.DateUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -102,12 +103,12 @@ public class ExperimentRestartTask implements Runnable {
                     }
                     if(scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentPeriodStartNoticeTask.getDesc())){
                         // 2.2、执行定时任务
-                        ExperimentNoticeTask experimentPeriodStartNoticeTask = new ExperimentNoticeTask(periodStartNoticer, (NoticeParams)json.get("noticeParams"),experimentTaskScheduleService,(String) json.get("experimentInstanceId"),(Integer) json.get("period"), EnumExperimentNotice.startNotice.getCode());
+                        ExperimentNoticeTask experimentPeriodStartNoticeTask = new ExperimentNoticeTask(periodStartNoticer, JSON.parseObject(json.get("noticeParams").toString(),NoticeParams.class),experimentTaskScheduleService,(String) json.get("experimentInstanceId"),(Integer) json.get("period"), EnumExperimentNotice.startNotice.getCode());
                         taskScheduler.schedule(experimentPeriodStartNoticeTask, DateUtil.date(scheduleEntity.getExecuteTime()));
                     }
                     if(scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentPeriodEndNoticeTask.getDesc())){
                         // 2.2、执行定时任务
-                        ExperimentNoticeTask experimentPeriodEndNoticeTask = new ExperimentNoticeTask(periodEndNoticer, (NoticeParams)json.get("noticeParams"),experimentTaskScheduleService,(String) json.get("experimentInstanceId"),(Integer) json.get("period"),EnumExperimentNotice.endNotice.getCode());
+                        ExperimentNoticeTask experimentPeriodEndNoticeTask = new ExperimentNoticeTask(periodEndNoticer, JSON.parseObject(json.get("noticeParams").toString(),NoticeParams.class),experimentTaskScheduleService,(String) json.get("experimentInstanceId"),(Integer) json.get("period"),EnumExperimentNotice.endNotice.getCode());
                         taskScheduler.schedule(experimentPeriodEndNoticeTask, DateUtil.date(scheduleEntity.getExecuteTime()));
                     }
                 }
@@ -143,12 +144,12 @@ public class ExperimentRestartTask implements Runnable {
                     }
                     if(scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentPeriodStartNoticeTask.getDesc())){
                         // 2.2、执行定时任务
-                        ExperimentNoticeTask experimentPeriodStartNoticeTask = new ExperimentNoticeTask(periodStartNoticer, (NoticeParams)json.get("noticeParams"),experimentTaskScheduleService,(String) json.get("experimentInstanceId"),(Integer) json.get("period"), EnumExperimentNotice.startNotice.getCode());
+                        ExperimentNoticeTask experimentPeriodStartNoticeTask = new ExperimentNoticeTask(periodStartNoticer, JSON.parseObject(json.get("noticeParams").toString(),NoticeParams.class),experimentTaskScheduleService,(String) json.get("experimentInstanceId"),(Integer) json.get("period"), EnumExperimentNotice.startNotice.getCode());
                         experimentPeriodStartNoticeTask.run();
                     }
                     if(scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentPeriodEndNoticeTask.getDesc())){
                         // 2.2、执行定时任务
-                        ExperimentNoticeTask experimentPeriodEndNoticeTask = new ExperimentNoticeTask(periodEndNoticer, (NoticeParams)json.get("noticeParams"),experimentTaskScheduleService,(String) json.get("experimentInstanceId"),(Integer) json.get("period"),EnumExperimentNotice.endNotice.getCode());
+                        ExperimentNoticeTask experimentPeriodEndNoticeTask = new ExperimentNoticeTask(periodEndNoticer, JSON.parseObject(json.get("noticeParams").toString(),NoticeParams.class),experimentTaskScheduleService,(String) json.get("experimentInstanceId"),(Integer) json.get("period"),EnumExperimentNotice.endNotice.getCode());
                         experimentPeriodEndNoticeTask.run();
                     }
                 }
