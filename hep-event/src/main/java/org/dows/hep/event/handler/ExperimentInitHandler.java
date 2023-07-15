@@ -25,17 +25,14 @@ import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.biz.snapshot.EnumSnapshotType;
 import org.dows.hep.biz.snapshot.SnapshotManager;
 import org.dows.hep.biz.snapshot.SnapshotRequest;
+import org.dows.hep.biz.task.ExperimentBeginTask;
 import org.dows.hep.biz.tenant.experiment.ExperimentCaseInfoManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentQuestionnaireManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentSchemeManageBiz;
-import org.dows.hep.biz.task.ExperimentBeginTask;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentSettingEntity;
-import org.dows.hep.service.ExperimentInstanceService;
-import org.dows.hep.service.ExperimentParticipatorService;
-import org.dows.hep.service.ExperimentSettingService;
-import org.dows.hep.service.ExperimentTimerService;
+import org.dows.hep.service.*;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
@@ -67,6 +64,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
+    private final ExperimentTaskScheduleService experimentTaskScheduleService;
 
     private final RsCopyBiz rsCopyBiz;
 

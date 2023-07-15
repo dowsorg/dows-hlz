@@ -1,18 +1,22 @@
 package org.dows.hep.event.handler;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.uim.AccountInfo;
+import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
 import org.dows.hep.biz.event.EventScheduler;
-import org.dows.hep.biz.task.ExperimentFinishTask;
 import org.dows.hep.biz.task.ExperimentCalcTask;
+import org.dows.hep.biz.task.ExperimentFinishTask;
+import org.dows.hep.entity.ExperimentTaskScheduleEntity;
 import org.dows.hep.entity.ExperimentTimerEntity;
+import org.dows.hep.service.ExperimentTaskScheduleService;
 import org.dows.hep.websocket.HepClientManager;
 import org.dows.hep.websocket.proto.MessageCode;
 import org.springframework.stereotype.Component;
@@ -32,6 +36,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Component
 public class ExperimentStartHandler extends AbstractEventHandler implements EventHandler<ExperimentRestartRequest> {
+
+    private final ExperimentTaskScheduleService experimentTaskScheduleService;
 
 
     @Override
@@ -163,6 +169,32 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
         ExperimentTimerEntity lastPeriods = experimentTimerBiz
                 .getLastPeriods(experimentRestartRequest.getExperimentInstanceId(), EnumExperimentState.FINISH);
 
+        //保存任务进计时器表，防止重启后服务挂了，一个任务每个实验每一期只能有一条数据
+        ExperimentTaskScheduleEntity finishEntity = new ExperimentTaskScheduleEntity();
+        ExperimentTaskScheduleEntity finishTaskScheduleEntity = experimentTaskScheduleService.lambdaQuery()
+                .eq(ExperimentTaskScheduleEntity::getTaskBeanCode, "experimentFinishTask")
+                .eq(ExperimentTaskScheduleEntity::getExperimentInstanceId, experimentRestartRequest.getExperimentInstanceId())
+                .eq(ExperimentTaskScheduleEntity::getPeriods, lastPeriods.getPeriod())
+                .one();
+        if (finishTaskScheduleEntity != null && !ReflectUtil.isObjectNull(finishTaskScheduleEntity)) {
+            BeanUtil.copyProperties(finishTaskScheduleEntity, finishEntity);
+            finishEntity.setExecuteTime(DateUtil.date(lastPeriods.getEndTime()));
+            finishEntity.setExecuted(false);
+        } else {
+            finishEntity
+                    .builder()
+                    .experimentTaskTimerId(idGenerator.nextIdStr())
+                    .experimentInstanceId(experimentRestartRequest.getExperimentInstanceId())
+                    .taskBeanCode("experimentFinishTask")
+                    .periods(lastPeriods.getPeriod())
+                    .appId(lastPeriods.getAppId())
+                    .executeTime(DateUtil.date(lastPeriods.getEndTime()))
+                    .executed(false)
+                    .build();
+        }
+        experimentTaskScheduleService.saveOrUpdate(finishEntity);
+
+        // 执行任务
         ExperimentFinishTask experimentFinishTask = new ExperimentFinishTask(experimentInstanceService,
                 experimentParticipatorService, experimentTimerService, experimentScoreCalculator,
                 experimentRestartRequest.getExperimentInstanceId());
@@ -173,14 +205,42 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
          */
         for (ExperimentGroupResponse experimentGroupRespons : experimentGroupResponses) {
             for (ExperimentTimerEntity updateExperimentTimerEntity : updateExperimentTimerEntities) {
+
+                //保存任务进计时器表，防止重启后服务挂了，一个任务每个实验每一期只能有一条数据
+                ExperimentTaskScheduleEntity calcEntity = new ExperimentTaskScheduleEntity();
+                ExperimentTaskScheduleEntity calcTaskScheduleEntity = experimentTaskScheduleService.lambdaQuery()
+                        .eq(ExperimentTaskScheduleEntity::getTaskBeanCode, "experimentCalcTask")
+                        .eq(ExperimentTaskScheduleEntity::getExperimentInstanceId, experimentRestartRequest.getExperimentInstanceId())
+                        .eq(ExperimentTaskScheduleEntity::getPeriods, lastPeriods.getPeriod())
+                        .one();
+                if (calcTaskScheduleEntity != null && !ReflectUtil.isObjectNull(calcTaskScheduleEntity)) {
+                    BeanUtil.copyProperties(calcTaskScheduleEntity, calcEntity);
+                    calcEntity.setExecuteTime(DateUtil.date(lastPeriods.getEndTime()));
+                    calcEntity.setExecuted(false);
+                } else {
+                    calcEntity
+                            .builder()
+                            .experimentTaskTimerId(idGenerator.nextIdStr())
+                            .experimentInstanceId(experimentRestartRequest.getExperimentInstanceId())
+                            .taskBeanCode("experimentCalcTask")
+                            .periods(lastPeriods.getPeriod())
+                            .appId(lastPeriods.getAppId())
+                            .executeTime(DateUtil.date(lastPeriods.getEndTime()))
+                            .executed(false)
+                            .build();
+                }
+                experimentTaskScheduleService.saveOrUpdate(calcEntity);
+                // 执行任务
                 ExperimentCalcTask experimentCalcTask = new ExperimentCalcTask(
                         experimentTimerBiz,
                         experimentScoreCalculator,
                         experimentRestartRequest.getExperimentInstanceId(),
                         experimentGroupRespons.getExperimentGroupId(),
                         updateExperimentTimerEntity.getPeriod());
+
                 taskScheduler.schedule(experimentCalcTask, DateUtil.date(updateExperimentTimerEntity.getEndTime()));
             }
+
         }
     }
 

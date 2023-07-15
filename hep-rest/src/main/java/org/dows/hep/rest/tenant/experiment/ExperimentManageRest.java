@@ -208,7 +208,7 @@ public class ExperimentManageRest {
      */
     @Operation(summary = "提交方案设计评分详情")
     @PostMapping("v1/tenantExperiment/experimentManage/submitSchemeScore")
-    public Boolean submitSchemeScore(@RequestBody @Validated ExperimentSchemeScoreRequest schemeScoreRequest, HttpServletRequest request) {
+    public String submitSchemeScore(@RequestBody @Validated ExperimentSchemeScoreRequest schemeScoreRequest, HttpServletRequest request) {
         String accountId = baseBiz.getAccountId(request);
         return experimentSchemeScoreBiz.submitSchemeScore(schemeScoreRequest, accountId);
     }

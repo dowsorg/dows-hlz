@@ -39,6 +39,9 @@ public class ExperimentTaskScheduleEntity implements CrudEntity {
     @Schema(title = "实验任务计时器ID")
     private String experimentTaskTimerId;
 
+    @Schema(title = "期数")
+    private Integer periods;
+
     @Schema(title = "实验实列ID")
     private String experimentInstanceId;
 
