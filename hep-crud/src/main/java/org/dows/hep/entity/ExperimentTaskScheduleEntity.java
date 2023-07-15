@@ -45,8 +45,14 @@ public class ExperimentTaskScheduleEntity implements CrudEntity {
     @Schema(title = "实验实列ID")
     private String experimentInstanceId;
 
+    @Schema(title = "实验小组ID")
+    private String experimentGroupId;
+
     @Schema(title = "任务beancode")
     private String taskBeanCode;
+
+    @Schema(title = "任务参数")
+    private String taskParams;
 
     @Schema(title = "执行时间表达式")
     private String executeExpression;

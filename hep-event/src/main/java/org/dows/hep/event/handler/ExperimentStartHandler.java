@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.uim.AccountInfo;
 import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.enums.EnumExperimentState;
+import org.dows.hep.api.enums.EnumExperimentTask;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
@@ -172,22 +173,26 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
         //保存任务进计时器表，防止重启后服务挂了，一个任务每个实验每一期只能有一条数据
         ExperimentTaskScheduleEntity finishEntity = new ExperimentTaskScheduleEntity();
         ExperimentTaskScheduleEntity finishTaskScheduleEntity = experimentTaskScheduleService.lambdaQuery()
-                .eq(ExperimentTaskScheduleEntity::getTaskBeanCode, "experimentFinishTask")
+                .eq(ExperimentTaskScheduleEntity::getTaskBeanCode, EnumExperimentTask.experimentFinishTask.getDesc())
                 .eq(ExperimentTaskScheduleEntity::getExperimentInstanceId, experimentRestartRequest.getExperimentInstanceId())
                 .eq(ExperimentTaskScheduleEntity::getPeriods, lastPeriods.getPeriod())
                 .one();
+        String taskParams = "{\"experimentInstanceId\":\"" + experimentRestartRequest.getExperimentInstanceId()
+                + "\",\"period\":" + lastPeriods.getPeriod() + "}";
         if (finishTaskScheduleEntity != null && !ReflectUtil.isObjectNull(finishTaskScheduleEntity)) {
             BeanUtil.copyProperties(finishTaskScheduleEntity, finishEntity);
             finishEntity.setExecuteTime(DateUtil.date(lastPeriods.getEndTime()));
+            finishEntity.setTaskParams(taskParams);
             finishEntity.setExecuted(false);
         } else {
-            finishEntity
+            finishEntity = new ExperimentTaskScheduleEntity()
                     .builder()
                     .experimentTaskTimerId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentRestartRequest.getExperimentInstanceId())
-                    .taskBeanCode("experimentFinishTask")
+                    .taskBeanCode(EnumExperimentTask.experimentFinishTask.getDesc())
+                    .taskParams(taskParams)
                     .periods(lastPeriods.getPeriod())
-                    .appId(lastPeriods.getAppId())
+                    .appId("3")
                     .executeTime(DateUtil.date(lastPeriods.getEndTime()))
                     .executed(false)
                     .build();
@@ -196,8 +201,8 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
 
         // 执行任务
         ExperimentFinishTask experimentFinishTask = new ExperimentFinishTask(experimentInstanceService,
-                experimentParticipatorService, experimentTimerService, experimentScoreCalculator,
-                experimentRestartRequest.getExperimentInstanceId());
+                experimentParticipatorService, experimentTimerService, experimentTaskScheduleService,experimentScoreCalculator,
+                experimentRestartRequest.getExperimentInstanceId(),lastPeriods.getPeriod());
 
         taskScheduler.schedule(experimentFinishTask, DateUtil.date(lastPeriods.getEndTime()));
         /**
@@ -205,35 +210,42 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
          */
         for (ExperimentGroupResponse experimentGroupRespons : experimentGroupResponses) {
             for (ExperimentTimerEntity updateExperimentTimerEntity : updateExperimentTimerEntities) {
-
                 //保存任务进计时器表，防止重启后服务挂了，一个任务每个实验每一期只能有一条数据
                 ExperimentTaskScheduleEntity calcEntity = new ExperimentTaskScheduleEntity();
                 ExperimentTaskScheduleEntity calcTaskScheduleEntity = experimentTaskScheduleService.lambdaQuery()
-                        .eq(ExperimentTaskScheduleEntity::getTaskBeanCode, "experimentCalcTask")
+                        .eq(ExperimentTaskScheduleEntity::getTaskBeanCode, EnumExperimentTask.experimentCalcTask.getDesc())
                         .eq(ExperimentTaskScheduleEntity::getExperimentInstanceId, experimentRestartRequest.getExperimentInstanceId())
+                        .eq(ExperimentTaskScheduleEntity::getExperimentGroupId,experimentGroupRespons.getExperimentGroupId())
                         .eq(ExperimentTaskScheduleEntity::getPeriods, lastPeriods.getPeriod())
                         .one();
+                String taskParams1 = "{\"experimentInstanceId\":\"" + experimentRestartRequest.getExperimentInstanceId() + "\",\"experimentGroupId\":\""
+                        + experimentGroupRespons.getExperimentGroupId() + "\",\"period\":" + updateExperimentTimerEntity.getPeriod() + "}";
                 if (calcTaskScheduleEntity != null && !ReflectUtil.isObjectNull(calcTaskScheduleEntity)) {
                     BeanUtil.copyProperties(calcTaskScheduleEntity, calcEntity);
-                    calcEntity.setExecuteTime(DateUtil.date(lastPeriods.getEndTime()));
+                    calcEntity.setExecuteTime(DateUtil.date(updateExperimentTimerEntity.getEndTime()));
+                    calcEntity.setTaskParams(taskParams1);
                     calcEntity.setExecuted(false);
                 } else {
-                    calcEntity
+                    calcEntity = new ExperimentTaskScheduleEntity()
                             .builder()
                             .experimentTaskTimerId(idGenerator.nextIdStr())
                             .experimentInstanceId(experimentRestartRequest.getExperimentInstanceId())
-                            .taskBeanCode("experimentCalcTask")
-                            .periods(lastPeriods.getPeriod())
-                            .appId(lastPeriods.getAppId())
-                            .executeTime(DateUtil.date(lastPeriods.getEndTime()))
+                            .experimentGroupId(experimentGroupRespons.getExperimentGroupId())
+                            .taskBeanCode(EnumExperimentTask.experimentCalcTask.getDesc())
+                            .taskParams(taskParams1)
+                            .periods(updateExperimentTimerEntity.getPeriod())
+                            .appId("3")
+                            .executeTime(DateUtil.date(updateExperimentTimerEntity.getEndTime()))
                             .executed(false)
                             .build();
                 }
                 experimentTaskScheduleService.saveOrUpdate(calcEntity);
+
                 // 执行任务
                 ExperimentCalcTask experimentCalcTask = new ExperimentCalcTask(
                         experimentTimerBiz,
                         experimentScoreCalculator,
+                        experimentTaskScheduleService,
                         experimentRestartRequest.getExperimentInstanceId(),
                         experimentGroupRespons.getExperimentGroupId(),
                         updateExperimentTimerEntity.getPeriod());

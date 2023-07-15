@@ -1,5 +1,6 @@
 package org.dows.hep.event.handler;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.RequiredArgsConstructor;
@@ -8,12 +9,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.dows.account.request.AccountGroupRequest;
 import org.dows.account.response.AccountGroupResponse;
 import org.dows.account.response.AccountInstanceResponse;
+import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.ExperimentContext;
 import org.dows.hep.api.base.evaluate.EvaluateEnabledEnum;
 import org.dows.hep.api.base.indicator.request.RsCopyCrowdsAndRiskModelRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyIndicatorFuncRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyPersonIndicatorRequestRs;
 import org.dows.hep.api.enums.EnumExperimentState;
+import org.dows.hep.api.enums.EnumExperimentTask;
 import org.dows.hep.api.exception.ExperimentInitHanlderException;
 import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
 import org.dows.hep.api.tenant.experiment.request.ExperimentGroupSettingRequest;
@@ -31,6 +34,7 @@ import org.dows.hep.biz.tenant.experiment.ExperimentQuestionnaireManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentSchemeManageBiz;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentSettingEntity;
+import org.dows.hep.entity.ExperimentTaskScheduleEntity;
 import org.dows.hep.service.*;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
@@ -160,16 +164,43 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
      * @param experimentGroupSettingRequest
      */
     public void setExperimentBeginTimerTask(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
+        //保存任务进计时器表，防止重启后服务挂了，一个任务每个实验每一期只能有一条数据
+        ExperimentTaskScheduleEntity beginEntity = new ExperimentTaskScheduleEntity();
+        ExperimentTaskScheduleEntity beginTaskScheduleEntity = experimentTaskScheduleService.lambdaQuery()
+                .eq(ExperimentTaskScheduleEntity::getTaskBeanCode, EnumExperimentTask.experimentBeginTask.getDesc())
+                .eq(ExperimentTaskScheduleEntity::getExperimentInstanceId, experimentGroupSettingRequest.getExperimentInstanceId())
+                .isNull(ExperimentTaskScheduleEntity::getPeriods)
+                .one();
+        String taskParams = "{\"experimentInstanceId\":\"" + experimentGroupSettingRequest.getExperimentInstanceId()+"\"}";
+        if (beginTaskScheduleEntity != null && !ReflectUtil.isObjectNull(beginTaskScheduleEntity)) {
+            BeanUtil.copyProperties(beginTaskScheduleEntity, beginEntity);
+            beginEntity.setExecuteTime(experimentGroupSettingRequest.getStartTime());
+            beginEntity.setTaskParams(taskParams);
+            beginEntity.setExecuted(false);
+        } else {
+            beginEntity = new ExperimentTaskScheduleEntity()
+                            .builder()
+                            .experimentTaskTimerId(idGenerator.nextIdStr())
+                            .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
+                            .taskBeanCode(EnumExperimentTask.experimentBeginTask.getDesc())
+                            .taskParams(taskParams)
+                            .appId(experimentGroupSettingRequest.getAppId())
+                            .executeTime(experimentGroupSettingRequest.getStartTime())
+                            .executed(false)
+                            .build();
+        }
+        experimentTaskScheduleService.saveOrUpdate(beginEntity);
+
+        //执行定时任务
         ExperimentBeginTask experimentBeginTask = new ExperimentBeginTask(
                 experimentInstanceService, experimentParticipatorService, experimentTimerService, applicationEventPublisher,
-                experimentGroupSettingRequest.getExperimentInstanceId());
+                experimentTaskScheduleService, experimentGroupSettingRequest.getExperimentInstanceId());
 
         /**
          * 设定定时任务
          * todo 设定一个TimeTask,通过timer到时间执行一次，考虑重启情况，写数据库，针对出现的情况，更具时间重新schedule,先用事件处理，后期优化
          */
         taskScheduler.schedule(experimentBeginTask, experimentGroupSettingRequest.getStartTime());
-
     }
 
     /**
