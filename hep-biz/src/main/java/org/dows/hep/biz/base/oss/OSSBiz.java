@@ -7,8 +7,7 @@ import cn.hutool.core.util.ZipUtil;
 import jakarta.xml.bind.DatatypeConverter;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.oss.api.OssInfo;
-import org.dows.framework.oss.api.S3OssClient;
-import org.dows.framework.oss.minio.MinioOssClient;
+import org.dows.framework.oss.local.LocalOssClient;
 import org.dows.hep.entity.MaterialsAttachmentEntity;
 import org.springframework.stereotype.Component;
 
@@ -24,7 +23,7 @@ import java.util.List;
 @Component
 public class OSSBiz {
 
-    private final S3OssClient ossClient;
+    private final LocalOssClient ossClient;
 
     // 直接使用minio
     //private final MinioOssClient minioOssClient;
