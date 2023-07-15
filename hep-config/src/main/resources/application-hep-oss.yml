@@ -1,12 +1,4 @@
 oss:
-  local:
-    enable: true
-    ossConfig:
-      volumed:
-        basePath: /data/resources/images/hep
-        slice-config:
-          task-num: 8
-          part-size: 104857600
   minio:
     enable: true
     access-key: PHTHKEPBYYD079K90B0O
@@ -17,7 +9,14 @@ oss:
     slice-config:
       task-num: 8
       part-size: 104857604 # 1024*1024*100
-
+  local:
+    enable: true
+    ossConfig:
+      volumed:
+        basePath: /data/resources/images/hep
+        slice-config:
+          task-num: 8
+          part-size: 104857600
 spring:
   servlet:
     multipart:

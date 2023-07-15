@@ -14,6 +14,7 @@ import org.dows.hep.biz.cache.CategCacheFactory;
 import org.dows.hep.biz.dao.IndicatorExpressionRefDao;
 import org.dows.hep.biz.dao.IndicatorFuncDao;
 import org.dows.hep.biz.dao.TreatItemDao;
+import org.dows.hep.biz.snapshot.SnapshotRequestHolder;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.ShareBiz;
@@ -45,6 +46,9 @@ public class TreatItemBiz{
     private final IndicatorExpressionBiz indicatorExpressionBiz;
 
     protected CategCache getCategCache(){
+        if(SnapshotRequestHolder.hasSnapshotRequest()){
+            return CategCacheFactory.TreatItem.getExptCache();
+        }
         return CategCacheFactory.TreatItem.getCache();
     }
     /**

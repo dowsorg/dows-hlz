@@ -172,8 +172,8 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
     @Override
     protected boolean isCompleted(ExperimentSettingCollection val) {
         return ShareUtil.XObject.notEmpty(val)
-                &ShareUtil.XObject.notEmpty(val.getStartTime())
-                &ShareUtil.XObject.notEmpty(val.getMapPeriod());
+                &&ShareUtil.XObject.notEmpty(val.getStartTime())
+                &&ShareUtil.XObject.notEmpty(val.getMapPeriod());
     }
 
     @Override

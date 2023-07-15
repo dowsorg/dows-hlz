@@ -55,7 +55,7 @@ public class ExperimentSnapshotRefDao extends BaseDao<ExperimentSnapshotRefServi
                 .eq(ShareUtil.XObject.notEmpty(appId),ExperimentSnapshotRefEntity::getAppId,appId)
                 .eq(ExperimentSnapshotRefEntity::getSnapshotType,snapShotType)
                 .eq(ExperimentSnapshotRefEntity::getMd5, md5)
-                .isNull(ExperimentSnapshotRefEntity::getRefExperimentInstanceId)
+                .eq(ExperimentSnapshotRefEntity::getRefExperimentInstanceId,"")
                 .select(cols)
                 .orderByDesc(ExperimentSnapshotRefEntity::getId)
                 .last("limit 1")

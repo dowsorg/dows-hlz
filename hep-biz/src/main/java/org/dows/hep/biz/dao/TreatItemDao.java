@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -115,11 +114,11 @@ public class TreatItemDao extends BaseSubDao<TreatItemService,TreatItemEntity,Tr
         return true;
     }
 
-    public List<TreatItemEntity> getByIndicatorFuncId(String appId, String indicatorFuncId, Collection<String> categIds,
+    public List<TreatItemEntity> getByIndicatorFuncId(String appId, String indicatorFuncId,
                                                       SFunction<TreatItemEntity,?>... cols){
         return service.lambdaQuery()
                 .eq(ShareUtil.XObject.notEmpty(appId),TreatItemEntity::getAppId,appId)
-                .eq(TreatItemEntity::getIndicatorFuncId, indicatorFuncId)
+                .eq(ShareUtil.XObject.notEmpty(indicatorFuncId), TreatItemEntity::getIndicatorFuncId, indicatorFuncId)
                 .orderByAsc(TreatItemEntity::getInterveneCategId, TreatItemEntity::getId)
                 .select(cols)
                 .list();

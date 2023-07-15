@@ -12,6 +12,7 @@ import org.dows.hep.biz.cache.CategCache;
 import org.dows.hep.biz.cache.CategCacheFactory;
 import org.dows.hep.biz.dao.IndicatorExpressionRefDao;
 import org.dows.hep.biz.dao.SportItemDao;
+import org.dows.hep.biz.snapshot.SnapshotRequestHolder;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.ShareBiz;
@@ -42,6 +43,9 @@ public class SportItemBiz{
     private final IndicatorExpressionRefDao daoExpressionRef;
 
     protected CategCache getCategCache(){
+        if(SnapshotRequestHolder.hasSnapshotRequest()){
+            return CategCacheFactory.SPORTItem.getExptCache();
+        }
         return CategCacheFactory.SPORTItem.getCache();
     }
     /**
@@ -55,8 +59,9 @@ public class SportItemBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Page<SportItemResponse> pageSportItem(FindSportRequest findSport ) {
+        final CategCache cache=getCategCache();
         return ShareBiz.buildPage(dao.pageByCondition(findSport), i ->
-                CopyWrapper.create(SportItemResponse::new).endFrom(refreshCateg(i)));
+                CopyWrapper.create(SportItemResponse::new).endFrom(refreshCateg(cache, i)));
 
     }
     /**
@@ -72,9 +77,9 @@ public class SportItemBiz{
     public SportItemInfoResponse getSportItem(String appId, String sportItemId ) {
         SportItemEntity row=AssertUtil.getNotNull(dao.getById(sportItemId))
                 .orElseThrow("运动项目不存在");
-
+        final CategCache cache=getCategCache();
         List<IndicatorExpressionResponseRs> expressions=ShareBiz.getExpressionsByReasonId(indicatorExpressionBiz,appId,sportItemId);
-        return CopyWrapper.create(SportItemInfoResponse::new).endFrom(refreshCateg(row))
+        return CopyWrapper.create(SportItemInfoResponse::new).endFrom(refreshCateg(cache, row))
                 .setExpresssions(expressions);
     }
     /**
@@ -92,9 +97,10 @@ public class SportItemBiz{
         AssertUtil.trueThenThrow(ShareUtil.XObject.notEmpty(saveSportItem.getSportItemId())
                         && dao.getById(saveSportItem.getSportItemId(), SportItemEntity::getSportItemId).isEmpty())
                 .throwMessage("运动项目不存在");
+        final CategCache cache=getCategCache();
         CategVO categVO = null;
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(saveSportItem.getInterveneCategId())
-                        || null == (categVO = getCategCache().getById(appId,saveSportItem.getInterveneCategId())))
+                        || null == (categVO = cache.getById(appId,saveSportItem.getInterveneCategId())))
                 .throwMessage("类别不存在");
 
         AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(saveSportItem.getExpresssions())
@@ -158,11 +164,11 @@ public class SportItemBiz{
      * @param src
      * @return
      */
-    protected SportItemEntity refreshCateg(SportItemEntity src) {
+    protected SportItemEntity refreshCateg(CategCache cache, SportItemEntity src) {
         if (ShareUtil.XObject.isEmpty(src.getInterveneCategId())) {
             return src;
         }
-        CategVO cacheItem = getCategCache().getById(src.getAppId(), src.getInterveneCategId());
+        CategVO cacheItem = cache.getById(src.getAppId(), src.getInterveneCategId());
         if (null == cacheItem) {
             return src;
         }

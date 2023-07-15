@@ -58,6 +58,9 @@ public class EventBiz{
 
 
     protected CategCache getCategCache(){
+        /*if(SnapshotRequestHolder.hasSnapshotRequest()){
+            return CategCacheFactory.EVENT.getExptCache();
+        }*/
         return CategCacheFactory.EVENT.getCache();
     }
 
@@ -95,7 +98,8 @@ public class EventBiz{
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(appId))
                 .throwMessage("appId不可为空");
         final String pid=saveEventCateg.get(0).getCategPid();
-        CategVO parent = ShareUtil.XObject.defaultIfNull(getCategCache().getById(appId, pid),new CategVO());
+        final CategCache cache=getCategCache();
+        CategVO parent = ShareUtil.XObject.defaultIfNull(cache.getById(appId, pid),new CategVO());
         AssertUtil.trueThenThrow(ShareUtil.XString.hasLength(pid) && ShareUtil.XObject.isEmpty(parent.getCategIdPath()))
                 .throwMessage("父类别不存在");
         List<EventCategEntity> rows=ShareUtil.XCollection.map(saveEventCateg, i-> {
@@ -108,12 +112,12 @@ public class EventBiz{
                     .setFamily(evencategFamily.getCode())
                     .setEventCategId(i.getCategId())
                     .setCategPid(pid)
-                    .setCategIdPath(getCategCache().buildCategPath(parent.getCategIdPath(), i.getCategId()))
-                    .setCategNamePath(getCategCache().buildCategPath(parent.getCategNamePath(), i.getCategName()));
+                    .setCategIdPath(cache.buildCategPath(parent.getCategIdPath(), i.getCategId()))
+                    .setCategNamePath(cache.buildCategPath(parent.getCategNamePath(), i.getCategName()));
         });
 
         eventCategDao.tranSaveBatch(rows);
-        getCategCache().clear();
+        cache.clear();
         return true;
     }
     /**
@@ -130,14 +134,15 @@ public class EventBiz{
         final String appId= delEventCateg.getAppId();
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(delEventCateg.getIds()))
                 .throwMessage("缺少必要参数");
+        final CategCache cache=getCategCache();
         delEventCateg.getIds().forEach(i -> {
-            AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(getCategCache().getByParentId(appId, i, true)))
+            AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(cache.getByParentId(appId, i, true)))
                     .throwMessage("类别包含子级类别，不可删除");
             AssertUtil.trueThenThrow(EnumCheckCategPolicy.EVENT.checkCategRef(i))
                     .throwMessage("类别已被引用，不可删除");
         });
         eventCategDao.tranDelete(delEventCateg.getIds());
-        getCategCache().clear();
+        cache.clear();
         return true;
     }
     /**
@@ -151,9 +156,9 @@ public class EventBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Page<EventResponse> pageEvent(FindEventRequest findEvent ) {
-
+        final CategCache cache=getCategCache();
         return ShareBiz.buildPage(eventDao.pageByCondition(findEvent),i->
-                CopyWrapper.create(EventResponse::new).endFrom( refreshCateg(i)));
+                CopyWrapper.create(EventResponse::new).endFrom( refreshCateg(cache,i)));
 
     }
     /**
@@ -197,8 +202,9 @@ public class EventBiz{
                         .endFrom(i, v -> v.setRefId(i.getEventActionId())
                                 .setActionExpresssions(mapExressions.get(i.getEventActionId()))));
         mapExressions.clear();
+        final CategCache cache=getCategCache();
         return CopyWrapper.create(EventInfoResponse::new)
-                .endFrom(refreshCateg(row))
+                .endFrom(refreshCateg(cache,row))
                 .setConditionExpresssions(conditions)
                 .setEffectExpresssions(effects)
                 .setActions(vosAction);
@@ -222,8 +228,9 @@ public class EventBiz{
                         && eventDao.getById(saveEvent.getEventId(), EventEntity::getId).isEmpty())
                 .throwMessage("突发事件不存在或已删除");
         CategVO categVO = null;
+        final CategCache cache=getCategCache();
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(saveEvent.getEventCategId())
-                        || null == (categVO = getCategCache().getById(appId,saveEvent.getEventCategId())))
+                        || null == (categVO = cache.getById(appId,saveEvent.getEventCategId())))
                 .throwMessage("事件类别不存在");
         EnumEventTriggerType triggerType=EnumEventTriggerType.of(saveEvent.getTriggerType());
         AssertUtil.trueThenThrow(triggerType==EnumEventTriggerType.CONDITION&&ShareUtil.XCollection.notEmpty(saveEvent.getEffectExpresssions()))
@@ -360,11 +367,11 @@ public class EventBiz{
      * @param src
      * @return
      */
-    protected EventEntity refreshCateg(EventEntity src) {
+    protected EventEntity refreshCateg(CategCache cache, EventEntity src) {
         if (ShareUtil.XObject.isEmpty(src.getEventCategId())) {
             return src;
         }
-        CategVO cacheItem = getCategCache().getById(src.getAppId(), src.getEventCategId());
+        CategVO cacheItem = cache.getById(src.getAppId(), src.getEventCategId());
         if (null == cacheItem) {
             return src;
         }

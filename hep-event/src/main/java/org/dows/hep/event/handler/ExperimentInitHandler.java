@@ -22,7 +22,6 @@ import org.dows.hep.api.user.organization.request.CaseOrgRequest;
 import org.dows.hep.api.user.organization.response.CaseOrgResponse;
 import org.dows.hep.biz.base.indicator.RsCopyBiz;
 import org.dows.hep.biz.base.org.OrgBiz;
-import org.dows.hep.biz.snapshot.EnumSnapshotType;
 import org.dows.hep.biz.snapshot.SnapshotManager;
 import org.dows.hep.biz.snapshot.SnapshotRequest;
 import org.dows.hep.biz.task.ExperimentBeginTask;
@@ -151,8 +150,8 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
               .caseInstanceId(caseInstanceId)
               .build());
         }
-        //复制突发事件
-        SnapshotManager.Instance().write( new SnapshotRequest(appId,experimentInstanceId), EnumSnapshotType.CASEEvent);
+        //复制操作指标和突发事件
+        SnapshotManager.Instance().write( new SnapshotRequest(appId,experimentInstanceId), true);
     }
 
     /**

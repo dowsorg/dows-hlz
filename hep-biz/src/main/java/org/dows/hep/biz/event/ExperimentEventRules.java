@@ -76,16 +76,13 @@ public class ExperimentEventRules {
         boolean rst= experimentEventDao.tranUpdateTriggered(saveEvents,()-> saveTriggeredTimeEventX(rowsNotice,rowsIndicatorVal));
         if(rst){
             //发送webSocket
-            List<OrgNoticeResponse> notices=new ArrayList<>();
-            for(ExperimentOrgNoticeEntity item:rowsNotice ){
-                notices.add(experimentOrgNoticeBiz.CreateOrgNoticeResponse(item));
-            }
             final String experimentId=rowsNotice.get(0).getExperimentInstanceId();
-            final Set<String> accountIds=ShareBiz.getAccountIdsByGroupAndOrgId(experimentId, rowsNotice,
-                    ExperimentOrgNoticeEntity::getExperimentGroupId,ExperimentOrgNoticeEntity::getExperimentOrgId);
-            if(ShareUtil.XObject.notEmpty(accountIds)) {
-                ShareBiz.publishWebSocketEvent(applicationEventPublisher, EventName.exptEventTriggeredHandler, EnumWebSocketType.EVENT_TRIGGERED, experimentId,
-                        accountIds, notices);
+            Map<String,List<OrgNoticeResponse>> mapNotice=experimentOrgNoticeBiz.getWebSocketNotice(experimentId, rowsNotice);
+            if(ShareUtil.XObject.notEmpty(mapNotice)) {
+                for(Map.Entry<String,List<OrgNoticeResponse>> entry :mapNotice.entrySet()){
+                    ShareBiz.publishWebSocketEvent(applicationEventPublisher, EventName.exptEventTriggeredHandler, EnumWebSocketType.EVENT_TRIGGERED, experimentId,
+                            Set.of(entry.getKey()), entry.getValue());
+                }
             }
         }
         return rst;

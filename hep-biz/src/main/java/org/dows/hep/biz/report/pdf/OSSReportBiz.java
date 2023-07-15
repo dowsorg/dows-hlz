@@ -5,7 +5,7 @@ import cn.hutool.core.collection.CollUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.oss.api.OssInfo;
-import org.dows.framework.oss.local.LocalOssClient;
+import org.dows.framework.oss.minio.MinioOssClient;
 import org.dows.hep.api.report.pdf.ExptGroupReportVO;
 import org.dows.hep.api.report.pdf.ExptReportVO;
 import org.springframework.stereotype.Component;
@@ -28,8 +28,8 @@ import java.util.zip.ZipOutputStream;
 @Component
 @RequiredArgsConstructor
 public class OSSReportBiz {
-//    private final MinioOssClient ossClient;
-    private final LocalOssClient ossClient;
+    private final MinioOssClient ossClient;
+//    private final LocalOssClient ossClient;
 //    private final S3OssClient ossClient;
 
 
@@ -55,9 +55,9 @@ public class OSSReportBiz {
             toZipGroup(exptReportVO);
         }
 
-        String zipPath = exptReportVO.getZipPath();
+//        String zipPath = exptReportVO.getZipPath();
         String zipName = exptReportVO.getZipName();
-        OssInfo ossInfo = ossClient.upLoad(new File(zipPath), zipName, true);
+        OssInfo ossInfo = ossClient.upLoad(new File(zipName), zipName, true);
         exptReportVO.setZipPath(ossInfo.getPath());
         exptReportVO.setZipName(ossInfo.getName());
     }
