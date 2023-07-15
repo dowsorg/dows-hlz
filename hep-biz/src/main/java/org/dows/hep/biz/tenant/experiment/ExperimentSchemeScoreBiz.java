@@ -90,14 +90,18 @@ public class ExperimentSchemeScoreBiz {
         if (CollUtil.isEmpty(schemeList)) {
             throw new BizException("获取方案设计报告的小组列表时，方案设计数据为空");
         }
+
+        // 获取 `exptInstanceId` && `reviewAccountId` 下所有的方案设计评分
+        // 是否是管理员
+        boolean isAdmin = baseBiz.isAdministrator(reviewAccountId);
         // schemeId list
         List<String> schemeIdList = schemeList.stream()
                 .map(ExperimentSchemeEntity::getExperimentSchemeId)
                 .toList();
-        // 获取 `exptInstanceId` && `reviewAccountId` 下所有的方案设计评分
         List<ExperimentSchemeScoreEntity> schemeScoreList = experimentSchemeScoreService.lambdaQuery()
                 .in(ExperimentSchemeScoreEntity::getExperimentSchemeId, schemeIdList)
-                .eq(ExperimentSchemeScoreEntity::getReviewAccountId, reviewAccountId)
+                .eq(!isAdmin, ExperimentSchemeScoreEntity::getReviewAccountId, reviewAccountId)
+                .eq(isAdmin, ExperimentSchemeScoreEntity::getReviewAccountId, ADMIN_ACCOUNT_ID)
                 .list();
 
         // group-id map expt-scheme
@@ -113,6 +117,7 @@ public class ExperimentSchemeScoreBiz {
             ExperimentSchemeEntity schemeEntity = groupIdMapExptScheme.get(group.getExperimentGroupId());
             Assert.notNull(schemeEntity, "获取方案设计报告的小组列表时: 小组的方案设计数据为空");
             ExperimentSchemeScoreEntity schemeScoreEntity = schemeIdMapSchemeScore.get(schemeEntity.getExperimentSchemeId());
+            Assert.notNull(schemeScoreEntity, "获取方案设计报告的小组列表时: 方案设计评分表数据为空");
             ExptSchemeGroupReviewResponse resultItem = ExptSchemeGroupReviewResponse.builder()
                     .exptGroupId(group.getExperimentGroupId())
                     .exptGroupName(group.getGroupName())
@@ -120,8 +125,8 @@ public class ExperimentSchemeScoreBiz {
                     .groupNo(group.getGroupNo())
                     .exptSchemeStateCode(schemeEntity.getState())
                     .exptSchemeStateName(ExptSchemeStateEnum.getByCode(schemeEntity.getState()).getName())
-                    .reviewDt(schemeScoreEntity != null ? schemeScoreEntity.getReviewDt() : null)
-                    .reviewScore(schemeScoreEntity != null ? schemeScoreEntity.getReviewScore() : null)
+                    .reviewDt(schemeScoreEntity.getReviewDt())
+                    .reviewScore(isAdmin ? schemeEntity.getScore() : schemeScoreEntity.getReviewScore())
                     .build();
             result.add(resultItem);
         });
@@ -454,6 +459,7 @@ public class ExperimentSchemeScoreBiz {
                     .id(experimentSchemeScoreEntity.getId())
                     .reviewScore(reviewScore)
                     .reviewState(ExptReviewStateEnum.REVIEWED.getCode())
+                    .reviewDt(new Date())
                     .build();
             entityList.add(entity);
         });
