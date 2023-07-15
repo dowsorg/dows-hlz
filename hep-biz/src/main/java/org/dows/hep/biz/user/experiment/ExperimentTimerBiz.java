@@ -222,7 +222,6 @@ public class ExperimentTimerBiz {
                         countDownResponse.setState(v.getState());
                         countDownResponse.setPeriod(v.getPeriod());
                     }
-
                 }
             });
         }
