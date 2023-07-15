@@ -4,7 +4,7 @@ oss:
     access-key: PHTHKEPBYYD079K90B0O
     secret-key: ya35DAaNmtMKm0m7Yntdwj8m1p5ud+3fQ2kM5XDn
     bucket-name: hep
-    base-path: /
+    base-path: report
     endpoint: http://192.168.1.60:9000
     slice-config:
       task-num: 8
