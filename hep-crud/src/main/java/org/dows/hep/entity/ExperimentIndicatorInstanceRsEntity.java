@@ -79,6 +79,9 @@ public class ExperimentIndicatorInstanceRsEntity {
   @Schema(title = "默认值")
   private String def;
 
+  @Schema(title = "期数反转时，重新计算人物指标顺序，内部使用，不需要对外提供")
+  private Integer recalculateSeq;
+
   @JsonIgnore
   @TableLogic
   @TableField(fill = FieldFill.INSERT)
