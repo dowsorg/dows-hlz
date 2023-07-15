@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 /**
  * @author fhb
  * @version 1.0
- * @description TODO
+ * @description findsoft 属性文件
  * @date 2023/7/6 14:39
  **/
 @Component
