@@ -203,24 +203,26 @@ public class ExperimentTimerBiz {
                 //Double aFloat = mockRateMap.get(period + "");
                 // 算出天数
                 //Double day = second * aFloat;
-                if (experimentTimerEntity.getState() == EnumExperimentState.FINISH.getState()) {
+                if (v.getState() == EnumExperimentState.FINISH.getState()) {
                     //countDownResponse.setSandDuration(Double.valueOf(totalDay));
-                    countDownResponse.setState(experimentTimerEntity.getState());
-                } else if (experimentTimerEntity.getState() == EnumExperimentState.ONGOING.getState()) {
+                    countDownResponse.setState(v.getState());
+                    countDownResponse.setPeriod(v.getPeriod());
+                } else if (v.getState() == EnumExperimentState.ONGOING.getState()) {
                     // 当前时间戳-当前期数开始时间 = 相对时间（持续了多久）；将转换为秒  .. day/duration = rate
                     //Long second1 = sct - second;
 
-                /*Double day1 = second1 * aFloat;
+                    /*Double day1 = second1 * aFloat;
 
-                for (int i = 0; i < period; i++) {
-                    Integer integer = periodMap.get(i + "");
-                    day += integer;
-                }*/
-                    if (sct >= experimentTimerEntity.getStartTime() && sct <= experimentTimerEntity.getEndTime()) {
-                        countDownResponse.setSandDurationSecond(sct - experimentTimerEntity.getStartTime() / 1000);
-                        //countDownResponse.setSandDuration(day);
+                    for (int i = 0; i < period; i++) {
+                        Integer integer = periodMap.get(i + "");
+                        day += integer;
+                    }*/
+                    if (sct >= v.getStartTime() && sct <= v.getEndTime()) {
+                        countDownResponse.setSandDurationSecond(sct - v.getStartTime() / 1000);
+                        countDownResponse.setState(v.getState());
+                        countDownResponse.setPeriod(v.getPeriod());
                     }
-                    countDownResponse.setState(experimentTimerEntity.getState());
+
                 }
             });
         }
