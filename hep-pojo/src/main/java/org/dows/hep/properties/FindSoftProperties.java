@@ -1,4 +1,4 @@
-package org.dows.hep.api.report.pdf;
+package org.dows.hep.properties;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

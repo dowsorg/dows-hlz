@@ -1,16 +1,28 @@
-package org.dows.hep.vo;
+package org.dows.hep.vo.report;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 
 import java.util.List;
 import java.util.Map;
 
 /**
- * 实验报告
- */
+ * @version 1.0
+ * @description 实验 `沙盘pdf报告` 填充数据
+ * @date 2023/7/7 11:00
+ **/
+@Builder
 @Data
-public class ExperimentReport {
+@AllArgsConstructor
+@NoArgsConstructor
+@Schema(name = "ExptBaseReportVO 对象", title = "实验 `沙盘pdf报告` 填充数据")
+public class ExptSandReportModel implements ExptReportModel {
+    // 基本信息
+    private ExptBaseInfoModel baseInfo;
     // 总得分
     private Score totalScore;
     // 每期得分()

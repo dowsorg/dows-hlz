@@ -1,4 +1,4 @@
-package org.dows.hep.api.report.pdf;
+package org.dows.hep.vo.report;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;

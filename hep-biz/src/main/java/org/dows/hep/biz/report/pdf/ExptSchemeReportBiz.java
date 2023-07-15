@@ -16,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.constant.SystemConstant;
-import org.dows.hep.api.report.pdf.*;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeItemResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeResponse;
 import org.dows.hep.biz.base.oss.OSSBiz;
@@ -25,9 +24,11 @@ import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
 import org.dows.hep.entity.ExperimentGroupEntity;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
+import org.dows.hep.properties.FindSoftProperties;
 import org.dows.hep.service.ExperimentGroupService;
 import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentParticipatorService;
+import org.dows.hep.vo.report.*;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
@@ -110,7 +111,7 @@ public class ExptSchemeReportBiz implements ExptReportBiz {
     // 生成 pdf 报告
     private ExptGroupReportVO generatePdfReportOfGroup(String exptGroupId, ExperimentReportData exptData) {
         // 将 expt-data 转为 pdf-data
-        ExptBaseInfo baseInfoVO = generateBaseInfoVO();
+        ExptBaseInfoModel baseInfoVO = generateBaseInfoVO();
         ExptSchemeReportModel.GroupInfo groupInfo = generateGroupInfo(exptGroupId, exptData);
         ExptSchemeReportModel.ScoreInfo scoreInfo = generateScoreInfo(exptGroupId, exptData);
         ExptSchemeReportModel.SchemeInfo schemeInfo = generateSchemeInfo(exptGroupId, exptData);
@@ -182,7 +183,7 @@ public class ExptSchemeReportBiz implements ExptReportBiz {
                 .list();
     }
 
-    private ExptBaseInfo generateBaseInfoVO() {
+    private ExptBaseInfoModel generateBaseInfoVO() {
         String logoStr = null;
         String coverStr = null;
         try {
@@ -193,7 +194,7 @@ public class ExptSchemeReportBiz implements ExptReportBiz {
             throw new BizException("导出实验报告时，获取logo和cover图片资源异常");
         }
 
-        return ExptBaseInfo.builder()
+        return ExptBaseInfoModel.builder()
                 .title(findSoftProperties.getExptSchemeReportTitle())
                 .logoImg(logoStr)
                 .coverImg(coverStr)

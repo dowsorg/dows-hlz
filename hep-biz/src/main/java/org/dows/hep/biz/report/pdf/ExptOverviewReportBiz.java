@@ -2,7 +2,7 @@ package org.dows.hep.biz.report.pdf;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dows.hep.api.report.pdf.ExptReportVO;
+import org.dows.hep.vo.report.ExptReportVO;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
