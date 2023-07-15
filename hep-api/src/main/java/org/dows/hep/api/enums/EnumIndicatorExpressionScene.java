@@ -13,6 +13,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @Getter
 public enum EnumIndicatorExpressionScene {
+  RE_CALCULATE(1, "重新计划指标"),
   PHYSICAL_EXAM(3, "体格检查"),
   SUPPORT_EXAM(4, "辅助检查"),
   RISK_MODEL(5, "死亡模型"),

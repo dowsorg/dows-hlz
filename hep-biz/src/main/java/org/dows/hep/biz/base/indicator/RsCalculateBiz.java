@@ -3,7 +3,7 @@ package org.dows.hep.biz.base.indicator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
+import org.dows.hep.api.base.indicator.request.RsCalculateAllPersonRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCalculateCompetitiveScoreRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCalculateHealthScoreRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCalculateMoneyScoreRequestRs;
@@ -12,12 +12,9 @@ import org.dows.hep.api.base.indicator.response.GroupMoneyScoreRsResponse;
 import org.dows.hep.api.base.indicator.response.RsCalculateCompetitiveScoreRsResponse;
 import org.dows.hep.api.base.indicator.response.RsCalculateMoneyScoreRsResponse;
 import org.dows.hep.api.enums.*;
+import org.dows.hep.api.exception.RsCalculateBizException;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
-import org.springframework.expression.Expression;
-import org.springframework.expression.ExpressionParser;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +40,8 @@ public class RsCalculateBiz {
 
   private final RsExperimentCrowdsBiz rsExperimentCrowdsBiz;
   private final RsIndicatorExpressionBiz rsIndicatorExpressionBiz;
+  private final RsExperimentIndicatorInstanceBiz rsExperimentIndicatorInstanceBiz;
+  private final RsExperimentPersonBiz rsExperimentPersonBiz;
 
   /* runsix:TODO 计算医疗占比 */
   @Transactional(rollbackFor = Exception.class)
@@ -481,16 +480,97 @@ public class RsCalculateBiz {
       Map<String, Integer> kExperimentRiskModelIdVRiskDeathProbabilityMap,
       AtomicInteger totalRiskDeathProbabilityAtomicInteger
   ) {
-    BigDecimal finalScoreBigDecimal = BigDecimal.ZERO;
+    AtomicReference<BigDecimal> finalScoreBigDecimal = new AtomicReference<>(BigDecimal.ZERO);
     int totalRiskDeathProbability = totalRiskDeathProbabilityAtomicInteger.get();
     kExperimentRiskModelIdVTotalScoreMap.forEach((experimentRiskModelId, totalScore) -> {
       Integer riskDeathProbability = kExperimentRiskModelIdVRiskDeathProbabilityMap.get(experimentRiskModelId);
-      finalScoreBigDecimal.add(
-          BigDecimal.valueOf(riskDeathProbability)
-              .divide(BigDecimal.valueOf(totalRiskDeathProbability), 2, RoundingMode.DOWN)
-              .multiply(totalScore)
+      finalScoreBigDecimal.set(
+          finalScoreBigDecimal.get().add(
+              BigDecimal.valueOf(riskDeathProbability)
+                  .divide(BigDecimal.valueOf(totalRiskDeathProbability), 2, RoundingMode.DOWN)
+                  .multiply(totalScore)
+          )
       );
     });
-    return finalScoreBigDecimal;
+    return finalScoreBigDecimal.get();
   }
+
+  @Transactional(rollbackFor = Exception.class)
+  public void reCalculateAllPerson(RsCalculateAllPersonRequestRs rsCalculateAllPersonRequestRs) throws ExecutionException, InterruptedException {
+    String appId = rsCalculateAllPersonRequestRs.getAppId();
+    String experimentId = rsCalculateAllPersonRequestRs.getExperimentId();
+    Integer periods = rsCalculateAllPersonRequestRs.getPeriods();
+
+    Set<String> reasonIdSet = new HashSet<>();
+    Map<String, List<ExperimentIndicatorExpressionRsEntity>> kReasonIdVExperimentIndicatorExpressionRsEntityListMap = new HashMap<>();
+    Map<String, List<ExperimentIndicatorExpressionItemRsEntity>> kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap = new HashMap<>();
+    Map<String, ExperimentIndicatorExpressionItemRsEntity> kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap = new HashMap<>();
+
+    Set<String> experimentPersonIdSet = new HashSet<>();
+    CompletableFuture<Void> cfPopulateExperimentPersonIdSet = CompletableFuture.runAsync(() -> {
+      rsExperimentPersonBiz.populateExperimentPersonIdSet(experimentPersonIdSet, experimentId);
+    });
+    cfPopulateExperimentPersonIdSet.get();
+
+    Map<String, List<ExperimentIndicatorInstanceRsEntity>> kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap = new HashMap<>();
+    CompletableFuture<Void> cfPopulateKExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap = CompletableFuture.runAsync(() -> {
+       rsExperimentIndicatorInstanceBiz.populateKExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap(
+          kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap, experimentPersonIdSet, experimentId
+       );
+    });
+    cfPopulateKExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap.get();
+
+    Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
+    kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap.forEach((experimentPersonId, experimentIndicatorInstanceRsEntityList) -> {
+      experimentIndicatorInstanceRsEntityList.forEach(experimentIndicatorInstanceRsEntity -> {
+        experimentIndicatorInstanceIdSet.add(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
+      });
+    });
+    if (experimentIndicatorInstanceIdSet.isEmpty()) {return;}
+    Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = new HashMap<>();
+    CompletableFuture<Void> cfPopulateKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = CompletableFuture.runAsync(() -> {
+      rsExperimentIndicatorInstanceBiz.populateKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(
+          kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap, periods, experimentIndicatorInstanceIdSet
+      );
+    });
+    cfPopulateKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get();
+
+    reasonIdSet.addAll(experimentIndicatorInstanceIdSet);
+    CompletableFuture<Void> cfPopulateParseParam = CompletableFuture.runAsync(() -> {
+      try {
+        rsIndicatorExpressionBiz.populateParseParam(
+            reasonIdSet,
+            kReasonIdVExperimentIndicatorExpressionRsEntityListMap,
+            kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap,
+            kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap
+        );
+      } catch (Exception e) {
+        log.error("RsCalculateBiz.reCalculateAllPerson.cfPopulateParseParam rsCalculateAllPersonRequestRs:{}" , rsCalculateAllPersonRequestRs, e);
+        throw new RsCalculateBizException(EnumESC.RS_CALCULATE_ERROR);
+      }
+    });
+    cfPopulateParseParam.get();
+
+    CompletableFuture<Void> cfReCalculateAllExperimentIndicatorInstance = CompletableFuture.runAsync(() -> {
+      try {
+        rsIndicatorExpressionBiz.reCalculateAllExperimentIndicatorInstance(
+            kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap,
+            kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
+            kReasonIdVExperimentIndicatorExpressionRsEntityListMap,
+            kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap,
+            kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap
+        );
+      } catch (Exception e) {
+        log.error("RsCalculateBiz.reCalculateAllPerson.cfReCalculateAllExperimentIndicatorInstance rsCalculateAllPersonRequestRs:{}" , rsCalculateAllPersonRequestRs, e);
+        throw new RsCalculateBizException(EnumESC.RS_CALCULATE_ERROR);
+      }
+    });
+    cfReCalculateAllExperimentIndicatorInstance.get();
+
+    CompletableFuture<Void> cfFinalOperation = CompletableFuture.runAsync(() -> {
+      experimentIndicatorValRsService.saveOrUpdateBatch(kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.values());
+    });
+    cfFinalOperation.get();
+  }
+
 }
