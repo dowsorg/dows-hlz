@@ -22,9 +22,11 @@ import org.dows.hep.api.base.person.response.PersonInstanceResponse;
 import org.dows.hep.api.tenant.casus.request.CasePersonIndicatorFuncRequest;
 import org.dows.hep.biz.base.indicator.CaseIndicatorInstanceBiz;
 import org.dows.hep.biz.base.org.OrgBiz;
+import org.dows.hep.entity.CasePersonEntity;
 import org.dows.hep.entity.CasePersonIndicatorFuncEntity;
 import org.dows.hep.entity.HepArmEntity;
 import org.dows.hep.service.CasePersonIndicatorFuncService;
+import org.dows.hep.service.CasePersonService;
 import org.dows.hep.service.HepArmService;
 import org.dows.sequence.api.IdGenerator;
 import org.dows.user.api.api.UserExtinfoApi;
@@ -72,6 +74,8 @@ public class PersonManageBiz {
 
     private final CaseIndicatorInstanceBiz caseIndicatorInstanceBiz;
 
+    private final CasePersonService casePersonService;
+
     /**
      * @param
      * @return
@@ -96,6 +100,17 @@ public class PersonManageBiz {
             UserExtinfoResponse extinfoResponse = userExtinfoApi.getUserExtinfoByUserId(userId);
             userExtinfoApi.deleteUserExtinfoById(extinfoResponse.getId());
         });
+        //4、如果用户在机构中存在，一并删除
+        List<CasePersonEntity> personEntityList = casePersonService.lambdaQuery()
+                .in(CasePersonEntity::getAccountId,accountIds)
+                .eq(CasePersonEntity::getDeleted,false)
+                .list();
+        if(personEntityList != null && personEntityList.size() > 0){
+            personEntityList.forEach(personEntity ->{
+                personEntity.setDeleted(true);
+            });
+            casePersonService.updateBatchById(personEntityList);
+        }
         return count;
     }
 
