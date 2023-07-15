@@ -80,7 +80,7 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
         }
         if(experimentState.equals(EnumExperimentState.SUSPEND.getState())){
             logInfo("call", "pausedExperiment");
-            raiseScheduler(DELAYSeconds4Pause);
+            //raiseScheduler(DELAYSeconds4Pause);
             return RUNCode4Silence;
         }
         if(null==exptColl.getStartTime()){

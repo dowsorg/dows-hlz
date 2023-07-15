@@ -351,6 +351,7 @@ public class ExperimentOrgInterveneBiz{
         if(checkIndicatorFunc){
             validator.checkIndicatorFunc();
         }
+        //ExperimentTimePoint timePoint=validator.getTimePoint(false,)
         OperateOrgFuncEntity rowOrgFunc=getRowOrgFunc(exptOperate,
                 OperateOrgFuncEntity::getOperateOrgFuncId,
                 OperateOrgFuncEntity::getOperateFlowId,

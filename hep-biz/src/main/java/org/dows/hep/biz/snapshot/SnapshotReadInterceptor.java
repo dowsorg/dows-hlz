@@ -27,27 +27,30 @@ public class SnapshotReadInterceptor extends DynamicTableNameInnerInterceptor {
             return sql;
         }
         final String sqlKey=getSqlKey(sql);
-        if(!ShareUtil.XObject.nullSafeEquals(sqlKey, localSqlKey.get())){
+        int orig=sql.indexOf(snapshotType.getDstTableName());
+        if(orig<0||!ShareUtil.XObject.nullSafeEquals(sqlKey, localSqlKey.get())){
             return sql;
         }
         try {
             String experimentId = SnapshotRequestHolder.getRefExperimentId(snapshotType);
-            if (ShareUtil.XObject.isEmpty(experimentId)) {
-                return sql;
-            }
-            int start = sql.toLowerCase().indexOf("where");
-            String eqExperimentId = String.format(" %s=%s ", snapshotType.getColExperimentInstanceId() ,experimentId);
+            experimentId=ShareUtil.XString.defaultIfEmpty(experimentId, "");
+            int start = sql.toLowerCase().indexOf("where",orig);
+            String eqExperimentId = String.format(" %s='%s' ", snapshotType.getColExperimentInstanceId() ,experimentId);
+            StringBuilder sb = new StringBuilder();
             if (start < 0) {
-                return String.format("%s where %s", sql, eqExperimentId);
+                int last=orig+snapshotType.getDstTableName().length();
+                sb.append(sql.substring(0, last));
+                sb.append(" where ");
+                sb.append(eqExperimentId);
+                sb.append(sql.substring(last));
             } else {
-                StringBuilder sb = new StringBuilder();
                 int last = start + 5;
                 sb.append(sql.substring(0, last));
                 sb.append(eqExperimentId);
                 sb.append(" and ");
                 sb.append(sql.substring(last));
-                return sb.toString();
             }
+            return sb.toString();
         } finally {
             localSqlKey.remove();
             localSnapshotType.remove();
