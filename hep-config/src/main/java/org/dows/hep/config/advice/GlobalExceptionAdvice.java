@@ -43,13 +43,13 @@ public class GlobalExceptionAdvice {
   }
 
   @ExceptionHandler(value = Exception.class)
-  public Response<?> handleException(HttpServletRequest request, HttpServletResponse response, BaseException e) {
+  public Response<?> handleException(HttpServletRequest request, HttpServletResponse response, Exception e) {
     log.error("抛出了Exception异常，调用={}服务出现自定义异常，请求的url是={}，请求的方法是={}，原因={}", serviceName, request.getRequestURL(),
         request.getMethod(), e.getMessage(), e);
-    if (e.getStatusCode() != null) {
+    /*if (e.getStatusCode() != null) {
       return Response.failed(e.getStatusCode());
-    }
-    return Response.failed(CommonStatusCode.FAILED.getCode(),getMessage(e));
+    }*/
+    return Response.failed(CommonStatusCode.FAILED.getCode(),e.getMessage());
   }
 
   /**

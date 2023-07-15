@@ -5,10 +5,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.account.api.AccountInstanceApi;
 import org.dows.account.response.AccountInstanceResponse;
+import org.dows.framework.crud.api.CrudContextHolder;
 import org.dows.hep.api.enums.EnumEventActionState;
 import org.dows.hep.api.enums.EnumExperimentOrgNoticeType;
 import org.dows.hep.api.user.experiment.response.OrgNoticeResponse;
 import org.dows.hep.api.user.experiment.vo.ExptOrgNoticeActionVO;
+import org.dows.hep.biz.dao.ExperimentParticipatorDao;
 import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.vo.ExperimentEventBox;
@@ -16,6 +18,7 @@ import org.dows.hep.biz.vo.ExperimentEventJson;
 import org.dows.hep.biz.vo.ExperimentOrgNoticeBox;
 import org.dows.hep.entity.ExperimentEventEntity;
 import org.dows.hep.entity.ExperimentOrgNoticeEntity;
+import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.service.ExperimentOrgNoticeService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
@@ -144,6 +147,41 @@ public class ExperimentOrgNoticeBiz {
                 .endFrom(noticeBox.getEntity());
         if(noticeBox.isEventNotice()) {
             rst.setActions(noticeBox.fromActionsJson(false));
+        }
+        return rst;
+    }
+    //endregion
+
+    //region websocket
+    public  Map<String,List<OrgNoticeResponse>> getWebSocketNotice(String experimentInstanceId, List<ExperimentOrgNoticeEntity> src)  throws JsonProcessingException{
+        Set<String> groupIds=ShareUtil.XCollection.toSet(src, ExperimentOrgNoticeEntity::getExperimentGroupId);
+        List<ExperimentParticipatorEntity> rowsParticipator= CrudContextHolder.getBean(ExperimentParticipatorDao.class).getAccountIdsByGroupId(experimentInstanceId, groupIds,
+                ExperimentParticipatorEntity::getAccountId,
+                ExperimentParticipatorEntity::getExperimentGroupId,
+                ExperimentParticipatorEntity::getExperimentOrgIds);
+        Map<String,List<OrgNoticeResponse>> rst=new HashMap<>();
+        List<OrgNoticeResponse> notices=null;
+        String[] orgIds;
+        for(ExperimentParticipatorEntity rowAccount:rowsParticipator){
+            if(null==notices||notices.size()>0) {
+                notices = new ArrayList<>();
+            }
+            orgIds=null;
+            if(ShareUtil.XObject.notEmpty(rowAccount.getExperimentOrgIds())){
+                orgIds=rowAccount.getExperimentOrgIds().split(",");
+            }
+            for(ExperimentOrgNoticeEntity rowNotice:src){
+                if(!ShareUtil.XObject.nullSafeEquals(rowNotice.getExperimentGroupId(), rowAccount.getExperimentGroupId()) ){
+                    continue;
+                }
+                if(null!=orgIds&&!ShareUtil.XArray.contains(orgIds, rowNotice.getExperimentOrgId())){
+                    continue;
+                }
+                notices.add(CreateOrgNoticeResponse(rowNotice));
+            }
+            if(notices.size()>0){
+                rst.put(rowAccount.getAccountId(), notices);
+            }
         }
         return rst;
     }

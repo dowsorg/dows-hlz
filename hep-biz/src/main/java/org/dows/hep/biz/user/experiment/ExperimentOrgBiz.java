@@ -85,8 +85,8 @@ public class ExperimentOrgBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Boolean startOrgFlow(StartOrgFlowRequest startOrgFlow, HttpServletRequest request ) {
-        ExptRequestValidator validator=ExptRequestValidator.create(startOrgFlow);
-        validator.checkExperimentPerson()
+        ExptRequestValidator validator=ExptRequestValidator.create(startOrgFlow)
+                .checkExperimentPerson()
                 .checkExperimentOrg()
                 .checkExperimentInstance();
         //校验登录
@@ -142,8 +142,8 @@ public class ExperimentOrgBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Page<OrgNoticeResponse> pageOrgNotice(BaseExptRequest findOrgNotice ) {
-        ExptRequestValidator validator=ExptRequestValidator.create(findOrgNotice);
-        validator.checkExperimentOrgId()
+        ExptRequestValidator.create(findOrgNotice)
+                .checkExperimentOrgId()
                 .checkExperimentGroup();
 
         return ShareBiz.buildPage(experimentOrgNoticeDao.pageByCondition(findOrgNotice,
@@ -203,15 +203,12 @@ public class ExperimentOrgBiz{
     public OrgNoticeResponse saveOrgNoticeAction(SaveNoticeActionRequest saveNoticeAction, HttpServletRequest request) throws JsonProcessingException {
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(saveNoticeAction.getActions()))
                 .throwMessage("请选择事件处理措施");
-
-        ExptRequestValidator validator=ExptRequestValidator.create(saveNoticeAction);
-        validator.checkExperimentOrg()
-                .checkExperimentInstanceId();
         //校验登录
         LoginContextVO voLogin= ShareBiz.getLoginUser(request);
         ExperimentOrgNoticeEntity rowNotice= AssertUtil.getNotNull(experimentOrgNoticeDao.getById(saveNoticeAction.getExperimentOrgNoticeId(),
                 ExperimentOrgNoticeEntity::getId,
                 ExperimentOrgNoticeEntity::getExperimentOrgNoticeId,
+                ExperimentOrgNoticeEntity::getExperimentInstanceId,
                 ExperimentOrgNoticeEntity::getExperimentPersonId,
                 ExperimentOrgNoticeEntity::getPersonName,
                 ExperimentOrgNoticeEntity::getAvatar,
@@ -227,6 +224,10 @@ public class ExperimentOrgBiz{
                 ExperimentOrgNoticeEntity::getActionState,
                 ExperimentOrgNoticeEntity::getEventActions
         )).orElseThrow("未找到机构通知信息");
+        saveNoticeAction.setExperimentInstanceId(rowNotice.getExperimentInstanceId());
+        ExptRequestValidator validator=ExptRequestValidator.create(saveNoticeAction)
+                .checkExperimentInstanceId();
+
         AssertUtil.trueThenThrow(EnumEventActionState.DONE.getCode().equals(rowNotice.getActionState()))
                 .throwMessage("该事件已处理");
         AssertUtil.trueThenThrow(!EnumExperimentOrgNoticeType.EVENTTriggered.getCode().equals(rowNotice.getNoticeSrcType())

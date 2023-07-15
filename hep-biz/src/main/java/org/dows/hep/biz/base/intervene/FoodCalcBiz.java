@@ -418,8 +418,9 @@ public class FoodCalcBiz {
                 FoodMaterialEntity::getAppId,
                 FoodMaterialEntity::getFoodMaterialId,
                 FoodMaterialEntity::getInterveneCategId);
+        final CategCache cache=getCategCache();
         rowsMaterial.forEach(i -> {
-            CategVO cacheCateg = getCategCache().getById(i.getAppId(), i.getInterveneCategId());
+            CategVO cacheCateg = cache.getById(i.getAppId(), i.getInterveneCategId());
             if (null == cacheCateg) {
                 return;
             }
