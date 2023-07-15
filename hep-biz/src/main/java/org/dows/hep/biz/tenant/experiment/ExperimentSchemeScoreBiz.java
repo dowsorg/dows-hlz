@@ -469,7 +469,7 @@ public class ExperimentSchemeScoreBiz {
                     .orElse(0.00);
             finalScore = (float) average;
         }
-        return BigDecimal.valueOf(finalScore).setScale(0, RoundingMode.DOWN);
+        return BigDecimal.valueOf(finalScore).setScale(1, RoundingMode.HALF_UP);
     }
 
     private boolean updSchemeState(BigDecimal score, String schemeId) {
