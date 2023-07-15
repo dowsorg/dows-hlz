@@ -2,6 +2,7 @@ package org.dows.hep.event.handler;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
+import com.alibaba.fastjson.JSON;
 import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -107,7 +108,7 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
                     .eq(ExperimentTaskScheduleEntity::getPeriods, v.getPeriod())
                     .one();
             String taskParams1 = "{\"experimentInstanceId\":\"" + experimentInstanceId
-                    + "\",\"period\":" + v.getPeriod() + ",\"noticeParams\":" + noticeParams + ",\"noticeType\":" + EnumExperimentNotice.startNotice.getCode() + "}";
+                    + "\",\"period\":" + v.getPeriod() + ",\"noticeParams\":" + JSON.toJSONString(noticeParams) + ",\"noticeType\":" + EnumExperimentNotice.startNotice.getCode() + "}";
             if (startTaskScheduleEntity != null && !ReflectUtil.isObjectNull(startTaskScheduleEntity)) {
                 BeanUtil.copyProperties(startTaskScheduleEntity, startEntity);
                 startEntity.setExecuteTime(new Date(v.getStartTime()));
@@ -139,7 +140,7 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
                     .eq(ExperimentTaskScheduleEntity::getPeriods, v.getPeriod())
                     .one();
             String taskParams2 = "{\"experimentInstanceId\":\"" + experimentInstanceId
-                    + "\",\"period\":" + v.getPeriod() + ",\"noticeParams\":" + noticeParams + ",\"noticeType\":" + EnumExperimentNotice.endNotice.getCode() + "}";
+                    + "\",\"period\":" + v.getPeriod() + ",\"noticeParams\":" + JSON.toJSONString(noticeParams) + ",\"noticeType\":" + EnumExperimentNotice.endNotice.getCode() + "}";
             if (endTaskScheduleEntity != null && !ReflectUtil.isObjectNull(endTaskScheduleEntity)) {
                 BeanUtil.copyProperties(endTaskScheduleEntity, endEntity);
                 endEntity.setExecuteTime(new Date(v.getStartTime()));
