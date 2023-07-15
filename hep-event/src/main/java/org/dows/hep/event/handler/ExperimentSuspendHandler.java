@@ -99,7 +99,7 @@ public class ExperimentSuspendHandler extends AbstractEventHandler implements Ev
                     .periodInterval(experimentTimerEntity.getPeriodInterval())
                     .appId(experimentTimerEntity.getAppId())
                     .model(experimentTimerEntity.getModel())
-                    .state(experimentTimerEntity.getState())
+                    .state(EnumExperimentState.SUSPEND.getState())
                     .pauseCount(experimentTimerEntity.getPauseCount() + 1)
                     .paused(true)
                     .pauseStartTime(experimentRestartRequest.getCurrentTime())
