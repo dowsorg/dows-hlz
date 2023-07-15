@@ -174,7 +174,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
         ExperimentTaskScheduleEntity finishTaskScheduleEntity = experimentTaskScheduleService.lambdaQuery()
                 .eq(ExperimentTaskScheduleEntity::getTaskBeanCode, "experimentFinishTask")
                 .eq(ExperimentTaskScheduleEntity::getExperimentInstanceId, experimentRestartRequest.getExperimentInstanceId())
-                .eq(ExperimentTaskScheduleEntity::getPeriod, lastPeriods.getPeriod())
+                .eq(ExperimentTaskScheduleEntity::getPeriods, lastPeriods.getPeriod())
                 .one();
         if (finishTaskScheduleEntity != null && !ReflectUtil.isObjectNull(finishTaskScheduleEntity)) {
             BeanUtil.copyProperties(finishTaskScheduleEntity, finishEntity);
@@ -186,7 +186,8 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                     .experimentTaskTimerId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentRestartRequest.getExperimentInstanceId())
                     .taskBeanCode("experimentFinishTask")
-                    .period(lastPeriods.getPeriod())
+                    .periods(lastPeriods.getPeriod())
+                    .appId(lastPeriods.getAppId())
                     .executeTime(DateUtil.date(lastPeriods.getEndTime()))
                     .executed(false)
                     .build();
@@ -210,7 +211,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                 ExperimentTaskScheduleEntity calcTaskScheduleEntity = experimentTaskScheduleService.lambdaQuery()
                         .eq(ExperimentTaskScheduleEntity::getTaskBeanCode, "experimentCalcTask")
                         .eq(ExperimentTaskScheduleEntity::getExperimentInstanceId, experimentRestartRequest.getExperimentInstanceId())
-                        .eq(ExperimentTaskScheduleEntity::getPeriod, lastPeriods.getPeriod())
+                        .eq(ExperimentTaskScheduleEntity::getPeriods, lastPeriods.getPeriod())
                         .one();
                 if (calcTaskScheduleEntity != null && !ReflectUtil.isObjectNull(calcTaskScheduleEntity)) {
                     BeanUtil.copyProperties(calcTaskScheduleEntity, calcEntity);
@@ -222,7 +223,8 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                             .experimentTaskTimerId(idGenerator.nextIdStr())
                             .experimentInstanceId(experimentRestartRequest.getExperimentInstanceId())
                             .taskBeanCode("experimentCalcTask")
-                            .period(lastPeriods.getPeriod())
+                            .periods(lastPeriods.getPeriod())
+                            .appId(lastPeriods.getAppId())
                             .executeTime(DateUtil.date(lastPeriods.getEndTime()))
                             .executed(false)
                             .build();
@@ -238,6 +240,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
 
                 taskScheduler.schedule(experimentCalcTask, DateUtil.date(updateExperimentTimerEntity.getEndTime()));
             }
+
         }
     }
 

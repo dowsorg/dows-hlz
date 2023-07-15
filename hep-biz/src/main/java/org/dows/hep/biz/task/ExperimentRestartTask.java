@@ -18,6 +18,8 @@ public class ExperimentRestartTask implements Runnable {
     // 应用ID(需要根据应用ID查询该应用下的实验)
     private final String appId;
 
+    private final Integer period;
+
     /**
      * todo
      * 1.获取实验计时器，
@@ -31,17 +33,26 @@ public class ExperimentRestartTask implements Runnable {
         List<ExperimentTaskScheduleEntity> scheduleEntityList = experimentTaskScheduleService.lambdaQuery()
                 .eq(ExperimentTaskScheduleEntity::getDeleted, false)
                 .eq(ExperimentTaskScheduleEntity::getExecuted, false)
+                .eq(ExperimentTaskScheduleEntity::getPeriods,period)
+                .eq(ExperimentTaskScheduleEntity::getAppId,appId)
                 .list();
         // 2、判断是在重启开始前应该执行的还是之后执行的任务，如果本来应该是重启之前执行的任务，重启的时候就执行，否则的话就拉起任务
         if (scheduleEntityList != null && scheduleEntityList.size() > 0) {
             scheduleEntityList.forEach(scheduleEntity -> {
-                if (scheduleEntity.getRestartTime().after(scheduleEntity.getExecuteTime())) {
+                if (scheduleEntity.getRestartTime() != null && scheduleEntity.getRestartTime().after(scheduleEntity.getExecuteTime())) {
                     //2.1、直接执行中途断了的任务
+                    if(scheduleEntity.getTaskBeanCode().equals("experimentCalcTask")){
+                    //2.2、
+                    }
+                    if(scheduleEntity.getTaskBeanCode().equals("experimentFinishTask")){
 
-                }
-                if (scheduleEntity.getRestartTime().before(scheduleEntity.getExecuteTime()) ||
-                        scheduleEntity.getRestartTime().equals(scheduleEntity.getExecuteTime())) {
-                    //2.2、拉起任务
+                    }
+                    if(scheduleEntity.getTaskBeanCode().equals("experimentPeriodStartNoticeTask")){
+
+                    }
+                    if(scheduleEntity.getTaskBeanCode().equals("experimentPeriodEndNoticeTask")){
+
+                    }
                 }
             });
         }

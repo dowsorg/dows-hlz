@@ -1,6 +1,5 @@
 package org.dows.hep.event;
 
-import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +33,7 @@ public class ApplicationRestartedListener implements ApplicationListener<Applica
                 .eq(ExperimentTaskScheduleEntity::getAppId,appId)
                 .gt(ExperimentTaskScheduleEntity::getExecuteTime,now)
                 .update();
-        ExperimentRestartTask experimentRestartTask = new ExperimentRestartTask(experimentTaskScheduleService, appId);
+        ExperimentRestartTask experimentRestartTask = new ExperimentRestartTask(experimentTaskScheduleService, appId,1);
         experimentRestartTask.run();
     }
 }

@@ -40,7 +40,7 @@ public class ExperimentTaskScheduleEntity implements CrudEntity {
     private String experimentTaskTimerId;
 
     @Schema(title = "期数")
-    private Integer period;
+    private Integer periods;
 
     @Schema(title = "实验实列ID")
     private String experimentInstanceId;

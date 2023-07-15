@@ -101,19 +101,19 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
             ExperimentTaskScheduleEntity startTaskScheduleEntity = experimentTaskScheduleService.lambdaQuery()
                     .eq(ExperimentTaskScheduleEntity::getTaskBeanCode, "experimentPeriodStartNoticeTask")
                     .eq(ExperimentTaskScheduleEntity::getExperimentInstanceId, experimentInstanceId)
-                    .eq(ExperimentTaskScheduleEntity::getPeriod, periods)
+                    .eq(ExperimentTaskScheduleEntity::getPeriods, periods)
                     .one();
             if (startTaskScheduleEntity != null && !ReflectUtil.isObjectNull(startTaskScheduleEntity)) {
                 BeanUtil.copyProperties(startTaskScheduleEntity, startEntity);
                 startEntity.setExecuteTime(new Date(v.getStartTime()));
                 startEntity.setExecuted(false);
             } else {
-                startEntity
-                        .builder()
+                startEntity.builder()
                         .experimentTaskTimerId(idGenerator.nextIdStr())
                         .experimentInstanceId(experimentInstanceId)
                         .taskBeanCode("experimentPeriodStartNoticeTask")
-                        .period(periods)
+                        .periods(periods)
+                        .appId(v.getAppId())
                         .executeTime(new Date(v.getStartTime()))
                         .executed(false)
                         .build();
@@ -129,19 +129,19 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
             ExperimentTaskScheduleEntity endTaskScheduleEntity = experimentTaskScheduleService.lambdaQuery()
                     .eq(ExperimentTaskScheduleEntity::getTaskBeanCode, "experimentPeriodEndNoticeTask")
                     .eq(ExperimentTaskScheduleEntity::getExperimentInstanceId, experimentInstanceId)
-                    .eq(ExperimentTaskScheduleEntity::getPeriod, periods)
+                    .eq(ExperimentTaskScheduleEntity::getPeriods, periods)
                     .one();
             if (endTaskScheduleEntity != null && !ReflectUtil.isObjectNull(endTaskScheduleEntity)) {
                 BeanUtil.copyProperties(endTaskScheduleEntity, endEntity);
                 endEntity.setExecuteTime(new Date(v.getStartTime()));
                 endEntity.setExecuted(false);
             } else {
-                endEntity
-                        .builder()
+                endEntity.builder()
                         .experimentTaskTimerId(idGenerator.nextIdStr())
                         .experimentInstanceId(experimentInstanceId)
                         .taskBeanCode("experimentPeriodEndNoticeTask")
-                        .period(periods)
+                        .periods(periods)
+                        .appId(v.getAppId())
                         .executeTime(new Date(v.getStartTime()))
                         .executed(false)
                         .build();
