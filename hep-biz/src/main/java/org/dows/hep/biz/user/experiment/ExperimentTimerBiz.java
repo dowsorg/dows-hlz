@@ -218,7 +218,7 @@ public class ExperimentTimerBiz {
                         day += integer;
                     }*/
                     if (sct >= v.getStartTime() && sct <= v.getEndTime()) {
-                        countDownResponse.setSandDurationSecond(sct - v.getStartTime() / 1000);
+                        countDownResponse.setSandDurationSecond((sct - v.getStartTime()) / 1000);
                         countDownResponse.setState(v.getState());
                         countDownResponse.setPeriod(v.getPeriod());
                     }
