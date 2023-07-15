@@ -193,6 +193,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
         }
         experimentTaskScheduleService.saveOrUpdate(finishEntity);
 
+        // 执行任务
         ExperimentFinishTask experimentFinishTask = new ExperimentFinishTask(experimentInstanceService,
                 experimentParticipatorService, experimentTimerService, experimentScoreCalculator,
                 experimentRestartRequest.getExperimentInstanceId());
@@ -203,12 +204,6 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
          */
         for (ExperimentGroupResponse experimentGroupRespons : experimentGroupResponses) {
             for (ExperimentTimerEntity updateExperimentTimerEntity : updateExperimentTimerEntities) {
-                ExperimentCalcTask experimentCalcTask = new ExperimentCalcTask(
-                        experimentTimerBiz,
-                        experimentScoreCalculator,
-                        experimentRestartRequest.getExperimentInstanceId(),
-                        experimentGroupRespons.getExperimentGroupId(),
-                        updateExperimentTimerEntity.getPeriod());
 
                 //保存任务进计时器表，防止重启后服务挂了，一个任务每个实验每一期只能有一条数据
                 ExperimentTaskScheduleEntity calcEntity = new ExperimentTaskScheduleEntity();
@@ -233,6 +228,13 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                             .build();
                 }
                 experimentTaskScheduleService.saveOrUpdate(calcEntity);
+                // 执行任务
+                ExperimentCalcTask experimentCalcTask = new ExperimentCalcTask(
+                        experimentTimerBiz,
+                        experimentScoreCalculator,
+                        experimentRestartRequest.getExperimentInstanceId(),
+                        experimentGroupRespons.getExperimentGroupId(),
+                        updateExperimentTimerEntity.getPeriod());
 
                 taskScheduler.schedule(experimentCalcTask, DateUtil.date(updateExperimentTimerEntity.getEndTime()));
             }
