@@ -27,6 +27,8 @@ import org.dows.hep.service.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -151,16 +153,8 @@ public class ExperimentSchemeScoreBiz {
 
         // 方案设计-评分信息
         List<ExperimentSchemeScoreResponse> scoreInfos = listSchemeScore(exptInstanceId, reviewAccountId, exptGroupId);
-        float totalScore = 0.0f;
-        if (CollUtil.isNotEmpty(scoreInfos)) {
-            double average = scoreInfos.stream()
-                    .mapToDouble(item -> item.getReviewScore() == null ? 0.0 : item.getReviewScore().doubleValue())
-                    .average()
-                    .orElse(0.00);
-            totalScore = (float) average;
-        }
         ExptSchemeScoreReviewVO.SchemeScoreInfo schemeScoreInfo = ExptSchemeScoreReviewVO.SchemeScoreInfo.builder()
-                .finalScore(totalScore)
+                .finalScore(schemeInfo.getScore())
                 .scoreInfos(scoreInfos)
                 .build();
 
@@ -179,7 +173,7 @@ public class ExperimentSchemeScoreBiz {
      * @date 2023/6/15 21:52
      */
     @DSTransactional
-    public Boolean submitSchemeScore(ExperimentSchemeScoreRequest request, String submitAccountId) {
+    public String submitSchemeScore(ExperimentSchemeScoreRequest request, String submitAccountId) {
         /* 处理请求数据 */
         // check params and auth
         checkParamsAndAuth(request, submitAccountId);
@@ -223,10 +217,11 @@ public class ExperimentSchemeScoreBiz {
         boolean updScoreItemRes = updSchemeScoreItemScore(itemList, scoreItemIdMapEntity);
         // 更新 SchemeScore 的得分和状态
         boolean updScoreRes = updSchemeScoreAndState(scoreInfos, schemeIdMapEntity);
-        // 更新 exptScheme 的状态
-        boolean updSchemeRes = updSchemeState(schemeIdList);
+        // 更新 exptScheme 的得分和状态
+        BigDecimal score = calFinalScore(scoreInfos);
+        boolean updSchemeRes = updSchemeState(score, schemeIdList.get(0));
 
-        return updScoreItemRes && updScoreRes && updSchemeRes;
+        return score.toString();
     }
 
     private void preHandleExperimentSchemeScore(String experimentInstanceId, String caseInstanceId, List<String> viewAccountIds) {
@@ -465,10 +460,23 @@ public class ExperimentSchemeScoreBiz {
         return experimentSchemeScoreService.updateBatchById(entityList);
     }
 
-    private boolean updSchemeState(List<String> schemeIdList) {
+    private BigDecimal calFinalScore(List<ExperimentSchemeScoreRequest.SchemeScoreRequest> scoreInfos) {
+        float finalScore = 0.00f;
+        if (CollUtil.isNotEmpty(scoreInfos)) {
+            double average = scoreInfos.stream()
+                    .mapToDouble(item -> item.getReviewScore() == null ? 0.0 : item.getReviewScore().doubleValue())
+                    .average()
+                    .orElse(0.00);
+            finalScore = (float) average;
+        }
+        return BigDecimal.valueOf(finalScore).setScale(0, RoundingMode.DOWN);
+    }
+
+    private boolean updSchemeState(BigDecimal score, String schemeId) {
         return experimentSchemeService.lambdaUpdate()
-                .in(ExperimentSchemeEntity::getExperimentSchemeId, schemeIdList)
+                .eq(ExperimentSchemeEntity::getExperimentSchemeId, schemeId)
                 .set(ExperimentSchemeEntity::getState, ExptSchemeStateEnum.SCORED.getCode()) // 2-已批阅
+                .set(ExperimentSchemeEntity::getScore, score)
                 .update();
     }
 }
