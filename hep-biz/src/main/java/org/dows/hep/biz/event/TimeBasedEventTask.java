@@ -37,9 +37,9 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
     //最小间隔
     private final int DELAYSecondsMin=3;
     //暂停轮询间隔
-    private final int DELAYSeconds4Pause=5;
+    private final int DELAYSeconds4Pause=10;
     //失败重试间隔
-    private final int DELAYSeconds4Fail=5;
+    private final int DELAYSeconds4Fail=10;
     //子任务并发数
     private final int CONCURRENTNum=4;
 
@@ -58,7 +58,7 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
             call();
         }catch (Exception ex){
             logError(ex, "run",ex.getMessage());
-            raiseScheduler(DELAYSecondsMin);
+            raiseScheduler(DELAYSeconds4Fail);
         }
     }
 
@@ -92,10 +92,6 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
         if(ShareUtil.XObject.isEmpty(eventColl.getEventGroups()) ){
             logInfo("call", "emptyEvents");
             TimeBasedEventCache.Instance().caffineCache().invalidate(experimentKey);
-            //debug
-            if(experimentKey.equals("356157388262346752")){
-                raiseScheduler(DELAYSeconds4Pause);
-            }
             return RUNCode4Silence;
         }
         LocalDateTime dtNow=LocalDateTime.now();
@@ -105,14 +101,9 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
             raiseScheduler(DELAYSeconds4Fail);
             return RUNCode4Fail;
         }
-        //debug
-        if(experimentKey.equals("356157388262346752")){
-
-        }else {
-            if (timePoint.getGameState() == EnumExperimentState.FINISH) {
-                logInfo("call", "finishedExperiment");
-                return RUNCode4Silence;
-            }
+        if (timePoint.getGameState() == EnumExperimentState.FINISH) {
+            logInfo("call", "finishedExperiment");
+            return RUNCode4Silence;
         }
 
         exptColl.setPauseSeconds(timePoint.getCntPauseSeconds());
@@ -165,7 +156,7 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
                                 String.join(",", ShareUtil.XCollection.map(i.getEventItems(), ExperimentEventEntity::getExperimentEventId)));
                     }
                 });
-               logError(ex, "runEventGroup fail.", "eventIds:%s",
+                logError(ex, "runEventGroup fail.", "eventIds:%s",
                         String.join(",", ShareUtil.XCollection.map(triggeredEvents, ExperimentEventEntity::getExperimentEventId)));
                 runStat.failTheadCounter.incrementAndGet();
                 exceptionFlag = true;

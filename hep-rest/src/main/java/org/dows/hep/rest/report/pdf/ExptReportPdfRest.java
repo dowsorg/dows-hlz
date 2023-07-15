@@ -50,16 +50,13 @@ public class ExptReportPdfRest {
     public ExptReportVO exportGroupReport(@RequestParam String experimentInstanceId, @RequestParam String experimentGroupId) {
         // 获取实验信息
         ExperimentInstanceEntity exptEntity = checkExpt(experimentInstanceId);
-
         String fileName = exptEntity.getId() + SystemConstant.SPLIT_UNDER_LINE + exptEntity.getExperimentName() + SystemConstant.SPLIT_UNDER_LINE + experimentGroupId + SystemConstant.SUFFIX_ZIP;
-        String zipPath = SystemConstant.PDF_REPORT_TMP_PATH + fileName;
 
         /*todo 分布式锁*/
         RLock lock = redissonClient.getLock(RedisKeyConst.HM_LOCK_REPORT + experimentGroupId);
         try {
             if (lock.tryLock(-1, 10, TimeUnit.SECONDS)) {
                 ExptReportVO exptReportVO = generatePdf(experimentInstanceId, experimentGroupId);
-                exptReportVO.setZipPath(zipPath);
                 exptReportVO.setZipName(fileName);
                 ossReportBiz.upload(exptReportVO);
                 return exptReportVO;
@@ -82,16 +79,14 @@ public class ExptReportPdfRest {
     public ExptReportVO exportExptReport(@RequestParam String experimentInstanceId) throws InterruptedException {
         // check
         ExperimentInstanceEntity exptEntity = checkExpt(experimentInstanceId);
-
         String fileName = exptEntity.getId() + SystemConstant.SPLIT_UNDER_LINE + exptEntity.getExperimentName() + SystemConstant.SUFFIX_ZIP;
-        String zipPath = SystemConstant.PDF_REPORT_TMP_PATH + fileName;
 
         /*todo 分布式锁*/
         RLock lock = redissonClient.getLock(RedisKeyConst.HM_LOCK_REPORT + experimentInstanceId);
         try {
             if (lock.tryLock(-1, 30, TimeUnit.SECONDS)) {
                 ExptReportVO exptReportVO = generatePdf(experimentInstanceId, null);
-                exptReportVO.setZipPath(zipPath);
+//                exptReportVO.setZipPath(zipPath);
                 exptReportVO.setZipName(fileName);
                 ossReportBiz.upload(exptReportVO);
                 return exptReportVO;

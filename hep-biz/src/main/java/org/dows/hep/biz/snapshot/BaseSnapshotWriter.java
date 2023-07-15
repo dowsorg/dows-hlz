@@ -69,7 +69,7 @@ public abstract class BaseSnapshotWriter<T> implements ISnapshotDbWriter<T> {
                 logError("write","快照写入失败. %s",req );
             }
             SnapshotRefCache.Instance().removeExperimentIdByMd5(req.getAppId(),snapshotType,md5);
-            SnapshotRefCache.Instance().removeRefExperimentId(req.getAppId(),snapshotType,req.getExperimentInstanceId());
+            SnapshotRefCache.Instance().removeRefExperimentId(req.getAppId(),snapshotType,experimentId);
             return rst;
         }catch(Exception ex){
             logError(ex,"write","快照写入异常. %s",req );
