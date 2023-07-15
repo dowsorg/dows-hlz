@@ -43,6 +43,64 @@ public class RsIndicatorExpressionBiz {
   private final ExperimentIndicatorExpressionRsService experimentIndicatorExpressionRsService;
   private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
 
+  /* runsix:期数反转使用 */
+  public void reCalculateAllExperimentIndicatorInstance(
+      Map<String, List<ExperimentIndicatorInstanceRsEntity>> kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap,
+      Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
+      Map<String, List<ExperimentIndicatorExpressionRsEntity>> kReasonIdVExperimentIndicatorExpressionRsEntityListMap,
+      Map<String, List<ExperimentIndicatorExpressionItemRsEntity>> kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap,
+      Map<String, ExperimentIndicatorExpressionItemRsEntity> kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap
+
+  ) {
+    if (Objects.isNull(kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap)
+        || Objects.isNull(kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap)
+        || Objects.isNull(kReasonIdVExperimentIndicatorExpressionRsEntityListMap)
+        || Objects.isNull(kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap)
+        || Objects.isNull(kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap)
+    ) {return;}
+    kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap.forEach((kExperimentPersonId, experimentIndicatorInstanceRsEntityList) -> {
+      experimentIndicatorInstanceRsEntityList.sort(Comparator.comparingInt(ExperimentIndicatorInstanceRsEntity::getRecalculateSeq));
+      experimentIndicatorInstanceRsEntityList.forEach(experimentIndicatorInstanceRsEntity -> {
+        String experimentIndicatorInstanceId = experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId();
+        ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
+        if (Objects.isNull(experimentIndicatorValRsEntity)) {return;}
+        AtomicReference<String> newCurrentValAtomicReference = new AtomicReference<>();
+        List<ExperimentIndicatorExpressionRsEntity> experimentIndicatorExpressionRsEntityList = kReasonIdVExperimentIndicatorExpressionRsEntityListMap.get(experimentIndicatorInstanceId);
+        if (Objects.isNull(experimentIndicatorExpressionRsEntityList) || experimentIndicatorExpressionRsEntityList.isEmpty()) {return;}
+        /* runsix:指标管理的指标，只允许有一个公式 */
+        ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity = experimentIndicatorExpressionRsEntityList.get(0);
+        String experimentIndicatorExpressionId = experimentIndicatorExpressionRsEntity.getExperimentIndicatorExpressionId();
+        List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList = kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap.get(experimentIndicatorExpressionId);
+        if (Objects.isNull(experimentIndicatorExpressionItemRsEntityList) || experimentIndicatorExpressionItemRsEntityList.isEmpty()) {return;}
+        ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity = null;
+        String minIndicatorExpressionItemId = experimentIndicatorExpressionRsEntity.getMinIndicatorExpressionItemId();
+        if (StringUtils.isNotBlank(minIndicatorExpressionItemId) && Objects.nonNull(kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(minIndicatorExpressionItemId))) {
+          minExperimentIndicatorExpressionItemRsEntity = kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(minIndicatorExpressionItemId);
+        }
+        ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity = null;
+        String maxIndicatorExpressionItemId = experimentIndicatorExpressionRsEntity.getMaxIndicatorExpressionItemId();
+        if (StringUtils.isNotBlank(maxIndicatorExpressionItemId) && Objects.nonNull(kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(maxIndicatorExpressionItemId))) {
+          maxExperimentIndicatorExpressionItemRsEntity = kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(maxIndicatorExpressionItemId);
+        }
+        this.parseIndicatorExpression(
+            EnumIndicatorExpressionField.EXPERIMENT.getField(),
+            EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource(),
+            EnumIndicatorExpressionScene.RE_CALCULATE.getScene(),
+            newCurrentValAtomicReference,
+            kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
+            experimentIndicatorExpressionRsEntity,
+            experimentIndicatorExpressionItemRsEntityList,
+            minExperimentIndicatorExpressionItemRsEntity,
+            maxExperimentIndicatorExpressionItemRsEntity
+        );
+        String newCurrentVal = newCurrentValAtomicReference.get();
+        if (StringUtils.isBlank(newCurrentVal)) {return;}
+        experimentIndicatorValRsEntity.setCurrentVal(newCurrentVal);
+        kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(experimentIndicatorInstanceId, experimentIndicatorValRsEntity);
+      });
+    });
+  }
+
   public void populateKExperimentPersonIdVKExperimentIndicatorInstanceIdVExperimentIndicatorValMap(
       Map<String, Map<String, ExperimentIndicatorValRsEntity>> kExperimentPersonIdVKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
       Set<String> experimentPersonIdSet,
@@ -801,16 +859,6 @@ public class RsIndicatorExpressionBiz {
         break;
       }
     }
-    /* runsix:如果没有结果，看情况出炉 */
-    String result = resultAtomicReference.get();
-    if (StringUtils.isBlank(result)) {
-      /* runsix:TODO  */
-      if (NumberUtils.isCreatable(result)) {
-        resultAtomicReference.set("0");
-      } else {
-        resultAtomicReference.set("");
-      }
-    }
   }
 
   /**
@@ -981,16 +1029,72 @@ public class RsIndicatorExpressionBiz {
     }
   }
 
+  public void populateParseParam(
+      Set<String> reasonIdSet,
+      Map<String, List<ExperimentIndicatorExpressionRsEntity>> kReasonIdVExperimentIndicatorExpressionRsEntityListMap,
+      Map<String, List<ExperimentIndicatorExpressionItemRsEntity>> kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap,
+      Map<String, ExperimentIndicatorExpressionItemRsEntity> kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap
+  ) throws ExecutionException, InterruptedException {
+    if (Objects.isNull(reasonIdSet) || reasonIdSet.isEmpty()
+        || Objects.isNull(kReasonIdVExperimentIndicatorExpressionRsEntityListMap)
+        || Objects.isNull(kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap)
+        || Objects.isNull(kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap)
+    ) {return;}
+
+    CompletableFuture<Void> cfPopulateKExperimentReasonIdVExperimentIndicatorExpressionRsEntityListMap = CompletableFuture.runAsync(() -> {
+      try {
+        populateKExperimentReasonIdVExperimentIndicatorExpressionRsEntityListMap(kReasonIdVExperimentIndicatorExpressionRsEntityListMap, reasonIdSet);
+      } catch (Exception e) {
+        log.error("RsIndicatorExpressionBiz.populateParseParam error", e);
+        throw new RsIndicatorExpressionException("填充解析公式参数出错，请及时与管理员联系");
+      }
+    });
+    cfPopulateKExperimentReasonIdVExperimentIndicatorExpressionRsEntityListMap.get();
+
+    Set<String> experimentIndicatorExpressionIdSet = new HashSet<>();
+    kReasonIdVExperimentIndicatorExpressionRsEntityListMap.forEach((reasonId, experimentIndicatorExpressionRsEntityList) -> {
+      experimentIndicatorExpressionRsEntityList.forEach(experimentIndicatorExpressionRsEntity -> {
+        experimentIndicatorExpressionIdSet.add(experimentIndicatorExpressionRsEntity.getExperimentIndicatorExpressionId());
+      });
+    });
+    if (experimentIndicatorExpressionIdSet.isEmpty()) {return;}
+
+    Map<String, ExperimentIndicatorExpressionRsEntity> kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap = new HashMap<>();
+    CompletableFuture<Void> cfPopulateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap = CompletableFuture.runAsync(() -> {
+      populateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap(kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap, experimentIndicatorExpressionIdSet);
+    });
+    cfPopulateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap.get();
+
+    CompletableFuture<Void> cfPopulateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap = CompletableFuture.runAsync(() -> {
+      populateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap(
+          kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap, experimentIndicatorExpressionIdSet);
+    });
+    cfPopulateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap.get();
+
+    Set<String> experimentIndicatorExpressionItemIdSet = new HashSet<>();
+    kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap.forEach((experimentIndicatorExpressionId, experimentIndicatorExpressionItemRsEntityList) -> {
+      experimentIndicatorExpressionItemRsEntityList.forEach(experimentIndicatorExpressionItemRsEntity -> {
+        experimentIndicatorExpressionItemIdSet.add(experimentIndicatorExpressionItemRsEntity.getExperimentIndicatorExpressionItemId());
+      });
+    });
+    if (experimentIndicatorExpressionItemIdSet.isEmpty()) {return;}
+
+    CompletableFuture<Void> cfPopulateKExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap = CompletableFuture.runAsync(() -> {
+      populateKExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap(
+          kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap, experimentIndicatorExpressionItemIdSet);
+    });
+    cfPopulateKExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get();
+
+  }
+
+  /* runsix:指标管理的指标id以及对应的指标公式（只有一条） */
   public void populateKExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap(
       Map<String, ExperimentIndicatorExpressionRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap,
       Set<String> experimentIndicatorInstanceIdSet
   ) {
-    if (Objects.isNull(kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap)) {
-      return;
-    }
-    if (Objects.isNull(experimentIndicatorInstanceIdSet) || experimentIndicatorInstanceIdSet.isEmpty()) {
-      return;
-    }
+    if (Objects.isNull(kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap)
+        || Objects.isNull(experimentIndicatorInstanceIdSet) || experimentIndicatorInstanceIdSet.isEmpty()
+    ) {return;}
     Set<String> experimentIndicatorExpressionIdSet = new HashSet<>();
     Map<String, String> kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionIdMap = new HashMap<>();
     experimentIndicatorExpressionRefRsService.lambdaQuery()
@@ -998,13 +1102,12 @@ public class RsIndicatorExpressionBiz {
         .list()
         .forEach(experimentIndicatorExpressionRefRsEntity -> {
           experimentIndicatorExpressionIdSet.add(experimentIndicatorExpressionRefRsEntity.getIndicatorExpressionId());
+          /* runsix:因为只有一条，所以这样操作 */
           kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionIdMap.put(
               experimentIndicatorExpressionRefRsEntity.getReasonId(), experimentIndicatorExpressionRefRsEntity.getIndicatorExpressionId()
           );
         });
-    if (experimentIndicatorInstanceIdSet.isEmpty()) {
-      return;
-    }
+    if (experimentIndicatorExpressionIdSet.isEmpty()) {return;}
     Map<String, ExperimentIndicatorExpressionRsEntity> kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap = new HashMap<>();
     experimentIndicatorExpressionRsService.lambdaQuery()
         .in(ExperimentIndicatorExpressionRsEntity::getExperimentIndicatorExpressionId, experimentIndicatorExpressionIdSet)
@@ -1017,6 +1120,51 @@ public class RsIndicatorExpressionBiz {
       if (Objects.nonNull(experimentIndicatorExpressionRsEntity)) {
         kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap.put(experimentIndicatorInstanceId, experimentIndicatorExpressionRsEntity);
       }
+    });
+  }
+
+  public void populateKExperimentReasonIdVExperimentIndicatorExpressionRsEntityListMap(
+      Map<String, List<ExperimentIndicatorExpressionRsEntity>> kReasonIdVExperimentIndicatorExpressionRsEntityListMap,
+      Set<String> experimentReasonIdSet
+  ) throws ExecutionException, InterruptedException {
+    if (Objects.isNull(kReasonIdVExperimentIndicatorExpressionRsEntityListMap)
+        || Objects.isNull(experimentReasonIdSet) || experimentReasonIdSet.isEmpty()
+    ) {return;}
+    /* runsix:init kReasonIdVExperimentIndicatorExpressionRsEntityListMap for lambda */
+    experimentReasonIdSet.forEach(experimentReasonId -> {
+      kReasonIdVExperimentIndicatorExpressionRsEntityListMap.put(experimentReasonId, new ArrayList<>());
+    });
+
+    Map<String, List<ExperimentIndicatorExpressionRefRsEntity>> kExperimentReasonIdVExperimentIndicatorExpressionRefListMap = new HashMap<>();
+    CompletableFuture<Void> cfPopulateKExperimentReasonIdVExperimentIndicatorExpressionRefListMap = CompletableFuture.runAsync(() -> {
+      populateKExperimentReasonIdVExperimentIndicatorExpressionRefListMap(kExperimentReasonIdVExperimentIndicatorExpressionRefListMap, experimentReasonIdSet);
+    });
+    cfPopulateKExperimentReasonIdVExperimentIndicatorExpressionRefListMap.get();
+
+    Set<String> experimentIndicatorExpressionIdSet = new HashSet<>();
+    kExperimentReasonIdVExperimentIndicatorExpressionRefListMap.forEach((experimentReasonId, experimentIndicatorExpressionRefList) -> {
+      experimentIndicatorExpressionRefList.forEach(experimentIndicatorExpressionRefRsEntity -> {
+        experimentIndicatorExpressionIdSet.add(experimentIndicatorExpressionRefRsEntity.getIndicatorExpressionId());
+      });
+    });
+    if (experimentIndicatorExpressionIdSet.isEmpty()) {return;}
+
+    Map<String, ExperimentIndicatorExpressionRsEntity> kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap = new HashMap<>();
+    CompletableFuture<Void> cfPopulateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap = CompletableFuture.runAsync(() -> {
+      populateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap(kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap, experimentIndicatorExpressionIdSet);
+    });
+    cfPopulateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap.get();
+
+    kExperimentReasonIdVExperimentIndicatorExpressionRefListMap.forEach((experimentReasonId, experimentIndicatorExpressionRefList) -> {
+      List<ExperimentIndicatorExpressionRsEntity> experimentIndicatorExpressionRsEntityList = kReasonIdVExperimentIndicatorExpressionRsEntityListMap.get(experimentReasonId);
+      experimentIndicatorExpressionRefList.forEach(experimentIndicatorExpressionRefRsEntity -> {
+        String experimentIndicatorExpressionId = experimentIndicatorExpressionRefRsEntity.getIndicatorExpressionId();
+        ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity = kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap.get(experimentIndicatorExpressionId);
+        if (Objects.nonNull(experimentIndicatorExpressionRsEntity)) {
+          experimentIndicatorExpressionRsEntityList.add(experimentIndicatorExpressionRsEntity);
+        }
+      });
+      kReasonIdVExperimentIndicatorExpressionRsEntityListMap.put(experimentReasonId, experimentIndicatorExpressionRsEntityList);
     });
   }
 

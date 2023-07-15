@@ -28,6 +28,9 @@ public class ExperimentSchemeScoreRequest {
         @Schema(title = "方案设计评分ID")
         private String experimentSchemeScoreId;
 
+        @Schema(title = "评审人给的总评分")
+        private Float reviewScore;
+
         @Schema(title = "itemList")
         private List<SchemeScoreItemRequest> itemList;
     }

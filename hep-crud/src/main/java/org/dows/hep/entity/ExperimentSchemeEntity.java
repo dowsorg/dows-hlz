@@ -69,6 +69,9 @@ public class ExperimentSchemeEntity implements CrudEntity {
     @Schema(title = "方案设计")
     private String schemeSetting;
 
+    @Schema(title = "方案设计得分")
+    private Float score;
+
     @JsonIgnore
     @TableLogic
     @TableField(fill = FieldFill.INSERT)

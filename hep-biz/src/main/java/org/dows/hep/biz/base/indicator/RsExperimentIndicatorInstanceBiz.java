@@ -21,6 +21,30 @@ public class RsExperimentIndicatorInstanceBiz {
   private final ExperimentIndicatorInstanceRsService experimentIndicatorInstanceRsService;
   private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
 
+  public void populateKExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap(
+      Map<String, List<ExperimentIndicatorInstanceRsEntity>> kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap,
+      Set<String> experimentPersonIdSet,
+      String experimentId
+  ) {
+    if (Objects.isNull(kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap)
+        || Objects.isNull(experimentPersonIdSet) || experimentPersonIdSet.isEmpty()
+        || StringUtils.isBlank(experimentId)
+    ) {return;}
+    experimentIndicatorInstanceRsService.lambdaQuery()
+        .eq(ExperimentIndicatorInstanceRsEntity::getExperimentId, experimentId)
+        .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdSet)
+        .list()
+        .forEach(experimentIndicatorInstanceRsEntity -> {
+          String experimentPersonId = experimentIndicatorInstanceRsEntity.getExperimentPersonId();
+          List<ExperimentIndicatorInstanceRsEntity> experimentIndicatorInstanceRsEntityList = kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap.get(experimentPersonId);
+          if (Objects.isNull(experimentIndicatorInstanceRsEntityList)) {
+            experimentIndicatorInstanceRsEntityList = new ArrayList<>();
+          }
+          experimentIndicatorInstanceRsEntityList.add(experimentIndicatorInstanceRsEntity);
+          kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap.put(experimentPersonId, experimentIndicatorInstanceRsEntityList);
+        });
+  }
+
   public void populateKExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap(
       Map<String, Map<String, String>> kExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap,
       Set<String> experimentPersonIdSet) {
@@ -45,6 +69,8 @@ public class RsExperimentIndicatorInstanceBiz {
           });
     }
   }
+
+
 
   public void populateKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap(
       Map<String, String> kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap,
@@ -73,12 +99,9 @@ public class RsExperimentIndicatorInstanceBiz {
       String experimentPersonId,
       Set<String> indicatorInstanceIdSet
   ) {
-    if (Objects.isNull(kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap)) {
-      return ;
-    }
-    if (StringUtils.isBlank(experimentPersonId)) {
-      return;
-    }
+    if (Objects.isNull(kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap)
+        || StringUtils.isBlank(experimentPersonId)
+    ) {return;}
     experimentIndicatorInstanceRsService.lambdaQuery()
         .eq(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonId)
         .in(Objects.nonNull(indicatorInstanceIdSet) && !indicatorInstanceIdSet.isEmpty(), ExperimentIndicatorInstanceRsEntity::getIndicatorInstanceId, indicatorInstanceIdSet)
@@ -95,15 +118,10 @@ public class RsExperimentIndicatorInstanceBiz {
       Integer period,
       Set<String> experimentIndicatorInstanceIdSet
   ) {
-    if (Objects.isNull(kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap)) {
-      return;
-    }
-    if (Objects.isNull(period)) {
-      return;
-    }
-    if (Objects.isNull(experimentIndicatorInstanceIdSet) || experimentIndicatorInstanceIdSet.isEmpty()) {
-      return;
-    }
+    if (Objects.isNull(kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap)
+        || Objects.isNull(period)
+        || Objects.isNull(experimentIndicatorInstanceIdSet) || experimentIndicatorInstanceIdSet.isEmpty()
+    ) {return;}
     experimentIndicatorValRsService.lambdaQuery()
         .eq(ExperimentIndicatorValRsEntity::getPeriods, period)
         .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
@@ -116,15 +134,13 @@ public class RsExperimentIndicatorInstanceBiz {
 
   public void populateKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(
       Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
-      Integer period,
+      Integer periods,
       Set<String> experimentIndicatorInstanceIdSet) {
-    if (Objects.isNull(experimentIndicatorInstanceIdSet) || experimentIndicatorInstanceIdSet.isEmpty()) {
-      return;
-    }
-    if (Objects.isNull(period)) {
-      return;
-    }
+    if (Objects.isNull(experimentIndicatorInstanceIdSet) || experimentIndicatorInstanceIdSet.isEmpty()
+        || Objects.isNull(periods)
+    ) {return;}
     experimentIndicatorValRsService.lambdaQuery()
+        .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
         .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
         .list()
         .forEach(experimentIndicatorValRsEntity -> {

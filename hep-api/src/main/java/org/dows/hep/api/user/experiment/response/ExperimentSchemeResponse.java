@@ -41,4 +41,7 @@ public class ExperimentSchemeResponse {
 
     @Schema(title = "方案设计试卷")
     private List<ExperimentSchemeItemResponse> itemList;
+
+    @Schema(title = "方案设计得分")
+    private Float score;
 }
