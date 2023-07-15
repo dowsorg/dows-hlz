@@ -149,43 +149,6 @@ public class ShareBiz {
     }
 
 
-    /**
-     * 按小组和分配机构id获取账户
-     * @param experimentInstanceId
-     * @param src
-     * @param funcGroupId
-     * @param funcOrgId
-     * @return
-     * @param <T>
-     */
-    public static <T> Set<String> getAccountIdsByGroupAndOrgId(String experimentInstanceId, List<T> src,Function<T,String> funcGroupId, Function<T,String> funcOrgId){
-        Set<String> groupIds=ShareUtil.XCollection.toSet(src, funcGroupId);
-        List<ExperimentParticipatorEntity> rowsParticipator=CrudContextHolder.getBean(ExperimentParticipatorDao.class).getAccountIdsByGroupId(experimentInstanceId, groupIds,
-                ExperimentParticipatorEntity::getAccountId,
-                ExperimentParticipatorEntity::getExperimentGroupId,
-                ExperimentParticipatorEntity::getExperimentOrgIds);
-        Set<String> rst=new HashSet<>();
-        final String format="%s|%s";
-        Set<String> groupXOrgIds=ShareUtil.XCollection.toSet(src, i->String.format(format, funcGroupId.apply(i),funcOrgId.apply(i)));
-
-        rowsParticipator.forEach(i->{
-            if(ShareUtil.XObject.isEmpty(i.getExperimentOrgIds())){
-                rst.add(i.getAccountId());
-                return;
-            }
-            String groupId=i.getExperimentGroupId();
-            String[] orgIds=i.getExperimentOrgIds().split(",");
-            for(String orgId:orgIds){
-                if(groupXOrgIds.contains(String.format(format,groupId,orgId))){
-                    rst.add(i.getAccountId());
-                    return;
-                }
-            }
-        });
-        return rst;
-
-    }
-
 
     /**
      * 发布webSocket事件

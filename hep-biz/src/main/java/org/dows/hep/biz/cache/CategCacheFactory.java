@@ -2,16 +2,24 @@ package org.dows.hep.biz.cache;
 
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.api.CrudContextHolder;
+import org.dows.hep.api.base.intervene.request.FindSportRequest;
 import org.dows.hep.api.base.intervene.vo.FoodCategExtendVO;
 import org.dows.hep.api.enums.EnumCategFamily;
 import org.dows.hep.biz.dao.EventCategDao;
 import org.dows.hep.biz.dao.InterveneCategDao;
+import org.dows.hep.biz.dao.SportItemDao;
+import org.dows.hep.biz.dao.TreatItemDao;
+import org.dows.hep.biz.snapshot.EnumSnapshotType;
+import org.dows.hep.biz.snapshot.SnapshotRefCache;
+import org.dows.hep.biz.snapshot.SnapshotRequestHolder;
 import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.JacksonUtil;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.vo.CategVO;
 import org.dows.hep.entity.EventCategEntity;
 import org.dows.hep.entity.InterveneCategoryEntity;
+import org.dows.hep.entity.SportItemEntity;
+import org.dows.hep.entity.TreatItemEntity;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,32 +30,89 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public enum CategCacheFactory {
-    NONE(EnumCategFamily.NONE,0),
-    FOODMaterial(EnumCategFamily.FOODMaterial,60),
-    FOODDishes(EnumCategFamily.FOODDishes,60),
-    FOODCookBook(EnumCategFamily.FOODCookBook,60),
+    NONE(EnumCategFamily.NONE,EnumSnapshotType.NONE, 0),
+    FOODMaterial(EnumCategFamily.FOODMaterial,EnumSnapshotType.CATEGIntervene, 60),
+    FOODDishes(EnumCategFamily.FOODDishes,EnumSnapshotType.CATEGIntervene, 60),
+    FOODCookBook(EnumCategFamily.FOODCookBook,EnumSnapshotType.CATEGIntervene, 60),
 
-    SPORTItem(EnumCategFamily.SPORTItem,60),
-    SPORTPlan(EnumCategFamily.SPORTPlan,60),
+    SPORTItem(EnumCategFamily.SPORTItem,EnumSnapshotType.CATEGIntervene, 60){
+        @Override
+        protected List<CategVO> loadExptCacheData() {
+            List<CategVO> rst= super.loadExptCacheData();
+            if(ShareUtil.XObject.isEmpty(rst)){
+                return rst;
+            }
+            final String appId=rst.get(0).getAppId();
+            rst.addAll(ShareUtil.XCollection.map(CrudContextHolder.getBean(SportItemDao.class)
+                    .listByCondition(new FindSportRequest(),
+                    SportItemEntity::getInterveneCategId,
+                    SportItemEntity::getSportItemId,
+                    SportItemEntity::getSportItemName),row->CategVO.builder()
+                    .categId(row.getSportItemId())
+                    .categName(row.getSportItemName())
+                    .categPid(row.getInterveneCategId())
+                    .appId(appId)
+                    .build()));
+            return rst;
+        }
+    },
+    SPORTPlan(EnumCategFamily.SPORTPlan,EnumSnapshotType.CATEGIntervene, 60),
 
-    TreatItem(EnumCategFamily.TreatItem,60),
+    TreatItem(EnumCategFamily.TreatItem,EnumSnapshotType.CATEGIntervene, 60){
+        @Override
+        protected List<CategVO> loadExptCacheData() {
+            List<CategVO> rst= super.loadExptCacheData();
+            if(ShareUtil.XObject.isEmpty(rst)){
+                return rst;
+            }
+            final String appId=rst.get(0).getAppId();
+            rst.addAll(ShareUtil.XCollection.map(CrudContextHolder.getBean(TreatItemDao.class)
+                    .getByIndicatorFuncId(appId,null,
+                            TreatItemEntity::getTreatItemId,
+                            TreatItemEntity::getTreatItemName,
+                            TreatItemEntity::getInterveneCategId),row->CategVO.builder()
+                    .categId(row.getTreatItemId())
+                    .categName(row.getTreatItemName())
+                    .categPid(row.getInterveneCategId())
+                    .appId(appId)
+                    .build()));
+            return rst;
+        }
+    },
 
-    EVENT(EnumCategFamily.EVENT,60),
+    EVENT(EnumCategFamily.EVENT,EnumSnapshotType.CATEGEvent, 60),
     ;
-    private EnumCategFamily enumCategFamily;
+    private EnumCategFamily categFamily;
+
+    private EnumSnapshotType snapshotType;
 
 
     private volatile CategCache categCache;
-    CategCacheFactory(EnumCategFamily enumCategFamily, long expireInMinutes) {
-        this.enumCategFamily=enumCategFamily;
+
+    private volatile ExperimentCategCache exptCategCache;
+
+
+    CategCacheFactory(EnumCategFamily categFamily,EnumSnapshotType snapshotType, long expireInMinutes) {
+        this.categFamily =categFamily;
+        this.snapshotType=snapshotType;
         this.categCache=new CategCache(expireInMinutes,this::loadCacheData);
+        this.exptCategCache=new ExperimentCategCache(this::loadExptCacheData);
     }
 
     public EnumCategFamily getFamily(){
-        return this.enumCategFamily;
+        return this.categFamily;
     }
     public CategCache getCache(){
         return this.categCache;
+    }
+
+    public CategCache getExptCache(){
+        String refExperimentId = SnapshotRequestHolder.getRefExperimentId(this.snapshotType);
+        return exptCategCache.loadingCache().get(refExperimentId);
+    }
+    public CategCache getExptCache(String appId, String experimentId) {
+        String refExperimentId = SnapshotRefCache.Instance().getRefExperimentId(appId, snapshotType, experimentId);
+        return exptCategCache.loadingCache().get(refExperimentId);
     }
 
     public static CategCacheFactory of(String family){
@@ -70,7 +135,9 @@ public enum CategCacheFactory {
      * @return
      */
     public static List<CategVO> getPrimeCategs(String appId){
-        return CategCacheFactory.FOODMaterial.getCache().getAll(appId).stream()
+        CategCache cache=SnapshotRequestHolder.hasSnapshotRequest()?
+                CategCacheFactory.FOODMaterial.getExptCache(): CategCacheFactory.FOODMaterial.getCache();
+        return cache.getAll(appId).stream()
                 .filter(i->Integer.valueOf(1).equals( i.getMark()))
                 .sorted(Comparator.comparingInt((CategVO a) -> Optional.ofNullable(a.getSeq()).orElse(0)).thenComparingLong(CategVO::getId))
                 .collect(Collectors.toList());
@@ -79,15 +146,18 @@ public enum CategCacheFactory {
 
 
     //region loadData
-    private List<CategVO> loadCacheData(){
-        switch (this.enumCategFamily){
+    protected List<CategVO> loadCacheData(){
+        switch (this.categFamily){
             case NONE:
                 return Collections.emptyList();
             case EVENT:
                  return loadEventData();
             default:
-                return loadInterveneData(this.enumCategFamily);
+                return loadInterveneData(this.categFamily);
         }
+    }
+    protected List<CategVO> loadExptCacheData(){
+        return loadCacheData();
     }
 
     private static List<CategVO> loadInterveneData(EnumCategFamily family){

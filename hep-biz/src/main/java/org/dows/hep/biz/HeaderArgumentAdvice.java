@@ -29,12 +29,13 @@ public class HeaderArgumentAdvice extends RequestBodyAdviceAdapter {
 
     @Override
     public Object afterBodyRead(Object body, HttpInputMessage inputMessage, MethodParameter parameter, Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
-        return setAppId(body);
+        HttpServletRequest req=getHttpRequest();
+        setAppId(req,body);
+        return setPageArgs(req,body);
     }
 
 
-    private Object setAppId(Object body){
-        HttpServletRequest req=getHttpRequest();
+    private Object setAppId(HttpServletRequest req,Object body){
         if(ShareUtil.XObject.anyEmpty(body,req)){
             return body;
         }
@@ -56,6 +57,25 @@ public class HeaderArgumentAdvice extends RequestBodyAdviceAdapter {
         }
         appIdField.setAccessible(true);
         ReflectionUtils.setField(appIdField,target,appId);
+        return body;
+    }
+    private Object setPageArgs(HttpServletRequest req,Object body){
+        if(ShareUtil.XObject.anyEmpty(body,req)){
+            return body;
+        }
+        Field pageNoField= ReflectionUtils.findField(body.getClass(), "pageNo", Integer.class);
+        Field pageSizeField= ReflectionUtils.findField(body.getClass(), "pageSize", Integer.class);
+        if(null==pageSizeField||null==pageNoField){
+            return body;
+        }
+        pageNoField.setAccessible(true);
+        pageSizeField.setAccessible(true);
+        if(null== ReflectionUtils.getField(pageNoField,body)){
+            ReflectionUtils.setField(pageNoField,body,1);
+        }
+        if(null== ReflectionUtils.getField(pageSizeField,body)){
+            ReflectionUtils.setField(pageSizeField,body,10);
+        }
         return body;
     }
 

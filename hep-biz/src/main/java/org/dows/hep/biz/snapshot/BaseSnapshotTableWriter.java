@@ -42,6 +42,10 @@ public abstract class BaseSnapshotTableWriter<ST,ET extends ExperimentCrudEntity
         }
         List<ET> dstRows=new ArrayList<>();
         data.forEach(i->dstRows.add(castExperimentEntity(req,i)));
+        final String experimentId=dstRows.get(0).getExperimentInstanceId();
+        experimentService.update()
+                .eq(snapshotType.getColExperimentInstanceId(), experimentId)
+                .remove();
         return experimentService.saveBatch(dstRows) ;
     }
 

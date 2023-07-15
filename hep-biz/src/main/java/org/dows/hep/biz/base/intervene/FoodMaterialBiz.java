@@ -14,6 +14,7 @@ import org.dows.hep.biz.cache.CategCacheFactory;
 import org.dows.hep.biz.dao.FoodMaterialDao;
 import org.dows.hep.biz.dao.IndicatorExpressionRefDao;
 import org.dows.hep.biz.dao.IndicatorInstanceDao;
+import org.dows.hep.biz.snapshot.SnapshotRequestHolder;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.ShareBiz;
@@ -51,6 +52,9 @@ public class FoodMaterialBiz{
     private final FoodCalcBiz foodCalcBiz;
 
     protected CategCache getCategCache(){
+        if(SnapshotRequestHolder.hasSnapshotRequest()){
+            return CategCacheFactory.FOODMaterial.getExptCache();
+        }
         return CategCacheFactory.FOODMaterial.getCache();
     }
 
@@ -65,8 +69,9 @@ public class FoodMaterialBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Page<FoodMaterialResponse> pageFoodMaterial(FindFoodRequest findFood ) {
+        final CategCache cache=getCategCache();
         return ShareBiz.buildPage(dao.pageByCondition(findFood), i ->
-                CopyWrapper.create(FoodMaterialResponse::new).endFrom(refreshCateg(i)));
+                CopyWrapper.create(FoodMaterialResponse::new).endFrom(refreshCateg(cache,i)));
     }
     /**
     * @param
@@ -107,8 +112,9 @@ public class FoodMaterialBiz{
         List<FoodNutrientVO> voNutrients=ShareUtil.XCollection.map(nutrients,
                 i->CopyWrapper.create(FoodNutrientVO::new).endFrom(i));
         List<IndicatorExpressionResponseRs> expressions=ShareBiz.getExpressionsByReasonId(indicatorExpressionBiz,appId,foodMaterialId);
+        final CategCache cache=getCategCache();
         return CopyWrapper.create(FoodMaterialInfoResponse::new)
-                .endFrom(refreshCateg(row))
+                .endFrom(refreshCateg(cache,row))
                 .setNutrients(voNutrients)
                 .setExpresssions(expressions);
 
@@ -128,9 +134,10 @@ public class FoodMaterialBiz{
         AssertUtil.trueThenThrow(ShareUtil.XObject.notEmpty(saveFoodMaterial.getFoodMaterialId())
                         && dao.getById(saveFoodMaterial.getFoodMaterialId(),FoodMaterialEntity::getFoodMaterialId).isEmpty())
                 .throwMessage("食材不存在");
+        final CategCache cache=getCategCache();
         CategVO categVO=null;
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(saveFoodMaterial.getInterveneCategId())
-                        ||null==(categVO=getCategCache().getById(appId, saveFoodMaterial.getInterveneCategId())))
+                        ||null==(categVO=cache.getById(appId, saveFoodMaterial.getInterveneCategId())))
                 .throwMessage("食材类别不存在");
         AssertUtil.trueThenThrow(categVO.getLayer()!=2)
                 .throwMessage("请选择到第二级类别");
@@ -200,11 +207,11 @@ public class FoodMaterialBiz{
      * @param src
      * @return
      */
-    protected FoodMaterialEntity refreshCateg(FoodMaterialEntity src) {
+    protected FoodMaterialEntity refreshCateg(CategCache cache, FoodMaterialEntity src) {
         if (ShareUtil.XObject.isEmpty(src.getInterveneCategId())) {
             return src;
         }
-        CategVO cacheItem = getCategCache().getById(src.getAppId(), src.getInterveneCategId());
+        CategVO cacheItem = cache.getById(src.getAppId(), src.getInterveneCategId());
         if (null == cacheItem) {
             return src;
         }

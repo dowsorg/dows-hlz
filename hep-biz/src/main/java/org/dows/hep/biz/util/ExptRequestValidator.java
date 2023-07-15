@@ -9,6 +9,7 @@ import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.biz.event.ExperimentSettingCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
+import org.dows.hep.biz.snapshot.SnapshotRequestHolder;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 
@@ -31,11 +32,24 @@ public class ExptRequestValidator {
         this.periods=req.getPeriods();
 
     }
+    private ExptRequestValidator(String appId,String experimentInstanceId,String experimentGroupId,String experimentOrgId,String experimentPersonId){
+        this.appId=appId;
+        this.experimentInstanceId=experimentInstanceId;
+        this.experimentGroupId=experimentGroupId;
+        this.experimentOrgId=experimentOrgId;
+        this.experimentPersonId=experimentPersonId;
+        if(ShareUtil.XObject.allNotEmpty(appId,experimentInstanceId)){
+            SnapshotRequestHolder.setSnapshotRequest(this.appId, experimentInstanceId);
+        }
+    }
     private ExptRequestValidator(ExptOrgFuncRequest req){
         this((BaseExptRequest) req);
         this.indicatorFuncId=req.getIndicatorFuncId();
     }
     //region create
+    public static ExptRequestValidator create(String appId,String experimentInstanceId,String experimentGroupId,String experimentOrgId,String experimentPersonId){
+        return new ExptRequestValidator(appId,experimentInstanceId,experimentGroupId,experimentOrgId,experimentPersonId);
+    }
     public static ExptRequestValidator create(BaseExptRequest req){
         return new ExptRequestValidator(req);
     }
@@ -124,6 +138,7 @@ public class ExptRequestValidator {
     public ExptRequestValidator checkExperimentInstanceId(){
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(experimentInstanceId))
                 .throwMessage("未找到实验ID");
+        SnapshotRequestHolder.setSnapshotRequest(this.appId, experimentInstanceId);
         return this;
     }
     public ExptRequestValidator checkExperimentInstance(){

@@ -50,6 +50,13 @@ public class ShareUtil {
             }
             return true;
         }
+        public static boolean allNotEmpty(Object... objs) {
+            if(isEmpty(objs)) return false;
+            for(Object item:objs){
+                if(isEmpty(item)) return false;
+            }
+            return true;
+        }
 
         public static boolean anyEmpty(Object... objs) {
             if(isEmpty(objs)) return true;

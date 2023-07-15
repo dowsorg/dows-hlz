@@ -12,6 +12,7 @@ import org.dows.hep.biz.dao.EnumCheckCategPolicy;
 import org.dows.hep.biz.dao.IndicatorFuncDao;
 import org.dows.hep.biz.dao.InterveneCategDao;
 import org.dows.hep.api.enums.EnumCategFamily;
+import org.dows.hep.biz.snapshot.SnapshotRequestHolder;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.JacksonUtil;
@@ -43,10 +44,14 @@ public class InterveneCategBiz {
     private final IdGenerator idGenerator;
 
     protected CategCache getCategCache(String family){
-        return CategCacheFactory.of(checkFamily(family)).getCache();
+        return getCategCache(checkFamily(family));
     }
     protected CategCache getCategCache(EnumCategFamily family){
-        return CategCacheFactory.of(family).getCache();
+        CategCacheFactory cacheFactory=CategCacheFactory.of(family);
+        if(SnapshotRequestHolder.hasSnapshotRequest()){
+            return cacheFactory.getExptCache();
+        }
+        return cacheFactory.getCache();
     }
 
 
