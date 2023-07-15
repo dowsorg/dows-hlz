@@ -48,6 +48,10 @@ public class ExperimentTaskScheduleEntity implements CrudEntity {
     @Schema(title = "执行时间表达式")
     private String executeExpression;
 
+    @Schema(title = "应用ID")
+    private String appId;
+
+
     @Schema(title = "开始执行时间")
     private Date executeTime;
 
@@ -56,6 +60,7 @@ public class ExperimentTaskScheduleEntity implements CrudEntity {
 
     @Schema(title = "是否已执行")
     private Boolean executed;
+
 
     @JsonIgnore
     @TableLogic
