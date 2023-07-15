@@ -116,8 +116,8 @@ public class ExperimentTimerBiz {
      * @创建时间: 2023年4月23日 上午9:44:34
      */
     public CountDownResponse tenantCountdown(String experimentInstanceId) {
+        Long sct = System.currentTimeMillis();
         CountDownResponse countDownResponse = new CountDownResponse();
-
         List<ExperimentSettingEntity> list = experimentSettingService.lambdaQuery()
                 .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
                 .list();
@@ -171,46 +171,47 @@ public class ExperimentTimerBiz {
             countDownResponse.setSandTimeUnit("天");
             countDownResponse.setModel(EnumExperimentMode.SAND.getCode());
 
-            // 如果沙盘未开始，直接返回0,或大于结束如果开始，则返回对应的持续时间
-            // 获取当前期数
             List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerService.lambdaQuery()
                     .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
+                    .orderByAsc(ExperimentTimerEntity::getPeriod, ExperimentTimerEntity::getPauseCount)
                     .list();
 
-            for (ExperimentTimerEntity experimentTimerEntity : experimentTimerEntityList) {
-                if (experimentTimerEntity.getState() == EnumExperimentState.FINISH.getState()) {
-                    countDownResponse.setSandDuration(Double.valueOf(totalDay));
-                    countDownResponse.setState(experimentTimerEntity.getState());
-                    break;
-                } else if (experimentTimerEntity.getState() == EnumExperimentState.UNBEGIN.getState()) {
-                    countDownResponse.setSandDuration(0D);
-                    countDownResponse.setState(experimentTimerEntity.getState());
-                    break;
-                } else if (experimentTimerEntity.getState() == EnumExperimentState.ONGOING.getState()) {
-                    Long sct = System.currentTimeMillis();
-                    if (sct >= experimentTimerEntity.getStartTime() && sct <= experimentTimerEntity.getEndTime()) {
-                        countDownResponse.setPeriod(experimentTimerEntity.getPeriod());
-                        // 当前时间戳-当前期数开始时间 = 相对时间（持续了多久）
-                        Long ct = sct - experimentTimerEntity.getStartTime();
-                        // 将ct转换为秒  .. day/duration = rate
-                        Long second = ct / 1000;
-                        // 获取比例
-                        Double aFloat = mockRateMap.get(experimentTimerEntity.getPeriod() + "");
-                        Double day = second * aFloat;
-                        Integer period = experimentTimerEntity.getPeriod();
-                        if (period > 1) {
-                            for (int i = 1; i <= period; i++) {
-                                Integer integer = periodMap.get(i + "");
-                                day += integer;
-                            }
-                        }
-                        countDownResponse.setSandDurationSecond(second);
-                        countDownResponse.setSandDuration(day);
-                        countDownResponse.setState(experimentTimerEntity.getState());
-                        break;
+            // 如果有暂停则优先处理暂停
+            ExperimentTimerEntity experimentTimerEntity = experimentTimerEntityList.stream()
+                    .filter(e -> e.getPaused() == true)
+                    .findFirst()
+                    .orElse(null);
+            // 当前时间戳-当前期数开始时间 = 相对时间（持续了多久）；将转换为秒  .. day/duration = rate
+            Long second = 0L;
+            if (null != experimentTimerEntity) {
+                second = experimentTimerEntity.getStartTime() / 1000;
+                countDownResponse.setSandDurationSecond(second);
+                countDownResponse.setState(experimentTimerEntity.getState());
+                countDownResponse.setPeriod(experimentTimerEntity.getPeriod());
+                return countDownResponse;
+            }
+
+            Map<Integer, ExperimentTimerEntity> collect = new HashMap<>();
+            experimentTimerEntityList.stream()
+                    .collect(Collectors.groupingBy(ExperimentTimerEntity::getPeriod))
+                    .forEach((k, v) -> {
+                        collect.put(k, v.stream().max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount)).get());
+                    });
+
+            collect.forEach((k, v) -> {
+                if (v.getState() == EnumExperimentState.FINISH.getState()) {
+                    //countDownResponse.setSandDuration(Double.valueOf(totalDay));
+                    countDownResponse.setState(v.getState());
+                    countDownResponse.setPeriod(v.getPeriod());
+                } else if (v.getState() == EnumExperimentState.ONGOING.getState()) {
+                    // 当前时间戳-当前期数开始时间 = 相对时间（持续了多久）；将转换为秒  .. day/duration = rate
+                    if (sct >= v.getStartTime() && sct <= v.getEndTime()) {
+                        countDownResponse.setSandDurationSecond((sct - v.getStartTime()) / 1000);
+                        countDownResponse.setState(v.getState());
+                        countDownResponse.setPeriod(v.getPeriod());
                     }
                 }
-            }
+            });
         }
         // 如果都不为空，则为标准模式
         if (experimentSettingEntity1 != null && experimentSettingEntity2 != null) {

@@ -2,6 +2,8 @@ package org.dows.hep.biz.report.pdf;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.io.resource.ClassPathResource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.oss.api.OssInfo;
@@ -9,12 +11,11 @@ import org.dows.framework.oss.minio.MinioOssClient;
 import org.dows.hep.api.report.pdf.ExptGroupReportVO;
 import org.dows.hep.api.report.pdf.ExptReportVO;
 import org.springframework.stereotype.Component;
+import org.yaml.snakeyaml.Yaml;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -29,15 +30,13 @@ import java.util.zip.ZipOutputStream;
 @RequiredArgsConstructor
 public class OSSReportBiz {
     private final MinioOssClient ossClient;
-//    private final LocalOssClient ossClient;
-//    private final S3OssClient ossClient;
-
+    private static final String URL_PATH_SEPARATOR = "/";
 
     /**
      * @param exptReportVO -
      * @return java.util.List<org.dows.framework.oss.api.OssInfo>
      * @author fhb
-     * @description todo 改造批量方法
+     * @description
      * @date 2023/7/13 21:33
      */
     public void upload(ExptReportVO exptReportVO) {
@@ -55,11 +54,28 @@ public class OSSReportBiz {
             toZipGroup(exptReportVO);
         }
 
-//        String zipPath = exptReportVO.getZipPath();
         String zipName = exptReportVO.getZipName();
         OssInfo ossInfo = ossClient.upLoad(new File(zipName), zipName, true);
-        exptReportVO.setZipPath(ossInfo.getPath());
+
+        ClassPathResource classPathResource = new ClassPathResource("application-hep-oss.yml");
+        ByteArrayInputStream inputStream = IoUtil.toStream(classPathResource.readBytes());
+
+        Yaml yaml = new Yaml();
+        Map<String, Object> data = yaml.load(inputStream);
+        try {
+            inputStream.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        // 获取配置数据
+        Map oss = (Map) data.get("oss");
+        Map minio = (Map) oss.get("minio");
+        String endpoint = (String) minio.get("endpoint");
+        String bucketName = (String) minio.get("bucket-name");
+        String basePath = (String) minio.get("base-path");
+
         exptReportVO.setZipName(ossInfo.getName());
+        exptReportVO.setZipPath(endpoint + URL_PATH_SEPARATOR + bucketName + URL_PATH_SEPARATOR + basePath + URL_PATH_SEPARATOR + ossInfo.getName());
     }
 
     private void toZipGroup(ExptReportVO reportVO) {
@@ -71,7 +87,7 @@ public class OSSReportBiz {
         byte[] buf = new byte[1024];
         ZipOutputStream zos = null;
         try {
-            FileOutputStream out = new FileOutputStream(reportVO.getZipPath());
+            FileOutputStream out = new FileOutputStream(reportVO.getZipName());
             zos = new ZipOutputStream(out);
             ExptGroupReportVO groupReportVO = groupReportList.get(0);
             doZip(buf, zos, groupReportVO);
@@ -92,7 +108,7 @@ public class OSSReportBiz {
         byte[] buf = new byte[1024];
         ZipOutputStream zos = null;
         try {
-            FileOutputStream out = new FileOutputStream(reportVO.getZipPath());
+            FileOutputStream out = new FileOutputStream(reportVO.getZipName());
             zos = new ZipOutputStream(out);
 
             List<ExptGroupReportVO> groupReportList = reportVO.getGroupReportList();

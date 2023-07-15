@@ -3,15 +3,19 @@ package org.dows.hep.biz.task;
 import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.enums.EnumExperimentState;
+import org.dows.hep.api.enums.EnumExperimentTask;
 import org.dows.hep.api.event.SuspendEvent;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
+import org.dows.hep.entity.ExperimentTaskScheduleEntity;
 import org.dows.hep.entity.ExperimentTimerEntity;
 import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentParticipatorService;
+import org.dows.hep.service.ExperimentTaskScheduleService;
 import org.dows.hep.service.ExperimentTimerService;
 import org.springframework.context.ApplicationEventPublisher;
 
@@ -35,6 +39,8 @@ public class ExperimentBeginTask implements Runnable {
     private final ExperimentTimerService experimentTimerService;
 
     private final ApplicationEventPublisher applicationEventPublisher;
+
+    private final ExperimentTaskScheduleService experimentTaskScheduleService;
 
     private final String experimentInstanceId;
 
@@ -98,5 +104,18 @@ public class ExperimentBeginTask implements Runnable {
             applicationEventPublisher.publishEvent(new SuspendEvent(experimentRestartRequest));
         }
 
+        //更改实验任务状态
+        ExperimentTaskScheduleEntity beginTaskScheduleEntity = experimentTaskScheduleService.lambdaQuery()
+                .eq(ExperimentTaskScheduleEntity::getTaskBeanCode, EnumExperimentTask.experimentBeginTask.getDesc())
+                .eq(ExperimentTaskScheduleEntity::getExperimentInstanceId, experimentInstanceId)
+                .isNull(ExperimentTaskScheduleEntity::getPeriods)
+                .one();
+        if(beginTaskScheduleEntity == null || ReflectUtil.isObjectNull(beginTaskScheduleEntity)){
+            throw new ExperimentException("该实验任务不存在");
+        }
+        experimentTaskScheduleService.lambdaUpdate()
+                .eq(ExperimentTaskScheduleEntity::getId,beginTaskScheduleEntity.getId())
+                .set(ExperimentTaskScheduleEntity::getExecuted,true)
+                .update();
     }
 }
