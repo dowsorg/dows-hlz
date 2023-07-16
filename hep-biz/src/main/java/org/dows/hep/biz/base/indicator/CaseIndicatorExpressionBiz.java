@@ -3,6 +3,7 @@ package org.dows.hep.biz.base.indicator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.dows.hep.api.base.indicator.request.CaseBatchBindReasonIdRequestRs;
 import org.dows.hep.api.base.indicator.request.CaseCreateOrUpdateIndicatorExpressionRequestRs;
 import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.entity.*;
@@ -255,7 +256,16 @@ public class CaseIndicatorExpressionBiz {
   }
 
   @Transactional(rollbackFor = Exception.class)
-  public String createOrUpdate(CaseCreateOrUpdateIndicatorExpressionRequestRs caseCreateOrUpdateIndicatorExpressionRequestRs) {
+  public String v2CreateOrUpdate(CaseCreateOrUpdateIndicatorExpressionRequestRs caseCreateOrUpdateIndicatorExpressionRequestRs) {
     return null;
+  }
+
+  public CaseIndicatorExpressionResponseRs get(String caseIndicatorExpressionId) {
+    return null;
+  }
+
+  @Transactional(rollbackFor = Exception.class)
+  public void batchBindReasonId(CaseBatchBindReasonIdRequestRs caseBatchBindReasonIdRequestRs) {
+
   }
 }

@@ -9,6 +9,7 @@ import org.dows.hep.api.base.indicator.request.RsIndicatorExpressionCheckoutResu
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.RsExperimentIndicatorExpressionBizException;
 import org.dows.hep.api.exception.RsIndicatorExpressionException;
+import org.dows.sequence.api.IdGenerator;
 import org.springframework.expression.EvaluationException;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
@@ -29,6 +30,19 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class RsUtilBiz {
+  private final IdGenerator idGenerator;
+
+  public void populateKOldIdVNewIdMap(
+      Map<String, String> kOldIdVNewIdMap,
+      Set<String> oldIdSet
+  ) {
+    if (Objects.isNull(kOldIdVNewIdMap)
+        || Objects.isNull(oldIdSet) || oldIdSet.isEmpty()
+    ) {return;}
+    oldIdSet.forEach(oldId -> {
+      kOldIdVNewIdMap.put(oldId, idGenerator.nextIdStr());
+    });
+  }
   public String wrapStrWithDoubleSingleQuotes(String str) {
     return EnumString.SINGLE_QUOTES.getStr() +
         str +
@@ -71,7 +85,6 @@ public class RsUtilBiz {
     }
     return enumIndicatorExpressionField;
   }
-
   public EnumIndicatorExpressionScene checkScene(Integer scene) {
     EnumIndicatorExpressionScene enumIndicatorExpressionScene = EnumIndicatorExpressionScene.getByScene(scene);
     if (Objects.isNull(enumIndicatorExpressionScene)) {
