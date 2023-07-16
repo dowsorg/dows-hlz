@@ -43,7 +43,7 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
   private final ExperimentIndicatorExpressionItemRsService experimentIndicatorExpressionItemRsService;
   private final ExperimentIndicatorExpressionInfluenceRsService experimentIndicatorExpressionInfluenceRsService;
   private final ExperimentIndicatorInstanceRsBiz experimentIndicatorInstanceRsBiz;
-  private final RsIndicatorExpressionBiz rsIndicatorExpressionBiz;
+  private final RsExperimentIndicatorExpressionBiz rsExperimentIndicatorExpressionBiz;
   private final RsExperimentIndicatorInstanceBiz rsExperimentIndicatorInstanceBiz;
 
   public static ExperimentPhysicalExamReportResponseRs experimentPhysicalExamReport2ResponseRs(ExperimentIndicatorViewPhysicalExamReportRsEntity experimentIndicatorViewPhysicalExamReportRsEntity) {
@@ -407,7 +407,7 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
 
     Map<String, ExperimentIndicatorExpressionRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap = new HashMap<>();
     CompletableFuture<Void> cfPopulateKExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap = CompletableFuture.runAsync(() -> {
-      rsIndicatorExpressionBiz.populateKExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap(
+      rsExperimentIndicatorExpressionBiz.populateKExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap(
           kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap, experimentIndicatorInstanceIdSet
       );
     });
@@ -417,7 +417,7 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
         .stream().map(ExperimentIndicatorExpressionRsEntity::getExperimentIndicatorExpressionId).collect(Collectors.toSet());
     Map<String, List<ExperimentIndicatorExpressionItemRsEntity>> kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap = new HashMap<>();
     CompletableFuture<Void> cfPopulateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap = CompletableFuture.runAsync(() -> {
-      rsIndicatorExpressionBiz.populateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap(
+      rsExperimentIndicatorExpressionBiz.populateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap(
           kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap, experimentIndicatorExpressionIdSet
       );
     });
@@ -436,7 +436,7 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
       }
     });
     CompletableFuture<Void> cfPopulateKExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap = CompletableFuture.runAsync(() -> {
-      rsIndicatorExpressionBiz.populateKExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap(
+      rsExperimentIndicatorExpressionBiz.populateKExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap(
           kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap, minAndMaxExperimentIndicatorExpressionItemIdSet
       );
     });
@@ -473,7 +473,7 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
               }
 
               if (Objects.nonNull(experimentIndicatorExpressionItemRsEntityList)) {
-                rsIndicatorExpressionBiz.parseIndicatorExpression(
+                rsExperimentIndicatorExpressionBiz.parseExperimentIndicatorExpression(
                     EnumIndicatorExpressionField.EXPERIMENT.getField(),
                     EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource(),
                     EnumIndicatorExpressionScene.PHYSICAL_EXAM.getScene(),
