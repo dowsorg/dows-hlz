@@ -33,7 +33,7 @@ public class CaseIndicatorExpressionRest {
   }
 
   @Operation(summary = "根据公式id查询出所有")
-  @GetMapping("v1/baseIndicator/indicatorExpression/get")
+  @GetMapping("v1/caseIndicator/indicatorExpression/get")
   public CaseIndicatorExpressionResponseRs get(@RequestParam String caseIndicatorExpressionId) {
     return caseIndicatorExpressionBiz.get(caseIndicatorExpressionId);
   }
