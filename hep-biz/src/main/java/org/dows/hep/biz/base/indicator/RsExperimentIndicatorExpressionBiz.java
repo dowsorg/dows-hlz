@@ -42,6 +42,7 @@ public class RsExperimentIndicatorExpressionBiz {
   private final ExperimentIndicatorExpressionRsService experimentIndicatorExpressionRsService;
   private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
   private final RsExperimentIndicatorInstanceBiz rsExperimentIndicatorInstanceBiz;
+  private final RsUtilBiz rsUtilBiz;
 
   /* runsix:期数反转使用 */
   public void reCalculateAllExperimentIndicatorInstance(
@@ -239,9 +240,9 @@ public class RsExperimentIndicatorExpressionBiz {
             resultBoolean = Boolean.FALSE;
           } else {
             try {
-              checkConditionNameAndValSize(conditionNameList, conditionValList);
-              List<String> conditionNameSplitList = getConditionNameSplitList(conditionNameList);
-              List<String> conditionValSplitList = getConditionValSplitList(conditionValList);
+              rsUtilBiz.checkConditionNameAndValSize(conditionNameList, conditionValList);
+              List<String> conditionNameSplitList = rsUtilBiz.getConditionNameSplitList(conditionNameList);
+              List<String> conditionValSplitList = rsUtilBiz.getConditionValSplitList(conditionValList);
               StandardEvaluationContext context = new StandardEvaluationContext();
               boolean needParse = true;
               for (int i = 0; i <= conditionNameSplitList.size() - 1; i++) {
@@ -289,257 +290,6 @@ public class RsExperimentIndicatorExpressionBiz {
     });
   }
 
-  private static String wrapStrWithDoubleSingleQuotes(String str) {
-    return EnumString.SINGLE_QUOTES.getStr() +
-        str +
-        EnumString.SINGLE_QUOTES.getStr();
-  }
-
-  private EnumIndicatorExpressionField checkField(Integer field) {
-    EnumIndicatorExpressionField enumIndicatorExpressionField = EnumIndicatorExpressionField.getByField(field);
-    if (Objects.isNull(enumIndicatorExpressionField)) {
-      log.error("RsIndicatorExpressionBiz.checkField field:{} is illegal", field);
-      throw new RsIndicatorExpressionException("检查指标公式-指标公式域只能是数据库、案例库或实验域");
-    }
-    return enumIndicatorExpressionField;
-  }
-
-  private EnumIndicatorExpressionScene checkScene(Integer scene) {
-    EnumIndicatorExpressionScene enumIndicatorExpressionScene = EnumIndicatorExpressionScene.getByScene(scene);
-    if (Objects.isNull(enumIndicatorExpressionScene)) {
-      log.error("RsIndicatorExpressionBiz.checkScene scene:{} is illegal", scene);
-      throw new RsIndicatorExpressionException("检查指标公式-指标公式域只能是数据库、案例库或实验域");
-    }
-    return enumIndicatorExpressionScene;
-  }
-
-  private EnumIndicatorExpressionSource checkSource(Integer source) {
-    EnumIndicatorExpressionSource enumIndicatorExpressionSource = EnumIndicatorExpressionSource.getBySource(source);
-    if (Objects.isNull(enumIndicatorExpressionSource)) {
-      log.error("RsIndicatorExpressionBiz.checkSource. 的指标公式来源:{} 不合法", source);
-      throw new RsIndicatorExpressionException(String.format("检查指标公式有误，指标公式来源不合法，source:%s", source));
-    }
-    return enumIndicatorExpressionSource;
-  }
-  private void checkConditionNameAndValSize(String conditionNameList, String conditionValList) {
-    if (StringUtils.isBlank(conditionNameList)) {
-      if (StringUtils.isBlank(conditionValList)) {
-        /* runsix:right, no condition */
-      } else {
-        /* runsix:conditionNameList is blank but conditionValList is not blank */
-        log.error("RsIndicatorExpressionBiz.checkCondition.checkConditionNameAndValSize conditionNameList is blank but conditionValList is not blank");
-        throw new RsIndicatorExpressionException("检查指标公式条件-检查条件参数名列表以及参数值列表有误，条件参数名列表为空，但是条件值列表不为空");
-      }
-    } else {
-      if (StringUtils.isBlank(conditionValList)) {
-        /* runsix:conditionNameList is not blank but conditionValList is blank */
-        log.error("RsIndicatorExpressionBiz.checkCondition.checkConditionNameAndValSize conditionNameList is not blank but conditionValList is blank");
-        throw new RsIndicatorExpressionException("检查指标公式条件-检查条件参数名列表以及参数值列表有误，条件参数名列表为空，但是条件值列表不为空");
-      } else {
-        List<String> conditionNameSplitList = getConditionNameSplitList(conditionNameList);
-        List<String> conditionValSplitList = getConditionValSplitList(conditionValList);
-        if (conditionNameSplitList.size() != conditionValSplitList.size()) {
-          log.error("RsIndicatorExpressionBiz.checkCondition.checkConditionNameAndValSize conditionNameList size:{}, conditionValList size:{}, is not same", conditionNameSplitList.size(), conditionValSplitList.size());
-          throw new RsIndicatorExpressionException("检查指标公式条件-检查条件参数名列表以及参数值列表有误，条件参数名列表与条件值列表不一致");
-        }
-      }
-    }
-  }
-
-  private void databaseCheckConditionMustBeBoolean(Map<String, String> kIndicatorInstanceIdVValMap, String conditionExpression, List<String> conditionNameSplitList, List<String> conditionValSplitList) {
-    StandardEvaluationContext context = new StandardEvaluationContext();
-    for (int i = 0; i <= conditionNameSplitList.size()-1; i++) {
-      String indicatorInstanceId = conditionValSplitList.get(i);
-      String val = kIndicatorInstanceIdVValMap.get(indicatorInstanceId);
-      if (Objects.isNull(val)) {
-        log.error("sIndicatorExpressionBiz.checkCondition.databaseCheckConditionMustBeBoolean field database indicatorInstanceId:{} does not exist", indicatorInstanceId);
-        throw new RsIndicatorExpressionException(EnumESC.INDICATOR_EXPRESSION_CHECK_INDICATOR_INSTANCE_ID_DOES_NOT_EXIST);
-      }
-      boolean isValDigital = NumberUtils.isCreatable(val);
-      if (isValDigital) {
-        context.setVariable(conditionNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(val)).setScale(2, RoundingMode.DOWN));
-      } else {
-        val = wrapStrWithDoubleSingleQuotes(val);
-        context.setVariable(conditionNameSplitList.get(i), wrapStrWithDoubleSingleQuotes(val));
-      }
-    }
-    ExpressionParser parser = new SpelExpressionParser();
-    Expression expression = parser.parseExpression(conditionExpression);
-    String conditionExpressionResult = expression.getValue(context, String.class);
-    if(!StringUtils.equalsIgnoreCase(conditionExpressionResult, EnumBoolean.TRUE.getCode().toString()) && !StringUtils.equalsIgnoreCase(conditionExpressionResult, EnumBoolean.FALSE.getCode().toString())) {
-      log.warn("RsIndicatorExpressionBiz.checkCondition.databaseCheckConditionMustBeBoolean result:{} is not boolean", conditionExpressionResult);
-      throw new RsIndicatorExpressionException("检查指标公式条件-条件解析结果不是true或false");
-    }
-  }
-  /* runsix:TODO */
-  private void caseCheckConditionMustBeBoolean() {}
-
-  private void checkConditionMustBeBoolean(
-      Map<String, String> kIndicatorInstanceIdVValMap,
-      Integer field, String conditionExpression, String conditionNameList, String conditionValList) {
-    /* runsix:condition can be blank */
-    if (StringUtils.isBlank(conditionExpression)) {
-      return;
-    }
-    EnumIndicatorExpressionField enumIndicatorExpressionField = checkField(field);
-    List<String> conditionNameSplitList = Arrays.stream(conditionNameList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr())).collect(Collectors.toList());
-    List<String> conditionValSplitList = Arrays.stream(conditionValList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr())).collect(Collectors.toList());
-    switch (enumIndicatorExpressionField) {
-      case DATABASE -> databaseCheckConditionMustBeBoolean(kIndicatorInstanceIdVValMap, conditionExpression, conditionNameSplitList, conditionValSplitList);
-      case CASE -> caseCheckConditionMustBeBoolean();
-      default -> {
-        log.error("RsIndicatorExpressionBiz.checkCondition.checkConditionMustBeBoolean field:{} is illegal", field);
-        throw new RsIndicatorExpressionException("检查指标公式条件-指标公式域只能是数据库或案例库");
-      }
-    }
-  }
-
-  public boolean checkCondition(
-      Map<String, String> kIndicatorInstanceIdVValMap,
-      RsIndicatorExpressionCheckConditionRequest rsIndicatorExpressionCheckConditionRequest) {
-    boolean checkConditionResult = true;
-    Integer source = rsIndicatorExpressionCheckConditionRequest.getSource();
-    Integer field = rsIndicatorExpressionCheckConditionRequest.getField();
-    String conditionExpression = rsIndicatorExpressionCheckConditionRequest.getConditionExpression();
-    String conditionNameList = rsIndicatorExpressionCheckConditionRequest.getConditionNameList();
-    String conditionValList = rsIndicatorExpressionCheckConditionRequest.getConditionValList();
-    checkSource(source);
-    checkConditionNameAndValSize(conditionNameList, conditionValList);
-    checkConditionMustBeBoolean(kIndicatorInstanceIdVValMap, field, conditionExpression, conditionNameList, conditionValList);
-    return checkConditionResult;
-  }
-
-  private static void checkResultNameAndValSize(String resultNameList, String resultValList) {
-    if (StringUtils.isBlank(resultNameList)) {
-      if (StringUtils.isBlank(resultValList)) {
-        /* runsix:right, no result */
-      } else {
-        /* runsix:resultNameList is blank but resultValList is not blank */
-        log.error("RsIndicatorExpressionBiz.checkResult.checkResultNameAndValSize resultNameList is blank but resultValList is not blank");
-        throw new RsIndicatorExpressionException("检查指标公式结果-检查结果参数名列表以及参数值列表有误，结果参数名列表为空，但是结果值列表不为空");
-      }
-    } else {
-      if (StringUtils.isBlank(resultValList)) {
-        /* runsix:resultNameList is not blank but resultValList is blank */
-        log.error("RsIndicatorExpressionBiz.checkResult.checkResultNameAndValSize resultNameList is not blank but resultValList is blank");
-        throw new RsIndicatorExpressionException("检查指标公式结果-检查结果参数名列表以及参数值列表有误，结果参数名列表为空，但是结果值列表不为空");
-      } else {
-        String[] resultNameArray = resultNameList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr());
-        String[] resultValArray = resultValList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr());
-        if (resultNameArray.length != resultValArray.length) {
-          log.error("RsIndicatorExpressionBiz.checkResult.checkResultNameAndValSize resultNameList size:{}, resultValList size:{}, is not same", resultNameArray.length, resultValArray.length);
-          throw new RsIndicatorExpressionException("检查指标公式结果-检查结果参数名列表以及参数值列表有误，结果参数名列表与结果值列表不一致");
-        }
-      }
-    }
-  }
-
-  private void checkResultCannotExistJudgeOperator(String resultExpression) {
-    if (Objects.nonNull(resultExpression) &&
-        EnumIndicatorExpressionOperator.kJudgeOperatorVEnumIndicatorExpressionOperatorMap.keySet().stream().anyMatch(resultExpression::contains)) {
-      log.error("RsIndicatorExpressionBiz.checkCondition.checkResultCannotExistJudgeOperator resultExpression contains judgeOperator");
-      throw new RsIndicatorExpressionException("检查指标公式结果-指标公式结果不能包含比较运算符");
-    }
-  }
-
-  private void databaseCheckResultParse(Map<String, String> kIndicatorInstanceIdVValMap, String resultExpression, List<String> resultNameSplitList, List<String> resultValSplitList) {
-    StandardEvaluationContext context = new StandardEvaluationContext();
-    for (int i = 0; i <= resultNameSplitList.size()-1; i++) {
-      String indicatorInstanceId = resultValSplitList.get(i);
-      String val = kIndicatorInstanceIdVValMap.get(indicatorInstanceId);
-      if (Objects.isNull(val)) {
-        log.error("RsIndicatorExpressionBiz.checkResult.databaseCheckResultMustBeBoolean field database indicatorInstanceId:{} does not exist", indicatorInstanceId);
-        throw new RsIndicatorExpressionException(String.format("检查指标公式结果-结果指标id：%s 不存在", indicatorInstanceId));
-      }
-      boolean isValDigital = NumberUtils.isCreatable(val);
-      if (isValDigital) {
-        context.setVariable(resultNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(val)).setScale(2, RoundingMode.DOWN));
-      } else {
-        context.setVariable(resultNameSplitList.get(i), wrapStrWithDoubleSingleQuotes(val));
-      }
-    }
-    try {
-      ExpressionParser parser = new SpelExpressionParser();
-      Expression expression = parser.parseExpression(resultExpression);
-      expression.getValue(context, String.class);
-    } catch (ParseException parseException) {
-      log.warn("RsIndicatorExpressionBiz.databaseCheckResultParse resultExpression:{} parser.parseExpression(resultExpression) throw exception", resultExpression);
-      throw new RsIndicatorExpressionException(String.format("检查结果公式结果-解析结果表达式异常 expression:%s", resultExpression));
-    } catch (EvaluationException evaluationException) {
-      log.warn("RsIndicatorExpressionBiz.databaseCheckResultParse context:{} expression.getValue(context, String.class) throw exception", context);
-      throw new RsIndicatorExpressionException(String.format("检查结果公式结果-获取结果值异常，expression:%s，context:%s", resultExpression, context));
-    } catch (Exception e) {
-      log.warn("RsIndicatorExpressionBiz.databaseCheckResultParse throw unknown exception, expression:{}, context:{}, throwable:{}", resultExpression, context, e);
-      throw new RsIndicatorExpressionException(String.format("检查结果公式结果-未知异常，expression:%s，context:%s", resultExpression, context));
-    }
-  }
-  /* runsix:TODO */
-  private void caseCheckResultParse() {}
-
-  private void checkResultParse(Map<String, String> kIndicatorInstanceIdVValMap, Integer field, String resultExpression, String resultNameList, String resultValList) {
-    /* runsix:result can be blank */
-    if (StringUtils.isBlank(resultExpression)) {
-      return;
-    }
-    EnumIndicatorExpressionField enumIndicatorExpressionField = checkField(field);
-    List<String> resultNameSplitList = Arrays.stream(resultNameList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr())).collect(Collectors.toList());
-    List<String> resultValSplitList = Arrays.stream(resultValList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr())).collect(Collectors.toList());
-    switch (enumIndicatorExpressionField) {
-      case DATABASE -> databaseCheckResultParse(kIndicatorInstanceIdVValMap, resultExpression, resultNameSplitList, resultValSplitList);
-      case CASE -> caseCheckResultParse();
-      default -> {
-        log.error("RsIndicatorExpressionBiz.checkCondition.checkConditionMustBeBoolean field:{} is illegal", field);
-        throw new RsIndicatorExpressionException(String.format("检查指标公式条件-指标公式域只能是数据库或案例库，field:%s", field));
-      }
-    }
-  }
-
-  public boolean checkResult(Map<String, String> kIndicatorInstanceIdVValMap, RsIndicatorExpressionCheckoutResultRequest rsIndicatorExpressionCheckoutResultRequest) {
-    boolean checkConditionResult = true;
-    Integer source = rsIndicatorExpressionCheckoutResultRequest.getSource();
-    Integer field = rsIndicatorExpressionCheckoutResultRequest.getField();
-    String resultRaw = rsIndicatorExpressionCheckoutResultRequest.getResultRaw();
-    String resultExpression = rsIndicatorExpressionCheckoutResultRequest.getResultExpression();
-    String resultNameList = rsIndicatorExpressionCheckoutResultRequest.getResultNameList();
-    String resultValList = rsIndicatorExpressionCheckoutResultRequest.getResultValList();
-    EnumIndicatorExpressionSource enumIndicatorExpressionSource = checkSource(source);
-    switch (enumIndicatorExpressionSource) {
-      case INDICATOR_MANAGEMENT -> {
-        if (StringUtils.isAnyBlank(resultRaw, resultExpression)) {
-          log.error("RsExperimentIndicatorExpressionBiz.checkResult INDICATOR_MANAGEMENT resultRaw:{}, resultExpression:{} is blank", resultRaw, resultExpression);
-          throw new RsExperimentIndicatorExpressionBizException(EnumESC.DATABASE_INDICATOR_MANAGEMENT_RESULT_CANNOT_BE_BLANK);
-        }
-      }
-      case INDICATOR_JUDGE_RISK_FACTOR -> {
-        if (StringUtils.isNotBlank(resultRaw) || StringUtils.isNotBlank(resultExpression)) {
-          log.error("RsExperimentIndicatorExpressionBiz.checkResult INDICATOR_JUDGE_RISK_FACTOR resultRaw:{}, resultExpression:{} is not blank", resultRaw, resultExpression);
-        }
-      }
-      case LABEL_MANAGEMENT -> {
-        if (StringUtils.isNotBlank(resultRaw) || StringUtils.isNotBlank(resultExpression)) {
-          log.error("RsExperimentIndicatorExpressionBiz.checkResult LABEL_MANAGEMENT resultRaw:{}, resultExpression:{} is not blank", resultRaw, resultExpression);
-        }
-      }
-      case CROWDS -> {
-        if (StringUtils.isNotBlank(resultRaw) || StringUtils.isNotBlank(resultExpression)) {
-          log.error("RsExperimentIndicatorExpressionBiz.checkResult CROWDS resultRaw:{}, resultExpression:{} is not blank", resultRaw, resultExpression);
-        }
-      }
-      case RISK_MODEL -> {
-        if (StringUtils.isAnyBlank(resultRaw, resultExpression)) {
-          log.error("RsExperimentIndicatorExpressionBiz.checkResult RISK_MODEL resultRaw:{}, resultExpression:{} is blank", resultRaw, resultExpression);
-          throw new RsExperimentIndicatorExpressionBizException(EnumESC.DATABASE_RISK_MODEL_RESULT_CANNOT_BE_BLANK);
-        }
-      }
-      default -> {
-        log.warn("RsExperimentIndicatorExpressionBiz.checkResult 指标公式来源:{} 不合法", source);
-      }
-    }
-    checkResultNameAndValSize(resultNameList, resultValList);
-    checkResultCannotExistJudgeOperator(resultExpression);
-    checkResultParse(kIndicatorInstanceIdVValMap, field, resultExpression, resultNameList, resultValList);
-    return checkConditionResult;
-  }
 
 
   /* runsix:indicatorExpression is just a condition  */
@@ -603,9 +353,9 @@ public class RsExperimentIndicatorExpressionBiz {
     try {
       String resultExpression = experimentIndicatorExpressionItemRsEntity.getResultExpression();
       String resultNameList = experimentIndicatorExpressionItemRsEntity.getResultNameList();
-      List<String> resultNameSplitList = getResultNameSplitList(resultNameList);
+      List<String> resultNameSplitList = rsUtilBiz.getResultNameSplitList(resultNameList);
       String resultValList = experimentIndicatorExpressionItemRsEntity.getResultValList();
-      List<String> resultValSplitList = getResultValSplitList(resultValList);
+      List<String> resultValSplitList = rsUtilBiz.getResultValSplitList(resultValList);
       StandardEvaluationContext context = new StandardEvaluationContext();
       ExpressionParser parser = new SpelExpressionParser();
       Expression expression = parser.parseExpression(resultExpression);
@@ -641,9 +391,9 @@ public class RsExperimentIndicatorExpressionBiz {
     try {
       String resultExpression = experimentIndicatorExpressionItemRsEntity.getResultExpression();
       String resultNameList = experimentIndicatorExpressionItemRsEntity.getResultNameList();
-      List<String> resultNameSplitList = getResultNameSplitList(resultNameList);
+      List<String> resultNameSplitList = rsUtilBiz.getResultNameSplitList(resultNameList);
       String resultValList = experimentIndicatorExpressionItemRsEntity.getResultValList();
-      List<String> resultValSplitList = getResultValSplitList(resultValList);
+      List<String> resultValSplitList = rsUtilBiz.getResultValSplitList(resultValList);
       StandardEvaluationContext context = new StandardEvaluationContext();
       ExpressionParser parser = new SpelExpressionParser();
       Expression expression = parser.parseExpression(resultExpression);
@@ -682,9 +432,9 @@ public class RsExperimentIndicatorExpressionBiz {
     try {
       String conditionExpression = experimentIndicatorExpressionItemRsEntity.getConditionExpression();
       String conditionNameList = experimentIndicatorExpressionItemRsEntity.getConditionNameList();
-      List<String> conditionNameSplitList = getConditionNameSplitList(conditionNameList);
+      List<String> conditionNameSplitList = rsUtilBiz.getConditionNameSplitList(conditionNameList);
       String conditionValList = experimentIndicatorExpressionItemRsEntity.getConditionValList();
-      List<String> conditionValSplitList = getConditionValSplitList(conditionValList);
+      List<String> conditionValSplitList = rsUtilBiz.getConditionValSplitList(conditionValList);
       StandardEvaluationContext context = new StandardEvaluationContext();
       ExpressionParser parser = new SpelExpressionParser();
       Expression expression = parser.parseExpression(conditionExpression);
@@ -720,9 +470,9 @@ public class RsExperimentIndicatorExpressionBiz {
     try {
       String conditionExpression = experimentIndicatorExpressionItemRsEntity.getConditionExpression();
       String conditionNameList = experimentIndicatorExpressionItemRsEntity.getConditionNameList();
-      List<String> conditionNameSplitList = getConditionNameSplitList(conditionNameList);
+      List<String> conditionNameSplitList = rsUtilBiz.getConditionNameSplitList(conditionNameList);
       String conditionValList = experimentIndicatorExpressionItemRsEntity.getConditionValList();
-      List<String> conditionValSplitList = getConditionValSplitList(conditionValList);
+      List<String> conditionValSplitList = rsUtilBiz.getConditionValSplitList(conditionValList);
       StandardEvaluationContext context = new StandardEvaluationContext();
       ExpressionParser parser = new SpelExpressionParser();
       Expression expression = parser.parseExpression(conditionExpression);
@@ -973,7 +723,7 @@ public class RsExperimentIndicatorExpressionBiz {
       ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity,
       ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity
       ) {
-    EnumIndicatorExpressionSource enumIndicatorExpressionSource = checkSource(source);
+    EnumIndicatorExpressionSource enumIndicatorExpressionSource = rsUtilBiz.checkSource(source);
     switch (enumIndicatorExpressionSource) {
       case INDICATOR_MANAGEMENT -> ePIEIndicatorManagement(
           scene,
@@ -1041,8 +791,8 @@ public class RsExperimentIndicatorExpressionBiz {
       ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity,
       ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity
       ) {
-    EnumIndicatorExpressionField enumIndicatorExpressionField = checkField(field);
-    EnumIndicatorExpressionScene enumIndicatorExpressionScene = checkScene(scene);
+    EnumIndicatorExpressionField enumIndicatorExpressionField = rsUtilBiz.checkField(field);
+    EnumIndicatorExpressionScene enumIndicatorExpressionScene = rsUtilBiz.checkScene(scene);
     switch (enumIndicatorExpressionField) {
       case DATABASE -> databaseParseIndicatorExpression();
       case CASE -> caseParseIndicatorExpression();
@@ -1282,41 +1032,5 @@ public class RsExperimentIndicatorExpressionBiz {
         kExperimentPersonIdVHealthExperimentIndicatorValRsEntityMap.put(experimentPersonId, experimentIndicatorValRsEntity);
       }
     });
-  }
-
-  private List<String> getConditionNameSplitList(String conditionNameList) {
-    if (StringUtils.isBlank(conditionNameList)) {
-      return new ArrayList<>();
-    }
-    return Arrays.stream(conditionNameList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr())).collect(Collectors.toList());
-  }
-
-  private List<String> getConditionValSplitList(String conditionValList) {
-    if (StringUtils.isBlank(conditionValList)) {
-      return new ArrayList<>();
-    }
-    return Arrays.stream(conditionValList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr())).collect(Collectors.toList());
-  }
-
-  private List<String> getResultNameSplitList(String resultNameList) {
-    if (StringUtils.isBlank(resultNameList)) {
-      return new ArrayList<>();
-    }
-    return Arrays.stream(resultNameList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr())).collect(Collectors.toList());
-  }
-
-  private List<String> getResultValSplitList(String resultValList) {
-    if (StringUtils.isBlank(resultValList)) {
-      return new ArrayList<>();
-    }
-    return Arrays.stream(resultValList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr())).collect(Collectors.toList());
-  }
-
-  public static void main(String[] args) {
-    StandardEvaluationContext context = new StandardEvaluationContext();
-    ExpressionParser parser = new SpelExpressionParser();
-    Expression expression = parser.parseExpression("'大于70kg，有点胖'");
-    String result = expression.getValue(context, String.class);
-    log.error(result);
   }
 }

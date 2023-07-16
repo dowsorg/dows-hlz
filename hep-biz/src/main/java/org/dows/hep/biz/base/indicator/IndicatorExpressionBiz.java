@@ -41,12 +41,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class IndicatorExpressionBiz{
-
   @Value("${redisson.lock.lease-time.teacher.indicator-expression-create-delete-update:5000}")
   private Integer leaseTimeIndicatorExpressionCreateDeleteUpdate;
-
   private final RedissonClient redissonClient;
-
   private final String indicatorExpressionFieldAppId = "appId";
   private final IdGenerator idGenerator;
   private final IndicatorExpressionService indicatorExpressionService;
@@ -56,9 +53,8 @@ public class IndicatorExpressionBiz{
   private final IndicatorExpressionInfluenceService indicatorExpressionInfluenceService;
   private final IndicatorInstanceService indicatorInstanceService;
   private final IndicatorCategoryService indicatorCategoryService;
-
-  private final RsExperimentIndicatorExpressionBiz rsExperimentIndicatorExpressionBiz;
   private final RsIndicatorExpressionBiz rsIndicatorExpressionBiz;
+  private final RsUtilBiz rsUtilBiz;
   public static IndicatorExpressionResponseRs indicatorExpression2ResponseRs(
       IndicatorExpressionEntity indicatorExpressionEntity,
       List<IndicatorExpressionItemResponseRs> indicatorExpressionItemResponseRsList,
@@ -1583,7 +1579,7 @@ public class IndicatorExpressionBiz{
       /* runsix:2.10 check indicatorExpressionItemEntityList */
       if (!indicatorExpressionItemEntityList.isEmpty()) {
         indicatorExpressionItemEntityList.forEach(indicatorExpressionItemEntity -> {
-          rsExperimentIndicatorExpressionBiz.checkCondition(kIndicatorInstanceIdVValMap, RsIndicatorExpressionCheckConditionRequest
+          rsUtilBiz.checkCondition(kIndicatorInstanceIdVValMap, RsIndicatorExpressionCheckConditionRequest
               .builder()
               .source(EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource())
               .field(EnumIndicatorExpressionField.DATABASE.getField())
@@ -1592,7 +1588,7 @@ public class IndicatorExpressionBiz{
               .conditionNameList(indicatorExpressionItemEntity.getConditionNameList())
               .conditionValList(indicatorExpressionItemEntity.getConditionValList())
               .build());
-          rsExperimentIndicatorExpressionBiz.checkResult(kIndicatorInstanceIdVValMap, RsIndicatorExpressionCheckoutResultRequest
+          rsUtilBiz.checkResult(kIndicatorInstanceIdVValMap, RsIndicatorExpressionCheckoutResultRequest
               .builder()
               .source(EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource())
               .field(EnumIndicatorExpressionField.DATABASE.getField())
