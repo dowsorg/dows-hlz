@@ -15,7 +15,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RsIndicatorExpressionCheckoutConditionRequest implements Serializable {
+public class RsIndicatorExpressionCheckConditionRequest implements Serializable {
   @Schema(title = "指标公式产生类型")
   private Integer source;
 
