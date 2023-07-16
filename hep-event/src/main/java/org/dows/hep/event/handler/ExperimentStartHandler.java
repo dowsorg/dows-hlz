@@ -47,17 +47,13 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
         List<ExperimentTimerEntity> updateExperimentTimerEntities = new ArrayList<>();
         // 查询实验期数
         List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerBiz
-                .getCurrentPeriods(experimentRestartRequest.getExperimentInstanceId());
-
-        List<ExperimentGroupResponse> experimentGroupResponses = experimentGroupBiz
-                .listGroup(experimentRestartRequest.getExperimentInstanceId());
-
-        // 按期数分组
-        Map<Integer, List<ExperimentTimerEntity>> experimentTimerMap = experimentTimerEntityList.stream()
-                .collect(Collectors.groupingBy(ExperimentTimerEntity::getPeriod));
+                .getPeriodsTimerList(experimentRestartRequest.getExperimentInstanceId());
 
         // 方案设计模式不需要设计时器，只有标准模式或沙盘模式才需要设计时器//null == experimentRestartRequest.getPeriods() &&
         if (null == experimentRestartRequest.getPeriods()) {
+            // 按期数分组
+            Map<Integer, List<ExperimentTimerEntity>> experimentTimerMap = experimentTimerEntityList.stream()
+                    .collect(Collectors.groupingBy(ExperimentTimerEntity::getPeriod));
             experimentTimerMap.forEach((k, v) -> {
                 ExperimentTimerEntity experimentTimerEntity = v.stream()
                         .max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount))
@@ -79,28 +75,22 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
             });
             experimentTimerBiz.saveOrUpdateExperimentTimeExperimentState(experimentRestartRequest.getExperimentInstanceId(),
                     updateExperimentTimerEntities, EnumExperimentState.ONGOING);
-            //1、更改缓存
             /**
-             * todo 需要调整
+             * todo 可优化缓存
+             * HepContext hepContext = HepContext.getExperimentContext(experimentRestartRequest.getExperimentInstanceId());
+             * hepContext.setState(ExperimentStateEnum.ONGOING);
              */
-            /*HepContext hepContext = HepContext.getExperimentContext(experimentRestartRequest.getExperimentInstanceId());
-            hepContext.setState(ExperimentStateEnum.ONGOING);*/
         } else/* if(experimentRestartRequest.getModel() == ExperimentModeEnum.SAND.getCode())*/ {
             //todo 计时器
             log.info("执行开始操作....");
-
-            // 找出当前期数计时器集合
-            List<ExperimentTimerEntity> collect = experimentTimerEntityList.stream()
+            // 找出当前期数计时器集合且暂停次数为最大的
+            ExperimentTimerEntity updateExperimentTimer = experimentTimerEntityList.stream()
                     .filter(t -> t.getPeriod() == experimentRestartRequest.getPeriods())
-                    .collect(Collectors.toList());
-            //暂停次数为最大的
-            ExperimentTimerEntity updateExperimentTimer = collect.stream()
                     .max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount))
                     .orElse(null);
             if (updateExperimentTimer == null) {
                 throw new ExperimentException("实验计时器不存在！");
             }
-
             if (!updateExperimentTimer.getPaused()) {
                 throw new ExperimentException("当前实验已开始，请勿重复执行开始！");
             }
@@ -115,25 +105,17 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
             updateExperimentTimer.setEndTime(updateExperimentTimer.getEndTime() + duration);
             // 设置暂停结束时间
             updateExperimentTimer.setPauseEndTime(experimentRestartRequest.getCurrentTime());
-            updateExperimentTimer.setPeriodInterval(updateExperimentTimer.getPeriodInterval());
             // 加入待更新集合
             updateExperimentTimerEntities.add(updateExperimentTimer);
-            // 剔除当前期数
-            experimentTimerEntityList.removeAll(collect);
-            if (experimentTimerEntityList.size() > 0) {
-                // 从新排序，确保当前期数后的期数自增
-                experimentTimerEntityList = experimentTimerEntityList.stream()
-                        .sorted(Comparator.comparingInt(ExperimentTimerEntity::getPeriod))
-                        .collect(Collectors.toList());
-                for (ExperimentTimerEntity currentPeriod : experimentTimerEntityList) {
-                    if (currentPeriod.getPeriod() >= experimentRestartRequest.getPeriods()) {
-                        // 重新设置当前期数的下一期开始时间，结束时间等
-                        currentPeriod.setStartTime(currentPeriod.getStartTime() + duration);
-                        currentPeriod.setEndTime(currentPeriod.getEndTime() + duration);
-                    }
+            // 更新当前期之后数据
+            for (ExperimentTimerEntity currentPeriod : experimentTimerEntityList) {
+                if (currentPeriod.getPeriod() > experimentRestartRequest.getPeriods()) {
+                    // 重新设置当前期数的下一期开始时间，结束时间等
+                    currentPeriod.setStartTime(currentPeriod.getStartTime() + duration);
+                    currentPeriod.setEndTime(currentPeriod.getEndTime() + duration);
+                    // 加入待更新集合
+                    updateExperimentTimerEntities.add(currentPeriod);
                 }
-                // 加入待更新集合
-                updateExperimentTimerEntities.addAll(experimentTimerEntityList);
             }
             // 批量更新期数定时器
             boolean b = experimentTimerBiz.saveOrUpdateExperimentTimeExperimentState(experimentRestartRequest.getExperimentInstanceId(),
@@ -148,6 +130,9 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                 }
             }
         }
+
+        List<ExperimentGroupResponse> experimentGroupResponses = experimentGroupBiz
+                .listGroup(experimentRestartRequest.getExperimentInstanceId());
         // 重置定时任务
         resetTimeTask(experimentRestartRequest, updateExperimentTimerEntities, experimentGroupResponses);
         // 突发事件检测

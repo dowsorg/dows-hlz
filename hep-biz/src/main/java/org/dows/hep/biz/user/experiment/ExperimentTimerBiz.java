@@ -222,15 +222,16 @@ public class ExperimentTimerBiz {
 
 
     /**
-     * 获取当前实验期数定时器
+     * 获取当前实验所有期数计时器列表并按期数递增排序
      * ExperimentRestartRequest experimentRestartRequest
      *
      * @param experimentInstanceId
      * @return
      */
-    public List<ExperimentTimerEntity> getCurrentPeriods(String experimentInstanceId) {
+    public List<ExperimentTimerEntity> getPeriodsTimerList(String experimentInstanceId) {
         List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
                 .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
+                .orderByAsc(ExperimentTimerEntity::getPeriod)
                 //.eq(ExperimentTimerEntity::getAppId, experimentRestartRequest.getAppId())
                 .list();
         return list;
@@ -337,7 +338,7 @@ public class ExperimentTimerBiz {
     }
 
     /**
-     * 获取实验每一期的开始时间和结束时间
+     * 获取实验所有除暂停记录外的每一期的开始时间和结束时间
      *
      * @param experimentInstanceId
      */

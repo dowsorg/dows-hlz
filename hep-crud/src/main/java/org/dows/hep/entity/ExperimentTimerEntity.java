@@ -47,6 +47,8 @@ public class ExperimentTimerEntity implements CrudEntity {
 
     @Schema(title = "暂停时长[暂停结束时间-暂停起始时间]")
     private Long duration;
+    @Schema(title = "计时器|计数器")
+    private Long timer;
 
     @Schema(title = "实验开始时间")
     private Long startTime;

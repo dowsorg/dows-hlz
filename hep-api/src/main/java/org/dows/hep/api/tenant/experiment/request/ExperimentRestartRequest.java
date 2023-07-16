@@ -35,7 +35,7 @@ public class ExperimentRestartRequest {
     private Boolean paused;
 
     //@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    @NotBlank(message = "暂停或开始的当前时间不可为空")
-    @Schema(title = "暂停或开始的当前时间", requiredMode = Schema.RequiredMode.REQUIRED)
+    //@NotBlank(message = "暂停或开始的当前时间不可为空")
+    //@Schema(title = "暂停或开始的当前时间", requiredMode = Schema.RequiredMode.REQUIRED)
     private Date currentTime;
 }

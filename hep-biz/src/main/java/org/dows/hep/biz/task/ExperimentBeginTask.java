@@ -81,9 +81,11 @@ public class ExperimentBeginTask implements Runnable {
                     .eq(ExperimentTimerEntity::getDeleted, false)
                     .set(ExperimentTimerEntity::getState, EnumExperimentState.PREPARE.getState())
                     .update();
-            //1、更改缓存
-            /*ExperimentContext experimentContext = ExperimentContext.getExperimentContext(experimentInstanceEntity.getExperimentInstanceId());
-            experimentContext.setState(ExperimentStateEnum.PREPARE);*/
+            /**
+             * todo 优化更改缓存
+             * ExperimentContext experimentContext = ExperimentContext.getExperimentContext(experimentInstanceEntity.getExperimentInstanceId());
+             * experimentContext.setState(ExperimentStateEnum.PREPARE);
+             */
         }
 
         /**
