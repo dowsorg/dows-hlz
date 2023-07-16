@@ -4,26 +4,44 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ZipUtil;
+import jakarta.xml.bind.DatatypeConverter;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.oss.api.OssInfo;
-import org.dows.framework.oss.api.S3OssClient;
+import org.dows.framework.oss.local.LocalOssClient;
 import org.dows.hep.entity.MaterialsAttachmentEntity;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 
 @RequiredArgsConstructor
 @Component
 public class OSSBiz {
 
-    private final S3OssClient ossClient;
+    private final LocalOssClient ossClient;
+
+    // 直接使用minio
+    //private final MinioOssClient minioOssClient;
 
     public OssInfo upload(InputStream is, String fileName) {
         OssInfo info = ossClient.upLoad(is, fileName, false);
         info.setPath("/hepapi/" + fileName);
         return info;
+    }
+
+    /**
+     * @param os       - 输出流
+     * @param pathName - 目标文件
+     * @date 2023/7/13 14:40
+     */
+    public void downloadByPath(OutputStream os, String pathName) {
+        pathName = pathName.replace("/hepapi/", "");
+        ossClient.downLoad(os, pathName);
     }
 
     /**
@@ -55,4 +73,29 @@ public class OSSBiz {
 
         return oss;
     }
+
+
+    public String getBase64(String fileName) {
+        String file = ossClient.getBasePath();
+        if (ossClient.getBasePath().startsWith("/")) {
+            file += fileName;
+        }
+        String base64 = null;
+        try {
+            base64 = DatatypeConverter.printBase64Binary(Files.readAllBytes(Paths.get(file)));
+        } catch (IOException e) {
+            return "";
+        }
+        return base64;
+    }
+
+/*    public static void main(String[] args) {
+        String base64 = null;
+        try {
+            base64 = DatatypeConverter.printBase64Binary(Files.readAllBytes(Paths.get("E:\\temps\\1.png")));
+            System.out.println(base64);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }*/
 }

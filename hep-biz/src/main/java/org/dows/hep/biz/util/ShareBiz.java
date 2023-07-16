@@ -8,15 +8,20 @@ import org.dows.framework.crud.api.CrudContextHolder;
 import org.dows.hep.api.base.indicator.response.CaseIndicatorExpressionResponseRs;
 import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
 import org.dows.hep.api.enums.EnumToken;
+import org.dows.hep.api.enums.EnumWebSocketType;
+import org.dows.hep.api.event.CommonExperimentEvent;
+import org.dows.hep.api.event.CommonWebSocketEventSource;
+import org.dows.hep.api.event.EventName;
 import org.dows.hep.biz.base.indicator.CaseIndicatorExpressionBiz;
 import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
-import org.dows.hep.biz.event.ExperimentSettingCache;
-import org.dows.hep.biz.event.data.ExperimentCacheKey;
-import org.dows.hep.biz.event.data.ExperimentTimePoint;
+import org.dows.hep.biz.dao.ExperimentInstanceDao;
+import org.dows.hep.biz.dao.ExperimentParticipatorDao;
 import org.dows.hep.biz.vo.LoginContextVO;
+import org.dows.hep.entity.ExperimentInstanceEntity;
+import org.dows.hep.entity.ExperimentParticipatorEntity;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 
@@ -64,20 +69,16 @@ public class ShareBiz {
 
     }
 
-
-    /**
-     * 计算当前游戏内天数
-     * @param appId
-     * @param experimentInstanceId
-     * @param dt
-     * @return
-     */
-    public static Integer calcGameDay(String appId, String experimentInstanceId, Date dt){
-        final LocalDateTime ldt=ShareUtil.XDate.localDT4Date(dt);
-        final ExperimentCacheKey key=new ExperimentCacheKey().setAppId(appId).setExperimentInstanceId(experimentInstanceId);
-        ExperimentTimePoint timePoint= ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(key,ldt,true);
-        return Optional.ofNullable(timePoint).map(ExperimentTimePoint::getGameDay).orElse(-1);
+    public static String checkAppId(String appId,String experimentInstanceId){
+        if(!ShareUtil.XObject.isEmpty(appId)){
+            return appId;
+        }
+        return CrudContextHolder.getBean(ExperimentInstanceDao.class).getById(experimentInstanceId,
+                ExperimentInstanceEntity::getAppId)
+                .map(ExperimentInstanceEntity::getAppId)
+                .orElse("");
     }
+
 
     //region 获取公式
     public static List<CaseIndicatorExpressionResponseRs> getCaseExpressionsByReasonId(CaseIndicatorExpressionBiz indicatorExpressionBiz, String appId, String reasonId) {
@@ -131,5 +132,45 @@ public class ShareBiz {
         return rst;
     }
     //endreigon
+
+
+
+    //region
+
+    /**
+     * 按小组id获取账户
+     * @param experimentInstanceId
+     * @param experimentGroupIds
+     * @return
+     */
+    public static Set<String> getAccountIdsByGroupId(String experimentInstanceId, Set<String> experimentGroupIds) {
+        return ShareUtil.XCollection.toSet(CrudContextHolder.getBean(ExperimentParticipatorDao.class).getAccountIdsByGroupId(experimentInstanceId, experimentGroupIds,
+                ExperimentParticipatorEntity::getAccountId), ExperimentParticipatorEntity::getAccountId);
+    }
+
+
+
+    /**
+     * 发布webSocket事件
+     * @param applicationEventPublisher
+     * @param eventName
+     * @param socketType
+     * @param experimentId
+     * @param clientIds
+     * @param data
+     * @param <T>
+     */
+
+    public static <T> void publishWebSocketEvent(ApplicationEventPublisher applicationEventPublisher, EventName eventName, EnumWebSocketType socketType,String experimentId,Set<String> clientIds,T data) {
+        if(ShareUtil.XObject.anyEmpty(experimentId,clientIds)){
+            return;
+        }
+        CommonWebSocketEventSource eventSource = new CommonWebSocketEventSource(socketType)
+                .setExperimentInstanceId(experimentId)
+                .setData(data)
+                .setClientIds(clientIds);
+        applicationEventPublisher.publishEvent(CommonExperimentEvent.create(eventName, eventSource));
+    }
+    //endregion
 
 }

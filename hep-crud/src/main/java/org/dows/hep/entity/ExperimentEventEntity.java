@@ -63,6 +63,12 @@ public class ExperimentEventEntity implements CrudEntity {
     @Schema(title = "案例事件ID")
     private String caseEventId;
 
+    @Schema(title = "uim人物ID")
+    private String accountId;
+
+    @Schema(title = "人物名称")
+    private String personName;
+
     @Schema(title = "触发类型 0-条件触发 1-第一期 2-第二期...5-第5期")
     private Integer triggerType;
 
@@ -78,11 +84,17 @@ public class ExperimentEventEntity implements CrudEntity {
     @Schema(title = "触发时间")
     private Date triggerTime;
 
+    @Schema(title = "触发期数")
+    private Integer triggeredPeriod;
+
     @Schema(title = "触发游戏内天数")
     private Integer triggerGameDay;
 
     @Schema(title = "处理时间")
     private Date actionTime;
+
+    @Schema(title = "处理期数")
+    private Integer actionPeriod;
 
     @Schema(title = "处理游戏内天数")
     private Integer actionGameDay;

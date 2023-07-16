@@ -12,9 +12,6 @@ import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Comparator;
-import java.util.List;
-
 /**
  * @author lait.zhang
  * @description project descr:实验:实验计时器
@@ -41,6 +38,19 @@ public class ExperimentTimerRest {
         return countDownResponse;
     }
 
+    /**
+     * 获取实验倒计时
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取实验进度条")
+    @GetMapping("v1/tenantExperiment/experimentTimer/progress")
+    public CountDownResponse progress(@RequestParam String experimentInstanceId) {
+        CountDownResponse countdown = experimentTimerBiz.tenantCountdown(experimentInstanceId);
+        return countdown;
+    }
+
 
     /**
      * 获取实验每期时间
@@ -51,7 +61,7 @@ public class ExperimentTimerRest {
     @Operation(summary = "获取当前实验期数信息[每期开始，结束，间隔等]及当前所在期数")
     @GetMapping("v1/userExperiment/experimentTimer/periods")
     public ExperimentPeriodsResonse periods(String appId, String experimentInstanceId) {
-        return experimentTimerBiz.getExperimentPeriods(appId, experimentInstanceId);
+        return experimentTimerBiz.getExperimentCurrentPeriods(appId, experimentInstanceId);
     }
 
     /**
@@ -84,11 +94,10 @@ public class ExperimentTimerRest {
      * @param
      * @return
      */
-    @Operation(summary = "获取实验期数")
+    @Operation(summary = "获取实验当前期数")
     @PostMapping("v1/userExperiment/experimentTimer/getExperimentPeriods")
     public void getExperimentPeriods(@RequestParam @Validated String appId,
-                                     @RequestParam @Validated String experimentInstanceId
-                                     ) {
-        experimentTimerBiz.getExperimentPeriods(appId,experimentInstanceId);
+                                     @RequestParam @Validated String experimentInstanceId) {
+        experimentTimerBiz.getExperimentCurrentPeriods(appId,experimentInstanceId);
     }
 }

@@ -5,9 +5,15 @@ import lombok.Getter;
 import org.dows.framework.crud.api.CrudContextHolder;
 import org.dows.hep.api.core.BaseExptRequest;
 import org.dows.hep.api.core.ExptOrgFuncRequest;
+import org.dows.hep.api.enums.EnumExperimentState;
+import org.dows.hep.biz.event.ExperimentSettingCache;
+import org.dows.hep.biz.event.data.ExperimentCacheKey;
+import org.dows.hep.biz.event.data.ExperimentTimePoint;
+import org.dows.hep.biz.snapshot.SnapshotRequestHolder;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 /**
@@ -26,11 +32,24 @@ public class ExptRequestValidator {
         this.periods=req.getPeriods();
 
     }
+    private ExptRequestValidator(String appId,String experimentInstanceId,String experimentGroupId,String experimentOrgId,String experimentPersonId){
+        this.appId=appId;
+        this.experimentInstanceId=experimentInstanceId;
+        this.experimentGroupId=experimentGroupId;
+        this.experimentOrgId=experimentOrgId;
+        this.experimentPersonId=experimentPersonId;
+        if(ShareUtil.XObject.allNotEmpty(appId,experimentInstanceId)){
+            SnapshotRequestHolder.setSnapshotRequest(this.appId, experimentInstanceId);
+        }
+    }
     private ExptRequestValidator(ExptOrgFuncRequest req){
         this((BaseExptRequest) req);
         this.indicatorFuncId=req.getIndicatorFuncId();
     }
     //region create
+    public static ExptRequestValidator create(String appId,String experimentInstanceId,String experimentGroupId,String experimentOrgId,String experimentPersonId){
+        return new ExptRequestValidator(appId,experimentInstanceId,experimentGroupId,experimentOrgId,experimentPersonId);
+    }
     public static ExptRequestValidator create(BaseExptRequest req){
         return new ExptRequestValidator(req);
     }
@@ -116,6 +135,12 @@ public class ExptRequestValidator {
     //endregion
 
     //region checkExperimentInstance
+    public ExptRequestValidator checkExperimentInstanceId(){
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(experimentInstanceId))
+                .throwMessage("未找到实验ID");
+        SnapshotRequestHolder.setSnapshotRequest(this.appId, experimentInstanceId);
+        return this;
+    }
     public ExptRequestValidator checkExperimentInstance(){
         getExperimentInstance();
         return this;
@@ -136,8 +161,7 @@ public class ExptRequestValidator {
                 ExperimentInstanceEntity::getState);
     }
     public ExperimentInstanceEntity getExperimentInstance(SFunction<ExperimentInstanceEntity,?>... cols){
-        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(experimentInstanceId))
-                .throwMessage("未找到实验ID");
+        checkExperimentInstanceId();
         if(null== cachedExptInstance) {
             cachedExptInstance = CrudContextHolder.getBean(ExperimentInstanceService.class)
                     .lambdaQuery()
@@ -155,6 +179,11 @@ public class ExptRequestValidator {
     //endregion
 
     //region checkExperimentGroup
+    public ExptRequestValidator checkExperimentGroupId(){
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(experimentGroupId))
+                .throwMessage("未找到实验小组ID");
+        return this;
+    }
     public ExptRequestValidator checkExperimentGroup(){
         getExperimentGroup();
         return this;
@@ -178,8 +207,7 @@ public class ExptRequestValidator {
                 ExperimentGroupEntity::getGroupState);
     }
     public ExperimentGroupEntity getExperimentGroup(SFunction<ExperimentGroupEntity,?>... cols){
-        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(experimentGroupId))
-                .throwMessage("未找到实验小组ID");
+        checkExperimentGroupId();
         if(null== cachedExptGroup) {
             cachedExptGroup = CrudContextHolder.getBean(ExperimentGroupService.class)
                     .lambdaQuery()
@@ -197,6 +225,11 @@ public class ExptRequestValidator {
     //endregion
 
     //region checkExperimentOrg
+    public ExptRequestValidator checkExperimentOrgId(){
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(experimentOrgId))
+                .throwMessage("未找到机构ID");
+        return this;
+    }
     public ExptRequestValidator checkExperimentOrg(){
         getExperimentOrg();
         return this;
@@ -216,8 +249,7 @@ public class ExptRequestValidator {
                 ExperimentOrgEntity::getCaseOrgName);
     }
     public ExperimentOrgEntity getExperimentOrg(SFunction<ExperimentOrgEntity,?>... cols){
-        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(experimentPersonId))
-                .throwMessage("未找到实验人物ID");
+        checkExperimentOrgId();
         if(null== cachedExptOrg) {
             cachedExptOrg = CrudContextHolder.getBean(ExperimentOrgService.class)
                     .lambdaQuery()
@@ -241,6 +273,11 @@ public class ExptRequestValidator {
     //endregion
 
     //region checkExperimentPerson
+    public ExptRequestValidator checkExperimentPersonId(){
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(experimentPersonId))
+                .throwMessage("未找到实验人物ID");
+        return this;
+    }
     public ExptRequestValidator checkExperimentPerson(){
         getExperimentPerson();
         return this;
@@ -258,8 +295,7 @@ public class ExptRequestValidator {
                 ExperimentPersonEntity::getExperimentOrgId);
     }
     public ExperimentPersonEntity getExperimentPerson(SFunction<ExperimentPersonEntity,?>... cols){
-        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(experimentPersonId))
-                .throwMessage("未找到实验人物ID");
+        checkExperimentPersonId();
         if(null== cachedExptPerson) {
             cachedExptPerson = CrudContextHolder.getBean(ExperimentPersonService.class)
                     .lambdaQuery()
@@ -286,6 +322,11 @@ public class ExptRequestValidator {
     //endregion
 
     //region checkIndicatorFunc
+    public ExptRequestValidator checkIndicatorFuncId(){
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(indicatorFuncId))
+                .throwMessage("未找到机构功能点ID");
+        return this;
+    }
     public ExptRequestValidator checkIndicatorFunc(){
         getIndicatorFunc();
         return this;
@@ -302,8 +343,7 @@ public class ExptRequestValidator {
                 IndicatorFuncEntity::getName);
     }
     public IndicatorFuncEntity getIndicatorFunc(SFunction<IndicatorFuncEntity,?>... cols){
-        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(indicatorFuncId))
-                .throwMessage("未找到机构功能ID");
+        checkIndicatorFuncId();
         if(null== cachedExptOrgFunc){
             cachedExptOrgFunc =CrudContextHolder.getBean(IndicatorFuncService.class)
                     .lambdaQuery()
@@ -312,9 +352,29 @@ public class ExptRequestValidator {
                     .select(cols)
                     .oneOpt();
         }
-        IndicatorFuncEntity rst=AssertUtil.getNotNull(cachedExptOrgFunc).orElseThrow("未找到机构功能");
+        IndicatorFuncEntity rst=AssertUtil.getNotNull(cachedExptOrgFunc).orElseThrow("未找到机构功能点");
         if(ShareUtil.XObject.isEmpty(indicatorCategoryId)&&ShareUtil.XObject.notEmpty(rst.getIndicatorCategoryId())){
             indicatorCategoryId=rst.getIndicatorCategoryId();
+        }
+        return rst;
+    }
+    //endregion
+
+    //region checkTimePoint
+    public ExptRequestValidator checkTimePoint(boolean assertRunning, LocalDateTime now,boolean fillGameDay){
+        getTimePoint(assertRunning, now,fillGameDay);
+        return this;
+    }
+    public ExperimentTimePoint getTimePoint(boolean assertRunning, LocalDateTime now,boolean fillGameDay){
+        ExperimentTimePoint rst= ExperimentSettingCache.Instance().getTimePointByRealTime(ExperimentCacheKey.create(this.appId,this.experimentInstanceId), now, fillGameDay);
+        if(ShareUtil.XObject.isEmpty(periods)&&ShareUtil.XObject.notEmpty(rst.getPeriod())){
+            periods=rst.getPeriod();
+        }
+        if(assertRunning) {
+            AssertUtil.trueThenThrow(rst.getGameState() == EnumExperimentState.UNBEGIN)
+                    .throwMessage("当前实验还未进入沙盘");
+            AssertUtil.trueThenThrow(rst.getGameState() == EnumExperimentState.FINISH)
+                    .throwMessage("当前实验已结束");
         }
         return rst;
     }

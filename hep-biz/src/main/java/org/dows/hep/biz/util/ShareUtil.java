@@ -50,6 +50,13 @@ public class ShareUtil {
             }
             return true;
         }
+        public static boolean allNotEmpty(Object... objs) {
+            if(isEmpty(objs)) return false;
+            for(Object item:objs){
+                if(isEmpty(item)) return false;
+            }
+            return true;
+        }
 
         public static boolean anyEmpty(Object... objs) {
             if(isEmpty(objs)) return true;
@@ -153,6 +160,9 @@ public class ShareUtil {
             return CollUtil.map(collection, func, ignoreNull);
         }
 
+        public static <T,R> Set<R> toSet(Collection<T> src,Function<? super T, ? extends R> mapper ){
+            return src.stream().map(mapper).collect(Collectors.toSet());
+        }
         public static <T, K> Map<K, T> toMap(List<T> src, Function<? super T, ? extends K> keyMapper) {
             return toMap(src, keyMapper, Function.identity(), false);
         }

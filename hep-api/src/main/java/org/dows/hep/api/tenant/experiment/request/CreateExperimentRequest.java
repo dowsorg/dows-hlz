@@ -36,6 +36,8 @@ public class CreateExperimentRequest{
 
     @Schema(title = "案例名称")
     private String caseName;
+    @Schema(title = "案例图示")
+    private String casePic;
 
     @Schema(title = "实验名称")
     private String experimentName;

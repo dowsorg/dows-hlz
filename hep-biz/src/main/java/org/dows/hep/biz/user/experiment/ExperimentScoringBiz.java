@@ -293,6 +293,9 @@ public class ExperimentScoringBiz {
 
     }
 
+
+//    public
+
     public ExperimentRankResponse getRank(String experimentId) {
         List<ExperimentRankItemResponse> experimentRankItemResponseList = new ArrayList<>();
         List<ExperimentTotalRankItemResponse> experimentTotalRankItemResponseList = new ArrayList<>();
@@ -435,7 +438,7 @@ public class ExperimentScoringBiz {
 
     public ExperimentGraphRankResponse getGraphRank(String appId, String experimentId, Integer period) throws ExecutionException, InterruptedException {
         if (Objects.isNull(period)) {
-            ExperimentPeriodsResonse experimentPeriods = experimentTimerBiz.getExperimentPeriods(appId, experimentId);
+            ExperimentPeriodsResonse experimentPeriods = experimentTimerBiz.getExperimentCurrentPeriods(appId, experimentId);
             if (Objects.nonNull(experimentPeriods) && Objects.nonNull(experimentPeriods.getCurrentPeriod())) {
                 period = experimentPeriods.getCurrentPeriod();
             } else {

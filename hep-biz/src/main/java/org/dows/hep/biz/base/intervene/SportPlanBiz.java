@@ -10,6 +10,7 @@ import org.dows.hep.biz.cache.CategCache;
 import org.dows.hep.biz.cache.CategCacheFactory;
 import org.dows.hep.biz.dao.SportItemDao;
 import org.dows.hep.biz.dao.SportPlanDao;
+import org.dows.hep.biz.snapshot.SnapshotRequestHolder;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.ShareBiz;
@@ -36,8 +37,18 @@ public class SportPlanBiz{
     private final SportPlanDao dao;
     private final SportItemDao daoSportItem;
 
-    protected CategCache getCategCache(){
+    protected CategCache getPlanCategCache(){
+        if(SnapshotRequestHolder.hasSnapshotRequest()){
+            return CategCacheFactory.SPORTPlan.getExptCache();
+        }
         return CategCacheFactory.SPORTPlan.getCache();
+    }
+
+    protected CategCache getItemCategCache(){
+        if(SnapshotRequestHolder.hasSnapshotRequest()){
+            return CategCacheFactory.SPORTItem.getExptCache();
+        }
+        return CategCacheFactory.SPORTItem.getCache();
     }
 
     /**
@@ -51,8 +62,9 @@ public class SportPlanBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Page<SportPlanResponse> pageSportPlan(FindSportRequest findSport ) {
+        final CategCache cache=getPlanCategCache();
         return ShareBiz.buildPage(dao.pageByCondition(findSport),  i->
-                CopyWrapper.create(SportPlanResponse::new).endFrom(refreshCateg(i)));
+                CopyWrapper.create(SportPlanResponse::new).endFrom(refreshCateg(cache,i)));
 
     }
     /**
@@ -68,7 +80,7 @@ public class SportPlanBiz{
     public SportPlanInfoResponse getSportPlan(String appId, String sportPlanId ) {
         SportPlanEntity row= AssertUtil.getNotNull(dao.getById(sportPlanId))
                 .orElseThrow("运动方案不存在或已删除，请刷新");
-        final CategCache cache=getCategCache();
+        final CategCache cacheItem= getItemCategCache();
 
         List<SportPlanItemsEntity> subRows=dao.getSubByLeadId(sportPlanId,
                 SportPlanItemsEntity::getId,
@@ -93,7 +105,7 @@ public class SportPlanBiz{
                 return;
             }
             i.setStrengthMet(src.getStrengthMet()).setStrengthType(src.getStrengthType());
-            CategVO cacheCateg = cache.getById(appId, src.getInterveneCategId());
+            CategVO cacheCateg = cacheItem.getById(appId, src.getInterveneCategId());
             if (null == cacheCateg) {
                 return;
             }
@@ -102,7 +114,8 @@ public class SportPlanBiz{
         subRows.clear();
         itemIds.clear();
         mapItems.clear();
-        return CopyWrapper.create(SportPlanInfoResponse::new).endFrom(refreshCateg(row))
+        final CategCache cache=getPlanCategCache();
+        return CopyWrapper.create(SportPlanInfoResponse::new).endFrom(refreshCateg(cache, row))
                 .setSportItems(vos);
     }
     /**
@@ -120,9 +133,10 @@ public class SportPlanBiz{
         AssertUtil.trueThenThrow(ShareUtil.XObject.notEmpty(saveSportPlan.getSportPlanId())
                         && dao.getById(saveSportPlan.getSportPlanId(), SportPlanEntity::getSportPlanId).isEmpty())
                 .throwMessage("运动方案不存在");
+        final CategCache cache=getPlanCategCache();
         CategVO categVO=null;
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(saveSportPlan.getInterveneCategId())
-                        ||null==(categVO= getCategCache().getById(appId,saveSportPlan.getInterveneCategId())))
+                        ||null==(categVO= cache.getById(appId,saveSportPlan.getInterveneCategId())))
                 .throwMessage("类别不存在");
         AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(saveSportPlan.getSportItems())
                 &&saveSportPlan.getSportItems().stream()
@@ -186,11 +200,11 @@ public class SportPlanBiz{
      * @param src
      * @return
      */
-    protected SportPlanEntity refreshCateg(SportPlanEntity src) {
+    protected SportPlanEntity refreshCateg(CategCache cache, SportPlanEntity src) {
         if (ShareUtil.XObject.isEmpty(src.getInterveneCategId())) {
             return src;
         }
-        CategVO cacheItem = getCategCache().getById(src.getAppId(), src.getInterveneCategId());
+        CategVO cacheItem = cache.getById(src.getAppId(), src.getInterveneCategId());
         if (null == cacheItem) {
             return src;
         }

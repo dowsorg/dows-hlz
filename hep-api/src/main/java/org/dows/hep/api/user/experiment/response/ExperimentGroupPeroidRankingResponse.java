@@ -36,13 +36,12 @@ public class ExperimentGroupPeroidRankingResponse {
 
     @Schema(title = "小组别名")
     private String groupAlias;
+
     @Schema(title = "小组总分")
     private String totalScore;
 
     @Schema(title = "期数分数")
     private List<ScoreCateg> scoreCategs;
-
-
 
 
     @Data

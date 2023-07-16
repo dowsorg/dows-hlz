@@ -15,6 +15,7 @@ import org.dows.hep.entity.ExperimentEventEntity;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -66,6 +67,17 @@ public class TimeBasedEventCollection implements ICacheClear {
             lock.unlock();
         }
     }
+    public void removeGroup(TimeBasedEventGroup group){
+        if(ShareUtil.XObject.anyEmpty(eventGroups,group)) {
+            return;
+        }
+        lock.lock();
+        try{
+            eventGroups.remove(group);
+        }finally {
+            lock.unlock();
+        }
+    }
     public void removeGroups(List<TimeBasedEventGroup> groups){
         if(ShareUtil.XObject.anyEmpty(eventGroups,groups)) {
             return;
@@ -82,7 +94,9 @@ public class TimeBasedEventCollection implements ICacheClear {
             return;
         }
         eventGroups.forEach(i->{
-            if(ShareUtil.XObject.isEmpty(i.getEventItems())) return;
+            if(ShareUtil.XObject.isEmpty(i.getEventItems())) {
+                return;
+            }
             i.getEventItems().clear();
         });
         eventGroups.clear();
@@ -109,10 +123,15 @@ public class TimeBasedEventCollection implements ICacheClear {
         private LocalDateTime rawTriggeringTime;
 
         @Schema(title = "已触发时间")
+        private volatile Integer triggeredPeriod;
+        @Schema(title = "已触发时间")
         private volatile LocalDateTime triggeredTime;
 
         @Schema(title = "待触发游戏内天数")
         private Integer triggeringGameDay;
+
+        @Schema(title = "重试次数")
+        private final AtomicInteger retryTimes=new AtomicInteger();
 
         @Schema(title = "事件列表")
         private List<ExperimentEventEntity> eventItems;

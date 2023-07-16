@@ -23,6 +23,11 @@
             <groupId>org.dows.saas</groupId>
             <artifactId>hep-crud</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.dows.saas</groupId>
+            <artifactId>hep-websocket</artifactId>
+        </dependency>
+
         <!--uim包-->
         <dependency>
             <groupId>org.dows.cloud</groupId>
@@ -58,9 +63,18 @@
         <dependency>
             <groupId>org.jboss.xnio</groupId>
             <artifactId>xnio-api</artifactId>
-            <version>3.8.8.Final</version>
-            <scope>compile</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>html2pdf</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+        </dependency>
+
 
     </dependencies>
 

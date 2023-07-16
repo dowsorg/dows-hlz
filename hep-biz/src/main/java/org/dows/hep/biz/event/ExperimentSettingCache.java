@@ -2,6 +2,7 @@ package org.dows.hep.biz.event;
 
 
 import cn.hutool.json.JSONUtil;
+import com.github.benmanes.caffeine.cache.RemovalCause;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
@@ -37,8 +38,8 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
     public static ExperimentSettingCache Instance(){
         return s_instance;
     }
-    protected final static int CACHEInitCapacity=1;
-    protected final static int CACHEMaxSize=4;
+    protected final static int CACHEInitCapacity=2;
+    protected final static int CACHEMaxSize=10;
     protected final static int CACHEExpireSeconds=60*60*6;
 
     private ExperimentSettingCache(){
@@ -163,13 +164,16 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
 
     }
 
+    @Override
+    protected void onRemoval(ExperimentCacheKey key, ExperimentSettingCollection value, RemovalCause cause) {
 
+    }
 
     @Override
     protected boolean isCompleted(ExperimentSettingCollection val) {
         return ShareUtil.XObject.notEmpty(val)
-                &ShareUtil.XObject.notEmpty(val.getStartTime())
-                &ShareUtil.XObject.notEmpty(val.getMapPeriod());
+                &&ShareUtil.XObject.notEmpty(val.getStartTime())
+                &&ShareUtil.XObject.notEmpty(val.getMapPeriod());
     }
 
     @Override

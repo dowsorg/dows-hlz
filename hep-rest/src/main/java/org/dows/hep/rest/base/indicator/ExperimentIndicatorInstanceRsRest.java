@@ -4,8 +4,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
+import org.dows.hep.api.user.experiment.request.ExperimentIndicatorInstanceRequest;
+import org.dows.hep.api.user.experiment.response.EchartsDataResonse;
 import org.dows.hep.biz.base.indicator.ExperimentIndicatorInstanceRsBiz;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author runsix
@@ -29,5 +33,17 @@ public class ExperimentIndicatorInstanceRsRest {
   @PostMapping("v1/experimentIndicator/money/change")
   public void changeMoney(@RequestBody RsChangeMoneyRequest rsChangeMoneyRequest) {
     experimentIndicatorInstanceRsBiz.changeMoney(rsChangeMoneyRequest);
+  }
+
+  @Operation(summary = "实验体检人次统计")
+  @PostMapping("v1/experimentIndicator/ageRate/stat")
+  public List<EchartsDataResonse> statAgeRate(@RequestBody ExperimentIndicatorInstanceRequest experimentIndicatorInstanceRequest) {
+    return experimentIndicatorInstanceRsBiz.statAgeRate(experimentIndicatorInstanceRequest);
+  }
+
+  @Operation(summary = "实验人物性别统计")
+  @PostMapping("v1/experimentIndicator/genderRate/stat")
+  public List<EchartsDataResonse> statGenderRate(@RequestBody ExperimentIndicatorInstanceRequest experimentIndicatorInstanceRequest) {
+    return experimentIndicatorInstanceRsBiz.statGenderRate(experimentIndicatorInstanceRequest);
   }
 }

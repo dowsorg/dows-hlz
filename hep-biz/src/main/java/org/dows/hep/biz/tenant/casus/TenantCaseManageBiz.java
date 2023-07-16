@@ -114,7 +114,8 @@ public class TenantCaseManageBiz {
                     wrapper.eq(CaseInstanceEntity::getAccountId, accountId)
                             .or(wrapper1 -> {
                                 wrapper1.eq(CaseInstanceEntity::getSource, CaseSourceEnum.ADMIN.name())
-                                        .eq(CaseInstanceEntity::getShared, CaseSharedEnum.SHARED.getCode());
+                                        .eq(CaseInstanceEntity::getShared, CaseSharedEnum.SHARED.getCode())
+                                        .eq(CaseInstanceEntity::getState, CaseEnabledEnum.ENABLED.getCode());
                             });
                 })
                 .page(caseInstancePageRequest.getPage());

@@ -11,6 +11,12 @@ public enum EnumWebSocketType {
     EXPT_SCHEME_SUBMITTED,
 
     // 开始实验倒计时
-    START_EXPERIMENT_COUNTDOWN
-    ;
+    START_EXPERIMENT_COUNTDOWN,
+    //突发事件触发
+    EVENT_TRIGGERED,
+    // 实验暂停
+    EXPT_SUSPEND,
+
+
+    EXPT_RESTART;
 }

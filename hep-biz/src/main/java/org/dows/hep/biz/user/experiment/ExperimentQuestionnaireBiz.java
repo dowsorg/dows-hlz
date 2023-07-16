@@ -91,7 +91,7 @@ public class ExperimentQuestionnaireBiz {
      */
     public ExperimentQuestionnaireResponse getQuestionnaire(ExptQuestionnaireSearchRequest request) {
         Assert.notNull(request, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
-        ExperimentPeriodsResonse experimentPeriods = experimentTimerBiz.getExperimentPeriods("3", request.getExperimentInstanceId());
+        ExperimentPeriodsResonse experimentPeriods = experimentTimerBiz.getExperimentCurrentPeriods("3", request.getExperimentInstanceId());
         Integer currentPeriod = Optional.ofNullable(experimentPeriods)
                 .map(ExperimentPeriodsResonse::getCurrentPeriod)
                 .orElseThrow(() -> new BizException(ExperimentESCEnum.PERIOD_NON_NULL));

@@ -54,23 +54,40 @@ public class ExperimentOrgNoticeEntity implements CrudEntity {
     @Schema(title = "实验人物id")
     private String experimentPersonId;
 
+    @Schema(title = "人物名称")
+    private String personName;
+
     @Schema(title = "期数")
     private Integer periods;
 
     @Schema(title = "游戏内天数")
     private Integer gameDay;
 
+    @Schema(title = "通知时间")
+    private Date noticeTime;
+
     @Schema(title = "通知类型 1-人物转移 2-检测随访 3-突发事件")
-    private Boolean noticeSrcType;
+    private Integer noticeSrcType;
 
     @Schema(title = "通知来源id，转移，随访操作id，事件id")
     private String noticeSrcId;
 
+    @Schema(title = "uid人物id")
+    private String accountId;
+
+    @Schema(title = "人物头像")
+    private String avatar;
     @Schema(title = "通知标题")
     private String title;
 
     @Schema(title = "通知内容")
     private String content;
+
+    @Schema(title = "操作提示")
+    private String tips;
+
+    @Schema(title = "事件处理措施列表")
+    private String eventActions;
 
     @Schema(title = "通知状态，0-未读 1-已读")
     private Integer readState;

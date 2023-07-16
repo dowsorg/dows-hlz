@@ -3,6 +3,7 @@ package org.dows.hep.biz.snapshot;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.mybatis.MybatisCrudService;
 import org.dows.hep.ExperimentCrudEntity;
+import org.dows.hep.biz.util.ShareUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -28,7 +29,8 @@ public class BaseSnapshotFullTableWriter<ST,SS extends MybatisCrudService<ST>, E
     @Override
     public List<ST> readSource(SnapshotRequest req) {
         return sourceService.query()
-                .eq("app_id", req.getAppId())
+                .eq(ShareUtil.XObject.notEmpty(snapshotType.getColState()),"app_id", req.getAppId())
+                .eq(ShareUtil.XObject.notEmpty(snapshotType.getColState()), snapshotType.getColState(), "1")
                 .orderByAsc("id")
                 .list();
     }

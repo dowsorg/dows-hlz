@@ -34,8 +34,7 @@ public class FoodCalc4ExptBiz extends FoodCalcBiz {
 
     @Override
     protected CategCache getCategCache() {
-        //TODO 实验缓存
-        return CategCacheFactory.FOODMaterial.getCache();
+        return CategCacheFactory.FOODMaterial.getExptCache();
     }
 
     /**

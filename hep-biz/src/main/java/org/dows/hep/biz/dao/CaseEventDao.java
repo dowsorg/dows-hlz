@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -164,7 +165,7 @@ public class CaseEventDao extends BaseSubDao<CaseEventService, CaseEventEntity, 
     }
     //endregion
 
-    public List<CaseEventEntity> getCaseEventsByPersons(List<String> personIds,SFunction<CaseEventEntity,?>...cols){
+    public List<CaseEventEntity> getCaseEventsByPersonIds(Collection<String> personIds, SFunction<CaseEventEntity,?>...cols){
         if(ShareUtil.XObject.isEmpty(personIds)){
             return Collections.emptyList();
         }

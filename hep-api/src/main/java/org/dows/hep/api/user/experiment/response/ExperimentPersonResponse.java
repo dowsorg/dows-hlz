@@ -24,6 +24,9 @@ public class ExperimentPersonResponse {
     @Schema(title = "实验人物id")
     private String experimentPersonId;
 
+    @Schema(title = "实验人物uim账户ID")
+    private String accountId;
+
     @Schema(title = "人物名称")
     private String name;
 

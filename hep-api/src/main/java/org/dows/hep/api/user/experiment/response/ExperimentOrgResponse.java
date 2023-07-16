@@ -22,6 +22,10 @@ public class ExperimentOrgResponse extends AccountOrgResponse {
 
     @Schema(title = "操作手册")
     private String handbook;
+
+    @Schema(title = "案例机构ID")
+    private String caseOrgId;
+
     @Schema(title = "机构费用列表")
     private List<ExperimentOrgFeeResponse> feeList;
 

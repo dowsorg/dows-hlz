@@ -23,6 +23,7 @@ public class HandlerEventRequest{
     @Schema(title = "实验人物ID")
     private String experimentPersonId;
 
+
     @Schema(title = "操作人id")
     private String operateAccountId;
 

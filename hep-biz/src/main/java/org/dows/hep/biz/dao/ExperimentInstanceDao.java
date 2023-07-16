@@ -1,9 +1,12 @@
 package org.dows.hep.biz.dao;
 
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.service.ExperimentInstanceService;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @author : wuzl
@@ -38,5 +41,17 @@ public class ExperimentInstanceDao extends BaseDao<ExperimentInstanceService, Ex
     @Override
     protected SFunction<Integer, ?> setColState(ExperimentInstanceEntity item) {
         return null;
+    }
+
+    public List<ExperimentInstanceEntity> getRunningExperiment(String appId, Integer minState,Integer maxState,
+                                                               SFunction<ExperimentInstanceEntity,?>... cols){
+        return service.lambdaQuery()
+                .eq(ShareUtil.XObject.notEmpty(appId),ExperimentInstanceEntity::getAppId,appId)
+                .ge(ShareUtil.XObject.notEmpty(minState), ExperimentInstanceEntity::getState,minState)
+                .le(ShareUtil.XObject.notEmpty(maxState), ExperimentInstanceEntity::getState,maxState)
+                .orderByAsc(ExperimentInstanceEntity::getStartTime)
+                .select(cols)
+                .list();
+
     }
 }

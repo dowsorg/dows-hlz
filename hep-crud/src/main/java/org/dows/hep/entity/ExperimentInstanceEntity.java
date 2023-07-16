@@ -47,6 +47,8 @@ public class ExperimentInstanceEntity implements CrudEntity {
 
     @Schema(title = "案例名称[社区名]")
     private String caseName;
+    @Schema(title = "案例图示[社区图片]")
+    private String casePic;
 
     @Schema(title = "实验名称")
     private String experimentName;

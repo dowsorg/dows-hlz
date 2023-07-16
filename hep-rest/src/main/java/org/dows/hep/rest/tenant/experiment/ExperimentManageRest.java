@@ -7,11 +7,16 @@ import lombok.RequiredArgsConstructor;
 import org.dows.account.util.JwtUtil;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.hep.api.annotation.Resubmit;
+import org.dows.hep.api.core.CreateExperimentForm;
 import org.dows.hep.api.enums.EnumToken;
 import org.dows.hep.api.tenant.experiment.request.*;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
+import org.dows.hep.api.tenant.experiment.response.ExptSchemeGroupReviewResponse;
+import org.dows.hep.api.tenant.experiment.vo.ExptSchemeScoreReviewVO;
 import org.dows.hep.api.user.experiment.response.CountDownResponse;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
+import org.dows.hep.biz.tenant.experiment.ExperimentSchemeScoreBiz;
+import org.dows.hep.biz.user.experiment.ExperimentBaseBiz;
 import org.dows.hep.biz.user.experiment.ExperimentParticipatorBiz;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import org.springframework.validation.annotation.Validated;
@@ -22,6 +27,7 @@ import java.util.Map;
 
 /**
  * @author lait.zhang
+ * @folder tenant-hep/实验管理
  * @description project descr:实验:实验管理
  * @date 2023年4月23日 上午9:44:34
  */
@@ -29,9 +35,11 @@ import java.util.Map;
 @RestController
 @Tag(name = "实验管理", description = "实验管理")
 public class ExperimentManageRest {
+    private final ExperimentBaseBiz baseBiz;
     private final ExperimentManageBiz experimentManageBiz;
     private final ExperimentParticipatorBiz experimentParticipatorBiz;
     private final ExperimentTimerBiz experimentTimerBiz;
+    private final ExperimentSchemeScoreBiz experimentSchemeScoreBiz;
 
     /**
      * 获取实验倒计时
@@ -47,6 +55,7 @@ public class ExperimentManageRest {
 
         return countdown;
     }
+
     /**
      * 分配实验
      *
@@ -62,8 +71,21 @@ public class ExperimentManageRest {
         //1、获取登录账ID
         String accountId = map.get("accountId").toString();
         //return "";
-        return experimentManageBiz.allot(createExperiment,accountId);
+        return experimentManageBiz.allot(createExperiment, accountId);
     }
+
+    /**
+     * 获取实验分配信息
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取实验分配信息")
+    @GetMapping("v1/tenantExperiment/experimentManage/getAllotData")
+    public CreateExperimentForm getAllotData(String experimentInstanceId) {
+        return experimentManageBiz.getAllotData(experimentInstanceId, "");
+    }
+
 
     /**
      * 案例机构和人物复制到实验
@@ -116,7 +138,7 @@ public class ExperimentManageRest {
 
 
     /**
-     * 获取实验列表
+     * 分页获取实验列表
      *
      * @param
      * @return
@@ -126,8 +148,9 @@ public class ExperimentManageRest {
     public PageResponse<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
         return experimentManageBiz.pageByRole(pageExperimentRequest);
     }
+
     /**
-     * 获取实验列表
+     * 根据组名分页获取实验列表
      *
      * @param
      * @return
@@ -139,11 +162,8 @@ public class ExperimentManageRest {
 
     }
 
-
-
-
     /**
-     * 获取实验列表
+     * 开始/暂停实验
      *
      * @param
      * @return
@@ -154,5 +174,42 @@ public class ExperimentManageRest {
         experimentManageBiz.restart(experimentRestartRequest);
     }
 
+    /**
+     * 获取方案设计评分小组列表
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取方案设计评分小组列表")
+    @GetMapping("v1/tenantExperiment/experimentManage/listSchemeGroupReview")
+    public List<ExptSchemeGroupReviewResponse> listSchemeGroupReview(@RequestParam("exptInstanceId") String exptInstanceId, HttpServletRequest request) {
+        String accountId = baseBiz.getAccountId(request);
+        return experimentSchemeScoreBiz.listSchemeGroupReview(exptInstanceId, accountId);
+    }
 
+    /**
+     * 获取方案设计评分详情
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取方案设计评分详情")
+    @GetMapping("v1/tenantExperiment/experimentManage/getSchemeReviewDetail")
+    public ExptSchemeScoreReviewVO getSchemeReviewDetail(@RequestParam("exptInstanceId") String exptInstanceId, @RequestParam("exptGroupId") String exptGroupId, HttpServletRequest request) {
+        String accountId = baseBiz.getAccountId(request);
+        return experimentSchemeScoreBiz.getSchemeScoreReview(exptInstanceId, accountId, exptGroupId);
+    }
+
+    /**
+     * 提交方案设计评分详情
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "提交方案设计评分详情")
+    @PostMapping("v1/tenantExperiment/experimentManage/submitSchemeScore")
+    public String submitSchemeScore(@RequestBody @Validated ExperimentSchemeScoreRequest schemeScoreRequest, HttpServletRequest request) {
+        String accountId = baseBiz.getAccountId(request);
+        return experimentSchemeScoreBiz.submitSchemeScore(schemeScoreRequest, accountId);
+    }
 }

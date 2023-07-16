@@ -2,42 +2,50 @@ package org.dows.hep.biz.tenant.experiment;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.response.QuestionSectionDimensionResponse;
 import org.dows.hep.api.tenant.casus.response.CaseSchemeResponse;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSchemeScoreRequest;
+import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.tenant.experiment.response.ExperimentSchemeScoreItemResponse;
 import org.dows.hep.api.tenant.experiment.response.ExperimentSchemeScoreResponse;
+import org.dows.hep.api.tenant.experiment.response.ExptSchemeGroupReviewResponse;
+import org.dows.hep.api.tenant.experiment.vo.ExptSchemeScoreReviewVO;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.ExptReviewStateEnum;
+import org.dows.hep.api.user.experiment.ExptSchemeStateEnum;
+import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
+import org.dows.hep.api.user.experiment.response.ExperimentSchemeResponse;
 import org.dows.hep.biz.tenant.casus.TenantCaseSchemeBiz;
-import org.dows.hep.entity.ExperimentParticipatorEntity;
-import org.dows.hep.entity.ExperimentSchemeEntity;
-import org.dows.hep.entity.ExperimentSchemeScoreEntity;
-import org.dows.hep.entity.ExperimentSchemeScoreItemEntity;
-import org.dows.hep.service.ExperimentParticipatorService;
-import org.dows.hep.service.ExperimentSchemeScoreItemService;
-import org.dows.hep.service.ExperimentSchemeScoreService;
-import org.dows.hep.service.ExperimentSchemeService;
+import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
+import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
+import org.dows.hep.entity.*;
+import org.dows.hep.service.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ExperimentSchemeScoreBiz {
     private final ExperimentManageBaseBiz baseBiz;
-    private final ExperimentSchemeService experimentSchemeService;
     private final TenantCaseSchemeBiz tenantCaseSchemeBiz;
+    private final ExperimentSchemeBiz experimentSchemeBiz;
+    private final ExperimentSettingBiz experimentSettingBiz;
+    private final ExperimentSchemeService experimentSchemeService;
     private final ExperimentSchemeScoreService experimentSchemeScoreService;
     private final ExperimentSchemeScoreItemService experimentSchemeScoreItemService;
     private final ExperimentParticipatorService experimentParticipatorService;
+    private final ExperimentGroupService experimentGroupService;
+
+    private static final String ADMIN_ACCOUNT_ID = "1001010086";
 
     /**
      * @param experimentInstanceId - 实验实例ID
@@ -47,14 +55,178 @@ public class ExperimentSchemeScoreBiz {
      * @date 2023/6/15 20:36
      */
     public void preHandleExperimentSchemeScore(String experimentInstanceId, String caseInstanceId) {
-        List<String> viewAccountIds = new ArrayList<>(experimentParticipatorService.lambdaQuery()
+        List<String> viewAccountIds = new ArrayList<>();
+        viewAccountIds.add(ADMIN_ACCOUNT_ID);
+        List<String> tAccountIds = experimentParticipatorService.lambdaQuery()
                 .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
                 .eq(ExperimentParticipatorEntity::getParticipatorType, 0)
                 .list()
                 .stream()
                 .map(ExperimentParticipatorEntity::getAccountId)
-                .toList());
+                .toList();
+        viewAccountIds.addAll(tAccountIds);
         preHandleExperimentSchemeScore(experimentInstanceId, caseInstanceId, viewAccountIds);
+    }
+
+    /**
+     * @param exptInstanceId  - 实验实例ID
+     * @param reviewAccountId - 评审账号ID
+     * @return java.util.List<org.dows.hep.api.tenant.experiment.response.ExptSchemeGroupReviewResponse>
+     * @author fhb
+     * @description
+     * @date 2023/7/12 16:37
+     */
+    public List<ExptSchemeGroupReviewResponse> listSchemeGroupReview(String exptInstanceId, String reviewAccountId) {
+        // 获取实验下 `exptInstanceId` 小组信息
+        List<ExperimentGroupResponse> exptGroupList = baseBiz.listExptGroup(exptInstanceId);
+        if (CollUtil.isEmpty(exptGroupList)) {
+            throw new BizException("获取方案设计报告的小组列表时，小组信息为空");
+        }
+
+        // 获取该实验下 `exptInstanceId` 方案设计
+        List<ExperimentSchemeEntity> schemeList = experimentSchemeService.lambdaQuery()
+                .eq(ExperimentSchemeEntity::getExperimentInstanceId, exptInstanceId)
+                .list();
+        if (CollUtil.isEmpty(schemeList)) {
+            throw new BizException("获取方案设计报告的小组列表时，方案设计数据为空");
+        }
+
+        // 获取 `exptInstanceId` && `reviewAccountId` 下所有的方案设计评分
+        // 是否是管理员
+        boolean isAdmin = baseBiz.isAdministrator(reviewAccountId);
+        // schemeId list
+        List<String> schemeIdList = schemeList.stream()
+                .map(ExperimentSchemeEntity::getExperimentSchemeId)
+                .toList();
+        List<ExperimentSchemeScoreEntity> schemeScoreList = experimentSchemeScoreService.lambdaQuery()
+                .in(ExperimentSchemeScoreEntity::getExperimentSchemeId, schemeIdList)
+                .eq(!isAdmin, ExperimentSchemeScoreEntity::getReviewAccountId, reviewAccountId)
+                .eq(isAdmin, ExperimentSchemeScoreEntity::getReviewAccountId, ADMIN_ACCOUNT_ID)
+                .list();
+
+        // group-id map expt-scheme
+        Map<String, ExperimentSchemeEntity> groupIdMapExptScheme = schemeList.stream()
+                .collect(Collectors.toMap(ExperimentSchemeEntity::getExperimentGroupId, item -> item));
+        // scheme-id map scheme-score
+        Map<String, ExperimentSchemeScoreEntity> schemeIdMapSchemeScore = schemeScoreList.stream()
+                .collect(Collectors.toMap(ExperimentSchemeScoreEntity::getExperimentSchemeId, item -> item, (v1, v2) -> v1));
+
+        // build result
+        List<ExptSchemeGroupReviewResponse> result = new ArrayList<>();
+        exptGroupList.forEach(group -> {
+            ExperimentSchemeEntity schemeEntity = groupIdMapExptScheme.get(group.getExperimentGroupId());
+            Assert.notNull(schemeEntity, "获取方案设计报告的小组列表时: 小组的方案设计数据为空");
+            ExperimentSchemeScoreEntity schemeScoreEntity = schemeIdMapSchemeScore.get(schemeEntity.getExperimentSchemeId());
+            Assert.notNull(schemeScoreEntity, "获取方案设计报告的小组列表时: 方案设计评分表数据为空");
+            ExptSchemeGroupReviewResponse resultItem = ExptSchemeGroupReviewResponse.builder()
+                    .exptGroupId(group.getExperimentGroupId())
+                    .exptGroupName(group.getGroupName())
+                    .exptGroupAliasName(group.getGroupAlias())
+                    .groupNo(group.getGroupNo())
+                    .exptSchemeStateCode(schemeEntity.getState())
+                    .exptSchemeStateName(ExptSchemeStateEnum.getByCode(schemeEntity.getState()).getName())
+                    .reviewDt(schemeScoreEntity.getReviewDt())
+                    .reviewScore(isAdmin ? schemeEntity.getScore() : schemeScoreEntity.getReviewScore())
+                    .build();
+            result.add(resultItem);
+        });
+
+        return result;
+    }
+
+    /**
+     * @param exptInstanceId  - 实验实例ID
+     * @param reviewAccountId - 评审账号ID
+     * @param exptGroupId     - 实验组ID
+     * @return org.dows.hep.api.tenant.experiment.vo.ExptSchemeScoreReviewVO
+     * @author fhb
+     * @description 获取方案设计评分详情
+     * @date 2023/7/12 19:51
+     */
+    public ExptSchemeScoreReviewVO getSchemeScoreReview(String exptInstanceId, String reviewAccountId, String exptGroupId) {
+        // 方案设计-记录信息
+        ExperimentGroupEntity exptGroup = experimentGroupService.lambdaQuery()
+                .eq(ExperimentGroupEntity::getExperimentGroupId, exptGroupId)
+                .oneOpt()
+                .orElseThrow(() -> new BizException("获取方案设计评分详情时：小组信息为空"));
+        ExperimentSchemeResponse schemeInfo = experimentSchemeBiz.getScheme(exptInstanceId, exptGroupId, null, false);
+        ExptSchemeScoreReviewVO.SchemeRecordInfo schemeRecordInfo = ExptSchemeScoreReviewVO.SchemeRecordInfo.builder()
+                .groupName(exptGroup.getGroupName())
+                .groupAlias(exptGroup.getGroupAlias())
+                .schemeInfo(schemeInfo)
+                .build();
+
+        // 方案设计-评分信息
+        List<ExperimentSchemeScoreResponse> scoreInfos = listSchemeScore(exptInstanceId, reviewAccountId, exptGroupId);
+        ExptSchemeScoreReviewVO.SchemeScoreInfo schemeScoreInfo = ExptSchemeScoreReviewVO.SchemeScoreInfo.builder()
+                .finalScore(schemeInfo.getScore())
+                .scoreInfos(scoreInfos)
+                .build();
+
+        return ExptSchemeScoreReviewVO.builder()
+                .schemeRecordInfo(schemeRecordInfo)
+                .schemeScoreInfo(schemeScoreInfo)
+                .build();
+    }
+
+    /**
+     * 如果是管理员，则可能是多个评分表一同提交
+     * 如果不是管理员，则是单个评分表提交
+     *
+     * @author fhb
+     * @description 提交方案设计评分表
+     * @date 2023/6/15 21:52
+     */
+    @DSTransactional
+    public String submitSchemeScore(ExperimentSchemeScoreRequest request, String submitAccountId) {
+        /* 处理请求数据 */
+        // check params and auth
+        checkParamsAndAuth(request, submitAccountId);
+        // 平铺出所有请求中的 itemList
+        List<ExperimentSchemeScoreRequest.SchemeScoreRequest> scoreInfos = request.getScoreInfos();
+        List<ExperimentSchemeScoreRequest.SchemeScoreItemRequest> itemList = scoreInfos.stream()
+                .flatMap(item -> item.getItemList().stream())
+                .toList();
+        // 平铺所有请求中的 id
+        List<String> scoreIdList = scoreInfos.stream()
+                .map(ExperimentSchemeScoreRequest.SchemeScoreRequest::getExperimentSchemeScoreId)
+                .toList();
+
+
+        /* 准备数据 */
+        // 获取对应 itemList 的所有 ori itemList
+        List<String> scoreItemIdList = itemList.stream()
+                .map(ExperimentSchemeScoreRequest.SchemeScoreItemRequest::getExperimentSchemeScoreItemId)
+                .toList();
+        List<ExperimentSchemeScoreItemEntity> oriItemEntityList = experimentSchemeScoreItemService.lambdaQuery()
+                .in(ExperimentSchemeScoreItemEntity::getExperimentSchemeScoreItemId, scoreItemIdList)
+                .list();
+        Map<String, ExperimentSchemeScoreItemEntity> scoreItemIdMapEntity = oriItemEntityList.stream()
+                .collect(Collectors.toMap(ExperimentSchemeScoreItemEntity::getExperimentSchemeScoreItemId, item -> item));
+        // 获取对应 idList 的所有 ori list
+        List<ExperimentSchemeScoreEntity> oriEntityList = experimentSchemeScoreService.lambdaQuery()
+                .in(ExperimentSchemeScoreEntity::getExperimentSchemeScoreId, scoreIdList)
+                .list();
+        Map<String, ExperimentSchemeScoreEntity> schemeIdMapEntity = oriEntityList.stream()
+                .collect(Collectors.toMap(ExperimentSchemeScoreEntity::getExperimentSchemeScoreId, item -> item));
+        // 获取 scheme-score 对应的 expt-scheme
+        List<String> schemeIdList = oriEntityList.stream()
+                .map(ExperimentSchemeScoreEntity::getExperimentSchemeId)
+                .toList();
+
+
+        /* 处理数据 */
+        // check item score range
+        checkItemScoreRange(itemList, oriItemEntityList);
+        // 批量更新 SchemeScoreItem 的得分
+        boolean updScoreItemRes = updSchemeScoreItemScore(itemList, scoreItemIdMapEntity);
+        // 更新 SchemeScore 的得分和状态
+        boolean updScoreRes = updSchemeScoreAndState(scoreInfos, schemeIdMapEntity);
+        // 更新 exptScheme 的得分和状态
+        BigDecimal score = calFinalScore(scoreInfos);
+        boolean updSchemeRes = updSchemeState(score, schemeIdList.get(0));
+
+        return score.toString();
     }
 
     private void preHandleExperimentSchemeScore(String experimentInstanceId, String caseInstanceId, List<String> viewAccountIds) {
@@ -119,28 +291,44 @@ public class ExperimentSchemeScoreBiz {
         experimentSchemeScoreItemService.saveBatch(itemList);
     }
 
-    /**
-     * @param
-     * @return
-     * @author fhb
-     * @description 获取方案设计评分表
-     * @date 2023/6/15 21:35
-     */
-    public List<ExperimentSchemeScoreResponse> listSchemeScore(String experimentSchemeId, String reviewAccountId) {
-        Assert.notNull(experimentSchemeId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
-        Assert.notNull(reviewAccountId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
+    private List<ExperimentSchemeScoreResponse> listSchemeScore(String exptInstanceId, String reviewAccountId, String exptGroupId) {
+        Assert.notNull(exptInstanceId, "获取方案设计评分详情时：实验实例ID不能为空");
+        Assert.notNull(reviewAccountId, "获取方案设计评分详情时：实验评审人账号ID不能为空");
+        Assert.notNull(exptGroupId, "获取方案设计评分详情时：实验小组ID不能为空");
+
+        // 获取 `exptInstanceId` && `exptGroupId` 的方案设计
+        ExperimentSchemeEntity exptScheme = experimentSchemeService.lambdaQuery()
+                .eq(ExperimentSchemeEntity::getExperimentInstanceId, exptInstanceId)
+                .eq(ExperimentSchemeEntity::getExperimentGroupId, exptGroupId)
+                .oneOpt()
+                .orElseThrow(() -> new BizException("获取方案设计评分详情时：获取小组方案设计数据异常"));
 
         // 是否是管理员
         boolean isAdmin = baseBiz.isAdministrator(reviewAccountId);
         // 管理员看到所有的评分表, 普通角色仅仅看到自己的评分表
         List<ExperimentSchemeScoreEntity> scoreList = experimentSchemeScoreService.lambdaQuery()
-                .eq(ExperimentSchemeScoreEntity::getExperimentSchemeId, experimentSchemeId)
+                .eq(ExperimentSchemeScoreEntity::getExperimentSchemeId, exptScheme.getExperimentSchemeId())
                 .eq(!isAdmin, ExperimentSchemeScoreEntity::getReviewAccountId, reviewAccountId)
                 .list();
         if (CollUtil.isEmpty(scoreList)) {
             return new ArrayList<>();
         }
 
+        // 排序，保证管理员的数据放在第一条
+        int adminIndex = 0;
+        for (int i = 0; i < scoreList.size(); i++) {
+            ExperimentSchemeScoreEntity scoreEntity = scoreList.get(i);
+            String tempAccountId = scoreEntity.getReviewAccountId();
+            if (ADMIN_ACCOUNT_ID.equals(tempAccountId)) {
+                adminIndex = i;
+            }
+        }
+        ExperimentSchemeScoreEntity firstEntity = scoreList.get(0);
+        ExperimentSchemeScoreEntity adminEntity = scoreList.get(adminIndex);
+        scoreList.set(0, adminEntity);
+        scoreList.set(adminIndex, firstEntity);
+
+        // list item
         List<String> schemeScoreIdList = scoreList.stream()
                 .map(ExperimentSchemeScoreEntity::getExperimentSchemeScoreId)
                 .toList();
@@ -164,37 +352,96 @@ public class ExperimentSchemeScoreBiz {
         return result;
     }
 
-    /**
-     * @author fhb
-     * @description 提交方案设计评分表
-     * @date 2023/6/15 21:52
-     */
-    public Boolean submitSchemeScore(ExperimentSchemeScoreRequest request, String submitAccountId) {
-        Assert.notNull(request, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
-        Assert.notNull(request.getExperimentSchemeScoreId(), ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
-        Assert.notNull(request.getItemList(), ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
-        Assert.notNull(submitAccountId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
+    private ExperimentSchemeScoreEntity getSchemeScore(String experimentSchemeScoreId) {
+        return experimentSchemeScoreService.lambdaQuery()
+                .eq(ExperimentSchemeScoreEntity::getExperimentSchemeScoreId, experimentSchemeScoreId)
+                .oneOpt()
+                .orElseThrow(() -> new BizException(ExperimentESCEnum.DATA_NULL));
+    }
 
+    private void checkParamsAndAuth(ExperimentSchemeScoreRequest request, String submitAccountId) {
+        Assert.notNull(request, "提交方案设计评分表时：请求参数不能为空");
+        Assert.notNull(request.getScoreInfos(), "提交方案设计评分表时：请求参数不能为空");
+        Assert.notNull(submitAccountId, "提交方案设计评分表时：评审人账号ID不能为空");
+
+        // get scoreEndTime and auditEndTime
+        List<ExperimentSchemeScoreRequest.SchemeScoreRequest> scoreInfos = request.getScoreInfos();
+        ExperimentSchemeScoreRequest.SchemeScoreRequest first = scoreInfos.get(0);
+        ExperimentSchemeScoreEntity firstSchemeScoreEntity = getSchemeScore(first.getExperimentSchemeScoreId());
+        String experimentSchemeId = firstSchemeScoreEntity.getExperimentSchemeId();
+        String exptInstanceId = experimentSchemeService.lambdaQuery()
+                .eq(ExperimentSchemeEntity::getExperimentSchemeId, experimentSchemeId)
+                .oneOpt()
+                .map(ExperimentSchemeEntity::getExperimentInstanceId)
+                .orElseThrow(() -> new BizException("提交方案设计评分表时：获取实验实例异常"));
+        ExperimentSetting.SchemeSetting schemeSetting = experimentSettingBiz.getSchemeSetting(exptInstanceId);
+        Assert.notNull(schemeSetting, "提交方案设计评分表时：获取实验设置信息异常");
+        Date scoreEndTime = schemeSetting.getScoreEndTime();
+        Assert.notNull(scoreEndTime, "提交方案设计评分表时：获取方案设计评分截止时间信息异常");
+        Date auditEndTime = schemeSetting.getAuditEndTime();
+        Assert.notNull(scoreEndTime, "提交方案设计评分表时：获取方案设计审核截止时间信息异常");
+
+        // check
+        Date currentDate = new Date();
         boolean isAdmin = baseBiz.isAdministrator(submitAccountId);
-        ExperimentSchemeScoreEntity schemeScore = getSchemeScore(request.getExperimentSchemeScoreId());
-        String reviewAccountId = schemeScore.getReviewAccountId();
-        if (!isAdmin && Objects.equals(submitAccountId, reviewAccountId)) {
-            throw new BizException(ExperimentESCEnum.NO_AUTHORITY);
-        }
+        if (!isAdmin) {
+            // check auth
+            String reviewAccountId = firstSchemeScoreEntity.getReviewAccountId();
+            if (Objects.equals(submitAccountId, reviewAccountId)) {
+                throw new BizException("提交方案设计评分表时：评审人账号没有该评分表的操作权限");
+            }
 
-        List<ExperimentSchemeScoreItemEntity> itemEntityList = new ArrayList<>();
-        List<ExperimentSchemeScoreRequest.ExperimentSchemeScoreItemRequest> itemList = request.getItemList();
-        List<String> itemIdList = itemList.stream()
-                .map(ExperimentSchemeScoreRequest.ExperimentSchemeScoreItemRequest::getExperimentSchemeScoreItemId)
-                .toList();
-        Map<String, Long> idCollect = experimentSchemeScoreItemService.lambdaQuery()
-                .in(ExperimentSchemeScoreItemEntity::getExperimentSchemeScoreItemId, itemIdList)
-                .list()
-                .stream()
-                .collect(Collectors.toMap(ExperimentSchemeScoreItemEntity::getExperimentSchemeScoreItemId, ExperimentSchemeScoreItemEntity::getId));
+            // check date
+            if (DateUtil.compare(currentDate, scoreEndTime) > 0) {
+                throw new BizException("提交方案设计评分表时：已过评审时间，请联系管理员");
+            }
+        }
+        if (DateUtil.compare(currentDate, auditEndTime) > 0) {
+            throw new BizException("提交方案设计评分表时：审核已截止");
+        }
+    }
+
+    private static void checkItemScoreRange(List<ExperimentSchemeScoreRequest.SchemeScoreItemRequest> itemList, List<ExperimentSchemeScoreItemEntity> oriItemEntityList) {
+        Map<String, List<ExperimentSchemeScoreItemEntity>> groupByName = oriItemEntityList.stream()
+                .collect(Collectors.groupingBy(ExperimentSchemeScoreItemEntity::getDimensionName));
+        Map<String, Float> idMapMaxValue = new HashMap<>();
+        Map<String, Float> idMapMinValue = new HashMap<>();
+        groupByName.forEach((k, v) -> {
+            Float max = v.stream().max((v1, v2) -> {
+                        return (int) (v1.getMaxScore() - v2.getMaxScore());
+                    }).map(ExperimentSchemeScoreItemEntity::getMaxScore)
+                    .orElseThrow(() -> new BizException("提交方案设计评分表时：获取评分最大值异常"));
+            Float min = v.stream().min((v1, v2) -> {
+                        return (int) (v1.getMaxScore() - v2.getMaxScore());
+                    }).map(ExperimentSchemeScoreItemEntity::getMinScore)
+                    .orElseThrow(() -> new BizException("提交方案设计评分表时：获取评分最小值异常"));
+            v.forEach(item -> {
+                String experimentSchemeScoreItemId = item.getExperimentSchemeScoreItemId();
+                idMapMaxValue.put(experimentSchemeScoreItemId, max);
+                idMapMinValue.put(experimentSchemeScoreItemId, min);
+            });
+        });
         itemList.forEach(item -> {
+            String experimentSchemeScoreItemId = item.getExperimentSchemeScoreItemId();
+            Float score = item.getScore();
+
+            Float minScore = idMapMinValue.get(experimentSchemeScoreItemId);
+            Float maxScore = idMapMaxValue.get(experimentSchemeScoreItemId);
+            if (score < minScore) {
+                throw new BizException("提交方案设计评分表时：分数不能小于该组最小值");
+            }
+            if (score > maxScore) {
+                throw new BizException("提交方案设计评分表时：分数不能大于该组最大值");
+            }
+        });
+    }
+
+    private boolean updSchemeScoreItemScore(List<ExperimentSchemeScoreRequest.SchemeScoreItemRequest> itemList, Map<String, ExperimentSchemeScoreItemEntity> scoreItemIdMapEntity) {
+        List<ExperimentSchemeScoreItemEntity> itemEntityList = new ArrayList<>();
+        itemList.forEach(item -> {
+            ExperimentSchemeScoreItemEntity oriItemEntity = scoreItemIdMapEntity.get(item.getExperimentSchemeScoreItemId());
             ExperimentSchemeScoreItemEntity itemEntity = ExperimentSchemeScoreItemEntity.builder()
-                    .id(idCollect.get(item.getExperimentSchemeScoreItemId()))
+                    .id(oriItemEntity.getId())
                     .score(item.getScore())
                     .build();
             itemEntityList.add(itemEntity);
@@ -202,10 +449,40 @@ public class ExperimentSchemeScoreBiz {
         return experimentSchemeScoreItemService.updateBatchById(itemEntityList);
     }
 
-    private ExperimentSchemeScoreEntity getSchemeScore(String experimentSchemeScoreId) {
-        return experimentSchemeScoreService.lambdaQuery()
-                .eq(ExperimentSchemeScoreEntity::getExperimentSchemeScoreId, experimentSchemeScoreId)
-                .oneOpt()
-                .orElseThrow(() -> new BizException(ExperimentESCEnum.DATA_NULL));
+    private boolean updSchemeScoreAndState(List<ExperimentSchemeScoreRequest.SchemeScoreRequest> scoreInfos, Map<String, ExperimentSchemeScoreEntity> schemeIdMapEntity) {
+        List<ExperimentSchemeScoreEntity> entityList = new ArrayList<>();
+        scoreInfos.forEach(scoreInfo -> {
+            String experimentSchemeScoreId = scoreInfo.getExperimentSchemeScoreId();
+            Float reviewScore = scoreInfo.getReviewScore() == null ? 0.0f : scoreInfo.getReviewScore();
+            ExperimentSchemeScoreEntity experimentSchemeScoreEntity = schemeIdMapEntity.get(scoreInfo.getExperimentSchemeScoreId());
+            ExperimentSchemeScoreEntity entity = ExperimentSchemeScoreEntity.builder()
+                    .id(experimentSchemeScoreEntity.getId())
+                    .reviewScore(reviewScore)
+                    .reviewState(ExptReviewStateEnum.REVIEWED.getCode())
+                    .reviewDt(new Date())
+                    .build();
+            entityList.add(entity);
+        });
+        return experimentSchemeScoreService.updateBatchById(entityList);
+    }
+
+    private BigDecimal calFinalScore(List<ExperimentSchemeScoreRequest.SchemeScoreRequest> scoreInfos) {
+        float finalScore = 0.00f;
+        if (CollUtil.isNotEmpty(scoreInfos)) {
+            double average = scoreInfos.stream()
+                    .mapToDouble(item -> item.getReviewScore() == null ? 0.0 : item.getReviewScore().doubleValue())
+                    .average()
+                    .orElse(0.00);
+            finalScore = (float) average;
+        }
+        return BigDecimal.valueOf(finalScore).setScale(1, RoundingMode.HALF_UP);
+    }
+
+    private boolean updSchemeState(BigDecimal score, String schemeId) {
+        return experimentSchemeService.lambdaUpdate()
+                .eq(ExperimentSchemeEntity::getExperimentSchemeId, schemeId)
+                .set(ExperimentSchemeEntity::getState, ExptSchemeStateEnum.SCORED.getCode()) // 2-已批阅
+                .set(ExperimentSchemeEntity::getScore, score)
+                .update();
     }
 }

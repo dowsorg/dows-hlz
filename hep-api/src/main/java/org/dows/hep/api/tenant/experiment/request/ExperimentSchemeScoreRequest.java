@@ -20,14 +20,23 @@ import java.util.List;
 @Schema(name = "ExperimentSchemeScoreRequest 对象", title = "评分表")
 public class ExperimentSchemeScoreRequest {
 
-    @Schema(title = "方案设计评分ID")
-    private String experimentSchemeScoreId;
-
-    @Schema(title = "itemList")
-    private List<ExperimentSchemeScoreItemRequest> itemList;
+    @Schema(title = "方案设计-得分列表")
+    private List<SchemeScoreRequest> scoreInfos;
 
     @Data
-    public static class ExperimentSchemeScoreItemRequest {
+    public static class SchemeScoreRequest {
+        @Schema(title = "方案设计评分ID")
+        private String experimentSchemeScoreId;
+
+        @Schema(title = "评审人给的总评分")
+        private Float reviewScore;
+
+        @Schema(title = "itemList")
+        private List<SchemeScoreItemRequest> itemList;
+    }
+
+    @Data
+    public static class SchemeScoreItemRequest {
         @Schema(title = "方案设计评分ItemId")
         private String experimentSchemeScoreItemId;
 

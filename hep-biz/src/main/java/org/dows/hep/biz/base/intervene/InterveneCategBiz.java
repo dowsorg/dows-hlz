@@ -12,6 +12,7 @@ import org.dows.hep.biz.dao.EnumCheckCategPolicy;
 import org.dows.hep.biz.dao.IndicatorFuncDao;
 import org.dows.hep.biz.dao.InterveneCategDao;
 import org.dows.hep.api.enums.EnumCategFamily;
+import org.dows.hep.biz.snapshot.SnapshotRequestHolder;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.JacksonUtil;
@@ -43,10 +44,14 @@ public class InterveneCategBiz {
     private final IdGenerator idGenerator;
 
     protected CategCache getCategCache(String family){
-        return CategCacheFactory.of(checkFamily(family)).getCache();
+        return getCategCache(checkFamily(family));
     }
     protected CategCache getCategCache(EnumCategFamily family){
-        return CategCacheFactory.of(family).getCache();
+        CategCacheFactory cacheFactory=CategCacheFactory.of(family);
+        if(SnapshotRequestHolder.hasSnapshotRequest()){
+            return cacheFactory.getExptCache();
+        }
+        return cacheFactory.getCache();
     }
 
 
@@ -125,6 +130,8 @@ public class InterveneCategBiz {
             return false;
         }
         final String appId=saveInterveneCateg.get(0).getAppId();
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(appId))
+                .throwMessage("appId不可为空");
         final String pid=saveInterveneCateg.get(0).getCategPid();
         final String family=saveInterveneCateg.get(0).getFamily();
         final EnumCategFamily enumFamily=checkFamily(family);

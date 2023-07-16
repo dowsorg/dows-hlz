@@ -3,6 +3,7 @@ package org.dows.hep.biz.event;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.dows.hep.biz.cache.BaseManulCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
+import org.dows.hep.biz.util.ShareBiz;
 
 import java.util.concurrent.*;
 
@@ -18,7 +19,7 @@ public class EventScheduler {
     }
     private EventScheduler(int coreSize){
         ScheduledThreadPoolExecutor executor=new ScheduledThreadPoolExecutor(coreSize,
-                new ThreadFactoryBuilder().setNameFormat("EventScheduler-%d").build(),
+                new ThreadFactoryBuilder().setNameFormat("eventScheduler-%d").build(),
                 new ThreadPoolAbortPolicy());
         executor.setRemoveOnCancelPolicy(true);
         scheduledExecutor=executor;
@@ -37,6 +38,7 @@ public class EventScheduler {
      * @return
      */
     public ScheduledFuture<?> scheduleTimeBasedEvent(String appId,String experimentId, long delaySeconds) {
+        appId= ShareBiz.checkAppId(appId,experimentId);
         final ExperimentCacheKey cacheKey = new ExperimentCacheKey(appId, experimentId);
         final String exclusiveKey = String.format("timeevent:%s", cacheKey);
         final Runnable task = new TimeBasedEventTask(cacheKey);

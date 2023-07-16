@@ -26,17 +26,19 @@ import org.dows.hep.api.user.experiment.response.SaveExptTreatResponse;
 import org.dows.hep.api.user.experiment.vo.ExptTreatPlanItemVO;
 import org.dows.hep.biz.base.intervene.*;
 import org.dows.hep.biz.dao.OperateOrgFuncDao;
-import org.dows.hep.biz.dao.SportItemDao;
-import org.dows.hep.biz.dao.TreatItemDao;
+import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.util.*;
 import org.dows.hep.biz.vo.CalcExptFoodCookbookResult;
 import org.dows.hep.biz.vo.Categ4ExptVO;
 import org.dows.hep.biz.vo.CategVO;
 import org.dows.hep.biz.vo.LoginContextVO;
-import org.dows.hep.entity.*;
+import org.dows.hep.entity.IndicatorFuncEntity;
+import org.dows.hep.entity.OperateOrgFuncEntity;
+import org.dows.hep.entity.OperateOrgFuncSnapEntity;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -67,10 +69,9 @@ public class ExperimentOrgInterveneBiz{
 
     private final TreatItemBiz treatItemBiz;
 
-    private final SportItemDao sportItemDao;
-    private final TreatItemDao treatItemDao;
 
     public List<Categ4ExptVO> listInterveneCateg4Expt(FindInterveneCateg4ExptRequest findCateg ) throws JsonProcessingException {
+        ExptRequestValidator.create(findCateg).checkExperimentInstanceId();
         FindInterveneCategRequest castReq=CopyWrapper.create(FindInterveneCategRequest::new).endFrom(findCateg);
         List<CategVO> items=interveneCategBiz.listInterveneCateg(castReq);
         if(ShareUtil.XObject.isEmpty(items)){
@@ -81,114 +82,60 @@ public class ExperimentOrgInterveneBiz{
     }
 
     public Page<FoodCookBookResponse> pageFoodCookbook4Expt(FindInterveneList4ExptRequest findFood ){
+        ExptRequestValidator.create(findFood).checkExperimentInstanceId();
         FindFoodRequest castReq=CopyWrapper.create(FindFoodRequest::new).endFrom(findFood);
         return foodPlanBiz.pageFoodCookbook(castReq);
     }
     public FoodCookBookInfoResponse getFoodCookbook4Expt(GetInfo4ExptRequest getInfo) {
+        ExptRequestValidator.create(getInfo).checkExperimentInstanceId();
         return foodPlanBiz.getFoodCookbook(getInfo.getAppId(),getInfo.getInstanceId());
     }
     public Page<FoodDishesResponse> pageFoodDishes4Expt(FindInterveneList4ExptRequest findFood ) {
+        ExptRequestValidator.create(findFood).checkExperimentInstanceId();
         FindFoodRequest castReq=CopyWrapper.create(FindFoodRequest::new).endFrom(findFood);
         return foodPlanBiz.pageFoodDishes(castReq);
     }
     public Page<FoodMaterialResponse> pageFoodMaterial4Expt( FindInterveneList4ExptRequest findFood ) {
+        ExptRequestValidator.create(findFood).checkExperimentInstanceId();
         FindFoodRequest castReq=CopyWrapper.create(FindFoodRequest::new).endFrom(findFood);
         return foodMaterialBiz.pageFoodMaterial(castReq);
     }
     public Page<SportPlanResponse> pageSportPlan4Expt(FindInterveneList4ExptRequest findSport ){
+        ExptRequestValidator.create(findSport).checkExperimentInstanceId();
         FindSportRequest castReq=CopyWrapper.create(FindSportRequest::new).endFrom(findSport);
         return sportPlanBiz.pageSportPlan(castReq);
     }
     public SportPlanInfoResponse getSportPlan4Expt(GetInfo4ExptRequest getInfo) {
+        ExptRequestValidator.create(getInfo).checkExperimentInstanceId();
         return sportPlanBiz.getSportPlan(getInfo.getAppId(),getInfo.getInstanceId());
     }
     public Page<SportItemResponse> pageSportItem4Expt(FindInterveneList4ExptRequest findSport ){
+        ExptRequestValidator.create(findSport).checkExperimentInstanceId();
         FindSportRequest castReq=CopyWrapper.create(FindSportRequest::new).endFrom(findSport);
         return sportItemBiz.pageSportItem(castReq);
     }
 
     public List<Categ4ExptVO> listSportCateg4Expt(FindInterveneCateg4ExptRequest findSport ) throws JsonProcessingException{
+        findSport.setFamily(EnumCategFamily.SPORTItem.getCode());
         findSport.setWithChild(1);
-        FindInterveneCategRequest castReq=CopyWrapper.create(FindInterveneCategRequest::new).endFrom(findSport);
-        List<CategVO> items=interveneCategBiz.listInterveneCateg(castReq);
-        if(ShareUtil.XObject.isEmpty(items)){
-            return Collections.emptyList();
-        }
-        List<Categ4ExptVO> rst= JacksonUtil.deepCopy(items, true,new TypeReference<>() {});
-        Map<String,Categ4ExptVO> mapLeaf=getLeafMap(rst);
-        if(ShareUtil.XObject.isEmpty(mapLeaf)){
-            return rst;
-        }
-        FindSportRequest findReq=FindSportRequest.builder()
-                .appId(findSport.getAppId())
-                .build();
-        Map<String,List<Categ4ExptVO>> mapItems=ShareUtil.XCollection.groupBy(sportItemDao.listByCondition (findReq,
-                SportItemEntity::getInterveneCategId,
-                SportItemEntity::getSportItemId,
-                SportItemEntity::getSportItemName),row->Categ4ExptVO.builder()
-                .categId(row.getSportItemId())
-                .categName(row.getSportItemName())
-                .categPid(row.getInterveneCategId())
-                .build(),  Categ4ExptVO::getCategPid);
-        mapLeaf.entrySet().forEach(i->{
-            i.getValue().setChilds(mapItems.get(i.getKey()));
-        });
-        return rst;
+        FindInterveneCateg4ExptRequest castReq=CopyWrapper.create(FindInterveneCateg4ExptRequest::new).endFrom(findSport);
+        return listInterveneCateg4Expt(castReq);
+
     }
     public List<Categ4ExptVO> listTreatCateg4Expt( FindInterveneCateg4ExptRequest findTreat ) throws JsonProcessingException {
         findTreat.setWithChild(1);
-        FindInterveneCategRequest castReq=CopyWrapper.create(FindInterveneCategRequest::new).endFrom(findTreat);
-        List<CategVO> items=interveneCategBiz.listInterveneCateg(castReq);
-        if(ShareUtil.XObject.isEmpty(items)){
-            return Collections.emptyList();
-        }
-        List<Categ4ExptVO> rst= JacksonUtil.deepCopy(items, true,new TypeReference<>() {});
-        Map<String,Categ4ExptVO> mapLeaf=getLeafMap(rst);
-        if(ShareUtil.XObject.isEmpty(mapLeaf)){
-            return rst;
-        }
-        final String indicatorFuncId=findTreat.getFamily().substring(EnumCategFamily.TreatItem.getCode().length());
-        Map<String,List<Categ4ExptVO>> mapTreats=ShareUtil.XCollection.groupBy(treatItemDao.getByIndicatorFuncId(findTreat.getAppId(),indicatorFuncId,
-                mapLeaf.size()<=200?mapLeaf.keySet():null,
-                TreatItemEntity::getInterveneCategId,
-                TreatItemEntity::getTreatItemId,
-                TreatItemEntity::getTreatItemName),row->Categ4ExptVO.builder()
-                .categId(row.getTreatItemId())
-                .categName(row.getTreatItemName())
-                .categPid(row.getInterveneCategId())
-                .build(),  Categ4ExptVO::getCategPid);
-        mapLeaf.entrySet().forEach(i->{
-            i.getValue().setChilds(mapTreats.get(i.getKey()));
-        });
-        return rst;
+        FindInterveneCateg4ExptRequest castReq=CopyWrapper.create(FindInterveneCateg4ExptRequest::new).endFrom(findTreat);
+        return listInterveneCateg4Expt(castReq);
+    }
 
-    }
-    Map<String,Categ4ExptVO>  getLeafMap(List<Categ4ExptVO> categs){
-        if(ShareUtil.XCollection.isEmpty(categs)){
-            return Collections.emptyMap();
-        }
-        Map<String,Categ4ExptVO> rst=new HashMap<>();
-        categs.forEach(i->fillLeafMap(rst,i));
-        return rst;
-    }
-    void fillLeafMap(Map<String,Categ4ExptVO> dst,Categ4ExptVO categ){
-        if(ShareUtil.XObject.isEmpty(categ)){
-            return;
-        }
-        if(ShareUtil.XCollection.isEmpty(categ.getChilds())){
-            dst.put(categ.getCategId(),categ);
-            return;
-        }
-        for(Categ4ExptVO item:categ.getChilds()) {
-            fillLeafMap(dst, item);
-        }
-    }
     public List<TreatItemResponse>  listTreatItem4Expt( FindTreatList4ExptRequest findTreat ){
+        ExptRequestValidator.create(findTreat).checkExperimentInstanceId();
         FindTreatRequest castReq=FindTreatRequest.builder()
                 .incIds(findTreat.getIncIds())
                 .appId(findTreat.getAppId())
-                .pageSize(1)
-                .pageNo(Optional.ofNullable(findTreat.getIncIds()).map(List::size).orElse(10))
+                .indicatorFuncId(findTreat.getIndicatorFuncId())
+                .pageSize(Optional.ofNullable(findTreat.getIncIds()).map(List::size).orElse(10))
+                .pageNo(1)
                 .build();
         return treatItemBiz.pageTreatItem(castReq).getRecords();
     }
@@ -200,10 +147,10 @@ public class ExperimentOrgInterveneBiz{
         return getExptSnapData(exptOperate,false,CalcExptFoodCookbookResult.class,CalcExptFoodCookbookResult::new);
     }
     public SaveExptInterveneResponse saveExptFoodCookbook(SaveExptFoodRequest saveFood, HttpServletRequest request) {
-        ExptRequestValidator validator=ExptRequestValidator.create(saveFood);
-        validator.checkExperimentPerson()
-                .checkExperimentOrg()
-                .checkExperimentInstance();
+        ExptRequestValidator validator=ExptRequestValidator.create(saveFood)
+                .checkExperimentPerson()
+                .checkExperimentOrgId()
+                .checkExperimentInstanceId();
         saveFood.setDetails(ShareUtil.XObject.defaultIfNull(saveFood.getDetails(), Collections.emptyList()));
         //按餐次校验重复食材或菜肴
         Map<EnumFoodMealTime, List<String>> mapDetails = new HashMap<>();
@@ -228,26 +175,31 @@ public class ExperimentOrgInterveneBiz{
         });
         mapDetails.clear();
 
+
         //校验操作类型
         final EnumExptOperateType operateType=EnumExptOperateType.INTERVENEFood;
         //校验登录
         LoginContextVO voLogin= ShareBiz.getLoginUser(request);
         //校验挂号
-        ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator);
-        final Optional<OperateFlowEntity> flowOption=flowValidator.checkOrgFlowRunning();
+        final LocalDateTime ldtNow=LocalDateTime.now();
+        final Date dateNow=ShareUtil.XDate.localDT2Date(ldtNow);
+        ExperimentTimePoint timePoint=validator.getTimePoint(true, ldtNow, true);
+        ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator)
+                .checkOrgFlow(false);
 
         //计算营养统计，膳食宝塔
         CalcExptFoodCookbookResult snapRst= foodCalc4ExptBiz.calcFoodGraph4ExptCookbook(validator.getAppId(), saveFood.getDetails());
         snapRst.setDetails(saveFood.getDetails());
         //保存操作记录
-        final Date dateNow=new Date();
+
         OperateOrgFuncEntity rowOrgFunc= createRowOrgFunc(validator)
                 .setIndicatorCategoryId(operateType.getIndicatorCateg().getCode())
                 .setOperateType(operateType.getCode())
                 .setOperateAccountId(voLogin.getAccountId())
                 .setOperateAccountName(voLogin.getAccountName())
                 .setOperateTime(dateNow)
-                .setOperateGameDay(ShareBiz.calcGameDay(validator.getAppId(), validator.getExperimentInstanceId(),dateNow))
+                .setOperateGameDay(timePoint.getGameDay())
+                .setPeriods(timePoint.getPeriod())
                 .setOperateFlowId(flowValidator.getOperateFlowId())
                 .setReportFlag(operateType.getReportFuncFlag()?1:0)
                 .setReportLabel("饮食干预")
@@ -269,6 +221,7 @@ public class ExperimentOrgInterveneBiz{
 
     }
     public CalcExptFoodCookbookResult calcExptFoodGraph( CalcExptFoodGraphRequest calcFoodGraph ){
+        ExptRequestValidator.create(calcFoodGraph).checkExperimentInstanceId();
         return foodCalc4ExptBiz.calcFoodGraph4Expt(calcFoodGraph);
     }
 
@@ -278,8 +231,8 @@ public class ExperimentOrgInterveneBiz{
     public SaveExptInterveneResponse saveExptSportPlan(SaveExptSportRequest saveSport, HttpServletRequest request ) {
         ExptRequestValidator validator=ExptRequestValidator.create(saveSport);
         validator.checkExperimentPerson()
-                .checkExperimentOrg()
-                .checkExperimentInstance();
+                .checkExperimentOrgId()
+                .checkExperimentInstanceId();
 
         saveSport.setSportItems(ShareUtil.XObject.defaultIfNull(saveSport.getSportItems(), Collections.emptyList()));
         AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(saveSport.getSportItems())
@@ -293,18 +246,21 @@ public class ExperimentOrgInterveneBiz{
         //校验登录
         LoginContextVO voLogin= ShareBiz.getLoginUser(request);
         //校验挂号
-        ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator);
-        final Optional<OperateFlowEntity> flowOption=flowValidator.checkOrgFlowRunning();
+        final LocalDateTime ldtNow=LocalDateTime.now();
+        final Date dateNow=ShareUtil.XDate.localDT2Date(ldtNow);
+        ExperimentTimePoint timePoint=validator.getTimePoint(true, ldtNow, true);
+        ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator)
+                .checkOrgFlow(false);
 
         //保存操作记录
-        final Date dateNow=new Date();
         OperateOrgFuncEntity rowOrgFunc= createRowOrgFunc(validator)
                 .setIndicatorCategoryId(operateType.getIndicatorCateg().getCode())
                 .setOperateType(operateType.getCode())
                 .setOperateAccountId(voLogin.getAccountId())
                 .setOperateAccountName(voLogin.getAccountName())
                 .setOperateTime(dateNow)
-                .setOperateGameDay(ShareBiz.calcGameDay(validator.getAppId(), validator.getExperimentInstanceId(),dateNow))
+                .setOperateGameDay(timePoint.getGameDay())
+                .setPeriods(timePoint.getPeriod())
                 .setOperateFlowId(flowValidator.getOperateFlowId())
                 .setReportFlag(operateType.getReportFuncFlag()?1:0)
                 .setReportLabel("运动干预")
@@ -332,7 +288,7 @@ public class ExperimentOrgInterveneBiz{
         ExptRequestValidator validator=ExptRequestValidator.create(saveTreat);
         validator.checkExperimentPerson()
                 .checkExperimentOrg()
-                .checkExperimentInstance()
+                .checkExperimentInstanceId()
                 .checkIndicatorFunc();
 
         saveTreat.setTreatItems(ShareUtil.XObject.defaultIfNull(saveTreat.getTreatItems(), Collections.emptyList()));
@@ -343,10 +299,13 @@ public class ExperimentOrgInterveneBiz{
         //校验登录
         LoginContextVO voLogin= ShareBiz.getLoginUser(request);
         //校验挂号
-        ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator);
-        final Optional<OperateFlowEntity> flowOption=flowValidator.checkOrgFlowRunning();
+        final LocalDateTime ldtNow=LocalDateTime.now();
+        final Date dateNow=ShareUtil.XDate.localDT2Date(ldtNow);
+        ExperimentTimePoint timePoint=validator.getTimePoint(true, ldtNow, true);
+        ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator)
+                .requireOrgFlowRunning(timePoint.getPeriod());
         //保存操作记录
-        final Date dateNow=new Date();
+
         IndicatorFuncEntity defOrgFunc=validator.getIndicatorFunc();
         OperateOrgFuncEntity rowOrgFunc= createRowOrgFunc(validator)
                 .setIndicatorCategoryId(operateType.getIndicatorCateg().getCode())
@@ -354,7 +313,7 @@ public class ExperimentOrgInterveneBiz{
                 .setOperateAccountId(voLogin.getAccountId())
                 .setOperateAccountName(voLogin.getAccountName())
                 .setOperateTime(dateNow)
-                .setOperateGameDay(ShareBiz.calcGameDay(validator.getAppId(), validator.getExperimentInstanceId(),dateNow))
+                .setOperateGameDay(timePoint.getGameDay())
                 .setOperateFlowId(flowValidator.getOperateFlowId())
                 .setReportFlag(operateType.getReportFuncFlag()?1:0)
                 .setReportLabel(defOrgFunc.getName())
@@ -365,10 +324,10 @@ public class ExperimentOrgInterveneBiz{
                 .setSnapTime(dateNow);
         for(int i=saveTreat.getTreatItems().size()-1;i>=0;i--){
             ExptTreatPlanItemVO item=saveTreat.getTreatItems().get(i);
-            if(ShareUtil.XObject.notEmpty(item.getId(), true)){
+            if(ShareUtil.XObject.notEmpty(item.getItemId(), true)){
                 continue;
             }
-            item.setId(getTimestampId(dateNow, i)).setDealFlag(0);
+            item.setItemId(getTimestampId(dateNow,saveTreat.getTreatItems().size()-i)).setDealFlag(0);
         }
         ExptTreatPlanResponse snapRst=new ExptTreatPlanResponse().setTreatItems(saveTreat.getTreatItems());
         try{
@@ -385,14 +344,18 @@ public class ExperimentOrgInterveneBiz{
 
     private <T> T getExptSnapData(ExptOperateOrgFuncRequest exptOperate,boolean checkIndicatorFunc, Class<T> clazz, Supplier<T> creator){
         T rst=creator.get();
-        ExptRequestValidator validator=ExptRequestValidator.create(exptOperate);
-        validator.checkExperimentPerson()
+        ExptRequestValidator validator=ExptRequestValidator.create(exptOperate)
+                .checkExperimentPerson()
                 .checkExperimentOrg()
                 .checkExperimentInstance();
         if(checkIndicatorFunc){
             validator.checkIndicatorFunc();
         }
-        OperateOrgFuncEntity rowOrgFunc=getRowOrgFunc(exptOperate, OperateOrgFuncEntity::getOperateOrgFuncId)
+        //ExperimentTimePoint timePoint=validator.getTimePoint(false,)
+        OperateOrgFuncEntity rowOrgFunc=getRowOrgFunc(exptOperate,
+                OperateOrgFuncEntity::getOperateOrgFuncId,
+                OperateOrgFuncEntity::getOperateFlowId,
+                OperateOrgFuncEntity::getPeriods)
                 .orElse(null);
         if(null==rowOrgFunc){
             return rst;
@@ -423,9 +386,9 @@ public class ExperimentOrgInterveneBiz{
                 .build();
     }
     private Optional<OperateOrgFuncEntity> getRowOrgFunc(ExptOperateOrgFuncRequest req, SFunction<OperateOrgFuncEntity,?>... cols){
-        if(ShareUtil.XObject.notEmpty(req.getOperateOrgFuncId())){
+        /*if(ShareUtil.XObject.notEmpty(req.getOperateOrgFuncId())){
             return operateOrgFuncDao.getById(req.getOperateOrgFuncId(), cols);
-        }
+        }*/
         return operateOrgFuncDao.getCurrentOrgFuncRecord(req.getExperimentPersonId(), req.getExperimentOrgId(),
                 req.getIndicatorFuncId(), req.getPeriods(), cols);
     }

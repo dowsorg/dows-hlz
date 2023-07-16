@@ -3,6 +3,7 @@ package org.dows.hep.api.base.materials.request;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -30,15 +31,18 @@ public class MaterialsRequest {
     private String categoryId;
 
     @Schema(title = "标题")
+    @NotBlank(message = "标题不能为空")
     private String title;
 
     @Schema(title = "资料简介")
+    @NotBlank(message = "资料简介不能为空")
     private String descr;
 
     @Schema(title = "序号")
     private Integer sequence;
 
     @Schema(title = "附件集合")
+    @NotEmpty(message = "学习资料不能为空")
     private List<MaterialsAttachmentRequest> materialsAttachments;
 
     @Schema(title = "创建者账号ID")
