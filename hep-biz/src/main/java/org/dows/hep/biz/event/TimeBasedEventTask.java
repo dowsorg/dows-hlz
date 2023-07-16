@@ -37,7 +37,7 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
     //最小间隔
     private final int DELAYSecondsMin=3;
     //暂停轮询间隔
-    private final int DELAYSeconds4Pause=10;
+    private final int DELAYSeconds4Pause=30;
     //失败重试间隔
     private final int DELAYSeconds4Fail=10;
     //子任务并发数

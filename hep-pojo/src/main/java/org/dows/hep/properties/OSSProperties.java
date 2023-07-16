@@ -1,4 +1,4 @@
-package org.dows.hep.api.report.pdf;
+package org.dows.hep.properties;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

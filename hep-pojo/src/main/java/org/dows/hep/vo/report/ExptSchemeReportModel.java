@@ -1,4 +1,4 @@
-package org.dows.hep.api.report.pdf;
+package org.dows.hep.vo.report;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -9,18 +9,18 @@ import java.util.List;
 /**
  * @author fhb
  * @version 1.0
- * @description 实验方案设计报告
+ * @description 实验 `方案设计pdf报告` 填充数据
  * @date 2023/7/7 11:00
  **/
 @Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(name = "ExptBaseReportVO 对象", title = "实验报告基本信息")
-public class ExptSchemeReportModel implements IExptReportModel {
+@Schema(name = "ExptSchemeReportModel 对象", title = "实验 `方案设计pdf报告` 填充数据")
+public class ExptSchemeReportModel implements ExptReportModel {
 
     @Schema(title = "基本信息")
-    private ExptBaseInfo baseInfo;
+    private ExptBaseInfoModel baseInfo;
 
     @Schema(title = "小组信息")
     private GroupInfo groupInfo;
