@@ -35,6 +35,22 @@ public class TimeUtil {
         return newTime;
     }
 
+    public static Date timeAddMinute(Date date, Integer timer) {
+        Calendar rightNow = Calendar.getInstance();
+        rightNow.setTime(date);
+        rightNow.add(Calendar.MINUTE, timer);
+        Date dt1 = rightNow.getTime();
+        return dt1;
+    }
+
+    public static Date timeAddSecond(Date date, Integer timer) {
+        Calendar rightNow = Calendar.getInstance();
+        rightNow.setTime(date);
+        rightNow.add(Calendar.SECOND, timer);
+        Date dt1 = rightNow.getTime();
+        return dt1;
+    }
+
     //4、 时间加天数
     public static Date addDays(Date time,int count) {
         Date date = new Date();
