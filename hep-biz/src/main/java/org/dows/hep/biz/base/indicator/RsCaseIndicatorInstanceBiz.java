@@ -13,6 +13,7 @@ import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.api.exception.RsCaseIndicatorInstanceBizException;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.CaseIndicatorInstanceService;
+import org.dows.hep.service.CaseIndicatorRuleService;
 import org.dows.hep.service.IndicatorExpressionInfluenceService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ public class RsCaseIndicatorInstanceBiz {
   private final IdGenerator idGenerator;
   private final IndicatorExpressionInfluenceService indicatorExpressionInfluenceService;
   private final CaseIndicatorInstanceService caseIndicatorInstanceService;
+  private final CaseIndicatorRuleService caseIndicatorRuleService;
 
   public String convertConditionValList2Case(
       String conditionValList,
@@ -363,7 +365,7 @@ public class RsCaseIndicatorInstanceBiz {
         });
   }
 
-  public void checkCaseIndicatorInstanceId(
+  public void checkCaseIndicatorInstanceIdInCaseIndicatorInstanceEntity(
       AtomicReference<CaseIndicatorInstanceEntity> caseIndicatorInstanceEntityAR,
       String caseIndicatorInstanceId) {
     if (Objects.isNull(caseIndicatorInstanceEntityAR) || StringUtils.isBlank(caseIndicatorInstanceId)) {
@@ -373,10 +375,26 @@ public class RsCaseIndicatorInstanceBiz {
         .eq(CaseIndicatorInstanceEntity::getCaseIndicatorInstanceId, caseIndicatorInstanceId)
         .oneOpt()
         .orElseThrow(() -> {
-          log.warn("RsCaseIndicatorInstanceBiz.checkCaseIndicatorInstanceId caseIndicatorInstanceId:{} is illegal", caseIndicatorInstanceId);
+          log.warn("RsCaseIndicatorInstanceBiz.checkCaseIndicatorInstanceIdInCaseIndicatorInstanceEntity caseIndicatorInstanceId:{} is illegal", caseIndicatorInstanceId);
           throw new RsCaseIndicatorInstanceBizException(EnumESC.CASE_INDICATOR_INSTANCE_ID_IS_ILLEGAL);
         });
     caseIndicatorInstanceEntityAR.set(caseIndicatorInstanceEntity);
+  }
+
+  public void checkCaseIndicatorInstanceIdInCaseIndicatorRuleEntity(
+      AtomicReference<CaseIndicatorRuleEntity> caseIndicatorRuleEntityAR,
+      String caseIndicatorInstanceId) {
+    if (Objects.isNull(caseIndicatorRuleEntityAR) || StringUtils.isBlank(caseIndicatorInstanceId)) {
+      return;
+    }
+    CaseIndicatorRuleEntity caseIndicatorRuleEntity = caseIndicatorRuleService.lambdaQuery()
+        .eq(CaseIndicatorRuleEntity::getVariableId, caseIndicatorInstanceId)
+        .oneOpt()
+        .orElseThrow(() -> {
+          log.warn("RsCaseIndicatorInstanceBiz.checkCaseIndicatorInstanceIdInCaseIndicatorRuleEntity caseIndicatorInstanceId:{} is illegal", caseIndicatorInstanceId);
+          throw new RsCaseIndicatorInstanceBizException(EnumESC.CASE_INDICATOR_INSTANCE_ID_IS_ILLEGAL);
+        });
+    caseIndicatorRuleEntityAR.set(caseIndicatorRuleEntity);
   }
 
   public void checkIfCanDeleteCaseIndicatorInstanceEntity(CaseIndicatorInstanceEntity caseIndicatorInstanceEntity) {

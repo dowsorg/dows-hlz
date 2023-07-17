@@ -247,7 +247,7 @@ public class IndicatorInstanceBiz{
      * 2.delete IndicatorCategoryRef
      * 3.delete IndicatorRule
     */
-    /* runsix:TODO 删除指标公式相关 */
+    /* runsix: TODO 删除指标公式相关 */
     @Transactional(rollbackFor = Exception.class)
     public void delete(String indicatorInstanceId) throws InterruptedException, ExecutionException {
         IndicatorInstanceEntity indicatorInstanceEntity = indicatorInstanceService.lambdaQuery()

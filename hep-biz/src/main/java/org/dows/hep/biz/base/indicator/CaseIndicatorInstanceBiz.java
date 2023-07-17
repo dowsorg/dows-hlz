@@ -733,7 +733,7 @@ public class CaseIndicatorInstanceBiz {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void createOrUpdateRs(CreateOrUpdateCaseIndicatorInstanceRequestRs createOrUpdateCaseIndicatorInstanceRequestRs) {
+    public void createOrUpdateRs(CreateOrUpdateCaseIndicatorInstanceRequestRs createOrUpdateCaseIndicatorInstanceRequestRs) throws InterruptedException {
         /* runsix:param */
         String accountId = createOrUpdateCaseIndicatorInstanceRequestRs.getAccountId();
         String caseIndicatorInstanceId = createOrUpdateCaseIndicatorInstanceRequestRs.getCaseIndicatorInstanceId();
@@ -745,10 +745,85 @@ public class CaseIndicatorInstanceBiz {
         String unit = createOrUpdateCaseIndicatorInstanceRequestRs.getUnit();
         Integer core = createOrUpdateCaseIndicatorInstanceRequestRs.getCore();
         Integer food = createOrUpdateCaseIndicatorInstanceRequestRs.getFood();
+        Integer type = createOrUpdateCaseIndicatorInstanceRequestRs.getType();
         String min = createOrUpdateCaseIndicatorInstanceRequestRs.getMin();
         String max = createOrUpdateCaseIndicatorInstanceRequestRs.getMax();
+        /* runsix:result */
+        AtomicReference<CaseIndicatorInstanceEntity> caseIndicatorInstanceEntityAR = new AtomicReference<>();
+        AtomicReference<CaseIndicatorCategoryRefEntity> caseIndicatorCategoryRefEntityAR = new AtomicReference<>();
+        AtomicReference<CaseIndicatorRuleEntity> caseIndicatorRuleEntityAR = new AtomicReference<>();
+        if (StringUtils.isBlank(caseIndicatorInstanceId)) {
+            caseIndicatorInstanceId = idGenerator.nextIdStr();
+            CaseIndicatorInstanceEntity caseIndicatorInstanceEntity = CaseIndicatorInstanceEntity
+                .builder()
+                .caseIndicatorInstanceId(caseIndicatorInstanceId)
+                .appId(appId)
+                .principalId(accountId)
+                .indicatorCategoryId(caseIndicatorCategoryId)
+                .indicatorName(indicatorName)
+                .displayByPercent(displayByPercent)
+                .unit(unit)
+                .core(core)
+                .food(food)
+                .type(type)
+                .build();
+            AtomicInteger seqAtomicInteger = new AtomicInteger(1);
+            caseIndicatorCategoryRefService.lambdaQuery()
+                .eq(CaseIndicatorCategoryRefEntity::getIndicatorCategoryId, caseIndicatorCategoryId)
+                .orderByDesc(CaseIndicatorCategoryRefEntity::getSeq)
+                .last(EnumString.LIMIT_1.getStr())
+                .oneOpt()
+                .ifPresent(caseIndicatorCategoryRefEntity1 -> seqAtomicInteger.set(caseIndicatorCategoryRefEntity1.getSeq() + 1));
+            CaseIndicatorCategoryRefEntity caseIndicatorCategoryRefEntity = CaseIndicatorCategoryRefEntity
+                .builder()
+                .caseIndicatorCategoryRefId(idGenerator.nextIdStr())
+                .appId(appId)
+                .indicatorCategoryId(caseIndicatorCategoryId)
+                .indicatorInstanceId(caseIndicatorInstanceId)
+                .seq(seqAtomicInteger.get())
+                .build();
+            CaseIndicatorRuleEntity caseIndicatorRuleEntity = CaseIndicatorRuleEntity
+                .builder()
+                .caseIndicatorRuleId(idGenerator.nextIdStr())
+                .appId(appId)
+                .variableId(caseIndicatorInstanceId)
+                .ruleType(EnumIndicatorRuleType.INDICATOR.getCode())
+                .min(min)
+                .max(max)
+                .def(def)
+                .build();
+            caseIndicatorInstanceEntityAR.set(caseIndicatorInstanceEntity);
+            caseIndicatorCategoryRefEntityAR.set(caseIndicatorCategoryRefEntity);
+            caseIndicatorRuleEntityAR.set(caseIndicatorRuleEntity);
+        } else {
+            rsCaseIndicatorInstanceBiz.checkCaseIndicatorInstanceIdInCaseIndicatorInstanceEntity(caseIndicatorInstanceEntityAR, caseIndicatorInstanceId);
+            CaseIndicatorInstanceEntity caseIndicatorInstanceEntity = caseIndicatorInstanceEntityAR.get();
+            caseIndicatorInstanceEntity.setIndicatorName(indicatorName);
+            caseIndicatorInstanceEntity.setDisplayByPercent(displayByPercent);
+            caseIndicatorInstanceEntity.setUnit(unit);
+            caseIndicatorInstanceEntity.setCore(core);
+            caseIndicatorInstanceEntity.setFood(food);
+            rsCaseIndicatorInstanceBiz.checkCaseIndicatorInstanceIdInCaseIndicatorRuleEntity(caseIndicatorRuleEntityAR, caseIndicatorInstanceId);
+            CaseIndicatorRuleEntity caseIndicatorRuleEntity = caseIndicatorRuleEntityAR.get();
+            caseIndicatorRuleEntity.setMin(min);
+            caseIndicatorRuleEntity.setMax(max);
+            caseIndicatorRuleEntity.setDef(def);
 
-
+            caseIndicatorInstanceEntityAR.set(caseIndicatorInstanceEntity);
+            caseIndicatorRuleEntityAR.set(caseIndicatorRuleEntity);
+        }
+        RLock lock = redissonClient.getLock(RedissonUtil.getLockName(appId, EnumRedissonLock.CASE_INDICATOR_INSTANCE_CREATE_DELETE_UPDATE, caseIndicatorInstanceFieldPid, caseIndicatorCategoryId));
+        boolean isLocked = lock.tryLock(leaseTimeCaseIndicatorInstanceCreateDeleteUpdate, TimeUnit.MILLISECONDS);
+        if (!isLocked) {
+            throw new IndicatorInstanceException(EnumESC.SYSTEM_BUSY_PLEASE_OPERATOR_INDICATOR_INSTANCE_LATER);
+        }
+        try {
+            if (Objects.nonNull(caseIndicatorInstanceEntityAR.get())) {caseIndicatorInstanceService.saveOrUpdate(caseIndicatorInstanceEntityAR.get());}
+            if (Objects.nonNull(caseIndicatorCategoryRefEntityAR.get())) {caseIndicatorCategoryRefService.saveOrUpdate(caseIndicatorCategoryRefEntityAR.get());}
+            if (Objects.nonNull(caseIndicatorRuleEntityAR.get())) {caseIndicatorRuleService.saveOrUpdate(caseIndicatorRuleEntityAR.get());}
+        } finally {
+            lock.unlock();
+        }
     }
 
     /* runsix:TODO 删除指标公式相关 */
@@ -756,7 +831,7 @@ public class CaseIndicatorInstanceBiz {
     public void delete(String caseIndicatorInstanceId) throws ExecutionException, InterruptedException {
         AtomicReference<CaseIndicatorInstanceEntity> caseIndicatorInstanceEntityAR = new AtomicReference<>();
         CompletableFuture<Void> cfCheckCaseIndicatorInstanceId = CompletableFuture.runAsync(() -> {
-            rsCaseIndicatorInstanceBiz.checkCaseIndicatorInstanceId(caseIndicatorInstanceEntityAR, caseIndicatorInstanceId);
+            rsCaseIndicatorInstanceBiz.checkCaseIndicatorInstanceIdInCaseIndicatorInstanceEntity(caseIndicatorInstanceEntityAR, caseIndicatorInstanceId);
         });
         cfCheckCaseIndicatorInstanceId.get();
 
