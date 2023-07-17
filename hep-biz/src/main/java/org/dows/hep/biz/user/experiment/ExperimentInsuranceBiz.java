@@ -111,22 +111,36 @@ public class ExperimentInsuranceBiz {
                 }
             }
         }
-        ExperimentPersonInsuranceEntity experimentPersonInsuranceEntity = ExperimentPersonInsuranceEntity
-                .builder()
-                .experimentPersonInsuranceId(idGenerator.nextIdStr())
-                .appId(experimentPersonInsuranceRequest.getAppId())
-                .experimentPersonId(experimentPersonInsuranceRequest.getExperimentPersonId())
-                .experimentInstanceId(experimentPersonInsuranceRequest.getExperimentInstanceId())
-                .experimentGroupId(experimentPersonInsuranceRequest.getExperimentGroupId())
-                .periods(experimentPersonInsuranceRequest.getPeriods())
-                .operateOrgId(experimentPersonInsuranceRequest.getOperateOrgId())
-                .insuranceAmount(experimentPersonInsuranceRequest.getInsuranceAmount())
-                .reimburseRatio(reimburseRatio)
-                .indate(new Date())
-//                .expdate(TimeUtil.addDays(new Date(), 365))
-                .expdate(expdate)
-                .build();
-        return experimentPersonInsuranceService.save(experimentPersonInsuranceEntity);
+        ExperimentPersonInsuranceEntity insuranceEntity = experimentPersonInsuranceService.lambdaQuery()
+                .eq(ExperimentPersonInsuranceEntity::getExperimentInstanceId,experimentPersonInsuranceRequest.getExperimentInstanceId())
+                .eq(ExperimentPersonInsuranceEntity::getExperimentGroupId,experimentPersonInsuranceRequest.getExperimentGroupId())
+                .eq(ExperimentPersonInsuranceEntity::getExperimentPersonId,experimentPersonInsuranceRequest.getExperimentPersonId())
+//                .eq(ExperimentPersonInsuranceEntity::getPeriods,experimentPersonInsuranceRequest.getPeriods())
+                .one();
+        if(insuranceEntity != null && !ReflectUtil.isObjectNull(insuranceEntity)){
+            //更新
+            return experimentPersonInsuranceService.lambdaUpdate()
+                    .set(ExperimentPersonInsuranceEntity::getExpdate,expdate)
+                    .set(ExperimentPersonInsuranceEntity::getPeriods,experimentPersonInsuranceRequest.getPeriods())
+                    .eq(ExperimentPersonInsuranceEntity::getId,insuranceEntity.getId())
+                    .update();
+        }else {
+            ExperimentPersonInsuranceEntity experimentPersonInsuranceEntity = ExperimentPersonInsuranceEntity
+                    .builder()
+                    .experimentPersonInsuranceId(idGenerator.nextIdStr())
+                    .appId(experimentPersonInsuranceRequest.getAppId())
+                    .experimentPersonId(experimentPersonInsuranceRequest.getExperimentPersonId())
+                    .experimentInstanceId(experimentPersonInsuranceRequest.getExperimentInstanceId())
+                    .experimentGroupId(experimentPersonInsuranceRequest.getExperimentGroupId())
+                    .periods(experimentPersonInsuranceRequest.getPeriods())
+                    .operateOrgId(experimentPersonInsuranceRequest.getOperateOrgId())
+                    .insuranceAmount(experimentPersonInsuranceRequest.getInsuranceAmount())
+                    .reimburseRatio(reimburseRatio)
+                    .indate(new Date())
+                    .expdate(expdate)
+                    .build();
+            return experimentPersonInsuranceService.save(experimentPersonInsuranceEntity);
+        }
     }
 
     /**
@@ -268,7 +282,7 @@ public class ExperimentInsuranceBiz {
                 .eq(ExperimentPersonInsuranceEntity::getExperimentPersonId, experimentPersonInsuranceRequest.getExperimentPersonId())
                 .eq(ExperimentPersonInsuranceEntity::getExperimentInstanceId, experimentPersonInsuranceRequest.getExperimentInstanceId())
                 .eq(ExperimentPersonInsuranceEntity::getExperimentGroupId, experimentPersonInsuranceRequest.getExperimentGroupId())
-                .eq(ExperimentPersonInsuranceEntity::getPeriods, experimentPersonInsuranceRequest.getPeriods())
+//                .eq(ExperimentPersonInsuranceEntity::getPeriods, experimentPersonInsuranceRequest.getPeriods())
                 .eq(ExperimentPersonInsuranceEntity::getOperateOrgId, experimentPersonInsuranceRequest.getOperateOrgId())
                 .eq(ExperimentPersonInsuranceEntity::getDeleted, false)
                 .one();
