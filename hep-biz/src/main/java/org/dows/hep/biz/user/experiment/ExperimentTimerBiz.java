@@ -54,6 +54,22 @@ public class ExperimentTimerBiz {
         long ct = System.currentTimeMillis();
         // 获取当前期数
         CountDownResponse countDownResponse = new CountDownResponse();
+        List<ExperimentSettingEntity> experimentSettingEntities = experimentSettingService.lambdaQuery()
+                .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
+                .list();
+        ExperimentSettingEntity experimentSettingEntity2 = experimentSettingEntities.stream()
+                .filter(e -> e.getConfigKey().equals(ExperimentSetting.SandSetting.class.getName()))
+                .findFirst()
+                .orElse(null);
+        if (experimentSettingEntity2 != null) {
+            ExperimentSetting.SandSetting sandSetting =
+                    JSONUtil.toBean(experimentSettingEntity2.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
+            // 每期持续时长
+            countDownResponse.setDurationMap(sandSetting.getDurationMap());
+            // 期数
+            countDownResponse.setPeriodMap(sandSetting.getPeriodMap());
+        }
+
         List<ExperimentTimerEntity> list = this.getPeriodsTimerList(experimentInstanceId);
         // 优先处理暂停
         ExperimentTimerEntity experimentTimerEntity = list.stream()
@@ -65,6 +81,8 @@ public class ExperimentTimerBiz {
                     - experimentTimerEntity.getStartTime()) / 1000;
             countDownResponse.setExperimentInstanceId(experimentTimerEntity.getExperimentInstanceId());
             countDownResponse.setSandDurationSecond(second);
+            //
+            countDownResponse.setSandDuration(Double.valueOf(second));
             countDownResponse.setState(experimentTimerEntity.getState());
             countDownResponse.setModel(experimentTimerEntity.getModel());
             countDownResponse.setPeriod(experimentTimerEntity.getPeriod());
@@ -76,8 +94,11 @@ public class ExperimentTimerBiz {
             ExperimentTimerEntity next;
             // 最后一期
             if (i == list.size() - 1) {
+                // 本期持续时间 = 当前时间-本期开始时间-暂停持续时间
+                // long ds = sct - v.getStartTime() - v.getDuration();
                 countDownResponse.setCountdown(pre.getStartTime() - ct);
                 countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
+                countDownResponse.setSandDurationSecond((pre.getEndTime() - ct) / 1000);
                 countDownResponse.setModel(pre.getModel());
                 countDownResponse.setPeriod(pre.getPeriod());
                 countDownResponse.setState(pre.getState());
@@ -108,7 +129,8 @@ public class ExperimentTimerBiz {
     }
 
 
-    private void dd(String experimentInstanceId) {
+    private Map<String, ExperimentSettingEntity> getSettingByKey(String experimentInstanceId) {
+        Map<String, ExperimentSettingEntity> map = new HashMap<>();
         List<ExperimentSettingEntity> list = experimentSettingService.lambdaQuery()
                 .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
                 .list();
@@ -121,6 +143,7 @@ public class ExperimentTimerBiz {
                 .filter(e -> e.getConfigKey().equals(ExperimentSetting.SandSetting.class.getName()))
                 .findFirst()
                 .orElse(null);
+        return map;
     }
 
     /**
@@ -219,8 +242,8 @@ public class ExperimentTimerBiz {
                 } else if (v.getState() == EnumExperimentState.ONGOING.getState()) {
                     // 当前时间戳-当前期数开始时间 = 相对时间（持续了多久）；将转换为秒  .. day/duration = rate
                     if (sct >= v.getStartTime() && sct <= v.getEndTime()) {
-                        // 持续时间 = 当前时间-开始时间-暂停时间
-                        long ds = sct - v.getStartTime() - v.getPauseStartTime().getTime();
+                        // 本期持续时间 = 当前时间-本期开始时间-暂停持续时间
+                        long ds = sct - v.getStartTime() - v.getDuration();
                         countDownResponse.setSandDurationSecond(ds / 1000);
                         countDownResponse.setState(v.getState());
                         countDownResponse.setPeriod(v.getPeriod());
