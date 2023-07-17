@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.CaseCreateCopyToPersonRequestRs;
+import org.dows.hep.api.base.indicator.request.CreateOrUpdateCaseIndicatorInstanceRequestRs;
 import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.enums.EnumIndicatorCategory;
 import org.dows.hep.api.enums.EnumIndicatorRuleType;
@@ -19,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 /**
@@ -41,8 +44,9 @@ public class CaseIndicatorInstanceBiz {
     private final CaseIndicatorExpressionRefService caseIndicatorExpressionRefService;
     private final CaseIndicatorExpressionInfluenceService caseIndicatorExpressionInfluenceService;
     private final CaseIndicatorCategoryPrincipalRefService caseIndicatorCategoryPrincipalRefService;
-
     private final CasePersonService casePersonService;
+    private final RsUtilBiz rsUtilBiz;
+    private final RsCaseIndicatorInstanceBiz rsCaseIndicatorInstanceBiz;
 
     public static CaseIndicatorInstanceResponseRs caseIndicatorInstance2ResponseRs(
             CaseIndicatorInstanceEntity caseIndicatorInstanceEntity,
@@ -164,6 +168,119 @@ public class CaseIndicatorInstanceBiz {
         }
         kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap.put(indicatorInstanceId, influenceIndicatorInstanceIdSet);
         kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.put(indicatorInstanceId, influencedIndicatorInstanceIdSet);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void v2CopyPersonIndicatorInstance(CaseCreateCopyToPersonRequestRs caseCreateCopyToPersonRequestRs) throws ExecutionException, InterruptedException {
+        /* runsix:param */
+        String appId = caseCreateCopyToPersonRequestRs.getAppId();
+        String principalId = caseCreateCopyToPersonRequestRs.getPrincipalId();
+        /* runsix:result */
+        List<IndicatorInstanceCategoryResponseRs> indicatorInstanceCategoryResponseRsList = indicatorInstanceBiz.getByAppId(appId);
+        List<CaseIndicatorCategoryEntity> caseIndicatorCategoryEntityList = new ArrayList<>();
+        List<CaseIndicatorCategoryRefEntity> caseIndicatorCategoryRefEntityList = new ArrayList<>();
+        List<CaseIndicatorCategoryPrincipalRefEntity> caseIndicatorCategoryPrincipalRefEntityList = new ArrayList<>();
+        List<CaseIndicatorRuleEntity> caseIndicatorRuleEntityList = new ArrayList<>();
+        List<CaseIndicatorInstanceEntity> caseIndicatorInstanceEntityList = new ArrayList<>();
+        List<CaseIndicatorExpressionRefEntity> caseIndicatorExpressionRefEntityList = new ArrayList<>();
+        List<CaseIndicatorExpressionEntity> caseIndicatorExpressionEntityList = new ArrayList<>();
+        List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList = new ArrayList<>();
+        List<CaseIndicatorExpressionInfluenceEntity> caseIndicatorExpressionInfluenceEntityList = new ArrayList<>();
+
+        Set<String> allOldIdSet = new HashSet<>();
+        Set<String> indicatorInstanceIdSet = new HashSet<>();
+        if (Objects.isNull(indicatorInstanceCategoryResponseRsList) || indicatorInstanceCategoryResponseRsList.isEmpty()) {
+            log.error("CaseIndicatorInstanceBiz.v2CopyPersonIndicatorInstance indicatorInstanceCategoryResponseRsList is empty do not copy");
+            return;
+        }
+        indicatorInstanceCategoryResponseRsList.forEach(indicatorInstanceCategoryResponseRs -> {
+            allOldIdSet.add(indicatorInstanceCategoryResponseRs.getIndicatorCategoryId());
+            List<IndicatorInstanceResponseRs> indicatorInstanceResponseRsList = indicatorInstanceCategoryResponseRs.getIndicatorInstanceResponseRsList();
+            if (Objects.isNull(indicatorInstanceResponseRsList) || indicatorInstanceResponseRsList.isEmpty()) {return;}
+            indicatorInstanceResponseRsList.forEach(indicatorInstanceResponseRs -> {
+                allOldIdSet.add(indicatorInstanceResponseRs.getIndicatorInstanceId());
+                indicatorInstanceIdSet.add(indicatorInstanceResponseRs.getIndicatorInstanceId());
+                List<IndicatorExpressionResponseRs> indicatorExpressionResponseRsList = indicatorInstanceResponseRs.getIndicatorExpressionResponseRsList();
+                if (Objects.isNull(indicatorExpressionResponseRsList) || indicatorExpressionResponseRsList.isEmpty()) {return;}
+                indicatorExpressionResponseRsList.forEach(indicatorExpressionResponseRs -> {
+                    allOldIdSet.add(indicatorExpressionResponseRs.getIndicatorExpressionId());
+                    allOldIdSet.add(indicatorExpressionResponseRs.getIndicatorExpressionRefId());
+                    List<IndicatorExpressionItemResponseRs> indicatorExpressionItemResponseRsList = indicatorExpressionResponseRs.getIndicatorExpressionItemResponseRsList();
+                    if (Objects.nonNull(indicatorExpressionItemResponseRsList) && !indicatorExpressionItemResponseRsList.isEmpty()) {
+                        indicatorExpressionItemResponseRsList.forEach(indicatorExpressionItemResponseRs -> {
+                            allOldIdSet.add(indicatorExpressionItemResponseRs.getIndicatorExpressionItemId());
+                        });
+                    }
+                    IndicatorExpressionItemResponseRs minIndicatorExpressionItemResponseRs = indicatorExpressionResponseRs.getMinIndicatorExpressionItemResponseRs();
+                    if (Objects.nonNull(minIndicatorExpressionItemResponseRs)) {
+                        allOldIdSet.add(minIndicatorExpressionItemResponseRs.getIndicatorExpressionItemId());
+                    }
+                    IndicatorExpressionItemResponseRs maxIndicatorExpressionItemResponseRs = indicatorExpressionResponseRs.getMaxIndicatorExpressionItemResponseRs();
+                    if (Objects.nonNull(maxIndicatorExpressionItemResponseRs)) {
+                        allOldIdSet.add(maxIndicatorExpressionItemResponseRs.getIndicatorExpressionItemId());
+                    }
+                });
+            });
+        });
+
+        Map<String, String> kOldIdVNewIdMap = new HashMap<>();
+        CompletableFuture<Void> cfPopulateKOldIdVNewIdMap = CompletableFuture.runAsync(() -> {
+            rsUtilBiz.populateKOldIdVNewIdMap(kOldIdVNewIdMap, allOldIdSet);
+        });
+        cfPopulateKOldIdVNewIdMap.get();
+
+        CompletableFuture<Void> cfPopulateCaseIndicatorCategoryList = CompletableFuture.runAsync(() -> {
+            rsCaseIndicatorInstanceBiz.populateCaseIndicatorCategoryList(caseIndicatorCategoryEntityList, indicatorInstanceCategoryResponseRsList, kOldIdVNewIdMap);
+        });
+        cfPopulateCaseIndicatorCategoryList.get();
+
+        CompletableFuture<Void> cfPopulateCaseIndicatorCategoryRefList = CompletableFuture.runAsync(() -> {
+            rsCaseIndicatorInstanceBiz.populateCaseIndicatorCategoryRefList(caseIndicatorCategoryRefEntityList, indicatorInstanceCategoryResponseRsList, kOldIdVNewIdMap);
+        });
+        cfPopulateCaseIndicatorCategoryRefList.get();
+
+        CompletableFuture<Void> cfPopulateCaseIndicatorCategoryPrincipalRefList = CompletableFuture.runAsync(() -> {
+            rsCaseIndicatorInstanceBiz.populateCaseIndicatorCategoryPrincipalRefList(caseIndicatorCategoryPrincipalRefEntityList, indicatorInstanceCategoryResponseRsList, kOldIdVNewIdMap, principalId);
+        });
+        cfPopulateCaseIndicatorCategoryPrincipalRefList.get();
+
+        CompletableFuture<Void> cfPopulateCaseIndicatorRuleEntityList = CompletableFuture.runAsync(() -> {
+            rsCaseIndicatorInstanceBiz.populateCaseIndicatorRuleEntityList(caseIndicatorRuleEntityList, indicatorInstanceCategoryResponseRsList, kOldIdVNewIdMap);
+        });
+        cfPopulateCaseIndicatorRuleEntityList.get();
+
+        CompletableFuture<Void> cfPopulateCaseIndicatorInstanceEntityList = CompletableFuture.runAsync(() -> {
+            rsCaseIndicatorInstanceBiz.populateCaseIndicatorInstanceEntityList(caseIndicatorInstanceEntityList, indicatorInstanceCategoryResponseRsList, kOldIdVNewIdMap, principalId);
+        });
+        cfPopulateCaseIndicatorInstanceEntityList.get();
+
+        CompletableFuture<Void> cfPopulateAllCaseIndicatorExpressionEntityList = CompletableFuture.runAsync(() -> {
+            rsCaseIndicatorInstanceBiz.populateAllCaseIndicatorExpressionEntityList(caseIndicatorExpressionRefEntityList, caseIndicatorExpressionEntityList, caseIndicatorExpressionItemEntityList, indicatorInstanceCategoryResponseRsList, kOldIdVNewIdMap);
+        });
+        cfPopulateAllCaseIndicatorExpressionEntityList.get();
+
+        List<IndicatorExpressionInfluenceEntity> indicatorExpressionInfluenceEntityList = new ArrayList<>();
+        CompletableFuture<Void> cfPopulateIndicatorExpressionInfluenceEntityList = CompletableFuture.runAsync(() -> {
+            rsCaseIndicatorInstanceBiz.populateIndicatorExpressionInfluenceEntityList(indicatorExpressionInfluenceEntityList, indicatorInstanceIdSet);
+        });
+        cfPopulateIndicatorExpressionInfluenceEntityList.get();
+        Set<String> indicatorExpressionInfluenceSet = indicatorExpressionInfluenceEntityList.stream().map(IndicatorExpressionInfluenceEntity::getIndicatorExpressionInfluenceId).collect(Collectors.toSet());
+        CompletableFuture<Void> cfPopulateCaseIndicatorExpressionInfluenceEntityList = CompletableFuture.runAsync(() -> {
+            rsCaseIndicatorInstanceBiz.populateCaseIndicatorExpressionInfluenceEntityList(caseIndicatorExpressionInfluenceEntityList, indicatorExpressionInfluenceSet, kOldIdVNewIdMap);
+        });
+        cfPopulateCaseIndicatorExpressionInfluenceEntityList.get();
+
+        /* runsix:batch save */
+        caseIndicatorCategoryService.saveOrUpdateBatch(caseIndicatorCategoryEntityList);
+        caseIndicatorCategoryRefService.saveOrUpdateBatch(caseIndicatorCategoryRefEntityList);
+        caseIndicatorCategoryPrincipalRefService.saveOrUpdateBatch(caseIndicatorCategoryPrincipalRefEntityList);
+        caseIndicatorRuleService.saveOrUpdateBatch(caseIndicatorRuleEntityList);
+        caseIndicatorInstanceService.saveOrUpdateBatch(caseIndicatorInstanceEntityList);
+        caseIndicatorExpressionRefService.saveOrUpdateBatch(caseIndicatorExpressionRefEntityList);
+        caseIndicatorExpressionService.saveOrUpdateBatch(caseIndicatorExpressionEntityList);
+        caseIndicatorExpressionItemService.saveOrUpdateBatch(caseIndicatorExpressionItemEntityList);
+        caseIndicatorExpressionInfluenceService.saveOrUpdateBatch(caseIndicatorExpressionInfluenceEntityList);
+
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -604,4 +721,26 @@ public class CaseIndicatorInstanceBiz {
         return update;
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public void createOrUpdateRs(CreateOrUpdateCaseIndicatorInstanceRequestRs createOrUpdateCaseIndicatorInstanceRequestRs) {
+        /* runsix:param */
+        String accountId = createOrUpdateCaseIndicatorInstanceRequestRs.getAccountId();
+        String caseIndicatorInstanceId = createOrUpdateCaseIndicatorInstanceRequestRs.getCaseIndicatorInstanceId();
+        String caseIndicatorCategoryId = createOrUpdateCaseIndicatorInstanceRequestRs.getCaseIndicatorCategoryId();
+        String appId = createOrUpdateCaseIndicatorInstanceRequestRs.getAppId();
+        String indicatorName = createOrUpdateCaseIndicatorInstanceRequestRs.getIndicatorName();
+        Integer displayByPercent = createOrUpdateCaseIndicatorInstanceRequestRs.getDisplayByPercent();
+        String def = createOrUpdateCaseIndicatorInstanceRequestRs.getDef();
+        String unit = createOrUpdateCaseIndicatorInstanceRequestRs.getUnit();
+        Integer core = createOrUpdateCaseIndicatorInstanceRequestRs.getCore();
+        Integer food = createOrUpdateCaseIndicatorInstanceRequestRs.getFood();
+        String min = createOrUpdateCaseIndicatorInstanceRequestRs.getMin();
+        String max = createOrUpdateCaseIndicatorInstanceRequestRs.getMax();
+
+
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void delete(String caseIndicatorInstanceId) {
+    }
 }

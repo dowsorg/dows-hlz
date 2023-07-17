@@ -1,6 +1,7 @@
 package org.dows.hep.biz.tenant.experiment;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
@@ -701,6 +702,8 @@ public class ExperimentManageBiz {
      */
     public void restart(ExperimentRestartRequest experimentRestartRequest) {
         ExperimentEvent experimentEvent;
+        // 以服务端时间为准
+        experimentRestartRequest.setCurrentTime(DateUtil.date());
         if (experimentRestartRequest.getPaused()) {
             experimentEvent = new SuspendEvent(experimentRestartRequest);
         } else {

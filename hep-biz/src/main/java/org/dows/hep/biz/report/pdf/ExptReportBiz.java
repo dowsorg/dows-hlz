@@ -1,6 +1,6 @@
 package org.dows.hep.biz.report.pdf;
 
-import org.dows.hep.api.report.pdf.ExptReportVO;
+import org.dows.hep.vo.report.ExptReportVO;
 
 /**
  * @author fhb

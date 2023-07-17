@@ -11,7 +11,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.dows.hep.api.report.pdf.IExptReportModel;
+import org.dows.hep.vo.report.ExptReportModel;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfig;
@@ -48,7 +48,7 @@ public class Template2PdfBiz {
         converterProperties.setFontProvider(fontProvider);
     }
 
-    public void convert2Pdf(IExptReportModel pdfData, String ftlName, File targetFile) throws IOException, TemplateException {
+    public void convert2Pdf(ExptReportModel pdfData, String ftlName, File targetFile) throws IOException, TemplateException {
         Template template = templateCache.get(ftlName);
         if (template == null) {
             template = freeMarkerConfig.getConfiguration().getTemplate(ftlName);

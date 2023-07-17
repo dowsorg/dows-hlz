@@ -1,4 +1,4 @@
-package org.dows.hep.api.report.pdf;
+package org.dows.hep.vo.report;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(name = "ExptBaseReportVO 对象", title = "实验报告基本信息")
-public class ExptBaseInfo {
+public class ExptBaseInfoModel {
     @Schema(title = "标题")
     private String title;
 

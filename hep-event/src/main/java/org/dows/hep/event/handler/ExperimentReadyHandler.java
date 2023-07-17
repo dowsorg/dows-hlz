@@ -129,7 +129,9 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
             experimentTaskScheduleService.saveOrUpdate(startEntity);
 
             // 期数开始通知任务
-            ExperimentNoticeTask experimentPeriodStartNoticeTask = new ExperimentNoticeTask(periodStartNoticer, noticeParams,experimentTaskScheduleService,experimentInstanceId,v.getPeriod(), EnumExperimentNotice.startNotice.getCode());
+            ExperimentNoticeTask experimentPeriodStartNoticeTask = new ExperimentNoticeTask(periodStartNoticer,
+                    noticeParams,experimentTaskScheduleService,experimentInstanceId,v.getPeriod(),
+                    EnumExperimentNotice.startNotice.getCode());
             taskScheduler.schedule(experimentPeriodStartNoticeTask, new Date(v.getStartTime()));
 
             //保存任务进计时器表，防止重启后服务挂了，一个任务每个实验每一期只能有一条数据

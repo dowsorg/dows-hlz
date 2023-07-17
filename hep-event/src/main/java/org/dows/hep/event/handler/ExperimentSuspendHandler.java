@@ -1,11 +1,11 @@
 package org.dows.hep.event.handler;
 
+import cn.hutool.core.date.DateUtil;
 import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.Response;
 import org.dows.framework.api.uim.AccountInfo;
-import org.dows.hep.api.ExperimentContext;
 import org.dows.hep.api.WsMessageResponse;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.enums.EnumWebSocketType;
@@ -21,7 +21,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
 
 /**
  * todo
@@ -43,48 +42,33 @@ public class ExperimentSuspendHandler extends AbstractEventHandler implements Ev
 
         // 待更新集合
         List<ExperimentTimerEntity> updateExperimentTimerEntities = new ArrayList<>();
-        // 查询实验期数列表
+        // 获取当前实验所有期数计时器列表并按期数递增排序
         List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerBiz
-                .getCurrentPeriods(experimentRestartRequest.getExperimentInstanceId());
-
-        /*if (experimentRestartRequest.getPeriods() == null) {*/
+                .getPeriodsTimerList(experimentRestartRequest.getExperimentInstanceId());
+        // 如果期数为空，则可能为设计模式，或分配小组机构等场景
         if (experimentRestartRequest.getPeriods() == null) {
             // todo 更新所有计时器时间
             for (ExperimentTimerEntity experimentTimerEntity : experimentTimerEntityList) {
                 ExperimentTimerEntity updExperimentTimerEntity = new ExperimentTimerEntity();
-                //ExperimentTimerEntity updExperimentTimerEntity = experimentTimerEntity;
-                updExperimentTimerEntity.setExperimentTimerId(idGenerator.nextIdStr());
+                updExperimentTimerEntity.setId(experimentTimerEntity.getId());
                 updExperimentTimerEntity.setPauseCount(experimentTimerEntity.getPauseCount() + 1);
-                updExperimentTimerEntity.setExperimentInstanceId(experimentTimerEntity.getExperimentInstanceId());
-                updExperimentTimerEntity.setPeriodInterval(experimentTimerEntity.getPeriodInterval());
-                updExperimentTimerEntity.setPeriod(experimentTimerEntity.getPeriod());
-                //updExperimentTimerEntity.setAppId(experimentTimerEntity.getAppId());
-                updExperimentTimerEntity.setModel(experimentTimerEntity.getModel());
-                updExperimentTimerEntity.setState(experimentTimerEntity.getState());
-                updExperimentTimerEntity.setStartTime(experimentTimerEntity.getStartTime());
-                updExperimentTimerEntity.setEndTime(experimentTimerEntity.getEndTime());
+                updExperimentTimerEntity.setState(EnumExperimentState.PREPARE.getState());
                 updExperimentTimerEntity.setPauseStartTime(experimentRestartRequest.getCurrentTime());
                 updExperimentTimerEntity.setPaused(experimentRestartRequest.getPaused());
                 updateExperimentTimerEntities.add(updExperimentTimerEntity);
             }
             // 保存或更新实验计时器
-            boolean b = experimentTimerBiz.saveOrUpdateExperimentTimeExperimentState(experimentRestartRequest.getExperimentInstanceId(),
+            experimentTimerBiz.saveOrUpdateExperimentTimeExperimentState(experimentRestartRequest.getExperimentInstanceId(),
                     updateExperimentTimerEntities, EnumExperimentState.PREPARE);
-            //1、更改缓存
             /**
-             * todo 需要调整
+             * todo 可优化缓存
              */
-            /*HepContext hepContext = HepContext.getExperimentContext(experimentRestartRequest.getExperimentInstanceId());
-            hepContext.setState(ExperimentStateEnum.PREPARE);*/
-
-        } else /*if(experimentRestartRequest.getModel() == ExperimentModeEnum.SAND.getCode())*/ {
-            // 找出当前期数计时器集合
-            List<ExperimentTimerEntity> collect = experimentTimerEntityList.stream()
+        } else {
+            // 获取当前时间
+            long ct = System.currentTimeMillis();
+            // 找出当前期数计时器集合，且暂停次数为最大的
+            ExperimentTimerEntity experimentTimerEntity = experimentTimerEntityList.stream()
                     .filter(t -> t.getPeriod() == experimentRestartRequest.getPeriods())
-                    .collect(Collectors.toList());
-
-            //暂停次数为最大的
-            ExperimentTimerEntity experimentTimerEntity = collect.stream()
                     .max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount))
                     .orElse(null);
             if (experimentTimerEntity == null) {
@@ -93,6 +77,14 @@ public class ExperimentSuspendHandler extends AbstractEventHandler implements Ev
             if (experimentTimerEntity.getPaused()) {
                 throw new ExperimentException("当前实验已暂停，请勿重复执行暂停！");
             }
+            // 如果当前时间不在本期开始和结束之间
+            if (ct <= experimentTimerEntity.getStartTime() || ct >= experimentTimerEntity.getEndTime()) {
+                throw new ExperimentException(String.format("无法为当前{%s}期执行暂停,该期开始时间为:{%s}，结束时间:{%s}",
+                        experimentTimerEntity.getPeriod(),
+                        DateUtil.formatDateTime(DateUtil.date(experimentTimerEntity.getStartTime())),
+                        DateUtil.formatDateTime(DateUtil.date(experimentTimerEntity.getEndTime()))));
+            }
+            // 暂停时新增暂停记录
             ExperimentTimerEntity addExperimentTimer = ExperimentTimerEntity.builder()
                     .experimentTimerId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentTimerEntity.getExperimentInstanceId())
@@ -108,16 +100,18 @@ public class ExperimentSuspendHandler extends AbstractEventHandler implements Ev
                     .pauseStartTime(experimentRestartRequest.getCurrentTime())
                     .build();
             updateExperimentTimerEntities.add(addExperimentTimer);
-            // 保存或更新实验计时器
+            // 保存或更新实验计时器状态为暂停
             boolean b = experimentTimerBiz.saveOrUpdateExperimentTimeExperimentState(experimentRestartRequest.getExperimentInstanceId(),
                     updateExperimentTimerEntities, EnumExperimentState.SUSPEND);
             if (b) {
-                // 设置当前实验上下文信息
-                ExperimentContext experimentContext = new ExperimentContext();
-                experimentContext.setExperimentId(experimentRestartRequest.getExperimentInstanceId());
-                experimentContext.setState(EnumExperimentState.SUSPEND);
-                ExperimentContext.set(experimentContext);
-                WsMessageResponse wsMessageResponse = new WsMessageResponse(EnumWebSocketType.EXPT_SUSPEND,experimentRestartRequest);
+                /**
+                 * 设置当前实验上下文信息
+                 * ExperimentContext experimentContext = new ExperimentContext();
+                 * experimentContext.setExperimentId(experimentRestartRequest.getExperimentInstanceId());
+                 * experimentContext.setState(EnumExperimentState.SUSPEND);
+                 * ExperimentContext.set(experimentContext);
+                 */
+                WsMessageResponse wsMessageResponse = new WsMessageResponse(EnumWebSocketType.EXPT_SUSPEND, experimentRestartRequest);
                 // 通知客户端
                 ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfos();
                 Set<Channel> channels = userInfos.keySet();

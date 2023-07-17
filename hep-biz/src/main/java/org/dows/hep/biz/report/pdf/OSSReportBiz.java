@@ -8,8 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.oss.api.OssInfo;
 import org.dows.framework.oss.minio.MinioOssClient;
-import org.dows.hep.api.report.pdf.ExptGroupReportVO;
-import org.dows.hep.api.report.pdf.ExptReportVO;
+import org.dows.hep.vo.report.ExptGroupReportVO;
+import org.dows.hep.vo.report.ExptReportVO;
 import org.springframework.stereotype.Component;
 import org.yaml.snakeyaml.Yaml;
 
