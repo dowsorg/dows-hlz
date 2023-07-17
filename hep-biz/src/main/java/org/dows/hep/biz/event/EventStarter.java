@@ -6,8 +6,8 @@ import org.dows.hep.biz.dao.ExperimentInstanceDao;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -18,7 +18,7 @@ import java.util.List;
  */
 @Component
 @Slf4j
-public class EventStarter implements ApplicationListener<ContextRefreshedEvent> {
+public class EventStarter implements ApplicationListener<ApplicationStartedEvent> {
 
     private static volatile EventStarter s_instnace;
     public static EventStarter Instance(){
@@ -60,7 +60,7 @@ public class EventStarter implements ApplicationListener<ContextRefreshedEvent> 
     }
 
     @Override
-    public void onApplicationEvent(ContextRefreshedEvent event) {
+    public void onApplicationEvent(ApplicationStartedEvent event) {
         this.start();
     }
 }

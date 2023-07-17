@@ -1,5 +1,6 @@
 package org.dows.hep.biz.dao;
 
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import org.dows.framework.crud.api.CrudEntity;
@@ -24,6 +25,10 @@ public abstract class BaseDao<S extends MybatisCrudService<E>,E extends CrudEnti
 
     protected BaseDao(String notExistsMessage){
        this.notExistsMessage=ShareUtil.XString.defaultIfEmpty(notExistsMessage,this.notExistsMessage);
+    }
+    protected BaseDao(String notExistsMessage,String failSaveMessage){
+        this.notExistsMessage=ShareUtil.XString.defaultIfEmpty(notExistsMessage,this.notExistsMessage);
+        this.failedSaveMessage=ShareUtil.XString.defaultIfEmpty(failedSaveMessage,this.failedSaveMessage);
     }
 
     @Autowired
@@ -104,6 +109,15 @@ public abstract class BaseDao<S extends MybatisCrudService<E>,E extends CrudEnti
                 .throwMessage(failedSaveMessage);
         return true;
     }
+    @DSTransactional
+    public boolean tranSave(E item,boolean useLogicId, Supplier<Boolean> saveOthers) {
+        AssertUtil.falseThenThrow(saveOrUpdate(item, useLogicId))
+                .throwMessage(failedSaveMessage);
+        if (null != saveOthers && !saveOthers.get()) {
+            return false;
+        }
+        return true;
+    }
 
     /**
      * 批量保存事务
@@ -114,6 +128,16 @@ public abstract class BaseDao<S extends MybatisCrudService<E>,E extends CrudEnti
     public boolean tranSaveBatch(Collection<E> items) {
         AssertUtil.falseThenThrow(saveOrUpdateBatch(items))
                 .throwMessage(failedSaveMessage);
+        return true;
+    }
+
+    @DSTransactional
+    public boolean tranSaveBatch(Collection<E> items,boolean useLogicId,boolean dftIfEmpty,Supplier<Boolean> saveOthers) {
+        AssertUtil.falseThenThrow(saveOrUpdateBatch(items,useLogicId,dftIfEmpty))
+                .throwMessage(failedSaveMessage);
+        if (null != saveOthers && !saveOthers.get()) {
+            return false;
+        }
         return true;
     }
 

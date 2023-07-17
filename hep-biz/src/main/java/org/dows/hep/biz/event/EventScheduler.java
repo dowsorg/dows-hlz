@@ -7,6 +7,7 @@ import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.util.ShareBiz;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.*;
 
@@ -15,14 +16,16 @@ import java.util.concurrent.*;
  * @date : 2023/6/18 17:34
  */
 @Slf4j
+@Component
 public class EventScheduler implements ApplicationListener<ContextClosedEvent> {
     static final int DFTCoreSize=3;
-    private static final EventScheduler s_instance=new EventScheduler(DFTCoreSize);
+    private static volatile EventScheduler s_instance;
     public static EventScheduler Instance(){
         return s_instance;
     }
-    private EventScheduler(int coreSize){
-        ScheduledThreadPoolExecutor executor=new ScheduledThreadPoolExecutor(coreSize,
+    private EventScheduler(){
+        s_instance=this;
+        ScheduledThreadPoolExecutor executor=new ScheduledThreadPoolExecutor(DFTCoreSize,
                 new ThreadFactoryBuilder().setNameFormat("eventScheduler-%d").build(),
                 new ThreadPoolAbortPolicy());
         executor.setRemoveOnCancelPolicy(true);
@@ -100,10 +103,15 @@ public class EventScheduler implements ApplicationListener<ContextClosedEvent> {
 
     @Override
     public void onApplicationEvent(ContextClosedEvent event) {
+        this.shutDown();
+        EventExecutor.Instance().shutDown();
+    }
+
+    public void shutDown(){
         try{
             scheduledExecutor.shutdownNow();
-        }catch(Exception ex){
-            log.error("EventScheduler.shutDown",ex);
+        }catch (Exception ex){
+            ex.printStackTrace();
         }
     }
 
@@ -113,4 +121,6 @@ public class EventScheduler implements ApplicationListener<ContextClosedEvent> {
             super(10, 20, 60*60*12, 0);
         }
     }
+
+
 }

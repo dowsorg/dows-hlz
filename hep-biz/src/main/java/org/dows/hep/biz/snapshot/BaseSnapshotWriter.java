@@ -61,7 +61,7 @@ public abstract class BaseSnapshotWriter<T> implements ISnapshotDbWriter<T> {
                     .build();
             boolean rst;
             if(ShareUtil.XObject.isEmpty(refExperimentId)){
-                rst= experimentSnapshotRefDao.tranSave(rowRef,()->saveSnapshotData(req,data));
+                rst= experimentSnapshotRefDao.tranSave(rowRef,false, ()->saveSnapshotData(req,data));
             }else{
                 rst=experimentSnapshotRefDao.tranSave(rowRef);
             }

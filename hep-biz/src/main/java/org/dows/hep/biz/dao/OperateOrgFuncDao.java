@@ -80,20 +80,24 @@ public class OperateOrgFuncDao extends BaseSubDao<OperateOrgFuncService, Operate
      * @param experimentOrgId
      * @param indicatorFuncId
      * @param periods
+     * @param operateFlowId
      * @param cols
      * @return
      */
     public Optional<OperateOrgFuncEntity> getCurrentOrgFuncRecord(String experimentPersonId, String experimentOrgId, String indicatorFuncId,
-                                                               Integer periods,SFunction<OperateOrgFuncEntity,?>... cols) {
+                                                               Integer periods,String operateFlowId, SFunction<OperateOrgFuncEntity,?>... cols) {
         return service.lambdaQuery()
-                .eq(OperateOrgFuncEntity::getExperimentPersonId,experimentPersonId)
-                .eq(OperateOrgFuncEntity::getExperimentOrgId,experimentOrgId)
-                .eq(ShareUtil.XObject.notEmpty(indicatorFuncId),OperateOrgFuncEntity::getIndicatorFuncId,indicatorFuncId)
-                .eq(ShareUtil.XObject.notEmpty(periods, true),OperateOrgFuncEntity::getPeriods,periods)
+                .eq(OperateOrgFuncEntity::getExperimentPersonId, experimentPersonId)
+                .eq(OperateOrgFuncEntity::getExperimentOrgId, experimentOrgId)
+                .eq(ShareUtil.XObject.notEmpty(indicatorFuncId), OperateOrgFuncEntity::getIndicatorFuncId, indicatorFuncId)
+                .ge(ShareUtil.XObject.notEmpty(periods, true), OperateOrgFuncEntity::getPeriods, periods)
+                .eq(ShareUtil.XObject.notEmpty(operateFlowId),OperateOrgFuncEntity::getOperateFlowId,operateFlowId)
                 .orderByDesc(OperateOrgFuncEntity::getId)
                 .select(cols)
                 .last("limit 1")
                 .oneOpt();
 
     }
+
+
 }
