@@ -90,7 +90,8 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
              */
         } else/* if(experimentRestartRequest.getModel() == ExperimentModeEnum.SAND.getCode())*/ {
             // 获取当前时间
-            long ct = System.currentTimeMillis();
+            //long ct = System.currentTimeMillis();
+            long ct = experimentRestartRequest.getCurrentTime().getTime();
             //todo 计时器
             log.info("执行开始操作....");
             // 找出当前期数计时器集合且暂停次数为最大的
