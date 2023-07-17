@@ -79,13 +79,16 @@ public class ExperimentTimerBiz {
         if (null != experimentTimerEntity) {
             Long second = (experimentTimerEntity.getPauseStartTime().getTime()
                     - experimentTimerEntity.getStartTime()) / 1000;
-            countDownResponse.setExperimentInstanceId(experimentTimerEntity.getExperimentInstanceId());
             countDownResponse.setSandDurationSecond(second);
-            //
-            countDownResponse.setSandDuration(Double.valueOf(second));
+            // 当前期时长
+            Integer duration = countDownResponse.getDurationMap().get(experimentTimerEntity.getPeriod());
+            // 设置剩余时间
+            countDownResponse.setSandRemnantSecond(duration * 60 - second);
+            //countDownResponse.setSandDuration(Double.valueOf(second));
             countDownResponse.setState(experimentTimerEntity.getState());
             countDownResponse.setModel(experimentTimerEntity.getModel());
             countDownResponse.setPeriod(experimentTimerEntity.getPeriod());
+            countDownResponse.setExperimentInstanceId(experimentTimerEntity.getExperimentInstanceId());
             return countDownResponse;
         }
 
@@ -97,8 +100,9 @@ public class ExperimentTimerBiz {
                 // 本期持续时间 = 当前时间-本期开始时间-暂停持续时间
                 // long ds = sct - v.getStartTime() - v.getDuration();
                 countDownResponse.setCountdown(pre.getStartTime() - ct);
-                countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
-                countDownResponse.setSandDurationSecond((pre.getEndTime() - ct) / 1000);
+                //countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
+                //countDownResponse.setSandDurationSecond((pre.getEndTime() - ct) / 1000);
+                countDownResponse.setSandRemnantSecond((pre.getEndTime() - ct) / 1000);
                 countDownResponse.setModel(pre.getModel());
                 countDownResponse.setPeriod(pre.getPeriod());
                 countDownResponse.setState(pre.getState());
@@ -119,6 +123,10 @@ public class ExperimentTimerBiz {
                 break;
             } else if (ct >= pre.getStartTime() && ct <= pre.getEndTime()) { //  开始之后
                 countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
+                // 本期持续时间 = 当前时间-本期开始时间-暂停持续时间
+                //long ds = sct - pre.getStartTime() - pre.getDuration();
+                countDownResponse.setSandRemnantSecond(pre.getEndTime() - ct);
+                //countDownResponse.setSandDurationSecond(Double.valueOf(pre.getEndTime() - ct));
                 countDownResponse.setModel(pre.getModel());
                 countDownResponse.setPeriod(pre.getPeriod());
                 countDownResponse.setState(pre.getState());
