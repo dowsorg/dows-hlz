@@ -158,7 +158,7 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
                         .taskParams(taskParams2)
                         .periods(v.getPeriod())
                         .appId(v.getAppId())
-                        .executeTime(new Date(v.getStartTime()))
+                        .executeTime(new Date(v.getEndTime()))
                         .executed(false)
                         .build();
             }
