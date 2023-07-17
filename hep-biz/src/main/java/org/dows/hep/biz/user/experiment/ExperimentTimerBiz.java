@@ -334,7 +334,6 @@ public class ExperimentTimerBiz {
         experimentPeriodsResonse.setExperimentPeriods(experimentPeriods);
 
         return experimentPeriodsResonse;
-
     }
 
     /**
@@ -359,4 +358,21 @@ public class ExperimentTimerBiz {
         });
         return map;
     }
+
+    /**
+     * 获取实验还没开始暂停时的最初始化的实验每期时间
+     *
+     * @param experimentInstanceId
+     */
+    public List<ExperimentTimerEntity> getExperimentPeriodsStartAnsEndTimeNoPause(String experimentInstanceId) {
+        List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
+                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
+                .isNull(ExperimentTimerEntity::getPauseStartTime)
+                .isNull(ExperimentTimerEntity::getPauseEndTime)
+                .orderByAsc(ExperimentTimerEntity::getPeriod)
+                .list();
+        return list;
+    }
+
+
 }

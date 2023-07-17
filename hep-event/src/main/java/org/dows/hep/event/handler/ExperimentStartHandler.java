@@ -15,8 +15,11 @@ import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
 import org.dows.hep.biz.event.EventScheduler;
 import org.dows.hep.biz.task.ExperimentCalcTask;
 import org.dows.hep.biz.task.ExperimentFinishTask;
+import org.dows.hep.biz.util.TimeUtil;
+import org.dows.hep.entity.ExperimentPersonInsuranceEntity;
 import org.dows.hep.entity.ExperimentTaskScheduleEntity;
 import org.dows.hep.entity.ExperimentTimerEntity;
+import org.dows.hep.service.ExperimentPersonInsuranceService;
 import org.dows.hep.service.ExperimentTaskScheduleService;
 import org.dows.hep.websocket.HepClientManager;
 import org.dows.hep.websocket.proto.MessageCode;
@@ -39,6 +42,8 @@ import java.util.stream.Collectors;
 public class ExperimentStartHandler extends AbstractEventHandler implements EventHandler<ExperimentRestartRequest> {
 
     private final ExperimentTaskScheduleService experimentTaskScheduleService;
+
+    private final ExperimentPersonInsuranceService experimentPersonInsuranceService;
 
 
     @Override
@@ -128,6 +133,18 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                 for (Channel channel : channels) {
                     HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, experimentRestartRequest);
                 }
+            }
+
+            // 所有保险也会暂停，需要重新延长开始时间
+            List<ExperimentPersonInsuranceEntity> insuranceEntityList = experimentPersonInsuranceService.lambdaQuery()
+                    .eq(ExperimentPersonInsuranceEntity::getExperimentInstanceId,experimentRestartRequest.getExperimentInstanceId())
+                    .eq(ExperimentPersonInsuranceEntity::getDeleted,false)
+                    .list();
+            if(insuranceEntityList != null && insuranceEntityList.size() > 0){
+                insuranceEntityList.forEach(insurance ->{
+                    insurance.setExpdate(TimeUtil.addTimeByLong(insurance.getExpdate(),duration));
+                });
+                experimentPersonInsuranceService.updateBatchById(insuranceEntityList);
             }
         }
 

@@ -1,14 +1,13 @@
 package org.dows.hep.biz.user.experiment;
 
+import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.util.ReflectUtil;
+import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.request.ExperimentPersonInsuranceRequest;
 import org.dows.hep.biz.util.TimeUtil;
-import org.dows.hep.entity.CaseOrgFeeEntity;
-import org.dows.hep.entity.ExperimentOrgEntity;
-import org.dows.hep.entity.ExperimentPersonInsuranceEntity;
-import org.dows.hep.entity.ExperimentPersonMedicalResultEntity;
+import org.dows.hep.entity.*;
 import org.dows.hep.service.CaseOrgFeeService;
 import org.dows.hep.service.ExperimentOrgService;
 import org.dows.hep.service.ExperimentPersonInsuranceService;
@@ -37,6 +36,8 @@ public class ExperimentInsuranceBiz {
     private final ExperimentOrgService experimentOrgService;
     private final CaseOrgFeeService caseOrgFeeService;
     private final IdGenerator idGenerator;
+    private final ExperimentSettingBiz experimentSettingBiz;
+    private final ExperimentTimerBiz experimentTimerBiz;
 
     /**
      * @param
@@ -66,6 +67,50 @@ public class ExperimentInsuranceBiz {
                 reimburseRatio = feeEntity.getReimburseRatio();
             }
         }
+        //2、计算失效时间
+        //2.1、首先获取实验设置，判断真实天数与模拟数据的比例
+        Date expdate = new Date();
+        String configVals = experimentSettingBiz.getSandSettingStr(experimentPersonInsuranceRequest.getExperimentInstanceId());
+        ExperimentSetting.SandSetting sandSetting = JSONUtil.toBean(configVals, ExperimentSetting.SandSetting.class);
+        //2.2、判断有几期,获取总的换算天数，计算
+        int periods = sandSetting.getPeriods();
+        //2.3、获取实验每期时间
+        Map<Integer, ExperimentTimerEntity> experimentPeriodsStartAnsEndTime =
+                experimentTimerBiz.getExperimentPeriodsStartAnsEndTime(experimentPersonInsuranceRequest.getExperimentInstanceId());
+        int currentPeriods = Integer.parseInt(experimentPersonInsuranceRequest.getPeriods());
+        int remainDay = 0;
+        for (int i = currentPeriods; i <= periods; i++) {
+            Integer duration = sandSetting.getDurationMap().get(String.valueOf(i));
+            Integer periodsand = sandSetting.getPeriodMap().get(String.valueOf(i));
+            if (i == currentPeriods) {
+                //2.4、判断当前时间在本期还剩多少
+                long remainTime = experimentPeriodsStartAnsEndTime.get(i).getEndTime() - new Date().getTime();
+                int remainMinute = (int) (remainTime / 1000 / 60);
+                //2.5、假设365天都在一期需要的时间
+                int assumMinute = (int) ((double)duration * 365 / (double)periodsand);
+                if(assumMinute >= remainMinute){
+                    remainDay += remainMinute / ((double)duration / (double)periodsand);
+                    expdate = TimeUtil.timeAddMinute(new Date(),remainMinute);
+                }else{
+                    expdate = TimeUtil.timeAddMinute(new Date(),assumMinute);
+                    break;
+                }
+            }
+            if(i != currentPeriods){
+                //2.7、后面的期数，都是完整的
+                long remainTime = experimentPeriodsStartAnsEndTime.get(i).getEndTime() - experimentPeriodsStartAnsEndTime.get(i).getStartTime();
+                int remainMinute = (int) (remainTime / 1000 / 60);
+                //2.5、判断剩下天数都在一期需要的时间
+                int assumMinute = (int) ((double)(365 - remainDay) * ((double)duration / (double)periodsand));
+                if(assumMinute >= remainMinute){
+                    remainDay += remainMinute / ((double)duration / (double)periodsand);
+                    expdate = TimeUtil.timeAddMinute(expdate,remainMinute);
+                }else{
+                    expdate = TimeUtil.timeAddMinute(expdate,assumMinute);
+                    break;
+                }
+            }
+        }
         ExperimentPersonInsuranceEntity experimentPersonInsuranceEntity = ExperimentPersonInsuranceEntity
                 .builder()
                 .experimentPersonInsuranceId(idGenerator.nextIdStr())
@@ -78,7 +123,8 @@ public class ExperimentInsuranceBiz {
                 .insuranceAmount(experimentPersonInsuranceRequest.getInsuranceAmount())
                 .reimburseRatio(reimburseRatio)
                 .indate(new Date())
-                .expdate(TimeUtil.addDays(new Date(), 365))
+//                .expdate(TimeUtil.addDays(new Date(), 365))
+                .expdate(expdate)
                 .build();
         return experimentPersonInsuranceService.save(experimentPersonInsuranceEntity);
     }
@@ -116,7 +162,7 @@ public class ExperimentInsuranceBiz {
         }
         //3、计算每期医疗占比，并保存进数据库，todo personFund为用户总金额
         BigDecimal personFund = new BigDecimal(22222);
-        BigDecimal per = totalPay.divide(personFund,BigDecimal.ROUND_CEILING);
+        BigDecimal per = totalPay.divide(personFund, BigDecimal.ROUND_CEILING);
         //3.1、计算得分
         BigDecimal newPer = new BigDecimal(1).subtract(per);
         ExperimentPersonMedicalResultEntity resultEntity = ExperimentPersonMedicalResultEntity.builder()
@@ -169,7 +215,7 @@ public class ExperimentInsuranceBiz {
                 .list();
         BigDecimal totalScore = new BigDecimal(0);
         if (resultEntityList != null && resultEntityList.size() > 0) {
-            for(ExperimentPersonMedicalResultEntity result : resultEntityList) {
+            for (ExperimentPersonMedicalResultEntity result : resultEntityList) {
                 totalScore = totalScore.add(result.getMedicalScore());
             }
         }
@@ -197,9 +243,9 @@ public class ExperimentInsuranceBiz {
             BigDecimal totalScore = new BigDecimal(0);
             List<ExperimentPersonMedicalResultEntity> resultEntityList = entry.getValue();
             if (resultEntityList != null && resultEntityList.size() > 0) {
-                    for(ExperimentPersonMedicalResultEntity result : resultEntityList) {
-                        totalScore = totalScore.add(result.getMedicalScore());
-                    }
+                for (ExperimentPersonMedicalResultEntity result : resultEntityList) {
+                    totalScore = totalScore.add(result.getMedicalScore());
+                }
                 BigDecimal avgScore = totalScore.divide(new BigDecimal(resultEntityList.size()));
                 resultMap.put(entry.getKey(), avgScore);
             }
@@ -219,17 +265,17 @@ public class ExperimentInsuranceBiz {
      */
     public Boolean checkInsureStatus(ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest) throws ParseException {
         ExperimentPersonInsuranceEntity entity = experimentPersonInsuranceService.lambdaQuery()
-                .eq(ExperimentPersonInsuranceEntity::getExperimentPersonId,experimentPersonInsuranceRequest.getExperimentPersonId())
+                .eq(ExperimentPersonInsuranceEntity::getExperimentPersonId, experimentPersonInsuranceRequest.getExperimentPersonId())
                 .eq(ExperimentPersonInsuranceEntity::getExperimentInstanceId, experimentPersonInsuranceRequest.getExperimentInstanceId())
                 .eq(ExperimentPersonInsuranceEntity::getExperimentGroupId, experimentPersonInsuranceRequest.getExperimentGroupId())
                 .eq(ExperimentPersonInsuranceEntity::getPeriods, experimentPersonInsuranceRequest.getPeriods())
                 .eq(ExperimentPersonInsuranceEntity::getOperateOrgId, experimentPersonInsuranceRequest.getOperateOrgId())
                 .eq(ExperimentPersonInsuranceEntity::getDeleted, false)
                 .one();
-        if(entity == null || ReflectUtil.isObjectNull(entity)){
+        if (entity == null || ReflectUtil.isObjectNull(entity)) {
             return false;
         }
         //判断过期时间
-        return TimeUtil.isBeforeTime(new Date(),entity.getExpdate());
+        return TimeUtil.isBeforeTime(new Date(), entity.getExpdate());
     }
 }
