@@ -112,10 +112,8 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                         DateUtil.formatDateTime(DateUtil.date(updateExperimentTimer.getStartTime())),
                         DateUtil.formatDateTime(DateUtil.date(updateExperimentTimer.getEndTime()))));
             }
-            // 暂停开始时间
-            long pst = updateExperimentTimer.getPauseStartTime().getTime();
-            // 持续时间 = 暂停结束时间 - 暂停开始时间
-            long duration = experimentRestartRequest.getCurrentTime().getTime() - pst;
+            // 暂停持续时间 = 暂停结束时间 - 暂停开始时间
+            long duration = ct - updateExperimentTimer.getPauseStartTime().getTime();
             // 设当前期数的暂停时长
             updateExperimentTimer.setDuration(duration);
             updateExperimentTimer.setPaused(false);
