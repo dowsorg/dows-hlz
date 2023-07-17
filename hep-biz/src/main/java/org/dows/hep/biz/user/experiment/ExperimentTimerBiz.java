@@ -78,10 +78,11 @@ public class ExperimentTimerBiz {
                 .orElse(null);
         if (null != experimentTimerEntity) {
             Long second = (experimentTimerEntity.getPauseStartTime().getTime()
-                    - experimentTimerEntity.getStartTime()) / 1000;
+                    - experimentTimerEntity.getStartTime()
+                    + experimentTimerEntity.getPeriodInterval()) / 1000;
             countDownResponse.setSandDurationSecond(second);
             // 当前期时长
-            Integer duration = countDownResponse.getDurationMap().get(experimentTimerEntity.getPeriod());
+            Integer duration = countDownResponse.getDurationMap().get(experimentTimerEntity.getPeriod().toString());
             // 设置剩余时间
             countDownResponse.setSandRemnantSecond(duration * 60 - second);
             //countDownResponse.setSandDuration(Double.valueOf(second));
@@ -102,7 +103,7 @@ public class ExperimentTimerBiz {
                 countDownResponse.setCountdown(pre.getStartTime() - ct);
                 //countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
                 //countDownResponse.setSandDurationSecond((pre.getEndTime() - ct) / 1000);
-                countDownResponse.setSandRemnantSecond((pre.getEndTime() - ct) / 1000);
+                countDownResponse.setSandRemnantSecond((pre.getEndTime() - ct - pre.getPeriodInterval()) / 1000);
                 countDownResponse.setModel(pre.getModel());
                 countDownResponse.setPeriod(pre.getPeriod());
                 countDownResponse.setState(pre.getState());
@@ -125,7 +126,7 @@ public class ExperimentTimerBiz {
                 countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
                 // 本期持续时间 = 当前时间-本期开始时间-暂停持续时间
                 //long ds = sct - pre.getStartTime() - pre.getDuration();
-                countDownResponse.setSandRemnantSecond(pre.getEndTime() - ct);
+                countDownResponse.setSandRemnantSecond(pre.getEndTime() - ct - pre.getPeriodInterval());
                 //countDownResponse.setSandDurationSecond(Double.valueOf(pre.getEndTime() - ct));
                 countDownResponse.setModel(pre.getModel());
                 countDownResponse.setPeriod(pre.getPeriod());
