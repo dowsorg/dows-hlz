@@ -53,53 +53,53 @@ public class ExperimentTimerBiz {
     public CountDownResponse userCountdown(String experimentInstanceId) {
         // 获取当前期数
         CountDownResponse countDownResponse = new CountDownResponse();
-
         List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
                 .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
-                .eq(ExperimentTimerEntity::getState, EnumExperimentState.ONGOING.getState())
-                //.eq(ExperimentTimerEntity::getModel, 2) // 沙盘模式
-                //.ne(ExperimentTimerEntity::getState, ExperimentStateEnum.FINISH.getState())
+                .orderByAsc(ExperimentTimerEntity::getPeriod, ExperimentTimerEntity::getPauseCount)
                 .list();
-        list = list.stream().sorted(Comparator.comparingInt(ExperimentTimerEntity::getPeriod))
-                .collect(Collectors.toList());
-
         long ct = System.currentTimeMillis();
-
 
         for (int i = 0; i < list.size(); i++) {
             ExperimentTimerEntity pre = list.get(i);
             ExperimentTimerEntity next;
-            // 最后一期
-            if (i == list.size() - 1) {
-                countDownResponse.setCountdown(pre.getStartTime() - ct);
-                countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
+            // 优先处理暂停
+            if(pre.getPaused()){
+                Long second = (pre.getPauseStartTime().getTime()-pre.getStartTime())/1000;
+                countDownResponse.setSandDurationSecond(second);
+                countDownResponse.setState(pre.getState());
                 countDownResponse.setModel(pre.getModel());
                 countDownResponse.setPeriod(pre.getPeriod());
-                countDownResponse.setState(pre.getState());
                 break;
-            }
-            next = list.get(i + 1);
-            // 两期之间
-            if (ct >= pre.getEndTime() && ct < next.getStartTime()) {
-                ct = next.getStartTime() - ct;
-                countDownResponse.setCountdown(ct);
-                // todo 兜底计算，在两期之间计算上一期数据,异步
-
-
-                break;
-            } else if (ct <= pre.getStartTime()) { // 小组分配结束
-                countDownResponse.setCountdown(pre.getStartTime() - ct);
-                countDownResponse.setModel(pre.getModel());
-                countDownResponse.setPeriod(pre.getPeriod());
-                countDownResponse.setState(pre.getState());
-                break;
-            } else if (ct >= pre.getStartTime() && ct <= pre.getEndTime()) { //  开始之后
-                countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
-                countDownResponse.setModel(pre.getModel());
-                countDownResponse.setPeriod(pre.getPeriod());
-                countDownResponse.setState(pre.getState());
-                break;
-
+            } else {
+                // 最后一期
+                if (i == list.size() - 1) {
+                    countDownResponse.setCountdown(pre.getStartTime() - ct);
+                    countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
+                    countDownResponse.setModel(pre.getModel());
+                    countDownResponse.setPeriod(pre.getPeriod());
+                    countDownResponse.setState(pre.getState());
+                    break;
+                }
+                next = list.get(i + 1);
+                // 两期之间
+                if (ct >= pre.getEndTime() && ct < next.getStartTime()) {
+                    ct = next.getStartTime() - ct;
+                    countDownResponse.setCountdown(ct);
+                    // todo 兜底计算，在两期之间计算上一期数据,异步
+                    break;
+                } else if (ct <= pre.getStartTime()) { // 小组分配结束
+                    countDownResponse.setCountdown(pre.getStartTime() - ct);
+                    countDownResponse.setModel(pre.getModel());
+                    countDownResponse.setPeriod(pre.getPeriod());
+                    countDownResponse.setState(pre.getState());
+                    break;
+                } else if (ct >= pre.getStartTime() && ct <= pre.getEndTime()) { //  开始之后
+                    countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
+                    countDownResponse.setModel(pre.getModel());
+                    countDownResponse.setPeriod(pre.getPeriod());
+                    countDownResponse.setState(pre.getState());
+                    break;
+                }
             }
         }
         return countDownResponse;
