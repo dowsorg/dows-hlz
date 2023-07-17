@@ -130,7 +130,9 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
 
             // 期数开始通知任务
             ExperimentNoticeTask experimentPeriodStartNoticeTask = new ExperimentNoticeTask(periodStartNoticer,
-                    noticeParams,experimentTaskScheduleService,experimentInstanceId,v.getPeriod(),
+                    noticeParams,experimentTaskScheduleService,
+                    experimentInstanceId,
+                    v.getPeriod(),
                     EnumExperimentNotice.startNotice.getCode());
             taskScheduler.schedule(experimentPeriodStartNoticeTask, new Date(v.getStartTime()));
 
@@ -163,7 +165,11 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
             experimentTaskScheduleService.saveOrUpdate(endEntity);
 
             // 期数结束通知任务
-            ExperimentNoticeTask experimentPeriodEndNoticeTask = new ExperimentNoticeTask(periodEndNoticer, noticeParams,experimentTaskScheduleService,experimentInstanceId,v.getPeriod(),EnumExperimentNotice.endNotice.getCode());
+            ExperimentNoticeTask experimentPeriodEndNoticeTask = new ExperimentNoticeTask(periodEndNoticer,
+                    noticeParams,experimentTaskScheduleService,
+                    experimentInstanceId,
+                    v.getPeriod(),
+                    EnumExperimentNotice.endNotice.getCode());
             taskScheduler.schedule(experimentPeriodEndNoticeTask, new Date(v.getEndTime()));
         });
     }

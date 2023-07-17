@@ -5,10 +5,13 @@ import cn.hutool.core.date.DateUtil;
 import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.framework.api.Response;
 import org.dows.framework.api.uim.AccountInfo;
 import org.dows.framework.api.util.ReflectUtil;
+import org.dows.hep.api.WsMessageResponse;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.enums.EnumExperimentTask;
+import org.dows.hep.api.enums.EnumWebSocketType;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
@@ -125,21 +128,22 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                     // 重新设置当前期数的下一期开始时间，结束时间等
                     currentPeriod.setStartTime(currentPeriod.getStartTime() + duration);
                     currentPeriod.setEndTime(currentPeriod.getEndTime() + duration);
-                    // 加入待更新集合
-                    //updateExperimentTimerEntities.add(currentPeriod);
                 }
+                // 加入待更新集合
                 updateExperimentTimerEntities.add(currentPeriod);
             }
             // 批量更新期数定时器
-            boolean b = experimentTimerBiz.saveOrUpdateExperimentTimeExperimentState(experimentRestartRequest.getExperimentInstanceId(),
+            boolean b = experimentTimerBiz
+                    .saveOrUpdateExperimentTimeExperimentState(experimentRestartRequest.getExperimentInstanceId(),
                     updateExperimentTimerEntities, EnumExperimentState.ONGOING);
 
             if (b) {
+                WsMessageResponse wsMessageResponse = new WsMessageResponse(EnumWebSocketType.EXPT_RESTART, experimentRestartRequest);
                 // 通知客户端
                 ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfos();
                 Set<Channel> channels = userInfos.keySet();
                 for (Channel channel : channels) {
-                    HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, experimentRestartRequest);
+                    HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, Response.ok(wsMessageResponse));
                 }
             }
         }
