@@ -142,6 +142,7 @@ public class ExperimentOrgBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Page<OrgNoticeResponse> pageOrgNotice(BaseExptRequest findOrgNotice ) {
+
         ExptRequestValidator.create(findOrgNotice)
                 .checkExperimentOrgId()
                 .checkExperimentGroup();

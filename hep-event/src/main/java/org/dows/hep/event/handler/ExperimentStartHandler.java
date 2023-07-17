@@ -5,10 +5,13 @@ import cn.hutool.core.date.DateUtil;
 import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.framework.api.Response;
 import org.dows.framework.api.uim.AccountInfo;
 import org.dows.framework.api.util.ReflectUtil;
+import org.dows.hep.api.WsMessageResponse;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.enums.EnumExperimentTask;
+import org.dows.hep.api.enums.EnumWebSocketType;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
@@ -86,6 +89,8 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
              * hepContext.setState(ExperimentStateEnum.ONGOING);
              */
         } else/* if(experimentRestartRequest.getModel() == ExperimentModeEnum.SAND.getCode())*/ {
+            // 获取当前时间
+            long ct = System.currentTimeMillis();
             //todo 计时器
             log.info("执行开始操作....");
             // 找出当前期数计时器集合且暂停次数为最大的
@@ -99,6 +104,13 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
             if (!updateExperimentTimer.getPaused()) {
                 throw new ExperimentException("当前实验已开始，请勿重复执行开始！");
             }
+            // 如果当前时间不在本期开始和结束之间
+            if (ct <= updateExperimentTimer.getStartTime() || ct >= updateExperimentTimer.getEndTime()) {
+                throw new ExperimentException(String.format("无法为当前{%s}期执行暂停,该期开始时间为:{%s}，结束时间:{%s}",
+                        updateExperimentTimer.getPeriod(),
+                        DateUtil.formatDateTime(DateUtil.date(updateExperimentTimer.getStartTime())),
+                        DateUtil.formatDateTime(DateUtil.date(updateExperimentTimer.getEndTime()))));
+            }
             // 暂停开始时间
             long pst = updateExperimentTimer.getPauseStartTime().getTime();
             // 持续时间 = 暂停结束时间 - 暂停开始时间
@@ -106,6 +118,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
             // 设当前期数的暂停时长
             updateExperimentTimer.setDuration(duration);
             updateExperimentTimer.setPaused(false);
+            updateExperimentTimer.setState(EnumExperimentState.ONGOING.getState());
             // 本期结束时间 = 元本期结束时间+暂停时间
             updateExperimentTimer.setEndTime(updateExperimentTimer.getEndTime() + duration);
             // 设置暂停结束时间
@@ -114,24 +127,28 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
             updateExperimentTimerEntities.add(updateExperimentTimer);
             // 更新当前期之后数据
             for (ExperimentTimerEntity currentPeriod : experimentTimerEntityList) {
+                currentPeriod.setState(EnumExperimentState.ONGOING.getState());
+                currentPeriod.setPaused(false);
                 if (currentPeriod.getPeriod() > experimentRestartRequest.getPeriods()) {
                     // 重新设置当前期数的下一期开始时间，结束时间等
                     currentPeriod.setStartTime(currentPeriod.getStartTime() + duration);
                     currentPeriod.setEndTime(currentPeriod.getEndTime() + duration);
-                    // 加入待更新集合
-                    updateExperimentTimerEntities.add(currentPeriod);
                 }
+                // 加入待更新集合
+                updateExperimentTimerEntities.add(currentPeriod);
             }
             // 批量更新期数定时器
-            boolean b = experimentTimerBiz.saveOrUpdateExperimentTimeExperimentState(experimentRestartRequest.getExperimentInstanceId(),
+            boolean b = experimentTimerBiz
+                    .saveOrUpdateExperimentTimeExperimentState(experimentRestartRequest.getExperimentInstanceId(),
                     updateExperimentTimerEntities, EnumExperimentState.ONGOING);
 
             if (b) {
+                WsMessageResponse wsMessageResponse = new WsMessageResponse(EnumWebSocketType.EXPT_RESTART, experimentRestartRequest);
                 // 通知客户端
                 ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfos();
                 Set<Channel> channels = userInfos.keySet();
                 for (Channel channel : channels) {
-                    HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, experimentRestartRequest);
+                    HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, Response.ok(wsMessageResponse));
                 }
             }
 

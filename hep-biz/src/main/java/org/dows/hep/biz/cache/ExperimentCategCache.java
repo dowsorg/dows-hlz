@@ -15,7 +15,7 @@ public class ExperimentCategCache extends BaseLoadingCache<String,CategCache> {
     private final Supplier<List<CategVO>> loadDataFunc;
     private static final int EXPIREInMinutes=60*24;
     public ExperimentCategCache(Supplier<List<CategVO>> loadDataFunc){
-        super(1,4,EXPIREInMinutes*3,0);
+        super(1,4,EXPIREInMinutes*2,0);
         this.loadDataFunc=loadDataFunc;
     }
 

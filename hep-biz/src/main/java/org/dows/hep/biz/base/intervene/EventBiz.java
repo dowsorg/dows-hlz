@@ -223,7 +223,6 @@ public class EventBiz{
     public Boolean saveEvent(SaveEventRequest saveEvent, HttpServletRequest request) {
         final String appId=saveEvent.getAppId();
         LoginContextVO voLogin=ShareBiz.getLoginUser(request);
-        //TODO checkLogin
         AssertUtil.trueThenThrow(ShareUtil.XObject.notEmpty(saveEvent.getEventId())
                         && eventDao.getById(saveEvent.getEventId(), EventEntity::getId).isEmpty())
                 .throwMessage("突发事件不存在或已删除");
