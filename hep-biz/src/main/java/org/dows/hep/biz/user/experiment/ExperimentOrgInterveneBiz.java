@@ -25,6 +25,7 @@ import org.dows.hep.api.user.experiment.response.SaveExptInterveneResponse;
 import org.dows.hep.api.user.experiment.response.SaveExptTreatResponse;
 import org.dows.hep.api.user.experiment.vo.ExptTreatPlanItemVO;
 import org.dows.hep.biz.base.intervene.*;
+import org.dows.hep.biz.dao.OperateFlowDao;
 import org.dows.hep.biz.dao.OperateOrgFuncDao;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.util.*;
@@ -54,6 +55,8 @@ import java.util.stream.Collectors;
 public class ExperimentOrgInterveneBiz{
 
     private final FoodCalc4ExptBiz foodCalc4ExptBiz;
+
+    private final OperateFlowDao operateFlowDao;
 
     private final OperateOrgFuncDao operateOrgFuncDao;
 

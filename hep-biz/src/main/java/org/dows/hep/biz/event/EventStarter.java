@@ -24,7 +24,7 @@ public class EventStarter implements ApplicationListener<ContextRefreshedEvent> 
     public static EventStarter Instance(){
         return s_instnace;
     }
-    private final static long DELAYSeconds=60;
+    private final static long DELAYSeconds=180;
 
     private EventStarter(){
         s_instnace=this;
@@ -32,8 +32,13 @@ public class EventStarter implements ApplicationListener<ContextRefreshedEvent> 
     @Autowired
     private ExperimentInstanceDao experimentInstanceDao;
 
+    private volatile boolean startedFlag=false;
+
 
     public void start(){
+        if(startedFlag){
+            return;
+        }
         int cnt=0;
         try {
             List<ExperimentInstanceEntity> rowsExperiment = experimentInstanceDao.getRunningExperiment(
@@ -47,6 +52,7 @@ public class EventStarter implements ApplicationListener<ContextRefreshedEvent> 
             });
             log.info(String.format("EventStarter.start succ. cnt:%s id:%s",rowsExperiment.size(),
                     String.join(",", ShareUtil.XCollection.map(rowsExperiment, ExperimentInstanceEntity::getExperimentInstanceId))));
+            startedFlag=true;
         }catch (Exception ex){
             log.error(String.format( "EventStarter.start err. cnt:%s", cnt),ex);
         }

@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class EventExecutor {
     static final int DFTPOOLNum=3;
-    static final int DFTCorePoolSize=5;
+    static final int DFTCorePoolSize=4;
     static final int DFTMaxPoolSize=8;
 
     static final int DFTQUEUESize=100;
