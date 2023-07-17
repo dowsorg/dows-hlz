@@ -6,6 +6,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.dows.hep.api.base.indicator.request.RsIndicatorExpressionCheckConditionRequest;
 import org.dows.hep.api.base.indicator.request.RsIndicatorExpressionCheckoutResultRequest;
+import org.dows.hep.api.base.indicator.response.CaseIndicatorExpressionItemResponseRs;
+import org.dows.hep.api.base.indicator.response.IndicatorExpressionItemResponseRs;
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.RsExperimentIndicatorExpressionBizException;
 import org.dows.hep.api.exception.RsIndicatorExpressionException;
@@ -328,5 +330,61 @@ public class RsUtilBiz {
     checkResultCannotExistJudgeOperator(resultExpression);
     checkResultParse(kIndicatorInstanceIdVValMap, field, resultExpression, resultNameList, resultValList);
     return checkConditionResult;
+  }
+
+  public void specialHandleIndicatorExpressionItemResponseRsList(List<IndicatorExpressionItemResponseRs> indicatorExpressionItemResponseRsList) {
+    if (Objects.isNull(indicatorExpressionItemResponseRsList)) {return;}
+    if (indicatorExpressionItemResponseRsList.size() == 0) {
+      IndicatorExpressionItemResponseRs indicatorExpressionItemResponseRs0 = new IndicatorExpressionItemResponseRs();
+      indicatorExpressionItemResponseRs0.setAppId(EnumString.APP_ID.getStr());
+      indicatorExpressionItemResponseRs0.setSeq(-2);
+      indicatorExpressionItemResponseRsList.add(indicatorExpressionItemResponseRs0);
+      IndicatorExpressionItemResponseRs indicatorExpressionItemResponseRs1 = new IndicatorExpressionItemResponseRs();
+      indicatorExpressionItemResponseRs1.setAppId(EnumString.APP_ID.getStr());
+      indicatorExpressionItemResponseRs1.setSeq(-1);
+      indicatorExpressionItemResponseRsList.add(indicatorExpressionItemResponseRs1);
+    } else if (indicatorExpressionItemResponseRsList.size() == 1) {
+      IndicatorExpressionItemResponseRs indicatorExpressionItemResponseRs0 = new IndicatorExpressionItemResponseRs();
+      indicatorExpressionItemResponseRs0.setAppId(EnumString.APP_ID.getStr());
+      IndicatorExpressionItemResponseRs indicatorExpressionItemResponseRs = indicatorExpressionItemResponseRsList.get(0);
+      Integer seq = indicatorExpressionItemResponseRs.getSeq();
+      if (Integer.MAX_VALUE == seq) {
+        indicatorExpressionItemResponseRs0.setSeq(0);
+      } else {
+        indicatorExpressionItemResponseRs0.setSeq(Integer.MAX_VALUE);
+      }
+      indicatorExpressionItemResponseRsList.add(indicatorExpressionItemResponseRs0);
+      indicatorExpressionItemResponseRsList.sort(Comparator.comparingInt(IndicatorExpressionItemResponseRs::getSeq));
+    } else {
+      /* runsix:do nothing */
+    }
+  }
+
+  public void specialHandleCaseIndicatorExpressionItemResponseRsList(List<CaseIndicatorExpressionItemResponseRs> caseIndicatorExpressionItemResponseRsList) {
+    if (Objects.isNull(caseIndicatorExpressionItemResponseRsList)) {return;}
+    if (caseIndicatorExpressionItemResponseRsList.size() == 0) {
+      CaseIndicatorExpressionItemResponseRs caseIndicatorExpressionItemResponseRs0 = new CaseIndicatorExpressionItemResponseRs();
+      caseIndicatorExpressionItemResponseRs0.setAppId(EnumString.APP_ID.getStr());
+      caseIndicatorExpressionItemResponseRs0.setSeq(-2);
+      caseIndicatorExpressionItemResponseRsList.add(caseIndicatorExpressionItemResponseRs0);
+      CaseIndicatorExpressionItemResponseRs caseIndicatorExpressionItemResponseRs1 = new CaseIndicatorExpressionItemResponseRs();
+      caseIndicatorExpressionItemResponseRs1.setAppId(EnumString.APP_ID.getStr());
+      caseIndicatorExpressionItemResponseRs1.setSeq(-1);
+      caseIndicatorExpressionItemResponseRsList.add(caseIndicatorExpressionItemResponseRs1);
+    } else if (caseIndicatorExpressionItemResponseRsList.size() == 1) {
+      CaseIndicatorExpressionItemResponseRs caseIndicatorExpressionItemResponseRs0 = new CaseIndicatorExpressionItemResponseRs();
+      caseIndicatorExpressionItemResponseRs0.setAppId(EnumString.APP_ID.getStr());
+      CaseIndicatorExpressionItemResponseRs caseIndicatorExpressionItemResponseRs = caseIndicatorExpressionItemResponseRsList.get(0);
+      Integer seq = caseIndicatorExpressionItemResponseRs.getSeq();
+      if (Integer.MAX_VALUE == seq) {
+        caseIndicatorExpressionItemResponseRs0.setSeq(0);
+      } else {
+        caseIndicatorExpressionItemResponseRs0.setSeq(Integer.MAX_VALUE);
+      }
+      caseIndicatorExpressionItemResponseRsList.add(caseIndicatorExpressionItemResponseRs0);
+      caseIndicatorExpressionItemResponseRsList.sort(Comparator.comparingInt(CaseIndicatorExpressionItemResponseRs::getSeq));
+    } else {
+      /* runsix:do nothing */
+    }
   }
 }

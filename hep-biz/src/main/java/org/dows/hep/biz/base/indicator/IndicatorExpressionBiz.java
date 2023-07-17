@@ -204,35 +204,14 @@ public class IndicatorExpressionBiz{
         if (Objects.isNull(indicatorExpressionItemEntityList)) {
           indicatorExpressionItemEntityList = new ArrayList<>();
         }
-        List<IndicatorExpressionItemResponseRs> finalIndicatorExpressionItemResponseRsList = new ArrayList<>();
         List<IndicatorExpressionItemResponseRs> indicatorExpressionItemResponseRsList = indicatorExpressionItemEntityList.stream().map(IndicatorExpressionItemBiz::indicatorExpressionItem2ResponseRs)
             .sorted(Comparator.comparingInt(IndicatorExpressionItemResponseRs::getSeq)).collect(Collectors.toList());
         /* runsix:TODO 弥补孙福聪那边实现不了，他必须要返回2个 */
-        if (indicatorExpressionItemResponseRsList.size() == 0) {
-          IndicatorExpressionItemResponseRs indicatorExpressionItemResponseRs0 = new IndicatorExpressionItemResponseRs();
-          indicatorExpressionItemResponseRs0.setSeq(-2);
-          finalIndicatorExpressionItemResponseRsList.add(indicatorExpressionItemResponseRs0);
-          IndicatorExpressionItemResponseRs indicatorExpressionItemResponseRs1 = new IndicatorExpressionItemResponseRs();
-          indicatorExpressionItemResponseRs1.setSeq(-1);
-          finalIndicatorExpressionItemResponseRsList.add(indicatorExpressionItemResponseRs1);
-        } else if (indicatorExpressionItemResponseRsList.size() == 1) {
-          IndicatorExpressionItemResponseRs indicatorExpressionItemResponseRs0 = new IndicatorExpressionItemResponseRs();
-          IndicatorExpressionItemResponseRs indicatorExpressionItemResponseRs = indicatorExpressionItemResponseRsList.get(0);
-          Integer seq = indicatorExpressionItemResponseRs.getSeq();
-          if (Integer.MAX_VALUE == seq) {
-            indicatorExpressionItemResponseRs0.setSeq(0);
-          } else {
-            indicatorExpressionItemResponseRs0.setSeq(Integer.MAX_VALUE);
-          }
-          finalIndicatorExpressionItemResponseRsList.addAll(indicatorExpressionItemResponseRsList);
-          finalIndicatorExpressionItemResponseRsList.add(indicatorExpressionItemResponseRs0);
-          finalIndicatorExpressionItemResponseRsList.sort(Comparator.comparingInt(IndicatorExpressionItemResponseRs::getSeq));
-        } else {
-          finalIndicatorExpressionItemResponseRsList.addAll(indicatorExpressionItemResponseRsList);
-        }
+        rsUtilBiz.specialHandleIndicatorExpressionItemResponseRsList(indicatorExpressionItemResponseRsList);
+
         IndicatorExpressionResponseRs indicatorExpressionResponseRs = IndicatorExpressionBiz.indicatorExpression2ResponseRs(
             indicatorExpressionEntity,
-            finalIndicatorExpressionItemResponseRsList,
+            indicatorExpressionItemResponseRsList,
             kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(maxIndicatorExpressionItemId),
             kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(minIndicatorExpressionItemId),
             kPrincipalIdVIndicatorCategoryRsMap.get(indicatorExpressionEntity.getPrincipalId()),
@@ -1323,11 +1302,15 @@ public class IndicatorExpressionBiz{
   public IndicatorExpressionResponseRs get(String indicatorExpressionId) {
     IndicatorExpressionEntity indicatorExpressionEntity = indicatorExpressionService.lambdaQuery()
         .eq(IndicatorExpressionEntity::getIndicatorExpressionId, indicatorExpressionId)
-        .oneOpt()
-        .orElseThrow(() -> {
-          log.warn("method IndicatorExpressionBiz.get param indicatorExpressionId:{} is illegal", indicatorExpressionId);
-          throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
-        });
+        .one();
+    if (Objects.isNull(indicatorExpressionEntity)) {return null;}
+//    IndicatorExpressionEntity indicatorExpressionEntity = indicatorExpressionService.lambdaQuery()
+//        .eq(IndicatorExpressionEntity::getIndicatorExpressionId, indicatorExpressionId)
+//        .oneOpt()
+//        .orElseThrow(() -> {
+//          log.warn("method IndicatorExpressionBiz.get param indicatorExpressionId:{} is illegal", indicatorExpressionId);
+//          throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
+//        });
     List<IndicatorExpressionItemResponseRs> indicatorExpressionItemResponseRsList = indicatorExpressionItemService.lambdaQuery()
         .eq(IndicatorExpressionItemEntity::getIndicatorExpressionId, indicatorExpressionId)
         .list()
@@ -1375,6 +1358,7 @@ public class IndicatorExpressionBiz{
     }
     IndicatorExpressionItemResponseRs maxIndicatorExpressionItemResponseRs = kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(maxIndicatorExpressionItemId);
     IndicatorExpressionItemResponseRs minIndicatorExpressionItemResponseRs = kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(minIndicatorExpressionItemId);
+    /* runsix:TODO ？？？这里没问题？？？，这个id怎么会是目录id呢 */
     String principalId = indicatorExpressionEntity.getPrincipalId();
     IndicatorCategoryEntity indicatorCategoryEntity = indicatorCategoryService.lambdaQuery()
         .eq(IndicatorCategoryEntity::getIndicatorCategoryId, principalId)
@@ -1429,7 +1413,7 @@ public class IndicatorExpressionBiz{
       AtomicReference<IndicatorExpressionItemEntity> maxIndicatorExpressionItemEntityAtomicReference = new AtomicReference<>();
 
       /* runsix: 2.1 check indicatorExpressionId */
-      CompletableFuture<Void> cfPopulateIndicatorExpression = CompletableFuture.runAsync(() -> rsIndicatorExpressionBiz.populateIndicatorExpression(indicatorExpressionEntityAtomicReference, indicatorExpressionId));
+      CompletableFuture<Void> cfPopulateIndicatorExpression = CompletableFuture.runAsync(() -> rsIndicatorExpressionBiz.populateIndicatorExpressionEntity(indicatorExpressionEntityAtomicReference, indicatorExpressionId));
       cfPopulateIndicatorExpression.get();
 
       /* runsix:2.2 populate indicatorExpressionInfluenceEntityAtomicReference */

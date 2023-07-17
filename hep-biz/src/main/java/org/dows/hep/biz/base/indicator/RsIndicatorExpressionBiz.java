@@ -10,14 +10,8 @@ import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.api.exception.IndicatorExpressionException;
 import org.dows.hep.api.exception.RsIndicatorExpressionBizException;
-import org.dows.hep.entity.IndicatorExpressionEntity;
-import org.dows.hep.entity.IndicatorExpressionInfluenceEntity;
-import org.dows.hep.entity.IndicatorExpressionItemEntity;
-import org.dows.hep.entity.IndicatorValEntity;
-import org.dows.hep.service.IndicatorExpressionInfluenceService;
-import org.dows.hep.service.IndicatorExpressionItemService;
-import org.dows.hep.service.IndicatorExpressionService;
-import org.dows.hep.service.IndicatorValService;
+import org.dows.hep.entity.*;
+import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
@@ -35,14 +29,14 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class RsIndicatorExpressionBiz {
-  private final IndicatorValService indicatorValService;
+  private final IndicatorRuleService indicatorRuleService;
   private final IndicatorExpressionService indicatorExpressionService;
   private final IndicatorExpressionItemService indicatorExpressionItemService;
   private final IndicatorExpressionInfluenceService indicatorExpressionInfluenceService;
   private final IdGenerator idGenerator;
 
 
-  public void populateIndicatorExpression(
+  public void populateIndicatorExpressionEntity(
       AtomicReference<IndicatorExpressionEntity> indicatorExpressionEntityAtomicReference,
       String indicatorExpressionId) {
     if (Objects.isNull(indicatorExpressionEntityAtomicReference) || StringUtils.isBlank(indicatorExpressionId)) {return;}
@@ -344,11 +338,11 @@ public class RsIndicatorExpressionBiz {
     if (Objects.isNull(kIndicatorInstanceIdVValMap)
         || Objects.isNull(indicatorInstanceIdSet) || indicatorInstanceIdSet.isEmpty()
     ) {return;}
-    indicatorValService.lambdaQuery()
-        .in(IndicatorValEntity::getIndicatorInstanceId, indicatorInstanceIdSet)
+    indicatorRuleService.lambdaQuery()
+        .in(IndicatorRuleEntity::getVariableId, indicatorInstanceIdSet)
         .list()
-        .forEach(indicatorValEntity -> {
-          kIndicatorInstanceIdVValMap.put(indicatorValEntity.getIndicatorInstanceId(), indicatorValEntity.getDef());
+        .forEach(indicatorRuleEntity -> {
+          kIndicatorInstanceIdVValMap.put(indicatorRuleEntity.getVariableId(), indicatorRuleEntity.getDef());
         });
   }
 }

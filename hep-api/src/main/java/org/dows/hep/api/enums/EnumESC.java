@@ -57,7 +57,12 @@ public enum EnumESC implements StatusCode {
     DELETE_INDICATOR_CATEGORY_FAILED_INDICATOR_JUDGE_HEALTH_PROBLEM_ENTITY(50142, "删除目录失败，此目录下存在判断操作-三级类-无报告"),
     DELETE_INDICATOR_CATEGORY_FAILED_TAG_INSTANCE_ENTITY(50143, "删除目录失败，此目录下存在标签"),
     DELETE_CROWDS_FAILED_RISK_MODEL_ENTITY(50144, "删除人群类别失败，此人群类别下存在死亡原因"),
-    ;
+    CASE_INDICATOR_EXPRESSION_REF_ID_IS_ILLEGAL(50145, "案例指标公式关联id不合法"),
+    SYSTEM_BUSY_PLEASE_OPERATOR_CASE_INDICATOR_EXPRESSION_LATER(50146, "系统繁忙，请稍后重新操作案例指标公式"),
+    CASE_INDICATOR_EXPRESSION_CIRCLE_DEPENDENCY(50147, "案例指标公式循环依赖"),
+    CASE_INDICATOR_EXPRESSION_MAX_MUST_GE_MIN(50148, "案例指标公式最大值必须大于等于最小值"),
+    CASE_INDICATOR_EXPRESSION_MIN_MAX_MUST_BE_DIGIT(50149, "案例指标公式最小最大值必须是数字"),
+    CASE_INDICATOR_EXPRESSION_ITEM_ID_IS_ILLEGAL(50150, "案例库指标公式细项id不合法");
     private final Integer code;
     private final String descr;
 }

@@ -34,6 +34,7 @@ public class IndicatorExpressionRefBiz {
           log.warn("method IndicatorExpressionRefBiz.delete indicatorExpressionRefId:{} is illegal", indicatorExpressionRefId);
           throw new IndicatorExpressionItemRefException(EnumESC.VALIDATE_EXCEPTION);
         });
+    /* runsix: */
     boolean isRemove = indicatorExpressionRefService.remove(
         new LambdaQueryWrapper<IndicatorExpressionRefEntity>()
             .eq(IndicatorExpressionRefEntity::getIndicatorExpressionRefId, indicatorExpressionRefId)
