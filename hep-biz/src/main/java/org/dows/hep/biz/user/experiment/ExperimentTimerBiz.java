@@ -184,7 +184,7 @@ public class ExperimentTimerBiz {
             // 当前时间戳-当前期数开始时间 = 相对时间（持续了多久）；将转换为秒  .. day/duration = rate
             Long second = 0L;
             if (null != experimentTimerEntity) {
-                second = experimentTimerEntity.getStartTime() / 1000;
+                second = (experimentTimerEntity.getPauseStartTime().getTime()-experimentTimerEntity.getStartTime()) / 1000;
                 countDownResponse.setSandDurationSecond(second);
                 countDownResponse.setState(experimentTimerEntity.getState());
                 countDownResponse.setPeriod(experimentTimerEntity.getPeriod());

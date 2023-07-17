@@ -81,6 +81,8 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
              * hepContext.setState(ExperimentStateEnum.ONGOING);
              */
         } else/* if(experimentRestartRequest.getModel() == ExperimentModeEnum.SAND.getCode())*/ {
+            // 获取当前时间
+            long ct = System.currentTimeMillis();
             //todo 计时器
             log.info("执行开始操作....");
             // 找出当前期数计时器集合且暂停次数为最大的
@@ -93,6 +95,13 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
             }
             if (!updateExperimentTimer.getPaused()) {
                 throw new ExperimentException("当前实验已开始，请勿重复执行开始！");
+            }
+            // 如果当前时间不在本期开始和结束之间
+            if (ct <= updateExperimentTimer.getStartTime() || ct >= updateExperimentTimer.getEndTime()) {
+                throw new ExperimentException(String.format("无法为当前{%s}期执行暂停,该期开始时间为:{%s}，结束时间:{%s}",
+                        updateExperimentTimer.getPeriod(),
+                        DateUtil.formatDateTime(DateUtil.date(updateExperimentTimer.getStartTime())),
+                        DateUtil.formatDateTime(DateUtil.date(updateExperimentTimer.getEndTime()))));
             }
             // 暂停开始时间
             long pst = updateExperimentTimer.getPauseStartTime().getTime();
