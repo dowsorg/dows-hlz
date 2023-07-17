@@ -107,6 +107,22 @@ public class ExperimentTimerBiz {
         return countDownResponse;
     }
 
+
+    private void dd(String experimentInstanceId) {
+        List<ExperimentSettingEntity> list = experimentSettingService.lambdaQuery()
+                .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
+                .list();
+        ExperimentSettingEntity experimentSettingEntity1 = list.stream()
+                .filter(e -> e.getConfigKey().equals(ExperimentSetting.SchemeSetting.class.getName()))
+                .findFirst()
+                .orElse(null);
+
+        ExperimentSettingEntity experimentSettingEntity2 = list.stream()
+                .filter(e -> e.getConfigKey().equals(ExperimentSetting.SandSetting.class.getName()))
+                .findFirst()
+                .orElse(null);
+    }
+
     /**
      * @param
      * @return
@@ -203,7 +219,9 @@ public class ExperimentTimerBiz {
                 } else if (v.getState() == EnumExperimentState.ONGOING.getState()) {
                     // 当前时间戳-当前期数开始时间 = 相对时间（持续了多久）；将转换为秒  .. day/duration = rate
                     if (sct >= v.getStartTime() && sct <= v.getEndTime()) {
-                        countDownResponse.setSandDurationSecond((sct - v.getStartTime()) / 1000);
+                        // 持续时间 = 当前时间-开始时间-暂停时间
+                        long ds = sct - v.getStartTime() - v.getPauseStartTime().getTime();
+                        countDownResponse.setSandDurationSecond(ds / 1000);
                         countDownResponse.setState(v.getState());
                         countDownResponse.setPeriod(v.getPeriod());
                     }
