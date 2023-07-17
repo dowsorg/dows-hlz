@@ -16,14 +16,18 @@ import org.dows.hep.api.base.risk.RiskEnum;
 import org.dows.hep.api.base.risk.request.CrowdsInstanceRequest;
 import org.dows.hep.api.base.risk.request.PageCrowdsRequest;
 import org.dows.hep.api.base.risk.response.CrowdsInstanceResponse;
+import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
+import org.dows.hep.api.exception.CrowdsInstanceBizException;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.exception.RiskCategoryException;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
 import org.dows.hep.entity.CrowdsInstanceEntity;
+import org.dows.hep.entity.RiskModelEntity;
 import org.dows.hep.entity.TagsInstanceEntity;
 import org.dows.hep.service.CrowdsInstanceService;
+import org.dows.hep.service.RiskModelService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +44,7 @@ public class CrowdsInstanceBiz {
     private final CrowdsInstanceService crowdsInstanceService;
     private final IdGenerator idGenerator;
     private final IndicatorExpressionBiz indicatorExpressionBiz;
+    private final RiskModelService riskModelService;
 
     /**
      * @param
@@ -198,6 +203,16 @@ public class CrowdsInstanceBiz {
      */
     @DSTransactional
     public Boolean batchDelCrowds(Set<String> crowdsIds) {
+        if (Objects.isNull(crowdsIds) || crowdsIds.isEmpty()) {
+            return Boolean.TRUE;
+        }
+        List<RiskModelEntity> riskModelEntityList = riskModelService.lambdaQuery()
+            .in(RiskModelEntity::getCrowdsCategoryId, crowdsIds)
+            .list();
+        if (!riskModelEntityList.isEmpty()) {
+            throw new CrowdsInstanceBizException(EnumESC.DELETE_CROWDS_FAILED_RISK_MODEL_ENTITY);
+        }
+
         LambdaUpdateWrapper<CrowdsInstanceEntity> updateWrapper = new LambdaUpdateWrapper<CrowdsInstanceEntity>()
                 .in(CrowdsInstanceEntity::getCrowdsId, crowdsIds)
                 .eq(CrowdsInstanceEntity::getDeleted, false)

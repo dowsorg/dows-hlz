@@ -49,6 +49,13 @@ public class RsUtilBiz {
         EnumString.SINGLE_QUOTES.getStr();
   }
 
+  public List<String> getSplitList(String rawList) {
+    if (StringUtils.isBlank(rawList)) {
+      return new ArrayList<>();
+    }
+    return Arrays.stream(rawList.split(EnumString.COMMA.getStr())).collect(Collectors.toList());
+  }
+
   public List<String> getConditionNameSplitList(String conditionNameList) {
     if (StringUtils.isBlank(conditionNameList)) {
       return new ArrayList<>();

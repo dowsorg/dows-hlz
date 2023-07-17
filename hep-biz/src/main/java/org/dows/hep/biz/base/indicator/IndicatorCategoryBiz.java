@@ -10,8 +10,10 @@ import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.IndicatorCategoryException;
 import org.dows.hep.biz.util.RedissonUtil;
 import org.dows.hep.entity.IndicatorCategoryEntity;
+import org.dows.hep.entity.IndicatorCategoryRefEntity;
 import org.dows.hep.entity.IndicatorFuncEntity;
 import org.dows.hep.entity.IndicatorInstanceEntity;
+import org.dows.hep.service.IndicatorCategoryRefService;
 import org.dows.hep.service.IndicatorCategoryService;
 import org.dows.hep.service.IndicatorInstanceService;
 import org.dows.sequence.api.IdGenerator;
@@ -22,12 +24,12 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -43,10 +45,13 @@ public class IndicatorCategoryBiz{
     @Value("${redisson.lock.lease-time.teacher.indicator-category-create-delete-update:5000}")
     private Integer leaseTimeIndicatorCategoryCreateDeleteUpdate;
     private final String indicatorCategoryFieldPid = "pid";
+
+    private final IndicatorCategoryRefService indicatorCategoryRefService;
     private final IndicatorCategoryService indicatorCategoryService;
     private final IndicatorInstanceService indicatorInstanceService;
     private final RedissonClient redissonClient;
     private final IdGenerator idGenerator;
+    private final RsIndicatorInstanceBiz rsIndicatorInstanceBiz;
 
     public static IndicatorCategoryResponse indicatorCategoryEntity2Response(IndicatorCategoryEntity indicatorCategoryEntity) {
         if (Objects.isNull(indicatorCategoryEntity)) {
@@ -216,14 +221,31 @@ public class IndicatorCategoryBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     @Transactional(rollbackFor = Exception.class)
-    public void delete(String indicatorCategoryId) {
+    public void delete(String indicatorCategoryId) throws ExecutionException, InterruptedException {
         EnumIndicatorCategory enumIndicatorCategory = EnumIndicatorCategory.kCodeVEnumIndicatorCategoryMap.get(indicatorCategoryId);
         if (Objects.nonNull(enumIndicatorCategory) && EnumStatus.ENABLE.getCode().equals(enumIndicatorCategory.getCannotDelete())) {
             throw new IndicatorCategoryException(EnumESC.SYSTEM_INDICATOR_CATEGORY_CANNOT_DELETE);
         }
+
+        AtomicReference<IndicatorCategoryEntity> indicatorCategoryEntityAR = new AtomicReference<>();
+        CompletableFuture<Void> cfCheckIndicatorCategoryId = CompletableFuture.runAsync(() -> {
+            rsIndicatorInstanceBiz.checkIndicatorCategoryId(indicatorCategoryEntityAR, indicatorCategoryId);
+        });
+        cfCheckIndicatorCategoryId.get();
+        IndicatorCategoryEntity indicatorCategoryEntity = indicatorCategoryEntityAR.get();
+        String appId = indicatorCategoryEntity.getAppId();
+
+        Set<String> indicatorInstanceIdSet = new HashSet<>();
+        CompletableFuture<Void> cfPopulateIndicatorInstanceIdSet = CompletableFuture.runAsync(() -> {
+            rsIndicatorInstanceBiz.populateIndicatorInstanceIdSet(indicatorInstanceIdSet, indicatorCategoryId);
+        });
+        cfPopulateIndicatorInstanceIdSet.get();
+        rsIndicatorInstanceBiz.checkIndicatorInstanceDelete(appId, indicatorInstanceIdSet);
+
         boolean isRefByIndicatorCategory = indicatorCategoryService.lambdaQuery()
             .eq(IndicatorCategoryEntity::getPid, indicatorCategoryId)
             .exists();
+
         if (isRefByIndicatorCategory) {
             throw new IndicatorCategoryException(EnumESC.INDICATOR_CATEGORY_HAS_DATA_CANNOT_DELETE);
         }

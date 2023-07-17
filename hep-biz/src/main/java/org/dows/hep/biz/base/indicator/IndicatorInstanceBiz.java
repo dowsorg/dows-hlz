@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -48,8 +49,8 @@ public class IndicatorInstanceBiz{
     private final IndicatorCategoryRefService indicatorCategoryRefService;
     private final IndicatorRuleService indicatorRuleService;
     private final IndicatorCategoryService indicatorCategoryService;
-
     private final IndicatorExpressionBiz indicatorExpressionBiz;
+    private final RsIndicatorInstanceBiz rsIndicatorInstanceBiz;
 
     public static IndicatorInstanceResponseRs indicatorInstance2ResponseRs(
         IndicatorInstanceEntity indicatorInstanceEntity,
@@ -246,8 +247,9 @@ public class IndicatorInstanceBiz{
      * 2.delete IndicatorCategoryRef
      * 3.delete IndicatorRule
     */
+    /* runsix:TODO 删除指标公式相关 */
     @Transactional(rollbackFor = Exception.class)
-    public void delete(String indicatorInstanceId) throws InterruptedException {
+    public void delete(String indicatorInstanceId) throws InterruptedException, ExecutionException {
         IndicatorInstanceEntity indicatorInstanceEntity = indicatorInstanceService.lambdaQuery()
             .eq(IndicatorInstanceEntity::getIndicatorInstanceId, indicatorInstanceId)
             .oneOpt()
@@ -260,6 +262,12 @@ public class IndicatorInstanceBiz{
             throw new IndicatorInstanceException(EnumESC.SYSTEM_INDICATOR_INSTANCE_CANNOT_DELETE);
         }
         String appId = indicatorInstanceEntity.getAppId();
+
+        /* runsix:删除检查 */
+        Set<String> indicatorInstanceIdSet = new HashSet<>();
+        indicatorInstanceIdSet.add(indicatorInstanceId);
+        rsIndicatorInstanceBiz.checkIndicatorInstanceDelete(appId, indicatorInstanceIdSet);
+
         String indicatorCategoryId = indicatorInstanceEntity.getIndicatorCategoryId();
         IndicatorCategoryRefEntity indicatorCategoryRefEntity = indicatorCategoryRefService.lambdaQuery()
             .eq(IndicatorCategoryRefEntity::getIndicatorInstanceId, indicatorInstanceId)
@@ -286,6 +294,10 @@ public class IndicatorInstanceBiz{
                 new LambdaQueryWrapper<IndicatorCategoryRefEntity>()
                     .eq(IndicatorCategoryRefEntity::getIndicatorInstanceId, indicatorInstanceId)
             );
+            if (!isRemovedIndicatorCategoryRef) {
+                log.warn("方法deleteIndicatorInstance对indicatorInstanceId：{}的IndicatorCategoryRef删除失败", indicatorInstanceId);
+                throw new IndicatorInstanceException(EnumESC.VALIDATE_EXCEPTION);
+            }
             AtomicInteger atomicInteger = new AtomicInteger(1);
             List<IndicatorCategoryRefEntity> indicatorCategoryRefEntityList = indicatorCategoryRefService.lambdaQuery()
                 .eq(IndicatorCategoryRefEntity::getAppId, appId)
@@ -298,10 +310,6 @@ public class IndicatorInstanceBiz{
                 })
                 .collect(Collectors.toList());
             indicatorCategoryRefService.saveOrUpdateBatch(indicatorCategoryRefEntityList);
-            if (!isRemovedIndicatorCategoryRef) {
-                log.warn("方法deleteIndicatorInstance对indicatorInstanceId：{}的IndicatorCategoryRef删除失败", indicatorInstanceId);
-                throw new IndicatorInstanceException(EnumESC.VALIDATE_EXCEPTION);
-            }
             boolean isRemovedIndicatorRule = indicatorRuleService.remove(
                 new LambdaQueryWrapper<IndicatorRuleEntity>()
                     .eq(IndicatorRuleEntity::getVariableId, indicatorInstanceId)
