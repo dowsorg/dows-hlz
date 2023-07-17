@@ -43,7 +43,8 @@ public class ExperimentNoticeTask implements Runnable {
             }
             experimentTaskScheduleService.lambdaUpdate()
                     .eq(ExperimentTaskScheduleEntity::getId, startNoticeTaskScheduleEntity.getId())
-                    .set(ExperimentTaskScheduleEntity::getExecuted,true);
+                    .set(ExperimentTaskScheduleEntity::getExecuted,true)
+                    .update();
         }
         if(noticeType == 1) {
             ExperimentTaskScheduleEntity endNoticeTaskScheduleEntity = experimentTaskScheduleService.lambdaQuery()
