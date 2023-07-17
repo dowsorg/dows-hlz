@@ -18,6 +18,7 @@ import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
+
 import java.util.Date;
 
 /**
@@ -55,13 +56,17 @@ public class ApplicationRestartedListener implements ApplicationListener<Applica
         // 更新重启时间(当前应用下大于当前时间且未执行的任务)
         experimentTaskScheduleService.lambdaUpdate()
                 .set(ExperimentTaskScheduleEntity::getRestartTime, now)
-                .eq(ExperimentTaskScheduleEntity::getExecuted,false)
-                .eq(ExperimentTaskScheduleEntity::getAppId,appId)
-                .gt(ExperimentTaskScheduleEntity::getExecuteTime,now)
+                .eq(ExperimentTaskScheduleEntity::getExecuted, false)
+                .eq(ExperimentTaskScheduleEntity::getAppId, appId)
+                .gt(ExperimentTaskScheduleEntity::getExecuteTime, now)
                 .update();
-        ExperimentRestartTask experimentRestartTask = new ExperimentRestartTask(experimentTaskScheduleService,experimentInstanceService,
-                experimentParticipatorService,experimentTimerService,applicationEventPublisher,
-                appId,taskScheduler,experimentTimerBiz,experimentScoreCalculator,periodStartNoticer,periodEndNoticer);
-        experimentRestartTask.run();
+        try {
+            ExperimentRestartTask experimentRestartTask = new ExperimentRestartTask(experimentTaskScheduleService, experimentInstanceService,
+                    experimentParticipatorService, experimentTimerService, applicationEventPublisher,
+                    appId, taskScheduler, experimentTimerBiz, experimentScoreCalculator, periodStartNoticer, periodEndNoticer);
+            experimentRestartTask.run();
+        } catch (Exception e) {
+            log.error("执行任务失败....");
+        }
     }
 }
