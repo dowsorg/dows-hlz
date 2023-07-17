@@ -33,14 +33,15 @@ public class CaseIndicatorCategoryPrincipalRefEntity {
   @Schema(title = "分布式id")
   private String caseIndicatorCategoryPrincipalRefId;
 
+  @Schema(title = "应用ID")
+  private String appId;
+
   @Schema(title = "主体id")
   private String principalId;
 
   @Schema(title = "指标目录ID")
   private String indicatorCategoryId;
 
-  @Schema(title = "应用ID")
-  private String appId;
 
   @JsonIgnore
   @TableLogic

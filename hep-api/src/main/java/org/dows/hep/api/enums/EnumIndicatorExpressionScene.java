@@ -13,10 +13,11 @@ import java.util.Objects;
 @AllArgsConstructor
 @Getter
 public enum EnumIndicatorExpressionScene {
-  RE_CALCULATE(1, "重新计划指标"),
+  RE_CALCULATE(1, "重新计算指标"),
   PHYSICAL_EXAM(3, "体格检查"),
   SUPPORT_EXAM(4, "辅助检查"),
   RISK_MODEL(5, "死亡模型"),
+  DATABASE_CREATE_OR_UPDATE_INDICATOR_EXPRESSION(6, "数据库创建或更新指标公式"),
   ;
 
   private final Integer scene;
