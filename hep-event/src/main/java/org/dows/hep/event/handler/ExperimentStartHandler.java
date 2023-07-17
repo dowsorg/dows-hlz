@@ -124,6 +124,9 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                     currentPeriod.setEndTime(currentPeriod.getEndTime() + duration);
                     // 加入待更新集合
                     updateExperimentTimerEntities.add(currentPeriod);
+                } else {
+                    currentPeriod.setPaused(false);
+                    updateExperimentTimerEntities.add(currentPeriod);
                 }
             }
             // 批量更新期数定时器
