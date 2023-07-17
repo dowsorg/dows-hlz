@@ -12,7 +12,7 @@ import java.util.concurrent.*;
  * @date : 2023/6/18 17:34
  */
 public class EventScheduler {
-    static final int DFTCoreSize=4;
+    static final int DFTCoreSize=3;
     private static final EventScheduler s_instance=new EventScheduler(DFTCoreSize);
     public static EventScheduler Instance(){
         return s_instance;
@@ -22,6 +22,8 @@ public class EventScheduler {
                 new ThreadFactoryBuilder().setNameFormat("eventScheduler-%d").build(),
                 new ThreadPoolAbortPolicy());
         executor.setRemoveOnCancelPolicy(true);
+        executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+        executor.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
         scheduledExecutor=executor;
 
     }
@@ -39,10 +41,12 @@ public class EventScheduler {
      */
     public ScheduledFuture<?> scheduleTimeBasedEvent(String appId,String experimentId, long delaySeconds) {
         appId= ShareBiz.checkAppId(appId,experimentId);
-        final ExperimentCacheKey cacheKey = new ExperimentCacheKey(appId, experimentId);
-        final String exclusiveKey = String.format("timeevent:%s", cacheKey);
-        final Runnable task = new TimeBasedEventTask(cacheKey);
-        return scheduleExclusive(exclusiveKey, task, delaySeconds);
+        final ExperimentCacheKey experimentKey = new ExperimentCacheKey(appId, experimentId);
+        return scheduleTimeBasedEvent(experimentKey,delaySeconds);
+    }
+    public ScheduledFuture<?> scheduleTimeBasedEvent(ExperimentCacheKey experimentKey, long delaySeconds){
+        final String exclusiveKey = String.format("timeevent:%s", experimentKey);
+        return scheduleExclusive(exclusiveKey, new TimeBasedEventTask(experimentKey), delaySeconds);
     }
 
     public ScheduledFuture<?> scheduleExclusive(String exclusiveKey, Runnable  cmd, long delaySeconds) {
