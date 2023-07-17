@@ -76,10 +76,11 @@ public class ExptOrgFlowValidator {
     @Getter
     private String operateFlowId;
 
-
+    @Getter
     private List<CaseOrgFeeEntity> exptFeeList;
 
 
+    @Getter
     private Optional<OperateFlowEntity> exptFlow;
     //endregion
 
@@ -162,13 +163,13 @@ public class ExptOrgFlowValidator {
      * 是否有已有挂号
      * @return
      */
-    public ExptOrgFlowValidator checkOrgFlowRunning(){
-        ExperimentTimePoint timePoint= ExperimentSettingCache.Instance().getTimePointByRealTime(ExperimentCacheKey.create(this.appId, this.experimentInstanceId),
-                LocalDateTime.now(),false);
+    public ExptOrgFlowValidator checkOrgFlowRunning() {
+        ExperimentTimePoint timePoint = ExperimentSettingCache.Instance().getTimePointByRealTime(ExperimentCacheKey.create(this.appId, this.experimentInstanceId),
+                LocalDateTime.now(), false);
         return checkOrgFlowRunning(timePoint.getPeriod());
     }
-    public ExptOrgFlowValidator checkOrgFlowRunning(int curPeriod){
-        AssertUtil.falseThenThrow(ifOrgFlowRunning(true,curPeriod))
+    public ExptOrgFlowValidator checkOrgFlowRunning( int curPeriod) {
+        AssertUtil.falseThenThrow(ifOrgFlowRunning(true, curPeriod))
                 .throwMessage("未找到挂号记录");
         return this;
     }

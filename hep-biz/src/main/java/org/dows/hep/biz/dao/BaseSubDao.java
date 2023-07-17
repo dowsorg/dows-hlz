@@ -1,5 +1,6 @@
 package org.dows.hep.biz.dao;
 
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
@@ -28,6 +29,10 @@ public abstract class BaseSubDao<LS extends MybatisCrudService<LE>, LE extends C
 
     protected BaseSubDao(String notExistsMessage){
         super(notExistsMessage);
+    }
+
+    protected BaseSubDao(String notExistsMessage,String failSaveMessage){
+        super(notExistsMessage,failSaveMessage);
     }
 
     @Autowired
@@ -110,6 +115,16 @@ public abstract class BaseSubDao<LS extends MybatisCrudService<LE>, LE extends C
                 .throwMessage(failedSaveMessage);
         return true;
     }
+    @DSTransactional
+    public boolean tranSave(List<LE> leads, List<SE> subs,boolean dftIfLeadEmpty,Supplier<Boolean> saveOthers) {
+        if (!this.tranSaveBatch(leads, subs, dftIfLeadEmpty)) {
+            return false;
+        }
+        if (null != saveOthers && !saveOthers.get()) {
+            return false;
+        }
+        return true;
+    }
     /**
      *  主从保存事务
      * @param lead 主表记录
@@ -121,6 +136,20 @@ public abstract class BaseSubDao<LS extends MybatisCrudService<LE>, LE extends C
     public boolean tranSave(LE lead, List<SE> subs,boolean delSubBefore) {
         AssertUtil.falseThenThrow(coreTranSave(lead, subs,delSubBefore,defaultUseLogicId))
                 .throwMessage(failedSaveMessage);
+        return true;
+    }
+
+    @DSTransactional
+    public boolean tranSave(LE lead, List<SE> sub, boolean delSubBefore,Supplier<Boolean> saveOthers) {
+        if (ShareUtil.XObject.isEmpty(lead)) {
+            return false;
+        }
+        if (!this.tranSave(lead, sub, delSubBefore)) {
+            return false;
+        }
+        if (null != saveOthers && !saveOthers.get()) {
+            return false;
+        }
         return true;
     }
 

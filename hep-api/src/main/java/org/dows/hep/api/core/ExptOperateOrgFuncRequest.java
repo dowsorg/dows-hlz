@@ -1,5 +1,6 @@
 package org.dows.hep.api.core;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,4 +17,8 @@ import lombok.NoArgsConstructor;
 public class ExptOperateOrgFuncRequest extends ExptOrgFuncRequest {
     @Schema(title = "机构操作记录id,非空时仅以此查询记录")
     private String operateOrgFuncId;
+
+    @JsonIgnore
+    @Schema(title = "挂号流水id")
+    private String operateFlowId;
 }
