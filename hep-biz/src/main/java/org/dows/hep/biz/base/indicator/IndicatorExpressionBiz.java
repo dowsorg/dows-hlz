@@ -204,35 +204,14 @@ public class IndicatorExpressionBiz{
         if (Objects.isNull(indicatorExpressionItemEntityList)) {
           indicatorExpressionItemEntityList = new ArrayList<>();
         }
-        List<IndicatorExpressionItemResponseRs> finalIndicatorExpressionItemResponseRsList = new ArrayList<>();
         List<IndicatorExpressionItemResponseRs> indicatorExpressionItemResponseRsList = indicatorExpressionItemEntityList.stream().map(IndicatorExpressionItemBiz::indicatorExpressionItem2ResponseRs)
             .sorted(Comparator.comparingInt(IndicatorExpressionItemResponseRs::getSeq)).collect(Collectors.toList());
         /* runsix:TODO 弥补孙福聪那边实现不了，他必须要返回2个 */
-        if (indicatorExpressionItemResponseRsList.size() == 0) {
-          IndicatorExpressionItemResponseRs indicatorExpressionItemResponseRs0 = new IndicatorExpressionItemResponseRs();
-          indicatorExpressionItemResponseRs0.setSeq(-2);
-          finalIndicatorExpressionItemResponseRsList.add(indicatorExpressionItemResponseRs0);
-          IndicatorExpressionItemResponseRs indicatorExpressionItemResponseRs1 = new IndicatorExpressionItemResponseRs();
-          indicatorExpressionItemResponseRs1.setSeq(-1);
-          finalIndicatorExpressionItemResponseRsList.add(indicatorExpressionItemResponseRs1);
-        } else if (indicatorExpressionItemResponseRsList.size() == 1) {
-          IndicatorExpressionItemResponseRs indicatorExpressionItemResponseRs0 = new IndicatorExpressionItemResponseRs();
-          IndicatorExpressionItemResponseRs indicatorExpressionItemResponseRs = indicatorExpressionItemResponseRsList.get(0);
-          Integer seq = indicatorExpressionItemResponseRs.getSeq();
-          if (Integer.MAX_VALUE == seq) {
-            indicatorExpressionItemResponseRs0.setSeq(0);
-          } else {
-            indicatorExpressionItemResponseRs0.setSeq(Integer.MAX_VALUE);
-          }
-          finalIndicatorExpressionItemResponseRsList.addAll(indicatorExpressionItemResponseRsList);
-          finalIndicatorExpressionItemResponseRsList.add(indicatorExpressionItemResponseRs0);
-          finalIndicatorExpressionItemResponseRsList.sort(Comparator.comparingInt(IndicatorExpressionItemResponseRs::getSeq));
-        } else {
-          finalIndicatorExpressionItemResponseRsList.addAll(indicatorExpressionItemResponseRsList);
-        }
+        rsUtilBiz.specialHandleIndicatorExpressionItemResponseRsList(indicatorExpressionItemResponseRsList);
+
         IndicatorExpressionResponseRs indicatorExpressionResponseRs = IndicatorExpressionBiz.indicatorExpression2ResponseRs(
             indicatorExpressionEntity,
-            finalIndicatorExpressionItemResponseRsList,
+            indicatorExpressionItemResponseRsList,
             kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(maxIndicatorExpressionItemId),
             kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(minIndicatorExpressionItemId),
             kPrincipalIdVIndicatorCategoryRsMap.get(indicatorExpressionEntity.getPrincipalId()),
@@ -1323,11 +1302,15 @@ public class IndicatorExpressionBiz{
   public IndicatorExpressionResponseRs get(String indicatorExpressionId) {
     IndicatorExpressionEntity indicatorExpressionEntity = indicatorExpressionService.lambdaQuery()
         .eq(IndicatorExpressionEntity::getIndicatorExpressionId, indicatorExpressionId)
-        .oneOpt()
-        .orElseThrow(() -> {
-          log.warn("method IndicatorExpressionBiz.get param indicatorExpressionId:{} is illegal", indicatorExpressionId);
-          throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
-        });
+        .one();
+    if (Objects.isNull(indicatorExpressionEntity)) {return null;}
+//    IndicatorExpressionEntity indicatorExpressionEntity = indicatorExpressionService.lambdaQuery()
+//        .eq(IndicatorExpressionEntity::getIndicatorExpressionId, indicatorExpressionId)
+//        .oneOpt()
+//        .orElseThrow(() -> {
+//          log.warn("method IndicatorExpressionBiz.get param indicatorExpressionId:{} is illegal", indicatorExpressionId);
+//          throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
+//        });
     List<IndicatorExpressionItemResponseRs> indicatorExpressionItemResponseRsList = indicatorExpressionItemService.lambdaQuery()
         .eq(IndicatorExpressionItemEntity::getIndicatorExpressionId, indicatorExpressionId)
         .list()
@@ -1375,6 +1358,7 @@ public class IndicatorExpressionBiz{
     }
     IndicatorExpressionItemResponseRs maxIndicatorExpressionItemResponseRs = kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(maxIndicatorExpressionItemId);
     IndicatorExpressionItemResponseRs minIndicatorExpressionItemResponseRs = kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(minIndicatorExpressionItemId);
+    /* runsix:TODO ？？？这里没问题？？？，这个id怎么会是目录id呢 */
     String principalId = indicatorExpressionEntity.getPrincipalId();
     IndicatorCategoryEntity indicatorCategoryEntity = indicatorCategoryService.lambdaQuery()
         .eq(IndicatorCategoryEntity::getIndicatorCategoryId, principalId)
@@ -1429,10 +1413,17 @@ public class IndicatorExpressionBiz{
       AtomicReference<IndicatorExpressionItemEntity> maxIndicatorExpressionItemEntityAtomicReference = new AtomicReference<>();
 
       /* runsix: 2.1 check indicatorExpressionId */
-      CompletableFuture<Void> cfPopulateIndicatorExpression = CompletableFuture.runAsync(() -> rsIndicatorExpressionBiz.populateIndicatorExpression(indicatorExpressionEntityAtomicReference, indicatorExpressionId));
+      CompletableFuture<Void> cfPopulateIndicatorExpression = CompletableFuture.runAsync(() -> rsIndicatorExpressionBiz.populateIndicatorExpressionEntity(indicatorExpressionEntityAtomicReference, indicatorExpressionId));
       cfPopulateIndicatorExpression.get();
+      IndicatorExpressionEntity indicatorExpressionEntity = indicatorExpressionEntityAtomicReference.get();
+      Integer dbType = null;
+      /* runsix:2.2 populate typeChangeAtomicBoolean  */
+      if (Objects.nonNull(indicatorExpressionEntity)) {
+        dbType = indicatorExpressionEntity.getType();
+        if (!dbType.equals(paramType)) {typeChangeAtomicBoolean.set(Boolean.TRUE);}
+      }
 
-      /* runsix:2.2 populate indicatorExpressionInfluenceEntityAtomicReference */
+      /* runsix:2.3 populate indicatorExpressionInfluenceEntityAtomicReference */
       CompletableFuture<Void> cfCheckCircleDependencyAndPopulateIndicatorExpressionInfluenceEntity = CompletableFuture.runAsync(() -> {
         try {
           rsIndicatorExpressionBiz.checkCircleDependencyAndPopulateIndicatorExpressionInfluenceEntity(
@@ -1449,63 +1440,60 @@ public class IndicatorExpressionBiz{
       });
       cfCheckCircleDependencyAndPopulateIndicatorExpressionInfluenceEntity.get();
 
-      IndicatorExpressionEntity indicatorExpressionEntity = indicatorExpressionEntityAtomicReference.get();
-      Integer dbType = indicatorExpressionEntity.getType();
-      /* runsix:2.3 populate typeChangeAtomicBoolean  */
-      if (Objects.nonNull(indicatorExpressionEntity) && !dbType.equals(paramType)) {typeChangeAtomicBoolean.set(Boolean.TRUE);}
-
-      /* runsix:2.4 公式类型发生变化，原先上下限需要删除 */
-      Set<String> minAndMaxIndicatorExpressionItemIdSet = new HashSet<>();
-      String dbMinIndicatorExpressionItemId = indicatorExpressionEntity.getMinIndicatorExpressionItemId();
-      String dbMaxIndicatorExpressionItemId = indicatorExpressionEntity.getMaxIndicatorExpressionItemId();
-      if (typeChangeAtomicBoolean.get()) {
-        if (StringUtils.isNotBlank(dbMinIndicatorExpressionItemId)) {minAndMaxIndicatorExpressionItemIdSet.add(dbMinIndicatorExpressionItemId);}
-        if (StringUtils.isNotBlank(dbMaxIndicatorExpressionItemId)) {minAndMaxIndicatorExpressionItemIdSet.add(dbMaxIndicatorExpressionItemId);}
-        if (!minAndMaxIndicatorExpressionItemIdSet.isEmpty()) {
-          indicatorExpressionItemService.remove(new LambdaQueryWrapper<IndicatorExpressionItemEntity>().in(IndicatorExpressionItemEntity::getIndicatorExpressionItemId, minAndMaxIndicatorExpressionItemIdSet));
+      if (Objects.nonNull(indicatorExpressionEntity)) {
+        /* runsix:2.4 公式类型发生变化，原先上下限需要删除 */
+        Set<String> minAndMaxIndicatorExpressionItemIdSet = new HashSet<>();
+        String dbMinIndicatorExpressionItemId = indicatorExpressionEntity.getMinIndicatorExpressionItemId();
+        String dbMaxIndicatorExpressionItemId = indicatorExpressionEntity.getMaxIndicatorExpressionItemId();
+        if (typeChangeAtomicBoolean.get()) {
+          if (StringUtils.isNotBlank(dbMinIndicatorExpressionItemId)) {minAndMaxIndicatorExpressionItemIdSet.add(dbMinIndicatorExpressionItemId);}
+          if (StringUtils.isNotBlank(dbMaxIndicatorExpressionItemId)) {minAndMaxIndicatorExpressionItemIdSet.add(dbMaxIndicatorExpressionItemId);}
+          if (!minAndMaxIndicatorExpressionItemIdSet.isEmpty()) {
+            indicatorExpressionItemService.remove(new LambdaQueryWrapper<IndicatorExpressionItemEntity>().in(IndicatorExpressionItemEntity::getIndicatorExpressionItemId, minAndMaxIndicatorExpressionItemIdSet));
+          }
         }
-      }
 
-      /* runsix:2.5 获取原来的上下限 */
-      Map<String, IndicatorExpressionItemEntity> kMinAndMaxIndicatorExpressionItemIdVIndicatorExpressionItemMap = new HashMap<>();
-      CompletableFuture<Void> cfMinAndMaxPopulateKIndicatorExpressionItemIdVIndicatorExpressionItemMap = CompletableFuture.runAsync(() -> {
-        rsIndicatorExpressionBiz.populateByItemIdSetKIndicatorExpressionItemIdVIndicatorExpressionItemMap(
-            kMinAndMaxIndicatorExpressionItemIdVIndicatorExpressionItemMap, minAndMaxIndicatorExpressionItemIdSet
-        );
-      });
-      cfMinAndMaxPopulateKIndicatorExpressionItemIdVIndicatorExpressionItemMap.get();
+        /* runsix:2.5 获取原来的上下限 */
+        Map<String, IndicatorExpressionItemEntity> kMinAndMaxIndicatorExpressionItemIdVIndicatorExpressionItemMap = new HashMap<>();
+        CompletableFuture<Void> cfMinAndMaxPopulateKIndicatorExpressionItemIdVIndicatorExpressionItemMap = CompletableFuture.runAsync(() -> {
+          rsIndicatorExpressionBiz.populateByItemIdSetKIndicatorExpressionItemIdVIndicatorExpressionItemMap(
+              kMinAndMaxIndicatorExpressionItemIdVIndicatorExpressionItemMap, minAndMaxIndicatorExpressionItemIdSet
+          );
+        });
+        cfMinAndMaxPopulateKIndicatorExpressionItemIdVIndicatorExpressionItemMap.get();
 
-      /* runsix:2.6 populate minIndicatorExpressionItemEntityAtomicReference && maxIndicatorExpressionItemEntityAtomicReference 创建新的上下限 */
-      IndicatorExpressionItemEntity minIndicatorExpressionItemEntity = kMinAndMaxIndicatorExpressionItemIdVIndicatorExpressionItemMap.get(dbMinIndicatorExpressionItemId);
-      if (Objects.nonNull(minIndicatorExpressionItemEntity)) {
-        minIndicatorExpressionItemEntityAtomicReference.set(minIndicatorExpressionItemEntity);
+        /* runsix:2.6 populate minIndicatorExpressionItemEntityAtomicReference && maxIndicatorExpressionItemEntityAtomicReference 创建新的上下限 */
+        IndicatorExpressionItemEntity minIndicatorExpressionItemEntity = kMinAndMaxIndicatorExpressionItemIdVIndicatorExpressionItemMap.get(dbMinIndicatorExpressionItemId);
+        if (Objects.nonNull(minIndicatorExpressionItemEntity)) {
+          minIndicatorExpressionItemEntityAtomicReference.set(minIndicatorExpressionItemEntity);
+        }
+        IndicatorExpressionItemEntity maxIndicatorExpressionItemEntity = kMinAndMaxIndicatorExpressionItemIdVIndicatorExpressionItemMap.get(dbMaxIndicatorExpressionItemId);
+        if (Objects.nonNull(maxIndicatorExpressionItemEntity)) {
+          maxIndicatorExpressionItemEntityAtomicReference.set(maxIndicatorExpressionItemEntity);
+        }
+        CompletableFuture<Void> cfPopulateMinAndMaxIndicatorExpressionItem = CompletableFuture.runAsync(() -> {
+          rsIndicatorExpressionBiz.populateMinAndMaxIndicatorExpressionItem(
+              typeChangeAtomicBoolean.get(),
+              minIndicatorExpressionItemEntityAtomicReference,
+              minCreateOrUpdateIndicatorExpressionItemRequestRs,
+              maxIndicatorExpressionItemEntityAtomicReference,
+              maxCreateOrUpdateIndicatorExpressionItemRequestRs
+          );
+        });
+        cfPopulateMinAndMaxIndicatorExpressionItem.get();
       }
-      IndicatorExpressionItemEntity maxIndicatorExpressionItemEntity = kMinAndMaxIndicatorExpressionItemIdVIndicatorExpressionItemMap.get(dbMaxIndicatorExpressionItemId);
-      if (Objects.nonNull(maxIndicatorExpressionItemEntity)) {
-        maxIndicatorExpressionItemEntityAtomicReference.set(maxIndicatorExpressionItemEntity);
-      }
-      CompletableFuture<Void> cfPopulateMinAndMaxIndicatorExpressionItem = CompletableFuture.runAsync(() -> {
-        rsIndicatorExpressionBiz.populateMinAndMaxIndicatorExpressionItem(
-            typeChangeAtomicBoolean.get(),
-            minIndicatorExpressionItemEntityAtomicReference,
-            minCreateOrUpdateIndicatorExpressionItemRequestRs,
-            maxIndicatorExpressionItemEntityAtomicReference,
-            maxCreateOrUpdateIndicatorExpressionItemRequestRs
-        );
-      });
-      cfPopulateMinAndMaxIndicatorExpressionItem.get();
 
       /* runsix: 2.7 populate new indicatorExpressionEntityAtomicReference 判断是新建还是修改*/
       IndicatorExpressionItemEntity newMinIndicatorExpressionItemEntity = minIndicatorExpressionItemEntityAtomicReference.get();
       IndicatorExpressionItemEntity newMaxIndicatorExpressionItemEntity = maxIndicatorExpressionItemEntityAtomicReference.get();
       String newMinIndicatorExpressionItemId = null;
       if (Objects.nonNull(newMinIndicatorExpressionItemEntity)
-          && StringUtils.isNoneBlank(newMinIndicatorExpressionItemEntity.getIndicatorExpressionItemId())) {
+          && StringUtils.isNotBlank(newMinIndicatorExpressionItemEntity.getIndicatorExpressionItemId())) {
         newMinIndicatorExpressionItemId = newMinIndicatorExpressionItemEntity.getIndicatorExpressionItemId();
       }
       String newMaxIndicatorExpressionItemId = null;
       if (Objects.nonNull(newMaxIndicatorExpressionItemEntity)
-          && StringUtils.isNoneBlank(newMaxIndicatorExpressionItemEntity.getIndicatorExpressionItemId())) {
+          && StringUtils.isNotBlank(newMaxIndicatorExpressionItemEntity.getIndicatorExpressionItemId())) {
         newMaxIndicatorExpressionItemId = newMaxIndicatorExpressionItemEntity.getIndicatorExpressionItemId();
       }
       /* runsix:2.7.1 新建 */
@@ -1520,6 +1508,7 @@ public class IndicatorExpressionBiz{
             .type(paramType)
             .source(source)
             .build();
+        indicatorExpressionEntityAtomicReference.set(indicatorExpressionEntity);
       } else {
         /* runsix:2.7.2 修改 */
         /**
