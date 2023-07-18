@@ -70,7 +70,7 @@ public class ExptSchemeReportModel implements ExptReportModel {
         private int ranking;
 
         @Schema(title = "小组得分")
-        private Float score;
+        private String score;
     }
 
     @Builder

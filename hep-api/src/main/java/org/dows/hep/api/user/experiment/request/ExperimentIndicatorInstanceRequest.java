@@ -20,6 +20,9 @@ public class ExperimentIndicatorInstanceRequest {
     @Schema(title = "实验小组ID")
     private String experimentGroupId;
 
+    @Schema(title = "实验人物ID")
+    private String experimentPersonId;
+
     @Schema(title = "应用ID")
     @ApiModelProperty(required = true)
     private String appId;

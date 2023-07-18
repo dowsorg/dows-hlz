@@ -25,6 +25,9 @@ public class ExperimentQuestionnaireItemResponse {
     @Schema(title = "item id")
     private String experimentQuestionnaireItemId;
 
+    @Schema(title = "实验知识答题ID")
+    private String experimentQuestionnaireId;
+
     @Schema(title = "问题类别")
     private String questionCateg;
 
@@ -42,6 +45,12 @@ public class ExperimentQuestionnaireItemResponse {
 
     @Schema(title = "问题答案-存id")
     private List<String> questionResult;
+
+    @Schema(title = "正确答案")
+    private String rightValue;
+
+    @Schema(title = "答案详情")
+    private String questionDetailedAnswer;
 
     @Schema(title = "子")
     private List<ExperimentQuestionnaireItemResponse> children = new ArrayList<>();

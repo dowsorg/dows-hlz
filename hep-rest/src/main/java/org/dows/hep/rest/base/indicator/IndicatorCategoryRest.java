@@ -15,6 +15,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
 * @description project descr:指标:指标类别
@@ -44,7 +45,7 @@ public class IndicatorCategoryRest {
 
     @Operation(summary = "删除指标类别")
     @DeleteMapping("v1/baseIndicator/indicatorCategory/delete")
-    public void delete(@RequestParam @Validated String indicatorCategoryId) {
+    public void delete(@RequestParam @Validated String indicatorCategoryId) throws ExecutionException, InterruptedException {
         indicatorCategoryBiz.delete(indicatorCategoryId);
     }
 

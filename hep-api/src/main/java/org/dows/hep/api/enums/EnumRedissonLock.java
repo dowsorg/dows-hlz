@@ -16,6 +16,8 @@ public enum EnumRedissonLock {
     INDICATOR_VIEW_MONITOR_FOLLOWUP_CREATE_DELETE_UPDATE(4, "indicator-view-monitor-followup-create-delete-update"),
     INDICATOR_EXPRESSION_CREATE_DELETE_UPDATE(5, "indicator-expression-create-delete-update"),
     INDICATOR_BATCH_UPDATE_CORE_FOOD(6, "indicator-batch-update-core-food"),
+    CASE_INDICATOR_INSTANCE_CREATE_DELETE_UPDATE(7, "case-indicator-instance-create-delete-update"),
+    CASE_INDICATOR_EXPRESSION_CREATE_DELETE_UPDATE(8, "case-indicator-expression-create-delete-update"),
     ;
     private final Integer code;
     private final String situation;
