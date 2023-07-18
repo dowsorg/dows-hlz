@@ -3,7 +3,6 @@ package org.dows.hep.biz.report.pdf;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
-import com.itextpdf.commons.utils.Base64;
 import com.itextpdf.styledxmlparser.jsoup.Jsoup;
 import com.itextpdf.styledxmlparser.jsoup.nodes.Document;
 import com.itextpdf.styledxmlparser.jsoup.nodes.Element;
@@ -13,7 +12,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.constant.SystemConstant;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeItemResponse;
@@ -28,8 +26,10 @@ import org.dows.hep.properties.FindSoftProperties;
 import org.dows.hep.service.ExperimentGroupService;
 import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentParticipatorService;
-import org.dows.hep.vo.report.*;
-import org.springframework.core.io.ClassPathResource;
+import org.dows.hep.vo.report.ExptBaseInfoModel;
+import org.dows.hep.vo.report.ExptGroupReportVO;
+import org.dows.hep.vo.report.ExptReportVO;
+import org.dows.hep.vo.report.ExptSchemeReportModel;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -46,7 +46,7 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ExptSchemeReportBiz implements ExptReportBiz {
+public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.ExptSchemeReportData, ExptSchemeReportModel> {
 
     private final Template2PdfBiz template2PdfBiz;
     private final FindSoftProperties findSoftProperties;
@@ -59,7 +59,7 @@ public class ExptSchemeReportBiz implements ExptReportBiz {
 
     @Data
     @Builder
-    public static class ExperimentReportData {
+    public static class ExptSchemeReportData implements ExptReportData{
         private ExperimentInstanceEntity exptInfo;
         private List<ExperimentSchemeResponse> exptSchemeList;
         private List<ExperimentGroupEntity> exptGroupInfoList;
@@ -73,7 +73,6 @@ public class ExptSchemeReportBiz implements ExptReportBiz {
      * @description 如果有 exptGroupId，则只导出该组的报告，否则导出所有组的报告
      * @date 2023/7/7 16:54
      */
-    @Override
     public ExptReportVO generatePdfReport(String experimentInstanceId, String exptGroupId) {
         // 构建 result
         List<ExptGroupReportVO> groupReportVOS = new ArrayList<>();
@@ -81,26 +80,16 @@ public class ExptSchemeReportBiz implements ExptReportBiz {
                 .groupReportList(groupReportVOS)
                 .build();
 
-        // 实验所有小组数据
-        List<ExperimentGroupEntity> exptGroupInfoList = listExptGroupInfo(experimentInstanceId, exptGroupId);
-
-        // 准备`生成报告`所需的数据
-        ExperimentReportData exptData = ExperimentReportData.builder()
-                .exptInfo(getExptInfo(experimentInstanceId))
-                .exptSchemeList(listExptScheme(experimentInstanceId, exptGroupId))
-                .exptGroupInfoList(exptGroupInfoList)
-                .exptMemberList(listExptMembers(experimentInstanceId, exptGroupId))
-                .build();
-
         // 有小组ID则生成该小组的报告，
         // 没有小组ID则批量生成实验所有小组的报告
+        ExptSchemeReportData exptData = prepareData(experimentInstanceId, exptGroupId);
+        List<ExperimentGroupEntity> exptGroupInfoList = exptData.getExptGroupInfoList();
         if (StrUtil.isBlank(exptGroupId)) { // 批量-所有小组
             for (ExperimentGroupEntity group : exptGroupInfoList) {
                 ExptGroupReportVO exptGroupReportVO = generatePdfReportOfGroup(group.getExperimentGroupId(), exptData);
                 groupReportVOS.add(exptGroupReportVO);
             }
         } else { // 单个小组
-            // todo 填充数据
             ExptGroupReportVO exptGroupReportVO = generatePdfReportOfGroup(exptGroupId, exptData);
             groupReportVOS.add(exptGroupReportVO);
         }
@@ -108,24 +97,99 @@ public class ExptSchemeReportBiz implements ExptReportBiz {
         return result;
     }
 
-    // 生成 pdf 报告
-    private ExptGroupReportVO generatePdfReportOfGroup(String exptGroupId, ExperimentReportData exptData) {
-        // 将 expt-data 转为 pdf-data
-        ExptBaseInfoModel baseInfoVO = generateBaseInfoVO();
+    /**
+     * @param exptInstanceId - 实验实例ID
+     * @param exptGroupId - 实验小组ID
+     * @return org.dows.hep.biz.report.pdf.ExptSchemeReportBiz.ExptSchemeReportData
+     * @author fhb
+     * @description 预先准备好生成报告需要的数据
+     * @date 2023/7/17 11:07
+     */
+    @Override
+    public ExptSchemeReportData prepareData(String exptInstanceId, String exptGroupId) {
+        // 准备`生成报告`所需的数据
+        return ExptSchemeReportData.builder()
+                .exptInfo(getExptInfo(experimentInstanceService, exptInstanceId))
+                .exptSchemeList(listExptScheme(exptInstanceId, exptGroupId))
+                .exptGroupInfoList(listExptGroupInfo(experimentGroupService, exptInstanceId, exptGroupId))
+                .exptMemberList(listExptMembers(experimentParticipatorService, exptInstanceId, exptGroupId))
+                .build();
+    }
+
+    /**
+     * @param exptGroupId - 实验小组ID
+     * @param exptData - 生成 `填充模板数据model` 需要的数据支持
+     * @return org.dows.hep.vo.report.ExptSchemeReportModel
+     * @author fhb
+     * @description 生成pdf所需要填充的数据
+     * @date 2023/7/17 11:09
+     */
+    @Override
+    public ExptSchemeReportModel getExptReportModel(String exptGroupId, ExptSchemeReportData exptData) {
+        ExptBaseInfoModel baseInfoVO = generateBaseInfoVO(findSoftProperties, log);
         ExptSchemeReportModel.GroupInfo groupInfo = generateGroupInfo(exptGroupId, exptData);
         ExptSchemeReportModel.ScoreInfo scoreInfo = generateScoreInfo(exptGroupId, exptData);
         ExptSchemeReportModel.SchemeInfo schemeInfo = generateSchemeInfo(exptGroupId, exptData);
         List<ExptSchemeReportModel.QuestionInfo> questionInfoList = generateQuestionInfo(exptGroupId, exptData);
-        ExptSchemeReportModel pdfVO = ExptSchemeReportModel.builder()
+
+        return ExptSchemeReportModel.builder()
                 .baseInfo(baseInfoVO)
                 .groupInfo(groupInfo)
                 .scoreInfo(scoreInfo)
                 .schemeInfo(schemeInfo)
                 .questionInfos(questionInfoList)
                 .build();
-        // pdf file
+    }
+
+    /**
+     * @param exptGroupId - 实验小组ID
+     * @param exptReportData - 生成 `填充模板数据model` 需要的数据支持
+     * @return java.io.File
+     * @author fhb
+     * @description pdf 生成的位置
+     * @date 2023/7/17 11:11
+     */
+    @Override
+    public File getTempFile(String exptGroupId, ExptSchemeReportData exptReportData) {
+        ExperimentInstanceEntity exptInfo = exptReportData.getExptInfo();
+        List<ExperimentGroupEntity> groupList = exptReportData.getExptGroupInfoList();
+        if (CollUtil.isEmpty(groupList) || StrUtil.isBlank(exptGroupId)) {
+            throw new BizException("获取实验方案设计报告时，获取组员信息数据异常");
+        }
+
+        ExperimentGroupEntity groupEntity = groupList.stream()
+                .filter(item -> exptGroupId.equals(item.getExperimentGroupId()))
+                .findFirst()
+                .orElse(null);
+        if (BeanUtil.isEmpty(groupEntity)) {
+            throw new BizException("获取实验方案设计报告时，获取组员信息数据异常");
+        }
+
+        File homeDirFile = new File(SystemConstant.PDF_REPORT_TMP_PATH);
+        boolean mkdirs = homeDirFile.mkdirs();
+        String fileName = "第" + groupEntity.getGroupNo() + "组" + SystemConstant.SPLIT_UNDER_LINE + exptInfo.getExperimentName() + SystemConstant.SPLIT_UNDER_LINE + "方案设计报告" + SystemConstant.SUFFIX_PDF;
+        return new File(homeDirFile, fileName);
+    }
+
+    /**
+     * @return java.lang.String
+     * @author fhb
+     * @description 获取pdf模板
+     * @date 2023/7/17 11:11
+     */
+    @Override
+    public String getSchemeFlt() {
+        return findSoftProperties.getExptSchemeFtl();
+    }
+
+    // 生成 pdf 报告
+    // todo 如果文件存在，则不再生成立即返回，测试阶段先不做
+    private ExptGroupReportVO generatePdfReportOfGroup(String exptGroupId, ExptSchemeReportData exptData) {
+        // pdf 填充数据
+        ExptSchemeReportModel pdfVO = getExptReportModel(exptGroupId, exptData);
+        // pdf 输出文件
         File targetFile = getTempFile(exptGroupId, exptData);
-        // pdf flt
+        // pdf 模板
         String schemeFlt = getSchemeFlt();
 
         try {
@@ -135,24 +199,16 @@ public class ExptSchemeReportBiz implements ExptReportBiz {
             throw new BizException("导出方案设计报告时，html转pdf异常");
         }
 
-        List<ExptGroupReportVO.ReportFile> paths = new ArrayList<>();
         ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
                 .name(targetFile.getName())
                 .path(targetFile.getPath())
                 .build();
-        paths.add(reportFile);
+        List<ExptGroupReportVO.ReportFile> paths = List.of(reportFile);
         return ExptGroupReportVO.builder()
                 .exptGroupId(exptGroupId)
-                .exptGroupNo(Integer.valueOf(groupInfo.getGroupNo()))
+                .exptGroupNo(Integer.valueOf(pdfVO.getGroupInfo().getGroupNo()))
                 .paths(paths)
                 .build();
-    }
-
-    private ExperimentInstanceEntity getExptInfo(String exptInstanceId) {
-        return experimentInstanceService.lambdaQuery()
-                .eq(ExperimentInstanceEntity::getExperimentInstanceId, exptInstanceId)
-                .oneOpt()
-                .orElse(null);
     }
 
     private List<ExperimentSchemeResponse> listExptScheme(String exptInstanceId, String exptGroupId) {
@@ -169,43 +225,10 @@ public class ExptSchemeReportBiz implements ExptReportBiz {
                 .toList();
     }
 
-    private List<ExperimentGroupEntity> listExptGroupInfo(String exptInstanceId, String exptGroupId) {
-        return experimentGroupService.lambdaQuery()
-                .eq(ExperimentGroupEntity::getExperimentInstanceId, exptInstanceId)
-                .eq(StrUtil.isNotBlank(exptGroupId), ExperimentGroupEntity::getExperimentGroupId, exptGroupId)
-                .list();
-    }
-
-    private List<ExperimentParticipatorEntity> listExptMembers(String exptInstanceId, String exptGroupId) {
-        return experimentParticipatorService.lambdaQuery()
-                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, exptInstanceId)
-                .eq(StrUtil.isNotBlank(exptGroupId), ExperimentParticipatorEntity::getExperimentGroupId, exptGroupId)
-                .list();
-    }
-
-    private ExptBaseInfoModel generateBaseInfoVO() {
-        String logoStr = null;
-        String coverStr = null;
-        try {
-            logoStr = Base64.encodeBytes(IOUtils.toByteArray(new ClassPathResource(findSoftProperties.getLogo()).getInputStream()));
-            coverStr = Base64.encodeBytes(IOUtils.toByteArray(new ClassPathResource(findSoftProperties.getCover()).getInputStream()));
-        } catch (IOException e) {
-            log.error("导出实验报告时，获取logo和cover图片资源异常");
-            throw new BizException("导出实验报告时，获取logo和cover图片资源异常");
-        }
-
-        return ExptBaseInfoModel.builder()
-                .title(findSoftProperties.getExptSchemeReportTitle())
-                .logoImg(logoStr)
-                .coverImg(coverStr)
-                .copyRight(findSoftProperties.getCopyRight())
-                .build();
-    }
-
-    private ExptSchemeReportModel.GroupInfo generateGroupInfo(String exptGroupId, ExperimentReportData experimentReportData) {
-        ExperimentInstanceEntity exptInfo = experimentReportData.getExptInfo();
-        List<ExperimentGroupEntity> groupList = experimentReportData.getExptGroupInfoList();
-        List<ExperimentParticipatorEntity> memberList = experimentReportData.getExptMemberList();
+    private ExptSchemeReportModel.GroupInfo generateGroupInfo(String exptGroupId, ExptSchemeReportData exptSchemeReportData) {
+        ExperimentInstanceEntity exptInfo = exptSchemeReportData.getExptInfo();
+        List<ExperimentGroupEntity> groupList = exptSchemeReportData.getExptGroupInfoList();
+        List<ExperimentParticipatorEntity> memberList = exptSchemeReportData.getExptMemberList();
         final ExptSchemeReportModel.GroupInfo emptyGroupInfo = new ExptSchemeReportModel.GroupInfo();
 
         if (CollUtil.isEmpty(groupList) || CollUtil.isEmpty(memberList)) {
@@ -239,16 +262,16 @@ public class ExptSchemeReportBiz implements ExptReportBiz {
     }
 
     // todo 获取得分信息
-    private ExptSchemeReportModel.ScoreInfo generateScoreInfo(String exptGroupId, ExperimentReportData experimentReportData) {
+    private ExptSchemeReportModel.ScoreInfo generateScoreInfo(String exptGroupId, ExptSchemeReportData exptSchemeReportData) {
         return ExptSchemeReportModel.ScoreInfo.builder()
                 .show(Boolean.TRUE)
-                .score(0.0f)
+                .score("0.00")
                 .ranking(1)
                 .build();
     }
 
-    private ExptSchemeReportModel.SchemeInfo generateSchemeInfo(String exptGroupId, ExperimentReportData experimentReportData) {
-        List<ExperimentSchemeResponse> schemeList = experimentReportData.getExptSchemeList();
+    private ExptSchemeReportModel.SchemeInfo generateSchemeInfo(String exptGroupId, ExptSchemeReportData exptSchemeReportData) {
+        List<ExperimentSchemeResponse> schemeList = exptSchemeReportData.getExptSchemeList();
         final ExptSchemeReportModel.SchemeInfo emptySchemeInfo = new ExptSchemeReportModel.SchemeInfo();
         if (CollUtil.isEmpty(schemeList)) {
             return emptySchemeInfo;
@@ -270,9 +293,9 @@ public class ExptSchemeReportBiz implements ExptReportBiz {
                 .build();
     }
 
-    private List<ExptSchemeReportModel.QuestionInfo> generateQuestionInfo(String exptGroupId, ExperimentReportData experimentReportData) {
+    private List<ExptSchemeReportModel.QuestionInfo> generateQuestionInfo(String exptGroupId, ExptSchemeReportData exptSchemeReportData) {
         List<ExptSchemeReportModel.QuestionInfo> result = new ArrayList<>();
-        List<ExperimentSchemeResponse> schemeResponseList = experimentReportData.getExptSchemeList();
+        List<ExperimentSchemeResponse> schemeResponseList = exptSchemeReportData.getExptSchemeList();
         if (CollUtil.isEmpty(schemeResponseList)) {
             return result;
         }
@@ -343,31 +366,6 @@ public class ExptSchemeReportBiz implements ExptReportBiz {
         String fileName = src.replace("/hepapi/", "");
         String base64 = ossBiz.getBase64(fileName);
         return "data:image/jpeg;base64," + base64;
-    }
-
-    private File getTempFile(String exptGroupId, ExperimentReportData experimentReportData) {
-        ExperimentInstanceEntity exptInfo = experimentReportData.getExptInfo();
-        List<ExperimentGroupEntity> groupList = experimentReportData.getExptGroupInfoList();
-        if (CollUtil.isEmpty(groupList) || StrUtil.isBlank(exptGroupId)) {
-            throw new BizException("获取实验方案设计报告时，获取组员信息数据异常");
-        }
-
-        ExperimentGroupEntity groupEntity = groupList.stream()
-                .filter(item -> exptGroupId.equals(item.getExperimentGroupId()))
-                .findFirst()
-                .orElse(null);
-        if (BeanUtil.isEmpty(groupEntity)) {
-            throw new BizException("获取实验方案设计报告时，获取组员信息数据异常");
-        }
-
-        File homeDirFile = new File(SystemConstant.PDF_REPORT_TMP_PATH);
-        boolean mkdirs = homeDirFile.mkdirs();
-        String fileName = "第" + groupEntity.getGroupNo() + "组" + SystemConstant.SPLIT_UNDER_LINE + exptInfo.getExperimentName() + SystemConstant.SPLIT_UNDER_LINE + "方案设计报告" + SystemConstant.SUFFIX_PDF;
-        return new File(homeDirFile, fileName);
-    }
-
-    private String getSchemeFlt() {
-        return findSoftProperties.getExptSchemeFtl();
     }
 
 }

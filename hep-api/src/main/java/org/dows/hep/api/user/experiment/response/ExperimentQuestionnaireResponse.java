@@ -23,10 +23,15 @@ public class ExperimentQuestionnaireResponse {
     @Schema(title = "实验知识答题ID")
     private String experimentQuestionnaireId;
 
+    @Schema(title = "实验小组ID")
+    private String experimentGroupId;
+
     @Schema(title = "案例问卷名")
     private String questionnaireName;
 
-    @Deprecated
+    @Schema(title = "期数排序")
+    private Integer periodSequence;
+
     @Schema(title = "知识答题试卷-全部item")
     private List<ExperimentQuestionnaireItemResponse> itemList;
 

@@ -45,6 +45,15 @@ public class ExptReportPdfRest {
     private final ExptOverviewReportBiz exptOverviewReportBiz;
     private final OSSReportBiz ossReportBiz;
 
+    /**
+     * 导出小组实验pdf报告
+     * @param experimentInstanceId - 实验实例ID
+     * @param experimentGroupId - 实验小组ID
+     * @return org.dows.hep.vo.report.ExptReportVO
+     * @author fhb
+     * @description 导出小组实验pdf报告
+     * @date 2023/7/18 10:15
+     */
     @Operation(summary = "导出小组实验pdf报告")
     @GetMapping(value = "/v1/report/pdf/exportGroupReport")
     public ExptReportVO exportGroupReport(@RequestParam String experimentInstanceId, @RequestParam String experimentGroupId) {
@@ -74,6 +83,14 @@ public class ExptReportPdfRest {
         return ExptReportVO.emptyVO();
     }
 
+    /**
+     * 导出实验pdf报告
+     * @param experimentInstanceId - 实验实例ID
+     * @return org.dows.hep.vo.report.ExptReportVO
+     * @author fhb
+     * @description 导出实验pdf报告
+     * @date 2023/7/18 10:16
+     */
     @Operation(summary = "导出实验pdf报告")
     @GetMapping(value = "/v1/report/pdf/exportExptReport")
     public ExptReportVO exportExptReport(@RequestParam String experimentInstanceId) throws InterruptedException {

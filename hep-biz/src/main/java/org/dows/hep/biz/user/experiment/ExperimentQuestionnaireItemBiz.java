@@ -56,6 +56,39 @@ public class ExperimentQuestionnaireItemBiz {
     }
 
     /**
+     * @param questionnaireIds - 问卷Ids
+     * @param needRightValue   - 是否需要正确答案
+     * @return java.util.List<org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireItemResponse>
+     * @author fhb
+     * @description 列出知识答题
+     * @date 2023/7/18 14:01
+     */
+    public List<ExperimentQuestionnaireItemResponse> listByQuestionnaireIds(List<String> questionnaireIds, boolean needRightValue) {
+        List<ExperimentQuestionnaireItemEntity> entityList = experimentQuestionnaireItemService.lambdaQuery()
+                .in(ExperimentQuestionnaireItemEntity::getExperimentQuestionnaireId, questionnaireIds)
+                .list();
+        List<ExperimentQuestionnaireItemResponse> result = entityList.stream()
+                .map(entity -> {
+                    ExperimentQuestionnaireItemResponse resultItem = BeanUtil.copyProperties(entity, ExperimentQuestionnaireItemResponse.class);
+                    List<String> results = convertResultStr2ResultList(entity.getQuestionResult());
+                    List<ExptQuestionnaireOptionDTO> optionList = convertOptStr2OptionList(entity.getQuestionOptions());
+                    mergeOptionsAndResults(optionList, results);
+
+                    resultItem.setQuestionOptionList(optionList);
+                    resultItem.setQuestionResult(results);
+                    return resultItem;
+                })
+                .toList();
+        if (!needRightValue) {
+            result.forEach(item -> {
+                item.setRightValue(null);
+                item.setQuestionDetailedAnswer(null);
+            });
+        }
+        return result;
+    }
+
+    /**
      * @param
      * @return
      * @author fhb
