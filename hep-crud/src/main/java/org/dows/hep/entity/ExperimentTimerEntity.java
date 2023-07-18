@@ -29,7 +29,7 @@ import java.util.Date;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(name = "ExperimentTimer", title = "实验计数计时器")
-@TableName("experiment_timer1")
+@TableName("experiment_timer")
 public class ExperimentTimerEntity implements CrudEntity {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
