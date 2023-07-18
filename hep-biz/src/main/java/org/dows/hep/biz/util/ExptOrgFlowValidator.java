@@ -195,6 +195,7 @@ public class ExptOrgFlowValidator {
      * @param assertExists
      * @return
      */
+
     public ExptOrgFlowValidator checkOrgFlow(boolean assertExists){
         getOrgFlow(assertExists);
         return this;
@@ -210,8 +211,8 @@ public class ExptOrgFlowValidator {
                 OperateFlowEntity::getStartTime,
                 OperateFlowEntity::getEndTime,
                 OperateFlowEntity::getPeriods,
-                OperateFlowEntity::getTotalSteps,
-                OperateFlowEntity::getDoneSteps);
+                OperateFlowEntity::getOperateTime,
+                OperateFlowEntity::getOperateGameDay);
     }
     public OperateFlowEntity getOrgFlow(boolean assertExists,SFunction<OperateFlowEntity,?>... cols){
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(experimentPersonId))
@@ -229,5 +230,15 @@ public class ExptOrgFlowValidator {
         return exptFlow.orElse(null);
     }
     //endregion
+
+    public ExptOrgFlowValidator updateFlowOperate(ExperimentTimePoint timePoint){
+        OperateFlowEntity rowFlow=getOrgFlow(false);
+        if(null==rowFlow){
+            return this;
+        }
+        rowFlow.setOperateTime(ShareUtil.XDate.localDT2Date( timePoint.getRealTime()));
+        rowFlow.setOperateGameDay(timePoint.getGameDay());
+        return this;
+    }
 
 }

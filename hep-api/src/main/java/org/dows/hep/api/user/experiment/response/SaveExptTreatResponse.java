@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import org.dows.hep.api.user.experiment.vo.ExptOrgFlowReportVO;
 
 /**
 * @description 
@@ -25,7 +24,7 @@ public class SaveExptTreatResponse {
 
 
     @Schema(title = "报告信息")
-    private ExptOrgFlowReportVO reportInfo;
+    private ExptOrgFlowReportResponse reportInfo;
 
 
 }
