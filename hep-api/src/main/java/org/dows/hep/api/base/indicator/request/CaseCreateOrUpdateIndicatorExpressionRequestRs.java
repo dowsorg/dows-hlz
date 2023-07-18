@@ -19,11 +19,14 @@ import java.util.List;
 @Builder
 public class CaseCreateOrUpdateIndicatorExpressionRequestRs implements Serializable {
   @Schema(title = "分布式ID")
+  private String caseIndicatorExpressionId;
+
+  @Schema(title = "分布式ID")
   private String indicatorExpressionId;
 
   @Schema(title = "分布式ID")
   @ApiModelProperty(required = true)
-  private String principalId;
+  private String casePrincipalId;
 
   @Schema(title = "指标公式与主体关联关系分布式ID")
   private String indicatorExpressionRefId;
@@ -45,11 +48,11 @@ public class CaseCreateOrUpdateIndicatorExpressionRequestRs implements Serializa
 
   @Schema(title = "指标公式细项")
   @ApiModelProperty(required = true)
-  private List<CreateOrUpdateIndicatorExpressionItemRequestRs> createOrUpdateIndicatorExpressionItemRequestRsList;
+  private List<CaseCreateOrUpdateIndicatorExpressionItemRequestRs> caseCreateOrUpdateIndicatorExpressionItemRequestRsList;
 
   @Schema(title = "公式上限")
-  private CreateOrUpdateIndicatorExpressionItemRequestRs maxCreateOrUpdateIndicatorExpressionItemRequestRs;
+  private CaseCreateOrUpdateIndicatorExpressionItemRequestRs caseMaxCreateOrUpdateIndicatorExpressionItemRequestRs;
 
   @Schema(title = "公式下限")
-  private CreateOrUpdateIndicatorExpressionItemRequestRs minCreateOrUpdateIndicatorExpressionItemRequestRs;
+  private CaseCreateOrUpdateIndicatorExpressionItemRequestRs caseMinCreateOrUpdateIndicatorExpressionItemRequestRs;
 }

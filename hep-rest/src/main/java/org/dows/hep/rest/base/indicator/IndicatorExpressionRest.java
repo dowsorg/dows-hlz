@@ -27,7 +27,7 @@ public class IndicatorExpressionRest {
     return indicatorExpressionBiz.createOrUpdate(createOrUpdateIndicatorExpressionRequestRs);
   }
 
-  @Operation(summary = "新版创建指标公式")
+  @Operation(summary = "V2创建指标公式")
   @PostMapping("v2/baseIndicator/indicatorExpression/createOrUpdateRs")
   public String v2CreateOrUpdate(@RequestBody CreateOrUpdateIndicatorExpressionRequestRs createOrUpdateIndicatorExpressionRequestRs) throws InterruptedException, ExecutionException {
     return indicatorExpressionBiz.v2CreateOrUpdate(createOrUpdateIndicatorExpressionRequestRs);
