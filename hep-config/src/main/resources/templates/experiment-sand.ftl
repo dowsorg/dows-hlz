@@ -110,11 +110,11 @@
     <div align="center" style="font-size:14px;">${baseInfo.copyRight} <span id="pages"> / </span></div>
 </div>
 <div class="page">
-    <div class="text-right"><img src="data:image/jpg;base64,${logoImg}"/></div>
+    <div class="text-right"><img src="data:image/jpg;base64,${baseInfo.logoImg}"/></div>
     <div align="center">
         <div class="pageTitle " style="margin-top:60px">${baseInfo.title}</div>
         <div class="pageTitle " style="margin-top:38px">健康沙盘</div>
-        <img src="data:image/jpg;base64,${coverImg}" style="width: 760px;margin-top:38px"/>
+        <img src="data:image/jpg;base64,${baseInfo.coverImg}" style="width: 760px;margin-top:38px"/>
     </div>
     <div align="right">
         <div class="groupDiv">组数：第${groupInfo.groupNo!""}组</div>
@@ -139,11 +139,11 @@
             <td>总排名</td>
         </tr>
         <tr class="background-even-blue">
-            <td>${scoreInfo.totalScore.healthIndexScore?string("0.##")}</td>
-            <td>${scoreInfo.totalScore.knowledgeScore?string("0.##")}</td>
-            <td>${scoreInfo.totalScore.treatmentPercentScore?string("0.##")}</td>
-            <td>${scoreInfo.totalScore.totalScore?string("0.##")}</td>
-            <td>${scoreInfo.totalScore.totalRanking?string("0.##")}</td>
+            <td>${scoreInfo.totalScore.healthIndexScore}</td>
+            <td>${scoreInfo.totalScore.knowledgeScore}</td>
+            <td>${scoreInfo.totalScore.treatmentPercentScore}</td>
+            <td>${scoreInfo.totalScore.totalScore}</td>
+            <td>${scoreInfo.totalScore.totalRanking}</td>
         </tr>
     </table>
     <div style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">每期得分</div>
@@ -158,12 +158,12 @@
         </tr>
         <#list scoreInfo.periodScores as periodScore>
             <tr class="background-even-blue">
-                <td>${periodScore.peroid}</td>
-                <td>${periodScore.scoreInfo.healthIndexScore?string("0.##")}</td>
-                <td>${periodScore.scoreInfo.knowledgeScore?string("0.##")}</td>
-                <td>${periodScore.scoreInfo.treatmentPercentScore?string("0.##")}</td>
-                <td>${periodScore.scoreInfo.totalScore?string("0.##")}</td>
-                <td>${periodScore.scoreInfo.totalRanking}!0</td>
+                <td>${periodScore_index + 1}</td>
+                <td>${periodScore.scoreInfo.healthIndexScore}</td>
+                <td>${periodScore.scoreInfo.knowledgeScore}</td>
+                <td>${periodScore.scoreInfo.treatmentPercentScore}</td>
+                <td>${periodScore.scoreInfo.totalScore}</td>
+                <td>${periodScore.scoreInfo.totalRanking!0}</td>
             </tr>
         </#list>
     </table>
@@ -177,10 +177,7 @@
             <td>第五期</td>
         </tr>
         <#list scoreInfo.periodWeights as periodWeight>
-            <tr class="background-even-blue">
-                <td>${periodWeight.peroid}</td>
-                <td>${periodWeight.weight!""}</td>
-            </tr>
+            <td class="background-even-blue">${periodWeight.weight!""}</td>
         </#list>
     </table>
     <div style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">评分权重</div>
@@ -295,9 +292,9 @@
                     <div>你的答案</div>
                     <div>${questionInfo.userAnswer!"无"}</div>
                     <div>参考答案</div>
-                    <div>${pq.rightAnswer!"无"}</div>
+                    <div>${questionInfo.rightAnswer!"无"}</div>
                     <div>解析</div>
-                    <div>${pq.analysis!"无"}</div>
+                    <div>${questionInfo.analysis!"无"}</div>
                 </div>
             </#list>
         </#list>
