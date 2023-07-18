@@ -18,15 +18,9 @@ import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireItemResp
 import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireResponse;
 import org.dows.hep.biz.user.experiment.ExperimentQuestionnaireBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
-import org.dows.hep.entity.ExperimentGroupEntity;
-import org.dows.hep.entity.ExperimentInstanceEntity;
-import org.dows.hep.entity.ExperimentParticipatorEntity;
-import org.dows.hep.entity.ExperimentScoringEntity;
+import org.dows.hep.entity.*;
 import org.dows.hep.properties.FindSoftProperties;
-import org.dows.hep.service.ExperimentGroupService;
-import org.dows.hep.service.ExperimentInstanceService;
-import org.dows.hep.service.ExperimentParticipatorService;
-import org.dows.hep.service.ExperimentScoringService;
+import org.dows.hep.service.*;
 import org.dows.hep.vo.report.ExptBaseInfoModel;
 import org.dows.hep.vo.report.ExptGroupReportVO;
 import org.dows.hep.vo.report.ExptReportVO;
@@ -35,6 +29,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +55,7 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
     private final ExperimentParticipatorService experimentParticipatorService;
     private final ExperimentInstanceService experimentInstanceService;
     private final ExperimentScoringService experimentScoringService;
+    private final ExperimentOrgService experimentOrgService;
 
     @Data
     @Builder
@@ -69,6 +66,7 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
         private List<ExperimentScoringEntity> exptScoringList;
         private ExperimentSetting.SandSetting sandSetting;
         private List<ExperimentQuestionnaireResponse> exptQuestionnaireList;
+        private List<ExperimentOrgEntity> exptOrgList;
     }
 
     /**
@@ -122,6 +120,7 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
                 .exptScoringList(listExptScoring(exptInstanceId, exptGroupId))
                 .sandSetting(getExptSandSetting(exptInstanceId))
                 .exptQuestionnaireList(listExptQuestionnaire(exptInstanceId, exptGroupId))
+                .exptOrgList(listExptOrg(exptInstanceId))
                 .build();
     }
 
@@ -235,10 +234,17 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
         return experimentQuestionnaireBiz.listExptQuestionnaire(exptInstanceId, exptGroupId, Boolean.TRUE);
     }
 
+    private List<ExperimentOrgEntity> listExptOrg(String exptInstanceId) {
+        return experimentOrgService.lambdaQuery()
+                .eq(ExperimentOrgEntity::getExperimentInstanceId, exptInstanceId)
+                .list();
+    }
+
     private ExptSandReportModel.GroupInfo generateGroupInfo(String exptGroupId, ExptSandReportData exptData) {
         ExperimentInstanceEntity exptInfo = exptData.getExptInfo();
         List<ExperimentGroupEntity> groupList = exptData.getExptGroupInfoList();
         List<ExperimentParticipatorEntity> memberList = exptData.getExptMemberList();
+        List<ExperimentOrgEntity> exptOrgList = exptData.getExptOrgList();
         final ExptSandReportModel.GroupInfo emptyGroupInfo = new ExptSandReportModel.GroupInfo();
 
         if (CollUtil.isEmpty(groupList) || CollUtil.isEmpty(memberList)) {
@@ -267,8 +273,7 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
                 .caseName(exptInfo.getCaseName())
                 .experimentName(exptInfo.getExperimentName())
                 .exptStartDate(exptInfo.getStartTime())
-                // todo 后续改为查询
-                .caseNum(3)
+                .caseNum(exptOrgList.size())
                 .build();
     }
 
@@ -287,39 +292,11 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
             return emptyResult;
         }
 
-        // 期数得分信息
-        List<ExptSandReportModel.ScoreInfo.PeriodScore> periodScores = new ArrayList<>();
-        Map<Integer, ExperimentScoringEntity> periodMapScore = groupScoreList.stream()
-                .collect(Collectors.toMap(ExperimentScoringEntity::getPeriods, item -> item, (v1, v2) -> v1));
-        periodMapScore.forEach((k, v) -> {
-            ExptSandReportModel.ScoreInfo.Score scoreInfo = ExptSandReportModel.ScoreInfo.Score.builder()
-                    .healthIndexScore(v.getHealthIndexScore())
-                    .knowledgeScore(v.getKnowledgeScore())
-                    .treatmentPercentScore(v.getTreatmentPercentScore())
-                    .totalScore(v.getTotalScore())
-                    // todo 计算下
-                    .totalRanking("0")
-                    .build();
-            ExptSandReportModel.ScoreInfo.PeriodScore periodScore = ExptSandReportModel.ScoreInfo.PeriodScore.builder()
-                    .periods(String.valueOf(k))
-                    .scoreInfo(scoreInfo)
-                    .build();
-            periodScores.add(periodScore);
-        });
-
-        // todo 计算 还是 存储？
-        // 总得分
-        ExptSandReportModel.ScoreInfo.Score totalScore = ExptSandReportModel.ScoreInfo.Score.builder()
-                .healthIndexScore("0.00")
-                .knowledgeScore("0.00")
-                .treatmentPercentScore("0.00")
-                .totalScore("0.00")
-                .totalRanking("1")
-                .build();
 
         // 每期权重
         List<ExptSandReportModel.ScoreInfo.PeriodWeight> periodWeights = new ArrayList<>();
         ExperimentSetting.SandSetting sandSetting = exptData.getSandSetting();
+        Integer periods = sandSetting.getPeriods();
         Map<String, Float> weightMap = sandSetting.getWeightMap();
         weightMap.forEach((period, weight) -> {
             ExptSandReportModel.ScoreInfo.PeriodWeight periodWeight = ExptSandReportModel.ScoreInfo.PeriodWeight.builder()
@@ -337,6 +314,75 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
                 .healthIndexWeight(String.valueOf(healthIndexWeight == null ? 0.00 : healthIndexWeight) + "%")
                 .knowledgeWeight(String.valueOf(knowledgeWeight == null ? 0.00 : knowledgeWeight) + "%")
                 .treatmentPercentWeight(String.valueOf(medicalRatioWeight == null ? 0.00 : medicalRatioWeight) + "%")
+                .build();
+
+        // 期数得分信息
+        List<ExptSandReportModel.ScoreInfo.PeriodScore> periodScores = new ArrayList<>();
+        Map<Integer, ExperimentScoringEntity> periodMapScore = groupScoreList.stream()
+                .collect(Collectors.toMap(ExperimentScoringEntity::getPeriods, item -> item, (v1, v2) -> v1));
+        for (int i = 0; i < periods; i++) {
+            ExperimentScoringEntity v = periodMapScore.get(i + 1);
+            ExptSandReportModel.ScoreInfo.Score scoreInfo = ExptSandReportModel.ScoreInfo.Score.builder()
+                    .healthIndexScore(v.getHealthIndexScore())
+                    .knowledgeScore(v.getKnowledgeScore())
+                    .treatmentPercentScore(v.getTreatmentPercentScore())
+                    .totalScore(v.getTotalScore())
+                    // todo 计算下
+                    .totalRanking("0")
+                    .build();
+            ExptSandReportModel.ScoreInfo.PeriodScore periodScore = ExptSandReportModel.ScoreInfo.PeriodScore.builder()
+                    .periods(String.valueOf(i + 1))
+                    .scoreInfo(scoreInfo)
+                    .build();
+            periodScores.add(periodScore);
+        }
+
+        // todo 计算 还是 存储？
+        // 总得分
+        BigDecimal tHealthIndexScore = BigDecimal.ZERO;
+        BigDecimal tKnowledgeScore = BigDecimal.ZERO;
+        BigDecimal tTreatmentPercentScore = BigDecimal.ZERO;
+        BigDecimal tTotalScore = BigDecimal.ZERO;
+        for (int i = 0; i < periods; i++) {
+            ExperimentScoringEntity exptScore = periodMapScore.get(i + 1);
+            String healthIndexScore = exptScore.getHealthIndexScore();
+            String knowledgeScore = exptScore.getKnowledgeScore();
+            String treatmentPercentScore = exptScore.getTreatmentPercentScore();
+            String totalScore = exptScore.getTotalScore();
+            // convert bigDecimal
+            BigDecimal bHealthIndexScore = new BigDecimal(healthIndexScore);
+            BigDecimal bKnowledgeScore = new BigDecimal(knowledgeScore);
+            BigDecimal bTreatmentPercentScore = new BigDecimal(treatmentPercentScore);
+            BigDecimal bTotalScore = new BigDecimal(totalScore);
+
+            // weight
+            Float periodWeight = weightMap.get(String.valueOf(i + 1));
+            BigDecimal bPeriodWeight = BigDecimal.valueOf(periodWeight).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+
+            // score mul weight
+            BigDecimal pHealthIndexScore = bHealthIndexScore.multiply(bPeriodWeight);
+            BigDecimal pKnowledgeScore = bKnowledgeScore.multiply(bPeriodWeight);
+            BigDecimal pTreatmentPercentScore = bTreatmentPercentScore.multiply(bPeriodWeight);
+            BigDecimal pTotalScore = bTotalScore.multiply(bPeriodWeight);
+
+            // accumulation
+            tHealthIndexScore = tHealthIndexScore.add(pHealthIndexScore);
+            tKnowledgeScore = tKnowledgeScore.add(pKnowledgeScore);
+            tTreatmentPercentScore = tTreatmentPercentScore.add(pTreatmentPercentScore);
+            tTotalScore = tTotalScore.add(pTotalScore);
+        }
+        tHealthIndexScore = tHealthIndexScore.divide(BigDecimal.valueOf(periods), 2, RoundingMode.HALF_UP);
+        tKnowledgeScore = tKnowledgeScore.divide(BigDecimal.valueOf(periods), 2, RoundingMode.HALF_UP);
+        tTreatmentPercentScore = tTreatmentPercentScore.divide(BigDecimal.valueOf(periods), 2, RoundingMode.HALF_UP);
+        tTotalScore = tTotalScore.divide(BigDecimal.valueOf(periods), 2, RoundingMode.HALF_UP);
+
+        ExptSandReportModel.ScoreInfo.Score totalScore = ExptSandReportModel.ScoreInfo.Score.builder()
+                .healthIndexScore(tHealthIndexScore.toString())
+                .knowledgeScore(tKnowledgeScore.toString())
+                .treatmentPercentScore(tTreatmentPercentScore.toString())
+                .totalScore(tTotalScore.toString())
+                // todo 计算下
+                .totalRanking("1")
                 .build();
 
         return ExptSandReportModel.ScoreInfo.builder()
