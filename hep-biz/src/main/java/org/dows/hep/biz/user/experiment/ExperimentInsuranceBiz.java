@@ -84,7 +84,7 @@ public class ExperimentInsuranceBiz {
             Integer periodsand = sandSetting.getPeriodMap().get(String.valueOf(i));
             if (i == currentPeriods) {
                 //2.4、判断当前时间在本期还剩多少
-                long remainTime = experimentPeriodsStartAnsEndTime.get(i).getEndTime() - new Date().getTime();
+                long remainTime = experimentPeriodsStartAnsEndTime.get(i).getEndTime().getTime() - new Date().getTime();
                 int remainMinute = (int) (remainTime / 1000 / 60);
                 //2.5、假设365天都在一期需要的时间
                 int assumMinute = (int) ((double)duration * 365 / (double)periodsand);
@@ -98,7 +98,8 @@ public class ExperimentInsuranceBiz {
             }
             if(i != currentPeriods){
                 //2.7、后面的期数，都是完整的
-                long remainTime = experimentPeriodsStartAnsEndTime.get(i).getEndTime() - experimentPeriodsStartAnsEndTime.get(i).getStartTime();
+                long remainTime = experimentPeriodsStartAnsEndTime.get(i).getEndTime().getTime()
+                        - experimentPeriodsStartAnsEndTime.get(i).getStartTime().getTime();
                 int remainMinute = (int) (remainTime / 1000 / 60);
                 //2.5、判断剩下天数都在一期需要的时间
                 int assumMinute = (int) ((double)(365 - remainDay) * ((double)duration / (double)periodsand));

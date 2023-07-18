@@ -78,7 +78,7 @@ public class ExperimentTimerBiz {
                 .orElse(null);
         if (null != experimentTimerEntity) {
             Long second = (experimentTimerEntity.getPauseStartTime().getTime()
-                    - experimentTimerEntity.getStartTime()
+                    - experimentTimerEntity.getStartTime().getTime()
                     + experimentTimerEntity.getPeriodInterval()) / 1000;
             countDownResponse.setSandDurationSecond(second);
             // 当前期时长
@@ -100,10 +100,10 @@ public class ExperimentTimerBiz {
             if (i == list.size() - 1) {
                 // 本期持续时间 = 当前时间-本期开始时间-暂停持续时间
                 // long ds = sct - v.getStartTime() - v.getDuration();
-                countDownResponse.setCountdown(pre.getStartTime() - ct);
+                countDownResponse.setCountdown(pre.getStartTime().getTime() - ct);
                 //countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
                 //countDownResponse.setSandDurationSecond((pre.getEndTime() - ct) / 1000);
-                countDownResponse.setSandRemnantSecond((pre.getEndTime() - ct - pre.getPeriodInterval()) / 1000);
+                countDownResponse.setSandRemnantSecond((pre.getEndTime().getTime() - ct - pre.getPeriodInterval()) / 1000);
                 countDownResponse.setModel(pre.getModel());
                 countDownResponse.setPeriod(pre.getPeriod());
                 countDownResponse.setState(pre.getState());
@@ -111,22 +111,22 @@ public class ExperimentTimerBiz {
             }
             next = list.get(i + 1);
             // 两期之间
-            if (ct >= pre.getEndTime() && ct < next.getStartTime()) {
-                ct = next.getStartTime() - ct;
+            if (ct >= pre.getEndTime().getTime() && ct < next.getStartTime().getTime()) {
+                ct = next.getStartTime().getTime() - ct;
                 countDownResponse.setCountdown(ct);
                 // todo 兜底计算，在两期之间计算上一期数据,异步
                 break;
-            } else if (ct <= pre.getStartTime()) { // 小组分配结束
-                countDownResponse.setCountdown(pre.getStartTime() - ct);
+            } else if (ct <= pre.getStartTime().getTime()) { // 小组分配结束
+                countDownResponse.setCountdown(pre.getStartTime().getTime() - ct);
                 countDownResponse.setModel(pre.getModel());
                 countDownResponse.setPeriod(pre.getPeriod());
                 countDownResponse.setState(pre.getState());
                 break;
-            } else if (ct >= pre.getStartTime() && ct <= pre.getEndTime()) { //  开始之后
-                countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
+            } else if (ct >= pre.getStartTime().getTime() && ct <= pre.getEndTime().getTime()) { //  开始之后
+                countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime().getTime() - ct));
                 // 本期持续时间 = 当前时间-本期开始时间-暂停持续时间
                 //long ds = sct - pre.getStartTime() - pre.getDuration();
-                countDownResponse.setSandRemnantSecond(pre.getEndTime() - ct - pre.getPeriodInterval());
+                countDownResponse.setSandRemnantSecond(pre.getEndTime().getTime() - ct - pre.getPeriodInterval());
                 //countDownResponse.setSandDurationSecond(Double.valueOf(pre.getEndTime() - ct));
                 countDownResponse.setModel(pre.getModel());
                 countDownResponse.setPeriod(pre.getPeriod());
@@ -178,7 +178,7 @@ public class ExperimentTimerBiz {
         if (experimentSettingEntity1 != null) {
             ExperimentSetting.SchemeSetting schemeSetting =
                     JSONUtil.toBean(experimentSettingEntity1.getConfigJsonVals(), ExperimentSetting.SchemeSetting.class);
-            if (System.currentTimeMillis() > schemeSetting.getSchemeEndTime().getTime()) {
+            if (sct > schemeSetting.getSchemeEndTime().getTime()) {
                 countDownResponse.setSchemeTime(0L);
             } else {
                 // 方案设计倒计时
@@ -229,7 +229,7 @@ public class ExperimentTimerBiz {
             // 当前时间戳-当前期数开始时间 = 相对时间（持续了多久）；将转换为秒  .. day/duration = rate
             Long second = 0L;
             if (null != experimentTimerEntity) {
-                second = (experimentTimerEntity.getPauseStartTime().getTime() - experimentTimerEntity.getStartTime()) / 1000;
+                second = (experimentTimerEntity.getPauseStartTime().getTime() - experimentTimerEntity.getStartTime().getTime()) / 1000;
                 countDownResponse.setSandDurationSecond(second);
                 countDownResponse.setState(experimentTimerEntity.getState());
                 countDownResponse.setPeriod(experimentTimerEntity.getPeriod());
@@ -250,9 +250,9 @@ public class ExperimentTimerBiz {
                     countDownResponse.setPeriod(v.getPeriod());
                 } else if (v.getState() == EnumExperimentState.ONGOING.getState()) {
                     // 当前时间戳-当前期数开始时间 = 相对时间（持续了多久）；将转换为秒  .. day/duration = rate
-                    if (sct >= v.getStartTime() && sct <= v.getEndTime()) {
+                    if (sct >= v.getStartTime().getTime() && sct <= v.getEndTime().getTime()) {
                         // 本期持续时间 = 当前时间-本期开始时间-暂停持续时间
-                        long ds = sct - v.getStartTime() - v.getDuration();
+                        long ds = sct - v.getStartTime().getTime();
                         countDownResponse.setSandDurationSecond(ds / 1000);
                         countDownResponse.setState(v.getState());
                         countDownResponse.setPeriod(v.getPeriod());
@@ -347,10 +347,10 @@ public class ExperimentTimerBiz {
     public ExperimentPeriodsResonse getExperimentCurrentPeriods(String appId, String experimentInstanceId) {
 
         List<ExperimentTimerEntity> list = this.getPeriodsTimerList(experimentInstanceId);
-
+        long currentTimeMillis = System.currentTimeMillis();
         ExperimentTimerEntity experimentTimerEntity = list.stream()
-                .filter(e -> e.getStartTime() <= System.currentTimeMillis() && System.currentTimeMillis() <= e.getEndTime())
-                .max(Comparator.comparingLong(ExperimentTimerEntity::getStartTime))
+                .filter(e -> e.getStartTime().getTime() <= currentTimeMillis && currentTimeMillis <= e.getEndTime().getTime())
+                .max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount))
                 .orElse(null);
 
         if (null == experimentTimerEntity) {

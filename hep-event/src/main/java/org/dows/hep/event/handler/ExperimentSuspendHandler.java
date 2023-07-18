@@ -53,6 +53,7 @@ public class ExperimentSuspendHandler extends AbstractEventHandler implements Ev
                 updExperimentTimerEntity.setId(experimentTimerEntity.getId());
                 updExperimentTimerEntity.setPauseCount(experimentTimerEntity.getPauseCount() + 1);
                 updExperimentTimerEntity.setState(EnumExperimentState.PREPARE.getState());
+                updExperimentTimerEntity.setPeriodDuration(experimentTimerEntity.getPeriodDuration());
                 updExperimentTimerEntity.setPauseStartTime(experimentRestartRequest.getCurrentTime());
                 updExperimentTimerEntity.setPaused(experimentRestartRequest.getPaused());
                 updateExperimentTimerEntities.add(updExperimentTimerEntity);
@@ -65,7 +66,7 @@ public class ExperimentSuspendHandler extends AbstractEventHandler implements Ev
              */
         } else {
             // 获取当前时间
-            long ct = System.currentTimeMillis();
+            long ct = experimentRestartRequest.getCurrentTime().getTime();
             // 找出当前期数计时器集合，且暂停次数为最大的
             ExperimentTimerEntity experimentTimerEntity = experimentTimerEntityList.stream()
                     .filter(t -> t.getPeriod() == experimentRestartRequest.getPeriods())
@@ -78,7 +79,7 @@ public class ExperimentSuspendHandler extends AbstractEventHandler implements Ev
                 throw new ExperimentException("当前实验已暂停，请勿重复执行暂停！");
             }
             // 如果当前时间不在本期开始和结束之间
-            if (ct <= experimentTimerEntity.getStartTime() || ct >= experimentTimerEntity.getEndTime()) {
+            if (ct <= experimentTimerEntity.getStartTime().getTime() || ct >= experimentTimerEntity.getEndTime().getTime()) {
                 throw new ExperimentException(String.format("无法为当前{%s}期执行暂停,该期开始时间为:{%s}，结束时间:{%s}",
                         experimentTimerEntity.getPeriod(),
                         DateUtil.formatDateTime(DateUtil.date(experimentTimerEntity.getStartTime())),
@@ -90,6 +91,7 @@ public class ExperimentSuspendHandler extends AbstractEventHandler implements Ev
                     .experimentInstanceId(experimentTimerEntity.getExperimentInstanceId())
                     .startTime(experimentTimerEntity.getStartTime())
                     .endTime(experimentTimerEntity.getEndTime())
+                    .periodDuration(experimentTimerEntity.getPeriodDuration())
                     .period(experimentTimerEntity.getPeriod())
                     .periodInterval(experimentTimerEntity.getPeriodInterval())
                     .appId(experimentTimerEntity.getAppId())

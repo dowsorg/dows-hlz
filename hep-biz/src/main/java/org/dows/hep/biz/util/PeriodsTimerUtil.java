@@ -9,6 +9,7 @@ import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentTimerEntity;
 import org.dows.sequence.api.IdGenerator;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -65,18 +66,21 @@ public class PeriodsTimerUtil {
             throw new ExperimentException("分配实验异常,期数与期数时间设置不匹配");
         }
         for (Integer period : periods) {
+            // 每期时长
+            long pd = durationMap.get(period + "") * 60 * 1000;
             // 一期结束时间 = 一期开始时间 + 一期持续时间
-            pet = pst + durationMap.get(period + "") * 60 * 1000;
+            pet = pst +pd;
             ExperimentTimerEntity experimentTimerEntity = ExperimentTimerEntity.builder()
                     .appId(experimentInstance.getAppId())
                     .experimentInstanceId(experimentInstance.getExperimentInstanceId())
                     .experimentTimerId(idGenerator.nextIdStr())
                     .periodInterval(interval)
+                    .periodDuration(pd)
                     .period(period)
                     .model(EnumExperimentMode.STANDARD.getCode())
                     .state(EnumExperimentState.UNBEGIN.getState())
-                    .startTime(pst)
-                    .endTime(pet)
+                    .startTime(new Date(pst))
+                    .endTime(new Date(pet))
                     .build();
             experimentTimerEntities.add(experimentTimerEntity);
             // 下一期开始时间 = 上一期结束时间+间隔时间

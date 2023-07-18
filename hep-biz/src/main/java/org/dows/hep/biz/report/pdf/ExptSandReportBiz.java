@@ -3,12 +3,14 @@ package org.dows.hep.biz.report.pdf;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import freemarker.template.TemplateException;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.hep.api.base.question.QuestionTypeEnum;
 import org.dows.hep.api.constant.SystemConstant;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.dto.ExptQuestionnaireOptionDTO;
@@ -269,7 +271,7 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
 
     private ExptSandReportModel.ScoreInfo generateScoreInfo(String exptGroupId, ExptSandReportData exptData) {
         List<ExperimentScoringEntity> exptScoringList = exptData.getExptScoringList();
-        final ExptSandReportModel.ScoreInfo emptyResult = new ExptSandReportModel.ScoreInfo();
+        ExptSandReportModel.ScoreInfo emptyResult = getEmptyScoreInfo(exptGroupId, exptData);
         if (CollUtil.isEmpty(exptScoringList)) {
             return emptyResult;
         }
@@ -321,6 +323,7 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
                     .periods(period)
                     .weight(String.valueOf(weight == null ? 0.00 : weight) + "%")
                     .build();
+            periodWeights.add(periodWeight);
         });
 
         // 评分权重
@@ -338,6 +341,65 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
                 .periodScores(periodScores)
                 .periodWeights(periodWeights)
                 .scoreWeight(scoreWeight)
+                .build();
+    }
+
+    private ExptSandReportModel.ScoreInfo getEmptyScoreInfo(String exptGroupId, ExptSandReportData exptData) {
+        // 每期权重
+        List<ExptSandReportModel.ScoreInfo.PeriodWeight> periodWeights = new ArrayList<>();
+        ExperimentSetting.SandSetting sandSetting = exptData.getSandSetting();
+        Map<String, Float> weightMap = sandSetting.getWeightMap();
+        weightMap.forEach((period, weight) -> {
+            ExptSandReportModel.ScoreInfo.PeriodWeight periodWeight = ExptSandReportModel.ScoreInfo.PeriodWeight.builder()
+                    .periods(period)
+                    .weight(String.valueOf(weight == null ? 0.00 : weight) + "%")
+                    .build();
+            periodWeights.add(periodWeight);
+        });
+
+        // 评分权重
+        Float healthIndexWeight = sandSetting.getHealthIndexWeight();
+        Float knowledgeWeight = sandSetting.getKnowledgeWeight();
+        Float medicalRatioWeight = sandSetting.getMedicalRatioWeight();
+        ExptSandReportModel.ScoreInfo.ScoreWeight scoreWeight = ExptSandReportModel.ScoreInfo.ScoreWeight.builder()
+                .healthIndexWeight(String.valueOf(healthIndexWeight == null ? 0.00 : healthIndexWeight) + "%")
+                .knowledgeWeight(String.valueOf(knowledgeWeight == null ? 0.00 : knowledgeWeight) + "%")
+                .treatmentPercentWeight(String.valueOf(medicalRatioWeight == null ? 0.00 : medicalRatioWeight) + "%")
+                .build();
+
+        // 期数得分信息
+        List<ExptSandReportModel.ScoreInfo.PeriodScore> periodScores = new ArrayList<>();
+        Integer periods = sandSetting.getPeriods();
+        for (int i = 0; i < periods; i++) {
+            ExptSandReportModel.ScoreInfo.Score scoreInfo = ExptSandReportModel.ScoreInfo.Score.builder()
+                    .healthIndexScore("0.00")
+                    .knowledgeScore("0.00")
+                    .treatmentPercentScore("0.00")
+                    .totalScore("0.00")
+                    // todo 计算下
+                    .totalRanking("0")
+                    .build();
+            ExptSandReportModel.ScoreInfo.PeriodScore periodScore = ExptSandReportModel.ScoreInfo.PeriodScore.builder()
+                    .periods(String.valueOf(i + 1))
+                    .scoreInfo(scoreInfo)
+                    .build();
+            periodScores.add(periodScore);
+        }
+
+        // 总得分
+        ExptSandReportModel.ScoreInfo.Score totalScore = ExptSandReportModel.ScoreInfo.Score.builder()
+                .healthIndexScore("0.00")
+                .knowledgeScore("0.00")
+                .treatmentPercentScore("0.00")
+                .totalScore("0.00")
+                .totalRanking("1")
+                .build();
+
+        return ExptSandReportModel.ScoreInfo.builder()
+                .periodWeights(periodWeights)
+                .scoreWeight(scoreWeight)
+                .totalScore(totalScore)
+                .periodScores(periodScores)
                 .build();
     }
 
@@ -402,7 +464,9 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
         List<ExptSandReportModel.KnowledgeAnswer.QuestionInfo> result = new ArrayList<>();
         itemList.forEach(questionItem -> {
             // 构造标题
-            String questionTitle = questionItem.getQuestionTitle();
+            String questionType = questionItem.getQuestionType();
+            String typeName = QuestionTypeEnum.getNameByCode(questionType);
+            String questionTitle = "[" + typeName + "]" + questionItem.getQuestionTitle();
 
             // 构建选项
             List<ExptQuestionnaireOptionDTO> questionOptionList = questionItem.getQuestionOptionList();
@@ -417,7 +481,7 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
             }
 
             // 构造回答答案
-            String userAnswer = "";
+            String userAnswer = null;
             List<String> questionResult = questionItem.getQuestionResult();
             if (CollUtil.isNotEmpty(questionResult)) {
                 Map<String, String> questionMap = questionResult.stream().collect(Collectors.toMap(item -> item, item -> item, (v1, v2) -> v1));
@@ -429,7 +493,16 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
             }
 
             // 构造正确答案
+            String rightAnswer = null;
             String rightValue = questionItem.getRightValue();
+            if (StrUtil.isNotBlank(rightValue)) {
+                List<ExptQuestionnaireOptionDTO> rightValueList = JSONUtil.toList(rightValue, ExptQuestionnaireOptionDTO.class);
+                if (CollUtil.isNotEmpty(rightValueList)) {
+                    rightAnswer = rightValueList.stream()
+                            .map(ExptQuestionnaireOptionDTO::getTitle)
+                            .collect(Collectors.joining());
+                }
+            }
 
             // 构造答案解析
             String analysis = questionItem.getQuestionDetailedAnswer();
@@ -439,7 +512,7 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
                     .questionTitle(questionTitle)
                     .questionOptions(questionOptions)
                     .userAnswer(userAnswer)
-                    .rightAnswer(rightValue)
+                    .rightAnswer(rightAnswer)
                     .analysis(analysis)
                     .build();
             result.add(questionInfo);
