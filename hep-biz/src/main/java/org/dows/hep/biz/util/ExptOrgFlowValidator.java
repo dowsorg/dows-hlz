@@ -205,6 +205,7 @@ public class ExptOrgFlowValidator {
     }
     public OperateFlowEntity getOrgFlow(boolean assertExists){
         return getOrgFlow(assertExists,
+                OperateFlowEntity::getId,
                 OperateFlowEntity::getOperateFlowId,
                 OperateFlowEntity::getStartTime,
                 OperateFlowEntity::getEndTime,
