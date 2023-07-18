@@ -46,11 +46,11 @@ public class ExperimentPersonTagsEntity implements CrudEntity {
     @Schema(title = "应用ID")
     private String appId;
 
-    @Schema(title = "实验人物标签ID")
-    private String tagsId;
+    @Schema(title = "实验人物标签ID集合,多条数据以逗号分隔")
+    private String tagsIds;
 
-    @Schema(title = "实验人物标签名称")
-    private String tagsName;
+    @Schema(title = "实验人物标签名称集合,多条数据以逗号分隔")
+    private String tagsNames;
 
     @JsonIgnore
     @TableLogic
