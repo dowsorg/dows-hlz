@@ -62,7 +62,9 @@ public enum EnumESC implements StatusCode {
     CASE_INDICATOR_EXPRESSION_CIRCLE_DEPENDENCY(50147, "案例指标公式循环依赖"),
     CASE_INDICATOR_EXPRESSION_MAX_MUST_GE_MIN(50148, "案例指标公式最大值必须大于等于最小值"),
     CASE_INDICATOR_EXPRESSION_MIN_MAX_MUST_BE_DIGIT(50149, "案例指标公式最小最大值必须是数字"),
-    CASE_INDICATOR_EXPRESSION_ITEM_ID_IS_ILLEGAL(50150, "案例库指标公式细项id不合法");
+    CASE_INDICATOR_EXPRESSION_ITEM_ID_IS_ILLEGAL(50150, "案例库指标公式细项id不合法"),
+    INDICATOR_EXPRESSION_FORMAT_IS_ILLEGAL(50151, "指标格式不正确"),
+    ;
     private final Integer code;
     private final String descr;
 }

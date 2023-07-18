@@ -1,5 +1,6 @@
 package org.dows.hep.biz.base.indicator;
 
+import cn.hutool.core.exceptions.ValidateException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -11,6 +12,7 @@ import org.dows.hep.api.base.indicator.response.IndicatorExpressionItemResponseR
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.RsExperimentIndicatorExpressionBizException;
 import org.dows.hep.api.exception.RsIndicatorExpressionException;
+import org.dows.hep.api.exception.RsUtilBizException;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.expression.EvaluationException;
 import org.springframework.expression.Expression;
@@ -150,7 +152,6 @@ public class RsUtilBiz {
       if (isValDigital) {
         context.setVariable(conditionNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(val)).setScale(2, RoundingMode.DOWN));
       } else {
-        val = this.wrapStrWithDoubleSingleQuotes(val);
         context.setVariable(conditionNameSplitList.get(i), val);
       }
     }
@@ -168,20 +169,24 @@ public class RsUtilBiz {
   private void checkConditionMustBeBoolean(
       Map<String, String> kIndicatorInstanceIdVValMap,
       Integer field, String conditionExpression, String conditionNameList, String conditionValList) {
-    /* runsix:condition can be blank */
-    if (StringUtils.isBlank(conditionExpression)) {
-      return;
-    }
-    EnumIndicatorExpressionField enumIndicatorExpressionField = checkField(field);
-    List<String> conditionNameSplitList = Arrays.stream(conditionNameList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr())).collect(Collectors.toList());
-    List<String> conditionValSplitList = Arrays.stream(conditionValList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr())).collect(Collectors.toList());
-    switch (enumIndicatorExpressionField) {
-      case DATABASE -> databaseCheckConditionMustBeBoolean(kIndicatorInstanceIdVValMap, conditionExpression, conditionNameSplitList, conditionValSplitList);
-      case CASE -> caseCheckConditionMustBeBoolean();
-      default -> {
-        log.error("RsIndicatorExpressionBiz.checkCondition.checkConditionMustBeBoolean field:{} is illegal", field);
-        throw new RsIndicatorExpressionException("检查指标公式条件-指标公式域只能是数据库或案例库");
+    try {
+      /* runsix:condition can be blank */
+      if (StringUtils.isBlank(conditionExpression)) {
+        return;
       }
+      EnumIndicatorExpressionField enumIndicatorExpressionField = checkField(field);
+      List<String> conditionNameSplitList = this.getConditionNameSplitList(conditionNameList);
+      List<String> conditionValSplitList = this.getConditionValSplitList(conditionValList);
+      switch (enumIndicatorExpressionField) {
+        case DATABASE -> databaseCheckConditionMustBeBoolean(kIndicatorInstanceIdVValMap, conditionExpression, conditionNameSplitList, conditionValSplitList);
+        case CASE -> caseCheckConditionMustBeBoolean();
+        default -> {
+          log.error("RsIndicatorExpressionBiz.checkCondition.checkConditionMustBeBoolean field:{} is illegal", field);
+          throw new RsIndicatorExpressionException("检查指标公式条件-指标公式域只能是数据库或案例库");
+        }
+      }
+    } catch (Exception e) {
+      throw new RsUtilBizException(EnumESC.INDICATOR_EXPRESSION_FORMAT_IS_ILLEGAL);
     }
   }
 
@@ -234,47 +239,48 @@ public class RsUtilBiz {
   }
 
   private void databaseCheckResultParse(Map<String, String> kIndicatorInstanceIdVValMap, String resultExpression, List<String> resultNameSplitList, List<String> resultValSplitList) {
-    StandardEvaluationContext context = new StandardEvaluationContext();
-    for (int i = 0; i <= resultNameSplitList.size()-1; i++) {
-      String indicatorInstanceId = resultValSplitList.get(i);
-      String val = kIndicatorInstanceIdVValMap.get(indicatorInstanceId);
-      if (Objects.isNull(val)) {
-        log.error("RsIndicatorExpressionBiz.checkResult.databaseCheckResultMustBeBoolean field database indicatorInstanceId:{} does not exist", indicatorInstanceId);
-        throw new RsIndicatorExpressionException(String.format("检查指标公式结果-结果指标id：%s 不存在", indicatorInstanceId));
-      }
-      boolean isValDigital = NumberUtils.isCreatable(val);
-      if (isValDigital) {
-        context.setVariable(resultNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(val)).setScale(2, RoundingMode.DOWN));
-      } else {
-        context.setVariable(resultNameSplitList.get(i), val);
-      }
-    }
     try {
+      StandardEvaluationContext context = new StandardEvaluationContext();
+      for (int i = 0; i <= resultNameSplitList.size()-1; i++) {
+        String indicatorInstanceId = resultValSplitList.get(i);
+        String val = kIndicatorInstanceIdVValMap.get(indicatorInstanceId);
+        if (Objects.isNull(val)) {
+          log.error("RsIndicatorExpressionBiz.checkResult.databaseCheckResultMustBeBoolean field database indicatorInstanceId:{} does not exist", indicatorInstanceId);
+          throw new RsIndicatorExpressionException(String.format("检查指标公式结果-结果指标id：%s 不存在", indicatorInstanceId));
+        }
+        boolean isValDigital = NumberUtils.isCreatable(val);
+        if (isValDigital) {
+          context.setVariable(resultNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(val)).setScale(2, RoundingMode.DOWN));
+        } else {
+          context.setVariable(resultNameSplitList.get(i), val);
+        }
+      }
       ExpressionParser parser = new SpelExpressionParser();
       Expression expression = parser.parseExpression(resultExpression);
       expression.getValue(context, String.class);
-    } catch (ParseException parseException) {
-      log.warn("RsIndicatorExpressionBiz.databaseCheckResultParse resultExpression:{} parser.parseExpression(resultExpression) throw exception", resultExpression);
-      throw new RsIndicatorExpressionException(String.format("检查结果公式结果-解析结果表达式异常 expression:%s", resultExpression));
-    } catch (EvaluationException evaluationException) {
-      log.warn("RsIndicatorExpressionBiz.databaseCheckResultParse context:{} expression.getValue(context, String.class) throw exception", context);
-      throw new RsIndicatorExpressionException(String.format("检查结果公式结果-获取结果值异常，expression:%s，context:%s", resultExpression, context));
     } catch (Exception e) {
-      log.warn("RsIndicatorExpressionBiz.databaseCheckResultParse throw unknown exception, expression:{}, context:{}, throwable:{}", resultExpression, context, e);
-      throw new RsIndicatorExpressionException(String.format("检查结果公式结果-未知异常，expression:%s，context:%s", resultExpression, context));
+      throw new RsUtilBizException(EnumESC.INDICATOR_EXPRESSION_FORMAT_IS_ILLEGAL);
     }
   }
   /* runsix:TODO */
   private void caseCheckResultParse() {}
 
+  public String handleResultExpression(String resultExpression) {
+    if (StringUtils.isBlank(resultExpression)) {return resultExpression;}
+    if (NumberUtils.isCreatable(resultExpression) || resultExpression.contains(EnumString.AT.getStr())) {
+      return resultExpression;
+    } else {
+      return wrapStrWithDoubleSingleQuotes(resultExpression);
+    }
+  }
   private void checkResultParse(Map<String, String> kIndicatorInstanceIdVValMap, Integer field, String resultExpression, String resultNameList, String resultValList) {
     /* runsix:result can be blank */
     if (StringUtils.isBlank(resultExpression)) {
       return;
     }
     EnumIndicatorExpressionField enumIndicatorExpressionField = this.checkField(field);
-    List<String> resultNameSplitList = Arrays.stream(resultNameList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr())).collect(Collectors.toList());
-    List<String> resultValSplitList = Arrays.stream(resultValList.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr())).collect(Collectors.toList());
+    List<String> resultNameSplitList = this.getResultNameSplitList(resultNameList);
+    List<String> resultValSplitList = this.getResultValSplitList(resultValList);
     switch (enumIndicatorExpressionField) {
       case DATABASE -> databaseCheckResultParse(kIndicatorInstanceIdVValMap, resultExpression, resultNameSplitList, resultValSplitList);
       case CASE -> caseCheckResultParse();
@@ -291,6 +297,8 @@ public class RsUtilBiz {
     Integer field = rsIndicatorExpressionCheckoutResultRequest.getField();
     String resultRaw = rsIndicatorExpressionCheckoutResultRequest.getResultRaw();
     String resultExpression = rsIndicatorExpressionCheckoutResultRequest.getResultExpression();
+    /* runsix:对传过来对结果处理 */
+    resultExpression = this.handleResultExpression(resultExpression);
     String resultNameList = rsIndicatorExpressionCheckoutResultRequest.getResultNameList();
     String resultValList = rsIndicatorExpressionCheckoutResultRequest.getResultValList();
     EnumIndicatorExpressionSource enumIndicatorExpressionSource = checkSource(source);

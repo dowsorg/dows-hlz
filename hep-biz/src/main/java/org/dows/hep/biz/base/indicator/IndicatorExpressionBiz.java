@@ -1415,8 +1415,15 @@ public class IndicatorExpressionBiz{
       /* runsix: 2.1 check indicatorExpressionId */
       CompletableFuture<Void> cfPopulateIndicatorExpression = CompletableFuture.runAsync(() -> rsIndicatorExpressionBiz.populateIndicatorExpressionEntity(indicatorExpressionEntityAtomicReference, indicatorExpressionId));
       cfPopulateIndicatorExpression.get();
+      IndicatorExpressionEntity indicatorExpressionEntity = indicatorExpressionEntityAtomicReference.get();
+      Integer dbType = null;
+      /* runsix:2.2 populate typeChangeAtomicBoolean  */
+      if (Objects.nonNull(indicatorExpressionEntity)) {
+        dbType = indicatorExpressionEntity.getType();
+        if (!dbType.equals(paramType)) {typeChangeAtomicBoolean.set(Boolean.TRUE);}
+      }
 
-      /* runsix:2.2 populate indicatorExpressionInfluenceEntityAtomicReference */
+      /* runsix:2.3 populate indicatorExpressionInfluenceEntityAtomicReference */
       CompletableFuture<Void> cfCheckCircleDependencyAndPopulateIndicatorExpressionInfluenceEntity = CompletableFuture.runAsync(() -> {
         try {
           rsIndicatorExpressionBiz.checkCircleDependencyAndPopulateIndicatorExpressionInfluenceEntity(
@@ -1433,63 +1440,60 @@ public class IndicatorExpressionBiz{
       });
       cfCheckCircleDependencyAndPopulateIndicatorExpressionInfluenceEntity.get();
 
-      IndicatorExpressionEntity indicatorExpressionEntity = indicatorExpressionEntityAtomicReference.get();
-      Integer dbType = indicatorExpressionEntity.getType();
-      /* runsix:2.3 populate typeChangeAtomicBoolean  */
-      if (Objects.nonNull(indicatorExpressionEntity) && !dbType.equals(paramType)) {typeChangeAtomicBoolean.set(Boolean.TRUE);}
-
-      /* runsix:2.4 公式类型发生变化，原先上下限需要删除 */
-      Set<String> minAndMaxIndicatorExpressionItemIdSet = new HashSet<>();
-      String dbMinIndicatorExpressionItemId = indicatorExpressionEntity.getMinIndicatorExpressionItemId();
-      String dbMaxIndicatorExpressionItemId = indicatorExpressionEntity.getMaxIndicatorExpressionItemId();
-      if (typeChangeAtomicBoolean.get()) {
-        if (StringUtils.isNotBlank(dbMinIndicatorExpressionItemId)) {minAndMaxIndicatorExpressionItemIdSet.add(dbMinIndicatorExpressionItemId);}
-        if (StringUtils.isNotBlank(dbMaxIndicatorExpressionItemId)) {minAndMaxIndicatorExpressionItemIdSet.add(dbMaxIndicatorExpressionItemId);}
-        if (!minAndMaxIndicatorExpressionItemIdSet.isEmpty()) {
-          indicatorExpressionItemService.remove(new LambdaQueryWrapper<IndicatorExpressionItemEntity>().in(IndicatorExpressionItemEntity::getIndicatorExpressionItemId, minAndMaxIndicatorExpressionItemIdSet));
+      if (Objects.nonNull(indicatorExpressionEntity)) {
+        /* runsix:2.4 公式类型发生变化，原先上下限需要删除 */
+        Set<String> minAndMaxIndicatorExpressionItemIdSet = new HashSet<>();
+        String dbMinIndicatorExpressionItemId = indicatorExpressionEntity.getMinIndicatorExpressionItemId();
+        String dbMaxIndicatorExpressionItemId = indicatorExpressionEntity.getMaxIndicatorExpressionItemId();
+        if (typeChangeAtomicBoolean.get()) {
+          if (StringUtils.isNotBlank(dbMinIndicatorExpressionItemId)) {minAndMaxIndicatorExpressionItemIdSet.add(dbMinIndicatorExpressionItemId);}
+          if (StringUtils.isNotBlank(dbMaxIndicatorExpressionItemId)) {minAndMaxIndicatorExpressionItemIdSet.add(dbMaxIndicatorExpressionItemId);}
+          if (!minAndMaxIndicatorExpressionItemIdSet.isEmpty()) {
+            indicatorExpressionItemService.remove(new LambdaQueryWrapper<IndicatorExpressionItemEntity>().in(IndicatorExpressionItemEntity::getIndicatorExpressionItemId, minAndMaxIndicatorExpressionItemIdSet));
+          }
         }
-      }
 
-      /* runsix:2.5 获取原来的上下限 */
-      Map<String, IndicatorExpressionItemEntity> kMinAndMaxIndicatorExpressionItemIdVIndicatorExpressionItemMap = new HashMap<>();
-      CompletableFuture<Void> cfMinAndMaxPopulateKIndicatorExpressionItemIdVIndicatorExpressionItemMap = CompletableFuture.runAsync(() -> {
-        rsIndicatorExpressionBiz.populateByItemIdSetKIndicatorExpressionItemIdVIndicatorExpressionItemMap(
-            kMinAndMaxIndicatorExpressionItemIdVIndicatorExpressionItemMap, minAndMaxIndicatorExpressionItemIdSet
-        );
-      });
-      cfMinAndMaxPopulateKIndicatorExpressionItemIdVIndicatorExpressionItemMap.get();
+        /* runsix:2.5 获取原来的上下限 */
+        Map<String, IndicatorExpressionItemEntity> kMinAndMaxIndicatorExpressionItemIdVIndicatorExpressionItemMap = new HashMap<>();
+        CompletableFuture<Void> cfMinAndMaxPopulateKIndicatorExpressionItemIdVIndicatorExpressionItemMap = CompletableFuture.runAsync(() -> {
+          rsIndicatorExpressionBiz.populateByItemIdSetKIndicatorExpressionItemIdVIndicatorExpressionItemMap(
+              kMinAndMaxIndicatorExpressionItemIdVIndicatorExpressionItemMap, minAndMaxIndicatorExpressionItemIdSet
+          );
+        });
+        cfMinAndMaxPopulateKIndicatorExpressionItemIdVIndicatorExpressionItemMap.get();
 
-      /* runsix:2.6 populate minIndicatorExpressionItemEntityAtomicReference && maxIndicatorExpressionItemEntityAtomicReference 创建新的上下限 */
-      IndicatorExpressionItemEntity minIndicatorExpressionItemEntity = kMinAndMaxIndicatorExpressionItemIdVIndicatorExpressionItemMap.get(dbMinIndicatorExpressionItemId);
-      if (Objects.nonNull(minIndicatorExpressionItemEntity)) {
-        minIndicatorExpressionItemEntityAtomicReference.set(minIndicatorExpressionItemEntity);
+        /* runsix:2.6 populate minIndicatorExpressionItemEntityAtomicReference && maxIndicatorExpressionItemEntityAtomicReference 创建新的上下限 */
+        IndicatorExpressionItemEntity minIndicatorExpressionItemEntity = kMinAndMaxIndicatorExpressionItemIdVIndicatorExpressionItemMap.get(dbMinIndicatorExpressionItemId);
+        if (Objects.nonNull(minIndicatorExpressionItemEntity)) {
+          minIndicatorExpressionItemEntityAtomicReference.set(minIndicatorExpressionItemEntity);
+        }
+        IndicatorExpressionItemEntity maxIndicatorExpressionItemEntity = kMinAndMaxIndicatorExpressionItemIdVIndicatorExpressionItemMap.get(dbMaxIndicatorExpressionItemId);
+        if (Objects.nonNull(maxIndicatorExpressionItemEntity)) {
+          maxIndicatorExpressionItemEntityAtomicReference.set(maxIndicatorExpressionItemEntity);
+        }
+        CompletableFuture<Void> cfPopulateMinAndMaxIndicatorExpressionItem = CompletableFuture.runAsync(() -> {
+          rsIndicatorExpressionBiz.populateMinAndMaxIndicatorExpressionItem(
+              typeChangeAtomicBoolean.get(),
+              minIndicatorExpressionItemEntityAtomicReference,
+              minCreateOrUpdateIndicatorExpressionItemRequestRs,
+              maxIndicatorExpressionItemEntityAtomicReference,
+              maxCreateOrUpdateIndicatorExpressionItemRequestRs
+          );
+        });
+        cfPopulateMinAndMaxIndicatorExpressionItem.get();
       }
-      IndicatorExpressionItemEntity maxIndicatorExpressionItemEntity = kMinAndMaxIndicatorExpressionItemIdVIndicatorExpressionItemMap.get(dbMaxIndicatorExpressionItemId);
-      if (Objects.nonNull(maxIndicatorExpressionItemEntity)) {
-        maxIndicatorExpressionItemEntityAtomicReference.set(maxIndicatorExpressionItemEntity);
-      }
-      CompletableFuture<Void> cfPopulateMinAndMaxIndicatorExpressionItem = CompletableFuture.runAsync(() -> {
-        rsIndicatorExpressionBiz.populateMinAndMaxIndicatorExpressionItem(
-            typeChangeAtomicBoolean.get(),
-            minIndicatorExpressionItemEntityAtomicReference,
-            minCreateOrUpdateIndicatorExpressionItemRequestRs,
-            maxIndicatorExpressionItemEntityAtomicReference,
-            maxCreateOrUpdateIndicatorExpressionItemRequestRs
-        );
-      });
-      cfPopulateMinAndMaxIndicatorExpressionItem.get();
 
       /* runsix: 2.7 populate new indicatorExpressionEntityAtomicReference 判断是新建还是修改*/
       IndicatorExpressionItemEntity newMinIndicatorExpressionItemEntity = minIndicatorExpressionItemEntityAtomicReference.get();
       IndicatorExpressionItemEntity newMaxIndicatorExpressionItemEntity = maxIndicatorExpressionItemEntityAtomicReference.get();
       String newMinIndicatorExpressionItemId = null;
       if (Objects.nonNull(newMinIndicatorExpressionItemEntity)
-          && StringUtils.isNoneBlank(newMinIndicatorExpressionItemEntity.getIndicatorExpressionItemId())) {
+          && StringUtils.isNotBlank(newMinIndicatorExpressionItemEntity.getIndicatorExpressionItemId())) {
         newMinIndicatorExpressionItemId = newMinIndicatorExpressionItemEntity.getIndicatorExpressionItemId();
       }
       String newMaxIndicatorExpressionItemId = null;
       if (Objects.nonNull(newMaxIndicatorExpressionItemEntity)
-          && StringUtils.isNoneBlank(newMaxIndicatorExpressionItemEntity.getIndicatorExpressionItemId())) {
+          && StringUtils.isNotBlank(newMaxIndicatorExpressionItemEntity.getIndicatorExpressionItemId())) {
         newMaxIndicatorExpressionItemId = newMaxIndicatorExpressionItemEntity.getIndicatorExpressionItemId();
       }
       /* runsix:2.7.1 新建 */
@@ -1504,6 +1508,7 @@ public class IndicatorExpressionBiz{
             .type(paramType)
             .source(source)
             .build();
+        indicatorExpressionEntityAtomicReference.set(indicatorExpressionEntity);
       } else {
         /* runsix:2.7.2 修改 */
         /**
