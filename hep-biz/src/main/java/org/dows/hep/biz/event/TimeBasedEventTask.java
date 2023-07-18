@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -41,14 +42,14 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
     //失败重试间隔
     private final int DELAYSeconds4Fail=10;
     //子任务并发数
-    private final int CONCURRENTNum=4;
+    private final int CONCURRENTNum=3;
+
+    private final int MAXRetry=3;
 
     public TimeBasedEventTask(ExperimentCacheKey experimentKey){
         this.experimentKey=experimentKey;
     }
-    public TimeBasedEventTask(String appId,String experimentInstanceId){
-        this.experimentKey=new ExperimentCacheKey().setAppId(appId).setExperimentInstanceId(experimentInstanceId);
-    }
+
 
 
     //region run
@@ -56,9 +57,9 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
     public void run() {
         try {
             call();
-        }catch (Exception ex){
-            logError(ex, "run",ex.getMessage());
-            raiseScheduler(DELAYSeconds4Fail);
+        }catch (Exception ex) {
+            logError(ex, "run", ex.getMessage());
+            raiseScheduler(DELAYSeconds4Fail, false, true);
         }
     }
 
@@ -80,12 +81,11 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
         }
         if(experimentState.equals(EnumExperimentState.SUSPEND.getState())){
             logInfo("call", "pausedExperiment");
-            //raiseScheduler(DELAYSeconds4Pause);
             return RUNCode4Silence;
         }
         if(null==exptColl.getStartTime()){
             logError("call", "notStartExperiment");
-            raiseScheduler(DELAYSeconds4Pause);
+            raiseScheduler(DELAYSeconds4Pause,false,true);
             return RUNCode4Silence;
         }
         TimeBasedEventCollection eventColl=TimeBasedEventCache.Instance().caffineCache().get(experimentKey,k->loadEvents(k,exptColl.getPeriods()) );
@@ -98,7 +98,7 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
         ExperimentTimePoint timePoint= ExperimentSettingCache.getTimePointByRealTimeSilence(exptColl, experimentKey, dtNow, true);
         if(ShareUtil.XObject.anyEmpty(timePoint,()->timePoint.getCntPauseSeconds())) {
             logError("call", "missTimePoint");
-            raiseScheduler(DELAYSeconds4Fail);
+            raiseScheduler(DELAYSeconds4Fail,false,true);
             return RUNCode4Fail;
         }
         if (timePoint.getGameState() == EnumExperimentState.FINISH) {
@@ -110,8 +110,9 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
         eventColl.setNextTriggerTime(calcTriggeringTime(dtNow, exptColl,eventColl));
         List<List<TimeBasedEventCollection.TimeBasedEventGroup>> groups=eventColl.splitGroups(CONCURRENTNum);
         final RunStat runStat=new RunStat(groups.size());
+        final ExecutorService executor=EventExecutor.Instance().getThreadPool();
         groups.forEach(i->{
-            CompletableFuture.runAsync(()->runEventGroup(i,timePoint,eventColl,runStat), EventExecutor.Instance().getThreadPool())
+            CompletableFuture.runAsync(()->runEventGroup(i,timePoint,eventColl,runStat), executor)
                     .exceptionally(ex-> {
                         logError(ex, "runEventGroup", "caseEventIds:%s", String.join(",",
                                 ShareUtil.XCollection.map(i, TimeBasedEventCollection.TimeBasedEventGroup::getCaseEventId)));
@@ -148,15 +149,17 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
                 runStat.doneCounter.addAndGet(triggeredEvents.size());
             } catch (Exception ex) {
                 groups.forEach(i -> {
-                    if (i.getRetryTimes().incrementAndGet() <= 3) {
-                        i.setTriggeredTime(null).setTriggeredPeriod(null);
-                    } else {
+                    if(i.getRetryTimes().incrementAndGet()>=MAXRetry){
                         eventColl.removeGroup(i);
-                        logError("runEventGroup maxRetry.", "eventIds:%s",
+                        experimentKey.getMaxRetry().incrementAndGet();
+                        logError("runEventGroup", "maxRetry.  eventIds:%s",
                                 String.join(",", ShareUtil.XCollection.map(i.getEventItems(), ExperimentEventEntity::getExperimentEventId)));
                     }
+                    else {
+                        i.setTriggeredTime(null).setTriggeredPeriod(null);
+                    }
                 });
-                logError(ex, "runEventGroup fail.", "eventIds:%s",
+                logError(ex, "runEventGroup", " fail. eventIds:%s",
                         String.join(",", ShareUtil.XCollection.map(triggeredEvents, ExperimentEventEntity::getExperimentEventId)));
                 runStat.failTheadCounter.incrementAndGet();
                 exceptionFlag = true;
@@ -172,18 +175,24 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
         long delay = -1;
         runStat.todoCounter.addAndGet(-runStat.doneCounter.get());
         if(runStat.failTheadCounter.get()>0){
-            raiseScheduler(delay=DELAYSeconds4Fail);
+            raiseScheduler(delay=DELAYSeconds4Fail,false,false);
         } else {
             if (null != nextTime) {
-                raiseScheduler(delay = Duration.between(LocalDateTime.now(), nextTime).toSeconds() + 2);
+                raiseScheduler(delay = Duration.between(LocalDateTime.now(), nextTime).toSeconds() + 2,true,false);
             }
         }
         logInfo("runEventGroup", "next:%s delay:%s failThread:%s done:%s todo:%s", nextTime,delay,
                 runStat.failTheadCounter.get(),runStat.doneCounter.get(),runStat.todoCounter.get());
     }
 
-    void raiseScheduler(long delaySeconds){
-        EventScheduler.Instance().scheduleTimeBasedEvent(experimentKey.getAppId(),experimentKey.getExperimentInstanceId(),Math.max(DELAYSecondsMin, delaySeconds));
+    void raiseScheduler(long delaySeconds,boolean resetRetry,boolean incrRetry) {
+        if(resetRetry){
+            experimentKey.getMaxRetry().set(0);
+        } else if ((incrRetry? experimentKey.getMaxRetry().incrementAndGet():experimentKey.getMaxRetry().get()) >= MAXRetry) {
+            logError("raiseScheduler", "maxRetry");
+            return;
+        }
+        EventScheduler.Instance().scheduleTimeBasedEvent(experimentKey, Math.max(DELAYSecondsMin, delaySeconds));
     }
     LocalDateTime calcTriggeringTime(LocalDateTime ldtNow, ExperimentSettingCollection exptCollection,TimeBasedEventCollection eventCollection){
         ExperimentTimePoint point;
@@ -196,8 +205,8 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
             }
             LocalDateTime triggeringTime=item.getRawTriggeringTime().plusSeconds(cntPauseSeconds);
             item.setTriggeringTime(triggeringTime);
-            if( ldtNow.compareTo(triggeringTime)<0 && triggeringTime.compareTo(nextTime)<0  ){
-                nextTime=triggeringTime;
+            if( ldtNow.compareTo(triggeringTime)<0 && triggeringTime.compareTo(nextTime)<0  ) {
+                nextTime = triggeringTime;
             }
         }
         return nextTime.isEqual(LocalDateTime.MAX)?null:nextTime;

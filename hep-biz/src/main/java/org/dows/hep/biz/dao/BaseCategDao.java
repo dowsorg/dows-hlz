@@ -16,6 +16,10 @@ public abstract class BaseCategDao<S extends MybatisCrudService<E>,E extends Cru
         super(notExistsMessage);
     }
 
+    protected BaseCategDao(String notExistsMessage,String failSaveMessage){
+        super(notExistsMessage,failSaveMessage);
+    }
+
     protected abstract SFunction<E,String> getColCateg();
 
     /**

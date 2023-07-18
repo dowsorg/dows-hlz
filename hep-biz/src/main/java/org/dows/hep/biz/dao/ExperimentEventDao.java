@@ -1,7 +1,6 @@
 package org.dows.hep.biz.dao;
 
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
-import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentEventEntity;
 import org.dows.hep.service.ExperimentEventService;
@@ -10,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Supplier;
 
 /**
  * @author : wuzl
@@ -97,32 +95,6 @@ public class ExperimentEventDao extends BaseDao<ExperimentEventService, Experime
                 .eq(ExperimentEventEntity::getExperimentInstanceId, experimentInstanceId)
                 .remove();
         return service.saveBatch(items);
-    }
-
-    @Transactional(rollbackFor = Exception.class)
-    public boolean tranUpdateTriggered(Collection<ExperimentEventEntity> items, Supplier<Boolean> saveOthers) {
-        if(ShareUtil.XObject.isEmpty(items)){
-            return true;
-        }
-        AssertUtil.falseThenThrow(saveOrUpdateBatch(items,true,true))
-                .throwMessage(failedSaveMessage);
-        if(null!=saveOthers && !saveOthers.get()) {
-            return false;
-        }
-        return true;
-    }
-
-    @Transactional(rollbackFor = Exception.class)
-    public boolean tranUpdateAcction(ExperimentEventEntity item, Supplier<Boolean> saveOthers) {
-        if(ShareUtil.XObject.isEmpty(item)){
-            return true;
-        }
-        AssertUtil.falseThenThrow(saveOrUpdate(item,true))
-                .throwMessage(failedSaveMessage);
-        if(null!=saveOthers && !saveOthers.get()) {
-            return false;
-        }
-        return true;
     }
 
 

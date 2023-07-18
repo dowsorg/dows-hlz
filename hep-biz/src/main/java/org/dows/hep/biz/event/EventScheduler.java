@@ -1,9 +1,13 @@
 package org.dows.hep.biz.event;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.biz.cache.BaseManulCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.util.ShareBiz;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.*;
 
@@ -11,17 +15,22 @@ import java.util.concurrent.*;
  * @author : wuzl
  * @date : 2023/6/18 17:34
  */
-public class EventScheduler {
-    static final int DFTCoreSize=4;
-    private static final EventScheduler s_instance=new EventScheduler(DFTCoreSize);
+@Slf4j
+@Component
+public class EventScheduler implements ApplicationListener<ContextClosedEvent> {
+    static final int DFTCoreSize=3;
+    private static volatile EventScheduler s_instance;
     public static EventScheduler Instance(){
         return s_instance;
     }
-    private EventScheduler(int coreSize){
-        ScheduledThreadPoolExecutor executor=new ScheduledThreadPoolExecutor(coreSize,
+    private EventScheduler(){
+        s_instance=this;
+        ScheduledThreadPoolExecutor executor=new ScheduledThreadPoolExecutor(DFTCoreSize,
                 new ThreadFactoryBuilder().setNameFormat("eventScheduler-%d").build(),
                 new ThreadPoolAbortPolicy());
         executor.setRemoveOnCancelPolicy(true);
+        executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+        executor.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
         scheduledExecutor=executor;
 
     }
@@ -39,10 +48,12 @@ public class EventScheduler {
      */
     public ScheduledFuture<?> scheduleTimeBasedEvent(String appId,String experimentId, long delaySeconds) {
         appId= ShareBiz.checkAppId(appId,experimentId);
-        final ExperimentCacheKey cacheKey = new ExperimentCacheKey(appId, experimentId);
-        final String exclusiveKey = String.format("timeevent:%s", cacheKey);
-        final Runnable task = new TimeBasedEventTask(cacheKey);
-        return scheduleExclusive(exclusiveKey, task, delaySeconds);
+        final ExperimentCacheKey experimentKey = new ExperimentCacheKey(appId, experimentId);
+        return scheduleTimeBasedEvent(experimentKey,delaySeconds);
+    }
+    public ScheduledFuture<?> scheduleTimeBasedEvent(ExperimentCacheKey experimentKey, long delaySeconds){
+        final String exclusiveKey = String.format("timeevent:%s", experimentKey);
+        return scheduleExclusive(exclusiveKey, new TimeBasedEventTask(experimentKey), delaySeconds);
     }
 
     public ScheduledFuture<?> scheduleExclusive(String exclusiveKey, Runnable  cmd, long delaySeconds) {
@@ -90,10 +101,26 @@ public class EventScheduler {
         return buffer;
     }
 
+    @Override
+    public void onApplicationEvent(ContextClosedEvent event) {
+        this.shutDown();
+        EventExecutor.Instance().shutDown();
+    }
+
+    public void shutDown(){
+        try{
+            scheduledExecutor.shutdownNow();
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+    }
+
     public static class ExperimentFutureCache extends BaseManulCache<String,Future<?>[]> {
 
         private ExperimentFutureCache() {
             super(10, 20, 60*60*12, 0);
         }
     }
+
+
 }

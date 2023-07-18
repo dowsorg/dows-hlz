@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author : wuzl
@@ -24,6 +25,8 @@ public class ExperimentCacheKey {
     private String appId;
     @Schema(title = "实验实例id")
     private String experimentInstanceId;
+
+    private final AtomicInteger maxRetry=new AtomicInteger();
 
     public static ExperimentCacheKey create(String appId,String experimentInstanceId){
         return new ExperimentCacheKey(appId,experimentInstanceId);
@@ -44,6 +47,6 @@ public class ExperimentCacheKey {
 
     @Override
     public String toString() {
-        return String.format("%s-%s", appId,experimentInstanceId);
+        return String.format("%s-%s-%s", appId,experimentInstanceId,maxRetry.get());
     }
 }

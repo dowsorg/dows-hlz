@@ -21,6 +21,7 @@ import org.dows.hep.service.ExperimentQuestionnaireService;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author fhb
@@ -115,6 +116,51 @@ public class ExperimentQuestionnaireBiz {
         List<ExperimentQuestionnaireResponse.ExptCategQuestionnaireItem> categItemList = ExperimentQuestionnaireResponse.convertItemList2CategItemList(itemTreeList);
         result.setItemList(itemTreeList);
         result.setCategItemList(categItemList);
+
+        return result;
+    }
+
+    /**
+     * @param exptInstanceId - 实验实例ID
+     * @param exptGroupId - 实验小组ID
+     * @param needRightValue - 是否需要返回正确答案
+     * @return org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireResponse
+     * @author fhb
+     * @description 如果有小组ID， 则列出小组的知识答题信息，否则列出实验所有的知识答题信息
+     * @date 2023/7/18 10:50
+     */
+    public List<ExperimentQuestionnaireResponse> listExptQuestionnaire(String exptInstanceId, String exptGroupId, boolean needRightValue) {
+        Assert.notBlank(exptInstanceId, "根据实验ID获取知识答题数据时：请求参数实验ID不能为空");
+
+        // 实验知识答题列表
+        List<ExperimentQuestionnaireEntity> exptQuestionnaireList = experimentQuestionnaireService.lambdaQuery()
+                .eq(ExperimentQuestionnaireEntity::getExperimentInstanceId, exptInstanceId)
+                .eq(StrUtil.isNotBlank(exptGroupId), ExperimentQuestionnaireEntity::getExperimentGroupId, exptGroupId)
+                .list();
+        if (CollUtil.isEmpty(exptQuestionnaireList)) {
+            return new ArrayList<>();
+        }
+        List<ExperimentQuestionnaireResponse> result = BeanUtil.copyToList(exptQuestionnaireList, ExperimentQuestionnaireResponse.class);
+
+        // 实验知识答题item列表
+        List<String> questionnaireIdList = exptQuestionnaireList.stream()
+                .map(ExperimentQuestionnaireEntity::getExperimentQuestionnaireId)
+                .toList();
+        List<ExperimentQuestionnaireItemResponse> itemList = experimentQuestionnaireItemBiz.listByQuestionnaireIds(questionnaireIdList, needRightValue);
+        if (CollUtil.isEmpty(itemList)) {
+            return result;
+        }
+
+        // build response
+        Map<String, List<ExperimentQuestionnaireItemResponse>> idMapItemList = itemList.stream()
+                .collect(Collectors.groupingBy(ExperimentQuestionnaireItemResponse::getExperimentQuestionnaireId));
+        result.forEach(resultItem -> {
+            List<ExperimentQuestionnaireItemResponse> resultItemItemList = idMapItemList.get(resultItem.getExperimentQuestionnaireId());
+            List<ExperimentQuestionnaireItemResponse> itemTreeList = convertList2Tree(resultItemItemList);
+            List<ExperimentQuestionnaireResponse.ExptCategQuestionnaireItem> categItemList = ExperimentQuestionnaireResponse.convertItemList2CategItemList(itemTreeList);
+            resultItem.setItemList(itemTreeList);
+            resultItem.setCategItemList(categItemList);
+        });
 
         return result;
     }

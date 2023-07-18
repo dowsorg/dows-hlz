@@ -6,8 +6,8 @@ import org.dows.hep.biz.dao.ExperimentInstanceDao;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -18,13 +18,13 @@ import java.util.List;
  */
 @Component
 @Slf4j
-public class EventStarter implements ApplicationListener<ContextRefreshedEvent> {
+public class EventStarter implements ApplicationListener<ApplicationStartedEvent> {
 
     private static volatile EventStarter s_instnace;
     public static EventStarter Instance(){
         return s_instnace;
     }
-    private final static long DELAYSeconds=60;
+    private final static long DELAYSeconds=180;
 
     private EventStarter(){
         s_instnace=this;
@@ -32,8 +32,13 @@ public class EventStarter implements ApplicationListener<ContextRefreshedEvent> 
     @Autowired
     private ExperimentInstanceDao experimentInstanceDao;
 
+    private volatile boolean startedFlag=false;
+
 
     public void start(){
+        if(startedFlag){
+            return;
+        }
         int cnt=0;
         try {
             List<ExperimentInstanceEntity> rowsExperiment = experimentInstanceDao.getRunningExperiment(
@@ -47,6 +52,7 @@ public class EventStarter implements ApplicationListener<ContextRefreshedEvent> 
             });
             log.info(String.format("EventStarter.start succ. cnt:%s id:%s",rowsExperiment.size(),
                     String.join(",", ShareUtil.XCollection.map(rowsExperiment, ExperimentInstanceEntity::getExperimentInstanceId))));
+            startedFlag=true;
         }catch (Exception ex){
             log.error(String.format( "EventStarter.start err. cnt:%s", cnt),ex);
         }
@@ -54,7 +60,7 @@ public class EventStarter implements ApplicationListener<ContextRefreshedEvent> 
     }
 
     @Override
-    public void onApplicationEvent(ContextRefreshedEvent event) {
+    public void onApplicationEvent(ApplicationStartedEvent event) {
         this.start();
     }
 }

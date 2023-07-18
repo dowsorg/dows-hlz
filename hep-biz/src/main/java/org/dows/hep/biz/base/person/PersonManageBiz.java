@@ -95,6 +95,17 @@ public class PersonManageBiz {
         });
         //2、删除账户实例
         Integer count = accountInstanceApi.deleteAccountInstanceByAccountIds(accountIds);
+        //3、删除小组信息
+        accountIds.forEach(accountId ->{
+            List<AccountGroupResponse> groupResponseList = accountGroupApi.getAccountGroupListByAccountId(accountId,"3");
+            if(groupResponseList != null && groupResponseList.size() > 0){
+                Set<String> ids = new HashSet<>();
+                groupResponseList.forEach(groupResponse -> {
+                    ids.add(groupResponse.getId());
+                });
+                accountGroupApi.batchDeleteGroups(ids);
+            }
+        });
         //3、删除用户扩展信息
         userIds.forEach(userId -> {
             UserExtinfoResponse extinfoResponse = userExtinfoApi.getUserExtinfoByUserId(userId);
@@ -107,9 +118,11 @@ public class PersonManageBiz {
                 .list();
         if(personEntityList != null && personEntityList.size() > 0){
             personEntityList.forEach(personEntity ->{
-                personEntity.setDeleted(true);
+                casePersonService.lambdaUpdate()
+                        .set(CasePersonEntity::getDeleted,true)
+                        .eq(CasePersonEntity::getId,personEntity.getId())
+                        .update();
             });
-            casePersonService.updateBatchById(personEntityList);
         }
         return count;
     }

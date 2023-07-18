@@ -73,7 +73,7 @@ public class ExperimentEventRules {
         if(saveIndicators){
 
         }
-        boolean rst= experimentEventDao.tranUpdateTriggered(saveEvents,()-> saveTriggeredTimeEventX(rowsNotice,rowsIndicatorVal));
+        boolean rst= experimentEventDao.tranSaveBatch(saveEvents,false,true, ()-> saveTriggeredTimeEventX(rowsNotice,rowsIndicatorVal));
         if(rst){
             //发送webSocket
             final String experimentId=rowsNotice.get(0).getExperimentInstanceId();
@@ -113,7 +113,7 @@ public class ExperimentEventRules {
         //处理事件指标
 
 
-        return experimentEventDao.tranUpdateAcction(saveEvent, () -> saveActionEventX(saveNotice, null));
+        return experimentEventDao.tranSave(saveEvent,true ,() -> saveActionEventX(saveNotice, null));
     }
     boolean saveActionEventX(ExperimentOrgNoticeEntity notice,List<ExperimentIndicatorValEntity> indicatorVals){
         experimentOrgNoticeBiz.update(notice);

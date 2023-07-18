@@ -23,6 +23,9 @@ import org.dows.hep.biz.event.ExperimentEventRules;
 import org.dows.hep.biz.event.ExperimentSettingCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
+import org.dows.hep.biz.snapshot.EnumSnapshotType;
+import org.dows.hep.biz.snapshot.SnapshotManager;
+import org.dows.hep.biz.snapshot.SnapshotRequest;
 import org.dows.hep.biz.util.*;
 import org.dows.hep.biz.vo.ExperimentEventBox;
 import org.dows.hep.biz.vo.ExperimentOrgNoticeBox;
@@ -142,6 +145,8 @@ public class ExperimentOrgBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Page<OrgNoticeResponse> pageOrgNotice(BaseExptRequest findOrgNotice ) {
+        SnapshotManager.Instance().write(new SnapshotRequest("3","356906709261881344"),
+                EnumSnapshotType.FOODMaterialNutrient);
         ExptRequestValidator.create(findOrgNotice)
                 .checkExperimentOrgId()
                 .checkExperimentGroup();

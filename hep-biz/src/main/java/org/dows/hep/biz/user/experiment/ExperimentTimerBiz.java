@@ -51,28 +51,59 @@ public class ExperimentTimerBiz {
      * @return
      */
     public CountDownResponse userCountdown(String experimentInstanceId) {
+        long ct = System.currentTimeMillis();
         // 获取当前期数
         CountDownResponse countDownResponse = new CountDownResponse();
-
-        List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
-                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
-                .eq(ExperimentTimerEntity::getState, EnumExperimentState.ONGOING.getState())
-                //.eq(ExperimentTimerEntity::getModel, 2) // 沙盘模式
-                //.ne(ExperimentTimerEntity::getState, ExperimentStateEnum.FINISH.getState())
+        List<ExperimentSettingEntity> experimentSettingEntities = experimentSettingService.lambdaQuery()
+                .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
                 .list();
-        list = list.stream().sorted(Comparator.comparingInt(ExperimentTimerEntity::getPeriod))
-                .collect(Collectors.toList());
+        ExperimentSettingEntity experimentSettingEntity2 = experimentSettingEntities.stream()
+                .filter(e -> e.getConfigKey().equals(ExperimentSetting.SandSetting.class.getName()))
+                .findFirst()
+                .orElse(null);
+        if (experimentSettingEntity2 != null) {
+            ExperimentSetting.SandSetting sandSetting =
+                    JSONUtil.toBean(experimentSettingEntity2.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
+            // 每期持续时长
+            countDownResponse.setDurationMap(sandSetting.getDurationMap());
+            // 期数
+            countDownResponse.setPeriodMap(sandSetting.getPeriodMap());
+        }
 
-        long ct = System.currentTimeMillis();
-
+        List<ExperimentTimerEntity> list = this.getPeriodsTimerList(experimentInstanceId);
+        // 优先处理暂停
+        ExperimentTimerEntity experimentTimerEntity = list.stream()
+                .filter(e -> e.getPaused() == true)
+                .findFirst()
+                .orElse(null);
+        if (null != experimentTimerEntity) {
+            Long second = (experimentTimerEntity.getPauseStartTime().getTime()
+                    - experimentTimerEntity.getStartTime().getTime()
+                    + experimentTimerEntity.getPeriodInterval()) / 1000;
+            countDownResponse.setSandDurationSecond(second);
+            // 当前期时长
+            Integer duration = countDownResponse.getDurationMap().get(experimentTimerEntity.getPeriod().toString());
+            // 设置剩余时间
+            countDownResponse.setSandRemnantSecond(duration * 60 - second);
+            //countDownResponse.setSandDuration(Double.valueOf(second));
+            countDownResponse.setState(experimentTimerEntity.getState());
+            countDownResponse.setModel(experimentTimerEntity.getModel());
+            countDownResponse.setPeriod(experimentTimerEntity.getPeriod());
+            countDownResponse.setExperimentInstanceId(experimentTimerEntity.getExperimentInstanceId());
+            return countDownResponse;
+        }
 
         for (int i = 0; i < list.size(); i++) {
             ExperimentTimerEntity pre = list.get(i);
             ExperimentTimerEntity next;
             // 最后一期
             if (i == list.size() - 1) {
-                countDownResponse.setCountdown(pre.getStartTime() - ct);
-                countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
+                // 本期持续时间 = 当前时间-本期开始时间-暂停持续时间
+                // long ds = sct - v.getStartTime() - v.getDuration();
+                countDownResponse.setCountdown(pre.getStartTime().getTime() - ct);
+                //countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
+                //countDownResponse.setSandDurationSecond((pre.getEndTime() - ct) / 1000);
+                countDownResponse.setSandRemnantSecond((pre.getEndTime().getTime() - ct - pre.getPeriodInterval()) / 1000);
                 countDownResponse.setModel(pre.getModel());
                 countDownResponse.setPeriod(pre.getPeriod());
                 countDownResponse.setState(pre.getState());
@@ -80,29 +111,48 @@ public class ExperimentTimerBiz {
             }
             next = list.get(i + 1);
             // 两期之间
-            if (ct >= pre.getEndTime() && ct < next.getStartTime()) {
-                ct = next.getStartTime() - ct;
+            if (ct >= pre.getEndTime().getTime() && ct < next.getStartTime().getTime()) {
+                ct = next.getStartTime().getTime() - ct;
                 countDownResponse.setCountdown(ct);
                 // todo 兜底计算，在两期之间计算上一期数据,异步
-
-
                 break;
-            } else if (ct <= pre.getStartTime()) { // 小组分配结束
-                countDownResponse.setCountdown(pre.getStartTime() - ct);
+            } else if (ct <= pre.getStartTime().getTime()) { // 小组分配结束
+                countDownResponse.setCountdown(pre.getStartTime().getTime() - ct);
                 countDownResponse.setModel(pre.getModel());
                 countDownResponse.setPeriod(pre.getPeriod());
                 countDownResponse.setState(pre.getState());
                 break;
-            } else if (ct >= pre.getStartTime() && ct <= pre.getEndTime()) { //  开始之后
-                countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime() - ct));
+            } else if (ct >= pre.getStartTime().getTime() && ct <= pre.getEndTime().getTime()) { //  开始之后
+                countDownResponse.setSandDuration(Double.valueOf(pre.getEndTime().getTime() - ct));
+                // 本期持续时间 = 当前时间-本期开始时间-暂停持续时间
+                //long ds = sct - pre.getStartTime() - pre.getDuration();
+                countDownResponse.setSandRemnantSecond(pre.getEndTime().getTime() - ct - pre.getPeriodInterval());
+                //countDownResponse.setSandDurationSecond(Double.valueOf(pre.getEndTime() - ct));
                 countDownResponse.setModel(pre.getModel());
                 countDownResponse.setPeriod(pre.getPeriod());
                 countDownResponse.setState(pre.getState());
                 break;
-
             }
         }
         return countDownResponse;
+    }
+
+
+    private Map<String, ExperimentSettingEntity> getSettingByKey(String experimentInstanceId) {
+        Map<String, ExperimentSettingEntity> map = new HashMap<>();
+        List<ExperimentSettingEntity> list = experimentSettingService.lambdaQuery()
+                .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
+                .list();
+        ExperimentSettingEntity experimentSettingEntity1 = list.stream()
+                .filter(e -> e.getConfigKey().equals(ExperimentSetting.SchemeSetting.class.getName()))
+                .findFirst()
+                .orElse(null);
+
+        ExperimentSettingEntity experimentSettingEntity2 = list.stream()
+                .filter(e -> e.getConfigKey().equals(ExperimentSetting.SandSetting.class.getName()))
+                .findFirst()
+                .orElse(null);
+        return map;
     }
 
     /**
@@ -128,7 +178,7 @@ public class ExperimentTimerBiz {
         if (experimentSettingEntity1 != null) {
             ExperimentSetting.SchemeSetting schemeSetting =
                     JSONUtil.toBean(experimentSettingEntity1.getConfigJsonVals(), ExperimentSetting.SchemeSetting.class);
-            if (System.currentTimeMillis() > schemeSetting.getSchemeEndTime().getTime()) {
+            if (sct > schemeSetting.getSchemeEndTime().getTime()) {
                 countDownResponse.setSchemeTime(0L);
             } else {
                 // 方案设计倒计时
@@ -168,14 +218,9 @@ public class ExperimentTimerBiz {
             countDownResponse.setMockRateMap(mockRateMap);
             countDownResponse.setPeriodMap(periodMap);
             countDownResponse.setSandTime(Long.valueOf(totalDay));
-            countDownResponse.setSandTimeUnit("天");
             countDownResponse.setModel(EnumExperimentMode.SAND.getCode());
 
-            List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerService.lambdaQuery()
-                    .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
-                    .orderByAsc(ExperimentTimerEntity::getPeriod, ExperimentTimerEntity::getPauseCount)
-                    .list();
-
+            List<ExperimentTimerEntity> experimentTimerEntityList = this.getPeriodsTimerList(experimentInstanceId);
             // 如果有暂停则优先处理暂停
             ExperimentTimerEntity experimentTimerEntity = experimentTimerEntityList.stream()
                     .filter(e -> e.getPaused() == true)
@@ -184,7 +229,7 @@ public class ExperimentTimerBiz {
             // 当前时间戳-当前期数开始时间 = 相对时间（持续了多久）；将转换为秒  .. day/duration = rate
             Long second = 0L;
             if (null != experimentTimerEntity) {
-                second = experimentTimerEntity.getStartTime() / 1000;
+                second = (experimentTimerEntity.getPauseStartTime().getTime() - experimentTimerEntity.getStartTime().getTime()) / 1000;
                 countDownResponse.setSandDurationSecond(second);
                 countDownResponse.setState(experimentTimerEntity.getState());
                 countDownResponse.setPeriod(experimentTimerEntity.getPeriod());
@@ -205,8 +250,10 @@ public class ExperimentTimerBiz {
                     countDownResponse.setPeriod(v.getPeriod());
                 } else if (v.getState() == EnumExperimentState.ONGOING.getState()) {
                     // 当前时间戳-当前期数开始时间 = 相对时间（持续了多久）；将转换为秒  .. day/duration = rate
-                    if (sct >= v.getStartTime() && sct <= v.getEndTime()) {
-                        countDownResponse.setSandDurationSecond((sct - v.getStartTime()) / 1000);
+                    if (sct >= v.getStartTime().getTime() && sct <= v.getEndTime().getTime()) {
+                        // 本期持续时间 = 当前时间-本期开始时间-暂停持续时间
+                        long ds = sct - v.getStartTime().getTime() - v.getDuration();
+                        countDownResponse.setSandDurationSecond(ds / 1000);
                         countDownResponse.setState(v.getState());
                         countDownResponse.setPeriod(v.getPeriod());
                     }
@@ -222,18 +269,19 @@ public class ExperimentTimerBiz {
 
 
     /**
-     * 获取当前实验期数定时器
+     * 获取当前实验所有期数计时器列表并按期数递增排序
      * ExperimentRestartRequest experimentRestartRequest
      *
      * @param experimentInstanceId
      * @return
      */
-    public List<ExperimentTimerEntity> getCurrentPeriods(String experimentInstanceId) {
-        List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
+    public List<ExperimentTimerEntity> getPeriodsTimerList(String experimentInstanceId) {
+        List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerService.lambdaQuery()
                 .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
-                //.eq(ExperimentTimerEntity::getAppId, experimentRestartRequest.getAppId())
+                .orderByAsc(ExperimentTimerEntity::getPeriod)
+                .orderByAsc(ExperimentTimerEntity::getPauseCount)
                 .list();
-        return list;
+        return experimentTimerEntityList;
     }
 
 
@@ -247,7 +295,6 @@ public class ExperimentTimerBiz {
         List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
                 .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
                 .ne(ExperimentTimerEntity::getState, enumExperimentState.getState())
-                //.eq(ExperimentTimerEntity::getAppId, experimentRestartRequest.getAppId())
                 .list();
         ExperimentTimerEntity experimentTimerEntity = list.stream()
                 .max(Comparator.comparingInt(ExperimentTimerEntity::getPeriod))
@@ -299,17 +346,11 @@ public class ExperimentTimerBiz {
      */
     public ExperimentPeriodsResonse getExperimentCurrentPeriods(String appId, String experimentInstanceId) {
 
-        List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
-                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
-                //.eq(ExperimentTimerEntity::getAppId, appId)
-                //.eq(ExperimentTimerEntity::getModel, 2) // 沙盘模式
-                //.ne(ExperimentTimerEntity::getState, EnumExperimentState.FINISH.getState())
-                .list();
-
-        //List<ExperimentTimerEntity> collect = list.stream().filter(t -> t.getPauseCount() == 0).collect(Collectors.toList());
+        List<ExperimentTimerEntity> list = this.getPeriodsTimerList(experimentInstanceId);
+        long currentTimeMillis = System.currentTimeMillis();
         ExperimentTimerEntity experimentTimerEntity = list.stream()
-                .filter(e -> e.getStartTime() <= System.currentTimeMillis() && System.currentTimeMillis() <= e.getEndTime())
-                .max(Comparator.comparingLong(ExperimentTimerEntity::getStartTime))
+                .filter(e -> e.getStartTime().getTime() <= currentTimeMillis && currentTimeMillis <= e.getEndTime().getTime())
+                .max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount))
                 .orElse(null);
 
         if (null == experimentTimerEntity) {
@@ -323,7 +364,6 @@ public class ExperimentTimerBiz {
             throw new ExperimentException("获取实验期数异常,当前时间不存在对应的实验期数,当前实验期数信息：" + stringBuilder);
         }
         // 获取当前期数
-        //ExperimentTimerEntity experimentTimerEntity = collect1.get(0);
         ExperimentPeriodsResonse experimentPeriodsResonse = new ExperimentPeriodsResonse();
         experimentPeriodsResonse.setCurrentPeriod(experimentTimerEntity.getPeriod());
         experimentPeriodsResonse.setExperimentInstanceId(experimentTimerEntity.getExperimentInstanceId());
@@ -333,11 +373,10 @@ public class ExperimentTimerBiz {
         experimentPeriodsResonse.setExperimentPeriods(experimentPeriods);
 
         return experimentPeriodsResonse;
-
     }
 
     /**
-     * 获取实验每一期的开始时间和结束时间
+     * 获取实验所有除暂停记录外的每一期的开始时间和结束时间
      *
      * @param experimentInstanceId
      */
@@ -358,4 +397,21 @@ public class ExperimentTimerBiz {
         });
         return map;
     }
+
+    /**
+     * 获取实验还没开始暂停时的最初始化的实验每期时间
+     *
+     * @param experimentInstanceId
+     */
+    public List<ExperimentTimerEntity> getExperimentPeriodsStartAnsEndTimeNoPause(String experimentInstanceId) {
+        List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
+                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
+                .isNull(ExperimentTimerEntity::getPauseStartTime)
+                .isNull(ExperimentTimerEntity::getPauseEndTime)
+                .orderByAsc(ExperimentTimerEntity::getPeriod)
+                .list();
+        return list;
+    }
+
+
 }

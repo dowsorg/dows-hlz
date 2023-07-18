@@ -1,15 +1,12 @@
 package org.dows.hep.biz.dao;
 
-import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
-import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentSnapshotRefEntity;
 import org.dows.hep.service.ExperimentSnapshotRefService;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
-import java.util.function.Supplier;
 
 /**
  * @author : wuzl
@@ -19,7 +16,7 @@ import java.util.function.Supplier;
 public class ExperimentSnapshotRefDao extends BaseDao<ExperimentSnapshotRefService, ExperimentSnapshotRefEntity>{
 
     public ExperimentSnapshotRefDao(){
-        super("实验快照关联不存在");
+        super("实验快照关联不存在","快照关联数据保存失败");
     }
 
     @Override
@@ -72,15 +69,7 @@ public class ExperimentSnapshotRefDao extends BaseDao<ExperimentSnapshotRefServi
                 .last("limit 1")
                 .oneOpt();
     }
-    @DSTransactional
-    public boolean tranSave(ExperimentSnapshotRefEntity item, Supplier<Boolean> saveOthers){
-        if(!saveOthers.get()){
-            return false;
-        }
-        AssertUtil.falseThenThrow(service.save(item))
-                .throwMessage("快照关联数据保存失败");
-        return true;
-    }
+
 
 
 

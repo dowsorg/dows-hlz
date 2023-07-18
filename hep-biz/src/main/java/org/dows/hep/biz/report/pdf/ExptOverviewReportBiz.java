@@ -2,9 +2,11 @@ package org.dows.hep.biz.report.pdf;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.vo.report.ExptReportModel;
 import org.dows.hep.vo.report.ExptReportVO;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -24,4 +26,26 @@ public class ExptOverviewReportBiz implements ExptReportBiz {
                 .groupReportList(new ArrayList<>())
                 .build();
     }
+
+    @Override
+    public ExptReportData prepareData(String exptInstanceId, String exptGroupId) {
+        return null;
+    }
+
+    @Override
+    public ExptReportModel getExptReportModel(String exptGroupId, ExptReportData exptReportData) {
+        return null;
+    }
+
+    @Override
+    public File getTempFile(String exptGroupId, ExptReportData exptReportData) {
+        return null;
+    }
+
+    @Override
+    public String getSchemeFlt() {
+        return null;
+    }
+
+
 }

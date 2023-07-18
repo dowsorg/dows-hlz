@@ -6,6 +6,7 @@ import org.dows.hep.entity.ExperimentTimerEntity;
 import org.dows.hep.service.ExperimentTimerService;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -73,13 +74,13 @@ public class ExperimentTimerDao extends BaseDao<ExperimentTimerService, Experime
      * @return
      */
 
-    public Optional<ExperimentTimerEntity> getCurPeriodByExperimentId(String appId, String experimentId, Long timeStamp,
+    public Optional<ExperimentTimerEntity> getCurPeriodByExperimentId(String appId, String experimentId, Date now,
                                                                       SFunction<ExperimentTimerEntity,?>... cols) {
         return service.lambdaQuery()
                 //.eq(ShareUtil.XObject.notEmpty(appId), ExperimentTimerEntity::getAppId, appId)
                 .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentId)
-                .le(ExperimentTimerEntity::getStartTime, timeStamp)
-                .ge(ExperimentTimerEntity::getEndTime, timeStamp)
+                .le(ExperimentTimerEntity::getStartTime, now)
+                .ge(ExperimentTimerEntity::getEndTime, now)
                 .orderByDesc(ExperimentTimerEntity::getStartTime, ExperimentTimerEntity::getPauseCount)
                 .select(cols)
                 .last("limit 1")
