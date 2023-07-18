@@ -54,6 +54,7 @@ public class ExperimentSuspendHandler extends AbstractEventHandler implements Ev
                 updExperimentTimerEntity.setPauseCount(experimentTimerEntity.getPauseCount() + 1);
                 updExperimentTimerEntity.setState(EnumExperimentState.PREPARE.getState());
                 updExperimentTimerEntity.setPeriodDuration(experimentTimerEntity.getPeriodDuration());
+                updExperimentTimerEntity.setTimer(experimentTimerEntity.getTimer());
                 updExperimentTimerEntity.setPauseStartTime(experimentRestartRequest.getCurrentTime());
                 updExperimentTimerEntity.setPaused(experimentRestartRequest.getPaused());
                 updateExperimentTimerEntities.add(updExperimentTimerEntity);
@@ -91,6 +92,7 @@ public class ExperimentSuspendHandler extends AbstractEventHandler implements Ev
                     .experimentInstanceId(experimentTimerEntity.getExperimentInstanceId())
                     .startTime(experimentTimerEntity.getStartTime())
                     .endTime(experimentTimerEntity.getEndTime())
+                    .timer(ct - experimentTimerEntity.getStartTime().getTime())
                     .periodDuration(experimentTimerEntity.getPeriodDuration())
                     .period(experimentTimerEntity.getPeriod())
                     .periodInterval(experimentTimerEntity.getPeriodInterval())
