@@ -124,6 +124,7 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
                 .throwMessage("未找到实验时间设置");
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(cached.getStartTime()))
                 .throwMessage("未找到实验开始时间");
+        final Date dateNow=ShareUtil.XDate.localDT2Date(dtNow);
         final Long nowTs = ShareUtil.XDate.localDT2UnixTS(dtNow, false);
         if (dtNow.isBefore(cached.getStartTime())) {
             return rst.setPeriod(1)
@@ -132,7 +133,7 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
                     .setGameState(EnumExperimentState.UNBEGIN);
         }
         Optional<ExperimentTimerEntity> rowTimeOpt = s_instance.experimentTimerDao.getCurPeriodByExperimentId(key.getAppId(), key.getExperimentInstanceId(),
-                nowTs,
+                dateNow,
                 ExperimentTimerEntity::getPeriod,
                 ExperimentTimerEntity::getStartTime,
                 ExperimentTimerEntity::getEndTime);
