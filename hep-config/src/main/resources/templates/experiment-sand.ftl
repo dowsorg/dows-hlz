@@ -4,18 +4,20 @@
     <meta charset="UTF-8"/>
     <title>健康沙盘报告</title>
     <style>
-        .pos{
-            position:absolute;
-            left:200px;
-            top:5px;
+        .pos {
+            position: absolute;
+            left: 200px;
+            top: 5px;
             width: 200px;
             font-size: 10px;
         }
+
         #header-right {
             display: block;
-            color: rgb(126,132,133);
+            color: rgb(126, 132, 133);
             position: running(header-right);
         }
+
         @page {
             size: 8.5in 11in;
             @top-right {
@@ -28,75 +30,96 @@
                 content: element(footer);
             }
         }
+
         #footer {
             position: running(footer);
         }
+
         #pages:before {
             content: counter(page);
         }
+
         #pages:after {
             content: counter(pages);
         }
-        .pageNext{page-break-after: always;}
+
+        .pageNext {
+            page-break-after: always;
+        }
     </style>
     <style>
         body {
-            font-family:SimHei;
+            font-family: SimHei;
         }
-        .bold{
-            font-weight:bold;
+
+        .bold {
+            font-weight: bold;
         }
+
         .text-center {
             text-align: center;
         }
+
         .text-right {
             text-align: right;
         }
+
         .wd-700 {
-            width:700px;
+            width: 700px;
         }
+
         .font-blue {
             color: rgb(42, 146, 185);
         }
+
         .background-singular-blue {
             background-color: rgb(187, 221, 233);
         }
+
         .background-even-blue {
             background-color: rgb(218, 226, 240);
         }
+
         .pageTitle {
             font-size: 32px;
-            color:rgb(42, 147, 186)
+            color: rgb(42, 147, 186)
         }
+
         .designContent {
             background: #fff;
         }
-        .introTitle{
+
+        .introTitle {
             padding: 0 16px;
             border-left: 4px solid #bbbfc4;
             margin-bottom: 24px;
         }
-        .planQuestion .title{
+
+        .planQuestion .title {
             font-size: 25px;
             color: rgba(0, 0, 0, 0.85);
             line-height: 32px;
             margin-bottom: 24px;
         }
-        .planQuestion .isSub{
+
+        .planQuestion .isSub {
             font-size: 22px;
             margin-bottom: 16px;
         }
-        .planQuestion .isSubSub{
+
+        .planQuestion .isSubSub {
             font-size: 18px;
             margin-bottom: 20px;
         }
+
         .answerContent {
             border-radius: 2px;
             border: 1px solid rgba(0, 0, 0, 0.15);
             padding: 6px 12px;
             color: rgba(42, 46, 54, 0.75);
         }
-        .groupDiv{
+
+        .groupDiv {
             text-align: left;
             font-size: 13px;
             margin-top: 30px;
@@ -121,14 +144,16 @@
         <div class="groupDiv">组名：${groupInfo.groupName!""}</div>
         <div class="groupDiv">成员：<#list groupInfo.groupMembers as item>${item}<#if item_has_next>、</#if></#list></div>
         <div class="groupDiv">实验社区：${groupInfo.caseName!""}</div>
-        <div class="groupDiv">实验日期：<#if groupInfo.exptStartDate??>${groupInfo.exptStartDate?string("yyyy-MM-dd")}</#if></div>
+        <div class="groupDiv">
+            实验日期：<#if groupInfo.exptStartDate??>${groupInfo.exptStartDate?string("yyyy-MM-dd")}</#if></div>
         <div class="groupDiv">案例数量：${groupInfo.caseNum!0}</div>
     </div>
 </div>
 <div class="pageNext"></div>
 <div class="page">
 
-    <div class="font-blue bold" style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">一 实验总得分</div>
+    <div class="font-blue bold" style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">一 实验总得分
+    </div>
     <div style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">总得分</div>
     <table class="wd-700 text-center" align="center">
         <tr class="background-singular-blue">
@@ -194,7 +219,8 @@
         </tr>
     </table>
 
-    <div class="font-blue bold" style="font-size:18px;margin-top:50px;margin-bottom:25px" align="center">二 实验详情</div>
+    <div class="font-blue bold" style="font-size:18px;margin-top:50px;margin-bottom:25px" align="center">二 实验详情
+    </div>
     <#list npcDatas as npc>
         <div style="font-size:18px;margin-top:25px;margin-bottom:25px">案例${npc.baseInfo.no}: ${npc.userName}</div>
         <div style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">基本信息</div>
@@ -285,16 +311,30 @@
             <#list categQuestionnaire.questionInfos as questionInfo>
                 <div>
                     <div style="font-size:18px;margin-top:25px;margin-bottom:25px;">${questionInfo.questionTitle}</div>
-                    <#list questionInfo.questionOptions as option>
-                        <div>${option}</div>
-                    </#list>
-
-                    <div>你的答案</div>
-                    <div>${questionInfo.userAnswer!"无"}</div>
-                    <div>参考答案</div>
-                    <div>${questionInfo.rightAnswer!"无"}</div>
-                    <div>解析</div>
-                    <div>${questionInfo.analysis!"无"}</div>
+                    <#if questionInfo.children?size==0>
+                        <#list questionInfo.questionOptions as option>
+                            <div>${option}</div>
+                        </#list>
+                        <div>你的答案</div>
+                        <div>${questionInfo.userAnswer!"无"}</div>
+                        <div>参考答案</div>
+                        <div>${questionInfo.rightAnswer!"无"}</div>
+                        <div>解析</div>
+                        <div>${questionInfo.analysis!"无"}</div>
+                    <#else >
+                        <#list questionInfo.children as child>
+                            <div style="font-size:18px;margin-top:25px;margin-bottom:25px;">${child.questionTitle}</div>
+                            <#list child.questionOptions as option>
+                                <div>${option}</div>
+                            </#list>
+                            <div>你的答案</div>
+                            <div>${child.userAnswer!"无"}</div>
+                            <div>参考答案</div>
+                            <div>${child.rightAnswer!"无"}</div>
+                            <div>解析</div>
+                            <div>${child.analysis!"无"}</div>
+                        </#list>
+                    </#if>
                 </div>
             </#list>
         </#list>
