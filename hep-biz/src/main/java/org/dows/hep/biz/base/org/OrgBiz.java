@@ -637,7 +637,7 @@ public class OrgBiz {
                 personWrapper.set(CasePersonEntity::getDeleted, true)
                         .eq(CasePersonEntity::getCaseOrgId, entity.getCaseOrgId())
                         .eq(CasePersonEntity::getCaseInstanceId, caseInstanceId)
-                        .in(CasePersonEntity::getCasePersonId,accountIds);
+                        .in(CasePersonEntity::getAccountId,accountIds);
                 boolean flag1 = casePersonService.update(personWrapper);
             });
             //2.2、获取该机构下的成员并删除
