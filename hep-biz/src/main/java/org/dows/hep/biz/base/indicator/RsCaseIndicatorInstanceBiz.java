@@ -9,6 +9,7 @@ import org.dows.hep.api.base.indicator.response.IndicatorInstanceCategoryRespons
 import org.dows.hep.api.base.indicator.response.IndicatorInstanceResponseRs;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.enums.EnumIndicatorRuleType;
+import org.dows.hep.api.enums.EnumIndicatorType;
 import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.api.exception.RsCaseIndicatorInstanceBizException;
 import org.dows.hep.entity.*;
@@ -403,5 +404,48 @@ public class RsCaseIndicatorInstanceBiz {
     if (StringUtils.isNotBlank(indicatorInstanceId)) {
       throw new RsCaseIndicatorInstanceBizException(EnumESC.CASE_INDICATOR_INSTANCE_COME_FROM_DATABASE_CANNOT_DELETE);
     }
+  }
+
+  public void populateKCaseIndicatorInstanceIdVCaseIndicatorInstanceEntityMap(
+      Map<String, CaseIndicatorInstanceEntity> kCaseIndicatorInstanceIdVCaseIndicatorInstanceEntityMap,
+      String accountId) {
+    if (Objects.isNull(kCaseIndicatorInstanceIdVCaseIndicatorInstanceEntityMap) || StringUtils.isBlank(accountId)) {return;}
+    caseIndicatorInstanceService.lambdaQuery()
+        .eq(CaseIndicatorInstanceEntity::getPrincipalId, accountId)
+        .list()
+        .forEach(caseIndicatorInstanceEntity -> {
+          kCaseIndicatorInstanceIdVCaseIndicatorInstanceEntityMap.put(caseIndicatorInstanceEntity.getCaseIndicatorInstanceId(), caseIndicatorInstanceEntity);
+        });
+  }
+
+  public void populateHealthPointCaseIndicatorRuleEntity(
+      AtomicReference<CaseIndicatorRuleEntity> caseIndicatorRuleEntityAR,
+      String accountId) {
+    if (Objects.isNull(caseIndicatorRuleEntityAR)
+        || StringUtils.isBlank(accountId)
+    ) {return;}
+    CaseIndicatorInstanceEntity caseIndicatorInstanceEntity = caseIndicatorInstanceService.lambdaQuery()
+        .eq(CaseIndicatorInstanceEntity::getPrincipalId, accountId)
+        .eq(CaseIndicatorInstanceEntity::getType, EnumIndicatorType.HEALTH_POINT.getType())
+        .one();
+    if (Objects.isNull(caseIndicatorInstanceEntity)) {return;}
+    caseIndicatorRuleService.lambdaQuery()
+        .eq(CaseIndicatorRuleEntity::getVariableId, caseIndicatorInstanceEntity.getCaseIndicatorInstanceId())
+        .oneOpt()
+        .ifPresent(caseIndicatorRuleEntityAR::set);
+  }
+
+  public void populateKCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap(
+      Map<String, CaseIndicatorRuleEntity> kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap,
+      Set<String> caseIndicatorInstanceIdSet) {
+    if (Objects.isNull(kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap)
+        || Objects.isNull(caseIndicatorInstanceIdSet) || caseIndicatorInstanceIdSet.isEmpty()
+    ) {return;}
+    caseIndicatorRuleService.lambdaQuery()
+        .in(CaseIndicatorRuleEntity::getVariableId, caseIndicatorInstanceIdSet)
+        .list()
+        .forEach(caseIndicatorRuleEntity -> {
+          kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap.put(caseIndicatorRuleEntity.getVariableId(), caseIndicatorRuleEntity);
+        });
   }
 }

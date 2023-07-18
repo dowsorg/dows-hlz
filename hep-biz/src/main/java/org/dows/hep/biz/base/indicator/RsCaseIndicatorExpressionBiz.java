@@ -5,18 +5,24 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.dows.hep.api.base.indicator.request.CaseCreateOrUpdateIndicatorExpressionItemRequestRs;
-import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorExpressionItemRequestRs;
 import org.dows.hep.api.enums.EnumESC;
+import org.dows.hep.api.enums.EnumIndicatorExpressionScene;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.api.exception.CaseIndicatorExpressionException;
 import org.dows.hep.api.exception.RsCaseIndicatorExpressionBizException;
-import org.dows.hep.api.exception.RsIndicatorExpressionBizException;
+import org.dows.hep.api.exception.RsIndicatorExpressionException;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
+import org.springframework.expression.Expression;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -39,6 +45,7 @@ public class RsCaseIndicatorExpressionBiz {
   private final CaseIndicatorExpressionService caseIndicatorExpressionService;
   private final CaseIndicatorExpressionItemService caseIndicatorExpressionItemService;
   private final CaseIndicatorExpressionInfluenceService caseIndicatorExpressionInfluenceService;
+  private final RsUtilBiz rsUtilBiz;
   public void populateCaseIndicatorExpressionEntity(
       AtomicReference<CaseIndicatorExpressionEntity> caseIndicatorExpressionEntityAR,
       String caseIndicatorExpressionId) {
@@ -122,6 +129,7 @@ public class RsCaseIndicatorExpressionBiz {
   }
 
   public void populateByDbAndParamCaseIndicatorExpressionItemEntityList(
+      String caseIndicatorExpressionId,
       List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList,
       Map<String, CaseIndicatorExpressionItemEntity> kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap,
       List<CaseCreateOrUpdateIndicatorExpressionItemRequestRs> caseCreateOrUpdateIndicatorExpressionItemRequestRsList
@@ -136,6 +144,12 @@ public class RsCaseIndicatorExpressionBiz {
       String caseIndicatorExpressionItemId = caseCreateOrUpdateIndicatorExpressionItemRequestRs.getCaseIndicatorExpressionItemId();
       CaseIndicatorExpressionItemEntity caseIndicatorExpressionItemEntity = null;
       if (StringUtils.isBlank(caseIndicatorExpressionItemId)) {
+        Integer seq = null;
+        if (StringUtils.isBlank(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getConditionRaw())) {
+          seq = Integer.MAX_VALUE;
+        } else {
+          seq = seqAtomicInteger.getAndIncrement();
+        }
         caseIndicatorExpressionItemEntity = CaseIndicatorExpressionItemEntity
             .builder()
             .caseIndicatorExpressionItemId(idGenerator.nextIdStr())
@@ -149,7 +163,7 @@ public class RsCaseIndicatorExpressionBiz {
             .resultExpression(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultExpression())
             .resultNameList(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultNameList())
             .resultValList(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultValList())
-            .seq(seqAtomicInteger.getAndIncrement())
+            .seq(seq)
             .build();
       } else {
         caseIndicatorExpressionItemEntity = kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get(caseIndicatorExpressionItemId);
@@ -371,5 +385,529 @@ public class RsCaseIndicatorExpressionBiz {
         .eq(CaseIndicatorExpressionRefEntity::getIndicatorExpressionId, caseIndicatorExpressionId)
         .oneOpt()
         .ifPresent(caseIndicatorExpressionRefEntityAR::set);
+  }
+
+  public void parseCaseIndicatorExpression(
+      Integer field, Integer source, Integer scene,
+      AtomicReference<String> resultAtomicReference,
+      Map<String, CaseIndicatorRuleEntity> kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap,
+      CaseIndicatorExpressionEntity caseIndicatorExpressionEntity,
+      List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList,
+      CaseIndicatorExpressionItemEntity minCaseIndicatorExpressionItemEntity,
+      CaseIndicatorExpressionItemEntity maxCaseIndicatorExpressionItemEntity
+  ) {
+    rsUtilBiz.checkField(field);
+    rsUtilBiz.checkScene(scene);
+    EnumIndicatorExpressionSource enumIndicatorExpressionSource = rsUtilBiz.checkSource(source);
+    switch (enumIndicatorExpressionSource) {
+      case INDICATOR_MANAGEMENT -> cPIEIndicatorManagement(
+          scene,
+          resultAtomicReference,
+          kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap,
+          caseIndicatorExpressionEntity,
+          caseIndicatorExpressionItemEntityList,
+          minCaseIndicatorExpressionItemEntity,
+          maxCaseIndicatorExpressionItemEntity
+      );
+      case CROWDS -> cPIECrowds(resultAtomicReference, caseIndicatorExpressionItemEntityList, kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap);
+      default -> {
+        log.error("RsIndicatorExpressionBiz.experimentParseIndicatorExpression source:{} is illegal", source);
+        throw new RsIndicatorExpressionException("公式来源不合法");
+      }
+    }
+  }
+  private void cPIEIndicatorManagement(
+      Integer scene, AtomicReference<String> resultAtomicReference,
+      Map<String, CaseIndicatorRuleEntity> kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap,
+      CaseIndicatorExpressionEntity caseIndicatorExpressionRsEntity,
+      List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList,
+      CaseIndicatorExpressionItemEntity minCaseIndicatorExpressionItemEntity,
+      CaseIndicatorExpressionItemEntity maxCaseIndicatorExpressionItemEntity
+  ) {
+    cPIEResultUsingExperimentIndicatorInstanceIdCombineWithHandle(
+        scene, resultAtomicReference,
+        kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap,
+        caseIndicatorExpressionRsEntity,
+        caseIndicatorExpressionItemEntityList,
+        minCaseIndicatorExpressionItemEntity,
+        maxCaseIndicatorExpressionItemEntity
+    );
+  }
+
+  private void cPIECrowds(
+      AtomicReference<String> resultAtomicReference,
+      List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList,
+      Map<String, CaseIndicatorRuleEntity> kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap
+  ) {
+    if (Objects.isNull(caseIndicatorExpressionItemEntityList)) {return;}
+    /* runsix:人群类型只能有一个公式，并且公式只有一个条件 */
+    boolean result = cPIEConditionUsingCaseIndicatorInstanceId(
+        caseIndicatorExpressionItemEntityList.get(0),
+        kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap
+    );
+    resultAtomicReference.set(String.valueOf(result));
+  }
+
+  public void cPIEResultUsingExperimentIndicatorInstanceIdCombineWithHandle(
+      Integer scene, AtomicReference<String> resultAtomicReference,
+      Map<String, CaseIndicatorRuleEntity> kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap,
+      CaseIndicatorExpressionEntity caseIndicatorExpressionRsEntity,
+      List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList,
+      CaseIndicatorExpressionItemEntity minCaseIndicatorExpressionItemEntity,
+      CaseIndicatorExpressionItemEntity maxCaseIndicatorExpressionItemEntity
+  ) {
+    /* runsix:1.按顺序解析每一个公式 */
+    caseIndicatorExpressionItemEntityList.sort(Comparator.comparingInt(CaseIndicatorExpressionItemEntity::getSeq));
+    for (int i = 0; i <= caseIndicatorExpressionItemEntityList.size()-1; i++) {
+      CaseIndicatorExpressionItemEntity caseIndicatorExpressionItemRsEntity = caseIndicatorExpressionItemEntityList.get(i);
+      boolean hasResult = cPIEResultUsingExperimentIndicatorInstanceIdCombineWithoutHandle(
+          resultAtomicReference, kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap, caseIndicatorExpressionItemRsEntity
+      );
+      if (hasResult) {
+        /* runsix:2.处理解析后的结果 */
+        handleParsedResult(
+            resultAtomicReference, scene, caseIndicatorExpressionRsEntity, minCaseIndicatorExpressionItemEntity, maxCaseIndicatorExpressionItemEntity
+        );
+        break;
+      }
+    }
+  }
+
+  private void handleParsedResult(
+      AtomicReference<String> resultAtomicReference,
+      Integer scene,
+      CaseIndicatorExpressionEntity caseIndicatorExpressionEntity,
+      CaseIndicatorExpressionItemEntity minCaseIndicatorExpressionItemEntity,
+      CaseIndicatorExpressionItemEntity maxCaseIndicatorExpressionItemRsEntity
+  ) {
+    EnumIndicatorExpressionScene enumIndicatorExpressionScene = EnumIndicatorExpressionScene.getByScene(scene);
+    /* runsix:如果公式使用场景不明确，不做特殊处理，直接返回 */
+    if (Objects.isNull(enumIndicatorExpressionScene)) {
+      return;
+    }
+  }
+
+  private boolean cPIEResultUsingExperimentIndicatorInstanceIdCombineWithoutHandle(
+      AtomicReference<String> resultAtomicReference,
+      Map<String, CaseIndicatorRuleEntity> kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap,
+      CaseIndicatorExpressionItemEntity caseIndicatorExpressionItemEntity
+  ) {
+    boolean parsedCondition = cPIEConditionUsingCaseIndicatorInstanceId(caseIndicatorExpressionItemEntity, kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap);
+    /* runsix:2.如果条件不满足，不解析结果，继续下一个 */
+    if (!parsedCondition) {
+      return false;
+    }
+
+    /* runsix:3.如果一个公式有结果就跳出 */
+    String parsedResult = cPIEResultUsingCaseIndicatorInstanceId(caseIndicatorExpressionItemEntity, kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap);
+    if (RsUtilBiz.RESULT_DROP.equals(parsedResult)) {
+      return false;
+    }
+    resultAtomicReference.set(parsedResult);
+    return true;
+  }
+
+  private boolean cPIEConditionUsingCaseIndicatorInstanceId(
+      CaseIndicatorExpressionItemEntity caseIndicatorExpressionItemEntity,
+      Map<String, CaseIndicatorRuleEntity> kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap
+  ) {
+    try {
+      String conditionExpression = caseIndicatorExpressionItemEntity.getConditionExpression();
+      String conditionNameList = caseIndicatorExpressionItemEntity.getConditionNameList();
+      List<String> conditionNameSplitList = rsUtilBiz.getConditionNameSplitList(conditionNameList);
+      String conditionValList = caseIndicatorExpressionItemEntity.getConditionValList();
+      List<String> conditionValSplitList = rsUtilBiz.getConditionValSplitList(conditionValList);
+      StandardEvaluationContext context = new StandardEvaluationContext();
+      ExpressionParser parser = new SpelExpressionParser();
+      Expression expression = parser.parseExpression(conditionExpression);
+      if (StringUtils.isBlank(conditionExpression)) {
+        return true;
+      }
+      for (int i = 0; i <= conditionNameSplitList.size() - 1; i++) {
+        String caseIndicatorInstanceId = conditionValSplitList.get(i);
+        CaseIndicatorRuleEntity caseIndicatorRuleEntity = kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap.get(caseIndicatorInstanceId);
+        if (Objects.isNull(caseIndicatorRuleEntity) || StringUtils.isBlank(caseIndicatorRuleEntity.getDef())) {
+          return false;
+        }
+        String currentVal = caseIndicatorRuleEntity.getDef();
+        boolean isValDigital = NumberUtils.isCreatable(currentVal);
+        if (isValDigital) {
+          context.setVariable(conditionNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(currentVal)).setScale(2, RoundingMode.DOWN));
+        } else {
+          context.setVariable(conditionNameSplitList.get(i), currentVal);
+        }
+      }
+      return Boolean.TRUE.equals(expression.getValue(context, Boolean.class));
+    } catch(Exception e) {
+      log.error("RsCaseIndicatorExpressionBiz.cPIEConditionUsingExperimentIndicatorInstanceId", e);
+      return false;
+    }
+  }
+
+  private String cPIEResultUsingCaseIndicatorInstanceId(
+      CaseIndicatorExpressionItemEntity caseIndicatorExpressionItemEntity,
+      Map<String, CaseIndicatorRuleEntity> kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap
+  ) {
+    try {
+      String resultExpression = caseIndicatorExpressionItemEntity.getResultExpression();
+      String resultNameList = caseIndicatorExpressionItemEntity.getResultNameList();
+      List<String> resultNameSplitList = rsUtilBiz.getResultNameSplitList(resultNameList);
+      String resultValList = caseIndicatorExpressionItemEntity.getResultValList();
+      List<String> resultValSplitList = rsUtilBiz.getResultValSplitList(resultValList);
+      StandardEvaluationContext context = new StandardEvaluationContext();
+      ExpressionParser parser = new SpelExpressionParser();
+      Expression expression = parser.parseExpression(resultExpression);
+      if (StringUtils.isBlank(resultExpression)) {
+        return RsUtilBiz.RESULT_DROP;
+      }
+      for (int i = 0; i <= resultNameSplitList.size() - 1; i++) {
+        String caseIndicatorInstanceId = resultValSplitList.get(i);
+        CaseIndicatorRuleEntity caseIndicatorRuleEntity = kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap.get(caseIndicatorInstanceId);
+        if (Objects.isNull(caseIndicatorRuleEntity) || StringUtils.isBlank(caseIndicatorRuleEntity.getDef())) {
+          return RsUtilBiz.RESULT_DROP;
+        }
+        String currentVal = caseIndicatorRuleEntity.getDef();
+        boolean isValDigital = NumberUtils.isCreatable(currentVal);
+        if (isValDigital) {
+          context.setVariable(resultNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(currentVal)).setScale(2, RoundingMode.DOWN));
+        } else {
+          context.setVariable(resultNameSplitList.get(i), currentVal);
+        }
+      }
+      return expression.getValue(context, String.class);
+    } catch(Exception e) {
+      log.error("RsCaseIndicatorExpressionBiz.cPIEResultUsingExperimentIndicatorInstanceId", e);
+      return RsUtilBiz.RESULT_DROP;
+    }
+  }
+
+  public void populateKCaseIndicatorInstanceIdInfluencedIndicatorInstanceIdSetMap(
+      Map<String, Set<String>> kCaseIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap,
+      Set<String> caseIndicatorInstanceIdSet) {
+    if (Objects.isNull(kCaseIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap)
+        || Objects.isNull(caseIndicatorInstanceIdSet) || caseIndicatorInstanceIdSet.isEmpty()
+    ) {return;}
+    caseIndicatorExpressionInfluenceService.lambdaQuery()
+        .in(CaseIndicatorExpressionInfluenceEntity::getIndicatorInstanceId, caseIndicatorInstanceIdSet)
+        .list()
+        .forEach(caseIndicatorExpressionInfluenceEntity -> {
+          String caseIndicatorInstanceId = caseIndicatorExpressionInfluenceEntity.getIndicatorInstanceId();
+          Set<String> influencedIndicatorInstanceIdSet = kCaseIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.get(caseIndicatorInstanceId);
+          if (Objects.isNull(influencedIndicatorInstanceIdSet)) {influencedIndicatorInstanceIdSet = new HashSet<>();}
+          String influencedIndicatorInstanceIdList = caseIndicatorExpressionInfluenceEntity.getInfluencedIndicatorInstanceIdList();
+          List<String> splitList = rsUtilBiz.getSplitList(influencedIndicatorInstanceIdList);
+          influencedIndicatorInstanceIdSet.addAll(splitList);
+          kCaseIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.put(caseIndicatorInstanceId, influencedIndicatorInstanceIdSet);
+        });
+  }
+
+  public void populateKCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap(
+      Map<String, CaseIndicatorRuleEntity> kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap,
+      Set<String> caseIndicatorInstanceIdSet) {
+    if (Objects.isNull(kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap)
+        || Objects.isNull(caseIndicatorInstanceIdSet) || caseIndicatorInstanceIdSet.isEmpty()
+    ) {return;}
+    caseIndicatorRuleService.lambdaQuery()
+        .in(CaseIndicatorRuleEntity::getVariableId, caseIndicatorInstanceIdSet)
+        .list()
+        .forEach(caseIndicatorRuleEntity -> {
+          kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap.put(caseIndicatorRuleEntity.getVariableId(), caseIndicatorRuleEntity);
+        });
+  }
+
+  public void populateKReasonIdVCaseIndicatorExpressionRefEntityListMap(
+      Map<String, List<CaseIndicatorExpressionRefEntity>> kReasonIdVCaseIndicatorExpressionRefEntityListMap,
+      Set<String> reasonIdSet
+  ){
+    if (Objects.isNull(kReasonIdVCaseIndicatorExpressionRefEntityListMap)
+        || Objects.isNull(reasonIdSet) || reasonIdSet.isEmpty()
+    ) {return;}
+    caseIndicatorExpressionRefService.lambdaQuery()
+        .in(CaseIndicatorExpressionRefEntity::getReasonId, reasonIdSet)
+        .list()
+        .forEach(caseIndicatorExpressionRefEntity -> {
+          String reasonId = caseIndicatorExpressionRefEntity.getReasonId();
+          List<CaseIndicatorExpressionRefEntity> caseIndicatorExpressionRefEntityList = kReasonIdVCaseIndicatorExpressionRefEntityListMap.get(reasonId);
+          if (Objects.isNull(caseIndicatorExpressionRefEntityList)) {caseIndicatorExpressionRefEntityList = new ArrayList<>();}
+          caseIndicatorExpressionRefEntityList.add(caseIndicatorExpressionRefEntity);
+          kReasonIdVCaseIndicatorExpressionRefEntityListMap.put(reasonId, caseIndicatorExpressionRefEntityList);
+        });
+  }
+
+  public void populateKCaseIndicatorExpressionIdCaseIndicatorExpressionEntityMap(
+      Map<String, CaseIndicatorExpressionEntity> kCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap,
+      Set<String> indicatorExpressionIdSet
+  ) {
+    if (Objects.isNull(kCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap)
+        || Objects.isNull(indicatorExpressionIdSet) || indicatorExpressionIdSet.isEmpty()
+    ) {return;}
+    caseIndicatorExpressionService.lambdaQuery()
+        .in(CaseIndicatorExpressionEntity::getCaseIndicatorExpressionId, indicatorExpressionIdSet)
+        .list()
+        .forEach(caseIndicatorExpressionEntity -> {
+          kCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap.put(caseIndicatorExpressionEntity.getCaseIndicatorExpressionId(), caseIndicatorExpressionEntity);
+        });
+  }
+
+  public void populateKCaseIndicatorInstanceIdVCaseIndicatorExpressionEntityMap(
+      Map<String, CaseIndicatorExpressionEntity> kCaseIndicatorInstanceIdVCaseIndicatorExpressionEntityMap,
+      Set<String> caseIndicatorInstanceIdSet) {
+    if (Objects.isNull(kCaseIndicatorInstanceIdVCaseIndicatorExpressionEntityMap)
+        || Objects.isNull(caseIndicatorInstanceIdSet) || caseIndicatorInstanceIdSet.isEmpty()
+    ) {return;}
+    Map<String, List<CaseIndicatorExpressionRefEntity>> kReasonIdVCaseIndicatorExpressionRefEntityListMap = new HashMap<>();
+    this.populateKReasonIdVCaseIndicatorExpressionRefEntityListMap(kReasonIdVCaseIndicatorExpressionRefEntityListMap, caseIndicatorInstanceIdSet);
+    Map<String, Set<String>> kReasonIdVCaseIndicatorExpressionIdSetMap = new HashMap<>();
+    Set<String> caseIndicatorExpressionIdSet = new HashSet<>();
+    kReasonIdVCaseIndicatorExpressionRefEntityListMap.forEach((reasonId, caseIndicatorExpressionRefEntityList) -> {
+      Set<String> caseIndicatorExpressionIdSet2 = caseIndicatorExpressionRefEntityList.stream().map(CaseIndicatorExpressionRefEntity::getIndicatorExpressionId).collect(Collectors.toSet());
+      caseIndicatorExpressionIdSet.addAll(caseIndicatorExpressionIdSet2);
+      Set<String> caseIndicatorExpressionIdSet1 = kReasonIdVCaseIndicatorExpressionIdSetMap.get(reasonId);
+      if (Objects.isNull(caseIndicatorExpressionIdSet1)) {
+        caseIndicatorExpressionIdSet1 = new HashSet<>();
+      }
+      caseIndicatorExpressionIdSet1.addAll(caseIndicatorExpressionIdSet2);
+      kReasonIdVCaseIndicatorExpressionIdSetMap.put(reasonId, caseIndicatorExpressionIdSet1);
+    });
+    Map<String, CaseIndicatorExpressionEntity> kCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap = new HashMap<>();
+    this.populateKCaseIndicatorExpressionIdCaseIndicatorExpressionEntityMap(kCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap, caseIndicatorExpressionIdSet);
+    kReasonIdVCaseIndicatorExpressionIdSetMap.forEach((reasonId, caseIndicatorExpressionIdSet2) -> {
+      caseIndicatorExpressionIdSet2.forEach(caseIndicatorExpressionId -> {
+        CaseIndicatorExpressionEntity caseIndicatorExpressionEntity = kCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap.get(caseIndicatorExpressionId);
+        if (Objects.isNull(caseIndicatorExpressionEntity)) {return;}
+        Integer source = caseIndicatorExpressionEntity.getSource();
+        if (EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource().equals(source)) {
+          kCaseIndicatorInstanceIdVCaseIndicatorExpressionEntityMap.put(reasonId, caseIndicatorExpressionEntity);
+        }
+      });
+    });
+  }
+
+  public void populateKCaseIndicatorInstanceIdVCaseIndicatorExpressionItemEntityListMap(
+      Map<String, List<CaseIndicatorExpressionItemEntity>> kCaseIndicatorInstanceIdVCaseIndicatorExpressionItemEntityListMap,
+      Set<String> caseIndicatorInstanceIdSet) {
+    if (Objects.isNull(kCaseIndicatorInstanceIdVCaseIndicatorExpressionItemEntityListMap)
+        || Objects.isNull(caseIndicatorInstanceIdSet) || caseIndicatorInstanceIdSet.isEmpty()
+    ) {return;}
+    Map<String, CaseIndicatorExpressionEntity> kCaseIndicatorInstanceIdVCaseIndicatorExpressionEntityMap = new HashMap<>();
+    this.populateKCaseIndicatorInstanceIdVCaseIndicatorExpressionEntityMap(kCaseIndicatorInstanceIdVCaseIndicatorExpressionEntityMap, caseIndicatorInstanceIdSet);
+    if (kCaseIndicatorInstanceIdVCaseIndicatorExpressionEntityMap.isEmpty()) {return;}
+    Set<String> caseIndicatorExpressionIdSet = kCaseIndicatorInstanceIdVCaseIndicatorExpressionEntityMap.values().stream().map(CaseIndicatorExpressionEntity::getCaseIndicatorExpressionId).collect(Collectors.toSet());
+    Map<String, List<CaseIndicatorExpressionItemEntity>> kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap = new HashMap<>();
+    caseIndicatorExpressionItemService.lambdaQuery()
+        .in(CaseIndicatorExpressionItemEntity::getIndicatorExpressionId, caseIndicatorExpressionIdSet)
+        .list()
+        .forEach(caseIndicatorExpressionItemEntity -> {
+          String indicatorExpressionId = caseIndicatorExpressionItemEntity.getIndicatorExpressionId();
+          List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList = kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap.get(indicatorExpressionId);
+          if (Objects.isNull(caseIndicatorExpressionItemEntityList)) {
+            caseIndicatorExpressionItemEntityList = new ArrayList<>();
+          }
+          caseIndicatorExpressionItemEntityList.add(caseIndicatorExpressionItemEntity);
+          kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap.put(indicatorExpressionId, caseIndicatorExpressionItemEntityList);
+        });
+    kCaseIndicatorInstanceIdVCaseIndicatorExpressionEntityMap.forEach((caseIndicatorInstanceId, caseIndicatorExpressionEntity) -> {
+      String indicatorExpressionId = caseIndicatorExpressionEntity.getIndicatorExpressionId();
+      List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList = kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap.get(indicatorExpressionId);
+      if (Objects.isNull(caseIndicatorExpressionItemEntityList)) {return;}
+      kCaseIndicatorInstanceIdVCaseIndicatorExpressionItemEntityListMap.put(caseIndicatorInstanceId, caseIndicatorExpressionItemEntityList);
+    });
+  }
+
+  public void populateKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap(
+      Map<String, CaseIndicatorExpressionItemEntity> kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap,
+      Set<String> caseIndicatorExpressionItemIdSet
+  ) {
+    if (Objects.isNull(kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap)
+        || Objects.isNull(caseIndicatorExpressionItemIdSet) || caseIndicatorExpressionItemIdSet.isEmpty()
+    ) {return;}
+    caseIndicatorExpressionItemService.lambdaQuery()
+        .in(CaseIndicatorExpressionItemEntity::getCaseIndicatorExpressionItemId, caseIndicatorExpressionItemIdSet)
+        .list()
+        .forEach(caseIndicatorExpressionItemEntity -> {
+          kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.put(caseIndicatorExpressionItemEntity.getCaseIndicatorExpressionItemId(), caseIndicatorExpressionItemEntity);
+        });
+  }
+
+  public void populateParseParam(
+      Set<String> reasonIdSet,
+      Map<String, List<CaseIndicatorExpressionEntity>> kReasonIdVCaseIndicatorExpressionEntityListMap,
+      Map<String, List<CaseIndicatorExpressionItemEntity>> kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap,
+      Map<String, CaseIndicatorExpressionItemEntity> kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemEntityMap
+  ) throws ExecutionException, InterruptedException {
+    if (Objects.isNull(reasonIdSet) || reasonIdSet.isEmpty()
+        || Objects.isNull(kReasonIdVCaseIndicatorExpressionEntityListMap)
+        || Objects.isNull(kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap)
+        || Objects.isNull(kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemEntityMap)
+    ) {return;}
+
+    CompletableFuture<Void> cfPopulateKCaseReasonIdVCaseIndicatorExpressionRsEntityListMap = CompletableFuture.runAsync(() -> {
+      try {
+        populateKCaseReasonIdVCaseIndicatorExpressionEntityListMap(kReasonIdVCaseIndicatorExpressionEntityListMap, reasonIdSet);
+      } catch (Exception e) {
+        log.error("RsCaseIndicatorExpressionBiz.populateParseParam error", e);
+        throw new RsIndicatorExpressionException("填充解析公式参数出错，请及时与管理员联系");
+      }
+    });
+    cfPopulateKCaseReasonIdVCaseIndicatorExpressionRsEntityListMap.get();
+
+    Set<String> caseIndicatorExpressionIdSet = new HashSet<>();
+    kReasonIdVCaseIndicatorExpressionEntityListMap.forEach((reasonId, caseIndicatorExpressionRsEntityList) -> {
+      caseIndicatorExpressionRsEntityList.forEach(caseIndicatorExpressionEntity -> {
+        caseIndicatorExpressionIdSet.add(caseIndicatorExpressionEntity.getCaseIndicatorExpressionId());
+      });
+    });
+    if (caseIndicatorExpressionIdSet.isEmpty()) {return;}
+
+    Map<String, CaseIndicatorExpressionEntity> kCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap = new HashMap<>();
+    CompletableFuture<Void> cfPopulateKCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap = CompletableFuture.runAsync(() -> {
+      populateKCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap(kCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap, caseIndicatorExpressionIdSet);
+    });
+    cfPopulateKCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap.get();
+
+    CompletableFuture<Void> cfPopulateKCaseIndicatorExpressionIdVCaseIndicatorExpressionItemListMap = CompletableFuture.runAsync(() -> {
+      populateKCaseIndicatorExpressionIdVCaseIndicatorExpressionItemListMap(
+          kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap, caseIndicatorExpressionIdSet);
+    });
+    cfPopulateKCaseIndicatorExpressionIdVCaseIndicatorExpressionItemListMap.get();
+
+    Set<String> caseIndicatorExpressionItemIdSet = new HashSet<>();
+    kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap.forEach((caseIndicatorExpressionId, caseIndicatorExpressionItemEntityList) -> {
+      caseIndicatorExpressionItemEntityList.forEach(caseIndicatorExpressionItemEntity -> {
+        caseIndicatorExpressionItemIdSet.add(caseIndicatorExpressionItemEntity.getCaseIndicatorExpressionItemId());
+      });
+    });
+    if (caseIndicatorExpressionItemIdSet.isEmpty()) {return;}
+
+    CompletableFuture<Void> cfPopulateKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemEntityMap = CompletableFuture.runAsync(() -> {
+      populateKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemEntityMap(
+          kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemEntityMap, caseIndicatorExpressionItemIdSet);
+    });
+    cfPopulateKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemEntityMap.get();
+  }
+
+  public void populateKCaseReasonIdVCaseIndicatorExpressionEntityListMap(
+      Map<String, List<CaseIndicatorExpressionEntity>> kReasonIdVCaseIndicatorExpressionEntityListMap,
+      Set<String> reasonIdSet
+  ) throws ExecutionException, InterruptedException {
+    if (Objects.isNull(kReasonIdVCaseIndicatorExpressionEntityListMap)
+        || Objects.isNull(reasonIdSet) || reasonIdSet.isEmpty()
+    ) {return;}
+    /* runsix:init kReasonIdVCaseIndicatorExpressionEntityListMap for lambda */
+    reasonIdSet.forEach(reasonId -> {
+      kReasonIdVCaseIndicatorExpressionEntityListMap.put(reasonId, new ArrayList<>());
+    });
+
+    Map<String, List<CaseIndicatorExpressionRefEntity>> kReasonIdVCaseIndicatorExpressionRefListMap = new HashMap<>();
+    CompletableFuture<Void> cfPopulateKReasonIdVCaseIndicatorExpressionRefListMap = CompletableFuture.runAsync(() -> {
+      populateKReasonIdVCaseIndicatorExpressionRefListMap(kReasonIdVCaseIndicatorExpressionRefListMap, reasonIdSet);
+    });
+    cfPopulateKReasonIdVCaseIndicatorExpressionRefListMap.get();
+
+    Set<String> caseIndicatorExpressionIdSet = new HashSet<>();
+    kReasonIdVCaseIndicatorExpressionRefListMap.forEach((reasonId, caseIndicatorExpressionRefList) -> {
+      caseIndicatorExpressionRefList.forEach(caseIndicatorExpressionRefRsEntity -> {
+        caseIndicatorExpressionIdSet.add(caseIndicatorExpressionRefRsEntity.getIndicatorExpressionId());
+      });
+    });
+    if (caseIndicatorExpressionIdSet.isEmpty()) {return;}
+
+    Map<String, CaseIndicatorExpressionEntity> kCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap = new HashMap<>();
+    CompletableFuture<Void> cfPopulateKCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap = CompletableFuture.runAsync(() -> {
+      populateKCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap(kCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap, caseIndicatorExpressionIdSet);
+    });
+    cfPopulateKCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap.get();
+
+    kReasonIdVCaseIndicatorExpressionRefListMap.forEach((reasonId, caseIndicatorExpressionRefList) -> {
+      List<CaseIndicatorExpressionEntity> caseIndicatorExpressionEntityList = kReasonIdVCaseIndicatorExpressionEntityListMap.get(reasonId);
+      caseIndicatorExpressionRefList.forEach(caseIndicatorExpressionRefEntity -> {
+        String caseIndicatorExpressionId = caseIndicatorExpressionRefEntity.getIndicatorExpressionId();
+        CaseIndicatorExpressionEntity caseIndicatorExpressionEntity = kCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap.get(caseIndicatorExpressionId);
+        if (Objects.nonNull(caseIndicatorExpressionEntity)) {
+          caseIndicatorExpressionEntityList.add(caseIndicatorExpressionEntity);
+        }
+      });
+      kReasonIdVCaseIndicatorExpressionEntityListMap.put(reasonId, caseIndicatorExpressionEntityList);
+    });
+  }
+
+  public void populateKReasonIdVCaseIndicatorExpressionRefListMap(
+      Map<String, List<CaseIndicatorExpressionRefEntity>> kReasonIdVCaseIndicatorExpressionRefListMap,
+      Set<String> reasonIdSet
+  ) {
+    if (Objects.isNull(kReasonIdVCaseIndicatorExpressionRefListMap) || Objects.isNull(reasonIdSet) || reasonIdSet.isEmpty()) {
+      return;
+    }
+    caseIndicatorExpressionRefService.lambdaQuery()
+        .in(CaseIndicatorExpressionRefEntity::getReasonId, reasonIdSet)
+        .list()
+        .forEach(caseIndicatorExpressionRefEntity -> {
+          String reasonId = caseIndicatorExpressionRefEntity.getReasonId();
+          List<CaseIndicatorExpressionRefEntity> caseIndicatorExpressionRefEntityList = kReasonIdVCaseIndicatorExpressionRefListMap.get(reasonId);
+          if (Objects.isNull(caseIndicatorExpressionRefEntityList)) {
+            caseIndicatorExpressionRefEntityList = new ArrayList<>();
+          }
+          caseIndicatorExpressionRefEntityList.add(caseIndicatorExpressionRefEntity);
+          kReasonIdVCaseIndicatorExpressionRefListMap.put(reasonId, caseIndicatorExpressionRefEntityList);
+        });
+  }
+
+  public void populateKCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap(
+      Map<String, CaseIndicatorExpressionEntity> kCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap,
+      Set<String> caseIndicatorExpressionIdSet
+  ) {
+    if (Objects.isNull(kCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap)
+        || Objects.isNull(caseIndicatorExpressionIdSet) || caseIndicatorExpressionIdSet.isEmpty()
+    ) {
+      return;
+    }
+    caseIndicatorExpressionService.lambdaQuery()
+        .in(CaseIndicatorExpressionEntity::getCaseIndicatorExpressionId, caseIndicatorExpressionIdSet)
+        .list()
+        .forEach(caseIndicatorExpressionEntity -> {
+          kCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap.put(caseIndicatorExpressionEntity.getCaseIndicatorExpressionId(), caseIndicatorExpressionEntity);
+        });
+  }
+
+  public void populateKCaseIndicatorExpressionIdVCaseIndicatorExpressionItemListMap(
+      Map<String, List<CaseIndicatorExpressionItemEntity>> kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemListMap,
+      Set<String> caseIndicatorExpressionIdSet) {
+    if (Objects.isNull(kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemListMap)) {
+      return;
+    }
+    if (Objects.isNull(caseIndicatorExpressionIdSet) || caseIndicatorExpressionIdSet.isEmpty()) {
+      return;
+    }
+    caseIndicatorExpressionItemService.lambdaQuery()
+        .in(CaseIndicatorExpressionItemEntity::getIndicatorExpressionId, caseIndicatorExpressionIdSet)
+        .list()
+        .forEach(caseIndicatorExpressionItemEntity -> {
+          String caseIndicatorExpressionId = caseIndicatorExpressionItemEntity.getIndicatorExpressionId();
+          List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList = kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemListMap.get(caseIndicatorExpressionId);
+          if (Objects.isNull(caseIndicatorExpressionItemEntityList)) {
+            caseIndicatorExpressionItemEntityList = new ArrayList<>();
+          }
+          caseIndicatorExpressionItemEntityList.add(caseIndicatorExpressionItemEntity);
+          kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemListMap.put(caseIndicatorExpressionId, caseIndicatorExpressionItemEntityList);
+        });
+  }
+
+  public void populateKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemEntityMap(
+      Map<String, CaseIndicatorExpressionItemEntity> kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemEntityMap,
+      Set<String> caseIndicatorExpressionItemIdSet
+  ) {
+    if (Objects.isNull(kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemEntityMap)
+        || Objects.isNull(caseIndicatorExpressionItemIdSet) || caseIndicatorExpressionItemIdSet.isEmpty()
+    ) {
+      return;
+    }
+    caseIndicatorExpressionItemService.lambdaQuery()
+        .in(CaseIndicatorExpressionItemEntity::getCaseIndicatorExpressionItemId, caseIndicatorExpressionItemIdSet)
+        .list()
+        .forEach(caseIndicatorExpressionItemEntity -> {
+          kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemEntityMap.put(
+              caseIndicatorExpressionItemEntity.getCaseIndicatorExpressionItemId(), caseIndicatorExpressionItemEntity
+          );
+        });
   }
 }

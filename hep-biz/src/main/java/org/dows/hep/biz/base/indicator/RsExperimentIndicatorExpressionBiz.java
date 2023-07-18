@@ -4,17 +4,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.dows.hep.api.base.indicator.request.RsIndicatorExpressionCheckConditionRequest;
-import org.dows.hep.api.base.indicator.request.RsIndicatorExpressionCheckoutResultRequest;
 import org.dows.hep.api.enums.*;
-import org.dows.hep.api.exception.RsExperimentIndicatorExpressionBizException;
 import org.dows.hep.api.exception.RsIndicatorExpressionException;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
-import org.springframework.expression.EvaluationException;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
-import org.springframework.expression.ParseException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Service;
@@ -25,7 +20,6 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 /**
  * @author runsix
@@ -35,7 +29,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RsExperimentIndicatorExpressionBiz {
   private final ExperimentIndicatorExpressionItemRsService experimentIndicatorExpressionItemRsService;
-  private final String RESULT_DROP = "";
+
   private final ExperimentIndicatorInstanceRsService experimentIndicatorInstanceRsService;
 
   private final ExperimentIndicatorExpressionRefRsService experimentIndicatorExpressionRefRsService;
@@ -86,7 +80,7 @@ public class RsExperimentIndicatorExpressionBiz {
         this.parseExperimentIndicatorExpression(
             EnumIndicatorExpressionField.EXPERIMENT.getField(),
             EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource(),
-            EnumIndicatorExpressionScene.RE_CALCULATE.getScene(),
+            EnumIndicatorExpressionScene.EXPERIMENT_RE_CALCULATE.getScene(),
             newCurrentValAtomicReference,
             kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
             experimentIndicatorExpressionRsEntity,
@@ -360,13 +354,13 @@ public class RsExperimentIndicatorExpressionBiz {
       ExpressionParser parser = new SpelExpressionParser();
       Expression expression = parser.parseExpression(resultExpression);
       if (StringUtils.isBlank(resultExpression)) {
-        return RESULT_DROP;
+        return RsUtilBiz.RESULT_DROP;
       }
       for (int i = 0; i <= resultNameSplitList.size() - 1; i++) {
         String experimentIndicatorInstanceId = resultValSplitList.get(i);
         ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
         if (Objects.isNull(experimentIndicatorValRsEntity) || StringUtils.isBlank(experimentIndicatorValRsEntity.getCurrentVal())) {
-          return RESULT_DROP;
+          return RsUtilBiz.RESULT_DROP;
         }
         String currentVal = experimentIndicatorValRsEntity.getCurrentVal();
         boolean isValDigital = NumberUtils.isCreatable(currentVal);
@@ -379,7 +373,7 @@ public class RsExperimentIndicatorExpressionBiz {
       return expression.getValue(context, String.class);
     } catch(Exception e) {
       log.error("RsIndicatorExpressionBiz.ePIEResultUsingExperimentIndicatorInstanceId", e);
-      return RESULT_DROP;
+      return RsUtilBiz.RESULT_DROP;
     }
   }
 
@@ -398,17 +392,17 @@ public class RsExperimentIndicatorExpressionBiz {
       ExpressionParser parser = new SpelExpressionParser();
       Expression expression = parser.parseExpression(resultExpression);
       if (StringUtils.isBlank(resultExpression)) {
-        return RESULT_DROP;
+        return RsUtilBiz.RESULT_DROP;
       }
       for (int i = 0; i <= resultNameSplitList.size() - 1; i++) {
         String indicatorInstanceId = resultValSplitList.get(i);
         String experimentIndicatorInstanceId = kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.get(indicatorInstanceId);
         if (StringUtils.isBlank(experimentIndicatorInstanceId)) {
-          return RESULT_DROP;
+          return RsUtilBiz.RESULT_DROP;
         }
         ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
         if (Objects.isNull(experimentIndicatorValRsEntity) || StringUtils.isBlank(experimentIndicatorValRsEntity.getCurrentVal())) {
-          return RESULT_DROP;
+          return RsUtilBiz.RESULT_DROP;
         }
         String currentVal = experimentIndicatorValRsEntity.getCurrentVal();
         boolean isValDigital = NumberUtils.isCreatable(currentVal);
@@ -421,7 +415,7 @@ public class RsExperimentIndicatorExpressionBiz {
       return expression.getValue(context, String.class);
     } catch(Exception e) {
       log.error("RsIndicatorExpressionBiz.ePIEResultUsingExperimentIndicatorInstanceId", e);
-      return RESULT_DROP;
+      return RsUtilBiz.RESULT_DROP;
     }
   }
 
@@ -662,7 +656,7 @@ public class RsExperimentIndicatorExpressionBiz {
 
     /* runsix:3.如果一个公式有结果就跳出 */
     String parsedResult = ePIEResultUsingExperimentIndicatorInstanceId(experimentIndicatorExpressionItemRsEntity, kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap);
-    if (RESULT_DROP.equals(parsedResult)) {
+    if (RsUtilBiz.RESULT_DROP.equals(parsedResult)) {
       return false;
     }
     resultAtomicReference.set(parsedResult);
@@ -694,60 +688,15 @@ public class RsExperimentIndicatorExpressionBiz {
   /* runsix:now it is just a condition */
   private void ePIECrowds(
       AtomicReference<String> resultAtomicReference,
-      ExperimentIndicatorExpressionItemRsEntity experimentIndicatorExpressionItemRsEntity,
+      List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList,
       Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap
   ) {
+    /* runsix:人群类型只能有一个公式，并且公式只有一个条件 */
     boolean result = ePIEConditionUsingExperimentIndicatorInstanceId(
-        experimentIndicatorExpressionItemRsEntity,
+        experimentIndicatorExpressionItemRsEntityList.get(0),
         kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap
     );
     resultAtomicReference.set(String.valueOf(result));
-  }
-
-  /* runsix:TODO  */
-  private void databaseParseIndicatorExpression() {
-
-  }
-
-  /* runsix:TODO  */
-  private void caseParseIndicatorExpression() {
-
-  }
-
-  /* runsix:TODO  */
-  private void experimentParseIndicatorExpression(
-      Integer source, Integer scene, AtomicReference<String> resultAtomicReference,
-      Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
-      ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity,
-      List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList,
-      ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity,
-      ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity
-      ) {
-    EnumIndicatorExpressionSource enumIndicatorExpressionSource = rsUtilBiz.checkSource(source);
-    switch (enumIndicatorExpressionSource) {
-      case INDICATOR_MANAGEMENT -> ePIEIndicatorManagement(
-          scene,
-          resultAtomicReference,
-          kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
-          experimentIndicatorExpressionRsEntity,
-          experimentIndicatorExpressionItemRsEntityList,
-          minExperimentIndicatorExpressionItemRsEntity,
-          maxExperimentIndicatorExpressionItemRsEntity
-          );
-      case INDICATOR_JUDGE_RISK_FACTOR -> ePIEIndicatorJudgeRiskFactor();
-      case CROWDS -> ePIECrowds(resultAtomicReference, experimentIndicatorExpressionItemRsEntityList.get(0), kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap);
-      case RISK_MODEL -> ePIERiskModel(scene,
-          resultAtomicReference,
-          kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
-          experimentIndicatorExpressionRsEntity,
-          experimentIndicatorExpressionItemRsEntityList,
-          minExperimentIndicatorExpressionItemRsEntity,
-          maxExperimentIndicatorExpressionItemRsEntity);
-      default -> {
-        log.error("RsIndicatorExpressionBiz.experimentParseIndicatorExpression source:{} is illegal", source);
-        throw new RsIndicatorExpressionException("公式来源不合法");
-      }
-    }
   }
 
   /* runsix:目前计算危险模型与指标管理的指标一样 */
@@ -791,22 +740,31 @@ public class RsExperimentIndicatorExpressionBiz {
       ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity,
       ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity
       ) {
-    EnumIndicatorExpressionField enumIndicatorExpressionField = rsUtilBiz.checkField(field);
-    EnumIndicatorExpressionScene enumIndicatorExpressionScene = rsUtilBiz.checkScene(scene);
-    switch (enumIndicatorExpressionField) {
-      case DATABASE -> databaseParseIndicatorExpression();
-      case CASE -> caseParseIndicatorExpression();
-      case EXPERIMENT -> experimentParseIndicatorExpression(
-          source, scene, resultAtomicReference,
+    rsUtilBiz.checkField(field);
+    rsUtilBiz.checkScene(scene);
+    EnumIndicatorExpressionSource enumIndicatorExpressionSource = rsUtilBiz.checkSource(source);
+    switch (enumIndicatorExpressionSource) {
+      case INDICATOR_MANAGEMENT -> ePIEIndicatorManagement(
+          scene,
+          resultAtomicReference,
           kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
           experimentIndicatorExpressionRsEntity,
           experimentIndicatorExpressionItemRsEntityList,
           minExperimentIndicatorExpressionItemRsEntity,
           maxExperimentIndicatorExpressionItemRsEntity
-          );
+      );
+      case INDICATOR_JUDGE_RISK_FACTOR -> ePIEIndicatorJudgeRiskFactor();
+      case CROWDS -> ePIECrowds(resultAtomicReference, experimentIndicatorExpressionItemRsEntityList, kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap);
+      case RISK_MODEL -> ePIERiskModel(scene,
+          resultAtomicReference,
+          kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
+          experimentIndicatorExpressionRsEntity,
+          experimentIndicatorExpressionItemRsEntityList,
+          minExperimentIndicatorExpressionItemRsEntity,
+          maxExperimentIndicatorExpressionItemRsEntity);
       default -> {
-        log.error("RsIndicatorExpressionBiz.parseIndicatorExpression field:{} is illegal", field);
-        throw new RsIndicatorExpressionException(String.format("解析公式-公式域只能是数据库、案例库或实验域，field:%s", field));
+        log.error("RsIndicatorExpressionBiz.experimentParseIndicatorExpression source:{} is illegal", source);
+        throw new RsIndicatorExpressionException("公式来源不合法");
       }
     }
   }
@@ -866,7 +824,6 @@ public class RsExperimentIndicatorExpressionBiz {
           kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap, experimentIndicatorExpressionItemIdSet);
     });
     cfPopulateKExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get();
-
   }
 
   /* runsix:指标管理的指标id以及对应的指标公式（只有一条） */

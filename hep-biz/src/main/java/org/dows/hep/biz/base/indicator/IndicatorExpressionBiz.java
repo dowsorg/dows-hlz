@@ -1304,13 +1304,6 @@ public class IndicatorExpressionBiz{
         .eq(IndicatorExpressionEntity::getIndicatorExpressionId, indicatorExpressionId)
         .one();
     if (Objects.isNull(indicatorExpressionEntity)) {return null;}
-//    IndicatorExpressionEntity indicatorExpressionEntity = indicatorExpressionService.lambdaQuery()
-//        .eq(IndicatorExpressionEntity::getIndicatorExpressionId, indicatorExpressionId)
-//        .oneOpt()
-//        .orElseThrow(() -> {
-//          log.warn("method IndicatorExpressionBiz.get param indicatorExpressionId:{} is illegal", indicatorExpressionId);
-//          throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
-//        });
     List<IndicatorExpressionItemResponseRs> indicatorExpressionItemResponseRsList = indicatorExpressionItemService.lambdaQuery()
         .eq(IndicatorExpressionItemEntity::getIndicatorExpressionId, indicatorExpressionId)
         .list()
@@ -1542,6 +1535,7 @@ public class IndicatorExpressionBiz{
       cfPopulateByIdKIndicatorExpressionItemIdVIndicatorExpressionItemMap.get();
       CompletableFuture<Void> cfPopulateByDbAndParamIndicatorExpressionItemEntityList = CompletableFuture.runAsync(() -> {
         rsIndicatorExpressionBiz.populateByDbAndParamIndicatorExpressionItemEntityList(
+            indicatorExpressionEntityAtomicReference.get().getIndicatorExpressionId(),
             indicatorExpressionItemEntityList, kIndicatorExpressionItemIdVIndicatorExpressionItemMap, createOrUpdateIndicatorExpressionItemRequestRsList
         );
       });

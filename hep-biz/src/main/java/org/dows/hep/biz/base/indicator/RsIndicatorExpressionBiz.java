@@ -282,6 +282,7 @@ public class RsIndicatorExpressionBiz {
   }
 
   public void populateByDbAndParamIndicatorExpressionItemEntityList(
+      String indicatorExpressionId,
       List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList,
       Map<String, IndicatorExpressionItemEntity> kIndicatorExpressionItemIdVIndicatorExpressionItemMap,
       List<CreateOrUpdateIndicatorExpressionItemRequestRs> createOrUpdateIndicatorExpressionItemRequestRsList
@@ -296,21 +297,27 @@ public class RsIndicatorExpressionBiz {
       String indicatorExpressionItemId = createOrUpdateIndicatorExpressionItemRequestRs.getIndicatorExpressionItemId();
       IndicatorExpressionItemEntity indicatorExpressionItemEntity = null;
       if (StringUtils.isBlank(indicatorExpressionItemId)) {
+        Integer seq = null;
+        if (StringUtils.isBlank(createOrUpdateIndicatorExpressionItemRequestRs.getConditionRaw())) {
+          seq = Integer.MAX_VALUE;
+        } else {
+          seq = seqAtomicInteger.getAndIncrement();
+        }
         indicatorExpressionItemEntity = IndicatorExpressionItemEntity
-            .builder()
-            .indicatorExpressionItemId(idGenerator.nextIdStr())
-            .appId(createOrUpdateIndicatorExpressionItemRequestRs.getAppId())
-            .indicatorExpressionId(createOrUpdateIndicatorExpressionItemRequestRs.getIndicatorExpressionId())
-            .conditionRaw(createOrUpdateIndicatorExpressionItemRequestRs.getConditionRaw())
-            .conditionExpression(createOrUpdateIndicatorExpressionItemRequestRs.getConditionExpression())
-            .conditionNameList(createOrUpdateIndicatorExpressionItemRequestRs.getConditionNameList())
-            .conditionValList(createOrUpdateIndicatorExpressionItemRequestRs.getConditionValList())
-            .resultRaw(createOrUpdateIndicatorExpressionItemRequestRs.getResultRaw())
-            .resultExpression(createOrUpdateIndicatorExpressionItemRequestRs.getResultExpression())
-            .resultNameList(createOrUpdateIndicatorExpressionItemRequestRs.getResultNameList())
-            .resultValList(createOrUpdateIndicatorExpressionItemRequestRs.getResultValList())
-            .seq(seqAtomicInteger.getAndIncrement())
-            .build();
+          .builder()
+          .indicatorExpressionItemId(idGenerator.nextIdStr())
+          .appId(createOrUpdateIndicatorExpressionItemRequestRs.getAppId())
+          .indicatorExpressionId(indicatorExpressionId)
+          .conditionRaw(createOrUpdateIndicatorExpressionItemRequestRs.getConditionRaw())
+          .conditionExpression(createOrUpdateIndicatorExpressionItemRequestRs.getConditionExpression())
+          .conditionNameList(createOrUpdateIndicatorExpressionItemRequestRs.getConditionNameList())
+          .conditionValList(createOrUpdateIndicatorExpressionItemRequestRs.getConditionValList())
+          .resultRaw(createOrUpdateIndicatorExpressionItemRequestRs.getResultRaw())
+          .resultExpression(createOrUpdateIndicatorExpressionItemRequestRs.getResultExpression())
+          .resultNameList(createOrUpdateIndicatorExpressionItemRequestRs.getResultNameList())
+          .resultValList(createOrUpdateIndicatorExpressionItemRequestRs.getResultValList())
+          .seq(seq)
+          .build();
       } else {
         indicatorExpressionItemEntity = kIndicatorExpressionItemIdVIndicatorExpressionItemMap.get(indicatorExpressionItemId);
         if (Objects.isNull(indicatorExpressionItemEntity)) {
