@@ -85,7 +85,7 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
         }
         if(null==exptColl.getStartTime()){
             logError("call", "notStartExperiment");
-            raiseScheduler(DELAYSeconds4Pause,false,false);
+            raiseScheduler(DELAYSeconds4Pause,false,true);
             return RUNCode4Silence;
         }
         TimeBasedEventCollection eventColl=TimeBasedEventCache.Instance().caffineCache().get(experimentKey,k->loadEvents(k,exptColl.getPeriods()) );

@@ -109,9 +109,11 @@ public class EventScheduler implements ApplicationListener<ContextClosedEvent> {
 
     public void shutDown(){
         try{
+            log.info("EventScheduler closing. {}",scheduledExecutor);
             scheduledExecutor.shutdownNow();
+            log.info("EventScheduler closed. {}",scheduledExecutor);
         }catch (Exception ex){
-            ex.printStackTrace();
+            log.error("EventScheduler failClose",ex);
         }
     }
 

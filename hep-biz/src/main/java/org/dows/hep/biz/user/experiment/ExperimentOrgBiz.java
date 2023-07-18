@@ -64,6 +64,7 @@ public class ExperimentOrgBiz{
     private final ExperimentEventDao experimentEventDao;
 
     private final ExperimentOrgNoticeBiz experimentOrgNoticeBiz;
+
     /**
     * @param
     * @return
@@ -290,8 +291,18 @@ public class ExperimentOrgBiz{
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public OrgReportResponse pageOrgReport(FindOrgReportRequest findOrgReport ) {
-        return new OrgReportResponse();
+    public Page<OrgFlowReportResponse> pageOrgReport(FindOrgReportRequest findOrgReport) {
+        return null;
+    }
+
+
+    /**
+     * 获取机构报告详情
+     * @param orgReportRequest
+     * @return
+     */
+    public ExptOrgFlowReportResponse getOrgReportInfo(ExptOrgFlowReportRequest orgReportRequest){
+        return null;
     }
     /**
     * @param

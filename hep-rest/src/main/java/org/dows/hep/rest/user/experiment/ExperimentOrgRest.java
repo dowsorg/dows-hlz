@@ -91,8 +91,19 @@ public class ExperimentOrgRest {
     */
     @Operation(summary = "获取机构报告列表")
     @PostMapping("v1/userExperiment/experimentOrg/pageOrgReport")
-    public OrgReportResponse pageOrgReport(@RequestBody @Validated FindOrgReportRequest findOrgReport ) {
+    public Page<OrgFlowReportResponse> pageOrgReport(@RequestBody @Validated FindOrgReportRequest findOrgReport)  {
         return experimentOrgBiz.pageOrgReport(findOrgReport);
+    }
+
+    /**
+     * 获取机构报告详情
+     * @param orgReportRequest
+     * @return
+     */
+    @Operation(summary = "获取机构报告详情")
+    @PostMapping("v1/userExperiment/experimentOrg/getOrgReportInfo")
+    public ExptOrgFlowReportResponse getOrgReportInfo(@RequestBody @Validated ExptOrgFlowReportRequest orgReportRequest){
+        return experimentOrgBiz.getOrgReportInfo(orgReportRequest);
     }
 
     /**

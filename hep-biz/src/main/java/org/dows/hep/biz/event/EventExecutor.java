@@ -43,11 +43,13 @@ public class EventExecutor {
     public void shutDown(){
         for(ThreadPoolExecutor item: pools){
             try {
+                log.info("EventScheduler closing. {}",item);
                 if(ShareUtil.XObject.notEmpty(item)) {
                     item.shutdown();
                 }
+                log.info("EventExecutor closed. {}",item);
             }catch (Exception ex){
-                ex.printStackTrace();
+                log.error(String.format("EventExecutor failClose. %s",item) ,ex);
             }
         }
 

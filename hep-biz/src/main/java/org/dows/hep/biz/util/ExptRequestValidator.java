@@ -82,6 +82,10 @@ public class ExptRequestValidator {
     @Getter
     private String indicatorFuncId;
 
+    //指标功能点名称
+    @Getter
+    private String indicatorFuncName;
+
     //功能点类别ID
     @Getter
     private String indicatorCategoryId;
@@ -355,6 +359,9 @@ public class ExptRequestValidator {
         IndicatorFuncEntity rst=AssertUtil.getNotNull(cachedExptOrgFunc).orElseThrow("未找到机构功能点");
         if(ShareUtil.XObject.isEmpty(indicatorCategoryId)&&ShareUtil.XObject.notEmpty(rst.getIndicatorCategoryId())){
             indicatorCategoryId=rst.getIndicatorCategoryId();
+        }
+        if(ShareUtil.XObject.notEmpty(rst.getName())){
+            indicatorFuncName=rst.getName();
         }
         return rst;
     }

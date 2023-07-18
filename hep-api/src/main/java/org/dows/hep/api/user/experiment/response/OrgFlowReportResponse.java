@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 /**
 * @description 
 *
@@ -13,18 +15,20 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Schema(name = "OrgReport 对象", title = "机构报告")
-public class OrgReportResponse{
+public class OrgFlowReportResponse {
     @Schema(title = "实验操作流程id")
     private String operateFlowId;
 
     @Schema(title = "操作时间")
-    private java.time.LocalDateTime operateTime;
+    private Date operateTime;
+
+    @Schema(title = "操作所在游戏内天数")
+    private Integer operateGameDay;
+    @Schema(title = "展示标签")
+    private String reportLabel;
 
     @Schema(title = "操作描述")
-    private String operateDescr;
-
-    @Schema(title = "标签")
-    private String label;
+    private String reportDescr;
 
 
 }

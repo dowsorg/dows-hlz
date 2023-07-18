@@ -19,15 +19,15 @@ import org.dows.hep.api.enums.EnumExptOperateType;
 import org.dows.hep.api.enums.EnumFoodDetailType;
 import org.dows.hep.api.enums.EnumFoodMealTime;
 import org.dows.hep.api.user.experiment.request.*;
-import org.dows.hep.api.user.experiment.response.ExptSportPlanResponse;
-import org.dows.hep.api.user.experiment.response.ExptTreatPlanResponse;
-import org.dows.hep.api.user.experiment.response.SaveExptInterveneResponse;
-import org.dows.hep.api.user.experiment.response.SaveExptTreatResponse;
+import org.dows.hep.api.user.experiment.response.*;
+import org.dows.hep.api.user.experiment.vo.ExptOrgReportNodeDataVO;
+import org.dows.hep.api.user.experiment.vo.ExptOrgReportNodeVO;
 import org.dows.hep.api.user.experiment.vo.ExptTreatPlanItemVO;
 import org.dows.hep.biz.base.intervene.*;
 import org.dows.hep.biz.dao.OperateFlowDao;
 import org.dows.hep.biz.dao.OperateOrgFuncDao;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
+import org.dows.hep.biz.orgreport.OrgReportComposer;
 import org.dows.hep.biz.util.*;
 import org.dows.hep.biz.vo.CalcExptFoodCookbookResult;
 import org.dows.hep.biz.vo.Categ4ExptVO;
@@ -53,6 +53,8 @@ import java.util.stream.Collectors;
 public class ExperimentOrgInterveneBiz{
 
     private final FoodCalc4ExptBiz foodCalc4ExptBiz;
+
+    private final OrgReportComposer orgReportComposer;
 
     private final OperateFlowDao operateFlowDao;
 
@@ -341,6 +343,7 @@ public class ExperimentOrgInterveneBiz{
         }
         //挂号报告
         boolean succFlag=false;
+        ExptOrgFlowReportResponse report=null;
         if(enumOperateType.getEndFlag()){
             OperateFlowEntity flow= flowValidator.getExptFlow().get();
             OperateFlowEntity saveFlow=OperateFlowEntity.builder()
@@ -356,25 +359,36 @@ public class ExperimentOrgInterveneBiz{
                     .operateTime(dateNow)
                     .operateGameDay(timePoint.getPeriod())
                     .build();
+
+            ExptOrgReportNodeVO node=new ExptOrgReportNodeVO()
+                    .setNodeData(new ExptOrgReportNodeDataVO().setTreatFourLevel(snapRst))
+                    .setIndicatorFuncId(validator.getIndicatorFuncId())
+                    .setIndicatorCategoryId(validator.getIndicatorCategoryId())
+                    .setIndicatorFuncName(validator.getIndicatorFuncName());
             OperateFlowSnapEntity saveFlowSnap=OperateFlowSnapEntity.builder()
                     .appId(rowOrgFunc.getAppId())
                     .snapTime(dateNow)
                     .build();
+            try{
+                report= orgReportComposer.composeReport(orgReportComposer.createRequest(validator),flowValidator.updateFlowOperate(timePoint),node);
+                saveFlowSnap.setRecordJson(JacksonUtil.toJson(report,true));
+            }catch (Exception ex){
+                AssertUtil.justThrow(String.format("机构报告数据编制失败：%s",ex.getMessage()),ex);
+            }
+
             succFlag=operateOrgFuncDao.tranSave(rowOrgFunc,List.of(rowOrgFuncSnap),false,()->{
                 saveFlow.setOperateOrgFuncId(rowOrgFunc.getOperateOrgFuncId());
-                return tranSaveTreatReport(saveFlow, saveFlowSnap);
+                return operateFlowDao.tranSave(saveFlow, List.of(saveFlowSnap), false);
             });
         }else{
             succFlag=operateOrgFuncDao.tranSave(rowOrgFunc,List.of(rowOrgFuncSnap),false);
         }
         return new SaveExptTreatResponse()
                 .setSuccess(succFlag)
-                .setOperateOrgFuncId(rowOrgFunc.getOperateOrgFuncId());
+                .setOperateOrgFuncId(rowOrgFunc.getOperateOrgFuncId())
+                .setReportInfo(report);
     }
-    boolean tranSaveTreatReport(OperateFlowEntity orgFlow, OperateFlowSnapEntity  orgFlowSnap) {
 
-        return operateFlowDao.tranSave(orgFlow, List.of(orgFlowSnap), false);
-    }
 
     private <T> T getExptSnapData(ExptOperateOrgFuncRequest reqOperateFunc,boolean checkIndicatorFunc,boolean checkOrgFlow, Class<T> clazz, Supplier<T> creator){
         T rst=creator.get();
@@ -385,7 +399,7 @@ public class ExperimentOrgInterveneBiz{
         if(checkIndicatorFunc){
             validator.checkIndicatorFunc();
         }
-        if(checkOrgFlow) {
+        if(checkOrgFlow&&ShareUtil.XObject.isEmpty(reqOperateFunc.getOperateFlowId())) {
             ExperimentTimePoint timePoint = validator.getTimePoint(false, LocalDateTime.now(), false);
             if (ShareUtil.XObject.isEmpty(timePoint)) {
                 return rst;
