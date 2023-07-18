@@ -183,6 +183,8 @@ public class ExptSandReportModel implements ExptReportModel {
             private String rightAnswer;
             //解析
             private String analysis;
+            // 子
+            private List<QuestionInfo> children;
         }
     }
 

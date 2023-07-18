@@ -18,7 +18,10 @@ import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireItemResp
 import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireResponse;
 import org.dows.hep.biz.user.experiment.ExperimentQuestionnaireBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
-import org.dows.hep.entity.*;
+import org.dows.hep.entity.ExperimentGroupEntity;
+import org.dows.hep.entity.ExperimentInstanceEntity;
+import org.dows.hep.entity.ExperimentParticipatorEntity;
+import org.dows.hep.entity.ExperimentScoringEntity;
 import org.dows.hep.properties.FindSoftProperties;
 import org.dows.hep.service.ExperimentGroupService;
 import org.dows.hep.service.ExperimentInstanceService;
@@ -463,62 +466,97 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
     private List<ExptSandReportModel.KnowledgeAnswer.QuestionInfo> buildQuestionItem(List<ExperimentQuestionnaireItemResponse> itemList) {
         List<ExptSandReportModel.KnowledgeAnswer.QuestionInfo> result = new ArrayList<>();
         itemList.forEach(questionItem -> {
-            // 构造标题
-            String questionType = questionItem.getQuestionType();
-            String typeName = QuestionTypeEnum.getNameByCode(questionType);
-            String questionTitle = "[" + typeName + "]" + questionItem.getQuestionTitle();
-
-            // 构建选项
-            List<ExptQuestionnaireOptionDTO> questionOptionList = questionItem.getQuestionOptionList();
-            List<String> questionOptions = new ArrayList<>();
-            if (CollUtil.isNotEmpty(questionOptionList)) {
-                questionOptions = questionOptionList.stream()
-                        .map(option -> {
-                            String title = option.getTitle();
-                            String value = option.getValue();
-                            return title + " " + value;
-                        }).toList();
+            // 处理子节点
+            List<ExperimentQuestionnaireItemResponse> questionItemChildren = questionItem.getChildren();
+            List<ExptSandReportModel.KnowledgeAnswer.QuestionInfo> children = new ArrayList<>();
+            if (CollUtil.isNotEmpty(questionItemChildren)) {
+                 children = convertQuestionChildren(questionItem.getChildren());
             }
 
-            // 构造回答答案
-            String userAnswer = null;
-            List<String> questionResult = questionItem.getQuestionResult();
-            if (CollUtil.isNotEmpty(questionResult)) {
-                Map<String, String> questionMap = questionResult.stream().collect(Collectors.toMap(item -> item, item -> item, (v1, v2) -> v1));
-                userAnswer = questionOptionList.stream()
-                        .filter(item -> {
-                            return questionMap.get(item.getId()) != null;
-                        }).map(ExptQuestionnaireOptionDTO::getTitle)
-                        .collect(Collectors.joining());
-            }
-
-            // 构造正确答案
-            String rightAnswer = null;
-            String rightValue = questionItem.getRightValue();
-            if (StrUtil.isNotBlank(rightValue)) {
-                List<ExptQuestionnaireOptionDTO> rightValueList = JSONUtil.toList(rightValue, ExptQuestionnaireOptionDTO.class);
-                if (CollUtil.isNotEmpty(rightValueList)) {
-                    rightAnswer = rightValueList.stream()
-                            .map(ExptQuestionnaireOptionDTO::getTitle)
-                            .collect(Collectors.joining());
-                }
-            }
-
-            // 构造答案解析
-            String analysis = questionItem.getQuestionDetailedAnswer();
-
-            // build
-            ExptSandReportModel.KnowledgeAnswer.QuestionInfo questionInfo = ExptSandReportModel.KnowledgeAnswer.QuestionInfo.builder()
-                    .questionTitle(questionTitle)
-                    .questionOptions(questionOptions)
-                    .userAnswer(userAnswer)
-                    .rightAnswer(rightAnswer)
-                    .analysis(analysis)
-                    .build();
+            // 处理当前节点
+            ExptSandReportModel.KnowledgeAnswer.QuestionInfo questionInfo = handleNode(questionItem, children);
             result.add(questionInfo);
         });
 
         return result;
+    }
+
+    private List<ExptSandReportModel.KnowledgeAnswer.QuestionInfo> convertQuestionChildren(List<ExperimentQuestionnaireItemResponse> oriChildren) {
+        if (CollUtil.isEmpty(oriChildren)) {
+            return new ArrayList<>();
+        }
+
+        List<ExptSandReportModel.KnowledgeAnswer.QuestionInfo> result = new ArrayList<>();
+        oriChildren.forEach(oriChild -> {
+            // 处理子节点
+            List<ExperimentQuestionnaireItemResponse> itemOriChildren = oriChild.getChildren();
+            List<ExptSandReportModel.KnowledgeAnswer.QuestionInfo> itemTargetChildren = new ArrayList<>();
+            if (CollUtil.isNotEmpty(itemOriChildren)) {
+                itemTargetChildren = convertQuestionChildren(itemOriChildren);
+            }
+
+            // 处理当前节点
+            ExptSandReportModel.KnowledgeAnswer.QuestionInfo resultItem = handleNode(oriChild, itemTargetChildren);
+            result.add(resultItem);
+        });
+
+        return result;
+    }
+
+    private static ExptSandReportModel.KnowledgeAnswer.QuestionInfo handleNode(ExperimentQuestionnaireItemResponse questionItem, List<ExptSandReportModel.KnowledgeAnswer.QuestionInfo> children) {
+        // 构造标题
+        String questionType = questionItem.getQuestionType();
+        String typeName = QuestionTypeEnum.getNameByCode(questionType);
+        String questionTitle = "[" + typeName + "]" + questionItem.getQuestionTitle();
+
+        // 构建选项
+        List<ExptQuestionnaireOptionDTO> questionOptionList = questionItem.getQuestionOptionList();
+        List<String> questionOptions = new ArrayList<>();
+        if (CollUtil.isNotEmpty(questionOptionList)) {
+            questionOptions = questionOptionList.stream()
+                    .map(option -> {
+                        String title = option.getTitle();
+                        String value = option.getValue();
+                        return title + " " + value;
+                    }).toList();
+        }
+
+        // 构造回答答案
+        String userAnswer = null;
+        List<String> questionResult = questionItem.getQuestionResult();
+        if (CollUtil.isNotEmpty(questionResult)) {
+            Map<String, String> questionMap = questionResult.stream().collect(Collectors.toMap(item -> item, item -> item, (v1, v2) -> v1));
+            userAnswer = questionOptionList.stream()
+                    .filter(item -> {
+                        return questionMap.get(item.getId()) != null;
+                    }).map(ExptQuestionnaireOptionDTO::getTitle)
+                    .collect(Collectors.joining());
+        }
+
+        // 构造正确答案
+        String rightAnswer = null;
+        String rightValue = questionItem.getRightValue();
+        if (StrUtil.isNotBlank(rightValue)) {
+            List<ExptQuestionnaireOptionDTO> rightValueList = JSONUtil.toList(rightValue, ExptQuestionnaireOptionDTO.class);
+            if (CollUtil.isNotEmpty(rightValueList)) {
+                rightAnswer = rightValueList.stream()
+                        .map(ExptQuestionnaireOptionDTO::getTitle)
+                        .collect(Collectors.joining());
+            }
+        }
+
+        // 构造答案解析
+        String analysis = questionItem.getQuestionDetailedAnswer();
+
+        // build
+        return ExptSandReportModel.KnowledgeAnswer.QuestionInfo.builder()
+                .questionTitle(questionTitle)
+                .questionOptions(questionOptions)
+                .userAnswer(userAnswer)
+                .rightAnswer(rightAnswer)
+                .analysis(analysis)
+                .children(children)
+                .build();
     }
 
 }
