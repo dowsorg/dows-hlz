@@ -64,7 +64,7 @@ public class CaseIndicatorInstanceRest {
 
     @Operation(summary = "删除指标")
     @DeleteMapping("v1/caseIndicator/indicatorInstance/delete")
-    public void delete(@RequestParam String caseIndicatorInstanceId) throws InterruptedException {
+    public void delete(@RequestParam String caseIndicatorInstanceId) throws InterruptedException, ExecutionException {
         caseIndicatorInstanceBiz.delete(caseIndicatorInstanceId);
     }
 }

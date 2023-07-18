@@ -1,27 +1,34 @@
 package org.dows.hep.biz.base.indicator;
 
 import cn.hutool.core.lang.Assert;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.CaseCreateCopyToPersonRequestRs;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateCaseIndicatorInstanceRequestRs;
 import org.dows.hep.api.base.indicator.response.*;
-import org.dows.hep.api.enums.EnumIndicatorCategory;
-import org.dows.hep.api.enums.EnumIndicatorRuleType;
-import org.dows.hep.api.enums.EnumIndicatorType;
-import org.dows.hep.api.enums.EnumString;
+import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.ExperimentException;
+import org.dows.hep.api.exception.IndicatorInstanceException;
+import org.dows.hep.api.exception.RsCaseIndicatorInstanceBizException;
 import org.dows.hep.api.tenant.casus.request.UpdateIndicatorValueRequest;
+import org.dows.hep.biz.util.RedissonUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -31,6 +38,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class CaseIndicatorInstanceBiz {
+    @Value("${redisson.lock.lease-time.teacher.case-indicator-instance-create-delete-update:5000}")
+    private Integer leaseTimeCaseIndicatorInstanceCreateDeleteUpdate;
+
+    private final String caseIndicatorInstanceFieldPid = "pid";
     private final IdGenerator idGenerator;
     private final IndicatorInstanceBiz indicatorInstanceBiz;
     private final IndicatorExpressionInfluenceService indicatorExpressionInfluenceService;
@@ -47,7 +58,7 @@ public class CaseIndicatorInstanceBiz {
     private final CasePersonService casePersonService;
     private final RsUtilBiz rsUtilBiz;
     private final RsCaseIndicatorInstanceBiz rsCaseIndicatorInstanceBiz;
-
+    private final RedissonClient redissonClient;
     public static CaseIndicatorInstanceResponseRs caseIndicatorInstance2ResponseRs(
             CaseIndicatorInstanceEntity caseIndicatorInstanceEntity,
             List<CaseIndicatorExpressionResponseRs> caseIndicatorExpressionResponseRsList,
@@ -722,7 +733,7 @@ public class CaseIndicatorInstanceBiz {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void createOrUpdateRs(CreateOrUpdateCaseIndicatorInstanceRequestRs createOrUpdateCaseIndicatorInstanceRequestRs) {
+    public void createOrUpdateRs(CreateOrUpdateCaseIndicatorInstanceRequestRs createOrUpdateCaseIndicatorInstanceRequestRs) throws InterruptedException {
         /* runsix:param */
         String accountId = createOrUpdateCaseIndicatorInstanceRequestRs.getAccountId();
         String caseIndicatorInstanceId = createOrUpdateCaseIndicatorInstanceRequestRs.getCaseIndicatorInstanceId();
@@ -734,13 +745,148 @@ public class CaseIndicatorInstanceBiz {
         String unit = createOrUpdateCaseIndicatorInstanceRequestRs.getUnit();
         Integer core = createOrUpdateCaseIndicatorInstanceRequestRs.getCore();
         Integer food = createOrUpdateCaseIndicatorInstanceRequestRs.getFood();
+        Integer type = createOrUpdateCaseIndicatorInstanceRequestRs.getType();
         String min = createOrUpdateCaseIndicatorInstanceRequestRs.getMin();
         String max = createOrUpdateCaseIndicatorInstanceRequestRs.getMax();
+        /* runsix:result */
+        AtomicReference<CaseIndicatorInstanceEntity> caseIndicatorInstanceEntityAR = new AtomicReference<>();
+        AtomicReference<CaseIndicatorCategoryRefEntity> caseIndicatorCategoryRefEntityAR = new AtomicReference<>();
+        AtomicReference<CaseIndicatorRuleEntity> caseIndicatorRuleEntityAR = new AtomicReference<>();
+        if (StringUtils.isBlank(caseIndicatorInstanceId)) {
+            caseIndicatorInstanceId = idGenerator.nextIdStr();
+            CaseIndicatorInstanceEntity caseIndicatorInstanceEntity = CaseIndicatorInstanceEntity
+                .builder()
+                .caseIndicatorInstanceId(caseIndicatorInstanceId)
+                .appId(appId)
+                .principalId(accountId)
+                .indicatorCategoryId(caseIndicatorCategoryId)
+                .indicatorName(indicatorName)
+                .displayByPercent(displayByPercent)
+                .unit(unit)
+                .core(core)
+                .food(food)
+                .type(type)
+                .build();
+            AtomicInteger seqAtomicInteger = new AtomicInteger(1);
+            caseIndicatorCategoryRefService.lambdaQuery()
+                .eq(CaseIndicatorCategoryRefEntity::getIndicatorCategoryId, caseIndicatorCategoryId)
+                .orderByDesc(CaseIndicatorCategoryRefEntity::getSeq)
+                .last(EnumString.LIMIT_1.getStr())
+                .oneOpt()
+                .ifPresent(caseIndicatorCategoryRefEntity1 -> seqAtomicInteger.set(caseIndicatorCategoryRefEntity1.getSeq() + 1));
+            CaseIndicatorCategoryRefEntity caseIndicatorCategoryRefEntity = CaseIndicatorCategoryRefEntity
+                .builder()
+                .caseIndicatorCategoryRefId(idGenerator.nextIdStr())
+                .appId(appId)
+                .indicatorCategoryId(caseIndicatorCategoryId)
+                .indicatorInstanceId(caseIndicatorInstanceId)
+                .seq(seqAtomicInteger.get())
+                .build();
+            CaseIndicatorRuleEntity caseIndicatorRuleEntity = CaseIndicatorRuleEntity
+                .builder()
+                .caseIndicatorRuleId(idGenerator.nextIdStr())
+                .appId(appId)
+                .variableId(caseIndicatorInstanceId)
+                .ruleType(EnumIndicatorRuleType.INDICATOR.getCode())
+                .min(min)
+                .max(max)
+                .def(def)
+                .build();
+            caseIndicatorInstanceEntityAR.set(caseIndicatorInstanceEntity);
+            caseIndicatorCategoryRefEntityAR.set(caseIndicatorCategoryRefEntity);
+            caseIndicatorRuleEntityAR.set(caseIndicatorRuleEntity);
+        } else {
+            rsCaseIndicatorInstanceBiz.checkCaseIndicatorInstanceIdInCaseIndicatorInstanceEntity(caseIndicatorInstanceEntityAR, caseIndicatorInstanceId);
+            CaseIndicatorInstanceEntity caseIndicatorInstanceEntity = caseIndicatorInstanceEntityAR.get();
+            caseIndicatorInstanceEntity.setIndicatorName(indicatorName);
+            caseIndicatorInstanceEntity.setDisplayByPercent(displayByPercent);
+            caseIndicatorInstanceEntity.setUnit(unit);
+            caseIndicatorInstanceEntity.setCore(core);
+            caseIndicatorInstanceEntity.setFood(food);
+            rsCaseIndicatorInstanceBiz.checkCaseIndicatorInstanceIdInCaseIndicatorRuleEntity(caseIndicatorRuleEntityAR, caseIndicatorInstanceId);
+            CaseIndicatorRuleEntity caseIndicatorRuleEntity = caseIndicatorRuleEntityAR.get();
+            caseIndicatorRuleEntity.setMin(min);
+            caseIndicatorRuleEntity.setMax(max);
+            caseIndicatorRuleEntity.setDef(def);
 
-
+            caseIndicatorInstanceEntityAR.set(caseIndicatorInstanceEntity);
+            caseIndicatorRuleEntityAR.set(caseIndicatorRuleEntity);
+        }
+        RLock lock = redissonClient.getLock(RedissonUtil.getLockName(appId, EnumRedissonLock.CASE_INDICATOR_INSTANCE_CREATE_DELETE_UPDATE, caseIndicatorInstanceFieldPid, caseIndicatorCategoryId));
+        boolean isLocked = lock.tryLock(leaseTimeCaseIndicatorInstanceCreateDeleteUpdate, TimeUnit.MILLISECONDS);
+        if (!isLocked) {
+            throw new IndicatorInstanceException(EnumESC.SYSTEM_BUSY_PLEASE_OPERATOR_INDICATOR_INSTANCE_LATER);
+        }
+        try {
+            if (Objects.nonNull(caseIndicatorInstanceEntityAR.get())) {caseIndicatorInstanceService.saveOrUpdate(caseIndicatorInstanceEntityAR.get());}
+            if (Objects.nonNull(caseIndicatorCategoryRefEntityAR.get())) {caseIndicatorCategoryRefService.saveOrUpdate(caseIndicatorCategoryRefEntityAR.get());}
+            if (Objects.nonNull(caseIndicatorRuleEntityAR.get())) {caseIndicatorRuleService.saveOrUpdate(caseIndicatorRuleEntityAR.get());}
+        } finally {
+            lock.unlock();
+        }
     }
 
+    /* runsix:TODO 删除指标公式相关 */
     @Transactional(rollbackFor = Exception.class)
-    public void delete(String caseIndicatorInstanceId) {
+    public void delete(String caseIndicatorInstanceId) throws ExecutionException, InterruptedException {
+        AtomicReference<CaseIndicatorInstanceEntity> caseIndicatorInstanceEntityAR = new AtomicReference<>();
+        CompletableFuture<Void> cfCheckCaseIndicatorInstanceId = CompletableFuture.runAsync(() -> {
+            rsCaseIndicatorInstanceBiz.checkCaseIndicatorInstanceIdInCaseIndicatorInstanceEntity(caseIndicatorInstanceEntityAR, caseIndicatorInstanceId);
+        });
+        cfCheckCaseIndicatorInstanceId.get();
+
+        CaseIndicatorInstanceEntity caseIndicatorInstanceEntity = caseIndicatorInstanceEntityAR.get();
+        CompletableFuture<Void> cfCheckIfCanDeleteCaseIndicatorInstanceEntity = CompletableFuture.runAsync(() -> {
+            rsCaseIndicatorInstanceBiz.checkIfCanDeleteCaseIndicatorInstanceEntity(caseIndicatorInstanceEntity);
+        });
+        cfCheckIfCanDeleteCaseIndicatorInstanceEntity.get();
+
+        String appId = caseIndicatorInstanceEntity.getAppId();
+        String indicatorCategoryId = caseIndicatorInstanceEntity.getIndicatorCategoryId();
+        RLock lock = redissonClient.getLock(RedissonUtil.getLockName(appId, EnumRedissonLock.CASE_INDICATOR_INSTANCE_CREATE_DELETE_UPDATE, caseIndicatorInstanceFieldPid, indicatorCategoryId));
+        boolean isLocked = lock.tryLock(leaseTimeCaseIndicatorInstanceCreateDeleteUpdate, TimeUnit.MILLISECONDS);
+        if (!isLocked) {
+            throw new IndicatorInstanceException(EnumESC.SYSTEM_BUSY_PLEASE_OPERATOR_CASE_INDICATOR_INSTANCE_LATER);
+        }
+        try {
+            boolean isRemovedCaseIndicatorInstance = caseIndicatorInstanceService.remove(
+                new LambdaQueryWrapper<CaseIndicatorInstanceEntity>()
+                    .eq(CaseIndicatorInstanceEntity::getCaseIndicatorInstanceId, caseIndicatorInstanceId)
+            );
+            if (!isRemovedCaseIndicatorInstance) {
+                log.warn("方法CaseIndicatorInstanceBiz.delete对caseIndicatorInstanceId：{}的caseIndicatorInstance删除失败", caseIndicatorInstanceId);
+                throw new RsCaseIndicatorInstanceBizException(EnumESC.CASE_INDICATOR_INSTANCE_ID_IS_ILLEGAL);
+            }
+            boolean isRemovedCaseIndicatorCategoryRef = caseIndicatorCategoryRefService.remove(
+                new LambdaQueryWrapper<CaseIndicatorCategoryRefEntity>()
+                    .eq(CaseIndicatorCategoryRefEntity::getIndicatorInstanceId, caseIndicatorInstanceId)
+            );
+            if (!isRemovedCaseIndicatorCategoryRef) {
+                log.warn("方法CaseIndicatorInstanceBiz.delete对caseIndicatorInstanceId：{}的IndicatorCategoryRef删除失败", caseIndicatorInstanceId);
+                throw new IndicatorInstanceException(EnumESC.CASE_INDICATOR_INSTANCE_ID_CATEGORY_REF_IS_ILLEGAL);
+            }
+            AtomicInteger atomicInteger = new AtomicInteger(1);
+            List<CaseIndicatorCategoryRefEntity> caseIndicatorCategoryRefEntityList = caseIndicatorCategoryRefService.lambdaQuery()
+                .eq(CaseIndicatorCategoryRefEntity::getAppId, appId)
+                .eq(CaseIndicatorCategoryRefEntity::getIndicatorCategoryId, indicatorCategoryId)
+                .orderByAsc(CaseIndicatorCategoryRefEntity::getSeq)
+                .list()
+                .stream()
+                .peek(caseIndicatorCategoryRefEntity1 -> {
+                    caseIndicatorCategoryRefEntity1.setSeq(atomicInteger.getAndIncrement());
+                })
+                .collect(Collectors.toList());
+            caseIndicatorCategoryRefService.saveOrUpdateBatch(caseIndicatorCategoryRefEntityList);
+            boolean isRemovedCaseIndicatorRule = caseIndicatorRuleService.remove(
+                new LambdaQueryWrapper<CaseIndicatorRuleEntity>()
+                    .eq(CaseIndicatorRuleEntity::getVariableId, caseIndicatorInstanceId)
+            );
+            if (!isRemovedCaseIndicatorRule) {
+                log.warn("方法方法CaseIndicatorInstanceBiz.delete对VariableId：{}的CaseIndicatorRule删除失败", cfCheckCaseIndicatorInstanceId);
+                throw new IndicatorInstanceException(EnumESC.CASE_INDICATOR_INSTANCE_ID_RULE_IS_ILLEGAL);
+            }
+        } finally {
+            lock.unlock();
+        }
     }
 }

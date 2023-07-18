@@ -9,7 +9,10 @@ import org.dows.hep.api.base.indicator.request.CaseCreateOrUpdateIndicatorExpres
 import org.dows.hep.api.base.indicator.response.CaseIndicatorExpressionResponseRs;
 import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
 import org.dows.hep.biz.base.indicator.CaseIndicatorExpressionBiz;
+import org.dows.hep.biz.base.indicator.CaseIndicatorExpressionRefBiz;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author runsix
@@ -22,7 +25,7 @@ public class CaseIndicatorExpressionRest {
 
   @Operation(summary = "创建指标公式")
   @PostMapping("v2/caseIndicator/caseIndicatorExpression/createOrUpdateRs")
-  public String v2CreateOrUpdate(@RequestBody CaseCreateOrUpdateIndicatorExpressionRequestRs caseCreateOrUpdateIndicatorExpressionRequestRs) throws InterruptedException {
+  public String v2CreateOrUpdate(@RequestBody CaseCreateOrUpdateIndicatorExpressionRequestRs caseCreateOrUpdateIndicatorExpressionRequestRs) throws InterruptedException, ExecutionException {
     return caseIndicatorExpressionBiz.v2CreateOrUpdate(caseCreateOrUpdateIndicatorExpressionRequestRs);
   }
 
@@ -34,7 +37,7 @@ public class CaseIndicatorExpressionRest {
 
   @Operation(summary = "根据公式id查询出所有")
   @GetMapping("v1/caseIndicator/indicatorExpression/get")
-  public CaseIndicatorExpressionResponseRs get(@RequestParam String caseIndicatorExpressionId) {
+  public CaseIndicatorExpressionResponseRs get(@RequestParam String caseIndicatorExpressionId) throws ExecutionException, InterruptedException {
     return caseIndicatorExpressionBiz.get(caseIndicatorExpressionId);
   }
 }
