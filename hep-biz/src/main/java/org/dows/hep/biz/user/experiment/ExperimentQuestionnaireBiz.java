@@ -160,7 +160,6 @@ public class ExperimentQuestionnaireBiz {
             List<ExperimentQuestionnaireResponse.ExptCategQuestionnaireItem> categItemList = ExperimentQuestionnaireResponse.convertItemList2CategItemList(itemTreeList);
             resultItem.setItemList(itemTreeList);
             resultItem.setCategItemList(categItemList);
-            result.add(resultItem);
         });
 
         return result;
