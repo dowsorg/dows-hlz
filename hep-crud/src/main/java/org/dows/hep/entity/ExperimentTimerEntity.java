@@ -29,7 +29,7 @@ import java.util.Date;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(name = "ExperimentTimer", title = "实验计数计时器")
-@TableName("experiment_timer")
+@TableName("experiment_timer1")
 public class ExperimentTimerEntity implements CrudEntity {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
@@ -51,13 +51,15 @@ public class ExperimentTimerEntity implements CrudEntity {
     private Long timer;
 
     @Schema(title = "实验开始时间")
-    private Long startTime;
+    private Date startTime;
 
     @Schema(title = "实验结束时间[如果有暂停，需加暂停时长]")
-    private Long endTime;
+    private Date endTime;
 
     @Schema(title = "实验每期间隔：秒")
     private Long periodInterval;
+    @Schema(title = "每期时长：秒")
+    private Long periodDuration;
 
     @Schema(title = "期数[根据期数生成对应的计时记录]")
     private Integer period;
