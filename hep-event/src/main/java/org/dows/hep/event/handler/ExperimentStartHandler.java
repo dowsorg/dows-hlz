@@ -74,6 +74,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                     experimentTimerEntity.setStartTime(DateUtil.date(experimentTimerEntity.getStartTime().getTime() + duration));
                     experimentTimerEntity.setEndTime(DateUtil.date(experimentTimerEntity.getEndTime().getTime() + duration));
                     experimentTimerEntity.setDuration(duration);
+                    experimentTimerEntity.setTimer(experimentTimerEntity.getTimer());
                     experimentTimerEntity.setPeriodDuration(experimentTimerEntity.getPeriodDuration());
                     // 修改实验状态，真正开始实验
                     experimentTimerEntity.setState(EnumExperimentState.ONGOING.getState());
@@ -117,6 +118,8 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
             long duration = ct - updateExperimentTimer.getPauseStartTime().getTime();
             // 设当前期数的暂停时长
             updateExperimentTimer.setDuration(duration);
+            // 本期时长
+            updateExperimentTimer.setTimer(updateExperimentTimer.getTimer());
             updateExperimentTimer.setPaused(false);
             updateExperimentTimer.setState(EnumExperimentState.ONGOING.getState());
             // 本期结束时间 = 元本期结束时间+暂停时间
@@ -134,6 +137,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                     // 重新设置当前期数的下一期开始时间，结束时间等
                     currentPeriod.setStartTime(DateUtil.date(currentPeriod.getStartTime().getTime() + duration));
                     currentPeriod.setEndTime(DateUtil.date(currentPeriod.getEndTime().getTime() + duration));
+                    //currentPeriod.setTimer(currentPeriod.getTimer()+(ct-duration));
                 }
                 // 加入待更新集合
                 updateExperimentTimerEntities.add(currentPeriod);
@@ -141,7 +145,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
             // 批量更新期数定时器
             boolean b = experimentTimerBiz
                     .saveOrUpdateExperimentTimeExperimentState(experimentRestartRequest.getExperimentInstanceId(),
-                    updateExperimentTimerEntities, EnumExperimentState.ONGOING);
+                            updateExperimentTimerEntities, EnumExperimentState.ONGOING);
 
             if (b) {
                 WsMessageResponse wsMessageResponse = new WsMessageResponse(EnumWebSocketType.EXPT_RESTART, experimentRestartRequest);
@@ -155,12 +159,12 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
 
             // 所有保险也会暂停，需要重新延长开始时间
             List<ExperimentPersonInsuranceEntity> insuranceEntityList = experimentPersonInsuranceService.lambdaQuery()
-                    .eq(ExperimentPersonInsuranceEntity::getExperimentInstanceId,experimentRestartRequest.getExperimentInstanceId())
-                    .eq(ExperimentPersonInsuranceEntity::getDeleted,false)
+                    .eq(ExperimentPersonInsuranceEntity::getExperimentInstanceId, experimentRestartRequest.getExperimentInstanceId())
+                    .eq(ExperimentPersonInsuranceEntity::getDeleted, false)
                     .list();
-            if(insuranceEntityList != null && insuranceEntityList.size() > 0){
-                insuranceEntityList.forEach(insurance ->{
-                    insurance.setExpdate(TimeUtil.addTimeByLong(insurance.getExpdate(),duration));
+            if (insuranceEntityList != null && insuranceEntityList.size() > 0) {
+                insuranceEntityList.forEach(insurance -> {
+                    insurance.setExpdate(TimeUtil.addTimeByLong(insurance.getExpdate(), duration));
                 });
                 experimentPersonInsuranceService.updateBatchById(insuranceEntityList);
             }
@@ -171,19 +175,20 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
         // 重置定时任务
         resetTimeTask(experimentRestartRequest, updateExperimentTimerEntities, experimentGroupResponses);
         // 突发事件检测
-        EventScheduler.Instance().scheduleTimeBasedEvent(null,experimentRestartRequest.getExperimentInstanceId(),5);
+        EventScheduler.Instance().scheduleTimeBasedEvent(null, experimentRestartRequest.getExperimentInstanceId(), 5);
 
     }
 
     /**
      * 重置定时任务
+     *
      * @param experimentRestartRequest
      * @param updateExperimentTimerEntities
      * @param experimentGroupResponses
      */
     private void resetTimeTask(ExperimentRestartRequest experimentRestartRequest,
-                           List<ExperimentTimerEntity> updateExperimentTimerEntities,
-                           List<ExperimentGroupResponse> experimentGroupResponses) {
+                               List<ExperimentTimerEntity> updateExperimentTimerEntities,
+                               List<ExperimentGroupResponse> experimentGroupResponses) {
         /**
          * 重设实验结束任务
          */
@@ -221,8 +226,8 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
 
         // 执行任务
         ExperimentFinishTask experimentFinishTask = new ExperimentFinishTask(experimentInstanceService,
-                experimentParticipatorService, experimentTimerService, experimentTaskScheduleService,experimentScoreCalculator,
-                experimentRestartRequest.getExperimentInstanceId(),lastPeriods.getPeriod());
+                experimentParticipatorService, experimentTimerService, experimentTaskScheduleService, experimentScoreCalculator,
+                experimentRestartRequest.getExperimentInstanceId(), lastPeriods.getPeriod());
 
         taskScheduler.schedule(experimentFinishTask, DateUtil.date(lastPeriods.getEndTime()));
         /**
@@ -235,7 +240,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                 ExperimentTaskScheduleEntity calcTaskScheduleEntity = experimentTaskScheduleService.lambdaQuery()
                         .eq(ExperimentTaskScheduleEntity::getTaskBeanCode, EnumExperimentTask.experimentCalcTask.getDesc())
                         .eq(ExperimentTaskScheduleEntity::getExperimentInstanceId, experimentRestartRequest.getExperimentInstanceId())
-                        .eq(ExperimentTaskScheduleEntity::getExperimentGroupId,experimentGroupRespons.getExperimentGroupId())
+                        .eq(ExperimentTaskScheduleEntity::getExperimentGroupId, experimentGroupRespons.getExperimentGroupId())
                         .eq(ExperimentTaskScheduleEntity::getPeriods, lastPeriods.getPeriod())
                         .one();
                 String taskParams1 = "{\"experimentInstanceId\":\"" + experimentRestartRequest.getExperimentInstanceId() + "\",\"experimentGroupId\":\""
