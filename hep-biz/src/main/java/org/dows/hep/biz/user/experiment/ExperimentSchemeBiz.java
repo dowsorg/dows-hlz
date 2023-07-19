@@ -188,6 +188,9 @@ public class ExperimentSchemeBiz {
         // handle group-status
         handleGroupStatus(request.getExperimentGroupId(), EnumExperimentGroupStatus.SCHEMA);
 
+        // handle expt-status
+        handleExptStatus(request.getExperimentInstanceId(), EnumExperimentState.ONGOING);
+
         // sync start
         syncStart(request.getExperimentInstanceId(), request.getExperimentGroupId());
 
