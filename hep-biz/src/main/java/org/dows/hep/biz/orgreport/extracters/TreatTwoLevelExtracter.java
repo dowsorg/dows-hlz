@@ -32,11 +32,6 @@ public class TreatTwoLevelExtracter implements IOrgReportExtracter<ExptTreatPlan
     }
 
     @Override
-    public TypeReference<ExptTreatPlanResponse> getReportClass() {
-        return s_typeRef;
-    }
-
-    @Override
     public ExptTreatPlanResponse getReportData(OrgReportExtractRequest req) {
         ExptOperateOrgFuncRequest castReq= CopyWrapper.create(ExptOperateOrgFuncRequest::new)
                 .endFrom(req);

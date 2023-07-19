@@ -1,7 +1,6 @@
 package org.dows.hep.biz.orgreport;
 
 import cn.hutool.extra.spring.SpringUtil;
-import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.enums.EnumExptOperateType;
 import org.dows.hep.api.user.experiment.vo.ExptOrgReportNodeDataVO;
@@ -51,17 +50,6 @@ public class OrgReportExtracterAdapter {
         extracter.fillReportData(req, src.getNodeData());
     }
 
-
-    public <T> T getReportData(OrgReportExtractRequest req,EnumExptOperateType operateType, TypeReference<T> typeReference) {
-        IOrgReportExtracter extracter = getExtracter(operateType);
-        if (null == extracter) {
-            return null;
-        }
-        if (null != typeReference && !typeReference.getType().equals(extracter.getReportClass().getType())) {
-            return null;
-        }
-        return (T) extracter.getReportData(req);
-    }
 
     private IOrgReportExtracter getExtracter(String indicatorCategoryId) {
         if (ShareUtil.XObject.isEmpty(indicatorCategoryId)) {
