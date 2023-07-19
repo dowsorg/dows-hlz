@@ -41,12 +41,18 @@ public class ExperimentQuestionnaireScoreBiz {
     private static final Integer SCORE_GRADE_HALF_RIGHT = 1;
     private static final Integer SCORE_GRADE_ALL_RIGHT = 2;
 
-    private String scoreMode;
-
+    /**
+     * @param experimentInstanceId - 实验实例ID
+     * @param period - 期数
+     * @return void
+     * @author fhb
+     * @description 计算该实验该期数的知识答题得分
+     * @date 2023/7/19 9:58
+     */
     public void calculateExptQuestionnaireScore(String experimentInstanceId, Integer period) {
         Assert.notBlank(experimentInstanceId, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
         Assert.notNull(period, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
-        setScoreMode(experimentInstanceId);
+        String scoreMode = experimentCaseInfoBiz.getQuestionnaireScoreMode(experimentInstanceId);
 
         List<ExperimentQuestionnaireEntity> result = new ArrayList<>();
 
@@ -76,7 +82,7 @@ public class ExperimentQuestionnaireScoreBiz {
         Map<String, List<ExperimentQuestionnaireItemEntity>> collect = itemEntityList.stream()
                 .collect(Collectors.groupingBy(ExperimentQuestionnaireItemEntity::getExperimentQuestionnaireId));
         collect.forEach((k, v) -> {
-            Float score = computeScore(v).floatValue();
+            Float score = computeScore(v, scoreMode).floatValue();
             ExperimentQuestionnaireEntity entity = ExperimentQuestionnaireEntity.builder()
                     .id(questionnaireIdMapId.get(k))
                     .score(score)
@@ -87,6 +93,15 @@ public class ExperimentQuestionnaireScoreBiz {
         experimentQuestionnaireService.updateBatchById(result);
     }
 
+    /**
+     * @param experimentInstanceId - 实验实例ID
+     * @param period - 期数
+     * @param groupId - 小组ID
+     * @return java.math.BigDecimal
+     * @author fhb
+     * @description 获取 `experimentInstanceId` 实验下, `period` 期数下，`groupId` 小组下的知识答题得分
+     * @date 2023/7/19 10:03
+     */
     public BigDecimal getExptQuestionnaireScore(String experimentInstanceId, Integer period, String groupId) {
         Assert.notBlank(experimentInstanceId, "获取实验知识答题分数，实验ID不能为空");
         Assert.notNull(period, "获取实验知识答题分数，实验期数不能为空");
@@ -103,6 +118,14 @@ public class ExperimentQuestionnaireScoreBiz {
         return calculateScoreAverageOfGroup(list);
     }
 
+    /**
+     * @param experimentInstanceId - 实验实例ID
+     * @param period - 期数
+     * @return java.util.Map<java.lang.String,java.math.BigDecimal>
+     * @author fhb
+     * @description 获取 `experimentInstanceId` 实验下， `period` 周期下的知识答题得分，并按照小组分组返回
+     * @date 2023/7/19 10:00
+     */
     public Map<String, BigDecimal> listExptQuestionnaireScore(String experimentInstanceId, Integer period) {
         Assert.notBlank(experimentInstanceId, "获取实验知识答题分数，实验ID不能为空");
         Assert.notNull(period, "获取实验知识答题分数，实验期数不能为空");
@@ -136,8 +159,8 @@ public class ExperimentQuestionnaireScoreBiz {
         return BigDecimal.valueOf(average);
     }
 
-    // 计分，在得出结果默认10位小数
-    private BigDecimal computeScore(List<ExperimentQuestionnaireItemEntity> itemList) {
+    // 计分
+    private BigDecimal computeScore(List<ExperimentQuestionnaireItemEntity> itemList, String scoreMode) {
         BigDecimal zeroScore = BigDecimal.valueOf(0.00);
         BigDecimal fullScore = BigDecimal.valueOf(100.00);
         int scale = 2;
@@ -176,7 +199,7 @@ public class ExperimentQuestionnaireScoreBiz {
         }
 
         // compute
-        if (StrUtil.isBlank(this.scoreMode)) {
+        if (StrUtil.isBlank(scoreMode)) {
             throw new BizException(ExperimentESCEnum.DATA_NULL);
         }
         if (allRightNum == totalNum) {
@@ -185,10 +208,10 @@ public class ExperimentQuestionnaireScoreBiz {
         if (allRightNum == 0 && halfRightNum == 0) {
             return zeroScore;
         }
-        if (CaseScoreModeEnum.STRICT.name().equals(this.scoreMode)) {
+        if (CaseScoreModeEnum.STRICT.name().equals(scoreMode)) {
             return NumberUtil.round(NumberUtil.mul(allRightNum, unitScore), scale);
         }
-        if (CaseScoreModeEnum.HALF.name().equals(this.scoreMode)) {
+        if (CaseScoreModeEnum.HALF.name().equals(scoreMode)) {
             BigDecimal tAllRightScore = NumberUtil.mul(allRightNum, unitScore);
             BigDecimal tHalfUnitScore = NumberUtil.div(unitScore, scale);
             BigDecimal tHalfRightScore = NumberUtil.mul(halfRightNum, tHalfUnitScore);
@@ -239,10 +262,6 @@ public class ExperimentQuestionnaireScoreBiz {
         }
 
         experimentQuestionnaireItemService.updateBatchById(result);
-    }
-
-    private void setScoreMode(String experimentInstanceId) {
-        this.scoreMode = experimentCaseInfoBiz.getQuestionnaireScoreMode(experimentInstanceId);
     }
 
     private static List<String> findCommonElements(List<String> list1, List<String> list2) {
