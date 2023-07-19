@@ -54,6 +54,7 @@ public class ExperimentSuspendHandler extends AbstractEventHandler implements Ev
                 updExperimentTimerEntity.setPauseCount(experimentTimerEntity.getPauseCount() + 1);
                 updExperimentTimerEntity.setState(EnumExperimentState.PREPARE.getState());
                 updExperimentTimerEntity.setPeriodDuration(experimentTimerEntity.getPeriodDuration());
+                updExperimentTimerEntity.setTimer(0L);
                 updExperimentTimerEntity.setPauseStartTime(experimentRestartRequest.getCurrentTime());
                 updExperimentTimerEntity.setPaused(experimentRestartRequest.getPaused());
                 updateExperimentTimerEntities.add(updExperimentTimerEntity);
@@ -85,12 +86,23 @@ public class ExperimentSuspendHandler extends AbstractEventHandler implements Ev
                         DateUtil.formatDateTime(DateUtil.date(experimentTimerEntity.getStartTime())),
                         DateUtil.formatDateTime(DateUtil.date(experimentTimerEntity.getEndTime()))));
             }
+
+            long timer = 0L;
+            // 期数持续时长
+            if (experimentTimerEntity.getTimer() == 0) {
+                timer = ct - experimentTimerEntity.getStartTime().getTime();
+            } else {
+                // 当前时间-上次暂停结束时间（本次开始时间） + 上次持续时间
+                timer = ct - experimentTimerEntity.getPauseEndTime().getTime() + experimentTimerEntity.getTimer();
+            }
             // 暂停时新增暂停记录
             ExperimentTimerEntity addExperimentTimer = ExperimentTimerEntity.builder()
                     .experimentTimerId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentTimerEntity.getExperimentInstanceId())
                     .startTime(experimentTimerEntity.getStartTime())
+                    //.startTime(DateUtil.date(ct))
                     .endTime(experimentTimerEntity.getEndTime())
+                    .timer(timer)
                     .periodDuration(experimentTimerEntity.getPeriodDuration())
                     .period(experimentTimerEntity.getPeriod())
                     .periodInterval(experimentTimerEntity.getPeriodInterval())

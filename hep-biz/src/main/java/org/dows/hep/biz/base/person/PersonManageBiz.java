@@ -40,6 +40,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 /**
@@ -252,7 +253,7 @@ public class PersonManageBiz {
      * @创建时间: 2023年4月23日 上午9:44:34
      */
     @DSTransactional
-    public PersonInstanceResponse copyPerson(String accountId,String source) {
+    public PersonInstanceResponse copyPerson(String accountId,String source) throws ExecutionException, InterruptedException {
         //1、获取用户信息及简介并创建新用户及简介
         AccountUserResponse accountUser = accountUserApi.getUserByAccountId(accountId);
         UserInstanceResponse userInstanceResponse = userInstanceApi.getUserInstanceByUserId(accountUser.getUserId());
@@ -666,7 +667,7 @@ public class PersonManageBiz {
      * @创建时间: 2023/4/25 17:35
      */
     @DSTransactional
-    public PersonInstanceResponse addPerson(AccountInstanceRequest request) {
+    public PersonInstanceResponse addPerson(AccountInstanceRequest request) throws ExecutionException, InterruptedException {
         //1、创建随机账号
         request.setAccountName(randomWord(6));
         //2、新增用户信息

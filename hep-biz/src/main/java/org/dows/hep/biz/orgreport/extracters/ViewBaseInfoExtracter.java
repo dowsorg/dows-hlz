@@ -27,10 +27,6 @@ public class ViewBaseInfoExtracter implements IOrgReportExtracter<ExperimentIndi
         return EnumExptOperateType.VIEWBaseInfo;
     }
 
-    @Override
-    public TypeReference<ExperimentIndicatorViewBaseInfoRsResponse> getReportClass() {
-        return s_typeRef;
-    }
 
     @Override
     public ExperimentIndicatorViewBaseInfoRsResponse getReportData(OrgReportExtractRequest req) {

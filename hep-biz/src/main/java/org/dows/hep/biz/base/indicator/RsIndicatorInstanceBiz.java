@@ -4,19 +4,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.enums.EnumESC;
+import org.dows.hep.api.enums.EnumIndicatorType;
 import org.dows.hep.api.exception.IndicatorCategoryException;
 import org.dows.hep.api.exception.RsIndicatorInstanceBizException;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * @author runsix
@@ -41,6 +40,7 @@ public class RsIndicatorInstanceBiz {
   private final IndicatorExpressionInfluenceService indicatorExpressionInfluenceService;
   private final TagsInstanceService tagsInstanceService;
   private final RsUtilBiz rsUtilBiz;
+  private final IndicatorRuleService indicatorRuleService;
 
   public void checkIndicatorInstanceDeleteInIndicatorViewBaseInfoDescrRef(String appId, Set<String> indicatorInstanceIdSet) {
     if (StringUtils.isBlank(appId) || Objects.isNull(indicatorInstanceIdSet) || indicatorInstanceIdSet.isEmpty()) {return;}
@@ -322,5 +322,66 @@ public class RsIndicatorInstanceBiz {
         .forEach(indicatorInstanceEntity -> {
           indicatorInstanceIdSet.add(indicatorInstanceEntity.getIndicatorInstanceId());
         });
+  }
+
+  public void populateKIndicatorInstanceIdVIndicatorInstanceEntityMap(
+      Map<String, IndicatorInstanceEntity> kIndicatorInstanceIdVIndicatorInstanceEntityMap,
+      String appId) {
+    if (Objects.isNull(kIndicatorInstanceIdVIndicatorInstanceEntityMap) || StringUtils.isBlank(appId)) {return;}
+    indicatorInstanceService.lambdaQuery()
+        .eq(IndicatorInstanceEntity::getAppId, appId)
+        .list()
+        .forEach(indicatorInstanceEntity -> {
+          kIndicatorInstanceIdVIndicatorInstanceEntityMap.put(indicatorInstanceEntity.getIndicatorInstanceId(), indicatorInstanceEntity);
+        });
+  }
+
+  public void populateKIndicatorInstanceIdVIndicatorRuleEntityMap(
+      Map<String, IndicatorRuleEntity> kIndicatorInstanceIdVIndicatorRuleEntityMap,
+      Set<String> indicatorInstanceIdSet) {
+    if (Objects.isNull(kIndicatorInstanceIdVIndicatorRuleEntityMap)
+        || Objects.isNull(indicatorInstanceIdSet) || indicatorInstanceIdSet.isEmpty()
+    ) {return;}
+    indicatorRuleService.lambdaQuery()
+        .in(IndicatorRuleEntity::getVariableId, indicatorInstanceIdSet)
+        .list()
+        .forEach(indicatorRuleEntity -> {
+          kIndicatorInstanceIdVIndicatorRuleEntityMap.put(indicatorRuleEntity.getVariableId(), indicatorRuleEntity);
+        });
+  }
+
+  public void populateHealthPointIndicatorRuleEntity(
+      AtomicReference<IndicatorRuleEntity> indicatorRuleEntityAR,
+      String appId) {
+    if (Objects.isNull(indicatorRuleEntityAR) || StringUtils.isBlank(appId)) {return;}
+    IndicatorInstanceEntity indicatorInstanceEntity = indicatorInstanceService.lambdaQuery()
+        .eq(IndicatorInstanceEntity::getAppId, appId)
+        .eq(IndicatorInstanceEntity::getType, EnumIndicatorType.HEALTH_POINT.getType())
+        .one();
+    if (Objects.isNull(indicatorInstanceEntity)) {return;}
+    indicatorRuleService.lambdaQuery()
+        .eq(IndicatorRuleEntity::getVariableId, indicatorInstanceEntity.getIndicatorInstanceId())
+        .oneOpt()
+        .ifPresent(indicatorRuleEntityAR::set);
+  }
+
+  public void populateAllKIndicatorInstanceIdVValMap(
+      Map<String, String> kIndicatorInstanceIdVValMap,
+      String appId) {
+    if (Objects.isNull(kIndicatorInstanceIdVValMap) || StringUtils.isBlank(appId)) {return;}
+    Set<String> indicatorInstanceIdSet = indicatorInstanceService.lambdaQuery()
+        .eq(IndicatorInstanceEntity::getAppId, appId)
+        .list()
+        .stream()
+        .map(IndicatorInstanceEntity::getIndicatorInstanceId)
+        .collect(Collectors.toSet());
+    if (!indicatorInstanceIdSet.isEmpty()) {
+      indicatorRuleService.lambdaQuery()
+          .in(IndicatorRuleEntity::getVariableId, indicatorInstanceIdSet)
+          .list()
+          .forEach(indicatorRuleEntity -> {
+            kIndicatorInstanceIdVValMap.put(indicatorRuleEntity.getVariableId(), indicatorRuleEntity.getDef());
+          });
+    }
   }
 }

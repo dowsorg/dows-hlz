@@ -28,10 +28,6 @@ public class JudegHealthProblemExtracter implements IOrgReportExtracter<List<Exp
         return EnumExptOperateType.JUDGEHealthProblem;
     }
 
-    @Override
-    public TypeReference<List<ExperimentHealthProblemReportResponseRs>> getReportClass() {
-        return s_typeRef;
-    }
 
     @Override
     public List<ExperimentHealthProblemReportResponseRs> getReportData(OrgReportExtractRequest req) {

@@ -10,6 +10,7 @@ import org.dows.hep.biz.base.indicator.ExperimentOrgModuleBiz;
 import org.dows.hep.biz.util.ExptOrgFlowValidator;
 import org.dows.hep.biz.util.ExptRequestValidator;
 import org.dows.hep.biz.util.ShareUtil;
+import org.dows.hep.entity.ExperimentOrgEntity;
 import org.dows.hep.entity.OperateFlowEntity;
 import org.springframework.stereotype.Component;
 
@@ -40,16 +41,11 @@ public class OrgReportComposer {
                 .setIndicatorFuncId(validator.getIndicatorFuncId())
                 ;
     }
-    public ExptOrgFlowReportResponse composeReport(OrgReportExtractRequest req){
-        return composeReport(req,null,null);
-    }
-    public ExptOrgFlowReportResponse composeReport(OrgReportExtractRequest req,ExptOrgReportNodeVO newNode){
-        return composeReport(req,null,newNode);
-    }
 
-    public ExptOrgFlowReportResponse composeReport(OrgReportExtractRequest req,ExptOrgFlowValidator flowValidator,ExptOrgReportNodeVO newNode){
+    public ExptOrgFlowReportResponse composeReport(ExptRequestValidator exptValidator,ExptOrgFlowValidator flowValidator,ExptOrgReportNodeVO newNode){
+        final ExperimentOrgEntity exptOrg= exptValidator.getExperimentOrg();
         if(null==flowValidator){
-            flowValidator=ExptOrgFlowValidator.create(req.getAppId(),req.getExperimentInstanceId(),req.getExperimentOrgId(),req.getExperimentPersonId());
+            flowValidator=ExptOrgFlowValidator.create(exptValidator);
         }
         OperateFlowEntity rowFlow=flowValidator.getOrgFlow(true,
                         OperateFlowEntity::getOperateFlowId,
@@ -57,13 +53,13 @@ public class OrgReportComposer {
                         OperateFlowEntity::getOperateTime,
                         OperateFlowEntity::getOperateGameDay
                         );
-        req.setOperateFlowId(rowFlow.getOperateFlowId());
         ExptOrgFlowReportResponse rst=new ExptOrgFlowReportResponse()
-                .setOperateFlowId(req.getOperateFlowId())
+                .setOperateFlowId(rowFlow.getOperateFlowId())
                 .setOperateTime(rowFlow.getOperateTime())
                 .setOperateGameDay(rowFlow.getOperateGameDay())
+                .setReportName(String.format("%s报告",exptOrg.getExperimentOrgName()))
                 .setNodes(new ArrayList<>());
-        List<ExperimentOrgModuleRsResponse> modules=experimentOrgModuleBiz.getByExperimentOrgIdAndExperimentPersonId(req.getExperimentOrgId());
+        List<ExperimentOrgModuleRsResponse> modules=experimentOrgModuleBiz.getByExperimentOrgIdAndExperimentPersonId(exptValidator.getExperimentOrgId());
         if(ShareUtil.XObject.isEmpty(modules)){
             return rst;
         }
@@ -77,14 +73,10 @@ public class OrgReportComposer {
                 if(!orgReportExtracterAdapter.supportIndicatorCategory(func.getIndicatorCategoryId())){
                     return;
                 }
+                if(null!=newNode &&func.getIndicatorCategoryId().equals(newNode.getIndicatorCategoryId()) ){
+                    return;
+                }
                 funcs.add(func);
-
-                ExptOrgReportNodeVO node=new ExptOrgReportNodeVO()
-                        .setIndicatorCategoryId(func.getIndicatorCategoryId())
-                        .setIndicatorFuncId(func.getIndicatorFuncId())
-                        .setIndicatorFuncName(func.getIndicatorFuncName());
-                orgReportExtracterAdapter.fillReportData(req,node);
-
             });
         });
         if(funcs.size()==0){
@@ -100,6 +92,7 @@ public class OrgReportComposer {
                         .setIndicatorFuncId(func.getIndicatorFuncId())
                         .setIndicatorFuncName(func.getIndicatorFuncName());
                 nodes.add(node);
+                OrgReportExtractRequest req=createRequest(exptValidator).setIndicatorFuncId(func.getIndicatorFuncId());
                 orgReportExtracterAdapter.fillReportData(req,node);
             });
         }

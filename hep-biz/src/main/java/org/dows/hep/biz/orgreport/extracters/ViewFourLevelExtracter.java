@@ -29,10 +29,6 @@ public class ViewFourLevelExtracter implements IOrgReportExtracter<List<Experime
         return EnumExptOperateType.VIEWFourLevel;
     }
 
-    @Override
-    public TypeReference<List<ExperimentSupportExamReportResponseRs>> getReportClass() {
-        return s_typeRef;
-    }
 
     @Override
     public List<ExperimentSupportExamReportResponseRs> getReportData(OrgReportExtractRequest req) {

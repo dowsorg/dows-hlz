@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.Set;
 
 /**
  * @author runsix
@@ -16,16 +15,10 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RsCalculateHealthScoreRequestRs implements Serializable {
+public class ReCalculateOnePersonRequestRs implements Serializable {
   @Schema(title = "appId")
   private String appId;
 
-  @Schema(title = "实验id")
-  private String experimentId;
-
-  @Schema(title = "期数")
-  private Integer periods;
-
-  @Schema(title = "实验人物id")
-  private Set<String> experimentPersonIdSet;
+  @Schema(title = "案例指标-绑定的主体")
+  private String accountId;
 }

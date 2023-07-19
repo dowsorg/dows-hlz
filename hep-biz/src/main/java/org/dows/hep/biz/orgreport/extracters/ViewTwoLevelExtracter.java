@@ -29,10 +29,6 @@ public class ViewTwoLevelExtracter implements IOrgReportExtracter<List<Experimen
         return EnumExptOperateType.VIEWTwoLevel;
     }
 
-    @Override
-    public TypeReference<List<ExperimentPhysicalExamReportResponseRs>> getReportClass() {
-        return s_typeRef;
-    }
 
     @Override
     public List<ExperimentPhysicalExamReportResponseRs> getReportData(OrgReportExtractRequest req) {

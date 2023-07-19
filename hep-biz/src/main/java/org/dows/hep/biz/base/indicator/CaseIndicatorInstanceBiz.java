@@ -182,7 +182,7 @@ public class CaseIndicatorInstanceBiz {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void v2CopyPersonIndicatorInstance(CaseCreateCopyToPersonRequestRs caseCreateCopyToPersonRequestRs) throws ExecutionException, InterruptedException {
+    public void copyPersonIndicatorInstance(CaseCreateCopyToPersonRequestRs caseCreateCopyToPersonRequestRs) throws ExecutionException, InterruptedException {
         /* runsix:param */
         String appId = caseCreateCopyToPersonRequestRs.getAppId();
         String principalId = caseCreateCopyToPersonRequestRs.getPrincipalId();
@@ -295,7 +295,7 @@ public class CaseIndicatorInstanceBiz {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void copyPersonIndicatorInstance(CaseCreateCopyToPersonRequestRs caseCreateCopyToPersonRequestRs) {
+    public void v1OldCopyPersonIndicatorInstance(CaseCreateCopyToPersonRequestRs caseCreateCopyToPersonRequestRs) {
         String appId = caseCreateCopyToPersonRequestRs.getAppId();
         String casePersonId = caseCreateCopyToPersonRequestRs.getPrincipalId();
         Set<String> indicatorInstanceIdSet = new HashSet<>();
