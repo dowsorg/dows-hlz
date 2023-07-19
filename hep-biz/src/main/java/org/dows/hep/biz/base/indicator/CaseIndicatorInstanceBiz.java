@@ -295,7 +295,7 @@ public class CaseIndicatorInstanceBiz {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void oldcopyPersonIndicatorInstance(CaseCreateCopyToPersonRequestRs caseCreateCopyToPersonRequestRs) {
+    public void v1OldCopyPersonIndicatorInstance(CaseCreateCopyToPersonRequestRs caseCreateCopyToPersonRequestRs) {
         String appId = caseCreateCopyToPersonRequestRs.getAppId();
         String casePersonId = caseCreateCopyToPersonRequestRs.getPrincipalId();
         Set<String> indicatorInstanceIdSet = new HashSet<>();

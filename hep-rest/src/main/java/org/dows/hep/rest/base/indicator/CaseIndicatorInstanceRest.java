@@ -32,7 +32,7 @@ public class CaseIndicatorInstanceRest {
     @Operation(summary = "复制数据库指标管理给人物")
     @PostMapping("v1/caseIndicator/indicatorInstance/copy")
     public void copyPersonIndicatorInstance(@RequestBody CaseCreateCopyToPersonRequestRs caseCreateCopyToPersonRequestRs) {
-        caseIndicatorInstanceBiz.oldcopyPersonIndicatorInstance(caseCreateCopyToPersonRequestRs);
+        caseIndicatorInstanceBiz.v1OldCopyPersonIndicatorInstance(caseCreateCopyToPersonRequestRs);
     }
 
     @Operation(summary = "V2复制数据库指标管理给人物")

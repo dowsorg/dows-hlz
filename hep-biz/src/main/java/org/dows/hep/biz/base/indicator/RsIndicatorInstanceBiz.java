@@ -15,6 +15,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * @author runsix
@@ -362,5 +363,25 @@ public class RsIndicatorInstanceBiz {
         .eq(IndicatorRuleEntity::getVariableId, indicatorInstanceEntity.getIndicatorInstanceId())
         .oneOpt()
         .ifPresent(indicatorRuleEntityAR::set);
+  }
+
+  public void populateAllKIndicatorInstanceIdVValMap(
+      Map<String, String> kIndicatorInstanceIdVValMap,
+      String appId) {
+    if (Objects.isNull(kIndicatorInstanceIdVValMap) || StringUtils.isBlank(appId)) {return;}
+    Set<String> indicatorInstanceIdSet = indicatorInstanceService.lambdaQuery()
+        .eq(IndicatorInstanceEntity::getAppId, appId)
+        .list()
+        .stream()
+        .map(IndicatorInstanceEntity::getIndicatorInstanceId)
+        .collect(Collectors.toSet());
+    if (!indicatorInstanceIdSet.isEmpty()) {
+      indicatorRuleService.lambdaQuery()
+          .in(IndicatorRuleEntity::getVariableId, indicatorInstanceIdSet)
+          .list()
+          .forEach(indicatorRuleEntity -> {
+            kIndicatorInstanceIdVValMap.put(indicatorRuleEntity.getVariableId(), indicatorRuleEntity.getDef());
+          });
+    }
   }
 }

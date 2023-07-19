@@ -47,6 +47,7 @@ public class CaseIndicatorExpressionBiz {
   private final CaseIndicatorExpressionService caseIndicatorExpressionService;
   private final CaseIndicatorExpressionItemService caseIndicatorExpressionItemService;
   private final CaseIndicatorExpressionInfluenceService caseIndicatorExpressionInfluenceService;
+  private final RsCaseIndicatorInstanceBiz rsCaseIndicatorInstanceBiz;
 
   public CaseIndicatorExpressionItemEntity caseIndicatorExpressionItemResponseRs2Case(
       String caseIndicatorExpressionItemId,

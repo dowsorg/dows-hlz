@@ -187,11 +187,11 @@ public class RsIndicatorExpressionBiz {
     allCreateOrUpdateIndicatorExpressionItemRequestRsList.forEach(createOrUpdateIndicatorExpressionItemRequestRs -> {
       String conditionValList = createOrUpdateIndicatorExpressionItemRequestRs.getConditionValList();
       if (StringUtils.isNotBlank(conditionValList)) {
-        conditionValListList.add(conditionValList);
+        conditionValListList.addAll(rsUtilBiz.getConditionValSplitList(conditionValList));
       }
       String resultValList = createOrUpdateIndicatorExpressionItemRequestRs.getResultValList();
       if (StringUtils.isNotBlank(resultValList)) {
-        resultValListList.add(resultValList);
+        resultValListList.addAll(rsUtilBiz.getResultValSplitList(resultValList));
       }
     });
   }
@@ -304,7 +304,6 @@ public class RsIndicatorExpressionBiz {
     ) {return;}
     AtomicInteger seqAtomicInteger = new AtomicInteger(1);
     createOrUpdateIndicatorExpressionItemRequestRsList.forEach(createOrUpdateIndicatorExpressionItemRequestRs -> {
-      /* runsix:TODO 做校验 */
       String indicatorExpressionItemId = createOrUpdateIndicatorExpressionItemRequestRs.getIndicatorExpressionItemId();
       IndicatorExpressionItemEntity indicatorExpressionItemEntity = null;
       if (StringUtils.isBlank(indicatorExpressionItemId)) {
