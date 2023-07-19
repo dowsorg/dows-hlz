@@ -151,7 +151,7 @@ public class HepOrgOperateBiz {
                     .eq(ExperimentPersonEntity::getExperimentPersonId,request.getAccountId())
                     .eq(ExperimentPersonEntity::getExperimentInstanceId,request.getExperimentInstanceId())
                     .eq(ExperimentPersonEntity::getExperimentGroupId,request.getExperimentGroupId())
-                    .set(ExperimentPersonEntity::getExperimentOrgId, request.getOrgId())
+                    .set(ExperimentPersonEntity::getExperimentOrgId, request.getExperimentOrgId())
                     .set(ExperimentPersonEntity::getExperimentOrgName,orgResponse.getOrgName());
             experimentPersonService.update(updateWrapper);
         }
