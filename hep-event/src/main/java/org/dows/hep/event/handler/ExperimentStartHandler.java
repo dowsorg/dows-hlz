@@ -74,7 +74,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                     experimentTimerEntity.setStartTime(DateUtil.date(experimentTimerEntity.getStartTime().getTime() + duration));
                     experimentTimerEntity.setEndTime(DateUtil.date(experimentTimerEntity.getEndTime().getTime() + duration));
                     experimentTimerEntity.setDuration(duration);
-                    experimentTimerEntity.setTimer(experimentTimerEntity.getTimer());
+                    experimentTimerEntity.setTimer(0L);
                     experimentTimerEntity.setPeriodDuration(experimentTimerEntity.getPeriodDuration());
                     // 修改实验状态，真正开始实验
                     experimentTimerEntity.setState(EnumExperimentState.ONGOING.getState());
@@ -114,14 +114,14 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                         DateUtil.formatDateTime(DateUtil.date(updateExperimentTimer.getStartTime())),
                         DateUtil.formatDateTime(DateUtil.date(updateExperimentTimer.getEndTime()))));
             }
-            // 暂停持续时间 = 暂停结束时间 - 暂停开始时间
+            // 暂停持续时间 = 当前时间（暂停结束时间） - 暂停开始时间
             long supendDuration = ct - updateExperimentTimer.getPauseStartTime().getTime();
-            // 期数持续时长
-            long periodDuration = ct - updateExperimentTimer.getStartTime().getTime();
+            // 期数持续时长 = 当前时间- 暂停时间
+            long periodDuration = ct - supendDuration;
             // 设当前期数的暂停时长
             updateExperimentTimer.setDuration(supendDuration);
-            // 本期时长
-            updateExperimentTimer.setTimer(updateExperimentTimer.getTimer() + periodDuration);
+            // 本期持续时长（上期持续时长+本次持续时间）
+            //updateExperimentTimer.setTimer(updateExperimentTimer.getTimer() + periodDuration);
             updateExperimentTimer.setPaused(false);
             updateExperimentTimer.setState(EnumExperimentState.ONGOING.getState());
             // 本期结束时间 = 元本期结束时间+暂停时间

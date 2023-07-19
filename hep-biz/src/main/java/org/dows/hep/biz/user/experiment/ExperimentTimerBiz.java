@@ -230,7 +230,7 @@ public class ExperimentTimerBiz {
             Long second = 0L;
             if (null != experimentTimerEntity) {
                 //second = (experimentTimerEntity.getPauseStartTime().getTime() - experimentTimerEntity.getStartTime().getTime()) / 1000;
-                countDownResponse.setSandDurationSecond(experimentTimerEntity.getTimer()/1000);
+                countDownResponse.setSandDurationSecond(experimentTimerEntity.getTimer() / 1000);
                 countDownResponse.setState(experimentTimerEntity.getState());
                 countDownResponse.setPeriod(experimentTimerEntity.getPeriod());
                 return countDownResponse;
@@ -251,9 +251,10 @@ public class ExperimentTimerBiz {
                 } else if (v.getState() == EnumExperimentState.ONGOING.getState()) {
                     // 当前时间戳-当前期数开始时间 = 相对时间（持续了多久）；将转换为秒  .. day/duration = rate
                     if (sct >= v.getStartTime().getTime() && sct <= v.getEndTime().getTime()) {
-                        // 本期持续时间 = 当前时间-本期开始时间-暂停持续时间
+                        // 本期持续时间 = 期数结束时间-当前开始时间-当前时间
                         //long ds = sct - v.getStartTime().getTime();
-                        countDownResponse.setSandDurationSecond(v.getTimer() / 1000);
+                        long ds = v.getEndTime().getTime() - v.getPauseEndTime().getTime() - sct;
+                        countDownResponse.setSandDurationSecond(ds);
                         countDownResponse.setState(v.getState());
                         countDownResponse.setPeriod(v.getPeriod());
                     }
