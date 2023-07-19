@@ -115,15 +115,17 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                         DateUtil.formatDateTime(DateUtil.date(updateExperimentTimer.getEndTime()))));
             }
             // 暂停持续时间 = 暂停结束时间 - 暂停开始时间
-            long duration = ct - updateExperimentTimer.getPauseStartTime().getTime();
+            long supendDuration = ct - updateExperimentTimer.getPauseStartTime().getTime();
+            // 期数持续时长
+            long periodDuration = ct - updateExperimentTimer.getStartTime().getTime();
             // 设当前期数的暂停时长
-            updateExperimentTimer.setDuration(duration);
+            updateExperimentTimer.setDuration(supendDuration);
             // 本期时长
-            updateExperimentTimer.setTimer(updateExperimentTimer.getTimer());
+            updateExperimentTimer.setTimer(updateExperimentTimer.getTimer() + periodDuration);
             updateExperimentTimer.setPaused(false);
             updateExperimentTimer.setState(EnumExperimentState.ONGOING.getState());
             // 本期结束时间 = 元本期结束时间+暂停时间
-            updateExperimentTimer.setEndTime(DateUtil.date(updateExperimentTimer.getEndTime().getTime() + duration));
+            updateExperimentTimer.setEndTime(DateUtil.date(updateExperimentTimer.getEndTime().getTime() + supendDuration));
             // 设置暂停结束时间
             updateExperimentTimer.setPauseEndTime(experimentRestartRequest.getCurrentTime());
             updateExperimentTimer.setPeriodDuration(updateExperimentTimer.getPeriodDuration());
@@ -135,8 +137,8 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                 currentPeriod.setPaused(false);
                 if (currentPeriod.getPeriod() > experimentRestartRequest.getPeriods()) {
                     // 重新设置当前期数的下一期开始时间，结束时间等
-                    currentPeriod.setStartTime(DateUtil.date(currentPeriod.getStartTime().getTime() + duration));
-                    currentPeriod.setEndTime(DateUtil.date(currentPeriod.getEndTime().getTime() + duration));
+                    currentPeriod.setStartTime(DateUtil.date(currentPeriod.getStartTime().getTime() + supendDuration));
+                    currentPeriod.setEndTime(DateUtil.date(currentPeriod.getEndTime().getTime() + supendDuration));
                     //currentPeriod.setTimer(currentPeriod.getTimer()+(ct-duration));
                 }
                 // 加入待更新集合
@@ -164,7 +166,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                     .list();
             if (insuranceEntityList != null && insuranceEntityList.size() > 0) {
                 insuranceEntityList.forEach(insurance -> {
-                    insurance.setExpdate(TimeUtil.addTimeByLong(insurance.getExpdate(), duration));
+                    insurance.setExpdate(TimeUtil.addTimeByLong(insurance.getExpdate(), supendDuration));
                 });
                 experimentPersonInsuranceService.updateBatchById(insuranceEntityList);
             }
