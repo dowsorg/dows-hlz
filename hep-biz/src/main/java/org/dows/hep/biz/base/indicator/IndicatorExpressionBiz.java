@@ -55,6 +55,7 @@ public class IndicatorExpressionBiz{
   private final IndicatorCategoryService indicatorCategoryService;
   private final RsIndicatorExpressionBiz rsIndicatorExpressionBiz;
   private final RsUtilBiz rsUtilBiz;
+  private final RsIndicatorInstanceBiz rsIndicatorInstanceBiz;
   public static IndicatorExpressionResponseRs indicatorExpression2ResponseRs(
       IndicatorExpressionEntity indicatorExpressionEntity,
       List<IndicatorExpressionItemResponseRs> indicatorExpressionItemResponseRsList,
