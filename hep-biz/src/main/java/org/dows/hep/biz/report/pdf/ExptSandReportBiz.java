@@ -64,6 +64,8 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
     private final ExperimentScoringService experimentScoringService;
     private final ExperimentOrgService experimentOrgService;
 
+    private static final String SAND_REPORT_HOME_DIR = SystemConstant.PDF_REPORT_TMP_PATH + "沙盘模拟实验报告" + File.separator;
+
     @Data
     @Builder
     public static class ExptSandReportData implements ExptReportData {
@@ -182,8 +184,10 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
             throw new BizException("获取沙盘模拟报告时，获取组员信息数据异常");
         }
 
-        File homeDirFile = new File(SystemConstant.PDF_REPORT_TMP_PATH);
+        // 创建方案设计报告文件目录
+        File homeDirFile = new File(SAND_REPORT_HOME_DIR);
         boolean mkdirs = homeDirFile.mkdirs();
+        // 文件名
         String fileName = "第" + groupEntity.getGroupNo() + "组" + SystemConstant.SPLIT_UNDER_LINE + exptInfo.getExperimentName() + SystemConstant.SPLIT_UNDER_LINE + "沙盘模拟报告" + SystemConstant.SUFFIX_PDF;
         return new File(homeDirFile, fileName);
     }

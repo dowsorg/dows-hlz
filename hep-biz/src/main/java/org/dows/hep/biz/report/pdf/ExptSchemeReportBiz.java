@@ -58,6 +58,8 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
     private final ExperimentParticipatorService experimentParticipatorService;
     private final ExperimentGroupService experimentGroupService;
 
+    private static final String SCHEME_REPORT_HOME_DIR = SystemConstant.PDF_REPORT_TMP_PATH + "方案设计实验报告" + File.separator;
+
     @Data
     @Builder
     public static class ExptSchemeReportData implements ExptReportData{
@@ -168,8 +170,10 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
             throw new BizException("获取实验方案设计报告时，获取组员信息数据异常");
         }
 
-        File homeDirFile = new File(SystemConstant.PDF_REPORT_TMP_PATH);
+        // 创建方案设计报告文件目录
+        File homeDirFile = new File(SCHEME_REPORT_HOME_DIR);
         boolean mkdirs = homeDirFile.mkdirs();
+        // 文件名
         String fileName = "第" + groupEntity.getGroupNo() + "组" + SystemConstant.SPLIT_UNDER_LINE + exptInfo.getExperimentName() + SystemConstant.SPLIT_UNDER_LINE + "方案设计报告" + SystemConstant.SUFFIX_PDF;
         return new File(homeDirFile, fileName);
     }

@@ -50,6 +50,8 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
     private final FindSoftProperties findSoftProperties;
     private final ExperimentInstanceService experimentInstanceService;
 
+    private static final String OVERVIEW_REPORT_HOME_DIR = SystemConstant.PDF_REPORT_TMP_PATH + "实验总报告" + File.separator;
+
     @Data
     @Builder
     public static class ExptOverviewReportData implements ExptReportData {
@@ -116,6 +118,12 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
     public ExptOverviewReportModel getExptReportModel(String exptGroupId, ExptOverviewReportData exptReportData) {
         ExptBaseInfoModel baseInfo = generateBaseInfoVO(findSoftProperties, log);
 
+        ExperimentInstanceEntity exptInfo1 = exptReportData.getExptInfo();
+        ExptOverviewReportModel.ExptInfo exptInfo = ExptOverviewReportModel.ExptInfo.builder()
+                .experimentName(exptInfo1.getExperimentName())
+                .exptStartDate(exptInfo1.getStartTime())
+                .build();
+
         List<ExptOverviewReportModel.SchemeRanking> schemeRankingList = null;
         List<ExptOverviewReportModel.SandGroupRanking> sandGroupRankingList = null;
         List<List<ExptOverviewReportModel.SandPeriodRanking>> sandPeriodRankingList = null;
@@ -135,6 +143,7 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
 
         return ExptOverviewReportModel.builder()
                 .baseInfo(baseInfo)
+                .exptInfo(exptInfo)
                 .totalRankingList(totalRankingList)
                 .schemeRankingList(schemeRankingList)
                 .sandGroupRankingList(sandGroupRankingList)
@@ -276,15 +285,17 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
     public File getTempFile(String exptGroupId, ExptOverviewReportData exptReportData) {
         ExperimentInstanceEntity exptInfo = exptReportData.getExptInfo();
 
-        File homeDirFile = new File(SystemConstant.PDF_REPORT_TMP_PATH);
+        // 实验总报告目录
+        File homeDirFile = new File(OVERVIEW_REPORT_HOME_DIR);
         boolean mkdirs = homeDirFile.mkdirs();
-        String fileName = SystemConstant.SPLIT_UNDER_LINE + exptInfo.getExperimentName() + SystemConstant.SPLIT_UNDER_LINE + "实验总报告" + SystemConstant.SUFFIX_PDF;
+        // 文件名
+        String fileName = exptInfo.getExperimentName() + SystemConstant.SPLIT_UNDER_LINE + "实验总报告" + SystemConstant.SUFFIX_PDF;
         return new File(homeDirFile, fileName);
     }
 
     @Override
     public String getSchemeFlt() {
-        return findSoftProperties.getExptSandFtl();
+        return findSoftProperties.getExptOverviewFtl();
     }
 
 }
