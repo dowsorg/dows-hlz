@@ -283,6 +283,13 @@ public class CaseIndicatorExpressionBiz {
       /* runsix: 2.1 check caseIndicatorExpressionId */
       CompletableFuture<Void> cfPopulateCaseIndicatorExpression = CompletableFuture.runAsync(() -> rsCaseIndicatorExpressionBiz.populateCaseIndicatorExpressionEntity(caseIndicatorExpressionEntityAtomicReference, caseIndicatorExpressionId));
       cfPopulateCaseIndicatorExpression.get();
+      CaseIndicatorExpressionEntity caseIndicatorExpressionEntity = caseIndicatorExpressionEntityAtomicReference.get();
+      Integer dbType = null;
+      /* runsix:2.2 populate typeChangeAtomicBoolean  */
+      if (Objects.nonNull(caseIndicatorExpressionEntity)) {
+        dbType = caseIndicatorExpressionEntity.getType();
+        if (!dbType.equals(paramType)) {typeChangeAtomicBoolean.set(Boolean.TRUE);}
+      }
 
       /* runsix:2.2 populate caseIndicatorExpressionInfluenceEntityAtomicReference */
       CompletableFuture<Void> cfCheckCircleDependencyAndPopulateCaseIndicatorExpressionInfluenceEntity = CompletableFuture.runAsync(() -> {
@@ -301,63 +308,60 @@ public class CaseIndicatorExpressionBiz {
       });
       cfCheckCircleDependencyAndPopulateCaseIndicatorExpressionInfluenceEntity.get();
 
-      CaseIndicatorExpressionEntity caseIndicatorExpressionEntity = caseIndicatorExpressionEntityAtomicReference.get();
-      Integer dbType = caseIndicatorExpressionEntity.getType();
-      /* runsix:2.3 populate typeChangeAtomicBoolean  */
-      if (Objects.nonNull(caseIndicatorExpressionEntity) && !dbType.equals(paramType)) {typeChangeAtomicBoolean.set(Boolean.TRUE);}
-
-      /* runsix:2.4 公式类型发生变化，原先上下限需要删除 */
-      Set<String> minAndMaxCaseIndicatorExpressionItemIdSet = new HashSet<>();
-      String dbMinCaseIndicatorExpressionItemId = caseIndicatorExpressionEntity.getMinIndicatorExpressionItemId();
-      String dbMaxCaseIndicatorExpressionItemId = caseIndicatorExpressionEntity.getMaxIndicatorExpressionItemId();
-      if (typeChangeAtomicBoolean.get()) {
-        if (StringUtils.isNotBlank(dbMinCaseIndicatorExpressionItemId)) {minAndMaxCaseIndicatorExpressionItemIdSet.add(dbMinCaseIndicatorExpressionItemId);}
-        if (StringUtils.isNotBlank(dbMaxCaseIndicatorExpressionItemId)) {minAndMaxCaseIndicatorExpressionItemIdSet.add(dbMaxCaseIndicatorExpressionItemId);}
-        if (!minAndMaxCaseIndicatorExpressionItemIdSet.isEmpty()) {
-          caseIndicatorExpressionItemService.remove(new LambdaQueryWrapper<CaseIndicatorExpressionItemEntity>().in(CaseIndicatorExpressionItemEntity::getCaseIndicatorExpressionItemId, minAndMaxCaseIndicatorExpressionItemIdSet));
+      if (Objects.nonNull(caseIndicatorExpressionEntity)) {
+        /* runsix:2.4 公式类型发生变化，原先上下限需要删除 */
+        Set<String> minAndMaxCaseIndicatorExpressionItemIdSet = new HashSet<>();
+        String dbMinCaseIndicatorExpressionItemId = caseIndicatorExpressionEntity.getMinIndicatorExpressionItemId();
+        String dbMaxCaseIndicatorExpressionItemId = caseIndicatorExpressionEntity.getMaxIndicatorExpressionItemId();
+        if (typeChangeAtomicBoolean.get()) {
+          if (StringUtils.isNotBlank(dbMinCaseIndicatorExpressionItemId)) {minAndMaxCaseIndicatorExpressionItemIdSet.add(dbMinCaseIndicatorExpressionItemId);}
+          if (StringUtils.isNotBlank(dbMaxCaseIndicatorExpressionItemId)) {minAndMaxCaseIndicatorExpressionItemIdSet.add(dbMaxCaseIndicatorExpressionItemId);}
+          if (!minAndMaxCaseIndicatorExpressionItemIdSet.isEmpty()) {
+            caseIndicatorExpressionItemService.remove(new LambdaQueryWrapper<CaseIndicatorExpressionItemEntity>().in(CaseIndicatorExpressionItemEntity::getCaseIndicatorExpressionItemId, minAndMaxCaseIndicatorExpressionItemIdSet));
+          }
         }
-      }
 
-      /* runsix:2.5 获取原来的上下限 */
-      Map<String, CaseIndicatorExpressionItemEntity> kMinAndMaxCaseIndicatorExpressionItemIdVIndicatorExpressionItemMap = new HashMap<>();
-      CompletableFuture<Void> cfMinAndMaxPopulateKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap = CompletableFuture.runAsync(() -> {
-        rsCaseIndicatorExpressionBiz.populateByCaseItemIdSetKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap(
-            kMinAndMaxCaseIndicatorExpressionItemIdVIndicatorExpressionItemMap, minAndMaxCaseIndicatorExpressionItemIdSet
-        );
-      });
-      cfMinAndMaxPopulateKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get();
+        /* runsix:2.5 获取原来的上下限 */
+        Map<String, CaseIndicatorExpressionItemEntity> kMinAndMaxCaseIndicatorExpressionItemIdVIndicatorExpressionItemMap = new HashMap<>();
+        CompletableFuture<Void> cfMinAndMaxPopulateKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap = CompletableFuture.runAsync(() -> {
+          rsCaseIndicatorExpressionBiz.populateByCaseItemIdSetKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap(
+              kMinAndMaxCaseIndicatorExpressionItemIdVIndicatorExpressionItemMap, minAndMaxCaseIndicatorExpressionItemIdSet
+          );
+        });
+        cfMinAndMaxPopulateKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get();
 
-      /* runsix:2.6 populate minCaseIndicatorExpressionItemEntityAtomicReference && maxCaseIndicatorExpressionItemEntityAtomicReference 创建新的上下限 */
-      CaseIndicatorExpressionItemEntity minCaseIndicatorExpressionItemEntity = kMinAndMaxCaseIndicatorExpressionItemIdVIndicatorExpressionItemMap.get(dbMinCaseIndicatorExpressionItemId);
-      if (Objects.nonNull(minCaseIndicatorExpressionItemEntity)) {
-        caseMinIndicatorExpressionItemEntityAtomicReference.set(minCaseIndicatorExpressionItemEntity);
+        /* runsix:2.6 populate minCaseIndicatorExpressionItemEntityAtomicReference && maxCaseIndicatorExpressionItemEntityAtomicReference 创建新的上下限 */
+        CaseIndicatorExpressionItemEntity minCaseIndicatorExpressionItemEntity = kMinAndMaxCaseIndicatorExpressionItemIdVIndicatorExpressionItemMap.get(dbMinCaseIndicatorExpressionItemId);
+        if (Objects.nonNull(minCaseIndicatorExpressionItemEntity)) {
+          caseMinIndicatorExpressionItemEntityAtomicReference.set(minCaseIndicatorExpressionItemEntity);
+        }
+        CaseIndicatorExpressionItemEntity maxCaseIndicatorExpressionItemEntity = kMinAndMaxCaseIndicatorExpressionItemIdVIndicatorExpressionItemMap.get(dbMaxCaseIndicatorExpressionItemId);
+        if (Objects.nonNull(maxCaseIndicatorExpressionItemEntity)) {
+          caseMaxIndicatorExpressionItemEntityAtomicReference.set(maxCaseIndicatorExpressionItemEntity);
+        }
+        CompletableFuture<Void> cfPopulateMinAndMaxCaseIndicatorExpressionItem = CompletableFuture.runAsync(() -> {
+          rsCaseIndicatorExpressionBiz.populateMinAndMaxCaseIndicatorExpressionItem(
+              typeChangeAtomicBoolean.get(),
+              caseMinIndicatorExpressionItemEntityAtomicReference,
+              caseMinCreateOrUpdateIndicatorExpressionItemRequestRs,
+              caseMaxIndicatorExpressionItemEntityAtomicReference,
+              caseMaxCreateOrUpdateIndicatorExpressionItemRequestRs
+          );
+        });
+        cfPopulateMinAndMaxCaseIndicatorExpressionItem.get();
       }
-      CaseIndicatorExpressionItemEntity maxCaseIndicatorExpressionItemEntity = kMinAndMaxCaseIndicatorExpressionItemIdVIndicatorExpressionItemMap.get(dbMaxCaseIndicatorExpressionItemId);
-      if (Objects.nonNull(maxCaseIndicatorExpressionItemEntity)) {
-        caseMaxIndicatorExpressionItemEntityAtomicReference.set(maxCaseIndicatorExpressionItemEntity);
-      }
-      CompletableFuture<Void> cfPopulateMinAndMaxCaseIndicatorExpressionItem = CompletableFuture.runAsync(() -> {
-        rsCaseIndicatorExpressionBiz.populateMinAndMaxCaseIndicatorExpressionItem(
-            typeChangeAtomicBoolean.get(),
-            caseMinIndicatorExpressionItemEntityAtomicReference,
-            caseMinCreateOrUpdateIndicatorExpressionItemRequestRs,
-            caseMaxIndicatorExpressionItemEntityAtomicReference,
-            caseMaxCreateOrUpdateIndicatorExpressionItemRequestRs
-        );
-      });
-      cfPopulateMinAndMaxCaseIndicatorExpressionItem.get();
 
       /* runsix: 2.7 populate new indicatorExpressionEntityAtomicReference 判断是新建还是修改*/
       CaseIndicatorExpressionItemEntity newMinCaseIndicatorExpressionItemEntity = caseMinIndicatorExpressionItemEntityAtomicReference.get();
       CaseIndicatorExpressionItemEntity newMaxCaseIndicatorExpressionItemEntity = caseMaxIndicatorExpressionItemEntityAtomicReference.get();
       String newMinCaseIndicatorExpressionItemId = null;
       if (Objects.nonNull(newMinCaseIndicatorExpressionItemEntity)
-          && StringUtils.isNoneBlank(newMinCaseIndicatorExpressionItemEntity.getCaseIndicatorExpressionItemId())) {
+          && StringUtils.isNotBlank(newMinCaseIndicatorExpressionItemEntity.getCaseIndicatorExpressionItemId())) {
         newMinCaseIndicatorExpressionItemId = newMinCaseIndicatorExpressionItemEntity.getCaseIndicatorExpressionItemId();
       }
       String newMaxIndicatorExpressionItemId = null;
       if (Objects.nonNull(newMaxCaseIndicatorExpressionItemEntity)
-          && StringUtils.isNoneBlank(newMaxCaseIndicatorExpressionItemEntity.getCaseIndicatorExpressionItemId())) {
+          && StringUtils.isNotBlank(newMaxCaseIndicatorExpressionItemEntity.getCaseIndicatorExpressionItemId())) {
         newMaxIndicatorExpressionItemId = newMaxCaseIndicatorExpressionItemEntity.getCaseIndicatorExpressionItemId();
       }
       /* runsix:2.7.1 新建 */
@@ -372,6 +376,7 @@ public class CaseIndicatorExpressionBiz {
             .type(paramType)
             .source(source)
             .build();
+        caseIndicatorExpressionEntityAtomicReference.set(caseIndicatorExpressionEntity);
       } else {
         /* runsix:2.7.2 修改 */
         /**
@@ -405,6 +410,7 @@ public class CaseIndicatorExpressionBiz {
       cfPopulateByIdKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get();
       CompletableFuture<Void> cfPopulateByDbAndParamCaseIndicatorExpressionItemEntityList = CompletableFuture.runAsync(() -> {
         rsCaseIndicatorExpressionBiz.populateByDbAndParamCaseIndicatorExpressionItemEntityList(
+            caseIndicatorExpressionEntityAtomicReference.get().getCaseIndicatorExpressionId(),
             caseIndicatorExpressionItemEntityList, kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap, caseCreateOrUpdateIndicatorExpressionItemRequestRsList
         );
       });

@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.CaseCreateCopyToPersonRequestRs;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateCaseIndicatorInstanceRequestRs;
-import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorInstanceRequestRs;
 import org.dows.hep.api.base.indicator.response.CaseIndicatorInstanceCategoryResponseRs;
 import org.dows.hep.api.tenant.casus.request.UpdateIndicatorValueRequest;
 import org.dows.hep.biz.base.indicator.CaseIndicatorInstanceBiz;
@@ -33,13 +32,13 @@ public class CaseIndicatorInstanceRest {
     @Operation(summary = "复制数据库指标管理给人物")
     @PostMapping("v1/caseIndicator/indicatorInstance/copy")
     public void copyPersonIndicatorInstance(@RequestBody CaseCreateCopyToPersonRequestRs caseCreateCopyToPersonRequestRs) {
-        caseIndicatorInstanceBiz.copyPersonIndicatorInstance(caseCreateCopyToPersonRequestRs);
+        caseIndicatorInstanceBiz.oldcopyPersonIndicatorInstance(caseCreateCopyToPersonRequestRs);
     }
 
     @Operation(summary = "V2复制数据库指标管理给人物")
     @PostMapping("v2/caseIndicator/indicatorInstance/copy")
     public void v2CopyPersonIndicatorInstance(@RequestBody CaseCreateCopyToPersonRequestRs caseCreateCopyToPersonRequestRs) throws ExecutionException, InterruptedException {
-        caseIndicatorInstanceBiz.v2CopyPersonIndicatorInstance(caseCreateCopyToPersonRequestRs);
+        caseIndicatorInstanceBiz.copyPersonIndicatorInstance(caseCreateCopyToPersonRequestRs);
     }
 
     @Operation(summary = "根据人物id和appId查询出所有的指标")
