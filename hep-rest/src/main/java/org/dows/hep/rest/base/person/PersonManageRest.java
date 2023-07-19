@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 /**
 * @description project descr:人物:人物管理
@@ -82,7 +83,7 @@ public class PersonManageRest {
     @Operation(summary = "复制人物")
     @PostMapping("v1/basePerson/personManage/copyPerson")
     public PersonInstanceResponse copyPerson(@RequestParam @Validated String accountId,
-                                             @RequestParam @Validated String source) {
+                                             @RequestParam @Validated String source) throws ExecutionException, InterruptedException {
         return personManageBiz.copyPerson(accountId,source);
     }
 
@@ -93,7 +94,7 @@ public class PersonManageRest {
      */
     @Operation(summary = "新增人物")
     @PostMapping("v1/basePerson/personManage/addPerson")
-    public PersonInstanceResponse addPerson(@RequestBody @Validated AccountInstanceRequest request) {
+    public PersonInstanceResponse addPerson(@RequestBody @Validated AccountInstanceRequest request) throws ExecutionException, InterruptedException {
         return personManageBiz.addPerson(request);
     }
 
