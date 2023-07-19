@@ -63,7 +63,7 @@ public class CategCache extends BaseLocalCache<CategCache.CacheData> implements 
                     .setLayer(layer[0]);
         });
         src.clear();
-        //TODO 分布式处理
+        //TODO
         return vCache;
     }
     //填充父级路径
@@ -174,14 +174,14 @@ public class CategCache extends BaseLocalCache<CategCache.CacheData> implements 
 
     @Override
     public boolean isExpired() {
-        //TODO 分布式处理
+        //TODO
         return super.isExpired();
     }
 
     @Override
     public void clear() {
         super.clear();
-        //TODO 分布式处理
+        //TODO
     }
 
     //endregion

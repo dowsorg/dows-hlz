@@ -282,8 +282,8 @@ public class ExperimentOrgInterveneBiz{
         }catch (Exception ex){
             AssertUtil.justThrow(String.format("记录数据编制失败：%s",ex.getMessage()),ex);
         }
-        //TODO saveFlow
-        Boolean succFlag= operateOrgFuncDao.tranSave(rowOrgFunc,Arrays.asList(rowOrgFuncSnap),false);
+
+        boolean succFlag= operateOrgFuncDao.tranSave(rowOrgFunc,Arrays.asList(rowOrgFuncSnap),false);
         return new SaveExptInterveneResponse()
                 .setSuccess(succFlag)
                 .setOperateOrgFuncId(rowOrgFunc.getOperateOrgFuncId());

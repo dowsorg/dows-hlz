@@ -12,7 +12,6 @@ import org.dows.hep.biz.util.ShareUtil;
 public interface IOrgReportExtracter<T> extends IOrgReportConsumer<T> {
     EnumExptOperateType getOperateType();
 
-    TypeReference<T> getReportClass();
 
     T getReportData(OrgReportExtractRequest req);
 

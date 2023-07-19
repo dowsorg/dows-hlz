@@ -28,10 +28,6 @@ public class JudegRiskFactorExtracter implements IOrgReportExtracter<List<Experi
         return EnumExptOperateType.JUDGERiskFactor;
     }
 
-    @Override
-    public TypeReference<List<ExperimentRiskFactorReportResponseRs>> getReportClass() {
-        return s_typeRef;
-    }
 
     @Override
     public List<ExperimentRiskFactorReportResponseRs> getReportData(OrgReportExtractRequest req) {

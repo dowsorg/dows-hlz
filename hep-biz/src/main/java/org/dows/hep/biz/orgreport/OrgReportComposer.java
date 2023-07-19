@@ -77,6 +77,9 @@ public class OrgReportComposer {
                 if(!orgReportExtracterAdapter.supportIndicatorCategory(func.getIndicatorCategoryId())){
                     return;
                 }
+                if(null!=newNode &&func.getIndicatorCategoryId().equals(newNode.getIndicatorCategoryId()) ){
+                    return;
+                }
                 funcs.add(func);
 
                 ExptOrgReportNodeVO node=new ExptOrgReportNodeVO()
