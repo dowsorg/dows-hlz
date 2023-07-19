@@ -246,14 +246,18 @@ public class ExperimentTimerBiz {
             collect.forEach((k, v) -> {
                 if (v.getState() == EnumExperimentState.FINISH.getState()) {
                     //countDownResponse.setSandDuration(Double.valueOf(totalDay));
+                    //countDownResponse.setSandDurationSecond(ds);
                     countDownResponse.setState(v.getState());
                     countDownResponse.setPeriod(v.getPeriod());
                 } else if (v.getState() == EnumExperimentState.ONGOING.getState()) {
                     // 当前时间戳-当前期数开始时间 = 相对时间（持续了多久）；将转换为秒  .. day/duration = rate
                     if (sct >= v.getStartTime().getTime() && sct <= v.getEndTime().getTime()) {
-                        // 本期持续时间 = 期数结束时间-当前开始时间-当前时间
-                        //long ds = sct - v.getStartTime().getTime();
-                        long ds = v.getEndTime().getTime() - v.getPauseEndTime().getTime() - sct;
+                        // 本期持续时间
+                        long ds = sct - v.getPauseEndTime().getTime() + v.getTimer();
+                        // 本期剩余时间
+                        long rs = v.getEndTime().getTime() - sct;
+                        //long ds = v.getEndTime().getTime() - v.getPauseEndTime().getTime() - sct;
+                        countDownResponse.setSandRemnantSecond(rs);
                         countDownResponse.setSandDurationSecond(ds);
                         countDownResponse.setState(v.getState());
                         countDownResponse.setPeriod(v.getPeriod());

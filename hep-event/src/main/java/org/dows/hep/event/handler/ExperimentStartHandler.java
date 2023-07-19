@@ -108,12 +108,12 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                 throw new ExperimentException("当前实验已开始，请勿重复执行开始！");
             }
             // 如果当前时间不在本期开始和结束之间
-            if (ct <= updateExperimentTimer.getStartTime().getTime() || ct >= updateExperimentTimer.getEndTime().getTime()) {
+            /*if (ct <= updateExperimentTimer.getStartTime().getTime() || ct >= updateExperimentTimer.getEndTime().getTime()) {
                 throw new ExperimentException(String.format("无法为当前{%s}期执行暂停,该期开始时间为:{%s}，结束时间:{%s}",
                         updateExperimentTimer.getPeriod(),
                         DateUtil.formatDateTime(DateUtil.date(updateExperimentTimer.getStartTime())),
                         DateUtil.formatDateTime(DateUtil.date(updateExperimentTimer.getEndTime()))));
-            }
+            }*/
             // 暂停持续时间 = 当前时间（暂停结束时间） - 暂停开始时间
             long supendDuration = ct - updateExperimentTimer.getPauseStartTime().getTime();
             // 期数持续时长 = 当前时间- 暂停时间
