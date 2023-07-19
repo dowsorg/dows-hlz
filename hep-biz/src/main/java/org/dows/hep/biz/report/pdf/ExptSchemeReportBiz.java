@@ -16,6 +16,7 @@ import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.constant.SystemConstant;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeItemResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeResponse;
+import org.dows.hep.api.user.experiment.response.ExptSchemeScoreRankResponse;
 import org.dows.hep.biz.base.oss.OSSBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentSchemeScoreBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
@@ -64,6 +65,7 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
         private List<ExperimentSchemeResponse> exptSchemeList;
         private List<ExperimentGroupEntity> exptGroupInfoList;
         private List<ExperimentParticipatorEntity> exptMemberList;
+        private List<ExptSchemeScoreRankResponse> rankList;
     }
 
     /**
@@ -113,6 +115,7 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
                 .exptSchemeList(listExptScheme(exptInstanceId, exptGroupId))
                 .exptGroupInfoList(listExptGroupInfo(experimentGroupService, exptInstanceId, exptGroupId))
                 .exptMemberList(listExptMembers(experimentParticipatorService, exptInstanceId, exptGroupId))
+                .rankList(listSchemeRank(exptInstanceId))
                 .build();
     }
 
@@ -225,6 +228,10 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
                 .toList();
     }
 
+    private List<ExptSchemeScoreRankResponse> listSchemeRank(String exptInstanceId) {
+        return experimentSchemeBiz.listExptSchemeScoreRank(exptInstanceId);
+    }
+
     private ExptSchemeReportModel.GroupInfo generateGroupInfo(String exptGroupId, ExptSchemeReportData exptSchemeReportData) {
         ExperimentInstanceEntity exptInfo = exptSchemeReportData.getExptInfo();
         List<ExperimentGroupEntity> groupList = exptSchemeReportData.getExptGroupInfoList();
@@ -261,12 +268,30 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
                 .build();
     }
 
-    // todo 获取得分信息
     private ExptSchemeReportModel.ScoreInfo generateScoreInfo(String exptGroupId, ExptSchemeReportData exptSchemeReportData) {
+        List<ExptSchemeScoreRankResponse> rankList = exptSchemeReportData.getRankList();
+        if (CollUtil.isEmpty(rankList)) {
+            return ExptSchemeReportModel.ScoreInfo.builder()
+                    .show(Boolean.TRUE)
+                    .score("0.00")
+                    .ranking(0)
+                    .build();
+        }
+
+        int rank = 0;
+        String score = "0.00";
+        for (int i = 0; i < rankList.size(); i++) {
+            ExptSchemeScoreRankResponse itemRank = rankList.get(i);
+            if (exptGroupId.equals(itemRank.getGroupId())) {
+                rank = i + 1;
+                score = itemRank.getScore();
+            }
+        }
+
         return ExptSchemeReportModel.ScoreInfo.builder()
                 .show(Boolean.TRUE)
-                .score("0.00")
-                .ranking(1)
+                .score(score)
+                .ranking(rank)
                 .build();
     }
 

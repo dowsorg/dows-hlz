@@ -330,6 +330,55 @@ public class ExperimentSchemeBiz {
         return res1;
     }
 
+    /**
+     * @param exptInstanceId - 实验实例ID
+     * @return java.util.List<org.dows.hep.api.user.experiment.response.ExptSchemeScoreRankResponse>
+     * @author fhb
+     * @description 获取实验下方案设计排行榜
+     * @date 2023/7/19 13:39
+     */
+    public List<ExptSchemeScoreRankResponse> listExptSchemeScoreRank(String exptInstanceId) {
+        // list expt-scheme
+        List<ExperimentSchemeEntity> schemeList = experimentSchemeService.lambdaQuery()
+                .eq(ExperimentSchemeEntity::getExperimentInstanceId, exptInstanceId)
+                .list();
+        if (CollUtil.isEmpty(schemeList)) {
+            throw new BizException("获取方案设计排行榜时，实验方案设计数据为空");
+        }
+        // list expt-group
+        List<ExperimentGroupEntity> groupList = experimentGroupService.lambdaQuery()
+                .eq(ExperimentGroupEntity::getExperimentInstanceId, exptInstanceId)
+                .list();
+        if (CollUtil.isEmpty(groupList)) {
+            throw new BizException("获取方案设计排行榜时，实验小组数据为空");
+        }
+
+
+        List<ExptSchemeScoreRankResponse> result = new ArrayList<>();
+        // 方案设计根据评分排序
+        List<ExperimentSchemeEntity> schemeSortedList = schemeList.stream().sorted((v1, v2) -> {
+            Float v1Score = v1.getScore() == null ? 0.00f : v1.getScore();
+            Float v2Score = v2.getScore() == null ? 0.00f : v2.getScore();
+            return (int) (v1Score - v2Score);
+        }).toList();
+        // 小组转为map
+        Map<String, ExperimentGroupEntity> groupIdMapEntity = groupList.stream()
+                .collect(Collectors.toMap(ExperimentGroupEntity::getExperimentGroupId, item -> item));
+        // build result
+        schemeSortedList.forEach(scheme -> {
+            String experimentGroupId = scheme.getExperimentGroupId();
+            Float score = scheme.getScore() == null ? 0.00f : scheme.getScore();
+            ExptSchemeScoreRankResponse rank = ExptSchemeScoreRankResponse.builder()
+                    .groupId(experimentGroupId)
+                    .groupNo(groupIdMapEntity.get(experimentGroupId).getGroupNo())
+                    .groupName(groupIdMapEntity.get(experimentGroupId).getGroupName())
+                    .score(String.valueOf(score))
+                    .build();
+            result.add(rank);
+        });
+        return result;
+    }
+
     private String cannotOperateAfterSubmit(String experimentInstanceId, String experimentGroupId) {
         ExperimentSchemeEntity entity = getScheme(experimentInstanceId, experimentGroupId);
         if (BeanUtil.isEmpty(entity)) {
