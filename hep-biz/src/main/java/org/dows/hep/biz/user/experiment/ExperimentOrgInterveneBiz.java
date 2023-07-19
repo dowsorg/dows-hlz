@@ -151,14 +151,14 @@ public class ExperimentOrgInterveneBiz{
         return foodCalc4ExptBiz.calcFoodGraph4Expt(calcFoodGraph);
     }
     public CalcExptFoodCookbookResult getExptFoodCookbook(ExptOperateOrgFuncRequest exptOperate ) {
-        return getExptSnapData(exptOperate,false,false, CalcExptFoodCookbookResult.class,CalcExptFoodCookbookResult::new);
+        return getReportSnapData(exptOperate,false,false, CalcExptFoodCookbookResult.class,CalcExptFoodCookbookResult::new);
     }
 
     public ExptSportPlanResponse getExptSportPlan(ExptOperateOrgFuncRequest exptOperate ) {
-        return getExptSnapData(exptOperate, false, false, ExptSportPlanResponse.class, ExptSportPlanResponse::new);
+        return getReportSnapData(exptOperate, false, false, ExptSportPlanResponse.class, ExptSportPlanResponse::new);
     }
     public ExptTreatPlanResponse getExptTreatPlan(ExptOperateOrgFuncRequest exptOperate){
-        return getExptSnapData(exptOperate,false,true, ExptTreatPlanResponse.class,ExptTreatPlanResponse::new);
+        return getReportSnapData(exptOperate,false,true, ExptTreatPlanResponse.class,ExptTreatPlanResponse::new);
     }
     public SaveExptInterveneResponse saveExptFoodCookbook(SaveExptFoodRequest saveFood, HttpServletRequest request) {
         ExptRequestValidator validator=ExptRequestValidator.create(saveFood)
@@ -322,8 +322,8 @@ public class ExperimentOrgInterveneBiz{
                 .setOperateGameDay(timePoint.getGameDay())
                 .setOperateFlowId(flowValidator.getOperateFlowId())
                 .setReportFlag(enumOperateType.getReportFuncFlag()?1:0)
-                .setReportLabel(defOrgFunc.getName())
-                .setReportDescr(String.format("%s了一次",defOrgFunc.getName()));
+                .setReportLabel(validator.getCachedExptOrg().get().getExperimentOrgName())
+                .setReportDescr(defOrgFunc.getName());
         //保存快照
         OperateOrgFuncSnapEntity rowOrgFuncSnap=new OperateOrgFuncSnapEntity()
                 .setAppId(validator.getAppId())
@@ -352,12 +352,12 @@ public class ExperimentOrgInterveneBiz{
                     .operateAccountId(voLogin.getAccountId())
                     .operateAccountName(voLogin.getAccountName())
                     .periods(timePoint.getPeriod())
-                    .reportFlag(enumOperateType.getReportFlowFlag()?1:0)
-                    .reportLabel(defOrgFunc.getName())
-                    .reportDescr(String.format("%s了一次",defOrgFunc.getName()))
+                    .reportFlag(1)
+                    .reportLabel(validator.getCachedExptOrg().get().getExperimentOrgName())
+                    .reportDescr(defOrgFunc.getName())
                     .endTime(dateNow)
                     .operateTime(dateNow)
-                    .operateGameDay(timePoint.getPeriod())
+                    .operateGameDay(timePoint.getGameDay())
                     .build();
 
             ExptOrgReportNodeVO node=new ExptOrgReportNodeVO()
@@ -370,7 +370,7 @@ public class ExperimentOrgInterveneBiz{
                     .snapTime(dateNow)
                     .build();
             try{
-                report= orgReportComposer.composeReport(orgReportComposer.createRequest(validator),flowValidator.updateFlowOperate(timePoint),node);
+                report= orgReportComposer.composeReport(validator,flowValidator.updateFlowOperate(timePoint),node);
                 saveFlowSnap.setRecordJson(JacksonUtil.toJson(report,true));
             }catch (Exception ex){
                 AssertUtil.justThrow(String.format("机构报告数据编制失败：%s",ex.getMessage()),ex);
@@ -390,12 +390,12 @@ public class ExperimentOrgInterveneBiz{
     }
 
 
-    private <T> T getExptSnapData(ExptOperateOrgFuncRequest reqOperateFunc,boolean checkIndicatorFunc,boolean checkOrgFlow, Class<T> clazz, Supplier<T> creator){
+    private <T> T getReportSnapData(ExptOperateOrgFuncRequest reqOperateFunc, boolean checkIndicatorFunc, boolean checkOrgFlow, Class<T> clazz, Supplier<T> creator){
         T rst=creator.get();
         ExptRequestValidator validator=ExptRequestValidator.create(reqOperateFunc)
                 .checkExperimentPerson()
-                .checkExperimentOrg()
-                .checkExperimentInstance();
+                .checkExperimentOrgId()
+                .checkExperimentInstanceId();
         if(checkIndicatorFunc){
             validator.checkIndicatorFunc();
         }

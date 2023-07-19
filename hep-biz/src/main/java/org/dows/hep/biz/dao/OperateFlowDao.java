@@ -2,7 +2,8 @@ package org.dows.hep.biz.dao;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
-import org.dows.hep.api.core.ExptOrgFuncRequest;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.dows.hep.api.user.experiment.request.FindOrgReportRequest;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.OperateFlowEntity;
 import org.dows.hep.entity.OperateFlowSnapEntity;
@@ -20,7 +21,7 @@ import java.util.Optional;
  */
 @Component
 public class OperateFlowDao extends BaseSubDao<OperateFlowService, OperateFlowEntity, OperateFlowSnapService, OperateFlowSnapEntity>
-        implements IPageDao<OperateFlowEntity, ExptOrgFuncRequest>{
+        implements IPageDao<OperateFlowEntity, FindOrgReportRequest>{
 
     public OperateFlowDao(){
         super("未找到挂号记录，请刷新");
@@ -72,8 +73,17 @@ public class OperateFlowDao extends BaseSubDao<OperateFlowService, OperateFlowEn
     }
 
     @Override
-    public IPage<OperateFlowEntity> pageByCondition(ExptOrgFuncRequest req, SFunction<OperateFlowEntity, ?>... cols) {
-        return null;
+    public IPage<OperateFlowEntity> pageByCondition(FindOrgReportRequest req, SFunction<OperateFlowEntity, ?>... cols) {
+        Page<OperateFlowEntity> page = Page.of(req.getPageNo(), req.getPageSize());
+        return service.lambdaQuery()
+                .eq(ShareUtil.XObject.notEmpty(req.getAppId()), OperateFlowEntity::getAppId,req.getAppId())
+                .eq(OperateFlowEntity::getExperimentOrgId, req.getExperimentOrgId())
+                .eq(ShareUtil.XObject.notEmpty(req.getExperimentPersonId()), OperateFlowEntity::getExperimentPersonId,req.getExperimentPersonId())
+                .eq(OperateFlowEntity::getReportFlag,1)
+                .eq(ShareUtil.XObject.notEmpty(req.getPeriods(),true),OperateFlowEntity::getPeriods,req.getPeriods())
+                .orderByDesc(OperateFlowEntity::getId)
+                .select(cols)
+                .page(page);
     }
 
     /**
@@ -92,7 +102,23 @@ public class OperateFlowDao extends BaseSubDao<OperateFlowService, OperateFlowEn
                 .eq(ShareUtil.XObject.notEmpty(periods, true),OperateFlowEntity::getPeriods,periods)
                 .orderByDesc(OperateFlowEntity::getPeriods, OperateFlowEntity::getId)
                 .select(cols)
-                .last("limit 1")
+                .last(" limit 1")
+                .oneOpt();
+    }
+
+    /**
+     * 获取机构挂号报告
+     * @param operateFlowId
+     * @param cols
+     * @return
+     */
+
+    public Optional<OperateFlowSnapEntity> getReportSnapByFlowId(String operateFlowId,SFunction<OperateFlowSnapEntity,?>... cols){
+        return subService.lambdaQuery()
+                .eq(OperateFlowSnapEntity::getOperateFlowId, operateFlowId)
+                .orderByDesc(OperateFlowSnapEntity::getId)
+                .select(cols)
+                .last(" limit 1")
                 .oneOpt();
     }
 

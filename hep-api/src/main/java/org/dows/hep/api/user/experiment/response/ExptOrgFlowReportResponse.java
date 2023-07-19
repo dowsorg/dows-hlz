@@ -28,6 +28,9 @@ public class ExptOrgFlowReportResponse {
     @Schema(title = "操作所在游戏内天数")
     private Integer operateGameDay;
 
+    @Schema(title = "报告名称(抬头)")
+    public String reportName;
+
     @Schema(title = "节点列表")
     public List<ExptOrgReportNodeVO> nodes;
 }

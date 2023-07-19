@@ -23,9 +23,6 @@ import org.dows.hep.biz.event.ExperimentEventRules;
 import org.dows.hep.biz.event.ExperimentSettingCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
-import org.dows.hep.biz.snapshot.EnumSnapshotType;
-import org.dows.hep.biz.snapshot.SnapshotManager;
-import org.dows.hep.biz.snapshot.SnapshotRequest;
 import org.dows.hep.biz.util.*;
 import org.dows.hep.biz.vo.ExperimentEventBox;
 import org.dows.hep.biz.vo.ExperimentOrgNoticeBox;
@@ -40,6 +37,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Supplier;
 
 /**
 * @description project descr:实验:机构操作
@@ -119,10 +117,8 @@ public class ExperimentOrgBiz{
                 .setStartTime(dateNow)
                 .setOperateTime(dateNow)
                 .setOperateGameDay(timePoint.getGameDay());
-        OperateFlowSnapEntity rowFlowSnap=OperateFlowSnapEntity.builder()
-                .appId(validator.getAppId())
-                .build();
-        return operateFlowDao.tranSave(rowFlow, Arrays.asList(rowFlowSnap),false);
+
+        return operateFlowDao.tranSave(rowFlow, null,false);
     }
     private OperateFlowEntity createRowOrgFlow(ExptRequestValidator req){
         return OperateFlowEntity.builder()
@@ -146,8 +142,6 @@ public class ExperimentOrgBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Page<OrgNoticeResponse> pageOrgNotice(BaseExptRequest findOrgNotice ) {
-        SnapshotManager.Instance().write(new SnapshotRequest("3","356906709261881344"),
-                EnumSnapshotType.FOODMaterialNutrient);
         ExptRequestValidator.create(findOrgNotice)
                 .checkExperimentOrgId()
                 .checkExperimentGroup();
@@ -292,7 +286,8 @@ public class ExperimentOrgBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Page<OrgFlowReportResponse> pageOrgReport(FindOrgReportRequest findOrgReport) {
-        return null;
+        return ShareBiz.buildPage(operateFlowDao.pageByCondition(findOrgReport), i-> CopyWrapper.create(OrgFlowReportResponse::new)
+                .endFrom(i));
     }
 
 
@@ -301,8 +296,30 @@ public class ExperimentOrgBiz{
      * @param orgReportRequest
      * @return
      */
-    public ExptOrgFlowReportResponse getOrgReportInfo(ExptOrgFlowReportRequest orgReportRequest){
-        return null;
+    public ExptOrgFlowReportResponse getOrgReportInfo(ExptOrgFlowReportRequest orgReportRequest) {
+        return getReportSnapData(orgReportRequest, ExptOrgFlowReportResponse.class, ExptOrgFlowReportResponse::new);
+    }
+
+    private <T> T getReportSnapData(ExptOrgFlowReportRequest orgReportRequest, Class<T> clazz, Supplier<T> creator){
+        T rst=creator.get();
+        ExptRequestValidator.create(orgReportRequest)
+                .checkExperimentOrgId()
+                .checkExperimentInstanceId();
+        final String flowId=orgReportRequest.getOperateFlowId();
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(flowId))
+                .throwMessage("未找到挂号记录ID");
+        OperateFlowSnapEntity rowFlowSnap=AssertUtil.getNotNull(operateFlowDao.getReportSnapByFlowId(flowId,
+                OperateFlowSnapEntity::getRecordJson
+                )).orElseThrow("未找到报告记录");
+        if(ShareUtil.XObject.isEmpty(rowFlowSnap.getRecordJson())) {
+            return rst;
+        }
+        try{
+            return JacksonUtil.fromJson(rowFlowSnap.getRecordJson(), clazz);
+        }catch (Exception ex) {
+            AssertUtil.justThrow(String.format("机构报告数据解析失败：%s", ex.getMessage()), ex);
+        }
+        return rst;
     }
     /**
     * @param
