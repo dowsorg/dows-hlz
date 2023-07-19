@@ -25,6 +25,8 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -35,6 +37,55 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RsUtilBiz {
   private final IdGenerator idGenerator;
+  public static final String RESULT_DROP = "";
+
+  public void calculateRiskModelScore(AtomicReference<BigDecimal> sumRiskModeScoreAR, Map<String, BigDecimal> kPrincipalIdVScoreMap, AtomicReference<BigDecimal> minScoreAR, AtomicReference<BigDecimal> maxScoreAR) {
+    if (Objects.isNull(sumRiskModeScoreAR) || Objects.isNull(kPrincipalIdVScoreMap) || Objects.isNull(minScoreAR) || Objects.isNull(maxScoreAR)
+    ) {return;}
+    BigDecimal minScore = minScoreAR.get();
+    BigDecimal maxScore = maxScoreAR.get();
+    if (kPrincipalIdVScoreMap.size() == 1) {
+      /* runsix:do nothing */
+    } else {
+      List<BigDecimal> leOneList = new ArrayList<>();
+      List<BigDecimal> gtOneList = new ArrayList<>();
+      kPrincipalIdVScoreMap.values().forEach(score -> {
+        if (score.compareTo(BigDecimal.ONE) <= 0) {
+          leOneList.add(score);
+        } else {
+          gtOneList.add(score);
+        }
+      });
+      BigDecimal multiplyResult = BigDecimal.ZERO;
+      if (!leOneList.isEmpty()) {
+        multiplyResult =  leOneList.stream().reduce(BigDecimal.ONE, BigDecimal::multiply);
+      }
+      BigDecimal addResult = gtOneList.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+      sumRiskModeScoreAR.set(addResult.add(multiplyResult).setScale(2, RoundingMode.DOWN));
+    }
+    BigDecimal beforeMinAndMax = sumRiskModeScoreAR.get();
+    if (minScore.compareTo(maxScore) == 0) {sumRiskModeScoreAR.set(BigDecimal.ZERO); return;}
+    sumRiskModeScoreAR.set(BigDecimal.valueOf(100).multiply(beforeMinAndMax.subtract(maxScore)).divide(minScore.subtract(maxScore), 2, RoundingMode.DOWN));
+  }
+
+  public BigDecimal newCalculateFinalHealthScore(
+      Map<String, BigDecimal> kRiskModelIdVTotalScoreMap,
+      Map<String, Integer> kRiskModelIdVRiskDeathProbabilityMap,
+      Integer totalRiskDeathProbability
+  ) {
+    AtomicReference<BigDecimal> finalScoreBigDecimal = new AtomicReference<>(BigDecimal.ZERO);
+    kRiskModelIdVTotalScoreMap.forEach((riskModelId, totalScore) -> {
+      Integer riskDeathProbability = kRiskModelIdVRiskDeathProbabilityMap.get(riskModelId);
+      finalScoreBigDecimal.set(
+          finalScoreBigDecimal.get().add(
+              BigDecimal.valueOf(riskDeathProbability)
+                  .divide(BigDecimal.valueOf(totalRiskDeathProbability), 2, RoundingMode.DOWN)
+                  .multiply(totalScore)
+          ).setScale(2, RoundingMode.DOWN)
+      );
+    });
+    return finalScoreBigDecimal.get();
+  }
 
   public void populateKOldIdVNewIdMap(
       Map<String, String> kOldIdVNewIdMap,
