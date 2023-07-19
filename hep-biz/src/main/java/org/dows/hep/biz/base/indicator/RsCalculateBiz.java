@@ -10,6 +10,8 @@ import org.dows.hep.api.base.indicator.response.RsCalculateCompetitiveScoreRsRes
 import org.dows.hep.api.base.indicator.response.RsCalculateMoneyScoreRsResponse;
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.RsCalculateBizException;
+import org.dows.hep.biz.request.CaseCalIndicatorExpressionRequest;
+import org.dows.hep.biz.request.DatabaseCalIndicatorExpressionRequest;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.springframework.stereotype.Service;
@@ -46,6 +48,9 @@ public class RsCalculateBiz {
   private final RsCaseIndicatorExpressionBiz rsCaseIndicatorExpressionBiz;
   private final RsCrowdsBiz rsCrowdsBiz;
   private final RsUtilBiz rsUtilBiz;
+  private final RsIndicatorExpressionBiz rsIndicatorExpressionBiz;
+  private final IndicatorRuleService indicatorRuleService;
+  private final RsIndicatorInstanceBiz rsIndicatorInstanceBiz;
 
   @Transactional(rollbackFor = Exception.class)
   public void caseReCalculateOnePerson(ReCalculateOnePersonRequestRs reCalculateOnePersonRequestRs) throws ExecutionException, InterruptedException {
@@ -134,11 +139,16 @@ public class RsCalculateBiz {
           rsCaseIndicatorExpressionBiz.parseCaseIndicatorExpression(
               EnumIndicatorExpressionField.CASE.getField(), EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource(), EnumIndicatorExpressionScene.CASE_RE_CALCULATE.getScene(),
               resultAtomicReference,
-              kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap,
-              caseIndicatorExpressionEntity,
-              caseIndicatorExpressionItemEntityList,
-              minCaseIndicatorExpressionItemEntity,
-              maxCaseIndicatorExpressionItemEntity
+              new HashMap<>(),
+              DatabaseCalIndicatorExpressionRequest.builder().build(),
+              CaseCalIndicatorExpressionRequest
+                  .builder()
+                  .kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap(kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap)
+                  .caseIndicatorExpressionEntity(caseIndicatorExpressionEntity)
+                  .caseIndicatorExpressionItemEntityList(caseIndicatorExpressionItemEntityList)
+                  .minCaseIndicatorExpressionItemEntity(minCaseIndicatorExpressionItemEntity)
+                  .maxCaseIndicatorExpressionItemEntity(maxCaseIndicatorExpressionItemEntity)
+                  .build()
           );
           caseIndicatorRuleEntity.setDef(resultAtomicReference.get());
           kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap.put(needCalculateCaseIndicatorInstanceId, caseIndicatorRuleEntity);
@@ -689,13 +699,28 @@ public class RsCalculateBiz {
     String accountId = caseRsCalculateHealthScoreRequestRs.getAccountId();
     /* runsix:populate */
     Set<String> allReasonIdSet = new HashSet<>();
+    Set<String> allCaseReasonIdSet = new HashSet<>();
     Set<String> crowdsIdSet = new HashSet<>();
     Set<String> riskModelIdSet = new HashSet<>();
     Set<String> caseIndicatorInstanceIdSet = new HashSet<>();
+    Map<String, String> kIndicatorInstanceIdVCaseIndicatorInstanceIdMap = new HashMap<>();
+
+    /* runsix:人群类别和死亡原因在数据库 */
+    Map<String, IndicatorRuleEntity> kIndicatorInstanceIdVIndicatorRuleEntityMap = new HashMap<>();
+    Map<String, List<IndicatorExpressionEntity>> kReasonIdVIndicatorExpressionEntityListMap = new HashMap<>();
+    Map<String, List<IndicatorExpressionItemEntity>> kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap = new HashMap<>();
+    Map<String, IndicatorExpressionItemEntity> kIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap = new HashMap<>();
+
     Map<String, CaseIndicatorRuleEntity> kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap = new HashMap<>();
-    Map<String, List<CaseIndicatorExpressionEntity>> kReasonIdVCaseIndicatorExpressionEntityListMap = new HashMap<>();
+    Map<String, List<CaseIndicatorExpressionEntity>> kCaseReasonIdVCaseIndicatorExpressionEntityListMap = new HashMap<>();
     Map<String, List<CaseIndicatorExpressionItemEntity>> kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap = new HashMap<>();
     Map<String, CaseIndicatorExpressionItemEntity> kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemEntityMap = new HashMap<>();
+
+    CompletableFuture<Void> cfPopulateKIndicatorInstanceIdVCaseIndicatorInstanceIdMap = CompletableFuture.runAsync(() -> {
+      rsCaseIndicatorInstanceBiz.populateKIndicatorInstanceIdVCaseIndicatorInstanceIdMap(kIndicatorInstanceIdVCaseIndicatorInstanceIdMap, accountId);
+    });
+    cfPopulateKIndicatorInstanceIdVCaseIndicatorInstanceIdMap.get();
+    if (kIndicatorInstanceIdVCaseIndicatorInstanceIdMap.isEmpty()) {return;}
 
     AtomicReference<CaseIndicatorRuleEntity> caseIndicatorRuleEntityAR = new AtomicReference<>();
     CompletableFuture<Void> cfPopulateHealthPointCaseIndicatorRuleEntity = CompletableFuture.runAsync(() -> {
@@ -739,17 +764,33 @@ public class RsCalculateBiz {
     cfPopulateKCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap.get();
     if (kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap.isEmpty()) {return;}
 
-    /* runsix:allReasonId */
+    /* runsix:allReasonIdSet && allCaseReasonIdSet */
     allReasonIdSet.addAll(crowdsIdSet);
     allReasonIdSet.addAll(riskModelIdSet);
-    allReasonIdSet.addAll(caseIndicatorInstanceIdSet);
+    allCaseReasonIdSet.addAll(caseIndicatorInstanceIdSet);
 
-    /* runsix:param */
-    CompletableFuture<Void> cfPopulateParseParam = CompletableFuture.runAsync(() -> {
+    /* runsix:database param */
+    CompletableFuture<Void> cfDatabasePopulateParseParam = CompletableFuture.runAsync(() -> {
       try {
-        rsCaseIndicatorExpressionBiz.populateParseParam(
+        rsIndicatorExpressionBiz.populateParseParam(
             allReasonIdSet,
-            kReasonIdVCaseIndicatorExpressionEntityListMap,
+            kReasonIdVIndicatorExpressionEntityListMap,
+            kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap,
+            kIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap
+        );
+      } catch (Exception e) {
+        log.error("RsCalculateBiz.caseRsCalculateHealthScore caseRsCalculateHealthScoreRequestRs:{}" , caseRsCalculateHealthScoreRequestRs, e);
+        throw new RsCalculateBizException(EnumESC.DATABASE_RS_CALCULATE_HEALTH_SCORE);
+      }
+    });
+    cfDatabasePopulateParseParam.get();
+
+    /* runsix:case param */
+    CompletableFuture<Void> cfCasePopulateParseParam = CompletableFuture.runAsync(() -> {
+      try {
+        rsCaseIndicatorExpressionBiz.populateCaseParseParam(
+            allCaseReasonIdSet,
+            kCaseReasonIdVCaseIndicatorExpressionEntityListMap,
             kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap,
             kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemEntityMap
         );
@@ -758,37 +799,43 @@ public class RsCalculateBiz {
         throw new RsCalculateBizException(EnumESC.CASE_RS_CALCULATE_HEALTH_SCORE);
       }
     });
-    cfPopulateParseParam.get();
+    cfCasePopulateParseParam.get();
 
     /* runsix:calculate */
     kCrowdsIdVCrowdsInstanceEntityMap.forEach((crowdsId, crowdsInstanceEntity) -> {
       /* runsix:一个人只能适用于一个人群类型 */
       AtomicBoolean hasFindCrowdsAR = new AtomicBoolean(Boolean.FALSE);
       if (hasFindCrowdsAR.get()) {return;}
+
       AtomicReference<String> crowdsAR = new AtomicReference<>(RsUtilBiz.RESULT_DROP);
-      CaseIndicatorExpressionEntity caseIndicatorExpressionEntity = null;
-      List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList = new ArrayList<>();
-      List<CaseIndicatorExpressionEntity> caseIndicatorExpressionEntityList = kReasonIdVCaseIndicatorExpressionEntityListMap.get(crowdsId);
+      IndicatorExpressionEntity indicatorExpressionEntity = null;
+      List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = new ArrayList<>();
+      List<IndicatorExpressionEntity> indicatorExpressionEntityList = kReasonIdVIndicatorExpressionEntityListMap.get(crowdsId);
       /* runsix:人群类型只能产生一个公式 */
-      if (Objects.nonNull(caseIndicatorExpressionEntityList)) {
-        caseIndicatorExpressionEntity = caseIndicatorExpressionEntityList.get(0);
+      if (Objects.nonNull(indicatorExpressionEntityList) && !indicatorExpressionEntityList.isEmpty()) {
+        indicatorExpressionEntity = indicatorExpressionEntityList.get(0);
       }
-      if (Objects.nonNull(caseIndicatorExpressionEntity)) {
-        String caseIndicatorExpressionId = caseIndicatorExpressionEntity.getCaseIndicatorExpressionId();
-        List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList1 = kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap.get(caseIndicatorExpressionId);
-        if (Objects.nonNull(caseIndicatorExpressionItemEntityList1)) {
+      if (Objects.nonNull(indicatorExpressionEntity)) {
+        String indicatorExpressionId = indicatorExpressionEntity.getIndicatorExpressionId();
+        List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList1 = kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.get(indicatorExpressionId);
+        if (Objects.nonNull(indicatorExpressionItemEntityList1) && !indicatorExpressionItemEntityList1.isEmpty()) {
           /* runsix:人群类型公式只能有一个条件 */
-          caseIndicatorExpressionItemEntityList.add(caseIndicatorExpressionItemEntityList1.get(0));
+          indicatorExpressionItemEntityList.add(indicatorExpressionItemEntityList1.get(0));
         }
       }
       rsCaseIndicatorExpressionBiz.parseCaseIndicatorExpression(
           EnumIndicatorExpressionField.CASE.getField(), EnumIndicatorExpressionSource.CROWDS.getSource(), EnumIndicatorExpressionScene.CASE_CALCULATE_HEALTH_POINT.getScene(),
           crowdsAR,
-          kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap,
-          caseIndicatorExpressionEntity,
-          caseIndicatorExpressionItemEntityList,
-          null,
-          null
+          kIndicatorInstanceIdVCaseIndicatorInstanceIdMap,
+          DatabaseCalIndicatorExpressionRequest
+              .builder()
+              .indicatorExpressionEntity(indicatorExpressionEntity)
+              .indicatorExpressionItemEntityList(indicatorExpressionItemEntityList)
+              .build(),
+          CaseCalIndicatorExpressionRequest
+              .builder()
+              .kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap(kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap)
+              .build()
       );
       if (StringUtils.equals(RsUtilBiz.RESULT_DROP, crowdsAR.get())) {return;}
       if (!StringUtils.equalsIgnoreCase(Boolean.TRUE.toString(), crowdsAR.get())) {return;}
@@ -803,44 +850,227 @@ public class RsCalculateBiz {
         AtomicReference<BigDecimal> maxScoreAtomicReference = new AtomicReference<>(BigDecimal.ZERO);
         String riskModelId = riskModelEntity.getRiskModelId();
         AtomicReference<BigDecimal> singleRiskModelAR = new AtomicReference<>(BigDecimal.ZERO);
-        List<CaseIndicatorExpressionEntity> caseIndicatorExpressionEntityList0 = kReasonIdVCaseIndicatorExpressionEntityListMap.get(riskModelId);
+        List<IndicatorExpressionEntity> indicatorExpressionEntityList0 = kReasonIdVIndicatorExpressionEntityListMap.get(riskModelId);
         /* runsix:危险原因会产生多个公式 */
-        if (Objects.isNull(caseIndicatorExpressionEntityList0) || caseIndicatorExpressionEntityList0.isEmpty()) {return;}
-        caseIndicatorExpressionEntityList0.forEach(caseIndicatorExpressionEntity2 -> {
+        if (Objects.isNull(indicatorExpressionEntityList0) || indicatorExpressionEntityList0.isEmpty()) {return;}
+        indicatorExpressionEntityList0.forEach(indicatorExpressionEntity2 -> {
           AtomicReference<String> singleExpressionResultRiskModelAR = new AtomicReference<>(RsUtilBiz.RESULT_DROP);
-          String caseIndicatorExpressionId = caseIndicatorExpressionEntity2.getCaseIndicatorExpressionId();
-          List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList2 = kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap.get(caseIndicatorExpressionId);
-          if (Objects.isNull(caseIndicatorExpressionItemEntityList2) || caseIndicatorExpressionItemEntityList2.isEmpty()) {return;}
-          String minIndicatorExpressionItemId = caseIndicatorExpressionEntity2.getMinIndicatorExpressionItemId();
-          CaseIndicatorExpressionItemEntity minCaseIndicatorExpressionItemEntity = kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemEntityMap.get(minIndicatorExpressionItemId);
-          String maxIndicatorExpressionItemId = caseIndicatorExpressionEntity2.getMinIndicatorExpressionItemId();
-          CaseIndicatorExpressionItemEntity maxCaseIndicatorExpressionItemEntity = kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemEntityMap.get(maxIndicatorExpressionItemId);
+          String indicatorExpressionId = indicatorExpressionEntity2.getIndicatorExpressionId();
+          List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList2 = kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.get(indicatorExpressionId);
+          if (Objects.isNull(indicatorExpressionItemEntityList2) || indicatorExpressionItemEntityList2.isEmpty()) {return;}
+          String minIndicatorExpressionItemId = indicatorExpressionEntity2.getMinIndicatorExpressionItemId();
+          IndicatorExpressionItemEntity minIndicatorExpressionItemEntity = kIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap.get(minIndicatorExpressionItemId);
+          String maxIndicatorExpressionItemId = indicatorExpressionEntity2.getMinIndicatorExpressionItemId();
+          IndicatorExpressionItemEntity maxIndicatorExpressionItemEntity = kIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap.get(maxIndicatorExpressionItemId);
           rsCaseIndicatorExpressionBiz.parseCaseIndicatorExpression(
               EnumIndicatorExpressionField.CASE.getField(), EnumIndicatorExpressionSource.RISK_MODEL.getSource(), EnumIndicatorExpressionScene.CASE_CALCULATE_HEALTH_POINT.getScene(),
               singleExpressionResultRiskModelAR,
-              kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap,
-              caseIndicatorExpressionEntity2,
-              caseIndicatorExpressionItemEntityList2,
-              minCaseIndicatorExpressionItemEntity,
-              maxCaseIndicatorExpressionItemEntity
+              kIndicatorInstanceIdVCaseIndicatorInstanceIdMap,
+              DatabaseCalIndicatorExpressionRequest
+                  .builder()
+                  .indicatorExpressionEntity(indicatorExpressionEntity2)
+                  .indicatorExpressionItemEntityList(indicatorExpressionItemEntityList2)
+                  .minIndicatorExpressionItemEntity(minIndicatorExpressionItemEntity)
+                  .maxIndicatorExpressionItemEntity(maxIndicatorExpressionItemEntity)
+                  .build(),
+              CaseCalIndicatorExpressionRequest
+                  .builder()
+                  .kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap(kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap)
+                  .build()
           );
           if (StringUtils.equals(RsUtilBiz.RESULT_DROP, singleExpressionResultRiskModelAR.get())) {return;}
-          if (Objects.isNull(minCaseIndicatorExpressionItemEntity) || Objects.isNull(maxCaseIndicatorExpressionItemEntity)) {return;}
-          BigDecimal curMin = minScoreAtomicReference.get();
-          if (curMin.compareTo(minScoreAtomicReference.get()) < 0) {minScoreAtomicReference.set(curMin);}
-          BigDecimal curMax = maxScoreAtomicReference.get();
-          if (curMax.compareTo(maxScoreAtomicReference.get()) > 0) {maxScoreAtomicReference.set(curMax);}
-          kRiskModelIdVRiskDeathProbabilityMap.put(riskModelId, riskModelEntity.getRiskDeathProbability());
 
+          BigDecimal curVal = BigDecimal.valueOf(Double.parseDouble(singleExpressionResultRiskModelAR.get()));
+          if (curVal.compareTo(minScoreAtomicReference.get()) < 0) {minScoreAtomicReference.set(curVal);}
+          if (curVal.compareTo(maxScoreAtomicReference.get()) > 0) {maxScoreAtomicReference.set(curVal);}
+
+          kRiskModelIdVRiskDeathProbabilityMap.put(riskModelId, riskModelEntity.getRiskDeathProbability());
+          kPrincipalIdVScoreMap.put(indicatorExpressionEntity2.getPrincipalId(), BigDecimal.valueOf(Double.parseDouble(singleExpressionResultRiskModelAR.get())));
         });
         rsUtilBiz.calculateRiskModelScore(singleRiskModelAR, kPrincipalIdVScoreMap, minScoreAtomicReference, maxScoreAtomicReference);
+        kRiskModelIdVTotalScoreMap.put(riskModelId, singleRiskModelAR.get());
       });
       if (kRiskModelIdVRiskDeathProbabilityMap.isEmpty()) {return;}
       Integer totalRiskDeathProbability = kRiskModelIdVRiskDeathProbabilityMap.values().stream().reduce(0, Integer::sum);
       CaseIndicatorRuleEntity caseIndicatorRuleEntity = caseIndicatorRuleEntityAR.get();
       BigDecimal newHealthPoint = rsUtilBiz.newCalculateFinalHealthScore(kRiskModelIdVTotalScoreMap, kRiskModelIdVRiskDeathProbabilityMap, totalRiskDeathProbability);
-      caseIndicatorRuleEntity.setDef(newHealthPoint.toString());
+      caseIndicatorRuleEntity.setDef(newHealthPoint.setScale(2, RoundingMode.DOWN).toString());
     });
     if (Objects.nonNull(caseIndicatorRuleEntityAR.get())) {caseIndicatorRuleService.saveOrUpdate(caseIndicatorRuleEntityAR.get());}
+  }
+
+  @Transactional(rollbackFor = Exception.class)
+  public void databaseRsCalculateHealthScore(DatabaseRsCalculateHealthScoreRequestRs databaseRsCalculateHealthScoreRequestRs) throws ExecutionException, InterruptedException {
+    /* runsix:param */
+    String appId = databaseRsCalculateHealthScoreRequestRs.getAppId();
+    /* runsix:result */
+    AtomicReference<IndicatorRuleEntity> indicatorRuleEntityAR = new AtomicReference<>();
+    /* runsix:populate */
+
+    Map<String, CrowdsInstanceEntity> kCrowdsIdVCrowdsInstanceEntityMap = new HashMap<>();
+    Set<String> crowdsIdSet = new HashSet<>();
+
+    Map<String, List<RiskModelEntity>> kCrowdsIdVRiskModelEntityListMap = new HashMap<>();
+    Set<String> riskModelIdSet = new HashSet<>();
+
+    Map<String, IndicatorInstanceEntity> kIndicatorInstanceIdVIndicatorInstanceEntityMap = new HashMap<>();
+    Set<String> indicatorInstanceIdSet = new HashSet<>();
+
+    Set<String> allReasonIdSet = new HashSet<>();
+    Map<String, IndicatorRuleEntity> kIndicatorInstanceIdVIndicatorRuleEntityMap = new HashMap<>();
+    Map<String, List<IndicatorExpressionEntity>> kReasonIdVIndicatorExpressionEntityListMap = new HashMap<>();
+    Map<String, List<IndicatorExpressionItemEntity>> kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap = new HashMap<>();
+    Map<String, IndicatorExpressionItemEntity> kIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap = new HashMap<>();
+
+    CompletableFuture<Void> cfPopulateKCrowdsIdVCrowdsInstanceEntityMap = CompletableFuture.runAsync(() -> {
+      rsCrowdsBiz.populateEnableKCrowdsIdVCrowdsInstanceEntityMap(kCrowdsIdVCrowdsInstanceEntityMap, appId);
+    });
+    cfPopulateKCrowdsIdVCrowdsInstanceEntityMap.get();
+    if (kCrowdsIdVCrowdsInstanceEntityMap.isEmpty()) {return;}
+    crowdsIdSet.addAll(kCrowdsIdVCrowdsInstanceEntityMap.keySet());
+
+
+    CompletableFuture<Void> cfPopulateKCrowdsIdVRiskModelEntityListMap = CompletableFuture.runAsync(() -> {
+      rsCrowdsBiz.populateEnableKCrowdsIdVRiskModelEntityListMap(kCrowdsIdVRiskModelEntityListMap, crowdsIdSet);
+    });
+    cfPopulateKCrowdsIdVRiskModelEntityListMap.get();
+    if (kCrowdsIdVRiskModelEntityListMap.isEmpty()) {return;}
+    kCrowdsIdVRiskModelEntityListMap.forEach((crowdsId, riskModelEntityList) -> {
+      riskModelIdSet.addAll(riskModelEntityList.stream().map(RiskModelEntity::getRiskModelId).collect(Collectors.toSet()));
+    });
+
+
+    CompletableFuture<Void> cfPopulateKIndicatorInstanceIdVIndicatorInstanceEntityMap = CompletableFuture.runAsync(() -> {
+      rsIndicatorInstanceBiz.populateKIndicatorInstanceIdVIndicatorInstanceEntityMap(kIndicatorInstanceIdVIndicatorInstanceEntityMap, appId);
+    });
+    cfPopulateKIndicatorInstanceIdVIndicatorInstanceEntityMap.get();
+    if (kIndicatorInstanceIdVIndicatorInstanceEntityMap.isEmpty()) {return;}
+    indicatorInstanceIdSet.addAll(kIndicatorInstanceIdVIndicatorInstanceEntityMap.keySet());
+
+
+    allReasonIdSet.addAll(crowdsIdSet);
+    allReasonIdSet.addAll(riskModelIdSet);
+    allReasonIdSet.addAll(indicatorInstanceIdSet);
+
+
+    CompletableFuture<Void> cfPopulateKIndicatorInstanceIdVIndicatorRuleEntityMap = CompletableFuture.runAsync(() -> {
+      rsIndicatorInstanceBiz.populateKIndicatorInstanceIdVIndicatorRuleEntityMap(kIndicatorInstanceIdVIndicatorRuleEntityMap, indicatorInstanceIdSet);
+    });
+    cfPopulateKIndicatorInstanceIdVIndicatorRuleEntityMap.get();
+    if (kIndicatorInstanceIdVIndicatorRuleEntityMap.isEmpty()) {return;}
+
+
+    CompletableFuture<Void> cfPopulateParseParam = CompletableFuture.runAsync(() -> {
+      try {
+        rsIndicatorExpressionBiz.populateParseParam(
+            allReasonIdSet,
+            kReasonIdVIndicatorExpressionEntityListMap,
+            kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap,
+            kIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap
+        );
+      } catch (Exception e) {
+        log.error("RsCalculateBiz.databaseRsCalculateHealthScore databaseRsCalculateHealthScoreRequestRs:{}" , databaseRsCalculateHealthScoreRequestRs, e);
+        throw new RsCalculateBizException(EnumESC.DATABASE_RS_CALCULATE_HEALTH_SCORE);
+      }
+    });
+    cfPopulateParseParam.get();
+
+    CompletableFuture<Void> cfPopulateHealthPointIndicatorRuleEntity = CompletableFuture.runAsync(() -> {
+      rsIndicatorInstanceBiz.populateHealthPointIndicatorRuleEntity(indicatorRuleEntityAR, appId);
+    });
+    cfPopulateHealthPointIndicatorRuleEntity.get();
+
+
+    kCrowdsIdVCrowdsInstanceEntityMap.forEach((crowdsId, crowdsInstanceEntity) -> {
+      /* runsix:一个人只能适用于一个人群类型 */
+      AtomicBoolean hasFindCrowdsAR = new AtomicBoolean(Boolean.FALSE);
+      if (hasFindCrowdsAR.get()) {return;}
+
+      AtomicReference<String> crowdsAR = new AtomicReference<>(RsUtilBiz.RESULT_DROP);
+      IndicatorExpressionEntity indicatorExpressionEntity = null;
+      List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = new ArrayList<>();
+      List<IndicatorExpressionEntity> indicatorExpressionEntityList = kReasonIdVIndicatorExpressionEntityListMap.get(crowdsId);
+      /* runsix:人群类型只能产生一个公式 */
+      if (Objects.nonNull(indicatorExpressionEntityList) && !indicatorExpressionEntityList.isEmpty()) {
+        indicatorExpressionEntity = indicatorExpressionEntityList.get(0);
+      }
+      if (Objects.nonNull(indicatorExpressionEntity)) {
+        String indicatorExpressionId = indicatorExpressionEntity.getIndicatorExpressionId();
+        List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList1 = kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.get(indicatorExpressionId);
+        if (Objects.nonNull(indicatorExpressionItemEntityList1) && !indicatorExpressionItemEntityList1.isEmpty()) {
+          /* runsix:人群类型公式只能有一个条件 */
+          indicatorExpressionItemEntityList.add(indicatorExpressionItemEntityList1.get(0));
+        }
+      }
+      rsIndicatorExpressionBiz.parseIndicatorExpression(
+          EnumIndicatorExpressionField.DATABASE.getField(), EnumIndicatorExpressionSource.CROWDS.getSource(), EnumIndicatorExpressionScene.DATABASE_CALCULATE_HEALTH_POINT.getScene(),
+          crowdsAR,
+          DatabaseCalIndicatorExpressionRequest
+              .builder()
+              .kIndicatorInstanceIdVIndicatorRuleEntityMap(kIndicatorInstanceIdVIndicatorRuleEntityMap)
+              .indicatorExpressionEntity(indicatorExpressionEntity)
+              .indicatorExpressionItemEntityList(indicatorExpressionItemEntityList)
+              .minIndicatorExpressionItemEntity(null)
+              .maxIndicatorExpressionItemEntity(null)
+              .build()
+      );
+      if (StringUtils.equals(RsUtilBiz.RESULT_DROP, crowdsAR.get())) {return;}
+      if (!StringUtils.equalsIgnoreCase(Boolean.TRUE.toString(), crowdsAR.get())) {return;}
+      hasFindCrowdsAR.set(Boolean.TRUE);
+      List<RiskModelEntity> riskModelEntityList = kCrowdsIdVRiskModelEntityListMap.get(crowdsId);
+      if (Objects.isNull(riskModelEntityList) || riskModelEntityList.isEmpty()) {return;}
+      Map<String, BigDecimal> kRiskModelIdVTotalScoreMap = new HashMap<>();
+      Map<String, Integer> kRiskModelIdVRiskDeathProbabilityMap = new HashMap<>();
+      riskModelEntityList.forEach(riskModelEntity -> {
+        Map<String, BigDecimal> kPrincipalIdVScoreMap = new HashMap<>();
+        AtomicReference<BigDecimal> minScoreAtomicReference = new AtomicReference<>(BigDecimal.ZERO);
+        AtomicReference<BigDecimal> maxScoreAtomicReference = new AtomicReference<>(BigDecimal.ZERO);
+        String riskModelId = riskModelEntity.getRiskModelId();
+        AtomicReference<BigDecimal> singleRiskModelAR = new AtomicReference<>(BigDecimal.ZERO);
+        List<IndicatorExpressionEntity> indicatorExpressionEntityList0 = kReasonIdVIndicatorExpressionEntityListMap.get(riskModelId);
+        /* runsix:危险原因会产生多个公式 */
+        if (Objects.isNull(indicatorExpressionEntityList0) || indicatorExpressionEntityList0.isEmpty()) {return;}
+        indicatorExpressionEntityList0.forEach(indicatorExpressionEntity2 -> {
+          AtomicReference<String> singleExpressionResultRiskModelAR = new AtomicReference<>(RsUtilBiz.RESULT_DROP);
+          String indicatorExpressionId = indicatorExpressionEntity2.getIndicatorExpressionId();
+          List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList2 = kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.get(indicatorExpressionId);
+          if (Objects.isNull(indicatorExpressionItemEntityList2) || indicatorExpressionItemEntityList2.isEmpty()) {return;}
+          String minIndicatorExpressionItemId = indicatorExpressionEntity2.getMinIndicatorExpressionItemId();
+          IndicatorExpressionItemEntity minIndicatorExpressionItemEntity = kIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap.get(minIndicatorExpressionItemId);
+          String maxIndicatorExpressionItemId = indicatorExpressionEntity2.getMinIndicatorExpressionItemId();
+          IndicatorExpressionItemEntity maxIndicatorExpressionItemEntity = kIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap.get(maxIndicatorExpressionItemId);
+          rsIndicatorExpressionBiz.parseIndicatorExpression(
+              EnumIndicatorExpressionField.DATABASE.getField(), EnumIndicatorExpressionSource.RISK_MODEL.getSource(), EnumIndicatorExpressionScene.DATABASE_CALCULATE_HEALTH_POINT.getScene(),
+              singleExpressionResultRiskModelAR,
+              DatabaseCalIndicatorExpressionRequest
+                  .builder()
+                  .kIndicatorInstanceIdVIndicatorRuleEntityMap(kIndicatorInstanceIdVIndicatorRuleEntityMap)
+                  .indicatorExpressionEntity(indicatorExpressionEntity2)
+                  .indicatorExpressionItemEntityList(indicatorExpressionItemEntityList2)
+                  .minIndicatorExpressionItemEntity(minIndicatorExpressionItemEntity)
+                  .maxIndicatorExpressionItemEntity(maxIndicatorExpressionItemEntity)
+                  .build()
+          );
+          if (StringUtils.equals(RsUtilBiz.RESULT_DROP, singleExpressionResultRiskModelAR.get())) {return;}
+
+          BigDecimal curVal = BigDecimal.valueOf(Double.parseDouble(singleExpressionResultRiskModelAR.get()));
+          if (curVal.compareTo(minScoreAtomicReference.get()) < 0) {minScoreAtomicReference.set(curVal);}
+          if (curVal.compareTo(maxScoreAtomicReference.get()) > 0) {maxScoreAtomicReference.set(curVal);}
+
+          kRiskModelIdVRiskDeathProbabilityMap.put(riskModelId, riskModelEntity.getRiskDeathProbability());
+          kPrincipalIdVScoreMap.put(indicatorExpressionEntity2.getPrincipalId(), BigDecimal.valueOf(Double.parseDouble(singleExpressionResultRiskModelAR.get())));
+        });
+        rsUtilBiz.calculateRiskModelScore(singleRiskModelAR, kPrincipalIdVScoreMap, minScoreAtomicReference, maxScoreAtomicReference);
+        kRiskModelIdVTotalScoreMap.put(riskModelId, singleRiskModelAR.get());
+      });
+      if (kRiskModelIdVRiskDeathProbabilityMap.isEmpty()) {return;}
+      Integer totalRiskDeathProbability = kRiskModelIdVRiskDeathProbabilityMap.values().stream().reduce(0, Integer::sum);
+      IndicatorRuleEntity indicatorRuleEntity = indicatorRuleEntityAR.get();
+      BigDecimal newHealthPoint = rsUtilBiz.newCalculateFinalHealthScore(kRiskModelIdVTotalScoreMap, kRiskModelIdVRiskDeathProbabilityMap, totalRiskDeathProbability);
+      indicatorRuleEntity.setDef(newHealthPoint.setScale(2, RoundingMode.DOWN).toString());
+    });
+
+    /* runsix:final operation */
+    if (Objects.nonNull(indicatorRuleEntityAR.get())) {indicatorRuleService.saveOrUpdate(indicatorRuleEntityAR.get());}
   }
 }

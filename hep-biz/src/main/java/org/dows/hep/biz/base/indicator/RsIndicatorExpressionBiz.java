@@ -6,15 +6,24 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorExpressionItemRequestRs;
 import org.dows.hep.api.enums.EnumESC;
+import org.dows.hep.api.enums.EnumIndicatorExpressionScene;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.api.exception.IndicatorExpressionException;
 import org.dows.hep.api.exception.RsIndicatorExpressionBizException;
+import org.dows.hep.api.exception.RsIndicatorExpressionException;
+import org.dows.hep.biz.request.DatabaseCalIndicatorExpressionRequest;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
+import org.springframework.expression.Expression;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -30,10 +39,12 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RsIndicatorExpressionBiz {
   private final IndicatorRuleService indicatorRuleService;
+  private final IndicatorExpressionRefService indicatorExpressionRefService;
   private final IndicatorExpressionService indicatorExpressionService;
   private final IndicatorExpressionItemService indicatorExpressionItemService;
   private final IndicatorExpressionInfluenceService indicatorExpressionInfluenceService;
   private final IdGenerator idGenerator;
+  private final RsUtilBiz rsUtilBiz;
 
 
   public void populateIndicatorExpressionEntity(
@@ -351,5 +362,401 @@ public class RsIndicatorExpressionBiz {
         .forEach(indicatorRuleEntity -> {
           kIndicatorInstanceIdVValMap.put(indicatorRuleEntity.getVariableId(), indicatorRuleEntity.getDef());
         });
+  }
+
+  public void populateParseParam(
+      Set<String> reasonIdSet,
+      Map<String, List<IndicatorExpressionEntity>> kReasonIdVIndicatorExpressionEntityListMap,
+      Map<String, List<IndicatorExpressionItemEntity>> kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap,
+      Map<String, IndicatorExpressionItemEntity> kIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap
+  ) throws ExecutionException, InterruptedException {
+    if (Objects.isNull(reasonIdSet) || reasonIdSet.isEmpty()
+        || Objects.isNull(kReasonIdVIndicatorExpressionEntityListMap)
+        || Objects.isNull(kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap)
+        || Objects.isNull(kIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap)
+    ) {return;}
+
+    CompletableFuture<Void> cfPopulateKReasonIdVIndicatorExpressionEntityListMap = CompletableFuture.runAsync(() -> {
+      try {
+        populateKReasonIdVIndicatorExpressionEntityListMap(kReasonIdVIndicatorExpressionEntityListMap, reasonIdSet);
+      } catch (Exception e) {
+        log.error("RsCaseIndicatorExpressionBiz.populateParseParam error", e);
+        throw new RsIndicatorExpressionException("填充解析公式参数出错，请及时与管理员联系");
+      }
+    });
+    cfPopulateKReasonIdVIndicatorExpressionEntityListMap.get();
+
+    Set<String> indicatorExpressionIdSet = new HashSet<>();
+    kReasonIdVIndicatorExpressionEntityListMap.forEach((reasonId, indicatorExpressionRsEntityList) -> {
+      indicatorExpressionRsEntityList.forEach(indicatorExpressionEntity -> {
+        indicatorExpressionIdSet.add(indicatorExpressionEntity.getIndicatorExpressionId());
+      });
+    });
+    if (indicatorExpressionIdSet.isEmpty()) {return;}
+
+    Map<String, IndicatorExpressionEntity> kIndicatorExpressionIdVIndicatorExpressionEntityMap = new HashMap<>();
+    CompletableFuture<Void> cfPopulateKIndicatorExpressionIdVIndicatorExpressionEntityMap = CompletableFuture.runAsync(() -> {
+      populateKIndicatorExpressionIdVIndicatorExpressionEntityMap(kIndicatorExpressionIdVIndicatorExpressionEntityMap, indicatorExpressionIdSet);
+    });
+    cfPopulateKIndicatorExpressionIdVIndicatorExpressionEntityMap.get();
+
+    CompletableFuture<Void> cfPopulateKIndicatorExpressionIdVIndicatorExpressionItemListMap = CompletableFuture.runAsync(() -> {
+      populateKIndicatorExpressionIdVIndicatorExpressionItemListMap(
+          kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap, indicatorExpressionIdSet);
+    });
+    cfPopulateKIndicatorExpressionIdVIndicatorExpressionItemListMap.get();
+
+    /* runsix:需要注意把最大最小值加进来 */
+    Set<String> indicatorExpressionItemIdSet = new HashSet<>();
+    kIndicatorExpressionIdVIndicatorExpressionEntityMap.values().forEach(indicatorExpressionEntity -> {
+      String minIndicatorExpressionItemId = indicatorExpressionEntity.getMinIndicatorExpressionItemId();
+      if (StringUtils.isNotBlank(minIndicatorExpressionItemId)) {
+        indicatorExpressionItemIdSet.add(minIndicatorExpressionItemId);
+      }
+      String maxIndicatorExpressionItemId = indicatorExpressionEntity.getMaxIndicatorExpressionItemId();
+      if (StringUtils.isNotBlank(maxIndicatorExpressionItemId)) {
+        indicatorExpressionItemIdSet.add(maxIndicatorExpressionItemId);
+      }
+    });
+    kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.forEach((indicatorExpressionId, indicatorExpressionItemEntityList) -> {
+      indicatorExpressionItemEntityList.forEach(indicatorExpressionItemEntity -> {
+        indicatorExpressionItemIdSet.add(indicatorExpressionItemEntity.getIndicatorExpressionItemId());
+      });
+    });
+    if (indicatorExpressionItemIdSet.isEmpty()) {return;}
+
+    CompletableFuture<Void> cfPopulateKIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap = CompletableFuture.runAsync(() -> {
+      populateKIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap(
+          kIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap, indicatorExpressionItemIdSet);
+    });
+    cfPopulateKIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap.get();
+  }
+
+  public void populateKReasonIdVIndicatorExpressionEntityListMap(
+      Map<String, List<IndicatorExpressionEntity>> kReasonIdVIndicatorExpressionEntityListMap,
+      Set<String> reasonIdSet
+  ) throws ExecutionException, InterruptedException {
+    if (Objects.isNull(kReasonIdVIndicatorExpressionEntityListMap)
+        || Objects.isNull(reasonIdSet) || reasonIdSet.isEmpty()
+    ) {return;}
+    /* runsix:init kReasonIdVIndicatorExpressionEntityListMap for lambda */
+    reasonIdSet.forEach(reasonId -> {
+      kReasonIdVIndicatorExpressionEntityListMap.put(reasonId, new ArrayList<>());
+    });
+
+    Map<String, List<IndicatorExpressionRefEntity>> kReasonIdVIndicatorExpressionRefListMap = new HashMap<>();
+    CompletableFuture<Void> cfPopulateKReasonIdVIndicatorExpressionRefListMap = CompletableFuture.runAsync(() -> {
+      populateKReasonIdVIndicatorExpressionRefListMap(kReasonIdVIndicatorExpressionRefListMap, reasonIdSet);
+    });
+    cfPopulateKReasonIdVIndicatorExpressionRefListMap.get();
+
+    Set<String> indicatorExpressionIdSet = new HashSet<>();
+    kReasonIdVIndicatorExpressionRefListMap.forEach((reasonId, indicatorExpressionRefList) -> {
+      indicatorExpressionRefList.forEach(indicatorExpressionRefRsEntity -> {
+        indicatorExpressionIdSet.add(indicatorExpressionRefRsEntity.getIndicatorExpressionId());
+      });
+    });
+    if (indicatorExpressionIdSet.isEmpty()) {return;}
+
+    Map<String, IndicatorExpressionEntity> kIndicatorExpressionIdVIndicatorExpressionEntityMap = new HashMap<>();
+    CompletableFuture<Void> cfPopulateKIndicatorExpressionIdVIndicatorExpressionEntityMap = CompletableFuture.runAsync(() -> {
+      populateKIndicatorExpressionIdVIndicatorExpressionEntityMap(kIndicatorExpressionIdVIndicatorExpressionEntityMap, indicatorExpressionIdSet);
+    });
+    cfPopulateKIndicatorExpressionIdVIndicatorExpressionEntityMap.get();
+
+    kReasonIdVIndicatorExpressionRefListMap.forEach((reasonId, indicatorExpressionRefList) -> {
+      List<IndicatorExpressionEntity> indicatorExpressionEntityList = kReasonIdVIndicatorExpressionEntityListMap.get(reasonId);
+      indicatorExpressionRefList.forEach(indicatorExpressionRefEntity -> {
+        String indicatorExpressionId = indicatorExpressionRefEntity.getIndicatorExpressionId();
+        IndicatorExpressionEntity indicatorExpressionEntity = kIndicatorExpressionIdVIndicatorExpressionEntityMap.get(indicatorExpressionId);
+        if (Objects.nonNull(indicatorExpressionEntity)) {
+          indicatorExpressionEntityList.add(indicatorExpressionEntity);
+        }
+      });
+      kReasonIdVIndicatorExpressionEntityListMap.put(reasonId, indicatorExpressionEntityList);
+    });
+  }
+
+  public void populateKReasonIdVIndicatorExpressionRefListMap(
+      Map<String, List<IndicatorExpressionRefEntity>> kReasonIdVIndicatorExpressionRefListMap,
+      Set<String> reasonIdSet
+  ) {
+    if (Objects.isNull(kReasonIdVIndicatorExpressionRefListMap) || Objects.isNull(reasonIdSet) || reasonIdSet.isEmpty()) {return;}
+    indicatorExpressionRefService.lambdaQuery()
+        .in(IndicatorExpressionRefEntity::getReasonId, reasonIdSet)
+        .list()
+        .forEach(indicatorExpressionRefEntity -> {
+          String reasonId = indicatorExpressionRefEntity.getReasonId();
+          List<IndicatorExpressionRefEntity> indicatorExpressionRefEntityList = kReasonIdVIndicatorExpressionRefListMap.get(reasonId);
+          if (Objects.isNull(indicatorExpressionRefEntityList)) {
+            indicatorExpressionRefEntityList = new ArrayList<>();
+          }
+          indicatorExpressionRefEntityList.add(indicatorExpressionRefEntity);
+          kReasonIdVIndicatorExpressionRefListMap.put(reasonId, indicatorExpressionRefEntityList);
+        });
+  }
+
+  public void populateKIndicatorExpressionIdVIndicatorExpressionEntityMap(
+      Map<String, IndicatorExpressionEntity> kIndicatorExpressionIdVIndicatorExpressionEntityMap,
+      Set<String> indicatorExpressionIdSet
+  ) {
+    if (Objects.isNull(kIndicatorExpressionIdVIndicatorExpressionEntityMap)
+        || Objects.isNull(indicatorExpressionIdSet) || indicatorExpressionIdSet.isEmpty()
+    ) {return;}
+    indicatorExpressionService.lambdaQuery()
+        .in(IndicatorExpressionEntity::getIndicatorExpressionId, indicatorExpressionIdSet)
+        .list()
+        .forEach(indicatorExpressionEntity -> {
+          kIndicatorExpressionIdVIndicatorExpressionEntityMap.put(indicatorExpressionEntity.getIndicatorExpressionId(), indicatorExpressionEntity);
+        });
+  }
+
+  public void populateKIndicatorExpressionIdVIndicatorExpressionItemListMap(
+      Map<String, List<IndicatorExpressionItemEntity>> kIndicatorExpressionIdVIndicatorExpressionItemListMap,
+      Set<String> indicatorExpressionIdSet) {
+    if (Objects.isNull(kIndicatorExpressionIdVIndicatorExpressionItemListMap)) {return;}
+    if (Objects.isNull(indicatorExpressionIdSet) || indicatorExpressionIdSet.isEmpty()) {return;}
+    indicatorExpressionItemService.lambdaQuery()
+        .in(IndicatorExpressionItemEntity::getIndicatorExpressionId, indicatorExpressionIdSet)
+        .list()
+        .forEach(indicatorExpressionItemEntity -> {
+          String indicatorExpressionId = indicatorExpressionItemEntity.getIndicatorExpressionId();
+          List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = kIndicatorExpressionIdVIndicatorExpressionItemListMap.get(indicatorExpressionId);
+          if (Objects.isNull(indicatorExpressionItemEntityList)) {
+            indicatorExpressionItemEntityList = new ArrayList<>();
+          }
+          indicatorExpressionItemEntityList.add(indicatorExpressionItemEntity);
+          kIndicatorExpressionIdVIndicatorExpressionItemListMap.put(indicatorExpressionId, indicatorExpressionItemEntityList);
+        });
+  }
+
+  public void populateKIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap(
+      Map<String, IndicatorExpressionItemEntity> kIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap,
+      Set<String> indicatorExpressionItemIdSet
+  ) {
+    if (Objects.isNull(kIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap)
+        || Objects.isNull(indicatorExpressionItemIdSet) || indicatorExpressionItemIdSet.isEmpty()
+    ) {return;}
+    indicatorExpressionItemService.lambdaQuery()
+        .in(IndicatorExpressionItemEntity::getIndicatorExpressionItemId, indicatorExpressionItemIdSet)
+        .list()
+        .forEach(indicatorExpressionItemEntity -> {
+          kIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap.put(indicatorExpressionItemEntity.getIndicatorExpressionItemId(), indicatorExpressionItemEntity);
+        });
+  }
+
+  public void parseIndicatorExpression(
+      Integer field, Integer source, Integer scene,
+      AtomicReference<String> resultAtomicReference,
+      DatabaseCalIndicatorExpressionRequest databaseCalIndicatorExpressionRequest
+  ) {
+    rsUtilBiz.checkField(field);
+    rsUtilBiz.checkScene(scene);
+    EnumIndicatorExpressionSource enumIndicatorExpressionSource = rsUtilBiz.checkSource(source);
+    Map<String, IndicatorRuleEntity> kIndicatorInstanceIdVIndicatorRuleEntityMap = databaseCalIndicatorExpressionRequest.getKIndicatorInstanceIdVIndicatorRuleEntityMap();
+    IndicatorExpressionEntity indicatorExpressionEntity = databaseCalIndicatorExpressionRequest.getIndicatorExpressionEntity();
+    List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = databaseCalIndicatorExpressionRequest.getIndicatorExpressionItemEntityList();
+    IndicatorExpressionItemEntity minIndicatorExpressionItemEntity = databaseCalIndicatorExpressionRequest.getMinIndicatorExpressionItemEntity();
+    IndicatorExpressionItemEntity maxIndicatorExpressionItemEntity = databaseCalIndicatorExpressionRequest.getMaxIndicatorExpressionItemEntity();
+    switch (enumIndicatorExpressionSource) {
+      case INDICATOR_MANAGEMENT -> dPIEIndicatorManagement(
+          scene,
+          resultAtomicReference,
+          kIndicatorInstanceIdVIndicatorRuleEntityMap,
+          indicatorExpressionEntity,
+          indicatorExpressionItemEntityList,
+          minIndicatorExpressionItemEntity,
+          maxIndicatorExpressionItemEntity
+      );
+      case CROWDS -> dPIECrowds(resultAtomicReference, indicatorExpressionItemEntityList, kIndicatorInstanceIdVIndicatorRuleEntityMap);
+      case RISK_MODEL -> dPIERiskModel(scene,
+          resultAtomicReference,
+          kIndicatorInstanceIdVIndicatorRuleEntityMap,
+          indicatorExpressionEntity,
+          indicatorExpressionItemEntityList,
+          minIndicatorExpressionItemEntity,
+          maxIndicatorExpressionItemEntity);
+      default -> {
+        log.error("RsIndicatorExpressionBiz.parseDatabaseIndicatorExpression source:{} is illegal", source);
+        throw new RsIndicatorExpressionException("公式来源不合法");
+      }
+    }
+  }
+
+  private void dPIERiskModel(Integer scene, AtomicReference<String> resultAtomicReference, Map<String, IndicatorRuleEntity> kIndicatorInstanceIdVIndicatorRuleEntityMap, IndicatorExpressionEntity indicatorExpressionEntity, List<IndicatorExpressionItemEntity> IndicatorExpressionItemEntityList, IndicatorExpressionItemEntity minIndicatorExpressionItemEntity, IndicatorExpressionItemEntity maxIndicatorExpressionItemEntity) {
+    dPIEIndicatorManagement(
+        scene,
+        resultAtomicReference,
+        kIndicatorInstanceIdVIndicatorRuleEntityMap,
+        indicatorExpressionEntity,
+        IndicatorExpressionItemEntityList,
+        minIndicatorExpressionItemEntity,
+        maxIndicatorExpressionItemEntity
+    );
+  }
+
+  private void dPIEIndicatorManagement(
+      Integer scene, AtomicReference<String> resultAtomicReference,
+      Map<String, IndicatorRuleEntity> kIndicatorInstanceIdVIndicatorRuleEntityMap,
+      IndicatorExpressionEntity indicatorExpressionRsEntity,
+      List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList,
+      IndicatorExpressionItemEntity minIndicatorExpressionItemEntity,
+      IndicatorExpressionItemEntity maxIndicatorExpressionItemEntity
+  ) {
+    dPIEResultUsingExperimentIndicatorInstanceIdCombineWithHandle(
+        scene, resultAtomicReference,
+        kIndicatorInstanceIdVIndicatorRuleEntityMap,
+        indicatorExpressionRsEntity,
+        indicatorExpressionItemEntityList,
+        minIndicatorExpressionItemEntity,
+        maxIndicatorExpressionItemEntity
+    );
+  }
+
+  private void dPIECrowds(
+      AtomicReference<String> resultAtomicReference,
+      List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList,
+      Map<String, IndicatorRuleEntity> kIndicatorInstanceIdVIndicatorRuleEntityMap
+  ) {
+    if (Objects.isNull(indicatorExpressionItemEntityList) || indicatorExpressionItemEntityList.isEmpty()) {return;}
+    /* runsix:人群类型只能有一个公式，并且公式只有一个条件 */
+    boolean result = dPIEConditionUsingCaseIndicatorInstanceId(
+        indicatorExpressionItemEntityList.get(0),
+        kIndicatorInstanceIdVIndicatorRuleEntityMap
+    );
+    resultAtomicReference.set(String.valueOf(result));
+  }
+
+  public void dPIEResultUsingExperimentIndicatorInstanceIdCombineWithHandle(
+      Integer scene, AtomicReference<String> resultAtomicReference,
+      Map<String, IndicatorRuleEntity> kIndicatorInstanceIdVIndicatorRuleEntityMap,
+      IndicatorExpressionEntity indicatorExpressionRsEntity,
+      List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList,
+      IndicatorExpressionItemEntity minIndicatorExpressionItemEntity,
+      IndicatorExpressionItemEntity maxIndicatorExpressionItemEntity
+  ) {
+    /* runsix:1.按顺序解析每一个公式 */
+    indicatorExpressionItemEntityList.sort(Comparator.comparingInt(IndicatorExpressionItemEntity::getSeq));
+    for (int i = 0; i <= indicatorExpressionItemEntityList.size()-1; i++) {
+      IndicatorExpressionItemEntity indicatorExpressionItemRsEntity = indicatorExpressionItemEntityList.get(i);
+      boolean hasResult = dPIEResultUsingExperimentIndicatorInstanceIdCombineWithoutHandle(
+          resultAtomicReference, kIndicatorInstanceIdVIndicatorRuleEntityMap, indicatorExpressionItemRsEntity
+      );
+      if (hasResult) {
+        /* runsix:2.处理解析后的结果 */
+        handleParsedResult(
+            resultAtomicReference, scene, indicatorExpressionRsEntity, minIndicatorExpressionItemEntity, maxIndicatorExpressionItemEntity
+        );
+        break;
+      }
+    }
+  }
+
+  private boolean dPIEConditionUsingCaseIndicatorInstanceId(
+      IndicatorExpressionItemEntity indicatorExpressionItemEntity,
+      Map<String, IndicatorRuleEntity> kIndicatorInstanceIdVIndicatorRuleEntityMap
+  ) {
+    try {
+      String conditionExpression = indicatorExpressionItemEntity.getConditionExpression();
+      String conditionNameList = indicatorExpressionItemEntity.getConditionNameList();
+      List<String> conditionNameSplitList = rsUtilBiz.getConditionNameSplitList(conditionNameList);
+      String conditionValList = indicatorExpressionItemEntity.getConditionValList();
+      List<String> conditionValSplitList = rsUtilBiz.getConditionValSplitList(conditionValList);
+      StandardEvaluationContext context = new StandardEvaluationContext();
+      ExpressionParser parser = new SpelExpressionParser();
+      Expression expression = parser.parseExpression(conditionExpression);
+      if (StringUtils.isBlank(conditionExpression)) {
+        return true;
+      }
+      for (int i = 0; i <= conditionNameSplitList.size() - 1; i++) {
+        String indicatorInstanceId = conditionValSplitList.get(i);
+        IndicatorRuleEntity indicatorRuleEntity = kIndicatorInstanceIdVIndicatorRuleEntityMap.get(indicatorInstanceId);
+        if (Objects.isNull(indicatorRuleEntity) || StringUtils.isBlank(indicatorRuleEntity.getDef())) {
+          return false;
+        }
+        String currentVal = indicatorRuleEntity.getDef();
+        boolean isValDigital = NumberUtils.isCreatable(currentVal);
+        if (isValDigital) {
+          context.setVariable(conditionNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(currentVal)).setScale(2, RoundingMode.DOWN));
+        } else {
+          context.setVariable(conditionNameSplitList.get(i), currentVal);
+        }
+      }
+      return Boolean.TRUE.equals(expression.getValue(context, Boolean.class));
+    } catch(Exception e) {
+      log.error("RsCaseIndicatorExpressionBiz.dPIEConditionUsingExperimentIndicatorInstanceId", e);
+      return false;
+    }
+  }
+
+  private boolean dPIEResultUsingExperimentIndicatorInstanceIdCombineWithoutHandle(
+      AtomicReference<String> resultAtomicReference,
+      Map<String, IndicatorRuleEntity> kIndicatorInstanceIdVIndicatorRuleEntityMap,
+      IndicatorExpressionItemEntity cndicatorExpressionItemEntity
+  ) {
+    boolean parsedCondition = dPIEConditionUsingCaseIndicatorInstanceId(cndicatorExpressionItemEntity, kIndicatorInstanceIdVIndicatorRuleEntityMap);
+    /* runsix:2.如果条件不满足，不解析结果，继续下一个 */
+    if (!parsedCondition) {
+      return false;
+    }
+
+    /* runsix:3.如果一个公式有结果就跳出 */
+    String parsedResult = dPIEResultUsingCaseIndicatorInstanceId(cndicatorExpressionItemEntity, kIndicatorInstanceIdVIndicatorRuleEntityMap);
+    if (RsUtilBiz.RESULT_DROP.equals(parsedResult)) {
+      return false;
+    }
+    resultAtomicReference.set(parsedResult);
+    return true;
+  }
+
+  private void handleParsedResult(
+      AtomicReference<String> resultAtomicReference,
+      Integer scene,
+      IndicatorExpressionEntity indicatorExpressionEntity,
+      IndicatorExpressionItemEntity minIndicatorExpressionItemEntity,
+      IndicatorExpressionItemEntity maxIndicatorExpressionItemRsEntity
+  ) {
+    EnumIndicatorExpressionScene enumIndicatorExpressionScene = EnumIndicatorExpressionScene.getByScene(scene);
+    /* runsix:如果公式使用场景不明确，不做特殊处理，直接返回 */
+    if (Objects.isNull(enumIndicatorExpressionScene)) {
+      return;
+    }
+  }
+
+  private String dPIEResultUsingCaseIndicatorInstanceId(
+      IndicatorExpressionItemEntity indicatorExpressionItemEntity,
+      Map<String, IndicatorRuleEntity> kIndicatorInstanceIdVIndicatorRuleEntityMap
+  ) {
+    try {
+      String resultExpression = indicatorExpressionItemEntity.getResultExpression();
+      String resultNameList = indicatorExpressionItemEntity.getResultNameList();
+      List<String> resultNameSplitList = rsUtilBiz.getResultNameSplitList(resultNameList);
+      String resultValList = indicatorExpressionItemEntity.getResultValList();
+      List<String> resultValSplitList = rsUtilBiz.getResultValSplitList(resultValList);
+      StandardEvaluationContext context = new StandardEvaluationContext();
+      ExpressionParser parser = new SpelExpressionParser();
+      Expression expression = parser.parseExpression(resultExpression);
+      if (StringUtils.isBlank(resultExpression)) {
+        return RsUtilBiz.RESULT_DROP;
+      }
+      for (int i = 0; i <= resultNameSplitList.size() - 1; i++) {
+        String indicatorInstanceId = resultValSplitList.get(i);
+        IndicatorRuleEntity indicatorRuleEntity = kIndicatorInstanceIdVIndicatorRuleEntityMap.get(indicatorInstanceId);
+        if (Objects.isNull(indicatorRuleEntity) || StringUtils.isBlank(indicatorRuleEntity.getDef())) {
+          return RsUtilBiz.RESULT_DROP;
+        }
+        String currentVal = indicatorRuleEntity.getDef();
+        boolean isValDigital = NumberUtils.isCreatable(currentVal);
+        if (isValDigital) {
+          context.setVariable(resultNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(currentVal)).setScale(2, RoundingMode.DOWN));
+        } else {
+          context.setVariable(resultNameSplitList.get(i), currentVal);
+        }
+      }
+      return expression.getValue(context, String.class);
+    } catch(Exception e) {
+      log.error("RsCaseIndicatorExpressionBiz.dPIEResultUsingExperimentIndicatorInstanceId", e);
+      return RsUtilBiz.RESULT_DROP;
+    }
   }
 }

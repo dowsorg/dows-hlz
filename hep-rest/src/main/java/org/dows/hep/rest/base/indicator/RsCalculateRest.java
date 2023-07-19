@@ -52,9 +52,15 @@ public class RsCalculateRest {
     rsCalculateBiz.caseReCalculateOnePerson(reCalculateOnePersonRequestRs);
   }
 
-  @Operation(summary = "案例-计算健康指数")
+  @Operation(summary = "案例-计算一个人健康指数")
   @PostMapping("v1/caseIndicator/healthScore/calculate")
   public void caseRsCalculateHealthScore(@RequestBody CaseRsCalculateHealthScoreRequestRs caseRsCalculateHealthScoreRequestRs) throws ExecutionException, InterruptedException {
     rsCalculateBiz.caseRsCalculateHealthScore(caseRsCalculateHealthScoreRequestRs);
+  }
+
+  @Operation(summary = "数据库-计算指标的健康指数")
+  @PostMapping("v1/databaseIndicator/healthScore/calculate")
+  public void databaseRsCalculateHealthScore(@RequestBody DatabaseRsCalculateHealthScoreRequestRs databaseRsCalculateHealthScoreRequestRs) throws ExecutionException, InterruptedException {
+    rsCalculateBiz.databaseRsCalculateHealthScore(databaseRsCalculateHealthScoreRequestRs);
   }
 }

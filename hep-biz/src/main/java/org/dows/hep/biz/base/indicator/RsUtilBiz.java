@@ -64,7 +64,7 @@ public class RsUtilBiz {
       sumRiskModeScoreAR.set(addResult.add(multiplyResult).setScale(2, RoundingMode.DOWN));
     }
     BigDecimal beforeMinAndMax = sumRiskModeScoreAR.get();
-    if (minScore.compareTo(maxScore) == 0) {sumRiskModeScoreAR.set(BigDecimal.ZERO);}
+    if (minScore.compareTo(maxScore) == 0) {sumRiskModeScoreAR.set(BigDecimal.ZERO); return;}
     sumRiskModeScoreAR.set(BigDecimal.valueOf(100).multiply(beforeMinAndMax.subtract(maxScore)).divide(minScore.subtract(maxScore), 2, RoundingMode.DOWN));
   }
 
@@ -81,7 +81,7 @@ public class RsUtilBiz {
               BigDecimal.valueOf(riskDeathProbability)
                   .divide(BigDecimal.valueOf(totalRiskDeathProbability), 2, RoundingMode.DOWN)
                   .multiply(totalScore)
-          )
+          ).setScale(2, RoundingMode.DOWN)
       );
     });
     return finalScoreBigDecimal.get();

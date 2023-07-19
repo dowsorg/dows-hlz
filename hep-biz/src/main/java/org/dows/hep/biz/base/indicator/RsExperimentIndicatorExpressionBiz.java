@@ -691,6 +691,7 @@ public class RsExperimentIndicatorExpressionBiz {
       List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList,
       Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap
   ) {
+    if (Objects.isNull(experimentIndicatorExpressionItemRsEntityList) || experimentIndicatorExpressionItemRsEntityList.isEmpty()) {return;}
     /* runsix:人群类型只能有一个公式，并且公式只有一个条件 */
     boolean result = ePIEConditionUsingExperimentIndicatorInstanceId(
         experimentIndicatorExpressionItemRsEntityList.get(0),

@@ -65,6 +65,7 @@ public enum EnumESC implements StatusCode {
     CASE_INDICATOR_EXPRESSION_ITEM_ID_IS_ILLEGAL(50150, "案例库指标公式细项id不合法"),
     INDICATOR_EXPRESSION_FORMAT_IS_ILLEGAL(50151, "指标格式不正确"),
     CASE_RS_CALCULATE_HEALTH_SCORE(50152, "案例重新计算健康指数存在异常，请联系管理员"),
+    DATABASE_RS_CALCULATE_HEALTH_SCORE(50153, "数据库重新计算健康指数存在异常，请联系管理员"),
     ;
     private final Integer code;
     private final String descr;

@@ -448,4 +448,16 @@ public class RsCaseIndicatorInstanceBiz {
           kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap.put(caseIndicatorRuleEntity.getVariableId(), caseIndicatorRuleEntity);
         });
   }
+
+  public void populateKIndicatorInstanceIdVCaseIndicatorInstanceIdMap(
+      Map<String, String> kIndicatorInstanceIdVCaseIndicatorInstanceIdMap,
+      String accountId) {
+    if (Objects.isNull(kIndicatorInstanceIdVCaseIndicatorInstanceIdMap) || StringUtils.isBlank(accountId)) {return;}
+    caseIndicatorInstanceService.lambdaQuery()
+        .eq(CaseIndicatorInstanceEntity::getPrincipalId, accountId)
+        .list()
+        .forEach(caseIndicatorInstanceEntity -> {
+          kIndicatorInstanceIdVCaseIndicatorInstanceIdMap.put(caseIndicatorInstanceEntity.getIndicatorInstanceId(), caseIndicatorInstanceEntity.getCaseIndicatorInstanceId());
+        });
+  }
 }
