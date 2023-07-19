@@ -15,6 +15,9 @@ public class SnapshotRequestHolder {
     public static final String ATTRKeyExperimentId="EXPERIMENTID";
     public static void setSnapshotRequest(String appId,String experimentId){
         HttpServletRequest request=getHttpRequest();
+        if(null==request){
+            return;
+        }
         request.setAttribute(ATTRKeyAppId,appId);
         experimentId=ShareUtil.XString.defaultIfEmpty(experimentId, "");
         request.setAttribute(ATTRKeyExperimentId,experimentId);

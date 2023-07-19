@@ -19,6 +19,9 @@ public class OrgFlowReportResponse {
     @Schema(title = "实验操作流程id")
     private String operateFlowId;
 
+    @Schema(title = "期数")
+    private Integer periods;
+
     @Schema(title = "操作时间")
     private Date operateTime;
 

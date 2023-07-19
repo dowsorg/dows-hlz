@@ -25,7 +25,7 @@ public enum EnumExptOperateType {
     INTERVENESport(12,EnumIndicatorCategory.OPERATE_MANAGEMENT_INTERVENE_SPORTS,"运动干预",-1,false,0,false),
     INTERVENETreatTwoLevel(13,EnumIndicatorCategory.OPERATE_MANAGEMENT_INTERVENE_PSYCHOLOGY,"心理治疗-二级无报告",1,true,33,false),
     INTERVENETreatFourLevel(14,EnumIndicatorCategory.OPERATE_MANAGEMENT_INTERVENE_TREATMENT,"药物治疗-四级有报告",3,true,99,true),
-    JUDGERiskFactor(21,EnumIndicatorCategory.JUDGE_MANAGEMENT_RISK_FACTOR,"危险因素-二级无报告",-1,false,0,false),
+    JUDGERiskFactor(21,EnumIndicatorCategory.JUDGE_MANAGEMENT_RISK_FACTOR,"危险因素-二级无报告",-1,false,21,false),
     JUDGEHealthProblem(22,EnumIndicatorCategory.JUDGE_MANAGEMENT_HEALTH_PROBLEM,"健康问题-三级无报告",-1,true,22,false),
     JUDGEDiseaseProblem(23,EnumIndicatorCategory.JUDGE_MANAGEMENT_DISEASE_PROBLEM,"疾病问题-四级无报告",-1,true,23,false),
     JUDGEHealthGuidance(24,EnumIndicatorCategory.JUDGE_MANAGEMENT_HEALTH_GUIDANCE,"健康指导-二级有报告",-1,false,99,true),
