@@ -3,6 +3,7 @@ package org.dows.hep.biz.event;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.biz.dao.ExperimentInstanceDao;
+import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +49,7 @@ public class EventStarter implements ApplicationListener<ApplicationStartedEvent
                     ExperimentInstanceEntity::getState);
             cnt= rowsExperiment.size();
             rowsExperiment.forEach(i -> {
-                EventScheduler.Instance().scheduleTimeBasedEvent(i.getAppId(), i.getExperimentInstanceId(), DELAYSeconds);
+                EventScheduler.Instance().scheduleTimeBasedEvent(new ExperimentCacheKey(i.getAppId(), i.getExperimentInstanceId()), DELAYSeconds);
             });
             log.info(String.format("EventStarter.start succ. cnt:%s id:%s",rowsExperiment.size(),
                     String.join(",", ShareUtil.XCollection.map(rowsExperiment, ExperimentInstanceEntity::getExperimentInstanceId))));

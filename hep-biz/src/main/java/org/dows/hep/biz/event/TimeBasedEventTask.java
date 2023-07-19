@@ -1,11 +1,8 @@
 package org.dows.hep.biz.event;
 
-import lombok.extern.slf4j.Slf4j;
-import org.dows.framework.crud.api.CrudContextHolder;
 import org.dows.hep.api.enums.EnumEventTriggerSpan;
 import org.dows.hep.api.enums.EnumExperimentEventState;
 import org.dows.hep.api.enums.EnumExperimentState;
-import org.dows.hep.biz.dao.ExperimentEventDao;
 import org.dows.hep.biz.dao.ExperimentInstanceDao;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentSettingCollection;
@@ -17,23 +14,21 @@ import org.dows.hep.entity.ExperimentInstanceEntity;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.concurrent.Callable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author : wuzl
  * @date : 2023/6/18 17:31
  */
-@Slf4j
-public class TimeBasedEventTask implements Callable<Integer>,Runnable {
-    private final ExperimentCacheKey experimentKey;
-    private final int RUNCode4Fail=-1;
-    private final int RUNCode4Silence=0;
-    private final int RUNCode4Succ=1;
+
+public class TimeBasedEventTask extends BaseEventTask  {
+
 
     //最小间隔
     private final int DELAYSecondsMin=3;
@@ -47,20 +42,17 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
     private final int MAXRetry=3;
 
     public TimeBasedEventTask(ExperimentCacheKey experimentKey){
-        this.experimentKey=experimentKey;
+        super(experimentKey);
     }
 
 
 
     //region run
+
     @Override
-    public void run() {
-        try {
-            call();
-        }catch (Exception ex) {
-            logError(ex, "run", ex.getMessage());
-            raiseScheduler(DELAYSeconds4Fail, false, true);
-        }
+    protected void exceptionally(Exception ex) {
+        super.exceptionally(ex);
+        raiseScheduler(DELAYSeconds4Fail, false, true);
     }
 
     @Override
@@ -122,7 +114,7 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
         return RUNCode4Succ;
     }
     void runEventGroup(List<TimeBasedEventCollection.TimeBasedEventGroup> groups, ExperimentTimePoint timePoint, TimeBasedEventCollection eventColl, RunStat runStat){
-        List<ExperimentEventEntity> triggeredEvents=new ArrayList<>();
+        List<ExperimentEventEntity> triggeringEvents=new ArrayList<>();
         List<TimeBasedEventCollection.TimeBasedEventGroup> triggeredGroups=new ArrayList<>();
         LocalDateTime triggerTime=timePoint.getRealTime();
         for(TimeBasedEventCollection.TimeBasedEventGroup group:groups ) {
@@ -139,14 +131,14 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
                         .setTriggerGameDay(timePoint.getGameDay())
                         .setState(EnumExperimentEventState.TRIGGERED.getCode());
             });
-            triggeredEvents.addAll(group.getEventItems());
+            triggeringEvents.addAll(group.getEventItems());
             triggeredGroups.add(group);
         }
         boolean exceptionFlag=false;
-        if(ShareUtil.XCollection.notEmpty(triggeredEvents)) {
+        if(ShareUtil.XCollection.notEmpty(triggeringEvents)) {
             try {
-                ExperimentEventRules.Instance().saveTriggeredTimeEvent(triggeredEvents,true);
-                runStat.doneCounter.addAndGet(triggeredEvents.size());
+                ExperimentEventRules.Instance().saveTriggeredTimeEvent(triggeringEvents,true);
+                runStat.doneCounter.addAndGet(triggeringEvents.size());
             } catch (Exception ex) {
                 groups.forEach(i -> {
                     if(i.getRetryTimes().incrementAndGet()>=MAXRetry){
@@ -160,7 +152,7 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
                     }
                 });
                 logError(ex, "runEventGroup", " fail. eventIds:%s",
-                        String.join(",", ShareUtil.XCollection.map(triggeredEvents, ExperimentEventEntity::getExperimentEventId)));
+                        String.join(",", ShareUtil.XCollection.map(triggeringEvents, ExperimentEventEntity::getExperimentEventId)));
                 runStat.failTheadCounter.incrementAndGet();
                 exceptionFlag = true;
             }
@@ -286,8 +278,8 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
     }
     //endregion
 
-    //region dao
-    private ExperimentInstanceDao experimentInstanceDao;
+   //region tools
+   private ExperimentInstanceDao experimentInstanceDao;
     private ExperimentInstanceDao getExperimentInstanceDao(){
         if(null==experimentInstanceDao){
             experimentInstanceDao=getDao(ExperimentInstanceDao.class);
@@ -295,48 +287,12 @@ public class TimeBasedEventTask implements Callable<Integer>,Runnable {
         return experimentInstanceDao;
     }
 
-
-    private ExperimentEventDao experimentEventDao;
-    private ExperimentEventDao getExperimentEventDao(){
-        if(null==experimentEventDao){
-            experimentEventDao=getDao(ExperimentEventDao.class);
-        }
-        return experimentEventDao;
-    }
-    private <T> T getDao(Class<T> clazz){
-        return CrudContextHolder.getBean(clazz);
-    }
-    //endregion
-
-    //region tools
-    private void logError(String func, String msg,Object... args){
-        logError(null, func,msg,args);
-    }
-    private void logError(Throwable ex, String func, String msg,Object... args){
-        String str=String.format("TimeBasedEventTask.%s input:%s %s", func,this.experimentKey,String.format(Optional.ofNullable(msg).orElse(""), args));
-        log.error(str,ex);
-        log.info(str);
-    }
-    private void logInfo(String func, String msg,Object... args){
-        String str=String.format("TimeBasedEventTask.%s input:%s %s", func,this.experimentKey,String.format(Optional.ofNullable(msg).orElse(""), args));
-        log.info(str);
-    }
-
     static int randomInteger(int min, int max){
         return ThreadLocalRandom.current().nextInt(min,max);
     }
     //endregion
 
-    public static class RunStat {
-        public RunStat(Integer threadSize){
-            theadCounter=new AtomicInteger(threadSize);
-        }
-        public final AtomicInteger theadCounter;
-        public final AtomicInteger failTheadCounter=new AtomicInteger();
-        public final AtomicInteger doneCounter=new AtomicInteger();
 
-        public final AtomicInteger todoCounter=new AtomicInteger();
-    }
 
 
 }
