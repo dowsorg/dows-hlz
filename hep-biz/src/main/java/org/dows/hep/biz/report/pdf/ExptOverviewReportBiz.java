@@ -10,11 +10,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.constant.SystemConstant;
+import org.dows.hep.api.user.experiment.ExptSettingModeEnum;
 import org.dows.hep.api.user.experiment.response.ExptSchemeScoreRankResponse;
 import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
 import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
+import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.properties.FindSoftProperties;
+import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.vo.report.ExptBaseInfoModel;
 import org.dows.hep.vo.report.ExptGroupReportVO;
 import org.dows.hep.vo.report.ExptOverviewReportModel;
@@ -42,8 +45,10 @@ import java.util.stream.Collectors;
 public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBiz.ExptOverviewReportData, ExptOverviewReportModel> {
     private final ExperimentSchemeBiz experimentSchemeBiz;
     private final ExperimentScoringBiz experimentScoringBiz;
+    private final ExperimentSettingBiz experimentSettingBiz;
     private final Template2PdfBiz template2PdfBiz;
     private final FindSoftProperties findSoftProperties;
+    private final ExperimentInstanceService experimentInstanceService;
 
     @Data
     @Builder
@@ -51,6 +56,7 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
         private ExperimentInstanceEntity exptInfo;
         private ExperimentRankResponse sandRank;
         private List<ExptSchemeScoreRankResponse> schemeRankList;
+        private ExptSettingModeEnum settingModeEnum;
     }
 
     @Override
@@ -85,9 +91,22 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
 
     @Override
     public ExptOverviewReportData prepareData(String exptInstanceId, String exptGroupId) {
-        List<ExptSchemeScoreRankResponse> schemeRankList = experimentSchemeBiz.listExptSchemeScoreRank(exptInstanceId);
-        ExperimentRankResponse sandRank = experimentScoringBiz.getRank(exptInstanceId);
+        ExperimentInstanceEntity exptInfo = getExptInfo(experimentInstanceService, exptInstanceId);
+
+        //
+        ExptSettingModeEnum exptSettingMode = experimentSettingBiz.getExptSettingMode(exptInstanceId);
+        List<ExptSchemeScoreRankResponse> schemeRankList = null;
+        ExperimentRankResponse sandRank = null;
+        if (ExptSettingModeEnum.SCHEME.equals(exptSettingMode)) {
+            schemeRankList = experimentSchemeBiz.listExptSchemeScoreRank(exptInstanceId);
+        }
+        if (ExptSettingModeEnum.SAND.equals(exptSettingMode)) {
+            sandRank = experimentScoringBiz.getRank(exptInstanceId);
+        }
+
         return ExptOverviewReportData.builder()
+                .settingModeEnum(exptSettingMode)
+                .exptInfo(exptInfo)
                 .sandRank(sandRank)
                 .schemeRankList(schemeRankList)
                 .build();
@@ -96,10 +115,24 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
     @Override
     public ExptOverviewReportModel getExptReportModel(String exptGroupId, ExptOverviewReportData exptReportData) {
         ExptBaseInfoModel baseInfo = generateBaseInfoVO(findSoftProperties, log);
-        List<ExptOverviewReportModel.SchemeRanking> schemeRankingList = generateSchemeRanking(exptReportData);
-        List<ExptOverviewReportModel.SandGroupRanking> sandGroupRankingList = generateSandGroupRanking(exptReportData);
-        List<List<ExptOverviewReportModel.SandPeriodRanking>> sandPeriodRankingList = generateSandPeriodRanking(exptReportData);
-        List<ExptOverviewReportModel.TotalRanking> totalRankingList = generateTotalRanking(schemeRankingList, sandGroupRankingList);
+
+        List<ExptOverviewReportModel.SchemeRanking> schemeRankingList = null;
+        List<ExptOverviewReportModel.SandGroupRanking> sandGroupRankingList = null;
+        List<List<ExptOverviewReportModel.SandPeriodRanking>> sandPeriodRankingList = null;
+        List<ExptOverviewReportModel.TotalRanking> totalRankingList = null;
+        ExptSettingModeEnum settingModeEnum = exptReportData.getSettingModeEnum();
+        if (ExptSettingModeEnum.SCHEME.equals(settingModeEnum)) {
+            schemeRankingList = generateSchemeRanking(exptReportData);
+        } else if (ExptSettingModeEnum.SAND.equals(settingModeEnum)) {
+            sandGroupRankingList = generateSandGroupRanking(exptReportData);
+            sandPeriodRankingList = generateSandPeriodRanking(exptReportData);
+        } else if (ExptSettingModeEnum.SAND_SCHEME.equals(settingModeEnum)) {
+            schemeRankingList = generateSchemeRanking(exptReportData);
+            sandGroupRankingList = generateSandGroupRanking(exptReportData);
+            sandPeriodRankingList = generateSandPeriodRanking(exptReportData);
+            totalRankingList = generateTotalRanking(schemeRankingList, sandGroupRankingList);
+        }
+
         return ExptOverviewReportModel.builder()
                 .baseInfo(baseInfo)
                 .totalRankingList(totalRankingList)

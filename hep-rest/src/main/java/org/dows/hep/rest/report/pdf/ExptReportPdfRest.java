@@ -141,10 +141,6 @@ public class ExptReportPdfRest {
                 .groupReportList(exptGroupReportVOS)
                 .build();
 
-        // 小组的实验总报告
-        ExptReportVO overviewReportVO = exptOverviewReportBiz.generatePdfReport(experimentInstanceId, experimentGroupId);
-        exptGroupReportVOS.addAll(overviewReportVO.getGroupReportList());
-
         ExptSettingModeEnum exptSettingMode = experimentSettingBiz.getExptSettingMode(experimentInstanceId);
         switch (exptSettingMode) {
             case SCHEME -> {
@@ -162,6 +158,9 @@ public class ExptReportPdfRest {
                 exptGroupReportVOS.addAll(sandReportVO.getGroupReportList());
             }
         }
+        // 实验总报告
+        ExptReportVO overviewReportVO = exptOverviewReportBiz.generatePdfReport(experimentInstanceId, experimentGroupId);
+        exptGroupReportVOS.addAll(overviewReportVO.getGroupReportList());
 
         return result;
     }
