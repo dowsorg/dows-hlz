@@ -364,11 +364,15 @@ public class ExperimentScoringBiz {
         kExperimentGroupIdVKPeriodVExperimentScoringEntityMap.forEach((experimentGroupId, kPeriodVExperimentScoringEntityMap) -> {
             List<ExperimentTotalRankGroupItemResponse> experimentTotalRankGroupItemResponseList = new ArrayList<>();
             AtomicReference<String> atomicReferenceExperimentGroupId = new AtomicReference<>();
+            AtomicReference<String> atomicReferenceExperimentGroupNo = new AtomicReference<>();
             AtomicReference<String> atomicReferenceExperimentGroupName = new AtomicReference<>();
             AtomicReference<Double> atomicReferenceAllPeriodsTotalScore = new AtomicReference<>(0D);
             kPeriodVExperimentScoringEntityMap.forEach((period, experimentScoringEntity) -> {
                 if (StringUtils.isBlank(atomicReferenceExperimentGroupId.get())) {
                     atomicReferenceExperimentGroupId.set(experimentScoringEntity.getExperimentGroupId());
+                }
+                if (StringUtils.isBlank(atomicReferenceExperimentGroupNo.get())) {
+                    atomicReferenceExperimentGroupNo.set(experimentScoringEntity.getExperimentGroupNo());
                 }
                 if (StringUtils.isBlank(atomicReferenceExperimentGroupName.get())) {
                     atomicReferenceExperimentGroupName.set(experimentScoringEntity.getExperimentGroupName());
@@ -388,6 +392,7 @@ public class ExperimentScoringBiz {
             experimentTotalRankItemResponseList.add(ExperimentTotalRankItemResponse
                 .builder()
                 .experimentGroupId(atomicReferenceExperimentGroupId.get())
+                .experimentGroupNo(atomicReferenceExperimentGroupNo.get())
                 .experimentGroupName(atomicReferenceExperimentGroupName.get())
                 .allPeriodsTotalScore(atomicReferenceAllPeriodsTotalScore.get().toString())
                 .experimentTotalRankGroupItemResponseList(experimentTotalRankGroupItemResponseList)
