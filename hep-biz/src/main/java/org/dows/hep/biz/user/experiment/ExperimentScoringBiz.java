@@ -363,9 +363,13 @@ public class ExperimentScoringBiz {
         /* runsix:算所有期数得分 */
         kExperimentGroupIdVKPeriodVExperimentScoringEntityMap.forEach((experimentGroupId, kPeriodVExperimentScoringEntityMap) -> {
             List<ExperimentTotalRankGroupItemResponse> experimentTotalRankGroupItemResponseList = new ArrayList<>();
+            AtomicReference<String> atomicReferenceExperimentGroupId = new AtomicReference<>();
             AtomicReference<String> atomicReferenceExperimentGroupName = new AtomicReference<>();
             AtomicReference<Double> atomicReferenceAllPeriodsTotalScore = new AtomicReference<>(0D);
             kPeriodVExperimentScoringEntityMap.forEach((period, experimentScoringEntity) -> {
+                if (StringUtils.isBlank(atomicReferenceExperimentGroupId.get())) {
+                    atomicReferenceExperimentGroupId.set(experimentScoringEntity.getExperimentGroupId());
+                }
                 if (StringUtils.isBlank(atomicReferenceExperimentGroupName.get())) {
                     atomicReferenceExperimentGroupName.set(experimentScoringEntity.getExperimentGroupName());
                 }
@@ -383,6 +387,7 @@ public class ExperimentScoringBiz {
             experimentTotalRankGroupItemResponseList.sort(Comparator.comparing(ExperimentTotalRankGroupItemResponse::getPeriods));
             experimentTotalRankItemResponseList.add(ExperimentTotalRankItemResponse
                 .builder()
+                .experimentGroupId(atomicReferenceExperimentGroupId.get())
                 .experimentGroupName(atomicReferenceExperimentGroupName.get())
                 .allPeriodsTotalScore(atomicReferenceAllPeriodsTotalScore.get().toString())
                 .experimentTotalRankGroupItemResponseList(experimentTotalRankGroupItemResponseList)
@@ -396,6 +401,7 @@ public class ExperimentScoringBiz {
             kExperimentGroupIdVExperimentScoringEntityMap.forEach((experimentGroupId, experimentScoringEntity) -> {
                 experimentRankGroupItemResponseList.add(ExperimentRankGroupItemResponse
                     .builder()
+                    .experimentGroupId(experimentScoringEntity.getExperimentGroupId())
                     .experimentGroupName(experimentScoringEntity.getExperimentGroupName())
                     .healthIndexScore(experimentScoringEntity.getHealthIndexScore())
                     .knowledgeScore(experimentScoringEntity.getKnowledgeScore())
