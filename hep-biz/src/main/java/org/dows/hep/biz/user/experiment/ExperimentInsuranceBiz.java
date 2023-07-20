@@ -16,6 +16,7 @@ import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
@@ -85,14 +86,19 @@ public class ExperimentInsuranceBiz {
             if (i == currentPeriods) {
                 //2.4、判断当前时间在本期还剩多少
                 long remainTime = experimentPeriodsStartAnsEndTime.get(i).getEndTime().getTime() - new Date().getTime();
-                int remainMinute = (int) (remainTime / 1000 / 60);
+                int remainSecond = (int)remainTime / 1000;
                 //2.5、假设365天都在一期需要的时间
-                int assumMinute = (int) ((double)duration * 365 / (double)periodsand);
-                if(assumMinute >= remainMinute){
-                    remainDay += remainMinute / ((double)duration / (double)periodsand);
-                    expdate = TimeUtil.timeAddMinute(new Date(),remainMinute);
+                BigDecimal assumSecond = BigDecimal.valueOf(duration).
+                        multiply(BigDecimal.valueOf(365)).
+                        divide(BigDecimal.valueOf(periodsand),2, RoundingMode.DOWN).
+                        multiply(BigDecimal.valueOf(60));
+                if(assumSecond.intValue() >= remainSecond){
+                    remainDay += BigDecimal.valueOf(remainSecond)
+                            .divide(BigDecimal.valueOf(duration),2, RoundingMode.DOWN)
+                            .divide(BigDecimal.valueOf(periodsand),2, RoundingMode.DOWN).intValue();
+                    expdate = TimeUtil.timeAddSecond(new Date(),remainSecond);
                 }else{
-                    expdate = TimeUtil.timeAddMinute(new Date(),assumMinute);
+                    expdate = TimeUtil.timeAddSecond(new Date(),assumSecond.intValue());
                     break;
                 }
             }
@@ -100,15 +106,19 @@ public class ExperimentInsuranceBiz {
                 //2.7、后面的期数，都是完整的
                 long remainTime = experimentPeriodsStartAnsEndTime.get(i).getEndTime().getTime()
                         - experimentPeriodsStartAnsEndTime.get(i).getStartTime().getTime();
-                int remainMinute = (int) (remainTime / 1000 / 60);
+                int remainSecond = (int) remainTime / 1000;
                 //2.5、判断剩下天数都在一期需要的时间
                 int leftDay = 365 - remainDay;
-                int assumMinute = (int) ((double)duration * leftDay / (double)periodsand);
-                if(assumMinute >= remainMinute){
-                    remainDay += remainMinute / ((double)duration / (double)periodsand);
-                    expdate = TimeUtil.timeAddMinute(expdate,remainMinute);
+                BigDecimal assumSecond = BigDecimal.valueOf(duration).
+                        multiply(BigDecimal.valueOf(leftDay)).
+                        divide(BigDecimal.valueOf(periodsand),2, RoundingMode.DOWN).multiply(BigDecimal.valueOf(60));
+                if(assumSecond.intValue() >= remainSecond){
+                    remainDay += BigDecimal.valueOf(remainSecond)
+                            .divide(BigDecimal.valueOf(duration),2, RoundingMode.DOWN)
+                            .divide(BigDecimal.valueOf(periodsand),2, RoundingMode.DOWN).intValue();
+                    expdate = TimeUtil.timeAddSecond(expdate,remainSecond);
                 }else{
-                    expdate = TimeUtil.timeAddMinute(expdate,assumMinute);
+                    expdate = TimeUtil.timeAddSecond(expdate,assumSecond.intValue());
                     break;
                 }
             }
