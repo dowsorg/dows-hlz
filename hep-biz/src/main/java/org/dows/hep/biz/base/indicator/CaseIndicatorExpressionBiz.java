@@ -468,7 +468,7 @@ public class CaseIndicatorExpressionBiz {
     } finally {
       lock.unlock();
     }
-    return caseIndicatorExpressionEntityAtomicReference.get().getIndicatorExpressionId();
+    return caseIndicatorExpressionEntityAtomicReference.get().getCaseIndicatorExpressionId();
   }
 
   public CaseIndicatorExpressionResponseRs get(String caseIndicatorExpressionId) throws ExecutionException, InterruptedException {
