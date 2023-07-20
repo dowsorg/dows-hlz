@@ -105,7 +105,7 @@ public class ExperimentInsuranceBiz {
                 }
             }
             if(i != currentPeriods){
-                //todo 加上每期间隔
+                //加上每期间隔
                 expdate = TimeUtil.timeAddSecond(expdate,sandSetting.getInterval().intValue());
                 //2.7、后面的期数，都是完整的
                 long remainTime = experimentPeriodsStartAnsEndTime.get(i).getEndTime().getTime()
