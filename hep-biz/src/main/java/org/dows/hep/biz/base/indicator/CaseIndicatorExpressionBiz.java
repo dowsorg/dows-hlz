@@ -296,6 +296,7 @@ public class CaseIndicatorExpressionBiz {
       CompletableFuture<Void> cfCheckCircleDependencyAndPopulateCaseIndicatorExpressionInfluenceEntity = CompletableFuture.runAsync(() -> {
         try {
           rsCaseIndicatorExpressionBiz.checkCircleDependencyAndPopulateCaseIndicatorExpressionInfluenceEntity(
+              appId,
               caseIndicatorExpressionInfluenceEntityAtomicReference,
               source,
               casePrincipalId,

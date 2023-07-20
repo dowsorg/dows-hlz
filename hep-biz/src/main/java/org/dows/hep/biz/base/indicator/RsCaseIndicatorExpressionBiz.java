@@ -290,13 +290,13 @@ public class RsCaseIndicatorExpressionBiz {
   }
 
   public void checkCircleDependencyAndPopulateCaseIndicatorExpressionInfluenceEntity(
+      String appId,
       AtomicReference<CaseIndicatorExpressionInfluenceEntity> caseIndicatorExpressionInfluenceEntityAtomicReference,
       Integer source,
       String principalId,
       List<CaseCreateOrUpdateIndicatorExpressionItemRequestRs> caseCreateOrUpdateIndicatorExpressionItemRequestRsList,
       CaseCreateOrUpdateIndicatorExpressionItemRequestRs caseMinCreateOrUpdateIndicatorExpressionItemRequestRs,
       CaseCreateOrUpdateIndicatorExpressionItemRequestRs caseMaxCreateOrUpdateIndicatorExpressionItemRequestRs
-
   ) throws ExecutionException, InterruptedException {
     if (Objects.isNull(caseIndicatorExpressionInfluenceEntityAtomicReference)
         || Objects.isNull(source) || !EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource().equals(source)
@@ -335,8 +335,16 @@ public class RsCaseIndicatorExpressionBiz {
         throw new CaseIndicatorExpressionException(EnumESC.CASE_INDICATOR_EXPRESSION_CIRCLE_DEPENDENCY);
       }
       caseIndicatorExpressionInfluenceEntity.setInfluencedIndicatorInstanceIdList(String.join(EnumString.COMMA.getStr(), paramCaseInfluencedIndicatorInstanceIdSet));
-      caseIndicatorExpressionInfluenceEntityAtomicReference.set(caseIndicatorExpressionInfluenceEntity);
+    } else {
+      caseIndicatorExpressionInfluenceEntity = CaseIndicatorExpressionInfluenceEntity
+          .builder()
+          .caseIndicatorExpressionInfluenceId(idGenerator.nextIdStr())
+          .appId(appId)
+          .indicatorInstanceId(principalId)
+          .influencedIndicatorInstanceIdList(String.join(EnumString.COMMA.getStr(), paramCaseInfluencedIndicatorInstanceIdSet))
+          .build();
     }
+    caseIndicatorExpressionInfluenceEntityAtomicReference.set(caseIndicatorExpressionInfluenceEntity);
   }
 
   public void populateCaseIndicatorExpressionItemEntityList(
