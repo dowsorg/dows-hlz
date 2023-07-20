@@ -1184,6 +1184,42 @@ public class IndicatorExpressionBiz{
     indicatorExpressionRefEntityAtomicReference.set(indicatorExpressionRefEntity);
     createOrUpdateIndicatorExpressionRequestRs.setIndicatorExpressionRefId(indicatorExpressionRefId);
   }
+
+  public void newPopulateIndicatorExpressionRefEntity(
+      String indicatorExpressionId,
+      CreateOrUpdateIndicatorExpressionRequestRs createOrUpdateIndicatorExpressionRequestRs,
+      AtomicReference<IndicatorExpressionRefEntity> indicatorExpressionRefEntityAtomicReference
+  ) {
+    String reasonId = createOrUpdateIndicatorExpressionRequestRs.getReasonId();
+    String indicatorExpressionRefId = createOrUpdateIndicatorExpressionRequestRs.getIndicatorExpressionRefId();
+    String appId = createOrUpdateIndicatorExpressionRequestRs.getAppId();
+    if (StringUtils.isBlank(indicatorExpressionId)) {
+      log.warn("method populateIndicatorExpressionRefEntity indicatorExpressionId is blank");
+      throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
+    }
+    IndicatorExpressionRefEntity indicatorExpressionRefEntity = new IndicatorExpressionRefEntity();
+    if (StringUtils.isBlank(indicatorExpressionRefId)) {
+      indicatorExpressionRefEntity = IndicatorExpressionRefEntity
+          .builder()
+          .indicatorExpressionRefId(idGenerator.nextIdStr())
+          .appId(appId)
+          .indicatorExpressionId(indicatorExpressionId)
+          .reasonId(reasonId)
+          .build();
+    } else {
+      indicatorExpressionRefEntity = indicatorExpressionRefService.lambdaQuery()
+          .eq(IndicatorExpressionRefEntity::getAppId, appId)
+          .eq(IndicatorExpressionRefEntity::getIndicatorExpressionRefId, indicatorExpressionRefId)
+          .oneOpt()
+          .orElseThrow(() -> {
+            log.warn("method populateIndicatorExpressionRefEntity indicatorExpressionRefId:{} is illegal", indicatorExpressionRefId);
+            throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
+          });
+      indicatorExpressionRefEntity.setReasonId(reasonId);
+    }
+    indicatorExpressionRefEntityAtomicReference.set(indicatorExpressionRefEntity);
+    createOrUpdateIndicatorExpressionRequestRs.setIndicatorExpressionRefId(indicatorExpressionRefId);
+  }
   public void populateMinIndicatorExpressionItemId(
       Boolean changeType,
       CreateOrUpdateIndicatorExpressionItemRequestRs minCreateOrUpdateIndicatorExpressionItemRequestRs,
@@ -1375,9 +1411,6 @@ public class IndicatorExpressionBiz{
     AtomicReference<IndicatorExpressionEntity> indicatorExpressionEntityAtomicReference = new AtomicReference<>();
     String indicatorExpressionId = createOrUpdateIndicatorExpressionRequestRs.getIndicatorExpressionId();
     String principalId = createOrUpdateIndicatorExpressionRequestRs.getPrincipalId();
-    /* runsix: TODO 这两个有什么用 */
-    String indicatorExpressionRefId = createOrUpdateIndicatorExpressionRequestRs.getIndicatorExpressionRefId();
-    String reasonId = createOrUpdateIndicatorExpressionRequestRs.getReasonId();
     String appId = createOrUpdateIndicatorExpressionRequestRs.getAppId();
     Integer paramType = createOrUpdateIndicatorExpressionRequestRs.getType();
     Integer source = createOrUpdateIndicatorExpressionRequestRs.getSource();
@@ -1393,6 +1426,7 @@ public class IndicatorExpressionBiz{
       /* runsix:result */
       List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = new ArrayList<>();
       AtomicBoolean typeChangeAtomicBoolean = new AtomicBoolean(Boolean.FALSE);
+      AtomicReference<IndicatorExpressionRefEntity> indicatorExpressionRefEntityAtomicReference = new AtomicReference<>();
       List<IndicatorExpressionInfluenceEntity> indicatorExpressionInfluenceEntityList = new ArrayList<>();
       AtomicReference<IndicatorExpressionItemEntity> minIndicatorExpressionItemEntityAtomicReference = new AtomicReference<>();
       AtomicReference<IndicatorExpressionItemEntity> maxIndicatorExpressionItemEntityAtomicReference = new AtomicReference<>();
@@ -1579,7 +1613,10 @@ public class IndicatorExpressionBiz{
               .build());
         });
       }
+      /* runsix:2.11 ref */
+      newPopulateIndicatorExpressionRefEntity(indicatorExpressionEntityAtomicReference.get().getIndicatorExpressionId(), createOrUpdateIndicatorExpressionRequestRs, indicatorExpressionRefEntityAtomicReference);
 
+      if (Objects.nonNull(indicatorExpressionRefEntityAtomicReference.get())) {indicatorExpressionRefService.saveOrUpdate(indicatorExpressionRefEntityAtomicReference.get());}
       if (Objects.nonNull(minIndicatorExpressionItemEntityAtomicReference.get())) {indicatorExpressionItemService.saveOrUpdate(minIndicatorExpressionItemEntityAtomicReference.get());}
       if (Objects.nonNull(maxIndicatorExpressionItemEntityAtomicReference.get())) {indicatorExpressionItemService.saveOrUpdate(maxIndicatorExpressionItemEntityAtomicReference.get());}
       if (Objects.nonNull(indicatorExpressionEntityAtomicReference.get())) {indicatorExpressionService.saveOrUpdate(indicatorExpressionEntityAtomicReference.get());}
