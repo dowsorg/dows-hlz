@@ -25,7 +25,7 @@ public class CaseIndicatorExpressionItemBiz {
         .builder()
         .id(caseIndicatorExpressionItemEntity.getId())
         .appId(caseIndicatorExpressionItemEntity.getAppId())
-        .indicatorExpressionItemId(caseIndicatorExpressionItemEntity.getIndicatorExpressionItemId())
+        .indicatorExpressionItemId(caseIndicatorExpressionItemEntity.getCaseIndicatorExpressionItemId())
         .indicatorExpressionId(caseIndicatorExpressionItemEntity.getIndicatorExpressionId())
         .conditionRaw(caseIndicatorExpressionItemEntity.getConditionRaw())
         .conditionExpression(caseIndicatorExpressionItemEntity.getConditionExpression())
