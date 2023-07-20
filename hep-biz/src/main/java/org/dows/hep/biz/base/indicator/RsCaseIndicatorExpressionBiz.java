@@ -126,7 +126,7 @@ public class RsCaseIndicatorExpressionBiz {
         .in(CaseIndicatorExpressionItemEntity::getIndicatorExpressionId, caseIndicatorExpressionId)
         .list()
         .forEach(caseIndicatorExpressionItemEntity -> {
-          kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.put(caseIndicatorExpressionItemEntity.getIndicatorExpressionItemId(), caseIndicatorExpressionItemEntity);
+          kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.put(caseIndicatorExpressionItemEntity.getCaseIndicatorExpressionItemId(), caseIndicatorExpressionItemEntity);
         });
   }
 
