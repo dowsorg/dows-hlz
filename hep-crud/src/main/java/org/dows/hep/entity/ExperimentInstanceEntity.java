@@ -56,6 +56,9 @@ public class ExperimentInstanceEntity implements CrudEntity {
     @Schema(title = "实验说明")
     private String experimentDescr;
 
+    @Schema(title = "分配人ID")
+    private String accountId;
+
     @Schema(title = "分配人账号")
     private String appointor;
 
