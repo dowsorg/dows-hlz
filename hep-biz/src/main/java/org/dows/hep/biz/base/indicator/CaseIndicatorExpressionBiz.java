@@ -277,7 +277,7 @@ public class CaseIndicatorExpressionBiz {
       /* runsix:result */
       List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList = new ArrayList<>();
       AtomicBoolean typeChangeAtomicBoolean = new AtomicBoolean(Boolean.FALSE);
-      AtomicReference<CaseIndicatorExpressionInfluenceEntity> caseIndicatorExpressionInfluenceEntityAtomicReference = new AtomicReference<>();
+      List<CaseIndicatorExpressionInfluenceEntity> caseIndicatorExpressionInfluenceEntityList = new ArrayList<>();
       AtomicReference<CaseIndicatorExpressionItemEntity> caseMinIndicatorExpressionItemEntityAtomicReference = new AtomicReference<>();
       AtomicReference<CaseIndicatorExpressionItemEntity> caseMaxIndicatorExpressionItemEntityAtomicReference = new AtomicReference<>();
 
@@ -292,12 +292,12 @@ public class CaseIndicatorExpressionBiz {
         if (!dbType.equals(paramType)) {typeChangeAtomicBoolean.set(Boolean.TRUE);}
       }
 
-      /* runsix:2.2 populate caseIndicatorExpressionInfluenceEntityAtomicReference */
+      /* runsix:2.3 populate caseIndicatorExpressionInfluenceEntityAtomicReference */
       CompletableFuture<Void> cfCheckCircleDependencyAndPopulateCaseIndicatorExpressionInfluenceEntity = CompletableFuture.runAsync(() -> {
         try {
-          rsCaseIndicatorExpressionBiz.checkCircleDependencyAndPopulateCaseIndicatorExpressionInfluenceEntity(
+          rsCaseIndicatorExpressionBiz.checkCircleDependencyAndPopulateIndicatorExpressionInfluenceEntity(
               appId,
-              caseIndicatorExpressionInfluenceEntityAtomicReference,
+              caseIndicatorExpressionInfluenceEntityList,
               source,
               casePrincipalId,
               caseCreateOrUpdateIndicatorExpressionItemRequestRsList,
@@ -464,8 +464,7 @@ public class CaseIndicatorExpressionBiz {
       if (Objects.nonNull(caseMaxIndicatorExpressionItemEntityAtomicReference.get())) {caseIndicatorExpressionItemService.saveOrUpdate(caseMaxIndicatorExpressionItemEntityAtomicReference.get());}
       if (Objects.nonNull(caseIndicatorExpressionEntityAtomicReference.get())) {caseIndicatorExpressionService.saveOrUpdate(caseIndicatorExpressionEntityAtomicReference.get());}
       if (!caseIndicatorExpressionItemEntityList.isEmpty()) {caseIndicatorExpressionItemService.saveOrUpdateBatch(caseIndicatorExpressionItemEntityList);}
-      CaseIndicatorExpressionInfluenceEntity caseIndicatorExpressionInfluenceEntity = caseIndicatorExpressionInfluenceEntityAtomicReference.get();
-      if (Objects.nonNull(caseIndicatorExpressionInfluenceEntity)) {caseIndicatorExpressionInfluenceService.saveOrUpdate(caseIndicatorExpressionInfluenceEntity);}
+      if (!caseIndicatorExpressionInfluenceEntityList.isEmpty()) {caseIndicatorExpressionInfluenceService.saveOrUpdateBatch(caseIndicatorExpressionInfluenceEntityList);}
     } finally {
       lock.unlock();
     }
