@@ -213,9 +213,31 @@ public class RsUtilBiz {
       throw new RsIndicatorExpressionException("检查指标公式条件-条件解析结果不是true或false");
     }
   }
-  /* runsix:TODO */
-  private void caseCheckConditionMustBeBoolean() {}
 
+  private void caseCheckConditionMustBeBoolean(Map<String, String> kCaseIndicatorInstanceIdVValMap, String conditionExpression, List<String> conditionNameSplitList, List<String> conditionValSplitList) {
+    StandardEvaluationContext context = new StandardEvaluationContext();
+    for (int i = 0; i <= conditionNameSplitList.size()-1; i++) {
+      String indicatorInstanceId = conditionValSplitList.get(i);
+      String val = kCaseIndicatorInstanceIdVValMap.get(indicatorInstanceId);
+      if (Objects.isNull(val)) {
+        log.error("RsIndicatorExpressionBiz.checkCondition.caseCheckConditionMustBeBoolean field case indicatorInstanceId:{} does not exist", indicatorInstanceId);
+        throw new RsIndicatorExpressionException(EnumESC.INDICATOR_EXPRESSION_CHECK_INDICATOR_INSTANCE_ID_DOES_NOT_EXIST);
+      }
+      boolean isValDigital = NumberUtils.isCreatable(val);
+      if (isValDigital) {
+        context.setVariable(conditionNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(val)).setScale(2, RoundingMode.DOWN));
+      } else {
+        context.setVariable(conditionNameSplitList.get(i), val);
+      }
+    }
+    ExpressionParser parser = new SpelExpressionParser();
+    Expression expression = parser.parseExpression(conditionExpression);
+    String conditionExpressionResult = expression.getValue(context, String.class);
+    if(!StringUtils.equalsIgnoreCase(conditionExpressionResult, EnumBoolean.TRUE.getCode().toString()) && !StringUtils.equalsIgnoreCase(conditionExpressionResult, EnumBoolean.FALSE.getCode().toString())) {
+      log.warn("RsIndicatorExpressionBiz.checkCondition.caseCheckConditionMustBeBoolean result:{} is not boolean", conditionExpressionResult);
+      throw new RsIndicatorExpressionException("检查指标公式条件-条件解析结果不是true或false");
+    }
+  }
   private void checkConditionMustBeBoolean(
       Map<String, String> kIndicatorInstanceIdVValMap,
       Integer field, String conditionExpression, String conditionNameList, String conditionValList) {
@@ -229,7 +251,7 @@ public class RsUtilBiz {
       List<String> conditionValSplitList = this.getConditionValSplitList(conditionValList);
       switch (enumIndicatorExpressionField) {
         case DATABASE -> databaseCheckConditionMustBeBoolean(kIndicatorInstanceIdVValMap, conditionExpression, conditionNameSplitList, conditionValSplitList);
-        case CASE -> caseCheckConditionMustBeBoolean();
+        case CASE -> caseCheckConditionMustBeBoolean(kIndicatorInstanceIdVValMap, conditionExpression, conditionNameSplitList, conditionValSplitList);
         default -> {
           log.error("RsIndicatorExpressionBiz.checkCondition.checkConditionMustBeBoolean field:{} is illegal", field);
           throw new RsIndicatorExpressionException("检查指标公式条件-指标公式域只能是数据库或案例库");
