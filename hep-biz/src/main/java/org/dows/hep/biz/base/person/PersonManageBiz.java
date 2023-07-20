@@ -394,16 +394,19 @@ public class PersonManageBiz {
         userExtinfoApi.insertOrUpdateExtinfo(extinfo);
         //3、如果有实验用户，更新用户姓名
         List<ExperimentInstanceEntity> instanceEntityList = experimentInstanceService.lambdaQuery()
-                .eq(ExperimentInstanceEntity::getAppointor,request.getAccountId())
+                .eq(ExperimentInstanceEntity::getAccountId,request.getAccountId())
                 .eq(ExperimentInstanceEntity::getDeleted,false)
                 .list();
         if(instanceEntityList != null && instanceEntityList.size() > 0){
+            List<ExperimentInstanceEntity> resultList = new ArrayList<>();
             instanceEntityList.forEach(instance->{
-                experimentInstanceService.lambdaUpdate()
-                        .set(ExperimentInstanceEntity::getAppointorName,request.getUserName())
-                        .eq(ExperimentInstanceEntity::getId,instance.getId())
-                        .update();
+                ExperimentInstanceEntity instanceEntity = ExperimentInstanceEntity.builder()
+                        .id(instance.getId())
+                        .appointorName(request.getUserName())
+                        .build();
+                resultList.add(instanceEntity);
             });
+            experimentInstanceService.updateBatchById(resultList);
         }
         return userId;
     }
@@ -510,6 +513,22 @@ public class PersonManageBiz {
                         .build();
                 accountGroupInfoApi.updateAccountGroupInfo(request1);
             });
+        }
+        //3、如果有实验用户，更新用户姓名
+        List<ExperimentInstanceEntity> instanceEntityList = experimentInstanceService.lambdaQuery()
+                .eq(ExperimentInstanceEntity::getAccountId,request.getAccountId())
+                .eq(ExperimentInstanceEntity::getDeleted,false)
+                .list();
+        if(instanceEntityList != null && instanceEntityList.size() > 0){
+            List<ExperimentInstanceEntity> resultList = new ArrayList<>();
+            instanceEntityList.forEach(instance->{
+                ExperimentInstanceEntity instanceEntity = ExperimentInstanceEntity.builder()
+                        .id(instance.getId())
+                        .appointorName(request.getUserName())
+                        .build();
+                resultList.add(instanceEntity);
+            });
+            experimentInstanceService.updateBatchById(resultList);
         }
         return userId;
     }
