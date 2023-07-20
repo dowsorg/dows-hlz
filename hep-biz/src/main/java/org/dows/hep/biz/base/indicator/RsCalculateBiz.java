@@ -68,9 +68,9 @@ public class RsCalculateBiz {
       caseIndicatorInstanceIdSet.add(caseIndicatorInstanceId);
     });
 
-    Map<String, Set<String>> kCaseIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap = new HashMap<>();
+    Map<String, Set<String>> kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap = new HashMap<>();
     CompletableFuture<Void> cfPopulateKCaseIndicatorInstanceIdInfluencedIndicatorInstanceIdSetMap = CompletableFuture.runAsync(() -> {
-      rsCaseIndicatorExpressionBiz.populateKCaseIndicatorInstanceIdInfluencedIndicatorInstanceIdSetMap(kCaseIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap, caseIndicatorInstanceIdSet);
+      rsCaseIndicatorExpressionBiz.populateKCaseIndicatorInstanceIdInfluencedIndicatorInstanceIdSetMap(kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap, caseIndicatorInstanceIdSet);
     });
     cfPopulateKCaseIndicatorInstanceIdInfluencedIndicatorInstanceIdSetMap.get();
 
@@ -111,7 +111,7 @@ public class RsCalculateBiz {
       AtomicBoolean hasFindOne = new AtomicBoolean(Boolean.FALSE);
       needCalculateCaseIndicatorInstanceIdSet.forEach(needCalculateCaseIndicatorInstanceId -> {
         if (hasFindOne.get()) {return;}
-        Set<String> influencedIndicatorInstanceIdSet = kCaseIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.get(needCalculateCaseIndicatorInstanceId);
+        Set<String> influencedIndicatorInstanceIdSet = kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap.get(needCalculateCaseIndicatorInstanceId);
         if (Objects.isNull(influencedIndicatorInstanceIdSet) || influencedIndicatorInstanceIdSet.isEmpty()
             || hasCalculatedCaseIndicatorInstanceIdSet.containsAll(influencedIndicatorInstanceIdSet)
         ) {

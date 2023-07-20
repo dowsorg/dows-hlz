@@ -7,15 +7,16 @@ import com.itextpdf.styledxmlparser.jsoup.Jsoup;
 import com.itextpdf.styledxmlparser.jsoup.nodes.Document;
 import com.itextpdf.styledxmlparser.jsoup.nodes.Element;
 import com.itextpdf.styledxmlparser.jsoup.select.Elements;
-import freemarker.template.TemplateException;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.framework.oss.api.OssInfo;
 import org.dows.hep.api.constant.SystemConstant;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeItemResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeResponse;
+import org.dows.hep.api.user.experiment.response.ExptSchemeScoreRankResponse;
 import org.dows.hep.biz.base.oss.OSSBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentSchemeScoreBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
@@ -33,7 +34,8 @@ import org.dows.hep.vo.report.ExptSchemeReportModel;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
-import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,17 +55,22 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
     private final ExperimentSchemeScoreBiz experimentSchemeScoreBiz;
     private final ExperimentSchemeBiz experimentSchemeBiz;
     private final OSSBiz ossBiz;
+    private final OSSReportBiz ossReportBiz;
     private final ExperimentInstanceService experimentInstanceService;
     private final ExperimentParticipatorService experimentParticipatorService;
     private final ExperimentGroupService experimentGroupService;
 
+    private final Object delFileLock = new Object();
+    private static final String SCHEME_REPORT_HOME_DIR = SystemConstant.PDF_REPORT_TMP_PATH + "方案设计实验报告" + File.separator;
+
     @Data
     @Builder
-    public static class ExptSchemeReportData implements ExptReportData{
+    public static class ExptSchemeReportData implements ExptReportData {
         private ExperimentInstanceEntity exptInfo;
         private List<ExperimentSchemeResponse> exptSchemeList;
         private List<ExperimentGroupEntity> exptGroupInfoList;
         private List<ExperimentParticipatorEntity> exptMemberList;
+        private List<ExptSchemeScoreRankResponse> rankList;
     }
 
     /**
@@ -99,7 +106,7 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
 
     /**
      * @param exptInstanceId - 实验实例ID
-     * @param exptGroupId - 实验小组ID
+     * @param exptGroupId    - 实验小组ID
      * @return org.dows.hep.biz.report.pdf.ExptSchemeReportBiz.ExptSchemeReportData
      * @author fhb
      * @description 预先准备好生成报告需要的数据
@@ -113,19 +120,20 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
                 .exptSchemeList(listExptScheme(exptInstanceId, exptGroupId))
                 .exptGroupInfoList(listExptGroupInfo(experimentGroupService, exptInstanceId, exptGroupId))
                 .exptMemberList(listExptMembers(experimentParticipatorService, exptInstanceId, exptGroupId))
+                .rankList(listSchemeRank(exptInstanceId))
                 .build();
     }
 
     /**
      * @param exptGroupId - 实验小组ID
-     * @param exptData - 生成 `填充模板数据model` 需要的数据支持
+     * @param exptData    - 生成 `填充模板数据model` 需要的数据支持
      * @return org.dows.hep.vo.report.ExptSchemeReportModel
      * @author fhb
      * @description 生成pdf所需要填充的数据
      * @date 2023/7/17 11:09
      */
     @Override
-    public ExptSchemeReportModel getExptReportModel(String exptGroupId, ExptSchemeReportData exptData) {
+    public ExptSchemeReportModel convertData2Model(String exptGroupId, ExptSchemeReportData exptData) {
         ExptBaseInfoModel baseInfoVO = generateBaseInfoVO(findSoftProperties, log);
         ExptSchemeReportModel.GroupInfo groupInfo = generateGroupInfo(exptGroupId, exptData);
         ExptSchemeReportModel.ScoreInfo scoreInfo = generateScoreInfo(exptGroupId, exptData);
@@ -142,7 +150,7 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
     }
 
     /**
-     * @param exptGroupId - 实验小组ID
+     * @param exptGroupId    - 实验小组ID
      * @param exptReportData - 生成 `填充模板数据model` 需要的数据支持
      * @return java.io.File
      * @author fhb
@@ -150,7 +158,7 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
      * @date 2023/7/17 11:11
      */
     @Override
-    public File getTempFile(String exptGroupId, ExptSchemeReportData exptReportData) {
+    public String getOutputPosition(String exptGroupId, ExptSchemeReportData exptReportData) {
         ExperimentInstanceEntity exptInfo = exptReportData.getExptInfo();
         List<ExperimentGroupEntity> groupList = exptReportData.getExptGroupInfoList();
         if (CollUtil.isEmpty(groupList) || StrUtil.isBlank(exptGroupId)) {
@@ -165,10 +173,13 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
             throw new BizException("获取实验方案设计报告时，获取组员信息数据异常");
         }
 
-        File homeDirFile = new File(SystemConstant.PDF_REPORT_TMP_PATH);
-        boolean mkdirs = homeDirFile.mkdirs();
-        String fileName = "第" + groupEntity.getGroupNo() + "组" + SystemConstant.SPLIT_UNDER_LINE + exptInfo.getExperimentName() + SystemConstant.SPLIT_UNDER_LINE + "方案设计报告" + SystemConstant.SUFFIX_PDF;
-        return new File(homeDirFile, fileName);
+        // 文件名
+        return "第" + groupEntity.getGroupNo() + "组"
+                + SystemConstant.SPLIT_UNDER_LINE
+                + exptInfo.getExperimentName()
+                + SystemConstant.SPLIT_UNDER_LINE
+                + "方案设计报告"
+                + SystemConstant.SUFFIX_PDF;
     }
 
     /**
@@ -183,31 +194,25 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
     }
 
     // 生成 pdf 报告
-    // todo 如果文件存在，则不再生成立即返回，测试阶段先不做
     private ExptGroupReportVO generatePdfReportOfGroup(String exptGroupId, ExptSchemeReportData exptData) {
-        // pdf 填充数据
-        ExptSchemeReportModel pdfVO = getExptReportModel(exptGroupId, exptData);
-        // pdf 输出文件
-        File targetFile = getTempFile(exptGroupId, exptData);
-        // pdf 模板
+        // pdf 素材
+        ExptSchemeReportModel pdfVO = convertData2Model(exptGroupId, exptData);
         String schemeFlt = getSchemeFlt();
+        String fileName = getOutputPosition(exptGroupId, exptData);
 
-        try {
-            template2PdfBiz.convert2Pdf(pdfVO, schemeFlt, targetFile);
-        } catch (IOException | TemplateException e) {
-            log.error("导出方案设计报告时，html转pdf异常");
-            throw new BizException("导出方案设计报告时，html转pdf异常");
-        }
+        // 生成 pdf 并上传文件
+        Path path = Paths.get(SCHEME_REPORT_HOME_DIR, fileName);
+        OssInfo ossInfo = template2PdfBiz.convertAndUpload(pdfVO, schemeFlt, path);
 
+        // 构造返回信息
         ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
-                .name(targetFile.getName())
-                .path(targetFile.getPath())
+                .name(ossInfo.getName())
+                .path(ossReportBiz.getUrlPath(ossInfo))
                 .build();
-        List<ExptGroupReportVO.ReportFile> paths = List.of(reportFile);
         return ExptGroupReportVO.builder()
                 .exptGroupId(exptGroupId)
                 .exptGroupNo(Integer.valueOf(pdfVO.getGroupInfo().getGroupNo()))
-                .paths(paths)
+                .paths(List.of(reportFile))
                 .build();
     }
 
@@ -223,6 +228,10 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
         return schemeResponseList.stream()
                 .filter(item -> exptGroupId.equals(item.getExperimentGroupId()))
                 .toList();
+    }
+
+    private List<ExptSchemeScoreRankResponse> listSchemeRank(String exptInstanceId) {
+        return experimentSchemeBiz.listExptSchemeScoreRank(exptInstanceId);
     }
 
     private ExptSchemeReportModel.GroupInfo generateGroupInfo(String exptGroupId, ExptSchemeReportData exptSchemeReportData) {
@@ -261,12 +270,30 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
                 .build();
     }
 
-    // todo 获取得分信息
     private ExptSchemeReportModel.ScoreInfo generateScoreInfo(String exptGroupId, ExptSchemeReportData exptSchemeReportData) {
+        List<ExptSchemeScoreRankResponse> rankList = exptSchemeReportData.getRankList();
+        if (CollUtil.isEmpty(rankList)) {
+            return ExptSchemeReportModel.ScoreInfo.builder()
+                    .show(Boolean.TRUE)
+                    .score("0.00")
+                    .ranking(0)
+                    .build();
+        }
+
+        int rank = 0;
+        String score = "0.00";
+        for (int i = 0; i < rankList.size(); i++) {
+            ExptSchemeScoreRankResponse itemRank = rankList.get(i);
+            if (exptGroupId.equals(itemRank.getGroupId())) {
+                rank = i + 1;
+                score = itemRank.getScore();
+            }
+        }
+
         return ExptSchemeReportModel.ScoreInfo.builder()
                 .show(Boolean.TRUE)
-                .score("0.00")
-                .ranking(1)
+                .score(score)
+                .ranking(rank)
                 .build();
     }
 

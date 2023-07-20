@@ -4,12 +4,16 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
-import freemarker.template.TemplateException;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.framework.oss.api.OssInfo;
+import org.dows.hep.api.base.indicator.response.ExperimentRankGroupItemResponse;
+import org.dows.hep.api.base.indicator.response.ExperimentRankItemResponse;
+import org.dows.hep.api.base.indicator.response.ExperimentRankResponse;
+import org.dows.hep.api.base.indicator.response.ExperimentTotalRankItemResponse;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
 import org.dows.hep.api.constant.SystemConstant;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
@@ -17,6 +21,7 @@ import org.dows.hep.api.user.experiment.dto.ExptQuestionnaireOptionDTO;
 import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireItemResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireResponse;
 import org.dows.hep.biz.user.experiment.ExperimentQuestionnaireBiz;
+import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
 import org.dows.hep.entity.*;
 import org.dows.hep.properties.FindSoftProperties;
@@ -28,10 +33,12 @@ import org.dows.hep.vo.report.ExptSandReportModel;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -50,12 +57,16 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
     private final Template2PdfBiz template2PdfBiz;
     private final ExperimentSettingBiz experimentSettingBiz;
     private final ExperimentQuestionnaireBiz experimentQuestionnaireBiz;
+    private final ExperimentScoringBiz experimentScoringBiz;
     private final FindSoftProperties findSoftProperties;
+    private final OSSReportBiz ossReportBiz;
     private final ExperimentGroupService experimentGroupService;
     private final ExperimentParticipatorService experimentParticipatorService;
     private final ExperimentInstanceService experimentInstanceService;
     private final ExperimentScoringService experimentScoringService;
     private final ExperimentOrgService experimentOrgService;
+
+    private static final String SAND_REPORT_HOME_DIR = SystemConstant.PDF_REPORT_TMP_PATH + "沙盘模拟实验报告" + File.separator;
 
     @Data
     @Builder
@@ -65,6 +76,7 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
         private List<ExperimentParticipatorEntity> exptMemberList;
         private List<ExperimentScoringEntity> exptScoringList;
         private ExperimentSetting.SandSetting sandSetting;
+        private ExperimentRankResponse experimentRankResponse;
         private List<ExperimentQuestionnaireResponse> exptQuestionnaireList;
         private List<ExperimentOrgEntity> exptOrgList;
     }
@@ -119,6 +131,7 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
                 .exptMemberList(listExptMembers(experimentParticipatorService, exptInstanceId, exptGroupId))
                 .exptScoringList(listExptScoring(exptInstanceId, exptGroupId))
                 .sandSetting(getExptSandSetting(exptInstanceId))
+                .experimentRankResponse(getRank(exptInstanceId))
                 .exptQuestionnaireList(listExptQuestionnaire(exptInstanceId, exptGroupId))
                 .exptOrgList(listExptOrg(exptInstanceId))
                 .build();
@@ -133,7 +146,7 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
      * @date 2023/7/17 13:36
      */
     @Override
-    public ExptSandReportModel getExptReportModel(String exptGroupId, ExptSandReportData exptData) {
+    public ExptSandReportModel convertData2Model(String exptGroupId, ExptSandReportData exptData) {
         ExptBaseInfoModel baseInfoVO = generateBaseInfoVO(findSoftProperties, log);
         ExptSandReportModel.GroupInfo groupInfo = generateGroupInfo(exptGroupId, exptData);
         ExptSandReportModel.ScoreInfo scoreInfo = generateScoreInfo(exptGroupId, exptData);
@@ -158,7 +171,7 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
      * @date 2023/7/17 13:37
      */
     @Override
-    public File getTempFile(String exptGroupId, ExptSandReportData exptReportData) {
+    public String getOutputPosition(String exptGroupId, ExptSandReportData exptReportData) {
         ExperimentInstanceEntity exptInfo = exptReportData.getExptInfo();
         List<ExperimentGroupEntity> groupList = exptReportData.getExptGroupInfoList();
         if (CollUtil.isEmpty(groupList) || StrUtil.isBlank(exptGroupId)) {
@@ -173,10 +186,13 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
             throw new BizException("获取沙盘模拟报告时，获取组员信息数据异常");
         }
 
-        File homeDirFile = new File(SystemConstant.PDF_REPORT_TMP_PATH);
-        boolean mkdirs = homeDirFile.mkdirs();
-        String fileName = "第" + groupEntity.getGroupNo() + "组" + SystemConstant.SPLIT_UNDER_LINE + exptInfo.getExperimentName() + SystemConstant.SPLIT_UNDER_LINE + "沙盘模拟报告" + SystemConstant.SUFFIX_PDF;
-        return new File(homeDirFile, fileName);
+        // 文件名
+        return "第" + groupEntity.getGroupNo() + "组"
+                + SystemConstant.SPLIT_UNDER_LINE
+                + exptInfo.getExperimentName()
+                + SystemConstant.SPLIT_UNDER_LINE
+                + "沙盘模拟报告"
+                + SystemConstant.SUFFIX_PDF;
     }
 
     /**
@@ -192,30 +208,24 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
 
     // 生成 pdf 报告
     private ExptGroupReportVO generatePdfReportOfGroup(String exptGroupId, ExptSandReportData exptData) {
-        // 将 expt-data 转为 pdf-data
-        ExptSandReportModel pdfVO = getExptReportModel(exptGroupId, exptData);
-        // pdf file
-        File targetFile = getTempFile(exptGroupId, exptData);
-        // pdf flt
+        // pdf 素材
+        ExptSandReportModel pdfVO = convertData2Model(exptGroupId, exptData);
         String schemeFlt = getSchemeFlt();
+        String fileName = getOutputPosition(exptGroupId, exptData);
 
-        try {
-            template2PdfBiz.convert2Pdf(pdfVO, schemeFlt, targetFile);
-        } catch (IOException | TemplateException e) {
-            log.error("导出沙盘模拟报告时，html转pdf异常");
-            throw new BizException("导出沙盘模拟报告时，html转pdf异常");
-        }
+        // 生成 pdf 并上传文件
+        Path path = Paths.get(SAND_REPORT_HOME_DIR, fileName);
+        OssInfo ossInfo = template2PdfBiz.convertAndUpload(pdfVO, schemeFlt, path);
 
-        List<ExptGroupReportVO.ReportFile> paths = new ArrayList<>();
+        // 构建返回信息
         ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
-                .name(targetFile.getName())
-                .path(targetFile.getPath())
+                .name(ossInfo.getName())
+                .path(ossReportBiz.getUrlPath(ossInfo))
                 .build();
-        paths.add(reportFile);
         return ExptGroupReportVO.builder()
                 .exptGroupId(exptGroupId)
                 .exptGroupNo(Integer.valueOf(pdfVO.getGroupInfo().getGroupNo()))
-                .paths(paths)
+                .paths(List.of(reportFile))
                 .build();
     }
 
@@ -228,6 +238,10 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
 
     private ExperimentSetting.SandSetting getExptSandSetting(String exptInstanceId) {
         return experimentSettingBiz.getSandSetting(exptInstanceId);
+    }
+
+    private ExperimentRankResponse getRank(String exptInstanceId) {
+        return experimentScoringBiz.getRank(exptInstanceId);
     }
 
     private List<ExperimentQuestionnaireResponse> listExptQuestionnaire(String exptInstanceId, String exptGroupId) {
@@ -292,7 +306,6 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
             return emptyResult;
         }
 
-
         // 每期权重
         List<ExptSandReportModel.ScoreInfo.PeriodWeight> periodWeights = new ArrayList<>();
         ExperimentSetting.SandSetting sandSetting = exptData.getSandSetting();
@@ -320,15 +333,16 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
         List<ExptSandReportModel.ScoreInfo.PeriodScore> periodScores = new ArrayList<>();
         Map<Integer, ExperimentScoringEntity> periodMapScore = groupScoreList.stream()
                 .collect(Collectors.toMap(ExperimentScoringEntity::getPeriods, item -> item, (v1, v2) -> v1));
+        Map<Integer, Integer> periodMapRank = getPeriodRank(exptGroupId, exptData);
         for (int i = 0; i < periods; i++) {
-            ExperimentScoringEntity v = periodMapScore.get(i + 1);
+            Integer period = i + 1;
+            ExperimentScoringEntity v = periodMapScore.get(period);
             ExptSandReportModel.ScoreInfo.Score scoreInfo = ExptSandReportModel.ScoreInfo.Score.builder()
                     .healthIndexScore(v.getHealthIndexScore())
                     .knowledgeScore(v.getKnowledgeScore())
                     .treatmentPercentScore(v.getTreatmentPercentScore())
                     .totalScore(v.getTotalScore())
-                    // todo 计算下
-                    .totalRanking("0")
+                    .totalRanking(String.valueOf(periodMapRank.get(period)))
                     .build();
             ExptSandReportModel.ScoreInfo.PeriodScore periodScore = ExptSandReportModel.ScoreInfo.PeriodScore.builder()
                     .periods(String.valueOf(i + 1))
@@ -337,7 +351,6 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
             periodScores.add(periodScore);
         }
 
-        // todo 计算 还是 存储？
         // 总得分
         BigDecimal tHealthIndexScore = BigDecimal.ZERO;
         BigDecimal tKnowledgeScore = BigDecimal.ZERO;
@@ -375,14 +388,13 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
         tKnowledgeScore = tKnowledgeScore.divide(BigDecimal.valueOf(periods), 2, RoundingMode.HALF_UP);
         tTreatmentPercentScore = tTreatmentPercentScore.divide(BigDecimal.valueOf(periods), 2, RoundingMode.HALF_UP);
         tTotalScore = tTotalScore.divide(BigDecimal.valueOf(periods), 2, RoundingMode.HALF_UP);
-
+        Integer totalRank = getTotalRank(exptGroupId, exptData);
         ExptSandReportModel.ScoreInfo.Score totalScore = ExptSandReportModel.ScoreInfo.Score.builder()
                 .healthIndexScore(tHealthIndexScore.toString())
                 .knowledgeScore(tKnowledgeScore.toString())
                 .treatmentPercentScore(tTreatmentPercentScore.toString())
                 .totalScore(tTotalScore.toString())
-                // todo 计算下
-                .totalRanking("1")
+                .totalRanking(String.valueOf(totalRank))
                 .build();
 
         return ExptSandReportModel.ScoreInfo.builder()
@@ -391,6 +403,48 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
                 .periodWeights(periodWeights)
                 .scoreWeight(scoreWeight)
                 .build();
+    }
+
+    private Map<Integer, Integer> getPeriodRank(String exptGroupId, ExptSandReportData exptData) {
+        ExperimentRankResponse experimentRankResponse = exptData.getExperimentRankResponse();
+        if (BeanUtil.isEmpty(experimentRankResponse)) {
+            throw new BizException("");
+        }
+
+        Map<Integer, Integer> result = new HashMap<>();
+        // 获取期数排行榜
+        List<ExperimentRankItemResponse> periodRank = experimentRankResponse.getExperimentRankItemResponseList();
+        // 期数排行榜按照期数分组
+        Map<Integer, List<ExperimentRankGroupItemResponse>> periodMapRank = periodRank.stream()
+                .collect(Collectors.toMap(ExperimentRankItemResponse::getPeriods, ExperimentRankItemResponse::getExperimentRankGroupItemResponseList));
+        for (int i = 0; i < periodRank.size(); i++) {
+            Integer period = i + 1;
+            List<ExperimentRankGroupItemResponse> periodRankList = periodMapRank.get(period);
+            Integer rankNum = 0;
+            for (int j = 0; j < periodRankList.size(); j++) {
+                ExperimentRankGroupItemResponse itemRank = periodRankList.get(j);
+                if (exptGroupId.equals(itemRank.getExperimentGroupId())) {
+                    rankNum = j + 1;
+                }
+            }
+
+            result.put(period, rankNum);
+        }
+
+        return result;
+    }
+
+    private Integer getTotalRank(String exptGroupId, ExptSandReportData exptData ) {
+        ExperimentRankResponse experimentRankResponse = exptData.getExperimentRankResponse();
+        List<ExperimentTotalRankItemResponse> totalRank = experimentRankResponse.getExperimentTotalRankItemResponseList();
+        Integer rankNum = 0;
+        for (int i = 0; i < totalRank.size(); i++) {
+            ExperimentTotalRankItemResponse itemRank = totalRank.get(i);
+            if (exptGroupId.equals(itemRank.getExperimentGroupId())) {
+                rankNum = i + 1;
+            }
+        }
+        return rankNum;
     }
 
     private ExptSandReportModel.ScoreInfo getEmptyScoreInfo(String exptGroupId, ExptSandReportData exptData) {
@@ -516,7 +570,7 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
             List<ExperimentQuestionnaireItemResponse> questionItemChildren = questionItem.getChildren();
             List<ExptSandReportModel.KnowledgeAnswer.QuestionInfo> children = new ArrayList<>();
             if (CollUtil.isNotEmpty(questionItemChildren)) {
-                 children = convertQuestionChildren(questionItem.getChildren());
+                children = convertQuestionChildren(questionItem.getChildren());
             }
 
             // 处理当前节点
@@ -549,7 +603,7 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
         return result;
     }
 
-    private static ExptSandReportModel.KnowledgeAnswer.QuestionInfo handleNode(ExperimentQuestionnaireItemResponse questionItem, List<ExptSandReportModel.KnowledgeAnswer.QuestionInfo> children) {
+    private ExptSandReportModel.KnowledgeAnswer.QuestionInfo handleNode(ExperimentQuestionnaireItemResponse questionItem, List<ExptSandReportModel.KnowledgeAnswer.QuestionInfo> children) {
         // 构造标题
         String questionType = questionItem.getQuestionType();
         String typeName = QuestionTypeEnum.getNameByCode(questionType);

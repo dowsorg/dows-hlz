@@ -17,6 +17,12 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class ExperimentTotalRankItemResponse implements Serializable {
+  @Schema(title = "实验小组ID")
+  private String experimentGroupId;
+
+  @Schema(title = "实验小组组数")
+  private String experimentGroupNo;
+
   @Schema(title = "实验小组名称")
   private String experimentGroupName;
 

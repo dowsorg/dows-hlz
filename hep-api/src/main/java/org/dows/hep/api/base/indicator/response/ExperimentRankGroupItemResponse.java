@@ -16,6 +16,9 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Builder
 public class ExperimentRankGroupItemResponse implements Serializable {
+  @Schema(title = "实验小组ID")
+  private String experimentGroupId;
+
   @Schema(title = "实验小组名称")
   private String experimentGroupName;
 
