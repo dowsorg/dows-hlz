@@ -17,7 +17,6 @@ import org.dows.hep.vo.report.ExptReportVO;
 import org.slf4j.Logger;
 import org.springframework.core.io.ClassPathResource;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -40,7 +39,7 @@ public interface ExptReportBiz<P extends ExptReportBiz.ExptReportData, R extends
     P prepareData(String exptInstanceId, String exptGroupId);
     R convertData2Model(String exptGroupId, P exptReportData);
     String getSchemeFlt();
-    File getOutputPosition(String exptGroupId, P exptReportData);
+    String getOutputPosition(String exptGroupId, P exptReportData);
 
     /**
      * @param experimentGroupService - 实验小组 service
