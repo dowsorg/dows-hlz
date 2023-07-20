@@ -405,7 +405,7 @@ public class CaseIndicatorExpressionBiz {
       Map<String, CaseIndicatorExpressionItemEntity> kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap = new HashMap<>();
       CompletableFuture<Void> cfPopulateByIdKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap = CompletableFuture.runAsync(() -> {
         rsCaseIndicatorExpressionBiz.populateByCaseIdKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap(
-            kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap, caseIndicatorExpressionEntityAtomicReference.get().getIndicatorExpressionId()
+            kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap, caseIndicatorExpressionEntityAtomicReference.get().getCaseIndicatorExpressionId()
         );
       });
       cfPopulateByIdKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get();
