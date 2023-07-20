@@ -156,7 +156,7 @@ public class RsCaseIndicatorExpressionBiz {
             .builder()
             .caseIndicatorExpressionItemId(idGenerator.nextIdStr())
             .appId(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getAppId())
-            .indicatorExpressionId(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getIndicatorExpressionId())
+            .indicatorExpressionId(caseIndicatorExpressionId)
             .conditionRaw(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getConditionRaw())
             .conditionExpression(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getConditionExpression())
             .conditionNameList(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getConditionNameList())
