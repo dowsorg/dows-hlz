@@ -4,12 +4,12 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
-import freemarker.template.TemplateException;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.framework.oss.api.OssInfo;
 import org.dows.hep.api.base.indicator.response.ExperimentRankGroupItemResponse;
 import org.dows.hep.api.base.indicator.response.ExperimentRankItemResponse;
 import org.dows.hep.api.base.indicator.response.ExperimentRankResponse;
@@ -33,9 +33,10 @@ import org.dows.hep.vo.report.ExptSandReportModel;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -169,7 +170,7 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
      * @date 2023/7/17 13:37
      */
     @Override
-    public File getOutputPosition(String exptGroupId, ExptSandReportData exptReportData) {
+    public String getOutputPosition(String exptGroupId, ExptSandReportData exptReportData) {
         ExperimentInstanceEntity exptInfo = exptReportData.getExptInfo();
         List<ExperimentGroupEntity> groupList = exptReportData.getExptGroupInfoList();
         if (CollUtil.isEmpty(groupList) || StrUtil.isBlank(exptGroupId)) {
@@ -184,12 +185,13 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
             throw new BizException("获取沙盘模拟报告时，获取组员信息数据异常");
         }
 
-        // 创建方案设计报告文件目录
-        File homeDirFile = new File(SAND_REPORT_HOME_DIR);
-        boolean mkdirs = homeDirFile.mkdirs();
         // 文件名
-        String fileName = "第" + groupEntity.getGroupNo() + "组" + SystemConstant.SPLIT_UNDER_LINE + exptInfo.getExperimentName() + SystemConstant.SPLIT_UNDER_LINE + "沙盘模拟报告" + SystemConstant.SUFFIX_PDF;
-        return new File(homeDirFile, fileName);
+        return "第" + groupEntity.getGroupNo() + "组"
+                + SystemConstant.SPLIT_UNDER_LINE
+                + exptInfo.getExperimentName()
+                + SystemConstant.SPLIT_UNDER_LINE
+                + "沙盘模拟报告"
+                + SystemConstant.SUFFIX_PDF;
     }
 
     /**
@@ -205,30 +207,24 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
 
     // 生成 pdf 报告
     private ExptGroupReportVO generatePdfReportOfGroup(String exptGroupId, ExptSandReportData exptData) {
-        // 将 expt-data 转为 pdf-data
+        // pdf 素材
         ExptSandReportModel pdfVO = convertData2Model(exptGroupId, exptData);
-        // pdf file
-        File targetFile = getOutputPosition(exptGroupId, exptData);
-        // pdf flt
         String schemeFlt = getSchemeFlt();
+        String fileName = getOutputPosition(exptGroupId, exptData);
 
-        try {
-            template2PdfBiz.convert2Pdf(pdfVO, schemeFlt, targetFile);
-        } catch (IOException | TemplateException e) {
-            log.error("导出沙盘模拟报告时，html转pdf异常");
-            throw new BizException("导出沙盘模拟报告时，html转pdf异常");
-        }
+        // 生成 pdf 并上传文件
+        Path path = Paths.get(SAND_REPORT_HOME_DIR, fileName);
+        OssInfo ossInfo = template2PdfBiz.convertAndUpload(pdfVO, schemeFlt, path);
 
-        List<ExptGroupReportVO.ReportFile> paths = new ArrayList<>();
+        // 构建返回信息
         ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
-                .name(targetFile.getName())
-                .path(targetFile.getPath())
+                .name(ossInfo.getName())
+                .path(ossInfo.getPath())
                 .build();
-        paths.add(reportFile);
         return ExptGroupReportVO.builder()
                 .exptGroupId(exptGroupId)
                 .exptGroupNo(Integer.valueOf(pdfVO.getGroupInfo().getGroupNo()))
-                .paths(paths)
+                .paths(List.of(reportFile))
                 .build();
     }
 
@@ -408,7 +404,7 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
                 .build();
     }
 
-    private static Map<Integer, Integer> getPeriodRank(String exptGroupId, ExptSandReportData exptData) {
+    private Map<Integer, Integer> getPeriodRank(String exptGroupId, ExptSandReportData exptData) {
         ExperimentRankResponse experimentRankResponse = exptData.getExperimentRankResponse();
         if (BeanUtil.isEmpty(experimentRankResponse)) {
             throw new BizException("");
@@ -437,7 +433,7 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
         return result;
     }
 
-    private static Integer getTotalRank(String exptGroupId, ExptSandReportData exptData ) {
+    private Integer getTotalRank(String exptGroupId, ExptSandReportData exptData ) {
         ExperimentRankResponse experimentRankResponse = exptData.getExperimentRankResponse();
         List<ExperimentTotalRankItemResponse> totalRank = experimentRankResponse.getExperimentTotalRankItemResponseList();
         Integer rankNum = 0;
@@ -606,7 +602,7 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
         return result;
     }
 
-    private static ExptSandReportModel.KnowledgeAnswer.QuestionInfo handleNode(ExperimentQuestionnaireItemResponse questionItem, List<ExptSandReportModel.KnowledgeAnswer.QuestionInfo> children) {
+    private ExptSandReportModel.KnowledgeAnswer.QuestionInfo handleNode(ExperimentQuestionnaireItemResponse questionItem, List<ExptSandReportModel.KnowledgeAnswer.QuestionInfo> children) {
         // 构造标题
         String questionType = questionItem.getQuestionType();
         String typeName = QuestionTypeEnum.getNameByCode(questionType);

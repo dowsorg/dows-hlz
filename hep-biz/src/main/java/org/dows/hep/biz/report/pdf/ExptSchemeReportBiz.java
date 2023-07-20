@@ -208,11 +208,10 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
                 .name(ossInfo.getName())
                 .path(ossInfo.getPath())
                 .build();
-        List<ExptGroupReportVO.ReportFile> paths = List.of(reportFile);
         return ExptGroupReportVO.builder()
                 .exptGroupId(exptGroupId)
                 .exptGroupNo(Integer.valueOf(pdfVO.getGroupInfo().getGroupNo()))
-                .paths(paths)
+                .paths(List.of(reportFile))
                 .build();
     }
 

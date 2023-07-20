@@ -15,7 +15,6 @@ import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.oss.api.OssInfo;
 import org.dows.framework.oss.minio.MinioOssClient;
 import org.dows.hep.vo.report.ExptReportModel;
-import org.dows.hep.vo.report.ExptSchemeReportModel;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfig;
@@ -62,7 +61,7 @@ public class Template2PdfBiz {
      * @description 将 model 填充进 view 中, 生成 pdf 文件并上传
      * @date 2023/7/20 11:54
      */
-    public OssInfo convertAndUpload(ExptSchemeReportModel pdfVO, String schemeFlt, Path filePath) {
+    public OssInfo convertAndUpload(ExptReportModel pdfVO, String schemeFlt, Path filePath) {
         // convert
         Path homeDir = filePath.getParent();
         File targetFile = filePath.toFile();
