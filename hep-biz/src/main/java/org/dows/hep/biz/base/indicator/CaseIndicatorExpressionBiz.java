@@ -101,7 +101,7 @@ public class CaseIndicatorExpressionBiz {
         .builder()
         .id(caseIndicatorExpressionEntity.getId())
         .indicatorExpressionRefId(caseIndicatorExpressionRefId)
-        .indicatorExpressionId(caseIndicatorExpressionEntity.getIndicatorExpressionId())
+        .indicatorExpressionId(caseIndicatorExpressionEntity.getCaseIndicatorExpressionId())
         .appId(caseIndicatorExpressionEntity.getAppId())
         .principalId(caseIndicatorExpressionEntity.getPrincipalId())
         .caseIndicatorCategoryResponse(caseIndicatorCategoryResponse)
