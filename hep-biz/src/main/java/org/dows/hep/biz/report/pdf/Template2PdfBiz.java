@@ -78,10 +78,10 @@ public class Template2PdfBiz {
 
         // 删除本地文件
         try {
-            // todo 多线程情况如何优化
+            // 如果上传 upload 慢,则删不掉, 因为有程序占用了
             Files.deleteIfExists(filePath);
             // 多线程目录删不掉
-//            Files.deleteIfExists(homeDir);
+            Files.deleteIfExists(homeDir);
         } catch (IOException e) {
             log.error("导出报告时，删除本地临时文件异常");
         }

@@ -55,6 +55,7 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
     private final ExperimentSchemeScoreBiz experimentSchemeScoreBiz;
     private final ExperimentSchemeBiz experimentSchemeBiz;
     private final OSSBiz ossBiz;
+    private final OSSReportBiz ossReportBiz;
     private final ExperimentInstanceService experimentInstanceService;
     private final ExperimentParticipatorService experimentParticipatorService;
     private final ExperimentGroupService experimentGroupService;
@@ -206,7 +207,7 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
         // 构造返回信息
         ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
                 .name(ossInfo.getName())
-                .path(ossInfo.getPath())
+                .path(ossReportBiz.getUrlPath(ossInfo))
                 .build();
         return ExptGroupReportVO.builder()
                 .exptGroupId(exptGroupId)

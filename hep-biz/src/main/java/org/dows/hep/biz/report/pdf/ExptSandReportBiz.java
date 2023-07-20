@@ -59,6 +59,7 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
     private final ExperimentQuestionnaireBiz experimentQuestionnaireBiz;
     private final ExperimentScoringBiz experimentScoringBiz;
     private final FindSoftProperties findSoftProperties;
+    private final OSSReportBiz ossReportBiz;
     private final ExperimentGroupService experimentGroupService;
     private final ExperimentParticipatorService experimentParticipatorService;
     private final ExperimentInstanceService experimentInstanceService;
@@ -219,7 +220,7 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
         // 构建返回信息
         ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
                 .name(ossInfo.getName())
-                .path(ossInfo.getPath())
+                .path(ossReportBiz.getUrlPath(ossInfo))
                 .build();
         return ExptGroupReportVO.builder()
                 .exptGroupId(exptGroupId)

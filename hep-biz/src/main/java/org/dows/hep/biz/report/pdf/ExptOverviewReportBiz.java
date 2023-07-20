@@ -48,6 +48,7 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
     private final ExperimentSettingBiz experimentSettingBiz;
     private final Template2PdfBiz template2PdfBiz;
     private final FindSoftProperties findSoftProperties;
+    private final OSSReportBiz ossReportBiz;
     private final ExperimentInstanceService experimentInstanceService;
 
     private static final String OVERVIEW_REPORT_HOME_DIR = SystemConstant.PDF_REPORT_TMP_PATH + "实验总报告" + File.separator;
@@ -76,7 +77,7 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
         // build result
         ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
                 .name(ossInfo.getName())
-                .path(ossInfo.getPath())
+                .path(ossReportBiz.getUrlPath(ossInfo))
                 .build();
         ExptGroupReportVO groupReportVO = ExptGroupReportVO.builder()
                 .exptGroupId(null)
