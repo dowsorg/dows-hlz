@@ -737,15 +737,6 @@ public class IndicatorExpressionBiz{
     return StringUtils.equalsIgnoreCase(str, EnumString.SPACE.getStr());
   }
 
-  /* runsix:TODO 需要删掉，测试使用 */
-  public static void main(String[] args) {
-//    String str = "#indicator0$_1 == 男";
-//    System.out.println(getConditionExpression(str));
-    String str = "indicator0@0";
-    String[] split = str.split("@");
-    System.out.println(split);
-  }
-
   /* runsix:TODO */
   @Transactional(rollbackFor = Exception.class)
   public void batchBindReasonId(BatchBindReasonIdRequestRs batchBindReasonIdRequestRs) {
