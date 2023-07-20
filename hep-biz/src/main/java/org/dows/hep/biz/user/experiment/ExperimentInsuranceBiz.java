@@ -102,7 +102,8 @@ public class ExperimentInsuranceBiz {
                         - experimentPeriodsStartAnsEndTime.get(i).getStartTime().getTime();
                 int remainMinute = (int) (remainTime / 1000 / 60);
                 //2.5、判断剩下天数都在一期需要的时间
-                int assumMinute = (int) ((double)(365 - remainDay) * ((double)duration / (double)periodsand));
+                int leftDay = 365 - remainDay;
+                int assumMinute = (int) ((double)duration * leftDay / (double)periodsand);
                 if(assumMinute >= remainMinute){
                     remainDay += remainMinute / ((double)duration / (double)periodsand);
                     expdate = TimeUtil.timeAddMinute(expdate,remainMinute);
