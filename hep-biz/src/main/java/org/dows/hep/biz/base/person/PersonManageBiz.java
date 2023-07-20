@@ -97,33 +97,34 @@ public class PersonManageBiz {
         //2、删除账户实例
         Integer count = accountInstanceApi.deleteAccountInstanceByAccountIds(accountIds);
         //3、删除小组信息
-        accountIds.forEach(accountId ->{
-            List<AccountGroupResponse> groupResponseList = accountGroupApi.getAccountGroupListByAccountId(accountId,"3");
-            if(groupResponseList != null && groupResponseList.size() > 0){
-                Set<String> ids = new HashSet<>();
-                groupResponseList.forEach(groupResponse -> {
-                    ids.add(groupResponse.getId());
-                });
-                accountGroupApi.batchDeleteGroups(ids);
-            }
-        });
-        //3、删除用户扩展信息
+//        accountIds.forEach(accountId ->{
+//            List<AccountGroupResponse> groupResponseList = accountGroupApi.getAccountGroupListByAccountId(accountId,"3");
+//            if(groupResponseList != null && groupResponseList.size() > 0){
+//                Set<String> ids = new HashSet<>();
+//                groupResponseList.forEach(groupResponse -> {
+//                    ids.add(groupResponse.getId());
+//                });
+//                accountGroupApi.batchDeleteGroups(ids);
+//            }
+//        });
+        //4、删除用户扩展信息
         userIds.forEach(userId -> {
             UserExtinfoResponse extinfoResponse = userExtinfoApi.getUserExtinfoByUserId(userId);
             userExtinfoApi.deleteUserExtinfoById(extinfoResponse.getId());
         });
-        //4、如果用户在机构中存在，一并删除
+        //5、如果用户在机构中存在，一并删除
         List<CasePersonEntity> personEntityList = casePersonService.lambdaQuery()
                 .in(CasePersonEntity::getAccountId,accountIds)
                 .eq(CasePersonEntity::getDeleted,false)
                 .list();
         if(personEntityList != null && personEntityList.size() > 0){
-            personEntityList.forEach(personEntity ->{
-                casePersonService.lambdaUpdate()
-                        .set(CasePersonEntity::getDeleted,true)
-                        .eq(CasePersonEntity::getId,personEntity.getId())
-                        .update();
-            });
+//            personEntityList.forEach(personEntity ->{
+//                casePersonService.lambdaUpdate()
+//                        .set(CasePersonEntity::getDeleted,true)
+//                        .eq(CasePersonEntity::getId,personEntity.getId())
+//                        .update();
+//            });
+            throw new AccountException("存在用户被机构所引用，无法删除");
         }
         return count;
     }
