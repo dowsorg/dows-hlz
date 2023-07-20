@@ -94,8 +94,10 @@ public class ExperimentInsuranceBiz {
                         multiply(BigDecimal.valueOf(60));
                 if(assumSecond.intValue() >= remainSecond){
                     remainDay += BigDecimal.valueOf(remainSecond)
+                            .divide(BigDecimal.valueOf(60),2, RoundingMode.DOWN)
+                            .multiply(BigDecimal.valueOf(periodsand))
                             .divide(BigDecimal.valueOf(duration),2, RoundingMode.DOWN)
-                            .divide(BigDecimal.valueOf(periodsand),2, RoundingMode.DOWN).intValue();
+                            .intValue();
                     expdate = TimeUtil.timeAddSecond(new Date(),remainSecond);
                 }else{
                     expdate = TimeUtil.timeAddSecond(new Date(),assumSecond.intValue());
@@ -116,8 +118,10 @@ public class ExperimentInsuranceBiz {
                         divide(BigDecimal.valueOf(periodsand),2, RoundingMode.DOWN).multiply(BigDecimal.valueOf(60));
                 if(assumSecond.intValue() >= remainSecond){
                     remainDay += BigDecimal.valueOf(remainSecond)
+                            .divide(BigDecimal.valueOf(60),2, RoundingMode.DOWN)
+                            .multiply(BigDecimal.valueOf(periodsand))
                             .divide(BigDecimal.valueOf(duration),2, RoundingMode.DOWN)
-                            .divide(BigDecimal.valueOf(periodsand),2, RoundingMode.DOWN).intValue();
+                            .intValue();
                     expdate = TimeUtil.timeAddSecond(expdate,remainSecond);
                 }else{
                     expdate = TimeUtil.timeAddSecond(expdate,assumSecond.intValue());
