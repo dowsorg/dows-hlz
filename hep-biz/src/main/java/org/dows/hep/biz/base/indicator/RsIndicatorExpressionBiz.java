@@ -232,11 +232,13 @@ public class RsIndicatorExpressionBiz {
           if (Objects.isNull(influenceIndicatorInstanceIdSet)) {influenceIndicatorInstanceIdSet = new HashSet<>();}
           String influenceIndicatorInstanceIdList = indicatorExpressionInfluenceEntity.getInfluenceIndicatorInstanceIdList();
           influenceIndicatorInstanceIdSet.addAll(rsUtilBiz.getSplitList(influenceIndicatorInstanceIdList));
+          kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap.put(indicatorInstanceId, influenceIndicatorInstanceIdSet);
 
           Set<String> influencedIndicatorInstanceIdSet = kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.get(indicatorInstanceId);
           if (Objects.isNull(influencedIndicatorInstanceIdSet)) {influencedIndicatorInstanceIdSet = new HashSet<>();}
           String influencedIndicatorInstanceIdList = indicatorExpressionInfluenceEntity.getInfluencedIndicatorInstanceIdList();
           influencedIndicatorInstanceIdSet.addAll(rsUtilBiz.getSplitList(influencedIndicatorInstanceIdList));
+          kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.put(indicatorInstanceId, influencedIndicatorInstanceIdSet);
         });
   }
 
