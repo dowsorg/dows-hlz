@@ -1015,7 +1015,7 @@ public class RsCaseIndicatorExpressionBiz {
           kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap.put(indicatorExpressionId, caseIndicatorExpressionItemEntityList);
         });
     kCaseIndicatorInstanceIdVCaseIndicatorExpressionEntityMap.forEach((caseIndicatorInstanceId, caseIndicatorExpressionEntity) -> {
-      String indicatorExpressionId = caseIndicatorExpressionEntity.getIndicatorExpressionId();
+      String indicatorExpressionId = caseIndicatorExpressionEntity.getCaseIndicatorExpressionId();
       List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList = kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap.get(indicatorExpressionId);
       if (Objects.isNull(caseIndicatorExpressionItemEntityList)) {return;}
       kCaseIndicatorInstanceIdVCaseIndicatorExpressionItemEntityListMap.put(caseIndicatorInstanceId, caseIndicatorExpressionItemEntityList);
