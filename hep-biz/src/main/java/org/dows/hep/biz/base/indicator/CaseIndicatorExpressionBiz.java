@@ -140,7 +140,7 @@ public class CaseIndicatorExpressionBiz {
           }
           indicatorExpressionIdList.add(indicatorExpressionId);
           kReasonIdVIndicatorExpressionIdListMap.put(reasonId, indicatorExpressionIdList);
-          kIndicatorExpressionIdVIndicatorExpressionRefIdMap.put(indicatorExpressionId, indicatorExpressionRefEntity.getIndicatorExpressionRefId());
+          kIndicatorExpressionIdVIndicatorExpressionRefIdMap.put(indicatorExpressionId, indicatorExpressionRefEntity.getCaseIndicatorExpressionRefId());
         });
     Map<String, CaseIndicatorExpressionEntity> kIndicatorExpressionIdVIndicatorExpressionEntityMap = new HashMap<>();
     Map<String, List<CaseIndicatorExpressionItemEntity>> kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap = new HashMap<>();
@@ -655,7 +655,7 @@ public class CaseIndicatorExpressionBiz {
     } else {
       caseIndicatorExpressionRefEntity = caseIndicatorExpressionRefService.lambdaQuery()
           .eq(CaseIndicatorExpressionRefEntity::getAppId, appId)
-          .eq(CaseIndicatorExpressionRefEntity::getIndicatorExpressionRefId, indicatorExpressionRefId)
+          .eq(CaseIndicatorExpressionRefEntity::getCaseIndicatorExpressionRefId, indicatorExpressionRefId)
           .oneOpt()
           .orElseThrow(() -> {
             log.warn("method populateIndicatorExpressionRefEntity indicatorExpressionRefId:{} is illegal", indicatorExpressionRefId);

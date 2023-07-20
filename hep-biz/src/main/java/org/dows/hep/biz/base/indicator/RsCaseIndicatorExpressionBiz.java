@@ -621,6 +621,7 @@ public class RsCaseIndicatorExpressionBiz {
       CaseIndicatorExpressionItemEntity maxCaseIndicatorExpressionItemEntity
   ) {
     /* runsix:1.按顺序解析每一个公式 */
+    if (Objects.isNull(caseIndicatorExpressionItemEntityList)) {return;}
     caseIndicatorExpressionItemEntityList.sort(Comparator.comparingInt(CaseIndicatorExpressionItemEntity::getSeq));
     for (int i = 0; i <= caseIndicatorExpressionItemEntityList.size()-1; i++) {
       CaseIndicatorExpressionItemEntity caseIndicatorExpressionItemRsEntity = caseIndicatorExpressionItemEntityList.get(i);
