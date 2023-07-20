@@ -143,7 +143,6 @@ public class RsCaseIndicatorExpressionBiz {
     ) {return;}
     AtomicInteger seqAtomicInteger = new AtomicInteger(1);
     caseCreateOrUpdateIndicatorExpressionItemRequestRsList.forEach(caseCreateOrUpdateIndicatorExpressionItemRequestRs -> {
-      /* runsix:TODO 做校验 */
       String caseIndicatorExpressionItemId = caseCreateOrUpdateIndicatorExpressionItemRequestRs.getCaseIndicatorExpressionItemId();
       CaseIndicatorExpressionItemEntity caseIndicatorExpressionItemEntity = null;
       if (StringUtils.isBlank(caseIndicatorExpressionItemId)) {
@@ -157,7 +156,7 @@ public class RsCaseIndicatorExpressionBiz {
             .builder()
             .caseIndicatorExpressionItemId(idGenerator.nextIdStr())
             .appId(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getAppId())
-            .indicatorExpressionId(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getIndicatorExpressionId())
+            .indicatorExpressionId(caseIndicatorExpressionId)
             .conditionRaw(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getConditionRaw())
             .conditionExpression(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getConditionExpression())
             .conditionNameList(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getConditionNameList())
