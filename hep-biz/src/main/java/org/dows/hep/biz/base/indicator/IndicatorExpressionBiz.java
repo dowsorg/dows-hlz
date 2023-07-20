@@ -1402,7 +1402,7 @@ public class IndicatorExpressionBiz{
       /* runsix:result */
       List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = new ArrayList<>();
       AtomicBoolean typeChangeAtomicBoolean = new AtomicBoolean(Boolean.FALSE);
-      AtomicReference<IndicatorExpressionInfluenceEntity> indicatorExpressionInfluenceEntityAtomicReference = new AtomicReference<>();
+      List<IndicatorExpressionInfluenceEntity> indicatorExpressionInfluenceEntityList = new ArrayList<>();
       AtomicReference<IndicatorExpressionItemEntity> minIndicatorExpressionItemEntityAtomicReference = new AtomicReference<>();
       AtomicReference<IndicatorExpressionItemEntity> maxIndicatorExpressionItemEntityAtomicReference = new AtomicReference<>();
 
@@ -1417,11 +1417,16 @@ public class IndicatorExpressionBiz{
         if (!dbType.equals(paramType)) {typeChangeAtomicBoolean.set(Boolean.TRUE);}
       }
 
+      /**
+       * runsix method process
+       * 使用kahn算法，假定原则，判断是否存在循环依赖
+      */
       /* runsix:2.3 populate indicatorExpressionInfluenceEntityAtomicReference */
-      CompletableFuture<Void> cfCheckCircleDependencyAndPopulateIndicatorExpressionInfluenceEntity = CompletableFuture.runAsync(() -> {
+      CompletableFuture<Void> cfCheckCircleDependencyAndPopulateIndicatorExpressionInfluenceEntityList = CompletableFuture.runAsync(() -> {
         try {
           rsIndicatorExpressionBiz.checkCircleDependencyAndPopulateIndicatorExpressionInfluenceEntity(
-              indicatorExpressionInfluenceEntityAtomicReference,
+              appId,
+              indicatorExpressionInfluenceEntityList,
               source,
               principalId,
               createOrUpdateIndicatorExpressionItemRequestRsList,
@@ -1432,7 +1437,7 @@ public class IndicatorExpressionBiz{
           throw new IndicatorExpressionException(EnumESC.INDICATOR_EXPRESSION_CIRCLE_DEPENDENCY);
         }
       });
-      cfCheckCircleDependencyAndPopulateIndicatorExpressionInfluenceEntity.get();
+      cfCheckCircleDependencyAndPopulateIndicatorExpressionInfluenceEntityList.get();
 
       if (Objects.nonNull(indicatorExpressionEntity)) {
         /* runsix:2.4 公式类型发生变化，原先上下限需要删除 */
@@ -1588,8 +1593,7 @@ public class IndicatorExpressionBiz{
       if (Objects.nonNull(maxIndicatorExpressionItemEntityAtomicReference.get())) {indicatorExpressionItemService.saveOrUpdate(maxIndicatorExpressionItemEntityAtomicReference.get());}
       if (Objects.nonNull(indicatorExpressionEntityAtomicReference.get())) {indicatorExpressionService.saveOrUpdate(indicatorExpressionEntityAtomicReference.get());}
       if (!indicatorExpressionItemEntityList.isEmpty()) {indicatorExpressionItemService.saveOrUpdateBatch(indicatorExpressionItemEntityList);}
-      IndicatorExpressionInfluenceEntity indicatorExpressionInfluenceEntity = indicatorExpressionInfluenceEntityAtomicReference.get();
-      if (Objects.nonNull(indicatorExpressionInfluenceEntity)) {indicatorExpressionInfluenceService.saveOrUpdate(indicatorExpressionInfluenceEntity);}
+      if (!indicatorExpressionInfluenceEntityList.isEmpty()) {indicatorExpressionInfluenceService.saveOrUpdateBatch(indicatorExpressionInfluenceEntityList);}
     } finally {
       lock.unlock();
     }

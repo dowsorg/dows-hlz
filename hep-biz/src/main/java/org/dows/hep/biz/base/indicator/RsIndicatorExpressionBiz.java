@@ -122,27 +122,141 @@ public class RsIndicatorExpressionBiz {
   }
 
   public void checkCircleDependencyAndPopulateIndicatorExpressionInfluenceEntity(
-      AtomicReference<IndicatorExpressionInfluenceEntity> indicatorExpressionInfluenceEntityAtomicReference,
+      String appId,
+      List<IndicatorExpressionInfluenceEntity> indicatorExpressionInfluenceEntityList,
       Integer source,
       String principalId,
       List<CreateOrUpdateIndicatorExpressionItemRequestRs> createOrUpdateIndicatorExpressionItemRequestRsList,
       CreateOrUpdateIndicatorExpressionItemRequestRs minCreateOrUpdateIndicatorExpressionItemRequestRs,
       CreateOrUpdateIndicatorExpressionItemRequestRs maxCreateOrUpdateIndicatorExpressionItemRequestRs
-
   ) throws ExecutionException, InterruptedException {
-    if (Objects.isNull(indicatorExpressionInfluenceEntityAtomicReference)
+    if (Objects.isNull(indicatorExpressionInfluenceEntityList)
+        || Objects.isNull(source) || !EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource().equals(source)
+        || Objects.isNull(principalId)
+    ) {return;}
+    Map<String, IndicatorExpressionInfluenceEntity> kIndicatorInstanceIdVIndicatorExpressionInfluenceEntityMap = new HashMap<>();
+    Map<String, Set<String>> kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap = new HashMap<>();
+    Map<String, Set<String>> kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap = new HashMap<>();
+    CompletableFuture<Void> cfPopulateAllInfluenceSet = CompletableFuture.runAsync(() -> {
+      this.populateAllInfluenceSet(appId, kIndicatorInstanceIdVIndicatorExpressionInfluenceEntityMap, kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap, kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap);
+    });
+    cfPopulateAllInfluenceSet.get();
+
+    List<String> conditionValListList = new ArrayList<>();
+    List<String> resultValListList = new ArrayList<>();
+    this.populateCreateOrUpdateIndicatorExpressionItemRequestRsList(
+        conditionValListList,
+        resultValListList,
+        createOrUpdateIndicatorExpressionItemRequestRsList,
+        minCreateOrUpdateIndicatorExpressionItemRequestRs,
+        maxCreateOrUpdateIndicatorExpressionItemRequestRs
+    );
+
+    Set<String> oldInfluencedIndicatorInstanceIdSet = kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.get(principalId);
+    /* runsix:如果有影响关系，说明是已经存在的指标。先删除 */
+    if (Objects.nonNull(oldInfluencedIndicatorInstanceIdSet)) {
+      /* runsix:维护其它指标影响它 */
+      oldInfluencedIndicatorInstanceIdSet.forEach(oldInfluencedIndicatorInstanceId -> {
+        Set<String> influenceIndicatorInstanceIdSet = kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap.get(oldInfluencedIndicatorInstanceId);
+        if (Objects.nonNull(influenceIndicatorInstanceIdSet) && !influenceIndicatorInstanceIdSet.isEmpty()) {
+          influenceIndicatorInstanceIdSet.remove(principalId);
+          kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap.put(oldInfluencedIndicatorInstanceId, influenceIndicatorInstanceIdSet);
+        }
+      });
+    }
+
+    /* runsix:后新增 new */
+    Set<String> newInfluencedIndicatorInstanceIdSet = new HashSet<>();
+    newInfluencedIndicatorInstanceIdSet.addAll(conditionValListList);
+    newInfluencedIndicatorInstanceIdSet.addAll(resultValListList);
+    newInfluencedIndicatorInstanceIdSet.remove(principalId);
+
+    /* runsix:维护新的影响它的指标 */
+    newInfluencedIndicatorInstanceIdSet.forEach(newInfluencedIndicatorInstanceId -> {
+      Set<String> influenceIndicatorInstanceIdSet = kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap.get(newInfluencedIndicatorInstanceId);
+      if (Objects.isNull(influenceIndicatorInstanceIdSet)) {influenceIndicatorInstanceIdSet = new HashSet<>();}
+      influenceIndicatorInstanceIdSet.add(principalId);
+      kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap.put(newInfluencedIndicatorInstanceId, influenceIndicatorInstanceIdSet);
+    });
+
+    /* runsix:旧的被影响指标都删掉，下面新增 */
+    kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.put(principalId, newInfluencedIndicatorInstanceIdSet);
+    /* runsix:它影响谁 */
+    Set<String> principalInfluenceIndicatorInstanceIdSet = kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap.get(principalId);
+    if (Objects.isNull(principalInfluenceIndicatorInstanceIdSet)) {principalInfluenceIndicatorInstanceIdSet = new HashSet<>();}
+    kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap.put(principalId, principalInfluenceIndicatorInstanceIdSet);
+
+    /* runsix:kahn校验 */
+    rsUtilBiz.algorithmKahn(null, kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap);
+
+    kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.forEach((indicatorInstanceId, influencedIndicatorInstanceIdSet) -> {
+      IndicatorExpressionInfluenceEntity indicatorExpressionInfluenceEntity = kIndicatorInstanceIdVIndicatorExpressionInfluenceEntityMap.get(indicatorInstanceId);
+      Set<String> influenceIndicatorInstanceIdSet1 = kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap.get(indicatorInstanceId);
+      String newInfluenceIndicatorInstanceId = rsUtilBiz.getCommaList(influenceIndicatorInstanceIdSet1);
+      Set<String> influencedIndicatorInstanceIdSet1 = kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.get(indicatorInstanceId);
+      String newInfluencedIndicatorInstanceId = rsUtilBiz.getCommaList(influencedIndicatorInstanceIdSet1);
+      if (Objects.isNull(indicatorExpressionInfluenceEntity)) {
+        indicatorExpressionInfluenceEntity = IndicatorExpressionInfluenceEntity
+            .builder()
+            .indicatorExpressionInfluenceId(idGenerator.nextIdStr())
+            .appId(appId)
+            .indicatorInstanceId(indicatorInstanceId)
+            .influenceIndicatorInstanceIdList(newInfluenceIndicatorInstanceId)
+            .influencedIndicatorInstanceIdList(newInfluencedIndicatorInstanceId)
+            .build();
+      } else {
+        indicatorExpressionInfluenceEntity.setInfluenceIndicatorInstanceIdList(newInfluenceIndicatorInstanceId);
+        indicatorExpressionInfluenceEntity.setInfluencedIndicatorInstanceIdList(newInfluencedIndicatorInstanceId);
+      }
+      indicatorExpressionInfluenceEntityList.add(indicatorExpressionInfluenceEntity);
+    });
+  }
+
+  private void populateAllInfluenceSet(
+      String appId,
+      Map<String, IndicatorExpressionInfluenceEntity> kIndicatorInstanceIdVIndicatorExpressionInfluenceEntityMap,
+      Map<String, Set<String>> kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap,
+      Map<String, Set<String>> kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap) {
+    if (StringUtils.isBlank(appId)
+        || Objects.isNull(kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap)
+        || Objects.isNull(kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap)
+    ) {return;}
+    indicatorExpressionInfluenceService.lambdaQuery()
+        .eq(IndicatorExpressionInfluenceEntity::getAppId, appId)
+        .list()
+        .forEach(indicatorExpressionInfluenceEntity -> {
+          String indicatorInstanceId = indicatorExpressionInfluenceEntity.getIndicatorInstanceId();
+          kIndicatorInstanceIdVIndicatorExpressionInfluenceEntityMap.put(indicatorInstanceId, indicatorExpressionInfluenceEntity);
+
+          Set<String> influenceIndicatorInstanceIdSet = kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap.get(indicatorInstanceId);
+          if (Objects.isNull(influenceIndicatorInstanceIdSet)) {influenceIndicatorInstanceIdSet = new HashSet<>();}
+          String influenceIndicatorInstanceIdList = indicatorExpressionInfluenceEntity.getInfluenceIndicatorInstanceIdList();
+          influenceIndicatorInstanceIdSet.addAll(rsUtilBiz.getSplitList(influenceIndicatorInstanceIdList));
+
+          Set<String> influencedIndicatorInstanceIdSet = kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.get(indicatorInstanceId);
+          if (Objects.isNull(influencedIndicatorInstanceIdSet)) {influencedIndicatorInstanceIdSet = new HashSet<>();}
+          String influencedIndicatorInstanceIdList = indicatorExpressionInfluenceEntity.getInfluencedIndicatorInstanceIdList();
+          influencedIndicatorInstanceIdSet.addAll(rsUtilBiz.getSplitList(influencedIndicatorInstanceIdList));
+        });
+  }
+
+  /* runsix:TODO DELETE  */
+  public void oldCheckCircleDependencyAndPopulateIndicatorExpressionInfluenceEntity(
+      String appId,
+      List<IndicatorExpressionInfluenceEntity> indicatorExpressionInfluenceEntityList,
+      Integer source,
+      String principalId,
+      List<CreateOrUpdateIndicatorExpressionItemRequestRs> createOrUpdateIndicatorExpressionItemRequestRsList,
+      CreateOrUpdateIndicatorExpressionItemRequestRs minCreateOrUpdateIndicatorExpressionItemRequestRs,
+      CreateOrUpdateIndicatorExpressionItemRequestRs maxCreateOrUpdateIndicatorExpressionItemRequestRs
+  ) throws ExecutionException, InterruptedException {
+    if (Objects.isNull(indicatorExpressionInfluenceEntityList)
         || Objects.isNull(source) || !EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource().equals(source)
         || Objects.isNull(principalId)
     ) {return;}
     Map<String, IndicatorExpressionInfluenceEntity> kIndicatorInstanceIdVIndicatorExpressionInfluenceEntityMap = new HashMap<>();
     Set<String> indicatorInstanceIdSet = new HashSet<>();
     indicatorInstanceIdSet.add(principalId);
-    CompletableFuture<Void> cfPopulateKIndicatorInstanceIdVIndicatorExpressionInfluenceMap = CompletableFuture.runAsync(() -> {
-      this.populateKIndicatorInstanceIdVIndicatorExpressionInfluenceMap(kIndicatorInstanceIdVIndicatorExpressionInfluenceEntityMap, indicatorInstanceIdSet);
-    });
-    cfPopulateKIndicatorInstanceIdVIndicatorExpressionInfluenceMap.get();
-
-    IndicatorExpressionInfluenceEntity indicatorExpressionInfluenceEntity = kIndicatorInstanceIdVIndicatorExpressionInfluenceEntityMap.get(principalId);
     Set<String> paramInfluencedIndicatorInstanceIdSet = new HashSet<>();
     List<String> conditionValListList = new ArrayList<>();
     List<String> resultValListList = new ArrayList<>();
@@ -153,6 +267,15 @@ public class RsIndicatorExpressionBiz {
         minCreateOrUpdateIndicatorExpressionItemRequestRs,
         maxCreateOrUpdateIndicatorExpressionItemRequestRs
     );
+    indicatorInstanceIdSet.addAll(conditionValListList);
+    indicatorInstanceIdSet.addAll(resultValListList);
+    CompletableFuture<Void> cfPopulateKIndicatorInstanceIdVIndicatorExpressionInfluenceMap = CompletableFuture.runAsync(() -> {
+      this.populateKIndicatorInstanceIdVIndicatorExpressionInfluenceMap(kIndicatorInstanceIdVIndicatorExpressionInfluenceEntityMap, indicatorInstanceIdSet);
+    });
+    cfPopulateKIndicatorInstanceIdVIndicatorExpressionInfluenceMap.get();
+
+    IndicatorExpressionInfluenceEntity indicatorExpressionInfluenceEntity = kIndicatorInstanceIdVIndicatorExpressionInfluenceEntityMap.get(principalId);
+
     CompletableFuture<Void> cfPopulateInfluencedIndicatorInstanceIdSet = CompletableFuture.runAsync(() -> {
       this.populateInfluencedIndicatorInstanceIdSet(principalId, paramInfluencedIndicatorInstanceIdSet, conditionValListList, resultValListList);
     });
@@ -166,9 +289,19 @@ public class RsIndicatorExpressionBiz {
         log.error("IndicatorExpressionBiz.v2CreateOrUpdate circle dependency dbInfluenceIndicatorInstanceIdList:{}, paramInfluencedIndicatorInstanceIdSet:{}", dbInfluenceIndicatorInstanceIdList, paramInfluencedIndicatorInstanceIdSet);
         throw new IndicatorExpressionException(EnumESC.INDICATOR_EXPRESSION_CIRCLE_DEPENDENCY);
       }
+
+
       indicatorExpressionInfluenceEntity.setInfluencedIndicatorInstanceIdList(String.join(EnumString.COMMA.getStr(), paramInfluencedIndicatorInstanceIdSet));
-      indicatorExpressionInfluenceEntityAtomicReference.set(indicatorExpressionInfluenceEntity);
+    } else {
+      indicatorExpressionInfluenceEntity = IndicatorExpressionInfluenceEntity
+          .builder()
+          .indicatorExpressionInfluenceId(idGenerator.nextIdStr())
+          .appId(appId)
+          .indicatorInstanceId(principalId)
+          .influencedIndicatorInstanceIdList(String.join(EnumString.COMMA.getStr(), paramInfluencedIndicatorInstanceIdSet))
+          .build();
     }
+    indicatorExpressionInfluenceEntityList.add(indicatorExpressionInfluenceEntity);
   }
 
   public void populateCreateOrUpdateIndicatorExpressionItemRequestRsList(
