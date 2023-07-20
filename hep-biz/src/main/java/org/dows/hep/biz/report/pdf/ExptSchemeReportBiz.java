@@ -130,7 +130,7 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
      * @date 2023/7/17 11:09
      */
     @Override
-    public ExptSchemeReportModel getExptReportModel(String exptGroupId, ExptSchemeReportData exptData) {
+    public ExptSchemeReportModel convertData2Model(String exptGroupId, ExptSchemeReportData exptData) {
         ExptBaseInfoModel baseInfoVO = generateBaseInfoVO(findSoftProperties, log);
         ExptSchemeReportModel.GroupInfo groupInfo = generateGroupInfo(exptGroupId, exptData);
         ExptSchemeReportModel.ScoreInfo scoreInfo = generateScoreInfo(exptGroupId, exptData);
@@ -155,7 +155,7 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
      * @date 2023/7/17 11:11
      */
     @Override
-    public File getTargetFile(String exptGroupId, ExptSchemeReportData exptReportData) {
+    public File getOutputPosition(String exptGroupId, ExptSchemeReportData exptReportData) {
         ExperimentInstanceEntity exptInfo = exptReportData.getExptInfo();
         List<ExperimentGroupEntity> groupList = exptReportData.getExptGroupInfoList();
         if (CollUtil.isEmpty(groupList) || StrUtil.isBlank(exptGroupId)) {
@@ -190,14 +190,14 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
     }
 
     // 生成 pdf 报告
-    // todo 如果文件存在，则不再生成立即返回，测试阶段先不做
     private ExptGroupReportVO generatePdfReportOfGroup(String exptGroupId, ExptSchemeReportData exptData) {
         // pdf 填充数据
-        ExptSchemeReportModel pdfVO = getExptReportModel(exptGroupId, exptData);
-        // pdf 输出文件
-        File targetFile = getTargetFile(exptGroupId, exptData);
+        ExptSchemeReportModel pdfVO = convertData2Model(exptGroupId, exptData);
         // pdf 模板
         String schemeFlt = getSchemeFlt();
+        // pdf 输出文件
+        File targetFile = getOutputPosition(exptGroupId, exptData);
+
 
         try {
             template2PdfBiz.convert2Pdf(pdfVO, schemeFlt, targetFile);

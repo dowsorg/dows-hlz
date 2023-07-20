@@ -144,7 +144,7 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
      * @date 2023/7/17 13:36
      */
     @Override
-    public ExptSandReportModel getExptReportModel(String exptGroupId, ExptSandReportData exptData) {
+    public ExptSandReportModel convertData2Model(String exptGroupId, ExptSandReportData exptData) {
         ExptBaseInfoModel baseInfoVO = generateBaseInfoVO(findSoftProperties, log);
         ExptSandReportModel.GroupInfo groupInfo = generateGroupInfo(exptGroupId, exptData);
         ExptSandReportModel.ScoreInfo scoreInfo = generateScoreInfo(exptGroupId, exptData);
@@ -169,7 +169,7 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
      * @date 2023/7/17 13:37
      */
     @Override
-    public File getTargetFile(String exptGroupId, ExptSandReportData exptReportData) {
+    public File getOutputPosition(String exptGroupId, ExptSandReportData exptReportData) {
         ExperimentInstanceEntity exptInfo = exptReportData.getExptInfo();
         List<ExperimentGroupEntity> groupList = exptReportData.getExptGroupInfoList();
         if (CollUtil.isEmpty(groupList) || StrUtil.isBlank(exptGroupId)) {
@@ -206,9 +206,9 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
     // 生成 pdf 报告
     private ExptGroupReportVO generatePdfReportOfGroup(String exptGroupId, ExptSandReportData exptData) {
         // 将 expt-data 转为 pdf-data
-        ExptSandReportModel pdfVO = getExptReportModel(exptGroupId, exptData);
+        ExptSandReportModel pdfVO = convertData2Model(exptGroupId, exptData);
         // pdf file
-        File targetFile = getTargetFile(exptGroupId, exptData);
+        File targetFile = getOutputPosition(exptGroupId, exptData);
         // pdf flt
         String schemeFlt = getSchemeFlt();
 

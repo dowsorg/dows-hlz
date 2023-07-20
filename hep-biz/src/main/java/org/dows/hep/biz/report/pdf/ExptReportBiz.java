@@ -29,13 +29,28 @@ import java.util.List;
  **/
 public interface ExptReportBiz<P extends ExptReportBiz.ExptReportData, R extends ExptReportModel> {
     ExptReportVO generatePdfReport(String exptInstanceId, String exptGroupId);
+
+    /**
+     * 生成 pdf 文件
+     * - prepareData: 预先准备好需要的业务数据
+     * - getExptReportModel: 将业务数据组装为 modelAndView 中的 model
+     * - getSchemeFlt: 获取 modelAndView 中的 view
+     * - getOutputPosition: 获取 pdf 输出位置
+     */
     P prepareData(String exptInstanceId, String exptGroupId);
-
-    /* 生成 pdf 文件*/
-    R getExptReportModel(String exptGroupId, P exptReportData);
-    File getTargetFile(String exptGroupId, P exptReportData);
+    R convertData2Model(String exptGroupId, P exptReportData);
     String getSchemeFlt();
+    File getOutputPosition(String exptGroupId, P exptReportData);
 
+    /**
+     * @param experimentGroupService - 实验小组 service
+     * @param exptInstanceId - 实验实例ID
+     * @param exptGroupId - 实验小组ID
+     * @return java.util.List<org.dows.hep.entity.ExperimentGroupEntity>
+     * @author fhb
+     * @description 列出`exptInstanceId` `exptGroupId` 下小组信息
+     * @date 2023/7/20 11:08
+     */
     default List<ExperimentGroupEntity> listExptGroupInfo(ExperimentGroupService experimentGroupService, String exptInstanceId, String exptGroupId) {
         return experimentGroupService.lambdaQuery()
                 .eq(ExperimentGroupEntity::getExperimentInstanceId, exptInstanceId)
@@ -43,6 +58,14 @@ public interface ExptReportBiz<P extends ExptReportBiz.ExptReportData, R extends
                 .list();
     }
 
+    /**
+     * @param experimentInstanceService - 实验实例 service
+     * @param exptInstanceId - 实验实例ID
+     * @return org.dows.hep.entity.ExperimentInstanceEntity
+     * @author fhb
+     * @description 获取实验信息
+     * @date 2023/7/20 11:10
+     */
     default ExperimentInstanceEntity getExptInfo(ExperimentInstanceService experimentInstanceService, String exptInstanceId) {
         return experimentInstanceService.lambdaQuery()
                 .eq(ExperimentInstanceEntity::getExperimentInstanceId, exptInstanceId)
@@ -50,6 +73,15 @@ public interface ExptReportBiz<P extends ExptReportBiz.ExptReportData, R extends
                 .orElse(null);
     }
 
+    /**
+     * @param experimentParticipatorService - 实验参与者 service
+     * @param exptInstanceId - 实验实例ID
+     * @param exptGroupId - 实验小组ID
+     * @return java.util.List<org.dows.hep.entity.ExperimentParticipatorEntity>
+     * @author fhb
+     * @description 获取  `exptInstanceId`  `exptGroupId` 下的参与者信息
+     * @date 2023/7/20 11:10
+     */
     default List<ExperimentParticipatorEntity> listExptMembers(ExperimentParticipatorService experimentParticipatorService, String exptInstanceId, String exptGroupId) {
         return experimentParticipatorService.lambdaQuery()
                 .eq(ExperimentParticipatorEntity::getExperimentInstanceId, exptInstanceId)
@@ -57,6 +89,14 @@ public interface ExptReportBiz<P extends ExptReportBiz.ExptReportData, R extends
                 .list();
     }
 
+    /**
+     * @param findSoftProperties - findSoft 公司基本信息
+     * @param log - log
+     * @return org.dows.hep.vo.report.ExptBaseInfoModel
+     * @author fhb
+     * @description 生成一些基本信息
+     * @date 2023/7/20 11:12
+     */
     default ExptBaseInfoModel generateBaseInfoVO(FindSoftProperties findSoftProperties, Logger log) {
         String logoStr = null;
         String coverStr = null;

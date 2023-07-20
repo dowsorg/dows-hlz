@@ -65,9 +65,9 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
     public ExptReportVO generatePdfReport(String exptInstanceId, String exptGroupId) {
         ExptOverviewReportData exptData = prepareData(exptInstanceId, exptGroupId);
         // 将 expt-data 转为 pdf-data
-        ExptOverviewReportModel pdfVO = getExptReportModel(exptGroupId, exptData);
+        ExptOverviewReportModel pdfVO = convertData2Model(exptGroupId, exptData);
         // pdf file
-        File targetFile = getTargetFile(exptGroupId, exptData);
+        File targetFile = getOutputPosition(exptGroupId, exptData);
         // pdf flt
         String schemeFlt = getSchemeFlt();
 
@@ -115,7 +115,7 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
     }
 
     @Override
-    public ExptOverviewReportModel getExptReportModel(String exptGroupId, ExptOverviewReportData exptReportData) {
+    public ExptOverviewReportModel convertData2Model(String exptGroupId, ExptOverviewReportData exptReportData) {
         ExptBaseInfoModel baseInfo = generateBaseInfoVO(findSoftProperties, log);
 
         ExperimentInstanceEntity exptInfo1 = exptReportData.getExptInfo();
@@ -282,7 +282,7 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
     }
 
     @Override
-    public File getTargetFile(String exptGroupId, ExptOverviewReportData exptReportData) {
+    public File getOutputPosition(String exptGroupId, ExptOverviewReportData exptReportData) {
         ExperimentInstanceEntity exptInfo = exptReportData.getExptInfo();
 
         // 实验总报告目录
