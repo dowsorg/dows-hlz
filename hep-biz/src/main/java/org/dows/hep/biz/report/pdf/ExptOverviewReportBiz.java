@@ -156,7 +156,7 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
         // 文件名
         return exptInfo.getExperimentName()
                 + SystemConstant.SPLIT_UNDER_LINE
-                + "实验总报告"
+                + "总报告"
                 + SystemConstant.SUFFIX_PDF;
     }
 
