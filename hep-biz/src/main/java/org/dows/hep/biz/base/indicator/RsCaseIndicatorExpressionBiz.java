@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.dows.hep.api.base.indicator.request.CaseCreateOrUpdateIndicatorExpressionItemRequestRs;
-import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorExpressionItemRequestRs;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.enums.EnumIndicatorExpressionScene;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
@@ -143,7 +142,7 @@ public class RsCaseIndicatorExpressionBiz {
     ) {return;}
     AtomicInteger seqAtomicInteger = new AtomicInteger(1);
     caseCreateOrUpdateIndicatorExpressionItemRequestRsList.forEach(caseCreateOrUpdateIndicatorExpressionItemRequestRs -> {
-      String caseIndicatorExpressionItemId = caseCreateOrUpdateIndicatorExpressionItemRequestRs.getCaseIndicatorExpressionItemId();
+      String caseIndicatorExpressionItemId = caseCreateOrUpdateIndicatorExpressionItemRequestRs.getIndicatorExpressionItemId();
       CaseIndicatorExpressionItemEntity caseIndicatorExpressionItemEntity = null;
       if (StringUtils.isBlank(caseIndicatorExpressionItemId)) {
         Integer seq = null;
