@@ -460,7 +460,7 @@ public class CaseIndicatorExpressionBiz {
       }
 
       /* runsix:2.11 ref */
-      newPopulateIndicatorExpressionRefEntity(caseIndicatorExpressionEntityAtomicReference.get().getIndicatorExpressionId(), caseCreateOrUpdateIndicatorExpressionRequestRs, caseIndicatorExpressionRefEntityAtomicReference);
+      newPopulateIndicatorExpressionRefEntity(caseIndicatorExpressionEntityAtomicReference.get().getCaseIndicatorExpressionId(), caseCreateOrUpdateIndicatorExpressionRequestRs, caseIndicatorExpressionRefEntityAtomicReference);
 
       if (Objects.nonNull(caseIndicatorExpressionRefEntityAtomicReference.get())) {caseIndicatorExpressionRefService.saveOrUpdate(caseIndicatorExpressionRefEntityAtomicReference.get());}
       if (Objects.nonNull(caseMinIndicatorExpressionItemEntityAtomicReference.get())) {caseIndicatorExpressionItemService.saveOrUpdate(caseMinIndicatorExpressionItemEntityAtomicReference.get());}
