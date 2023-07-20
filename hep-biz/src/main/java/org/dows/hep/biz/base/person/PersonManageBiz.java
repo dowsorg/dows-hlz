@@ -24,9 +24,11 @@ import org.dows.hep.biz.base.indicator.CaseIndicatorInstanceBiz;
 import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.entity.CasePersonEntity;
 import org.dows.hep.entity.CasePersonIndicatorFuncEntity;
+import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.HepArmEntity;
 import org.dows.hep.service.CasePersonIndicatorFuncService;
 import org.dows.hep.service.CasePersonService;
+import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.HepArmService;
 import org.dows.sequence.api.IdGenerator;
 import org.dows.user.api.api.UserExtinfoApi;
@@ -76,6 +78,8 @@ public class PersonManageBiz {
     private final CaseIndicatorInstanceBiz caseIndicatorInstanceBiz;
 
     private final CasePersonService casePersonService;
+
+    private final ExperimentInstanceService experimentInstanceService;
 
     /**
      * @param
@@ -388,6 +392,19 @@ public class PersonManageBiz {
                 .intro(request.getIntro())
                 .build();
         userExtinfoApi.insertOrUpdateExtinfo(extinfo);
+        //3、如果有实验用户，更新用户姓名
+        List<ExperimentInstanceEntity> instanceEntityList = experimentInstanceService.lambdaQuery()
+                .eq(ExperimentInstanceEntity::getAppointor,request.getAccountId())
+                .eq(ExperimentInstanceEntity::getDeleted,false)
+                .list();
+        if(instanceEntityList != null && instanceEntityList.size() > 0){
+            instanceEntityList.forEach(instance->{
+                experimentInstanceService.lambdaUpdate()
+                        .set(ExperimentInstanceEntity::getAppointorName,request.getUserName())
+                        .eq(ExperimentInstanceEntity::getId,instance.getId())
+                        .update();
+            });
+        }
         return userId;
     }
 
