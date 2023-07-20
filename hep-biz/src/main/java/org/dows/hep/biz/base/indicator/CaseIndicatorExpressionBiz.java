@@ -140,7 +140,7 @@ public class CaseIndicatorExpressionBiz {
           }
           indicatorExpressionIdList.add(indicatorExpressionId);
           kReasonIdVIndicatorExpressionIdListMap.put(reasonId, indicatorExpressionIdList);
-          kIndicatorExpressionIdVIndicatorExpressionRefIdMap.put(indicatorExpressionId, indicatorExpressionRefEntity.getIndicatorExpressionRefId());
+          kIndicatorExpressionIdVIndicatorExpressionRefIdMap.put(indicatorExpressionId, indicatorExpressionRefEntity.getCaseIndicatorExpressionRefId());
         });
     Map<String, CaseIndicatorExpressionEntity> kIndicatorExpressionIdVIndicatorExpressionEntityMap = new HashMap<>();
     Map<String, List<CaseIndicatorExpressionItemEntity>> kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap = new HashMap<>();
