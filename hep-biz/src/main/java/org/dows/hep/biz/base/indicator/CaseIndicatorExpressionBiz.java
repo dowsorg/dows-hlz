@@ -655,7 +655,7 @@ public class CaseIndicatorExpressionBiz {
     } else {
       caseIndicatorExpressionRefEntity = caseIndicatorExpressionRefService.lambdaQuery()
           .eq(CaseIndicatorExpressionRefEntity::getAppId, appId)
-          .eq(CaseIndicatorExpressionRefEntity::getIndicatorExpressionRefId, indicatorExpressionRefId)
+          .eq(CaseIndicatorExpressionRefEntity::getCaseIndicatorExpressionRefId, indicatorExpressionRefId)
           .oneOpt()
           .orElseThrow(() -> {
             log.warn("method populateIndicatorExpressionRefEntity indicatorExpressionRefId:{} is illegal", indicatorExpressionRefId);
