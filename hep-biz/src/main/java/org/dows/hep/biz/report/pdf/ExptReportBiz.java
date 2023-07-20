@@ -33,7 +33,7 @@ public interface ExptReportBiz<P extends ExptReportBiz.ExptReportData, R extends
 
     /* 生成 pdf 文件*/
     R getExptReportModel(String exptGroupId, P exptReportData);
-    File getTempFile(String exptGroupId, P exptReportData);
+    File getTargetFile(String exptGroupId, P exptReportData);
     String getSchemeFlt();
 
     default List<ExperimentGroupEntity> listExptGroupInfo(ExperimentGroupService experimentGroupService, String exptInstanceId, String exptGroupId) {

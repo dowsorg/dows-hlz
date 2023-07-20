@@ -67,7 +67,7 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
         // 将 expt-data 转为 pdf-data
         ExptOverviewReportModel pdfVO = getExptReportModel(exptGroupId, exptData);
         // pdf file
-        File targetFile = getTempFile(exptGroupId, exptData);
+        File targetFile = getTargetFile(exptGroupId, exptData);
         // pdf flt
         String schemeFlt = getSchemeFlt();
 
@@ -282,7 +282,7 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
     }
 
     @Override
-    public File getTempFile(String exptGroupId, ExptOverviewReportData exptReportData) {
+    public File getTargetFile(String exptGroupId, ExptOverviewReportData exptReportData) {
         ExperimentInstanceEntity exptInfo = exptReportData.getExptInfo();
 
         // 实验总报告目录

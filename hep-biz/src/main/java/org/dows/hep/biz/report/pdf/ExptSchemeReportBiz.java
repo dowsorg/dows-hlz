@@ -155,7 +155,7 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
      * @date 2023/7/17 11:11
      */
     @Override
-    public File getTempFile(String exptGroupId, ExptSchemeReportData exptReportData) {
+    public File getTargetFile(String exptGroupId, ExptSchemeReportData exptReportData) {
         ExperimentInstanceEntity exptInfo = exptReportData.getExptInfo();
         List<ExperimentGroupEntity> groupList = exptReportData.getExptGroupInfoList();
         if (CollUtil.isEmpty(groupList) || StrUtil.isBlank(exptGroupId)) {
@@ -195,7 +195,7 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
         // pdf 填充数据
         ExptSchemeReportModel pdfVO = getExptReportModel(exptGroupId, exptData);
         // pdf 输出文件
-        File targetFile = getTempFile(exptGroupId, exptData);
+        File targetFile = getTargetFile(exptGroupId, exptData);
         // pdf 模板
         String schemeFlt = getSchemeFlt();
 

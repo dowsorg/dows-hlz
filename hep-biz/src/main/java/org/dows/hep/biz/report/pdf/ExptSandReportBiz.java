@@ -169,7 +169,7 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
      * @date 2023/7/17 13:37
      */
     @Override
-    public File getTempFile(String exptGroupId, ExptSandReportData exptReportData) {
+    public File getTargetFile(String exptGroupId, ExptSandReportData exptReportData) {
         ExperimentInstanceEntity exptInfo = exptReportData.getExptInfo();
         List<ExperimentGroupEntity> groupList = exptReportData.getExptGroupInfoList();
         if (CollUtil.isEmpty(groupList) || StrUtil.isBlank(exptGroupId)) {
@@ -208,7 +208,7 @@ public class ExptSandReportBiz implements ExptReportBiz<ExptSandReportBiz.ExptSa
         // 将 expt-data 转为 pdf-data
         ExptSandReportModel pdfVO = getExptReportModel(exptGroupId, exptData);
         // pdf file
-        File targetFile = getTempFile(exptGroupId, exptData);
+        File targetFile = getTargetFile(exptGroupId, exptData);
         // pdf flt
         String schemeFlt = getSchemeFlt();
 
