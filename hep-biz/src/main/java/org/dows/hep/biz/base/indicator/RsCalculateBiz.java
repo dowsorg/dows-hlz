@@ -105,6 +105,7 @@ public class RsCalculateBiz {
     });
     cfKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get();
 
+    /* runsix:出现经典错误 */
     Set<String> hasCalculatedCaseIndicatorInstanceIdSet = new HashSet<>();
     Set<String> needCalculateCaseIndicatorInstanceIdSet = new HashSet<>(caseIndicatorInstanceIdSet);
     while (!needCalculateCaseIndicatorInstanceIdSet.isEmpty()) {
