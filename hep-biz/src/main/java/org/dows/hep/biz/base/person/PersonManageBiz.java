@@ -89,30 +89,7 @@ public class PersonManageBiz {
      */
     @DSTransactional
     public Integer deletePersons(Set<String> accountIds) {
-        //1、通过账户ID找到用户ID
-        Set<String> userIds = new HashSet<>();
-        accountIds.forEach(accountId -> {
-            userIds.add(accountUserApi.getUserByAccountId(accountId).getUserId());
-        });
-        //2、删除账户实例
-        Integer count = accountInstanceApi.deleteAccountInstanceByAccountIds(accountIds);
-        //3、删除小组信息
-//        accountIds.forEach(accountId ->{
-//            List<AccountGroupResponse> groupResponseList = accountGroupApi.getAccountGroupListByAccountId(accountId,"3");
-//            if(groupResponseList != null && groupResponseList.size() > 0){
-//                Set<String> ids = new HashSet<>();
-//                groupResponseList.forEach(groupResponse -> {
-//                    ids.add(groupResponse.getId());
-//                });
-//                accountGroupApi.batchDeleteGroups(ids);
-//            }
-//        });
-        //4、删除用户扩展信息
-        userIds.forEach(userId -> {
-            UserExtinfoResponse extinfoResponse = userExtinfoApi.getUserExtinfoByUserId(userId);
-            userExtinfoApi.deleteUserExtinfoById(extinfoResponse.getId());
-        });
-        //5、如果用户在机构中存在，一并删除
+        //1、如果用户是否存在机构信息，存在则无法删除
         List<CasePersonEntity> personEntityList = casePersonService.lambdaQuery()
                 .in(CasePersonEntity::getAccountId,accountIds)
                 .eq(CasePersonEntity::getDeleted,false)
@@ -126,6 +103,29 @@ public class PersonManageBiz {
 //            });
             throw new AccountException("存在用户被机构所引用，无法删除");
         }
+        //2、通过账户ID找到用户ID
+        Set<String> userIds = new HashSet<>();
+        accountIds.forEach(accountId -> {
+            userIds.add(accountUserApi.getUserByAccountId(accountId).getUserId());
+        });
+        //3、删除账户实例
+        Integer count = accountInstanceApi.deleteAccountInstanceByAccountIds(accountIds);
+        //4、删除小组信息
+//        accountIds.forEach(accountId ->{
+//            List<AccountGroupResponse> groupResponseList = accountGroupApi.getAccountGroupListByAccountId(accountId,"3");
+//            if(groupResponseList != null && groupResponseList.size() > 0){
+//                Set<String> ids = new HashSet<>();
+//                groupResponseList.forEach(groupResponse -> {
+//                    ids.add(groupResponse.getId());
+//                });
+//                accountGroupApi.batchDeleteGroups(ids);
+//            }
+//        });
+        //5、删除用户扩展信息
+        userIds.forEach(userId -> {
+            UserExtinfoResponse extinfoResponse = userExtinfoApi.getUserExtinfoByUserId(userId);
+            userExtinfoApi.deleteUserExtinfoById(extinfoResponse.getId());
+        });
         return count;
     }
 
