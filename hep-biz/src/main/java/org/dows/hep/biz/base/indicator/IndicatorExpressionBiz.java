@@ -1602,6 +1602,8 @@ public class IndicatorExpressionBiz{
               .conditionNameList(indicatorExpressionItemEntity.getConditionNameList())
               .conditionValList(indicatorExpressionItemEntity.getConditionValList())
               .build());
+          /* runsix:如果是指标管理，没有条件，就不用检查结果 */
+          if (EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource().equals(source) && StringUtils.isBlank(indicatorExpressionItemEntity.getConditionRaw())) {return;}
           rsUtilBiz.checkResult(kIndicatorInstanceIdVValMap, RsIndicatorExpressionCheckoutResultRequest
               .builder()
               .source(source)

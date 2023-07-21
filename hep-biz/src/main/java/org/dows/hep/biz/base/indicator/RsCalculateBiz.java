@@ -146,61 +146,6 @@ public class RsCalculateBiz {
       kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap.put(caseIndicatorInstanceId, caseIndicatorRuleEntity);
     });
 
-    /* runsix:出现经典错误 */
-//    Set<String> hasCalculatedCaseIndicatorInstanceIdSet = new HashSet<>();
-//    Set<String> needCalculateCaseIndicatorInstanceIdSet = new HashSet<>(caseIndicatorInstanceIdSet);
-//    while (!needCalculateCaseIndicatorInstanceIdSet.isEmpty()) {
-//      AtomicBoolean hasFindOne = new AtomicBoolean(Boolean.FALSE);
-//      needCalculateCaseIndicatorInstanceIdSet.forEach(needCalculateCaseIndicatorInstanceId -> {
-//        if (hasFindOne.get()) {return;}
-//        Set<String> influencedIndicatorInstanceIdSet = kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap.get(needCalculateCaseIndicatorInstanceId);
-//        if (Objects.isNull(influencedIndicatorInstanceIdSet) || influencedIndicatorInstanceIdSet.isEmpty()
-//            || hasCalculatedCaseIndicatorInstanceIdSet.containsAll(influencedIndicatorInstanceIdSet)
-//        ) {
-//          /* runsix:TODO 这里应该是默认值，算错了就用当前值计算 */
-//          CaseIndicatorRuleEntity caseIndicatorRuleEntity = kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap.get(needCalculateCaseIndicatorInstanceId);
-//          String def = caseIndicatorRuleEntity.getDef();
-//          AtomicReference<String> resultAtomicReference = new AtomicReference<>(def);
-//          CaseIndicatorExpressionEntity caseIndicatorExpressionEntity = kCaseIndicatorInstanceIdVCaseIndicatorExpressionEntityMap.get(needCalculateCaseIndicatorInstanceId);
-//          List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList = kCaseIndicatorInstanceIdVCaseIndicatorExpressionItemEntityListMap.get(needCalculateCaseIndicatorInstanceId);
-//          CaseIndicatorExpressionItemEntity minCaseIndicatorExpressionItemEntity = null;
-//          if (Objects.nonNull(caseIndicatorExpressionEntity)
-//              && StringUtils.isNotBlank(caseIndicatorExpressionEntity.getMinIndicatorExpressionItemId())
-//              && Objects.nonNull(kMinAndMaxCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get(caseIndicatorExpressionEntity.getMinIndicatorExpressionItemId()))
-//          ) {
-//            minCaseIndicatorExpressionItemEntity = kMinAndMaxCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get(caseIndicatorExpressionEntity.getMinIndicatorExpressionItemId());
-//          }
-//          CaseIndicatorExpressionItemEntity maxCaseIndicatorExpressionItemEntity = null;
-//          if (Objects.nonNull(caseIndicatorExpressionEntity)
-//              && StringUtils.isNotBlank(caseIndicatorExpressionEntity.getMaxIndicatorExpressionItemId())
-//              && Objects.nonNull(kMinAndMaxCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get(caseIndicatorExpressionEntity.getMaxIndicatorExpressionItemId()))
-//          ) {
-//            maxCaseIndicatorExpressionItemEntity = kMinAndMaxCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get(caseIndicatorExpressionEntity.getMaxIndicatorExpressionItemId());
-//          }
-//
-//          rsCaseIndicatorExpressionBiz.parseCaseIndicatorExpression(
-//              EnumIndicatorExpressionField.CASE.getField(), EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource(), EnumIndicatorExpressionScene.CASE_RE_CALCULATE.getScene(),
-//              resultAtomicReference,
-//              new HashMap<>(),
-//              DatabaseCalIndicatorExpressionRequest.builder().build(),
-//              CaseCalIndicatorExpressionRequest
-//                  .builder()
-//                  .kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap(kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap)
-//                  .caseIndicatorExpressionEntity(caseIndicatorExpressionEntity)
-//                  .caseIndicatorExpressionItemEntityList(caseIndicatorExpressionItemEntityList)
-//                  .minCaseIndicatorExpressionItemEntity(minCaseIndicatorExpressionItemEntity)
-//                  .maxCaseIndicatorExpressionItemEntity(maxCaseIndicatorExpressionItemEntity)
-//                  .build()
-//          );
-//          caseIndicatorRuleEntity.setDef(resultAtomicReference.get());
-//          kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap.put(needCalculateCaseIndicatorInstanceId, caseIndicatorRuleEntity);
-//          hasCalculatedCaseIndicatorInstanceIdSet.add(needCalculateCaseIndicatorInstanceId);
-//          needCalculateCaseIndicatorInstanceIdSet.remove(needCalculateCaseIndicatorInstanceId);
-//        }
-//      });
-//    }
-
-
     caseIndicatorRuleService.saveOrUpdateBatch(kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap.values());
   }
 

@@ -143,6 +143,8 @@ public class RsCaseIndicatorExpressionBiz {
     AtomicInteger seqAtomicInteger = new AtomicInteger(1);
     caseCreateOrUpdateIndicatorExpressionItemRequestRsList.forEach(caseCreateOrUpdateIndicatorExpressionItemRequestRs -> {
       String caseIndicatorExpressionItemId = caseCreateOrUpdateIndicatorExpressionItemRequestRs.getIndicatorExpressionItemId();
+      String resultExpression = caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultExpression();
+      resultExpression = rsUtilBiz.handleResultExpression(resultExpression);
       CaseIndicatorExpressionItemEntity caseIndicatorExpressionItemEntity = null;
       if (StringUtils.isBlank(caseIndicatorExpressionItemId)) {
         Integer seq = null;
@@ -161,7 +163,7 @@ public class RsCaseIndicatorExpressionBiz {
             .conditionNameList(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getConditionNameList())
             .conditionValList(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getConditionValList())
             .resultRaw(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultRaw())
-            .resultExpression(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultExpression())
+            .resultExpression(resultExpression)
             .resultNameList(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultNameList())
             .resultValList(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultValList())
             .seq(seq)
@@ -177,7 +179,7 @@ public class RsCaseIndicatorExpressionBiz {
         caseIndicatorExpressionItemEntity.setConditionNameList(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getConditionNameList());
         caseIndicatorExpressionItemEntity.setConditionValList(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getConditionValList());
         caseIndicatorExpressionItemEntity.setResultRaw(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultRaw());
-        caseIndicatorExpressionItemEntity.setResultExpression(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultExpression());
+        caseIndicatorExpressionItemEntity.setResultExpression(resultExpression);
         caseIndicatorExpressionItemEntity.setResultNameList(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultNameList());
         caseIndicatorExpressionItemEntity.setResultValList(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultValList());
         caseIndicatorExpressionItemEntity.setSeq(seqAtomicInteger.getAndIncrement());
@@ -743,12 +745,12 @@ public class RsCaseIndicatorExpressionBiz {
       List<String> conditionNameSplitList = rsUtilBiz.getConditionNameSplitList(conditionNameList);
       String conditionValList = indicatorExpressionItemEntity.getConditionValList();
       List<String> conditionValSplitList = rsUtilBiz.getConditionValSplitList(conditionValList);
-      StandardEvaluationContext context = new StandardEvaluationContext();
-      ExpressionParser parser = new SpelExpressionParser();
-      Expression expression = parser.parseExpression(conditionExpression);
       if (StringUtils.isBlank(conditionExpression)) {
         return true;
       }
+      StandardEvaluationContext context = new StandardEvaluationContext();
+      ExpressionParser parser = new SpelExpressionParser();
+      Expression expression = parser.parseExpression(conditionExpression);
       for (int i = 0; i <= conditionNameSplitList.size() - 1; i++) {
         String indicatorInstanceId = conditionValSplitList.get(i);
         String caseIndicatorInstanceId = kIndicatorInstanceIdVCaseIndicatorInstanceIdMap.get(indicatorInstanceId);
@@ -782,12 +784,12 @@ public class RsCaseIndicatorExpressionBiz {
       List<String> conditionNameSplitList = rsUtilBiz.getConditionNameSplitList(conditionNameList);
       String conditionValList = caseIndicatorExpressionItemEntity.getConditionValList();
       List<String> conditionValSplitList = rsUtilBiz.getConditionValSplitList(conditionValList);
-      StandardEvaluationContext context = new StandardEvaluationContext();
-      ExpressionParser parser = new SpelExpressionParser();
-      Expression expression = parser.parseExpression(conditionExpression);
       if (StringUtils.isBlank(conditionExpression)) {
         return true;
       }
+      StandardEvaluationContext context = new StandardEvaluationContext();
+      ExpressionParser parser = new SpelExpressionParser();
+      Expression expression = parser.parseExpression(conditionExpression);
       for (int i = 0; i <= conditionNameSplitList.size() - 1; i++) {
         String caseIndicatorInstanceId = conditionValSplitList.get(i);
         if (StringUtils.isBlank(caseIndicatorInstanceId)) {continue;}
@@ -820,12 +822,12 @@ public class RsCaseIndicatorExpressionBiz {
       List<String> resultNameSplitList = rsUtilBiz.getResultNameSplitList(resultNameList);
       String resultValList = caseIndicatorExpressionItemEntity.getResultValList();
       List<String> resultValSplitList = rsUtilBiz.getResultValSplitList(resultValList);
-      StandardEvaluationContext context = new StandardEvaluationContext();
-      ExpressionParser parser = new SpelExpressionParser();
-      Expression expression = parser.parseExpression(resultExpression);
       if (StringUtils.isBlank(resultExpression)) {
         return RsUtilBiz.RESULT_DROP;
       }
+      StandardEvaluationContext context = new StandardEvaluationContext();
+      ExpressionParser parser = new SpelExpressionParser();
+      Expression expression = parser.parseExpression(resultExpression);
       for (int i = 0; i <= resultNameSplitList.size() - 1; i++) {
         String caseIndicatorInstanceId = resultValSplitList.get(i);
         if (StringUtils.isBlank(caseIndicatorInstanceId)) {continue;}
@@ -859,12 +861,12 @@ public class RsCaseIndicatorExpressionBiz {
       List<String> resultNameSplitList = rsUtilBiz.getResultNameSplitList(resultNameList);
       String resultValList = indicatorExpressionItemEntity.getResultValList();
       List<String> resultValSplitList = rsUtilBiz.getResultValSplitList(resultValList);
-      StandardEvaluationContext context = new StandardEvaluationContext();
-      ExpressionParser parser = new SpelExpressionParser();
-      Expression expression = parser.parseExpression(resultExpression);
       if (StringUtils.isBlank(resultExpression)) {
         return RsUtilBiz.RESULT_DROP;
       }
+      StandardEvaluationContext context = new StandardEvaluationContext();
+      ExpressionParser parser = new SpelExpressionParser();
+      Expression expression = parser.parseExpression(resultExpression);
       for (int i = 0; i <= resultNameSplitList.size() - 1; i++) {
         String indicatorInstanceId = resultValSplitList.get(i);
         String caseIndicatorInstanceId = kIndicatorInstanceIdVCaseIndicatorInstanceIdMap.get(indicatorInstanceId);

@@ -440,6 +440,8 @@ public class RsIndicatorExpressionBiz {
     AtomicInteger seqAtomicInteger = new AtomicInteger(1);
     createOrUpdateIndicatorExpressionItemRequestRsList.forEach(createOrUpdateIndicatorExpressionItemRequestRs -> {
       String indicatorExpressionItemId = createOrUpdateIndicatorExpressionItemRequestRs.getIndicatorExpressionItemId();
+      String resultExpression = createOrUpdateIndicatorExpressionItemRequestRs.getResultExpression();
+      resultExpression = rsUtilBiz.handleResultExpression(resultExpression);
       IndicatorExpressionItemEntity indicatorExpressionItemEntity = null;
       if (StringUtils.isBlank(indicatorExpressionItemId)) {
         Integer seq = null;
@@ -458,7 +460,7 @@ public class RsIndicatorExpressionBiz {
           .conditionNameList(createOrUpdateIndicatorExpressionItemRequestRs.getConditionNameList())
           .conditionValList(createOrUpdateIndicatorExpressionItemRequestRs.getConditionValList())
           .resultRaw(createOrUpdateIndicatorExpressionItemRequestRs.getResultRaw())
-          .resultExpression(createOrUpdateIndicatorExpressionItemRequestRs.getResultExpression())
+          .resultExpression(resultExpression)
           .resultNameList(createOrUpdateIndicatorExpressionItemRequestRs.getResultNameList())
           .resultValList(createOrUpdateIndicatorExpressionItemRequestRs.getResultValList())
           .seq(seq)
@@ -474,7 +476,7 @@ public class RsIndicatorExpressionBiz {
         indicatorExpressionItemEntity.setConditionNameList(createOrUpdateIndicatorExpressionItemRequestRs.getConditionNameList());
         indicatorExpressionItemEntity.setConditionValList(createOrUpdateIndicatorExpressionItemRequestRs.getConditionValList());
         indicatorExpressionItemEntity.setResultRaw(createOrUpdateIndicatorExpressionItemRequestRs.getResultRaw());
-        indicatorExpressionItemEntity.setResultExpression(createOrUpdateIndicatorExpressionItemRequestRs.getResultExpression());
+        indicatorExpressionItemEntity.setResultExpression(resultExpression);
         indicatorExpressionItemEntity.setResultNameList(createOrUpdateIndicatorExpressionItemRequestRs.getResultNameList());
         indicatorExpressionItemEntity.setResultValList(createOrUpdateIndicatorExpressionItemRequestRs.getResultValList());
         indicatorExpressionItemEntity.setSeq(seqAtomicInteger.getAndIncrement());
@@ -796,12 +798,12 @@ public class RsIndicatorExpressionBiz {
       List<String> conditionNameSplitList = rsUtilBiz.getConditionNameSplitList(conditionNameList);
       String conditionValList = indicatorExpressionItemEntity.getConditionValList();
       List<String> conditionValSplitList = rsUtilBiz.getConditionValSplitList(conditionValList);
-      StandardEvaluationContext context = new StandardEvaluationContext();
-      ExpressionParser parser = new SpelExpressionParser();
-      Expression expression = parser.parseExpression(conditionExpression);
       if (StringUtils.isBlank(conditionExpression)) {
         return true;
       }
+      StandardEvaluationContext context = new StandardEvaluationContext();
+      ExpressionParser parser = new SpelExpressionParser();
+      Expression expression = parser.parseExpression(conditionExpression);
       for (int i = 0; i <= conditionNameSplitList.size() - 1; i++) {
         String indicatorInstanceId = conditionValSplitList.get(i);
         IndicatorRuleEntity indicatorRuleEntity = kIndicatorInstanceIdVIndicatorRuleEntityMap.get(indicatorInstanceId);

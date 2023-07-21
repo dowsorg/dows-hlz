@@ -447,6 +447,8 @@ public class CaseIndicatorExpressionBiz {
               .conditionNameList(caseIndicatorExpressionItemEntity.getConditionNameList())
               .conditionValList(caseIndicatorExpressionItemEntity.getConditionValList())
               .build());
+          /* runsix:如果是指标管理，没有条件，就不用检查结果 */
+          if (EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource().equals(source) && StringUtils.isBlank(caseIndicatorExpressionItemEntity.getConditionRaw())) {return;}
           rsUtilBiz.checkResult(kCaseIndicatorInstanceIdVValMap, RsIndicatorExpressionCheckoutResultRequest
               .builder()
               .source(source)
