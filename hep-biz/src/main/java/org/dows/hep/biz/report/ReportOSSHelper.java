@@ -1,4 +1,4 @@
-package org.dows.hep.biz.report.pdf;
+package org.dows.hep.biz.report;
 
 import jakarta.xml.bind.DatatypeConverter;
 import lombok.RequiredArgsConstructor;

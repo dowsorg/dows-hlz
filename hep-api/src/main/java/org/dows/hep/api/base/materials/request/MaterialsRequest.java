@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -16,6 +18,8 @@ import java.util.List;
  * @date 2023/4/18 15:02
  */
 @Data
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @Schema(name = "MaterialsRequest 对象", title = "资料")
 public class MaterialsRequest {
