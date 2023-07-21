@@ -51,7 +51,7 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.ExptSchemeReportData, ExptSchemeReportModel> {
+public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeReportHandler.ExptSchemeReportData, ExptSchemeReportModel> {
     private final ExperimentSchemeScoreBiz experimentSchemeScoreBiz;
     private final ExperimentSchemeBiz experimentSchemeBiz;
     private final ExperimentInstanceService experimentInstanceService;

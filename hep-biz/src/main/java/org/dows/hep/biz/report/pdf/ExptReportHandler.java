@@ -18,7 +18,7 @@ import java.util.List;
  * @description 实验报告
  * @date 2023/7/7 13:49
  **/
-public interface ExptReportBiz<P extends ExptReportBiz.ExptReportData, R extends ExptReportModel> {
+public interface ExptReportHandler<P extends ExptReportHandler.ExptReportData, R extends ExptReportModel> {
     ExptReportVO generatePdfReport(String exptInstanceId, String exptGroupId);
 
     /**

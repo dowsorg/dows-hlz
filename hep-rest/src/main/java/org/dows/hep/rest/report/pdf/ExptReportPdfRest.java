@@ -9,9 +9,9 @@ import org.dows.hep.api.constant.SystemConstant;
 import org.dows.hep.vo.report.ExptGroupReportVO;
 import org.dows.hep.vo.report.ExptReportVO;
 import org.dows.hep.api.user.experiment.ExptSettingModeEnum;
-import org.dows.hep.biz.report.pdf.ExptOverviewReportBiz;
-import org.dows.hep.biz.report.pdf.ExptSandReportBiz;
-import org.dows.hep.biz.report.pdf.ExptSchemeReportBiz;
+import org.dows.hep.biz.report.pdf.ExptOverviewReportHandler;
+import org.dows.hep.biz.report.pdf.ExptSandReportHandler;
+import org.dows.hep.biz.report.pdf.ExptSchemeReportHandler;
 import org.dows.hep.biz.report.pdf.ReportZipHelper;
 import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
 import org.dows.hep.entity.ExperimentInstanceEntity;
@@ -40,9 +40,9 @@ public class ExptReportPdfRest {
     private final RedissonClient redissonClient;
     private final ExperimentInstanceService experimentInstanceService;
     private final ExperimentSettingBiz experimentSettingBiz;
-    private final ExptSchemeReportBiz exptSchemeReportBiz;
-    private final ExptSandReportBiz exptSandReportBiz;
-    private final ExptOverviewReportBiz exptOverviewReportBiz;
+    private final ExptSchemeReportHandler exptSchemeReportBiz;
+    private final ExptSandReportHandler exptSandReportBiz;
+    private final ExptOverviewReportHandler exptOverviewReportBiz;
     private final ReportZipHelper reportZipHelper;
 
     /**

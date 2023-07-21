@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBiz.ExptOverviewReportData, ExptOverviewReportModel> {
+public class ExptOverviewReportHandler implements ExptReportHandler<ExptOverviewReportHandler.ExptOverviewReportData, ExptOverviewReportModel> {
     private final ExperimentSchemeBiz experimentSchemeBiz;
     private final ExperimentScoringBiz experimentScoringBiz;
     private final ExperimentSettingBiz experimentSettingBiz;
