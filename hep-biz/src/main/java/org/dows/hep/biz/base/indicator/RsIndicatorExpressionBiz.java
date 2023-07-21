@@ -135,8 +135,8 @@ public class RsIndicatorExpressionBiz {
         || Objects.isNull(principalId)
     ) {return;}
     Map<String, IndicatorExpressionInfluenceEntity> kIndicatorInstanceIdVIndicatorExpressionInfluenceEntityMap = new HashMap<>();
-    Map<String, Set<String>> kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap = new HashMap<>();
     Map<String, Set<String>> kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap = new HashMap<>();
+    Map<String, Set<String>> kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap = new HashMap<>();
     CompletableFuture<Void> cfPopulateAllInfluenceSet = CompletableFuture.runAsync(() -> {
       this.populateAllInfluenceSet(appId, kIndicatorInstanceIdVIndicatorExpressionInfluenceEntityMap, kIndicatorInstanceIdVInfluenceIndicatorInstanceIdSetMap, kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap);
     });
