@@ -82,7 +82,7 @@ public class ExptOverviewReportHandler implements ExptReportHandler<ExptOverview
         String fileName = getOutputPosition(exptGroupId, exptData);
 
         // 判断记录中是否有数据
-        String reportOfGroup = recordHelper.getReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.EXPT);
+        String reportOfGroup = recordHelper.getReportOfExpt(exptInstanceId, ExptReportTypeEnum.EXPT);
         if (StrUtil.isNotBlank(reportOfGroup)) {
             ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
                     .name(fileName)

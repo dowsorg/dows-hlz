@@ -78,10 +78,10 @@ public class ExptReportFacadeBiz {
                 // 查询是否已经存在
                 String reportOfExpt = reportRecordHelper.getReportOfExpt(exptInstanceId, ExptReportTypeEnum.EXPT_ZIP);
                 if (StrUtil.isNotBlank(reportOfExpt)) {
-                    return ExptReportVO.builder()
-                            .zipName(exptZipName)
-                            .zipPath(reportOfExpt)
-                            .build();
+                    ExptReportVO exptReportVO = generatePdf(exptInstanceId, null);
+                    exptReportVO.setZipName(exptZipName);
+                    exptReportVO.setZipPath(reportOfExpt);
+                    return exptReportVO;
                 }
 
                 // 生成报告
@@ -140,12 +140,12 @@ public class ExptReportFacadeBiz {
         try {
             if (lock.tryLock(-1, 10, TimeUnit.SECONDS)) {
                 // 查询是否已经存在
-                String reportOfGroup = reportRecordHelper.getReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.EXPT_ZIP);
+                String reportOfGroup = reportRecordHelper.getReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP_ZIP);
                 if (StrUtil.isNotBlank(reportOfGroup)) {
-                    return ExptReportVO.builder()
-                            .zipName(groupZipName)
-                            .zipPath(reportOfGroup)
-                            .build();
+                    ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId);
+                    exptReportVO.setZipName(groupZipName);
+                    exptReportVO.setZipPath(reportOfGroup);
+                    return exptReportVO;
                 }
 
                 // 生成报告
