@@ -21,25 +21,33 @@ public class CountDownResponse {
     private Integer model;
     @Schema(title = "期数")
     private Integer period;
-    @Schema(title = "沙盘持续时间")
-    private Double sandDuration;
+
+    @Schema(title = "实验倒计时时间")
+    private Long countdown;
+
+
+    @Schema(title = "沙盘总时长[天]")
+    private Long sandTotalTime;
+    @Schema(title = "沙盘时间单位")
+    private String sandTimeUnit;
     @Schema(title = "沙盘持续时间(秒)")
     private Long sandDurationSecond;
     @Schema(title = "沙盘剩余时间(秒)")
     private Long sandRemnantSecond;
 
-    @Schema(title = "沙盘实验时长")
-    private Long sandTime;
-    @Schema(title = "沙盘实验倒计时时间")
-    private Long countdown;
-    @Schema(title = "沙盘时间单位")
-    private String sandTimeUnit;
 
-    @Schema(title = "方案设计倒计时时间")
-    private Long schemeTime;
 
-    @Schema(title = "方案时间单位")
+    @Schema(title = "方案设计总时长")
+    private Long schemeTotalTime;
+    @Schema(title = "方案设计时间单位")
     private String schemeTimeUnit;
+    @Schema(title = "方案持续时间(秒)")
+    private Long schemeDurationSecond;
+    @Schema(title = "方案剩余时间(秒)")
+    private Long schemeRemnantSecond;
+
+
+
     @Schema(title = "实验状态")
     private Integer state;
     /**

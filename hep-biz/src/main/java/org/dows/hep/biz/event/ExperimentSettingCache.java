@@ -158,7 +158,7 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
                 .orElseThrow(String.format("未找到实验第%s期设置", rst.getPeriod()));
         long pausingSeconds = 0;
         if (Optional.ofNullable(rowTime.getPaused()).orElse(false)) {
-            pausingSeconds = (nowTs - rowTime.getPauseStartTime().getTime()) / 1000;
+            pausingSeconds = (nowTs - rowTime.getPauseTime().getTime()) / 1000;
         }
         rst.setCntPauseSeconds(pausingSeconds + rowTime.getEndTime().getTime() / 1000
                 - ShareUtil.XDate.localDT2UnixTS(cached.getStartTime().plusSeconds(setting.getEndSecond()), true));
