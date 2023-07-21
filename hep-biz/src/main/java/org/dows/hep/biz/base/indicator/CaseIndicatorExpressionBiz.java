@@ -440,7 +440,7 @@ public class CaseIndicatorExpressionBiz {
         caseIndicatorExpressionItemEntityList.forEach(caseIndicatorExpressionItemEntity -> {
           rsUtilBiz.checkCondition(kCaseIndicatorInstanceIdVValMap, RsIndicatorExpressionCheckConditionRequest
               .builder()
-              .source(EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource())
+              .source(source)
               .field(EnumIndicatorExpressionField.CASE.getField())
               .conditionRaw(caseIndicatorExpressionItemEntity.getConditionRaw())
               .conditionExpression(caseIndicatorExpressionItemEntity.getConditionExpression())
@@ -449,7 +449,7 @@ public class CaseIndicatorExpressionBiz {
               .build());
           rsUtilBiz.checkResult(kCaseIndicatorInstanceIdVValMap, RsIndicatorExpressionCheckoutResultRequest
               .builder()
-              .source(EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource())
+              .source(source)
               .field(EnumIndicatorExpressionField.CASE.getField())
               .resultRaw(caseIndicatorExpressionItemEntity.getResultRaw())
               .resultExpression(caseIndicatorExpressionItemEntity.getResultExpression())

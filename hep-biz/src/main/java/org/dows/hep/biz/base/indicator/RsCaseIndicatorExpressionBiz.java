@@ -767,7 +767,7 @@ public class RsCaseIndicatorExpressionBiz {
       }
       return Boolean.TRUE.equals(expression.getValue(context, Boolean.class));
     } catch(Exception e) {
-      log.error("RsCaseIndicatorExpressionBiz.cPIEConditionUsingExperimentIndicatorInstanceId", e);
+      log.error("RsCaseIndicatorExpressionBiz.cPIEConditionUsingIndicatorInstanceId", e);
       return false;
     }
   }
@@ -805,7 +805,7 @@ public class RsCaseIndicatorExpressionBiz {
       }
       return Boolean.TRUE.equals(expression.getValue(context, Boolean.class));
     } catch(Exception e) {
-      log.error("RsCaseIndicatorExpressionBiz.cPIEConditionUsingExperimentIndicatorInstanceId", e);
+      log.error("RsCaseIndicatorExpressionBiz.cPIEConditionUsingCaseIndicatorInstanceId", e);
       return false;
     }
   }
