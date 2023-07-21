@@ -314,7 +314,7 @@ public class ExperimentInsuranceBiz {
         if(flag){
             long interval = (entity.getExpdate().getTime() - new Date().getTime())/1000;
             map.put("result", true);
-            map.put("interval",interval);
+            map.put("interval",interval / 3600 + "时" + interval % 3600 / 60 + "分" + interval % 60 + "秒");
         }else{
             map.put("result", false);
         }
