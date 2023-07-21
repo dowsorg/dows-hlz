@@ -138,7 +138,6 @@ public class IndicatorInstanceBiz{
 
     @Transactional(rollbackFor = Exception.class)
     public void createOrUpdateRs(CreateOrUpdateIndicatorInstanceRequestRs createOrUpdateIndicatorInstanceRequestRs) throws InterruptedException {
-        IndicatorExpressionInfluenceEntity indicatorExpressionInfluenceEntity = null;
         String indicatorInstanceId = createOrUpdateIndicatorInstanceRequestRs.getIndicatorInstanceId();
         String indicatorCategoryId = createOrUpdateIndicatorInstanceRequestRs.getIndicatorCategoryId();
         Integer type = createOrUpdateIndicatorInstanceRequestRs.getType();
@@ -162,6 +161,7 @@ public class IndicatorInstanceBiz{
         IndicatorInstanceEntity indicatorInstanceEntity = null;
         IndicatorCategoryRefEntity indicatorCategoryRefEntity = null;
         IndicatorRuleEntity indicatorRuleEntity = null;
+        IndicatorExpressionInfluenceEntity indicatorExpressionInfluenceEntity = null;
         if (StringUtils.isBlank(indicatorInstanceId)) {
             indicatorInstanceId = idGenerator.nextIdStr();
             indicatorInstanceEntity = IndicatorInstanceEntity

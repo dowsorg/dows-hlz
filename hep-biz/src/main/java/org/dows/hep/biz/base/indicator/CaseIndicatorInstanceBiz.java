@@ -752,6 +752,7 @@ public class CaseIndicatorInstanceBiz {
         AtomicReference<CaseIndicatorInstanceEntity> caseIndicatorInstanceEntityAR = new AtomicReference<>();
         AtomicReference<CaseIndicatorCategoryRefEntity> caseIndicatorCategoryRefEntityAR = new AtomicReference<>();
         AtomicReference<CaseIndicatorRuleEntity> caseIndicatorRuleEntityAR = new AtomicReference<>();
+        AtomicReference<CaseIndicatorExpressionInfluenceEntity> caseIndicatorExpressionInfluenceEntityAR = new AtomicReference<>();
         if (StringUtils.isBlank(caseIndicatorInstanceId)) {
             caseIndicatorInstanceId = idGenerator.nextIdStr();
             CaseIndicatorInstanceEntity caseIndicatorInstanceEntity = CaseIndicatorInstanceEntity
@@ -792,9 +793,16 @@ public class CaseIndicatorInstanceBiz {
                 .max(max)
                 .def(def)
                 .build();
+            CaseIndicatorExpressionInfluenceEntity caseIndicatorExpressionInfluenceEntity = CaseIndicatorExpressionInfluenceEntity
+                .builder()
+                .caseIndicatorExpressionInfluenceId(idGenerator.nextIdStr())
+                .appId(appId)
+                .indicatorInstanceId(caseIndicatorInstanceId)
+                .build();
             caseIndicatorInstanceEntityAR.set(caseIndicatorInstanceEntity);
             caseIndicatorCategoryRefEntityAR.set(caseIndicatorCategoryRefEntity);
             caseIndicatorRuleEntityAR.set(caseIndicatorRuleEntity);
+            caseIndicatorExpressionInfluenceEntityAR.set(caseIndicatorExpressionInfluenceEntity);
         } else {
             rsCaseIndicatorInstanceBiz.checkCaseIndicatorInstanceIdInCaseIndicatorInstanceEntity(caseIndicatorInstanceEntityAR, caseIndicatorInstanceId);
             CaseIndicatorInstanceEntity caseIndicatorInstanceEntity = caseIndicatorInstanceEntityAR.get();
@@ -821,6 +829,7 @@ public class CaseIndicatorInstanceBiz {
             if (Objects.nonNull(caseIndicatorInstanceEntityAR.get())) {caseIndicatorInstanceService.saveOrUpdate(caseIndicatorInstanceEntityAR.get());}
             if (Objects.nonNull(caseIndicatorCategoryRefEntityAR.get())) {caseIndicatorCategoryRefService.saveOrUpdate(caseIndicatorCategoryRefEntityAR.get());}
             if (Objects.nonNull(caseIndicatorRuleEntityAR.get())) {caseIndicatorRuleService.saveOrUpdate(caseIndicatorRuleEntityAR.get());}
+            if (Objects.nonNull(caseIndicatorExpressionInfluenceEntityAR.get())) {caseIndicatorExpressionInfluenceService.saveOrUpdate(caseIndicatorExpressionInfluenceEntityAR.get());}
         } finally {
             lock.unlock();
         }
