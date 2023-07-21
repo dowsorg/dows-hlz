@@ -42,7 +42,7 @@ public class ReportZipHelper {
      * @description
      * @date 2023/7/13 21:33
      */
-    public void upload(ExptReportVO exptReportVO) {
+    public void zipAndUpload(ExptReportVO exptReportVO) {
         if (BeanUtil.isEmpty(exptReportVO)) {
             return;
         }

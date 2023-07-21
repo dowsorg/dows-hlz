@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 实验报告实例(ExperimentReportInstance)实体类
@@ -36,23 +36,20 @@ public class ExperimentReportInstanceEntity implements CrudEntity {
     @Schema(title = "数据库ID")
     private Long id;
 
-    @Schema(title = "应用ID")
-    private String appId;
-
     @Schema(title = "实验报告实例ID")
     private String experimentReportInstanceId;
 
     @Schema(title = "实验实列ID")
     private String experimentInstanceId;
 
-    @Schema(title = "实验时间")
-    private String experimentTime;
-
-    @Schema(title = "实验完成时间")
-    private Date experimentFinishTime;
+    @Schema(title = "实验小组ID")
+    private String experimentGroupId;
 
     @Schema(title = "资料ID[pdf报告ID]")
     private String materialsId;
+
+    @Schema(title = "报告类型")
+    private String reportType;
 
     @JsonIgnore
     @TableLogic
