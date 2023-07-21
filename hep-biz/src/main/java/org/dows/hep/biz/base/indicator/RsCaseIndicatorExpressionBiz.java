@@ -1240,4 +1240,38 @@ public class RsCaseIndicatorExpressionBiz {
           );
         });
   }
+
+  public void populateAllKCaseIndicatorInstanceIdVSeqMap(String caseInstanceId, Map<String, Integer> kCaseIndicatorInstanceIdVSeqMap) {
+    if (Objects.isNull(kCaseIndicatorInstanceIdVSeqMap) || StringUtils.isBlank(caseInstanceId)) {return;}
+    Map<String, Set<String>> kPrincipalIdVCaseIndicatorInstanceIdSetMap = new HashMap<>();
+    caseIndicatorInstanceService.lambdaQuery()
+        .eq(CaseIndicatorInstanceEntity::getCaseIndicatorInstanceId, caseInstanceId)
+        .list()
+        .forEach(caseIndicatorInstanceEntity -> {
+          String principalId = caseIndicatorInstanceEntity.getPrincipalId();
+          Set<String> caseIndicatorInstanceIdSet = kPrincipalIdVCaseIndicatorInstanceIdSetMap.get(principalId);
+          if (Objects.isNull(caseIndicatorInstanceIdSet)) {caseIndicatorInstanceIdSet = new HashSet<>();}
+          caseIndicatorInstanceIdSet.add(caseIndicatorInstanceEntity.getCaseIndicatorInstanceId());
+          kPrincipalIdVCaseIndicatorInstanceIdSetMap.put(principalId, caseIndicatorInstanceIdSet);
+        });
+    kPrincipalIdVCaseIndicatorInstanceIdSetMap.values().forEach(caseIndicatorInstanceIdSet -> {
+      List<String> seqList = new ArrayList<>();
+      Map<String, Set<String>> kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap = new HashMap<>();
+      CompletableFuture<Void> cfPopulateKCaseIndicatorInstanceIdInfluencedIndicatorInstanceIdSetMap = CompletableFuture.runAsync(() -> {
+        this.populateKCaseIndicatorInstanceIdInfluencedIndicatorInstanceIdSetMap(kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap, caseIndicatorInstanceIdSet);
+      });
+      try {
+        cfPopulateKCaseIndicatorInstanceIdInfluencedIndicatorInstanceIdSetMap.get();
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      } catch (ExecutionException e) {
+        throw new RuntimeException(e);
+      }
+      rsUtilBiz.algorithmKahn(seqList, kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap);
+      for (int i = 0; i <= seqList.size()-1; i++) {
+        String caseIndicatorInstanceId = seqList.get(i);
+        kCaseIndicatorInstanceIdVSeqMap.put(caseIndicatorInstanceId, i+1);
+      }
+    });
+  }
 }

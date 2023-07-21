@@ -9,6 +9,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -33,6 +34,12 @@ public class ExperimentEventListener implements ApplicationListener<ExperimentEv
         if (null == eventHandler) {
             throw new BizException("未找到对应的事件处理器");
         }
-        eventHandler.exec(experimentEvent.getSource());
+        try {
+            eventHandler.exec(experimentEvent.getSource());
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
