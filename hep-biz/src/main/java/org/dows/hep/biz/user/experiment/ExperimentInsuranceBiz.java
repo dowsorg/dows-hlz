@@ -92,7 +92,7 @@ public class ExperimentInsuranceBiz {
                         multiply(BigDecimal.valueOf(365)).
                         divide(BigDecimal.valueOf(periodsand),2, RoundingMode.DOWN).
                         multiply(BigDecimal.valueOf(60));
-                if(assumSecond.intValue() >= remainSecond){
+                if(assumSecond.intValue() > remainSecond){
                     remainDay += BigDecimal.valueOf(remainSecond)
                             .divide(BigDecimal.valueOf(60),2, RoundingMode.DOWN)
                             .multiply(BigDecimal.valueOf(periodsand))
@@ -107,7 +107,7 @@ public class ExperimentInsuranceBiz {
             if(i != currentPeriods){
                 //加上每期间隔
                 expdate = TimeUtil.timeAddSecond(expdate,sandSetting.getInterval().intValue());
-                //2.7、后面的期数，都是完整的
+                //2.6、后面的期数，都是完整的
                 long remainTime = experimentPeriodsStartAnsEndTime.get(i).getEndTime().getTime()
                         - experimentPeriodsStartAnsEndTime.get(i).getStartTime().getTime();
                 int remainSecond = (int) remainTime / 1000;
@@ -116,7 +116,7 @@ public class ExperimentInsuranceBiz {
                 BigDecimal assumSecond = BigDecimal.valueOf(duration).
                         multiply(BigDecimal.valueOf(leftDay)).
                         divide(BigDecimal.valueOf(periodsand),2, RoundingMode.DOWN).multiply(BigDecimal.valueOf(60));
-                if(assumSecond.intValue() >= remainSecond){
+                if(assumSecond.intValue() > remainSecond){
                     remainDay += BigDecimal.valueOf(remainSecond)
                             .divide(BigDecimal.valueOf(60),2, RoundingMode.DOWN)
                             .multiply(BigDecimal.valueOf(periodsand))
