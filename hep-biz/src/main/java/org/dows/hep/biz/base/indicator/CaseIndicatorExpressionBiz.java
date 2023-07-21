@@ -258,6 +258,7 @@ public class CaseIndicatorExpressionBiz {
   public String v2CreateOrUpdate(CaseCreateOrUpdateIndicatorExpressionRequestRs caseCreateOrUpdateIndicatorExpressionRequestRs) throws InterruptedException, ExecutionException {
     /* runsix:param */
     AtomicReference<CaseIndicatorExpressionEntity> caseIndicatorExpressionEntityAtomicReference = new AtomicReference<>();
+    String accountId = caseCreateOrUpdateIndicatorExpressionRequestRs.getAccountId();
     String caseIndicatorExpressionId = caseCreateOrUpdateIndicatorExpressionRequestRs.getCaseIndicatorExpressionId();
     String casePrincipalId = caseCreateOrUpdateIndicatorExpressionRequestRs.getCasePrincipalId();
     String appId = caseCreateOrUpdateIndicatorExpressionRequestRs.getAppId();
@@ -295,6 +296,7 @@ public class CaseIndicatorExpressionBiz {
       CompletableFuture<Void> cfCheckCircleDependencyAndPopulateCaseIndicatorExpressionInfluenceEntity = CompletableFuture.runAsync(() -> {
         try {
           rsCaseIndicatorExpressionBiz.checkCircleDependencyAndPopulateIndicatorExpressionInfluenceEntity(
+              accountId,
               appId,
               caseIndicatorExpressionInfluenceEntityList,
               source,

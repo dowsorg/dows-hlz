@@ -24,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 /**
@@ -95,6 +97,8 @@ public class RsCopyBiz {
   private final RiskModelService riskModelService;
   private final ExperimentCrowdsInstanceRsService experimentCrowdsInstanceRsService;
   private final ExperimentRiskModelRsService experimentRiskModelRsService;
+  private final RsUtilBiz rsUtilBiz;
+  private final RsCaseIndicatorExpressionBiz rsCaseIndicatorExpressionBiz;
 
   @Transactional(rollbackFor = Exception.class)
   public void rsCopyIndicatorFunc(RsCopyIndicatorFuncRequestRs rsCopyIndicatorFuncRequestRs) {
@@ -1405,7 +1409,14 @@ public class RsCopyBiz {
    * 2.ExperimentIndicatorValRsEntity
   */
   @Transactional(rollbackFor = Exception.class)
-  public void rsCopyPersonIndicator(RsCopyPersonIndicatorRequestRs rsCopyPersonIndicatorRequestRs) {
+  public void rsCopyPersonIndicator(RsCopyPersonIndicatorRequestRs rsCopyPersonIndicatorRequestRs) throws ExecutionException, InterruptedException {
+    Map<String, Integer> kCaseIndicatorInstanceIdVSeqMap = new HashMap<>();
+    String caseInstanceId = rsCopyPersonIndicatorRequestRs.getCaseInstanceId();
+    CompletableFuture<Void> cfPopulateKCaseIndicatorInstanceIdVSeqMap = CompletableFuture.runAsync(() -> {
+      rsCaseIndicatorExpressionBiz.populateAllKCaseIndicatorInstanceIdVSeqMap(caseInstanceId, kCaseIndicatorInstanceIdVSeqMap);
+    });
+    cfPopulateKCaseIndicatorInstanceIdVSeqMap.get();
+
     List<ExperimentIndicatorInstanceRsEntity> experimentIndicatorInstanceRsEntityList = new ArrayList<>();
     List<ExperimentIndicatorValRsEntity> experimentIndicatorValRsEntityList = new ArrayList<>();
     List<ExperimentIndicatorExpressionRefRsEntity> experimentIndicatorExpressionRefRsEntityList = new ArrayList<>();
@@ -1416,7 +1427,6 @@ public class RsCopyBiz {
     Map<String, String> kExperimentIndicatorInstanceIdVExperimentPersonIdMap = new HashMap<>();
     Map<String, CaseIndicatorExpressionItemEntity> kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap = new HashMap<>();
     String experimentInstanceId = rsCopyPersonIndicatorRequestRs.getExperimentInstanceId();
-    String caseInstanceId = rsCopyPersonIndicatorRequestRs.getCaseInstanceId();
     String appId = rsCopyPersonIndicatorRequestRs.getAppId();
     Set<String> experimentPersonIdSet = new HashSet<>();
     Set<String> casePersonIdSet = new HashSet<>();
@@ -1510,6 +1520,7 @@ public class RsCopyBiz {
         kCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.put(caseIndicatorInstanceId, experimentIndicatorInstanceId);
         kExperimentPersonIdVKCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.put(experimentPersonId, kCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap);
         kExperimentIndicatorInstanceIdVExperimentPersonIdMap.put(experimentIndicatorInstanceId, experimentPersonId);
+        Integer recalculateSeq = kCaseIndicatorInstanceIdVSeqMap.get(caseIndicatorInstanceEntity.getCaseIndicatorInstanceId());
         experimentIndicatorInstanceRsEntityList.add(
             ExperimentIndicatorInstanceRsEntity
                 .builder()
@@ -1529,6 +1540,7 @@ public class RsCopyBiz {
                 .min(min)
                 .max(max)
                 .def(def)
+                .recalculateSeq(recalculateSeq)
                 .build()
         );
       });
