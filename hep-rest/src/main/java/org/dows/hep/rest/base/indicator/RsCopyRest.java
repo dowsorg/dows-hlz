@@ -10,6 +10,8 @@ import org.dows.hep.biz.base.indicator.RsCopyBiz;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.concurrent.ExecutionException;
+
 /**
  * @author runsix
  */
@@ -27,7 +29,7 @@ public class RsCopyRest {
 
   @Operation(summary = "复制人物指标以及人物指标的公式到实验")
   @PostMapping("v1/experimentIndicator/personIndicator/rsCopy")
-  public void rsCopyPersonIndicator(RsCopyPersonIndicatorRequestRs rsCopyPersonIndicatorRequestRs) {
+  public void rsCopyPersonIndicator(RsCopyPersonIndicatorRequestRs rsCopyPersonIndicatorRequestRs) throws ExecutionException, InterruptedException {
     rsCopyBiz.rsCopyPersonIndicator(rsCopyPersonIndicatorRequestRs);
   }
 

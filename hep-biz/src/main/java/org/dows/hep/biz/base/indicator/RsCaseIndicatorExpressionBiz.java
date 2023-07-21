@@ -48,6 +48,7 @@ public class RsCaseIndicatorExpressionBiz {
   private final CaseIndicatorExpressionItemService caseIndicatorExpressionItemService;
   private final CaseIndicatorExpressionInfluenceService caseIndicatorExpressionInfluenceService;
   private final RsUtilBiz rsUtilBiz;
+  private final CasePersonService casePersonService;
   public void populateCaseIndicatorExpressionEntity(
       AtomicReference<CaseIndicatorExpressionEntity> caseIndicatorExpressionEntityAR,
       String caseIndicatorExpressionId) {
@@ -290,7 +291,8 @@ public class RsCaseIndicatorExpressionBiz {
     paramCaseInfluencedIndicatorInstanceIdSet.remove(principalId);
   }
 
-  private void populateAllInfluenceSet(
+  private void populateAccountAllInfluenceSet(
+      String accountId,
       String appId,
       Map<String, CaseIndicatorExpressionInfluenceEntity> kCaseIndicatorInstanceIdVCaseIndicatorExpressionInfluenceEntityMap,
       Map<String, Set<String>> kCaseIndicatorInstanceIdVCaseInfluenceIndicatorInstanceIdSetMap,
@@ -299,8 +301,16 @@ public class RsCaseIndicatorExpressionBiz {
         || Objects.isNull(kCaseIndicatorInstanceIdVCaseInfluenceIndicatorInstanceIdSetMap)
         || Objects.isNull(kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap)
     ) {return;}
+    Set<String> caseIndicatorInstanceIdSet = caseIndicatorInstanceService.lambdaQuery()
+        .eq(CaseIndicatorInstanceEntity::getAppId, appId)
+        .eq(CaseIndicatorInstanceEntity::getPrincipalId, accountId)
+        .list()
+        .stream()
+        .map(CaseIndicatorInstanceEntity::getCaseIndicatorInstanceId)
+        .collect(Collectors.toSet());
+    if (caseIndicatorInstanceIdSet.isEmpty()) {return;}
     caseIndicatorExpressionInfluenceService.lambdaQuery()
-        .eq(CaseIndicatorExpressionInfluenceEntity::getAppId, appId)
+        .in(CaseIndicatorExpressionInfluenceEntity::getIndicatorInstanceId, caseIndicatorInstanceIdSet)
         .list()
         .forEach(caseIndicatorExpressionInfluenceEntity -> {
           String caseIndicatorInstanceId = caseIndicatorExpressionInfluenceEntity.getIndicatorInstanceId();
@@ -321,6 +331,7 @@ public class RsCaseIndicatorExpressionBiz {
   }
 
   public void checkCircleDependencyAndPopulateIndicatorExpressionInfluenceEntity(
+      String accountId,
       String appId,
       List<CaseIndicatorExpressionInfluenceEntity> caseIndicatorExpressionInfluenceEntityList,
       Integer source,
@@ -337,7 +348,7 @@ public class RsCaseIndicatorExpressionBiz {
     Map<String, Set<String>> kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap = new HashMap<>();
     Map<String, Set<String>> kCaseIndicatorInstanceIdVCaseInfluenceIndicatorInstanceIdSetMap = new HashMap<>();
     CompletableFuture<Void> cfPopulateAllInfluenceSet = CompletableFuture.runAsync(() -> {
-      this.populateAllInfluenceSet(appId, kCaseIndicatorInstanceIdVCaseIndicatorExpressionInfluenceEntityMap, kCaseIndicatorInstanceIdVCaseInfluenceIndicatorInstanceIdSetMap, kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap);
+      this.populateAccountAllInfluenceSet(accountId, appId, kCaseIndicatorInstanceIdVCaseIndicatorExpressionInfluenceEntityMap, kCaseIndicatorInstanceIdVCaseInfluenceIndicatorInstanceIdSetMap, kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap);
     });
     cfPopulateAllInfluenceSet.get();
 
@@ -1229,5 +1240,45 @@ public class RsCaseIndicatorExpressionBiz {
               caseIndicatorExpressionItemEntity.getCaseIndicatorExpressionItemId(), caseIndicatorExpressionItemEntity
           );
         });
+  }
+
+  public void populateAllKCaseIndicatorInstanceIdVSeqMap(String caseInstanceId, Map<String, Integer> kCaseIndicatorInstanceIdVSeqMap) {
+    if (Objects.isNull(kCaseIndicatorInstanceIdVSeqMap) || StringUtils.isBlank(caseInstanceId)) {return;}
+    Map<String, Set<String>> kPrincipalIdVCaseIndicatorInstanceIdSetMap = new HashMap<>();
+    Set<String> accountIdSet = casePersonService.lambdaQuery()
+        .eq(CasePersonEntity::getCaseInstanceId, caseInstanceId)
+        .list()
+        .stream().map(CasePersonEntity::getAccountId)
+        .collect(Collectors.toSet());
+    if (accountIdSet.isEmpty()) {return;}
+    caseIndicatorInstanceService.lambdaQuery()
+        .in(CaseIndicatorInstanceEntity::getPrincipalId, accountIdSet)
+        .list()
+        .forEach(caseIndicatorInstanceEntity -> {
+          String principalId = caseIndicatorInstanceEntity.getPrincipalId();
+          Set<String> caseIndicatorInstanceIdSet = kPrincipalIdVCaseIndicatorInstanceIdSetMap.get(principalId);
+          if (Objects.isNull(caseIndicatorInstanceIdSet)) {caseIndicatorInstanceIdSet = new HashSet<>();}
+          caseIndicatorInstanceIdSet.add(caseIndicatorInstanceEntity.getCaseIndicatorInstanceId());
+          kPrincipalIdVCaseIndicatorInstanceIdSetMap.put(principalId, caseIndicatorInstanceIdSet);
+        });
+    kPrincipalIdVCaseIndicatorInstanceIdSetMap.values().forEach(caseIndicatorInstanceIdSet -> {
+      List<String> seqList = new ArrayList<>();
+      Map<String, Set<String>> kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap = new HashMap<>();
+      CompletableFuture<Void> cfPopulateKCaseIndicatorInstanceIdInfluencedIndicatorInstanceIdSetMap = CompletableFuture.runAsync(() -> {
+        this.populateKCaseIndicatorInstanceIdInfluencedIndicatorInstanceIdSetMap(kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap, caseIndicatorInstanceIdSet);
+      });
+      try {
+        cfPopulateKCaseIndicatorInstanceIdInfluencedIndicatorInstanceIdSetMap.get();
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      } catch (ExecutionException e) {
+        throw new RuntimeException(e);
+      }
+      rsUtilBiz.algorithmKahn(seqList, kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap);
+      for (int i = 0; i <= seqList.size()-1; i++) {
+        String caseIndicatorInstanceId = seqList.get(i);
+        kCaseIndicatorInstanceIdVSeqMap.put(caseIndicatorInstanceId, i+1);
+      }
+    });
   }
 }

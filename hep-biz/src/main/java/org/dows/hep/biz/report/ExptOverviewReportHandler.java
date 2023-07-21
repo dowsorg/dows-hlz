@@ -1,7 +1,8 @@
-package org.dows.hep.biz.report.pdf;
+package org.dows.hep.biz.report;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.itextpdf.commons.utils.Base64;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +12,10 @@ import org.apache.commons.io.IOUtils;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.oss.api.OssInfo;
 import org.dows.hep.api.base.indicator.response.*;
+import org.dows.hep.api.base.materials.request.MaterialsAttachmentRequest;
+import org.dows.hep.api.base.materials.request.MaterialsRequest;
 import org.dows.hep.api.constant.SystemConstant;
+import org.dows.hep.api.user.experiment.ExptReportTypeEnum;
 import org.dows.hep.api.user.experiment.ExptSettingModeEnum;
 import org.dows.hep.api.user.experiment.response.ExptSchemeScoreRankResponse;
 import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
@@ -47,7 +51,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBiz.ExptOverviewReportData, ExptOverviewReportModel> {
+public class ExptOverviewReportHandler implements ExptReportHandler<ExptOverviewReportHandler.ExptOverviewReportData, ExptOverviewReportModel> {
     private final ExperimentSchemeBiz experimentSchemeBiz;
     private final ExperimentScoringBiz experimentScoringBiz;
     private final ExperimentSettingBiz experimentSettingBiz;
@@ -55,6 +59,7 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
 
     private final ReportOSSHelper ossHelper;
     private final ReportPdfHelper reportPdfHelper;
+    private final ReportRecordHelper recordHelper;
     private final FindSoftProperties findSoftProperties;
 
     private static final String OVERVIEW_REPORT_HOME_DIR = SystemConstant.PDF_REPORT_TMP_PATH + "实验总报告" + File.separator;
@@ -76,9 +81,41 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
         String schemeFlt = getSchemeFlt();
         String fileName = getOutputPosition(exptGroupId, exptData);
 
+        // 判断记录中是否有数据
+        String reportOfGroup = recordHelper.getReportOfExpt(exptInstanceId, ExptReportTypeEnum.EXPT);
+        if (StrUtil.isNotBlank(reportOfGroup)) {
+            ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
+                    .name(fileName)
+                    .path(reportOfGroup)
+                    .build();
+            ExptGroupReportVO groupReportVO = ExptGroupReportVO.builder()
+                    .exptGroupId(null)
+                    .exptGroupNo(null)
+                    .paths(List.of(reportFile))
+                    .build();
+            return ExptReportVO.builder()
+                    .groupReportList(List.of(groupReportVO))
+                    .build();
+        }
+
         // 生成 pdf 并上传文件
         Path path = Paths.get(OVERVIEW_REPORT_HOME_DIR, fileName);
         OssInfo ossInfo = reportPdfHelper.convertAndUpload(pdfVO, schemeFlt, path);
+
+        // 记录一份数据
+        if (StrUtil.isNotBlank(ossInfo.getPath())) {
+            MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
+                    .fileName(fileName)
+                    .fileType("pdf")
+                    .fileUri(ossHelper.getUrlPath(ossInfo))
+                    .build();
+            MaterialsRequest materialsRequest = MaterialsRequest.builder()
+                    .bizCode("EXPT")
+                    .title(fileName)
+                    .materialsAttachments(List.of(attachment))
+                    .build();
+            recordHelper.record(exptInstanceId, exptGroupId, ExptReportTypeEnum.EXPT, materialsRequest);
+        }
 
         // build result
         ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()

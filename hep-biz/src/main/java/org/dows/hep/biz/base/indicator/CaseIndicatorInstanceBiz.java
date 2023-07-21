@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.CaseCreateCopyToPersonRequestRs;
+import org.dows.hep.api.base.indicator.request.CaseRsCalculateHealthScoreRequestRs;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateCaseIndicatorInstanceRequestRs;
 import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.enums.*;
@@ -59,6 +60,7 @@ public class CaseIndicatorInstanceBiz {
     private final RsUtilBiz rsUtilBiz;
     private final RsCaseIndicatorInstanceBiz rsCaseIndicatorInstanceBiz;
     private final RedissonClient redissonClient;
+    private final RsCalculateBiz rsCalculateBiz;
     public static CaseIndicatorInstanceResponseRs caseIndicatorInstance2ResponseRs(
             CaseIndicatorInstanceEntity caseIndicatorInstanceEntity,
             List<CaseIndicatorExpressionResponseRs> caseIndicatorExpressionResponseRsList,
@@ -830,6 +832,13 @@ public class CaseIndicatorInstanceBiz {
             if (Objects.nonNull(caseIndicatorCategoryRefEntityAR.get())) {caseIndicatorCategoryRefService.saveOrUpdate(caseIndicatorCategoryRefEntityAR.get());}
             if (Objects.nonNull(caseIndicatorRuleEntityAR.get())) {caseIndicatorRuleService.saveOrUpdate(caseIndicatorRuleEntityAR.get());}
             if (Objects.nonNull(caseIndicatorExpressionInfluenceEntityAR.get())) {caseIndicatorExpressionInfluenceService.saveOrUpdate(caseIndicatorExpressionInfluenceEntityAR.get());}
+            rsCalculateBiz.caseRsCalculateHealthScore(CaseRsCalculateHealthScoreRequestRs
+                .builder()
+                    .appId(appId)
+                    .accountId(accountId)
+                .build());
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
         } finally {
             lock.unlock();
         }

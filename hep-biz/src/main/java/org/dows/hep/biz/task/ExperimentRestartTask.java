@@ -20,6 +20,7 @@ import org.dows.hep.service.ExperimentTaskScheduleService;
 import org.dows.hep.service.ExperimentTimerService;
 import org.springframework.context.ApplicationEventPublisher;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -113,7 +114,7 @@ public class ExperimentRestartTask implements Runnable {
                     }
                 }
                 // 2.3、之前的任务，因为宕机没有按时执行，直接全部一次性执行了
-                if(scheduleEntity.getRestartTime() == null){
+                if(scheduleEntity.getExecuteTime().before(new Date())){
                     JSONObject json = JSONObject.parseObject(scheduleEntity.getTaskParams());
                     //2.1、直接重新拉取，后期重新执行
                     if(scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentBeginTask.getDesc())){

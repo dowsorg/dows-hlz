@@ -739,7 +739,7 @@ public class RsIndicatorExpressionBiz {
       IndicatorExpressionItemEntity minIndicatorExpressionItemEntity,
       IndicatorExpressionItemEntity maxIndicatorExpressionItemEntity
   ) {
-    dPIEResultUsingExperimentIndicatorInstanceIdCombineWithHandle(
+    dPIEResultUsingIndicatorInstanceIdCombineWithHandle(
         scene, resultAtomicReference,
         kIndicatorInstanceIdVIndicatorRuleEntityMap,
         indicatorExpressionRsEntity,
@@ -756,14 +756,14 @@ public class RsIndicatorExpressionBiz {
   ) {
     if (Objects.isNull(indicatorExpressionItemEntityList) || indicatorExpressionItemEntityList.isEmpty()) {return;}
     /* runsix:人群类型只能有一个公式，并且公式只有一个条件 */
-    boolean result = dPIEConditionUsingCaseIndicatorInstanceId(
+    boolean result = dPIEConditionUsingIndicatorInstanceId(
         indicatorExpressionItemEntityList.get(0),
         kIndicatorInstanceIdVIndicatorRuleEntityMap
     );
     resultAtomicReference.set(String.valueOf(result));
   }
 
-  public void dPIEResultUsingExperimentIndicatorInstanceIdCombineWithHandle(
+  public void dPIEResultUsingIndicatorInstanceIdCombineWithHandle(
       Integer scene, AtomicReference<String> resultAtomicReference,
       Map<String, IndicatorRuleEntity> kIndicatorInstanceIdVIndicatorRuleEntityMap,
       IndicatorExpressionEntity indicatorExpressionRsEntity,
@@ -775,7 +775,7 @@ public class RsIndicatorExpressionBiz {
     indicatorExpressionItemEntityList.sort(Comparator.comparingInt(IndicatorExpressionItemEntity::getSeq));
     for (int i = 0; i <= indicatorExpressionItemEntityList.size()-1; i++) {
       IndicatorExpressionItemEntity indicatorExpressionItemRsEntity = indicatorExpressionItemEntityList.get(i);
-      boolean hasResult = dPIEResultUsingExperimentIndicatorInstanceIdCombineWithoutHandle(
+      boolean hasResult = dPIEResultUsingIndicatorInstanceIdCombineWithoutHandle(
           resultAtomicReference, kIndicatorInstanceIdVIndicatorRuleEntityMap, indicatorExpressionItemRsEntity
       );
       if (hasResult) {
@@ -788,7 +788,7 @@ public class RsIndicatorExpressionBiz {
     }
   }
 
-  private boolean dPIEConditionUsingCaseIndicatorInstanceId(
+  private boolean dPIEConditionUsingIndicatorInstanceId(
       IndicatorExpressionItemEntity indicatorExpressionItemEntity,
       Map<String, IndicatorRuleEntity> kIndicatorInstanceIdVIndicatorRuleEntityMap
   ) {
@@ -825,19 +825,19 @@ public class RsIndicatorExpressionBiz {
     }
   }
 
-  private boolean dPIEResultUsingExperimentIndicatorInstanceIdCombineWithoutHandle(
+  private boolean dPIEResultUsingIndicatorInstanceIdCombineWithoutHandle(
       AtomicReference<String> resultAtomicReference,
       Map<String, IndicatorRuleEntity> kIndicatorInstanceIdVIndicatorRuleEntityMap,
-      IndicatorExpressionItemEntity cndicatorExpressionItemEntity
+      IndicatorExpressionItemEntity indicatorExpressionItemEntity
   ) {
-    boolean parsedCondition = dPIEConditionUsingCaseIndicatorInstanceId(cndicatorExpressionItemEntity, kIndicatorInstanceIdVIndicatorRuleEntityMap);
+    boolean parsedCondition = dPIEConditionUsingIndicatorInstanceId(indicatorExpressionItemEntity, kIndicatorInstanceIdVIndicatorRuleEntityMap);
     /* runsix:2.如果条件不满足，不解析结果，继续下一个 */
     if (!parsedCondition) {
       return false;
     }
 
     /* runsix:3.如果一个公式有结果就跳出 */
-    String parsedResult = dPIEResultUsingCaseIndicatorInstanceId(cndicatorExpressionItemEntity, kIndicatorInstanceIdVIndicatorRuleEntityMap);
+    String parsedResult = dPIEResultUsingCaseIndicatorInstanceId(indicatorExpressionItemEntity, kIndicatorInstanceIdVIndicatorRuleEntityMap);
     if (RsUtilBiz.RESULT_DROP.equals(parsedResult)) {
       return false;
     }

@@ -18,6 +18,10 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class CaseCreateOrUpdateIndicatorExpressionRequestRs implements Serializable {
+  @ApiModelProperty(required = true)
+  @Schema(title = "人物账号id")
+  private String accountId;
+
   @Schema(title = "分布式ID")
   private String caseIndicatorExpressionId;
 

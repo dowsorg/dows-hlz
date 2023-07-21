@@ -1,4 +1,4 @@
-package org.dows.hep.biz.report.pdf;
+package org.dows.hep.biz.report;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
@@ -42,7 +42,7 @@ public class ReportZipHelper {
      * @description
      * @date 2023/7/13 21:33
      */
-    public void upload(ExptReportVO exptReportVO) {
+    public void zipAndUpload(ExptReportVO exptReportVO) {
         if (BeanUtil.isEmpty(exptReportVO)) {
             return;
         }
