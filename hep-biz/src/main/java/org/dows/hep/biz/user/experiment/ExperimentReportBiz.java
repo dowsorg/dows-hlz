@@ -12,8 +12,6 @@ import org.dows.hep.service.ExperimentReportInstanceService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 /**
  * 实验报告BIZ
  * todo
@@ -38,65 +36,65 @@ public class ExperimentReportBiz {
      * @description 保存报告记录
      * @date 2023/7/21 13:31
      */
-    public String saveReport(ExperimentReportInstanceEntity entity) {
+    public boolean saveReport(ExperimentReportInstanceEntity entity) {
         String experimentReportInstanceId = entity.getExperimentReportInstanceId();
         if (StrUtil.isBlank(experimentReportInstanceId)) {
             entity.setExperimentReportInstanceId(idGenerator.nextIdStr());
         }
-        experimentReportInstanceService.save(entity);
-
-        return entity.getExperimentReportInstanceId();
+        return experimentReportInstanceService.save(entity);
     }
 
     /**
      * @param exptInstanceId - 实验实例ID
      * @param typeEnum - 类型
-     * @return java.util.List<org.dows.hep.entity.ExperimentReportInstanceEntity>
+     * @return org.dows.hep.entity.ExperimentReportInstanceEntity
      * @author fhb
      * @description 获取实验报告
      * @date 2023/7/21 11:50
      */
-    public List<ExperimentReportInstanceEntity> listReportOfExpt(String exptInstanceId, ExptReportTypeEnum typeEnum) {
+    public ExperimentReportInstanceEntity getReportOfExpt(String exptInstanceId, ExptReportTypeEnum typeEnum) {
         return experimentReportInstanceService.lambdaQuery()
                 .eq(ExperimentReportInstanceEntity::getExperimentInstanceId, exptInstanceId)
-                .eq(typeEnum != null, ExperimentReportInstanceEntity::getReportType, typeEnum.name())
-                .list();
+                .eq( ExperimentReportInstanceEntity::getReportType, typeEnum.name())
+                .oneOpt()
+                .orElse(null);
     }
 
     /**
      * @param exptInstanceId - 实验实例ID
-     * @param exptGroupId - 实验小组ID
-     * @param typeEnum - 类型
-     * @return java.util.List<org.dows.hep.entity.ExperimentReportInstanceEntity>
+     * @param exptGroupId    - 实验小组ID
+     * @param typeEnum       - 类型
+     * @return org.dows.hep.entity.ExperimentReportInstanceEntity
      * @author fhb
      * @description
      * @date 2023/7/21 11:51
      */
-    public List<ExperimentReportInstanceEntity> listReportOfGroup(String exptInstanceId, String exptGroupId, ExptReportTypeEnum typeEnum) {
+    public ExperimentReportInstanceEntity getReportOfGroup(String exptInstanceId, String exptGroupId, ExptReportTypeEnum typeEnum) {
         return experimentReportInstanceService.lambdaQuery()
                 .eq(ExperimentReportInstanceEntity::getExperimentInstanceId, exptInstanceId)
                 .eq(ExperimentReportInstanceEntity::getExperimentGroupId, exptGroupId)
-                .eq(typeEnum != null, ExperimentReportInstanceEntity::getReportType, typeEnum.name())
-                .list();
+                .eq(ExperimentReportInstanceEntity::getReportType, typeEnum.name())
+                .oneOpt()
+                .orElse(null);
     }
 
     /**
      * @param exptInstanceId - 实验实例ID
      * @param accountId - 账号ID
      * @param typeEnum - 类型
-     * @return java.util.List<org.dows.hep.entity.ExperimentReportInstanceEntity>
+     * @return org.dows.hep.entity.ExperimentReportInstanceEntity
      * @author fhb
      * @description
      * @date 2023/7/21 13:30
      */
-    public List<ExperimentReportInstanceEntity> listReportOfAccount(String exptInstanceId, String accountId, ExptReportTypeEnum typeEnum) {
+    public ExperimentReportInstanceEntity getReportOfAccount(String exptInstanceId, String accountId, ExptReportTypeEnum typeEnum) {
         ExperimentParticipatorEntity experimentParticipatorEntity = experimentParticipatorService.lambdaQuery()
                 .eq(ExperimentParticipatorEntity::getExperimentInstanceId, exptInstanceId)
                 .eq(ExperimentParticipatorEntity::getAccountId, accountId)
                 .oneOpt()
                 .orElseThrow(() -> new BizException("获取用户实验报告时, 获取实验参与者信息异常"));
         String experimentGroupId = experimentParticipatorEntity.getExperimentGroupId();
-        return listReportOfGroup(exptInstanceId, experimentGroupId, typeEnum);
+        return getReportOfGroup(exptInstanceId, experimentGroupId, typeEnum);
     }
 
 }

@@ -1,6 +1,8 @@
 package org.dows.hep.api.base.materials.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +12,8 @@ import lombok.NoArgsConstructor;
  * @date 2023/4/18 15:02
  */
 @Data
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @Schema(name = "MaterialsAttachmentRequest 对象", title = "资料附件")
 public class MaterialsAttachmentRequest {

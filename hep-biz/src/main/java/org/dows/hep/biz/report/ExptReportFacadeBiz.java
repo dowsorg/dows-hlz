@@ -1,5 +1,6 @@
 package org.dows.hep.biz.report;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -7,8 +8,11 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.hep.api.base.materials.request.MaterialsAttachmentRequest;
+import org.dows.hep.api.base.materials.request.MaterialsRequest;
 import org.dows.hep.api.constant.RedisKeyConst;
 import org.dows.hep.api.constant.SystemConstant;
+import org.dows.hep.api.user.experiment.ExptReportTypeEnum;
 import org.dows.hep.api.user.experiment.ExptSettingModeEnum;
 import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
 import org.dows.hep.entity.ExperimentInstanceEntity;
@@ -45,10 +49,13 @@ public class ExptReportFacadeBiz {
     private final ExperimentInstanceService experimentInstanceService;
     private final ExperimentParticipatorService experimentParticipatorService;
     private final ExperimentSettingBiz experimentSettingBiz;
+
     private final ExptSchemeReportHandler schemeReportHandler;
     private final ExptSandReportHandler sandReportHandler;
     private final ExptOverviewReportHandler overviewReportHandler;
+
     private final ReportZipHelper reportZipHelper;
+    private final ReportRecordHelper reportRecordHelper;
 
     /**
      * @param exptInstanceId - 实验实例ID
@@ -69,9 +76,34 @@ public class ExptReportFacadeBiz {
         RLock lock = redissonClient.getLock(RedisKeyConst.HM_LOCK_REPORT + exptInstanceId);
         try {
             if (lock.tryLock(-1, 30, TimeUnit.SECONDS)) {
+                // 查询是否已经存在
+                String reportOfExpt = reportRecordHelper.getReportOfExpt(exptInstanceId, ExptReportTypeEnum.EXPT_ZIP);
+                if (StrUtil.isNotBlank(reportOfExpt)) {
+                    return ExptReportVO.builder()
+                            .zipName(exptZipName)
+                            .zipPath(reportOfExpt)
+                            .build();
+                }
+
+                // 生成报告
                 ExptReportVO exptReportVO = generatePdf(exptInstanceId, null);
                 exptReportVO.setZipName(exptZipName);
                 reportZipHelper.zipAndUpload(exptReportVO);
+
+                // 记录一份数据
+                if (StrUtil.isNotBlank(exptReportVO.getZipPath())) {
+                    MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
+                            .fileName(exptReportVO.getZipName())
+                            .fileType("zip")
+                            .fileUri(exptReportVO.getZipPath())
+                            .build();
+                    MaterialsRequest materialsRequest = MaterialsRequest.builder()
+                            .bizCode("EXPT")
+                            .title(exptReportVO.getZipName())
+                            .materialsAttachments(List.of(attachment))
+                            .build();
+                    reportRecordHelper.record(exptInstanceId, null, ExptReportTypeEnum.EXPT_ZIP, materialsRequest);
+                }
                 return exptReportVO;
             } else {
                 throw new BizException("报告生成中");
@@ -109,9 +141,34 @@ public class ExptReportFacadeBiz {
         RLock lock = redissonClient.getLock(RedisKeyConst.HM_LOCK_REPORT + exptGroupId);
         try {
             if (lock.tryLock(-1, 10, TimeUnit.SECONDS)) {
+                // 查询是否已经存在
+                String reportOfGroup = reportRecordHelper.getReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.EXPT_ZIP);
+                if (StrUtil.isNotBlank(reportOfGroup)) {
+                    return ExptReportVO.builder()
+                            .zipName(groupZipName)
+                            .zipPath(reportOfGroup)
+                            .build();
+                }
+
+                // 生成报告
                 ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId);
                 exptReportVO.setZipName(groupZipName);
                 reportZipHelper.zipAndUpload(exptReportVO);
+
+                // 记录一份数据
+                if (StrUtil.isNotBlank(exptReportVO.getZipPath())) {
+                    MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
+                            .fileName(exptReportVO.getZipName())
+                            .fileType("zip")
+                            .fileUri(exptReportVO.getZipPath())
+                            .build();
+                    MaterialsRequest materialsRequest = MaterialsRequest.builder()
+                            .bizCode("EXPT")
+                            .title(exptReportVO.getZipName())
+                            .materialsAttachments(List.of(attachment))
+                            .build();
+                    reportRecordHelper.record(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP_ZIP, materialsRequest);
+                }
                 return exptReportVO;
             } else {
                 throw new BizException("报告生成中");
