@@ -42,7 +42,7 @@ public class ExperimentInsuranceRest {
      */
     @Operation(summary = "获取保险状态")
     @PostMapping("v1/userExperiment/experimentOrgJudge/checkInsureStatus")
-    public Boolean checkInsureStatus(@RequestBody @Validated ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest) throws ParseException {
+    public Map<String,Object> checkInsureStatus(@RequestBody @Validated ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest) throws ParseException {
         return experimentInsuranceBiz.checkInsureStatus(experimentPersonInsuranceRequest);
     }
 

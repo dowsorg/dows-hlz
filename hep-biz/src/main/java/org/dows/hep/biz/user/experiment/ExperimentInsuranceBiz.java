@@ -295,7 +295,8 @@ public class ExperimentInsuranceBiz {
      * @开始时间:
      * @创建时间: 2023年6月28日 上午11:27:34
      */
-    public Boolean checkInsureStatus(ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest) throws ParseException {
+    public Map<String,Object> checkInsureStatus(ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest) throws ParseException {
+        Map<String,Object> map = new HashMap<>();
         ExperimentPersonInsuranceEntity entity = experimentPersonInsuranceService.lambdaQuery()
                 .eq(ExperimentPersonInsuranceEntity::getExperimentPersonId, experimentPersonInsuranceRequest.getExperimentPersonId())
                 .eq(ExperimentPersonInsuranceEntity::getExperimentInstanceId, experimentPersonInsuranceRequest.getExperimentInstanceId())
@@ -305,9 +306,18 @@ public class ExperimentInsuranceBiz {
                 .eq(ExperimentPersonInsuranceEntity::getDeleted, false)
                 .one();
         if (entity == null || ReflectUtil.isObjectNull(entity)) {
-            return false;
+            map.put("result",false);
+            return map;
         }
-        //判断过期时间
-        return TimeUtil.isBeforeTime(new Date(), entity.getExpdate());
+        //如果还未过期
+        Boolean flag = TimeUtil.isBeforeTime(new Date(), entity.getExpdate());
+        if(flag){
+            long interval = (entity.getExpdate().getTime() - new Date().getTime())/1000;
+            map.put("result", true);
+            map.put("interval",interval);
+        }else{
+            map.put("result", false);
+        }
+        return map;
     }
 }
