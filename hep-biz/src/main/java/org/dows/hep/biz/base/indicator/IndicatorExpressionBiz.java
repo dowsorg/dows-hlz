@@ -1595,7 +1595,7 @@ public class IndicatorExpressionBiz{
         indicatorExpressionItemEntityList.forEach(indicatorExpressionItemEntity -> {
           rsUtilBiz.checkCondition(kIndicatorInstanceIdVValMap, RsIndicatorExpressionCheckConditionRequest
               .builder()
-              .source(EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource())
+              .source(source)
               .field(EnumIndicatorExpressionField.DATABASE.getField())
               .conditionRaw(indicatorExpressionItemEntity.getConditionRaw())
               .conditionExpression(indicatorExpressionItemEntity.getConditionExpression())
@@ -1604,7 +1604,7 @@ public class IndicatorExpressionBiz{
               .build());
           rsUtilBiz.checkResult(kIndicatorInstanceIdVValMap, RsIndicatorExpressionCheckoutResultRequest
               .builder()
-              .source(EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource())
+              .source(source)
               .field(EnumIndicatorExpressionField.DATABASE.getField())
               .resultRaw(indicatorExpressionItemEntity.getResultRaw())
               .resultExpression(indicatorExpressionItemEntity.getResultExpression())
