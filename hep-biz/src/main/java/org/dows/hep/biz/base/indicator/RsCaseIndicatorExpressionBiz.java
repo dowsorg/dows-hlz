@@ -259,11 +259,11 @@ public class RsCaseIndicatorExpressionBiz {
     allCaseCreateOrUpdateIndicatorExpressionItemRequestRsList.forEach(createOrUpdateIndicatorExpressionItemRequestRs -> {
       String conditionValList = createOrUpdateIndicatorExpressionItemRequestRs.getConditionValList();
       if (StringUtils.isNotBlank(conditionValList)) {
-        conditionValListList.add(conditionValList);
+        conditionValListList.addAll(rsUtilBiz.getConditionValSplitList(conditionValList));
       }
       String resultValList = createOrUpdateIndicatorExpressionItemRequestRs.getResultValList();
       if (StringUtils.isNotBlank(resultValList)) {
-        resultValListList.add(resultValList);
+        resultValListList.addAll(rsUtilBiz.getResultValSplitList(resultValList));
       }
     });
   }
