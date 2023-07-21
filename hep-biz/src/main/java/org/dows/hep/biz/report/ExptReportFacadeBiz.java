@@ -72,7 +72,6 @@ public class ExptReportFacadeBiz {
                 + exptEntity.getExperimentName()
                 + SystemConstant.SUFFIX_ZIP;
 
-        /*todo 分布式锁*/
         RLock lock = redissonClient.getLock(RedisKeyConst.HM_LOCK_REPORT + exptInstanceId);
         try {
             if (lock.tryLock(-1, 30, TimeUnit.SECONDS)) {
@@ -137,7 +136,6 @@ public class ExptReportFacadeBiz {
                 + exptGroupId
                 + SystemConstant.SUFFIX_ZIP;
 
-        /*todo 分布式锁*/
         RLock lock = redissonClient.getLock(RedisKeyConst.HM_LOCK_REPORT + exptGroupId);
         try {
             if (lock.tryLock(-1, 10, TimeUnit.SECONDS)) {
