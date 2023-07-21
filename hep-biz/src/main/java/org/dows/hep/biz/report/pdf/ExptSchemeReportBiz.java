@@ -3,6 +3,7 @@ package org.dows.hep.biz.report.pdf;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.itextpdf.commons.utils.Base64;
 import com.itextpdf.styledxmlparser.jsoup.Jsoup;
 import com.itextpdf.styledxmlparser.jsoup.nodes.Document;
 import com.itextpdf.styledxmlparser.jsoup.nodes.Element;
@@ -11,13 +12,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.oss.api.OssInfo;
 import org.dows.hep.api.constant.SystemConstant;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeItemResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeResponse;
 import org.dows.hep.api.user.experiment.response.ExptSchemeScoreRankResponse;
-import org.dows.hep.biz.base.oss.OSSBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentSchemeScoreBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
 import org.dows.hep.entity.ExperimentGroupEntity;
@@ -31,9 +32,11 @@ import org.dows.hep.vo.report.ExptBaseInfoModel;
 import org.dows.hep.vo.report.ExptGroupReportVO;
 import org.dows.hep.vo.report.ExptReportVO;
 import org.dows.hep.vo.report.ExptSchemeReportModel;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -49,16 +52,15 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.ExptSchemeReportData, ExptSchemeReportModel> {
-
-    private final Template2PdfBiz template2PdfBiz;
-    private final FindSoftProperties findSoftProperties;
     private final ExperimentSchemeScoreBiz experimentSchemeScoreBiz;
     private final ExperimentSchemeBiz experimentSchemeBiz;
-    private final OSSBiz ossBiz;
-    private final OSSReportBiz ossReportBiz;
     private final ExperimentInstanceService experimentInstanceService;
     private final ExperimentParticipatorService experimentParticipatorService;
     private final ExperimentGroupService experimentGroupService;
+
+    private final ReportOSSHelper ossHelper;
+    private final ReportPdfHelper reportPdfHelper;
+    private final FindSoftProperties findSoftProperties;
 
     private final Object delFileLock = new Object();
     private static final String SCHEME_REPORT_HOME_DIR = SystemConstant.PDF_REPORT_TMP_PATH + "方案设计实验报告" + File.separator;
@@ -134,7 +136,7 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
      */
     @Override
     public ExptSchemeReportModel convertData2Model(String exptGroupId, ExptSchemeReportData exptData) {
-        ExptBaseInfoModel baseInfoVO = generateBaseInfoVO(findSoftProperties, log);
+        ExptBaseInfoModel baseInfoVO = generateBaseInfoVO(findSoftProperties);
         ExptSchemeReportModel.GroupInfo groupInfo = generateGroupInfo(exptGroupId, exptData);
         ExptSchemeReportModel.ScoreInfo scoreInfo = generateScoreInfo(exptGroupId, exptData);
         ExptSchemeReportModel.SchemeInfo schemeInfo = generateSchemeInfo(exptGroupId, exptData);
@@ -202,12 +204,12 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
 
         // 生成 pdf 并上传文件
         Path path = Paths.get(SCHEME_REPORT_HOME_DIR, fileName);
-        OssInfo ossInfo = template2PdfBiz.convertAndUpload(pdfVO, schemeFlt, path);
+        OssInfo ossInfo = reportPdfHelper.convertAndUpload(pdfVO, schemeFlt, path);
 
         // 构造返回信息
         ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
                 .name(ossInfo.getName())
-                .path(ossReportBiz.getUrlPath(ossInfo))
+                .path(ossHelper.getUrlPath(ossInfo))
                 .build();
         return ExptGroupReportVO.builder()
                 .exptGroupId(exptGroupId)
@@ -232,6 +234,25 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
 
     private List<ExptSchemeScoreRankResponse> listSchemeRank(String exptInstanceId) {
         return experimentSchemeBiz.listExptSchemeScoreRank(exptInstanceId);
+    }
+
+    private ExptBaseInfoModel generateBaseInfoVO(FindSoftProperties findSoftProperties) {
+        String logoStr = null;
+        String coverStr = null;
+        try {
+            logoStr = Base64.encodeBytes(IOUtils.toByteArray(new ClassPathResource(findSoftProperties.getLogo()).getInputStream()));
+            coverStr = Base64.encodeBytes(IOUtils.toByteArray(new ClassPathResource(findSoftProperties.getCover()).getInputStream()));
+        } catch (IOException e) {
+            log.error("导出实验报告时，获取logo和cover图片资源异常");
+            throw new BizException("导出实验报告时，获取logo和cover图片资源异常");
+        }
+
+        return ExptBaseInfoModel.builder()
+                .title(findSoftProperties.getExptSchemeReportTitle())
+                .logoImg(logoStr)
+                .coverImg(coverStr)
+                .copyRight(findSoftProperties.getCopyRight())
+                .build();
     }
 
     private ExptSchemeReportModel.GroupInfo generateGroupInfo(String exptGroupId, ExptSchemeReportData exptSchemeReportData) {
@@ -391,7 +412,7 @@ public class ExptSchemeReportBiz implements ExptReportBiz<ExptSchemeReportBiz.Ex
 
     private String getBase64(String src) {
         String fileName = src.replace("/hepapi/", "");
-        String base64 = ossBiz.getBase64(fileName);
+        String base64 = ossHelper.getBase64(fileName);
         return "data:image/jpeg;base64," + base64;
     }
 
