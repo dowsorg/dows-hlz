@@ -36,11 +36,11 @@ public class ExperimentInsuranceRest {
     }
 
     /**
-     * 获取保险状态
+     * 获取保险状态及剩余时间
      * @param
      * @return
      */
-    @Operation(summary = "获取保险状态")
+    @Operation(summary = "获取保险状态及剩余时间")
     @PostMapping("v1/userExperiment/experimentOrgJudge/checkInsureStatus")
     public Map<String,Object> checkInsureStatus(@RequestBody @Validated ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest) throws ParseException {
         return experimentInsuranceBiz.checkInsureStatus(experimentPersonInsuranceRequest);
