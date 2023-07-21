@@ -369,8 +369,6 @@ public class RsUtilBiz {
     Integer field = rsIndicatorExpressionCheckoutResultRequest.getField();
     String resultRaw = rsIndicatorExpressionCheckoutResultRequest.getResultRaw();
     String resultExpression = rsIndicatorExpressionCheckoutResultRequest.getResultExpression();
-    /* runsix:对传过来对结果处理 */
-    resultExpression = this.handleResultExpression(resultExpression);
     String resultNameList = rsIndicatorExpressionCheckoutResultRequest.getResultNameList();
     String resultValList = rsIndicatorExpressionCheckoutResultRequest.getResultValList();
     EnumIndicatorExpressionSource enumIndicatorExpressionSource = checkSource(source);
