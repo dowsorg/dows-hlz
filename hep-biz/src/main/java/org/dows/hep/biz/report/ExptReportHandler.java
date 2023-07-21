@@ -1,4 +1,4 @@
-package org.dows.hep.biz.report.pdf;
+package org.dows.hep.biz.report;
 
 import cn.hutool.core.util.StrUtil;
 import org.dows.hep.entity.ExperimentGroupEntity;

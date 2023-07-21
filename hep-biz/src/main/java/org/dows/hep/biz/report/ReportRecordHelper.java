@@ -1,4 +1,4 @@
-package org.dows.hep.biz.report.pdf;
+package org.dows.hep.biz.report;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

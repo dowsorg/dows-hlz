@@ -1,11 +1,11 @@
-package org.dows.hep.rest.report.pdf;
+package org.dows.hep.rest.report;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.biz.report.pdf.ExptReportFacadeBiz;
+import org.dows.hep.biz.report.ExptReportFacadeBiz;
 import org.dows.hep.biz.user.experiment.ExperimentBaseBiz;
 import org.dows.hep.vo.report.ExptReportVO;
 import org.springframework.web.bind.annotation.GetMapping;
