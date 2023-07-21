@@ -41,6 +41,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -92,7 +93,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
     }
 
     @Override
-    public void exec(ExperimentGroupSettingRequest request) {
+    public void exec(ExperimentGroupSettingRequest request) throws ExecutionException, InterruptedException {
         String experimentInstanceId = request.getExperimentInstanceId();
         String caseInstanceId = request.getCaseInstanceId();
         ExperimentInstanceEntity experimentInstanceEntity = experimentInstanceService.lambdaQuery()
