@@ -564,7 +564,7 @@ public class OrgBiz {
                 personWrapper.set(CasePersonEntity::getDeleted, true)
                         .eq(CasePersonEntity::getCaseOrgId, entity.getCaseOrgId())
                         .eq(CasePersonEntity::getCaseInstanceId, caseInstanceId);
-                boolean flag2 = caseOrgService.update(orgWrapper);
+                boolean flag2 = casePersonService.update(personWrapper);
                 //4、删除组织机构费用表
                 List<CaseOrgFeeEntity> feeList = caseOrgFeeService.lambdaQuery()
                         .eq(CaseOrgFeeEntity::getCaseOrgId, entity.getCaseOrgId())
