@@ -334,8 +334,31 @@ public class RsUtilBiz {
       throw new RsUtilBizException(EnumESC.INDICATOR_EXPRESSION_FORMAT_IS_ILLEGAL);
     }
   }
-  /* runsix:TODO */
-  private void caseCheckResultParse() {}
+
+  private void caseCheckResultParse(Map<String, String> kCaseIndicatorInstanceIdVValMap, String resultExpression, List<String> resultNameSplitList, List<String> resultValSplitList) {
+    try {
+      StandardEvaluationContext context = new StandardEvaluationContext();
+      for (int i = 0; i <= resultNameSplitList.size()-1; i++) {
+        String caseIndicatorInstanceId = resultValSplitList.get(i);
+        String val = kCaseIndicatorInstanceIdVValMap.get(caseIndicatorInstanceId);
+        if (Objects.isNull(val)) {
+          log.error("RsIndicatorExpressionBiz.checkResult.caseCheckResultParse field case caseIndicatorInstanceId:{} does not exist", caseIndicatorInstanceId);
+          throw new RsIndicatorExpressionException(String.format("检查指标公式结果-结果指标id：%s 不存在", caseIndicatorInstanceId));
+        }
+        boolean isValDigital = NumberUtils.isCreatable(val);
+        if (isValDigital) {
+          context.setVariable(resultNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(val)).setScale(2, RoundingMode.DOWN));
+        } else {
+          context.setVariable(resultNameSplitList.get(i), val);
+        }
+      }
+      ExpressionParser parser = new SpelExpressionParser();
+      Expression expression = parser.parseExpression(resultExpression);
+      expression.getValue(context, String.class);
+    } catch (Exception e) {
+      throw new RsUtilBizException(EnumESC.INDICATOR_EXPRESSION_FORMAT_IS_ILLEGAL);
+    }
+  }
 
   public String handleResultExpression(String resultExpression) {
     if (StringUtils.isBlank(resultExpression)) {return resultExpression;}
@@ -355,7 +378,7 @@ public class RsUtilBiz {
     List<String> resultValSplitList = this.getResultValSplitList(resultValList);
     switch (enumIndicatorExpressionField) {
       case DATABASE -> databaseCheckResultParse(kIndicatorInstanceIdVValMap, resultExpression, resultNameSplitList, resultValSplitList);
-      case CASE -> caseCheckResultParse();
+      case CASE -> caseCheckResultParse(kIndicatorInstanceIdVValMap, resultExpression, resultNameSplitList, resultValSplitList);
       default -> {
         log.error("RsIndicatorExpressionBiz.checkCondition.checkConditionMustBeBoolean field:{} is illegal", field);
         throw new RsIndicatorExpressionException(String.format("检查指标公式条件-指标公式域只能是数据库或案例库，field:%s", field));

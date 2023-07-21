@@ -290,7 +290,8 @@ public class RsCaseIndicatorExpressionBiz {
     paramCaseInfluencedIndicatorInstanceIdSet.remove(principalId);
   }
 
-  private void populateAllInfluenceSet(
+  private void populateAccountAllInfluenceSet(
+      String accountId,
       String appId,
       Map<String, CaseIndicatorExpressionInfluenceEntity> kCaseIndicatorInstanceIdVCaseIndicatorExpressionInfluenceEntityMap,
       Map<String, Set<String>> kCaseIndicatorInstanceIdVCaseInfluenceIndicatorInstanceIdSetMap,
@@ -299,8 +300,16 @@ public class RsCaseIndicatorExpressionBiz {
         || Objects.isNull(kCaseIndicatorInstanceIdVCaseInfluenceIndicatorInstanceIdSetMap)
         || Objects.isNull(kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap)
     ) {return;}
+    Set<String> caseIndicatorInstanceIdSet = caseIndicatorInstanceService.lambdaQuery()
+        .eq(CaseIndicatorInstanceEntity::getAppId, appId)
+        .eq(CaseIndicatorInstanceEntity::getPrincipalId, accountId)
+        .list()
+        .stream()
+        .map(CaseIndicatorInstanceEntity::getCaseIndicatorInstanceId)
+        .collect(Collectors.toSet());
+    if (caseIndicatorInstanceIdSet.isEmpty()) {return;}
     caseIndicatorExpressionInfluenceService.lambdaQuery()
-        .eq(CaseIndicatorExpressionInfluenceEntity::getAppId, appId)
+        .in(CaseIndicatorExpressionInfluenceEntity::getIndicatorInstanceId, caseIndicatorInstanceIdSet)
         .list()
         .forEach(caseIndicatorExpressionInfluenceEntity -> {
           String caseIndicatorInstanceId = caseIndicatorExpressionInfluenceEntity.getIndicatorInstanceId();
@@ -321,6 +330,7 @@ public class RsCaseIndicatorExpressionBiz {
   }
 
   public void checkCircleDependencyAndPopulateIndicatorExpressionInfluenceEntity(
+      String accountId,
       String appId,
       List<CaseIndicatorExpressionInfluenceEntity> caseIndicatorExpressionInfluenceEntityList,
       Integer source,
@@ -337,7 +347,7 @@ public class RsCaseIndicatorExpressionBiz {
     Map<String, Set<String>> kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap = new HashMap<>();
     Map<String, Set<String>> kCaseIndicatorInstanceIdVCaseInfluenceIndicatorInstanceIdSetMap = new HashMap<>();
     CompletableFuture<Void> cfPopulateAllInfluenceSet = CompletableFuture.runAsync(() -> {
-      this.populateAllInfluenceSet(appId, kCaseIndicatorInstanceIdVCaseIndicatorExpressionInfluenceEntityMap, kCaseIndicatorInstanceIdVCaseInfluenceIndicatorInstanceIdSetMap, kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap);
+      this.populateAccountAllInfluenceSet(accountId, appId, kCaseIndicatorInstanceIdVCaseIndicatorExpressionInfluenceEntityMap, kCaseIndicatorInstanceIdVCaseInfluenceIndicatorInstanceIdSetMap, kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap);
     });
     cfPopulateAllInfluenceSet.get();
 
