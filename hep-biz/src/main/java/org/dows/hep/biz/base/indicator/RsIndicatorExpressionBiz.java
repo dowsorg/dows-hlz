@@ -440,6 +440,8 @@ public class RsIndicatorExpressionBiz {
     AtomicInteger seqAtomicInteger = new AtomicInteger(1);
     createOrUpdateIndicatorExpressionItemRequestRsList.forEach(createOrUpdateIndicatorExpressionItemRequestRs -> {
       String indicatorExpressionItemId = createOrUpdateIndicatorExpressionItemRequestRs.getIndicatorExpressionItemId();
+      String resultExpression = createOrUpdateIndicatorExpressionItemRequestRs.getResultExpression();
+      resultExpression = rsUtilBiz.handleResultExpression(resultExpression);
       IndicatorExpressionItemEntity indicatorExpressionItemEntity = null;
       if (StringUtils.isBlank(indicatorExpressionItemId)) {
         Integer seq = null;
@@ -458,7 +460,7 @@ public class RsIndicatorExpressionBiz {
           .conditionNameList(createOrUpdateIndicatorExpressionItemRequestRs.getConditionNameList())
           .conditionValList(createOrUpdateIndicatorExpressionItemRequestRs.getConditionValList())
           .resultRaw(createOrUpdateIndicatorExpressionItemRequestRs.getResultRaw())
-          .resultExpression(createOrUpdateIndicatorExpressionItemRequestRs.getResultExpression())
+          .resultExpression(resultExpression)
           .resultNameList(createOrUpdateIndicatorExpressionItemRequestRs.getResultNameList())
           .resultValList(createOrUpdateIndicatorExpressionItemRequestRs.getResultValList())
           .seq(seq)
@@ -474,7 +476,7 @@ public class RsIndicatorExpressionBiz {
         indicatorExpressionItemEntity.setConditionNameList(createOrUpdateIndicatorExpressionItemRequestRs.getConditionNameList());
         indicatorExpressionItemEntity.setConditionValList(createOrUpdateIndicatorExpressionItemRequestRs.getConditionValList());
         indicatorExpressionItemEntity.setResultRaw(createOrUpdateIndicatorExpressionItemRequestRs.getResultRaw());
-        indicatorExpressionItemEntity.setResultExpression(createOrUpdateIndicatorExpressionItemRequestRs.getResultExpression());
+        indicatorExpressionItemEntity.setResultExpression(resultExpression);
         indicatorExpressionItemEntity.setResultNameList(createOrUpdateIndicatorExpressionItemRequestRs.getResultNameList());
         indicatorExpressionItemEntity.setResultValList(createOrUpdateIndicatorExpressionItemRequestRs.getResultValList());
         indicatorExpressionItemEntity.setSeq(seqAtomicInteger.getAndIncrement());
@@ -737,7 +739,7 @@ public class RsIndicatorExpressionBiz {
       IndicatorExpressionItemEntity minIndicatorExpressionItemEntity,
       IndicatorExpressionItemEntity maxIndicatorExpressionItemEntity
   ) {
-    dPIEResultUsingExperimentIndicatorInstanceIdCombineWithHandle(
+    dPIEResultUsingIndicatorInstanceIdCombineWithHandle(
         scene, resultAtomicReference,
         kIndicatorInstanceIdVIndicatorRuleEntityMap,
         indicatorExpressionRsEntity,
@@ -754,14 +756,14 @@ public class RsIndicatorExpressionBiz {
   ) {
     if (Objects.isNull(indicatorExpressionItemEntityList) || indicatorExpressionItemEntityList.isEmpty()) {return;}
     /* runsix:人群类型只能有一个公式，并且公式只有一个条件 */
-    boolean result = dPIEConditionUsingCaseIndicatorInstanceId(
+    boolean result = dPIEConditionUsingIndicatorInstanceId(
         indicatorExpressionItemEntityList.get(0),
         kIndicatorInstanceIdVIndicatorRuleEntityMap
     );
     resultAtomicReference.set(String.valueOf(result));
   }
 
-  public void dPIEResultUsingExperimentIndicatorInstanceIdCombineWithHandle(
+  public void dPIEResultUsingIndicatorInstanceIdCombineWithHandle(
       Integer scene, AtomicReference<String> resultAtomicReference,
       Map<String, IndicatorRuleEntity> kIndicatorInstanceIdVIndicatorRuleEntityMap,
       IndicatorExpressionEntity indicatorExpressionRsEntity,
@@ -773,7 +775,7 @@ public class RsIndicatorExpressionBiz {
     indicatorExpressionItemEntityList.sort(Comparator.comparingInt(IndicatorExpressionItemEntity::getSeq));
     for (int i = 0; i <= indicatorExpressionItemEntityList.size()-1; i++) {
       IndicatorExpressionItemEntity indicatorExpressionItemRsEntity = indicatorExpressionItemEntityList.get(i);
-      boolean hasResult = dPIEResultUsingExperimentIndicatorInstanceIdCombineWithoutHandle(
+      boolean hasResult = dPIEResultUsingIndicatorInstanceIdCombineWithoutHandle(
           resultAtomicReference, kIndicatorInstanceIdVIndicatorRuleEntityMap, indicatorExpressionItemRsEntity
       );
       if (hasResult) {
@@ -786,7 +788,7 @@ public class RsIndicatorExpressionBiz {
     }
   }
 
-  private boolean dPIEConditionUsingCaseIndicatorInstanceId(
+  private boolean dPIEConditionUsingIndicatorInstanceId(
       IndicatorExpressionItemEntity indicatorExpressionItemEntity,
       Map<String, IndicatorRuleEntity> kIndicatorInstanceIdVIndicatorRuleEntityMap
   ) {
@@ -796,12 +798,12 @@ public class RsIndicatorExpressionBiz {
       List<String> conditionNameSplitList = rsUtilBiz.getConditionNameSplitList(conditionNameList);
       String conditionValList = indicatorExpressionItemEntity.getConditionValList();
       List<String> conditionValSplitList = rsUtilBiz.getConditionValSplitList(conditionValList);
-      StandardEvaluationContext context = new StandardEvaluationContext();
-      ExpressionParser parser = new SpelExpressionParser();
-      Expression expression = parser.parseExpression(conditionExpression);
       if (StringUtils.isBlank(conditionExpression)) {
         return true;
       }
+      StandardEvaluationContext context = new StandardEvaluationContext();
+      ExpressionParser parser = new SpelExpressionParser();
+      Expression expression = parser.parseExpression(conditionExpression);
       for (int i = 0; i <= conditionNameSplitList.size() - 1; i++) {
         String indicatorInstanceId = conditionValSplitList.get(i);
         IndicatorRuleEntity indicatorRuleEntity = kIndicatorInstanceIdVIndicatorRuleEntityMap.get(indicatorInstanceId);
@@ -823,19 +825,19 @@ public class RsIndicatorExpressionBiz {
     }
   }
 
-  private boolean dPIEResultUsingExperimentIndicatorInstanceIdCombineWithoutHandle(
+  private boolean dPIEResultUsingIndicatorInstanceIdCombineWithoutHandle(
       AtomicReference<String> resultAtomicReference,
       Map<String, IndicatorRuleEntity> kIndicatorInstanceIdVIndicatorRuleEntityMap,
-      IndicatorExpressionItemEntity cndicatorExpressionItemEntity
+      IndicatorExpressionItemEntity indicatorExpressionItemEntity
   ) {
-    boolean parsedCondition = dPIEConditionUsingCaseIndicatorInstanceId(cndicatorExpressionItemEntity, kIndicatorInstanceIdVIndicatorRuleEntityMap);
+    boolean parsedCondition = dPIEConditionUsingIndicatorInstanceId(indicatorExpressionItemEntity, kIndicatorInstanceIdVIndicatorRuleEntityMap);
     /* runsix:2.如果条件不满足，不解析结果，继续下一个 */
     if (!parsedCondition) {
       return false;
     }
 
     /* runsix:3.如果一个公式有结果就跳出 */
-    String parsedResult = dPIEResultUsingCaseIndicatorInstanceId(cndicatorExpressionItemEntity, kIndicatorInstanceIdVIndicatorRuleEntityMap);
+    String parsedResult = dPIEResultUsingCaseIndicatorInstanceId(indicatorExpressionItemEntity, kIndicatorInstanceIdVIndicatorRuleEntityMap);
     if (RsUtilBiz.RESULT_DROP.equals(parsedResult)) {
       return false;
     }
