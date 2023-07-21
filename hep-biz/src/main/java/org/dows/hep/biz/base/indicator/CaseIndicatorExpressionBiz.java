@@ -309,11 +309,17 @@ public class CaseIndicatorExpressionBiz {
       });
       cfCheckCircleDependencyAndPopulateCaseIndicatorExpressionInfluenceEntity.get();
 
+
+      Map<String, CaseIndicatorExpressionItemEntity> kMinAndMaxCaseIndicatorExpressionItemIdVIndicatorExpressionItemMap = new HashMap<>();
+      CaseIndicatorExpressionItemEntity minCaseIndicatorExpressionItemEntity = null;
+      CaseIndicatorExpressionItemEntity maxCaseIndicatorExpressionItemEntity = null;
+      String dbMinCaseIndicatorExpressionItemId = null;
+      String dbMaxCaseIndicatorExpressionItemId = null;
       if (Objects.nonNull(caseIndicatorExpressionEntity)) {
         /* runsix:2.4 公式类型发生变化，原先上下限需要删除 */
         Set<String> minAndMaxCaseIndicatorExpressionItemIdSet = new HashSet<>();
-        String dbMinCaseIndicatorExpressionItemId = caseIndicatorExpressionEntity.getMinIndicatorExpressionItemId();
-        String dbMaxCaseIndicatorExpressionItemId = caseIndicatorExpressionEntity.getMaxIndicatorExpressionItemId();
+        dbMinCaseIndicatorExpressionItemId = caseIndicatorExpressionEntity.getMinIndicatorExpressionItemId();
+        dbMaxCaseIndicatorExpressionItemId = caseIndicatorExpressionEntity.getMaxIndicatorExpressionItemId();
         if (typeChangeAtomicBoolean.get()) {
           if (StringUtils.isNotBlank(dbMinCaseIndicatorExpressionItemId)) {minAndMaxCaseIndicatorExpressionItemIdSet.add(dbMinCaseIndicatorExpressionItemId);}
           if (StringUtils.isNotBlank(dbMaxCaseIndicatorExpressionItemId)) {minAndMaxCaseIndicatorExpressionItemIdSet.add(dbMaxCaseIndicatorExpressionItemId);}
@@ -323,34 +329,37 @@ public class CaseIndicatorExpressionBiz {
         }
 
         /* runsix:2.5 获取原来的上下限 */
-        Map<String, CaseIndicatorExpressionItemEntity> kMinAndMaxCaseIndicatorExpressionItemIdVIndicatorExpressionItemMap = new HashMap<>();
         CompletableFuture<Void> cfMinAndMaxPopulateKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap = CompletableFuture.runAsync(() -> {
           rsCaseIndicatorExpressionBiz.populateByCaseItemIdSetKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap(
               kMinAndMaxCaseIndicatorExpressionItemIdVIndicatorExpressionItemMap, minAndMaxCaseIndicatorExpressionItemIdSet
           );
         });
         cfMinAndMaxPopulateKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get();
+      }
 
-        /* runsix:2.6 populate minCaseIndicatorExpressionItemEntityAtomicReference && maxCaseIndicatorExpressionItemEntityAtomicReference 创建新的上下限 */
-        CaseIndicatorExpressionItemEntity minCaseIndicatorExpressionItemEntity = kMinAndMaxCaseIndicatorExpressionItemIdVIndicatorExpressionItemMap.get(dbMinCaseIndicatorExpressionItemId);
+      /* runsix:2.6 populate minCaseIndicatorExpressionItemEntityAtomicReference && maxCaseIndicatorExpressionItemEntityAtomicReference 创建新的上下限 */
+      if (StringUtils.isNotBlank(dbMinCaseIndicatorExpressionItemId)) {
+        minCaseIndicatorExpressionItemEntity = kMinAndMaxCaseIndicatorExpressionItemIdVIndicatorExpressionItemMap.get(dbMinCaseIndicatorExpressionItemId);
         if (Objects.nonNull(minCaseIndicatorExpressionItemEntity)) {
           caseMinIndicatorExpressionItemEntityAtomicReference.set(minCaseIndicatorExpressionItemEntity);
         }
-        CaseIndicatorExpressionItemEntity maxCaseIndicatorExpressionItemEntity = kMinAndMaxCaseIndicatorExpressionItemIdVIndicatorExpressionItemMap.get(dbMaxCaseIndicatorExpressionItemId);
+      }
+      if (StringUtils.isNotBlank(dbMaxCaseIndicatorExpressionItemId)) {
+        maxCaseIndicatorExpressionItemEntity = kMinAndMaxCaseIndicatorExpressionItemIdVIndicatorExpressionItemMap.get(dbMaxCaseIndicatorExpressionItemId);
         if (Objects.nonNull(maxCaseIndicatorExpressionItemEntity)) {
           caseMaxIndicatorExpressionItemEntityAtomicReference.set(maxCaseIndicatorExpressionItemEntity);
         }
-        CompletableFuture<Void> cfPopulateMinAndMaxCaseIndicatorExpressionItem = CompletableFuture.runAsync(() -> {
-          rsCaseIndicatorExpressionBiz.populateMinAndMaxCaseIndicatorExpressionItem(
-              typeChangeAtomicBoolean.get(),
-              caseMinIndicatorExpressionItemEntityAtomicReference,
-              caseMinCreateOrUpdateIndicatorExpressionItemRequestRs,
-              caseMaxIndicatorExpressionItemEntityAtomicReference,
-              caseMaxCreateOrUpdateIndicatorExpressionItemRequestRs
-          );
-        });
-        cfPopulateMinAndMaxCaseIndicatorExpressionItem.get();
       }
+      CompletableFuture<Void> cfPopulateMinAndMaxCaseIndicatorExpressionItem = CompletableFuture.runAsync(() -> {
+        rsCaseIndicatorExpressionBiz.populateMinAndMaxCaseIndicatorExpressionItem(
+            typeChangeAtomicBoolean.get(),
+            caseMinIndicatorExpressionItemEntityAtomicReference,
+            caseMinCreateOrUpdateIndicatorExpressionItemRequestRs,
+            caseMaxIndicatorExpressionItemEntityAtomicReference,
+            caseMaxCreateOrUpdateIndicatorExpressionItemRequestRs
+        );
+      });
+      cfPopulateMinAndMaxCaseIndicatorExpressionItem.get();
 
       /* runsix: 2.7 populate new indicatorExpressionEntityAtomicReference 判断是新建还是修改*/
       CaseIndicatorExpressionItemEntity newMinCaseIndicatorExpressionItemEntity = caseMinIndicatorExpressionItemEntityAtomicReference.get();
