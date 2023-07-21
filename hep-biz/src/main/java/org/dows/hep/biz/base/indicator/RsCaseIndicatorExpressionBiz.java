@@ -48,6 +48,7 @@ public class RsCaseIndicatorExpressionBiz {
   private final CaseIndicatorExpressionItemService caseIndicatorExpressionItemService;
   private final CaseIndicatorExpressionInfluenceService caseIndicatorExpressionInfluenceService;
   private final RsUtilBiz rsUtilBiz;
+  private final CasePersonService casePersonService;
   public void populateCaseIndicatorExpressionEntity(
       AtomicReference<CaseIndicatorExpressionEntity> caseIndicatorExpressionEntityAR,
       String caseIndicatorExpressionId) {
@@ -1244,8 +1245,14 @@ public class RsCaseIndicatorExpressionBiz {
   public void populateAllKCaseIndicatorInstanceIdVSeqMap(String caseInstanceId, Map<String, Integer> kCaseIndicatorInstanceIdVSeqMap) {
     if (Objects.isNull(kCaseIndicatorInstanceIdVSeqMap) || StringUtils.isBlank(caseInstanceId)) {return;}
     Map<String, Set<String>> kPrincipalIdVCaseIndicatorInstanceIdSetMap = new HashMap<>();
+    Set<String> accountIdSet = casePersonService.lambdaQuery()
+        .eq(CasePersonEntity::getCaseInstanceId, caseInstanceId)
+        .list()
+        .stream().map(CasePersonEntity::getAccountId)
+        .collect(Collectors.toSet());
+    if (accountIdSet.isEmpty()) {return;}
     caseIndicatorInstanceService.lambdaQuery()
-        .eq(CaseIndicatorInstanceEntity::getCaseIndicatorInstanceId, caseInstanceId)
+        .in(CaseIndicatorInstanceEntity::getPrincipalId, accountIdSet)
         .list()
         .forEach(caseIndicatorInstanceEntity -> {
           String principalId = caseIndicatorInstanceEntity.getPrincipalId();
