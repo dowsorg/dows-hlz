@@ -1,5 +1,6 @@
 package org.dows.hep.biz.user.experiment;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,9 +16,11 @@ import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
 import org.dows.hep.biz.base.indicator.RsCalculateBiz;
 import org.dows.hep.entity.ExperimentGroupEntity;
+import org.dows.hep.entity.ExperimentRankingEntity;
 import org.dows.hep.entity.ExperimentScoringEntity;
 import org.dows.hep.entity.ExperimentSettingEntity;
 import org.dows.hep.service.ExperimentGroupService;
+import org.dows.hep.service.ExperimentRankingService;
 import org.dows.hep.service.ExperimentScoringService;
 import org.dows.hep.service.ExperimentSettingService;
 import org.dows.sequence.api.IdGenerator;
@@ -55,15 +58,18 @@ public class ExperimentScoringBiz {
     private final ExperimentSettingBiz experimentSettingBiz;
     private final ExperimentSettingService experimentSettingService;
 
+    private final ExperimentRankingService experimentRankingService;
+
     private final ExperimentScoringService experimentScoringService;
     private final ExperimentTimerBiz experimentTimerBiz;
     private final ExperimentGroupService experimentGroupService;
     private final RsCalculateBiz rsCalculateBiz;
 
+
     private BigDecimal getWeightTotalScore(
-        BigDecimal knowledgeWeight, BigDecimal knowledgeScore,
-        BigDecimal healthIndexWeight, BigDecimal healthIndexScore,
-        BigDecimal medicalRatioWeight, BigDecimal medicalRatioScore
+            BigDecimal knowledgeWeight, BigDecimal knowledgeScore,
+            BigDecimal healthIndexWeight, BigDecimal healthIndexScore,
+            BigDecimal medicalRatioWeight, BigDecimal medicalRatioScore
     ) {
         BigDecimal finalKnowledgeScore = knowledgeScore.multiply(knowledgeWeight);
         BigDecimal finalHealthIndexScore = healthIndexScore.multiply(healthIndexWeight);
@@ -94,14 +100,14 @@ public class ExperimentScoringBiz {
         CompletableFuture<Void> populateKExperimentGroupIdVGroupMoneyScoreMapCF = getPopulateKExperimentGroupIdVGroupMoneyScoreMapCF(kExperimentGroupIdVGroupMoneyScoreMap, experimentInstanceId, period);
 
         CompletableFuture.allOf(populateExperimentGroupEntityListCF, populateScoringCountCF, populateWeightCF,
-            populateQuestionnaireScoreMapCF, populateKExperimentGroupIdVGroupCompetitiveScoreMapCF, populateKExperimentGroupIdVGroupMoneyScoreMapCF).get();
+                populateQuestionnaireScoreMapCF, populateKExperimentGroupIdVGroupCompetitiveScoreMapCF, populateKExperimentGroupIdVGroupMoneyScoreMapCF).get();
 
         List<ExperimentScoringEntity> experimentScoringEntityList = new ArrayList<>();
         CompletableFuture<Void> populateExperimentScoringEntityListCF = getPopulateExperimentScoringEntityListCF(
-            experimentScoringEntityList, experimentGroupEntityList, scoringCountAtomicInteger,
-            knowledgeWeightAtomicReference, healthIndexWeightAtomicReference, medicalRatioWeightAtomicReference,
-            questionnaireScoreMap, kExperimentGroupIdVGroupCompetitiveScoreMap, kExperimentGroupIdVGroupMoneyScoreMap,
-            experimentInstanceId, period
+                experimentScoringEntityList, experimentGroupEntityList, scoringCountAtomicInteger,
+                knowledgeWeightAtomicReference, healthIndexWeightAtomicReference, medicalRatioWeightAtomicReference,
+                questionnaireScoreMap, kExperimentGroupIdVGroupCompetitiveScoreMap, kExperimentGroupIdVGroupMoneyScoreMap,
+                experimentInstanceId, period
         );
         populateExperimentScoringEntityListCF.get();
         experimentScoringService.saveOrUpdateBatch(experimentScoringEntityList);
@@ -110,59 +116,59 @@ public class ExperimentScoringBiz {
     private CompletableFuture<Void> getPopulateExperimentGroupEntityListCF(String experimentInstanceId, List<ExperimentGroupEntity> experimentGroupEntityList) {
         return CompletableFuture.runAsync(() -> {
             experimentGroupEntityList.addAll(experimentGroupService.lambdaQuery()
-                .eq(ExperimentGroupEntity::getExperimentInstanceId, experimentInstanceId)
-                .list());
+                    .eq(ExperimentGroupEntity::getExperimentInstanceId, experimentInstanceId)
+                    .list());
         });
     }
 
     private CompletableFuture<Void> getPopulateScoringCountCF(AtomicInteger scoringCountAtomicInteger, String experimentInstanceId, Integer period) {
         return CompletableFuture.runAsync(() -> {
             experimentScoringService.lambdaQuery()
-                .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentInstanceId)
-                .eq(ExperimentScoringEntity::getPeriods, period)
-                .list()
-                .stream()
-                .map(ExperimentScoringEntity::getScoringCount)
-                .max(Integer::compareTo)
-                .ifPresent(a -> scoringCountAtomicInteger.set(a + 1));
+                    .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentInstanceId)
+                    .eq(ExperimentScoringEntity::getPeriods, period)
+                    .list()
+                    .stream()
+                    .map(ExperimentScoringEntity::getScoringCount)
+                    .max(Integer::compareTo)
+                    .ifPresent(a -> scoringCountAtomicInteger.set(a + 1));
         });
     }
 
     private CompletableFuture<Void> getPopulateWeightCF(
-        AtomicReference<Float> knowledgeWeightAtomicReference,
-        AtomicReference<Float> healthIndexWeightAtomicReference,
-        AtomicReference<Float> medicalRatioWeightAtomicReference,
-        String experimentInstanceId
-        ) {
+            AtomicReference<Float> knowledgeWeightAtomicReference,
+            AtomicReference<Float> healthIndexWeightAtomicReference,
+            AtomicReference<Float> medicalRatioWeightAtomicReference,
+            String experimentInstanceId
+    ) {
         return CompletableFuture.runAsync(() -> {
             experimentSettingService.lambdaQuery()
-                .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
-                .eq(ExperimentSettingEntity::getConfigKey, ExperimentSetting.SandSetting.class.getName())
-                .oneOpt()
-                .ifPresent(experimentSettingEntity -> {
-                    ExperimentSetting.SandSetting sandSetting = JSONUtil.toBean(experimentSettingEntity.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
-                    knowledgeWeightAtomicReference.set(sandSetting.getKnowledgeWeight());
-                    healthIndexWeightAtomicReference.set(sandSetting.getHealthIndexWeight());
-                    medicalRatioWeightAtomicReference.set(sandSetting.getMedicalRatioWeight());
-                });
+                    .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
+                    .eq(ExperimentSettingEntity::getConfigKey, ExperimentSetting.SandSetting.class.getName())
+                    .oneOpt()
+                    .ifPresent(experimentSettingEntity -> {
+                        ExperimentSetting.SandSetting sandSetting = JSONUtil.toBean(experimentSettingEntity.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
+                        knowledgeWeightAtomicReference.set(sandSetting.getKnowledgeWeight());
+                        healthIndexWeightAtomicReference.set(sandSetting.getHealthIndexWeight());
+                        medicalRatioWeightAtomicReference.set(sandSetting.getMedicalRatioWeight());
+                    });
         });
     }
 
     private CompletableFuture<Void> getPopulateQuestionnaireScoreMapCF(
-        Map<String, BigDecimal> questionnaireScoreMap, String experimentInstanceId, Integer period) {
+            Map<String, BigDecimal> questionnaireScoreMap, String experimentInstanceId, Integer period) {
         return CompletableFuture.runAsync(() -> {
             questionnaireScoreMap.putAll(experimentQuestionnaireScoreBiz.listExptQuestionnaireScore(experimentInstanceId, period));
         });
     }
 
     private CompletableFuture<Void> getPopulateKExperimentGroupIdVGroupCompetitiveScoreMapCF(
-        Map<String, BigDecimal> kExperimentGroupIdVGroupCompetitiveScoreMap, String experimentInstanceId, Integer period) {
+            Map<String, BigDecimal> kExperimentGroupIdVGroupCompetitiveScoreMap, String experimentInstanceId, Integer period) {
         return CompletableFuture.runAsync(() -> {
             RsCalculateCompetitiveScoreRsResponse rsCalculateCompetitiveScoreRsResponse = rsCalculateBiz.rsCalculateCompetitiveScore(RsCalculateCompetitiveScoreRequestRs
-                .builder()
-                .experimentId(experimentInstanceId)
-                .periods(period)
-                .build());
+                    .builder()
+                    .experimentId(experimentInstanceId)
+                    .periods(period)
+                    .build());
             List<GroupCompetitiveScoreRsResponse> groupCompetitiveScoreRsResponseList = rsCalculateCompetitiveScoreRsResponse.getGroupCompetitiveScoreRsResponseList();
             if (Objects.nonNull(groupCompetitiveScoreRsResponseList) && groupCompetitiveScoreRsResponseList.isEmpty()) {
                 groupCompetitiveScoreRsResponseList.forEach(groupCompetitiveScoreRsResponse -> {
@@ -175,14 +181,14 @@ public class ExperimentScoringBiz {
     }
 
     private CompletableFuture<Void> getPopulateKExperimentGroupIdVGroupMoneyScoreMapCF(
-        Map<String, BigDecimal> kExperimentGroupIdVGroupMoneyScoreMap, String experimentInstanceId, Integer period
+            Map<String, BigDecimal> kExperimentGroupIdVGroupMoneyScoreMap, String experimentInstanceId, Integer period
     ) {
         return CompletableFuture.runAsync(() -> {
             RsCalculateMoneyScoreRsResponse rsCalculateMoneyScoreRsResponse = rsCalculateBiz.rsCalculateMoneyScore(RsCalculateMoneyScoreRequestRs
-                .builder()
-                .experimentId(experimentInstanceId)
-                .periods(period)
-                .build());
+                    .builder()
+                    .experimentId(experimentInstanceId)
+                    .periods(period)
+                    .build());
             List<GroupMoneyScoreRsResponse> groupMoneyScoreRsResponseList = rsCalculateMoneyScoreRsResponse.getGroupMoneyScoreRsResponseList();
             if (Objects.isNull(groupMoneyScoreRsResponseList) || groupMoneyScoreRsResponseList.isEmpty()) {
                 groupMoneyScoreRsResponseList.forEach(groupMoneyScoreRsResponse -> {
@@ -195,17 +201,17 @@ public class ExperimentScoringBiz {
     }
 
     private CompletableFuture<Void> getPopulateExperimentScoringEntityListCF(
-        List<ExperimentScoringEntity> experimentScoringEntityList,
-        List<ExperimentGroupEntity> experimentGroupEntityList,
-        AtomicInteger scoringCountAtomicInteger,
-        AtomicReference<Float> knowledgeWeightAtomicReference,
-        AtomicReference<Float> healthIndexWeightAtomicReference,
-        AtomicReference<Float> medicalRatioWeightAtomicReference,
-        Map<String, BigDecimal> questionnaireScoreMap,
-        Map<String, BigDecimal> kExperimentGroupIdVGroupCompetitiveScoreMap,
-        Map<String, BigDecimal> kExperimentGroupIdVGroupMoneyScoreMap,
-        String experimentInstanceId,
-        Integer period
+            List<ExperimentScoringEntity> experimentScoringEntityList,
+            List<ExperimentGroupEntity> experimentGroupEntityList,
+            AtomicInteger scoringCountAtomicInteger,
+            AtomicReference<Float> knowledgeWeightAtomicReference,
+            AtomicReference<Float> healthIndexWeightAtomicReference,
+            AtomicReference<Float> medicalRatioWeightAtomicReference,
+            Map<String, BigDecimal> questionnaireScoreMap,
+            Map<String, BigDecimal> kExperimentGroupIdVGroupCompetitiveScoreMap,
+            Map<String, BigDecimal> kExperimentGroupIdVGroupMoneyScoreMap,
+            String experimentInstanceId,
+            Integer period
     ) {
         return CompletableFuture.runAsync(() -> {
             experimentGroupEntityList.forEach(experimentGroupEntity -> {
@@ -226,25 +232,25 @@ public class ExperimentScoringBiz {
                     groupIdVGroupMoneyScoreBigDecimal = BigDecimal.ZERO;
                 }
                 BigDecimal totalScoreBigDecimal = getWeightTotalScore(
-                    BigDecimal.valueOf(knowledgeWeightAtomicReference.get()), questionnaireScoreBigDecimal,
-                    BigDecimal.valueOf(healthIndexWeightAtomicReference.get()), groupCompetitiveScoreBigDecimal,
-                    BigDecimal.valueOf(medicalRatioWeightAtomicReference.get()), groupIdVGroupMoneyScoreBigDecimal
+                        BigDecimal.valueOf(knowledgeWeightAtomicReference.get()), questionnaireScoreBigDecimal,
+                        BigDecimal.valueOf(healthIndexWeightAtomicReference.get()), groupCompetitiveScoreBigDecimal,
+                        BigDecimal.valueOf(medicalRatioWeightAtomicReference.get()), groupIdVGroupMoneyScoreBigDecimal
                 );
                 experimentScoringEntityList.add(ExperimentScoringEntity
-                    .builder()
-                    .experimentScoringId(idGenerator.nextIdStr())
-                    .experimentInstanceId(experimentInstanceId)
-                    .experimentGroupId(experimentGroupId)
-                    .experimentGroupNo(groupNo)
-                    .experimentGroupName(groupName)
-                    .experimentGroupAlias(groupAlias)
-                    .knowledgeScore(questionnaireScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
-                    .healthIndexScore(groupCompetitiveScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
-                    .treatmentPercentScore(groupIdVGroupMoneyScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
-                    .totalScore(totalScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
-                    .scoringCount(scoringCountAtomicInteger.get())
-                    .periods(period)
-                    .build());
+                        .builder()
+                        .experimentScoringId(idGenerator.nextIdStr())
+                        .experimentInstanceId(experimentInstanceId)
+                        .experimentGroupId(experimentGroupId)
+                        .experimentGroupNo(groupNo)
+                        .experimentGroupName(groupName)
+                        .experimentGroupAlias(groupAlias)
+                        .knowledgeScore(questionnaireScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
+                        .healthIndexScore(groupCompetitiveScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
+                        .treatmentPercentScore(groupIdVGroupMoneyScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
+                        .totalScore(totalScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
+                        .scoringCount(scoringCountAtomicInteger.get())
+                        .periods(period)
+                        .build());
             });
         });
     }
@@ -301,103 +307,66 @@ public class ExperimentScoringBiz {
         List<ExperimentTotalRankItemResponse> experimentTotalRankItemResponseList = new ArrayList<>();
         Map<Integer, ExperimentRankItemResponse> kPeriodVExperimentRankItemResponseMap = new HashMap<>();
         ExperimentSettingEntity experimentSettingEntity = experimentSettingService.lambdaQuery()
-            .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentId)
-            .eq(ExperimentSettingEntity::getConfigKey, ExperimentSetting.SandSetting.class.getName())
-            .oneOpt()
-            .orElseThrow(() -> {
-                log.error("experimentId:{} has no sandSetting", experimentId);
-                throw new ExperimentScoringException(EnumESC.VALIDATE_EXCEPTION);
-            });
+                .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentId)
+                .eq(ExperimentSettingEntity::getConfigKey, ExperimentSetting.SandSetting.class.getName())
+                .oneOpt()
+                .orElseThrow(() -> {
+                    log.error("experimentId:{} has no sandSetting", experimentId);
+                    throw new ExperimentScoringException(EnumESC.VALIDATE_EXCEPTION);
+                });
         ExperimentSetting.SandSetting sandSetting = JSONUtil.toBean(experimentSettingEntity.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
         Map<String, Float> kPeriodVWeightMap = sandSetting.getWeightMap();
         Integer totalPeriods = sandSetting.getPeriods();
         for (int i = 1; i <= totalPeriods; i++) {
             ExperimentRankItemResponse experimentRankItemResponse = ExperimentRankItemResponse
-                .builder()
-                .periods(i)
-                .experimentRankGroupItemResponseList(new ArrayList<>())
-                .build();
+                    .builder()
+                    .periods(i)
+                    .experimentRankGroupItemResponseList(new ArrayList<>())
+                    .build();
             kPeriodVExperimentRankItemResponseMap.put(i, experimentRankItemResponse);
         }
         Map<Integer, Map<String, ExperimentScoringEntity>> kPeriodVKExperimentGroupIdVExperimentScoringEntityMap = new HashMap<>();
         Map<String, Map<Integer, ExperimentScoringEntity>> kExperimentGroupIdVKPeriodVExperimentScoringEntityMap = new HashMap<>();
-        experimentScoringService.lambdaQuery()
-            .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
-            .list()
-            .forEach(experimentScoringEntity -> {
-                String experimentGroupId = experimentScoringEntity.getExperimentGroupId();
-                Integer periods1 = experimentScoringEntity.getPeriods();
-                /* runsix:populate kExperimentGroupIdVKPeriodVExperimentScoringEntityMap */
-                Map<Integer, ExperimentScoringEntity> kPeriodVExperimentScoringEntityMap = kExperimentGroupIdVKPeriodVExperimentScoringEntityMap.get(experimentGroupId);
-                if (Objects.isNull(kPeriodVExperimentScoringEntityMap)) {
-                    kPeriodVExperimentScoringEntityMap = new HashMap<>();
-                }
-                ExperimentScoringEntity experimentScoringEntity2 = kPeriodVExperimentScoringEntityMap.get(periods1);
-                if (Objects.isNull(experimentScoringEntity2)) {
+        List<ExperimentScoringEntity> list = experimentScoringService.lambdaQuery()
+                .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
+                .list();
+        list.forEach(experimentScoringEntity -> {
+            String experimentGroupId = experimentScoringEntity.getExperimentGroupId();
+            Integer periods1 = experimentScoringEntity.getPeriods();
+            /* runsix:populate kExperimentGroupIdVKPeriodVExperimentScoringEntityMap */
+            Map<Integer, ExperimentScoringEntity> kPeriodVExperimentScoringEntityMap = kExperimentGroupIdVKPeriodVExperimentScoringEntityMap.get(experimentGroupId);
+            if (Objects.isNull(kPeriodVExperimentScoringEntityMap)) {
+                kPeriodVExperimentScoringEntityMap = new HashMap<>();
+            }
+            ExperimentScoringEntity experimentScoringEntity2 = kPeriodVExperimentScoringEntityMap.get(periods1);
+            if (Objects.isNull(experimentScoringEntity2)) {
+                kPeriodVExperimentScoringEntityMap.put(periods1, experimentScoringEntity);
+            } else {
+                Integer scoringCount = experimentScoringEntity.getScoringCount();
+                Integer scoringCount2 = experimentScoringEntity2.getScoringCount();
+                if (scoringCount > scoringCount2) {
                     kPeriodVExperimentScoringEntityMap.put(periods1, experimentScoringEntity);
-                } else {
-                    Integer scoringCount = experimentScoringEntity.getScoringCount();
-                    Integer scoringCount2 = experimentScoringEntity2.getScoringCount();
-                    if (scoringCount > scoringCount2) {
-                        kPeriodVExperimentScoringEntityMap.put(periods1, experimentScoringEntity);
-                    }
                 }
-                kExperimentGroupIdVKPeriodVExperimentScoringEntityMap.put(experimentGroupId, kPeriodVExperimentScoringEntityMap);
-                /* runsix:populate kPeriodVKExperimentGroupIdVExperimentScoringEntityMap */
-                Map<String, ExperimentScoringEntity> kExperimentGroupIdVExperimentScoringEntityMap = kPeriodVKExperimentGroupIdVExperimentScoringEntityMap.get(periods1);
-                if (Objects.isNull(kExperimentGroupIdVExperimentScoringEntityMap)) {
-                    kExperimentGroupIdVExperimentScoringEntityMap = new HashMap<>();
-                }
-                ExperimentScoringEntity experimentScoringEntity1 = kExperimentGroupIdVExperimentScoringEntityMap.get(experimentGroupId);
-                if (Objects.isNull(experimentScoringEntity1)) {
+            }
+            kExperimentGroupIdVKPeriodVExperimentScoringEntityMap.put(experimentGroupId, kPeriodVExperimentScoringEntityMap);
+            /* runsix:populate kPeriodVKExperimentGroupIdVExperimentScoringEntityMap */
+            Map<String, ExperimentScoringEntity> kExperimentGroupIdVExperimentScoringEntityMap = kPeriodVKExperimentGroupIdVExperimentScoringEntityMap.get(periods1);
+            if (Objects.isNull(kExperimentGroupIdVExperimentScoringEntityMap)) {
+                kExperimentGroupIdVExperimentScoringEntityMap = new HashMap<>();
+            }
+            ExperimentScoringEntity experimentScoringEntity1 = kExperimentGroupIdVExperimentScoringEntityMap.get(experimentGroupId);
+            if (Objects.isNull(experimentScoringEntity1)) {
+                kExperimentGroupIdVExperimentScoringEntityMap.put(experimentGroupId, experimentScoringEntity);
+            } else {
+                Integer scoringCount = experimentScoringEntity.getScoringCount();
+                Integer scoringCount1 = experimentScoringEntity1.getScoringCount();
+                if (scoringCount > scoringCount1) {
                     kExperimentGroupIdVExperimentScoringEntityMap.put(experimentGroupId, experimentScoringEntity);
-                } else {
-                    Integer scoringCount = experimentScoringEntity.getScoringCount();
-                    Integer scoringCount1 = experimentScoringEntity1.getScoringCount();
-                    if (scoringCount > scoringCount1) {
-                        kExperimentGroupIdVExperimentScoringEntityMap.put(experimentGroupId, experimentScoringEntity);
-                    }
                 }
-                kPeriodVKExperimentGroupIdVExperimentScoringEntityMap.put(periods1, kExperimentGroupIdVExperimentScoringEntityMap);
-            });
-        /* runsix:算所有期数得分 */
-        kExperimentGroupIdVKPeriodVExperimentScoringEntityMap.forEach((experimentGroupId, kPeriodVExperimentScoringEntityMap) -> {
-            List<ExperimentTotalRankGroupItemResponse> experimentTotalRankGroupItemResponseList = new ArrayList<>();
-            AtomicReference<String> atomicReferenceExperimentGroupId = new AtomicReference<>();
-            AtomicReference<String> atomicReferenceExperimentGroupNo = new AtomicReference<>();
-            AtomicReference<String> atomicReferenceExperimentGroupName = new AtomicReference<>();
-            AtomicReference<Double> atomicReferenceAllPeriodsTotalScore = new AtomicReference<>(0D);
-            kPeriodVExperimentScoringEntityMap.forEach((period, experimentScoringEntity) -> {
-                if (StringUtils.isBlank(atomicReferenceExperimentGroupId.get())) {
-                    atomicReferenceExperimentGroupId.set(experimentScoringEntity.getExperimentGroupId());
-                }
-                if (StringUtils.isBlank(atomicReferenceExperimentGroupNo.get())) {
-                    atomicReferenceExperimentGroupNo.set(experimentScoringEntity.getExperimentGroupNo());
-                }
-                if (StringUtils.isBlank(atomicReferenceExperimentGroupName.get())) {
-                    atomicReferenceExperimentGroupName.set(experimentScoringEntity.getExperimentGroupName());
-                }
-                Double currentTotalScore = atomicReferenceAllPeriodsTotalScore.get();
-                String totalScore = experimentScoringEntity.getTotalScore();
-                Float weight = kPeriodVWeightMap.get(period.toString());
-                currentTotalScore += Double.parseDouble(totalScore)*weight/100;
-                atomicReferenceAllPeriodsTotalScore.set(currentTotalScore);
-                experimentTotalRankGroupItemResponseList.add(ExperimentTotalRankGroupItemResponse
-                    .builder()
-                    .totalScore(experimentScoringEntity.getTotalScore())
-                    .periods(period)
-                    .build());
-            });
-            experimentTotalRankGroupItemResponseList.sort(Comparator.comparing(ExperimentTotalRankGroupItemResponse::getPeriods));
-            experimentTotalRankItemResponseList.add(ExperimentTotalRankItemResponse
-                .builder()
-                .experimentGroupId(atomicReferenceExperimentGroupId.get())
-                .experimentGroupNo(atomicReferenceExperimentGroupNo.get())
-                .experimentGroupName(atomicReferenceExperimentGroupName.get())
-                .allPeriodsTotalScore(atomicReferenceAllPeriodsTotalScore.get().toString())
-                .experimentTotalRankGroupItemResponseList(experimentTotalRankGroupItemResponseList)
-                .build());
+            }
+            kPeriodVKExperimentGroupIdVExperimentScoringEntityMap.put(periods1, kExperimentGroupIdVExperimentScoringEntityMap);
         });
+
         /* runsix:算每期列表 */
         kPeriodVKExperimentGroupIdVExperimentScoringEntityMap.forEach((period, kExperimentGroupIdVExperimentScoringEntityMap) -> {
             /* runsix:12345期数据 */
@@ -405,15 +374,15 @@ public class ExperimentScoringBiz {
             List<ExperimentRankGroupItemResponse> experimentRankGroupItemResponseList = experimentRankItemResponse.getExperimentRankGroupItemResponseList();
             kExperimentGroupIdVExperimentScoringEntityMap.forEach((experimentGroupId, experimentScoringEntity) -> {
                 experimentRankGroupItemResponseList.add(ExperimentRankGroupItemResponse
-                    .builder()
-                    .experimentGroupId(experimentScoringEntity.getExperimentGroupId())
-                    .experimentGroupName(experimentScoringEntity.getExperimentGroupName())
-                    .healthIndexScore(experimentScoringEntity.getHealthIndexScore())
-                    .knowledgeScore(experimentScoringEntity.getKnowledgeScore())
-                    .treatmentPercentScore(experimentScoringEntity.getTreatmentPercentScore())
-                    .totalScore(experimentScoringEntity.getTotalScore())
-                    .periods(experimentScoringEntity.getPeriods())
-                    .build());
+                        .builder()
+                        .experimentGroupId(experimentScoringEntity.getExperimentGroupId())
+                        .experimentGroupName(experimentScoringEntity.getExperimentGroupName())
+                        .healthIndexScore(experimentScoringEntity.getHealthIndexScore())
+                        .knowledgeScore(experimentScoringEntity.getKnowledgeScore())
+                        .treatmentPercentScore(experimentScoringEntity.getTreatmentPercentScore())
+                        .totalScore(experimentScoringEntity.getTotalScore())
+                        .periods(experimentScoringEntity.getPeriods())
+                        .build());
 
             });
             experimentRankGroupItemResponseList.sort(Comparator.comparing(ExperimentRankGroupItemResponse::getTotalScore));
@@ -431,20 +400,119 @@ public class ExperimentScoringBiz {
             experimentRankItemResponse.setExperimentRankGroupItemResponseList(experimentRankGroupItemResponseList);
         });
 
+        /**
+         * 如果期数未满，那么不执行计算总分，直接返回对应的期数分值
+         */
+        if (list.size() != totalPeriods) {
+            return ExperimentRankResponse
+                    .builder()
+                    .totalPeriod(totalPeriods)
+                    .experimentRankItemResponseList(experimentRankItemResponseList)
+                    .experimentTotalRankItemResponseList(experimentTotalRankItemResponseList)
+                    .build();
+        }
+
+        /**
+         * todo ExperimentScoringBiz.getRank(String experimentId,String period,boolean recalc)该方法增加一个参数，可以用于判断是否要从新计算总分
+         * if(recalc){
+         *     todo
+         * }
+         * 先查数据库
+         */
+        List<ExperimentRankingEntity> list1 = experimentRankingService.lambdaQuery()
+                .eq(ExperimentRankingEntity::getExperimentInstanceId, experimentId)
+                .list();
+        if (CollectionUtil.isNotEmpty(list1)) {
+            for (ExperimentRankingEntity experimentRankingEntity : list1) {
+                ExperimentTotalRankItemResponse experimentTotalRankItemResponse = ExperimentTotalRankItemResponse.builder()
+                        .experimentGroupNo(experimentRankingEntity.getGroupAlias())
+                        .experimentGroupId(experimentRankingEntity.getExperimentGroupId())
+                        .experimentGroupName(experimentRankingEntity.getGroupName())
+                        .experimentTotalRankGroupItemResponseList(JSONUtil.toList(experimentRankingEntity.getPeriodScoreJson()
+                                , ExperimentTotalRankGroupItemResponse.class))
+                        .build();
+                experimentTotalRankItemResponseList.add(experimentTotalRankItemResponse);
+            }
+            ExperimentRankResponse build = ExperimentRankResponse.builder()
+                    .totalPeriod(totalPeriods)
+                    .experimentRankItemResponseList(experimentRankItemResponseList)
+                    .experimentTotalRankItemResponseList(experimentTotalRankItemResponseList)
+                    .build();
+            return build;
+        }
+
+        /* runsix:算所有期数得分 */
+        kExperimentGroupIdVKPeriodVExperimentScoringEntityMap.forEach((experimentGroupId, kPeriodVExperimentScoringEntityMap) -> {
+            List<ExperimentTotalRankGroupItemResponse> experimentTotalRankGroupItemResponseList = new ArrayList<>();
+            AtomicReference<String> atomicReferenceExperimentGroupId = new AtomicReference<>();
+            AtomicReference<String> atomicReferenceExperimentGroupNo = new AtomicReference<>();
+            AtomicReference<String> atomicReferenceExperimentGroupName = new AtomicReference<>();
+            AtomicReference<Double> atomicReferenceAllPeriodsTotalScore = new AtomicReference<>(0D);
+
+            kPeriodVExperimentScoringEntityMap.forEach((period, experimentScoringEntity) -> {
+                if (StringUtils.isBlank(atomicReferenceExperimentGroupId.get())) {
+                    atomicReferenceExperimentGroupId.set(experimentScoringEntity.getExperimentGroupId());
+                }
+                if (StringUtils.isBlank(atomicReferenceExperimentGroupNo.get())) {
+                    atomicReferenceExperimentGroupNo.set(experimentScoringEntity.getExperimentGroupNo());
+                }
+                if (StringUtils.isBlank(atomicReferenceExperimentGroupName.get())) {
+                    atomicReferenceExperimentGroupName.set(experimentScoringEntity.getExperimentGroupName());
+                }
+                Double currentTotalScore = atomicReferenceAllPeriodsTotalScore.get();
+                String totalScore = experimentScoringEntity.getTotalScore();
+                Float weight = kPeriodVWeightMap.get(period.toString());
+                currentTotalScore += Double.parseDouble(totalScore) * weight / 100;
+
+
+                atomicReferenceAllPeriodsTotalScore.set(currentTotalScore);
+                experimentTotalRankGroupItemResponseList.add(ExperimentTotalRankGroupItemResponse
+                        .builder()
+                        .totalScore(experimentScoringEntity.getTotalScore())
+                        .periods(period)
+                        .build());
+            });
+            experimentTotalRankGroupItemResponseList.sort(Comparator.comparing(ExperimentTotalRankGroupItemResponse::getPeriods));
+
+            experimentTotalRankItemResponseList.add(ExperimentTotalRankItemResponse
+                    .builder()
+                    .experimentGroupId(atomicReferenceExperimentGroupId.get())
+                    .experimentGroupNo(atomicReferenceExperimentGroupNo.get())
+                    .experimentGroupName(atomicReferenceExperimentGroupName.get())
+                    .allPeriodsTotalScore(atomicReferenceAllPeriodsTotalScore.get().toString())
+                    .experimentTotalRankGroupItemResponseList(experimentTotalRankGroupItemResponseList)
+                    .build());
+        });
         /* runsix:sort */
         experimentTotalRankItemResponseList.sort(Comparator.comparing(a -> Double.parseDouble(a.getAllPeriodsTotalScore())));
         Collections.reverse(experimentTotalRankItemResponseList);
-        experimentTotalRankItemResponseList.forEach(experimentTotalRankItemResponse -> {
-            List<ExperimentTotalRankGroupItemResponse> experimentTotalRankGroupItemResponseList = experimentTotalRankItemResponse.getExperimentTotalRankGroupItemResponseList();
-            experimentTotalRankGroupItemResponseList.sort(Comparator.comparingInt(ExperimentTotalRankGroupItemResponse::getPeriods));
-            experimentTotalRankItemResponse.setExperimentTotalRankGroupItemResponseList(experimentTotalRankGroupItemResponseList);
-        });
+        List<ExperimentRankingEntity> experimentRankingEntities = new ArrayList<>();
+        for (int i = 1; i <= experimentTotalRankItemResponseList.size(); i++) {
+            ExperimentTotalRankItemResponse experimentTotalRankItemResponse = experimentTotalRankItemResponseList.get(i);
+            experimentTotalRankItemResponse.getExperimentTotalRankGroupItemResponseList()
+                    .sort(Comparator.comparingInt(ExperimentTotalRankGroupItemResponse::getPeriods));
+            // 小组排行
+            ExperimentRankingEntity experimentRankingEntity = ExperimentRankingEntity.builder()
+                    .experimentRankingId(idGenerator.nextIdStr())
+                    .experimentInstanceId(experimentId)
+                    .experimentGroupId(experimentTotalRankItemResponse.getExperimentGroupId())
+                    .rankingIndex(i)// 排名
+                    .totalScore(experimentTotalRankItemResponse.getAllPeriodsTotalScore())
+                    .periodScoreJson(JSONUtil.toJsonStr(experimentTotalRankItemResponse.getExperimentTotalRankGroupItemResponseList()))
+                    .groupName(experimentTotalRankItemResponse.getExperimentGroupName())
+                    .groupAlias(experimentTotalRankItemResponse.getExperimentGroupNo())
+                    .build();
+            experimentRankingEntities.add(experimentRankingEntity);
+        }
+        // 保存计算后的结果
+        experimentRankingService.saveBatch(experimentRankingEntities);
+
         return ExperimentRankResponse
-            .builder()
-            .totalPeriod(totalPeriods)
-            .experimentRankItemResponseList(experimentRankItemResponseList)
-            .experimentTotalRankItemResponseList(experimentTotalRankItemResponseList)
-            .build();
+                .builder()
+                .totalPeriod(totalPeriods)
+                .experimentRankItemResponseList(experimentRankItemResponseList)
+                .experimentTotalRankItemResponseList(experimentTotalRankItemResponseList)
+                .build();
     }
 
     public ExperimentGraphRankResponse getGraphRank(String appId, String experimentId, Integer period) throws ExecutionException, InterruptedException {
@@ -457,10 +525,10 @@ public class ExperimentScoringBiz {
             }
         }
         Map<String, ExperimentGroupEntity> kExperimentGroupIdVExperimentGroupEntityMap = experimentGroupService.lambdaQuery()
-            .eq(ExperimentGroupEntity::getExperimentInstanceId, experimentId)
-            .list()
-            .stream()
-            .collect(Collectors.toMap(ExperimentGroupEntity::getExperimentGroupId, a->a));
+                .eq(ExperimentGroupEntity::getExperimentInstanceId, experimentId)
+                .list()
+                .stream()
+                .collect(Collectors.toMap(ExperimentGroupEntity::getExperimentGroupId, a -> a));
 
         AtomicReference<Float> knowledgeWeightAtomicReference = new AtomicReference<>(0F);
         AtomicReference<Float> healthIndexWeightAtomicReference = new AtomicReference<>(0F);
@@ -470,22 +538,22 @@ public class ExperimentScoringBiz {
 
         Map<String, ExperimentScoringEntity> kExperimentGroupIdVExperimentScoringEntityMap = new HashMap<>();
         experimentScoringService.lambdaQuery()
-            .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
-            .eq(ExperimentScoringEntity::getPeriods, period)
-            .list()
-            .forEach(experimentScoringEntity -> {
-                String experimentGroupId = experimentScoringEntity.getExperimentGroupId();
-                ExperimentScoringEntity experimentScoringEntity1 = kExperimentGroupIdVExperimentScoringEntityMap.get(experimentGroupId);
-                if (Objects.isNull(experimentScoringEntity1)) {
-                    kExperimentGroupIdVExperimentScoringEntityMap.put(experimentGroupId, experimentScoringEntity);
-                } else {
-                    Integer scoringCount = experimentScoringEntity.getScoringCount();
-                    Integer scoringCount1 = experimentScoringEntity1.getScoringCount();
-                    if (scoringCount > scoringCount1) {
+                .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
+                .eq(ExperimentScoringEntity::getPeriods, period)
+                .list()
+                .forEach(experimentScoringEntity -> {
+                    String experimentGroupId = experimentScoringEntity.getExperimentGroupId();
+                    ExperimentScoringEntity experimentScoringEntity1 = kExperimentGroupIdVExperimentScoringEntityMap.get(experimentGroupId);
+                    if (Objects.isNull(experimentScoringEntity1)) {
                         kExperimentGroupIdVExperimentScoringEntityMap.put(experimentGroupId, experimentScoringEntity);
+                    } else {
+                        Integer scoringCount = experimentScoringEntity.getScoringCount();
+                        Integer scoringCount1 = experimentScoringEntity1.getScoringCount();
+                        if (scoringCount > scoringCount1) {
+                            kExperimentGroupIdVExperimentScoringEntityMap.put(experimentGroupId, experimentScoringEntity);
+                        }
                     }
-                }
-            });
+                });
 
         Map<String, ExperimentGraphRankGroupResponse> kExperimentGroupIdVExperimentGraphRankGroupResponseMap = new HashMap<>();
         kExperimentGroupIdVExperimentGroupEntityMap.forEach((experimentGroupId, experimentGroupEntity) -> {
@@ -507,16 +575,16 @@ public class ExperimentScoringBiz {
                 percentTreatmentPercentScore = BigDecimal.valueOf(Double.parseDouble(treatmentPercentScore)).multiply(BigDecimal.valueOf(medicalRatioWeightAtomicReference.get())).divide(BigDecimal.valueOf(100), 2, RoundingMode.DOWN).divide(BigDecimal.valueOf(Double.parseDouble(totalScore)), 2, RoundingMode.DOWN).toString();
             }
             ExperimentGraphRankGroupResponse experimentGraphRankGroupResponse = ExperimentGraphRankGroupResponse
-                .builder()
-                .experimentGroupId(experimentGroupEntity.getExperimentGroupId())
-                .experimentGroupNo(experimentGroupEntity.getGroupNo())
-                .experimentGroupAlias(experimentGroupEntity.getGroupAlias())
-                .experimentGroupName(experimentGroupEntity.getGroupName())
-                .percentKnowledgeScore(percentKnowledgeScore)
-                .percentHealthIndexScore(percentHealthIndexScore)
-                .percentTreatmentPercentScore(percentTreatmentPercentScore)
-                .totalScore(totalScore)
-                .build();
+                    .builder()
+                    .experimentGroupId(experimentGroupEntity.getExperimentGroupId())
+                    .experimentGroupNo(experimentGroupEntity.getGroupNo())
+                    .experimentGroupAlias(experimentGroupEntity.getGroupAlias())
+                    .experimentGroupName(experimentGroupEntity.getGroupName())
+                    .percentKnowledgeScore(percentKnowledgeScore)
+                    .percentHealthIndexScore(percentHealthIndexScore)
+                    .percentTreatmentPercentScore(percentTreatmentPercentScore)
+                    .totalScore(totalScore)
+                    .build();
             kExperimentGroupIdVExperimentGraphRankGroupResponseMap.put(experimentGroupId, experimentGraphRankGroupResponse);
         });
         List<ExperimentGraphRankGroupResponse> experimentGraphRankGroupResponseList = new ArrayList<>();
@@ -526,9 +594,9 @@ public class ExperimentScoringBiz {
         experimentGraphRankGroupResponseList.sort(Comparator.comparing(ExperimentGraphRankGroupResponse::getTotalScore));
         Collections.reverse(experimentGraphRankGroupResponseList);
         return ExperimentGraphRankResponse
-            .builder()
-            .periods(period)
-            .experimentGraphRankGroupResponseList(experimentGraphRankGroupResponseList)
-            .build();
+                .builder()
+                .periods(period)
+                .experimentGraphRankGroupResponseList(experimentGraphRankGroupResponseList)
+                .build();
     }
 }
