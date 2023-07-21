@@ -81,7 +81,7 @@ public class ReportRecordHelper {
         }
 
         List<MaterialsAttachmentResponse> materialsAttachments = materials.getMaterialsAttachments();
-        if (CollUtil.isNotEmpty(materialsAttachments)) {
+        if (CollUtil.isEmpty(materialsAttachments)) {
             return "";
         }
 

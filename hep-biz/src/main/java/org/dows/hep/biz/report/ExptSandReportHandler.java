@@ -16,9 +16,12 @@ import org.dows.hep.api.base.indicator.response.ExperimentRankGroupItemResponse;
 import org.dows.hep.api.base.indicator.response.ExperimentRankItemResponse;
 import org.dows.hep.api.base.indicator.response.ExperimentRankResponse;
 import org.dows.hep.api.base.indicator.response.ExperimentTotalRankItemResponse;
+import org.dows.hep.api.base.materials.request.MaterialsAttachmentRequest;
+import org.dows.hep.api.base.materials.request.MaterialsRequest;
 import org.dows.hep.api.base.question.QuestionTypeEnum;
 import org.dows.hep.api.constant.SystemConstant;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
+import org.dows.hep.api.user.experiment.ExptReportTypeEnum;
 import org.dows.hep.api.user.experiment.dto.ExptQuestionnaireOptionDTO;
 import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireItemResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireResponse;
@@ -68,6 +71,7 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
 
     private final ReportOSSHelper ossHelper;
     private final ReportPdfHelper reportPdfHelper;
+    private final ReportRecordHelper recordHelper;
     private final FindSoftProperties findSoftProperties;
 
     private static final String SAND_REPORT_HOME_DIR = SystemConstant.PDF_REPORT_TMP_PATH + "沙盘模拟实验报告" + File.separator;
@@ -107,11 +111,11 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
         List<ExperimentGroupEntity> exptGroupInfoList = exptData.getExptGroupInfoList();
         if (StrUtil.isBlank(exptGroupId)) { // 批量-所有小组
             for (ExperimentGroupEntity group : exptGroupInfoList) {
-                ExptGroupReportVO exptGroupReportVO = generatePdfReportOfGroup(group.getExperimentGroupId(), exptData);
+                ExptGroupReportVO exptGroupReportVO = generatePdfReportOfGroup(experimentInstanceId, group.getExperimentGroupId(), exptData);
                 groupReportVOs.add(exptGroupReportVO);
             }
         } else { // 单个小组
-            ExptGroupReportVO exptGroupReportVO = generatePdfReportOfGroup(exptGroupId, exptData);
+            ExptGroupReportVO exptGroupReportVO = generatePdfReportOfGroup(experimentInstanceId, exptGroupId, exptData);
             groupReportVOs.add(exptGroupReportVO);
         }
 
@@ -211,15 +215,44 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
     }
 
     // 生成 pdf 报告
-    private ExptGroupReportVO generatePdfReportOfGroup(String exptGroupId, ExptSandReportData exptData) {
+    private ExptGroupReportVO generatePdfReportOfGroup(String exptInstanceId, String exptGroupId, ExptSandReportData exptData) {
         // pdf 素材
         ExptSandReportModel pdfVO = convertData2Model(exptGroupId, exptData);
         String schemeFlt = getSchemeFlt();
         String fileName = getOutputPosition(exptGroupId, exptData);
 
+        // 判断记录中是否有数据
+        String reportOfGroup = recordHelper.getReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP);
+        if (StrUtil.isNotBlank(reportOfGroup)) {
+            ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
+                    .name(fileName)
+                    .path(reportOfGroup)
+                    .build();
+            return ExptGroupReportVO.builder()
+                    .exptGroupId(exptGroupId)
+                    .exptGroupNo(Integer.valueOf(pdfVO.getGroupInfo().getGroupNo()))
+                    .paths(List.of(reportFile))
+                    .build();
+        }
+
         // 生成 pdf 并上传文件
         Path path = Paths.get(SAND_REPORT_HOME_DIR, fileName);
         OssInfo ossInfo = reportPdfHelper.convertAndUpload(pdfVO, schemeFlt, path);
+
+        // 记录一份数据
+        if (StrUtil.isNotBlank(ossInfo.getPath())) {
+            MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
+                    .fileName(fileName)
+                    .fileType("pdf")
+                    .fileUri(ossHelper.getUrlPath(ossInfo))
+                    .build();
+            MaterialsRequest materialsRequest = MaterialsRequest.builder()
+                    .bizCode("EXPT")
+                    .title(fileName)
+                    .materialsAttachments(List.of(attachment))
+                    .build();
+            recordHelper.record(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP, materialsRequest);
+        }
 
         // 构建返回信息
         ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
