@@ -2,10 +2,13 @@ package org.dows.hep.biz.report.pdf;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import com.itextpdf.commons.utils.Base64;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
+import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.oss.api.OssInfo;
 import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.constant.SystemConstant;
@@ -21,9 +24,11 @@ import org.dows.hep.vo.report.ExptBaseInfoModel;
 import org.dows.hep.vo.report.ExptGroupReportVO;
 import org.dows.hep.vo.report.ExptOverviewReportModel;
 import org.dows.hep.vo.report.ExptReportVO;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Path;
@@ -46,10 +51,11 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
     private final ExperimentSchemeBiz experimentSchemeBiz;
     private final ExperimentScoringBiz experimentScoringBiz;
     private final ExperimentSettingBiz experimentSettingBiz;
-    private final Template2PdfBiz template2PdfBiz;
-    private final FindSoftProperties findSoftProperties;
-    private final OSSReportBiz ossReportBiz;
     private final ExperimentInstanceService experimentInstanceService;
+
+    private final ReportOSSHelper ossHelper;
+    private final ReportPdfHelper reportPdfHelper;
+    private final FindSoftProperties findSoftProperties;
 
     private static final String OVERVIEW_REPORT_HOME_DIR = SystemConstant.PDF_REPORT_TMP_PATH + "实验总报告" + File.separator;
 
@@ -72,12 +78,12 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
 
         // 生成 pdf 并上传文件
         Path path = Paths.get(OVERVIEW_REPORT_HOME_DIR, fileName);
-        OssInfo ossInfo = template2PdfBiz.convertAndUpload(pdfVO, schemeFlt, path);
+        OssInfo ossInfo = reportPdfHelper.convertAndUpload(pdfVO, schemeFlt, path);
 
         // build result
         ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
                 .name(ossInfo.getName())
-                .path(ossReportBiz.getUrlPath(ossInfo))
+                .path(ossHelper.getUrlPath(ossInfo))
                 .build();
         ExptGroupReportVO groupReportVO = ExptGroupReportVO.builder()
                 .exptGroupId(null)
@@ -115,7 +121,7 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
     @Override
     public ExptOverviewReportModel convertData2Model(String exptGroupId, ExptOverviewReportData exptReportData) {
         // 基本信息
-        ExptBaseInfoModel baseInfo = generateBaseInfoVO(findSoftProperties, log);
+        ExptBaseInfoModel baseInfo = generateBaseInfoVO(findSoftProperties);
         // 实验信息
         ExperimentInstanceEntity exptInfo1 = exptReportData.getExptInfo();
         ExptOverviewReportModel.ExptInfo exptInfo = ExptOverviewReportModel.ExptInfo.builder()
@@ -163,6 +169,25 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
     @Override
     public String getSchemeFlt() {
         return findSoftProperties.getExptOverviewFtl();
+    }
+
+    private ExptBaseInfoModel generateBaseInfoVO(FindSoftProperties findSoftProperties) {
+        String logoStr = null;
+        String coverStr = null;
+        try {
+            logoStr = Base64.encodeBytes(IOUtils.toByteArray(new ClassPathResource(findSoftProperties.getLogo()).getInputStream()));
+            coverStr = Base64.encodeBytes(IOUtils.toByteArray(new ClassPathResource(findSoftProperties.getCover()).getInputStream()));
+        } catch (IOException e) {
+            log.error("导出实验报告时，获取logo和cover图片资源异常");
+            throw new BizException("导出实验报告时，获取logo和cover图片资源异常");
+        }
+
+        return ExptBaseInfoModel.builder()
+                .title(findSoftProperties.getExptOverviewReportTitle())
+                .logoImg(logoStr)
+                .coverImg(coverStr)
+                .copyRight(findSoftProperties.getCopyRight())
+                .build();
     }
 
     private List<ExptOverviewReportModel.TotalRanking> generateTotalRanking(List<ExptOverviewReportModel.SchemeRanking> schemeRankingList, List<ExptOverviewReportModel.SandGroupRanking> sandGroupRankingList) {

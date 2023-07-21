@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.oss.api.OssInfo;
-import org.dows.framework.oss.minio.MinioOssClient;
 import org.dows.hep.vo.report.ExptReportModel;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
@@ -37,9 +36,10 @@ import java.util.Map;
 @Component
 @Getter
 @RequiredArgsConstructor
-public class Template2PdfBiz {
-    private final MinioOssClient ossClient;
+public class ReportPdfHelper {
     private final FreeMarkerConfig freeMarkerConfig;
+    private final ReportOSSHelper ossHelper;
+
     private final Map<String, Template> templateCache = new HashMap<>(3);
     private final ConverterProperties converterProperties = new ConverterProperties();
 
@@ -74,7 +74,7 @@ public class Template2PdfBiz {
         }
 
         // 上传
-        OssInfo ossInfo = ossClient.upLoad(targetFile, targetFile.getName(), true);
+        OssInfo ossInfo = ossHelper.upload(targetFile, targetFile.getName(), true);
 
         // 删除本地文件
         try {

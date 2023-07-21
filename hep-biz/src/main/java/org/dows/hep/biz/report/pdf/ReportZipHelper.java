@@ -6,9 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.oss.api.OssInfo;
-import org.dows.framework.oss.minio.MinioOssClient;
 import org.dows.hep.api.constant.SystemConstant;
-import org.dows.hep.properties.OSSProperties;
 import org.dows.hep.vo.report.ExptGroupReportVO;
 import org.dows.hep.vo.report.ExptReportVO;
 import org.springframework.stereotype.Component;
@@ -33,10 +31,8 @@ import java.util.zip.ZipOutputStream;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class OSSReportBiz {
-    private final MinioOssClient ossClient;
-    private final OSSProperties ossProperties;
-    private static final String URL_PATH_SEPARATOR = "/";
+public class ReportZipHelper {
+    private final ReportOSSHelper ossHelper;
     private static final String ZIP_REPORT_HOME_DIR = SystemConstant.PDF_REPORT_TMP_PATH + "压缩文件" + File.separator;
 
     /**
@@ -65,8 +61,13 @@ public class OSSReportBiz {
         }
         try (OutputStream out = Files.newOutputStream(fileName);
              ZipOutputStream zos = new ZipOutputStream(out)) {
+            // 压缩文件
             toZipExpt(exptReportVO, zos);
-            upload(exptReportVO, fileName.toFile());
+            // minio 上传文件
+            OssInfo ossInfo = ossHelper.upload(fileName.toFile(), fileName.toString(), true);
+            // 构建文件返回全路径
+            exptReportVO.setZipName(ossInfo.getName());
+            exptReportVO.setZipPath(ossHelper.getUrlPath(ossInfo));
         } catch (IOException e) {
             throw new BizException("导出pdf报告时, 压缩文件或文件上传异常");
         }
@@ -78,36 +79,6 @@ public class OSSReportBiz {
         } catch (IOException e) {
             log.error("导出pdf报告时, 删除pdf报告的本地文件异常");
         }
-    }
-
-    /**
-     * @param ossInfo - 获取文件完整 uri 路径
-     * @return java.lang.String
-     * @author fhb
-     * @description 获取文件完整 uri 路径
-     * @date 2023/7/20 15:23
-     */
-    public String getUrlPath(OssInfo ossInfo) {
-        OSSProperties.MinioOss minio = ossProperties.getMinio();
-        String endpoint = minio.getEndpoint();
-        String basePath = minio.getBasePath();
-        String bucketName = minio.getBucketName();
-        // 构建返回值
-        return endpoint
-                + URL_PATH_SEPARATOR
-                + bucketName
-                + URL_PATH_SEPARATOR
-                + basePath
-                + URL_PATH_SEPARATOR
-                + ossInfo.getName();
-    }
-
-    private void upload(ExptReportVO exptReportVO, File file) {
-        // minio 上传文件
-        OssInfo ossInfo = ossClient.upLoad(file, file.getName(), true);
-        /*构建文件返回全路径*/
-        exptReportVO.setZipName(ossInfo.getName());
-        exptReportVO.setZipPath(getUrlPath(ossInfo));
     }
 
     private void toZipExpt(ExptReportVO reportVO, ZipOutputStream zos) {
@@ -129,7 +100,7 @@ public class OSSReportBiz {
                 for (ExptGroupReportVO.ReportFile path : paths) {
                     Path temFilePath = Paths.get(ZIP_REPORT_HOME_DIR, path.getName());
                     OutputStream out = Files.newOutputStream(temFilePath);
-                    ossClient.downLoad(out, path.getName());
+                    ossHelper.download(out, path.getName());
 
                     zos.putNextEntry(new ZipEntry(groupDirName + temFilePath.getFileName()));
 
