@@ -45,6 +45,10 @@ public class ExperimentCacheKey {
         return Objects.hash(appId, experimentInstanceId);
     }
 
+    public String getKeyString(){
+        return String.format("%s-%s", appId,experimentInstanceId);
+    }
+
     @Override
     public String toString() {
         return String.format("%s-%s-%s", appId,experimentInstanceId,maxRetry.get());

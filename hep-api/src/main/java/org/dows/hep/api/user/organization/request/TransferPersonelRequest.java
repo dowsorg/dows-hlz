@@ -20,6 +20,9 @@ public class TransferPersonelRequest {
     @Schema(title = "实验小组ID")
     private String experimentGroupId;
 
+    @Schema(title = "实验机构ID")
+    private String experimentOrgId;
+
     @Schema(title = "转移说明")
     private String descr;
 

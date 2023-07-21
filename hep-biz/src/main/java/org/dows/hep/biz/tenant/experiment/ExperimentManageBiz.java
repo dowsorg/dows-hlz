@@ -114,6 +114,7 @@ public class ExperimentManageBiz {
                 .experimentDescr(createExperiment.getExperimentDescr())
                 .model(createExperiment.getModel())
                 .state(EnumExperimentState.UNBEGIN.getState())
+                .accountId(accountId)
                 .appointor(instanceResponse.getAccountName())
                 .caseInstanceId(createExperiment.getCaseInstanceId())
                 .caseName(createExperiment.getCaseName())

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.enums.EnumESC;
+import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.enums.EnumIndicatorType;
 import org.dows.hep.api.exception.IndicatorCategoryException;
 import org.dows.hep.api.exception.RsIndicatorInstanceBizException;
@@ -15,6 +16,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * @author runsix
@@ -111,6 +113,7 @@ public class RsIndicatorInstanceBiz {
     if (StringUtils.isBlank(appId) || Objects.isNull(indicatorInstanceIdSet) || indicatorInstanceIdSet.isEmpty()) {return;}
     List<IndicatorExpressionEntity> indicatorExpressionEntityList = indicatorExpressionService.lambdaQuery()
         .eq(IndicatorExpressionEntity::getAppId, appId)
+        .notIn(IndicatorExpressionEntity::getSource, EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource())
         .in(IndicatorExpressionEntity::getPrincipalId, indicatorInstanceIdSet)
         .list();
     if (!indicatorExpressionEntityList.isEmpty()) {
@@ -125,11 +128,11 @@ public class RsIndicatorInstanceBiz {
         .eq(IndicatorExpressionInfluenceEntity::getAppId, appId)
         .list()
         .forEach(indicatorExpressionInfluenceEntity -> {
-          String influenceIndicatorInstanceIdList = indicatorExpressionInfluenceEntity.getInfluenceIndicatorInstanceIdList();
-          List<String> influenceIndicatorInstanceIdSplitList = rsUtilBiz.getSplitList(influenceIndicatorInstanceIdList);
+//          String influenceIndicatorInstanceIdList = indicatorExpressionInfluenceEntity.getInfluenceIndicatorInstanceIdList();
+//          List<String> influenceIndicatorInstanceIdSplitList = rsUtilBiz.getSplitList(influenceIndicatorInstanceIdList);
+//          dbExistIndicatorInstanceIdSet.addAll(influenceIndicatorInstanceIdSplitList);
           String influencedIndicatorInstanceIdList = indicatorExpressionInfluenceEntity.getInfluencedIndicatorInstanceIdList();
           List<String> influencedIndicatorInstanceIdSplitList = rsUtilBiz.getSplitList(influencedIndicatorInstanceIdList);
-          dbExistIndicatorInstanceIdSet.addAll(influenceIndicatorInstanceIdSplitList);
           dbExistIndicatorInstanceIdSet.addAll(influencedIndicatorInstanceIdSplitList);
         });
     if (indicatorInstanceIdSet.stream().anyMatch(dbExistIndicatorInstanceIdSet::contains)) {
@@ -362,5 +365,25 @@ public class RsIndicatorInstanceBiz {
         .eq(IndicatorRuleEntity::getVariableId, indicatorInstanceEntity.getIndicatorInstanceId())
         .oneOpt()
         .ifPresent(indicatorRuleEntityAR::set);
+  }
+
+  public void populateAllKIndicatorInstanceIdVValMap(
+      Map<String, String> kIndicatorInstanceIdVValMap,
+      String appId) {
+    if (Objects.isNull(kIndicatorInstanceIdVValMap) || StringUtils.isBlank(appId)) {return;}
+    Set<String> indicatorInstanceIdSet = indicatorInstanceService.lambdaQuery()
+        .eq(IndicatorInstanceEntity::getAppId, appId)
+        .list()
+        .stream()
+        .map(IndicatorInstanceEntity::getIndicatorInstanceId)
+        .collect(Collectors.toSet());
+    if (!indicatorInstanceIdSet.isEmpty()) {
+      indicatorRuleService.lambdaQuery()
+          .in(IndicatorRuleEntity::getVariableId, indicatorInstanceIdSet)
+          .list()
+          .forEach(indicatorRuleEntity -> {
+            kIndicatorInstanceIdVValMap.put(indicatorRuleEntity.getVariableId(), indicatorRuleEntity.getDef());
+          });
+    }
   }
 }

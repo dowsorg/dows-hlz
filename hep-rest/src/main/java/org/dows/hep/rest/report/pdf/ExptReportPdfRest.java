@@ -12,7 +12,7 @@ import org.dows.hep.api.user.experiment.ExptSettingModeEnum;
 import org.dows.hep.biz.report.pdf.ExptOverviewReportBiz;
 import org.dows.hep.biz.report.pdf.ExptSandReportBiz;
 import org.dows.hep.biz.report.pdf.ExptSchemeReportBiz;
-import org.dows.hep.biz.report.pdf.OSSReportBiz;
+import org.dows.hep.biz.report.pdf.ReportZipHelper;
 import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.service.ExperimentInstanceService;
@@ -43,7 +43,7 @@ public class ExptReportPdfRest {
     private final ExptSchemeReportBiz exptSchemeReportBiz;
     private final ExptSandReportBiz exptSandReportBiz;
     private final ExptOverviewReportBiz exptOverviewReportBiz;
-    private final OSSReportBiz ossReportBiz;
+    private final ReportZipHelper reportZipHelper;
 
     /**
      * 导出小组实验pdf报告
@@ -67,7 +67,7 @@ public class ExptReportPdfRest {
             if (lock.tryLock(-1, 10, TimeUnit.SECONDS)) {
                 ExptReportVO exptReportVO = generatePdf(experimentInstanceId, experimentGroupId);
                 exptReportVO.setZipName(fileName);
-                ossReportBiz.upload(exptReportVO);
+                reportZipHelper.upload(exptReportVO);
                 return exptReportVO;
             } else {
                 throw new BizException("报告生成中");
@@ -105,7 +105,7 @@ public class ExptReportPdfRest {
                 ExptReportVO exptReportVO = generatePdf(experimentInstanceId, null);
 //                exptReportVO.setZipPath(zipPath);
                 exptReportVO.setZipName(fileName);
-                ossReportBiz.upload(exptReportVO);
+                reportZipHelper.upload(exptReportVO);
                 return exptReportVO;
             } else {
                 throw new BizException("报告生成中");
@@ -141,10 +141,6 @@ public class ExptReportPdfRest {
                 .groupReportList(exptGroupReportVOS)
                 .build();
 
-        // 小组的实验总报告
-        ExptReportVO overviewReportVO = exptOverviewReportBiz.generatePdfReport(experimentInstanceId, experimentGroupId);
-        exptGroupReportVOS.addAll(overviewReportVO.getGroupReportList());
-
         ExptSettingModeEnum exptSettingMode = experimentSettingBiz.getExptSettingMode(experimentInstanceId);
         switch (exptSettingMode) {
             case SCHEME -> {
@@ -162,6 +158,9 @@ public class ExptReportPdfRest {
                 exptGroupReportVOS.addAll(sandReportVO.getGroupReportList());
             }
         }
+        // 实验总报告
+        ExptReportVO overviewReportVO = exptOverviewReportBiz.generatePdfReport(experimentInstanceId, experimentGroupId);
+        exptGroupReportVOS.addAll(overviewReportVO.getGroupReportList());
 
         return result;
     }

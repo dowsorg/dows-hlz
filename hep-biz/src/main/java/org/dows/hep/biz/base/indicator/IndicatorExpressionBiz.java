@@ -55,6 +55,7 @@ public class IndicatorExpressionBiz{
   private final IndicatorCategoryService indicatorCategoryService;
   private final RsIndicatorExpressionBiz rsIndicatorExpressionBiz;
   private final RsUtilBiz rsUtilBiz;
+  private final RsIndicatorInstanceBiz rsIndicatorInstanceBiz;
   public static IndicatorExpressionResponseRs indicatorExpression2ResponseRs(
       IndicatorExpressionEntity indicatorExpressionEntity,
       List<IndicatorExpressionItemResponseRs> indicatorExpressionItemResponseRsList,
@@ -736,15 +737,6 @@ public class IndicatorExpressionBiz{
     return StringUtils.equalsIgnoreCase(str, EnumString.SPACE.getStr());
   }
 
-  /* runsix:TODO 需要删掉，测试使用 */
-  public static void main(String[] args) {
-//    String str = "#indicator0$_1 == 男";
-//    System.out.println(getConditionExpression(str));
-    String str = "indicator0@0";
-    String[] split = str.split("@");
-    System.out.println(split);
-  }
-
   /* runsix:TODO */
   @Transactional(rollbackFor = Exception.class)
   public void batchBindReasonId(BatchBindReasonIdRequestRs batchBindReasonIdRequestRs) {
@@ -1192,6 +1184,42 @@ public class IndicatorExpressionBiz{
     indicatorExpressionRefEntityAtomicReference.set(indicatorExpressionRefEntity);
     createOrUpdateIndicatorExpressionRequestRs.setIndicatorExpressionRefId(indicatorExpressionRefId);
   }
+
+  public void newPopulateIndicatorExpressionRefEntity(
+      String indicatorExpressionId,
+      CreateOrUpdateIndicatorExpressionRequestRs createOrUpdateIndicatorExpressionRequestRs,
+      AtomicReference<IndicatorExpressionRefEntity> indicatorExpressionRefEntityAtomicReference
+  ) {
+    String reasonId = createOrUpdateIndicatorExpressionRequestRs.getReasonId();
+    String indicatorExpressionRefId = createOrUpdateIndicatorExpressionRequestRs.getIndicatorExpressionRefId();
+    String appId = createOrUpdateIndicatorExpressionRequestRs.getAppId();
+    if (StringUtils.isBlank(indicatorExpressionId)) {
+      log.warn("method populateIndicatorExpressionRefEntity indicatorExpressionId is blank");
+      throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
+    }
+    IndicatorExpressionRefEntity indicatorExpressionRefEntity = new IndicatorExpressionRefEntity();
+    if (StringUtils.isBlank(indicatorExpressionRefId)) {
+      indicatorExpressionRefEntity = IndicatorExpressionRefEntity
+          .builder()
+          .indicatorExpressionRefId(idGenerator.nextIdStr())
+          .appId(appId)
+          .indicatorExpressionId(indicatorExpressionId)
+          .reasonId(reasonId)
+          .build();
+    } else {
+      indicatorExpressionRefEntity = indicatorExpressionRefService.lambdaQuery()
+          .eq(IndicatorExpressionRefEntity::getAppId, appId)
+          .eq(IndicatorExpressionRefEntity::getIndicatorExpressionRefId, indicatorExpressionRefId)
+          .oneOpt()
+          .orElseThrow(() -> {
+            log.warn("method populateIndicatorExpressionRefEntity indicatorExpressionRefId:{} is illegal", indicatorExpressionRefId);
+            throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
+          });
+      indicatorExpressionRefEntity.setReasonId(reasonId);
+    }
+    indicatorExpressionRefEntityAtomicReference.set(indicatorExpressionRefEntity);
+    createOrUpdateIndicatorExpressionRequestRs.setIndicatorExpressionRefId(indicatorExpressionRefId);
+  }
   public void populateMinIndicatorExpressionItemId(
       Boolean changeType,
       CreateOrUpdateIndicatorExpressionItemRequestRs minCreateOrUpdateIndicatorExpressionItemRequestRs,
@@ -1383,9 +1411,6 @@ public class IndicatorExpressionBiz{
     AtomicReference<IndicatorExpressionEntity> indicatorExpressionEntityAtomicReference = new AtomicReference<>();
     String indicatorExpressionId = createOrUpdateIndicatorExpressionRequestRs.getIndicatorExpressionId();
     String principalId = createOrUpdateIndicatorExpressionRequestRs.getPrincipalId();
-    /* runsix: TODO 这两个有什么用 */
-    String indicatorExpressionRefId = createOrUpdateIndicatorExpressionRequestRs.getIndicatorExpressionRefId();
-    String reasonId = createOrUpdateIndicatorExpressionRequestRs.getReasonId();
     String appId = createOrUpdateIndicatorExpressionRequestRs.getAppId();
     Integer paramType = createOrUpdateIndicatorExpressionRequestRs.getType();
     Integer source = createOrUpdateIndicatorExpressionRequestRs.getSource();
@@ -1401,7 +1426,8 @@ public class IndicatorExpressionBiz{
       /* runsix:result */
       List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = new ArrayList<>();
       AtomicBoolean typeChangeAtomicBoolean = new AtomicBoolean(Boolean.FALSE);
-      AtomicReference<IndicatorExpressionInfluenceEntity> indicatorExpressionInfluenceEntityAtomicReference = new AtomicReference<>();
+      AtomicReference<IndicatorExpressionRefEntity> indicatorExpressionRefEntityAtomicReference = new AtomicReference<>();
+      List<IndicatorExpressionInfluenceEntity> indicatorExpressionInfluenceEntityList = new ArrayList<>();
       AtomicReference<IndicatorExpressionItemEntity> minIndicatorExpressionItemEntityAtomicReference = new AtomicReference<>();
       AtomicReference<IndicatorExpressionItemEntity> maxIndicatorExpressionItemEntityAtomicReference = new AtomicReference<>();
 
@@ -1416,11 +1442,16 @@ public class IndicatorExpressionBiz{
         if (!dbType.equals(paramType)) {typeChangeAtomicBoolean.set(Boolean.TRUE);}
       }
 
+      /**
+       * runsix method process
+       * 使用kahn算法，假定原则，判断是否存在循环依赖
+      */
       /* runsix:2.3 populate indicatorExpressionInfluenceEntityAtomicReference */
-      CompletableFuture<Void> cfCheckCircleDependencyAndPopulateIndicatorExpressionInfluenceEntity = CompletableFuture.runAsync(() -> {
+      CompletableFuture<Void> cfCheckCircleDependencyAndPopulateIndicatorExpressionInfluenceEntityList = CompletableFuture.runAsync(() -> {
         try {
           rsIndicatorExpressionBiz.checkCircleDependencyAndPopulateIndicatorExpressionInfluenceEntity(
-              indicatorExpressionInfluenceEntityAtomicReference,
+              appId,
+              indicatorExpressionInfluenceEntityList,
               source,
               principalId,
               createOrUpdateIndicatorExpressionItemRequestRsList,
@@ -1431,7 +1462,7 @@ public class IndicatorExpressionBiz{
           throw new IndicatorExpressionException(EnumESC.INDICATOR_EXPRESSION_CIRCLE_DEPENDENCY);
         }
       });
-      cfCheckCircleDependencyAndPopulateIndicatorExpressionInfluenceEntity.get();
+      cfCheckCircleDependencyAndPopulateIndicatorExpressionInfluenceEntityList.get();
 
       if (Objects.nonNull(indicatorExpressionEntity)) {
         /* runsix:2.4 公式类型发生变化，原先上下限需要删除 */
@@ -1564,16 +1595,18 @@ public class IndicatorExpressionBiz{
         indicatorExpressionItemEntityList.forEach(indicatorExpressionItemEntity -> {
           rsUtilBiz.checkCondition(kIndicatorInstanceIdVValMap, RsIndicatorExpressionCheckConditionRequest
               .builder()
-              .source(EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource())
+              .source(source)
               .field(EnumIndicatorExpressionField.DATABASE.getField())
               .conditionRaw(indicatorExpressionItemEntity.getConditionRaw())
               .conditionExpression(indicatorExpressionItemEntity.getConditionExpression())
               .conditionNameList(indicatorExpressionItemEntity.getConditionNameList())
               .conditionValList(indicatorExpressionItemEntity.getConditionValList())
               .build());
+          /* runsix:如果是指标管理，没有条件，就不用检查结果 */
+          if (EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource().equals(source) && StringUtils.isBlank(indicatorExpressionItemEntity.getConditionRaw())) {return;}
           rsUtilBiz.checkResult(kIndicatorInstanceIdVValMap, RsIndicatorExpressionCheckoutResultRequest
               .builder()
-              .source(EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource())
+              .source(source)
               .field(EnumIndicatorExpressionField.DATABASE.getField())
               .resultRaw(indicatorExpressionItemEntity.getResultRaw())
               .resultExpression(indicatorExpressionItemEntity.getResultExpression())
@@ -1582,13 +1615,15 @@ public class IndicatorExpressionBiz{
               .build());
         });
       }
+      /* runsix:2.11 ref */
+      newPopulateIndicatorExpressionRefEntity(indicatorExpressionEntityAtomicReference.get().getIndicatorExpressionId(), createOrUpdateIndicatorExpressionRequestRs, indicatorExpressionRefEntityAtomicReference);
 
+      if (Objects.nonNull(indicatorExpressionRefEntityAtomicReference.get())) {indicatorExpressionRefService.saveOrUpdate(indicatorExpressionRefEntityAtomicReference.get());}
       if (Objects.nonNull(minIndicatorExpressionItemEntityAtomicReference.get())) {indicatorExpressionItemService.saveOrUpdate(minIndicatorExpressionItemEntityAtomicReference.get());}
       if (Objects.nonNull(maxIndicatorExpressionItemEntityAtomicReference.get())) {indicatorExpressionItemService.saveOrUpdate(maxIndicatorExpressionItemEntityAtomicReference.get());}
       if (Objects.nonNull(indicatorExpressionEntityAtomicReference.get())) {indicatorExpressionService.saveOrUpdate(indicatorExpressionEntityAtomicReference.get());}
       if (!indicatorExpressionItemEntityList.isEmpty()) {indicatorExpressionItemService.saveOrUpdateBatch(indicatorExpressionItemEntityList);}
-      IndicatorExpressionInfluenceEntity indicatorExpressionInfluenceEntity = indicatorExpressionInfluenceEntityAtomicReference.get();
-      if (Objects.nonNull(indicatorExpressionInfluenceEntity)) {indicatorExpressionInfluenceService.saveOrUpdate(indicatorExpressionInfluenceEntity);}
+      if (!indicatorExpressionInfluenceEntityList.isEmpty()) {indicatorExpressionInfluenceService.saveOrUpdateBatch(indicatorExpressionInfluenceEntityList);}
     } finally {
       lock.unlock();
     }

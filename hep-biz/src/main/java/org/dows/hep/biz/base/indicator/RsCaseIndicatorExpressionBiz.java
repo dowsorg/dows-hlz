@@ -126,7 +126,7 @@ public class RsCaseIndicatorExpressionBiz {
         .in(CaseIndicatorExpressionItemEntity::getIndicatorExpressionId, caseIndicatorExpressionId)
         .list()
         .forEach(caseIndicatorExpressionItemEntity -> {
-          kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.put(caseIndicatorExpressionItemEntity.getIndicatorExpressionItemId(), caseIndicatorExpressionItemEntity);
+          kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.put(caseIndicatorExpressionItemEntity.getCaseIndicatorExpressionItemId(), caseIndicatorExpressionItemEntity);
         });
   }
 
@@ -142,8 +142,9 @@ public class RsCaseIndicatorExpressionBiz {
     ) {return;}
     AtomicInteger seqAtomicInteger = new AtomicInteger(1);
     caseCreateOrUpdateIndicatorExpressionItemRequestRsList.forEach(caseCreateOrUpdateIndicatorExpressionItemRequestRs -> {
-      /* runsix:TODO 做校验 */
-      String caseIndicatorExpressionItemId = caseCreateOrUpdateIndicatorExpressionItemRequestRs.getCaseIndicatorExpressionItemId();
+      String caseIndicatorExpressionItemId = caseCreateOrUpdateIndicatorExpressionItemRequestRs.getIndicatorExpressionItemId();
+      String resultExpression = caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultExpression();
+      resultExpression = rsUtilBiz.handleResultExpression(resultExpression);
       CaseIndicatorExpressionItemEntity caseIndicatorExpressionItemEntity = null;
       if (StringUtils.isBlank(caseIndicatorExpressionItemId)) {
         Integer seq = null;
@@ -156,13 +157,13 @@ public class RsCaseIndicatorExpressionBiz {
             .builder()
             .caseIndicatorExpressionItemId(idGenerator.nextIdStr())
             .appId(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getAppId())
-            .indicatorExpressionId(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getIndicatorExpressionId())
+            .indicatorExpressionId(caseIndicatorExpressionId)
             .conditionRaw(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getConditionRaw())
             .conditionExpression(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getConditionExpression())
             .conditionNameList(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getConditionNameList())
             .conditionValList(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getConditionValList())
             .resultRaw(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultRaw())
-            .resultExpression(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultExpression())
+            .resultExpression(resultExpression)
             .resultNameList(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultNameList())
             .resultValList(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultValList())
             .seq(seq)
@@ -178,7 +179,7 @@ public class RsCaseIndicatorExpressionBiz {
         caseIndicatorExpressionItemEntity.setConditionNameList(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getConditionNameList());
         caseIndicatorExpressionItemEntity.setConditionValList(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getConditionValList());
         caseIndicatorExpressionItemEntity.setResultRaw(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultRaw());
-        caseIndicatorExpressionItemEntity.setResultExpression(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultExpression());
+        caseIndicatorExpressionItemEntity.setResultExpression(resultExpression);
         caseIndicatorExpressionItemEntity.setResultNameList(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultNameList());
         caseIndicatorExpressionItemEntity.setResultValList(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultValList());
         caseIndicatorExpressionItemEntity.setSeq(seqAtomicInteger.getAndIncrement());
@@ -289,14 +290,136 @@ public class RsCaseIndicatorExpressionBiz {
     paramCaseInfluencedIndicatorInstanceIdSet.remove(principalId);
   }
 
-  public void checkCircleDependencyAndPopulateCaseIndicatorExpressionInfluenceEntity(
+  private void populateAllInfluenceSet(
+      String appId,
+      Map<String, CaseIndicatorExpressionInfluenceEntity> kCaseIndicatorInstanceIdVCaseIndicatorExpressionInfluenceEntityMap,
+      Map<String, Set<String>> kCaseIndicatorInstanceIdVCaseInfluenceIndicatorInstanceIdSetMap,
+      Map<String, Set<String>> kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap) {
+    if (StringUtils.isBlank(appId)
+        || Objects.isNull(kCaseIndicatorInstanceIdVCaseInfluenceIndicatorInstanceIdSetMap)
+        || Objects.isNull(kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap)
+    ) {return;}
+    caseIndicatorExpressionInfluenceService.lambdaQuery()
+        .eq(CaseIndicatorExpressionInfluenceEntity::getAppId, appId)
+        .list()
+        .forEach(caseIndicatorExpressionInfluenceEntity -> {
+          String caseIndicatorInstanceId = caseIndicatorExpressionInfluenceEntity.getIndicatorInstanceId();
+          kCaseIndicatorInstanceIdVCaseIndicatorExpressionInfluenceEntityMap.put(caseIndicatorInstanceId, caseIndicatorExpressionInfluenceEntity);
+
+          Set<String> caseInfluenceIndicatorInstanceIdSet = kCaseIndicatorInstanceIdVCaseInfluenceIndicatorInstanceIdSetMap.get(caseIndicatorInstanceId);
+          if (Objects.isNull(caseInfluenceIndicatorInstanceIdSet)) {caseInfluenceIndicatorInstanceIdSet = new HashSet<>();}
+          String caseInfluenceIndicatorInstanceIdList = caseIndicatorExpressionInfluenceEntity.getInfluenceIndicatorInstanceIdList();
+          caseInfluenceIndicatorInstanceIdSet.addAll(rsUtilBiz.getSplitList(caseInfluenceIndicatorInstanceIdList));
+          kCaseIndicatorInstanceIdVCaseInfluenceIndicatorInstanceIdSetMap.put(caseIndicatorInstanceId, caseInfluenceIndicatorInstanceIdSet);
+
+          Set<String> caseInfluencedIndicatorInstanceIdSet = kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap.get(caseIndicatorInstanceId);
+          if (Objects.isNull(caseInfluencedIndicatorInstanceIdSet)) {caseInfluencedIndicatorInstanceIdSet = new HashSet<>();}
+          String caseInfluencedIndicatorInstanceIdList = caseIndicatorExpressionInfluenceEntity.getInfluencedIndicatorInstanceIdList();
+          caseInfluencedIndicatorInstanceIdSet.addAll(rsUtilBiz.getSplitList(caseInfluencedIndicatorInstanceIdList));
+          kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap.put(caseIndicatorInstanceId, caseInfluencedIndicatorInstanceIdSet);
+        });
+  }
+
+  public void checkCircleDependencyAndPopulateIndicatorExpressionInfluenceEntity(
+      String appId,
+      List<CaseIndicatorExpressionInfluenceEntity> caseIndicatorExpressionInfluenceEntityList,
+      Integer source,
+      String principalId,
+      List<CaseCreateOrUpdateIndicatorExpressionItemRequestRs> caseCreateOrUpdateIndicatorExpressionItemRequestRsList,
+      CaseCreateOrUpdateIndicatorExpressionItemRequestRs caseMinCreateOrUpdateIndicatorExpressionItemRequestRs,
+      CaseCreateOrUpdateIndicatorExpressionItemRequestRs caseMaxCreateOrUpdateIndicatorExpressionItemRequestRs
+  ) throws ExecutionException, InterruptedException {
+    if (Objects.isNull(caseIndicatorExpressionInfluenceEntityList)
+        || Objects.isNull(source) || !EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource().equals(source)
+        || Objects.isNull(principalId)
+    ) {return;}
+    Map<String, CaseIndicatorExpressionInfluenceEntity> kCaseIndicatorInstanceIdVCaseIndicatorExpressionInfluenceEntityMap = new HashMap<>();
+    Map<String, Set<String>> kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap = new HashMap<>();
+    Map<String, Set<String>> kCaseIndicatorInstanceIdVCaseInfluenceIndicatorInstanceIdSetMap = new HashMap<>();
+    CompletableFuture<Void> cfPopulateAllInfluenceSet = CompletableFuture.runAsync(() -> {
+      this.populateAllInfluenceSet(appId, kCaseIndicatorInstanceIdVCaseIndicatorExpressionInfluenceEntityMap, kCaseIndicatorInstanceIdVCaseInfluenceIndicatorInstanceIdSetMap, kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap);
+    });
+    cfPopulateAllInfluenceSet.get();
+
+    List<String> conditionValListList = new ArrayList<>();
+    List<String> resultValListList = new ArrayList<>();
+    this.populateCaseCreateOrUpdateIndicatorExpressionItemRequestRsList(
+        conditionValListList,
+        resultValListList,
+        caseCreateOrUpdateIndicatorExpressionItemRequestRsList,
+        caseMinCreateOrUpdateIndicatorExpressionItemRequestRs,
+        caseMaxCreateOrUpdateIndicatorExpressionItemRequestRs
+    );
+
+    Set<String> oldCaseInfluencedIndicatorInstanceIdSet = kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap.get(principalId);
+    /* runsix:如果有影响关系，说明是已经存在的指标。先删除 */
+    if (Objects.nonNull(oldCaseInfluencedIndicatorInstanceIdSet)) {
+      /* runsix:维护其它指标影响它 */
+      oldCaseInfluencedIndicatorInstanceIdSet.forEach(oldCaseInfluencedIndicatorInstanceId -> {
+        Set<String> caseInfluenceIndicatorInstanceIdSet = kCaseIndicatorInstanceIdVCaseInfluenceIndicatorInstanceIdSetMap.get(oldCaseInfluencedIndicatorInstanceId);
+        if (Objects.nonNull(caseInfluenceIndicatorInstanceIdSet) && !caseInfluenceIndicatorInstanceIdSet.isEmpty()) {
+          caseInfluenceIndicatorInstanceIdSet.remove(principalId);
+          kCaseIndicatorInstanceIdVCaseInfluenceIndicatorInstanceIdSetMap.put(oldCaseInfluencedIndicatorInstanceId, caseInfluenceIndicatorInstanceIdSet);
+        }
+      });
+    }
+
+    /* runsix:后新增 new */
+    Set<String> newCaseInfluencedIndicatorInstanceIdSet = new HashSet<>();
+    newCaseInfluencedIndicatorInstanceIdSet.addAll(conditionValListList);
+    newCaseInfluencedIndicatorInstanceIdSet.addAll(resultValListList);
+    newCaseInfluencedIndicatorInstanceIdSet.remove(principalId);
+
+    /* runsix:维护新的影响它的指标 */
+    newCaseInfluencedIndicatorInstanceIdSet.forEach(newInfluencedIndicatorInstanceId -> {
+      Set<String> caseInfluenceIndicatorInstanceIdSet = kCaseIndicatorInstanceIdVCaseInfluenceIndicatorInstanceIdSetMap.get(newInfluencedIndicatorInstanceId);
+      if (Objects.isNull(caseInfluenceIndicatorInstanceIdSet)) {caseInfluenceIndicatorInstanceIdSet = new HashSet<>();}
+      caseInfluenceIndicatorInstanceIdSet.add(principalId);
+      kCaseIndicatorInstanceIdVCaseInfluenceIndicatorInstanceIdSetMap.put(newInfluencedIndicatorInstanceId, caseInfluenceIndicatorInstanceIdSet);
+    });
+
+    /* runsix:旧的被影响指标都删掉，下面新增 */
+    kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap.put(principalId, newCaseInfluencedIndicatorInstanceIdSet);
+    /* runsix:它影响谁 */
+    Set<String> casePrincipalInfluenceIndicatorInstanceIdSet = kCaseIndicatorInstanceIdVCaseInfluenceIndicatorInstanceIdSetMap.get(principalId);
+    if (Objects.isNull(casePrincipalInfluenceIndicatorInstanceIdSet)) {casePrincipalInfluenceIndicatorInstanceIdSet = new HashSet<>();}
+    kCaseIndicatorInstanceIdVCaseInfluenceIndicatorInstanceIdSetMap.put(principalId, casePrincipalInfluenceIndicatorInstanceIdSet);
+
+    /* runsix:kahn校验 */
+    rsUtilBiz.algorithmKahn(null, kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap);
+
+    kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap.forEach((caseIndicatorInstanceId, caseInfluencedIndicatorInstanceIdSet) -> {
+      CaseIndicatorExpressionInfluenceEntity caseIndicatorExpressionInfluenceEntity = kCaseIndicatorInstanceIdVCaseIndicatorExpressionInfluenceEntityMap.get(caseIndicatorInstanceId);
+      Set<String> caseInfluenceIndicatorInstanceIdSet1 = kCaseIndicatorInstanceIdVCaseInfluenceIndicatorInstanceIdSetMap.get(caseIndicatorInstanceId);
+      String newCaseInfluenceIndicatorInstanceId = rsUtilBiz.getCommaList(caseInfluenceIndicatorInstanceIdSet1);
+      Set<String> caseInfluencedIndicatorInstanceIdSet1 = kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap.get(caseIndicatorInstanceId);
+      String newInfluencedIndicatorInstanceId = rsUtilBiz.getCommaList(caseInfluencedIndicatorInstanceIdSet1);
+      if (Objects.isNull(caseIndicatorExpressionInfluenceEntity)) {
+        caseIndicatorExpressionInfluenceEntity = CaseIndicatorExpressionInfluenceEntity
+            .builder()
+            .caseIndicatorExpressionInfluenceId(idGenerator.nextIdStr())
+            .appId(appId)
+            .indicatorInstanceId(caseIndicatorInstanceId)
+            .influenceIndicatorInstanceIdList(newCaseInfluenceIndicatorInstanceId)
+            .influencedIndicatorInstanceIdList(newInfluencedIndicatorInstanceId)
+            .build();
+      } else {
+        caseIndicatorExpressionInfluenceEntity.setInfluenceIndicatorInstanceIdList(newCaseInfluenceIndicatorInstanceId);
+        caseIndicatorExpressionInfluenceEntity.setInfluencedIndicatorInstanceIdList(newInfluencedIndicatorInstanceId);
+      }
+      caseIndicatorExpressionInfluenceEntityList.add(caseIndicatorExpressionInfluenceEntity);
+    });
+  }
+
+  /* runsix:TODO DELETE  */
+  public void oldCheckCircleDependencyAndPopulateCaseIndicatorExpressionInfluenceEntity(
+      String appId,
       AtomicReference<CaseIndicatorExpressionInfluenceEntity> caseIndicatorExpressionInfluenceEntityAtomicReference,
       Integer source,
       String principalId,
       List<CaseCreateOrUpdateIndicatorExpressionItemRequestRs> caseCreateOrUpdateIndicatorExpressionItemRequestRsList,
       CaseCreateOrUpdateIndicatorExpressionItemRequestRs caseMinCreateOrUpdateIndicatorExpressionItemRequestRs,
       CaseCreateOrUpdateIndicatorExpressionItemRequestRs caseMaxCreateOrUpdateIndicatorExpressionItemRequestRs
-
   ) throws ExecutionException, InterruptedException {
     if (Objects.isNull(caseIndicatorExpressionInfluenceEntityAtomicReference)
         || Objects.isNull(source) || !EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource().equals(source)
@@ -335,8 +458,16 @@ public class RsCaseIndicatorExpressionBiz {
         throw new CaseIndicatorExpressionException(EnumESC.CASE_INDICATOR_EXPRESSION_CIRCLE_DEPENDENCY);
       }
       caseIndicatorExpressionInfluenceEntity.setInfluencedIndicatorInstanceIdList(String.join(EnumString.COMMA.getStr(), paramCaseInfluencedIndicatorInstanceIdSet));
-      caseIndicatorExpressionInfluenceEntityAtomicReference.set(caseIndicatorExpressionInfluenceEntity);
+    } else {
+      caseIndicatorExpressionInfluenceEntity = CaseIndicatorExpressionInfluenceEntity
+          .builder()
+          .caseIndicatorExpressionInfluenceId(idGenerator.nextIdStr())
+          .appId(appId)
+          .indicatorInstanceId(principalId)
+          .influencedIndicatorInstanceIdList(String.join(EnumString.COMMA.getStr(), paramCaseInfluencedIndicatorInstanceIdSet))
+          .build();
     }
+    caseIndicatorExpressionInfluenceEntityAtomicReference.set(caseIndicatorExpressionInfluenceEntity);
   }
 
   public void populateCaseIndicatorExpressionItemEntityList(
@@ -491,6 +622,7 @@ public class RsCaseIndicatorExpressionBiz {
       CaseIndicatorExpressionItemEntity maxCaseIndicatorExpressionItemEntity
   ) {
     /* runsix:1.按顺序解析每一个公式 */
+    if (Objects.isNull(caseIndicatorExpressionItemEntityList)) {return;}
     caseIndicatorExpressionItemEntityList.sort(Comparator.comparingInt(CaseIndicatorExpressionItemEntity::getSeq));
     for (int i = 0; i <= caseIndicatorExpressionItemEntityList.size()-1; i++) {
       CaseIndicatorExpressionItemEntity caseIndicatorExpressionItemRsEntity = caseIndicatorExpressionItemEntityList.get(i);
@@ -613,12 +745,12 @@ public class RsCaseIndicatorExpressionBiz {
       List<String> conditionNameSplitList = rsUtilBiz.getConditionNameSplitList(conditionNameList);
       String conditionValList = indicatorExpressionItemEntity.getConditionValList();
       List<String> conditionValSplitList = rsUtilBiz.getConditionValSplitList(conditionValList);
-      StandardEvaluationContext context = new StandardEvaluationContext();
-      ExpressionParser parser = new SpelExpressionParser();
-      Expression expression = parser.parseExpression(conditionExpression);
       if (StringUtils.isBlank(conditionExpression)) {
         return true;
       }
+      StandardEvaluationContext context = new StandardEvaluationContext();
+      ExpressionParser parser = new SpelExpressionParser();
+      Expression expression = parser.parseExpression(conditionExpression);
       for (int i = 0; i <= conditionNameSplitList.size() - 1; i++) {
         String indicatorInstanceId = conditionValSplitList.get(i);
         String caseIndicatorInstanceId = kIndicatorInstanceIdVCaseIndicatorInstanceIdMap.get(indicatorInstanceId);
@@ -637,7 +769,7 @@ public class RsCaseIndicatorExpressionBiz {
       }
       return Boolean.TRUE.equals(expression.getValue(context, Boolean.class));
     } catch(Exception e) {
-      log.error("RsCaseIndicatorExpressionBiz.cPIEConditionUsingExperimentIndicatorInstanceId", e);
+      log.error("RsCaseIndicatorExpressionBiz.cPIEConditionUsingIndicatorInstanceId", e);
       return false;
     }
   }
@@ -652,12 +784,12 @@ public class RsCaseIndicatorExpressionBiz {
       List<String> conditionNameSplitList = rsUtilBiz.getConditionNameSplitList(conditionNameList);
       String conditionValList = caseIndicatorExpressionItemEntity.getConditionValList();
       List<String> conditionValSplitList = rsUtilBiz.getConditionValSplitList(conditionValList);
-      StandardEvaluationContext context = new StandardEvaluationContext();
-      ExpressionParser parser = new SpelExpressionParser();
-      Expression expression = parser.parseExpression(conditionExpression);
       if (StringUtils.isBlank(conditionExpression)) {
         return true;
       }
+      StandardEvaluationContext context = new StandardEvaluationContext();
+      ExpressionParser parser = new SpelExpressionParser();
+      Expression expression = parser.parseExpression(conditionExpression);
       for (int i = 0; i <= conditionNameSplitList.size() - 1; i++) {
         String caseIndicatorInstanceId = conditionValSplitList.get(i);
         if (StringUtils.isBlank(caseIndicatorInstanceId)) {continue;}
@@ -675,7 +807,7 @@ public class RsCaseIndicatorExpressionBiz {
       }
       return Boolean.TRUE.equals(expression.getValue(context, Boolean.class));
     } catch(Exception e) {
-      log.error("RsCaseIndicatorExpressionBiz.cPIEConditionUsingExperimentIndicatorInstanceId", e);
+      log.error("RsCaseIndicatorExpressionBiz.cPIEConditionUsingCaseIndicatorInstanceId", e);
       return false;
     }
   }
@@ -690,12 +822,12 @@ public class RsCaseIndicatorExpressionBiz {
       List<String> resultNameSplitList = rsUtilBiz.getResultNameSplitList(resultNameList);
       String resultValList = caseIndicatorExpressionItemEntity.getResultValList();
       List<String> resultValSplitList = rsUtilBiz.getResultValSplitList(resultValList);
-      StandardEvaluationContext context = new StandardEvaluationContext();
-      ExpressionParser parser = new SpelExpressionParser();
-      Expression expression = parser.parseExpression(resultExpression);
       if (StringUtils.isBlank(resultExpression)) {
         return RsUtilBiz.RESULT_DROP;
       }
+      StandardEvaluationContext context = new StandardEvaluationContext();
+      ExpressionParser parser = new SpelExpressionParser();
+      Expression expression = parser.parseExpression(resultExpression);
       for (int i = 0; i <= resultNameSplitList.size() - 1; i++) {
         String caseIndicatorInstanceId = resultValSplitList.get(i);
         if (StringUtils.isBlank(caseIndicatorInstanceId)) {continue;}
@@ -729,12 +861,12 @@ public class RsCaseIndicatorExpressionBiz {
       List<String> resultNameSplitList = rsUtilBiz.getResultNameSplitList(resultNameList);
       String resultValList = indicatorExpressionItemEntity.getResultValList();
       List<String> resultValSplitList = rsUtilBiz.getResultValSplitList(resultValList);
-      StandardEvaluationContext context = new StandardEvaluationContext();
-      ExpressionParser parser = new SpelExpressionParser();
-      Expression expression = parser.parseExpression(resultExpression);
       if (StringUtils.isBlank(resultExpression)) {
         return RsUtilBiz.RESULT_DROP;
       }
+      StandardEvaluationContext context = new StandardEvaluationContext();
+      ExpressionParser parser = new SpelExpressionParser();
+      Expression expression = parser.parseExpression(resultExpression);
       for (int i = 0; i <= resultNameSplitList.size() - 1; i++) {
         String indicatorInstanceId = resultValSplitList.get(i);
         String caseIndicatorInstanceId = kIndicatorInstanceIdVCaseIndicatorInstanceIdMap.get(indicatorInstanceId);
@@ -884,7 +1016,7 @@ public class RsCaseIndicatorExpressionBiz {
           kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap.put(indicatorExpressionId, caseIndicatorExpressionItemEntityList);
         });
     kCaseIndicatorInstanceIdVCaseIndicatorExpressionEntityMap.forEach((caseIndicatorInstanceId, caseIndicatorExpressionEntity) -> {
-      String indicatorExpressionId = caseIndicatorExpressionEntity.getIndicatorExpressionId();
+      String indicatorExpressionId = caseIndicatorExpressionEntity.getCaseIndicatorExpressionId();
       List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList = kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap.get(indicatorExpressionId);
       if (Objects.isNull(caseIndicatorExpressionItemEntityList)) {return;}
       kCaseIndicatorInstanceIdVCaseIndicatorExpressionItemEntityListMap.put(caseIndicatorInstanceId, caseIndicatorExpressionItemEntityList);

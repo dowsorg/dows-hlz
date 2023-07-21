@@ -3,13 +3,17 @@ package org.dows.hep.biz.base.indicator;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.enums.EnumESC;
+import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.exception.CaseIndicatorExpressionRefBizException;
 import org.dows.hep.api.exception.IndicatorExpressionItemRefException;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author runsix
@@ -21,6 +25,8 @@ public class CaseIndicatorExpressionRefBiz {
   private final CaseIndicatorExpressionRefService caseIndicatorExpressionRefService;
   private final CaseIndicatorExpressionService caseIndicatorExpressionService;
   private final CaseIndicatorExpressionItemService caseIndicatorExpressionItemService;
+
+  private final CaseIndicatorExpressionInfluenceService caseIndicatorExpressionInfluenceService;
 
   @Transactional(rollbackFor = Exception.class)
   public void delete(String caseIndicatorExpressionRefId) {
@@ -40,6 +46,22 @@ public class CaseIndicatorExpressionRefBiz {
       throw new IndicatorExpressionItemRefException(EnumESC.CASE_INDICATOR_EXPRESSION_REF_ID_IS_ILLEGAL);
     }
     String caseIndicatorExpressionId = caseIndicatorExpressionRefEntity.getIndicatorExpressionId();
+    AtomicReference<String> caseIndicatorInstanceIdAR = new AtomicReference<>();
+    caseIndicatorExpressionService.lambdaQuery()
+        .eq(CaseIndicatorExpressionEntity::getCaseIndicatorExpressionId, caseIndicatorExpressionId)
+        .oneOpt()
+        .ifPresent(caseIndicatorExpressionEntity -> {
+          if (EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource().equals(caseIndicatorExpressionEntity.getSource())) {
+            caseIndicatorInstanceIdAR.set(caseIndicatorExpressionEntity.getPrincipalId());
+          }
+        });
+    if (StringUtils.isNotBlank(caseIndicatorInstanceIdAR.get())) {
+      caseIndicatorExpressionInfluenceService.lambdaUpdate()
+          .eq(CaseIndicatorExpressionInfluenceEntity::getIndicatorInstanceId, caseIndicatorInstanceIdAR.get())
+          .set(CaseIndicatorExpressionInfluenceEntity::getInfluenceIndicatorInstanceIdList, null)
+          .set(CaseIndicatorExpressionInfluenceEntity::getInfluencedIndicatorInstanceIdList, null)
+          .update();
+    }
     caseIndicatorExpressionService.remove(
         new LambdaQueryWrapper<CaseIndicatorExpressionEntity>()
             .eq(CaseIndicatorExpressionEntity::getIndicatorExpressionId, caseIndicatorExpressionId)

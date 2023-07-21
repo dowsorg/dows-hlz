@@ -23,29 +23,11 @@ import java.util.concurrent.ExecutionException;
 public class CaseIndicatorInstanceRest {
     private final CaseIndicatorInstanceBiz caseIndicatorInstanceBiz;
 
-    @Operation(summary = "查询健康指数")
-    @GetMapping("v1/caseIndicator/healthPoint/get")
-    public String getHealthPoint(@RequestParam String casePersonId) {
-        return caseIndicatorInstanceBiz.getHealthPoint(casePersonId);
-    }
-
-    @Operation(summary = "复制数据库指标管理给人物")
-    @PostMapping("v1/caseIndicator/indicatorInstance/copy")
-    public void copyPersonIndicatorInstance(@RequestBody CaseCreateCopyToPersonRequestRs caseCreateCopyToPersonRequestRs) {
-        caseIndicatorInstanceBiz.oldcopyPersonIndicatorInstance(caseCreateCopyToPersonRequestRs);
-    }
-
-    @Operation(summary = "V2复制数据库指标管理给人物")
-    @PostMapping("v2/caseIndicator/indicatorInstance/copy")
-    public void v2CopyPersonIndicatorInstance(@RequestBody CaseCreateCopyToPersonRequestRs caseCreateCopyToPersonRequestRs) throws ExecutionException, InterruptedException {
-        caseIndicatorInstanceBiz.copyPersonIndicatorInstance(caseCreateCopyToPersonRequestRs);
-    }
-
     @Operation(summary = "根据人物id和appId查询出所有的指标")
     @GetMapping("v1/caseIndicator/indicatorInstance/getByPersonIdAndAppId")
     public List<CaseIndicatorInstanceCategoryResponseRs> getByPersonIdAndAppId(
-            @RequestParam String personId,
-            @RequestParam String appId) {
+        @RequestParam String personId,
+        @RequestParam String appId) {
         return caseIndicatorInstanceBiz.getByPersonIdAndAppId(personId, appId);
     }
 
@@ -65,5 +47,23 @@ public class CaseIndicatorInstanceRest {
     @DeleteMapping("v1/caseIndicator/indicatorInstance/delete")
     public void delete(@RequestParam String caseIndicatorInstanceId) throws InterruptedException, ExecutionException {
         caseIndicatorInstanceBiz.delete(caseIndicatorInstanceId);
+    }
+
+    @Operation(summary = "查询健康指数")
+    @GetMapping("v1/caseIndicator/healthPoint/get")
+    public String getHealthPoint(@RequestParam String casePersonId) {
+        return caseIndicatorInstanceBiz.getHealthPoint(casePersonId);
+    }
+
+    @Operation(summary = "复制数据库指标管理给人物")
+    @PostMapping("v1/caseIndicator/indicatorInstance/copy")
+    public void copyPersonIndicatorInstance(@RequestBody CaseCreateCopyToPersonRequestRs caseCreateCopyToPersonRequestRs) {
+        caseIndicatorInstanceBiz.v1OldCopyPersonIndicatorInstance(caseCreateCopyToPersonRequestRs);
+    }
+
+    @Operation(summary = "V2复制数据库指标管理给人物")
+    @PostMapping("v2/caseIndicator/indicatorInstance/copy")
+    public void v2CopyPersonIndicatorInstance(@RequestBody CaseCreateCopyToPersonRequestRs caseCreateCopyToPersonRequestRs) throws ExecutionException, InterruptedException {
+        caseIndicatorInstanceBiz.copyPersonIndicatorInstance(caseCreateCopyToPersonRequestRs);
     }
 }

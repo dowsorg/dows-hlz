@@ -9,7 +9,10 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author : wuzl
@@ -49,15 +52,16 @@ public class EventScheduler implements ApplicationListener<ContextClosedEvent> {
     public ScheduledFuture<?> scheduleTimeBasedEvent(String appId,String experimentId, long delaySeconds) {
         appId= ShareBiz.checkAppId(appId,experimentId);
         final ExperimentCacheKey experimentKey = new ExperimentCacheKey(appId, experimentId);
+        log.info("EventScheduler schedule. {} {}",scheduledExecutor,experimentKey);
         return scheduleTimeBasedEvent(experimentKey,delaySeconds);
     }
     public ScheduledFuture<?> scheduleTimeBasedEvent(ExperimentCacheKey experimentKey, long delaySeconds){
-        final String exclusiveKey = String.format("timeevent:%s", experimentKey);
+        final String exclusiveKey = String.format("timeevent:%s", experimentKey.getKeyString());
         return scheduleExclusive(exclusiveKey, new TimeBasedEventTask(experimentKey), delaySeconds);
     }
 
     public ScheduledFuture<?> scheduleExclusive(String exclusiveKey, Runnable  cmd, long delaySeconds) {
-        Future<?>[] buffer = futureCache.caffineCache().get(exclusiveKey, key -> new Future<?>[2]);
+        ScheduledFuture<?>[] buffer = futureCache.caffineCache().get(exclusiveKey, key -> new ScheduledFuture<?>[2]);
         ScheduledFuture<?> rst=null;
         final long additiveSeconds=5;
         synchronized (buffer){
@@ -78,17 +82,17 @@ public class EventScheduler implements ApplicationListener<ContextClosedEvent> {
             runnable.run();
         };
     }
-    private Future<?>[] clearExclusiveTaskBuffer(String exclusiveKey){
+    private ScheduledFuture<?>[] clearExclusiveTaskBuffer(String exclusiveKey){
         return clearExclusiveTaskBuffer(futureCache.caffineCache().getIfPresent(exclusiveKey));
     }
-    private Future<?>[] clearExclusiveTaskBuffer(Future<?>[] buffer){
+    private ScheduledFuture<?>[] clearExclusiveTaskBuffer(ScheduledFuture<?>[] buffer){
         if(null==buffer){
             return null;
         }
         final BlockingQueue queue= scheduledExecutor.getQueue();
         synchronized (buffer){
             for(int i=0;i<buffer.length;i++){
-                Future future=buffer[i];
+                ScheduledFuture future=buffer[i];
                 if(null==future){
                     continue;
                 }
@@ -117,7 +121,7 @@ public class EventScheduler implements ApplicationListener<ContextClosedEvent> {
         }
     }
 
-    public static class ExperimentFutureCache extends BaseManulCache<String,Future<?>[]> {
+    public static class ExperimentFutureCache extends BaseManulCache<String,ScheduledFuture<?>[]> {
 
         private ExperimentFutureCache() {
             super(10, 20, 60*60*12, 0);

@@ -51,6 +51,7 @@ public class IndicatorInstanceBiz{
     private final IndicatorCategoryService indicatorCategoryService;
     private final IndicatorExpressionBiz indicatorExpressionBiz;
     private final RsIndicatorInstanceBiz rsIndicatorInstanceBiz;
+    private final IndicatorExpressionInfluenceService indicatorExpressionInfluenceService;
 
     public static IndicatorInstanceResponseRs indicatorInstance2ResponseRs(
         IndicatorInstanceEntity indicatorInstanceEntity,
@@ -160,6 +161,7 @@ public class IndicatorInstanceBiz{
         IndicatorInstanceEntity indicatorInstanceEntity = null;
         IndicatorCategoryRefEntity indicatorCategoryRefEntity = null;
         IndicatorRuleEntity indicatorRuleEntity = null;
+        IndicatorExpressionInfluenceEntity indicatorExpressionInfluenceEntity = null;
         if (StringUtils.isBlank(indicatorInstanceId)) {
             indicatorInstanceId = idGenerator.nextIdStr();
             indicatorInstanceEntity = IndicatorInstanceEntity
@@ -199,6 +201,12 @@ public class IndicatorInstanceBiz{
                 .max(max)
                 .def(def)
                 .build();
+            indicatorExpressionInfluenceEntity = IndicatorExpressionInfluenceEntity
+                .builder()
+                .indicatorExpressionInfluenceId(idGenerator.nextIdStr())
+                .appId(appId)
+                .indicatorInstanceId(indicatorInstanceId)
+                .build();
         } else {
             String finalIndicatorInstanceId = indicatorInstanceId;
             indicatorInstanceEntity = indicatorInstanceService.lambdaQuery()
@@ -232,6 +240,7 @@ public class IndicatorInstanceBiz{
             throw new IndicatorInstanceException(EnumESC.SYSTEM_BUSY_PLEASE_OPERATOR_INDICATOR_INSTANCE_LATER);
         }
         try {
+            if (Objects.nonNull(indicatorExpressionInfluenceEntity)) {indicatorExpressionInfluenceService.saveOrUpdate(indicatorExpressionInfluenceEntity);}
             indicatorInstanceService.saveOrUpdate(indicatorInstanceEntity);
             indicatorCategoryRefService.saveOrUpdate(indicatorCategoryRefEntity);
             indicatorRuleService.saveOrUpdate(indicatorRuleEntity);
