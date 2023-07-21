@@ -3,10 +3,8 @@ package org.dows.hep.biz.task;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.enums.EnumCalcCode;
 import org.dows.hep.api.enums.EnumExperimentTask;
-import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.biz.calc.ExperimentScoreCalculator;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import org.dows.hep.entity.ExperimentTaskScheduleEntity;
@@ -40,18 +38,19 @@ public class ExperimentCalcTask implements Runnable {
         experimentScoreCalculator.calc(experimentInstanceId, experimentGroupId, period, calcCodes);
 
         //更改计算任务状态
-        ExperimentTaskScheduleEntity calcTaskScheduleEntity = experimentTaskScheduleService.lambdaQuery()
+        List<ExperimentTaskScheduleEntity> calcTaskScheduleEntityList = experimentTaskScheduleService.lambdaQuery()
                 .eq(ExperimentTaskScheduleEntity::getTaskBeanCode, EnumExperimentTask.experimentCalcTask.getDesc())
                 .eq(ExperimentTaskScheduleEntity::getExperimentInstanceId, experimentInstanceId)
                 .eq(ExperimentTaskScheduleEntity::getExperimentGroupId, experimentGroupId)
                 .eq(ExperimentTaskScheduleEntity::getPeriods,period)
-                .one();
-        if(calcTaskScheduleEntity == null || ReflectUtil.isObjectNull(calcTaskScheduleEntity)){
-            throw new ExperimentException("该计算任务不存在");
+                .list();
+        if(calcTaskScheduleEntityList != null && calcTaskScheduleEntityList.size() > 0){
+            calcTaskScheduleEntityList.forEach(cal ->{
+                experimentTaskScheduleService.lambdaUpdate()
+                        .eq(ExperimentTaskScheduleEntity::getId,cal.getId())
+                        .set(ExperimentTaskScheduleEntity::getExecuted,true)
+                        .update();
+            });
         }
-        experimentTaskScheduleService.lambdaUpdate()
-                .eq(ExperimentTaskScheduleEntity::getId,calcTaskScheduleEntity.getId())
-                .set(ExperimentTaskScheduleEntity::getExecuted,true)
-                .update();
     }
 }
