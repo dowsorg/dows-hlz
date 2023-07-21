@@ -250,9 +250,11 @@ public class IndicatorInstanceBiz{
                 .builder()
                 .appId(EnumString.APP_ID.getStr())
                 .build());
-        } catch (ExecutionException e) {
+        }
+        catch (ExecutionException e) {
             throw new RuntimeException(e);
-        } finally {
+        }
+        finally {
             lock.unlock();
         }
     }

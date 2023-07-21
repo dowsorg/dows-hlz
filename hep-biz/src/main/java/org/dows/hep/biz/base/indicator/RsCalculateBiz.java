@@ -882,6 +882,7 @@ public class RsCalculateBiz {
       CaseIndicatorRuleEntity caseIndicatorRuleEntity = caseIndicatorRuleEntityAR.get();
       BigDecimal newHealthPoint = rsUtilBiz.newCalculateFinalHealthScore(kRiskModelIdVTotalScoreMap, kRiskModelIdVRiskDeathProbabilityMap, totalRiskDeathProbability);
       caseIndicatorRuleEntity.setDef(newHealthPoint.setScale(2, RoundingMode.DOWN).toString());
+      caseIndicatorRuleEntityAR.set(caseIndicatorRuleEntity);
     });
     if (Objects.nonNull(caseIndicatorRuleEntityAR.get())) {caseIndicatorRuleService.saveOrUpdate(caseIndicatorRuleEntityAR.get());}
   }
@@ -1055,6 +1056,7 @@ public class RsCalculateBiz {
       IndicatorRuleEntity indicatorRuleEntity = indicatorRuleEntityAR.get();
       BigDecimal newHealthPoint = rsUtilBiz.newCalculateFinalHealthScore(kRiskModelIdVTotalScoreMap, kRiskModelIdVRiskDeathProbabilityMap, totalRiskDeathProbability);
       indicatorRuleEntity.setDef(newHealthPoint.setScale(2, RoundingMode.DOWN).toString());
+      indicatorRuleEntityAR.set(indicatorRuleEntity);
     });
 
     /* runsix:final operation */
