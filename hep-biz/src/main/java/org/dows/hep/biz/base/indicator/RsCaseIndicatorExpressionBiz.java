@@ -259,11 +259,11 @@ public class RsCaseIndicatorExpressionBiz {
     allCaseCreateOrUpdateIndicatorExpressionItemRequestRsList.forEach(createOrUpdateIndicatorExpressionItemRequestRs -> {
       String conditionValList = createOrUpdateIndicatorExpressionItemRequestRs.getConditionValList();
       if (StringUtils.isNotBlank(conditionValList)) {
-        conditionValListList.add(conditionValList);
+        conditionValListList.addAll(rsUtilBiz.getConditionValSplitList(conditionValList));
       }
       String resultValList = createOrUpdateIndicatorExpressionItemRequestRs.getResultValList();
       if (StringUtils.isNotBlank(resultValList)) {
-        resultValListList.add(resultValList);
+        resultValListList.addAll(rsUtilBiz.getResultValSplitList(resultValList));
       }
     });
   }
@@ -420,65 +420,6 @@ public class RsCaseIndicatorExpressionBiz {
       }
       caseIndicatorExpressionInfluenceEntityList.add(caseIndicatorExpressionInfluenceEntity);
     });
-  }
-
-  /* runsix:TODO DELETE  */
-  public void oldCheckCircleDependencyAndPopulateCaseIndicatorExpressionInfluenceEntity(
-      String appId,
-      AtomicReference<CaseIndicatorExpressionInfluenceEntity> caseIndicatorExpressionInfluenceEntityAtomicReference,
-      Integer source,
-      String principalId,
-      List<CaseCreateOrUpdateIndicatorExpressionItemRequestRs> caseCreateOrUpdateIndicatorExpressionItemRequestRsList,
-      CaseCreateOrUpdateIndicatorExpressionItemRequestRs caseMinCreateOrUpdateIndicatorExpressionItemRequestRs,
-      CaseCreateOrUpdateIndicatorExpressionItemRequestRs caseMaxCreateOrUpdateIndicatorExpressionItemRequestRs
-  ) throws ExecutionException, InterruptedException {
-    if (Objects.isNull(caseIndicatorExpressionInfluenceEntityAtomicReference)
-        || Objects.isNull(source) || !EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource().equals(source)
-        || Objects.isNull(principalId)
-    ) {return;}
-    Map<String, CaseIndicatorExpressionInfluenceEntity> kCaseIndicatorInstanceIdVCaseIndicatorExpressionInfluenceEntityMap = new HashMap<>();
-    Set<String> caseIndicatorInstanceIdSet = new HashSet<>();
-    caseIndicatorInstanceIdSet.add(principalId);
-    CompletableFuture<Void> cfPopulateKCaseIndicatorInstanceIdVCaseIndicatorExpressionInfluenceMap = CompletableFuture.runAsync(() -> {
-      this.populateKCaseIndicatorInstanceIdVCaseIndicatorExpressionInfluenceMap(kCaseIndicatorInstanceIdVCaseIndicatorExpressionInfluenceEntityMap, caseIndicatorInstanceIdSet);
-    });
-    cfPopulateKCaseIndicatorInstanceIdVCaseIndicatorExpressionInfluenceMap.get();
-
-    CaseIndicatorExpressionInfluenceEntity caseIndicatorExpressionInfluenceEntity = kCaseIndicatorInstanceIdVCaseIndicatorExpressionInfluenceEntityMap.get(principalId);
-    Set<String> paramCaseInfluencedIndicatorInstanceIdSet = new HashSet<>();
-    List<String> conditionValListList = new ArrayList<>();
-    List<String> resultValListList = new ArrayList<>();
-    this.populateCaseCreateOrUpdateIndicatorExpressionItemRequestRsList(
-        conditionValListList,
-        resultValListList,
-        caseCreateOrUpdateIndicatorExpressionItemRequestRsList,
-        caseMinCreateOrUpdateIndicatorExpressionItemRequestRs,
-        caseMaxCreateOrUpdateIndicatorExpressionItemRequestRs
-    );
-    CompletableFuture<Void> cfPopulateCaseInfluencedIndicatorInstanceIdSet = CompletableFuture.runAsync(() -> {
-      this.populateCaseInfluencedIndicatorInstanceIdSet(principalId, paramCaseInfluencedIndicatorInstanceIdSet, conditionValListList, resultValListList);
-    });
-    cfPopulateCaseInfluencedIndicatorInstanceIdSet.get();
-
-    if (Objects.nonNull(caseIndicatorExpressionInfluenceEntity)) {
-      String dbCaseInfluenceIndicatorInstanceIdList = caseIndicatorExpressionInfluenceEntity.getInfluenceIndicatorInstanceIdList();
-      if (StringUtils.isNotBlank(dbCaseInfluenceIndicatorInstanceIdList)
-          && paramCaseInfluencedIndicatorInstanceIdSet.stream().anyMatch(dbCaseInfluenceIndicatorInstanceIdList::contains)
-      ) {
-        log.error("CaseIndicatorExpressionBiz.v2CreateOrUpdate circle dependency dbCaseInfluenceIndicatorInstanceIdList:{}, paramCaseInfluencedIndicatorInstanceIdSet:{}", dbCaseInfluenceIndicatorInstanceIdList, paramCaseInfluencedIndicatorInstanceIdSet);
-        throw new CaseIndicatorExpressionException(EnumESC.CASE_INDICATOR_EXPRESSION_CIRCLE_DEPENDENCY);
-      }
-      caseIndicatorExpressionInfluenceEntity.setInfluencedIndicatorInstanceIdList(String.join(EnumString.COMMA.getStr(), paramCaseInfluencedIndicatorInstanceIdSet));
-    } else {
-      caseIndicatorExpressionInfluenceEntity = CaseIndicatorExpressionInfluenceEntity
-          .builder()
-          .caseIndicatorExpressionInfluenceId(idGenerator.nextIdStr())
-          .appId(appId)
-          .indicatorInstanceId(principalId)
-          .influencedIndicatorInstanceIdList(String.join(EnumString.COMMA.getStr(), paramCaseInfluencedIndicatorInstanceIdSet))
-          .build();
-    }
-    caseIndicatorExpressionInfluenceEntityAtomicReference.set(caseIndicatorExpressionInfluenceEntity);
   }
 
   public void populateCaseIndicatorExpressionItemEntityList(
