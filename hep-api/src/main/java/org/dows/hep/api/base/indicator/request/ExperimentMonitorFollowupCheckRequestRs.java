@@ -19,6 +19,15 @@ public class ExperimentMonitorFollowupCheckRequestRs implements Serializable {
   @Schema(title = "实验id")
   private String experimentId;
 
+  @Schema(title = "实验小组id")
+  private String experimentGroupId;
+
+  @Schema(title = "实验期数")
+  private Integer periods;
+
+  @Schema(title = "操作者id")
+  private String operatorId;
+
   @Schema(title = "应用ID")
   private String appId;
 

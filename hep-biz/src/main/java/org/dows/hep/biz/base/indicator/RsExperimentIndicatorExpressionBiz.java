@@ -703,9 +703,11 @@ public class RsExperimentIndicatorExpressionBiz {
   ) {
     if (Objects.isNull(experimentIndicatorExpressionItemRsEntityList) || experimentIndicatorExpressionItemRsEntityList.isEmpty()) {return;}
     /* runsix:人群类型只能有一个公式，并且公式只有一个条件 */
-    boolean result = ePIEConditionUsingExperimentIndicatorInstanceId(
+    /* runsix:!TODO  */
+    boolean result = ePIEConditionUsingIndicatorInstanceId(
         experimentIndicatorExpressionItemRsEntityList.get(0),
-        kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap
+        kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
+        null
     );
     resultAtomicReference.set(String.valueOf(result));
   }
