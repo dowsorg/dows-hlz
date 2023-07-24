@@ -45,6 +45,7 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
   private final ExperimentIndicatorInstanceRsBiz experimentIndicatorInstanceRsBiz;
   private final RsExperimentIndicatorExpressionBiz rsExperimentIndicatorExpressionBiz;
   private final RsExperimentIndicatorInstanceBiz rsExperimentIndicatorInstanceBiz;
+  private final RsExperimentIndicatorValBiz rsExperimentIndicatorValBiz;
 
   public static ExperimentPhysicalExamReportResponseRs experimentPhysicalExamReport2ResponseRs(ExperimentIndicatorViewPhysicalExamReportRsEntity experimentIndicatorViewPhysicalExamReportRsEntity) {
     if (Objects.isNull(experimentIndicatorViewPhysicalExamReportRsEntity)) {
@@ -60,7 +61,7 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
         .build();
   }
   @Transactional(rollbackFor = Exception.class)
-  public void physicalExamCheck(ExperimentPhysicalExamCheckRequestRs experimentPhysicalExamCheckRequestRs) {
+  public void physicalExamCheck(ExperimentPhysicalExamCheckRequestRs experimentPhysicalExamCheckRequestRs) throws ExecutionException, InterruptedException {
     List<ExperimentIndicatorViewPhysicalExamReportRsEntity> experimentIndicatorViewPhysicalExamReportRsEntityList = new ArrayList<>();
     /* runsix:TODO 这个期数后期根据张亮接口拿 */
     Integer period = 1;
@@ -114,14 +115,12 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
           .forEach(experimentIndicatorInstanceRsEntity -> {
             kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.put(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId(), experimentIndicatorInstanceRsEntity);
           });
-      experimentIndicatorValRsService.lambdaQuery()
-          .eq(ExperimentIndicatorValRsEntity::getExperimentId, experimentId)
-          .eq(ExperimentIndicatorValRsEntity::getPeriods, period)
-          .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
-          .list()
-          .forEach(experimentIndicatorValRsEntity -> {
-            kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(experimentIndicatorValRsEntity.getIndicatorInstanceId(), experimentIndicatorValRsEntity);
-          });
+      CompletableFuture<Void> cfPopulateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = CompletableFuture.runAsync(() -> {
+        rsExperimentIndicatorValBiz.populateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(
+            kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap, experimentPersonId, period
+        );
+      });
+      cfPopulateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get();
     }
     if (!experimentIndicatorInstanceIdSet.isEmpty()) {
       experimentIndicatorExpressionRefRsService.lambdaQuery()
@@ -398,12 +397,12 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
     }
 
     Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = new HashMap<>();
-    CompletableFuture<Void> cfPopulateKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = CompletableFuture.runAsync(() -> {
-      rsExperimentIndicatorInstanceBiz.populateKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(
-          kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap, period, experimentIndicatorInstanceIdSet
+    CompletableFuture<Void> cfPopulateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = CompletableFuture.runAsync(() -> {
+      rsExperimentIndicatorValBiz.populateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(
+          kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap, experimentPersonId, period
       );
     });
-    cfPopulateKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get();
+    cfPopulateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get();
 
     Map<String, ExperimentIndicatorExpressionRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap = new HashMap<>();
     CompletableFuture<Void> cfPopulateKExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap = CompletableFuture.runAsync(() -> {
