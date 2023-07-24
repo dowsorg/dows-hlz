@@ -19,6 +19,7 @@ import org.dows.hep.biz.dao.ExperimentParticipatorDao;
 import org.dows.hep.biz.vo.LoginContextVO;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
+import org.dows.hep.entity.OperateFlowEntity;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
@@ -80,20 +81,39 @@ public class ShareBiz {
     }
 
     /**
-     * 获取 某人物在某机构 当前最新挂号流水号
+     * 获取 某人物在某机构 进行中的当前挂号流水号
      * @param appId
      * @param experimentInstanceId 实验id
      * @param experimentOrgId      机构id
      * @param experimentPersonId   人物id
-     * @return 不存在返回空
+     * @return 不存在返回空串
      */
-    public static String checkOperateFlowId(String appId,String experimentInstanceId, String experimentOrgId,String experimentPersonId){
+    public static String checkRunningOperateFlowId(String appId,String experimentInstanceId, String experimentOrgId,String experimentPersonId){
         ExptOrgFlowValidator validator= ExptOrgFlowValidator.create(appId, experimentInstanceId, experimentOrgId, experimentPersonId);
         if(!validator.ifOrgFlowRunning(false)){
             return "";
         }
         return validator.getOperateFlowId();
     }
+
+    /**
+     * 获取 某人物在某机构 最近一次挂号流水号（可能已结束）
+     * @param appId
+     * @param experimentInstanceId 实验id
+     * @param experimentOrgId      机构id
+     * @param experimentPersonId   人物id
+     * @return 不存在返回空串
+     */
+
+    public static String checkExistingOperateFlowId(String appId,String experimentInstanceId, String experimentOrgId,String experimentPersonId){
+        OperateFlowEntity orgFlow= ExptOrgFlowValidator.create(appId, experimentInstanceId, experimentOrgId, experimentPersonId)
+                .getOrgFlow(false);
+        if(ShareUtil.XObject.isEmpty(orgFlow)){
+            return "";
+        }
+        return orgFlow.getOperateFlowId();
+    }
+
 
 
     //region 获取公式
