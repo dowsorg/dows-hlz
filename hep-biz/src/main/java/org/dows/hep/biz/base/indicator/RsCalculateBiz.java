@@ -1083,16 +1083,18 @@ public class RsCalculateBiz {
     String experimentId = rsExperimentSetDurationRequest.getExperimentId();
     Integer periods = rsExperimentSetDurationRequest.getPeriods();
     Set<String> personIdSet = rsExperimentSetDurationRequest.getPersonIdSet();
+    Integer duration = rsExperimentSetDurationRequest.getDuration();
     /* runsix:result */
     List<ExperimentIndicatorValRsEntity> experimentIndicatorValRsEntityList = new ArrayList<>();
     /* runsix:step populate experimentIndicatorInstanceIdSet */
     Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
     experimentIndicatorInstanceRsService.lambdaQuery()
         .eq(ExperimentIndicatorInstanceRsEntity::getExperimentId, experimentId)
+        .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.DURATION.getType())
         .in(Objects.nonNull(personIdSet) && !personIdSet.isEmpty(), ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, personIdSet)
         .list()
         .forEach(experimentIndicatorInstanceRsEntity -> {
-          personIdSet.add(experimentIndicatorInstanceRsEntity.getExperimentPersonId());
+          experimentIndicatorInstanceIdSet.add(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
         });
 
     /* runsix:step */
@@ -1102,7 +1104,7 @@ public class RsCalculateBiz {
             .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
             .list()
             .stream()
-            .peek(experimentIndicatorValRsEntity -> experimentIndicatorValRsEntity.setCurrentVal(periods.toString()))
+            .peek(experimentIndicatorValRsEntity -> experimentIndicatorValRsEntity.setCurrentVal(duration.toString()))
             .collect(Collectors.toList())
     );
 

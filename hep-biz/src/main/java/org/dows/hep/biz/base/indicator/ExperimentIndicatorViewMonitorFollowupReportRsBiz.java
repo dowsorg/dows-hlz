@@ -2,6 +2,7 @@ package org.dows.hep.biz.base.indicator;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.ExperimentMonitorFollowupCheckRequestRs;
 import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.enums.EnumESC;
@@ -223,8 +224,10 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
         .forEach(experimentIndicatorViewMonitorFollowupRsEntity -> {
           List<ExperimentIndicatorViewMonitorFollowupFollowupContentRsResponse> experimentIndicatorViewMonitorFollowupFollowupContentRsResponseList = new ArrayList<>();
           String ivmfContentNameArray = experimentIndicatorViewMonitorFollowupRsEntity.getIvmfContentNameArray();
+          if (StringUtils.isBlank(ivmfContentNameArray)) {return;}
           List<String> contentNameList = Arrays.stream(ivmfContentNameArray.split(EnumString.COMMA.getStr())).collect(Collectors.toList());
           String ivmfContentRefIndicatorInstanceIdArray = experimentIndicatorViewMonitorFollowupRsEntity.getIvmfContentRefIndicatorInstanceIdArray();
+          if (StringUtils.isBlank(ivmfContentRefIndicatorInstanceIdArray)) {return;}
           List<String> indicatorInstanceIdArrayList = Arrays.stream(ivmfContentRefIndicatorInstanceIdArray.split(EnumString.JIN.getStr())).collect(Collectors.toList());
           for (int i = 0; i <= contentNameList.size()-1; i++) {
             String indicatorInstanceIdArray = indicatorInstanceIdArrayList.get(i);
