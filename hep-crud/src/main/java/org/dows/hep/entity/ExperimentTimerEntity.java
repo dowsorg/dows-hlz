@@ -45,21 +45,27 @@ public class ExperimentTimerEntity implements CrudEntity {
     @Schema(title = "实验实列ID")
     private String experimentInstanceId;
 
-    @Schema(title = "暂停时长[暂停结束时间-暂停起始时间]")
-    private Long duration;
-    @Schema(title = "计时器|计数器")
-    private Long timer;
+
 
     @Schema(title = "实验开始时间")
     private Date startTime;
-
-    @Schema(title = "实验结束时间[如果有暂停，需加暂停时长]")
+    @Schema(title = "原结束时间")
     private Date endTime;
+   @Schema(title = "重新开始时间[暂停推迟后的开始时间]")
+    private Date restartTime;
+    @Schema(title = "暂停时间")
+    private Date pauseTime;
+
 
     @Schema(title = "实验每期间隔：秒")
     private Long periodInterval;
     @Schema(title = "每期时长：秒")
     private Long periodDuration;
+    @Schema(title = "暂停时长：秒")
+    private Long pauseDuration;
+    @Schema(title = "期数计时器|计数器")
+    private Long periodTimer;
+
 
     @Schema(title = "期数[根据期数生成对应的计时记录]")
     private Integer period;
@@ -76,10 +82,6 @@ public class ExperimentTimerEntity implements CrudEntity {
     @Schema(title = "是否暂停")
     private Boolean paused;
 
-    @Schema(title = "暂停开始时间")
-    private Date pauseStartTime;
-    @Schema(title = "暂停结束时间")
-    private Date pauseEndTime;
 
     @TableField(fill = FieldFill.INSERT)
     @Schema(title = "时间戳")

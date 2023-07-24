@@ -14,34 +14,28 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "findsoft")
 @Data
 public class FindSoftProperties {
-
     // base info
-    private String name = "软件名称";
-    private String version = "1.0.0";
+    private String name = "";
+    private String version = "";
     private String copyRight = "";
-    private String abbreviation = "软件简称";
-    private boolean scoreAudit = false;
-
+    private String abbreviation = "";
+    private boolean scoreAudit;
     // logo 类路径
-    private String findsoftLogo = "pdf/images/findsoft-logo.jpg";
+    private String findsoftLogo = "";
     // 封面 类路径
-    private String cover = "pdf/images/cover.png";
+    private String cover = "";
     // logo 类路径
-    private String logo = "pdf/images/logo.png";
-
+    private String logo = "";
     // 总报告标题
     private String exptOverviewReportTitle = "";
     // 方案设计标题
     private String exptSchemeReportTitle = "";
     // 沙盘标题
     private String exptSandReportTitle = "";
-
     // 总预览模板路径
-    private String exptOverviewFtl = "experiment-overview.ftl";
+    private String exptOverviewFtl = "";
     // 方案设计模板路径
-    private String exptSchemeFtl = "experiment-scheme.ftl";
+    private String exptSchemeFtl = "";
     // 沙盘模板路径
-    private String exptSandFtl = "experiment-sand.ftl";
-
-
+    private String exptSandFtl = "";
 }
