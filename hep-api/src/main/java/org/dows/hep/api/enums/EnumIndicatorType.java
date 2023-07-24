@@ -19,6 +19,7 @@ public enum EnumIndicatorType {
   WEIGHT(4, "体重"),
   HEALTH_POINT(5, "健康指数"),
   AGE(6, "年龄"),
+  DURATION(7, "持续天数"),
   ;
 
   public final static Map<Integer, EnumIndicatorType> kTypeVEnumIndicatorTypeMap = new HashMap<>();

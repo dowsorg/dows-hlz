@@ -18,6 +18,7 @@ public enum EnumIndicatorCategory {
   INDICATOR_MANAGEMENT_BASE_INFO("10201", "基本信息", 1),
   INDICATOR_MANAGEMENT_MONEY("10202", "资金情况", 1),
   INDICATOR_MANAGEMENT_HEALTH("10203", "健康指数", 1),
+  SYSTEM_CALCULATE_INDICATOR("10204", "系统计算指标", 1),
 
 
   VIEW_MANAGEMENT("103", "查看指标",1),
