@@ -334,19 +334,29 @@ public class ExperimentSchemeScoreBiz {
             return new ArrayList<>();
         }
 
-        // 排序，保证管理员的数据放在第一条
-        int adminIndex = 0;
-        for (int i = 0; i < scoreList.size(); i++) {
-            ExperimentSchemeScoreEntity scoreEntity = scoreList.get(i);
-            String tempAccountId = scoreEntity.getReviewAccountId();
-            if (ADMIN_ACCOUNT_ID.equals(tempAccountId)) {
-                adminIndex = i;
+        Map<String, String> teacherNameMap = new HashMap<>();
+        if (isAdmin) {
+            // 排序，保证管理员的数据放在第一条
+            int adminIndex = 0;
+            for (int i = 0; i < scoreList.size(); i++) {
+                ExperimentSchemeScoreEntity scoreEntity = scoreList.get(i);
+                String tempAccountId = scoreEntity.getReviewAccountId();
+                if (ADMIN_ACCOUNT_ID.equals(tempAccountId)) {
+                    adminIndex = i;
+                }
+
+                // todo @UIM 提供批量优化方法
+                String userName = baseBiz.getUserName(tempAccountId, "获取方案设计评分详情时，获取教师账号信息异常");
+                teacherNameMap.put(tempAccountId, userName);
             }
+            ExperimentSchemeScoreEntity firstEntity = scoreList.get(0);
+            ExperimentSchemeScoreEntity adminEntity = scoreList.get(adminIndex);
+            scoreList.set(0, adminEntity);
+            scoreList.set(adminIndex, firstEntity);
+
+            teacherNameMap.put(ADMIN_ACCOUNT_ID, "管理员");
         }
-        ExperimentSchemeScoreEntity firstEntity = scoreList.get(0);
-        ExperimentSchemeScoreEntity adminEntity = scoreList.get(adminIndex);
-        scoreList.set(0, adminEntity);
-        scoreList.set(adminIndex, firstEntity);
+
 
         // list item
         List<String> schemeScoreIdList = scoreList.stream()
@@ -362,6 +372,11 @@ public class ExperimentSchemeScoreBiz {
         Map<String, List<ExperimentSchemeScoreItemResponse>> collect = resultItemList.stream()
                 .collect(Collectors.groupingBy(ExperimentSchemeScoreItemResponse::getExperimentSchemeScoreId));
         result.forEach(r -> {
+            // 设置教师名
+            String accountId = r.getReviewAccountId();
+            r.setReviewAccountName(teacherNameMap.get(accountId));
+
+            // 设置评分表
             List<ExperimentSchemeScoreItemResponse> rItemList = collect.get(r.getExperimentSchemeScoreId());
             Map<String, List<ExperimentSchemeScoreItemResponse>> rItemMap = rItemList.stream()
                     .collect(Collectors.groupingBy(ExperimentSchemeScoreItemResponse::getDimensionName));
