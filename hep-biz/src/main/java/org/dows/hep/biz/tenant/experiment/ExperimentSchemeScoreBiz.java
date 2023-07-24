@@ -240,6 +240,12 @@ public class ExperimentSchemeScoreBiz {
             throw new BizException(ExperimentESCEnum.SCHEME_NOT_NULL);
         }
 
+        // 获取该案例下 `caseInstanceId` 所有评分维度
+        List<QuestionSectionDimensionResponse> dimensionList = caseScheme.getQuestionSectionDimensionList();
+        if (CollUtil.isEmpty(dimensionList)) {
+            return;
+        }
+
         // 获取该实验下 `experimentInstanceId` 所有的方案设计
         List<ExperimentSchemeEntity> schemeList = experimentSchemeService.lambdaQuery()
                 .eq(ExperimentSchemeEntity::getExperimentInstanceId, experimentInstanceId)
@@ -265,12 +271,6 @@ public class ExperimentSchemeScoreBiz {
             });
         });
         experimentSchemeScoreService.saveBatch(scoreList);
-
-        // 获取该案例下 `caseInstanceId` 所有评分维度
-        List<QuestionSectionDimensionResponse> dimensionList = caseScheme.getQuestionSectionDimensionList();
-        if (CollUtil.isEmpty(dimensionList)) {
-            return;
-        }
 
         // 预生成评分详细表 `experimentSchemeScoreItem`
         List<ExperimentSchemeScoreItemEntity> itemList = new ArrayList<>();
@@ -401,19 +401,17 @@ public class ExperimentSchemeScoreBiz {
         }
     }
 
-    private static void checkItemScoreRange(List<ExperimentSchemeScoreRequest.SchemeScoreItemRequest> itemList, List<ExperimentSchemeScoreItemEntity> oriItemEntityList) {
+    private void checkItemScoreRange(List<ExperimentSchemeScoreRequest.SchemeScoreItemRequest> itemList, List<ExperimentSchemeScoreItemEntity> oriItemEntityList) {
         Map<String, List<ExperimentSchemeScoreItemEntity>> groupByName = oriItemEntityList.stream()
                 .collect(Collectors.groupingBy(ExperimentSchemeScoreItemEntity::getDimensionName));
         Map<String, Float> idMapMaxValue = new HashMap<>();
         Map<String, Float> idMapMinValue = new HashMap<>();
         groupByName.forEach((k, v) -> {
-            Float max = v.stream().max((v1, v2) -> {
-                        return (int) (v1.getMaxScore() - v2.getMaxScore());
-                    }).map(ExperimentSchemeScoreItemEntity::getMaxScore)
+            Float max = v.stream().max((v1, v2) -> (int) (v1.getMaxScore() - v2.getMaxScore()))
+                    .map(ExperimentSchemeScoreItemEntity::getMaxScore)
                     .orElseThrow(() -> new BizException("提交方案设计评分表时：获取评分最大值异常"));
-            Float min = v.stream().min((v1, v2) -> {
-                        return (int) (v1.getMaxScore() - v2.getMaxScore());
-                    }).map(ExperimentSchemeScoreItemEntity::getMinScore)
+            Float min = v.stream().min((v1, v2) -> (int) (v1.getMaxScore() - v2.getMaxScore()))
+                    .map(ExperimentSchemeScoreItemEntity::getMinScore)
                     .orElseThrow(() -> new BizException("提交方案设计评分表时：获取评分最小值异常"));
             v.forEach(item -> {
                 String experimentSchemeScoreItemId = item.getExperimentSchemeScoreItemId();
@@ -453,8 +451,9 @@ public class ExperimentSchemeScoreBiz {
         List<ExperimentSchemeScoreEntity> entityList = new ArrayList<>();
         scoreInfos.forEach(scoreInfo -> {
             String experimentSchemeScoreId = scoreInfo.getExperimentSchemeScoreId();
-            Float reviewScore = scoreInfo.getReviewScore() == null ? 0.0f : scoreInfo.getReviewScore();
-            ExperimentSchemeScoreEntity experimentSchemeScoreEntity = schemeIdMapEntity.get(scoreInfo.getExperimentSchemeScoreId());
+            Float reviewScore = scoreInfo.getReviewScore() == null ? 0.00f : scoreInfo.getReviewScore();
+
+            ExperimentSchemeScoreEntity experimentSchemeScoreEntity = schemeIdMapEntity.get(experimentSchemeScoreId);
             ExperimentSchemeScoreEntity entity = ExperimentSchemeScoreEntity.builder()
                     .id(experimentSchemeScoreEntity.getId())
                     .reviewScore(reviewScore)
@@ -475,7 +474,7 @@ public class ExperimentSchemeScoreBiz {
                     .orElse(0.00);
             finalScore = (float) average;
         }
-        return BigDecimal.valueOf(finalScore).setScale(1, RoundingMode.HALF_UP);
+        return BigDecimal.valueOf(finalScore).setScale(0, RoundingMode.HALF_UP);
     }
 
     private boolean updSchemeState(BigDecimal score, String schemeId) {
