@@ -58,8 +58,8 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
   @Transactional(rollbackFor = Exception.class)
   public void monitorFollowupCheck(ExperimentMonitorFollowupCheckRequestRs experimentMonitorFollowupCheckRequestRs) {
     ExperimentIndicatorViewMonitorFollowupReportRsEntity experimentIndicatorViewMonitorFollowupReportRsEntity = null;
-    /* runsix:TODO 这个期数后期根据张亮接口拿 */
-    Integer period = 1;
+    Integer periods = experimentMonitorFollowupCheckRequestRs.getPeriods();
+    String experimentGroupId = experimentMonitorFollowupCheckRequestRs.getExperimentGroupId();
     String experimentPersonId = experimentMonitorFollowupCheckRequestRs.getExperimentPersonId();
     String indicatorFuncId = experimentMonitorFollowupCheckRequestRs.getIndicatorFuncId();
     String appId = experimentMonitorFollowupCheckRequestRs.getAppId();
@@ -71,7 +71,7 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
     ExperimentIndicatorViewMonitorFollowupPlanRsEntity experimentIndicatorViewMonitorFollowupPlanRsEntity = experimentIndicatorViewMonitorFollowupPlanRsService.lambdaQuery()
         .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getAppId, appId)
         .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getExperimentId, experimentId)
-        .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getPeriods, period)
+        .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getPeriods, periods)
         .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getIndicatorFuncId, indicatorFuncId)
         .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getExperimentPersonId, experimentPersonId)
         .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getExperimentIndicatorViewMonitorFollowupId, indicatorViewMonitorFollowupId)
@@ -82,7 +82,7 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
               .experimentIndicatorViewMonitorFollowupPlanId(idGenerator.nextIdStr())
               .experimentId(experimentId)
               .appId(appId)
-              .periods(period)
+              .periods(periods)
               .indicatorFuncId(indicatorFuncId)
               .experimentPersonId(experimentPersonId)
               .operateFlowId(operateFlowId)
@@ -105,7 +105,7 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
     ExperimentIndicatorViewMonitorFollowupReportRsEntity lastExperimentIndicatorViewMonitorFollowupReportRsEntity = experimentIndicatorViewMonitorFollowupReportRsService.lambdaQuery()
         .eq(ExperimentIndicatorViewMonitorFollowupReportRsEntity::getAppId, appId)
         .eq(ExperimentIndicatorViewMonitorFollowupReportRsEntity::getExperimentId, experimentId)
-        .eq(ExperimentIndicatorViewMonitorFollowupReportRsEntity::getPeriod, period)
+        .eq(ExperimentIndicatorViewMonitorFollowupReportRsEntity::getPeriod, periods)
         .eq(ExperimentIndicatorViewMonitorFollowupReportRsEntity::getIndicatorFuncId, indicatorFuncId)
         .eq(ExperimentIndicatorViewMonitorFollowupReportRsEntity::getExperimentIndicatorViewMonitorFollowupId, indicatorViewMonitorFollowupId)
         .eq(ExperimentIndicatorViewMonitorFollowupReportRsEntity::getExperimentPersonId, experimentPersonId)
@@ -133,7 +133,7 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
         });
     if (!experimentIndicatorInstanceIdSet.isEmpty()) {
       experimentIndicatorValRsService.lambdaQuery()
-          .eq(ExperimentIndicatorValRsEntity::getPeriods, period)
+          .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
           .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
           .list()
           .forEach(experimentIndicatorValRsEntity -> {
@@ -163,7 +163,7 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
         .experimentId(experimentId)
         .caseId(caseId)
         .appId(appId)
-        .period(period)
+        .period(periods)
         .indicatorFuncId(indicatorFuncId)
         .experimentPersonId(experimentPersonId)
         .operateFlowId(operateFlowId)
