@@ -60,13 +60,9 @@ public class ApplicationRestartedListener implements ApplicationListener<Applica
                 .eq(ExperimentTaskScheduleEntity::getAppId, appId)
                 .gt(ExperimentTaskScheduleEntity::getExecuteTime, now)
                 .update();
-        try {
             ExperimentRestartTask experimentRestartTask = new ExperimentRestartTask(experimentTaskScheduleService, experimentInstanceService,
                     experimentParticipatorService, experimentTimerService, applicationEventPublisher,
                     appId, taskScheduler, experimentTimerBiz, experimentScoreCalculator, periodStartNoticer, periodEndNoticer);
             experimentRestartTask.run();
-        } catch (Exception e) {
-            log.error("执行任务失败....");
-        }
     }
 }

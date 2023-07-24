@@ -180,6 +180,19 @@ public class HepApplication{
                     .min("1")
                     .max("200")
                     .build());
+                case DURATION -> createOrUpdateIndicatorInstanceRequestRsList.add(CreateOrUpdateIndicatorInstanceRequestRs
+                    .builder()
+                    .indicatorCategoryId(EnumIndicatorCategory.SYSTEM_CALCULATE_INDICATOR.getCode())
+                    .appId(EnumString.APP_ID.getStr())
+                    .indicatorName(EnumIndicatorType.DURATION.getDesc())
+                    .displayByPercent(EnumStatus.DISABLE.getCode())
+                    .def("1")
+                    .core(EnumStatus.ENABLE.getCode())
+                    .food(EnumStatus.DISABLE.getCode())
+                    .type(EnumIndicatorType.DURATION.getType())
+                    .min("0")
+                    .max("10000")
+                    .build());
                 default ->
                     log.error("必须初始化指标类型枚举不存在，type:{}, desc:{}", enumIndicatorType.getType(), enumIndicatorType.getDesc());
             }

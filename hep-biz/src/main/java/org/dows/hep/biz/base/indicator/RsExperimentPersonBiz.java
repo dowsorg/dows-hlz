@@ -22,13 +22,15 @@ public class RsExperimentPersonBiz {
 
   public void populateExperimentPersonIdSet(
       Set<String> experimentPersonIdSet,
-      String experimentId
+      String experimentId,
+      Set<String> personIdSet
   ) {
     if (Objects.isNull(experimentPersonIdSet)
         || StringUtils.isBlank(experimentId)
     ) {return;}
     experimentPersonService.lambdaQuery()
         .eq(ExperimentPersonEntity::getExperimentInstanceId, experimentId)
+        .in(Objects.nonNull(personIdSet) && !personIdSet.isEmpty(), ExperimentPersonEntity::getExperimentPersonId, personIdSet)
         .list()
         .forEach(experimentPersonEntity -> {
           experimentPersonIdSet.add(experimentPersonEntity.getExperimentPersonId());

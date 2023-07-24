@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.concurrent.ExecutionException;
+
 /**
  * @author runsix
  */
@@ -23,7 +25,7 @@ public class ExperimentIndicatorViewBaseInfoRsRest {
   public ExperimentIndicatorViewBaseInfoRsResponse get(
       @RequestParam String experimentIndicatorViewBaseInfoId,
       @RequestParam String experimentPersonId
-  ) {
+  ) throws ExecutionException, InterruptedException {
     return experimentIndicatorViewBaseInfoRsBiz.get(experimentIndicatorViewBaseInfoId, experimentPersonId);
   }
 }
