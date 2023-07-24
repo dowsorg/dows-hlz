@@ -20,16 +20,17 @@ import java.util.concurrent.ExecutionException;
 public class ExperimentIndicatorViewPhysicalExamReportRsRest {
   private final ExperimentIndicatorViewPhysicalExamReportRsBiz experimentIndicatorViewPhysicalExamReportRsBiz;
 
-  @Operation(summary = "实验人物和在这个机构功能点下的体格检查报告")
-  @PostMapping("v1/userExperiment/physicalExamReport/check")
-  public void physicalExamCheck(@RequestBody ExperimentPhysicalExamCheckRequestRs experimentPhysicalExamCheckRequestRs) throws ExecutionException, InterruptedException {
-    experimentIndicatorViewPhysicalExamReportRsBiz.physicalExamCheck(experimentPhysicalExamCheckRequestRs);
-  }
+  /* runsix:弃用 */
+//  @Operation(summary = "实验人物和在这个机构功能点下的体格检查报告")
+//  @PostMapping("v1old/userExperiment/physicalExamReport/check")
+//  public void physicalExamCheck(@RequestBody ExperimentPhysicalExamCheckRequestRs experimentPhysicalExamCheckRequestRs) throws ExecutionException, InterruptedException {
+//    experimentIndicatorViewPhysicalExamReportRsBiz.physicalExamCheck(experimentPhysicalExamCheckRequestRs);
+//  }
 
   @Operation(summary = "实验人物和在这个机构功能点下的体格检查报告")
-  @PostMapping("v2/userExperiment/physicalExamReport/check")
-  public void v2PhysicalExamCheck(@RequestBody ExperimentPhysicalExamCheckRequestRs experimentPhysicalExamCheckRequestRs) throws ExecutionException, InterruptedException {
-    experimentIndicatorViewPhysicalExamReportRsBiz.v2PhysicalExamCheck(experimentPhysicalExamCheckRequestRs);
+  @PostMapping("v1/userExperiment/physicalExamReport/check")
+  public void v1PhysicalExamCheck(@RequestBody ExperimentPhysicalExamCheckRequestRs experimentPhysicalExamCheckRequestRs) throws ExecutionException, InterruptedException {
+    experimentIndicatorViewPhysicalExamReportRsBiz.v1PhysicalExamCheck(experimentPhysicalExamCheckRequestRs);
   }
 
   @Operation(summary = "根据实验人物id和功能点id查找体格报告")
