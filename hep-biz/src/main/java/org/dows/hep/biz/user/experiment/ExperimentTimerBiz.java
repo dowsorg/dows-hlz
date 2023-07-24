@@ -342,7 +342,6 @@ public class ExperimentTimerBiz {
         return experimentTimerEntity;
     }
 
-
     /**
      * 更新定时器及实验状态（experimentInstance,experimentParticipator）
      *
