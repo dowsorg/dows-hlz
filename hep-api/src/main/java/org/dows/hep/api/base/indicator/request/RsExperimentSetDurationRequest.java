@@ -28,4 +28,7 @@ public class RsExperimentSetDurationRequest implements Serializable {
 
   @Schema(title = "实验人物id")
   private Set<String> personIdSet;
+
+  @Schema(title = "持续时间")
+  private Integer duration;
 }
