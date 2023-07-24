@@ -9,6 +9,8 @@ import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
 import org.dows.hep.api.base.indicator.response.ExperimentPhysicalExamReportResponseRs;
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.ExperimentIndicatorViewPhysicalExamReportRsException;
+import org.dows.hep.biz.operate.CostRequest;
+import org.dows.hep.biz.operate.OperateCostBiz;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -46,6 +48,7 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
   private final RsExperimentIndicatorExpressionBiz rsExperimentIndicatorExpressionBiz;
   private final RsExperimentIndicatorInstanceBiz rsExperimentIndicatorInstanceBiz;
   private final RsExperimentIndicatorValBiz rsExperimentIndicatorValBiz;
+  private final OperateCostBiz operateCostBiz;
 
   public static ExperimentPhysicalExamReportResponseRs experimentPhysicalExamReport2ResponseRs(ExperimentIndicatorViewPhysicalExamReportRsEntity experimentIndicatorViewPhysicalExamReportRsEntity) {
     if (Objects.isNull(experimentIndicatorViewPhysicalExamReportRsEntity)) {
