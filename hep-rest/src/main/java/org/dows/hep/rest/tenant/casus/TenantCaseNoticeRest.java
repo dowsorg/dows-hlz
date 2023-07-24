@@ -18,7 +18,7 @@ import java.util.List;
 */
 @RequiredArgsConstructor
 @RestController
-@Tag(name = "案例公告", description = "案例公告")
+@Tag(name = "案例公告", description = "案例域-案例公告")
 public class TenantCaseNoticeRest {
     private final TenantCaseNoticeBiz tenantCaseNoticeBiz;
 

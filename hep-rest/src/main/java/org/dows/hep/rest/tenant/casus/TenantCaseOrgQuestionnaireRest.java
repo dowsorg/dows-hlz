@@ -21,7 +21,7 @@ import java.util.Map;
  */
 @RequiredArgsConstructor
 @RestController
-@Tag(name = "案例问卷分配", description = "案例问卷")
+@Tag(name = "案例问卷分配", description = "案例域-问卷分配")
 public class TenantCaseOrgQuestionnaireRest {
     private final TenantCaseOrgQuestionnaireBiz tenantCaseOrgQuestionnaireBiz;
 

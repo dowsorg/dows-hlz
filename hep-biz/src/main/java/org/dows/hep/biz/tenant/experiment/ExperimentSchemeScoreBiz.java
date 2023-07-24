@@ -495,7 +495,8 @@ public class ExperimentSchemeScoreBiz {
             } else {
                 BigDecimal bMaxScore = BigDecimal.valueOf(maxScore);
                 BigDecimal bReviewScore = BigDecimal.valueOf(reviewScore);
-                scoreBy100 = bReviewScore.divide(bMaxScore, 2, RoundingMode.HALF_UP);
+                scoreBy100 = bReviewScore.divide(bMaxScore, 2, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100));
             }
             totalScore = totalScore.add(scoreBy100);
         }
