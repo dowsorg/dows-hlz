@@ -309,6 +309,23 @@ public class TenantCaseSchemeBiz {
         return caseSchemeService.remove(queryWrapper);
     }
 
+    /**
+     * @param caseInstanceIds - 案例实例ID 集合
+     * @return java.lang.Boolean
+     * @author fhb
+     * @description 删除案例下方案设计
+     * @date 2023/7/24 17:04
+     */
+    public Boolean delCaseSchemeByCaseInstanceIds(List<String> caseInstanceIds) {
+        if (CollUtil.isEmpty(caseInstanceIds)) {
+            return Boolean.FALSE;
+        }
+
+        LambdaQueryWrapper<CaseSchemeEntity> remWrapper = new LambdaQueryWrapper<CaseSchemeEntity>()
+                .in(CaseSchemeEntity::getCaseInstanceId, caseInstanceIds);
+        return caseSchemeService.remove(remWrapper);
+    }
+
     private boolean changeStatus(String caseSchemeId, CaseEnabledEnum enumStatus) {
         LambdaUpdateWrapper<CaseSchemeEntity> updateWrapper = new LambdaUpdateWrapper<CaseSchemeEntity>()
                 .eq(CaseSchemeEntity::getCaseSchemeId, caseSchemeId)

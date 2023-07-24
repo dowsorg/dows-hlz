@@ -1,6 +1,7 @@
 package org.dows.hep.biz.tenant.casus;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,8 @@ import org.dows.hep.api.tenant.casus.response.CaseSettingResponse;
 import org.dows.hep.entity.CaseSettingEntity;
 import org.dows.hep.service.CaseSettingService;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
 * @description project descr:案例:案例问卷设置
@@ -66,6 +69,23 @@ public class TenantCaseSettingBiz {
         CaseSettingEntity entity = caseSettingService.getOne(queryWrapper);
 
         return BeanUtil.copyProperties(entity, CaseSettingResponse.class);
+    }
+
+    /**
+     * @param caseInstanceIds - 案例实例ID集合
+     * @return java.lang.Boolean
+     * @author fhb
+     * @description 删除案例设置
+     * @date 2023/7/24 17:39
+     */
+    public Boolean delCaseSettingByCaseInstanceId(List<String> caseInstanceIds) {
+        if (CollUtil.isEmpty(caseInstanceIds)) {
+            return Boolean.FALSE;
+        }
+
+        LambdaQueryWrapper<CaseSettingEntity> remWrapper = new LambdaQueryWrapper<CaseSettingEntity>()
+                .in(CaseSettingEntity::getCaseInstanceId, caseInstanceIds);
+        return caseSettingService.remove(remWrapper);
     }
 
     private CaseSettingEntity convertRequest2Entity(CaseSettingRequest request) {

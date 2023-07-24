@@ -1,6 +1,7 @@
 package org.dows.hep.biz.tenant.casus;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
@@ -142,6 +143,23 @@ public class TenantCaseNoticeBiz {
 
         LambdaQueryWrapper<CaseNoticeEntity> remWrapper = new LambdaQueryWrapper<CaseNoticeEntity>()
                 .in(CaseNoticeEntity::getCaseNoticeId, caseNoticeIds);
+        return caseNoticeService.remove(remWrapper);
+    }
+
+    /**
+     * @param caseInstanceIds - 案例实例ID集合
+     * @return java.lang.Boolean
+     * @author fhb
+     * @description 删除案例下公告信息
+     * @date 2023/7/24 17:11
+     */
+    public Boolean delCaseNoticeByCaseInstanceIds(List<String> caseInstanceIds) {
+        if (CollUtil.isEmpty(caseInstanceIds)) {
+            return Boolean.FALSE;
+        }
+
+        LambdaQueryWrapper<CaseNoticeEntity> remWrapper = new LambdaQueryWrapper<CaseNoticeEntity>()
+                .in(CaseNoticeEntity::getCaseInstanceId, caseInstanceIds);
         return caseNoticeService.remove(remWrapper);
     }
 

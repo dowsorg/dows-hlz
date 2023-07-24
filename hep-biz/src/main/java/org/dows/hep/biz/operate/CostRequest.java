@@ -29,6 +29,9 @@ public class CostRequest {
     @Schema(title = "挂号流水")
     private String operateFlowId;
 
+    @Schema(title = "挂号")
+    private String operateCostId;
+
     @Schema(title = "患者ID|NPC人物ID[uim-accountId]")
     private String patientId;
 

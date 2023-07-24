@@ -126,7 +126,9 @@ public class ExperimentOrgBiz{
                 .periods(startOrgFlow.getPeriods())
                 .moneyChange(BigDecimal.valueOf(ghf).negate())
                 .build());
+        String operateFlowId = idGenerator.nextIdStr();
         rowFlow=createRowOrgFlow(validator)
+                .setOperateFlowId(operateFlowId)
                 .setPeriods(timePoint.getPeriod())
                 .setOperateAccountId(voLogin.getAccountId())
                 .setOperateAccountName(voLogin.getAccountName())
@@ -136,12 +138,12 @@ public class ExperimentOrgBiz{
                 .setOperateGameDay(timePoint.getGameDay());
         //保存消费记录
         CostRequest costRequest = CostRequest.builder()
-                .operateFlowId(idGenerator.nextIdStr())
+                .operateCostId(idGenerator.nextIdStr())
                 .experimentInstanceId(startOrgFlow.getExperimentInstanceId())
                 .experimentGroupId(startOrgFlow.getExperimentGroupId())
                 .operatorId(voLogin.getAccountId())
                 .experimentOrgId(startOrgFlow.getExperimentOrgId())
-                .operateFlowId(rowFlow.getOperateFlowId())
+                .operateFlowId(operateFlowId)
                 .patientId(startOrgFlow.getExperimentPersonId())
                 .feeName(EnumOrgFeeType.GHF.getName())
                 .feeCode(EnumOrgFeeType.GHF.getCode())
