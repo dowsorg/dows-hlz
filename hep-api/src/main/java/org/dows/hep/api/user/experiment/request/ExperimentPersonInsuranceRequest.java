@@ -31,6 +31,9 @@ public class ExperimentPersonInsuranceRequest {
     @Schema(title = "实验小组ID")
     private String experimentGroupId;
 
+    @Schema(title = "实验小组ID")
+    private String operateFlowId;
+
     @Schema(title = "期数")
     private String periods;
 
