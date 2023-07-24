@@ -191,18 +191,6 @@ public class ExperimentSchemeScoreBiz {
         List<ExperimentSchemeScoreRequest.SchemeScoreItemRequest> itemList = scoreInfos.stream()
                 .flatMap(item -> item.getItemList().stream())
                 .toList();
-        // 获取评分表取值范围
-        String firstSchemeScoreId = scoreIdList.get(0);
-        List<ExperimentSchemeScoreItemEntity> firstSchemeScoreItemList = experimentSchemeScoreItemService.lambdaQuery()
-                .eq(ExperimentSchemeScoreItemEntity::getExperimentSchemeScoreId, firstSchemeScoreId)
-                .list();
-        if (CollUtil.isEmpty(firstSchemeScoreItemList)) {
-            throw new BizException("提交方案设计评分表时, 获取评分表条目异常");
-        }
-        firstSchemeScoreItemList.sort((v1, v2) -> (int) (v1.getMinScore() - v2.getMinScore()));
-        ExperimentSchemeScoreItemEntity firstEntity = firstSchemeScoreItemList.get(0);
-        ExperimentSchemeScoreItemEntity lastEntity = firstSchemeScoreItemList.get(firstSchemeScoreItemList.size() - 1);
-        Float maxScore = lastEntity.getMaxScore();
 
 
         /* 准备数据 */
@@ -225,6 +213,24 @@ public class ExperimentSchemeScoreBiz {
         List<String> schemeIdList = oriEntityList.stream()
                 .map(ExperimentSchemeScoreEntity::getExperimentSchemeId)
                 .toList();
+        // 获取评分表取值范围
+        float maxScore = 0.00f;
+        String firstSchemeScoreId = scoreIdList.get(0);
+        List<ExperimentSchemeScoreItemEntity> firstSchemeScoreItemList = experimentSchemeScoreItemService.lambdaQuery()
+                .eq(ExperimentSchemeScoreItemEntity::getExperimentSchemeScoreId, firstSchemeScoreId)
+                .list();
+        if (CollUtil.isEmpty(firstSchemeScoreItemList)) {
+            throw new BizException("提交方案设计评分表时, 获取评分表条目异常");
+        }
+        Map<String, List<ExperimentSchemeScoreItemEntity>> collect = firstSchemeScoreItemList.stream()
+                .collect(Collectors.groupingBy(ExperimentSchemeScoreItemEntity::getDimensionName));
+        for (Map.Entry<String, List<ExperimentSchemeScoreItemEntity>> entry: collect.entrySet()){
+            List<ExperimentSchemeScoreItemEntity> contentList = entry.getValue();
+            contentList.sort((v1, v2) -> (int) (v2.getMaxScore() - v1.getMaxScore()));
+            ExperimentSchemeScoreItemEntity itemEntity = contentList.get(0);
+            Float itemMaxScore = itemEntity.getMaxScore();
+            maxScore += itemMaxScore;
+        }
 
 
         /* 处理数据 */
