@@ -10,13 +10,17 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
+import org.dows.framework.crud.api.CrudEntity;
 
-import java.io.Serializable;
 import java.util.Date;
 
 /**
- * @author runsix
+ * (ExperimentIndicatorViewMonitorFollowupPlanRs)实体类
+ *
+ * @author lait
+ * @since 2023-07-24 14:59:17
  */
+@SuppressWarnings("serial")
 @Data
 @ToString
 @Builder
@@ -24,47 +28,49 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "ExperimentIndicatorViewMonitorFollowupPlanRsEntity", title = "查看指标体格检查类")
+@Schema(name = "ExperimentIndicatorViewMonitorFollowupPlanRs", title = "")
 @TableName("experiment_indicator_view_monitor_followup_plan_rs")
-public class ExperimentIndicatorViewMonitorFollowupPlanRsEntity implements Serializable {
-  @JsonFormat(shape = JsonFormat.Shape.STRING)
-  @Schema(title = "主键")
-  private Long id;
+public class ExperimentIndicatorViewMonitorFollowupPlanRsEntity implements CrudEntity {
 
-  @Schema(title = "分布式ID")
-  private String experimentIndicatorViewMonitorFollowupPlanId;
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @Schema(title = "id")
+    private Long id;
 
-  @Schema(title = "实验id")
-  private String experimentId;
+    @Schema(title = "随访计划ID")
+    private String experimentIndicatorViewMonitorFollowupPlanId;
 
-  @Schema(title = "应用ID")
-  private String appId;
+    @Schema(title = "实验ID")
+    private String experimentId;
 
-  @Schema(title = "期数")
-  private Integer periods;
+    @Schema(title = "监测随访ID")
+    private String experimentIndicatorViewMonitorFollowupId;
 
-  @Schema(title = "功能点id")
-  private String indicatorFuncId;
+    @Schema(title = "应用ID")
+    private String appId;
 
-  @Schema(title = "实验人物id")
-  private String experimentPersonId;
+    @Schema(title = "指标功能ID")
+    private String indicatorFuncId;
 
-  @Schema(title = "挂号流水号")
-  private String operateFlowId;
+    @Schema(title = "人物ID")
+    private String experimentPersonId;
 
-  @Schema(title = "随访频率天数")
-  private Integer intervalDay;
+    @Schema(title = "操作流水ID")
+    private String operateFlowId;
 
-  @Schema(title = "监测随访表id列表")
-  private String experimentIndicatorViewMonitorFollowupId;
+    @Schema(title = "期数")
+    private Integer periods;
 
-  @JsonIgnore
-  @TableLogic
-  @TableField(fill = FieldFill.INSERT)
-  @Schema(title = "逻辑删除")
-  private Boolean deleted;
+    @Schema(title = "间隔天数")
+    private Integer intervalDay;
 
-  @TableField(fill = FieldFill.INSERT)
-  @Schema(title = "时间戳")
-  private Date dt;
+    @JsonIgnore
+    @TableLogic
+    @TableField(fill = FieldFill.INSERT)
+    @Schema(title = "逻辑删除")
+    private Boolean deleted;
+
+    @TableField(fill = FieldFill.INSERT)
+    @Schema(title = "")
+    private Date dt;
 }
+

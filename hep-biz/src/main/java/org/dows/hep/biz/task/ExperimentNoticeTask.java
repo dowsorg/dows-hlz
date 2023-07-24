@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.enums.EnumExperimentTask;
 import org.dows.hep.api.exception.ExperimentException;
-import org.dows.hep.api.notify.NoticeParams;
+import org.dows.hep.api.notify.NoticeContent;
 import org.dows.hep.api.notify.Notifiable;
 import org.dows.hep.entity.ExperimentTaskScheduleEntity;
 import org.dows.hep.service.ExperimentTaskScheduleService;
@@ -18,7 +18,7 @@ import org.dows.hep.service.ExperimentTaskScheduleService;
 public class ExperimentNoticeTask implements Runnable {
 
     private final Notifiable notifiable;
-    private final NoticeParams noticeParams;
+    private final NoticeContent noticeContent;
     private final ExperimentTaskScheduleService experimentTaskScheduleService;
 
     private final String experimentInstanceId;
@@ -29,7 +29,7 @@ public class ExperimentNoticeTask implements Runnable {
 
     @Override
     public void run() {
-        notifiable.notice(noticeParams);
+        notifiable.notice(noticeContent);
 
         //更改通知任务状态
         if(noticeType == 0) {
