@@ -304,6 +304,23 @@ public class TenantCaseQuestionnaireBiz {
     }
 
     /**
+     * @param caseInstanceIds - 案例实例ID集合
+     * @return java.lang.Boolean
+     * @author fhb
+     * @description 删除案例下知识答题
+     * @date 2023/7/24 17:35
+     */
+    public Boolean delCaseQByCaseInstanceIds(List<String> caseInstanceIds) {
+        if (CollUtil.isEmpty(caseInstanceIds)) {
+            return Boolean.FALSE;
+        }
+
+        LambdaQueryWrapper<CaseQuestionnaireEntity> remWrapper = new LambdaQueryWrapper<CaseQuestionnaireEntity>()
+                .in(CaseQuestionnaireEntity::getCaseInstanceId, caseInstanceIds);
+        return caseQuestionnaireService.remove(remWrapper);
+    }
+
+    /**
      * @param
      * @return
      * @说明: 删除案例问卷item
