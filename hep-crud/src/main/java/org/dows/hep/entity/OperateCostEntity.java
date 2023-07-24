@@ -1,5 +1,6 @@
 package org.dows.hep.entity;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
@@ -18,7 +19,7 @@ import org.dows.framework.crud.api.CrudEntity;
  * 操作花费(OperateCost)实体类
  *
  * @author lait
- * @since 2023-07-24 10:29:43
+ * @since 2023-07-24 11:55:29
  */
 @SuppressWarnings("serial")
 @Data
@@ -51,6 +52,9 @@ public class OperateCostEntity implements CrudEntity {
     @Schema(title = "机构ID")
     private String caseOrgId;
 
+    @Schema(title = "挂号流水")
+    private String operateFlowId;
+
     @Schema(title = "患者ID|NPC人物ID[uim-accountId]")
     private String patientId;
 
@@ -61,7 +65,10 @@ public class OperateCostEntity implements CrudEntity {
     private String feeCode;
 
     @Schema(title = "花费")
-    private String cost;
+    private BigDecimal cost;
+
+    @Schema(title = "返回|报销比例或金额")
+    private BigDecimal restitution;
 
     @Schema(title = "期数")
     private Integer period;
