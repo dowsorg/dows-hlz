@@ -12,6 +12,8 @@ import org.dows.hep.service.*;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 /**
@@ -29,8 +31,9 @@ public class ExperimentIndicatorViewBaseInfoRsBiz {
   private final ExperimentTimerBiz experimentTimerBiz;
   private final ExperimentIndicatorInstanceRsService experimentIndicatorInstanceRsService;
   private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
-  
-  public ExperimentIndicatorViewBaseInfoRsResponse get(String experimentIndicatorViewBaseInfoId, String experimentPersonId) {
+  private final RsExperimentIndicatorValBiz rsExperimentIndicatorValBiz;
+
+  public ExperimentIndicatorViewBaseInfoRsResponse get(String experimentIndicatorViewBaseInfoId, String experimentPersonId) throws ExecutionException, InterruptedException {
     ExperimentIndicatorViewBaseInfoRsEntity experimentIndicatorViewBaseInfoRsEntity = experimentIndicatorViewBaseInfoRsService.lambdaQuery()
         .eq(ExperimentIndicatorViewBaseInfoRsEntity::getExperimentIndicatorViewBaseInfoId, experimentIndicatorViewBaseInfoId)
         .oneOpt()
@@ -54,7 +57,7 @@ public class ExperimentIndicatorViewBaseInfoRsBiz {
 //      throw new ExperimentIndicatorViewBaseInfoRsException(EnumESC.VALIDATE_EXCEPTION);
 //    }
 //    Integer currentPeriod = experimentPeriods.getCurrentPeriod();
-    Integer currentPeriod = 1;
+    Integer periods = 1;
     experimentIndicatorInstanceRsService.lambdaQuery()
         .select(ExperimentIndicatorInstanceRsEntity::getExperimentIndicatorInstanceId, ExperimentIndicatorInstanceRsEntity::getIndicatorInstanceId, ExperimentIndicatorInstanceRsEntity::getIndicatorName, ExperimentIndicatorInstanceRsEntity::getUnit)
         .eq(ExperimentIndicatorInstanceRsEntity::getExperimentId, experimentId)
@@ -66,16 +69,29 @@ public class ExperimentIndicatorViewBaseInfoRsBiz {
           kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.put(
               experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId(), experimentIndicatorInstanceRsEntity);
         });
-    if (!experimentIndicatorInstanceIdSet.isEmpty()) {
-      experimentIndicatorValRsService.lambdaQuery()
-          .eq(ExperimentIndicatorValRsEntity::getExperimentId, experimentId)
-          .eq(ExperimentIndicatorValRsEntity::getPeriods, currentPeriod)
-          .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
-          .list()
-          .forEach(experimentIndicatorValRsEntity -> {
-            kExperimentIndicatorInstanceIdVValMap.put(experimentIndicatorValRsEntity.getIndicatorInstanceId(), experimentIndicatorValRsEntity.getCurrentVal());
-          });
-    }
+
+      Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = new HashMap<>();
+      CompletableFuture<Void> cfPopulateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = CompletableFuture.runAsync(() -> {
+        rsExperimentIndicatorValBiz.populateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(
+            kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap, experimentPersonId, periods
+        );
+      });
+      cfPopulateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get();
+
+    kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.forEach((experimentIndicatorInstanceId, experimentIndicatorValRsEntity) -> {
+      kExperimentIndicatorInstanceIdVValMap.put(experimentIndicatorInstanceId, experimentIndicatorValRsEntity.getCurrentVal());
+    });
+
+//    if (!experimentIndicatorInstanceIdSet.isEmpty()) {
+//      experimentIndicatorValRsService.lambdaQuery()
+//          .eq(ExperimentIndicatorValRsEntity::getExperimentId, experimentId)
+//          .eq(ExperimentIndicatorValRsEntity::getPeriods, currentPeriod)
+//          .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
+//          .list()
+//          .forEach(experimentIndicatorValRsEntity -> {
+//            kExperimentIndicatorInstanceIdVValMap.put(experimentIndicatorValRsEntity.getIndicatorInstanceId(), experimentIndicatorValRsEntity.getCurrentVal());
+//          });
+//    }
     List<ExperimentIndicatorViewBaseInfoDescRsEntity> experimentIndicatorViewBaseInfoDescRsEntityList = experimentIndicatorViewBaseInfoDescrRsService.lambdaQuery()
         .eq(ExperimentIndicatorViewBaseInfoDescRsEntity::getIndicatorViewBaseInfoId, experimentIndicatorViewBaseInfoId)
         .orderByAsc(ExperimentIndicatorViewBaseInfoDescRsEntity::getSeq)
@@ -128,11 +144,13 @@ public class ExperimentIndicatorViewBaseInfoRsBiz {
       ExperimentIndicatorInstanceRsResponse experimentIndicatorInstanceRsResponse = populateExperimentIndicatorInstanceRsResponse(
           experimentIndicatorViewBaseInfoSingleRsEntity.getIndicatorInstanceId(), kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap, kInstanceIdVExperimentIndicatorInstanceIdMap, kExperimentIndicatorInstanceIdVValMap
       );
+      if (Objects.nonNull(experimentIndicatorInstanceRsResponse)) {
       ExperimentIndicatorViewBaseInfoSingleRsResponse experimentIndicatorViewBaseInfoSingleRsResponse = ExperimentIndicatorViewBaseInfoSingleRsResponse
           .builder()
           .experimentIndicatorInstanceRsResponse(experimentIndicatorInstanceRsResponse)
           .build();
-      experimentIndicatorViewBaseInfoSingleRsResponseList.add(experimentIndicatorViewBaseInfoSingleRsResponse);
+        experimentIndicatorViewBaseInfoSingleRsResponseList.add(experimentIndicatorViewBaseInfoSingleRsResponse);
+      }
     });
     return ExperimentIndicatorViewBaseInfoRsResponse
         .builder()
@@ -166,7 +184,7 @@ public class ExperimentIndicatorViewBaseInfoRsBiz {
     ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.get(experimentIndicatorInstanceId);
     if (Objects.isNull(experimentIndicatorInstanceRsEntity)) {
       log.warn("method ExperimentIndicatorViewBaseInfoRsBiz.get populateExperimentIndicatorInstanceRsResponse indicatorInstanceId:{} is illegal, mapped no experimentIndicatorInstanceRsEntity", indicatorInstanceId);
-      throw new ExperimentIndicatorViewBaseInfoRsException(EnumESC.VALIDATE_EXCEPTION);
+      return null;
     }
     return ExperimentIndicatorInstanceRsResponse.getExperimentIndicatorInstanceRsResponse(
         experimentIndicatorInstanceRsEntity.getIndicatorName(), kExperimentIndicatorInstanceIdVValMap.get(experimentIndicatorInstanceId), experimentIndicatorInstanceRsEntity.getUnit()
