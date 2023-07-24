@@ -23,8 +23,8 @@ public class CostRequest {
     @Schema(title = "操作者ID[uim-accountId]")
     private String operatorId;
 
-    @Schema(title = "机构ID")
-    private String caseOrgId;
+    @Schema(title = "实验机构ID")
+    private String experimentOrgId;
 
     @Schema(title = "挂号流水")
     private String operateFlowId;
