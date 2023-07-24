@@ -21,6 +21,7 @@ public enum EnumIndicatorExpressionScene {
   CASE_RE_CALCULATE(7, "案例重新计算指标"),
   CASE_CALCULATE_HEALTH_POINT(8, "案例计算健康指数"),
   DATABASE_CALCULATE_HEALTH_POINT(9, "数据库计算健康指数"),
+  EXPERIMENT_CALCULATE_HEALTH_POINT(10, "数据库计算健康指数"),
   ;
 
   private final Integer scene;
