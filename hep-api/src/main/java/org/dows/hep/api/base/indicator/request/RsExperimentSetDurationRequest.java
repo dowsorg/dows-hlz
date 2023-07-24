@@ -16,7 +16,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RsCalculateAllPersonRequestRs implements Serializable {
+public class RsExperimentSetDurationRequest implements Serializable {
   @Schema(title = "appId")
   private String appId;
 
@@ -26,6 +26,6 @@ public class RsCalculateAllPersonRequestRs implements Serializable {
   @Schema(title = "期数")
   private Integer periods;
 
-  @Schema(title = "人物id")
-  private Set<String> personId;
+  @Schema(title = "实验人物id")
+  private Set<String> personIdSet;
 }

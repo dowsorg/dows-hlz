@@ -606,6 +606,7 @@ public class RsCalculateBiz {
     String appId = rsCalculateAllPersonRequestRs.getAppId();
     String experimentId = rsCalculateAllPersonRequestRs.getExperimentId();
     Integer periods = rsCalculateAllPersonRequestRs.getPeriods();
+    Set<String> personIdSet = rsCalculateAllPersonRequestRs.getPersonId();
 
     Set<String> reasonIdSet = new HashSet<>();
     Map<String, List<ExperimentIndicatorExpressionRsEntity>> kReasonIdVExperimentIndicatorExpressionRsEntityListMap = new HashMap<>();
@@ -614,7 +615,7 @@ public class RsCalculateBiz {
 
     Set<String> experimentPersonIdSet = new HashSet<>();
     CompletableFuture<Void> cfPopulateExperimentPersonIdSet = CompletableFuture.runAsync(() -> {
-      rsExperimentPersonBiz.populateExperimentPersonIdSet(experimentPersonIdSet, experimentId);
+      rsExperimentPersonBiz.populateExperimentPersonIdSet(experimentPersonIdSet, experimentId, personIdSet);
     });
     cfPopulateExperimentPersonIdSet.get();
 
@@ -1061,5 +1062,39 @@ public class RsCalculateBiz {
 
     /* runsix:final operation */
     if (Objects.nonNull(indicatorRuleEntityAR.get())) {indicatorRuleService.saveOrUpdate(indicatorRuleEntityAR.get());}
+  }
+
+  @Transactional(rollbackFor = Exception.class)
+  public void experimentSetDuration(RsExperimentSetDurationRequest rsExperimentSetDurationRequest) {
+    /* runsix:param */
+    String appId = rsExperimentSetDurationRequest.getAppId();
+    String experimentId = rsExperimentSetDurationRequest.getExperimentId();
+    Integer periods = rsExperimentSetDurationRequest.getPeriods();
+    Set<String> personIdSet = rsExperimentSetDurationRequest.getPersonIdSet();
+    /* runsix:result */
+    List<ExperimentIndicatorValRsEntity> experimentIndicatorValRsEntityList = new ArrayList<>();
+    /* runsix:step populate experimentIndicatorInstanceIdSet */
+    Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
+    experimentIndicatorInstanceRsService.lambdaQuery()
+        .eq(ExperimentIndicatorInstanceRsEntity::getExperimentId, experimentId)
+        .in(Objects.nonNull(personIdSet) && !personIdSet.isEmpty(), ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, personIdSet)
+        .list()
+        .forEach(experimentIndicatorInstanceRsEntity -> {
+          personIdSet.add(experimentIndicatorInstanceRsEntity.getExperimentPersonId());
+        });
+
+    /* runsix:step */
+    experimentIndicatorValRsEntityList.addAll(
+        experimentIndicatorValRsService.lambdaQuery()
+            .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
+            .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
+            .list()
+            .stream()
+            .peek(experimentIndicatorValRsEntity -> experimentIndicatorValRsEntity.setCurrentVal(periods.toString()))
+            .collect(Collectors.toList())
+    );
+
+    /* runsix:operation */
+    experimentIndicatorValRsService.saveOrUpdateBatch(experimentIndicatorValRsEntityList);
   }
 }

@@ -8,6 +8,7 @@ import org.dows.hep.api.base.indicator.response.RsCalculateCompetitiveScoreRsRes
 import org.dows.hep.api.base.indicator.response.RsCalculateMoneyScoreRsResponse;
 import org.dows.hep.biz.base.indicator.RsCalculateBiz;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -62,5 +63,11 @@ public class RsCalculateRest {
   @PostMapping("v1/databaseIndicator/healthScore/calculate")
   public void databaseRsCalculateHealthScore(@RequestBody DatabaseRsCalculateHealthScoreRequestRs databaseRsCalculateHealthScoreRequestRs) throws ExecutionException, InterruptedException {
     rsCalculateBiz.databaseRsCalculateHealthScore(databaseRsCalculateHealthScoreRequestRs);
+  }
+
+  @Operation(summary = "计算前设置持续天数当前值")
+  @PutMapping("v1/experimentIndicator/duration/put")
+  public void experimentSetDuration(@RequestBody RsExperimentSetDurationRequest rsExperimentSetDurationRequest) {
+    rsCalculateBiz.experimentSetDuration(rsExperimentSetDurationRequest);
   }
 }
