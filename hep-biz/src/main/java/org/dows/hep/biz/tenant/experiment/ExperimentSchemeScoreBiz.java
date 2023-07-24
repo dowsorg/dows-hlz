@@ -182,19 +182,37 @@ public class ExperimentSchemeScoreBiz {
         /* 处理请求数据 */
         // check params and auth
         checkParamsAndAuth(request, submitAccountId);
-        // 平铺出所有请求中的 itemList
         List<ExperimentSchemeScoreRequest.SchemeScoreRequest> scoreInfos = request.getScoreInfos();
-        List<ExperimentSchemeScoreRequest.SchemeScoreItemRequest> itemList = scoreInfos.stream()
-                .flatMap(item -> item.getItemList().stream())
-                .toList();
-        // 平铺所有请求中的 id
+        // 平铺所有请求中的 scoreIdList
         List<String> scoreIdList = scoreInfos.stream()
                 .map(ExperimentSchemeScoreRequest.SchemeScoreRequest::getExperimentSchemeScoreId)
                 .toList();
+        // 平铺出所有请求中的 scoreItemList
+        List<ExperimentSchemeScoreRequest.SchemeScoreItemRequest> itemList = scoreInfos.stream()
+                .flatMap(item -> item.getItemList().stream())
+                .toList();
+        // 获取评分表取值范围
+        String firstSchemeScoreId = scoreIdList.get(0);
+        List<ExperimentSchemeScoreItemEntity> firstSchemeScoreItemList = experimentSchemeScoreItemService.lambdaQuery()
+                .eq(ExperimentSchemeScoreItemEntity::getExperimentSchemeScoreId, firstSchemeScoreId)
+                .list();
+        if (CollUtil.isEmpty(firstSchemeScoreItemList)) {
+            throw new BizException("提交方案设计评分表时, 获取评分表条目异常");
+        }
+        firstSchemeScoreItemList.sort((v1, v2) -> (int) (v1.getMinScore() - v2.getMinScore()));
+        ExperimentSchemeScoreItemEntity firstEntity = firstSchemeScoreItemList.get(0);
+        ExperimentSchemeScoreItemEntity lastEntity = firstSchemeScoreItemList.get(firstSchemeScoreItemList.size() - 1);
+        Float maxScore = lastEntity.getMaxScore();
 
 
         /* 准备数据 */
-        // 获取对应 itemList 的所有 ori itemList
+        // 获取对应 scoreIdList 的所有 oriEntityList
+        List<ExperimentSchemeScoreEntity> oriEntityList = experimentSchemeScoreService.lambdaQuery()
+                .in(ExperimentSchemeScoreEntity::getExperimentSchemeScoreId, scoreIdList)
+                .list();
+        Map<String, ExperimentSchemeScoreEntity> schemeIdMapEntity = oriEntityList.stream()
+                .collect(Collectors.toMap(ExperimentSchemeScoreEntity::getExperimentSchemeScoreId, item -> item));
+        // 获取对应 scoreItemList 的所有 oriItemEntityList
         List<String> scoreItemIdList = itemList.stream()
                 .map(ExperimentSchemeScoreRequest.SchemeScoreItemRequest::getExperimentSchemeScoreItemId)
                 .toList();
@@ -203,12 +221,6 @@ public class ExperimentSchemeScoreBiz {
                 .list();
         Map<String, ExperimentSchemeScoreItemEntity> scoreItemIdMapEntity = oriItemEntityList.stream()
                 .collect(Collectors.toMap(ExperimentSchemeScoreItemEntity::getExperimentSchemeScoreItemId, item -> item));
-        // 获取对应 idList 的所有 ori list
-        List<ExperimentSchemeScoreEntity> oriEntityList = experimentSchemeScoreService.lambdaQuery()
-                .in(ExperimentSchemeScoreEntity::getExperimentSchemeScoreId, scoreIdList)
-                .list();
-        Map<String, ExperimentSchemeScoreEntity> schemeIdMapEntity = oriEntityList.stream()
-                .collect(Collectors.toMap(ExperimentSchemeScoreEntity::getExperimentSchemeScoreId, item -> item));
         // 获取 scheme-score 对应的 expt-scheme
         List<String> schemeIdList = oriEntityList.stream()
                 .map(ExperimentSchemeScoreEntity::getExperimentSchemeId)
@@ -218,12 +230,14 @@ public class ExperimentSchemeScoreBiz {
         /* 处理数据 */
         // check item score range
         checkItemScoreRange(itemList, oriItemEntityList);
+
         // 批量更新 SchemeScoreItem 的得分
         boolean updScoreItemRes = updSchemeScoreItemScore(itemList, scoreItemIdMapEntity);
         // 更新 SchemeScore 的得分和状态
         boolean updScoreRes = updSchemeScoreAndState(scoreInfos, schemeIdMapEntity);
+
         // 更新 exptScheme 的得分和状态
-        BigDecimal score = calFinalScore(scoreInfos);
+        BigDecimal score = calFinalScore(scoreInfos, maxScore);
         boolean updSchemeRes = updSchemeState(score, schemeIdList.get(0));
 
         return score.toString();
@@ -465,16 +479,29 @@ public class ExperimentSchemeScoreBiz {
         return experimentSchemeScoreService.updateBatchById(entityList);
     }
 
-    private BigDecimal calFinalScore(List<ExperimentSchemeScoreRequest.SchemeScoreRequest> scoreInfos) {
-        float finalScore = 0.00f;
-        if (CollUtil.isNotEmpty(scoreInfos)) {
-            double average = scoreInfos.stream()
-                    .mapToDouble(item -> item.getReviewScore() == null ? 0.0 : item.getReviewScore().doubleValue())
-                    .average()
-                    .orElse(0.00);
-            finalScore = (float) average;
+    private BigDecimal calFinalScore(List<ExperimentSchemeScoreRequest.SchemeScoreRequest> scoreInfos, float maxScore) {
+        if (CollUtil.isEmpty(scoreInfos)) {
+            return BigDecimal.ZERO;
         }
-        return BigDecimal.valueOf(finalScore).setScale(0, RoundingMode.HALF_UP);
+
+        BigDecimal finalScore = BigDecimal.ZERO;
+        BigDecimal totalScore = BigDecimal.ZERO;
+        // 将评分转换为以100为基数的
+        for (ExperimentSchemeScoreRequest.SchemeScoreRequest scoreInfo : scoreInfos) {
+            BigDecimal scoreBy100;
+            float reviewScore = scoreInfo.getReviewScore();
+            if ((int) reviewScore == (int) maxScore) {
+                scoreBy100 = new BigDecimal("100");
+            } else {
+                BigDecimal bMaxScore = BigDecimal.valueOf(maxScore);
+                BigDecimal bReviewScore = BigDecimal.valueOf(reviewScore);
+                scoreBy100 = bReviewScore.divide(bMaxScore, 2, RoundingMode.HALF_UP);
+            }
+            totalScore = totalScore.add(scoreBy100);
+        }
+        // 计算平均值
+        finalScore = totalScore.divide(BigDecimal.valueOf(scoreInfos.size()), 0, RoundingMode.HALF_UP);
+        return finalScore;
     }
 
     private boolean updSchemeState(BigDecimal score, String schemeId) {
