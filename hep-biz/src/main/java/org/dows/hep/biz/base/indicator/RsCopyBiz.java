@@ -1912,21 +1912,12 @@ public class RsCopyBiz {
       List<ExperimentIndicatorExpressionRsEntity> experimentIndicatorExpressionRsEntityList,
       List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList
   ) {
-    if (Objects.isNull(reasonIdSet) || reasonIdSet.isEmpty()) {
-      return;
-    }
-    if (Objects.isNull(experimentIndicatorExpressionRefRsEntityList)) {
-      log.error("experimentIndicatorExpressionRefRsEntityList is null, copy stop");
-      return;
-    }
-    if (Objects.isNull(experimentIndicatorExpressionRsEntityList)) {
-      log.error("experimentIndicatorExpressionRsEntityList is null, copy stop");
-      return;
-    }
-    if (Objects.isNull(experimentIndicatorExpressionItemRsEntityList)) {
-      log.error("experimentIndicatorExpressionItemRsEntityList is null, copy stop");
-      return;
-    }
+    if (Objects.isNull(reasonIdSet) || reasonIdSet.isEmpty()
+        || Objects.isNull(experimentIndicatorExpressionRefRsEntityList)
+        || Objects.isNull(experimentIndicatorExpressionRsEntityList)
+        || Objects.isNull(experimentIndicatorExpressionItemRsEntityList)
+    ) {return;}
+
     Map<String, IndicatorExpressionRefEntity> kIndicatorExpressionIdVIndicatorExpressionRefEntityMap = new HashMap<>();
     Map<String, Set<String>> kReasonIdVIndicatorExpressionIdSetMap = new HashMap<>();
     Set<String> indicatorExpressionIdSet = new HashSet<>();
@@ -1944,6 +1935,8 @@ public class RsCopyBiz {
         }
         indicatorExpressionIdSet1.add(indicatorExpressionId);
         kReasonIdVIndicatorExpressionIdSetMap.put(reasonId, indicatorExpressionIdSet1);
+
+        kIndicatorExpressionIdVIndicatorExpressionRefEntityMap.put(indicatorExpressionId, indicatorExpressionRefEntity);
       });
     Map<String, IndicatorExpressionEntity> kIndicatorExpressionIdVIndicatorExpressionEntityMap = new HashMap<>();
     Map<String, List<IndicatorExpressionItemEntity>> kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap = new HashMap<>();
@@ -1985,9 +1978,7 @@ public class RsCopyBiz {
           .eq(IndicatorExpressionItemEntity::getAppId, appId)
           .in(IndicatorExpressionItemEntity::getIndicatorExpressionItemId, minAndMaxIndicatorExpressionItemIdSet)
           .list()
-          .forEach(indicatorExpressionItemEntity -> {
-            minOrMaxIndicatorExpressionItemEntityList.add(indicatorExpressionItemEntity);
-          });
+          .forEach(minOrMaxIndicatorExpressionItemEntityList::add);
     }
     Map<String, String> kMinOrMaxIndicatorExpressionItemEntityIdVExperimentIndicatorExpressionItemIdMap = new HashMap<>();
     if (!minOrMaxIndicatorExpressionItemEntityList.isEmpty()) {
