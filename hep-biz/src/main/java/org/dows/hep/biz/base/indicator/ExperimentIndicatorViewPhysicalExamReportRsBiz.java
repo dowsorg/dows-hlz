@@ -347,7 +347,7 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
    * 2.save reportList
   */
   @Transactional(rollbackFor = Exception.class)
-  public void v2PhysicalExamCheck(ExperimentPhysicalExamCheckRequestRs experimentPhysicalExamCheckRequestRs) throws ExecutionException, InterruptedException {
+  public void v1PhysicalExamCheck(ExperimentPhysicalExamCheckRequestRs experimentPhysicalExamCheckRequestRs) throws ExecutionException, InterruptedException {
     /* runsix:TODO 这个期数后期根据张亮接口拿 */
     Integer period = 1;
     String appId = experimentPhysicalExamCheckRequestRs.getAppId();
