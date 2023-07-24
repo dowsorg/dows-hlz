@@ -79,6 +79,22 @@ public class ShareBiz {
                 .orElse("");
     }
 
+    /**
+     * 获取 某人物在某机构 当前最新挂号流水号
+     * @param appId
+     * @param experimentInstanceId 实验id
+     * @param experimentOrgId      机构id
+     * @param experimentPersonId   人物id
+     * @return 不存在返回空
+     */
+    public static String checkOperateFlowId(String appId,String experimentInstanceId, String experimentOrgId,String experimentPersonId){
+        ExptOrgFlowValidator validator= ExptOrgFlowValidator.create(appId, experimentInstanceId, experimentOrgId, experimentPersonId);
+        if(!validator.ifOrgFlowRunning(false)){
+            return "";
+        }
+        return validator.getOperateFlowId();
+    }
+
 
     //region 获取公式
     public static List<CaseIndicatorExpressionResponseRs> getCaseExpressionsByReasonId(CaseIndicatorExpressionBiz indicatorExpressionBiz, String appId, String reasonId) {
