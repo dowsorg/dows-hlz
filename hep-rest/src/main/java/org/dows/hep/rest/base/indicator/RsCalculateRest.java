@@ -23,10 +23,10 @@ import java.util.concurrent.ExecutionException;
 public class RsCalculateRest {
   private final RsCalculateBiz rsCalculateBiz;
 
-  @Operation(summary = "实验-期数重新计算N个人所有指标")
-  @PostMapping("v1/experimentIndicator/allPerson/reCalculate")
-  public void experimentReCalculateAllPerson(@RequestBody RsCalculateAllPersonRequestRs rsCalculateAllPersonRequestRs) throws ExecutionException, InterruptedException {
-    rsCalculateBiz.experimentReCalculateAllPerson(rsCalculateAllPersonRequestRs);
+  @Operation(summary = "实验-期数重新计算N个人所有指标，如果不传人，就是所有的")
+  @PostMapping("v1/experimentIndicator/person/reCalculate")
+  public void experimentReCalculatePerson(@RequestBody RsCalculatePersonRequestRs rsCalculatePersonRequestRs) throws ExecutionException, InterruptedException {
+    rsCalculateBiz.experimentReCalculatePerson(rsCalculatePersonRequestRs);
   }
 
   @Operation(summary = "实验-计算健康指数")
@@ -69,5 +69,11 @@ public class RsCalculateRest {
   @PutMapping("v1/experimentIndicator/duration/put")
   public void experimentSetDuration(@RequestBody RsExperimentSetDurationRequest rsExperimentSetDurationRequest) {
     rsCalculateBiz.experimentSetDuration(rsExperimentSetDurationRequest);
+  }
+
+  @Operation(summary = "期数翻转结束后，要把本期最终结果更新为下一期的值")
+  @PutMapping("v1/experimentIndicator/val/put")
+  public void experimentSetVal(@RequestBody RsExperimentSetValRequest rsExperimentSetValRequest) throws ExecutionException, InterruptedException {
+    rsCalculateBiz.experimentSetVal(rsExperimentSetValRequest);
   }
 }

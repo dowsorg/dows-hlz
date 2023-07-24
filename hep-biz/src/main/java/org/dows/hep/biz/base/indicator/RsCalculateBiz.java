@@ -1,5 +1,6 @@
 package org.dows.hep.biz.base.indicator;
 
+import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -10,6 +11,7 @@ import org.dows.hep.api.base.indicator.response.RsCalculateCompetitiveScoreRsRes
 import org.dows.hep.api.base.indicator.response.RsCalculateMoneyScoreRsResponse;
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.RsCalculateBizException;
+import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.biz.request.CaseCalIndicatorExpressionRequest;
 import org.dows.hep.biz.request.DatabaseCalIndicatorExpressionRequest;
 import org.dows.hep.entity.*;
@@ -51,6 +53,8 @@ public class RsCalculateBiz {
   private final RsIndicatorExpressionBiz rsIndicatorExpressionBiz;
   private final IndicatorRuleService indicatorRuleService;
   private final RsIndicatorInstanceBiz rsIndicatorInstanceBiz;
+  private final ExperimentSettingService experimentSettingService;
+  private final RsExperimentIndicatorValBiz rsExperimentIndicatorValBiz;
 
   @Transactional(rollbackFor = Exception.class)
   public void caseReCalculateOnePerson(ReCalculateOnePersonRequestRs reCalculateOnePersonRequestRs) throws ExecutionException, InterruptedException {
@@ -602,11 +606,11 @@ public class RsCalculateBiz {
   }
 
   @Transactional(rollbackFor = Exception.class)
-  public void experimentReCalculateAllPerson(RsCalculateAllPersonRequestRs rsCalculateAllPersonRequestRs) throws ExecutionException, InterruptedException {
-    String appId = rsCalculateAllPersonRequestRs.getAppId();
-    String experimentId = rsCalculateAllPersonRequestRs.getExperimentId();
-    Integer periods = rsCalculateAllPersonRequestRs.getPeriods();
-    Set<String> personIdSet = rsCalculateAllPersonRequestRs.getPersonId();
+  public void experimentReCalculatePerson(RsCalculatePersonRequestRs rsCalculatePersonRequestRs) throws ExecutionException, InterruptedException {
+    String appId = rsCalculatePersonRequestRs.getAppId();
+    String experimentId = rsCalculatePersonRequestRs.getExperimentId();
+    Integer periods = rsCalculatePersonRequestRs.getPeriods();
+    Set<String> personIdSet = rsCalculatePersonRequestRs.getPersonId();
 
     Set<String> reasonIdSet = new HashSet<>();
     Map<String, List<ExperimentIndicatorExpressionRsEntity>> kReasonIdVExperimentIndicatorExpressionRsEntityListMap = new HashMap<>();
@@ -628,7 +632,9 @@ public class RsCalculateBiz {
     cfPopulateKExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap.get();
 
     Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
+    List<ExperimentIndicatorInstanceRsEntity> resultExperimentIndicatorInstanceRsEntityList = new ArrayList<>();
     kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap.forEach((experimentPersonId, experimentIndicatorInstanceRsEntityList) -> {
+      resultExperimentIndicatorInstanceRsEntityList.addAll(experimentIndicatorInstanceRsEntityList);
       experimentIndicatorInstanceRsEntityList.forEach(experimentIndicatorInstanceRsEntity -> {
         experimentIndicatorInstanceIdSet.add(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
       });
@@ -652,7 +658,7 @@ public class RsCalculateBiz {
             kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap
         );
       } catch (Exception e) {
-        log.error("RsCalculateBiz.reCalculateAllPerson.cfPopulateParseParam rsCalculateAllPersonRequestRs:{}" , rsCalculateAllPersonRequestRs, e);
+        log.error("RsCalculateBiz.reCalculateAllPerson.cfPopulateParseParam rsCalculateAllPersonRequestRs:{}" , rsCalculatePersonRequestRs, e);
         throw new RsCalculateBizException(EnumESC.RS_CALCULATE_ERROR);
       }
     });
@@ -668,13 +674,19 @@ public class RsCalculateBiz {
             kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap
         );
       } catch (Exception e) {
-        log.error("RsCalculateBiz.reCalculateAllPerson.cfReCalculateAllExperimentIndicatorInstance rsCalculateAllPersonRequestRs:{}" , rsCalculateAllPersonRequestRs, e);
+        log.error("RsCalculateBiz.reCalculateAllPerson.cfReCalculateAllExperimentIndicatorInstance rsCalculateAllPersonRequestRs:{}" , rsCalculatePersonRequestRs, e);
         throw new RsCalculateBizException(EnumESC.RS_CALCULATE_ERROR);
       }
     });
     cfReCalculateAllExperimentIndicatorInstance.get();
 
+    /* runsix:需要把指标变化的那个字段置为0 */
+    resultExperimentIndicatorInstanceRsEntityList.forEach(experimentIndicatorInstanceRsEntity -> {
+      experimentIndicatorInstanceRsEntity.setChangeVal(0D);
+    });
+
     CompletableFuture<Void> cfFinalOperation = CompletableFuture.runAsync(() -> {
+      experimentIndicatorInstanceRsService.saveOrUpdateBatch(resultExperimentIndicatorInstanceRsEntityList);
       experimentIndicatorValRsService.saveOrUpdateBatch(kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.values());
     });
     cfFinalOperation.get();
@@ -1095,6 +1107,68 @@ public class RsCalculateBiz {
     );
 
     /* runsix:operation */
+    experimentIndicatorValRsService.saveOrUpdateBatch(experimentIndicatorValRsEntityList);
+  }
+
+  @Transactional(rollbackFor = Exception.class)
+  public void experimentSetVal(RsExperimentSetValRequest rsExperimentSetValRequest) throws ExecutionException, InterruptedException {
+    /* runsix:param */
+    String appId = rsExperimentSetValRequest.getAppId();
+    String experimentId = rsExperimentSetValRequest.getExperimentId();
+    Integer curPeriods = rsExperimentSetValRequest.getPeriods();
+    /* runsix:result */
+    List<ExperimentIndicatorValRsEntity> experimentIndicatorValRsEntityList = new ArrayList<>();
+    /* runsix:check if last periods */
+    ExperimentSettingEntity experimentSettingEntity = experimentSettingService.lambdaQuery()
+        .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentId)
+        .eq(ExperimentSettingEntity::getConfigKey, ExperimentSetting.SandSetting.class.getName())
+        .one();
+    /* runsix:如果实验不存在，不做任何操作 */
+    if (Objects.isNull(experimentSettingEntity)) {return;}
+    ExperimentSetting.SandSetting sandSetting = JSONUtil.toBean(experimentSettingEntity.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
+    Integer maxPeriods = sandSetting.getPeriods();
+    /* runsix:如果当前期数是最后一期，不需要更新下一期，因为没有下一期 */
+    if (curPeriods >= maxPeriods) {return;}
+    Integer nextPeriods = curPeriods+1;
+
+    Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
+    Set<String> experimentPersonIdSet = experimentPersonService.lambdaQuery()
+        .eq(ExperimentPersonEntity::getExperimentInstanceId, experimentId)
+        .list()
+        .stream().map(ExperimentPersonEntity::getExperimentPersonId)
+        .collect(Collectors.toSet());
+    if (experimentPersonIdSet.isEmpty()) {return;}
+
+    experimentIndicatorInstanceRsService.lambdaQuery()
+        .eq(ExperimentIndicatorInstanceRsEntity::getExperimentId, experimentId)
+        .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdSet)
+        .list()
+        .forEach(experimentIndicatorInstanceRsEntity -> {
+          experimentIndicatorInstanceIdSet.add(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
+        });
+
+    Map<String, ExperimentIndicatorValRsEntity> curKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = new HashMap<>();
+    CompletableFuture<Void> curCfPopulateKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = CompletableFuture.runAsync(() -> {
+      rsExperimentIndicatorValBiz.populateKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(
+          curKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,experimentIndicatorInstanceIdSet, curPeriods);
+    });
+    curCfPopulateKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get();
+
+    Map<String, ExperimentIndicatorValRsEntity> nextKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = new HashMap<>();
+    CompletableFuture<Void> nextCfPopulateKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = CompletableFuture.runAsync(() -> {
+      rsExperimentIndicatorValBiz.populateKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(
+          nextKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap, experimentIndicatorInstanceIdSet, nextPeriods);
+    });
+    nextCfPopulateKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get();
+
+    nextKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.forEach((experimentIndicatorInstanceId, nextExperimentIndicatorValRsEntity) -> {
+      ExperimentIndicatorValRsEntity curExperimentIndicatorValRsEntity = curKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
+      if (Objects.isNull(curExperimentIndicatorValRsEntity)) {return;}
+      nextExperimentIndicatorValRsEntity.setCurrentVal(curExperimentIndicatorValRsEntity.getCurrentVal());
+      experimentIndicatorValRsEntityList.add(nextExperimentIndicatorValRsEntity);
+    });
+
+    /* runsix:final operation */
     experimentIndicatorValRsService.saveOrUpdateBatch(experimentIndicatorValRsEntityList);
   }
 }

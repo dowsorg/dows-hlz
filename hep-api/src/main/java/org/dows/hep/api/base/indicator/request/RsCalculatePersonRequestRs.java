@@ -16,7 +16,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RsCalculateAllPersonRequestRs implements Serializable {
+public class RsCalculatePersonRequestRs implements Serializable {
   @Schema(title = "appId")
   private String appId;
 
