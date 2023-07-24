@@ -522,7 +522,7 @@ public class ExperimentSchemeScoreBiz {
             totalScore = totalScore.add(scoreBy100);
         }
         // 计算平均值
-        finalScore = totalScore.divide(BigDecimal.valueOf(scoreInfos.size()), 0, RoundingMode.HALF_UP);
+        finalScore = totalScore.divide(BigDecimal.valueOf(scoreInfos.size()), 0, RoundingMode.DOWN);
         return finalScore;
     }
 
