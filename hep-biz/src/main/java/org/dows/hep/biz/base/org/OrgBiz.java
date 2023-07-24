@@ -564,7 +564,7 @@ public class OrgBiz {
                 personWrapper.set(CasePersonEntity::getDeleted, true)
                         .eq(CasePersonEntity::getCaseOrgId, entity.getCaseOrgId())
                         .eq(CasePersonEntity::getCaseInstanceId, caseInstanceId);
-                boolean flag2 = caseOrgService.update(orgWrapper);
+                boolean flag2 = casePersonService.update(personWrapper);
                 //4、删除组织机构费用表
                 List<CaseOrgFeeEntity> feeList = caseOrgFeeService.lambdaQuery()
                         .eq(CaseOrgFeeEntity::getCaseOrgId, entity.getCaseOrgId())
@@ -580,10 +580,30 @@ public class OrgBiz {
                     }
                 }
             });
+            List<AccountGroupResponse> groupResponseList = accountGroupApi.getAccountGroupByOrgIds(orgIds);
             //5、删除组织机构
             accountOrgApi.batchDeleteAccountOrgsByOrgIds(orgIds);
             //6、删除组织机构地理位置
             accountOrgGeoApi.batchDeleteAccountOrgGeosByOrgIds(orgIds);
+            //7、判断人物如果是机构人物，则删除
+            if(groupResponseList != null && groupResponseList.size() > 0){
+                Set<String> userIds = new HashSet<>();
+                Set<String> accountIds = new HashSet<>();
+                groupResponseList.forEach(group->{
+                    AccountInstanceResponse instanceResponse = accountInstanceApi.getAccountInstanceByAccountId(group.getAccountId());
+                    if(instanceResponse != null && !ReflectUtil.isObjectNull(instanceResponse)){
+                        if(instanceResponse.getSource().equals("机构人物")){
+                            userIds.add(accountUserApi.getUserByAccountId(group.getAccountId()).getUserId());
+                            accountIds.add(group.getAccountId());
+                        }
+                    }
+                });
+                accountInstanceApi.deleteAccountInstanceByAccountIds(accountIds);
+                userIds.forEach(userId -> {
+                    UserExtinfoResponse extinfoResponse = userExtinfoApi.getUserExtinfoByUserId(userId);
+                    userExtinfoApi.deleteUserExtinfoById(extinfoResponse.getId());
+                });
+            }
         }
         //7、todo 删除功能点
         return true;
