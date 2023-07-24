@@ -9,6 +9,7 @@ import org.dows.hep.biz.base.indicator.ExperimentIndicatorViewSupportExamReportR
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author runsix
@@ -21,7 +22,7 @@ public class ExperimentIndicatorViewSupportExamReportRsRest {
 
   @Operation(summary = "实验人物和在这个机构功能点下的辅助检查报告")
   @PostMapping("v1/userExperiment/supportExamReport/check")
-  public void supportExamCheck(@RequestBody ExperimentSupportExamCheckRequestRs experimentSupportExamCheckRequestRs) {
+  public void supportExamCheck(@RequestBody ExperimentSupportExamCheckRequestRs experimentSupportExamCheckRequestRs) throws ExecutionException, InterruptedException {
     experimentIndicatorViewSupportExamReportRsBiz.supportExamCheck(experimentSupportExamCheckRequestRs);
   }
 

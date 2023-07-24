@@ -23,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -43,6 +45,7 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
   private final ExperimentIndicatorExpressionItemRsService experimentIndicatorExpressionItemRsService;
   private final ExperimentIndicatorExpressionInfluenceRsService experimentIndicatorExpressionInfluenceRsService;
   private final ExperimentIndicatorInstanceRsBiz experimentIndicatorInstanceRsBiz;
+  private final RsExperimentIndicatorValBiz rsExperimentIndicatorValBiz;
 
   public static ExperimentSupportExamReportResponseRs experimentSupportExamReport2ResponseRs(ExperimentIndicatorViewSupportExamReportRsEntity experimentIndicatorViewSupportExamReportRsEntity) {
     if (Objects.isNull(experimentIndicatorViewSupportExamReportRsEntity)) {
@@ -58,7 +61,7 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
         .build();
   }
   @Transactional(rollbackFor = Exception.class)
-  public void supportExamCheck(ExperimentSupportExamCheckRequestRs experimentSupportExamCheckRequestRs) {
+  public void supportExamCheck(ExperimentSupportExamCheckRequestRs experimentSupportExamCheckRequestRs) throws ExecutionException, InterruptedException {
     List<ExperimentIndicatorViewSupportExamReportRsEntity> experimentIndicatorViewSupportExamReportRsEntityList = new ArrayList<>();
     /* runsix:TODO 这个期数后期根据张亮接口拿 */
     Integer period = 1;
@@ -112,14 +115,12 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
           .forEach(experimentIndicatorInstanceRsEntity -> {
             kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.put(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId(), experimentIndicatorInstanceRsEntity);
           });
-      experimentIndicatorValRsService.lambdaQuery()
-          .eq(ExperimentIndicatorValRsEntity::getExperimentId, experimentId)
-          .eq(ExperimentIndicatorValRsEntity::getPeriods, period)
-          .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
-          .list()
-          .forEach(experimentIndicatorValRsEntity -> {
-            kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(experimentIndicatorValRsEntity.getIndicatorInstanceId(), experimentIndicatorValRsEntity);
-          });
+      CompletableFuture<Void> cfPopulateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = CompletableFuture.runAsync(() -> {
+        rsExperimentIndicatorValBiz.populateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(
+            kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap, experimentPersonId, period
+        );
+      });
+      cfPopulateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get();
     }
     if (!experimentIndicatorInstanceIdSet.isEmpty()) {
       experimentIndicatorExpressionRefRsService.lambdaQuery()
