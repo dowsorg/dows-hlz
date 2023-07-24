@@ -5,6 +5,8 @@ import org.dows.hep.api.enums.EnumExptOperateType;
 import org.dows.hep.api.user.experiment.vo.ExptOrgReportNodeDataVO;
 import org.dows.hep.biz.util.ShareUtil;
 
+import java.util.concurrent.ExecutionException;
+
 /**
  * @author : wuzl
  * @date : 2023/7/18 11:28
@@ -13,9 +15,9 @@ public interface IOrgReportExtracter<T> extends IOrgReportConsumer<T> {
     EnumExptOperateType getOperateType();
 
 
-    T getReportData(OrgReportExtractRequest req);
+    T getReportData(OrgReportExtractRequest req) throws ExecutionException, InterruptedException;
 
-    default void fillReportData(OrgReportExtractRequest req, ExptOrgReportNodeDataVO node){
+    default void fillReportData(OrgReportExtractRequest req, ExptOrgReportNodeDataVO node) throws ExecutionException, InterruptedException {
         if(ShareUtil.XObject.isEmpty(node)){
             return;
         }

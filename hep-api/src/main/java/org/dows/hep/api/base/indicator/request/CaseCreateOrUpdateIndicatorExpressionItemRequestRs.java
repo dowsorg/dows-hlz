@@ -18,7 +18,7 @@ import java.io.Serializable;
 @Builder
 public class CaseCreateOrUpdateIndicatorExpressionItemRequestRs implements Serializable {
   @Schema(title = "分布式ID")
-  private String caseIndicatorExpressionItemId;
+  private String indicatorExpressionItemId;
 
   @Schema(title = "应用ID")
   @ApiModelProperty(required = true)

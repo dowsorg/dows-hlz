@@ -348,7 +348,9 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
       String indicatorCurrentVal = indicatorCurrentValList.get(i);
       ExperimentIndicatorInstanceRsResponse experimentIndicatorInstanceRsResponse = populateExperimentIndicatorInstanceRsResponseMF(
           indicatorInstanceId, kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap, kInstanceIdVExperimentIndicatorInstanceIdMap, indicatorCurrentVal);
-      experimentIndicatorInstanceRsResponseList.add(experimentIndicatorInstanceRsResponse);
+      if (Objects.nonNull(experimentIndicatorInstanceRsResponse)) {
+        experimentIndicatorInstanceRsResponseList.add(experimentIndicatorInstanceRsResponse);
+      }
     }
   }
 

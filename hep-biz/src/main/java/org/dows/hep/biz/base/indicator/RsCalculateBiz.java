@@ -1,5 +1,6 @@
 package org.dows.hep.biz.base.indicator;
 
+import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -10,6 +11,7 @@ import org.dows.hep.api.base.indicator.response.RsCalculateCompetitiveScoreRsRes
 import org.dows.hep.api.base.indicator.response.RsCalculateMoneyScoreRsResponse;
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.RsCalculateBizException;
+import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.biz.request.CaseCalIndicatorExpressionRequest;
 import org.dows.hep.biz.request.DatabaseCalIndicatorExpressionRequest;
 import org.dows.hep.entity.*;
@@ -51,6 +53,8 @@ public class RsCalculateBiz {
   private final RsIndicatorExpressionBiz rsIndicatorExpressionBiz;
   private final IndicatorRuleService indicatorRuleService;
   private final RsIndicatorInstanceBiz rsIndicatorInstanceBiz;
+  private final ExperimentSettingService experimentSettingService;
+  private final RsExperimentIndicatorValBiz rsExperimentIndicatorValBiz;
 
   @Transactional(rollbackFor = Exception.class)
   public void caseReCalculateOnePerson(ReCalculateOnePersonRequestRs reCalculateOnePersonRequestRs) throws ExecutionException, InterruptedException {
@@ -68,9 +72,9 @@ public class RsCalculateBiz {
       caseIndicatorInstanceIdSet.add(caseIndicatorInstanceId);
     });
 
-    Map<String, Set<String>> kCaseIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap = new HashMap<>();
+    Map<String, Set<String>> kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap = new HashMap<>();
     CompletableFuture<Void> cfPopulateKCaseIndicatorInstanceIdInfluencedIndicatorInstanceIdSetMap = CompletableFuture.runAsync(() -> {
-      rsCaseIndicatorExpressionBiz.populateKCaseIndicatorInstanceIdInfluencedIndicatorInstanceIdSetMap(kCaseIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap, caseIndicatorInstanceIdSet);
+      rsCaseIndicatorExpressionBiz.populateKCaseIndicatorInstanceIdInfluencedIndicatorInstanceIdSetMap(kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap, caseIndicatorInstanceIdSet);
     });
     cfPopulateKCaseIndicatorInstanceIdInfluencedIndicatorInstanceIdSetMap.get();
 
@@ -105,59 +109,46 @@ public class RsCalculateBiz {
     });
     cfKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get();
 
-    Set<String> hasCalculatedCaseIndicatorInstanceIdSet = new HashSet<>();
-    Set<String> needCalculateCaseIndicatorInstanceIdSet = new HashSet<>(caseIndicatorInstanceIdSet);
-    while (!needCalculateCaseIndicatorInstanceIdSet.isEmpty()) {
-      AtomicBoolean hasFindOne = new AtomicBoolean(Boolean.FALSE);
-      needCalculateCaseIndicatorInstanceIdSet.forEach(needCalculateCaseIndicatorInstanceId -> {
-        if (hasFindOne.get()) {return;}
-        Set<String> influencedIndicatorInstanceIdSet = kCaseIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.get(needCalculateCaseIndicatorInstanceId);
-        if (Objects.isNull(influencedIndicatorInstanceIdSet) || influencedIndicatorInstanceIdSet.isEmpty()
-            || hasCalculatedCaseIndicatorInstanceIdSet.containsAll(influencedIndicatorInstanceIdSet)
-        ) {
-          /* runsix:TODO 这里应该是默认值，算错了就用当前值计算 */
-          CaseIndicatorRuleEntity caseIndicatorRuleEntity = kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap.get(needCalculateCaseIndicatorInstanceId);
-          String def = caseIndicatorRuleEntity.getDef();
-          AtomicReference<String> resultAtomicReference = new AtomicReference<>(def);
-          CaseIndicatorExpressionEntity caseIndicatorExpressionEntity = kCaseIndicatorInstanceIdVCaseIndicatorExpressionEntityMap.get(needCalculateCaseIndicatorInstanceId);
-          List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList = kCaseIndicatorInstanceIdVCaseIndicatorExpressionItemEntityListMap.get(needCalculateCaseIndicatorInstanceId);
-          CaseIndicatorExpressionItemEntity minCaseIndicatorExpressionItemEntity = null;
-          if (Objects.nonNull(caseIndicatorExpressionEntity)
-              && StringUtils.isNotBlank(caseIndicatorExpressionEntity.getMinIndicatorExpressionItemId())
-              && Objects.nonNull(kMinAndMaxCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get(caseIndicatorExpressionEntity.getMinIndicatorExpressionItemId()))
-          ) {
-            minCaseIndicatorExpressionItemEntity = kMinAndMaxCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get(caseIndicatorExpressionEntity.getMinIndicatorExpressionItemId());
-          }
-          CaseIndicatorExpressionItemEntity maxCaseIndicatorExpressionItemEntity = null;
-          if (Objects.nonNull(caseIndicatorExpressionEntity)
-              && StringUtils.isNotBlank(caseIndicatorExpressionEntity.getMaxIndicatorExpressionItemId())
-              && Objects.nonNull(kMinAndMaxCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get(caseIndicatorExpressionEntity.getMaxIndicatorExpressionItemId()))
-          ) {
-            maxCaseIndicatorExpressionItemEntity = kMinAndMaxCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get(caseIndicatorExpressionEntity.getMaxIndicatorExpressionItemId());
-          }
+    List<String> seqCaseIndicatorInstanceIdList = new ArrayList<>();
+    rsUtilBiz.algorithmKahn(seqCaseIndicatorInstanceIdList, kCaseIndicatorInstanceIdVCaseInfluencedIndicatorInstanceIdSetMap);
+    seqCaseIndicatorInstanceIdList.forEach(caseIndicatorInstanceId -> {
+      CaseIndicatorRuleEntity caseIndicatorRuleEntity = kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap.get(caseIndicatorInstanceId);
+      String def = caseIndicatorRuleEntity.getDef();
+      AtomicReference<String> resultAtomicReference = new AtomicReference<>(def);
+      CaseIndicatorExpressionEntity caseIndicatorExpressionEntity = kCaseIndicatorInstanceIdVCaseIndicatorExpressionEntityMap.get(caseIndicatorInstanceId);
+      List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList = kCaseIndicatorInstanceIdVCaseIndicatorExpressionItemEntityListMap.get(caseIndicatorInstanceId);
+      CaseIndicatorExpressionItemEntity minCaseIndicatorExpressionItemEntity = null;
+      if (Objects.nonNull(caseIndicatorExpressionEntity)
+          && StringUtils.isNotBlank(caseIndicatorExpressionEntity.getMinIndicatorExpressionItemId())
+          && Objects.nonNull(kMinAndMaxCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get(caseIndicatorExpressionEntity.getMinIndicatorExpressionItemId()))
+      ) {
+        minCaseIndicatorExpressionItemEntity = kMinAndMaxCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get(caseIndicatorExpressionEntity.getMinIndicatorExpressionItemId());
+      }
+      CaseIndicatorExpressionItemEntity maxCaseIndicatorExpressionItemEntity = null;
+      if (Objects.nonNull(caseIndicatorExpressionEntity)
+          && StringUtils.isNotBlank(caseIndicatorExpressionEntity.getMaxIndicatorExpressionItemId())
+          && Objects.nonNull(kMinAndMaxCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get(caseIndicatorExpressionEntity.getMaxIndicatorExpressionItemId()))
+      ) {
+        maxCaseIndicatorExpressionItemEntity = kMinAndMaxCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get(caseIndicatorExpressionEntity.getMaxIndicatorExpressionItemId());
+      }
 
-          rsCaseIndicatorExpressionBiz.parseCaseIndicatorExpression(
-              EnumIndicatorExpressionField.CASE.getField(), EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource(), EnumIndicatorExpressionScene.CASE_RE_CALCULATE.getScene(),
-              resultAtomicReference,
-              new HashMap<>(),
-              DatabaseCalIndicatorExpressionRequest.builder().build(),
-              CaseCalIndicatorExpressionRequest
-                  .builder()
-                  .kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap(kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap)
-                  .caseIndicatorExpressionEntity(caseIndicatorExpressionEntity)
-                  .caseIndicatorExpressionItemEntityList(caseIndicatorExpressionItemEntityList)
-                  .minCaseIndicatorExpressionItemEntity(minCaseIndicatorExpressionItemEntity)
-                  .maxCaseIndicatorExpressionItemEntity(maxCaseIndicatorExpressionItemEntity)
-                  .build()
-          );
-          caseIndicatorRuleEntity.setDef(resultAtomicReference.get());
-          kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap.put(needCalculateCaseIndicatorInstanceId, caseIndicatorRuleEntity);
-          hasCalculatedCaseIndicatorInstanceIdSet.add(needCalculateCaseIndicatorInstanceId);
-          needCalculateCaseIndicatorInstanceIdSet.remove(needCalculateCaseIndicatorInstanceId);
-        }
-      });
-    }
-
+      rsCaseIndicatorExpressionBiz.parseCaseIndicatorExpression(
+          EnumIndicatorExpressionField.CASE.getField(), EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource(), EnumIndicatorExpressionScene.CASE_RE_CALCULATE.getScene(),
+          resultAtomicReference,
+          new HashMap<>(),
+          DatabaseCalIndicatorExpressionRequest.builder().build(),
+          CaseCalIndicatorExpressionRequest
+              .builder()
+              .kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap(kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap)
+              .caseIndicatorExpressionEntity(caseIndicatorExpressionEntity)
+              .caseIndicatorExpressionItemEntityList(caseIndicatorExpressionItemEntityList)
+              .minCaseIndicatorExpressionItemEntity(minCaseIndicatorExpressionItemEntity)
+              .maxCaseIndicatorExpressionItemEntity(maxCaseIndicatorExpressionItemEntity)
+              .build()
+      );
+      caseIndicatorRuleEntity.setDef(resultAtomicReference.get());
+      kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap.put(caseIndicatorInstanceId, caseIndicatorRuleEntity);
+    });
 
     caseIndicatorRuleService.saveOrUpdateBatch(kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap.values());
   }
@@ -615,10 +606,11 @@ public class RsCalculateBiz {
   }
 
   @Transactional(rollbackFor = Exception.class)
-  public void experimentReCalculateAllPerson(RsCalculateAllPersonRequestRs rsCalculateAllPersonRequestRs) throws ExecutionException, InterruptedException {
-    String appId = rsCalculateAllPersonRequestRs.getAppId();
-    String experimentId = rsCalculateAllPersonRequestRs.getExperimentId();
-    Integer periods = rsCalculateAllPersonRequestRs.getPeriods();
+  public void experimentReCalculatePerson(RsCalculatePersonRequestRs rsCalculatePersonRequestRs) throws ExecutionException, InterruptedException {
+    String appId = rsCalculatePersonRequestRs.getAppId();
+    String experimentId = rsCalculatePersonRequestRs.getExperimentId();
+    Integer periods = rsCalculatePersonRequestRs.getPeriods();
+    Set<String> personIdSet = rsCalculatePersonRequestRs.getPersonId();
 
     Set<String> reasonIdSet = new HashSet<>();
     Map<String, List<ExperimentIndicatorExpressionRsEntity>> kReasonIdVExperimentIndicatorExpressionRsEntityListMap = new HashMap<>();
@@ -627,7 +619,7 @@ public class RsCalculateBiz {
 
     Set<String> experimentPersonIdSet = new HashSet<>();
     CompletableFuture<Void> cfPopulateExperimentPersonIdSet = CompletableFuture.runAsync(() -> {
-      rsExperimentPersonBiz.populateExperimentPersonIdSet(experimentPersonIdSet, experimentId);
+      rsExperimentPersonBiz.populateExperimentPersonIdSet(experimentPersonIdSet, experimentId, personIdSet);
     });
     cfPopulateExperimentPersonIdSet.get();
 
@@ -640,7 +632,9 @@ public class RsCalculateBiz {
     cfPopulateKExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap.get();
 
     Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
+    List<ExperimentIndicatorInstanceRsEntity> resultExperimentIndicatorInstanceRsEntityList = new ArrayList<>();
     kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap.forEach((experimentPersonId, experimentIndicatorInstanceRsEntityList) -> {
+      resultExperimentIndicatorInstanceRsEntityList.addAll(experimentIndicatorInstanceRsEntityList);
       experimentIndicatorInstanceRsEntityList.forEach(experimentIndicatorInstanceRsEntity -> {
         experimentIndicatorInstanceIdSet.add(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
       });
@@ -664,7 +658,7 @@ public class RsCalculateBiz {
             kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap
         );
       } catch (Exception e) {
-        log.error("RsCalculateBiz.reCalculateAllPerson.cfPopulateParseParam rsCalculateAllPersonRequestRs:{}" , rsCalculateAllPersonRequestRs, e);
+        log.error("RsCalculateBiz.reCalculateAllPerson.cfPopulateParseParam rsCalculateAllPersonRequestRs:{}" , rsCalculatePersonRequestRs, e);
         throw new RsCalculateBizException(EnumESC.RS_CALCULATE_ERROR);
       }
     });
@@ -680,13 +674,19 @@ public class RsCalculateBiz {
             kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap
         );
       } catch (Exception e) {
-        log.error("RsCalculateBiz.reCalculateAllPerson.cfReCalculateAllExperimentIndicatorInstance rsCalculateAllPersonRequestRs:{}" , rsCalculateAllPersonRequestRs, e);
+        log.error("RsCalculateBiz.reCalculateAllPerson.cfReCalculateAllExperimentIndicatorInstance rsCalculateAllPersonRequestRs:{}" , rsCalculatePersonRequestRs, e);
         throw new RsCalculateBizException(EnumESC.RS_CALCULATE_ERROR);
       }
     });
     cfReCalculateAllExperimentIndicatorInstance.get();
 
+    /* runsix:需要把指标变化的那个字段置为0 */
+    resultExperimentIndicatorInstanceRsEntityList.forEach(experimentIndicatorInstanceRsEntity -> {
+      experimentIndicatorInstanceRsEntity.setChangeVal(0D);
+    });
+
     CompletableFuture<Void> cfFinalOperation = CompletableFuture.runAsync(() -> {
+      experimentIndicatorInstanceRsService.saveOrUpdateBatch(resultExperimentIndicatorInstanceRsEntityList);
       experimentIndicatorValRsService.saveOrUpdateBatch(kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.values());
     });
     cfFinalOperation.get();
@@ -895,6 +895,7 @@ public class RsCalculateBiz {
       CaseIndicatorRuleEntity caseIndicatorRuleEntity = caseIndicatorRuleEntityAR.get();
       BigDecimal newHealthPoint = rsUtilBiz.newCalculateFinalHealthScore(kRiskModelIdVTotalScoreMap, kRiskModelIdVRiskDeathProbabilityMap, totalRiskDeathProbability);
       caseIndicatorRuleEntity.setDef(newHealthPoint.setScale(2, RoundingMode.DOWN).toString());
+      caseIndicatorRuleEntityAR.set(caseIndicatorRuleEntity);
     });
     if (Objects.nonNull(caseIndicatorRuleEntityAR.get())) {caseIndicatorRuleService.saveOrUpdate(caseIndicatorRuleEntityAR.get());}
   }
@@ -1068,9 +1069,106 @@ public class RsCalculateBiz {
       IndicatorRuleEntity indicatorRuleEntity = indicatorRuleEntityAR.get();
       BigDecimal newHealthPoint = rsUtilBiz.newCalculateFinalHealthScore(kRiskModelIdVTotalScoreMap, kRiskModelIdVRiskDeathProbabilityMap, totalRiskDeathProbability);
       indicatorRuleEntity.setDef(newHealthPoint.setScale(2, RoundingMode.DOWN).toString());
+      indicatorRuleEntityAR.set(indicatorRuleEntity);
     });
 
     /* runsix:final operation */
     if (Objects.nonNull(indicatorRuleEntityAR.get())) {indicatorRuleService.saveOrUpdate(indicatorRuleEntityAR.get());}
+  }
+
+  @Transactional(rollbackFor = Exception.class)
+  public void experimentSetDuration(RsExperimentSetDurationRequest rsExperimentSetDurationRequest) {
+    /* runsix:param */
+    String appId = rsExperimentSetDurationRequest.getAppId();
+    String experimentId = rsExperimentSetDurationRequest.getExperimentId();
+    Integer periods = rsExperimentSetDurationRequest.getPeriods();
+    Set<String> personIdSet = rsExperimentSetDurationRequest.getPersonIdSet();
+    /* runsix:result */
+    List<ExperimentIndicatorValRsEntity> experimentIndicatorValRsEntityList = new ArrayList<>();
+    /* runsix:step populate experimentIndicatorInstanceIdSet */
+    Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
+    experimentIndicatorInstanceRsService.lambdaQuery()
+        .eq(ExperimentIndicatorInstanceRsEntity::getExperimentId, experimentId)
+        .in(Objects.nonNull(personIdSet) && !personIdSet.isEmpty(), ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, personIdSet)
+        .list()
+        .forEach(experimentIndicatorInstanceRsEntity -> {
+          personIdSet.add(experimentIndicatorInstanceRsEntity.getExperimentPersonId());
+        });
+
+    /* runsix:step */
+    experimentIndicatorValRsEntityList.addAll(
+        experimentIndicatorValRsService.lambdaQuery()
+            .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
+            .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
+            .list()
+            .stream()
+            .peek(experimentIndicatorValRsEntity -> experimentIndicatorValRsEntity.setCurrentVal(periods.toString()))
+            .collect(Collectors.toList())
+    );
+
+    /* runsix:operation */
+    experimentIndicatorValRsService.saveOrUpdateBatch(experimentIndicatorValRsEntityList);
+  }
+
+  @Transactional(rollbackFor = Exception.class)
+  public void experimentSetVal(RsExperimentSetValRequest rsExperimentSetValRequest) throws ExecutionException, InterruptedException {
+    /* runsix:param */
+    String appId = rsExperimentSetValRequest.getAppId();
+    String experimentId = rsExperimentSetValRequest.getExperimentId();
+    Integer curPeriods = rsExperimentSetValRequest.getPeriods();
+    /* runsix:result */
+    List<ExperimentIndicatorValRsEntity> experimentIndicatorValRsEntityList = new ArrayList<>();
+    /* runsix:check if last periods */
+    ExperimentSettingEntity experimentSettingEntity = experimentSettingService.lambdaQuery()
+        .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentId)
+        .eq(ExperimentSettingEntity::getConfigKey, ExperimentSetting.SandSetting.class.getName())
+        .one();
+    /* runsix:如果实验不存在，不做任何操作 */
+    if (Objects.isNull(experimentSettingEntity)) {return;}
+    ExperimentSetting.SandSetting sandSetting = JSONUtil.toBean(experimentSettingEntity.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
+    Integer maxPeriods = sandSetting.getPeriods();
+    /* runsix:如果当前期数是最后一期，不需要更新下一期，因为没有下一期 */
+    if (curPeriods >= maxPeriods) {return;}
+    Integer nextPeriods = curPeriods+1;
+
+    Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
+    Set<String> experimentPersonIdSet = experimentPersonService.lambdaQuery()
+        .eq(ExperimentPersonEntity::getExperimentInstanceId, experimentId)
+        .list()
+        .stream().map(ExperimentPersonEntity::getExperimentPersonId)
+        .collect(Collectors.toSet());
+    if (experimentPersonIdSet.isEmpty()) {return;}
+
+    experimentIndicatorInstanceRsService.lambdaQuery()
+        .eq(ExperimentIndicatorInstanceRsEntity::getExperimentId, experimentId)
+        .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdSet)
+        .list()
+        .forEach(experimentIndicatorInstanceRsEntity -> {
+          experimentIndicatorInstanceIdSet.add(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
+        });
+
+    Map<String, ExperimentIndicatorValRsEntity> curKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = new HashMap<>();
+    CompletableFuture<Void> curCfPopulateKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = CompletableFuture.runAsync(() -> {
+      rsExperimentIndicatorValBiz.populateKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(
+          curKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,experimentIndicatorInstanceIdSet, curPeriods);
+    });
+    curCfPopulateKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get();
+
+    Map<String, ExperimentIndicatorValRsEntity> nextKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = new HashMap<>();
+    CompletableFuture<Void> nextCfPopulateKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = CompletableFuture.runAsync(() -> {
+      rsExperimentIndicatorValBiz.populateKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(
+          nextKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap, experimentIndicatorInstanceIdSet, nextPeriods);
+    });
+    nextCfPopulateKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get();
+
+    nextKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.forEach((experimentIndicatorInstanceId, nextExperimentIndicatorValRsEntity) -> {
+      ExperimentIndicatorValRsEntity curExperimentIndicatorValRsEntity = curKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
+      if (Objects.isNull(curExperimentIndicatorValRsEntity)) {return;}
+      nextExperimentIndicatorValRsEntity.setCurrentVal(curExperimentIndicatorValRsEntity.getCurrentVal());
+      experimentIndicatorValRsEntityList.add(nextExperimentIndicatorValRsEntity);
+    });
+
+    /* runsix:final operation */
+    experimentIndicatorValRsService.saveOrUpdateBatch(experimentIndicatorValRsEntityList);
   }
 }

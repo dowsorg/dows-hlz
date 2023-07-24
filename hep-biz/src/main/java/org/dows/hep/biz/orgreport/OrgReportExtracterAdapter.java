@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author : wuzl
@@ -36,7 +37,7 @@ public class OrgReportExtracterAdapter {
         return null!=getExtracter(indicatorCategoryId);
     }
 
-    public void fillReportData(OrgReportExtractRequest req,ExptOrgReportNodeVO src){
+    public void fillReportData(OrgReportExtractRequest req,ExptOrgReportNodeVO src) throws ExecutionException, InterruptedException {
         if(ShareUtil.XObject.anyEmpty(src)){
             return;
         }

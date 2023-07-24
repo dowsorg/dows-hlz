@@ -8,6 +8,7 @@ import org.dows.hep.api.base.indicator.request.*;
 import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.CaseIndicatorExpressionBizException;
+import org.dows.hep.api.exception.CaseIndicatorExpressionException;
 import org.dows.hep.api.exception.IndicatorExpressionException;
 import org.dows.hep.biz.util.RedissonUtil;
 import org.dows.hep.entity.*;
@@ -100,7 +101,7 @@ public class CaseIndicatorExpressionBiz {
         .builder()
         .id(caseIndicatorExpressionEntity.getId())
         .indicatorExpressionRefId(caseIndicatorExpressionRefId)
-        .indicatorExpressionId(caseIndicatorExpressionEntity.getIndicatorExpressionId())
+        .indicatorExpressionId(caseIndicatorExpressionEntity.getCaseIndicatorExpressionId())
         .appId(caseIndicatorExpressionEntity.getAppId())
         .principalId(caseIndicatorExpressionEntity.getPrincipalId())
         .caseIndicatorCategoryResponse(caseIndicatorCategoryResponse)
@@ -139,7 +140,7 @@ public class CaseIndicatorExpressionBiz {
           }
           indicatorExpressionIdList.add(indicatorExpressionId);
           kReasonIdVIndicatorExpressionIdListMap.put(reasonId, indicatorExpressionIdList);
-          kIndicatorExpressionIdVIndicatorExpressionRefIdMap.put(indicatorExpressionId, indicatorExpressionRefEntity.getIndicatorExpressionRefId());
+          kIndicatorExpressionIdVIndicatorExpressionRefIdMap.put(indicatorExpressionId, indicatorExpressionRefEntity.getCaseIndicatorExpressionRefId());
         });
     Map<String, CaseIndicatorExpressionEntity> kIndicatorExpressionIdVIndicatorExpressionEntityMap = new HashMap<>();
     Map<String, List<CaseIndicatorExpressionItemEntity>> kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap = new HashMap<>();
@@ -257,11 +258,9 @@ public class CaseIndicatorExpressionBiz {
   public String v2CreateOrUpdate(CaseCreateOrUpdateIndicatorExpressionRequestRs caseCreateOrUpdateIndicatorExpressionRequestRs) throws InterruptedException, ExecutionException {
     /* runsix:param */
     AtomicReference<CaseIndicatorExpressionEntity> caseIndicatorExpressionEntityAtomicReference = new AtomicReference<>();
+    String accountId = caseCreateOrUpdateIndicatorExpressionRequestRs.getAccountId();
     String caseIndicatorExpressionId = caseCreateOrUpdateIndicatorExpressionRequestRs.getCaseIndicatorExpressionId();
     String casePrincipalId = caseCreateOrUpdateIndicatorExpressionRequestRs.getCasePrincipalId();
-    /* runsix: TODO 这两个有什么用 */
-    String caseIndicatorExpressionRefId = caseCreateOrUpdateIndicatorExpressionRequestRs.getIndicatorExpressionRefId();
-    String caseReasonId = caseCreateOrUpdateIndicatorExpressionRequestRs.getReasonId();
     String appId = caseCreateOrUpdateIndicatorExpressionRequestRs.getAppId();
     Integer paramType = caseCreateOrUpdateIndicatorExpressionRequestRs.getType();
     Integer source = caseCreateOrUpdateIndicatorExpressionRequestRs.getSource();
@@ -277,7 +276,8 @@ public class CaseIndicatorExpressionBiz {
       /* runsix:result */
       List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList = new ArrayList<>();
       AtomicBoolean typeChangeAtomicBoolean = new AtomicBoolean(Boolean.FALSE);
-      AtomicReference<CaseIndicatorExpressionInfluenceEntity> caseIndicatorExpressionInfluenceEntityAtomicReference = new AtomicReference<>();
+      AtomicReference<CaseIndicatorExpressionRefEntity> caseIndicatorExpressionRefEntityAtomicReference = new AtomicReference<>();
+      List<CaseIndicatorExpressionInfluenceEntity> caseIndicatorExpressionInfluenceEntityList = new ArrayList<>();
       AtomicReference<CaseIndicatorExpressionItemEntity> caseMinIndicatorExpressionItemEntityAtomicReference = new AtomicReference<>();
       AtomicReference<CaseIndicatorExpressionItemEntity> caseMaxIndicatorExpressionItemEntityAtomicReference = new AtomicReference<>();
 
@@ -292,11 +292,13 @@ public class CaseIndicatorExpressionBiz {
         if (!dbType.equals(paramType)) {typeChangeAtomicBoolean.set(Boolean.TRUE);}
       }
 
-      /* runsix:2.2 populate caseIndicatorExpressionInfluenceEntityAtomicReference */
+      /* runsix:2.3 populate caseIndicatorExpressionInfluenceEntityAtomicReference */
       CompletableFuture<Void> cfCheckCircleDependencyAndPopulateCaseIndicatorExpressionInfluenceEntity = CompletableFuture.runAsync(() -> {
         try {
-          rsCaseIndicatorExpressionBiz.checkCircleDependencyAndPopulateCaseIndicatorExpressionInfluenceEntity(
-              caseIndicatorExpressionInfluenceEntityAtomicReference,
+          rsCaseIndicatorExpressionBiz.checkCircleDependencyAndPopulateIndicatorExpressionInfluenceEntity(
+              accountId,
+              appId,
+              caseIndicatorExpressionInfluenceEntityList,
               source,
               casePrincipalId,
               caseCreateOrUpdateIndicatorExpressionItemRequestRsList,
@@ -309,11 +311,17 @@ public class CaseIndicatorExpressionBiz {
       });
       cfCheckCircleDependencyAndPopulateCaseIndicatorExpressionInfluenceEntity.get();
 
+
+      Map<String, CaseIndicatorExpressionItemEntity> kMinAndMaxCaseIndicatorExpressionItemIdVIndicatorExpressionItemMap = new HashMap<>();
+      CaseIndicatorExpressionItemEntity minCaseIndicatorExpressionItemEntity = null;
+      CaseIndicatorExpressionItemEntity maxCaseIndicatorExpressionItemEntity = null;
+      String dbMinCaseIndicatorExpressionItemId = null;
+      String dbMaxCaseIndicatorExpressionItemId = null;
       if (Objects.nonNull(caseIndicatorExpressionEntity)) {
         /* runsix:2.4 公式类型发生变化，原先上下限需要删除 */
         Set<String> minAndMaxCaseIndicatorExpressionItemIdSet = new HashSet<>();
-        String dbMinCaseIndicatorExpressionItemId = caseIndicatorExpressionEntity.getMinIndicatorExpressionItemId();
-        String dbMaxCaseIndicatorExpressionItemId = caseIndicatorExpressionEntity.getMaxIndicatorExpressionItemId();
+        dbMinCaseIndicatorExpressionItemId = caseIndicatorExpressionEntity.getMinIndicatorExpressionItemId();
+        dbMaxCaseIndicatorExpressionItemId = caseIndicatorExpressionEntity.getMaxIndicatorExpressionItemId();
         if (typeChangeAtomicBoolean.get()) {
           if (StringUtils.isNotBlank(dbMinCaseIndicatorExpressionItemId)) {minAndMaxCaseIndicatorExpressionItemIdSet.add(dbMinCaseIndicatorExpressionItemId);}
           if (StringUtils.isNotBlank(dbMaxCaseIndicatorExpressionItemId)) {minAndMaxCaseIndicatorExpressionItemIdSet.add(dbMaxCaseIndicatorExpressionItemId);}
@@ -323,34 +331,37 @@ public class CaseIndicatorExpressionBiz {
         }
 
         /* runsix:2.5 获取原来的上下限 */
-        Map<String, CaseIndicatorExpressionItemEntity> kMinAndMaxCaseIndicatorExpressionItemIdVIndicatorExpressionItemMap = new HashMap<>();
         CompletableFuture<Void> cfMinAndMaxPopulateKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap = CompletableFuture.runAsync(() -> {
           rsCaseIndicatorExpressionBiz.populateByCaseItemIdSetKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap(
               kMinAndMaxCaseIndicatorExpressionItemIdVIndicatorExpressionItemMap, minAndMaxCaseIndicatorExpressionItemIdSet
           );
         });
         cfMinAndMaxPopulateKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get();
+      }
 
-        /* runsix:2.6 populate minCaseIndicatorExpressionItemEntityAtomicReference && maxCaseIndicatorExpressionItemEntityAtomicReference 创建新的上下限 */
-        CaseIndicatorExpressionItemEntity minCaseIndicatorExpressionItemEntity = kMinAndMaxCaseIndicatorExpressionItemIdVIndicatorExpressionItemMap.get(dbMinCaseIndicatorExpressionItemId);
+      /* runsix:2.6 populate minCaseIndicatorExpressionItemEntityAtomicReference && maxCaseIndicatorExpressionItemEntityAtomicReference 创建新的上下限 */
+      if (StringUtils.isNotBlank(dbMinCaseIndicatorExpressionItemId)) {
+        minCaseIndicatorExpressionItemEntity = kMinAndMaxCaseIndicatorExpressionItemIdVIndicatorExpressionItemMap.get(dbMinCaseIndicatorExpressionItemId);
         if (Objects.nonNull(minCaseIndicatorExpressionItemEntity)) {
           caseMinIndicatorExpressionItemEntityAtomicReference.set(minCaseIndicatorExpressionItemEntity);
         }
-        CaseIndicatorExpressionItemEntity maxCaseIndicatorExpressionItemEntity = kMinAndMaxCaseIndicatorExpressionItemIdVIndicatorExpressionItemMap.get(dbMaxCaseIndicatorExpressionItemId);
+      }
+      if (StringUtils.isNotBlank(dbMaxCaseIndicatorExpressionItemId)) {
+        maxCaseIndicatorExpressionItemEntity = kMinAndMaxCaseIndicatorExpressionItemIdVIndicatorExpressionItemMap.get(dbMaxCaseIndicatorExpressionItemId);
         if (Objects.nonNull(maxCaseIndicatorExpressionItemEntity)) {
           caseMaxIndicatorExpressionItemEntityAtomicReference.set(maxCaseIndicatorExpressionItemEntity);
         }
-        CompletableFuture<Void> cfPopulateMinAndMaxCaseIndicatorExpressionItem = CompletableFuture.runAsync(() -> {
-          rsCaseIndicatorExpressionBiz.populateMinAndMaxCaseIndicatorExpressionItem(
-              typeChangeAtomicBoolean.get(),
-              caseMinIndicatorExpressionItemEntityAtomicReference,
-              caseMinCreateOrUpdateIndicatorExpressionItemRequestRs,
-              caseMaxIndicatorExpressionItemEntityAtomicReference,
-              caseMaxCreateOrUpdateIndicatorExpressionItemRequestRs
-          );
-        });
-        cfPopulateMinAndMaxCaseIndicatorExpressionItem.get();
       }
+      CompletableFuture<Void> cfPopulateMinAndMaxCaseIndicatorExpressionItem = CompletableFuture.runAsync(() -> {
+        rsCaseIndicatorExpressionBiz.populateMinAndMaxCaseIndicatorExpressionItem(
+            typeChangeAtomicBoolean.get(),
+            caseMinIndicatorExpressionItemEntityAtomicReference,
+            caseMinCreateOrUpdateIndicatorExpressionItemRequestRs,
+            caseMaxIndicatorExpressionItemEntityAtomicReference,
+            caseMaxCreateOrUpdateIndicatorExpressionItemRequestRs
+        );
+      });
+      cfPopulateMinAndMaxCaseIndicatorExpressionItem.get();
 
       /* runsix: 2.7 populate new indicatorExpressionEntityAtomicReference 判断是新建还是修改*/
       CaseIndicatorExpressionItemEntity newMinCaseIndicatorExpressionItemEntity = caseMinIndicatorExpressionItemEntityAtomicReference.get();
@@ -371,7 +382,7 @@ public class CaseIndicatorExpressionBiz {
             .builder()
             .caseIndicatorExpressionId(idGenerator.nextIdStr())
             .appId(appId)
-            .principalId(casePrincipalId)
+            .casePrincipalId(casePrincipalId)
             .minIndicatorExpressionItemId(newMinCaseIndicatorExpressionItemId)
             .maxIndicatorExpressionItemId(newMaxIndicatorExpressionItemId)
             .type(paramType)
@@ -405,7 +416,7 @@ public class CaseIndicatorExpressionBiz {
       Map<String, CaseIndicatorExpressionItemEntity> kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap = new HashMap<>();
       CompletableFuture<Void> cfPopulateByIdKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap = CompletableFuture.runAsync(() -> {
         rsCaseIndicatorExpressionBiz.populateByCaseIdKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap(
-            kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap, caseIndicatorExpressionEntityAtomicReference.get().getIndicatorExpressionId()
+            kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap, caseIndicatorExpressionEntityAtomicReference.get().getCaseIndicatorExpressionId()
         );
       });
       cfPopulateByIdKCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get();
@@ -440,16 +451,18 @@ public class CaseIndicatorExpressionBiz {
         caseIndicatorExpressionItemEntityList.forEach(caseIndicatorExpressionItemEntity -> {
           rsUtilBiz.checkCondition(kCaseIndicatorInstanceIdVValMap, RsIndicatorExpressionCheckConditionRequest
               .builder()
-              .source(EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource())
+              .source(source)
               .field(EnumIndicatorExpressionField.CASE.getField())
               .conditionRaw(caseIndicatorExpressionItemEntity.getConditionRaw())
               .conditionExpression(caseIndicatorExpressionItemEntity.getConditionExpression())
               .conditionNameList(caseIndicatorExpressionItemEntity.getConditionNameList())
               .conditionValList(caseIndicatorExpressionItemEntity.getConditionValList())
               .build());
+          /* runsix:如果是指标管理，没有条件，就不用检查结果 */
+          if (EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource().equals(source) && StringUtils.isBlank(caseIndicatorExpressionItemEntity.getConditionRaw())) {return;}
           rsUtilBiz.checkResult(kCaseIndicatorInstanceIdVValMap, RsIndicatorExpressionCheckoutResultRequest
               .builder()
-              .source(EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource())
+              .source(source)
               .field(EnumIndicatorExpressionField.CASE.getField())
               .resultRaw(caseIndicatorExpressionItemEntity.getResultRaw())
               .resultExpression(caseIndicatorExpressionItemEntity.getResultExpression())
@@ -459,16 +472,19 @@ public class CaseIndicatorExpressionBiz {
         });
       }
 
+      /* runsix:2.11 ref */
+      newPopulateIndicatorExpressionRefEntity(caseIndicatorExpressionEntityAtomicReference.get().getCaseIndicatorExpressionId(), caseCreateOrUpdateIndicatorExpressionRequestRs, caseIndicatorExpressionRefEntityAtomicReference);
+
+      if (Objects.nonNull(caseIndicatorExpressionRefEntityAtomicReference.get())) {caseIndicatorExpressionRefService.saveOrUpdate(caseIndicatorExpressionRefEntityAtomicReference.get());}
       if (Objects.nonNull(caseMinIndicatorExpressionItemEntityAtomicReference.get())) {caseIndicatorExpressionItemService.saveOrUpdate(caseMinIndicatorExpressionItemEntityAtomicReference.get());}
       if (Objects.nonNull(caseMaxIndicatorExpressionItemEntityAtomicReference.get())) {caseIndicatorExpressionItemService.saveOrUpdate(caseMaxIndicatorExpressionItemEntityAtomicReference.get());}
       if (Objects.nonNull(caseIndicatorExpressionEntityAtomicReference.get())) {caseIndicatorExpressionService.saveOrUpdate(caseIndicatorExpressionEntityAtomicReference.get());}
       if (!caseIndicatorExpressionItemEntityList.isEmpty()) {caseIndicatorExpressionItemService.saveOrUpdateBatch(caseIndicatorExpressionItemEntityList);}
-      CaseIndicatorExpressionInfluenceEntity caseIndicatorExpressionInfluenceEntity = caseIndicatorExpressionInfluenceEntityAtomicReference.get();
-      if (Objects.nonNull(caseIndicatorExpressionInfluenceEntity)) {caseIndicatorExpressionInfluenceService.saveOrUpdate(caseIndicatorExpressionInfluenceEntity);}
+      if (!caseIndicatorExpressionInfluenceEntityList.isEmpty()) {caseIndicatorExpressionInfluenceService.saveOrUpdateBatch(caseIndicatorExpressionInfluenceEntityList);}
     } finally {
       lock.unlock();
     }
-    return caseIndicatorExpressionEntityAtomicReference.get().getIndicatorExpressionId();
+    return caseIndicatorExpressionEntityAtomicReference.get().getCaseIndicatorExpressionId();
   }
 
   public CaseIndicatorExpressionResponseRs get(String caseIndicatorExpressionId) throws ExecutionException, InterruptedException {
@@ -558,6 +574,109 @@ public class CaseIndicatorExpressionBiz {
 
   @Transactional(rollbackFor = Exception.class)
   public void batchBindReasonId(CaseBatchBindReasonIdRequestRs caseBatchBindReasonIdRequestRs) {
+    List<String> caseIndicatorExpressionIdList = caseBatchBindReasonIdRequestRs.getCaseIndicatorExpressionIdList();
+    if (Objects.isNull(caseIndicatorExpressionIdList)) {
+      return;
+    }
+    List<String> filteredCaseIndicatorExpressionIdList = caseIndicatorExpressionIdList.stream().filter(StringUtils::isNotBlank).collect(Collectors.toList());
+    if (filteredCaseIndicatorExpressionIdList.isEmpty()) {
+      return;
+    }
+    caseBatchBindReasonIdRequestRs.setCaseIndicatorExpressionIdList(filteredCaseIndicatorExpressionIdList);
+    List<CaseIndicatorExpressionRefEntity> caseIndicatorExpressionRefEntityList = new ArrayList<>();
+    populateCaseIndicatorExpressionRefEntityList(caseIndicatorExpressionRefEntityList, caseBatchBindReasonIdRequestRs);
+    caseIndicatorExpressionRefService.saveOrUpdateBatch(caseIndicatorExpressionRefEntityList);
+  }
 
+  public void populateCaseIndicatorExpressionRefEntityList(
+      List<CaseIndicatorExpressionRefEntity> caseIndicatorExpressionRefEntityList,
+      CaseBatchBindReasonIdRequestRs caseBatchBindReasonIdRequestRs) {
+    String appId = caseBatchBindReasonIdRequestRs.getAppId();
+    String reasonId = caseBatchBindReasonIdRequestRs.getReasonId();
+    Integer source = caseBatchBindReasonIdRequestRs.getSource();
+    List<String> paramCaseIndicatorExpressionIdList = caseBatchBindReasonIdRequestRs.getCaseIndicatorExpressionIdList();
+    if (Objects.isNull(paramCaseIndicatorExpressionIdList)) {
+      paramCaseIndicatorExpressionIdList = new ArrayList<>();
+    }
+    checkSourceAndReasonId(source, reasonId);
+    Set<String> dbCaseIndicatorExpressionIdSet = new HashSet<>();
+    if (!paramCaseIndicatorExpressionIdList.isEmpty()) {
+      caseIndicatorExpressionService.lambdaQuery()
+          .eq(CaseIndicatorExpressionEntity::getAppId, appId)
+          .in(CaseIndicatorExpressionEntity::getCaseIndicatorExpressionId, paramCaseIndicatorExpressionIdList)
+          .list()
+          .forEach(caseIndicatorExpressionEntity -> {
+            dbCaseIndicatorExpressionIdSet.add(caseIndicatorExpressionEntity.getCaseIndicatorExpressionId());
+          });
+    }
+    if (paramCaseIndicatorExpressionIdList.stream().anyMatch(caseIndicatorExpressionId -> !dbCaseIndicatorExpressionIdSet.contains(caseIndicatorExpressionId))) {
+      log.warn("method populateIndicatorExpressionRefEntityList paramIndicatorExpressionIdList:{} is illegal", paramCaseIndicatorExpressionIdList);
+      throw new CaseIndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
+    }
+    Map<String, CaseIndicatorExpressionRefEntity> kCaseIndicatorExpressionIdVCaseIndicatorExpressionRefEntityMap = new HashMap<>();
+    if (!paramCaseIndicatorExpressionIdList.isEmpty()) {
+      caseIndicatorExpressionRefService.lambdaQuery()
+          .eq(CaseIndicatorExpressionRefEntity::getAppId, appId)
+          .in(CaseIndicatorExpressionRefEntity::getIndicatorExpressionId, paramCaseIndicatorExpressionIdList)
+          .list()
+          .forEach(caseIndicatorExpressionRefEntity -> {
+            kCaseIndicatorExpressionIdVCaseIndicatorExpressionRefEntityMap.put(caseIndicatorExpressionRefEntity.getIndicatorExpressionId(), caseIndicatorExpressionRefEntity);
+          });
+    }
+    dbCaseIndicatorExpressionIdSet.forEach(caseIndicatorExpressionId -> {
+      CaseIndicatorExpressionRefEntity caseIndicatorExpressionRefEntity = kCaseIndicatorExpressionIdVCaseIndicatorExpressionRefEntityMap.get(caseIndicatorExpressionId);
+      if (Objects.isNull(caseIndicatorExpressionRefEntity)) {
+        caseIndicatorExpressionRefEntity = CaseIndicatorExpressionRefEntity
+            .builder()
+            .caseIndicatorExpressionRefId(idGenerator.nextIdStr())
+            .appId(appId)
+            .indicatorExpressionId(caseIndicatorExpressionId)
+            .reasonId(reasonId)
+            .build();
+      } else {
+        caseIndicatorExpressionRefEntity.setReasonId(reasonId);
+      }
+      caseIndicatorExpressionRefEntityList.add(caseIndicatorExpressionRefEntity);
+    });
+  }
+
+  public void checkSourceAndReasonId(Integer source, String reasonId) {
+    /* runsix:TODO  */
+  }
+
+  public void newPopulateIndicatorExpressionRefEntity(
+      String caseIndicatorExpressionId,
+      CaseCreateOrUpdateIndicatorExpressionRequestRs caseCreateOrUpdateIndicatorExpressionRequestRs,
+      AtomicReference<CaseIndicatorExpressionRefEntity> caseIndicatorExpressionRefEntityAtomicReference
+  ) {
+    String reasonId = caseCreateOrUpdateIndicatorExpressionRequestRs.getReasonId();
+    String indicatorExpressionRefId = caseCreateOrUpdateIndicatorExpressionRequestRs.getIndicatorExpressionRefId();
+    String appId = caseCreateOrUpdateIndicatorExpressionRequestRs.getAppId();
+    if (StringUtils.isBlank(caseIndicatorExpressionId)) {
+      log.warn("method populateIndicatorExpressionRefEntity indicatorExpressionId is blank");
+      throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
+    }
+    CaseIndicatorExpressionRefEntity caseIndicatorExpressionRefEntity = new CaseIndicatorExpressionRefEntity();
+    if (StringUtils.isBlank(indicatorExpressionRefId)) {
+      caseIndicatorExpressionRefEntity = CaseIndicatorExpressionRefEntity
+          .builder()
+          .caseIndicatorExpressionRefId(idGenerator.nextIdStr())
+          .appId(appId)
+          .indicatorExpressionId(caseIndicatorExpressionId)
+          .reasonId(reasonId)
+          .build();
+    } else {
+      caseIndicatorExpressionRefEntity = caseIndicatorExpressionRefService.lambdaQuery()
+          .eq(CaseIndicatorExpressionRefEntity::getAppId, appId)
+          .eq(CaseIndicatorExpressionRefEntity::getCaseIndicatorExpressionRefId, indicatorExpressionRefId)
+          .oneOpt()
+          .orElseThrow(() -> {
+            log.warn("method populateIndicatorExpressionRefEntity indicatorExpressionRefId:{} is illegal", indicatorExpressionRefId);
+            throw new IndicatorExpressionException(EnumESC.VALIDATE_EXCEPTION);
+          });
+      caseIndicatorExpressionRefEntity.setReasonId(reasonId);
+    }
+    caseIndicatorExpressionRefEntityAtomicReference.set(caseIndicatorExpressionRefEntity);
+    caseCreateOrUpdateIndicatorExpressionRequestRs.setIndicatorExpressionRefId(indicatorExpressionRefId);
   }
 }

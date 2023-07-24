@@ -77,25 +77,25 @@
     </style>
 </head>
 <body>
-<div id="header-right" class="bold" style="font-size:16px;">${title}</div>
+<div id="header-right" class="bold" style="font-size:16px;">${baseInfo.title!""}</div>
 <div id="footer">
-    <div align="center" style="font-size:14px;">${copyRight} <span id="pages"> / </span></div>
+    <div align="center" style="font-size:14px;">${baseInfo.copyRight!""} <span id="pages"> / </span></div>
 </div>
 <div class="page">
-    <div class="text-right"><img src="data:image/jpg;base64,${logoImg}"/></div>
+    <div class="text-right"><img src="data:image/jpg;base64,${baseInfo.logoImg}"/></div>
     <div align="center">
-        <div class="pageTitle " style="margin-top:60px">${title}</div>
+        <div class="pageTitle " style="margin-top:60px">${baseInfo.title!""}</div>
         <div class="pageTitle " style="margin-top:38px">总报告</div>
-        <img src="data:image/jpg;base64,${coverImg}" style="width: 760px;margin-top:38px"/>
+        <img src="data:image/jpg;base64,${baseInfo.coverImg}" style="width: 760px;margin-top:38px"/>
     </div>
     <div align="right">
-        <div class="groupDiv">实验社区：${areaName}</div>
-        <div class="groupDiv">实验日期：${startTime?string("yyyy-MM-dd")}</div>
+        <div class="groupDiv">实验社区：${exptInfo.experimentName}</div>
+        <div class="groupDiv">实验日期：${exptInfo.exptStartDate?string("yyyy-MM-dd")}</div>
     </div>
 </div>
 <div class="pageNext"></div>
     <div class="page">
-        <#if totalRank??>
+        <#if totalRankingList?has_content && (totalRankingList?size>0)>
             <div class="font-blue bold" style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">总排行榜</div>
             <table class="wd-700 text-center" align="center">
                 <tr class="background-singular-blue">
@@ -106,19 +106,19 @@
                     <td>沙盘模拟</td>
                     <td>得分</td>
                 </tr>
-                <#list totalRank as item>
+                <#list totalRankingList as item>
                     <tr class="background-even-blue">
                         <td>${item_index+1}</td>
-                        <td>第${item.groupSeq}组</td>
+                        <td>${item.groupNo}</td>
                         <td>${item.groupName}</td>
-                        <td>${item.planScore?string("0.##")}</td>
-                        <td>${item.sandScore?string("0.##")}</td>
-                        <td>${item.totalScore?string("0.##")}</td>
+                        <td>${item.schemeScore}</td>
+                        <td>${item.sandScore}</td>
+                        <td>${item.totalScore}</td>
                     </tr>
                 </#list>
             </table>
         </#if>
-        <#if planRank??>
+        <#if schemeRankingList?has_content && (schemeRankingList?size > 0)>
         <div class="font-blue bold" style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">方案设计排行榜</div>
         <table class="wd-700 text-center" align="center">
             <tr class="background-singular-blue">
@@ -127,43 +127,43 @@
                 <td>组名</td>
                 <td>方案设计得分</td>
             </tr>
-            <#list planRank as item>
+            <#list schemeRankingList as item>
             <tr class="background-even-blue">
-                <td>${item.rank}</td>
-                <td>第${item.groupSeq}组</td>
+                <td>${item_index+1}</td>
+                <td>${item.groupNo}</td>
                 <td>${item.groupName!"未进入的小组"}</td>
-                <td>${item.planScore?string("0.##")}</td>
+                <td>${item.schemeScore}</td>
             </tr>
             </#list>
         </table>
         </#if>
-        <#if groupScore??>
+        <#if sandGroupRankingList?has_content && (sandGroupRankingList?size > 0)>
         <div class="font-blue bold" style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">沙盘对抗排行榜</div>
         <table class="wd-700 text-center" align="center">
             <tr class="background-singular-blue">
                 <td>排名</td>
                 <td>组数</td>
                 <td>组名</td>
-                <#list periodScore as item>
+                <#list sandGroupRankingList.periodGroupScoreList as item>
                 <td>第${item_index+1}期</td>
                 </#list>
                 <td>得分</td>
             </tr>
-            <#list groupScore as item>
+            <#list sandGroupRankingList as item>
             <tr class="background-even-blue">
                 <td>${item_index+1}</td>
-                <td>第${item.seq}组</td>
-                <td>${item.stuGroupName}</td>
-                <#list item.periodScore as item2>
-                    <td>${item2?string("0.##")}</td>
+                <td>${item.groupNo}</td>
+                <td>${item.groupName}</td>
+                <#list item.periodGroupScoreList as item2>
+                    <td>${item2.score}</td>
                 </#list>
-                <td>${item.total?string("0.##")}</td>
+                <td>${item.groupScore}</td>
             </tr>
             </#list>
         </table>
         </#if>
-        <#if periodScore??>
-        <#list periodScore as item>
+        <#if sandPeriodRankingList?has_content && (sandPeriodRankingList?size > 0)>
+        <#list sandPeriodRankingList as item>
         <div class="font-blue bold" style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">第${item_index+1}期排行榜</div>
         <table class="wd-700 text-center" align="center">
             <tr class="background-singular-blue">
@@ -178,12 +178,12 @@
             <#list item as item2>
             <tr class="background-even-blue">
                 <td>${item2_index+1}</td>
-                <td>第${item2.seq}组</td>
-                <td>${item2.stuGroupName}</td>
-                <td>${item2.healthIndex?string("0.##")}</td>
-                <td>${item2.knowledge?string("0.##")}</td>
-                <td>${item2.medical?string("0.##")}</td>
-                <td>${item2.total?string("0.##")}</td>
+                <td>${item2.groupNo}</td>
+                <td>${item2.groupName}</td>
+                <td>${item2.healthIndexScore}</td>
+                <td>${item2.knowledgeScore}</td>
+                <td>${item2.treatmentPercentScore}</td>
+                <td>${item2.totalScore}</td>
             </tr>
             </#list>
         </table>

@@ -54,8 +54,8 @@ public class ExperimentSuspendHandler extends AbstractEventHandler implements Ev
                 updExperimentTimerEntity.setPauseCount(experimentTimerEntity.getPauseCount() + 1);
                 updExperimentTimerEntity.setState(EnumExperimentState.PREPARE.getState());
                 updExperimentTimerEntity.setPeriodDuration(experimentTimerEntity.getPeriodDuration());
-                updExperimentTimerEntity.setTimer(0L);
-                updExperimentTimerEntity.setPauseStartTime(experimentRestartRequest.getCurrentTime());
+                updExperimentTimerEntity.setPeriodTimer(0L);
+                updExperimentTimerEntity.setPauseTime(experimentRestartRequest.getCurrentTime());
                 updExperimentTimerEntity.setPaused(experimentRestartRequest.getPaused());
                 updateExperimentTimerEntities.add(updExperimentTimerEntity);
             }
@@ -87,31 +87,29 @@ public class ExperimentSuspendHandler extends AbstractEventHandler implements Ev
                         DateUtil.formatDateTime(DateUtil.date(experimentTimerEntity.getEndTime()))));
             }
 
-            long timer = 0L;
-            // 期数持续时长
-            if (experimentTimerEntity.getTimer() == 0) {
-                timer = ct - experimentTimerEntity.getStartTime().getTime();
-            } else {
-                // 当前时间-上次暂停结束时间（本次开始时间） + 上次持续时间
-                timer = ct - experimentTimerEntity.getPauseEndTime().getTime() + experimentTimerEntity.getTimer();
-            }
+            // 期数持续时长 = 当前时间-暂停时间-间隔时间
+            long timer = ct - experimentTimerEntity.getRestartTime().getTime()
+                    + experimentTimerEntity.getPeriodTimer();
             // 暂停时新增暂停记录
             ExperimentTimerEntity addExperimentTimer = ExperimentTimerEntity.builder()
                     .experimentTimerId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentTimerEntity.getExperimentInstanceId())
                     .startTime(experimentTimerEntity.getStartTime())
-                    //.startTime(DateUtil.date(ct))
                     .endTime(experimentTimerEntity.getEndTime())
-                    .timer(timer)
                     .periodDuration(experimentTimerEntity.getPeriodDuration())
                     .period(experimentTimerEntity.getPeriod())
                     .periodInterval(experimentTimerEntity.getPeriodInterval())
                     .appId(experimentTimerEntity.getAppId())
                     .model(experimentTimerEntity.getModel())
-                    .state(EnumExperimentState.SUSPEND.getState())
                     .pauseCount(experimentTimerEntity.getPauseCount() + 1)
+                    //.deferEndTime(experimentTimerEntity.getDeferEndTime())
+                    .restartTime(experimentTimerEntity.getRestartTime())
+
+                    .pauseTime(experimentRestartRequest.getCurrentTime())
+
+                    .state(EnumExperimentState.SUSPEND.getState())
                     .paused(true)
-                    .pauseStartTime(experimentRestartRequest.getCurrentTime())
+                    .periodTimer(timer)
                     .build();
             updateExperimentTimerEntities.add(addExperimentTimer);
             // 保存或更新实验计时器状态为暂停

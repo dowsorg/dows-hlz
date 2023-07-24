@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author : wuzl
@@ -93,7 +94,13 @@ public class OrgReportComposer {
                         .setIndicatorFuncName(func.getIndicatorFuncName());
                 nodes.add(node);
                 OrgReportExtractRequest req=createRequest(exptValidator).setIndicatorFuncId(func.getIndicatorFuncId());
-                orgReportExtracterAdapter.fillReportData(req,node);
+                try {
+                    orgReportExtracterAdapter.fillReportData(req,node);
+                } catch (ExecutionException e) {
+                    throw new RuntimeException(e);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             });
         }
         CompletableFuture.allOf(futures).join();

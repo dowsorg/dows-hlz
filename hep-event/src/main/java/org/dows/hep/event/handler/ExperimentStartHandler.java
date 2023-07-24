@@ -68,18 +68,21 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                         .orElse(null);
                 if (experimentTimerEntity != null) {
                     // 暂停开始时间
-                    long pst = experimentTimerEntity.getPauseStartTime().getTime();
+                    long pst = experimentTimerEntity.getPauseTime().getTime();
                     // 持续时间 = 暂停结束时间 - 暂停开始时间
                     long duration = experimentRestartRequest.getCurrentTime().getTime() - pst;
+
                     experimentTimerEntity.setStartTime(DateUtil.date(experimentTimerEntity.getStartTime().getTime() + duration));
                     experimentTimerEntity.setEndTime(DateUtil.date(experimentTimerEntity.getEndTime().getTime() + duration));
-                    experimentTimerEntity.setDuration(duration);
-                    experimentTimerEntity.setTimer(0L);
-                    experimentTimerEntity.setPeriodDuration(experimentTimerEntity.getPeriodDuration());
+                    // 记录暂停时长
+                    experimentTimerEntity.setPauseDuration(duration);
+                    experimentTimerEntity.setPeriodTimer(0L);
                     // 修改实验状态，真正开始实验
                     experimentTimerEntity.setState(EnumExperimentState.ONGOING.getState());
                     experimentTimerEntity.setPaused(experimentRestartRequest.getPaused());
-                    experimentTimerEntity.setPauseEndTime(experimentRestartRequest.getCurrentTime());
+                    // 重新开始时间[暂停推迟后的开始时间]
+                    long rs = experimentRestartRequest.getCurrentTime().getTime() + experimentTimerEntity.getPeriodInterval();
+                    experimentTimerEntity.setRestartTime(DateUtil.date(rs));
                     updateExperimentTimerEntities.add(experimentTimerEntity);
                 }
             });
@@ -92,7 +95,6 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
              */
         } else/* if(experimentRestartRequest.getModel() == ExperimentModeEnum.SAND.getCode())*/ {
             // 获取当前时间
-            //long ct = System.currentTimeMillis();
             long ct = experimentRestartRequest.getCurrentTime().getTime();
             //todo 计时器
             log.info("执行开始操作....");
@@ -107,43 +109,35 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
             if (!updateExperimentTimer.getPaused()) {
                 throw new ExperimentException("当前实验已开始，请勿重复执行开始！");
             }
-            // 如果当前时间不在本期开始和结束之间
-            /*if (ct <= updateExperimentTimer.getStartTime().getTime() || ct >= updateExperimentTimer.getEndTime().getTime()) {
-                throw new ExperimentException(String.format("无法为当前{%s}期执行暂停,该期开始时间为:{%s}，结束时间:{%s}",
-                        updateExperimentTimer.getPeriod(),
-                        DateUtil.formatDateTime(DateUtil.date(updateExperimentTimer.getStartTime())),
-                        DateUtil.formatDateTime(DateUtil.date(updateExperimentTimer.getEndTime()))));
-            }*/
             // 暂停持续时间 = 当前时间（暂停结束时间） - 暂停开始时间
-            long supendDuration = ct - updateExperimentTimer.getPauseStartTime().getTime();
-            // 期数持续时长 = 当前时间- 暂停时间
-            long periodDuration = ct - supendDuration;
+            long supendDuration = ct - updateExperimentTimer.getPauseTime().getTime();
+            // 暂退推迟后的结束时间 = 元本期结束时间+暂停时间
+            long deferEndTime = updateExperimentTimer.getEndTime().getTime() + supendDuration;
             // 设当前期数的暂停时长
-            updateExperimentTimer.setDuration(supendDuration);
-            // 本期持续时长（上期持续时长+本次持续时间）
-            //updateExperimentTimer.setTimer(updateExperimentTimer.getTimer() + periodDuration);
+            updateExperimentTimer.setPauseDuration(supendDuration);
+            updateExperimentTimer.setEndTime(DateUtil.date(deferEndTime));
+
+            // 重新开始时间[暂停结束时间]
+            updateExperimentTimer.setRestartTime(experimentRestartRequest.getCurrentTime());
+
+            updateExperimentTimer.setPeriodDuration(updateExperimentTimer.getPeriodDuration());
             updateExperimentTimer.setPaused(false);
             updateExperimentTimer.setState(EnumExperimentState.ONGOING.getState());
-            // 本期结束时间 = 元本期结束时间+暂停时间
-            updateExperimentTimer.setEndTime(DateUtil.date(updateExperimentTimer.getEndTime().getTime() + supendDuration));
-            // 设置暂停结束时间
-            updateExperimentTimer.setPauseEndTime(experimentRestartRequest.getCurrentTime());
-            updateExperimentTimer.setPeriodDuration(updateExperimentTimer.getPeriodDuration());
-            // 加入待更新集合
-            updateExperimentTimerEntities.add(updateExperimentTimer);
+
             // 更新当前期之后数据
             for (ExperimentTimerEntity currentPeriod : experimentTimerEntityList) {
-                currentPeriod.setState(EnumExperimentState.ONGOING.getState());
-                currentPeriod.setPaused(false);
                 if (currentPeriod.getPeriod() > experimentRestartRequest.getPeriods()) {
                     // 重新设置当前期数的下一期开始时间，结束时间等
                     currentPeriod.setStartTime(DateUtil.date(currentPeriod.getStartTime().getTime() + supendDuration));
                     currentPeriod.setEndTime(DateUtil.date(currentPeriod.getEndTime().getTime() + supendDuration));
-                    //currentPeriod.setTimer(currentPeriod.getTimer()+(ct-duration));
                 }
+                currentPeriod.setState(EnumExperimentState.ONGOING.getState());
+                currentPeriod.setPaused(false);
                 // 加入待更新集合
                 updateExperimentTimerEntities.add(currentPeriod);
             }
+            // 加入待更新集合
+            updateExperimentTimerEntities.add(updateExperimentTimer);
             // 批量更新期数定时器
             boolean b = experimentTimerBiz
                     .saveOrUpdateExperimentTimeExperimentState(experimentRestartRequest.getExperimentInstanceId(),
@@ -197,6 +191,9 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
         ExperimentTimerEntity lastPeriods = experimentTimerBiz
                 .getLastPeriods(experimentRestartRequest.getExperimentInstanceId(), EnumExperimentState.FINISH);
 
+        List<ExperimentTimerEntity> entityList = experimentTimerBiz
+                .getPeriodsTimerList(experimentRestartRequest.getExperimentInstanceId());
+
         //保存任务进计时器表，防止重启后服务挂了，一个任务每个实验每一期只能有一条数据
         ExperimentTaskScheduleEntity finishEntity = new ExperimentTaskScheduleEntity();
         ExperimentTaskScheduleEntity finishTaskScheduleEntity = experimentTaskScheduleService.lambdaQuery()
@@ -208,7 +205,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                 + "\",\"period\":" + lastPeriods.getPeriod() + "}";
         if (finishTaskScheduleEntity != null && !ReflectUtil.isObjectNull(finishTaskScheduleEntity)) {
             BeanUtil.copyProperties(finishTaskScheduleEntity, finishEntity);
-            finishEntity.setExecuteTime(DateUtil.date(lastPeriods.getEndTime()));
+            finishEntity.setExecuteTime(DateUtil.date(entityList.get(entityList.size() - 1).getEndTime()));
             finishEntity.setTaskParams(taskParams);
             finishEntity.setExecuted(false);
         } else {
@@ -220,7 +217,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                     .taskParams(taskParams)
                     .periods(lastPeriods.getPeriod())
                     .appId("3")
-                    .executeTime(DateUtil.date(lastPeriods.getEndTime()))
+                    .executeTime(DateUtil.date(entityList.get(entityList.size() - 1).getEndTime()))
                     .executed(false)
                     .build();
         }
@@ -231,7 +228,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                 experimentParticipatorService, experimentTimerService, experimentTaskScheduleService, experimentScoreCalculator,
                 experimentRestartRequest.getExperimentInstanceId(), lastPeriods.getPeriod());
 
-        taskScheduler.schedule(experimentFinishTask, DateUtil.date(lastPeriods.getEndTime()));
+        taskScheduler.schedule(experimentFinishTask, entityList.get(entityList.size() - 1).getEndTime());
         /**
          * 每小组重设每期结束任务
          */
@@ -249,7 +246,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                         + experimentGroupRespons.getExperimentGroupId() + "\",\"period\":" + updateExperimentTimerEntity.getPeriod() + "}";
                 if (calcTaskScheduleEntity != null && !ReflectUtil.isObjectNull(calcTaskScheduleEntity)) {
                     BeanUtil.copyProperties(calcTaskScheduleEntity, calcEntity);
-                    calcEntity.setExecuteTime(DateUtil.date(updateExperimentTimerEntity.getEndTime()));
+                    calcEntity.setExecuteTime(DateUtil.date(entityList.get(entityList.size() - 1).getEndTime()));
                     calcEntity.setTaskParams(taskParams1);
                     calcEntity.setExecuted(false);
                 } else {
@@ -262,9 +259,9 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                             .taskParams(taskParams1)
                             .periods(updateExperimentTimerEntity.getPeriod())
                             .appId("3")
-                            .executeTime(DateUtil.date(updateExperimentTimerEntity.getEndTime()))
+                            .executeTime(DateUtil.date(entityList.get(entityList.size() - 1).getEndTime()))
                             .executed(false)
-                            .build();
+                            .build() ;
                 }
                 experimentTaskScheduleService.saveOrUpdate(calcEntity);
 
@@ -277,7 +274,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                         experimentGroupRespons.getExperimentGroupId(),
                         updateExperimentTimerEntity.getPeriod());
 
-                taskScheduler.schedule(experimentCalcTask, DateUtil.date(updateExperimentTimerEntity.getEndTime()));
+                taskScheduler.schedule(experimentCalcTask, entityList.get(entityList.size() - 1).getEndTime());
             }
 
         }

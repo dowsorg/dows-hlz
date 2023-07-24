@@ -10,6 +10,8 @@ import org.dows.hep.biz.orgreport.OrgReportExtractRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.ExecutionException;
+
 /**
  * @author : wuzl
  * @date : 2023/7/18 11:37
@@ -29,7 +31,7 @@ public class ViewBaseInfoExtracter implements IOrgReportExtracter<ExperimentIndi
 
 
     @Override
-    public ExperimentIndicatorViewBaseInfoRsResponse getReportData(OrgReportExtractRequest req) {
+    public ExperimentIndicatorViewBaseInfoRsResponse getReportData(OrgReportExtractRequest req) throws ExecutionException, InterruptedException {
         return experimentIndicatorViewBaseInfoRsBiz.get(req.getIndicatorFuncId(),req.getExperimentPersonId());
     }
 

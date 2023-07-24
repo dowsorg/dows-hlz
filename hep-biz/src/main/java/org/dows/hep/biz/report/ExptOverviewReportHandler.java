@@ -1,15 +1,21 @@
-package org.dows.hep.biz.report.pdf;
+package org.dows.hep.biz.report;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
-import freemarker.template.TemplateException;
+import cn.hutool.core.util.StrUtil;
+import com.itextpdf.commons.utils.Base64;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.framework.oss.api.OssInfo;
 import org.dows.hep.api.base.indicator.response.*;
+import org.dows.hep.api.base.materials.request.MaterialsAttachmentRequest;
+import org.dows.hep.api.base.materials.request.MaterialsRequest;
 import org.dows.hep.api.constant.SystemConstant;
+import org.dows.hep.api.user.experiment.ExptReportTypeEnum;
 import org.dows.hep.api.user.experiment.ExptSettingModeEnum;
 import org.dows.hep.api.user.experiment.response.ExptSchemeScoreRankResponse;
 import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
@@ -22,12 +28,15 @@ import org.dows.hep.vo.report.ExptBaseInfoModel;
 import org.dows.hep.vo.report.ExptGroupReportVO;
 import org.dows.hep.vo.report.ExptOverviewReportModel;
 import org.dows.hep.vo.report.ExptReportVO;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -42,13 +51,18 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBiz.ExptOverviewReportData, ExptOverviewReportModel> {
+public class ExptOverviewReportHandler implements ExptReportHandler<ExptOverviewReportHandler.ExptOverviewReportData, ExptOverviewReportModel> {
     private final ExperimentSchemeBiz experimentSchemeBiz;
     private final ExperimentScoringBiz experimentScoringBiz;
     private final ExperimentSettingBiz experimentSettingBiz;
-    private final Template2PdfBiz template2PdfBiz;
-    private final FindSoftProperties findSoftProperties;
     private final ExperimentInstanceService experimentInstanceService;
+
+    private final ReportOSSHelper ossHelper;
+    private final ReportPdfHelper reportPdfHelper;
+    private final ReportRecordHelper recordHelper;
+    private final FindSoftProperties findSoftProperties;
+
+    private static final String OVERVIEW_REPORT_HOME_DIR = SystemConstant.PDF_REPORT_TMP_PATH + "实验总报告" + File.separator;
 
     @Data
     @Builder
@@ -61,27 +75,56 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
 
     @Override
     public ExptReportVO generatePdfReport(String exptInstanceId, String exptGroupId) {
+        // pdf 素材
         ExptOverviewReportData exptData = prepareData(exptInstanceId, exptGroupId);
-        // 将 expt-data 转为 pdf-data
-        ExptOverviewReportModel pdfVO = getExptReportModel(exptGroupId, exptData);
-        // pdf file
-        File targetFile = getTempFile(exptGroupId, exptData);
-        // pdf flt
+        ExptOverviewReportModel pdfVO = convertData2Model(exptGroupId, exptData);
         String schemeFlt = getSchemeFlt();
+        String fileName = getOutputPosition(exptGroupId, exptData);
 
-        try {
-            template2PdfBiz.convert2Pdf(pdfVO, schemeFlt, targetFile);
-        } catch (IOException | TemplateException e) {
-            log.error("导出沙盘模拟报告时，html转pdf异常");
-            throw new BizException("导出沙盘模拟报告时，html转pdf异常");
+        // 判断记录中是否有数据
+        String reportOfGroup = recordHelper.getReportOfExpt(exptInstanceId, ExptReportTypeEnum.EXPT);
+        if (StrUtil.isNotBlank(reportOfGroup)) {
+            ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
+                    .name(fileName)
+                    .path(reportOfGroup)
+                    .build();
+            ExptGroupReportVO groupReportVO = ExptGroupReportVO.builder()
+                    .exptGroupId(null)
+                    .exptGroupNo(null)
+                    .paths(List.of(reportFile))
+                    .build();
+            return ExptReportVO.builder()
+                    .groupReportList(List.of(groupReportVO))
+                    .build();
+        }
+
+        // 生成 pdf 并上传文件
+        Path path = Paths.get(OVERVIEW_REPORT_HOME_DIR, fileName);
+        OssInfo ossInfo = reportPdfHelper.convertAndUpload(pdfVO, schemeFlt, path);
+
+        // 记录一份数据
+        if (StrUtil.isNotBlank(ossInfo.getPath())) {
+            MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
+                    .fileName(fileName)
+                    .fileType("pdf")
+                    .fileUri(ossHelper.getUrlPath(ossInfo))
+                    .build();
+            MaterialsRequest materialsRequest = MaterialsRequest.builder()
+                    .bizCode("EXPT")
+                    .title(fileName)
+                    .materialsAttachments(List.of(attachment))
+                    .build();
+            recordHelper.record(exptInstanceId, exptGroupId, ExptReportTypeEnum.EXPT, materialsRequest);
         }
 
         // build result
         ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
-                .name(targetFile.getName())
-                .path(targetFile.getPath())
+                .name(ossInfo.getName())
+                .path(ossHelper.getUrlPath(ossInfo))
                 .build();
         ExptGroupReportVO groupReportVO = ExptGroupReportVO.builder()
+                .exptGroupId(null)
+                .exptGroupNo(null)
                 .paths(List.of(reportFile))
                 .build();
         return ExptReportVO.builder()
@@ -91,9 +134,9 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
 
     @Override
     public ExptOverviewReportData prepareData(String exptInstanceId, String exptGroupId) {
+        // 实验信息
         ExperimentInstanceEntity exptInfo = getExptInfo(experimentInstanceService, exptInstanceId);
-
-        //
+        // 根据实验模式不同,准备不同数据
         ExptSettingModeEnum exptSettingMode = experimentSettingBiz.getExptSettingMode(exptInstanceId);
         List<ExptSchemeScoreRankResponse> schemeRankList = null;
         ExperimentRankResponse sandRank = null;
@@ -113,9 +156,16 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
     }
 
     @Override
-    public ExptOverviewReportModel getExptReportModel(String exptGroupId, ExptOverviewReportData exptReportData) {
-        ExptBaseInfoModel baseInfo = generateBaseInfoVO(findSoftProperties, log);
-
+    public ExptOverviewReportModel convertData2Model(String exptGroupId, ExptOverviewReportData exptReportData) {
+        // 基本信息
+        ExptBaseInfoModel baseInfo = generateBaseInfoVO(findSoftProperties);
+        // 实验信息
+        ExperimentInstanceEntity exptInfo1 = exptReportData.getExptInfo();
+        ExptOverviewReportModel.ExptInfo exptInfo = ExptOverviewReportModel.ExptInfo.builder()
+                .experimentName(exptInfo1.getExperimentName())
+                .exptStartDate(exptInfo1.getStartTime())
+                .build();
+        // 根据实验模式不同,准备不同数据
         List<ExptOverviewReportModel.SchemeRanking> schemeRankingList = null;
         List<ExptOverviewReportModel.SandGroupRanking> sandGroupRankingList = null;
         List<List<ExptOverviewReportModel.SandPeriodRanking>> sandPeriodRankingList = null;
@@ -135,10 +185,45 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
 
         return ExptOverviewReportModel.builder()
                 .baseInfo(baseInfo)
+                .exptInfo(exptInfo)
                 .totalRankingList(totalRankingList)
                 .schemeRankingList(schemeRankingList)
                 .sandGroupRankingList(sandGroupRankingList)
                 .sandPeriodRankingList(sandPeriodRankingList)
+                .build();
+    }
+
+    @Override
+    public String getOutputPosition(String exptGroupId, ExptOverviewReportData exptReportData) {
+        ExperimentInstanceEntity exptInfo = exptReportData.getExptInfo();
+        // 文件名
+        return exptInfo.getExperimentName()
+                + SystemConstant.SPLIT_UNDER_LINE
+                + "总报告"
+                + SystemConstant.SUFFIX_PDF;
+    }
+
+    @Override
+    public String getSchemeFlt() {
+        return findSoftProperties.getExptOverviewFtl();
+    }
+
+    private ExptBaseInfoModel generateBaseInfoVO(FindSoftProperties findSoftProperties) {
+        String logoStr = null;
+        String coverStr = null;
+        try {
+            logoStr = Base64.encodeBytes(IOUtils.toByteArray(new ClassPathResource(findSoftProperties.getLogo()).getInputStream()));
+            coverStr = Base64.encodeBytes(IOUtils.toByteArray(new ClassPathResource(findSoftProperties.getCover()).getInputStream()));
+        } catch (IOException e) {
+            log.error("导出实验报告时，获取logo和cover图片资源异常");
+            throw new BizException("导出实验报告时，获取logo和cover图片资源异常");
+        }
+
+        return ExptBaseInfoModel.builder()
+                .title(findSoftProperties.getExptOverviewReportTitle())
+                .logoImg(logoStr)
+                .coverImg(coverStr)
+                .copyRight(findSoftProperties.getCopyRight())
                 .build();
     }
 
@@ -271,20 +356,4 @@ public class ExptOverviewReportBiz implements ExptReportBiz<ExptOverviewReportBi
         });
         return result;
     }
-
-    @Override
-    public File getTempFile(String exptGroupId, ExptOverviewReportData exptReportData) {
-        ExperimentInstanceEntity exptInfo = exptReportData.getExptInfo();
-
-        File homeDirFile = new File(SystemConstant.PDF_REPORT_TMP_PATH);
-        boolean mkdirs = homeDirFile.mkdirs();
-        String fileName = SystemConstant.SPLIT_UNDER_LINE + exptInfo.getExperimentName() + SystemConstant.SPLIT_UNDER_LINE + "实验总报告" + SystemConstant.SUFFIX_PDF;
-        return new File(homeDirFile, fileName);
-    }
-
-    @Override
-    public String getSchemeFlt() {
-        return findSoftProperties.getExptSandFtl();
-    }
-
 }

@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -23,6 +24,9 @@ public class ExptOverviewReportModel implements ExptReportModel {
     @Schema(title = "基本信息")
     private ExptBaseInfoModel baseInfo;
 
+    @Schema(title = "实验信息")
+    private ExptInfo exptInfo;
+
     @Schema(title = "总排行榜")
     private List<TotalRanking> totalRankingList;
 
@@ -34,6 +38,21 @@ public class ExptOverviewReportModel implements ExptReportModel {
 
     @Schema(title = "期数排行榜")
     private List<List<SandPeriodRanking>> sandPeriodRankingList;
+
+    @Builder
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ExptInfo {
+        @Schema(title = "实验名称")
+        private String experimentName;
+
+        @Schema(title = "实验日期")
+        private Date exptStartDate;
+
+        @Schema(title = "期数")
+        private Integer periods;
+    }
 
     @Builder
     @Data

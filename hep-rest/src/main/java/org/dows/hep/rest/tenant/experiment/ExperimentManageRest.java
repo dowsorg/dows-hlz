@@ -51,7 +51,7 @@ public class ExperimentManageRest {
     @GetMapping("v1/tenantExperiment/experimentTimer/countdown")
     public CountDownResponse countdown(@RequestParam String experimentInstanceId) {
 
-        CountDownResponse countdown = experimentTimerBiz.tenantCountdown(experimentInstanceId);
+        CountDownResponse countdown = experimentTimerBiz.countdown(experimentInstanceId);
 
         return countdown;
     }

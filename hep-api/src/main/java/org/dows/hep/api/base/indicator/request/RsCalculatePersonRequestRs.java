@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.Set;
 
 /**
  * @author runsix
@@ -15,7 +16,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RsCalculateAllPersonRequestRs implements Serializable {
+public class RsCalculatePersonRequestRs implements Serializable {
   @Schema(title = "appId")
   private String appId;
 
@@ -24,4 +25,7 @@ public class RsCalculateAllPersonRequestRs implements Serializable {
 
   @Schema(title = "期数")
   private Integer periods;
+
+  @Schema(title = "人物id")
+  private Set<String> personId;
 }

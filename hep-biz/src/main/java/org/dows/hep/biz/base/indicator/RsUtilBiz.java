@@ -1,6 +1,5 @@
 package org.dows.hep.biz.base.indicator;
 
-import cn.hutool.core.exceptions.ValidateException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -14,10 +13,8 @@ import org.dows.hep.api.exception.RsExperimentIndicatorExpressionBizException;
 import org.dows.hep.api.exception.RsIndicatorExpressionException;
 import org.dows.hep.api.exception.RsUtilBizException;
 import org.dows.sequence.api.IdGenerator;
-import org.springframework.expression.EvaluationException;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
-import org.springframework.expression.ParseException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Service;
@@ -25,7 +22,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -39,6 +35,9 @@ public class RsUtilBiz {
   private final IdGenerator idGenerator;
   public static final String RESULT_DROP = "";
 
+  public String getCommaList(Collection<String> collection) {
+    return String.join(EnumString.COMMA.getStr(), collection);
+  }
   public void calculateRiskModelScore(AtomicReference<BigDecimal> sumRiskModeScoreAR, Map<String, BigDecimal> kPrincipalIdVScoreMap, AtomicReference<BigDecimal> minScoreAR, AtomicReference<BigDecimal> maxScoreAR) {
     if (Objects.isNull(sumRiskModeScoreAR) || Objects.isNull(kPrincipalIdVScoreMap) || Objects.isNull(minScoreAR) || Objects.isNull(maxScoreAR)
     ) {return;}
@@ -214,9 +213,31 @@ public class RsUtilBiz {
       throw new RsIndicatorExpressionException("检查指标公式条件-条件解析结果不是true或false");
     }
   }
-  /* runsix:TODO */
-  private void caseCheckConditionMustBeBoolean() {}
 
+  private void caseCheckConditionMustBeBoolean(Map<String, String> kCaseIndicatorInstanceIdVValMap, String conditionExpression, List<String> conditionNameSplitList, List<String> conditionValSplitList) {
+    StandardEvaluationContext context = new StandardEvaluationContext();
+    for (int i = 0; i <= conditionNameSplitList.size()-1; i++) {
+      String indicatorInstanceId = conditionValSplitList.get(i);
+      String val = kCaseIndicatorInstanceIdVValMap.get(indicatorInstanceId);
+      if (Objects.isNull(val)) {
+        log.error("RsIndicatorExpressionBiz.checkCondition.caseCheckConditionMustBeBoolean field case indicatorInstanceId:{} does not exist", indicatorInstanceId);
+        throw new RsIndicatorExpressionException(EnumESC.INDICATOR_EXPRESSION_CHECK_INDICATOR_INSTANCE_ID_DOES_NOT_EXIST);
+      }
+      boolean isValDigital = NumberUtils.isCreatable(val);
+      if (isValDigital) {
+        context.setVariable(conditionNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(val)).setScale(2, RoundingMode.DOWN));
+      } else {
+        context.setVariable(conditionNameSplitList.get(i), val);
+      }
+    }
+    ExpressionParser parser = new SpelExpressionParser();
+    Expression expression = parser.parseExpression(conditionExpression);
+    String conditionExpressionResult = expression.getValue(context, String.class);
+    if(!StringUtils.equalsIgnoreCase(conditionExpressionResult, EnumBoolean.TRUE.getCode().toString()) && !StringUtils.equalsIgnoreCase(conditionExpressionResult, EnumBoolean.FALSE.getCode().toString())) {
+      log.warn("RsIndicatorExpressionBiz.checkCondition.caseCheckConditionMustBeBoolean result:{} is not boolean", conditionExpressionResult);
+      throw new RsIndicatorExpressionException("检查指标公式条件-条件解析结果不是true或false");
+    }
+  }
   private void checkConditionMustBeBoolean(
       Map<String, String> kIndicatorInstanceIdVValMap,
       Integer field, String conditionExpression, String conditionNameList, String conditionValList) {
@@ -230,7 +251,7 @@ public class RsUtilBiz {
       List<String> conditionValSplitList = this.getConditionValSplitList(conditionValList);
       switch (enumIndicatorExpressionField) {
         case DATABASE -> databaseCheckConditionMustBeBoolean(kIndicatorInstanceIdVValMap, conditionExpression, conditionNameSplitList, conditionValSplitList);
-        case CASE -> caseCheckConditionMustBeBoolean();
+        case CASE -> caseCheckConditionMustBeBoolean(kIndicatorInstanceIdVValMap, conditionExpression, conditionNameSplitList, conditionValSplitList);
         default -> {
           log.error("RsIndicatorExpressionBiz.checkCondition.checkConditionMustBeBoolean field:{} is illegal", field);
           throw new RsIndicatorExpressionException("检查指标公式条件-指标公式域只能是数据库或案例库");
@@ -313,8 +334,31 @@ public class RsUtilBiz {
       throw new RsUtilBizException(EnumESC.INDICATOR_EXPRESSION_FORMAT_IS_ILLEGAL);
     }
   }
-  /* runsix:TODO */
-  private void caseCheckResultParse() {}
+
+  private void caseCheckResultParse(Map<String, String> kCaseIndicatorInstanceIdVValMap, String resultExpression, List<String> resultNameSplitList, List<String> resultValSplitList) {
+    try {
+      StandardEvaluationContext context = new StandardEvaluationContext();
+      for (int i = 0; i <= resultNameSplitList.size()-1; i++) {
+        String caseIndicatorInstanceId = resultValSplitList.get(i);
+        String val = kCaseIndicatorInstanceIdVValMap.get(caseIndicatorInstanceId);
+        if (Objects.isNull(val)) {
+          log.error("RsIndicatorExpressionBiz.checkResult.caseCheckResultParse field case caseIndicatorInstanceId:{} does not exist", caseIndicatorInstanceId);
+          throw new RsIndicatorExpressionException(String.format("检查指标公式结果-结果指标id：%s 不存在", caseIndicatorInstanceId));
+        }
+        boolean isValDigital = NumberUtils.isCreatable(val);
+        if (isValDigital) {
+          context.setVariable(resultNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(val)).setScale(2, RoundingMode.DOWN));
+        } else {
+          context.setVariable(resultNameSplitList.get(i), val);
+        }
+      }
+      ExpressionParser parser = new SpelExpressionParser();
+      Expression expression = parser.parseExpression(resultExpression);
+      expression.getValue(context, String.class);
+    } catch (Exception e) {
+      throw new RsUtilBizException(EnumESC.INDICATOR_EXPRESSION_FORMAT_IS_ILLEGAL);
+    }
+  }
 
   public String handleResultExpression(String resultExpression) {
     if (StringUtils.isBlank(resultExpression)) {return resultExpression;}
@@ -334,7 +378,7 @@ public class RsUtilBiz {
     List<String> resultValSplitList = this.getResultValSplitList(resultValList);
     switch (enumIndicatorExpressionField) {
       case DATABASE -> databaseCheckResultParse(kIndicatorInstanceIdVValMap, resultExpression, resultNameSplitList, resultValSplitList);
-      case CASE -> caseCheckResultParse();
+      case CASE -> caseCheckResultParse(kIndicatorInstanceIdVValMap, resultExpression, resultNameSplitList, resultValSplitList);
       default -> {
         log.error("RsIndicatorExpressionBiz.checkCondition.checkConditionMustBeBoolean field:{} is illegal", field);
         throw new RsIndicatorExpressionException(String.format("检查指标公式条件-指标公式域只能是数据库或案例库，field:%s", field));
@@ -348,8 +392,6 @@ public class RsUtilBiz {
     Integer field = rsIndicatorExpressionCheckoutResultRequest.getField();
     String resultRaw = rsIndicatorExpressionCheckoutResultRequest.getResultRaw();
     String resultExpression = rsIndicatorExpressionCheckoutResultRequest.getResultExpression();
-    /* runsix:对传过来对结果处理 */
-    resultExpression = this.handleResultExpression(resultExpression);
     String resultNameList = rsIndicatorExpressionCheckoutResultRequest.getResultNameList();
     String resultValList = rsIndicatorExpressionCheckoutResultRequest.getResultValList();
     EnumIndicatorExpressionSource enumIndicatorExpressionSource = checkSource(source);
@@ -445,5 +487,100 @@ public class RsUtilBiz {
     } else {
       /* runsix:do nothing */
     }
+  }
+
+  public void algorithmKahn(
+      List<String> seqCalculateIndicatorInstanceIdList,
+      Map<String, Set<String>> kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap
+  ) {
+    if (Objects.isNull(kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap)
+    ) {return;}
+
+    Map<String, Set<String>> copyKIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap = new HashMap<>();
+    kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.forEach((indicatorInstanceId, influencedIndicatorInstanceIdSet) -> {
+      copyKIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.put(indicatorInstanceId, new HashSet<>(influencedIndicatorInstanceIdSet));
+    });
+
+    Set<String> needCalculateIndicatorInstanceIdSet = copyKIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.keySet();
+    /* runsix:维护顺序使用 */
+    while (!needCalculateIndicatorInstanceIdSet.isEmpty()) {
+      Set<String> zeroInfluencedIndicatorInstanceIdSet = new HashSet<>();
+      needCalculateIndicatorInstanceIdSet.forEach(needCalculateIndicatorInstanceId -> {
+        Set<String> influencedIndicatorInstanceIdSet = copyKIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.get(needCalculateIndicatorInstanceId);
+        if (Objects.isNull(influencedIndicatorInstanceIdSet) || influencedIndicatorInstanceIdSet.isEmpty()) {
+          zeroInfluencedIndicatorInstanceIdSet.add(needCalculateIndicatorInstanceId);
+          if (Objects.nonNull(seqCalculateIndicatorInstanceIdList)) {
+            seqCalculateIndicatorInstanceIdList.add(needCalculateIndicatorInstanceId);
+          }
+        }
+      });
+      if (zeroInfluencedIndicatorInstanceIdSet.isEmpty()) {
+        throw new RsUtilBizException(EnumESC.INDICATOR_EXPRESSION_CIRCLE_DEPENDENCY);
+      }
+      needCalculateIndicatorInstanceIdSet.removeAll(zeroInfluencedIndicatorInstanceIdSet);
+      copyKIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.forEach((indicatorInstanceId, influencedIndicatorInstanceIdSet) -> {
+        influencedIndicatorInstanceIdSet.removeAll(zeroInfluencedIndicatorInstanceIdSet);
+        copyKIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.put(indicatorInstanceId, influencedIndicatorInstanceIdSet);
+      });
+    }
+  }
+
+  /* runsix:TODO DELETE  */
+  public static void testAlgorithmKahn(
+      List<String> seqCalculateIndicatorInstanceIdList,
+      Map<String, Set<String>> kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap
+  ) {
+    if (Objects.isNull(kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap)
+    ) {return;}
+
+    Map<String, Set<String>> copyKIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap = new HashMap<>();
+    kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.forEach((indicatorInstanceId, influencedIndicatorInstanceIdSet) -> {
+      copyKIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.put(indicatorInstanceId, new HashSet<>(influencedIndicatorInstanceIdSet));
+    });
+
+    Set<String> needCalculateIndicatorInstanceIdSet = copyKIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.keySet();
+    /* runsix:维护顺序使用 */
+    while (!needCalculateIndicatorInstanceIdSet.isEmpty()) {
+      Set<String> zeroInfluencedIndicatorInstanceIdSet = new HashSet<>();
+      needCalculateIndicatorInstanceIdSet.forEach(needCalculateIndicatorInstanceId -> {
+        Set<String> influencedIndicatorInstanceIdSet = copyKIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.get(needCalculateIndicatorInstanceId);
+        if (Objects.isNull(influencedIndicatorInstanceIdSet) || influencedIndicatorInstanceIdSet.isEmpty()) {
+          zeroInfluencedIndicatorInstanceIdSet.add(needCalculateIndicatorInstanceId);
+          if (Objects.nonNull(seqCalculateIndicatorInstanceIdList)) {
+            seqCalculateIndicatorInstanceIdList.add(needCalculateIndicatorInstanceId);
+          }
+        }
+      });
+      if (zeroInfluencedIndicatorInstanceIdSet.isEmpty()) {
+        throw new RsUtilBizException(EnumESC.INDICATOR_EXPRESSION_CIRCLE_DEPENDENCY);
+      }
+      needCalculateIndicatorInstanceIdSet.removeAll(zeroInfluencedIndicatorInstanceIdSet);
+      copyKIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.forEach((indicatorInstanceId, influencedIndicatorInstanceIdSet) -> {
+        influencedIndicatorInstanceIdSet.removeAll(zeroInfluencedIndicatorInstanceIdSet);
+        copyKIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.put(indicatorInstanceId, influencedIndicatorInstanceIdSet);
+      });
+    }
+  }
+
+  public static void main(String[] args) {
+    List<String> seqCalculateIndicatorInstanceIdList = new ArrayList<>();
+    Map<String, Set<String>> kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap = new HashMap<>();
+    Set<String> firstSet = new HashSet<>();
+    firstSet.add("2");
+    firstSet.add("5");
+    Set<String> secondSet = new HashSet<>();
+    secondSet.add("3");
+    secondSet.add("5");
+    Set<String> thirdSet = new HashSet<>();
+    thirdSet.add("4");
+    Set<String> fourthSet = new HashSet<>();
+    Set<String> fifthSet = new HashSet<>();
+    kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.put("1", firstSet);
+    kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.put("2", secondSet);
+    kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.put("3", thirdSet);
+    kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.put("4", fourthSet);
+    kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.put("5", fifthSet);
+    RsUtilBiz.testAlgorithmKahn(seqCalculateIndicatorInstanceIdList, kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap);
+    System.out.println(seqCalculateIndicatorInstanceIdList);
   }
 }

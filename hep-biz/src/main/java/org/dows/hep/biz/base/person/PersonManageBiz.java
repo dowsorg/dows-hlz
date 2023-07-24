@@ -24,9 +24,11 @@ import org.dows.hep.biz.base.indicator.CaseIndicatorInstanceBiz;
 import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.entity.CasePersonEntity;
 import org.dows.hep.entity.CasePersonIndicatorFuncEntity;
+import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.HepArmEntity;
 import org.dows.hep.service.CasePersonIndicatorFuncService;
 import org.dows.hep.service.CasePersonService;
+import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.HepArmService;
 import org.dows.sequence.api.IdGenerator;
 import org.dows.user.api.api.UserExtinfoApi;
@@ -77,6 +79,8 @@ public class PersonManageBiz {
 
     private final CasePersonService casePersonService;
 
+    private final ExperimentInstanceService experimentInstanceService;
+
     /**
      * @param
      * @return
@@ -89,42 +93,43 @@ public class PersonManageBiz {
      */
     @DSTransactional
     public Integer deletePersons(Set<String> accountIds) {
-        //1、通过账户ID找到用户ID
-        Set<String> userIds = new HashSet<>();
-        accountIds.forEach(accountId -> {
-            userIds.add(accountUserApi.getUserByAccountId(accountId).getUserId());
-        });
-        //2、删除账户实例
-        Integer count = accountInstanceApi.deleteAccountInstanceByAccountIds(accountIds);
-        //3、删除小组信息
-        accountIds.forEach(accountId ->{
-            List<AccountGroupResponse> groupResponseList = accountGroupApi.getAccountGroupListByAccountId(accountId,"3");
-            if(groupResponseList != null && groupResponseList.size() > 0){
-                Set<String> ids = new HashSet<>();
-                groupResponseList.forEach(groupResponse -> {
-                    ids.add(groupResponse.getId());
-                });
-                accountGroupApi.batchDeleteGroups(ids);
-            }
-        });
-        //3、删除用户扩展信息
-        userIds.forEach(userId -> {
-            UserExtinfoResponse extinfoResponse = userExtinfoApi.getUserExtinfoByUserId(userId);
-            userExtinfoApi.deleteUserExtinfoById(extinfoResponse.getId());
-        });
-        //4、如果用户在机构中存在，一并删除
+        //1、如果用户是否存在机构信息，存在则无法删除
         List<CasePersonEntity> personEntityList = casePersonService.lambdaQuery()
                 .in(CasePersonEntity::getAccountId,accountIds)
                 .eq(CasePersonEntity::getDeleted,false)
                 .list();
         if(personEntityList != null && personEntityList.size() > 0){
-            personEntityList.forEach(personEntity ->{
-                casePersonService.lambdaUpdate()
-                        .set(CasePersonEntity::getDeleted,true)
-                        .eq(CasePersonEntity::getId,personEntity.getId())
-                        .update();
-            });
+//            personEntityList.forEach(personEntity ->{
+//                casePersonService.lambdaUpdate()
+//                        .set(CasePersonEntity::getDeleted,true)
+//                        .eq(CasePersonEntity::getId,personEntity.getId())
+//                        .update();
+//            });
+            throw new AccountException("存在用户被机构所引用，无法删除");
         }
+        //2、通过账户ID找到用户ID
+        Set<String> userIds = new HashSet<>();
+        accountIds.forEach(accountId -> {
+            userIds.add(accountUserApi.getUserByAccountId(accountId).getUserId());
+        });
+        //3、删除账户实例
+        Integer count = accountInstanceApi.deleteAccountInstanceByAccountIds(accountIds);
+        //4、删除小组信息
+//        accountIds.forEach(accountId ->{
+//            List<AccountGroupResponse> groupResponseList = accountGroupApi.getAccountGroupListByAccountId(accountId,"3");
+//            if(groupResponseList != null && groupResponseList.size() > 0){
+//                Set<String> ids = new HashSet<>();
+//                groupResponseList.forEach(groupResponse -> {
+//                    ids.add(groupResponse.getId());
+//                });
+//                accountGroupApi.batchDeleteGroups(ids);
+//            }
+//        });
+        //5、删除用户扩展信息
+        userIds.forEach(userId -> {
+            UserExtinfoResponse extinfoResponse = userExtinfoApi.getUserExtinfoByUserId(userId);
+            userExtinfoApi.deleteUserExtinfoById(extinfoResponse.getId());
+        });
         return count;
     }
 
@@ -387,6 +392,22 @@ public class PersonManageBiz {
                 .intro(request.getIntro())
                 .build();
         userExtinfoApi.insertOrUpdateExtinfo(extinfo);
+        //3、如果有实验用户，更新用户姓名
+        List<ExperimentInstanceEntity> instanceEntityList = experimentInstanceService.lambdaQuery()
+                .eq(ExperimentInstanceEntity::getAccountId,request.getAccountId())
+                .eq(ExperimentInstanceEntity::getDeleted,false)
+                .list();
+        if(instanceEntityList != null && instanceEntityList.size() > 0){
+            List<ExperimentInstanceEntity> resultList = new ArrayList<>();
+            instanceEntityList.forEach(instance->{
+                ExperimentInstanceEntity instanceEntity = ExperimentInstanceEntity.builder()
+                        .id(instance.getId())
+                        .appointorName(request.getUserName())
+                        .build();
+                resultList.add(instanceEntity);
+            });
+            experimentInstanceService.updateBatchById(resultList);
+        }
         return userId;
     }
 
@@ -492,6 +513,22 @@ public class PersonManageBiz {
                         .build();
                 accountGroupInfoApi.updateAccountGroupInfo(request1);
             });
+        }
+        //3、如果有实验用户，更新用户姓名
+        List<ExperimentInstanceEntity> instanceEntityList = experimentInstanceService.lambdaQuery()
+                .eq(ExperimentInstanceEntity::getAccountId,request.getAccountId())
+                .eq(ExperimentInstanceEntity::getDeleted,false)
+                .list();
+        if(instanceEntityList != null && instanceEntityList.size() > 0){
+            List<ExperimentInstanceEntity> resultList = new ArrayList<>();
+            instanceEntityList.forEach(instance->{
+                ExperimentInstanceEntity instanceEntity = ExperimentInstanceEntity.builder()
+                        .id(instance.getId())
+                        .appointorName(request.getUserName())
+                        .build();
+                resultList.add(instanceEntity);
+            });
+            experimentInstanceService.updateBatchById(resultList);
         }
         return userId;
     }
