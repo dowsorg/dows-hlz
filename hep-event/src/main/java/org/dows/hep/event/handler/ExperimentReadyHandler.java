@@ -101,35 +101,33 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
                             .periods(periods)
                             .experimentInstanceId(experimentInstanceId)
                             .build())
-             /*       .experimentInstanceId(experimentInstanceId)
-                    .experimentGroupId(experimentGroupId)
-                    .startTime(DateUtil.date(v.getStartTime()))
-                    .endTime(DateUtil.date(v.getEndTime()))
-                    .currentPeriod(v.getPeriod())
-                    .periods(periods)*/
                     .noticeType(EnumNoticeType.BoardCastSysEvent)
                     .build();
 
             extracted(experimentInstanceId, v, noticeContent);
 
             // 期数开始通知任务
-            ExperimentNoticeTask experimentPeriodStartNoticeTask = new ExperimentNoticeTask(periodStartNoticer,
-                    noticeContent,
-                    experimentTaskScheduleService,
+            ExperimentNoticeTask experimentPeriodStartNoticeTask = new ExperimentNoticeTask(
                     experimentInstanceId,
+                    experimentGroupId,
                     v.getPeriod(),
-                    EnumExperimentNotice.startNotice.getCode());
+                    periodStartNoticer,
+                    noticeContent,
+                    experimentTaskScheduleService
+            );
             taskScheduler.schedule(experimentPeriodStartNoticeTask, v.getStartTime());
 
             extracted1(experimentInstanceId, v, noticeContent);
 
             // 期数结束通知任务
-            ExperimentNoticeTask experimentPeriodEndNoticeTask = new ExperimentNoticeTask(periodEndNoticer,
-                    noticeContent,
-                    experimentTaskScheduleService,
+            ExperimentNoticeTask experimentPeriodEndNoticeTask = new ExperimentNoticeTask(
                     experimentInstanceId,
+                    experimentGroupId,
                     v.getPeriod(),
-                    EnumExperimentNotice.endNotice.getCode());
+                    periodEndNoticer,
+                    noticeContent,
+                    experimentTaskScheduleService
+            );
             taskScheduler.schedule(experimentPeriodEndNoticeTask, v.getEndTime());
         });
     }

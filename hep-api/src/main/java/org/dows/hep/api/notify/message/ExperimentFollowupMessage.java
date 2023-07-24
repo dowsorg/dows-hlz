@@ -9,6 +9,7 @@ import lombok.Data;
 @Data
 @Builder
 public class ExperimentFollowupMessage implements ExperimentMessage {
-
+    // 是否可以随访[true，false]
+    private Boolean flag;
 
 }
