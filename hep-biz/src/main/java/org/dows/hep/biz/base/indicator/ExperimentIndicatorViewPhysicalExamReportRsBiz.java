@@ -528,7 +528,7 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
                            .eq(ExperimentPersonEntity::getDeleted,false)
                            .one();
     CostRequest costRequest = CostRequest.builder()
-            .operateFlowId(idGenerator.nextIdStr())
+            .operateCostId(idGenerator.nextIdStr())
             .experimentInstanceId(experimentPhysicalExamCheckRequestRs.getExperimentId())
             .experimentGroupId(personEntity.getExperimentGroupId())
             .operatorId(voLogin.getAccountId())

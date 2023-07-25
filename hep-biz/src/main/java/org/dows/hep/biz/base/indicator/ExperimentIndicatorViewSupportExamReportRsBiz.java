@@ -545,7 +545,7 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
             .eq(ExperimentPersonEntity::getDeleted,false)
             .one();
     CostRequest costRequest = CostRequest.builder()
-            .operateFlowId(idGenerator.nextIdStr())
+            .operateCostId(idGenerator.nextIdStr())
             .experimentInstanceId(experimentSupportExamCheckRequestRs.getExperimentId())
             .experimentGroupId(personEntity.getExperimentGroupId())
             .operatorId(voLogin.getAccountId())
