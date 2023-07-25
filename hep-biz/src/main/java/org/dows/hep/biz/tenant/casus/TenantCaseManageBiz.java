@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.materials.MaterialsESCEnum;
-import org.dows.hep.api.base.question.QuestionESCEnum;
 import org.dows.hep.api.tenant.casus.*;
 import org.dows.hep.api.tenant.casus.request.CaseInstanceCopyRequest;
 import org.dows.hep.api.tenant.casus.request.CaseInstancePageRequest;
@@ -29,7 +28,15 @@ import java.util.List;
 
 /**
  * @author lait.zhang
- * @description project descr:案例:案例管理
+ * @description
+ * 1.管理员端自定义权限：
+ *      ●可以查看、编辑、复制、删除系统中管理员用户创建的已发布/未发布的社区；
+ *      ●可以查看、编辑、复制、删除系统中所有教师用户创建的已发布/未发布的社区
+ * 2.教师端自定义权限：
+ *      ●可以查看、编辑、复制、删除自己创建的已发布/未发布的社区；
+ *      ●可以查看管理员或其他教师创建的已经发布的社区；
+ *      ●可以复制所有已经发布的社区，且复制生成的社区其创建者为该用户；
+ *      ●不能删除管理员或其他教师创建的社区；
  * @date 2023年4月23日 上午9:44:34
  */
 @Slf4j
@@ -236,18 +243,11 @@ public class TenantCaseManageBiz {
 
     private CaseInstanceEntity convertRequest2Entity(CaseInstanceRequest request, CaseSourceEnum sourceEnum) {
         if (BeanUtil.isEmpty(request)) {
-            throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
+            throw new BizException("新增或更新社区时，请求参数不可为空");
         }
 
         String accountId = request.getAccountId();
         boolean isAdmin = baseBiz.isAdministrator(accountId);
-        Integer shared = CaseSharedEnum.PRIVATE.getCode();
-        String source = sourceEnum.name();
-        if (isAdmin) {
-            shared = CaseSharedEnum.SHARED.getCode();
-            source = CaseSourceEnum.ADMIN.name();
-        }
-
         CaseInstanceEntity result = CaseInstanceEntity.builder()
                 .appId(baseBiz.getAppId())
                 .caseInstanceId(request.getCaseInstanceId())
@@ -257,10 +257,6 @@ public class TenantCaseManageBiz {
                 .caseType(request.getCaseType())
                 .descr(request.getDescr())
                 .guide(request.getGuide())
-                .accountId(request.getAccountId())
-                .accountName(request.getAccountName())
-                .source(source)
-                .shared(shared)
                 .state(request.getState())
                 .build();
 
@@ -269,6 +265,17 @@ public class TenantCaseManageBiz {
             result.setCaseInstanceId(baseBiz.getIdStr());
             result.setCaseIdentifier(baseBiz.getIdStr());
             result.setVer(baseBiz.getLastVer());
+            // 只有新增时可以唯一确定
+            Integer shared = CaseSharedEnum.PRIVATE.getCode();
+            String source = sourceEnum.name();
+            if (isAdmin) {
+                shared = CaseSharedEnum.SHARED.getCode();
+                source = CaseSourceEnum.ADMIN.name();
+            }
+            result.setSource(source);
+            result.setShared(shared);
+            result.setAccountId(request.getAccountId());
+            result.setAccountName(request.getAccountName());
 
             // set default setting
             CaseSettingRequest caseSettingRequest = CaseSettingRequest.builder()
