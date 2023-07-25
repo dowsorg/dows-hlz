@@ -296,7 +296,7 @@ public class ExperimentTimerBiz {
                                              .appId("3")
                                              .periods(et.getPeriod() - 1)
                                              .build();
-                        // 发布报销事件
+                        // 发布保险报销事件
                         applicationEventPublisher.publishEvent(new FeeReimburseEvent(personRequest));
                     }
                     break;
