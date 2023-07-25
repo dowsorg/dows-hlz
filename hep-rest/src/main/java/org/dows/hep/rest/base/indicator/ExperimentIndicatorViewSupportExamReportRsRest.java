@@ -2,8 +2,8 @@ package org.dows.hep.rest.base.indicator;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.indicator.request.ExperimentSupportExamCheckRequestRs;
 import org.dows.hep.api.base.indicator.request.ExperimentSupportExamCheckRequestRs;
 import org.dows.hep.api.base.indicator.response.ExperimentSupportExamReportResponseRs;
 import org.dows.hep.biz.base.indicator.ExperimentIndicatorViewSupportExamReportRsBiz;
@@ -30,8 +30,8 @@ public class ExperimentIndicatorViewSupportExamReportRsRest {
 
   @Operation(summary = "实验人物和在这个机构功能点下的体格检查报告")
   @PostMapping("v1/userExperiment/supportExamReport/check")
-  public void v1SupportExamCheck(@RequestBody ExperimentSupportExamCheckRequestRs experimentSupportExamCheckRequestRs) throws ExecutionException, InterruptedException {
-    experimentIndicatorViewSupportExamReportRsBiz.v1SupportExamCheck(experimentSupportExamCheckRequestRs);
+  public void v1SupportExamCheck(@RequestBody ExperimentSupportExamCheckRequestRs experimentSupportExamCheckRequestRs, HttpServletRequest request) throws ExecutionException, InterruptedException {
+    experimentIndicatorViewSupportExamReportRsBiz.v1SupportExamCheck(experimentSupportExamCheckRequestRs,request);
   }
 
   @Operation(summary = "根据实验人物id和功能点id查找辅助报告")

@@ -1,22 +1,20 @@
 package org.dows.hep.biz.base.indicator;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
-import org.dows.hep.api.base.indicator.request.ExperimentSupportExamCheckRequestRs;
 import org.dows.hep.api.base.indicator.request.ExperimentSupportExamCheckRequestRs;
 import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
 import org.dows.hep.api.base.indicator.response.ExperimentSupportExamReportResponseRs;
 import org.dows.hep.api.enums.*;
-import org.dows.hep.api.exception.ExperimentIndicatorViewSupportExamReportRsException;
+import org.dows.hep.biz.operate.CostRequest;
+import org.dows.hep.biz.operate.OperateCostBiz;
+import org.dows.hep.biz.util.ShareBiz;
+import org.dows.hep.biz.vo.LoginContextVO;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
-import org.springframework.expression.Expression;
-import org.springframework.expression.ExpressionParser;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +45,8 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
   private final RsExperimentIndicatorValBiz rsExperimentIndicatorValBiz;
   private final RsExperimentIndicatorInstanceBiz rsExperimentIndicatorInstanceBiz;
   private final RsExperimentIndicatorExpressionBiz rsExperimentIndicatorExpressionBiz;
+  private final ExperimentPersonService experimentPersonService;
+  private final OperateCostBiz operateCostBiz;
 
   public static ExperimentSupportExamReportResponseRs experimentSupportExamReport2ResponseRs(ExperimentIndicatorViewSupportExamReportRsEntity experimentIndicatorViewSupportExamReportRsEntity) {
     if (Objects.isNull(experimentIndicatorViewSupportExamReportRsEntity)) {
@@ -366,7 +366,7 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
   }
 
   @Transactional(rollbackFor = Exception.class)
-  public void v1SupportExamCheck(ExperimentSupportExamCheckRequestRs experimentSupportExamCheckRequestRs) throws ExecutionException, InterruptedException {
+  public void v1SupportExamCheck(ExperimentSupportExamCheckRequestRs experimentSupportExamCheckRequestRs, HttpServletRequest request) throws ExecutionException, InterruptedException {
     /* runsix:TODO 这个期数后期根据张亮接口拿 */
     Integer period = 1;
     String appId = experimentSupportExamCheckRequestRs.getAppId();
@@ -375,8 +375,11 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
     String indicatorFuncId = experimentSupportExamCheckRequestRs.getIndicatorFuncId();
     String experimentOrgId = experimentSupportExamCheckRequestRs.getExperimentOrgId();
     List<String> experimentIndicatorViewSupportExamIdList = experimentSupportExamCheckRequestRs.getExperimentIndicatorViewSupportExamIdList();
-    /* runsix:TODO 等吴治霖弄好 */
-    String operateFlowId = "1";
+    // 获取人物正在进行的流水号
+    String operateFlowId = ShareBiz.checkRunningOperateFlowId(experimentSupportExamCheckRequestRs.getAppId(),
+            experimentSupportExamCheckRequestRs.getExperimentId(),
+            experimentSupportExamCheckRequestRs.getExperimentOrgId(),
+            experimentSupportExamCheckRequestRs.getExperimentPersonId());
 
     Set<String> indicatorInstanceIdSet = new HashSet<>();
     List<ExperimentIndicatorViewSupportExamRsEntity> experimentIndicatorViewSupportExamRsEntityList = new ArrayList<>();
@@ -534,6 +537,27 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
         .periods(period)
         .moneyChange(totalFeeAtomicReference.get())
         .build());
+    // 保存消费记录
+    LoginContextVO voLogin= ShareBiz.getLoginUser(request);
+    // 获取小组信息
+    ExperimentPersonEntity personEntity = experimentPersonService.lambdaQuery()
+            .eq(ExperimentPersonEntity::getExperimentPersonId,experimentSupportExamCheckRequestRs.getExperimentPersonId())
+            .eq(ExperimentPersonEntity::getDeleted,false)
+            .one();
+    CostRequest costRequest = CostRequest.builder()
+            .operateFlowId(idGenerator.nextIdStr())
+            .experimentInstanceId(experimentSupportExamCheckRequestRs.getExperimentId())
+            .experimentGroupId(personEntity.getExperimentGroupId())
+            .operatorId(voLogin.getAccountId())
+            .experimentOrgId(experimentSupportExamCheckRequestRs.getExperimentOrgId())
+            .operateFlowId(operateFlowId)
+            .patientId(experimentSupportExamCheckRequestRs.getExperimentPersonId())
+            .feeName(EnumOrgFeeType.TGJCF.getName())
+            .feeCode(EnumOrgFeeType.TGJCF.getCode())
+            .cost(totalFeeAtomicReference.get())
+            .period(experimentSupportExamCheckRequestRs.getPeriods())
+            .build();
+    operateCostBiz.saveCost(costRequest);
     experimentIndicatorViewSupportExamReportRsService.saveOrUpdateBatch(experimentIndicatorViewSupportExamReportRsEntityList);
   }
   private static String v1WrapStrWithDoubleSingleQuotes(String str) {
