@@ -7,6 +7,7 @@ import org.dows.hep.api.base.indicator.response.ExperimentHealthProblemReportRes
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.biz.util.ExptOrgFlowValidator;
+import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -50,8 +51,7 @@ public class ExperimentIndicatorJudgeHealthProblemReportRsBiz {
   @Transactional(rollbackFor = Exception.class)
   public void healthProblemCheck(ExperimentHealthProblemCheckRequestRs experimentHealthProblemCheckRequestRs) {
     List<ExperimentIndicatorJudgeHealthProblemReportRsEntity> experimentIndicatorJudgeHealthProblemReportRsEntityList = new ArrayList<>();
-    /* runsix:TODO 这个期数后期根据张亮接口拿 */
-    Integer period = 1;
+    Integer periods = experimentHealthProblemCheckRequestRs.getPeriods();
     String experimentPersonId = experimentHealthProblemCheckRequestRs.getExperimentPersonId();
     String indicatorFuncId = experimentHealthProblemCheckRequestRs.getIndicatorFuncId();
     List<String> experimentIndicatorJudgeHealthProblemIdList = experimentHealthProblemCheckRequestRs.getExperimentIndicatorJudgeHealthProblemIdList();
@@ -59,11 +59,7 @@ public class ExperimentIndicatorJudgeHealthProblemReportRsBiz {
     String experimentId = experimentHealthProblemCheckRequestRs.getExperimentId();
     String experimentOrgId = experimentHealthProblemCheckRequestRs.getExperimentOrgId();
 
-    String operateFlowId = "1";
-    /* runsix:TODO 等实验能跑，才用吴治霖这个 */
-//    ExptOrgFlowValidator exptOrgFlowValidator = ExptOrgFlowValidator.create(appId, experimentId, experimentOrgId, experimentPersonId);
-//    exptOrgFlowValidator.checkOrgFlow(true);
-//    String operateFlowId = exptOrgFlowValidator.getOperateFlowId();
+    String operateFlowId = ShareBiz.checkRunningOperateFlowId(appId, experimentId, experimentOrgId, experimentPersonId);
     Map<String, ExperimentIndicatorJudgeHealthProblemRsEntity> kExperimentIndicatorJudgeHealthProblemIdVExperimentIndicatorJudgeHealthProblemRsEntityMap = new HashMap<>();
     if (!experimentIndicatorJudgeHealthProblemIdList.isEmpty()) {
       experimentIndicatorJudgeHealthProblemRsService.lambdaQuery()
@@ -78,7 +74,7 @@ public class ExperimentIndicatorJudgeHealthProblemReportRsBiz {
     ExperimentIndicatorJudgeHealthProblemReportRsEntity experimentIndicatorJudgeHealthProblemReportRsEntity = experimentIndicatorJudgeHealthProblemReportRsService.lambdaQuery()
         .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getAppId, appId)
         .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getExperimentId, experimentId)
-        .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getPeriod, period)
+        .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getPeriod, periods)
         .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getIndicatorFuncId, indicatorFuncId)
         .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getExperimentPersonId, experimentPersonId)
         .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getOperateFlowId, operateFlowId)
@@ -96,7 +92,7 @@ public class ExperimentIndicatorJudgeHealthProblemReportRsBiz {
               .experimentIndicatorJudgeHealthProblemReportId(idGenerator.nextIdStr())
               .experimentId(experimentId)
               .appId(appId)
-              .period(period)
+              .period(periods)
               .indicatorFuncId(indicatorFuncId)
               .experimentPersonId(experimentPersonId)
               .operateFlowId(operateFlowId)
@@ -110,17 +106,12 @@ public class ExperimentIndicatorJudgeHealthProblemReportRsBiz {
     experimentIndicatorJudgeHealthProblemReportRsService.saveOrUpdateBatch(experimentIndicatorJudgeHealthProblemReportRsEntityList);
   }
 
-  public List<ExperimentHealthProblemReportResponseRs> get(String appId, String experimentId, String indicatorFuncId, String experimentPersonId, String experimentOrgId) {
-    /* runsix:TODO 期数当前写死为1,后期从张亮获取 */
-    Integer period = 1;
-    String operateFlowId = "1";
-//    ExptOrgFlowValidator exptOrgFlowValidator = ExptOrgFlowValidator.create(appId, experimentId, experimentOrgId, experimentPersonId);
-//    exptOrgFlowValidator.checkOrgFlow(true);
-//    String operateFlowId = exptOrgFlowValidator.getOperateFlowId();
+  public List<ExperimentHealthProblemReportResponseRs> get(String appId, String experimentId, String indicatorFuncId, String experimentPersonId, String experimentOrgId, Integer periods) {
+    String operateFlowId = ShareBiz.checkRunningOperateFlowId(appId, experimentId, experimentOrgId, experimentPersonId);
     ExperimentIndicatorJudgeHealthProblemReportRsEntity experimentIndicatorJudgeHealthProblemReportRsEntity = experimentIndicatorJudgeHealthProblemReportRsService.lambdaQuery()
         .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getAppId, appId)
         .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getExperimentId, experimentId)
-        .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getPeriod, period)
+        .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getPeriod, periods)
         .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getIndicatorFuncId, indicatorFuncId)
         .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getExperimentPersonId, experimentPersonId)
         .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getOperateFlowId, operateFlowId)
@@ -134,7 +125,7 @@ public class ExperimentIndicatorJudgeHealthProblemReportRsBiz {
     return experimentIndicatorJudgeHealthProblemReportRsService.lambdaQuery()
         .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getAppId, appId)
         .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getExperimentId, experimentId)
-        .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getPeriod, period)
+        .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getPeriod, periods)
         .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getIndicatorFuncId, indicatorFuncId)
         .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getExperimentPersonId, experimentPersonId)
         .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getOperateFlowId, operateFlowId)

@@ -32,6 +32,9 @@ public class ExperimentRiskFactorCheckRequestRs implements Serializable {
   @Schema(title = "机构id")
   private String experimentOrgId;
 
+  @Schema(title = "期数")
+  private Integer periods;
+
   @Schema(title = "危险因素id列表")
   private List<String> experimentIndicatorJudgeRiskFactorIdList;
 

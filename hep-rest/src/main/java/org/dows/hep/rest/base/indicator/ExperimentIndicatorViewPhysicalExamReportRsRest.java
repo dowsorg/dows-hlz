@@ -21,17 +21,10 @@ import java.util.concurrent.ExecutionException;
 public class ExperimentIndicatorViewPhysicalExamReportRsRest {
   private final ExperimentIndicatorViewPhysicalExamReportRsBiz experimentIndicatorViewPhysicalExamReportRsBiz;
 
-  /* runsix:弃用 */
-//  @Operation(summary = "实验人物和在这个机构功能点下的体格检查报告")
-//  @PostMapping("v1old/userExperiment/physicalExamReport/check")
-//  public void physicalExamCheck(@RequestBody ExperimentPhysicalExamCheckRequestRs experimentPhysicalExamCheckRequestRs) throws ExecutionException, InterruptedException {
-//    experimentIndicatorViewPhysicalExamReportRsBiz.physicalExamCheck(experimentPhysicalExamCheckRequestRs);
-//  }
-
   @Operation(summary = "实验人物和在这个机构功能点下的体格检查报告")
   @PostMapping("v1/userExperiment/physicalExamReport/check")
-  public void v1PhysicalExamCheck(@RequestBody ExperimentPhysicalExamCheckRequestRs experimentPhysicalExamCheckRequestRs, HttpServletRequest request) throws ExecutionException, InterruptedException {
-    experimentIndicatorViewPhysicalExamReportRsBiz.v1PhysicalExamCheck(experimentPhysicalExamCheckRequestRs,request);
+  public void physicalExamCheck(@RequestBody ExperimentPhysicalExamCheckRequestRs experimentPhysicalExamCheckRequestRs, HttpServletRequest request) throws ExecutionException, InterruptedException {
+    experimentIndicatorViewPhysicalExamReportRsBiz.physicalExamCheck(experimentPhysicalExamCheckRequestRs,request);
   }
 
   @Operation(summary = "根据实验人物id和功能点id查找体格报告")
@@ -41,7 +34,9 @@ public class ExperimentIndicatorViewPhysicalExamReportRsRest {
       @RequestParam String experimentId,
       @RequestParam String indicatorFuncId,
       @RequestParam String experimentPersonId,
-      @RequestParam String experimentOrgId) {
-    return experimentIndicatorViewPhysicalExamReportRsBiz.get(appId, experimentId, indicatorFuncId, experimentPersonId, experimentOrgId);
+      @RequestParam String experimentOrgId,
+      @RequestParam Integer periods
+      ) {
+    return experimentIndicatorViewPhysicalExamReportRsBiz.get(appId, experimentId, indicatorFuncId, experimentPersonId, experimentOrgId, periods);
   }
 }
