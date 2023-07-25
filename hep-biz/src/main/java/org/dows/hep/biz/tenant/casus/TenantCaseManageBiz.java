@@ -181,7 +181,7 @@ public class TenantCaseManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public Boolean enabledQuestion(String caseInstanceId) {
+    public Boolean enabledCaseInstance(String caseInstanceId) {
         if (StrUtil.isBlank(caseInstanceId)) {
             return false;
         }
@@ -199,7 +199,7 @@ public class TenantCaseManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public Boolean disabledQuestion(String caseInstanceId) {
+    public Boolean disabledCaseInstance(String caseInstanceId) {
         if (StrUtil.isBlank(caseInstanceId)) {
             return false;
         }
