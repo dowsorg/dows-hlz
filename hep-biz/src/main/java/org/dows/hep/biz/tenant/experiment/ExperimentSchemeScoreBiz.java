@@ -56,7 +56,8 @@ public class ExperimentSchemeScoreBiz {
      */
     public void preHandleExperimentSchemeScore(String experimentInstanceId, String caseInstanceId) {
         List<String> viewAccountIds = new ArrayList<>();
-        viewAccountIds.add(ADMIN_ACCOUNT_ID);
+        // 管理员不参与评分了
+//        viewAccountIds.add(ADMIN_ACCOUNT_ID);
         List<String> tAccountIds = experimentParticipatorService.lambdaQuery()
                 .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
                 .eq(ExperimentParticipatorEntity::getParticipatorType, 0)
@@ -73,7 +74,7 @@ public class ExperimentSchemeScoreBiz {
      * @param reviewAccountId - 评审账号ID
      * @return java.util.List<org.dows.hep.api.tenant.experiment.response.ExptSchemeGroupReviewResponse>
      * @author fhb
-     * @description
+     * @description 获取方案设计报告的小组列表
      * @date 2023/7/12 16:37
      */
     public List<ExptSchemeGroupReviewResponse> listSchemeGroupReview(String exptInstanceId, String reviewAccountId) {
@@ -224,7 +225,7 @@ public class ExperimentSchemeScoreBiz {
         }
         Map<String, List<ExperimentSchemeScoreItemEntity>> collect = firstSchemeScoreItemList.stream()
                 .collect(Collectors.groupingBy(ExperimentSchemeScoreItemEntity::getDimensionName));
-        for (Map.Entry<String, List<ExperimentSchemeScoreItemEntity>> entry: collect.entrySet()){
+        for (Map.Entry<String, List<ExperimentSchemeScoreItemEntity>> entry : collect.entrySet()) {
             List<ExperimentSchemeScoreItemEntity> contentList = entry.getValue();
             contentList.sort((v1, v2) -> (int) (v2.getMaxScore() - v1.getMaxScore()));
             ExperimentSchemeScoreItemEntity itemEntity = contentList.get(0);
@@ -335,28 +336,37 @@ public class ExperimentSchemeScoreBiz {
         }
 
         Map<String, String> teacherNameMap = new HashMap<>();
+//        if (isAdmin) {
+//            // 排序，保证管理员的数据放在第一条
+//            int adminIndex = 0;
+//            for (int i = 0; i < scoreList.size(); i++) {
+//                ExperimentSchemeScoreEntity scoreEntity = scoreList.get(i);
+//                String tempAccountId = scoreEntity.getReviewAccountId();
+//                if (ADMIN_ACCOUNT_ID.equals(tempAccountId)) {
+//                    adminIndex = i;
+//                }
+//
+//                // todo @UIM 提供批量优化方法
+//                String userName = baseBiz.getUserName(tempAccountId, "获取方案设计评分详情时，获取教师账号信息异常");
+//                teacherNameMap.put(tempAccountId, userName);
+//            }
+//            ExperimentSchemeScoreEntity firstEntity = scoreList.get(0);
+//            ExperimentSchemeScoreEntity adminEntity = scoreList.get(adminIndex);
+//            scoreList.set(0, adminEntity);
+//            scoreList.set(adminIndex, firstEntity);
+//
+//            teacherNameMap.put(ADMIN_ACCOUNT_ID, "管理员");
+//        }
         if (isAdmin) {
-            // 排序，保证管理员的数据放在第一条
-            int adminIndex = 0;
-            for (int i = 0; i < scoreList.size(); i++) {
-                ExperimentSchemeScoreEntity scoreEntity = scoreList.get(i);
+            scoreList.forEach(scoreEntity -> {
                 String tempAccountId = scoreEntity.getReviewAccountId();
-                if (ADMIN_ACCOUNT_ID.equals(tempAccountId)) {
-                    adminIndex = i;
-                }
-
                 // todo @UIM 提供批量优化方法
                 String userName = baseBiz.getUserName(tempAccountId, "获取方案设计评分详情时，获取教师账号信息异常");
                 teacherNameMap.put(tempAccountId, userName);
-            }
-            ExperimentSchemeScoreEntity firstEntity = scoreList.get(0);
-            ExperimentSchemeScoreEntity adminEntity = scoreList.get(adminIndex);
-            scoreList.set(0, adminEntity);
-            scoreList.set(adminIndex, firstEntity);
-
+            });
+            // 兼容旧数据
             teacherNameMap.put(ADMIN_ACCOUNT_ID, "管理员");
         }
-
 
         // list item
         List<String> schemeScoreIdList = scoreList.stream()
