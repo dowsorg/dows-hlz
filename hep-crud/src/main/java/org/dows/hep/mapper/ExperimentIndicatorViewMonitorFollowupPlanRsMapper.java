@@ -3,13 +3,12 @@ package org.dows.hep.mapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.dows.framework.crud.mybatis.MybatisCrudMapper;
 import org.dows.hep.entity.ExperimentIndicatorViewMonitorFollowupPlanRsEntity;
-import org.dows.hep.entity.ExperimentIndicatorViewMonitorFollowupRsEntity;
 
 /**
- * 查看指标监测随访类(IndicatorViewMonitorFollowup)表数据库访问层
+ * (ExperimentIndicatorViewMonitorFollowupPlanRs)表数据库访问层
  *
  * @author lait
- * @since 2023-04-28 10:29:50
+ * @since 2023-07-24 14:55:16
  */
 @Mapper
 public interface ExperimentIndicatorViewMonitorFollowupPlanRsMapper extends MybatisCrudMapper<ExperimentIndicatorViewMonitorFollowupPlanRsEntity> {

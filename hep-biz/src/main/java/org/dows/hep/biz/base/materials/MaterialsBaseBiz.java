@@ -110,6 +110,7 @@ public class MaterialsBaseBiz {
         return Boolean.FALSE;
     }
 
+    // todo uim 提供批量操作
     public String getUserName(String accountId) {
         String userName = "ERROR";
         try {

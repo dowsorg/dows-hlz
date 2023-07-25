@@ -20,6 +20,9 @@ public enum EventName {
 
     experimentReadyEvent("experimentReadyHandler"),
     exptEventTriggeredHandler("commonWebSocketEventHandler"),
+
+
+    experimentFollowupEvent("experimentFollowupHandler"),
     ;
 
 

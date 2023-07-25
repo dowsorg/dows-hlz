@@ -23,6 +23,12 @@ public class ExperimentSchemeScoreResponse {
     @Schema(title = "方案设计评分ID")
     private String experimentSchemeScoreId;
 
+    @Schema(title = "评审账号ID")
+    private String reviewAccountId;
+
+    @Schema(title = "评审账号名")
+    private String reviewAccountName;
+
     @Schema(title = "评审得分-每个评审人给的分数")
     private Float reviewScore;
 

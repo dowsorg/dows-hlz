@@ -7,6 +7,7 @@ import org.dows.hep.biz.user.experiment.ExperimentInsuranceBiz;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentParticipatorService;
+import org.dows.hep.service.ExperimentTaskScheduleService;
 import org.dows.hep.service.ExperimentTimerService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +22,8 @@ public abstract class AbstractEventHandler {
     @Autowired
     protected TaskScheduler taskScheduler;
 
-
-
+    @Autowired
+    protected ExperimentTaskScheduleService experimentTaskScheduleService;
 
 
     @Autowired

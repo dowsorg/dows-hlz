@@ -1,8 +1,5 @@
 package org.dows.hep.entity;
 
-import java.math.BigDecimal;
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -14,6 +11,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * 操作花费(OperateCost)实体类
@@ -49,8 +49,8 @@ public class OperateCostEntity implements CrudEntity {
     @Schema(title = "操作者ID[uim-accountId]")
     private String operatorId;
 
-    @Schema(title = "机构ID")
-    private String caseOrgId;
+    @Schema(title = "实验机构ID")
+    private String experimentOrgId;
 
     @Schema(title = "挂号流水")
     private String operateFlowId;

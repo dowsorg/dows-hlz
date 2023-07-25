@@ -342,7 +342,6 @@ public class ExperimentTimerBiz {
         return experimentTimerEntity;
     }
 
-
     /**
      * 更新定时器及实验状态（experimentInstance,experimentParticipator）
      *
@@ -438,17 +437,15 @@ public class ExperimentTimerBiz {
     }
 
     /**
-     * 获取实验还没开始暂停时的最初始化的实验每期时间
+     * 获取当前实验计时器
      *
      * @param experimentInstanceId
      */
-    public List<ExperimentTimerEntity> getExperimentPeriodsStartAnsEndTimeNoPause(String experimentInstanceId) {
-        List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
-                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
-                .isNull(ExperimentTimerEntity::getPauseTime)
-                .orderByAsc(ExperimentTimerEntity::getPeriod)
-                .list();
-        return list;
+    public ExperimentTimerEntity getCurrentExperimentTimer(String experimentInstanceId, Long currentTimestamp) {
+        return getExperimentPeriodsStartAnsEndTime(experimentInstanceId).values().stream()
+                .filter(e -> e.getStartTime().getTime() >= currentTimestamp && currentTimestamp <= e.getEndTime().getTime())
+                .findFirst()
+                .orElse(null);
     }
 
 

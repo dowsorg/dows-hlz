@@ -2,11 +2,19 @@ package org.dows.hep.biz.user.experiment;
 
 import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.util.ReflectUtil;
+import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
+import org.dows.hep.api.enums.EnumOrgFeeType;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.request.ExperimentPersonInsuranceRequest;
+import org.dows.hep.biz.base.indicator.ExperimentIndicatorInstanceRsBiz;
+import org.dows.hep.biz.operate.CostRequest;
+import org.dows.hep.biz.operate.OperateCostBiz;
+import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.biz.util.TimeUtil;
+import org.dows.hep.biz.vo.LoginContextVO;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.CaseOrgFeeService;
 import org.dows.hep.service.ExperimentOrgService;
@@ -39,6 +47,8 @@ public class ExperimentInsuranceBiz {
     private final IdGenerator idGenerator;
     private final ExperimentSettingBiz experimentSettingBiz;
     private final ExperimentTimerBiz experimentTimerBiz;
+    private final ExperimentIndicatorInstanceRsBiz experimentIndicatorInstanceRsBiz;
+    private final OperateCostBiz operateCostBiz;
 
     /**
      * @param
@@ -51,8 +61,32 @@ public class ExperimentInsuranceBiz {
      * @创建时间: 2023年6月27日 下午18:29:34
      */
     @DSTransactional
-    public Boolean isPurchaseInsure(ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest) {
-        //1、通过机构获取报销比例
+    public Boolean isPurchaseInsure(ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest, HttpServletRequest request) {
+        //1、扣除购买保险费
+        experimentIndicatorInstanceRsBiz.changeMoney(RsChangeMoneyRequest.builder()
+                .appId(experimentPersonInsuranceRequest.getAppId())
+                .experimentId(experimentPersonInsuranceRequest.getExperimentInstanceId())
+                .experimentPersonId(experimentPersonInsuranceRequest.getExperimentPersonId())
+                .periods(Integer.parseInt(experimentPersonInsuranceRequest.getPeriods()))
+                .moneyChange(experimentPersonInsuranceRequest.getInsuranceAmount().negate())
+                .build());
+        LoginContextVO voLogin= ShareBiz.getLoginUser(request);
+        //2、保存消费记录
+        CostRequest costRequest = CostRequest.builder()
+                .operateFlowId(idGenerator.nextIdStr())
+                .experimentInstanceId(experimentPersonInsuranceRequest.getExperimentInstanceId())
+                .experimentGroupId(experimentPersonInsuranceRequest.getExperimentGroupId())
+                .operatorId(voLogin.getAccountId())
+                .experimentOrgId(experimentPersonInsuranceRequest.getOperateOrgId())
+                .operateFlowId(experimentPersonInsuranceRequest.getOperateFlowId())
+                .patientId(experimentPersonInsuranceRequest.getExperimentPersonId())
+                .feeName(EnumOrgFeeType.BXF.getName())
+                .feeCode(EnumOrgFeeType.BXF.getCode())
+                .cost(experimentPersonInsuranceRequest.getInsuranceAmount())
+                .period(Integer.parseInt(experimentPersonInsuranceRequest.getPeriods()))
+                .build();
+        operateCostBiz.saveCost(costRequest);
+        //3、通过机构获取报销比例
         ExperimentOrgEntity orgEntity = experimentOrgService.lambdaQuery()
                 .eq(ExperimentOrgEntity::getExperimentOrgId, experimentPersonInsuranceRequest.getOperateOrgId())
                 .eq(ExperimentOrgEntity::getDeleted, false)
@@ -68,14 +102,14 @@ public class ExperimentInsuranceBiz {
                 reimburseRatio = feeEntity.getReimburseRatio();
             }
         }
-        //2、计算失效时间
-        //2.1、首先获取实验设置，判断真实天数与模拟数据的比例
+        //4、计算失效时间
+        //4.1、首先获取实验设置，判断真实天数与模拟数据的比例
         Date expdate = new Date();
         String configVals = experimentSettingBiz.getSandSettingStr(experimentPersonInsuranceRequest.getExperimentInstanceId());
         ExperimentSetting.SandSetting sandSetting = JSONUtil.toBean(configVals, ExperimentSetting.SandSetting.class);
-        //2.2、判断有几期,获取总的换算天数，计算
+        //4.2、判断有几期,获取总的换算天数，计算
         int periods = sandSetting.getPeriods();
-        //2.3、获取实验每期时间
+        //4.3、获取实验每期时间
         Map<Integer, ExperimentTimerEntity> experimentPeriodsStartAnsEndTime =
                 experimentTimerBiz.getExperimentPeriodsStartAnsEndTime(experimentPersonInsuranceRequest.getExperimentInstanceId());
         int currentPeriods = Integer.parseInt(experimentPersonInsuranceRequest.getPeriods());
@@ -84,10 +118,10 @@ public class ExperimentInsuranceBiz {
             Integer duration = sandSetting.getDurationMap().get(String.valueOf(i));
             Integer periodsand = sandSetting.getPeriodMap().get(String.valueOf(i));
             if (i == currentPeriods) {
-                //2.4、判断当前时间在本期还剩多少
+                //4.4、判断当前时间在本期还剩多少
                 long remainTime = experimentPeriodsStartAnsEndTime.get(i).getEndTime().getTime() - new Date().getTime();
                 int remainSecond = (int)remainTime / 1000;
-                //2.5、假设365天都在一期需要的时间
+                //4.5、假设365天都在一期需要的时间
                 BigDecimal assumSecond = BigDecimal.valueOf(duration).
                         multiply(BigDecimal.valueOf(365)).
                         divide(BigDecimal.valueOf(periodsand),2, RoundingMode.DOWN).
@@ -107,11 +141,11 @@ public class ExperimentInsuranceBiz {
             if(i != currentPeriods){
                 //加上每期间隔
                 expdate = TimeUtil.timeAddSecond(expdate,sandSetting.getInterval().intValue());
-                //2.6、后面的期数，都是完整的
+                //4.6、后面的期数，都是完整的
                 long remainTime = experimentPeriodsStartAnsEndTime.get(i).getEndTime().getTime()
                         - experimentPeriodsStartAnsEndTime.get(i).getStartTime().getTime();
                 int remainSecond = (int) remainTime / 1000;
-                //2.5、判断剩下天数都在一期需要的时间
+                //4.7、判断剩下天数都在一期需要的时间
                 int leftDay = 365 - remainDay;
                 BigDecimal assumSecond = BigDecimal.valueOf(duration).
                         multiply(BigDecimal.valueOf(leftDay)).

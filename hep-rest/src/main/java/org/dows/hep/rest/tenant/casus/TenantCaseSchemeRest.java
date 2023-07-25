@@ -27,7 +27,7 @@ import java.util.Map;
  */
 @RequiredArgsConstructor
 @RestController
-@Tag(name = "案例方案设计", description = "案例方案设计")
+@Tag(name = "案例方案设计", description = "案例域-方案设计")
 public class TenantCaseSchemeRest {
     private final TenantCaseSchemeBiz tenantCaseSchemeBiz;
 

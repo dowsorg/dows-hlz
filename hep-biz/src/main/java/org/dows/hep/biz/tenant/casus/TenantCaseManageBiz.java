@@ -3,6 +3,7 @@ package org.dows.hep.biz.tenant.casus;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -19,6 +20,7 @@ import org.dows.hep.api.tenant.casus.request.CaseInstanceRequest;
 import org.dows.hep.api.tenant.casus.request.CaseSettingRequest;
 import org.dows.hep.api.tenant.casus.response.CaseInstancePageResponse;
 import org.dows.hep.api.tenant.casus.response.CaseInstanceResponse;
+import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.entity.CaseInstanceEntity;
 import org.dows.hep.service.CaseInstanceService;
 import org.springframework.stereotype.Service;
@@ -36,6 +38,7 @@ import java.util.List;
 public class TenantCaseManageBiz {
     private final CaseInstanceService caseInstanceService;
     private final TenantCaseBaseBiz baseBiz;
+    private final OrgBiz orgBiz;
     private final TenantCaseNoticeBiz caseNoticeBiz;
     private final TenantCaseSchemeBiz caseSchemeBiz;
     private final TenantCaseQuestionnaireBiz caseQuestionnaireBiz;
@@ -207,14 +210,28 @@ public class TenantCaseManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
+    @DSTransactional
     public Boolean delCaseInstance(List<String> caseInstanceIds) {
         if (CollUtil.isEmpty(caseInstanceIds)) {
             throw new BizException(CaseESCEnum.PARAMS_NON_NULL);
         }
 
+        // 删除案例下机构
+        caseInstanceIds.forEach(caseInstanceId -> orgBiz.deleteOrgs(null, caseInstanceId, baseBiz.getAppId()));
+        // 删除案例下方案设计
+        Boolean delSchemeRes = caseSchemeBiz.delCaseSchemeByCaseInstanceIds(caseInstanceIds);
+        // 删除案例下社区公告
+        Boolean delNoticeRes = caseNoticeBiz.delCaseNoticeByCaseInstanceIds(caseInstanceIds);
+        // 删除案例下知识答题
+        Boolean delCaseQuestionnaireRes = caseQuestionnaireBiz.delCaseQByCaseInstanceIds(caseInstanceIds);
+        // 删除案例设置
+        Boolean delSettingRes = caseSettingBiz.delCaseSettingByCaseInstanceId(caseInstanceIds);
+        // 删除案例实例
         LambdaQueryWrapper<CaseInstanceEntity> queryWrapper = new LambdaQueryWrapper<CaseInstanceEntity>()
                 .in(CaseInstanceEntity::getCaseInstanceId, caseInstanceIds);
-        return caseInstanceService.remove(queryWrapper);
+        boolean delInstanceRes = caseInstanceService.remove(queryWrapper);
+
+        return delSchemeRes && delNoticeRes && delCaseQuestionnaireRes && delSettingRes && delInstanceRes;
     }
 
     private CaseInstanceEntity convertRequest2Entity(CaseInstanceRequest request, CaseSourceEnum sourceEnum) {

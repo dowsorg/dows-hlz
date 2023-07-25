@@ -1,6 +1,7 @@
 package org.dows.hep.biz.user.experiment;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -9,13 +10,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.account.api.AccountUserApi;
+import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
 import org.dows.hep.api.core.BaseExptRequest;
 import org.dows.hep.api.enums.EnumEventActionState;
 import org.dows.hep.api.enums.EnumExperimentEventState;
 import org.dows.hep.api.enums.EnumExperimentOrgNoticeType;
+import org.dows.hep.api.enums.EnumOrgFeeType;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.api.user.experiment.vo.ExptOrgNoticeActionVO;
+import org.dows.hep.biz.base.indicator.ExperimentIndicatorInstanceRsBiz;
 import org.dows.hep.biz.dao.ExperimentEventDao;
 import org.dows.hep.biz.dao.ExperimentOrgNoticeDao;
 import org.dows.hep.biz.dao.OperateFlowDao;
@@ -23,12 +27,15 @@ import org.dows.hep.biz.event.ExperimentEventRules;
 import org.dows.hep.biz.event.ExperimentSettingCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
+import org.dows.hep.biz.operate.CostRequest;
+import org.dows.hep.biz.operate.OperateCostBiz;
 import org.dows.hep.biz.util.*;
 import org.dows.hep.biz.vo.ExperimentEventBox;
 import org.dows.hep.biz.vo.ExperimentOrgNoticeBox;
 import org.dows.hep.biz.vo.LoginContextVO;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.ExperimentPersonService;
+import org.dows.sequence.api.IdGenerator;
 import org.dows.user.api.api.UserInstanceApi;
 import org.dows.user.api.response.UserInstanceResponse;
 import org.springframework.beans.BeanUtils;
@@ -63,6 +70,12 @@ public class ExperimentOrgBiz{
 
     private final ExperimentOrgNoticeBiz experimentOrgNoticeBiz;
 
+    private final ExperimentIndicatorInstanceRsBiz experimentIndicatorInstanceRsBiz;
+
+    private final OperateCostBiz operateCostBiz;
+
+    private final IdGenerator idGenerator;
+
     /**
     * @param
     * @return
@@ -86,6 +99,7 @@ public class ExperimentOrgBiz{
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
+    @DSTransactional
     public Boolean startOrgFlow(StartOrgFlowRequest startOrgFlow, HttpServletRequest request ) {
         ExptRequestValidator validator=ExptRequestValidator.create(startOrgFlow)
                 .checkExperimentPerson()
@@ -101,23 +115,42 @@ public class ExperimentOrgBiz{
         OperateFlowEntity  rowFlow=flowValidator.getOrgFlow(false);
         AssertUtil.trueThenThrow(flowValidator.ifOrgFlowRunning(rowFlow,timePoint.getPeriod()))
                 .throwMessage("当前已挂过号");
-        //TODO 检验资金,扣费
-        BigDecimal asset=BigDecimal.ZERO;
-        BigDecimal refund=BigDecimal.ZERO;
         Double ghf= flowValidator.getOrgFee4Ghf().orElse(-1d);
         AssertUtil.trueThenThrow(ghf<=0)
                 .throwMessage("未找到有效的挂号费设置");
+        //检验资金,扣费
+        experimentIndicatorInstanceRsBiz.changeMoney(RsChangeMoneyRequest.builder()
+                .appId(startOrgFlow.getAppId())
+                .experimentId(startOrgFlow.getExperimentInstanceId())
+                .experimentPersonId(startOrgFlow.getExperimentPersonId())
+                .periods(startOrgFlow.getPeriods())
+                .moneyChange(BigDecimal.valueOf(ghf).negate())
+                .build());
+        String operateFlowId = idGenerator.nextIdStr();
         rowFlow=createRowOrgFlow(validator)
+                .setOperateFlowId(operateFlowId)
                 .setPeriods(timePoint.getPeriod())
                 .setOperateAccountId(voLogin.getAccountId())
                 .setOperateAccountName(voLogin.getAccountName())
                 .setFee(BigDecimalUtil.valueOf(ghf))
-                .setAsset(asset)
-                .setRefund(refund)
                 .setStartTime(dateNow)
                 .setOperateTime(dateNow)
                 .setOperateGameDay(timePoint.getGameDay());
-
+        //保存消费记录
+        CostRequest costRequest = CostRequest.builder()
+                .operateCostId(idGenerator.nextIdStr())
+                .experimentInstanceId(startOrgFlow.getExperimentInstanceId())
+                .experimentGroupId(startOrgFlow.getExperimentGroupId())
+                .operatorId(voLogin.getAccountId())
+                .experimentOrgId(startOrgFlow.getExperimentOrgId())
+                .operateFlowId(operateFlowId)
+                .patientId(startOrgFlow.getExperimentPersonId())
+                .feeName(EnumOrgFeeType.GHF.getName())
+                .feeCode(EnumOrgFeeType.GHF.getCode())
+                .cost(BigDecimalUtil.valueOf(ghf))
+                .period(startOrgFlow.getPeriods())
+                .build();
+        operateCostBiz.saveCost(costRequest);
         return operateFlowDao.tranSave(rowFlow, null,false);
     }
     private OperateFlowEntity createRowOrgFlow(ExptRequestValidator req){

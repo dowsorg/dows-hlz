@@ -2,6 +2,7 @@ package org.dows.hep.rest.user.experiment;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.user.experiment.request.ExperimentPersonInsuranceRequest;
 import org.dows.hep.biz.user.experiment.ExperimentInsuranceBiz;
@@ -9,6 +10,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.Map;
@@ -30,9 +32,9 @@ public class ExperimentInsuranceRest {
      */
     @Operation(summary = "购买保险")
     @PostMapping("v1/userExperiment/experimentOrgJudge/isPurchaseInsure")
-    public Boolean isPurchaseInsure(@RequestBody @Validated ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest)
+    public Boolean isPurchaseInsure(@RequestBody @Validated ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest, HttpServletRequest request)
     {
-        return experimentInsuranceBiz.isPurchaseInsure(experimentPersonInsuranceRequest);
+        return experimentInsuranceBiz.isPurchaseInsure(experimentPersonInsuranceRequest,request);
     }
 
     /**

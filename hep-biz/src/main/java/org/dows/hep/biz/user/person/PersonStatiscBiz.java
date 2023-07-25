@@ -2,9 +2,11 @@ package org.dows.hep.biz.user.person;
 
 import lombok.RequiredArgsConstructor;
 import org.dows.account.api.AccountInstanceApi;
+import org.dows.account.api.AccountOrgApi;
 import org.dows.account.api.AccountOrgGeoApi;
 import org.dows.account.response.AccountInstanceResponse;
 import org.dows.account.response.AccountOrgGeoResponse;
+import org.dows.account.response.AccountOrgInfoResponse;
 import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.user.experiment.response.ExperimentOrgResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
@@ -43,6 +45,8 @@ public class PersonStatiscBiz {
     private final ExperimentOrgService experimentOrgService;
 
     private final CaseOrgFeeDao caseOrgFeeDao;
+
+    private final AccountOrgApi accountOrgApi;
 
     /**
      * @param
@@ -120,6 +124,12 @@ public class PersonStatiscBiz {
                 orgResponse.setOrgLatitude(orgGeo.getOrgLatitude());
                 orgResponse.setOrgLongitude(orgGeo.getOrgLongitude());
                 orgResponse.setOrgName(orgGeo.getOrgName());
+                //获取是否开启数字档案
+                AccountOrgInfoResponse orgInfoResponse = accountOrgApi.getAccountOrgInfoByOrgId(org.getOrgId());
+                orgResponse.setIsEnable(orgInfoResponse.getIsEnable());
+                if(orgInfoResponse.getIsEnable() == null){
+                    orgResponse.setIsEnable(false);
+                }
                 orgResponses.add(orgResponse);
             });
         }
