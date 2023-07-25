@@ -29,9 +29,10 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsRest {
   @GetMapping("v1/userExperiment/monitorFollowup/get")
   public ExperimentMonitorFollowupRsResponse get(
       @RequestParam String indicatorFuncId,
-      @RequestParam String experimentPersonId
+      @RequestParam String experimentPersonId,
+      @RequestParam Integer periods
       ) {
-    return experimentIndicatorViewMonitorFollowupReportRsBiz.get(indicatorFuncId, experimentPersonId);
+    return experimentIndicatorViewMonitorFollowupReportRsBiz.get(indicatorFuncId, experimentPersonId, periods);
   }
 
 }

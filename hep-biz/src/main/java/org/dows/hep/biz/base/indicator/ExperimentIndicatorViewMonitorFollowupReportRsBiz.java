@@ -9,6 +9,7 @@ import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.api.exception.ExperimentIndicatorViewBaseInfoRsException;
 import org.dows.hep.api.exception.ExperimentIndicatorViewMonitorFollowupReportRsException;
+import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -32,8 +33,8 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
   private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
 
   private final ExperimentIndicatorViewMonitorFollowupPlanRsService experimentIndicatorViewMonitorFollowupPlanRsService;
-
   private final ExperimentIndicatorViewMonitorFollowupReportRsService experimentIndicatorViewMonitorFollowupReportRsService;
+  private final ShareBiz shareBiz;
 
   public static ExperimentIndicatorViewMonitorFollowupPlanRsResponse experimentIndicatorViewMonitorFollowupPlanRs2Response(ExperimentIndicatorViewMonitorFollowupPlanRsEntity experimentIndicatorViewMonitorFollowupPlanRsEntity) {
     if (Objects.isNull(experimentIndicatorViewMonitorFollowupPlanRsEntity)) {
@@ -184,14 +185,12 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
    * 2.plan exist
    *   1.2 return last experimentIndicatorViewMonitorFollowupReportRsResponse
   */
-  public ExperimentMonitorFollowupRsResponse get(String indicatorFuncId, String experimentPersonId) {
-    /* runsix:TODO 这个等张亮的期数弄好再调整 */
-    Integer period = 1;
+  public ExperimentMonitorFollowupRsResponse get(String indicatorFuncId, String experimentPersonId, Integer periods) {
     ExperimentIndicatorViewMonitorFollowupPlanRsResponse experimentIndicatorViewMonitorFollowupPlanRsResponse = null;
     List<ExperimentIndicatorViewMonitorFollowupRsResponse> experimentIndicatorViewMonitorFollowupRsResponseList = new ArrayList<>();
     ExperimentIndicatorViewMonitorFollowupReportRsResponse experimentIndicatorViewMonitorFollowupReportRsResponse = null;
     ExperimentIndicatorViewMonitorFollowupPlanRsEntity experimentIndicatorViewMonitorFollowupPlanRsEntity = experimentIndicatorViewMonitorFollowupPlanRsService.lambdaQuery()
-        .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getPeriods, period)
+        .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getPeriods, periods)
         .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getExperimentPersonId, experimentPersonId)
         .one();
     experimentIndicatorViewMonitorFollowupPlanRsResponse = experimentIndicatorViewMonitorFollowupPlanRs2Response(experimentIndicatorViewMonitorFollowupPlanRsEntity);
@@ -211,7 +210,7 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
         });
     if (!experimentIndicatorInstanceIdSet.isEmpty()) {
       experimentIndicatorValRsService.lambdaQuery()
-          .eq(ExperimentIndicatorValRsEntity::getPeriods, period)
+          .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
           .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
           .list()
           .forEach(experimentIndicatorValRsEntity -> {
@@ -252,7 +251,7 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
     if (Objects.isNull(experimentIndicatorViewMonitorFollowupPlanRsEntity)) {
     } else {
       ExperimentIndicatorViewMonitorFollowupReportRsEntity experimentIndicatorViewMonitorFollowupReportRsEntity = experimentIndicatorViewMonitorFollowupReportRsService.lambdaQuery()
-          .eq(ExperimentIndicatorViewMonitorFollowupReportRsEntity::getPeriod, period)
+          .eq(ExperimentIndicatorViewMonitorFollowupReportRsEntity::getPeriod, periods)
           .eq(ExperimentIndicatorViewMonitorFollowupReportRsEntity::getExperimentPersonId, experimentPersonId)
           .eq(ExperimentIndicatorViewMonitorFollowupReportRsEntity::getIndicatorFuncId, indicatorFuncId)
           .orderByDesc(ExperimentIndicatorViewMonitorFollowupReportRsEntity::getCount)
