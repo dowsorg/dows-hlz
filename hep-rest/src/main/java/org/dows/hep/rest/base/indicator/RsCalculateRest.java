@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.*;
 import org.dows.hep.api.base.indicator.response.RsCalculateCompetitiveScoreRsResponse;
 import org.dows.hep.api.base.indicator.response.RsCalculateMoneyScoreRsResponse;
-import org.dows.hep.biz.base.indicator.RsCalculateBiz;
+import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,59 +21,71 @@ import java.util.concurrent.ExecutionException;
 @RequiredArgsConstructor
 @Tag(name = "实验各种数计算", description = "实验各种数计算")
 public class RsCalculateRest {
-  private final RsCalculateBiz rsCalculateBiz;
+  private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
+
+  @Operation(summary = "功能结算点（比如健康指导点击后）调用这个封装好的方法")
+  @PostMapping("v1/experimentIndicator/func/reCalculate")
+  public void experimentReCalculateFunc(@RequestBody RsCalculateFuncRequest rsCalculateFuncRequest) throws ExecutionException, InterruptedException {
+    rsExperimentCalculateBiz.experimentReCalculateFunc(rsCalculateFuncRequest);
+  }
+
+  @Operation(summary = "期数翻转与我相关")
+  @PostMapping("v1/experimentIndicator/periods/reCalculate")
+  public void experimentReCalculatePeriods(@RequestBody RsCalculatePeriodsRequest rsCalculatePeriodsRequest) throws ExecutionException, InterruptedException {
+    rsExperimentCalculateBiz.experimentReCalculatePeriods(rsCalculatePeriodsRequest);
+  }
 
   @Operation(summary = "实验-期数重新计算N个人所有指标，如果不传人，就是所有的")
   @PostMapping("v1/experimentIndicator/person/reCalculate")
   public void experimentReCalculatePerson(@RequestBody RsCalculatePersonRequestRs rsCalculatePersonRequestRs) throws ExecutionException, InterruptedException {
-    rsCalculateBiz.experimentReCalculatePerson(rsCalculatePersonRequestRs);
+    rsExperimentCalculateBiz.experimentReCalculatePerson(rsCalculatePersonRequestRs);
   }
 
   @Operation(summary = "实验-计算健康指数")
   @PostMapping("v1/experimentIndicator/healthScore/calculate")
   public void experimentRsCalculateHealthScore(@RequestBody ExperimentRsCalculateHealthScoreRequestRs experimentRsCalculateHealthScoreRequestRs) throws ExecutionException, InterruptedException {
-    rsCalculateBiz.experimentRsCalculateHealthScore(experimentRsCalculateHealthScoreRequestRs);
+    rsExperimentCalculateBiz.experimentRsCalculateHealthScore(experimentRsCalculateHealthScoreRequestRs);
   }
 
   @Operation(summary = "计算医疗占比")
   @PostMapping("v1/experimentIndicator/moneyScore/calculate")
   public RsCalculateMoneyScoreRsResponse rsCalculateMoneyScore(@RequestBody RsCalculateMoneyScoreRequestRs rsCalculateMoneyScoreRequestRs) {
-    return rsCalculateBiz.rsCalculateMoneyScore(rsCalculateMoneyScoreRequestRs);
+    return rsExperimentCalculateBiz.rsCalculateMoneyScore(rsCalculateMoneyScoreRequestRs);
   }
 
   @Operation(summary = "计算出实验小组的竞争性得分")
   @PostMapping("v1/experimentIndicator/competitiveScore/calculate")
   public RsCalculateCompetitiveScoreRsResponse rsCalculateCompetitiveScore(@RequestBody RsCalculateCompetitiveScoreRequestRs rsCalculateCompetitiveScoreRequestRs) {
-    return rsCalculateBiz.rsCalculateCompetitiveScore(rsCalculateCompetitiveScoreRequestRs);
+    return rsExperimentCalculateBiz.rsCalculateCompetitiveScore(rsCalculateCompetitiveScoreRequestRs);
   }
 
   @Operation(summary = "案例-重新计算一个人所有指标")
   @PostMapping("v1/caseIndicator/onePerson/reCalculate")
   public void caseReCalculateOnePerson(@RequestBody ReCalculateOnePersonRequestRs reCalculateOnePersonRequestRs) throws ExecutionException, InterruptedException {
-    rsCalculateBiz.caseReCalculateOnePerson(reCalculateOnePersonRequestRs);
+    rsExperimentCalculateBiz.caseReCalculateOnePerson(reCalculateOnePersonRequestRs);
   }
 
   @Operation(summary = "案例-计算一个人健康指数")
   @PostMapping("v1/caseIndicator/healthScore/calculate")
   public void caseRsCalculateHealthScore(@RequestBody CaseRsCalculateHealthScoreRequestRs caseRsCalculateHealthScoreRequestRs) throws ExecutionException, InterruptedException {
-    rsCalculateBiz.caseRsCalculateHealthScore(caseRsCalculateHealthScoreRequestRs);
+    rsExperimentCalculateBiz.caseRsCalculateHealthScore(caseRsCalculateHealthScoreRequestRs);
   }
 
   @Operation(summary = "数据库-计算指标的健康指数")
   @PostMapping("v1/databaseIndicator/healthScore/calculate")
   public void databaseRsCalculateHealthScore(@RequestBody DatabaseRsCalculateHealthScoreRequestRs databaseRsCalculateHealthScoreRequestRs) throws ExecutionException, InterruptedException {
-    rsCalculateBiz.databaseRsCalculateHealthScore(databaseRsCalculateHealthScoreRequestRs);
+    rsExperimentCalculateBiz.databaseRsCalculateHealthScore(databaseRsCalculateHealthScoreRequestRs);
   }
 
   @Operation(summary = "计算前设置持续天数当前值")
   @PutMapping("v1/experimentIndicator/duration/put")
-  public void experimentSetDuration(@RequestBody RsExperimentSetDurationRequest rsExperimentSetDurationRequest) {
-    rsCalculateBiz.experimentSetDuration(rsExperimentSetDurationRequest);
+  public void experimentSetDuration(@RequestBody RsExperimentSetDurationRequest rsExperimentSetDurationRequest) throws ExecutionException, InterruptedException {
+    rsExperimentCalculateBiz.experimentSetDuration(rsExperimentSetDurationRequest);
   }
 
   @Operation(summary = "期数翻转结束后，要把本期最终结果更新为下一期的值")
   @PutMapping("v1/experimentIndicator/val/put")
   public void experimentSetVal(@RequestBody RsExperimentSetValRequest rsExperimentSetValRequest) throws ExecutionException, InterruptedException {
-    rsCalculateBiz.experimentSetVal(rsExperimentSetValRequest);
+    rsExperimentCalculateBiz.experimentSetVal(rsExperimentSetValRequest);
   }
 }

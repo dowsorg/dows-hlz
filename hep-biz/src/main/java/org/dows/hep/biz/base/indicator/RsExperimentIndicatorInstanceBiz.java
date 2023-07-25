@@ -3,6 +3,7 @@ package org.dows.hep.biz.base.indicator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.dows.hep.api.enums.EnumIndicatorType;
 import org.dows.hep.entity.ExperimentIndicatorInstanceRsEntity;
 import org.dows.hep.entity.ExperimentIndicatorValRsEntity;
 import org.dows.hep.service.ExperimentIndicatorInstanceRsService;
@@ -147,6 +148,21 @@ public class RsExperimentIndicatorInstanceBiz {
           kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(
               experimentIndicatorValRsEntity.getIndicatorInstanceId(), experimentIndicatorValRsEntity
           );
+        });
+  }
+
+  public void populateKExperimentPersonIdVDurationExperimentIndicatorInstanceIdMap(
+      Map<String, String> kExperimentPersonIdVExperimentIndicatorInstanceIdMap,
+      Set<String> experimentPersonIdSet) {
+    if (Objects.isNull(kExperimentPersonIdVExperimentIndicatorInstanceIdMap)
+        || Objects.isNull(experimentPersonIdSet) || experimentPersonIdSet.isEmpty()
+    ) {return;}
+    experimentIndicatorInstanceRsService.lambdaQuery()
+        .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.DURATION.getType())
+        .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdSet)
+        .list()
+        .forEach(experimentIndicatorInstanceRsEntity -> {
+          kExperimentPersonIdVExperimentIndicatorInstanceIdMap.put(experimentIndicatorInstanceRsEntity.getExperimentPersonId(), experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
         });
   }
 }
