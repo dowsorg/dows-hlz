@@ -552,8 +552,8 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
             .experimentOrgId(experimentSupportExamCheckRequestRs.getExperimentOrgId())
             .operateFlowId(operateFlowId)
             .patientId(experimentSupportExamCheckRequestRs.getExperimentPersonId())
-            .feeName(EnumOrgFeeType.TGJCF.getName())
-            .feeCode(EnumOrgFeeType.TGJCF.getCode())
+            .feeName(EnumOrgFeeType.FZJCF.getName())
+            .feeCode(EnumOrgFeeType.FZJCF.getCode())
             .cost(totalFeeAtomicReference.get())
             .period(experimentSupportExamCheckRequestRs.getPeriods())
             .build();
