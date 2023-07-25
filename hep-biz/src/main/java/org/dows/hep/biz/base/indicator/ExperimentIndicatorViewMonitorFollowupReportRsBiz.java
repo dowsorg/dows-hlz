@@ -10,6 +10,7 @@ import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.api.event.ExperimentFollowupEvent;
 import org.dows.hep.api.exception.ExperimentIndicatorViewBaseInfoRsException;
 import org.dows.hep.api.exception.ExperimentIndicatorViewMonitorFollowupReportRsException;
+import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -34,16 +35,13 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
     private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
 
     private final ExperimentIndicatorViewMonitorFollowupPlanRsService experimentIndicatorViewMonitorFollowupPlanRsService;
-
     private final ExperimentIndicatorViewMonitorFollowupReportRsService experimentIndicatorViewMonitorFollowupReportRsService;
-
     private final ApplicationContext applicationContext;
 
     public static ExperimentIndicatorViewMonitorFollowupPlanRsResponse experimentIndicatorViewMonitorFollowupPlanRs2Response(ExperimentIndicatorViewMonitorFollowupPlanRsEntity experimentIndicatorViewMonitorFollowupPlanRsEntity) {
         if (Objects.isNull(experimentIndicatorViewMonitorFollowupPlanRsEntity)) {
             return null;
         }
-        ;
         return ExperimentIndicatorViewMonitorFollowupPlanRsResponse
                 .builder()
                 .experimentIndicatorViewMonitorFollowupPlanId(experimentIndicatorViewMonitorFollowupPlanRsEntity.getExperimentIndicatorViewMonitorFollowupPlanId())
@@ -65,14 +63,14 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
         ExperimentIndicatorViewMonitorFollowupReportRsEntity experimentIndicatorViewMonitorFollowupReportRsEntity = null;
         Integer periods = experimentMonitorFollowupCheckRequestRs.getPeriods();
         String experimentGroupId = experimentMonitorFollowupCheckRequestRs.getExperimentGroupId();
+        String experimentOrgId = experimentMonitorFollowupCheckRequestRs.getExperimentOrgId();
         String experimentPersonId = experimentMonitorFollowupCheckRequestRs.getExperimentPersonId();
         String indicatorFuncId = experimentMonitorFollowupCheckRequestRs.getIndicatorFuncId();
         String appId = experimentMonitorFollowupCheckRequestRs.getAppId();
         String experimentId = experimentMonitorFollowupCheckRequestRs.getExperimentId();
         String indicatorViewMonitorFollowupId = experimentMonitorFollowupCheckRequestRs.getIndicatorViewMonitorFollowupId();
         Integer intervalDay = experimentMonitorFollowupCheckRequestRs.getIntervalDay();
-        /* runsix:TODO 等吴治霖弄好 */
-        String operateFlowId = "1";
+        String operateFlowId = ShareBiz.checkRunningOperateFlowId(appId, experimentId, experimentOrgId, experimentPersonId);
         ExperimentIndicatorViewMonitorFollowupPlanRsEntity experimentIndicatorViewMonitorFollowupPlanRsEntity = experimentIndicatorViewMonitorFollowupPlanRsService.lambdaQuery()
                 .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getAppId, appId)
                 .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getExperimentId, experimentId)
@@ -193,14 +191,12 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
      * 2.plan exist
      * 1.2 return last experimentIndicatorViewMonitorFollowupReportRsResponse
      */
-    public ExperimentMonitorFollowupRsResponse get(String indicatorFuncId, String experimentPersonId) {
-        /* runsix:TODO 这个等张亮的期数弄好再调整 */
-        Integer period = 1;
+    public ExperimentMonitorFollowupRsResponse get(String indicatorFuncId, String experimentPersonId, Integer periods) {
         ExperimentIndicatorViewMonitorFollowupPlanRsResponse experimentIndicatorViewMonitorFollowupPlanRsResponse = null;
         List<ExperimentIndicatorViewMonitorFollowupRsResponse> experimentIndicatorViewMonitorFollowupRsResponseList = new ArrayList<>();
         ExperimentIndicatorViewMonitorFollowupReportRsResponse experimentIndicatorViewMonitorFollowupReportRsResponse = null;
         ExperimentIndicatorViewMonitorFollowupPlanRsEntity experimentIndicatorViewMonitorFollowupPlanRsEntity = experimentIndicatorViewMonitorFollowupPlanRsService.lambdaQuery()
-                .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getPeriods, period)
+                .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getPeriods, periods)
                 .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getExperimentPersonId, experimentPersonId)
                 .one();
         experimentIndicatorViewMonitorFollowupPlanRsResponse = experimentIndicatorViewMonitorFollowupPlanRs2Response(experimentIndicatorViewMonitorFollowupPlanRsEntity);
@@ -220,7 +216,7 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
                 });
         if (!experimentIndicatorInstanceIdSet.isEmpty()) {
             experimentIndicatorValRsService.lambdaQuery()
-                    .eq(ExperimentIndicatorValRsEntity::getPeriods, period)
+                    .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
                     .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
                     .list()
                     .forEach(experimentIndicatorValRsEntity -> {
@@ -265,7 +261,7 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
         if (Objects.isNull(experimentIndicatorViewMonitorFollowupPlanRsEntity)) {
         } else {
             ExperimentIndicatorViewMonitorFollowupReportRsEntity experimentIndicatorViewMonitorFollowupReportRsEntity = experimentIndicatorViewMonitorFollowupReportRsService.lambdaQuery()
-                    .eq(ExperimentIndicatorViewMonitorFollowupReportRsEntity::getPeriod, period)
+                    .eq(ExperimentIndicatorViewMonitorFollowupReportRsEntity::getPeriod, periods)
                     .eq(ExperimentIndicatorViewMonitorFollowupReportRsEntity::getExperimentPersonId, experimentPersonId)
                     .eq(ExperimentIndicatorViewMonitorFollowupReportRsEntity::getIndicatorFuncId, indicatorFuncId)
                     .orderByDesc(ExperimentIndicatorViewMonitorFollowupReportRsEntity::getCount)

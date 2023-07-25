@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.ExperimentMonitorFollowupCheckRequestRs;
-import org.dows.hep.api.base.indicator.request.ExperimentPhysicalExamCheckRequestRs;
 import org.dows.hep.api.base.indicator.response.ExperimentMonitorFollowupRsResponse;
 import org.dows.hep.biz.base.indicator.ExperimentIndicatorViewMonitorFollowupReportRsBiz;
 import org.springframework.web.bind.annotation.*;
@@ -29,9 +28,10 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsRest {
   @GetMapping("v1/userExperiment/monitorFollowup/get")
   public ExperimentMonitorFollowupRsResponse get(
       @RequestParam String indicatorFuncId,
-      @RequestParam String experimentPersonId
+      @RequestParam String experimentPersonId,
+      @RequestParam Integer periods
       ) {
-    return experimentIndicatorViewMonitorFollowupReportRsBiz.get(indicatorFuncId, experimentPersonId);
+    return experimentIndicatorViewMonitorFollowupReportRsBiz.get(indicatorFuncId, experimentPersonId, periods);
   }
 
 }

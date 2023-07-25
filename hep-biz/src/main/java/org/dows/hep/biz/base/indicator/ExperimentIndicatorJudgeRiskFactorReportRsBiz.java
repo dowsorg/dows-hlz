@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.base.indicator.request.ExperimentRiskFactorCheckRequestRs;
 import org.dows.hep.api.base.indicator.response.ExperimentRiskFactorReportResponseRs;
 import org.dows.hep.api.enums.EnumString;
+import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.entity.ExperimentIndicatorJudgeRiskFactorReportRsEntity;
 import org.dows.hep.entity.ExperimentIndicatorJudgeRiskFactorRsEntity;
 import org.dows.hep.service.*;
@@ -25,13 +26,7 @@ import java.util.stream.Collectors;
 public class ExperimentIndicatorJudgeRiskFactorReportRsBiz {
   private final ExperimentIndicatorJudgeRiskFactorReportRsService experimentIndicatorJudgeRiskFactorReportRsService;
   private final ExperimentIndicatorJudgeRiskFactorRsService experimentIndicatorJudgeRiskFactorRsService;
-  private final ExperimentIndicatorInstanceRsService experimentIndicatorInstanceRsService;
-  private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
   private final IdGenerator idGenerator;
-  private final ExperimentIndicatorExpressionRefRsService experimentIndicatorExpressionRefRsService;
-  private final ExperimentIndicatorExpressionRsService experimentIndicatorExpressionRsService;
-  private final ExperimentIndicatorExpressionItemRsService experimentIndicatorExpressionItemRsService;
-  private final ExperimentIndicatorExpressionInfluenceRsService experimentIndicatorExpressionInfluenceRsService;
 
   public static ExperimentRiskFactorReportResponseRs experimentRiskFactorReport2ResponseRs(ExperimentIndicatorJudgeRiskFactorReportRsEntity experimentIndicatorJudgeRiskFactorReportRsEntity) {
     if (Objects.isNull(experimentIndicatorJudgeRiskFactorReportRsEntity)) {
@@ -49,8 +44,7 @@ public class ExperimentIndicatorJudgeRiskFactorReportRsBiz {
   @Transactional(rollbackFor = Exception.class)
   public void riskFactorCheck(ExperimentRiskFactorCheckRequestRs experimentRiskFactorCheckRequestRs) {
     List<ExperimentIndicatorJudgeRiskFactorReportRsEntity> experimentIndicatorJudgeRiskFactorReportRsEntityList = new ArrayList<>();
-    /* runsix:TODO 这个期数后期根据张亮接口拿 */
-    Integer period = 1;
+    Integer periods = experimentRiskFactorCheckRequestRs.getPeriods();
     String experimentPersonId = experimentRiskFactorCheckRequestRs.getExperimentPersonId();
     String indicatorFuncId = experimentRiskFactorCheckRequestRs.getIndicatorFuncId();
     List<String> experimentIndicatorJudgeRiskFactorIdList = experimentRiskFactorCheckRequestRs.getExperimentIndicatorJudgeRiskFactorIdList();
@@ -58,11 +52,7 @@ public class ExperimentIndicatorJudgeRiskFactorReportRsBiz {
     String experimentId = experimentRiskFactorCheckRequestRs.getExperimentId();
     String experimentOrgId = experimentRiskFactorCheckRequestRs.getExperimentOrgId();
 
-    String operateFlowId = "1";
-    /* runsix:TODO 等实验能跑，才用吴治霖这个 */
-//    ExptOrgFlowValidator exptOrgFlowValidator = ExptOrgFlowValidator.create(appId, experimentId, experimentOrgId, experimentPersonId);
-//    exptOrgFlowValidator.checkOrgFlow(true);
-//    String operateFlowId = exptOrgFlowValidator.getOperateFlowId();
+    String operateFlowId = ShareBiz.checkRunningOperateFlowId(appId, experimentId, experimentOrgId, experimentPersonId);
     Map<String, ExperimentIndicatorJudgeRiskFactorRsEntity> kExperimentIndicatorJudgeRiskFactorIdVExperimentIndicatorJudgeRiskFactorRsEntityMap = new HashMap<>();
     if (!experimentIndicatorJudgeRiskFactorIdList.isEmpty()) {
       experimentIndicatorJudgeRiskFactorRsService.lambdaQuery()
@@ -77,7 +67,7 @@ public class ExperimentIndicatorJudgeRiskFactorReportRsBiz {
     ExperimentIndicatorJudgeRiskFactorReportRsEntity experimentIndicatorJudgeRiskFactorReportRsEntity = experimentIndicatorJudgeRiskFactorReportRsService.lambdaQuery()
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getAppId, appId)
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getExperimentId, experimentId)
-        .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getPeriod, period)
+        .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getPeriod, periods)
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getIndicatorFuncId, indicatorFuncId)
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getExperimentPersonId, experimentPersonId)
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getOperateFlowId, operateFlowId)
@@ -95,7 +85,7 @@ public class ExperimentIndicatorJudgeRiskFactorReportRsBiz {
               .experimentIndicatorJudgeRiskFactorReportId(idGenerator.nextIdStr())
               .experimentId(experimentId)
               .appId(appId)
-              .period(period)
+              .period(periods)
               .indicatorFuncId(indicatorFuncId)
               .experimentPersonId(experimentPersonId)
               .operateFlowId(operateFlowId)
@@ -109,17 +99,12 @@ public class ExperimentIndicatorJudgeRiskFactorReportRsBiz {
     experimentIndicatorJudgeRiskFactorReportRsService.saveOrUpdateBatch(experimentIndicatorJudgeRiskFactorReportRsEntityList);
   }
 
-  public List<ExperimentRiskFactorReportResponseRs> get(String appId, String experimentId, String indicatorFuncId, String experimentPersonId, String experimentOrgId) {
-    /* runsix:TODO 期数当前写死为1,后期从张亮获取 */
-    Integer period = 1;
-    String operateFlowId = "1";
-//    ExptOrgFlowValidator exptOrgFlowValidator = ExptOrgFlowValidator.create(appId, experimentId, experimentOrgId, experimentPersonId);
-//    exptOrgFlowValidator.checkOrgFlow(true);
-//    String operateFlowId = exptOrgFlowValidator.getOperateFlowId();
+  public List<ExperimentRiskFactorReportResponseRs> get(String appId, String experimentId, String indicatorFuncId, String experimentPersonId, String experimentOrgId, Integer periods) {
+    String operateFlowId = ShareBiz.checkRunningOperateFlowId(appId, experimentId, experimentOrgId, experimentPersonId);
     return experimentIndicatorJudgeRiskFactorReportRsService.lambdaQuery()
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getAppId, appId)
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getExperimentId, experimentId)
-        .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getPeriod, period)
+        .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getPeriod, periods)
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getIndicatorFuncId, indicatorFuncId)
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getExperimentPersonId, experimentPersonId)
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getOperateFlowId, operateFlowId)

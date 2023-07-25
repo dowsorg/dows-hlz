@@ -33,7 +33,8 @@ public class ExperimentIndicatorJudgeRiskFactorReportRsRest {
       @RequestParam String experimentId,
       @RequestParam String indicatorFuncId,
       @RequestParam String experimentPersonId,
-      @RequestParam String experimentOrgId) {
-    return experimentIndicatorJudgeRiskFactorReportRsBiz.get(appId, experimentId, indicatorFuncId, experimentPersonId, experimentOrgId);
+      @RequestParam String experimentOrgId,
+      @RequestParam Integer periods) {
+    return experimentIndicatorJudgeRiskFactorReportRsBiz.get(appId, experimentId, indicatorFuncId, experimentPersonId, experimentOrgId, periods);
   }
 }

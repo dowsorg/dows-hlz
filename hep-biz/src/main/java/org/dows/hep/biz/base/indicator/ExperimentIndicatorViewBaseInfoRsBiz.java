@@ -6,7 +6,6 @@ import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.api.exception.ExperimentIndicatorViewBaseInfoRsException;
-import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.springframework.stereotype.Service;
@@ -27,13 +26,10 @@ public class ExperimentIndicatorViewBaseInfoRsBiz {
   private final ExperimentIndicatorViewBaseInfoDescrRsService experimentIndicatorViewBaseInfoDescrRsService;
   private final ExperimentIndicatorViewBaseInfoMonitorRsService experimentIndicatorViewBaseInfoMonitorRsService;
   private final ExperimentIndicatorViewBaseInfoSingleRsService experimentIndicatorViewBaseInfoSingleRsService;
-
-  private final ExperimentTimerBiz experimentTimerBiz;
   private final ExperimentIndicatorInstanceRsService experimentIndicatorInstanceRsService;
-  private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
   private final RsExperimentIndicatorValBiz rsExperimentIndicatorValBiz;
 
-  public ExperimentIndicatorViewBaseInfoRsResponse get(String experimentIndicatorViewBaseInfoId, String experimentPersonId) throws ExecutionException, InterruptedException {
+  public ExperimentIndicatorViewBaseInfoRsResponse get(String experimentIndicatorViewBaseInfoId, String experimentPersonId, Integer periods) throws ExecutionException, InterruptedException {
     ExperimentIndicatorViewBaseInfoRsEntity experimentIndicatorViewBaseInfoRsEntity = experimentIndicatorViewBaseInfoRsService.lambdaQuery()
         .eq(ExperimentIndicatorViewBaseInfoRsEntity::getExperimentIndicatorViewBaseInfoId, experimentIndicatorViewBaseInfoId)
         .oneOpt()
@@ -47,17 +43,8 @@ public class ExperimentIndicatorViewBaseInfoRsBiz {
     Map<String, ExperimentIndicatorInstanceRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap = new HashMap<>();
     Map<String, String> kExperimentIndicatorInstanceIdVValMap = new HashMap<>();
     Map<String, String> kInstanceIdVExperimentIndicatorInstanceIdMap = new HashMap<>();
-    Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
     String appId = experimentIndicatorViewBaseInfoRsEntity.getAppId();
     String experimentId = experimentIndicatorViewBaseInfoRsEntity.getExperimentId();
-    /* runsix: TODO 等张亮那边弄好 */
-//    ExperimentPeriodsResonse experimentPeriods = experimentTimerBiz.getExperimentPeriods(appId, experimentId);
-//    if (Objects.isNull(experimentPeriods)) {
-//      log.warn("method ExperimentIndicatorViewBaseInfoRsBiz.get experimentTimerBiz.getExperimentPeriods experimentId:{} is illegal", experimentId);
-//      throw new ExperimentIndicatorViewBaseInfoRsException(EnumESC.VALIDATE_EXCEPTION);
-//    }
-//    Integer currentPeriod = experimentPeriods.getCurrentPeriod();
-    Integer periods = 1;
     experimentIndicatorInstanceRsService.lambdaQuery()
         .select(ExperimentIndicatorInstanceRsEntity::getExperimentIndicatorInstanceId, ExperimentIndicatorInstanceRsEntity::getIndicatorInstanceId, ExperimentIndicatorInstanceRsEntity::getIndicatorName, ExperimentIndicatorInstanceRsEntity::getUnit)
         .eq(ExperimentIndicatorInstanceRsEntity::getExperimentId, experimentId)
@@ -65,7 +52,6 @@ public class ExperimentIndicatorViewBaseInfoRsBiz {
         .list()
         .forEach(experimentIndicatorInstanceRsEntity -> {
           kInstanceIdVExperimentIndicatorInstanceIdMap.put(experimentIndicatorInstanceRsEntity.getIndicatorInstanceId(), experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
-          experimentIndicatorInstanceIdSet.add(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
           kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.put(
               experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId(), experimentIndicatorInstanceRsEntity);
         });
@@ -82,16 +68,6 @@ public class ExperimentIndicatorViewBaseInfoRsBiz {
       kExperimentIndicatorInstanceIdVValMap.put(experimentIndicatorInstanceId, experimentIndicatorValRsEntity.getCurrentVal());
     });
 
-//    if (!experimentIndicatorInstanceIdSet.isEmpty()) {
-//      experimentIndicatorValRsService.lambdaQuery()
-//          .eq(ExperimentIndicatorValRsEntity::getExperimentId, experimentId)
-//          .eq(ExperimentIndicatorValRsEntity::getPeriods, currentPeriod)
-//          .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
-//          .list()
-//          .forEach(experimentIndicatorValRsEntity -> {
-//            kExperimentIndicatorInstanceIdVValMap.put(experimentIndicatorValRsEntity.getIndicatorInstanceId(), experimentIndicatorValRsEntity.getCurrentVal());
-//          });
-//    }
     List<ExperimentIndicatorViewBaseInfoDescRsEntity> experimentIndicatorViewBaseInfoDescRsEntityList = experimentIndicatorViewBaseInfoDescrRsService.lambdaQuery()
         .eq(ExperimentIndicatorViewBaseInfoDescRsEntity::getIndicatorViewBaseInfoId, experimentIndicatorViewBaseInfoId)
         .orderByAsc(ExperimentIndicatorViewBaseInfoDescRsEntity::getSeq)
