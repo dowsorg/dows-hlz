@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.enums.EnumExperimentTask;
 import org.dows.hep.api.exception.ExperimentException;
-import org.dows.hep.api.notify.NoticeParams;
+import org.dows.hep.api.notify.NoticeContent;
 import org.dows.hep.api.notify.Notifiable;
 import org.dows.hep.entity.ExperimentTaskScheduleEntity;
 import org.dows.hep.service.ExperimentTaskScheduleService;
@@ -16,50 +16,51 @@ import org.dows.hep.service.ExperimentTaskScheduleService;
 @Slf4j
 @RequiredArgsConstructor
 public class ExperimentNoticeTask implements Runnable {
-
-    private final Notifiable notifiable;
-    private final NoticeParams noticeParams;
-    private final ExperimentTaskScheduleService experimentTaskScheduleService;
-
+    // 实验ID
     private final String experimentInstanceId;
-
+    // 小组ID
+    private final String experimentGroupId;
+    // 期数
     private final Integer period;
 
-    private final Integer noticeType;
+    private final Notifiable notifiable;
+    private final NoticeContent noticeContent;
+    // 实验任务调度
+    private final ExperimentTaskScheduleService experimentTaskScheduleService;
+
+
+//    private final Integer noticeType;
 
     @Override
     public void run() {
-        notifiable.notice(noticeParams);
+        notifiable.notice(noticeContent);
 
         //更改通知任务状态
-        if(noticeType == 0) {
-            ExperimentTaskScheduleEntity startNoticeTaskScheduleEntity = experimentTaskScheduleService.lambdaQuery()
-                    .eq(ExperimentTaskScheduleEntity::getTaskBeanCode, EnumExperimentTask.experimentPeriodStartNoticeTask.getDesc())
-                    .eq(ExperimentTaskScheduleEntity::getExperimentInstanceId, experimentInstanceId)
-                    .eq(ExperimentTaskScheduleEntity::getPeriods, period)
-                    .one();
-            if (startNoticeTaskScheduleEntity == null || ReflectUtil.isObjectNull(startNoticeTaskScheduleEntity)) {
-                throw new ExperimentException("该通知任务不存在");
-            }
-            experimentTaskScheduleService.lambdaUpdate()
-                    .eq(ExperimentTaskScheduleEntity::getId, startNoticeTaskScheduleEntity.getId())
-                    .set(ExperimentTaskScheduleEntity::getExecuted,true)
-                    .update();
+        ExperimentTaskScheduleEntity startNoticeTaskScheduleEntity = experimentTaskScheduleService.lambdaQuery()
+                .eq(ExperimentTaskScheduleEntity::getTaskBeanCode, EnumExperimentTask.experimentPeriodStartNoticeTask.getDesc())
+                .eq(ExperimentTaskScheduleEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentTaskScheduleEntity::getPeriods, period)
+                .one();
+        if (startNoticeTaskScheduleEntity == null || ReflectUtil.isObjectNull(startNoticeTaskScheduleEntity)) {
+            throw new ExperimentException("该通知任务不存在");
         }
-        if(noticeType == 1) {
-            ExperimentTaskScheduleEntity endNoticeTaskScheduleEntity = experimentTaskScheduleService.lambdaQuery()
-                    .eq(ExperimentTaskScheduleEntity::getTaskBeanCode, EnumExperimentTask.experimentPeriodEndNoticeTask.getDesc())
-                    .eq(ExperimentTaskScheduleEntity::getExperimentInstanceId, experimentInstanceId)
-                    .eq(ExperimentTaskScheduleEntity::getPeriods, period)
-                    .one();
-            if (endNoticeTaskScheduleEntity == null || ReflectUtil.isObjectNull(endNoticeTaskScheduleEntity)) {
-                throw new ExperimentException("该通知任务不存在");
-            }
-            experimentTaskScheduleService.lambdaUpdate()
-                    .eq(ExperimentTaskScheduleEntity::getId, endNoticeTaskScheduleEntity.getId())
-                    .set(ExperimentTaskScheduleEntity::getExecuted,true)
-                    .update();
+        experimentTaskScheduleService.lambdaUpdate()
+                .eq(ExperimentTaskScheduleEntity::getId, startNoticeTaskScheduleEntity.getId())
+                .set(ExperimentTaskScheduleEntity::getExecuted, true)
+                .update();
+
+        ExperimentTaskScheduleEntity endNoticeTaskScheduleEntity = experimentTaskScheduleService.lambdaQuery()
+                .eq(ExperimentTaskScheduleEntity::getTaskBeanCode, EnumExperimentTask.experimentPeriodEndNoticeTask.getDesc())
+                .eq(ExperimentTaskScheduleEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentTaskScheduleEntity::getPeriods, period)
+                .one();
+        if (endNoticeTaskScheduleEntity == null || ReflectUtil.isObjectNull(endNoticeTaskScheduleEntity)) {
+            throw new ExperimentException("该通知任务不存在");
         }
+        experimentTaskScheduleService.lambdaUpdate()
+                .eq(ExperimentTaskScheduleEntity::getId, endNoticeTaskScheduleEntity.getId())
+                .set(ExperimentTaskScheduleEntity::getExecuted, true)
+                .update();
     }
 
 }

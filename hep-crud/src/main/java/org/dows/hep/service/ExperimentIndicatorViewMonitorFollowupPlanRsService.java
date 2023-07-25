@@ -1,15 +1,14 @@
 package org.dows.hep.service;
 
-import org.dows.framework.crud.mybatis.MybatisCrudService;
 import org.dows.hep.entity.ExperimentIndicatorViewMonitorFollowupPlanRsEntity;
-import org.dows.hep.entity.ExperimentIndicatorViewMonitorFollowupRsEntity;
+import org.dows.framework.crud.mybatis.MybatisCrudService;
 
 
 /**
- * 查看指标监测随访类(ExperimentIndicatorViewMonitorFollowupService)表服务接口
+ * (ExperimentIndicatorViewMonitorFollowupPlanRs)表服务接口
  *
  * @author lait
- * @since 2023-04-28 10:30:48
+ * @since 2023-07-24 14:55:16
  */
 public interface ExperimentIndicatorViewMonitorFollowupPlanRsService extends MybatisCrudService<ExperimentIndicatorViewMonitorFollowupPlanRsEntity> {
 

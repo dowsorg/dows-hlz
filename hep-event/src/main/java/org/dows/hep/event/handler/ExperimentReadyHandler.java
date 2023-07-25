@@ -13,7 +13,8 @@ import org.dows.hep.api.enums.EnumExperimentNotice;
 import org.dows.hep.api.enums.EnumExperimentTask;
 import org.dows.hep.api.enums.EnumNoticeType;
 import org.dows.hep.api.enums.EnumWebSocketType;
-import org.dows.hep.api.notify.NoticeParams;
+import org.dows.hep.api.notify.NoticeContent;
+import org.dows.hep.api.notify.message.ExperimentPeriodMessage;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentParticipatorRequest;
 import org.dows.hep.api.user.experiment.request.ExptQuestionnaireAllotRequest;
@@ -91,41 +92,47 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
         // 总期数
         int periods = experimentPeriodsStartAnsEndTime.size();
         experimentPeriodsStartAnsEndTime.forEach((k, v) -> {
-            NoticeParams noticeParams = NoticeParams.builder()
-                    .experimentInstanceId(experimentInstanceId)
-                    .experimentGroupId(experimentGroupId)
-                    .startTime(DateUtil.date(v.getStartTime()))
-                    .endTime(DateUtil.date(v.getEndTime()))
-                    .currentPeriod(v.getPeriod())
-                    .periods(periods)
+            NoticeContent noticeContent = NoticeContent.builder()
+                    .payload(ExperimentPeriodMessage.builder()
+                            .currentPeriod(v.getPeriod())
+                            .endTime(DateUtil.date(v.getEndTime()))
+                            .startTime(DateUtil.date(v.getStartTime()))
+                            .experimentGroupId(experimentGroupId)
+                            .periods(periods)
+                            .experimentInstanceId(experimentInstanceId)
+                            .build())
                     .noticeType(EnumNoticeType.BoardCastSysEvent)
                     .build();
 
-            extracted(experimentInstanceId, v, noticeParams);
+            extracted(experimentInstanceId, v, noticeContent);
 
             // 期数开始通知任务
-            ExperimentNoticeTask experimentPeriodStartNoticeTask = new ExperimentNoticeTask(periodStartNoticer,
-                    noticeParams,
-                    experimentTaskScheduleService,
+            ExperimentNoticeTask experimentPeriodStartNoticeTask = new ExperimentNoticeTask(
                     experimentInstanceId,
+                    experimentGroupId,
                     v.getPeriod(),
-                    EnumExperimentNotice.startNotice.getCode());
+                    periodStartNoticer,
+                    noticeContent,
+                    experimentTaskScheduleService
+            );
             taskScheduler.schedule(experimentPeriodStartNoticeTask, v.getStartTime());
 
-            extracted1(experimentInstanceId, v, noticeParams);
+            extracted1(experimentInstanceId, v, noticeContent);
 
             // 期数结束通知任务
-            ExperimentNoticeTask experimentPeriodEndNoticeTask = new ExperimentNoticeTask(periodEndNoticer,
-                    noticeParams,
-                    experimentTaskScheduleService,
+            ExperimentNoticeTask experimentPeriodEndNoticeTask = new ExperimentNoticeTask(
                     experimentInstanceId,
+                    experimentGroupId,
                     v.getPeriod(),
-                    EnumExperimentNotice.endNotice.getCode());
+                    periodEndNoticer,
+                    noticeContent,
+                    experimentTaskScheduleService
+            );
             taskScheduler.schedule(experimentPeriodEndNoticeTask, v.getEndTime());
         });
     }
 
-    private void extracted1(String experimentInstanceId, ExperimentTimerEntity v, NoticeParams noticeParams) {
+    private void extracted1(String experimentInstanceId, ExperimentTimerEntity v, NoticeContent noticeContent) {
         //保存任务进计时器表，防止重启后服务挂了，一个任务每个实验每一期只能有一条数据
         ExperimentTaskScheduleEntity endEntity = new ExperimentTaskScheduleEntity();
         ExperimentTaskScheduleEntity endTaskScheduleEntity = experimentTaskScheduleService.lambdaQuery()
@@ -134,7 +141,7 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
                 .eq(ExperimentTaskScheduleEntity::getPeriods, v.getPeriod())
                 .one();
         String taskParams2 = "{\"experimentInstanceId\":\"" + experimentInstanceId
-                + "\",\"period\":" + v.getPeriod() + ",\"noticeParams\":" + JSON.toJSONString(noticeParams) + ",\"noticeType\":" + EnumExperimentNotice.endNotice.getCode() + "}";
+                + "\",\"period\":" + v.getPeriod() + ",\"noticeParams\":" + JSON.toJSONString(noticeContent) + ",\"noticeType\":" + EnumExperimentNotice.endNotice.getCode() + "}";
         if (endTaskScheduleEntity != null && !ReflectUtil.isObjectNull(endTaskScheduleEntity)) {
             BeanUtil.copyProperties(endTaskScheduleEntity, endEntity);
             endEntity.setExecuteTime(v.getStartTime());
@@ -155,7 +162,7 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
         experimentTaskScheduleService.saveOrUpdate(endEntity);
     }
 
-    private void extracted(String experimentInstanceId, ExperimentTimerEntity v, NoticeParams noticeParams) {
+    private void extracted(String experimentInstanceId, ExperimentTimerEntity v, NoticeContent noticeContent) {
         //保存任务进计时器表，防止重启后服务挂了，一个任务每个实验每一期只能有一条数据
         ExperimentTaskScheduleEntity startEntity = new ExperimentTaskScheduleEntity();
         ExperimentTaskScheduleEntity startTaskScheduleEntity = experimentTaskScheduleService.lambdaQuery()
@@ -164,7 +171,7 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
                 .eq(ExperimentTaskScheduleEntity::getPeriods, v.getPeriod())
                 .one();
         String taskParams1 = "{\"experimentInstanceId\":\"" + experimentInstanceId
-                + "\",\"period\":" + v.getPeriod() + ",\"noticeParams\":" + JSON.toJSONString(noticeParams) + ",\"noticeType\":" + EnumExperimentNotice.startNotice.getCode() + "}";
+                + "\",\"period\":" + v.getPeriod() + ",\"noticeParams\":" + JSON.toJSONString(noticeContent) + ",\"noticeType\":" + EnumExperimentNotice.startNotice.getCode() + "}";
         if (startTaskScheduleEntity != null && !ReflectUtil.isObjectNull(startTaskScheduleEntity)) {
             BeanUtil.copyProperties(startTaskScheduleEntity, startEntity);
             startEntity.setExecuteTime(v.getStartTime());

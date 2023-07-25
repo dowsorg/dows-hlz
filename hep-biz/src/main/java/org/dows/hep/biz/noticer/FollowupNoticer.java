@@ -7,15 +7,14 @@ import org.dows.hep.api.notify.Notifiable;
 import org.springframework.stereotype.Component;
 
 /**
- * 期数开始消息通知器
+ * 检测随访通知
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class PeriodStartNoticer extends AbstractPeriodNoticer implements Notifiable {
-
+public class FollowupNoticer extends AbstractPeriodNoticer implements Notifiable {
     @Override
     public void notice(NoticeContent noticeContent) {
-        doNotice(noticeContent);
+
     }
 }
