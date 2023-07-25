@@ -2,6 +2,7 @@ package org.dows.hep.rest.base.indicator;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.ExperimentPhysicalExamCheckRequestRs;
 import org.dows.hep.api.base.indicator.response.ExperimentPhysicalExamReportResponseRs;
@@ -29,8 +30,8 @@ public class ExperimentIndicatorViewPhysicalExamReportRsRest {
 
   @Operation(summary = "实验人物和在这个机构功能点下的体格检查报告")
   @PostMapping("v1/userExperiment/physicalExamReport/check")
-  public void v1PhysicalExamCheck(@RequestBody ExperimentPhysicalExamCheckRequestRs experimentPhysicalExamCheckRequestRs) throws ExecutionException, InterruptedException {
-    experimentIndicatorViewPhysicalExamReportRsBiz.v1PhysicalExamCheck(experimentPhysicalExamCheckRequestRs);
+  public void v1PhysicalExamCheck(@RequestBody ExperimentPhysicalExamCheckRequestRs experimentPhysicalExamCheckRequestRs, HttpServletRequest request) throws ExecutionException, InterruptedException {
+    experimentIndicatorViewPhysicalExamReportRsBiz.v1PhysicalExamCheck(experimentPhysicalExamCheckRequestRs,request);
   }
 
   @Operation(summary = "根据实验人物id和功能点id查找体格报告")
