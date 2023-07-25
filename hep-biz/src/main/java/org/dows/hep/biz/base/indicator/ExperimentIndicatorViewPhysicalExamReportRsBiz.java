@@ -11,6 +11,9 @@ import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.ExperimentIndicatorViewPhysicalExamReportRsException;
 import org.dows.hep.biz.operate.CostRequest;
 import org.dows.hep.biz.operate.OperateCostBiz;
+import org.dows.hep.biz.request.CaseCalIndicatorExpressionRequest;
+import org.dows.hep.biz.request.DatabaseCalIndicatorExpressionRequest;
+import org.dows.hep.biz.request.ExperimentCalIndicatorExpressionRequest;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -480,11 +483,17 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
                     EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource(),
                     EnumIndicatorExpressionScene.PHYSICAL_EXAM.getScene(),
                     resultExplainAtomicReference,
-                    kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
-                    experimentIndicatorExpressionRsEntity,
-                    experimentIndicatorExpressionItemRsEntityList,
-                    minExperimentIndicatorExpressionItemRsEntity,
-                    maxExperimentIndicatorExpressionItemRsEntity
+                    new HashMap<>(),
+                    DatabaseCalIndicatorExpressionRequest.builder().build(),
+                    CaseCalIndicatorExpressionRequest.builder().build(),
+                    ExperimentCalIndicatorExpressionRequest
+                        .builder()
+                        .kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap)
+                        .experimentIndicatorExpressionRsEntity(experimentIndicatorExpressionRsEntity)
+                        .experimentIndicatorExpressionItemRsEntityList(experimentIndicatorExpressionItemRsEntityList)
+                        .minExperimentIndicatorExpressionItemRsEntity(minExperimentIndicatorExpressionItemRsEntity)
+                        .maxExperimentIndicatorExpressionItemRsEntity(maxExperimentIndicatorExpressionItemRsEntity)
+                        .build()
                 );
               }
             }
@@ -518,6 +527,8 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
         .periods(periods)
         .moneyChange(totalFeeAtomicReference.get())
         .build());
+    /* runsix: TODO 姜霞加在这里 */
+
     experimentIndicatorViewPhysicalExamReportRsService.saveOrUpdateBatch(experimentIndicatorViewPhysicalExamReportRsEntityList);
   }
 
