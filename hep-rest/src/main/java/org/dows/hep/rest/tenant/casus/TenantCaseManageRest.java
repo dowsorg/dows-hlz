@@ -82,6 +82,28 @@ public class TenantCaseManageRest {
     }
 
     /**
+     * 启用
+     * @param
+     * @return
+     */
+    @Operation(summary = "启用")
+    @GetMapping("v1/tenantCasus/caseManage/enabledCaseInstance")
+    public Boolean enabledCaseInstance(@Validated String caseInstanceId) {
+        return tenantCaseManageBiz.enabledCaseInstance(caseInstanceId);
+    }
+
+    /**
+     * 禁用
+     * @param
+     * @return
+     */
+    @Operation(summary = "禁用")
+    @GetMapping("v1/tenantCasus/caseManage/disabledCaseInstance")
+    public Boolean disabledCaseInstance(@Validated String caseInstanceId) {
+        return tenantCaseManageBiz.disabledCaseInstance(caseInstanceId);
+    }
+
+    /**
     * 删除
     * @param
     * @return
