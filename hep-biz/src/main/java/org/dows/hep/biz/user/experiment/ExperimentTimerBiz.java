@@ -10,10 +10,8 @@ import org.dows.hep.api.enums.EnumExperimentMode;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
-import org.dows.hep.api.user.experiment.request.ExperimentPersonRequest;
 import org.dows.hep.api.user.experiment.response.CountDownResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
-import org.dows.hep.biz.user.person.PersonStatiscBiz;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.entity.ExperimentSettingEntity;
@@ -23,7 +21,6 @@ import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.hep.service.ExperimentSettingService;
 import org.dows.hep.service.ExperimentTimerService;
 import org.springframework.stereotype.Service;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -41,7 +38,7 @@ public class ExperimentTimerBiz {
     private final ExperimentInstanceService experimentInstanceService;
     private final ExperimentParticipatorService experimentParticipatorService;
     private final ExperimentSettingService experimentSettingService;
-    private final PersonStatiscBiz personStatiscBiz;
+//    private final PersonStatiscBiz personStatiscBiz;
 
 
     /**
@@ -290,11 +287,11 @@ public class ExperimentTimerBiz {
                     countDownResponse.setPeriod(et.getPeriod());
                     countDownResponse.setState(et.getState());
                     if(et.getPeriod() >1){
-                        personStatiscBiz.refundFunds(ExperimentPersonRequest.builder()
-                                                     .experimentInstanceId(experimentInstanceId)
-                                                     .appId("3")
-                                                     .periods(et.getPeriod() - 1)
-                                                     .build());
+//                        personStatiscBiz.refundFunds(ExperimentPersonRequest.builder()
+//                                                     .experimentInstanceId(experimentInstanceId)
+//                                                     .appId("3")
+//                                                     .periods(et.getPeriod() - 1)
+//                                                     .build());
                     }
                     break;
                 } else if (sct >= et.getStartTime().getTime() && sct <= et.getEndTime().getTime()) {// 期数中
