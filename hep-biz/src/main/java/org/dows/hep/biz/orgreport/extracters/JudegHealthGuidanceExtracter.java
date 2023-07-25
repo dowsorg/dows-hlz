@@ -5,8 +5,11 @@ import org.dows.hep.api.base.indicator.response.ExperimentHealthGuidanceReportRe
 import org.dows.hep.api.enums.EnumExptOperateType;
 import org.dows.hep.api.user.experiment.vo.ExptOrgReportNodeDataVO;
 import org.dows.hep.biz.base.indicator.ExperimentIndicatorJudgeHealthGuidanceReportRsBiz;
+import org.dows.hep.biz.event.ExperimentSettingCache;
+import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.orgreport.IOrgReportExtracter;
 import org.dows.hep.biz.orgreport.OrgReportExtractRequest;
+import org.dows.hep.biz.util.ShareBiz;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -32,8 +35,9 @@ public class JudegHealthGuidanceExtracter implements IOrgReportExtracter<List<Ex
 
     @Override
     public List<ExperimentHealthGuidanceReportResponseRs> getReportData(OrgReportExtractRequest req) {
+        final Integer period= ShareBiz.getCurrentPeriod(req.getAppId(), req.getExperimentInstanceId());
         return experimentIndicatorJudgeHealthGuidanceReportRsBiz.get(req.getAppId(), req.getExperimentInstanceId(),
-                req.getIndicatorFuncId(),req.getExperimentPersonId(),req.getExperimentOrgId());
+                req.getIndicatorFuncId(),req.getExperimentPersonId(),req.getExperimentOrgId(),period);
     }
 
     @Override
