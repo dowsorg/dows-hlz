@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.Accessors;
 
@@ -43,9 +44,11 @@ public class QuestionRequest {
 
     @Schema(title = "问题标题")
     @NotBlank(message = "问题标题不能为空")
+    @Size(min = 1, max = 500, message = "问题标题长度限制为 1-500")
     private String questionTitle;
 
     @Schema(title = "问题描述")
+    @Size(max = 1000, message = "问题描述长度上限为 1000")
     private String questionDescr;
 
     @Schema(title = "状态 0-禁用 1-启用")

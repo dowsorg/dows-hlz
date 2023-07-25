@@ -69,6 +69,10 @@ public class ExperimentInsuranceBiz {
                 .moneyChange(experimentPersonInsuranceRequest.getInsuranceAmount().negate())
                 .build());
         LoginContextVO voLogin= ShareBiz.getLoginUser(request);
+        String operateFlowId = ShareBiz.checkRunningOperateFlowId(experimentPersonInsuranceRequest.getAppId(),
+                experimentPersonInsuranceRequest.getExperimentInstanceId(),
+                experimentPersonInsuranceRequest.getOperateOrgId(),
+                experimentPersonInsuranceRequest.getExperimentPersonId());
         //2、保存消费记录
         CostRequest costRequest = CostRequest.builder()
                 .operateFlowId(idGenerator.nextIdStr())
@@ -76,7 +80,7 @@ public class ExperimentInsuranceBiz {
                 .experimentGroupId(experimentPersonInsuranceRequest.getExperimentGroupId())
                 .operatorId(voLogin.getAccountId())
                 .experimentOrgId(experimentPersonInsuranceRequest.getOperateOrgId())
-                .operateFlowId(experimentPersonInsuranceRequest.getOperateFlowId())
+                .operateFlowId(operateFlowId)
                 .patientId(experimentPersonInsuranceRequest.getExperimentPersonId())
                 .feeName(EnumOrgFeeType.BXF.getName())
                 .feeCode(EnumOrgFeeType.BXF.getCode())

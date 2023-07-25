@@ -118,16 +118,16 @@ public class RsExperimentIndicatorExpressionBiz {
   public void populateKExperimentPersonIdVKExperimentIndicatorInstanceIdVExperimentIndicatorValMap(
       Map<String, Map<String, ExperimentIndicatorValRsEntity>> kExperimentPersonIdVKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
       Set<String> experimentPersonIdSet,
-      Integer period
+      Integer periods
   ) {
     if (Objects.isNull(kExperimentPersonIdVKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap)
         || Objects.isNull(experimentPersonIdSet) || experimentPersonIdSet.isEmpty()
     ) {
       return;
     }
-    if (Objects.isNull(period)) {
+    if (Objects.isNull(periods)) {
       /* runsix:TODO 等张亮期数接口 */
-      period = 1;
+      periods = 1;
     }
     experimentPersonIdSet.forEach(experimentPersonId -> {
       kExperimentPersonIdVKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(
