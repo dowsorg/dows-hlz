@@ -24,8 +24,9 @@ public class ExperimentIndicatorViewBaseInfoRsRest {
   @GetMapping("v1/userExperiment/baseInfo/get")
   public ExperimentIndicatorViewBaseInfoRsResponse get(
       @RequestParam String experimentIndicatorViewBaseInfoId,
-      @RequestParam String experimentPersonId
+      @RequestParam String experimentPersonId,
+      @RequestParam Integer periods
   ) throws ExecutionException, InterruptedException {
-    return experimentIndicatorViewBaseInfoRsBiz.get(experimentIndicatorViewBaseInfoId, experimentPersonId);
+    return experimentIndicatorViewBaseInfoRsBiz.get(experimentIndicatorViewBaseInfoId, experimentPersonId, periods);
   }
 }

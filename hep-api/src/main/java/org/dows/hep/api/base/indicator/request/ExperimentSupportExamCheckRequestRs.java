@@ -23,6 +23,9 @@ public class ExperimentSupportExamCheckRequestRs implements Serializable {
   @Schema(title = "应用ID")
   private String appId;
 
+  @Schema(title = "期数")
+  private Integer periods;
+
   @Schema(title = "实验人物id")
   private String experimentPersonId;
 

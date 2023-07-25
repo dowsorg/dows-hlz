@@ -32,6 +32,9 @@ public class ExperimentHealthProblemCheckRequestRs implements Serializable {
   @Schema(title = "机构id")
   private String experimentOrgId;
 
+  @Schema(title = "期数")
+  private Integer periods;
+
   @Schema(title = "体格检查id")
   private List<String> experimentIndicatorJudgeHealthProblemIdList;
 

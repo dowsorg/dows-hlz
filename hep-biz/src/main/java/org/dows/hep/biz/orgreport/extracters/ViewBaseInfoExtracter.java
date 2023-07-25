@@ -7,6 +7,7 @@ import org.dows.hep.api.user.experiment.vo.ExptOrgReportNodeDataVO;
 import org.dows.hep.biz.base.indicator.ExperimentIndicatorViewBaseInfoRsBiz;
 import org.dows.hep.biz.orgreport.IOrgReportExtracter;
 import org.dows.hep.biz.orgreport.OrgReportExtractRequest;
+import org.dows.hep.biz.util.ShareBiz;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -32,7 +33,8 @@ public class ViewBaseInfoExtracter implements IOrgReportExtracter<ExperimentIndi
 
     @Override
     public ExperimentIndicatorViewBaseInfoRsResponse getReportData(OrgReportExtractRequest req) throws ExecutionException, InterruptedException {
-        return experimentIndicatorViewBaseInfoRsBiz.get(req.getIndicatorFuncId(),req.getExperimentPersonId());
+        final Integer period= ShareBiz.getCurrentPeriod(req.getAppId(), req.getExperimentInstanceId());
+        return experimentIndicatorViewBaseInfoRsBiz.get(req.getIndicatorFuncId(),req.getExperimentPersonId(),period);
     }
 
     @Override

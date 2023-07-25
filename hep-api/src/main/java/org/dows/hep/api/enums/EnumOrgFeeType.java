@@ -16,6 +16,10 @@ public enum EnumOrgFeeType {
     NONE("","NA"),
     GHF("GHF","挂号费"),
     BXF("BXF","保险费"),
+    TGJCF("TGJCF","体格检查费"),
+    FZJCF("FZJCF","辅助检查费"),
+    XLGYF("XLGYF","心理干预费"),
+    YWZLF("YWZLF","药物治疗费"),
     ;
 
     private String code;

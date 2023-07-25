@@ -477,7 +477,7 @@ public class RsCaseIndicatorExpressionBiz {
       AtomicReference<String> resultAtomicReference,
       Map<String, String> kIndicatorInstanceIdVCaseIndicatorInstanceIdMap,
       DatabaseCalIndicatorExpressionRequest databaseCalIndicatorExpressionRequest,
-      CaseCalIndicatorExpressionRequest caseIndicatorExpressionRequest
+      CaseCalIndicatorExpressionRequest caseCalIndicatorExpressionRequest
   ) {
     rsUtilBiz.checkField(field);
     rsUtilBiz.checkScene(scene);
@@ -488,11 +488,11 @@ public class RsCaseIndicatorExpressionBiz {
     IndicatorExpressionItemEntity minIndicatorExpressionItemEntity = databaseCalIndicatorExpressionRequest.getMinIndicatorExpressionItemEntity();
     IndicatorExpressionItemEntity maxIndicatorExpressionItemEntity = databaseCalIndicatorExpressionRequest.getMaxIndicatorExpressionItemEntity();
 
-    Map<String, CaseIndicatorRuleEntity> kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap = caseIndicatorExpressionRequest.getKCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap();
-    CaseIndicatorExpressionEntity caseIndicatorExpressionEntity = caseIndicatorExpressionRequest.getCaseIndicatorExpressionEntity();
-    List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList = caseIndicatorExpressionRequest.getCaseIndicatorExpressionItemEntityList();
-    CaseIndicatorExpressionItemEntity minCaseIndicatorExpressionItemEntity = caseIndicatorExpressionRequest.getMinCaseIndicatorExpressionItemEntity();
-    CaseIndicatorExpressionItemEntity maxCaseIndicatorExpressionItemEntity = caseIndicatorExpressionRequest.getMaxCaseIndicatorExpressionItemEntity();
+    Map<String, CaseIndicatorRuleEntity> kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap = caseCalIndicatorExpressionRequest.getKCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap();
+    CaseIndicatorExpressionEntity caseIndicatorExpressionEntity = caseCalIndicatorExpressionRequest.getCaseIndicatorExpressionEntity();
+    List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList = caseCalIndicatorExpressionRequest.getCaseIndicatorExpressionItemEntityList();
+    CaseIndicatorExpressionItemEntity minCaseIndicatorExpressionItemEntity = caseCalIndicatorExpressionRequest.getMinCaseIndicatorExpressionItemEntity();
+    CaseIndicatorExpressionItemEntity maxCaseIndicatorExpressionItemEntity = caseCalIndicatorExpressionRequest.getMaxCaseIndicatorExpressionItemEntity();
     switch (enumIndicatorExpressionSource) {
       case INDICATOR_MANAGEMENT -> cPIEIndicatorManagement(
           scene,
