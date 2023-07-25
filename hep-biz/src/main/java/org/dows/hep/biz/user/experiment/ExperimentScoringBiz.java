@@ -78,12 +78,12 @@ public class ExperimentScoringBiz {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void saveOrUpd(String experimentInstanceId, Integer period) throws ExecutionException, InterruptedException {
+    public void saveOrUpd(String experimentInstanceId, Integer periods) throws ExecutionException, InterruptedException {
         List<ExperimentGroupEntity> experimentGroupEntityList = new ArrayList<>();
         CompletableFuture<Void> populateExperimentGroupEntityListCF = getPopulateExperimentGroupEntityListCF(experimentInstanceId, experimentGroupEntityList);
 
         AtomicInteger scoringCountAtomicInteger = new AtomicInteger(1);
-        CompletableFuture<Void> populateScoringCountCF = getPopulateScoringCountCF(scoringCountAtomicInteger, experimentInstanceId, period);
+        CompletableFuture<Void> populateScoringCountCF = getPopulateScoringCountCF(scoringCountAtomicInteger, experimentInstanceId, periods);
 
         AtomicReference<Float> knowledgeWeightAtomicReference = new AtomicReference<>(0F);
         AtomicReference<Float> healthIndexWeightAtomicReference = new AtomicReference<>(0F);
@@ -91,13 +91,13 @@ public class ExperimentScoringBiz {
         CompletableFuture<Void> populateWeightCF = getPopulateWeightCF(knowledgeWeightAtomicReference, healthIndexWeightAtomicReference, medicalRatioWeightAtomicReference, experimentInstanceId);
 
         Map<String, BigDecimal> questionnaireScoreMap = new HashMap<>();
-        CompletableFuture<Void> populateQuestionnaireScoreMapCF = getPopulateQuestionnaireScoreMapCF(questionnaireScoreMap, experimentInstanceId, period);
+        CompletableFuture<Void> populateQuestionnaireScoreMapCF = getPopulateQuestionnaireScoreMapCF(questionnaireScoreMap, experimentInstanceId, periods);
 
         Map<String, BigDecimal> kExperimentGroupIdVGroupCompetitiveScoreMap = new HashMap<>();
-        CompletableFuture<Void> populateKExperimentGroupIdVGroupCompetitiveScoreMapCF = getPopulateKExperimentGroupIdVGroupCompetitiveScoreMapCF(kExperimentGroupIdVGroupCompetitiveScoreMap, experimentInstanceId, period);
+        CompletableFuture<Void> populateKExperimentGroupIdVGroupCompetitiveScoreMapCF = getPopulateKExperimentGroupIdVGroupCompetitiveScoreMapCF(kExperimentGroupIdVGroupCompetitiveScoreMap, experimentInstanceId, periods);
 
         Map<String, BigDecimal> kExperimentGroupIdVGroupMoneyScoreMap = new HashMap<>();
-        CompletableFuture<Void> populateKExperimentGroupIdVGroupMoneyScoreMapCF = getPopulateKExperimentGroupIdVGroupMoneyScoreMapCF(kExperimentGroupIdVGroupMoneyScoreMap, experimentInstanceId, period);
+        CompletableFuture<Void> populateKExperimentGroupIdVGroupMoneyScoreMapCF = getPopulateKExperimentGroupIdVGroupMoneyScoreMapCF(kExperimentGroupIdVGroupMoneyScoreMap, experimentInstanceId, periods);
 
         CompletableFuture.allOf(populateExperimentGroupEntityListCF, populateScoringCountCF, populateWeightCF,
                 populateQuestionnaireScoreMapCF, populateKExperimentGroupIdVGroupCompetitiveScoreMapCF, populateKExperimentGroupIdVGroupMoneyScoreMapCF).get();
@@ -107,7 +107,7 @@ public class ExperimentScoringBiz {
                 experimentScoringEntityList, experimentGroupEntityList, scoringCountAtomicInteger,
                 knowledgeWeightAtomicReference, healthIndexWeightAtomicReference, medicalRatioWeightAtomicReference,
                 questionnaireScoreMap, kExperimentGroupIdVGroupCompetitiveScoreMap, kExperimentGroupIdVGroupMoneyScoreMap,
-                experimentInstanceId, period
+                experimentInstanceId, periods
         );
         populateExperimentScoringEntityListCF.get();
         experimentScoringService.saveOrUpdateBatch(experimentScoringEntityList);
@@ -162,15 +162,15 @@ public class ExperimentScoringBiz {
     }
 
     private CompletableFuture<Void> getPopulateKExperimentGroupIdVGroupCompetitiveScoreMapCF(
-            Map<String, BigDecimal> kExperimentGroupIdVGroupCompetitiveScoreMap, String experimentInstanceId, Integer period) {
+            Map<String, BigDecimal> kExperimentGroupIdVGroupCompetitiveScoreMap, String experimentInstanceId, Integer periods) {
         return CompletableFuture.runAsync(() -> {
             RsCalculateCompetitiveScoreRsResponse rsCalculateCompetitiveScoreRsResponse = rsCalculateBiz.rsCalculateCompetitiveScore(RsCalculateCompetitiveScoreRequestRs
                     .builder()
                     .experimentId(experimentInstanceId)
-                    .periods(period)
+                    .periods(periods)
                     .build());
             List<GroupCompetitiveScoreRsResponse> groupCompetitiveScoreRsResponseList = rsCalculateCompetitiveScoreRsResponse.getGroupCompetitiveScoreRsResponseList();
-            if (Objects.nonNull(groupCompetitiveScoreRsResponseList) && groupCompetitiveScoreRsResponseList.isEmpty()) {
+            if (Objects.nonNull(groupCompetitiveScoreRsResponseList) && !groupCompetitiveScoreRsResponseList.isEmpty()) {
                 groupCompetitiveScoreRsResponseList.forEach(groupCompetitiveScoreRsResponse -> {
                     String experimentGroupId = groupCompetitiveScoreRsResponse.getExperimentGroupId();
                     BigDecimal groupCompetitiveScore = groupCompetitiveScoreRsResponse.getGroupCompetitiveScore();
@@ -181,13 +181,13 @@ public class ExperimentScoringBiz {
     }
 
     private CompletableFuture<Void> getPopulateKExperimentGroupIdVGroupMoneyScoreMapCF(
-            Map<String, BigDecimal> kExperimentGroupIdVGroupMoneyScoreMap, String experimentInstanceId, Integer period
+            Map<String, BigDecimal> kExperimentGroupIdVGroupMoneyScoreMap, String experimentInstanceId, Integer periods
     ) {
         return CompletableFuture.runAsync(() -> {
             RsCalculateMoneyScoreRsResponse rsCalculateMoneyScoreRsResponse = rsCalculateBiz.rsCalculateMoneyScore(RsCalculateMoneyScoreRequestRs
                     .builder()
                     .experimentId(experimentInstanceId)
-                    .periods(period)
+                    .periods(periods)
                     .build());
             List<GroupMoneyScoreRsResponse> groupMoneyScoreRsResponseList = rsCalculateMoneyScoreRsResponse.getGroupMoneyScoreRsResponseList();
             if (Objects.isNull(groupMoneyScoreRsResponseList) || groupMoneyScoreRsResponseList.isEmpty()) {
@@ -211,7 +211,7 @@ public class ExperimentScoringBiz {
             Map<String, BigDecimal> kExperimentGroupIdVGroupCompetitiveScoreMap,
             Map<String, BigDecimal> kExperimentGroupIdVGroupMoneyScoreMap,
             String experimentInstanceId,
-            Integer period
+            Integer periods
     ) {
         return CompletableFuture.runAsync(() -> {
             experimentGroupEntityList.forEach(experimentGroupEntity -> {
@@ -249,7 +249,7 @@ public class ExperimentScoringBiz {
                         .treatmentPercentScore(groupIdVGroupMoneyScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
                         .totalScore(totalScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
                         .scoringCount(scoringCountAtomicInteger.get())
-                        .periods(period)
+                        .periods(periods)
                         .build());
             });
         });

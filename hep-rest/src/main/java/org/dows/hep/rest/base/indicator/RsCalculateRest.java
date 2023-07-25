@@ -23,6 +23,18 @@ import java.util.concurrent.ExecutionException;
 public class RsCalculateRest {
   private final RsCalculateBiz rsCalculateBiz;
 
+  @Operation(summary = "功能结算点（比如健康指导点击后）调用这个封装好的方法")
+  @PostMapping("v1/experimentIndicator/func/reCalculate")
+  public void experimentReCalculateFunc(@RequestBody RsCalculateFuncRequest rsCalculateFuncRequest) throws ExecutionException, InterruptedException {
+    rsCalculateBiz.experimentReCalculateFunc(rsCalculateFuncRequest);
+  }
+
+  @Operation(summary = "期数翻转与我相关")
+  @PostMapping("v1/experimentIndicator/periods/reCalculate")
+  public void experimentReCalculatePeriods(@RequestBody RsCalculatePeriodsRequest rsCalculatePeriodsRequest) throws ExecutionException, InterruptedException {
+    rsCalculateBiz.experimentReCalculatePeriods(rsCalculatePeriodsRequest);
+  }
+
   @Operation(summary = "实验-期数重新计算N个人所有指标，如果不传人，就是所有的")
   @PostMapping("v1/experimentIndicator/person/reCalculate")
   public void experimentReCalculatePerson(@RequestBody RsCalculatePersonRequestRs rsCalculatePersonRequestRs) throws ExecutionException, InterruptedException {
@@ -67,7 +79,7 @@ public class RsCalculateRest {
 
   @Operation(summary = "计算前设置持续天数当前值")
   @PutMapping("v1/experimentIndicator/duration/put")
-  public void experimentSetDuration(@RequestBody RsExperimentSetDurationRequest rsExperimentSetDurationRequest) {
+  public void experimentSetDuration(@RequestBody RsExperimentSetDurationRequest rsExperimentSetDurationRequest) throws ExecutionException, InterruptedException {
     rsCalculateBiz.experimentSetDuration(rsExperimentSetDurationRequest);
   }
 

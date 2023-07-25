@@ -7,8 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author runsix
@@ -17,7 +15,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RsExperimentSetDurationRequest implements Serializable {
+public class RsCalculateFuncRequest implements Serializable {
   @Schema(title = "appId")
   private String appId;
 
@@ -27,6 +25,6 @@ public class RsExperimentSetDurationRequest implements Serializable {
   @Schema(title = "期数")
   private Integer periods;
 
-  @Schema(title = "实验人物与持续时间Map")
-  private Map<String, Integer> kExperimentPersonIdVDurationMap;
+  @Schema(title = "实验人物id，功能点结算是每个人的")
+  private String experimentPersonId;
 }
