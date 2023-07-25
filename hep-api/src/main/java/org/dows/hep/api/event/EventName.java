@@ -17,11 +17,9 @@ public enum EventName {
     groupMemberAllotEvent("groupMemberAllotHandler"),
     teamName("teamNameHandler"),
     copyExperimentPersonAndOrgEvent("copyExperimentPersonAndOrgHandler"),
-
+    feeReimburseEvent("feeReimburseHandler"),
     experimentReadyEvent("experimentReadyHandler"),
     exptEventTriggeredHandler("commonWebSocketEventHandler"),
-
-
     experimentFollowupEvent("experimentFollowupHandler"),
     ;
 
