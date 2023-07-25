@@ -12,16 +12,22 @@ import org.dows.hep.api.base.indicator.response.RsCalculateMoneyScoreRsResponse;
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.RsCalculateBizException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
+import org.dows.hep.biz.event.ExperimentSettingCache;
+import org.dows.hep.biz.event.data.ExperimentCacheKey;
+import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.request.CaseCalIndicatorExpressionRequest;
 import org.dows.hep.biz.request.DatabaseCalIndicatorExpressionRequest;
 import org.dows.hep.biz.request.ExperimentCalIndicatorExpressionRequest;
+import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
+import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -36,13 +42,11 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RsCalculateBiz {
-  private final CaseIndicatorInstanceService caseIndicatorInstanceService;
+public class RsExperimentCalculateBiz {
   private final CaseIndicatorRuleService caseIndicatorRuleService;
   private final ExperimentIndicatorInstanceRsService experimentIndicatorInstanceRsService;
   private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
   private final ExperimentPersonService experimentPersonService;
-
   private final RsExperimentCrowdsBiz rsExperimentCrowdsBiz;
   private final RsExperimentIndicatorExpressionBiz rsExperimentIndicatorExpressionBiz;
   private final RsExperimentIndicatorInstanceBiz rsExperimentIndicatorInstanceBiz;
@@ -56,6 +60,9 @@ public class RsCalculateBiz {
   private final RsIndicatorInstanceBiz rsIndicatorInstanceBiz;
   private final ExperimentSettingService experimentSettingService;
   private final RsExperimentIndicatorValBiz rsExperimentIndicatorValBiz;
+  private final ExperimentPersonCalculateTimeRsService experimentPersonCalculateTimeRsService;
+  private final IdGenerator idGenerator;
+//  private final ExperimentScoringBiz experimentScoringBiz;
 
   @Transactional(rollbackFor = Exception.class)
   public void caseReCalculateOnePerson(ReCalculateOnePersonRequestRs reCalculateOnePersonRequestRs) throws ExecutionException, InterruptedException {
@@ -534,7 +541,7 @@ public class RsCalculateBiz {
     String appId = rsCalculatePersonRequestRs.getAppId();
     String experimentId = rsCalculatePersonRequestRs.getExperimentId();
     Integer periods = rsCalculatePersonRequestRs.getPeriods();
-    Set<String> personIdSet = rsCalculatePersonRequestRs.getPersonId();
+    Set<String> personIdSet = rsCalculatePersonRequestRs.getPersonIdSet();
 
     Set<String> reasonIdSet = new HashSet<>();
     Map<String, List<ExperimentIndicatorExpressionRsEntity>> kReasonIdVExperimentIndicatorExpressionRsEntityListMap = new HashMap<>();
@@ -1001,36 +1008,39 @@ public class RsCalculateBiz {
   }
 
   @Transactional(rollbackFor = Exception.class)
-  public void experimentSetDuration(RsExperimentSetDurationRequest rsExperimentSetDurationRequest) {
+  public void experimentSetDuration(RsExperimentSetDurationRequest rsExperimentSetDurationRequest) throws ExecutionException, InterruptedException {
     /* runsix:param */
     String appId = rsExperimentSetDurationRequest.getAppId();
     String experimentId = rsExperimentSetDurationRequest.getExperimentId();
     Integer periods = rsExperimentSetDurationRequest.getPeriods();
-    Set<String> personIdSet = rsExperimentSetDurationRequest.getPersonIdSet();
-    Integer duration = rsExperimentSetDurationRequest.getDuration();
+    Map<String, Integer> kExperimentPersonIdVDurationMap = rsExperimentSetDurationRequest.getKExperimentPersonIdVDurationMap();
+    if (Objects.isNull(kExperimentPersonIdVDurationMap) || kExperimentPersonIdVDurationMap.isEmpty()) {return;}
+    Set<String> experimentPersonIdSet = kExperimentPersonIdVDurationMap.keySet();
     /* runsix:result */
     List<ExperimentIndicatorValRsEntity> experimentIndicatorValRsEntityList = new ArrayList<>();
-    /* runsix:step populate experimentIndicatorInstanceIdSet */
-    Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
-    experimentIndicatorInstanceRsService.lambdaQuery()
-        .eq(ExperimentIndicatorInstanceRsEntity::getExperimentId, experimentId)
-        .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.DURATION.getType())
-        .in(Objects.nonNull(personIdSet) && !personIdSet.isEmpty(), ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, personIdSet)
-        .list()
-        .forEach(experimentIndicatorInstanceRsEntity -> {
-          experimentIndicatorInstanceIdSet.add(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
-        });
+    Map<String, String> kExperimentPersonIdVExperimentIndicatorInstanceIdMap = new HashMap<>();
+    CompletableFuture<Void> cfPopulateKExperimentPersonIdVDurationExperimentIndicatorInstanceIdMap = CompletableFuture.runAsync(() -> {
+      rsExperimentIndicatorInstanceBiz.populateKExperimentPersonIdVDurationExperimentIndicatorInstanceIdMap(kExperimentPersonIdVExperimentIndicatorInstanceIdMap, experimentPersonIdSet);
+    });
+    cfPopulateKExperimentPersonIdVDurationExperimentIndicatorInstanceIdMap.get();
 
-    /* runsix:step */
-    experimentIndicatorValRsEntityList.addAll(
-        experimentIndicatorValRsService.lambdaQuery()
-            .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
-            .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
-            .list()
-            .stream()
-            .peek(experimentIndicatorValRsEntity -> experimentIndicatorValRsEntity.setCurrentVal(duration.toString()))
-            .collect(Collectors.toList())
-    );
+    if (kExperimentPersonIdVExperimentIndicatorInstanceIdMap.isEmpty()) {return;}
+    Set<String> durationExperimentIndicatorInstanceIdSet = (Set<String>) kExperimentPersonIdVExperimentIndicatorInstanceIdMap.values();
+    Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = new HashMap<>();
+    CompletableFuture<Void> cfPopulateKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = CompletableFuture.runAsync(() -> {
+      rsExperimentIndicatorValBiz.populateKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(
+          kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap, durationExperimentIndicatorInstanceIdSet, periods);
+    });
+    cfPopulateKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get();
+
+    kExperimentPersonIdVDurationMap.forEach((experimentPersonId, duration) -> {
+      String experimentIndicatorInstanceId = kExperimentPersonIdVExperimentIndicatorInstanceIdMap.get(experimentPersonId);
+      if (StringUtils.isBlank(experimentIndicatorInstanceId)) {return;}
+      ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
+      if (Objects.isNull(experimentIndicatorValRsEntity)) {return;}
+      experimentIndicatorValRsEntity.setCurrentVal(String.valueOf(Math.max(duration, 1)));
+      experimentIndicatorValRsEntityList.add(experimentIndicatorValRsEntity);
+    });
 
     /* runsix:operation */
     experimentIndicatorValRsService.saveOrUpdateBatch(experimentIndicatorValRsEntityList);
@@ -1096,5 +1106,184 @@ public class RsCalculateBiz {
 
     /* runsix:final operation */
     experimentIndicatorValRsService.saveOrUpdateBatch(experimentIndicatorValRsEntityList);
+  }
+
+  @Transactional(rollbackFor = Exception.class)
+  public void experimentUpdateCalculatorTime(RsCalculateTimeRequest rsCalculateTimeRequest, Map<String, Integer> kExperimentPersonIdVDurationMap) {
+    /* runsix:param */
+    String appId = rsCalculateTimeRequest.getAppId();
+    String experimentId = rsCalculateTimeRequest.getExperimentId();
+    Set<String> experimentPersonIdSet = rsCalculateTimeRequest.getExperimentPersonIdSet();
+    ExperimentTimePoint timePoint=ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create(appId,experimentId), LocalDateTime.now(), true);
+    Integer gameDay = timePoint.getGameDay();
+    /* runsix:result */
+    List<ExperimentPersonCalculateTimeRsEntity> experimentPersonCalculateTimeRsEntityList = new ArrayList<>();
+
+    Map<String, ExperimentPersonCalculateTimeRsEntity> kExperimentPersonIdVExperimentPersonCalculateTimeRsEntityMap = new HashMap<>();
+    if (Objects.isNull(experimentPersonIdSet) || experimentPersonIdSet.isEmpty()) {return;}
+    experimentPersonCalculateTimeRsService.lambdaQuery()
+        .eq(ExperimentPersonCalculateTimeRsEntity::getExperimentId, experimentId)
+        .in(ExperimentPersonCalculateTimeRsEntity::getExperimentPersonId, experimentPersonIdSet)
+        .list()
+        .forEach(experimentPersonCalculateTimeRsEntity -> {
+          kExperimentPersonIdVExperimentPersonCalculateTimeRsEntityMap.put(experimentPersonCalculateTimeRsEntity.getExperimentPersonId(), experimentPersonCalculateTimeRsEntity);
+        });
+    experimentPersonIdSet.forEach(experimentPersonId -> {
+      ExperimentPersonCalculateTimeRsEntity experimentPersonCalculateTimeRsEntity = kExperimentPersonIdVExperimentPersonCalculateTimeRsEntityMap.get(experimentPersonId);
+      Integer duration = null;
+      /* runsix:如果没有，说明是第一次结算，第一次结算要插入 */
+      if (Objects.isNull(experimentPersonCalculateTimeRsEntity)) {
+        duration = Math.max(gameDay, 1);
+        experimentPersonCalculateTimeRsEntity = ExperimentPersonCalculateTimeRsEntity
+            .builder()
+            .experimentPersonCalculateTimeId(idGenerator.nextIdStr())
+            .experimentId(experimentId)
+            .experimentPersonId(experimentPersonId)
+            .lastCalDay(gameDay)
+            .build();
+      } else {
+        duration = Math.max(gameDay - experimentPersonCalculateTimeRsEntity.getLastCalDay(), 1);
+        experimentPersonCalculateTimeRsEntity.setLastCalDay(gameDay);
+      }
+      experimentPersonCalculateTimeRsEntityList.add(experimentPersonCalculateTimeRsEntity);
+      if (Objects.isNull(kExperimentPersonIdVDurationMap)) {return;}
+      kExperimentPersonIdVDurationMap.put(experimentPersonId, duration);
+    });
+
+    /* runsix:final operation */
+    experimentPersonCalculateTimeRsService.saveOrUpdateBatch(experimentPersonCalculateTimeRsEntityList);
+  }
+
+  /**
+   * runsix method process
+   * 功能结算点需要调用这个，单个人结算
+   * 注意参数personIdSet，如果为空表示是此次实验所有人
+   * 1.计算此次结算持续天数
+   * 2.设置这个人的持续天数
+   * 3.重新计算人的指标
+   * 4.重新计算健康指数
+  */
+  @Transactional(rollbackFor = Exception.class)
+  public void experimentReCalculateFunc(RsCalculateFuncRequest rsCalculateFuncRequest) throws ExecutionException, InterruptedException {
+    /* runsix:param */
+    String appId = rsCalculateFuncRequest.getAppId();
+    String experimentId = rsCalculateFuncRequest.getExperimentId();
+    Integer periods = rsCalculateFuncRequest.getPeriods();
+    String experimentPersonId = rsCalculateFuncRequest.getExperimentPersonId();
+    Set<String> experimentPersonIdSet = new HashSet<>();
+    experimentPersonIdSet.add(experimentPersonId);
+    /* runsix:cal param */
+    Map<String, Integer> kExperimentPersonIdVDurationMap = new HashMap<>();
+
+    /* runsix:1.计算此次结算持续天数 */
+    this.experimentUpdateCalculatorTime(RsCalculateTimeRequest
+        .builder()
+        .appId(appId)
+        .experimentId(experimentId)
+        .experimentPersonIdSet(experimentPersonIdSet)
+        .build(),
+        kExperimentPersonIdVDurationMap);
+
+    /* runsix:2.设置此次结算持续天数 */
+    this.experimentSetDuration(RsExperimentSetDurationRequest
+        .builder()
+        .appId(appId)
+        .experimentId(experimentId)
+        .periods(periods)
+        .kExperimentPersonIdVDurationMap(kExperimentPersonIdVDurationMap)
+        .build());
+
+    /* runsix:3.重新计算人的指标 */
+    this.experimentReCalculatePerson(RsCalculatePersonRequestRs
+        .builder()
+        .appId(appId)
+        .experimentId(experimentId)
+        .periods(periods)
+        .personIdSet(experimentPersonIdSet)
+        .build());
+
+    /* runsix:4.重新计算健康指数 */
+    this.experimentRsCalculateHealthScore(ExperimentRsCalculateHealthScoreRequestRs
+        .builder()
+        .appId(appId)
+        .experimentId(experimentId)
+        .periods(periods)
+        .experimentPersonIdSet(experimentPersonIdSet)
+        .build());
+  }
+
+  /**
+   * runsix method process
+   * 期数翻转，计算所有人
+   * 1.算出每个人的持续天数
+   * 2.设置每个人的持续天数
+   * 3.重新计算所有人的指标
+   * 4.重新计算所有人的健康指数
+   * 5.存储期数翻转数据
+   * 最后一步是更新所有人下一期的指标
+  */
+  @Transactional(rollbackFor = Exception.class)
+  public void experimentReCalculatePeriods(RsCalculatePeriodsRequest rsCalculatePeriodsRequest) throws ExecutionException, InterruptedException {
+    /* runsix:param */
+    String appId = rsCalculatePeriodsRequest.getAppId();
+    String experimentId = rsCalculatePeriodsRequest.getExperimentId();
+    Integer periods = rsCalculatePeriodsRequest.getPeriods();
+
+    /* runsix:cal param */
+    Map<String, Integer> kExperimentPersonIdVDurationMap = new HashMap<>();
+
+    /* runsix:get all experiment person */
+    Set<String> experimentPersonIdSet = new HashSet<>();
+    CompletableFuture<Void> cfPopulateExperimentPersonIdSet = CompletableFuture.runAsync(() -> {
+      rsExperimentPersonBiz.populateExperimentPersonIdSet(experimentPersonIdSet, experimentId, null);
+    });
+    cfPopulateExperimentPersonIdSet.get();
+
+    /* runsix:1.算出每个人的持续天数 */
+    this.experimentUpdateCalculatorTime(RsCalculateTimeRequest
+            .builder()
+            .appId(appId)
+            .experimentId(experimentId)
+            .experimentPersonIdSet(experimentPersonIdSet)
+            .build(),
+        kExperimentPersonIdVDurationMap);
+
+    /* runsix:2.设置每个人的持续天数 */
+    this.experimentSetDuration(RsExperimentSetDurationRequest
+        .builder()
+        .appId(appId)
+        .experimentId(experimentId)
+        .periods(periods)
+        .kExperimentPersonIdVDurationMap(kExperimentPersonIdVDurationMap)
+        .build());
+
+    /* runsix:3.重新计算所有人的指标 */
+    this.experimentReCalculatePerson(RsCalculatePersonRequestRs
+        .builder()
+        .appId(appId)
+        .experimentId(experimentId)
+        .periods(periods)
+        .personIdSet(experimentPersonIdSet)
+        .build());
+
+    /* runsix:4.重新计算所有人的健康指数 */
+    this.experimentRsCalculateHealthScore(ExperimentRsCalculateHealthScoreRequestRs
+        .builder()
+        .appId(appId)
+        .experimentId(experimentId)
+        .periods(periods)
+        .experimentPersonIdSet(experimentPersonIdSet)
+        .build());
+
+//    /* runsix:5.存储期数翻转数据 */
+//    experimentScoringBiz.saveOrUpd(experimentId, periods);
+
+    /* runsix:最后一步是更新所有人下一期的指标 */
+    this.experimentSetVal(RsExperimentSetValRequest
+        .builder()
+        .appId(appId)
+        .experimentId(experimentId)
+        .periods(periods)
+        .build());
   }
 }

@@ -27,5 +27,5 @@ public class RsCalculatePersonRequestRs implements Serializable {
   private Integer periods;
 
   @Schema(title = "人物id")
-  private Set<String> personId;
+  private Set<String> personIdSet;
 }

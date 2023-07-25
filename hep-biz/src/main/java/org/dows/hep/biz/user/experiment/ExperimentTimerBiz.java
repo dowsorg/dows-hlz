@@ -429,7 +429,7 @@ public class ExperimentTimerBiz {
      * @param experimentInstanceId
      */
     public Map<Integer, ExperimentTimerEntity> getExperimentPeriodsStartAnsEndTime(String experimentInstanceId) {
-        Map<Integer, ExperimentTimerEntity> map = new HashMap<>();
+        Map<Integer, ExperimentTimerEntity> map = new LinkedHashMap<>();
         List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
                 .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
                 .orderByAsc(ExperimentTimerEntity::getPeriod)

@@ -128,9 +128,6 @@ public class RsIndicatorInstanceBiz {
         .eq(IndicatorExpressionInfluenceEntity::getAppId, appId)
         .list()
         .forEach(indicatorExpressionInfluenceEntity -> {
-//          String influenceIndicatorInstanceIdList = indicatorExpressionInfluenceEntity.getInfluenceIndicatorInstanceIdList();
-//          List<String> influenceIndicatorInstanceIdSplitList = rsUtilBiz.getSplitList(influenceIndicatorInstanceIdList);
-//          dbExistIndicatorInstanceIdSet.addAll(influenceIndicatorInstanceIdSplitList);
           String influencedIndicatorInstanceIdList = indicatorExpressionInfluenceEntity.getInfluencedIndicatorInstanceIdList();
           List<String> influencedIndicatorInstanceIdSplitList = rsUtilBiz.getSplitList(influencedIndicatorInstanceIdList);
           dbExistIndicatorInstanceIdSet.addAll(influencedIndicatorInstanceIdSplitList);
