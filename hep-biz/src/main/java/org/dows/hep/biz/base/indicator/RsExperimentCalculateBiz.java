@@ -42,13 +42,11 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RsCalculateBiz {
-  private final CaseIndicatorInstanceService caseIndicatorInstanceService;
+public class RsExperimentCalculateBiz {
   private final CaseIndicatorRuleService caseIndicatorRuleService;
   private final ExperimentIndicatorInstanceRsService experimentIndicatorInstanceRsService;
   private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
   private final ExperimentPersonService experimentPersonService;
-
   private final RsExperimentCrowdsBiz rsExperimentCrowdsBiz;
   private final RsExperimentIndicatorExpressionBiz rsExperimentIndicatorExpressionBiz;
   private final RsExperimentIndicatorInstanceBiz rsExperimentIndicatorInstanceBiz;
@@ -64,7 +62,7 @@ public class RsCalculateBiz {
   private final RsExperimentIndicatorValBiz rsExperimentIndicatorValBiz;
   private final ExperimentPersonCalculateTimeRsService experimentPersonCalculateTimeRsService;
   private final IdGenerator idGenerator;
-  private final ExperimentScoringBiz experimentScoringBiz;
+//  private final ExperimentScoringBiz experimentScoringBiz;
 
   @Transactional(rollbackFor = Exception.class)
   public void caseReCalculateOnePerson(ReCalculateOnePersonRequestRs reCalculateOnePersonRequestRs) throws ExecutionException, InterruptedException {
@@ -1277,8 +1275,8 @@ public class RsCalculateBiz {
         .experimentPersonIdSet(experimentPersonIdSet)
         .build());
 
-    /* runsix:5.存储期数翻转数据 */
-    experimentScoringBiz.saveOrUpd(experimentId, periods);
+//    /* runsix:5.存储期数翻转数据 */
+//    experimentScoringBiz.saveOrUpd(experimentId, periods);
 
     /* runsix:最后一步是更新所有人下一期的指标 */
     this.experimentSetVal(RsExperimentSetValRequest

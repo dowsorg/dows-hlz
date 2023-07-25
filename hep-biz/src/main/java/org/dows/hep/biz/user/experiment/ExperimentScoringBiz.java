@@ -14,7 +14,7 @@ import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.exception.ExperimentScoringException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
-import org.dows.hep.biz.base.indicator.RsCalculateBiz;
+import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
 import org.dows.hep.entity.ExperimentGroupEntity;
 import org.dows.hep.entity.ExperimentRankingEntity;
 import org.dows.hep.entity.ExperimentScoringEntity;
@@ -63,7 +63,7 @@ public class ExperimentScoringBiz {
     private final ExperimentScoringService experimentScoringService;
     private final ExperimentTimerBiz experimentTimerBiz;
     private final ExperimentGroupService experimentGroupService;
-    private final RsCalculateBiz rsCalculateBiz;
+    private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
 
 
     private BigDecimal getWeightTotalScore(
@@ -164,7 +164,7 @@ public class ExperimentScoringBiz {
     private CompletableFuture<Void> getPopulateKExperimentGroupIdVGroupCompetitiveScoreMapCF(
             Map<String, BigDecimal> kExperimentGroupIdVGroupCompetitiveScoreMap, String experimentInstanceId, Integer periods) {
         return CompletableFuture.runAsync(() -> {
-            RsCalculateCompetitiveScoreRsResponse rsCalculateCompetitiveScoreRsResponse = rsCalculateBiz.rsCalculateCompetitiveScore(RsCalculateCompetitiveScoreRequestRs
+            RsCalculateCompetitiveScoreRsResponse rsCalculateCompetitiveScoreRsResponse = rsExperimentCalculateBiz.rsCalculateCompetitiveScore(RsCalculateCompetitiveScoreRequestRs
                     .builder()
                     .experimentId(experimentInstanceId)
                     .periods(periods)
@@ -184,7 +184,7 @@ public class ExperimentScoringBiz {
             Map<String, BigDecimal> kExperimentGroupIdVGroupMoneyScoreMap, String experimentInstanceId, Integer periods
     ) {
         return CompletableFuture.runAsync(() -> {
-            RsCalculateMoneyScoreRsResponse rsCalculateMoneyScoreRsResponse = rsCalculateBiz.rsCalculateMoneyScore(RsCalculateMoneyScoreRequestRs
+            RsCalculateMoneyScoreRsResponse rsCalculateMoneyScoreRsResponse = rsExperimentCalculateBiz.rsCalculateMoneyScore(RsCalculateMoneyScoreRequestRs
                     .builder()
                     .experimentId(experimentInstanceId)
                     .periods(periods)

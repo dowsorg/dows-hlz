@@ -65,14 +65,6 @@ public class ExperimentIndicatorInstanceRsBiz {
         String experimentPersonId = rsChangeMoneyRequest.getExperimentPersonId();
         Integer periods = rsChangeMoneyRequest.getPeriods();
         BigDecimal moneyChange = rsChangeMoneyRequest.getMoneyChange();
-        if (Objects.isNull(periods)) {
-            ExperimentPeriodsResonse experimentPeriods = experimentTimerBiz.getExperimentCurrentPeriods(appId, experimentId);
-            if (Objects.nonNull(experimentPeriods) && Objects.nonNull(experimentPeriods.getCurrentPeriod())) {
-                periods = experimentPeriods.getCurrentPeriod();
-            } else {
-                periods = 1;
-            }
-        }
         ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = experimentIndicatorInstanceRsService.lambdaQuery()
                 .eq(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonId)
                 .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.MONEY.getType())
