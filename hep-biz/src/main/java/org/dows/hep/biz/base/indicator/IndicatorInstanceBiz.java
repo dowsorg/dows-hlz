@@ -52,7 +52,7 @@ public class IndicatorInstanceBiz{
     private final IndicatorExpressionBiz indicatorExpressionBiz;
     private final RsIndicatorInstanceBiz rsIndicatorInstanceBiz;
     private final IndicatorExpressionInfluenceService indicatorExpressionInfluenceService;
-    private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
+    private final RsDatabaseCalculateBiz rsDatabaseCalculateBiz;
 
     public static IndicatorInstanceResponseRs indicatorInstance2ResponseRs(
         IndicatorInstanceEntity indicatorInstanceEntity,
@@ -246,7 +246,7 @@ public class IndicatorInstanceBiz{
             indicatorCategoryRefService.saveOrUpdate(indicatorCategoryRefEntity);
             indicatorRuleService.saveOrUpdate(indicatorRuleEntity);
             /* runsix:重新计算健康指数 */
-            rsExperimentCalculateBiz.databaseRsCalculateHealthScore(DatabaseRsCalculateHealthScoreRequestRs
+            rsDatabaseCalculateBiz.databaseRsCalculateHealthScore(DatabaseRsCalculateHealthScoreRequestRs
                 .builder()
                 .appId(EnumString.APP_ID.getStr())
                 .build());

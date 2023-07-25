@@ -60,7 +60,7 @@ public class CaseIndicatorInstanceBiz {
     private final RsUtilBiz rsUtilBiz;
     private final RsCaseIndicatorInstanceBiz rsCaseIndicatorInstanceBiz;
     private final RedissonClient redissonClient;
-    private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
+    private final RsCaseCalculateBiz rsCaseCalculateBiz;
     public static CaseIndicatorInstanceResponseRs caseIndicatorInstance2ResponseRs(
             CaseIndicatorInstanceEntity caseIndicatorInstanceEntity,
             List<CaseIndicatorExpressionResponseRs> caseIndicatorExpressionResponseRsList,
@@ -832,7 +832,7 @@ public class CaseIndicatorInstanceBiz {
             if (Objects.nonNull(caseIndicatorCategoryRefEntityAR.get())) {caseIndicatorCategoryRefService.saveOrUpdate(caseIndicatorCategoryRefEntityAR.get());}
             if (Objects.nonNull(caseIndicatorRuleEntityAR.get())) {caseIndicatorRuleService.saveOrUpdate(caseIndicatorRuleEntityAR.get());}
             if (Objects.nonNull(caseIndicatorExpressionInfluenceEntityAR.get())) {caseIndicatorExpressionInfluenceService.saveOrUpdate(caseIndicatorExpressionInfluenceEntityAR.get());}
-            rsExperimentCalculateBiz.caseRsCalculateHealthScore(CaseRsCalculateHealthScoreRequestRs
+            rsCaseCalculateBiz.caseRsCalculateHealthScore(CaseRsCalculateHealthScoreRequestRs
                 .builder()
                     .appId(appId)
                     .accountId(accountId)
