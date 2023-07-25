@@ -139,8 +139,8 @@ public class ExperimentOrgBiz{
         //保存消费记录
         CostRequest costRequest = CostRequest.builder()
                 .operateCostId(idGenerator.nextIdStr())
-                .experimentInstanceId(startOrgFlow.getExperimentInstanceId())
-                .experimentGroupId(startOrgFlow.getExperimentGroupId())
+                .experimentInstanceId(validator.getExperimentInstanceId())
+                .experimentGroupId(validator.getExperimentGroupId())
                 .operatorId(voLogin.getAccountId())
                 .experimentOrgId(startOrgFlow.getExperimentOrgId())
                 .operateFlowId(operateFlowId)

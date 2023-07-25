@@ -7,6 +7,7 @@ import org.dows.hep.api.user.experiment.vo.ExptOrgReportNodeDataVO;
 import org.dows.hep.biz.base.indicator.ExperimentIndicatorViewSupportExamReportRsBiz;
 import org.dows.hep.biz.orgreport.IOrgReportExtracter;
 import org.dows.hep.biz.orgreport.OrgReportExtractRequest;
+import org.dows.hep.biz.util.ShareBiz;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -32,8 +33,9 @@ public class ViewFourLevelExtracter implements IOrgReportExtracter<List<Experime
 
     @Override
     public List<ExperimentSupportExamReportResponseRs> getReportData(OrgReportExtractRequest req) {
+        final Integer period= ShareBiz.getCurrentPeriod(req.getAppId(), req.getExperimentInstanceId());
         return experimentIndicatorViewSupportExamReportRsBiz.get(req.getAppId(), req.getExperimentInstanceId(),
-                req.getIndicatorFuncId(), req.getExperimentPersonId(), req.getExperimentOrgId());
+                req.getIndicatorFuncId(), req.getExperimentPersonId(), req.getExperimentOrgId(),period);
     }
 
     @Override

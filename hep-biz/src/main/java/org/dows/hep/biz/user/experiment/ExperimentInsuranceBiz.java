@@ -16,10 +16,7 @@ import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.biz.util.TimeUtil;
 import org.dows.hep.biz.vo.LoginContextVO;
 import org.dows.hep.entity.*;
-import org.dows.hep.service.CaseOrgFeeService;
-import org.dows.hep.service.ExperimentOrgService;
-import org.dows.hep.service.ExperimentPersonInsuranceService;
-import org.dows.hep.service.ExperimentPersonMedicalResultService;
+import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
@@ -49,6 +46,7 @@ public class ExperimentInsuranceBiz {
     private final ExperimentTimerBiz experimentTimerBiz;
     private final ExperimentIndicatorInstanceRsBiz experimentIndicatorInstanceRsBiz;
     private final OperateCostBiz operateCostBiz;
+    private final OperateInsuranceService operateInsuranceService;
 
     /**
      * @param
@@ -71,6 +69,10 @@ public class ExperimentInsuranceBiz {
                 .moneyChange(experimentPersonInsuranceRequest.getInsuranceAmount().negate())
                 .build());
         LoginContextVO voLogin= ShareBiz.getLoginUser(request);
+        String operateFlowId = ShareBiz.checkRunningOperateFlowId(experimentPersonInsuranceRequest.getAppId(),
+                experimentPersonInsuranceRequest.getExperimentInstanceId(),
+                experimentPersonInsuranceRequest.getOperateOrgId(),
+                experimentPersonInsuranceRequest.getExperimentPersonId());
         //2、保存消费记录
         CostRequest costRequest = CostRequest.builder()
                 .operateFlowId(idGenerator.nextIdStr())
@@ -78,7 +80,7 @@ public class ExperimentInsuranceBiz {
                 .experimentGroupId(experimentPersonInsuranceRequest.getExperimentGroupId())
                 .operatorId(voLogin.getAccountId())
                 .experimentOrgId(experimentPersonInsuranceRequest.getOperateOrgId())
-                .operateFlowId(experimentPersonInsuranceRequest.getOperateFlowId())
+                .operateFlowId(operateFlowId)
                 .patientId(experimentPersonInsuranceRequest.getExperimentPersonId())
                 .feeName(EnumOrgFeeType.BXF.getName())
                 .feeCode(EnumOrgFeeType.BXF.getCode())
@@ -167,11 +169,13 @@ public class ExperimentInsuranceBiz {
                 .eq(ExperimentPersonInsuranceEntity::getExperimentInstanceId,experimentPersonInsuranceRequest.getExperimentInstanceId())
                 .eq(ExperimentPersonInsuranceEntity::getExperimentGroupId,experimentPersonInsuranceRequest.getExperimentGroupId())
                 .eq(ExperimentPersonInsuranceEntity::getExperimentPersonId,experimentPersonInsuranceRequest.getExperimentPersonId())
-//                .eq(ExperimentPersonInsuranceEntity::getPeriods,experimentPersonInsuranceRequest.getPeriods())
+                .eq(ExperimentPersonInsuranceEntity::getOperateOrgId,experimentPersonInsuranceRequest.getOperateOrgId())
                 .one();
+        Boolean flag;
         if(insuranceEntity != null && !ReflectUtil.isObjectNull(insuranceEntity)){
             //更新
-            return experimentPersonInsuranceService.lambdaUpdate()
+            flag = experimentPersonInsuranceService.lambdaUpdate()
+                    .set(ExperimentPersonInsuranceEntity::getIndate,new Date())
                     .set(ExperimentPersonInsuranceEntity::getExpdate,expdate)
                     .set(ExperimentPersonInsuranceEntity::getPeriods,experimentPersonInsuranceRequest.getPeriods())
                     .eq(ExperimentPersonInsuranceEntity::getId,insuranceEntity.getId())
@@ -191,8 +195,21 @@ public class ExperimentInsuranceBiz {
                     .indate(new Date())
                     .expdate(expdate)
                     .build();
-            return experimentPersonInsuranceService.save(experimentPersonInsuranceEntity);
+            flag = experimentPersonInsuranceService.save(experimentPersonInsuranceEntity);
         }
+        //保存购买保险记录
+        OperateInsuranceEntity insuranceEntity1 = OperateInsuranceEntity.builder()
+                .operateInsuranceId(idGenerator.nextIdStr())
+                .experimentInstanceId(experimentPersonInsuranceRequest.getExperimentInstanceId())
+                .experimentGroupId(experimentPersonInsuranceRequest.getExperimentGroupId())
+                .experimentPersonId(experimentPersonInsuranceRequest.getExperimentPersonId())
+                .experimentOrgId(experimentPersonInsuranceRequest.getOperateOrgId())
+                .periods(Integer.parseInt(experimentPersonInsuranceRequest.getPeriods()))
+                .indate(new Date())
+                .expdate(expdate)
+                .build();
+        operateInsuranceService.save(insuranceEntity1);
+        return flag;
     }
 
     /**

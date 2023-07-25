@@ -16,6 +16,9 @@ import org.dows.hep.biz.base.indicator.CaseIndicatorExpressionBiz;
 import org.dows.hep.biz.base.indicator.IndicatorExpressionBiz;
 import org.dows.hep.biz.dao.ExperimentInstanceDao;
 import org.dows.hep.biz.dao.ExperimentParticipatorDao;
+import org.dows.hep.biz.event.ExperimentSettingCache;
+import org.dows.hep.biz.event.data.ExperimentCacheKey;
+import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.vo.LoginContextVO;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
@@ -23,6 +26,7 @@ import org.dows.hep.entity.OperateFlowEntity;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 
@@ -112,6 +116,15 @@ public class ShareBiz {
             return "";
         }
         return orgFlow.getOperateFlowId();
+    }
+
+
+    public static Integer getCurrentPeriod(String appId,String experimentInstanceId){
+        ExperimentTimePoint timePoint=ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create(appId,experimentInstanceId), LocalDateTime.now(), false);
+        return Optional.ofNullable(timePoint)
+                .map(ExperimentTimePoint::getPeriod)
+                .orElse(null);
+
     }
 
 

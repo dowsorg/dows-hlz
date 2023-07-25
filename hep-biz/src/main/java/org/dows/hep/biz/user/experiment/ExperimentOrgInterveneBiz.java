@@ -14,10 +14,7 @@ import org.dows.hep.api.base.intervene.response.*;
 import org.dows.hep.api.base.intervene.vo.FoodCookbookDetailVO;
 import org.dows.hep.api.base.intervene.vo.SportPlanItemVO;
 import org.dows.hep.api.core.ExptOperateOrgFuncRequest;
-import org.dows.hep.api.enums.EnumCategFamily;
-import org.dows.hep.api.enums.EnumExptOperateType;
-import org.dows.hep.api.enums.EnumFoodDetailType;
-import org.dows.hep.api.enums.EnumFoodMealTime;
+import org.dows.hep.api.enums.*;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.api.user.experiment.vo.ExptOrgReportNodeDataVO;
@@ -27,6 +24,8 @@ import org.dows.hep.biz.base.intervene.*;
 import org.dows.hep.biz.dao.OperateFlowDao;
 import org.dows.hep.biz.dao.OperateOrgFuncDao;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
+import org.dows.hep.biz.operate.CostRequest;
+import org.dows.hep.biz.operate.OperateCostBiz;
 import org.dows.hep.biz.orgreport.OrgReportComposer;
 import org.dows.hep.biz.util.*;
 import org.dows.hep.biz.vo.CalcExptFoodCookbookResult;
@@ -34,8 +33,11 @@ import org.dows.hep.biz.vo.Categ4ExptVO;
 import org.dows.hep.biz.vo.CategVO;
 import org.dows.hep.biz.vo.LoginContextVO;
 import org.dows.hep.entity.*;
+import org.dows.hep.service.ExperimentPersonService;
+import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -71,6 +73,12 @@ public class ExperimentOrgInterveneBiz{
     private final SportItemBiz sportItemBiz;
 
     private final TreatItemBiz treatItemBiz;
+
+    private final ExperimentPersonService experimentPersonService;
+
+    private final IdGenerator idGenerator;
+
+    private final OperateCostBiz operateCostBiz;
 
 
     public List<Categ4ExptVO> listInterveneCateg4Expt(FindInterveneCateg4ExptRequest findCateg ) throws JsonProcessingException {
@@ -383,6 +391,45 @@ public class ExperimentOrgInterveneBiz{
         }else{
             succFlag=operateOrgFuncDao.tranSave(rowOrgFunc,List.of(rowOrgFuncSnap),false);
         }
+        // 判断是什么干预类型
+        String feeName = "";
+        String feeCode = "";
+        if(enumOperateType == EnumExptOperateType.INTERVENETreatTwoLevel){
+            feeName = EnumOrgFeeType.XLGYF.getName();
+            feeCode = EnumOrgFeeType.XLGYF.getCode();
+        }
+        if(enumOperateType == EnumExptOperateType.INTERVENETreatFourLevel){
+            feeName = EnumOrgFeeType.YWZLF.getName();
+            feeCode = EnumOrgFeeType.YWZLF.getCode();
+        }
+
+        // 获取总的费用资金
+        BigDecimal sum = new BigDecimal(0);
+        for(int i = 0;i < saveTreat.getTreatItems().size(); i++){
+            ExptTreatPlanItemVO vo = saveTreat.getTreatItems().get(i);
+            sum = sum.add(BigDecimalOptional.valueOf(vo.getFee()).mul(BigDecimalUtil.tryParseDecimalElseZero(vo.getWeight())).getValue());
+        }
+
+        // 获取小组信息
+        ExperimentPersonEntity personEntity = experimentPersonService.lambdaQuery()
+                .eq(ExperimentPersonEntity::getExperimentPersonId,saveTreat.getExperimentPersonId())
+                .eq(ExperimentPersonEntity::getDeleted,false)
+                .one();
+        // 保存消费记录
+        CostRequest costRequest = CostRequest.builder()
+                .operateCostId(idGenerator.nextIdStr())
+                .experimentInstanceId(saveTreat.getExperimentInstanceId())
+                .experimentGroupId(personEntity.getExperimentGroupId())
+                .operatorId(voLogin.getAccountId())
+                .experimentOrgId(saveTreat.getExperimentOrgId())
+                .operateFlowId(flowValidator.getOperateFlowId())
+                .patientId(saveTreat.getExperimentPersonId())
+                .feeName(feeName)
+                .feeCode(feeCode)
+                .cost(sum)
+                .period(saveTreat.getPeriods())
+                .build();
+        operateCostBiz.saveCost(costRequest);
         return new SaveExptTreatResponse()
                 .setSuccess(succFlag)
                 .setOperateOrgFuncId(rowOrgFunc.getOperateOrgFuncId())
