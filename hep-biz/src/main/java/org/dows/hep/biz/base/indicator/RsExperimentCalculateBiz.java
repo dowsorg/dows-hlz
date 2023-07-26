@@ -8,6 +8,7 @@ import org.dows.hep.api.base.indicator.request.*;
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.RsCalculateBizException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
+import org.dows.hep.api.user.experiment.request.ExperimentPersonRequest;
 import org.dows.hep.biz.event.ExperimentSettingCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
@@ -15,6 +16,7 @@ import org.dows.hep.biz.request.CaseCalIndicatorExpressionRequest;
 import org.dows.hep.biz.request.DatabaseCalIndicatorExpressionRequest;
 import org.dows.hep.biz.request.ExperimentCalIndicatorExpressionRequest;
 import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
+import org.dows.hep.biz.user.person.PersonStatiscBiz;
 import org.dows.hep.biz.util.RedissonUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
@@ -60,6 +62,7 @@ public class RsExperimentCalculateBiz {
   private final ExperimentScoringBiz experimentScoringBiz;
   private final ExperimentScoringService experimentScoringService;
   private final RedissonClient redissonClient;
+  private final PersonStatiscBiz personStatiscBiz;
 
   @Transactional(rollbackFor = Exception.class)
   public void experimentRsCalculateHealthScore(ExperimentRsCalculateHealthScoreRequestRs experimentRsCalculateHealthScoreRequestRs) throws ExecutionException, InterruptedException {
@@ -655,6 +658,14 @@ public class RsExperimentCalculateBiz {
 
       /* runsix:5.存储期数翻转数据 */
       experimentScoringBiz.saveOrUpd(experimentId, periods);
+
+      ExperimentPersonRequest experimentPersonRequest = ExperimentPersonRequest.builder()
+          .experimentInstanceId(experimentId)
+          .appId(appId)
+          .periods(periods)// 计算上一期
+          .build();
+      // 一期结束保险返还
+      personStatiscBiz.refundFunds(experimentPersonRequest);
 
       /* runsix:最后一步是更新所有人下一期的指标 */
       this.experimentSetVal(RsExperimentSetValRequest

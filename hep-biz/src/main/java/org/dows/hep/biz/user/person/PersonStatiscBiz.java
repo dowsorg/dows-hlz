@@ -242,6 +242,7 @@ public class PersonStatiscBiz {
                 .eq(ExperimentPersonEntity::getExperimentInstanceId, request.getExperimentInstanceId())
                 .eq(ExperimentPersonEntity::getDeleted, false)
                 .list();
+        /* runsix: TODO must optimize 这里面存在循环修改 */
         //3、判断在该期结束之前每个人购买了多少保险，并报销，保险是累加的
         if (personEntityList != null && personEntityList.size() > 0) {
             personEntityList.forEach(person -> {
