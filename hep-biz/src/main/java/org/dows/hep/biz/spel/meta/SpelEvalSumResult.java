@@ -23,6 +23,8 @@ import java.math.BigDecimal;
 public class SpelEvalSumResult {
     private String experimentIndicatorId;
 
+    private Object curVal;
+
     private Object val;
 
     private BigDecimal valNumber;

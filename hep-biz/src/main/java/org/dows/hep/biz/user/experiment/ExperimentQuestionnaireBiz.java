@@ -37,11 +37,10 @@ public class ExperimentQuestionnaireBiz {
     private final ExperimentQuestionnaireScoreBiz experimentQuestionnaireScoreBiz;
 
     /**
-     * @param
-     * @return
+     * @param request - 试卷分配请求
      * @author fhb
      * @description 为试卷设置答题者-在实验分配机构完成后通过事件调用
-     * @date 2023/6/3 20:53
+     * @date 2023/7/26 15:00
      */
     public void allotQuestionnaireMembers(ExptQuestionnaireAllotRequest request) {
         if (BeanUtil.isEmpty(request)) {
@@ -84,11 +83,11 @@ public class ExperimentQuestionnaireBiz {
     }
 
     /**
-     * @param
-     * @return
+     * @param request - 查询知识答题问卷请求
+     * @return org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireResponse
      * @author fhb
-     * @description
-     * @date 2023/6/3 20:53
+     * @description 查询知识答题问卷
+     * @date 2023/7/26 15:01
      */
     public ExperimentQuestionnaireResponse getQuestionnaire(ExptQuestionnaireSearchRequest request) {
         Assert.notNull(request, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
@@ -166,11 +165,12 @@ public class ExperimentQuestionnaireBiz {
     }
 
     /**
-     * @param
-     * @return
-     * @author fhb
-     * @description 保存
-     * @date 2023/6/7 13:50
+     * @param request - 知识答题结果
+     * @param updateAccountId - 提交账号ID
+     * @return java.lang.Boolean
+     * @author 更新答题答案内容
+     * @description
+     * @date 2023/7/26 14:59
      */
     public Boolean updateQuestionnaire(ExperimentQuestionnaireRequest request, String updateAccountId) {
         if (BeanUtil.isEmpty(request) || StrUtil.isBlank(updateAccountId)) {
@@ -185,45 +185,41 @@ public class ExperimentQuestionnaireBiz {
         return experimentQuestionnaireItemBiz.updateBatch(itemList);
     }
 
-//    /**
-//     * @param
-//     * @return
-//     * @说明: 提交
-//     * @关联表:
-//     * @工时: 2H
-//     * @开发者: lait
-//     * @开始时间:
-//     * @创建时间: 2023年4月23日 上午9:44:34
-//     */
-//    @DSTransactional
-//    public Boolean submitQuestionnaire(String experimentQuestionnaireId, String accountId) {
-//        if (StrUtil.isBlank(experimentQuestionnaireId) || StrUtil.isBlank(accountId)) {
-//            throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
-//        }
-//
-//        // check
-//        cannotOperateAfterSubmit(experimentQuestionnaireId, accountId);
-//
-//        // submit
-//        boolean updateRes = experimentQuestionnaireService.lambdaUpdate()
-//                .eq(ExperimentQuestionnaireEntity::getExperimentQuestionnaireId, experimentQuestionnaireId)
-//                .set(ExperimentQuestionnaireEntity::getState, ExptQuestionnaireStateEnum.SUBMITTED.getCode())
-//                .update();
-//
-//        // todo compute
-//
-//        return updateRes;
-//    }
+    /**
+     * @param experimentQuestionnaireId - 实验知识答题试卷ID
+     * @param accountId - 账号ID
+     * @return java.lang.Boolean
+     * @author fhb
+     * @description 提交单份问卷
+     * @date 2023/7/26 14:55
+     */
+    @DSTransactional
+    public Boolean submitQuestionnaire(String experimentQuestionnaireId, String accountId) {
+        if (StrUtil.isBlank(experimentQuestionnaireId) || StrUtil.isBlank(accountId)) {
+            throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
+        }
+
+        // check
+        cannotOperateAfterSubmit(experimentQuestionnaireId, accountId);
+
+        // submit
+        boolean updateRes = experimentQuestionnaireService.lambdaUpdate()
+                .eq(ExperimentQuestionnaireEntity::getExperimentQuestionnaireId, experimentQuestionnaireId)
+                .set(ExperimentQuestionnaireEntity::getState, ExptQuestionnaireStateEnum.SUBMITTED.getCode())
+                .update();
+
+        // todo compute
+
+        return updateRes;
+    }
 
     /**
-     * @param
-     * @return
-     * @说明: 批量提交
-     * @关联表:
-     * @工时: 2H
-     * @开发者: lait
-     * @开始时间:
-     * @创建时间: 2023年4月23日 上午9:44:34
+     * @param experimentInstanceId - 实验实例ID
+     * @param period - 期数
+     * @return java.lang.Boolean
+     * @author fhb
+     * @description 根据`实验实例ID` 和 `期数` 批量提交，每期结束时调用。（注： 需要在算分之前提交）
+     * @date 2023/7/26 14:57
      */
     @DSTransactional
     public Boolean submitQuestionnaireBatch(String experimentInstanceId, Integer period) {

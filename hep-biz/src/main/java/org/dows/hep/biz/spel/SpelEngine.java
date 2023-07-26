@@ -12,6 +12,7 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -57,7 +58,8 @@ public class SpelEngine {
         logError(null, func, msg, args);
     }
     private void logError(Throwable ex, String func, String msg,Object... args){
-        String str=String.format("%s.%s %s", this.getClass().getName(), func,String.format(Optional.ofNullable(msg).orElse(""), args));
+        String str=String.format("%s.%s@%s[%s] %s", this.getClass().getName(), func, LocalDateTime.now(),this.hashCode(),
+                String.format(Optional.ofNullable(msg).orElse(""), args));
         log.error(str,ex);
 
     }
@@ -159,6 +161,8 @@ public class SpelEngine {
         if (ShareUtil.XObject.anyEmpty(input.getIndicatorId(), input.getExpressions())) {
             return rst;
         }
+        Object curVal = context.lookupVariable(SpelVarKeyFormatter.getVariableKey(input.getIndicatorId()));
+        rst.setCurVal(curVal);
         Object val = null;
         for (SpelInput.SpelExpressionItem item : input.getExpressions()) {
             if (ShareUtil.XObject.isEmpty(item.getResultExpression())) {
@@ -178,7 +182,6 @@ public class SpelEngine {
             return rst;
         }
         BigDecimal valNumber = BigDecimalUtil.valueOf(val);
-        Object curVal = context.lookupVariable(SpelVarKeyFormatter.getVariableKey(input.getIndicatorId()));
         BigDecimal curValNumber = BigDecimalUtil.valueOf(curVal, BigDecimal.ZERO);
         BigDecimal change = valNumber.subtract(curValNumber);
         if (ShareUtil.XObject.notNumber(input.getFactor())) {
@@ -204,6 +207,7 @@ public class SpelEngine {
             return;
         }
         SpelEvalSumResult evalSumItem = mapSum.computeIfAbsent(item.getIndicatorId(), k -> new SpelEvalSumResult().setExperimentIndicatorId(item.getIndicatorId()));
+        evalSumItem.setCurVal(item.getCurVal());
         if (ShareUtil.XObject.notNumber(item.getVal())) {
             if (ShareUtil.XObject.notNumber(evalSumItem.getVal())) {
                 evalSumItem.setVal(item.getVal()).setValNumber(null);

@@ -348,18 +348,19 @@ public class ExperimentOrgInterveneBiz{
             item.setItemId(getTimestampId(dateNow,saveTreat.getTreatItems().size()-i)).setDealFlag(0);
             newItems.add(item);
         }
+        Map<String, SpelEvalSumResult> mapSum=new HashMap<>();
+        List<SpelEvalResult> evalResults=SpelInvoker.Instance().evalTreatEffect(validator.getExperimentInstanceId(), validator.getExperimentPersonId(),
+                timePoint.getPeriod(), newItems,mapSum);
         ExptTreatPlanResponse snapRst=new ExptTreatPlanResponse().setTreatItems(saveTreat.getTreatItems());
         try{
-            rowOrgFuncSnap.setInputJson(JacksonUtil.toJson(snapRst,true));
+            rowOrgFuncSnap.setInputJson(JacksonUtil.toJson(snapRst,true))
+                    .setResultJson(JacksonUtil.toJson(evalResults,true));
         }catch (Exception ex){
             AssertUtil.justThrow(String.format("记录数据编制失败：%s",ex.getMessage()),ex);
         }
         //挂号报告
         boolean succFlag=false;
         ExptOrgFlowReportResponse report=null;
-        Map<String, SpelEvalSumResult> mapSum=new HashMap<>();
-        List<SpelEvalResult> evalResults=SpelInvoker.Instance().evalTreatEffect(validator.getExperimentInstanceId(), validator.getExperimentPersonId(),
-                timePoint.getPeriod(), newItems,mapSum);
         if(enumOperateType.getEndFlag()){
             OperateFlowEntity flow= flowValidator.getExptFlow().get();
             OperateFlowEntity saveFlow=OperateFlowEntity.builder()

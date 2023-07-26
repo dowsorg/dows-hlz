@@ -25,6 +25,8 @@ public class SpelEvalResult {
 
     private String indicatorId;
 
+    private Object curVal;
+
     private Object val;
 
     private BigDecimal valNumber;
