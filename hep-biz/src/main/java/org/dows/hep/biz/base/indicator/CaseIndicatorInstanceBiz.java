@@ -10,6 +10,7 @@ import org.dows.hep.api.base.indicator.request.CaseRsCalculateHealthScoreRequest
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateCaseIndicatorInstanceRequestRs;
 import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.enums.*;
+import org.dows.hep.api.exception.CaseIndicatorInstanceException;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.exception.IndicatorInstanceException;
 import org.dows.hep.api.exception.RsCaseIndicatorInstanceBizException;
@@ -756,6 +757,11 @@ public class CaseIndicatorInstanceBiz {
         AtomicReference<CaseIndicatorRuleEntity> caseIndicatorRuleEntityAR = new AtomicReference<>();
         AtomicReference<CaseIndicatorExpressionInfluenceEntity> caseIndicatorExpressionInfluenceEntityAR = new AtomicReference<>();
         if (StringUtils.isBlank(caseIndicatorInstanceId)) {
+            caseIndicatorInstanceService.lambdaQuery()
+                .eq(CaseIndicatorInstanceEntity::getPrincipalId, accountId)
+                .eq(CaseIndicatorInstanceEntity::getIndicatorName, indicatorName)
+                .oneOpt()
+                .ifPresent(a -> {throw new CaseIndicatorInstanceException(EnumESC.CASE_INDICATOR_NAME_EXIST);});
             caseIndicatorInstanceId = idGenerator.nextIdStr();
             CaseIndicatorInstanceEntity caseIndicatorInstanceEntity = CaseIndicatorInstanceEntity
                 .builder()
@@ -808,6 +814,14 @@ public class CaseIndicatorInstanceBiz {
         } else {
             rsCaseIndicatorInstanceBiz.checkCaseIndicatorInstanceIdInCaseIndicatorInstanceEntity(caseIndicatorInstanceEntityAR, caseIndicatorInstanceId);
             CaseIndicatorInstanceEntity caseIndicatorInstanceEntity = caseIndicatorInstanceEntityAR.get();
+            String oldIndicatorName = caseIndicatorInstanceEntity.getIndicatorName();
+            if (!StringUtils.equals(oldIndicatorName, indicatorName)) {
+                caseIndicatorInstanceService.lambdaQuery()
+                    .eq(CaseIndicatorInstanceEntity::getPrincipalId, accountId)
+                    .eq(CaseIndicatorInstanceEntity::getIndicatorName, indicatorName)
+                    .oneOpt()
+                    .ifPresent(a -> {throw new CaseIndicatorInstanceException(EnumESC.CASE_INDICATOR_NAME_EXIST);});
+            }
             caseIndicatorInstanceEntity.setIndicatorName(indicatorName);
             caseIndicatorInstanceEntity.setDisplayByPercent(displayByPercent);
             caseIndicatorInstanceEntity.setUnit(unit);

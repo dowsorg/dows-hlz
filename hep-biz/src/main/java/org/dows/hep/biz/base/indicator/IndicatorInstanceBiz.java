@@ -164,6 +164,11 @@ public class IndicatorInstanceBiz{
         IndicatorRuleEntity indicatorRuleEntity = null;
         IndicatorExpressionInfluenceEntity indicatorExpressionInfluenceEntity = null;
         if (StringUtils.isBlank(indicatorInstanceId)) {
+            /* runsix:指标名字不允许存在重复 */
+            indicatorInstanceService.lambdaQuery()
+                .eq(IndicatorInstanceEntity::getIndicatorName, indicatorName)
+                .oneOpt()
+                .ifPresent(a -> {throw new IndicatorInstanceException(EnumESC.INDICATOR_NAME_EXIST);});
             indicatorInstanceId = idGenerator.nextIdStr();
             indicatorInstanceEntity = IndicatorInstanceEntity
                 .builder()
@@ -218,6 +223,14 @@ public class IndicatorInstanceBiz{
                     log.warn("method createOrUpdateRs param createOrUpdateIndicatorInstanceRequestRs indicatorInstanceId:{} is illegal", finalIndicatorInstanceId);
                     throw new IndicatorInstanceException(EnumESC.VALIDATE_EXCEPTION);
                 });
+            String oldIndicatorName = indicatorInstanceEntity.getIndicatorName();
+            if (!StringUtils.equals(oldIndicatorName, indicatorName)) {
+                indicatorInstanceService.lambdaQuery()
+                    .eq(IndicatorInstanceEntity::getIndicatorName, indicatorName)
+                    .oneOpt()
+                    .ifPresent(a -> {throw new IndicatorInstanceException(EnumESC.INDICATOR_NAME_EXIST);});
+            }
+            /* runsix: */
             indicatorInstanceEntity.setIndicatorName(indicatorName);
             indicatorInstanceEntity.setDisplayByPercent(displayByPercent);
             indicatorInstanceEntity.setUnit(unit);
