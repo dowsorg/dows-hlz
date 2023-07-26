@@ -55,6 +55,12 @@ public class CaseIndicatorInstanceRest {
         return caseIndicatorInstanceBiz.getHealthPoint(casePersonId);
     }
 
+    @Operation(summary = "新版查询健康指数")
+    @GetMapping("v2/caseIndicator/healthPoint/get")
+    public String v2GetHealthPoint(@RequestParam String accountId) {
+        return caseIndicatorInstanceBiz.v2GetHealthPoint(accountId);
+    }
+
     @Operation(summary = "复制数据库指标管理给人物")
     @PostMapping("v1/caseIndicator/indicatorInstance/copy")
     public void copyPersonIndicatorInstance(@RequestBody CaseCreateCopyToPersonRequestRs caseCreateCopyToPersonRequestRs) {

@@ -54,4 +54,10 @@ public class ExperimentIndicatorInstanceRsRest {
   public List<EchartsDataResonse> statGenderRate(@RequestBody ExperimentIndicatorInstanceRequest experimentIndicatorInstanceRequest) {
     return experimentIndicatorInstanceRsBiz.statGenderRate(experimentIndicatorInstanceRequest);
   }
+
+  @Operation(summary = "实验某个小组的平均健康指数")
+  @GetMapping("v1/experimentIndicator/healthPoint/average")
+  public String groupAverageHealth(@RequestParam String experimentGroupId) {
+    return experimentIndicatorInstanceRsBiz.groupAverageHealth(experimentGroupId);
+  }
 }
