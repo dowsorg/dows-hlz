@@ -5,10 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.*;
-import org.dows.hep.api.base.indicator.response.GroupCompetitiveScoreRsResponse;
-import org.dows.hep.api.base.indicator.response.GroupMoneyScoreRsResponse;
-import org.dows.hep.api.base.indicator.response.RsCalculateCompetitiveScoreRsResponse;
-import org.dows.hep.api.base.indicator.response.RsCalculateMoneyScoreRsResponse;
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.RsCalculateBizException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
@@ -26,13 +22,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -518,12 +512,12 @@ public class RsExperimentCalculateBiz {
    * 4.重新计算健康指数
   */
   @Transactional(rollbackFor = Exception.class)
-  public void experimentReCalculateFunc(RsCalculateFuncRequest rsCalculateFuncRequest) throws ExecutionException, InterruptedException {
+  public void experimentReCalculateFunc(RsExperimentCalculateFuncRequest rsExperimentCalculateFuncRequest) throws ExecutionException, InterruptedException {
     /* runsix:param */
-    String appId = rsCalculateFuncRequest.getAppId();
-    String experimentId = rsCalculateFuncRequest.getExperimentId();
-    Integer periods = rsCalculateFuncRequest.getPeriods();
-    String experimentPersonId = rsCalculateFuncRequest.getExperimentPersonId();
+    String appId = rsExperimentCalculateFuncRequest.getAppId();
+    String experimentId = rsExperimentCalculateFuncRequest.getExperimentId();
+    Integer periods = rsExperimentCalculateFuncRequest.getPeriods();
+    String experimentPersonId = rsExperimentCalculateFuncRequest.getExperimentPersonId();
     Set<String> experimentPersonIdSet = new HashSet<>();
     experimentPersonIdSet.add(experimentPersonId);
     /* runsix:cal param */

@@ -8,7 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.enums.*;
-import org.dows.hep.api.event.ExperimentReadyEvent;
+import org.dows.hep.api.event.ReadyEvent;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.exception.ExperimentParticipatorException;
 import org.dows.hep.api.user.experiment.request.AllotActorRequest;
@@ -313,7 +313,7 @@ public class ExperimentGroupBiz {
          * 所有小组准备完成发布事件，计数小组是否分配到齐，是否都分配好，如果都分配好，发布实验就绪事件
          */
         if (list.size() == collect.size()) {
-            applicationEventPublisher.publishEvent(new ExperimentReadyEvent(participatorList));
+            applicationEventPublisher.publishEvent(new ReadyEvent(participatorList));
             return true;
         }
         return false;

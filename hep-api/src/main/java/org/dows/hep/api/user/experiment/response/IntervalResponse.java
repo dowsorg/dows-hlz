@@ -14,9 +14,15 @@ import java.util.Map;
 @Data
 @NoArgsConstructor
 @Schema(name = "CountDown 对象", title = "时间")
-public class CountDownResponse {
+public class IntervalResponse {
+    @Schema(title = "应用ID")
+    private String appId;
+
+
     @Schema(title = "实验实例ID")
     private String experimentInstanceId;
+    @Schema(title = "实验小组ID")
+    private String experimentGroupId;
     @Schema(title = "模式")
     private Integer model;
     @Schema(title = "期数")
@@ -36,7 +42,6 @@ public class CountDownResponse {
     private Long sandRemnantSecond;
 
 
-
     @Schema(title = "方案设计总时长")
     private Long schemeTotalTime;
     @Schema(title = "方案设计时间单位")
@@ -45,7 +50,6 @@ public class CountDownResponse {
     private Long schemeDurationSecond;
     @Schema(title = "方案剩余时间(秒)")
     private Long schemeRemnantSecond;
-
 
 
     @Schema(title = "实验状态")

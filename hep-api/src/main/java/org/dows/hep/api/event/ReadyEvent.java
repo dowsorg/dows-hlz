@@ -8,15 +8,15 @@ import java.time.Clock;
 /**
  * 实验就绪事件
  */
-public class ExperimentReadyEvent extends ExperimentEvent implements Serializable {
+public class ReadyEvent extends ExperimentEvent implements Serializable {
     @Getter
     private EventName eventName = EventName.experimentReadyEvent;
 
-    public ExperimentReadyEvent(Object source) {
+    public ReadyEvent(Object source) {
         super(source);
     }
 
-    public ExperimentReadyEvent(Object source, Clock clock) {
+    public ReadyEvent(Object source, Clock clock) {
         super(source, clock);
     }
 }
