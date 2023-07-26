@@ -34,7 +34,10 @@ public class TreatItemDao extends BaseSubDao<TreatItemService,TreatItemEntity,Tr
     protected IndicatorExpressionRefDao indicatorExpressionRefDao;
 
 
-
+    @Override
+    protected SFunction<TreatItemEntity, String> getColAppId() {
+        return TreatItemEntity::getAppId;
+    }
 
     @Override
     protected SFunction<TreatItemEntity, String> getColId() {
@@ -124,5 +127,6 @@ public class TreatItemDao extends BaseSubDao<TreatItemService,TreatItemEntity,Tr
                 .list();
 
     }
+
 
 }

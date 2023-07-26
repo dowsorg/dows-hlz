@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
-import org.dows.hep.api.user.experiment.response.CountDownResponse;
+import org.dows.hep.api.user.experiment.response.IntervalResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
 import org.dows.hep.api.user.experiment.response.ExperimentStateResponse;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
@@ -32,10 +32,10 @@ public class ExperimentTimerRest {
      */
     @Operation(summary = "获取实验倒计时")
     @GetMapping("v1/userExperiment/experimentTimer/countdown")
-    public CountDownResponse countdown(String appId, String experimentInstanceId) {
+    public IntervalResponse countdown(String appId, String experimentInstanceId) {
 
-        CountDownResponse countDownResponse = experimentTimerBiz.countdown(experimentInstanceId);
-        return countDownResponse;
+        IntervalResponse intervalResponse = experimentTimerBiz.countdown(experimentInstanceId);
+        return intervalResponse;
     }
 
     /**
@@ -46,8 +46,8 @@ public class ExperimentTimerRest {
      */
     @Operation(summary = "获取实验进度条")
     @GetMapping("v1/tenantExperiment/experimentTimer/progress")
-    public CountDownResponse progress(@RequestParam String experimentInstanceId) {
-        CountDownResponse countdown = experimentTimerBiz.countdown(experimentInstanceId);
+    public IntervalResponse progress(@RequestParam String experimentInstanceId) {
+        IntervalResponse countdown = experimentTimerBiz.countdown(experimentInstanceId);
         return countdown;
     }
 

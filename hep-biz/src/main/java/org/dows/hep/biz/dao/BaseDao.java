@@ -262,7 +262,13 @@ public abstract class BaseDao<S extends MybatisCrudService<E>,E extends CrudEnti
     //endregion
 
     //region retrieve
-
+    public List<E> getAll(String appId, boolean isAsc, SFunction<E,?>... cols){
+        return service.lambdaQuery()
+                .eq(null!=getColAppId()&&ShareUtil.XObject.notEmpty(appId),getColAppId(),appId)
+                .orderBy(true, isAsc, E::getId)
+                .select(cols)
+                .list();
+    }
     /**
      * 按物理主键排序获取所有
      * @param isAsc

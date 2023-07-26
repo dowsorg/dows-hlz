@@ -1,11 +1,16 @@
 package org.dows.hep.biz.dao;
 
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.IndicatorExpressionEntity;
 import org.dows.hep.entity.IndicatorExpressionItemEntity;
 import org.dows.hep.service.IndicatorExpressionItemService;
 import org.dows.hep.service.IndicatorExpressionService;
 import org.springframework.stereotype.Component;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author : wuzl
@@ -61,5 +66,18 @@ public class IndicatorExpressionDao extends BaseSubDao<IndicatorExpressionServic
     @Override
     protected SFunction<String, ?> setColSubId(IndicatorExpressionItemEntity item) {
         return item::setIndicatorExpressionItemId;
+    }
+
+    public List<IndicatorExpressionEntity> getBySource(Collection<Integer> sources,SFunction<IndicatorExpressionEntity,?>... cols) {
+        if(ShareUtil.XObject.isEmpty(sources)){
+            return Collections.emptyList();
+        }
+        final boolean oneFlag=sources.size()==1;
+        return service.lambdaQuery()
+                .eq(oneFlag, IndicatorExpressionEntity::getSource,sources.iterator().next())
+                .in(!oneFlag, IndicatorExpressionEntity::getSource, sources)
+                .orderByAsc(IndicatorExpressionEntity::getId)
+                .select(cols)
+                .list();
     }
 }

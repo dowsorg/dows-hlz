@@ -11,15 +11,15 @@ import java.time.Clock;
  * @description 实验初始化事件，创建实验并分组的时候触发该事件
  * @date 2023/6/20 0:16
  **/
-public class ExperimentInitEvent extends ExperimentEvent implements Serializable {
+public class InitializeEvent extends ExperimentEvent implements Serializable {
     @Getter
     private EventName eventName = EventName.experimentInitEvent;
 
-    public ExperimentInitEvent(Object source) {
+    public InitializeEvent(Object source) {
         super(source);
     }
 
-    public ExperimentInitEvent(Object source, Clock clock) {
+    public InitializeEvent(Object source, Clock clock) {
         super(source, clock);
     }
 }

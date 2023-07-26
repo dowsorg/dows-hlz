@@ -22,7 +22,7 @@ import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.enums.EnumParticipatorType;
 import org.dows.hep.api.event.ExperimentEvent;
-import org.dows.hep.api.event.ExperimentInitEvent;
+import org.dows.hep.api.event.InitializeEvent;
 import org.dows.hep.api.event.StartEvent;
 import org.dows.hep.api.event.SuspendEvent;
 import org.dows.hep.api.exception.ExperimentException;
@@ -103,6 +103,12 @@ public class ExperimentManageBiz {
      */
     @DSTransactional
     public String allot(CreateExperimentRequest createExperiment, String accountId) {
+        // 获取参与教师
+        List<AccountInstanceResponse> teachers = createExperiment.getTeachers();
+        Set<String> teacherIds = new HashSet<>();
+        teachers.forEach(teacher->{
+            teacherIds.add(teacher.getAccountId());
+        });
         // 根据登录ID获取账户名和用户名
         AccountInstanceResponse instanceResponse = personManageBiz.getPersonalInformation(accountId, createExperiment.getAppId());
         // 填充数据
@@ -116,6 +122,7 @@ public class ExperimentManageBiz {
                 .state(EnumExperimentState.UNBEGIN.getState())
                 .accountId(accountId)
                 .appointor(instanceResponse.getAccountName())
+                .experimentParticipatorIds(String.join(",", teacherIds))
                 .caseInstanceId(createExperiment.getCaseInstanceId())
                 .caseName(createExperiment.getCaseName())
                 .casePic(createExperiment.getCasePic())
@@ -125,7 +132,6 @@ public class ExperimentManageBiz {
         experimentInstanceService.save(experimentInstance);
 
         ExperimentSetting experimentSetting = createExperiment.getExperimentSetting();
-        List<AccountInstanceResponse> teachers = createExperiment.getTeachers();
         List<ExperimentParticipatorEntity> experimentParticipatorEntityList = new ArrayList<>();
         for (AccountInstanceResponse instance : teachers) {
             ExperimentParticipatorEntity experimentParticipatorEntity = ExperimentParticipatorEntity.builder()
@@ -274,7 +280,7 @@ public class ExperimentManageBiz {
         experimentParticipatorService.saveBatch(collect);
 
         // 发布实验init事件
-        applicationEventPublisher.publishEvent(new ExperimentInitEvent(experimentGroupSettingRequest));
+        applicationEventPublisher.publishEvent(new InitializeEvent(experimentGroupSettingRequest));
 
         return true;
     }
@@ -749,7 +755,7 @@ public class ExperimentManageBiz {
         } else {
             if (roleCode.equals("TEACHER")) {
                 page = experimentInstanceService.page(page, experimentInstanceService.lambdaQuery()
-                        .eq(ExperimentInstanceEntity::getAppointor, accountRoleByPrincipalId.getPrincipalName())
+                        .like(ExperimentInstanceEntity::getExperimentParticipatorIds, accountRoleByPrincipalId.getPrincipalId())
                         .orderByDesc(ExperimentInstanceEntity::getStartTime)
                         .getWrapper());
             } else {

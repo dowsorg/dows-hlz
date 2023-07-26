@@ -47,10 +47,10 @@ import java.util.stream.Collectors;
 @Service
 public class ExperimentSchemeBiz {
     private final ExperimentSchemeService experimentSchemeService;
-    private final ExperimentGroupBiz experimentGroupBiz;
     private final ExperimentGroupService experimentGroupService;
     private final ExperimentSettingService experimentSettingService;
     private final ExperimentInstanceService experimentInstanceService;
+    private final ExperimentGroupBiz experimentGroupBiz;
     private final ExperimentSchemeItemBiz experimentSchemeItemBiz;
     private final ExperimentParticipatorBiz experimentParticipatorBiz;
     private final ApplicationEventPublisher applicationEventPublisher;
@@ -189,7 +189,8 @@ public class ExperimentSchemeBiz {
         handleGroupStatus(request.getExperimentGroupId(), EnumExperimentGroupStatus.SCHEMA);
 
         // handle expt-status
-        handleExptStatus(request.getExperimentInstanceId(), EnumExperimentState.ONGOING);
+        // 方案设计单个小组操作不可以改变整体实验状态
+//        handleExptStatus(request.getExperimentInstanceId(), EnumExperimentState.ONGOING);
 
         // sync start
         syncStart(request.getExperimentInstanceId(), request.getExperimentGroupId());
@@ -324,11 +325,41 @@ public class ExperimentSchemeBiz {
             handleGroupStatus(experimentGroupId, EnumExperimentGroupStatus.ASSIGN_DEPARTMENT);
         } else {
             handleGroupStatus(experimentGroupId, EnumExperimentGroupStatus.WAIT_SCHEMA);
-            handleExptStatus(experimentInstanceId, EnumExperimentState.FINISH);
+            // 方案设计单个小组操作不可以改变整体实验状态
+//            handleExptStatus(experimentInstanceId, EnumExperimentState.FINISH);
         }
 
         // sync submitted
-        syncSubmitted(experimentInstanceId, experimentGroupId);
+        syncSubmittedGroupScheme(experimentInstanceId, experimentGroupId);
+
+        return res1;
+    }
+
+    /**
+     * @param exptInstanceId - 实验实例ID
+     * @return java.lang.Boolean
+     * @author fhb
+     * @description 方案设计截止时间到了时，批量提交试卷（不再对截止时间校验，调用方校验好）
+     * @date 2023/7/26 11:00
+     */
+    public Boolean submitBatchWhenExpire(String exptInstanceId) {
+        if (StrUtil.isBlank(exptInstanceId)) {
+            throw new BizException("方案设计截止时间提交时，实验ID数据异常");
+        }
+
+        boolean res1 = experimentSchemeService.lambdaUpdate()
+                .eq(ExperimentSchemeEntity::getExperimentInstanceId, exptInstanceId)
+                .set(ExperimentSchemeEntity::getState, ExptSchemeStateEnum.SUBMITTED.getCode()) // 1-已提交
+                .update();
+        if (containsSandSetting(exptInstanceId)) {
+            handleExptAllGroupStatus(exptInstanceId, EnumExperimentGroupStatus.ASSIGN_DEPARTMENT);
+        } else {
+            handleExptAllGroupStatus(exptInstanceId, EnumExperimentGroupStatus.WAIT_SCHEMA);
+            handleExptStatus(exptInstanceId, EnumExperimentState.FINISH);
+        }
+
+        // sync submitted
+        syncSubmittedExptScheme(exptInstanceId);
 
         return res1;
     }
@@ -525,6 +556,13 @@ public class ExperimentSchemeBiz {
         return experimentGroupService.update(updateWrapper);
     }
 
+    private Boolean handleExptAllGroupStatus(String exptInstanceId, EnumExperimentGroupStatus groupStatus) {
+        LambdaUpdateWrapper<ExperimentGroupEntity> updateWrapper = new LambdaUpdateWrapper<ExperimentGroupEntity>()
+                .eq(ExperimentGroupEntity::getExperimentInstanceId, exptInstanceId)
+                .set(ExperimentGroupEntity::getGroupState, groupStatus.getCode());
+        return experimentGroupService.update(updateWrapper);
+    }
+
     private Boolean handleExptStatus(String experimentInstanceId, EnumExperimentState enumExperimentState) {
         LambdaUpdateWrapper<ExperimentInstanceEntity> updateWrapper = new LambdaUpdateWrapper<ExperimentInstanceEntity>()
                 .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
@@ -594,8 +632,33 @@ public class ExperimentSchemeBiz {
                         .build()));
     }
 
-    private void syncSubmitted(String experimentInstanceId, String experimentGroupId) {
+    private void syncSubmittedGroupScheme(String experimentInstanceId, String experimentGroupId) {
         List<String> accountIds = listGroupAccountId(experimentInstanceId, experimentGroupId);
+        applicationEventPublisher.publishEvent(new ExptSchemeSubmittedEvent(
+                ExptSchemeSubmittedEventSource.builder()
+                        .accountIds(accountIds)
+                        .build()
+        ));
+    }
+
+    // todo @experimentGroupBiz 提供批量查询方法
+    private void syncSubmittedExptScheme(String experimentInstanceId) {
+        // 获取实验所有小组成员的账号
+        List<String> accountIds = new ArrayList<>();
+        List<ExperimentGroupResponse> exptGroups = experimentGroupBiz.listGroup(experimentInstanceId);
+        if (CollUtil.isEmpty(exptGroups)) {
+            return;
+        }
+        for (ExperimentGroupResponse group : exptGroups) {
+            String experimentGroupId = group.getExperimentGroupId();
+            List<String> groupAccountIds = listGroupAccountId(experimentInstanceId, experimentGroupId);
+            if (CollUtil.isEmpty(groupAccountIds)) {
+                continue;
+            }
+            accountIds.addAll(groupAccountIds);
+        }
+
+        // 同步信息
         applicationEventPublisher.publishEvent(new ExptSchemeSubmittedEvent(
                 ExptSchemeSubmittedEventSource.builder()
                         .accountIds(accountIds)

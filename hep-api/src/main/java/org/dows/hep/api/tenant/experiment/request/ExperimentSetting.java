@@ -1,6 +1,5 @@
 package org.dows.hep.api.tenant.experiment.request;
 
-import cn.hutool.core.date.DateUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.dows.hep.api.exception.ExperimentException;
@@ -48,7 +47,7 @@ public class ExperimentSetting {
                     throw new ExperimentException("实验开始时间不能大于设计截止时间");
                 }
                 if(schemeEndTime.getTime() >= scoreEndTime.getTime()){
-                    throw new ExperimentException("方案设计解释时间不能大于评分截止时间");
+                    throw new ExperimentException("方案设计截止时间不能大于评分截止时间");
                 }
                 if(scoreEndTime.getTime() >= auditEndTime.getTime()){
                     throw new ExperimentException("评分截止时间不能大于审核截止时间");

@@ -33,8 +33,7 @@ public class ViewBaseInfoExtracter implements IOrgReportExtracter<ExperimentIndi
 
     @Override
     public ExperimentIndicatorViewBaseInfoRsResponse getReportData(OrgReportExtractRequest req) throws ExecutionException, InterruptedException {
-        final Integer period= ShareBiz.getCurrentPeriod(req.getAppId(), req.getExperimentInstanceId());
-        return experimentIndicatorViewBaseInfoRsBiz.get(req.getIndicatorFuncId(),req.getExperimentPersonId(),period);
+        return experimentIndicatorViewBaseInfoRsBiz.get(req.getIndicatorFuncId(),req.getExperimentPersonId(),req.getPeriod());
     }
 
     @Override
