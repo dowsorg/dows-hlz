@@ -705,6 +705,24 @@ public class CaseIndicatorInstanceBiz {
         return healthPoint;
     }
 
+    public String v2GetHealthPoint(String accountId) {
+        String healthPoint = "1";
+        CaseIndicatorInstanceEntity caseIndicatorInstanceEntity = caseIndicatorInstanceService.lambdaQuery()
+            .eq(CaseIndicatorInstanceEntity::getPrincipalId, accountId)
+            .eq(CaseIndicatorInstanceEntity::getType, EnumIndicatorType.HEALTH_POINT.getType())
+            .one();
+        if (Objects.nonNull(caseIndicatorInstanceEntity)) {
+            String caseIndicatorInstanceId = caseIndicatorInstanceEntity.getCaseIndicatorInstanceId();
+            CaseIndicatorRuleEntity caseIndicatorRuleEntity = caseIndicatorRuleService.lambdaQuery()
+                .eq(CaseIndicatorRuleEntity::getVariableId, caseIndicatorInstanceId)
+                .one();
+            if (Objects.nonNull(caseIndicatorRuleEntity)) {
+                healthPoint = caseIndicatorRuleEntity.getDef();
+            }
+        }
+        return healthPoint;
+    }
+
 
     /**
      * 更新NPC人物指标的值或默认值或描述

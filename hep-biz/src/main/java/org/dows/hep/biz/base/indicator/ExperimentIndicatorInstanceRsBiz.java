@@ -10,9 +10,11 @@ import org.dows.hep.api.user.experiment.response.EchartsDataResonse;
 import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import org.dows.hep.biz.util.EchartsUtils;
+import org.dows.hep.entity.ExperimentGroupEntity;
 import org.dows.hep.entity.ExperimentIndicatorInstanceRsEntity;
 import org.dows.hep.entity.ExperimentIndicatorValRsEntity;
 import org.dows.hep.entity.ExperimentPersonEntity;
+import org.dows.hep.service.ExperimentGroupService;
 import org.dows.hep.service.ExperimentIndicatorInstanceRsService;
 import org.dows.hep.service.ExperimentIndicatorValRsService;
 import org.dows.hep.service.ExperimentPersonService;
@@ -21,10 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -40,6 +39,7 @@ public class ExperimentIndicatorInstanceRsBiz {
     private final ExperimentPersonService experimentPersonService;
     private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
     private final ExperimentTimerBiz experimentTimerBiz;
+    private final ExperimentGroupService experimentGroupService;
 
     public String getHealthPoint(Integer periods, String experimentPersonId) {
         String healthPoint = "1";
@@ -238,5 +238,16 @@ public class ExperimentIndicatorInstanceRsBiz {
         } else {
             return experimentIndicatorInstanceRsEntity.getDef();
         }
+    }
+
+    public String groupAverageHealth(String experimentGroupId) {
+        Set<String> experimentPersonIdSet = experimentPersonService.lambdaQuery()
+            .eq(ExperimentPersonEntity::getExperimentGroupId, experimentGroupId)
+            .list()
+            .stream()
+            .map(ExperimentPersonEntity::getExperimentPersonId)
+            .collect(Collectors.toSet());
+        if (experimentPersonIdSet.isEmpty()) {return "0";}
+        return "0";
     }
 }
