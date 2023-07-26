@@ -56,6 +56,10 @@ public class RsExperimentIndicatorExpressionBiz {
         || Objects.isNull(kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap)
         || Objects.isNull(kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap)
     ) {return;}
+    Map<String, ExperimentIndicatorValRsEntity> lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = new HashMap<>();
+    kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.forEach((experimentIndicatorInstanceId, experimentIndicatorValRsEntity) -> {
+      lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(experimentIndicatorInstanceId, experimentIndicatorValRsEntity);
+    });
     kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap.forEach((kExperimentPersonId, experimentIndicatorInstanceRsEntityList) -> {
       experimentIndicatorInstanceRsEntityList.sort(Comparator.comparingInt(ExperimentIndicatorInstanceRsEntity::getRecalculateSeq));
       /* runsix:吴治霖那块的改变 */
@@ -101,6 +105,7 @@ public class RsExperimentIndicatorExpressionBiz {
             ExperimentCalIndicatorExpressionRequest
                 .builder()
                 .kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap)
+                .lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap)
                 .experimentIndicatorExpressionRsEntity(experimentIndicatorExpressionRsEntity)
                 .experimentIndicatorExpressionItemRsEntityList(experimentIndicatorExpressionItemRsEntityList)
                 .minExperimentIndicatorExpressionItemRsEntity(minExperimentIndicatorExpressionItemRsEntity)
@@ -361,6 +366,7 @@ public class RsExperimentIndicatorExpressionBiz {
 
   private String ePIEResultUsingExperimentIndicatorInstanceId(
       ExperimentIndicatorExpressionItemRsEntity experimentIndicatorExpressionItemRsEntity,
+      Map<String, ExperimentIndicatorValRsEntity> lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
       Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap
   ) {
     try {
@@ -377,7 +383,8 @@ public class RsExperimentIndicatorExpressionBiz {
       }
       for (int i = 0; i <= resultNameSplitList.size() - 1; i++) {
         String experimentIndicatorInstanceId = resultValSplitList.get(i);
-        ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
+        String resultName = resultNameSplitList.get(i);
+        ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = getExperimentIndicatorValRsEntityByResultName(resultName, experimentIndicatorInstanceId, lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap, kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap);
         if (Objects.isNull(experimentIndicatorValRsEntity) || StringUtils.isBlank(experimentIndicatorValRsEntity.getCurrentVal())) {
           return RsUtilBiz.RESULT_DROP;
         }
@@ -440,6 +447,7 @@ public class RsExperimentIndicatorExpressionBiz {
 
   private boolean ePIEConditionUsingExperimentIndicatorInstanceId(
       ExperimentIndicatorExpressionItemRsEntity experimentIndicatorExpressionItemRsEntity,
+      Map<String, ExperimentIndicatorValRsEntity> lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
       Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap
       ) {
     try {
@@ -633,6 +641,7 @@ public class RsExperimentIndicatorExpressionBiz {
   */
   public void ePIEResultUsingExperimentIndicatorInstanceIdCombineWithHandle(
       Integer scene, AtomicReference<String> resultAtomicReference,
+      Map<String, ExperimentIndicatorValRsEntity> lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
       Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
       ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity,
       List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList,
@@ -644,7 +653,7 @@ public class RsExperimentIndicatorExpressionBiz {
     for (int i = 0; i <= experimentIndicatorExpressionItemRsEntityList.size()-1; i++) {
       ExperimentIndicatorExpressionItemRsEntity experimentIndicatorExpressionItemRsEntity = experimentIndicatorExpressionItemRsEntityList.get(i);
       boolean hasResult = ePIEResultUsingExperimentIndicatorInstanceIdCombineWithoutHandle(
-          resultAtomicReference, kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap, experimentIndicatorExpressionItemRsEntity
+          resultAtomicReference, lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap, kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap, experimentIndicatorExpressionItemRsEntity
       );
       if (hasResult) {
         /* runsix:2.处理解析后的结果 */
@@ -690,17 +699,18 @@ public class RsExperimentIndicatorExpressionBiz {
   */
   private boolean ePIEResultUsingExperimentIndicatorInstanceIdCombineWithoutHandle(
       AtomicReference<String> resultAtomicReference,
+      Map<String, ExperimentIndicatorValRsEntity> lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
       Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
       ExperimentIndicatorExpressionItemRsEntity experimentIndicatorExpressionItemRsEntity
   ) {
-    boolean parsedCondition = ePIEConditionUsingExperimentIndicatorInstanceId(experimentIndicatorExpressionItemRsEntity, kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap);
+    boolean parsedCondition = ePIEConditionUsingExperimentIndicatorInstanceId(experimentIndicatorExpressionItemRsEntity, lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap, kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap);
     /* runsix:2.如果条件不满足，不解析结果，继续下一个 */
     if (!parsedCondition) {
       return false;
     }
 
     /* runsix:3.如果一个公式有结果就跳出 */
-    String parsedResult = ePIEResultUsingExperimentIndicatorInstanceId(experimentIndicatorExpressionItemRsEntity, kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap);
+    String parsedResult = ePIEResultUsingExperimentIndicatorInstanceId(experimentIndicatorExpressionItemRsEntity, lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap, kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap);
     if (RsUtilBiz.RESULT_DROP.equals(parsedResult)) {
       return false;
     }
@@ -731,6 +741,7 @@ public class RsExperimentIndicatorExpressionBiz {
 
   private void ePIEIndicatorManagement(
       Integer scene, AtomicReference<String> resultAtomicReference,
+      Map<String, ExperimentIndicatorValRsEntity> lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
       Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
       ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity,
       List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList,
@@ -739,6 +750,7 @@ public class RsExperimentIndicatorExpressionBiz {
   ) {
     ePIEResultUsingExperimentIndicatorInstanceIdCombineWithHandle(
         scene, resultAtomicReference,
+        lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
         kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
         experimentIndicatorExpressionRsEntity,
         experimentIndicatorExpressionItemRsEntityList,
@@ -826,6 +838,7 @@ public class RsExperimentIndicatorExpressionBiz {
     CaseIndicatorExpressionItemEntity maxCaseIndicatorExpressionItemEntity = caseCalIndicatorExpressionRequest.getMaxCaseIndicatorExpressionItemEntity();
 
     Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = experimentCalIndicatorExpressionRequest.getKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap();
+    Map<String, ExperimentIndicatorValRsEntity> lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = experimentCalIndicatorExpressionRequest.getLastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap();
     ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity = experimentCalIndicatorExpressionRequest.getExperimentIndicatorExpressionRsEntity();
     List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList = experimentCalIndicatorExpressionRequest.getExperimentIndicatorExpressionItemRsEntityList();
     ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity = experimentCalIndicatorExpressionRequest.getMinExperimentIndicatorExpressionItemRsEntity();
@@ -835,6 +848,7 @@ public class RsExperimentIndicatorExpressionBiz {
       case INDICATOR_MANAGEMENT -> ePIEIndicatorManagement(
           scene,
           resultAtomicReference,
+          lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
           kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
           experimentIndicatorExpressionRsEntity,
           experimentIndicatorExpressionItemRsEntityList,
@@ -1079,5 +1093,19 @@ public class RsExperimentIndicatorExpressionBiz {
         kExperimentPersonIdVHealthExperimentIndicatorValRsEntityMap.put(experimentPersonId, experimentIndicatorValRsEntity);
       }
     });
+  }
+
+  private ExperimentIndicatorValRsEntity getExperimentIndicatorValRsEntityByResultName(
+      String resultName,
+      String experimentIndicatorInstanceId,
+      Map<String, ExperimentIndicatorValRsEntity> lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
+      Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap) {
+    if (StringUtils.isBlank(resultName)) {return null;}
+    String[] splitResultName = resultName.split(EnumString.SPLIT_DOLLAR.getStr());
+    if (StringUtils.equals("0", splitResultName[1])) {
+      return kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
+    } else {
+      return lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
+    }
   }
 }

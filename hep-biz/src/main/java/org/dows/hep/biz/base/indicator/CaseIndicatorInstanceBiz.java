@@ -832,10 +832,11 @@ public class CaseIndicatorInstanceBiz {
             if (Objects.nonNull(caseIndicatorCategoryRefEntityAR.get())) {caseIndicatorCategoryRefService.saveOrUpdate(caseIndicatorCategoryRefEntityAR.get());}
             if (Objects.nonNull(caseIndicatorRuleEntityAR.get())) {caseIndicatorRuleService.saveOrUpdate(caseIndicatorRuleEntityAR.get());}
             if (Objects.nonNull(caseIndicatorExpressionInfluenceEntityAR.get())) {caseIndicatorExpressionInfluenceService.saveOrUpdate(caseIndicatorExpressionInfluenceEntityAR.get());}
+            /* runsix:重新计算健康指数 */
             rsCaseCalculateBiz.caseRsCalculateHealthScore(CaseRsCalculateHealthScoreRequestRs
                 .builder()
-                    .appId(appId)
-                    .accountId(accountId)
+                .appId(appId)
+                .accountId(accountId)
                 .build());
         } catch (ExecutionException e) {
             throw new RuntimeException(e);
