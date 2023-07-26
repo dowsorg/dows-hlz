@@ -593,6 +593,7 @@ public class RsCopyBiz {
     if (!funcIndicatorViewMonitorFollowupIdSet.isEmpty()) {
       indicatorViewMonitorFollowupService.lambdaQuery()
           .eq(IndicatorViewMonitorFollowupEntity::getAppId, appId)
+          .eq(IndicatorViewMonitorFollowupEntity::getStatus, EnumStatus.ENABLE.getCode())
           .in(IndicatorViewMonitorFollowupEntity::getIndicatorFuncId, funcIndicatorViewMonitorFollowupIdSet)
           .list()
           .forEach(indicatorViewMonitorFollowupEntity -> {
