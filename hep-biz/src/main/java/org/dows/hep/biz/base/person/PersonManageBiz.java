@@ -776,6 +776,8 @@ public class PersonManageBiz {
         List<PersonInstanceResponse> personInstanceResponseList = new ArrayList<>();
         List<AccountInstanceResponse> accountInstanceList = accountInstancePage.getRecords();
         accountInstanceList.forEach(accountInstance -> {
+            //4、获取健康指数
+            String healthPoint = caseIndicatorInstanceBiz.v2GetHealthPoint(accountInstance.getAccountId());
             PersonInstanceResponse personInstance = PersonInstanceResponse.builder()
                     .accountId(accountInstance.getAccountId())
                     .accountName(accountInstance.getAccountName())
@@ -783,6 +785,7 @@ public class PersonManageBiz {
                     .status(accountInstance.getStatus())
                     .avatar(accountInstance.getAvatar())
                     .intro(accountInstance.getIntro())
+                    .healthPoint(healthPoint)
                     .build();
             personInstanceResponseList.add(personInstance);
         });
