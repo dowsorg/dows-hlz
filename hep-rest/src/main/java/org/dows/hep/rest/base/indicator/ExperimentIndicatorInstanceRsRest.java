@@ -29,6 +29,14 @@ public class ExperimentIndicatorInstanceRsRest {
     return experimentIndicatorInstanceRsBiz.getHealthPoint(periods, experimentPersonId);
   }
 
+  @Operation(summary = "查询人物初始化资金")
+  @GetMapping("v1/experimentIndicator/money/get")
+  public String getHealthPoint(
+      @RequestParam String experimentPersonId
+  ) {
+    return experimentIndicatorInstanceRsBiz.getMoneyDef(experimentPersonId);
+  }
+
   @Operation(summary = "实验人物金额变化")
   @PostMapping("v1/experimentIndicator/money/change")
   public void changeMoney(@RequestBody RsChangeMoneyRequest rsChangeMoneyRequest) {
