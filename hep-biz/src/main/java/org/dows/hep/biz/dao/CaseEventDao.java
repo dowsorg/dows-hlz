@@ -177,5 +177,12 @@ public class CaseEventDao extends BaseSubDao<CaseEventService, CaseEventEntity, 
                 .list();
     }
 
+    public List<CaseEventEntity> getByCaseInstanceId(String caseInstanceId,SFunction<CaseEventEntity,?>...cols){
+        return service.lambdaQuery()
+                .eq(CaseEventEntity::getCaseInstanceId, caseInstanceId)
+                .select(cols)
+                .list();
+    }
+
 
 }

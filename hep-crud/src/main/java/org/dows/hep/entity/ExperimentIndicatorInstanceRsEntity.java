@@ -7,10 +7,10 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
+import org.dows.framework.crud.api.CrudEntity;
 
 import java.util.Date;
 
@@ -26,7 +26,7 @@ import java.util.Date;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(name = "ExperimentIndicatorInstanceRsEntity", title = "实验小组")
 @TableName("experiment_indicator_instance_rs")
-public class ExperimentIndicatorInstanceRsEntity {
+public class ExperimentIndicatorInstanceRsEntity implements CrudEntity {
   @JsonFormat(shape = JsonFormat.Shape.STRING)
   @Schema(title = "数据库ID")
   private Long id;

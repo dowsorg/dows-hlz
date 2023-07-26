@@ -135,8 +135,8 @@ public class CaseIndicatorExpressionRefDao extends BaseDao<CaseIndicatorExpressi
             return true;
         }
         boolean rst=true;
-        for(Map.Entry<String,List<String>> item: mapReasonId.entrySet()){
-            rst&=updateReasonId(item.getKey(),item.getValue());
+        for(Map.Entry<String,List<String>> item: mapReasonId.entrySet()) {
+            rst &= updateReasonId(item.getKey(), item.getValue());
         }
         return rst;
     }

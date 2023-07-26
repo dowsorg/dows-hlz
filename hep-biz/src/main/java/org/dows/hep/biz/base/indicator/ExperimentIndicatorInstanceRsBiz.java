@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
+import org.dows.hep.api.base.indicator.response.GroupAverageHealthPointResponse;
 import org.dows.hep.api.enums.EnumIndicatorType;
 import org.dows.hep.api.user.experiment.request.ExperimentIndicatorInstanceRequest;
 import org.dows.hep.api.user.experiment.response.EchartsDataResonse;
@@ -240,14 +241,50 @@ public class ExperimentIndicatorInstanceRsBiz {
         }
     }
 
-    public String groupAverageHealth(String experimentGroupId) {
+    public GroupAverageHealthPointResponse groupAverageHealth(String experimentGroupId, Integer periods) {
         Set<String> experimentPersonIdSet = experimentPersonService.lambdaQuery()
             .eq(ExperimentPersonEntity::getExperimentGroupId, experimentGroupId)
             .list()
             .stream()
             .map(ExperimentPersonEntity::getExperimentPersonId)
             .collect(Collectors.toSet());
-        if (experimentPersonIdSet.isEmpty()) {return "0";}
-        return "0";
+        if (experimentPersonIdSet.isEmpty()) {
+            return GroupAverageHealthPointResponse
+            .builder()
+            .experimentPersonCount(0)
+            .averageHealthPoint("0")
+            .build();
+        }
+
+        Set<String> healthPointExperimentIndicatorInstanceIdSet = experimentIndicatorInstanceRsService.lambdaQuery()
+            .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.HEALTH_POINT.getType())
+            .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdSet)
+            .list()
+            .stream()
+            .map(ExperimentIndicatorInstanceRsEntity::getExperimentIndicatorInstanceId)
+            .collect(Collectors.toSet());
+        if (healthPointExperimentIndicatorInstanceIdSet.isEmpty()) {
+            return GroupAverageHealthPointResponse
+                .builder()
+                .experimentPersonCount(0)
+                .averageHealthPoint("0")
+                .build();
+        }
+        BigDecimal total = experimentIndicatorValRsService.lambdaQuery()
+            .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
+            .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, healthPointExperimentIndicatorInstanceIdSet)
+            .list()
+            .stream()
+            .map(experimentIndicatorValRsEntity -> {
+                return BigDecimal.valueOf(Double.parseDouble(experimentIndicatorValRsEntity.getCurrentVal()));
+            })
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        int experimentPersonCount = healthPointExperimentIndicatorInstanceIdSet.size();
+        String averageHealthPoint = total.divide(BigDecimal.valueOf(experimentPersonCount), 2, RoundingMode.DOWN).toString();
+        return GroupAverageHealthPointResponse
+            .builder()
+            .experimentPersonCount(experimentPersonCount)
+            .averageHealthPoint(averageHealthPoint)
+            .build();
     }
 }

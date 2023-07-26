@@ -1,14 +1,19 @@
 package org.dows.hep.biz.snapshot.writers;
 
-import org.dows.hep.biz.snapshot.BaseSnapshotFullTableWriter;
+import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.biz.dao.*;
+import org.dows.hep.biz.snapshot.BaseSnapshotTableWriter;
 import org.dows.hep.biz.snapshot.EnumSnapshotType;
 import org.dows.hep.biz.snapshot.SnapshotRequest;
-import org.dows.hep.entity.CaseIndicatorExpressionRefEntity;
+import org.dows.hep.biz.util.CopyWrapper;
+import org.dows.hep.biz.util.ShareUtil;
+import org.dows.hep.entity.*;
 import org.dows.hep.entity.snapshot.SnapCaseIndicatorExpressionRefEntity;
-import org.dows.hep.service.CaseIndicatorExpressionRefService;
 import org.dows.hep.service.snapshot.SnapCaseIndicatorExpressionRefService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -16,13 +21,45 @@ import java.util.List;
  * @date : 2023/7/2 12:14
  */
 @Service
-public class SnapCaseIndicatorExpressionRefWriter extends BaseSnapshotFullTableWriter<CaseIndicatorExpressionRefEntity, CaseIndicatorExpressionRefService, SnapCaseIndicatorExpressionRefEntity, SnapCaseIndicatorExpressionRefService> {
+@Slf4j
+public class SnapCaseIndicatorExpressionRefWriter extends BaseSnapshotTableWriter<CaseIndicatorExpressionRefEntity,SnapCaseIndicatorExpressionRefEntity, SnapCaseIndicatorExpressionRefService> {
     public SnapCaseIndicatorExpressionRefWriter() {
         super(EnumSnapshotType.CASEIndicatorExpressionRef, SnapCaseIndicatorExpressionRefEntity::new);
     }
+    @Autowired
+    private CaseIndicatorExpressionRefDao caseIndicatorExpressionRefDao;
+
+    @Autowired
+    private IndicatorExpressionRefDao indicatorExpressionRefDao;
+
+    @Autowired
+    private ExperimentInstanceDao experimentInstanceDao;
+
+    @Autowired
+    private CaseEventDao caseEventDao;
+
+    @Autowired
+    private TreatItemDao treatItemDao;
 
     @Override
     public List<CaseIndicatorExpressionRefEntity> readSource(SnapshotRequest req) {
-        return null;
+        final String caseInstanceId= experimentInstanceDao.getById(req.getExperimentInstanceId(), ExperimentInstanceEntity::getCaseInstanceId)
+                .map(ExperimentInstanceEntity::getCaseInstanceId)
+                .orElse(null);
+        if(null==caseInstanceId){
+            return null;
+        }
+        List<CaseIndicatorExpressionRefEntity> rst=new ArrayList<>();
+        List<String> caseEventIds= ShareUtil.XCollection.map(caseEventDao.getByCaseInstanceId(caseInstanceId, CaseEventEntity::getCaseEventId),
+                CaseEventEntity::getCaseEventId);
+        rst.addAll(caseIndicatorExpressionRefDao.getByReasonId(req.getAppId(), caseEventIds ));
+        List<String> treatItemIds= ShareUtil.XCollection.map(treatItemDao.getAll(req.getAppId(), true,TreatItemEntity::getTreatItemId),
+                TreatItemEntity::getTreatItemId);
+        List<IndicatorExpressionRefEntity> rowsTreatRef=indicatorExpressionRefDao.getByReasonId(req.getAppId(), treatItemIds);
+        rst.addAll(ShareUtil.XCollection.map(rowsTreatRef, i->
+                CopyWrapper.create(CaseIndicatorExpressionRefEntity::new)
+                        .endFrom(i)
+                        .setCaseIndicatorExpressionRefId(i.getIndicatorExpressionRefId())));
+        return rst;
     }
 }

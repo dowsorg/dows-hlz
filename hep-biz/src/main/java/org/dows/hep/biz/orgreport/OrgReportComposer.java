@@ -7,6 +7,7 @@ import org.dows.hep.api.enums.EnumExptOperateType;
 import org.dows.hep.api.user.experiment.response.ExptOrgFlowReportResponse;
 import org.dows.hep.api.user.experiment.vo.ExptOrgReportNodeVO;
 import org.dows.hep.biz.base.indicator.ExperimentOrgModuleBiz;
+import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.util.ExptOrgFlowValidator;
 import org.dows.hep.biz.util.ExptRequestValidator;
 import org.dows.hep.biz.util.ShareUtil;
@@ -43,7 +44,7 @@ public class OrgReportComposer {
                 ;
     }
 
-    public ExptOrgFlowReportResponse composeReport(ExptRequestValidator exptValidator,ExptOrgFlowValidator flowValidator,ExptOrgReportNodeVO newNode){
+    public ExptOrgFlowReportResponse composeReport(ExptRequestValidator exptValidator, ExptOrgFlowValidator flowValidator, ExperimentTimePoint timePoint, ExptOrgReportNodeVO newNode){
         final ExperimentOrgEntity exptOrg= exptValidator.getExperimentOrg();
         if(null==flowValidator){
             flowValidator=ExptOrgFlowValidator.create(exptValidator);
@@ -93,7 +94,9 @@ public class OrgReportComposer {
                         .setIndicatorFuncId(func.getIndicatorFuncId())
                         .setIndicatorFuncName(func.getIndicatorFuncName());
                 nodes.add(node);
-                OrgReportExtractRequest req=createRequest(exptValidator).setIndicatorFuncId(func.getIndicatorFuncId());
+                OrgReportExtractRequest req=createRequest(exptValidator)
+                        .setPeriod(timePoint.getPeriod())
+                        .setIndicatorFuncId(func.getIndicatorFuncId());
                 try {
                     orgReportExtracterAdapter.fillReportData(req,node);
                 } catch (ExecutionException e) {

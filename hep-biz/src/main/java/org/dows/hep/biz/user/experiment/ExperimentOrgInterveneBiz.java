@@ -23,10 +23,14 @@ import org.dows.hep.api.user.experiment.vo.ExptTreatPlanItemVO;
 import org.dows.hep.biz.base.intervene.*;
 import org.dows.hep.biz.dao.OperateFlowDao;
 import org.dows.hep.biz.dao.OperateOrgFuncDao;
+import org.dows.hep.biz.event.PersonBasedEventTask;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.operate.CostRequest;
 import org.dows.hep.biz.operate.OperateCostBiz;
 import org.dows.hep.biz.orgreport.OrgReportComposer;
+import org.dows.hep.biz.spel.SpelInvoker;
+import org.dows.hep.biz.spel.meta.SpelEvalResult;
+import org.dows.hep.biz.spel.meta.SpelEvalSumResult;
 import org.dows.hep.biz.util.*;
 import org.dows.hep.biz.vo.CalcExptFoodCookbookResult;
 import org.dows.hep.biz.vo.Categ4ExptVO;
@@ -319,7 +323,6 @@ public class ExperimentOrgInterveneBiz{
         ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator)
                 .requireOrgFlowRunning(timePoint.getPeriod());
         //保存操作记录
-
         IndicatorFuncEntity defOrgFunc=validator.getIndicatorFunc();
         OperateOrgFuncEntity rowOrgFunc= createRowOrgFunc(validator)
                 .setIndicatorCategoryId(enumOperateType.getIndicatorCateg().getCode())
@@ -336,12 +339,14 @@ public class ExperimentOrgInterveneBiz{
         OperateOrgFuncSnapEntity rowOrgFuncSnap=new OperateOrgFuncSnapEntity()
                 .setAppId(validator.getAppId())
                 .setSnapTime(dateNow);
+        final List<ExptTreatPlanItemVO> newItems=new ArrayList<>();
         for(int i=saveTreat.getTreatItems().size()-1;i>=0;i--){
             ExptTreatPlanItemVO item=saveTreat.getTreatItems().get(i);
             if(ShareUtil.XObject.notEmpty(item.getItemId(), true)){
                 continue;
             }
             item.setItemId(getTimestampId(dateNow,saveTreat.getTreatItems().size()-i)).setDealFlag(0);
+            newItems.add(item);
         }
         ExptTreatPlanResponse snapRst=new ExptTreatPlanResponse().setTreatItems(saveTreat.getTreatItems());
         try{
@@ -352,6 +357,9 @@ public class ExperimentOrgInterveneBiz{
         //挂号报告
         boolean succFlag=false;
         ExptOrgFlowReportResponse report=null;
+        Map<String, SpelEvalSumResult> mapSum=new HashMap<>();
+        List<SpelEvalResult> evalResults=SpelInvoker.Instance().evalTreatEffect(validator.getExperimentInstanceId(), validator.getExperimentPersonId(),
+                timePoint.getPeriod(), newItems,mapSum);
         if(enumOperateType.getEndFlag()){
             OperateFlowEntity flow= flowValidator.getExptFlow().get();
             OperateFlowEntity saveFlow=OperateFlowEntity.builder()
@@ -378,7 +386,7 @@ public class ExperimentOrgInterveneBiz{
                     .snapTime(dateNow)
                     .build();
             try{
-                report= orgReportComposer.composeReport(validator,flowValidator.updateFlowOperate(timePoint),node);
+                report= orgReportComposer.composeReport(validator,flowValidator.updateFlowOperate(timePoint),timePoint,node);
                 saveFlowSnap.setRecordJson(JacksonUtil.toJson(report,true));
             }catch (Exception ex){
                 AssertUtil.justThrow(String.format("机构报告数据编制失败：%s",ex.getMessage()),ex);
@@ -386,11 +394,21 @@ public class ExperimentOrgInterveneBiz{
 
             succFlag=operateOrgFuncDao.tranSave(rowOrgFunc,List.of(rowOrgFuncSnap),false,()->{
                 saveFlow.setOperateOrgFuncId(rowOrgFunc.getOperateOrgFuncId());
-                return operateFlowDao.tranSave(saveFlow, List.of(saveFlowSnap), false);
+                AssertUtil.falseThenThrow(operateFlowDao.tranSave(saveFlow, List.of(saveFlowSnap), false))
+                        .throwMessage("机构报告数据保存失败");
+                AssertUtil.falseThenThrow(SpelInvoker.Instance().saveIndicator(evalResults, mapSum.values(), timePoint.getPeriod()))
+                        .throwMessage("影响指标数据保存失败");
+                return true;
             });
         }else{
-            succFlag=operateOrgFuncDao.tranSave(rowOrgFunc,List.of(rowOrgFuncSnap),false);
+            succFlag=operateOrgFuncDao.tranSave(rowOrgFunc,List.of(rowOrgFuncSnap),false,()->{
+                AssertUtil.falseThenThrow(SpelInvoker.Instance().saveIndicator(evalResults, mapSum.values(), timePoint.getPeriod()))
+                        .throwMessage("影响指标数据保存失败");
+                return true;
+            });
         }
+        //TODO
+        PersonBasedEventTask.runPersonBasedEventAsync(validator.getAppId(),validator.getExperimentInstanceId());
         // 判断是什么干预类型
         String feeName = "";
         String feeCode = "";

@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
+import org.dows.hep.api.base.indicator.response.GroupAverageHealthPointResponse;
 import org.dows.hep.api.user.experiment.request.ExperimentIndicatorInstanceRequest;
 import org.dows.hep.api.user.experiment.response.EchartsDataResonse;
 import org.dows.hep.biz.base.indicator.ExperimentIndicatorInstanceRsBiz;
@@ -57,7 +58,10 @@ public class ExperimentIndicatorInstanceRsRest {
 
   @Operation(summary = "实验某个小组的平均健康指数")
   @GetMapping("v1/experimentIndicator/healthPoint/average")
-  public String groupAverageHealth(@RequestParam String experimentGroupId) {
-    return experimentIndicatorInstanceRsBiz.groupAverageHealth(experimentGroupId);
+  public GroupAverageHealthPointResponse groupAverageHealth(
+      @RequestParam String experimentGroupId,
+      @RequestParam Integer periods
+      ) {
+    return experimentIndicatorInstanceRsBiz.groupAverageHealth(experimentGroupId, periods);
   }
 }
