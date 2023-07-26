@@ -638,7 +638,7 @@ public class ExperimentScoringBiz {
         experimentTotalRankItemResponseList.sort(Comparator.comparing(a -> Double.parseDouble(a.getAllPeriodsTotalScore())));
         Collections.reverse(experimentTotalRankItemResponseList);
         List<ExperimentRankingEntity> experimentRankingEntities = new ArrayList<>();
-        for (int i = 1; i <= experimentTotalRankItemResponseList.size(); i++) {
+        for (int i = 0; i < experimentTotalRankItemResponseList.size(); i++) {
             ExperimentTotalRankItemResponse experimentTotalRankItemResponse = experimentTotalRankItemResponseList.get(i);
             experimentTotalRankItemResponse.getExperimentTotalRankGroupItemResponseList()
                     .sort(Comparator.comparingInt(ExperimentTotalRankGroupItemResponse::getPeriods));
@@ -647,7 +647,7 @@ public class ExperimentScoringBiz {
                     .experimentRankingId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentId)
                     .experimentGroupId(experimentTotalRankItemResponse.getExperimentGroupId())
-                    .rankingIndex(i)// 排名
+                    .rankingIndex(i+1)// 排名
                     .totalScore(experimentTotalRankItemResponse.getAllPeriodsTotalScore())
                     .periodScoreJson(JSONUtil.toJsonStr(experimentTotalRankItemResponse.getExperimentTotalRankGroupItemResponseList()))
                     .groupName(experimentTotalRankItemResponse.getExperimentGroupName())

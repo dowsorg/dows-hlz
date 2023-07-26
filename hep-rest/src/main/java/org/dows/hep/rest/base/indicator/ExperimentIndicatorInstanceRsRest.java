@@ -31,7 +31,7 @@ public class ExperimentIndicatorInstanceRsRest {
 
   @Operation(summary = "查询人物初始化资金")
   @GetMapping("v1/experimentIndicator/money/get")
-  public String getHealthPoint(
+  public String getMoneyDef(
       @RequestParam String experimentPersonId
   ) {
     return experimentIndicatorInstanceRsBiz.getMoneyDef(experimentPersonId);

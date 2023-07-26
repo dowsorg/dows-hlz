@@ -357,11 +357,8 @@ public class RsExperimentCalculateBiz {
       experimentIndicatorInstanceRsEntity.setChangeVal(0D);
     });
 
-    CompletableFuture<Void> cfFinalOperation = CompletableFuture.runAsync(() -> {
-      experimentIndicatorInstanceRsService.saveOrUpdateBatch(resultExperimentIndicatorInstanceRsEntityList);
-      experimentIndicatorValRsService.saveOrUpdateBatch(kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.values());
-    });
-    cfFinalOperation.get();
+    experimentIndicatorInstanceRsService.saveOrUpdateBatch(resultExperimentIndicatorInstanceRsEntityList);
+    experimentIndicatorValRsService.saveOrUpdateBatch(kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.values());
   }
 
   @Transactional(rollbackFor = Exception.class)
@@ -382,7 +379,7 @@ public class RsExperimentCalculateBiz {
     cfPopulateKExperimentPersonIdVDurationExperimentIndicatorInstanceIdMap.get();
 
     if (kExperimentPersonIdVExperimentIndicatorInstanceIdMap.isEmpty()) {return;}
-    Set<String> durationExperimentIndicatorInstanceIdSet = (Set<String>) kExperimentPersonIdVExperimentIndicatorInstanceIdMap.values();
+    Set<String> durationExperimentIndicatorInstanceIdSet = new HashSet<>(kExperimentPersonIdVExperimentIndicatorInstanceIdMap.values());
     Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = new HashMap<>();
     CompletableFuture<Void> cfPopulateKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = CompletableFuture.runAsync(() -> {
       rsExperimentIndicatorValBiz.populateKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(
