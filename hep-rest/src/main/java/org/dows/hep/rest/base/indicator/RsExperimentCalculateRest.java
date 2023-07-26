@@ -6,8 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.*;
 import org.dows.hep.api.base.indicator.response.RsCalculateCompetitiveScoreRsResponse;
 import org.dows.hep.api.base.indicator.response.RsCalculateMoneyScoreRsResponse;
-import org.dows.hep.biz.base.indicator.RsCaseCalculateBiz;
-import org.dows.hep.biz.base.indicator.RsDatabaseCalculateBiz;
 import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
 import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,8 +27,8 @@ public class RsExperimentCalculateRest {
 
   @Operation(summary = "功能结算点（比如健康指导点击后）调用这个封装好的方法")
   @PostMapping("v1/experimentIndicator/func/reCalculate")
-  public void experimentReCalculateFunc(@RequestBody RsCalculateFuncRequest rsCalculateFuncRequest) throws ExecutionException, InterruptedException {
-    rsExperimentCalculateBiz.experimentReCalculateFunc(rsCalculateFuncRequest);
+  public void experimentReCalculateFunc(@RequestBody RsExperimentCalculateFuncRequest rsExperimentCalculateFuncRequest) throws ExecutionException, InterruptedException {
+    rsExperimentCalculateBiz.experimentReCalculateFunc(rsExperimentCalculateFuncRequest);
   }
 
   @Operation(summary = "期数翻转与我相关")

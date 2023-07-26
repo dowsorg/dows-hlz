@@ -8,6 +8,8 @@ import org.dows.hep.api.base.indicator.response.ExperimentMonitorFollowupRsRespo
 import org.dows.hep.biz.base.indicator.ExperimentIndicatorViewMonitorFollowupReportRsBiz;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.concurrent.ExecutionException;
+
 /**
  * @author runsix
  */
@@ -19,7 +21,7 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsRest {
 
   @Operation(summary = "进行随访")
   @PostMapping("v1/userExperiment/monitorFollowup/check")
-  public void monitorFollowupCheck(@RequestBody ExperimentMonitorFollowupCheckRequestRs experimentMonitorFollowupCheckRequestRs) {
+  public void monitorFollowupCheck(@RequestBody ExperimentMonitorFollowupCheckRequestRs experimentMonitorFollowupCheckRequestRs) throws ExecutionException, InterruptedException {
     experimentIndicatorViewMonitorFollowupReportRsBiz.monitorFollowupCheck(experimentMonitorFollowupCheckRequestRs);
   }
 
