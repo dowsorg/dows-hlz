@@ -98,14 +98,14 @@ public class ExperimentFollowupHandler extends AbstractEventHandler implements E
                 extracted(ct, intervalMs, prts, dates, v, realityMs, residueTime);
                 continue;
             }
-            if (prts.get() != 0) {
-                BigDecimal mul = NumberUtil.mul(prts.get(), curRatio);
-                long pct = v.getRestartTime().getTime() + mul.longValue();
-                dates.add(new Date(pct));
-                long residueTime = v.getEndTime().getTime() - pct;
-                prts.set(0L);
-                extracted(pct, intervalMs, prts, dates, v, realityMs, residueTime);
-            }
+//            if (prts.get() != 0) {
+//                BigDecimal mul = NumberUtil.mul(prts.get(), curRatio);
+//                long pct = v.getRestartTime().getTime() + mul.longValue();
+//                dates.add(new Date(pct));
+//                long residueTime = v.getEndTime().getTime() - pct;
+//                prts.set(0L);
+//                extracted(pct, intervalMs, prts, dates, v, realityMs, residueTime);
+//            }
         }
 
         NoticeContent noticeContent = NoticeContent.builder()
@@ -142,15 +142,17 @@ public class ExperimentFollowupHandler extends AbstractEventHandler implements E
                     delayTime += ct + realityMs.longValue() * l;
                     dates.add(new Date(delayTime));
                 }
-            } else {
-                // 剩余时间延到下一期（期数间隔时间不包含在内）,下一期开始的时候需要加上该值
-                prts.set(realityMs.longValue() - (residueTime - delayTime));
             }
-        } else {
-            /**
-             *  下期开始时间 = 随访间隔天数-本期剩余时间+间隔时间，下一期开始的时候需要加上该时长值
-             */
-            prts.set(realityMs.longValue() - residueTime);
+//            else {
+//                // 剩余时间延到下一期（期数间隔时间不包含在内）,下一期开始的时候需要加上该值
+//                prts.set(realityMs.longValue() - (residueTime - delayTime));
+//            }
         }
+//        else {
+//            /**
+//             *  下期开始时间 = 随访间隔天数-本期剩余时间+间隔时间，下一期开始的时候需要加上该时长值
+//             */
+//            prts.set(realityMs.longValue() - residueTime);
+//        }
     }
 }
