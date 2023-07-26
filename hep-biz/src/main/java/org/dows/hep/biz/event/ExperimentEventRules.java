@@ -5,11 +5,12 @@ import org.dows.hep.api.enums.EnumWebSocketType;
 import org.dows.hep.api.event.EventName;
 import org.dows.hep.api.user.experiment.response.OrgNoticeResponse;
 import org.dows.hep.biz.dao.ExperimentEventDao;
+import org.dows.hep.biz.spel.SpelInvoker;
 import org.dows.hep.biz.user.experiment.ExperimentOrgNoticeBiz;
+import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentEventEntity;
-import org.dows.hep.entity.ExperimentIndicatorValEntity;
 import org.dows.hep.entity.ExperimentOrgNoticeEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -43,7 +44,7 @@ public class ExperimentEventRules {
 
     //region facade
     public boolean saveTriggeredTimeEvent(List<ExperimentEventEntity> events,boolean saveIndicators) throws JsonProcessingException {
-        List<ExperimentEventEntity> saveEvents= ShareUtil.XCollection.map(events, i->
+        List<ExperimentEventEntity> saveEvents = ShareUtil.XCollection.map(events, i ->
                 ExperimentEventEntity.builder()
                         .id(i.getId())
                         .experimentEventId(i.getExperimentEventId())
@@ -53,33 +54,28 @@ public class ExperimentEventRules {
                         .triggerGameDay(i.getTriggerGameDay())
                         .state(i.getState())
                         .build());
-        List<String> eventIds=ShareUtil.XCollection.map(events, ExperimentEventEntity::getExperimentEventId);
-        Map<String,ExperimentEventEntity> mapEvents=experimentEventDao.getMapByIds(eventIds,
+        List<String> eventIds = ShareUtil.XCollection.map(events, ExperimentEventEntity::getExperimentEventId);
+        Map<String, ExperimentEventEntity> mapEvents = experimentEventDao.getMapByIds(eventIds,
                 ExperimentEventEntity::getExperimentEventId,
                 ExperimentEventEntity::getEventJson);
         //事件触发通知
-        List<ExperimentOrgNoticeEntity> rowsNotice=new ArrayList<>();
-        final Map<String,String> mapAvatar=new HashMap<>();
-        for(ExperimentEventEntity item:events){
+        List<ExperimentOrgNoticeEntity> rowsNotice = new ArrayList<>();
+        final Map<String, String> mapAvatar = new HashMap<>();
+        for (ExperimentEventEntity item : events) {
             Optional.ofNullable(mapEvents.get(item.getExperimentEventId()))
-                    .ifPresent(finded->item.setEventJson(finded.getEventJson()));
-            rowsNotice.add(experimentOrgNoticeBiz.createNotice(item,mapAvatar));
+                    .ifPresent(finded -> item.setEventJson(finded.getEventJson()));
+            rowsNotice.add(experimentOrgNoticeBiz.createNotice(item, mapAvatar));
         }
         eventIds.clear();
         mapEvents.clear();
 
-        //事件触发指标
-        List<ExperimentIndicatorValEntity> rowsIndicatorVal=null;
-        if(saveIndicators){
-
-        }
-        boolean rst= experimentEventDao.tranSaveBatch(saveEvents,false,true, ()-> saveTriggeredTimeEventX(rowsNotice,rowsIndicatorVal));
-        if(rst){
+        boolean rst = experimentEventDao.tranSaveBatch(saveEvents, false, true, () -> saveTriggeredTimeEventX(rowsNotice, saveIndicators ? events : null));
+        if (rst) {
             //发送webSocket
-            final String experimentId=rowsNotice.get(0).getExperimentInstanceId();
-            Map<String,List<OrgNoticeResponse>> mapNotice=experimentOrgNoticeBiz.getWebSocketNotice(experimentId, rowsNotice);
-            if(ShareUtil.XObject.notEmpty(mapNotice)) {
-                for(Map.Entry<String,List<OrgNoticeResponse>> entry :mapNotice.entrySet()){
+            final String experimentId = rowsNotice.get(0).getExperimentInstanceId();
+            Map<String, List<OrgNoticeResponse>> mapNotice = experimentOrgNoticeBiz.getWebSocketNotice(experimentId, rowsNotice);
+            if (ShareUtil.XObject.notEmpty(mapNotice)) {
+                for (Map.Entry<String, List<OrgNoticeResponse>> entry : mapNotice.entrySet()) {
                     ShareBiz.publishWebSocketEvent(applicationEventPublisher, EventName.exptEventTriggeredHandler, EnumWebSocketType.EVENT_TRIGGERED, experimentId,
                             Set.of(entry.getKey()), entry.getValue());
                 }
@@ -87,11 +83,20 @@ public class ExperimentEventRules {
         }
         return rst;
     }
-    boolean saveTriggeredTimeEventX(List<ExperimentOrgNoticeEntity> notices,List<ExperimentIndicatorValEntity> indicatorVals){
-        experimentOrgNoticeBiz.add(notices);
+    boolean saveTriggeredTimeEventX(List<ExperimentOrgNoticeEntity> notices,List<ExperimentEventEntity> events){
+        AssertUtil.falseThenThrow(experimentOrgNoticeBiz.add(notices)).throwMessage("事件触发通知保存失败");
+        if(ShareUtil.XObject.isEmpty(events)){
+            return true;
+        }
+        final List<String> caseEventIds=ShareUtil.XCollection.map(events, ExperimentEventEntity::getCaseEventId);
+        final ExperimentEventEntity topEvent=events.get(0);
+        final String experimentId=topEvent.getExperimentInstanceId();
+        final String experimentPersonId=topEvent.getExperimentPersonId();
+        final Integer periods=topEvent.getTriggeredPeriod();
+        SpelInvoker.Instance().saveEventEffect(experimentId, experimentPersonId,periods, caseEventIds);
         return true;
     }
-    public boolean saveActionEvent(ExperimentEventEntity event, ExperimentOrgNoticeEntity notice) {
+    public boolean saveActionEvent(ExperimentEventEntity event, ExperimentOrgNoticeEntity notice,List<String> actedIds) {
         ExperimentEventEntity saveEvent = ExperimentEventEntity.builder()
                 .id(event.getId())
                 .experimentEventId(event.getExperimentEventId())
@@ -110,13 +115,15 @@ public class ExperimentEventRules {
                 .actionState(notice.getActionState())
                 .readState(notice.getReadState())
                 .build();
-        //处理事件指标
-
-
-        return experimentEventDao.tranSave(saveEvent,true ,() -> saveActionEventX(saveNotice, null));
+        return experimentEventDao.tranSave(saveEvent, true, () -> saveActionEventX(saveNotice, event, actedIds));
     }
-    boolean saveActionEventX(ExperimentOrgNoticeEntity notice,List<ExperimentIndicatorValEntity> indicatorVals){
-        experimentOrgNoticeBiz.update(notice);
+    boolean saveActionEventX(ExperimentOrgNoticeEntity notice,ExperimentEventEntity event,List<String> actedIds) {
+        AssertUtil.falseThenThrow(experimentOrgNoticeBiz.update(notice)).throwMessage("通知状态更新失败");
+        if (ShareUtil.XObject.isEmpty(event)) {
+            return true;
+        }
+        AssertUtil.falseThenThrow(SpelInvoker.Instance().saveEventAction(event.getExperimentInstanceId(), event.getExperimentPersonId(), event.getActionPeriod(), actedIds))
+                .throwMessage("影响指标数据保存失败");
         return true;
     }
 

@@ -33,9 +33,8 @@ public class ViewTwoLevelExtracter implements IOrgReportExtracter<List<Experimen
 
     @Override
     public List<ExperimentPhysicalExamReportResponseRs> getReportData(OrgReportExtractRequest req) {
-        final Integer period= ShareBiz.getCurrentPeriod(req.getAppId(), req.getExperimentInstanceId());
         return experimentIndicatorViewPhysicalExamReportRsBiz.get(req.getAppId(), req.getExperimentInstanceId(),
-                req.getIndicatorFuncId(),req.getExperimentPersonId(),req.getExperimentOrgId(),period);
+                req.getIndicatorFuncId(),req.getExperimentPersonId(),req.getExperimentOrgId(),req.getPeriod());
     }
 
     @Override

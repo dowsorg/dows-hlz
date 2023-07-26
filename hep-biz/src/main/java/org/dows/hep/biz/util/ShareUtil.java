@@ -3,16 +3,19 @@ package org.dows.hep.biz.util;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.google.common.collect.Lists;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -71,6 +74,24 @@ public class ShareUtil {
         }
 
 
+        public static boolean isNumber(Object obj){
+            if(isEmpty(obj)){
+                return false;
+            }
+            if(obj instanceof Number){
+                return true;
+            }
+            return isNumber(obj.toString());
+        }
+        public static boolean notNumber(Object obj){
+            return !isNumber(obj);
+        }
+        public static boolean isNumber(String str){
+            return NumberUtil.isNumber(str);
+        }
+        public static boolean notNumber(String str){
+            return !isNumber(str);
+        }
         public static <T> T defaultIfNull(T object, T defaultValue) {
             return ObjectUtil.defaultIfNull(object, defaultValue);
         }
@@ -231,6 +252,21 @@ public class ShareUtil {
         }
 
 
+    }
+    public static class XRandom {
+        public static boolean randomBoolean(){
+            return randomInteger(0, 2)==0;
+        }
+
+        public static BigDecimal randomBigDecimal(BigDecimal min, BigDecimal max, int scale){
+            final long factor=(long)Math.pow(10,scale<0?0:scale);
+            int minVal=min.multiply(BigDecimal.valueOf( factor)).intValue();
+            int maxVal=max.multiply(BigDecimal.valueOf( factor)).intValue();
+            return BigDecimalUtil.div(BigDecimal.valueOf(randomInteger(minVal, maxVal)),BigDecimal.valueOf(factor),scale);
+        }
+        public static int randomInteger(int min, int max){
+            return ThreadLocalRandom.current().nextInt(min,max);
+        }
     }
 
 

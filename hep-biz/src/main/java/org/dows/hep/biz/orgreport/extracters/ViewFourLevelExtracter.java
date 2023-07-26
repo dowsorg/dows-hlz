@@ -33,9 +33,8 @@ public class ViewFourLevelExtracter implements IOrgReportExtracter<List<Experime
 
     @Override
     public List<ExperimentSupportExamReportResponseRs> getReportData(OrgReportExtractRequest req) {
-        final Integer period= ShareBiz.getCurrentPeriod(req.getAppId(), req.getExperimentInstanceId());
         return experimentIndicatorViewSupportExamReportRsBiz.get(req.getAppId(), req.getExperimentInstanceId(),
-                req.getIndicatorFuncId(), req.getExperimentPersonId(), req.getExperimentOrgId(),period);
+                req.getIndicatorFuncId(), req.getExperimentPersonId(), req.getExperimentOrgId(),req.getPeriod());
     }
 
     @Override

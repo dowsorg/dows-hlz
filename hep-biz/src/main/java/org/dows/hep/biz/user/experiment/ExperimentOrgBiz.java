@@ -269,22 +269,25 @@ public class ExperimentOrgBiz{
         ExperimentEventEntity rowEvent=AssertUtil.getNotNull(experimentEventDao.getById(rowNotice.getNoticeSrcId(),
                 ExperimentEventEntity::getId,
                 ExperimentEventEntity::getExperimentEventId,
+                ExperimentEventEntity::getCaseEventId,
+                ExperimentEventEntity::getExperimentInstanceId,
+                ExperimentEventEntity::getExperimentPersonId,
                 ExperimentEventEntity::getState
                 )).orElseThrow("未找到突发事件信息");
         ExperimentOrgNoticeBox noticeBox=ExperimentOrgNoticeBox.create(rowNotice);
         List<ExptOrgNoticeActionVO> actions=noticeBox.fromActionsJson(true);
         Map<String,ExptOrgNoticeActionVO> mapAction=ShareUtil.XCollection.toMap(actions, ExptOrgNoticeActionVO::getCaseEventActionId);
-        boolean actedFlag=false;
+        final List<String> actedIds=new ArrayList<>();
         for(ExptOrgNoticeActionVO item:saveNoticeAction.getActions()){
             ExptOrgNoticeActionVO vAction=mapAction.get(item.getCaseEventActionId());
             AssertUtil.trueThenThrow(null==vAction)
                     .throwMessage(String.format("未找到处理措施[%s]的定义", item.getActionDesc()));
             vAction.setActedFlag(Optional.ofNullable(item.getActedFlag()).orElse(0)>0?1:0);
             if(vAction.getActedFlag()>0){
-                actedFlag=true;
+                actedIds.add(vAction.getCaseEventActionId());
             }
         }
-        AssertUtil.falseThenThrow(actedFlag)
+        AssertUtil.trueThenThrow(actedIds.size()==0)
                 .throwMessage("请选择事件处理措施");
 
         noticeBox.toActionsJson(true);
@@ -301,7 +304,7 @@ public class ExperimentOrgBiz{
                 .setActionPeriod(timePoint.getPeriod())
                 .setActionGameDay(timePoint.getGameDay())
                 .setState(EnumExperimentEventState.USERAction.getCode());
-        if(!ExperimentEventRules.Instance().saveActionEvent(rowEvent, rowNotice)){
+        if(!ExperimentEventRules.Instance().saveActionEvent(rowEvent, rowNotice,actedIds)){
             return null;
         }
         return experimentOrgNoticeBiz.CreateOrgNoticeResponse(noticeBox);
