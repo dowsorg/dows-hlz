@@ -4,10 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.ExperimentMonitorFollowupCheckRequestRs;
+import org.dows.hep.api.base.indicator.request.RsExperimentCalculateFuncRequest;
 import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.enums.EnumString;
-import org.dows.hep.api.event.ExperimentFollowupEvent;
+import org.dows.hep.api.event.FollowupEvent;
 import org.dows.hep.api.exception.ExperimentIndicatorViewBaseInfoRsException;
 import org.dows.hep.api.exception.ExperimentIndicatorViewMonitorFollowupReportRsException;
 import org.dows.hep.biz.util.ShareBiz;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -37,6 +39,7 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
     private final ExperimentIndicatorViewMonitorFollowupPlanRsService experimentIndicatorViewMonitorFollowupPlanRsService;
     private final ExperimentIndicatorViewMonitorFollowupReportRsService experimentIndicatorViewMonitorFollowupReportRsService;
     private final ApplicationContext applicationContext;
+    private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
 
     public static ExperimentIndicatorViewMonitorFollowupPlanRsResponse experimentIndicatorViewMonitorFollowupPlanRs2Response(ExperimentIndicatorViewMonitorFollowupPlanRsEntity experimentIndicatorViewMonitorFollowupPlanRsEntity) {
         if (Objects.isNull(experimentIndicatorViewMonitorFollowupPlanRsEntity)) {
@@ -59,7 +62,7 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void monitorFollowupCheck(ExperimentMonitorFollowupCheckRequestRs experimentMonitorFollowupCheckRequestRs) {
+    public void monitorFollowupCheck(ExperimentMonitorFollowupCheckRequestRs experimentMonitorFollowupCheckRequestRs) throws ExecutionException, InterruptedException {
         ExperimentIndicatorViewMonitorFollowupReportRsEntity experimentIndicatorViewMonitorFollowupReportRsEntity = null;
         Integer periods = experimentMonitorFollowupCheckRequestRs.getPeriods();
         String experimentGroupId = experimentMonitorFollowupCheckRequestRs.getExperimentGroupId();
@@ -95,7 +98,7 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
             /**
              * todo 解耦，根据随访计划启动定时调度
              */
-            applicationContext.publishEvent(new ExperimentFollowupEvent(experimentMonitorFollowupCheckRequestRs));
+            applicationContext.publishEvent(new FollowupEvent(experimentMonitorFollowupCheckRequestRs));
         }
         ExperimentIndicatorViewMonitorFollowupRsEntity experimentIndicatorViewMonitorFollowupRsEntity = experimentIndicatorViewMonitorFollowupRsService.lambdaQuery()
                 .eq(ExperimentIndicatorViewMonitorFollowupRsEntity::getExperimentIndicatorViewMonitorFollowupId, indicatorViewMonitorFollowupId)
@@ -182,6 +185,14 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
                 .ivmfIndicatorCurrentValArray(indicatorCurrentValArray)
                 .build();
         experimentIndicatorViewMonitorFollowupReportRsService.saveOrUpdate(experimentIndicatorViewMonitorFollowupReportRsEntity);
+        /* runsix:监测随访是一个触发计算时间点 */
+        rsExperimentCalculateBiz.experimentReCalculateFunc(RsExperimentCalculateFuncRequest
+            .builder()
+            .appId(appId)
+            .experimentId(experimentId)
+            .periods(periods)
+            .experimentPersonId(experimentPersonId)
+            .build());
     }
 
     /**

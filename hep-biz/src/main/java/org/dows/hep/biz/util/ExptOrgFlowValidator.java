@@ -93,8 +93,10 @@ public class ExptOrgFlowValidator {
      */
     public Optional<Double> getOrgFee4Ghf(){
         return getOrgFee(EnumOrgFeeType.GHF)
-                .map(CaseOrgFeeEntity::getFee)
-                .filter(i->i>0);
+                .map(i->Math.max(0,i.getFee()))
+                .or(()->Optional.of(0d));
+                //.map(CaseOrgFeeEntity::getFee);
+                //.filter(i->i>0);
     }
 
     /**
