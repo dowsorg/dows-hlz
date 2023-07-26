@@ -59,7 +59,7 @@ public class FromSnapshotLoader extends BaseSpelLoader {
         final List<String> expressionIds=ShareUtil.XCollection.map(rowsExpressionRef, SnapCaseIndicatorExpressionRefEntity::getIndicatorExpressionId);
         List<SnapCaseIndicatorExpressionEntity> rowsExpression= snapCaseIndicatorExpressionDao.getByExpressionId(refExperimentId4Expression,expressionIds,source,
                 SnapCaseIndicatorExpressionEntity::getCaseIndicatorExpressionId,
-                SnapCaseIndicatorExpressionEntity::getPrincipalId,
+                SnapCaseIndicatorExpressionEntity::getCasePrincipalId,
                 SnapCaseIndicatorExpressionEntity::getType,
                 SnapCaseIndicatorExpressionEntity::getMaxIndicatorExpressionItemId,
                 SnapCaseIndicatorExpressionEntity::getMinIndicatorExpressionItemId
@@ -111,7 +111,7 @@ public class FromSnapshotLoader extends BaseSpelLoader {
         final List<String> expressionIds=ShareUtil.XCollection.map(rowsExpressionRef, SnapCaseIndicatorExpressionRefEntity::getIndicatorExpressionId);
         List<SnapCaseIndicatorExpressionEntity> rowsExpression= snapCaseIndicatorExpressionDao.getByExpressionId(refExperimentId4Expression,expressionIds,source,
                 SnapCaseIndicatorExpressionEntity::getCaseIndicatorExpressionId,
-                SnapCaseIndicatorExpressionEntity::getPrincipalId,
+                SnapCaseIndicatorExpressionEntity::getCasePrincipalId,
                 SnapCaseIndicatorExpressionEntity::getType,
                 SnapCaseIndicatorExpressionEntity::getMaxIndicatorExpressionItemId,
                 SnapCaseIndicatorExpressionEntity::getMinIndicatorExpressionItemId
@@ -124,6 +124,7 @@ public class FromSnapshotLoader extends BaseSpelLoader {
         final List<String> itemExpressionIds=ShareUtil.XCollection.map(rowsExpression, SnapCaseIndicatorExpressionEntity::getCaseIndicatorExpressionId);
         List<SnapCaseIndicatorExpressionItemEntity> rowsExpressionItem=snapCaseIndicatorExpressionItemDao.getByExpressionId(refExperimentId4Item,itemExpressionIds,
                 SnapCaseIndicatorExpressionItemEntity::getCaseIndicatorExpressionItemId,
+                SnapCaseIndicatorExpressionItemEntity::getIndicatorExpressionId,
                 SnapCaseIndicatorExpressionItemEntity::getConditionExpression,
                 SnapCaseIndicatorExpressionItemEntity::getConditionNameList,
                 SnapCaseIndicatorExpressionItemEntity::getConditionValList,
@@ -183,7 +184,7 @@ public class FromSnapshotLoader extends BaseSpelLoader {
         }
         SnapCaseIndicatorExpressionEntity rowExpression= snapCaseIndicatorExpressionDao.getByExpressionId(refExperimentId4Expression,expressionId,source,
                 SnapCaseIndicatorExpressionEntity::getCaseIndicatorExpressionId,
-                SnapCaseIndicatorExpressionEntity::getPrincipalId,
+                SnapCaseIndicatorExpressionEntity::getCasePrincipalId,
                 SnapCaseIndicatorExpressionEntity::getType,
                 SnapCaseIndicatorExpressionEntity::getMaxIndicatorExpressionItemId,
                 SnapCaseIndicatorExpressionEntity::getMinIndicatorExpressionItemId

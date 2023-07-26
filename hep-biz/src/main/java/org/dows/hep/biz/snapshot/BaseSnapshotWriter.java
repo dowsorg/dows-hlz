@@ -9,6 +9,7 @@ import org.dows.hep.entity.ExperimentSnapshotRefEntity;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 /**
@@ -82,11 +83,13 @@ public abstract class BaseSnapshotWriter<T> implements ISnapshotDbWriter<T> {
         logError(null, func,msg,args);
     }
     protected void logError(Throwable ex, String func, String msg,Object... args){
-        String str=String.format("%s.%s type:%s %s",this.getClass().getName(), func,getSnapshotType().getName(),String.format(Optional.ofNullable(msg).orElse(""), args));
+        String str=String.format("%s.%s@%s[%s] %s", this.getClass().getName(), func, LocalDateTime.now(),this.hashCode(),
+                String.format(Optional.ofNullable(msg).orElse(""), args));
         log.error(str,ex);
     }
     protected void logInfo(String func, String msg,Object... args){
-        String str=String.format("%s.%s type:%s %s",this.getClass().getName(), func,getSnapshotType().getName(),String.format(Optional.ofNullable(msg).orElse(""), args));
+        String str=String.format("%s.%s@%s[%s] type:%s %s",this.getClass().getName(),func,LocalDateTime.now(),this.hashCode(),
+                getSnapshotType().getName(),String.format(Optional.ofNullable(msg).orElse(""), args));
         log.info(str);
     }
 }
