@@ -227,4 +227,16 @@ public class ExperimentIndicatorInstanceRsBiz {
         }
         return statList;
     }
+
+    public String getMoneyDef(String experimentPersonId) {
+        ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = experimentIndicatorInstanceRsService.lambdaQuery()
+            .eq(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonId)
+            .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.MONEY.getType())
+            .one();
+        if (Objects.isNull(experimentIndicatorInstanceRsEntity)) {
+            return "0";
+        } else {
+            return experimentIndicatorInstanceRsEntity.getDef();
+        }
+    }
 }
