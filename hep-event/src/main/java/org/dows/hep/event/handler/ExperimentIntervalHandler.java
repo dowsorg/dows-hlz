@@ -2,10 +2,12 @@ package org.dows.hep.event.handler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.base.indicator.request.RsCalculatePeriodsRequest;
 import org.dows.hep.api.calc.ExperimentScoreCalcRequest;
 import org.dows.hep.api.enums.EnumCalcCode;
 import org.dows.hep.api.user.experiment.request.ExperimentPersonRequest;
 import org.dows.hep.api.user.experiment.response.IntervalResponse;
+import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
 import org.dows.hep.biz.calc.ExperimentScoreCalculator;
 import org.dows.hep.biz.user.experiment.ExperimentQuestionnaireBiz;
 import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
@@ -26,9 +28,10 @@ public class ExperimentIntervalHandler extends AbstractEventHandler implements E
     private final ExperimentQuestionnaireBiz experimentQuestionnaireBiz;
     private final ExperimentScoreCalculator experimentScoreCalculator;
     private final ExperimentScoringBiz experimentScoringBiz;
+    private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
 
     @Override
-    public void exec(IntervalResponse intervalResponse) {
+    public void exec(IntervalResponse intervalResponse) throws ExecutionException, InterruptedException {
         String appId = intervalResponse.getAppId();
         String experimentInstanceId = intervalResponse.getExperimentInstanceId();
         Integer period = intervalResponse.getPeriod();
@@ -52,17 +55,16 @@ public class ExperimentIntervalHandler extends AbstractEventHandler implements E
 
         // 落库： 所有计算出得分落在 experiment_scoring 表中
         try {
-            experimentScoringBiz.saveOrUpd(experimentInstanceId, period);
+            /* runsix:期数翻转，指标相关计算 */
+            rsExperimentCalculateBiz.experimentReCalculatePeriods(RsCalculatePeriodsRequest
+                .builder()
+                .appId(appId)
+                .experimentId(experimentInstanceId)
+                .periods(period)
+                .build());
+            /* runsix:期数翻转，指标相关计算 */
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
         }
-
-        ExperimentPersonRequest experimentPersonRequest = ExperimentPersonRequest.builder()
-                .experimentInstanceId(experimentInstanceId)
-                .appId(appId)
-                .periods(period - 1)// 计算上一期
-                .build();
-        // 一期结束保险返还
-        personStatiscBiz.refundFunds(experimentPersonRequest);
     }
 }

@@ -8,6 +8,7 @@ import org.dows.hep.api.base.indicator.request.*;
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.RsCalculateBizException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
+import org.dows.hep.api.user.experiment.request.ExperimentPersonRequest;
 import org.dows.hep.biz.event.ExperimentSettingCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
@@ -15,9 +16,14 @@ import org.dows.hep.biz.request.CaseCalIndicatorExpressionRequest;
 import org.dows.hep.biz.request.DatabaseCalIndicatorExpressionRequest;
 import org.dows.hep.biz.request.ExperimentCalIndicatorExpressionRequest;
 import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
+import org.dows.hep.biz.user.person.PersonStatiscBiz;
+import org.dows.hep.biz.util.RedissonUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +32,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -37,6 +44,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class RsExperimentCalculateBiz {
+  @Value("${redisson.lock.lease-time.experiment.recalculate-periods:0}")
+  private Integer leaseTimeExperimentRecalculatePeriods;
+  private final String EXPERIMENT_ID_PLUS_PERIODS = "experiment-id-periods";
   private final ExperimentIndicatorInstanceRsService experimentIndicatorInstanceRsService;
   private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
   private final ExperimentPersonService experimentPersonService;
@@ -50,6 +60,9 @@ public class RsExperimentCalculateBiz {
   private final ExperimentPersonCalculateTimeRsService experimentPersonCalculateTimeRsService;
   private final IdGenerator idGenerator;
   private final ExperimentScoringBiz experimentScoringBiz;
+  private final ExperimentScoringService experimentScoringService;
+  private final RedissonClient redissonClient;
+  private final PersonStatiscBiz personStatiscBiz;
 
   @Transactional(rollbackFor = Exception.class)
   public void experimentRsCalculateHealthScore(ExperimentRsCalculateHealthScoreRequestRs experimentRsCalculateHealthScoreRequestRs) throws ExecutionException, InterruptedException {
@@ -572,67 +585,97 @@ public class RsExperimentCalculateBiz {
   */
   @Transactional(rollbackFor = Exception.class)
   public void experimentReCalculatePeriods(RsCalculatePeriodsRequest rsCalculatePeriodsRequest) throws ExecutionException, InterruptedException {
-    /* runsix:TODO 加锁 */
     /* runsix:param */
     String appId = rsCalculatePeriodsRequest.getAppId();
     String experimentId = rsCalculatePeriodsRequest.getExperimentId();
     Integer periods = rsCalculatePeriodsRequest.getPeriods();
+    ExperimentScoringEntity experimentScoringEntity = experimentScoringService.lambdaQuery()
+        .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
+        .eq(ExperimentScoringEntity::getPeriods, periods)
+        .one();
+    /* runsix:说明已经这个实验这一期已经期数翻转计算过啦 */
+    if (Objects.nonNull(experimentScoringEntity)) {return;}
 
-    /* runsix:cal param */
-    Map<String, Integer> kExperimentPersonIdVDurationMap = new HashMap<>();
+    /* runsix:如果没有计算，那就谁先拿到谁算 */
+    RLock lock = redissonClient.getLock(RedissonUtil.getLockName(appId, EnumRedissonLock.EXPERIMENT_RECALCULATE_PERIODS, EXPERIMENT_ID_PLUS_PERIODS, experimentId+"-"+periods));
+    boolean isLocked = lock.tryLock(leaseTimeExperimentRecalculatePeriods, TimeUnit.MILLISECONDS);
+    if (!isLocked) {
+      return;
+    }
+    try {
+      ExperimentScoringEntity insideExperimentScoringEntity = experimentScoringService.lambdaQuery()
+          .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
+          .eq(ExperimentScoringEntity::getPeriods, periods)
+          .one();
+      /* runsix:说明已经这个实验这一期已经期数翻转计算过啦 */
+      if (Objects.nonNull(insideExperimentScoringEntity)) {return;}
 
-    /* runsix:get all experiment person */
-    Set<String> experimentPersonIdSet = new HashSet<>();
-    CompletableFuture<Void> cfPopulateExperimentPersonIdSet = CompletableFuture.runAsync(() -> {
-      rsExperimentPersonBiz.populateExperimentPersonIdSet(experimentPersonIdSet, experimentId, null);
-    });
-    cfPopulateExperimentPersonIdSet.get();
+      /* runsix:cal param */
+      Map<String, Integer> kExperimentPersonIdVDurationMap = new HashMap<>();
 
-    /* runsix:1.算出每个人的持续天数 */
-    this.experimentUpdateCalculatorTime(RsCalculateTimeRequest
-            .builder()
-            .appId(appId)
-            .experimentId(experimentId)
-            .experimentPersonIdSet(experimentPersonIdSet)
-            .build(),
-        kExperimentPersonIdVDurationMap);
+      /* runsix:get all experiment person */
+      Set<String> experimentPersonIdSet = new HashSet<>();
+      CompletableFuture<Void> cfPopulateExperimentPersonIdSet = CompletableFuture.runAsync(() -> {
+        rsExperimentPersonBiz.populateExperimentPersonIdSet(experimentPersonIdSet, experimentId, null);
+      });
+      cfPopulateExperimentPersonIdSet.get();
 
-    /* runsix:2.设置每个人的持续天数 */
-    this.experimentSetDuration(RsExperimentSetDurationRequest
-        .builder()
-        .appId(appId)
-        .experimentId(experimentId)
-        .periods(periods)
-        .kExperimentPersonIdVDurationMap(kExperimentPersonIdVDurationMap)
-        .build());
+      /* runsix:1.算出每个人的持续天数 */
+      this.experimentUpdateCalculatorTime(RsCalculateTimeRequest
+              .builder()
+              .appId(appId)
+              .experimentId(experimentId)
+              .experimentPersonIdSet(experimentPersonIdSet)
+              .build(),
+          kExperimentPersonIdVDurationMap);
 
-    /* runsix:3.重新计算所有人的指标 */
-    this.experimentReCalculatePerson(RsCalculatePersonRequestRs
-        .builder()
-        .appId(appId)
-        .experimentId(experimentId)
-        .periods(periods)
-        .personIdSet(experimentPersonIdSet)
-        .build());
+      /* runsix:2.设置每个人的持续天数 */
+      this.experimentSetDuration(RsExperimentSetDurationRequest
+          .builder()
+          .appId(appId)
+          .experimentId(experimentId)
+          .periods(periods)
+          .kExperimentPersonIdVDurationMap(kExperimentPersonIdVDurationMap)
+          .build());
 
-    /* runsix:4.重新计算所有人的健康指数 */
-    this.experimentRsCalculateHealthScore(ExperimentRsCalculateHealthScoreRequestRs
-        .builder()
-        .appId(appId)
-        .experimentId(experimentId)
-        .periods(periods)
-        .experimentPersonIdSet(experimentPersonIdSet)
-        .build());
+      /* runsix:3.重新计算所有人的指标 */
+      this.experimentReCalculatePerson(RsCalculatePersonRequestRs
+          .builder()
+          .appId(appId)
+          .experimentId(experimentId)
+          .periods(periods)
+          .personIdSet(experimentPersonIdSet)
+          .build());
 
-    /* runsix:5.存储期数翻转数据 */
-    experimentScoringBiz.saveOrUpd(experimentId, periods);
+      /* runsix:4.重新计算所有人的健康指数 */
+      this.experimentRsCalculateHealthScore(ExperimentRsCalculateHealthScoreRequestRs
+          .builder()
+          .appId(appId)
+          .experimentId(experimentId)
+          .periods(periods)
+          .experimentPersonIdSet(experimentPersonIdSet)
+          .build());
 
-    /* runsix:最后一步是更新所有人下一期的指标 */
-    this.experimentSetVal(RsExperimentSetValRequest
-        .builder()
-        .appId(appId)
-        .experimentId(experimentId)
-        .periods(periods)
-        .build());
+      /* runsix:5.存储期数翻转数据 */
+      experimentScoringBiz.saveOrUpd(experimentId, periods);
+
+      ExperimentPersonRequest experimentPersonRequest = ExperimentPersonRequest.builder()
+          .experimentInstanceId(experimentId)
+          .appId(appId)
+          .periods(periods)// 计算上一期
+          .build();
+      // 一期结束保险返还
+      personStatiscBiz.refundFunds(experimentPersonRequest);
+
+      /* runsix:最后一步是更新所有人下一期的指标 */
+      this.experimentSetVal(RsExperimentSetValRequest
+          .builder()
+          .appId(appId)
+          .experimentId(experimentId)
+          .periods(periods)
+          .build());
+    } finally {
+      lock.unlock();
+    }
   }
 }
