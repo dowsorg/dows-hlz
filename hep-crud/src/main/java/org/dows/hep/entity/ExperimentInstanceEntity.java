@@ -56,6 +56,9 @@ public class ExperimentInstanceEntity implements CrudEntity {
     @Schema(title = "实验说明")
     private String experimentDescr;
 
+    @Schema(title = "实验参与者ID集合，以逗号分隔")
+    private String experimentParticipatorIds;
+
     @Schema(title = "分配人ID")
     private String accountId;
 

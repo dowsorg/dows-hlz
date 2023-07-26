@@ -5,6 +5,7 @@ import org.dows.framework.crud.api.CrudContextHolder;
 import org.dows.hep.biz.dao.ExperimentEventDao;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -57,12 +58,14 @@ public abstract class BaseEventTask implements Callable<Integer>,Runnable {
         logError(null, func,msg,args);
     }
     protected void logError(Throwable ex, String func, String msg,Object... args){
-        String str=String.format("%s.%s input:%s %s", this.getClass().getName(), func,this.experimentKey,String.format(Optional.ofNullable(msg).orElse(""), args));
+        String str=String.format("%s.%s@%s[%s] input:%s %s", this.getClass().getName(), func, LocalDateTime.now(),this.hashCode(),
+                this.experimentKey, String.format(Optional.ofNullable(msg).orElse(""), args));
         log.error(str,ex);
-        log.info(str);
+        //log.info(str);
     }
     protected void logInfo(String func, String msg,Object... args) {
-        String str = String.format("%s.%s input:%s %s", this.getClass().getName(), func, this.experimentKey, String.format(Optional.ofNullable(msg).orElse(""), args));
+        String str = String.format("%s.%s@%s[%s] input:%s %s", this.getClass().getName(), func, LocalDateTime.now(),this.hashCode(),
+                this.experimentKey, String.format(Optional.ofNullable(msg).orElse(""), args));
         log.info(str);
     }
 

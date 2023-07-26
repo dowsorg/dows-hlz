@@ -11,6 +11,7 @@ import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.snapshot.SnapCaseIndicatorExpressionEntity;
 import org.dows.hep.entity.snapshot.SnapCaseIndicatorExpressionItemEntity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -70,6 +71,9 @@ public abstract class BaseSpelLoader implements ISpelLoad {
     }
 
     protected String checkExpressionIndicatorId(String exptPersonId,String indicatorId) {
+        if(ShareUtil.XObject.isEmpty(indicatorId)){
+            return null;
+        }
         return PersonIndicatorIdCache.Instance().getIndicatorIdBySourceId(exptPersonId, indicatorId);
     }
     protected String buildExpressionString(String exptPersonId, String rawExpression,String names,String vals){
@@ -106,7 +110,8 @@ public abstract class BaseSpelLoader implements ISpelLoad {
         logError(null, func, msg, args);
     }
     protected void logError(Throwable ex, String func, String msg,Object... args){
-        String str=String.format("%s.%s %s", this.getClass().getName(), func,String.format(Optional.ofNullable(msg).orElse(""), args));
+        String str=String.format("%s.%s@%s[%s] %s", this.getClass().getName(), func, LocalDateTime.now(),this.hashCode(),
+                String.format(Optional.ofNullable(msg).orElse(""), args));
         log.error(str,ex);
 
     }

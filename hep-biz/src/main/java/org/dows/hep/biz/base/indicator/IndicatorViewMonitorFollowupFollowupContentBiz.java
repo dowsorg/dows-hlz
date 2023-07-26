@@ -3,6 +3,7 @@ package org.dows.hep.biz.base.indicator;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.response.IndicatorViewMonitorFollowupContentRefResponseRs;
 import org.dows.hep.api.base.indicator.response.IndicatorViewMonitorFollowupFollowupContentResponseRs;
 import org.dows.hep.api.enums.EnumESC;
@@ -96,9 +97,9 @@ public class IndicatorViewMonitorFollowupFollowupContentBiz {
 
   @Transactional(rollbackFor = Exception.class)
   public void batchDelete(List<String> indicatorViewMonitorFollowupFollowupContentIdList) throws InterruptedException {
+    indicatorViewMonitorFollowupFollowupContentIdList = indicatorViewMonitorFollowupFollowupContentIdList.stream().filter(StringUtils::isNotBlank).collect(Collectors.toList());
     if (indicatorViewMonitorFollowupFollowupContentIdList.isEmpty()) {
-      log.warn("method IndicatorViewMonitorFollowupFollowupContentBiz.batchDelete param indicatorViewMonitorFollowupFollowupContentIdList is empty");
-      throw new IndicatorViewMonitorFollowupFollowupContentException(EnumESC.VALIDATE_EXCEPTION);
+      return;
     }
     Set<String> dbIndicatorViewMonitorFollowupFollowupContentIdSet = indicatorViewMonitorFollowupFollowupContentService.lambdaQuery()
         .in(IndicatorViewMonitorFollowupFollowupContentEntity::getIndicatorViewMonitorFollowupFollowupContentId, indicatorViewMonitorFollowupFollowupContentIdList)

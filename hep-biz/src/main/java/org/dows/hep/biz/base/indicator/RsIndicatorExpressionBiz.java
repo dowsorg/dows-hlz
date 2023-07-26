@@ -380,10 +380,20 @@ public class RsIndicatorExpressionBiz {
       AtomicReference<IndicatorExpressionItemEntity> maxIndicatorExpressionItemEntityAtomicReference,
       CreateOrUpdateIndicatorExpressionItemRequestRs maxCreateOrUpdateIndicatorExpressionItemRequestRs
   ) {
-    String minResultRaw = minCreateOrUpdateIndicatorExpressionItemRequestRs.getResultRaw();
-    String minResultExpression = minCreateOrUpdateIndicatorExpressionItemRequestRs.getResultExpression();
-    String maxResultRaw = maxCreateOrUpdateIndicatorExpressionItemRequestRs.getResultRaw();
-    String maxResultExpression = maxCreateOrUpdateIndicatorExpressionItemRequestRs.getResultExpression();
+    String minResultRaw = null;
+    String minResultExpression = null;
+    String maxResultRaw = null;
+    String maxResultExpression = null;
+    if (Objects.nonNull(minCreateOrUpdateIndicatorExpressionItemRequestRs)) {
+      minResultRaw = minCreateOrUpdateIndicatorExpressionItemRequestRs.getResultRaw();
+      minResultExpression = minCreateOrUpdateIndicatorExpressionItemRequestRs.getResultExpression();
+      populateMinOrMaxIndicatorExpressionItem(typeChange, minIndicatorExpressionItemEntityAtomicReference, minCreateOrUpdateIndicatorExpressionItemRequestRs);
+    }
+    if (Objects.nonNull(maxCreateOrUpdateIndicatorExpressionItemRequestRs)) {
+      maxResultRaw = maxCreateOrUpdateIndicatorExpressionItemRequestRs.getResultRaw();
+      maxResultExpression = maxCreateOrUpdateIndicatorExpressionItemRequestRs.getResultExpression();
+      populateMinOrMaxIndicatorExpressionItem(typeChange, maxIndicatorExpressionItemEntityAtomicReference, maxCreateOrUpdateIndicatorExpressionItemRequestRs);
+    }
     /* runsix:最大最小都不为空并且都是数字，则需要保证最大大于或等于最小 */
     if (StringUtils.isNoneBlank(minResultRaw, minResultExpression, maxResultRaw, maxResultExpression)
         && NumberUtils.isCreatable(minResultRaw) && NumberUtils.isCreatable(minResultExpression)
@@ -393,8 +403,6 @@ public class RsIndicatorExpressionBiz {
       log.warn("RsIndicatorExpressionBiz.populateMinAndMaxIndicatorExpressionItem maxResultRaw:{} lt minResultRaw:{}", maxResultRaw, minResultRaw);
       throw new RsIndicatorExpressionBizException(EnumESC.INDICATOR_EXPRESSION_MAX_MUST_GE_MIN);
     }
-    populateMinOrMaxIndicatorExpressionItem(typeChange, minIndicatorExpressionItemEntityAtomicReference, minCreateOrUpdateIndicatorExpressionItemRequestRs);
-    populateMinOrMaxIndicatorExpressionItem(typeChange, maxIndicatorExpressionItemEntityAtomicReference, maxCreateOrUpdateIndicatorExpressionItemRequestRs);
   }
 
   public void populateByItemIdSetKIndicatorExpressionItemIdVIndicatorExpressionItemMap(
