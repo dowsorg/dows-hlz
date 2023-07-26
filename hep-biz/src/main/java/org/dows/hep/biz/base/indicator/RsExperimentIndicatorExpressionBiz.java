@@ -48,7 +48,6 @@ public class RsExperimentIndicatorExpressionBiz {
       Map<String, List<ExperimentIndicatorExpressionRsEntity>> kReasonIdVExperimentIndicatorExpressionRsEntityListMap,
       Map<String, List<ExperimentIndicatorExpressionItemRsEntity>> kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap,
       Map<String, ExperimentIndicatorExpressionItemRsEntity> kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap
-
   ) {
     if (Objects.isNull(kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap)
         || Objects.isNull(kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap)
@@ -58,7 +57,21 @@ public class RsExperimentIndicatorExpressionBiz {
     ) {return;}
     Map<String, ExperimentIndicatorValRsEntity> lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = new HashMap<>();
     kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.forEach((experimentIndicatorInstanceId, experimentIndicatorValRsEntity) -> {
-      lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(experimentIndicatorInstanceId, experimentIndicatorValRsEntity);
+      lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(experimentIndicatorInstanceId, ExperimentIndicatorValRsEntity
+          .builder()
+              .id(experimentIndicatorValRsEntity.getId())
+              .experimentIndicatorValId(experimentIndicatorValRsEntity.getExperimentIndicatorValId())
+              .experimentId(experimentIndicatorValRsEntity.getExperimentId())
+              .caseId(experimentIndicatorValRsEntity.getCaseId())
+              .indicatorInstanceId(experimentIndicatorValRsEntity.getIndicatorInstanceId())
+              .currentVal(experimentIndicatorValRsEntity.getCurrentVal())
+              .periods(experimentIndicatorValRsEntity.getPeriods())
+              .min(experimentIndicatorValRsEntity.getMin())
+              .max(experimentIndicatorValRsEntity.getMax())
+              .descr(experimentIndicatorValRsEntity.getDescr())
+              .deleted(experimentIndicatorValRsEntity.getDeleted())
+              .dt(experimentIndicatorValRsEntity.getDt())
+          .build());
     });
     kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap.forEach((kExperimentPersonId, experimentIndicatorInstanceRsEntityList) -> {
       experimentIndicatorInstanceRsEntityList.sort(Comparator.comparingInt(ExperimentIndicatorInstanceRsEntity::getRecalculateSeq));
@@ -1101,11 +1114,15 @@ public class RsExperimentIndicatorExpressionBiz {
       Map<String, ExperimentIndicatorValRsEntity> lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
       Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap) {
     if (StringUtils.isBlank(resultName)) {return null;}
-    String[] splitResultName = resultName.split(EnumString.SPLIT_DOLLAR.getStr());
+    String[] splitResultName = resultName.split(EnumString.INDICATOR_EXPRESSION_SPLIT.getStr());
     if (StringUtils.equals("0", splitResultName[1])) {
       return kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
     } else {
       return lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
     }
+  }
+
+  public static void main(String[] args) {
+
   }
 }
