@@ -16,6 +16,8 @@ import org.dows.hep.api.exception.ExperimentScoringException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
 import org.dows.hep.biz.base.indicator.RsUtilBiz;
+import org.dows.hep.biz.operate.CostRequest;
+import org.dows.hep.biz.operate.OperateCostBiz;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -61,6 +63,8 @@ public class ExperimentScoringBiz {
     private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
     private final RsUtilBiz rsUtilBiz;
 
+    private final OperateCostBiz operateCostBiz;
+
     private BigDecimal getWeightTotalScore(
             BigDecimal knowledgeWeight, BigDecimal knowledgeScore,
             BigDecimal healthIndexWeight, BigDecimal healthIndexScore,
@@ -78,7 +82,7 @@ public class ExperimentScoringBiz {
             if (maxHealthScore.compareTo(defHealthScore) == 0) {
                 resultBigDecimal = currentHealthScore;
             } else {
-                resultBigDecimal = (currentHealthScore.subtract(defHealthScore).divide(maxHealthScore.subtract(defHealthScore), 2, RoundingMode.DOWN).multiply(BigDecimal.valueOf(100-60))).add(BigDecimal.valueOf(60));
+                resultBigDecimal = (currentHealthScore.subtract(defHealthScore).divide(maxHealthScore.subtract(defHealthScore), 2, RoundingMode.DOWN).multiply(BigDecimal.valueOf(100 - 60))).add(BigDecimal.valueOf(60));
             }
         } else {
             if (minHealthScore.compareTo(defHealthScore) == 0) {
@@ -100,23 +104,23 @@ public class ExperimentScoringBiz {
         Map<String, String> kExperimentPersonIdVCasePersonIdMap = new HashMap<>();
         Map<String, List<ExperimentPersonEntity>> kExperimentGroupIdVExperimentPersonEntityListMap = new HashMap<>();
         experimentPersonService.lambdaQuery()
-            .eq(ExperimentPersonEntity::getExperimentInstanceId, experimentId)
-            .list()
-            .forEach(experimentPersonEntity -> {
-                String experimentPersonId = experimentPersonEntity.getExperimentPersonId();
-                experimentPersonIdSet.add(experimentPersonId);
+                .eq(ExperimentPersonEntity::getExperimentInstanceId, experimentId)
+                .list()
+                .forEach(experimentPersonEntity -> {
+                    String experimentPersonId = experimentPersonEntity.getExperimentPersonId();
+                    experimentPersonIdSet.add(experimentPersonId);
 
-                String casePersonId = experimentPersonEntity.getCasePersonId();
-                kExperimentPersonIdVCasePersonIdMap.put(experimentPersonId, casePersonId);
+                    String casePersonId = experimentPersonEntity.getCasePersonId();
+                    kExperimentPersonIdVCasePersonIdMap.put(experimentPersonId, casePersonId);
 
-                String experimentGroupId = experimentPersonEntity.getExperimentGroupId();
-                List<ExperimentPersonEntity> experimentPersonEntityList = kExperimentGroupIdVExperimentPersonEntityListMap.get(experimentGroupId);
-                if (Objects.isNull(experimentPersonEntityList)) {
-                    experimentPersonEntityList = new ArrayList<>();
-                }
-                experimentPersonEntityList.add(experimentPersonEntity);
-                kExperimentGroupIdVExperimentPersonEntityListMap.put(experimentGroupId, experimentPersonEntityList);
-            });
+                    String experimentGroupId = experimentPersonEntity.getExperimentGroupId();
+                    List<ExperimentPersonEntity> experimentPersonEntityList = kExperimentGroupIdVExperimentPersonEntityListMap.get(experimentGroupId);
+                    if (Objects.isNull(experimentPersonEntityList)) {
+                        experimentPersonEntityList = new ArrayList<>();
+                    }
+                    experimentPersonEntityList.add(experimentPersonEntity);
+                    kExperimentGroupIdVExperimentPersonEntityListMap.put(experimentGroupId, experimentPersonEntityList);
+                });
         AtomicInteger groupExperimentPersonSizeAtomicInteger = new AtomicInteger(0);
         kExperimentGroupIdVExperimentPersonEntityListMap.forEach((ekExperimentGroupIdVExperimentPersonEntityListMap, experimentPersonEntityList) -> {
             if (Objects.nonNull(experimentPersonEntityList) && !experimentPersonEntityList.isEmpty()) {
@@ -129,19 +133,19 @@ public class ExperimentScoringBiz {
         Map<String, ExperimentIndicatorInstanceRsEntity> kExperimentPersonIdVHealthExperimentIndicatorInstanceRsEntityMap = new HashMap<>();
         if (!experimentPersonIdSet.isEmpty()) {
             experimentIndicatorInstanceRsService.lambdaQuery()
-                .eq(ExperimentIndicatorInstanceRsEntity::getExperimentId, experimentId)
-                .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.HEALTH_POINT.getType())
-                .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdSet)
-                .list()
-                .forEach(experimentIndicatorInstanceRsEntity -> {
-                    String experimentIndicatorInstanceId = experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId();
-                    experimentIndicatorInstanceIdSet.add(experimentIndicatorInstanceId);
+                    .eq(ExperimentIndicatorInstanceRsEntity::getExperimentId, experimentId)
+                    .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.HEALTH_POINT.getType())
+                    .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdSet)
+                    .list()
+                    .forEach(experimentIndicatorInstanceRsEntity -> {
+                        String experimentIndicatorInstanceId = experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId();
+                        experimentIndicatorInstanceIdSet.add(experimentIndicatorInstanceId);
 
-                    String experimentPersonId = experimentIndicatorInstanceRsEntity.getExperimentPersonId();
-                    kExperimentIndicatorInstanceIdVExperimentPersonIdMap.put(experimentIndicatorInstanceId, experimentPersonId);
+                        String experimentPersonId = experimentIndicatorInstanceRsEntity.getExperimentPersonId();
+                        kExperimentIndicatorInstanceIdVExperimentPersonIdMap.put(experimentIndicatorInstanceId, experimentPersonId);
 
-                    kExperimentPersonIdVHealthExperimentIndicatorInstanceRsEntityMap.put(experimentPersonId, experimentIndicatorInstanceRsEntity);
-                });
+                        kExperimentPersonIdVHealthExperimentIndicatorInstanceRsEntityMap.put(experimentPersonId, experimentIndicatorInstanceRsEntity);
+                    });
         }
 
         Map<String, ExperimentIndicatorValRsEntity> kHealthExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = new HashMap<>();
@@ -149,42 +153,42 @@ public class ExperimentScoringBiz {
         Map<String, BigDecimal> kCasePersonIdVMaxHealthScoreMap = new HashMap<>();
         if (!experimentIndicatorInstanceIdSet.isEmpty()) {
             experimentIndicatorValRsService.lambdaQuery()
-                .eq(ExperimentIndicatorValRsEntity::getExperimentId, experimentId)
-                .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
-                .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
-                .list()
-                .forEach(experimentIndicatorValRsEntity -> {
-                    String indicatorInstanceId = experimentIndicatorValRsEntity.getIndicatorInstanceId();
-                    kHealthExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(indicatorInstanceId, experimentIndicatorValRsEntity);
+                    .eq(ExperimentIndicatorValRsEntity::getExperimentId, experimentId)
+                    .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
+                    .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
+                    .list()
+                    .forEach(experimentIndicatorValRsEntity -> {
+                        String indicatorInstanceId = experimentIndicatorValRsEntity.getIndicatorInstanceId();
+                        kHealthExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(indicatorInstanceId, experimentIndicatorValRsEntity);
 
-                    String currentVal = experimentIndicatorValRsEntity.getCurrentVal();
-                    BigDecimal currentBigDecimal = BigDecimal.valueOf(Double.parseDouble(currentVal));
-                    String experimentPersonId = kExperimentIndicatorInstanceIdVExperimentPersonIdMap.get(indicatorInstanceId);
-                    if (StringUtils.isNotBlank(experimentPersonId)) {
-                        String casePersonId = kExperimentPersonIdVCasePersonIdMap.get(experimentPersonId);
-                        if (StringUtils.isNotBlank(casePersonId)) {
-                            BigDecimal minBigDecimal = kCasePersonIdVMinHealthScoreMap.get(casePersonId);
-                            if (Objects.isNull(minBigDecimal)) {
-                                minBigDecimal = currentBigDecimal;
-                            } else {
-                                if (currentBigDecimal.compareTo(minBigDecimal) < 0) {
+                        String currentVal = experimentIndicatorValRsEntity.getCurrentVal();
+                        BigDecimal currentBigDecimal = BigDecimal.valueOf(Double.parseDouble(currentVal));
+                        String experimentPersonId = kExperimentIndicatorInstanceIdVExperimentPersonIdMap.get(indicatorInstanceId);
+                        if (StringUtils.isNotBlank(experimentPersonId)) {
+                            String casePersonId = kExperimentPersonIdVCasePersonIdMap.get(experimentPersonId);
+                            if (StringUtils.isNotBlank(casePersonId)) {
+                                BigDecimal minBigDecimal = kCasePersonIdVMinHealthScoreMap.get(casePersonId);
+                                if (Objects.isNull(minBigDecimal)) {
                                     minBigDecimal = currentBigDecimal;
+                                } else {
+                                    if (currentBigDecimal.compareTo(minBigDecimal) < 0) {
+                                        minBigDecimal = currentBigDecimal;
+                                    }
                                 }
-                            }
-                            kCasePersonIdVMinHealthScoreMap.put(casePersonId, minBigDecimal);
+                                kCasePersonIdVMinHealthScoreMap.put(casePersonId, minBigDecimal);
 
-                            BigDecimal maxBigDecimal = kCasePersonIdVMaxHealthScoreMap.get(casePersonId);
-                            if (Objects.isNull(maxBigDecimal)) {
-                                maxBigDecimal = currentBigDecimal;
-                            } else {
-                                if (currentBigDecimal.compareTo(maxBigDecimal) > 0) {
+                                BigDecimal maxBigDecimal = kCasePersonIdVMaxHealthScoreMap.get(casePersonId);
+                                if (Objects.isNull(maxBigDecimal)) {
                                     maxBigDecimal = currentBigDecimal;
+                                } else {
+                                    if (currentBigDecimal.compareTo(maxBigDecimal) > 0) {
+                                        maxBigDecimal = currentBigDecimal;
+                                    }
                                 }
+                                kCasePersonIdVMaxHealthScoreMap.put(casePersonId, maxBigDecimal);
                             }
-                            kCasePersonIdVMaxHealthScoreMap.put(casePersonId, maxBigDecimal);
                         }
-                    }
-                });
+                    });
         }
 
         kExperimentGroupIdVExperimentPersonEntityListMap.forEach((experimentGroupId, experimentPersonEntityList) -> {
@@ -207,24 +211,39 @@ public class ExperimentScoringBiz {
         });
         kExperimentGroupIdVGroupCompetitiveScoreMap.forEach((experimentGroupId, groupCompetitiveScore) -> {
             groupCompetitiveScoreRsResponseList.add(GroupCompetitiveScoreRsResponse
-                .builder()
-                .experimentGroupId(experimentGroupId)
-                .groupCompetitiveScore(groupCompetitiveScore)
-                .build());
+                    .builder()
+                    .experimentGroupId(experimentGroupId)
+                    .groupCompetitiveScore(groupCompetitiveScore)
+                    .build());
         });
         return RsCalculateCompetitiveScoreRsResponse
-            .builder()
-            .groupCompetitiveScoreRsResponseList(groupCompetitiveScoreRsResponseList)
-            .build();
+                .builder()
+                .groupCompetitiveScoreRsResponseList(groupCompetitiveScoreRsResponseList)
+                .build();
     }
 
     /* runsix:TODO 计算医疗占比 */
     public RsCalculateMoneyScoreRsResponse rsCalculateMoneyScore(RsCalculateMoneyScoreRequestRs rsCalculateMoneyScoreRequestRs) {
         List<GroupMoneyScoreRsResponse> groupMoneyScoreRsResponseList = new ArrayList<>();
+
+        CostRequest costRequest = CostRequest.builder()
+                .experimentInstanceId(rsCalculateMoneyScoreRequestRs.getExperimentId())
+                .period(rsCalculateMoneyScoreRequestRs.getPeriods())
+                .build();
+        // 计算的本期医疗占比得分
+        Map<String, BigDecimal> stringBigDecimalMap = operateCostBiz.calcGroupTreatmentPercent(costRequest);
+
+        stringBigDecimalMap.forEach((k, v) -> {
+            GroupMoneyScoreRsResponse groupMoneyScoreRsResponse = new GroupMoneyScoreRsResponse();
+            groupMoneyScoreRsResponse.setExperimentGroupId(k);
+            groupMoneyScoreRsResponse.setGroupMoneyScore(v);
+            groupMoneyScoreRsResponseList.add(groupMoneyScoreRsResponse);
+        });
+
         return RsCalculateMoneyScoreRsResponse
-            .builder()
-            .groupMoneyScoreRsResponseList(groupMoneyScoreRsResponseList)
-            .build();
+                .builder()
+                .groupMoneyScoreRsResponseList(groupMoneyScoreRsResponseList)
+                .build();
     }
 
 

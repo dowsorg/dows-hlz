@@ -1,5 +1,6 @@
 package org.dows.hep.biz.user.person;
 
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.api.AccountInstanceApi;
 import org.dows.account.api.AccountOrgApi;
@@ -8,19 +9,27 @@ import org.dows.account.response.AccountInstanceResponse;
 import org.dows.account.response.AccountOrgGeoResponse;
 import org.dows.account.response.AccountOrgInfoResponse;
 import org.dows.framework.api.util.ReflectUtil;
+import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
+import org.dows.hep.api.user.experiment.request.ExperimentPersonRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentOrgResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
+import org.dows.hep.biz.base.indicator.ExperimentIndicatorInstanceRsBiz;
 import org.dows.hep.biz.dao.CaseOrgFeeDao;
+import org.dows.hep.biz.operate.CostRequest;
+import org.dows.hep.biz.operate.OperateCostBiz;
+import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author jx
@@ -47,6 +56,18 @@ public class PersonStatiscBiz {
     private final CaseOrgFeeDao caseOrgFeeDao;
 
     private final AccountOrgApi accountOrgApi;
+
+    private final ExperimentTimerBiz experimentTimerBiz;
+
+    private final ExperimentPersonService experimentPersonService;
+
+    private final OperateCostBiz operateCostBiz;
+
+    private final OperateInsuranceService operateInsuranceService;
+
+    private final CaseOrgFeeService caseOrgFeeService;
+
+    private final ExperimentIndicatorInstanceRsBiz experimentIndicatorInstanceRsBiz;
 
     /**
      * @param
@@ -127,24 +148,24 @@ public class PersonStatiscBiz {
                 //获取是否开启数字档案
                 AccountOrgInfoResponse orgInfoResponse = accountOrgApi.getAccountOrgInfoByOrgId(org.getOrgId());
                 orgResponse.setIsEnable(orgInfoResponse.getIsEnable());
-                if(orgInfoResponse.getIsEnable() == null){
+                if (orgInfoResponse.getIsEnable() == null) {
                     orgResponse.setIsEnable(false);
                 }
                 orgResponses.add(orgResponse);
             });
         }
-        List<String> orgIds= ShareUtil.XCollection.map(orgResponses, ExperimentOrgResponse::getOrgId);
-        List<CaseOrgFeeEntity> rowsFee=caseOrgFeeDao.getFeeList(orgIds,
+        List<String> orgIds = ShareUtil.XCollection.map(orgResponses, ExperimentOrgResponse::getOrgId);
+        List<CaseOrgFeeEntity> rowsFee = caseOrgFeeDao.getFeeList(orgIds,
                 CaseOrgFeeEntity::getCaseOrgId,
                 CaseOrgFeeEntity::getFeeCode,
                 CaseOrgFeeEntity::getFeeName,
                 CaseOrgFeeEntity::getFee,
                 CaseOrgFeeEntity::getReimburseRatio
-                );
-        Map<String,List<ExperimentOrgResponse.ExperimentOrgFeeResponse>> mapFee=ShareUtil.XCollection.groupBy(rowsFee,
-                i-> CopyWrapper.create(ExperimentOrgResponse.ExperimentOrgFeeResponse::new).endFrom(i),
+        );
+        Map<String, List<ExperimentOrgResponse.ExperimentOrgFeeResponse>> mapFee = ShareUtil.XCollection.groupBy(rowsFee,
+                i -> CopyWrapper.create(ExperimentOrgResponse.ExperimentOrgFeeResponse::new).endFrom(i),
                 ExperimentOrgResponse.ExperimentOrgFeeResponse::getCaseOrgId);
-        orgResponses.forEach(i->i.setFeeList(mapFee.get(i.getOrgId())));
+        orgResponses.forEach(i -> i.setFeeList(mapFee.get(i.getOrgId())));
         rowsFee.clear();
         mapFee.clear();
         return orgResponses;
@@ -189,7 +210,7 @@ public class PersonStatiscBiz {
                         .eq(ExperimentOrgEntity::getExperimentOrgId, experimentOrgId)
                         .eq(ExperimentOrgEntity::getDeleted, false)
                         .one();
-                if(orgEntity != null){
+                if (orgEntity != null) {
                     orgIds.add(orgEntity.getOrgId());
                 }
             });
@@ -199,5 +220,79 @@ public class PersonStatiscBiz {
         AccountInstanceResponse instanceResponse = accountInstanceApi.getAccountInstanceByAccountId(participatorEntity.getAccountId());
         experimentParticipatorResponse.setAvatar(instanceResponse.getAvatar());
         return experimentParticipatorResponse;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 每期结束后，返回剩余的资金
+     * @关联表: operate_cost、operate_insurance
+     * @工时: 3H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年7月25日 下午16:35:34
+     */
+    @DSTransactional
+    public void refundFunds(ExperimentPersonRequest request) {
+        //1、获取该期的结束时间
+        Map<Integer, ExperimentTimerEntity> timerEntityMap = experimentTimerBiz.getExperimentPeriodsStartAnsEndTime(request.getExperimentInstanceId());
+        ExperimentTimerEntity timerEntity = timerEntityMap.get(request.getPeriods());
+        //2、获取该实验人物，所有人物都要统计保险报销
+        List<ExperimentPersonEntity> personEntityList = experimentPersonService.lambdaQuery()
+                .eq(ExperimentPersonEntity::getExperimentInstanceId, request.getExperimentInstanceId())
+                .eq(ExperimentPersonEntity::getDeleted, false)
+                .list();
+        //3、判断在该期结束之前每个人购买了多少保险，并报销，保险是累加的
+        if (personEntityList != null && personEntityList.size() > 0) {
+            personEntityList.forEach(person -> {
+                BigDecimal fee = new BigDecimal(0);
+                //3.1、获取人物的所有花费，不包括保险费
+                List<OperateCostEntity> costEntityList = operateCostBiz.getPeriodsCostNotInsurance(CostRequest.builder()
+                        .patientId(person.getExperimentPersonId())
+                        .period(request.getPeriods())
+                        .build());
+                costEntityList = costEntityList.stream().filter(c -> ((c.getDt().after(timerEntity.getStartTime()) || c.getDt().equals(timerEntity.getStartTime()))
+                        && (c.getDt().before(timerEntity.getEndTime()) || c.getDt().equals(timerEntity.getEndTime()))))
+                        .collect(Collectors.toList());
+                //3.2、判断人物消费期间购买了哪些保险
+                if (costEntityList != null && costEntityList.size() > 0) {
+                    for (int i = 0; i < costEntityList.size(); i++) {
+                        List<OperateInsuranceEntity> insuranceEntityList = operateInsuranceService.lambdaQuery()
+                                .eq(OperateInsuranceEntity::getExperimentPersonId, person.getExperimentPersonId())
+                                .le(OperateInsuranceEntity::getIndate, costEntityList.get(i).getDt())
+                                .ge(OperateInsuranceEntity::getExpdate, costEntityList.get(i).getDt())
+                                .list();
+                        //3.3、可能会存在多个机构购买情况，金钱要叠加
+                        if (insuranceEntityList != null && insuranceEntityList.size() > 0) {
+                            for (int j = 0; j < insuranceEntityList.size(); j++) {
+                                //3.4、通过机构获取报销比例
+                                ExperimentOrgEntity orgEntity = experimentOrgService.lambdaQuery()
+                                        .eq(ExperimentOrgEntity::getExperimentOrgId, insuranceEntityList.get(j).getExperimentOrgId())
+                                        .eq(ExperimentOrgEntity::getDeleted, false)
+                                        .one();
+                                if (orgEntity != null && !ReflectUtil.isObjectNull(orgEntity)) {
+                                    CaseOrgFeeEntity feeEntity = caseOrgFeeService.lambdaQuery()
+                                            .eq(CaseOrgFeeEntity::getCaseOrgId, orgEntity.getCaseOrgId())
+                                            .eq(CaseOrgFeeEntity::getFeeCode, "BXF")
+                                            .eq(CaseOrgFeeEntity::getDeleted, false)
+                                            .one();
+                                    if (feeEntity != null && !ReflectUtil.isObjectNull(feeEntity)) {
+                                        fee = fee.add(costEntityList.get(i).getCost().multiply(BigDecimal.valueOf(feeEntity.getReimburseRatio()).divide(BigDecimal.valueOf(100))));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    //3.3、扣费
+                    experimentIndicatorInstanceRsBiz.changeMoney(RsChangeMoneyRequest.builder()
+                            .appId(request.getAppId())
+                            .experimentId(request.getExperimentInstanceId())
+                            .experimentPersonId(person.getExperimentPersonId())
+                            .periods(request.getPeriods())
+                            .moneyChange(fee)
+                            .build());
+                }
+            });
+        }
     }
 }

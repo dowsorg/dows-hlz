@@ -427,7 +427,7 @@ public class ExperimentOrgInterveneBiz{
                 .feeName(feeName)
                 .feeCode(feeCode)
                 .cost(sum)
-                .period(saveTreat.getPeriods())
+                .period(timePoint.getPeriod())
                 .build();
         operateCostBiz.saveCost(costRequest);
         return new SaveExptTreatResponse()

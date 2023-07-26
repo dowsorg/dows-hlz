@@ -3,6 +3,7 @@ package org.dows.hep.rest.user.person;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.user.experiment.request.ExperimentPersonRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentOrgResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
 import org.dows.hep.biz.user.person.PersonStatiscBiz;
@@ -69,5 +70,21 @@ public class PersonStatiscRest {
     @GetMapping("v1/basePerson/personManage/getParticipatorInfo/{experimentParticipatorId}")
     public ExperimentParticipatorResponse getParticipatorInfo(@PathVariable @Validated String experimentParticipatorId) {
         return personStatiscBiz.getParticipatorInfo(experimentParticipatorId);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 每期结束后，每个人物如果有购买保险的话，就返回报销比例
+     * @关联表:
+     * @工时: 3H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年7月25日 下午14:07:34
+     */
+    @Operation(summary = "每期结束后，每个人物如果有购买保险的话，就返回报销比例")
+    @PostMapping("v1/basePerson/personManage/refundFunds")
+    public void refundFunds(@RequestBody @Validated ExperimentPersonRequest request) {
+        personStatiscBiz.refundFunds(request);
     }
 }

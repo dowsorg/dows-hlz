@@ -8,8 +8,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
 import org.dows.hep.api.enums.EnumExperimentMode;
 import org.dows.hep.api.enums.EnumExperimentState;
+import org.dows.hep.api.event.FeeReimburseEvent;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
+import org.dows.hep.api.user.experiment.request.ExperimentPersonRequest;
 import org.dows.hep.api.user.experiment.response.CountDownResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
 import org.dows.hep.entity.ExperimentInstanceEntity;
@@ -20,6 +22,7 @@ import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.hep.service.ExperimentSettingService;
 import org.dows.hep.service.ExperimentTimerService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -39,6 +42,7 @@ public class ExperimentTimerBiz {
     private final ExperimentInstanceService experimentInstanceService;
     private final ExperimentParticipatorService experimentParticipatorService;
     private final ExperimentSettingService experimentSettingService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
 
     /**
@@ -286,6 +290,15 @@ public class ExperimentTimerBiz {
                     countDownResponse.setModel(et.getModel());
                     countDownResponse.setPeriod(et.getPeriod());
                     countDownResponse.setState(et.getState());
+                    if(et.getPeriod() >1){
+                        ExperimentPersonRequest personRequest = ExperimentPersonRequest.builder()
+                                             .experimentInstanceId(experimentInstanceId)
+                                             .appId("3")
+                                             .periods(et.getPeriod() - 1)
+                                             .build();
+                        // 发布保险报销事件
+                        applicationEventPublisher.publishEvent(new FeeReimburseEvent(personRequest));
+                    }
                     break;
                 } else if (sct >= et.getStartTime().getTime() && sct <= et.getEndTime().getTime()) {// 期数中
                     // 本期剩余时间 = 暂停推迟后的结束时间 - 当前时间
@@ -315,11 +328,26 @@ public class ExperimentTimerBiz {
      * @return
      */
     public List<ExperimentTimerEntity> getPeriodsTimerList(String experimentInstanceId) {
+        //List<ExperimentTimerEntity> experimentTimerEntities = new ArrayList<>();
+
         List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerService.lambdaQuery()
                 .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
                 .orderByAsc(ExperimentTimerEntity::getPeriod)
                 .orderByAsc(ExperimentTimerEntity::getPauseCount)
                 .list();
+        /**
+         * todo 优化时放开
+         */
+        /*experimentTimerEntityList.stream()
+                .collect(Collectors.groupingBy(ExperimentTimerEntity::getPeriod))
+                .forEach((k, v) -> {
+                    ExperimentTimerEntity et = v.stream()
+                            .max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount))
+                            .get();
+                    experimentTimerEntities.add(et);
+                });*/
+        //return experimentTimerEntities;
+
         return experimentTimerEntityList;
     }
 
@@ -383,11 +411,10 @@ public class ExperimentTimerBiz {
      * @return
      */
     public ExperimentPeriodsResonse getExperimentCurrentPeriods(String appId, String experimentInstanceId) {
-
-        List<ExperimentTimerEntity> list = this.getPeriodsTimerList(experimentInstanceId);
         long currentTimeMillis = System.currentTimeMillis();
+        List<ExperimentTimerEntity> list = this.getPeriodsTimerList(experimentInstanceId);
         ExperimentTimerEntity experimentTimerEntity = list.stream()
-                .filter(e -> e.getStartTime().getTime() <= currentTimeMillis && currentTimeMillis <= e.getEndTime().getTime())
+                .filter(e -> currentTimeMillis >= e.getStartTime().getTime() && currentTimeMillis <= e.getEndTime().getTime())
                 .max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount))
                 .orElse(null);
 
@@ -419,7 +446,7 @@ public class ExperimentTimerBiz {
      * @param experimentInstanceId
      */
     public Map<Integer, ExperimentTimerEntity> getExperimentPeriodsStartAnsEndTime(String experimentInstanceId) {
-        Map<Integer, ExperimentTimerEntity> map = new HashMap<>();
+        Map<Integer, ExperimentTimerEntity> map = new LinkedHashMap<>();
         List<ExperimentTimerEntity> list = experimentTimerService.lambdaQuery()
                 .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
                 .orderByAsc(ExperimentTimerEntity::getPeriod)

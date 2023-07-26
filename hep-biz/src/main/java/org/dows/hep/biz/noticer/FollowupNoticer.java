@@ -15,6 +15,6 @@ import org.springframework.stereotype.Component;
 public class FollowupNoticer extends AbstractPeriodNoticer implements Notifiable {
     @Override
     public void notice(NoticeContent noticeContent) {
-
+        doNotice(noticeContent);
     }
 }
