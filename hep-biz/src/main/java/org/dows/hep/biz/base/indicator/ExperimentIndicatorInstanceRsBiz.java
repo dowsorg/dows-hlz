@@ -240,7 +240,7 @@ public class ExperimentIndicatorInstanceRsBiz {
         }
     }
 
-    public String groupAverageHealth(String experimentGroupId) {
+    public String groupAverageHealth(String experimentGroupId, Integer periods) {
         Set<String> experimentPersonIdSet = experimentPersonService.lambdaQuery()
             .eq(ExperimentPersonEntity::getExperimentGroupId, experimentGroupId)
             .list()
@@ -248,6 +248,26 @@ public class ExperimentIndicatorInstanceRsBiz {
             .map(ExperimentPersonEntity::getExperimentPersonId)
             .collect(Collectors.toSet());
         if (experimentPersonIdSet.isEmpty()) {return "0";}
-        return "0";
+
+        Set<String> healthPointExperimentIndicatorInstanceIdSet = experimentIndicatorInstanceRsService.lambdaQuery()
+            .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.HEALTH_POINT.getType())
+            .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdSet)
+            .list()
+            .stream()
+            .map(ExperimentIndicatorInstanceRsEntity::getExperimentIndicatorInstanceId)
+            .collect(Collectors.toSet());
+        if (healthPointExperimentIndicatorInstanceIdSet.isEmpty()) {return "0";}
+
+        BigDecimal total = experimentIndicatorValRsService.lambdaQuery()
+            .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
+            .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, healthPointExperimentIndicatorInstanceIdSet)
+            .list()
+            .stream()
+            .map(experimentIndicatorValRsEntity -> {
+                return BigDecimal.valueOf(Double.parseDouble(experimentIndicatorValRsEntity.getCurrentVal()));
+            })
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return total.divide(BigDecimal.valueOf(healthPointExperimentIndicatorInstanceIdSet.size()), 2, RoundingMode.DOWN).toString();
     }
 }

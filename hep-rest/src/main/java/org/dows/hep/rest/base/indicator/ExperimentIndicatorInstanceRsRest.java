@@ -57,7 +57,10 @@ public class ExperimentIndicatorInstanceRsRest {
 
   @Operation(summary = "实验某个小组的平均健康指数")
   @GetMapping("v1/experimentIndicator/healthPoint/average")
-  public String groupAverageHealth(@RequestParam String experimentGroupId) {
-    return experimentIndicatorInstanceRsBiz.groupAverageHealth(experimentGroupId);
+  public String groupAverageHealth(
+      @RequestParam String experimentGroupId,
+      @RequestParam Integer periods
+      ) {
+    return experimentIndicatorInstanceRsBiz.groupAverageHealth(experimentGroupId, periods);
   }
 }
