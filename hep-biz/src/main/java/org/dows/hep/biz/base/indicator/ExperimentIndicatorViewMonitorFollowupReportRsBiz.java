@@ -7,7 +7,7 @@ import org.dows.hep.api.base.indicator.request.ExperimentMonitorFollowupCheckReq
 import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.enums.EnumString;
-import org.dows.hep.api.event.ExperimentFollowupEvent;
+import org.dows.hep.api.event.FollowupEvent;
 import org.dows.hep.api.exception.ExperimentIndicatorViewBaseInfoRsException;
 import org.dows.hep.api.exception.ExperimentIndicatorViewMonitorFollowupReportRsException;
 import org.dows.hep.biz.util.ShareBiz;
@@ -95,7 +95,7 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
             /**
              * todo 解耦，根据随访计划启动定时调度
              */
-            applicationContext.publishEvent(new ExperimentFollowupEvent(experimentMonitorFollowupCheckRequestRs));
+            applicationContext.publishEvent(new FollowupEvent(experimentMonitorFollowupCheckRequestRs));
         }
         ExperimentIndicatorViewMonitorFollowupRsEntity experimentIndicatorViewMonitorFollowupRsEntity = experimentIndicatorViewMonitorFollowupRsService.lambdaQuery()
                 .eq(ExperimentIndicatorViewMonitorFollowupRsEntity::getExperimentIndicatorViewMonitorFollowupId, indicatorViewMonitorFollowupId)
