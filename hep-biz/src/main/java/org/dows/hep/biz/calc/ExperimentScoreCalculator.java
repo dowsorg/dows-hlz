@@ -1,5 +1,6 @@
 package org.dows.hep.biz.calc;
 
+import cn.hutool.core.collection.CollUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.calc.ExperimentScoreCalcRequest;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * 排行榜计算
@@ -29,9 +31,11 @@ public class ExperimentScoreCalculator {
         if (enumCalcCodes == null || enumCalcCodes.size() == 0) {
             throw new ExperimentException("实验分数计算器集合为空");
         }
+
         extracted(experimentScoreCalcRequest.getExperimentInstanceId(),
                 experimentScoreCalcRequest.getExperimentGroupId(),
-                experimentScoreCalcRequest.getPeriod(), enumCalcCodes);
+                experimentScoreCalcRequest.getPeriod(),
+                enumCalcCodes);
     }
 
 
@@ -40,16 +44,36 @@ public class ExperimentScoreCalculator {
     }
 
 
-    private void extracted(String expeirmentInstanceId, String experimentGroupId, Integer peroid,
+    private void extracted(String expeirmentInstanceId,
+                           String experimentGroupId,
+                           Integer peroid,
                            List<EnumCalcCode> enumCalcCodes) {
+        // enumCalcCodes 为空不执行
+        if (CollUtil.isEmpty(enumCalcCodes)) {
+            return;
+        }
+
+        CountDownLatch latch = new CountDownLatch(enumCalcCodes.size());
         for (EnumCalcCode enumCalcCode : enumCalcCodes) {
-            Calculatable calculatable = calculatableMap.get(enumCalcCode);
-            if (calculatable != null) {
-                // 交由线程执行
-                threadPoolTaskExecutor.execute(() -> {
-                    calculatable.calc(expeirmentInstanceId, experimentGroupId, peroid);
-                });
+            Calculatable calculatable = calculatableMap.get(enumCalcCode.name());
+            if (calculatable == null) {
+                latch.countDown();
+                continue;
             }
+
+            threadPoolTaskExecutor.execute(() -> {
+                // 线程执行主逻辑
+                calculatable.calc(expeirmentInstanceId, experimentGroupId, peroid);
+                // 任务执行完毕，减少 CountDownLatch 的计数
+                latch.countDown();
+            });
+        }
+
+        // 等待所有handler线程执行完毕
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 
