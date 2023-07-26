@@ -11,18 +11,13 @@ import org.dows.hep.api.base.indicator.request.RsCalculateMoneyScoreRequestRs;
 import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.enums.EnumCalcCode;
 import org.dows.hep.api.enums.EnumESC;
+import org.dows.hep.api.enums.EnumIndicatorType;
 import org.dows.hep.api.exception.ExperimentScoringException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
-import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
-import org.dows.hep.entity.ExperimentGroupEntity;
-import org.dows.hep.entity.ExperimentRankingEntity;
-import org.dows.hep.entity.ExperimentScoringEntity;
-import org.dows.hep.entity.ExperimentSettingEntity;
-import org.dows.hep.service.ExperimentGroupService;
-import org.dows.hep.service.ExperimentRankingService;
-import org.dows.hep.service.ExperimentScoringService;
-import org.dows.hep.service.ExperimentSettingService;
+import org.dows.hep.biz.base.indicator.RsUtilBiz;
+import org.dows.hep.entity.*;
+import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,10 +47,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ExperimentScoringBiz {
 
-    private final ExperimentGroupBiz experimentGroupBiz;
     private final ExperimentQuestionnaireScoreBiz experimentQuestionnaireScoreBiz;
     private final IdGenerator idGenerator;
-    private final ExperimentSettingBiz experimentSettingBiz;
     private final ExperimentSettingService experimentSettingService;
 
     private final ExperimentRankingService experimentRankingService;
@@ -63,8 +56,10 @@ public class ExperimentScoringBiz {
     private final ExperimentScoringService experimentScoringService;
     private final ExperimentTimerBiz experimentTimerBiz;
     private final ExperimentGroupService experimentGroupService;
-    private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
-
+    private final ExperimentPersonService experimentPersonService;
+    private final ExperimentIndicatorInstanceRsService experimentIndicatorInstanceRsService;
+    private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
+    private final RsUtilBiz rsUtilBiz;
 
     private BigDecimal getWeightTotalScore(
             BigDecimal knowledgeWeight, BigDecimal knowledgeScore,
@@ -76,6 +71,162 @@ public class ExperimentScoringBiz {
         BigDecimal finalMedicalRatioScoreScore = medicalRatioScore.multiply(medicalRatioWeight);
         return finalKnowledgeScore.add(finalHealthIndexScore).add(finalMedicalRatioScoreScore).divide(BigDecimal.valueOf(100), 2, RoundingMode.DOWN);
     }
+
+    private BigDecimal rsCalculateCompetitiveScore(BigDecimal currentHealthScore, BigDecimal defHealthScore, BigDecimal minHealthScore, BigDecimal maxHealthScore) {
+        BigDecimal resultBigDecimal = null;
+        if (currentHealthScore.compareTo(defHealthScore) >= 0) {
+            if (maxHealthScore.compareTo(defHealthScore) == 0) {
+                resultBigDecimal = currentHealthScore;
+            } else {
+                resultBigDecimal = (currentHealthScore.subtract(defHealthScore).divide(maxHealthScore.subtract(defHealthScore), 2, RoundingMode.DOWN).multiply(BigDecimal.valueOf(100-60))).add(BigDecimal.valueOf(60));
+            }
+        } else {
+            if (minHealthScore.compareTo(defHealthScore) == 0) {
+                resultBigDecimal = currentHealthScore;
+            } else {
+                resultBigDecimal = currentHealthScore.subtract(minHealthScore).divide(defHealthScore.subtract(minHealthScore), 2, RoundingMode.DOWN).multiply(BigDecimal.valueOf(60));
+            }
+        }
+        return resultBigDecimal;
+    }
+
+    public RsCalculateCompetitiveScoreRsResponse rsCalculateCompetitiveScore(RsCalculateCompetitiveScoreRequestRs rsCalculateCompetitiveScoreRequestRs) {
+        List<GroupCompetitiveScoreRsResponse> groupCompetitiveScoreRsResponseList = new ArrayList<>();
+        String experimentId = rsCalculateCompetitiveScoreRequestRs.getExperimentId();
+        Integer periods = rsCalculateCompetitiveScoreRequestRs.getPeriods();
+        Map<String, BigDecimal> kExperimentGroupIdVGroupCompetitiveScoreMap = new HashMap<>();
+
+        Set<String> experimentPersonIdSet = new HashSet<>();
+        Map<String, String> kExperimentPersonIdVCasePersonIdMap = new HashMap<>();
+        Map<String, List<ExperimentPersonEntity>> kExperimentGroupIdVExperimentPersonEntityListMap = new HashMap<>();
+        experimentPersonService.lambdaQuery()
+            .eq(ExperimentPersonEntity::getExperimentInstanceId, experimentId)
+            .list()
+            .forEach(experimentPersonEntity -> {
+                String experimentPersonId = experimentPersonEntity.getExperimentPersonId();
+                experimentPersonIdSet.add(experimentPersonId);
+
+                String casePersonId = experimentPersonEntity.getCasePersonId();
+                kExperimentPersonIdVCasePersonIdMap.put(experimentPersonId, casePersonId);
+
+                String experimentGroupId = experimentPersonEntity.getExperimentGroupId();
+                List<ExperimentPersonEntity> experimentPersonEntityList = kExperimentGroupIdVExperimentPersonEntityListMap.get(experimentGroupId);
+                if (Objects.isNull(experimentPersonEntityList)) {
+                    experimentPersonEntityList = new ArrayList<>();
+                }
+                experimentPersonEntityList.add(experimentPersonEntity);
+                kExperimentGroupIdVExperimentPersonEntityListMap.put(experimentGroupId, experimentPersonEntityList);
+            });
+        AtomicInteger groupExperimentPersonSizeAtomicInteger = new AtomicInteger(0);
+        kExperimentGroupIdVExperimentPersonEntityListMap.forEach((ekExperimentGroupIdVExperimentPersonEntityListMap, experimentPersonEntityList) -> {
+            if (Objects.nonNull(experimentPersonEntityList) && !experimentPersonEntityList.isEmpty()) {
+                groupExperimentPersonSizeAtomicInteger.set(experimentPersonEntityList.size());
+            }
+        });
+
+        Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
+        Map<String, String> kExperimentIndicatorInstanceIdVExperimentPersonIdMap = new HashMap<>();
+        Map<String, ExperimentIndicatorInstanceRsEntity> kExperimentPersonIdVHealthExperimentIndicatorInstanceRsEntityMap = new HashMap<>();
+        if (!experimentPersonIdSet.isEmpty()) {
+            experimentIndicatorInstanceRsService.lambdaQuery()
+                .eq(ExperimentIndicatorInstanceRsEntity::getExperimentId, experimentId)
+                .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.HEALTH_POINT.getType())
+                .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdSet)
+                .list()
+                .forEach(experimentIndicatorInstanceRsEntity -> {
+                    String experimentIndicatorInstanceId = experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId();
+                    experimentIndicatorInstanceIdSet.add(experimentIndicatorInstanceId);
+
+                    String experimentPersonId = experimentIndicatorInstanceRsEntity.getExperimentPersonId();
+                    kExperimentIndicatorInstanceIdVExperimentPersonIdMap.put(experimentIndicatorInstanceId, experimentPersonId);
+
+                    kExperimentPersonIdVHealthExperimentIndicatorInstanceRsEntityMap.put(experimentPersonId, experimentIndicatorInstanceRsEntity);
+                });
+        }
+
+        Map<String, ExperimentIndicatorValRsEntity> kHealthExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = new HashMap<>();
+        Map<String, BigDecimal> kCasePersonIdVMinHealthScoreMap = new HashMap<>();
+        Map<String, BigDecimal> kCasePersonIdVMaxHealthScoreMap = new HashMap<>();
+        if (!experimentIndicatorInstanceIdSet.isEmpty()) {
+            experimentIndicatorValRsService.lambdaQuery()
+                .eq(ExperimentIndicatorValRsEntity::getExperimentId, experimentId)
+                .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
+                .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
+                .list()
+                .forEach(experimentIndicatorValRsEntity -> {
+                    String indicatorInstanceId = experimentIndicatorValRsEntity.getIndicatorInstanceId();
+                    kHealthExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(indicatorInstanceId, experimentIndicatorValRsEntity);
+
+                    String currentVal = experimentIndicatorValRsEntity.getCurrentVal();
+                    BigDecimal currentBigDecimal = BigDecimal.valueOf(Double.parseDouble(currentVal));
+                    String experimentPersonId = kExperimentIndicatorInstanceIdVExperimentPersonIdMap.get(indicatorInstanceId);
+                    if (StringUtils.isNotBlank(experimentPersonId)) {
+                        String casePersonId = kExperimentPersonIdVCasePersonIdMap.get(experimentPersonId);
+                        if (StringUtils.isNotBlank(casePersonId)) {
+                            BigDecimal minBigDecimal = kCasePersonIdVMinHealthScoreMap.get(casePersonId);
+                            if (Objects.isNull(minBigDecimal)) {
+                                minBigDecimal = currentBigDecimal;
+                            } else {
+                                if (currentBigDecimal.compareTo(minBigDecimal) < 0) {
+                                    minBigDecimal = currentBigDecimal;
+                                }
+                            }
+                            kCasePersonIdVMinHealthScoreMap.put(casePersonId, minBigDecimal);
+
+                            BigDecimal maxBigDecimal = kCasePersonIdVMaxHealthScoreMap.get(casePersonId);
+                            if (Objects.isNull(maxBigDecimal)) {
+                                maxBigDecimal = currentBigDecimal;
+                            } else {
+                                if (currentBigDecimal.compareTo(maxBigDecimal) > 0) {
+                                    maxBigDecimal = currentBigDecimal;
+                                }
+                            }
+                            kCasePersonIdVMaxHealthScoreMap.put(casePersonId, maxBigDecimal);
+                        }
+                    }
+                });
+        }
+
+        kExperimentGroupIdVExperimentPersonEntityListMap.forEach((experimentGroupId, experimentPersonEntityList) -> {
+            AtomicReference<BigDecimal> atomicReferenceTotalHealthScore = new AtomicReference<>(BigDecimal.ZERO);
+            experimentPersonEntityList.forEach(experimentPersonEntity -> {
+                String experimentPersonId = experimentPersonEntity.getExperimentPersonId();
+                String casePersonId = experimentPersonEntity.getCasePersonId();
+                BigDecimal minHealthScore = kCasePersonIdVMinHealthScoreMap.get(casePersonId);
+                BigDecimal maxHealthScore = kCasePersonIdVMaxHealthScoreMap.get(casePersonId);
+                ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = kExperimentPersonIdVHealthExperimentIndicatorInstanceRsEntityMap.get(experimentPersonId);
+                String defHealthScore = experimentIndicatorInstanceRsEntity.getDef();
+                String healthExperimentIndicatorInstanceId = experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId();
+                ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kHealthExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(healthExperimentIndicatorInstanceId);
+                String currentHealthScore = experimentIndicatorValRsEntity.getCurrentVal();
+                BigDecimal resultHealthScore = rsCalculateCompetitiveScore(BigDecimal.valueOf(Double.parseDouble(currentHealthScore)), BigDecimal.valueOf(Double.parseDouble(defHealthScore)), minHealthScore, maxHealthScore);
+                BigDecimal lastHealthScore = atomicReferenceTotalHealthScore.get();
+                atomicReferenceTotalHealthScore.set(lastHealthScore.add(resultHealthScore));
+            });
+            kExperimentGroupIdVGroupCompetitiveScoreMap.put(experimentGroupId, atomicReferenceTotalHealthScore.get().divide(BigDecimal.valueOf(groupExperimentPersonSizeAtomicInteger.get()), 2, RoundingMode.DOWN));
+        });
+        kExperimentGroupIdVGroupCompetitiveScoreMap.forEach((experimentGroupId, groupCompetitiveScore) -> {
+            groupCompetitiveScoreRsResponseList.add(GroupCompetitiveScoreRsResponse
+                .builder()
+                .experimentGroupId(experimentGroupId)
+                .groupCompetitiveScore(groupCompetitiveScore)
+                .build());
+        });
+        return RsCalculateCompetitiveScoreRsResponse
+            .builder()
+            .groupCompetitiveScoreRsResponseList(groupCompetitiveScoreRsResponseList)
+            .build();
+    }
+
+    /* runsix:TODO 计算医疗占比 */
+    public RsCalculateMoneyScoreRsResponse rsCalculateMoneyScore(RsCalculateMoneyScoreRequestRs rsCalculateMoneyScoreRequestRs) {
+        List<GroupMoneyScoreRsResponse> groupMoneyScoreRsResponseList = new ArrayList<>();
+        return RsCalculateMoneyScoreRsResponse
+            .builder()
+            .groupMoneyScoreRsResponseList(groupMoneyScoreRsResponseList)
+            .build();
+    }
+
 
     @Transactional(rollbackFor = Exception.class)
     public void saveOrUpd(String experimentInstanceId, Integer periods) throws ExecutionException, InterruptedException {
@@ -164,7 +315,7 @@ public class ExperimentScoringBiz {
     private CompletableFuture<Void> getPopulateKExperimentGroupIdVGroupCompetitiveScoreMapCF(
             Map<String, BigDecimal> kExperimentGroupIdVGroupCompetitiveScoreMap, String experimentInstanceId, Integer periods) {
         return CompletableFuture.runAsync(() -> {
-            RsCalculateCompetitiveScoreRsResponse rsCalculateCompetitiveScoreRsResponse = rsExperimentCalculateBiz.rsCalculateCompetitiveScore(RsCalculateCompetitiveScoreRequestRs
+            RsCalculateCompetitiveScoreRsResponse rsCalculateCompetitiveScoreRsResponse = this.rsCalculateCompetitiveScore(RsCalculateCompetitiveScoreRequestRs
                     .builder()
                     .experimentId(experimentInstanceId)
                     .periods(periods)
@@ -184,13 +335,13 @@ public class ExperimentScoringBiz {
             Map<String, BigDecimal> kExperimentGroupIdVGroupMoneyScoreMap, String experimentInstanceId, Integer periods
     ) {
         return CompletableFuture.runAsync(() -> {
-            RsCalculateMoneyScoreRsResponse rsCalculateMoneyScoreRsResponse = rsExperimentCalculateBiz.rsCalculateMoneyScore(RsCalculateMoneyScoreRequestRs
+            RsCalculateMoneyScoreRsResponse rsCalculateMoneyScoreRsResponse = this.rsCalculateMoneyScore(RsCalculateMoneyScoreRequestRs
                     .builder()
                     .experimentId(experimentInstanceId)
                     .periods(periods)
                     .build());
             List<GroupMoneyScoreRsResponse> groupMoneyScoreRsResponseList = rsCalculateMoneyScoreRsResponse.getGroupMoneyScoreRsResponseList();
-            if (Objects.isNull(groupMoneyScoreRsResponseList) || groupMoneyScoreRsResponseList.isEmpty()) {
+            if (Objects.nonNull(groupMoneyScoreRsResponseList) && !groupMoneyScoreRsResponseList.isEmpty()) {
                 groupMoneyScoreRsResponseList.forEach(groupMoneyScoreRsResponse -> {
                     String experimentGroupId = groupMoneyScoreRsResponse.getExperimentGroupId();
                     BigDecimal groupMoneyScore = groupMoneyScoreRsResponse.getGroupMoneyScore();

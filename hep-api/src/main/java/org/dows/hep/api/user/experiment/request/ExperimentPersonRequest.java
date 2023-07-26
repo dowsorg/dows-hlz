@@ -2,6 +2,8 @@ package org.dows.hep.api.user.experiment.request;
 
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +12,8 @@ import lombok.NoArgsConstructor;
  * @date 2023/5/10 10:19
  */
 @Data
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @Schema(name = "ExperimentPerson 对象", title = "实验人物")
 public class ExperimentPersonRequest {

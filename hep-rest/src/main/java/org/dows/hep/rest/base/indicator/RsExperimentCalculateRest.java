@@ -6,7 +6,10 @@ import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.*;
 import org.dows.hep.api.base.indicator.response.RsCalculateCompetitiveScoreRsResponse;
 import org.dows.hep.api.base.indicator.response.RsCalculateMoneyScoreRsResponse;
+import org.dows.hep.biz.base.indicator.RsCaseCalculateBiz;
+import org.dows.hep.biz.base.indicator.RsDatabaseCalculateBiz;
 import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
+import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,8 +23,9 @@ import java.util.concurrent.ExecutionException;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "实验各种数计算", description = "实验各种数计算")
-public class RsCalculateRest {
+public class RsExperimentCalculateRest {
   private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
+  private final ExperimentScoringBiz experimentScoringBiz;
 
   @Operation(summary = "功能结算点（比如健康指导点击后）调用这个封装好的方法")
   @PostMapping("v1/experimentIndicator/func/reCalculate")
@@ -50,32 +54,15 @@ public class RsCalculateRest {
   @Operation(summary = "计算医疗占比")
   @PostMapping("v1/experimentIndicator/moneyScore/calculate")
   public RsCalculateMoneyScoreRsResponse rsCalculateMoneyScore(@RequestBody RsCalculateMoneyScoreRequestRs rsCalculateMoneyScoreRequestRs) {
-    return rsExperimentCalculateBiz.rsCalculateMoneyScore(rsCalculateMoneyScoreRequestRs);
+    return experimentScoringBiz.rsCalculateMoneyScore(rsCalculateMoneyScoreRequestRs);
   }
 
   @Operation(summary = "计算出实验小组的竞争性得分")
   @PostMapping("v1/experimentIndicator/competitiveScore/calculate")
   public RsCalculateCompetitiveScoreRsResponse rsCalculateCompetitiveScore(@RequestBody RsCalculateCompetitiveScoreRequestRs rsCalculateCompetitiveScoreRequestRs) {
-    return rsExperimentCalculateBiz.rsCalculateCompetitiveScore(rsCalculateCompetitiveScoreRequestRs);
+    return experimentScoringBiz.rsCalculateCompetitiveScore(rsCalculateCompetitiveScoreRequestRs);
   }
 
-  @Operation(summary = "案例-重新计算一个人所有指标")
-  @PostMapping("v1/caseIndicator/onePerson/reCalculate")
-  public void caseReCalculateOnePerson(@RequestBody ReCalculateOnePersonRequestRs reCalculateOnePersonRequestRs) throws ExecutionException, InterruptedException {
-    rsExperimentCalculateBiz.caseReCalculateOnePerson(reCalculateOnePersonRequestRs);
-  }
-
-  @Operation(summary = "案例-计算一个人健康指数")
-  @PostMapping("v1/caseIndicator/healthScore/calculate")
-  public void caseRsCalculateHealthScore(@RequestBody CaseRsCalculateHealthScoreRequestRs caseRsCalculateHealthScoreRequestRs) throws ExecutionException, InterruptedException {
-    rsExperimentCalculateBiz.caseRsCalculateHealthScore(caseRsCalculateHealthScoreRequestRs);
-  }
-
-  @Operation(summary = "数据库-计算指标的健康指数")
-  @PostMapping("v1/databaseIndicator/healthScore/calculate")
-  public void databaseRsCalculateHealthScore(@RequestBody DatabaseRsCalculateHealthScoreRequestRs databaseRsCalculateHealthScoreRequestRs) throws ExecutionException, InterruptedException {
-    rsExperimentCalculateBiz.databaseRsCalculateHealthScore(databaseRsCalculateHealthScoreRequestRs);
-  }
 
   @Operation(summary = "计算前设置持续天数当前值")
   @PutMapping("v1/experimentIndicator/duration/put")

@@ -8,8 +8,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
 import org.dows.hep.api.enums.EnumExperimentMode;
 import org.dows.hep.api.enums.EnumExperimentState;
+import org.dows.hep.api.event.FeeReimburseEvent;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
+import org.dows.hep.api.user.experiment.request.ExperimentPersonRequest;
 import org.dows.hep.api.user.experiment.response.CountDownResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
 import org.dows.hep.entity.ExperimentInstanceEntity;
@@ -20,6 +22,7 @@ import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.hep.service.ExperimentSettingService;
 import org.dows.hep.service.ExperimentTimerService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -39,6 +42,7 @@ public class ExperimentTimerBiz {
     private final ExperimentInstanceService experimentInstanceService;
     private final ExperimentParticipatorService experimentParticipatorService;
     private final ExperimentSettingService experimentSettingService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
 
     /**
@@ -286,6 +290,15 @@ public class ExperimentTimerBiz {
                     countDownResponse.setModel(et.getModel());
                     countDownResponse.setPeriod(et.getPeriod());
                     countDownResponse.setState(et.getState());
+                    if(et.getPeriod() >1){
+                        ExperimentPersonRequest personRequest = ExperimentPersonRequest.builder()
+                                             .experimentInstanceId(experimentInstanceId)
+                                             .appId("3")
+                                             .periods(et.getPeriod() - 1)
+                                             .build();
+                        // 发布保险报销事件
+                        applicationEventPublisher.publishEvent(new FeeReimburseEvent(personRequest));
+                    }
                     break;
                 } else if (sct >= et.getStartTime().getTime() && sct <= et.getEndTime().getTime()) {// 期数中
                     // 本期剩余时间 = 暂停推迟后的结束时间 - 当前时间

@@ -19,6 +19,7 @@ import java.util.Map;
 @Builder
 public class ExperimentCalIndicatorExpressionRequest implements Serializable {
   private Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap;
+  private Map<String, ExperimentIndicatorValRsEntity> lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap;
   private ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity;
   private List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList;
   private ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity;
