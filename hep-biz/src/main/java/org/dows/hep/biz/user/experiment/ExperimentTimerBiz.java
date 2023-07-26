@@ -68,6 +68,7 @@ public class ExperimentTimerBiz {
 
         /**
          * 方案设计模式
+         * 说明： 方案设计不是所有小组同时进入实验，所以学生端不适用此处的倒计时
          */
         ExperimentSettingEntity schemeSettingEntity = list.stream()
                 .filter(e -> e.getConfigKey().equals(ExperimentSetting.SchemeSetting.class.getName()))
