@@ -433,8 +433,10 @@ public class ExperimentOrgBiz{
                 person.setOperateFlowId(rowFlow.getOperateFlowId());
                 person.setFlowPeriod(rowFlow.getPeriods());
             }
+            // 获取健康指数
+            String healthPoint = experimentIndicatorInstanceRsBiz.getHealthPoint(personRequest.getPeriods(),person.getExperimentPersonId());
+            person.setHealthPoint(healthPoint);
             responseList.add(person);
-
         }
         voPage.setRecords(responseList);
         return voPage;

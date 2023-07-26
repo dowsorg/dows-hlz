@@ -22,7 +22,7 @@ import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.enums.EnumParticipatorType;
 import org.dows.hep.api.event.ExperimentEvent;
-import org.dows.hep.api.event.ExperimentInitEvent;
+import org.dows.hep.api.event.InitializeEvent;
 import org.dows.hep.api.event.StartEvent;
 import org.dows.hep.api.event.SuspendEvent;
 import org.dows.hep.api.exception.ExperimentException;
@@ -274,7 +274,7 @@ public class ExperimentManageBiz {
         experimentParticipatorService.saveBatch(collect);
 
         // 发布实验init事件
-        applicationEventPublisher.publishEvent(new ExperimentInitEvent(experimentGroupSettingRequest));
+        applicationEventPublisher.publishEvent(new InitializeEvent(experimentGroupSettingRequest));
 
         return true;
     }

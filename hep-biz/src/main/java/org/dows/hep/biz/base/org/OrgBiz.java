@@ -429,7 +429,23 @@ public class OrgBiz {
         Set<String> orgIds = new HashSet<>();
         orgIds.add(entity.getOrgId());
         request.setOrgIds(orgIds);
-        return accountGroupApi.customAccountGroupList(request);
+        IPage<AccountGroupResponse> groupResponseIPage = accountGroupApi.customAccountGroupList(request);
+        //2、因为要加健康指数，必须处理一下
+        IPage<AccountGroupResponse> groupIPage = new Page<>();
+        BeanUtils.copyProperties(groupResponseIPage, groupIPage, new String[]{"records"});
+        List<AccountGroupResponse> responseList = groupResponseIPage.getRecords();
+        responseList.forEach(group->{
+            //2.1、通过accountId和caseOrgId找到casePersonId
+            CasePersonEntity casePersonEntity = casePersonService.lambdaQuery()
+                             .eq(CasePersonEntity::getAccountId,group.getAccountId())
+                             .eq(CasePersonEntity::getCaseOrgId,caseOrgId)
+                             .one();
+            //2.2、获取健康指数
+            String healthPoint = caseIndicatorInstanceBiz.getHealthPoint(casePersonEntity.getCasePersonId());
+            group.setHealthPoint(healthPoint);
+        });
+        groupIPage.setRecords(responseList);
+        return groupIPage;
     }
 
     /**

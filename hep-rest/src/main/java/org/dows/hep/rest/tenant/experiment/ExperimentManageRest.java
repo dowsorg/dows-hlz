@@ -13,7 +13,7 @@ import org.dows.hep.api.tenant.experiment.request.*;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.api.tenant.experiment.response.ExptSchemeGroupReviewResponse;
 import org.dows.hep.api.tenant.experiment.vo.ExptSchemeScoreReviewVO;
-import org.dows.hep.api.user.experiment.response.CountDownResponse;
+import org.dows.hep.api.user.experiment.response.IntervalResponse;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentSchemeScoreBiz;
 import org.dows.hep.biz.user.experiment.ExperimentBaseBiz;
@@ -49,9 +49,9 @@ public class ExperimentManageRest {
      */
     @Operation(summary = "获取租户端实验倒计时")
     @GetMapping("v1/tenantExperiment/experimentTimer/countdown")
-    public CountDownResponse countdown(@RequestParam String experimentInstanceId) {
+    public IntervalResponse countdown(@RequestParam String experimentInstanceId) {
 
-        CountDownResponse countdown = experimentTimerBiz.countdown(experimentInstanceId);
+        IntervalResponse countdown = experimentTimerBiz.countdown(experimentInstanceId);
 
         return countdown;
     }
