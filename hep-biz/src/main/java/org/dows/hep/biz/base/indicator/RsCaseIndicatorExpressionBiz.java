@@ -211,10 +211,20 @@ public class RsCaseIndicatorExpressionBiz {
       AtomicReference<CaseIndicatorExpressionItemEntity> caseMaxIndicatorExpressionItemEntityAtomicReference,
       CaseCreateOrUpdateIndicatorExpressionItemRequestRs caseMaxCreateOrUpdateIndicatorExpressionItemRequestRs
   ) {
-    String minResultRaw = caseMinCreateOrUpdateIndicatorExpressionItemRequestRs.getResultRaw();
-    String minResultExpression = caseMinCreateOrUpdateIndicatorExpressionItemRequestRs.getResultExpression();
-    String maxResultRaw = caseMaxCreateOrUpdateIndicatorExpressionItemRequestRs.getResultRaw();
-    String maxResultExpression = caseMaxCreateOrUpdateIndicatorExpressionItemRequestRs.getResultExpression();
+    String minResultRaw = null;
+    String minResultExpression = null;
+    String maxResultRaw = null;
+    String maxResultExpression = null;
+    if (Objects.nonNull(caseMinCreateOrUpdateIndicatorExpressionItemRequestRs)) {
+      minResultRaw = caseMinCreateOrUpdateIndicatorExpressionItemRequestRs.getResultRaw();
+      minResultExpression = caseMinCreateOrUpdateIndicatorExpressionItemRequestRs.getResultExpression();
+      populateMinOrMaxCaseIndicatorExpressionItem(typeChange, caseMinIndicatorExpressionItemEntityAtomicReference, caseMinCreateOrUpdateIndicatorExpressionItemRequestRs);
+    }
+    if (Objects.nonNull(caseMaxCreateOrUpdateIndicatorExpressionItemRequestRs)) {
+      maxResultRaw = caseMaxCreateOrUpdateIndicatorExpressionItemRequestRs.getResultRaw();
+      maxResultExpression = caseMaxCreateOrUpdateIndicatorExpressionItemRequestRs.getResultExpression();
+      populateMinOrMaxCaseIndicatorExpressionItem(typeChange, caseMaxIndicatorExpressionItemEntityAtomicReference, caseMaxCreateOrUpdateIndicatorExpressionItemRequestRs);
+    }
     /* runsix:最大最小都不为空并且都是数字，则需要保证最大大于或等于最小 */
     if (StringUtils.isNoneBlank(minResultRaw, minResultExpression, maxResultRaw, maxResultExpression)
         && NumberUtils.isCreatable(minResultRaw) && NumberUtils.isCreatable(minResultExpression)
@@ -224,8 +234,6 @@ public class RsCaseIndicatorExpressionBiz {
       log.warn("RsCaseIndicatorExpressionBiz.populateMinAndMaxCaseIndicatorExpressionItem maxResultRaw:{} lt minResultRaw:{}", maxResultRaw, minResultRaw);
       throw new RsCaseIndicatorExpressionBizException(EnumESC.CASE_INDICATOR_EXPRESSION_MAX_MUST_GE_MIN);
     }
-    populateMinOrMaxCaseIndicatorExpressionItem(typeChange, caseMinIndicatorExpressionItemEntityAtomicReference, caseMinCreateOrUpdateIndicatorExpressionItemRequestRs);
-    populateMinOrMaxCaseIndicatorExpressionItem(typeChange, caseMaxIndicatorExpressionItemEntityAtomicReference, caseMaxCreateOrUpdateIndicatorExpressionItemRequestRs);
   }
 
   public void populateKCaseIndicatorInstanceIdVCaseIndicatorExpressionInfluenceMap(
