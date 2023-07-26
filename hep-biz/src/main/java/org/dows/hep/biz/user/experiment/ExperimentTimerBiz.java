@@ -315,11 +315,26 @@ public class ExperimentTimerBiz {
      * @return
      */
     public List<ExperimentTimerEntity> getPeriodsTimerList(String experimentInstanceId) {
+        //List<ExperimentTimerEntity> experimentTimerEntities = new ArrayList<>();
+
         List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerService.lambdaQuery()
                 .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
                 .orderByAsc(ExperimentTimerEntity::getPeriod)
                 .orderByAsc(ExperimentTimerEntity::getPauseCount)
                 .list();
+        /**
+         * todo 优化时放开
+         */
+        /*experimentTimerEntityList.stream()
+                .collect(Collectors.groupingBy(ExperimentTimerEntity::getPeriod))
+                .forEach((k, v) -> {
+                    ExperimentTimerEntity et = v.stream()
+                            .max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount))
+                            .get();
+                    experimentTimerEntities.add(et);
+                });*/
+        //return experimentTimerEntities;
+
         return experimentTimerEntityList;
     }
 
@@ -383,11 +398,10 @@ public class ExperimentTimerBiz {
      * @return
      */
     public ExperimentPeriodsResonse getExperimentCurrentPeriods(String appId, String experimentInstanceId) {
-
-        List<ExperimentTimerEntity> list = this.getPeriodsTimerList(experimentInstanceId);
         long currentTimeMillis = System.currentTimeMillis();
+        List<ExperimentTimerEntity> list = this.getPeriodsTimerList(experimentInstanceId);
         ExperimentTimerEntity experimentTimerEntity = list.stream()
-                .filter(e -> e.getStartTime().getTime() <= currentTimeMillis && currentTimeMillis <= e.getEndTime().getTime())
+                .filter(e -> currentTimeMillis >= e.getStartTime().getTime() && currentTimeMillis <= e.getEndTime().getTime())
                 .max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount))
                 .orElse(null);
 
