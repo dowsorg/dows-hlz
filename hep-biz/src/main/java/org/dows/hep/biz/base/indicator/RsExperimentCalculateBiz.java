@@ -578,6 +578,7 @@ public class RsExperimentCalculateBiz {
   */
   @Transactional(rollbackFor = Exception.class)
   public void experimentReCalculatePeriods(RsCalculatePeriodsRequest rsCalculatePeriodsRequest) throws ExecutionException, InterruptedException {
+    /* runsix:TODO 加锁 */
     /* runsix:param */
     String appId = rsCalculatePeriodsRequest.getAppId();
     String experimentId = rsCalculatePeriodsRequest.getExperimentId();
