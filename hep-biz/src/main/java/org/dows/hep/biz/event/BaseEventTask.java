@@ -59,7 +59,7 @@ public abstract class BaseEventTask implements Callable<Integer>,Runnable {
     protected void logError(Throwable ex, String func, String msg,Object... args){
         String str=String.format("%s.%s input:%s %s", this.getClass().getName(), func,this.experimentKey,String.format(Optional.ofNullable(msg).orElse(""), args));
         log.error(str,ex);
-        log.info(str);
+        //log.info(str);
     }
     protected void logInfo(String func, String msg,Object... args) {
         String str = String.format("%s.%s input:%s %s", this.getClass().getName(), func, this.experimentKey, String.format(Optional.ofNullable(msg).orElse(""), args));
