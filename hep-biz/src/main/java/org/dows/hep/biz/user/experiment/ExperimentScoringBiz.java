@@ -341,7 +341,7 @@ public class ExperimentScoringBiz {
                     .periods(periods)
                     .build());
             List<GroupMoneyScoreRsResponse> groupMoneyScoreRsResponseList = rsCalculateMoneyScoreRsResponse.getGroupMoneyScoreRsResponseList();
-            if (Objects.isNull(groupMoneyScoreRsResponseList) || groupMoneyScoreRsResponseList.isEmpty()) {
+            if (Objects.nonNull(groupMoneyScoreRsResponseList) && !groupMoneyScoreRsResponseList.isEmpty()) {
                 groupMoneyScoreRsResponseList.forEach(groupMoneyScoreRsResponse -> {
                     String experimentGroupId = groupMoneyScoreRsResponse.getExperimentGroupId();
                     BigDecimal groupMoneyScore = groupMoneyScoreRsResponse.getGroupMoneyScore();
