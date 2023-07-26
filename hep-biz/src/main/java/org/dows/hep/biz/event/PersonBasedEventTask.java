@@ -6,6 +6,8 @@ import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentSettingCollection;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.event.data.PersonBasedEventCollection;
+import org.dows.hep.biz.spel.SpelInvoker;
+import org.dows.hep.biz.spel.SpelPersonContext;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentEventEntity;
 
@@ -15,7 +17,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * @author : wuzl
@@ -30,10 +31,12 @@ public class PersonBasedEventTask extends BaseEventTask{
         super(experimentKey);
     }
 
-    public static void executeEvent(String appId,String experimentInstanceId) {
-        new PersonBasedEventTask(ExperimentCacheKey.create(appId,experimentInstanceId)).run();
+    public static void runPersonBasedEvent(String appId,String experimentInstanceId) {
+        new PersonBasedEventTask(ExperimentCacheKey.create(appId, experimentInstanceId)).run();
     }
-
+    public static void runPersonBasedEventAsync(String appId,String experimentInstanceId) {
+        CompletableFuture.runAsync(() -> runPersonBasedEvent(appId, experimentInstanceId));
+    }
     @Override
     public Integer call() throws Exception {
         ExperimentSettingCollection exptColl= ExperimentSettingCache.Instance().getSet(experimentKey,true);
@@ -78,12 +81,14 @@ public class PersonBasedEventTask extends BaseEventTask{
         for(PersonBasedEventCollection.PersonBasedEventGroup group:groups ) {
             int cntTriggered=0;
             int cntTriggering=0;
+            SpelPersonContext spelContext=new SpelPersonContext().setVariables(group.getExperimentPersonId(), timePoint.getPeriod());
             for(ExperimentEventEntity event:group.getEventItems()){
                 if(null!=event.getTriggerTime()) {
                     cntTriggered++;
                     continue;
                 }
-                if(!ifTriggerEvent(event)){
+                if(!SpelInvoker.Instance().checkEventCondition(eventColl.getExperimentInstanceId(), group.getExperimentPersonId(),
+                        timePoint.getPeriod(), event.getCaseEventId(),spelContext ) ){
                     continue;
                 }
                 event.setTriggerTime(dtNow)
@@ -131,8 +136,6 @@ public class PersonBasedEventTask extends BaseEventTask{
                 runStat.failTheadCounter.get(),runStat.doneCounter.get(),runStat.todoCounter.get());
     }
 
-    boolean ifTriggerEvent(ExperimentEventEntity event){
-        //TODO
-        return ThreadLocalRandom.current().nextInt(0,3)==0;
-    }
+
+
 }

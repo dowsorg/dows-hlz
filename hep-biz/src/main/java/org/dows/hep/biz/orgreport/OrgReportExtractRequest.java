@@ -35,4 +35,7 @@ public class OrgReportExtractRequest {
     @Schema(title = "挂号流水ID")
     private String operateFlowId;
 
+    @Schema(title = "当前期数")
+    private Integer period;
+
 }

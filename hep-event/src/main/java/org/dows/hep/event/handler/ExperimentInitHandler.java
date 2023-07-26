@@ -28,10 +28,12 @@ import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.biz.snapshot.SnapshotManager;
 import org.dows.hep.biz.snapshot.SnapshotRequest;
 import org.dows.hep.biz.task.ExperimentBeginTask;
+import org.dows.hep.biz.task.ExptSchemeExpireTask;
 import org.dows.hep.biz.tenant.experiment.ExperimentCaseInfoManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentQuestionnaireManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentSchemeManageBiz;
+import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentSettingEntity;
 import org.dows.hep.entity.ExperimentTaskScheduleEntity;
@@ -40,6 +42,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,6 +58,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
     private final ExperimentCaseInfoManageBiz experimentCaseInfoManageBiz;
     private final ExperimentSchemeManageBiz experimentSchemeManageBiz;
     private final ExperimentQuestionnaireManageBiz experimentQuestionnaireManageBiz;
+    private final ExperimentSchemeBiz experimentSchemeBiz;
     private final OrgBiz orgBiz;
     private final ExperimentManageBiz experimentManageBiz;
     //todo 记得优化@jx
@@ -108,11 +112,13 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
             .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
             .list();
         AtomicReference<ExperimentSetting.SandSetting> sandSettingAtomicReference = new AtomicReference<>();
+        AtomicReference<ExperimentSetting.SchemeSetting> schemeSettingAtomicReference = new AtomicReference<>();
         AtomicBoolean hasSchemeSettingAtomicBoolean  = new AtomicBoolean(Boolean.FALSE);
         AtomicBoolean hasSandSettingAtomicBoolean  = new AtomicBoolean(Boolean.FALSE);
         experimentSettingEntityList.forEach(experimentSettingEntity -> {
             if (StringUtils.equals(ExperimentSetting.SchemeSetting.class.getName(), experimentSettingEntity.getConfigKey())) {
                 hasSchemeSettingAtomicBoolean.set(Boolean.TRUE);
+                schemeSettingAtomicReference.set(JSONUtil.toBean(experimentSettingEntity.getConfigJsonVals(), ExperimentSetting.SchemeSetting.class));
             } else if (StringUtils.equals(ExperimentSetting.SandSetting.class.getName(), experimentSettingEntity.getConfigKey())) {
                 hasSandSettingAtomicBoolean.set(Boolean.TRUE);
                 sandSettingAtomicReference.set(JSONUtil.toBean(experimentSettingEntity.getConfigJsonVals(), ExperimentSetting.SandSetting.class));
@@ -130,6 +136,10 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
         experimentSchemeManageBiz.preHandleExperimentScheme(experimentInstanceId, caseInstanceId);
         // 初始化实验 `知识答题` 数据
         experimentQuestionnaireManageBiz.preHandleExperimentQuestionnaire(experimentInstanceId, caseInstanceId);
+        // 设置方案设计截止时间提交定时器
+        if (hasSchemeSettingAtomicBoolean.get()) {
+            setExptSchemeExpireTask(schemeSettingAtomicReference, request);
+        }
         /* runsix:初始化实验 '复制人物指标以及人物指标的公式到实验' */
         if (hasSandSettingAtomicBoolean.get()) {
             ExperimentSetting.SandSetting sandSetting = sandSettingAtomicReference.get();
@@ -158,6 +168,30 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
         //复制操作指标和突发事件
         SnapshotManager.Instance().write( new SnapshotRequest(appId,experimentInstanceId), true);
     }
+
+    private void setExptSchemeExpireTask(AtomicReference<ExperimentSetting.SchemeSetting> schemeSettingAtomicReference, ExperimentGroupSettingRequest request) {
+        //保存任务进计时器表，防止重启后服务挂了，一个任务每个实验每一期只能有一条数据
+        String taskParams = "{\"experimentInstanceId\":\"" + request.getExperimentInstanceId() + "\"}";
+        ExperimentSetting.SchemeSetting schemeSetting = schemeSettingAtomicReference.get();
+        Date schemeEndTime = schemeSetting.getSchemeEndTime();
+
+        ExperimentTaskScheduleEntity entity = ExperimentTaskScheduleEntity.builder()
+                .experimentTaskTimerId(idGenerator.nextIdStr())
+                .experimentInstanceId(request.getExperimentInstanceId())
+                .taskBeanCode(EnumExperimentTask.experimentBeginTask.getDesc())
+                .taskParams(taskParams)
+                .appId(request.getAppId())
+                .executeTime(schemeEndTime)
+                .executed(false)
+                .build();
+        experimentTaskScheduleService.save(entity);
+
+        //执行定时任务
+        ExptSchemeExpireTask exptSchemeExpireTask = new ExptSchemeExpireTask(experimentTaskScheduleService, experimentSchemeBiz, request.getExperimentInstanceId());
+        taskScheduler.schedule(exptSchemeExpireTask, schemeEndTime);
+    }
+
+
 
     /**
      * 实验开始定时器

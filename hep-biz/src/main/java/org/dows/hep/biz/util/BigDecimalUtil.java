@@ -38,6 +38,19 @@ public class BigDecimalUtil {
     public static Double doubleValue(BigDecimal src, Double dft) {
         return null == src ? dft : src.doubleValue();
     }
+
+    public static BigDecimal valueOf(Object src){
+        return valueOf(src,null);
+    }
+    public static BigDecimal valueOf(Object src,BigDecimal dft){
+        if(null==src){
+            return dft;
+        }
+        if(src instanceof BigDecimal){
+            return (BigDecimal) src;
+        }
+        return new BigDecimal(src.toString());
+    }
     public static BigDecimal valueOf(Short src){
         return valueOf(src,null);
     }
@@ -76,6 +89,9 @@ public class BigDecimalUtil {
     public static BigDecimal tryParseDecimal(String src, BigDecimal dft) {
         BigDecimal rst = dft;
         try {
+            if(!ShareUtil.XObject.isNumber(src)){
+                return rst;
+            }
             if (ShareUtil.XString.hasLength(src)) {
                 rst =new BigDecimal(src.trim());
             }

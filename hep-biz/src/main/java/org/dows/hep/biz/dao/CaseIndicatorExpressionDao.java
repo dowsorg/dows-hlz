@@ -1,11 +1,16 @@
 package org.dows.hep.biz.dao;
 
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.CaseIndicatorExpressionEntity;
 import org.dows.hep.entity.CaseIndicatorExpressionItemEntity;
 import org.dows.hep.service.CaseIndicatorExpressionItemService;
 import org.dows.hep.service.CaseIndicatorExpressionService;
 import org.springframework.stereotype.Component;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author : wuzl
@@ -61,5 +66,18 @@ public class CaseIndicatorExpressionDao extends BaseSubDao<CaseIndicatorExpressi
     @Override
     protected SFunction<String, ?> setColSubId(CaseIndicatorExpressionItemEntity item) {
         return item::setCaseIndicatorExpressionItemId;
+    }
+
+    public List<CaseIndicatorExpressionEntity> getBySource(Collection<Integer> sources,SFunction<CaseIndicatorExpressionEntity,?>... cols) {
+        if (ShareUtil.XObject.isEmpty(sources)) {
+            return Collections.emptyList();
+        }
+        final boolean oneFlag = sources.size() == 1;
+        return service.lambdaQuery()
+                .eq(oneFlag, CaseIndicatorExpressionEntity::getSource, sources.iterator().next())
+                .in(!oneFlag, CaseIndicatorExpressionEntity::getSource, sources)
+                .orderByAsc(CaseIndicatorExpressionEntity::getId)
+                .select(cols)
+                .list();
     }
 }

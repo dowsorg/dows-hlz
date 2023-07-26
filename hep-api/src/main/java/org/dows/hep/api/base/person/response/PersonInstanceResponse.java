@@ -39,6 +39,9 @@ public class PersonInstanceResponse{
     @Schema(title = "账号名")
     private String accountName;
 
+    @Schema(title = "健康指数")
+    private String healthPoint;
+
     @Schema(title = "用户名")
     private String userName;
 
