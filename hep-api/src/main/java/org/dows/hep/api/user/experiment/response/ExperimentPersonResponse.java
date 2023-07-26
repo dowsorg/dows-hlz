@@ -51,6 +51,9 @@ public class ExperimentPersonResponse {
     @Schema(title = "期数")
     private Integer periods;
 
+    @Schema(title = "健康指数")
+    private String healthPoint;
+
     @Schema(title = "当前挂号流水号,为空-未挂号 非空-已挂号")
     private String operateFlowId;
 
