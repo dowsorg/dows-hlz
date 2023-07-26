@@ -21,6 +21,7 @@ import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 实验重启任务
@@ -68,21 +69,25 @@ public class ExperimentRestartTask implements Runnable {
                 .eq(ExperimentTaskScheduleEntity::getExecuted, false)
                 .eq(ExperimentTaskScheduleEntity::getAppId, appId)
                 .list();
-        // 2、判断是在重启开始前应该执行的还是之后执行的任务，如果本来应该是重启之前执行的任务，重启的时候就执行，否则的话就拉起任务
+        // 2、有些数据部分信息可能会被误删，要过滤掉这些数据
+        scheduleEntityList = scheduleEntityList.stream().filter(schedule -> experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()) != null &&
+                        experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()).size() > 0)
+                        .collect(Collectors.toList());
+        // 3、判断是在重启开始前应该执行的还是之后执行的任务，如果本来应该是重启之前执行的任务，重启的时候就执行，否则的话就拉起任务
         if (scheduleEntityList != null && scheduleEntityList.size() > 0) {
             scheduleEntityList.forEach(scheduleEntity -> {
                 if (scheduleEntity.getRestartTime() != null && scheduleEntity.getExecuteTime().after(scheduleEntity.getRestartTime())) {
                     JSONObject json = JSONObject.parseObject(scheduleEntity.getTaskParams());
-                    //2.1、直接重新拉取，后期重新执行
+                    //3.1、直接重新拉取，后期重新执行
                     if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentBeginTask.getDesc())) {
-                        // 2.2、执行定时任务
+                        // 3.2、执行定时任务
                         ExperimentBeginTask experimentBeginTask = new ExperimentBeginTask(
                                 experimentInstanceService, experimentParticipatorService, experimentTimerService, applicationEventPublisher,
                                 experimentTaskScheduleService, (String) json.get("experimentInstanceId"));
                         taskScheduler.schedule(experimentBeginTask, scheduleEntity.getExecuteTime());
                     }
                     if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentCalcTask.getDesc())) {
-                        // 2.2、执行定时任务
+                        // 3.3、执行定时任务
                         ExperimentCalcTask experimentCalcTask = new ExperimentCalcTask(
                                 experimentTimerBiz,
                                 experimentScoreCalculator,
@@ -94,7 +99,7 @@ public class ExperimentRestartTask implements Runnable {
                         taskScheduler.schedule(experimentCalcTask, DateUtil.date(scheduleEntity.getExecuteTime()));
                     }
                     if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentFinishTask.getDesc())) {
-                        // 2.2、执行定时任务
+                        // 3.4、执行定时任务
                         ExperimentFinishTask experimentFinishTask = new ExperimentFinishTask(experimentInstanceService,
                                 experimentParticipatorService, experimentTimerService, experimentTaskScheduleService, experimentScoreCalculator,
                                 (String) json.get("experimentInstanceId"), (Integer) json.get("period"));
@@ -102,7 +107,7 @@ public class ExperimentRestartTask implements Runnable {
                         taskScheduler.schedule(experimentFinishTask, DateUtil.date(scheduleEntity.getExecuteTime()));
                     }
                     if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentPeriodStartNoticeTask.getDesc())) {
-                        // 2.2、执行定时任务
+                        // 3.5、执行定时任务
                         ExperimentNoticeTask experimentPeriodStartNoticeTask = new ExperimentNoticeTask(
                                 (String) json.get("experimentInstanceId"),
                                 (String) json.get("experimentGroupId"),
@@ -114,7 +119,7 @@ public class ExperimentRestartTask implements Runnable {
                         taskScheduler.schedule(experimentPeriodStartNoticeTask, DateUtil.date(scheduleEntity.getExecuteTime()));
                     }
                     if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentPeriodEndNoticeTask.getDesc())) {
-                        // 2.2、执行定时任务
+                        // 3.6、执行定时任务
                         ExperimentNoticeTask experimentPeriodEndNoticeTask = new ExperimentNoticeTask(
                                 (String) json.get("experimentInstanceId"),
                                 (String) json.get("experimentGroupId"),
@@ -126,19 +131,19 @@ public class ExperimentRestartTask implements Runnable {
                         taskScheduler.schedule(experimentPeriodEndNoticeTask, DateUtil.date(scheduleEntity.getExecuteTime()));
                     }
                 }
-                // 2.3、之前的任务，因为宕机没有按时执行，直接全部一次性执行了
+                // 3.7、之前的任务，因为宕机没有按时执行，直接全部一次性执行了
                 if (scheduleEntity.getExecuteTime().before(new Date())) {
                     JSONObject json = JSONObject.parseObject(scheduleEntity.getTaskParams());
-                    //2.1、直接重新拉取，后期重新执行
+                    //3.7、直接重新拉取，后期重新执行
                     if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentBeginTask.getDesc())) {
-                        // 2.2、执行定时任务
+                        // 3.8、执行定时任务
                         ExperimentBeginTask experimentBeginTask = new ExperimentBeginTask(
                                 experimentInstanceService, experimentParticipatorService, experimentTimerService, applicationEventPublisher,
                                 experimentTaskScheduleService, (String) json.get("experimentInstanceId"));
                         experimentBeginTask.run();
                     }
                     if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentCalcTask.getDesc())) {
-                        // 2.2、执行定时任务
+                        // 3.9、执行定时任务
                         ExperimentCalcTask experimentCalcTask = new ExperimentCalcTask(
                                 experimentTimerBiz,
                                 experimentScoreCalculator,
@@ -149,7 +154,7 @@ public class ExperimentRestartTask implements Runnable {
                         experimentCalcTask.run();
                     }
                     if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentFinishTask.getDesc())) {
-                        // 2.2、执行定时任务
+                        // 3.10、执行定时任务
                         ExperimentFinishTask experimentFinishTask = new ExperimentFinishTask(experimentInstanceService,
                                 experimentParticipatorService, experimentTimerService, experimentTaskScheduleService, experimentScoreCalculator,
                                 (String) json.get("experimentInstanceId"), (Integer) json.get("period"));
@@ -157,7 +162,7 @@ public class ExperimentRestartTask implements Runnable {
                         experimentFinishTask.run();
                     }
                     if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentPeriodStartNoticeTask.getDesc())) {
-                        // 2.2、执行定时任务
+                        // 3.11、执行定时任务
                         ExperimentNoticeTask experimentPeriodStartNoticeTask = new ExperimentNoticeTask(
                                 (String) json.get("experimentInstanceId"),
                                 (String) json.get("experimentGroupId"),
@@ -169,7 +174,7 @@ public class ExperimentRestartTask implements Runnable {
                         experimentPeriodStartNoticeTask.run();
                     }
                     if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentPeriodEndNoticeTask.getDesc())) {
-                        // 2.2、执行定时任务
+                        // 3.12、执行定时任务
                         ExperimentNoticeTask experimentPeriodEndNoticeTask = new ExperimentNoticeTask(
                                 (String) json.get("experimentInstanceId"),
                                 (String) json.get("experimentGroupId"),
