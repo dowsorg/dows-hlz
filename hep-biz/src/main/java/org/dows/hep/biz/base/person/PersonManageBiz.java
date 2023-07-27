@@ -22,6 +22,7 @@ import org.dows.hep.api.base.person.response.PersonInstanceResponse;
 import org.dows.hep.api.tenant.casus.request.CasePersonIndicatorFuncRequest;
 import org.dows.hep.biz.base.indicator.CaseIndicatorInstanceBiz;
 import org.dows.hep.biz.base.org.OrgBiz;
+import org.dows.hep.biz.tenant.casus.TenantCaseEventBiz;
 import org.dows.hep.entity.CasePersonEntity;
 import org.dows.hep.entity.CasePersonIndicatorFuncEntity;
 import org.dows.hep.entity.ExperimentInstanceEntity;
@@ -80,6 +81,8 @@ public class PersonManageBiz {
     private final CasePersonService casePersonService;
 
     private final ExperimentInstanceService experimentInstanceService;
+
+    private final TenantCaseEventBiz tenantCaseEventBiz;
 
     /**
      * @param
@@ -297,6 +300,9 @@ public class PersonManageBiz {
                 .appId(accountInstanceResponse.getAppId())
                 .principalId(vo.getAccountId())
                 .build());
+        //6.复制事件
+        tenantCaseEventBiz.copyCaseEvent4Person(accountInstanceResponse.getAppId(),vo.getAccountId(),accountId,
+                accountInstanceResponse.getUserName());
         return PersonInstanceResponse.builder().accountId(vo.getAccountId())
                 .build();
     }

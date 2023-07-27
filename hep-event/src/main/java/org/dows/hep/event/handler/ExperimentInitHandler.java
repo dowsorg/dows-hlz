@@ -12,6 +12,7 @@ import org.dows.account.response.AccountInstanceResponse;
 import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.ExperimentContext;
 import org.dows.hep.api.base.evaluate.EvaluateEnabledEnum;
+import org.dows.hep.api.base.indicator.request.ExperimentRsCalculateAndCreateReportHealthScoreRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyCrowdsAndRiskModelRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyIndicatorFuncRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyPersonIndicatorRequestRs;
@@ -24,6 +25,7 @@ import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.organization.request.CaseOrgRequest;
 import org.dows.hep.api.user.organization.response.CaseOrgResponse;
 import org.dows.hep.biz.base.indicator.RsCopyBiz;
+import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
 import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.biz.snapshot.SnapshotManager;
 import org.dows.hep.biz.snapshot.SnapshotRequest;
@@ -77,6 +79,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
     private final RsCopyBiz rsCopyBiz;
 
     private final ExperimentSettingService experimentSettingService;
+    private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
 
 //    @Override
     public void execOld(ExperimentGroupSettingRequest request) {
@@ -164,6 +167,13 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
               .experimentInstanceId(experimentInstanceId)
               .caseInstanceId(caseInstanceId)
               .build());
+          /* runsix:复制实验，拿到第0期第数据 */
+          rsExperimentCalculateBiz.experimentRsCalculateAndCreateReportHealthScore(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
+              .builder()
+                  .appId(appId)
+                  .experimentId(experimentInstanceId)
+                  .periods(0)
+              .build());
         }
         //复制操作指标和突发事件
         SnapshotManager.Instance().write( new SnapshotRequest(appId,experimentInstanceId), true);
@@ -178,7 +188,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
         ExperimentTaskScheduleEntity entity = ExperimentTaskScheduleEntity.builder()
                 .experimentTaskTimerId(idGenerator.nextIdStr())
                 .experimentInstanceId(request.getExperimentInstanceId())
-                .taskBeanCode(EnumExperimentTask.experimentBeginTask.getDesc())
+                .taskBeanCode(EnumExperimentTask.exptSchemeExpireTask.getDesc())
                 .taskParams(taskParams)
                 .appId(request.getAppId())
                 .executeTime(schemeEndTime)

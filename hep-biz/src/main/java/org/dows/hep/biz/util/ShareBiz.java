@@ -64,6 +64,9 @@ public class ShareBiz {
      */
     public static LoginContextVO getLoginUser(HttpServletRequest request){
         LoginContextVO rst=new LoginContextVO();
+        if(null==request){
+            return rst;
+        }
         String token = request.getHeader("token");
         if(ShareUtil.XObject.isEmpty(token)){
             return rst;

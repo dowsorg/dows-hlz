@@ -13,7 +13,7 @@ import org.dows.hep.service.ExperimentTaskScheduleService;
 /**
  * @author fhb
  * @version 1.0
- * @description 实验 `方案设计` 到期执行任务
+ * @description 实验 `方案设计` 到期执行任务 - 截止作答时间结束
  * @date 2023/7/26 9:41
  **/
 

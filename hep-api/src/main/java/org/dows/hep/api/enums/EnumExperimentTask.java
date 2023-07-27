@@ -15,7 +15,8 @@ public enum EnumExperimentTask {
     experimentCalcTask(2, "experimentCalcTask"),
     experimentPeriodStartNoticeTask(3, "experimentPeriodStartNoticeTask"),
     experimentPeriodEndNoticeTask(4, "experimentPeriodEndNoticeTask"),
-    exptSchemeExpireTask(5, "exptSchemeExpireTask")
+    exptSchemeExpireTask(5, "exptSchemeExpireTask"),
+    exptSchemeFinishTask(6, "exptSchemeFinishTask")
     ;
     private final Integer code;
     private final String desc;

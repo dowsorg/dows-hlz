@@ -52,7 +52,7 @@ public class RsUtilBiz {
         if (score.compareTo(BigDecimal.ONE) <= 0) {
           leOneList.add(score);
         } else {
-          gtOneList.add(score);
+          gtOneList.add(score.subtract(BigDecimal.ONE));
         }
       });
       BigDecimal multiplyResult = BigDecimal.ZERO;
@@ -560,6 +560,14 @@ public class RsUtilBiz {
         copyKIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap.put(indicatorInstanceId, influencedIndicatorInstanceIdSet);
       });
     }
+  }
+
+  public void healthPointMinAndMax(AtomicReference<BigDecimal> cur) {
+    if (Objects.isNull(cur)) {return;}
+    BigDecimal curBD = cur.get();
+    if (curBD.compareTo(BigDecimal.ONE) < 0) {curBD = BigDecimal.ONE;}
+    if (curBD.compareTo(BigDecimal.valueOf(100)) > 0) {curBD = BigDecimal.valueOf(100);}
+    cur.set(curBD);
   }
 
   public static void main(String[] args) {
