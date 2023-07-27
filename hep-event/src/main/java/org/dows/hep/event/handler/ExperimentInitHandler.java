@@ -178,7 +178,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
         ExperimentTaskScheduleEntity entity = ExperimentTaskScheduleEntity.builder()
                 .experimentTaskTimerId(idGenerator.nextIdStr())
                 .experimentInstanceId(request.getExperimentInstanceId())
-                .taskBeanCode(EnumExperimentTask.experimentBeginTask.getDesc())
+                .taskBeanCode(EnumExperimentTask.exptSchemeExpireTask.getDesc())
                 .taskParams(taskParams)
                 .appId(request.getAppId())
                 .executeTime(schemeEndTime)
