@@ -237,7 +237,9 @@ public class RiskBiz {
                     // 组装Item
                     PersonRiskFactor.RiskItem riskItem = new PersonRiskFactor.RiskItem();
                     riskItem.setItemName(experimentIndicatorInstanceRsEntity.getIndicatorName());
+
                     //riskItem.setItemValue();
+
                     //riskItem.setRiskScore();
                     riskItems.add(riskItem);
                 }
