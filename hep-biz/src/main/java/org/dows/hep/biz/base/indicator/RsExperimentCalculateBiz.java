@@ -398,6 +398,7 @@ public class RsExperimentCalculateBiz {
 
 
     Map<String, ExperimentIndicatorValRsEntity> kExperimentPersonIdVHealthExperimentIndicatorValRsEntityMap = new HashMap<>();
+
     CompletableFuture<Void> cfPopulateKExperimentPersonIdVHealthExperimentIndicatorInstanceRsEntityMap = CompletableFuture.runAsync(() -> {
       rsExperimentIndicatorExpressionBiz.populateKExperimentPersonIdVHealthExperimentIndicatorValRsEntityMap(
           kExperimentPersonIdVHealthExperimentIndicatorValRsEntityMap, experimentPersonIdSet, periods);
@@ -405,9 +406,10 @@ public class RsExperimentCalculateBiz {
     cfPopulateKExperimentPersonIdVHealthExperimentIndicatorInstanceRsEntityMap.get();
 
     Map<String, Map<String, ExperimentIndicatorValRsEntity>> kExperimentPersonIdVKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = new HashMap<>();
+    Map<String, String> kExperimentIndicatorIdVNameMap = new HashMap<>();
     CompletableFuture<Void> cfPopulateKExperimentPersonIdVKExperimentIndicatorInstanceIdVExperimentIndicatorValMap = CompletableFuture.runAsync(() -> {
-      rsExperimentIndicatorExpressionBiz.populateKExperimentPersonIdVKExperimentIndicatorInstanceIdVExperimentIndicatorValMap(
-          kExperimentPersonIdVKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap, experimentPersonIdSet, periods
+      rsExperimentIndicatorExpressionBiz.populateWithNameKExperimentPersonIdVKExperimentIndicatorInstanceIdVExperimentIndicatorValMap(
+          kExperimentPersonIdVKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap, kExperimentIndicatorIdVNameMap, experimentPersonIdSet, periods
       );
     });
     cfPopulateKExperimentPersonIdVKExperimentIndicatorInstanceIdVExperimentIndicatorValMap.get();
@@ -504,16 +506,16 @@ public class RsExperimentCalculateBiz {
             kRiskModelIdVRiskDeathProbabilityMap.put(experimentRiskModelId, experimentRiskModelRsEntity.getRiskDeathProbability());
             kPrincipalIdVScoreMap.put(riskModelExperimentIndicatorExpressionRsEntity.getPrincipalId(), BigDecimal.valueOf(Double.parseDouble(singleExpressionResultRiskModelAR.get())));
             ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
-
-            if (Objects.nonNull(experimentIndicatorValRsEntity) && ) {
+            String name = kExperimentIndicatorIdVNameMap.get(experimentIndicatorInstanceId);
+            if (Objects.nonNull(experimentIndicatorValRsEntity) && StringUtils.isNotBlank(name)) {
               experimentPersonHealthRiskFactorRsEntityList.add(ExperimentPersonHealthRiskFactorRsEntity
                   .builder()
                   .experimentPersonHealthRiskFactorId(idGenerator.nextIdStr())
                   .experimentPersonRiskModelId(experimentPersonRiskModelId)
                   .experimentIndicatorInstanceId(experimentIndicatorInstanceId)
-                  .name()
+                  .name(name)
                   .val(experimentIndicatorValRsEntity.getCurrentVal())
-                  .riskScore(curVal)
+                  .riskScore(curVal.doubleValue())
                   .build());
             }
           });
