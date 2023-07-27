@@ -39,6 +39,8 @@ public class RiskModelBiz {
 
     private final IndicatorExpressionBiz indicatorExpressionBiz;
 
+    private final CrowdsInstanceBiz crowdsInstanceBiz;
+
     /**
      * @param
      * @return
@@ -210,6 +212,7 @@ public class RiskModelBiz {
                 String riskModelId = riskModelResponse.getRiskModelId();
                 List<IndicatorExpressionResponseRs> indicatorExpressionResponseRsList = kReasonIdVIndicatorExpressionResponseRsListMap.get(riskModelId);
                 riskModelResponse.setIndicatorExpressionResponseRsList(indicatorExpressionResponseRsList);
+                riskModelResponse.setCrowdsCategoryName(crowdsInstanceBiz.getCrowdsByCrowdsId(riskModelResponse.getCrowdsCategoryId()).getName());
             });
         }
         pageInfo.setList(riskModelResponseList);
