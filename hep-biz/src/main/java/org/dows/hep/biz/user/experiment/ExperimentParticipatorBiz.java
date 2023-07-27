@@ -1,5 +1,6 @@
 package org.dows.hep.biz.user.experiment;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
@@ -12,6 +13,7 @@ import org.dows.account.response.AccountInstanceResponse;
 import org.dows.account.response.AccountRoleResponse;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
+import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.enums.EnumExperimentStatusCode;
 import org.dows.hep.api.enums.EnumParticipatorType;
 import org.dows.hep.api.exception.ExperimentException;
@@ -30,12 +32,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class ExperimentParticipatorBiz {
+    private final ExperimentSchemeBiz experimentSchemeBiz;
     // 实验参与者
     private final ExperimentParticipatorService experimentParticipatorService;
     // 实验小组
@@ -106,7 +110,7 @@ public class ExperimentParticipatorBiz {
      */
     public PageResponse<ExperimentListResponse> page(PageExperimentRequest pageExperimentRequest) {
         //查询参与者参加的实验列表
-        Page page = new Page<ExperimentParticipatorEntity>();
+        Page<ExperimentParticipatorEntity> page = new Page<>();
         page.setCurrent(pageExperimentRequest.getPageNo());
         page.setSize(pageExperimentRequest.getPageSize());
 
@@ -136,14 +140,42 @@ public class ExperimentParticipatorBiz {
         } else {//
             page = page.setTotal(0).setCurrent(0).setSize(0).setRecords(new ArrayList<>());
         }
+
+        // 对方案设计模式实验状态二次处理
+        if (StrUtil.isNotBlank(pageExperimentRequest.getAccountId())) {
+            handleSchemeExptState(page, pageExperimentRequest.getAccountId());
+        }
+
         //为空时list设置为空数组
         PageResponse pageInfo = experimentParticipatorService.getPageInfo(page, ExperimentListResponse.class);
-        if(pageInfo.getList() == null || pageInfo.getList().size() == 0){
+        if (pageInfo.getList() == null || pageInfo.getList().size() == 0) {
             pageInfo.setList(new ArrayList());
         }
         return pageInfo;
     }
 
+    private void handleSchemeExptState(Page<ExperimentParticipatorEntity> page, String accountId) {
+        // 获取实验列表
+        List<ExperimentParticipatorEntity> records = page.getRecords();
+        if (CollUtil.isNotEmpty(records)) {
+            // 需要处理的实验
+            List<String> exptInstanceIds = records.stream()
+                    .map(ExperimentParticipatorEntity::getExperimentInstanceId)
+                    .toList();
+
+            // 实验状态变更Map
+            Map<String, EnumExperimentState> groupStateMapExptState = experimentSchemeBiz.groupStateMapExptState(exptInstanceIds, accountId);
+
+            // 变更
+            records.forEach(record -> {
+                String exptInstanceId = record.getExperimentInstanceId();
+                EnumExperimentState exptState = groupStateMapExptState.get(exptInstanceId);
+                if (exptState != null) {
+                    record.setState(exptState.getState());
+                }
+            });
+        }
+    }
 
     /**
      * @param
@@ -174,9 +206,9 @@ public class ExperimentParticipatorBiz {
             list.forEach(response -> {
                 //获取小组组名和状态
                 ExperimentGroupEntity groupEntity = experimentGroupService.lambdaQuery()
-                        .eq(ExperimentGroupEntity::getExperimentGroupId,response.getExperimentGroupId())
-                        .eq(ExperimentGroupEntity::getExperimentInstanceId,pageExperimentRequest.getExperimentInstanceId())
-                        .eq(ExperimentGroupEntity::getDeleted,false)
+                        .eq(ExperimentGroupEntity::getExperimentGroupId, response.getExperimentGroupId())
+                        .eq(ExperimentGroupEntity::getExperimentInstanceId, pageExperimentRequest.getExperimentInstanceId())
+                        .eq(ExperimentGroupEntity::getDeleted, false)
                         .one();
                 response.setGroupNo(groupEntity.getGroupNo());
                 response.setGroupAlias(groupEntity.getGroupAlias());

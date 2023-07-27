@@ -64,7 +64,11 @@ public class ExperimentSchemeRest {
     @Operation(summary = "分配方案设计")
     @PostMapping("v1/userExperiment/experimentScheme/allotSchemeMembers")
     public Boolean allotGroupMembers(@RequestBody @Validated ExperimentSchemeAllotRequest request) {
-        return experimentSchemeBiz.allotSchemeMembers(request);
+        Boolean submitRes = experimentSchemeBiz.allotSchemeMembers(request);
+        if (submitRes) {
+            experimentSchemeBiz.setAutoSubmitTaskWhen0RemainingTime(request.getExperimentInstanceId(), request.getExperimentGroupId());
+        }
+        return submitRes;
     }
 
     /**

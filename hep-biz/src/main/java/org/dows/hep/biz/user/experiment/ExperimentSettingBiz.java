@@ -14,8 +14,11 @@ import org.dows.hep.service.ExperimentSettingService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 实验设置BIZ
@@ -138,6 +141,13 @@ public class ExperimentSettingBiz {
         return containsSand && containsScheme;
     }
 
+    /**
+     * @param exptInstanceId - 实验实例ID
+     * @return org.dows.hep.api.user.experiment.ExptSettingModeEnum
+     * @author fhn
+     * @description 获取实验的实验模式
+     * @date 2023/7/5 10:27
+     */
     public ExptSettingModeEnum getExptSettingMode(String exptInstanceId) {
         List<ExperimentSettingEntity> settingList = listExptSetting(exptInstanceId);
         if (CollUtil.isEmpty(settingList)) {
@@ -162,6 +172,49 @@ public class ExperimentSettingBiz {
             return ExptSettingModeEnum.SCHEME;
         }
         return ExptSettingModeEnum.SAND;
+    }
+
+    /**
+     * @param exptInstanceIds - 实验实例ID集合
+     * @return org.dows.hep.api.user.experiment.ExptSettingModeEnum
+     * @author fhn
+     * @description 获取实验的实验模式
+     * @date 2023/7/27 10:27
+     */
+    public Map<String, ExptSettingModeEnum> listExptSettingMode(List<String> exptInstanceIds) {
+        List<ExperimentSettingEntity> settingList = listExptSetting(exptInstanceIds);
+        if (CollUtil.isEmpty(settingList)) {
+            throw new BizException("获取实验设置时，查询实验设置数据为空");
+        }
+
+        Map<String, ExptSettingModeEnum> result = new HashMap<>();
+        Map<String, List<ExperimentSettingEntity>> exptCollect = settingList.stream()
+                .collect(Collectors.groupingBy(ExperimentSettingEntity::getExperimentInstanceId));
+        exptCollect.forEach((k, v) -> {
+            ExptSettingModeEnum mode = null;
+            boolean containsSand = Boolean.FALSE;
+            boolean containsScheme = Boolean.FALSE;
+            for (ExperimentSettingEntity settingEntity : v) {
+                String configKey = settingEntity.getConfigKey();
+                if (ExperimentSetting.SandSetting.class.getName().equals(configKey)) {
+                    containsSand = Boolean.TRUE;
+                }
+                if (ExperimentSetting.SchemeSetting.class.getName().equals(configKey)) {
+                    containsScheme = Boolean.TRUE;
+                }
+            }
+            if (containsScheme && containsSand) {
+                mode = ExptSettingModeEnum.SAND_SCHEME;
+            } else if (containsScheme) {
+                mode = ExptSettingModeEnum.SCHEME;
+            } else {
+                mode = ExptSettingModeEnum.SAND;
+            }
+
+            result.put(k, mode);
+        });
+
+        return result;
     }
 
     private ExperimentSettingEntity getSchemeSetting0(String exptInstanceId) {
@@ -193,6 +246,14 @@ public class ExperimentSettingBiz {
 
         return experimentSettingService.lambdaQuery()
                 .eq(ExperimentSettingEntity::getExperimentInstanceId, exptInstanceId)
+                .list();
+    }
+
+    private List<ExperimentSettingEntity> listExptSetting(List<String> exptInstanceIds) {
+        Assert.notEmpty(exptInstanceIds, "查询实验设置时，实验ID不能为空");
+
+        return experimentSettingService.lambdaQuery()
+                .in(ExperimentSettingEntity::getExperimentInstanceId, exptInstanceIds)
                 .list();
     }
 }
