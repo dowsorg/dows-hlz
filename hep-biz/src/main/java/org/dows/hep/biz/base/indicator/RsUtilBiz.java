@@ -362,7 +362,7 @@ public class RsUtilBiz {
 
   public String handleResultExpression(String resultExpression) {
     if (StringUtils.isBlank(resultExpression)) {return resultExpression;}
-    if (NumberUtils.isCreatable(resultExpression) || resultExpression.contains(EnumString.AT.getStr())) {
+    if (NumberUtils.isCreatable(resultExpression) || resultExpression.contains(EnumString.JIN.getStr())) {
       return resultExpression;
     } else {
       return wrapStrWithDoubleSingleQuotes(resultExpression);

@@ -46,6 +46,9 @@ public class ExperimentIndicatorValRsEntity implements CrudEntity {
   @Schema(title = "当前值")
   private String currentVal;
 
+  @Schema(title = "每一期初始值")
+  private String initVal;
+
   @Schema(title = "期数")
   private Integer periods;
 

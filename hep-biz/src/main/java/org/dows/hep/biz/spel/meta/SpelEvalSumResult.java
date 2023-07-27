@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import org.dows.hep.biz.util.BigDecimalUtil;
 import org.dows.hep.biz.util.ShareUtil;
 
 import java.math.BigDecimal;
@@ -40,7 +39,7 @@ public class SpelEvalSumResult {
             return null;
         }
         if(val instanceof BigDecimal){
-            return ((BigDecimal)val).toString();
+            return ((BigDecimal)val).toPlainString();
         }
         return val.toString();
     }

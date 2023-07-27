@@ -40,6 +40,9 @@ public class RiskModelResponse{
     @Schema(title = "人群类别ID")
     private String crowdsCategoryId;
 
+    @Schema(title = "人群类别名称")
+    private String crowdsCategoryName;
+
     @Schema(title = "0-禁用，1-启用")
     private Integer status;
 

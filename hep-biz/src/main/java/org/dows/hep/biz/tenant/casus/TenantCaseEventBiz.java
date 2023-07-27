@@ -7,10 +7,7 @@ import org.dows.hep.api.base.indicator.response.CaseIndicatorExpressionResponseR
 import org.dows.hep.api.base.intervene.request.DelRefItemRequest;
 import org.dows.hep.api.base.intervene.vo.CaseEventActionInfoVO;
 import org.dows.hep.api.base.intervene.vo.IndicatorExpressionVO;
-import org.dows.hep.api.enums.EnumEventTriggerSpan;
-import org.dows.hep.api.enums.EnumEventTriggerType;
-import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
-import org.dows.hep.api.enums.EnumStatus;
+import org.dows.hep.api.enums.*;
 import org.dows.hep.api.tenant.casus.request.CopyCaseEventRequest;
 import org.dows.hep.api.tenant.casus.request.DelCaseEventRequest;
 import org.dows.hep.api.tenant.casus.request.FindCaseEventRequest;
@@ -127,7 +124,7 @@ public class TenantCaseEventBiz {
         List<CaseEventActionInfoVO> vosAction = ShareUtil.XCollection.map(rowsAction,
                 i -> CopyWrapper.create(CaseEventActionInfoVO::new)
                         .endFrom(i, v -> v.setRefId(i.getCaseEventId())
-                                .setActionExpresssions(mapExressions.get(i.getCaseEventId()))));
+                                .setActionExpresssions(mapExressions.get(i.getCaseEventActionId()))));
         mapExressions.clear();
         return CopyWrapper.create(CaseEventInfoResponse::new)
                 .endFrom(refreshCateg(row))
@@ -246,22 +243,26 @@ public class TenantCaseEventBiz {
         List<IndicatorExpressionRefEntity> rowsExpressionRef = indicatorExpressionRefDao.getByReasonId(appId, eventIds);
         List<String> expressionIds = ShareUtil.XCollection.map(rowsExpressionRef, IndicatorExpressionRefEntity::getIndicatorExpressionId);
         List<IndicatorExpressionEntity> rowsExpression = indicatorExpressionDao.getByIds(expressionIds);
-        List<String> indicatorIds = rowsExpression.stream().map(IndicatorExpressionEntity::getPrincipalId).filter(ShareUtil.XObject::notEmpty).collect(Collectors.toList());
         Map<String, String> mapIndicatorId = ShareUtil.XCollection.toMap(caseIndicatorInstanceDao.getByPersonId(appId, personId,
                         CaseIndicatorInstanceEntity::getIndicatorInstanceId,
                         CaseIndicatorInstanceEntity::getCaseIndicatorInstanceId),
                 CaseIndicatorInstanceEntity::getIndicatorInstanceId, CaseIndicatorInstanceEntity::getCaseIndicatorInstanceId);
-        indicatorIds.forEach(i -> {
-            if (mapIndicatorId.containsKey(i)) {
-                return;
+        rowsExpression.forEach(i->{
+            if(ShareUtil.XObject.notEmpty(i.getPrincipalId())){
+                String caseIndicatorId=mapIndicatorId.get(i.getPrincipalId());
+                if(ShareUtil.XObject.isEmpty(caseIndicatorId)){
+                    assertNotExistsIndicatorId(i.getPrincipalId());
+                }
             }
-            String notExistsIndicator = indicatorInstanceDao.getById(i, IndicatorInstanceEntity::getIndicatorName)
-                    .map(IndicatorInstanceEntity::getIndicatorName).orElse("id:".concat(i));
-            AssertUtil.justThrow(String.format("人物未定义关联指标[%s]", notExistsIndicator));
         });
         mapIndicatorId.put("", "");
         mapIndicatorId.put(null, "");
         List<IndicatorExpressionItemEntity> rowsExpressionItem = indicatorExpressionDao.getSubByLeadIds(expressionIds);
+        rowsExpressionItem.forEach(i->{
+            i.setConditionValList(castExpresionVals(i.getConditionValList(), mapIndicatorId));
+            i.setResultValList(castExpresionVals(i.getResultValList(), mapIndicatorId));
+        });
+
         List<EventActionEntity> rowsAction = eventActionDao.getByEventIds(eventIds);
         Map<String, String> mapEventIds = new HashMap<>();
         Map<String, String> mapExpressionId = new HashMap<>();
@@ -290,13 +291,6 @@ public class TenantCaseEventBiz {
                         .setCaseEventActionId(idGenerator.nextIdStr())
                         .setId(null)
         );
-        List<CaseIndicatorExpressionRefEntity> rowsCaseExpressionRef = ShareUtil.XCollection.map(rowsExpressionRef, i ->
-                CopyWrapper.create(CaseIndicatorExpressionRefEntity::new)
-                        .endFrom(i)
-                        .setIndicatorExpressionRefId(i.getIndicatorExpressionRefId())
-                        .setCaseIndicatorExpressionRefId(idGenerator.nextIdStr())
-                        .setId(null)
-        );
         List<CaseIndicatorExpressionEntity> rowsCaseExpression = ShareUtil.XCollection.map(rowsExpression, i ->
                 CopyWrapper.create(CaseIndicatorExpressionEntity::new)
                         .endFrom(i)
@@ -313,11 +307,42 @@ public class TenantCaseEventBiz {
                         .setCaseIndicatorExpressionItemId(mapExpresionItemId.computeIfAbsent(i.getIndicatorExpressionItemId(), v -> idGenerator.nextIdStr()))
                         .setId(null)
         );
+        List<CaseIndicatorExpressionRefEntity> rowsCaseExpressionRef = ShareUtil.XCollection.map(rowsExpressionRef, i ->
+                CopyWrapper.create(CaseIndicatorExpressionRefEntity::new)
+                        .endFrom(i)
+                        .setIndicatorExpressionRefId(i.getIndicatorExpressionRefId())
+                        .setCaseIndicatorExpressionRefId(idGenerator.nextIdStr())
+                        .setReasonId(mapEventIds.get(i.getReasonId()))
+                        .setIndicatorExpressionId(mapExpressionId.get(i.getIndicatorExpressionId()))
+                        .setId(null)
+        );
+
         mapIndicatorId.clear();
         mapEventIds.clear();
         mapExpressionId.clear();
         mapExpresionItemId.clear();
         return caseEventDao.tranSaveBatch(rowsCaseEvent, rowsCaseAction, rowsCaseExpressionRef, rowsCaseExpression,rowsCaseExpressionItem);
+    }
+    private String castExpresionVals(String expressionVals,Map<String,String> mapIndicatorId){
+        if(ShareUtil.XObject.isEmpty(expressionVals)){
+            return expressionVals;
+        }
+        String[] spilts=expressionVals.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr());
+        String caseIndicatorId;
+        for(String baseIndicatorId:spilts){
+            caseIndicatorId=mapIndicatorId.get(baseIndicatorId);
+            if(ShareUtil.XObject.isEmpty(caseIndicatorId)){
+                assertNotExistsIndicatorId(baseIndicatorId);
+                continue;
+            }
+            expressionVals=expressionVals.replace(baseIndicatorId, caseIndicatorId);
+        }
+        return expressionVals;
+    }
+    private void assertNotExistsIndicatorId(String indicatorId){
+        String notExistsIndicator = indicatorInstanceDao.getById(indicatorId, IndicatorInstanceEntity::getIndicatorName)
+                .map(IndicatorInstanceEntity::getIndicatorName).orElse("id:".concat(indicatorId));
+        AssertUtil.justThrow(String.format("人物未定义关联指标[%s]", notExistsIndicator));
     }
 
     /**
