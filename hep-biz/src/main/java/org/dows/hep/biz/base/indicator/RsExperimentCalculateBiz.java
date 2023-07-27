@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -278,7 +279,9 @@ public class RsExperimentCalculateBiz {
         if (kRiskModelIdVRiskDeathProbabilityMap.isEmpty()) {return;}
         Integer totalRiskDeathProbability = kRiskModelIdVRiskDeathProbabilityMap.values().stream().reduce(0, Integer::sum);
         BigDecimal newHealthPoint = rsUtilBiz.newCalculateFinalHealthScore(kRiskModelIdVTotalScoreMap, kRiskModelIdVRiskDeathProbabilityMap, totalRiskDeathProbability);
-        healthExperimentIndicatorValRsEntity.setCurrentVal(newHealthPoint.toString());
+        AtomicReference<BigDecimal> newHealthPointAR = new AtomicReference<>(newHealthPoint);
+        rsUtilBiz.healthPointMinAndMax(newHealthPointAR);
+        healthExperimentIndicatorValRsEntity.setCurrentVal(newHealthPointAR.get().setScale(2, RoundingMode.DOWN).toString());
         healthExperimentIndicatorValRsEntityList.add(healthExperimentIndicatorValRsEntity);
       });
     });
