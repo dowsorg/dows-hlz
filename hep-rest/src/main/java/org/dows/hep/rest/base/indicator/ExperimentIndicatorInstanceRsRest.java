@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
+import org.dows.hep.api.base.indicator.request.RsInitMoneyRequest;
 import org.dows.hep.api.base.indicator.response.GroupAverageHealthPointResponse;
 import org.dows.hep.api.user.experiment.request.ExperimentIndicatorInstanceRequest;
 import org.dows.hep.api.user.experiment.response.EchartsDataResonse;
@@ -11,6 +12,8 @@ import org.dows.hep.biz.base.indicator.ExperimentIndicatorInstanceRsBiz;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author runsix
@@ -36,6 +39,12 @@ public class ExperimentIndicatorInstanceRsRest {
       @RequestParam String experimentPersonId
   ) {
     return experimentIndicatorInstanceRsBiz.getMoneyDef(experimentPersonId);
+  }
+
+  @Operation(summary = "查询人物期数的初始化资金")
+  @GetMapping("v1/experimentIndicator/money/getByPeriods")
+  public Map<String, String> getInitMoneyByPeriods(@RequestBody RsInitMoneyRequest rsInitMoneyRequest) {
+    return experimentIndicatorInstanceRsBiz.getInitMoneyByPeriods(rsInitMoneyRequest);
   }
 
   @Operation(summary = "实验人物金额变化")

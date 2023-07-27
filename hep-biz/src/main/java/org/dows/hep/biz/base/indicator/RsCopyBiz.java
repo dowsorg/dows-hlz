@@ -1556,6 +1556,7 @@ public class RsCopyBiz {
                 .caseId(caseInstanceId)
                 .indicatorInstanceId(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId())
                 .currentVal(experimentIndicatorInstanceRsEntity.getDef())
+                .initVal(experimentIndicatorInstanceRsEntity.getDef())
                 .periods(i)
                 .min(experimentIndicatorInstanceRsEntity.getMin())
                 .max(experimentIndicatorInstanceRsEntity.getMax())

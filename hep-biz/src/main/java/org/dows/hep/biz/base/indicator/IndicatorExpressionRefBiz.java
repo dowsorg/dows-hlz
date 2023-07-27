@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.enums.EnumESC;
+import org.dows.hep.api.enums.EnumIndicatorExpressionScene;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.exception.IndicatorExpressionItemRefException;
 import org.dows.hep.entity.IndicatorExpressionEntity;
@@ -18,6 +19,7 @@ import org.dows.hep.service.IndicatorExpressionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -31,10 +33,12 @@ public class IndicatorExpressionRefBiz {
   private final IndicatorExpressionService indicatorExpressionService;
   private final IndicatorExpressionItemService indicatorExpressionItemService;
   private final IndicatorExpressionInfluenceService indicatorExpressionInfluenceService;
+  private final RsUtilBiz rsUtilBiz;
+  private final RsIndicatorExpressionBiz rsIndicatorExpressionBiz;
 
 
   @Transactional(rollbackFor = Exception.class)
-  public void delete(String indicatorExpressionRefId) {
+  public void oldDelete(String indicatorExpressionRefId) {
     IndicatorExpressionRefEntity indicatorExpressionRefEntity = indicatorExpressionRefService.lambdaQuery()
         .eq(IndicatorExpressionRefEntity::getIndicatorExpressionRefId, indicatorExpressionRefId)
         .oneOpt()
@@ -68,6 +72,41 @@ public class IndicatorExpressionRefBiz {
           .set(IndicatorExpressionInfluenceEntity::getInfluencedIndicatorInstanceIdList, null)
           .update();
     }
+    indicatorExpressionService.remove(
+        new LambdaQueryWrapper<IndicatorExpressionEntity>()
+            .eq(IndicatorExpressionEntity::getIndicatorExpressionId, indicatorExpressionId)
+    );
+    indicatorExpressionItemService.remove(
+        new LambdaQueryWrapper<IndicatorExpressionItemEntity>()
+            .eq(IndicatorExpressionItemEntity::getIndicatorExpressionId, indicatorExpressionId)
+    );
+  }
+
+  @Transactional(rollbackFor = Exception.class)
+  public void delete(String indicatorExpressionRefId) {
+    /* runsix:delete IndicatorExpressionRefEntity */
+    IndicatorExpressionRefEntity indicatorExpressionRefEntity = indicatorExpressionRefService.lambdaQuery()
+        .eq(IndicatorExpressionRefEntity::getIndicatorExpressionRefId, indicatorExpressionRefId)
+        .oneOpt()
+        .orElseThrow(() -> {
+          log.warn("method IndicatorExpressionRefBiz.delete indicatorExpressionRefId:{} is illegal", indicatorExpressionRefId);
+          throw new IndicatorExpressionItemRefException(EnumESC.VALIDATE_EXCEPTION);
+        });
+    boolean isRemove = indicatorExpressionRefService.remove(
+        new LambdaQueryWrapper<IndicatorExpressionRefEntity>()
+            .eq(IndicatorExpressionRefEntity::getIndicatorExpressionRefId, indicatorExpressionRefId)
+    );
+    if (!isRemove) {
+      log.warn("method IndicatorExpressionRefBiz.delete indicatorExpressionRefId:{} is illegal", indicatorExpressionRefId);
+      throw new IndicatorExpressionItemRefException(EnumESC.VALIDATE_EXCEPTION);
+    }
+
+    /* runsix:delete IndicatorExpressionEntity */
+    String indicatorExpressionId = indicatorExpressionRefEntity.getIndicatorExpressionId();
+    IndicatorExpressionEntity indicatorExpressionEntity = indicatorExpressionService.lambdaQuery()
+        .eq(IndicatorExpressionEntity::getIndicatorExpressionId, indicatorExpressionId)
+        .one();
+    rsIndicatorExpressionBiz.modifyInfluenced(indicatorExpressionEntity);
     indicatorExpressionService.remove(
         new LambdaQueryWrapper<IndicatorExpressionEntity>()
             .eq(IndicatorExpressionEntity::getIndicatorExpressionId, indicatorExpressionId)

@@ -22,7 +22,9 @@ import java.util.Objects;
 @RequiredArgsConstructor
 @Slf4j
 public class IndicatorExpressionItemBiz {
+  private final IndicatorExpressionService indicatorExpressionService;
   private final IndicatorExpressionItemService indicatorExpressionItemService;
+  private final RsIndicatorExpressionBiz rsIndicatorExpressionBiz;
   public static IndicatorExpressionItemResponseRs indicatorExpressionItem2ResponseRs(IndicatorExpressionItemEntity indicatorExpressionItemEntity) {
     if (Objects.isNull(indicatorExpressionItemEntity)) {
       return null;
@@ -49,6 +51,17 @@ public class IndicatorExpressionItemBiz {
 
   @Transactional(rollbackFor = Exception.class)
   public void delete(String indicatorExpressionItemId) {
+    IndicatorExpressionItemEntity indicatorExpressionItemEntity = indicatorExpressionItemService.lambdaQuery()
+        .eq(IndicatorExpressionItemEntity::getIndicatorExpressionItemId, indicatorExpressionItemId)
+        .one();
+    if (Objects.isNull(indicatorExpressionItemEntity)) {return;}
+
+    String indicatorExpressionId = indicatorExpressionItemEntity.getIndicatorExpressionId();
+    IndicatorExpressionEntity indicatorExpressionEntity = indicatorExpressionService.lambdaQuery()
+        .eq(IndicatorExpressionEntity::getIndicatorExpressionId, indicatorExpressionId)
+        .one();
+    if (Objects.isNull(indicatorExpressionEntity)) {return;}
+    rsIndicatorExpressionBiz.modifyInfluenced(indicatorExpressionEntity);
     boolean isRemove = indicatorExpressionItemService.remove(
         new LambdaQueryWrapper<IndicatorExpressionItemEntity>()
             .eq(IndicatorExpressionItemEntity::getIndicatorExpressionItemId, indicatorExpressionItemId)

@@ -21,6 +21,7 @@ import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -380,10 +381,20 @@ public class RsIndicatorExpressionBiz {
       AtomicReference<IndicatorExpressionItemEntity> maxIndicatorExpressionItemEntityAtomicReference,
       CreateOrUpdateIndicatorExpressionItemRequestRs maxCreateOrUpdateIndicatorExpressionItemRequestRs
   ) {
-    String minResultRaw = minCreateOrUpdateIndicatorExpressionItemRequestRs.getResultRaw();
-    String minResultExpression = minCreateOrUpdateIndicatorExpressionItemRequestRs.getResultExpression();
-    String maxResultRaw = maxCreateOrUpdateIndicatorExpressionItemRequestRs.getResultRaw();
-    String maxResultExpression = maxCreateOrUpdateIndicatorExpressionItemRequestRs.getResultExpression();
+    String minResultRaw = null;
+    String minResultExpression = null;
+    String maxResultRaw = null;
+    String maxResultExpression = null;
+    if (Objects.nonNull(minCreateOrUpdateIndicatorExpressionItemRequestRs)) {
+      minResultRaw = minCreateOrUpdateIndicatorExpressionItemRequestRs.getResultRaw();
+      minResultExpression = minCreateOrUpdateIndicatorExpressionItemRequestRs.getResultExpression();
+      populateMinOrMaxIndicatorExpressionItem(typeChange, minIndicatorExpressionItemEntityAtomicReference, minCreateOrUpdateIndicatorExpressionItemRequestRs);
+    }
+    if (Objects.nonNull(maxCreateOrUpdateIndicatorExpressionItemRequestRs)) {
+      maxResultRaw = maxCreateOrUpdateIndicatorExpressionItemRequestRs.getResultRaw();
+      maxResultExpression = maxCreateOrUpdateIndicatorExpressionItemRequestRs.getResultExpression();
+      populateMinOrMaxIndicatorExpressionItem(typeChange, maxIndicatorExpressionItemEntityAtomicReference, maxCreateOrUpdateIndicatorExpressionItemRequestRs);
+    }
     /* runsix:最大最小都不为空并且都是数字，则需要保证最大大于或等于最小 */
     if (StringUtils.isNoneBlank(minResultRaw, minResultExpression, maxResultRaw, maxResultExpression)
         && NumberUtils.isCreatable(minResultRaw) && NumberUtils.isCreatable(minResultExpression)
@@ -393,8 +404,6 @@ public class RsIndicatorExpressionBiz {
       log.warn("RsIndicatorExpressionBiz.populateMinAndMaxIndicatorExpressionItem maxResultRaw:{} lt minResultRaw:{}", maxResultRaw, minResultRaw);
       throw new RsIndicatorExpressionBizException(EnumESC.INDICATOR_EXPRESSION_MAX_MUST_GE_MIN);
     }
-    populateMinOrMaxIndicatorExpressionItem(typeChange, minIndicatorExpressionItemEntityAtomicReference, minCreateOrUpdateIndicatorExpressionItemRequestRs);
-    populateMinOrMaxIndicatorExpressionItem(typeChange, maxIndicatorExpressionItemEntityAtomicReference, maxCreateOrUpdateIndicatorExpressionItemRequestRs);
   }
 
   public void populateByItemIdSetKIndicatorExpressionItemIdVIndicatorExpressionItemMap(
@@ -893,6 +902,53 @@ public class RsIndicatorExpressionBiz {
     } catch(Exception e) {
       log.error("RsCaseIndicatorExpressionBiz.dPIEResultUsingExperimentIndicatorInstanceId", e);
       return RsUtilBiz.RESULT_DROP;
+    }
+  }
+
+  @Transactional(rollbackFor = Exception.class)
+  public void modifyInfluenced(IndicatorExpressionEntity indicatorExpressionEntity) {
+    if (Objects.isNull(indicatorExpressionEntity)) {return;}
+    String indicatorExpressionId = indicatorExpressionEntity.getIndicatorExpressionId();
+    Integer source = indicatorExpressionEntity.getSource();
+    EnumIndicatorExpressionSource enumIndicatorExpressionSource = EnumIndicatorExpressionSource.getBySource(source);
+    /* runsix:如果是指标管理中指标产生的公式，需要对影响进行处理 */
+    if (enumIndicatorExpressionSource == EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT) {
+      /* runsix:指标本体 */
+      String principalId = indicatorExpressionEntity.getPrincipalId();
+      List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = indicatorExpressionItemService.lambdaQuery()
+          .eq(IndicatorExpressionItemEntity::getIndicatorExpressionId, indicatorExpressionId)
+          .list();
+      /* runsix:影响这个指标的指标id */
+      Set<String> influencedIndicatorInstanceIdSet = new HashSet<>();
+      indicatorExpressionItemEntityList.forEach(indicatorExpressionItemEntity -> {
+        String conditionValList = indicatorExpressionItemEntity.getConditionValList();
+        String resultValList = indicatorExpressionItemEntity.getResultValList();
+        influencedIndicatorInstanceIdSet.addAll(rsUtilBiz.getConditionValSplitList(conditionValList));
+        influencedIndicatorInstanceIdSet.addAll(rsUtilBiz.getResultValSplitList(resultValList));
+      });
+      /* runsix:移除它自己 */
+      influencedIndicatorInstanceIdSet.remove(principalId);
+      /* runsix:所有需要改的，包括它自己和影响它的 */
+      List<IndicatorExpressionInfluenceEntity> allIndicatorExpressionInfluenceEntityList = new ArrayList<>();
+      IndicatorExpressionInfluenceEntity principalIndicatorExpressionInfluenceEntity = indicatorExpressionInfluenceService.lambdaQuery()
+          .eq(IndicatorExpressionInfluenceEntity::getIndicatorInstanceId, principalId)
+          .one();
+      principalIndicatorExpressionInfluenceEntity.setInfluencedIndicatorInstanceIdList(null);
+      allIndicatorExpressionInfluenceEntityList.add(principalIndicatorExpressionInfluenceEntity);
+      if (Objects.nonNull(influencedIndicatorInstanceIdSet) && !influencedIndicatorInstanceIdSet.isEmpty()) {
+        List<IndicatorExpressionInfluenceEntity> indicatorExpressionInfluenceEntityList = indicatorExpressionInfluenceService.lambdaQuery()
+            .in(IndicatorExpressionInfluenceEntity::getIndicatorInstanceId, influencedIndicatorInstanceIdSet)
+            .list();
+        indicatorExpressionInfluenceEntityList.forEach(indicatorExpressionInfluenceEntity -> {
+          String influenceIndicatorInstanceIdList = indicatorExpressionInfluenceEntity.getInfluenceIndicatorInstanceIdList();
+          List<String> originList = rsUtilBiz.getSplitList(influenceIndicatorInstanceIdList);
+          /* runsix:减去此次删除的指标id */
+          originList.remove(principalId);
+          indicatorExpressionInfluenceEntity.setInfluenceIndicatorInstanceIdList(rsUtilBiz.getCommaList(originList));
+          allIndicatorExpressionInfluenceEntityList.add(indicatorExpressionInfluenceEntity);
+        });
+      }
+      indicatorExpressionInfluenceService.saveOrUpdateBatch(allIndicatorExpressionInfluenceEntityList);
     }
   }
 }
