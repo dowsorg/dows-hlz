@@ -1263,17 +1263,19 @@ public class RsCaseIndicatorExpressionBiz {
       casePrincipalIndicatorExpressionInfluenceEntity.setInfluencedIndicatorInstanceIdList(null);
       allCaseIndicatorExpressionInfluenceEntityList.add(casePrincipalIndicatorExpressionInfluenceEntity);
 
-      List<CaseIndicatorExpressionInfluenceEntity> caseIndicatorExpressionInfluenceEntityList = caseIndicatorExpressionInfluenceService.lambdaQuery()
-          .in(CaseIndicatorExpressionInfluenceEntity::getIndicatorInstanceId, caseInfluencedIndicatorInstanceIdSet)
-          .list();
-      caseIndicatorExpressionInfluenceEntityList.forEach(caseIndicatorExpressionInfluenceEntity -> {
-        String influenceIndicatorInstanceIdList = caseIndicatorExpressionInfluenceEntity.getInfluenceIndicatorInstanceIdList();
-        List<String> originList = rsUtilBiz.getSplitList(influenceIndicatorInstanceIdList);
-        /* runsix:减去此次删除的指标id */
-        originList.remove(casePrincipalId);
-        caseIndicatorExpressionInfluenceEntity.setInfluenceIndicatorInstanceIdList(rsUtilBiz.getCommaList(originList));
-        allCaseIndicatorExpressionInfluenceEntityList.add(caseIndicatorExpressionInfluenceEntity);
-      });
+      if (Objects.nonNull(caseInfluencedIndicatorInstanceIdSet) && !caseInfluencedIndicatorInstanceIdSet.isEmpty()) {
+        List<CaseIndicatorExpressionInfluenceEntity> caseIndicatorExpressionInfluenceEntityList = caseIndicatorExpressionInfluenceService.lambdaQuery()
+            .in(CaseIndicatorExpressionInfluenceEntity::getIndicatorInstanceId, caseInfluencedIndicatorInstanceIdSet)
+            .list();
+        caseIndicatorExpressionInfluenceEntityList.forEach(caseIndicatorExpressionInfluenceEntity -> {
+          String influenceIndicatorInstanceIdList = caseIndicatorExpressionInfluenceEntity.getInfluenceIndicatorInstanceIdList();
+          List<String> originList = rsUtilBiz.getSplitList(influenceIndicatorInstanceIdList);
+          /* runsix:减去此次删除的指标id */
+          originList.remove(casePrincipalId);
+          caseIndicatorExpressionInfluenceEntity.setInfluenceIndicatorInstanceIdList(rsUtilBiz.getCommaList(originList));
+          allCaseIndicatorExpressionInfluenceEntityList.add(caseIndicatorExpressionInfluenceEntity);
+        });
+      }
       caseIndicatorExpressionInfluenceService.saveOrUpdateBatch(allCaseIndicatorExpressionInfluenceEntityList);
     }
   }

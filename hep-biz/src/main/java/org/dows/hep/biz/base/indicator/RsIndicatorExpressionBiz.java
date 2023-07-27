@@ -935,18 +935,19 @@ public class RsIndicatorExpressionBiz {
           .one();
       principalIndicatorExpressionInfluenceEntity.setInfluencedIndicatorInstanceIdList(null);
       allIndicatorExpressionInfluenceEntityList.add(principalIndicatorExpressionInfluenceEntity);
-
-      List<IndicatorExpressionInfluenceEntity> indicatorExpressionInfluenceEntityList = indicatorExpressionInfluenceService.lambdaQuery()
-          .in(IndicatorExpressionInfluenceEntity::getIndicatorInstanceId, influencedIndicatorInstanceIdSet)
-          .list();
-      indicatorExpressionInfluenceEntityList.forEach(indicatorExpressionInfluenceEntity -> {
-        String influenceIndicatorInstanceIdList = indicatorExpressionInfluenceEntity.getInfluenceIndicatorInstanceIdList();
-        List<String> originList = rsUtilBiz.getSplitList(influenceIndicatorInstanceIdList);
-        /* runsix:减去此次删除的指标id */
-        originList.remove(principalId);
-        indicatorExpressionInfluenceEntity.setInfluenceIndicatorInstanceIdList(rsUtilBiz.getCommaList(originList));
-        allIndicatorExpressionInfluenceEntityList.add(indicatorExpressionInfluenceEntity);
-      });
+      if (Objects.nonNull(influencedIndicatorInstanceIdSet) && !influencedIndicatorInstanceIdSet.isEmpty()) {
+        List<IndicatorExpressionInfluenceEntity> indicatorExpressionInfluenceEntityList = indicatorExpressionInfluenceService.lambdaQuery()
+            .in(IndicatorExpressionInfluenceEntity::getIndicatorInstanceId, influencedIndicatorInstanceIdSet)
+            .list();
+        indicatorExpressionInfluenceEntityList.forEach(indicatorExpressionInfluenceEntity -> {
+          String influenceIndicatorInstanceIdList = indicatorExpressionInfluenceEntity.getInfluenceIndicatorInstanceIdList();
+          List<String> originList = rsUtilBiz.getSplitList(influenceIndicatorInstanceIdList);
+          /* runsix:减去此次删除的指标id */
+          originList.remove(principalId);
+          indicatorExpressionInfluenceEntity.setInfluenceIndicatorInstanceIdList(rsUtilBiz.getCommaList(originList));
+          allIndicatorExpressionInfluenceEntityList.add(indicatorExpressionInfluenceEntity);
+        });
+      }
       indicatorExpressionInfluenceService.saveOrUpdateBatch(allIndicatorExpressionInfluenceEntityList);
     }
   }
