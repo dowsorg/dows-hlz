@@ -741,11 +741,17 @@ public class OrgBiz {
         String extinfoId = userExtinfoApi.insertUserExtinfo(userExtinfo);
         //1.2、获取该账户的所有信息
         AccountInstanceResponse accountInstanceResponse = accountInstanceApi.getAccountInstanceByAccountId(accountId);
+        CaseOrgEntity orgEntity =  caseOrgService.lambdaQuery()
+                .eq(CaseOrgEntity::getCaseOrgId,caseOrgId)
+                .eq(CaseOrgEntity::getDeleted,false)
+                .oneOpt()
+                .orElse(null);
         //1.3、复制账户信息
         AccountInstanceRequest accountInstanceRequest = AccountInstanceRequest.builder()
                 .appId(accountInstanceResponse.getAppId())
                 .avatar(accountInstanceResponse.getAvatar())
                 .status(accountInstanceResponse.getStatus())
+                .accountOrgOrgId(orgEntity.getOrgId())
                 .source("机构人物")
                 .principalType(accountInstanceResponse.getPrincipalType())
                 .identifier(createCode(7))
