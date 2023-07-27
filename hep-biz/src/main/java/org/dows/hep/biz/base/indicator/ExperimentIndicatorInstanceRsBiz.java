@@ -3,7 +3,9 @@ package org.dows.hep.biz.base.indicator;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
+import org.dows.hep.api.base.indicator.request.RsInitMoneyRequest;
 import org.dows.hep.api.base.indicator.response.GroupAverageHealthPointResponse;
 import org.dows.hep.api.enums.EnumIndicatorType;
 import org.dows.hep.api.user.experiment.request.ExperimentIndicatorInstanceRequest;
@@ -286,5 +288,38 @@ public class ExperimentIndicatorInstanceRsBiz {
             .experimentPersonCount(experimentPersonCount)
             .averageHealthPoint(averageHealthPoint)
             .build();
+    }
+
+    public Map<String, String> getInitMoneyByPeriods(RsInitMoneyRequest rsInitMoneyRequest) {
+        Integer periods = rsInitMoneyRequest.getPeriods();
+        Set<String> experimentPersonIdSet = rsInitMoneyRequest.getExperimentPersonIdSet();
+        if (Objects.isNull(experimentPersonIdSet) || experimentPersonIdSet.isEmpty()) {return new HashMap<>();}
+        Map<String, String> kExperimentPersonIdVInitMoneyMap = new HashMap<>();
+
+        Map<String, String> kExperimentPersonIdVMoneyExperimentIndicatorInstanceIdMap = new HashMap<>();
+        experimentIndicatorInstanceRsService.lambdaQuery()
+            .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.MONEY.getType())
+            .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdSet)
+            .list()
+            .forEach(experimentIndicatorInstanceRsEntity -> {
+                kExperimentPersonIdVMoneyExperimentIndicatorInstanceIdMap.put(experimentIndicatorInstanceRsEntity.getExperimentPersonId(), experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
+            });
+        if (kExperimentPersonIdVMoneyExperimentIndicatorInstanceIdMap.isEmpty()) {return new HashMap<>();}
+        Set<String> moneyExperimentIndicatorInstanceIdSet = new HashSet<>(kExperimentPersonIdVMoneyExperimentIndicatorInstanceIdMap.values());
+
+        Map<String, String> kMoneyExperimentIndicatorInstanceIdVInitValMap = experimentIndicatorValRsService.lambdaQuery()
+            .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
+            .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, moneyExperimentIndicatorInstanceIdSet)
+            .list()
+            .stream()
+            .collect(Collectors.toMap(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, ExperimentIndicatorValRsEntity::getInitVal));
+
+        kExperimentPersonIdVMoneyExperimentIndicatorInstanceIdMap.forEach((experimentPersonId, moneyExperimentIndicatorInstanceId) -> {
+            String initVal = kMoneyExperimentIndicatorInstanceIdVInitValMap.get(moneyExperimentIndicatorInstanceId);
+            if (StringUtils.isNotBlank(initVal)) {
+                kExperimentPersonIdVInitMoneyMap.put(experimentPersonId, initVal);
+            }
+        });
+        return kExperimentPersonIdVInitMoneyMap;
     }
 }
