@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -502,21 +503,36 @@ public class RsExperimentCalculateBiz {
 
             kRiskModelIdVRiskDeathProbabilityMap.put(experimentRiskModelId, experimentRiskModelRsEntity.getRiskDeathProbability());
             kPrincipalIdVScoreMap.put(riskModelExperimentIndicatorExpressionRsEntity.getPrincipalId(), BigDecimal.valueOf(Double.parseDouble(singleExpressionResultRiskModelAR.get())));
-            experimentPersonHealthRiskFactorRsEntityList.add(ExperimentPersonHealthRiskFactorRsEntity
-                .builder()
-                .experimentPersonHealthRiskFactorId(idGenerator.nextIdStr())
-                .experimentPersonRiskModelId(experimentPersonRiskModelId)
-                .experimentIndicatorInstanceId(experimentIndicatorInstanceId)
-                !!!TODO
-                .name()
-                .val()
-                .riskScore(curVal)
-                .build());
+            ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
+
+            if (Objects.nonNull(experimentIndicatorValRsEntity) && ) {
+              experimentPersonHealthRiskFactorRsEntityList.add(ExperimentPersonHealthRiskFactorRsEntity
+                  .builder()
+                  .experimentPersonHealthRiskFactorId(idGenerator.nextIdStr())
+                  .experimentPersonRiskModelId(experimentPersonRiskModelId)
+                  .experimentIndicatorInstanceId(experimentIndicatorInstanceId)
+                  .name()
+                  .val(experimentIndicatorValRsEntity.getCurrentVal())
+                  .riskScore(curVal)
+                  .build());
+            }
           });
           /* runsix:一个危险分数 */
-
           rsUtilBiz.calculateRiskModelScore(singleRiskModelAR, kPrincipalIdVScoreMap, minScoreAtomicReference, maxScoreAtomicReference);
           kRiskModelIdVTotalScoreMap.put(experimentRiskModelId, singleRiskModelAR.get());
+          experimentPersonRiskModelRsEntityList.add(ExperimentPersonRiskModelRsEntity
+              .builder()
+              .experimentPersonRiskModelId(experimentPersonRiskModelId)
+              .experimentId(experimentId)
+              .appId(appId)
+              .periods(originPeriods)
+              .experimentPersonId(experimentPersonId)
+              .experimentRiskModelId(experimentRiskModelId)
+              .name(experimentRiskModelRsEntity.getName())
+              .riskDeathProbability(experimentRiskModelRsEntity.getRiskDeathProbability())
+              .composeRiskScore(singleRiskModelAR.get().setScale(2, RoundingMode.DOWN).doubleValue())
+              .existDeathRiskScore(singleRiskModelAR.get().multiply(BigDecimal.valueOf(experimentRiskModelRsEntity.getRiskDeathProbability())).setScale(2, RoundingMode.DOWN).doubleValue())
+              .build());
         });
         if (kRiskModelIdVRiskDeathProbabilityMap.isEmpty()) {return;}
         Integer totalRiskDeathProbability = kRiskModelIdVRiskDeathProbabilityMap.values().stream().reduce(0, Integer::sum);
