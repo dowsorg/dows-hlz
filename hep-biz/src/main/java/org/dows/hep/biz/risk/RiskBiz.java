@@ -122,19 +122,6 @@ public class RiskBiz {
 //        });
 
 
-//        experimentRiskModelRsEntities.forEach(e -> {
-//            // todo 构建对象
-//            String riskName = e.getName();
-//            // 死亡分数
-//            Integer deathScore= e.getRiskDeathProbability();
-//            // 人群ID
-//            String crowdsCategoryId = e.getCrowdsCategoryId();
-//
-//            String experimentRiskModelId = e.getExperimentRiskModelId();
-//
-//
-//        });
-
         // 获取该实验所有的人物&指标实例
         List<ExperimentIndicatorInstanceRsEntity> eies = experimentIndicatorInstanceRsService.lambdaQuery()
                 .eq(ExperimentIndicatorInstanceRsEntity::getExperimentId, experimentInstanceId)
@@ -180,10 +167,11 @@ public class RiskBiz {
                     .collect(Collectors.groupingBy(ExperimentIndicatorExpressionRefRsEntity::getReasonId));
             // 所有死亡原因id集合
             List<String> resonIds = eierMapList.keySet().stream().toList();
-            // 按原因ID进行k-v映射
-            Map<String, ExperimentIndicatorExpressionRefRsEntity> experimentIndicatorExpressionRefRsEntityMap = list.stream()
-                    .collect(Collectors.toMap(ExperimentIndicatorExpressionRefRsEntity::getExperimentIndicatorExpressionRefId, Function.identity()));
-
+            /**
+             * 按原因ID进行k-v映射
+             * Map<String, ExperimentIndicatorExpressionRefRsEntity> experimentIndicatorExpressionRefRsEntityMap = list.stream()
+             *                     .collect(Collectors.toMap(ExperimentIndicatorExpressionRefRsEntity::getExperimentIndicatorExpressionRefId, Function.identity()));
+             */
 
             /**
              * 人物死亡原因对象集合
@@ -200,12 +188,11 @@ public class RiskBiz {
              * 人群
              *
              * todo 所属人群，判断当前用户那一类人，报告暂时不需要，标签需要
+             * List<ExperimentCrowdsInstanceRsEntity> experimentCrowdsInstanceRsEntityList = experimentCrowdsInstanceRsService.lambdaQuery()
+             *                     .eq(ExperimentCrowdsInstanceRsEntity::getExperimentId, experimentInstanceId)
+             *                     .in(ExperimentCrowdsInstanceRsEntity::getExperimentCrowdsId, experimentRiskModelRsEntityMap.keySet())
+             *                     .list();
              */
-            List<ExperimentCrowdsInstanceRsEntity> experimentCrowdsInstanceRsEntityList = experimentCrowdsInstanceRsService.lambdaQuery()
-                    .eq(ExperimentCrowdsInstanceRsEntity::getExperimentId, experimentInstanceId)
-                    .in(ExperimentCrowdsInstanceRsEntity::getExperimentCrowdsId, experimentRiskModelRsEntityMap.keySet())
-                    .list();
-
 
             PersonRiskFactor personRiskFactor = new PersonRiskFactor();
             personRiskFactor.setPersonId(k);
@@ -220,6 +207,7 @@ public class RiskBiz {
                 PersonRiskFactor.RiskFactor riskFactor = new PersonRiskFactor.RiskFactor();
                 riskFactor.setRiskName(riskName);
                 riskFactor.setRiskDeathProbability(riskDeathProbability);
+
                 riskFactor.setRiskScore("");
                 riskFactor.setDeathRiskScore("");
 
@@ -248,9 +236,9 @@ public class RiskBiz {
 
                     // 组装Item
                     PersonRiskFactor.RiskItem riskItem = new PersonRiskFactor.RiskItem();
-//                    riskItem.setItemName();
-//                    riskItem.setItemValue();
-//                    riskItem.setRiskScore();
+                    riskItem.setItemName(experimentIndicatorInstanceRsEntity.getIndicatorName());
+                    //riskItem.setItemValue();
+                    //riskItem.setRiskScore();
                     riskItems.add(riskItem);
                 }
             }
