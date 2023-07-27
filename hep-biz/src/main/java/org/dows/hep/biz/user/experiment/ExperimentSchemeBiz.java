@@ -461,6 +461,9 @@ public class ExperimentSchemeBiz {
             if (EnumExperimentGroupStatus.SCHEMA.getCode().equals(groupState)) {
                 result.put(exptId, EnumExperimentState.ONGOING);
             }
+            if (EnumExperimentGroupStatus.WAIT_SCHEMA.getCode().equals(groupState)) {
+                result.put(exptId, EnumExperimentState.FINISH);
+            }
         });
 
         return result;
