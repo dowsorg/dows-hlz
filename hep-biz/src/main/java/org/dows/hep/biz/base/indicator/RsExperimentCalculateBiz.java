@@ -294,12 +294,16 @@ public class RsExperimentCalculateBiz {
     Integer originPeriods = experimentRsCalculateAndCreateReportHealthScoreRequestRs.getPeriods();
     Integer periods = Math.max(1, originPeriods);
     String experimentId = experimentRsCalculateAndCreateReportHealthScoreRequestRs.getExperimentId();
-    Set<String> experimentPersonIdSet = experimentRsCalculateAndCreateReportHealthScoreRequestRs.getExperimentPersonIdSet();
+    Set<String> experimentPersonIdSet = experimentPersonService.lambdaQuery()
+        .eq(ExperimentPersonEntity::getExperimentInstanceId, experimentId)
+        .list()
+        .stream()
+        .map(ExperimentPersonEntity::getExperimentPersonId)
+        .collect(Collectors.toSet());
+    if (experimentPersonIdSet.isEmpty()) {return;}
     List<ExperimentPersonRiskModelRsEntity> experimentPersonRiskModelRsEntityList = new ArrayList<>();
     List<ExperimentPersonHealthRiskFactorRsEntity> experimentPersonHealthRiskFactorRsEntityList = new ArrayList<>();
-
     Map<String, Map<String, String>> kExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap = new HashMap<>();
-    if (Objects.isNull(experimentPersonIdSet) || experimentPersonIdSet.isEmpty()) {return;}
     CompletableFuture<Void> cfPopulateKExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap = CompletableFuture.runAsync(() -> {
       rsExperimentIndicatorInstanceBiz.populateKExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap(kExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap, experimentPersonIdSet);
     });
@@ -473,7 +477,8 @@ public class RsExperimentCalculateBiz {
             String riskModelIndicatorExpressionId = riskModelExperimentIndicatorExpressionRefRsEntity.getIndicatorExpressionId();
             ExperimentIndicatorExpressionRsEntity riskModelExperimentIndicatorExpressionRsEntity = kRiskModelExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap.get(riskModelIndicatorExpressionId);
             if (Objects.isNull(riskModelExperimentIndicatorExpressionRsEntity)) {return;}
-            String experimentIndicatorInstanceId = riskModelExperimentIndicatorExpressionRsEntity.getPrincipalId();
+            String indicatorInstanceId = riskModelExperimentIndicatorExpressionRsEntity.getPrincipalId();
+            String experimentIndicatorInstanceId = kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.get(indicatorInstanceId);
             AtomicReference<String> singleExpressionResultRiskModelAR = new AtomicReference<>(RsUtilBiz.RESULT_DROP);
             String experimentIndicatorExpressionId = riskModelExperimentIndicatorExpressionRsEntity.getExperimentIndicatorExpressionId();
             List<ExperimentIndicatorExpressionItemRsEntity> riskModelExperimentIndicatorExpressionItemRsEntityList = kRiskModelExpIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap.get(experimentIndicatorExpressionId);
@@ -918,7 +923,6 @@ public class RsExperimentCalculateBiz {
           .appId(appId)
           .experimentId(experimentId)
           .periods(periods)
-          .experimentPersonIdSet(experimentPersonIdSet)
           .build());
 
       /* runsix:5.存储期数翻转数据 */
