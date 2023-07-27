@@ -1,4 +1,4 @@
-package org.dows.hep.biz.risk;
+package org.dows.hep.vo.report;
 
 import lombok.Data;
 
@@ -9,13 +9,19 @@ import java.util.List;
  */
 @Data
 public class PersonRiskFactor {
-
+    // npc 人物id
     private String personId;
+    // 人物名称
     private String personName;
-    // 因素
-    private RiskFactor riskFactor;
+    // 期数
+    private Integer period;
+    // 人物因素
+    private List<RiskFactor> riskFactors;
 
 
+    /**
+     * 风险因素
+     */
     @Data
     public static class RiskFactor{
         // 风险名称
@@ -29,9 +35,11 @@ public class PersonRiskFactor {
         private String deathRiskScore;
         // 风险item
         private List<RiskItem> riskItems;
-
     }
 
+    /**
+     * 风险item
+     */
     @Data
     public static class RiskItem{
         private String itemName;

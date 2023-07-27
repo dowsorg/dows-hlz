@@ -7,6 +7,7 @@ import org.dows.hep.biz.base.risk.CrowdsInstanceBiz;
 import org.dows.hep.biz.base.risk.RiskModelBiz;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
+import org.dows.hep.vo.report.PersonRiskFactor;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -211,7 +212,7 @@ public class RiskBiz {
                 riskFactor.setRiskScore("");
                 riskFactor.setDeathRiskScore("");
 
-                personRiskFactor.setRiskFactor(riskFactor);
+                //personRiskFactor.setRiskFactor(riskFactor);
                 List<PersonRiskFactor.RiskItem> riskItems = new ArrayList<>();
                 riskFactor.setRiskItems(riskItems);
                 /**

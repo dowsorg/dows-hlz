@@ -118,13 +118,14 @@ public class ExptSandReportModel implements ExptReportModel {
         // 基本信息
         private NpcBaseInfo baseInfo;
         // 干预前风险指标
-        private List<RiskIndicator> interveneBefores;
+        private PersonRiskFactor interveneBefores;
         //干预后风险指标
-        private List<RiskIndicator> interveneAfters;
+        private PersonRiskFactor interveneAfters;
         //服务记录
         private List<ServiceLog> serviceLogs;
     }
 
+    @Data
     public static class NpcBaseInfo {
         private Integer no;
         private String userName;
@@ -134,7 +135,7 @@ public class ExptSandReportModel implements ExptReportModel {
         private String diseaseCateg;
     }
 
-    @Data
+    /*@Data
     public static class RiskIndicator {
         //死亡原因
         private String deathReason;
@@ -147,7 +148,7 @@ public class ExptSandReportModel implements ExptReportModel {
         //危险分数
         private String dangerScore;
 
-    }
+    }*/
 
     @Data
     public static class ServiceLog {

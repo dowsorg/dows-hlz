@@ -1,4 +1,4 @@
-package org.dows.hep.biz.risk;
+package org.dows.hep.vo.report;
 
 import lombok.Builder;
 import lombok.Data;
