@@ -432,6 +432,9 @@ public class ExperimentSchemeBiz {
                 schemeExptIdList.add(k);
             }
         });
+        if (CollUtil.isEmpty(schemeExptIdList)) {
+            return result;
+        }
 
         // 获取实验 && 账号的小组信息 - exptId map groupId
         List<ExperimentParticipatorEntity> partList = experimentParticipatorService.lambdaQuery()
