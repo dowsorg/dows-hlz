@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.base.indicator.request.ExperimentHealthGuidanceCheckRequestRs;
 import org.dows.hep.api.base.indicator.response.ExperimentHealthGuidanceReportResponseRs;
+import org.dows.hep.api.base.indicator.response.ExperimentIndicatorFuncRsResponse;
+import org.dows.hep.api.base.indicator.response.ExperimentOrgModuleRsResponse;
 import org.dows.hep.api.core.ExptOrgFuncRequest;
 import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.api.user.experiment.response.ExptOrgFlowReportResponse;
@@ -36,6 +38,8 @@ import java.util.stream.Collectors;
 public class ExperimentIndicatorJudgeHealthGuidanceReportRsBiz {
   private final ExperimentIndicatorJudgeHealthGuidanceReportRsService experimentIndicatorJudgeHealthGuidanceReportRsService;
   private final ExperimentIndicatorJudgeHealthGuidanceRsService experimentIndicatorJudgeHealthGuidanceRsService;
+
+  private final ExperimentOrgModuleBiz experimentOrgModuleBiz;
   private final IdGenerator idGenerator;
 
   private final OrgReportComposer orgReportComposer;
@@ -72,8 +76,7 @@ public class ExperimentIndicatorJudgeHealthGuidanceReportRsBiz {
             .setPeriods(periods)
             .setAppId(appId);
     ExptRequestValidator exptValidator = ExptRequestValidator.create(funcRequest)
-            .checkExperimentOrg()
-            .checkIndicatorFunc();
+            .checkExperimentOrg();
     final LocalDateTime ldtNow = LocalDateTime.now();
     final Date dateNow = ShareUtil.XDate.localDT2Date(ldtNow);
     ExperimentTimePoint timePoint = exptValidator.getTimePoint(true, ldtNow, true);
@@ -135,7 +138,7 @@ public class ExperimentIndicatorJudgeHealthGuidanceReportRsBiz {
             .periods(periods)
             .reportFlag(1)
             .reportLabel(exptValidator.getCachedExptOrg().get().getExperimentOrgName())
-            .reportDescr(exptValidator.getIndicatorFuncName())
+            .reportDescr(getIndicatorFuncName(exptValidator.getExperimentOrgId(),exptValidator.getIndicatorFuncId()))
             .endTime(dateNow)
             .operateTime(dateNow)
             .operateGameDay(timePoint.getGameDay())
@@ -154,6 +157,23 @@ public class ExperimentIndicatorJudgeHealthGuidanceReportRsBiz {
     operateFlowDao.tranSave(saveFlow, List.of(saveFlowSnap), false);
 
 
+  }
+  private String getIndicatorFuncName(String experimentOrgId, String indicatorFuncId){
+    List<ExperimentOrgModuleRsResponse> modules=experimentOrgModuleBiz.getByExperimentOrgIdAndExperimentPersonId(experimentOrgId);
+    if(ShareUtil.XObject.isEmpty(modules)){
+      return null;
+    }
+    for(ExperimentOrgModuleRsResponse module:modules){
+      if(ShareUtil.XObject.isEmpty(module.getExperimentIndicatorFuncRsResponseList())){
+        continue;
+      }
+      for(ExperimentIndicatorFuncRsResponse func:module.getExperimentIndicatorFuncRsResponseList()){
+        if(indicatorFuncId.equals(func.getIndicatorFuncId())){
+          return func.getIndicatorFuncName();
+        }
+      }
+    }
+    return "";
   }
 
   public List<ExperimentHealthGuidanceReportResponseRs> get(String appId, String experimentId, String indicatorFuncId, String experimentPersonId, String experimentOrgId, Integer periods) {
