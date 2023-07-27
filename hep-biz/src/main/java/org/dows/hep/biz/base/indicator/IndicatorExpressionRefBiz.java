@@ -34,6 +34,7 @@ public class IndicatorExpressionRefBiz {
   private final IndicatorExpressionItemService indicatorExpressionItemService;
   private final IndicatorExpressionInfluenceService indicatorExpressionInfluenceService;
   private final RsUtilBiz rsUtilBiz;
+  private final RsIndicatorExpressionBiz rsIndicatorExpressionBiz;
 
 
   @Transactional(rollbackFor = Exception.class)
@@ -105,47 +106,7 @@ public class IndicatorExpressionRefBiz {
     IndicatorExpressionEntity indicatorExpressionEntity = indicatorExpressionService.lambdaQuery()
         .eq(IndicatorExpressionEntity::getIndicatorExpressionId, indicatorExpressionId)
         .one();
-    if (Objects.isNull(indicatorExpressionEntity)) {return;}
-    Integer source = indicatorExpressionEntity.getSource();
-    EnumIndicatorExpressionSource enumIndicatorExpressionSource = EnumIndicatorExpressionSource.getBySource(source);
-    /* runsix:如果是指标管理中指标产生的公式，需要对影响进行处理 */
-    if (enumIndicatorExpressionSource == EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT) {
-      /* runsix:指标本体 */
-      String principalId = indicatorExpressionEntity.getPrincipalId();
-      List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = indicatorExpressionItemService.lambdaQuery()
-          .eq(IndicatorExpressionItemEntity::getIndicatorExpressionId, indicatorExpressionId)
-          .list();
-      /* runsix:影响这个指标的指标id */
-      Set<String> influencedIndicatorInstanceIdSet = new HashSet<>();
-      indicatorExpressionItemEntityList.forEach(indicatorExpressionItemEntity -> {
-        String conditionValList = indicatorExpressionItemEntity.getConditionValList();
-        String resultValList = indicatorExpressionItemEntity.getResultValList();
-        influencedIndicatorInstanceIdSet.addAll(rsUtilBiz.getConditionValSplitList(conditionValList));
-        influencedIndicatorInstanceIdSet.addAll(rsUtilBiz.getResultValSplitList(resultValList));
-      });
-      /* runsix:移除它自己 */
-      influencedIndicatorInstanceIdSet.remove(principalId);
-      /* runsix:所有需要改的，包括它自己和影响它的 */
-      List<IndicatorExpressionInfluenceEntity> allIndicatorExpressionInfluenceEntityList = new ArrayList<>();
-      IndicatorExpressionInfluenceEntity principalIndicatorExpressionInfluenceEntity = indicatorExpressionInfluenceService.lambdaQuery()
-          .eq(IndicatorExpressionInfluenceEntity::getIndicatorInstanceId, principalId)
-          .one();
-      principalIndicatorExpressionInfluenceEntity.setInfluencedIndicatorInstanceIdList(null);
-      allIndicatorExpressionInfluenceEntityList.add(principalIndicatorExpressionInfluenceEntity);
-
-      List<IndicatorExpressionInfluenceEntity> indicatorExpressionInfluenceEntityList = indicatorExpressionInfluenceService.lambdaQuery()
-          .in(IndicatorExpressionInfluenceEntity::getIndicatorInstanceId, influencedIndicatorInstanceIdSet)
-          .list();
-      indicatorExpressionInfluenceEntityList.forEach(indicatorExpressionInfluenceEntity -> {
-        String influenceIndicatorInstanceIdList = indicatorExpressionInfluenceEntity.getInfluenceIndicatorInstanceIdList();
-        List<String> originList = rsUtilBiz.getSplitList(influenceIndicatorInstanceIdList);
-        /* runsix:减去此次删除的指标id */
-        originList.remove(principalId);
-        indicatorExpressionInfluenceEntity.setInfluenceIndicatorInstanceIdList(rsUtilBiz.getCommaList(originList));
-        allIndicatorExpressionInfluenceEntityList.add(indicatorExpressionInfluenceEntity);
-      });
-      indicatorExpressionInfluenceService.saveOrUpdateBatch(allIndicatorExpressionInfluenceEntityList);
-    }
+    rsIndicatorExpressionBiz.modifyInfluenced(indicatorExpressionEntity);
     indicatorExpressionService.remove(
         new LambdaQueryWrapper<IndicatorExpressionEntity>()
             .eq(IndicatorExpressionEntity::getIndicatorExpressionId, indicatorExpressionId)
