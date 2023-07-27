@@ -67,7 +67,7 @@ public class SpelInvoker {
 
     //region 突发事件
     //触发条件
-    public boolean checkEventCondition(String experimentId, String experimentPersonId,Integer period, String eventId, StandardEvaluationContext context) {
+    public boolean checkEventCondition(String experimentId, String experimentPersonId, String eventId, StandardEvaluationContext context) {
         return spelEngine.loadFromSnapshot()
                 .withReasonId(experimentId, experimentPersonId, eventId,
                         EnumIndicatorExpressionSource.EMERGENCY_TRIGGER_CONDITION.getSource())

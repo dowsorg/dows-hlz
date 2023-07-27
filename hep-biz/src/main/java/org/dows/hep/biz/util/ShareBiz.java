@@ -24,6 +24,8 @@ import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.entity.OperateFlowEntity;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -59,9 +61,11 @@ public class ShareBiz {
 
     /**
      * 获取登录用户
-     * @param request
      * @return
      */
+    public static LoginContextVO getLoginUser(){
+        return getLoginUser(getHttpRequest());
+    }
     public static LoginContextVO getLoginUser(HttpServletRequest request){
         LoginContextVO rst=new LoginContextVO();
         if(null==request){
@@ -75,6 +79,11 @@ public class ShareBiz {
         return rst.setAccountId(Optional.ofNullable(map.get("accountId")).map(Object::toString).orElse(""))
                 .setAccountName(Optional.ofNullable(map.get("accountName")).map(Object::toString).orElse(""));
 
+    }
+
+    public static HttpServletRequest getHttpRequest() {
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        return requestAttributes != null ? requestAttributes.getRequest() : null;
     }
 
     public static String checkAppId(String appId,String experimentInstanceId){

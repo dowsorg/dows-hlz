@@ -10,6 +10,7 @@ import org.dows.hep.api.exception.RsCalculateBizException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.request.ExperimentPersonRequest;
 import org.dows.hep.biz.event.ExperimentSettingCache;
+import org.dows.hep.biz.event.PersonBasedEventTask;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.request.CaseCalIndicatorExpressionRequest;
@@ -843,6 +844,9 @@ public class RsExperimentCalculateBiz {
         .periods(periods)
         .experimentPersonIdSet(experimentPersonIdSet)
         .build());
+
+    //计算突发事件触发
+    PersonBasedEventTask.runPersonBasedEventAsync(appId,experimentId);
   }
 
   /**
@@ -945,6 +949,10 @@ public class RsExperimentCalculateBiz {
           .experimentId(experimentId)
           .periods(periods)
           .build());
+
+      //计算突发事件触发
+      PersonBasedEventTask.runPersonBasedEventAsync(appId,experimentId);
+
     } finally {
       lock.unlock();
     }

@@ -6,6 +6,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.base.indicator.request.RsExperimentCalculateFuncRequest;
 import org.dows.hep.api.base.intervene.request.FindFoodRequest;
 import org.dows.hep.api.base.intervene.request.FindInterveneCategRequest;
 import org.dows.hep.api.base.intervene.request.FindSportRequest;
@@ -20,22 +22,20 @@ import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.api.user.experiment.vo.ExptOrgReportNodeDataVO;
 import org.dows.hep.api.user.experiment.vo.ExptOrgReportNodeVO;
 import org.dows.hep.api.user.experiment.vo.ExptTreatPlanItemVO;
+import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
 import org.dows.hep.biz.base.intervene.*;
 import org.dows.hep.biz.dao.OperateFlowDao;
 import org.dows.hep.biz.dao.OperateOrgFuncDao;
-import org.dows.hep.biz.event.PersonBasedEventTask;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.operate.CostRequest;
 import org.dows.hep.biz.operate.OperateCostBiz;
 import org.dows.hep.biz.orgreport.OrgReportComposer;
+import org.dows.hep.biz.spel.PersonIndicatorIdCache;
 import org.dows.hep.biz.spel.SpelInvoker;
 import org.dows.hep.biz.spel.meta.SpelEvalResult;
 import org.dows.hep.biz.spel.meta.SpelEvalSumResult;
 import org.dows.hep.biz.util.*;
-import org.dows.hep.biz.vo.CalcExptFoodCookbookResult;
-import org.dows.hep.biz.vo.Categ4ExptVO;
-import org.dows.hep.biz.vo.CategVO;
-import org.dows.hep.biz.vo.LoginContextVO;
+import org.dows.hep.biz.vo.*;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.ExperimentPersonService;
 import org.dows.sequence.api.IdGenerator;
@@ -45,6 +45,7 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -56,6 +57,7 @@ import java.util.stream.Collectors;
 */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ExperimentOrgInterveneBiz{
 
     private final FoodCalc4ExptBiz foodCalc4ExptBiz;
@@ -65,6 +67,8 @@ public class ExperimentOrgInterveneBiz{
     private final OperateFlowDao operateFlowDao;
 
     private final OperateOrgFuncDao operateOrgFuncDao;
+
+    private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
 
 
     //region 快照数据查询
@@ -239,8 +243,24 @@ public class ExperimentOrgInterveneBiz{
         }catch (Exception ex){
             AssertUtil.justThrow(String.format("记录数据编制失败：%s",ex.getMessage()),ex);
         }
+        final PersonIndicatorIdCache cacheIndicatorId=PersonIndicatorIdCache.Instance();
+        List<SpelEvalSumResult> evalSumResults=new ArrayList<>();
+        for(CalcFoodStatVO item:snapRst.getStatEnergy()) {
+            String indicatorId = cacheIndicatorId.getIndicatorIdBySourceId(validator.getExperimentPersonId(), item.getInstanceId());
+            if (ShareUtil.XObject.isEmpty(indicatorId)) {
+                continue;
+            }
+            evalSumResults.add(SpelEvalSumResult.builder()
+                    .experimentIndicatorId(indicatorId)
+                    .val(item.getWeight())
+                    .build());
+        }
 
-        Boolean succFlag= operateOrgFuncDao.tranSave(rowOrgFunc,Arrays.asList(rowOrgFuncSnap),false);
+        Boolean succFlag= operateOrgFuncDao.tranSave(rowOrgFunc,Arrays.asList(rowOrgFuncSnap),false,()->{
+            AssertUtil.falseThenThrow(SpelInvoker.Instance().saveIndicator(null, evalSumResults, timePoint.getPeriod()))
+                    .throwMessage("影响指标数据保存失败");
+            return true;
+        });
         return new SaveExptInterveneResponse()
                 .setSuccess(succFlag)
                 .setOperateOrgFuncId(rowOrgFunc.getOperateOrgFuncId());
@@ -408,8 +428,6 @@ public class ExperimentOrgInterveneBiz{
                 return true;
             });
         }
-        //TODO
-        PersonBasedEventTask.runPersonBasedEventAsync(validator.getAppId(),validator.getExperimentInstanceId());
         // 判断是什么干预类型
         String feeName = "";
         String feeCode = "";
@@ -449,6 +467,20 @@ public class ExperimentOrgInterveneBiz{
                 .period(timePoint.getPeriod())
                 .build();
         operateCostBiz.saveCost(costRequest);
+        CompletableFuture.runAsync(()-> {
+                    try {
+                        rsExperimentCalculateBiz.experimentReCalculateFunc(RsExperimentCalculateFuncRequest.builder()
+                                .appId(validator.getAppId())
+                                .experimentId(validator.getExperimentInstanceId())
+                                .periods(timePoint.getPeriod())
+                                .experimentPersonId(validator.getExperimentPersonId())
+                                .build());
+                    } catch (Exception ex) {
+                        log.error(String.format("saveExptTreatPlan.deal experimentId:%s personId:%s",
+                                validator.getExperimentInstanceId(),validator.getExperimentPersonId()),ex);
+                    }
+                });
+
         return new SaveExptTreatResponse()
                 .setSuccess(succFlag)
                 .setOperateOrgFuncId(rowOrgFunc.getOperateOrgFuncId())

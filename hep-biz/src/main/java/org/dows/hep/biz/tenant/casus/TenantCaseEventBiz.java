@@ -231,7 +231,7 @@ public class TenantCaseEventBiz {
         if(ShareUtil.XObject.isEmpty(rowsEvent)){
             return true;
         }
-        HttpServletRequest request= SnapshotRequestHolder.getHttpRequest();
+        HttpServletRequest request= ShareBiz.getHttpRequest();
         LoginContextVO voLogin = ShareBiz.getLoginUser(request);
         List<CasePersonEntity> rowsCasePerson=casePersonDao.getByAccountIds(List.of(srcAccountId),
                 CasePersonEntity::getCaseInstanceId,

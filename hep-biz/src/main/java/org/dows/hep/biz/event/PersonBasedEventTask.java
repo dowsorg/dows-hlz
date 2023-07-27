@@ -88,7 +88,7 @@ public class PersonBasedEventTask extends BaseEventTask{
                     continue;
                 }
                 if(!SpelInvoker.Instance().checkEventCondition(eventColl.getExperimentInstanceId(), group.getExperimentPersonId(),
-                        timePoint.getPeriod(), event.getCaseEventId(),spelContext ) ){
+                        event.getCaseEventId(),spelContext ) ){
                     continue;
                 }
                 event.setTriggerTime(dtNow)

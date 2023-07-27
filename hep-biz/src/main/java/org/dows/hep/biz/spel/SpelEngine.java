@@ -104,14 +104,20 @@ public class SpelEngine {
         }
         Boolean val = false;
         for (SpelInput.SpelExpressionItem item : input.getExpressions()) {
+            if(ShareUtil.XObject.notEmpty(item.getConditionExpression())){
+                if(!coreGetBoolean(parser, item.getConditionExpression(), context)){
+                    continue;
+                }
+                else{
+                    val=true;
+                    break;
+                }
+            }
             if (ShareUtil.XObject.isEmpty(item.getResultExpression())) {
                 continue;
             }
-            if (ShareUtil.XObject.isEmpty(item.getConditionExpression())
-                    || coreGetBoolean(parser, item.getConditionExpression(), context)) {
-                val = coreGetBoolean(parser, item.getResultExpression(), context);
-                break;
-            }
+            val = coreGetBoolean(parser, item.getResultExpression(), context);
+            break;
         }
         return rst.setValBoolean(val);
     }
@@ -223,7 +229,15 @@ public class SpelEngine {
         if(ShareUtil.XObject.isEmpty(expression)){
             return false;
         }
-        return coreGetValue(parser, expression, context, Boolean.class);
+        Object obj= coreGetValue(parser, expression, context);
+        if(ShareUtil.XObject.isEmpty(obj)){
+            return false;
+        }
+        if(obj instanceof Boolean){
+            return (Boolean)obj;
+        }
+        return obj.toString().toLowerCase().equals("true");
+
     }
 
     private Object coreGetValue(ExpressionParser parser,String expression,StandardEvaluationContext context){
