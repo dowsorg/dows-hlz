@@ -110,7 +110,7 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
     AtomicReference<BigDecimal> totalFeeAtomicReference = new AtomicReference<>(BigDecimal.ZERO);
     CompletableFuture<Void> cfPopulateTotalFee = CompletableFuture.runAsync(() -> {
       experimentIndicatorViewSupportExamRsEntityList.forEach(experimentIndicatorViewSupportExamRsEntity -> {
-        totalFeeAtomicReference.set(totalFeeAtomicReference.get().add(experimentIndicatorViewSupportExamRsEntity.getFee()));
+        totalFeeAtomicReference.set(totalFeeAtomicReference.get().subtract(experimentIndicatorViewSupportExamRsEntity.getFee()));
       });
     });
     cfPopulateTotalFee.get();
