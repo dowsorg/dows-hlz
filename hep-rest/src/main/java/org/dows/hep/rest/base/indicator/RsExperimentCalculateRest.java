@@ -49,6 +49,12 @@ public class RsExperimentCalculateRest {
     rsExperimentCalculateBiz.experimentRsCalculateHealthScore(experimentRsCalculateHealthScoreRequestRs);
   }
 
+  @Operation(summary = "实验-计算健康指数并且生成报告")
+  @PostMapping("v1/experimentIndicator/healthScore/calculateAndCreateReport")
+  public void experimentRsCalculateAndCreateReportHealthScore(@RequestBody ExperimentRsCalculateAndCreateReportHealthScoreRequestRs experimentRsCalculateAndCreateReportHealthScoreRequestRs) throws ExecutionException, InterruptedException {
+    rsExperimentCalculateBiz.experimentRsCalculateAndCreateReportHealthScore(experimentRsCalculateAndCreateReportHealthScoreRequestRs);
+  }
+
   @Operation(summary = "计算医疗占比")
   @PostMapping("v1/experimentIndicator/moneyScore/calculate")
   public RsCalculateMoneyScoreRsResponse rsCalculateMoneyScore(@RequestBody RsCalculateMoneyScoreRequestRs rsCalculateMoneyScoreRequestRs) {

@@ -52,7 +52,7 @@ public class RsUtilBiz {
         if (score.compareTo(BigDecimal.ONE) <= 0) {
           leOneList.add(score);
         } else {
-          gtOneList.add(score);
+          gtOneList.add(score.subtract(BigDecimal.ONE));
         }
       });
       BigDecimal multiplyResult = BigDecimal.ZERO;
