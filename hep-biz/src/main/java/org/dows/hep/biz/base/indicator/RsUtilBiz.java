@@ -562,6 +562,14 @@ public class RsUtilBiz {
     }
   }
 
+  public void healthPointMinAndMax(AtomicReference<BigDecimal> cur) {
+    if (Objects.isNull(cur)) {return;}
+    BigDecimal curBD = cur.get();
+    if (curBD.compareTo(BigDecimal.ONE) < 0) {curBD = BigDecimal.ONE;}
+    if (curBD.compareTo(BigDecimal.valueOf(100)) > 0) {curBD = BigDecimal.valueOf(100);}
+    cur.set(curBD);
+  }
+
   public static void main(String[] args) {
     List<String> seqCalculateIndicatorInstanceIdList = new ArrayList<>();
     Map<String, Set<String>> kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap = new HashMap<>();

@@ -204,7 +204,9 @@ public class RsDatabaseCalculateBiz {
       Integer totalRiskDeathProbability = kRiskModelIdVRiskDeathProbabilityMap.values().stream().reduce(0, Integer::sum);
       IndicatorRuleEntity indicatorRuleEntity = indicatorRuleEntityAR.get();
       BigDecimal newHealthPoint = rsUtilBiz.newCalculateFinalHealthScore(kRiskModelIdVTotalScoreMap, kRiskModelIdVRiskDeathProbabilityMap, totalRiskDeathProbability);
-      indicatorRuleEntity.setDef(newHealthPoint.setScale(2, RoundingMode.DOWN).toString());
+      AtomicReference<BigDecimal> newHealthPointAR = new AtomicReference<>(newHealthPoint);
+      rsUtilBiz.healthPointMinAndMax(newHealthPointAR);
+      indicatorRuleEntity.setDef(newHealthPointAR.get().setScale(2, RoundingMode.DOWN).toString());
       indicatorRuleEntityAR.set(indicatorRuleEntity);
     });
 
