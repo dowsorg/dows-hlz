@@ -462,6 +462,7 @@ public class RsExperimentCalculateBiz {
       ExperimentIndicatorValRsEntity curExperimentIndicatorValRsEntity = curKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
       if (Objects.isNull(curExperimentIndicatorValRsEntity)) {return;}
       nextExperimentIndicatorValRsEntity.setCurrentVal(curExperimentIndicatorValRsEntity.getCurrentVal());
+      nextExperimentIndicatorValRsEntity.setExperimentIndicatorValId(curExperimentIndicatorValRsEntity.getCurrentVal());
       experimentIndicatorValRsEntityList.add(nextExperimentIndicatorValRsEntity);
     });
 
