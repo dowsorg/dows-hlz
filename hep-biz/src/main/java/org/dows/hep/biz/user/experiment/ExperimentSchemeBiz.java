@@ -12,25 +12,24 @@ import lombok.AllArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.EnumExperimentState;
+import org.dows.hep.api.enums.EnumParticipatorType;
 import org.dows.hep.api.event.ExptSchemeStartEvent;
 import org.dows.hep.api.event.ExptSchemeSubmittedEvent;
 import org.dows.hep.api.event.ExptSchemeSyncEvent;
 import org.dows.hep.api.event.source.ExptSchemeStartEventSource;
 import org.dows.hep.api.event.source.ExptSchemeSubmittedEventSource;
+import org.dows.hep.api.event.source.ExptSchemeSyncEventSource;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.ExptSchemeStateEnum;
+import org.dows.hep.api.user.experiment.ExptSettingModeEnum;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeAllotRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeItemRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeRequest;
-import org.dows.hep.api.event.source.ExptSchemeSyncEventSource;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeSubmitRequest;
 import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.entity.*;
-import org.dows.hep.service.ExperimentGroupService;
-import org.dows.hep.service.ExperimentInstanceService;
-import org.dows.hep.service.ExperimentSchemeService;
-import org.dows.hep.service.ExperimentSettingService;
+import org.dows.hep.service.*;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -52,19 +51,19 @@ public class ExperimentSchemeBiz {
     private final ExperimentInstanceService experimentInstanceService;
     private final ExperimentGroupBiz experimentGroupBiz;
     private final ExperimentSchemeItemBiz experimentSchemeItemBiz;
-    private final ExperimentParticipatorBiz experimentParticipatorBiz;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final ExperimentParticipatorService experimentParticipatorService;
+    private final ExperimentSettingBiz experimentSettingBiz;
 
     /**
-     * @param
-     * @param needAuth
-     * @return
-     * @说明: 获取实验方案
-     * @关联表:
-     * @工时: 2H
-     * @开发者: lait
-     * @开始时间:
-     * @创建时间: 2023年4月23日 上午9:44:34
+     * @param experimentInstanceId - 实验实例ID
+     * @param experimentGroupId - 实验小组ID
+     * @param accountId - 账号ID
+     * @param needAuth - 是否需要添加权限标记返回
+     * @return org.dows.hep.api.user.experiment.response.ExperimentSchemeResponse
+     * @author fhb
+     * @description 获取方案设计
+     * @date 2023/7/27 10:46
      */
     public ExperimentSchemeResponse getScheme(String experimentInstanceId,
                                               String experimentGroupId,
@@ -74,9 +73,11 @@ public class ExperimentSchemeBiz {
             throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
         }
 
+        // scheme
         ExperimentSchemeEntity entity = getScheme(experimentInstanceId, experimentGroupId);
         ExperimentSchemeResponse result = BeanUtil.copyProperties(entity, ExperimentSchemeResponse.class);
 
+        // scheme-item
         List<ExperimentSchemeItemResponse> itemList = experimentSchemeItemBiz.listBySchemeId(entity.getExperimentSchemeId());
         if (needAuth) {
             setAuthority(itemList, experimentInstanceId, experimentGroupId, accountId);
@@ -413,6 +414,55 @@ public class ExperimentSchemeBiz {
         return result;
     }
 
+    /**
+     * @param exptInstanceIds - 实验实例ID集合
+     * @param accountId - 账号ID
+     * @return java.util.Map<java.lang.String,org.dows.hep.api.enums.EnumExperimentState>
+     * @author fhb
+     * @description 将`方案设计模式的`实验状态根据实验小组状态进行调整
+     * @date 2023/7/27 11:52
+     */
+    public Map<String, EnumExperimentState> groupStateMapExptState(List<String> exptInstanceIds, String accountId) {
+        Map<String, EnumExperimentState> result = new HashMap<>();
+        // 找出实验模式是方案设计的 - exptIds
+        List<String> schemeExptIdList = new ArrayList<>();
+        Map<String, ExptSettingModeEnum> exptModeCollect = experimentSettingBiz.listExptSettingMode(exptInstanceIds);
+        exptModeCollect.forEach((k, v) -> {
+            if (ExptSettingModeEnum.SCHEME.equals(v)) {
+                schemeExptIdList.add(k);
+            }
+        });
+
+        // 获取实验 && 账号的小组信息 - exptId map groupId
+        List<ExperimentParticipatorEntity> partList = experimentParticipatorService.lambdaQuery()
+                .in(ExperimentParticipatorEntity::getExperimentInstanceId, schemeExptIdList)
+                .eq(ExperimentParticipatorEntity::getAccountId, accountId)
+                .list();
+        List<String> groupIdList = partList.stream()
+                .map(ExperimentParticipatorEntity::getExperimentGroupId)
+                .toList();
+        Map<String, String> exptIdMapGroupId = partList.stream()
+                .collect(Collectors.toMap(ExperimentParticipatorEntity::getExperimentInstanceId, ExperimentParticipatorEntity::getExperimentGroupId));
+
+        // 获取实验小组状态 - groupId map groupState
+        List<ExperimentGroupEntity> groupList = experimentGroupService.lambdaQuery()
+                .in(ExperimentGroupEntity::getExperimentGroupId, groupIdList)
+                .list();
+        Map<String, Integer> groupIdMapState = groupList.stream()
+                .collect(Collectors.toMap(ExperimentGroupEntity::getExperimentGroupId, ExperimentGroupEntity::getGroupState));
+
+        // exptId map groupState
+        schemeExptIdList.forEach(exptId -> {
+            String groupId = exptIdMapGroupId.get(exptId);
+            Integer groupState = groupIdMapState.get(groupId);
+            if (EnumExperimentGroupStatus.SCHEMA.getCode().equals(groupState)) {
+                result.put(exptId, EnumExperimentState.ONGOING);
+            }
+        });
+
+        return result;
+    }
+
     private String cannotOperateAfterSubmit(String experimentInstanceId, String experimentGroupId) {
         ExperimentSchemeEntity entity = getScheme(experimentInstanceId, experimentGroupId);
         if (BeanUtil.isEmpty(entity)) {
@@ -438,10 +488,23 @@ public class ExperimentSchemeBiz {
     }
 
     private void checkIsCaptain(String experimentInstanceId, String experimentGroupId, String accountId) {
-        Boolean isCaptain = experimentParticipatorBiz.isCaptain(experimentInstanceId, experimentGroupId, accountId);
+        Boolean isCaptain = isCaptain(experimentInstanceId, experimentGroupId, accountId);
         if (!isCaptain) {
             throw new BizException(ExperimentESCEnum.NO_AUTHORITY);
         }
+    }
+
+    public Boolean isCaptain(String experimentInstanceId, String experimentGroupId, String accountId) {
+        Long count = experimentParticipatorService.lambdaQuery()
+                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentParticipatorEntity::getExperimentGroupId, experimentGroupId)
+                .eq(ExperimentParticipatorEntity::getAccountId, accountId)
+                .eq(ExperimentParticipatorEntity::getParticipatorType, EnumParticipatorType.CAPTAIN.getCode())
+                .count();
+        if (count == null || count == 0) {
+            return Boolean.FALSE;
+        }
+        return Boolean.TRUE;
     }
 
     private void filterIfNoPermission(ExperimentSchemeRequest request, String submitAccountId) {
