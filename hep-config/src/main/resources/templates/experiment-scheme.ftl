@@ -134,7 +134,7 @@
                     <td>排名</td>
                 </tr>
                 <tr class="background-even-blue">
-                    <td>${scoreInfo.score?string("0.##")}</td>
+                    <td>${scoreInfo.score}</td>
                     <td>${scoreInfo.rank!0}</td>
                 </tr>
             </table>

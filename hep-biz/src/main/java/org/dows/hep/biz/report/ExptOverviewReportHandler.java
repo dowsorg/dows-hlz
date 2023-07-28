@@ -144,7 +144,7 @@ public class ExptOverviewReportHandler implements ExptReportHandler<ExptOverview
             schemeRankList = experimentSchemeBiz.listExptSchemeScoreRank(exptInstanceId);
         }
         if (ExptSettingModeEnum.SAND.equals(exptSettingMode)) {
-            sandRank = experimentScoringBiz.getRank(exptInstanceId);
+            sandRank = getRank(exptInstanceId);
         }
 
         return ExptOverviewReportData.builder()
@@ -206,6 +206,17 @@ public class ExptOverviewReportHandler implements ExptReportHandler<ExptOverview
     @Override
     public String getSchemeFlt() {
         return findSoftProperties.getExptOverviewFtl();
+    }
+
+    private ExperimentRankResponse getRank(String exptInstanceId) {
+        ExperimentRankResponse result = null;
+        try {
+            result = experimentScoringBiz.getRank(exptInstanceId);
+        } catch (Exception e) {
+            log.error("获取总报告时，获取实验 {} 的排行榜数据异常", exptInstanceId);
+            throw new BizException(String.format("获取总报告时，获取实验 %s 的排行榜数据异常", exptInstanceId));
+        }
+        return result;
     }
 
     private ExptBaseInfoModel generateBaseInfoVO(FindSoftProperties findSoftProperties) {

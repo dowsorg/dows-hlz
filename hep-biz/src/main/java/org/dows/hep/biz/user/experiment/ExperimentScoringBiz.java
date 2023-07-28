@@ -222,7 +222,6 @@ public class ExperimentScoringBiz {
                 .build();
     }
 
-    /* runsix:TODO 计算医疗占比 */
     public RsCalculateMoneyScoreRsResponse rsCalculateMoneyScore(RsCalculateMoneyScoreRequestRs rsCalculateMoneyScoreRequestRs) {
         List<GroupMoneyScoreRsResponse> groupMoneyScoreRsResponseList = new ArrayList<>();
 

@@ -170,6 +170,13 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
               .experimentInstanceId(experimentInstanceId)
               .caseInstanceId(caseInstanceId)
               .build());
+            /* runsix:复制实验，拿到第0期第数据 */
+            rsExperimentCalculateBiz.experimentRsCalculateAndCreateReportHealthScore(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
+                .builder()
+                .appId(appId)
+                .experimentId(experimentInstanceId)
+                .periods(0)
+                .build());
         }
         //复制操作指标和突发事件
         SnapshotManager.Instance().write( new SnapshotRequest(appId,experimentInstanceId), true);

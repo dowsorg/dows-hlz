@@ -1,6 +1,5 @@
 package org.dows.hep.biz.report;
 
-import jakarta.xml.bind.DatatypeConverter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.oss.api.OssInfo;
@@ -9,10 +8,7 @@ import org.dows.hep.properties.OSSProperties;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 /**
  * @author fhb
@@ -73,26 +69,5 @@ public class ReportOSSHelper {
                 + basePath
                 + URL_PATH_SEPARATOR
                 + ossInfo.getName();
-    }
-
-    /**
-     * @param fileName - 文件名
-     * @return java.lang.String
-     * @author fhb
-     * @description 读取文件为 base64 格式
-     * @date 2023/7/21 10:14
-     */
-    public String getBase64(String fileName) {
-        String basePath = ossClient.getBasePath();
-        if (ossClient.getBasePath().startsWith("/")) {
-            basePath += fileName;
-        }
-        String base64 = null;
-        try {
-            base64 = DatatypeConverter.printBase64Binary(Files.readAllBytes(Paths.get(basePath)));
-        } catch (IOException e) {
-            return "";
-        }
-        return base64;
     }
 }

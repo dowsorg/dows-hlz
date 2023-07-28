@@ -102,7 +102,7 @@ public class ExperimentSchemeScoreBiz {
         List<ExperimentSchemeScoreEntity> schemeScoreList = experimentSchemeScoreService.lambdaQuery()
                 .in(ExperimentSchemeScoreEntity::getExperimentSchemeId, schemeIdList)
                 .eq(!isAdmin, ExperimentSchemeScoreEntity::getReviewAccountId, reviewAccountId)
-                .eq(isAdmin, ExperimentSchemeScoreEntity::getReviewAccountId, ADMIN_ACCOUNT_ID)
+//                .eq(isAdmin, ExperimentSchemeScoreEntity::getReviewAccountId, ADMIN_ACCOUNT_ID)
                 .list();
 
         // group-id map expt-scheme

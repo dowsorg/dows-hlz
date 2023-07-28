@@ -22,7 +22,7 @@ import org.dows.hep.api.user.experiment.ExptReportTypeEnum;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeItemResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentSchemeResponse;
 import org.dows.hep.api.user.experiment.response.ExptSchemeScoreRankResponse;
-import org.dows.hep.biz.tenant.experiment.ExperimentSchemeScoreBiz;
+import org.dows.hep.biz.base.oss.OSSBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
 import org.dows.hep.entity.ExperimentGroupEntity;
 import org.dows.hep.entity.ExperimentInstanceEntity;
@@ -55,18 +55,17 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeReportHandler.ExptSchemeReportData, ExptSchemeReportModel> {
-    private final ExperimentSchemeScoreBiz experimentSchemeScoreBiz;
     private final ExperimentSchemeBiz experimentSchemeBiz;
     private final ExperimentInstanceService experimentInstanceService;
     private final ExperimentParticipatorService experimentParticipatorService;
     private final ExperimentGroupService experimentGroupService;
 
+    private final OSSBiz ossBiz;
     private final ReportOSSHelper ossHelper;
     private final ReportPdfHelper reportPdfHelper;
     private final ReportRecordHelper recordHelper;
     private final FindSoftProperties findSoftProperties;
 
-    private final Object delFileLock = new Object();
     private static final String SCHEME_REPORT_HOME_DIR = SystemConstant.PDF_REPORT_TMP_PATH + "方案设计实验报告" + File.separator;
 
     @Data
@@ -437,6 +436,7 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
         for (Element imgTag : imgTags) {
             String src = imgTag.attr("src");
             imgTag.attr("src", getBase64(src));
+            imgTag.attr("style", "width: 100%; height: auto;");
         }
 
         // 返回替换后的文本
@@ -445,7 +445,7 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
 
     private String getBase64(String src) {
         String fileName = src.replace("/hepapi/", "");
-        String base64 = ossHelper.getBase64(fileName);
+        String base64 = ossBiz.getBase64(fileName);
         return "data:image/jpeg;base64," + base64;
     }
 
