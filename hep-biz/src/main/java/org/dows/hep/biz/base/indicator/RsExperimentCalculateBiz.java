@@ -766,7 +766,7 @@ public class RsExperimentCalculateBiz {
       ExperimentSetting.SandSetting sandSetting = rsUtilBiz.getByExperimentId(experimentId);
       Map<String, Integer> durationMap = sandSetting.getDurationMap();
       for (int i = 1; i <= periods; i++) {
-        gameDayAR.getAndAdd(durationMap.get(i));
+        gameDayAR.getAndAdd(durationMap.get(String.valueOf(i)));
       }
     } else {
       gameDayAR.set(timePoint.getGameDay());
