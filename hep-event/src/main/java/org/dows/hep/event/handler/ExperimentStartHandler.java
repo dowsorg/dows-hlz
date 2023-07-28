@@ -2,6 +2,7 @@ package org.dows.hep.event.handler;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
+import com.alibaba.fastjson.JSON;
 import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
 import org.dows.hep.biz.event.EventScheduler;
+import org.dows.hep.biz.request.ExperimentTaskParamsRequest;
 import org.dows.hep.biz.task.ExperimentCalcTask;
 import org.dows.hep.biz.task.ExperimentFinishTask;
 import org.dows.hep.biz.util.TimeUtil;
@@ -201,12 +203,13 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                 .eq(ExperimentTaskScheduleEntity::getExperimentInstanceId, experimentRestartRequest.getExperimentInstanceId())
                 .eq(ExperimentTaskScheduleEntity::getPeriods, lastPeriods.getPeriod())
                 .one();
-        String taskParams = "{\"experimentInstanceId\":\"" + experimentRestartRequest.getExperimentInstanceId()
-                + "\",\"period\":" + lastPeriods.getPeriod() + "}";
         if (finishTaskScheduleEntity != null && !ReflectUtil.isObjectNull(finishTaskScheduleEntity)) {
             BeanUtil.copyProperties(finishTaskScheduleEntity, finishEntity);
             finishEntity.setExecuteTime(DateUtil.date(entityList.get(entityList.size() - 1).getEndTime()));
-            finishEntity.setTaskParams(taskParams);
+            finishEntity.setTaskParams(JSON.toJSONString(ExperimentTaskParamsRequest.builder()
+                    .experimentInstanceId(experimentRestartRequest.getExperimentInstanceId())
+                    .period(lastPeriods.getPeriod())
+                    .build()));
             finishEntity.setExecuted(false);
         } else {
             finishEntity = new ExperimentTaskScheduleEntity()
@@ -214,7 +217,10 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                     .experimentTaskTimerId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentRestartRequest.getExperimentInstanceId())
                     .taskBeanCode(EnumExperimentTask.experimentFinishTask.getDesc())
-                    .taskParams(taskParams)
+                    .taskParams(JSON.toJSONString(ExperimentTaskParamsRequest.builder()
+                            .experimentInstanceId(experimentRestartRequest.getExperimentInstanceId())
+                            .period(lastPeriods.getPeriod())
+                            .build()))
                     .periods(lastPeriods.getPeriod())
                     .appId("3")
                     .executeTime(DateUtil.date(entityList.get(entityList.size() - 1).getEndTime()))
@@ -242,8 +248,11 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                         .eq(ExperimentTaskScheduleEntity::getExperimentGroupId, experimentGroupRespons.getExperimentGroupId())
                         .eq(ExperimentTaskScheduleEntity::getPeriods, lastPeriods.getPeriod())
                         .one();
-                String taskParams1 = "{\"experimentInstanceId\":\"" + experimentRestartRequest.getExperimentInstanceId() + "\",\"experimentGroupId\":\""
-                        + experimentGroupRespons.getExperimentGroupId() + "\",\"period\":" + updateExperimentTimerEntity.getPeriod() + "}";
+                String taskParams1 = JSON.toJSONString(ExperimentTaskParamsRequest.builder()
+                        .experimentInstanceId(experimentRestartRequest.getExperimentInstanceId())
+                        .experimentGroupId(experimentGroupRespons.getExperimentGroupId())
+                        .period(updateExperimentTimerEntity.getPeriod())
+                        .build());
                 if (calcTaskScheduleEntity != null && !ReflectUtil.isObjectNull(calcTaskScheduleEntity)) {
                     BeanUtil.copyProperties(calcTaskScheduleEntity, calcEntity);
                     calcEntity.setExecuteTime(DateUtil.date(entityList.get(entityList.size() - 1).getEndTime()));

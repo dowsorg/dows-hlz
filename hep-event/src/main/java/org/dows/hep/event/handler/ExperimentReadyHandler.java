@@ -21,6 +21,7 @@ import org.dows.hep.api.user.experiment.request.ExptQuestionnaireAllotRequest;
 import org.dows.hep.api.user.experiment.response.StartCutdownResponse;
 import org.dows.hep.biz.noticer.PeriodEndNoticer;
 import org.dows.hep.biz.noticer.PeriodStartNoticer;
+import org.dows.hep.biz.request.ExperimentTaskParamsRequest;
 import org.dows.hep.biz.task.ExperimentNoticeTask;
 import org.dows.hep.biz.user.experiment.ExperimentQuestionnaireBiz;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
@@ -140,8 +141,12 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
                 .eq(ExperimentTaskScheduleEntity::getExperimentInstanceId, experimentInstanceId)
                 .eq(ExperimentTaskScheduleEntity::getPeriods, v.getPeriod())
                 .one();
-        String taskParams2 = "{\"experimentInstanceId\":\"" + experimentInstanceId
-                + "\",\"period\":" + v.getPeriod() + ",\"noticeParams\":" + JSON.toJSONString(noticeContent) + ",\"noticeType\":" + EnumExperimentNotice.endNotice.getCode() + "}";
+        String taskParam = JSON.toJSONString(ExperimentTaskParamsRequest.builder()
+                .experimentInstanceId(experimentInstanceId)
+                .period(v.getPeriod())
+                .noticeParams(JSON.toJSONString(noticeContent))
+                .noticeType(EnumExperimentNotice.endNotice.getCode())
+                .build());
         if (endTaskScheduleEntity != null && !ReflectUtil.isObjectNull(endTaskScheduleEntity)) {
             BeanUtil.copyProperties(endTaskScheduleEntity, endEntity);
             endEntity.setExecuteTime(v.getStartTime());
@@ -152,7 +157,7 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
                     .experimentTaskTimerId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentInstanceId)
                     .taskBeanCode(EnumExperimentTask.experimentPeriodEndNoticeTask.getDesc())
-                    .taskParams(taskParams2)
+                    .taskParams(taskParam)
                     .periods(v.getPeriod())
                     .appId(v.getAppId())
                     .executeTime(v.getEndTime())
@@ -170,8 +175,12 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
                 .eq(ExperimentTaskScheduleEntity::getExperimentInstanceId, experimentInstanceId)
                 .eq(ExperimentTaskScheduleEntity::getPeriods, v.getPeriod())
                 .one();
-        String taskParams1 = "{\"experimentInstanceId\":\"" + experimentInstanceId
-                + "\",\"period\":" + v.getPeriod() + ",\"noticeParams\":" + JSON.toJSONString(noticeContent) + ",\"noticeType\":" + EnumExperimentNotice.startNotice.getCode() + "}";
+        String taskParam = JSON.toJSONString(ExperimentTaskParamsRequest.builder()
+                .experimentInstanceId(experimentInstanceId)
+                .period(v.getPeriod())
+                .noticeParams(JSON.toJSONString(noticeContent))
+                .noticeType(EnumExperimentNotice.startNotice.getCode())
+                .build());
         if (startTaskScheduleEntity != null && !ReflectUtil.isObjectNull(startTaskScheduleEntity)) {
             BeanUtil.copyProperties(startTaskScheduleEntity, startEntity);
             startEntity.setExecuteTime(v.getStartTime());
@@ -182,7 +191,7 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
                     .experimentTaskTimerId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentInstanceId)
                     .taskBeanCode(EnumExperimentTask.experimentPeriodStartNoticeTask.getDesc())
-                    .taskParams(taskParams1)
+                    .taskParams(taskParam)
                     .periods(v.getPeriod())
                     .appId(v.getAppId())
                     .executeTime(v.getStartTime())

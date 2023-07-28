@@ -13,12 +13,14 @@ import org.dows.account.response.AccountInstanceResponse;
 import org.dows.account.response.AccountRoleResponse;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
+import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.enums.EnumExperimentStatusCode;
 import org.dows.hep.api.enums.EnumParticipatorType;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.PageExperimentRequest;
 import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
+import org.dows.hep.api.user.experiment.ExptSettingModeEnum;
 import org.dows.hep.api.user.experiment.request.GetExperimentGroupCaptainRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
 import org.dows.hep.api.user.experiment.response.GetExperimentGroupCaptainResponse;
@@ -31,15 +33,17 @@ import org.dows.hep.service.ExperimentParticipatorService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class ExperimentParticipatorBiz {
-    private final ExperimentSchemeBiz experimentSchemeBiz;
+    private final ExperimentSettingBiz experimentSettingBiz;
     // 实验参与者
     private final ExperimentParticipatorService experimentParticipatorService;
     // 实验小组
@@ -164,7 +168,7 @@ public class ExperimentParticipatorBiz {
                     .toList();
 
             // 实验状态变更Map
-            Map<String, EnumExperimentState> groupStateMapExptState = experimentSchemeBiz.groupStateMapExptState(exptInstanceIds, accountId);
+            Map<String, EnumExperimentState> groupStateMapExptState = groupStateMapExptState(exptInstanceIds, accountId);
 
             // 变更
             records.forEach(record -> {
@@ -175,6 +179,61 @@ public class ExperimentParticipatorBiz {
                 }
             });
         }
+    }
+
+    /**
+     * @param exptInstanceIds - 实验实例ID集合
+     * @param accountId       - 账号ID
+     * @return java.util.Map<java.lang.String, org.dows.hep.api.enums.EnumExperimentState>
+     * @author fhb
+     * @description 将`方案设计模式的`实验状态根据实验小组状态进行调整
+     * @date 2023/7/27 11:52
+     */
+    private Map<String, EnumExperimentState> groupStateMapExptState(List<String> exptInstanceIds, String accountId) {
+        Map<String, EnumExperimentState> result = new HashMap<>();
+        // 找出实验模式是方案设计的 - exptIds
+        List<String> schemeExptIdList = new ArrayList<>();
+        Map<String, ExptSettingModeEnum> exptModeCollect = experimentSettingBiz.listExptSettingMode(exptInstanceIds);
+        exptModeCollect.forEach((k, v) -> {
+            if (ExptSettingModeEnum.SCHEME.equals(v)) {
+                schemeExptIdList.add(k);
+            }
+        });
+        if (CollUtil.isEmpty(schemeExptIdList)) {
+            return result;
+        }
+
+        // 获取实验 && 账号的小组信息 - exptId map groupId
+        List<ExperimentParticipatorEntity> partList = experimentParticipatorService.lambdaQuery()
+                .in(ExperimentParticipatorEntity::getExperimentInstanceId, schemeExptIdList)
+                .eq(ExperimentParticipatorEntity::getAccountId, accountId)
+                .list();
+        List<String> groupIdList = partList.stream()
+                .map(ExperimentParticipatorEntity::getExperimentGroupId)
+                .toList();
+        Map<String, String> exptIdMapGroupId = partList.stream()
+                .collect(Collectors.toMap(ExperimentParticipatorEntity::getExperimentInstanceId, ExperimentParticipatorEntity::getExperimentGroupId));
+
+        // 获取实验小组状态 - groupId map groupState
+        List<ExperimentGroupEntity> groupList = experimentGroupService.lambdaQuery()
+                .in(ExperimentGroupEntity::getExperimentGroupId, groupIdList)
+                .list();
+        Map<String, Integer> groupIdMapState = groupList.stream()
+                .collect(Collectors.toMap(ExperimentGroupEntity::getExperimentGroupId, ExperimentGroupEntity::getGroupState));
+
+        // exptId map groupState
+        schemeExptIdList.forEach(exptId -> {
+            String groupId = exptIdMapGroupId.get(exptId);
+            Integer groupState = groupIdMapState.get(groupId);
+            if (EnumExperimentGroupStatus.SCHEMA.getCode().equals(groupState)) {
+                result.put(exptId, EnumExperimentState.ONGOING);
+            }
+            if (EnumExperimentGroupStatus.WAIT_SCHEMA.getCode().equals(groupState)) {
+                result.put(exptId, EnumExperimentState.FINISH);
+            }
+        });
+
+        return result;
     }
 
     /**

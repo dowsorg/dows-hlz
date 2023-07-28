@@ -39,8 +39,6 @@ public class ExperimentGroupBiz {
 
     private final ExperimentParticipatorService experimentParticipatorService;
 
-    private final ExperimentSettingService experimentSettingService;
-
     private final ExperimentActorService experimentActorService;
 
     private final ExperimentInstanceService experimentInstanceService;
