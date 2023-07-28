@@ -436,6 +436,7 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
         for (Element imgTag : imgTags) {
             String src = imgTag.attr("src");
             imgTag.attr("src", getBase64(src));
+            imgTag.attr("style", "width: 100%; height: auto;");
         }
 
         // 返回替换后的文本
