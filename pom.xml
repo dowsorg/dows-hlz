@@ -34,7 +34,13 @@
         <rbac.version>20230418-SNAPSHOT</rbac.version>
         <tenant.version>20230418-SNAPSHOT</tenant.version>
         <auth.version>20230418-SNAPSHOT</auth.version>
+
+        <registry.host>registry.cn-hangzhou.aliyuncs.com</registry.host>
+        <registry.username>dows@dows.onaliyun.com</registry.username>
+        <registry.password>dowsdxz123456</registry.password>
+        <image.alias>${project.name}</image.alias>
     </properties>
+
 
     <dependencyManagement>
         <dependencies>
