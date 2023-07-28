@@ -275,7 +275,14 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
     }
 
     private ExperimentRankResponse getRank(String exptInstanceId) {
-        return experimentScoringBiz.getRank(exptInstanceId);
+        ExperimentRankResponse result = null;
+        try {
+            result = experimentScoringBiz.getRank(exptInstanceId);
+        } catch (Exception e) {
+            log.error("获取沙盘模拟报告时，获取实验 {} 的排行榜数据异常", exptInstanceId);
+            throw new BizException(String.format("获取沙盘模拟报告时，获取实验 %s 的排行榜数据异常", exptInstanceId));
+        }
+        return result;
     }
 
     private List<ExperimentQuestionnaireResponse> listExptQuestionnaire(String exptInstanceId, String exptGroupId) {
