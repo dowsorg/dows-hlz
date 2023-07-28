@@ -6,4 +6,8 @@ RUN echo "Asia/Shanghai" > /etc/timezone
 ENV JAVA_OPTS='-Xmx2048m -Xms2048m'
 ENV JAR_LOCATION=/root/$JAR_FILE
 
-CMD java $JAVA_OPTS -Dspring.profiles.active=dev -jar $JAR_LOCATION
+#CMD java $JAVA_OPTS -Dspring.profiles.active=dev -jar $JAR_LOCATION
+ENV SPRING_PROFILE="-Dspring.profiles.active=dev"
+#配置开启debug
+ENV JAVA_DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8040"
+ENTRYPOINT ["java","$JAVA_OPTS","$JAVA_DEBUG","$SPRING_PROFILE","-jar","$JAR_LOCATION"]
