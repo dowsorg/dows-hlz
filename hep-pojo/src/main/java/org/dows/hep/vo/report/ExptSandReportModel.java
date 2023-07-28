@@ -116,7 +116,7 @@ public class ExptSandReportModel implements ExptReportModel {
     @Data
     public static class NpcData {
         // 基本信息
-        private NpcBaseInfo baseInfo;
+        //private NpcBaseInfo baseInfo;
         // 干预前风险指标
         private PersonRiskFactor interveneBefores;
         //干预后风险指标
@@ -125,7 +125,7 @@ public class ExptSandReportModel implements ExptReportModel {
         private List<ServiceLog> serviceLogs;
     }
 
-    @Data
+/*    @Data
     public static class NpcBaseInfo {
         private Integer no;
         private String userName;
@@ -133,7 +133,7 @@ public class ExptSandReportModel implements ExptReportModel {
         private String age;
         //疾病类别
         private String diseaseCateg;
-    }
+    }*/
 
     /*@Data
     public static class RiskIndicator {

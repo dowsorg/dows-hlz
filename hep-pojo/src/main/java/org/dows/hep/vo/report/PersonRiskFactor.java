@@ -19,8 +19,17 @@ public class PersonRiskFactor {
     private String personId;
     // 人物名称
     private String personName;
+    //
+    private String sex;
+
+    private Integer age;
+    // 疾病类别
+    private String diseaseCateg;
     // 期数
     private Integer period;
+
+
+    //性别 年龄 疾病类别
     // 人物因素
     private List<RiskFactor> riskFactors;
 
@@ -41,6 +50,10 @@ public class PersonRiskFactor {
         private String deathRiskScore;
         // 风险item
         private List<RiskItem> riskItems;
+
+        private Integer getGroupSize(){
+            return riskItems.size();
+        }
     }
 
     /**

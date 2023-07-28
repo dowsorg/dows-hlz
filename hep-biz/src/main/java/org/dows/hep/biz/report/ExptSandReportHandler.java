@@ -562,24 +562,29 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
     private List<ExptSandReportModel.NpcData> generateNpcInfo(String exptGroupId, ExptSandReportData exptData) {
         List<ExptSandReportModel.NpcData> result = new ArrayList<>();
         String experimentInstanceId = exptData.getExptInfo().getExperimentInstanceId();
-        // 期数
-        Integer periods = exptData.getSandSetting().getPeriods();
-        List<PersonRiskFactor> personRiskFactors = riskBiz.get(experimentInstanceId, exptGroupId, null)
-                .stream()
-                .sorted(Comparator.comparing(PersonRiskFactor::getPersonId))
-                .collect(Collectors.toList());
 
-        int lastPeriod = periods - 1;
-        // 获取第一期
-        PersonRiskFactor personRiskFactor1 = personRiskFactors.get(0);
-        // 获取最后一期
-        PersonRiskFactor personRiskFactor2 = personRiskFactors.get(lastPeriod);
+        // 获取NPC指标数据
+        Map<Integer, List<PersonRiskFactor>> collect = riskBiz.get(experimentInstanceId, exptGroupId, null).stream()
+                .collect(Collectors.groupingBy(PersonRiskFactor::getPeriod));
+        // 获取第0期
+        List<PersonRiskFactor> personRiskFactors1 = collect.get(0);
+        // 取最后一期
+        List<PersonRiskFactor> personRiskFactors2 = collect.get(collect.size() - 1);
+        // 人物ID->NPC人物对象
+        Map<String, ExptSandReportModel.NpcData> npcData = new LinkedHashMap<>();
 
-        ExptSandReportModel.NpcData  npcData = new ExptSandReportModel.NpcData();
-        npcData.setInterveneBefores(personRiskFactor1);
-        npcData.setInterveneAfters(personRiskFactor2);
-
-        result.add(npcData);
+        for (PersonRiskFactor personRiskFactor : personRiskFactors1) {
+            ExptSandReportModel.NpcData nd = new ExptSandReportModel.NpcData();
+            nd.setInterveneBefores(personRiskFactor);
+            npcData.put(personRiskFactor.getPersonId(), nd);
+            result.add(nd);
+        }
+        for (PersonRiskFactor personRiskFactor : personRiskFactors2) {
+            ExptSandReportModel.NpcData npcData1 = npcData.get(personRiskFactor.getPersonId());
+            if (npcData1 != null) {
+                npcData1.setInterveneAfters(personRiskFactor);
+            }
+        }
         return result;
     }
 

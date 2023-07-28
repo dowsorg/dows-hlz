@@ -222,7 +222,7 @@
     <div class="font-blue bold" style="font-size:18px;margin-top:50px;margin-bottom:25px" align="center">二 实验详情
     </div>
     <#list npcDatas as npc>
-        <div style="font-size:18px;margin-top:25px;margin-bottom:25px">案例${npc.baseInfo.no}: ${npc.userName}</div>
+        <#--<div style="font-size:18px;margin-top:25px;margin-bottom:25px">案例${npc.baseInfo.no}: ${npc.userName}</div>
         <div style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">基本信息</div>
         <table class="wd-700 text-center" align="center">
             <tr class="background-singular-blue">
@@ -237,7 +237,7 @@
                 <td>${npc.baseInfo.age}</td>
                 <td>${npc.baseInfo.diseaseCateg}</td>
             </tr>
-        </table>
+        </table>-->
         <div style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">危险因素评价</div>
         <div style="font-size:18px;margin-top:25px;margin-bottom:25px">干预前</div>
         <table class="wd-700 text-center" align="center">
@@ -250,17 +250,23 @@
                 <td>组合危险分数</td>
                 <td>存在死亡危险</td>
             </tr>
-            <#list npc.interveneBefores as ib>
+            <#if npc.interveneBefores.riskFactors??>
+                <#list npc.interveneBefores.riskFactors as ibrf>
                 <tr class="background-even-blue">
-                    <td rowspan="${ib.groupSize!0}">${ib.deathReason}</td>
-                    <td rowspan="${ib.groupSize!0}">${ib.deathProbability}</td>
-                    <td>${ib.riskFactor}</td>
-                    <td>${ib.indicator}</td>
-                    <td>${ib.dangerScore}</td>
-                    <td rowspan="${ib.groupSize!0}">${ib.combinationDangerScore}</td>
-                    <td rowspan="${ib.groupSize!0}">${ib.deathScore}</td>
+                    <td rowspan="${ibrf.groupSize!0}">${ibrf.riskName}</td>
+                    <td rowspan="${ibrf.groupSize!0}">${ibrf.riskDeathProbability}</td>
+                    <#if ibrf.riskItems??>
+                        <#list ibrf.riskItems as ri >
+                    <td>${ri.itemName}</td>
+                    <td>${ri.itemValue}</td>
+                    <td>${ri.riskScore}</td>
+                        </#list>
+                    </#if>
+                    <td rowspan="${ibrf.groupSize!0}">${ibrf.riskScore}</td>
+                    <td rowspan="${ibrf.groupSize!0}">${ibrf.deathRiskScore}</td>
                 </tr>
-            </#list>
+                </#list>
+            </#if>
         </table>
         <div style="font-size:18px;margin-top:25px;margin-bottom:25px">干预后</div>
         <table class="wd-700 text-center" align="center">
@@ -273,7 +279,24 @@
                 <td>组合危险分数</td>
                 <td>存在死亡危险</td>
             </tr>
-            <#list npc.interveneAfters as ia>
+            <#if npc.interveneAfters.riskFactors??>
+                <#list npc.interveneBefores.riskFactors as iarf>
+            <tr class="background-even-blue">
+                <td rowspan="${iarf.groupSize!0}">${iarf.riskName}</td>
+                <td rowspan="${iarf.groupSize!0}">${iarf.riskDeathProbability}</td>
+                <#if iarf.riskItems??>
+                    <#list iarf.riskItems as ri >
+                        <td>${ri.itemName}</td>
+                        <td>${ri.itemValue}</td>
+                        <td>${ri.riskScore}</td>
+                    </#list>
+                </#if>
+                <td rowspan="${iarf.groupSize!0}">${iarf.riskScore}</td>
+                <td rowspan="${iarf.groupSize!0}">${iarf.deathRiskScore}</td>
+            </tr>
+                </#list>
+            </#if>
+<#--            <#list npc.interveneAfters as ia>
                 <tr class="background-even-blue">
                     <td rowspan="${ia.groupSize!0}">${ia.deathReason!""}</td>
                     <td rowspan="${ia.groupSize!0}">${ia.deathProbability!""}</td>
@@ -283,7 +306,7 @@
                     <td rowspan="${ia.groupSize!0}">${ia.combinationDangerScore!""}</td>
                     <td rowspan="${ia.groupSize!0}">${ia.deathScore!""}</td>
                 </tr>
-            </#list>
+            </#list>-->
         </table>
 
         <div style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">服务记录</div>
