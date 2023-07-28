@@ -220,7 +220,7 @@ public class ExperimentManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-//    @DSTransactional
+    @DSTransactional
     public Boolean grouping(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
 
         Long delay = experimentGroupSettingRequest.getStartTime().getTime() - System.currentTimeMillis();

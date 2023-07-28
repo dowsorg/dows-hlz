@@ -16,22 +16,15 @@ import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
-import org.springframework.expression.Expression;
-import org.springframework.expression.ExpressionParser;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -106,8 +99,6 @@ public class RsCopyBiz {
   private final RsUtilBiz rsUtilBiz;
   private final RsCaseIndicatorExpressionBiz rsCaseIndicatorExpressionBiz;
   private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
-  private final PlatformTransactionManager platformTransactionManager;
-  private final TransactionDefinition transactionDefinition;
 
   @Transactional(rollbackFor = Exception.class)
   public void rsCopyIndicatorFunc(RsCopyIndicatorFuncRequestRs rsCopyIndicatorFuncRequestRs) {
@@ -1804,14 +1795,22 @@ public class RsCopyBiz {
     return experimentIndicatorExpressionItemRsEntity;
   }
 
-//  @Transactional(rollbackFor = Exception.class, isolation = Isolation.READ_UNCOMMITTED)
+  @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.READ_UNCOMMITTED,rollbackFor = Exception.class)
   public void rsCopyCrowdsAndRiskModel(RsCopyCrowdsAndRiskModelRequestRs rsCopyCrowdsAndRiskModelRequestRs) throws ExecutionException, InterruptedException {
     Map<String, String> kCrowdsInstanceIdVExperimentCrowsInstanceIdMap = new HashMap<>();
     String appId = rsCopyCrowdsAndRiskModelRequestRs.getAppId();
     String experimentInstanceId = rsCopyCrowdsAndRiskModelRequestRs.getExperimentInstanceId();
     rsCopyCrowds(appId, experimentInstanceId, kCrowdsInstanceIdVExperimentCrowsInstanceIdMap);
     rsCopyRiskModel(appId, experimentInstanceId, kCrowdsInstanceIdVExperimentCrowsInstanceIdMap);
+    /* runsix:复制实验，拿到第0期第数据 */
+    rsExperimentCalculateBiz.experimentRsCalculateAndCreateReportHealthScore(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
+        .builder()
+        .appId(appId)
+        .experimentId(experimentInstanceId)
+        .periods(0)
+        .build());
   }
+
 
   public void rsCopyCrowds(String appId, String experimentInstanceId, Map<String, String> kCrowdsInstanceIdVExperimentCrowsInstanceIdMap) {
     if (Objects.isNull(kCrowdsInstanceIdVExperimentCrowsInstanceIdMap)) {
@@ -1846,7 +1845,6 @@ public class RsCopyBiz {
           .deathProbability(crowdsInstanceEntity.getDeathProbability())
           .build());
     });
-
     rsCopyNoneIndicatorIndicatorExpression(appId, experimentInstanceId, crowdsIdSet,
         kCrowdsInstanceIdVExperimentCrowsInstanceIdMap, experimentIndicatorExpressionRefRsEntityList, experimentIndicatorExpressionRsEntityList, experimentIndicatorExpressionItemRsEntityList);
     if (!experimentCrowdsInstanceRsEntityList.isEmpty()) {
