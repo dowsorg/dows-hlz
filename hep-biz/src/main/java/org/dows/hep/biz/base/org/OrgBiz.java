@@ -782,7 +782,7 @@ public class OrgBiz {
         caseIndicatorInstanceBiz.copyPersonIndicatorInstance(CaseCreateCopyToPersonRequestRs
                 .builder()
                 .appId(accountInstanceResponse.getAppId())
-                .principalId(vo.getAccountId())
+                .principalId(accountId)
                 .build());
         //4.复制事件
         tenantCaseEventBiz.copyCaseEvent4Person(accountInstanceResponse.getAppId(),vo.getAccountId(),accountId,
