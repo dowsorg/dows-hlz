@@ -36,6 +36,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -757,9 +758,20 @@ public class RsExperimentCalculateBiz {
     /* runsix:param */
     String appId = rsCalculateTimeRequest.getAppId();
     String experimentId = rsCalculateTimeRequest.getExperimentId();
+    Integer periods = rsCalculateTimeRequest.getPeriods();
     Set<String> experimentPersonIdSet = rsCalculateTimeRequest.getExperimentPersonIdSet();
+    AtomicInteger gameDayAR = new AtomicInteger(0);
     ExperimentTimePoint timePoint=ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create(appId,experimentId), LocalDateTime.now(), true);
-    Integer gameDay = timePoint.getGameDay();
+    if (Objects.isNull(timePoint)) {
+      ExperimentSetting.SandSetting sandSetting = rsUtilBiz.getByExperimentId(experimentId);
+      Map<String, Integer> durationMap = sandSetting.getDurationMap();
+      for (int i = 1; i <= periods; i++) {
+        gameDayAR.getAndAdd(durationMap.get(i));
+      }
+    } else {
+      gameDayAR.set(timePoint.getGameDay());
+    }
+    Integer gameDay = gameDayAR.get();
     /* runsix:result */
     List<ExperimentPersonCalculateTimeRsEntity> experimentPersonCalculateTimeRsEntityList = new ArrayList<>();
 
@@ -911,6 +923,7 @@ public class RsExperimentCalculateBiz {
               .builder()
               .appId(appId)
               .experimentId(experimentId)
+              .periods(periods)
               .experimentPersonIdSet(experimentPersonIdSet)
               .build(),
           kExperimentPersonIdVDurationMap);
