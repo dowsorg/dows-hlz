@@ -222,27 +222,30 @@ public class ExperimentScoringBiz {
                 .build();
     }
 
+    /* runsix:TODO 等待张亮修复，先返回空 */
     public RsCalculateMoneyScoreRsResponse rsCalculateMoneyScore(RsCalculateMoneyScoreRequestRs rsCalculateMoneyScoreRequestRs) {
-        List<GroupMoneyScoreRsResponse> groupMoneyScoreRsResponseList = new ArrayList<>();
+        return RsCalculateMoneyScoreRsResponse.builder().build();
 
-        CostRequest costRequest = CostRequest.builder()
-                .experimentInstanceId(rsCalculateMoneyScoreRequestRs.getExperimentId())
-                .period(rsCalculateMoneyScoreRequestRs.getPeriods())
-                .build();
-        // 计算的本期医疗占比得分
-        Map<String, BigDecimal> stringBigDecimalMap = operateCostBiz.calcGroupTreatmentPercent(costRequest);
-
-        stringBigDecimalMap.forEach((k, v) -> {
-            GroupMoneyScoreRsResponse groupMoneyScoreRsResponse = new GroupMoneyScoreRsResponse();
-            groupMoneyScoreRsResponse.setExperimentGroupId(k);
-            groupMoneyScoreRsResponse.setGroupMoneyScore(v);
-            groupMoneyScoreRsResponseList.add(groupMoneyScoreRsResponse);
-        });
-
-        return RsCalculateMoneyScoreRsResponse
-                .builder()
-                .groupMoneyScoreRsResponseList(groupMoneyScoreRsResponseList)
-                .build();
+//        List<GroupMoneyScoreRsResponse> groupMoneyScoreRsResponseList = new ArrayList<>();
+//
+//        CostRequest costRequest = CostRequest.builder()
+//                .experimentInstanceId(rsCalculateMoneyScoreRequestRs.getExperimentId())
+//                .period(rsCalculateMoneyScoreRequestRs.getPeriods())
+//                .build();
+//        // 计算的本期医疗占比得分
+//        Map<String, BigDecimal> stringBigDecimalMap = operateCostBiz.calcGroupTreatmentPercent(costRequest);
+//
+//        stringBigDecimalMap.forEach((k, v) -> {
+//            GroupMoneyScoreRsResponse groupMoneyScoreRsResponse = new GroupMoneyScoreRsResponse();
+//            groupMoneyScoreRsResponse.setExperimentGroupId(k);
+//            groupMoneyScoreRsResponse.setGroupMoneyScore(v);
+//            groupMoneyScoreRsResponseList.add(groupMoneyScoreRsResponse);
+//        });
+//
+//        return RsCalculateMoneyScoreRsResponse
+//                .builder()
+//                .groupMoneyScoreRsResponseList(groupMoneyScoreRsResponseList)
+//                .build();
     }
 
 
