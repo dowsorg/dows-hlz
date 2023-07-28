@@ -46,8 +46,7 @@ public class RsUtilBiz {
         .eq(ExperimentSettingEntity::getConfigKey, ExperimentSetting.SandSetting.class.getName())
         .one();
     if (Objects.isNull(experimentSettingEntity)) {return null;}
-    ExperimentSetting.SandSetting sandSetting = JSONUtil.toBean(experimentSettingEntity.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
-    return sandSetting;
+    return JSONUtil.toBean(experimentSettingEntity.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
   }
 
   public String getCommaList(Collection<String> collection) {
