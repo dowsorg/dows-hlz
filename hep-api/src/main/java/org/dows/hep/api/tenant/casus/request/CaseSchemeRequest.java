@@ -2,6 +2,7 @@ package org.dows.hep.api.tenant.casus.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -61,9 +62,11 @@ public class CaseSchemeRequest{
     private String questionSectionId;
 
     @Schema(title = "问题集合")
+    @Valid
     private List<QuestionSectionItemRequest> sectionItemList;
 
     @Schema(title = "维度集合")
+    @Valid
     private List<QuestionSectionDimensionRequest> questionSectionDimensionList;
 
 
