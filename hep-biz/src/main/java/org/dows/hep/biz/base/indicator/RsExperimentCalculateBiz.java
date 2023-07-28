@@ -319,6 +319,10 @@ public class RsExperimentCalculateBiz {
       );
     });
     cfPopulateKExperimentCrowdsIdVExperimentCrowdsInstanceRsEntityMap.get();
+    if (kExperimentCrowdsIdVExperimentCrowdsInstanceRsEntityMap.isEmpty()) {
+      log.error("RsExperimentCalculateBiz.experimentRsCalculateAndCreateReportHealthScore Crowds is empty experimentId:{}", experimentId);
+      return;
+    }
     Set<String> experimentCrowdsIdSet = new HashSet<>();
     List<ExperimentCrowdsInstanceRsEntity> experimentCrowdsInstanceRsEntityList = new ArrayList<>();
     kExperimentCrowdsIdVExperimentCrowdsInstanceRsEntityMap.forEach((experimentCrowdsId, experimentCrowdsInstanceRsEntity) -> {
@@ -356,6 +360,11 @@ public class RsExperimentCalculateBiz {
     kExperimentCrowdsIdVExperimentRiskModelRsEntityListMap.forEach((experimentCrowdsId, experimentRiskModelRsEntityList) -> {
       experimentRiskModelIdSet.addAll(experimentRiskModelRsEntityList.stream().map(ExperimentRiskModelRsEntity::getExperimentRiskModelId).collect(Collectors.toSet()));
     });
+
+    if (experimentRiskModelIdSet.isEmpty()) {
+      log.error("RsExperimentCalculateBiz.experimentRsCalculateAndCreateReportHealthScore riskModel is empty experimentId:{}", experimentId);
+      return;
+    }
     Map<String, List<ExperimentIndicatorExpressionRefRsEntity>> kExperimentRiskModelIdVExperimentIndicatorExpressionRefListMap = new HashMap<>();
     CompletableFuture<Void> cfPopulateKExperimentRiskModelIdVExperimentIndicatorExpressionRefListMap = CompletableFuture.runAsync(() -> {
       rsExperimentIndicatorExpressionBiz.populateKExperimentReasonIdVExperimentIndicatorExpressionRefListMap(
