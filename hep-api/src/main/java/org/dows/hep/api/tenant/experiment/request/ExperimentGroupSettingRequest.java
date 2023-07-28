@@ -1,6 +1,7 @@
 package org.dows.hep.api.tenant.experiment.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,6 +14,7 @@ import java.util.List;
  * @date
  */
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
 @Schema(name = "GroupSetting 对象", title = "小组设置")
 public class ExperimentGroupSettingRequest {
