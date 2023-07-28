@@ -67,7 +67,7 @@ public class OperateCostBiz {
                 .stream()
                 .collect(Collectors.groupingBy(OperateCostEntity::getExperimentGroupId));
         // 获取初始资金
-        String moneyDef = experimentIndicatorInstanceRsBiz.getMoneyDef(request.getExperimentInstanceId());
+        String moneyDef = experimentIndicatorInstanceRsBiz.getMoneyDef(request.getPatientId());
         Map<String, BigDecimal> map = new HashMap<>();
         collect.forEach((k, v) -> {
             // 计算当前期某小组的总费用

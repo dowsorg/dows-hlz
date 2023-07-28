@@ -19,6 +19,10 @@
             <artifactId>websocket-boot</artifactId>
             <version>20230331-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>org.dows.framework</groupId>
+            <artifactId>sequence-snowflake</artifactId>
+        </dependency>
 
     </dependencies>
 </project>

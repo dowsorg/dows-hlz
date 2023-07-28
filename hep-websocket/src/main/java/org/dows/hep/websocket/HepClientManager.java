@@ -7,7 +7,12 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.uim.AccountInfo;
 import org.dows.framework.websocket.util.NettyUtil;
+import org.dows.hep.websocket.config.WsProperties;
 import org.dows.hep.websocket.proto.MessageProto;
+import org.dows.hep.websocket.schedule.MsgScheduler;
+import org.dows.sequence.api.IdGenerator;
+import org.dows.sequence.snowflake.SnowflakeIdGenerator;
+import org.dows.sequence.snowflake.config.SnowFlakeConfiguration;
 
 import java.util.Collection;
 import java.util.List;
@@ -27,6 +32,10 @@ public class HepClientManager {
 
     // 设备集合  key 房间号 value：设备集合
     private static ConcurrentMap<String, List<String>> equipments = new ConcurrentHashMap<>();
+
+    private static IdGenerator idGenerator = new SnowflakeIdGenerator(new SnowFlakeConfiguration());
+    private static ConcurrentMap<String, String> MSGIDS = new ConcurrentHashMap<>();
+
 
     /**
      * 保存用户身份信息
@@ -146,6 +155,7 @@ public class HepClientManager {
 
     /**
      * 广播事件消息
+     *
      * @param uid
      * @param nick
      * @param room
@@ -184,7 +194,8 @@ public class HepClientManager {
                     if (accountInfo == null || !accountInfo.getAuth()) {
                         continue;
                     }
-                    ch.writeAndFlush(new TextWebSocketFrame(MessageProto.buildSystProto(code, mess)));
+
+                    ch.writeAndFlush(new TextWebSocketFrame(MessageProto.buildSystProto(idGenerator.nextIdStr(), code, mess)));
                 }
             }
         } finally {
@@ -206,7 +217,7 @@ public class HepClientManager {
                 if (accountInfo == null || !accountInfo.getAuth()) {
                     continue;
                 }
-                ch.writeAndFlush(new TextWebSocketFrame(MessageProto.buildSystProto(code, mess)));
+                ch.writeAndFlush(new TextWebSocketFrame(MessageProto.buildSystProto(idGenerator.nextIdStr(), code, mess)));
             }
         } finally {
             rwLock.readLock().unlock();
@@ -237,14 +248,49 @@ public class HepClientManager {
         }
     }
 
+
     /**
      * 发送系统消息
      *
      * @param code
      * @param mess
      */
-    public static void sendInfo(Channel channel, int code, Object mess) {
-        channel.writeAndFlush(new TextWebSocketFrame(MessageProto.buildSystProto(code, mess)));
+    public static String sendInfo(Channel channel, int code, Object mess) {
+        String msgid = idGenerator.nextIdStr();
+        String sc = MessageProto.buildSystProto(msgid, code, mess);
+        channel.writeAndFlush(new TextWebSocketFrame(sc));
+        return msgid;
+    }
+
+    /**
+     * 发送系统消息
+     *
+     * @param code
+     * @param mess
+     */
+    public static String sendInfoRetry(Channel channel, int code, Object mess, String cron) {
+        if (StrUtil.isBlank(cron)) {
+            WsProperties bean = MsgScheduler.getApplicationContext().getBean(WsProperties.class);
+            if (null != bean) {
+                cron = bean.getProducer().getCron();
+            } else {
+                cron = "0/3 * * * * ?";
+            }
+        }
+        String msgid = idGenerator.nextIdStr();
+        MsgScheduler.schedule(() -> {
+            String sc = MSGIDS.get(msgid);
+            if (null == sc) {
+                sc = MessageProto.buildSystProto(msgid, code, mess);
+                MSGIDS.put(msgid, sc);
+            }
+            channel.writeAndFlush(new TextWebSocketFrame(sc));
+        }, cron, msgid);
+        return msgid;
+    }
+
+    public static void removeMsgById(String msgId) {
+        MSGIDS.remove(msgId);
     }
 
     /**
@@ -308,10 +354,11 @@ public class HepClientManager {
 
     /**
      * 按实验id获取实验下的在线用户
+     *
      * @param experimentId
      * @return
      */
-    public static ConcurrentMap<Channel, AccountInfo> getUserInfosByExperimentId(String experimentId){
+    public static ConcurrentMap<Channel, AccountInfo> getUserInfosByExperimentId(String experimentId) {
         return ONLINE_ACCOUNT.getOrDefault(experimentId, new ConcurrentHashMap<>());
     }
 

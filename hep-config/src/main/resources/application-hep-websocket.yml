@@ -1,0 +1,47 @@
+dows:
+  websocket:
+    producer:
+      retry:
+        cron: 0/3 * * * * ?
+        duration: 3
+
+
+---
+#生产环境
+spring:
+  config:
+    activate:
+      on-profile: pro
+springdoc:
+  api-docs:
+    enabled: false
+
+
+---
+#测试环境
+spring:
+  config:
+    activate:
+      on-profile: sit
+springdoc:
+  api-docs:
+    enabled: true
+
+---
+#开发环境
+spring:
+  config:
+    activate:
+      on-profile: dev
+springdoc:
+  api-docs:
+    enabled: true
+---
+#本地环境
+spring:
+  config:
+    activate:
+      on-profile: local
+springdoc:
+  api-docs:
+    enabled: true
