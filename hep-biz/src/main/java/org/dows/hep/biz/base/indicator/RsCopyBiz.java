@@ -1809,17 +1809,8 @@ public class RsCopyBiz {
     Map<String, String> kCrowdsInstanceIdVExperimentCrowsInstanceIdMap = new HashMap<>();
     String appId = rsCopyCrowdsAndRiskModelRequestRs.getAppId();
     String experimentInstanceId = rsCopyCrowdsAndRiskModelRequestRs.getExperimentInstanceId();
-    TransactionStatus transactionStatus = platformTransactionManager.getTransaction(transactionDefinition);
     rsCopyCrowds(appId, experimentInstanceId, kCrowdsInstanceIdVExperimentCrowsInstanceIdMap);
     rsCopyRiskModel(appId, experimentInstanceId, kCrowdsInstanceIdVExperimentCrowsInstanceIdMap);
-    platformTransactionManager.commit(transactionStatus);
-    /* runsix:复制实验，拿到第0期第数据 */
-    rsExperimentCalculateBiz.experimentRsCalculateAndCreateReportHealthScore(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
-        .builder()
-        .appId(appId)
-        .experimentId(experimentInstanceId)
-        .periods(0)
-        .build());
   }
 
   public void rsCopyCrowds(String appId, String experimentInstanceId, Map<String, String> kCrowdsInstanceIdVExperimentCrowsInstanceIdMap) {
