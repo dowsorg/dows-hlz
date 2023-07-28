@@ -44,6 +44,7 @@ import org.dows.hep.entity.ExperimentTaskScheduleEntity;
 import org.dows.hep.service.*;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -102,6 +103,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void exec(ExperimentGroupSettingRequest request) throws ExecutionException, InterruptedException {
         String experimentInstanceId = request.getExperimentInstanceId();
         String caseInstanceId = request.getCaseInstanceId();
