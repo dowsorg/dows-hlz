@@ -4,22 +4,19 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.websocket.HepClientManager;
-import org.dows.hep.websocket.config.WsProperties;
 import org.springframework.beans.BeansException;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 
 @RequiredArgsConstructor
 @Slf4j
-@Configuration
-@EnableConfigurationProperties({WsProperties.class})
+@Component
 public class MsgScheduler implements ApplicationContextAware {
 
     @Getter
