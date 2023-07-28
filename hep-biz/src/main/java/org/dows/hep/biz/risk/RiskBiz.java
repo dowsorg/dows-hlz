@@ -19,13 +19,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RiskBiz {
 
-    private final RiskModelBiz riskModelBiz;
-
-    private final CrowdsInstanceBiz crowdsInstanceBiz;
-
-    // 实验人群
-    private final ExperimentCrowdsInstanceRsService experimentCrowdsInstanceRsService;
-
     // 实验风险模型
     private final ExperimentRiskModelRsService experimentRiskModelRsService;
 
@@ -44,62 +37,79 @@ public class RiskBiz {
     /**
      * runsix method process
      * 根据实验id、小组id获取此小组所有人 每一期的数据，如果只要干预前后，那就取每个人第一个和最后一个
-    */
-    public List<PersonRiskFactor> get(String experimentInstanceId, String experimentGroupId, String period) {
+     */
+    public List<PersonRiskFactor> get(String experimentInstanceId, String experimentGroupId, Integer period) {
         List<PersonRiskFactor> personRiskFactorList = new ArrayList<>();
 
         /* runsix:获取小组所有实验人物 */
         Map<String, ExperimentPersonEntity> kExperimentPersonIdVExperimentPersonEntityMap = new HashMap<>();
         experimentPersonService.lambdaQuery()
-            .eq(ExperimentPersonEntity::getExperimentGroupId, experimentGroupId)
-            .list()
-            .forEach(experimentPersonEntity -> {
-                kExperimentPersonIdVExperimentPersonEntityMap.put(experimentPersonEntity.getExperimentPersonId(), experimentPersonEntity);
-            });
-        if (kExperimentPersonIdVExperimentPersonEntityMap.isEmpty()) {return personRiskFactorList;}
+                .eq(ExperimentPersonEntity::getExperimentGroupId, experimentGroupId)
+                .list()
+                .forEach(experimentPersonEntity -> {
+                    kExperimentPersonIdVExperimentPersonEntityMap.put(experimentPersonEntity.getExperimentPersonId(), experimentPersonEntity);
+                });
+        if (kExperimentPersonIdVExperimentPersonEntityMap.isEmpty()) {
+            return personRiskFactorList;
+        }
 
         /* runsix:此小组所有实验人物id */
         Set<String> experimentPersonIdSet = kExperimentPersonIdVExperimentPersonEntityMap.keySet();
         Map<String, List<ExperimentPersonRiskModelRsEntity>> kExperimentPersonIdVExperimentPersonRiskModelRsEntityListMap = new HashMap<>();
         experimentPersonRiskModelRsService.lambdaQuery()
-            .eq(ExperimentPersonRiskModelRsEntity::getExperimentId, experimentInstanceId)
-            .in(ExperimentPersonRiskModelRsEntity::getExperimentPersonId, experimentPersonIdSet)
-            .list()
-            .forEach(experimentPersonRiskModelRsEntity -> {
-                String experimentPersonId = experimentPersonRiskModelRsEntity.getExperimentPersonId();
-                List<ExperimentPersonRiskModelRsEntity> experimentPersonRiskModelRsEntityList = kExperimentPersonIdVExperimentPersonRiskModelRsEntityListMap.get(experimentPersonId);
-                if (Objects.isNull(experimentPersonRiskModelRsEntityList)) {experimentPersonRiskModelRsEntityList = new ArrayList<>();}
-                experimentPersonRiskModelRsEntityList.add(experimentPersonRiskModelRsEntity);
-                kExperimentPersonIdVExperimentPersonRiskModelRsEntityListMap.put(experimentPersonId, experimentPersonRiskModelRsEntityList);
-            });
-        if (kExperimentPersonIdVExperimentPersonRiskModelRsEntityListMap.isEmpty()) {return personRiskFactorList;}
+                .eq(ExperimentPersonRiskModelRsEntity::getExperimentId, experimentInstanceId)
+                .in(ExperimentPersonRiskModelRsEntity::getExperimentPersonId, experimentPersonIdSet)
+                .list()
+                .forEach(experimentPersonRiskModelRsEntity -> {
+                    String experimentPersonId = experimentPersonRiskModelRsEntity.getExperimentPersonId();
+                    List<ExperimentPersonRiskModelRsEntity> experimentPersonRiskModelRsEntityList =
+                            kExperimentPersonIdVExperimentPersonRiskModelRsEntityListMap.get(experimentPersonId);
+                    if (Objects.isNull(experimentPersonRiskModelRsEntityList)) {
+                        experimentPersonRiskModelRsEntityList = new ArrayList<>();
+                    }
+                    experimentPersonRiskModelRsEntityList.add(experimentPersonRiskModelRsEntity);
+                    kExperimentPersonIdVExperimentPersonRiskModelRsEntityListMap.put(experimentPersonId, experimentPersonRiskModelRsEntityList);
+                });
+        if (kExperimentPersonIdVExperimentPersonRiskModelRsEntityListMap.isEmpty()) {
+            return personRiskFactorList;
+        }
         Set<String> experimentPersonRiskModelIdSet = new HashSet<>();
         kExperimentPersonIdVExperimentPersonRiskModelRsEntityListMap.values().forEach(experimentPersonRiskModelRsEntityList -> {
-            experimentPersonRiskModelIdSet.addAll(experimentPersonRiskModelRsEntityList.stream().map(ExperimentPersonRiskModelRsEntity::getExperimentPersonRiskModelId).collect(Collectors.toSet()));
+            experimentPersonRiskModelIdSet.addAll(experimentPersonRiskModelRsEntityList.stream()
+                    .map(ExperimentPersonRiskModelRsEntity::getExperimentPersonRiskModelId).collect(Collectors.toSet()));
         });
-        if (experimentPersonRiskModelIdSet.isEmpty()) {return personRiskFactorList;}
+        if (experimentPersonRiskModelIdSet.isEmpty()) {
+            return personRiskFactorList;
+        }
         Map<String, List<ExperimentPersonHealthRiskFactorRsEntity>> kExperimentPersonRiskModelIdVExperimentPersonHealthRiskFactorRsEntityListMap = new HashMap<>();
         experimentPersonHealthRiskFactorRsService.lambdaQuery()
-            .in(ExperimentPersonHealthRiskFactorRsEntity::getExperimentPersonRiskModelId, experimentPersonRiskModelIdSet)
-            .list()
-            .forEach(experimentPersonHealthRiskFactorRsEntity -> {
-                String experimentPersonRiskModelId = experimentPersonHealthRiskFactorRsEntity.getExperimentPersonRiskModelId();
-                List<ExperimentPersonHealthRiskFactorRsEntity> experimentPersonHealthRiskFactorRsEntityList = kExperimentPersonRiskModelIdVExperimentPersonHealthRiskFactorRsEntityListMap.get(experimentPersonRiskModelId);
-                if (Objects.isNull(experimentPersonHealthRiskFactorRsEntityList)) {experimentPersonHealthRiskFactorRsEntityList = new ArrayList<>();}
-                experimentPersonHealthRiskFactorRsEntityList.add(experimentPersonHealthRiskFactorRsEntity);
-                kExperimentPersonRiskModelIdVExperimentPersonHealthRiskFactorRsEntityListMap.put(experimentPersonRiskModelId, experimentPersonHealthRiskFactorRsEntityList);
-            });
+                .in(ExperimentPersonHealthRiskFactorRsEntity::getExperimentPersonRiskModelId, experimentPersonRiskModelIdSet)
+                .list()
+                .forEach(experimentPersonHealthRiskFactorRsEntity -> {
+                    String experimentPersonRiskModelId = experimentPersonHealthRiskFactorRsEntity.getExperimentPersonRiskModelId();
+                    List<ExperimentPersonHealthRiskFactorRsEntity> experimentPersonHealthRiskFactorRsEntityList =
+                            kExperimentPersonRiskModelIdVExperimentPersonHealthRiskFactorRsEntityListMap.get(experimentPersonRiskModelId);
+                    if (Objects.isNull(experimentPersonHealthRiskFactorRsEntityList)) {
+                        experimentPersonHealthRiskFactorRsEntityList = new ArrayList<>();
+                    }
+                    experimentPersonHealthRiskFactorRsEntityList.add(experimentPersonHealthRiskFactorRsEntity);
+                    kExperimentPersonRiskModelIdVExperimentPersonHealthRiskFactorRsEntityListMap.put(experimentPersonRiskModelId,
+                            experimentPersonHealthRiskFactorRsEntityList);
+                });
 
         /* runsix:组合数据 */
         kExperimentPersonIdVExperimentPersonRiskModelRsEntityListMap.forEach((experimentPersonId, experimentPersonRiskModelRsEntityList) -> {
             ExperimentPersonEntity experimentPersonEntity = kExperimentPersonIdVExperimentPersonEntityMap.get(experimentPersonId);
-            if (Objects.isNull(experimentPersonEntity)) {return;}
+            if (Objects.isNull(experimentPersonEntity)) {
+                return;
+            }
             PersonRiskFactor personRiskFactor = PersonRiskFactor
-                .builder()
-                .personId(experimentPersonEntity.getExperimentPersonId())
-                .personName(experimentPersonEntity.getUserName())
-                .build();
-            Map<Integer, List<ExperimentPersonRiskModelRsEntity>> kPeriodsVExperimentPersonRiskModelRsEntityListMap = experimentPersonRiskModelRsEntityList.stream().collect(Collectors.groupingBy(ExperimentPersonRiskModelRsEntity::getPeriods));
+                    .builder()
+                    .personId(experimentPersonEntity.getExperimentPersonId())
+                    .personName(experimentPersonEntity.getUserName())
+                    .build();
+            Map<Integer, List<ExperimentPersonRiskModelRsEntity>> kPeriodsVExperimentPersonRiskModelRsEntityListMap
+                    = experimentPersonRiskModelRsEntityList.stream().collect(Collectors.groupingBy(ExperimentPersonRiskModelRsEntity::getPeriods));
             kPeriodsVExperimentPersonRiskModelRsEntityListMap.forEach((periods, periodsExperimentPersonRiskModelRsEntityList) -> {
                 personRiskFactor.setPeriod(periods);
                 List<PersonRiskFactor.RiskFactor> riskFactors = new ArrayList<>();
@@ -111,7 +121,8 @@ public class RiskBiz {
                     riskFactor.setRiskScore(periodsExperimentPersonRiskModelRsEntity.getComposeRiskScore().toString());
                     riskFactor.setDeathRiskScore(periodsExperimentPersonRiskModelRsEntity.getExistDeathRiskScore().toString());
                     String experimentPersonRiskModelId = periodsExperimentPersonRiskModelRsEntity.getExperimentPersonRiskModelId();
-                    List<ExperimentPersonHealthRiskFactorRsEntity> experimentPersonHealthRiskFactorRsEntityList = kExperimentPersonRiskModelIdVExperimentPersonHealthRiskFactorRsEntityListMap.get(experimentPersonRiskModelId);
+                    List<ExperimentPersonHealthRiskFactorRsEntity> experimentPersonHealthRiskFactorRsEntityList =
+                            kExperimentPersonRiskModelIdVExperimentPersonHealthRiskFactorRsEntityListMap.get(experimentPersonRiskModelId);
                     if (Objects.nonNull(experimentPersonHealthRiskFactorRsEntityList) && !experimentPersonHealthRiskFactorRsEntityList.isEmpty()) {
                         experimentPersonHealthRiskFactorRsEntityList.forEach(experimentPersonHealthRiskFactorRsEntity -> {
                             PersonRiskFactor.RiskItem riskItem = new PersonRiskFactor.RiskItem();

@@ -291,7 +291,6 @@ public class RsExperimentCalculateBiz {
     if (!healthExperimentIndicatorValRsEntityList.isEmpty()) {experimentIndicatorValRsService.saveOrUpdateBatch(healthExperimentIndicatorValRsEntityList);}
   }
 
-  @Transactional(rollbackFor = Exception.class)
   public void experimentRsCalculateAndCreateReportHealthScore(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs experimentRsCalculateAndCreateReportHealthScoreRequestRs) throws ExecutionException, InterruptedException {
     String appId = experimentRsCalculateAndCreateReportHealthScoreRequestRs.getAppId();
     Integer originPeriods = experimentRsCalculateAndCreateReportHealthScoreRequestRs.getPeriods();

@@ -3,12 +3,11 @@ package org.dows.hep.event;
 import cn.hutool.core.date.DateUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dows.hep.biz.calc.ExperimentScoreCalculator;
+import org.dows.hep.biz.calc.CalculatorDispatcher;
 import org.dows.hep.biz.noticer.PeriodEndNoticer;
 import org.dows.hep.biz.noticer.PeriodStartNoticer;
 import org.dows.hep.biz.schedule.TaskScheduler;
 import org.dows.hep.biz.task.ExperimentRestartTask;
-import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import org.dows.hep.entity.ExperimentTaskScheduleEntity;
 import org.dows.hep.service.ExperimentInstanceService;
@@ -43,13 +42,11 @@ public class ApplicationRestartedListener implements ApplicationListener<Applica
 
     private final ExperimentTimerBiz experimentTimerBiz;
 
-    private final ExperimentScoreCalculator experimentScoreCalculator;
+    private final CalculatorDispatcher calculatorDispatcher;
 
     private final PeriodStartNoticer periodStartNoticer;
 
     private final PeriodEndNoticer periodEndNoticer;
-
-    private final ExperimentSchemeBiz experimentSchemeBiz;
 
     @Override
     public void onApplicationEvent(ApplicationStartedEvent event) {
@@ -65,7 +62,7 @@ public class ApplicationRestartedListener implements ApplicationListener<Applica
                 .update();
             ExperimentRestartTask experimentRestartTask = new ExperimentRestartTask(experimentTaskScheduleService, experimentInstanceService,
                     experimentParticipatorService, experimentTimerService, applicationEventPublisher,
-                    appId, taskScheduler, experimentTimerBiz, experimentScoreCalculator, periodStartNoticer, periodEndNoticer,experimentSchemeBiz);
+                    appId, taskScheduler, experimentTimerBiz, calculatorDispatcher, periodStartNoticer, periodEndNoticer);
             experimentRestartTask.run();
     }
 }

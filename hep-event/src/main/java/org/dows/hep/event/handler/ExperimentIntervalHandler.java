@@ -5,10 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.base.indicator.request.RsCalculatePeriodsRequest;
 import org.dows.hep.api.calc.ExperimentScoreCalcRequest;
 import org.dows.hep.api.enums.EnumCalcCode;
-import org.dows.hep.api.user.experiment.request.ExperimentPersonRequest;
 import org.dows.hep.api.user.experiment.response.IntervalResponse;
 import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
-import org.dows.hep.biz.calc.ExperimentScoreCalculator;
+import org.dows.hep.biz.calc.CalculatorDispatcher;
 import org.dows.hep.biz.user.experiment.ExperimentQuestionnaireBiz;
 import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
 import org.dows.hep.biz.user.person.PersonStatiscBiz;
@@ -26,7 +25,7 @@ import java.util.concurrent.ExecutionException;
 public class ExperimentIntervalHandler extends AbstractEventHandler implements EventHandler<IntervalResponse> {
     private final PersonStatiscBiz personStatiscBiz;
     private final ExperimentQuestionnaireBiz experimentQuestionnaireBiz;
-    private final ExperimentScoreCalculator experimentScoreCalculator;
+    private final CalculatorDispatcher calculatorDispatcher;
     private final ExperimentScoringBiz experimentScoringBiz;
     private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
 
@@ -51,7 +50,7 @@ public class ExperimentIntervalHandler extends AbstractEventHandler implements E
                         EnumCalcCode.hepTreatmentPercentCalculator,
                         EnumCalcCode.hepTotalScoreCalculator))
                 .build();
-        experimentScoreCalculator.calc(exptScoreCalcRequest);
+        calculatorDispatcher.calc(exptScoreCalcRequest);
 
         // 落库： 所有计算出得分落在 experiment_scoring 表中
         try {
