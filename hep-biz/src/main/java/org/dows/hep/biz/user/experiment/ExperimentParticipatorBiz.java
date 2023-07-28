@@ -26,6 +26,7 @@ import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
 import org.dows.hep.api.user.experiment.response.GetExperimentGroupCaptainResponse;
 import org.dows.hep.biz.util.EntityUtil;
 import org.dows.hep.entity.ExperimentGroupEntity;
+import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.service.ExperimentGroupService;
 import org.dows.hep.service.ExperimentInstanceService;
@@ -269,11 +270,16 @@ public class ExperimentParticipatorBiz {
                         .eq(ExperimentGroupEntity::getExperimentInstanceId, pageExperimentRequest.getExperimentInstanceId())
                         .eq(ExperimentGroupEntity::getDeleted, false)
                         .one();
+                //获取实验状态
+                ExperimentInstanceEntity instanceEntity = experimentInstanceService.lambdaQuery()
+                        .eq(ExperimentInstanceEntity::getExperimentInstanceId,pageExperimentRequest.getExperimentInstanceId())
+                        .eq(ExperimentInstanceEntity::getDeleted, false)
+                        .one();
                 response.setGroupNo(groupEntity.getGroupNo());
                 response.setGroupAlias(groupEntity.getGroupAlias());
                 response.setGroupName(groupEntity.getGroupName());
-                response.setGroupState(groupEntity.getGroupState());
-                response.setGroupStateStr(response.getGroupStateDescr());
+                response.setState(instanceEntity.getState());
+                response.setStateDescr(response.getStateDescr());
                 List<ExperimentParticipatorEntity> participatorEntityList = experimentParticipatorService.lambdaQuery()
                         .eq(ExperimentParticipatorEntity::getExperimentGroupId, response.getExperimentGroupId())
                         .list();
