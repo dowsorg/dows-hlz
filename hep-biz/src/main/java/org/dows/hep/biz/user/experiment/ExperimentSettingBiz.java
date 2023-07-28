@@ -64,6 +64,9 @@ public class ExperimentSettingBiz {
      */
     public ExperimentSetting.SchemeSetting getSchemeSetting(String exptInstanceId) {
         String settingStr = getSchemeSettingStr(exptInstanceId);
+        if (StrUtil.isBlank(settingStr)) {
+            return new ExperimentSetting.SchemeSetting();
+        }
         return JSONUtil.toBean(settingStr, ExperimentSetting.SchemeSetting.class);
     }
 
@@ -76,6 +79,9 @@ public class ExperimentSettingBiz {
      */
     public ExperimentSetting.SandSetting getSandSetting(String exptInstanceId) {
         String settingStr = getSandSettingStr(exptInstanceId);
+        if (StrUtil.isBlank(settingStr)) {
+            return new ExperimentSetting.SandSetting();
+        }
         return JSONUtil.toBean(settingStr, ExperimentSetting.SandSetting.class);
     }
 
