@@ -397,6 +397,9 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
         for (int i = 0; i < periods; i++) {
             Integer period = i + 1;
             ExperimentScoringEntity v = periodMapScore.get(period);
+            if (BeanUtil.isEmpty(v)) {
+                continue;
+            }
             ExptSandReportModel.ScoreInfo.Score scoreInfo = ExptSandReportModel.ScoreInfo.Score.builder()
                     .healthIndexScore(v.getHealthIndexScore())
                     .knowledgeScore(v.getKnowledgeScore())
@@ -418,6 +421,9 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
         BigDecimal tTotalScore = BigDecimal.ZERO;
         for (int i = 0; i < periods; i++) {
             ExperimentScoringEntity exptScore = periodMapScore.get(i + 1);
+            if (BeanUtil.isEmpty(exptScore)) {
+                continue;
+            }
             String healthIndexScore = exptScore.getHealthIndexScore();
             String knowledgeScore = exptScore.getKnowledgeScore();
             String treatmentPercentScore = exptScore.getTreatmentPercentScore();
