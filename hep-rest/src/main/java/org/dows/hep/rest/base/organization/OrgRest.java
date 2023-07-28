@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author jx
@@ -235,7 +236,7 @@ public class OrgRest {
     @PostMapping("v1/baseOrg/org/copyPerson")
     public String copyPerson(@RequestParam String caseOrgId,
                              @RequestParam String caseInstanceId,
-                             @RequestParam String accountId) {
+                             @RequestParam String accountId) throws ExecutionException, InterruptedException {
         return orgBiz.copyPerson(caseOrgId,caseInstanceId,accountId);
     }
 }

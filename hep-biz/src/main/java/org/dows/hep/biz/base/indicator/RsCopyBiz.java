@@ -21,6 +21,7 @@ import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -1797,7 +1798,7 @@ public class RsCopyBiz {
     return experimentIndicatorExpressionItemRsEntity;
   }
 
-  @Transactional(rollbackFor = Exception.class)
+  @Transactional(rollbackFor = Exception.class, isolation = Isolation.READ_UNCOMMITTED)
   public void rsCopyCrowdsAndRiskModel(RsCopyCrowdsAndRiskModelRequestRs rsCopyCrowdsAndRiskModelRequestRs) throws ExecutionException, InterruptedException {
     Map<String, String> kCrowdsInstanceIdVExperimentCrowsInstanceIdMap = new HashMap<>();
     String appId = rsCopyCrowdsAndRiskModelRequestRs.getAppId();
@@ -1813,7 +1814,6 @@ public class RsCopyBiz {
         .build());
   }
 
-  @Transactional(rollbackFor = Exception.class)
   public void rsCopyCrowds(String appId, String experimentInstanceId, Map<String, String> kCrowdsInstanceIdVExperimentCrowsInstanceIdMap) {
     if (Objects.isNull(kCrowdsInstanceIdVExperimentCrowsInstanceIdMap)) {
       log.error("rsCopyCrowds kCrowdsInstanceIdVExperimentCrowsInstanceIdMap is null, copy stop");
@@ -1863,7 +1863,6 @@ public class RsCopyBiz {
     }
   }
 
-  @Transactional(rollbackFor = Exception.class)
   public void rsCopyRiskModel(String appId, String experimentInstanceId, Map<String, String> kCrowdsInstanceIdVExperimentCrowsInstanceIdMap) {
     List<ExperimentRiskModelRsEntity> experimentRiskModelRsEntityList = new ArrayList<>();
     List<ExperimentIndicatorExpressionRefRsEntity> experimentIndicatorExpressionRefRsEntityList = new ArrayList<>();
