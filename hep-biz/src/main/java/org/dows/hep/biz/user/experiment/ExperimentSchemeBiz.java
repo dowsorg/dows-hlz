@@ -8,6 +8,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.AllArgsConstructor;
@@ -31,6 +32,7 @@ import org.dows.hep.api.user.experiment.request.ExperimentSchemeItemRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeSubmitRequest;
 import org.dows.hep.api.user.experiment.response.*;
+import org.dows.hep.biz.request.ExperimentTaskParamsRequest;
 import org.dows.hep.biz.schedule.TaskScheduler;
 import org.dows.hep.biz.task.ExptSchemeFinishTask;
 import org.dows.hep.entity.*;
@@ -351,12 +353,15 @@ public class ExperimentSchemeBiz {
             DateTime endTime = DateUtil.offset(beginTime, DateField.MILLISECOND, (int) remainingTime);
 
             //保存任务进计时器表，防止重启后服务挂了，一个任务每个实验每一期只能有一条数据
-            String taskParams = "{\"experimentInstanceId\":\"" + exptInstanceId + "\"}";
             ExperimentTaskScheduleEntity taskEntity = ExperimentTaskScheduleEntity.builder()
                     .experimentTaskTimerId(idGenerator.nextIdStr())
+                    .experimentGroupId(exptGroupId)
                     .experimentInstanceId(exptInstanceId)
                     .taskBeanCode(EnumExperimentTask.exptSchemeFinishTask.getDesc())
-                    .taskParams(taskParams)
+                    .taskParams(JSON.toJSONString(ExperimentTaskParamsRequest.builder()
+                                .experimentInstanceId(exptInstanceId)
+                                .experimentGroupId(exptGroupId)
+                                .build()))
                     .appId("3")
                     .executeTime(endTime)
                     .executed(false)

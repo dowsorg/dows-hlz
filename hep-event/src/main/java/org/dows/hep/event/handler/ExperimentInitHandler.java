@@ -2,6 +2,7 @@ package org.dows.hep.event.handler;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,7 @@ import org.dows.hep.api.user.organization.response.CaseOrgResponse;
 import org.dows.hep.biz.base.indicator.RsCopyBiz;
 import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
 import org.dows.hep.biz.base.org.OrgBiz;
+import org.dows.hep.biz.request.ExperimentTaskParamsRequest;
 import org.dows.hep.biz.snapshot.SnapshotManager;
 import org.dows.hep.biz.snapshot.SnapshotRequest;
 import org.dows.hep.biz.task.ExperimentBeginTask;
@@ -181,7 +183,6 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
 
     private void setExptSchemeExpireTask(AtomicReference<ExperimentSetting.SchemeSetting> schemeSettingAtomicReference, ExperimentGroupSettingRequest request) {
         //保存任务进计时器表，防止重启后服务挂了，一个任务每个实验每一期只能有一条数据
-        String taskParams = "{\"experimentInstanceId\":\"" + request.getExperimentInstanceId() + "\"}";
         ExperimentSetting.SchemeSetting schemeSetting = schemeSettingAtomicReference.get();
         Date schemeEndTime = schemeSetting.getSchemeEndTime();
 
@@ -189,7 +190,9 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
                 .experimentTaskTimerId(idGenerator.nextIdStr())
                 .experimentInstanceId(request.getExperimentInstanceId())
                 .taskBeanCode(EnumExperimentTask.exptSchemeExpireTask.getDesc())
-                .taskParams(taskParams)
+                .taskParams(JSON.toJSONString(ExperimentTaskParamsRequest.builder()
+                        .experimentInstanceId(request.getExperimentInstanceId())
+                        .build()))
                 .appId(request.getAppId())
                 .executeTime(schemeEndTime)
                 .executed(false)
@@ -216,11 +219,12 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
                 .eq(ExperimentTaskScheduleEntity::getExperimentInstanceId, experimentGroupSettingRequest.getExperimentInstanceId())
                 .isNull(ExperimentTaskScheduleEntity::getPeriods)
                 .one();
-        String taskParams = "{\"experimentInstanceId\":\"" + experimentGroupSettingRequest.getExperimentInstanceId()+"\"}";
         if (beginTaskScheduleEntity != null && !ReflectUtil.isObjectNull(beginTaskScheduleEntity)) {
             BeanUtil.copyProperties(beginTaskScheduleEntity, beginEntity);
             beginEntity.setExecuteTime(experimentGroupSettingRequest.getStartTime());
-            beginEntity.setTaskParams(taskParams);
+            beginEntity.setTaskParams(JSON.toJSONString(ExperimentTaskParamsRequest.builder()
+                    .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
+                    .build()));
             beginEntity.setExecuted(false);
         } else {
             beginEntity = new ExperimentTaskScheduleEntity()
@@ -228,7 +232,9 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
                             .experimentTaskTimerId(idGenerator.nextIdStr())
                             .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
                             .taskBeanCode(EnumExperimentTask.experimentBeginTask.getDesc())
-                            .taskParams(taskParams)
+                            .taskParams(JSON.toJSONString(ExperimentTaskParamsRequest.builder()
+                            .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
+                            .build()))
                             .appId(experimentGroupSettingRequest.getAppId())
                             .executeTime(experimentGroupSettingRequest.getStartTime())
                             .executed(false)
