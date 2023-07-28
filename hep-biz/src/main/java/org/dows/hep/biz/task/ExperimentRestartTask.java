@@ -70,9 +70,15 @@ public class ExperimentRestartTask implements Runnable {
                 .eq(ExperimentTaskScheduleEntity::getAppId, appId)
                 .list();
         // 2、有些数据部分信息可能会被误删，要过滤掉这些数据
+        scheduleEntityList.stream().filter(schedule -> experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()) == null ||
+                experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()).size() == 0)
+                .forEach(schedule -> experimentTaskScheduleService.lambdaUpdate().set(ExperimentTaskScheduleEntity::getDeleted, true)
+                        .eq(ExperimentTaskScheduleEntity::getId, schedule.getId())
+                        .update()
+                );
         scheduleEntityList = scheduleEntityList.stream().filter(schedule -> experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()) != null &&
-                        experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()).size() > 0)
-                        .collect(Collectors.toList());
+                experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()).size() > 0)
+                .collect(Collectors.toList());
         // 3、判断是在重启开始前应该执行的还是之后执行的任务，如果本来应该是重启之前执行的任务，重启的时候就执行，否则的话就拉起任务
         if (scheduleEntityList != null && scheduleEntityList.size() > 0) {
             scheduleEntityList.forEach(scheduleEntity -> {
