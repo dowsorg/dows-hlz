@@ -28,7 +28,7 @@ public class RsExperimentCalculateRest {
 
   @Operation(summary = "获取实验小组干预危险因素")
   @GetMapping("v1/experimentIndicator/personRiskModel/get")
-  public List<PersonRiskFactor> get(String experimentInstanceId, String experimentGroupId, String period) {
+  public List<PersonRiskFactor> get(String experimentInstanceId, String experimentGroupId, Integer period) {
     return riskBiz.get(experimentInstanceId, experimentGroupId, period);
   }
 

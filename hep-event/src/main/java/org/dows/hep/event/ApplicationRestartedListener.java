@@ -3,7 +3,7 @@ package org.dows.hep.event;
 import cn.hutool.core.date.DateUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dows.hep.biz.calc.ExperimentScoreCalculator;
+import org.dows.hep.biz.calc.CalculatorDispatcher;
 import org.dows.hep.biz.noticer.PeriodEndNoticer;
 import org.dows.hep.biz.noticer.PeriodStartNoticer;
 import org.dows.hep.biz.schedule.TaskScheduler;
@@ -42,7 +42,7 @@ public class ApplicationRestartedListener implements ApplicationListener<Applica
 
     private final ExperimentTimerBiz experimentTimerBiz;
 
-    private final ExperimentScoreCalculator experimentScoreCalculator;
+    private final CalculatorDispatcher calculatorDispatcher;
 
     private final PeriodStartNoticer periodStartNoticer;
 
@@ -62,7 +62,7 @@ public class ApplicationRestartedListener implements ApplicationListener<Applica
                 .update();
             ExperimentRestartTask experimentRestartTask = new ExperimentRestartTask(experimentTaskScheduleService, experimentInstanceService,
                     experimentParticipatorService, experimentTimerService, applicationEventPublisher,
-                    appId, taskScheduler, experimentTimerBiz, experimentScoreCalculator, periodStartNoticer, periodEndNoticer);
+                    appId, taskScheduler, experimentTimerBiz, calculatorDispatcher, periodStartNoticer, periodEndNoticer);
             experimentRestartTask.run();
     }
 }

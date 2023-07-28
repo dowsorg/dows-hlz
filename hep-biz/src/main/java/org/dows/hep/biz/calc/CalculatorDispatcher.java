@@ -19,7 +19,7 @@ import java.util.concurrent.CountDownLatch;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ExperimentScoreCalculator {
+public class CalculatorDispatcher {
 
     private final Map<String, Calculatable> calculatableMap;
 

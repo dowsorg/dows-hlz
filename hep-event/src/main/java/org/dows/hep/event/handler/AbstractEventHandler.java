@@ -1,6 +1,6 @@
 package org.dows.hep.event.handler;
 
-import org.dows.hep.biz.calc.ExperimentScoreCalculator;
+import org.dows.hep.biz.calc.CalculatorDispatcher;
 import org.dows.hep.biz.schedule.TaskScheduler;
 import org.dows.hep.biz.user.experiment.ExperimentGroupBiz;
 import org.dows.hep.biz.user.experiment.ExperimentInsuranceBiz;
@@ -37,7 +37,7 @@ public abstract class AbstractEventHandler {
     protected  ExperimentTimerService experimentTimerService;
 
     @Autowired
-    protected ExperimentScoreCalculator experimentScoreCalculator;
+    protected CalculatorDispatcher calculatorDispatcher;
     @Autowired
     protected IdGenerator idGenerator;
 }

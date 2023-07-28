@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.enums.EnumExperimentTask;
 import org.dows.hep.api.notify.NoticeContent;
-import org.dows.hep.biz.calc.ExperimentScoreCalculator;
+import org.dows.hep.biz.calc.CalculatorDispatcher;
 import org.dows.hep.biz.noticer.PeriodEndNoticer;
 import org.dows.hep.biz.noticer.PeriodStartNoticer;
 import org.dows.hep.biz.schedule.TaskScheduler;
@@ -47,7 +47,7 @@ public class ExperimentRestartTask implements Runnable {
 
     private final ExperimentTimerBiz experimentTimerBiz;
 
-    private final ExperimentScoreCalculator experimentScoreCalculator;
+    private final CalculatorDispatcher calculatorDispatcher;
 
     private final PeriodStartNoticer periodStartNoticer;
 
@@ -96,7 +96,7 @@ public class ExperimentRestartTask implements Runnable {
                         // 3.3、执行定时任务
                         ExperimentCalcTask experimentCalcTask = new ExperimentCalcTask(
                                 experimentTimerBiz,
-                                experimentScoreCalculator,
+                                calculatorDispatcher,
                                 experimentTaskScheduleService,
                                 (String) json.get("experimentInstanceId"),
                                 (String) json.get("experimentGroupId"),
@@ -107,7 +107,7 @@ public class ExperimentRestartTask implements Runnable {
                     if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentFinishTask.getDesc())) {
                         // 3.4、执行定时任务
                         ExperimentFinishTask experimentFinishTask = new ExperimentFinishTask(experimentInstanceService,
-                                experimentParticipatorService, experimentTimerService, experimentTaskScheduleService, experimentScoreCalculator,
+                                experimentParticipatorService, experimentTimerService, experimentTaskScheduleService, calculatorDispatcher,
                                 (String) json.get("experimentInstanceId"), (Integer) json.get("period"));
 
                         taskScheduler.schedule(experimentFinishTask, DateUtil.date(scheduleEntity.getExecuteTime()));
@@ -152,7 +152,7 @@ public class ExperimentRestartTask implements Runnable {
                         // 3.9、执行定时任务
                         ExperimentCalcTask experimentCalcTask = new ExperimentCalcTask(
                                 experimentTimerBiz,
-                                experimentScoreCalculator,
+                                calculatorDispatcher,
                                 experimentTaskScheduleService,
                                 (String) json.get("experimentInstanceId"),
                                 (String) json.get("experimentGroupId"),
@@ -162,7 +162,7 @@ public class ExperimentRestartTask implements Runnable {
                     if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentFinishTask.getDesc())) {
                         // 3.10、执行定时任务
                         ExperimentFinishTask experimentFinishTask = new ExperimentFinishTask(experimentInstanceService,
-                                experimentParticipatorService, experimentTimerService, experimentTaskScheduleService, experimentScoreCalculator,
+                                experimentParticipatorService, experimentTimerService, experimentTaskScheduleService, calculatorDispatcher,
                                 (String) json.get("experimentInstanceId"), (Integer) json.get("period"));
 
                         experimentFinishTask.run();

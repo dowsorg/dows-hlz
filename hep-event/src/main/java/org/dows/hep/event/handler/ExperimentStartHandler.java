@@ -225,7 +225,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
 
         // 执行任务
         ExperimentFinishTask experimentFinishTask = new ExperimentFinishTask(experimentInstanceService,
-                experimentParticipatorService, experimentTimerService, experimentTaskScheduleService, experimentScoreCalculator,
+                experimentParticipatorService, experimentTimerService, experimentTaskScheduleService, calculatorDispatcher,
                 experimentRestartRequest.getExperimentInstanceId(), lastPeriods.getPeriod());
 
         taskScheduler.schedule(experimentFinishTask, entityList.get(entityList.size() - 1).getEndTime());
@@ -268,7 +268,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                 // 执行任务
                 ExperimentCalcTask experimentCalcTask = new ExperimentCalcTask(
                         experimentTimerBiz,
-                        experimentScoreCalculator,
+                        calculatorDispatcher,
                         experimentTaskScheduleService,
                         experimentRestartRequest.getExperimentInstanceId(),
                         experimentGroupRespons.getExperimentGroupId(),
