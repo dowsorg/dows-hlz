@@ -49,7 +49,7 @@ public class ExptSchemeStartHandler extends AbstractEventHandler implements Even
                         .data(EnumWebSocketType.EXPT_SCHEME_START.name())
                         .build();
                 Response<WsMessageResponse> response = Response.ok(result);
-                HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, response);
+                HepClientManager.sendInfoRetry(channel, MessageCode.MESS_CODE, response, null);
             }
         }
     }

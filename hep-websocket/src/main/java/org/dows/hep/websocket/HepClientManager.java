@@ -272,7 +272,7 @@ public class HepClientManager {
         if (StrUtil.isBlank(cron)) {
             WsProperties bean = MsgScheduler.getApplicationContext().getBean(WsProperties.class);
             if (null != bean) {
-                cron = bean.getProducer().getCron();
+                cron = bean.getProducer().getRetry().getCron();
             } else {
                 cron = "0/3 * * * * ?";
             }

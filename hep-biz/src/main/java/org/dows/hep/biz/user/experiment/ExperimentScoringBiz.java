@@ -1,6 +1,7 @@
 package org.dows.hep.biz.user.experiment;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.annotation.CalcCode;
 import org.dows.hep.api.base.indicator.request.RsCalculateCompetitiveScoreRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCalculateMoneyScoreRequestRs;
+import org.dows.hep.api.base.indicator.request.RsInitMoneyRequest;
 import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.enums.EnumCalcCode;
 import org.dows.hep.api.enums.EnumESC;
@@ -15,6 +17,7 @@ import org.dows.hep.api.enums.EnumIndicatorType;
 import org.dows.hep.api.exception.ExperimentScoringException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
+import org.dows.hep.biz.base.indicator.ExperimentIndicatorInstanceRsBiz;
 import org.dows.hep.biz.base.indicator.RsUtilBiz;
 import org.dows.hep.biz.operate.CostRequest;
 import org.dows.hep.biz.operate.OperateCostBiz;
@@ -63,7 +66,10 @@ public class ExperimentScoringBiz {
     private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
     private final RsUtilBiz rsUtilBiz;
 
+    private final ExperimentIndicatorInstanceRsBiz experimentIndicatorInstanceRsBiz;
+
     private final OperateCostBiz operateCostBiz;
+    private final OperateCostService operateCostService;
 
     private BigDecimal getWeightTotalScore(
             BigDecimal knowledgeWeight, BigDecimal knowledgeScore,
@@ -222,16 +228,89 @@ public class ExperimentScoringBiz {
                 .build();
     }
 
+    /* runsix:TODO 等待张亮修复，先返回空 */
     public RsCalculateMoneyScoreRsResponse rsCalculateMoneyScore(RsCalculateMoneyScoreRequestRs rsCalculateMoneyScoreRequestRs) {
         List<GroupMoneyScoreRsResponse> groupMoneyScoreRsResponseList = new ArrayList<>();
+        Integer periods = rsCalculateMoneyScoreRequestRs.getPeriods();
+        String experimentId = rsCalculateMoneyScoreRequestRs.getExperimentId();
 
-        CostRequest costRequest = CostRequest.builder()
-                .experimentInstanceId(rsCalculateMoneyScoreRequestRs.getExperimentId())
-                .period(rsCalculateMoneyScoreRequestRs.getPeriods())
-                .build();
-        // 计算的本期医疗占比得分
-        Map<String, BigDecimal> stringBigDecimalMap = operateCostBiz.calcGroupTreatmentPercent(costRequest);
+        Map<String, String> kExperimentPersonIdVExperimentOrgGroupIdMap = new HashMap<>();
+        Set<String> experimentPersonIdSet = new HashSet<>();
+        experimentPersonService.lambdaQuery()
+            .eq(ExperimentPersonEntity::getExperimentInstanceId, experimentId)
+            .list()
+            .forEach(experimentPersonEntity -> {
+                String experimentPersonId = experimentPersonEntity.getExperimentPersonId();
+                experimentPersonIdSet.add(experimentPersonId);
 
+                kExperimentPersonIdVExperimentOrgGroupIdMap.put(experimentPersonId, experimentPersonEntity.getExperimentGroupId());
+            });
+
+
+        if (experimentPersonIdSet.isEmpty()) {return RsCalculateMoneyScoreRsResponse.builder().build();}
+
+        Map<String, String> initMoneyByPeriods = experimentIndicatorInstanceRsBiz.getInitMoneyByPeriods(
+            RsInitMoneyRequest
+                .builder()
+                .periods(periods)
+                .experimentPersonIdSet(experimentPersonIdSet)
+                .build()
+        );
+        if (initMoneyByPeriods.isEmpty()) {return RsCalculateMoneyScoreRsResponse.builder().build();}
+
+        Map<String, BigDecimal> kExperimentOrgGroupIdVTotalMap = new HashMap<>();
+        initMoneyByPeriods.forEach((experimentPersonId, money) -> {
+            String experimentOrgGroupId = kExperimentPersonIdVExperimentOrgGroupIdMap.get(experimentPersonId);
+            if (StringUtils.isBlank(experimentOrgGroupId)) {return;}
+            BigDecimal bigDecimal = kExperimentOrgGroupIdVTotalMap.get(experimentOrgGroupId);
+            if (Objects.isNull(bigDecimal)) {
+                bigDecimal = BigDecimal.ZERO;
+            }
+            bigDecimal = bigDecimal.add(BigDecimal.valueOf(Double.parseDouble(money)));
+            kExperimentOrgGroupIdVTotalMap.put(experimentOrgGroupId, bigDecimal);
+        });
+
+        CostRequest request = CostRequest
+            .builder()
+            .experimentInstanceId(experimentId)
+            .period(periods)
+            .build();
+
+        Map<String, List<OperateCostEntity>> collect = operateCostService.lambdaQuery()
+            .eq(OperateCostEntity::getExperimentInstanceId, request.getExperimentInstanceId())
+            .eq(OperateCostEntity::getPeriod, request.getPeriod())
+            .eq(OperateCostEntity::getDeleted, Boolean.FALSE)
+            .list()
+            .stream()
+            .collect(Collectors.groupingBy(OperateCostEntity::getExperimentGroupId));
+
+        Map<String, BigDecimal> map = new HashMap<>();
+
+        collect.forEach((k, v) -> {
+            // 计算当前期某小组的总费用
+            BigDecimal periodTotalCost = v.stream()
+                .map(OperateCostEntity::getCost)
+                .reduce(BigDecimal::add)
+                .get();
+            BigDecimal initiaCapital = kExperimentOrgGroupIdVTotalMap.get(k);
+            BigDecimal div = NumberUtil.div(periodTotalCost, initiaCapital, 2);
+
+            BigDecimal treatmentPercentScore = NumberUtil.div(NumberUtil.sub(1, div), 100);
+            map.put(k, treatmentPercentScore);
+        });
+        Map<String, BigDecimal> stringBigDecimalMap = map;
+
+
+
+//        List<GroupMoneyScoreRsResponse> groupMoneyScoreRsResponseList = new ArrayList<>();
+//
+//        CostRequest costRequest = CostRequest.builder()
+//                .experimentInstanceId(rsCalculateMoneyScoreRequestRs.getExperimentId())
+//                .period(rsCalculateMoneyScoreRequestRs.getPeriods())
+//                .build();
+//        // 计算的本期医疗占比得分
+//        Map<String, BigDecimal> stringBigDecimalMap = operateCostBiz.calcGroupTreatmentPercent(costRequest);
+//
         stringBigDecimalMap.forEach((k, v) -> {
             GroupMoneyScoreRsResponse groupMoneyScoreRsResponse = new GroupMoneyScoreRsResponse();
             groupMoneyScoreRsResponse.setExperimentGroupId(k);

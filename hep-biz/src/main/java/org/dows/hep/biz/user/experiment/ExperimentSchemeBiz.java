@@ -267,7 +267,8 @@ public class ExperimentSchemeBiz {
                 .map(ExperimentSchemeItemEntity::getAccountId)
                 .orElse("");
         // check
-        ExperimentSchemeEntity schemeEntity = cannotOperateAfterSubmit(experimentSchemeId);
+        ExperimentSchemeEntity schemeEntity = cannotUpdateAfterSubmit(experimentSchemeId);
+        cannotUpdateIf0UsableTime(schemeEntity.getExperimentSchemeId());
         if (!submitAccountId.equals(itemAccountId)) {
             throw new BizException(ExperimentESCEnum.NO_AUTHORITY);
         }
@@ -292,7 +293,8 @@ public class ExperimentSchemeBiz {
         }
 
         // check
-        ExperimentSchemeEntity schemeEntity = cannotOperateAfterSubmit(request.getExperimentSchemeId());
+        ExperimentSchemeEntity schemeEntity = cannotUpdateAfterSubmit(request.getExperimentSchemeId());
+        cannotUpdateIf0UsableTime(schemeEntity.getExperimentSchemeId());
         filterIfNoPermission(request, submitAccountId);
         // update
         List<ExperimentSchemeItemRequest> itemList = request.getItemList();
@@ -321,7 +323,7 @@ public class ExperimentSchemeBiz {
         String accountId = submitRequest.getAccountId();
 
         // check submit status
-        String experimentSchemeId = cannotOperateAfterSubmit(experimentInstanceId, experimentGroupId);
+        String experimentSchemeId = cannotSubmitAfterSubmit(experimentInstanceId, experimentGroupId);
 
         // check auth
         checkIsCaptain(experimentInstanceId, experimentGroupId, accountId);
@@ -389,23 +391,6 @@ public class ExperimentSchemeBiz {
         // 自动提交方案设计
         String experimentSchemeId = entity.getExperimentSchemeId();
         return submitScheme(exptInstanceId, exptGroupId, experimentSchemeId);
-    }
-
-    private boolean submitScheme(String exptInstanceId, String exptGroupId, String experimentSchemeId) {
-        boolean res1 = experimentSchemeService.lambdaUpdate()
-                .eq(ExperimentSchemeEntity::getExperimentSchemeId, experimentSchemeId)
-                .set(ExperimentSchemeEntity::getState, ExptSchemeStateEnum.SUBMITTED.getCode()) // 1-已提交
-                .update();
-        // 处理小组状态
-        if (containsSandSetting(exptInstanceId)) {
-            handleGroupStatus(exptGroupId, EnumExperimentGroupStatus.ASSIGN_DEPARTMENT);
-        } else {
-            handleGroupStatus(exptGroupId, EnumExperimentGroupStatus.WAIT_SCHEMA);
-        }
-
-        // sync submitted
-        syncSubmittedGroupScheme(exptInstanceId, exptGroupId);
-        return res1;
     }
 
     /**
@@ -486,7 +471,24 @@ public class ExperimentSchemeBiz {
         return result;
     }
 
-    private String cannotOperateAfterSubmit(String experimentInstanceId, String experimentGroupId) {
+    private boolean submitScheme(String exptInstanceId, String exptGroupId, String experimentSchemeId) {
+        boolean res1 = experimentSchemeService.lambdaUpdate()
+                .eq(ExperimentSchemeEntity::getExperimentSchemeId, experimentSchemeId)
+                .set(ExperimentSchemeEntity::getState, ExptSchemeStateEnum.SUBMITTED.getCode()) // 1-已提交
+                .update();
+        // 处理小组状态
+        if (containsSandSetting(exptInstanceId)) {
+            handleGroupStatus(exptGroupId, EnumExperimentGroupStatus.ASSIGN_DEPARTMENT);
+        } else {
+            handleGroupStatus(exptGroupId, EnumExperimentGroupStatus.WAIT_SCHEMA);
+        }
+
+        // sync submitted
+        syncSubmittedGroupScheme(exptInstanceId, exptGroupId);
+        return res1;
+    }
+
+    private String cannotSubmitAfterSubmit(String experimentInstanceId, String experimentGroupId) {
         ExperimentSchemeEntity entity = getScheme(experimentInstanceId, experimentGroupId);
         if (BeanUtil.isEmpty(entity)) {
             throw new BizException(ExperimentESCEnum.SCHEME_NOT_NULL);
@@ -498,7 +500,18 @@ public class ExperimentSchemeBiz {
         return entity.getExperimentSchemeId();
     }
 
-    private ExperimentSchemeEntity cannotOperateAfterSubmit(String experimentSchemeId) {
+    private void cannotUpdateIf0UsableTime(String exptSchemeId) {
+        ExperimentSchemeSettingResponse schemeDuration = getSchemeDuration(exptSchemeId);
+        String remainingTimeStr = Optional.ofNullable(schemeDuration)
+                .map(ExperimentSchemeSettingResponse::getRemainingTime)
+                .orElse("0");
+        long remainingTime = Long.parseLong(remainingTimeStr);
+        if (0 == remainingTime) {
+            throw new BizException("方案设计实验作答时间已结束");
+        }
+    }
+
+    private ExperimentSchemeEntity cannotUpdateAfterSubmit(String experimentSchemeId) {
         ExperimentSchemeEntity entity = getById(experimentSchemeId);
         if (BeanUtil.isEmpty(entity)) {
             throw new BizException(ExperimentESCEnum.SCHEME_NOT_NULL);

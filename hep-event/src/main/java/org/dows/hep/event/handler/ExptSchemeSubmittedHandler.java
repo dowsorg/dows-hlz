@@ -49,7 +49,7 @@ public class ExptSchemeSubmittedHandler extends AbstractEventHandler implements 
                         .data(EnumWebSocketType.EXPT_SCHEME_SUBMITTED.name())
                         .build();
                 Response<WsMessageResponse> response = Response.ok(result);
-                HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, response);
+                HepClientManager.sendInfoRetry(channel, MessageCode.MESS_CODE, response, null);
             }
         }
     }
