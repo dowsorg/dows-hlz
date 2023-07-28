@@ -3,6 +3,7 @@ package org.dows.hep.biz.base.indicator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.dows.hep.api.base.indicator.request.ExperimentRsCalculateAndCreateReportHealthScoreRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyCrowdsAndRiskModelRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyIndicatorFuncRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyPersonIndicatorRequestRs;
@@ -99,6 +100,7 @@ public class RsCopyBiz {
   private final ExperimentRiskModelRsService experimentRiskModelRsService;
   private final RsUtilBiz rsUtilBiz;
   private final RsCaseIndicatorExpressionBiz rsCaseIndicatorExpressionBiz;
+  private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
 
   @Transactional(rollbackFor = Exception.class)
   public void rsCopyIndicatorFunc(RsCopyIndicatorFuncRequestRs rsCopyIndicatorFuncRequestRs) {
@@ -1796,12 +1798,19 @@ public class RsCopyBiz {
   }
 
   @Transactional(rollbackFor = Exception.class)
-  public void rsCopyCrowdsAndRiskModel(RsCopyCrowdsAndRiskModelRequestRs rsCopyCrowdsAndRiskModelRequestRs) {
+  public void rsCopyCrowdsAndRiskModel(RsCopyCrowdsAndRiskModelRequestRs rsCopyCrowdsAndRiskModelRequestRs) throws ExecutionException, InterruptedException {
     Map<String, String> kCrowdsInstanceIdVExperimentCrowsInstanceIdMap = new HashMap<>();
     String appId = rsCopyCrowdsAndRiskModelRequestRs.getAppId();
     String experimentInstanceId = rsCopyCrowdsAndRiskModelRequestRs.getExperimentInstanceId();
     rsCopyCrowds(appId, experimentInstanceId, kCrowdsInstanceIdVExperimentCrowsInstanceIdMap);
     rsCopyRiskModel(appId, experimentInstanceId, kCrowdsInstanceIdVExperimentCrowsInstanceIdMap);
+    /* runsix:复制实验，拿到第0期第数据 */
+    rsExperimentCalculateBiz.experimentRsCalculateAndCreateReportHealthScore(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
+        .builder()
+        .appId(appId)
+        .experimentId(experimentInstanceId)
+        .periods(0)
+        .build());
   }
 
   @Transactional(rollbackFor = Exception.class)

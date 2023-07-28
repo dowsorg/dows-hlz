@@ -35,7 +35,7 @@ public class RsCopyRest {
 
   @Operation(summary = "复制人群类型以及死亡原因以及公式到实验")
   @PostMapping("v1/experimentIndicator/crowdsAndRiskModel/rsCopy")
-  public void rsCopyCrowdsAndRiskModel(RsCopyCrowdsAndRiskModelRequestRs rsCopyCrowdsAndRiskModelRequestRs) {
+  public void rsCopyCrowdsAndRiskModel(RsCopyCrowdsAndRiskModelRequestRs rsCopyCrowdsAndRiskModelRequestRs) throws ExecutionException, InterruptedException {
     rsCopyBiz.rsCopyCrowdsAndRiskModel(rsCopyCrowdsAndRiskModelRequestRs);
   }
 }
