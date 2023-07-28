@@ -8,6 +8,9 @@ import org.dows.hep.entity.ExperimentRiskModelRsEntity;
 import org.dows.hep.service.ExperimentCrowdsInstanceRsService;
 import org.dows.hep.service.ExperimentRiskModelRsService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -17,6 +20,7 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional(isolation = Isolation.READ_UNCOMMITTED, propagation = Propagation.REQUIRES_NEW)
 public class RsExperimentCrowdsBiz {
   private final ExperimentCrowdsInstanceRsService experimentCrowdsInstanceRsService;
   private final ExperimentRiskModelRsService experimentRiskModelRsService;
