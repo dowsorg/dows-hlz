@@ -1,6 +1,9 @@
 package org.dows.hep.vo.report;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
@@ -8,6 +11,9 @@ import java.util.List;
  * 人物风险因素
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class PersonRiskFactor {
     // npc 人物id
     private String personId;

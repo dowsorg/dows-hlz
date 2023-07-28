@@ -7,12 +7,12 @@ import org.dows.hep.api.base.indicator.request.*;
 import org.dows.hep.api.base.indicator.response.RsCalculateCompetitiveScoreRsResponse;
 import org.dows.hep.api.base.indicator.response.RsCalculateMoneyScoreRsResponse;
 import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
+import org.dows.hep.biz.risk.RiskBiz;
 import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.dows.hep.vo.report.PersonRiskFactor;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -24,6 +24,13 @@ import java.util.concurrent.ExecutionException;
 public class RsExperimentCalculateRest {
   private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
   private final ExperimentScoringBiz experimentScoringBiz;
+  private final RiskBiz riskBiz;
+
+  @Operation(summary = "获取实验小组干预危险因素")
+  @GetMapping("v1/experimentIndicator/personRiskModel/get")
+  public List<PersonRiskFactor> get(String experimentInstanceId, String experimentGroupId, String period) {
+    return riskBiz.get(experimentInstanceId, experimentGroupId, period);
+  }
 
   @Operation(summary = "功能结算点（比如健康指导点击后）调用这个封装好的方法")
   @PostMapping("v1/experimentIndicator/func/reCalculate")
