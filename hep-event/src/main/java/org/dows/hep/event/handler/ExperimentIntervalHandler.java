@@ -34,6 +34,8 @@ public class ExperimentIntervalHandler extends AbstractEventHandler implements E
         String appId = intervalResponse.getAppId();
         String experimentInstanceId = intervalResponse.getExperimentInstanceId();
         Integer period = intervalResponse.getPeriod();
+        Integer minOnePeriods = Math.max(1, period-1);
+        log.error("intervalResponse:periods:{}", period);
         String experimentGroupId = intervalResponse.getExperimentGroupId();
 
         // 每期结束后，统一提交知识答题。 （注：需要在算分前执行）
@@ -59,7 +61,7 @@ public class ExperimentIntervalHandler extends AbstractEventHandler implements E
                 .builder()
                 .appId(appId)
                 .experimentId(experimentInstanceId)
-                .periods(period)
+                .periods(minOnePeriods)
                 .build());
             /* runsix:期数翻转，指标相关计算 */
         } catch (ExecutionException | InterruptedException e) {

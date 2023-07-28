@@ -1,5 +1,6 @@
 package org.dows.hep.biz.base.indicator;
 
+import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -12,6 +13,9 @@ import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.RsExperimentIndicatorExpressionBizException;
 import org.dows.hep.api.exception.RsIndicatorExpressionException;
 import org.dows.hep.api.exception.RsUtilBizException;
+import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
+import org.dows.hep.entity.ExperimentSettingEntity;
+import org.dows.hep.service.ExperimentSettingService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
@@ -34,6 +38,16 @@ import java.util.stream.Collectors;
 public class RsUtilBiz {
   private final IdGenerator idGenerator;
   public static final String RESULT_DROP = "";
+  private final ExperimentSettingService experimentSettingService;
+
+  public ExperimentSetting.SandSetting getByExperimentId(String experimentId) {
+    ExperimentSettingEntity experimentSettingEntity = experimentSettingService.lambdaQuery()
+        .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentId)
+        .eq(ExperimentSettingEntity::getConfigKey, ExperimentSetting.SandSetting.class.getName())
+        .one();
+    if (Objects.isNull(experimentSettingEntity)) {return null;}
+    return JSONUtil.toBean(experimentSettingEntity.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
+  }
 
   public String getCommaList(Collection<String> collection) {
     return String.join(EnumString.COMMA.getStr(), collection);
