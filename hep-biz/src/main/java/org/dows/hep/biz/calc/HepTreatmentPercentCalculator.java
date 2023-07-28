@@ -20,8 +20,8 @@ public class HepTreatmentPercentCalculator implements Calculatable {
     @Override
     public void calc(ExperimentScoreCalcRequest experimentScoreCalcRequest) {
 
-        CostRequest costRequest = CostRequest.builder().build();
-        operateCostBiz.calcGroupTreatmentPercent(costRequest);
+//        CostRequest costRequest = CostRequest.builder().build();
+//        operateCostBiz.calcGroupTreatmentPercent(costRequest);
 
     }
 
