@@ -5,6 +5,8 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.websocket.*;
+import org.dows.hep.websocket.proto.MessageBody;
+import org.dows.hep.websocket.schedule.MsgScheduler;
 import org.springframework.util.MultiValueMap;
 
 import java.io.IOException;
@@ -15,7 +17,7 @@ import java.util.Map;
  * http://www.jsons.cn/websocket/
  */
 @Slf4j
-@WebSocketEndpoint(path="/hep")
+@WebSocketEndpoint(path = "/hep")
 public class HepSocketEndpoint {
 
 
@@ -49,22 +51,17 @@ public class HepSocketEndpoint {
 
     @OnMessage
     public void onMessage(NettySession nettySession, String message) {
-        System.out.println(message);
+        // todo 应该是dispatch模式，先简单实现
+        MessageBody messageBody = JSONUtil.toBean(message, MessageBody.class);
         // 确定收到具体用户的信息，处理业务逻辑
         //AccountInfo accountInfo = HepClientManager.getAccountInfo(nettySession.channel());
-        //
-        //HepClientManager.broadCastInfo();
-
-        nettySession.sendText("hep starting......");
+        MsgScheduler.remove(messageBody.getMsgId());
     }
 
-//    @OnBinary
-//    public void onBinary(NettySession nettySession, byte[] bytes) {
-//        for (byte b : bytes) {
-//            System.out.println(b);
-//        }
-//        nettySession.sendBinary(bytes);
-//    }
+    @OnBinary
+    public void onBinary(NettySession nettySession, byte[] bytes) {
+        //nettySession.sendBinary(bytes);
+    }
 
     @OnEvent
     public void onEvent(NettySession nettySession, Object evt) {

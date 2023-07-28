@@ -41,8 +41,9 @@ public class MessageProto {
         return JSONUtil.toJsonStr(chatProto);
     }
 
-    public static String buildSystProto(int code, Object mess) {
+    public static String buildSystProto(String msgId,int code, Object mess) {
         MessageProto chatProto = new MessageProto(SYST_PROTO, null);
+        chatProto.extend.put("msgId",msgId);
         chatProto.extend.put("code", code);
         chatProto.extend.put("mess", mess);
         return JSONUtil.toJsonStr(chatProto);
