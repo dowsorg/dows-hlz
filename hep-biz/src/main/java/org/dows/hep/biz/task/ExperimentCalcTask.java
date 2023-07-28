@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.enums.EnumCalcCode;
 import org.dows.hep.api.enums.EnumExperimentTask;
-import org.dows.hep.biz.calc.ExperimentScoreCalculator;
+import org.dows.hep.biz.calc.CalculatorDispatcher;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import org.dows.hep.entity.ExperimentTaskScheduleEntity;
 import org.dows.hep.service.ExperimentTaskScheduleService;
@@ -22,7 +22,7 @@ public class ExperimentCalcTask implements Runnable {
 
     // 计时器
     private final ExperimentTimerBiz experimentTimerBiz;
-    private final ExperimentScoreCalculator experimentScoreCalculator;
+    private final CalculatorDispatcher calculatorDispatcher;
     private final ExperimentTaskScheduleService experimentTaskScheduleService;
     // 实验ID
     private final String experimentInstanceId;
@@ -35,7 +35,7 @@ public class ExperimentCalcTask implements Runnable {
     public void run() {
         List<EnumCalcCode> calcCodes = List.of(EnumCalcCode.hepHealthIndexCalculator, EnumCalcCode.hepKnowledgeCalculator,
                 EnumCalcCode.hepTreatmentPercentCalculator, EnumCalcCode.hepOperateRightCalculator);
-        experimentScoreCalculator.calc(experimentInstanceId, experimentGroupId, period, calcCodes);
+        calculatorDispatcher.calc(experimentInstanceId, experimentGroupId, period, calcCodes);
 
         //更改计算任务状态
         List<ExperimentTaskScheduleEntity> calcTaskScheduleEntityList = experimentTaskScheduleService.lambdaQuery()

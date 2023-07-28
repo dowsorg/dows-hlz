@@ -15,11 +15,13 @@ import org.dows.account.biz.exception.AccountException;
 import org.dows.account.request.*;
 import org.dows.account.response.*;
 import org.dows.framework.api.util.ReflectUtil;
+import org.dows.hep.api.base.indicator.request.CaseCreateCopyToPersonRequestRs;
 import org.dows.hep.api.enums.EnumCaseFee;
 import org.dows.hep.api.exception.CaseFeeException;
 import org.dows.hep.api.user.organization.request.CaseOrgRequest;
 import org.dows.hep.api.user.organization.response.CaseOrgResponse;
 import org.dows.hep.biz.base.indicator.CaseIndicatorInstanceBiz;
+import org.dows.hep.biz.tenant.casus.TenantCaseEventBiz;
 import org.dows.hep.entity.CaseOrgEntity;
 import org.dows.hep.entity.CaseOrgFeeEntity;
 import org.dows.hep.entity.CasePersonEntity;
@@ -39,6 +41,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author jx
@@ -62,6 +65,7 @@ public class OrgBiz {
     private final HepArmService hepArmService;
     private final AccountRoleApi accountRoleApi;
     private final CaseIndicatorInstanceBiz caseIndicatorInstanceBiz;
+    private final TenantCaseEventBiz tenantCaseEventBiz;
 
     /**
      * @param
@@ -725,7 +729,7 @@ public class OrgBiz {
      * @创建时间: 2023/5/05 10:00
      */
     @DSTransactional
-    public String copyPerson(String caseOrgId, String caseInstanceId, String accountId) {
+    public String copyPerson(String caseOrgId, String caseInstanceId, String accountId) throws ExecutionException, InterruptedException {
         //1、机构内人物复制
         //1.1、获取用户信息及简介并创建新用户及简介
         AccountUserResponse accountUser = accountUserApi.getUserByAccountId(accountId);
@@ -774,6 +778,15 @@ public class OrgBiz {
                 .accountId(vo.getAccountId())
                 .build();
         casePersonService.save(person);
+        //3、复制指标
+        caseIndicatorInstanceBiz.copyPersonIndicatorInstance(CaseCreateCopyToPersonRequestRs
+                .builder()
+                .appId(accountInstanceResponse.getAppId())
+                .principalId(accountId)
+                .build());
+        //4.复制事件
+        tenantCaseEventBiz.copyCaseEvent4Person(accountInstanceResponse.getAppId(),vo.getAccountId(),accountId,
+                accountInstanceResponse.getUserName());
         return vo.getAccountId();
     }
 

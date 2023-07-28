@@ -9,7 +9,7 @@ import org.dows.hep.api.enums.EnumCalcCode;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.enums.EnumExperimentTask;
 import org.dows.hep.api.exception.ExperimentException;
-import org.dows.hep.biz.calc.ExperimentScoreCalculator;
+import org.dows.hep.biz.calc.CalculatorDispatcher;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.entity.ExperimentTaskScheduleEntity;
@@ -39,7 +39,7 @@ public class ExperimentFinishTask implements Runnable {
 
     private final ExperimentTaskScheduleService experimentTaskScheduleService;
     //
-    private final ExperimentScoreCalculator experimentScoreCalculator;
+    private final CalculatorDispatcher calculatorDispatcher;
 
     private final String experimentInstanceId;
 
@@ -84,7 +84,7 @@ public class ExperimentFinishTask implements Runnable {
         experimentScoreCalcRequest.setExperimentInstanceId(experimentInstanceId);
         experimentScoreCalcRequest.setEnumCalcCodes(List.of(EnumCalcCode.hepTotalScoreCalculator));
         //todo 根据条件计算总排行
-        experimentScoreCalculator.calc(experimentScoreCalcRequest);
+        calculatorDispatcher.calc(experimentScoreCalcRequest);
 
         //更改完成任务状态
         ExperimentTaskScheduleEntity finishTaskScheduleEntity = experimentTaskScheduleService.lambdaQuery()

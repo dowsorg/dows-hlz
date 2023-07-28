@@ -1813,7 +1813,6 @@ public class RsCopyBiz {
         .build());
   }
 
-  @Transactional(rollbackFor = Exception.class)
   public void rsCopyCrowds(String appId, String experimentInstanceId, Map<String, String> kCrowdsInstanceIdVExperimentCrowsInstanceIdMap) {
     if (Objects.isNull(kCrowdsInstanceIdVExperimentCrowsInstanceIdMap)) {
       log.error("rsCopyCrowds kCrowdsInstanceIdVExperimentCrowsInstanceIdMap is null, copy stop");
@@ -1863,7 +1862,6 @@ public class RsCopyBiz {
     }
   }
 
-  @Transactional(rollbackFor = Exception.class)
   public void rsCopyRiskModel(String appId, String experimentInstanceId, Map<String, String> kCrowdsInstanceIdVExperimentCrowsInstanceIdMap) {
     List<ExperimentRiskModelRsEntity> experimentRiskModelRsEntityList = new ArrayList<>();
     List<ExperimentIndicatorExpressionRefRsEntity> experimentIndicatorExpressionRefRsEntityList = new ArrayList<>();

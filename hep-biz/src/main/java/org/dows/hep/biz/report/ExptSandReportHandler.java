@@ -25,16 +25,14 @@ import org.dows.hep.api.user.experiment.ExptReportTypeEnum;
 import org.dows.hep.api.user.experiment.dto.ExptQuestionnaireOptionDTO;
 import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireItemResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireResponse;
+import org.dows.hep.biz.risk.RiskBiz;
 import org.dows.hep.biz.user.experiment.ExperimentQuestionnaireBiz;
 import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
 import org.dows.hep.entity.*;
 import org.dows.hep.properties.FindSoftProperties;
 import org.dows.hep.service.*;
-import org.dows.hep.vo.report.ExptBaseInfoModel;
-import org.dows.hep.vo.report.ExptGroupReportVO;
-import org.dows.hep.vo.report.ExptReportVO;
-import org.dows.hep.vo.report.ExptSandReportModel;
+import org.dows.hep.vo.report.*;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
@@ -44,10 +42,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -68,6 +63,8 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
     private final ExperimentInstanceService experimentInstanceService;
     private final ExperimentScoringService experimentScoringService;
     private final ExperimentOrgService experimentOrgService;
+
+    private final RiskBiz riskBiz;
 
     private final ReportOSSHelper ossHelper;
     private final ReportPdfHelper reportPdfHelper;
@@ -490,7 +487,7 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
         return result;
     }
 
-    private Integer getTotalRank(String exptGroupId, ExptSandReportData exptData ) {
+    private Integer getTotalRank(String exptGroupId, ExptSandReportData exptData) {
         ExperimentRankResponse experimentRankResponse = exptData.getExperimentRankResponse();
         List<ExperimentTotalRankItemResponse> totalRank = experimentRankResponse.getExperimentTotalRankItemResponseList();
         Integer rankNum = 0;
@@ -564,6 +561,25 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
 
     private List<ExptSandReportModel.NpcData> generateNpcInfo(String exptGroupId, ExptSandReportData exptData) {
         List<ExptSandReportModel.NpcData> result = new ArrayList<>();
+        String experimentInstanceId = exptData.getExptInfo().getExperimentInstanceId();
+        // 期数
+        Integer periods = exptData.getSandSetting().getPeriods();
+        List<PersonRiskFactor> personRiskFactors = riskBiz.get(experimentInstanceId, exptGroupId, null)
+                .stream()
+                .sorted(Comparator.comparing(PersonRiskFactor::getPersonId))
+                .collect(Collectors.toList());
+
+        int lastPeriod = periods - 1;
+        // 获取第一期
+        PersonRiskFactor personRiskFactor1 = personRiskFactors.get(0);
+        // 获取最后一期
+        PersonRiskFactor personRiskFactor2 = personRiskFactors.get(lastPeriod);
+
+        ExptSandReportModel.NpcData  npcData = new ExptSandReportModel.NpcData();
+        npcData.setInterveneBefores(personRiskFactor1);
+        npcData.setInterveneAfters(personRiskFactor2);
+
+        result.add(npcData);
         return result;
     }
 
