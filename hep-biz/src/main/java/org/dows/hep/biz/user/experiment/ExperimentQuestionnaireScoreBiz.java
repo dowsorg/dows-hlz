@@ -227,6 +227,9 @@ public class ExperimentQuestionnaireScoreBiz {
 
             // list right_value_id
             String rightValue = item.getRightValue();
+            if (StrUtil.isBlank(rightValue)) {
+                continue;
+            }
             List<ExptQuestionnaireOptionDTO> rightValueList = JSONUtil.toList(rightValue, ExptQuestionnaireOptionDTO.class);
             if (CollUtil.isEmpty(rightValueList)) {
                 continue;
