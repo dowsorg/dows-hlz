@@ -33,7 +33,8 @@ import java.util.zip.ZipOutputStream;
 @RequiredArgsConstructor
 public class ReportZipHelper {
     private final ReportOSSHelper ossHelper;
-    private static final String ZIP_REPORT_HOME_DIR = SystemConstant.PDF_REPORT_TMP_PATH + "压缩文件" + File.separator;
+    private static final String ZIP_DIR = "压缩文件" + File.separator;
+    private static final String ZIP_REPORT_HOME_DIR = SystemConstant.PDF_REPORT_TMP_PATH + ZIP_DIR;
 
     /**
      * @param exptReportVO -
@@ -64,7 +65,7 @@ public class ReportZipHelper {
             // 压缩文件
             toZipExpt(exptReportVO, zos);
             // minio 上传文件
-            OssInfo ossInfo = ossHelper.upload(fileName.toFile(), fileName.toString(), true);
+            OssInfo ossInfo = ossHelper.upload(fileName.toFile(), ZIP_DIR + fileName.getFileName().toString(), true);
             // 构建文件返回全路径
             exptReportVO.setZipName(ossInfo.getName());
             exptReportVO.setZipPath(ossHelper.getUrlPath(ossInfo));
