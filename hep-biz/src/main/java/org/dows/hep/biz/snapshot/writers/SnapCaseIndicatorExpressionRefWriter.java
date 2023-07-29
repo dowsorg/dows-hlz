@@ -33,7 +33,10 @@ public class SnapCaseIndicatorExpressionRefWriter extends BaseSnapshotTableWrite
     private IndicatorExpressionRefDao indicatorExpressionRefDao;
 
     @Autowired
-    private ExperimentInstanceDao experimentInstanceDao;
+    private ExperimentPersonDao experimentPersonDao;
+
+    @Autowired
+    private CasePersonDao casePersonDao;
 
     @Autowired
     private CaseEventDao caseEventDao;
@@ -43,14 +46,13 @@ public class SnapCaseIndicatorExpressionRefWriter extends BaseSnapshotTableWrite
 
     @Override
     public List<CaseIndicatorExpressionRefEntity> readSource(SnapshotRequest req) {
-        final String caseInstanceId= experimentInstanceDao.getById(req.getExperimentInstanceId(), ExperimentInstanceEntity::getCaseInstanceId)
-                .map(ExperimentInstanceEntity::getCaseInstanceId)
-                .orElse(null);
-        if(null==caseInstanceId){
-            return null;
-        }
         List<CaseIndicatorExpressionRefEntity> rst=new ArrayList<>();
-        List<String> caseEventIds= ShareUtil.XCollection.map(caseEventDao.getByCaseInstanceId(caseInstanceId, CaseEventEntity::getCaseEventId),
+
+        List<String> casePersonIds=ShareUtil.XCollection.map(experimentPersonDao.getByExperimentId(req.getAppId(), req.getExperimentInstanceId(), ExperimentPersonEntity::getCasePersonId),
+                ExperimentPersonEntity::getCasePersonId);
+        List<String> caseAccountIds=ShareUtil.XCollection.map(casePersonDao.getByPersonIds(casePersonIds, CasePersonEntity::getAccountId),
+                CasePersonEntity::getAccountId);
+        List<String> caseEventIds= ShareUtil.XCollection.map(caseEventDao.getCaseEventsByPersonIds(caseAccountIds, CaseEventEntity::getCaseEventId),
                 CaseEventEntity::getCaseEventId);
         rst.addAll(caseIndicatorExpressionRefDao.getByReasonId(req.getAppId(), caseEventIds ));
         List<String> treatItemIds= ShareUtil.XCollection.map(treatItemDao.getAll(req.getAppId(), true,TreatItemEntity::getTreatItemId),
