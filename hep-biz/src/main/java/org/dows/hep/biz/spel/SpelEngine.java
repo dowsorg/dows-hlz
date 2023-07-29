@@ -190,7 +190,7 @@ public class SpelEngine {
         BigDecimal valNumber = BigDecimalUtil.valueOf(val);
         BigDecimal curValNumber = BigDecimalUtil.valueOf(curVal, BigDecimal.ZERO);
         BigDecimal change = valNumber.subtract(curValNumber);
-        if (ShareUtil.XObject.notNumber(input.getFactor())) {
+        if (ShareUtil.XObject.isNumber(input.getFactor())) {
             change = change.multiply(input.getFactor());
         }
         if (ShareUtil.XObject.allEmpty(input.getMin(), input.getMax())) {
@@ -209,7 +209,7 @@ public class SpelEngine {
         return rst;
     }
     private void coreEvalSum(Map<String, SpelEvalSumResult> mapSum,SpelEvalResult item) {
-        if (ShareUtil.XObject.anyEmpty(mapSum, item)) {
+        if (null==mapSum|| ShareUtil.XObject.isEmpty(item)) {
             return;
         }
         SpelEvalSumResult evalSumItem = mapSum.computeIfAbsent(item.getIndicatorId(), k -> new SpelEvalSumResult().setExperimentIndicatorId(item.getIndicatorId()));

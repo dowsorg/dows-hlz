@@ -142,7 +142,7 @@ public class SpelInvoker {
         List<ExperimentIndicatorValRsEntity> rows=ShareUtil.XCollection.map(evalResults, false, i->
                 new ExperimentIndicatorValRsEntity().setIndicatorInstanceId(i.getExperimentIndicatorId())
                         .setPeriods(periods)
-                        .setCurrentVal(i.getValString()));
+                        .setCurrentVal( i.getNewValString()));
         return experimentIndicatorValRsDao.updateIndicatorCurrent(rows);
     }
 
