@@ -187,15 +187,8 @@ public class ExperimentTimerBiz {
                     long ds = et.getPeriodDuration() - rs;
                     intervalResponse.setSandRemnantSecond(rs / 1000);
                     intervalResponse.setSandDurationSecond(ds / 1000);
-//                    intervalResponse.setState(et.getState());
-//                    intervalResponse.setPeriod(et.getPeriod());
                     break;
                 } else if (sct > et.getEndTime().getTime() && sct <= et.getEndTime().getTime() + et.getPeriodInterval()) { // 间隔期
-//                    intervalResponse.setCountdown(et.getStartTime().getTime() - sct);
-//                    intervalResponse.setModel(et.getModel());
-//                    intervalResponse.setPeriod(et.getPeriod());
-//                    intervalResponse.setState(et.getState());
-//                    intervalResponse.setAppId(et.getAppId());
                     // 发布保险报销事件
                     applicationEventPublisher.publishEvent(new IntervalEvent(intervalResponse));
                     break;
