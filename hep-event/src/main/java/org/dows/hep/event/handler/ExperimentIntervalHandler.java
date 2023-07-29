@@ -34,7 +34,6 @@ public class ExperimentIntervalHandler extends AbstractEventHandler implements E
         String appId = intervalResponse.getAppId();
         String experimentInstanceId = intervalResponse.getExperimentInstanceId();
         Integer period = intervalResponse.getPeriod();
-        Integer minOnePeriods = Math.max(1, period-1);
         log.error("intervalResponse:periods:{}", period);
         String experimentGroupId = intervalResponse.getExperimentGroupId();
 
@@ -61,7 +60,7 @@ public class ExperimentIntervalHandler extends AbstractEventHandler implements E
                 .builder()
                 .appId(appId)
                 .experimentId(experimentInstanceId)
-                .periods(minOnePeriods)
+                .periods(period)
                 .build());
             /* runsix:期数翻转，指标相关计算 */
         } catch (ExecutionException | InterruptedException e) {
