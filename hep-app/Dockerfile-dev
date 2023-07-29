@@ -1,10 +1,11 @@
 FROM eclipse-temurin:17-jre as builder
 
 WORKDIR application
-ARG JAR_FILE=./target/*.jar
-COPY ${JAR_FILE} app.jar
+ARG JAR_FILE
 
-RUN java -Djarmode=layertools -jar app.jar extract && rm app.jar
+COPY hep-app/target/${JAR_FILE} /root/${JAR_FILE}
+
+RUN java -Djarmode=layertools -jar ${JAR_FILE} extract && rm ${JAR_FILE}
 
 
 FROM eclipse-temurin:17-jre
