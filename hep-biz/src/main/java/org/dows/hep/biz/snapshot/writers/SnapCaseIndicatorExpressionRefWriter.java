@@ -42,6 +42,9 @@ public class SnapCaseIndicatorExpressionRefWriter extends BaseSnapshotTableWrite
     private CaseEventDao caseEventDao;
 
     @Autowired
+    private CaseEventActionDao caseEventActionDao;
+
+    @Autowired
     private TreatItemDao treatItemDao;
 
     @Override
@@ -54,6 +57,9 @@ public class SnapCaseIndicatorExpressionRefWriter extends BaseSnapshotTableWrite
                 CasePersonEntity::getAccountId);
         List<String> caseEventIds= ShareUtil.XCollection.map(caseEventDao.getCaseEventsByPersonIds(caseAccountIds, CaseEventEntity::getCaseEventId),
                 CaseEventEntity::getCaseEventId);
+        List<String> caseActionIds=ShareUtil.XCollection.map(caseEventActionDao.getByEventId(caseEventIds, CaseEventActionEntity::getCaseEventActionId),
+                CaseEventActionEntity::getCaseEventActionId);
+        caseEventIds.add(caseActionIds);
         rst.addAll(caseIndicatorExpressionRefDao.getByReasonId(req.getAppId(), caseEventIds ));
         List<String> treatItemIds= ShareUtil.XCollection.map(treatItemDao.getAll(req.getAppId(), true,TreatItemEntity::getTreatItemId),
                 TreatItemEntity::getTreatItemId);
