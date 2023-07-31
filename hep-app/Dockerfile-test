@@ -12,7 +12,7 @@ FROM eclipse-temurin:17-jre
 
 ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-ENV JAVA_OPTS="-Xms128m -Xmx256m"
+ENV JAVA_OPTS="-Xms2048m -Xmx2048m"
 
 ENV SPRING_PROFILE="-Dspring.profiles.active=test"
 #配置开启debug
