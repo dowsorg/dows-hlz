@@ -363,7 +363,7 @@ public class ExperimentOrgInterveneBiz{
         OperateOrgFuncSnapEntity rowOrgFuncSnap=new OperateOrgFuncSnapEntity()
                 .setAppId(validator.getAppId())
                 .setSnapTime(dateNow);
-        final List<ExptTreatPlanItemVO> newItems=new ArrayList<>();
+        List<ExptTreatPlanItemVO> newItems=new ArrayList<>();
         for(int i=saveTreat.getTreatItems().size()-1;i>=0;i--){
             ExptTreatPlanItemVO item=saveTreat.getTreatItems().get(i);
             if(ShareUtil.XObject.notEmpty(item.getItemId(), true)){
