@@ -9,6 +9,8 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -50,24 +52,25 @@ public class EventScheduler implements ApplicationListener<ContextClosedEvent> {
      * @return
      */
     public ScheduledFuture<?> scheduleTimeBasedEvent(String appId,String experimentId, long delaySeconds) {
-        appId= ShareBiz.checkAppId(appId,experimentId);
+        appId = ShareBiz.checkAppId(appId, experimentId);
         final ExperimentCacheKey experimentKey = new ExperimentCacheKey(appId, experimentId);
-        log.info("EventScheduler schedule. {} {}",scheduledExecutor,experimentKey);
-        return scheduleTimeBasedEvent(experimentKey,delaySeconds);
+        log.info("EventScheduler schedule. {} {}", scheduledExecutor, experimentKey);
+        return scheduleTimeBasedEvent(experimentKey, LocalDateTime.now().plusSeconds(delaySeconds));
     }
-    public ScheduledFuture<?> scheduleTimeBasedEvent(ExperimentCacheKey experimentKey, long delaySeconds){
+    public ScheduledFuture<?> scheduleTimeBasedEvent(ExperimentCacheKey experimentKey, LocalDateTime nextTime){
         final String exclusiveKey = String.format("timeevent:%s", experimentKey.getKeyString());
-        return scheduleExclusive(exclusiveKey, new TimeBasedEventTask(experimentKey), delaySeconds);
+        return scheduleExclusive(exclusiveKey, new TimeBasedEventTask(experimentKey), nextTime);
     }
 
-    public ScheduledFuture<?> scheduleExclusive(String exclusiveKey, Runnable  cmd, long delaySeconds) {
+    public ScheduledFuture<?> scheduleExclusive(String exclusiveKey, Runnable  cmd, LocalDateTime nextTime) {
         ScheduledFuture<?>[] buffer = futureCache.caffineCache().get(exclusiveKey, key -> new ScheduledFuture<?>[2]);
-        ScheduledFuture<?> rst=null;
-        final long additiveSeconds=5;
-        synchronized (buffer){
+        ScheduledFuture<?> rst = null;
+        final long additiveSeconds = 5;
+        synchronized (buffer) {
             clearExclusiveTaskBuffer(buffer);
-            buffer[0]=rst=schedule(decoratedExclusiveTask(exclusiveKey,cmd),delaySeconds,TimeUnit.SECONDS);
-            buffer[1]=schedule(decoratedExclusiveTask(exclusiveKey,cmd),delaySeconds+additiveSeconds,TimeUnit.SECONDS);
+            final long delaySeconds = Math.max(1, Duration.between(LocalDateTime.now(), nextTime).toSeconds());
+            buffer[0] = rst = schedule(decoratedExclusiveTask(exclusiveKey, cmd), delaySeconds, TimeUnit.SECONDS);
+            buffer[1] = schedule(decoratedExclusiveTask(exclusiveKey, cmd), delaySeconds + additiveSeconds, TimeUnit.SECONDS);
         }
         return rst;
     }

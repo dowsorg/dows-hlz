@@ -11,6 +11,7 @@ import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -48,8 +49,9 @@ public class EventStarter implements ApplicationListener<ApplicationStartedEvent
                     ExperimentInstanceEntity::getExperimentInstanceId,
                     ExperimentInstanceEntity::getState);
             cnt= rowsExperiment.size();
+            final LocalDateTime nextTime=LocalDateTime.now().plusSeconds(DELAYSeconds);
             rowsExperiment.forEach(i -> {
-                EventScheduler.Instance().scheduleTimeBasedEvent(new ExperimentCacheKey(i.getAppId(), i.getExperimentInstanceId()), DELAYSeconds);
+                EventScheduler.Instance().scheduleTimeBasedEvent(new ExperimentCacheKey(i.getAppId(), i.getExperimentInstanceId()), nextTime);
             });
             log.info(String.format("EventStarter.start succ. cnt:%s id:%s",rowsExperiment.size(),
                     String.join(",", ShareUtil.XCollection.map(rowsExperiment, ExperimentInstanceEntity::getExperimentInstanceId))));

@@ -65,12 +65,13 @@ public class PersonBasedEventTask extends BaseEventTask{
         final RunStat runStat=new RunStat(groups.size());
         final ExecutorService executor=EventExecutor.Instance().getThreadPool();
         groups.forEach(i->{
-            CompletableFuture.runAsync(()->runEventGroup(i,timePoint,eventColl,runStat), executor)
+            runEventGroup(i,timePoint,eventColl,runStat);
+         /*   CompletableFuture.runAsync(()->runEventGroup(i,timePoint,eventColl,runStat), executor)
                     .exceptionally(ex-> {
                         logError(ex, "runEventGroup", "exptPersonIds:%s", String.join(",",
                                 ShareUtil.XCollection.map(i, PersonBasedEventCollection.PersonBasedEventGroup::getExperimentPersonId)));
                         return null;
-                    });
+                    });*/
         });
         return RUNCode4Succ;
     }
