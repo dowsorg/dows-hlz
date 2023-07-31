@@ -326,14 +326,6 @@ public class ExperimentOrgInterveneBiz{
     }
 
     public SaveExptTreatResponse saveExptTreatPlan( SaveExptTreatRequest saveTreat, HttpServletRequest request){
-        ExptRequestValidator validator=ExptRequestValidator.create(saveTreat);
-        validator.checkExperimentPerson()
-                .checkExperimentOrg()
-                .checkExperimentInstanceId()
-                .checkIndicatorFunc();
-
-        saveTreat.setTreatItems(ShareUtil.XObject.defaultIfNull(saveTreat.getTreatItems(), Collections.emptyList()));
-
         // 获取总的费用资金
         BigDecimal sum = new BigDecimal(0);
         log.info("getTreatItems==========" + saveTreat.getTreatItems());
@@ -348,6 +340,14 @@ public class ExperimentOrgInterveneBiz{
             }
         }
         log.info("sum=======================" + sum);
+
+        ExptRequestValidator validator=ExptRequestValidator.create(saveTreat);
+        validator.checkExperimentPerson()
+                .checkExperimentOrg()
+                .checkExperimentInstanceId()
+                .checkIndicatorFunc();
+
+        saveTreat.setTreatItems(ShareUtil.XObject.defaultIfNull(saveTreat.getTreatItems(), Collections.emptyList()));
 
         //校验操作类型
         EnumExptOperateType enumOperateType=EnumExptOperateType.ofCategId(validator.getIndicatorCategoryId());
