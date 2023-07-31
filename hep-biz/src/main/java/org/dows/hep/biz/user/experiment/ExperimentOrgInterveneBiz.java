@@ -339,8 +339,8 @@ public class ExperimentOrgInterveneBiz{
         for(int i = 0;i < saveTreat.getTreatItems().size(); i++){
             ExptTreatPlanItemVO vo = saveTreat.getTreatItems().get(i);
             if(vo.getItemId() == null) {
-                log.info("id" + vo.getItemId());
-                log.info(String.valueOf("is true" + vo.getItemId() == null));
+                log.info("id=======" + vo.getItemId());
+                log.info("flag =======" + String.valueOf(vo.getItemId() == null));
                 sum = sum.add(BigDecimalOptional.valueOf(vo.getFee()).mul(BigDecimalUtil.tryParseDecimalElseZero(vo.getWeight())).getValue());
                 log.info("111111111");
             }
