@@ -646,7 +646,7 @@ public class RsExperimentIndicatorExpressionBiz {
   ) {
     String result = resultAtomicReference.get();
     /* runsix:1.如果解析的结果是空，则将结果赋值为指标默认值 */
-    if (StringUtils.isBlank(result)) {
+    if (StringUtils.equals(RsUtilBiz.RESULT_DROP, result)) {
       /* runsix: TODO must optimize */
       String principalId = experimentIndicatorExpressionRsEntity.getPrincipalId();
       ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = experimentIndicatorInstanceRsService.lambdaQuery()
