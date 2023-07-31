@@ -1,6 +1,5 @@
 package org.dows.hep.api.user.experiment.vo;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,11 +19,11 @@ import lombok.experimental.Accessors;
 @Schema(name = "ExptTreatPlanItemVO 对象", title = "治疗方案关联项目")
 public class ExptTreatPlanItemVO {
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
+
     @Schema(title = "序号,新增为空,非空该条不可删除, 前端按该值倒序排列")
     private String itemId;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
+
     @Schema(title = "前端传入原始序号")
     private String rawItemId;
     @Schema(title = "治疗项目ID")
