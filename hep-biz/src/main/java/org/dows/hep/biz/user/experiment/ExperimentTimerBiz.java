@@ -173,22 +173,27 @@ public class ExperimentTimerBiz {
              */
             for (int i = 0; i < experimentTimerEntities.size(); i++) {
                 ExperimentTimerEntity et = experimentTimerEntities.get(i);
+                String logStr = JSONUtil.toJsonStr(et);
+                log.error("0-et:{}", logStr);
                 intervalResponse.setModel(et.getModel());
                 intervalResponse.setPeriod(et.getPeriod());
                 intervalResponse.setState(et.getState());
                 intervalResponse.setAppId(et.getAppId());
                 // 间隔期|倒计时
                 if (sct >= et.getStartTime().getTime() - et.getPeriodInterval() && sct < et.getStartTime().getTime()) { // 一期开始倒计时
+                    log.error("1-et:{}", logStr);
                     intervalResponse.setCountdown(et.getStartTime().getTime() - sct);
                     break;
                 } else if (sct >= et.getStartTime().getTime() && sct <= et.getEndTime().getTime()) {// 期数中
+                    log.error("2-et:{}", logStr);
                     // 本期剩余时间 = 暂停推迟后的结束时间 - 当前时间
                     long rs = et.getEndTime().getTime() - sct + 1;
                     long ds = et.getPeriodDuration() - rs;
                     intervalResponse.setSandRemnantSecond(rs / 1000);
                     intervalResponse.setSandDurationSecond(ds / 1000);
                     break;
-                } else if (sct >= et.getEndTime().getTime() && sct <= et.getEndTime().getTime() + et.getPeriodInterval()) { // 间隔期
+                } else if (sct >= et.getEndTime().getTime() && sct <= et.getEndTime().getTime() + et.getPeriodInterval()) {
+                    log.error("3-et:{}", logStr);// 间隔期
                     log.error("ExperimentTimerBiz.countdown periods:{}", et.getPeriod());
                     intervalResponse.setCountdown(et.getEndTime().getTime() + et.getPeriodInterval() - sct);
                     // 发布保险报销事件
