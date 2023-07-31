@@ -54,7 +54,7 @@ public class SpelEvalSumResult {
             return null;
         }
         if(obj instanceof BigDecimal){
-            return ((BigDecimal)val).toPlainString();
+            return ((BigDecimal)obj).toPlainString();
         }
         return obj.toString();
     }
