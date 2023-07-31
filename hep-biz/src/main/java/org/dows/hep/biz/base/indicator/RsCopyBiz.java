@@ -1795,7 +1795,6 @@ public class RsCopyBiz {
     return experimentIndicatorExpressionItemRsEntity;
   }
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.READ_UNCOMMITTED,rollbackFor = Exception.class)
   public void rsCopyCrowdsAndRiskModel(RsCopyCrowdsAndRiskModelRequestRs rsCopyCrowdsAndRiskModelRequestRs) throws ExecutionException, InterruptedException {
     Map<String, String> kCrowdsInstanceIdVExperimentCrowsInstanceIdMap = new HashMap<>();
     String appId = rsCopyCrowdsAndRiskModelRequestRs.getAppId();
