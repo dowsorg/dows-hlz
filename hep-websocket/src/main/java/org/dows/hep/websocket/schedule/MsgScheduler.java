@@ -59,14 +59,14 @@ public class MsgScheduler implements ApplicationContextAware {
             // 如果任务取消需要消耗点时间
             boolean cancelled = scheduledFuture.isCancelled();
             while (!cancelled) {
-                scheduledFuture.cancel(true);
+                cancelled = scheduledFuture.cancel(true);
                 log.info("定时任务取消中:{}", msgId);
             }
             // 最后从队列中删除
             futureMap.remove(msgId);
+            // 移除消息id及消息
+            HepClientManager.removeMsgById(msgId);
         }
-        // 移除消息id及消息
-        HepClientManager.removeMsgById(msgId);
         return null;
     }
 }

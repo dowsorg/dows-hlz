@@ -51,11 +51,15 @@ public class HepSocketEndpoint {
 
     @OnMessage
     public void onMessage(NettySession nettySession, String message) {
-        // todo 应该是dispatch模式，先简单实现
-        MessageBody messageBody = JSONUtil.toBean(message, MessageBody.class);
-        // 确定收到具体用户的信息，处理业务逻辑
-        //AccountInfo accountInfo = HepClientManager.getAccountInfo(nettySession.channel());
-        MsgScheduler.remove(messageBody.getMsgId());
+        try {
+            // todo 应该是dispatch模式，先简单实现
+            MessageBody messageBody = JSONUtil.toBean(message, MessageBody.class);
+            // 确定收到具体用户的信息，处理业务逻辑
+            //AccountInfo accountInfo = HepClientManager.getAccountInfo(nettySession.channel());
+            MsgScheduler.remove(messageBody.getMsgId());
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
     }
 
     @OnBinary
