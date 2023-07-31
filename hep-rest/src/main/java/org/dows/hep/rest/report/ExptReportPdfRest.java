@@ -1,16 +1,22 @@
 package org.dows.hep.rest.report;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.tenant.experiment.request.ExptAccountReportRequest;
+import org.dows.hep.api.tenant.experiment.request.ExptGroupReportPageRequest;
+import org.dows.hep.api.tenant.experiment.request.ExptReportPageRequest;
+import org.dows.hep.api.tenant.experiment.response.ExptAccountReportResponse;
+import org.dows.hep.api.tenant.experiment.response.ExptGroupReportPageResponse;
+import org.dows.hep.api.tenant.experiment.response.ExptReportPageResponse;
 import org.dows.hep.biz.report.ExptReportFacadeBiz;
 import org.dows.hep.biz.user.experiment.ExperimentBaseBiz;
 import org.dows.hep.vo.report.ExptReportVO;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
@@ -27,6 +33,59 @@ import java.io.IOException;
 public class ExptReportPdfRest {
     private final ExptReportFacadeBiz exptReportFacadeBiz;
     private final ExperimentBaseBiz baseBiz;
+
+    /**
+     *
+     * 分页获取报告列表
+     *
+     * @param pageRequest - 分页请求
+     * @param request - servletRequest
+     * @return com.baomidou.mybatisplus.core.metadata.IPage<org.dows.hep.api.tenant.experiment.response.ExptReportPageResponse>
+     * @author fhb
+     * @description 分页获取报告列表
+     * @date 2023/7/31 16:15
+     */
+    @Operation(summary = "分页获取报告列表")
+    @PostMapping(value = "/v1/report/pageExptReport")
+    public Page<ExptReportPageResponse> pageExptReport(@RequestBody @Validated ExptReportPageRequest pageRequest, HttpServletRequest request) {
+        String accountId = baseBiz.getAccountId(request);
+        return exptReportFacadeBiz.pageExptReport(pageRequest, accountId);
+    }
+
+    /**
+     *
+     * 分页获取实验下小组列表
+     *
+     * @param pageRequest - 分页请求
+     * @return com.baomidou.mybatisplus.core.metadata.IPage<org.dows.hep.api.tenant.experiment.response.ExptGroupReportPageResponse>
+     * @author fhb
+     * @description 分页获取实验下小组列表
+     * @date 2023/7/31 16:16
+     */
+    @Operation(summary = "分页获取实验下小组列表")
+    @PostMapping(value = "/v1/report/pageGroupReport")
+    public Page<ExptGroupReportPageResponse> pageGroupReport(@RequestBody @Validated ExptGroupReportPageRequest pageRequest) {
+        return exptReportFacadeBiz.pageGroupReport(pageRequest);
+    }
+
+    /**
+     *
+     * 分页获取学生报告列表
+     *
+     * @param pageRequest - 分页请求
+     * @param request - servletRequest
+     * @return com.baomidou.mybatisplus.core.metadata.IPage<org.dows.hep.api.tenant.experiment.response.ExptAccountReportResponse>
+     * @author fhb
+     * @description 分页获取学生报告列表
+     * @date 2023/7/31 16:17
+     */
+    @Operation(summary = "分页获取学生报告列表")
+    @PostMapping(value = "/v1/report/pageAccountReport")
+    public Page<ExptAccountReportResponse> pageAccountReport(@RequestBody @Validated ExptAccountReportRequest pageRequest, HttpServletRequest request) {
+        String accountId = baseBiz.getAccountId(request);
+        pageRequest.setAccountId(accountId);
+        return exptReportFacadeBiz.pageAccountReport(pageRequest);
+    }
 
     /**
      * 导出实验pdf报告
@@ -127,7 +186,7 @@ public class ExptReportPdfRest {
     @GetMapping("v1/report/previewAccountReport")
     public void previewAccountReport(@RequestParam String experimentInstanceId,
                                      HttpServletRequest request,
-                                     HttpServletResponse response) throws IOException {
+                                     HttpServletResponse response) {
         String accountId = baseBiz.getAccountId(request);
         exptReportFacadeBiz.previewAccountReport(experimentInstanceId, accountId, request, response);
     }

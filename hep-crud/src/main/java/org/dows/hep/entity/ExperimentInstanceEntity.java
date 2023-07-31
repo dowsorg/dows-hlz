@@ -71,6 +71,9 @@ public class ExperimentInstanceEntity implements CrudEntity {
     @Schema(title = "开始时间")
     private Date startTime;
 
+    @Schema(title = "结束时间")
+    private Date endTime;
+
     @Schema(title = "实验状态[默认未开始状态0~6步][0-未开始 1-已开始 2-暂停]")
     private Integer state;
 
