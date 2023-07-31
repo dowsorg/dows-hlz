@@ -189,6 +189,7 @@ public class ExperimentTimerBiz {
                     intervalResponse.setSandDurationSecond(ds / 1000);
                     break;
                 } else if (sct >= et.getEndTime().getTime() && sct <= et.getEndTime().getTime() + et.getPeriodInterval()) { // 间隔期
+                    intervalResponse.setCountdown(et.getEndTime().getTime() + et.getPeriodInterval() - sct);
                     // 发布保险报销事件
                     applicationEventPublisher.publishEvent(new IntervalEvent(intervalResponse));
                     break;
