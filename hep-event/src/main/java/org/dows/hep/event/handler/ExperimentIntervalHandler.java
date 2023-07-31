@@ -34,7 +34,6 @@ public class ExperimentIntervalHandler extends AbstractEventHandler implements E
         String appId = intervalResponse.getAppId();
         String experimentInstanceId = intervalResponse.getExperimentInstanceId();
         Integer period = intervalResponse.getPeriod();
-        log.error("intervalResponse:periods:{}", period);
         String experimentGroupId = intervalResponse.getExperimentGroupId();
 
         // 每期结束后，统一提交知识答题。 （注：需要在算分前执行）
