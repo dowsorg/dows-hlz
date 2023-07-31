@@ -1,6 +1,6 @@
 package org.dows.hep.rest.report;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -47,7 +47,7 @@ public class ExptReportPdfRest {
      */
     @Operation(summary = "分页获取报告列表")
     @PostMapping(value = "/v1/report/pageExptReport")
-    public IPage<ExptReportPageResponse> pageExptReport(@RequestBody @Validated ExptReportPageRequest pageRequest, HttpServletRequest request) {
+    public Page<ExptReportPageResponse> pageExptReport(@RequestBody @Validated ExptReportPageRequest pageRequest, HttpServletRequest request) {
         String accountId = baseBiz.getAccountId(request);
         return exptReportFacadeBiz.pageExptReport(pageRequest, accountId);
     }
@@ -64,7 +64,7 @@ public class ExptReportPdfRest {
      */
     @Operation(summary = "分页获取实验下小组列表")
     @PostMapping(value = "/v1/report/pageGroupReport")
-    public IPage<ExptGroupReportPageResponse> pageGroupReport(@RequestBody @Validated ExptGroupReportPageRequest pageRequest) {
+    public Page<ExptGroupReportPageResponse> pageGroupReport(@RequestBody @Validated ExptGroupReportPageRequest pageRequest) {
         return exptReportFacadeBiz.pageGroupReport(pageRequest);
     }
 
@@ -81,7 +81,7 @@ public class ExptReportPdfRest {
      */
     @Operation(summary = "分页获取学生报告列表")
     @PostMapping(value = "/v1/report/pageAccountReport")
-    public IPage<ExptAccountReportResponse> pageAccountReport(@RequestBody @Validated ExptAccountReportRequest pageRequest, HttpServletRequest request) {
+    public Page<ExptAccountReportResponse> pageAccountReport(@RequestBody @Validated ExptAccountReportRequest pageRequest, HttpServletRequest request) {
         String accountId = baseBiz.getAccountId(request);
         pageRequest.setAccountId(accountId);
         return exptReportFacadeBiz.pageAccountReport(pageRequest);

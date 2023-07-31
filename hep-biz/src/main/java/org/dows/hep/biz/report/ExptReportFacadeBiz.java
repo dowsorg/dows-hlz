@@ -4,7 +4,6 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -86,7 +85,7 @@ public class ExptReportFacadeBiz {
      * @description 分页查询实验报告
      * @date 2023/7/31 11:49
      */
-    public IPage<ExptReportPageResponse> pageExptReport(ExptReportPageRequest pageRequest, String accessAccountId) {
+    public Page<ExptReportPageResponse> pageExptReport(ExptReportPageRequest pageRequest, String accessAccountId) {
         Integer sortByExptNameAsc = pageRequest.getSortByExptNameAsc();
         Integer sortByAllotTimeAsc = pageRequest.getSortByAllotTimeAsc();
         Integer sortByStartTimeAsc = pageRequest.getSortByStartTimeAsc();
@@ -114,7 +113,7 @@ public class ExptReportFacadeBiz {
      * @description 分页请求小组报告
      * @date 2023/7/31 14:16
      */
-    public IPage<ExptGroupReportPageResponse> pageGroupReport(ExptGroupReportPageRequest pageRequest) {
+    public Page<ExptGroupReportPageResponse> pageGroupReport(ExptGroupReportPageRequest pageRequest) {
         Page<ExperimentRankingEntity> pageResult = experimentRankingService.lambdaQuery()
                 .eq(ExperimentRankingEntity::getExperimentInstanceId, pageRequest.getExptInstanceId())
                 .page(pageRequest.getPage());
@@ -128,7 +127,7 @@ public class ExptReportFacadeBiz {
      * @description  个人查询小组报告
      * @date 2023/7/31 15:44
      */
-    public IPage<ExptAccountReportResponse> pageAccountReport(ExptAccountReportRequest pageRequest) {
+    public Page<ExptAccountReportResponse> pageAccountReport(ExptAccountReportRequest pageRequest) {
         Page<ExperimentParticipatorEntity> pageResult = experimentParticipatorService.lambdaQuery()
                 .eq(ExperimentParticipatorEntity::getAccountId, pageRequest.getAccountId())
                 .orderByDesc(ExperimentParticipatorEntity::getExperimentStartTime)
@@ -387,7 +386,7 @@ public class ExptReportFacadeBiz {
         return result;
     }
 
-    private IPage<ExptGroupReportPageResponse> convertGroupPageResult(Page<ExperimentRankingEntity> pageResult) {
+    private Page<ExptGroupReportPageResponse> convertGroupPageResult(Page<ExperimentRankingEntity> pageResult) {
         Page<ExptGroupReportPageResponse> result = BeanUtil.copyProperties(pageResult, Page.class);
         List<ExperimentRankingEntity> records = pageResult.getRecords();
         if (CollUtil.isEmpty(records)) {
@@ -417,7 +416,7 @@ public class ExptReportFacadeBiz {
         return result;
     }
 
-    private IPage<ExptAccountReportResponse> convertAccountPageResult(Page<ExperimentParticipatorEntity> pageResult) {
+    private Page<ExptAccountReportResponse> convertAccountPageResult(Page<ExperimentParticipatorEntity> pageResult) {
         Page<ExptAccountReportResponse> result = BeanUtil.copyProperties(pageResult, Page.class);
         List<ExperimentParticipatorEntity> records = pageResult.getRecords();
         if (CollUtil.isEmpty(records)) {
