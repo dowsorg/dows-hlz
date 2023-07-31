@@ -133,7 +133,7 @@
     <div align="center" style="font-size:14px;">${baseInfo.copyRight} <span id="pages"> / </span></div>
 </div>
 <div class="page">
-    <div class="text-right"><img src="data:image/jpg;base64,${baseInfo.logoImg}"/></div>
+    <div class="text-right"><img src="data:image/jpg;base64,${baseInfo.logoImg}" style="width: 80%"/></div>
     <div align="center">
         <div class="pageTitle " style="margin-top:60px">${baseInfo.title}</div>
         <div class="pageTitle " style="margin-top:38px">健康沙盘</div>
@@ -316,6 +316,7 @@
                 <td>服务记录</td>
                 <td>标签</td>
             </tr>
+            <#if npc.serviceLogs??>
             <#list npc.serviceLogs as serviceLog>
                 <tr class="background-even-blue">
                     <td>${serviceLog.dt!""}</td>
@@ -323,6 +324,7 @@
                     <td>${serviceLog.lable!""}</td>
                 </tr>
             </#list>
+            </#if>
         </table>
     </#list>
 
