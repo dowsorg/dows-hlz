@@ -10,13 +10,16 @@ RUN java -Djarmode=layertools -jar app.jar extract && rm app.jar
 
 FROM eclipse-temurin:17-jre
 
+ARG RTE
+#默认dev
+ENV RTE=${RTE:-"dev"}
 ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 ENV JAVA_OPTS="-Xms2048m -Xmx2048m"
-
-ENV SPRING_PROFILE="-Dspring.profiles.active=staging"
 #配置开启debug
-ENV JAVA_DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8041"
+ENV JAVA_DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+ENV SPRING_RUN="org.springframework.boot.loader.JarLauncher"
+ENV SPRING_ENV="-Dspring.profiles.active="
 
 WORKDIR application
 COPY --from=builder application/dependencies/ ./
@@ -24,6 +27,4 @@ COPY --from=builder application/spring-boot-loader/ ./
 COPY --from=builder application/snapshot-dependencies/ ./
 COPY --from=builder application/application/ ./
 
-EXPOSE 8080
-
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS $JAVA_DEBUG $SPRING_PROFILE org.springframework.boot.loader.JarLauncher"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS $JAVA_DEBUG $SPRING_ENV$RTE $SPRING_RUN"]

@@ -668,7 +668,7 @@ public class RsExperimentIndicatorExpressionBiz {
       ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity,
       ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity
   ) {
-
+    /* runsix:在计算死亡模型值的时候，已经做过处理了 */
   }
 
   private void supportExamHandleParsedResult(
@@ -677,7 +677,22 @@ public class RsExperimentIndicatorExpressionBiz {
       ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity,
       ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity
   ) {
-
+    String result = resultAtomicReference.get();
+    /* runsix:1.如果解析的结果是空，则将结果赋值为指标默认值 */
+    if (StringUtils.equals(RsUtilBiz.RESULT_DROP, result)) {
+      /* runsix: TODO must optimize */
+      String principalId = experimentIndicatorExpressionRsEntity.getPrincipalId();
+      ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = experimentIndicatorInstanceRsService.lambdaQuery()
+          .eq(ExperimentIndicatorInstanceRsEntity::getExperimentIndicatorInstanceId, principalId)
+          .one();
+      if (Objects.isNull(experimentIndicatorInstanceRsEntity)) {
+        resultAtomicReference.set("");
+      } else {
+        resultAtomicReference.set(experimentIndicatorInstanceRsEntity.getDef());
+      }
+    }
+    /* runsix:2.上下限处理 */
+    minAndMaxHandle(resultAtomicReference, minExperimentIndicatorExpressionItemRsEntity, maxExperimentIndicatorExpressionItemRsEntity);
   }
 
   private void handleParsedResult(

@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.uim.AccountInfo;
 import org.dows.framework.websocket.util.NettyUtil;
@@ -36,6 +37,7 @@ public class HepClientManager {
     private static IdGenerator idGenerator = new SnowflakeIdGenerator(new SnowFlakeConfiguration());
     private static ConcurrentMap<String, String> MSGIDS = new ConcurrentHashMap<>();
 
+    public static final AttributeKey<String> EXPERIMENT_IN_SESSION_ATTRIBUTE = AttributeKey.newInstance("experimentId");
 
     /**
      * 保存用户身份信息
@@ -52,7 +54,7 @@ public class HepClientManager {
             return null;
         }
         // 添加当前用户身份信息到通道数据
-        //channel.attr(USER_ROOM_IN_SESSION_ATTRIBUTE_ATTR).set(room);
+        channel.attr(EXPERIMENT_IN_SESSION_ATTRIBUTE).set(onlineAccount.getExperimentId());
         //channel.attr(USER_NAME_IN_SESSION_ATTRIBUTE_ATTR).set(nick);
         // 增加一个用户数
         accountCount.incrementAndGet();
@@ -77,8 +79,7 @@ public class HepClientManager {
     public static String getRoomIdFromSession(Channel session) {
         Object attr = null;
         if (session != null) {
-            // 重通道（Channel）中获取自定义的属性USER_ID_IN_SESSION_ATTRIBUTE_ATTR的属性值
-            //attr = session.attr(USER_ROOM_IN_SESSION_ATTRIBUTE_ATTR).get();
+            attr = session.attr(EXPERIMENT_IN_SESSION_ATTRIBUTE).get();
             if (attr != null) {
                 return (String) attr;
             }
@@ -279,6 +280,10 @@ public class HepClientManager {
         }
         String msgid = idGenerator.nextIdStr();
         MsgScheduler.schedule(() -> {
+            if(Thread.currentThread().isInterrupted()) {
+                return;
+            }
+
             String sc = MSGIDS.get(msgid);
             if (null == sc) {
                 sc = MessageProto.buildSystProto(msgid, code, mess);

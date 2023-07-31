@@ -275,7 +275,7 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
             .patientId(experimentSupportExamCheckRequestRs.getExperimentPersonId())
             .feeName(EnumOrgFeeType.FZJCF.getName())
             .feeCode(EnumOrgFeeType.FZJCF.getCode())
-            .cost(totalFeeAtomicReference.get())
+            .cost(totalFeeAtomicReference.get().negate())
             .period(experimentSupportExamCheckRequestRs.getPeriods())
             .build();
     operateCostBiz.saveCost(costRequest);

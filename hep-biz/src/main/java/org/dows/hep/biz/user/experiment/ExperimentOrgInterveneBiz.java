@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
 import org.dows.hep.api.base.indicator.request.RsExperimentCalculateFuncRequest;
 import org.dows.hep.api.base.intervene.request.FindFoodRequest;
 import org.dows.hep.api.base.intervene.request.FindInterveneCategRequest;
@@ -22,6 +23,7 @@ import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.api.user.experiment.vo.ExptOrgReportNodeDataVO;
 import org.dows.hep.api.user.experiment.vo.ExptOrgReportNodeVO;
 import org.dows.hep.api.user.experiment.vo.ExptTreatPlanItemVO;
+import org.dows.hep.biz.base.indicator.ExperimentIndicatorInstanceRsBiz;
 import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
 import org.dows.hep.biz.base.intervene.*;
 import org.dows.hep.biz.dao.OperateFlowDao;
@@ -87,6 +89,8 @@ public class ExperimentOrgInterveneBiz{
     private final IdGenerator idGenerator;
 
     private final OperateCostBiz operateCostBiz;
+    
+    private final ExperimentIndicatorInstanceRsBiz experimentIndicatorInstanceRsBiz;
 
 
     public List<Categ4ExptVO> listInterveneCateg4Expt(FindInterveneCateg4ExptRequest findCateg ) throws JsonProcessingException {
@@ -376,7 +380,7 @@ public class ExperimentOrgInterveneBiz{
             rowOrgFuncSnap.setInputJson(JacksonUtil.toJson(snapRst,true))
                     .setResultJson(JacksonUtil.toJson(evalResults,true));
         }catch (Exception ex){
-            AssertUtil.justThrow(String.format("记录数据编制失败：%s",ex.getMessage()),ex);
+            AssertUtil.justThrow(String.format("记录指标数据编制失败：%s",ex.getMessage()),ex);
         }
         //挂号报告
         boolean succFlag=false;
@@ -442,10 +446,19 @@ public class ExperimentOrgInterveneBiz{
 
         // 获取总的费用资金
         BigDecimal sum = new BigDecimal(0);
-        for(int i = 0;i < saveTreat.getTreatItems().size(); i++){
-            ExptTreatPlanItemVO vo = saveTreat.getTreatItems().get(i);
+        for(int i = 0;i < newItems.size(); i++){
+            ExptTreatPlanItemVO vo = newItems.get(i);
             sum = sum.add(BigDecimalOptional.valueOf(vo.getFee()).mul(BigDecimalUtil.tryParseDecimalElseZero(vo.getWeight())).getValue());
         }
+
+        experimentIndicatorInstanceRsBiz.changeMoney(RsChangeMoneyRequest
+                .builder()
+                .appId(saveTreat.getAppId())
+                .experimentId(saveTreat.getExperimentInstanceId())
+                .experimentPersonId(saveTreat.getExperimentPersonId())
+                .periods(timePoint.getPeriod())
+                .moneyChange(sum.negate())
+                .build());
 
         // 获取小组信息
         ExperimentPersonEntity personEntity = experimentPersonService.lambdaQuery()
@@ -467,19 +480,21 @@ public class ExperimentOrgInterveneBiz{
                 .period(timePoint.getPeriod())
                 .build();
         operateCostBiz.saveCost(costRequest);
-        CompletableFuture.runAsync(()-> {
-                    try {
-                        rsExperimentCalculateBiz.experimentReCalculateFunc(RsExperimentCalculateFuncRequest.builder()
-                                .appId(validator.getAppId())
-                                .experimentId(validator.getExperimentInstanceId())
-                                .periods(timePoint.getPeriod())
-                                .experimentPersonId(validator.getExperimentPersonId())
-                                .build());
-                    } catch (Exception ex) {
-                        log.error(String.format("saveExptTreatPlan.deal experimentId:%s personId:%s",
-                                validator.getExperimentInstanceId(),validator.getExperimentPersonId()),ex);
-                    }
-                });
+        if(enumOperateType.getEndFlag()) {
+            CompletableFuture.runAsync(() -> {
+                try {
+                    rsExperimentCalculateBiz.experimentReCalculateFunc(RsExperimentCalculateFuncRequest.builder()
+                            .appId(validator.getAppId())
+                            .experimentId(validator.getExperimentInstanceId())
+                            .periods(timePoint.getPeriod())
+                            .experimentPersonId(validator.getExperimentPersonId())
+                            .build());
+                } catch (Exception ex) {
+                    log.error(String.format("saveExptTreatPlan.deal experimentId:%s personId:%s",
+                            validator.getExperimentInstanceId(), validator.getExperimentPersonId()), ex);
+                }
+            });
+        }
 
         return new SaveExptTreatResponse()
                 .setSuccess(succFlag)
