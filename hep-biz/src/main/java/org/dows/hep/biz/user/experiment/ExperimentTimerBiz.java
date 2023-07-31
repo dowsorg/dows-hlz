@@ -151,22 +151,7 @@ public class ExperimentTimerBiz {
                 intervalResponse.setPeriod(experimentTimerEntity.getPeriod());
                 return intervalResponse;
             }
-            /**
-             * 已结束
-             */
-            ExperimentTimerEntity finshTimer = experimentTimerEntityList.stream()
-                    .filter(e -> e.getState() == EnumExperimentState.FINISH.getState())
-                    .max(Comparator.comparingInt(ExperimentTimerEntity::getPeriod))
-                    .orElse(null);
-            if (null != finshTimer) {
-                Long sum = experimentTimerEntities.stream()
-                        .map(ExperimentTimerEntity::getPeriodDuration).reduce(Long::sum)
-                        .get();
-                intervalResponse.setSandDurationSecond(sum / 1000);
-                intervalResponse.setState(finshTimer.getState());
-                intervalResponse.setPeriod(finshTimer.getPeriod());
-                return intervalResponse;
-            }
+
             /**
              * 进行中
              * 找出每期暂停次数最大的记录
@@ -200,6 +185,23 @@ public class ExperimentTimerBiz {
                     applicationEventPublisher.publishEvent(new IntervalEvent(intervalResponse));
                     break;
                 }
+            }
+
+            /**
+             * 已结束
+             */
+            ExperimentTimerEntity finshTimer = experimentTimerEntityList.stream()
+                    .filter(e -> e.getState() == EnumExperimentState.FINISH.getState())
+                    .max(Comparator.comparingInt(ExperimentTimerEntity::getPeriod))
+                    .orElse(null);
+            if (null != finshTimer) {
+                Long sum = experimentTimerEntities.stream()
+                        .map(ExperimentTimerEntity::getPeriodDuration).reduce(Long::sum)
+                        .get();
+                intervalResponse.setSandDurationSecond(sum / 1000);
+                intervalResponse.setState(finshTimer.getState());
+                intervalResponse.setPeriod(finshTimer.getPeriod());
+                return intervalResponse;
             }
         }
         // 如果都不为空，则为标准模式

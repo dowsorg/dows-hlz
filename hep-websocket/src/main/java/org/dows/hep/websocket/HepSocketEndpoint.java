@@ -1,6 +1,7 @@
 package org.dows.hep.websocket;
 
 import cn.hutool.json.JSONUtil;
+import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -52,10 +53,15 @@ public class HepSocketEndpoint {
     @OnMessage
     public void onMessage(NettySession nettySession, String message) {
         try {
+
+            Channel channel = nettySession.channel();
+            //nettySession.getAttribute("");
+
             // todo 应该是dispatch模式，先简单实现
             MessageBody messageBody = JSONUtil.toBean(message, MessageBody.class);
             // 确定收到具体用户的信息，处理业务逻辑
             //AccountInfo accountInfo = HepClientManager.getAccountInfo(nettySession.channel());
+            log.info("移除消息：{}", messageBody.getMsgId());
             MsgScheduler.remove(messageBody.getMsgId());
         } catch (Exception e) {
             log.error(e.getMessage());
