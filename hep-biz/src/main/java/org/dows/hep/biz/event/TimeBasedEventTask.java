@@ -12,7 +12,6 @@ import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentEventEntity;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -164,27 +163,31 @@ public class TimeBasedEventTask extends BaseEventTask  {
             return;
         }
         final LocalDateTime nextTime = eventColl.getNextTriggerTime();
-        long delay = -1;
         runStat.todoCounter.addAndGet(-runStat.doneCounter.get());
         if(runStat.failTheadCounter.get()>0){
-            raiseScheduler(delay=DELAYSeconds4Fail,false,false);
+            raiseScheduler(DELAYSeconds4Fail,false,false);
         } else {
             if (null != nextTime) {
-                raiseScheduler(delay = Duration.between(LocalDateTime.now(), nextTime).toSeconds() + 2,true,false);
+                raiseScheduler(nextTime.plusSeconds(2), true, false);
             }
         }
-        logInfo("runEventGroup", "next:%s delay:%s failThread:%s done:%s todo:%s", nextTime,delay,
+        logInfo("runEventGroup", "next:%s failThread:%s done:%s todo:%s", nextTime,
                 runStat.failTheadCounter.get(),runStat.doneCounter.get(),runStat.todoCounter.get());
     }
 
-    void raiseScheduler(long delaySeconds,boolean resetRetry,boolean incrRetry) {
+    void raiseScheduler(long delaySeconds,boolean resetRetry,boolean incrRetry){
+        raiseScheduler(LocalDateTime.now().plusSeconds(delaySeconds), resetRetry, incrRetry);
+    }
+    void raiseScheduler(LocalDateTime nextTime,boolean resetRetry,boolean incrRetry) {
         if(resetRetry){
             experimentKey.getMaxRetry().set(0);
         } else if ((incrRetry? experimentKey.getMaxRetry().incrementAndGet():experimentKey.getMaxRetry().get()) >= MAXRetry) {
             logError("raiseScheduler", "maxRetry");
             return;
         }
-        EventScheduler.Instance().scheduleTimeBasedEvent(experimentKey, Math.max(DELAYSecondsMin, delaySeconds));
+
+        final LocalDateTime minNext=LocalDateTime.now().plusSeconds(DELAYSecondsMin);
+        EventScheduler.Instance().scheduleTimeBasedEvent(experimentKey, minNext.isBefore(nextTime)?nextTime:minNext);
     }
     LocalDateTime calcTriggeringTime(LocalDateTime ldtNow, ExperimentSettingCollection exptCollection,TimeBasedEventCollection eventCollection){
         ExperimentTimePoint point;

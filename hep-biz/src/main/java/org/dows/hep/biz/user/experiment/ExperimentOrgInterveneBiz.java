@@ -383,7 +383,7 @@ public class ExperimentOrgInterveneBiz{
         for(int i=saveTreat.getTreatItems().size()-1;i>=0;i--){
             ExptTreatPlanItemVO item=saveTreat.getTreatItems().get(i);
             item.setRawItemId(item.getItemId());
-            if(ShareUtil.XObject.notEmpty(item.getItemId(), true)){
+            if(ShareUtil.XObject.notEmpty(item.getItemId())){
                 continue;
             }
             item.setItemId(getTimestampId(dateNow,saveTreat.getTreatItems().size()-i)).setDealFlag(0);
@@ -575,9 +575,9 @@ public class ExperimentOrgInterveneBiz{
                 req.getIndicatorFuncId(), req.getPeriods(),req.getOperateFlowId(), cols);
     }
 
-    private Long getTimestampId(Date dt,int seq){
+    private String getTimestampId(Date dt,int seq){
         final int mod=10000;
-        return getTimestampPrefix(dt)*mod+seq%mod;
+        return String.valueOf(getTimestampPrefix(dt)*mod+seq%mod);
     }
 
     private Long getTimestampPrefix(Date dt){
