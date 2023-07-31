@@ -2,7 +2,10 @@ package org.dows.hep.biz.risk;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.base.indicator.request.RsAgeRequest;
+import org.dows.hep.api.base.indicator.request.RsSexRequest;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
+import org.dows.hep.biz.base.indicator.ExperimentIndicatorInstanceRsBiz;
 import org.dows.hep.biz.base.risk.CrowdsInstanceBiz;
 import org.dows.hep.biz.base.risk.RiskModelBiz;
 import org.dows.hep.entity.*;
@@ -33,6 +36,7 @@ public class RiskBiz {
     private final ExperimentIndicatorInstanceRsService experimentIndicatorInstanceRsService;
     private final ExperimentPersonRiskModelRsService experimentPersonRiskModelRsService;
     private final ExperimentPersonHealthRiskFactorRsService experimentPersonHealthRiskFactorRsService;
+    private final ExperimentIndicatorInstanceRsBiz experimentIndicatorInstanceRsBiz;
 
     /**
      * runsix method process
@@ -55,6 +59,17 @@ public class RiskBiz {
 
         /* runsix:此小组所有实验人物id */
         Set<String> experimentPersonIdSet = kExperimentPersonIdVExperimentPersonEntityMap.keySet();
+        Map<String, String> kExperimentPersonIdVAgeMap = experimentIndicatorInstanceRsBiz.getAgeByPeriods(RsAgeRequest
+            .builder()
+            .periods(period)
+            .experimentPersonIdSet(experimentPersonIdSet)
+            .build());
+        Map<String, String> kExperimentPersonIdVSexMap = experimentIndicatorInstanceRsBiz.getSexByPeriods(RsSexRequest
+            .builder()
+            .periods(period)
+            .experimentPersonIdSet(experimentPersonIdSet)
+            .build());
+
         Map<String, List<ExperimentPersonRiskModelRsEntity>> kExperimentPersonIdVExperimentPersonRiskModelRsEntityListMap = new HashMap<>();
         experimentPersonRiskModelRsService.lambdaQuery()
                 .eq(ExperimentPersonRiskModelRsEntity::getExperimentId, experimentInstanceId)
@@ -107,6 +122,8 @@ public class RiskBiz {
                     .builder()
                     .personId(experimentPersonEntity.getExperimentPersonId())
                     .personName(experimentPersonEntity.getUserName())
+                    .sex(kExperimentPersonIdVSexMap.get(experimentPersonEntity.getExperimentPersonId()))
+                    .age(Integer.valueOf(kExperimentPersonIdVAgeMap.get(experimentPersonEntity.getExperimentPersonId())))
                     .build();
             Map<Integer, List<ExperimentPersonRiskModelRsEntity>> kPeriodsVExperimentPersonRiskModelRsEntityListMap
                     = experimentPersonRiskModelRsEntityList.stream().collect(Collectors.groupingBy(ExperimentPersonRiskModelRsEntity::getPeriods));
