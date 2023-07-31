@@ -15,10 +15,8 @@ import org.dows.hep.api.tenant.experiment.response.ExptReportPageResponse;
 import org.dows.hep.biz.report.ExptReportFacadeBiz;
 import org.dows.hep.biz.user.experiment.ExperimentBaseBiz;
 import org.dows.hep.vo.report.ExptReportVO;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
@@ -49,7 +47,7 @@ public class ExptReportPdfRest {
      */
     @Operation(summary = "分页获取报告列表")
     @PostMapping(value = "/v1/report/pageExptReport")
-    public IPage<ExptReportPageResponse> pageExptReport(ExptReportPageRequest pageRequest, HttpServletRequest request) {
+    public IPage<ExptReportPageResponse> pageExptReport(@RequestBody @Validated ExptReportPageRequest pageRequest, HttpServletRequest request) {
         String accountId = baseBiz.getAccountId(request);
         return exptReportFacadeBiz.pageExptReport(pageRequest, accountId);
     }
@@ -66,7 +64,7 @@ public class ExptReportPdfRest {
      */
     @Operation(summary = "分页获取实验下小组列表")
     @PostMapping(value = "/v1/report/pageGroupReport")
-    public IPage<ExptGroupReportPageResponse> pageGroupReport(ExptGroupReportPageRequest pageRequest) {
+    public IPage<ExptGroupReportPageResponse> pageGroupReport(@RequestBody @Validated ExptGroupReportPageRequest pageRequest) {
         return exptReportFacadeBiz.pageGroupReport(pageRequest);
     }
 
@@ -83,7 +81,7 @@ public class ExptReportPdfRest {
      */
     @Operation(summary = "分页获取学生报告列表")
     @PostMapping(value = "/v1/report/pageAccountReport")
-    public IPage<ExptAccountReportResponse> pageAccountReport(ExptAccountReportRequest pageRequest, HttpServletRequest request) {
+    public IPage<ExptAccountReportResponse> pageAccountReport(@RequestBody @Validated ExptAccountReportRequest pageRequest, HttpServletRequest request) {
         String accountId = baseBiz.getAccountId(request);
         pageRequest.setAccountId(accountId);
         return exptReportFacadeBiz.pageAccountReport(pageRequest);

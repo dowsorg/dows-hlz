@@ -19,7 +19,7 @@ import java.util.Date;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(name = "ExptGroupReportPageResponse 对象", title = "个人查询报告分页响应")
+@Schema(name = "ExptAccountReportResponse 对象", title = "个人查询报告分页响应")
 public class ExptAccountReportResponse {
     @Schema(title = "实验ID")
     private String exptInstanceId;
