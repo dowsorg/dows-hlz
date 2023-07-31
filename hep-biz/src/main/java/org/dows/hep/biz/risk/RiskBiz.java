@@ -40,6 +40,7 @@ public class RiskBiz {
 
     /**
      * runsix method process
+     * 这个period不使用
      * 根据实验id、小组id获取此小组所有人 每一期的数据，如果只要干预前后，那就取每个人第一个和最后一个
      */
     public List<PersonRiskFactor> get(String experimentInstanceId, String experimentGroupId, Integer period) {
@@ -61,12 +62,12 @@ public class RiskBiz {
         Set<String> experimentPersonIdSet = kExperimentPersonIdVExperimentPersonEntityMap.keySet();
         Map<String, String> kExperimentPersonIdVAgeMap = experimentIndicatorInstanceRsBiz.getAgeByPeriods(RsAgeRequest
             .builder()
-            .periods(period)
+            .periods(1)
             .experimentPersonIdSet(experimentPersonIdSet)
             .build());
         Map<String, String> kExperimentPersonIdVSexMap = experimentIndicatorInstanceRsBiz.getSexByPeriods(RsSexRequest
             .builder()
-            .periods(period)
+            .periods(1)
             .experimentPersonIdSet(experimentPersonIdSet)
             .build());
 
@@ -118,16 +119,16 @@ public class RiskBiz {
             if (Objects.isNull(experimentPersonEntity)) {
                 return;
             }
-            PersonRiskFactor personRiskFactor = PersonRiskFactor
+            Map<Integer, List<ExperimentPersonRiskModelRsEntity>> kPeriodsVExperimentPersonRiskModelRsEntityListMap
+                    = experimentPersonRiskModelRsEntityList.stream().collect(Collectors.groupingBy(ExperimentPersonRiskModelRsEntity::getPeriods));
+            kPeriodsVExperimentPersonRiskModelRsEntityListMap.forEach((periods, periodsExperimentPersonRiskModelRsEntityList) -> {
+                PersonRiskFactor personRiskFactor = PersonRiskFactor
                     .builder()
                     .personId(experimentPersonEntity.getExperimentPersonId())
                     .personName(experimentPersonEntity.getUserName())
                     .sex(kExperimentPersonIdVSexMap.get(experimentPersonEntity.getExperimentPersonId()))
                     .age(Integer.valueOf(kExperimentPersonIdVAgeMap.get(experimentPersonEntity.getExperimentPersonId())))
                     .build();
-            Map<Integer, List<ExperimentPersonRiskModelRsEntity>> kPeriodsVExperimentPersonRiskModelRsEntityListMap
-                    = experimentPersonRiskModelRsEntityList.stream().collect(Collectors.groupingBy(ExperimentPersonRiskModelRsEntity::getPeriods));
-            kPeriodsVExperimentPersonRiskModelRsEntityListMap.forEach((periods, periodsExperimentPersonRiskModelRsEntityList) -> {
                 personRiskFactor.setPeriod(periods);
                 List<PersonRiskFactor.RiskFactor> riskFactors = new ArrayList<>();
                 periodsExperimentPersonRiskModelRsEntityList.forEach(periodsExperimentPersonRiskModelRsEntity -> {
@@ -153,8 +154,8 @@ public class RiskBiz {
                     riskFactors.add(riskFactor);
                 });
                 personRiskFactor.setRiskFactors(riskFactors);
+                personRiskFactorList.add(personRiskFactor);
             });
-            personRiskFactorList.add(personRiskFactor);
         });
         return personRiskFactorList;
     }
