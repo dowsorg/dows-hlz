@@ -1,5 +1,6 @@
 package org.dows.hep.vo.report;
 
+import cn.hutool.core.date.DateUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -56,6 +57,10 @@ public class ExptSchemeReportModel implements ExptReportModel {
 
         @Schema(title = "实验日期")
         private Date exptStartDate;
+
+        public String getExptStartDate(){
+            return DateUtil.format(exptStartDate,"yyyy-MM-dd");
+        }
     }
 
     @Builder

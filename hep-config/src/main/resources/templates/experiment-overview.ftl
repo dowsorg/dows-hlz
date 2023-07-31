@@ -144,9 +144,11 @@
                 <td>排名</td>
                 <td>组数</td>
                 <td>组名</td>
+                <#if sandGroupRankingList.periodGroupScoreList??>
                 <#list sandGroupRankingList.periodGroupScoreList as item>
                 <td>第${item_index+1}期</td>
                 </#list>
+                </#if>
                 <td>得分</td>
             </tr>
             <#list sandGroupRankingList as item>

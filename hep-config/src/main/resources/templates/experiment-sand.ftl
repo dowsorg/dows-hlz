@@ -145,7 +145,8 @@
         <div class="groupDiv">成员：<#list groupInfo.groupMembers as item>${item}<#if item_has_next>、</#if></#list></div>
         <div class="groupDiv">实验社区：${groupInfo.caseName!""}</div>
         <div class="groupDiv">
-            实验日期：<#if groupInfo.exptStartDate??>${groupInfo.exptStartDate?string("yyyy-MM-dd")}</#if></div>
+            实验日期：<#if groupInfo.exptStartDate??>${groupInfo.exptStartDate!""}</#if>
+        </div>
         <div class="groupDiv">案例数量：${groupInfo.caseNum!0}</div>
     </div>
 </div>
