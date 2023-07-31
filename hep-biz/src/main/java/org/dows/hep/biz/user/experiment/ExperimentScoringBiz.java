@@ -676,6 +676,7 @@ public class ExperimentScoringBiz {
                         .experimentGroupNo(experimentRankingEntity.getGroupAlias())
                         .experimentGroupId(experimentRankingEntity.getExperimentGroupId())
                         .experimentGroupName(experimentRankingEntity.getGroupName())
+                        .allPeriodsTotalScore(experimentRankingEntity.getTotalScore())
                         .experimentTotalRankGroupItemResponseList(JSONUtil.toList(experimentRankingEntity.getPeriodScoreJson()
                                 , ExperimentTotalRankGroupItemResponse.class))
                         .build();
