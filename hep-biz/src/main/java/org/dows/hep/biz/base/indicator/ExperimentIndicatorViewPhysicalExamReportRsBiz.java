@@ -265,7 +265,7 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
             .patientId(experimentPhysicalExamCheckRequestRs.getExperimentPersonId())
             .feeName(EnumOrgFeeType.TGJCF.getName())
             .feeCode(EnumOrgFeeType.TGJCF.getCode())
-            .cost(totalFeeAtomicReference.get())
+            .cost(totalFeeAtomicReference.get().negate())
             .period(experimentPhysicalExamCheckRequestRs.getPeriods())
             .build();
     operateCostBiz.saveCost(costRequest);
