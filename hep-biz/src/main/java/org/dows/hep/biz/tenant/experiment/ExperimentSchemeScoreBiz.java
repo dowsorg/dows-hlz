@@ -160,7 +160,7 @@ public class ExperimentSchemeScoreBiz {
         // 方案设计-评分信息
         List<ExperimentSchemeScoreResponse> scoreInfos = listSchemeScore(exptInstanceId, reviewAccountId, exptGroupId);
         ExptSchemeScoreReviewVO.SchemeScoreInfo schemeScoreInfo = ExptSchemeScoreReviewVO.SchemeScoreInfo.builder()
-                .finalScore(schemeInfo.getScore())
+                .finalScore(schemeInfo == null ? 0 : (schemeInfo.getScore() == null ? 0 : schemeInfo.getScore()))
                 .scoreInfos(scoreInfos)
                 .build();
 
