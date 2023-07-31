@@ -199,6 +199,8 @@ public class ExperimentTimerBiz {
                     // 发布保险报销事件
                     applicationEventPublisher.publishEvent(new IntervalEvent(intervalResponse));
                     break;
+                } else {
+                    log.error("logStr-4:{}", logStr);
                 }
             }
         }
