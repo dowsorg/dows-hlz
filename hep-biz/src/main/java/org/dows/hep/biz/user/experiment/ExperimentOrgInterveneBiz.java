@@ -363,12 +363,6 @@ public class ExperimentOrgInterveneBiz{
         OperateOrgFuncSnapEntity rowOrgFuncSnap=new OperateOrgFuncSnapEntity()
                 .setAppId(validator.getAppId())
                 .setSnapTime(dateNow);
-        ExptTreatPlanResponse snapRst=new ExptTreatPlanResponse().setTreatItems(saveTreat.getTreatItems());
-        try{
-            rowOrgFuncSnap.setInputJson(JacksonUtil.toJson(snapRst,true));
-        }catch (Exception ex){
-            AssertUtil.justThrow(String.format("记录数据编制失败：%s",ex.getMessage()),ex);
-        }
         final List<ExptTreatPlanItemVO> newItems=new ArrayList<>();
         for(int i=saveTreat.getTreatItems().size()-1;i>=0;i--){
             ExptTreatPlanItemVO item=saveTreat.getTreatItems().get(i);
@@ -381,8 +375,10 @@ public class ExperimentOrgInterveneBiz{
         Map<String, SpelEvalSumResult> mapSum=new HashMap<>();
         List<SpelEvalResult> evalResults=SpelInvoker.Instance().evalTreatEffect(validator.getExperimentInstanceId(), validator.getExperimentPersonId(),
                 timePoint.getPeriod(), newItems,mapSum);
+        ExptTreatPlanResponse snapRst=new ExptTreatPlanResponse().setTreatItems(saveTreat.getTreatItems());
         try{
-            rowOrgFuncSnap.setResultJson(JacksonUtil.toJson(evalResults,true));
+            rowOrgFuncSnap.setInputJson(JacksonUtil.toJson(snapRst,true))
+                    .setResultJson(JacksonUtil.toJson(evalResults,true));
         }catch (Exception ex){
             AssertUtil.justThrow(String.format("记录指标数据编制失败：%s",ex.getMessage()),ex);
         }
