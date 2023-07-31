@@ -140,18 +140,16 @@
         <#if sandGroupRankingList?has_content && (sandGroupRankingList?size > 0)>
         <div class="font-blue bold" style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">沙盘对抗排行榜</div>
         <table class="wd-700 text-center" align="center">
+            <#list sandGroupRankingList as item>
             <tr class="background-singular-blue">
                 <td>排名</td>
                 <td>组数</td>
                 <td>组名</td>
-                <#if sandGroupRankingList.periodGroupScoreList??>
-                <#list sandGroupRankingList.periodGroupScoreList as item>
-                <td>第${item_index+1}期</td>
-                </#list>
-                </#if>
+                    <#list item.periodGroupScoreList as itemItem>
+                        <td>第${itemItem_index+1}期</td>
+                    </#list>
                 <td>得分</td>
             </tr>
-            <#list sandGroupRankingList as item>
             <tr class="background-even-blue">
                 <td>${item_index+1}</td>
                 <td>${item.groupNo}</td>
