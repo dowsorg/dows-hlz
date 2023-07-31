@@ -2,6 +2,10 @@ package org.dows.hep.api.enums;
 
 import lombok.Getter;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 /**
  * 实验状态
  */
@@ -14,6 +18,13 @@ public enum EnumExperimentState {
     FINISH(5, "已结束"),
 
     ;
+
+    private static final Map<Integer, EnumExperimentState> cacheByCode;
+
+    static {
+        cacheByCode = Arrays.stream(EnumExperimentState.values()).collect(Collectors.toMap(EnumExperimentState::getState, item -> item));
+    }
+
     @Getter
     private int state;
     @Getter
@@ -23,4 +34,13 @@ public enum EnumExperimentState {
         this.state = state;
         this.descr = descr;
     }
+
+    public static EnumExperimentState getByCode(Integer code) {
+        return cacheByCode.get(code);
+    }
+
+    public static String getNameByCode(Integer code) {
+        return getByCode(code).getDescr();
+    }
+
 }
