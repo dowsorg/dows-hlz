@@ -363,6 +363,12 @@ public class ExperimentOrgInterveneBiz{
         OperateOrgFuncSnapEntity rowOrgFuncSnap=new OperateOrgFuncSnapEntity()
                 .setAppId(validator.getAppId())
                 .setSnapTime(dateNow);
+        ExptTreatPlanResponse snapRst=new ExptTreatPlanResponse().setTreatItems(saveTreat.getTreatItems());
+        try{
+            rowOrgFuncSnap.setInputJson(JacksonUtil.toJson(snapRst,true));
+        }catch (Exception ex){
+            AssertUtil.justThrow(String.format("记录数据编制失败：%s",ex.getMessage()),ex);
+        }
         final List<ExptTreatPlanItemVO> newItems=new ArrayList<>();
         for(int i=saveTreat.getTreatItems().size()-1;i>=0;i--){
             ExptTreatPlanItemVO item=saveTreat.getTreatItems().get(i);
@@ -375,12 +381,10 @@ public class ExperimentOrgInterveneBiz{
         Map<String, SpelEvalSumResult> mapSum=new HashMap<>();
         List<SpelEvalResult> evalResults=SpelInvoker.Instance().evalTreatEffect(validator.getExperimentInstanceId(), validator.getExperimentPersonId(),
                 timePoint.getPeriod(), newItems,mapSum);
-        ExptTreatPlanResponse snapRst=new ExptTreatPlanResponse().setTreatItems(saveTreat.getTreatItems());
         try{
-            rowOrgFuncSnap.setInputJson(JacksonUtil.toJson(snapRst,true))
-                    .setResultJson(JacksonUtil.toJson(evalResults,true));
+            rowOrgFuncSnap.setResultJson(JacksonUtil.toJson(evalResults,true));
         }catch (Exception ex){
-            AssertUtil.justThrow(String.format("记录数据编制失败：%s",ex.getMessage()),ex);
+            AssertUtil.justThrow(String.format("记录指标数据编制失败：%s",ex.getMessage()),ex);
         }
         //挂号报告
         boolean succFlag=false;
@@ -480,19 +484,21 @@ public class ExperimentOrgInterveneBiz{
                 .period(timePoint.getPeriod())
                 .build();
         operateCostBiz.saveCost(costRequest);
-        CompletableFuture.runAsync(()-> {
-                    try {
-                        rsExperimentCalculateBiz.experimentReCalculateFunc(RsExperimentCalculateFuncRequest.builder()
-                                .appId(validator.getAppId())
-                                .experimentId(validator.getExperimentInstanceId())
-                                .periods(timePoint.getPeriod())
-                                .experimentPersonId(validator.getExperimentPersonId())
-                                .build());
-                    } catch (Exception ex) {
-                        log.error(String.format("saveExptTreatPlan.deal experimentId:%s personId:%s",
-                                validator.getExperimentInstanceId(),validator.getExperimentPersonId()),ex);
-                    }
-                });
+        if(enumOperateType.getEndFlag()) {
+            CompletableFuture.runAsync(() -> {
+                try {
+                    rsExperimentCalculateBiz.experimentReCalculateFunc(RsExperimentCalculateFuncRequest.builder()
+                            .appId(validator.getAppId())
+                            .experimentId(validator.getExperimentInstanceId())
+                            .periods(timePoint.getPeriod())
+                            .experimentPersonId(validator.getExperimentPersonId())
+                            .build());
+                } catch (Exception ex) {
+                    log.error(String.format("saveExptTreatPlan.deal experimentId:%s personId:%s",
+                            validator.getExperimentInstanceId(), validator.getExperimentPersonId()), ex);
+                }
+            });
+        }
 
         return new SaveExptTreatResponse()
                 .setSuccess(succFlag)
