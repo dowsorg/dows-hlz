@@ -12,7 +12,7 @@ FROM eclipse-temurin:17-jre
 
 ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-ENV JAVA_OPTS="-Xms128m -Xmx256m"
+ENV JAVA_OPTS="-Xms2048m -Xmx2048m"
 
 ENV SPRING_PROFILE="-Dspring.profiles.active=dev"
 #配置开启debug
@@ -23,7 +23,5 @@ COPY --from=builder application/dependencies/ ./
 COPY --from=builder application/spring-boot-loader/ ./
 COPY --from=builder application/snapshot-dependencies/ ./
 COPY --from=builder application/application/ ./
-
-EXPOSE 8080
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS $JAVA_DEBUG $SPRING_PROFILE org.springframework.boot.loader.JarLauncher"]

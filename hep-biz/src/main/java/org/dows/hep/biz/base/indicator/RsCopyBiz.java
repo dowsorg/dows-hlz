@@ -100,7 +100,6 @@ public class RsCopyBiz {
   private final RsCaseIndicatorExpressionBiz rsCaseIndicatorExpressionBiz;
   private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
 
-  @Transactional(rollbackFor = Exception.class)
   public void rsCopyIndicatorFunc(RsCopyIndicatorFuncRequestRs rsCopyIndicatorFuncRequestRs) {
     List<ExperimentOrgModuleRsEntity> experimentOrgModuleRsEntityList = new ArrayList<>();
     List<IndicatorViewMonitorFollowupEntity> indicatorViewMonitorFollowupEntityList = new ArrayList<>();
@@ -1409,7 +1408,6 @@ public class RsCopyBiz {
    * 1.ExperimentIndicatorInstanceRsEntity
    * 2.ExperimentIndicatorValRsEntity
   */
-  @Transactional(rollbackFor = Exception.class)
   public void rsCopyPersonIndicator(RsCopyPersonIndicatorRequestRs rsCopyPersonIndicatorRequestRs) throws ExecutionException, InterruptedException {
     Map<String, Integer> kCaseIndicatorInstanceIdVSeqMap = new HashMap<>();
     String caseInstanceId = rsCopyPersonIndicatorRequestRs.getCaseInstanceId();
@@ -1795,20 +1793,12 @@ public class RsCopyBiz {
     return experimentIndicatorExpressionItemRsEntity;
   }
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.READ_UNCOMMITTED,rollbackFor = Exception.class)
   public void rsCopyCrowdsAndRiskModel(RsCopyCrowdsAndRiskModelRequestRs rsCopyCrowdsAndRiskModelRequestRs) throws ExecutionException, InterruptedException {
     Map<String, String> kCrowdsInstanceIdVExperimentCrowsInstanceIdMap = new HashMap<>();
     String appId = rsCopyCrowdsAndRiskModelRequestRs.getAppId();
     String experimentInstanceId = rsCopyCrowdsAndRiskModelRequestRs.getExperimentInstanceId();
     rsCopyCrowds(appId, experimentInstanceId, kCrowdsInstanceIdVExperimentCrowsInstanceIdMap);
     rsCopyRiskModel(appId, experimentInstanceId, kCrowdsInstanceIdVExperimentCrowsInstanceIdMap);
-    /* runsix:复制实验，拿到第0期第数据 */
-    rsExperimentCalculateBiz.experimentRsCalculateAndCreateReportHealthScore(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
-        .builder()
-        .appId(appId)
-        .experimentId(experimentInstanceId)
-        .periods(0)
-        .build());
   }
 
 
