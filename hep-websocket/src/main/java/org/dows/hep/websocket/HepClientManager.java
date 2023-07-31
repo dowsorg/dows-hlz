@@ -279,6 +279,10 @@ public class HepClientManager {
         }
         String msgid = idGenerator.nextIdStr();
         MsgScheduler.schedule(() -> {
+            if(Thread.currentThread().isInterrupted()) {
+                return;
+            }
+
             String sc = MSGIDS.get(msgid);
             if (null == sc) {
                 sc = MessageProto.buildSystProto(msgid, code, mess);
