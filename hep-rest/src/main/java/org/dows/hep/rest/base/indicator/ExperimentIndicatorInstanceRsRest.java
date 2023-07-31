@@ -3,8 +3,10 @@ package org.dows.hep.rest.base.indicator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.indicator.request.RsAgeRequest;
 import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
 import org.dows.hep.api.base.indicator.request.RsInitMoneyRequest;
+import org.dows.hep.api.base.indicator.request.RsSexRequest;
 import org.dows.hep.api.base.indicator.response.GroupAverageHealthPointResponse;
 import org.dows.hep.api.user.experiment.request.ExperimentIndicatorInstanceRequest;
 import org.dows.hep.api.user.experiment.response.EchartsDataResonse;
@@ -72,5 +74,17 @@ public class ExperimentIndicatorInstanceRsRest {
       @RequestParam Integer periods
       ) {
     return experimentIndicatorInstanceRsBiz.groupAverageHealth(experimentGroupId, periods);
+  }
+
+  @Operation(summary = "实验人的性别")
+  @GetMapping("v1/experimentIndicator/sex/get")
+  public Map<String, String> getSexByPeriods(@RequestBody RsSexRequest rsSexRequest) {
+    return experimentIndicatorInstanceRsBiz.getSexByPeriods(rsSexRequest);
+  }
+
+  @Operation(summary = "实验人的年龄")
+  @GetMapping("v1/experimentIndicator/age/get")
+  public Map<String, String> getAgeByPeriods(@RequestBody RsAgeRequest rsAgeRequest) {
+    return experimentIndicatorInstanceRsBiz.getAgeByPeriods(rsAgeRequest);
   }
 }

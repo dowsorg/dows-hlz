@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.dows.hep.api.base.indicator.request.RsAgeRequest;
 import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
 import org.dows.hep.api.base.indicator.request.RsInitMoneyRequest;
+import org.dows.hep.api.base.indicator.request.RsSexRequest;
 import org.dows.hep.api.base.indicator.response.GroupAverageHealthPointResponse;
 import org.dows.hep.api.enums.EnumIndicatorType;
 import org.dows.hep.api.user.experiment.request.ExperimentIndicatorInstanceRequest;
@@ -321,5 +323,83 @@ public class ExperimentIndicatorInstanceRsBiz {
             }
         });
         return kExperimentPersonIdVInitMoneyMap;
+    }
+
+    public Map<String, String> getSexByPeriods(RsSexRequest rsSexRequest) {
+        /* runsix:result */
+        Map<String, String> kExperimentPersonIdVSexMap = new HashMap<>();
+        /* runsix:param */
+        Integer periods = rsSexRequest.getPeriods();
+        Set<String> experimentPersonIdSet = rsSexRequest.getExperimentPersonIdSet();
+        if (Objects.isNull(experimentPersonIdSet) || experimentPersonIdSet.isEmpty()) {return kExperimentPersonIdVSexMap;}
+
+        Map<String, String> kExperimentPersonIdVSexIdMap = new HashMap<>();
+        experimentIndicatorInstanceRsService.lambdaQuery()
+            .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.SEX.getType())
+            .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdSet)
+            .list()
+            .forEach(experimentIndicatorInstanceRsEntity -> {
+                kExperimentPersonIdVSexIdMap.put(experimentIndicatorInstanceRsEntity.getExperimentPersonId(), experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
+            });
+        if (kExperimentPersonIdVSexIdMap.isEmpty()) {return kExperimentPersonIdVSexIdMap;}
+
+        Set<String> sexIdSet = new HashSet<>(kExperimentPersonIdVSexIdMap.values());
+        Map<String, String> kSexIdMapVValMap = new HashMap<>();
+        experimentIndicatorValRsService.lambdaQuery()
+            .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
+            .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, sexIdSet)
+            .list()
+            .forEach(experimentIndicatorValRsEntity -> {
+                String indicatorInstanceId = experimentIndicatorValRsEntity.getIndicatorInstanceId();
+                String currentVal = experimentIndicatorValRsEntity.getCurrentVal();
+                kSexIdMapVValMap.put(indicatorInstanceId, currentVal);
+            });
+        kExperimentPersonIdVSexIdMap.forEach((experimentPersonId, sexId) -> {
+            String val = kSexIdMapVValMap.get(sexId);
+            if (StringUtils.isNotBlank(val)) {
+                kExperimentPersonIdVSexMap.put(experimentPersonId, val);
+            }
+        });
+
+        return kExperimentPersonIdVSexMap;
+    }
+
+    public Map<String, String> getAgeByPeriods(RsAgeRequest rsAgeRequest) {
+        /* runsix:result */
+        Map<String, String> kExperimentPersonIdVAgeMap = new HashMap<>();
+        /* runsix:param */
+        Integer periods = rsAgeRequest.getPeriods();
+        Set<String> experimentPersonIdSet = rsAgeRequest.getExperimentPersonIdSet();
+        if (Objects.isNull(experimentPersonIdSet) || experimentPersonIdSet.isEmpty()) {return kExperimentPersonIdVAgeMap;}
+
+        Map<String, String> kExperimentPersonIdVAgeIdMap = new HashMap<>();
+        experimentIndicatorInstanceRsService.lambdaQuery()
+            .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.AGE.getType())
+            .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdSet)
+            .list()
+            .forEach(experimentIndicatorInstanceRsEntity -> {
+                kExperimentPersonIdVAgeIdMap.put(experimentIndicatorInstanceRsEntity.getExperimentPersonId(), experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
+            });
+        if (kExperimentPersonIdVAgeIdMap.isEmpty()) {return kExperimentPersonIdVAgeIdMap;}
+
+        Set<String> ageIdSet = new HashSet<>(kExperimentPersonIdVAgeIdMap.values());
+        Map<String, String> kAgeIdMapVValMap = new HashMap<>();
+        experimentIndicatorValRsService.lambdaQuery()
+            .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
+            .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, ageIdSet)
+            .list()
+            .forEach(experimentIndicatorValRsEntity -> {
+                String indicatorInstanceId = experimentIndicatorValRsEntity.getIndicatorInstanceId();
+                String currentVal = experimentIndicatorValRsEntity.getCurrentVal();
+                kAgeIdMapVValMap.put(indicatorInstanceId, currentVal);
+            });
+        kExperimentPersonIdVAgeIdMap.forEach((experimentPersonId, sexId) -> {
+            String val = kAgeIdMapVValMap.get(sexId);
+            if (StringUtils.isNotBlank(val)) {
+                kExperimentPersonIdVAgeMap.put(experimentPersonId, val);
+            }
+        });
+
+        return kExperimentPersonIdVAgeMap;
     }
 }
