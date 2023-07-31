@@ -14,7 +14,7 @@ ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 ENV JAVA_OPTS="-Xms128m -Xmx256m"
 
-ENV SPRING_PROFILE="-Dspring.profiles.active=dev"
+ENV SPRING_PROFILE="-Dspring.profiles.active=test"
 #配置开启debug
 ENV JAVA_DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8041"
 
