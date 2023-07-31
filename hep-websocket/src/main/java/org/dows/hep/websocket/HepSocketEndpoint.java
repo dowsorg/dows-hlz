@@ -1,16 +1,22 @@
 package org.dows.hep.websocket;
 
 import cn.hutool.json.JSONUtil;
+import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.framework.api.Response;
+import org.dows.framework.api.uim.AccountInfo;
 import org.dows.framework.websocket.*;
 import org.dows.hep.websocket.proto.MessageBody;
+import org.dows.hep.websocket.proto.MessageCode;
 import org.dows.hep.websocket.schedule.MsgScheduler;
 import org.springframework.util.MultiValueMap;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * 测试：
@@ -51,11 +57,15 @@ public class HepSocketEndpoint {
 
     @OnMessage
     public void onMessage(NettySession nettySession, String message) {
-        // todo 应该是dispatch模式，先简单实现
-        MessageBody messageBody = JSONUtil.toBean(message, MessageBody.class);
-        // 确定收到具体用户的信息，处理业务逻辑
-        //AccountInfo accountInfo = HepClientManager.getAccountInfo(nettySession.channel());
-        MsgScheduler.remove(messageBody.getMsgId());
+        try {
+            // todo 应该是dispatch模式，先简单实现
+            MessageBody messageBody = JSONUtil.toBean(message, MessageBody.class);
+            // 确定收到具体用户的信息，处理业务逻辑
+            //AccountInfo accountInfo = HepClientManager.getAccountInfo(nettySession.channel());
+            MsgScheduler.remove(messageBody.getMsgId());
+        } catch (Exception e){
+
+        }
     }
 
     @OnBinary
