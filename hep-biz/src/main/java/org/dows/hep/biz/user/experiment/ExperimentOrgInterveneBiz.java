@@ -449,7 +449,6 @@ public class ExperimentOrgInterveneBiz{
         for(int i = 0;i < newItems.size(); i++){
             ExptTreatPlanItemVO vo = newItems.get(i);
             sum = sum.add(BigDecimalOptional.valueOf(vo.getFee()).mul(BigDecimalUtil.tryParseDecimalElseZero(vo.getWeight())).getValue());
-            System.out.println("111111");
         }
 
         experimentIndicatorInstanceRsBiz.changeMoney(RsChangeMoneyRequest
