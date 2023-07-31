@@ -340,8 +340,10 @@ public class ExperimentOrgInterveneBiz{
             ExptTreatPlanItemVO vo = saveTreat.getTreatItems().get(i);
             if(vo.getItemId() == null) {
                 sum = sum.add(BigDecimalOptional.valueOf(vo.getFee()).mul(BigDecimalUtil.tryParseDecimalElseZero(vo.getWeight())).getValue());
+                log.info("111111111");
             }
         }
+        log.info("sum=======================" + sum);
 
         //校验操作类型
         EnumExptOperateType enumOperateType=EnumExptOperateType.ofCategId(validator.getIndicatorCategoryId());
