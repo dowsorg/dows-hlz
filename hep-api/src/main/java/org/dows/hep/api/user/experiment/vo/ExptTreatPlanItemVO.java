@@ -23,6 +23,10 @@ public class ExptTreatPlanItemVO {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "序号,新增为空,非空该条不可删除, 前端按该值倒序排列")
     private Long itemId;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @Schema(title = "前端传入原始序号")
+    private Long rawItemId;
     @Schema(title = "治疗项目ID")
     private String treatItemId;
 
