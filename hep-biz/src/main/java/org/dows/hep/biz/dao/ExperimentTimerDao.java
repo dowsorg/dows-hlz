@@ -59,7 +59,7 @@ public class ExperimentTimerDao extends BaseDao<ExperimentTimerService, Experime
                 //.eq(ShareUtil.XObject.notEmpty(appId), ExperimentTimerEntity::getAppId,appId)
                 .eq(ExperimentTimerEntity::getExperimentInstanceId,experimentId)
                 .eq(ShareUtil.XObject.notEmpty(period),ExperimentTimerEntity::getPeriod,period)
-                .orderByDesc(ExperimentTimerEntity::getStartTime, ExperimentTimerEntity::getPauseCount)
+                .orderByDesc(ExperimentTimerEntity::getPeriod, ExperimentTimerEntity::getStartTime, ExperimentTimerEntity::getPauseCount)
                 .select(cols)
                 .list();
 
@@ -69,7 +69,7 @@ public class ExperimentTimerDao extends BaseDao<ExperimentTimerService, Experime
      * 获取实验当前timer
      * @param appId
      * @param experimentId
-     * @param timeStamp
+     * @param now
      * @param cols
      * @return
      */

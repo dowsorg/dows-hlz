@@ -27,6 +27,9 @@ public class ExperimentSettingCollection implements ICacheClear {
     @Schema(title = "实验实例id")
     private String experimentInstanceId;
 
+    @Schema(title = "实验模式")
+    private Integer model;
+
     @Schema(title = "期数")
     private Integer periods;
 

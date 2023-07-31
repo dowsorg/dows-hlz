@@ -366,6 +366,7 @@ public class ExperimentOrgInterveneBiz{
         List<ExptTreatPlanItemVO> newItems=new ArrayList<>();
         for(int i=saveTreat.getTreatItems().size()-1;i>=0;i--){
             ExptTreatPlanItemVO item=saveTreat.getTreatItems().get(i);
+            item.setRawItemId(item.getItemId());
             if(ShareUtil.XObject.notEmpty(item.getItemId(), true)){
                 continue;
             }
@@ -380,7 +381,7 @@ public class ExperimentOrgInterveneBiz{
             rowOrgFuncSnap.setInputJson(JacksonUtil.toJson(snapRst,true))
                     .setResultJson(JacksonUtil.toJson(evalResults,true));
         }catch (Exception ex){
-            AssertUtil.justThrow(String.format("记录指标数据编制失败：%s",ex.getMessage()),ex);
+            AssertUtil.justThrow(String.format("记录数据编制失败：%s",ex.getMessage()),ex);
         }
         //挂号报告
         boolean succFlag=false;
