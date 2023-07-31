@@ -651,7 +651,12 @@ public class ExperimentScoringBiz {
         /**
          * 如果期数未满，那么不执行计算总分，直接返回对应的期数分值
          */
-        if (list.size() != totalPeriods) {
+        int size = experimentGroupService.lambdaQuery()
+            .eq(ExperimentGroupEntity::getExperimentInstanceId, experimentId)
+            .list()
+            .size();
+
+        if (list.size() != totalPeriods*size) {
             return ExperimentRankResponse
                     .builder()
                     .totalPeriod(totalPeriods)
