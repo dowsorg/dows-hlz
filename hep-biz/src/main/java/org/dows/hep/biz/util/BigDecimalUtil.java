@@ -49,7 +49,7 @@ public class BigDecimalUtil {
         if(src instanceof BigDecimal){
             return (BigDecimal) src;
         }
-        return new BigDecimal(src.toString());
+        return tryParseDecimal(src.toString(), dft);
     }
     public static BigDecimal valueOf(Short src){
         return valueOf(src,null);
