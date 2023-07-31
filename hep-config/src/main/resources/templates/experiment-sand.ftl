@@ -133,7 +133,7 @@
     <div align="center" style="font-size:14px;">${baseInfo.copyRight} <span id="pages"> / </span></div>
 </div>
 <div class="page">
-    <div class="text-right"><img src="data:image/jpg;base64,${baseInfo.logoImg}" style="width: 80%"/></div>
+    <img src="data:image/jpg;base64,${baseInfo.logoImg}" align="center" width="740px" style="width: 740px;margin-top:60px;margin-bottom: 200px"/>
     <div align="center">
         <div class="pageTitle " style="margin-top:60px">${baseInfo.title}</div>
         <div class="pageTitle " style="margin-top:38px">健康沙盘</div>
@@ -145,7 +145,7 @@
         <div class="groupDiv">成员：<#list groupInfo.groupMembers as item>${item}<#if item_has_next>、</#if></#list></div>
         <div class="groupDiv">实验社区：${groupInfo.caseName!""}</div>
         <div class="groupDiv">
-            实验日期：<#if groupInfo.exptStartDate??>${groupInfo.exptStartDate!""}</#if>
+            实验日期：<#if groupInfo.exptStartDate??>${groupInfo.exptStartDate?string("yyyy-MM-dd")}</#if>
         </div>
         <div class="groupDiv">案例数量：${groupInfo.caseNum!0}</div>
     </div>
@@ -158,11 +158,11 @@
     <div style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">总得分</div>
     <table class="wd-700 text-center" align="center">
         <tr class="background-singular-blue">
-            <td width="350px" style="">健康指数得分</td>
-            <td>知识考点得分</td>
-            <td>医疗占比得分</td>
-            <td>总分</td>
-            <td>总排名</td>
+            <td width="20%">健康指数得分</td>
+            <td width="20%">知识考点得分</td>
+            <td width="20%">医疗占比得分</td>
+            <td width="20%">总分</td>
+            <td width="20%">总排名</td>
         </tr>
         <tr class="background-even-blue">
             <td>${scoreInfo.totalScore.healthIndexScore}</td>
@@ -175,32 +175,32 @@
     <div style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">每期得分</div>
     <table class="wd-700 text-center" align="center">
         <tr class="background-singular-blue">
-            <td width="350px" style="">期数</td>
-            <td>健康指数得分</td>
-            <td>知识考点得分</td>
-            <td>医疗占比得分</td>
-            <td>总分</td>
-            <td>排名</td>
+            <td width="20%">期数</td>
+            <td width="16%">健康指数得分</td>
+            <td width="16%">知识考点得分</td>
+            <td width="16%">医疗占比得分</td>
+            <td width="16%">总分</td>
+            <td width="16%">排名</td>
         </tr>
         <#list scoreInfo.periodScores as periodScore>
-            <tr class="background-even-blue">
-                <td>${periodScore_index + 1}</td>
-                <td>${periodScore.scoreInfo.healthIndexScore}</td>
-                <td>${periodScore.scoreInfo.knowledgeScore}</td>
-                <td>${periodScore.scoreInfo.treatmentPercentScore}</td>
-                <td>${periodScore.scoreInfo.totalScore}</td>
-                <td>${periodScore.scoreInfo.totalRanking!0}</td>
-            </tr>
+        <tr class="background-even-blue">
+            <td>${periodScore_index + 1}</td>
+            <td>${periodScore.scoreInfo.healthIndexScore}</td>
+            <td>${periodScore.scoreInfo.knowledgeScore}</td>
+            <td>${periodScore.scoreInfo.treatmentPercentScore}</td>
+            <td>${periodScore.scoreInfo.totalScore}</td>
+            <td>${periodScore.scoreInfo.totalRanking!0}</td>
+        </tr>
         </#list>
     </table>
     <div style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">每期权重</div>
     <table class="wd-700 text-center" align="center">
         <tr class="background-singular-blue">
-            <td width="350px" style="">第一期</td>
-            <td>第二期</td>
-            <td>第三期</td>
-            <td>第四期</td>
-            <td>第五期</td>
+            <td width="20%">第一期</td>
+            <td width="20%">第二期</td>
+            <td width="20%">第三期</td>
+            <td width="20%">第四期</td>
+            <td width="20%">第五期</td>
         </tr>
         <#list scoreInfo.periodWeights as periodWeight>
             <td class="background-even-blue">${periodWeight.weight!""}</td>
@@ -209,7 +209,7 @@
     <div style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">评分权重</div>
     <table class="wd-700 text-center" align="center">
         <tr class="background-singular-blue">
-            <td width="350px" style="">健康指数</td>
+            <td>健康指数</td>
             <td>知识考点</td>
             <td>医疗占比</td>
         </tr>
@@ -223,7 +223,7 @@
     <div class="font-blue bold" style="font-size:18px;margin-top:50px;margin-bottom:25px" align="center">二 实验详情
     </div>
     <#list npcDatas as npc>
-        <#--<div style="font-size:18px;margin-top:25px;margin-bottom:25px">案例${npc.baseInfo.no}: ${npc.userName}</div>
+        <div style="font-size:18px;margin-top:25px;margin-bottom:25px">案例${npc.interveneBefores.personId!""}: ${npc.personName!""}</div>
         <div style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">基本信息</div>
         <table class="wd-700 text-center" align="center">
             <tr class="background-singular-blue">
@@ -233,12 +233,12 @@
                 <td>疾病类别</td>
             </tr>
             <tr class="background-even-blue">
-                <td>${npc.baseInfo.userName}</td>
-                <td>${npc.baseInfo.sex}</td>
-                <td>${npc.baseInfo.age}</td>
-                <td>${npc.baseInfo.diseaseCateg}</td>
+                <td>${npc.interveneBefores.personName!""}</td>
+                <td>${npc.interveneBefores.sex!""}</td>
+                <td>${npc.interveneBefores.age!""}</td>
+                <td>${npc.interveneBefores.diseaseCateg!""}</td>
             </tr>
-        </table>-->
+        </table>
         <div style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">危险因素评价</div>
         <div style="font-size:18px;margin-top:25px;margin-bottom:25px">干预前</div>
         <table class="wd-700 text-center" align="center">
@@ -253,19 +253,19 @@
             </tr>
             <#if npc.interveneBefores.riskFactors??>
                 <#list npc.interveneBefores.riskFactors as ibrf>
-                <tr class="background-even-blue">
-                    <td rowspan="${ibrf.groupSize!0}">${ibrf.riskName}</td>
-                    <td rowspan="${ibrf.groupSize!0}">${ibrf.riskDeathProbability}</td>
-                    <#if ibrf.riskItems??>
-                        <#list ibrf.riskItems as ri >
-                    <td>${ri.itemName}</td>
-                    <td>${ri.itemValue}</td>
-                    <td>${ri.riskScore}</td>
-                        </#list>
-                    </#if>
-                    <td rowspan="${ibrf.groupSize!0}">${ibrf.riskScore}</td>
-                    <td rowspan="${ibrf.groupSize!0}">${ibrf.deathRiskScore}</td>
-                </tr>
+            <tr class="background-even-blue">
+                <td rowspan="${ibrf.groupSize!0}">${ibrf.riskName}</td>
+                <td rowspan="${ibrf.groupSize!0}">${ibrf.riskDeathProbability}</td>
+                <#if ibrf.riskItems??>
+                    <#list ibrf.riskItems as ri >
+                <td>${ri.itemName}</td>
+                <td>${ri.itemValue}</td>
+                <td>${ri.riskScore}</td>
+                    </#list>
+                </#if>
+                <td rowspan="${ibrf.groupSize!0}">${ibrf.riskScore}</td>
+                <td rowspan="${ibrf.groupSize!0}">${ibrf.deathRiskScore}</td>
+            </tr>
                 </#list>
             </#if>
         </table>
