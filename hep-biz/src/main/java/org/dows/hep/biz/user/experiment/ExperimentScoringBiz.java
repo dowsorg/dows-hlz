@@ -228,7 +228,6 @@ public class ExperimentScoringBiz {
                 .build();
     }
 
-    /* runsix:TODO 等待张亮修复，先返回空 */
     public RsCalculateMoneyScoreRsResponse rsCalculateMoneyScore(RsCalculateMoneyScoreRequestRs rsCalculateMoneyScoreRequestRs) {
         List<GroupMoneyScoreRsResponse> groupMoneyScoreRsResponseList = new ArrayList<>();
         Integer periods = rsCalculateMoneyScoreRequestRs.getPeriods();
@@ -270,52 +269,28 @@ public class ExperimentScoringBiz {
             kExperimentOrgGroupIdVTotalMap.put(experimentOrgGroupId, bigDecimal);
         });
 
-        CostRequest request = CostRequest
-            .builder()
-            .experimentInstanceId(experimentId)
-            .period(periods)
-            .build();
-
-        Map<String, List<OperateCostEntity>> collect = operateCostService.lambdaQuery()
-            .eq(OperateCostEntity::getExperimentInstanceId, request.getExperimentInstanceId())
-            .eq(OperateCostEntity::getPeriod, request.getPeriod())
-            .eq(OperateCostEntity::getDeleted, Boolean.FALSE)
+        Map<String, BigDecimal> kExperimentGroupIdVCostTotalMap = new HashMap<>();
+        operateCostService.lambdaQuery()
+            .eq(OperateCostEntity::getExperimentInstanceId, experimentId)
+            .eq(OperateCostEntity::getPeriod, periods)
             .list()
-            .stream()
-            .collect(Collectors.groupingBy(OperateCostEntity::getExperimentGroupId));
-
-        Map<String, BigDecimal> map = new HashMap<>();
-
-        collect.forEach((k, v) -> {
-            // 计算当前期某小组的总费用
-            BigDecimal periodTotalCost = v.stream()
-                .map(OperateCostEntity::getCost)
-                .reduce(BigDecimal::add)
-                .get();
-            BigDecimal initiaCapital = kExperimentOrgGroupIdVTotalMap.get(k);
-            BigDecimal div = NumberUtil.div(periodTotalCost, initiaCapital, 2);
-
-            BigDecimal treatmentPercentScore = NumberUtil.div(NumberUtil.sub(1, div), 100);
-            map.put(k, treatmentPercentScore);
-        });
-        Map<String, BigDecimal> stringBigDecimalMap = map;
-
-
-
-//        List<GroupMoneyScoreRsResponse> groupMoneyScoreRsResponseList = new ArrayList<>();
-//
-//        CostRequest costRequest = CostRequest.builder()
-//                .experimentInstanceId(rsCalculateMoneyScoreRequestRs.getExperimentId())
-//                .period(rsCalculateMoneyScoreRequestRs.getPeriods())
-//                .build();
-//        // 计算的本期医疗占比得分
-//        Map<String, BigDecimal> stringBigDecimalMap = operateCostBiz.calcGroupTreatmentPercent(costRequest);
-//
-        stringBigDecimalMap.forEach((k, v) -> {
-            GroupMoneyScoreRsResponse groupMoneyScoreRsResponse = new GroupMoneyScoreRsResponse();
-            groupMoneyScoreRsResponse.setExperimentGroupId(k);
-            groupMoneyScoreRsResponse.setGroupMoneyScore(v);
-            groupMoneyScoreRsResponseList.add(groupMoneyScoreRsResponse);
+            .forEach(operateCostEntity -> {
+                String experimentGroupId = operateCostEntity.getExperimentGroupId();
+                BigDecimal cost = operateCostEntity.getCost();
+                BigDecimal bigDecimal = kExperimentGroupIdVCostTotalMap.get(experimentGroupId);
+                if (Objects.isNull(bigDecimal)) {bigDecimal = BigDecimal.ZERO;}
+                bigDecimal = bigDecimal.add(cost);
+                kExperimentGroupIdVCostTotalMap.put(experimentGroupId, bigDecimal);
+            });
+        kExperimentOrgGroupIdVTotalMap.forEach((experimentOrgGroupId, initTotal) -> {
+            BigDecimal costTotal = kExperimentGroupIdVCostTotalMap.get(experimentOrgGroupId);
+            if (Objects.isNull(costTotal)) {costTotal = BigDecimal.ZERO;}
+            BigDecimal groupMoneyScore = BigDecimal.valueOf(100).multiply(BigDecimal.ONE.subtract((costTotal.divide(initTotal, 2, RoundingMode.DOWN))));
+            groupMoneyScoreRsResponseList.add(GroupMoneyScoreRsResponse
+                .builder()
+                    .experimentGroupId(experimentOrgGroupId)
+                    .groupMoneyScore(groupMoneyScore)
+                .build());
         });
 
         return RsCalculateMoneyScoreRsResponse
