@@ -447,7 +447,7 @@ public class ExperimentOrgInterveneBiz{
         // 获取总的费用资金
         BigDecimal sum = new BigDecimal(0);
 //        for(int i = 0;i < saveTreat.getTreatItems().size(); i++){
-            ExptTreatPlanItemVO vo = saveTreat.getTreatItems().get(saveTreat.getTreatItems().size() - 1);
+            ExptTreatPlanItemVO vo = saveTreat.getTreatItems().get(0);
             sum = sum.add(BigDecimalOptional.valueOf(vo.getFee()).mul(BigDecimalUtil.tryParseDecimalElseZero(vo.getWeight())).getValue());
 //        }
 
