@@ -336,8 +336,10 @@ public class ExperimentOrgInterveneBiz{
 
         // 获取总的费用资金
         BigDecimal sum = new BigDecimal(0);
+        log.info("getTreatItems==========" + saveTreat.getTreatItems());
         for(int i = 0;i < saveTreat.getTreatItems().size(); i++){
             ExptTreatPlanItemVO vo = saveTreat.getTreatItems().get(i);
+            log.info("vo==========" + vo);
             if(vo.getItemId() == null) {
                 log.info("id=======" + vo.getItemId());
                 log.info("flag =======" + String.valueOf(vo.getItemId() == null));
