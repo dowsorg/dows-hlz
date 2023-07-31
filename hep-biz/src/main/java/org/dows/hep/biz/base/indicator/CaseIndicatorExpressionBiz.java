@@ -103,7 +103,7 @@ public class CaseIndicatorExpressionBiz {
         .indicatorExpressionRefId(caseIndicatorExpressionRefId)
         .indicatorExpressionId(caseIndicatorExpressionEntity.getCaseIndicatorExpressionId())
         .appId(caseIndicatorExpressionEntity.getAppId())
-        .principalId(caseIndicatorExpressionEntity.getPrincipalId())
+        .principalId(caseIndicatorExpressionEntity.getCasePrincipalId())
         .caseIndicatorCategoryResponse(caseIndicatorCategoryResponse)
         .type(caseIndicatorExpressionEntity.getType())
         .source(caseIndicatorExpressionEntity.getSource())
