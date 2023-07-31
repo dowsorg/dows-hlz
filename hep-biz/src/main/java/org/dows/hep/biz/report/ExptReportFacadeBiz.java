@@ -426,6 +426,7 @@ public class ExptReportFacadeBiz {
         List<ExptAccountReportResponse> ts = new ArrayList<>();
         records.forEach(item -> {
             ExptAccountReportResponse itemResponse = ExptAccountReportResponse.builder()
+                    .exptInstanceId(item.getExperimentInstanceId())
                     .exptName(item.getExperimentName())
                     .exptMode(EnumExperimentMode.getNameByCode(item.getModel()))
                     .exptStartTime(item.getExperimentStartTime())
