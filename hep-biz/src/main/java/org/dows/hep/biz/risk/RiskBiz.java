@@ -127,7 +127,7 @@ public class RiskBiz {
                     .personId(experimentPersonEntity.getExperimentPersonId())
                     .personName(experimentPersonEntity.getUserName())
                     .sex(kExperimentPersonIdVSexMap.get(experimentPersonEntity.getExperimentPersonId()))
-                    .age(Integer.valueOf(kExperimentPersonIdVAgeMap.get(experimentPersonEntity.getExperimentPersonId())))
+                    .age(Double.valueOf(kExperimentPersonIdVAgeMap.get(experimentPersonEntity.getExperimentPersonId())).intValue())
                     .build();
                 personRiskFactor.setPeriod(periods);
                 List<PersonRiskFactor.RiskFactor> riskFactors = new ArrayList<>();
