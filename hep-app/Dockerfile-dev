@@ -3,6 +3,7 @@ FROM eclipse-temurin:17-jre as builder
 WORKDIR application
 ARG JAR_FILE
 
+COPY hep-app/skywalking-agent/ /root/
 COPY hep-app/target/${JAR_FILE} app.jar
 
 RUN java -Djarmode=layertools -jar app.jar extract && rm app.jar
@@ -17,6 +18,8 @@ ENV JAVA_OPTS="-Xms2048m -Xmx2048m"
 ENV SPRING_PROFILE="-Dspring.profiles.active=dev"
 #配置开启debug
 ENV JAVA_DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8040"
+# SKYWALKING
+ENV SKYWALKING="-javaagent:/root/skywalking-agent.jar -Dskywalking.agent.service_name=dev-dows-hep"
 
 WORKDIR application
 COPY --from=builder application/dependencies/ ./
