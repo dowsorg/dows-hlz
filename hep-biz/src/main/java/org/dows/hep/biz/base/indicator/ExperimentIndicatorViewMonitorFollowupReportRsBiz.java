@@ -215,9 +215,8 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
                 .ivmfIndicatorCurrentValArray(indicatorCurrentValArray)
                 .build();
         experimentIndicatorViewMonitorFollowupReportRsService.saveOrUpdate(experimentIndicatorViewMonitorFollowupReportRsEntity);
+
         //服务记录
-
-
         LoginContextVO voLogin = ShareBiz.getLoginUser();
         final ExperimentIndicatorFuncRsResponse func=getIndicatorFunc(experimentOrgId,indicatorFuncId);
         OperateFlowEntity saveFlow = OperateFlowEntity.builder()
