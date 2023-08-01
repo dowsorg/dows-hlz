@@ -122,7 +122,7 @@ public class SpelInvoker {
     public boolean saveIndicator(Collection<SpelEvalResult> evalResults, Collection<SpelEvalSumResult> evalSumResults,Integer periods){
         if(DEBUGFlag){
             saveIndicatorCurrent(evalSumResults,periods);
-            saveIndicatorChange(evalSumResults);
+            //saveIndicatorChange(evalSumResults);
             log.info("IndicatorDebug..."+JSONUtil.toJsonStr(evalResults));
             return true;
         }
