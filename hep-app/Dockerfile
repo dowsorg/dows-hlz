@@ -20,6 +20,8 @@ ENV JAVA_OPTS="-Xms2048m -Xmx2048m"
 ENV JAVA_DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
 ENV SPRING_RUN="org.springframework.boot.loader.JarLauncher"
 ENV SPRING_ENV="-Dspring.profiles.active="
+#监控
+ENV SKYWALKING="-javaagent:/application/skywalking-agent/skywalking-agent.jar -Dskywalking.agent.service_name=dows-hep-"
 
 WORKDIR application
 COPY --from=builder application/dependencies/ ./
@@ -27,4 +29,4 @@ COPY --from=builder application/spring-boot-loader/ ./
 COPY --from=builder application/snapshot-dependencies/ ./
 COPY --from=builder application/application/ ./
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS $JAVA_DEBUG $SPRING_ENV$RTE $SPRING_RUN"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS $JAVA_DEBUG $SPRING_ENV$RTE $SKYWALKINGE$RTE $SPRING_RUN"]
