@@ -18,7 +18,7 @@ ENV SPRING_PROFILE="-Dspring.profiles.active=dev"
 #配置开启debug
 ENV JAVA_DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8040"
 #skywalking
-ENV SKYWALKING_NAME="-javaagent:./hep-app/skywalking-agent/skywalking-agent.jar -Dskywalking.agent.service_name=dev-dows-hep"
+ENV SKYWALKING_NAME="-javaagent:/application/skywalking-agent/skywalking-agent.jar -Dskywalking.agent.service_name=dev-dows-hep"
 
 WORKDIR application
 COPY --from=builder application/dependencies/ ./
