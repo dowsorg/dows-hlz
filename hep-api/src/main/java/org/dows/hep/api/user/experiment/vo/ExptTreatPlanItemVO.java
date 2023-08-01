@@ -53,6 +53,4 @@ public class ExptTreatPlanItemVO {
     @Schema(title = "结算标记 0-未结算 1-已结算,后端专用")
     private Integer dealFlag;
 
-
-
 }

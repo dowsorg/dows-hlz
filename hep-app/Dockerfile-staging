@@ -16,7 +16,7 @@ ENV JAVA_OPTS="-Xms2048m -Xmx2048m"
 
 ENV SPRING_PROFILE="-Dspring.profiles.active=staging"
 #配置开启debug
-ENV JAVA_DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8041"
+ENV JAVA_DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8042"
 
 WORKDIR application
 COPY --from=builder application/dependencies/ ./

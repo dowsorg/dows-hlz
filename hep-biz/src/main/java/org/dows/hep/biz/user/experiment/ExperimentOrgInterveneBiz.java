@@ -326,20 +326,6 @@ public class ExperimentOrgInterveneBiz{
     }
 
     public SaveExptTreatResponse saveExptTreatPlan( SaveExptTreatRequest saveTreat, HttpServletRequest request){
-        // 获取总的费用资金
-        BigDecimal sum = new BigDecimal(0);
-        log.info("getTreatItems==========" + saveTreat.getTreatItems());
-        for(int i = 0;i < saveTreat.getTreatItems().size(); i++){
-            ExptTreatPlanItemVO vo = saveTreat.getTreatItems().get(i);
-            log.info("vo==========" + vo);
-            if(vo.getItemId() == null) {
-                log.info("id=======" + vo.getItemId());
-                log.info("flag =======" + String.valueOf(vo.getItemId() == null));
-                sum = sum.add(BigDecimalOptional.valueOf(vo.getFee()).mul(BigDecimalUtil.tryParseDecimalElseZero(vo.getWeight())).getValue());
-                log.info("111111111");
-            }
-        }
-        log.info("sum=======================" + sum);
 
         ExptRequestValidator validator=ExptRequestValidator.create(saveTreat);
         validator.checkExperimentPerson()
@@ -461,6 +447,12 @@ public class ExperimentOrgInterveneBiz{
             feeCode = EnumOrgFeeType.YWZLF.getCode();
         }
 
+        // 获取总的费用资金
+        BigDecimal sum = new BigDecimal(0);
+        for(int i = 0;i < newItems.size(); i++){
+            ExptTreatPlanItemVO vo = newItems.get(i);
+            sum = sum.add(BigDecimalOptional.valueOf(vo.getFee()).mul(BigDecimalUtil.tryParseDecimalElseZero(vo.getWeight())).getValue());
+        }
 
         experimentIndicatorInstanceRsBiz.changeMoney(RsChangeMoneyRequest
                 .builder()

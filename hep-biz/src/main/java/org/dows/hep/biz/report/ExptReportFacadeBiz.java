@@ -150,7 +150,7 @@ public class ExptReportFacadeBiz {
                 + exptEntity.getExperimentName()
                 + SystemConstant.SUFFIX_ZIP;
 
-        RLock lock = redissonClient.getLock(RedisKeyConst.HM_LOCK_REPORT + exptInstanceId);
+        RLock lock = redissonClient.getLock(RedisKeyConst.HEP_LOCK_REPORT + exptInstanceId);
         try {
             if (lock.tryLock(-1, 30, TimeUnit.SECONDS)) {
                 // 查询是否已经存在
@@ -214,7 +214,7 @@ public class ExptReportFacadeBiz {
                 + exptGroupId
                 + SystemConstant.SUFFIX_ZIP;
 
-        RLock lock = redissonClient.getLock(RedisKeyConst.HM_LOCK_REPORT + exptGroupId);
+        RLock lock = redissonClient.getLock(RedisKeyConst.HEP_LOCK_REPORT + exptGroupId);
         try {
             if (lock.tryLock(-1, 10, TimeUnit.SECONDS)) {
                 // 查询是否已经存在
