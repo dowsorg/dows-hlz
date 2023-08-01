@@ -207,7 +207,7 @@ public class CaseIndicatorExpressionBiz {
       if (!indicatorCategoryIdSet.isEmpty()) {
         caseIndicatorCategoryService.lambdaQuery()
             .eq(CaseIndicatorCategoryEntity::getAppId, appId)
-            .in(CaseIndicatorCategoryEntity::getIndicatorCategoryId, indicatorCategoryIdSet)
+            .in(CaseIndicatorCategoryEntity::getCaseIndicatorCategoryId, indicatorCategoryIdSet)
             .list()
             .forEach(indicatorCategoryEntity -> {
               kIndicatorCategoryIdVIndicatorCategoryRsMap.put(
