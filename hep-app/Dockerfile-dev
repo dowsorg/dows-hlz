@@ -2,7 +2,6 @@ FROM eclipse-temurin:17-jre as builder
 
 WORKDIR application
 ARG JAR_FILE
-COPY hep-app/target/${JAR_FILE} bpp.jar
 COPY hep-app/skywalking-agent/ ./skywalking-agent/
 COPY hep-app/target/${JAR_FILE} app.jar
 
@@ -19,14 +18,13 @@ ENV SPRING_PROFILE="-Dspring.profiles.active=dev"
 #配置开启debug
 ENV JAVA_DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8040"
 # SKYWALKING
-ENV SKYWALKING="-javaagent:/root/skywalking-agent.jar -Dskywalking.agent.service_name=dev-dows-hep"
+ENV SKYWALKING="-javaagent:/root/skywalking-agent/skywalking-agent.jar -Dskywalking.agent.service_name=dev-dows-hep"
 
 WORKDIR application
-COPY --from=builder application/bpp.jar /root/
 COPY --from=builder application/skywalking-agent/ /root/skywalking-agent/
 COPY --from=builder application/dependencies/ ./
 COPY --from=builder application/spring-boot-loader/ ./
 COPY --from=builder application/snapshot-dependencies/ ./
 COPY --from=builder application/application/ ./
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS $JAVA_DEBUG $SPRING_PROFILE org.springframework.boot.loader.JarLauncher"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS $SKYWALKING $JAVA_DEBUG $SPRING_PROFILE org.springframework.boot.loader.JarLauncher"]
