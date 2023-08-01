@@ -28,4 +28,4 @@ COPY --from=builder application/application/ ./
 
 EXPOSE 8080
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS $SKYWALKING_NAME $JAVA_DEBUG $SPRING_PROFILE org.springframework.boot.loader.JarLauncher"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS $JAVA_DEBUG $SPRING_PROFILE org.springframework.boot.loader.JarLauncher"]
