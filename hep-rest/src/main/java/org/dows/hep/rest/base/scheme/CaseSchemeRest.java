@@ -44,7 +44,7 @@ public class CaseSchemeRest {
         String accountName = baseBiz.getAccountName(request);
         caseScheme.setAccountId(accountId);
         caseScheme.setAccountName(accountName);
-        return tenantCaseSchemeBiz.saveOrUpdCaseScheme(caseScheme, CaseSchemeSourceEnum.ADMIN, QuestionSourceEnum.ADMIN);
+        return tenantCaseSchemeBiz.saveOrUpdCaseSchemeAdmin(caseScheme, CaseSchemeSourceEnum.ADMIN, QuestionSourceEnum.ADMIN);
     }
 
     /**
