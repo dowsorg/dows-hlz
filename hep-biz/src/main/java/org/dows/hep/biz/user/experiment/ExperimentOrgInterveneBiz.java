@@ -450,7 +450,6 @@ public class ExperimentOrgInterveneBiz{
         // 获取总的费用资金
         BigDecimal sum = new BigDecimal(0);
         for(int i = 0;i < newItems.size(); i++){
-            log.info("newItems.get(i)" + newItems.get(i));
             ExptTreatPlanItemVO vo = newItems.get(i);
             sum = sum.add(BigDecimalOptional.valueOf(vo.getFee()).mul(BigDecimalUtil.tryParseDecimalElseZero(vo.getWeight())).getValue());
         }
