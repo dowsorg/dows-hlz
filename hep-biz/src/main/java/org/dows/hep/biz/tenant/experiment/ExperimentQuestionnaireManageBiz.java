@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import lombok.RequiredArgsConstructor;
+import org.apache.skywalking.apm.toolkit.trace.Trace;
 import org.dows.hep.api.base.question.response.QuestionOptionWithAnswerResponse;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionItemResponse;
@@ -54,6 +55,7 @@ public class ExperimentQuestionnaireManageBiz {
      * @description 预生成知识考点问卷-分配实验的时候调用
      * @date 2023/7/5 17:15
      */
+    @Trace(operationName = "初始化实验 `知识答题` 数据")
     public void preHandleExperimentQuestionnaire(String experimentInstanceId, String caseInstanceId) {
         // 没有包含沙盘模式就退出
         if (!experimentSettingBiz.containsSand(experimentInstanceId)) {

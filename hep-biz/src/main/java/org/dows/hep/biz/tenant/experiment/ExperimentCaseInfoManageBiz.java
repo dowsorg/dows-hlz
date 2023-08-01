@@ -3,6 +3,7 @@ package org.dows.hep.biz.tenant.experiment;
 import cn.hutool.core.collection.CollUtil;
 import com.alibaba.fastjson.JSON;
 import lombok.RequiredArgsConstructor;
+import org.apache.skywalking.apm.toolkit.trace.Trace;
 import org.dows.hep.api.tenant.casus.CaseScoreModeEnum;
 import org.dows.hep.api.tenant.casus.response.CaseInstanceResponse;
 import org.dows.hep.api.tenant.casus.response.CaseNoticeResponse;
@@ -37,6 +38,7 @@ public class ExperimentCaseInfoManageBiz {
      * @description 预生成社区基本信息-分配实验的时候调用
      * @date 2023/7/5 17:15
      */
+    @Trace(operationName = "初始化实验 `社区基本信息`")
     public void preHandleCaseInfo(String experimentInstanceId, String caseInstanceId) {
         ExperimentCaseInfoEntity entity = ExperimentCaseInfoEntity.builder()
                 .experimentCaseInfoId(baseBiz.getIdStr())

@@ -3,6 +3,7 @@ package org.dows.hep.biz.base.indicator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.skywalking.apm.toolkit.trace.Trace;
 import org.dows.hep.api.base.indicator.request.ExperimentRsCalculateAndCreateReportHealthScoreRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyCrowdsAndRiskModelRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyIndicatorFuncRequestRs;
@@ -100,6 +101,7 @@ public class RsCopyBiz {
   private final RsCaseIndicatorExpressionBiz rsCaseIndicatorExpressionBiz;
   private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
 
+  @Trace(operationName = "初始化实验 '复制功能点到实验'")
   public void rsCopyIndicatorFunc(RsCopyIndicatorFuncRequestRs rsCopyIndicatorFuncRequestRs) {
     List<ExperimentOrgModuleRsEntity> experimentOrgModuleRsEntityList = new ArrayList<>();
     List<IndicatorViewMonitorFollowupEntity> indicatorViewMonitorFollowupEntityList = new ArrayList<>();
@@ -1408,6 +1410,7 @@ public class RsCopyBiz {
    * 1.ExperimentIndicatorInstanceRsEntity
    * 2.ExperimentIndicatorValRsEntity
   */
+  @Trace(operationName = "复制人物指标")
   public void rsCopyPersonIndicator(RsCopyPersonIndicatorRequestRs rsCopyPersonIndicatorRequestRs) throws ExecutionException, InterruptedException {
     Map<String, Integer> kCaseIndicatorInstanceIdVSeqMap = new HashMap<>();
     String caseInstanceId = rsCopyPersonIndicatorRequestRs.getCaseInstanceId();
@@ -1793,6 +1796,7 @@ public class RsCopyBiz {
     return experimentIndicatorExpressionItemRsEntity;
   }
 
+  @Trace(operationName = "初始化实验 '复制人群类型以及死亡原因以及公式到实验")
   public void rsCopyCrowdsAndRiskModel(RsCopyCrowdsAndRiskModelRequestRs rsCopyCrowdsAndRiskModelRequestRs) throws ExecutionException, InterruptedException {
     Map<String, String> kCrowdsInstanceIdVExperimentCrowsInstanceIdMap = new HashMap<>();
     String appId = rsCopyCrowdsAndRiskModelRequestRs.getAppId();
@@ -1802,6 +1806,7 @@ public class RsCopyBiz {
   }
 
 
+  @Trace(operationName = "复制人群类别")
   public void rsCopyCrowds(String appId, String experimentInstanceId, Map<String, String> kCrowdsInstanceIdVExperimentCrowsInstanceIdMap) {
     if (Objects.isNull(kCrowdsInstanceIdVExperimentCrowsInstanceIdMap)) {
       log.error("rsCopyCrowds kCrowdsInstanceIdVExperimentCrowsInstanceIdMap is null, copy stop");
@@ -1851,6 +1856,7 @@ public class RsCopyBiz {
     }
   }
 
+  @Trace(operationName = "复制死亡原因")
   public void rsCopyRiskModel(String appId, String experimentInstanceId, Map<String, String> kCrowdsInstanceIdVExperimentCrowsInstanceIdMap) {
     List<ExperimentRiskModelRsEntity> experimentRiskModelRsEntityList = new ArrayList<>();
     List<ExperimentIndicatorExpressionRefRsEntity> experimentIndicatorExpressionRefRsEntityList = new ArrayList<>();
