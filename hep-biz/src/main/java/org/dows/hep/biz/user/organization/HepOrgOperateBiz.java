@@ -113,10 +113,10 @@ public class HepOrgOperateBiz {
                 .eq(ExperimentPersonEntity::getDeleted,false)
                 .one();
         //2、根据账户找到对应的机构
-        List<AccountGroupResponse> groupResponseList = accountGroupApi.getAccountGroupListByAccountId(experimentPerson.getAccountId(), appId);
+        List<AccountGroupResponse> groupResponseList = accountGroupApi.getAccountGroupListByAccountId(experimentPerson.getAccountId(), "3");
         //3、删除该条数据，并将账户添加到新机构
         if (groupResponseList != null && groupResponseList.size() > 0) {
-            AccountOrgResponse orgResponse = accountOrgApi.getAccountOrgByOrgId(request.getOrgId(), appId);
+            AccountOrgResponse orgResponse = accountOrgApi.getAccountOrgByOrgId(request.getOrgId(), "3");
             groupResponseList.forEach(group -> {
                 AccountGroupRequest request1 = new AccountGroupRequest();
                 BeanUtil.copyProperties(orgResponse, request1);

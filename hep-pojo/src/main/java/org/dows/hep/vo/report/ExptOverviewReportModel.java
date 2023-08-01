@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -48,7 +47,7 @@ public class ExptOverviewReportModel implements ExptReportModel {
         private String experimentName;
 
         @Schema(title = "实验日期")
-        private Date exptStartDate;
+        private String exptStartDate;
 
         @Schema(title = "期数")
         private Integer periods;

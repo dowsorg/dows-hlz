@@ -2,6 +2,7 @@ package org.dows.hep.biz.report;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.itextpdf.commons.utils.Base64;
 import com.itextpdf.styledxmlparser.jsoup.Jsoup;
@@ -319,7 +320,7 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
                 .groupMembers(groupMembers)
                 .caseName(exptInfo.getCaseName())
                 .experimentName(exptInfo.getExperimentName())
-                .exptStartDate(exptInfo.getStartTime())
+                .exptStartDate(exptInfo.getStartTime() == null ? "" : DateUtil.formatDate(exptInfo.getStartTime()))
                 .build();
     }
 

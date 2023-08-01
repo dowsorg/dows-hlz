@@ -90,7 +90,7 @@
     </div>
     <div align="right">
         <div class="groupDiv">实验社区：${exptInfo.experimentName}</div>
-        <div class="groupDiv">实验日期：${exptInfo.exptStartDate?string("yyyy-MM-dd")}</div>
+        <div class="groupDiv">实验日期：${exptInfo.exptStartDate}</div>
     </div>
 </div>
 <div class="pageNext"></div>
