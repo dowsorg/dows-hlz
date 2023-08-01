@@ -70,4 +70,29 @@ public class ReportOSSHelper {
                 + URL_PATH_SEPARATOR
                 + ossInfo.getName();
     }
+
+    /**
+     * @param ossInfo -
+     * @param parent  -
+     * @return java.lang.String
+     * @author fhb
+     * @description 获取文件完整 uri 路径
+     * @date 2023/8/1 16:26
+     */
+    public String getUrlPath(OssInfo ossInfo, String parent) {
+        OSSProperties.MinioOss minio = ossProperties.getMinio();
+        String endpoint = minio.getEndpoint();
+        String basePath = minio.getBasePath();
+        String bucketName = minio.getBucketName();
+        // 构建返回值
+        return endpoint
+                + URL_PATH_SEPARATOR
+                + bucketName
+                + URL_PATH_SEPARATOR
+                + basePath
+                + URL_PATH_SEPARATOR
+                + parent
+                + URL_PATH_SEPARATOR
+                + ossInfo.getName();
+    }
 }
