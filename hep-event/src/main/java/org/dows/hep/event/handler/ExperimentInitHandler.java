@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.skywalking.apm.toolkit.trace.Trace;
 import org.dows.account.request.AccountGroupRequest;
 import org.dows.account.response.AccountGroupResponse;
 import org.dows.account.response.AccountInstanceResponse;
@@ -84,24 +85,6 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
     private final ExperimentSettingService experimentSettingService;
     private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
 
-//    @Override
-    public void execOld(ExperimentGroupSettingRequest request) {
-        String experimentInstanceId = request.getExperimentInstanceId();
-        String caseInstanceId = request.getCaseInstanceId();
-        // 设置实验开始定时器
-        setExperimentBeginTimerTask(request);
-        // 初始化实验 `设置小组` 个数
-        createGroupEvent(request);
-        // 初始化实验 `复制机构和人物`
-        copyExperimentPersonAndOrgEvent(request);
-        // 初始化实验 `社区基本信息`
-        experimentCaseInfoManageBiz.preHandleCaseInfo(experimentInstanceId, caseInstanceId);
-        // 初始化实验 `方案设计` 数据
-        experimentSchemeManageBiz.preHandleExperimentScheme(experimentInstanceId, caseInstanceId);
-        // 初始化实验 `知识答题` 数据
-        experimentQuestionnaireManageBiz.preHandleExperimentQuestionnaire(experimentInstanceId, caseInstanceId);
-    }
-
     @Override
     public void exec(ExperimentGroupSettingRequest request) throws ExecutionException, InterruptedException {
         String experimentInstanceId = request.getExperimentInstanceId();
@@ -170,7 +153,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
               .experimentInstanceId(experimentInstanceId)
               .caseInstanceId(caseInstanceId)
               .build());
-            /* runsix:复制实验，拿到第0期第数据 */
+            /* runsix:复制实验，拿到第0期的数据 */
             rsExperimentCalculateBiz.experimentRsCalculateAndCreateReportHealthScore(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
                 .builder()
                 .appId(appId)
@@ -182,6 +165,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
         SnapshotManager.Instance().write( new SnapshotRequest(appId,experimentInstanceId), true);
     }
 
+    @Trace(operationName = "设置方案设计截止时间提交定时器")
     private void setExptSchemeExpireTask(AtomicReference<ExperimentSetting.SchemeSetting> schemeSettingAtomicReference, ExperimentGroupSettingRequest request) {
         //保存任务进计时器表，防止重启后服务挂了，一个任务每个实验每一期只能有一条数据
         ExperimentSetting.SchemeSetting schemeSetting = schemeSettingAtomicReference.get();
@@ -212,6 +196,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
      *
      * @param experimentGroupSettingRequest
      */
+    @Trace(operationName = "实验开始定时器")
     public void setExperimentBeginTimerTask(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
         //保存任务进计时器表，防止重启后服务挂了，一个任务每个实验每一期只能有一条数据
         ExperimentTaskScheduleEntity beginEntity = new ExperimentTaskScheduleEntity();
@@ -260,6 +245,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
      *
      * @param experimentGroupSettingRequest
      */
+    @Trace(operationName = "初始化实验 `设置小组` 个数")
     public void createGroupEvent(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
         ExperimentContext experimentContext = new ExperimentContext();
         experimentContext.setExperimentId(experimentGroupSettingRequest.getExperimentInstanceId());
@@ -273,6 +259,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
     /**
      * copy 实验人物计事件
      */
+    @Trace(operationName = "初始化实验 `复制机构和人物`")
     public void copyExperimentPersonAndOrgEvent(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
         // 复制人物与机构到实验中
         ExperimentInstanceEntity experimentInstanceEntity = experimentInstanceService.lambdaQuery()
