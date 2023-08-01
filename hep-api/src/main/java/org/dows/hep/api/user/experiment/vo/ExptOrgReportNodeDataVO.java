@@ -46,6 +46,9 @@ public class ExptOrgReportNodeDataVO {
     @Schema(title = "判断指标--健康指导")
     private List<ExperimentHealthGuidanceReportResponseRs> judgeHealthGuidance;
 
+    @Schema(title = "监测随访")
+    private ExperimentIndicatorViewMonitorFollowupReportRsResponse monitorFollowup;
+
  /*   @Schema(title = "判断指标--疾病问题")
     private Object judgeDiseaseProblem;
 

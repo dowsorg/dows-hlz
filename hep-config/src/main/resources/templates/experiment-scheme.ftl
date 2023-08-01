@@ -121,7 +121,7 @@
         <div class="groupDiv">组名：${groupInfo.groupName!""}</div>
         <div class="groupDiv">成员：<#list groupInfo.groupMembers as item>${item}<#if item_has_next>、</#if></#list></div>
         <div class="groupDiv">实验社区：${groupInfo.caseName!""}</div>
-        <div class="groupDiv">实验日期：<#if groupInfo.exptStartDate??>${groupInfo.exptStartDate?string("yyyy-MM-dd")}</#if></div>
+        <div class="groupDiv">实验日期：${groupInfo.exptStartDate!""}</div>
     </div>
 </div>
 <div class="pageNext"></div>
