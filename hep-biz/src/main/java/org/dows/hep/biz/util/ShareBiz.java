@@ -96,6 +96,12 @@ public class ShareBiz {
                 .orElse("");
     }
 
+    public static String assertRunningOperateFlowId(String appId,String experimentInstanceId, String experimentOrgId,String experimentPersonId){
+        ExptOrgFlowValidator validator= ExptOrgFlowValidator.create(appId, experimentInstanceId, experimentOrgId, experimentPersonId);
+        validator.checkOrgFlowRunning();
+        return validator.getOperateFlowId();
+    }
+
     /**
      * 获取 某人物在某机构 进行中的当前挂号流水号
      * @param appId

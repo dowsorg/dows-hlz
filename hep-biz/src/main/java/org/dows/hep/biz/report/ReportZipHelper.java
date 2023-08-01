@@ -37,10 +37,9 @@ public class ReportZipHelper {
     private static final String ZIP_REPORT_HOME_DIR = SystemConstant.PDF_REPORT_TMP_PATH + ZIP_DIR;
 
     /**
-     * @param exptReportVO -
-     * @return java.util.List<org.dows.framework.oss.api.OssInfo>
+     * @param exptReportVO - 包含被压缩文件地址
      * @author fhb
-     * @description
+     * @description 压缩文件并上传压缩文件
      * @date 2023/7/13 21:33
      */
     public void zipAndUpload(ExptReportVO exptReportVO) {
