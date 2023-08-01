@@ -53,9 +53,9 @@ public class ReportPdfHelper {
     }
 
     /**
-     * @param pdfVO - model
+     * @param pdfVO     - model
      * @param schemeFlt - view
-     * @param filePath - target
+     * @param filePath  - target
      * @return org.dows.framework.oss.api.OssInfo
      * @author fhb
      * @description 将 model 填充进 view 中, 生成 pdf 文件并上传
@@ -69,7 +69,7 @@ public class ReportPdfHelper {
             Path directories = Files.createDirectories(homeDir);
             convert2Pdf(pdfVO, schemeFlt, targetFile);
         } catch (IOException | TemplateException e) {
-            log.error("导出方报告时，html转pdf异常");
+            log.error("导出报告时，html转pdf异常");
             throw new BizException("导出报告时，html转pdf异常");
         }
 
