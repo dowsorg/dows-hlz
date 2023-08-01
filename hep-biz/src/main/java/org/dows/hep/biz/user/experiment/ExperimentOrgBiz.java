@@ -127,6 +127,7 @@ public class ExperimentOrgBiz{
                 .build());
         String operateFlowId = idGenerator.nextIdStr();
         rowFlow=createRowOrgFlow(validator)
+                .setReportFlag(0)
                 .setOperateFlowId(operateFlowId)
                 .setPeriods(timePoint.getPeriod())
                 .setOperateAccountId(voLogin.getAccountId())
