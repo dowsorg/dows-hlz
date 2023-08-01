@@ -440,7 +440,7 @@ public class ExperimentSchemeScoreBiz {
         if (!isAdmin) {
             // check auth
             String reviewAccountId = firstSchemeScoreEntity.getReviewAccountId();
-            if (Objects.equals(submitAccountId, reviewAccountId)) {
+            if (!Objects.equals(submitAccountId, reviewAccountId)) {
                 throw new BizException("提交方案设计评分表时：评审人账号没有该评分表的操作权限");
             }
 
