@@ -451,12 +451,12 @@ public class RsExperimentIndicatorExpressionBiz {
       List<String> resultNameSplitList = rsUtilBiz.getResultNameSplitList(resultNameList);
       String resultValList = experimentIndicatorExpressionItemRsEntity.getResultValList();
       List<String> resultValSplitList = rsUtilBiz.getResultValSplitList(resultValList);
-      StandardEvaluationContext context = new StandardEvaluationContext();
-      ExpressionParser parser = new SpelExpressionParser();
-      Expression expression = parser.parseExpression(resultExpression);
       if (StringUtils.isBlank(resultExpression)) {
         return RsUtilBiz.RESULT_DROP;
       }
+      StandardEvaluationContext context = new StandardEvaluationContext();
+      ExpressionParser parser = new SpelExpressionParser();
+      Expression expression = parser.parseExpression(resultExpression);
       for (int i = 0; i <= resultNameSplitList.size() - 1; i++) {
         String experimentIndicatorInstanceId = resultValSplitList.get(i);
         String resultName = resultNameSplitList.get(i);
@@ -490,12 +490,12 @@ public class RsExperimentIndicatorExpressionBiz {
       List<String> resultNameSplitList = rsUtilBiz.getResultNameSplitList(resultNameList);
       String resultValList = experimentIndicatorExpressionItemRsEntity.getResultValList();
       List<String> resultValSplitList = rsUtilBiz.getResultValSplitList(resultValList);
-      StandardEvaluationContext context = new StandardEvaluationContext();
-      ExpressionParser parser = new SpelExpressionParser();
-      Expression expression = parser.parseExpression(resultExpression);
       if (StringUtils.isBlank(resultExpression)) {
         return RsUtilBiz.RESULT_DROP;
       }
+      StandardEvaluationContext context = new StandardEvaluationContext();
+      ExpressionParser parser = new SpelExpressionParser();
+      Expression expression = parser.parseExpression(resultExpression);
       for (int i = 0; i <= resultNameSplitList.size() - 1; i++) {
         String indicatorInstanceId = resultValSplitList.get(i);
         String experimentIndicatorInstanceId = kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.get(indicatorInstanceId);
