@@ -386,8 +386,7 @@ public class ExperimentOrgInterveneBiz{
             if(ShareUtil.XObject.notEmpty(item.getItemId())){
                 continue;
             }
-//            item.setItemId(getTimestampId(dateNow,saveTreat.getTreatItems().size()-i)).setDealFlag(0);
-            item.setItemId(getTimestampId(dateNow,saveTreat.getTreatItems().size()-i));
+            item.setItemId(getTimestampId(dateNow,saveTreat.getTreatItems().size()-i)).setDealFlag(0);
             newItems.add(item);
         }
         Map<String, SpelEvalSumResult> mapSum=new HashMap<>();

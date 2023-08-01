@@ -5,13 +5,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 /**
  * @author : wuzl
  * @date : 2023/5/4 17:40
  */
 @Data
-//@Accessors(chain = true)
+@Accessors(chain = true)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -51,7 +52,5 @@ public class ExptTreatPlanItemVO {
 
     @Schema(title = "结算标记 0-未结算 1-已结算,后端专用")
     private Integer dealFlag;
-
-
 
 }
