@@ -1,5 +1,6 @@
 dows:
   websocket:
+    port: 1111
     producer:
       retry:
         cron: 0/3 * * * * ?
