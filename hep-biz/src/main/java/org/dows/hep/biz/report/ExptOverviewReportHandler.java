@@ -2,6 +2,7 @@ package org.dows.hep.biz.report;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.itextpdf.commons.utils.Base64;
 import lombok.Builder;
@@ -163,7 +164,7 @@ public class ExptOverviewReportHandler implements ExptReportHandler<ExptOverview
         ExperimentInstanceEntity exptInfo1 = exptReportData.getExptInfo();
         ExptOverviewReportModel.ExptInfo exptInfo = ExptOverviewReportModel.ExptInfo.builder()
                 .experimentName(exptInfo1.getExperimentName())
-                .exptStartDate(exptInfo1.getStartTime())
+                .exptStartDate(exptInfo1.getStartTime() == null ? "" : DateUtil.formatDate(exptInfo1.getStartTime()))
                 .build();
         // 根据实验模式不同,准备不同数据
         List<ExptOverviewReportModel.SchemeRanking> schemeRankingList = null;
