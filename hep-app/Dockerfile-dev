@@ -26,4 +26,4 @@ COPY --from=builder application/spring-boot-loader/ ./
 COPY --from=builder application/snapshot-dependencies/ ./
 COPY --from=builder application/application/ ./
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS $SKYWALKING_NAME $JAVA_DEBUG $SPRING_PROFILE org.springframework.boot.loader.JarLauncher"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS $JAVA_DEBUG $SPRING_PROFILE org.springframework.boot.loader.JarLauncher"]
