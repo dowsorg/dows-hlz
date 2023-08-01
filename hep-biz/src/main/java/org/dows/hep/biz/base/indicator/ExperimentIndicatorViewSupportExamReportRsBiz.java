@@ -14,6 +14,7 @@ import org.dows.hep.biz.request.ExperimentCalIndicatorExpressionRequest;
 import org.dows.hep.biz.operate.CostRequest;
 import org.dows.hep.biz.operate.OperateCostBiz;
 import org.dows.hep.biz.util.ShareBiz;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.vo.LoginContextVO;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
@@ -67,6 +68,9 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
 
   public List<ExperimentSupportExamReportResponseRs> get(String appId, String experimentId, String indicatorFuncId, String experimentPersonId, String experimentOrgId, Integer periods) {
     String operateFlowId = ShareBiz.checkRunningOperateFlowId(appId, experimentId, experimentOrgId, experimentPersonId);
+    if(ShareUtil.XObject.isEmpty(operateFlowId)){
+      return Collections.emptyList();
+    }
     return experimentIndicatorViewSupportExamReportRsService.lambdaQuery()
         .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getAppId, appId)
         .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getExperimentId, experimentId)
@@ -91,7 +95,7 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
     String experimentOrgId = experimentSupportExamCheckRequestRs.getExperimentOrgId();
     List<String> experimentIndicatorViewSupportExamIdList = experimentSupportExamCheckRequestRs.getExperimentIndicatorViewSupportExamIdList();
     // 获取人物正在进行的流水号
-    String operateFlowId = ShareBiz.checkRunningOperateFlowId(experimentSupportExamCheckRequestRs.getAppId(),
+    String operateFlowId = ShareBiz.assertRunningOperateFlowId(experimentSupportExamCheckRequestRs.getAppId(),
             experimentSupportExamCheckRequestRs.getExperimentId(),
             experimentSupportExamCheckRequestRs.getExperimentOrgId(),
             experimentSupportExamCheckRequestRs.getExperimentPersonId());
