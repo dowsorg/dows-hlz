@@ -41,7 +41,7 @@ public class TenantCaseSchemeRest {
     @PostMapping("v1/tenantCasus/caseScheme/saveOrUpdCaseScheme")
     public String saveOrUpdCaseScheme(@RequestBody @Validated CaseSchemeRequest caseScheme) {
         caseScheme.setEnabled(CaseEnabledEnum.ENABLED.getCode());
-        return tenantCaseSchemeBiz.saveOrUpdCaseScheme(caseScheme, CaseSchemeSourceEnum.TENANT, QuestionSourceEnum.TENANT);
+        return tenantCaseSchemeBiz.saveOrUpdCaseSchemeTenant(caseScheme, CaseSchemeSourceEnum.TENANT, QuestionSourceEnum.TENANT);
     }
 
     /**

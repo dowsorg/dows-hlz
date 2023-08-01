@@ -6,8 +6,11 @@ import org.dows.hep.api.event.EventName;
 import org.dows.hep.api.user.experiment.response.OrgNoticeResponse;
 import org.dows.hep.biz.dao.ExperimentEventDao;
 import org.dows.hep.biz.spel.SpelInvoker;
+import org.dows.hep.biz.spel.meta.SpelEvalResult;
+import org.dows.hep.biz.spel.meta.SpelEvalSumResult;
 import org.dows.hep.biz.user.experiment.ExperimentOrgNoticeBiz;
 import org.dows.hep.biz.util.AssertUtil;
+import org.dows.hep.biz.util.JacksonUtil;
 import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentEventEntity;
@@ -96,11 +99,16 @@ public class ExperimentEventRules {
         SpelInvoker.Instance().saveEventEffect(experimentId, experimentPersonId,periods, caseEventIds);
         return true;
     }
-    public boolean saveActionEvent(ExperimentEventEntity event, ExperimentOrgNoticeEntity notice,List<String> actedIds) {
+    public boolean saveActionEvent(ExperimentEventEntity event, ExperimentOrgNoticeEntity notice,List<String> actedIds) throws JsonProcessingException {
+        final Integer period=event.getActionPeriod();
+        Map<String, SpelEvalSumResult> mapSum=new HashMap<>();
+        List<SpelEvalResult> evalResults=SpelInvoker.Instance().evalEventAction(event.getExperimentInstanceId(), event.getExperimentPersonId(), period, actedIds,mapSum);
+
         ExperimentEventEntity saveEvent = ExperimentEventEntity.builder()
                 .id(event.getId())
                 .experimentEventId(event.getExperimentEventId())
-                .actionJson(event.getActionJson())
+                //.actionJson(event.getActionJson())
+                .actionJson(JacksonUtil.toJson(evalResults, true))
                 .actionAccountId(event.getActionAccountId())
                 .actionAccountName(event.getActionAccountName())
                 .actionTime(event.getActionTime())
@@ -115,17 +123,17 @@ public class ExperimentEventRules {
                 .actionState(notice.getActionState())
                 .readState(notice.getReadState())
                 .build();
-        return experimentEventDao.tranSave(saveEvent, true, () -> saveActionEventX(saveNotice, event, actedIds));
-    }
-    boolean saveActionEventX(ExperimentOrgNoticeEntity notice,ExperimentEventEntity event,List<String> actedIds) {
-        AssertUtil.falseThenThrow(experimentOrgNoticeBiz.update(notice)).throwMessage("通知状态更新失败");
-        if (ShareUtil.XObject.isEmpty(event)) {
+        return experimentEventDao.tranSave(saveEvent, true, () -> {
+            AssertUtil.falseThenThrow(experimentOrgNoticeBiz.update(notice)).throwMessage("通知状态更新失败");
+            if (ShareUtil.XObject.isEmpty(event)) {
+                return true;
+            }
+            AssertUtil.falseThenThrow(SpelInvoker.Instance().saveIndicator(evalResults,mapSum.values(),period))
+                    .throwMessage("影响指标数据保存失败");
             return true;
-        }
-        AssertUtil.falseThenThrow(SpelInvoker.Instance().saveEventAction(event.getExperimentInstanceId(), event.getExperimentPersonId(), event.getActionPeriod(), actedIds))
-                .throwMessage("影响指标数据保存失败");
-        return true;
+        });
     }
+
 
     //endregion
 

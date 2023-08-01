@@ -102,7 +102,6 @@ public class ExperimentSchemeScoreBiz {
         List<ExperimentSchemeScoreEntity> schemeScoreList = experimentSchemeScoreService.lambdaQuery()
                 .in(ExperimentSchemeScoreEntity::getExperimentSchemeId, schemeIdList)
                 .eq(!isAdmin, ExperimentSchemeScoreEntity::getReviewAccountId, reviewAccountId)
-//                .eq(isAdmin, ExperimentSchemeScoreEntity::getReviewAccountId, ADMIN_ACCOUNT_ID)
                 .list();
 
         // group-id map expt-scheme
@@ -127,12 +126,42 @@ public class ExperimentSchemeScoreBiz {
                     .exptSchemeStateCode(schemeEntity.getState())
                     .exptSchemeStateName(ExptSchemeStateEnum.getByCode(schemeEntity.getState()).getName())
                     .reviewDt(schemeScoreEntity.getReviewDt())
-                    .reviewScore(isAdmin ? schemeEntity.getScore() : schemeScoreEntity.getReviewScore())
+                    .reviewScore(isAdmin ? (schemeEntity.getScore() == null ? 0 : schemeEntity.getScore()) : (schemeScoreEntity.getReviewScore() == null ? 0 : schemeScoreEntity.getReviewScore()))
                     .build();
             result.add(resultItem);
         });
 
         return result;
+    }
+
+    /**
+     * @param exptInstanceId - 实验实例ID
+     * @param accountId      - 账号
+     * @return boolean
+     * @author fhb
+     * @description 判断是否有评分操作权限
+     * @date 2023/8/1 13:13
+     */
+    public boolean canReview(String exptInstanceId, String accountId) {
+        boolean isAdmin = baseBiz.isAdministrator(accountId);
+        ExperimentSetting.SchemeSetting schemeSetting = experimentSettingBiz.getSchemeSetting(exptInstanceId);
+        Assert.notNull(schemeSetting, "方案设计评分权限校验：获取实验设置信息异常");
+
+        Date schemeEndTime = schemeSetting.getSchemeEndTime();
+        Assert.notNull(schemeEndTime, "方案设计评分权限校验：获取方案设计作答截止时间信息异常");
+
+        Date scoreEndTime = schemeSetting.getScoreEndTime();
+        Assert.notNull(scoreEndTime, "提交方案设计评分表时：获取方案设计评分截止时间信息异常");
+
+        Date auditEndTime = schemeSetting.getAuditEndTime();
+        Assert.notNull(scoreEndTime, "提交方案设计评分表时：获取方案设计审核截止时间信息异常");
+
+        Date currentDate = new Date();
+        if (isAdmin) {
+            return DateUtil.compare(currentDate, scoreEndTime) > 0 && DateUtil.compare(currentDate, auditEndTime) < 0;
+        } else {
+            return DateUtil.compare(currentDate, schemeEndTime) > 0 && DateUtil.compare(currentDate, scoreEndTime) < 0;
+        }
     }
 
     /**
@@ -336,27 +365,6 @@ public class ExperimentSchemeScoreBiz {
         }
 
         Map<String, String> teacherNameMap = new HashMap<>();
-//        if (isAdmin) {
-//            // 排序，保证管理员的数据放在第一条
-//            int adminIndex = 0;
-//            for (int i = 0; i < scoreList.size(); i++) {
-//                ExperimentSchemeScoreEntity scoreEntity = scoreList.get(i);
-//                String tempAccountId = scoreEntity.getReviewAccountId();
-//                if (ADMIN_ACCOUNT_ID.equals(tempAccountId)) {
-//                    adminIndex = i;
-//                }
-//
-//                // todo @UIM 提供批量优化方法
-//                String userName = baseBiz.getUserName(tempAccountId, "获取方案设计评分详情时，获取教师账号信息异常");
-//                teacherNameMap.put(tempAccountId, userName);
-//            }
-//            ExperimentSchemeScoreEntity firstEntity = scoreList.get(0);
-//            ExperimentSchemeScoreEntity adminEntity = scoreList.get(adminIndex);
-//            scoreList.set(0, adminEntity);
-//            scoreList.set(adminIndex, firstEntity);
-//
-//            teacherNameMap.put(ADMIN_ACCOUNT_ID, "管理员");
-//        }
         if (isAdmin) {
             scoreList.forEach(scoreEntity -> {
                 String tempAccountId = scoreEntity.getReviewAccountId();
@@ -432,13 +440,18 @@ public class ExperimentSchemeScoreBiz {
         if (!isAdmin) {
             // check auth
             String reviewAccountId = firstSchemeScoreEntity.getReviewAccountId();
-            if (Objects.equals(submitAccountId, reviewAccountId)) {
+            if (!Objects.equals(submitAccountId, reviewAccountId)) {
                 throw new BizException("提交方案设计评分表时：评审人账号没有该评分表的操作权限");
             }
 
             // check date
             if (DateUtil.compare(currentDate, scoreEndTime) > 0) {
                 throw new BizException("提交方案设计评分表时：已过评审时间，请联系管理员");
+            }
+        } else {
+            // check date
+            if (DateUtil.compare(currentDate, scoreEndTime) < 0) {
+                throw new BizException("提交方案设计评分表时：评分还未结束，暂不可以修改评分");
             }
         }
         if (DateUtil.compare(currentDate, auditEndTime) > 0) {

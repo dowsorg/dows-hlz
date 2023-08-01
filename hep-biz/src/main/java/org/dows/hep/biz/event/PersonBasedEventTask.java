@@ -1,5 +1,6 @@
 package org.dows.hep.biz.event;
 
+import org.apache.skywalking.apm.toolkit.trace.Trace;
 import org.dows.hep.api.enums.EnumExperimentEventState;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
@@ -34,6 +35,7 @@ public class PersonBasedEventTask extends BaseEventTask{
     public static void runPersonBasedEvent(String appId,String experimentInstanceId) {
         new PersonBasedEventTask(ExperimentCacheKey.create(appId, experimentInstanceId)).run();
     }
+    @Trace(operationName = "计算突发事件触发")
     public static void runPersonBasedEventAsync(String appId,String experimentInstanceId) {
         CompletableFuture.runAsync(() -> runPersonBasedEvent(appId, experimentInstanceId));
     }

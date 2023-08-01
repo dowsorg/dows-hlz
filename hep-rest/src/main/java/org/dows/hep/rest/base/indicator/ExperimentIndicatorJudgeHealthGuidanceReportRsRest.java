@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.ExperimentHealthGuidanceCheckRequestRs;
 import org.dows.hep.api.base.indicator.response.ExperimentHealthGuidanceReportResponseRs;
+import org.dows.hep.api.user.experiment.response.ExptOrgFlowReportResponse;
 import org.dows.hep.biz.base.indicator.ExperimentIndicatorJudgeHealthGuidanceReportRsBiz;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,8 +23,8 @@ public class ExperimentIndicatorJudgeHealthGuidanceReportRsRest {
   /* runsix:TODO 这是一个结束操作，报告后期加 */
   @Operation(summary = "实验人物和在这个机构功能点下的健康指导报告")
   @PostMapping("v1/userExperiment/healthGuidanceReport/check")
-  public void healthGuidanceCheck(@RequestBody ExperimentHealthGuidanceCheckRequestRs experimentHealthGuidanceCheckRequestRs) {
-    experimentIndicatorJudgeHealthGuidanceReportRsBiz.healthGuidanceCheck(experimentHealthGuidanceCheckRequestRs);
+  public ExptOrgFlowReportResponse healthGuidanceCheck(@RequestBody ExperimentHealthGuidanceCheckRequestRs experimentHealthGuidanceCheckRequestRs) {
+    return experimentIndicatorJudgeHealthGuidanceReportRsBiz.healthGuidanceCheck(experimentHealthGuidanceCheckRequestRs);
   }
 
   @Operation(summary = "根据实验人物id和功能点id查找这次挂号的上一次健康指导报告")

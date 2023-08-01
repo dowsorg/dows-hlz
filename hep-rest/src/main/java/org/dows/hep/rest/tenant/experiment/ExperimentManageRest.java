@@ -188,6 +188,19 @@ public class ExperimentManageRest {
     }
 
     /**
+     * 是否可以评分
+     *
+     * @param
+     * @return
+     */
+    @Operation(summary = "是否可以评分")
+    @GetMapping("v1/tenantExperiment/experimentManage/canReview")
+    public boolean canReview(@RequestParam("exptInstanceId") String exptInstanceId,  HttpServletRequest request) {
+        String accountId = baseBiz.getAccountId(request);
+        return experimentSchemeScoreBiz.canReview(exptInstanceId, accountId);
+    }
+
+    /**
      * 获取方案设计评分详情
      *
      * @param

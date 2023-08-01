@@ -56,8 +56,8 @@ public class SpelInvoker {
     //region 治疗干预
     public List<SpelEvalResult> evalTreatEffect(String experimentId, String experimentPersonId, Integer periods,List<ExptTreatPlanItemVO> treatItems,Map<String, SpelEvalSumResult> mapSum ) {
         StandardEvaluationContext context = new SpelPersonContext().setVariables(experimentPersonId, periods);
-        final Map<String, BigDecimal> mapTreatItem = ShareUtil.XCollection.toMap(treatItems, ExptTreatPlanItemVO::getTreatItemId, i ->
-                BigDecimalUtil.tryParseDecimalElseNull(i.getWeight()));
+        final Map<String, BigDecimal> mapTreatItem = ShareUtil.XCollection.toMap(treatItems, HashMap::new,ExptTreatPlanItemVO::getTreatItemId,i ->
+                BigDecimalUtil.tryParseDecimalElseNull(i.getWeight()),(c,n)->BigDecimalUtil.add(c,n));
         return spelEngine.loadFromSnapshot()
                 .withReasonId(experimentId, experimentPersonId, mapTreatItem.keySet(), null)
                 .prepare(inputs -> inputs.forEach(i -> i.setFactor(mapTreatItem.get(i.getReasonId()))))
@@ -96,6 +96,13 @@ public class SpelInvoker {
     }
 
     //处理措施作用
+
+    public List<SpelEvalResult> evalEventAction(String experimentId, String experimentPersonId, Integer periods,Collection<String> actionIds,Map<String, SpelEvalSumResult> mapSum){
+        return  spelEngine.loadFromSnapshot()
+                .withReasonId(experimentId, experimentPersonId, actionIds,
+                        EnumIndicatorExpressionSource.EMERGENCY_ACTION_INFLUENCE_INDICATOR.getSource())
+                .evalSum(new SpelPersonContext().setVariables(experimentPersonId,periods), mapSum);
+    }
     public boolean saveEventAction(String experimentId, String experimentPersonId, Integer periods,Collection<String> actionIds){
         return saveEventAction(experimentId,experimentPersonId,periods,actionIds,
                 new SpelPersonContext().setVariables(experimentPersonId,periods));

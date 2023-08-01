@@ -14,6 +14,7 @@ import org.dows.hep.api.base.question.*;
 import org.dows.hep.api.base.question.request.QuestionSectionItemRequest;
 import org.dows.hep.api.base.question.request.QuestionSectionRequest;
 import org.dows.hep.api.base.question.response.*;
+import org.dows.hep.api.constant.RedisKeyConst;
 import org.dows.hep.api.tenant.casus.CaseESCEnum;
 import org.dows.hep.api.tenant.casus.CaseEnabledEnum;
 import org.dows.hep.api.tenant.casus.CaseSchemeSourceEnum;
@@ -27,9 +28,12 @@ import org.dows.hep.biz.base.question.QuestionSectionBiz;
 import org.dows.hep.entity.CaseInstanceEntity;
 import org.dows.hep.entity.CaseSchemeEntity;
 import org.dows.hep.service.CaseSchemeService;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -45,6 +49,8 @@ public class TenantCaseSchemeBiz {
     private final QuestionSectionBiz questionSectionBiz;
     private final TenantCaseCategoryBiz caseCategoryBiz;
 
+    private final RedissonClient redissonClient;
+
     /**
      * @param
      * @return
@@ -56,9 +62,49 @@ public class TenantCaseSchemeBiz {
      * @创建时间: 2023年4月17日 下午8:00:11
      */
     @DSTransactional
-    public String saveOrUpdCaseScheme(CaseSchemeRequest caseScheme, CaseSchemeSourceEnum caseSchemeSourceEnum, QuestionSourceEnum questionSourceEnum) {
-        if (caseScheme == null) {
-            return "";
+    public String saveOrUpdCaseSchemeTenant(CaseSchemeRequest caseScheme, CaseSchemeSourceEnum caseSchemeSourceEnum, QuestionSourceEnum questionSourceEnum) {
+        if (BeanUtil.isEmpty(caseScheme)) {
+            throw new BizException("教师端新增或更新方案设计时， 请求参数不能为空");
+        }
+        if (!CaseSchemeSourceEnum.TENANT.equals(caseSchemeSourceEnum)) {
+            throw new BizException("教师端新增或更新方案设计时，请求来源错误");
+        }
+        String caseInstanceId = caseScheme.getCaseInstanceId();
+        if (StrUtil.isBlank(caseInstanceId)) {
+            throw new BizException("教师端新增或更新方案设计时: 案例ID不能为空");
+        }
+
+        // 如果新增
+        RLock lock = redissonClient.getLock(RedisKeyConst.HEP_LOCK_EXPT_SCHEME + caseInstanceId);
+        try {
+            if (lock.tryLock(-1, 10, TimeUnit.SECONDS)) {
+                String caseSchemeId = caseScheme.getCaseSchemeId();
+                if (StrUtil.isBlank(caseSchemeId)) {
+                    CaseSchemeEntity caseSchemeEntity = getByInstanceId(caseInstanceId);
+                    if (BeanUtil.isNotEmpty(caseSchemeEntity)) {
+                        throw new BizException("教师端新增方案设计时: 方案设计已存在，请勿重复添加");
+                    }
+                }
+
+                CaseSchemeEntity caseSchemeEntity = convertRequest2Entity(caseScheme, caseSchemeSourceEnum, questionSourceEnum);
+                caseSchemeService.saveOrUpdate(caseSchemeEntity);
+                return caseSchemeEntity.getCaseSchemeId();
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } finally {
+            if (lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
+        }
+
+        return "";
+    }
+
+    @DSTransactional
+    public String saveOrUpdCaseSchemeAdmin(CaseSchemeRequest caseScheme, CaseSchemeSourceEnum caseSchemeSourceEnum, QuestionSourceEnum questionSourceEnum) {
+        if (BeanUtil.isEmpty(caseScheme)) {
+            throw new BizException("新增或更新方案设计时， 请求参数不能为空");
         }
 
         CaseSchemeEntity caseSchemeEntity = convertRequest2Entity(caseScheme, caseSchemeSourceEnum, questionSourceEnum);
@@ -92,11 +138,11 @@ public class TenantCaseSchemeBiz {
     }
 
     /**
+     * @param
+     * @return
      * @author fhb
      * @description 列出符合条件的方案设计
      * @date 2023/6/10 13:30
-     * @param
-     * @return
      */
     public List<CaseSchemeResponse> listCaseScheme(CaseSchemeSearchRequest caseSchemeSearch) {
         if (caseSchemeSearch == null) {
@@ -164,11 +210,11 @@ public class TenantCaseSchemeBiz {
     }
 
     /**
+     * @param
+     * @return
      * @author fhb
      * @description
      * @date 2023/6/3 13:56
-     * @param
-     * @return
      */
     public CaseSchemeEntity getById(String caseSchemeId) {
         return caseSchemeService.lambdaQuery()
@@ -199,11 +245,11 @@ public class TenantCaseSchemeBiz {
     }
 
     /**
+     * @param
+     * @return
      * @author fhb
      * @description
      * @date 2023/6/3 13:56
-     * @param
-     * @return
      */
     public CaseSchemeEntity getByInstanceId(String caseInstanceId) {
         return caseSchemeService.lambdaQuery()
@@ -242,22 +288,22 @@ public class TenantCaseSchemeBiz {
      * @开发者: fhb
      * @开始时间:
      * @创建时间: 2023年4月17日 下午8:00:11
-    */
-    public Boolean enabledCaseScheme(String caseSchemeId ) {
+     */
+    public Boolean enabledCaseScheme(String caseSchemeId) {
         return changeStatus(caseSchemeId, CaseEnabledEnum.ENABLED);
     }
 
     /**
-    * @param
-    * @return
-    * @说明: 禁用案例方案
-    * @关联表: caseScheme
-    * @工时: 3H
-    * @开发者: fhb
-    * @开始时间: 
-    * @创建时间: 2023年4月17日 下午8:00:11
-    */
-    public Boolean disabledCaseScheme(String caseSchemeId ) {
+     * @param
+     * @return
+     * @说明: 禁用案例方案
+     * @关联表: caseScheme
+     * @工时: 3H
+     * @开发者: fhb
+     * @开始时间:
+     * @创建时间: 2023年4月17日 下午8:00:11
+     */
+    public Boolean disabledCaseScheme(String caseSchemeId) {
         return changeStatus(caseSchemeId, CaseEnabledEnum.DISABLED);
     }
 

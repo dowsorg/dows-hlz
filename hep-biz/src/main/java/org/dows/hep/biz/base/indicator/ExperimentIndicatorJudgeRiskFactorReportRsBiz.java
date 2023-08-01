@@ -6,6 +6,7 @@ import org.dows.hep.api.base.indicator.request.ExperimentRiskFactorCheckRequestR
 import org.dows.hep.api.base.indicator.response.ExperimentRiskFactorReportResponseRs;
 import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.biz.util.ShareBiz;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentIndicatorJudgeRiskFactorReportRsEntity;
 import org.dows.hep.entity.ExperimentIndicatorJudgeRiskFactorRsEntity;
 import org.dows.hep.service.*;
@@ -52,7 +53,7 @@ public class ExperimentIndicatorJudgeRiskFactorReportRsBiz {
     String experimentId = experimentRiskFactorCheckRequestRs.getExperimentId();
     String experimentOrgId = experimentRiskFactorCheckRequestRs.getExperimentOrgId();
 
-    String operateFlowId = ShareBiz.checkRunningOperateFlowId(appId, experimentId, experimentOrgId, experimentPersonId);
+    String operateFlowId = ShareBiz.assertRunningOperateFlowId(appId, experimentId, experimentOrgId, experimentPersonId);
     Map<String, ExperimentIndicatorJudgeRiskFactorRsEntity> kExperimentIndicatorJudgeRiskFactorIdVExperimentIndicatorJudgeRiskFactorRsEntityMap = new HashMap<>();
     if (!experimentIndicatorJudgeRiskFactorIdList.isEmpty()) {
       experimentIndicatorJudgeRiskFactorRsService.lambdaQuery()
@@ -101,6 +102,9 @@ public class ExperimentIndicatorJudgeRiskFactorReportRsBiz {
 
   public List<ExperimentRiskFactorReportResponseRs> get(String appId, String experimentId, String indicatorFuncId, String experimentPersonId, String experimentOrgId, Integer periods) {
     String operateFlowId = ShareBiz.checkRunningOperateFlowId(appId, experimentId, experimentOrgId, experimentPersonId);
+    if(ShareUtil.XObject.isEmpty(operateFlowId)){
+      return Collections.emptyList();
+    }
     return experimentIndicatorJudgeRiskFactorReportRsService.lambdaQuery()
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getAppId, appId)
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getExperimentId, experimentId)
