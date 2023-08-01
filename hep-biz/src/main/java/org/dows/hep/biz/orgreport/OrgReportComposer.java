@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.response.ExperimentIndicatorFuncRsResponse;
 import org.dows.hep.api.base.indicator.response.ExperimentOrgModuleRsResponse;
 import org.dows.hep.api.enums.EnumExptOperateType;
+import org.dows.hep.api.enums.EnumIndicatorCategory;
 import org.dows.hep.api.user.experiment.response.ExptOrgFlowReportResponse;
 import org.dows.hep.api.user.experiment.vo.ExptOrgReportNodeVO;
 import org.dows.hep.biz.base.indicator.ExperimentOrgModuleBiz;
@@ -20,6 +21,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author : wuzl
@@ -67,6 +69,7 @@ public class OrgReportComposer {
         }
 
         final List<ExperimentIndicatorFuncRsResponse> funcs=new ArrayList<>();
+        AtomicInteger cntBaseInfo=new AtomicInteger(0);
         modules.forEach(module->{
             if(ShareUtil.XObject.isEmpty(module.getExperimentIndicatorFuncRsResponseList())){
                 return;
@@ -76,6 +79,10 @@ public class OrgReportComposer {
                     return;
                 }
                 if(null!=newNode &&func.getIndicatorCategoryId().equals(newNode.getIndicatorCategoryId()) ){
+                    return;
+                }
+                if(EnumIndicatorCategory.VIEW_MANAGEMENT_BASE_INFO.getCode().equals(func.getIndicatorCategoryId())
+                    &&cntBaseInfo.getAndIncrement()>0) {
                     return;
                 }
                 funcs.add(func);

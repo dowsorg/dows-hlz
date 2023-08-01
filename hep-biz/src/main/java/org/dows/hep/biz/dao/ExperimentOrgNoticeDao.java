@@ -45,7 +45,7 @@ public class ExperimentOrgNoticeDao extends BaseDao<ExperimentOrgNoticeService,E
     @Override
     public IPage<ExperimentOrgNoticeEntity> pageByCondition(BaseExptRequest req, SFunction<ExperimentOrgNoticeEntity, ?>... cols) {
         Page<ExperimentOrgNoticeEntity> page = Page.of(req.getPageNo(), req.getPageSize());
-        page.addOrder(OrderItem.asc("id"));
+        page.addOrder(OrderItem.desc("id"));
         return service.lambdaQuery()
                 .eq(ShareUtil.XObject.notEmpty(req.getAppId()), ExperimentOrgNoticeEntity::getAppId, req.getAppId())
                 .eq(ExperimentOrgNoticeEntity::getExperimentOrgId, req.getExperimentOrgId())

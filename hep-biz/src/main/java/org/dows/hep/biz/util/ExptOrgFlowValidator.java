@@ -172,7 +172,7 @@ public class ExptOrgFlowValidator {
     }
     public ExptOrgFlowValidator checkOrgFlowRunning( int curPeriod) {
         AssertUtil.falseThenThrow(ifOrgFlowRunning(true, curPeriod))
-                .throwMessage("未找到挂号记录");
+                .throwMessage("请先挂号");
         return this;
     }
     public boolean ifOrgFlowRunning(boolean assertExists){
