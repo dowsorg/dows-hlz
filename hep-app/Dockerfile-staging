@@ -16,7 +16,9 @@ ENV JAVA_OPTS="-Xms2048m -Xmx2048m"
 
 ENV SPRING_PROFILE="-Dspring.profiles.active=staging"
 #配置开启debug
-ENV JAVA_DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8041"
+ENV JAVA_DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8042"
+#skywalking
+ENV SKYWALKING_NAME="-javaagent:./hep-app/skywalking-agent/skywalking-agent.jar -Dskywalking.agent.service_name=staging-dows-hep"
 
 WORKDIR application
 COPY --from=builder application/dependencies/ ./
@@ -26,4 +28,4 @@ COPY --from=builder application/application/ ./
 
 EXPOSE 8080
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS $JAVA_DEBUG $SPRING_PROFILE org.springframework.boot.loader.JarLauncher"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS $SKYWALKING_NAME $JAVA_DEBUG $SPRING_PROFILE org.springframework.boot.loader.JarLauncher"]
