@@ -296,6 +296,7 @@ public class RsExperimentCalculateBiz {
   }
 
   @Trace(operationName = "重新计算所有人的健康指数")
+  @Tags({@Tag(key = "experimentId", value = "arg[0].experimentId"), @Tag(key = "periods", value = "arg[0].periods")})
   public void experimentRsCalculateAndCreateReportHealthScore(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs experimentRsCalculateAndCreateReportHealthScoreRequestRs) throws ExecutionException, InterruptedException {
     String appId = experimentRsCalculateAndCreateReportHealthScoreRequestRs.getAppId();
     Integer originPeriods = experimentRsCalculateAndCreateReportHealthScoreRequestRs.getPeriods();
@@ -571,8 +572,8 @@ public class RsExperimentCalculateBiz {
     if (!experimentPersonRiskModelRsEntityList.isEmpty()) {experimentPersonRiskModelRsService.saveOrUpdateBatch(experimentPersonRiskModelRsEntityList);}
     if (!experimentPersonHealthRiskFactorRsEntityList.isEmpty()) {experimentPersonHealthRiskFactorRsService.saveOrUpdateBatch(experimentPersonHealthRiskFactorRsEntityList);}
   }
-  @Transactional(rollbackFor = Exception.class)
   @Trace(operationName = "重新计算所有人的指标")
+  @Tags({@Tag(key = "experimentId", value = "arg[0].experimentId"), @Tag(key = "periods", value = "arg[0].periods")})
   public void experimentReCalculatePerson(RsCalculatePersonRequestRs rsCalculatePersonRequestRs) throws ExecutionException, InterruptedException {
     String appId = rsCalculatePersonRequestRs.getAppId();
     String experimentId = rsCalculatePersonRequestRs.getExperimentId();
@@ -656,8 +657,8 @@ public class RsExperimentCalculateBiz {
     experimentIndicatorValRsService.saveOrUpdateBatch(kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.values());
   }
 
-  @Transactional(rollbackFor = Exception.class)
   @Trace(operationName = "设置每个人的持续天数")
+  @Tags({@Tag(key = "experimentId", value = "arg[0].experimentId"), @Tag(key = "periods", value = "arg[0].periods")})
   public void experimentSetDuration(RsExperimentSetDurationRequest rsExperimentSetDurationRequest) throws ExecutionException, InterruptedException {
     /* runsix:param */
     String appId = rsExperimentSetDurationRequest.getAppId();
@@ -696,8 +697,8 @@ public class RsExperimentCalculateBiz {
     experimentIndicatorValRsService.saveOrUpdateBatch(experimentIndicatorValRsEntityList);
   }
 
-  @Transactional(rollbackFor = Exception.class)
   @Trace(operationName = "更新所有人下一期的指标")
+  @Tags({@Tag(key = "experimentId", value = "arg[0].experimentId"), @Tag(key = "periods", value = "arg[0].periods")})
   public void experimentSetVal(RsExperimentSetValRequest rsExperimentSetValRequest) throws ExecutionException, InterruptedException {
     /* runsix:param */
     String appId = rsExperimentSetValRequest.getAppId();
@@ -752,7 +753,7 @@ public class RsExperimentCalculateBiz {
       ExperimentIndicatorValRsEntity curExperimentIndicatorValRsEntity = curKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
       if (Objects.isNull(curExperimentIndicatorValRsEntity)) {return;}
       nextExperimentIndicatorValRsEntity.setCurrentVal(curExperimentIndicatorValRsEntity.getCurrentVal());
-      nextExperimentIndicatorValRsEntity.setExperimentIndicatorValId(curExperimentIndicatorValRsEntity.getCurrentVal());
+      nextExperimentIndicatorValRsEntity.setInitVal(curExperimentIndicatorValRsEntity.getCurrentVal());
       experimentIndicatorValRsEntityList.add(nextExperimentIndicatorValRsEntity);
     });
 
@@ -760,8 +761,8 @@ public class RsExperimentCalculateBiz {
     experimentIndicatorValRsService.saveOrUpdateBatch(experimentIndicatorValRsEntityList);
   }
 
-  @Transactional(rollbackFor = Exception.class)
   @Trace(operationName = "算出每个人的持续天数")
+  @Tags({@Tag(key = "experimentId", value = "arg[0].experimentId"), @Tag(key = "periods", value = "arg[0].periods")})
   public void experimentUpdateCalculatorTime(RsCalculateTimeRequest rsCalculateTimeRequest, Map<String, Integer> kExperimentPersonIdVDurationMap) {
     /* runsix:param */
     String appId = rsCalculateTimeRequest.getAppId();
@@ -895,8 +896,9 @@ public class RsExperimentCalculateBiz {
    * 5.存储期数翻转数据
    * 最后一步是更新所有人下一期的指标
   */
-  @Transactional(rollbackFor = Exception.class)
+//  @Transactional(rollbackFor = Exception.class)
   @Trace(operationName = "期数翻转方法最外层")
+  @Tags({@Tag(key = "experimentId", value = "arg[0].experimentId"), @Tag(key = "periods", value = "arg[0].periods")})
   public void experimentReCalculatePeriods(RsCalculatePeriodsRequest rsCalculatePeriodsRequest) throws ExecutionException, InterruptedException {
     /* runsix:param */
     String appId = rsCalculatePeriodsRequest.getAppId();

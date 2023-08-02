@@ -211,7 +211,7 @@ public class CaseIndicatorExpressionBiz {
             .list()
             .forEach(indicatorCategoryEntity -> {
               kIndicatorCategoryIdVIndicatorCategoryRsMap.put(
-                  indicatorCategoryEntity.getIndicatorCategoryId(),
+                  indicatorCategoryEntity.getCaseIndicatorCategoryId(),
                   CaseIndicatorCategoryBiz.caseIndicatorCategoryEntity2Response(indicatorCategoryEntity));
             });
       }
@@ -241,7 +241,7 @@ public class CaseIndicatorExpressionBiz {
             caseIndicatorExpressionItemResponseRsList,
             kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(maxIndicatorExpressionItemId),
             kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap.get(minIndicatorExpressionItemId),
-            kPrincipalIdVIndicatorCategoryRsMap.get(indicatorExpressionEntity.getPrincipalId()),
+            kPrincipalIdVIndicatorCategoryRsMap.get(indicatorExpressionEntity.getCasePrincipalId()),
             kIndicatorExpressionIdVIndicatorExpressionRefIdMap.get(indicatorExpressionId)
         );
         List<CaseIndicatorExpressionResponseRs> caseIndicatorExpressionResponseRsList = kReasonIdVIndicatorExpressionResponseRsListMap.get(reasonId);

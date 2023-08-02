@@ -6,6 +6,8 @@ import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.skywalking.apm.toolkit.trace.Tag;
+import org.apache.skywalking.apm.toolkit.trace.Tags;
 import org.apache.skywalking.apm.toolkit.trace.Trace;
 import org.dows.hep.api.annotation.CalcCode;
 import org.dows.hep.api.base.indicator.request.RsCalculateCompetitiveScoreRequestRs;
@@ -301,8 +303,8 @@ public class ExperimentScoringBiz {
     }
 
 
-    @Transactional(rollbackFor = Exception.class)
     @Trace(operationName = "存储期数翻转数据")
+    @Tags({@Tag(key = "experimentId", value = "arg[0]"), @Tag(key = "periods", value = "arg[1]")})
     public void saveOrUpd(String experimentInstanceId, Integer periods) throws ExecutionException, InterruptedException {
         List<ExperimentGroupEntity> experimentGroupEntityList = new ArrayList<>();
         CompletableFuture<Void> populateExperimentGroupEntityListCF = getPopulateExperimentGroupEntityListCF(experimentInstanceId, experimentGroupEntityList);

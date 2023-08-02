@@ -1,7 +1,8 @@
 package org.dows.hep.biz.user.person;
 
-import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.skywalking.apm.toolkit.trace.Tag;
+import org.apache.skywalking.apm.toolkit.trace.Tags;
 import org.apache.skywalking.apm.toolkit.trace.Trace;
 import org.dows.account.api.AccountInstanceApi;
 import org.dows.account.api.AccountOrgApi;
@@ -24,8 +25,10 @@ import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -233,8 +236,8 @@ public class PersonStatiscBiz {
      * @开始时间:
      * @创建时间: 2023年7月25日 下午16:35:34
      */
-    @DSTransactional
     @Trace(operationName = "一期结束保险返还")
+    @Tags({@Tag(key = "experimentId", value = "arg[0].experimentInstanceId"), @Tag(key = "periods", value = "arg[0].periods")})
     public void refundFunds(ExperimentPersonRequest request) {
         //1、获取该期的结束时间
         Map<Integer, ExperimentTimerEntity> timerEntityMap = experimentTimerBiz.getExperimentPeriodsStartAnsEndTime(request.getExperimentInstanceId());
@@ -277,10 +280,9 @@ public class PersonStatiscBiz {
                                     CaseOrgFeeEntity feeEntity = caseOrgFeeService.lambdaQuery()
                                             .eq(CaseOrgFeeEntity::getCaseOrgId, orgEntity.getCaseOrgId())
                                             .eq(CaseOrgFeeEntity::getFeeCode, "BXF")
-                                            .eq(CaseOrgFeeEntity::getDeleted, false)
                                             .one();
                                     if (feeEntity != null && !ReflectUtil.isObjectNull(feeEntity)) {
-                                        fee = fee.add(costEntityList.get(i).getCost().multiply(BigDecimal.valueOf(feeEntity.getReimburseRatio()).divide(BigDecimal.valueOf(100))));
+                                        fee = fee.add(costEntityList.get(i).getCost().multiply(BigDecimal.valueOf(feeEntity.getReimburseRatio()).divide(BigDecimal.valueOf(100), 2, RoundingMode.DOWN)));
                                     }
                                 }
                             }

@@ -55,44 +55,4 @@ public class IndicatorFuncRest {
     public List<IndicatorFuncOrgResponse> getOrgEditFuncByAppId(@RequestParam @Validated String appId) {
         return indicatorFuncBiz.getOrgEditFuncByAppId(appId);
     }
-
-//
-//    @Operation(summary = "删除指标功能")
-//    @DeleteMapping("v1/baseIndicator/indicatorFunc/deleteIndicatorFunc")
-//    public void deleteIndicatorFunc(@Validated String indicatorFunc ) {
-//        indicatorFuncBiz.deleteIndicatorFunc(indicatorFunc);
-//    }
-
-//    /**
-//    * 获取指标功能
-//    * @param
-//    * @return
-//    */
-//    @Operation(summary = "获取指标功能")
-//    @GetMapping("v1/baseIndicator/indicatorFunc/getIndicatorFunc")
-//    public IndicatorFuncResponse getIndicatorFunc(@Validated String indicatorFunc) {
-//        return indicatorFuncBiz.getIndicatorFunc(indicatorFunc);
-//    }
-
-//    /**
-//    * 筛选指标类别
-//    * @param
-//    * @return
-//    */
-//    @Operation(summary = "查询指标类别下所有功能点")
-//    @GetMapping("v1/baseIndicator/indicatorFunc/listIndicatorFunc")
-//    public List<IndicatorFuncResponse> listIndicatorFunc(
-//        @RequestParam @Validated String appId,
-//        @RequestParam @Validated String indicatorCategoryId) {
-//        return indicatorFuncBiz.listIndicatorFunc(appId,indicatorCategoryId);
-//    }
-
-//    /**
-//    * 分页筛选指标类别
-//    * @param
-//    * @return
-//    */
-//    @Operation(summary = "分页筛选指标类别")
-
-
 }
