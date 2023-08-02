@@ -201,7 +201,7 @@ public class ExperimentSchemeBiz {
         // handle group-status
         handleGroupStatus(request.getExperimentGroupId(), EnumExperimentGroupStatus.SCHEMA);
 
-        // It's not supposed to be done here, but...
+        // It's not supposed to be done here, but...leader...
         handleExptStatus(request.getExperimentInstanceId(), EnumExperimentState.ONGOING);
 
         // sync start
