@@ -757,7 +757,6 @@ public class RsExperimentCalculateBiz {
       if (Objects.isNull(curExperimentIndicatorValRsEntity)) {return;}
       nextExperimentIndicatorValRsEntity.setCurrentVal(curExperimentIndicatorValRsEntity.getCurrentVal());
       nextExperimentIndicatorValRsEntity.setInitVal(curExperimentIndicatorValRsEntity.getCurrentVal());
-      nextExperimentIndicatorValRsEntity.setExperimentIndicatorValId(curExperimentIndicatorValRsEntity.getCurrentVal());
       experimentIndicatorValRsEntityList.add(nextExperimentIndicatorValRsEntity);
     });
 
