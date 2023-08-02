@@ -17,8 +17,8 @@
         <!--<appender-ref ref="CONSOLE"/>-->
         <appender-ref ref="FILE-INFO"/>
     </AsyncLogger>
-    <AsyncLogger name="com.baomidou" level="INFO" includeLocation="true">
-        <!--<appender-ref ref="CONSOLE"/>-->
+    <AsyncLogger name="com.baomidou" level="ERROR" includeLocation="true">
+        <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE-INFO"/>
     </AsyncLogger>
 </loggers>
