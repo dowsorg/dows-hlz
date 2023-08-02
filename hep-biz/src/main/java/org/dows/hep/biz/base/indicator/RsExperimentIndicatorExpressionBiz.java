@@ -43,6 +43,7 @@ public class RsExperimentIndicatorExpressionBiz {
   private final RsUtilBiz rsUtilBiz;
 
   /* runsix:期数反转使用 */
+  @Trace(operationName = "reCalculateAllExperimentIndicatorInstance")
   public void reCalculateAllExperimentIndicatorInstance(
       Map<String, List<ExperimentIndicatorInstanceRsEntity>> kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap,
       Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
