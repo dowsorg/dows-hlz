@@ -341,7 +341,26 @@ public abstract class BaseSubDao<LS extends MybatisCrudService<LE>, LE extends C
         return subService.lambdaQuery()
                 .eq(oneFlag, getColLeadId(),ids.iterator().next())
                 .in(!oneFlag, getColLeadId(),ids)
-                .orderByAsc(getColLeadId(),SE::getId)
+                .orderByAsc(getColLeadId())
+                .select(cols)
+                .list();
+    }
+
+    /**
+     * 按多从表id获取从表列表
+     * @param ids 从表id列表
+     * @param cols 选择列
+     * @return
+     */
+    public List<SE> getSubBySubIds(Collection<String> ids,SFunction<SE,?>... cols){
+        if(ShareUtil.XObject.isEmpty(ids)){
+            return Collections.emptyList();
+        }
+        final boolean oneFlag=ids.size()==1;
+        return subService.lambdaQuery()
+                .eq(oneFlag, getColSubId(),ids.iterator().next())
+                .in(!oneFlag, getColSubId(),ids)
+                .orderByAsc(getColSubId())
                 .select(cols)
                 .list();
     }
