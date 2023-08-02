@@ -43,7 +43,7 @@ public class EventStarter implements ApplicationListener<ApplicationStartedEvent
         }
         int cnt=0;
         try {
-            List<ExperimentInstanceEntity> rowsExperiment = experimentInstanceDao.getRunningExperiment(
+            List<ExperimentInstanceEntity> rowsExperiment = experimentInstanceDao.getRunningExperiment4Sand(
                     null, EnumExperimentState.ONGOING.getState(), EnumExperimentState.SUSPEND.getState(),
                     ExperimentInstanceEntity::getAppId,
                     ExperimentInstanceEntity::getExperimentInstanceId,
