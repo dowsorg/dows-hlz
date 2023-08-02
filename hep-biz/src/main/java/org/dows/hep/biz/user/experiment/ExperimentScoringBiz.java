@@ -303,7 +303,6 @@ public class ExperimentScoringBiz {
     }
 
 
-    @Transactional(rollbackFor = Exception.class)
     @Trace(operationName = "存储期数翻转数据")
     @Tags({@Tag(key = "experimentId", value = "arg[0]"), @Tag(key = "periods", value = "arg[1]")})
     public void saveOrUpd(String experimentInstanceId, Integer periods) throws ExecutionException, InterruptedException {
