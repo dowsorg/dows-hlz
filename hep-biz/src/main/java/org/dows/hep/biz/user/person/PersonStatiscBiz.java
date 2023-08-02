@@ -1,6 +1,5 @@
 package org.dows.hep.biz.user.person;
 
-import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.skywalking.apm.toolkit.trace.Trace;
 import org.dows.account.api.AccountInstanceApi;
@@ -24,6 +23,7 @@ import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -233,7 +233,7 @@ public class PersonStatiscBiz {
      * @开始时间:
      * @创建时间: 2023年7月25日 下午16:35:34
      */
-    @DSTransactional
+    @Transactional
     @Trace(operationName = "一期结束保险返还")
     public void refundFunds(ExperimentPersonRequest request) {
         //1、获取该期的结束时间
