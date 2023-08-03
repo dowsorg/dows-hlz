@@ -33,8 +33,8 @@ import java.util.zip.ZipOutputStream;
 @RequiredArgsConstructor
 public class ReportZipHelper {
     private final ReportOSSHelper ossHelper;
-    private static final String ZIP_DIR = "压缩文件" + File.separator;
-    private static final String ZIP_REPORT_HOME_DIR = SystemConstant.PDF_REPORT_TMP_PATH + ZIP_DIR;
+    private static final String ZIP_DIR = "zip";
+    private static final String ZIP_REPORT_HOME_DIR = SystemConstant.PDF_REPORT_TMP_PATH + ZIP_DIR + File.separator;
 
     /**
      * @param exptReportVO - 包含被压缩文件地址
@@ -64,10 +64,11 @@ public class ReportZipHelper {
             // 压缩文件
             toZipExpt(exptReportVO, zos);
             // minio 上传文件
-            OssInfo ossInfo = ossHelper.upload(fileName.toFile(), ZIP_DIR + fileName.getFileName().toString(), true);
+            String targetName = ZIP_DIR + File.separator + fileName.getFileName().toString();
+            OssInfo ossInfo = ossHelper.upload(fileName.toFile(), targetName, true);
             // 构建文件返回全路径
             exptReportVO.setZipName(ossInfo.getName());
-            exptReportVO.setZipPath(ossHelper.getUrlPath(ossInfo));
+            exptReportVO.setZipPath(ossHelper.getUrlPath(ossInfo, ZIP_DIR));
         } catch (IOException e) {
             throw new BizException("导出pdf报告时, 压缩文件或文件上传异常");
         }

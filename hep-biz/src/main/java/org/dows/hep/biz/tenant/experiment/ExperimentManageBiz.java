@@ -301,13 +301,10 @@ public class ExperimentManageBiz {
                 .oneOpt()
                 .orElseThrow(() -> new BizException(ExperimentESCEnum.DATA_NULL));
 
-        ExperimentParticipatorEntity experimentParticipator = experimentParticipatorService.lambdaQuery()
+        List<ExperimentParticipatorEntity> experimentParticipatorList = experimentParticipatorService.lambdaQuery()
                 .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
-                // todo 查找老师,后面定义为枚举，这里先实现
                 .eq(ExperimentParticipatorEntity::getParticipatorType, 0)
-                .last("limit 1")
-                .oneOpt()
-                .orElseThrow(() -> new BizException(ExperimentESCEnum.DATA_NULL));
+                .list();
 
         List<ExperimentSettingEntity> experimentSettings = experimentSettingService.lambdaQuery()
                 .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
@@ -316,11 +313,15 @@ public class ExperimentManageBiz {
         // 处理实验
         BeanUtil.copyProperties(experimentInstance, createExperimentForm, "teachers", "experimentSetting");
         // 处理老师
-        AccountInstanceResponse accountInstanceResponse = new AccountInstanceResponse();
-        BeanUtil.copyProperties(experimentParticipator, accountInstanceResponse);
+        List<AccountInstanceResponse> accountInstanceResponseList = new ArrayList<>();
+        experimentParticipatorList.forEach(experimentParticipator ->{
+            AccountInstanceResponse accountInstanceResponse = new AccountInstanceResponse();
+            BeanUtil.copyProperties(experimentParticipator, accountInstanceResponse);
+            accountInstanceResponseList.add(accountInstanceResponse);
+        });
         // todo 一个实验是否可以有多个老师
-        List<AccountInstanceResponse> teachers = Arrays.asList(accountInstanceResponse);
-        createExperimentForm.setTeachers(teachers);
+//        List<AccountInstanceResponse> teachers = Arrays.asList(accountInstanceResponse);
+        createExperimentForm.setTeachers(accountInstanceResponseList);
         // 处理实验设置
         ExperimentSetting experimentSetting = new ExperimentSetting();
         for (ExperimentSettingEntity expSetting : experimentSettings) {

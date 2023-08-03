@@ -18,7 +18,6 @@ import org.dows.hep.biz.base.indicator.CaseIndicatorExpressionBiz;
 import org.dows.hep.biz.cache.CategCache;
 import org.dows.hep.biz.cache.CategCacheFactory;
 import org.dows.hep.biz.dao.*;
-import org.dows.hep.biz.snapshot.SnapshotRequestHolder;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.ShareBiz;
@@ -264,6 +263,7 @@ public class TenantCaseEventBiz {
             }
             mapIndicatorId.put(k,dstIndicatorId);
         });
+        List<String> minMaxExpressionItemIds=new ArrayList<>();
         rowsExpression.forEach(i->{
             if(ShareUtil.XObject.notEmpty(i.getPrincipalId())){
                 String caseIndicatorId=mapIndicatorId.get(i.getPrincipalId());
@@ -271,10 +271,19 @@ public class TenantCaseEventBiz {
                     assertNotExistsCaseIndicatorId(i.getPrincipalId());
                 }
             }
+            if(ShareUtil.XObject.notEmpty(i.getMinIndicatorExpressionItemId())){
+                minMaxExpressionItemIds.add(i.getMinIndicatorExpressionItemId());
+            }
+            if(ShareUtil.XObject.notEmpty(i.getMaxIndicatorExpressionItemId())){
+                minMaxExpressionItemIds.add(i.getMaxIndicatorExpressionItemId());
+            }
         });
         mapIndicatorId.put("", "");
         mapIndicatorId.put(null, "");
         List<CaseIndicatorExpressionItemEntity> rowsExpressionItem = caseIndicatorExpressionDao.getSubByLeadIds(expressionIds);
+        if(minMaxExpressionItemIds.size()>0){
+            rowsExpressionItem.addAll(caseIndicatorExpressionDao.getSubBySubIds(minMaxExpressionItemIds));
+        }
         rowsExpressionItem.forEach(i->{
             i.setConditionValList(castExpresionVals(i.getConditionValList(), mapIndicatorId,true));
             i.setResultValList(castExpresionVals(i.getResultValList(), mapIndicatorId,true));
@@ -367,6 +376,7 @@ public class TenantCaseEventBiz {
                         CaseIndicatorInstanceEntity::getIndicatorInstanceId,
                         CaseIndicatorInstanceEntity::getCaseIndicatorInstanceId),
                 CaseIndicatorInstanceEntity::getIndicatorInstanceId, CaseIndicatorInstanceEntity::getCaseIndicatorInstanceId);
+        List<String> minMaxExpressionItemIds=new ArrayList<>();
         rowsExpression.forEach(i->{
             if(ShareUtil.XObject.notEmpty(i.getPrincipalId())){
                 String caseIndicatorId=mapIndicatorId.get(i.getPrincipalId());
@@ -374,10 +384,19 @@ public class TenantCaseEventBiz {
                     assertNotExistsIndicatorId(i.getPrincipalId());
                 }
             }
+            if(ShareUtil.XObject.notEmpty(i.getMinIndicatorExpressionItemId())){
+                minMaxExpressionItemIds.add(i.getMinIndicatorExpressionItemId());
+            }
+            if(ShareUtil.XObject.notEmpty(i.getMaxIndicatorExpressionItemId())){
+                minMaxExpressionItemIds.add(i.getMaxIndicatorExpressionItemId());
+            }
         });
         mapIndicatorId.put("", "");
         mapIndicatorId.put(null, "");
         List<IndicatorExpressionItemEntity> rowsExpressionItem = indicatorExpressionDao.getSubByLeadIds(expressionIds);
+        if(minMaxExpressionItemIds.size()>0){
+            rowsExpressionItem.addAll(indicatorExpressionDao.getSubBySubIds(minMaxExpressionItemIds));
+        }
         rowsExpressionItem.forEach(i->{
             i.setConditionValList(castExpresionVals(i.getConditionValList(), mapIndicatorId,false));
             i.setResultValList(castExpresionVals(i.getResultValList(), mapIndicatorId,false));

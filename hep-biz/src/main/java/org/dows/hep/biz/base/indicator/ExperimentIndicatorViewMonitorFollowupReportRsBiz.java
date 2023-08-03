@@ -6,12 +6,20 @@ import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.ExperimentMonitorFollowupCheckRequestRs;
 import org.dows.hep.api.base.indicator.request.RsExperimentCalculateFuncRequest;
 import org.dows.hep.api.base.indicator.response.*;
+import org.dows.hep.api.core.ExptOrgFuncRequest;
 import org.dows.hep.api.enums.EnumESC;
+import org.dows.hep.api.enums.EnumExperimentOrgReportFlag;
 import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.api.event.FollowupEvent;
 import org.dows.hep.api.exception.ExperimentIndicatorViewBaseInfoRsException;
 import org.dows.hep.api.exception.ExperimentIndicatorViewMonitorFollowupReportRsException;
-import org.dows.hep.biz.util.ShareBiz;
+import org.dows.hep.api.user.experiment.response.ExptOrgFlowReportResponse;
+import org.dows.hep.api.user.experiment.vo.ExptOrgReportNodeDataVO;
+import org.dows.hep.api.user.experiment.vo.ExptOrgReportNodeVO;
+import org.dows.hep.biz.dao.OperateFlowDao;
+import org.dows.hep.biz.event.data.ExperimentTimePoint;
+import org.dows.hep.biz.util.*;
+import org.dows.hep.biz.vo.LoginContextVO;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -19,6 +27,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,6 +49,10 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
     private final ExperimentIndicatorViewMonitorFollowupReportRsService experimentIndicatorViewMonitorFollowupReportRsService;
     private final ApplicationContext applicationContext;
     private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
+
+    private final ExperimentOrgModuleBiz experimentOrgModuleBiz;
+
+    private final OperateFlowDao operateFlowDao;
 
     public static ExperimentIndicatorViewMonitorFollowupPlanRsResponse experimentIndicatorViewMonitorFollowupPlanRs2Response(ExperimentIndicatorViewMonitorFollowupPlanRsEntity experimentIndicatorViewMonitorFollowupPlanRsEntity) {
         if (Objects.isNull(experimentIndicatorViewMonitorFollowupPlanRsEntity)) {
@@ -73,7 +86,24 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
         String experimentId = experimentMonitorFollowupCheckRequestRs.getExperimentId();
         String indicatorViewMonitorFollowupId = experimentMonitorFollowupCheckRequestRs.getIndicatorViewMonitorFollowupId();
         Integer intervalDay = experimentMonitorFollowupCheckRequestRs.getIntervalDay();
-        String operateFlowId = ShareBiz.checkRunningOperateFlowId(appId, experimentId, experimentOrgId, experimentPersonId);
+
+        ExptOrgFuncRequest funcRequest = (ExptOrgFuncRequest) new ExptOrgFuncRequest().setIndicatorFuncId(indicatorFuncId)
+                .setExperimentInstanceId(experimentId)
+                .setExperimentOrgId(experimentOrgId)
+                .setExperimentPersonId(experimentPersonId)
+                .setExperimentGroupId(experimentGroupId)
+                .setPeriods(periods)
+                .setAppId(appId);
+        ExptRequestValidator exptValidator = ExptRequestValidator.create(funcRequest)
+                .checkExperimentOrg();
+        final LocalDateTime ldtNow = LocalDateTime.now();
+        final Date dateNow = ShareUtil.XDate.localDT2Date(ldtNow);
+        ExperimentTimePoint timePoint = exptValidator.getTimePoint(true, ldtNow, true);
+        ExptOrgFlowValidator flowValidator = ExptOrgFlowValidator.create(exptValidator)
+                .checkOrgFlowRunning(periods);
+        final String operateFlowId = flowValidator.getOperateFlowId();
+
+
         ExperimentIndicatorViewMonitorFollowupPlanRsEntity experimentIndicatorViewMonitorFollowupPlanRsEntity = experimentIndicatorViewMonitorFollowupPlanRsService.lambdaQuery()
                 .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getAppId, appId)
                 .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getExperimentId, experimentId)
@@ -185,6 +215,55 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
                 .ivmfIndicatorCurrentValArray(indicatorCurrentValArray)
                 .build();
         experimentIndicatorViewMonitorFollowupReportRsService.saveOrUpdate(experimentIndicatorViewMonitorFollowupReportRsEntity);
+
+        //服务记录
+        LoginContextVO voLogin = ShareBiz.getLoginUser();
+        final ExperimentIndicatorFuncRsResponse func=getIndicatorFunc(experimentOrgId,indicatorFuncId);
+        OperateFlowEntity saveFlow = OperateFlowEntity.builder()
+                .id(null)
+                .operateFlowId(idGenerator.nextIdStr())
+                .operateOrgFuncId(indicatorViewMonitorFollowupId)
+                .appId(exptValidator.getAppId())
+                .experimentInstanceId(exptValidator.getExperimentInstanceId())
+                .experimentGroupId(exptValidator.getExperimentGroupId())
+                .experimentOrgId(exptValidator.getExperimentOrgId())
+                .experimentPersonId(exptValidator.getExperimentPersonId())
+                .operateAccountId(voLogin.getAccountId())
+                .operateAccountName(voLogin.getAccountName())
+                .periods(periods)
+                .reportFlag(EnumExperimentOrgReportFlag.FOLLOWUP.getCode())
+                .reportLabel(exptValidator.getCachedExptOrg().get().getExperimentOrgName())
+                .reportDescr(func.getIndicatorFuncName())
+                .startTime(dateNow)
+                .endTime(dateNow)
+                .operateTime(dateNow)
+                .operateGameDay(timePoint.getGameDay())
+                .build();
+        OperateFlowSnapEntity saveFlowSnap = OperateFlowSnapEntity.builder()
+                .appId(appId)
+                .snapTime(dateNow)
+                .build();
+        ExperimentMonitorFollowupRsResponse folowupReport=this.get(indicatorFuncId, experimentPersonId, periods);
+        if(ShareUtil.XObject.allNotEmpty(folowupReport,folowupReport.getExperimentIndicatorViewMonitorFollowupReportRsResponse())) {
+            ExptOrgReportNodeVO reportNode=new ExptOrgReportNodeVO()
+                    .setIndicatorFuncId(exptValidator.getIndicatorFuncId())
+                    .setIndicatorFuncName(func.getIndicatorFuncName())
+                    .setIndicatorCategoryId(func.getIndicatorCategoryId() )
+                    .setNodeData(new ExptOrgReportNodeDataVO().setMonitorFollowup(folowupReport.getExperimentIndicatorViewMonitorFollowupReportRsResponse()));
+            ExptOrgFlowReportResponse report=new ExptOrgFlowReportResponse()
+                    .setOperateFlowId(saveFlow.getOperateFlowId())
+                    .setOperateTime(saveFlow.getOperateTime())
+                    .setOperateGameDay(saveFlow.getOperateGameDay())
+                    .setReportName(String.format("%s报告",saveFlow.getReportLabel()))
+                    .setNodes(List.of(reportNode));
+            try {
+                saveFlowSnap.setRecordJson(JacksonUtil.toJson(report, true));
+            } catch (Exception ex) {
+                AssertUtil.justThrow(String.format("机构报告数据编制失败：%s", ex.getMessage()), ex);
+            }
+            operateFlowDao.tranSave(saveFlow, List.of(saveFlowSnap), false);
+        }
+
         /* runsix:监测随访是一个触发计算时间点 */
         rsExperimentCalculateBiz.experimentReCalculateFunc(RsExperimentCalculateFuncRequest
             .builder()
@@ -193,6 +272,25 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
             .periods(periods)
             .experimentPersonId(experimentPersonId)
             .build());
+    }
+    private ExperimentIndicatorFuncRsResponse getIndicatorFunc(String experimentOrgId, String indicatorFuncId){
+        ExperimentIndicatorFuncRsResponse rst=new ExperimentIndicatorFuncRsResponse();
+        rst.setIndicatorFuncId(indicatorFuncId);
+        List<ExperimentOrgModuleRsResponse> modules=experimentOrgModuleBiz.getByExperimentOrgIdAndExperimentPersonId(experimentOrgId);
+        if(ShareUtil.XObject.isEmpty(modules)){
+            return rst;
+        }
+        for(ExperimentOrgModuleRsResponse module:modules){
+            if(ShareUtil.XObject.isEmpty(module.getExperimentIndicatorFuncRsResponseList())){
+                continue;
+            }
+            for(ExperimentIndicatorFuncRsResponse func:module.getExperimentIndicatorFuncRsResponseList()){
+                if(indicatorFuncId.equals(func.getIndicatorFuncId())){
+                    return func;
+                }
+            }
+        }
+        return rst;
     }
 
     /**
