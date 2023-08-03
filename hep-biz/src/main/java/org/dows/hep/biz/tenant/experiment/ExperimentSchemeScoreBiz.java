@@ -3,6 +3,7 @@ package org.dows.hep.biz.tenant.experiment;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
@@ -211,7 +212,7 @@ public class ExperimentSchemeScoreBiz {
     public String submitSchemeScore(ExperimentSchemeScoreRequest request, String submitAccountId) {
         /* 处理请求数据 */
         // check params and auth
-        checkParamsAndAuth(request, submitAccountId);
+        String experimentSchemeId = checkParamsAndAuth(request, submitAccountId);
         List<ExperimentSchemeScoreRequest.SchemeScoreRequest> scoreInfos = request.getScoreInfos();
         // 平铺所有请求中的 scoreIdList
         List<String> scoreIdList = scoreInfos.stream()
@@ -273,7 +274,7 @@ public class ExperimentSchemeScoreBiz {
         boolean updScoreRes = updSchemeScoreAndState(scoreInfos, schemeIdMapEntity);
 
         // 更新 exptScheme 的得分和状态
-        BigDecimal score = calFinalScore(scoreInfos, maxScore);
+        BigDecimal score = calFinalScore(experimentSchemeId, maxScore);
         boolean updSchemeRes = updSchemeState(score, schemeIdList.get(0));
 
         return score.toString();
@@ -405,6 +406,12 @@ public class ExperimentSchemeScoreBiz {
         return result;
     }
 
+    private List<ExperimentSchemeScoreEntity> listSchemeScore(String exptSchemeId) {
+        return experimentSchemeScoreService.lambdaQuery()
+                .eq(ExperimentSchemeScoreEntity::getExperimentSchemeId, exptSchemeId)
+                .list();
+    }
+
     private ExperimentSchemeScoreEntity getSchemeScore(String experimentSchemeScoreId) {
         return experimentSchemeScoreService.lambdaQuery()
                 .eq(ExperimentSchemeScoreEntity::getExperimentSchemeScoreId, experimentSchemeScoreId)
@@ -412,7 +419,7 @@ public class ExperimentSchemeScoreBiz {
                 .orElseThrow(() -> new BizException(ExperimentESCEnum.DATA_NULL));
     }
 
-    private void checkParamsAndAuth(ExperimentSchemeScoreRequest request, String submitAccountId) {
+    private String checkParamsAndAuth(ExperimentSchemeScoreRequest request, String submitAccountId) {
         Assert.notNull(request, "提交方案设计评分表时：请求参数不能为空");
         Assert.notNull(request.getScoreInfos(), "提交方案设计评分表时：请求参数不能为空");
         Assert.notNull(submitAccountId, "提交方案设计评分表时：评审人账号ID不能为空");
@@ -457,6 +464,8 @@ public class ExperimentSchemeScoreBiz {
         if (DateUtil.compare(currentDate, auditEndTime) > 0) {
             throw new BizException("提交方案设计评分表时：审核已截止");
         }
+
+        return experimentSchemeId;
     }
 
     private void checkItemScoreRange(List<ExperimentSchemeScoreRequest.SchemeScoreItemRequest> itemList, List<ExperimentSchemeScoreItemEntity> oriItemEntityList) {
@@ -523,17 +532,18 @@ public class ExperimentSchemeScoreBiz {
         return experimentSchemeScoreService.updateBatchById(entityList);
     }
 
-    private BigDecimal calFinalScore(List<ExperimentSchemeScoreRequest.SchemeScoreRequest> scoreInfos, float maxScore) {
-        if (CollUtil.isEmpty(scoreInfos)) {
+    private BigDecimal calFinalScore(String exptSchemeId, float maxScore) {
+        if (StrUtil.isBlank(exptSchemeId)) {
             return BigDecimal.ZERO;
         }
 
         BigDecimal finalScore = BigDecimal.ZERO;
         BigDecimal totalScore = BigDecimal.ZERO;
         // 将评分转换为以100为基数的
-        for (ExperimentSchemeScoreRequest.SchemeScoreRequest scoreInfo : scoreInfos) {
+        List<ExperimentSchemeScoreEntity> scoreInfos = listSchemeScore(exptSchemeId);
+        for (ExperimentSchemeScoreEntity scoreInfo : scoreInfos) {
             BigDecimal scoreBy100;
-            float reviewScore = scoreInfo.getReviewScore();
+            float reviewScore = scoreInfo.getReviewScore() == null ? 0.0f : scoreInfo.getReviewScore();
             if ((int) reviewScore == (int) maxScore) {
                 scoreBy100 = new BigDecimal("100");
             } else {

@@ -149,6 +149,12 @@ public class ExperimentManageRest {
         return experimentManageBiz.pageByRole(pageExperimentRequest);
     }
 
+    @Operation(summary = "删除获取实验")
+    @DeleteMapping("v1/tenantExperiment/experimentManage/delete")
+    public Boolean delete(DeleteExperimentRequest deleteExperimentRequest) {
+        return experimentManageBiz.delete(deleteExperimentRequest);
+    }
+
     /**
      * 根据组名分页获取实验列表
      *
@@ -195,7 +201,7 @@ public class ExperimentManageRest {
      */
     @Operation(summary = "是否可以评分")
     @GetMapping("v1/tenantExperiment/experimentManage/canReview")
-    public boolean canReview(@RequestParam("exptInstanceId") String exptInstanceId,  HttpServletRequest request) {
+    public boolean canReview(@RequestParam("exptInstanceId") String exptInstanceId, HttpServletRequest request) {
         String accountId = baseBiz.getAccountId(request);
         return experimentSchemeScoreBiz.canReview(exptInstanceId, accountId);
     }

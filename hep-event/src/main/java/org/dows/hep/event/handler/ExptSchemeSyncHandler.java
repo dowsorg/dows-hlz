@@ -46,7 +46,7 @@ public class ExptSchemeSyncHandler extends AbstractEventHandler implements Event
                         .data(experimentSchemeResponse)
                         .build();
                 Response<WsMessageResponse> response = Response.ok(result);
-                HepClientManager.sendInfoRetry(channel, MessageCode.MESS_CODE, response, null);
+                HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, response);
             }
         }
     }

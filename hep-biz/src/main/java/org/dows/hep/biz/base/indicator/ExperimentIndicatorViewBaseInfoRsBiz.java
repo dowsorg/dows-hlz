@@ -147,7 +147,9 @@ public class ExperimentIndicatorViewBaseInfoRsBiz {
     indicatorInstanceIdList.forEach(indicatorInstanceId -> {
       ExperimentIndicatorInstanceRsResponse experimentIndicatorInstanceRsResponse = populateExperimentIndicatorInstanceRsResponse(
           indicatorInstanceId, kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap, kInstanceIdVExperimentIndicatorInstanceIdMap, kExperimentIndicatorInstanceIdVValMap);
-      experimentIndicatorInstanceRsResponseList.add(experimentIndicatorInstanceRsResponse);
+      if (Objects.nonNull(experimentIndicatorInstanceRsResponse)) {
+        experimentIndicatorInstanceRsResponseList.add(experimentIndicatorInstanceRsResponse);
+      }
     });
   }
 

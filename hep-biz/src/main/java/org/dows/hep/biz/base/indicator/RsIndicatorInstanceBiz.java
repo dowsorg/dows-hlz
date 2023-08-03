@@ -193,6 +193,7 @@ public class RsIndicatorInstanceBiz {
         .orElseThrow(() -> {
           throw new IndicatorCategoryException(EnumESC.INDICATOR_CATEGORY_ID_IS_ILLEGAL);
         });
+    indicatorCategoryEntityAR.set(indicatorCategoryEntity);
   }
 
   public void checkIndicatorCategoryDeleteInIndicatorViewMonitorFollowupEntity(String appId, Set<String> indicatorCategoryIdSet) {

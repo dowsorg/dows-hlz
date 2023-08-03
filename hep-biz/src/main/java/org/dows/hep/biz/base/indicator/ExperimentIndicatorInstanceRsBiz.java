@@ -63,6 +63,7 @@ public class ExperimentIndicatorInstanceRsBiz {
         return healthPoint;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public void changeMoney(RsChangeMoneyRequest rsChangeMoneyRequest) {
         String appId = rsChangeMoneyRequest.getAppId();
         String experimentId = rsChangeMoneyRequest.getExperimentId();

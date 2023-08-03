@@ -91,6 +91,8 @@ public class ExperimentManageBiz {
 
     private final PersonManageBiz personManageBiz;
 
+    private final ExperimentTaskScheduleService experimentTaskScheduleService;
+
     /**
      * @param
      * @return
@@ -101,13 +103,12 @@ public class ExperimentManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    /* runsix:临时移除，因为多数据源问题查不到插入的数据 */
-//    @DSTransactional
+    @DSTransactional
     public String allot(CreateExperimentRequest createExperiment, String accountId) {
         // 获取参与教师
         List<AccountInstanceResponse> teachers = createExperiment.getTeachers();
         Set<String> teacherIds = new HashSet<>();
-        teachers.forEach(teacher->{
+        teachers.forEach(teacher -> {
             teacherIds.add(teacher.getAccountId());
         });
         // 根据登录ID获取账户名和用户名
@@ -221,8 +222,7 @@ public class ExperimentManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    /* runsix:临时移除，因为多数据源问题查不到插入的数据 */
-//    @DSTransactional
+    @DSTransactional
     public Boolean grouping(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
 
         Long delay = experimentGroupSettingRequest.getStartTime().getTime() - System.currentTimeMillis();
@@ -314,7 +314,7 @@ public class ExperimentManageBiz {
         BeanUtil.copyProperties(experimentInstance, createExperimentForm, "teachers", "experimentSetting");
         // 处理老师
         List<AccountInstanceResponse> accountInstanceResponseList = new ArrayList<>();
-        experimentParticipatorList.forEach(experimentParticipator ->{
+        experimentParticipatorList.forEach(experimentParticipator -> {
             AccountInstanceResponse accountInstanceResponse = new AccountInstanceResponse();
             BeanUtil.copyProperties(experimentParticipator, accountInstanceResponse);
             accountInstanceResponseList.add(accountInstanceResponse);
@@ -492,6 +492,21 @@ public class ExperimentManageBiz {
         }
         PageResponse pageInfo = experimentInstanceService.getPageInfo(page, ExperimentListResponse.class);
         return pageInfo;
+    }
+
+    public boolean delete(DeleteExperimentRequest deleteExperimentRequest) {
+        List<String> experimentInstanceIds = deleteExperimentRequest.getExperimentInstanceId();
+        boolean update = experimentInstanceService.lambdaUpdate()
+                .in(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceIds)
+                //.eq(ExperimentInstanceEntity::getExperimentInstanceId, pageExperimentRequest.getExperimentInstanceId())
+                .set(ExperimentInstanceEntity::getDeleted, Boolean.TRUE)
+                .update();
+        //删除任务中的实验
+        experimentTaskScheduleService.lambdaUpdate()
+                .in(ExperimentTaskScheduleEntity::getExperimentInstanceId,experimentInstanceIds)
+                .set(ExperimentTaskScheduleEntity::getDeleted, Boolean.TRUE)
+                .update();
+        return update;
     }
 
 
@@ -780,7 +795,7 @@ public class ExperimentManageBiz {
                         sb.append(participator.getAccountName()).append(",");
                     });
                 }
-                if(StringUtils.isNotEmpty(sb)) {
+                if (StringUtils.isNotEmpty(sb)) {
                     String str = sb.substring(0, sb.length() - 1);
                     response.setParticipators(str);
                 }

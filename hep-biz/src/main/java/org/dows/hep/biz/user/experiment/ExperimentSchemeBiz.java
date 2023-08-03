@@ -201,7 +201,7 @@ public class ExperimentSchemeBiz {
         // handle group-status
         handleGroupStatus(request.getExperimentGroupId(), EnumExperimentGroupStatus.SCHEMA);
 
-        // It's not supposed to be done here, but...
+        // handle expt-status
         handleExptStatus(request.getExperimentInstanceId(), EnumExperimentState.ONGOING);
 
         // sync start
@@ -257,6 +257,7 @@ public class ExperimentSchemeBiz {
      * @description 保存
      * @date 2023/6/7 13:50
      */
+    @DSTransactional
     public Boolean updateScheme(String experimentSchemeItemId, String questionResult, String submitAccountId) {
         if (StrUtil.isBlank(experimentSchemeItemId) || StrUtil.isBlank(questionResult) || StrUtil.isBlank(submitAccountId)) {
             throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
@@ -290,6 +291,7 @@ public class ExperimentSchemeBiz {
      * @description 批量保存
      * @date 2023/6/7 13:50
      */
+    @DSTransactional
     public Boolean updateSchemeBatch(ExperimentSchemeRequest request, String submitAccountId) {
         if (BeanUtil.isEmpty(request)) {
             throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
