@@ -52,14 +52,13 @@ public class TenantCaseSchemeBiz {
     private final RedissonClient redissonClient;
 
     /**
-     * @param
-     * @return
-     * @说明: 新增和更新方案设计
-     * @关联表: caseScheme
-     * @工时: 8H
-     * @开发者: fhb
-     * @开始时间:
-     * @创建时间: 2023年4月17日 下午8:00:11
+     * @param caseScheme           - 案例方案设计请求
+     * @param caseSchemeSourceEnum - 案例方案设计来源
+     * @param questionSourceEnum   - 问卷来源
+     * @return java.lang.String
+     * @author fhb
+     * @description 新增或保存案例方案设计 - 上锁，保证一个案例只有一个方案设计
+     * @date 2023/8/3 10:44
      */
     @DSTransactional
     public String saveOrUpdCaseSchemeTenant(CaseSchemeRequest caseScheme, CaseSchemeSourceEnum caseSchemeSourceEnum, QuestionSourceEnum questionSourceEnum) {
@@ -75,7 +74,7 @@ public class TenantCaseSchemeBiz {
         }
 
         // 如果新增
-        RLock lock = redissonClient.getLock(RedisKeyConst.HEP_LOCK_EXPT_SCHEME + caseInstanceId);
+        RLock lock = redissonClient.getLock(RedisKeyConst.HEP_LOCK_CASE_SCHEME + caseInstanceId);
         try {
             if (lock.tryLock(-1, 10, TimeUnit.SECONDS)) {
                 String caseSchemeId = caseScheme.getCaseSchemeId();
@@ -101,6 +100,15 @@ public class TenantCaseSchemeBiz {
         return "";
     }
 
+    /**
+     * @param caseScheme           - 案例方案设计请求
+     * @param caseSchemeSourceEnum - 案例方案设计来源
+     * @param questionSourceEnum   - 问卷来源
+     * @return java.lang.String
+     * @author fhb
+     * @description 新增或保存案例方案设计 - 未上锁，保证性能（仅限管理端调用）
+     * @date 2023/8/3 10:46
+     */
     @DSTransactional
     public String saveOrUpdCaseSchemeAdmin(CaseSchemeRequest caseScheme, CaseSchemeSourceEnum caseSchemeSourceEnum, QuestionSourceEnum questionSourceEnum) {
         if (BeanUtil.isEmpty(caseScheme)) {
