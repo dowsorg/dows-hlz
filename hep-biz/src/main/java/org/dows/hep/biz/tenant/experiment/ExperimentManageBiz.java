@@ -103,8 +103,7 @@ public class ExperimentManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    /* runsix:临时移除，因为多数据源问题查不到插入的数据 */
-//    @DSTransactional
+    @DSTransactional
     public String allot(CreateExperimentRequest createExperiment, String accountId) {
         // 获取参与教师
         List<AccountInstanceResponse> teachers = createExperiment.getTeachers();
@@ -223,8 +222,7 @@ public class ExperimentManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    /* runsix:临时移除，因为多数据源问题查不到插入的数据 */
-//    @DSTransactional
+    @DSTransactional
     public Boolean grouping(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
 
         Long delay = experimentGroupSettingRequest.getStartTime().getTime() - System.currentTimeMillis();

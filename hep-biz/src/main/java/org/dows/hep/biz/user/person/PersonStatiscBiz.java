@@ -236,6 +236,7 @@ public class PersonStatiscBiz {
      * @开始时间:
      * @创建时间: 2023年7月25日 下午16:35:34
      */
+    @Transactional(rollbackFor = Exception.class)
     @Trace(operationName = "一期结束保险返还")
     @Tags({@Tag(key = "experimentId", value = "arg[0].experimentInstanceId"), @Tag(key = "periods", value = "arg[0].periods")})
     public void refundFunds(ExperimentPersonRequest request) {

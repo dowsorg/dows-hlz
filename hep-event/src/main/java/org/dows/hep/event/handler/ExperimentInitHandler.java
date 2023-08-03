@@ -85,6 +85,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
     private final ExperimentSettingService experimentSettingService;
     private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void exec(ExperimentGroupSettingRequest request) throws ExecutionException, InterruptedException {
         String experimentInstanceId = request.getExperimentInstanceId();

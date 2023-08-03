@@ -303,9 +303,121 @@ public class ExperimentScoringBiz {
     }
 
 
+    @Transactional(rollbackFor = Exception.class)
     @Trace(operationName = "存储期数翻转数据")
     @Tags({@Tag(key = "experimentId", value = "arg[0]"), @Tag(key = "periods", value = "arg[1]")})
     public void saveOrUpd(String experimentInstanceId, Integer periods) throws ExecutionException, InterruptedException {
+        List<ExperimentGroupEntity> experimentGroupEntityList = new ArrayList<>();
+        experimentGroupEntityList.addAll(experimentGroupService.lambdaQuery()
+            .eq(ExperimentGroupEntity::getExperimentInstanceId, experimentInstanceId)
+            .list());
+
+        AtomicInteger scoringCountAtomicInteger = new AtomicInteger(1);
+        experimentScoringService.lambdaQuery()
+            .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentInstanceId)
+            .eq(ExperimentScoringEntity::getPeriods, periods)
+            .list()
+            .stream()
+            .map(ExperimentScoringEntity::getScoringCount)
+            .max(Integer::compareTo)
+            .ifPresent(a -> scoringCountAtomicInteger.set(a + 1));
+
+
+
+        AtomicReference<Float> knowledgeWeightAtomicReference = new AtomicReference<>(0F);
+        AtomicReference<Float> healthIndexWeightAtomicReference = new AtomicReference<>(0F);
+        AtomicReference<Float> medicalRatioWeightAtomicReference = new AtomicReference<>(0F);
+        experimentSettingService.lambdaQuery()
+            .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
+            .eq(ExperimentSettingEntity::getConfigKey, ExperimentSetting.SandSetting.class.getName())
+            .oneOpt()
+            .ifPresent(experimentSettingEntity -> {
+                ExperimentSetting.SandSetting sandSetting = JSONUtil.toBean(experimentSettingEntity.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
+                knowledgeWeightAtomicReference.set(sandSetting.getKnowledgeWeight());
+                healthIndexWeightAtomicReference.set(sandSetting.getHealthIndexWeight());
+                medicalRatioWeightAtomicReference.set(sandSetting.getMedicalRatioWeight());
+            });
+
+        Map<String, BigDecimal> questionnaireScoreMap = new HashMap<>();
+        questionnaireScoreMap.putAll(experimentQuestionnaireScoreBiz.listExptQuestionnaireScore(experimentInstanceId, periods));
+
+        Map<String, BigDecimal> kExperimentGroupIdVGroupCompetitiveScoreMap = new HashMap<>();
+        RsCalculateCompetitiveScoreRsResponse rsCalculateCompetitiveScoreRsResponse = this.rsCalculateCompetitiveScore(RsCalculateCompetitiveScoreRequestRs
+            .builder()
+            .experimentId(experimentInstanceId)
+            .periods(periods)
+            .build());
+        List<GroupCompetitiveScoreRsResponse> groupCompetitiveScoreRsResponseList = rsCalculateCompetitiveScoreRsResponse.getGroupCompetitiveScoreRsResponseList();
+        if (Objects.nonNull(groupCompetitiveScoreRsResponseList) && !groupCompetitiveScoreRsResponseList.isEmpty()) {
+            groupCompetitiveScoreRsResponseList.forEach(groupCompetitiveScoreRsResponse -> {
+                String experimentGroupId = groupCompetitiveScoreRsResponse.getExperimentGroupId();
+                BigDecimal groupCompetitiveScore = groupCompetitiveScoreRsResponse.getGroupCompetitiveScore();
+                kExperimentGroupIdVGroupCompetitiveScoreMap.put(experimentGroupId, groupCompetitiveScore);
+            });
+        }
+
+        Map<String, BigDecimal> kExperimentGroupIdVGroupMoneyScoreMap = new HashMap<>();
+        RsCalculateMoneyScoreRsResponse rsCalculateMoneyScoreRsResponse = this.rsCalculateMoneyScore(RsCalculateMoneyScoreRequestRs
+            .builder()
+            .experimentId(experimentInstanceId)
+            .periods(periods)
+            .build());
+        List<GroupMoneyScoreRsResponse> groupMoneyScoreRsResponseList = rsCalculateMoneyScoreRsResponse.getGroupMoneyScoreRsResponseList();
+        if (Objects.nonNull(groupMoneyScoreRsResponseList) && !groupMoneyScoreRsResponseList.isEmpty()) {
+            groupMoneyScoreRsResponseList.forEach(groupMoneyScoreRsResponse -> {
+                String experimentGroupId = groupMoneyScoreRsResponse.getExperimentGroupId();
+                BigDecimal groupMoneyScore = groupMoneyScoreRsResponse.getGroupMoneyScore();
+                kExperimentGroupIdVGroupMoneyScoreMap.put(experimentGroupId, groupMoneyScore);
+            });
+        }
+
+        List<ExperimentScoringEntity> experimentScoringEntityList = new ArrayList<>();
+        experimentGroupEntityList.forEach(experimentGroupEntity -> {
+            String experimentGroupId = experimentGroupEntity.getExperimentGroupId();
+            String groupName = experimentGroupEntity.getGroupName();
+            String groupNo = experimentGroupEntity.getGroupNo();
+            String groupAlias = experimentGroupEntity.getGroupAlias();
+            BigDecimal questionnaireScoreBigDecimal = questionnaireScoreMap.get(experimentGroupId);
+            if (Objects.isNull(questionnaireScoreBigDecimal)) {
+                questionnaireScoreBigDecimal = BigDecimal.ZERO;
+            }
+            BigDecimal groupCompetitiveScoreBigDecimal = kExperimentGroupIdVGroupCompetitiveScoreMap.get(experimentGroupId);
+            if (Objects.isNull(groupCompetitiveScoreBigDecimal)) {
+                groupCompetitiveScoreBigDecimal = BigDecimal.ZERO;
+            }
+            BigDecimal groupIdVGroupMoneyScoreBigDecimal = kExperimentGroupIdVGroupMoneyScoreMap.get(experimentGroupId);
+            if (Objects.isNull(groupIdVGroupMoneyScoreBigDecimal)) {
+                groupIdVGroupMoneyScoreBigDecimal = BigDecimal.ZERO;
+            }
+            BigDecimal totalScoreBigDecimal = getWeightTotalScore(
+                BigDecimal.valueOf(knowledgeWeightAtomicReference.get()), questionnaireScoreBigDecimal,
+                BigDecimal.valueOf(healthIndexWeightAtomicReference.get()), groupCompetitiveScoreBigDecimal,
+                BigDecimal.valueOf(medicalRatioWeightAtomicReference.get()), groupIdVGroupMoneyScoreBigDecimal
+            );
+            experimentScoringEntityList.add(ExperimentScoringEntity
+                .builder()
+                .experimentScoringId(idGenerator.nextIdStr())
+                .experimentInstanceId(experimentInstanceId)
+                .experimentGroupId(experimentGroupId)
+                .experimentGroupNo(groupNo)
+                .experimentGroupName(groupName)
+                .experimentGroupAlias(groupAlias)
+                .knowledgeScore(questionnaireScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
+                .healthIndexScore(groupCompetitiveScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
+                .treatmentPercentScore(groupIdVGroupMoneyScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
+                .totalScore(totalScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
+                .scoringCount(scoringCountAtomicInteger.get())
+                .periods(periods)
+                .build());
+        });
+
+        experimentScoringService.saveOrUpdateBatch(experimentScoringEntityList);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Trace(operationName = "存储期数翻转数据")
+    @Tags({@Tag(key = "experimentId", value = "arg[0]"), @Tag(key = "periods", value = "arg[1]")})
+    public void cfSaveOrUpd(String experimentInstanceId, Integer periods) throws ExecutionException, InterruptedException {
         List<ExperimentGroupEntity> experimentGroupEntityList = new ArrayList<>();
         CompletableFuture<Void> populateExperimentGroupEntityListCF = getPopulateExperimentGroupEntityListCF(experimentInstanceId, experimentGroupEntityList);
 
@@ -327,14 +439,14 @@ public class ExperimentScoringBiz {
         CompletableFuture<Void> populateKExperimentGroupIdVGroupMoneyScoreMapCF = getPopulateKExperimentGroupIdVGroupMoneyScoreMapCF(kExperimentGroupIdVGroupMoneyScoreMap, experimentInstanceId, periods);
 
         CompletableFuture.allOf(populateExperimentGroupEntityListCF, populateScoringCountCF, populateWeightCF,
-                populateQuestionnaireScoreMapCF, populateKExperimentGroupIdVGroupCompetitiveScoreMapCF, populateKExperimentGroupIdVGroupMoneyScoreMapCF).get();
+            populateQuestionnaireScoreMapCF, populateKExperimentGroupIdVGroupCompetitiveScoreMapCF, populateKExperimentGroupIdVGroupMoneyScoreMapCF).get();
 
         List<ExperimentScoringEntity> experimentScoringEntityList = new ArrayList<>();
         CompletableFuture<Void> populateExperimentScoringEntityListCF = getPopulateExperimentScoringEntityListCF(
-                experimentScoringEntityList, experimentGroupEntityList, scoringCountAtomicInteger,
-                knowledgeWeightAtomicReference, healthIndexWeightAtomicReference, medicalRatioWeightAtomicReference,
-                questionnaireScoreMap, kExperimentGroupIdVGroupCompetitiveScoreMap, kExperimentGroupIdVGroupMoneyScoreMap,
-                experimentInstanceId, periods
+            experimentScoringEntityList, experimentGroupEntityList, scoringCountAtomicInteger,
+            knowledgeWeightAtomicReference, healthIndexWeightAtomicReference, medicalRatioWeightAtomicReference,
+            questionnaireScoreMap, kExperimentGroupIdVGroupCompetitiveScoreMap, kExperimentGroupIdVGroupMoneyScoreMap,
+            experimentInstanceId, periods
         );
         populateExperimentScoringEntityListCF.get();
         experimentScoringService.saveOrUpdateBatch(experimentScoringEntityList);
@@ -351,13 +463,13 @@ public class ExperimentScoringBiz {
     private CompletableFuture<Void> getPopulateScoringCountCF(AtomicInteger scoringCountAtomicInteger, String experimentInstanceId, Integer period) {
         return CompletableFuture.runAsync(() -> {
             experimentScoringService.lambdaQuery()
-                    .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentInstanceId)
-                    .eq(ExperimentScoringEntity::getPeriods, period)
-                    .list()
-                    .stream()
-                    .map(ExperimentScoringEntity::getScoringCount)
-                    .max(Integer::compareTo)
-                    .ifPresent(a -> scoringCountAtomicInteger.set(a + 1));
+                .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentScoringEntity::getPeriods, period)
+                .list()
+                .stream()
+                .map(ExperimentScoringEntity::getScoringCount)
+                .max(Integer::compareTo)
+                .ifPresent(a -> scoringCountAtomicInteger.set(a + 1));
         });
     }
 
