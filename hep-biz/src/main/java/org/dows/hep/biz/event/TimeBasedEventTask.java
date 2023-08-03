@@ -128,7 +128,9 @@ public class TimeBasedEventTask extends BaseEventTask  {
                 i.setTriggerTime(ShareUtil.XDate.localDT2Date(triggerTime))
                         .setTriggeredPeriod(timePoint.getPeriod())
                         .setTriggerGameDay(timePoint.getGameDay())
-                        .setState(EnumExperimentEventState.TRIGGERED.getCode());
+                        .setState(EnumExperimentEventState.TRIGGERED.getCode())
+                        .setTriggeringTime(ShareUtil.XDate.localDT2Date(group.getTriggeringTime()))
+                        .setTriggeringGameDay(group.getTriggeringGameDay());
             });
             triggeringEvents.addAll(group.getEventItems());
             triggeredGroups.add(group);

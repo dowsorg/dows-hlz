@@ -184,35 +184,35 @@ public class ShareUtil {
         public static <T,R> Set<R> toSet(Collection<T> src,Function<? super T, ? extends R> mapper ){
             return src.stream().map(mapper).collect(Collectors.toSet());
         }
-        public static <T, K> Map<K, T> toMap(List<T> src, Function<? super T, ? extends K> keyMapper) {
+        public static <T, K> Map<K, T> toMap(Collection<T> src, Function<? super T, ? extends K> keyMapper) {
             return toMap(src, keyMapper, Function.identity(), false);
         }
-        public static <T, K, U> Map<K, U> toMap(List<T> src, Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
+        public static <T, K, U> Map<K, U> toMap(Collection<T> src, Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
            return toMap(src, keyMapper, valueMapper, false);
         }
-        public static <T, K, U> Map<K, U> toMap(List<T> src, Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,boolean preferNew) {
+        public static <T, K, U> Map<K, U> toMap(Collection<T> src, Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,boolean preferNew) {
             if (isEmpty(src)) {
                 return new HashMap<>(0);
             }
             return src.stream().collect(Collectors.toMap(keyMapper, valueMapper, (c, n) -> preferNew ? n : c));
         }
-        public static <T, K, U, M extends Map<K, U>> M toMap(List<T> src, Supplier<M> mapFactory, Function<? super T, ? extends K> keyMapper,
+        public static <T, K, U, M extends Map<K, U>> M toMap(Collection<T> src, Supplier<M> mapFactory, Function<? super T, ? extends K> keyMapper,
                                                              Function<? super T, ? extends U> valueMapper, boolean preferNew) {
             return src.stream().collect(Collectors.toMap(keyMapper, valueMapper, (c, n) -> preferNew ? n : c, mapFactory));
         }
-        public static <T, K, U, M extends Map<K, U>> M toMap(List<T> src, Supplier<M> mapFactory, Function<? super T, ? extends K> keyMapper,
+        public static <T, K, U, M extends Map<K, U>> M toMap(Collection<T> src, Supplier<M> mapFactory, Function<? super T, ? extends K> keyMapper,
                                                              Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
             return src.stream().collect(Collectors.toMap(keyMapper, valueMapper, mergeFunction, mapFactory));
         }
 
 
-        public static <T, K> Map<K,List<T>> groupBy(List<T> src, Function<? super T, ? extends K> keyMapper) {
+        public static <T, K> Map<K,List<T>> groupBy(Collection<T> src, Function<? super T, ? extends K> keyMapper) {
             return src.stream().collect(Collectors.groupingBy(keyMapper, HashMap::new, Collectors.toList()));
         }
-        public static <T,U, K> Map<K,List<U>> groupBy(List<T> src, Function<? super T, ? extends U> mapper, Function<? super U, ? extends K> keyMapper) {
+        public static <T,U, K> Map<K,List<U>> groupBy(Collection<T> src, Function<? super T, ? extends U> mapper, Function<? super U, ? extends K> keyMapper) {
             return src.stream().map(mapper).collect(Collectors.groupingBy(keyMapper, HashMap::new, Collectors.toList()));
         }
-        public static <T, K, U,D,A, M extends Map<K, D>> M groupBy(List<T> src, Supplier<M> mapFactory, Function<? super T, ? extends U> mapper, Function<? super U, ? extends K> keyMapper, Collector<? super U, A, D> downstream){
+        public static <T, K, U,D,A, M extends Map<K, D>> M groupBy(Collection<T> src, Supplier<M> mapFactory, Function<? super T, ? extends U> mapper, Function<? super U, ? extends K> keyMapper, Collector<? super U, A, D> downstream){
             return src.stream().map(mapper).collect(Collectors.groupingBy(keyMapper,mapFactory,downstream));
         }
 

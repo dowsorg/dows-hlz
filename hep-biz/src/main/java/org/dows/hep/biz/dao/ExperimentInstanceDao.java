@@ -7,6 +7,7 @@ import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.service.ExperimentInstanceService;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -44,12 +45,13 @@ public class ExperimentInstanceDao extends BaseDao<ExperimentInstanceService, Ex
         return null;
     }
 
-    public List<ExperimentInstanceEntity> getRunningExperiment4Sand(String appId, Integer minState, Integer maxState,
+    public List<ExperimentInstanceEntity> getRunningExperiment4Sand(String appId, Integer minState, Integer maxState, Date startTime,
                                                                     SFunction<ExperimentInstanceEntity,?>... cols){
         return service.lambdaQuery()
                 .eq(ShareUtil.XObject.notEmpty(appId),ExperimentInstanceEntity::getAppId,appId)
                 .ge(ShareUtil.XObject.notEmpty(minState), ExperimentInstanceEntity::getState,minState)
                 .le(ShareUtil.XObject.notEmpty(maxState), ExperimentInstanceEntity::getState,maxState)
+                .ge(ShareUtil.XObject.notEmpty(startTime),ExperimentInstanceEntity::getStartTime,startTime )
                 .ne(ExperimentInstanceEntity::getModel, EnumExperimentMode.SCHEME.getCode())
                 .orderByAsc(ExperimentInstanceEntity::getStartTime)
                 .select(cols)

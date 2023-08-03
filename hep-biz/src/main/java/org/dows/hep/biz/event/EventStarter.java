@@ -1,5 +1,6 @@
 package org.dows.hep.biz.event;
 
+import cn.hutool.core.date.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.biz.dao.ExperimentInstanceDao;
@@ -12,6 +13,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -45,6 +47,7 @@ public class EventStarter implements ApplicationListener<ApplicationStartedEvent
         try {
             List<ExperimentInstanceEntity> rowsExperiment = experimentInstanceDao.getRunningExperiment4Sand(
                     null, EnumExperimentState.ONGOING.getState(), EnumExperimentState.SUSPEND.getState(),
+                    DateUtil.offsetDay(new Date(),-5).toJdkDate(),
                     ExperimentInstanceEntity::getAppId,
                     ExperimentInstanceEntity::getExperimentInstanceId,
                     ExperimentInstanceEntity::getState);
