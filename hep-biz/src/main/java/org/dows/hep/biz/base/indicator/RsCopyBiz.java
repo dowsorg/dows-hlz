@@ -101,6 +101,7 @@ public class RsCopyBiz {
   private final RsCaseIndicatorExpressionBiz rsCaseIndicatorExpressionBiz;
   private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
 
+  @Transactional(rollbackFor = Exception.class)
   @Trace(operationName = "初始化实验 '复制功能点到实验'")
   public void rsCopyIndicatorFunc(RsCopyIndicatorFuncRequestRs rsCopyIndicatorFuncRequestRs) {
     List<ExperimentOrgModuleRsEntity> experimentOrgModuleRsEntityList = new ArrayList<>();
@@ -1796,6 +1797,7 @@ public class RsCopyBiz {
     return experimentIndicatorExpressionItemRsEntity;
   }
 
+  @Transactional(rollbackFor = Exception.class)
   @Trace(operationName = "初始化实验 '复制人群类型以及死亡原因以及公式到实验")
   public void rsCopyCrowdsAndRiskModel(RsCopyCrowdsAndRiskModelRequestRs rsCopyCrowdsAndRiskModelRequestRs) throws ExecutionException, InterruptedException {
     Map<String, String> kCrowdsInstanceIdVExperimentCrowsInstanceIdMap = new HashMap<>();
@@ -1806,6 +1808,7 @@ public class RsCopyBiz {
   }
 
 
+  @Transactional(rollbackFor = Exception.class)
   @Trace(operationName = "复制人群类别")
   public void rsCopyCrowds(String appId, String experimentInstanceId, Map<String, String> kCrowdsInstanceIdVExperimentCrowsInstanceIdMap) {
     if (Objects.isNull(kCrowdsInstanceIdVExperimentCrowsInstanceIdMap)) {
@@ -1856,6 +1859,7 @@ public class RsCopyBiz {
     }
   }
 
+  @Transactional(rollbackFor = Exception.class)
   @Trace(operationName = "复制死亡原因")
   public void rsCopyRiskModel(String appId, String experimentInstanceId, Map<String, String> kCrowdsInstanceIdVExperimentCrowsInstanceIdMap) {
     List<ExperimentRiskModelRsEntity> experimentRiskModelRsEntityList = new ArrayList<>();
