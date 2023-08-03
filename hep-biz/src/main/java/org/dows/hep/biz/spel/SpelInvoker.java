@@ -18,10 +18,7 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author : wuzl
@@ -130,14 +127,19 @@ public class SpelInvoker {
     }
 
 
-    public boolean saveIndicatorChange(Collection<SpelEvalSumResult> evalResults){
-        if(ShareUtil.XObject.isEmpty(evalResults)) {
+    public boolean saveIndicatorChange(Collection<SpelEvalSumResult> evalResults) {
+        if (ShareUtil.XObject.isEmpty(evalResults)) {
             return true;
         }
-        List<ExperimentIndicatorInstanceRsEntity> rows=ShareUtil.XCollection.map(evalResults, false, i->
-                new ExperimentIndicatorInstanceRsEntity().setExperimentIndicatorInstanceId(i.getExperimentIndicatorId())
-                        .setChangeVal(i.getValdDouble()));
-
+        final Map<String, Double> mapEval = ShareUtil.XCollection.toMap(evalResults, SpelEvalSumResult::getExperimentIndicatorId, SpelEvalSumResult::getValdDouble);
+        List<ExperimentIndicatorInstanceRsEntity> rows = experimentIndicatorInstanceRsDao.getByExperimentIndicatorIds(mapEval.keySet(),
+                ExperimentIndicatorInstanceRsEntity::getId,
+                ExperimentIndicatorInstanceRsEntity::getExperimentIndicatorInstanceId,
+                ExperimentIndicatorInstanceRsEntity::getChangeVal);
+        rows.forEach(i -> i.setChangeVal(
+                Optional.ofNullable(i.getChangeVal()).orElse(0d)
+                        + Optional.ofNullable(mapEval.get(i.getExperimentIndicatorInstanceId())).orElse(0d))
+        );
         return experimentIndicatorInstanceRsDao.updateIndicatorChange(rows);
     }
 

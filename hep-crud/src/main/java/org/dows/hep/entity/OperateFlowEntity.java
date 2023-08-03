@@ -77,6 +77,9 @@ public class OperateFlowEntity implements CrudEntity {
     @Schema(title = "展示类型 0-不展示 1-用户端展示")
     private Integer reportFlag;
 
+    @Schema(title = "报告来源id")
+    private String reportSrcId;
+
     @Schema(title = "展示标签")
     private String reportLabel;
 
