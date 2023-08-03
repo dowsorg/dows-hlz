@@ -107,7 +107,7 @@ public class ExperimentManageBiz {
         // 获取参与教师
         List<AccountInstanceResponse> teachers = createExperiment.getTeachers();
         Set<String> teacherIds = new HashSet<>();
-        teachers.forEach(teacher->{
+        teachers.forEach(teacher -> {
             teacherIds.add(teacher.getAccountId());
         });
         // 根据登录ID获取账户名和用户名
@@ -493,6 +493,14 @@ public class ExperimentManageBiz {
         return pageInfo;
     }
 
+    public boolean delete(PageExperimentRequest pageExperimentRequest) {
+        boolean update = experimentInstanceService.lambdaUpdate()
+                .eq(ExperimentInstanceEntity::getExperimentInstanceId, pageExperimentRequest.getExperimentInstanceId())
+                .set(ExperimentInstanceEntity::getDeleted, Boolean.TRUE)
+                .update();
+        return update;
+    }
+
 
     /**
      * @param
@@ -779,7 +787,7 @@ public class ExperimentManageBiz {
                         sb.append(participator.getAccountName()).append(",");
                     });
                 }
-                if(StringUtils.isNotEmpty(sb)) {
+                if (StringUtils.isNotEmpty(sb)) {
                     String str = sb.substring(0, sb.length() - 1);
                     response.setParticipators(str);
                 }
