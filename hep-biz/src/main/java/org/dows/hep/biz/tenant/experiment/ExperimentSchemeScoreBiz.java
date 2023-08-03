@@ -211,7 +211,7 @@ public class ExperimentSchemeScoreBiz {
     public String submitSchemeScore(ExperimentSchemeScoreRequest request, String submitAccountId) {
         /* 处理请求数据 */
         // check params and auth
-        checkParamsAndAuth(request, submitAccountId);
+        int sheetSize = checkParamsAndAuth(request, submitAccountId);
         List<ExperimentSchemeScoreRequest.SchemeScoreRequest> scoreInfos = request.getScoreInfos();
         // 平铺所有请求中的 scoreIdList
         List<String> scoreIdList = scoreInfos.stream()
@@ -273,7 +273,7 @@ public class ExperimentSchemeScoreBiz {
         boolean updScoreRes = updSchemeScoreAndState(scoreInfos, schemeIdMapEntity);
 
         // 更新 exptScheme 的得分和状态
-        BigDecimal score = calFinalScore(scoreInfos, maxScore);
+        BigDecimal score = calFinalScore(scoreInfos, maxScore, sheetSize);
         boolean updSchemeRes = updSchemeState(score, schemeIdList.get(0));
 
         return score.toString();
@@ -412,7 +412,7 @@ public class ExperimentSchemeScoreBiz {
                 .orElseThrow(() -> new BizException(ExperimentESCEnum.DATA_NULL));
     }
 
-    private void checkParamsAndAuth(ExperimentSchemeScoreRequest request, String submitAccountId) {
+    private int checkParamsAndAuth(ExperimentSchemeScoreRequest request, String submitAccountId) {
         Assert.notNull(request, "提交方案设计评分表时：请求参数不能为空");
         Assert.notNull(request.getScoreInfos(), "提交方案设计评分表时：请求参数不能为空");
         Assert.notNull(submitAccountId, "提交方案设计评分表时：评审人账号ID不能为空");
@@ -457,6 +457,11 @@ public class ExperimentSchemeScoreBiz {
         if (DateUtil.compare(currentDate, auditEndTime) > 0) {
             throw new BizException("提交方案设计评分表时：审核已截止");
         }
+
+        Long size = experimentSchemeScoreService.lambdaQuery()
+                .eq(ExperimentSchemeScoreEntity::getExperimentSchemeId, experimentSchemeId)
+                .count();
+        return size.intValue();
     }
 
     private void checkItemScoreRange(List<ExperimentSchemeScoreRequest.SchemeScoreItemRequest> itemList, List<ExperimentSchemeScoreItemEntity> oriItemEntityList) {
@@ -523,7 +528,7 @@ public class ExperimentSchemeScoreBiz {
         return experimentSchemeScoreService.updateBatchById(entityList);
     }
 
-    private BigDecimal calFinalScore(List<ExperimentSchemeScoreRequest.SchemeScoreRequest> scoreInfos, float maxScore) {
+    private BigDecimal calFinalScore(List<ExperimentSchemeScoreRequest.SchemeScoreRequest> scoreInfos, float maxScore, int sheetSize) {
         if (CollUtil.isEmpty(scoreInfos)) {
             return BigDecimal.ZERO;
         }
@@ -545,7 +550,7 @@ public class ExperimentSchemeScoreBiz {
             totalScore = totalScore.add(scoreBy100);
         }
         // 计算平均值
-        finalScore = totalScore.divide(BigDecimal.valueOf(scoreInfos.size()), 0, RoundingMode.DOWN);
+        finalScore = totalScore.divide(BigDecimal.valueOf(sheetSize), 0, RoundingMode.DOWN);
         return finalScore;
     }
 
