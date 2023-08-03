@@ -314,7 +314,7 @@ public class ExperimentManageBiz {
         BeanUtil.copyProperties(experimentInstance, createExperimentForm, "teachers", "experimentSetting");
         // 处理老师
         List<AccountInstanceResponse> accountInstanceResponseList = new ArrayList<>();
-        experimentParticipatorList.forEach(experimentParticipator ->{
+        experimentParticipatorList.forEach(experimentParticipator -> {
             AccountInstanceResponse accountInstanceResponse = new AccountInstanceResponse();
             BeanUtil.copyProperties(experimentParticipator, accountInstanceResponse);
             accountInstanceResponseList.add(accountInstanceResponse);
@@ -494,9 +494,11 @@ public class ExperimentManageBiz {
         return pageInfo;
     }
 
-    public boolean delete(PageExperimentRequest pageExperimentRequest) {
+    public boolean delete(DeleteExperimentRequest deleteExperimentRequest) {
+        List<String> experimentInstanceIds = deleteExperimentRequest.getExperimentInstanceId();
         boolean update = experimentInstanceService.lambdaUpdate()
-                .eq(ExperimentInstanceEntity::getExperimentInstanceId, pageExperimentRequest.getExperimentInstanceId())
+                .in(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceIds)
+                //.eq(ExperimentInstanceEntity::getExperimentInstanceId, pageExperimentRequest.getExperimentInstanceId())
                 .set(ExperimentInstanceEntity::getDeleted, Boolean.TRUE)
                 .update();
         return update;
