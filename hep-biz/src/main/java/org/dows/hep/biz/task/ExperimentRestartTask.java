@@ -77,7 +77,6 @@ public class ExperimentRestartTask implements Runnable {
                 .eq(ExperimentTaskScheduleEntity::getAppId, appId)
                 .list();
         // 2、有些数据部分信息可能会被误删，要过滤掉这些数据
-        // 重复?? 批量?? 模式匹配??
 //        scheduleEntityList.stream().filter(schedule -> experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()) == null ||
 //                experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()).size() == 0)
 //                .forEach(schedule -> experimentTaskScheduleService.lambdaUpdate().set(ExperimentTaskScheduleEntity::getDeleted, true)
