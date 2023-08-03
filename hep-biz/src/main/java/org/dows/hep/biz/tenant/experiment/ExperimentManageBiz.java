@@ -91,6 +91,8 @@ public class ExperimentManageBiz {
 
     private final PersonManageBiz personManageBiz;
 
+    private final ExperimentTaskScheduleService experimentTaskScheduleService;
+
     /**
      * @param
      * @return
@@ -500,6 +502,11 @@ public class ExperimentManageBiz {
                 .in(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceIds)
                 //.eq(ExperimentInstanceEntity::getExperimentInstanceId, pageExperimentRequest.getExperimentInstanceId())
                 .set(ExperimentInstanceEntity::getDeleted, Boolean.TRUE)
+                .update();
+        //删除任务中的实验
+        experimentTaskScheduleService.lambdaUpdate()
+                .in(ExperimentTaskScheduleEntity::getExperimentInstanceId,experimentInstanceIds)
+                .set(ExperimentTaskScheduleEntity::getDeleted, Boolean.TRUE)
                 .update();
         return update;
     }
