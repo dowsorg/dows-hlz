@@ -79,14 +79,9 @@ public class QuestionInstanceRest {
     @Operation(summary = "根据ID获取详情")
     @GetMapping("v1/baseQuestion/questionInstance/getQuestion")
     public QuestionResponse getQuestion(@Validated String questionInstanceId) {
-        log.info("获取问题详情执行：{}", questionInstanceId);
-        QuestionResponse question = null;
-        try {
-             question = questionInstanceBiz.getQuestion(questionInstanceId);
-        } catch (Exception e) {
-            log.info("获取问题详情异常： {}, 异常： {}", questionInstanceId, e.getMessage());
-        }
-        return question;
+//        QuestionResponse question = questionInstanceBiz.getQuestion(questionInstanceId);
+        return new QuestionResponse();
+//        return question;
     }
 
     /**
