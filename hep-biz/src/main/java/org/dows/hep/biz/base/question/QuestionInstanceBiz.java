@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.*;
 import org.dows.hep.api.base.question.dto.QuestionRequestDTO;
@@ -38,6 +39,7 @@ import java.util.stream.Collectors;
  * @description project descr:问题:问题
  * @date 2023年4月18日 上午10:45:07
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class QuestionInstanceBiz {
@@ -205,8 +207,14 @@ public class QuestionInstanceBiz {
             return new QuestionResponse();
         }
 
+        QuestionResponse questionResponse = null;
         QuestionTypeHandler questionTypeHandler = QuestionTypeFactory.get(questionTypeEnum);
-        QuestionResponse questionResponse = questionTypeHandler.get(questionInstanceId, resultRecordDTO);
+        try {
+             questionResponse = questionTypeHandler.get(questionInstanceId, resultRecordDTO);
+        } catch (Exception e) {
+            log.error("获取问题详情异常, 问题id为 {}", questionInstanceId);
+        }
+
         String questionCategId = questionResponse.getQuestionCategId();
         if (StrUtil.isNotBlank(questionCategId)) {
             setQuestionCategIds(questionResponse);
