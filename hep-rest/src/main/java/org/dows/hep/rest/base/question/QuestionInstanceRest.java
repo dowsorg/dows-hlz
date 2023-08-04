@@ -79,9 +79,7 @@ public class QuestionInstanceRest {
     @Operation(summary = "根据ID获取详情")
     @GetMapping("v1/baseQuestion/questionInstance/getQuestion")
     public QuestionResponse getQuestion(@Validated String questionInstanceId) {
-//        QuestionResponse question = questionInstanceBiz.getQuestion(questionInstanceId);
-        return new QuestionResponse();
-//        return question;
+        return questionInstanceBiz.getQuestion(questionInstanceId);
     }
 
     /**
