@@ -76,6 +76,9 @@ public class ExperimentRestartTask implements Runnable {
                 .eq(ExperimentTaskScheduleEntity::getExecuted, false)
                 .eq(ExperimentTaskScheduleEntity::getAppId, appId)
                 .list();
+        if (CollUtil.isEmpty(scheduleEntityList)) {
+            return;
+        }
         // 2、有些数据部分信息可能会被误删，要过滤掉这些数据
 //        scheduleEntityList.stream().filter(schedule -> experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()) == null ||
 //                experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()).size() == 0)
