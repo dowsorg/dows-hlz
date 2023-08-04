@@ -79,6 +79,7 @@ public class QuestionInstanceRest {
     @Operation(summary = "根据ID获取详情")
     @GetMapping("v1/baseQuestion/questionInstance/getQuestion")
     public QuestionResponse getQuestion(@Validated String questionInstanceId) {
+        log.info("获取问题详情执行：{}", questionInstanceId);
         QuestionResponse question = null;
         try {
              question = questionInstanceBiz.getQuestion(questionInstanceId);
