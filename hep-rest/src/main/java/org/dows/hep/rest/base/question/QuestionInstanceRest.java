@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.base.question.QuestionAccessAuthEnum;
 import org.dows.hep.api.base.question.QuestionSourceEnum;
 import org.dows.hep.api.base.question.request.QuestionPageRequest;
@@ -25,6 +26,7 @@ import java.util.List;
  * @description project descr:问题:问题
  * @date 2023年4月18日 上午10:45:07
  */
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @Tag(name = "问题域-题目", description = "问题")
@@ -77,7 +79,13 @@ public class QuestionInstanceRest {
     @Operation(summary = "根据ID获取详情")
     @GetMapping("v1/baseQuestion/questionInstance/getQuestion")
     public QuestionResponse getQuestion(@Validated String questionInstanceId) {
-        return questionInstanceBiz.getQuestion(questionInstanceId);
+        QuestionResponse question = null;
+        try {
+             question = questionInstanceBiz.getQuestion(questionInstanceId);
+        } catch (Exception e) {
+            log.info("获取问题详情异常： {}, 异常： {}", questionInstanceId, e.getMessage());
+        }
+        return question;
     }
 
     /**
