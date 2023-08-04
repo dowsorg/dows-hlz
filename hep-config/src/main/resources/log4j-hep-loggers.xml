@@ -5,7 +5,7 @@
     <AsyncRoot level="INFO" includeLocation="true">
         <AppenderRef ref="CONSOLE"/>
     </AsyncRoot>
-    <AsyncLogger name="org.dows" level="INFO" includeLocation="true">
+    <AsyncLogger name="org.dows" level="INFO" additivity="false"  includeLocation="true">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE-INFO"/>
     </AsyncLogger>

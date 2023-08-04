@@ -57,18 +57,23 @@ public class ApplicationRestartedListener implements ApplicationListener<Applica
     @Override
     public void onApplicationEvent(ApplicationStartedEvent event) {
         log.info("执行任务重启......");
-        String appId = "3";
-        Date now = DateUtil.date();
-        // 更新重启时间(当前应用下大于当前时间且未执行的任务)
-        experimentTaskScheduleService.lambdaUpdate()
-                .set(ExperimentTaskScheduleEntity::getRestartTime, now)
-                .eq(ExperimentTaskScheduleEntity::getExecuted, false)
-                .eq(ExperimentTaskScheduleEntity::getAppId, appId)
-                .gt(ExperimentTaskScheduleEntity::getExecuteTime, now)
-                .update();
+        try {
+            String appId = "3";
+            Date now = DateUtil.date();
+            // 更新重启时间(当前应用下大于当前时间且未执行的任务)
+            experimentTaskScheduleService.lambdaUpdate()
+                    .set(ExperimentTaskScheduleEntity::getRestartTime, now)
+                    .eq(ExperimentTaskScheduleEntity::getExecuted, false)
+                    .eq(ExperimentTaskScheduleEntity::getAppId, appId)
+                    .gt(ExperimentTaskScheduleEntity::getExecuteTime, now)
+                    .update();
             ExperimentRestartTask experimentRestartTask = new ExperimentRestartTask(experimentTaskScheduleService, experimentInstanceService,
                     experimentParticipatorService, experimentTimerService, applicationEventPublisher,
                     appId, taskScheduler, experimentTimerBiz, calculatorDispatcher, periodStartNoticer, periodEndNoticer, experimentSettingBiz, experimentSchemeBiz);
             experimentRestartTask.run();
+            log.info("ApplicationRestarted succ.");
+        } catch (Exception ex){
+            log.error("ApplicationRestarted fail.", ex);
+        }
     }
 }
