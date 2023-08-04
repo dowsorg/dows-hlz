@@ -193,6 +193,7 @@ public class QuestionInstanceBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
+    // todo 测完切为 log.error
     public QuestionResponse getQuestion(String questionInstanceId, QuestionResultRecordDTO resultRecordDTO) {
         if (questionInstanceId == null) {
             return new QuestionResponse();
@@ -204,6 +205,7 @@ public class QuestionInstanceBiz {
                 .map(QuestionTypeEnum::getByCode)
                 .orElse(null);
         if (questionTypeEnum == null) {
+            log.info("根据id获取问题异常或问题类型异常，问题id为： {}", questionInstanceId);
             return new QuestionResponse();
         }
 
@@ -212,13 +214,20 @@ public class QuestionInstanceBiz {
         try {
              questionResponse = questionTypeHandler.get(questionInstanceId, resultRecordDTO);
         } catch (Exception e) {
-            log.error("获取问题详情异常, 问题id为 {}", questionInstanceId);
+            log.info("获取问题详情异常, 问题id为 {}", questionInstanceId);
+        }
+        if (BeanUtil.isEmpty(questionResponse)) {
+            return questionResponse;
         }
 
         String questionCategId = questionResponse.getQuestionCategId();
         if (StrUtil.isNotBlank(questionCategId)) {
-            setQuestionCategIds(questionResponse);
-            setQuestionCategName(questionResponse);
+            try {
+                setQuestionCategIds(questionResponse);
+                setQuestionCategName(questionResponse);
+            } catch (Exception e) {
+                log.info("设置问题类目异常，问题id为 ：{}， 类目id为： {}", questionInstanceId, questionCategId);
+            }
         }
         return questionResponse;
     }
