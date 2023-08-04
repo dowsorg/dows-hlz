@@ -84,6 +84,6 @@ public class RsExperimentCalculateRest {
   @Operation(summary = "期数翻转结束后，要把本期最终结果更新为下一期的值")
   @PutMapping("v1/experimentIndicator/val/put")
   public void experimentSetVal(@RequestBody RsExperimentSetValRequest rsExperimentSetValRequest) throws ExecutionException, InterruptedException {
-    rsExperimentCalculateBiz.experimentSetVal(rsExperimentSetValRequest);
+    rsExperimentCalculateBiz.cfExperimentSetVal(rsExperimentSetValRequest);
   }
 }

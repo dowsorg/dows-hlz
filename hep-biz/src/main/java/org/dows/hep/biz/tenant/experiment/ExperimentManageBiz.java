@@ -91,6 +91,8 @@ public class ExperimentManageBiz {
 
     private final PersonManageBiz personManageBiz;
 
+    private final ExperimentTaskScheduleService experimentTaskScheduleService;
+
     /**
      * @param
      * @return
@@ -101,8 +103,7 @@ public class ExperimentManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    /* runsix:临时移除，因为多数据源问题查不到插入的数据 */
-//    @DSTransactional
+    @DSTransactional
     public String allot(CreateExperimentRequest createExperiment, String accountId) {
         // 获取参与教师
         List<AccountInstanceResponse> teachers = createExperiment.getTeachers();
@@ -221,8 +222,7 @@ public class ExperimentManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    /* runsix:临时移除，因为多数据源问题查不到插入的数据 */
-//    @DSTransactional
+    @DSTransactional
     public Boolean grouping(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
 
         Long delay = experimentGroupSettingRequest.getStartTime().getTime() - System.currentTimeMillis();
@@ -500,6 +500,11 @@ public class ExperimentManageBiz {
                 .in(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceIds)
                 //.eq(ExperimentInstanceEntity::getExperimentInstanceId, pageExperimentRequest.getExperimentInstanceId())
                 .set(ExperimentInstanceEntity::getDeleted, Boolean.TRUE)
+                .update();
+        //删除任务中的实验
+        experimentTaskScheduleService.lambdaUpdate()
+                .in(ExperimentTaskScheduleEntity::getExperimentInstanceId,experimentInstanceIds)
+                .set(ExperimentTaskScheduleEntity::getDeleted, Boolean.TRUE)
                 .update();
         return update;
     }

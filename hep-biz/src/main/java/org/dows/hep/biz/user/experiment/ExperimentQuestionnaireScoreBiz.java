@@ -248,7 +248,9 @@ public class ExperimentQuestionnaireScoreBiz {
 
             // check
             List<String> commonElements = findCommonElements(rightIdList, resultIdList);
-            if (commonElements.size() == rightIdList.size()) {
+            if (resultIdList.size() > rightIdList.size()) {
+                scoreGrade = SCORE_GRADE_ALL_ERROR;
+            } else if (commonElements.size() == rightIdList.size()) {
                 scoreGrade = SCORE_GRADE_ALL_RIGHT;
             } else if (commonElements.size() > 0) {
                 scoreGrade = SCORE_GRADE_HALF_RIGHT;

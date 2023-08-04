@@ -55,7 +55,7 @@ public class ExperimentIntervalHandler extends AbstractEventHandler implements E
         // 落库： 所有计算出得分落在 experiment_scoring 表中
         try {
             /* runsix:期数翻转，指标相关计算 */
-            rsExperimentCalculateBiz.experimentReCalculatePeriods(RsCalculatePeriodsRequest
+            rsExperimentCalculateBiz.cfExperimentReCalculatePeriods(RsCalculatePeriodsRequest
                 .builder()
                 .appId(appId)
                 .experimentId(experimentInstanceId)

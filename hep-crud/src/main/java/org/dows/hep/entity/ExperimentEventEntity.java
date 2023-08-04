@@ -84,6 +84,12 @@ public class ExperimentEventEntity implements CrudEntity {
     @Schema(title = "触发时间")
     private Date triggerTime;
 
+    @Schema(title = "触发中时间")
+    private Date triggeringTime;
+
+    @Schema(title = "触发中游戏内天数")
+    private Integer triggeringGameDay;
+
     @Schema(title = "触发期数")
     private Integer triggeredPeriod;
 
