@@ -282,18 +282,20 @@ public class ExperimentIndicatorInstanceRsBiz {
         int experimentPersonCount = healthPointExperimentIndicatorInstanceIdSet.size();
         String averageHealthPoint = total.divide(BigDecimal.valueOf(experimentPersonCount), 2, RoundingMode.DOWN).toString();
 
-        int rank = 1;
+        int rank = 0;
         AtomicInteger curRank = new AtomicInteger(1);
         Map<String, Integer> kExperimentGroupIdVRankMap = new HashMap<>();
         experimentScoringService.lambdaQuery()
             .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
-            .eq(ExperimentScoringEntity::getPeriods, periods)
+            .eq(ExperimentScoringEntity::getPeriods, periods-1)
             .orderByDesc(ExperimentScoringEntity::getTotalScore)
             .list()
             .forEach(experimentScoringEntity -> {
                 kExperimentGroupIdVRankMap.put(experimentScoringEntity.getExperimentGroupId(), curRank.getAndIncrement());
             });
-        rank = kExperimentGroupIdVRankMap.get(experimentGroupId);
+        if (Objects.nonNull(kExperimentGroupIdVRankMap.get(experimentGroupId))) {
+            rank = kExperimentGroupIdVRankMap.get(experimentGroupId);
+        }
         return GroupAverageHealthPointResponse
             .builder()
             .experimentPersonCount(experimentPersonCount)
