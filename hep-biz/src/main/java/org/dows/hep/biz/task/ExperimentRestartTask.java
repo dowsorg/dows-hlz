@@ -89,26 +89,39 @@ public class ExperimentRestartTask implements Runnable {
 //        scheduleEntityList = scheduleEntityList.stream().filter(schedule -> experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()) != null &&
 //                experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()).size() > 0)
 //                .collect(Collectors.toList());
+
         List<String> exptInstanceIds = scheduleEntityList.stream()
                 .map(ExperimentTaskScheduleEntity::getExperimentInstanceId)
                 .toList();
         Map<String, ExptSettingModeEnum> exptIdMapSettingMode = experimentSettingBiz.listExptSettingMode(exptInstanceIds);
-        List<ExperimentTaskScheduleEntity> scheduleFilteredList = scheduleEntityList.stream()
+
+        // 只有沙盘模式进行过滤
+        scheduleEntityList.stream()
                 .filter(schedule -> {
-                    if (exptIdMapSettingMode.containsKey(ExptSettingModeEnum.SAND.name())) {
+                    ExptSettingModeEnum exptSettingModeEnum = exptIdMapSettingMode.get(schedule.getExperimentInstanceId());
+                    if (exptSettingModeEnum != null && ExptSettingModeEnum.SAND.name().equals(exptSettingModeEnum.name())) {
                         return CollUtil.isEmpty(experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()));
                     }
                     return false;
+                })
+                .forEach(schedule -> experimentTaskScheduleService.lambdaUpdate()
+                        .set(ExperimentTaskScheduleEntity::getDeleted, true)
+                        .eq(ExperimentTaskScheduleEntity::getId, schedule.getId())
+                        .update()
+                );
+
+        // 只有沙盘模式进行过滤
+        List<ExperimentTaskScheduleEntity> scheduleFilteredList = scheduleEntityList.stream()
+                .filter(schedule -> {
+                    ExptSettingModeEnum exptSettingModeEnum = exptIdMapSettingMode.get(schedule.getExperimentInstanceId());
+                    if (exptSettingModeEnum != null && ExptSettingModeEnum.SAND.name().equals(exptSettingModeEnum.name())) {
+                        return CollUtil.isNotEmpty(experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()));
+                    }
+                    return true;
                 }).toList();
         if (CollUtil.isEmpty(scheduleFilteredList)) {
             return;
         }
-        // todo 批量
-        scheduleFilteredList.forEach(schedule ->
-                experimentTaskScheduleService.lambdaUpdate()
-                        .set(ExperimentTaskScheduleEntity::getDeleted, true)
-                        .eq(ExperimentTaskScheduleEntity::getId, schedule.getId())
-                        .update());
 
         // 3、判断是在重启开始前应该执行的还是之后执行的任务，如果本来应该是重启之前执行的任务，重启的时候就执行，否则的话就拉起任务
         scheduleFilteredList.forEach(scheduleEntity -> {
