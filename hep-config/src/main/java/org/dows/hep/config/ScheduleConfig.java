@@ -45,7 +45,7 @@ public class ScheduleConfig implements SchedulingConfigurer {
         ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
         taskScheduler.setPoolSize(100);
         taskScheduler.setThreadNamePrefix("hep-taskScheduler-");
-        taskScheduler.setWaitForTasksToCompleteOnShutdown(true);
+        taskScheduler.setWaitForTasksToCompleteOnShutdown(false);
         return taskScheduler;
 
     }
