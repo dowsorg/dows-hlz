@@ -1,6 +1,7 @@
 package org.dows.hep.biz.event;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.enums.EnumWebSocketType;
 import org.dows.hep.api.event.EventName;
 import org.dows.hep.api.user.experiment.response.OrgNoticeResponse;
@@ -20,12 +21,14 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author : wuzl
  * @date : 2023/6/22 22:17
  */
 @Component
+@Slf4j
 public class ExperimentEventRules {
     private static volatile ExperimentEventRules s_instance;
     public static ExperimentEventRules Instance(){
@@ -77,14 +80,23 @@ public class ExperimentEventRules {
         boolean rst = experimentEventDao.tranSaveBatch(saveEvents, false, true, () -> saveTriggeredTimeEventX(rowsNotice, saveIndicators ? events : null));
         if (rst) {
             //发送webSocket
+            StringBuilder sb=new StringBuilder();
             final String experimentId = rowsNotice.get(0).getExperimentInstanceId();
+            sb.append(String.format("webSocket.eventTriggered.sending[%s] exptId:%s noticeIds:%s ",
+                    Thread.currentThread().getName(),
+                    experimentId,
+                    rowsNotice.stream().map(ExperimentOrgNoticeEntity::getExperimentOrgNoticeId).collect(Collectors.joining(","))));
+
             Map<String, List<OrgNoticeResponse>> mapNotice = experimentOrgNoticeBiz.getWebSocketNotice(experimentId, rowsNotice);
             if (ShareUtil.XObject.notEmpty(mapNotice)) {
                 for (Map.Entry<String, List<OrgNoticeResponse>> entry : mapNotice.entrySet()) {
+                    sb.append(String.format( " [loop clientId:%s noticeIds:%s] ",entry.getKey(),
+                            entry.getValue().stream().map(OrgNoticeResponse::getExperimentOrgNoticeId).collect(Collectors.joining(","))));
                     ShareBiz.publishWebSocketEvent(applicationEventPublisher, EventName.exptEventTriggeredHandler, EnumWebSocketType.EVENT_TRIGGERED, experimentId,
                             Set.of(entry.getKey()), entry.getValue());
                 }
             }
+            log.info(sb.toString());
         }
         return rst;
     }

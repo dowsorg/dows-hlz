@@ -65,7 +65,7 @@ public class EventScheduler implements ApplicationListener<ContextClosedEvent> {
     public ScheduledFuture<?> scheduleExclusive(String exclusiveKey, Runnable  cmd, LocalDateTime nextTime) {
         ScheduledFuture<?>[] buffer = futureCache.caffineCache().get(exclusiveKey, key -> new ScheduledFuture<?>[2]);
         ScheduledFuture<?> rst = null;
-        final long additiveSeconds = 5;
+        final long additiveSeconds = 10;
         synchronized (buffer) {
             clearExclusiveTaskBuffer(buffer);
             final long delaySeconds = Math.max(1, Duration.between(LocalDateTime.now(), nextTime).toSeconds());
