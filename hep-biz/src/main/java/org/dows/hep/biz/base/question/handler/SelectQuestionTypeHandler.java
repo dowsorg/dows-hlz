@@ -94,6 +94,8 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
         List<QuestionAnswersEntity> answersEntityList = new ArrayList<>();
         List<QuestionOptionsEntity> optionsEntityList = new ArrayList<>();
         optionWithAnswerList.forEach(item -> {
+            checkOptionsWhenSaveOrUpd(item);
+
             // answer
             QuestionAnswersEntity questionAnswersEntity = QuestionAnswersEntity.builder()
                     .questionInstanceId(questionInstance.getQuestionInstanceId())
@@ -159,6 +161,8 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
         List<QuestionScoreEntity> scoreEntityList = new ArrayList<>();
         List<QuestionOptionsEntity> optionsEntityList = new ArrayList<>();
         optionWithAnswerList.forEach(item -> {
+            checkOptionsWhenSaveOrUpd(item);
+
             // answer
             QuestionAnswersEntity questionAnswersEntity = QuestionAnswersEntity.builder()
                     .questionInstanceId(questionInstance.getQuestionInstanceId())
@@ -234,6 +238,18 @@ public class SelectQuestionTypeHandler implements QuestionTypeHandler {
         baseQuestionHandler.setDimensionId(result);
         baseQuestionHandler.setQuestionResult(result, questionResultRecordDTO);
         return result;
+    }
+
+    private void checkOptionsWhenSaveOrUpd(QuestionOptionWithAnswerRequest item) {
+        String optionTitle = item.getOptionTitle();
+        if (StrUtil.isBlank(optionTitle)) {
+            throw new BizException("新增或更新选择题时，问题选项标识符不能为空");
+        }
+
+        String optionValue = item.getOptionValue();
+        if (StrUtil.isBlank(optionValue)) {
+            throw new BizException("新增或更新选择题时，问题选项内容不能为空");
+        }
     }
 
     private QuestionInstanceEntity getById(String questionInstanceId) {
