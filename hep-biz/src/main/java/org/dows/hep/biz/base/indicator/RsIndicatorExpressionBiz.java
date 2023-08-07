@@ -13,6 +13,7 @@ import org.dows.hep.api.exception.IndicatorExpressionException;
 import org.dows.hep.api.exception.RsIndicatorExpressionBizException;
 import org.dows.hep.api.exception.RsIndicatorExpressionException;
 import org.dows.hep.biz.request.DatabaseCalIndicatorExpressionRequest;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -446,6 +447,7 @@ public class RsIndicatorExpressionBiz {
         || Objects.isNull(kIndicatorExpressionItemIdVIndicatorExpressionItemMap)
         || Objects.isNull(createOrUpdateIndicatorExpressionItemRequestRsList) || createOrUpdateIndicatorExpressionItemRequestRsList.isEmpty()
     ) {return;}
+    fixExpressionItems(createOrUpdateIndicatorExpressionItemRequestRsList);
     AtomicInteger seqAtomicInteger = new AtomicInteger(1);
     createOrUpdateIndicatorExpressionItemRequestRsList.forEach(createOrUpdateIndicatorExpressionItemRequestRs -> {
      /* String conditionRaw = createOrUpdateIndicatorExpressionItemRequestRs.getConditionRaw();
@@ -456,12 +458,6 @@ public class RsIndicatorExpressionBiz {
       resultExpression = rsUtilBiz.handleResultExpression(resultExpression);
       IndicatorExpressionItemEntity indicatorExpressionItemEntity = null;
       if (StringUtils.isBlank(indicatorExpressionItemId)) {
-        Integer seq = null;
-        if (StringUtils.isBlank(createOrUpdateIndicatorExpressionItemRequestRs.getConditionRaw())) {
-          seq = Integer.MAX_VALUE;
-        } else {
-          seq = seqAtomicInteger.getAndIncrement();
-        }
         indicatorExpressionItemEntity = IndicatorExpressionItemEntity
           .builder()
           .indicatorExpressionItemId(idGenerator.nextIdStr())
@@ -475,7 +471,7 @@ public class RsIndicatorExpressionBiz {
           .resultExpression(resultExpression)
           .resultNameList(createOrUpdateIndicatorExpressionItemRequestRs.getResultNameList())
           .resultValList(createOrUpdateIndicatorExpressionItemRequestRs.getResultValList())
-          .seq(seq)
+          .seq(seqAtomicInteger.getAndIncrement())
           .build();
       } else {
         indicatorExpressionItemEntity = kIndicatorExpressionItemIdVIndicatorExpressionItemMap.get(indicatorExpressionItemId);
@@ -493,7 +489,28 @@ public class RsIndicatorExpressionBiz {
         indicatorExpressionItemEntity.setResultValList(createOrUpdateIndicatorExpressionItemRequestRs.getResultValList());
         indicatorExpressionItemEntity.setSeq(seqAtomicInteger.getAndIncrement());
       }
+      if(indicatorExpressionItemEntity.getSeq()>=createOrUpdateIndicatorExpressionItemRequestRsList.size()){
+        indicatorExpressionItemEntity.setSeq(Integer.MAX_VALUE);
+      }
       indicatorExpressionItemEntityList.add(indicatorExpressionItemEntity);
+    });
+  }
+  void fixExpressionItems(List<CreateOrUpdateIndicatorExpressionItemRequestRs> items){
+    if(ShareUtil.XObject.isEmpty(items)){
+      return;
+    }
+    final String EMPTY="";
+    items.forEach(i->{
+      if(ShareUtil.XObject.isEmpty(i.getConditionRaw())){
+        i.setConditionExpression(EMPTY);
+        i.setConditionNameList(EMPTY);
+        i.setConditionValList(EMPTY);
+      }
+      if(ShareUtil.XObject.isEmpty(i.getResultRaw())){
+        i.setResultExpression(EMPTY);
+        i.setResultNameList(EMPTY);
+        i.setResultValList(EMPTY);
+      }
     });
   }
 

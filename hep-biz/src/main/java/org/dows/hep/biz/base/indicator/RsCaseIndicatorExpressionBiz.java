@@ -9,11 +9,11 @@ import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.enums.EnumIndicatorExpressionScene;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.enums.EnumString;
-import org.dows.hep.api.exception.CaseIndicatorExpressionException;
 import org.dows.hep.api.exception.RsCaseIndicatorExpressionBizException;
 import org.dows.hep.api.exception.RsIndicatorExpressionException;
 import org.dows.hep.biz.request.CaseCalIndicatorExpressionRequest;
 import org.dows.hep.biz.request.DatabaseCalIndicatorExpressionRequest;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -142,6 +142,7 @@ public class RsCaseIndicatorExpressionBiz {
         || Objects.isNull(kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap)
         || Objects.isNull(caseCreateOrUpdateIndicatorExpressionItemRequestRsList) || caseCreateOrUpdateIndicatorExpressionItemRequestRsList.isEmpty()
     ) {return;}
+    fixExpressionItems(caseCreateOrUpdateIndicatorExpressionItemRequestRsList);
     AtomicInteger seqAtomicInteger = new AtomicInteger(1);
     caseCreateOrUpdateIndicatorExpressionItemRequestRsList.forEach(caseCreateOrUpdateIndicatorExpressionItemRequestRs -> {
      /* String conditionRaw = caseCreateOrUpdateIndicatorExpressionItemRequestRs.getConditionRaw();
@@ -153,12 +154,6 @@ public class RsCaseIndicatorExpressionBiz {
       resultExpression = rsUtilBiz.handleResultExpression(resultExpression);
       CaseIndicatorExpressionItemEntity caseIndicatorExpressionItemEntity = null;
       if (StringUtils.isBlank(caseIndicatorExpressionItemId)) {
-        Integer seq = null;
-        if (StringUtils.isBlank(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getConditionRaw())) {
-          seq = Integer.MAX_VALUE;
-        } else {
-          seq = seqAtomicInteger.getAndIncrement();
-        }
         caseIndicatorExpressionItemEntity = CaseIndicatorExpressionItemEntity
             .builder()
             .caseIndicatorExpressionItemId(idGenerator.nextIdStr())
@@ -172,7 +167,7 @@ public class RsCaseIndicatorExpressionBiz {
             .resultExpression(resultExpression)
             .resultNameList(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultNameList())
             .resultValList(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultValList())
-            .seq(seq)
+            .seq(seqAtomicInteger.getAndIncrement())
             .build();
       } else {
         caseIndicatorExpressionItemEntity = kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.get(caseIndicatorExpressionItemId);
@@ -190,7 +185,29 @@ public class RsCaseIndicatorExpressionBiz {
         caseIndicatorExpressionItemEntity.setResultValList(caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultValList());
         caseIndicatorExpressionItemEntity.setSeq(seqAtomicInteger.getAndIncrement());
       }
+      if(caseIndicatorExpressionItemEntity.getSeq()>=caseCreateOrUpdateIndicatorExpressionItemRequestRsList.size()){
+        caseIndicatorExpressionItemEntity.setSeq(Integer.MAX_VALUE);
+      }
       caseIndicatorExpressionItemEntityList.add(caseIndicatorExpressionItemEntity);
+    });
+  }
+
+  void fixExpressionItems(List<CaseCreateOrUpdateIndicatorExpressionItemRequestRs> items){
+    if(ShareUtil.XObject.isEmpty(items)){
+      return;
+    }
+    final String EMPTY="";
+    items.forEach(i->{
+      if(ShareUtil.XObject.isEmpty(i.getConditionRaw())){
+        i.setConditionExpression(EMPTY);
+        i.setConditionNameList(EMPTY);
+        i.setConditionValList(EMPTY);
+      }
+      if(ShareUtil.XObject.isEmpty(i.getResultRaw())){
+        i.setResultExpression(EMPTY);
+        i.setResultNameList(EMPTY);
+        i.setResultValList(EMPTY);
+      }
     });
   }
 
