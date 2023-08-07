@@ -52,6 +52,8 @@ public class ExperimentEventRules {
                         .id(i.getId())
                         .experimentEventId(i.getExperimentEventId())
                         .periods(i.getPeriods())
+                        .triggeringTime(i.getTriggeringTime())
+                        .triggeringGameDay(i.getTriggeringGameDay())
                         .triggeredPeriod(i.getTriggeredPeriod())
                         .triggerTime(i.getTriggerTime())
                         .triggerGameDay(i.getTriggerGameDay())

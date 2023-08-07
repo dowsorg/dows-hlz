@@ -439,7 +439,9 @@ public class ExperimentSchemeScoreBiz {
         Date scoreEndTime = schemeSetting.getScoreEndTime();
         Assert.notNull(scoreEndTime, "提交方案设计评分表时：获取方案设计评分截止时间信息异常");
         Date auditEndTime = schemeSetting.getAuditEndTime();
-        Assert.notNull(scoreEndTime, "提交方案设计评分表时：获取方案设计审核截止时间信息异常");
+        if (auditEndTime == null) {
+            auditEndTime = scoreEndTime;
+        }
 
         // check
         Date currentDate = new Date();

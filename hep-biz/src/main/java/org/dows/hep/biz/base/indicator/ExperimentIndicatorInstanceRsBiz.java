@@ -15,20 +15,15 @@ import org.dows.hep.api.user.experiment.response.EchartsDataResonse;
 import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import org.dows.hep.biz.util.EchartsUtils;
-import org.dows.hep.entity.ExperimentGroupEntity;
-import org.dows.hep.entity.ExperimentIndicatorInstanceRsEntity;
-import org.dows.hep.entity.ExperimentIndicatorValRsEntity;
-import org.dows.hep.entity.ExperimentPersonEntity;
-import org.dows.hep.service.ExperimentGroupService;
-import org.dows.hep.service.ExperimentIndicatorInstanceRsService;
-import org.dows.hep.service.ExperimentIndicatorValRsService;
-import org.dows.hep.service.ExperimentPersonService;
+import org.dows.hep.entity.*;
+import org.dows.hep.service.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -43,6 +38,7 @@ public class ExperimentIndicatorInstanceRsBiz {
     private final ExperimentIndicatorInstanceRsService experimentIndicatorInstanceRsService;
     private final ExperimentPersonService experimentPersonService;
     private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
+    private final ExperimentScoringService experimentScoringService;
     private final ExperimentTimerBiz experimentTimerBiz;
     private final ExperimentGroupService experimentGroupService;
 
@@ -245,7 +241,7 @@ public class ExperimentIndicatorInstanceRsBiz {
         }
     }
 
-    public GroupAverageHealthPointResponse groupAverageHealth(String experimentGroupId, Integer periods) {
+    public GroupAverageHealthPointResponse groupAverageHealth(String experimentId, String experimentGroupId, Integer periods) {
         Set<String> experimentPersonIdSet = experimentPersonService.lambdaQuery()
             .eq(ExperimentPersonEntity::getExperimentGroupId, experimentGroupId)
             .list()
@@ -285,10 +281,26 @@ public class ExperimentIndicatorInstanceRsBiz {
             .reduce(BigDecimal.ZERO, BigDecimal::add);
         int experimentPersonCount = healthPointExperimentIndicatorInstanceIdSet.size();
         String averageHealthPoint = total.divide(BigDecimal.valueOf(experimentPersonCount), 2, RoundingMode.DOWN).toString();
+
+        int rank = 0;
+        AtomicInteger curRank = new AtomicInteger(1);
+        Map<String, Integer> kExperimentGroupIdVRankMap = new HashMap<>();
+        experimentScoringService.lambdaQuery()
+            .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
+            .eq(ExperimentScoringEntity::getPeriods, periods-1)
+            .orderByDesc(ExperimentScoringEntity::getTotalScore)
+            .list()
+            .forEach(experimentScoringEntity -> {
+                kExperimentGroupIdVRankMap.put(experimentScoringEntity.getExperimentGroupId(), curRank.getAndIncrement());
+            });
+        if (Objects.nonNull(kExperimentGroupIdVRankMap.get(experimentGroupId))) {
+            rank = kExperimentGroupIdVRankMap.get(experimentGroupId);
+        }
         return GroupAverageHealthPointResponse
             .builder()
             .experimentPersonCount(experimentPersonCount)
             .averageHealthPoint(averageHealthPoint)
+            .rank(rank)
             .build();
     }
 
