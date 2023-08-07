@@ -67,13 +67,14 @@ public class ExperimentIndicatorInstanceRsRest {
     return experimentIndicatorInstanceRsBiz.statGenderRate(experimentIndicatorInstanceRequest);
   }
 
-  @Operation(summary = "实验某个小组的平均健康指数")
+  @Operation(summary = "实验某个小组的平均健康指数，会把上一期排名给它")
   @GetMapping("v1/experimentIndicator/healthPoint/average")
   public GroupAverageHealthPointResponse groupAverageHealth(
+      @RequestParam String experimentId,
       @RequestParam String experimentGroupId,
       @RequestParam Integer periods
       ) {
-    return experimentIndicatorInstanceRsBiz.groupAverageHealth(experimentGroupId, periods);
+    return experimentIndicatorInstanceRsBiz.groupAverageHealth(experimentId, experimentGroupId, periods);
   }
 
   @Operation(summary = "实验人的性别")
