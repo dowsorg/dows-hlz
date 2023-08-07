@@ -448,9 +448,9 @@ public class RsIndicatorExpressionBiz {
     ) {return;}
     AtomicInteger seqAtomicInteger = new AtomicInteger(1);
     createOrUpdateIndicatorExpressionItemRequestRsList.forEach(createOrUpdateIndicatorExpressionItemRequestRs -> {
-      String conditionRaw = createOrUpdateIndicatorExpressionItemRequestRs.getConditionRaw();
+     /* String conditionRaw = createOrUpdateIndicatorExpressionItemRequestRs.getConditionRaw();
       String resultRaw = createOrUpdateIndicatorExpressionItemRequestRs.getResultRaw();
-      if (StringUtils.isAllBlank(conditionRaw, resultRaw)) {return;}
+      if (StringUtils.isAllBlank(conditionRaw, resultRaw)) {return;}*/
       String indicatorExpressionItemId = createOrUpdateIndicatorExpressionItemRequestRs.getIndicatorExpressionItemId();
       String resultExpression = createOrUpdateIndicatorExpressionItemRequestRs.getResultExpression();
       resultExpression = rsUtilBiz.handleResultExpression(resultExpression);

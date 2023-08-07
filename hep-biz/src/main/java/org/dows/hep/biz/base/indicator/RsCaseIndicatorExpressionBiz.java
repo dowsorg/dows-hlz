@@ -144,9 +144,9 @@ public class RsCaseIndicatorExpressionBiz {
     ) {return;}
     AtomicInteger seqAtomicInteger = new AtomicInteger(1);
     caseCreateOrUpdateIndicatorExpressionItemRequestRsList.forEach(caseCreateOrUpdateIndicatorExpressionItemRequestRs -> {
-      String conditionRaw = caseCreateOrUpdateIndicatorExpressionItemRequestRs.getConditionRaw();
+     /* String conditionRaw = caseCreateOrUpdateIndicatorExpressionItemRequestRs.getConditionRaw();
       String resultRaw = caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultRaw();
-      if (StringUtils.isAllBlank(conditionRaw, resultRaw)) {return;}
+      if (StringUtils.isAllBlank(conditionRaw, resultRaw)) {return;}*/
 
       String caseIndicatorExpressionItemId = caseCreateOrUpdateIndicatorExpressionItemRequestRs.getIndicatorExpressionItemId();
       String resultExpression = caseCreateOrUpdateIndicatorExpressionItemRequestRs.getResultExpression();
