@@ -28,9 +28,9 @@ public class OSSRest {
         if (Objects.isNull(file) || file.isEmpty()) {
             throw new IOException("文件不能为空");
         }
-        if (file.getSize() > 629145600L) {
-            throw new IOException("文件超过最大限制6M");
-        }
+//        if (file.getSize() > 629145600L) {
+//            throw new IOException("文件超过最大限制6M");
+//        }
 
         // 文件名后缀
         String suffix = null;
