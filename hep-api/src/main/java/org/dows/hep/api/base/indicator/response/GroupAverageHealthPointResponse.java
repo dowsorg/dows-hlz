@@ -22,4 +22,6 @@ public class GroupAverageHealthPointResponse implements Serializable {
   @Schema(title = "平均健康指数")
   private String averageHealthPoint;
 
+  @Schema(title = "上一期排名")
+  private Integer rank;
 }

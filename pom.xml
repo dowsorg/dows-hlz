@@ -27,6 +27,8 @@
         <module>hep-snapshot</module>
         <module>hep-websocket</module>
         <module>hep-job</module>
+        <module>hep-task</module>
+        <module>hep-calc</module>
     </modules>
 
     <properties>

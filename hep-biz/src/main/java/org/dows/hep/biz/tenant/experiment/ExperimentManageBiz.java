@@ -768,12 +768,14 @@ public class ExperimentManageBiz {
                         .or().like("case_name", pageExperimentRequest.getKeyword())
                         .or().like("appointor_name", pageExperimentRequest.getKeyword());
             }
+            queryWrapper.eq("app_Id","3");
             queryWrapper.orderByDesc("start_time");
             page = experimentInstanceService.page(page, queryWrapper);
         } else {
             if (roleCode.equals("TEACHER")) {
                 page = experimentInstanceService.page(page, experimentInstanceService.lambdaQuery()
                         .like(ExperimentInstanceEntity::getExperimentParticipatorIds, accountRoleByPrincipalId.getPrincipalId())
+                        .eq(ExperimentInstanceEntity::getAppId,"3")
                         .orderByDesc(ExperimentInstanceEntity::getStartTime)
                         .getWrapper());
             } else {
