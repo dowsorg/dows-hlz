@@ -120,7 +120,7 @@ public class HepClientManager {
             AccountInfo userInfo = ONLINE_ACCOUNT.get(room).get(channel);
             if (userInfo != null) {
                 AccountInfo tmp = ONLINE_ACCOUNT.get(room).remove(channel);
-                if (tmp != null && tmp.getAuth()) {
+                if (tmp != null) {
                     // 减去一个认证用户
                     accountCount.decrementAndGet();
                 }
@@ -143,7 +143,7 @@ public class HepClientManager {
                 Set<Channel> keySet = ONLINE_ACCOUNT.get(room).keySet();
                 for (Channel ch : keySet) {
                     AccountInfo accountInfo = ONLINE_ACCOUNT.get(room).get(ch);
-                    if (accountInfo == null || !accountInfo.getAuth()) {
+                    if (accountInfo == null) {
                         continue;
                     }
                     ch.writeAndFlush(new TextWebSocketFrame(MessageProto.buildMessProto(uid, nick, message)));
@@ -169,7 +169,7 @@ public class HepClientManager {
                 Set<Channel> keySet = ONLINE_ACCOUNT.get(room).keySet();
                 for (Channel ch : keySet) {
                     AccountInfo accountInfo = ONLINE_ACCOUNT.get(room).get(ch);
-                    if (accountInfo == null || !accountInfo.getAuth()) {
+                    if (accountInfo == null ) {
                         continue;
                     }
                     ch.writeAndFlush(new TextWebSocketFrame(MessageProto.buildMessProto(uid, nick, message)));
@@ -192,7 +192,7 @@ public class HepClientManager {
                 Set<Channel> keySet = userInfos.keySet();
                 for (Channel ch : keySet) {
                     AccountInfo accountInfo = userInfos.get(ch);
-                    if (accountInfo == null || !accountInfo.getAuth()) {
+                    if (accountInfo == null ) {
                         continue;
                     }
 
@@ -215,7 +215,7 @@ public class HepClientManager {
             Set<Channel> keySet = ONLINE_ACCOUNT.get(room).keySet();
             for (Channel ch : keySet) {
                 AccountInfo accountInfo = ONLINE_ACCOUNT.get(room).get(ch);
-                if (accountInfo == null || !accountInfo.getAuth()) {
+                if (accountInfo == null ) {
                     continue;
                 }
                 ch.writeAndFlush(new TextWebSocketFrame(MessageProto.buildSystProto(idGenerator.nextIdStr(), code, mess)));
@@ -238,7 +238,7 @@ public class HepClientManager {
                 Set<Channel> keySet = accountInfos.keySet();
                 for (Channel ch : keySet) {
                     AccountInfo accountInfo = accountInfos.get(ch);
-                    if (accountInfo == null || !accountInfo.getAuth()) {
+                    if (accountInfo == null) {
                         continue;
                     }
                     ch.writeAndFlush(new TextWebSocketFrame(MessageProto.buildPingProto()));
@@ -321,10 +321,8 @@ public class HepClientManager {
                 if (accountInfo == null) {
                     continue;
                 }
-                // 判断通道状态
-                if (!ch.isOpen() || !ch.isActive() || (!accountInfo.getAuth() &&
-                        // 过期时间（10秒）
-                        (System.currentTimeMillis() - accountInfo.getTime()) > 10000)) {
+                // 判断通道状态,// 过期时间（10秒）
+                if (!ch.isOpen() || !ch.isActive() || (System.currentTimeMillis() - accountInfo.getTime()) > 10000) {
                     // 移除通道
                     removeChannel(ch);
                 }
