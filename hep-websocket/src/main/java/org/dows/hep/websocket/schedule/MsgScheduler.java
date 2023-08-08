@@ -11,6 +11,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 
@@ -42,11 +44,16 @@ public class MsgScheduler implements ApplicationContextAware {
      * <li>"0 0 9-17 * * MON-FRI" = on the hour nine-to-five weekdays</li>
      * <li>"0 0 0 25 12 ?" = every Christmas Day at midnight</li>
      */
-    public static void schedule(Runnable task, String cron, String msgId) {
+    public static void schedule(Runnable task, String cron, String msgId, Long duration) {
         if (cron == null || "".equals(cron)) {
             cron = "0 * * * * *";
         }
-        ScheduledFuture future = taskScheduler.schedule(task, new CronTrigger(cron));
+        ScheduledFuture future = null;
+        if (duration != null && duration != 0L) {
+            future = taskScheduler.scheduleWithFixedDelay(task, Instant.now(), Duration.ofMillis(duration));
+        } else {
+            future = taskScheduler.schedule(task, new CronTrigger(cron));
+        }
         // 加入到队列中
         futureMap.put(msgId, future);
     }

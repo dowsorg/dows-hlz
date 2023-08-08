@@ -164,6 +164,7 @@ public class ExperimentTimerBiz {
                 intervalResponse.setAppId(et.getAppId());
                 // 间隔期|倒计时
                 if (sct >= et.getStartTime().getTime() - et.getPeriodInterval() && sct < et.getStartTime().getTime()) { // 一期开始倒计时
+                    intervalResponse.setCountdownType(0);
                     intervalResponse.setCountdown(et.getStartTime().getTime() - sct);
                     break;
                 } else if (sct >= et.getStartTime().getTime() && sct <= et.getEndTime().getTime()) {// 期数中
@@ -173,8 +174,9 @@ public class ExperimentTimerBiz {
                     intervalResponse.setSandRemnantSecond(rs / 1000);
                     intervalResponse.setSandDurationSecond(ds / 1000);
                     break;
-                } else if (sct >= et.getEndTime().getTime() && sct <= et.getEndTime().getTime() + et.getPeriodInterval()) {
+                } else if (sct >= et.getEndTime().getTime() && sct <= et.getEndTime().getTime() + et.getPeriodInterval()) {// // 一期结束倒计时
                     intervalResponse.setCountdown(et.getEndTime().getTime() + et.getPeriodInterval() - sct);
+                    intervalResponse.setCountdownType(1);
                     // 发布保险报销事件
                     applicationEventPublisher.publishEvent(new IntervalEvent(intervalResponse));
                     break;

@@ -151,7 +151,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                 ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfos();
                 Set<Channel> channels = userInfos.keySet();
                 for (Channel channel : channels) {
-                    HepClientManager.sendInfoRetry(channel, MessageCode.MESS_CODE, Response.ok(wsMessageResponse),null);
+                    HepClientManager.sendInfoRetry(channel, MessageCode.MESS_CODE, Response.ok(wsMessageResponse), null);
                 }
             }
 
@@ -212,8 +212,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                     .build()));
             finishEntity.setExecuted(false);
         } else {
-            finishEntity = new ExperimentTaskScheduleEntity()
-                    .builder()
+            finishEntity = ExperimentTaskScheduleEntity.builder()
                     .experimentTaskTimerId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentRestartRequest.getExperimentInstanceId())
                     .taskBeanCode(EnumExperimentTask.experimentFinishTask.getDesc())
@@ -270,7 +269,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                             .appId("3")
                             .executeTime(DateUtil.date(entityList.get(entityList.size() - 1).getEndTime()))
                             .executed(false)
-                            .build() ;
+                            .build();
                 }
                 experimentTaskScheduleService.saveOrUpdate(calcEntity);
 
