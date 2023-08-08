@@ -16,6 +16,7 @@ import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.hep.service.ExperimentTaskScheduleService;
 import org.dows.hep.service.ExperimentTimerService;
+import org.dows.hep.websocket.HepClientMonitor;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
@@ -54,10 +55,14 @@ public class ApplicationRestartedListener implements ApplicationListener<Applica
 
     private final ExperimentSchemeBiz experimentSchemeBiz;
 
+    // 启动监听
+    private final HepClientMonitor hepClientMonitor;
+
     @Override
     public void onApplicationEvent(ApplicationStartedEvent event) {
         log.info("执行任务重启......");
         try {
+            hepClientMonitor.start();
             String appId = "3";
             Date now = DateUtil.date();
             // 更新重启时间(当前应用下大于当前时间且未执行的任务)

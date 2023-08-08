@@ -129,7 +129,7 @@ public class ExperimentSuspendHandler extends AbstractEventHandler implements Ev
                 ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfos();
                 Set<Channel> channels = userInfos.keySet();
                 for (Channel channel : channels) {
-                    HepClientManager.sendInfoRetry(channel, MessageCode.MESS_CODE, Response.ok(wsMessageResponse),null);
+                    HepClientManager.sendInfoRetry(channel, MessageCode.MESS_CODE, Response.ok(wsMessageResponse),idGenerator.nextIdStr(),null);
                 }
                 log.info("暂停实验:{}", JSONUtil.toJsonStr(wsMessageResponse));
             }

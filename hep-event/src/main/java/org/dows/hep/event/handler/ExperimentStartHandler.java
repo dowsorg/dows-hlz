@@ -151,7 +151,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                 ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfos();
                 Set<Channel> channels = userInfos.keySet();
                 for (Channel channel : channels) {
-                    HepClientManager.sendInfoRetry(channel, MessageCode.MESS_CODE, Response.ok(wsMessageResponse), null);
+                    HepClientManager.sendInfoRetry(channel, MessageCode.MESS_CODE, Response.ok(wsMessageResponse), idGenerator.nextIdStr(), null);
                 }
             }
 

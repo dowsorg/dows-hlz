@@ -20,7 +20,7 @@ public class MsgController {
         ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfos();
         Set<Channel> channels = userInfos.keySet();
         for (Channel channel : channels) {
-            HepClientManager.sendInfoRetry(channel, MessageCode.MESS_CODE, Response.ok("ok"),null);
+            HepClientManager.sendInfoRetry(channel, MessageCode.MESS_CODE, Response.ok("ok"),"2222",null);
         }
 
     }

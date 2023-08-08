@@ -15,19 +15,13 @@ public class HepClientMonitor {
 
     public void start() {
         // 定时扫描所有的Channel，关闭失效的Channel
-        executorService.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                HepClientManager.scanNotActiveChannel();
-            }
+        executorService.scheduleAtFixedRate(() -> {
+            HepClientManager.scanNotActiveChannel();
         }, 3, 60, TimeUnit.SECONDS);
 
         // 定时向所有客户端发送Ping消息
-        executorService.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                HepClientManager.broadCastPing();
-            }
+        executorService.scheduleAtFixedRate(() -> {
+            HepClientManager.broadCastPing();
         }, 3, 50, TimeUnit.SECONDS);
     }
 

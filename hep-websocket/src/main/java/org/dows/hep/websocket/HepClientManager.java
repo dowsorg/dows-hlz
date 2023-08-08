@@ -269,7 +269,7 @@ public class HepClientManager {
      * @param code
      * @param mess
      */
-    public static String sendInfoRetry(Channel channel, int code, Object mess, String cron) {
+    public static String sendInfoRetry(Channel channel, int code, Object mess, String msgId,String cron) {
         if (StrUtil.isBlank(cron)) {
             WsProperties bean = MsgScheduler.getApplicationContext().getBean(WsProperties.class);
             if (null != bean) {
@@ -278,20 +278,19 @@ public class HepClientManager {
                 cron = "0/3 * * * * ?";
             }
         }
-        String msgid = idGenerator.nextIdStr();
+        //String msgid = idGenerator.nextIdStr();
         MsgScheduler.schedule(() -> {
             if(Thread.currentThread().isInterrupted()) {
                 return;
             }
-
-            String sc = MSGIDS.get(msgid);
+            String sc = MSGIDS.get(msgId);
             if (null == sc) {
-                sc = MessageProto.buildSystProto(msgid, code, mess);
-                MSGIDS.put(msgid, sc);
+                sc = MessageProto.buildSystProto(msgId, code, mess);
+                MSGIDS.put(msgId, sc);
             }
             channel.writeAndFlush(new TextWebSocketFrame(sc));
-        }, cron, msgid,0L);
-        return msgid;
+        }, cron, msgId,0L);
+        return msgId;
     }
 
     public static void removeMsgById(String msgId) {
