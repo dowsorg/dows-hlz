@@ -1,6 +1,7 @@
 package org.dows.hep.event.handler;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.json.JSONUtil;
 import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -130,6 +131,7 @@ public class ExperimentSuspendHandler extends AbstractEventHandler implements Ev
                 for (Channel channel : channels) {
                     HepClientManager.sendInfoRetry(channel, MessageCode.MESS_CODE, Response.ok(wsMessageResponse),null);
                 }
+                log.info("暂停实验:{}", JSONUtil.toJsonStr(wsMessageResponse));
             }
         }
         // 重置定时任务
