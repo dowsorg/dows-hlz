@@ -4,9 +4,11 @@ import io.netty.channel.Channel;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.websocket.HepClientManager;
 import org.dows.hep.websocket.proto.MessageProto;
 
+@Slf4j
 @Data
 @RequiredArgsConstructor
 public class Sender implements Runnable {
