@@ -355,6 +355,8 @@ public class HepClientManager {
             userInfos.putAll(userInfoConcurrentMap);
         }
         return userInfos;
+
+
     }
 
     /**

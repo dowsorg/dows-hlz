@@ -135,7 +135,7 @@ public class ExperimentSuspendHandler extends AbstractEventHandler implements Ev
                  */
                 WsMessageResponse wsMessageResponse = new WsMessageResponse(EnumWebSocketType.EXPT_SUSPEND, experimentRestartRequest);
                 // 通知客户端
-                ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfos();
+                ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfosByExperimentId(experimentRestartRequest.getExperimentInstanceId());
                 Set<Channel> channels = userInfos.keySet();
                 for (Channel channel : channels) {
                     HepClientManager.sendInfoRetry(channel, MessageCode.MESS_CODE, Response.ok(wsMessageResponse),idGenerator.nextIdStr(),null);

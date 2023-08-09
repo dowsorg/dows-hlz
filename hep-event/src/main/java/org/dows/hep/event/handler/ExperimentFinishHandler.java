@@ -26,14 +26,14 @@ public class ExperimentFinishHandler extends AbstractEventHandler implements Eve
     public void exec(Object obj) {
 
         //todo 定时器
-        log.info("开启调度....");
-        ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfos();
-
-        Set<Channel> channels = userInfos.keySet();
-
-        for (Channel channel : channels) {
-            HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, obj);
-        }
+        log.info("ExperimentFinishHandler....");
+//        ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfos();
+//
+//        Set<Channel> channels = userInfos.keySet();
+//
+//        for (Channel channel : channels) {
+//            HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, obj);
+//        }
 
 
     }
