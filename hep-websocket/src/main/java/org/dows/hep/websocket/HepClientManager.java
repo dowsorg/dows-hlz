@@ -39,6 +39,7 @@ public class HepClientManager {
     private static ConcurrentMap<String, String> MSGIDS = new ConcurrentHashMap<>();
 
     public static final AttributeKey<String> EXPERIMENT_IN_SESSION_ATTRIBUTE = AttributeKey.newInstance("experimentId");
+    public static final AttributeKey<String> ACCOUNT_IN_SESSION_ATTRIBUTE = AttributeKey.newInstance("accountId");
 
     /**
      * 保存用户身份信息
@@ -56,7 +57,7 @@ public class HepClientManager {
         }
         // 添加当前用户身份信息到通道数据
         channel.attr(EXPERIMENT_IN_SESSION_ATTRIBUTE).set(onlineAccount.getExperimentId());
-        //channel.attr(USER_NAME_IN_SESSION_ATTRIBUTE_ATTR).set(nick);
+        channel.attr(ACCOUNT_IN_SESSION_ATTRIBUTE).set(onlineAccount.getAccountId());
         // 增加一个用户数
         accountCount.incrementAndGet();
         AccountInfo accountInfo = new AccountInfo();

@@ -41,8 +41,10 @@ public class HepSocketEndpoint {
 
     @OnClose
     public void onClose(NettySession nettySession) throws IOException {
+        Object attribute = nettySession.getAttribute(HepClientManager.ACCOUNT_IN_SESSION_ATTRIBUTE.name());
+        log.info("one connection closed:{}", attribute);
         HepClientManager.removeChannel(nettySession.channel());
-        log.info("one connection closed");
+
     }
 
     @OnError
@@ -61,7 +63,6 @@ public class HepSocketEndpoint {
             MessageBody messageBody = JSONUtil.toBean(message, MessageBody.class);
             // 确定收到具体用户的信息，处理业务逻辑
             //AccountInfo accountInfo = HepClientManager.getAccountInfo(nettySession.channel());
-            log.info("移除消息：{}", messageBody.getMsgId());
             MsgScheduler.remove(messageBody.getMsgId());
         } catch (Exception e) {
             log.error(e.getMessage());
