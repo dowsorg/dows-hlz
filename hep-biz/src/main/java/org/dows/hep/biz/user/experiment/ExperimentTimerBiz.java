@@ -153,7 +153,7 @@ public class ExperimentTimerBiz {
             }
 
             /**
-             * 进行中
+             * 进行中（已开始...)
              * 找出每期暂停次数最大的记录
              */
             for (int i = 0; i < experimentTimerEntities.size(); i++) {
@@ -163,7 +163,10 @@ public class ExperimentTimerBiz {
                 intervalResponse.setState(et.getState());
                 intervalResponse.setAppId(et.getAppId());
                 // 间隔期|倒计时
-                if (sct >= et.getStartTime().getTime() - et.getPeriodInterval() && sct < et.getStartTime().getTime()) { // 一期开始倒计时
+                if (sct < et.getStartTime().getTime() - et.getPeriodInterval()) {// 实验未开始
+                    intervalResponse.setPeriod(null);
+                    break;
+                } else if (sct >= et.getStartTime().getTime() - et.getPeriodInterval() && sct < et.getStartTime().getTime()) { // 一期开始倒计时
                     intervalResponse.setCountdownType(0);
                     intervalResponse.setCountdown(et.getStartTime().getTime() - sct);
                     break;
