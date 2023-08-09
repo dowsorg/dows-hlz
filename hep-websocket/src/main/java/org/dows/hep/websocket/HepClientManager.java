@@ -11,6 +11,7 @@ import org.dows.framework.websocket.util.NettyUtil;
 import org.dows.hep.websocket.config.WsProperties;
 import org.dows.hep.websocket.proto.MessageProto;
 import org.dows.hep.websocket.schedule.MsgScheduler;
+import org.dows.hep.websocket.schedule.Sender;
 import org.dows.sequence.api.IdGenerator;
 import org.dows.sequence.snowflake.SnowflakeIdGenerator;
 import org.dows.sequence.snowflake.config.SnowFlakeConfiguration;
@@ -169,7 +170,7 @@ public class HepClientManager {
                 Set<Channel> keySet = ONLINE_ACCOUNT.get(room).keySet();
                 for (Channel ch : keySet) {
                     AccountInfo accountInfo = ONLINE_ACCOUNT.get(room).get(ch);
-                    if (accountInfo == null ) {
+                    if (accountInfo == null) {
                         continue;
                     }
                     ch.writeAndFlush(new TextWebSocketFrame(MessageProto.buildMessProto(uid, nick, message)));
@@ -192,7 +193,7 @@ public class HepClientManager {
                 Set<Channel> keySet = userInfos.keySet();
                 for (Channel ch : keySet) {
                     AccountInfo accountInfo = userInfos.get(ch);
-                    if (accountInfo == null ) {
+                    if (accountInfo == null) {
                         continue;
                     }
 
@@ -215,7 +216,7 @@ public class HepClientManager {
             Set<Channel> keySet = ONLINE_ACCOUNT.get(room).keySet();
             for (Channel ch : keySet) {
                 AccountInfo accountInfo = ONLINE_ACCOUNT.get(room).get(ch);
-                if (accountInfo == null ) {
+                if (accountInfo == null) {
                     continue;
                 }
                 ch.writeAndFlush(new TextWebSocketFrame(MessageProto.buildSystProto(idGenerator.nextIdStr(), code, mess)));
@@ -269,7 +270,7 @@ public class HepClientManager {
      * @param code
      * @param mess
      */
-    public static String sendInfoRetry(Channel channel, int code, Object mess, String msgId,String cron) {
+    public static String sendInfoRetry(Channel channel, int code, Object mess, String msgId, String cron) {
         if (StrUtil.isBlank(cron)) {
             WsProperties bean = MsgScheduler.getApplicationContext().getBean(WsProperties.class);
             if (null != bean) {
@@ -278,20 +279,20 @@ public class HepClientManager {
                 cron = "0/3 * * * * ?";
             }
         }
-        //String msgid = idGenerator.nextIdStr();
-        MsgScheduler.schedule(() -> {
-            String sc = MSGIDS.get(msgId);
-            if (null == sc) {
-                sc = MessageProto.buildSystProto(msgId, code, mess);
-                MSGIDS.put(msgId, sc);
-            }
-            channel.writeAndFlush(new TextWebSocketFrame(sc));
-        }, cron, msgId,0L);
+        MsgScheduler.schedule(new Sender(msgId,code,mess,channel), cron, msgId, 0L);
         return msgId;
     }
 
     public static void removeMsgById(String msgId) {
         MSGIDS.remove(msgId);
+    }
+
+    public static String getMsgById(String msgId) {
+        return MSGIDS.get(msgId);
+    }
+
+    public static String putMsg(String msgId, String mess) {
+        return MSGIDS.put(msgId, mess);
     }
 
     /**
@@ -390,4 +391,6 @@ public class HepClientManager {
             //accountInfo.setTime(System.currentTimeMillis());
         }
     }
+
+
 }
