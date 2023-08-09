@@ -401,7 +401,8 @@ public class FoodCalcBiz {
         rst.add((CalcFoodStatVO)energyVo.setInstanceName(EnumFoodNutrient.ENERGY.getName())
                 .setUnit(EnumFoodNutrient.ENERGY.getUnit())
                 .setWeight(BigDecimalUtil.formatRoundDecimal(box.getValue(),NUMBERScale2,false,EMPTYValue))
-                .setEnergy(EMPTYValue));
+                .setEnergy(EMPTYValue)
+                .buildRangeText().buildWeightText());
         return rst;
     }
 

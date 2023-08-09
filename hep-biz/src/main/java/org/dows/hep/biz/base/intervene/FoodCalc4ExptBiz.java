@@ -219,10 +219,11 @@ public class FoodCalc4ExptBiz extends FoodCalcBiz {
             i.setEnergyRate(BigDecimalUtil.formatPercent(i.getEnergyOptional().div(box.getValue()).getValue(), EMPTYValue, NUMBERScale2, true));
         });
         //添加能量汇总
-        statEnergy.add(EnumFoodNutrient.BASENutrients3.size()-1, (CalcFoodStatVO)new CalcFoodStatVO().setInstanceName(EnumFoodNutrient.ENERGY.getName())
+        statEnergy.add(EnumFoodNutrient.BASENutrients3.size(), (CalcFoodStatVO)new CalcFoodStatVO().setInstanceName(EnumFoodNutrient.ENERGY.getName())
                 .setUnit(EnumFoodNutrient.ENERGY.getUnit())
                 .setWeight(totalEnergy)
-                .setEnergy(EMPTYValue));
+                .setEnergy(EMPTYValue)
+                .buildRangeText().buildWeightText());
         rst.setStatMealEnergy(new ArrayList<>( mapMealEnergy.values()));
 
     }

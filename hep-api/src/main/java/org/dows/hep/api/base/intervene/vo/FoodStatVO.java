@@ -58,20 +58,20 @@ public class FoodStatVO {
         StringBuilder sb=new StringBuilder();
         if(StringUtils.hasLength(this.min)){
             sb.append(this.min);
-        }
-        if(null!=percentFlag&&percentFlag>0){
-            sb.append(CHARPercent);
-        }else if(StringUtils.hasLength(this.unit)) {
-            sb.append(this.unit);
+            if(null!=percentFlag&&percentFlag>0){
+                sb.append(CHARPercent);
+            }else if(StringUtils.hasLength(this.unit)) {
+                sb.append(this.unit);
+            }
         }
         sb.append(CHARLink);
         if(StringUtils.hasLength(this.max)){
             sb.append(this.max);
-        }
-        if(null!=percentFlag&&percentFlag>0){
-            sb.append(CHARPercent);
-        }else if(StringUtils.hasLength(this.unit)) {
-            sb.append(this.unit);
+            if(null!=percentFlag&&percentFlag>0){
+                sb.append(CHARPercent);
+            }else if(StringUtils.hasLength(this.unit)) {
+                sb.append(this.unit);
+            }
         }
         rangeText= sb.toString();
         sb.setLength(0);

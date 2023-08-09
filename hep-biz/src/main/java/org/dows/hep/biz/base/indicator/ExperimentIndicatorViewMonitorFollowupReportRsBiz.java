@@ -86,6 +86,8 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
         String experimentId = experimentMonitorFollowupCheckRequestRs.getExperimentId();
         String indicatorViewMonitorFollowupId = experimentMonitorFollowupCheckRequestRs.getIndicatorViewMonitorFollowupId();
         Integer intervalDay = experimentMonitorFollowupCheckRequestRs.getIntervalDay();
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(intervalDay, true))
+                .throwMessage("请选择随访频率");
 
         ExptOrgFuncRequest funcRequest = (ExptOrgFuncRequest) new ExptOrgFuncRequest().setIndicatorFuncId(indicatorFuncId)
                 .setExperimentInstanceId(experimentId)
@@ -184,7 +186,9 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
         List<String> indicatorCurrentValArrayList = new ArrayList<>();
         List<String> contentNameList = Arrays.stream(ivmfContentNameArray.split(EnumString.COMMA.getStr())).collect(Collectors.toList());
         List<String> indicatorInstanceIdArrayList = Arrays.stream(ivmfContentRefIndicatorInstanceIdArray.split(EnumString.JIN.getStr())).collect(Collectors.toList());
-        for (int i = 0; i <= contentNameList.size() - 1; i++) {
+
+        final Integer loopNum=Math.min(contentNameList.size(), indicatorInstanceIdArrayList.size() );
+        for (int i = 0; i < loopNum; i++) {
             String indicatorInstanceIdArray = indicatorInstanceIdArrayList.get(i);
             List<String> indicatorInstanceIdList = Arrays.stream(indicatorInstanceIdArray.split(EnumString.COMMA.getStr())).collect(Collectors.toList());
             List<String> indicatorCurrentValList = new ArrayList<>();
@@ -347,7 +351,8 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
                         return;
                     }
                     List<String> indicatorInstanceIdArrayList = Arrays.stream(ivmfContentRefIndicatorInstanceIdArray.split(EnumString.JIN.getStr())).collect(Collectors.toList());
-                    for (int i = 0; i <= contentNameList.size() - 1; i++) {
+                    final Integer loopNum=Math.min(contentNameList.size(), indicatorInstanceIdArrayList.size() );
+                    for (int i = 0; i < loopNum; i++) {
                         String indicatorInstanceIdArray = indicatorInstanceIdArrayList.get(i);
                         List<ExperimentIndicatorInstanceRsResponse> experimentIndicatorInstanceRsResponseList = new ArrayList<>();
                         populateExperimentIndicatorInstanceRsResponseList(experimentIndicatorInstanceRsResponseList, indicatorInstanceIdArray,
@@ -389,7 +394,8 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
                 List<String> indicatorInstanceIdArrayList = Arrays.stream(ivmfContentRefIndicatorInstanceIdArray.split(EnumString.JIN.getStr())).collect(Collectors.toList());
                 String ivmfIndicatorCurrentValArray = experimentIndicatorViewMonitorFollowupReportRsEntity.getIvmfIndicatorCurrentValArray();
                 List<String> indicatorInstanceCurrentValArrayList = Arrays.stream(ivmfIndicatorCurrentValArray.split(EnumString.JIN.getStr())).collect(Collectors.toList());
-                for (int i = 0; i <= contentNameList.size() - 1; i++) {
+                final Integer loopNum=Math.min( Math.min(contentNameList.size(), indicatorInstanceIdArrayList.size()) , indicatorInstanceCurrentValArrayList.size());
+                for (int i = 0; i < loopNum; i++) {
                     String indicatorInstanceIdArray = indicatorInstanceIdArrayList.get(i);
                     String indicatorCurrentValArray = indicatorInstanceCurrentValArrayList.get(i);
                     List<ExperimentIndicatorInstanceRsResponse> experimentIndicatorInstanceRsResponseList = new ArrayList<>();
