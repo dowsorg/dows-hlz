@@ -94,7 +94,8 @@ public class ExperimentIndicatorViewBaseInfoRsBiz {
       List<String> contentNameList = Arrays.stream(ivbimContentNameArray.split(EnumString.COMMA.getStr())).collect(Collectors.toList());
       String ivbimContentRefIndicatorInstanceIdArray = experimentIndicatorViewBaseInfoMonitorRsEntity.getIvbimContentRefIndicatorInstanceIdArray();
       List<String> indicatorInstanceIdArrayList = Arrays.stream(ivbimContentRefIndicatorInstanceIdArray.split(EnumString.JIN.getStr())).collect(Collectors.toList());
-      for (int i = 0; i <= contentNameList.size()-1; i++) {
+      final int loopNum=Math.min(contentNameList.size(), indicatorInstanceIdArrayList.size());
+      for (int i = 0; i < loopNum; i++) {
         String indicatorInstanceIdArray = indicatorInstanceIdArrayList.get(i);
         List<ExperimentIndicatorInstanceRsResponse> experimentIndicatorInstanceRsResponseList = new ArrayList<>();
         populateExperimentIndicatorInstanceRsResponseList(experimentIndicatorInstanceRsResponseList, indicatorInstanceIdArray,
