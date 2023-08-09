@@ -272,21 +272,16 @@ public class HepClientManager {
      * @param mess
      */
     public static String sendInfoRetry(Channel channel, int code, Object mess, String msgId, String cron) {
-        try {
-            rwLock.readLock().lock();
-            if (StrUtil.isBlank(cron)) {
-                WsProperties bean = MsgScheduler.getApplicationContext().getBean(WsProperties.class);
-                if (null != bean) {
-                    cron = bean.getProducer().getRetry().getCron();
-                } else {
-                    cron = "0/3 * * * * ?";
-                }
+        if (StrUtil.isBlank(cron)) {
+            WsProperties bean = MsgScheduler.getApplicationContext().getBean(WsProperties.class);
+            if (null != bean) {
+                cron = bean.getProducer().getRetry().getCron();
+            } else {
+                cron = "0/3 * * * * ?";
             }
-            MsgScheduler.schedule(new Sender(msgId, code, mess, channel), cron, msgId, 0L);
-            return msgId;
-        } finally {
-            rwLock.readLock().unlock();
         }
+        MsgScheduler.schedule(new Sender(msgId, code, mess, channel), cron, msgId, 3L);
+        return msgId;
     }
 
     public static void removeMsgById(String msgId) {
