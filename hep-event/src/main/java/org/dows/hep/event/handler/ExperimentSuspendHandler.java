@@ -45,9 +45,18 @@ public class ExperimentSuspendHandler extends AbstractEventHandler implements Ev
         List<ExperimentTimerEntity> updateExperimentTimerEntities = new ArrayList<>();
         // 获取当前实验所有期数计时器列表并按期数递增排序
         List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerBiz
-                .getPeriodsTimerList(experimentRestartRequest.getExperimentInstanceId());
+                .getPeriodTimers(experimentRestartRequest.getExperimentInstanceId());
+        // 实验状态
+        Integer state = experimentRestartRequest.getState();
+
         // 如果期数为空，则可能为设计模式，或分配小组机构等场景
-        if (experimentRestartRequest.getPeriods() == null) {
+        if (experimentRestartRequest.getPeriods() == null || state == EnumExperimentState.PREPARE.getState()) {
+            for (ExperimentTimerEntity experimentTimerEntity : experimentTimerEntityList) {
+                boolean before = experimentTimerEntity.getEndTime().before(experimentRestartRequest.getCurrentTime());
+                if(before){
+                    throw new ExperimentException("间隔期内不能进行暂停操作");
+                }
+            }
             // todo 更新所有计时器时间
             for (ExperimentTimerEntity experimentTimerEntity : experimentTimerEntityList) {
                 ExperimentTimerEntity updExperimentTimerEntity = new ExperimentTimerEntity();

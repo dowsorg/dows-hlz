@@ -321,7 +321,7 @@ public class HepClientManager {
                     continue;
                 }
                 // 判断通道状态,// 过期时间（10秒）
-                if (!ch.isOpen() || !ch.isActive() || (System.currentTimeMillis() - accountInfo.getTime()) > 10000) {
+                if (!ch.isOpen() || !ch.isActive() /*|| (System.currentTimeMillis() - accountInfo.getTime()) > 10000*/) {
                     // 移除通道
                     removeChannel(ch);
                 }

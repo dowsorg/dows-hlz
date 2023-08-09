@@ -77,7 +77,7 @@ public class PeriodsTimerUtil {
                     .periodInterval(interval)
                     .periodDuration(pd)
                     .period(period)
-                    .model(EnumExperimentMode.STANDARD.getCode())
+                    .model(EnumExperimentMode.SAND.getCode())
                     .state(EnumExperimentState.UNBEGIN.getState())
                     .startTime(new Date(pst))
                     .endTime(new Date(pet))

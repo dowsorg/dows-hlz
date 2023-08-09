@@ -43,9 +43,10 @@ public class ScheduleConfig implements SchedulingConfigurer {
     @Bean
     public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
         ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
-        taskScheduler.setPoolSize(100);
+        taskScheduler.setPoolSize(30);
         taskScheduler.setThreadNamePrefix("hep-taskScheduler-");
         taskScheduler.setWaitForTasksToCompleteOnShutdown(false);
+        taskScheduler.setRemoveOnCancelPolicy(true);
         return taskScheduler;
 
     }
