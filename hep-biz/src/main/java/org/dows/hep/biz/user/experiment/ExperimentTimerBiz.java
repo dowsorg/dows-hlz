@@ -243,6 +243,38 @@ public class ExperimentTimerBiz {
 
 
     /**
+     * 获取间隔的开始时间和结束时间
+     * ExperimentRestartRequest experimentRestartRequest
+     *
+     * @param experimentInstanceId
+     * @return
+     */
+    public List<ExperimentTimerEntity> getPeriodTimers(String experimentInstanceId) {
+        List<ExperimentTimerEntity> experimentTimerEntities = new ArrayList<>();
+
+        List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerService.lambdaQuery()
+                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
+                .orderByAsc(ExperimentTimerEntity::getPeriod)
+                .orderByAsc(ExperimentTimerEntity::getPauseCount)
+                .list();
+        /**
+         * todo 优化时放开
+         */
+        experimentTimerEntityList.stream()
+                .collect(Collectors.groupingBy(ExperimentTimerEntity::getPeriod))
+                .forEach((k, v) -> {
+                    ExperimentTimerEntity et = v.stream()
+                            .max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount))
+                            .get();
+//                    long st = et.getEndTime().getTime() + et.getPeriodInterval();
+                    experimentTimerEntities.add(et);
+                });
+
+        return experimentTimerEntities;
+    }
+
+
+    /**
      * 根据实验状态获取最后期数的计时器
      *
      * @param experimentInstanceId

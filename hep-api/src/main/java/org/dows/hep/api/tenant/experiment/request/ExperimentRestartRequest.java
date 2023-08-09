@@ -30,9 +30,13 @@ public class ExperimentRestartRequest {
     @Schema(title = "实验期数", requiredMode = Schema.RequiredMode.REQUIRED)
     private Integer periods;
 
+    // 实验状态/阶段[0:未开始,1:准备中,2:进行中,3:已暂停,4:算分中,5:已结束]
+    private Integer state;
+
     @NotBlank(message = "状态不可为空")
     @Schema(title = "是否暂停状态(true,false)", requiredMode = Schema.RequiredMode.REQUIRED)
     private Boolean paused;
+
 
     //@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     //@NotBlank(message = "暂停或开始的当前时间不可为空")
