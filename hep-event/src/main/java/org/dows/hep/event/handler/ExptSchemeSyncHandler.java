@@ -34,6 +34,7 @@ public class ExptSchemeSyncHandler extends AbstractEventHandler implements Event
         Set<String> accountIdSet = new HashSet<>(accountIds);
         ExperimentSchemeResponse experimentSchemeResponse = obj.getExperimentSchemeResponse();
 
+        String experimentInstanceId = obj.getExperimentSchemeResponse().getExperimentInstanceId();
         // 通知客户端
         ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfos();
         Set<Map.Entry<Channel, AccountInfo>> entries = userInfos.entrySet();

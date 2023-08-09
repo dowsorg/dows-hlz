@@ -59,6 +59,7 @@ public class MsgScheduler implements ApplicationContextAware {
     }
 
     public static Object remove(String msgId) {
+        log.info("移除消息：{}", msgId);
         ScheduledFuture scheduledFuture = futureMap.get(msgId);
         if (scheduledFuture != null) {
             // 取消定时任务

@@ -14,10 +14,10 @@ public class HepClientMonitor {
     private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
 
     public void start() {
-        // 定时扫描所有的Channel，关闭失效的Channel
-        executorService.scheduleAtFixedRate(() -> {
-            HepClientManager.scanNotActiveChannel();
-        }, 3, 60, TimeUnit.SECONDS);
+        // 定时扫描所有的Channel，关闭失效的Channel，整个实验结束时，触发该扫描，清除
+//        executorService.scheduleAtFixedRate(() -> {
+//            HepClientManager.scanNotActiveChannel();
+//        }, 3, 60, TimeUnit.SECONDS);
 
         // 定时向所有客户端发送Ping消息
         executorService.scheduleAtFixedRate(() -> {
