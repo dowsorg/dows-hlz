@@ -63,10 +63,10 @@ public class MsgScheduler implements ApplicationContextAware {
         if (scheduledFuture != null) {
             // 取消定时任务
             scheduledFuture.cancel(true);
-            // 如果任务取消需要消耗点时间
+            // 如果任务取消需要消耗点时间，设置线程池setRemoveOnCancelPolicy为true模式
             boolean cancelled = scheduledFuture.isCancelled();
-            while (!cancelled) {
-                cancelled = scheduledFuture.cancel(true);
+            if (!cancelled) {
+                scheduledFuture.cancel(true);
                 log.info("定时任务取消中:{}", msgId);
             }
             // 最后从队列中删除
