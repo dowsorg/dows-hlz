@@ -12,6 +12,7 @@ import java.util.Map;
  * 4
  */
 public class MessageProto {
+    //1:476,2:732,3:988,4:1244,5:1500,6:1756
     public static final int PING_PROTO = 1 << 8 | 220; //ping消息
     public static final int PONG_PROTO = 2 << 8 | 220; //pong消息
     public static final int SYST_PROTO = 3 << 8 | 220; //系统消息
