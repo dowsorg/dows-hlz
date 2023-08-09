@@ -532,9 +532,12 @@ public class RsCopyBiz {
                     signleIvbimContentRefIndicatorInstanceIdList.add(indicatorInstanceId);
                   }
                 });
-                singleIvbimContentRefIndicatorInstanceIdArray = String.join(EnumString.COMMA.getStr(), signleIvbimContentRefIndicatorInstanceIdList);
-                ivbimContentRefIndicatorInstanceIdList.add(singleIvbimContentRefIndicatorInstanceIdArray);
-                ivbimContentNameList.add(name1);
+                if(signleIvbimContentRefIndicatorInstanceIdList.size()>0){
+                    singleIvbimContentRefIndicatorInstanceIdArray = String.join(EnumString.COMMA.getStr(), signleIvbimContentRefIndicatorInstanceIdList);
+                    ivbimContentRefIndicatorInstanceIdList.add(singleIvbimContentRefIndicatorInstanceIdArray);
+                    ivbimContentNameList.add(name1);
+                }
+
               }
 
             });
