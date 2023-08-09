@@ -282,7 +282,7 @@ public class HepClientManager {
                     cron = "0/3 * * * * ?";
                 }
             }
-            MsgScheduler.schedule(new Sender(msgId, code, mess, channel), cron, msgId, 0L);
+            MsgScheduler.schedule(new Sender(msgId, code, mess, channel), cron, msgId, 3L);
             return msgId;
         } finally {
             rwLock.readLock().unlock();

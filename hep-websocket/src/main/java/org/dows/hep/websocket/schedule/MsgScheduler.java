@@ -50,7 +50,7 @@ public class MsgScheduler implements ApplicationContextAware {
         }
         ScheduledFuture future = null;
         if (duration != null && duration != 0L) {
-            future = taskScheduler.scheduleWithFixedDelay(task, Instant.now(), Duration.ofMillis(duration));
+            future = taskScheduler.scheduleAtFixedRate(task, Instant.now(), Duration.ofSeconds(duration));
         } else {
             future = taskScheduler.schedule(task, new CronTrigger(cron));
         }
