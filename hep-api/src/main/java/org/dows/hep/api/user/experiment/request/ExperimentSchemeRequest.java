@@ -21,6 +21,9 @@ public class ExperimentSchemeRequest {
     @Schema(title = "实验方案设计ID")
     private String experimentSchemeId;
 
+    @Schema(title = "视频答案-如果有的话")
+    private String videoAnswer;
+
     @NotNull
     @Schema(title = "方案设计试卷")
     private List<ExperimentSchemeItemRequest> itemList;

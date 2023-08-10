@@ -39,6 +39,9 @@ public class ExperimentSchemeResponse {
     @Schema(title = "视频题干")
     private String videoQuestion;
 
+    @Schema(title = "视频答案")
+    private String videoAnswer;
+
     @Schema(title = "方案设计试卷")
     private List<ExperimentSchemeItemResponse> itemList;
 

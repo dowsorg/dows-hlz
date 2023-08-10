@@ -60,6 +60,9 @@ public class ExperimentSchemeEntity implements CrudEntity {
     @Schema(title = "视频题干")
     private String videoQuestion;
 
+    @Schema(title = "视频答案")
+    private String videoAnswer;
+
     @Schema(title = "方案状态[0:未提交,1:已提交]")
     private Integer state;
 

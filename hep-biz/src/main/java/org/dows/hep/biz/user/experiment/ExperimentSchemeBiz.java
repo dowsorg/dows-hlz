@@ -258,7 +258,7 @@ public class ExperimentSchemeBiz {
      * @date 2023/6/7 13:50
      */
     @DSTransactional
-    public Boolean updateScheme(String experimentSchemeItemId, String questionResult, String submitAccountId) {
+    public Boolean updateScheme(String experimentSchemeItemId, String questionResult, String submitAccountId, String videoAnswer) {
         if (StrUtil.isBlank(experimentSchemeItemId) || StrUtil.isBlank(questionResult) || StrUtil.isBlank(submitAccountId)) {
             throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
         }
@@ -276,7 +276,14 @@ public class ExperimentSchemeBiz {
         if (!submitAccountId.equals(itemAccountId)) {
             throw new BizException(ExperimentESCEnum.NO_AUTHORITY);
         }
-        // update
+        // update schemeVideo
+        if (StrUtil.isNotBlank(videoAnswer)) {
+            experimentSchemeService.lambdaUpdate()
+                    .set(ExperimentSchemeEntity::getVideoAnswer, videoAnswer)
+                    .eq(ExperimentSchemeEntity::getExperimentSchemeId, experimentSchemeId)
+                    .update();
+        }
+        // update item
         boolean res1 = experimentSchemeItemBiz.update(experimentSchemeItemId, questionResult);
         // sync
         syncResult(schemeEntity.getExperimentInstanceId(), schemeEntity.getExperimentGroupId());
@@ -301,6 +308,14 @@ public class ExperimentSchemeBiz {
         ExperimentSchemeEntity schemeEntity = cannotUpdateAfterSubmit(request.getExperimentSchemeId());
         cannotUpdateIf0UsableTime(schemeEntity.getExperimentSchemeId());
         filterIfNoPermission(request, submitAccountId);
+        // update schemeVideo
+        String videoAnswer = request.getVideoAnswer();
+        if (StrUtil.isNotBlank(videoAnswer)) {
+            experimentSchemeService.lambdaUpdate()
+                    .set(ExperimentSchemeEntity::getVideoAnswer, videoAnswer)
+                    .eq(ExperimentSchemeEntity::getExperimentSchemeId, request.getExperimentSchemeId())
+                    .update();
+        }
         // update
         List<ExperimentSchemeItemRequest> itemList = request.getItemList();
         boolean res1 = experimentSchemeItemBiz.updateBatch(itemList);

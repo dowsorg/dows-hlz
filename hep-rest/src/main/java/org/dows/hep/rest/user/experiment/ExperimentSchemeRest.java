@@ -93,7 +93,7 @@ public class ExperimentSchemeRest {
     @PostMapping("v1/userExperiment/experimentScheme/updateSchemeItem")
     public Boolean updateSchemeItem(@RequestBody @Validated ExperimentScheme1Request experimentSchemeRequest, HttpServletRequest request) {
         String accountId = baseBiz.getAccountId(request);
-        return experimentSchemeBiz.updateScheme(experimentSchemeRequest.getExperimentSchemeItemId(), experimentSchemeRequest.getQuestionResult(), accountId);
+        return experimentSchemeBiz.updateScheme(experimentSchemeRequest.getExperimentSchemeItemId(), experimentSchemeRequest.getQuestionResult(), accountId, experimentSchemeRequest.getVideoAnswer());
     }
 
     /**

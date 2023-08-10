@@ -21,4 +21,7 @@ public class ExperimentScheme1Request {
 
     @Schema(title = "作答答案")
     private String questionResult;
+
+    @Schema(title = "视频答案-如果有的话")
+    private String videoAnswer;
 }
