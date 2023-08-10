@@ -605,4 +605,13 @@ public class RsUtilBiz {
     RsUtilBiz.testAlgorithmKahn(seqCalculateIndicatorInstanceIdList, kIndicatorInstanceIdVInfluencedIndicatorInstanceIdSetMap);
     System.out.println(seqCalculateIndicatorInstanceIdList);
   }
+
+  /* runsix:获取核心指标字符串 */
+  public static String getCoreString(String instanceName, String currentVal, String unit) {
+    if (StringUtils.isBlank(unit)) {
+      return String.format("%s:%s", instanceName, currentVal);
+    } else {
+      return String.format("%s:%s%s", instanceName, currentVal, unit);
+    }
+  }
 }
