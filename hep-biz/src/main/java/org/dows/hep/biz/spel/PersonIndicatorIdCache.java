@@ -44,6 +44,9 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
     }
 
     public String getIndicatorIdBySourceId(String exptPersonId, String baseOrCaseIndicatorId){
+        if(ShareUtil.XObject.anyEmpty(exptPersonId,baseOrCaseIndicatorId)) {
+            return null;
+        }
         PersonIndicatorIdCollection coll= this.loadingCache().get(exptPersonId);
         if(ShareUtil.XObject.isEmpty(coll)){
             return null;
@@ -51,6 +54,9 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
         return coll.getMapBaseCase2ExptId().get(baseOrCaseIndicatorId);
     }
     public ExperimentIndicatorInstanceRsEntity getIndicatorById(String exptPersonId,String indicatorId){
+        if(ShareUtil.XObject.anyEmpty(exptPersonId,indicatorId)){
+            return null;
+        }
         PersonIndicatorIdCollection coll= this.loadingCache().get(exptPersonId);
         if(ShareUtil.XObject.isEmpty(coll)){
             return null;

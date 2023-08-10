@@ -212,7 +212,10 @@ public class SpelEngine {
         if (null==mapSum|| ShareUtil.XObject.isEmpty(item)) {
             return;
         }
-        SpelEvalSumResult evalSumItem = mapSum.computeIfAbsent(item.getIndicatorId(), k -> new SpelEvalSumResult().setExperimentIndicatorId(item.getIndicatorId()));
+        SpelEvalSumResult evalSumItem = mapSum.computeIfAbsent(item.getIndicatorId(), k -> new SpelEvalSumResult()
+                .setExperimentIndicatorId(item.getIndicatorId())
+                .setMin(item.getMin())
+                .setMax(item.getMax()));
         evalSumItem.setCurVal(item.getCurVal());
         if (ShareUtil.XObject.notNumber(item.getVal())) {
             if (ShareUtil.XObject.notNumber(evalSumItem.getVal())) {

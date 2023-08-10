@@ -13,10 +13,13 @@ import org.dows.hep.api.enums.EnumIndicatorType;
 import org.dows.hep.api.enums.EnumStatus;
 import org.dows.hep.api.user.experiment.request.ExperimentIndicatorInstanceRequest;
 import org.dows.hep.api.user.experiment.response.EchartsDataResonse;
-import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
+import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.EchartsUtils;
-import org.dows.hep.entity.*;
+import org.dows.hep.entity.ExperimentIndicatorInstanceRsEntity;
+import org.dows.hep.entity.ExperimentIndicatorValRsEntity;
+import org.dows.hep.entity.ExperimentPersonEntity;
+import org.dows.hep.entity.ExperimentScoringEntity;
 import org.dows.hep.service.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,7 +64,19 @@ public class ExperimentIndicatorInstanceRsBiz {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void changeMoney(RsChangeMoneyRequest rsChangeMoneyRequest) {
+    public boolean changeMoney(RsChangeMoneyRequest rsChangeMoneyRequest) {
+        return saveChangeMoney(getChangeMoney(rsChangeMoneyRequest));
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public boolean saveChangeMoney(ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity){
+        if(null==experimentIndicatorValRsEntity){
+            return false;
+        }
+        return experimentIndicatorValRsService.saveOrUpdate(experimentIndicatorValRsEntity);
+    }
+
+    public ExperimentIndicatorValRsEntity getChangeMoney(RsChangeMoneyRequest rsChangeMoneyRequest){
         String appId = rsChangeMoneyRequest.getAppId();
         String experimentId = rsChangeMoneyRequest.getExperimentId();
         String experimentPersonId = rsChangeMoneyRequest.getExperimentPersonId();
@@ -80,13 +95,17 @@ public class ExperimentIndicatorInstanceRsBiz {
         String max = experimentIndicatorValRsEntity.getMax();
         String moneyCurrentVal = experimentIndicatorValRsEntity.getCurrentVal();
         BigDecimal newMoneyCurrentVal = BigDecimal.valueOf(Double.parseDouble(moneyCurrentVal)).add(moneyChange);
+        if(rsChangeMoneyRequest.isAssertEnough()) {
+            AssertUtil.trueThenThrow(newMoneyCurrentVal.compareTo(BigDecimal.ZERO) < 0)
+                    .throwMessage("您的资金不足了");
+        }
         if (newMoneyCurrentVal.compareTo(BigDecimal.valueOf(Double.parseDouble(min))) < 0) {
             newMoneyCurrentVal = BigDecimal.valueOf(Double.parseDouble(min));
         } else if (newMoneyCurrentVal.compareTo(BigDecimal.valueOf(Double.parseDouble(max))) > 0) {
             newMoneyCurrentVal = BigDecimal.valueOf(Double.parseDouble(max));
         }
         experimentIndicatorValRsEntity.setCurrentVal(newMoneyCurrentVal.setScale(2, RoundingMode.DOWN).toString());
-        experimentIndicatorValRsService.saveOrUpdate(experimentIndicatorValRsEntity);
+        return experimentIndicatorValRsEntity;
     }
 
     /**

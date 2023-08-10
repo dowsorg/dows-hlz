@@ -8,6 +8,7 @@ import org.dows.hep.biz.spel.meta.ISpelLoad;
 import org.dows.hep.biz.spel.meta.SpelInput;
 import org.dows.hep.biz.util.BigDecimalUtil;
 import org.dows.hep.biz.util.ShareUtil;
+import org.dows.hep.entity.ExperimentIndicatorInstanceRsEntity;
 import org.dows.hep.entity.snapshot.SnapCaseIndicatorExpressionEntity;
 import org.dows.hep.entity.snapshot.SnapCaseIndicatorExpressionItemEntity;
 
@@ -28,9 +29,12 @@ public abstract class BaseSpelLoader implements ISpelLoad {
         if (null == rst) {
             rst = new SpelInput();
         }
+        Optional<ExperimentIndicatorInstanceRsEntity> optIndicator=Optional.ofNullable( PersonIndicatorIdCache.Instance().getIndicatorById(exptPersonId,rowExpression.getCasePrincipalId()));
         rst.setExpressionId(rowExpression.getCaseIndicatorExpressionId())
-                .setIndicatorId(checkExpressionIndicatorId(exptPersonId, rowExpression.getCasePrincipalId()))
-                .setRandom(Optional.ofNullable(rowExpression.getType()).orElse(0).equals(1));
+                .setIndicatorId(optIndicator.map(ExperimentIndicatorInstanceRsEntity::getExperimentIndicatorInstanceId).orElse(null))
+                .setRandom(Optional.ofNullable(rowExpression.getType()).orElse(0).equals(1))
+                .setMin(optIndicator.map(i->BigDecimalUtil.tryParseDecimal(i.getMin(),null)).orElse(null))
+                .setMax(optIndicator.map(i->BigDecimalUtil.tryParseDecimal(i.getMax(),null)).orElse(null));
         if (ShareUtil.XObject.isEmpty(rowsExpressionItem)) {
             return rst;
         }
@@ -38,12 +42,12 @@ public abstract class BaseSpelLoader implements ISpelLoad {
         SpelInput.SpelExpressionItem expressionItem;
         for (SnapCaseIndicatorExpressionItemEntity item : rowsExpressionItem) {
             //公式下限
-            if (item.getCaseIndicatorExpressionItemId().equals(rowExpression.getMinIndicatorExpressionItemId())) {
+            if (null==rst.getMin() && item.getCaseIndicatorExpressionItemId().equals(rowExpression.getMinIndicatorExpressionItemId())) {
                 rst.setMin(BigDecimalUtil.tryParseDecimal(item.getResultExpression(), null));
                 continue;
             }
             //公式上限
-            if (item.getCaseIndicatorExpressionItemId().equals(rowExpression.getMaxIndicatorExpressionItemId())) {
+            if (null==rst.getMax() && item.getCaseIndicatorExpressionItemId().equals(rowExpression.getMaxIndicatorExpressionItemId())) {
                 rst.setMax(BigDecimalUtil.tryParseDecimal(item.getResultExpression(), null));
                 continue;
             }
@@ -70,12 +74,7 @@ public abstract class BaseSpelLoader implements ISpelLoad {
                 .build();
     }
 
-    protected String checkExpressionIndicatorId(String exptPersonId,String indicatorId) {
-        if(ShareUtil.XObject.isEmpty(indicatorId)){
-            return null;
-        }
-        return PersonIndicatorIdCache.Instance().getIndicatorIdBySourceId(exptPersonId, indicatorId);
-    }
+
     protected String buildExpressionString(String exptPersonId, String rawExpression,String names,String vals){
         if(ShareUtil.XObject.isEmpty(names)){
             return rawExpression;

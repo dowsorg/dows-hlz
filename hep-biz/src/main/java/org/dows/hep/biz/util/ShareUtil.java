@@ -53,12 +53,18 @@ public class ShareUtil {
             }
             return true;
         }
+        public static boolean allEmpty(Object obj, Supplier func) {
+            return isEmpty(obj) && isEmpty(func.get());
+        }
         public static boolean allNotEmpty(Object... objs) {
             if(isEmpty(objs)) return false;
             for(Object item:objs){
                 if(isEmpty(item)) return false;
             }
             return true;
+        }
+        public static boolean allNotEmpty(Object obj, Supplier func) {
+            return notEmpty(obj) && notEmpty(func.get());
         }
 
         public static boolean anyEmpty(Object... objs) {
@@ -259,6 +265,9 @@ public class ShareUtil {
         }
 
         public static BigDecimal randomBigDecimal(BigDecimal min, BigDecimal max, int scale){
+            if(min.compareTo(max)>0){
+
+            }
             final long factor=(long)Math.pow(10,scale<0?0:scale);
             int minVal=min.multiply(BigDecimal.valueOf( factor)).intValue();
             int maxVal=max.multiply(BigDecimal.valueOf( factor)).intValue();

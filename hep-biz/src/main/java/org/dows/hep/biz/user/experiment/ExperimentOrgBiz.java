@@ -118,12 +118,13 @@ public class ExperimentOrgBiz{
         Double ghf= flowValidator.getOrgFee4Ghf().orElse(0d);
 
         //检验资金,扣费
-        experimentIndicatorInstanceRsBiz.changeMoney(RsChangeMoneyRequest.builder()
+        ExperimentIndicatorValRsEntity costIndicator=experimentIndicatorInstanceRsBiz.getChangeMoney(RsChangeMoneyRequest.builder()
                 .appId(startOrgFlow.getAppId())
                 .experimentId(startOrgFlow.getExperimentInstanceId())
                 .experimentPersonId(startOrgFlow.getExperimentPersonId())
                 .periods(startOrgFlow.getPeriods())
                 .moneyChange(BigDecimal.valueOf(ghf).negate())
+                .assertEnough(true)
                 .build());
         String operateFlowId = idGenerator.nextIdStr();
         rowFlow=createRowOrgFlow(validator)
@@ -150,8 +151,11 @@ public class ExperimentOrgBiz{
                 .cost(BigDecimalUtil.valueOf(ghf))
                 .period(startOrgFlow.getPeriods())
                 .build();
-        operateCostBiz.saveCost(costRequest);
-        return operateFlowDao.tranSave(rowFlow, null,false);
+        return operateFlowDao.tranSave(rowFlow, null,false,()->{
+            experimentIndicatorInstanceRsBiz.saveChangeMoney(costIndicator);
+            operateCostBiz.saveCost(costRequest);
+            return true;
+        });
     }
     private OperateFlowEntity createRowOrgFlow(ExptRequestValidator req){
         return OperateFlowEntity.builder()
@@ -178,7 +182,6 @@ public class ExperimentOrgBiz{
         ExptRequestValidator.create(findOrgNotice)
                 .checkExperimentOrgId()
                 .checkExperimentGroup();
-
         return ShareBiz.buildPage(experimentOrgNoticeDao.pageByCondition(findOrgNotice,
                 ExperimentOrgNoticeEntity::getId,
                 ExperimentOrgNoticeEntity::getExperimentOrgNoticeId,

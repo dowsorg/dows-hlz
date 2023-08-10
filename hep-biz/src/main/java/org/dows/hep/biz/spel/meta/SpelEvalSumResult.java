@@ -29,6 +29,10 @@ public class SpelEvalSumResult {
 
     private BigDecimal valNumber;
 
+    private BigDecimal min;
+
+    private BigDecimal max;
+
     public Double getValdDouble(){
         if(ShareUtil.XObject.notNumber(val)){
             return null;
@@ -46,7 +50,17 @@ public class SpelEvalSumResult {
         if(ShareUtil.XObject.notNumber(val)||ShareUtil.XObject.notNumber(curVal)){
             return getValString();
         }
-        return getString( BigDecimalUtil.valueOf(curVal).add(BigDecimalUtil.valueOf(val)));
+        BigDecimal newVal=BigDecimalUtil.valueOf(val).add(BigDecimalUtil.valueOf(curVal));
+        if (ShareUtil.XObject.allEmpty(this.getMin(), this.getMax())){
+            return getString(newVal);
+        }
+        if (ShareUtil.XObject.notEmpty(this.getMin()) && newVal.compareTo(this.getMin()) < 0) {
+            newVal = this.getMin();
+        }
+        if (ShareUtil.XObject.notEmpty(this.getMax()) && this.getMax().compareTo(newVal) < 0) {
+            newVal = this.getMax();
+        }
+        return getString(newVal);
     }
 
     String getString(Object obj){
