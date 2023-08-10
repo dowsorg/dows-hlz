@@ -256,6 +256,7 @@ public class TimeBasedEventTask extends BaseEventTask  {
                 ExperimentEventEntity::getCasePersonId,
                 ExperimentEventEntity::getCaseEventId,
                 ExperimentEventEntity::getTriggerType,
+                ExperimentEventEntity::getTriggerSpan,
                 ExperimentEventEntity::getTriggerTime,
                 ExperimentEventEntity::getTriggerGameDay,
                 ExperimentEventEntity::getState

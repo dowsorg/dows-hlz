@@ -10,6 +10,7 @@ import org.dows.hep.api.base.indicator.request.RsInitMoneyRequest;
 import org.dows.hep.api.base.indicator.request.RsSexRequest;
 import org.dows.hep.api.base.indicator.response.GroupAverageHealthPointResponse;
 import org.dows.hep.api.enums.EnumIndicatorType;
+import org.dows.hep.api.enums.EnumStatus;
 import org.dows.hep.api.user.experiment.request.ExperimentIndicatorInstanceRequest;
 import org.dows.hep.api.user.experiment.response.EchartsDataResonse;
 import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
@@ -413,5 +414,66 @@ public class ExperimentIndicatorInstanceRsBiz {
         });
 
         return kExperimentPersonIdVAgeMap;
+    }
+
+    public Map<String, List<String>> getCoreByPeriodsAndExperimentPersonIdList(Integer periods, List<String> experimentPersonIdList) {
+        Map<String, List<String>> resultMap = new HashMap<>();
+        
+        /* runsix:校验 */
+        if (Objects.isNull(periods)
+            || Objects.isNull(experimentPersonIdList) || experimentPersonIdList.isEmpty()
+        ) {return resultMap;}
+
+        /* runsix:1.获取所有人所有核心指标 */
+        Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
+        Map<String, List<ExperimentIndicatorInstanceRsEntity>> kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap = new HashMap<>();
+        experimentIndicatorInstanceRsService.lambdaQuery()
+            .eq(ExperimentIndicatorInstanceRsEntity::getCore, EnumStatus.ENABLE.getCode())
+            .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdList)
+            .list()
+            .forEach(experimentIndicatorInstanceRsEntity -> {
+                String experimentIndicatorInstanceId = experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId();
+                experimentIndicatorInstanceIdSet.add(experimentIndicatorInstanceId);
+
+                String experimentPersonId = experimentIndicatorInstanceRsEntity.getExperimentPersonId();
+                List<ExperimentIndicatorInstanceRsEntity> experimentIndicatorInstanceRsEntityList = kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap.get(experimentPersonId);
+                if (Objects.isNull(experimentIndicatorInstanceRsEntityList)) {experimentIndicatorInstanceRsEntityList = new ArrayList<>();}
+                experimentIndicatorInstanceRsEntityList.add(experimentIndicatorInstanceRsEntity);
+                kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap.put(experimentPersonId, experimentIndicatorInstanceRsEntityList);
+            });
+
+        /* runsix:校验 */
+        if (experimentIndicatorInstanceIdSet.isEmpty()) {return resultMap;}
+
+        /* runsix:2.获取所有核心指标的值 */
+        Map<String, String> kExperimentIndicatorInstanceIdVCurrentValMap = new HashMap<>();
+        experimentIndicatorValRsService.lambdaQuery()
+            .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
+            .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
+            .list()
+            .forEach(experimentIndicatorValRsEntity -> {
+                kExperimentIndicatorInstanceIdVCurrentValMap.put(experimentIndicatorValRsEntity.getIndicatorInstanceId(), experimentIndicatorValRsEntity.getCurrentVal());
+            });
+
+
+        /* runsix:3.组合数据 */
+        kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap.forEach((experimentPersonId, experimentIndicatorInstanceRsEntityList) -> {
+            experimentIndicatorInstanceRsEntityList.forEach(experimentIndicatorInstanceRsEntity -> {
+                List<String> resultList = resultMap.get(experimentPersonId);
+                if (Objects.isNull(resultList)) {resultList = new ArrayList<>();}
+
+                String indicatorName = experimentIndicatorInstanceRsEntity.getIndicatorName();
+                String unit = experimentIndicatorInstanceRsEntity.getUnit();
+                String experimentIndicatorInstanceId = experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId();
+                String currentVal = kExperimentIndicatorInstanceIdVCurrentValMap.get(experimentIndicatorInstanceId);
+                /* runsix:理论上每个指标都有默认值，如果存在数据错误，就丢掉 */
+                if (StringUtils.isBlank(currentVal)) {return;}
+                resultList.add(RsUtilBiz.getCoreString(indicatorName, currentVal, unit));
+
+                resultMap.put(experimentPersonId, resultList);
+            });
+        });
+        
+        return resultMap;
     }
 }

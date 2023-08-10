@@ -30,6 +30,8 @@ public class IntervalResponse {
 
     @Schema(title = "实验倒计时时间")
     private Long countdown;
+    @Schema(title = "实验倒计时时间类型[0:开始倒计时,1:结束倒计时]")
+    private Integer countdownType;
 
 
     @Schema(title = "沙盘总时长[天]")

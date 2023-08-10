@@ -153,7 +153,7 @@ public class ExperimentTimerBiz {
             }
 
             /**
-             * 进行中
+             * 进行中（已开始...)
              * 找出每期暂停次数最大的记录
              */
             for (int i = 0; i < experimentTimerEntities.size(); i++) {
@@ -163,7 +163,11 @@ public class ExperimentTimerBiz {
                 intervalResponse.setState(et.getState());
                 intervalResponse.setAppId(et.getAppId());
                 // 间隔期|倒计时
-                if (sct >= et.getStartTime().getTime() - et.getPeriodInterval() && sct < et.getStartTime().getTime()) { // 一期开始倒计时
+                if (sct < et.getStartTime().getTime() - et.getPeriodInterval()) {// 实验未开始
+                    intervalResponse.setPeriod(null);
+                    break;
+                } else if (sct >= et.getStartTime().getTime() - et.getPeriodInterval() && sct < et.getStartTime().getTime()) { // 一期开始倒计时
+                    intervalResponse.setCountdownType(0);
                     intervalResponse.setCountdown(et.getStartTime().getTime() - sct);
                     break;
                 } else if (sct >= et.getStartTime().getTime() && sct <= et.getEndTime().getTime()) {// 期数中
@@ -173,8 +177,9 @@ public class ExperimentTimerBiz {
                     intervalResponse.setSandRemnantSecond(rs / 1000);
                     intervalResponse.setSandDurationSecond(ds / 1000);
                     break;
-                } else if (sct >= et.getEndTime().getTime() && sct <= et.getEndTime().getTime() + et.getPeriodInterval()) {
+                } else if (sct >= et.getEndTime().getTime() && sct <= et.getEndTime().getTime() + et.getPeriodInterval()) {// // 一期结束倒计时
                     intervalResponse.setCountdown(et.getEndTime().getTime() + et.getPeriodInterval() - sct);
+                    intervalResponse.setCountdownType(1);
                     // 发布保险报销事件
                     applicationEventPublisher.publishEvent(new IntervalEvent(intervalResponse));
                     break;
@@ -237,6 +242,38 @@ public class ExperimentTimerBiz {
         //return experimentTimerEntities;
 
         return experimentTimerEntityList;
+    }
+
+
+    /**
+     * 获取间隔的开始时间和结束时间
+     * ExperimentRestartRequest experimentRestartRequest
+     *
+     * @param experimentInstanceId
+     * @return
+     */
+    public List<ExperimentTimerEntity> getPeriodTimers(String experimentInstanceId) {
+        List<ExperimentTimerEntity> experimentTimerEntities = new ArrayList<>();
+
+        List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerService.lambdaQuery()
+                .eq(ExperimentTimerEntity::getExperimentInstanceId, experimentInstanceId)
+                .orderByAsc(ExperimentTimerEntity::getPeriod)
+                .orderByAsc(ExperimentTimerEntity::getPauseCount)
+                .list();
+        /**
+         * todo 优化时放开
+         */
+        experimentTimerEntityList.stream()
+                .collect(Collectors.groupingBy(ExperimentTimerEntity::getPeriod))
+                .forEach((k, v) -> {
+                    ExperimentTimerEntity et = v.stream()
+                            .max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount))
+                            .get();
+//                    long st = et.getEndTime().getTime() + et.getPeriodInterval();
+                    experimentTimerEntities.add(et);
+                });
+
+        return experimentTimerEntities;
     }
 
 

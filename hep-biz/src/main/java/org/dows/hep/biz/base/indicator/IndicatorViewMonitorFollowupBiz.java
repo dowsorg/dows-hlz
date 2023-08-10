@@ -305,6 +305,9 @@ public class IndicatorViewMonitorFollowupBiz{
     }
     List<CreateOrUpdateIndicatorViewMonitorFollowupFollowupContentRequestRs> createOrUpdateIndicatorViewMonitorFollowupFollowupContentRequestRsList = createOrUpdateIndicatorViewMonitorFollowupRequestRs.getCreateOrUpdateIndicatorViewMonitorFollowupFollowupContentRequestRsList();
     if (!createOrUpdateIndicatorViewMonitorFollowupFollowupContentRequestRsList.isEmpty()) {
+        for(int i=0;i<createOrUpdateIndicatorViewMonitorFollowupFollowupContentRequestRsList.size();i++){
+            createOrUpdateIndicatorViewMonitorFollowupFollowupContentRequestRsList.get(i).setSeq(i);
+        }
       Set<String> paramIndicatorViewMonitorFollowupFollowupContentIdSet = new HashSet<>();
       Set<String> dbIndicatorViewMonitorFollowupFollowupContentIdSet = new HashSet<>();
       Map<String, IndicatorViewMonitorFollowupFollowupContentEntity> kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupFollowupContentMap = new HashMap<>();

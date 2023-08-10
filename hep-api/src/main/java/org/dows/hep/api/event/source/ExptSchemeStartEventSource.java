@@ -20,4 +20,5 @@ import java.util.List;
 public class ExptSchemeStartEventSource {
     @Schema(title = "需要同步信息的账号")
     private List<String> accountIds;
+    private String experimentId;
 }

@@ -940,4 +940,65 @@ public class CaseIndicatorInstanceBiz {
             lock.unlock();
         }
     }
+
+    /**
+     * runsix method process
+     * 根据account_id获取关键指标
+    */
+    public Map<String, List<String>> getCoreByAccountIdList(List<String> accountIdList) {
+        Map<String, List<String>> resultMap = new HashMap<>();
+        /* runsix:校验 */
+        if (Objects.isNull(accountIdList) || accountIdList.isEmpty()) {return resultMap;}
+
+        /* runsix:1.获取所有人所有核心指标 */
+        Set<String> caseIndicatorInstanceIdSet = new HashSet<>();
+        Map<String, List<CaseIndicatorInstanceEntity>> kAccountIdVCaseIndicatorInstanceEntityListMap = new HashMap<>();
+        caseIndicatorInstanceService.lambdaQuery()
+            .eq(CaseIndicatorInstanceEntity::getCore, EnumStatus.ENABLE.getCode())
+            .in(CaseIndicatorInstanceEntity::getPrincipalId, accountIdList)
+            .list()
+            .forEach(caseIndicatorInstanceEntity -> {
+                String caseIndicatorInstanceId = caseIndicatorInstanceEntity.getCaseIndicatorInstanceId();
+                caseIndicatorInstanceIdSet.add(caseIndicatorInstanceId);
+
+                String principalId = caseIndicatorInstanceEntity.getPrincipalId();
+                List<CaseIndicatorInstanceEntity> caseIndicatorInstanceEntityList = kAccountIdVCaseIndicatorInstanceEntityListMap.get(principalId);
+                if (Objects.isNull(caseIndicatorInstanceEntityList)) {caseIndicatorInstanceEntityList = new ArrayList<>();}
+                caseIndicatorInstanceEntityList.add(caseIndicatorInstanceEntity);
+                kAccountIdVCaseIndicatorInstanceEntityListMap.put(principalId, caseIndicatorInstanceEntityList);
+            });
+
+        /* runsix:校验 */
+        if (caseIndicatorInstanceIdSet.isEmpty()) {return resultMap;}
+
+        /* runsix:2.获取所有核心指标的值 */
+        Map<String, String> kCaseIndicatorInstanceIdVDefMap = new HashMap<>();
+        caseIndicatorRuleService.lambdaQuery()
+            .in(CaseIndicatorRuleEntity::getVariableId, caseIndicatorInstanceIdSet)
+            .list()
+            .forEach(caseIndicatorRuleEntity -> {
+                kCaseIndicatorInstanceIdVDefMap.put(caseIndicatorRuleEntity.getVariableId(), caseIndicatorRuleEntity.getDef());
+            });
+
+
+        /* runsix:3.组合数据 */
+        kAccountIdVCaseIndicatorInstanceEntityListMap.forEach((accountId, caseIndicatorInstanceEntityList) -> {
+            caseIndicatorInstanceEntityList.forEach(caseIndicatorInstanceEntity -> {
+                List<String> resultList = resultMap.get(accountId);
+                if (Objects.isNull(resultList)) {resultList = new ArrayList<>();}
+
+                String indicatorName = caseIndicatorInstanceEntity.getIndicatorName();
+                String unit = caseIndicatorInstanceEntity.getUnit();
+                String caseIndicatorInstanceId = caseIndicatorInstanceEntity.getCaseIndicatorInstanceId();
+                String currentVal = kCaseIndicatorInstanceIdVDefMap.get(caseIndicatorInstanceId);
+                /* runsix:理论上每个指标都有默认值，如果存在数据错误，就丢掉 */
+                if (StringUtils.isBlank(currentVal)) {return;}
+                resultList.add(RsUtilBiz.getCoreString(indicatorName, currentVal, unit));
+
+                resultMap.put(accountId, resultList);
+            });
+        });
+
+        return resultMap;
+    }
 }

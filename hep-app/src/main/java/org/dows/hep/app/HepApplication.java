@@ -1,6 +1,7 @@
 package org.dows.hep.app;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorFuncRequest;
@@ -14,6 +15,7 @@ import org.dows.hep.entity.IndicatorInstanceEntity;
 import org.dows.hep.service.IndicatorCategoryService;
 import org.dows.hep.service.IndicatorFuncService;
 import org.dows.hep.service.IndicatorInstanceService;
+import org.dows.hep.websocket.HepClientMonitor;
 import org.dows.sequence.api.IdGenerator;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
@@ -50,6 +52,14 @@ public class HepApplication{
     private final IndicatorInstanceService indicatorInstanceService;
     private final IndicatorInstanceBiz indicatorInstanceBiz;
 
+    private final HepClientMonitor hepClientMonitor;
+
+
+    @PreDestroy
+    public void shutdownApp() {
+        log.info("应用关闭！");
+        hepClientMonitor.shutdown();
+    }
     @PostConstruct
     @Transactional(rollbackFor = Exception.class)
     public void init() throws InterruptedException {

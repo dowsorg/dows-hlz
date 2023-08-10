@@ -11,6 +11,7 @@ import org.dows.framework.websocket.util.NettyUtil;
 import org.dows.hep.websocket.config.WsProperties;
 import org.dows.hep.websocket.proto.MessageProto;
 import org.dows.hep.websocket.schedule.MsgScheduler;
+import org.dows.hep.websocket.schedule.Sender;
 import org.dows.sequence.api.IdGenerator;
 import org.dows.sequence.snowflake.SnowflakeIdGenerator;
 import org.dows.sequence.snowflake.config.SnowFlakeConfiguration;
@@ -38,6 +39,7 @@ public class HepClientManager {
     private static ConcurrentMap<String, String> MSGIDS = new ConcurrentHashMap<>();
 
     public static final AttributeKey<String> EXPERIMENT_IN_SESSION_ATTRIBUTE = AttributeKey.newInstance("experimentId");
+    public static final AttributeKey<String> ACCOUNT_IN_SESSION_ATTRIBUTE = AttributeKey.newInstance("accountId");
 
     /**
      * 保存用户身份信息
@@ -55,7 +57,7 @@ public class HepClientManager {
         }
         // 添加当前用户身份信息到通道数据
         channel.attr(EXPERIMENT_IN_SESSION_ATTRIBUTE).set(onlineAccount.getExperimentId());
-        //channel.attr(USER_NAME_IN_SESSION_ATTRIBUTE_ATTR).set(nick);
+        channel.attr(ACCOUNT_IN_SESSION_ATTRIBUTE).set(onlineAccount.getAccountId());
         // 增加一个用户数
         accountCount.incrementAndGet();
         AccountInfo accountInfo = new AccountInfo();
@@ -120,7 +122,7 @@ public class HepClientManager {
             AccountInfo userInfo = ONLINE_ACCOUNT.get(room).get(channel);
             if (userInfo != null) {
                 AccountInfo tmp = ONLINE_ACCOUNT.get(room).remove(channel);
-                if (tmp != null && tmp.getAuth()) {
+                if (tmp != null) {
                     // 减去一个认证用户
                     accountCount.decrementAndGet();
                 }
@@ -143,7 +145,7 @@ public class HepClientManager {
                 Set<Channel> keySet = ONLINE_ACCOUNT.get(room).keySet();
                 for (Channel ch : keySet) {
                     AccountInfo accountInfo = ONLINE_ACCOUNT.get(room).get(ch);
-                    if (accountInfo == null || !accountInfo.getAuth()) {
+                    if (accountInfo == null) {
                         continue;
                     }
                     ch.writeAndFlush(new TextWebSocketFrame(MessageProto.buildMessProto(uid, nick, message)));
@@ -169,7 +171,7 @@ public class HepClientManager {
                 Set<Channel> keySet = ONLINE_ACCOUNT.get(room).keySet();
                 for (Channel ch : keySet) {
                     AccountInfo accountInfo = ONLINE_ACCOUNT.get(room).get(ch);
-                    if (accountInfo == null || !accountInfo.getAuth()) {
+                    if (accountInfo == null) {
                         continue;
                     }
                     ch.writeAndFlush(new TextWebSocketFrame(MessageProto.buildMessProto(uid, nick, message)));
@@ -192,7 +194,7 @@ public class HepClientManager {
                 Set<Channel> keySet = userInfos.keySet();
                 for (Channel ch : keySet) {
                     AccountInfo accountInfo = userInfos.get(ch);
-                    if (accountInfo == null || !accountInfo.getAuth()) {
+                    if (accountInfo == null) {
                         continue;
                     }
 
@@ -215,7 +217,7 @@ public class HepClientManager {
             Set<Channel> keySet = ONLINE_ACCOUNT.get(room).keySet();
             for (Channel ch : keySet) {
                 AccountInfo accountInfo = ONLINE_ACCOUNT.get(room).get(ch);
-                if (accountInfo == null || !accountInfo.getAuth()) {
+                if (accountInfo == null) {
                     continue;
                 }
                 ch.writeAndFlush(new TextWebSocketFrame(MessageProto.buildSystProto(idGenerator.nextIdStr(), code, mess)));
@@ -238,7 +240,7 @@ public class HepClientManager {
                 Set<Channel> keySet = accountInfos.keySet();
                 for (Channel ch : keySet) {
                     AccountInfo accountInfo = accountInfos.get(ch);
-                    if (accountInfo == null || !accountInfo.getAuth()) {
+                    if (accountInfo == null) {
                         continue;
                     }
                     ch.writeAndFlush(new TextWebSocketFrame(MessageProto.buildPingProto()));
@@ -269,7 +271,7 @@ public class HepClientManager {
      * @param code
      * @param mess
      */
-    public static String sendInfoRetry(Channel channel, int code, Object mess, String cron) {
+    public static String sendInfoRetry(Channel channel, int code, Object mess, String msgId, String cron) {
         if (StrUtil.isBlank(cron)) {
             WsProperties bean = MsgScheduler.getApplicationContext().getBean(WsProperties.class);
             if (null != bean) {
@@ -278,24 +280,20 @@ public class HepClientManager {
                 cron = "0/3 * * * * ?";
             }
         }
-        String msgid = idGenerator.nextIdStr();
-        MsgScheduler.schedule(() -> {
-            if(Thread.currentThread().isInterrupted()) {
-                return;
-            }
-
-            String sc = MSGIDS.get(msgid);
-            if (null == sc) {
-                sc = MessageProto.buildSystProto(msgid, code, mess);
-                MSGIDS.put(msgid, sc);
-            }
-            channel.writeAndFlush(new TextWebSocketFrame(sc));
-        }, cron, msgid);
-        return msgid;
+        MsgScheduler.schedule(new Sender(msgId, code, mess, channel), cron, msgId, 3L);
+        return msgId;
     }
 
     public static void removeMsgById(String msgId) {
         MSGIDS.remove(msgId);
+    }
+
+    public static String getMsgById(String msgId) {
+        return MSGIDS.get(msgId);
+    }
+
+    public static String putMsg(String msgId, String mess) {
+        return MSGIDS.put(msgId, mess);
     }
 
     /**
@@ -321,10 +319,8 @@ public class HepClientManager {
                 if (accountInfo == null) {
                     continue;
                 }
-                // 判断通道状态
-                if (!ch.isOpen() || !ch.isActive() || (!accountInfo.getAuth() &&
-                        // 过期时间（10秒）
-                        (System.currentTimeMillis() - accountInfo.getTime()) > 10000)) {
+                // 判断通道状态,// 过期时间（10秒）
+                if (!ch.isOpen() || !ch.isActive() /*|| (System.currentTimeMillis() - accountInfo.getTime()) > 10000*/) {
                     // 移除通道
                     removeChannel(ch);
                 }
@@ -355,6 +351,8 @@ public class HepClientManager {
             userInfos.putAll(userInfoConcurrentMap);
         }
         return userInfos;
+
+
     }
 
     /**
@@ -396,4 +394,6 @@ public class HepClientManager {
             //accountInfo.setTime(System.currentTimeMillis());
         }
     }
+
+
 }

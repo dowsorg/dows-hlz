@@ -112,9 +112,7 @@ public class ExperimentFollowupHandler extends AbstractEventHandler implements E
                 .noticeType(EnumNoticeType.PushCurrentAccountNotice)
                 .messageCode(MessageCode.MESS_CODE)
                 .accountId(Arrays.asList(experimentMonitorFollowupCheckRequestRs.getOperatorId()))
-                .payload(ExperimentFollowupMessage.builder()
-                        .flag(true)
-                        .build())
+                .payload(ExperimentFollowupMessage.builder().flag(true).build())
                 .build();
 
         ExperimentNoticeTask experimentNoticeTask = new ExperimentNoticeTask(

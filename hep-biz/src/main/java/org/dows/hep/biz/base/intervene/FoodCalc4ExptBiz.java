@@ -118,7 +118,8 @@ public class FoodCalc4ExptBiz extends FoodCalcBiz {
         Map<String, IndicatorInstanceEntity> rowsIndicator=ShareUtil.XCollection.toMap(indicatorInstanceDao.getIndicators4Nutrient(
                 IndicatorInstanceEntity::getIndicatorInstanceId,
                 IndicatorInstanceEntity::getIndicatorName,
-                IndicatorInstanceEntity::getUnit),IndicatorInstanceEntity::getIndicatorName, Function.identity());
+                IndicatorInstanceEntity::getUnit,
+                IndicatorInstanceEntity::getDisplayByPercent),IndicatorInstanceEntity::getIndicatorName, Function.identity());
         if(ShareUtil.XCollection.isEmpty(rowsIndicator)){
             statEnergy.forEach(i->i.setWeight(EMPTYValue).setEnergy(EMPTYValue));
             return;
@@ -126,7 +127,9 @@ public class FoodCalc4ExptBiz extends FoodCalcBiz {
         statEnergy.forEach(i->{
             Optional.ofNullable(rowsIndicator.get(i.getInstanceName()))
                     .ifPresent(rowIndicator->{
-                        i.setInstanceId(rowIndicator.getIndicatorInstanceId()).setUnit(rowIndicator.getUnit());
+                        i.setInstanceId(rowIndicator.getIndicatorInstanceId())
+                                .setUnit(rowIndicator.getUnit())
+                                .setPercentFlag(rowIndicator.getDisplayByPercent()) ;
                         rowsIndicator.remove(i.getInstanceName());
                     });
         });
@@ -134,7 +137,9 @@ public class FoodCalc4ExptBiz extends FoodCalcBiz {
         rowsIndicator.values().forEach(i->statEnergy.add((CalcFoodStatVO)new CalcFoodStatVO()
                 .setInstanceId(i.getIndicatorInstanceId())
                 .setInstanceName(i.getIndicatorName())
-                .setUnit(i.getUnit())));
+                .setUnit(i.getUnit())
+                .setPercentFlag(i.getDisplayByPercent())
+        ));
         //fill指标推荐值区间
         List<String> indicatorIds=statEnergy.stream().map(CalcFoodStatVO::getInstanceId).collect(Collectors.toList());
         Map<String, IndicatorRuleEntity> rowsIndicatorRule=ShareUtil.XCollection.toMap(indicatorRuleDao.getByIndicatorIds(indicatorIds,
@@ -206,6 +211,7 @@ public class FoodCalc4ExptBiz extends FoodCalcBiz {
         statEnergy.forEach(i->{
             i.setWeight(BigDecimalUtil.formatRoundDecimal(i.getWeightOptional().getValue(),NUMBERScale2,false,EMPTYValue));
             i.setEnergy(BigDecimalUtil.formatPercent(i.getEnergyOptional().div(box.getValue()).getValue(), EMPTYValue, NUMBERScale2, true));
+            i.buildRangeText().buildWeightText();
         });
         //餐次能量占比
         mapMealEnergy.values().forEach(i->{
@@ -213,10 +219,11 @@ public class FoodCalc4ExptBiz extends FoodCalcBiz {
             i.setEnergyRate(BigDecimalUtil.formatPercent(i.getEnergyOptional().div(box.getValue()).getValue(), EMPTYValue, NUMBERScale2, true));
         });
         //添加能量汇总
-        statEnergy.add(EnumFoodNutrient.BASENutrients3.size()-1, (CalcFoodStatVO)new CalcFoodStatVO().setInstanceName(EnumFoodNutrient.ENERGY.getName())
+        statEnergy.add(EnumFoodNutrient.BASENutrients3.size(), (CalcFoodStatVO)new CalcFoodStatVO().setInstanceName(EnumFoodNutrient.ENERGY.getName())
                 .setUnit(EnumFoodNutrient.ENERGY.getUnit())
                 .setWeight(totalEnergy)
-                .setEnergy(EMPTYValue));
+                .setEnergy(EMPTYValue)
+                .buildRangeText().buildWeightText());
         rst.setStatMealEnergy(new ArrayList<>( mapMealEnergy.values()));
 
     }

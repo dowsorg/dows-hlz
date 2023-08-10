@@ -149,8 +149,7 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
             endEntity.setExecuteTime(v.getStartTime());
             endEntity.setExecuted(false);
         } else {
-            endEntity = new ExperimentTaskScheduleEntity()
-                    .builder()
+            endEntity = ExperimentTaskScheduleEntity.builder()
                     .experimentTaskTimerId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentInstanceId)
                     .taskBeanCode(EnumExperimentTask.experimentPeriodEndNoticeTask.getDesc())
@@ -183,8 +182,7 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
             startEntity.setExecuteTime(v.getStartTime());
             startEntity.setExecuted(false);
         } else {
-            startEntity = new ExperimentTaskScheduleEntity()
-                    .builder()
+            startEntity = ExperimentTaskScheduleEntity.builder()
                     .experimentTaskTimerId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentInstanceId)
                     .taskBeanCode(EnumExperimentTask.experimentPeriodStartNoticeTask.getDesc())

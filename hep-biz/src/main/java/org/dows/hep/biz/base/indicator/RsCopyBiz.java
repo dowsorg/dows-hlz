@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.skywalking.apm.toolkit.trace.Trace;
-import org.dows.hep.api.base.indicator.request.ExperimentRsCalculateAndCreateReportHealthScoreRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyCrowdsAndRiskModelRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyIndicatorFuncRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyPersonIndicatorRequestRs;
@@ -18,8 +17,6 @@ import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -523,7 +520,6 @@ public class RsCopyBiz {
           if (Objects.nonNull(indicatorViewBaseInfoMonitorContentEntityList) && !indicatorViewBaseInfoMonitorContentEntityList.isEmpty()) {
             indicatorViewBaseInfoMonitorContentEntityList.forEach(indicatorViewBaseInfoMonitorContentEntity -> {
               String name1 = indicatorViewBaseInfoMonitorContentEntity.getName();
-              ivbimContentNameList.add(name1);
               String indicatorViewBaseInfoMonitorContentId = indicatorViewBaseInfoMonitorContentEntity.getIndicatorViewBaseInfoMonitorContentId();
               List<IndicatorViewBaseInfoMonitorContentRefEntity> indicatorViewBaseInfoMonitorContentRefEntityList = kIVBIMContentIdVIVBIMContentRefEntityListMap.get(indicatorViewBaseInfoMonitorContentId);
               if (Objects.nonNull(indicatorViewBaseInfoMonitorContentRefEntityList) && !indicatorViewBaseInfoMonitorContentRefEntityList.isEmpty()) {
@@ -536,8 +532,12 @@ public class RsCopyBiz {
                     signleIvbimContentRefIndicatorInstanceIdList.add(indicatorInstanceId);
                   }
                 });
-                singleIvbimContentRefIndicatorInstanceIdArray = String.join(EnumString.COMMA.getStr(), signleIvbimContentRefIndicatorInstanceIdList);
-                ivbimContentRefIndicatorInstanceIdList.add(singleIvbimContentRefIndicatorInstanceIdArray);
+                if(signleIvbimContentRefIndicatorInstanceIdList.size()>0){
+                    singleIvbimContentRefIndicatorInstanceIdArray = String.join(EnumString.COMMA.getStr(), signleIvbimContentRefIndicatorInstanceIdList);
+                    ivbimContentRefIndicatorInstanceIdList.add(singleIvbimContentRefIndicatorInstanceIdArray);
+                    ivbimContentNameList.add(name1);
+                }
+
               }
 
             });
@@ -694,7 +694,7 @@ public class RsCopyBiz {
         indicatorViewMonitorFollowupFollowupContentEntityList.forEach(indicatorViewMonitorFollowupFollowupContentEntity -> {
           String indicatorViewMonitorFollowupFollowupContentId = indicatorViewMonitorFollowupFollowupContentEntity.getIndicatorViewMonitorFollowupFollowupContentId();
           String name1 = indicatorViewMonitorFollowupFollowupContentEntity.getName();
-          ivmfContentNameList.add(name1);
+
           List<IndicatorViewMonitorFollowupContentRefEntity> indicatorViewMonitorFollowupContentRefEntityList = kIndicatorViewMonitorFollowupFollowupContentIdVIndicatorViewMonitorFollowupContentRefEntityListMap.get(indicatorViewMonitorFollowupFollowupContentId);
           if (Objects.nonNull(indicatorViewMonitorFollowupContentRefEntityList) && !indicatorViewMonitorFollowupContentRefEntityList.isEmpty()) {
             String singleIvbimContentRefIndicatorInstanceIdArray = null;
@@ -708,6 +708,7 @@ public class RsCopyBiz {
             });
             singleIvbimContentRefIndicatorInstanceIdArray = String.join(EnumString.COMMA.getStr(), signleIvbimContentRefIndicatorInstanceIdList);
             ivmfContentRefIndicatorInstanceIdList.add(singleIvbimContentRefIndicatorInstanceIdArray);
+            ivmfContentNameList.add(name1);
           }
         });
         ivmfContentNameArray = String.join(EnumString.COMMA.getStr(), ivmfContentNameList);

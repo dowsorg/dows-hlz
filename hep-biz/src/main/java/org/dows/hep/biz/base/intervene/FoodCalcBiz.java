@@ -338,12 +338,15 @@ public class FoodCalcBiz {
         Map<String, IndicatorInstanceEntity> rowsIndicator=ShareUtil.XCollection.toMap(indicatorInstanceDao.getIndicators4Nutrient(EnumFoodNutrient.BASENutrientNames3,
                 IndicatorInstanceEntity::getIndicatorInstanceId,
                 IndicatorInstanceEntity::getIndicatorName,
-                IndicatorInstanceEntity::getUnit),IndicatorInstanceEntity::getIndicatorName, Function.identity());
+                IndicatorInstanceEntity::getUnit,
+                IndicatorInstanceEntity::getDisplayByPercent),IndicatorInstanceEntity::getIndicatorName, Function.identity());
         if(ShareUtil.XCollection.isEmpty(rowsIndicator)){
-            rst.forEach(i->i.setWeight(EMPTYValue).setEnergy(EMPTYValue));
+            rst.forEach(i->i.setWeight(EMPTYValue).setEnergy(EMPTYValue).setRangeText(EMPTYValue).setWeightText(EMPTYValue));
             return rst;
         }
-        rst.forEach(i-> Optional.ofNullable( rowsIndicator.get(i.getInstanceName())).ifPresent(v->i.setInstanceId(v.getIndicatorInstanceId()).setUnit(v.getUnit())));
+        rst.forEach(i-> Optional.ofNullable( rowsIndicator.get(i.getInstanceName())).ifPresent(v->i.setInstanceId(v.getIndicatorInstanceId())
+                .setUnit(v.getUnit())
+                .setPercentFlag(v.getDisplayByPercent())));
         //fill指标推荐值区间
         List<String> indicatorIds=rowsIndicator.values().stream().map(IndicatorInstanceEntity::getIndicatorInstanceId).collect(Collectors.toList());
         Map<String,IndicatorRuleEntity> rowsIndicatorRule=ShareUtil.XCollection.toMap(indicatorRuleDao.getByIndicatorIds(indicatorIds,
@@ -390,6 +393,7 @@ public class FoodCalcBiz {
         rst.forEach(i->{
             i.setWeight(BigDecimalUtil.formatRoundDecimal(i.getWeightOptional().getValue(),NUMBERScale2,false,EMPTYValue));
             i.setEnergy(BigDecimalUtil.formatPercent(i.getEnergyOptional().div(box.getValue()).getValue(), EMPTYValue, NUMBERScale2, true));
+            i.buildRangeText().buildWeightText();
         });
         //添加能量汇总
         CalcFoodStatVO energyVo=new CalcFoodStatVO();
@@ -397,7 +401,8 @@ public class FoodCalcBiz {
         rst.add((CalcFoodStatVO)energyVo.setInstanceName(EnumFoodNutrient.ENERGY.getName())
                 .setUnit(EnumFoodNutrient.ENERGY.getUnit())
                 .setWeight(BigDecimalUtil.formatRoundDecimal(box.getValue(),NUMBERScale2,false,EMPTYValue))
-                .setEnergy(EMPTYValue));
+                .setEnergy(EMPTYValue)
+                .buildRangeText().buildWeightText());
         return rst;
     }
 
@@ -437,6 +442,7 @@ public class FoodCalcBiz {
         List<CalcFoodStatVO> rst = new ArrayList<>(mapRst.values());
         rst.forEach(i->{
             i.setWeight(BigDecimalUtil.formatRoundDecimal(i.getWeightOptional().getValue(),NUMBERScale2,false,EMPTYValue));
+            i.buildRangeText().buildWeightText();
         });
         mapRst.clear();
         return rst;

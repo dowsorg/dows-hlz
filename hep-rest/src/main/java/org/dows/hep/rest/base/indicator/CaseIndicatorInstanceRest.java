@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.CaseCreateCopyToPersonRequestRs;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateCaseIndicatorInstanceRequestRs;
+import org.dows.hep.api.base.indicator.request.RsCaseGetCoreRequest;
+import org.dows.hep.api.base.indicator.request.RsExperimentGetCoreRequest;
 import org.dows.hep.api.base.indicator.response.CaseIndicatorInstanceCategoryResponseRs;
 import org.dows.hep.api.tenant.casus.request.UpdateIndicatorValueRequest;
 import org.dows.hep.biz.base.indicator.CaseIndicatorInstanceBiz;
@@ -12,6 +14,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -71,5 +74,12 @@ public class CaseIndicatorInstanceRest {
     @PostMapping("v2/caseIndicator/indicatorInstance/copy")
     public void v2CopyPersonIndicatorInstance(@RequestBody CaseCreateCopyToPersonRequestRs caseCreateCopyToPersonRequestRs) throws ExecutionException, InterruptedException {
         caseIndicatorInstanceBiz.copyPersonIndicatorInstance(caseCreateCopyToPersonRequestRs);
+    }
+
+    @Operation(summary = "获取人物的关键指标")
+    @PostMapping("v1/caseIndicator/indicatorInstance/core/get")
+    public Map<String, List<String>> getCoreByAccountIdList(@RequestBody RsCaseGetCoreRequest rsCaseGetCoreRequest) {
+        List<String> accountIdList = rsCaseGetCoreRequest.getAccountIdList();
+        return caseIndicatorInstanceBiz.getCoreByAccountIdList(accountIdList);
     }
 }

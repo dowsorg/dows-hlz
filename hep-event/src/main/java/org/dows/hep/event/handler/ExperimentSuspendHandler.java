@@ -1,6 +1,7 @@
 package org.dows.hep.event.handler;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.json.JSONUtil;
 import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,9 +45,18 @@ public class ExperimentSuspendHandler extends AbstractEventHandler implements Ev
         List<ExperimentTimerEntity> updateExperimentTimerEntities = new ArrayList<>();
         // 获取当前实验所有期数计时器列表并按期数递增排序
         List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerBiz
-                .getPeriodsTimerList(experimentRestartRequest.getExperimentInstanceId());
+                .getPeriodTimers(experimentRestartRequest.getExperimentInstanceId());
+        // 实验状态
+        Integer state = experimentRestartRequest.getState();
+
         // 如果期数为空，则可能为设计模式，或分配小组机构等场景
-        if (experimentRestartRequest.getPeriods() == null) {
+        if (experimentRestartRequest.getPeriods() == null || state == EnumExperimentState.PREPARE.getState()) {
+            for (ExperimentTimerEntity experimentTimerEntity : experimentTimerEntityList) {
+                boolean before = experimentTimerEntity.getEndTime().before(experimentRestartRequest.getCurrentTime());
+                if(before){
+                    throw new ExperimentException("间隔期内不能进行暂停操作");
+                }
+            }
             // todo 更新所有计时器时间
             for (ExperimentTimerEntity experimentTimerEntity : experimentTimerEntityList) {
                 ExperimentTimerEntity updExperimentTimerEntity = new ExperimentTimerEntity();
@@ -125,11 +135,12 @@ public class ExperimentSuspendHandler extends AbstractEventHandler implements Ev
                  */
                 WsMessageResponse wsMessageResponse = new WsMessageResponse(EnumWebSocketType.EXPT_SUSPEND, experimentRestartRequest);
                 // 通知客户端
-                ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfos();
+                ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfosByExperimentId(experimentRestartRequest.getExperimentInstanceId());
                 Set<Channel> channels = userInfos.keySet();
                 for (Channel channel : channels) {
-                    HepClientManager.sendInfoRetry(channel, MessageCode.MESS_CODE, Response.ok(wsMessageResponse),null);
+                    HepClientManager.sendInfoRetry(channel, MessageCode.MESS_CODE, Response.ok(wsMessageResponse),idGenerator.nextIdStr(),null);
                 }
+                log.info("暂停实验:{}", JSONUtil.toJsonStr(wsMessageResponse));
             }
         }
         // 重置定时任务

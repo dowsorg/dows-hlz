@@ -30,15 +30,21 @@ public class CommonWebSocketEventHandler<T> extends AbstractEventHandler impleme
     }
 
     public static <T> int sendWebSocketData(CommonWebSocketEventSource<T> src){
+        StringBuilder sb=new StringBuilder();
+        sb.append(String.format("CommonWebSocketEventHandler.sendWebSocketData[%s] ", Thread.currentThread().getName()));
+
         try {
             if (ShareUtil.XObject.isEmpty(src)) {
+                sb.append("emptySource");
                 return -1;
             }
             if (ShareUtil.XObject.anyEmpty(src.getExperimentInstanceId(), src.getClientIds())) {
+                sb.append("emptyInputClients");
                 return -1;
             }
             ConcurrentMap<Channel, AccountInfo> clients = HepClientManager.getUserInfosByExperimentId(src.getExperimentInstanceId());
             if (ShareUtil.XObject.isEmpty(clients)) {
+                sb.append(String.format( "emptyExptClients exptId:%s", src.getExperimentInstanceId()));
                 return -1;
             }
             WsMessageResponse wsMsg = WsMessageResponse.builder()
@@ -56,12 +62,15 @@ public class CommonWebSocketEventHandler<T> extends AbstractEventHandler impleme
                 HepClientManager.sendInfo(item.getKey(), MessageCode.MESS_CODE, wsPack);
 
             }
-            log.info(String.format("CommonWebSocketEventHandler.sendWebSocketData total:%s sended:%s sendedIds:%s",
+            sb.append(String.format(" total:%s sended:%s sendedIds:%s",
                     clientIds.size(), sended.size(), String.join(",", sended)));
             return sended.size();
         }catch (Exception ex){
-            log.error("CommonWebSocketEventHandler.sendWebSocketData fail.",ex);
+            log.error(sb.toString(),ex);
             return -1;
+        }finally {
+            log.info(sb.toString());
+            sb.setLength(0);
         }
 
     }

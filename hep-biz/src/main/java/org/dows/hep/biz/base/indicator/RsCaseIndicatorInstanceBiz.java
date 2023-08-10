@@ -293,7 +293,8 @@ public class RsCaseIndicatorInstanceBiz {
           }
           IndicatorExpressionItemResponseRs maxIndicatorExpressionItemResponseRs = indicatorExpressionResponseRs.getMaxIndicatorExpressionItemResponseRs();
           if (Objects.nonNull(maxIndicatorExpressionItemResponseRs)) {
-            caseMaxIndicatorExpressionItemId = kOldIdVNewIdMap.get(minIndicatorExpressionItemResponseRs.getIndicatorExpressionItemId());
+            String maxIndicatorExpressionItemId = maxIndicatorExpressionItemResponseRs.getIndicatorExpressionItemId();
+            caseMaxIndicatorExpressionItemId = kOldIdVNewIdMap.get(maxIndicatorExpressionItemId);
             CaseIndicatorExpressionItemEntity maxCaseIndicatorExpressionItemEntity = this.convertIndicatorExpressionItemResponseRs2Case(maxIndicatorExpressionItemResponseRs, kOldIdVNewIdMap);
             if (Objects.nonNull(maxCaseIndicatorExpressionItemEntity)) {
               caseIndicatorExpressionItemEntityList.add(maxCaseIndicatorExpressionItemEntity);
