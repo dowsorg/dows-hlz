@@ -17,7 +17,6 @@ import org.dows.hep.api.notify.NoticeContent;
 import org.dows.hep.api.notify.message.ExperimentPeriodMessage;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentParticipatorRequest;
-import org.dows.hep.api.user.experiment.request.ExptQuestionnaireAllotRequest;
 import org.dows.hep.api.user.experiment.response.StartCutdownResponse;
 import org.dows.hep.biz.noticer.PeriodEndNoticer;
 import org.dows.hep.biz.noticer.PeriodStartNoticer;
@@ -69,8 +68,6 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
         String appId = participatorRequestList.get(0).getAppId();
         // 触发开始
         triggerStart(experimentInstanceId);
-        // 分配题目
-        allotQuestion(experimentInstanceId, experimentGroupId);
         // 通知客户端
         wsNotice(participatorRequestList, experimentInstanceId);
         // 设置rankingTimerTask
@@ -212,37 +209,6 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
                 .paused(false)
                 .currentTime(new Date())
                 .build());
-    }
-
-    /**
-     * 分发试卷|题目
-     */
-    private void allotQuestion(String experimentInstanceId, String experimentGroupId) {
-
-        List<ExperimentParticipatorEntity> list = experimentParticipatorService.lambdaQuery()
-                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
-                .eq(ExperimentParticipatorEntity::getExperimentGroupId, experimentGroupId)
-                .list();
-
-        ArrayList<ExptQuestionnaireAllotRequest.ParticipatorWithQuestionnaire> allotList = new ArrayList<>();
-        ExptQuestionnaireAllotRequest request = ExptQuestionnaireAllotRequest.builder()
-                .experimentInstanceId(experimentInstanceId)
-                .experimentGroupId(experimentGroupId)
-                .build();
-        list.forEach(ep -> {
-            String experimentOrgIds = ep.getExperimentOrgIds();
-            String accountId = ep.getAccountId();
-            String[] orgIds = experimentOrgIds.split(",");
-
-            ExptQuestionnaireAllotRequest.ParticipatorWithQuestionnaire participatorWithQuestionnaire =
-                    new ExptQuestionnaireAllotRequest.ParticipatorWithQuestionnaire();
-            participatorWithQuestionnaire.setAccountId(accountId);
-            participatorWithQuestionnaire.setExperimentOrgIds(List.of(orgIds));
-            allotList.add(participatorWithQuestionnaire);
-        });
-        request.setAllotList(allotList);
-
-        experimentQuestionnaireBiz.allotQuestionnaireMembers(request);
     }
 
     /**

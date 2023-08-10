@@ -14,6 +14,7 @@ import org.dows.hep.api.exception.ExperimentParticipatorException;
 import org.dows.hep.api.user.experiment.request.AllotActorRequest;
 import org.dows.hep.api.user.experiment.request.CreateGroupRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentParticipatorRequest;
+import org.dows.hep.api.user.experiment.request.ExptQuestionnaireAllotRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
 import org.dows.hep.entity.*;
@@ -34,6 +35,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class ExperimentGroupBiz {
+
+    private final ExperimentQuestionnaireBiz experimentQuestionnaireBiz;
 
     private final ExperimentGroupService experimentGroupService;
 
@@ -256,6 +259,7 @@ public class ExperimentGroupBiz {
          * todo 优化一下参数结构@jx
          */
         String experimentInstanceId = participatorList.get(0).getExperimentInstanceId();
+        String experimentGroupId = participatorList.get(0).getExperimentGroupId();
         ExperimentInstanceEntity experimentInstanceEntity = experimentInstanceService.lambdaQuery()
                 .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
                 .oneOpt().orElseThrow(() -> new ExperimentException("实验不存在"));
@@ -308,6 +312,10 @@ public class ExperimentGroupBiz {
                 .filter(e -> e.getGroupState() == EnumExperimentGroupStatus.WAIT_ALL_GROUP_ASSIGN.getCode())
                 .collect(Collectors.toList());
         /**
+         * 分配试卷
+         */
+        allotQuestion(experimentInstanceId, experimentGroupId);
+        /**
          * 所有小组准备完成发布事件，计数小组是否分配到齐，是否都分配好，如果都分配好，发布实验就绪事件
          */
         if (list.size() == collect.size()) {
@@ -315,6 +323,37 @@ public class ExperimentGroupBiz {
             return true;
         }
         return false;
+    }
+
+    /**
+     * 分发试卷|题目
+     */
+    private void allotQuestion(String experimentInstanceId, String experimentGroupId) {
+
+        List<ExperimentParticipatorEntity> list = experimentParticipatorService.lambdaQuery()
+                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
+                .eq(ExperimentParticipatorEntity::getExperimentGroupId, experimentGroupId)
+                .list();
+
+        ArrayList<ExptQuestionnaireAllotRequest.ParticipatorWithQuestionnaire> allotList = new ArrayList<>();
+        ExptQuestionnaireAllotRequest request = ExptQuestionnaireAllotRequest.builder()
+                .experimentInstanceId(experimentInstanceId)
+                .experimentGroupId(experimentGroupId)
+                .build();
+        list.forEach(ep -> {
+            String experimentOrgIds = ep.getExperimentOrgIds();
+            String accountId = ep.getAccountId();
+            String[] orgIds = experimentOrgIds.split(",");
+
+            ExptQuestionnaireAllotRequest.ParticipatorWithQuestionnaire participatorWithQuestionnaire =
+                    new ExptQuestionnaireAllotRequest.ParticipatorWithQuestionnaire();
+            participatorWithQuestionnaire.setAccountId(accountId);
+            participatorWithQuestionnaire.setExperimentOrgIds(List.of(orgIds));
+            allotList.add(participatorWithQuestionnaire);
+        });
+        request.setAllotList(allotList);
+
+        experimentQuestionnaireBiz.allotQuestionnaireMembers(request);
     }
 
     /**
