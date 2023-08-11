@@ -31,4 +31,7 @@ public class RsChangeMoneyRequest implements Serializable {
 
   @Schema(title = "金钱变化值")
   private BigDecimal moneyChange;
+
+  @Schema(title = "确保足额")
+  private boolean assertEnough=false;
 }

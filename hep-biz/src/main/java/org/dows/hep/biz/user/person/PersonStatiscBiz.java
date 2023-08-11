@@ -206,7 +206,7 @@ public class PersonStatiscBiz {
             }
         }
         //2、获取参与者负责的uim机构
-        List<String> experimentOrgIds = Arrays.asList(participatorEntity.getExperimentOrgIds());
+        List<String> experimentOrgIds = Arrays.asList(participatorEntity.getExperimentOrgIds().split(","));
         List<String> orgIds = new ArrayList<>();
         if (experimentOrgIds != null && experimentOrgIds.size() > 0) {
             experimentOrgIds.forEach(experimentOrgId -> {
@@ -259,7 +259,7 @@ public class PersonStatiscBiz {
                         .period(request.getPeriods())
                         .build());
                 costEntityList = costEntityList.stream().filter(c -> ((c.getDt().after(timerEntity.getStartTime()) || c.getDt().equals(timerEntity.getStartTime()))
-                        && (c.getDt().before(timerEntity.getEndTime()) || c.getDt().equals(timerEntity.getEndTime()))))
+                                && (c.getDt().before(timerEntity.getEndTime()) || c.getDt().equals(timerEntity.getEndTime()))))
                         .collect(Collectors.toList());
                 //3.2、判断人物消费期间购买了哪些保险
                 if (costEntityList != null && costEntityList.size() > 0) {

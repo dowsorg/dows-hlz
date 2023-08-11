@@ -54,7 +54,7 @@ public class SpelInvoker {
     public List<SpelEvalResult> evalTreatEffect(String experimentId, String experimentPersonId, Integer periods,List<ExptTreatPlanItemVO> treatItems,Map<String, SpelEvalSumResult> mapSum ) {
         StandardEvaluationContext context = new SpelPersonContext().setVariables(experimentPersonId, periods);
         final Map<String, BigDecimal> mapTreatItem = ShareUtil.XCollection.toMap(treatItems, HashMap::new,ExptTreatPlanItemVO::getTreatItemId,i ->
-                BigDecimalUtil.tryParseDecimalElseNull(i.getWeight()),(c,n)->BigDecimalUtil.add(c,n));
+                BigDecimalUtil.tryParseDecimalElseZero(i.getWeight()),(c,n)->BigDecimalUtil.add(c,n));
         return spelEngine.loadFromSnapshot()
                 .withReasonId(experimentId, experimentPersonId, mapTreatItem.keySet(), null)
                 .prepare(inputs -> inputs.forEach(i -> i.setFactor(mapTreatItem.get(i.getReasonId()))))

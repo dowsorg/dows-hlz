@@ -135,7 +135,7 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
             return rst;
         }
 
-        AssertUtil.trueThenThrow(ShareUtil.XObject.anyEmpty(cached, cached.getMapPeriod()))
+        AssertUtil.trueThenThrow(ShareUtil.XObject.anyEmpty(cached, ()->cached.getMapPeriod()))
                 .throwMessage("getTimePointByRealTime-未找到实验时间设置");
        /* AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(cached.getStartTime()))
                 .throwMessage("getTimePointByRealTime-未找到实验开始时间");*/
