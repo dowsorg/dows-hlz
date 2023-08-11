@@ -116,7 +116,7 @@ public abstract class BaseSubDao<LS extends MybatisCrudService<LE>, LE extends C
         return true;
     }
     @DSTransactional
-    public boolean tranSave(List<LE> leads, List<SE> subs,boolean dftIfLeadEmpty,Supplier<Boolean> saveOthers) {
+    public boolean tranSaveBatch(List<LE> leads, List<SE> subs,boolean dftIfLeadEmpty,Supplier<Boolean> saveOthers) {
         if (!this.tranSaveBatch(leads, subs, dftIfLeadEmpty)) {
             return false;
         }
