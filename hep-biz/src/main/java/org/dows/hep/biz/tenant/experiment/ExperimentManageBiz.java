@@ -255,6 +255,7 @@ public class ExperimentManageBiz {
                         .experimentParticipatorId(idGenerator.nextIdStr())
                         .appId(experimentGroupSettingRequest.getAppId())
                         .model(experimentGroupSettingRequest.getModel())
+                        .caseInstanceId(experimentGroupSettingRequest.getCaseInstanceId())
                         .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
                         .experimentName(experimentGroupSettingRequest.getExperimentName())
                         .experimentStartTime(experimentGroupSettingRequest.getStartTime())
@@ -282,8 +283,9 @@ public class ExperimentManageBiz {
          * 同一时刻，一个用户职能参与到一个实验中
          */
         List<ExperimentParticipatorEntity> list = experimentParticipatorService.lambdaQuery()
-                .in(ExperimentParticipatorEntity::getAccountId, accountIds)
                 .eq(ExperimentParticipatorEntity::getExperimentStartTime, experimentGroupSettingRequest.getStartTime())
+                .eq(ExperimentParticipatorEntity::getCaseInstanceId,experimentGroupSettingRequest.getCaseInstanceId())
+                .in(ExperimentParticipatorEntity::getAccountId, accountIds)
                 .list();
         if (list.size() > 0) {
             List<String> collect1 = list.stream().map(ExperimentParticipatorEntity::getAccountName).collect(Collectors.toList());
