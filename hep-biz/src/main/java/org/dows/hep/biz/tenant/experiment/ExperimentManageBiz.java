@@ -139,6 +139,8 @@ public class ExperimentManageBiz {
             ExperimentParticipatorEntity experimentParticipatorEntity = ExperimentParticipatorEntity.builder()
                     .experimentParticipatorId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentInstance.getExperimentInstanceId())
+                    .caseInstanceId(createExperiment.getCaseInstanceId())
+                    .experimentStartTime(createExperiment.getStartTime())
                     .experimentName(experimentInstance.getExperimentName())
                     .accountId(instance.getAccountId())
                     .accountName(instance.getAccountName())
