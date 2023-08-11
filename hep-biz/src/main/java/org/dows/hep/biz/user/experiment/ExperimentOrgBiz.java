@@ -442,4 +442,13 @@ public class ExperimentOrgBiz{
         voPage.setRecords(responseList);
         return voPage;
     }
+
+    public Integer countExperimentPersons(ExperimentPersonRequest personRequest) {
+        List<ExperimentPersonEntity> personEntityList = experimentPersonService.lambdaQuery()
+                .eq(ExperimentPersonEntity::getExperimentInstanceId, personRequest.getExperimentInstanceId())
+                .eq(ExperimentPersonEntity::getExperimentGroupId,personRequest.getExperimentGroupId())
+                .eq(ExperimentPersonEntity::getDeleted,false)
+                .list();
+        return personEntityList.size();
+    }
 }

@@ -52,6 +52,17 @@ public class ExperimentOrgRest {
     }
 
     /**
+     * 获取实验小组人物数量
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取实验小组人物数量")
+    @PostMapping("v1/userExperiment/experimentOrg/countExperimentPersons")
+    public Integer countExperimentPersons(@RequestBody @Validated ExperimentPersonRequest personRequest) {
+        return experimentOrgBiz.countExperimentPersons(personRequest);
+    }
+
+    /**
     * 挂号：医院，体检中心
     * @param
     * @return
