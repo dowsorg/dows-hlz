@@ -64,6 +64,7 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
     private final ExperimentInstanceService experimentInstanceService;
     private final ExperimentScoringService experimentScoringService;
     private final ExperimentOrgService experimentOrgService;
+    private final ExperimentPersonService experimentPersonService;
 
     private final RiskBiz riskBiz;
 
@@ -85,6 +86,7 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
         private ExperimentRankResponse experimentRankResponse;
         private List<ExperimentQuestionnaireResponse> exptQuestionnaireList;
         private List<ExperimentOrgEntity> exptOrgList;
+        private List<ExperimentPersonEntity> exptPersonList;
     }
 
     /**
@@ -140,6 +142,7 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
                 .experimentRankResponse(getRank(exptInstanceId))
                 .exptQuestionnaireList(listExptQuestionnaire(exptInstanceId, exptGroupId))
                 .exptOrgList(listExptOrg(exptInstanceId))
+                .exptPersonList(listExptPerson(exptInstanceId, exptGroupId))
                 .build();
     }
 
@@ -296,6 +299,13 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
                 .list();
     }
 
+    private List<ExperimentPersonEntity> listExptPerson(String exptInstanceId, String exptGroupId) {
+        return experimentPersonService.lambdaQuery()
+                .eq(ExperimentPersonEntity::getExperimentInstanceId, exptInstanceId)
+                .eq(StrUtil.isNotBlank(exptGroupId), ExperimentPersonEntity::getExperimentGroupId, exptGroupId)
+                .list();
+    }
+
     private ExptBaseInfoModel generateBaseInfoVO(FindSoftProperties findSoftProperties) {
         String logoStr = null;
         String coverStr = null;
@@ -320,6 +330,7 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
         List<ExperimentGroupEntity> groupList = exptData.getExptGroupInfoList();
         List<ExperimentParticipatorEntity> memberList = exptData.getExptMemberList();
         List<ExperimentOrgEntity> exptOrgList = exptData.getExptOrgList();
+        List<ExperimentPersonEntity> exptPersonList = exptData.getExptPersonList();
         final ExptSandReportModel.GroupInfo emptyGroupInfo = new ExptSandReportModel.GroupInfo();
 
         if (CollUtil.isEmpty(groupList) || CollUtil.isEmpty(memberList)) {
@@ -341,6 +352,10 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
                 .map(ExperimentParticipatorEntity::getAccountName)
                 .toList();
 
+        List<ExperimentPersonEntity> groupNPCPerson = exptPersonList.stream()
+                .filter(item -> exptGroupId.equals(item.getExperimentGroupId()))
+                .toList();
+
         return ExptSandReportModel.GroupInfo.builder()
                 .groupNo(groupEntity.getGroupNo())
                 .groupName(groupEntity.getGroupName())
@@ -348,7 +363,7 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
                 .caseName(exptInfo.getCaseName())
                 .experimentName(exptInfo.getExperimentName())
                 .exptStartDate(exptInfo.getStartTime() == null ? "" : DateUtil.formatDate(exptInfo.getStartTime()))
-                .caseNum(exptOrgList.size())
+                .caseNum(CollUtil.isEmpty(groupNPCPerson) ? 0 : groupNPCPerson.size())
                 .build();
     }
 
