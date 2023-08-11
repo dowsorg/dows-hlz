@@ -7,6 +7,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.ExptQuestionnaireStateEnum;
 import org.dows.hep.api.user.experiment.request.ExperimentQuestionnaireItemRequest;
@@ -16,7 +17,9 @@ import org.dows.hep.api.user.experiment.request.ExptQuestionnaireSearchRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
 import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireItemResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireResponse;
+import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentQuestionnaireEntity;
+import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentQuestionnaireService;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +37,7 @@ public class ExperimentQuestionnaireBiz {
     private final ExperimentQuestionnaireService experimentQuestionnaireService;
     private final ExperimentQuestionnaireItemBiz experimentQuestionnaireItemBiz;
     private final ExperimentTimerBiz experimentTimerBiz;
-    private final ExperimentQuestionnaireScoreBiz experimentQuestionnaireScoreBiz;
+    private final ExperimentInstanceService experimentInstanceService;
 
     /**
      * @param request - 试卷分配请求
@@ -91,32 +94,60 @@ public class ExperimentQuestionnaireBiz {
      */
     public ExperimentQuestionnaireResponse getQuestionnaire(ExptQuestionnaireSearchRequest request) {
         Assert.notNull(request, ExperimentESCEnum.PARAMS_NON_NULL.getDescr());
-        ExperimentPeriodsResonse experimentPeriods = experimentTimerBiz.getExperimentCurrentPeriods("3", request.getExperimentInstanceId());
-        Integer currentPeriod = Optional.ofNullable(experimentPeriods)
-                .map(ExperimentPeriodsResonse::getCurrentPeriod)
-                .orElseThrow(() -> new BizException(ExperimentESCEnum.PERIOD_NON_NULL));
-
-        // 根据实验id、期数、小组id， 机构id 获取知识答题
-        ExperimentQuestionnaireEntity entity = experimentQuestionnaireService.lambdaQuery()
-                .eq(ExperimentQuestionnaireEntity::getExperimentInstanceId, request.getExperimentInstanceId())
-                .eq(ExperimentQuestionnaireEntity::getPeriodSequence, currentPeriod)
-                .eq(ExperimentQuestionnaireEntity::getExperimentOrgId, request.getExperimentOrgId())
-                .eq(ExperimentQuestionnaireEntity::getExperimentGroupId, request.getExperimentGroupId())
-                .eq(ExperimentQuestionnaireEntity::getExperimentAccountId,  request.getExperimentAccountId())
+        ExperimentInstanceEntity experimentInstanceEntity = experimentInstanceService.lambdaQuery()
+                .eq(ExperimentInstanceEntity::getExperimentInstanceId, request.getExperimentInstanceId())
                 .oneOpt()
-                .orElse(null);
-        if (BeanUtil.isEmpty(entity)) {
-            return new ExperimentQuestionnaireResponse();
+                .orElseThrow(() -> new BizException("查询知识答题问卷时：获取实验实例信息为空"));
+        Integer exptState = experimentInstanceEntity.getState();
+        if (EnumExperimentState.FINISH.getState() == exptState) {
+            // 根据实验id、小组id， 机构id 获取知识答题
+            List<ExperimentQuestionnaireEntity> list = experimentQuestionnaireService.lambdaQuery()
+                    .eq(ExperimentQuestionnaireEntity::getExperimentInstanceId, request.getExperimentInstanceId())
+                    .eq(ExperimentQuestionnaireEntity::getExperimentOrgId, request.getExperimentOrgId())
+                    .eq(ExperimentQuestionnaireEntity::getExperimentGroupId, request.getExperimentGroupId())
+                    .eq(ExperimentQuestionnaireEntity::getExperimentAccountId, request.getExperimentAccountId())
+                    .list();
+            if (CollUtil.isEmpty(list)) {
+                return new ExperimentQuestionnaireResponse();
+            }
+
+            ExperimentQuestionnaireResponse result = new ExperimentQuestionnaireResponse();
+            List<String> questionnaireIds = list.stream().map(ExperimentQuestionnaireEntity::getExperimentQuestionnaireId).toList();
+            List<ExperimentQuestionnaireItemResponse> itemList = experimentQuestionnaireItemBiz.listByQuestionnaireIds(questionnaireIds, false);
+            List<ExperimentQuestionnaireItemResponse> itemTreeList = convertList2Tree(itemList);
+            List<ExperimentQuestionnaireResponse.ExptCategQuestionnaireItem> categItemList = ExperimentQuestionnaireResponse.convertItemList2CategItemList(itemTreeList);
+            result.setItemList(itemTreeList);
+            result.setCategItemList(categItemList);
+
+            return result;
+        } else {
+            ExperimentPeriodsResonse experimentPeriods = experimentTimerBiz.getExperimentCurrentPeriods("3", request.getExperimentInstanceId());
+            Integer currentPeriod = Optional.ofNullable(experimentPeriods)
+                    .map(ExperimentPeriodsResonse::getCurrentPeriod)
+                    .orElseThrow(() -> new BizException(ExperimentESCEnum.PERIOD_NON_NULL));
+
+            // 根据实验id、期数、小组id， 机构id 获取知识答题
+            ExperimentQuestionnaireEntity entity = experimentQuestionnaireService.lambdaQuery()
+                    .eq(ExperimentQuestionnaireEntity::getExperimentInstanceId, request.getExperimentInstanceId())
+                    .eq(ExperimentQuestionnaireEntity::getPeriodSequence, currentPeriod)
+                    .eq(ExperimentQuestionnaireEntity::getExperimentOrgId, request.getExperimentOrgId())
+                    .eq(ExperimentQuestionnaireEntity::getExperimentGroupId, request.getExperimentGroupId())
+                    .eq(ExperimentQuestionnaireEntity::getExperimentAccountId,  request.getExperimentAccountId())
+                    .oneOpt()
+                    .orElse(null);
+            if (BeanUtil.isEmpty(entity)) {
+                return new ExperimentQuestionnaireResponse();
+            }
+
+            ExperimentQuestionnaireResponse result = BeanUtil.copyProperties(entity, ExperimentQuestionnaireResponse.class);
+            List<ExperimentQuestionnaireItemResponse> itemList = experimentQuestionnaireItemBiz.listByQuestionnaireId(entity.getExperimentQuestionnaireId());
+            List<ExperimentQuestionnaireItemResponse> itemTreeList = convertList2Tree(itemList);
+            List<ExperimentQuestionnaireResponse.ExptCategQuestionnaireItem> categItemList = ExperimentQuestionnaireResponse.convertItemList2CategItemList(itemTreeList);
+            result.setItemList(itemTreeList);
+            result.setCategItemList(categItemList);
+
+            return result;
         }
-        ExperimentQuestionnaireResponse result = BeanUtil.copyProperties(entity, ExperimentQuestionnaireResponse.class);
-
-        List<ExperimentQuestionnaireItemResponse> itemList = experimentQuestionnaireItemBiz.listByQuestionnaireId(entity.getExperimentQuestionnaireId());
-        List<ExperimentQuestionnaireItemResponse> itemTreeList = convertList2Tree(itemList);
-        List<ExperimentQuestionnaireResponse.ExptCategQuestionnaireItem> categItemList = ExperimentQuestionnaireResponse.convertItemList2CategItemList(itemTreeList);
-        result.setItemList(itemTreeList);
-        result.setCategItemList(categItemList);
-
-        return result;
     }
 
     /**

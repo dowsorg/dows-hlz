@@ -276,6 +276,21 @@ public class ExperimentManageBiz {
             }
         }
         List<ExperimentParticipatorEntity> collect = groupParticipators.values().stream().flatMap(x -> x.stream()).collect(Collectors.toList());
+
+        List<String> accountIds = collect.stream().map(ExperimentParticipatorEntity::getAccountId).collect(Collectors.toList());
+        /**
+         * 同一时刻，一个用户职能参与到一个实验中
+         */
+        List<ExperimentParticipatorEntity> list = experimentParticipatorService.lambdaQuery()
+                .in(ExperimentParticipatorEntity::getAccountId, accountIds)
+                .eq(ExperimentParticipatorEntity::getExperimentStartTime, experimentGroupSettingRequest.getStartTime())
+                .list();
+        if (list.size() > 0) {
+            List<String> collect1 = list.stream().map(ExperimentParticipatorEntity::getAccountName).collect(Collectors.toList());
+            List<String> collect2 = list.stream().map(ExperimentParticipatorEntity::getExperimentName).collect(Collectors.toList());
+            throw new ExperimentException("当前用户: " + String.join(",", collect1) + "在同一时刻已参与实验: " + String.join(",", collect2));
+        }
+
         // 保存实验小组
         experimentGroupService.saveBatch(experimentGroupEntitys);
         // 保存实验参与人[学生]
@@ -503,7 +518,7 @@ public class ExperimentManageBiz {
                 .update();
         //删除任务中的实验
         experimentTaskScheduleService.lambdaUpdate()
-                .in(ExperimentTaskScheduleEntity::getExperimentInstanceId,experimentInstanceIds)
+                .in(ExperimentTaskScheduleEntity::getExperimentInstanceId, experimentInstanceIds)
                 .set(ExperimentTaskScheduleEntity::getDeleted, Boolean.TRUE)
                 .update();
         return update;
@@ -768,14 +783,14 @@ public class ExperimentManageBiz {
                         .or().like("case_name", pageExperimentRequest.getKeyword())
                         .or().like("appointor_name", pageExperimentRequest.getKeyword());
             }
-            queryWrapper.eq("app_Id","3");
+            queryWrapper.eq("app_Id", "3");
             queryWrapper.orderByDesc("start_time");
             page = experimentInstanceService.page(page, queryWrapper);
         } else {
             if (roleCode.equals("TEACHER")) {
                 page = experimentInstanceService.page(page, experimentInstanceService.lambdaQuery()
                         .like(ExperimentInstanceEntity::getExperimentParticipatorIds, accountRoleByPrincipalId.getPrincipalId())
-                        .eq(ExperimentInstanceEntity::getAppId,"3")
+                        .eq(ExperimentInstanceEntity::getAppId, "3")
                         .orderByDesc(ExperimentInstanceEntity::getStartTime)
                         .getWrapper());
             } else {
