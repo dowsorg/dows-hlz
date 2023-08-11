@@ -272,7 +272,7 @@ public class ExperimentManageBiz {
                     experimentParticipatorEntity.setParticipatorType(EnumParticipatorType.CAPTAIN.getCode());
                 }
                 experimentParticipatorEntityList.add(experimentParticipatorEntity);
-                // 记录每组对应的组员
+                // 记录每组对应的组员——
                 groupParticipators.put(experimentGroupEntity.getExperimentGroupId(), experimentParticipatorEntityList);
             }
         }
