@@ -261,6 +261,7 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
         .experimentPersonId(experimentPersonId)
         .periods(periods)
         .moneyChange(totalFeeAtomicReference.get())
+        .assertEnough(true)
         .build());
     // 保存消费记录
     LoginContextVO voLogin= ShareBiz.getLoginUser(request);
