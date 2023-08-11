@@ -77,14 +77,6 @@ public class TenantCaseSchemeBiz {
         RLock lock = redissonClient.getLock(RedisKeyConst.HEP_LOCK_CASE_SCHEME + caseInstanceId);
         try {
             if (lock.tryLock(-1, 10, TimeUnit.SECONDS)) {
-                String caseSchemeId = caseScheme.getCaseSchemeId();
-                if (StrUtil.isBlank(caseSchemeId)) {
-                    CaseSchemeEntity caseSchemeEntity = getByInstanceId(caseInstanceId);
-                    if (BeanUtil.isNotEmpty(caseSchemeEntity)) {
-                        throw new BizException("教师端新增方案设计时: 方案设计已存在，请勿重复添加");
-                    }
-                }
-
                 CaseSchemeEntity caseSchemeEntity = convertRequest2Entity(caseScheme, caseSchemeSourceEnum, questionSourceEnum);
                 caseSchemeService.saveOrUpdate(caseSchemeEntity);
                 return caseSchemeEntity.getCaseSchemeId();
