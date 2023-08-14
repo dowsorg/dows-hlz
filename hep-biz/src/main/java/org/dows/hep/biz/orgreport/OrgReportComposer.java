@@ -103,7 +103,8 @@ public class OrgReportComposer {
                 nodes.add(node);
                 OrgReportExtractRequest req=createRequest(exptValidator)
                         .setPeriod(timePoint.getPeriod())
-                        .setIndicatorFuncId(func.getIndicatorFuncId());
+                        .setIndicatorFuncId(func.getIndicatorFuncId())
+                        .setOperateFlowId(rowFlow.getOperateFlowId());
                 try {
                     orgReportExtracterAdapter.fillReportData(req,node);
                 } catch (ExecutionException e) {

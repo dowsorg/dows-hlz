@@ -30,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -162,6 +161,17 @@ public class ExperimentIndicatorJudgeHealthGuidanceReportRsBiz {
             .setIndicatorFuncName(indicatorFuncName)
             .setIndicatorCategoryId(EnumIndicatorCategory.JUDGE_MANAGEMENT_HEALTH_GUIDANCE.getCode())
             .setNodeData(new ExptOrgReportNodeDataVO().setJudgeHealthGuidance(reports));
+    try {
+      rsExperimentCalculateBiz.experimentReCalculateFunc(RsExperimentCalculateFuncRequest.builder()
+              .appId(exptValidator.getAppId())
+              .experimentId(exptValidator.getExperimentInstanceId())
+              .periods(timePoint.getPeriod())
+              .experimentPersonId(exptValidator.getExperimentPersonId())
+              .build());
+    } catch (Exception ex) {
+      log.error(String.format("healthGuidanceCheck experimentId:%s personId:%s",
+              exptValidator.getExperimentInstanceId(), exptValidator.getExperimentPersonId()), ex);
+    }
     ExptOrgFlowReportResponse report=null;
     try {
       report = orgReportComposer.composeReport(exptValidator, flowValidator.updateFlowOperate(timePoint), timePoint, newNode);
@@ -170,21 +180,7 @@ public class ExperimentIndicatorJudgeHealthGuidanceReportRsBiz {
       AssertUtil.justThrow(String.format("机构报告数据编制失败：%s", ex.getMessage()), ex);
     }
     operateFlowDao.tranSave(saveFlow, List.of(saveFlowSnap), false);
-    CompletableFuture.runAsync(() -> {
-      try {
-        rsExperimentCalculateBiz.experimentReCalculateFunc(RsExperimentCalculateFuncRequest.builder()
-                .appId(exptValidator.getAppId())
-                .experimentId(exptValidator.getExperimentInstanceId())
-                .periods(timePoint.getPeriod())
-                .experimentPersonId(exptValidator.getExperimentPersonId())
-                .build());
-      } catch (Exception ex) {
-        log.error(String.format("healthGuidanceCheck experimentId:%s personId:%s",
-                exptValidator.getExperimentInstanceId(), exptValidator.getExperimentPersonId()), ex);
-      }
-    });
     return report;
-
 
   }
   private String getIndicatorFuncName(String experimentOrgId, String indicatorFuncId){

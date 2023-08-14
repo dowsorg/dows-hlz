@@ -55,7 +55,7 @@ public class ExperimentOrgNoticeDao extends BaseDao<ExperimentOrgNoticeService,E
                 //.eq(ExperimentOrgNoticeEntity::getExperimentOrgId, req.getExperimentOrgId())
                 //.eq(ExperimentOrgNoticeEntity::getExperimentGroupId, req.getExperimentGroupId())
                 .eq(oneFlag,ExperimentOrgNoticeEntity::getExperimentPersonId,req.getExperimentPersonIds().get(0))
-                .in(oneFlag,ExperimentOrgNoticeEntity::getExperimentPersonId,req.getExperimentPersonIds())
+                .in(!oneFlag,ExperimentOrgNoticeEntity::getExperimentPersonId,req.getExperimentPersonIds())
                 .select(cols)
                 .page(page);
     }

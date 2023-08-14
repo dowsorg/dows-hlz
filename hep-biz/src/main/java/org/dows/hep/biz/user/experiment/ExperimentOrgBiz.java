@@ -333,6 +333,12 @@ public class ExperimentOrgBiz{
     * @创建时间: 2023年4月23日 上午9:44:34
     */
     public Page<OrgFlowReportResponse> pageOrgReport(FindOrgReportRequest findOrgReport) {
+        if (ShareUtil.XObject.notEmpty(findOrgReport.getExperimentPersonId())) {
+            findOrgReport.setExperimentPersonIds(List.of(findOrgReport.getExperimentPersonId()));
+        } else {
+            findOrgReport.setExperimentPersonIds(ShareUtil.XCollection.map(experimentPersonDao.getByOrgId(findOrgReport.getExperimentOrgId(),
+                    ExperimentPersonEntity::getExperimentPersonId), ExperimentPersonEntity::getExperimentPersonId));
+        }
         return ShareBiz.buildPage(operateFlowDao.pageByCondition(findOrgReport), i-> CopyWrapper.create(OrgFlowReportResponse::new)
                 .endFrom(i));
     }

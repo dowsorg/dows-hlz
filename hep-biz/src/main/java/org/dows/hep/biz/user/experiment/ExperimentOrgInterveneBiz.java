@@ -47,7 +47,6 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -454,6 +453,17 @@ public class ExperimentOrgInterveneBiz{
                 }
                 return true;
             });
+            try {
+                rsExperimentCalculateBiz.experimentReCalculateFunc(RsExperimentCalculateFuncRequest.builder()
+                        .appId(validator.getAppId())
+                        .experimentId(validator.getExperimentInstanceId())
+                        .periods(timePoint.getPeriod())
+                        .experimentPersonId(validator.getExperimentPersonId())
+                        .build());
+            } catch (Exception ex) {
+                log.error(String.format("saveExptTreatPlan.deal experimentId:%s personId:%s",
+                        validator.getExperimentInstanceId(), validator.getExperimentPersonId()), ex);
+            }
             try{
                 report= orgReportComposer.composeReport(validator,flowValidator.updateFlowOperate(timePoint),timePoint,node);
                 saveFlowSnap.setRecordJson(JacksonUtil.toJson(report,true));
@@ -474,21 +484,7 @@ public class ExperimentOrgInterveneBiz{
             });
         }
 
-        if(enumOperateType.getEndFlag()) {
-            CompletableFuture.runAsync(() -> {
-                try {
-                    rsExperimentCalculateBiz.experimentReCalculateFunc(RsExperimentCalculateFuncRequest.builder()
-                            .appId(validator.getAppId())
-                            .experimentId(validator.getExperimentInstanceId())
-                            .periods(timePoint.getPeriod())
-                            .experimentPersonId(validator.getExperimentPersonId())
-                            .build());
-                } catch (Exception ex) {
-                    log.error(String.format("saveExptTreatPlan.deal experimentId:%s personId:%s",
-                            validator.getExperimentInstanceId(), validator.getExperimentPersonId()), ex);
-                }
-            });
-        }
+
 
         return new SaveExptTreatResponse()
                 .setSuccess(succFlag)

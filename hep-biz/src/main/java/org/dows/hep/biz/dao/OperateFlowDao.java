@@ -75,13 +75,18 @@ public class OperateFlowDao extends BaseSubDao<OperateFlowService, OperateFlowEn
     @Override
     public IPage<OperateFlowEntity> pageByCondition(FindOrgReportRequest req, SFunction<OperateFlowEntity, ?>... cols) {
         Page<OperateFlowEntity> page = Page.of(req.getPageNo(), req.getPageSize());
+        if(ShareUtil.XObject.isEmpty(req.getExperimentPersonIds())){
+            return page;
+        }
+        final boolean oneFlag=req.getExperimentPersonIds().size()==1;
         return service.lambdaQuery()
                 .eq(ShareUtil.XObject.notEmpty(req.getAppId()), OperateFlowEntity::getAppId,req.getAppId())
-                .eq(OperateFlowEntity::getExperimentOrgId, req.getExperimentOrgId())
-                .eq(ShareUtil.XObject.notEmpty(req.getExperimentPersonId()), OperateFlowEntity::getExperimentPersonId,req.getExperimentPersonId())
+                //.eq(OperateFlowEntity::getExperimentOrgId, req.getExperimentOrgId())
+                .eq(oneFlag, OperateFlowEntity::getExperimentPersonId,req.getExperimentPersonIds().get(0))
+                .in(!oneFlag,OperateFlowEntity::getExperimentPersonId,req.getExperimentPersonIds())
                 .ge(OperateFlowEntity::getReportFlag,1)
                 .eq(ShareUtil.XObject.notEmpty(req.getPeriods(),true),OperateFlowEntity::getPeriods,req.getPeriods())
-                .orderByDesc(OperateFlowEntity::getId)
+                .orderByDesc(OperateFlowEntity::getOperateTime, OperateFlowEntity::getId)
                 .select(cols)
                 .page(page);
     }

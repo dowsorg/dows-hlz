@@ -132,6 +132,15 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
              */
             applicationContext.publishEvent(new FollowupEvent(experimentMonitorFollowupCheckRequestRs));
         }
+        /* runsix:监测随访是一个触发计算时间点 */
+        rsExperimentCalculateBiz.experimentReCalculateFunc(RsExperimentCalculateFuncRequest
+                .builder()
+                .appId(appId)
+                .experimentId(experimentId)
+                .periods(periods)
+                .experimentPersonId(experimentPersonId)
+                .build());
+
         ExperimentIndicatorViewMonitorFollowupRsEntity experimentIndicatorViewMonitorFollowupRsEntity = experimentIndicatorViewMonitorFollowupRsService.lambdaQuery()
                 .eq(ExperimentIndicatorViewMonitorFollowupRsEntity::getExperimentIndicatorViewMonitorFollowupId, indicatorViewMonitorFollowupId)
                 .oneOpt()
@@ -268,14 +277,7 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
             operateFlowDao.tranSave(saveFlow, List.of(saveFlowSnap), false);
         }
 
-        /* runsix:监测随访是一个触发计算时间点 */
-        rsExperimentCalculateBiz.experimentReCalculateFunc(RsExperimentCalculateFuncRequest
-            .builder()
-            .appId(appId)
-            .experimentId(experimentId)
-            .periods(periods)
-            .experimentPersonId(experimentPersonId)
-            .build());
+
     }
     private ExperimentIndicatorFuncRsResponse getIndicatorFunc(String experimentOrgId, String indicatorFuncId){
         ExperimentIndicatorFuncRsResponse rst=new ExperimentIndicatorFuncRsResponse();
