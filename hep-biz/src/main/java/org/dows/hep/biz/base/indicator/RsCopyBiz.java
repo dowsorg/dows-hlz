@@ -1668,7 +1668,7 @@ public class RsCopyBiz {
               experimentInstanceId,
               caseInstanceId,
               appId,
-              experimentIndicatorExpressionId
+              null
           );
           if (Objects.nonNull(maxExperimentIndicatorExpressionItemRsEntity)) {
             experimentIndicatorExpressionItemRsEntityList.add(maxExperimentIndicatorExpressionItemRsEntity);
@@ -1684,7 +1684,7 @@ public class RsCopyBiz {
               experimentInstanceId,
               caseInstanceId,
               appId,
-              experimentIndicatorExpressionId
+              null
           );
           if (Objects.nonNull(minExperimentIndicatorExpressionItemRsEntity)) {
             experimentIndicatorExpressionItemRsEntityList.add(minExperimentIndicatorExpressionItemRsEntity);
