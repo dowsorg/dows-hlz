@@ -67,6 +67,7 @@ public class ExperimentInsuranceBiz {
                 .experimentPersonId(experimentPersonInsuranceRequest.getExperimentPersonId())
                 .periods(Integer.parseInt(experimentPersonInsuranceRequest.getPeriods()))
                 .moneyChange(experimentPersonInsuranceRequest.getInsuranceAmount().negate())
+                .assertEnough(true)
                 .build());
         LoginContextVO voLogin= ShareBiz.getLoginUser(request);
         String operateFlowId = ShareBiz.checkRunningOperateFlowId(experimentPersonInsuranceRequest.getAppId(),

@@ -1589,35 +1589,49 @@ public class RsCopyBiz {
     Map<String, CaseIndicatorExpressionEntity> kCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap = new HashMap<>();
     Map<String, List<CaseIndicatorExpressionItemEntity>> kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap = new HashMap<>();
     Map<String, CaseIndicatorExpressionInfluenceEntity> kCaseIndicatorInstanceIdVCaseIndicatorExpressionInfluenceEntityMap = new HashMap<>();
+    final List<String> minMaxExpressionItemIds=new ArrayList<>();
     if (!caseIndicatorExpressionIdSet.isEmpty()) {
-      caseIndicatorExpressionService.lambdaQuery()
-          .eq(CaseIndicatorExpressionEntity::getAppId, appId)
-          .in(CaseIndicatorExpressionEntity::getCaseIndicatorExpressionId, caseIndicatorExpressionIdSet)
-          .list()
-          .forEach(caseIndicatorExpressionEntity -> {
-            kCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap.put(caseIndicatorExpressionEntity.getCaseIndicatorExpressionId(), caseIndicatorExpressionEntity);
-          });
-      caseIndicatorExpressionItemService.lambdaQuery()
-          .eq(CaseIndicatorExpressionItemEntity::getAppId, appId)
-          .in(CaseIndicatorExpressionItemEntity::getIndicatorExpressionId, caseIndicatorExpressionIdSet)
-          .list()
-          .forEach(caseIndicatorExpressionItemEntity -> {
-            kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.put(caseIndicatorExpressionItemEntity.getCaseIndicatorExpressionItemId(), caseIndicatorExpressionItemEntity);
-            String indicatorExpressionId = caseIndicatorExpressionItemEntity.getIndicatorExpressionId();
-            List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList = kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap.get(indicatorExpressionId);
-            if (Objects.isNull(caseIndicatorExpressionItemEntityList)) {
-              caseIndicatorExpressionItemEntityList = new ArrayList<>();
-            }
-            caseIndicatorExpressionItemEntityList.add(caseIndicatorExpressionItemEntity);
-            kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap.put(indicatorExpressionId, caseIndicatorExpressionItemEntityList);
-          });
-      caseIndicatorExpressionInfluenceService.lambdaQuery()
-          .eq(CaseIndicatorExpressionInfluenceEntity::getAppId, appId)
-          .in(CaseIndicatorExpressionInfluenceEntity::getIndicatorInstanceId, caseIndicatorExpressionIdSet)
-          .list()
-          .forEach(caseIndicatorExpressionInfluenceEntity -> {
-            kCaseIndicatorInstanceIdVCaseIndicatorExpressionInfluenceEntityMap.put(caseIndicatorExpressionInfluenceEntity.getIndicatorInstanceId(), caseIndicatorExpressionInfluenceEntity);
-          });
+        caseIndicatorExpressionService.lambdaQuery()
+                .eq(CaseIndicatorExpressionEntity::getAppId, appId)
+                .in(CaseIndicatorExpressionEntity::getCaseIndicatorExpressionId, caseIndicatorExpressionIdSet)
+                .list()
+                .forEach(caseIndicatorExpressionEntity -> {
+                    kCaseIndicatorExpressionIdVCaseIndicatorExpressionEntityMap.put(caseIndicatorExpressionEntity.getCaseIndicatorExpressionId(), caseIndicatorExpressionEntity);
+                    if (ShareUtil.XObject.notEmpty(caseIndicatorExpressionEntity.getMaxIndicatorExpressionItemId())) {
+                        minMaxExpressionItemIds.add(caseIndicatorExpressionEntity.getMaxIndicatorExpressionItemId());
+                    }
+                    if (ShareUtil.XObject.notEmpty(caseIndicatorExpressionEntity.getMinIndicatorExpressionItemId())) {
+                        minMaxExpressionItemIds.add(caseIndicatorExpressionEntity.getMinIndicatorExpressionItemId());
+                    }
+                });
+        caseIndicatorExpressionItemService.lambdaQuery()
+                .eq(CaseIndicatorExpressionItemEntity::getAppId, appId)
+                .in(CaseIndicatorExpressionItemEntity::getIndicatorExpressionId, caseIndicatorExpressionIdSet)
+                .list()
+                .forEach(caseIndicatorExpressionItemEntity -> {
+                    kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.put(caseIndicatorExpressionItemEntity.getCaseIndicatorExpressionItemId(), caseIndicatorExpressionItemEntity);
+                    String indicatorExpressionId = caseIndicatorExpressionItemEntity.getIndicatorExpressionId();
+                    List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList = kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap.get(indicatorExpressionId);
+                    if (Objects.isNull(caseIndicatorExpressionItemEntityList)) {
+                        caseIndicatorExpressionItemEntityList = new ArrayList<>();
+                    }
+                    caseIndicatorExpressionItemEntityList.add(caseIndicatorExpressionItemEntity);
+                    kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap.put(indicatorExpressionId, caseIndicatorExpressionItemEntityList);
+                });
+        caseIndicatorExpressionItemService.lambdaQuery()
+                .eq(CaseIndicatorExpressionItemEntity::getAppId, appId)
+                .in(CaseIndicatorExpressionItemEntity::getCaseIndicatorExpressionItemId, minMaxExpressionItemIds)
+                .list()
+                .forEach(caseIndicatorExpressionItemEntity -> {
+                    kCaseIndicatorExpressionItemIdVCaseIndicatorExpressionItemMap.put(caseIndicatorExpressionItemEntity.getCaseIndicatorExpressionItemId(), caseIndicatorExpressionItemEntity);
+                });
+        caseIndicatorExpressionInfluenceService.lambdaQuery()
+                .eq(CaseIndicatorExpressionInfluenceEntity::getAppId, appId)
+                .in(CaseIndicatorExpressionInfluenceEntity::getIndicatorInstanceId, caseIndicatorExpressionIdSet)
+                .list()
+                .forEach(caseIndicatorExpressionInfluenceEntity -> {
+                    kCaseIndicatorInstanceIdVCaseIndicatorExpressionInfluenceEntityMap.put(caseIndicatorExpressionInfluenceEntity.getIndicatorInstanceId(), caseIndicatorExpressionInfluenceEntity);
+                });
     }
     caseIndicatorInstanceIdSet.forEach(caseIndicatorInstanceId -> {
       List<String> experimentIndicatorInstanceIdList = kCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdListMap.get(caseIndicatorInstanceId);
