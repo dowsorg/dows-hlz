@@ -1,5 +1,5 @@
 FROM eclipse-temurin:17-jre as builder
-
+#调整docker
 WORKDIR application
 ARG JAR_FILE
 
@@ -15,13 +15,9 @@ ARG RTE
 ENV RTE=${RTE:-"dev"}
 ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-ENV JAVA_OPTS="-Xms2048m -Xmx2048m"
 #配置开启debug
 ENV JAVA_DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
 ENV SPRING_RUN="org.springframework.boot.loader.JarLauncher"
-ENV SPRING_ENV="-Dspring.profiles.active="
-#监控
-ENV SKYWALKING="-javaagent:/application/skywalking-agent/skywalking-agent.jar -Dskywalking.agent.service_name=dows-hep-"
 
 WORKDIR application
 COPY --from=builder application/dependencies/ ./
