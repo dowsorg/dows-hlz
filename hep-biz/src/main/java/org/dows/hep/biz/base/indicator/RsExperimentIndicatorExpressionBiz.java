@@ -77,16 +77,7 @@ public class RsExperimentIndicatorExpressionBiz {
     });
     kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap.forEach((kExperimentPersonId, experimentIndicatorInstanceRsEntityList) -> {
       experimentIndicatorInstanceRsEntityList.sort(Comparator.comparingInt(ExperimentIndicatorInstanceRsEntity::getRecalculateSeq));
-      /* runsix:吴治霖那块的改变 */
-      experimentIndicatorInstanceRsEntityList.forEach(experimentIndicatorInstanceRsEntity -> {
-        String experimentIndicatorInstanceId = experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId();
-        ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
-        Double changeVal = experimentIndicatorInstanceRsEntity.getChangeVal();
-        if (Objects.nonNull(experimentIndicatorValRsEntity) && NumberUtils.isCreatable(experimentIndicatorValRsEntity.getCurrentVal())) {
-          experimentIndicatorValRsEntity.setCurrentVal(String.valueOf(Double.parseDouble(experimentIndicatorValRsEntity.getCurrentVal()) + changeVal));
-          kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(experimentIndicatorInstanceId, experimentIndicatorValRsEntity);
-        }
-      });
+
       experimentIndicatorInstanceRsEntityList.forEach(experimentIndicatorInstanceRsEntity -> {
         String experimentIndicatorInstanceId = experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId();
         ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
@@ -129,7 +120,12 @@ public class RsExperimentIndicatorExpressionBiz {
         );
         String newCurrentVal = newCurrentValAtomicReference.get();
         if (StringUtils.isBlank(newCurrentVal)) {return;}
+
         experimentIndicatorValRsEntity.setCurrentVal(newCurrentVal);
+        Double changeVal = experimentIndicatorInstanceRsEntity.getChangeVal();
+        if (Objects.nonNull(experimentIndicatorValRsEntity) && NumberUtils.isCreatable(experimentIndicatorValRsEntity.getCurrentVal())) {
+          experimentIndicatorValRsEntity.setCurrentVal(String.valueOf(Double.parseDouble(experimentIndicatorValRsEntity.getCurrentVal()) + changeVal));
+        }
         kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(experimentIndicatorInstanceId, experimentIndicatorValRsEntity);
       });
     });

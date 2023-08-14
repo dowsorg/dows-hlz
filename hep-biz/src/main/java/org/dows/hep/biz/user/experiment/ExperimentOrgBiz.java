@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.account.api.AccountUserApi;
 import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
-import org.dows.hep.api.core.BaseExptRequest;
 import org.dows.hep.api.enums.EnumEventActionState;
 import org.dows.hep.api.enums.EnumExperimentEventState;
 import org.dows.hep.api.enums.EnumExperimentOrgNoticeType;
@@ -22,6 +21,7 @@ import org.dows.hep.api.user.experiment.vo.ExptOrgNoticeActionVO;
 import org.dows.hep.biz.base.indicator.ExperimentIndicatorInstanceRsBiz;
 import org.dows.hep.biz.dao.ExperimentEventDao;
 import org.dows.hep.biz.dao.ExperimentOrgNoticeDao;
+import org.dows.hep.biz.dao.ExperimentPersonDao;
 import org.dows.hep.biz.dao.OperateFlowDao;
 import org.dows.hep.biz.event.ExperimentEventRules;
 import org.dows.hep.biz.event.ExperimentSettingCache;
@@ -67,6 +67,8 @@ public class ExperimentOrgBiz{
     private final ExperimentOrgNoticeDao experimentOrgNoticeDao;
 
     private final ExperimentEventDao experimentEventDao;
+
+    private final ExperimentPersonDao experimentPersonDao;
 
     private final ExperimentOrgNoticeBiz experimentOrgNoticeBiz;
 
@@ -178,10 +180,16 @@ public class ExperimentOrgBiz{
     * @开始时间: 
     * @创建时间: 2023年4月23日 上午9:44:34
     */
-    public Page<OrgNoticeResponse> pageOrgNotice(BaseExptRequest findOrgNotice ) {
+    public Page<OrgNoticeResponse> pageOrgNotice(FindOrgNoticeRequest findOrgNotice ) {
         ExptRequestValidator.create(findOrgNotice)
                 .checkExperimentOrgId()
                 .checkExperimentGroup();
+        if (ShareUtil.XObject.notEmpty(findOrgNotice.getExperimentPersonId())) {
+            findOrgNotice.setExperimentPersonIds(List.of(findOrgNotice.getExperimentPersonId()));
+        } else {
+            findOrgNotice.setExperimentPersonIds(ShareUtil.XCollection.map(experimentPersonDao.getByOrgId(findOrgNotice.getExperimentOrgId(),
+                    ExperimentPersonEntity::getExperimentPersonId), ExperimentPersonEntity::getExperimentPersonId));
+        }
         return ShareBiz.buildPage(experimentOrgNoticeDao.pageByCondition(findOrgNotice,
                 ExperimentOrgNoticeEntity::getId,
                 ExperimentOrgNoticeEntity::getExperimentOrgNoticeId,
@@ -197,7 +205,7 @@ public class ExperimentOrgBiz{
                 //ExperimentOrgNoticeEntity::getTips,
                 ExperimentOrgNoticeEntity::getReadState,
                 ExperimentOrgNoticeEntity::getActionState
-        ),i->CopyWrapper.create(OrgNoticeResponse::new).endFrom(i));
+        ), i -> CopyWrapper.create(OrgNoticeResponse::new).endFrom(i));
     }
 
     /**

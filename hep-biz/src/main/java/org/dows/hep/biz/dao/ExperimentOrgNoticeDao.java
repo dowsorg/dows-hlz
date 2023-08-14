@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.dows.hep.api.core.BaseExptRequest;
+import org.dows.hep.api.user.experiment.request.FindOrgNoticeRequest;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentOrgNoticeEntity;
 import org.dows.hep.service.ExperimentOrgNoticeService;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class ExperimentOrgNoticeDao extends BaseDao<ExperimentOrgNoticeService,ExperimentOrgNoticeEntity>
-        implements IPageDao<ExperimentOrgNoticeEntity, BaseExptRequest> {
+        implements IPageDao<ExperimentOrgNoticeEntity, FindOrgNoticeRequest> {
     public ExperimentOrgNoticeDao() {
         super("机构通知不存在");
     }
@@ -43,14 +43,19 @@ public class ExperimentOrgNoticeDao extends BaseDao<ExperimentOrgNoticeService,E
 
 
     @Override
-    public IPage<ExperimentOrgNoticeEntity> pageByCondition(BaseExptRequest req, SFunction<ExperimentOrgNoticeEntity, ?>... cols) {
+    public IPage<ExperimentOrgNoticeEntity> pageByCondition(FindOrgNoticeRequest req, SFunction<ExperimentOrgNoticeEntity, ?>... cols) {
         Page<ExperimentOrgNoticeEntity> page = Page.of(req.getPageNo(), req.getPageSize());
         page.addOrder(OrderItem.desc("id"));
+        if(ShareUtil.XObject.isEmpty(req.getExperimentPersonIds())){
+            return page;
+        }
+        final boolean oneFlag=req.getExperimentPersonIds().size()==1;
         return service.lambdaQuery()
                 .eq(ShareUtil.XObject.notEmpty(req.getAppId()), ExperimentOrgNoticeEntity::getAppId, req.getAppId())
-                .eq(ExperimentOrgNoticeEntity::getExperimentOrgId, req.getExperimentOrgId())
-                .eq(ExperimentOrgNoticeEntity::getExperimentGroupId, req.getExperimentGroupId())
-                .eq(ShareUtil.XObject.notEmpty(req.getExperimentPersonId()),ExperimentOrgNoticeEntity::getExperimentPersonId,req.getExperimentPersonId())
+                //.eq(ExperimentOrgNoticeEntity::getExperimentOrgId, req.getExperimentOrgId())
+                //.eq(ExperimentOrgNoticeEntity::getExperimentGroupId, req.getExperimentGroupId())
+                .eq(oneFlag,ExperimentOrgNoticeEntity::getExperimentPersonId,req.getExperimentPersonIds().get(0))
+                .in(oneFlag,ExperimentOrgNoticeEntity::getExperimentPersonId,req.getExperimentPersonIds())
                 .select(cols)
                 .page(page);
     }

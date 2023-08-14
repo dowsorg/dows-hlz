@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.core.BaseExptRequest;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.biz.user.experiment.ExperimentOrgBiz;
@@ -80,7 +79,7 @@ public class ExperimentOrgRest {
     */
     @Operation(summary = "获取机构通知列表")
     @PostMapping("v1/userExperiment/experimentOrg/pageOrgNotice")
-    public Page<OrgNoticeResponse> pageOrgNotice(@RequestBody @Validated BaseExptRequest findOrgNotice ) {
+    public Page<OrgNoticeResponse> pageOrgNotice(@RequestBody @Validated FindOrgNoticeRequest findOrgNotice ) {
         return experimentOrgBiz.pageOrgNotice(findOrgNotice);
     }
 

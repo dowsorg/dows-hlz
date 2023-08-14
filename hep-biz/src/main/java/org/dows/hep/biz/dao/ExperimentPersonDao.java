@@ -52,4 +52,11 @@ public class ExperimentPersonDao extends BaseDao<ExperimentPersonService, Experi
                 .list();
     }
 
+    public List<ExperimentPersonEntity> getByOrgId(String experimentOrgId,SFunction<ExperimentPersonEntity,?>... cols){
+        return service.lambdaQuery()
+                .eq(ExperimentPersonEntity::getExperimentOrgId,experimentOrgId)
+                .select(cols)
+                .list();
+    }
+
 }

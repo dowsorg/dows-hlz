@@ -1,10 +1,13 @@
 package org.dows.hep.api.user.experiment.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dows.hep.api.core.BaseExptRequest;
+
+import java.util.List;
 
 /**
 * @description 
@@ -20,6 +23,10 @@ public class FindOrgNoticeRequest extends BaseExptRequest {
     @Schema(title = "机构通知id")
     @ApiModelProperty(required = true)
     private String experimentOrgNoticeId;
+
+    @JsonIgnore
+    @Schema(title = "机构人物列表")
+    private List<String> experimentPersonIds;
 
 
 }
