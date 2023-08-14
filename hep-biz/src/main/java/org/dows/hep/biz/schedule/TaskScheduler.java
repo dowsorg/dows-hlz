@@ -60,7 +60,9 @@ public class TaskScheduler {
             scheduledFuture.cancel(true);
             // 如果任务取消需要消耗点时间
             boolean cancelled = scheduledFuture.isCancelled();
-            while (!cancelled) {
+            log.info("定时任务取消中:{}", runnable);
+            if (!cancelled) {
+                // 最后从队列中删除
                 scheduledFuture.cancel(true);
                 log.info("定时任务取消中:{}", runnable);
             }

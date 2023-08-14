@@ -213,8 +213,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
                     .build()));
             beginEntity.setExecuted(false);
         } else {
-            beginEntity = new ExperimentTaskScheduleEntity()
-                            .builder()
+            beginEntity = ExperimentTaskScheduleEntity.builder()
                             .experimentTaskTimerId(idGenerator.nextIdStr())
                             .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
                             .taskBeanCode(EnumExperimentTask.experimentBeginTask.getDesc())

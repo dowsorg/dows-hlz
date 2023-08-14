@@ -227,7 +227,7 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
 
 
         // 通知实验所有小组
-        ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfos();
+        ConcurrentMap<Channel, AccountInfo> userInfos = HepClientManager.getUserInfosByExperimentId(experimentInstanceId);
 
         // 过滤数据，只给学生发websocket
         Set<Channel> channels = userInfos.keySet();
@@ -239,7 +239,7 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
                 startCutdownResponse.setExperimentInstanceId(experimentInstanceId);
                 //startCutdownResponse.setPeriodInterval(periods1.getPeriodInterval());
                 Response<StartCutdownResponse> ok = Response.ok(startCutdownResponse);
-                HepClientManager.sendInfo(channel, MessageCode.MESS_CODE, ok);
+                HepClientManager.sendInfoRetry(channel, MessageCode.MESS_CODE, ok,idGenerator.nextIdStr(),null);
             }
         }
     }

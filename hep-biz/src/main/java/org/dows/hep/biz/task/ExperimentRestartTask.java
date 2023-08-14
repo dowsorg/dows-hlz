@@ -96,29 +96,25 @@ public class ExperimentRestartTask implements Runnable {
         Map<String, ExptSettingModeEnum> exptIdMapSettingMode = experimentSettingBiz.listExptSettingMode(exptInstanceIds);
 
         // 只有沙盘模式进行过滤
-        scheduleEntityList.stream()
-                .filter(schedule -> {
-                    ExptSettingModeEnum exptSettingModeEnum = exptIdMapSettingMode.get(schedule.getExperimentInstanceId());
-                    if (exptSettingModeEnum != null && ExptSettingModeEnum.SAND.name().equals(exptSettingModeEnum.name())) {
-                        return CollUtil.isEmpty(experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()));
-                    }
-                    return false;
-                })
-                .forEach(schedule -> experimentTaskScheduleService.lambdaUpdate()
-                        .set(ExperimentTaskScheduleEntity::getDeleted, true)
-                        .eq(ExperimentTaskScheduleEntity::getId, schedule.getId())
-                        .update()
-                );
-
+        scheduleEntityList.stream().filter(schedule -> {
+            ExptSettingModeEnum exptSettingModeEnum = exptIdMapSettingMode.get(schedule.getExperimentInstanceId());
+            if (exptSettingModeEnum != null && ExptSettingModeEnum.SAND.name().equals(exptSettingModeEnum.name())) {
+                return CollUtil.isEmpty(experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()));
+            }
+            return false;
+        }).forEach(schedule -> experimentTaskScheduleService.lambdaUpdate()
+                .set(ExperimentTaskScheduleEntity::getDeleted, true)
+                .eq(ExperimentTaskScheduleEntity::getId, schedule.getId())
+                .update()
+        );
         // 只有沙盘模式进行过滤
-        List<ExperimentTaskScheduleEntity> scheduleFilteredList = scheduleEntityList.stream()
-                .filter(schedule -> {
-                    ExptSettingModeEnum exptSettingModeEnum = exptIdMapSettingMode.get(schedule.getExperimentInstanceId());
-                    if (exptSettingModeEnum != null && ExptSettingModeEnum.SAND.name().equals(exptSettingModeEnum.name())) {
-                        return CollUtil.isNotEmpty(experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()));
-                    }
-                    return true;
-                }).toList();
+        List<ExperimentTaskScheduleEntity> scheduleFilteredList = scheduleEntityList.stream().filter(schedule -> {
+            ExptSettingModeEnum exptSettingModeEnum = exptIdMapSettingMode.get(schedule.getExperimentInstanceId());
+            if (exptSettingModeEnum != null && ExptSettingModeEnum.SAND.name().equals(exptSettingModeEnum.name())) {
+                return CollUtil.isNotEmpty(experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()));
+            }
+            return true;
+        }).toList();
         if (CollUtil.isEmpty(scheduleFilteredList)) {
             return;
         }

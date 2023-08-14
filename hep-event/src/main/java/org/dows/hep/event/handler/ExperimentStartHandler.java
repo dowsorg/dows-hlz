@@ -59,7 +59,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
         List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerBiz
                 .getPeriodsTimerList(experimentRestartRequest.getExperimentInstanceId());
 
-        // 方案设计模式不需要设计时器，只有标准模式或沙盘模式才需要设计时器//null == experimentRestartRequest.getPeriods() &&
+        // 方案设计模式不需要设计时器，只有标准模式或沙盘模式才需要设计时器//null == experimentRestartRequest.getPeriods() && 或者实验是准备中时
         if (null == experimentRestartRequest.getPeriods()) {
             // 按期数分组
             Map<Integer, List<ExperimentTimerEntity>> experimentTimerMap = experimentTimerEntityList.stream()
