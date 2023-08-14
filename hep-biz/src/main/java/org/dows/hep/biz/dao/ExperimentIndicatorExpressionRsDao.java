@@ -6,6 +6,7 @@ import org.dows.hep.entity.ExperimentIndicatorExpressionItemRsEntity;
 import org.dows.hep.entity.ExperimentIndicatorExpressionRsEntity;
 import org.dows.hep.service.ExperimentIndicatorExpressionItemRsService;
 import org.dows.hep.service.ExperimentIndicatorExpressionRsService;
+import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -15,6 +16,7 @@ import java.util.List;
  * @author : wuzl
  * @date : 2023/8/13 21:50
  */
+@Component
 public class ExperimentIndicatorExpressionRsDao extends BaseSubDao<ExperimentIndicatorExpressionRsService, ExperimentIndicatorExpressionRsEntity,
         ExperimentIndicatorExpressionItemRsService, ExperimentIndicatorExpressionItemRsEntity>{
 
