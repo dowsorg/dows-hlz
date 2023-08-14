@@ -105,6 +105,10 @@ public class ExperimentManageBiz {
      */
     @DSTransactional
     public String allot(CreateExperimentRequest createExperiment, String accountId) {
+        Long delay = createExperiment.getStartTime().getTime() - System.currentTimeMillis();
+        if (delay < 0) {
+            throw new ExperimentException("实验时间设置错误,实验开始时间小于当前时间!为确保实验正常初始化，开始时间至少大于当前时间1分钟");
+        }
         // 获取参与教师
         List<AccountInstanceResponse> teachers = createExperiment.getTeachers();
         Set<String> teacherIds = new HashSet<>();

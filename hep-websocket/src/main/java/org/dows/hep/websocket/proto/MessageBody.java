@@ -19,6 +19,8 @@ public class MessageBody<T> implements Serializable {
     private String accountId;
     // 消息ID
     private String msgId;
+    // 执行动作action
+    private String action;
     // 发送时间
     private Date sendTime;
     // 数据体(map结构)

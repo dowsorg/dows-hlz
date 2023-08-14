@@ -253,19 +253,23 @@
             </tr>
             <#if npc.interveneBefores.riskFactors??>
                 <#list npc.interveneBefores.riskFactors as ibrf>
+                    <#if ibrf.riskItems??>
+                        <#list ibrf.riskItems as ri >
             <tr class="background-even-blue">
+                <#if ri?is_first>
                 <td rowspan="${ibrf.groupSize!0}">${ibrf.riskName}</td>
                 <td rowspan="${ibrf.groupSize!0}">${ibrf.riskDeathProbability}</td>
-                <#if ibrf.riskItems??>
-                    <#list ibrf.riskItems as ri >
+                </#if>
                 <td>${ri.itemName}</td>
                 <td>${ri.itemValue}</td>
                 <td>${ri.riskScore}</td>
-                    </#list>
-                </#if>
+                <#if ri?is_first>
                 <td rowspan="${ibrf.groupSize!0}">${ibrf.riskScore}</td>
                 <td rowspan="${ibrf.groupSize!0}">${ibrf.deathRiskScore}</td>
+                </#if>
             </tr>
+                        </#list>
+                    </#if>
                 </#list>
             </#if>
         </table>
@@ -282,32 +286,25 @@
             </tr>
             <#if npc.interveneAfters.riskFactors??>
                 <#list npc.interveneBefores.riskFactors as iarf>
+                    <#if iarf.riskItems??>
+                        <#list iarf.riskItems as ri >
             <tr class="background-even-blue">
+                <#if ri?is_first>
                 <td rowspan="${iarf.groupSize!0}">${iarf.riskName}</td>
                 <td rowspan="${iarf.groupSize!0}">${iarf.riskDeathProbability}</td>
-                <#if iarf.riskItems??>
-                    <#list iarf.riskItems as ri >
-                        <td>${ri.itemName}</td>
-                        <td>${ri.itemValue}</td>
-                        <td>${ri.riskScore}</td>
-                    </#list>
                 </#if>
+                <td>${ri.itemName}</td>
+                <td>${ri.itemValue}</td>
+                <td>${ri.riskScore}</td>
+                <#if ri?is_first>
                 <td rowspan="${iarf.groupSize!0}">${iarf.riskScore}</td>
                 <td rowspan="${iarf.groupSize!0}">${iarf.deathRiskScore}</td>
+                </#if>
             </tr>
+                        </#list>
+                    </#if>
                 </#list>
             </#if>
-<#--            <#list npc.interveneAfters as ia>
-                <tr class="background-even-blue">
-                    <td rowspan="${ia.groupSize!0}">${ia.deathReason!""}</td>
-                    <td rowspan="${ia.groupSize!0}">${ia.deathProbability!""}</td>
-                    <td>${ia.riskFactor!""}</td>
-                    <td>${ia.indicator!""}</td>
-                    <td>${ia.dangerScore!""}</td>
-                    <td rowspan="${ia.groupSize!0}">${ia.combinationDangerScore!""}</td>
-                    <td rowspan="${ia.groupSize!0}">${ia.deathScore!""}</td>
-                </tr>
-            </#list>-->
         </table>
 
         <div style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">服务记录</div>
