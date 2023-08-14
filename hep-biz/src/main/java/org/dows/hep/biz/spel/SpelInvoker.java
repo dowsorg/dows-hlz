@@ -48,7 +48,6 @@ public class SpelInvoker {
     @Autowired
     private ExperimentIndicatorInstanceRsDao experimentIndicatorInstanceRsDao;
 
-    private final boolean DEBUGFlag=true;
 
     //region 治疗干预
     public List<SpelEvalResult> evalTreatEffect(String experimentId, String experimentPersonId, Integer periods,List<ExptTreatPlanItemVO> treatItems,Map<String, SpelEvalSumResult> mapSum ) {
@@ -117,12 +116,7 @@ public class SpelInvoker {
     //region save
 
     public boolean saveIndicator(Collection<SpelEvalResult> evalResults, Collection<SpelEvalSumResult> evalSumResults,Integer periods){
-        if(DEBUGFlag){
-            saveIndicatorCurrent(evalSumResults,periods);
-            //saveIndicatorChange(evalSumResults);
-            log.info("IndicatorDebug..."+JSONUtil.toJsonStr(evalResults));
-            return true;
-        }
+        log.info("IndicatorDebug..."+JSONUtil.toJsonStr(evalResults));
         return saveIndicatorChange(evalSumResults);
     }
 
