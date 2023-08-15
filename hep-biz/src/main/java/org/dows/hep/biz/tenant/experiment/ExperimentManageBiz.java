@@ -44,6 +44,7 @@ import org.dows.user.api.response.UserInstanceResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -290,7 +291,7 @@ public class ExperimentManageBiz {
          */
         List<ExperimentParticipatorEntity> list = experimentParticipatorService.lambdaQuery()
                 .eq(ExperimentParticipatorEntity::getExperimentStartTime, experimentGroupSettingRequest.getStartTime())
-                .eq(ExperimentParticipatorEntity::getCaseInstanceId,experimentGroupSettingRequest.getCaseInstanceId())
+                .eq(ExperimentParticipatorEntity::getCaseInstanceId, experimentGroupSettingRequest.getCaseInstanceId())
                 .in(ExperimentParticipatorEntity::getAccountId, accountIds)
                 .list();
         if (list.size() > 0) {
@@ -503,9 +504,11 @@ public class ExperimentManageBiz {
         try {
             if (!StrUtil.isBlank(pageExperimentRequest.getKeyword())) {
                 page = experimentInstanceService.page(page, experimentInstanceService.lambdaQuery()
-                        .likeLeft(ExperimentInstanceEntity::getExperimentName, pageExperimentRequest.getKeyword())
-                        .likeLeft(ExperimentInstanceEntity::getCaseName, pageExperimentRequest.getKeyword())
-                        .likeLeft(ExperimentInstanceEntity::getExperimentDescr, pageExperimentRequest.getKeyword())
+                        .likeRight(ExperimentInstanceEntity::getExperimentName, pageExperimentRequest.getKeyword())
+                        .or()
+                        .likeRight(ExperimentInstanceEntity::getCaseName, pageExperimentRequest.getKeyword())
+                        .or()
+                        .likeRight(ExperimentInstanceEntity::getExperimentDescr, pageExperimentRequest.getKeyword())
                         .getWrapper());
             } else {
                 page = experimentInstanceService.page(page, experimentInstanceService.lambdaQuery().getWrapper());
@@ -517,19 +520,27 @@ public class ExperimentManageBiz {
         return pageInfo;
     }
 
+    @Transactional
     public boolean delete(DeleteExperimentRequest deleteExperimentRequest) {
         List<String> experimentInstanceIds = deleteExperimentRequest.getExperimentInstanceId();
-        boolean update = experimentInstanceService.lambdaUpdate()
+        boolean update1 = experimentInstanceService.lambdaUpdate()
                 .in(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceIds)
                 //.eq(ExperimentInstanceEntity::getExperimentInstanceId, pageExperimentRequest.getExperimentInstanceId())
                 .set(ExperimentInstanceEntity::getDeleted, Boolean.TRUE)
                 .update();
+        boolean update2 = experimentParticipatorService.lambdaUpdate()
+                .in(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceIds)
+                .set(ExperimentParticipatorEntity::getDeleted, Boolean.TRUE)
+                .update();
         //删除任务中的实验
-        experimentTaskScheduleService.lambdaUpdate()
+        boolean update3 = experimentTaskScheduleService.lambdaUpdate()
                 .in(ExperimentTaskScheduleEntity::getExperimentInstanceId, experimentInstanceIds)
                 .set(ExperimentTaskScheduleEntity::getDeleted, Boolean.TRUE)
                 .update();
-        return update;
+        if (update1 && update2 && update3)
+            return true;
+        else
+            return false;
     }
 
 

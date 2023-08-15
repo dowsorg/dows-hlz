@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(name = "CaseOrg 对象", title = "案例机构")
-public class CaseOrgRequest {
+public class  CaseOrgRequest {
 
     @Schema(title = "数据库ID")
     private String id;
