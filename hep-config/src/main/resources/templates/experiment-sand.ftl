@@ -196,15 +196,15 @@
     <div style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">每期权重</div>
     <table class="wd-700 text-center" align="center">
         <tr class="background-singular-blue">
-            <td width="20%">第一期</td>
-            <td width="20%">第二期</td>
-            <td width="20%">第三期</td>
-            <td width="20%">第四期</td>
-            <td width="20%">第五期</td>
+        <#list scoreInfo.periodWeights as periodWeight>
+            <td width="20%">第 ${periodWeight?index} 期</td>
+        </#list>
         </tr>
+        <tr
         <#list scoreInfo.periodWeights as periodWeight>
             <td class="background-even-blue">${periodWeight.weight!""}</td>
         </#list>
+        </tr>
     </table>
     <div style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">评分权重</div>
     <table class="wd-700 text-center" align="center">
@@ -223,7 +223,7 @@
     <div class="font-blue bold" style="font-size:18px;margin-top:50px;margin-bottom:25px" align="center">二 实验详情
     </div>
     <#list npcDatas as npc>
-        <div style="font-size:18px;margin-top:25px;margin-bottom:25px">案例${npc.interveneBefores.personId!""}: ${npc.personName!""}</div>
+        <div style="font-size:18px;margin-top:25px;margin-bottom:25px">案例: ${npc.personName!""}</div>
         <div style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">基本信息</div>
         <table class="wd-700 text-center" align="center">
             <tr class="background-singular-blue">

@@ -16,8 +16,8 @@ mybatis-plus:
     cache-enabled: true
     multiple-result-sets-enabled: true
     jdbc-type-for-null: null
-#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
 
 #虽然两种都可以运行成功，但下面这种写法才是2.4版本的最好的写法，原因是2.4版本中官方将配置文件的加载进行了更新，
 #所以如果使用的是2.4版本推荐用下面的这种写法，至于原因就是为了提升对 Kubernetes 的原生支持而作的修改
