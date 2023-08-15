@@ -223,7 +223,7 @@
     <div class="font-blue bold" style="font-size:18px;margin-top:50px;margin-bottom:25px" align="center">二 实验详情
     </div>
     <#list npcDatas as npc>
-        <div style="font-size:18px;margin-top:25px;margin-bottom:25px">案例${npc.interveneBefores.personId!""}: ${npc.personName!""}</div>
+        <div style="font-size:18px;margin-top:25px;margin-bottom:25px">案例: ${npc.personName!""}</div>
         <div style="font-size:18px;margin-top:25px;margin-bottom:25px" align="center">基本信息</div>
         <table class="wd-700 text-center" align="center">
             <tr class="background-singular-blue">
