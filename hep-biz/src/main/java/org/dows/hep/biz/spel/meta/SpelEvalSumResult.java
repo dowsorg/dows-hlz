@@ -35,7 +35,7 @@ public class SpelEvalSumResult {
 
     public Double getValdDouble(){
         if(ShareUtil.XObject.notNumber(val)){
-            return null;
+            return 0d;
         }
         return Double.valueOf(val.toString());
     }
