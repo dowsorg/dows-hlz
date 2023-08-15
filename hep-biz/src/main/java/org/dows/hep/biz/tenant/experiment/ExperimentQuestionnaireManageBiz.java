@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import lombok.RequiredArgsConstructor;
 import org.apache.skywalking.apm.toolkit.trace.Trace;
+import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.response.QuestionOptionWithAnswerResponse;
 import org.dows.hep.api.base.question.response.QuestionResponse;
 import org.dows.hep.api.base.question.response.QuestionSectionItemResponse;
@@ -13,6 +14,7 @@ import org.dows.hep.api.base.question.response.QuestionSectionResponse;
 import org.dows.hep.api.tenant.casus.CasePeriodEnum;
 import org.dows.hep.api.tenant.casus.response.CaseOrgQuestionnaireResponse;
 import org.dows.hep.api.tenant.casus.response.CaseQuestionnaireResponse;
+import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.ExptQuestionnaireStateEnum;
 import org.dows.hep.api.user.experiment.dto.ExptQuestionnaireOptionDTO;
@@ -75,6 +77,24 @@ public class ExperimentQuestionnaireManageBiz {
         Map<String, Map<String, CaseOrgQuestionnaireResponse>> periodOrgCollect = tenantCaseOrgQuestionnaireBiz.mapSelectedQuestionnaires(caseInstanceId);
         if (CollUtil.isEmpty(periodOrgCollect)) {
             return;
+        }
+
+        // 根据实验设置过滤对应的问卷
+        ExperimentSetting.SandSetting sandSetting = experimentSettingBiz.getSandSetting(experimentInstanceId);
+        Integer periods = Optional.ofNullable(sandSetting)
+                .map(ExperimentSetting.SandSetting::getPeriods)
+                .orElseThrow(() -> new BizException("实验初始化知识问卷时： 实验设置数据异常"));
+        if (periods != periodOrgCollect.size()) {
+            Map<String, Map<String, CaseOrgQuestionnaireResponse>> tempPeriodOrgCollect = new LinkedHashMap<>();
+            for (int i = 0; i < periods; i++) {
+                CasePeriodEnum bySeq = CasePeriodEnum.getBySeq(i + 1);
+                String code = bySeq.getCode();
+                Map<String, CaseOrgQuestionnaireResponse> itemTempPeriodOrgCollect = periodOrgCollect.get(code);
+                if (CollUtil.isNotEmpty(itemTempPeriodOrgCollect)) {
+                    tempPeriodOrgCollect.put(code, itemTempPeriodOrgCollect);
+                }
+            }
+            periodOrgCollect = tempPeriodOrgCollect;
         }
 
         // 获取问卷
