@@ -248,15 +248,17 @@ public class ExperimentOrgInterveneBiz{
         }
         final PersonIndicatorIdCache cacheIndicatorId=PersonIndicatorIdCache.Instance();
         List<SpelEvalSumResult> evalSumResults=new ArrayList<>();
-        for(CalcFoodStatVO item:snapRst.getStatEnergy()) {
-            String indicatorId = cacheIndicatorId.getIndicatorIdBySourceId(validator.getExperimentPersonId(), item.getInstanceId());
-            if (ShareUtil.XObject.isEmpty(indicatorId)) {
-                continue;
+        if(ShareUtil.XObject.notEmpty(snapRst.getStatEnergy())) {
+            for (CalcFoodStatVO item : snapRst.getStatEnergy()) {
+                String indicatorId = cacheIndicatorId.getIndicatorIdBySourceId(validator.getExperimentPersonId(), item.getInstanceId());
+                if (ShareUtil.XObject.isEmpty(indicatorId)) {
+                    continue;
+                }
+                evalSumResults.add(SpelEvalSumResult.builder()
+                        .experimentIndicatorId(indicatorId)
+                        .val(item.getWeight())
+                        .build());
             }
-            evalSumResults.add(SpelEvalSumResult.builder()
-                    .experimentIndicatorId(indicatorId)
-                    .val(item.getWeight())
-                    .build());
         }
 
         Boolean succFlag= operateOrgFuncDao.tranSave(rowOrgFunc,Arrays.asList(rowOrgFuncSnap),false,()->{
