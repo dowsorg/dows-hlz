@@ -3,6 +3,7 @@ package org.dows.hep.rest.base.indicator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.annotation.Resubmit;
 import org.dows.hep.api.base.indicator.request.ExperimentMonitorFollowupCheckRequestRs;
 import org.dows.hep.api.base.indicator.response.ExperimentMonitorFollowupRsResponse;
 import org.dows.hep.biz.base.indicator.ExperimentIndicatorViewMonitorFollowupReportRsBiz;
@@ -19,6 +20,7 @@ import java.util.concurrent.ExecutionException;
 public class ExperimentIndicatorViewMonitorFollowupReportRsRest {
   private final ExperimentIndicatorViewMonitorFollowupReportRsBiz experimentIndicatorViewMonitorFollowupReportRsBiz;
 
+  @Resubmit(duration = 5)
   @Operation(summary = "进行随访")
   @PostMapping("v1/userExperiment/monitorFollowup/check")
   public void monitorFollowupCheck(@RequestBody ExperimentMonitorFollowupCheckRequestRs experimentMonitorFollowupCheckRequestRs) throws ExecutionException, InterruptedException {

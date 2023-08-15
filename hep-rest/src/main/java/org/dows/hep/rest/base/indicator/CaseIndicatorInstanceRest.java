@@ -3,10 +3,10 @@ package org.dows.hep.rest.base.indicator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.annotation.Resubmit;
 import org.dows.hep.api.base.indicator.request.CaseCreateCopyToPersonRequestRs;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateCaseIndicatorInstanceRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCaseGetCoreRequest;
-import org.dows.hep.api.base.indicator.request.RsExperimentGetCoreRequest;
 import org.dows.hep.api.base.indicator.response.CaseIndicatorInstanceCategoryResponseRs;
 import org.dows.hep.api.tenant.casus.request.UpdateIndicatorValueRequest;
 import org.dows.hep.biz.base.indicator.CaseIndicatorInstanceBiz;
@@ -40,6 +40,7 @@ public class CaseIndicatorInstanceRest {
         return caseIndicatorInstanceBiz.updateNpcIndicatorValue(updateIndicatorValueRequest);
     }
 
+    @Resubmit(duration = 5)
     @Operation(summary = "创建或修改指标实例")
     @PostMapping("v1/caseIndicator/indicatorInstance/createOrUpdateRs")
     public void createOrUpdateRs(@RequestBody CreateOrUpdateCaseIndicatorInstanceRequestRs createOrUpdateCaseIndicatorInstanceRequestRs) throws InterruptedException {
