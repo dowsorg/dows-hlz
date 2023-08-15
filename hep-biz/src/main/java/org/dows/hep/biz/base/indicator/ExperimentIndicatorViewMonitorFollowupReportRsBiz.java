@@ -113,6 +113,8 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
                 .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getIndicatorFuncId, indicatorFuncId)
                 .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getExperimentPersonId, experimentPersonId)
                 .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getExperimentIndicatorViewMonitorFollowupId, indicatorViewMonitorFollowupId)
+                .orderByDesc(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getId)
+                .last("limit 1")
                 .one();
         if (Objects.isNull(experimentIndicatorViewMonitorFollowupPlanRsEntity)) {
             experimentIndicatorViewMonitorFollowupPlanRsService.saveOrUpdate(ExperimentIndicatorViewMonitorFollowupPlanRsEntity
@@ -313,6 +315,8 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
         ExperimentIndicatorViewMonitorFollowupPlanRsEntity experimentIndicatorViewMonitorFollowupPlanRsEntity = experimentIndicatorViewMonitorFollowupPlanRsService.lambdaQuery()
                 .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getPeriods, periods)
                 .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getExperimentPersonId, experimentPersonId)
+                .orderByDesc(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getId)
+                .last("limit 1")
                 .one();
         experimentIndicatorViewMonitorFollowupPlanRsResponse = experimentIndicatorViewMonitorFollowupPlanRs2Response(experimentIndicatorViewMonitorFollowupPlanRsEntity);
         Map<String, ExperimentIndicatorInstanceRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap = new HashMap<>();

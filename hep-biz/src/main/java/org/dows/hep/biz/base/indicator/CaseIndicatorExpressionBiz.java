@@ -523,6 +523,7 @@ public class CaseIndicatorExpressionBiz {
         rsCaseIndicatorExpressionBiz.populateCaseIndicatorExpressionItemEntity(minCaseIndicatorExpressionItemEntityAR, caseIndicatorExpressionEntityAR.get().getMinIndicatorExpressionItemId());
       });
       cfMinPopulateCaseIndicatorExpressionItemEntity.get();
+      caseMinIndicatorExpressionItemResponseRs= CaseIndicatorExpressionItemBiz.caseIndicatorExpressionItem2ResponseRs(minCaseIndicatorExpressionItemEntityAR.get());
     }
 
     AtomicReference<CaseIndicatorExpressionItemEntity> maxCaseIndicatorExpressionItemEntityAR = new AtomicReference<>();
@@ -531,6 +532,7 @@ public class CaseIndicatorExpressionBiz {
         rsCaseIndicatorExpressionBiz.populateCaseIndicatorExpressionItemEntity(maxCaseIndicatorExpressionItemEntityAR, caseIndicatorExpressionEntityAR.get().getMaxIndicatorExpressionItemId());
       });
       cfMaxPopulateCaseIndicatorExpressionItemEntity.get();
+      caseMaxIndicatorExpressionItemResponseRs= CaseIndicatorExpressionItemBiz.caseIndicatorExpressionItem2ResponseRs(maxCaseIndicatorExpressionItemEntityAR.get());
     }
 
     AtomicReference<String> casePrincipalIdAR = new AtomicReference<>();

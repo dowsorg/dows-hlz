@@ -3,6 +3,7 @@ package org.dows.hep.rest.base.indicator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.annotation.Resubmit;
 import org.dows.hep.api.base.indicator.request.ExperimentHealthGuidanceCheckRequestRs;
 import org.dows.hep.api.base.indicator.response.ExperimentHealthGuidanceReportResponseRs;
 import org.dows.hep.api.user.experiment.response.ExptOrgFlowReportResponse;
@@ -21,6 +22,7 @@ public class ExperimentIndicatorJudgeHealthGuidanceReportRsRest {
   private final ExperimentIndicatorJudgeHealthGuidanceReportRsBiz experimentIndicatorJudgeHealthGuidanceReportRsBiz;
 
   /* runsix:TODO 这是一个结束操作，报告后期加 */
+  @Resubmit(duration = 5)
   @Operation(summary = "实验人物和在这个机构功能点下的健康指导报告")
   @PostMapping("v1/userExperiment/healthGuidanceReport/check")
   public ExptOrgFlowReportResponse healthGuidanceCheck(@RequestBody ExperimentHealthGuidanceCheckRequestRs experimentHealthGuidanceCheckRequestRs) {

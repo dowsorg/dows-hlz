@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.annotation.Resubmit;
 import org.dows.hep.api.base.intervene.response.*;
 import org.dows.hep.api.core.ExptOperateOrgFuncRequest;
 import org.dows.hep.api.user.experiment.request.*;
@@ -145,6 +146,7 @@ public class ExperimentOrgInterveneRest {
         return experimentOrgInterveneBiz.getExptTreatPlan(exptOperate);
     }
 
+    @Resubmit(duration = 5)
     @Operation(summary = "治疗干预：保存治疗方案，生成治疗报告")
     @PostMapping("v1/userExperiment/experimentOrgIntervene/saveExptTreatPlan")
     public SaveExptTreatResponse saveExptTreatPlan(@RequestBody @Validated SaveExptTreatRequest saveTreat, HttpServletRequest request){

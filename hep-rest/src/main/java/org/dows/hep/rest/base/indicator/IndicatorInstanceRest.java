@@ -1,14 +1,15 @@
 package org.dows.hep.rest.base.indicator;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.annotation.Resubmit;
 import org.dows.hep.api.base.indicator.request.BatchUpdateCoreRequestRs;
 import org.dows.hep.api.base.indicator.request.BatchUpdateFoodRequestRs;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorInstanceRequestRs;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorInstanceMoveRequestRs;
 import org.dows.hep.api.base.indicator.response.IndicatorInstanceCategoryResponseRs;
 import org.dows.hep.biz.base.indicator.IndicatorInstanceBiz;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.concurrent.ExecutionException;
 public class IndicatorInstanceRest {
     private final IndicatorInstanceBiz indicatorInstanceBiz;
 
+    @Resubmit(duration = 5)
     @Operation(summary = "创建或修改指标实例")
     @PostMapping("v1/baseIndicator/indicatorInstance/createOrUpdateRs")
     public void createOrUpdateRs(@RequestBody CreateOrUpdateIndicatorInstanceRequestRs createOrUpdateIndicatorInstanceRequestRs) throws InterruptedException {

@@ -294,6 +294,8 @@ public class FoodPlanBiz{
                         || null == (categVO = cache.getById(appId,saveFoodCookbook.getInterveneCategId())))
                 .throwMessage("类别不存在");
         saveFoodCookbook.setDetails(ShareUtil.XObject.defaultIfNull(saveFoodCookbook.getDetails(), Collections.emptyList()));
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(saveFoodCookbook.getDetails()))
+                .throwMessage("请添加食谱明细：食材或菜肴");
         Map<EnumFoodMealTime, List<String>> mapDetails = new HashMap<>();
         //按餐次校验重复食材或菜肴
         EnumFoodMealTime mealTime;
