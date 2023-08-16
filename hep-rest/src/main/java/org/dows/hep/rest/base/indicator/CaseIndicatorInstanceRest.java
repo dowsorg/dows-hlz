@@ -40,7 +40,7 @@ public class CaseIndicatorInstanceRest {
         return caseIndicatorInstanceBiz.updateNpcIndicatorValue(updateIndicatorValueRequest);
     }
 
-    @Resubmit(duration = 5)
+    @Resubmit(duration = 2)
     @Operation(summary = "创建或修改指标实例")
     @PostMapping("v1/caseIndicator/indicatorInstance/createOrUpdateRs")
     public void createOrUpdateRs(@RequestBody CreateOrUpdateCaseIndicatorInstanceRequestRs createOrUpdateCaseIndicatorInstanceRequestRs) throws InterruptedException {
