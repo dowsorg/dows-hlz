@@ -4,11 +4,11 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.account.request.AccountGroupRequest;
-import org.dows.account.response.AccountGroupResponse;
 import org.dows.account.response.AccountInstanceResponse;
 import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.ExperimentContext;
@@ -20,6 +20,7 @@ import org.dows.hep.api.base.indicator.request.RsCopyPersonIndicatorRequestRs;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.enums.EnumExperimentTask;
 import org.dows.hep.api.exception.ExperimentInitHanlderException;
+import org.dows.hep.api.tenant.casus.response.CaseAccountGroupResponse;
 import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
 import org.dows.hep.api.tenant.experiment.request.ExperimentGroupSettingRequest;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
@@ -44,7 +45,6 @@ import org.dows.hep.entity.ExperimentTaskScheduleEntity;
 import org.dows.hep.service.*;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -269,13 +269,13 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
         if (responseList != null && responseList.size() > 0) {
             responseList.forEach(response -> {
                 //1、通过案例机构ID找到机构ID下面的人物
-                IPage<AccountGroupResponse> groupResponseIPage = orgBiz.listPerson(AccountGroupRequest.builder()
+                Page<CaseAccountGroupResponse> groupResponseIPage = orgBiz.listPerson(AccountGroupRequest.builder()
                         .status(EvaluateEnabledEnum.ENABLED.getCode())
                         .appId(experimentGroupSettingRequest.getAppId())
                         .pageNo(1)
                         .pageSize(999)
                         .build(), response.getCaseOrgId());
-                List<AccountGroupResponse> accountGroupResponses = groupResponseIPage.getRecords();
+                List<CaseAccountGroupResponse> accountGroupResponses = groupResponseIPage.getRecords();
                 List<AccountInstanceResponse> instanceResponses = new ArrayList<>();
                 if (accountGroupResponses != null && accountGroupResponses.size() > 0) {
                     accountGroupResponses.forEach(accountGroup -> {

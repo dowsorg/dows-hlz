@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author jx
  * @date 2023/5/10 10:28
@@ -59,4 +61,7 @@ public class ExperimentPersonResponse {
 
     @Schema(title = "挂号流水所在期数,为空或0-未挂号 >0-已挂号")
     private Integer flowPeriod;
+
+    @Schema(title = "关键指标列表")
+    private List<String> coreIndicators;
 }

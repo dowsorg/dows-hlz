@@ -50,4 +50,7 @@ public class PersonInstanceResponse{
 
     @Schema(title = "人物功能点集合")
     private List<CasePersonIndicatorFuncRequest> entityList;
+
+    @Schema(title = "关键指标列表")
+    private List<String> coreIndicators;
 }

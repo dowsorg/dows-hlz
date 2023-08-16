@@ -18,10 +18,13 @@ import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.base.indicator.request.CaseCreateCopyToPersonRequestRs;
 import org.dows.hep.api.enums.EnumCaseFee;
 import org.dows.hep.api.exception.CaseFeeException;
+import org.dows.hep.api.tenant.casus.response.CaseAccountGroupResponse;
 import org.dows.hep.api.user.organization.request.CaseOrgRequest;
 import org.dows.hep.api.user.organization.response.CaseOrgResponse;
 import org.dows.hep.biz.base.indicator.CaseIndicatorInstanceBiz;
 import org.dows.hep.biz.tenant.casus.TenantCaseEventBiz;
+import org.dows.hep.biz.util.CopyWrapper;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.CaseOrgEntity;
 import org.dows.hep.entity.CaseOrgFeeEntity;
 import org.dows.hep.entity.CasePersonEntity;
@@ -423,7 +426,7 @@ public class OrgBiz {
      * @开始时间:
      * @创建时间: 2023/5/04 14:30
      */
-    public IPage<AccountGroupResponse> listPerson(AccountGroupRequest request, String caseOrgId) {
+    public Page<CaseAccountGroupResponse> listPerson(AccountGroupRequest request, String caseOrgId) {
         //1、获取该案例机构对应的机构ID
         CaseOrgEntity entity = caseOrgService.lambdaQuery()
                 .eq(CaseOrgEntity::getCaseOrgId, caseOrgId)
@@ -435,20 +438,29 @@ public class OrgBiz {
         request.setOrgIds(orgIds);
         IPage<AccountGroupResponse> groupResponseIPage = accountGroupApi.customAccountGroupList(request);
         //2、因为要加健康指数，必须处理一下
-        IPage<AccountGroupResponse> groupIPage = new Page<>();
+        Page<CaseAccountGroupResponse> groupIPage = new Page<>();
         BeanUtils.copyProperties(groupResponseIPage, groupIPage, new String[]{"records"});
         List<AccountGroupResponse> responseList = groupResponseIPage.getRecords();
+        List<CaseAccountGroupResponse> caseResponseList=new ArrayList<>();
+        final List<String> caseAccountIds= ShareUtil.XCollection.map(responseList,AccountGroupResponse::getAccountId);
+        final Map<String,CasePersonEntity> mapCasePersons=ShareUtil.XCollection.toMap(casePersonService.lambdaQuery()
+                .in(CasePersonEntity::getAccountId,caseAccountIds)
+                .eq(CasePersonEntity::getCaseOrgId,caseOrgId)
+                .list(), CasePersonEntity::getAccountId);
+        final Map<String,List<String>> mapCoreIndicators=caseIndicatorInstanceBiz.getCoreByAccountIdList(caseAccountIds);
         responseList.forEach(group->{
-            //2.1、通过accountId和caseOrgId找到casePersonId
-            CasePersonEntity casePersonEntity = casePersonService.lambdaQuery()
-                             .eq(CasePersonEntity::getAccountId,group.getAccountId())
-                             .eq(CasePersonEntity::getCaseOrgId,caseOrgId)
-                             .one();
-            //2.2、获取健康指数
-            String healthPoint = caseIndicatorInstanceBiz.getHealthPoint(casePersonEntity.getCasePersonId());
-            group.setHealthPoint(healthPoint);
+            CasePersonEntity casePersonEntity=mapCasePersons.get(group.getAccountId());
+            if(null==casePersonEntity){
+                return;
+            }
+            //group.setHealthPoint(caseIndicatorInstanceBiz.getHealthPoint(casePersonEntity.getCasePersonId()));
+            group.setHealthPoint(caseIndicatorInstanceBiz.v2GetHealthPoint(casePersonEntity.getAccountId()));
+            caseResponseList.add(CopyWrapper.create(CaseAccountGroupResponse::new)
+                    .endFrom(group)
+                    .setCoreIndicators(mapCoreIndicators.get(casePersonEntity.getAccountId())));
+
         });
-        groupIPage.setRecords(responseList);
+        groupIPage.setRecords(caseResponseList);
         return groupIPage;
     }
 
