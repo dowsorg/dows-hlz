@@ -2,7 +2,7 @@ FROM eclipse-temurin:17-jre as builder
 
 WORKDIR application
 ARG JAR_FILE
-COPY hep-app/skywalking-agent/ ./skywalking-agent/
+#COPY hep-app/skywalking-agent/ ./skywalking-agent/
 COPY hep-app/target/${JAR_FILE} app.jar
 
 RUN java -Djarmode=layertools -jar app.jar extract && rm app.jar
