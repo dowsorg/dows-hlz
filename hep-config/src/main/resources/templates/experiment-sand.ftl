@@ -197,7 +197,7 @@
     <table class="wd-700 text-center" align="center">
         <tr class="background-singular-blue">
         <#list scoreInfo.periodWeights as periodWeight>
-            <td width="20%">第 ${periodWeight?index} 期</td>
+            <td width="20%">第 ${periodWeight?index+1} 期</td>
         </#list>
         </tr>
         <tr
@@ -259,6 +259,9 @@
                 <#if ri?is_first>
                 <td rowspan="${ibrf.groupSize!0}">${ibrf.riskName}</td>
                 <td rowspan="${ibrf.groupSize!0}">${ibrf.riskDeathProbability}</td>
+                <#else>
+                <td></td>
+                <td></td>
                 </#if>
                 <td>${ri.itemName}</td>
                 <td>${ri.itemValue}</td>
@@ -266,6 +269,9 @@
                 <#if ri?is_first>
                 <td rowspan="${ibrf.groupSize!0}">${ibrf.riskScore}</td>
                 <td rowspan="${ibrf.groupSize!0}">${ibrf.deathRiskScore}</td>
+                <#else>
+                <td></td>
+                <td></td>
                 </#if>
             </tr>
                         </#list>
@@ -292,6 +298,9 @@
                 <#if ri?is_first>
                 <td rowspan="${iarf.groupSize!0}">${iarf.riskName}</td>
                 <td rowspan="${iarf.groupSize!0}">${iarf.riskDeathProbability}</td>
+                <#else>
+                <td></td>
+                <td></td>
                 </#if>
                 <td>${ri.itemName}</td>
                 <td>${ri.itemValue}</td>
@@ -299,6 +308,9 @@
                 <#if ri?is_first>
                 <td rowspan="${iarf.groupSize!0}">${iarf.riskScore}</td>
                 <td rowspan="${iarf.groupSize!0}">${iarf.deathRiskScore}</td>
+                <#else>
+                <td></td>
+                <td></td>
                 </#if>
             </tr>
                         </#list>
