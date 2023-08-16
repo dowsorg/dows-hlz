@@ -4,9 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.skywalking.apm.toolkit.trace.Tag;
-import org.apache.skywalking.apm.toolkit.trace.Tags;
-import org.apache.skywalking.apm.toolkit.trace.Trace;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorFuncRequest;
 import org.dows.hep.api.base.indicator.request.UpdateIndicatorFuncRequest;
 import org.dows.hep.api.base.indicator.response.IndicatorFuncOrgItemResponse;
@@ -260,8 +257,6 @@ public class IndicatorFuncBiz{
     }
 
 
-    @Trace(operationName = "自定义-机构管理-编辑功能")
-    @Tags(@Tag(key = "appId", value = "arg[0]"))
     public List<IndicatorFuncOrgResponse> getOrgEditFuncByAppId(String appId) {
         Set<String> indicatorFuncPidSet = new HashSet<>();
         indicatorFuncPidSet.add(EnumIndicatorCategory.VIEW_MANAGEMENT.getCode());
