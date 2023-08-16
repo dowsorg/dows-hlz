@@ -427,21 +427,31 @@ public class OrgBiz {
      * @创建时间: 2023/5/04 14:30
      */
     public Page<CaseAccountGroupResponse> listPerson(AccountGroupRequest request, String caseOrgId) {
+        Page<CaseAccountGroupResponse> rst = new Page<>();
+        List<CaseAccountGroupResponse> caseResponseList=new ArrayList<>();
+        rst.setRecords(caseResponseList);
+
         //1、获取该案例机构对应的机构ID
         CaseOrgEntity entity = caseOrgService.lambdaQuery()
                 .eq(CaseOrgEntity::getCaseOrgId, caseOrgId)
                 .eq(CaseOrgEntity::getDeleted, false)
                 .eq(CaseOrgEntity::getAppId, request.getAppId())
-                .one();
+                .oneOpt().orElse(null);
+        if(null==entity){
+            return rst;
+        }
         Set<String> orgIds = new HashSet<>();
         orgIds.add(entity.getOrgId());
         request.setOrgIds(orgIds);
         IPage<AccountGroupResponse> groupResponseIPage = accountGroupApi.customAccountGroupList(request);
+        if(null==groupResponseIPage||ShareUtil.XObject.isEmpty( groupResponseIPage.getRecords())){
+            return rst;
+        }
         //2、因为要加健康指数，必须处理一下
-        Page<CaseAccountGroupResponse> groupIPage = new Page<>();
-        BeanUtils.copyProperties(groupResponseIPage, groupIPage, new String[]{"records"});
+
+        BeanUtils.copyProperties(groupResponseIPage, rst, new String[]{"records"});
         List<AccountGroupResponse> responseList = groupResponseIPage.getRecords();
-        List<CaseAccountGroupResponse> caseResponseList=new ArrayList<>();
+
         final List<String> caseAccountIds= ShareUtil.XCollection.map(responseList,AccountGroupResponse::getAccountId);
         final Map<String,CasePersonEntity> mapCasePersons=ShareUtil.XCollection.toMap(casePersonService.lambdaQuery()
                 .in(CasePersonEntity::getAccountId,caseAccountIds)
@@ -460,8 +470,7 @@ public class OrgBiz {
                     .setCoreIndicators(mapCoreIndicators.get(casePersonEntity.getAccountId())));
 
         });
-        groupIPage.setRecords(caseResponseList);
-        return groupIPage;
+        return rst;
     }
 
     /**
