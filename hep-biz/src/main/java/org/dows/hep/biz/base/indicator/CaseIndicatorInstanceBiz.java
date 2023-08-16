@@ -945,7 +945,7 @@ public class CaseIndicatorInstanceBiz {
      * runsix method process
      * 根据account_id获取关键指标
     */
-    public Map<String, List<String>> getCoreByAccountIdList(List<String> accountIdList) {
+    public Map<String, List<String>> getCoreByAccountIdList(Collection<String> accountIdList) {
         Map<String, List<String>> resultMap = new HashMap<>();
         /* runsix:校验 */
         if (Objects.isNull(accountIdList) || accountIdList.isEmpty()) {return resultMap;}

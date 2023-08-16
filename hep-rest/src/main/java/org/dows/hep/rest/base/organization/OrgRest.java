@@ -1,6 +1,7 @@
 package org.dows.hep.rest.base.organization;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,6 +12,7 @@ import org.dows.account.response.AccountGroupResponse;
 import org.dows.account.response.AccountOrgResponse;
 import org.dows.account.util.JwtUtil;
 import org.dows.hep.api.enums.EnumToken;
+import org.dows.hep.api.tenant.casus.response.CaseAccountGroupResponse;
 import org.dows.hep.api.user.organization.request.CaseOrgRequest;
 import org.dows.hep.api.user.organization.response.CaseOrgResponse;
 import org.dows.hep.biz.base.org.OrgBiz;
@@ -153,8 +155,8 @@ public class OrgRest {
      */
     @Operation(summary = "获取案例机构人物列表")
     @PostMapping("v1/baseOrg/org/listPerson")
-    public IPage<AccountGroupResponse> listPerson(@RequestBody AccountGroupRequest request,
-                                                  @RequestParam String caseOrgId) {
+    public Page<CaseAccountGroupResponse> listPerson(@RequestBody AccountGroupRequest request,
+                                                     @RequestParam String caseOrgId) {
         return orgBiz.listPerson(request,caseOrgId);
     }
 
