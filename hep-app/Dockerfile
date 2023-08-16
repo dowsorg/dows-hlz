@@ -1,21 +1,20 @@
 FROM eclipse-temurin:17-jre as builder
-#调整docker
 WORKDIR application
-ARG JAR_FILE
-
-COPY hep-app/target/${JAR_FILE} app.jar
-
+COPY ./target/*.jar app.jar
 RUN java -Djarmode=layertools -jar app.jar extract && rm app.jar
-
 
 FROM eclipse-temurin:17-jre
 
-ARG RTE
-#默认dev
-ENV RTE=${RTE:-"dev"}
-ENV TZ=Asia/Shanghai
+ARG TZ
+ARG APM
+ARG JVM_OPTS
+ARG JAVA_OPTS
+ENV APM=$APM
+ENV JAVA_OPTS=$JAVA_OPTS
+ENV JVM_OPTS=$JVM_OPTS
+ENV TZ=$TZ
+
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-#配置开启debug
 ENV JAVA_DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
 ENV SPRING_RUN="org.springframework.boot.loader.JarLauncher"
 
@@ -25,4 +24,4 @@ COPY --from=builder application/spring-boot-loader/ ./
 COPY --from=builder application/snapshot-dependencies/ ./
 COPY --from=builder application/application/ ./
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS $JAVA_DEBUG $SPRING_ENV$RTE $SKYWALKINGE$RTE $SPRING_RUN"]
+ENTRYPOINT ["sh", "-c", "java $JVM_OPTS $APM $JAVA_DEBUG $JAVA_OPTS $SPRING_RUN"]
