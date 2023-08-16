@@ -71,6 +71,9 @@ public class ExperimentIndicatorJudgeHealthGuidanceReportRsBiz {
     String experimentPersonId = experimentHealthGuidanceCheckRequestRs.getExperimentPersonId();
     String indicatorFuncId = experimentHealthGuidanceCheckRequestRs.getIndicatorFuncId();
     List<String> experimentIndicatorJudgeHealthGuidanceIdList = experimentHealthGuidanceCheckRequestRs.getExperimentIndicatorJudgeHealthGuidanceIdList();
+    AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(experimentIndicatorJudgeHealthGuidanceIdList))
+            .throwMessage("请选择项目");
+
     String appId = experimentHealthGuidanceCheckRequestRs.getAppId();
     String experimentId = experimentHealthGuidanceCheckRequestRs.getExperimentId();
     String experimentOrgId = experimentHealthGuidanceCheckRequestRs.getExperimentOrgId();
@@ -90,15 +93,14 @@ public class ExperimentIndicatorJudgeHealthGuidanceReportRsBiz {
             .checkOrgFlowRunning(periods);
     final String operateFlowId = flowValidator.getOperateFlowId();
     Map<String, ExperimentIndicatorJudgeHealthGuidanceRsEntity> kExperimentIndicatorJudgeHealthGuidanceIdVExperimentIndicatorJudgeHealthGuidanceRsEntityMap = new HashMap<>();
-    if (!experimentIndicatorJudgeHealthGuidanceIdList.isEmpty()) {
-      experimentIndicatorJudgeHealthGuidanceRsService.lambdaQuery()
-              .eq(ExperimentIndicatorJudgeHealthGuidanceRsEntity::getAppId, appId)
-              .in(ExperimentIndicatorJudgeHealthGuidanceRsEntity::getExperimentIndicatorJudgeHealthGuidanceId, experimentIndicatorJudgeHealthGuidanceIdList)
-              .list()
-              .forEach(experimentIndicatorJudgeHealthGuidanceRsEntity -> {
-                kExperimentIndicatorJudgeHealthGuidanceIdVExperimentIndicatorJudgeHealthGuidanceRsEntityMap.put(experimentIndicatorJudgeHealthGuidanceRsEntity.getExperimentIndicatorJudgeHealthGuidanceId(), experimentIndicatorJudgeHealthGuidanceRsEntity);
-              });
-    }
+
+    experimentIndicatorJudgeHealthGuidanceRsService.lambdaQuery()
+            .eq(ExperimentIndicatorJudgeHealthGuidanceRsEntity::getAppId, appId)
+            .in(ExperimentIndicatorJudgeHealthGuidanceRsEntity::getExperimentIndicatorJudgeHealthGuidanceId, experimentIndicatorJudgeHealthGuidanceIdList)
+            .list()
+            .forEach(experimentIndicatorJudgeHealthGuidanceRsEntity -> {
+              kExperimentIndicatorJudgeHealthGuidanceIdVExperimentIndicatorJudgeHealthGuidanceRsEntityMap.put(experimentIndicatorJudgeHealthGuidanceRsEntity.getExperimentIndicatorJudgeHealthGuidanceId(), experimentIndicatorJudgeHealthGuidanceRsEntity);
+            });
     AtomicInteger atomicIntegerCount = new AtomicInteger(1);
     ExperimentIndicatorJudgeHealthGuidanceReportRsEntity experimentIndicatorJudgeHealthGuidanceReportRsEntity = experimentIndicatorJudgeHealthGuidanceReportRsService.lambdaQuery()
             .eq(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getAppId, appId)

@@ -9,7 +9,8 @@ import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentIndicatorJudgeRiskFactorReportRsEntity;
 import org.dows.hep.entity.ExperimentIndicatorJudgeRiskFactorRsEntity;
-import org.dows.hep.service.*;
+import org.dows.hep.service.ExperimentIndicatorJudgeRiskFactorReportRsService;
+import org.dows.hep.service.ExperimentIndicatorJudgeRiskFactorRsService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,15 +56,24 @@ public class ExperimentIndicatorJudgeRiskFactorReportRsBiz {
 
     String operateFlowId = ShareBiz.assertRunningOperateFlowId(appId, experimentId, experimentOrgId, experimentPersonId);
     Map<String, ExperimentIndicatorJudgeRiskFactorRsEntity> kExperimentIndicatorJudgeRiskFactorIdVExperimentIndicatorJudgeRiskFactorRsEntityMap = new HashMap<>();
-    if (!experimentIndicatorJudgeRiskFactorIdList.isEmpty()) {
-      experimentIndicatorJudgeRiskFactorRsService.lambdaQuery()
-          .eq(ExperimentIndicatorJudgeRiskFactorRsEntity::getAppId, appId)
-          .in(ExperimentIndicatorJudgeRiskFactorRsEntity::getExperimentIndicatorJudgeRiskFactorId, experimentIndicatorJudgeRiskFactorIdList)
-          .list()
-          .forEach(experimentIndicatorJudgeRiskFactorRsEntity -> {
-            kExperimentIndicatorJudgeRiskFactorIdVExperimentIndicatorJudgeRiskFactorRsEntityMap.put(experimentIndicatorJudgeRiskFactorRsEntity.getExperimentIndicatorJudgeRiskFactorId(), experimentIndicatorJudgeRiskFactorRsEntity);
-          });
+    if (experimentIndicatorJudgeRiskFactorIdList.isEmpty()) {
+      experimentIndicatorJudgeRiskFactorReportRsService.lambdaUpdate()
+              .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getAppId, appId)
+              .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getExperimentId, experimentId)
+              .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getPeriod, periods)
+              .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getIndicatorFuncId, indicatorFuncId)
+              .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getExperimentPersonId, experimentPersonId)
+              .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getOperateFlowId, operateFlowId)
+              .remove();
+      return;
     }
+    experimentIndicatorJudgeRiskFactorRsService.lambdaQuery()
+            .eq(ExperimentIndicatorJudgeRiskFactorRsEntity::getAppId, appId)
+            .in(ExperimentIndicatorJudgeRiskFactorRsEntity::getExperimentIndicatorJudgeRiskFactorId, experimentIndicatorJudgeRiskFactorIdList)
+            .list()
+            .forEach(experimentIndicatorJudgeRiskFactorRsEntity -> {
+              kExperimentIndicatorJudgeRiskFactorIdVExperimentIndicatorJudgeRiskFactorRsEntityMap.put(experimentIndicatorJudgeRiskFactorRsEntity.getExperimentIndicatorJudgeRiskFactorId(), experimentIndicatorJudgeRiskFactorRsEntity);
+            });
     AtomicInteger atomicIntegerCount = new AtomicInteger(1);
     ExperimentIndicatorJudgeRiskFactorReportRsEntity experimentIndicatorJudgeRiskFactorReportRsEntity = experimentIndicatorJudgeRiskFactorReportRsService.lambdaQuery()
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getAppId, appId)
@@ -105,6 +115,21 @@ public class ExperimentIndicatorJudgeRiskFactorReportRsBiz {
     if(ShareUtil.XObject.isEmpty(operateFlowId)){
       return Collections.emptyList();
     }
+    ExperimentIndicatorJudgeRiskFactorReportRsEntity experimentIndicatorJudgeRiskFactorReportRsEntity = experimentIndicatorJudgeRiskFactorReportRsService.lambdaQuery()
+            .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getAppId, appId)
+            .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getExperimentId, experimentId)
+            .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getPeriod, periods)
+            .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getIndicatorFuncId, indicatorFuncId)
+            .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getExperimentPersonId, experimentPersonId)
+            .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getOperateFlowId, operateFlowId)
+            .orderByDesc(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getCount)
+            .select(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getCount)
+            .last(EnumString.LIMIT_1.getStr())
+            .one();
+    if (Objects.isNull(experimentIndicatorJudgeRiskFactorReportRsEntity)) {
+      return new ArrayList<>();
+    }
+    Integer count = experimentIndicatorJudgeRiskFactorReportRsEntity.getCount();
     return experimentIndicatorJudgeRiskFactorReportRsService.lambdaQuery()
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getAppId, appId)
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getExperimentId, experimentId)
@@ -112,6 +137,7 @@ public class ExperimentIndicatorJudgeRiskFactorReportRsBiz {
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getIndicatorFuncId, indicatorFuncId)
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getExperimentPersonId, experimentPersonId)
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getOperateFlowId, operateFlowId)
+        .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getCount, count)
         .orderByAsc(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getDt)
         .list()
         .stream()
