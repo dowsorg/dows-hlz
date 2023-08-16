@@ -4,12 +4,11 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.skywalking.apm.toolkit.trace.Trace;
 import org.dows.account.request.AccountGroupRequest;
-import org.dows.account.response.AccountGroupResponse;
 import org.dows.account.response.AccountInstanceResponse;
 import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.ExperimentContext;
@@ -21,6 +20,7 @@ import org.dows.hep.api.base.indicator.request.RsCopyPersonIndicatorRequestRs;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.enums.EnumExperimentTask;
 import org.dows.hep.api.exception.ExperimentInitHanlderException;
+import org.dows.hep.api.tenant.casus.response.CaseAccountGroupResponse;
 import org.dows.hep.api.tenant.experiment.request.CreateExperimentRequest;
 import org.dows.hep.api.tenant.experiment.request.ExperimentGroupSettingRequest;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
@@ -45,7 +45,6 @@ import org.dows.hep.entity.ExperimentTaskScheduleEntity;
 import org.dows.hep.service.*;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -165,7 +164,6 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
         SnapshotManager.Instance().write( new SnapshotRequest(appId,experimentInstanceId), true);
     }
 
-    @Trace(operationName = "设置方案设计截止时间提交定时器")
     private void setExptSchemeExpireTask(AtomicReference<ExperimentSetting.SchemeSetting> schemeSettingAtomicReference, ExperimentGroupSettingRequest request) {
         //保存任务进计时器表，防止重启后服务挂了，一个任务每个实验每一期只能有一条数据
         ExperimentSetting.SchemeSetting schemeSetting = schemeSettingAtomicReference.get();
@@ -196,7 +194,6 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
      *
      * @param experimentGroupSettingRequest
      */
-    @Trace(operationName = "实验开始定时器")
     public void setExperimentBeginTimerTask(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
         //保存任务进计时器表，防止重启后服务挂了，一个任务每个实验每一期只能有一条数据
         ExperimentTaskScheduleEntity beginEntity = new ExperimentTaskScheduleEntity();
@@ -244,7 +241,6 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
      *
      * @param experimentGroupSettingRequest
      */
-    @Trace(operationName = "初始化实验 `设置小组` 个数")
     public void createGroupEvent(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
         ExperimentContext experimentContext = new ExperimentContext();
         experimentContext.setExperimentId(experimentGroupSettingRequest.getExperimentInstanceId());
@@ -258,7 +254,6 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
     /**
      * copy 实验人物计事件
      */
-    @Trace(operationName = "初始化实验 `复制机构和人物`")
     public void copyExperimentPersonAndOrgEvent(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
         // 复制人物与机构到实验中
         ExperimentInstanceEntity experimentInstanceEntity = experimentInstanceService.lambdaQuery()
@@ -274,13 +269,13 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
         if (responseList != null && responseList.size() > 0) {
             responseList.forEach(response -> {
                 //1、通过案例机构ID找到机构ID下面的人物
-                IPage<AccountGroupResponse> groupResponseIPage = orgBiz.listPerson(AccountGroupRequest.builder()
+                Page<CaseAccountGroupResponse> groupResponseIPage = orgBiz.listPerson(AccountGroupRequest.builder()
                         .status(EvaluateEnabledEnum.ENABLED.getCode())
                         .appId(experimentGroupSettingRequest.getAppId())
                         .pageNo(1)
                         .pageSize(999)
                         .build(), response.getCaseOrgId());
-                List<AccountGroupResponse> accountGroupResponses = groupResponseIPage.getRecords();
+                List<CaseAccountGroupResponse> accountGroupResponses = groupResponseIPage.getRecords();
                 List<AccountInstanceResponse> instanceResponses = new ArrayList<>();
                 if (accountGroupResponses != null && accountGroupResponses.size() > 0) {
                     accountGroupResponses.forEach(accountGroup -> {

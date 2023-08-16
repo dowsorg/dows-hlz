@@ -778,6 +778,8 @@ public class PersonManageBiz {
         });
         request.setAccountIds(accountIds);
         IPage<AccountInstanceResponse> accountInstancePage = accountInstanceApi.customAccountInstanceList(request);
+        //获取关键指标
+        Map<String, List<String>> mapCoreIndicators= caseIndicatorInstanceBiz.getCoreByAccountIdList(accountIds);
         //3、复制
         List<PersonInstanceResponse> personInstanceResponseList = new ArrayList<>();
         List<AccountInstanceResponse> accountInstanceList = accountInstancePage.getRecords();
@@ -792,6 +794,7 @@ public class PersonManageBiz {
                     .avatar(accountInstance.getAvatar())
                     .intro(accountInstance.getIntro())
                     .healthPoint(healthPoint)
+                    .coreIndicators(mapCoreIndicators.get(accountInstance.getAccountId()))
                     .build();
             personInstanceResponseList.add(personInstance);
         });

@@ -76,6 +76,7 @@ public class ExperimentOrgBiz{
 
     private final OperateCostBiz operateCostBiz;
 
+
     private final IdGenerator idGenerator;
 
     /**
@@ -423,13 +424,15 @@ public class ExperimentOrgBiz{
         ExperimentTimePoint timePoint=ExperimentSettingCache.Instance().getTimePointByRealTime(ExperimentCacheKey.create(personRequest.getAppId(),personRequest.getExperimentInstanceId()),
                 LocalDateTime.now(), false);
         final Integer period=timePoint.getPeriod();
-        List<String> personIds=ShareUtil.XCollection.map(entityIPage.getRecords(),ExperimentPersonEntity::getExperimentPersonId);
+        final List<String> personIds=ShareUtil.XCollection.map(entityIPage.getRecords(),ExperimentPersonEntity::getExperimentPersonId);
         List<OperateFlowEntity> rowsFlow=operateFlowDao.getCurrentFlowList(personRequest.getExperimentOrgId(),personIds,period,
                 OperateFlowEntity::getExperimentPersonId,
                 OperateFlowEntity::getOperateFlowId,
                 OperateFlowEntity::getPeriods);
         Map<String,OperateFlowEntity> mapFlow=ShareUtil.XCollection.toMap(rowsFlow, OperateFlowEntity::getExperimentPersonId);
 
+        //关键指标
+        Map<String, List<String>> mapCoreIndicators= experimentIndicatorInstanceRsBiz.getCoreByPeriodsAndExperimentPersonIdList(period,personIds);
 
         //复制
         Page<ExperimentPersonResponse> voPage = new Page<>();
@@ -454,9 +457,12 @@ public class ExperimentOrgBiz{
             // 获取健康指数
             String healthPoint = experimentIndicatorInstanceRsBiz.getHealthPoint(personRequest.getPeriods(),person.getExperimentPersonId());
             person.setHealthPoint(healthPoint);
+            //健康指标
+            person.setCoreIndicators(mapCoreIndicators.get(person.getExperimentPersonId()));
             responseList.add(person);
         }
-        voPage.setRecords(responseList);
+
+         voPage.setRecords(responseList);
         return voPage;
     }
 

@@ -3,8 +3,6 @@ package org.dows.hep.rest.base.risk;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.apache.skywalking.apm.toolkit.trace.Tags;
-import org.apache.skywalking.apm.toolkit.trace.Trace;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.hep.api.base.risk.request.CrowdsInstanceRequest;
 import org.dows.hep.api.base.risk.request.PageCrowdsRequest;

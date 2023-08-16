@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.skywalking.apm.toolkit.trace.Trace;
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.RsIndicatorExpressionException;
 import org.dows.hep.biz.request.CaseCalIndicatorExpressionRequest;
@@ -43,7 +42,6 @@ public class RsExperimentIndicatorExpressionBiz {
   private final RsUtilBiz rsUtilBiz;
 
   /* runsix:期数反转使用 */
-  @Trace(operationName = "reCalculateAllExperimentIndicatorInstance")
   public void reCalculateAllExperimentIndicatorInstance(
       Map<String, List<ExperimentIndicatorInstanceRsEntity>> kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap,
       Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
@@ -902,7 +900,6 @@ public class RsExperimentIndicatorExpressionBiz {
         });
   }
 
-  @Trace(operationName = "解析实验指标表达式")
   public void parseExperimentIndicatorExpression(
       Integer field, Integer source, Integer scene,
       AtomicReference<String> resultAtomicReference,
