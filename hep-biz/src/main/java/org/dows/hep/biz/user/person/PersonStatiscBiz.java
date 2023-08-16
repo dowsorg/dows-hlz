@@ -1,9 +1,6 @@
 package org.dows.hep.biz.user.person;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.skywalking.apm.toolkit.trace.Tag;
-import org.apache.skywalking.apm.toolkit.trace.Tags;
-import org.apache.skywalking.apm.toolkit.trace.Trace;
 import org.dows.account.api.AccountInstanceApi;
 import org.dows.account.api.AccountOrgApi;
 import org.dows.account.api.AccountOrgGeoApi;
@@ -237,8 +234,6 @@ public class PersonStatiscBiz {
      * @创建时间: 2023年7月25日 下午16:35:34
      */
     @Transactional(rollbackFor = Exception.class)
-    @Trace(operationName = "一期结束保险返还")
-    @Tags({@Tag(key = "experimentId", value = "arg[0].experimentInstanceId"), @Tag(key = "periods", value = "arg[0].periods")})
     public void refundFunds(ExperimentPersonRequest request) {
         //1、获取该期的结束时间
         Map<Integer, ExperimentTimerEntity> timerEntityMap = experimentTimerBiz.getExperimentPeriodsStartAnsEndTime(request.getExperimentInstanceId());
