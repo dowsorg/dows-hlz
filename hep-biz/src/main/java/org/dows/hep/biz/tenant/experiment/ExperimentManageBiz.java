@@ -523,18 +523,31 @@ public class ExperimentManageBiz {
     @Transactional
     public boolean delete(DeleteExperimentRequest deleteExperimentRequest) {
         List<String> experimentInstanceIds = deleteExperimentRequest.getExperimentInstanceId();
-        boolean update1 = experimentInstanceService.lambdaUpdate()
+
+        List<ExperimentInstanceEntity> list = experimentInstanceService.lambdaQuery()
                 .in(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceIds)
+                .eq(ExperimentInstanceEntity::getDeleted, false)
+                .list();
+        // 过滤出已结束试验
+        List<String> eids = list.stream()
+                .filter(e -> e.getState() == EnumExperimentState.FINISH.getState())
+                .map(ExperimentInstanceEntity::getExperimentInstanceId)
+                .collect(Collectors.toList());
+        if (eids.size() == 0) {
+            return true;
+        }
+        boolean update1 = experimentInstanceService.lambdaUpdate()
+                .in(ExperimentInstanceEntity::getExperimentInstanceId, eids)
                 //.eq(ExperimentInstanceEntity::getExperimentInstanceId, pageExperimentRequest.getExperimentInstanceId())
                 .set(ExperimentInstanceEntity::getDeleted, Boolean.TRUE)
                 .update();
         boolean update2 = experimentParticipatorService.lambdaUpdate()
-                .in(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceIds)
+                .in(ExperimentParticipatorEntity::getExperimentInstanceId, eids)
                 .set(ExperimentParticipatorEntity::getDeleted, Boolean.TRUE)
                 .update();
         //删除任务中的实验
         boolean update3 = experimentTaskScheduleService.lambdaUpdate()
-                .in(ExperimentTaskScheduleEntity::getExperimentInstanceId, experimentInstanceIds)
+                .in(ExperimentTaskScheduleEntity::getExperimentInstanceId, eids)
                 .set(ExperimentTaskScheduleEntity::getDeleted, Boolean.TRUE)
                 .update();
         if (update1 && update2 && update3)
