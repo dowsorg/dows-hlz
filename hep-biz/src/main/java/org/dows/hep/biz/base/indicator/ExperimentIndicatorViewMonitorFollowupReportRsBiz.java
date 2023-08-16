@@ -313,9 +313,9 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
         List<ExperimentIndicatorViewMonitorFollowupRsResponse> experimentIndicatorViewMonitorFollowupRsResponseList = new ArrayList<>();
         ExperimentIndicatorViewMonitorFollowupReportRsResponse experimentIndicatorViewMonitorFollowupReportRsResponse = null;
         ExperimentIndicatorViewMonitorFollowupPlanRsEntity experimentIndicatorViewMonitorFollowupPlanRsEntity = experimentIndicatorViewMonitorFollowupPlanRsService.lambdaQuery()
-                .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getPeriods, periods)
+                //.eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getPeriods, periods)
                 .eq(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getExperimentPersonId, experimentPersonId)
-                .orderByDesc(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getId)
+                .orderByDesc(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getPeriods,ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getId)
                 .last("limit 1")
                 .one();
         experimentIndicatorViewMonitorFollowupPlanRsResponse = experimentIndicatorViewMonitorFollowupPlanRs2Response(experimentIndicatorViewMonitorFollowupPlanRsEntity);
@@ -381,10 +381,10 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
         if (Objects.isNull(experimentIndicatorViewMonitorFollowupPlanRsEntity)) {
         } else {
             ExperimentIndicatorViewMonitorFollowupReportRsEntity experimentIndicatorViewMonitorFollowupReportRsEntity = experimentIndicatorViewMonitorFollowupReportRsService.lambdaQuery()
-                    .eq(ExperimentIndicatorViewMonitorFollowupReportRsEntity::getPeriod, periods)
+                    //.eq(ExperimentIndicatorViewMonitorFollowupReportRsEntity::getPeriod, periods)
                     .eq(ExperimentIndicatorViewMonitorFollowupReportRsEntity::getExperimentPersonId, experimentPersonId)
                     .eq(ExperimentIndicatorViewMonitorFollowupReportRsEntity::getIndicatorFuncId, indicatorFuncId)
-                    .orderByDesc(ExperimentIndicatorViewMonitorFollowupReportRsEntity::getCount)
+                    .orderByDesc(ExperimentIndicatorViewMonitorFollowupReportRsEntity::getPeriod,ExperimentIndicatorViewMonitorFollowupReportRsEntity::getCount)
                     .last(EnumString.LIMIT_1.getStr())
                     .one();
             if (Objects.isNull(experimentIndicatorViewMonitorFollowupReportRsEntity)) {
