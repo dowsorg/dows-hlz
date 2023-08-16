@@ -103,7 +103,7 @@
                         <!-- 单个镜像配置 -->
                         <image>
                             <!--镜像名(含版本号)-->
-                            <name>dxzsaas/sdk-demo:t-v1-20220701</name>
+                            <name>hepsaas/sdk-demo:t-v1-20220701</name>
                             <!--别名:用于容器命名和在docker-compose.yml文件只能找到对应名字的配置-->
                             <alias>${image.alias}</alias>
                             <!--镜像build相关配置-->

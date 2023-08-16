@@ -1,0 +1,23 @@
+version: '3'
+services:
+  hep-user-prod:
+    image: registry.cn-hangzhou.aliyuncs.com/dows/hep-user:$TAG
+    restart: unless-stopped
+    container_name: hep-tenant-prod
+    environment:
+      - JVM_OPTS=-server -Xms1024m -Xmx1024m -XX:MaxGCPauseMillis=500 -XX:+UseParallelGC -XX:+HeapDumpBeforeFullGC -XX:HeapDumpPath=/dows/hep/hep-user/logs/dump
+      - JAVA_OPTS=-Djasypt.encryptor.password=02700083-9fd9-4b82-a4b4-9177e0560e92 -Dspring.profiles.active=prod
+      - APM=-javaagent:/dows/hep/paas/skywalking-agent/skywalking-agent.jar -Dskywalking.agent.service_name=hep-user-prod
+    ports:
+      - $EHP:8080
+      - $EWP:80
+    volumes:
+      - ./logs:/dows/hep/hep-user/logs
+      - /dows/hep/paas/skywalking-agent:/dows/hep/paas/skywalking-agent
+    networks:
+      - hep_prod
+
+networks:
+  hep_prod:
+    external:
+      true

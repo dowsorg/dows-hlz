@@ -1,0 +1,26 @@
+version: '3'
+services:
+  hep-tenant-uat:
+    image: registry.cn-hangzhou.aliyuncs.com/dows/hep-admin:$TAG
+    restart: unless-stopped
+    container_name: hep-admin-uat
+    environment:
+      - JVM_OPTS=-server -Xms1024m -Xmx1024m -XX:MaxGCPauseMillis=500 -XX:+UseParallelGC -XX:+HeapDumpBeforeFullGC -XX:HeapDumpPath=/dows/hep/hep-admin/logs/dump
+      - JAVA_OPTS=-Djasypt.encryptor.password=02700083-9fd9-4b82-a4b4-9177e0560e92 -Dspring.profiles.active=uat
+      - APM=-javaagent:/dows/hep/paas/skywalking-agent/skywalking-agent.jar -Dskywalking.agent.service_name=hep-admin-uat
+    ports:
+      - $EHP:8080
+      - $EWP:80
+    volumes:
+      - ./logs:/dows/hep/hep-admin/logs
+      - /dows/hep/paas/skywalking-agent:/dows/hep/paas/skywalking-agent
+      #- ../../../../skywalking-agent:/dows/hep/paas/skywalking-agent
+    networks:
+      - hep_uat
+
+networks:
+  hep_uat:
+    # 使用外部指定的网络，为 true 就标识网络必须存在
+    external:
+      # docker network create -d bridge 网络名称
+      true
