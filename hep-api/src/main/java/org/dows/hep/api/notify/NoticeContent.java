@@ -22,7 +22,7 @@ public class NoticeContent<T extends ExperimentMessage> {
     // 消息code类型
     private int messageCode;
     // 通知类型[广播|ping|pong...]
-    private EnumNoticeType noticeType;
+    private EnumNoticeType type;
 
     // 载荷
     private T payload;
