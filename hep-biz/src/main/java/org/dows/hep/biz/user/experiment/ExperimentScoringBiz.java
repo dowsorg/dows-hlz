@@ -1,7 +1,6 @@
 package org.dows.hep.biz.user.experiment;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.util.NumberUtil;
 import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,8 +18,9 @@ import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
 import org.dows.hep.biz.base.indicator.ExperimentIndicatorInstanceRsBiz;
 import org.dows.hep.biz.base.indicator.RsUtilBiz;
-import org.dows.hep.biz.operate.CostRequest;
 import org.dows.hep.biz.operate.OperateCostBiz;
+import org.dows.hep.biz.util.BigDecimalOptional;
+import org.dows.hep.biz.util.BigDecimalUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -785,7 +785,8 @@ public class ExperimentScoringBiz {
             AtomicReference<String> atomicReferenceExperimentGroupId = new AtomicReference<>();
             AtomicReference<String> atomicReferenceExperimentGroupNo = new AtomicReference<>();
             AtomicReference<String> atomicReferenceExperimentGroupName = new AtomicReference<>();
-            AtomicReference<Double> atomicReferenceAllPeriodsTotalScore = new AtomicReference<>(0D);
+            BigDecimalOptional total=BigDecimalOptional.zero();
+            BigDecimalOptional cur=BigDecimalOptional.zero();
 
             kPeriodVExperimentScoringEntityMap.forEach((period, experimentScoringEntity) -> {
                 if (StringUtils.isBlank(atomicReferenceExperimentGroupId.get())) {
@@ -797,13 +798,15 @@ public class ExperimentScoringBiz {
                 if (StringUtils.isBlank(atomicReferenceExperimentGroupName.get())) {
                     atomicReferenceExperimentGroupName.set(experimentScoringEntity.getExperimentGroupName());
                 }
-                Double currentTotalScore = atomicReferenceAllPeriodsTotalScore.get();
                 String totalScore = experimentScoringEntity.getTotalScore();
                 Float weight = kPeriodVWeightMap.get(period.toString());
-                currentTotalScore += Double.parseDouble(totalScore) * weight / 100;
+                total.add(cur.setValue(BigDecimalUtil.tryParseDecimalElseZero(totalScore))
+                        .mul(BigDecimalUtil.valueOf(weight))
+                        .div(BigDecimalUtil.valueOf(100))
+                        .getValue());
 
 
-                atomicReferenceAllPeriodsTotalScore.set(currentTotalScore);
+
                 experimentTotalRankGroupItemResponseList.add(ExperimentTotalRankGroupItemResponse
                         .builder()
                         .totalScore(experimentScoringEntity.getTotalScore())
@@ -817,7 +820,7 @@ public class ExperimentScoringBiz {
                     .experimentGroupId(atomicReferenceExperimentGroupId.get())
                     .experimentGroupNo(atomicReferenceExperimentGroupNo.get())
                     .experimentGroupName(atomicReferenceExperimentGroupName.get())
-                    .allPeriodsTotalScore(atomicReferenceAllPeriodsTotalScore.get().toString())
+                    .allPeriodsTotalScore(BigDecimalUtil.formatRoundDecimal(total.getValue(),2))
                     .experimentTotalRankGroupItemResponseList(experimentTotalRankGroupItemResponseList)
                     .build());
         });
