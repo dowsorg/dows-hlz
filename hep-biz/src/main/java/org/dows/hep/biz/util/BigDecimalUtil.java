@@ -69,6 +69,12 @@ public class BigDecimalUtil {
     public static BigDecimal valueOf(Long src,BigDecimal dft){
         return null==src?dft:BigDecimal.valueOf(src.longValue());
     }
+    public static BigDecimal valueOf(Float src){
+        return valueOf(src,null);
+    }
+    public static BigDecimal valueOf(Float src,BigDecimal dft){
+        return null==src?dft:new BigDecimal(src.toString());
+    }
     public static BigDecimal valueOf(Double src){
         return valueOf(src,null);
     }
