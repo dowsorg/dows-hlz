@@ -27,7 +27,7 @@ import java.util.concurrent.ExecutionException;
 public class IndicatorInstanceRest {
     private final IndicatorInstanceBiz indicatorInstanceBiz;
 
-    @Resubmit(duration = 5)
+    @Resubmit(duration = 2)
     @Operation(summary = "创建或修改指标实例")
     @PostMapping("v1/baseIndicator/indicatorInstance/createOrUpdateRs")
     public void createOrUpdateRs(@RequestBody CreateOrUpdateIndicatorInstanceRequestRs createOrUpdateIndicatorInstanceRequestRs) throws InterruptedException {

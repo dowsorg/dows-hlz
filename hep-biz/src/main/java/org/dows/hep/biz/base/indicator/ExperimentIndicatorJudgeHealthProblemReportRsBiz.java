@@ -61,15 +61,24 @@ public class ExperimentIndicatorJudgeHealthProblemReportRsBiz {
 
     String operateFlowId = ShareBiz.assertRunningOperateFlowId(appId, experimentId, experimentOrgId, experimentPersonId);
     Map<String, ExperimentIndicatorJudgeHealthProblemRsEntity> kExperimentIndicatorJudgeHealthProblemIdVExperimentIndicatorJudgeHealthProblemRsEntityMap = new HashMap<>();
-    if (!experimentIndicatorJudgeHealthProblemIdList.isEmpty()) {
-      experimentIndicatorJudgeHealthProblemRsService.lambdaQuery()
-          .eq(ExperimentIndicatorJudgeHealthProblemRsEntity::getAppId, appId)
-          .in(ExperimentIndicatorJudgeHealthProblemRsEntity::getExperimentIndicatorJudgeHealthProblemId, experimentIndicatorJudgeHealthProblemIdList)
-          .list()
-          .forEach(experimentIndicatorJudgeHealthProblemRsEntity -> {
-            kExperimentIndicatorJudgeHealthProblemIdVExperimentIndicatorJudgeHealthProblemRsEntityMap.put(experimentIndicatorJudgeHealthProblemRsEntity.getExperimentIndicatorJudgeHealthProblemId(), experimentIndicatorJudgeHealthProblemRsEntity);
-          });
+    if (experimentIndicatorJudgeHealthProblemIdList.isEmpty()) {
+      experimentIndicatorJudgeHealthProblemReportRsService.lambdaUpdate()
+              .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getAppId, appId)
+              .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getExperimentId, experimentId)
+              .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getPeriod, periods)
+              .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getIndicatorFuncId, indicatorFuncId)
+              .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getExperimentPersonId, experimentPersonId)
+              .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getOperateFlowId, operateFlowId)
+              .remove();
+      return;
     }
+    experimentIndicatorJudgeHealthProblemRsService.lambdaQuery()
+            .eq(ExperimentIndicatorJudgeHealthProblemRsEntity::getAppId, appId)
+            .in(ExperimentIndicatorJudgeHealthProblemRsEntity::getExperimentIndicatorJudgeHealthProblemId, experimentIndicatorJudgeHealthProblemIdList)
+            .list()
+            .forEach(experimentIndicatorJudgeHealthProblemRsEntity -> {
+              kExperimentIndicatorJudgeHealthProblemIdVExperimentIndicatorJudgeHealthProblemRsEntityMap.put(experimentIndicatorJudgeHealthProblemRsEntity.getExperimentIndicatorJudgeHealthProblemId(), experimentIndicatorJudgeHealthProblemRsEntity);
+            });
     AtomicInteger atomicIntegerCount = new AtomicInteger(1);
     ExperimentIndicatorJudgeHealthProblemReportRsEntity experimentIndicatorJudgeHealthProblemReportRsEntity = experimentIndicatorJudgeHealthProblemReportRsService.lambdaQuery()
         .eq(ExperimentIndicatorJudgeHealthProblemReportRsEntity::getAppId, appId)

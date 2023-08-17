@@ -344,6 +344,8 @@ public class ExperimentOrgInterveneBiz{
         EnumExptOperateType enumOperateType=EnumExptOperateType.ofCategId(validator.getIndicatorCategoryId());
         AssertUtil.trueThenThrow(enumOperateType==EnumExptOperateType.NONE)
                 .throwMessage("未知的操作类型");
+        AssertUtil.trueThenThrow(enumOperateType.getEndFlag()&&ShareUtil.XObject.isEmpty(saveTreat.getTreatItems()))
+                .throwMessage("请选择项目");
         //校验登录
         LoginContextVO voLogin= ShareBiz.getLoginUser(request);
 

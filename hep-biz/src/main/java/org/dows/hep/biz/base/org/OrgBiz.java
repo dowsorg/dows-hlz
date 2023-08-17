@@ -436,7 +436,7 @@ public class OrgBiz {
                 .eq(CaseOrgEntity::getCaseOrgId, caseOrgId)
                 .eq(CaseOrgEntity::getDeleted, false)
                 .eq(CaseOrgEntity::getAppId, request.getAppId())
-                .oneOpt().orElse(null);
+                .one();
         if(null==entity){
             return rst;
         }
