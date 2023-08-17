@@ -10,10 +10,7 @@ import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.biz.user.experiment.ExperimentOrgBiz;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
 * @description project descr:实验:机构操作
@@ -48,6 +45,17 @@ public class ExperimentOrgRest {
     @PostMapping("v1/userExperiment/experimentOrg/pageExperimentPersons")
     public Page<ExperimentPersonResponse> pageExperimentPersons(@RequestBody @Validated ExperimentPersonRequest personRequest) {
         return experimentOrgBiz.pageExperimentPersons(personRequest);
+    }
+
+    /**
+     * 获取实验人物所属机构
+     * @param
+     * @return
+     */
+    @Operation(summary = "获取实验人物所属机构")
+    @PostMapping("v1/userExperiment/experimentOrg/getExperimentPersonOrg")
+    public ExperimentPersonResponse getExperimentPersonOrg(@RequestParam String experimentPersonId) {
+        return experimentOrgBiz.getExperimentPersonOrg(experimentPersonId);
     }
 
     /**

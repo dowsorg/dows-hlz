@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.account.api.AccountUserApi;
+import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
 import org.dows.hep.api.enums.EnumEventActionState;
 import org.dows.hep.api.enums.EnumExperimentEventState;
@@ -473,5 +474,16 @@ public class ExperimentOrgBiz{
                 .eq(ExperimentPersonEntity::getDeleted,false)
                 .list();
         return personEntityList.size();
+    }
+
+    public ExperimentPersonResponse getExperimentPersonOrg(String experimentPersonId) {
+        ExperimentPersonEntity personEntity = experimentPersonService.lambdaQuery()
+                .eq(ExperimentPersonEntity::getExperimentPersonId, experimentPersonId)
+                .eq(ExperimentPersonEntity::getDeleted,false)
+                .oneOpt()
+                .orElseThrow(() -> new BizException("该实验人物不存在"));
+        ExperimentPersonResponse response = new ExperimentPersonResponse();
+        BeanUtils.copyProperties(personEntity,response);
+        return response;
     }
 }
