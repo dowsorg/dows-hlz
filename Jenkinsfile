@@ -14,7 +14,7 @@ pipeline {
                 git branch: '*', url: 'http://192.168.1.21/dows/dows-ops.git'
             }
         }
-        stage('Build and Push Image') {
+        stage('CI-CD') {
             steps {
                 script {
                     // 获取分支名称 并用分割出版本号和名称
