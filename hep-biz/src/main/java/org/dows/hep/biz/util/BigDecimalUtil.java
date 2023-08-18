@@ -145,14 +145,20 @@ public class BigDecimalUtil {
     public static BigDecimal roundDecimal(BigDecimal src, int scale) {
         return roundDecimal(src, scale,false,null);
     }
+    public static BigDecimal roundDecimal(BigDecimal src, int scale,RoundingMode roundingMode) {
+        return roundDecimal(src, scale,roundingMode,false,null);
+    }
     public static BigDecimal roundDecimal(BigDecimal src, int scale,boolean stripZero){
         return roundDecimal(src, scale,stripZero,null);
     }
-    public static BigDecimal roundDecimal(BigDecimal src, int scale,boolean stripZero,BigDecimal dft) {
+    public static BigDecimal roundDecimal(BigDecimal src, int scale, boolean stripZero,BigDecimal dft) {
+        return roundDecimal(src, scale,RoundingMode.HALF_UP,stripZero,dft);
+    }
+    public static BigDecimal roundDecimal(BigDecimal src, int scale,RoundingMode roundingMode, boolean stripZero,BigDecimal dft) {
         if(null==src){
             return dft;
         }
-        BigDecimal rst=src.setScale(scale, BigDecimal.ROUND_HALF_UP);
+        BigDecimal rst=src.setScale(scale, roundingMode);
         if(stripZero){
             rst=rst.stripTrailingZeros();
         }
@@ -161,15 +167,22 @@ public class BigDecimalUtil {
     public static String formatRoundDecimal(BigDecimal src, int scale){
         return formatRoundDecimal(src, scale, false,null);
     }
+    public static String formatRoundDecimal(BigDecimal src, int scale,RoundingMode roundingMode){
+        return formatRoundDecimal(src, scale, roundingMode,false,null);
+    }
     public static String formatRoundDecimal(BigDecimal src, int scale,boolean stripZero) {
         return formatRoundDecimal(src, scale, stripZero,null);
     }
+    public static String formatRoundDecimal(BigDecimal src, int scale, boolean stripZero,  String dft){
+        return formatRoundDecimal(src,scale,RoundingMode.HALF_UP,stripZero,dft);
+    }
 
-    public static String formatRoundDecimal(BigDecimal src, int scale,boolean stripZero,  String dft) {
-        if(null==src){
+    public static String formatRoundDecimal(BigDecimal src, int scale,RoundingMode roundingMode, boolean stripZero,  String dft) {
+        if (null == src) {
             return dft;
         }
-        return roundDecimal(src,scale,stripZero).toPlainString();
+        BigDecimal val = roundDecimal(src, scale, roundingMode, stripZero, null);
+        return null == val ? dft : val.toPlainString();
     }
     //endregion
 
@@ -241,14 +254,20 @@ public class BigDecimalUtil {
     public static BigDecimal mul(BigDecimal x,BigDecimal y,int scale){
         return mul(x,y,scale,true);
     }
-    private static BigDecimal mul(BigDecimal x,BigDecimal y,int scale, boolean nullAsZero){
+    public static BigDecimal mul(BigDecimal x,BigDecimal y,int scale,RoundingMode roundingMode){
+        return mul(x,y,scale,roundingMode,true);
+    }
+    public static BigDecimal mul(BigDecimal x,BigDecimal y,int scale,boolean nullAsZero) {
+        return mul(x, y, scale, RoundingMode.HALF_UP, nullAsZero);
+    }
+    private static BigDecimal mul(BigDecimal x,BigDecimal y,int scale,RoundingMode roundingMode, boolean nullAsZero){
         if (!nullAsZero && (null == x || null == y)) {
             return null;
         }
         x = Optional.ofNullable(x).orElse(BigDecimal.ZERO);
         y = Optional.ofNullable(y).orElse(BigDecimal.ZERO);
         BigDecimal val=x.multiply(y);
-        return scale<0?val:val.setScale(scale,BigDecimal.ROUND_HALF_UP);
+        return scale<0?val:val.setScale(scale,roundingMode);
     }
     //endregion
 
@@ -260,6 +279,9 @@ public class BigDecimalUtil {
     public static BigDecimal divOptional(BigDecimal x,BigDecimal y,int scale){
         return div(x,y,scale,false);
     }
+    public static BigDecimal divOptional(BigDecimal x,BigDecimal y,int scale,RoundingMode roudingMode){
+        return div(x,y,scale,roudingMode,false);
+    }
     //遇null视为0
     public static BigDecimal div(BigDecimal x,BigDecimal y){
         return div(x,y,-1,true);
@@ -268,6 +290,12 @@ public class BigDecimalUtil {
         return div(x,y,scale,true);
     }
     private static BigDecimal div(BigDecimal x, BigDecimal y, int scale, boolean nullAsZero) {
+        return div(x, y, scale, RoundingMode.HALF_UP, nullAsZero);
+    }
+    public static BigDecimal div(BigDecimal x,BigDecimal y,int scale,RoundingMode roudingMode){
+        return div(x,y,scale,roudingMode,true);
+    }
+    private static BigDecimal div(BigDecimal x, BigDecimal y, int scale,RoundingMode roudingMode, boolean nullAsZero) {
         if (!nullAsZero && (null == x || null == y)) {
             return null;
         }
@@ -275,7 +303,7 @@ public class BigDecimalUtil {
         y = Optional.ofNullable(y).orElse(BigDecimal.ZERO);
         if (y.compareTo(BigDecimal.ZERO) == 0)
             return null;
-        return x.divide(y, scale < 0 ? s_commonDivideScale : scale, RoundingMode.HALF_UP);
+        return x.divide(y, scale < 0 ? s_commonDivideScale : scale, roudingMode);
     }
     //endregion
 

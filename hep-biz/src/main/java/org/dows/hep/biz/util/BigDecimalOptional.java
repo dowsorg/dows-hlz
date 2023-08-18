@@ -1,6 +1,7 @@
 package org.dows.hep.biz.util;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * @author : wuzl
@@ -48,6 +49,12 @@ public class BigDecimalOptional {
             return null;
         }
         return BigDecimalUtil.roundDecimal(this.value,scale);
+    }
+    public BigDecimal getValue(int scale, RoundingMode roundingMode){
+        if(null==this.value) {
+            return null;
+        }
+        return BigDecimalUtil.roundDecimal(this.value,scale,roundingMode);
     }
 
     public BigDecimalOptional setValue(BigDecimal val){
@@ -129,8 +136,12 @@ public class BigDecimalOptional {
         value=BigDecimalUtil.divOptional(value,other);
         return this;
     }
-    public BigDecimalOptional divOptional(BigDecimal other, int scale){
-        value=BigDecimalUtil.divOptional(value,other,scale);
+    public BigDecimalOptional divOptional(BigDecimal other, int scale) {
+        value = BigDecimalUtil.divOptional(value, other, scale);
+        return this;
+    }
+    public BigDecimalOptional divOptional(BigDecimal other, int scale,RoundingMode roundingMode){
+        value=BigDecimalUtil.divOptional(value,other,scale,roundingMode);
         return this;
     }
     public BigDecimalOptional div(BigDecimal other){
@@ -139,6 +150,40 @@ public class BigDecimalOptional {
     }
     public BigDecimalOptional div(BigDecimal other, int scale){
         value=BigDecimalUtil.div(value,other,scale);
+        return this;
+    }
+    public BigDecimalOptional div(BigDecimal other, int scale,RoundingMode roundingMode) {
+        value = BigDecimalUtil.div(value, other, scale, roundingMode);
+        return this;
+    }
+    //endregion
+
+
+    //region min-max
+    public BigDecimalOptional min(BigDecimal other){
+        if(null==other){
+            return this;
+        }
+        if(this.isEmpty()){
+            value=other;
+            return this;
+        }
+        if(value.compareTo(other)<0){
+            value=other;
+        }
+        return this;
+    }
+    public BigDecimalOptional max(BigDecimal other){
+        if(null==other){
+            return this;
+        }
+        if(this.isEmpty()){
+            value=other;
+            return this;
+        }
+        if(other.compareTo(value)<0){
+            value=other;
+        }
         return this;
     }
     //endregion

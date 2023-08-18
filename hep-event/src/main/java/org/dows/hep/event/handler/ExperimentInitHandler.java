@@ -29,6 +29,7 @@ import org.dows.hep.api.user.organization.response.CaseOrgResponse;
 import org.dows.hep.biz.base.indicator.RsCopyBiz;
 import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
 import org.dows.hep.biz.base.org.OrgBiz;
+import org.dows.hep.biz.calc.CalcHealthIndexBiz;
 import org.dows.hep.biz.request.ExperimentTaskParamsRequest;
 import org.dows.hep.biz.snapshot.SnapshotManager;
 import org.dows.hep.biz.snapshot.SnapshotRequest;
@@ -83,6 +84,8 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
 
     private final ExperimentSettingService experimentSettingService;
     private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
+
+    private final CalcHealthIndexBiz calcHealthIndexBiz;
 
     @Override
     public void exec(ExperimentGroupSettingRequest request) throws ExecutionException, InterruptedException {
@@ -153,7 +156,8 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
               .caseInstanceId(caseInstanceId)
               .build());
             /* runsix:复制实验，拿到第0期的数据 */
-            rsExperimentCalculateBiz.experimentRsCalculateAndCreateReportHealthScore(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
+            //rsExperimentCalculateBiz.experimentRsCalculateAndCreateReportHealthScore(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
+            calcHealthIndexBiz.calcPersonHelthIndex(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
                 .builder()
                 .appId(appId)
                 .experimentId(experimentInstanceId)
