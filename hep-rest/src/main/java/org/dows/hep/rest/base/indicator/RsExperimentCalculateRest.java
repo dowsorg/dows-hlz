@@ -7,6 +7,7 @@ import org.dows.hep.api.base.indicator.request.*;
 import org.dows.hep.api.base.indicator.response.RsCalculateCompetitiveScoreRsResponse;
 import org.dows.hep.api.base.indicator.response.RsCalculateMoneyScoreRsResponse;
 import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
+import org.dows.hep.biz.calc.CalcHealthIndexBiz;
 import org.dows.hep.biz.risk.RiskBiz;
 import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
 import org.dows.hep.vo.report.PersonRiskFactor;
@@ -25,6 +26,8 @@ public class RsExperimentCalculateRest {
   private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
   private final ExperimentScoringBiz experimentScoringBiz;
   private final RiskBiz riskBiz;
+
+  private final CalcHealthIndexBiz calcHealthIndexBiz;
 
   @Operation(summary = "获取实验小组干预危险因素")
   @GetMapping("v1/experimentIndicator/personRiskModel/get")
@@ -59,7 +62,8 @@ public class RsExperimentCalculateRest {
   @Operation(summary = "实验-计算健康指数并且生成报告")
   @PostMapping("v1/experimentIndicator/healthScore/calculateAndCreateReport")
   public void experimentRsCalculateAndCreateReportHealthScore(@RequestBody ExperimentRsCalculateAndCreateReportHealthScoreRequestRs experimentRsCalculateAndCreateReportHealthScoreRequestRs) throws ExecutionException, InterruptedException {
-    rsExperimentCalculateBiz.experimentRsCalculateAndCreateReportHealthScore(experimentRsCalculateAndCreateReportHealthScoreRequestRs);
+    //rsExperimentCalculateBiz.experimentRsCalculateAndCreateReportHealthScore(experimentRsCalculateAndCreateReportHealthScoreRequestRs);
+    calcHealthIndexBiz.calcPersonHelthIndex(experimentRsCalculateAndCreateReportHealthScoreRequestRs);
   }
 
   @Operation(summary = "计算医疗占比")

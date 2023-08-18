@@ -9,6 +9,7 @@ import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.RsCalculateBizException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.request.ExperimentPersonRequest;
+import org.dows.hep.biz.calc.CalcHealthIndexBiz;
 import org.dows.hep.biz.event.ExperimentSettingCache;
 import org.dows.hep.biz.event.PersonBasedEventTask;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
@@ -68,6 +69,8 @@ public class RsExperimentCalculateBiz {
   private final PersonStatiscBiz personStatiscBiz;
   private final ExperimentPersonRiskModelRsService experimentPersonRiskModelRsService;
   private final ExperimentPersonHealthRiskFactorRsService experimentPersonHealthRiskFactorRsService;
+
+  private final CalcHealthIndexBiz calcHealthIndexBiz;
 
   @Transactional(rollbackFor = Exception.class)
   public void experimentRsCalculateHealthScore(ExperimentRsCalculateHealthScoreRequestRs experimentRsCalculateHealthScoreRequestRs) throws ExecutionException, InterruptedException {
@@ -625,7 +628,7 @@ public class RsExperimentCalculateBiz {
             if (Objects.isNull(riskModelExperimentIndicatorExpressionItemRsEntityList) || riskModelExperimentIndicatorExpressionItemRsEntityList.isEmpty()) {return;}
             String minIndicatorExpressionItemId = riskModelExperimentIndicatorExpressionRsEntity.getMinIndicatorExpressionItemId();
             ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity = kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(minIndicatorExpressionItemId);
-            String maxIndicatorExpressionItemId = riskModelExperimentIndicatorExpressionRsEntity.getMinIndicatorExpressionItemId();
+            String maxIndicatorExpressionItemId = riskModelExperimentIndicatorExpressionRsEntity.getMaxIndicatorExpressionItemId();
             ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity = kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(maxIndicatorExpressionItemId);
             rsExperimentIndicatorExpressionBiz.parseExperimentIndicatorExpression(
                 EnumIndicatorExpressionField.EXPERIMENT.getField(), EnumIndicatorExpressionSource.RISK_MODEL.getSource(), EnumIndicatorExpressionScene.EXPERIMENT_CALCULATE_HEALTH_POINT.getScene(),
@@ -1499,12 +1502,18 @@ public class RsExperimentCalculateBiz {
           .build());
 
       /* runsix:4.重新计算所有人的健康指数 */
-      this.experimentRsCalculateAndCreateReportHealthScore(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
+     /* this.experimentRsCalculateAndCreateReportHealthScore(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
           .builder()
           .appId(appId)
           .experimentId(experimentId)
           .periods(periods)
-          .build());
+          .build());*/
+      calcHealthIndexBiz.calcPersonHelthIndex(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
+              .builder()
+              .appId(appId)
+              .experimentId(experimentId)
+              .periods(periods)
+              .build());
 
       /* runsix:5.存储期数翻转数据 */
       experimentScoringBiz.saveOrUpd(experimentId, periods);
@@ -1599,12 +1608,18 @@ public class RsExperimentCalculateBiz {
           .build());
 
       /* runsix:4.重新计算所有人的健康指数 */
-      this.experimentRsCalculateAndCreateReportHealthScore(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
+     /* this.experimentRsCalculateAndCreateReportHealthScore(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
           .builder()
           .appId(appId)
           .experimentId(experimentId)
           .periods(periods)
-          .build());
+          .build());*/
+      calcHealthIndexBiz.calcPersonHelthIndex(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
+              .builder()
+              .appId(appId)
+              .experimentId(experimentId)
+              .periods(periods)
+              .build());
 
       /* runsix:5.存储期数翻转数据 */
       experimentScoringBiz.saveOrUpd(experimentId, periods);

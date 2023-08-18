@@ -715,6 +715,7 @@ public class RsExperimentIndicatorExpressionBiz {
       );
       default -> {
         /* runsix:如果公式使用场景不明确，不做特殊处理，直接返回 */
+        minAndMaxHandle(resultAtomicReference, minExperimentIndicatorExpressionItemRsEntity, maxExperimentIndicatorExpressionItemRsEntity);
         return;
       }
     }
