@@ -243,8 +243,8 @@
         <div style="font-size:18px;margin-top:25px;margin-bottom:25px">干预前</div>
         <table class="wd-700 text-center" align="center">
             <tr class="background-singular-blue">
-                <td style="">死亡原因</td>
-                <td>死亡概率（1/10万）</td>
+                <td>死亡原因</td>
+                <td>死亡概率(1/10万)</td>
                 <td>健康危险因素</td>
                 <td>指标值</td>
                 <td>危险分数</td>
@@ -282,8 +282,8 @@
         <div style="font-size:18px;margin-top:25px;margin-bottom:25px">干预后</div>
         <table class="wd-700 text-center" align="center">
             <tr class="background-singular-blue">
-                <td style="">死亡原因</td>
-                <td>死亡概率（1/10万）</td>
+                <td>死亡原因</td>
+                <td>死亡概率(1/10万)</td>
                 <td>健康危险因素</td>
                 <td>指标值</td>
                 <td>危险分数</td>
