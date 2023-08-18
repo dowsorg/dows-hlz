@@ -1,0 +1,104 @@
+version: "3.7"
+services:
+  hep-mysql-uat: #mysql容器
+    image: mariadb
+    container_name: hep-mysql-uat
+    restart: always
+    privileged: true
+    environment:
+      MYSQL_ROOT_PASSWORD: "123456"
+      TZ: "Asia/Shanghai"
+    command:
+      --max_connections=1000
+      --character-set-server=utf8mb4
+      --default-authentication-plugin=mysql_native_password
+      --lower_case_table_names=1
+    volumes:
+      - "/etc/localtime:/etc/localtime"
+#      - "./hep-mysql-uat/log:/var/log/mysql"
+#      - "./hep-mysql-uat/my.cnf:/etc/mysql/my.cnf"
+      - "./hep-mysql-uat/mariadb.cnf:/etc/mariadb.cnf:rw"
+      - "./hep-mysql-uat/data:/var/lib/mysql:rw"
+    ports:
+      - "3307:3306"
+    user: "0"
+    networks:
+      - hep_uat
+
+  hep-adminer-uat:
+    image: adminer
+    container_name: hep-adminer-uat
+    restart: always
+    ports:
+      - 7033:8080
+    networks:
+      - hep_uat
+
+  hep-redis-uat:
+    image: redis
+    container_name: hep-redis-uat
+    restart: always
+    privileged: true
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - "./hep-redis-uat/data:/data"
+      - "./hep-redis-uat/conf/redis.conf:/etc/redis/redis.conf"
+      - "./hep-redis-uat/logs:/logs"
+    command: [ "redis-server","/etc/redis/redis.conf" ]
+    ports:
+      - "6380:6379"
+    networks:
+      - hep_uat
+
+  elasticsearch-uat:
+    image: elasticsearch:7.11.1
+    restart: "no"
+    container_name: elasticsearch-uat
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - "http.cors.enabled=true"
+      - "http.cors.allow-origin=*"
+      - "discovery.type=single-node"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    networks:
+      - hep_uat
+
+  skywalking-oap-uat:
+    image: apache/skywalking-oap-server:9.2.0
+    restart: "no"
+    container_name: skywalking-oap-uat
+    ports:
+      - "1234:1234"
+      - "11800:11800"
+      - "12800:12800"
+    depends_on:
+      - elasticsearch-uat
+    environment:
+      SW_STORAGE: "elasticsearch"
+      SW_STORAGE_ES_CLUSTER_NODES: "elasticsearch-uat:9200"
+    networks:
+      - hep_uat
+
+  skywalking-ui-uat:
+      image: apache/skywalking-ui
+      restart: "no"
+      container_name: skywalking-ui-uat
+      ports:
+        - "8080:8080"
+      depends_on:
+        - skywalking-oap-uat
+      environment:
+        SW_OAP_ADDRESS: "http://skywalking-oap-uat:12800"
+      networks:
+        - hep_uat
+
+networks:
+  # 定义上面的服务用到的网络的名称，默认是驱动属于 bridge，自定义的网络名称，在实际中会变为 项目名(或所在文件目录名)
+  hep_uat:
+    # 使用外部指定的网络，为 true 就标识网络必须存在
+    external:
+      # docker network create -d bridge 网络名称
+      true

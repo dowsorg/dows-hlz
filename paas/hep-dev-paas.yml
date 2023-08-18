@@ -1,0 +1,46 @@
+version: "3.7"
+services:
+  hep-mysql: #mysql容器
+    image: mysql
+    container_name: hep-mysql-dev
+    restart: always
+    command:
+      --max_connections=1000
+      --character-set-server=utf8mb4
+      --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: "123456"
+    volumes:
+      - ./hep-mysql-dev/my.cnf:/etc/my.cnf
+      - ./hep-mysql-dev/data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - hep_dev
+
+  hep-redis:
+    image: redis
+    container_name: hep-redis-dev
+    restart: always
+    privileged: true
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - ./hep-redis-dev/data:/data
+      - ./hep-redis-dev/conf/redis.conf:/etc/redis/redis.conf
+      - ./hep-redis-dev/logs:/logs
+    command: [ "redis-server","/etc/redis/redis.conf" ]
+    ports:
+      - "6379:6379"
+    networks:
+      - hep_dev
+
+
+
+networks:
+  # 定义上面的服务用到的网络的名称，默认是驱动属于 bridge，自定义的网络名称，在实际中会变为 项目名(或所在文件目录名)
+  hep_dev:
+    # 使用外部指定的网络，为 true 就标识网络必须存在
+    external:
+      # docker network create -d bridge 网络名称
+      true

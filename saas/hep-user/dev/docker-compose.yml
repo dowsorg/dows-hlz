@@ -1,0 +1,15 @@
+version: '3'
+services:
+  hep-user-dev:
+    image: registry.cn-hangzhou.aliyuncs.com/dows/hep-user:$TAG
+    restart: unless-stopped
+    container_name: hep-user-$RTE
+    environment:
+      - RTE=$RTE
+    ports:
+      - $EHP:8080
+      - $EWP:80
+      #调式端口
+#      - "5005:5005"
+    volumes:
+      - ./logs:/dows/hep/hep-user/logs

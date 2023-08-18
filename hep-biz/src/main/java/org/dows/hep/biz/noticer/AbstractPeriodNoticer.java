@@ -12,7 +12,7 @@ public class AbstractPeriodNoticer {
 
     protected void doNotice(NoticeContent noticeContent) {
         // 获取通知消息
-        EnumNoticeType noticeType = noticeContent.getNoticeType();
+        EnumNoticeType noticeType = noticeContent.getType();
         if (noticeType == EnumNoticeType.BoardCastSysNotice) {
             log.info("系统消息通知客户端：{}", JSONUtil.toJsonStr(noticeContent));
             HepClientManager.broadcastSysMsg(MessageCode.MESS_CODE, noticeContent);

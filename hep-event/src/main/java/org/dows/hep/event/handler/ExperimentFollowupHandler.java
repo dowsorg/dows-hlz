@@ -1,5 +1,6 @@
 package org.dows.hep.event.handler;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.dows.hep.api.notify.message.ExperimentFollowupMessage;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.biz.noticer.FollowupNoticer;
 import org.dows.hep.biz.task.ExperimentNoticeTask;
+import org.dows.hep.biz.user.experiment.ExperimentOrgBiz;
 import org.dows.hep.entity.ExperimentSettingEntity;
 import org.dows.hep.entity.ExperimentTimerEntity;
 import org.dows.hep.service.ExperimentIndicatorViewMonitorFollowupPlanRsService;
@@ -37,6 +39,8 @@ public class ExperimentFollowupHandler extends AbstractEventHandler implements E
     private final FollowupNoticer followupNoticer;
 
     private final ExperimentSettingService experimentSettingService;
+
+    private final ExperimentOrgBiz experimentOrgBiz;
 
 
     @Override
@@ -108,11 +112,13 @@ public class ExperimentFollowupHandler extends AbstractEventHandler implements E
 //            }
         }
 
+        ExperimentFollowupMessage build = ExperimentFollowupMessage.builder().flag(true).build();
+        BeanUtil.copyProperties(experimentMonitorFollowupCheckRequestRs, build);
         NoticeContent noticeContent = NoticeContent.builder()
-                .noticeType(EnumNoticeType.PushCurrentAccountNotice)
+                .type(EnumNoticeType.PushCurrentAccountNotice)
                 .messageCode(MessageCode.MESS_CODE)
                 .accountId(Arrays.asList(experimentMonitorFollowupCheckRequestRs.getOperatorId()))
-                .payload(ExperimentFollowupMessage.builder().flag(true).build())
+                .payload(build)
                 .build();
 
         ExperimentNoticeTask experimentNoticeTask = new ExperimentNoticeTask(

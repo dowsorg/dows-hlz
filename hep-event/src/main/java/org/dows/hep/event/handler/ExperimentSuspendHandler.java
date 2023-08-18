@@ -51,12 +51,13 @@ public class ExperimentSuspendHandler extends AbstractEventHandler implements Ev
 
         // 如果期数为空，则可能为设计模式，或分配小组机构等场景
         if (experimentRestartRequest.getPeriods() == null || state == EnumExperimentState.PREPARE.getState()) {
-            for (ExperimentTimerEntity experimentTimerEntity : experimentTimerEntityList) {
+            //todo 此处如果在重启情况下可能有问题，导致状态异常
+            /*for (ExperimentTimerEntity experimentTimerEntity : experimentTimerEntityList) {
                 boolean before = experimentTimerEntity.getEndTime().before(experimentRestartRequest.getCurrentTime());
                 if(before){
                     throw new ExperimentException("间隔期内不能进行暂停操作");
                 }
-            }
+            }*/
             // todo 更新所有计时器时间
             for (ExperimentTimerEntity experimentTimerEntity : experimentTimerEntityList) {
                 ExperimentTimerEntity updExperimentTimerEntity = new ExperimentTimerEntity();
@@ -84,7 +85,7 @@ public class ExperimentSuspendHandler extends AbstractEventHandler implements Ev
                     .max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount))
                     .orElse(null);
             if (experimentTimerEntity == null) {
-                throw new ExperimentException("实验计时器不存在！");
+                throw new ExperimentException("实验计时器不存在或未正常初始化！");
             }
             if (experimentTimerEntity.getPaused()) {
                 throw new ExperimentException("当前实验已暂停，请勿重复执行暂停！");

@@ -25,11 +25,15 @@ import org.dows.hep.api.tenant.experiment.response.ExptGroupReportPageResponse;
 import org.dows.hep.api.tenant.experiment.response.ExptReportPageResponse;
 import org.dows.hep.api.user.experiment.ExptReportTypeEnum;
 import org.dows.hep.api.user.experiment.ExptSettingModeEnum;
+import org.dows.hep.api.user.experiment.response.ExptSchemeScoreRankResponse;
 import org.dows.hep.biz.user.experiment.ExperimentBaseBiz;
+import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
+import org.dows.hep.entity.ExperimentGroupEntity;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.entity.ExperimentRankingEntity;
+import org.dows.hep.service.ExperimentGroupService;
 import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.hep.service.ExperimentRankingService;
@@ -69,6 +73,8 @@ public class ExptReportFacadeBiz {
     private final ExperimentInstanceService experimentInstanceService;
     private final ExperimentParticipatorService experimentParticipatorService;
     private final ExperimentRankingService experimentRankingService;
+    private final ExperimentSchemeBiz experimentSchemeBiz;
+    private final ExperimentGroupService experimentGroupService;
 
     private final ExptSchemeReportHandler schemeReportHandler;
     private final ExptSandReportHandler sandReportHandler;
@@ -114,10 +120,10 @@ public class ExptReportFacadeBiz {
      * @date 2023/7/31 14:16
      */
     public Page<ExptGroupReportPageResponse> pageGroupReport(ExptGroupReportPageRequest pageRequest) {
-        Page<ExperimentRankingEntity> pageResult = experimentRankingService.lambdaQuery()
-                .eq(ExperimentRankingEntity::getExperimentInstanceId, pageRequest.getExptInstanceId())
+        Page<ExperimentGroupEntity> pageResult = experimentGroupService.lambdaQuery()
+                .eq(ExperimentGroupEntity::getExperimentInstanceId, pageRequest.getExptInstanceId())
                 .page(pageRequest.getPage());
-        return convertGroupPageResult(pageResult);
+        return convertGroupPageResult(pageResult, pageRequest.getExptInstanceId());
     }
 
     /**
@@ -386,17 +392,48 @@ public class ExptReportFacadeBiz {
         return result;
     }
 
-    private Page<ExptGroupReportPageResponse> convertGroupPageResult(Page<ExperimentRankingEntity> pageResult) {
+    private Page<ExptGroupReportPageResponse> convertGroupPageResult(Page<ExperimentGroupEntity> pageResult, String exptInstanceId) {
         Page<ExptGroupReportPageResponse> result = BeanUtil.copyProperties(pageResult, Page.class);
-        List<ExperimentRankingEntity> records = pageResult.getRecords();
+        List<ExperimentGroupEntity> records = pageResult.getRecords();
         if (CollUtil.isEmpty(records)) {
             return result;
+        }
+
+        ExptSettingModeEnum exptSettingMode = experimentSettingBiz.getExptSettingMode(exptInstanceId);
+        if (exptSettingMode == null) {
+            throw new BizException("获取小组排行榜信息时：实验设置信息异常");
+        }
+
+        HashMap<String, String> scoreMap = new HashMap<>();
+        switch (exptSettingMode) {
+            case SAND -> {
+                List<ExperimentRankingEntity> sandRankingList = experimentRankingService.lambdaQuery()
+                        .eq(ExperimentRankingEntity::getExperimentInstanceId, exptInstanceId)
+                        .list();
+                if (CollUtil.isNotEmpty(sandRankingList)) {
+                    sandRankingList.forEach(sand -> {
+                        String groupId = sand.getExperimentGroupId();
+                        String score = sand.getTotalScore();
+                        scoreMap.put(groupId, score);
+                    });
+                }
+            }
+            case SCHEME -> {
+                List<ExptSchemeScoreRankResponse> schemeRankingList = experimentSchemeBiz.listExptSchemeScoreRank(exptInstanceId);
+                if (CollUtil.isNotEmpty(schemeRankingList)) {
+                    schemeRankingList.forEach(scheme -> {
+                        String groupId = scheme.getGroupId();
+                        String score = scheme.getScore();
+                        scoreMap.put(groupId, score);
+                    });
+                }
+            }
         }
 
         List<ExptGroupReportPageResponse> ts = new ArrayList<>();
         // 获取所有小组信息
         List<String> exptGroupIds = records.stream()
-                .map(ExperimentRankingEntity::getExperimentGroupId)
+                .map(ExperimentGroupEntity::getExperimentGroupId)
                 .toList();
         Map<String, String> groupIdMapMember = groupIdMapAccountName(exptGroupIds);
         records.forEach(item -> {
@@ -407,7 +444,7 @@ public class ExptReportFacadeBiz {
                     .exptGroupName(item.getGroupName())
                     .exptGroupAlign(item.getGroupAlias())
                     .exptGroupMembers(member)
-                    .totalScore(item.getTotalScore())
+                    .totalScore(scoreMap.get(item.getExperimentGroupId()) == null ? "0" : scoreMap.get(item.getExperimentGroupId()))
                     .build();
             ts.add(reportPageResponse);
         });

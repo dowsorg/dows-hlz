@@ -1,0 +1,71 @@
+version: "3.7"
+services:
+  hep-mysql-prd:  #mysql容器
+    # 指定镜像和版本
+    image: mariadb
+    # 指定容器的名称
+    container_name: hep-mysql-prd
+    restart: always
+    command:
+      --max_connections=1000
+      --character-set-server=utf8mb4
+      --default-authentication-plugin=mysql_native_password
+    environment:
+      TZ: "Asia/Shanghai"
+      # 配置root密码
+      MYSQL_ROOT_PASSWORD: "123456"
+    # 容器日志大小配置
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '5g'
+    volumes:
+      # 挂载数据目录
+      - ./hep-mysql-prd/data:/var/lib/mysql:rw
+      # 挂载配置文件目录
+      - ./hep-mysql-prd/mariadb.cnf:/etc/mariadb.cnf:rw
+      #- ./dows/hep/hep-mysql-prd/conf:/etc/mysql/conf.d:rw
+    ports:
+      - "3308:3306"
+    networks:
+      - hep_prd
+
+
+  hep-adminer-prd:
+    image: adminer
+    container_name: hep-adminer-prd
+    restart: always
+    ports:
+      - 8033:8080
+    networks:
+      - hep_prd
+
+
+
+
+  hep-redis-prd:
+    image: redis
+    container_name: hep-redis-prd
+    restart: always
+    privileged: true
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - ./hep-redis-prd/data:/data
+      - ./hep-redis-prd/conf/redis.conf:/etc/redis/redis.conf
+      - ./hep-redis-prd/logs:/logs
+    command: [ "redis-server","/etc/redis/redis.conf" ]
+    ports:
+      - 6381:6379
+    networks:
+      - hep_prd
+
+
+
+networks:
+  # 定义上面的服务用到的网络的名称，默认是驱动属于 bridge，自定义的网络名称，在实际中会变为 项目名(或所在文件目录名)
+  hep_prd:
+    # 使用外部指定的网络，为 true 就标识网络必须存在
+    external:
+      # docker network create -d bridge 网络名称
+      true

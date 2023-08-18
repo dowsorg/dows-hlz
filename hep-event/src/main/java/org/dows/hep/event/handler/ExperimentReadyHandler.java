@@ -99,7 +99,7 @@ public class ExperimentReadyHandler extends AbstractEventHandler implements Even
                             .periods(periods)
                             .experimentInstanceId(experimentInstanceId)
                             .build())
-                    .noticeType(EnumNoticeType.BoardCastSysEvent)
+                    .type(EnumNoticeType.BoardCastSysEvent)
                     .build();
 
             extracted(experimentInstanceId, v, noticeContent);
