@@ -257,8 +257,8 @@
                         <#list ibrf.riskItems as ri >
             <tr class="background-even-blue">
                 <#if ri?is_first>
-                <td rowspan="${ibrf.groupSize!0}">${ibrf.riskName}</td>
-                <td rowspan="${ibrf.groupSize!0}">${ibrf.riskDeathProbability}</td>
+                <td rowspan="${ibrf.riskItems?size}">${ibrf.riskName}</td>
+                <td rowspan="${ibrf.riskItems?size}">${ibrf.riskDeathProbability}</td>
                 <#else>
                 <td></td>
                 <td></td>
@@ -267,8 +267,8 @@
                 <td>${ri.itemValue}</td>
                 <td>${ri.riskScore}</td>
                 <#if ri?is_first>
-                <td rowspan="${ibrf.groupSize!0}">${ibrf.riskScore}</td>
-                <td rowspan="${ibrf.groupSize!0}">${ibrf.deathRiskScore}</td>
+                <td rowspan="${ibrf.riskItems?size}">${ibrf.riskScore}</td>
+                <td rowspan="${ibrf.riskItems?size}">${ibrf.deathRiskScore}</td>
                 <#else>
                 <td></td>
                 <td></td>
@@ -296,8 +296,8 @@
                         <#list iarf.riskItems as ri >
             <tr class="background-even-blue">
                 <#if ri?is_first>
-                <td rowspan="${iarf.groupSize!0}">${iarf.riskName}</td>
-                <td rowspan="${iarf.groupSize!0}">${iarf.riskDeathProbability}</td>
+                <td rowspan="${iarf.riskItems?size}">${iarf.riskName}</td>
+                <td rowspan="${iarf.riskItems?size}">${iarf.riskDeathProbability}</td>
                 <#else>
                 <td></td>
                 <td></td>
@@ -306,8 +306,8 @@
                 <td>${ri.itemValue}</td>
                 <td>${ri.riskScore}</td>
                 <#if ri?is_first>
-                <td rowspan="${iarf.groupSize!0}">${iarf.riskScore}</td>
-                <td rowspan="${iarf.groupSize!0}">${iarf.deathRiskScore}</td>
+                <td rowspan="${iarf.riskItems?size}">${iarf.riskScore}</td>
+                <td rowspan="${iarf.riskItems?size}">${iarf.deathRiskScore}</td>
                 <#else>
                 <td></td>
                 <td></td>
