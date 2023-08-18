@@ -4,7 +4,7 @@ import org.dows.framework.api.StatusCode;
 
 public enum ResubmitCode implements StatusCode {
 
-    RESUBMIT(20001, "请勿重复提交");
+    RESUBMIT(500, "请勿重复提交");
 
     private int code;
     private String descr;

@@ -46,7 +46,7 @@ public class ExperimentResubmitInterceptor implements HandlerInterceptor {
         String val = localCache.get(key);
         if (val != null) {
             // todo 先简单实现，后学还要根据提交参数判断
-            Response response1 = Response.ok(ResubmitCode.RESUBMIT);
+            Response response1 = Response.fail(ResubmitCode.RESUBMIT);
             response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
             PrintWriter out = response.getWriter();
