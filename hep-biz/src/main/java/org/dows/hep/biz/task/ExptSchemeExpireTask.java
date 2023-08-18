@@ -3,9 +3,7 @@ package org.dows.hep.biz.task;
 import cn.hutool.core.bean.BeanUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.enums.EnumExperimentTask;
-import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
 import org.dows.hep.entity.ExperimentTaskScheduleEntity;
 import org.dows.hep.service.ExperimentTaskScheduleService;
@@ -35,7 +33,7 @@ public class ExptSchemeExpireTask implements Runnable {
         Boolean submitRes = experimentSchemeBiz.submitBatchWhenExpire(exptInstanceId);
         if(!submitRes) {
             log.error("实验-方案设计到截止时间自动提交任务：批量更新方案设计状态时发生异常");
-            throw new BizException("实验-方案设计到截止时间自动提交任务：批量更新方案设计状态时发生异常");
+//            throw new BizException("实验-方案设计到截止时间自动提交任务：批量更新方案设计状态时发生异常");
         }
 
         //更改实验任务状态
@@ -46,7 +44,7 @@ public class ExptSchemeExpireTask implements Runnable {
                 .one();
         if (BeanUtil.isEmpty(exptSchemeExpireTaskEntity)) {
             log.error("实验-方案设计到截止时间自动提交任务：获取数据库执行任务数据异常");
-            throw new ExperimentException("实验-方案设计到截止时间自动提交任务：获取数据库执行任务数据异常");
+//            throw new ExperimentException("实验-方案设计到截止时间自动提交任务：获取数据库执行任务数据异常");
         }
 
         boolean updateRes = experimentTaskScheduleService.lambdaUpdate()
@@ -55,7 +53,7 @@ public class ExptSchemeExpireTask implements Runnable {
                 .update();
         if (!updateRes) {
             log.error("实验-方案设计到截止时间自动提交任务：更新数据库状态异常");
-            throw new BizException("实验-方案设计到截止时间自动提交任务：更新数据库状态异常");
+//            throw new BizException("实验-方案设计到截止时间自动提交任务：更新数据库状态异常");
         }
     }
 }

@@ -3,9 +3,7 @@ package org.dows.hep.biz.task;
 import cn.hutool.core.bean.BeanUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.enums.EnumExperimentTask;
-import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
 import org.dows.hep.entity.ExperimentTaskScheduleEntity;
 import org.dows.hep.service.ExperimentTaskScheduleService;
@@ -36,7 +34,7 @@ public class ExptSchemeFinishTask implements Runnable {
         boolean submitRes = experimentSchemeBiz.submitWhen0RemainingTime(exptInstanceId, exptGroupId);
         if(!submitRes) {
             log.error("实验-方案设计作答剩余时间为0时自动提交任务：更新方案设计状态时发生异常");
-            throw new BizException("实验-方案设计作答剩余时间为0时自动提交任务：更新方案设计状态时发生异常");
+//            throw new BizException("实验-方案设计作答剩余时间为0时自动提交任务：更新方案设计状态时发生异常");
         }
 
         //更改实验任务状态
@@ -47,7 +45,7 @@ public class ExptSchemeFinishTask implements Runnable {
                 .one();
         if (BeanUtil.isEmpty(exptSchemeFinishTaskEntity)) {
             log.error("实验-方案设计作答剩余时间为0时自动提交任务：获取数据库执行任务数据异常");
-            throw new ExperimentException("实验-方案设计作答剩余时间为0时自动提交任务：获取数据库执行任务数据异常");
+//            throw new ExperimentException("实验-方案设计作答剩余时间为0时自动提交任务：获取数据库执行任务数据异常");
         }
 
         boolean updateRes = experimentTaskScheduleService.lambdaUpdate()
@@ -56,7 +54,7 @@ public class ExptSchemeFinishTask implements Runnable {
                 .update();
         if (!updateRes) {
             log.error("实验-方案设计作答剩余时间为0时自动提交任务：更新数据库状态异常");
-            throw new BizException("实验-方案设计作答剩余时间为0时自动提交任务：更新数据库状态异常");
+//            throw new BizException("实验-方案设计作答剩余时间为0时自动提交任务：更新数据库状态异常");
         }
     }
 }
