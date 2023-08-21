@@ -124,13 +124,16 @@ public class RsExperimentIndicatorExpressionBiz {
         Double changeVal = experimentIndicatorInstanceRsEntity.getChangeVal();
         if (ShareUtil.XObject.notEmpty(changeVal)&& NumberUtils.isCreatable(newCurrentVal)) {
           newCurrentVal=String.valueOf(Double.parseDouble(experimentIndicatorValRsEntity.getCurrentVal()) + changeVal);
+          newCurrentValAtomicReference.set(newCurrentVal);
+          this.minAndMaxHandle(newCurrentValAtomicReference,minExperimentIndicatorExpressionItemRsEntity,maxExperimentIndicatorExpressionItemRsEntity);
         }
-        experimentIndicatorValRsEntity.setCurrentVal(newCurrentVal);
+        experimentIndicatorValRsEntity.setCurrentVal(newCurrentValAtomicReference.get());
         experimentIndicatorValRsEntity.setDt(dateNow);
         kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(experimentIndicatorInstanceId, experimentIndicatorValRsEntity);
       });
     });
   }
+
 
   public void populateWithNameKExperimentPersonIdVKExperimentIndicatorInstanceIdVExperimentIndicatorValMap(
       Map<String, Map<String, ExperimentIndicatorValRsEntity>> kExperimentPersonIdVKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
