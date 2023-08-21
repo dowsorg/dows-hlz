@@ -24,6 +24,7 @@ import org.dows.hep.service.ExperimentTimerService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -55,161 +56,180 @@ public class ExperimentTimerBiz {
      * @创建时间: 2023年4月23日 上午9:44:34
      */
     public IntervalResponse countdown(String experimentInstanceId) {
-        Long sct = System.currentTimeMillis();
-        IntervalResponse intervalResponse = new IntervalResponse();
-        List<ExperimentSettingEntity> list = experimentSettingService.lambdaQuery()
-                .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
-                .list();
+        StringBuilder sb=new StringBuilder();
+        try {
+            sb.append(String.format("input:%s@%s ", experimentInstanceId,LocalDateTime.now()));
+            Long sct = System.currentTimeMillis();
+            IntervalResponse intervalResponse = new IntervalResponse();
+            List<ExperimentSettingEntity> list = experimentSettingService.lambdaQuery()
+                    .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
+                    .list();
 
-        if (list.size() == 0) {
-            throw new ExperimentException("实验ID对应的实验不存在！");
-        }
-
-        /**
-         * 方案设计模式
-         * 说明： 方案设计不是所有小组同时进入实验，所以学生端不适用此处的倒计时
-         */
-        ExperimentSettingEntity schemeSettingEntity = list.stream()
-                .filter(e -> e.getConfigKey().equals(ExperimentSetting.SchemeSetting.class.getName()))
-                .findFirst()
-                .orElse(null);
-        if (schemeSettingEntity != null) {
-            ExperimentSetting.SchemeSetting schemeSetting =
-                    JSONUtil.toBean(schemeSettingEntity.getConfigJsonVals(), ExperimentSetting.SchemeSetting.class);
-            if (sct > schemeSetting.getSchemeEndTime().getTime()) {
-                intervalResponse.setSchemeTotalTime(0L);
-            } else {
-                // 方案设计倒计时
-                Long schemeTime = schemeSetting.getSchemeEndTime().getTime() - System.currentTimeMillis();
-                intervalResponse.setSchemeTotalTime(schemeTime);
+            if (list.size() == 0) {
+                throw new ExperimentException("实验ID对应的实验不存在！");
             }
-            intervalResponse.setModel(EnumExperimentMode.SCHEME.getCode());
-        }
 
-        /**
-         * 沙盘模式
-         */
-        ExperimentSettingEntity sandSettingEntity = list.stream()
-                .filter(e -> e.getConfigKey().equals(ExperimentSetting.SandSetting.class.getName()))
-                .findFirst()
-                .orElse(null);
-        if (sandSettingEntity != null) {
-            ExperimentSetting.SandSetting sandSetting =
-                    JSONUtil.toBean(sandSettingEntity.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
-            // 每期持续时长
-            Map<String, Integer> durationMap = sandSetting.getDurationMap();
-            // 期数
-            Map<String, Integer> periodMap = sandSetting.getPeriodMap();
-            // 对set排序一下
-            List<String> keys = periodMap.keySet().stream().sorted().collect(Collectors.toList());
-            // 每期对应的mock比列
-            Map<String, Double> mockRateMap = new HashMap<>();
-            int totalDay = 0;
-            for (String s : keys) {
-                Integer duration = durationMap.get(s);
-                Integer period = periodMap.get(s);
-                totalDay += period;
-                double mockRate = Double.valueOf(period) / Double.valueOf(duration * 60);
-                mockRateMap.put(s, mockRate);
-            }
-            // 公共数据
-            intervalResponse.setExperimentInstanceId(experimentInstanceId);
-            intervalResponse.setSandTotalTime(Long.valueOf(totalDay));
-            intervalResponse.setSandTimeUnit("天");
-            intervalResponse.setModel(EnumExperimentMode.SAND.getCode());
-            intervalResponse.setDurationMap(durationMap);
-            intervalResponse.setMockRateMap(mockRateMap);
-            intervalResponse.setPeriodMap(periodMap);
-            // 查询所有记录
-            List<ExperimentTimerEntity> experimentTimerEntityList = this.getPeriodsTimerList(experimentInstanceId);
-            // 过滤每期暂停次数最大的
-            List<ExperimentTimerEntity> experimentTimerEntities = new ArrayList<>();
-            experimentTimerEntityList.stream()
-                    .collect(Collectors.groupingBy(ExperimentTimerEntity::getPeriod))
-                    .forEach((k, v) -> {
-                        ExperimentTimerEntity et = v.stream()
-                                .max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount))
-                                .get();
-                        experimentTimerEntities.add(et);
-                    });
             /**
-             * 暂停中
-             * 如果有暂停则优先处理暂停
+             * 方案设计模式
+             * 说明： 方案设计不是所有小组同时进入实验，所以学生端不适用此处的倒计时
              */
-            ExperimentTimerEntity experimentTimerEntity = experimentTimerEntityList.stream()
-                    .filter(e -> e.getPaused() == true)
+            ExperimentSettingEntity schemeSettingEntity = list.stream()
+                    .filter(e -> e.getConfigKey().equals(ExperimentSetting.SchemeSetting.class.getName()))
                     .findFirst()
                     .orElse(null);
-            if (null != experimentTimerEntity) {
-                // 剩余时间
-                long rs = experimentTimerEntity.getEndTime().getTime() - experimentTimerEntity.getPauseTime().getTime();
-                // 持续时间
-                long ds = experimentTimerEntity.getPeriodDuration() - rs;
-                intervalResponse.setSandRemnantSecond(rs / 1000);
-                intervalResponse.setSandDurationSecond(ds / 1000);
-                intervalResponse.setState(experimentTimerEntity.getState());
-                intervalResponse.setPeriod(experimentTimerEntity.getPeriod());
-                return intervalResponse;
+            if (schemeSettingEntity != null) {
+                ExperimentSetting.SchemeSetting schemeSetting =
+                        JSONUtil.toBean(schemeSettingEntity.getConfigJsonVals(), ExperimentSetting.SchemeSetting.class);
+                if (sct > schemeSetting.getSchemeEndTime().getTime()) {
+                    intervalResponse.setSchemeTotalTime(0L);
+                } else {
+                    // 方案设计倒计时
+                    Long schemeTime = schemeSetting.getSchemeEndTime().getTime() - System.currentTimeMillis();
+                    intervalResponse.setSchemeTotalTime(schemeTime);
+                }
+                intervalResponse.setModel(EnumExperimentMode.SCHEME.getCode());
             }
 
             /**
-             * 进行中（已开始...)
-             * 找出每期暂停次数最大的记录
+             * 沙盘模式
              */
-            for (int i = 0; i < experimentTimerEntities.size(); i++) {
-                ExperimentTimerEntity et = experimentTimerEntities.get(i);
-                intervalResponse.setModel(et.getModel());
-                intervalResponse.setPeriod(et.getPeriod());
-                intervalResponse.setState(et.getState());
-                intervalResponse.setAppId(et.getAppId());
-                // 间隔期|倒计时
-                if (sct < et.getStartTime().getTime() - et.getPeriodInterval()) {// 实验未开始
-                    intervalResponse.setPeriod(null);
-                    break;
-                } else if (sct >= et.getStartTime().getTime() - et.getPeriodInterval() && sct < et.getStartTime().getTime()) { // 一期开始倒计时
-                    intervalResponse.setCountdownType(0);
-                    intervalResponse.setCountdown(et.getStartTime().getTime() - sct);
-                    break;
-                } else if (sct >= et.getStartTime().getTime() && sct <= et.getEndTime().getTime()) {// 期数中
-                    // 本期剩余时间 = 暂停推迟后的结束时间 - 当前时间
-                    long rs = et.getEndTime().getTime() - sct + 1;
-                    long ds = et.getPeriodDuration() - rs;
+            ExperimentSettingEntity sandSettingEntity = list.stream()
+                    .filter(e -> e.getConfigKey().equals(ExperimentSetting.SandSetting.class.getName()))
+                    .findFirst()
+                    .orElse(null);
+            if (sandSettingEntity != null) {
+                ExperimentSetting.SandSetting sandSetting =
+                        JSONUtil.toBean(sandSettingEntity.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
+                // 每期持续时长
+                Map<String, Integer> durationMap = sandSetting.getDurationMap();
+                // 期数
+                Map<String, Integer> periodMap = sandSetting.getPeriodMap();
+                // 对set排序一下
+                List<String> keys = periodMap.keySet().stream().sorted().collect(Collectors.toList());
+                // 每期对应的mock比列
+                Map<String, Double> mockRateMap = new HashMap<>();
+                int totalDay = 0;
+                for (String s : keys) {
+                    Integer duration = durationMap.get(s);
+                    Integer period = periodMap.get(s);
+                    totalDay += period;
+                    double mockRate = Double.valueOf(period) / Double.valueOf(duration * 60);
+                    mockRateMap.put(s, mockRate);
+                }
+                // 公共数据
+                intervalResponse.setExperimentInstanceId(experimentInstanceId);
+                intervalResponse.setSandTotalTime(Long.valueOf(totalDay));
+                intervalResponse.setSandTimeUnit("天");
+                intervalResponse.setModel(EnumExperimentMode.SAND.getCode());
+                intervalResponse.setDurationMap(durationMap);
+                intervalResponse.setMockRateMap(mockRateMap);
+                intervalResponse.setPeriodMap(periodMap);
+                // 查询所有记录
+                List<ExperimentTimerEntity> experimentTimerEntityList = this.getPeriodsTimerList(experimentInstanceId);
+                // 过滤每期暂停次数最大的
+                List<ExperimentTimerEntity> experimentTimerEntities = new ArrayList<>();
+                experimentTimerEntityList.stream()
+                        .collect(Collectors.groupingBy(ExperimentTimerEntity::getPeriod))
+                        .forEach((k, v) -> {
+                            ExperimentTimerEntity et = v.stream()
+                                    .max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount))
+                                    .get();
+                            experimentTimerEntities.add(et);
+                        });
+                /**
+                 * 暂停中
+                 * 如果有暂停则优先处理暂停
+                 */
+                ExperimentTimerEntity experimentTimerEntity = experimentTimerEntityList.stream()
+                        .filter(e -> e.getPaused() == true)
+                        .findFirst()
+                        .orElse(null);
+                if (null != experimentTimerEntity) {
+                    // 剩余时间
+                    long rs = experimentTimerEntity.getEndTime().getTime() - experimentTimerEntity.getPauseTime().getTime();
+                    // 持续时间
+                    long ds = experimentTimerEntity.getPeriodDuration() - rs;
                     intervalResponse.setSandRemnantSecond(rs / 1000);
                     intervalResponse.setSandDurationSecond(ds / 1000);
-                    break;
-                } else if (sct >= et.getEndTime().getTime() && sct <= et.getEndTime().getTime() + et.getPeriodInterval()) {// // 一期结束倒计时
-                    intervalResponse.setCountdown(et.getEndTime().getTime() + et.getPeriodInterval() - sct);
-                    intervalResponse.setCountdownType(1);
-                    // 发布保险报销事件
-                    applicationEventPublisher.publishEvent(new IntervalEvent(intervalResponse));
-                    break;
-                } else {
-                    /* runsix:留着打日志使用 */
+                    intervalResponse.setState(experimentTimerEntity.getState());
+                    intervalResponse.setPeriod(experimentTimerEntity.getPeriod());
+                    return intervalResponse;
+                }
+
+                /**
+                 * 进行中（已开始...)
+                 * 找出每期暂停次数最大的记录
+                 */
+                for (int i = 0; i < experimentTimerEntities.size(); i++) {
+                    ExperimentTimerEntity et = experimentTimerEntities.get(i);
+                    intervalResponse.setModel(et.getModel());
+                    intervalResponse.setPeriod(et.getPeriod());
+                    intervalResponse.setState(et.getState());
+                    intervalResponse.setAppId(et.getAppId());
+                    // 间隔期|倒计时
+                    if (sct < et.getStartTime().getTime() - et.getPeriodInterval()) {// 实验未开始
+                        intervalResponse.setPeriod(null);
+                        sb.append(String.format(" EXPTFLOW-PRE period:%s", et.getPeriod()));
+                        break;
+                    } else if (sct >= et.getStartTime().getTime() - et.getPeriodInterval() && sct < et.getStartTime().getTime()) { // 一期开始倒计时
+                        intervalResponse.setCountdownType(0);
+                        intervalResponse.setCountdown(et.getStartTime().getTime() - sct);
+                        sb.append(String.format(" EXPTFLOW-START period:%s", et.getPeriod()));
+                        break;
+                    } else if (sct >= et.getStartTime().getTime() && sct <= et.getEndTime().getTime()) {// 期数中
+                        // 本期剩余时间 = 暂停推迟后的结束时间 - 当前时间
+                        long rs = et.getEndTime().getTime() - sct + 1;
+                        long ds = et.getPeriodDuration() - rs;
+                        intervalResponse.setSandRemnantSecond(rs / 1000);
+                        intervalResponse.setSandDurationSecond(ds / 1000);
+                        sb.append(String.format(" EXPTFLOW-RUN period:%s", et.getPeriod()));
+                        break;
+                    } else if (sct >= et.getEndTime().getTime() && sct <= et.getEndTime().getTime() + et.getPeriodInterval()) {// // 一期结束倒计时
+                        intervalResponse.setCountdown(et.getEndTime().getTime() + et.getPeriodInterval() - sct);
+                        intervalResponse.setCountdownType(1);
+                        sb.append(String.format(" EXPTFLOW-GAP period:%s", et.getPeriod()));
+                        // 发布保险报销事件
+                        applicationEventPublisher.publishEvent(new IntervalEvent(intervalResponse));
+                        break;
+                    } else {
+                        /* runsix:留着打日志使用 */
+                    }
+                }
+
+                /**
+                 * 已结束
+                 */
+                ExperimentTimerEntity finshTimer = experimentTimerEntityList.stream()
+                        .filter(e -> e.getState() == EnumExperimentState.FINISH.getState())
+                        .max(Comparator.comparingInt(ExperimentTimerEntity::getPeriod))
+                        .orElse(null);
+                if (null != finshTimer) {
+                    Long sum = experimentTimerEntities.stream()
+                            .map(ExperimentTimerEntity::getPeriodDuration).reduce(Long::sum)
+                            .get();
+                    intervalResponse.setSandDurationSecond(sum / 1000);
+                    intervalResponse.setState(finshTimer.getState());
+                    intervalResponse.setPeriod(finshTimer.getPeriod());
+                    return intervalResponse;
                 }
             }
-
-            /**
-             * 已结束
-             */
-            ExperimentTimerEntity finshTimer = experimentTimerEntityList.stream()
-                    .filter(e -> e.getState() == EnumExperimentState.FINISH.getState())
-                    .max(Comparator.comparingInt(ExperimentTimerEntity::getPeriod))
-                    .orElse(null);
-            if (null != finshTimer) {
-                Long sum = experimentTimerEntities.stream()
-                        .map(ExperimentTimerEntity::getPeriodDuration).reduce(Long::sum)
-                        .get();
-                intervalResponse.setSandDurationSecond(sum / 1000);
-                intervalResponse.setState(finshTimer.getState());
-                intervalResponse.setPeriod(finshTimer.getPeriod());
-                return intervalResponse;
+            // 如果都不为空，则为标准模式
+            if (schemeSettingEntity != null && sandSettingEntity != null) {
+                intervalResponse.setModel(EnumExperimentMode.STANDARD.getCode());
             }
+            sb.append("rst:");
+            sb.append(JSONUtil.toJsonStr(intervalResponse));
+            return intervalResponse;
+        }catch (Exception ex){
+            log.error(String.format("EXPTFLOW-QUERY error.",ex.getMessage()));
+            sb.append("error:");
+            sb.append(ex.getMessage());
+            throw ex;
+        }finally {
+            log.info(String.format("EXPTFLOW-QUERY %s.countDown@%s[%s] %s", this.getClass().getName(), LocalDateTime.now(),Thread.currentThread().getName(),sb));
+            sb.setLength(0);
         }
-        // 如果都不为空，则为标准模式
-        if (schemeSettingEntity != null && sandSettingEntity != null) {
-            intervalResponse.setModel(EnumExperimentMode.STANDARD.getCode());
-        }
-        return intervalResponse;
+
     }
 
 
