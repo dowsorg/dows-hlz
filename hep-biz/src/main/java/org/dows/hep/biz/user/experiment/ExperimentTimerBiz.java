@@ -57,10 +57,11 @@ public class ExperimentTimerBiz {
      */
     public IntervalResponse countdown(String experimentInstanceId) {
         StringBuilder sb=new StringBuilder();
+        IntervalResponse intervalResponse = new IntervalResponse();
         try {
             sb.append(String.format("input:%s@%s ", experimentInstanceId,LocalDateTime.now()));
             Long sct = System.currentTimeMillis();
-            IntervalResponse intervalResponse = new IntervalResponse();
+
             List<ExperimentSettingEntity> list = experimentSettingService.lambdaQuery()
                     .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
                     .list();
@@ -217,15 +218,16 @@ public class ExperimentTimerBiz {
             if (schemeSettingEntity != null && sandSettingEntity != null) {
                 intervalResponse.setModel(EnumExperimentMode.STANDARD.getCode());
             }
-            sb.append("rst:");
-            sb.append(JSONUtil.toJsonStr(intervalResponse));
             return intervalResponse;
         }catch (Exception ex){
             log.error(String.format("EXPTFLOW-QUERY error.",ex.getMessage()));
-            sb.append("error:");
+            sb.append(" error:");
             sb.append(ex.getMessage());
+            sb.append("\r\n");
             throw ex;
         }finally {
+            sb.append(" rst:");
+            sb.append(JSONUtil.toJsonStr(intervalResponse));
             log.info(String.format("EXPTFLOW-QUERY %s.countDown@%s[%s] %s", this.getClass().getName(), LocalDateTime.now(),Thread.currentThread().getName(),sb));
             sb.setLength(0);
         }
