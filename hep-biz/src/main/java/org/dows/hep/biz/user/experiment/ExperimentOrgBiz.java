@@ -456,7 +456,7 @@ public class ExperimentOrgBiz{
                 person.setFlowPeriod(rowFlow.getPeriods());
             }
             // 获取健康指数
-            String healthPoint = experimentIndicatorInstanceRsBiz.getHealthPoint(personRequest.getPeriods(),person.getExperimentPersonId());
+            String healthPoint = experimentIndicatorInstanceRsBiz.getHealthPoint(period,person.getExperimentPersonId());
             person.setHealthPoint(healthPoint);
             //健康指标
             person.setCoreIndicators(mapCoreIndicators.get(person.getExperimentPersonId()));
