@@ -138,6 +138,7 @@ public class ShareBiz {
 
 
     public static Integer getCurrentPeriod(String appId,String experimentInstanceId){
+        appId=checkAppId(appId,experimentInstanceId);
         ExperimentTimePoint timePoint=ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create(appId,experimentInstanceId), LocalDateTime.now(), false);
         return Optional.ofNullable(timePoint)
                 .map(ExperimentTimePoint::getPeriod)
