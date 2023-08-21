@@ -9,6 +9,7 @@ import org.dows.hep.api.exception.RsIndicatorExpressionException;
 import org.dows.hep.biz.request.CaseCalIndicatorExpressionRequest;
 import org.dows.hep.biz.request.DatabaseCalIndicatorExpressionRequest;
 import org.dows.hep.biz.request.ExperimentCalIndicatorExpressionRequest;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.springframework.expression.Expression;
@@ -73,6 +74,7 @@ public class RsExperimentIndicatorExpressionBiz {
               .dt(experimentIndicatorValRsEntity.getDt())
           .build());
     });
+    final Date dateNow=new Date();
     kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap.forEach((kExperimentPersonId, experimentIndicatorInstanceRsEntityList) -> {
       experimentIndicatorInstanceRsEntityList.sort(Comparator.comparingInt(ExperimentIndicatorInstanceRsEntity::getRecalculateSeq));
 
@@ -119,15 +121,19 @@ public class RsExperimentIndicatorExpressionBiz {
         String newCurrentVal = newCurrentValAtomicReference.get();
         if (StringUtils.isBlank(newCurrentVal)) {return;}
 
-        experimentIndicatorValRsEntity.setCurrentVal(newCurrentVal);
         Double changeVal = experimentIndicatorInstanceRsEntity.getChangeVal();
-        if (Objects.nonNull(experimentIndicatorValRsEntity) && NumberUtils.isCreatable(experimentIndicatorValRsEntity.getCurrentVal())) {
-          experimentIndicatorValRsEntity.setCurrentVal(String.valueOf(Double.parseDouble(experimentIndicatorValRsEntity.getCurrentVal()) + changeVal));
+        if (ShareUtil.XObject.notEmpty(changeVal)&& NumberUtils.isCreatable(newCurrentVal)) {
+          newCurrentVal=String.valueOf(Double.parseDouble(experimentIndicatorValRsEntity.getCurrentVal()) + changeVal);
+          newCurrentValAtomicReference.set(newCurrentVal);
+          this.minAndMaxHandle(newCurrentValAtomicReference,minExperimentIndicatorExpressionItemRsEntity,maxExperimentIndicatorExpressionItemRsEntity);
         }
+        experimentIndicatorValRsEntity.setCurrentVal(newCurrentValAtomicReference.get());
+        experimentIndicatorValRsEntity.setDt(dateNow);
         kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(experimentIndicatorInstanceId, experimentIndicatorValRsEntity);
       });
     });
   }
+
 
   public void populateWithNameKExperimentPersonIdVKExperimentIndicatorInstanceIdVExperimentIndicatorValMap(
       Map<String, Map<String, ExperimentIndicatorValRsEntity>> kExperimentPersonIdVKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
@@ -1008,6 +1014,14 @@ public class RsExperimentIndicatorExpressionBiz {
       experimentIndicatorExpressionItemRsEntityList.forEach(experimentIndicatorExpressionItemRsEntity -> {
         experimentIndicatorExpressionItemIdSet.add(experimentIndicatorExpressionItemRsEntity.getExperimentIndicatorExpressionItemId());
       });
+    });
+    kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap.values().forEach(i->{
+      if(ShareUtil.XObject.notEmpty(i.getMinIndicatorExpressionItemId())){
+        experimentIndicatorExpressionItemIdSet.add(i.getMinIndicatorExpressionItemId());
+      }
+      if(ShareUtil.XObject.notEmpty(i.getMaxIndicatorExpressionItemId())){
+        experimentIndicatorExpressionItemIdSet.add(i.getMaxIndicatorExpressionItemId());
+      }
     });
     if (experimentIndicatorExpressionItemIdSet.isEmpty()) {return;}
 

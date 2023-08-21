@@ -3,6 +3,7 @@ package org.dows.hep.biz.base.indicator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.dows.framework.api.exceptions.BaseException;
 import org.dows.hep.api.base.indicator.request.RsCopyCrowdsAndRiskModelRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyIndicatorFuncRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyPersonIndicatorRequestRs;
@@ -131,7 +132,7 @@ public class RsCopyBiz {
         .oneOpt()
         .orElseThrow(() -> {
           log.warn("method RsCopyBiz.rsCopyViewIndicator param caseInstanceId:{} is illegal", caseInstanceId);
-          throw new RsCopyException(EnumESC.VALIDATE_EXCEPTION);
+          throw new BaseException(String.format("未找到案例ID:%s",caseInstanceId));
         });
     Set<String> caseOrgIdSet = new HashSet<>();
     List<CaseOrgEntity> caseOrgEntityList = caseOrgService.lambdaQuery()
@@ -143,7 +144,7 @@ public class RsCopyBiz {
         .collect(Collectors.toList());
     if (caseOrgIdSet.isEmpty()) {
       log.warn("method RsCopyBiz.rsCopyViewIndicator has no caseOrg");
-      throw new RsCopyException(EnumESC.VALIDATE_EXCEPTION);
+        throw new BaseException("案例机构列表为空");
     }
     Map<String, CaseOrgModuleEntity> kCaseOrgModuleIdVCaseOrgModuleEntityMap = new HashMap<>();
     Map<String, List<CaseOrgModuleEntity>> kCaseOrgIdVCaseOrgModuleEntityListMap = new HashMap<>();
@@ -163,7 +164,7 @@ public class RsCopyBiz {
     Set<String> caseOrgModuleIdSet = kCaseOrgModuleIdVCaseOrgModuleEntityMap.keySet();
     if (caseOrgModuleIdSet.isEmpty()) {
       log.warn("method RsCopyBiz.rsCopyViewIndicator has no caseOrgModule");
-      throw new RsCopyException(EnumESC.VALIDATE_EXCEPTION);
+        throw new BaseException("案例功能点模块列表为空");
     }
     Set<String> indicatorFuncIdSet = new HashSet<>();
     Map<String, Map<String, Integer>> kIndicatorFuncIdVKCaseOrgModuleIdVSeqMap = new HashMap<>();
@@ -190,7 +191,7 @@ public class RsCopyBiz {
         });
     if (indicatorFuncIdSet.isEmpty()) {
       log.warn("method RsCopyBiz.rsCopyViewIndicator has no indicatorFunc");
-      throw new RsCopyException(EnumESC.VALIDATE_EXCEPTION);
+        throw new BaseException("案例功能点列表为空");
     }
     experimentOrgService.lambdaQuery()
       .eq(ExperimentOrgEntity::getAppId, appId)
@@ -1451,7 +1452,8 @@ public class RsCopyBiz {
       });
     if (experimentPersonIdSet.isEmpty() || casePersonIdSet.isEmpty()) {
       log.warn("method rsCopyPersonIndicator experimentInstanceId:{} has no person", experimentInstanceId);
-      throw new RsCopyException(EnumESC.VALIDATE_EXCEPTION);
+      throw new BaseException("案例人物列表为空");
+
     }
     casePersonService.lambdaQuery()
       .in(CasePersonEntity::getCasePersonId, casePersonIdSet)
@@ -1462,7 +1464,7 @@ public class RsCopyBiz {
       });
     if (principalIdSet.isEmpty()) {
       log.warn("method rsCopyPersonIndicator principalIdSet:is empty");
-      throw new RsCopyException(EnumESC.VALIDATE_EXCEPTION);
+        throw new BaseException("uim人物列表为空");
     }
     /* runsix:defined by yourself */
     caseIndicatorInstanceService.lambdaQuery()
@@ -1480,7 +1482,7 @@ public class RsCopyBiz {
       });
     if (caseIndicatorInstanceIdSet.isEmpty()) {
       log.warn("method rsCopyPersonIndicator caseInstanceId:{} has no indicator", caseInstanceId);
-      throw new RsCopyException(EnumESC.VALIDATE_EXCEPTION);
+        throw new BaseException("案例指标列表为空");
     }
     caseIndicatorRuleService.lambdaQuery()
       .eq(CaseIndicatorRuleEntity::getAppId, appId)
@@ -1495,7 +1497,7 @@ public class RsCopyBiz {
       List<CaseIndicatorInstanceEntity> caseIndicatorInstanceEntityList = kPrincipalIdVCaseIndicatorInstanceEntityListMap.get(accountId);
       if (Objects.isNull(caseIndicatorInstanceEntityList)) {
         log.warn("method rsCopyPersonIndicator casePersonId:{}, accountId:{} has no indicator", casePersonId, accountId);
-        throw new RsCopyException(EnumESC.VALIDATE_EXCEPTION);
+          throw new BaseException(String.format("案例人物[%s]指标列表为空", casePersonId));
       }
       caseIndicatorInstanceEntityList.forEach(caseIndicatorInstanceEntity -> {
         String caseIndicatorInstanceId = caseIndicatorInstanceEntity.getCaseIndicatorInstanceId();
@@ -1635,7 +1637,7 @@ public class RsCopyBiz {
       List<String> experimentIndicatorInstanceIdList = kCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdListMap.get(caseIndicatorInstanceId);
       if (Objects.isNull(experimentIndicatorInstanceIdList) || experimentIndicatorInstanceIdList.isEmpty()) {
         log.warn("caseIndicatorInstanceId:{} has no experimentIndicatorInstanceIdList",  caseIndicatorInstanceId);
-        throw new RsCopyException(EnumESC.VALIDATE_EXCEPTION);
+          throw new BaseException(String.format("案例指标[%s]对应实验指标列表为空", caseIndicatorInstanceId));
       }
       experimentIndicatorInstanceIdList.forEach(experimentIndicatorInstanceId -> {
         String experimentPersonId = kExperimentIndicatorInstanceIdVExperimentPersonIdMap.get(experimentIndicatorInstanceId);
