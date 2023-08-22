@@ -10,7 +10,7 @@
     <!--日志编码-->
     <property name="CHARSET" value="utf-8"/>
     <!--单个日志文件大小-->
-    <property name="MAX_FILE_SIZE" value="200MB"/>
+    <property name="MAX_FILE_SIZE" value="3MB"/>
     <!--日志保存时间-->
     <property name="MAX_HISTORY" value="P30D"/>
 
@@ -19,8 +19,8 @@
 
     <property name="LOG_HOME" value="/dows/saas/hep-admin/logs"/>
 
-    <property name="LOG_FILE" value="${LOG_HOME}/${LOG_NAME}-%d{yyyy-MM-dd}.%i.log"/>
+    <property name="LOG_FILE" value="${LOG_HOME}/%d{yyyy-MM-dd}.%i.log"/>
 
-    <property name="LOG_ERROR_FILE" value="${LOG_HOME}/${LOG_NAME}-%d{yyyy-MM-dd}.err.%i.log"/>
+    <property name="LOG_ERROR_FILE" value="${LOG_HOME}/%d{yyyy-MM-dd}.err.%i.log"/>
 
 </properties>

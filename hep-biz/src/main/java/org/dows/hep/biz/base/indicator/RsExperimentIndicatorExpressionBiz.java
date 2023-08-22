@@ -81,46 +81,50 @@ public class RsExperimentIndicatorExpressionBiz {
       experimentIndicatorInstanceRsEntityList.forEach(experimentIndicatorInstanceRsEntity -> {
         String experimentIndicatorInstanceId = experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId();
         ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
-        if (Objects.isNull(experimentIndicatorValRsEntity)) {return;}
+        if (Objects.isNull(experimentIndicatorValRsEntity)) {
+          return;
+        }
         AtomicReference<String> newCurrentValAtomicReference = new AtomicReference<>();
         List<ExperimentIndicatorExpressionRsEntity> experimentIndicatorExpressionRsEntityList = kReasonIdVExperimentIndicatorExpressionRsEntityListMap.get(experimentIndicatorInstanceId);
-        if (Objects.isNull(experimentIndicatorExpressionRsEntityList) || experimentIndicatorExpressionRsEntityList.isEmpty()) {return;}
-        /* runsix:指标管理的指标，只允许有一个公式 */
-        ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity = experimentIndicatorExpressionRsEntityList.get(0);
-        String experimentIndicatorExpressionId = experimentIndicatorExpressionRsEntity.getExperimentIndicatorExpressionId();
-        List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList = kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap.get(experimentIndicatorExpressionId);
-        if (Objects.isNull(experimentIndicatorExpressionItemRsEntityList) || experimentIndicatorExpressionItemRsEntityList.isEmpty()) {return;}
         ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity = null;
-        String minIndicatorExpressionItemId = experimentIndicatorExpressionRsEntity.getMinIndicatorExpressionItemId();
-        if (StringUtils.isNotBlank(minIndicatorExpressionItemId) && Objects.nonNull(kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(minIndicatorExpressionItemId))) {
-          minExperimentIndicatorExpressionItemRsEntity = kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(minIndicatorExpressionItemId);
-        }
         ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity = null;
-        String maxIndicatorExpressionItemId = experimentIndicatorExpressionRsEntity.getMaxIndicatorExpressionItemId();
-        if (StringUtils.isNotBlank(maxIndicatorExpressionItemId) && Objects.nonNull(kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(maxIndicatorExpressionItemId))) {
-          maxExperimentIndicatorExpressionItemRsEntity = kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(maxIndicatorExpressionItemId);
-        }
-        this.parseExperimentIndicatorExpression(
-            EnumIndicatorExpressionField.EXPERIMENT.getField(),
-            EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource(),
-            EnumIndicatorExpressionScene.EXPERIMENT_RE_CALCULATE.getScene(),
-            newCurrentValAtomicReference,
-            new HashMap<>(),
-            DatabaseCalIndicatorExpressionRequest.builder().build(),
-            CaseCalIndicatorExpressionRequest.builder().build(),
-            ExperimentCalIndicatorExpressionRequest
-                .builder()
-                .kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap)
-                .lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap)
-                .experimentIndicatorExpressionRsEntity(experimentIndicatorExpressionRsEntity)
-                .experimentIndicatorExpressionItemRsEntityList(experimentIndicatorExpressionItemRsEntityList)
-                .minExperimentIndicatorExpressionItemRsEntity(minExperimentIndicatorExpressionItemRsEntity)
-                .maxExperimentIndicatorExpressionItemRsEntity(maxExperimentIndicatorExpressionItemRsEntity)
-                .build()
-        );
-        String newCurrentVal = newCurrentValAtomicReference.get();
-        if (StringUtils.isBlank(newCurrentVal)) {return;}
 
+        if (ShareUtil.XObject.notEmpty (experimentIndicatorExpressionRsEntityList)) {
+          /* 指标管理的指标，只允许有一个公式 */
+          ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity = experimentIndicatorExpressionRsEntityList.get(0);
+          String experimentIndicatorExpressionId = experimentIndicatorExpressionRsEntity.getExperimentIndicatorExpressionId();
+          String minIndicatorExpressionItemId = experimentIndicatorExpressionRsEntity.getMinIndicatorExpressionItemId();
+          if (StringUtils.isNotBlank(minIndicatorExpressionItemId) && Objects.nonNull(kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(minIndicatorExpressionItemId))) {
+            minExperimentIndicatorExpressionItemRsEntity = kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(minIndicatorExpressionItemId);
+          }
+          String maxIndicatorExpressionItemId = experimentIndicatorExpressionRsEntity.getMaxIndicatorExpressionItemId();
+          if (StringUtils.isNotBlank(maxIndicatorExpressionItemId) && Objects.nonNull(kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(maxIndicatorExpressionItemId))) {
+            maxExperimentIndicatorExpressionItemRsEntity = kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(maxIndicatorExpressionItemId);
+          }
+          List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList = kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap.get(experimentIndicatorExpressionId);
+          if (ShareUtil.XObject.notEmpty(experimentIndicatorExpressionItemRsEntityList)) {
+            this.parseExperimentIndicatorExpression(
+                    EnumIndicatorExpressionField.EXPERIMENT.getField(),
+                    EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource(),
+                    EnumIndicatorExpressionScene.EXPERIMENT_RE_CALCULATE.getScene(),
+                    newCurrentValAtomicReference,
+                    new HashMap<>(),
+                    DatabaseCalIndicatorExpressionRequest.builder().build(),
+                    CaseCalIndicatorExpressionRequest.builder().build(),
+                    ExperimentCalIndicatorExpressionRequest
+                            .builder()
+                            .kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap)
+                            .lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap)
+                            .experimentIndicatorExpressionRsEntity(experimentIndicatorExpressionRsEntity)
+                            .experimentIndicatorExpressionItemRsEntityList(experimentIndicatorExpressionItemRsEntityList)
+                            .minExperimentIndicatorExpressionItemRsEntity(minExperimentIndicatorExpressionItemRsEntity)
+                            .maxExperimentIndicatorExpressionItemRsEntity(maxExperimentIndicatorExpressionItemRsEntity)
+                            .build()
+            );
+          }
+        }
+
+        String newCurrentVal = newCurrentValAtomicReference.get();
         Double changeVal = experimentIndicatorInstanceRsEntity.getChangeVal();
         if (ShareUtil.XObject.notEmpty(changeVal)&& NumberUtils.isCreatable(newCurrentVal)) {
           newCurrentVal=String.valueOf(Double.parseDouble(experimentIndicatorValRsEntity.getCurrentVal()) + changeVal);
@@ -620,13 +624,17 @@ public class RsExperimentIndicatorExpressionBiz {
       return;
     }
     try {
-      String min = minExperimentIndicatorExpressionItemRsEntity.getResultRaw();
-      if (NumberUtils.isCreatable(min) && BigDecimal.valueOf(Double.parseDouble(result)).compareTo(BigDecimal.valueOf(Double.parseDouble(min))) < 0) {
-        result = min;
+      if(null!=minExperimentIndicatorExpressionItemRsEntity) {
+        String min = minExperimentIndicatorExpressionItemRsEntity.getResultRaw();
+        if (NumberUtils.isCreatable(min) && new BigDecimal(result).compareTo(new BigDecimal(min)) < 0) {
+          result = min;
+        }
       }
-      String max = maxExperimentIndicatorExpressionItemRsEntity.getResultRaw();
-      if (NumberUtils.isCreatable(max) && BigDecimal.valueOf(Double.parseDouble(result)).compareTo(BigDecimal.valueOf(Double.parseDouble(min))) > 0) {
-        result = max;
+      if(null!=maxExperimentIndicatorExpressionItemRsEntity) {
+        String max = maxExperimentIndicatorExpressionItemRsEntity.getResultRaw();
+        if (NumberUtils.isCreatable(max) && new BigDecimal(result).compareTo(new BigDecimal(max)) > 0) {
+          result = max;
+        }
       }
       resultAtomicReference.set(result);
     } catch (Exception e) {

@@ -72,6 +72,7 @@ public class RsIndicatorExpressionBiz {
     ) {return;}
     indicatorExpressionItemService.lambdaQuery()
         .in(IndicatorExpressionItemEntity::getIndicatorExpressionId, indicatorExpressionIdSet)
+            .orderByAsc(IndicatorExpressionItemEntity::getSeq)
         .list()
         .forEach(indicatorExpressionItemEntity -> {
           String indicatorExpressionId = indicatorExpressionItemEntity.getIndicatorExpressionId();

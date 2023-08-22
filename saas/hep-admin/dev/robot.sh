@@ -11,7 +11,7 @@ DESC=$4
 #颜色
 COLOR=$5
 
-curl --location 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=a61338af-097a-410d-ba42-5547d427223a' \
+curl --location 'https://oapi.dingtalk.com/robot/send?access_token=a108a939447601fcd4a884751203f35b187301a93c5dc880794ba1370f063f74' \
 --header 'Content-Type: application/json' \
 --data '
    {

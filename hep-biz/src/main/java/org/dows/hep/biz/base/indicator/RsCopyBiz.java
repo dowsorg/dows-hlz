@@ -1691,21 +1691,21 @@ public class RsCopyBiz {
             minIndicatorExpressionItemId = minExperimentIndicatorExpressionItemRsEntity.getExperimentIndicatorExpressionItemId();
           }
           List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList = kCaseIndicatorExpressionIdVCaseIndicatorExpressionItemEntityListMap.get(caseIndicatorExpressionId);
-          if (Objects.isNull(caseIndicatorExpressionItemEntityList) || caseIndicatorExpressionItemEntityList.isEmpty()) {
-            return;
+          if (ShareUtil.XObject.notEmpty(caseIndicatorExpressionItemEntityList) ) {
+              caseIndicatorExpressionItemEntityList.forEach(caseIndicatorExpressionItemEntity -> {
+                  ExperimentIndicatorExpressionItemRsEntity experimentIndicatorExpressionItemRsEntity = getExperimentIndicatorExpressionItemRsEntity(
+                          kExperimentPersonIdVKCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap,
+                          caseIndicatorExpressionItemEntity,
+                          experimentPersonId,
+                          experimentInstanceId,
+                          caseInstanceId,
+                          appId,
+                          experimentIndicatorExpressionId
+                  );
+                  experimentIndicatorExpressionItemRsEntityList.add(experimentIndicatorExpressionItemRsEntity);
+              });
           }
-          caseIndicatorExpressionItemEntityList.forEach(caseIndicatorExpressionItemEntity -> {
-            ExperimentIndicatorExpressionItemRsEntity experimentIndicatorExpressionItemRsEntity = getExperimentIndicatorExpressionItemRsEntity(
-                kExperimentPersonIdVKCaseIndicatorInstanceIdVExperimentIndicatorInstanceIdMap,
-                caseIndicatorExpressionItemEntity,
-                experimentPersonId,
-                experimentInstanceId,
-                caseInstanceId,
-                appId,
-                experimentIndicatorExpressionId
-            );
-            experimentIndicatorExpressionItemRsEntityList.add(experimentIndicatorExpressionItemRsEntity);
-          });
+
           ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity = ExperimentIndicatorExpressionRsEntity
               .builder()
               .experimentIndicatorExpressionId(experimentIndicatorExpressionId)

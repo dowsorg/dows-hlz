@@ -455,10 +455,13 @@ public class RsCaseIndicatorExpressionBiz {
   public void populateCaseIndicatorExpressionItemEntityList(
       List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList,
       String caseIndicatorExpressionId) {
-    if (Objects.isNull(caseIndicatorExpressionItemEntityList) || StringUtils.isBlank(caseIndicatorExpressionId)) {return;}
+    if (Objects.isNull(caseIndicatorExpressionItemEntityList) || StringUtils.isBlank(caseIndicatorExpressionId)) {
+      return;
+    }
     caseIndicatorExpressionItemEntityList.addAll(caseIndicatorExpressionItemService.lambdaQuery()
-        .eq(CaseIndicatorExpressionItemEntity::getIndicatorExpressionId, caseIndicatorExpressionId)
-        .list());
+            .eq(CaseIndicatorExpressionItemEntity::getIndicatorExpressionId, caseIndicatorExpressionId)
+            .orderByAsc(CaseIndicatorExpressionItemEntity::getSeq)
+            .list());
   }
 
 

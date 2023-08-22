@@ -56,6 +56,19 @@
                 </includes>
                 <filtering>true</filtering>
             </resource>
+           <!-- <resource>
+                <directory>../saas/hep-configs</directory>
+                <includes>
+                    <include>**/*.*</include>
+                    <include>**/*.*</include>
+                    <include>**/*.*</include>
+                    <include>**/*.yml</include>
+                    <include>**/*.properties</include>
+                    <include>**/*.xml</include>
+                    <include>**/*.sql</include>
+                </includes>
+                <filtering>true</filtering>
+            </resource>-->
         </resources>
         <plugins>
             <plugin>
