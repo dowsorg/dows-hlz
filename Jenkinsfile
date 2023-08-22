@@ -16,7 +16,8 @@ pipeline {
         MAVEN_HOME = '/usr/local/mvn/bin/mvn'
         PATH = "${env.JAVA_HOME}/bin:${env.MAVEN_HOME}/bin:${env.PATH}"
         SAAS_PATH = '/dows/saas/hep-admin'
-        HOST
+        AS_HOST='192.168.1.60'
+        AS_PWD='findsoft2022!@#'
     }
 
     stages {
@@ -39,6 +40,18 @@ pipeline {
                         ]]
                     ])
 
+                    List<String> changes = getChangedFilesList()
+                    println ("文件变更列表: " + changes)
+
+                    String gitCommitId = getGitcommitID()
+                    println("CommitID: " + gitCommitID)
+
+                    String gitCommitAuthorName = getAuthorName()
+                    println("提交人: " + gitCommitAuthorName)
+
+                    String gitCommitMessage = getCommitMessage()
+                    println("提交信息: " + gitCommitMessage)
+
                     sh '''
                         /usr/local/mvn/bin/mvn -v
                         /usr/local/mvn/bin/mvn -Dmaven.test.skip=true clean package -U
@@ -54,8 +67,8 @@ pipeline {
                         sh 'sshpass -p "findsoft2022!@#" ssh -o StrictHostKeyChecking=no root@192.168.1.60 "mkdir -p $SAAS_PATH/dev"'
                         sh "sshpass -p 'findsoft2022!@#' scp -r saas/hep-admin/dev root@192.168.1.60:$SAAS_PATH"
                         sh 'sshpass -p "findsoft2022!@#" ssh root@192.168.1.60 "cd $SAAS_PATH/dev;sudo docker login --username=findsoft@dows --password=findsoft123456 registry.cn-hangzhou.aliyuncs.com;docker compose stop && docker compose up -d"'
-
-                        sshpass -p findsoft2022!@# ssh -o StrictHostKeyChecking=no root@${{vars.AS_DXZ_HOST}} "sh $APP_PATH/prd/robot.sh $GITHUB_REF $GITHUB_ACTOR 'dxz-user-prd' 'prd环境构建、打包、传输失败'" 'red'
+                        // 通知
+                        sh 'sshpass -p "$AS_PWD" ssh root@"$AS_HOST" "sh $SAAS_PATH/dev/robot.sh $branch $gitCommitAuthorName 'hep-admin-dev' 'dev环境构建、打包、传输成功'" 'green''
 
                     } else if (branch.startsWith('sit-')) {
                         echo 'Building for sit environment for ${branch}'
@@ -90,4 +103,53 @@ pipeline {
             }
         }
     }
+}
+
+
+//获取变更文件列表，返回HashSet，注意添加的影响文件路径不含仓库目录名
+@NonCPS
+List<String> getChangedFilesList(){
+    def changedFiles = []
+    for ( changeLogSet in currentBuild.changeSets){
+        for (entry in changeLogSet.getItems()){
+            changedFiles.addAll(entry.affectedPaths)
+        }
+    }
+    return changedFiles
+}
+
+// 获取提交ID
+@NonCPS
+String getGitcommitID(){
+    gitCommitID = " "
+    for ( changeLogSet in currentBuild.changeSets){
+        for (entry in changeLogSet.getItems()){
+            gitCommitID = entry.commitId
+        }
+    }
+    return gitCommitID
+}
+
+// 获取提交人
+@NonCPS
+String getAuthorName(){
+    gitAuthorName = " "
+    for ( changeLogSet in currentBuild.changeSets){
+        for (entry in changeLogSet.getItems()){
+            gitAuthorName = entry.author.fullName
+        }
+    }
+    return gitAuthorName
+}
+
+// 获取提交信息
+@NonCPS
+String getCommitMessage(){
+    commitMessage = " "
+    for ( changeLogSet in currentBuild.changeSets){
+        for (entry in changeLogSet.getItems()){
+            commitMessage = entry.msg
+        }
+    }
+    return commitMessage
 }
