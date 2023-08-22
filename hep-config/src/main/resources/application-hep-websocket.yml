@@ -6,24 +6,12 @@ dows:
         cron: 0/3 * * * * ?
         duration: 3
 
-
----
-#生产环境
-spring:
-  config:
-    activate:
-      on-profile: pro
-springdoc:
-  api-docs:
-    enabled: false
-
-
 ---
 #测试环境
 spring:
   config:
     activate:
-      on-profile: sit
+      on-profile: dev
 springdoc:
   api-docs:
     enabled: true
@@ -33,7 +21,7 @@ springdoc:
 spring:
   config:
     activate:
-      on-profile: dev
+      on-profile: sit
 springdoc:
   api-docs:
     enabled: true
@@ -42,7 +30,17 @@ springdoc:
 spring:
   config:
     activate:
-      on-profile: local
+      on-profile: uat
 springdoc:
   api-docs:
     enabled: true
+
+---
+#生产环境
+spring:
+  config:
+    activate:
+      on-profile: prd
+springdoc:
+  api-docs:
+    enabled: false

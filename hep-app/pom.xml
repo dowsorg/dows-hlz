@@ -59,13 +59,13 @@
             <resource>
                 <directory>../saas/hep-configs</directory>
                 <includes>
-                    <include>../configs/**/*.*</include>
-                    <include>../configs/**/*.*</include>
-                    <include>../configs/**/*.*</include>
-                    <include>../configs/**/*.yml</include>
-                    <include>../configs/**/*.properties</include>
-                    <include>../configs/**/*.xml</include>
-                    <include>../configs/**/*.sql</include>
+                    <include>**/*.*</include>
+                    <include>**/*.*</include>
+                    <include>**/*.*</include>
+                    <include>**/*.yml</include>
+                    <include>**/*.properties</include>
+                    <include>**/*.xml</include>
+                    <include>**/*.sql</include>
                 </includes>
                 <filtering>true</filtering>
             </resource>

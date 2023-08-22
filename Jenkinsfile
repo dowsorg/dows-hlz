@@ -16,6 +16,7 @@ pipeline {
         MAVEN_HOME = '/usr/local/mvn/bin/mvn'
         PATH = "${env.JAVA_HOME}/bin:${env.MAVEN_HOME}/bin:${env.PATH}"
         SAAS_PATH = '/dows/saas/hep-admin'
+        HOST
     }
 
     stages {
@@ -53,6 +54,9 @@ pipeline {
                         sh 'sshpass -p "findsoft2022!@#" ssh -o StrictHostKeyChecking=no root@192.168.1.60 "mkdir -p $SAAS_PATH/dev"'
                         sh "sshpass -p 'findsoft2022!@#' scp -r saas/hep-admin/dev root@192.168.1.60:$SAAS_PATH"
                         sh 'sshpass -p "findsoft2022!@#" ssh root@192.168.1.60 "cd $SAAS_PATH/dev;sudo docker login --username=findsoft@dows --password=findsoft123456 registry.cn-hangzhou.aliyuncs.com;docker compose stop && docker compose up -d"'
+
+                        sshpass -p findsoft2022!@# ssh -o StrictHostKeyChecking=no root@${{vars.AS_DXZ_HOST}} "sh $APP_PATH/prd/robot.sh $GITHUB_REF $GITHUB_ACTOR 'dxz-user-prd' 'prd环境构建、打包、传输失败'" 'red'
+
                     } else if (branch.startsWith('sit-')) {
                         echo 'Building for sit environment for ${branch}'
 
