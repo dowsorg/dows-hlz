@@ -23,9 +23,8 @@ import org.dows.hep.service.ExperimentTaskScheduleService;
 import org.dows.hep.service.ExperimentTimerService;
 import org.springframework.context.ApplicationEventPublisher;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 实验重启任务
@@ -79,74 +78,77 @@ public class ExperimentRestartTask implements Runnable {
         if (CollUtil.isEmpty(scheduleEntityList)) {
             return;
         }
-        // 2、有些数据部分信息可能会被误删，要过滤掉这些数据
-//        scheduleEntityList.stream().filter(schedule -> experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()) == null ||
-//                experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()).size() == 0)
-//                .forEach(schedule -> experimentTaskScheduleService.lambdaUpdate().set(ExperimentTaskScheduleEntity::getDeleted, true)
-//                        .eq(ExperimentTaskScheduleEntity::getId, schedule.getId())
-//                        .update()
-//                );
-//        scheduleEntityList = scheduleEntityList.stream().filter(schedule -> experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()) != null &&
-//                experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()).size() > 0)
-//                .collect(Collectors.toList());
 
+        // 数据分为方案设计与沙盘
         List<String> exptInstanceIds = scheduleEntityList.stream()
                 .map(ExperimentTaskScheduleEntity::getExperimentInstanceId)
                 .toList();
         Map<String, ExptSettingModeEnum> exptIdMapSettingMode = experimentSettingBiz.listExptSettingMode(exptInstanceIds);
+        HashMap<ExptSettingModeEnum, Set<String>> settingModeMapExptId = new HashMap<>();
+        settingModeMapExptId.put(ExptSettingModeEnum.SAND, new HashSet<>());
+        settingModeMapExptId.put(ExptSettingModeEnum.SCHEME, new HashSet<>());
+        exptIdMapSettingMode.forEach((k, v) -> {
+            Set<String> set = settingModeMapExptId.get(v);
+            if (set != null) {
+                set.add(k);
+            }
+        });
 
-        // 只有沙盘模式进行过滤
-        scheduleEntityList.stream().filter(schedule -> {
-            ExptSettingModeEnum exptSettingModeEnum = exptIdMapSettingMode.get(schedule.getExperimentInstanceId());
-            if (exptSettingModeEnum != null && ExptSettingModeEnum.SAND.name().equals(exptSettingModeEnum.name())) {
-                return CollUtil.isEmpty(experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()));
-            }
-            return false;
-        }).forEach(schedule -> experimentTaskScheduleService.lambdaUpdate()
-                .set(ExperimentTaskScheduleEntity::getDeleted, true)
-                .eq(ExperimentTaskScheduleEntity::getId, schedule.getId())
-                .update()
-        );
-        // 只有沙盘模式进行过滤
-        List<ExperimentTaskScheduleEntity> scheduleFilteredList = scheduleEntityList.stream().filter(schedule -> {
-            ExptSettingModeEnum exptSettingModeEnum = exptIdMapSettingMode.get(schedule.getExperimentInstanceId());
-            if (exptSettingModeEnum != null && ExptSettingModeEnum.SAND.name().equals(exptSettingModeEnum.name())) {
-                return CollUtil.isNotEmpty(experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()));
-            }
-            return true;
-        }).toList();
-        if (CollUtil.isEmpty(scheduleFilteredList)) {
+
+        // 重置方案设计相关
+        try {
+            doResetScheme(settingModeMapExptId.get(ExptSettingModeEnum.SCHEME), scheduleEntityList);
+        } catch (Exception e) {
+            log.error("服务重启时，重置方案设计相关数据时，发生如下异常：" + e.getMessage());
+        }
+
+        // 重置沙盘相关
+        try {
+            doResetSand(settingModeMapExptId.get(ExptSettingModeEnum.SAND), scheduleEntityList);
+        } catch (Exception e) {
+            log.error("服务重启时，重置沙盘相关数据时，发生如下异常：" + e.getMessage());
+        }
+
+        try {
+            // 重置实验相关
+            deExpt(scheduleEntityList);
+        } catch (Exception e) {
+            log.error("服务重启，重置实验相关数据时，发生如下异常： " + e.getMessage());
+        }
+    }
+
+    private void doResetSand(Set<String> exptIdSet, List<ExperimentTaskScheduleEntity> scheduleEntityList) {
+        if (CollUtil.isEmpty(exptIdSet) || CollUtil.isEmpty(scheduleEntityList)) {
             return;
         }
 
+        // 过滤出只有沙盘的的
+        List<ExperimentTaskScheduleEntity> schemeExptTaskScheduleList = scheduleEntityList.stream()
+                .filter(item -> {
+                    String experimentInstanceId = item.getExperimentInstanceId();
+                    return exptIdSet.contains(experimentInstanceId);
+                })
+                .toList();
+        if (CollUtil.isEmpty(schemeExptTaskScheduleList)) {
+            return;
+        }
+
+        // 2、有些数据部分信息可能会被误删，要过滤掉这些数据
+        scheduleEntityList.stream().filter(schedule -> experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()) == null ||
+                        experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()).size() == 0)
+                .forEach(schedule -> experimentTaskScheduleService.lambdaUpdate().set(ExperimentTaskScheduleEntity::getDeleted, true)
+                        .eq(ExperimentTaskScheduleEntity::getId, schedule.getId())
+                        .update()
+                );
+        scheduleEntityList = scheduleEntityList.stream().filter(schedule -> experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()) != null &&
+                        experimentTimerBiz.getPeriodsTimerList(schedule.getExperimentInstanceId()).size() > 0)
+                .collect(Collectors.toList());
+
         // 3、判断是在重启开始前应该执行的还是之后执行的任务，如果本来应该是重启之前执行的任务，重启的时候就执行，否则的话就拉起任务
-        scheduleFilteredList.forEach(scheduleEntity -> {
+        scheduleEntityList.forEach(scheduleEntity -> {
             if (scheduleEntity.getRestartTime() != null && scheduleEntity.getExecuteTime().after(scheduleEntity.getRestartTime())) {
                 JSONObject json = JSONObject.parseObject(scheduleEntity.getTaskParams());
-                if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.exptSchemeExpireTask.getDesc())) {
-                    ExptSchemeExpireTask exptSchemeExpireTask = new ExptSchemeExpireTask(
-                            experimentTaskScheduleService,
-                            experimentSchemeBiz,
-                            (String) json.get("experimentInstanceId"));
-                    taskScheduler.schedule(exptSchemeExpireTask, DateUtil.date(scheduleEntity.getExecuteTime()));
-                }
-                if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.exptSchemeFinishTask.getDesc())) {
-                    ExptSchemeFinishTask exptSchemeFinishTask = new ExptSchemeFinishTask(
-                            experimentTaskScheduleService,
-                            experimentSchemeBiz,
-                            (String) json.get("experimentInstanceId"),
-                            (String) json.get("experimentGroupId")
-                    );
-                    taskScheduler.schedule(exptSchemeFinishTask, DateUtil.date(scheduleEntity.getExecuteTime()));
-                }
-                //3.1、直接重新拉取，后期重新执行
-                if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentBeginTask.getDesc())) {
-                    // 3.2、执行定时任务
-                    ExperimentBeginTask experimentBeginTask = new ExperimentBeginTask(
-                            experimentInstanceService, experimentParticipatorService, experimentTimerService, applicationEventPublisher,
-                            experimentTaskScheduleService, (String) json.get("experimentInstanceId"));
-                    taskScheduler.schedule(experimentBeginTask, scheduleEntity.getExecuteTime());
-                }
+
                 if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentCalcTask.getDesc())) {
                     // 3.3、执行定时任务
                     ExperimentCalcTask experimentCalcTask = new ExperimentCalcTask(
@@ -158,14 +160,6 @@ public class ExperimentRestartTask implements Runnable {
                             (Integer) json.get("period"));
 
                     taskScheduler.schedule(experimentCalcTask, DateUtil.date(scheduleEntity.getExecuteTime()));
-                }
-                if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentFinishTask.getDesc())) {
-                    // 3.4、执行定时任务
-                    ExperimentFinishTask experimentFinishTask = new ExperimentFinishTask(experimentInstanceService,
-                            experimentParticipatorService, experimentTimerService, experimentTaskScheduleService, calculatorDispatcher,
-                            (String) json.get("experimentInstanceId"), (Integer) json.get("period"));
-
-                    taskScheduler.schedule(experimentFinishTask, DateUtil.date(scheduleEntity.getExecuteTime()));
                 }
                 if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentPeriodStartNoticeTask.getDesc())) {
                     // 3.5、执行定时任务
@@ -195,30 +189,6 @@ public class ExperimentRestartTask implements Runnable {
             // 3.7、之前的任务，因为宕机没有按时执行，直接全部一次性执行了
             if (scheduleEntity.getExecuteTime().before(new Date())) {
                 JSONObject json = JSONObject.parseObject(scheduleEntity.getTaskParams());
-                if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.exptSchemeExpireTask.getDesc())) {
-                    ExptSchemeExpireTask exptSchemeExpireTask = new ExptSchemeExpireTask(
-                            experimentTaskScheduleService,
-                            experimentSchemeBiz,
-                            (String) json.get("experimentInstanceId"));
-                    exptSchemeExpireTask.run();
-                }
-                if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.exptSchemeFinishTask.getDesc())) {
-                    ExptSchemeFinishTask exptSchemeFinishTask = new ExptSchemeFinishTask(
-                            experimentTaskScheduleService,
-                            experimentSchemeBiz,
-                            (String) json.get("experimentInstanceId"),
-                            (String) json.get("experimentGroupId")
-                    );
-                    exptSchemeFinishTask.run();
-                }
-                //3.7、直接重新拉取，后期重新执行
-                if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentBeginTask.getDesc())) {
-                    // 3.8、执行定时任务
-                    ExperimentBeginTask experimentBeginTask = new ExperimentBeginTask(
-                            experimentInstanceService, experimentParticipatorService, experimentTimerService, applicationEventPublisher,
-                            experimentTaskScheduleService, (String) json.get("experimentInstanceId"));
-                    experimentBeginTask.run();
-                }
                 if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentCalcTask.getDesc())) {
                     // 3.9、执行定时任务
                     ExperimentCalcTask experimentCalcTask = new ExperimentCalcTask(
@@ -229,14 +199,6 @@ public class ExperimentRestartTask implements Runnable {
                             (String) json.get("experimentGroupId"),
                             (Integer) json.get("period"));
                     experimentCalcTask.run();
-                }
-                if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentFinishTask.getDesc())) {
-                    // 3.10、执行定时任务
-                    ExperimentFinishTask experimentFinishTask = new ExperimentFinishTask(experimentInstanceService,
-                            experimentParticipatorService, experimentTimerService, experimentTaskScheduleService, calculatorDispatcher,
-                            (String) json.get("experimentInstanceId"), (Integer) json.get("period"));
-
-                    experimentFinishTask.run();
                 }
                 if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentPeriodStartNoticeTask.getDesc())) {
                     // 3.11、执行定时任务
@@ -261,6 +223,106 @@ public class ExperimentRestartTask implements Runnable {
                             experimentTaskScheduleService
                     );
                     experimentPeriodEndNoticeTask.run();
+                }
+            }
+        });
+    }
+
+    private void doResetScheme(Set<String> exptIdSet, List<ExperimentTaskScheduleEntity> scheduleEntityList) {
+        if (CollUtil.isEmpty(exptIdSet) || CollUtil.isEmpty(scheduleEntityList)) {
+            return;
+        }
+
+        // 过滤出只有方案设计的
+        List<ExperimentTaskScheduleEntity> schemeExptTaskScheduleList = scheduleEntityList.stream()
+                .filter(item -> {
+                    String experimentInstanceId = item.getExperimentInstanceId();
+                    return exptIdSet.contains(experimentInstanceId);
+                })
+                .toList();
+        if (CollUtil.isEmpty(schemeExptTaskScheduleList)) {
+            return;
+        }
+
+        // 执行任务
+        scheduleEntityList.forEach(scheduleEntity -> {
+            // 任务执行时间在重启时间之后
+            JSONObject json = JSONObject.parseObject(scheduleEntity.getTaskParams());
+            if (scheduleEntity.getRestartTime() != null && scheduleEntity.getExecuteTime().after(new Date())) {
+                if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.exptSchemeExpireTask.getDesc())) {
+                    ExptSchemeExpireTask exptSchemeExpireTask = new ExptSchemeExpireTask(
+                            experimentTaskScheduleService,
+                            experimentSchemeBiz,
+                            (String) json.get("experimentInstanceId"));
+                    taskScheduler.schedule(exptSchemeExpireTask, DateUtil.date(scheduleEntity.getExecuteTime()));
+                }
+                if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.exptSchemeFinishTask.getDesc())) {
+                    ExptSchemeFinishTask exptSchemeFinishTask = new ExptSchemeFinishTask(
+                            experimentTaskScheduleService,
+                            experimentSchemeBiz,
+                            (String) json.get("experimentInstanceId"),
+                            (String) json.get("experimentGroupId")
+                    );
+                    taskScheduler.schedule(exptSchemeFinishTask, DateUtil.date(scheduleEntity.getExecuteTime()));
+                }
+            }
+            if (scheduleEntity.getExecuteTime().before(new Date())) {
+                if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.exptSchemeExpireTask.getDesc())) {
+                    ExptSchemeExpireTask exptSchemeExpireTask = new ExptSchemeExpireTask(
+                            experimentTaskScheduleService,
+                            experimentSchemeBiz,
+                            (String) json.get("experimentInstanceId"));
+                    exptSchemeExpireTask.run();
+                }
+                if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.exptSchemeFinishTask.getDesc())) {
+                    ExptSchemeFinishTask exptSchemeFinishTask = new ExptSchemeFinishTask(
+                            experimentTaskScheduleService,
+                            experimentSchemeBiz,
+                            (String) json.get("experimentInstanceId"),
+                            (String) json.get("experimentGroupId")
+                    );
+                    exptSchemeFinishTask.run();
+                }
+            }
+        });
+    }
+
+    private void deExpt(List<ExperimentTaskScheduleEntity> scheduleEntityList) {
+        if (CollUtil.isEmpty(scheduleEntityList)) {
+            return;
+        }
+
+        // 执行任务
+        scheduleEntityList.forEach(scheduleEntity -> {
+            // 任务执行时间在重启时间之后
+            JSONObject json = JSONObject.parseObject(scheduleEntity.getTaskParams());
+            if (scheduleEntity.getRestartTime() != null && scheduleEntity.getExecuteTime().after(new Date())) {
+                if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentBeginTask.getDesc())) {
+                    ExperimentBeginTask experimentBeginTask = new ExperimentBeginTask(
+                            experimentInstanceService, experimentParticipatorService, experimentTimerService, applicationEventPublisher,
+                            experimentTaskScheduleService, (String) json.get("experimentInstanceId"));
+                    taskScheduler.schedule(experimentBeginTask, scheduleEntity.getExecuteTime());
+                }
+                if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentFinishTask.getDesc())) {
+                    ExperimentFinishTask experimentFinishTask = new ExperimentFinishTask(experimentInstanceService,
+                            experimentParticipatorService, experimentTimerService, experimentTaskScheduleService, calculatorDispatcher,
+                            (String) json.get("experimentInstanceId"), (Integer) json.get("period"));
+
+                    taskScheduler.schedule(experimentFinishTask, DateUtil.date(scheduleEntity.getExecuteTime()));
+                }
+            }
+            if (scheduleEntity.getExecuteTime().before(new Date())) {
+                if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentBeginTask.getDesc())) {
+                    ExperimentBeginTask experimentBeginTask = new ExperimentBeginTask(
+                            experimentInstanceService, experimentParticipatorService, experimentTimerService, applicationEventPublisher,
+                            experimentTaskScheduleService, (String) json.get("experimentInstanceId"));
+                    experimentBeginTask.run();
+                }
+                if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentFinishTask.getDesc())) {
+                    ExperimentFinishTask experimentFinishTask = new ExperimentFinishTask(experimentInstanceService,
+                            experimentParticipatorService, experimentTimerService, experimentTaskScheduleService, calculatorDispatcher,
+                            (String) json.get("experimentInstanceId"), (Integer) json.get("period"));
+                    experimentFinishTask.run();
                 }
             }
         });
