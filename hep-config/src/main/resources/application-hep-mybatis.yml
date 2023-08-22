@@ -23,6 +23,21 @@ mybatis-plus:
 #所以如果使用的是2.4版本推荐用下面的这种写法，至于原因就是为了提升对 Kubernetes 的原生支持而作的修改
 #spring:
 #  profiles: pro
+---
+#生产环境
+spring:
+  config:
+    activate:
+      on-profile: pro
+
+
+
+---
+#开发环境
+spring:
+  config:
+    activate:
+      on-profile: sit
 
 
 ---
@@ -33,25 +48,9 @@ spring:
       on-profile: dev
 
 ---
-#开发环境
-spring:
-  config:
-    activate:
-      on-profile: sit
-
-
-
-
----
 #本地环境
 spring:
   config:
     activate:
-      on-profile: uat
+      on-profile: local
 
----
-#生产环境
-spring:
-  config:
-    activate:
-      on-profile: prd

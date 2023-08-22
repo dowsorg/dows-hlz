@@ -14,7 +14,7 @@ elasticjob:
 spring:
   config:
     activate:
-      on-profile: sit
+      on-profile: test
 elasticjob:
   reg-center:
     server-lists: 192.168.1.60:2281
@@ -24,19 +24,7 @@ elasticjob:
 spring:
   config:
     activate:
-      on-profile: uat
-elasticjob:
-  reg-center:
-    server-lists: 192.168.1.60:2381
-    namespace: staging-dows-hep
-
-
----
-#预发布环境
-spring:
-  config:
-    activate:
-      on-profile: prd
+      on-profile: staging
 elasticjob:
   reg-center:
     server-lists: 192.168.1.60:2381
