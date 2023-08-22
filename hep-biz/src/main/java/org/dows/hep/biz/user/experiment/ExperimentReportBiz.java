@@ -97,4 +97,30 @@ public class ExperimentReportBiz {
         return getReportOfGroup(exptInstanceId, experimentGroupId, typeEnum);
     }
 
+    public boolean delReportOfExpt(String exptInstanceId, ExptReportTypeEnum typeEnum) {
+        return experimentReportInstanceService.lambdaUpdate()
+                .eq(ExperimentReportInstanceEntity::getExperimentInstanceId, exptInstanceId)
+                .eq(ExperimentReportInstanceEntity::getReportType, typeEnum.name())
+                .set(ExperimentReportInstanceEntity::getDeleted, true)
+                .update();
+    }
+
+    public boolean delReportOfGroup(String exptInstanceId, String exptGroupId, ExptReportTypeEnum typeEnum) {
+        return experimentReportInstanceService.lambdaUpdate()
+                .eq(ExperimentReportInstanceEntity::getExperimentInstanceId, exptInstanceId)
+                .eq(ExperimentReportInstanceEntity::getExperimentGroupId, exptGroupId)
+                .eq(ExperimentReportInstanceEntity::getReportType, typeEnum.name())
+                .set(ExperimentReportInstanceEntity::getDeleted, true)
+                .update();
+    }
+
+    public boolean delReportOfAccount(String exptInstanceId, String accountId, ExptReportTypeEnum typeEnum) {
+        ExperimentParticipatorEntity experimentParticipatorEntity = experimentParticipatorService.lambdaQuery()
+                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, exptInstanceId)
+                .eq(ExperimentParticipatorEntity::getAccountId, accountId)
+                .oneOpt()
+                .orElseThrow(() -> new BizException("获取用户实验报告时, 获取实验参与者信息异常"));
+        String experimentGroupId = experimentParticipatorEntity.getExperimentGroupId();
+        return delReportOfAccount(exptInstanceId, experimentGroupId, typeEnum);
+    }
 }

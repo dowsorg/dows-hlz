@@ -143,12 +143,13 @@ public class ExptReportFacadeBiz {
 
     /**
      * @param exptInstanceId - 实验实例ID
+     * @param regenerate - 是否需要重新生成
      * @return org.dows.hep.vo.report.ExptReportVO
      * @author - fhb
      * @description 获取实验报告
      * @date 2023/7/21 14:11
      */
-    public ExptReportVO exportExptReport(String exptInstanceId) {
+    public ExptReportVO exportExptReport(String exptInstanceId, boolean regenerate) {
         // check
         ExperimentInstanceEntity exptEntity = checkExpt(exptInstanceId);
         String exptZipName = exptEntity.getId()
@@ -161,15 +162,18 @@ public class ExptReportFacadeBiz {
             if (lock.tryLock(-1, 30, TimeUnit.SECONDS)) {
                 // 查询是否已经存在
                 String reportOfExpt = reportRecordHelper.getReportOfExpt(exptInstanceId, ExptReportTypeEnum.EXPT_ZIP);
-                if (StrUtil.isNotBlank(reportOfExpt)) {
-                    ExptReportVO exptReportVO = generatePdf(exptInstanceId, null);
+                if (!regenerate && StrUtil.isNotBlank(reportOfExpt)) {
+                    ExptReportVO exptReportVO = generatePdf(exptInstanceId, null, false);
                     exptReportVO.setZipName(exptZipName);
                     exptReportVO.setZipPath(reportOfExpt);
                     return exptReportVO;
                 }
+                if (regenerate && StrUtil.isNotBlank(reportOfExpt)) {
+                    reportRecordHelper.delReportOfExpt(exptInstanceId, ExptReportTypeEnum.EXPT_ZIP);
+                }
 
                 // 生成报告
-                ExptReportVO exptReportVO = generatePdf(exptInstanceId, null);
+                ExptReportVO exptReportVO = generatePdf(exptInstanceId, null, true);
                 exptReportVO.setZipName(exptZipName);
                 reportZipHelper.zipAndUpload(exptReportVO);
 
@@ -205,12 +209,13 @@ public class ExptReportFacadeBiz {
     /**
      * @param exptInstanceId - 实验实例ID
      * @param exptGroupId    - 实验小组ID
+     * @param regenerate
      * @return org.dows.hep.vo.report.ExptReportVO
      * @author fhb
      * @description 获取小组实验报告
      * @date 2023/7/21 14:09
      */
-    public ExptReportVO exportGroupReport(String exptInstanceId, String exptGroupId) {
+    public ExptReportVO exportGroupReport(String exptInstanceId, String exptGroupId, boolean regenerate) {
         // check
         ExperimentInstanceEntity exptEntity = checkExpt(exptInstanceId);
         String groupZipName = exptEntity.getId()
@@ -225,15 +230,18 @@ public class ExptReportFacadeBiz {
             if (lock.tryLock(-1, 10, TimeUnit.SECONDS)) {
                 // 查询是否已经存在
                 String reportOfGroup = reportRecordHelper.getReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP_ZIP);
-                if (StrUtil.isNotBlank(reportOfGroup)) {
-                    ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId);
+                if (!regenerate && StrUtil.isNotBlank(reportOfGroup)) {
+                    ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId, false);
                     exptReportVO.setZipName(groupZipName);
                     exptReportVO.setZipPath(reportOfGroup);
                     return exptReportVO;
                 }
+                if (regenerate && StrUtil.isNotBlank(reportOfGroup)) {
+                    reportRecordHelper.delReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP_ZIP);
+                }
 
                 // 生成报告
-                ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId);
+                ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId, true);
                 exptReportVO.setZipName(groupZipName);
                 reportZipHelper.zipAndUpload(exptReportVO);
 
@@ -274,10 +282,10 @@ public class ExptReportFacadeBiz {
      * @description 获取学生账号的实验报告
      * @date 2023/7/21 14:08
      */
-    public ExptReportVO exportAccountReport(String exptInstanceId, String accountId) {
+    public ExptReportVO exportAccountReport(String exptInstanceId, String accountId, boolean regenerate) {
         String experimentGroupId = getGroupOfAccountAndExpt(exptInstanceId, accountId);
 
-        return exportGroupReport(exptInstanceId, experimentGroupId);
+        return exportGroupReport(exptInstanceId, experimentGroupId, regenerate);
     }
 
     public void previewExptReport(String exptInstanceId, HttpServletRequest request, HttpServletResponse response) {
@@ -323,7 +331,7 @@ public class ExptReportFacadeBiz {
     }
 
     // todo 后续策略模式
-    private ExptReportVO generatePdf(String experimentInstanceId, String experimentGroupId) {
+    private ExptReportVO generatePdf(String experimentInstanceId, String experimentGroupId, boolean regenerate) {
         List<ExptGroupReportVO> exptGroupReportVOS = new ArrayList<>();
         ExptReportVO result = ExptReportVO.builder()
                 .groupReportList(exptGroupReportVOS)
@@ -332,22 +340,22 @@ public class ExptReportFacadeBiz {
         ExptSettingModeEnum exptSettingMode = experimentSettingBiz.getExptSettingMode(experimentInstanceId);
         switch (exptSettingMode) {
             case SCHEME -> {
-                ExptReportVO schemeReportVO = schemeReportHandler.generatePdfReport(experimentInstanceId, experimentGroupId);
+                ExptReportVO schemeReportVO = schemeReportHandler.generatePdfReport(experimentInstanceId, experimentGroupId, regenerate);
                 exptGroupReportVOS.addAll(schemeReportVO.getGroupReportList());
             }
             case SAND -> {
-                ExptReportVO sandReportVO = sandReportHandler.generatePdfReport(experimentInstanceId, experimentGroupId);
+                ExptReportVO sandReportVO = sandReportHandler.generatePdfReport(experimentInstanceId, experimentGroupId, regenerate);
                 exptGroupReportVOS.addAll(sandReportVO.getGroupReportList());
             }
             case SAND_SCHEME -> {
-                ExptReportVO schemeReportVO = schemeReportHandler.generatePdfReport(experimentInstanceId, experimentGroupId);
-                ExptReportVO sandReportVO = sandReportHandler.generatePdfReport(experimentInstanceId, experimentGroupId);
+                ExptReportVO schemeReportVO = schemeReportHandler.generatePdfReport(experimentInstanceId, experimentGroupId, regenerate);
+                ExptReportVO sandReportVO = sandReportHandler.generatePdfReport(experimentInstanceId, experimentGroupId, regenerate);
                 exptGroupReportVOS.addAll(schemeReportVO.getGroupReportList());
                 exptGroupReportVOS.addAll(sandReportVO.getGroupReportList());
             }
         }
         // 实验总报告
-        ExptReportVO overviewReportVO = overviewReportHandler.generatePdfReport(experimentInstanceId, experimentGroupId);
+        ExptReportVO overviewReportVO = overviewReportHandler.generatePdfReport(experimentInstanceId, experimentGroupId, regenerate);
         exptGroupReportVOS.addAll(overviewReportVO.getGroupReportList());
 
         return result;

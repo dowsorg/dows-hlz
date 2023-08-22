@@ -82,11 +82,13 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
     /**
      * @param experimentInstanceId - 实验ID
      * @param exptGroupId          - 小组ID
+     * @param regenerate
      * @author fhb
      * @description 如果有 exptGroupId，则只导出该组的报告，否则导出所有组的报告
      * @date 2023/7/7 16:54
      */
-    public ExptReportVO generatePdfReport(String experimentInstanceId, String exptGroupId) {
+    @Override
+    public ExptReportVO generatePdfReport(String experimentInstanceId, String exptGroupId, boolean regenerate) {
         // 构建 result
         List<ExptGroupReportVO> groupReportVOS = new ArrayList<>();
         ExptReportVO result = ExptReportVO.builder()
@@ -99,11 +101,11 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
         List<ExperimentGroupEntity> exptGroupInfoList = exptData.getExptGroupInfoList();
         if (StrUtil.isBlank(exptGroupId)) { // 批量-所有小组
             for (ExperimentGroupEntity group : exptGroupInfoList) {
-                ExptGroupReportVO exptGroupReportVO = generatePdfReportOfGroup(experimentInstanceId, group.getExperimentGroupId(), exptData);
+                ExptGroupReportVO exptGroupReportVO = generatePdfReportOfGroup(experimentInstanceId, group.getExperimentGroupId(), exptData, regenerate);
                 groupReportVOS.add(exptGroupReportVO);
             }
         } else { // 单个小组
-            ExptGroupReportVO exptGroupReportVO = generatePdfReportOfGroup(experimentInstanceId, exptGroupId, exptData);
+            ExptGroupReportVO exptGroupReportVO = generatePdfReportOfGroup(experimentInstanceId, exptGroupId, exptData, regenerate);
             groupReportVOS.add(exptGroupReportVO);
         }
 
@@ -200,7 +202,7 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
     }
 
     // 生成 pdf 报告
-    private ExptGroupReportVO generatePdfReportOfGroup(String exptInstanceId, String exptGroupId, ExptSchemeReportData exptData) {
+    private ExptGroupReportVO generatePdfReportOfGroup(String exptInstanceId, String exptGroupId, ExptSchemeReportData exptData, boolean regenerate) {
         // pdf 素材
         ExptSchemeReportModel pdfVO = convertData2Model(exptGroupId, exptData);
         String schemeFlt = getSchemeFlt();
@@ -208,7 +210,7 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
 
         // 判断记录中是否有数据
         String reportOfGroup = recordHelper.getReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP);
-        if (StrUtil.isNotBlank(reportOfGroup)) {
+        if (!regenerate && StrUtil.isNotBlank(reportOfGroup)) {
             ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
                     .name(fileName)
                     .path(reportOfGroup)
@@ -218,6 +220,9 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
                     .exptGroupNo(Integer.valueOf(pdfVO.getGroupInfo().getGroupNo()))
                     .paths(List.of(reportFile))
                     .build();
+        }
+        if (regenerate && StrUtil.isNotBlank(reportOfGroup)) {
+            recordHelper.delReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP);
         }
 
         // 生成 pdf 并上传文件

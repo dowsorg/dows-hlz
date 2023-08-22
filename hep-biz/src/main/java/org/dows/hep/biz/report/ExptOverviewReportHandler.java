@@ -75,7 +75,7 @@ public class ExptOverviewReportHandler implements ExptReportHandler<ExptOverview
     }
 
     @Override
-    public ExptReportVO generatePdfReport(String exptInstanceId, String exptGroupId) {
+    public ExptReportVO generatePdfReport(String exptInstanceId, String exptGroupId, boolean regenerate) {
         // pdf 素材
         ExptOverviewReportData exptData = prepareData(exptInstanceId, exptGroupId);
         ExptOverviewReportModel pdfVO = convertData2Model(exptGroupId, exptData);
@@ -84,7 +84,7 @@ public class ExptOverviewReportHandler implements ExptReportHandler<ExptOverview
 
         // 判断记录中是否有数据
         String reportOfGroup = recordHelper.getReportOfExpt(exptInstanceId, ExptReportTypeEnum.EXPT);
-        if (StrUtil.isNotBlank(reportOfGroup)) {
+        if (!regenerate && StrUtil.isNotBlank(reportOfGroup)) {
             ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
                     .name(fileName)
                     .path(reportOfGroup)
@@ -97,6 +97,9 @@ public class ExptOverviewReportHandler implements ExptReportHandler<ExptOverview
             return ExptReportVO.builder()
                     .groupReportList(List.of(groupReportVO))
                     .build();
+        }
+        if (regenerate && StrUtil.isNotBlank(reportOfGroup)) {
+            recordHelper.delReportOfExpt(exptInstanceId, ExptReportTypeEnum.EXPT);
         }
 
         // 生成 pdf 并上传文件
