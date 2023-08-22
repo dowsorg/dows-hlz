@@ -51,7 +51,7 @@ pipeline {
                         sh "docker push registry.cn-hangzhou.aliyuncs.com/findsoft/hep-admin-dev:$ver"
 
                         sh 'sshpass -p "findsoft2022!@#" ssh -o StrictHostKeyChecking=no root@192.168.1.60 "mkdir -p $SAAS_PATH/dev"'
-                        sh "sshpass -p 'findsoft2022!@#' scp -r saas/ops-admin/dev root@192.168.1.60:$SAAS_PATH"
+                        sh "sshpass -p 'findsoft2022!@#' scp -r saas/hep-admin/dev root@192.168.1.60:$SAAS_PATH"
                         sh 'sshpass -p "findsoft2022!@#" ssh root@192.168.1.60 "cd $SAAS_PATH/dev;sudo docker login --username=findsoft@dows --password=findsoft123456 registry.cn-hangzhou.aliyuncs.com;docker compose stop && docker compose up -d"'
                     } else if (branch.startsWith('sit-')) {
                         echo 'Building for sit environment for ${branch}'
