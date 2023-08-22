@@ -1,7 +1,7 @@
 version: '3'
 services:
   hep-admin-sit:
-    image: registry.cn-hangzhou.aliyuncs.com/dows/hep-admin-sit:$TAG
+    image: registry.cn-hangzhou.aliyuncs.com/findsoft/hep-admin-sit:$TAG
     restart: unless-stopped
     container_name: hep-admin-sit
     environment:

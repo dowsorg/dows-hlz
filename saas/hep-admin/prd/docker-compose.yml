@@ -1,7 +1,7 @@
 version: '3'
 services:
   hep-user-prod:
-    image: registry.cn-hangzhou.aliyuncs.com/dows/hep-admin-prd:$TAG
+    image: registry.cn-hangzhou.aliyuncs.com/findsoft/hep-admin-prd:$TAG
     restart: unless-stopped
     container_name: hep-tenant-prod
     environment:

@@ -1,7 +1,7 @@
 version: '3'
 services:
   hep-admin-uat:
-    image: registry.cn-hangzhou.aliyuncs.com/dows/hep-admin-uat:$TAG
+    image: registry.cn-hangzhou.aliyuncs.com/findsoft/hep-admin-uat:$TAG
     restart: unless-stopped
     container_name: hep-admin-uat
     environment:

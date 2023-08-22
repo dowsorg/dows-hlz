@@ -1,7 +1,7 @@
 version: '3'
 services:
   hep-admin-dev:
-    image: registry.cn-hangzhou.aliyuncs.com/dows/hep-admin-dev:$TAG
+    image: registry.cn-hangzhou.aliyuncs.com/findsoft/hep-admin-dev:$TAG
     restart: unless-stopped
     container_name: hep-admin-dev
     environment:
