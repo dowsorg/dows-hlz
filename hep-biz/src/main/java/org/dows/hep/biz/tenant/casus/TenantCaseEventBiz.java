@@ -125,7 +125,7 @@ public class TenantCaseEventBiz {
                 });
         List<CaseEventActionInfoVO> vosAction = ShareUtil.XCollection.map(rowsAction,
                 i -> CopyWrapper.create(CaseEventActionInfoVO::new)
-                        .endFrom(i, v -> v.setRefId(i.getCaseEventId())
+                        .endFrom(i, v -> v.setRefId(i.getCaseEventActionId())
                                 .setActionExpresssions(mapExressions.get(i.getCaseEventActionId()))));
         mapExressions.clear();
         return CopyWrapper.create(CaseEventInfoResponse::new)
