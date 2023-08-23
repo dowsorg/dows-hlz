@@ -109,6 +109,18 @@ public class ReportRecordHelper {
         return getFileUri(reportOfAccount);
     }
 
+    public boolean delReportOfExpt(String exptInstanceId, ExptReportTypeEnum typeEnum) {
+        return experimentReportBiz.delReportOfExpt(exptInstanceId, typeEnum);
+    }
+
+    public boolean delReportOfGroup(String exptInstanceId, String exptGroupId, ExptReportTypeEnum exptReportTypeEnum) {
+        return experimentReportBiz.delReportOfGroup(exptInstanceId, exptGroupId, exptReportTypeEnum);
+    }
+
+    public boolean delReportOfAccount(String exptInstanceId, String accountId, ExptReportTypeEnum typeEnum) {
+        return experimentReportBiz.delReportOfAccount(exptInstanceId, accountId, typeEnum);
+    }
+
     private String getFileUri(ExperimentReportInstanceEntity reportOfExpt) {
         if (BeanUtil.isEmpty(reportOfExpt)) {
             return "";

@@ -92,13 +92,14 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
     /**
      * @param experimentInstanceId - 实验实例ID
      * @param exptGroupId          - 实验小组ID
+     * @param regenerate
      * @return org.dows.hep.vo.report.ExptReportVO
      * @author fhb
      * @description 如果有 exptGroupId，则只导出该组的报告，否则导出所有组的报告
      * @date 2023/7/17 9:23
      */
     @Override
-    public ExptReportVO generatePdfReport(String experimentInstanceId, String exptGroupId) {
+    public ExptReportVO generatePdfReport(String experimentInstanceId, String exptGroupId, boolean regenerate) {
         // 构建 result
         List<ExptGroupReportVO> groupReportVOs = new ArrayList<>();
         ExptReportVO result = ExptReportVO.builder()
@@ -111,11 +112,11 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
         List<ExperimentGroupEntity> exptGroupInfoList = exptData.getExptGroupInfoList();
         if (StrUtil.isBlank(exptGroupId)) { // 批量-所有小组
             for (ExperimentGroupEntity group : exptGroupInfoList) {
-                ExptGroupReportVO exptGroupReportVO = generatePdfReportOfGroup(experimentInstanceId, group.getExperimentGroupId(), exptData);
+                ExptGroupReportVO exptGroupReportVO = generatePdfReportOfGroup(experimentInstanceId, group.getExperimentGroupId(), exptData, regenerate);
                 groupReportVOs.add(exptGroupReportVO);
             }
         } else { // 单个小组
-            ExptGroupReportVO exptGroupReportVO = generatePdfReportOfGroup(experimentInstanceId, exptGroupId, exptData);
+            ExptGroupReportVO exptGroupReportVO = generatePdfReportOfGroup(experimentInstanceId, exptGroupId, exptData, regenerate);
             groupReportVOs.add(exptGroupReportVO);
         }
 
@@ -216,7 +217,7 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
     }
 
     // 生成 pdf 报告
-    private ExptGroupReportVO generatePdfReportOfGroup(String exptInstanceId, String exptGroupId, ExptSandReportData exptData) {
+    private ExptGroupReportVO generatePdfReportOfGroup(String exptInstanceId, String exptGroupId, ExptSandReportData exptData, boolean regenerate) {
         // pdf 素材
         ExptSandReportModel pdfVO = convertData2Model(exptGroupId, exptData);
         String schemeFlt = getSchemeFlt();
@@ -224,7 +225,7 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
 
         // 判断记录中是否有数据
         String reportOfGroup = recordHelper.getReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP);
-        if (StrUtil.isNotBlank(reportOfGroup)) {
+        if (!regenerate && StrUtil.isNotBlank(reportOfGroup)) {
             ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
                     .name(fileName)
                     .path(reportOfGroup)
@@ -234,6 +235,9 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
                     .exptGroupNo(Integer.valueOf(pdfVO.getGroupInfo().getGroupNo()))
                     .paths(List.of(reportFile))
                     .build();
+        }
+        if (regenerate && StrUtil.isNotBlank(reportOfGroup)) {
+            recordHelper.delReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP);
         }
 
         // 生成 pdf 并上传文件

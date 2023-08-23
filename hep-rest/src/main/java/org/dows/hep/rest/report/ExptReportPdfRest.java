@@ -99,7 +99,7 @@ public class ExptReportPdfRest {
     @Operation(summary = "导出实验pdf报告")
     @GetMapping(value = "/v1/report/exportExptReport")
     public ExptReportVO exportExptReport(@RequestParam String experimentInstanceId) {
-        return exptReportFacadeBiz.exportExptReport(experimentInstanceId);
+        return exptReportFacadeBiz.exportExptReport(experimentInstanceId, true);
     }
 
     /**
@@ -115,7 +115,7 @@ public class ExptReportPdfRest {
     @Operation(summary = "导出小组实验pdf报告")
     @GetMapping(value = "/v1/report/exportGroupReport")
     public ExptReportVO exportGroupReport(@RequestParam String experimentInstanceId, @RequestParam String experimentGroupId) {
-        return exptReportFacadeBiz.exportGroupReport(experimentInstanceId, experimentGroupId);
+        return exptReportFacadeBiz.exportGroupReport(experimentInstanceId, experimentGroupId, true);
     }
 
     /**
@@ -131,7 +131,7 @@ public class ExptReportPdfRest {
     @GetMapping(value = "/v1/report/exportAccountReport")
     public ExptReportVO exportAccountReport(@RequestParam String experimentInstanceId, HttpServletRequest request) {
         String accountId = baseBiz.getAccountId(request);
-        return exptReportFacadeBiz.exportAccountReport(experimentInstanceId, accountId);
+        return exptReportFacadeBiz.exportAccountReport(experimentInstanceId, accountId, true);
     }
 
     /**
