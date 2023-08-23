@@ -259,9 +259,6 @@
                 <#if ri?is_first>
                 <td rowspan="${ibrf.riskItems?size}">${ibrf.riskName}</td>
                 <td rowspan="${ibrf.riskItems?size}">${ibrf.riskDeathProbability}</td>
-                <#else>
-                <td></td>
-                <td></td>
                 </#if>
                 <td>${ri.itemName}</td>
                 <td>${ri.itemValue}</td>
@@ -269,9 +266,6 @@
                 <#if ri?is_first>
                 <td rowspan="${ibrf.riskItems?size}">${ibrf.riskScore}</td>
                 <td rowspan="${ibrf.riskItems?size}">${ibrf.deathRiskScore}</td>
-                <#else>
-                <td></td>
-                <td></td>
                 </#if>
             </tr>
                         </#list>
@@ -298,9 +292,6 @@
                 <#if ri?is_first>
                 <td rowspan="${iarf.riskItems?size}">${iarf.riskName}</td>
                 <td rowspan="${iarf.riskItems?size}">${iarf.riskDeathProbability}</td>
-                <#else>
-                <td></td>
-                <td></td>
                 </#if>
                 <td>${ri.itemName}</td>
                 <td>${ri.itemValue}</td>
@@ -308,9 +299,6 @@
                 <#if ri?is_first>
                 <td rowspan="${iarf.riskItems?size}">${iarf.riskScore}</td>
                 <td rowspan="${iarf.riskItems?size}">${iarf.deathRiskScore}</td>
-                <#else>
-                <td></td>
-                <td></td>
                 </#if>
             </tr>
                         </#list>
