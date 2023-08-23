@@ -40,8 +40,8 @@ pipeline {
                         //extensions: [],
                         extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: '']],
                         userRemoteConfigs: [[
-                            credentialsId: 'dows-gitlab', // credentialsId 在jenkins 凭据管理处获得
-                            url: 'http://192.168.1.21/dows/dows-ops.git' // gitlab链接
+                            credentialsId: 'dows-gitlab',
+                            url: 'http://192.168.1.21/dows/dows-hep.git'
                         ]]
                     ])
 
