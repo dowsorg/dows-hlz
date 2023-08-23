@@ -1,18 +1,20 @@
 version: '3'
 services:
-  hep-user-prod:
+  hep-admin-prd:
     image: registry.cn-hangzhou.aliyuncs.com/findsoft/hep-admin-prd:$TAG
     restart: unless-stopped
-    container_name: hep-tenant-prod
+    container_name: hep-admin-prd
     environment:
+      - TZ=$TZ
       - JVM_OPTS=-server -Xms1024m -Xmx1024m -XX:MaxGCPauseMillis=500 -XX:+UseParallelGC -XX:+HeapDumpBeforeFullGC -XX:HeapDumpPath=/dows/saas/hep-admin/logs/dump
-      - JAVA_OPTS=-Djasypt.encryptor.password=02700083-9fd9-4b82-a4b4-9177e0560e92 -Dspring.profiles.active=prd
+      - JAVA_OPTS=-Djasypt.encryptor.password=02700083-9fd9-4b82-a4b4-9177e0560e92 -Dspring.config.location=/dows/saas/hep-admin/configs/ -Dspring.profiles.active=dev
       - APM=-javaagent:/dows/paas/apm/skywalking-agent/skywalking-agent.jar -Dskywalking.agent.service_name=hep-admin-prd -Dskywalking.collector.backend_service=192.168.1.60:11800
     ports:
       - $EHP:8080
       - $EWP:80
     volumes:
       - ./logs:/dows/saas/hep-admin/logs
+      - /dows/saas/hep-admin/dev/configs:/dows/saas/hep-admin/configs
       - /dows/paas/apm/skywalking-agent-8.16.0:/dows/paas/apm/skywalking-agent
     networks:
       - prd_net
