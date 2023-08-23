@@ -29,7 +29,7 @@ pipeline {
             steps {
                 script {
                     def branch = detect_branch()
-                    echo  "=============当前分支为:${branch}=============="
+                    echo  "===当前分支为:${branch}==="
                     def rte = branch.split('-')[0]
                     def ver = branch.split('-')[1]
 
