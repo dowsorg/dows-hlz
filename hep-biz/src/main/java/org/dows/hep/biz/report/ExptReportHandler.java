@@ -19,7 +19,7 @@ import java.util.List;
  * @date 2023/7/7 13:49
  **/
 public interface ExptReportHandler<P extends ExptReportHandler.ExptReportData, R extends ExptReportModel> {
-    ExptReportVO generatePdfReport(String exptInstanceId, String exptGroupId);
+    ExptReportVO generatePdfReport(String exptInstanceId, String exptGroupId, boolean regenerate);
 
     /**
      * 生成 pdf 文件

@@ -135,7 +135,7 @@
                 </tr>
                 <tr class="background-even-blue">
                     <td>${scoreInfo.score}</td>
-                    <td>${scoreInfo.rank!0}</td>
+                    <td>${scoreInfo.ranking}</td>
                 </tr>
             </table>
             <div class="font-blue bold" style="font-size:18px;margin-top:50px;margin-bottom:25px" align="center">二、方案设计报告</div>
