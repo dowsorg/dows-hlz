@@ -127,15 +127,20 @@ public class RsExperimentIndicatorExpressionBiz {
         String newCurrentVal = newCurrentValAtomicReference.get();
         Double changeVal = experimentIndicatorInstanceRsEntity.getChangeVal();
 
-        if (ShareUtil.XObject.notEmpty(changeVal)) {
-          if(ShareUtil.XObject.isEmpty(newCurrentVal)){
-            newCurrentVal =String.valueOf(changeVal);
+        if (ShareUtil.XObject.notEmpty(changeVal)&&changeVal.compareTo(0d)!=0) {
+          if(ShareUtil.XObject.allEmpty(newCurrentVal,experimentIndicatorValRsEntity.getCurrentVal())) {
+            newCurrentVal = String.valueOf(changeVal);
           } else if(NumberUtils.isCreatable(newCurrentVal)) {
             newCurrentVal = String.valueOf(Double.parseDouble(newCurrentVal) + changeVal);
+          } else if(NumberUtils.isCreatable(experimentIndicatorValRsEntity.getCurrentVal())) {
+            newCurrentVal = String.valueOf(Double.parseDouble(experimentIndicatorValRsEntity.getCurrentVal()) + changeVal);
           }
           newCurrentValAtomicReference.set(newCurrentVal);
-          this.minAndMaxHandle(newCurrentValAtomicReference, minExperimentIndicatorExpressionItemRsEntity, maxExperimentIndicatorExpressionItemRsEntity);
         }
+        if(ShareUtil.XObject.isEmpty(newCurrentValAtomicReference.get())) {
+          return;
+        }
+        this.minAndMaxHandle(newCurrentValAtomicReference, minExperimentIndicatorExpressionItemRsEntity, maxExperimentIndicatorExpressionItemRsEntity);
         experimentIndicatorValRsEntity.setCurrentVal(newCurrentValAtomicReference.get());
         experimentIndicatorValRsEntity.setDt(dateNow);
         kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(experimentIndicatorInstanceId, experimentIndicatorValRsEntity);
