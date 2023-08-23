@@ -14,15 +14,18 @@ springdoc:
     - group: hep-user
       packagesToScan: org.dows.hep.rest.user
 
+
 ---
-#开发环境
+#生产环境
 spring:
   config:
     activate:
-      on-profile: dev
+      on-profile: pro
 springdoc:
   api-docs:
-    enabled: true
+    enabled: false
+
+
 ---
 #测试环境
 spring:
@@ -34,22 +37,20 @@ springdoc:
     enabled: true
 
 ---
-#生产环境
+#开发环境
 spring:
   config:
     activate:
-      on-profile: uat
+      on-profile: dev
 springdoc:
   api-docs:
     enabled: true
-
-
 ---
 #本地环境
 spring:
   config:
     activate:
-      on-profile: prd
+      on-profile: local
 springdoc:
   api-docs:
     enabled: true
