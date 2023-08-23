@@ -132,13 +132,16 @@ public class RsExperimentIndicatorExpressionBiz {
             newCurrentVal = String.valueOf(changeVal);
           } else if(NumberUtils.isCreatable(newCurrentVal)) {
             newCurrentVal = String.valueOf(Double.parseDouble(newCurrentVal) + changeVal);
+          } else if(NumberUtils.isCreatable(experimentIndicatorValRsEntity.getCurrentVal())) {
+            newCurrentVal = String.valueOf(Double.parseDouble(experimentIndicatorValRsEntity.getCurrentVal()) + changeVal);
           }
           newCurrentValAtomicReference.set(newCurrentVal);
-          this.minAndMaxHandle(newCurrentValAtomicReference, minExperimentIndicatorExpressionItemRsEntity, maxExperimentIndicatorExpressionItemRsEntity);
         }
-        if(ShareUtil.XObject.notEmpty(newCurrentValAtomicReference.get())) {
-          experimentIndicatorValRsEntity.setCurrentVal(newCurrentValAtomicReference.get());
+        if(ShareUtil.XObject.isEmpty(newCurrentValAtomicReference.get())) {
+          return;
         }
+        this.minAndMaxHandle(newCurrentValAtomicReference, minExperimentIndicatorExpressionItemRsEntity, maxExperimentIndicatorExpressionItemRsEntity);
+        experimentIndicatorValRsEntity.setCurrentVal(newCurrentValAtomicReference.get());
         experimentIndicatorValRsEntity.setDt(dateNow);
         kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.put(experimentIndicatorInstanceId, experimentIndicatorValRsEntity);
       });
