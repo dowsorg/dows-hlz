@@ -442,16 +442,7 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
         // 替换值并打印
         for (Element imgTag : imgTags) {
             String src = imgTag.attr("src");
-            String base64 = "data:image/jpeg;base64,";
-            try {
-                base64 = getBase64(src);
-            } catch (Exception e) {
-                log.error(String.format("图片%s转Base64异常", src));
-            }
-            if (StrUtil.isBlank(base64)) {
-                continue;
-            }
-            imgTag.attr("src", base64);
+            imgTag.attr("src", getBase64(src));
             imgTag.attr("style", "width: 100%; height: auto;");
         }
 
