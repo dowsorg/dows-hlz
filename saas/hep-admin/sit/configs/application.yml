@@ -21,7 +21,7 @@ spring:
         name: dows-hep
     profiles:
         include: hep-mysql,hep-mybatis,hep-mvc,hep-oss,hep-apidoc,hep-redisson,hep-findsoft,hep-websocket
-        active: dev
+        active: sit
 
     jackson:
         default-property-inclusion: always

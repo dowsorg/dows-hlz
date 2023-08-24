@@ -124,8 +124,8 @@ public class ExperimentSchemeScoreBiz {
                     .exptGroupName(group.getGroupName())
                     .exptGroupAliasName(group.getGroupAlias())
                     .groupNo(group.getGroupNo())
-                    .exptSchemeStateCode(schemeEntity.getState())
-                    .exptSchemeStateName(ExptSchemeStateEnum.getByCode(schemeEntity.getState()).getName())
+                    .exptSchemeStateCode(isAdmin ? schemeEntity.getState() : schemeScoreEntity.getReviewState())
+                    .exptSchemeStateName(isAdmin ? ExptSchemeStateEnum.getByCode(schemeEntity.getState()).getName() : ExptReviewStateEnum.getByCode(schemeScoreEntity.getReviewState()).getName())
                     .reviewDt(schemeScoreEntity.getReviewDt())
                     .reviewScore(isAdmin ? (schemeEntity.getScore() == null ? 0 : schemeEntity.getScore()) : (schemeScoreEntity.getReviewScore() == null ? 0 : schemeScoreEntity.getReviewScore()))
                     .build();
@@ -562,9 +562,19 @@ public class ExperimentSchemeScoreBiz {
     }
 
     private boolean updSchemeState(BigDecimal score, String schemeId) {
+        // 有任何一个未审批状态则为未审批
+        Integer state = ExptSchemeStateEnum.SUBMITTED.getCode();
+        List<ExperimentSchemeScoreEntity> schemeScoreEntityList = listSchemeScore(schemeId);
+        ExperimentSchemeScoreEntity experimentSchemeScoreEntity = schemeScoreEntityList.stream()
+                .filter(item -> Objects.equals(item.getReviewState(), ExptReviewStateEnum.UNREVIEWED.getCode()))
+                .findAny()
+                .orElse(null);
+        if (experimentSchemeScoreEntity == null) {
+            state = ExptSchemeStateEnum.SCORED.getCode();
+        }
         return experimentSchemeService.lambdaUpdate()
                 .eq(ExperimentSchemeEntity::getExperimentSchemeId, schemeId)
-                .set(ExperimentSchemeEntity::getState, ExptSchemeStateEnum.SCORED.getCode()) // 2-已批阅
+                .set(ExperimentSchemeEntity::getState, state)
                 .set(ExperimentSchemeEntity::getScore, score)
                 .update();
     }

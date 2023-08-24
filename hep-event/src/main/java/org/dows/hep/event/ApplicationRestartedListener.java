@@ -1,7 +1,10 @@
 package org.dows.hep.event;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
+import com.github.dockerjava.api.DockerClient;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.biz.calc.CalculatorDispatcher;
 import org.dows.hep.biz.noticer.PeriodEndNoticer;
@@ -17,11 +20,15 @@ import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.hep.service.ExperimentTaskScheduleService;
 import org.dows.hep.service.ExperimentTimerService;
 import org.dows.hep.websocket.HepClientMonitor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
 import java.util.Date;
 
 /**
@@ -31,6 +38,13 @@ import java.util.Date;
 @RequiredArgsConstructor
 @Component
 public class ApplicationRestartedListener implements ApplicationListener<ApplicationStartedEvent> {
+
+    @Value("${spring.application.name}")
+    public String appName;
+
+    @Value("${spring.profiles.active}")
+    public String appEnv;
+
     private final ExperimentTaskScheduleService experimentTaskScheduleService;
 
     private final ExperimentInstanceService experimentInstanceService;
@@ -58,8 +72,18 @@ public class ApplicationRestartedListener implements ApplicationListener<Applica
     // 启动监听
     private final HepClientMonitor hepClientMonitor;
 
+    @SneakyThrows
     @Override
     public void onApplicationEvent(ApplicationStartedEvent event) {
+        System.setProperty("appName", appName);
+        System.setProperty("appEnv", appEnv);
+        /*String podIp = new InetUtils(new InetUtilsProperties()).findFirstNonLoopbackHostInfo().getIpAddress();*/
+        String podIp = InetAddress.getLocalHost().getHostAddress();
+        if (!StrUtil.isBlank(podIp)) {
+            System.setProperty("podIp", podIp);
+        } else {
+            System.setProperty("podIp", "0.0.0.0");
+        }
         log.info("执行任务重启......");
         try {
             hepClientMonitor.start();
@@ -77,8 +101,49 @@ public class ApplicationRestartedListener implements ApplicationListener<Applica
                     appId, taskScheduler, experimentTimerBiz, calculatorDispatcher, periodStartNoticer, periodEndNoticer, experimentSettingBiz, experimentSchemeBiz);
             experimentRestartTask.run();
             log.info("ApplicationRestarted succ.");
-        } catch (Exception ex){
+        } catch (Exception ex) {
             log.error("ApplicationRestarted fail.", ex);
         }
     }
+
+    /**
+     * 获取docker 和宿主机IP
+     * @return
+     */
+/*    private String getIp(){
+        DockerClient dockerClient = DefaultDockerClient.fromEnv().build();
+        String containerId = "CONTAINER_ID";
+        ContainerInfo containerInfo = dockerClient.inspectContainer(containerId);
+        String ipAddress = containerInfo.getNetworkSettings().getNetworks().get("bridge").getIpAddress();
+        return ipAddress;
+    }*/
+
+
+   /* @SneakyThrows
+    private String getIp() {
+        Runtime rt = Runtime.getRuntime();
+
+        //执行 ifconfig -a 命令，查询宿主机的ip配置
+        String[] shell = {"/bin/bash", "-c", "sshpass -p 'abc@1234' ssh -o StrictHostKeyChecking=no -p 22 tmsceshi@10.73.100.6 ifconfig -a "};
+
+        //执行hello.sh 脚本
+        String[] shell1 = {"/bin/bash", "-c", "sshpass -p 'abc@1234' ssh -o StrictHostKeyChecking=no -p 22 tmsceshi@10.73.100.6 sh hello.sh "};
+        Process exec = Runtime.getRuntime().exec(shell);
+        BufferedReader in = null;
+        try {
+            in = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String str = null;
+            String[] strArray = null;
+            //逐一对每行内容进行操作
+            while ((str = in.readLine()) != null) {
+                System.out.println(str);
+            }
+
+        } catch (Exception e) {
+            System.out.println(e);
+        } finally {
+            in.close();
+        }
+        return "";
+    }*/
 }
