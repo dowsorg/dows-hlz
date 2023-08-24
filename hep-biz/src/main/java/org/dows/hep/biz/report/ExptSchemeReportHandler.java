@@ -82,7 +82,7 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
     /**
      * @param experimentInstanceId - 实验ID
      * @param exptGroupId          - 小组ID
-     * @param regenerate
+     * @param regenerate           - 是否重新生成
      * @author fhb
      * @description 如果有 exptGroupId，则只导出该组的报告，否则导出所有组的报告
      * @date 2023/7/7 16:54
@@ -210,6 +210,9 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
 
         // 判断记录中是否有数据
         String reportOfGroup = recordHelper.getReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP);
+
+        /*1.使用旧数据*/
+        // 不重新生成并且旧数据存在 --> 直接返回
         if (!regenerate && StrUtil.isNotBlank(reportOfGroup)) {
             ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
                     .name(fileName)
@@ -221,10 +224,8 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
                     .paths(List.of(reportFile))
                     .build();
         }
-        if (regenerate && StrUtil.isNotBlank(reportOfGroup)) {
-            recordHelper.delReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP);
-        }
 
+        /*2.使用新数据*/
         // 生成 pdf 并上传文件
         Path path = Paths.get(SCHEME_REPORT_HOME_DIR, fileName);
         OssInfo ossInfo = reportPdfHelper.convertAndUpload(pdfVO, schemeFlt, path);
@@ -400,7 +401,7 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
             ExptSchemeReportModel.QuestionInfo resultItem = ExptSchemeReportModel.QuestionInfo.builder()
                     .questionTitle(question.getQuestionTitle())
                     .questionDescr(convertImg2Base64(question.getQuestionDescr()))
-                    .questionResult(convertImg2Base64(question.getQuestionResult()))
+                    .questionResult(StrUtil.isBlank(convertImg2Base64(question.getQuestionResult())) ? "未作答" : convertImg2Base64(question.getQuestionResult()))
                     .children(children)
                     .build();
             result.add(resultItem);
@@ -441,7 +442,16 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
         // 替换值并打印
         for (Element imgTag : imgTags) {
             String src = imgTag.attr("src");
-            imgTag.attr("src", getBase64(src));
+            String base64 = "";
+            try {
+                base64 = getBase64(src);
+            } catch (Exception e) {
+                log.error(String.format("图片%s转Base64异常", src));
+            }
+            if (StrUtil.isBlank(base64)) {
+                continue;
+            }
+            imgTag.attr("src", base64);
             imgTag.attr("style", "width: 100%; height: auto;");
         }
 
