@@ -8,7 +8,7 @@ oss:
     endpoint: http://192.168.1.60:9000
     slice-config:
       task-num: 8
-      part-size: 104857604 # 1024*1024*100
+      part-size: 104857604
   local:
     enable: true
     ossConfig:
