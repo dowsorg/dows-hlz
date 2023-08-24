@@ -401,7 +401,7 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
             ExptSchemeReportModel.QuestionInfo resultItem = ExptSchemeReportModel.QuestionInfo.builder()
                     .questionTitle(question.getQuestionTitle())
                     .questionDescr(convertImg2Base64(question.getQuestionDescr()))
-                    .questionResult(convertImg2Base64(question.getQuestionResult()))
+                    .questionResult(StrUtil.isBlank(convertImg2Base64(question.getQuestionResult())) ? "未作答" : convertImg2Base64(question.getQuestionResult()))
                     .children(children)
                     .build();
             result.add(resultItem);
@@ -442,7 +442,16 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
         // 替换值并打印
         for (Element imgTag : imgTags) {
             String src = imgTag.attr("src");
-            imgTag.attr("src", getBase64(src));
+            String base64 = "";
+            try {
+                base64 = getBase64(src);
+            } catch (Exception e) {
+                log.error(String.format("图片%s转Base64异常", src));
+            }
+            if (StrUtil.isBlank(base64)) {
+                continue;
+            }
+            imgTag.attr("src", base64);
             imgTag.attr("style", "width: 100%; height: auto;");
         }
 
