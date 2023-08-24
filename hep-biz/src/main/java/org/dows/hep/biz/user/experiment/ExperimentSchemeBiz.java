@@ -471,7 +471,7 @@ public class ExperimentSchemeBiz {
         List<ExperimentSchemeEntity> schemeSortedList = schemeList.stream().sorted((v1, v2) -> {
             Float v1Score = v1.getScore() == null ? 0.00f : v1.getScore();
             Float v2Score = v2.getScore() == null ? 0.00f : v2.getScore();
-            return (int) (v1Score - v2Score);
+            return (int) (v2Score - v1Score);
         }).toList();
         // 小组转为map
         Map<String, ExperimentGroupEntity> groupIdMapEntity = groupList.stream()
