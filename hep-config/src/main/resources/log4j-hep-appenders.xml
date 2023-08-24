@@ -3,6 +3,9 @@
     <Console name="CONSOLE" target="SYSTEM_OUT">
         <PatternLayout pattern="${PATTERN}" charset="${CHARSET}"/>
     </Console>
+    <GRPCLogClientAppender name="SKYWALKING">
+        <PatternLayout  pattern="${SKYWALKING_PATTERN}"/>
+    </GRPCLogClientAppender>
     <RollingRandomAccessFile name="FILE-INFO"
                              fileName="${LOG_HOME}/info.log"
                              filePattern="${LOG_HOME}/info.%d{yyyy-MM-dd}-%i.log.gz">

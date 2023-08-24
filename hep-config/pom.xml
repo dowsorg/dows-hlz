@@ -99,6 +99,15 @@
                 <artifactId>zookeeper</artifactId>
             </dependency>-->
 
+        <dependency>
+            <groupId>org.apache.skywalking</groupId>
+            <artifactId>apm-toolkit-trace</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.skywalking</groupId>
+            <artifactId>apm-toolkit-log4j-2.x</artifactId>
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>

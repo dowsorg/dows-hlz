@@ -14,6 +14,19 @@
     <packaging>pom</packaging>
 
 
+
+    <properties>
+        <account.version>20230418-SNAPSHOT</account.version>
+        <rbac.version>20230418-SNAPSHOT</rbac.version>
+        <tenant.version>20230418-SNAPSHOT</tenant.version>
+        <auth.version>20230418-SNAPSHOT</auth.version>
+
+        <registry.host>registry.cn-hangzhou.aliyuncs.com</registry.host>
+        <registry.username>dows@dows.onaliyun.com</registry.username>
+        <registry.password>dowsdxz123456</registry.password>
+        <image.alias>${project.name}</image.alias>
+    </properties>
+
     <modules>
         <module>hep-api</module>
         <module>hep-app</module>
@@ -30,19 +43,6 @@
         <module>hep-task</module>
         <module>hep-calc</module>
     </modules>
-
-    <properties>
-        <account.version>20230418-SNAPSHOT</account.version>
-        <rbac.version>20230418-SNAPSHOT</rbac.version>
-        <tenant.version>20230418-SNAPSHOT</tenant.version>
-        <auth.version>20230418-SNAPSHOT</auth.version>
-
-        <registry.host>registry.cn-hangzhou.aliyuncs.com</registry.host>
-        <registry.username>dows@dows.onaliyun.com</registry.username>
-        <registry.password>dowsdxz123456</registry.password>
-        <image.alias>${project.name}</image.alias>
-    </properties>
-
 
     <dependencyManagement>
         <dependencies>
@@ -152,7 +152,16 @@
                 <version>4.0.2</version>
             </dependency>
 
-
+            <dependency>
+                <groupId>org.apache.skywalking</groupId>
+                <artifactId>apm-toolkit-trace</artifactId>
+                <version>8.16.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.skywalking</groupId>
+                <artifactId>apm-toolkit-log4j-2.x</artifactId>
+                <version>8.16.0</version>
+            </dependency>
 
         </dependencies>
     </dependencyManagement>

@@ -6,18 +6,22 @@
         <AppenderRef ref="CONSOLE"/>
     </AsyncRoot>
     <AsyncLogger name="org.dows" level="INFO" additivity="false"  includeLocation="true">
+        <appender-ref ref="SKYWALKING"/>
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE-INFO"/>
     </AsyncLogger>
     <AsyncLogger name="com.zaxxer.hikari.pool.ProxyStatement" level="INFO" additivity="false" includeLocation="true">
+        <appender-ref ref="SKYWALKING"/>
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE-INFO"/>
     </AsyncLogger>
     <AsyncLogger name="org.springframework" level="INFO" additivity="false" includeLocation="true">
+        <!--<appender-ref ref="SKYWALKING"/>-->
         <!--<appender-ref ref="CONSOLE"/>-->
         <appender-ref ref="FILE-INFO"/>
     </AsyncLogger>
     <AsyncLogger name="com.baomidou" level="ERROR" includeLocation="true">
+        <appender-ref ref="SKYWALKING"/>
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE-INFO"/>
     </AsyncLogger>

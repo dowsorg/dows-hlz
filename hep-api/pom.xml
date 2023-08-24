@@ -47,6 +47,10 @@
             <artifactId>account-biz</artifactId>
             <version>20230418-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
