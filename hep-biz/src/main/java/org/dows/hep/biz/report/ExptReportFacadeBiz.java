@@ -292,14 +292,14 @@ public class ExptReportFacadeBiz {
 
     /**
      * @param exptInstanceId - 实验实例ID
+     * @param regenerate
      * @param request        - http 请求
      * @param response       - http 响应
      * @author fhb
      * @description 预览实验报告
      * @date 2023/8/24 17:41
      */
-    public void previewExptReport(String exptInstanceId, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        boolean regenerate = regenerate(exptInstanceId);
+    public void previewExptReport(String exptInstanceId, boolean regenerate, HttpServletRequest request, HttpServletResponse response) throws IOException {
         ExptReportVO exptReportVO = exportExptReport(exptInstanceId, regenerate);
         List<ExptGroupReportVO> groupReportList = exptReportVO.getGroupReportList();
         if (CollUtil.isEmpty(groupReportList)) {
@@ -323,14 +323,14 @@ public class ExptReportFacadeBiz {
     /**
      * @param exptInstanceId - 实验实例ID
      * @param exptGroupId    - 实验小组ID
+     * @param regenerate
      * @param request        - Http 请求
      * @param response       - Http 响应
      * @author fhb
      * @description 预览小组报告
      * @date 2023/8/24 17:42
      */
-    public void previewGroupReport(String exptInstanceId, String exptGroupId, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        boolean regenerate = regenerate(exptInstanceId);
+    public void previewGroupReport(String exptInstanceId, String exptGroupId, boolean regenerate, HttpServletRequest request, HttpServletResponse response) throws IOException {
         ExptReportVO exptReportVO = exportGroupReport(exptInstanceId, exptGroupId, regenerate);
         List<ExptGroupReportVO> groupReportList = exptReportVO.getGroupReportList();
         if (CollUtil.isEmpty(groupReportList)) {
@@ -354,15 +354,16 @@ public class ExptReportFacadeBiz {
     /**
      * @param exptInstanceId - 实验实例ID
      * @param accountId      - 账号ID
+     * @param regenerate
      * @param request        - Http 请求
      * @param response       - Http 响应
      * @author fhb
      * @description 预览学生报告
      * @date 2023/8/24 17:43
      */
-    public void previewAccountReport(String exptInstanceId, String accountId, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void previewAccountReport(String exptInstanceId, String accountId, boolean regenerate, HttpServletRequest request, HttpServletResponse response) throws IOException {
         String experimentGroupId = getGroupOfAccountAndExpt(exptInstanceId, accountId);
-        previewGroupReport(exptInstanceId, experimentGroupId, request, response);
+        previewGroupReport(exptInstanceId, experimentGroupId, regenerate, request, response);
     }
 
     private void preview(String urlStr, HttpServletRequest request, HttpServletResponse response) throws IOException {

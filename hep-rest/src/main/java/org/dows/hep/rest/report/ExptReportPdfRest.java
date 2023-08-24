@@ -158,8 +158,9 @@ public class ExptReportPdfRest {
     public void previewExptReport(@RequestParam String experimentInstanceId,
                                   HttpServletRequest request,
                                   HttpServletResponse response) {
+        boolean regenerate = regenerate(experimentInstanceId);
         try {
-            exptReportFacadeBiz.previewExptReport(experimentInstanceId, request, response);
+            exptReportFacadeBiz.previewExptReport(experimentInstanceId, regenerate, request, response);
         } catch (IOException e) {
             log.error(String.format("预览实验报告时，发生IO异常: %s", e));
             throw new BizException(String.format("预览实验报告时，发生IO异常: %s", e));
@@ -183,8 +184,9 @@ public class ExptReportPdfRest {
                                    @RequestParam String experimentGroupId,
                                    HttpServletRequest request,
                                    HttpServletResponse response) {
+        boolean regenerate = regenerate(experimentInstanceId);
         try {
-            exptReportFacadeBiz.previewGroupReport(experimentInstanceId, experimentGroupId, request, response);
+            exptReportFacadeBiz.previewGroupReport(experimentInstanceId, experimentGroupId, regenerate, request, response);
         } catch (IOException e) {
             log.error(String.format("预览小组报告时，发生IO异常: %s", e));
             throw new BizException(String.format("预览小组报告时，发生IO异常: %s", e));
@@ -207,8 +209,9 @@ public class ExptReportPdfRest {
                                      HttpServletRequest request,
                                      HttpServletResponse response) {
         String accountId = baseBiz.getAccountId(request);
+        boolean regenerate = regenerate(experimentInstanceId);
         try {
-            exptReportFacadeBiz.previewAccountReport(experimentInstanceId, accountId, request, response);
+            exptReportFacadeBiz.previewAccountReport(experimentInstanceId, accountId, regenerate, request, response);
         } catch (IOException e) {
             log.error(String.format("预览学生报告时，发生IO异常: %s", e));
             throw new BizException(String.format("预览学生报告时，发生IO异常: %s", e));
