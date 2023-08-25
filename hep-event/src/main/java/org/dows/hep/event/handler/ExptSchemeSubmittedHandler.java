@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * @author fhb
  * @version 1.0
- * @description `实验-方案设计`组长分配完题目的时候`publish`该事件，以通知组内成员开始作答
+ * @description `实验-方案设计`组长提交的时候`publish`该事件，以通知组内成员结束作答
  * @date 2023/6/19 23:18
  **/
 @Slf4j
