@@ -149,7 +149,7 @@ public class ExperimentManageRest {
         return experimentManageBiz.pageByRole(pageExperimentRequest);
     }
 
-    @Operation(summary = "删除获取实验")
+    @Operation(summary = "删除实验")
     @DeleteMapping("v1/tenantExperiment/experimentManage/delete")
     public Boolean delete(DeleteExperimentRequest deleteExperimentRequest) {
         return experimentManageBiz.delete(deleteExperimentRequest);

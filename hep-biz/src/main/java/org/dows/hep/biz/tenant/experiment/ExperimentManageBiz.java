@@ -534,7 +534,7 @@ public class ExperimentManageBiz {
                 .map(ExperimentInstanceEntity::getExperimentInstanceId)
                 .collect(Collectors.toList());
         if (eids.size() == 0) {
-            return true;
+            return false;
         }
         boolean update1 = experimentInstanceService.lambdaUpdate()
                 .in(ExperimentInstanceEntity::getExperimentInstanceId, eids)
