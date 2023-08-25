@@ -119,7 +119,7 @@ public class ExptOverviewReportHandler implements ExptReportHandler<ExptOverview
                     .title(fileName)
                     .materialsAttachments(List.of(attachment))
                     .build();
-            recordHelper.record(exptInstanceId, exptGroupId, ExptReportTypeEnum.EXPT, materialsRequest);
+            recordHelper.record(exptInstanceId, null, ExptReportTypeEnum.EXPT, materialsRequest);
         }
 
         // build result
