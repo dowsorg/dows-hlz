@@ -25,6 +25,7 @@ import org.dows.hep.api.event.source.ExptSchemeSubmittedEventSource;
 import org.dows.hep.api.event.source.ExptSchemeSyncEventSource;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
+import org.dows.hep.api.user.experiment.ExptReviewStateEnum;
 import org.dows.hep.api.user.experiment.ExptSchemeStateEnum;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeAllotRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeItemRequest;
@@ -55,6 +56,7 @@ import java.util.stream.Collectors;
 public class ExperimentSchemeBiz {
     private final IdGenerator idGenerator;
     private final ExperimentSchemeService experimentSchemeService;
+    private final ExperimentSchemeScoreService experimentSchemeScoreService;
     private final ExperimentGroupService experimentGroupService;
     private final ExperimentSettingService experimentSettingService;
     private final ExperimentInstanceService experimentInstanceService;
@@ -425,10 +427,25 @@ public class ExperimentSchemeBiz {
             throw new BizException("方案设计截止时间提交时，实验ID数据异常");
         }
 
+        // 更新方案设计状态
         boolean res1 = experimentSchemeService.lambdaUpdate()
                 .eq(ExperimentSchemeEntity::getExperimentInstanceId, exptInstanceId)
                 .set(ExperimentSchemeEntity::getState, ExptSchemeStateEnum.SUBMITTED.getCode()) // 1-已提交
                 .update();
+
+        // 更新方案设计评分表状态
+        List<ExperimentSchemeEntity> schemeList = experimentSchemeService.lambdaQuery()
+                .eq(ExperimentSchemeEntity::getExperimentInstanceId, exptInstanceId)
+                .list();
+        List<String> schemeIdList = schemeList.stream()
+                .map(ExperimentSchemeEntity::getExperimentSchemeId)
+                .toList();
+        experimentSchemeScoreService.lambdaUpdate()
+                .in(ExperimentSchemeScoreEntity::getExperimentSchemeId, schemeIdList)
+                .set(ExperimentSchemeScoreEntity::getReviewState, ExptReviewStateEnum.UNREVIEWED.getCode())
+                .update();
+
+        // 更新实验小组状态或实验状态
         if (containsSandSetting(exptInstanceId)) {
             handleExptAllGroupStatus(exptInstanceId, EnumExperimentGroupStatus.ASSIGN_DEPARTMENT);
         } else {
@@ -436,8 +453,8 @@ public class ExperimentSchemeBiz {
             handleExptStatus(exptInstanceId, EnumExperimentState.FINISH);
         }
 
-        // sync submitted
-        syncSubmittedExptScheme(exptInstanceId);
+        // sync info
+        syncInfo(exptInstanceId);
 
         return res1;
     }
@@ -495,6 +512,10 @@ public class ExperimentSchemeBiz {
         boolean res1 = experimentSchemeService.lambdaUpdate()
                 .eq(ExperimentSchemeEntity::getExperimentSchemeId, experimentSchemeId)
                 .set(ExperimentSchemeEntity::getState, ExptSchemeStateEnum.SUBMITTED.getCode()) // 1-已提交
+                .update();
+        experimentSchemeScoreService.lambdaUpdate()
+                .eq(ExperimentSchemeScoreEntity::getExperimentSchemeId, experimentSchemeId)
+                .set(ExperimentSchemeScoreEntity::getReviewState, ExptReviewStateEnum.UNREVIEWED.getCode())
                 .update();
         // 处理小组状态
         if (containsSandSetting(exptInstanceId)) {
@@ -761,7 +782,7 @@ public class ExperimentSchemeBiz {
     }
 
     // todo @experimentGroupBiz 提供批量查询方法
-    private void syncSubmittedExptScheme(String experimentInstanceId) {
+    private void syncInfo(String experimentInstanceId) {
         // 获取实验所有小组成员的账号
         List<String> accountIds = new ArrayList<>();
         List<ExperimentGroupResponse> exptGroups = experimentGroupBiz.listGroup(experimentInstanceId);
