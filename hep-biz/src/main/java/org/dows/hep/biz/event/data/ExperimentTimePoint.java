@@ -25,7 +25,7 @@ public class ExperimentTimePoint {
     private Integer period;
 
     @Schema(title = "累计暂停秒数")
-    private Long cntPauseSeconds;
+    private long cntPauseSeconds;
     @Schema(title = "现实时间")
     private LocalDateTime realTime;
     @Schema(title = "游戏内天数")
@@ -34,4 +34,15 @@ public class ExperimentTimePoint {
     @Schema(title = "游戏状态")
     private EnumExperimentState gameState;
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("{");
+        sb.append("period:").append(period);
+        sb.append(" pause:").append(cntPauseSeconds);
+        sb.append(" time:").append(realTime);
+        sb.append(" day:").append(gameDay);
+        sb.append(" state:").append(gameState);
+        sb.append('}');
+        return sb.toString();
+    }
 }

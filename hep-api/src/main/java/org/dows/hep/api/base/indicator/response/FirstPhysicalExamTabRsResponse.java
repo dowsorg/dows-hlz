@@ -18,6 +18,9 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class FirstPhysicalExamTabRsResponse implements Serializable {
+
+  @Schema(title = "数据库id")
+  private Long id;
   @Schema(title = "第一层目录id")
   private String indicatorCategoryId;
 

@@ -17,6 +17,7 @@ import org.dows.account.response.*;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
+import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.core.CreateExperimentForm;
 import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.EnumExperimentState;
@@ -31,6 +32,7 @@ import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.response.ExperimentStateResponse;
 import org.dows.hep.biz.base.person.PersonManageBiz;
+import org.dows.hep.biz.event.EventScheduler;
 import org.dows.hep.biz.util.PeriodsTimerUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
@@ -305,9 +307,12 @@ public class ExperimentManageBiz {
         // 保存实验参与人[学生]
         experimentParticipatorService.saveBatch(collect);
 
-        // 发布实验init事件
-        applicationEventPublisher.publishEvent(new InitializeEvent(experimentGroupSettingRequest));
-
+        if(ConfigExperimentFlow.SWITCH2TaskSchedule) {
+            // 发布实验init事件
+            applicationEventPublisher.publishEvent(new InitializeEvent(experimentGroupSettingRequest));
+        }else {
+            EventScheduler.Instance().scheduleSysEvent(experimentGroupSettingRequest.getAppId(), experimentGroupSettingRequest.getExperimentInstanceId(), 1);
+        }
         return true;
     }
 

@@ -14,6 +14,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.enums.EnumExperimentTask;
@@ -33,6 +34,7 @@ import org.dows.hep.api.user.experiment.request.ExperimentSchemeItemRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeSubmitRequest;
 import org.dows.hep.api.user.experiment.response.*;
+import org.dows.hep.biz.event.sysevent.SysEventInvoker;
 import org.dows.hep.biz.request.ExperimentTaskParamsRequest;
 import org.dows.hep.biz.schedule.TaskScheduler;
 import org.dows.hep.biz.task.ExptSchemeFinishTask;
@@ -393,9 +395,14 @@ public class ExperimentSchemeBiz {
                     .build();
             experimentTaskScheduleService.save(taskEntity);
 
-            //执行定时任务
-            ExptSchemeFinishTask exptSchemeFinishTask = new ExptSchemeFinishTask(experimentTaskScheduleService, this, exptInstanceId, exptGroupId);
-            taskScheduler.schedule(exptSchemeFinishTask, endTime);
+            if(ConfigExperimentFlow.SWITCH2SysEvent){
+                //启用新流程
+                SysEventInvoker.Instance().triggeringSchemaGroupEnd(endTime, null, exptInstanceId,exptGroupId);
+            }else {
+                //执行定时任务
+                ExptSchemeFinishTask exptSchemeFinishTask = new ExptSchemeFinishTask(experimentTaskScheduleService, this, exptInstanceId, exptGroupId);
+                taskScheduler.schedule(exptSchemeFinishTask, endTime);
+            }
         });
     }
 

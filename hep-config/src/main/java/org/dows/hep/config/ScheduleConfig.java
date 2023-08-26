@@ -1,6 +1,7 @@
 package org.dows.hep.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -43,7 +44,8 @@ public class ScheduleConfig implements SchedulingConfigurer {
     @Bean
     public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
         ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
-        taskScheduler.setPoolSize(30);
+        //启用新流程用不到该线程池 by wuzl
+        taskScheduler.setPoolSize(ConfigExperimentFlow.SWITCH2TaskSchedule ? 30 : 1);
         taskScheduler.setThreadNamePrefix("hep-taskScheduler-");
         taskScheduler.setWaitForTasksToCompleteOnShutdown(false);
         taskScheduler.setRemoveOnCancelPolicy(true);

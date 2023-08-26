@@ -17,9 +17,11 @@ import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
 import org.dows.hep.biz.event.EventScheduler;
+import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.biz.request.ExperimentTaskParamsRequest;
 import org.dows.hep.biz.task.ExperimentCalcTask;
 import org.dows.hep.biz.task.ExperimentFinishTask;
+import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.biz.util.TimeUtil;
 import org.dows.hep.entity.ExperimentPersonInsuranceEntity;
 import org.dows.hep.entity.ExperimentTaskScheduleEntity;
@@ -173,8 +175,11 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
         // 重置定时任务
         resetTimeTask(experimentRestartRequest, updateExperimentTimerEntities, experimentGroupResponses);
         // 突发事件检测
-        EventScheduler.Instance().scheduleTimeBasedEvent(null, experimentRestartRequest.getExperimentInstanceId(), 5);
-
+        final String appId= ShareBiz.checkAppId(null, experimentRestartRequest.getExperimentInstanceId());
+        EventScheduler.Instance().scheduleTimeBasedEvent(appId, experimentRestartRequest.getExperimentInstanceId(), 5);
+        if(ConfigExperimentFlow.SWITCH2SysEvent){
+            EventScheduler.Instance().scheduleSysEvent(appId,experimentRestartRequest.getExperimentInstanceId(),3);
+        }
     }
 
     /**
@@ -187,6 +192,10 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
     private void resetTimeTask(ExperimentRestartRequest experimentRestartRequest,
                                List<ExperimentTimerEntity> updateExperimentTimerEntities,
                                List<ExperimentGroupResponse> experimentGroupResponses) {
+        if(ConfigExperimentFlow.SWITCH2SysEvent){
+            return;
+        }
+
         /**
          * 重设实验结束任务
          */

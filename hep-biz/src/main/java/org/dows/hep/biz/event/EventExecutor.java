@@ -2,10 +2,12 @@ package org.dows.hep.biz.event;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
-import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.util.ShareUtil;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -14,9 +16,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Slf4j
 public class EventExecutor {
-    static final int DFTPOOLNum=3;
-    static final int DFTCorePoolSize=4;
-    static final int DFTMaxPoolSize=8;
+    static final int DFTPOOLNum=4;
+    static final int DFTCorePoolSize=3;
+    static final int DFTMaxPoolSize=5;
 
     static final int DFTQUEUESize=100;
     private static final EventExecutor s_instance=new EventExecutor(DFTPOOLNum, DFTCorePoolSize,DFTMaxPoolSize,DFTQUEUESize);

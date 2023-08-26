@@ -17,6 +17,8 @@ import org.dows.hep.api.user.experiment.request.ExperimentParticipatorRequest;
 import org.dows.hep.api.user.experiment.request.ExptQuestionnaireAllotRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
+import org.dows.hep.api.config.ConfigExperimentFlow;
+import org.dows.hep.biz.event.sysevent.SysEventInvoker;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -319,7 +321,11 @@ public class ExperimentGroupBiz {
          * 所有小组准备完成发布事件，计数小组是否分配到齐，是否都分配好，如果都分配好，发布实验就绪事件
          */
         if (list.size() == collect.size()) {
-            applicationEventPublisher.publishEvent(new ReadyEvent(participatorList));
+            if(ConfigExperimentFlow.SWITCH2TaskSchedule) {
+                applicationEventPublisher.publishEvent(new ReadyEvent(participatorList));
+            }else {
+                SysEventInvoker.Instance().dealExperimentReady(null,experimentInstanceId);
+            }
             return true;
         }
         return false;
