@@ -12,6 +12,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.EnumExperimentState;
@@ -51,6 +52,7 @@ import java.util.stream.Collectors;
  * @description project descr:实验:实验方案
  * @date 2023年4月23日 上午9:44:34
  */
+@Slf4j
 @AllArgsConstructor
 @Service
 public class ExperimentSchemeBiz {
@@ -382,9 +384,9 @@ public class ExperimentSchemeBiz {
                     .experimentInstanceId(exptInstanceId)
                     .taskBeanCode(EnumExperimentTask.exptSchemeFinishTask.getDesc())
                     .taskParams(JSON.toJSONString(ExperimentTaskParamsRequest.builder()
-                                .experimentInstanceId(exptInstanceId)
-                                .experimentGroupId(exptGroupId)
-                                .build()))
+                            .experimentInstanceId(exptInstanceId)
+                            .experimentGroupId(exptGroupId)
+                            .build()))
                     .appId("3")
                     .executeTime(endTime)
                     .executed(false)
@@ -509,14 +511,25 @@ public class ExperimentSchemeBiz {
     }
 
     private boolean submitScheme(String exptInstanceId, String exptGroupId, String experimentSchemeId) {
-        boolean res1 = experimentSchemeService.lambdaUpdate()
+        boolean updSchemeRes = experimentSchemeService.lambdaUpdate()
                 .eq(ExperimentSchemeEntity::getExperimentSchemeId, experimentSchemeId)
                 .set(ExperimentSchemeEntity::getState, ExptSchemeStateEnum.SUBMITTED.getCode()) // 1-已提交
                 .update();
-        experimentSchemeScoreService.lambdaUpdate()
+        if (updSchemeRes) {
+            log.info(String.format("提交小组方案设计时，更新方案设计状态成功，实验ID=%s, 小组ID=%s, 方案设计ID=%s", exptInstanceId, exptGroupId, experimentSchemeId));
+        } else {
+            log.info(String.format("提交小组方案设计时，更新方案设计状态失败，实验ID=%s, 小组ID=%s, 方案设计ID=%s", exptInstanceId, exptGroupId, experimentSchemeId));
+        }
+
+        boolean updScoreRes = experimentSchemeScoreService.lambdaUpdate()
                 .eq(ExperimentSchemeScoreEntity::getExperimentSchemeId, experimentSchemeId)
                 .set(ExperimentSchemeScoreEntity::getReviewState, ExptReviewStateEnum.UNREVIEWED.getCode())
                 .update();
+        if (updScoreRes) {
+            log.info(String.format("提交小组方案设计时，更新方案设计评分表状态成功，实验ID=%s, 小组ID=%s, 方案设计ID=%s", exptInstanceId, exptGroupId, experimentSchemeId));
+        } else {
+            log.info(String.format("提交小组方案设计时，更新方案设计评分表状态失败，实验ID=%s, 小组ID=%s, 方案设计ID=%s", exptInstanceId, exptGroupId, experimentSchemeId));
+        }
 
         // 处理小组状态
         if (containsSandSetting(exptInstanceId)) {
@@ -527,7 +540,7 @@ public class ExperimentSchemeBiz {
 
         // sync submitted
         syncSubmittedGroupScheme(exptInstanceId, exptGroupId);
-        return res1;
+        return updSchemeRes && updScoreRes;
     }
 
     private String cannotSubmitAfterSubmit(String experimentInstanceId, String experimentGroupId) {
