@@ -79,24 +79,30 @@ public class ExperimentEventRules {
 
         boolean rst = experimentEventDao.tranSaveBatch(saveEvents, false, true, () -> saveTriggeredTimeEventX(rowsNotice, saveIndicators ? events : null));
         if (rst) {
-            //发送webSocket
             StringBuilder sb=new StringBuilder();
-            final String experimentId = rowsNotice.get(0).getExperimentInstanceId();
-            sb.append(String.format("webSocket.eventTriggered.sending[%s] exptId:%s noticeIds:%s ",
-                    Thread.currentThread().getName(),
-                    experimentId,
-                    rowsNotice.stream().map(ExperimentOrgNoticeEntity::getExperimentOrgNoticeId).collect(Collectors.joining(","))));
+            try {
+                //发送webSocket
+                final String experimentId = rowsNotice.get(0).getExperimentInstanceId();
+                sb.append(String.format("webSocket.eventTriggered.sending[%s] exptId:%s noticeIds:%s ",
+                        Thread.currentThread().getName(),
+                        experimentId,
+                        rowsNotice.stream().map(ExperimentOrgNoticeEntity::getExperimentOrgNoticeId).collect(Collectors.joining(","))));
 
-            Map<String, List<OrgNoticeResponse>> mapNotice = experimentOrgNoticeBiz.getWebSocketNotice(experimentId, rowsNotice);
-            if (ShareUtil.XObject.notEmpty(mapNotice)) {
-                for (Map.Entry<String, List<OrgNoticeResponse>> entry : mapNotice.entrySet()) {
-                    sb.append(String.format( " [loop clientId:%s noticeIds:%s] ",entry.getKey(),
-                            entry.getValue().stream().map(OrgNoticeResponse::getExperimentOrgNoticeId).collect(Collectors.joining(","))));
-                    ShareBiz.publishWebSocketEvent(applicationEventPublisher, EventName.exptEventTriggeredHandler, EnumWebSocketType.EVENT_TRIGGERED, experimentId,
-                            Set.of(entry.getKey()), entry.getValue());
+                Map<String, List<OrgNoticeResponse>> mapNotice = experimentOrgNoticeBiz.getWebSocketNotice(experimentId, rowsNotice);
+                if (ShareUtil.XObject.notEmpty(mapNotice)) {
+                    for (Map.Entry<String, List<OrgNoticeResponse>> entry : mapNotice.entrySet()) {
+                        sb.append(String.format( " [loop clientId:%s noticeIds:%s] ",entry.getKey(),
+                                entry.getValue().stream().map(OrgNoticeResponse::getExperimentOrgNoticeId).collect(Collectors.joining(","))));
+                        ShareBiz.publishWebSocketEvent(applicationEventPublisher, EventName.exptEventTriggeredHandler, EnumWebSocketType.EVENT_TRIGGERED, experimentId,
+                                Set.of(entry.getKey()), entry.getValue());
+                    }
                 }
+            }catch (Exception ex) {
+                sb.append(" error.").append(ex.getMessage());
+                throw ex;
+            }finally {
+                log.info(sb.toString());
             }
-            log.info(sb.toString());
         }
         return rst;
     }

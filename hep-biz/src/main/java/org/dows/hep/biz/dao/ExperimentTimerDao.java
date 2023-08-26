@@ -6,9 +6,8 @@ import org.dows.hep.entity.ExperimentTimerEntity;
 import org.dows.hep.service.ExperimentTimerService;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
 
 /**
  * @author : wuzl
@@ -63,6 +62,13 @@ public class ExperimentTimerDao extends BaseDao<ExperimentTimerService, Experime
                 .select(cols)
                 .list();
 
+    }
+
+    public Map<Integer,ExperimentTimerEntity> getMapByExperimentId(String appId,String experimentId,Integer period,
+        SFunction<ExperimentTimerEntity,?>... cols) {
+        return ShareUtil.XCollection.toMap(getByExperimentId(appId, experimentId, period, cols),
+                LinkedHashMap::new,
+                ExperimentTimerEntity::getPeriod, Function.identity(), false);
     }
 
     /**

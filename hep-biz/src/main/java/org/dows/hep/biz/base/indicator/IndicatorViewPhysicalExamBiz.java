@@ -1,7 +1,6 @@
 package org.dows.hep.biz.base.indicator;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,8 +12,13 @@ import org.dows.hep.api.base.indicator.response.IndicatorViewPhysicalExamRespons
 import org.dows.hep.api.base.indicator.response.IndicatorViewPhysicalExamResponseRs;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.exception.IndicatorViewPhysicalExamException;
+import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.RsPageUtil;
-import org.dows.hep.entity.*;
+import org.dows.hep.biz.util.ShareUtil;
+import org.dows.hep.entity.IndicatorCategoryEntity;
+import org.dows.hep.entity.IndicatorFuncEntity;
+import org.dows.hep.entity.IndicatorInstanceEntity;
+import org.dows.hep.entity.IndicatorViewPhysicalExamEntity;
 import org.dows.hep.service.IndicatorCategoryService;
 import org.dows.hep.service.IndicatorFuncService;
 import org.dows.hep.service.IndicatorInstanceService;
@@ -131,10 +135,12 @@ public class IndicatorViewPhysicalExamBiz{
                 .oneOpt()
                 .orElseThrow(() -> {
                     log.warn("method IndicatorViewPhysicalExamBiz.createOrUpdateRs param createOrUpdateIndicatorViewPhysicalExamRequestRs indicatorFuncId:{} is illegal", indicatorFuncId);
-                    throw new IndicatorViewPhysicalExamException(EnumESC.VALIDATE_EXCEPTION);
+                    throw new IndicatorViewPhysicalExamException("功能点不存在或已删除");
                 });
         }
         String indicatorCategoryId = createOrUpdateIndicatorViewPhysicalExamRequestRs.getIndicatorCategoryId();
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(indicatorCategoryId))
+                .throwMessage("请选择类别");
         if (StringUtils.isNotBlank(indicatorCategoryId)) {
             indicatorCategoryService.lambdaQuery()
                 .eq(IndicatorCategoryEntity::getAppId, appId)
@@ -142,7 +148,7 @@ public class IndicatorViewPhysicalExamBiz{
                 .oneOpt()
                 .orElseThrow(() -> {
                     log.warn("method IndicatorViewPhysicalExamBiz.createOrUpdateRs param createOrUpdateIndicatorViewPhysicalExamRequestRs indicatorCategoryId:{} is illegal", indicatorCategoryId);
-                    throw new IndicatorViewPhysicalExamException(EnumESC.VALIDATE_EXCEPTION);
+                    throw new IndicatorViewPhysicalExamException("类别不存在或已删除");
                 });
         }
         String indicatorInstanceId = createOrUpdateIndicatorViewPhysicalExamRequestRs.getIndicatorInstanceId();
@@ -153,7 +159,7 @@ public class IndicatorViewPhysicalExamBiz{
                 .oneOpt()
                 .orElseThrow(() -> {
                     log.warn("method IndicatorViewPhysicalExamBiz.createOrUpdateRs param createOrUpdateIndicatorViewPhysicalExamRequestRs indicatorInstanceId:{} is illegal", indicatorInstanceId);
-                    throw new IndicatorViewPhysicalExamException(EnumESC.VALIDATE_EXCEPTION);
+                    throw new IndicatorViewPhysicalExamException("关联指标不存在或已删除");
                 });
         }
         String indicatorViewPhysicalExamId = createOrUpdateIndicatorViewPhysicalExamRequestRs.getIndicatorViewPhysicalExamId();
