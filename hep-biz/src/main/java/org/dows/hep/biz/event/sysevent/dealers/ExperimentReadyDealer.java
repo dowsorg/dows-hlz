@@ -37,6 +37,10 @@ import java.util.concurrent.ConcurrentMap;
 @RequiredArgsConstructor
 public class ExperimentReadyDealer extends BaseEventDealer {
 
+    @Override
+    public boolean breakOnUnreached() {
+        return false;
+    }
 
     private final ExperimentTimerBiz experimentTimerBiz;
 
