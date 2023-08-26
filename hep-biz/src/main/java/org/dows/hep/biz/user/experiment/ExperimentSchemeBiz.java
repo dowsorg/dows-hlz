@@ -517,6 +517,7 @@ public class ExperimentSchemeBiz {
                 .eq(ExperimentSchemeScoreEntity::getExperimentSchemeId, experimentSchemeId)
                 .set(ExperimentSchemeScoreEntity::getReviewState, ExptReviewStateEnum.UNREVIEWED.getCode())
                 .update();
+
         // 处理小组状态
         if (containsSandSetting(exptInstanceId)) {
             handleGroupStatus(exptGroupId, EnumExperimentGroupStatus.ASSIGN_DEPARTMENT);
