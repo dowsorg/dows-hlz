@@ -229,24 +229,7 @@ public class SysEventTask extends BaseEventTask {
         final String experimentId = exptKey.getExperimentInstanceId();
         SysEventCollection rst = new SysEventCollection()
                 .setExperimentInstanceId(experimentId);
-        List<ExperimentSysEventEntity> rowsEvent = this.experimentSysEventDao.getByExperimentId(null, experimentId,null,
-                ExperimentSysEventEntity::getId,
-                ExperimentSysEventEntity::getAppId,
-                ExperimentSysEventEntity::getExperimentSysEventId,
-                ExperimentSysEventEntity::getPeriods,
-                ExperimentSysEventEntity::getEventType,
-                ExperimentSysEventEntity::getTriggerType,
-                ExperimentSysEventEntity::getTriggeringTime,
-                ExperimentSysEventEntity::getTriggeringGameDay,
-                ExperimentSysEventEntity::getTriggeredTime,
-                ExperimentSysEventEntity::getTriggeredPeriod,
-                ExperimentSysEventEntity::getTriggeredGameDay,
-                ExperimentSysEventEntity::getDealSeq,
-                ExperimentSysEventEntity::getDealTimes,
-                ExperimentSysEventEntity::getDealTime,
-                ExperimentSysEventEntity::getDealMsg,
-                ExperimentSysEventEntity::getState
-        );
+        List<ExperimentSysEventEntity> rowsEvent = this.experimentSysEventDao.getByExperimentId(null, experimentId,null);
         if (!ShareUtil.XCollection.isEmpty(rowsEvent)) {
             rst.setInitFlag(true);
 
