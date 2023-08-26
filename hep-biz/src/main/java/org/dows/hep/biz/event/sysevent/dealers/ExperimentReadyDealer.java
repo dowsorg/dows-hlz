@@ -63,9 +63,11 @@ public class ExperimentReadyDealer extends BaseEventDealer {
                     ExperimentTimerEntity::getExperimentTimerId,
                     ExperimentTimerEntity::getStartTime,
                     ExperimentTimerEntity::getEndTime,
+                    ExperimentTimerEntity::getPauseTime,
                     ExperimentTimerEntity::getRestartTime,
                     ExperimentTimerEntity::getPauseDuration,
                     ExperimentTimerEntity::getPeriodTimer,
+                    ExperimentTimerEntity::getPeriodInterval,
                     ExperimentTimerEntity::getState);
             final Date now = new Date();
             mapTimers.values().forEach(item -> {
