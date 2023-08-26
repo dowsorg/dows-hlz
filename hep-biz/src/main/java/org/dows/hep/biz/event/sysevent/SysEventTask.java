@@ -103,7 +103,7 @@ public class SysEventTask extends BaseEventTask {
             }
             LocalDateTime curTime = stat.curTimePoint.get().getRealTime();
             final List<SysEventRow> triggerRows = new ArrayList<>();
-            for (SysEventRow item : eventRows) {
+            for (SysEventRow item : triggerRows) {
                 if (item.isDealt()
                         ||null==item.getDealType()
                         ||EnumSysEventDealType.NONE==item.getDealType()) {
@@ -154,7 +154,7 @@ public class SysEventTask extends BaseEventTask {
 
             if (stat.failCounter.get() > 0) {
                 stat.append("failed[cnt-%s]",stat.failCounter.get());
-                raiseScheduler(DELAYSeconds4Fail, false, false);
+                raiseScheduler(DELAYSeconds4Fail, false, true);
                 return;
             }
             final LocalDateTime nextTime = stat.nextTriggerIime.get();
