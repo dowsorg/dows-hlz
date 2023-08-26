@@ -103,7 +103,7 @@ public class SysEventTask extends BaseEventTask {
             }
             LocalDateTime curTime = stat.curTimePoint.get().getRealTime();
             final List<SysEventRow> triggerRows = new ArrayList<>();
-            for (SysEventRow item : triggerRows) {
+            for (SysEventRow item : eventRows) {
                 if (item.isDealt()
                         ||null==item.getDealType()
                         ||EnumSysEventDealType.NONE==item.getDealType()) {
@@ -111,7 +111,7 @@ public class SysEventTask extends BaseEventTask {
                 }
                 stat.todoCounter.incrementAndGet();
                 if (!item.canTrigger(curTime, true)) {
-                    if(!item.getDealType().getDealer().breakOnUnreached()) {
+                    if(triggerRows.size()>0||!item.getDealType().getDealer().breakOnUnreached()) {
                         continue;
                     }
                     final LocalDateTime unReachedTime=item.getTriggeringTime();
