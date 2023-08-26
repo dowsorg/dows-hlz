@@ -442,8 +442,12 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
         // 替换值并打印
         for (Element imgTag : imgTags) {
             String src = imgTag.attr("src");
-            imgTag.attr("src", getBase64(src));
-            imgTag.attr("style", "width: 100%; height: auto;");
+            if (src.contains("http") || src.contains("https")) {
+                imgTag.attr("style", "width: 100%; height: auto;");
+            } else {
+                imgTag.attr("src", getBase64(src));
+                imgTag.attr("style", "width: 100%; height: auto;");
+            }
         }
 
         // 返回替换后的文本
