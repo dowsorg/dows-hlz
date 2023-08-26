@@ -80,6 +80,7 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
                 .setExperimentStartTime(ShareUtil.XDate.localDT4Date(rowExpt.getStartTime()));
         List<ExperimentSettingEntity> rowsSetting = experimentSettingDao.getByExperimentId(null, key.getExperimentInstanceId(),
                 null,
+                ExperimentSettingEntity::getConfigKey,
                 ExperimentSettingEntity::getConfigJsonVals);
         if (ShareUtil.XObject.anyEmpty(rowsSetting, () -> rowsSetting.get(0).getConfigJsonVals())) {
             return rst;
