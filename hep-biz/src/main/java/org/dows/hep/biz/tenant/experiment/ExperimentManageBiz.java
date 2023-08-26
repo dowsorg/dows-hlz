@@ -307,12 +307,8 @@ public class ExperimentManageBiz {
         // 保存实验参与人[学生]
         experimentParticipatorService.saveBatch(collect);
 
-        if(ConfigExperimentFlow.SWITCH2TaskSchedule) {
-            // 发布实验init事件
-            applicationEventPublisher.publishEvent(new InitializeEvent(experimentGroupSettingRequest));
-        }else {
-            EventScheduler.Instance().scheduleSysEvent(experimentGroupSettingRequest.getAppId(), experimentGroupSettingRequest.getExperimentInstanceId(), 1);
-        }
+        // 发布实验init事件
+        applicationEventPublisher.publishEvent(new InitializeEvent(experimentGroupSettingRequest));
         return true;
     }
 
