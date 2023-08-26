@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.tenant.casus.CaseSourceEnum;
 import org.dows.hep.api.tenant.casus.request.CaseInstanceCopyRequest;
 import org.dows.hep.api.tenant.casus.request.CaseInstancePageRequest;
@@ -24,6 +25,7 @@ import java.util.List;
 * @author lait.zhang
 * @date 2023年4月23日 上午9:44:34
 */
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @Tag(name = "案例管理", description = "案例域-案例管理")
@@ -65,6 +67,7 @@ public class TenantCaseManageRest {
     @Operation(summary = "分页")
     @PostMapping("v1/tenantCasus/caseManage/pageCaseInstance")
     public IPage<CaseInstancePageResponse> pageCaseInstance(@RequestBody @Validated CaseInstancePageRequest caseInstancePage, HttpServletRequest request) {
+        log.info("page caseInstance suc");
         String accountId = baseBiz.getAccountId(request);
         caseInstancePage.setAccountId(accountId);
         return tenantCaseManageBiz.pageCaseInstance(caseInstancePage);
