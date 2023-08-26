@@ -27,12 +27,12 @@ public class ExperimentSysEventDao extends BaseDao<ExperimentSysEventService, Ex
 
     @Override
     protected SFunction<ExperimentSysEventEntity, String> getColId() {
-        return null;
+        return ExperimentSysEventEntity::getExperimentSysEventId;
     }
 
     @Override
     protected SFunction<String, ?> setColId(ExperimentSysEventEntity item) {
-        return null;
+        return item::setExperimentSysEventId;
     }
 
     @Override

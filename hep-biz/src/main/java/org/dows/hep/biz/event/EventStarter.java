@@ -32,7 +32,7 @@ public class EventStarter implements ApplicationListener<ApplicationStartedEvent
     }
     private final static long DELAYSeconds4UserEvent =180;
 
-    private final static long DELAYSeconds4SysEvent=15;
+    private final static long DELAYSeconds4SysEvent=30;
 
     private EventStarter(){
         s_instnace=this;
@@ -51,21 +51,22 @@ public class EventStarter implements ApplicationListener<ApplicationStartedEvent
         final Set<String> userIds=new HashSet<>();
         try {
             List<ExperimentInstanceEntity> rowsExperiment = experimentInstanceDao.getRunningExperiment(
-                    null, EnumExperimentState.ONGOING.getState(), EnumExperimentState.SUSPEND.getState(),
-                    DateUtil.offsetDay(new Date(),-5).toJdkDate(),
+                    null, EnumExperimentState.UNBEGIN.getState(),  EnumExperimentState.SUSPEND.getState(),
+                    DateUtil.offsetDay(new Date(),-2).toJdkDate(),
                     ExperimentInstanceEntity::getAppId,
                     ExperimentInstanceEntity::getExperimentInstanceId,
                     ExperimentInstanceEntity::getModel,
                     ExperimentInstanceEntity::getState);
             final LocalDateTime nextTime4User=LocalDateTime.now().plusSeconds(DELAYSeconds4UserEvent);
-            final LocalDateTime nextTime4Sys=LocalDateTime.now().plusSeconds(DELAYSeconds4UserEvent);
+            final LocalDateTime nextTime4Sys=LocalDateTime.now().plusSeconds(DELAYSeconds4SysEvent);
             rowsExperiment.forEach(i -> {
                 sysIds.add(i.getExperimentInstanceId());
                 EventScheduler.Instance().scheduleSysEvent(new ExperimentCacheKey(i.getAppId(), i.getExperimentInstanceId()),nextTime4Sys);
-                if(null!=i.getModel() &&i.getModel().equals(EnumExperimentMode.SAND.getCode())){
+                if(null!=i.getModel() &&i.getModel().equals(EnumExperimentMode.SAND.getCode())
+                    &&i.getState()==EnumExperimentState.ONGOING.getState()){
                     userIds.add(i.getExperimentInstanceId());
+                    EventScheduler.Instance().scheduleTimeBasedEvent(new ExperimentCacheKey(i.getAppId(), i.getExperimentInstanceId()), nextTime4User);
                 }
-                EventScheduler.Instance().scheduleTimeBasedEvent(new ExperimentCacheKey(i.getAppId(), i.getExperimentInstanceId()), nextTime4User);
             });
             log.info(String.format("EventStarter.start succ. cntSys:%s cntUser:%s sysIds:%s userIds:%s",
                     sysIds.size(),userIds.size(),

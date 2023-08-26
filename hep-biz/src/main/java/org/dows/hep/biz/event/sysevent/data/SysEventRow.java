@@ -63,7 +63,7 @@ public class SysEventRow {
         if (!repeatFlag && null != entity.getTriggeredTime()) {
             return false;
         }
-        return null != this.triggeringTime && now.compareTo(this.triggeringTime) <= 0;
+        return null != this.triggeringTime && this.triggeringTime.compareTo(now) <= 0;
     }
 
     public void setTrigging(ExperimentTimePoint timePoint){

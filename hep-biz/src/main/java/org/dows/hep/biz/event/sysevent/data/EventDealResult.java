@@ -29,7 +29,7 @@ public class EventDealResult {
         if(msg.length()>0) {
             msg.append(SPLITText);
         }
-        if (ShareUtil.XObject.notEmpty(args)) {
+        if (ShareUtil.XObject.isEmpty(args)) {
             msg.append(txt);
         }
         msg.append(String.format(txt, args));

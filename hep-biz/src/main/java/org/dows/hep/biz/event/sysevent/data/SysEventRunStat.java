@@ -39,7 +39,7 @@ public class SysEventRunStat {
         if(msg.length()>0) {
             msg.append(SPLITText);
         }
-        if (ShareUtil.XObject.notEmpty(args)) {
+        if (ShareUtil.XObject.isEmpty(args)) {
             msg.append(txt);
         }
         msg.append(String.format(txt, args));
@@ -54,7 +54,7 @@ public class SysEventRunStat {
         sb.append(" todo:").append(todoCounter);
         sb.append(" cur:").append(curTimePoint);
         sb.append(" next:").append(nextTriggerIime);
-        sb.append(" msg:").append(sb);
+        sb.append(" msg:").append(msg);
         sb.append('}');
         return sb.toString();
     }

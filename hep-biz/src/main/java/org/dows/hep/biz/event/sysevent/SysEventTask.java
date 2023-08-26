@@ -73,7 +73,8 @@ public class SysEventTask extends BaseEventTask {
             return RUNCode4Silence;
         }
         if(!eventColl.isInitFlag()){
-            eventColl.setInitFlag(experimentSysEventDao.tranSaveBatch(ShareUtil.XCollection.map(eventColl.getEventRows(), SysEventRow::getEntity)));
+            eventColl.setInitFlag(experimentSysEventDao.saveOrUpdateBatch(ShareUtil.XCollection.map(eventColl.getEventRows(), SysEventRow::getEntity)
+                    ,false,true));
         }
         LocalDateTime ldtNow=LocalDateTime.now();
         ExperimentTimePoint timePoint= ExperimentSettingCache.getTimePointByRealTimeSilence(exptColl, experimentKey, ldtNow, true);
@@ -115,8 +116,9 @@ public class SysEventTask extends BaseEventTask {
                     }
                     final LocalDateTime unReachedTime=item.getTriggeringTime();
                     if (null != unReachedTime) {
+                        stat.nextTriggerIime.set(unReachedTime);
                         stat.append("waitNext[%s-%s]",item.getDealType(),item.getEventId());
-                        raiseScheduler(unReachedTime, true, false);
+                        raiseScheduler(unReachedTime, false, false);
                         return;
                     }
                     stat.append("waitPoll[%s-%s]",item.getDealType(),item.getEventId());
