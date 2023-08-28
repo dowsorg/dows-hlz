@@ -8,7 +8,6 @@ import org.dows.hep.biz.event.sysevent.data.*;
 import org.dows.hep.entity.ExperimentSysEventEntity;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -32,7 +31,7 @@ public class SandStartDealer extends BaseEventDealer {
 
     @Override
     protected boolean coreDeal(EventDealResult rst, SysEventRow row, SysEventRunStat stat) {
-        return false;
+        return true;
     }
 
     @Override

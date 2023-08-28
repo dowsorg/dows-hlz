@@ -48,6 +48,7 @@ public class ExperimentReportDealer extends BaseEventDealer {
             Map<Integer, ExperimentTimerEntity> mapTimers = experimentTimerDao.getMapByExperimentId(appId, experimentInstanceId, null,
                     ExperimentTimerEntity::getId,
                     ExperimentTimerEntity::getExperimentTimerId,
+                    ExperimentTimerEntity::getPeriod,
                     ExperimentTimerEntity::getState);
             mapTimers.values().forEach(item -> {
                 item.setState(EnumExperimentState.FINISH.getState());
@@ -67,8 +68,11 @@ public class ExperimentReportDealer extends BaseEventDealer {
 
     @Override
     public List<ExperimentSysEventEntity> buildEvents(ExperimentSettingCollection exptColl) {
-        return List.of(buildEvent(exptColl,exptColl.getPeriods(),
-                EnumSysEventDealType.EXPERIMENTReport.getCode(),
-                EnumSysEventTriggerType.EXPERIMENTReport.getCode()));
+        if(exptColl.hasSandMode()) {
+            return List.of(buildEvent(exptColl, exptColl.getPeriods(),
+                    EnumSysEventDealType.EXPERIMENTReport.getCode(),
+                    EnumSysEventTriggerType.EXPERIMENTReport.getCode()));
+        }
+        return null;
     }
 }

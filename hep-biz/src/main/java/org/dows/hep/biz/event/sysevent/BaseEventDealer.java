@@ -47,6 +47,7 @@ public abstract class BaseEventDealer implements ISysEventDealer {
     public boolean dealEvent(SysEventRow row, SysEventRunStat stat) {
         final ExperimentSysEventEntity entity = row.getEntity();
         EventDealResult rst = new EventDealResult()
+                .setExptId(entity.getExperimentInstanceId())
                 .setFlowStat(stat)
                 .setStartTime(LocalDateTime.now());
         boolean lockFlag = false;
@@ -57,20 +58,15 @@ public abstract class BaseEventDealer implements ISysEventDealer {
                 rst.setNextDeal(EnumSysEventDealType.of(next.getEntity().getEventType()))
                         .setNextTime(next.getTriggeringTime());
             }
-            if (!preDeal(rst, row, stat)) {
-                dealFlag=true;
-                return rst.setSucc(false)
-                        .append("preHalt")
-                        .isSucc();
-            }
+
             if (row.isDealt()) {
                 return rst.setSucc(true)
-                        .append("hasDealt")
+                        .append("nowDealt")
                         .isSucc();
             }
             final int maxRetry = this.maxRetryTimes();
             if (maxRetry > 0 && row.getRetryTimes().get() >= maxRetry) {
-                dealFlag=true;
+                dealFlag=row.getRetryTimes().get() <= maxRetry+1;
                 return rst.setSucc(false)
                         .append("maxRetry")
                         .isSucc();
@@ -93,12 +89,11 @@ public abstract class BaseEventDealer implements ISysEventDealer {
             }
             dealFlag=true;
             rst.setSucc(coreDeal(rst,row, stat));
-            postDeal(rst, row, stat);
         } catch (Exception ex) {
-            rst.setSucc(false)
-                    .append("error:%s", ex.getMessage());
+            dealFlag=true;
+            rst.setSucc(false).append("dealError:%s", ex.getMessage());
             row.getRetryTimes().incrementAndGet();
-            logError(ex, "dealEvent", "error. rst:%s",rst);
+            logError(ex, "dealEvent", "dealError. rst:%s",rst);
         } finally {
             if (lockFlag) {
                 row.getLock().unlock();
@@ -117,21 +112,14 @@ public abstract class BaseEventDealer implements ISysEventDealer {
                     saveDeal(entity);
                 } catch (Exception ex) {
                     entity.setState(curState);
-                    rst.append("error:%s", ex.getMessage());
+                    rst.setSucc(false).append("saveError:%s", ex.getMessage());
                     row.getRetryTimes().incrementAndGet();
-                    logError(ex, "dealEvent", "error. rst:%s",rst);
+                    logError(ex, "dealEvent", "saveError. rst:%s",rst);
                 }
             }
         }
         logInfo("dealEvent", "rst:%s", rst);
         return rst.isSucc();
-    }
-
-    protected boolean preDeal(EventDealResult rst,SysEventRow row, SysEventRunStat stat){
-        return true;
-    }
-    protected void postDeal(EventDealResult rst, SysEventRow row, SysEventRunStat stat){
-
     }
 
     protected abstract boolean coreDeal(EventDealResult rst,SysEventRow row, SysEventRunStat stat);

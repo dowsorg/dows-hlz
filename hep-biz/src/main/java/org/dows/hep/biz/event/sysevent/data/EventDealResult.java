@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @Data
 @Accessors(chain = true)
 public class EventDealResult {
+    private String exptId;
     private boolean succ;
     private final StringBuilder msg=new StringBuilder();
     private LocalDateTime startTime;
@@ -29,10 +30,11 @@ public class EventDealResult {
         if(msg.length()>0) {
             msg.append(SPLITText);
         }
-        if (ShareUtil.XObject.notEmpty(args)) {
+        if (ShareUtil.XObject.isEmpty(args)) {
             msg.append(txt);
+        }else {
+            msg.append(String.format(txt, args));
         }
-        msg.append(String.format(txt, args));
         return this;
     }
 
@@ -40,6 +42,7 @@ public class EventDealResult {
     public String toString() {
         final StringBuilder sb = new StringBuilder("{");
         sb.append("succ:").append(succ);
+        sb.append(" expt:").append(exptId);
         sb.append(" start:").append(startTime);
         sb.append(" end:").append(endTime);
         sb.append(" nextDeal:").append(nextDeal);

@@ -80,7 +80,7 @@ public class ExperimentGroupRest {
      */
     @Operation(summary = "分配小组成员")
     @PostMapping("v1/userExperiment/experimentGroup/allotGroupMembers")
-    public Boolean allotGroupMembers(@RequestBody @Validated List<ExperimentParticipatorRequest> participatorList) {
+    public Boolean allotGroupMembers(@RequestBody @Validated List<ExperimentParticipatorRequest> participatorList) throws InterruptedException{
         return experimentGroupBiz.allotGroupMembers(participatorList);
     }
 

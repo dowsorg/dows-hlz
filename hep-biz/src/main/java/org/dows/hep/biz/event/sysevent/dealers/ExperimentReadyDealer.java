@@ -38,6 +38,7 @@ import java.util.concurrent.ConcurrentMap;
 public class ExperimentReadyDealer extends BaseEventDealer {
 
 
+
     private final ExperimentTimerBiz experimentTimerBiz;
 
     private final ExperimentTimerDao experimentTimerDao;
@@ -61,11 +62,14 @@ public class ExperimentReadyDealer extends BaseEventDealer {
             Map<Integer, ExperimentTimerEntity> mapTimers = experimentTimerDao.getMapByExperimentId(appId, experimentInstanceId, null,
                     ExperimentTimerEntity::getId,
                     ExperimentTimerEntity::getExperimentTimerId,
+                    ExperimentTimerEntity::getPeriod,
                     ExperimentTimerEntity::getStartTime,
                     ExperimentTimerEntity::getEndTime,
+                    ExperimentTimerEntity::getPauseTime,
                     ExperimentTimerEntity::getRestartTime,
                     ExperimentTimerEntity::getPauseDuration,
                     ExperimentTimerEntity::getPeriodTimer,
+                    ExperimentTimerEntity::getPeriodInterval,
                     ExperimentTimerEntity::getState);
             final Date now = new Date();
             mapTimers.values().forEach(item -> {
@@ -124,6 +128,9 @@ public class ExperimentReadyDealer extends BaseEventDealer {
 
     @Override
     public List<ExperimentSysEventEntity> buildEvents(ExperimentSettingCollection exptColl) {
+        if(!exptColl.hasSandMode()){
+            return null;
+        }
         return List.of(buildEvent(exptColl,0,
                 EnumSysEventDealType.EXPERIMENTReady.getCode(),
                 EnumSysEventTriggerType.EXPERIMENTReady.getCode()));

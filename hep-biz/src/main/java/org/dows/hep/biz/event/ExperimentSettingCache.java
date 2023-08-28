@@ -80,6 +80,7 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
                 .setExperimentStartTime(ShareUtil.XDate.localDT4Date(rowExpt.getStartTime()));
         List<ExperimentSettingEntity> rowsSetting = experimentSettingDao.getByExperimentId(null, key.getExperimentInstanceId(),
                 null,
+                ExperimentSettingEntity::getConfigKey,
                 ExperimentSettingEntity::getConfigJsonVals);
         if (ShareUtil.XObject.anyEmpty(rowsSetting, () -> rowsSetting.get(0).getConfigJsonVals())) {
             return rst;
@@ -88,10 +89,10 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
         ExperimentSetting.SandSetting sandSetting=null;
         for(ExperimentSettingEntity item:rowsSetting){
             if(ExperimentSetting.SchemeSetting.class.getName().equals(item.getConfigKey())){
-                schemeSetting=JSONUtil.toBean(rowsSetting.get(0).getConfigJsonVals(), ExperimentSetting.SchemeSetting.class);
+                schemeSetting=JSONUtil.toBean(item.getConfigJsonVals(), ExperimentSetting.SchemeSetting.class);
             }
             if(ExperimentSetting.SandSetting.class.getName().equals(item.getConfigKey())){
-                sandSetting = JSONUtil.toBean(rowsSetting.get(0).getConfigJsonVals(), ExperimentSetting.SandSetting.class);
+                sandSetting = JSONUtil.toBean(item.getConfigJsonVals(), ExperimentSetting.SandSetting.class);
             }
         }
         if(null!=schemeSetting) {
@@ -180,10 +181,9 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
         ExperimentTimerEntity curTimer=null;
         for(ExperimentTimerEntity item:mapTimer.values()){
             if(nowTs<item.getStartTime().getTime()){
-                continue;
+                break;
             }
             curTimer=item;
-            break;
         }
 
         AssertUtil.getNotNull(curTimer).orElseThrow("getTimePointByRealTime-未找到当前实验计时器");

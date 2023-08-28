@@ -44,7 +44,7 @@ public class SchemaGroupEndDealer extends BaseEventDealer {
                 ExperimentGroupEntity::getExperimentGroupId);
         List<ExperimentSysEventEntity> rst=new ArrayList<>();
         rowsGroup.forEach(item-> rst.add(buildEvent(exptColl,0,
-                EnumSysEventDealType.SCHEMAEnd.getCode(),
+                EnumSysEventDealType.SCHEMAGroupEnd.getCode(),
                 EnumSysEventTriggerType.MANUAL.getCode())
                 .setExperimentGroupId(item.getExperimentGroupId())));
         return rst;

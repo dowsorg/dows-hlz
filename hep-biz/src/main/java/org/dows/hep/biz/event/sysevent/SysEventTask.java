@@ -41,7 +41,7 @@ public class SysEventTask extends BaseEventTask {
     @Override
     protected void exceptionally(Exception ex) {
         super.exceptionally(ex);
-        raiseScheduler(DELAYSeconds4Fail, false, true);
+        raiseScheduler(getRetryDelaySeconds(), false, true);
     }
 
     @Override
@@ -63,34 +63,31 @@ public class SysEventTask extends BaseEventTask {
         if(experimentState.equals(EnumExperimentState.SUSPEND.getState())){
             logInfo("call", "pausedExperiment");
             raiseScheduler(DELAYSeconds4Poll,false,true);
-            return RUNCode4Silence;
+            return 0;
         }
         SysEventCollection eventColl= SysEventCache.Instance().caffineCache()
                 .get(experimentKey, k->loadEvents(experimentKey,exptColl));
         if(ShareUtil.XObject.isEmpty(eventColl.getEventRows()) ){
             logError("call", "emptyEvents");
             raiseScheduler(DELAYSeconds4Poll,false,true);
-            return RUNCode4Silence;
+            return 0;
         }
         if(!eventColl.isInitFlag()){
-            eventColl.setInitFlag(experimentSysEventDao.tranSaveBatch(ShareUtil.XCollection.map(eventColl.getEventRows(), SysEventRow::getEntity)));
+            eventColl.setInitFlag(experimentSysEventDao.saveOrUpdateBatch(ShareUtil.XCollection.map(eventColl.getEventRows(), SysEventRow::getEntity)
+                    ,false,true));
         }
         LocalDateTime ldtNow=LocalDateTime.now();
         ExperimentTimePoint timePoint= ExperimentSettingCache.getTimePointByRealTimeSilence(exptColl, experimentKey, ldtNow, true);
         if(ShareUtil.XObject.anyEmpty(timePoint,()->timePoint.getCntPauseSeconds())) {
             logError("call", "missTimePoint");
-            raiseScheduler(DELAYSeconds4Fail,false,true);
-            return RUNCode4Fail;
+            raiseScheduler(getRetryDelaySeconds(),false,true);
+            return 0;
         }
         SysEventRunStat runStat=new SysEventRunStat();
         runStat.curTimePoint.set(timePoint);
         runStat.nextTriggerIime.set(calcTriggeringTime(ldtNow, runStat, exptColl, eventColl));
         final ExecutorService executor= EventExecutor.Instance().getThreadPool();
-        CompletableFuture.runAsync(()->runSysEvents(runStat,exptColl,eventColl), executor)
-                .exceptionally(ex-> {
-                    logError(ex, "runSysEvents", "error. stat:%s", runStat);
-                    return null;
-                });
+        CompletableFuture.runAsync(()->runSysEvents(runStat,exptColl,eventColl), executor);
         return 1;
     }
     void runSysEvents(SysEventRunStat stat,ExperimentSettingCollection exptColl,SysEventCollection eventColl){
@@ -109,21 +106,26 @@ public class SysEventTask extends BaseEventTask {
                     continue;
                 }
                 stat.todoCounter.incrementAndGet();
-                if (!item.canTrigger(curTime, true)) {
-                    if(!item.getDealType().getDealer().breakOnUnreached()) {
-                        continue;
-                    }
-                    final LocalDateTime unReachedTime=item.getTriggeringTime();
-                    if (null != unReachedTime) {
-                        stat.append("waitNext[%s-%s]",item.getDealType(),item.getEventId());
-                        raiseScheduler(unReachedTime, true, false);
-                        return;
-                    }
-                    stat.append("waitPoll[%s-%s]",item.getDealType(),item.getEventId());
-                    raiseScheduler(DELAYSeconds4Poll,false,true);
+                if (item.canTrigger(curTime, true)) {
+                    triggerRows.add(item);
+                    continue;
+                }
+                if(!item.getDealType().getDealer().breakOnUnreached()) {
+                    continue;
+                }
+                if(triggerRows.size()>0){
+                    break;
+                }
+                final LocalDateTime unReachedTime=item.getTriggeringTime();
+                if (null != unReachedTime) {
+                    stat.nextTriggerIime.set(unReachedTime);
+                    stat.append("waitNext[%s-%s]",item.getDealType(),unReachedTime);
+                    raiseScheduler(unReachedTime, true, false);
                     return;
                 }
-                triggerRows.add(item);
+                stat.append("waitPoll[%s-%s]",item.getDealType(),item.getEventId());
+                raiseScheduler(DELAYSeconds4Poll,false,true);
+                return;
             }
             for(int i=0;i<triggerRows.size();i++) {
                 if (i + 1 < triggerRows.size()) {
@@ -143,6 +145,9 @@ public class SysEventTask extends BaseEventTask {
                     stat.doneCounter.incrementAndGet();
                 } else {
                     stat.failCounter.incrementAndGet();
+                    if(item.tillMaxRetry()){
+                        experimentKey.getRetryTimes().incrementAndGet();
+                    }
                     if (dealer.breakOnFail()) {
                         stat.append("breakOnFail[%s-%s]",item.getDealType(),item.getEventId());
                         break;
@@ -152,7 +157,7 @@ public class SysEventTask extends BaseEventTask {
 
             if (stat.failCounter.get() > 0) {
                 stat.append("failed[cnt-%s]",stat.failCounter.get());
-                raiseScheduler(DELAYSeconds4Fail, false, false);
+                raiseScheduler(getRetryDelaySeconds(), false, false);
                 return;
             }
             final LocalDateTime nextTime = stat.nextTriggerIime.get();
@@ -169,11 +174,20 @@ public class SysEventTask extends BaseEventTask {
             stat.append("succPoll");
             raiseScheduler(DELAYSeconds4Poll,false,true);
 
-        }finally {
+        }catch (Exception ex){
+            stat.append("error:%s", ex.getMessage());
+            logError(ex, "runSysEvents", "error. stat:%s", stat);
+            raiseScheduler(getRetryDelaySeconds(), false, true);
+        } finally {
             logInfo("runSysEvents", "stat:%s", stat);
             stat.clear();
         }
     }
+
+    long getRetryDelaySeconds(){
+        return DELAYSeconds4Fail*(1+experimentKey.getRetryTimes().get());
+    }
+
 
     LocalDateTime calcTriggeringTime(LocalDateTime ldtNow, SysEventRunStat stat,ExperimentSettingCollection exptColl,SysEventCollection eventColl) {
         if (ShareUtil.XObject.isEmpty(eventColl.getEventRows())) {
@@ -184,7 +198,7 @@ public class SysEventTask extends BaseEventTask {
         ExperimentSysEventEntity entity = null;
         for (SysEventRow item : eventColl.getEventRows()) {
             entity = item.getEntity();
-            if (null == item.getTriggeringTime()||null==item.getTriggeredTime()) {
+            if (item.isTriggering()) {
                 point = sysEventInvoker.getTriggerTime(entity, exptColl, stat.curTimePoint.get().getCntPauseSeconds());
                 if (null != point) {
                     item.setTrigging(point);
@@ -209,8 +223,8 @@ public class SysEventTask extends BaseEventTask {
     }
     void raiseScheduler(LocalDateTime nextTime,boolean resetRetry,boolean incrRetry) {
         if(resetRetry){
-            experimentKey.getMaxRetry().set(0);
-        } else if ((incrRetry? experimentKey.getMaxRetry().incrementAndGet():experimentKey.getMaxRetry().get()) >= MAXRetry) {
+            experimentKey.getRetryTimes().set(0);
+        } else if ((incrRetry? experimentKey.getRetryTimes().incrementAndGet():experimentKey.getRetryTimes().get()) >= MAXRetry) {
             logError("raiseScheduler", "maxRetry");
             return;
         }
@@ -227,24 +241,7 @@ public class SysEventTask extends BaseEventTask {
         final String experimentId = exptKey.getExperimentInstanceId();
         SysEventCollection rst = new SysEventCollection()
                 .setExperimentInstanceId(experimentId);
-        List<ExperimentSysEventEntity> rowsEvent = this.experimentSysEventDao.getByExperimentId(null, experimentId,null,
-                ExperimentSysEventEntity::getId,
-                ExperimentSysEventEntity::getAppId,
-                ExperimentSysEventEntity::getExperimentSysEventId,
-                ExperimentSysEventEntity::getPeriods,
-                ExperimentSysEventEntity::getEventType,
-                ExperimentSysEventEntity::getTriggerType,
-                ExperimentSysEventEntity::getTriggeringTime,
-                ExperimentSysEventEntity::getTriggeringGameDay,
-                ExperimentSysEventEntity::getTriggeredTime,
-                ExperimentSysEventEntity::getTriggeredPeriod,
-                ExperimentSysEventEntity::getTriggeredGameDay,
-                ExperimentSysEventEntity::getDealSeq,
-                ExperimentSysEventEntity::getDealTimes,
-                ExperimentSysEventEntity::getDealTime,
-                ExperimentSysEventEntity::getDealMsg,
-                ExperimentSysEventEntity::getState
-        );
+        List<ExperimentSysEventEntity> rowsEvent = this.experimentSysEventDao.getByExperimentId(null, experimentId,null);
         if (!ShareUtil.XCollection.isEmpty(rowsEvent)) {
             rst.setInitFlag(true);
 
