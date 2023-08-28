@@ -255,7 +255,7 @@ public class SysEventInvoker {
         String str=String.format("%s.%s@%s[%s] %s", this.getClass().getName(), func, LocalDateTime.now(),this.hashCode(),
                 String.format(Optional.ofNullable(msg).orElse(""), args));
         log.error(str,ex);
-        log.info(str);
+        //log.info(str);
     }
     protected void logInfo(String func, String msg,Object... args) {
         String str = String.format("%s.%s@%s[%s] %s", this.getClass().getName(), func, LocalDateTime.now(),this.hashCode(),
