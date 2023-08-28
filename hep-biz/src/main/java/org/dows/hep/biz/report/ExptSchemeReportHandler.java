@@ -443,15 +443,16 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
         for (Element imgTag : imgTags) {
             String src = imgTag.attr("src");
             if (src.contains("http") || src.contains("https")) {
-                imgTag.attr("style", "width: 100%; height: auto;");
+                imgTag.attr("style", "width: 60%; height: auto;");
             } else {
                 imgTag.attr("src", getBase64(src));
-                imgTag.attr("style", "width: 100%; height: auto;");
+                imgTag.attr("style", "width: 60%; height: auto;");
             }
         }
 
         // 返回替换后的文本
-        return doc.body().html();
+        String html = doc.body().html();
+        return html;
     }
 
     private String getBase64(String src) {
