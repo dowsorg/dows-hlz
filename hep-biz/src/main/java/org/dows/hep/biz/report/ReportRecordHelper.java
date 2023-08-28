@@ -45,6 +45,20 @@ public class ReportRecordHelper {
      */
     @DSTransactional
     public boolean record(String exptInstanceId, String exptGroupId, ExptReportTypeEnum reportTypeEnum, MaterialsRequest materialsRequest) {
+
+        // 获取报告数据
+        if (StrUtil.isBlank(exptGroupId)) {
+            ExperimentReportInstanceEntity report = experimentReportBiz.getReportOfExpt(exptInstanceId, reportTypeEnum);
+            if (BeanUtil.isNotEmpty(report)) {
+                experimentReportBiz.delReportOfExpt(exptInstanceId, reportTypeEnum);
+            }
+        } else {
+            ExperimentReportInstanceEntity report = experimentReportBiz.getReportOfGroup(exptInstanceId, exptGroupId, reportTypeEnum);
+            if (BeanUtil.isNotEmpty(report)) {
+                experimentReportBiz.delReportOfGroup(exptInstanceId, exptGroupId, reportTypeEnum);
+            }
+        }
+
         String materialsId = materialsManageBiz.saveOrUpdMaterials(materialsRequest);
 
         ExperimentReportInstanceEntity exptReportInstanceEntity = ExperimentReportInstanceEntity.builder()

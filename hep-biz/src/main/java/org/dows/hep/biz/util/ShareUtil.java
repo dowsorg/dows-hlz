@@ -251,9 +251,15 @@ public class ShareUtil {
             return secondFlag ? dt.atZone(DFTTimeZone).toEpochSecond() : dt.atZone(DFTTimeZone).toInstant().toEpochMilli();
         }
         public static LocalDateTime localDT4Date(Date dt) {
+            if(null==dt){
+                return null;
+            }
             return dt.toInstant().atZone(DFTTimeZone).toLocalDateTime();
         }
         public static Date localDT2Date(LocalDateTime dt) {
+            if(null==dt){
+                return null;
+            }
             return Date.from(dt.atZone(DFTTimeZone).toInstant());
         }
 

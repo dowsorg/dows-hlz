@@ -118,7 +118,7 @@ public class CaseEventDao extends BaseSubDao<CaseEventService, CaseEventEntity, 
 
     @Transactional(rollbackFor = Exception.class)
     public boolean tranSave(CaseEventEntity lead, List<CaseEventActionEntity> actions, Map<String,List<String>> mapExpressions) {
-        AssertUtil.falseThenThrow(coreTranSave(lead, actions,  defaultUseLogicId))
+        AssertUtil.falseThenThrow(coreTranSave(lead, actions,  true))
                 .throwMessage(failedSaveMessage);
         return caseIndicatorExpressionRefDao.tranUpdateReasonId(mapExpressions);
 
@@ -128,7 +128,7 @@ public class CaseEventDao extends BaseSubDao<CaseEventService, CaseEventEntity, 
     @Transactional(rollbackFor = Exception.class)
     public boolean tranSaveBatch(List<CaseEventEntity> events,List<CaseEventActionEntity> actions,
                                  List<CaseIndicatorExpressionRefEntity> expressionRefs, List<CaseIndicatorExpressionEntity> expressions, List<CaseIndicatorExpressionItemEntity> expressionItems) {
-        this.tranSaveBatch(events);
+        this.tranSaveBatch(events,true,false);
         subDao.tranSaveBatch(actions,null,true);
         caseIndicatorExpressionRefDao.tranSaveBatch(expressionRefs,expressions,expressionItems);
         return true;

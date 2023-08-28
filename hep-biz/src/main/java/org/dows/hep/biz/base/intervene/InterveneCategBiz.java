@@ -157,7 +157,7 @@ public class InterveneCategBiz {
                     .setCategNamePath(cache.buildCategPath(parent.getCategNamePath(), i.getCategName()));
         });
 
-        interveneCategDao.tranSaveBatch(rows);
+        interveneCategDao.tranSaveBatch(rows,true,false);
         cache.clear();
         return true;
     }

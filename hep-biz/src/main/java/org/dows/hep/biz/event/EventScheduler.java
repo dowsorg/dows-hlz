@@ -4,6 +4,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.biz.cache.BaseManulCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
+import org.dows.hep.api.config.ConfigExperimentFlow;
+import org.dows.hep.biz.event.sysevent.SysEventTask;
 import org.dows.hep.biz.util.ShareBiz;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
@@ -23,7 +25,11 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Component
 public class EventScheduler implements ApplicationListener<ContextClosedEvent> {
-    static final int DFTCoreSize=3;
+    static final int DFTCoreSize=4;
+
+    static final long additiveSeconds4UserEvent = 10;
+
+    static final long additiveSeconds4SysEvent = 3;
     private static volatile EventScheduler s_instance;
     public static EventScheduler Instance(){
         return s_instance;
@@ -44,6 +50,31 @@ public class EventScheduler implements ApplicationListener<ContextClosedEvent> {
     private final ExperimentFutureCache futureCache=new ExperimentFutureCache();
 
     //region schedule
+
+    /**
+     * 系统事件定时
+     * @param appId
+     * @param experimentId
+     * @param delaySeconds
+     * @return
+     */
+
+    public ScheduledFuture<?> scheduleSysEvent(String appId,String experimentId, long delaySeconds) {
+        if(ConfigExperimentFlow.SWITCH2TaskSchedule){
+            return null;
+        }
+        appId = ShareBiz.checkAppId(appId, experimentId);
+        final ExperimentCacheKey experimentKey = new ExperimentCacheKey(appId, experimentId);
+        log.info("EventScheduler scheduleSysEvent. {} {}", scheduledExecutor, experimentKey);
+        return scheduleSysEvent(experimentKey, LocalDateTime.now().plusSeconds(delaySeconds));
+    }
+    public ScheduledFuture<?> scheduleSysEvent(ExperimentCacheKey experimentKey, LocalDateTime nextTime){
+        if(ConfigExperimentFlow.SWITCH2TaskSchedule){
+            return null;
+        }
+        final String exclusiveKey = String.format("sysevent:%s", experimentKey.getKeyString());
+        return scheduleExclusive(exclusiveKey, new SysEventTask(experimentKey), nextTime,additiveSeconds4SysEvent);
+    }
     /**
      * 按时间触发事件定时
      * @param appId
@@ -54,18 +85,18 @@ public class EventScheduler implements ApplicationListener<ContextClosedEvent> {
     public ScheduledFuture<?> scheduleTimeBasedEvent(String appId,String experimentId, long delaySeconds) {
         appId = ShareBiz.checkAppId(appId, experimentId);
         final ExperimentCacheKey experimentKey = new ExperimentCacheKey(appId, experimentId);
-        log.info("EventScheduler schedule. {} {}", scheduledExecutor, experimentKey);
+        log.info("EventScheduler scheduleTimeBasedEvent. {} {}", scheduledExecutor, experimentKey);
         return scheduleTimeBasedEvent(experimentKey, LocalDateTime.now().plusSeconds(delaySeconds));
     }
     public ScheduledFuture<?> scheduleTimeBasedEvent(ExperimentCacheKey experimentKey, LocalDateTime nextTime){
         final String exclusiveKey = String.format("timeevent:%s", experimentKey.getKeyString());
-        return scheduleExclusive(exclusiveKey, new TimeBasedEventTask(experimentKey), nextTime);
+        return scheduleExclusive(exclusiveKey, new TimeBasedEventTask(experimentKey), nextTime,additiveSeconds4UserEvent);
     }
 
-    public ScheduledFuture<?> scheduleExclusive(String exclusiveKey, Runnable  cmd, LocalDateTime nextTime) {
+    public ScheduledFuture<?> scheduleExclusive(String exclusiveKey, Runnable  cmd, LocalDateTime nextTime,long additiveSeconds) {
         ScheduledFuture<?>[] buffer = futureCache.caffineCache().get(exclusiveKey, key -> new ScheduledFuture<?>[2]);
         ScheduledFuture<?> rst = null;
-        final long additiveSeconds = 10;
+
         synchronized (buffer) {
             clearExclusiveTaskBuffer(buffer);
             final long delaySeconds = Math.max(1, Duration.between(LocalDateTime.now(), nextTime).toSeconds());
@@ -127,7 +158,7 @@ public class EventScheduler implements ApplicationListener<ContextClosedEvent> {
     public static class ExperimentFutureCache extends BaseManulCache<String,ScheduledFuture<?>[]> {
 
         private ExperimentFutureCache() {
-            super(10, 30, 60*60*12, 0);
+            super(10, 40, 60*60*12, 0);
         }
     }
 

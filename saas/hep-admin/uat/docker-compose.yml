@@ -14,7 +14,8 @@ services:
       - $EWP:80
     volumes:
       - ./logs:/dows/saas/hep-admin/logs
-      - /dows/saas/hep-admin/dev/configs:/dows/saas/hep-admin/configs
+      - /dows/saas/hep-admin/uat/configs:/dows/saas/hep-admin/configs
+      - /dows/saas/hep-admin/uat/resources:/data/resources/images/hep
       - /dows/paas/apm/skywalking-agent-8.16.0:/dows/paas/apm/skywalking-agent
     networks:
       - uat_net

@@ -82,7 +82,7 @@
     <div align="center" style="font-size:14px;">${baseInfo.copyRight!""} <span id="pages"> / </span></div>
 </div>
 <div class="page">
-    <img src="data:image/jpg;base64,${baseInfo.logoImg}" align="center" width="740px" style="width: 740px;margin-top:60px;margin-bottom: 200px"/>
+<#--    <img src="data:image/jpg;base64,${baseInfo.logoImg}" align="center" width="740px" style="width: 740px;margin-top:60px;margin-bottom: 200px"/>-->
     <div align="center">
         <div class="pageTitle " style="margin-top:60px">${baseInfo.title!""}</div>
         <div class="pageTitle " style="margin-top:38px">总报告</div>
