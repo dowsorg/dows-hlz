@@ -15,7 +15,22 @@ pipeline {
         JAVA_HOME = '/usr/local/jdk17'
         MAVEN_HOME = '/usr/local/mvn/bin/mvn'
         PATH = "${env.JAVA_HOME}/bin:${env.MAVEN_HOME}/bin:${env.PATH}"
-        SAAS_PATH = '/dows/saas/hep-admin'
+
+        FORM_DEV_CD_PATH = 'cd/hep/dev/saas/api/admin'
+        TO_DEV_CD_PATH = '/findsoft/hep/dev/saas/api'
+
+        FORM_SIT_CD_PATH = 'cd/hep/sit/saas/api/admin'
+        TO_SIT_CD_PATH = '/findsoft/hep/sit/saas/api'
+
+        FORM_UAT_CD_PATH = 'cd/hep/uat/saas/api/admin'
+        TO_UAT_CD_PATH = '/findsoft/hep/uat/saas/api'
+
+        FORM_PRD_CD_PATH = 'cd/hep/prd/saas/api/admin'
+        TO_PRD_CD_PATH = '/findsoft/hep/prd/saas/api'
+
+        LOGIN_DOCKER = 'docker login --username=findsoft@dows --password=findsoft123456 registry.cn-hangzhou.aliyuncs.com'
+        START_CONTAINER = "docker compose down && docker compose up -d"
+
         AS_HOST='192.168.1.60'
         AS_USERNAME='root'
         AS_PWD='findsoft2022!@#'
@@ -29,7 +44,9 @@ pipeline {
             steps {
                 script {
                     def branch = detect_branch()
-                    echo  "===当前分支为:${branch}==="
+                    echo  '===================================='
+                    echo  '         当前分支为:${branch}         '
+                    echo  '===================================='
                     def rte = branch.split('-')[0]
                     def ver = branch.split('-')[1]
 
@@ -67,49 +84,50 @@ pipeline {
                     if (branch.startsWith('dev-')) {
                         echo "Building for development environment for ${branch}"
 
-                        sh "docker build . --file Dockerfile -t registry.cn-hangzhou.aliyuncs.com/findsoft/hep-admin-dev:$ver"
-                        sh "docker push registry.cn-hangzhou.aliyuncs.com/findsoft/hep-admin-dev:$ver"
+                        sh "docker build . --file Dockerfile -t registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-dev:$ver"
+                        sh "docker push registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-dev:$ver"
 
-                        sh 'sshpass -p "$AS_PWD" ssh -o StrictHostKeyChecking=no "$AS_USERNAME"@"$AS_HOST" "mkdir -p $SAAS_PATH/dev"'
-                        sh 'sshpass -p "$AS_PWD" scp -r saas/hep-admin/dev "$AS_USERNAME"@"$AS_HOST":"$SAAS_PATH"'
-                        sh 'sshpass -p "$AS_PWD" ssh "$AS_USERNAME"@"$AS_HOST" "cd $SAAS_PATH/dev;sudo docker login --username=findsoft@dows --password=findsoft123456 registry.cn-hangzhou.aliyuncs.com;docker compose stop && docker compose up -d"'
 
-                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $SAAS_PATH/dev/robot.sh '\"${branch}\"' '\"${gitCommitAuthorName}\"' 'hep-admin' 'dev环境构建、打包、传输成功' 'green'"
+                        sh "sshpass -p $AS_PWD ssh -o StrictHostKeyChecking=no $AS_USERNAME@$AS_HOST mkdir -p $TO_DEV_CD_PATH"
+                        sh "sshpass -p $AS_PWD scp -r $FORM_DEV_CD_PATH $AS_USERNAME@$AS_HOST:$TO_DEV_CD_PATH"
+                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST 'cd $TO_DEV_CD_PATH/admin;$LOGIN_DOCKER;$START_CONTAINER'"
+
+                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_DEV_CD_PATH/admin/robot.sh '\"${branch}\"' '\"${gitCommitAuthorName}\"' 'api-hep-admin' 'DEV环境构建、打包、传输成功' 'green'"
 
                     } else if (branch.startsWith('sit-')) {
                         echo "Building for sit environment for $branch"
 
-                        sh "docker build . --file Dockerfile -t registry.cn-hangzhou.aliyuncs.com/findsoft/hep-admin-sit:$ver"
-                        sh "docker push registry.cn-hangzhou.aliyuncs.com/findsoft/hep-admin-sit:$ver"
+                        sh "docker build . --file Dockerfile -t registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-sit:$ver"
+                        sh "docker push registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-sit:$ver"
 
-                        sh 'sshpass -p "findsoft2022!@#" ssh -o StrictHostKeyChecking=no root@192.168.1.60 "mkdir -p $SAAS_PATH/sit"'
-                        sh "sshpass -p 'findsoft2022!@#' scp -r saas/hep-admin/sit root@192.168.1.60:$SAAS_PATH"
-                        sh 'sshpass -p "findsoft2022!@#" ssh root@192.168.1.60 "cd $SAAS_PATH/sit && docker login --username=findsoft@dows --password=findsoft123456 registry.cn-hangzhou.aliyuncs.com && docker compose stop && docker compose up -d"'
+                        sh "sshpass -p $AS_PWD ssh -o StrictHostKeyChecking=no $AS_USERNAME@$AS_HOST mkdir -p $TO_SIT_CD_PATH"
+                        sh "sshpass -p $AS_PWD scp -r $FORM_SIT_CD_PATH $AS_USERNAME@$AS_HOST:$TO_SIT_CD_PATH"
+                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST 'cd $TO_SIT_CD_PATH/admin;$LOGIN_DOCKER;$START_CONTAINER'"
 
-                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $SAAS_PATH/sit/robot.sh '\"${branch}\"' '\"${gitCommitAuthorName}\"' 'hep-admin' 'sit环境构建、打包、传输成功' 'green'"
+                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_SIT_CD_PATH/admin/robot.sh '\"${branch}\"' '\"${gitCommitAuthorName}\"' 'api-hep-admin' 'SIT环境构建、打包、传输成功' 'green'"
 
                     } else if (branch.startsWith('uat-')) {
                         echo "Building for uat environment for ${branch}"
 
-                        sh "docker build . --file Dockerfile -t registry.cn-hangzhou.aliyuncs.com/findsoft/hep-admin-uat:$ver"
-                        sh "docker push registry.cn-hangzhou.aliyuncs.com/findsoft/hep-admin-uat:$ver"
+                        sh "docker build . --file Dockerfile -t registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-uat:$ver"
+                        sh "docker push registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-uat:$ver"
 
-                        sh 'sshpass -p "findsoft2022!@#" ssh -o StrictHostKeyChecking=no root@192.168.1.60 "mkdir -p $SAAS_PATH/uat"'
-                        sh "sshpass -p 'findsoft2022!@#' scp -r saas/hep-admin/uat root@192.168.1.60:$SAAS_PATH"
-                        sh 'sshpass -p "findsoft2022!@#" ssh root@192.168.1.60 "cd $SAAS_PATH/uat && docker login --username=findsoft@dows --password=findsoft123456 registry.cn-hangzhou.aliyuncs.com && docker compose stop && docker compose up -d"'
+                        sh "sshpass -p $AS_PWD ssh -o StrictHostKeyChecking=no $AS_USERNAME@$AS_HOST mkdir -p $TO_UAT_CD_PATH"
+                        sh "sshpass -p $AS_PWD scp -r $FORM_UAT_CD_PATH $AS_USERNAME@$AS_HOST:$TO_UAT_CD_PATH"
+                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST 'cd $TO_UAT_CD_PATH/admin;$LOGIN_DOCKER;$START_CONTAINER'"
 
-                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $SAAS_PATH/uat/robot.sh '\"${branch}\"' '\"${gitCommitAuthorName}\"' 'hep-admin' 'uat环境构建、打包、传输成功' 'green'"
+                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_UAT_CD_PATH/admin/robot.sh '\"${branch}\"' '\"${gitCommitAuthorName}\"' 'api-hep-admin' 'UAT环境构建、打包、传输成功' 'green'"
                     } else if (branch.startsWith('prd-')){
                         echo "Building for production environment for ${branch}"
 
-                        sh "docker build . --file Dockerfile -t registry.cn-hangzhou.aliyuncs.com/findsoft/hep-admin-prd:$ver"
-                        sh "docker push registry.cn-hangzhou.aliyuncs.com/findsoft/hep-admin-prd:$ver"
+                        sh "docker build . --file Dockerfile -t registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-prd:$ver"
+                        sh "docker push registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-prd:$ver"
 
-                        sh 'sshpass -p "findsoft2022!@#" ssh -o StrictHostKeyChecking=no root@192.168.1.60 "mkdir -p $SAAS_PATH/prd"'
-                        sh "sshpass -p 'findsoft2022!@#' scp -r saas/hep-admin/prd root@192.168.1.60:$SAAS_PATH"
-                        sh 'sshpass -p "findsoft2022!@#" ssh root@192.168.1.60 "cd $SAAS_PATH/prd && docker login --username=findsoft@dows --password=findsoft123456 registry.cn-hangzhou.aliyuncs.com && docker compose stop && docker compose up -d"'
+                        sh "sshpass -p $AS_PWD ssh -o StrictHostKeyChecking=no $AS_USERNAME@$AS_HOST mkdir -p $TO_PRD_CD_PATH"
+                        sh "sshpass -p $AS_PWD scp -r $FORM_PRD_CD_PATH $AS_USERNAME@$AS_HOST:$TO_PRD_CD_PATH"
+                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST 'cd $TO_PRD_CD_PATH/admin;$LOGIN_DOCKER;$START_CONTAINER'"
 
-                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $SAAS_PATH/prd/robot.sh '\"${branch}\"' '\"${gitCommitAuthorName}\"' 'hep-admin' 'prd环境构建、打包、传输成功' 'green'"
+                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_PRD_CD_PATH/admin/robot.sh '\"${branch}\"' '\"${gitCommitAuthorName}\"' 'api-hep-admin' 'PRD环境构建、打包、传输成功' 'green'"
                     }
                 }
             }

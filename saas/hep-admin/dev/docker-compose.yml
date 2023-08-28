@@ -20,6 +20,25 @@ services:
     networks:
       - dev_net
 
+#  h5-hep-user-dev:
+#    image: registry.cn-hangzhou.aliyuncs.com/findsoft/h5-hep-user-dev:1.0.230826
+#    restart: unless-stopped
+#    container_name: h5-hep-user-dev
+#    environment:
+#      - TZ=$TZ
+#      - JVM_OPTS=-server -Xms1024m -Xmx1024m -XX:MaxGCPauseMillis=500 -XX:+UseParallelGC -XX:+HeapDumpBeforeFullGC -XX:HeapDumpPath=/dows/saas/hep-admin/logs/dump
+#      - JAVA_OPTS=-Djasypt.encryptor.password=02700083-9fd9-4b82-a4b4-9177e0560e92 -Dspring.config.location=/dows/saas/hep-admin/configs/ -Dspring.profiles.active=dev
+#      - APM=-javaagent:/dows/paas/apm/skywalking-agent/skywalking-agent.jar -Dskywalking.agent.service_name=hep-admin-dev -Dskywalking.collector.backend_service=192.168.1.60:11800
+#    ports:
+#      - $EHP:8080
+#      - $EWP:80
+#    volumes:
+#      - ./logs:/dows/saas/hep-admin/logs
+#      - /dows/saas/hep-admin/dev/configs:/dows/saas/hep-admin/configs
+#      - /dows/saas/hep-admin/dev/resources:/data/resources/images/hep
+#      - /dows/paas/apm/skywalking-agent-8.16.0:/dows/paas/apm/skywalking-agent
+#    networks:
+#      - dev_net
 networks:
   dev_net:
     # 使用外部指定的网络，为 true 就标识网络必须存在
