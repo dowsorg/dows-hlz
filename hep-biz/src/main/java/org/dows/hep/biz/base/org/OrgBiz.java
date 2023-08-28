@@ -151,7 +151,9 @@ public class OrgBiz {
         UserInstanceResponse userInstance = userInstanceApi.getUserInstanceByUserId(accountUser.getUserId());
         Boolean flag2 = accountGroupInfoApi.updateAccountGroupInfo(AccountGroupInfoRequest.builder()
                 .orgId(request.getOrgId())
+                .orgName(request.getOrgName())
                 .descr(request.getDescr())
+                .groupInfoName(request.getOrgName())
                 .owner(userInstance.getName())
                 .accountId(accountId)
                 .userId(userInstance.getUserId())
