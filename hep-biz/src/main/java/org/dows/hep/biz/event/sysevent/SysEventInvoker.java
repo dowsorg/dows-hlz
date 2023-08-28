@@ -94,11 +94,12 @@ public class SysEventInvoker {
         }
         List<ExperimentSysEventEntity> rowsSave=new ArrayList<>();
         for (SysEventRow item : todoEvents) {
-           if(null!=item.getEntity().getTriggeringTime()){
-               continue;
-           }
-           item.setTriggeringTime(ShareUtil.XDate.localDT4Date(triggeringTime));
-           rowsSave.add(item.getEntity());
+            if (null != item.getEntity().getTriggeringTime()) {
+                continue;
+            }
+            item.getEntity().setTriggeringTime(triggeringTime);
+            item.setTriggeringTime(ShareUtil.XDate.localDT4Date(triggeringTime));
+            rowsSave.add(item.getEntity());
         }
         if(ShareUtil.XObject.isEmpty(rowsSave)){
             return true;
@@ -254,7 +255,7 @@ public class SysEventInvoker {
         String str=String.format("%s.%s@%s[%s] %s", this.getClass().getName(), func, LocalDateTime.now(),this.hashCode(),
                 String.format(Optional.ofNullable(msg).orElse(""), args));
         log.error(str,ex);
-        log.info(str);
+        //log.info(str);
     }
     protected void logInfo(String func, String msg,Object... args) {
         String str = String.format("%s.%s@%s[%s] %s", this.getClass().getName(), func, LocalDateTime.now(),this.hashCode(),
