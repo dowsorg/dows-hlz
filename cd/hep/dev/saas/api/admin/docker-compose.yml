@@ -18,8 +18,10 @@ services:
       - ./resources:/data/resources/images/hep
       #- /dows/paas/apm/skywalking-agent-8.16.0:/dows/paas/apm/skywalking-agent
     networks:
-      dev_net:
-        ipv4_address: 172.18.0.6
+      - dev_net
+#    networks:
+#      dev_net:
+#        ipv4_address: 172.18.0.6
 
 networks:
   dev_net:

@@ -18,8 +18,10 @@ services:
       - ./resources:/data/resources/images/hep
       - /dows/paas/apm/skywalking-agent-8.16.0:/dows/paas/apm/skywalking-agent
     networks:
-      prd_net:
-        ipv4_address: 172.18.0.6
+      - prd_net
+#    networks:
+#      prd_net:
+#        ipv4_address: 172.18.0.6
 
 networks:
   prd_net:
