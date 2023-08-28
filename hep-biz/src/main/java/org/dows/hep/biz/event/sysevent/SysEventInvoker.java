@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author : wuzl
@@ -55,8 +56,8 @@ public class SysEventInvoker {
      * @param exptId
      * @return
      */
-    public boolean dealExperimentReady(String appId,String exptId){
-        return manualDeal(EnumSysEventDealType.EXPERIMENTReady,appId,exptId,null, null, null);
+    public void dealExperimentReady(String appId,String exptId){
+        manualDealAysnc(EnumSysEventDealType.EXPERIMENTReady,appId,exptId,null, null, null);
     }
 
     /**
@@ -111,6 +112,7 @@ public class SysEventInvoker {
         return true;
     }
 
+
     /**
      * 手动处理事件
      * @param dealType 处理类型
@@ -121,6 +123,9 @@ public class SysEventInvoker {
      * @param exptPersonId 人物id
      * @return
      */
+    public void manualDealAysnc(EnumSysEventDealType dealType, String appId,String exptId,Integer period, String exptGroupId,String exptPersonId){
+        CompletableFuture.runAsync(()->manualDeal(dealType,appId,exptId, period,exptGroupId,exptPersonId));
+    }
 
     public boolean manualDeal(EnumSysEventDealType dealType, String appId,String exptId,Integer period, String exptGroupId,String exptPersonId){
         appId= ShareBiz.checkAppId(appId,exptId);
@@ -137,7 +142,7 @@ public class SysEventInvoker {
             return false;
         }
         SysEventCollection eventColl= SysEventCache.Instance().caffineCache().getIfPresent(exptKey);
-        if(ShareUtil.XObject.isEmpty(eventColl.getEventRows()) ){
+        if(ShareUtil.XObject.anyEmpty(eventColl,()->eventColl.getEventRows()) ){
             logError("manualDeal", "emptyEvents expt:%s",exptKey);
             return false;
         }
@@ -176,7 +181,6 @@ public class SysEventInvoker {
                 }
             }
         }
-        SysEventCache.Instance().caffineCache().invalidate(exptKey);
         EventScheduler.Instance().scheduleSysEvent(appId, exptId, 3);
         logInfo("manualDeal", "expt:%s deal:%s period:%s stat:%s",
                 exptKey,dealType,period,stat);
@@ -250,7 +254,7 @@ public class SysEventInvoker {
         String str=String.format("%s.%s@%s[%s] %s", this.getClass().getName(), func, LocalDateTime.now(),this.hashCode(),
                 String.format(Optional.ofNullable(msg).orElse(""), args));
         log.error(str,ex);
-        //log.info(str);
+        log.info(str);
     }
     protected void logInfo(String func, String msg,Object... args) {
         String str = String.format("%s.%s@%s[%s] %s", this.getClass().getName(), func, LocalDateTime.now(),this.hashCode(),

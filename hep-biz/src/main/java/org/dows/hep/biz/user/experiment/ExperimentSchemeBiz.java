@@ -379,26 +379,25 @@ public class ExperimentSchemeBiz {
             long remainingTime = Long.parseLong(schemeDuration.getRemainingTime());
             DateTime endTime = DateUtil.offset(beginTime, DateField.MILLISECOND, (int) remainingTime);
 
-            //保存任务进计时器表，防止重启后服务挂了，一个任务每个实验每一期只能有一条数据
-            ExperimentTaskScheduleEntity taskEntity = ExperimentTaskScheduleEntity.builder()
-                    .experimentTaskTimerId(idGenerator.nextIdStr())
-                    .experimentGroupId(exptGroupId)
-                    .experimentInstanceId(exptInstanceId)
-                    .taskBeanCode(EnumExperimentTask.exptSchemeFinishTask.getDesc())
-                    .taskParams(JSON.toJSONString(ExperimentTaskParamsRequest.builder()
-                            .experimentInstanceId(exptInstanceId)
-                            .experimentGroupId(exptGroupId)
-                            .build()))
-                    .appId("3")
-                    .executeTime(endTime)
-                    .executed(false)
-                    .build();
-            experimentTaskScheduleService.save(taskEntity);
-
             if(ConfigExperimentFlow.SWITCH2SysEvent){
                 //启用新流程
                 SysEventInvoker.Instance().triggeringSchemaGroupEnd(endTime, null, exptInstanceId,exptGroupId);
             }else {
+                //保存任务进计时器表，防止重启后服务挂了，一个任务每个实验每一期只能有一条数据
+                ExperimentTaskScheduleEntity taskEntity = ExperimentTaskScheduleEntity.builder()
+                        .experimentTaskTimerId(idGenerator.nextIdStr())
+                        .experimentGroupId(exptGroupId)
+                        .experimentInstanceId(exptInstanceId)
+                        .taskBeanCode(EnumExperimentTask.exptSchemeFinishTask.getDesc())
+                        .taskParams(JSON.toJSONString(ExperimentTaskParamsRequest.builder()
+                                .experimentInstanceId(exptInstanceId)
+                                .experimentGroupId(exptGroupId)
+                                .build()))
+                        .appId("3")
+                        .executeTime(endTime)
+                        .executed(false)
+                        .build();
+                experimentTaskScheduleService.save(taskEntity);
                 //执行定时任务
                 ExptSchemeFinishTask exptSchemeFinishTask = new ExptSchemeFinishTask(experimentTaskScheduleService, this, exptInstanceId, exptGroupId);
                 taskScheduler.schedule(exptSchemeFinishTask, endTime);

@@ -41,8 +41,8 @@ public class EventDealResult {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("{");
-        sb.append("expt:").append(exptId);
-        sb.append(" succ:").append(succ);
+        sb.append("succ:").append(succ);
+        sb.append(" expt:").append(exptId);
         sb.append(" start:").append(startTime);
         sb.append(" end:").append(endTime);
         sb.append(" nextDeal:").append(nextDeal);
