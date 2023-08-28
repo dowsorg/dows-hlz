@@ -11,8 +11,8 @@ import java.util.stream.Collectors;
 @Getter
 public enum ExptReviewStateEnum {
     NOT_SUBMITTED(0, "未提交"),
-    UNREVIEWED(1, "待审批"),
-    REVIEWED(2, "已审批"),
+    UNREVIEWED(1, "待批阅"),
+    REVIEWED(2, "已批阅"),
     ;
 
     private final Integer code;

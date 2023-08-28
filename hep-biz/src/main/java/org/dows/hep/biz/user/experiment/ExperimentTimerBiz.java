@@ -13,6 +13,8 @@ import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
 import org.dows.hep.api.user.experiment.response.IntervalResponse;
+import org.dows.hep.api.config.ConfigExperimentFlow;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.entity.ExperimentSettingEntity;
@@ -189,8 +191,11 @@ public class ExperimentTimerBiz {
                         intervalResponse.setCountdown(et.getEndTime().getTime() + et.getPeriodInterval() - sct);
                         intervalResponse.setCountdownType(1);
                         sb.append(String.format(" EXPTFLOW-GAP period:%s", et.getPeriod()));
-                        // 发布保险报销事件
-                        applicationEventPublisher.publishEvent(new IntervalEvent(intervalResponse));
+
+                        if(ConfigExperimentFlow.SWITCH2TaskSchedule) {
+                            // 发布保险报销事件
+                            applicationEventPublisher.publishEvent(new IntervalEvent(intervalResponse));
+                        }
                         break;
                     } else {
                         /* runsix:留着打日志使用 */
@@ -327,10 +332,6 @@ public class ExperimentTimerBiz {
     public boolean saveOrUpdateExperimentTimeExperimentState(String experimentInstanceId,
                                                              List<ExperimentTimerEntity> updateExperimentTimerEntities,
                                                              EnumExperimentState enumExperimentState) {
-        boolean b = experimentTimerService.saveOrUpdateBatch(updateExperimentTimerEntities);
-        if (!b) {
-            throw new ExperimentException(" 更新计时器实验状态发生异常！");
-        }
         boolean update = experimentInstanceService.lambdaUpdate()
                 .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
                 .set(ExperimentInstanceEntity::getState, enumExperimentState.getState())
@@ -345,6 +346,13 @@ public class ExperimentTimerBiz {
 
         if (!update1) {
             throw new ExperimentException(" 更新实验参与者实验状态发生异常！");
+        }
+        if(ShareUtil.XObject.isEmpty(updateExperimentTimerEntities)){
+            return true;
+        }
+        boolean b = experimentTimerService.saveOrUpdateBatch(updateExperimentTimerEntities);
+        if (!b) {
+            throw new ExperimentException(" 更新计时器实验状态发生异常！");
         }
         return b;
     }

@@ -116,7 +116,7 @@ public class EventDao extends BaseSubDao<EventService, EventEntity, EventEvalSer
 
     @Transactional(rollbackFor = Exception.class)
     public boolean tranSave(EventEntity lead, List<EventActionEntity> actions, Map<String,List<String>> mapExpressions) {
-        AssertUtil.falseThenThrow(coreTranSave(lead, actions,  defaultUseLogicId))
+        AssertUtil.falseThenThrow(coreTranSave(lead, actions,  true))
                 .throwMessage(failedSaveMessage);
         return indicatorExpressionRefDao.tranUpdateReasonId(mapExpressions);
     }

@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.user.experiment.request.ExperimentScheme1Request;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeAllotRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeRequest;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
  * @folder user-hep/实验方案设计
  * @date 2023年4月23日 上午9:44:34
  */
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @Tag(name = "实验方案设计", description = "实验方案设计")
@@ -39,6 +41,7 @@ public class ExperimentSchemeRest {
     @Operation(summary = "获取方案设计")
     @GetMapping("v1/userExperiment/experimentScheme/getScheme")
     public ExperimentSchemeResponse getScheme(@NotBlank String experimentInstanceId, @NotBlank String experimentGroupId, HttpServletRequest request) {
+        log.info("get scheme begin...");
         String accountId = baseBiz.getAccountId(request);
         return experimentSchemeBiz.getScheme(experimentInstanceId, experimentGroupId, accountId, true);
     }

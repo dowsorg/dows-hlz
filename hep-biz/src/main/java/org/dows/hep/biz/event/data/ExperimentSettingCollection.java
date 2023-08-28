@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.dows.hep.api.enums.EnumExperimentMode;
 import org.dows.hep.biz.cache.ICacheClear;
 import org.dows.hep.biz.util.ShareUtil;
 
@@ -24,17 +25,29 @@ import java.util.Optional;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ExperimentSettingCollection implements ICacheClear {
+    @Schema(title = "appId")
+    private String appId;
     @Schema(title = "实验实例id")
     private String experimentInstanceId;
 
     @Schema(title = "实验模式")
-    private Integer model;
+    private EnumExperimentMode mode;
 
     @Schema(title = "期数")
     private Integer periods;
 
+    @Schema(title = "实验开始时间")
+    private LocalDateTime experimentStartTime;
+
+
+    @Schema(title = "方案设计时长")
+    private Long schemaDurationMinutes;
+
+    @Schema(title = "方案截止时间")
+    private LocalDateTime schemaEndTime;
+
     @Schema(title = "沙盒开始时间")
-    private LocalDateTime startTime;
+    private LocalDateTime sandStartTime;
 
     @Schema(title = "初始沙盒结束秒数")
     private int rawEndSeconds;
@@ -49,8 +62,15 @@ public class ExperimentSettingCollection implements ICacheClear {
     @Schema(title = "时间线")
     private RangeMap<Integer,Integer> mapPeriodSeconds;
 
+    public boolean hasSchemaMode(){
+        return mode ==EnumExperimentMode.SCHEME;
+    }
+    public boolean hasSandMode(){
+        return mode ==EnumExperimentMode.SAND;
+    }
+
     public LocalDateTime getRawEndTime(){
-        return Optional.ofNullable(getStartTime())
+        return Optional.ofNullable(getSandStartTime())
                 .map(i->i.plusSeconds(rawEndSeconds))
                 .orElse(null);
     }

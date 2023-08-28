@@ -213,10 +213,14 @@ public class HepClientManager {
     public static void broadcastSysMsg(int code, String room, Object mess) {
         try {
             rwLock.readLock().lock();
+            ConcurrentMap<Channel, AccountInfo> map= ONLINE_ACCOUNT.get(room);
+            if(null==map||map.size()==0){
+                return;
+            }
             // 获取所有的通道发送数据
-            Set<Channel> keySet = ONLINE_ACCOUNT.get(room).keySet();
+            Set<Channel> keySet = map.keySet();
             for (Channel ch : keySet) {
-                AccountInfo accountInfo = ONLINE_ACCOUNT.get(room).get(ch);
+                AccountInfo accountInfo = map.get(ch);
                 if (accountInfo == null) {
                     continue;
                 }

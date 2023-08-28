@@ -307,7 +307,6 @@ public class ExperimentManageBiz {
 
         // 发布实验init事件
         applicationEventPublisher.publishEvent(new InitializeEvent(experimentGroupSettingRequest));
-
         return true;
     }
 

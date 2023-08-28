@@ -56,6 +56,7 @@ public class ExperimentIndicatorViewPhysicalExamRsBiz {
           if (Objects.isNull(firstPhysicalExamTabRsResponse)) {
             firstPhysicalExamTabRsResponse = FirstPhysicalExamTabRsResponse
                 .builder()
+                .id(experimentIndicatorViewPhysicalExamRsEntity.getId())
                 .indicatorCategoryId(indicatorCategoryId)
                 .indicatorCategoryName(indicatorCategoryName)
                 .indicatorCategoryDt(indicatorCategoryDt)
@@ -71,7 +72,7 @@ public class ExperimentIndicatorViewPhysicalExamRsBiz {
           kIndicatorCategoryIdVFirstPhysicalExamTabRsResponseMap.put(indicatorCategoryId, firstPhysicalExamTabRsResponse);
         });
     return kIndicatorCategoryIdVFirstPhysicalExamTabRsResponseMap.values().stream()
-        .sorted(Comparator.comparingLong(firstPhysicalExamTabRsResponse -> firstPhysicalExamTabRsResponse.getIndicatorCategoryDt().getTime()))
+        .sorted(Comparator.comparingLong(firstPhysicalExamTabRsResponse -> firstPhysicalExamTabRsResponse.getId()))
         .collect(Collectors.toList());
   }
 }

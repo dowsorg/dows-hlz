@@ -1,6 +1,7 @@
 package org.dows.hep.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -21,7 +22,8 @@ public class ThreadConfig {
     public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
 
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        int i = Runtime.getRuntime().availableProcessors();
+        //启用新流程用不到该线程池 by wuzl
+        int i = ConfigExperimentFlow.SWITCH2TaskSchedule?Runtime.getRuntime().availableProcessors():1;
         //核心线程数目
         executor.setCorePoolSize(i * 2);
         //指定最大线程数
