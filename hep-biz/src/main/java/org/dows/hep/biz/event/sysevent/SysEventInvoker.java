@@ -106,6 +106,7 @@ public class SysEventInvoker {
             logError("manulTriggering", "failSave time:%s expt:%s deal:%s period:%s group:%s person:%s",
                     triggeringTime.getTime(),exptKey,dealType,period,exptGroupId,exptPersonId);
         }
+        SysEventCache.Instance().caffineCache().invalidate(exptKey);
         EventScheduler.Instance().scheduleSysEvent(appId, exptId, 3);
         return true;
     }
@@ -175,6 +176,7 @@ public class SysEventInvoker {
                 }
             }
         }
+        SysEventCache.Instance().caffineCache().invalidate(exptKey);
         EventScheduler.Instance().scheduleSysEvent(appId, exptId, 3);
         logInfo("manualDeal", "expt:%s deal:%s period:%s stat:%s",
                 exptKey,dealType,period,stat);
