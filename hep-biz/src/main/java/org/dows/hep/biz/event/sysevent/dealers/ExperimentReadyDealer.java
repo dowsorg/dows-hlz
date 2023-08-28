@@ -62,6 +62,7 @@ public class ExperimentReadyDealer extends BaseEventDealer {
             Map<Integer, ExperimentTimerEntity> mapTimers = experimentTimerDao.getMapByExperimentId(appId, experimentInstanceId, null,
                     ExperimentTimerEntity::getId,
                     ExperimentTimerEntity::getExperimentTimerId,
+                    ExperimentTimerEntity::getPeriod,
                     ExperimentTimerEntity::getStartTime,
                     ExperimentTimerEntity::getEndTime,
                     ExperimentTimerEntity::getPauseTime,
