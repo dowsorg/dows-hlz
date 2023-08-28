@@ -164,9 +164,9 @@ public class OrgBiz {
                         .id(group.getId())
                         .orgId(request.getOrgId())
                         .orgName(request.getOrgName())
-//                        .accountId(accountId)
-//                        .accountName(accountInstance.getAccountName())
-//                        .userId(userInstance.getUserId())
+                        .accountId(group.getAccountId())
+                        .accountName(group.getAccountName())
+                        .userId(group.getUserId())
                         .build());
             });
         }
