@@ -5,7 +5,7 @@ oss:
     secret-key: hB5WNBPnlSrsMq8cWFMt52yS5XfC3iAf9JAoi4UJ
     bucket-name: hep
     base-path: report
-    endpoint: http://minio-prd:9000
+    endpoint: http://139.186.208.204:9002
     slice-config:
       task-num: 8
       part-size: 104857604 # 1024*1024*100

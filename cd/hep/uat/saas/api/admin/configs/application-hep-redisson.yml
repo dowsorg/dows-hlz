@@ -98,7 +98,8 @@ spring:
           retryInterval: 1500
           subscriptionsPerConnection: 5
           clientName: null
-          address: redis://redis-prd:6379
+          address: redis://192.168.1.60:6399
+          password: findsoft_redis7
           subscriptionConnectionMinimumIdleSize: 1
           subscriptionConnectionPoolSize: 50
           connectionMinimumIdleSize: 32

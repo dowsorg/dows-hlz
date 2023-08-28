@@ -18,7 +18,7 @@ server:
 
 spring:
     application:
-        name: dows-hep
+        name: hep-admin
     profiles:
         include: hep-mysql,hep-mybatis,hep-mvc,hep-oss,hep-apidoc,hep-redisson,hep-findsoft,hep-websocket
         active: prd
