@@ -1,0 +1,6 @@
+snowflake:
+  initialTimestamp: 1604383611644L
+  workerIdBits: 5L
+  dataCenterIdBits: 5L
+  workerId: 1L
+  dataCenterId: 1L
