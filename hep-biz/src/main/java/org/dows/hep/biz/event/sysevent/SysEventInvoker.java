@@ -74,43 +74,54 @@ public class SysEventInvoker {
      */
 
     public boolean manulTriggering(Date triggeringTime,EnumSysEventDealType dealType, String appId,String exptId,Integer period, String exptGroupId,String exptPersonId){
-        appId= ShareBiz.checkAppId(appId,exptId);
-        final ExperimentCacheKey exptKey=ExperimentCacheKey.create(appId, exptId);
-        ExperimentSettingCollection exptColl= ExperimentSettingCache.Instance().getSet(exptKey,true);
-        if(ShareUtil.XObject.anyEmpty(exptColl,()->exptColl.getMode())){
-            logError("manulTriggering", "missSetting expt:%s",exptKey);
-            return false;
-        }
-        SysEventCollection eventColl= SysEventCache.Instance().caffineCache().getIfPresent(exptKey);
-        if(ShareUtil.XObject.anyEmpty(eventColl,()-> eventColl.getEventRows()) ){
-            logError("manulTriggering", "emptyEvents expt:%s",exptKey);
-            return false;
-        }
-        List<SysEventRow> todoEvents= filterEvents(eventColl,dealType,period,exptGroupId,exptPersonId);
-        if(ShareUtil.XObject.isEmpty(todoEvents)){
-            logError("manulTriggering", "missEvents expt:%s deal:%s period:%s group:%s person:%s",
-                    exptKey,dealType,period,exptGroupId,exptPersonId);
-            return false;
-        }
-        List<ExperimentSysEventEntity> rowsSave=new ArrayList<>();
-        for (SysEventRow item : todoEvents) {
-           if(null!=item.getEntity().getTriggeringTime()){
-               continue;
-           }
-           item.getEntity().setTriggeringTime(triggeringTime);
-           item.setTriggeringTime(ShareUtil.XDate.localDT4Date(triggeringTime));
-           rowsSave.add(item.getEntity());
-        }
-        if(ShareUtil.XObject.isEmpty(rowsSave)){
+        StringBuilder sb=new StringBuilder();
+        try {
+            sb.append(" exptId:").append(exptId);
+            sb.append(" deal:").append(dealType);
+            sb.append(" triggering:").append(ShareUtil.XDate.localDT4Date(triggeringTime));
+            appId = ShareBiz.checkAppId(appId, exptId);
+            final ExperimentCacheKey exptKey = ExperimentCacheKey.create(appId, exptId);
+            ExperimentSettingCollection exptColl = ExperimentSettingCache.Instance().getSet(exptKey, true);
+            if (ShareUtil.XObject.anyEmpty(exptColl, () -> exptColl.getMode())) {
+                logError("manulTriggering", "missSetting expt:%s", exptKey);
+                return false;
+            }
+            SysEventCollection eventColl = SysEventCache.Instance().caffineCache().getIfPresent(exptKey);
+            if (ShareUtil.XObject.anyEmpty(eventColl, () -> eventColl.getEventRows())) {
+                logError("manulTriggering", "emptyEvents expt:%s", exptKey);
+                return false;
+            }
+            List<SysEventRow> todoEvents = filterEvents(eventColl, dealType, period, exptGroupId, exptPersonId);
+            if (ShareUtil.XObject.isEmpty(todoEvents)) {
+                logError("manulTriggering", "missEvents expt:%s deal:%s period:%s group:%s person:%s",
+                        exptKey, dealType, period, exptGroupId, exptPersonId);
+                return false;
+            }
+            List<ExperimentSysEventEntity> rowsSave = new ArrayList<>();
+            for (SysEventRow item : todoEvents) {
+                if (null != item.getEntity().getTriggeringTime()) {
+                    continue;
+                }
+                item.getEntity().setTriggeringTime(triggeringTime);
+                item.setTriggeringTime(ShareUtil.XDate.localDT4Date(triggeringTime));
+                rowsSave.add(item.getEntity());
+            }
+            if (ShareUtil.XObject.isEmpty(rowsSave)) {
+                return true;
+            }
+            if (!experimentSysEventDao.saveOrUpdateBatch(rowsSave, false, true)) {
+                logError("manulTriggering", "failSave time:%s expt:%s deal:%s period:%s group:%s person:%s",
+                        triggeringTime.getTime(), exptKey, dealType, period, exptGroupId, exptPersonId);
+            }
+            SysEventCache.Instance().caffineCache().invalidate(exptKey);
+            EventScheduler.Instance().scheduleSysEvent(appId, exptId, 3);
             return true;
+        }catch (Exception ex){
+            sb.append(" error:").append(ex.getMessage());
+            throw ex;
+        }finally {
+            logInfo("manulTriggering", sb.toString());
         }
-        if(!experimentSysEventDao.saveOrUpdateBatch(rowsSave,false,true)){
-            logError("manulTriggering", "failSave time:%s expt:%s deal:%s period:%s group:%s person:%s",
-                    triggeringTime.getTime(),exptKey,dealType,period,exptGroupId,exptPersonId);
-        }
-        SysEventCache.Instance().caffineCache().invalidate(exptKey);
-        EventScheduler.Instance().scheduleSysEvent(appId, exptId, 3);
-        return true;
     }
 
 
