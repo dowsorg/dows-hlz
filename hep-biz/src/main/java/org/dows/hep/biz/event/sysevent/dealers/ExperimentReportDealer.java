@@ -67,8 +67,11 @@ public class ExperimentReportDealer extends BaseEventDealer {
 
     @Override
     public List<ExperimentSysEventEntity> buildEvents(ExperimentSettingCollection exptColl) {
-        return List.of(buildEvent(exptColl,exptColl.getPeriods(),
-                EnumSysEventDealType.EXPERIMENTReport.getCode(),
-                EnumSysEventTriggerType.EXPERIMENTReport.getCode()));
+        if(exptColl.hasSandMode()) {
+            return List.of(buildEvent(exptColl, exptColl.getPeriods(),
+                    EnumSysEventDealType.EXPERIMENTReport.getCode(),
+                    EnumSysEventTriggerType.EXPERIMENTReport.getCode()));
+        }
+        return null;
     }
 }

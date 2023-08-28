@@ -45,7 +45,7 @@ public class ScheduleConfig implements SchedulingConfigurer {
     public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
         ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
         //启用新流程用不到该线程池 by wuzl
-        taskScheduler.setPoolSize(ConfigExperimentFlow.SWITCH2TaskSchedule ? 30 : 1);
+        taskScheduler.setPoolSize(ConfigExperimentFlow.SWITCH2TaskSchedule ? 30 : 5);
         taskScheduler.setThreadNamePrefix("hep-taskScheduler-");
         taskScheduler.setWaitForTasksToCompleteOnShutdown(false);
         taskScheduler.setRemoveOnCancelPolicy(true);

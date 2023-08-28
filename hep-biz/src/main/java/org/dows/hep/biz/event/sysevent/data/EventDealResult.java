@@ -31,8 +31,9 @@ public class EventDealResult {
         }
         if (ShareUtil.XObject.isEmpty(args)) {
             msg.append(txt);
+        }else {
+            msg.append(String.format(txt, args));
         }
-        msg.append(String.format(txt, args));
         return this;
     }
 

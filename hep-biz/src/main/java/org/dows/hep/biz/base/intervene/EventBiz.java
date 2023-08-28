@@ -116,7 +116,7 @@ public class EventBiz{
                     .setCategNamePath(cache.buildCategPath(parent.getCategNamePath(), i.getCategName()));
         });
 
-        eventCategDao.tranSaveBatch(rows);
+        eventCategDao.tranSaveBatch(rows,true,false);
         cache.clear();
         return true;
     }

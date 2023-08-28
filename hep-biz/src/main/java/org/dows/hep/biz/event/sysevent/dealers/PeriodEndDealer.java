@@ -12,7 +12,6 @@ import org.dows.hep.biz.event.sysevent.BaseEventDealer;
 import org.dows.hep.biz.event.sysevent.data.*;
 import org.dows.hep.biz.user.experiment.ExperimentQuestionnaireBiz;
 import org.dows.hep.biz.user.experiment.ExperimentQuestionnaireScoreBiz;
-import org.dows.hep.biz.user.person.PersonStatiscBiz;
 import org.dows.hep.entity.ExperimentSysEventEntity;
 import org.dows.hep.websocket.HepClientManager;
 import org.dows.hep.websocket.proto.MessageBody;
@@ -23,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
 
 /**
  * @author : wuzl
@@ -34,7 +32,6 @@ import java.util.concurrent.ExecutionException;
 @RequiredArgsConstructor
 public class PeriodEndDealer extends BaseEventDealer {
 
-    private final PersonStatiscBiz personStatiscBiz;
     private final ExperimentQuestionnaireBiz experimentQuestionnaireBiz;
     private final ExperimentQuestionnaireScoreBiz experimentQuestionnaireScoreBiz;
 
@@ -67,8 +64,9 @@ public class PeriodEndDealer extends BaseEventDealer {
                     .periods(period)
                     .build());
 
-        } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e);
+        } catch (Exception ex) {
+            rst.append("calcError:%s", ex.getMessage());
+            return false;
         }
 
         MessageBody messageBody = new MessageBody<>();

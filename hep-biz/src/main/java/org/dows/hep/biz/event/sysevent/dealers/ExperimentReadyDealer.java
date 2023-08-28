@@ -37,10 +37,7 @@ import java.util.concurrent.ConcurrentMap;
 @RequiredArgsConstructor
 public class ExperimentReadyDealer extends BaseEventDealer {
 
-    @Override
-    public boolean breakOnUnreached() {
-        return false;
-    }
+
 
     private final ExperimentTimerBiz experimentTimerBiz;
 
@@ -130,6 +127,9 @@ public class ExperimentReadyDealer extends BaseEventDealer {
 
     @Override
     public List<ExperimentSysEventEntity> buildEvents(ExperimentSettingCollection exptColl) {
+        if(!exptColl.hasSandMode()){
+            return null;
+        }
         return List.of(buildEvent(exptColl,0,
                 EnumSysEventDealType.EXPERIMENTReady.getCode(),
                 EnumSysEventTriggerType.EXPERIMENTReady.getCode()));

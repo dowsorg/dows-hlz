@@ -56,12 +56,25 @@ public class SysEventRow {
         }
         return EnumSysEventState.DEALT.getCode().equals(entity.getState());
     }
+    public boolean tillMaxRetry(){
+        if(null==entity||dealType==EnumSysEventDealType.NONE){
+            return false;
+        }
+        return dealType.getDealer().maxRetryTimes()>0
+                &&this.retryTimes.get()>=dealType.getDealer().maxRetryTimes();
+    }
+    public boolean isTriggering(){
+        if(null==entity){
+            return false;
+        }
+        return null == entity.getTriggeringTime()||null==entity.getTriggeredTime();
+    }
     public boolean canTrigger(LocalDateTime now,boolean repeatFlag) {
         if (null == entity) {
             return false;
         }
-        if (!repeatFlag && null != entity.getTriggeredTime()) {
-            return false;
+        if(null!=entity.getTriggeredTime()){
+            return repeatFlag;
         }
         return null != this.triggeringTime && this.triggeringTime.compareTo(now) <= 0;
     }

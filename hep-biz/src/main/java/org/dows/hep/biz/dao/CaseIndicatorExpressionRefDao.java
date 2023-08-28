@@ -86,7 +86,7 @@ public class CaseIndicatorExpressionRefDao extends BaseDao<CaseIndicatorExpressi
 
     @Transactional(rollbackFor = Exception.class)
     public boolean tranSaveBatch(List<CaseIndicatorExpressionRefEntity> expressionRefs, List<CaseIndicatorExpressionEntity> expressions, List<CaseIndicatorExpressionItemEntity> expressionItems) {
-        this.saveOrUpdateBatch(expressionRefs,defaultUseLogicId,true);
+        this.saveOrUpdateBatch(expressionRefs,true,true);
         caseIndicatorExpressionDao.tranSaveBatch(expressions,expressionItems,true);
         return true;
     }

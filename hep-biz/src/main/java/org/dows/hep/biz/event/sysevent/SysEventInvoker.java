@@ -102,7 +102,7 @@ public class SysEventInvoker {
         if(ShareUtil.XObject.isEmpty(rowsSave)){
             return true;
         }
-        if(!experimentSysEventDao.tranSaveBatch(rowsSave)){
+        if(!experimentSysEventDao.saveOrUpdateBatch(rowsSave,false,true)){
             logError("manulTriggering", "failSave time:%s expt:%s deal:%s period:%s group:%s person:%s",
                     triggeringTime.getTime(),exptKey,dealType,period,exptGroupId,exptPersonId);
         }
@@ -159,6 +159,9 @@ public class SysEventInvoker {
                 continue;
             }
             stat.todoCounter.incrementAndGet();
+            if(null==item.getTriggeringTime()){
+                item.setTrigging(stat.curTimePoint.get());
+            }
             if(null==item.getTriggeredTime()) {
                 item.setTriggerd(stat.curTimePoint.get());
             }
@@ -172,9 +175,7 @@ public class SysEventInvoker {
                 }
             }
         }
-        if(stat.doneCounter.get()>0){
-            EventScheduler.Instance().scheduleSysEvent(appId, exptId, 3);
-        }
+        EventScheduler.Instance().scheduleSysEvent(appId, exptId, 3);
         logInfo("manualDeal", "expt:%s deal:%s period:%s stat:%s",
                 exptKey,dealType,period,stat);
         return stat.failCounter.get()==0;

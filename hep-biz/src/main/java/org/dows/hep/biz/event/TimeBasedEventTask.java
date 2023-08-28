@@ -141,7 +141,7 @@ public class TimeBasedEventTask extends BaseEventTask  {
                 groups.forEach(i -> {
                     if(i.getRetryTimes().incrementAndGet()>=MAXRetry){
                         eventColl.removeGroup(i);
-                        experimentKey.getMaxRetry().incrementAndGet();
+                        experimentKey.getRetryTimes().incrementAndGet();
                         logError("runEventGroup", "maxRetry.  eventIds:%s",
                                 String.join(",", ShareUtil.XCollection.map(i.getEventItems(), ExperimentEventEntity::getExperimentEventId)));
                     }
@@ -179,8 +179,8 @@ public class TimeBasedEventTask extends BaseEventTask  {
     }
     void raiseScheduler(LocalDateTime nextTime,boolean resetRetry,boolean incrRetry) {
         if(resetRetry){
-            experimentKey.getMaxRetry().set(0);
-        } else if ((incrRetry? experimentKey.getMaxRetry().incrementAndGet():experimentKey.getMaxRetry().get()) >= MAXRetry) {
+            experimentKey.getRetryTimes().set(0);
+        } else if ((incrRetry? experimentKey.getRetryTimes().incrementAndGet():experimentKey.getRetryTimes().get()) >= MAXRetry) {
             logError("raiseScheduler", "maxRetry");
             return;
         }

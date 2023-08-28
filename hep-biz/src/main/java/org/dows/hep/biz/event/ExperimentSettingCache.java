@@ -181,10 +181,9 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
         ExperimentTimerEntity curTimer=null;
         for(ExperimentTimerEntity item:mapTimer.values()){
             if(nowTs<item.getStartTime().getTime()){
-                continue;
+                break;
             }
             curTimer=item;
-            break;
         }
 
         AssertUtil.getNotNull(curTimer).orElseThrow("getTimePointByRealTime-未找到当前实验计时器");
