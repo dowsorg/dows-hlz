@@ -97,6 +97,7 @@ public class SysEventInvoker {
            if(null!=item.getEntity().getTriggeringTime()){
                continue;
            }
+           item.getEntity().setTriggeringTime(triggeringTime);
            item.setTriggeringTime(ShareUtil.XDate.localDT4Date(triggeringTime));
            rowsSave.add(item.getEntity());
         }
