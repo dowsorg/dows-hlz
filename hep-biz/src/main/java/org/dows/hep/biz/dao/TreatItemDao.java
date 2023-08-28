@@ -102,7 +102,7 @@ public class TreatItemDao extends BaseSubDao<TreatItemService,TreatItemEntity,Tr
 
     @Transactional(rollbackFor = Exception.class)
     public boolean tranSaveWithExpressions(TreatItemEntity lead, List<String> expressionIds){
-        AssertUtil.falseThenThrow(coreTranSave(lead,null,false, defaultUseLogicId))
+        AssertUtil.falseThenThrow(coreTranSave(lead,null,false, true))
                 .throwMessage(failedSaveMessage );
 
         return indicatorExpressionRefDao.tranUpdateReasonId(lead.getTreatItemId(),expressionIds);

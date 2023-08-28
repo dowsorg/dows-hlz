@@ -2,10 +2,10 @@ package org.dows.hep.biz.event;
 
 import cn.hutool.core.date.DateUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.enums.EnumExperimentMode;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.biz.dao.ExperimentInstanceDao;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
-import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
@@ -14,7 +14,9 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author : wuzl
@@ -28,7 +30,9 @@ public class EventStarter implements ApplicationListener<ApplicationStartedEvent
     public static EventStarter Instance(){
         return s_instnace;
     }
-    private final static long DELAYSeconds=180;
+    private final static long DELAYSeconds4UserEvent =180;
+
+    private final static long DELAYSeconds4SysEvent=30;
 
     private EventStarter(){
         s_instnace=this;
@@ -43,24 +47,35 @@ public class EventStarter implements ApplicationListener<ApplicationStartedEvent
         if(startedFlag){
             return;
         }
-        int cnt=0;
+        final Set<String> sysIds=new HashSet<>();
+        final Set<String> userIds=new HashSet<>();
         try {
-            List<ExperimentInstanceEntity> rowsExperiment = experimentInstanceDao.getRunningExperiment4Sand(
-                    null, EnumExperimentState.ONGOING.getState(), EnumExperimentState.SUSPEND.getState(),
-                    DateUtil.offsetDay(new Date(),-5).toJdkDate(),
+            List<ExperimentInstanceEntity> rowsExperiment = experimentInstanceDao.getRunningExperiment(
+                    null, EnumExperimentState.UNBEGIN.getState(),  EnumExperimentState.SUSPEND.getState(),
+                    DateUtil.offsetDay(new Date(),-2).toJdkDate(),
                     ExperimentInstanceEntity::getAppId,
                     ExperimentInstanceEntity::getExperimentInstanceId,
+                    ExperimentInstanceEntity::getModel,
                     ExperimentInstanceEntity::getState);
-            cnt= rowsExperiment.size();
-            final LocalDateTime nextTime=LocalDateTime.now().plusSeconds(DELAYSeconds);
+            final LocalDateTime nextTime4User=LocalDateTime.now().plusSeconds(DELAYSeconds4UserEvent);
+            final LocalDateTime nextTime4Sys=LocalDateTime.now().plusSeconds(DELAYSeconds4SysEvent);
             rowsExperiment.forEach(i -> {
-                EventScheduler.Instance().scheduleTimeBasedEvent(new ExperimentCacheKey(i.getAppId(), i.getExperimentInstanceId()), nextTime);
+                sysIds.add(i.getExperimentInstanceId());
+                EventScheduler.Instance().scheduleSysEvent(new ExperimentCacheKey(i.getAppId(), i.getExperimentInstanceId()),nextTime4Sys);
+                if(null!=i.getModel() &&i.getModel().equals(EnumExperimentMode.SAND.getCode())
+                    &&i.getState()==EnumExperimentState.ONGOING.getState()){
+                    userIds.add(i.getExperimentInstanceId());
+                    EventScheduler.Instance().scheduleTimeBasedEvent(new ExperimentCacheKey(i.getAppId(), i.getExperimentInstanceId()), nextTime4User);
+                }
             });
-            log.info(String.format("EventStarter.start succ. cnt:%s id:%s",rowsExperiment.size(),
-                    String.join(",", ShareUtil.XCollection.map(rowsExperiment, ExperimentInstanceEntity::getExperimentInstanceId))));
+            log.info(String.format("EventStarter.start succ. cntSys:%s cntUser:%s sysIds:%s userIds:%s",
+                    sysIds.size(),userIds.size(),
+                    String.join(",", sysIds),String.join(",", userIds)));
             startedFlag=true;
         }catch (Exception ex){
-            log.error(String.format( "EventStarter.start err. cnt:%s", cnt),ex);
+            log.error(String.format("EventStarter.start error. cntSys:%s cntUser:%s sysIds:%s userIds:%s",
+                    sysIds.size(),userIds.size(),
+                    String.join(",", sysIds),String.join(",", userIds)),ex);
         }
 
     }

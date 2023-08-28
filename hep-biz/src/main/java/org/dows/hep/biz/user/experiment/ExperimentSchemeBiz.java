@@ -12,7 +12,9 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.enums.EnumExperimentTask;
@@ -25,12 +27,14 @@ import org.dows.hep.api.event.source.ExptSchemeSubmittedEventSource;
 import org.dows.hep.api.event.source.ExptSchemeSyncEventSource;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
+import org.dows.hep.api.user.experiment.ExptReviewStateEnum;
 import org.dows.hep.api.user.experiment.ExptSchemeStateEnum;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeAllotRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeItemRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeRequest;
 import org.dows.hep.api.user.experiment.request.ExperimentSchemeSubmitRequest;
 import org.dows.hep.api.user.experiment.response.*;
+import org.dows.hep.biz.event.sysevent.SysEventInvoker;
 import org.dows.hep.biz.request.ExperimentTaskParamsRequest;
 import org.dows.hep.biz.schedule.TaskScheduler;
 import org.dows.hep.biz.task.ExptSchemeFinishTask;
@@ -50,11 +54,13 @@ import java.util.stream.Collectors;
  * @description project descr:实验:实验方案
  * @date 2023年4月23日 上午9:44:34
  */
+@Slf4j
 @AllArgsConstructor
 @Service
 public class ExperimentSchemeBiz {
     private final IdGenerator idGenerator;
     private final ExperimentSchemeService experimentSchemeService;
+    private final ExperimentSchemeScoreService experimentSchemeScoreService;
     private final ExperimentGroupService experimentGroupService;
     private final ExperimentSettingService experimentSettingService;
     private final ExperimentInstanceService experimentInstanceService;
@@ -373,25 +379,29 @@ public class ExperimentSchemeBiz {
             long remainingTime = Long.parseLong(schemeDuration.getRemainingTime());
             DateTime endTime = DateUtil.offset(beginTime, DateField.MILLISECOND, (int) remainingTime);
 
-            //保存任务进计时器表，防止重启后服务挂了，一个任务每个实验每一期只能有一条数据
-            ExperimentTaskScheduleEntity taskEntity = ExperimentTaskScheduleEntity.builder()
-                    .experimentTaskTimerId(idGenerator.nextIdStr())
-                    .experimentGroupId(exptGroupId)
-                    .experimentInstanceId(exptInstanceId)
-                    .taskBeanCode(EnumExperimentTask.exptSchemeFinishTask.getDesc())
-                    .taskParams(JSON.toJSONString(ExperimentTaskParamsRequest.builder()
+            if(ConfigExperimentFlow.SWITCH2SysEvent){
+                //启用新流程
+                SysEventInvoker.Instance().triggeringSchemaGroupEnd(endTime, null, exptInstanceId,exptGroupId);
+            }else {
+                //保存任务进计时器表，防止重启后服务挂了，一个任务每个实验每一期只能有一条数据
+                ExperimentTaskScheduleEntity taskEntity = ExperimentTaskScheduleEntity.builder()
+                        .experimentTaskTimerId(idGenerator.nextIdStr())
+                        .experimentGroupId(exptGroupId)
+                        .experimentInstanceId(exptInstanceId)
+                        .taskBeanCode(EnumExperimentTask.exptSchemeFinishTask.getDesc())
+                        .taskParams(JSON.toJSONString(ExperimentTaskParamsRequest.builder()
                                 .experimentInstanceId(exptInstanceId)
                                 .experimentGroupId(exptGroupId)
                                 .build()))
-                    .appId("3")
-                    .executeTime(endTime)
-                    .executed(false)
-                    .build();
-            experimentTaskScheduleService.save(taskEntity);
-
-            //执行定时任务
-            ExptSchemeFinishTask exptSchemeFinishTask = new ExptSchemeFinishTask(experimentTaskScheduleService, this, exptInstanceId, exptGroupId);
-            taskScheduler.schedule(exptSchemeFinishTask, endTime);
+                        .appId("3")
+                        .executeTime(endTime)
+                        .executed(false)
+                        .build();
+                experimentTaskScheduleService.save(taskEntity);
+                //执行定时任务
+                ExptSchemeFinishTask exptSchemeFinishTask = new ExptSchemeFinishTask(experimentTaskScheduleService, this, exptInstanceId, exptGroupId);
+                taskScheduler.schedule(exptSchemeFinishTask, endTime);
+            }
         });
     }
 
@@ -425,10 +435,25 @@ public class ExperimentSchemeBiz {
             throw new BizException("方案设计截止时间提交时，实验ID数据异常");
         }
 
+        // 更新方案设计状态
         boolean res1 = experimentSchemeService.lambdaUpdate()
                 .eq(ExperimentSchemeEntity::getExperimentInstanceId, exptInstanceId)
                 .set(ExperimentSchemeEntity::getState, ExptSchemeStateEnum.SUBMITTED.getCode()) // 1-已提交
                 .update();
+
+        // 更新方案设计评分表状态
+        List<ExperimentSchemeEntity> schemeList = experimentSchemeService.lambdaQuery()
+                .eq(ExperimentSchemeEntity::getExperimentInstanceId, exptInstanceId)
+                .list();
+        List<String> schemeIdList = schemeList.stream()
+                .map(ExperimentSchemeEntity::getExperimentSchemeId)
+                .toList();
+        experimentSchemeScoreService.lambdaUpdate()
+                .in(ExperimentSchemeScoreEntity::getExperimentSchemeId, schemeIdList)
+                .set(ExperimentSchemeScoreEntity::getReviewState, ExptReviewStateEnum.UNREVIEWED.getCode())
+                .update();
+
+        // 更新实验小组状态或实验状态
         if (containsSandSetting(exptInstanceId)) {
             handleExptAllGroupStatus(exptInstanceId, EnumExperimentGroupStatus.ASSIGN_DEPARTMENT);
         } else {
@@ -436,8 +461,8 @@ public class ExperimentSchemeBiz {
             handleExptStatus(exptInstanceId, EnumExperimentState.FINISH);
         }
 
-        // sync submitted
-        syncSubmittedExptScheme(exptInstanceId);
+        // sync info
+        syncInfo(exptInstanceId);
 
         return res1;
     }
@@ -471,7 +496,7 @@ public class ExperimentSchemeBiz {
         List<ExperimentSchemeEntity> schemeSortedList = schemeList.stream().sorted((v1, v2) -> {
             Float v1Score = v1.getScore() == null ? 0.00f : v1.getScore();
             Float v2Score = v2.getScore() == null ? 0.00f : v2.getScore();
-            return (int) (v1Score - v2Score);
+            return (int) (v2Score - v1Score);
         }).toList();
         // 小组转为map
         Map<String, ExperimentGroupEntity> groupIdMapEntity = groupList.stream()
@@ -492,10 +517,26 @@ public class ExperimentSchemeBiz {
     }
 
     private boolean submitScheme(String exptInstanceId, String exptGroupId, String experimentSchemeId) {
-        boolean res1 = experimentSchemeService.lambdaUpdate()
+        boolean updSchemeRes = experimentSchemeService.lambdaUpdate()
                 .eq(ExperimentSchemeEntity::getExperimentSchemeId, experimentSchemeId)
                 .set(ExperimentSchemeEntity::getState, ExptSchemeStateEnum.SUBMITTED.getCode()) // 1-已提交
                 .update();
+        if (updSchemeRes) {
+            log.info(String.format("提交小组方案设计时，更新方案设计状态成功，实验ID=%s, 小组ID=%s, 方案设计ID=%s", exptInstanceId, exptGroupId, experimentSchemeId));
+        } else {
+            log.info(String.format("提交小组方案设计时，更新方案设计状态失败，实验ID=%s, 小组ID=%s, 方案设计ID=%s", exptInstanceId, exptGroupId, experimentSchemeId));
+        }
+
+        boolean updScoreRes = experimentSchemeScoreService.lambdaUpdate()
+                .eq(ExperimentSchemeScoreEntity::getExperimentSchemeId, experimentSchemeId)
+                .set(ExperimentSchemeScoreEntity::getReviewState, ExptReviewStateEnum.UNREVIEWED.getCode())
+                .update();
+        if (updScoreRes) {
+            log.info(String.format("提交小组方案设计时，更新方案设计评分表状态成功，实验ID=%s, 小组ID=%s, 方案设计ID=%s", exptInstanceId, exptGroupId, experimentSchemeId));
+        } else {
+            log.info(String.format("提交小组方案设计时，更新方案设计评分表状态失败，实验ID=%s, 小组ID=%s, 方案设计ID=%s", exptInstanceId, exptGroupId, experimentSchemeId));
+        }
+
         // 处理小组状态
         if (containsSandSetting(exptInstanceId)) {
             handleGroupStatus(exptGroupId, EnumExperimentGroupStatus.ASSIGN_DEPARTMENT);
@@ -505,7 +546,7 @@ public class ExperimentSchemeBiz {
 
         // sync submitted
         syncSubmittedGroupScheme(exptInstanceId, exptGroupId);
-        return res1;
+        return updSchemeRes && updScoreRes;
     }
 
     private String cannotSubmitAfterSubmit(String experimentInstanceId, String experimentGroupId) {
@@ -761,7 +802,7 @@ public class ExperimentSchemeBiz {
     }
 
     // todo @experimentGroupBiz 提供批量查询方法
-    private void syncSubmittedExptScheme(String experimentInstanceId) {
+    private void syncInfo(String experimentInstanceId) {
         // 获取实验所有小组成员的账号
         List<String> accountIds = new ArrayList<>();
         List<ExperimentGroupResponse> exptGroups = experimentGroupBiz.listGroup(experimentInstanceId);

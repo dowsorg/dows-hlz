@@ -1,0 +1,28 @@
+version: '3'
+services:
+  api-hep-admin-sit:
+    image: registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-sit:$TAG
+    restart: on-failure:3
+    container_name: api-hep-admin-sit
+    environment:
+      - TZ=$TZ
+      - JVM_OPTS=-server -Xms1024m -Xmx1024m
+      - JAVA_OPTS=-Djasypt.encryptor.password=02700083-9fd9-4b82-a4b4-9177e0560e92 -Dspring.config.location=/dows/saas/hep-admin/configs/ -Dspring.profiles.active=sit
+      #- APM=-javaagent:/dows/paas/apm/skywalking-agent/skywalking-agent.jar -Dskywalking.agent.service_name=hep-admin-sit -Dskywalking.collector.backend_service=192.168.1.60:11800
+    ports:
+      - $EHP:8080
+      - $EWP:80
+    volumes:
+      - ./logs:/dows/saas/hep-admin/logs
+      - ./configs:/dows/saas/hep-admin/configs
+      - ./resources:/data/resources/images/hep
+      #- /dows/paas/apm/skywalking-agent-8.16.0:/dows/paas/apm/skywalking-agent
+    networks:
+      - sit_net
+#    networks:
+#      sit_net:
+#        ipv4_address: 172.18.0.6
+
+networks:
+  sit_net:
+    external: true

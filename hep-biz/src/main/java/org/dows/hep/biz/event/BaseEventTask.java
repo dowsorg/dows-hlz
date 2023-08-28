@@ -3,7 +3,9 @@ package org.dows.hep.biz.event;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.api.CrudContextHolder;
 import org.dows.hep.biz.dao.ExperimentEventDao;
+import org.dows.hep.biz.dao.ExperimentInstanceDao;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
+import org.dows.hep.entity.ExperimentInstanceEntity;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -21,8 +23,14 @@ public abstract class BaseEventTask implements Callable<Integer>,Runnable {
     protected final int RUNCode4Silence=0;
     protected final int RUNCode4Succ=1;
 
+    protected final ExperimentInstanceDao experimentInstanceDao;
+
+    protected final ExperimentEventDao experimentEventDao;
+
     protected BaseEventTask(ExperimentCacheKey experimentKey){
         this.experimentKey=experimentKey;
+        experimentInstanceDao= getBean(ExperimentInstanceDao.class);
+        experimentEventDao=getBean(ExperimentEventDao.class);
     }
 
     @Override
@@ -39,21 +47,19 @@ public abstract class BaseEventTask implements Callable<Integer>,Runnable {
 
     public abstract Integer call() throws Exception;
 
-    //region dao
-
-    private ExperimentEventDao experimentEventDao;
-    protected ExperimentEventDao getExperimentEventDao(){
-        if(null==experimentEventDao){
-            experimentEventDao=getDao(ExperimentEventDao.class);
-        }
-        return experimentEventDao;
-    }
-    protected  <T> T getDao(Class<T> clazz){
-        return CrudContextHolder.getBean(clazz);
-    }
-    //endregion
 
     //region tools
+    protected  <T> T getBean(Class<T> clazz){
+        return CrudContextHolder.getBean(clazz);
+    }
+
+    protected Integer loadExperimentState() {
+        return this.experimentInstanceDao.getById(experimentKey.getAppId(), experimentKey.getExperimentInstanceId(),
+                        ExperimentInstanceEntity::getState)
+                .map(ExperimentInstanceEntity::getState)
+                .orElse(null);
+    }
+
     protected void logError(String func, String msg,Object... args){
         logError(null, func,msg,args);
     }

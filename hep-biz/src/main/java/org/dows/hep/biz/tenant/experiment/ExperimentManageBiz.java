@@ -307,7 +307,6 @@ public class ExperimentManageBiz {
 
         // 发布实验init事件
         applicationEventPublisher.publishEvent(new InitializeEvent(experimentGroupSettingRequest));
-
         return true;
     }
 
@@ -534,7 +533,7 @@ public class ExperimentManageBiz {
                 .map(ExperimentInstanceEntity::getExperimentInstanceId)
                 .collect(Collectors.toList());
         if (eids.size() == 0) {
-            return true;
+            return false;
         }
         boolean update1 = experimentInstanceService.lambdaUpdate()
                 .in(ExperimentInstanceEntity::getExperimentInstanceId, eids)

@@ -119,7 +119,7 @@ public class PersonBasedEventTask extends BaseEventTask{
                         return;
                     }
                     eventColl.removeGroup(i);
-                    experimentKey.getMaxRetry().incrementAndGet();
+                    experimentKey.getRetryTimes().incrementAndGet();
                     logError("runEventGroup", "maxRetry.  eventIds:%s",
                             String.join(",", ShareUtil.XCollection.map(i.getEventItems(), ExperimentEventEntity::getExperimentEventId)));
 

@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapp
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.util.ReflectUtil;
+import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.event.ReadyEvent;
 import org.dows.hep.api.exception.ExperimentException;
@@ -17,14 +18,20 @@ import org.dows.hep.api.user.experiment.request.ExperimentParticipatorRequest;
 import org.dows.hep.api.user.experiment.request.ExptQuestionnaireAllotRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
+import org.dows.hep.biz.event.sysevent.SysEventInvoker;
+import org.dows.hep.biz.util.AssertUtil;
+import org.dows.hep.biz.util.RedissonUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -51,6 +58,8 @@ public class ExperimentGroupBiz {
     private final ExperimentOrgService experimentOrgService;
 
     private final ApplicationEventPublisher applicationEventPublisher;
+
+    private final RedissonClient redissonClient;
 
     /**
      * @param
@@ -254,7 +263,7 @@ public class ExperimentGroupBiz {
      * @创建时间: 2023年5月8日 上10:13:07
      */
     @DSTransactional
-    public Boolean allotGroupMembers(List<ExperimentParticipatorRequest> participatorList) {
+    public Boolean allotGroupMembers(List<ExperimentParticipatorRequest> participatorList) throws InterruptedException {
         /**
          * todo 优化一下参数结构@jx
          */
@@ -302,27 +311,47 @@ public class ExperimentGroupBiz {
         if (!b) {
             return false;
         }
-        /**
-         * 查询当前实验所有小组并判断状态
-         */
-        List<ExperimentGroupEntity> list = experimentGroupService.lambdaQuery()
-                .eq(ExperimentGroupEntity::getExperimentInstanceId, experimentInstanceId)
-                .list();
-        List<ExperimentGroupEntity> collect = list.stream()
-                .filter(e -> e.getGroupState() == EnumExperimentGroupStatus.WAIT_ALL_GROUP_ASSIGN.getCode())
-                .collect(Collectors.toList());
+
         /**
          * 分配试卷
          */
         allotQuestion(experimentInstanceId, experimentGroupId);
+
+        RLock lock = redissonClient.getLock(RedissonUtil.getLockName(participatorList.get(0).getAppId(), EnumRedissonLock.EXPT_ALLOT_GROUP_MEMBERS, "", experimentInstanceId));
+        boolean isLocked = lock.tryLock(5, TimeUnit.MILLISECONDS);
+        if(!isLocked){
+            AssertUtil.justThrow("当前操作人数较多，请稍后再试");
+            return false;
+        }
+        try {
+            /**
+             * 查询当前实验所有小组并判断状态
+             */
+            List<ExperimentGroupEntity> list = experimentGroupService.lambdaQuery()
+                    .eq(ExperimentGroupEntity::getExperimentInstanceId, experimentInstanceId)
+                    .select(ExperimentGroupEntity::getGroupState)
+                    .list();
+
+            List<ExperimentGroupEntity> collect = list.stream()
+                    .filter(e -> e.getGroupState() == EnumExperimentGroupStatus.WAIT_ALL_GROUP_ASSIGN.getCode())
+                    .collect(Collectors.toList());
+            if(list.size()!=collect.size()){
+                return true;
+            }
+        }finally {
+            lock.unlock();
+        }
+
+
         /**
          * 所有小组准备完成发布事件，计数小组是否分配到齐，是否都分配好，如果都分配好，发布实验就绪事件
          */
-        if (list.size() == collect.size()) {
+        if(ConfigExperimentFlow.SWITCH2TaskSchedule) {
             applicationEventPublisher.publishEvent(new ReadyEvent(participatorList));
-            return true;
+        }else {
+            SysEventInvoker.Instance().dealExperimentReady(null,experimentInstanceId);
         }
-        return false;
+        return true;
     }
 
     /**

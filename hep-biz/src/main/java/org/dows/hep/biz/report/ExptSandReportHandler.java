@@ -225,6 +225,9 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
 
         // 判断记录中是否有数据
         String reportOfGroup = recordHelper.getReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP);
+
+        /*1.使用旧数据*/
+        // 不重新生成并且旧数据存在 --> 直接返回
         if (!regenerate && StrUtil.isNotBlank(reportOfGroup)) {
             ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
                     .name(fileName)
@@ -236,10 +239,9 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
                     .paths(List.of(reportFile))
                     .build();
         }
-        if (regenerate && StrUtil.isNotBlank(reportOfGroup)) {
-            recordHelper.delReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP);
-        }
 
+
+        /*2.使用新数据*/
         // 生成 pdf 并上传文件
         Path path = Paths.get(SAND_REPORT_HOME_DIR, fileName);
         OssInfo ossInfo = reportPdfHelper.convertAndUpload(pdfVO, schemeFlt, path);

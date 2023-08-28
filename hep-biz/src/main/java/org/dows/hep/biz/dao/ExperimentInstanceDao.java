@@ -45,6 +45,19 @@ public class ExperimentInstanceDao extends BaseDao<ExperimentInstanceService, Ex
         return null;
     }
 
+    public List<ExperimentInstanceEntity> getRunningExperiment(String appId, Integer minState, Integer maxState, Date startTime,
+                                                                    SFunction<ExperimentInstanceEntity,?>... cols){
+        return service.lambdaQuery()
+                .eq(ShareUtil.XObject.notEmpty(appId),ExperimentInstanceEntity::getAppId,appId)
+                .ge(ShareUtil.XObject.notEmpty(minState), ExperimentInstanceEntity::getState,minState)
+                .le(ShareUtil.XObject.notEmpty(maxState), ExperimentInstanceEntity::getState,maxState)
+                .ge(ShareUtil.XObject.notEmpty(startTime),ExperimentInstanceEntity::getStartTime,startTime )
+                .orderByAsc(ExperimentInstanceEntity::getStartTime)
+                .select(cols)
+                .list();
+
+    }
+
     public List<ExperimentInstanceEntity> getRunningExperiment4Sand(String appId, Integer minState, Integer maxState, Date startTime,
                                                                     SFunction<ExperimentInstanceEntity,?>... cols){
         return service.lambdaQuery()

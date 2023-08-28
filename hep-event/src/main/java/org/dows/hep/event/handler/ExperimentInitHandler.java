@@ -30,6 +30,8 @@ import org.dows.hep.biz.base.indicator.RsCopyBiz;
 import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
 import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.biz.calc.CalcHealthIndexBiz;
+import org.dows.hep.biz.event.EventScheduler;
+import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.biz.request.ExperimentTaskParamsRequest;
 import org.dows.hep.biz.snapshot.SnapshotManager;
 import org.dows.hep.biz.snapshot.SnapshotRequest;
@@ -166,9 +168,18 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
         }
         //复制操作指标和突发事件
         SnapshotManager.Instance().write( new SnapshotRequest(appId,experimentInstanceId), true);
+        if(ConfigExperimentFlow.SWITCH2SysEvent){
+            //启用新流程
+            EventScheduler.Instance().scheduleSysEvent(appId, experimentInstanceId, 1);
+        }
     }
 
     private void setExptSchemeExpireTask(AtomicReference<ExperimentSetting.SchemeSetting> schemeSettingAtomicReference, ExperimentGroupSettingRequest request) {
+        if(ConfigExperimentFlow.SWITCH2SysEvent){
+            //启用新流程
+            return;
+        }
+
         //保存任务进计时器表，防止重启后服务挂了，一个任务每个实验每一期只能有一条数据
         ExperimentSetting.SchemeSetting schemeSetting = schemeSettingAtomicReference.get();
         Date schemeEndTime = schemeSetting.getSchemeEndTime();
@@ -199,6 +210,11 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
      * @param experimentGroupSettingRequest
      */
     public void setExperimentBeginTimerTask(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
+        if(ConfigExperimentFlow.SWITCH2SysEvent){
+            //启用新流程
+            return;
+        }
+
         //保存任务进计时器表，防止重启后服务挂了，一个任务每个实验每一期只能有一条数据
         ExperimentTaskScheduleEntity beginEntity = new ExperimentTaskScheduleEntity();
         ExperimentTaskScheduleEntity beginTaskScheduleEntity = experimentTaskScheduleService.lambdaQuery()

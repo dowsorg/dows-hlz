@@ -12,7 +12,6 @@ import org.dows.hep.entity.MaterialsAttachmentEntity;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -83,7 +82,7 @@ public class OSSBiz {
         String base64 = null;
         try {
             base64 = DatatypeConverter.printBase64Binary(Files.readAllBytes(Paths.get(file)));
-        } catch (IOException e) {
+        } catch (Exception e) {
             return "";
         }
         return base64;

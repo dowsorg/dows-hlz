@@ -123,7 +123,7 @@ public class FoodMaterialDao extends BaseSubDao<FoodMaterialService,FoodMaterial
 
     @Transactional(rollbackFor = Exception.class)
     public boolean tranSaveWithExpressions(FoodMaterialEntity lead, List<FoodMaterialNutrientEntity> nutrients,List<String> expressionIds){
-        AssertUtil.falseThenThrow(coreTranSave(lead,null,nutrients,false, true,defaultUseLogicId))
+        AssertUtil.falseThenThrow(coreTranSave(lead,null,nutrients,false, true,true))
                 .throwMessage(failedSaveMessage );
 
         return indicatorExpressionRefDao.tranUpdateReasonId(lead.getFoodMaterialId(),expressionIds);

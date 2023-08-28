@@ -2,11 +2,12 @@ package org.dows.hep.event;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
-import com.github.dockerjava.api.DockerClient;
+
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.biz.calc.CalculatorDispatcher;
+import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.biz.noticer.PeriodEndNoticer;
 import org.dows.hep.biz.noticer.PeriodStartNoticer;
 import org.dows.hep.biz.schedule.TaskScheduler;
@@ -75,6 +76,8 @@ public class ApplicationRestartedListener implements ApplicationListener<Applica
     @SneakyThrows
     @Override
     public void onApplicationEvent(ApplicationStartedEvent event) {
+
+
         System.setProperty("appName", appName);
         System.setProperty("appEnv", appEnv);
         /*String podIp = new InetUtils(new InetUtilsProperties()).findFirstNonLoopbackHostInfo().getIpAddress();*/
@@ -87,21 +90,23 @@ public class ApplicationRestartedListener implements ApplicationListener<Applica
         log.info("执行任务重启......");
         try {
             hepClientMonitor.start();
-            String appId = "3";
-            Date now = DateUtil.date();
-            // 更新重启时间(当前应用下大于当前时间且未执行的任务)
-            experimentTaskScheduleService.lambdaUpdate()
-                    .set(ExperimentTaskScheduleEntity::getRestartTime, now)
-                    .eq(ExperimentTaskScheduleEntity::getExecuted, false)
-                    .eq(ExperimentTaskScheduleEntity::getAppId, appId)
-                    .gt(ExperimentTaskScheduleEntity::getExecuteTime, now)
-                    .update();
-            ExperimentRestartTask experimentRestartTask = new ExperimentRestartTask(experimentTaskScheduleService, experimentInstanceService,
-                    experimentParticipatorService, experimentTimerService, applicationEventPublisher,
-                    appId, taskScheduler, experimentTimerBiz, calculatorDispatcher, periodStartNoticer, periodEndNoticer, experimentSettingBiz, experimentSchemeBiz);
-            experimentRestartTask.run();
+            if(ConfigExperimentFlow.SWITCH2TaskSchedule) {
+                String appId = "3";
+                Date now = DateUtil.date();
+                // 更新重启时间(当前应用下大于当前时间且未执行的任务)
+                experimentTaskScheduleService.lambdaUpdate()
+                        .set(ExperimentTaskScheduleEntity::getRestartTime, now)
+                        .eq(ExperimentTaskScheduleEntity::getExecuted, false)
+                        .eq(ExperimentTaskScheduleEntity::getAppId, appId)
+                        .gt(ExperimentTaskScheduleEntity::getExecuteTime, now)
+                        .update();
+                ExperimentRestartTask experimentRestartTask = new ExperimentRestartTask(experimentTaskScheduleService, experimentInstanceService,
+                        experimentParticipatorService, experimentTimerService, applicationEventPublisher,
+                        appId, taskScheduler, experimentTimerBiz, calculatorDispatcher, periodStartNoticer, periodEndNoticer, experimentSettingBiz, experimentSchemeBiz);
+                experimentRestartTask.run();
+            }
             log.info("ApplicationRestarted succ.");
-        } catch (Exception ex) {
+        } catch (Exception ex){
             log.error("ApplicationRestarted fail.", ex);
         }
     }

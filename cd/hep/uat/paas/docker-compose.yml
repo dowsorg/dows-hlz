@@ -1,0 +1,89 @@
+version: "3"
+services:
+  mysql-prd:
+    # 指定镜像和版本
+    image: mariadb
+    # 指定容器的名称
+    container_name: mysql-prd
+    restart: always
+    command:
+      --max_connections=1000
+      --character-set-server=utf8mb4
+      --default-authentication-plugin=mysql_native_password
+    environment:
+      TZ: "Asia/Shanghai"
+      MYSQL_ROOT_PASSWORD: "123456"
+    # 容器日志大小配置
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '5g'
+    volumes:
+      # 挂载数据目录
+      - ./mysql/data:/var/lib/mysql:rw
+      # 挂载配置文件目录
+      - ./mysql/conf.d:/etc/mysql/conf.d
+      #- ./dows/hep/hep-mysql-prd/conf:/etc/mysql/conf.d:rw
+    ports:
+      - "13306:3306"
+
+
+  minio-prd:
+    image: minio/minio:latest
+    container_name: minio-prd
+    restart: always
+    volumes:
+      - "./minio/data:/data"
+      - "./minio/minio:/minio"
+      - "./minio/config:/root/.minio"
+    environment:
+      TZ: Asia/Shanghai
+      LANG: en_US.UTF-8
+      MINIO_PROMETHEUS_AUTH_TYPE: "public"
+      MINIO_ACCESS_KEY: "root"
+      MINIO_SECRET_KEY: "password"
+    command: server /data
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+    ports: # 映射端口
+      - "19000:9000"
+      - "12330:42330"
+
+
+  redis-prd:
+    image: redis
+    container_name: redis-prd
+    restart: always
+    privileged: true
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - ./redis/data:/data
+      - ./redis/conf/redis.conf:/etc/redis/redis.conf
+      - ./redis/logs:/logs
+    command: [ "redis-server","/etc/redis/redis.conf" ]
+    ports:
+      - 16379:6379
+
+
+  nginx-prd:
+    image: nginx
+    restart: unless-stopped
+    container_name: nginx-prd
+    ports:
+      - 180:80
+    volumes:
+      - ./nginx/conf:/etc/nginx
+      - ./nginx/cert/:/etc/cert/                   # ssl证书
+      - ./nginx/www/:/usr/share/nginx/html/         # 默认显示的index网页
+      - ./nginx/logs/:/var/log/nginx/               # 日志文件
+
+networks:
+  # 定义上面的服务用到的网络的名称，默认是驱动属于 bridge，自定义的网络名称，在实际中会变为 项目名(或所在文件目录名)
+  default:
+    # 使用外部指定的网络，为 true 就标识网络必须存在
+    external:
+      # docker network create -d bridge 网络名称
+      name: prd_net

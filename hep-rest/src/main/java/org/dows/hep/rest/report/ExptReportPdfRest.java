@@ -6,14 +6,18 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.tenant.experiment.request.ExptAccountReportRequest;
 import org.dows.hep.api.tenant.experiment.request.ExptGroupReportPageRequest;
 import org.dows.hep.api.tenant.experiment.request.ExptReportPageRequest;
 import org.dows.hep.api.tenant.experiment.response.ExptAccountReportResponse;
 import org.dows.hep.api.tenant.experiment.response.ExptGroupReportPageResponse;
 import org.dows.hep.api.tenant.experiment.response.ExptReportPageResponse;
+import org.dows.hep.api.user.experiment.ExptSettingModeEnum;
 import org.dows.hep.biz.report.ExptReportFacadeBiz;
 import org.dows.hep.biz.user.experiment.ExperimentBaseBiz;
+import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
 import org.dows.hep.vo.report.ExptReportVO;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -27,11 +31,13 @@ import java.io.IOException;
  * @description 报告管理-pdf形式
  * @date 2023/7/6 16:38
  **/
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @Tag(name = "pdf报告管理", description = "pdf报告管理")
 public class ExptReportPdfRest {
     private final ExptReportFacadeBiz exptReportFacadeBiz;
+    private final ExperimentSettingBiz experimentSettingBiz;
     private final ExperimentBaseBiz baseBiz;
 
     /**
@@ -99,7 +105,8 @@ public class ExptReportPdfRest {
     @Operation(summary = "导出实验pdf报告")
     @GetMapping(value = "/v1/report/exportExptReport")
     public ExptReportVO exportExptReport(@RequestParam String experimentInstanceId) {
-        return exptReportFacadeBiz.exportExptReport(experimentInstanceId, true);
+        boolean regenerate = regenerate(experimentInstanceId);
+        return exptReportFacadeBiz.exportExptReport(experimentInstanceId, regenerate);
     }
 
     /**
@@ -115,7 +122,8 @@ public class ExptReportPdfRest {
     @Operation(summary = "导出小组实验pdf报告")
     @GetMapping(value = "/v1/report/exportGroupReport")
     public ExptReportVO exportGroupReport(@RequestParam String experimentInstanceId, @RequestParam String experimentGroupId) {
-        return exptReportFacadeBiz.exportGroupReport(experimentInstanceId, experimentGroupId, true);
+        boolean regenerate = regenerate(experimentInstanceId);
+        return exptReportFacadeBiz.exportGroupReport(experimentInstanceId, experimentGroupId, regenerate);
     }
 
     /**
@@ -131,7 +139,8 @@ public class ExptReportPdfRest {
     @GetMapping(value = "/v1/report/exportAccountReport")
     public ExptReportVO exportAccountReport(@RequestParam String experimentInstanceId, HttpServletRequest request) {
         String accountId = baseBiz.getAccountId(request);
-        return exptReportFacadeBiz.exportAccountReport(experimentInstanceId, accountId, true);
+        boolean regenerate = regenerate(experimentInstanceId);
+        return exptReportFacadeBiz.exportAccountReport(experimentInstanceId, accountId, regenerate);
     }
 
     /**
@@ -148,8 +157,14 @@ public class ExptReportPdfRest {
     @GetMapping("v1/report/previewExptReport")
     public void previewExptReport(@RequestParam String experimentInstanceId,
                                   HttpServletRequest request,
-                                  HttpServletResponse response) throws IOException {
-        exptReportFacadeBiz.previewExptReport(experimentInstanceId, request, response);
+                                  HttpServletResponse response) {
+        boolean regenerate = regenerate(experimentInstanceId);
+        try {
+            exptReportFacadeBiz.previewExptReport(experimentInstanceId, regenerate, request, response);
+        } catch (IOException e) {
+            log.error(String.format("预览实验报告时，发生IO异常: %s", e));
+            throw new BizException(String.format("预览实验报告时，发生IO异常: %s", e));
+        }
     }
 
     /**
@@ -168,8 +183,14 @@ public class ExptReportPdfRest {
     public void previewGroupReport(@RequestParam String experimentInstanceId,
                                    @RequestParam String experimentGroupId,
                                    HttpServletRequest request,
-                                   HttpServletResponse response) throws IOException {
-        exptReportFacadeBiz.previewGroupReport(experimentInstanceId, experimentGroupId, request, response);
+                                   HttpServletResponse response) {
+        boolean regenerate = regenerate(experimentInstanceId);
+        try {
+            exptReportFacadeBiz.previewGroupReport(experimentInstanceId, experimentGroupId, regenerate, request, response);
+        } catch (IOException e) {
+            log.error(String.format("预览小组报告时，发生IO异常: %s", e));
+            throw new BizException(String.format("预览小组报告时，发生IO异常: %s", e));
+        }
     }
 
     /**
@@ -188,6 +209,24 @@ public class ExptReportPdfRest {
                                      HttpServletRequest request,
                                      HttpServletResponse response) {
         String accountId = baseBiz.getAccountId(request);
-        exptReportFacadeBiz.previewAccountReport(experimentInstanceId, accountId, request, response);
+        boolean regenerate = regenerate(experimentInstanceId);
+        try {
+            exptReportFacadeBiz.previewAccountReport(experimentInstanceId, accountId, regenerate, request, response);
+        } catch (IOException e) {
+            log.error(String.format("预览学生报告时，发生IO异常: %s", e));
+            throw new BizException(String.format("预览学生报告时，发生IO异常: %s", e));
+        }
+    }
+
+    private boolean regenerate(String experimentInstanceId) {
+        ExptSettingModeEnum exptSettingMode = experimentSettingBiz.getExptSettingMode(experimentInstanceId);
+        if (exptSettingMode == null) {
+            throw new BizException(String.format("导出实验pdf报告时：获取实验%s的设置数据异常", experimentInstanceId));
+        }
+        boolean regenerate = Boolean.TRUE;
+        if (ExptSettingModeEnum.SAND.equals(exptSettingMode)) {
+            regenerate = Boolean.FALSE;
+        }
+        return regenerate;
     }
 }

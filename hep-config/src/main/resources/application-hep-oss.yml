@@ -28,6 +28,9 @@ spring:
 
 ## windows
 #oss.local.enable = true
+
+
+
 #oss.local.ossConfig.volumnd.basePath = d:/images
 #oss.local.ossConfig.volumnd.slice-config.task-num = 8
 #oss.local.ossConfig.volumnd.slice-config.part-size = 104857600

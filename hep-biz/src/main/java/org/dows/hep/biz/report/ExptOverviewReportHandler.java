@@ -84,6 +84,9 @@ public class ExptOverviewReportHandler implements ExptReportHandler<ExptOverview
 
         // 判断记录中是否有数据
         String reportOfGroup = recordHelper.getReportOfExpt(exptInstanceId, ExptReportTypeEnum.EXPT);
+
+        /*1.使用旧数据*/
+        // 不重新生成并且旧数据存在 --> 直接返回
         if (!regenerate && StrUtil.isNotBlank(reportOfGroup)) {
             ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
                     .name(fileName)
@@ -98,10 +101,8 @@ public class ExptOverviewReportHandler implements ExptReportHandler<ExptOverview
                     .groupReportList(List.of(groupReportVO))
                     .build();
         }
-        if (regenerate && StrUtil.isNotBlank(reportOfGroup)) {
-            recordHelper.delReportOfExpt(exptInstanceId, ExptReportTypeEnum.EXPT);
-        }
 
+        /*2.使用新数据*/
         // 生成 pdf 并上传文件
         Path path = Paths.get(OVERVIEW_REPORT_HOME_DIR, fileName);
         OssInfo ossInfo = reportPdfHelper.convertAndUpload(pdfVO, schemeFlt, path);
@@ -118,7 +119,7 @@ public class ExptOverviewReportHandler implements ExptReportHandler<ExptOverview
                     .title(fileName)
                     .materialsAttachments(List.of(attachment))
                     .build();
-            recordHelper.record(exptInstanceId, exptGroupId, ExptReportTypeEnum.EXPT, materialsRequest);
+            recordHelper.record(exptInstanceId, null, ExptReportTypeEnum.EXPT, materialsRequest);
         }
 
         // build result

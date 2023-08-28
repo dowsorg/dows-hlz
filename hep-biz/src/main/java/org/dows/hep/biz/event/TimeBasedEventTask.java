@@ -3,14 +3,12 @@ package org.dows.hep.biz.event;
 import org.dows.hep.api.enums.EnumEventTriggerSpan;
 import org.dows.hep.api.enums.EnumExperimentEventState;
 import org.dows.hep.api.enums.EnumExperimentState;
-import org.dows.hep.biz.dao.ExperimentInstanceDao;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentSettingCollection;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.event.data.TimeBasedEventCollection;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentEventEntity;
-import org.dows.hep.entity.ExperimentInstanceEntity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * @author : wuzl
@@ -31,9 +28,9 @@ public class TimeBasedEventTask extends BaseEventTask  {
 
     //最小间隔
     private final int DELAYSecondsMin=3;
-    //暂停轮询间隔
-    private final int DELAYSeconds4Pause=30;
-    //失败重试间隔
+    //轮询间隔
+    private final int DELAYSeconds4Poll =30;
+    //重试间隔
     private final int DELAYSeconds4Fail=10;
     //子任务并发数
     private final int CONCURRENTNum=3;
@@ -74,9 +71,9 @@ public class TimeBasedEventTask extends BaseEventTask  {
             logInfo("call", "pausedExperiment");
             return RUNCode4Silence;
         }
-        if(null==exptColl.getStartTime()){
+        if(null==exptColl.getSandStartTime()){
             logError("call", "notStartExperiment");
-            raiseScheduler(DELAYSeconds4Pause,false,true);
+            raiseScheduler(DELAYSeconds4Poll,false,true);
             return RUNCode4Silence;
         }
         TimeBasedEventCollection eventColl=TimeBasedEventCache.Instance().caffineCache().get(experimentKey,k->loadEvents(k,exptColl.getPeriods()) );
@@ -144,7 +141,7 @@ public class TimeBasedEventTask extends BaseEventTask  {
                 groups.forEach(i -> {
                     if(i.getRetryTimes().incrementAndGet()>=MAXRetry){
                         eventColl.removeGroup(i);
-                        experimentKey.getMaxRetry().incrementAndGet();
+                        experimentKey.getRetryTimes().incrementAndGet();
                         logError("runEventGroup", "maxRetry.  eventIds:%s",
                                 String.join(",", ShareUtil.XCollection.map(i.getEventItems(), ExperimentEventEntity::getExperimentEventId)));
                     }
@@ -182,8 +179,8 @@ public class TimeBasedEventTask extends BaseEventTask  {
     }
     void raiseScheduler(LocalDateTime nextTime,boolean resetRetry,boolean incrRetry) {
         if(resetRetry){
-            experimentKey.getMaxRetry().set(0);
-        } else if ((incrRetry? experimentKey.getMaxRetry().incrementAndGet():experimentKey.getMaxRetry().get()) >= MAXRetry) {
+            experimentKey.getRetryTimes().set(0);
+        } else if ((incrRetry? experimentKey.getRetryTimes().incrementAndGet():experimentKey.getRetryTimes().get()) >= MAXRetry) {
             logError("raiseScheduler", "maxRetry");
             return;
         }
@@ -220,28 +217,23 @@ public class TimeBasedEventTask extends BaseEventTask  {
             case MIDDLE -> {minRate=35;maxRate=65;}
             case BACK ->{minRate=70;maxRate=90;}
         }
-        double rate=randomInteger(minRate, maxRate)/100d;
+        double rate=ShareUtil.XRandom.randomInteger(minRate, maxRate)/100d;
         int triggerSeconds=periodSetting.getStartSecond()+(int) (rate*periodSetting.getTotalSeconds());
         int gameDay=periodSetting.getStartGameDay()-1+(int)Math.ceil(rate*periodSetting.getTotalDays());
         return new ExperimentTimePoint()
-                .setRealTime(exptCollection.getStartTime().plusSeconds(triggerSeconds))
+                .setRealTime(exptCollection.getSandStartTime().plusSeconds(triggerSeconds))
                 .setGameDay(gameDay);
     }
     //endregion
 
     //region load
-    Integer loadExperimentState() {
-        return getExperimentInstanceDao().getById(experimentKey.getAppId(), experimentKey.getExperimentInstanceId(),
-                ExperimentInstanceEntity::getState)
-                .map(ExperimentInstanceEntity::getState)
-                .orElse(null);
-    }
+
 
 
     TimeBasedEventCollection loadEvents(ExperimentCacheKey experimentKey,Integer maxPeriod){
         TimeBasedEventCollection rst=new TimeBasedEventCollection()
                 .setExperimentInstanceId(experimentKey.getExperimentInstanceId());
-        List<ExperimentEventEntity> rowsEvent=getExperimentEventDao().getTimeEventByExperimentId(experimentKey.getAppId(), experimentKey.getExperimentInstanceId(),
+        List<ExperimentEventEntity> rowsEvent=this.experimentEventDao.getTimeEventByExperimentId(experimentKey.getAppId(), experimentKey.getExperimentInstanceId(),
                 null, maxPeriod,EnumExperimentEventState.INIT.getCode(),
                 ExperimentEventEntity::getId,
                 ExperimentEventEntity::getAppId,
@@ -283,21 +275,6 @@ public class TimeBasedEventTask extends BaseEventTask  {
         return rst;
     }
     //endregion
-
-   //region tools
-   private ExperimentInstanceDao experimentInstanceDao;
-    private ExperimentInstanceDao getExperimentInstanceDao(){
-        if(null==experimentInstanceDao){
-            experimentInstanceDao=getDao(ExperimentInstanceDao.class);
-        }
-        return experimentInstanceDao;
-    }
-
-    static int randomInteger(int min, int max){
-        return ThreadLocalRandom.current().nextInt(min,max);
-    }
-    //endregion
-
 
 
 

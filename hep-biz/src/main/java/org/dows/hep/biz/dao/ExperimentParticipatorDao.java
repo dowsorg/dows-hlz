@@ -39,6 +39,14 @@ public class ExperimentParticipatorDao extends BaseDao<ExperimentParticipatorSer
         return null;
     }
 
+    public List<ExperimentParticipatorEntity> getByExperimentId(String experimentInstanceId,
+                                                                SFunction<ExperimentParticipatorEntity,?>...cols){
+        return service.lambdaQuery()
+                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
+                .select(cols)
+                .list();
+    }
+
     public List<ExperimentParticipatorEntity> getAccountIdsByGroupId(String experimentInstanceId, String experimentGroupId,
                                                                      SFunction<ExperimentParticipatorEntity,?>...cols) {
         return service.lambdaQuery()
