@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @Data
 @Accessors(chain = true)
 public class EventDealResult {
+    private String exptId;
     private boolean succ;
     private final StringBuilder msg=new StringBuilder();
     private LocalDateTime startTime;
@@ -40,7 +41,8 @@ public class EventDealResult {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("{");
-        sb.append("succ:").append(succ);
+        sb.append("expt:").append(exptId);
+        sb.append(" succ:").append(succ);
         sb.append(" start:").append(startTime);
         sb.append(" end:").append(endTime);
         sb.append(" nextDeal:").append(nextDeal);

@@ -91,7 +91,7 @@ public class PeriodEndDealer extends BaseEventDealer {
             return null;
         }
         List<ExperimentSysEventEntity> rst=new ArrayList<>();
-        for(int i=1;i<exptColl.getPeriods();i++){
+        for(int i=1;i<=exptColl.getPeriods();i++){
             rst.add(buildEvent(exptColl,i,
                     EnumSysEventDealType.PERIODEnd.getCode(),
                     EnumSysEventTriggerType.PERIODEnd.getCode()));
