@@ -19,7 +19,7 @@ ip=$(ifconfig | grep inet | awk 'NR==3{print $2}')
 lsblk=$(df -h / | awk '{print $5}' | tail -n 1 )
 mem=$(free | grep Mem | awk '{print $3/$2 * 100.0}')
 cpu=$(top -b -n1 | grep "Cpu(s)" | awk '{print $2}')
-url="https://oapi.dingtalk.com/robot/send?access_token=a108a939447601fcd4a884751203f35b187301a93c5dc880794ba1370f063f74"
+url="https://oapi.dingtalk.com/robot/send?access_token=078c2fbb8c787e37d392e10470e18e7db0a10053145a4b90770fdfc7ae646257"
 
 
 curl $url -H 'Content-Type: application/json' -d "{
@@ -27,15 +27,15 @@ curl $url -H 'Content-Type: application/json' -d "{
     'markdown':{
       'title':'应用发布监控',
       'text':'
-        ******<font color=\"#0000FF\">${title}</font>******\n
-        **发布时间:** <font color=\"#0000FF\">${time} ${times} ${xingqi}</font>\n
-        **项目名:** <font  color=\"#FF0000\">${PROJECT_NAME}</font>\n
-        **分支名:** <font  color=\"#FF0000\">${BRANCH_NAME}</font>\n
-        **发布者:** <font  color=\"#FF0000\">${AUTHOR_NAME}</font>\n
-        **IP**: <font color=\"#0000FF\">${ip}</font>\n
-        **磁盘空间使用率:** <font color=\"#FF0000\">${lsblk}</font>\n
-        **内存使用率**: <font color=\"#FF0000\">${mem}%</font>\n
-        **CPU使用率**: <font color=\"#FF0000\">${cpu}%</font>\n
+        ******${title}******\n
+        **发布时间:** ${time} ${times} ${xingqi}\n
+        **项目名:** ${PROJECT_NAME}\n
+        **分支名:** ${BRANCH_NAME}\n
+        **发布者:** ${AUTHOR_NAME}\n
+        **IP**: ${ip}\n
+        **磁盘空间使用率:** ${lsblk}\n
+        **内存使用率**: ${mem}%\n
+        **CPU使用率**: ${cpu}%\n
       '
     }
 }"
