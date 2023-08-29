@@ -9,6 +9,7 @@ services:
     environment:
       TZ: Asia/Shanghai
     volumes:
+      - /etc/localtime:/etc/localtime
       - ./redis/data:/data
       - ./redis/conf/redis.conf:/etc/redis/redis.conf
       - ./redis/logs:/logs

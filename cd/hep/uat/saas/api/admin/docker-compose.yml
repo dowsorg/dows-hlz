@@ -13,6 +13,7 @@ services:
       - $EHP:8080
       - $EWP:80
     volumes:
+      - /etc/localtime:/etc/localtime
       - ./logs:/dows/saas/hep-admin/logs
       - ./configs:/dows/saas/hep-admin/configs
       - ./resources:/data/resources/images/hep
