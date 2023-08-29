@@ -251,8 +251,12 @@ public class ExperimentSchemeBiz {
             result.setRemainingTime(String.valueOf(0));
             return result;
         }
+
+        long remainingTime = finalEndTime - current;
         result.setSchemeEndTime(String.valueOf(schemeEndTime));
-        result.setRemainingTime(String.valueOf(finalEndTime - current));
+        result.setRemainingTime(String.valueOf(remainingTime));
+        result.setSchemeEndTimestamp(schemeEndTime.getTime());
+        result.setRemainingTimestamp(remainingTime);
         return result;
     }
 
