@@ -8,7 +8,7 @@ oss:
     endpoint: http://192.168.1.60:9000
     slice-config:
       task-num: 8
-      part-size: 104857604
+      part-size: 104857604 # 1024*1024*100
   local:
     enable: true
     ossConfig:
@@ -28,9 +28,6 @@ spring:
 
 ## windows
 #oss.local.enable = true
-
-
-
 #oss.local.ossConfig.volumnd.basePath = d:/images
 #oss.local.ossConfig.volumnd.slice-config.task-num = 8
 #oss.local.ossConfig.volumnd.slice-config.part-size = 104857600
