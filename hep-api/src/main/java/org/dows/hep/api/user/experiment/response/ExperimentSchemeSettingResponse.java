@@ -14,10 +14,16 @@ import lombok.NoArgsConstructor;
 @Schema(name = "ExperimentSchemeSettingResponse 对象", title = "实验方案设计设置信息")
 public class ExperimentSchemeSettingResponse {
 
-    @Schema(title = "截止时间-时间戳字符串形式")
+    @Schema(title = "截止时间")
     private String schemeEndTime;
 
-    @Schema(title = "剩余时间-时间戳字符串形式")
+    @Schema(title = "剩余时间")
     private String remainingTime;
+
+    @Schema(title = "截止时间-时间戳")
+    private long schemeEndTimestamp;
+
+    @Schema(title = "剩余时间-时间戳")
+    private long remainingTimestamp;
 
 }
