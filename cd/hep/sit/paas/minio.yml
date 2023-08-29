@@ -20,6 +20,7 @@ services:
         max-file: "10"
       driver: json-file
     volumes:
+      - /etc/localtime:/etc/localtime
       - ./minio/data:/data
       - ./minio/config:/root/.minio
       - ./minio/minio:/minio
