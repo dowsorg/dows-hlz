@@ -4,9 +4,11 @@ import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.request.AccountInstanceRequest;
-import org.dows.account.response.AccountInstanceResponse;
 import org.dows.hep.api.tenant.excel.BatchMemberInsertRequest;
-import org.dows.hep.api.tenant.organization.request.*;
+import org.dows.hep.api.tenant.organization.request.AddOrgMemberRequest;
+import org.dows.hep.api.tenant.organization.request.AddOrgRequest;
+import org.dows.hep.api.tenant.organization.request.OrgFeeSettingRequest;
+import org.dows.hep.api.tenant.organization.request.OrgFuncRequest;
 import org.dows.hep.biz.base.person.PersonManageBiz;
 import org.dows.hep.biz.tenant.excel.BatchInsertBiz;
 import org.springframework.stereotype.Service;
@@ -122,7 +124,7 @@ public class OrgManageBiz{
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        List<BatchMemberInsertRequest> list = batchInsertBiz.batchInsert(fin, 2, 100, BatchMemberInsertRequest.class, "accountName");
+        List<BatchMemberInsertRequest> list = batchInsertBiz.batchInsert(fin, 2, 500, BatchMemberInsertRequest.class, "accountName");
         //2、插入用户信息
         if (list != null && list.size() > 0) {
             for (int i = 0; i < list.size(); i++) {
