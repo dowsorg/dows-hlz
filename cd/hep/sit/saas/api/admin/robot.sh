@@ -26,11 +26,8 @@ url="https://oapi.dingtalk.com/robot/send?access_token=23dda836e12466db0b890ce8d
 
 curl $url \
 -H 'Content-Type: application/json' \
--d \
-'{"msgtype": "text",
-  "at": {
-    "isAtAll": true
-  },
+-d '{
+  "msgtype": "text",
   "text": {
       "content": "
         项目: '${title}'
