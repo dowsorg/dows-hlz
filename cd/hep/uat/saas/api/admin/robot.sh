@@ -7,11 +7,11 @@ AUTHOR_NAME=$2
 #项目名
 PROJECT_NAME=$3
 #描述
-DESC=$4
+TITLE=$4
 #颜色
 COLOR=$5
 
-title='应用发布监控'
+#title='应用发布监控'
 time="$(date "+%Y-%m-%d")"
 times="$(date "+%H:%M:%S")"
 xingqi="$(date "+%A")"
@@ -27,7 +27,7 @@ curl $url -H 'Content-Type: application/json' -d "{
     'markdown':{
       'title':'应用发布监控',
       'text':'
-        ******<font color=\"#0000FF\">${title}</font>******\n
+        ******<font color=\"#0000FF\">${TITLE}</font>******\n
         **发布时间:** <font color=\"#0000FF\">${time} ${times} ${xingqi}</font>\n
         **项目名:** <font  color=\"#FF0000\">${PROJECT_NAME}</font>\n
         **分支名:** <font  color=\"#FF0000\">${BRANCH_NAME}</font>\n

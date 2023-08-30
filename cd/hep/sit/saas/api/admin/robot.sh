@@ -7,7 +7,7 @@ AUTHOR_NAME=$2
 #项目名
 PROJECT_NAME=$3
 #描述
-DESC=$4
+TITLE=$4
 #颜色
 COLOR=$5
 
@@ -30,7 +30,7 @@ curl $url \
     "msgtype": "text",
     "text": {
         "content": "
-          项目: '$title'
+          项目: '$TITLE'
           发布时间: ${time} ${times} ${xingqi}
           项目名: '${PROJECT_NAME}'
           分支名: ${BRANCH_NAME}
