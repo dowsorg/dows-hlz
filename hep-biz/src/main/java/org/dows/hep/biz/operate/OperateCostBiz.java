@@ -54,6 +54,26 @@ public class OperateCostBiz {
         return costEntityList;
     }
 
+    /**
+     * @param
+     * @return
+     * @说明: 获取实验任务每期的花费
+     * @关联表: operate_cost
+     * @工时: 1H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年7月25日 下午14:40:34
+     */
+    public List<OperateCostEntity> getPeriodsRestitution(CostRequest request) {
+        List<OperateCostEntity> costEntityList = operateCostService.lambdaQuery()
+                .eq(OperateCostEntity::getPatientId, request.getPatientId())
+                .eq(OperateCostEntity::getPeriod, request.getPeriod())
+                .isNotNull(OperateCostEntity::getRestitution)
+                .eq(OperateCostEntity::getDeleted, false)
+                .list();
+        return costEntityList;
+    }
+
 
     /**
      * 计算小组医疗占比得分
