@@ -49,9 +49,9 @@ public class ExperimentManageRest {
      */
     @Operation(summary = "获取租户端实验倒计时")
     @GetMapping("v1/tenantExperiment/experimentTimer/countdown")
-    public IntervalResponse countdown(@RequestParam String experimentInstanceId) {
+    public IntervalResponse countdown(@RequestParam String appId,@RequestParam String experimentInstanceId) {
 
-        IntervalResponse countdown = experimentTimerBiz.countdown(experimentInstanceId);
+        IntervalResponse countdown = experimentTimerBiz.countdown(appId, experimentInstanceId);
 
         return countdown;
     }

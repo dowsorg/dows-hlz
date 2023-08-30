@@ -1,9 +1,15 @@
 package org.dows.hep.biz.event.sysevent;
 
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.enums.EnumWebSocketType;
+import org.dows.hep.api.user.experiment.response.IntervalResponse;
 import org.dows.hep.biz.dao.ExperimentSysEventDao;
+import org.dows.hep.biz.event.ExperimentFlowRules;
+import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentSettingCollection;
 import org.dows.hep.biz.event.sysevent.data.*;
+import org.dows.hep.biz.util.PushWebSocketUtil;
+import org.dows.hep.biz.vo.PushWebScoketResult;
 import org.dows.hep.entity.ExperimentSysEventEntity;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -24,6 +31,9 @@ public abstract class BaseEventDealer implements ISysEventDealer {
     protected IdGenerator idGenerator;
     @Autowired
     protected ExperimentSysEventDao experimentSysEventDao;
+
+    @Autowired
+    protected ExperimentFlowRules experimentFlowRules;
 
     protected final long TRYLockTimeOutSeconds=30;
 
@@ -65,7 +75,7 @@ public abstract class BaseEventDealer implements ISysEventDealer {
                         .isSucc();
             }
             final int maxRetry = this.maxRetryTimes();
-            if (maxRetry > 0 && row.getRetryTimes().get() >= maxRetry) {
+            if (row.tillMaxRetry()) {
                 dealFlag=row.getRetryTimes().get() <= maxRetry+1;
                 return rst.setSucc(false)
                         .append("maxRetry")
@@ -105,8 +115,8 @@ public abstract class BaseEventDealer implements ISysEventDealer {
                             .setEndTime(LocalDateTime.now());
                     entity.setDealTimes(Optional.ofNullable(entity.getDealTimes()).orElse(0) + 1)
                             .setDealTime(new Date())
-                            .setDealMsg(rst.toString());
-                    if(rst.isSucc()){
+                            .setDealMsg(row.tillMaxRetry()?null:rst.toString());
+                    if(rst.isSucc()) {
                         entity.setState(EnumSysEventState.DEALT.getCode());
                     }
                     saveDeal(entity);
@@ -124,19 +134,19 @@ public abstract class BaseEventDealer implements ISysEventDealer {
 
     protected abstract boolean coreDeal(EventDealResult rst,SysEventRow row, SysEventRunStat stat);
 
-    protected int getDealSeq(int period,int eventType,int triggerType) {
-        return period*1000+EnumSysEventDealType.of(eventType).getDealSeq();
+    protected int getDealSeq(int period,EnumSysEventDealType dealType,EnumSysEventTriggerType triggerType) {
+        return period*1000+dealType.getDealSeq();
     }
-    protected ExperimentSysEventEntity buildEvent(ExperimentSettingCollection exptColl,Integer period,int eventType,int triggerType){
+    protected ExperimentSysEventEntity buildEvent(ExperimentSettingCollection exptColl,Integer period,EnumSysEventDealType dealType,EnumSysEventTriggerType triggerType){
         period=Optional.ofNullable(period).orElse(0);
         return ExperimentSysEventEntity.builder()
                 .experimentSysEventId(idGenerator.nextIdStr())
                 .appId(exptColl.getAppId())
                 .experimentInstanceId(exptColl.getExperimentInstanceId())
                 .periods(period)
-                .eventType(eventType)
-                .triggerType(triggerType)
-                .dealSeq(getDealSeq(period,eventType,triggerType))
+                .eventType(dealType.getCode())
+                .triggerType(triggerType.getCode())
+                .dealSeq(getDealSeq(period,dealType,triggerType))
                 .dealTimes(0)
                 .state(EnumSysEventState.INIT.getCode())
                 .build();
@@ -180,6 +190,17 @@ public abstract class BaseEventDealer implements ISysEventDealer {
         return pushType==EnumSysEventPushType.ALWAYS
                 ||pushType==EnumSysEventPushType.NEWEST&&null== row.getNext();
     }
+    protected PushWebScoketResult push(ExperimentCacheKey exptKey,ExperimentSettingCollection exptColl,EnumWebSocketType socketType, Set<String> clientIds,SysEventRow checkPush) {
+        if (null != checkPush && !requirePush(checkPush)) {
+            return new PushWebScoketResult().append("unRequirePush[%s] ", this.getPushType());
+        }
+        final String experimentInstanceId = exptKey.getExperimentInstanceId();
+        IntervalResponse pushData = experimentFlowRules.countdown(exptKey, exptColl);
+        return PushWebSocketUtil.Instance().pushCommon(socketType, experimentInstanceId, clientIds, pushData);
+
+    }
+
+
     //endregion
 
     //region log

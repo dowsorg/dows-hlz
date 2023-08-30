@@ -18,5 +18,18 @@ public enum EnumWebSocketType {
     EXPT_SUSPEND,
 
 
-    EXPT_RESTART;
+    EXPT_RESTART,
+
+    //region 实验流程
+    //沙盘准备倒计时，替换 START_EXPERIMENT_COUNTDOWN
+    FLOW_SAND_READY,
+    //沙盘期初开始
+    FLOW_PERIOD_START,
+    //期数翻转倒计时
+    FLOW_PERIOD_ENDING,
+    //期数翻转计算完毕 替换 calc
+    FLOW_PERIOD_ENDED,
+
+    //endregion
+    ;
 }

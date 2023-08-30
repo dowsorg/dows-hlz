@@ -41,8 +41,8 @@ public class SchemaStartDealer extends BaseEventDealer {
             return null;
         }
         return List.of(buildEvent(exptColl,0,
-                EnumSysEventDealType.SCHEMAStart.getCode(),
-                EnumSysEventTriggerType.SCHEMAStart.getCode()));
+                EnumSysEventDealType.SCHEMAStart,
+                EnumSysEventTriggerType.SCHEMAStart));
     }
 
 }

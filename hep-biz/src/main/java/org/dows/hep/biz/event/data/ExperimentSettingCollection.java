@@ -51,6 +51,7 @@ public class ExperimentSettingCollection implements ICacheClear {
 
     @Schema(title = "初始沙盒结束秒数")
     private int rawEndSeconds;
+
     @Schema(title = "累计暂停秒数")
     private long cntPauseSeconds;
     @Schema(title = "上一次累计暂停秒数")
@@ -61,6 +62,16 @@ public class ExperimentSettingCollection implements ICacheClear {
 
     @Schema(title = "时间线")
     private RangeMap<Integer,Integer> mapPeriodSeconds;
+
+    //region 兼容countDown
+    private Map<String, Integer> durationMap;
+    private Map<String, Integer> periodMap;
+    private Map<String, Double> mockRateMap;
+
+    private long totalDays;
+
+    private long totalSeconds;
+    //endregion
 
     public boolean hasSchemaMode(){
         return mode ==EnumExperimentMode.SCHEME;

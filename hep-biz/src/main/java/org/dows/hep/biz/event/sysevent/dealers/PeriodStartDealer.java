@@ -59,8 +59,8 @@ public class PeriodStartDealer extends BaseEventDealer {
         List<ExperimentSysEventEntity> rst=new ArrayList<>();
         for(int i=1;i<=exptColl.getPeriods();i++){
             rst.add(buildEvent(exptColl,i,
-                    EnumSysEventDealType.PERIODStart.getCode(),
-                    EnumSysEventTriggerType.PERIODStart.getCode()));
+                    EnumSysEventDealType.PERIODStart,
+                    EnumSysEventTriggerType.PERIODStart));
         }
         return rst;
     }

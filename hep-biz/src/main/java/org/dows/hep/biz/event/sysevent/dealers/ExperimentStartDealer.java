@@ -84,8 +84,8 @@ public class ExperimentStartDealer extends BaseEventDealer {
     @Override
     public List<ExperimentSysEventEntity> buildEvents(ExperimentSettingCollection exptColl) {
         return List.of(buildEvent(exptColl,0,
-                EnumSysEventDealType.EXPERIMENTStart.getCode(),
-                EnumSysEventTriggerType.EXPERIMENTStart.getCode()));
+                EnumSysEventDealType.EXPERIMENTStart,
+                EnumSysEventTriggerType.EXPERIMENTStart));
     }
 
 }

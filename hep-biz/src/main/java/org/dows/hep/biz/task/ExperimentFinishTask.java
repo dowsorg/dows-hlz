@@ -10,6 +10,7 @@ import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.enums.EnumExperimentTask;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.biz.calc.CalculatorDispatcher;
+import org.dows.hep.biz.event.ExperimentTimerCache;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.entity.ExperimentTaskScheduleEntity;
@@ -82,6 +83,7 @@ public class ExperimentFinishTask implements Runnable {
                     .eq(ExperimentTimerEntity::getDeleted, false)
                     .set(ExperimentTimerEntity::getState, EnumExperimentState.FINISH.getState())
                     .update();
+            ExperimentTimerCache.Instance().remove(experimentInstanceEntity.getAppId(), experimentInstanceEntity.getExperimentInstanceId());
 
             sb.append(String.format(" 1-updateState@%s",LocalDateTime.now()));
 

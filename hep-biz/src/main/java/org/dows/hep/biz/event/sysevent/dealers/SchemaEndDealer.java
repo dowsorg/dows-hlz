@@ -39,8 +39,8 @@ public class SchemaEndDealer extends BaseEventDealer {
             return null;
         }
         return List.of(buildEvent(exptColl,0,
-                EnumSysEventDealType.SCHEMAEnd.getCode(),
-                EnumSysEventTriggerType.SCHEMAEnd.getCode()));
+                EnumSysEventDealType.SCHEMAEnd,
+                EnumSysEventTriggerType.SCHEMAEnd));
     }
 
 }
