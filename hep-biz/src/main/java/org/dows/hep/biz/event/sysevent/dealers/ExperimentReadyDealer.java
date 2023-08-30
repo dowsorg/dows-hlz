@@ -105,12 +105,12 @@ public class ExperimentReadyDealer extends BaseEventDealer {
         }
         Set<String> clientIds=ShareBiz.getAccountIdsByExperimentId(experimentInstanceId);
         this.pushTimeState(rst, exptKey, exptColl,EnumWebSocketType.FLOW_SAND_READY ,clientIds , row);
-        pushMsg(experimentInstanceId,clientIds);
+        this.oldPush(experimentInstanceId,clientIds);
         return true;
     }
 
     // old push
-    private void pushMsg(String experimentInstanceId,Set<String> accountIds ) {
+    private void oldPush(String experimentInstanceId,Set<String> accountIds ) {
 
 
         // 通知实验所有小组

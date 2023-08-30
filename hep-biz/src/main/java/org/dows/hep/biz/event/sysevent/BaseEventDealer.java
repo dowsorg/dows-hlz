@@ -195,7 +195,7 @@ public abstract class BaseEventDealer implements ISysEventDealer {
     protected PushWebScoketResult pushTimeState(EventDealResult rst, ExperimentCacheKey exptKey, ExperimentSettingCollection exptColl, EnumWebSocketType socketType, SysEventRow checkPush){
         Set<String> clientIds= ShareBiz.getAccountIdsByExperimentId(exptKey.getExperimentInstanceId());
         if(ShareUtil.XCollection.isEmpty(clientIds)){
-            PushWebScoketResult pushRst=new PushWebScoketResult().setType(socketType.toString()).append("missClientIds");
+            PushWebScoketResult pushRst=new PushWebScoketResult().setType(socketType.toString()).append("missAccounts");
             rst.getPushStat().add(pushRst);
             return pushRst;
         }
@@ -203,18 +203,26 @@ public abstract class BaseEventDealer implements ISysEventDealer {
 
     }
     protected PushWebScoketResult pushTimeState(EventDealResult rst, ExperimentCacheKey exptKey, ExperimentSettingCollection exptColl, EnumWebSocketType socketType, Set<String> clientIds, SysEventRow checkPush) {
-        if (null != checkPush && !requirePush(checkPush)) {
-            return new PushWebScoketResult().append("unRequirePush[%s] ", this.getPushType());
+        try {
+            if (null != checkPush && !requirePush(checkPush)) {
+                PushWebScoketResult pushRst= new PushWebScoketResult().append("unRequirePush[%s] ", this.getPushType());
+                rst.getPushStat().add(pushRst);
+                return pushRst;
+            }
+            final String experimentInstanceId = exptKey.getExperimentInstanceId();
+            IntervalResponse pushData = experimentFlowRules.countdown(exptKey, exptColl);
+            PushWebScoketResult pushRst = PushWebSocketUtil.Instance().pushCommon(socketType, experimentInstanceId, clientIds, pushData);
+            if (ShareUtil.XObject.notEmpty(pushRst)) {
+                pushRst.setType(socketType.toString());
+            }
+            rst.getPushStat().add(pushRst);
+            return pushRst;
+        }catch (Exception ex){
+            PushWebScoketResult pushRst= new PushWebScoketResult().append("pushError:%s",ex.getMessage());
+            rst.getPushStat().add(pushRst);
+            logError(ex, "dealEvent", "pushError. rst:%s",rst);
+            return pushRst;
         }
-        final String experimentInstanceId = exptKey.getExperimentInstanceId();
-        IntervalResponse pushData = experimentFlowRules.countdown(exptKey, exptColl);
-        PushWebScoketResult pushRst= PushWebSocketUtil.Instance().pushCommon(socketType, experimentInstanceId, clientIds, pushData);
-        if(ShareUtil.XObject.notEmpty(pushRst)){
-            pushRst.setType(socketType.toString());
-        }
-        rst.getPushStat().add(pushRst);
-        return pushRst;
-
     }
 
 

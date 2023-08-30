@@ -30,12 +30,12 @@ public class ExperimentFlowRules {
         }
         ExperimentCacheKey exptKey=ExperimentCacheKey.create(appId,experimentInstanceId);
         ExperimentSettingCollection exptColl= ExperimentSettingCache.Instance().getSet(exptKey,true);
-        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(exptColl))
-                .throwMessage("未找到实验设置");
         return countdown(exptKey, exptColl);
 
     }
     public IntervalResponse countdown(ExperimentCacheKey exptKey,ExperimentSettingCollection exptColl){
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(exptColl))
+                .throwMessage("未找到实验设置");
         IntervalResponse rst=new IntervalResponse();
         rst.setAppId(exptColl.getAppId());
         rst.setExperimentInstanceId(exptColl.getExperimentInstanceId());
