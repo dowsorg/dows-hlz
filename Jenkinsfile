@@ -104,7 +104,7 @@ pipeline {
                         sh "sshpass -p $AS_PWD scp -r $FORM_SIT_CD_PATH $AS_USERNAME@$AS_HOST:$TO_SIT_CD_PATH"
                         sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST 'cd $TO_SIT_CD_PATH/admin;$LOGIN_DOCKER;$START_CONTAINER'"
 
-                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_SIT_CD_PATH/admin/robot.sh '\"${branch}\"' '\"${gitCommitAuthorName}\"' 'api-hep-admin' 'SIT环境构建、打包、传输成功' 'green' '\"${gitCommitMessage}\"'"
+                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST 'sh $TO_SIT_CD_PATH/admin/robot.sh \"${branch}\" \"${gitCommitAuthorName}\" \"api-hep-admin\" \"SIT环境发布\" \"green\" \"${gitCommitMessage}\" '"
 
                     } else if (branch.startsWith('uat-')) {
                         echo "Building for uat environment for ${branch}"
