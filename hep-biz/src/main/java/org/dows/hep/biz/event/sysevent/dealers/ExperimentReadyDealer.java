@@ -104,7 +104,7 @@ public class ExperimentReadyDealer extends BaseEventDealer {
             return false;
         }
         Set<String> clientIds=ShareBiz.getAccountIdsByExperimentId(experimentInstanceId);
-        rst.getPushStat().add(this.push(exptKey, exptColl,EnumWebSocketType.FLOW_SAND_READY ,clientIds , row));
+        this.pushTimeState(rst, exptKey, exptColl,EnumWebSocketType.FLOW_SAND_READY ,clientIds , row);
         pushMsg(experimentInstanceId,clientIds);
         return true;
     }

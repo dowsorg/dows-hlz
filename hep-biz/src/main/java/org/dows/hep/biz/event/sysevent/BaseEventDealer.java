@@ -9,6 +9,8 @@ import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentSettingCollection;
 import org.dows.hep.biz.event.sysevent.data.*;
 import org.dows.hep.biz.util.PushWebSocketUtil;
+import org.dows.hep.biz.util.ShareBiz;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.vo.PushWebScoketResult;
 import org.dows.hep.entity.ExperimentSysEventEntity;
 import org.dows.sequence.api.IdGenerator;
@@ -190,13 +192,28 @@ public abstract class BaseEventDealer implements ISysEventDealer {
         return pushType==EnumSysEventPushType.ALWAYS
                 ||pushType==EnumSysEventPushType.NEWEST&&null== row.getNext();
     }
-    protected PushWebScoketResult push(ExperimentCacheKey exptKey,ExperimentSettingCollection exptColl,EnumWebSocketType socketType, Set<String> clientIds,SysEventRow checkPush) {
+    protected PushWebScoketResult pushTimeState(EventDealResult rst, ExperimentCacheKey exptKey, ExperimentSettingCollection exptColl, EnumWebSocketType socketType, SysEventRow checkPush){
+        Set<String> clientIds= ShareBiz.getAccountIdsByExperimentId(exptKey.getExperimentInstanceId());
+        if(ShareUtil.XCollection.isEmpty(clientIds)){
+            PushWebScoketResult pushRst=new PushWebScoketResult().setType(socketType.toString()).append("missClientIds");
+            rst.getPushStat().add(pushRst);
+            return pushRst;
+        }
+        return pushTimeState(rst,exptKey,exptColl,socketType,clientIds,checkPush);
+
+    }
+    protected PushWebScoketResult pushTimeState(EventDealResult rst, ExperimentCacheKey exptKey, ExperimentSettingCollection exptColl, EnumWebSocketType socketType, Set<String> clientIds, SysEventRow checkPush) {
         if (null != checkPush && !requirePush(checkPush)) {
             return new PushWebScoketResult().append("unRequirePush[%s] ", this.getPushType());
         }
         final String experimentInstanceId = exptKey.getExperimentInstanceId();
         IntervalResponse pushData = experimentFlowRules.countdown(exptKey, exptColl);
-        return PushWebSocketUtil.Instance().pushCommon(socketType, experimentInstanceId, clientIds, pushData);
+        PushWebScoketResult pushRst= PushWebSocketUtil.Instance().pushCommon(socketType, experimentInstanceId, clientIds, pushData);
+        if(ShareUtil.XObject.notEmpty(pushRst)){
+            pushRst.setType(socketType.toString());
+        }
+        rst.getPushStat().add(pushRst);
+        return pushRst;
 
     }
 

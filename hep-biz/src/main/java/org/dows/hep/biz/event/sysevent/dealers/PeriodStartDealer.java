@@ -2,6 +2,7 @@ package org.dows.hep.biz.event.sysevent.dealers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.enums.EnumWebSocketType;
 import org.dows.hep.biz.dao.ExperimentTimerDao;
 import org.dows.hep.biz.event.EventScheduler;
 import org.dows.hep.biz.event.data.ExperimentSettingCollection;
@@ -45,6 +46,8 @@ public class PeriodStartDealer extends BaseEventDealer {
         EventScheduler.Instance().scheduleTimeBasedEvent(appId, experimentInstanceId, 5);
         //实验流程
         EventScheduler.Instance().scheduleSysEvent(appId, experimentInstanceId, 3);
+
+        /*this.pushTimeState(rst, ex, exptColl, EnumWebSocketType.FLOW_SAND_READY ,clientIds , row);*/
         return true;
     }
 
