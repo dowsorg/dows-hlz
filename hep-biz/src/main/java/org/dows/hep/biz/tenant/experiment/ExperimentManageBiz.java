@@ -340,6 +340,7 @@ public class ExperimentManageBiz {
 
         final Set<String> accountIds= ShareUtil.XCollection.toSet(experimentParticipatorList,ExperimentParticipatorEntity::getAccountId);
         List<AccountInstanceResponse> accountInstanceResponseList= ShareBiz.getAccountsByAccountIds(accountIds);
+        accountInstanceResponseList.forEach(item->item.setPassword(null));
         // 处理老师
       /*  List<AccountInstanceResponse> accountInstanceResponseList = new ArrayList<>();
         experimentParticipatorList.forEach(experimentParticipator -> {
