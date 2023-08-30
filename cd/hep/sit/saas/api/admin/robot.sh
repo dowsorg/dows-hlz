@@ -26,26 +26,23 @@ url="https://oapi.dingtalk.com/robot/send?access_token=23dda836e12466db0b890ce8d
 
 curl $url \
 -H 'Content-Type: application/json' \
--d \
-'{"msgtype": "text",
-  "at": {
-    "isAtAll": true
-  },
-  "text": {
-      "content": "
-        项目: '${title}'
-        发布时间: '${time}' '${times}' '${xingqi}'
-        项目名: '${PROJECT_NAME}'
-        分支名: '${BRANCH_NAME}'
-        发布者: '${AUTHOR_NAME}'
-        COMMIT: '${COMMIT}'
-        IP: '${ip}'
-        DISK: '${lsblk}'
-        MEM: '${mem}%'
-        CPU: '${cpu}%'
-      "
-  }
-}'
+-d "{
+    'msgtype': 'text',
+    'text': {
+        'content': '
+          项目: $title
+          发布时间: ${time} ${times} ${xingqi}
+          项目名: ${PROJECT_NAME}
+          分支名: ${BRANCH_NAME}'
+          发布者: ${AUTHOR_NAME}
+          COMMIT: ${COMMIT}
+          IP: ${ip}
+          DISK: ${lsblk}
+          MEM: ${mem}%
+          CPU: ${cpu}%
+        '
+    }
+}"
 
 #curl $url \
 #-H 'Content-Type: application/json' \
