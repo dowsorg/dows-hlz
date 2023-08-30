@@ -1,0 +1,33 @@
+version: "3"
+services:
+  minio-prd:
+    image: minio/minio:latest
+    restart: always
+    container_name: minio-prd
+    command: server /data --console-address :9200
+    ports:
+      - "9002:9000"
+      - "9200:9200"
+    environment:
+      TZ: Asia/Shanghai
+      LANG: en_US.UTF-8
+      MINIO_PROMETHEUS_AUTH_TYPE: "public"
+      MINIO_ACCESS_KEY: "root"
+      MINIO_SECRET_KEY: "password"
+    logging:
+      options:
+        max-size: "10M"
+        max-file: "10"
+      driver: json-file
+    volumes:
+      - /etc/localtime:/etc/localtime
+      - ./minio/data:/data
+      - ./minio/config:/root/.minio
+      - ./minio/minio:/minio
+    networks:
+      prd_net:
+        ipv4_address: 172.18.0.4
+
+networks:
+  prd_net:
+    external: true

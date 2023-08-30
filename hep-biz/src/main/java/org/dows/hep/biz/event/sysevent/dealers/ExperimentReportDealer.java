@@ -48,6 +48,7 @@ public class ExperimentReportDealer extends BaseEventDealer {
             Map<Integer, ExperimentTimerEntity> mapTimers = experimentTimerDao.getMapByExperimentId(appId, experimentInstanceId, null,
                     ExperimentTimerEntity::getId,
                     ExperimentTimerEntity::getExperimentTimerId,
+                    ExperimentTimerEntity::getPeriod,
                     ExperimentTimerEntity::getState);
             mapTimers.values().forEach(item -> {
                 item.setState(EnumExperimentState.FINISH.getState());

@@ -1,0 +1,25 @@
+version: "3"
+services:
+
+  redis-prd:
+    image: redis
+    container_name: redis-prd
+    restart: always
+    privileged: true
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - /etc/localtime:/etc/localtime
+      - ./redis/data:/data
+      - ./redis/conf/redis.conf:/etc/redis/redis.conf
+      - ./redis/logs:/logs
+    command: [ "redis-server","/etc/redis/redis.conf" ]
+    ports:
+      - 46379:6379
+    networks:
+      prd_net:
+        ipv4_address: 172.18.0.3
+
+networks:
+  prd_net:
+    external: true

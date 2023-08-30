@@ -47,6 +47,7 @@ public abstract class BaseEventDealer implements ISysEventDealer {
     public boolean dealEvent(SysEventRow row, SysEventRunStat stat) {
         final ExperimentSysEventEntity entity = row.getEntity();
         EventDealResult rst = new EventDealResult()
+                .setExptId(entity.getExperimentInstanceId())
                 .setFlowStat(stat)
                 .setStartTime(LocalDateTime.now());
         boolean lockFlag = false;
