@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.account.api.AccountUserApi;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
 import org.dows.hep.api.enums.EnumEventActionState;
 import org.dows.hep.api.enums.EnumExperimentEventState;
@@ -35,7 +36,10 @@ import org.dows.hep.biz.vo.ExperimentEventBox;
 import org.dows.hep.biz.vo.ExperimentOrgNoticeBox;
 import org.dows.hep.biz.vo.LoginContextVO;
 import org.dows.hep.entity.*;
+import org.dows.hep.service.CaseOrgFeeService;
+import org.dows.hep.service.ExperimentOrgService;
 import org.dows.hep.service.ExperimentPersonService;
+import org.dows.hep.service.OperateInsuranceService;
 import org.dows.sequence.api.IdGenerator;
 import org.dows.user.api.api.UserInstanceApi;
 import org.dows.user.api.response.UserInstanceResponse;
@@ -43,6 +47,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Supplier;
@@ -77,9 +82,13 @@ public class ExperimentOrgBiz{
 
     private final OperateCostBiz operateCostBiz;
 
+    private final OperateInsuranceService operateInsuranceService;
 
     private final IdGenerator idGenerator;
 
+    private final ExperimentOrgService experimentOrgService;
+
+    private final CaseOrgFeeService caseOrgFeeService;
     /**
     * @param
     * @return
@@ -141,6 +150,8 @@ public class ExperimentOrgBiz{
                 .setStartTime(dateNow)
                 .setOperateTime(dateNow)
                 .setOperateGameDay(timePoint.getGameDay());
+        //计算每次操作应该返回的报销金额
+        BigDecimal reimburse = getExperimentPersonRestitution(BigDecimalUtil.valueOf(ghf),startOrgFlow.getExperimentPersonId());
         //保存消费记录
         CostRequest costRequest = CostRequest.builder()
                 .operateCostId(idGenerator.nextIdStr())
@@ -153,6 +164,7 @@ public class ExperimentOrgBiz{
                 .feeName(EnumOrgFeeType.GHF.getName())
                 .feeCode(EnumOrgFeeType.GHF.getCode())
                 .cost(BigDecimalUtil.valueOf(ghf))
+                .restitution(reimburse)
                 .period(startOrgFlow.getPeriods())
                 .build();
         return operateFlowDao.tranSave(rowFlow, null,false,()->{
@@ -171,6 +183,36 @@ public class ExperimentOrgBiz{
                 .periods(req.getPeriods())
                 .flowName(req.getCachedExptOrg().get().getCaseOrgName().concat("挂号"))
                 .build();
+    }
+
+    private BigDecimal getExperimentPersonRestitution(BigDecimal fee,String experimentPersonId){
+        //获取在该消费之前的保险购买记录并计算报销比例
+        List<OperateInsuranceEntity> insuranceEntityList = operateInsuranceService.lambdaQuery()
+                .eq(OperateInsuranceEntity::getExperimentPersonId, experimentPersonId)
+                .le(OperateInsuranceEntity::getIndate, new Date())
+                .ge(OperateInsuranceEntity::getExpdate, new Date())
+                .list();
+        //可能会存在多个机构购买情况，金钱要叠加
+        BigDecimal reimburse = new BigDecimal(0);
+        if (insuranceEntityList != null && insuranceEntityList.size() > 0) {
+            for (int j = 0; j < insuranceEntityList.size(); j++) {
+                //3.4、通过机构获取报销比例
+                ExperimentOrgEntity orgEntity = experimentOrgService.lambdaQuery()
+                        .eq(ExperimentOrgEntity::getExperimentOrgId, insuranceEntityList.get(j).getExperimentOrgId())
+                        .eq(ExperimentOrgEntity::getDeleted, false)
+                        .one();
+                if (orgEntity != null && !ReflectUtil.isObjectNull(orgEntity)) {
+                    CaseOrgFeeEntity feeEntity = caseOrgFeeService.lambdaQuery()
+                            .eq(CaseOrgFeeEntity::getCaseOrgId, orgEntity.getCaseOrgId())
+                            .eq(CaseOrgFeeEntity::getFeeCode, "BXF")
+                            .one();
+                    if (feeEntity != null && !ReflectUtil.isObjectNull(feeEntity)) {
+                        reimburse = reimburse.add(fee.multiply(BigDecimal.valueOf(feeEntity.getReimburseRatio())).divide(BigDecimal.valueOf(100), 2, RoundingMode.DOWN));
+                    }
+                }
+            }
+        }
+        return reimburse;
     }
     /**
     * @param

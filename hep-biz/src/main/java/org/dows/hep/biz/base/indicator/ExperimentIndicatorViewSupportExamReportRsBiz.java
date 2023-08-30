@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.base.indicator.request.ExperimentSupportExamCheckRequestRs;
 import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
 import org.dows.hep.api.base.indicator.response.ExperimentSupportExamReportResponseRs;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -38,19 +40,16 @@ import java.util.stream.Collectors;
 public class ExperimentIndicatorViewSupportExamReportRsBiz {
   private final ExperimentIndicatorViewSupportExamReportRsService experimentIndicatorViewSupportExamReportRsService;
   private final ExperimentIndicatorViewSupportExamRsService experimentIndicatorViewSupportExamRsService;
-  private final ExperimentIndicatorInstanceRsService experimentIndicatorInstanceRsService;
-  private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
   private final IdGenerator idGenerator;
-  private final ExperimentIndicatorExpressionRefRsService experimentIndicatorExpressionRefRsService;
-  private final ExperimentIndicatorExpressionRsService experimentIndicatorExpressionRsService;
-  private final ExperimentIndicatorExpressionItemRsService experimentIndicatorExpressionItemRsService;
-  private final ExperimentIndicatorExpressionInfluenceRsService experimentIndicatorExpressionInfluenceRsService;
   private final ExperimentIndicatorInstanceRsBiz experimentIndicatorInstanceRsBiz;
   private final RsExperimentIndicatorValBiz rsExperimentIndicatorValBiz;
   private final RsExperimentIndicatorInstanceBiz rsExperimentIndicatorInstanceBiz;
   private final RsExperimentIndicatorExpressionBiz rsExperimentIndicatorExpressionBiz;
   private final ExperimentPersonService experimentPersonService;
   private final OperateCostBiz operateCostBiz;
+  private final OperateInsuranceService operateInsuranceService;
+  private final ExperimentOrgService experimentOrgService;
+  private final CaseOrgFeeService caseOrgFeeService;
 
   public static ExperimentSupportExamReportResponseRs experimentSupportExamReport2ResponseRs(ExperimentIndicatorViewSupportExamReportRsEntity experimentIndicatorViewSupportExamReportRsEntity) {
     if (Objects.isNull(experimentIndicatorViewSupportExamReportRsEntity)) {
@@ -270,6 +269,8 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
             .eq(ExperimentPersonEntity::getExperimentPersonId,experimentSupportExamCheckRequestRs.getExperimentPersonId())
             .eq(ExperimentPersonEntity::getDeleted,false)
             .one();
+    //计算每次操作应该返回的报销金额
+    BigDecimal reimburse = getExperimentPersonRestitution(totalFeeAtomicReference.get().negate(),experimentSupportExamCheckRequestRs.getExperimentPersonId());
     CostRequest costRequest = CostRequest.builder()
             .operateCostId(idGenerator.nextIdStr())
             .experimentInstanceId(experimentSupportExamCheckRequestRs.getExperimentId())
@@ -281,9 +282,40 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
             .feeName(EnumOrgFeeType.FZJCF.getName())
             .feeCode(EnumOrgFeeType.FZJCF.getCode())
             .cost(totalFeeAtomicReference.get().negate())
+            .restitution(reimburse)
             .period(experimentSupportExamCheckRequestRs.getPeriods())
             .build();
     operateCostBiz.saveCost(costRequest);
     experimentIndicatorViewSupportExamReportRsService.saveOrUpdateBatch(experimentIndicatorViewSupportExamReportRsEntityList);
+  }
+
+  private BigDecimal getExperimentPersonRestitution(BigDecimal fee,String experimentPersonId){
+    //获取在该消费之前的保险购买记录并计算报销比例
+    List<OperateInsuranceEntity> insuranceEntityList = operateInsuranceService.lambdaQuery()
+            .eq(OperateInsuranceEntity::getExperimentPersonId, experimentPersonId)
+            .le(OperateInsuranceEntity::getIndate, new Date())
+            .ge(OperateInsuranceEntity::getExpdate, new Date())
+            .list();
+    //可能会存在多个机构购买情况，金钱要叠加
+    BigDecimal reimburse = new BigDecimal(0);
+    if (insuranceEntityList != null && insuranceEntityList.size() > 0) {
+      for (int j = 0; j < insuranceEntityList.size(); j++) {
+        //3.4、通过机构获取报销比例
+        ExperimentOrgEntity orgEntity = experimentOrgService.lambdaQuery()
+                .eq(ExperimentOrgEntity::getExperimentOrgId, insuranceEntityList.get(j).getExperimentOrgId())
+                .eq(ExperimentOrgEntity::getDeleted, false)
+                .one();
+        if (orgEntity != null && !ReflectUtil.isObjectNull(orgEntity)) {
+          CaseOrgFeeEntity feeEntity = caseOrgFeeService.lambdaQuery()
+                  .eq(CaseOrgFeeEntity::getCaseOrgId, orgEntity.getCaseOrgId())
+                  .eq(CaseOrgFeeEntity::getFeeCode, "BXF")
+                  .one();
+          if (feeEntity != null && !ReflectUtil.isObjectNull(feeEntity)) {
+            reimburse = reimburse.add(fee.multiply(BigDecimal.valueOf(feeEntity.getReimburseRatio())).divide(BigDecimal.valueOf(100), 2, RoundingMode.DOWN));
+          }
+        }
+      }
+    }
+    return reimburse;
   }
 }

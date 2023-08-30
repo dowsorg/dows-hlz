@@ -25,12 +25,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author jx
@@ -233,67 +231,106 @@ public class PersonStatiscBiz {
      * @开始时间:
      * @创建时间: 2023年7月25日 下午16:35:34
      */
+//    @Transactional(rollbackFor = Exception.class)
+//    public void refundFunds(ExperimentPersonRequest request) {
+//        //1、获取该期的结束时间
+//        Map<Integer, ExperimentTimerEntity> timerEntityMap = experimentTimerBiz.getExperimentPeriodsStartAnsEndTime(request.getExperimentInstanceId());
+//        ExperimentTimerEntity timerEntity = timerEntityMap.get(request.getPeriods());
+//        //2、获取该实验人物，所有人物都要统计保险报销
+//        List<ExperimentPersonEntity> personEntityList = experimentPersonService.lambdaQuery()
+//                .eq(ExperimentPersonEntity::getExperimentInstanceId, request.getExperimentInstanceId())
+//                .eq(ExperimentPersonEntity::getDeleted, false)
+//                .list();
+//        /* runsix: TODO must optimize 这里面存在循环修改 */
+//        //3、判断在该期结束之前每个人购买了多少保险，并报销，保险是累加的
+//        if (personEntityList != null && personEntityList.size() > 0) {
+//            personEntityList.forEach(person -> {
+//                BigDecimal fee = new BigDecimal(0);
+//                //3.1、获取人物的所有花费，不包括保险费
+//                List<OperateCostEntity> costEntityList = operateCostBiz.getPeriodsCostNotInsurance(CostRequest.builder()
+//                        .patientId(person.getExperimentPersonId())
+//                        .period(request.getPeriods())
+//                        .build());
+//                costEntityList = costEntityList.stream().filter(c -> ((c.getDt().after(timerEntity.getStartTime()) || c.getDt().equals(timerEntity.getStartTime()))
+//                                && (c.getDt().before(timerEntity.getEndTime()) || c.getDt().equals(timerEntity.getEndTime()))))
+//                        .collect(Collectors.toList());
+//                //3.2、判断人物消费期间购买了哪些保险
+//                if (costEntityList != null && costEntityList.size() > 0) {
+//                    for (int i = 0; i < costEntityList.size(); i++) {
+//                        List<OperateInsuranceEntity> insuranceEntityList = operateInsuranceService.lambdaQuery()
+//                                .eq(OperateInsuranceEntity::getExperimentPersonId, person.getExperimentPersonId())
+//                                .le(OperateInsuranceEntity::getIndate, costEntityList.get(i).getDt())
+//                                .ge(OperateInsuranceEntity::getExpdate, costEntityList.get(i).getDt())
+//                                .list();
+//                        //3.3、可能会存在多个机构购买情况，金钱要叠加
+//                        if (insuranceEntityList != null && insuranceEntityList.size() > 0) {
+//                            for (int j = 0; j < insuranceEntityList.size(); j++) {
+//                                //3.4、通过机构获取报销比例
+//                                ExperimentOrgEntity orgEntity = experimentOrgService.lambdaQuery()
+//                                        .eq(ExperimentOrgEntity::getExperimentOrgId, insuranceEntityList.get(j).getExperimentOrgId())
+//                                        .eq(ExperimentOrgEntity::getDeleted, false)
+//                                        .one();
+//                                if (orgEntity != null && !ReflectUtil.isObjectNull(orgEntity)) {
+//                                    CaseOrgFeeEntity feeEntity = caseOrgFeeService.lambdaQuery()
+//                                            .eq(CaseOrgFeeEntity::getCaseOrgId, orgEntity.getCaseOrgId())
+//                                            .eq(CaseOrgFeeEntity::getFeeCode, "BXF")
+//                                            .one();
+//                                    if (feeEntity != null && !ReflectUtil.isObjectNull(feeEntity)) {
+//                                        fee = fee.add(costEntityList.get(i).getCost().multiply(BigDecimal.valueOf(feeEntity.getReimburseRatio()).divide(BigDecimal.valueOf(100), 2, RoundingMode.DOWN)));
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                    //3.3、扣费
+//                    experimentIndicatorInstanceRsBiz.changeMoney(RsChangeMoneyRequest.builder()
+//                            .appId(request.getAppId())
+//                            .experimentId(request.getExperimentInstanceId())
+//                            .experimentPersonId(person.getExperimentPersonId())
+//                            .periods(request.getPeriods())
+//                            .moneyChange(fee)
+//                            .build());
+//                }
+//            });
+//        }
+//    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 每期结束后，返回剩余的资金
+     * @关联表: operate_cost、operate_insurance
+     * @工时: 3H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023年7月25日 下午16:35:34
+     */
+
     @Transactional(rollbackFor = Exception.class)
     public void refundFunds(ExperimentPersonRequest request) {
-        //1、获取该期的结束时间
-        Map<Integer, ExperimentTimerEntity> timerEntityMap = experimentTimerBiz.getExperimentPeriodsStartAnsEndTime(request.getExperimentInstanceId());
-        ExperimentTimerEntity timerEntity = timerEntityMap.get(request.getPeriods());
-        //2、获取该实验人物，所有人物都要统计保险报销
+        //1、获取该实验人物，所有人物都要统计保险报销
         List<ExperimentPersonEntity> personEntityList = experimentPersonService.lambdaQuery()
                 .eq(ExperimentPersonEntity::getExperimentInstanceId, request.getExperimentInstanceId())
                 .eq(ExperimentPersonEntity::getDeleted, false)
                 .list();
-        /* runsix: TODO must optimize 这里面存在循环修改 */
-        //3、判断在该期结束之前每个人购买了多少保险，并报销，保险是累加的
         if (personEntityList != null && personEntityList.size() > 0) {
-            personEntityList.forEach(person -> {
+            for (ExperimentPersonEntity personEntity : personEntityList) {
                 BigDecimal fee = new BigDecimal(0);
-                //3.1、获取人物的所有花费，不包括保险费
-                List<OperateCostEntity> costEntityList = operateCostBiz.getPeriodsCostNotInsurance(CostRequest.builder()
-                        .patientId(person.getExperimentPersonId())
-                        .period(request.getPeriods())
-                        .build());
-                costEntityList = costEntityList.stream().filter(c -> ((c.getDt().after(timerEntity.getStartTime()) || c.getDt().equals(timerEntity.getStartTime()))
-                                && (c.getDt().before(timerEntity.getEndTime()) || c.getDt().equals(timerEntity.getEndTime()))))
-                        .collect(Collectors.toList());
-                //3.2、判断人物消费期间购买了哪些保险
-                if (costEntityList != null && costEntityList.size() > 0) {
-                    for (int i = 0; i < costEntityList.size(); i++) {
-                        List<OperateInsuranceEntity> insuranceEntityList = operateInsuranceService.lambdaQuery()
-                                .eq(OperateInsuranceEntity::getExperimentPersonId, person.getExperimentPersonId())
-                                .le(OperateInsuranceEntity::getIndate, costEntityList.get(i).getDt())
-                                .ge(OperateInsuranceEntity::getExpdate, costEntityList.get(i).getDt())
-                                .list();
-                        //3.3、可能会存在多个机构购买情况，金钱要叠加
-                        if (insuranceEntityList != null && insuranceEntityList.size() > 0) {
-                            for (int j = 0; j < insuranceEntityList.size(); j++) {
-                                //3.4、通过机构获取报销比例
-                                ExperimentOrgEntity orgEntity = experimentOrgService.lambdaQuery()
-                                        .eq(ExperimentOrgEntity::getExperimentOrgId, insuranceEntityList.get(j).getExperimentOrgId())
-                                        .eq(ExperimentOrgEntity::getDeleted, false)
-                                        .one();
-                                if (orgEntity != null && !ReflectUtil.isObjectNull(orgEntity)) {
-                                    CaseOrgFeeEntity feeEntity = caseOrgFeeService.lambdaQuery()
-                                            .eq(CaseOrgFeeEntity::getCaseOrgId, orgEntity.getCaseOrgId())
-                                            .eq(CaseOrgFeeEntity::getFeeCode, "BXF")
-                                            .one();
-                                    if (feeEntity != null && !ReflectUtil.isObjectNull(feeEntity)) {
-                                        fee = fee.add(costEntityList.get(i).getCost().multiply(BigDecimal.valueOf(feeEntity.getReimburseRatio()).divide(BigDecimal.valueOf(100), 2, RoundingMode.DOWN)));
-                                    }
-                                }
-                            }
-                        }
+                List<OperateCostEntity> operateCostEntityList = operateCostBiz.getPeriodsRestitution(CostRequest.builder().patientId(personEntity.getExperimentPersonId()).period(request.getPeriods()).build());
+                if (operateCostEntityList != null && operateCostEntityList.size() > 0) {
+                    for (OperateCostEntity operateCostEntity : operateCostEntityList) {
+                        fee = fee.add(operateCostEntity.getRestitution());
                     }
-                    //3.3、扣费
-                    experimentIndicatorInstanceRsBiz.changeMoney(RsChangeMoneyRequest.builder()
-                            .appId(request.getAppId())
-                            .experimentId(request.getExperimentInstanceId())
-                            .experimentPersonId(person.getExperimentPersonId())
-                            .periods(request.getPeriods())
-                            .moneyChange(fee)
-                            .build());
                 }
-            });
+                //2、扣费
+                experimentIndicatorInstanceRsBiz.changeMoney(RsChangeMoneyRequest.builder()
+                        .appId(request.getAppId())
+                        .experimentId(request.getExperimentInstanceId())
+                        .experimentPersonId(personEntity.getExperimentPersonId())
+                        .periods(request.getPeriods())
+                        .moneyChange(fee)
+                        .build());
+            }
         }
     }
 }

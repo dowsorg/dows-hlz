@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
 import org.dows.hep.api.base.indicator.request.RsExperimentCalculateFuncRequest;
 import org.dows.hep.api.base.intervene.request.FindFoodRequest;
@@ -39,11 +40,15 @@ import org.dows.hep.biz.spel.meta.SpelEvalSumResult;
 import org.dows.hep.biz.util.*;
 import org.dows.hep.biz.vo.*;
 import org.dows.hep.entity.*;
+import org.dows.hep.service.CaseOrgFeeService;
+import org.dows.hep.service.ExperimentOrgService;
 import org.dows.hep.service.ExperimentPersonService;
+import org.dows.hep.service.OperateInsuranceService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -60,36 +65,25 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class ExperimentOrgInterveneBiz{
-
     private final FoodCalc4ExptBiz foodCalc4ExptBiz;
-
     private final OrgReportComposer orgReportComposer;
-
     private final OperateFlowDao operateFlowDao;
-
     private final OperateOrgFuncDao operateOrgFuncDao;
-
     private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
-
-
     //region 快照数据查询
     private final InterveneCategBiz interveneCategBiz;
     private final FoodPlanBiz foodPlanBiz;
     private final FoodMaterialBiz foodMaterialBiz;
-
     private final SportPlanBiz sportPlanBiz;
-
     private final SportItemBiz sportItemBiz;
-
     private final TreatItemBiz treatItemBiz;
-
     private final ExperimentPersonService experimentPersonService;
-
     private final IdGenerator idGenerator;
-
     private final OperateCostBiz operateCostBiz;
-    
     private final ExperimentIndicatorInstanceRsBiz experimentIndicatorInstanceRsBiz;
+    private final OperateInsuranceService operateInsuranceService;
+    private final ExperimentOrgService experimentOrgService;
+    private final CaseOrgFeeService caseOrgFeeService;
 
 
     public List<Categ4ExptVO> listInterveneCateg4Expt(FindInterveneCateg4ExptRequest findCateg ) throws JsonProcessingException {
@@ -379,6 +373,8 @@ public class ExperimentOrgInterveneBiz{
                 .moneyChange(cost.getValue().negate())
                 .assertEnough(true)
                 .build());
+        //计算每次操作应该返回的报销金额
+        BigDecimal reimburse = getExperimentPersonRestitution(cost.getValue(),saveTreat.getExperimentPersonId());
         final CostRequest costRecord=!costFlag?null:CostRequest.builder()
                 .operateCostId(idGenerator.nextIdStr())
                 .experimentInstanceId(saveTreat.getExperimentInstanceId())
@@ -390,6 +386,7 @@ public class ExperimentOrgInterveneBiz{
                 .feeName(feeType.getName())
                 .feeCode(feeType.getCode())
                 .cost(cost.getValue())
+                .restitution(reimburse)
                 .period(timePoint.getPeriod())
                 .build();
         //操作记录
@@ -535,6 +532,36 @@ public class ExperimentOrgInterveneBiz{
             AssertUtil.justThrow(String.format("记录数据解析失败：%s",ex.getMessage()),ex);
         }
         return rst;
+    }
+
+    private BigDecimal getExperimentPersonRestitution(BigDecimal fee,String experimentPersonId){
+        //获取在该消费之前的保险购买记录并计算报销比例
+        List<OperateInsuranceEntity> insuranceEntityList = operateInsuranceService.lambdaQuery()
+                .eq(OperateInsuranceEntity::getExperimentPersonId, experimentPersonId)
+                .le(OperateInsuranceEntity::getIndate, new Date())
+                .ge(OperateInsuranceEntity::getExpdate, new Date())
+                .list();
+        //可能会存在多个机构购买情况，金钱要叠加
+        BigDecimal reimburse = new BigDecimal(0);
+        if (insuranceEntityList != null && insuranceEntityList.size() > 0) {
+            for (int j = 0; j < insuranceEntityList.size(); j++) {
+                //3.4、通过机构获取报销比例
+                ExperimentOrgEntity orgEntity = experimentOrgService.lambdaQuery()
+                        .eq(ExperimentOrgEntity::getExperimentOrgId, insuranceEntityList.get(j).getExperimentOrgId())
+                        .eq(ExperimentOrgEntity::getDeleted, false)
+                        .one();
+                if (orgEntity != null && !ReflectUtil.isObjectNull(orgEntity)) {
+                    CaseOrgFeeEntity feeEntity = caseOrgFeeService.lambdaQuery()
+                            .eq(CaseOrgFeeEntity::getCaseOrgId, orgEntity.getCaseOrgId())
+                            .eq(CaseOrgFeeEntity::getFeeCode, "BXF")
+                            .one();
+                    if (feeEntity != null && !ReflectUtil.isObjectNull(feeEntity)) {
+                        reimburse = reimburse.add(fee.multiply(BigDecimal.valueOf(feeEntity.getReimburseRatio())).divide(BigDecimal.valueOf(100), 2, RoundingMode.DOWN));
+                    }
+                }
+            }
+        }
+        return reimburse;
     }
 
 
