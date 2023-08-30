@@ -19,7 +19,7 @@ ip=$(ifconfig | grep inet | awk 'NR==3{print $2}')
 lsblk=$(df -h / | awk '{print $5}' | tail -n 1 )
 mem=$(free | grep Mem | awk '{print $3/$2 * 100.0}')
 cpu=$(top -b -n1 | grep "Cpu(s)" | awk '{print $2}')
-url="https://oapi.dingtalk.com/robot/send?access_token=a108a939447601fcd4a884751203f35b187301a93c5dc880794ba1370f063f74"
+url="https://oapi.dingtalk.com/robot/send?access_token=23dda836e12466db0b890ce8d924dfd0e5c747692c364369387c6514821e7d90"
 
 
 curl $url -H 'Content-Type: application/json' -d "{
