@@ -10,6 +10,7 @@ docker_password="findsoft123456"
 docker_version=""
 project_path="/findsoft/hep"
 docker_registry="registry.cn-hangzhou.aliyuncs.com"
+network="prd_net"
 
 sudo echo -e "\033[32m --start-- \033[0m"
 
@@ -50,9 +51,22 @@ docker compose -f ./saas/api/admin/docker-compose.yml down
 docker compose -f ./saas/h5/admin/docker-compose.yml down
 docker compose -f ./saas/h5/user/docker-compose.yml down
 
+## api 教师端
+docker rmi -f "$docker_registry/findsoft/api-hep-admin-prd:1.0.230821"
+## h5教师端
+docker rmi -f "$docker_registry/findsoft/h5-hep-admin-prd:1.0.230826"
+## h5学生端
+docker rmi -f "$docker_registry/findsoft/h5-hep-user-prd:1.0.230826"
+
 #创建prd网络
-docker network rm prd_net
-docker network create --driver bridge --subnet 172.18.0.0/16 --gateway 172.18.0.1 prd_net
+if docker network inspect $network >/dev/null 2>&1; then
+    echo "Network '$network' already exists."
+else
+    docker network create --driver bridge --subnet 172.18.0.0/16 --gateway 172.18.0.1 $network
+    echo "Network '$network' created."
+fi
+#docker network rm prd_net
+#docker network create --driver bridge --subnet 172.18.0.0/16 --gateway 172.18.0.1 prd_net
 
 #启动paas
 sudo echo -e "\033[32m 2.running paas docker-compose  \033[0m"
@@ -64,8 +78,9 @@ sudo docker compose -f ./paas/pdf.yml up -d
 sudo echo -e "\033[32m 3.running saas docker-compose  \033[0m"
 #启动saas
 docker compose -f ./saas/api/admin/docker-compose.yml up -d
-docker compose -f ./saas/h5/admin/docker-compose.yml up -d
 docker compose -f ./saas/h5/user/docker-compose.yml up -d
+docker compose -f ./saas/h5/admin/docker-compose.yml up -d
+
 
 #查看
 sudo docker ps -a
