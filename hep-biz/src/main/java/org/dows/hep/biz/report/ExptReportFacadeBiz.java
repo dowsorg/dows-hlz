@@ -136,6 +136,7 @@ public class ExptReportFacadeBiz {
     public Page<ExptAccountReportResponse> pageAccountReport(ExptAccountReportRequest pageRequest) {
         Page<ExperimentParticipatorEntity> pageResult = experimentParticipatorService.lambdaQuery()
                 .eq(ExperimentParticipatorEntity::getAccountId, pageRequest.getAccountId())
+                .eq(ExperimentParticipatorEntity::getState, EnumExperimentState.FINISH.getState())
                 .orderByDesc(ExperimentParticipatorEntity::getExperimentStartTime)
                 .page(pageRequest.getPage());
         return convertAccountPageResult(pageResult);
