@@ -31,15 +31,15 @@ curl $url \
     "text": {
         "content": "
           项目: '$TITLE'
-          发布时间: ${time} ${times} ${xingqi}
-          项目名: '${PROJECT_NAME}'
-          分支名: ${BRANCH_NAME}
-          发布者: ${AUTHOR_NAME}
-          COMMIT: ${COMMIT}
-          IP: ${ip}
-          DISK: ${lsblk}
-          MEM: ${mem}%
-          CPU: ${cpu}%
+          发布时间: '$time' '$times' '$xingqi'
+          项目名: '$PROJECT_NAME'
+          分支名: '$BRANCH_NAME'
+          发布者: '$AUTHOR_NAME'
+          COMMIT: '$COMMIT'
+          IP: '$ip'
+          DISK: '$lsblk'
+          MEM: '$mem'%
+          CPU: '$cpu'%
         "
     }
 }'
