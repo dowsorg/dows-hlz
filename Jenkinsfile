@@ -92,7 +92,7 @@ pipeline {
                         sh "sshpass -p $AS_PWD scp -r $FORM_DEV_CD_PATH $AS_USERNAME@$AS_HOST:$TO_DEV_CD_PATH"
                         sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST 'cd $TO_DEV_CD_PATH/admin;$LOGIN_DOCKER;$START_CONTAINER'"
 
-                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_DEV_CD_PATH/admin/robot.sh '\"${branch}\"' '\"${gitCommitAuthorName}\"' 'api-hep-admin' 'DEV环境构建、打包、传输成功' 'green'"
+                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_DEV_CD_PATH/admin/robot.sh '\"${branch}\"' '\"${gitCommitAuthorName}\"' 'api-hep-admin' 'DEV环境构建、打包、传输成功' 'green' '\"${gitCommitMessage}\"'"
 
                     } else if (branch.startsWith('sit-')) {
                         echo "Building for sit environment for $branch"
@@ -104,7 +104,7 @@ pipeline {
                         sh "sshpass -p $AS_PWD scp -r $FORM_SIT_CD_PATH $AS_USERNAME@$AS_HOST:$TO_SIT_CD_PATH"
                         sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST 'cd $TO_SIT_CD_PATH/admin;$LOGIN_DOCKER;$START_CONTAINER'"
 
-                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_SIT_CD_PATH/admin/robot.sh '\"${branch}\"' '\"${gitCommitAuthorName}\"' 'api-hep-admin' 'SIT环境构建、打包、传输成功' 'green'"
+                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_SIT_CD_PATH/admin/robot.sh '\"${branch}\"' '\"${gitCommitAuthorName}\"' 'api-hep-admin' 'SIT环境构建、打包、传输成功' 'green' '\"${gitCommitMessage}\"'"
 
                     } else if (branch.startsWith('uat-')) {
                         echo "Building for uat environment for ${branch}"
@@ -116,7 +116,7 @@ pipeline {
                         sh "sshpass -p $AS_PWD scp -r $FORM_UAT_CD_PATH $AS_USERNAME@$AS_HOST:$TO_UAT_CD_PATH"
                         sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST 'cd $TO_UAT_CD_PATH/admin;$LOGIN_DOCKER;$START_CONTAINER'"
 
-                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_UAT_CD_PATH/admin/robot.sh '\"${branch}\"' '\"${gitCommitAuthorName}\"' 'api-hep-admin' 'UAT环境构建、打包、传输成功' 'green'"
+                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_UAT_CD_PATH/admin/robot.sh '\"${branch}\"' '\"${gitCommitAuthorName}\"' 'api-hep-admin' 'UAT环境构建、打包、传输成功' 'green' '\"${gitCommitMessage}\"'"
                     } else if (branch.startsWith('prd-')){
                         echo "Building for production environment for ${branch}"
 
@@ -127,7 +127,7 @@ pipeline {
                         sh "sshpass -p $AS_PWD scp -r $FORM_PRD_CD_PATH $AS_USERNAME@$AS_HOST:$TO_PRD_CD_PATH"
                         sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST 'cd $TO_PRD_CD_PATH/admin;$LOGIN_DOCKER;$START_CONTAINER'"
 
-                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_PRD_CD_PATH/admin/robot.sh '\"${branch}\"' '\"${gitCommitAuthorName}\"' 'api-hep-admin' 'PRD环境构建、打包、传输成功' 'green'"
+                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_PRD_CD_PATH/admin/robot.sh '\"${branch}\"' '\"${gitCommitAuthorName}\"' 'api-hep-admin' 'PRD环境构建、打包、传输成功' 'green' '\"${gitCommitMessage}\"'"
                     }
                 }
             }

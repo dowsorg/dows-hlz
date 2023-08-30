@@ -180,9 +180,7 @@ public class SysEventInvoker {
             if(null==item.getTriggeringTime()){
                 item.setTrigging(stat.curTimePoint.get());
             }
-            if(null==item.getTriggeredTime()) {
-                item.setTriggerd(stat.curTimePoint.get());
-            }
+            item.setTriggerd(stat.curTimePoint.get());
             if (dealer.dealEvent(item, stat)) {
                 stat.doneCounter.incrementAndGet();
             } else {
