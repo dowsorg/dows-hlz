@@ -107,7 +107,20 @@ public class ExptReportFacadeBiz {
                     wrapper.eq(ExperimentInstanceEntity::getAccountId, accessAccountId);
                 })
                 .like(StrUtil.isNotBlank(pageRequest.getKeyword()), ExperimentInstanceEntity::getExperimentName, pageRequest.getKeyword())
-//                .orderBy()
+                // 升序
+//                .orderByAsc(sortByExptNameAsc != null && sortByExptNameAsc == 1, ExperimentInstanceEntity::getExperimentName)
+//                .orderByAsc(sortByAllotTimeAsc != null && sortByAllotTimeAsc == 1, ExperimentInstanceEntity::getDt)
+//                .orderByAsc(sortByStartTimeAsc != null && sortByStartTimeAsc == 1, ExperimentInstanceEntity::getStartTime)
+//                .orderByAsc(sortByEndTimeAsc != null && sortByEndTimeAsc == 1, ExperimentInstanceEntity::getEndTime)
+//                .orderByAsc(sortByAllotUserNameAsc != null && sortByAllotUserNameAsc == 1, ExperimentInstanceEntity::getAppointorName)
+//                .orderByAsc(sortByExptModeAsc != null && sortByExptModeAsc == 1, ExperimentInstanceEntity::getModel)
+                // 降序
+//                .orderByDesc(sortByExptNameAsc != null && sortByExptNameAsc == 0, ExperimentInstanceEntity::getExperimentName)
+//                .orderByDesc(sortByAllotTimeAsc != null && sortByAllotTimeAsc == 0, ExperimentInstanceEntity::getDt)
+//                .orderByDesc(sortByStartTimeAsc != null && sortByStartTimeAsc == 0, ExperimentInstanceEntity::getStartTime)
+//                .orderByDesc(sortByEndTimeAsc != null && sortByEndTimeAsc == 0, ExperimentInstanceEntity::getEndTime)
+//                .orderByDesc(sortByAllotUserNameAsc != null && sortByAllotUserNameAsc == 0, ExperimentInstanceEntity::getAppointorName)
+//                .orderByDesc(sortByExptModeAsc != null && sortByExptModeAsc == 0, ExperimentInstanceEntity::getModel)
                 .page(pageRequest.getPage());
         return convertPageResult(pageResult);
     }
@@ -211,7 +224,7 @@ public class ExptReportFacadeBiz {
     /**
      * @param exptInstanceId - 实验实例ID
      * @param exptGroupId    - 实验小组ID
-     * @param regenerate
+     * @param regenerate     - 是否重新生成
      * @return org.dows.hep.vo.report.ExptReportVO
      * @author fhb
      * @description 获取小组实验报告
@@ -293,7 +306,7 @@ public class ExptReportFacadeBiz {
 
     /**
      * @param exptInstanceId - 实验实例ID
-     * @param regenerate
+     * @param regenerate     - 是否重新生成
      * @param request        - http 请求
      * @param response       - http 响应
      * @author fhb
@@ -324,7 +337,7 @@ public class ExptReportFacadeBiz {
     /**
      * @param exptInstanceId - 实验实例ID
      * @param exptGroupId    - 实验小组ID
-     * @param regenerate
+     * @param regenerate     - 是否重新生成
      * @param request        - Http 请求
      * @param response       - Http 响应
      * @author fhb
@@ -355,7 +368,7 @@ public class ExptReportFacadeBiz {
     /**
      * @param exptInstanceId - 实验实例ID
      * @param accountId      - 账号ID
-     * @param regenerate
+     * @param regenerate     - 是否重新生成
      * @param request        - Http 请求
      * @param response       - Http 响应
      * @author fhb
