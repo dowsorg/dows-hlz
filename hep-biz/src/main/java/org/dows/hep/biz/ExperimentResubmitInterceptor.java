@@ -41,7 +41,7 @@ public class ExperimentResubmitInterceptor implements HandlerInterceptor {
         String experimentId = request.getHeader("experimentId");
         String clientIP = getRemoteIP(request);
         String key = token + clientIP + request.getMethod() + request.getRequestURI();
-        log.info("拦截UIR:{}", key);
+        //log.info("拦截UIR:{}", key);
         ;
         String val = localCache.get(key);
         if (val != null) {

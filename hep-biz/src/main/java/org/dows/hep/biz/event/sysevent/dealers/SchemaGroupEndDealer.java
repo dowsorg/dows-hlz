@@ -28,6 +28,11 @@ public class SchemaGroupEndDealer extends BaseEventDealer {
     private final ExperimentGroupDao experimentGroupDao;
 
     @Override
+    public boolean breakOnUnreached() {
+        return false;
+    }
+
+    @Override
     protected boolean coreDeal(EventDealResult rst, SysEventRow row, SysEventRunStat stat) {
         final String exptId=row.getEntity().getExperimentInstanceId();
         final String exptGroupId=row.getEntity().getExperimentGroupId();
@@ -44,8 +49,8 @@ public class SchemaGroupEndDealer extends BaseEventDealer {
                 ExperimentGroupEntity::getExperimentGroupId);
         List<ExperimentSysEventEntity> rst=new ArrayList<>();
         rowsGroup.forEach(item-> rst.add(buildEvent(exptColl,0,
-                EnumSysEventDealType.SCHEMAGroupEnd.getCode(),
-                EnumSysEventTriggerType.MANUAL.getCode())
+                EnumSysEventDealType.SCHEMAGroupEnd,
+                EnumSysEventTriggerType.MANUAL)
                 .setExperimentGroupId(item.getExperimentGroupId())));
         return rst;
     }

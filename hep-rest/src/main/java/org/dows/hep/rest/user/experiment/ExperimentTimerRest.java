@@ -34,7 +34,7 @@ public class ExperimentTimerRest {
     @GetMapping("v1/userExperiment/experimentTimer/countdown")
     public IntervalResponse countdown(String appId, String experimentInstanceId) {
 
-        IntervalResponse intervalResponse = experimentTimerBiz.countdown(experimentInstanceId);
+        IntervalResponse intervalResponse = experimentTimerBiz.countdown(appId, experimentInstanceId);
         return intervalResponse;
     }
 
@@ -46,8 +46,8 @@ public class ExperimentTimerRest {
      */
     @Operation(summary = "获取实验进度条")
     @GetMapping("v1/tenantExperiment/experimentTimer/progress")
-    public IntervalResponse progress(@RequestParam String experimentInstanceId) {
-        IntervalResponse countdown = experimentTimerBiz.countdown(experimentInstanceId);
+    public IntervalResponse progress(@RequestParam String appId,  @RequestParam String experimentInstanceId) {
+        IntervalResponse countdown = experimentTimerBiz.countdown(appId,experimentInstanceId);
         return countdown;
     }
 

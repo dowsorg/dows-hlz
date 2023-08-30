@@ -3,8 +3,11 @@ package org.dows.hep.biz.event.sysevent.data;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.dows.hep.biz.util.ShareUtil;
+import org.dows.hep.biz.vo.PushWebScoketResult;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author : wuzl
@@ -23,6 +26,8 @@ public class EventDealResult {
     private Integer retryTimes;
 
     private SysEventRunStat flowStat;
+
+    private final List<PushWebScoketResult>  pushStat=new ArrayList<>();
 
     private final String SPLITText=" ";
 
@@ -50,6 +55,13 @@ public class EventDealResult {
         sb.append(" retry:").append(retryTimes);
         sb.append(" msg:").append(msg);
         sb.append(" flow:").append(flowStat);
+        sb.append(" push:");
+        for(int i=0;i<pushStat.size();i++){
+            if(i>0){
+                sb.append(",");
+            }
+            sb.append(pushStat.get(i));
+        }
         sb.append('}');
         return sb.toString();
     }

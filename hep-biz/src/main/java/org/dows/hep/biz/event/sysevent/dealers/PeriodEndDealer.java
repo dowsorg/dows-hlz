@@ -6,7 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.Response;
 import org.dows.framework.api.uim.AccountInfo;
 import org.dows.hep.api.base.indicator.request.RsCalculatePeriodsRequest;
+import org.dows.hep.api.enums.EnumWebSocketType;
 import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
+import org.dows.hep.biz.event.ExperimentSettingCache;
+import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentSettingCollection;
 import org.dows.hep.biz.event.sysevent.BaseEventDealer;
 import org.dows.hep.biz.event.sysevent.data.*;
@@ -48,6 +51,10 @@ public class PeriodEndDealer extends BaseEventDealer {
         final String experimentInstanceId = event.getExperimentInstanceId();
         final Integer period = event.getPeriods();
 
+        final ExperimentCacheKey exptKey=ExperimentCacheKey.create(appId,experimentInstanceId);
+        final ExperimentSettingCollection exptColl= ExperimentSettingCache.Instance().getSet(exptKey, true);
+        this.pushTimeState(rst, exptKey, exptColl, EnumWebSocketType.FLOW_PERIOD_ENDING , row);
+
 
         // 每期结束后，统一提交知识答题。 （注：需要在算分前执行）
         experimentQuestionnaireBiz.submitQuestionnaireBatch(experimentInstanceId, period);
@@ -68,7 +75,11 @@ public class PeriodEndDealer extends BaseEventDealer {
             rst.append("calcError:%s", ex.getMessage());
             return false;
         }
-
+        this.pushTimeState(rst, exptKey, exptColl, EnumWebSocketType.FLOW_PERIOD_ENDED , row);
+        this.oldPush(appId, experimentInstanceId, period);
+        return true;
+    }
+    private void oldPush(String appId, String experimentInstanceId,Integer period){
         MessageBody messageBody = new MessageBody<>();
         messageBody.setExperimentId(experimentInstanceId);
         messageBody.setPeriod(period.toString());
@@ -82,7 +93,6 @@ public class PeriodEndDealer extends BaseEventDealer {
         for (Channel channel : channels) {
             HepClientManager.sendInfoRetry(channel, MessageCode.MESS_CODE, Response.ok(messageBody), idGenerator.nextIdStr(), null);
         }
-        return true;
     }
 
     @Override
@@ -93,8 +103,8 @@ public class PeriodEndDealer extends BaseEventDealer {
         List<ExperimentSysEventEntity> rst=new ArrayList<>();
         for(int i=1;i<=exptColl.getPeriods();i++){
             rst.add(buildEvent(exptColl,i,
-                    EnumSysEventDealType.PERIODEnd.getCode(),
-                    EnumSysEventTriggerType.PERIODEnd.getCode()));
+                    EnumSysEventDealType.PERIODEnd,
+                    EnumSysEventTriggerType.PERIODEnd));
         }
         return rst;
     }

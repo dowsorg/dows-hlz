@@ -43,7 +43,7 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
     }
 
     protected final static int CACHEInitCapacity = 2;
-    protected final static int CACHEMaxSize = 10;
+    protected final static int CACHEMaxSize = 20;
     protected final static int CACHEExpireSeconds = 60 * 60 * 6;
 
     private ExperimentSettingCache() {
@@ -102,6 +102,10 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
         if(null==sandSetting){
             return rst.setPeriods(0);
         }
+        rst.setDurationMap(sandSetting.getDurationMap());
+        rst.setPeriodMap(sandSetting.getPeriodMap());
+        Map<String, Double> mockRateMap = new HashMap<>();
+        rst.setMockRateMap(mockRateMap);
         Map<Integer, ExperimentSettingCollection.ExperimentPeriodSetting> mapPeriod = new HashMap<>();
         RangeMap<Integer, Integer> mapPeriodSeconds = TreeRangeMap.create();
 
@@ -110,13 +114,16 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
         int startSeconds, startDay;
         int endSeconds = 0;
         int endDay = 0;
+        long totalSeconds=0;
         for (int i = 1; i <= periods; i++) {
             Integer lastMinutes = sandSetting.getDurationMap().get(String.valueOf(i));
             startSeconds = endSeconds;
             endSeconds = startSeconds + lastMinutes * 60;
             Integer lastDays = sandSetting.getPeriodMap().get(String.valueOf(i));
+            mockRateMap.put(String.valueOf(i),lastDays/(lastMinutes*60d));
             startDay = endDay + 1;
             endDay = startDay + lastDays - 1;
+            totalSeconds+=lastMinutes*60;
             mapPeriod.put(i, ExperimentSettingCollection.ExperimentPeriodSetting.builder()
                     .Period(i)
                     .startSecond(startSeconds)
@@ -132,7 +139,9 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
         return rst.setPeriods(periods)
                 .setRawEndSeconds(endSeconds)
                 .setMapPeriod(mapPeriod)
-                .setMapPeriodSeconds(mapPeriodSeconds);
+                .setMapPeriodSeconds(mapPeriodSeconds)
+                .setTotalDays(Long.valueOf(endDay))
+                .setTotalSeconds(totalSeconds);
     }
 
     public ExperimentTimePoint getTimePointByRealTimeSilence(ExperimentCacheKey key, LocalDateTime dt, boolean fillGameDay) {
@@ -171,37 +180,25 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
                     .setCntPauseSeconds(0L)
                     .setGameState(EnumExperimentState.UNBEGIN);
         }
-        Map<Integer,ExperimentTimerEntity> mapTimer=s_instance.experimentTimerDao.getMapByExperimentId(key.getAppId(), key.getExperimentInstanceId(),null,
-                ExperimentTimerEntity::getPeriod,
-                ExperimentTimerEntity::getStartTime,
-                ExperimentTimerEntity::getEndTime,
-                ExperimentTimerEntity::getPaused,
-                ExperimentTimerEntity::getPauseTime,
-                ExperimentTimerEntity::getState);
+        ExperimentTimerCache.CacheData timerCache= ExperimentTimerCache.Instance().loadingCache().get(key);
         ExperimentTimerEntity curTimer=null;
-        for(ExperimentTimerEntity item:mapTimer.values()){
-            if(nowTs<item.getStartTime().getTime()){
-                break;
-            }
-            curTimer=item;
+        if(ShareUtil.XObject.isEmpty(timerCache)||ShareUtil.XObject.isEmpty(curTimer=timerCache.getCurTimer(dtNow))) {
+            return rst.setPeriod(1)
+                    .setGameDay(1)
+                    .setCntPauseSeconds(0L)
+                    .setGameState(EnumExperimentState.UNBEGIN);
         }
 
-        AssertUtil.getNotNull(curTimer).orElseThrow("getTimePointByRealTime-未找到当前实验计时器");
         rst.setPeriod(curTimer.getPeriod());
         if (cached.getPeriods().equals(curTimer.getPeriod()) && curTimer.getEndTime().getTime() <= nowTs) {
             rst.setGameState(EnumExperimentState.FINISH);
         } else {
             rst.setGameState(EnumExperimentState.ONGOING);
         }
-        ExperimentSettingCollection.ExperimentPeriodSetting setting = AssertUtil.getNotNull(cached.getSettingByPeriod(rst.getPeriod()))
+        AssertUtil.getNotNull(cached.getSettingByPeriod(rst.getPeriod()))
                 .orElseThrow(String.format("getTimePointByRealTime-未找到实验第%s期设置", rst.getPeriod()));
-        long pausingSeconds = 0;
-        if (Optional.ofNullable(curTimer.getPaused()).orElse(false)) {
-            pausingSeconds = (nowTs - curTimer.getPauseTime().getTime()) / 1000;
-        }
-        rst.setCntPauseSeconds(pausingSeconds + curTimer.getEndTime().getTime() / 1000
-                - ShareUtil.XDate.localDT2UnixTS(cached.getSandStartTime().plusSeconds(setting.getEndSecond()), true));
-        if (!fillGameDay || ShareUtil.XObject.isEmpty(rst.getCntPauseSeconds())) {
+        rst.setCntPauseSeconds(timerCache.getCntPauseSeconds());
+        if (!fillGameDay) {
             return rst;
         }
         Integer rawSeconds = (int) (Duration.between(cached.getSandStartTime(), dtNow).toSeconds() + 1 - rst.getCntPauseSeconds());

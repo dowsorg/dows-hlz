@@ -49,7 +49,7 @@ public class ExperimentOrgNoticeBiz {
         return experimentOrgNoticeService.save(row);
     }
     public boolean update(ExperimentOrgNoticeEntity row) {
-        if(ShareUtil.XObject.notEmpty(row.getExperimentOrgNoticeId())) {
+        if(ShareUtil.XObject.isEmpty(row.getExperimentOrgNoticeId())) {
             return experimentOrgNoticeService.updateById(row);
         }else{
             return experimentOrgNoticeService.lambdaUpdate()

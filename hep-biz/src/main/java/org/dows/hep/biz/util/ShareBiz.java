@@ -3,6 +3,9 @@ package org.dows.hep.biz.util;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.servlet.http.HttpServletRequest;
+import org.dows.account.api.AccountInstanceApi;
+import org.dows.account.request.AccountInstanceRequest;
+import org.dows.account.response.AccountInstanceResponse;
 import org.dows.account.util.JwtUtil;
 import org.dows.framework.crud.api.CrudContextHolder;
 import org.dows.hep.api.base.indicator.response.CaseIndicatorExpressionResponseRs;
@@ -204,6 +207,27 @@ public class ShareBiz {
 
 
     //region
+
+    public static Set<String> getAccountIdsByExperimentId(String experimentId){
+        ExperimentParticipatorDao experimentParticipatorDao=CrudContextHolder.getBean(ExperimentParticipatorDao.class);
+        return ShareUtil.XCollection.toSet(experimentParticipatorDao.getByExperimentId(experimentId,
+                ExperimentParticipatorEntity::getAccountId),ExperimentParticipatorEntity::getAccountId);
+    }
+    public static List<AccountInstanceResponse> getAccountsByAccountIds(Set<String> accountIds) {
+        if (ShareUtil.XObject.isEmpty(accountIds)) {
+            return null;
+        }
+        AccountInstanceApi accountInstanceApi = CrudContextHolder.getBean(AccountInstanceApi.class);
+        AccountInstanceRequest req = AccountInstanceRequest.builder()
+                .pageNo(1)
+                .pageSize(accountIds.size() + 1)
+                .accountIds(accountIds)
+                .build();
+        return Optional.ofNullable(accountInstanceApi.customAccountInstanceList(req))
+                .map(i->i.getRecords())
+                .orElse(Collections.emptyList());
+
+    }
 
     /**
      * 按小组id获取账户
