@@ -195,7 +195,8 @@ public abstract class BaseEventDealer implements ISysEventDealer {
     protected PushWebScoketResult pushTimeState(EventDealResult rst, ExperimentCacheKey exptKey, ExperimentSettingCollection exptColl, EnumWebSocketType socketType, SysEventRow checkPush){
         Set<String> clientIds= ShareBiz.getAccountIdsByExperimentId(exptKey.getExperimentInstanceId());
         if(ShareUtil.XCollection.isEmpty(clientIds)){
-            PushWebScoketResult pushRst=new PushWebScoketResult().setType(socketType.toString()).append("missAccounts");
+            PushWebScoketResult pushRst=new PushWebScoketResult().setType(socketType.toString())
+                    .append("missAccounts");
             rst.getPushStat().add(pushRst);
             return pushRst;
         }
@@ -205,16 +206,14 @@ public abstract class BaseEventDealer implements ISysEventDealer {
     protected PushWebScoketResult pushTimeState(EventDealResult rst, ExperimentCacheKey exptKey, ExperimentSettingCollection exptColl, EnumWebSocketType socketType, Set<String> clientIds, SysEventRow checkPush) {
         try {
             if (null != checkPush && !requirePush(checkPush)) {
-                PushWebScoketResult pushRst= new PushWebScoketResult().append("unRequirePush[%s] ", this.getPushType());
+                PushWebScoketResult pushRst= new PushWebScoketResult().setType(socketType.toString())
+                        .append("unRequirePush[%s] ", this.getPushType());
                 rst.getPushStat().add(pushRst);
                 return pushRst;
             }
             final String experimentInstanceId = exptKey.getExperimentInstanceId();
             IntervalResponse pushData = experimentFlowRules.countdown(exptKey, exptColl);
             PushWebScoketResult pushRst = PushWebSocketUtil.Instance().pushCommon(socketType, experimentInstanceId, clientIds, pushData);
-            if (ShareUtil.XObject.notEmpty(pushRst)) {
-                pushRst.setType(socketType.toString());
-            }
             rst.getPushStat().add(pushRst);
             return pushRst;
         }catch (Exception ex){

@@ -339,7 +339,9 @@ public class ExperimentGroupBiz {
                 return true;
             }
         }finally {
-            lock.unlock();
+            if(isLocked) {
+                lock.unlock();
+            }
         }
 
 

@@ -49,26 +49,40 @@ public class HepClientManager {
      * @return
      */
     public static AccountInfo saveUser(Channel channel, OnlineAccount onlineAccount) {
-        String addr = NettyUtil.parseChannelRemoteAddr(channel);
-        // 判断通道状态是否正常
-        if (!channel.isActive()) {
-            log.error("channel is not active, accountInfo:{}", addr, JSONUtil.toJsonStr(onlineAccount));
-            return null;
+        StringBuilder sb=new StringBuilder();
+        AccountInfo accountInfo=null;
+        try {
+            sb.append("WSTrace--").append(" channel:").append(channel.hashCode())
+                    .append(" login:").append(onlineAccount.getAccountId()).append("-");
+            String addr = NettyUtil.parseChannelRemoteAddr(channel);
+            // 判断通道状态是否正常
+            if (!channel.isActive()) {
+                sb.append("inactive");
+                log.error("channel is not active, accountInfo:{}", addr, JSONUtil.toJsonStr(onlineAccount));
+                return null;
+            }
+            // 添加当前用户身份信息到通道数据
+            channel.attr(EXPERIMENT_IN_SESSION_ATTRIBUTE).set(onlineAccount.getExperimentId());
+            channel.attr(ACCOUNT_IN_SESSION_ATTRIBUTE).set(onlineAccount.getAccountId());
+            // 增加一个用户数
+            accountCount.incrementAndGet();
+            accountInfo = new AccountInfo();
+            accountInfo.setAccountName(onlineAccount.getAccountId());
+            // 保存用户到指定房间数据
+            if (ONLINE_ACCOUNT.get(onlineAccount.getExperimentId()) == null) {
+                ConcurrentMap<Channel, AccountInfo> userInfoConcurrentMap = new ConcurrentHashMap<>();
+                ONLINE_ACCOUNT.put(onlineAccount.getExperimentId(), userInfoConcurrentMap);
+            }
+            ONLINE_ACCOUNT.get(onlineAccount.getExperimentId()).put(channel, accountInfo);
+            sb.append("succ");
+        }catch (Exception ex){
+            sb.append("error:").append(ex.getMessage());
+            log.error("HepClientManager.login",ex);
+
+        }finally {
+            log.info(sb.toString());
+            sb.setLength(0);
         }
-        // 添加当前用户身份信息到通道数据
-        channel.attr(EXPERIMENT_IN_SESSION_ATTRIBUTE).set(onlineAccount.getExperimentId());
-        channel.attr(ACCOUNT_IN_SESSION_ATTRIBUTE).set(onlineAccount.getAccountId());
-        // 增加一个用户数
-        accountCount.incrementAndGet();
-        AccountInfo accountInfo = new AccountInfo();
-        accountInfo.setAccountName(onlineAccount.getAccountId());
-        // 保存用户到指定房间数据
-        if (ONLINE_ACCOUNT.get(onlineAccount.getExperimentId()) == null) {
-            ConcurrentMap<Channel, AccountInfo> userInfoConcurrentMap = new ConcurrentHashMap<>();
-            ONLINE_ACCOUNT.put(onlineAccount.getExperimentId(), userInfoConcurrentMap);
-        }
-        ONLINE_ACCOUNT.get(onlineAccount.getExperimentId()).put(channel, accountInfo);
-        // 返回数据
         return accountInfo;
     }
 
@@ -113,7 +127,9 @@ public class HepClientManager {
      * @param channel
      */
     public static void removeChannel(Channel channel) {
+        StringBuilder sb=new StringBuilder();
         try {
+            sb.append("WSTrace--").append(" channel:").append(channel.hashCode()).append(" logout:");
             log.warn("channel will be remove, address is :{}", NettyUtil.parseChannelRemoteAddr(channel));
             rwLock.writeLock().lock();
             channel.close();
@@ -121,14 +137,21 @@ public class HepClientManager {
             String room = getRoomIdFromSession(channel);
             AccountInfo userInfo = ONLINE_ACCOUNT.get(room).get(channel);
             if (userInfo != null) {
+                sb.append(userInfo.getAccountId()).append("-");
                 AccountInfo tmp = ONLINE_ACCOUNT.get(room).remove(channel);
                 if (tmp != null) {
                     // 减去一个认证用户
                     accountCount.decrementAndGet();
                 }
             }
-        } finally {
+            sb.append("succ");
+        } catch (Exception ex){
+            sb.append("error:").append(ex.getMessage());
+            log.error("HepClientManager.logout",ex);
+        }finally {
             rwLock.writeLock().unlock();
+            log.info(sb.toString());
+            sb.setLength(0);
         }
 
     }
@@ -237,7 +260,7 @@ public class HepClientManager {
     public static void broadCastPing() {
         try {
             rwLock.readLock().lock();
-            log.info("broadCastPing userCount: {}", accountCount.intValue());
+           // log.info("broadCastPing userCount: {}", accountCount.intValue());
             // 获取所有的通道发送数据
             Collection<ConcurrentMap<Channel, AccountInfo>> collection = ONLINE_ACCOUNT.values();
             for (ConcurrentMap<Channel, AccountInfo> accountInfos : collection) {
