@@ -104,7 +104,9 @@ public class ExptReportFacadeBiz {
                 .eq(ExperimentInstanceEntity::getState, EnumExperimentState.FINISH.getState())
                 .and(!isAdmin, wrapper -> {
                     // 教师可以看到自己的以及管理员已经发布的 todo @实验列表 exptInstance 提供个区分管理员和教师端的
-                    wrapper.eq(ExperimentInstanceEntity::getAccountId, accessAccountId);
+                    wrapper.eq(ExperimentInstanceEntity::getAccountId, accessAccountId)
+                            .or()
+                            .eq(ExperimentInstanceEntity::getAppointor, "Admin");
                 })
                 .like(StrUtil.isNotBlank(pageRequest.getKeyword()), ExperimentInstanceEntity::getExperimentName, pageRequest.getKeyword())
                 // 升序
