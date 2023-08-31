@@ -7,10 +7,36 @@
 
 docker_username="findsoft@dows"
 docker_password="findsoft123456"
-docker_version=""
-project_path="/findsoft/hep"
 docker_registry="registry.cn-hangzhou.aliyuncs.com"
-network="prd_net"
+docker_images=("$docker_registry/findsoft/api-hep-admin-prd" "$docker_registry/findsoft/h5-hep-admin-prd" "$docker_registry/findsoft/h5-hep-user-prd")
+docker_network="prd_net"
+
+
+# Function to check if a container is running
+check_container_running() {
+    local container_name="$1"
+    local running=$(docker inspect -f '{{.State.Running}}' "$container_name" 2>/dev/null)
+
+    if [ "$running" = "true" ]; then
+        return 0 # Container is running
+    else
+        return 1 # Container is not running
+    fi
+}
+
+# Function to start or restart a container
+start_or_restart_container() {
+    local container_name="$1"
+    local image_name="$2"
+
+    if check_container_running "$container_name"-prd; then
+        echo "Container '$container_name' is already running."
+    else
+        echo "Starting or restarting container '$container_name'..."
+        docker compose -f ./paas/"$container_name".yml up  -d
+        echo "Container '$container_name' started or restarted."
+    fi
+}
 
 sudo echo -e "\033[32m --start-- \033[0m"
 
@@ -38,11 +64,11 @@ sudo docker login --username=$docker_username --password=$docker_password ${dock
 sudo echo -e "\033[32m 1.remove old tag images \033[0m"
 ## todo脚本动态判断
 ## api
-#sudo docker rmi -f "$docker_registry/hep-admin-prd:1.0.230821"
+#sudo docker rmi -f "$docker_registry/hep-admin-uat:1.0.230821"
 ## h5教师端
-#sudo docker rmi -f "$docker_registry/h5-hep-admin-prd:1.0.230826"
+#sudo docker rmi -f "$docker_registry/h5-hep-admin-uat:1.0.230826"
 ## h5学生端
-#sudo docker rmi -f "$docker_registry/h5-hep-user-prd:1.0.230826"
+#sudo docker rmi -f "$docker_registry/h5-hep-user-uat:1.0.230826"
 
 sudo docker images
 
@@ -51,31 +77,51 @@ docker compose -f ./saas/api/admin/docker-compose.yml down
 docker compose -f ./saas/h5/admin/docker-compose.yml down
 docker compose -f ./saas/h5/user/docker-compose.yml down
 
-## api 教师端
-docker rmi -f "$docker_registry/findsoft/api-hep-admin-prd:1.0.230821"
-## h5教师端
-docker rmi -f "$docker_registry/findsoft/h5-hep-admin-prd:1.0.230826"
-## h5学生端
-docker rmi -f "$docker_registry/findsoft/h5-hep-user-prd:1.0.230826"
+### api 教师端
+#docker rmi -f "$docker_registry/findsoft/api-hep-admin-uat:1.0.230821"
+### h5教师端
+#docker rmi -f "$docker_registry/findsoft/h5-hep-admin-uat:1.0.230826"
+### h5学生端
+#docker rmi -f "$docker_registry/findsoft/h5-hep-user-uat:1.0.230826"
 
-#创建prd网络
-if docker network inspect $network >/dev/null 2>&1; then
-    echo "Network '$network' already exists."
+#for di in "${docker_images[@]}"; do
+#    if docker image inspect $di >/dev/null 2>&1; then
+#        docker image rm $di
+#        echo "......image '$di' deleted......"
+#    else
+#        echo "......image '$di' does not exist......"
+#    fi
+#done
+containerId=`docker images | grep hep-* | awk '{print $3}'`
+echo $containerId
+for str in $containerId
+do
+  docker rmi $str
+  echo "......deleted image '$str'......"
+done
+
+#创建uat网络
+if docker network inspect $docker_network >/dev/null 2>&1; then
+    echo "Network '$docker_network' already exists."
 else
-    docker network create --driver bridge --subnet 172.18.0.0/16 --gateway 172.18.0.1 $network
-    echo "Network '$network' created."
+    docker network create --driver bridge --subnet 172.18.0.0/16 --gateway 172.18.0.1 $docker_network
+    echo "Network '$docker_network' created."
 fi
-#docker network rm prd_net
-#docker network create --driver bridge --subnet 172.18.0.0/16 --gateway 172.18.0.1 prd_net
+#docker network rm uat_net
+#docker network create --driver bridge --subnet 172.18.0.0/16 --gateway 172.18.0.1 uat_net
 
 #启动paas
-sudo echo -e "\033[32m 2.running paas docker-compose  \033[0m"
-sudo docker compose -f ./paas/mysql.yml up -d
-sudo docker compose -f ./paas/redis.yml up -d
-sudo docker compose -f ./paas/minio.yml up -d
-sudo docker compose -f ./paas/pdf.yml up -d
+echo -e "\033[32m 2.running paas docker-compose  \033[0m"
+start_or_restart_container "mysql"
+start_or_restart_container "redis"
+start_or_restart_container "minio"
+start_or_restart_container "pdf"
+#sudo docker compose -f ./paas/mysql.yml up  -d
+#sudo docker compose -f ./paas/redis.yml up  -d
+#sudo docker compose -f ./paas/minio.yml up  -d
+#sudo docker compose -f ./paas/pdf.yml up -d
 
-sudo echo -e "\033[32m 3.running saas docker-compose  \033[0m"
+echo -e "\033[32m 3.running saas docker-compose  \033[0m"
 #启动saas
 docker compose -f ./saas/api/admin/docker-compose.yml up -d
 docker compose -f ./saas/h5/user/docker-compose.yml up -d
