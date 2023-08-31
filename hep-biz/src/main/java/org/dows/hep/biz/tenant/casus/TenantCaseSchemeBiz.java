@@ -388,9 +388,11 @@ public class TenantCaseSchemeBiz {
         List<QuestionSectionItemResponse> sectionItemList = questionSectionResponse.getSectionItemList();
         List<QuestionSectionDimensionResponse> questionSectionDimensionList = questionSectionResponse.getQuestionSectionDimensionList();
         Map<String, List<QuestionSectionDimensionResponse>> questionSectionDimensionMap = questionSectionResponse.getQuestionSectionDimensionMap();
+        List<Map<String, List<QuestionSectionDimensionResponse>>> questionSectionDimensionArray = questionSectionResponse.getQuestionSectionDimensionArray();
         result.setSectionItemList(sectionItemList);
         result.setQuestionSectionDimensionList(questionSectionDimensionList);
         result.setQuestionSectionDimensionMap(questionSectionDimensionMap);
+        result.setQuestionSectionDimensionArray(questionSectionDimensionArray);
     }
 
     private CaseSchemeEntity convertRequest2Entity(CaseSchemeRequest request, CaseSchemeSourceEnum caseSchemeSourceEnum, QuestionSourceEnum questionSourceEnum) {

@@ -21,10 +21,7 @@ import org.dows.hep.entity.QuestionSectionEntity;
 import org.dows.hep.service.QuestionSectionService;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -204,6 +201,14 @@ public class QuestionSectionBiz {
         if (!dimensionResponseList.isEmpty()) {
             Map<String, List<QuestionSectionDimensionResponse>> collect = dimensionResponseList.stream().collect(Collectors.groupingBy(QuestionSectionDimensionResponse::getDimensionName));
             questionSectionResponse.setQuestionSectionDimensionMap(collect);
+
+            List<Map<String, List<QuestionSectionDimensionResponse>>> list = new ArrayList<>();
+            collect.forEach((k, v) -> {
+                Map<String, List<QuestionSectionDimensionResponse>> itemMap = new HashMap<>();
+                itemMap.put(k, v);
+                list.add(itemMap);
+            });
+            questionSectionResponse.setQuestionSectionDimensionArray(list);
         }
 
         return questionSectionResponse;
