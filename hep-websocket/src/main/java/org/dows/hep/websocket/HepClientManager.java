@@ -18,6 +18,7 @@ import org.dows.sequence.snowflake.config.SnowFlakeConfiguration;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -53,11 +54,11 @@ public class HepClientManager {
         AccountInfo accountInfo=null;
         try {
             sb.append("WSTrace--").append(" channel:").append(channel.hashCode())
-                    .append(" login:").append(onlineAccount.getAccountId()).append("-");
+                    .append(" login:").append(onlineAccount.getAccountId());
             String addr = NettyUtil.parseChannelRemoteAddr(channel);
             // 判断通道状态是否正常
             if (!channel.isActive()) {
-                sb.append("inactive");
+                sb.append("-inactive");
                 log.error("channel is not active, accountInfo:{}", addr, JSONUtil.toJsonStr(onlineAccount));
                 return null;
             }
@@ -74,7 +75,9 @@ public class HepClientManager {
                 ONLINE_ACCOUNT.put(onlineAccount.getExperimentId(), userInfoConcurrentMap);
             }
             ONLINE_ACCOUNT.get(onlineAccount.getExperimentId()).put(channel, accountInfo);
-            sb.append("succ");
+            sb.append(" expt:").append(channel.attr(EXPERIMENT_IN_SESSION_ATTRIBUTE).get());
+            sb.append(" attr:").append(channel.attr(ACCOUNT_IN_SESSION_ATTRIBUTE).get());
+            sb.append(" cnt:").append(Optional.ofNullable( ONLINE_ACCOUNT.get(onlineAccount.getExperimentId())).map(i->i.size()).orElse(null));
         }catch (Exception ex){
             sb.append("error:").append(ex.getMessage());
             log.error("HepClientManager.login",ex);
@@ -137,14 +140,18 @@ public class HepClientManager {
             String room = getRoomIdFromSession(channel);
             AccountInfo userInfo = ONLINE_ACCOUNT.get(room).get(channel);
             if (userInfo != null) {
-                sb.append(userInfo.getAccountId()).append("-");
+                sb.append(userInfo.getAccountName());
                 AccountInfo tmp = ONLINE_ACCOUNT.get(room).remove(channel);
                 if (tmp != null) {
                     // 减去一个认证用户
                     accountCount.decrementAndGet();
                 }
+            }else{
+                sb.append("-miss");
             }
-            sb.append("succ");
+            sb.append(" expt:").append(room);
+            sb.append(" attr:").append(channel.attr(ACCOUNT_IN_SESSION_ATTRIBUTE).get());
+            sb.append(" cnt:").append(Optional.ofNullable( ONLINE_ACCOUNT.get(room)).map(i->i.size()).orElse(null));
         } catch (Exception ex){
             sb.append("error:").append(ex.getMessage());
             log.error("HepClientManager.logout",ex);
