@@ -399,7 +399,7 @@ public class ExperimentSchemeScoreBiz {
             List<ExperimentSchemeScoreItemResponse> rItemList = collect.get(r.getExperimentSchemeScoreId());
             // 前端展示需要
             Map<String, List<ExperimentSchemeScoreItemResponse>> rItemMap = rItemList.stream()
-                    .collect(Collectors.groupingBy(ExperimentSchemeScoreItemResponse::getDimensionName));
+                    .collect(Collectors.groupingBy(ExperimentSchemeScoreItemResponse::getDimensionName, LinkedHashMap::new, Collectors.toList()));
             // 前端展示需要
             List<Map<String, List<ExperimentSchemeScoreItemResponse>>> rItemArray = new ArrayList<>();
             rItemMap.forEach((k, v) -> {

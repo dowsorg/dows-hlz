@@ -199,7 +199,8 @@ public class QuestionSectionBiz {
         List<QuestionSectionDimensionResponse> dimensionResponseList = questionSectionDimensionBiz.listQuestionSectionDimension(questionSectionId);
         questionSectionResponse.setQuestionSectionDimensionList(dimensionResponseList);
         if (!dimensionResponseList.isEmpty()) {
-            Map<String, List<QuestionSectionDimensionResponse>> collect = dimensionResponseList.stream().collect(Collectors.groupingBy(QuestionSectionDimensionResponse::getDimensionName));
+            Map<String, List<QuestionSectionDimensionResponse>> collect = dimensionResponseList.stream()
+                    .collect(Collectors.groupingBy(QuestionSectionDimensionResponse::getDimensionName, LinkedHashMap::new, Collectors.toList()));
             questionSectionResponse.setQuestionSectionDimensionMap(collect);
 
             List<Map<String, List<QuestionSectionDimensionResponse>>> list = new ArrayList<>();
