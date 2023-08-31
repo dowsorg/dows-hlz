@@ -37,4 +37,7 @@ public class ExperimentSchemeScoreResponse {
 
     @Schema(title = "方案设计评分ItemMap-展示使用")
     private Map<String, List<ExperimentSchemeScoreItemResponse>> itemMap;
+
+    @Schema(title = "方案设计评分ItemMapArray-展示使用")
+    private List<Map<String, List<ExperimentSchemeScoreItemResponse>>> itemArray;
 }

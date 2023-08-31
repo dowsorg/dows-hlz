@@ -59,4 +59,7 @@ public class QuestionSectionResponse {
 
     @Schema(title = "维度Map")
     private Map<String, List<QuestionSectionDimensionResponse>> questionSectionDimensionMap;
+
+    @Schema(title = "维度Array")
+    private List<Map<String, List<QuestionSectionDimensionResponse>>> questionSectionDimensionArray;
 }
