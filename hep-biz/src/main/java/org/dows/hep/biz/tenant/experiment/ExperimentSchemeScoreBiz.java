@@ -397,10 +397,19 @@ public class ExperimentSchemeScoreBiz {
 
             // 设置评分表
             List<ExperimentSchemeScoreItemResponse> rItemList = collect.get(r.getExperimentSchemeScoreId());
+            // 前端展示需要
             Map<String, List<ExperimentSchemeScoreItemResponse>> rItemMap = rItemList.stream()
                     .collect(Collectors.groupingBy(ExperimentSchemeScoreItemResponse::getDimensionName));
+            // 前端展示需要
+            List<Map<String, List<ExperimentSchemeScoreItemResponse>>> rItemArray = new ArrayList<>();
+            rItemMap.forEach((k, v) -> {
+                Map<String, List<ExperimentSchemeScoreItemResponse>> itemMap = new HashMap<>();
+                itemMap.put(k, v);
+                rItemArray.add(itemMap);
+            });
             r.setItemList(rItemList);
             r.setItemMap(rItemMap);
+            r.setItemArray(rItemArray);
         });
 
         return result;
