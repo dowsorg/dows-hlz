@@ -64,6 +64,7 @@ public class QuestionSectionDimensionBiz{
 
         List<QuestionSectionDimensionEntity> entityList = questionSectionDimensionService.lambdaQuery()
                 .eq(QuestionSectionDimensionEntity::getQuestionSectionId, questionSectionId)
+                .orderByAsc(QuestionSectionDimensionEntity::getId)
                 .list();
         if (entityList == null || entityList.isEmpty()) {
             return new ArrayList<>();

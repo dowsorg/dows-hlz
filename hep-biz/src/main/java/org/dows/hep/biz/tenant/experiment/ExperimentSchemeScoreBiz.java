@@ -383,6 +383,7 @@ public class ExperimentSchemeScoreBiz {
                 .toList();
         List<ExperimentSchemeScoreItemEntity> itemList = experimentSchemeScoreItemService.lambdaQuery()
                 .in(ExperimentSchemeScoreItemEntity::getExperimentSchemeScoreId, schemeScoreIdList)
+                .orderByAsc(ExperimentSchemeScoreItemEntity::getId)
                 .list();
 
         // convert
