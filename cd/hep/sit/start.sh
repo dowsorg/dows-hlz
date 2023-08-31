@@ -9,7 +9,7 @@ docker_username="findsoft@dows"
 docker_password="findsoft123456"
 docker_registry="registry.cn-hangzhou.aliyuncs.com"
 docker_images=("$docker_registry/findsoft/api-hep-admin-prd" "$docker_registry/findsoft/h5-hep-admin-prd" "$docker_registry/findsoft/h5-hep-user-prd")
-docker_network="prd_net"
+docker_network="sit_net"
 
 
 # Function to check if a container is running
