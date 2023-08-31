@@ -390,8 +390,10 @@ public class ExptReportFacadeBiz {
         // 读取临时文件内容为字节数组
         byte[] fileData = FileUtils.readFileToByteArray(tempFilePath.toFile());
         // 设置响应的内容类型
-        String contentType = request.getServletContext().getMimeType(tempFilePath.getFileName().toString());
-        response.setContentType(contentType);
+        response.setContentType("application/pdf");
+       /* String contentType = request.getServletContext().getMimeType(tempFilePath.getFileName().toString());
+        response.setContentType(contentType);*/
+
         // 将文件数据写入响应
         response.getOutputStream().write(fileData);
         // 删除临时文件
