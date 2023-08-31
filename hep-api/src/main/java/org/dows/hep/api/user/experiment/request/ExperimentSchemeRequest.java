@@ -1,6 +1,7 @@
 package org.dows.hep.api.user.experiment.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -25,6 +26,7 @@ public class ExperimentSchemeRequest {
     private String videoAnswer;
 
     @NotNull
+    @Valid
     @Schema(title = "方案设计试卷")
     private List<ExperimentSchemeItemRequest> itemList;
 }
