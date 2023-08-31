@@ -423,15 +423,15 @@ public class ExptReportFacadeBiz {
             boolean isAdmin = baseBiz.isAdministrator(accountId);
             if (!isAdmin) {
                 ExperimentSetting.SchemeSetting schemeSetting = experimentSettingBiz.getSchemeSetting(experimentInstanceId);
-                // 评分截止时间
-                long scoreEndTime = Optional.of(schemeSetting)
-                        .map(ExperimentSetting.SchemeSetting::getScoreEndTime)
+                // 审核截止时间
+                long auditEndTime = Optional.of(schemeSetting)
+                        .map(ExperimentSetting.SchemeSetting::getAuditEndTime)
                         .map(Date::getTime)
                         .orElseThrow(() -> new BizException("下载报告时，获取方案设计设置数据异常"));
                 long current = DateUtil.current();
                 // 未到评分截止时间
-                if (current < scoreEndTime) {
-                    throw new BizException("下载报告时，未到方案设计评分截止时间，请等待！");
+                if (current < auditEndTime) {
+                    throw new BizException("评分中，请等待！");
                 }
             }
         }

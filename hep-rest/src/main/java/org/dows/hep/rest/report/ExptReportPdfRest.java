@@ -210,9 +210,10 @@ public class ExptReportPdfRest {
     @Operation(summary = "预览学生报告")
     @GetMapping("v1/report/previewAccountReport")
     public void previewAccountReport(@RequestParam String experimentInstanceId,
+                                     @RequestParam String accountId,
                                      HttpServletRequest request,
                                      HttpServletResponse response) {
-        String accountId = baseBiz.getAccountId(request);
+//        String accountId = baseBiz.getAccountId(request);
         boolean regenerate = regenerate(experimentInstanceId);
         try {
             exptReportFacadeBiz.previewAccountReport(experimentInstanceId, accountId, regenerate, request, response);
