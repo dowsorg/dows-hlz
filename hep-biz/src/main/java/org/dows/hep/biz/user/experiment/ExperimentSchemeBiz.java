@@ -463,6 +463,7 @@ public class ExperimentSchemeBiz {
         } else {
             handleExptAllGroupStatus(exptInstanceId, EnumExperimentGroupStatus.WAIT_SCHEMA);
             handleExptStatus(exptInstanceId, EnumExperimentState.FINISH);
+            handleExptParticipator(exptInstanceId, EnumExperimentState.FINISH);
         }
 
         // sync info
@@ -732,6 +733,13 @@ public class ExperimentSchemeBiz {
                 .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
                 .set(ExperimentInstanceEntity::getState, enumExperimentState.getState());
         return experimentInstanceService.update(updateWrapper);
+    }
+
+    private Boolean handleExptParticipator(String exptInstanceId, EnumExperimentState enumExperimentState) {
+        LambdaUpdateWrapper<ExperimentParticipatorEntity> wrapper = new LambdaUpdateWrapper<ExperimentParticipatorEntity>()
+                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, exptInstanceId)
+                .set(ExperimentParticipatorEntity::getState, enumExperimentState.getState());
+        return experimentParticipatorService.update(wrapper);
     }
 
     private ExperimentSchemeEntity getScheme(String experimentInstanceId, String experimentGroupId) {
