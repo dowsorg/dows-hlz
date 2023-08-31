@@ -36,9 +36,6 @@ public class ToolBiz {
         sb.append("[");
         AtomicReference<String> vExptId=new AtomicReference<>("");
         dump.forEach((k,v)->{
-            if(sb.length()>0){
-                sb.append(",");
-            }
             sb.append("{");
             if(!vExptId.equals(v.getTenantName())&&ShareUtil.XObject.notEmpty(v.getTenantName()) ){
                 sb.append("expt:").append(v.getTenantName());
@@ -46,7 +43,7 @@ public class ToolBiz {
             }
             sb.append(" channel:").append(k);
             sb.append(" user:").append(v.getAccountName());
-            sb.append("}");
+            sb.append("},");
         });
         sb.append("]");
         dump.clear();

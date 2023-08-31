@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.biz.user.experiment.ToolBiz;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,7 +20,7 @@ public class ToolRest {
 
     private final ToolBiz toolBiz;
     @Operation(summary = "获取webSocket连接状态")
-    @PostMapping("v1/tool/getWebSocketState")
+    @GetMapping("v1/tool/getWebSocketState")
     public String getWebSocketState(@RequestParam String exptId){
         return toolBiz.getWebSocketState(exptId);
     }
