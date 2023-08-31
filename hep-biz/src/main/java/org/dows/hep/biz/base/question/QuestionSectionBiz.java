@@ -200,7 +200,7 @@ public class QuestionSectionBiz {
         questionSectionResponse.setQuestionSectionDimensionList(dimensionResponseList);
         if (!dimensionResponseList.isEmpty()) {
             Map<String, List<QuestionSectionDimensionResponse>> collect = dimensionResponseList.stream()
-                    .collect(Collectors.groupingBy(QuestionSectionDimensionResponse::getDimensionName, LinkedHashMap::new, Collectors.toList()));
+                    .collect(Collectors.groupingBy(QuestionSectionDimensionResponse::getDimensionName, TreeMap::new, Collectors.toList()));
             questionSectionResponse.setQuestionSectionDimensionMap(collect);
 
             List<Map<String, List<QuestionSectionDimensionResponse>>> list = new ArrayList<>();
