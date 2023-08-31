@@ -8,7 +8,7 @@
 docker_username="findsoft@dows"
 docker_password="findsoft123456"
 docker_registry="registry.cn-hangzhou.aliyuncs.com"
-docker_images=("$docker_registry/findsoft/api-hep-admin-prd" "$docker_registry/findsoft/h5-hep-admin-prd" "$docker_registry/findsoft/h5-hep-user-prd")
+docker_images=("$docker_registry/findsoft/api-hep-admin-sit" "$docker_registry/findsoft/h5-hep-admin-sit" "$docker_registry/findsoft/h5-hep-user-sit")
 docker_network="sit_net"
 
 
@@ -29,7 +29,7 @@ start_or_restart_container() {
     local container_name="$1"
     local image_name="$2"
 
-    if check_container_running "$container_name"-prd; then
+    if check_container_running "$container_name"-sit; then
         echo "Container '$container_name' is already running."
     else
         echo "Starting or restarting container '$container_name'..."

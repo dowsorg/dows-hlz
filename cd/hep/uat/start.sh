@@ -8,8 +8,35 @@
 docker_username="findsoft@dows"
 docker_password="findsoft123456"
 docker_registry="registry.cn-hangzhou.aliyuncs.com"
-docker_images=("$docker_registry/findsoft/api-hep-admin-uat:1.0.230821" "$docker_registry/findsoft/h5-hep-admin-uat:1.0.230826" "$docker_registry/findsoft/h5-hep-user-uat:1.0.230826")
+docker_images=("$docker_registry/findsoft/api-hep-admin-uat" "$docker_registry/findsoft/h5-hep-admin-uat" "$docker_registry/findsoft/h5-hep-user-uat")
 docker_network="uat_net"
+
+
+# Function to check if a container is running
+check_container_running() {
+    local container_name="$1"
+    local running=$(docker inspect -f '{{.State.Running}}' "$container_name" 2>/dev/null)
+
+    if [ "$running" = "true" ]; then
+        return 0 # Container is running
+    else
+        return 1 # Container is not running
+    fi
+}
+
+# Function to start or restart a container
+start_or_restart_container() {
+    local container_name="$1"
+    local image_name="$2"
+
+    if check_container_running "$container_name"-uat; then
+        echo "Container '$container_name' is already running."
+    else
+        echo "Starting or restarting container '$container_name'..."
+        docker compose -f ./paas/"$container_name".yml up  -d
+        echo "Container '$container_name' started or restarted."
+    fi
+}
 
 sudo echo -e "\033[32m --start-- \033[0m"
 
@@ -57,13 +84,20 @@ docker compose -f ./saas/h5/user/docker-compose.yml down
 ### h5学生端
 #docker rmi -f "$docker_registry/findsoft/h5-hep-user-uat:1.0.230826"
 
-for di in "${docker_images[@]}"; do
-    if docker image inspect $di >/dev/null 2>&1; then
-        docker image rm $di
-        echo "......image '$di' deleted......"
-    else
-        echo "......image '$di' does not exist......"
-    fi
+#for di in "${docker_images[@]}"; do
+#    if docker image inspect $di >/dev/null 2>&1; then
+#        docker image rm $di
+#        echo "......image '$di' deleted......"
+#    else
+#        echo "......image '$di' does not exist......"
+#    fi
+#done
+containerId=`docker images | grep hep-* | awk '{print $3}'`
+echo $containerId
+for str in $containerId
+do
+  docker rmi $str
+  echo "......deleted image '$str'......"
 done
 
 #创建uat网络
@@ -78,10 +112,14 @@ fi
 
 #启动paas
 echo -e "\033[32m 2.running paas docker-compose  \033[0m"
-sudo docker compose -f ./paas/mysql.yml up --remove-orphans -d
-sudo docker compose -f ./paas/redis.yml up --remove-orphans -d
-sudo docker compose -f ./paas/minio.yml up --remove-orphans -d
-sudo docker compose -f ./paas/pdf.yml up --remove-orphans -d
+start_or_restart_container "mysql"
+start_or_restart_container "redis"
+start_or_restart_container "minio"
+start_or_restart_container "pdf"
+#sudo docker compose -f ./paas/mysql.yml up  -d
+#sudo docker compose -f ./paas/redis.yml up  -d
+#sudo docker compose -f ./paas/minio.yml up  -d
+#sudo docker compose -f ./paas/pdf.yml up -d
 
 echo -e "\033[32m 3.running saas docker-compose  \033[0m"
 #启动saas
