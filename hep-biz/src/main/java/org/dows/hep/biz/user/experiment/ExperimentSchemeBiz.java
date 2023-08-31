@@ -272,6 +272,9 @@ public class ExperimentSchemeBiz {
         if (StrUtil.isBlank(experimentSchemeItemId) || StrUtil.isBlank(questionResult) || StrUtil.isBlank(submitAccountId)) {
             throw new BizException(ExperimentESCEnum.PARAMS_NON_NULL);
         }
+        if (questionResult.length() > 10000) {
+            throw new BizException("提交方案设计时，答案长度应为0-10000");
+        }
 
         ExperimentSchemeItemEntity schemeItem = getSchemeItem(experimentSchemeItemId);
         String experimentSchemeId = Optional.ofNullable(schemeItem)
@@ -315,6 +318,7 @@ public class ExperimentSchemeBiz {
         }
 
         // check
+        checkRequestQuestionResultLength(request);
         ExperimentSchemeEntity schemeEntity = cannotUpdateAfterSubmit(request.getExperimentSchemeId());
         cannotUpdateIf0UsableTime(schemeEntity.getExperimentSchemeId());
         filterIfNoPermission(request, submitAccountId);
@@ -383,10 +387,10 @@ public class ExperimentSchemeBiz {
             long remainingTime = Long.parseLong(schemeDuration.getRemainingTime());
             DateTime endTime = DateUtil.offset(beginTime, DateField.MILLISECOND, (int) remainingTime);
 
-            if(ConfigExperimentFlow.SWITCH2SysEvent){
+            if (ConfigExperimentFlow.SWITCH2SysEvent) {
                 //启用新流程
-                SysEventInvoker.Instance().triggeringSchemaGroupEnd(endTime, null, exptInstanceId,exptGroupId);
-            }else {
+                SysEventInvoker.Instance().triggeringSchemaGroupEnd(endTime, null, exptInstanceId, exptGroupId);
+            } else {
                 //保存任务进计时器表，防止重启后服务挂了，一个任务每个实验每一期只能有一条数据
                 ExperimentTaskScheduleEntity taskEntity = ExperimentTaskScheduleEntity.builder()
                         .experimentTaskTimerId(idGenerator.nextIdStr())
@@ -587,6 +591,31 @@ public class ExperimentSchemeBiz {
             throw new BizException(ExperimentESCEnum.SCHEME_HAS_BEEN_SUBMITTED);
         }
         return entity;
+    }
+
+    private void checkRequestQuestionResultLength(ExperimentSchemeRequest request) {
+        String videoAnswer = request.getVideoAnswer();
+        if (StrUtil.isNotBlank(videoAnswer) && videoAnswer.length() > 10000) {
+            throw new BizException("保存方案设计时，视频答案长度应为0-10000");
+        }
+
+        List<ExperimentSchemeItemRequest> itemList = request.getItemList();
+        if (CollUtil.isNotEmpty(itemList)) {
+            for (ExperimentSchemeItemRequest item : itemList) {
+                checkItemResultLength(item);
+            }
+        }
+    }
+
+    private void checkItemResultLength(ExperimentSchemeItemRequest item) {
+        if (item.getQuestionResult() != null && item.getQuestionResult().length() > 10000) {
+            throw new BizException("答案长度应为0-10000");
+        }
+        if (item.getChildren() != null) {
+            for (ExperimentSchemeItemRequest child : item.getChildren()) {
+                checkItemResultLength(child);
+            }
+        }
     }
 
     private void checkIsCaptain(String experimentInstanceId, String experimentGroupId, String accountId) {

@@ -2,6 +2,7 @@ package org.dows.hep.biz.report;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -17,6 +18,7 @@ import org.dows.hep.api.constant.RedisKeyConst;
 import org.dows.hep.api.constant.SystemConstant;
 import org.dows.hep.api.enums.EnumExperimentMode;
 import org.dows.hep.api.enums.EnumExperimentState;
+import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.tenant.experiment.request.ExptAccountReportRequest;
 import org.dows.hep.api.tenant.experiment.request.ExptGroupReportPageRequest;
 import org.dows.hep.api.tenant.experiment.request.ExptReportPageRequest;
@@ -50,10 +52,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -165,9 +164,9 @@ public class ExptReportFacadeBiz {
      * @description 获取实验报告
      * @date 2023/7/21 14:11
      */
-    public ExptReportVO exportExptReport(String exptInstanceId, boolean regenerate) {
+    public ExptReportVO exportExptReport(String exptInstanceId, String accountId, boolean regenerate) {
         // check
-        ExperimentInstanceEntity exptEntity = checkExpt(exptInstanceId);
+        ExperimentInstanceEntity exptEntity = checkExpt(exptInstanceId, accountId);
         String exptZipName = exptEntity.getId()
                 + SystemConstant.SPLIT_UNDER_LINE
                 + exptEntity.getExperimentName()
@@ -232,9 +231,9 @@ public class ExptReportFacadeBiz {
      * @description 获取小组实验报告
      * @date 2023/7/21 14:09
      */
-    public ExptReportVO exportGroupReport(String exptInstanceId, String exptGroupId, boolean regenerate) {
+    public ExptReportVO exportGroupReport(String exptInstanceId, String exptGroupId, String accountId, boolean regenerate) {
         // check
-        ExperimentInstanceEntity exptEntity = checkExpt(exptInstanceId);
+        ExperimentInstanceEntity exptEntity = checkExpt(exptInstanceId, accountId);
         String groupZipName = exptEntity.getId()
                 + SystemConstant.SPLIT_UNDER_LINE
                 + exptEntity.getExperimentName()
@@ -303,7 +302,7 @@ public class ExptReportFacadeBiz {
     public ExptReportVO exportAccountReport(String exptInstanceId, String accountId, boolean regenerate) {
         String experimentGroupId = getGroupOfAccountAndExpt(exptInstanceId, accountId);
 
-        return exportGroupReport(exptInstanceId, experimentGroupId, regenerate);
+        return exportGroupReport(exptInstanceId, experimentGroupId, accountId, regenerate);
     }
 
     /**
@@ -315,8 +314,8 @@ public class ExptReportFacadeBiz {
      * @description 预览实验报告
      * @date 2023/8/24 17:41
      */
-    public void previewExptReport(String exptInstanceId, boolean regenerate, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        ExptReportVO exptReportVO = exportExptReport(exptInstanceId, regenerate);
+    public void previewExptReport(String exptInstanceId, String accountId, boolean regenerate, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        ExptReportVO exptReportVO = exportExptReport(exptInstanceId, accountId, regenerate);
         List<ExptGroupReportVO> groupReportList = exptReportVO.getGroupReportList();
         if (CollUtil.isEmpty(groupReportList)) {
             return;
@@ -346,8 +345,8 @@ public class ExptReportFacadeBiz {
      * @description 预览小组报告
      * @date 2023/8/24 17:42
      */
-    public void previewGroupReport(String exptInstanceId, String exptGroupId, boolean regenerate, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        ExptReportVO exptReportVO = exportGroupReport(exptInstanceId, exptGroupId, regenerate);
+    public void previewGroupReport(String exptInstanceId, String exptGroupId, String accountId, boolean regenerate, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        ExptReportVO exptReportVO = exportGroupReport(exptInstanceId, exptGroupId, accountId, regenerate);
         List<ExptGroupReportVO> groupReportList = exptReportVO.getGroupReportList();
         if (CollUtil.isEmpty(groupReportList)) {
             return;
@@ -379,7 +378,7 @@ public class ExptReportFacadeBiz {
      */
     public void previewAccountReport(String exptInstanceId, String accountId, boolean regenerate, HttpServletRequest request, HttpServletResponse response) throws IOException {
         String experimentGroupId = getGroupOfAccountAndExpt(exptInstanceId, accountId);
-        previewGroupReport(exptInstanceId, experimentGroupId, regenerate, request, response);
+        previewGroupReport(exptInstanceId, experimentGroupId, accountId, regenerate, request, response);
     }
 
     private void preview(String urlStr, HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -402,7 +401,8 @@ public class ExptReportFacadeBiz {
         Files.deleteIfExists(tempFilePath);
     }
 
-    private ExperimentInstanceEntity checkExpt(String experimentInstanceId) {
+    private ExperimentInstanceEntity checkExpt(String experimentInstanceId, String accountId) {
+        // 校验状态
         ExperimentInstanceEntity exptInstance = experimentInstanceService.lambdaQuery()
                 .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
                 .oneOpt()
@@ -410,6 +410,30 @@ public class ExptReportFacadeBiz {
         Integer state = exptInstance.getState();
         if (state < EnumExperimentState.FINISH.getState()) {
             throw new BizException("实验还未结束，请等待");
+        }
+
+        // 校验模式
+        ExptSettingModeEnum exptSettingMode = experimentSettingBiz.getExptSettingMode(experimentInstanceId);
+        if (exptSettingMode == null) {
+            throw new BizException("下载报告时，获取实验设置数据异常");
+        }
+        // 如果是方案设计模式
+        if (ExptSettingModeEnum.SCHEME.equals(exptSettingMode)) {
+            // 是否是管理员
+            boolean isAdmin = baseBiz.isAdministrator(accountId);
+            if (!isAdmin) {
+                ExperimentSetting.SchemeSetting schemeSetting = experimentSettingBiz.getSchemeSetting(experimentInstanceId);
+                // 评分截止时间
+                long scoreEndTime = Optional.of(schemeSetting)
+                        .map(ExperimentSetting.SchemeSetting::getScoreEndTime)
+                        .map(Date::getTime)
+                        .orElseThrow(() -> new BizException("下载报告时，获取方案设计设置数据异常"));
+                long current = DateUtil.current();
+                // 未到评分截止时间
+                if (current < scoreEndTime) {
+                    throw new BizException("下载报告时，未到方案设计评分截止时间，请等待！");
+                }
+            }
         }
         return exptInstance;
     }
