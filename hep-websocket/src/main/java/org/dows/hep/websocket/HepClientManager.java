@@ -69,6 +69,7 @@ public class HepClientManager {
             accountCount.incrementAndGet();
             accountInfo = new AccountInfo();
             accountInfo.setAccountName(onlineAccount.getAccountId());
+            accountInfo.setTenantName(onlineAccount.getExperimentId());
             // 保存用户到指定房间数据
             if (ONLINE_ACCOUNT.get(onlineAccount.getExperimentId()) == null) {
                 ConcurrentMap<Channel, AccountInfo> userInfoConcurrentMap = new ConcurrentHashMap<>();

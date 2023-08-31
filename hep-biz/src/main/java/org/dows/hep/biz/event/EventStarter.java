@@ -41,6 +41,7 @@ public class EventStarter implements ApplicationListener<ApplicationStartedEvent
     private ExperimentInstanceDao experimentInstanceDao;
 
     private volatile boolean startedFlag=false;
+    private static final String APPId="3";
 
 
     public void start(){
@@ -51,7 +52,7 @@ public class EventStarter implements ApplicationListener<ApplicationStartedEvent
         final Set<String> userIds=new HashSet<>();
         try {
             List<ExperimentInstanceEntity> rowsExperiment = experimentInstanceDao.getRunningExperiment(
-                    null, EnumExperimentState.UNBEGIN.getState(),  EnumExperimentState.SUSPEND.getState(),
+                    APPId , EnumExperimentState.UNBEGIN.getState(),  EnumExperimentState.SUSPEND.getState(),
                     DateUtil.offsetDay(new Date(),-2).toJdkDate(),
                     ExperimentInstanceEntity::getAppId,
                     ExperimentInstanceEntity::getExperimentInstanceId,
