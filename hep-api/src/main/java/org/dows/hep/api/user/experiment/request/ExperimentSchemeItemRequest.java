@@ -2,6 +2,7 @@ package org.dows.hep.api.user.experiment.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,6 +30,7 @@ public class ExperimentSchemeItemRequest {
     private String accountId;
 
     @Schema(title = "作答答案")
+    @Size(min = 0, max = 10000, message = "答案长度应为0-10000")
     private String questionResult;
 
     @Schema(title = "子")
