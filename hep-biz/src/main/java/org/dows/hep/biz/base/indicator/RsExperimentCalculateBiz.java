@@ -1423,7 +1423,7 @@ public class RsExperimentCalculateBiz {
         .build());
 
     //计算突发事件触发
-    PersonBasedEventTask.runPersonBasedEventAsync(appId,experimentId);
+    PersonBasedEventTask.runPersonBasedEvent(appId,experimentId);
   }
 
   /**
@@ -1535,7 +1535,7 @@ public class RsExperimentCalculateBiz {
           .build());
 
       //计算突发事件触发
-      PersonBasedEventTask.runPersonBasedEventAsync(appId,experimentId);
+      PersonBasedEventTask.runPersonBasedEvent(appId,experimentId);
 
     } finally {
       lock.unlock();
@@ -1641,7 +1641,7 @@ public class RsExperimentCalculateBiz {
           .build());
 
       //计算突发事件触发
-      PersonBasedEventTask.runPersonBasedEventAsync(appId,experimentId);
+      PersonBasedEventTask.runPersonBasedEvent(appId,experimentId);
 
     } finally {
       lock.unlock();
