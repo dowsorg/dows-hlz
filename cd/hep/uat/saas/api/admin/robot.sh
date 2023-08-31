@@ -7,11 +7,11 @@ AUTHOR_NAME=$2
 #项目名
 PROJECT_NAME=$3
 #描述
-DESC=$4
+TITLE=$4
 #颜色
 COLOR=$5
 
-title='应用发布监控'
+#title='应用发布监控'
 time="$(date "+%Y-%m-%d")"
 times="$(date "+%H:%M:%S")"
 xingqi="$(date "+%A")"
@@ -19,7 +19,7 @@ ip=$(ifconfig | grep inet | awk 'NR==3{print $2}')
 lsblk=$(df -h / | awk '{print $5}' | tail -n 1 )
 mem=$(free | grep Mem | awk '{print $3/$2 * 100.0}')
 cpu=$(top -b -n1 | grep "Cpu(s)" | awk '{print $2}')
-url="https://oapi.dingtalk.com/robot/send?access_token=a108a939447601fcd4a884751203f35b187301a93c5dc880794ba1370f063f74"
+url="https://oapi.dingtalk.com/robot/send?access_token=21d6e9818d74556dd52f8021bcf94080136cb065c51bcf29f9b42c0513f19095"
 
 
 curl $url -H 'Content-Type: application/json' -d "{
@@ -27,7 +27,7 @@ curl $url -H 'Content-Type: application/json' -d "{
     'markdown':{
       'title':'应用发布监控',
       'text':'
-        ******<font color=\"#0000FF\">${title}</font>******\n
+        ******<font color=\"#0000FF\">${TITLE}</font>******\n
         **发布时间:** <font color=\"#0000FF\">${time} ${times} ${xingqi}</font>\n
         **项目名:** <font  color=\"#FF0000\">${PROJECT_NAME}</font>\n
         **分支名:** <font  color=\"#FF0000\">${BRANCH_NAME}</font>\n
