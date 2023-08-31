@@ -10,6 +10,9 @@
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE-INFO"/>
     </AsyncLogger>
+    <AsyncLogger name="org.dows" level="ERROR" additivity="false"  includeLocation="true">
+        <appender-ref ref="FILE-ERROR"/>
+    </AsyncLogger>
     <AsyncLogger name="com.zaxxer.hikari.pool.ProxyStatement" level="INFO" additivity="false" includeLocation="true">
         <appender-ref ref="SKYWALKING"/>
         <appender-ref ref="CONSOLE"/>

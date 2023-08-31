@@ -32,6 +32,8 @@ import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.response.ExperimentStateResponse;
 import org.dows.hep.biz.base.person.PersonManageBiz;
 import org.dows.hep.biz.util.PeriodsTimerUtil;
+import org.dows.hep.biz.util.ShareBiz;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -335,13 +337,17 @@ public class ExperimentManageBiz {
 
         // 处理实验
         BeanUtil.copyProperties(experimentInstance, createExperimentForm, "teachers", "experimentSetting");
+
+        final Set<String> accountIds= ShareUtil.XCollection.toSet(experimentParticipatorList,ExperimentParticipatorEntity::getAccountId);
+        List<AccountInstanceResponse> accountInstanceResponseList= ShareBiz.getAccountsByAccountIds(accountIds);
+        accountInstanceResponseList.forEach(item->item.setPassword(null));
         // 处理老师
-        List<AccountInstanceResponse> accountInstanceResponseList = new ArrayList<>();
+      /*  List<AccountInstanceResponse> accountInstanceResponseList = new ArrayList<>();
         experimentParticipatorList.forEach(experimentParticipator -> {
             AccountInstanceResponse accountInstanceResponse = new AccountInstanceResponse();
             BeanUtil.copyProperties(experimentParticipator, accountInstanceResponse);
             accountInstanceResponseList.add(accountInstanceResponse);
-        });
+        });*/
         // todo 一个实验是否可以有多个老师
 //        List<AccountInstanceResponse> teachers = Arrays.asList(accountInstanceResponse);
         createExperimentForm.setTeachers(accountInstanceResponseList);
@@ -837,8 +843,25 @@ public class ExperimentManageBiz {
                         .eq(ExperimentParticipatorEntity::getExperimentInstanceId, response.getExperimentInstanceId())
                         .isNull(ExperimentParticipatorEntity::getExperimentGroupId)
                         .list();
+                Set<String> accountIds=ShareUtil.XCollection.toSet(participatorList,ExperimentParticipatorEntity::getAccountId);
+                if(ShareUtil.XObject.isEmpty(accountIds)){
+                    return;
+                }
+                List<AccountInstanceResponse> accounts=ShareBiz.getAccountsByAccountIds(accountIds);
+                if(ShareUtil.XObject.isEmpty(accounts)){
+                    return;
+                }
                 StringBuilder sb = new StringBuilder();
-                if (participatorList != null && participatorList.size() > 0) {
+                accounts.forEach(item->{
+                    if(sb.length()==0){
+                        sb.append(item.getUserName());
+                    }else{
+                        sb.append(",").append(item.getUserName());
+                    }
+                });
+                response.setParticipators(sb.toString());
+                sb.setLength(0);
+                /*if (participatorList != null && participatorList.size() > 0) {
                     participatorList.forEach(participator -> {
                         sb.append(participator.getAccountName()).append(",");
                     });
@@ -846,7 +869,7 @@ public class ExperimentManageBiz {
                 if (StringUtils.isNotEmpty(sb)) {
                     String str = sb.substring(0, sb.length() - 1);
                     response.setParticipators(str);
-                }
+                }*/
             });
         }
         pageInfo.setList(listResponses);

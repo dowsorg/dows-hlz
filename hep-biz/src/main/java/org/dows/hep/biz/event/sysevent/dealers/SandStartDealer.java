@@ -40,8 +40,8 @@ public class SandStartDealer extends BaseEventDealer {
             return null;
         }
         return List.of(buildEvent(exptColl,1,
-                EnumSysEventDealType.SANDStart.getCode(),
-                EnumSysEventTriggerType.SANDStart.getCode()));
+                EnumSysEventDealType.SANDStart,
+                EnumSysEventTriggerType.SANDStart));
     }
 
 }

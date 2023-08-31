@@ -318,7 +318,7 @@ public class ExperimentGroupBiz {
         allotQuestion(experimentInstanceId, experimentGroupId);
 
         RLock lock = redissonClient.getLock(RedissonUtil.getLockName(participatorList.get(0).getAppId(), EnumRedissonLock.EXPT_ALLOT_GROUP_MEMBERS, "", experimentInstanceId));
-        boolean isLocked = lock.tryLock(5, TimeUnit.MILLISECONDS);
+        boolean isLocked = lock.tryLock(5,10, TimeUnit.MILLISECONDS);
         if(!isLocked){
             AssertUtil.justThrow("当前操作人数较多，请稍后再试");
             return false;
@@ -339,7 +339,9 @@ public class ExperimentGroupBiz {
                 return true;
             }
         }finally {
-            lock.unlock();
+            if(isLocked) {
+                lock.unlock();
+            }
         }
 
 

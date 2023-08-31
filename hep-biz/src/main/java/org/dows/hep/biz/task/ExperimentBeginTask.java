@@ -9,6 +9,7 @@ import org.dows.hep.api.enums.EnumExperimentTask;
 import org.dows.hep.api.event.SuspendEvent;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
+import org.dows.hep.biz.event.ExperimentTimerCache;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.entity.ExperimentTaskScheduleEntity;
@@ -81,6 +82,7 @@ public class ExperimentBeginTask implements Runnable {
                     .eq(ExperimentTimerEntity::getDeleted, false)
                     .set(ExperimentTimerEntity::getState, EnumExperimentState.PREPARE.getState())
                     .update();
+            ExperimentTimerCache.Instance().remove(experimentInstanceEntity.getAppId(), experimentInstanceEntity.getExperimentInstanceId());
             /**
              * todo 优化更改缓存
              * ExperimentContext experimentContext = ExperimentContext.getExperimentContext(experimentInstanceEntity.getExperimentInstanceId());

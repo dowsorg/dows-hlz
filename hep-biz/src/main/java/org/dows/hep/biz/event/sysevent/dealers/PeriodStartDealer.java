@@ -2,8 +2,11 @@ package org.dows.hep.biz.event.sysevent.dealers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.enums.EnumWebSocketType;
 import org.dows.hep.biz.dao.ExperimentTimerDao;
 import org.dows.hep.biz.event.EventScheduler;
+import org.dows.hep.biz.event.ExperimentSettingCache;
+import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentSettingCollection;
 import org.dows.hep.biz.event.sysevent.BaseEventDealer;
 import org.dows.hep.biz.event.sysevent.data.*;
@@ -41,10 +44,14 @@ public class PeriodStartDealer extends BaseEventDealer {
         final ExperimentSysEventEntity event = row.getEntity();
         final String appId = event.getAppId();
         final String experimentInstanceId = event.getExperimentInstanceId();
+        final ExperimentCacheKey exptKey=ExperimentCacheKey.create(appId, experimentInstanceId);
         //突发事件
         EventScheduler.Instance().scheduleTimeBasedEvent(appId, experimentInstanceId, 5);
         //实验流程
         EventScheduler.Instance().scheduleSysEvent(appId, experimentInstanceId, 3);
+
+        ExperimentSettingCollection exptColl= ExperimentSettingCache.Instance().getSet(exptKey, true);
+        this.pushTimeState(rst, exptKey, exptColl, EnumWebSocketType.FLOW_PERIOD_START , row);
         return true;
     }
 
@@ -59,8 +66,8 @@ public class PeriodStartDealer extends BaseEventDealer {
         List<ExperimentSysEventEntity> rst=new ArrayList<>();
         for(int i=1;i<=exptColl.getPeriods();i++){
             rst.add(buildEvent(exptColl,i,
-                    EnumSysEventDealType.PERIODStart.getCode(),
-                    EnumSysEventTriggerType.PERIODStart.getCode()));
+                    EnumSysEventDealType.PERIODStart,
+                    EnumSysEventTriggerType.PERIODStart));
         }
         return rst;
     }

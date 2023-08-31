@@ -3,6 +3,7 @@ package org.dows.hep.api.user.experiment.response;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dows.hep.api.user.experiment.vo.ExptTimePointVO;
 
 import java.util.Map;
 
@@ -14,7 +15,7 @@ import java.util.Map;
 @Data
 @NoArgsConstructor
 @Schema(name = "CountDown 对象", title = "时间")
-public class IntervalResponse {
+public class IntervalResponse extends ExptTimePointVO {
     @Schema(title = "应用ID")
     private String appId;
 
@@ -25,37 +26,17 @@ public class IntervalResponse {
     private String experimentGroupId;
     @Schema(title = "模式")
     private Integer model;
-    @Schema(title = "期数")
-    private Integer period;
-
-    @Schema(title = "实验倒计时时间")
-    private Long countdown;
-    @Schema(title = "实验倒计时时间类型[0:开始倒计时,1:结束倒计时]")
-    private Integer countdownType;
 
 
-    @Schema(title = "沙盘总时长[天]")
-    private Long sandTotalTime;
-    @Schema(title = "沙盘时间单位")
-    private String sandTimeUnit;
-    @Schema(title = "沙盘持续时间(秒)")
-    private Long sandDurationSecond;
-    @Schema(title = "沙盘剩余时间(秒)")
-    private Long sandRemnantSecond;
 
 
-    @Schema(title = "方案设计总时长")
-    private Long schemeTotalTime;
-    @Schema(title = "方案设计时间单位")
-    private String schemeTimeUnit;
-    @Schema(title = "方案持续时间(秒)")
-    private Long schemeDurationSecond;
-    @Schema(title = "方案剩余时间(秒)")
-    private Long schemeRemnantSecond;
 
 
-    @Schema(title = "实验状态")
-    private Integer state;
+
+
+
+
+
     /**
      * 用于前端计算
      */

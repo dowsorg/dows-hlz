@@ -17,15 +17,18 @@ import org.dows.hep.biz.event.data.ExperimentSettingCollection;
 import org.dows.hep.biz.event.sysevent.BaseEventDealer;
 import org.dows.hep.biz.event.sysevent.data.*;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
+import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.biz.util.ShareUtil;
-import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.entity.ExperimentSysEventEntity;
 import org.dows.hep.entity.ExperimentTimerEntity;
 import org.dows.hep.websocket.HepClientManager;
 import org.dows.hep.websocket.proto.MessageCode;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
 /**
@@ -46,12 +49,15 @@ public class ExperimentReadyDealer extends BaseEventDealer {
     private final ExperimentParticipatorDao experimentParticipatorDao;
 
 
+
+
     @Override
     protected boolean coreDeal(EventDealResult rst, SysEventRow row, SysEventRunStat stat) {
         final String appId=row.getEntity().getAppId();
         final String experimentInstanceId=row.getEntity().getExperimentInstanceId();
+        final ExperimentCacheKey exptKey=ExperimentCacheKey.create(appId,experimentInstanceId);
 
-        ExperimentSettingCollection exptColl= ExperimentSettingCache.Instance().getSet(ExperimentCacheKey.create(appId,experimentInstanceId),true);
+        ExperimentSettingCollection exptColl= ExperimentSettingCache.Instance().getSet(exptKey,true);
         if(ShareUtil.XObject.anyEmpty(exptColl,()->exptColl.getMode())){
             rst.append("missSetting[%s]",experimentInstanceId);
             return false;
@@ -97,15 +103,14 @@ public class ExperimentReadyDealer extends BaseEventDealer {
             rst.append("failUpdateExptState[%s]",experimentInstanceId);
             return false;
         }
-        pushMsg(experimentInstanceId);
+        Set<String> clientIds=ShareBiz.getAccountIdsByExperimentId(experimentInstanceId);
+        this.pushTimeState(rst, exptKey, exptColl,EnumWebSocketType.FLOW_SAND_READY ,clientIds , row);
+        this.oldPush(experimentInstanceId,clientIds);
         return true;
     }
 
-    private void pushMsg(String experimentInstanceId) {
-        // 查询到对应的accountId
-        Set<String> accountIds = ShareUtil.XCollection.toSet(experimentParticipatorDao.getByExperimentId(experimentInstanceId,
-                ExperimentParticipatorEntity::getAccountId),ExperimentParticipatorEntity::getAccountId);
-                new HashSet<>();
+    // old push
+    private void oldPush(String experimentInstanceId,Set<String> accountIds ) {
 
 
         // 通知实验所有小组
@@ -132,8 +137,8 @@ public class ExperimentReadyDealer extends BaseEventDealer {
             return null;
         }
         return List.of(buildEvent(exptColl,0,
-                EnumSysEventDealType.EXPERIMENTReady.getCode(),
-                EnumSysEventTriggerType.EXPERIMENTReady.getCode()));
+                EnumSysEventDealType.EXPERIMENTReady,
+                EnumSysEventTriggerType.EXPERIMENTReady));
     }
 
 

@@ -16,6 +16,7 @@ import java.util.Set;
 @Accessors(chain = true)
 public class PushWebScoketResult {
 
+    private String type;
     private final Set<String> hitClients=new HashSet<>();
 
     private final Set<String> missClients=new HashSet<>();
@@ -39,7 +40,8 @@ public class PushWebScoketResult {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("{");
-        sb.append("hit:").append(String.join(",",hitClients));
+        sb.append("type:").append(type);
+        sb.append(" hit:").append(String.join(",",hitClients));
         sb.append(" miss:").append(String.join(",",missClients));
         sb.append(" msg:").append(msg);
         sb.append('}');

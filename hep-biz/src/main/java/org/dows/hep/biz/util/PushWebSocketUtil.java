@@ -58,7 +58,7 @@ public class PushWebSocketUtil {
             if (ShareUtil.XObject.anyEmpty(src.getExperimentInstanceId(), src.getClientIds())) {
                 return rst.append("emptyClients");
             }
-            rst.append(src.getSocketType().toString());
+            rst.setType(src.getSocketType().toString());
             ConcurrentMap<Channel, AccountInfo> clients = HepClientManager.getUserInfosByExperimentId(src.getExperimentInstanceId());
             if (ShareUtil.XObject.isEmpty(clients)) {
                 return rst.append("missClients[%s]", src.getExperimentInstanceId());
