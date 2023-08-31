@@ -185,10 +185,11 @@ public class ExptReportPdfRest {
     @GetMapping("v1/report/previewGroupReport")
     public void previewGroupReport(@RequestParam String experimentInstanceId,
                                    @RequestParam String experimentGroupId,
+                                   @RequestParam String accountId,
                                    HttpServletRequest request,
                                    HttpServletResponse response) {
         boolean regenerate = regenerate(experimentInstanceId);
-        String accountId = baseBiz.getAccountId(request);
+//        String accountId = baseBiz.getAccountId(request);
         try {
             exptReportFacadeBiz.previewGroupReport(experimentInstanceId, experimentGroupId, accountId, regenerate, request, response);
         } catch (IOException e) {
