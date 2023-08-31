@@ -1,17 +1,26 @@
 #!/bin/bash
 
 #分支名
-BRANCH_NAME=$1
+BRANCH_NAME="$1"
 #触发者
-AUTHOR_NAME=$2
+AUTHOR_NAME="$2"
 #项目名
-PROJECT_NAME=$3
+PROJECT_NAME="$3"
 #描述
-TITLE=$4
-#颜色
-COLOR=$5
+TITLE="$4"
 
-COMMIT=$6
+#提交信息
+COMMIT="$5"
+
+CHANGES="$6"
+
+
+echo "p5:"$COMMIT
+echo "p6:"$CHANGES
+
+
+#颜色
+COLOR="$7"
 
 title='应用发布'
 time="$(date "+%Y-%m-%d")"
@@ -26,24 +35,26 @@ url="https://oapi.dingtalk.com/robot/send?access_token=23dda836e12466db0b890ce8d
 
 curl $url \
 -H 'Content-Type: application/json' \
--d '{
-    "msgtype": "text",
-    "text": {
-        "content": "
-          项目: '$TITLE'
-          发布时间: '$time' '$times' '$xingqi'
-          项目名: '$PROJECT_NAME'
-          分支名: '$BRANCH_NAME'
-          发布者: '$AUTHOR_NAME'
-          COMMIT: '$COMMIT'
-          IP: '$ip'
-          DISK: '$lsblk'
-          MEM: '$mem'%
-          CPU: '$cpu'%
-        "
+-d "{
+    'msgtype': 'text',
+    'text': {
+        'content': '
+          项目: $TITLE
+          发布时间: $time $times $xingqi
+          项目名: $PROJECT_NAME
+          分支名: $BRANCH_NAME
+          发布者: $AUTHOR_NAME
+          COMMIT: $COMMIT
+          CHANGES: $CHANGES
+          HOST: $ip
+          DISK: $lsblk
+          MEM: $mem%
+          CPU: $cpu%
+        '
     }
-}'
+}"
 
+#"sit-1.0.230821" "lait.zhang" api-hep-admin SIT环境发布 green "fix sit start.sh"
 #curl $url \
 #-H 'Content-Type: application/json' \
 #-d \
