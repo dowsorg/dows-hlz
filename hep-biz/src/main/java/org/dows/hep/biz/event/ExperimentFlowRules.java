@@ -2,11 +2,13 @@ package org.dows.hep.biz.event;
 
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.enums.EnumExperimentState;
+import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
 import org.dows.hep.api.user.experiment.response.IntervalResponse;
 import org.dows.hep.api.user.experiment.vo.ExptTimePointVO;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentSettingCollection;
 import org.dows.hep.biz.util.AssertUtil;
+import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentTimerEntity;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Component;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author : wuzl
@@ -22,6 +25,32 @@ import java.util.Date;
 @Component
 @Slf4j
 public class ExperimentFlowRules {
+
+    public ExperimentPeriodsResonse getExperimentCurrentPeriods(String appId, String experimentInstanceId) {
+        ExperimentPeriodsResonse rst=new ExperimentPeriodsResonse().setExperimentInstanceId(experimentInstanceId);
+        if(ShareUtil.XObject.isEmpty(appId)){
+            appId="3";
+        }
+        ExperimentCacheKey exptKey=ExperimentCacheKey.create(appId,experimentInstanceId);
+        ExperimentSettingCollection exptColl= ExperimentSettingCache.Instance().getSet(exptKey,true);
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(exptColl))
+                .throwMessage("未找到实验设置");
+
+        if(!exptColl.hasSandMode()){
+            return rst;
+        }
+        ExperimentTimerCache.CacheData cacheTimer=ExperimentTimerCache.Instance().getCacheData(exptKey);
+        AssertUtil.trueThenThrow(ShareUtil.XObject.anyEmpty(cacheTimer,()->cacheTimer.getMapTimer()))
+                .throwMessage("未找到沙盘时间设置");
+        ExperimentTimerEntity curTimer=cacheTimer.getCurTimer(LocalDateTime.now());
+        if(ShareUtil.XObject.isEmpty(curTimer)){
+            return rst.setCurrentPeriod(0);
+        }
+        List<ExperimentPeriodsResonse.ExperimentPeriods> periods = ShareUtil.XCollection.map(cacheTimer.getMapTimer().values(), item->
+                CopyWrapper.create(ExperimentPeriodsResonse.ExperimentPeriods::new).endFrom(item));
+        return rst.setCurrentPeriod(curTimer.getPeriod())
+                .setExperimentPeriods(periods);
+    }
 
     public IntervalResponse countdown(String appId, String experimentInstanceId){
 

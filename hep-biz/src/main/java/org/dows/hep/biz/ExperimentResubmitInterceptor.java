@@ -21,7 +21,7 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -36,11 +36,18 @@ public class ExperimentResubmitInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
-        String token = request.getHeader("token");
-        String appId = request.getHeader("appId");
-        String experimentId = request.getHeader("experimentId");
-        String clientIP = getRemoteIP(request);
-        String key = token + clientIP + request.getMethod() + request.getRequestURI();
+        String token = Optional.ofNullable( request.getHeader("token")).orElse("");
+        String appId =  Optional.ofNullable(request.getHeader("appId")).orElse("");
+        String experimentId = Optional.ofNullable(request.getHeader("experimentId")).orElse("");
+        String clientIP = Optional.ofNullable(getRemoteIP(request)).orElse("");
+
+        //String key = token + clientIP + request.getMethod() + request.getRequestURI();
+        int sampleLen=10;
+        String key=String.format("%s-%s-%s-%s-%s-%s",
+                token.hashCode(),
+                token.length(),
+                token.length()>sampleLen? token.substring(token.length()-sampleLen, token.length()):token,
+                clientIP, request.getMethod(),request.getRequestURI())
         //log.info("拦截UIR:{}", key);
         ;
         String val = localCache.get(key);
@@ -60,6 +67,28 @@ public class ExperimentResubmitInterceptor implements HandlerInterceptor {
 
             Resubmit methodAnnotation = AnnotationUtils.findAnnotation(method.getMethod(), Resubmit.class);
             Resubmit repeatSubmitByCls = AnnotationUtils.findAnnotation(method.getMethod().getDeclaringClass(), Resubmit.class);
+
+            long dueSec=-1;
+            if(null!=methodAnnotation){
+                if(repeatSubmitByCls.value()){
+                    return true;
+                }
+                dueSec= methodAnnotation.duration();
+            }
+            if(null!=repeatSubmitByCls){
+                if(repeatSubmitByCls.value()){
+                    return true;
+                }
+                if(dueSec<=0){
+                    dueSec=repeatSubmitByCls.duration();
+                }
+            }
+            if(dueSec<=0){
+                dueSec=2;//默认2秒内禁止重复提交
+            }
+            localCache.set(key, "", dueSec * 1000, TimeUnit.MILLISECONDS);
+
+/*
             // 没有限制重复提交，直接跳过
             if (Objects.isNull(methodAnnotation) && Objects.isNull(repeatSubmitByCls)) {
                 return true;
@@ -71,6 +100,9 @@ public class ExperimentResubmitInterceptor implements HandlerInterceptor {
             } else {
                 localCache.set(key, "", methodAnnotation.duration() * 1000, TimeUnit.MILLISECONDS);
             }
+*/
+
+
         }
         return true;
     }
