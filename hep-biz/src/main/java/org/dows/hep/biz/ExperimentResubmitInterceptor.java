@@ -37,7 +37,7 @@ public class ExperimentResubmitInterceptor implements HandlerInterceptor {
     private static final Set<String> URLIncludes=new HashSet<>();
 
     static {
-        URLIncludes.add("/userExperiment/");
+        URLIncludes.add("/userExperiment/".toLowerCase());
 
 
     }
@@ -96,9 +96,21 @@ public class ExperimentResubmitInterceptor implements HandlerInterceptor {
                 if(!request.getMethod().toLowerCase().equals("post")){
                     return true;
                 }
-                dueSec=2;//默认2秒内禁止重复提交
+                final String uri=Optional.ofNullable( request.getRequestURI()).orElse("").toLowerCase();
+                boolean hitFlag=false;
+                for(String item:URLIncludes){
+                    if(uri.contains(item)){
+                        hitFlag=true;
+                        break;
+                    }
+                }
+                if(hitFlag){
+                    dueSec=2;//默认2秒内禁止重复提交
+                }
             }
-            localCache.set(key, "", dueSec * 1000, TimeUnit.MILLISECONDS);
+            if(dueSec>0) {
+                localCache.set(key, "", dueSec * 1000, TimeUnit.MILLISECONDS);
+            }
 
 /*
             // 没有限制重复提交，直接跳过
