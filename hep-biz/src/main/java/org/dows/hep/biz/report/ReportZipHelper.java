@@ -174,7 +174,7 @@ public class ReportZipHelper {
                     Files.createDirectories(groupPath);
                     Path filePath = Paths.get(sourceDir.toString(), groupPathName, reportFile.getName());
                     OutputStream outputStream = Files.newOutputStream(filePath);
-                    ossHelper.download(outputStream, reportFile.getName());
+                    ossHelper.download(outputStream, reportFile.getParent() + File.separator + reportFile.getName());
                 } catch (Exception e) {
                     log.error("压缩文件时：下载文件到源文件数据异常");
                 }
