@@ -28,7 +28,7 @@ public class ExptGroupReportVO {
     private Integer exptGroupNo;
 
     @Schema(title = "文件路径")
-    private List<ReportFile> paths;
+    private List<ReportFile> reportFiles;
 
     @Data
     @Builder
@@ -39,7 +39,7 @@ public class ExptGroupReportVO {
 
     public static ExptGroupReportVO emptyVO() {
         return ExptGroupReportVO.builder()
-                .paths(new ArrayList<>())
+                .reportFiles(new ArrayList<>())
                 .build();
     }
 }

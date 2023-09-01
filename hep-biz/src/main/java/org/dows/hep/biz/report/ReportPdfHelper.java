@@ -61,7 +61,7 @@ public class ReportPdfHelper {
      * @description 将 model 填充进 view 中, 生成 pdf 文件并上传
      * @date 2023/7/20 11:54
      */
-    public OssInfo convertAndUpload(ExptReportModel pdfVO, String schemeFlt, Path filePath) {
+    public OssInfo convertAndUpload(ExptReportModel pdfVO, String schemeFlt, Path filePath, Path uploadPath) {
         // convert
         Path homeDir = filePath.getParent();
         File targetFile = filePath.toFile();
@@ -74,7 +74,7 @@ public class ReportPdfHelper {
         }
 
         // 上传
-        OssInfo ossInfo = ossHelper.upload(targetFile, targetFile.getName(), true);
+        OssInfo ossInfo = ossHelper.upload(targetFile, uploadPath.toString(), true);
 
         // 删除本地文件
         try {
