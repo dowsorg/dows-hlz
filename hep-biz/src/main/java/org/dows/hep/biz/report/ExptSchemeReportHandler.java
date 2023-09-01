@@ -67,7 +67,7 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
     private final ReportRecordHelper recordHelper;
     private final FindSoftProperties findSoftProperties;
 
-    private static final String SCHEME_REPORT_HOME_DIR = SystemConstant.PDF_REPORT_TMP_PATH + "方案设计实验报告" + File.separator;
+    private static final String LOCAL_SCHEME_REPORT = SystemConstant.PDF_REPORT_TMP_PATH + "方案设计实验报告" + File.separator;
 
     @Data
     @Builder
@@ -221,21 +221,22 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
             return ExptGroupReportVO.builder()
                     .exptGroupId(exptGroupId)
                     .exptGroupNo(Integer.valueOf(pdfVO.getGroupInfo().getGroupNo()))
-                    .paths(List.of(reportFile))
+                    .reportFiles(List.of(reportFile))
                     .build();
         }
 
         /*2.使用新数据*/
         // 生成 pdf 并上传文件
-        Path path = Paths.get(SCHEME_REPORT_HOME_DIR, fileName);
-        OssInfo ossInfo = reportPdfHelper.convertAndUpload(pdfVO, schemeFlt, path);
+        Path path = Paths.get(LOCAL_SCHEME_REPORT, fileName);
+        Path uploadPath = Paths.get(exptInstanceId, fileName);
+        OssInfo ossInfo = reportPdfHelper.convertAndUpload(pdfVO, schemeFlt, path, uploadPath);
 
         // 记录一份数据
         if (StrUtil.isNotBlank(ossInfo.getPath())) {
             MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
                     .fileName(fileName)
                     .fileType("pdf")
-                    .fileUri(ossHelper.getUrlPath(ossInfo))
+                    .fileUri(ossHelper.getUrlPath(ossInfo, exptInstanceId))
                     .build();
             MaterialsRequest materialsRequest = MaterialsRequest.builder()
                     .bizCode("EXPT")
@@ -248,12 +249,12 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
         // 构造返回信息
         ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
                 .name(ossInfo.getName())
-                .path(ossHelper.getUrlPath(ossInfo))
+                .path(ossHelper.getUrlPath(ossInfo, exptInstanceId))
                 .build();
         return ExptGroupReportVO.builder()
                 .exptGroupId(exptGroupId)
                 .exptGroupNo(Integer.valueOf(pdfVO.getGroupInfo().getGroupNo()))
-                .paths(List.of(reportFile))
+                .reportFiles(List.of(reportFile))
                 .build();
     }
 

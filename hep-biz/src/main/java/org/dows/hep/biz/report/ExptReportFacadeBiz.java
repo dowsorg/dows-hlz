@@ -51,8 +51,10 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -169,14 +171,15 @@ public class ExptReportFacadeBiz {
         ExperimentInstanceEntity exptEntity = checkExpt(exptInstanceId, accountId);
         String exptZipName = exptEntity.getId()
                 + SystemConstant.SPLIT_UNDER_LINE
-                + exptEntity.getExperimentName()
-                + SystemConstant.SUFFIX_ZIP;
+                + exptEntity.getExperimentName();
+        String exptZipSuffix = SystemConstant.SUFFIX_ZIP;
+        String exptZipFullName = exptZipName + exptZipSuffix;
 
-        // 不重新生成并且旧数据存在 --> 直接返回
+        /*是否使用旧数据 不重新生成并且旧数据存在 --> 直接返回*/
         String zipPath1 = reportRecordHelper.getReportOfExpt(exptInstanceId, ExptReportTypeEnum.EXPT_ZIP);
         if (!regenerate && StrUtil.isNotBlank(zipPath1)) {
             ExptReportVO exptReportVO = generatePdf(exptInstanceId, null, false);
-            exptReportVO.setZipName(exptZipName);
+            exptReportVO.setZipName(exptZipFullName);
             exptReportVO.setZipPath(zipPath1);
             return exptReportVO;
         }
@@ -185,36 +188,26 @@ public class ExptReportFacadeBiz {
         try {
             if (lock.tryLock(-1, 30, TimeUnit.SECONDS)) {
 
-                /*1.使用旧数据*/
-                // 不重新生成并且旧数据存在 --> 直接返回
+                /*是否使用旧数据 不重新生成并且旧数据存在 --> 直接返回*/
                 String zipPath2 = reportRecordHelper.getReportOfExpt(exptInstanceId, ExptReportTypeEnum.EXPT_ZIP);
                 if (!regenerate && StrUtil.isNotBlank(zipPath2)) {
                     ExptReportVO exptReportVO = generatePdf(exptInstanceId, null, false); // 此处可以确定，regenerate 一定为 false
-                    exptReportVO.setZipName(exptZipName);
+                    exptReportVO.setZipName(exptZipFullName);
                     exptReportVO.setZipPath(zipPath2);
                     return exptReportVO;
                 }
 
-                /*2.使用新数据*/
+                /*使用新数据*/
                 // 生成报告
                 ExptReportVO exptReportVO = generatePdf(exptInstanceId, null, regenerate); // 此处 regenerate 与 参数保持一致
-                exptReportVO.setZipName(exptZipName);
-                reportZipHelper.zipAndUpload(exptReportVO);
-
-                // 记录一份数据
-                if (StrUtil.isNotBlank(exptReportVO.getZipPath())) {
-                    MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
-                            .fileName(exptReportVO.getZipName())
-                            .fileType("zip")
-                            .fileUri(exptReportVO.getZipPath())
-                            .build();
-                    MaterialsRequest materialsRequest = MaterialsRequest.builder()
-                            .bizCode("EXPT")
-                            .title(exptReportVO.getZipName())
-                            .materialsAttachments(List.of(attachment))
-                            .build();
-                    reportRecordHelper.record(exptInstanceId, null, ExptReportTypeEnum.EXPT_ZIP, materialsRequest);
+                // 压缩并上传报告
+                Path uploadPath = Paths.get(exptInstanceId, exptZipName + exptZipSuffix);
+                boolean zipRes = reportZipHelper.zipAndUploadV2(exptReportVO, uploadPath, exptZipName, exptZipSuffix);
+                if (zipRes) {
+                    // 存档报告zip数据
+                    recordAsync(exptInstanceId, null, ExptReportTypeEnum.EXPT_ZIP, exptReportVO);
                 }
+
                 return exptReportVO;
             } else {
                 throw new BizException("报告生成中");
@@ -279,19 +272,7 @@ public class ExptReportFacadeBiz {
                 reportZipHelper.zipAndUpload(exptReportVO);
 
                 // 记录一份数据
-                if (StrUtil.isNotBlank(exptReportVO.getZipPath())) {
-                    MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
-                            .fileName(exptReportVO.getZipName())
-                            .fileType("zip")
-                            .fileUri(exptReportVO.getZipPath())
-                            .build();
-                    MaterialsRequest materialsRequest = MaterialsRequest.builder()
-                            .bizCode("EXPT")
-                            .title(exptReportVO.getZipName())
-                            .materialsAttachments(List.of(attachment))
-                            .build();
-                    reportRecordHelper.record(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP_ZIP, materialsRequest);
-                }
+                recordAsync(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP_ZIP, exptReportVO);
                 return exptReportVO;
             } else {
                 throw new BizException("报告生成中");
@@ -340,7 +321,7 @@ public class ExptReportFacadeBiz {
         ExptGroupReportVO.ReportFile reportFile = groupReportList.stream()
                 .filter(item -> StrUtil.isBlank(item.getExptGroupId()))
                 .findFirst()
-                .map(item -> item.getPaths().get(0))
+                .map(item -> item.getReportFiles().get(0))
                 .orElse(null);
         if (null == reportFile) {
             return;
@@ -371,7 +352,7 @@ public class ExptReportFacadeBiz {
         ExptGroupReportVO.ReportFile reportFile = groupReportList.stream()
                 .filter(item -> item.getExptGroupId().equals(exptGroupId))
                 .findFirst()
-                .map(item -> item.getPaths().get(0))
+                .map(item -> item.getReportFiles().get(0))
                 .orElse(null);
         if (null == reportFile) {
             return;
@@ -630,15 +611,23 @@ public class ExptReportFacadeBiz {
         return result;
     }
 
-    private boolean regenerate(String experimentInstanceId) {
-        ExptSettingModeEnum exptSettingMode = experimentSettingBiz.getExptSettingMode(experimentInstanceId);
-        if (exptSettingMode == null) {
-            throw new BizException(String.format("导出实验pdf报告时：获取实验%s的设置数据异常", experimentInstanceId));
+    // 异步执行记录操作
+    private void recordAsync(String exptInstanceId, String exptGroupId, ExptReportTypeEnum reportTypeEnum, ExptReportVO exptReportVO) {
+        if (StrUtil.isNotBlank(exptReportVO.getZipPath())) {
+            CompletableFuture.runAsync(() -> {
+                MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
+                        .fileName(exptReportVO.getZipName())
+                        .fileType("zip")
+                        .fileUri(exptReportVO.getZipPath())
+                        .build();
+                MaterialsRequest materialsRequest = MaterialsRequest.builder()
+                        .bizCode("EXPT")
+                        .title(exptReportVO.getZipName())
+                        .materialsAttachments(List.of(attachment))
+                        .build();
+                reportRecordHelper.record(exptInstanceId, exptGroupId, reportTypeEnum, materialsRequest);
+            });
         }
-        boolean regenerate = Boolean.TRUE;
-        if (ExptSettingModeEnum.SAND.equals(exptSettingMode)) {
-            regenerate = Boolean.FALSE;
-        }
-        return regenerate;
     }
+
 }
