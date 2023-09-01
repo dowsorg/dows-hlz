@@ -92,10 +92,10 @@ public class ExperimentResubmitInterceptor implements HandlerInterceptor {
                     dueSec=repeatSubmitByCls.duration();
                 }
             }
-            if(request.getMethod().toLowerCase().equals("get")){
-                return true;
-            }
             if(dueSec<=0){
+                if(!request.getMethod().toLowerCase().equals("post")){
+                    return true;
+                }
                 dueSec=2;//默认2秒内禁止重复提交
             }
             localCache.set(key, "", dueSec * 1000, TimeUnit.MILLISECONDS);
