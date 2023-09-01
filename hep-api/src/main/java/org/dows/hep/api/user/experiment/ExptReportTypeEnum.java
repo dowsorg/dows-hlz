@@ -8,5 +8,21 @@ package org.dows.hep.api.user.experiment;
  **/
 public enum ExptReportTypeEnum {
 
-    EXPT, EXPT_ZIP, GROUP, GROUP_ZIP, ACCOUNT, ACCOUNT_ZIP;
+    // 实验总报告
+    EXPT,
+
+    // 实验报告压缩包（实验总报告+所有小组报告）
+    EXPT_ZIP,
+
+    // 小组实验报告
+    GROUP,
+
+    // 小组报告压缩包（小组实验报告+实验总报告）
+    GROUP_ZIP,
+
+    // 学生报告
+    ACCOUNT,
+
+    // 学生报告压缩包
+    ACCOUNT_ZIP;
 }
