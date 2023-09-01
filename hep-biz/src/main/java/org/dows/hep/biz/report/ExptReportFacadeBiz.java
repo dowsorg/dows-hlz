@@ -201,7 +201,7 @@ public class ExptReportFacadeBiz {
                 // 生成报告
                 ExptReportVO exptReportVO = generatePdf(exptInstanceId, null, regenerate); // 此处 regenerate 与 参数保持一致
                 // 压缩并上传报告
-                Path uploadPath = Paths.get(exptInstanceId, exptZipName + exptZipSuffix);
+                Path uploadPath = Paths.get(exptInstanceId, exptZipFullName);
                 boolean zipRes = reportZipHelper.zipAndUploadV2(exptReportVO, uploadPath, exptZipName, exptZipSuffix);
                 if (zipRes) {
                     // 存档报告zip数据
@@ -239,8 +239,9 @@ public class ExptReportFacadeBiz {
                 + SystemConstant.SPLIT_UNDER_LINE
                 + exptEntity.getExperimentName()
                 + SystemConstant.SPLIT_UNDER_LINE
-                + exptGroupId
-                + SystemConstant.SUFFIX_ZIP;
+                + exptGroupId;
+        String groupZipSuffix = SystemConstant.SUFFIX_ZIP;
+        String groupZipFullName = groupZipName + groupZipSuffix;
 
         // 不重新生成并且旧数据存在 --> 直接返回
         String zipPath1 = reportRecordHelper.getReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP_ZIP);
@@ -268,11 +269,14 @@ public class ExptReportFacadeBiz {
                 /*2.使用新数据*/
                 // 生成报告
                 ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId, regenerate); // 此处 regenerate 与 参数保持一致
-                exptReportVO.setZipName(groupZipName);
-                reportZipHelper.zipAndUpload(exptReportVO);
+                // 压缩并上传报告
+                Path uploadPath = Paths.get(exptInstanceId, groupZipFullName);
+                boolean zipRes = reportZipHelper.zipAndUploadV2(exptReportVO, uploadPath, groupZipName, groupZipSuffix);
+                if (zipRes) {
+                    // 存档报告zip数据
+                    recordAsync(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP_ZIP, exptReportVO);
+                }
 
-                // 记录一份数据
-                recordAsync(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP_ZIP, exptReportVO);
                 return exptReportVO;
             } else {
                 throw new BizException("报告生成中");
