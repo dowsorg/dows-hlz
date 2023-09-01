@@ -33,6 +33,7 @@ public class ExptGroupReportVO {
     @Data
     @Builder
     public static class ReportFile {
+        private String parent;
         private String name;
         private String path;
     }
