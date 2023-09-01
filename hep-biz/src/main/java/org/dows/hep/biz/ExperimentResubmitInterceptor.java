@@ -84,18 +84,19 @@ public class ExperimentResubmitInterceptor implements HandlerInterceptor {
                 }
                 dueSec= methodAnnotation.duration();
             }
-            if(null!=repeatSubmitByCls){
-                if(repeatSubmitByCls.value()){
-                    return true;
-                }
-                if(dueSec<=0){
-                    dueSec=repeatSubmitByCls.duration();
+            if(dueSec<=0) {
+                if (null != repeatSubmitByCls) {
+                    if (repeatSubmitByCls.value()) {
+                        return true;
+                    }
+                    dueSec = repeatSubmitByCls.duration();
                 }
             }
             if(dueSec<=0){
                 if(!request.getMethod().toLowerCase().equals("post")){
                     return true;
                 }
+                /*
                 final String uri=Optional.ofNullable( request.getRequestURI()).orElse("").toLowerCase();
                 boolean hitFlag=false;
                 for(String item:URLIncludes){
@@ -107,6 +108,7 @@ public class ExperimentResubmitInterceptor implements HandlerInterceptor {
                 if(hitFlag){
                     dueSec=2;//默认2秒内禁止重复提交
                 }
+                */
             }
             if(dueSec>0) {
                 localCache.set(key, "", dueSec * 1000, TimeUnit.MILLISECONDS);
