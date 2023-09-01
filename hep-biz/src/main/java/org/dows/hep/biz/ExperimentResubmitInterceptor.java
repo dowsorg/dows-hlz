@@ -21,7 +21,9 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -32,6 +34,13 @@ import java.util.concurrent.TimeUnit;
 public class ExperimentResubmitInterceptor implements HandlerInterceptor {
 
     private final LocalCache localCache;
+    private static final Set<String> URLIncludes=new HashSet<>();
+
+    static {
+        URLIncludes.add("/userExperiment/");
+
+
+    }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -70,7 +79,7 @@ public class ExperimentResubmitInterceptor implements HandlerInterceptor {
 
             long dueSec=-1;
             if(null!=methodAnnotation){
-                if(repeatSubmitByCls.value()){
+                if(methodAnnotation.value()){
                     return true;
                 }
                 dueSec= methodAnnotation.duration();
@@ -82,6 +91,9 @@ public class ExperimentResubmitInterceptor implements HandlerInterceptor {
                 if(dueSec<=0){
                     dueSec=repeatSubmitByCls.duration();
                 }
+            }
+            if(request.getMethod().toLowerCase().equals("get")){
+                return true;
             }
             if(dueSec<=0){
                 dueSec=2;//默认2秒内禁止重复提交
