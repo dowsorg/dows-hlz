@@ -57,8 +57,8 @@ public class ExperimentResubmitInterceptor implements HandlerInterceptor {
                 token.length(),
                 token.length()>sampleLen? token.substring(token.length()-sampleLen, token.length()):token,
                 clientIP, request.getMethod(),request.getRequestURI())
-        //log.info("拦截UIR:{}", key);
-        ;
+                //log.info("拦截UIR:{}", key);
+                ;
         String val = localCache.get(key);
         if (val != null) {
             // todo 先简单实现，后学还要根据提交参数判断
