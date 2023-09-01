@@ -172,24 +172,32 @@ public class ExptReportFacadeBiz {
                 + exptEntity.getExperimentName()
                 + SystemConstant.SUFFIX_ZIP;
 
+        // 不重新生成并且旧数据存在 --> 直接返回
+        String zipPath1 = reportRecordHelper.getReportOfExpt(exptInstanceId, ExptReportTypeEnum.EXPT_ZIP);
+        if (!regenerate && StrUtil.isNotBlank(zipPath1)) {
+            ExptReportVO exptReportVO = generatePdf(exptInstanceId, null, false);
+            exptReportVO.setZipName(exptZipName);
+            exptReportVO.setZipPath(zipPath1);
+            return exptReportVO;
+        }
+
         RLock lock = redissonClient.getLock(RedisKeyConst.HEP_LOCK_REPORT + exptInstanceId);
         try {
             if (lock.tryLock(-1, 30, TimeUnit.SECONDS)) {
-                // 查询是否已经存在
-                String reportOfExpt = reportRecordHelper.getReportOfExpt(exptInstanceId, ExptReportTypeEnum.EXPT_ZIP);
 
                 /*1.使用旧数据*/
                 // 不重新生成并且旧数据存在 --> 直接返回
-                if (!regenerate && StrUtil.isNotBlank(reportOfExpt)) {
-                    ExptReportVO exptReportVO = generatePdf(exptInstanceId, null, false);
+                String zipPath2 = reportRecordHelper.getReportOfExpt(exptInstanceId, ExptReportTypeEnum.EXPT_ZIP);
+                if (!regenerate && StrUtil.isNotBlank(zipPath2)) {
+                    ExptReportVO exptReportVO = generatePdf(exptInstanceId, null, false); // 此处可以确定，regenerate 一定为 false
                     exptReportVO.setZipName(exptZipName);
-                    exptReportVO.setZipPath(reportOfExpt);
+                    exptReportVO.setZipPath(zipPath2);
                     return exptReportVO;
                 }
 
                 /*2.使用新数据*/
                 // 生成报告
-                ExptReportVO exptReportVO = generatePdf(exptInstanceId, null, true);
+                ExptReportVO exptReportVO = generatePdf(exptInstanceId, null, regenerate); // 此处 regenerate 与 参数保持一致
                 exptReportVO.setZipName(exptZipName);
                 reportZipHelper.zipAndUpload(exptReportVO);
 
@@ -241,24 +249,32 @@ public class ExptReportFacadeBiz {
                 + exptGroupId
                 + SystemConstant.SUFFIX_ZIP;
 
+        // 不重新生成并且旧数据存在 --> 直接返回
+        String zipPath1 = reportRecordHelper.getReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP_ZIP);
+        if (!regenerate && StrUtil.isNotBlank(zipPath1)) {
+            ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId, false);
+            exptReportVO.setZipName(groupZipName);
+            exptReportVO.setZipPath(zipPath1);
+            return exptReportVO;
+        }
+
         RLock lock = redissonClient.getLock(RedisKeyConst.HEP_LOCK_REPORT + exptGroupId);
         try {
             if (lock.tryLock(-1, 10, TimeUnit.SECONDS)) {
-                // 查询是否已经存在
-                String reportOfGroup = reportRecordHelper.getReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP_ZIP);
 
                 /*1.使用旧数据*/
                 // 不重新生成并且旧数据存在 --> 直接返回
-                if (!regenerate && StrUtil.isNotBlank(reportOfGroup)) {
-                    ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId, false);
+                String zipPath2 = reportRecordHelper.getReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP_ZIP);
+                if (!regenerate && StrUtil.isNotBlank(zipPath2)) {
+                    ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId, false); // 此处可以确定，regenerate 一定为 false
                     exptReportVO.setZipName(groupZipName);
-                    exptReportVO.setZipPath(reportOfGroup);
+                    exptReportVO.setZipPath(zipPath2);
                     return exptReportVO;
                 }
 
                 /*2.使用新数据*/
                 // 生成报告
-                ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId, true);
+                ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId, regenerate); // 此处 regenerate 与 参数保持一致
                 exptReportVO.setZipName(groupZipName);
                 reportZipHelper.zipAndUpload(exptReportVO);
 
@@ -301,7 +317,6 @@ public class ExptReportFacadeBiz {
      */
     public ExptReportVO exportAccountReport(String exptInstanceId, String accountId, boolean regenerate) {
         String experimentGroupId = getGroupOfAccountAndExpt(exptInstanceId, accountId);
-
         return exportGroupReport(exptInstanceId, experimentGroupId, accountId, regenerate);
     }
 

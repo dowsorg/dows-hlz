@@ -14,7 +14,6 @@ import org.dows.hep.api.tenant.experiment.request.ExptReportPageRequest;
 import org.dows.hep.api.tenant.experiment.response.ExptAccountReportResponse;
 import org.dows.hep.api.tenant.experiment.response.ExptGroupReportPageResponse;
 import org.dows.hep.api.tenant.experiment.response.ExptReportPageResponse;
-import org.dows.hep.api.user.experiment.ExptSettingModeEnum;
 import org.dows.hep.biz.report.ExptReportFacadeBiz;
 import org.dows.hep.biz.user.experiment.ExperimentBaseBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
@@ -225,14 +224,15 @@ public class ExptReportPdfRest {
     }
 
     private boolean regenerate(String experimentInstanceId) {
-        ExptSettingModeEnum exptSettingMode = experimentSettingBiz.getExptSettingMode(experimentInstanceId);
-        if (exptSettingMode == null) {
-            throw new BizException(String.format("导出实验pdf报告时：获取实验%s的设置数据异常", experimentInstanceId));
-        }
-        boolean regenerate = Boolean.TRUE;
-        if (ExptSettingModeEnum.SAND.equals(exptSettingMode)) {
-            regenerate = Boolean.FALSE;
-        }
-        return regenerate;
+        return Boolean.FALSE;
+//        ExptSettingModeEnum exptSettingMode = experimentSettingBiz.getExptSettingMode(experimentInstanceId);
+//        if (exptSettingMode == null) {
+//            throw new BizException(String.format("导出实验pdf报告时：获取实验%s的设置数据异常", experimentInstanceId));
+//        }
+//        boolean regenerate = Boolean.TRUE;
+//        if (ExptSettingModeEnum.SAND.equals(exptSettingMode)) {
+//            regenerate = Boolean.FALSE;
+//        }
+//        return regenerate;
     }
 }
