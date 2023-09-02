@@ -1,5 +1,6 @@
 package org.dows.hep.rest.report;
 
+import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -8,12 +9,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.tenant.experiment.request.ExptAccountReportRequest;
 import org.dows.hep.api.tenant.experiment.request.ExptGroupReportPageRequest;
 import org.dows.hep.api.tenant.experiment.request.ExptReportPageRequest;
 import org.dows.hep.api.tenant.experiment.response.ExptAccountReportResponse;
 import org.dows.hep.api.tenant.experiment.response.ExptGroupReportPageResponse;
 import org.dows.hep.api.tenant.experiment.response.ExptReportPageResponse;
+import org.dows.hep.api.user.experiment.ExptSettingModeEnum;
 import org.dows.hep.biz.report.ExptReportFacadeBiz;
 import org.dows.hep.biz.user.experiment.ExperimentBaseBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
@@ -22,6 +25,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Date;
+import java.util.Optional;
 
 /**
  * @author fhb
@@ -225,14 +230,41 @@ public class ExptReportPdfRest {
 
     private boolean regenerate(String experimentInstanceId) {
         return Boolean.FALSE;
-//        ExptSettingModeEnum exptSettingMode = experimentSettingBiz.getExptSettingMode(experimentInstanceId);
-//        if (exptSettingMode == null) {
-//            throw new BizException(String.format("导出实验pdf报告时：获取实验%s的设置数据异常", experimentInstanceId));
-//        }
-//        boolean regenerate = Boolean.TRUE;
-//        if (ExptSettingModeEnum.SAND.equals(exptSettingMode)) {
-//            regenerate = Boolean.FALSE;
-//        }
-//        return regenerate;
     }
+
+    // todo 定时任务保证方案设计审核截止时间后重新生成一份报告
+    private boolean regenerate(String exptInstanceId, String accountId) {
+        // 管理员 && 方案设计模式 --> 在审核截止前重新生成
+        boolean isAdmin = baseBiz.isAdministrator(accountId);
+        if (isAdmin) {
+            // 获取实验模式
+            ExptSettingModeEnum exptSettingMode = experimentSettingBiz.getExptSettingMode(exptInstanceId);
+            if (exptSettingMode == null) {
+                throw new BizException("下载报告时，获取实验设置数据异常");
+            }
+
+            // 不是方案设计 --> 不重新生成
+            if (!ExptSettingModeEnum.SCHEME.equals(exptSettingMode)) {
+                return Boolean.FALSE;
+            }
+
+            // 是方案设计
+            ExperimentSetting.SchemeSetting schemeSetting = experimentSettingBiz.getSchemeSetting(exptInstanceId);
+            // 审核截止时间
+            long auditEndTime = Optional.of(schemeSetting)
+                    .map(ExperimentSetting.SchemeSetting::getAuditEndTime)
+                    .map(Date::getTime)
+                    .orElseThrow(() -> new BizException("下载报告时，获取方案设计设置数据异常"));
+            long current = DateUtil.current();
+            // 未到评分截止时间
+            if (current < auditEndTime) {
+                return Boolean.TRUE;
+            }
+        }
+
+        // 非管理员不重新生成
+        return Boolean.FALSE;
+    }
+
+
 }
