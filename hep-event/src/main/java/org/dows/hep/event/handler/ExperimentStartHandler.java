@@ -177,6 +177,8 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
         // 突发事件检测
         final String appId= ShareBiz.checkAppId(null, experimentRestartRequest.getExperimentInstanceId());
         EventScheduler.Instance().scheduleTimeBasedEvent(appId, experimentRestartRequest.getExperimentInstanceId(), 5);
+        //随访计划
+        EventScheduler.Instance().scheduleFollowUpPlan(appId, experimentRestartRequest.getExperimentInstanceId(), 5);
         if(ConfigExperimentFlow.SWITCH2SysEvent){
             EventScheduler.Instance().scheduleSysEvent(appId,experimentRestartRequest.getExperimentInstanceId(),3);
         }

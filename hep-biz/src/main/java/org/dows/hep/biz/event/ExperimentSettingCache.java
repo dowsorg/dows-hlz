@@ -107,7 +107,8 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
         Map<String, Double> mockRateMap = new HashMap<>();
         rst.setMockRateMap(mockRateMap);
         Map<Integer, ExperimentSettingCollection.ExperimentPeriodSetting> mapPeriod = new HashMap<>();
-        RangeMap<Integer, Integer> mapPeriodSeconds = TreeRangeMap.create();
+        RangeMap<Integer, Integer> rangePeriodSeconds = TreeRangeMap.create();
+        RangeMap<Integer, Integer> rangePeriodDays = TreeRangeMap.create();
 
         final Integer periods = sandSetting.getPeriods();
         final Integer interval = sandSetting.getInterval().intValue();// sandSetting.getInterval().intValue()/1000
@@ -134,12 +135,14 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
             if (i < periods) {
                 endSeconds += interval;
             }
-            mapPeriodSeconds.put(i < periods ? Range.closedOpen(startSeconds, endSeconds) : Range.closed(startSeconds, endSeconds), i);
+            rangePeriodSeconds.put(i < periods ? Range.closedOpen(startSeconds, endSeconds) : Range.closed(startSeconds, endSeconds), i);
+            rangePeriodDays.put(Range.closed(startDay, endDay),i);
         }
         return rst.setPeriods(periods)
                 .setRawEndSeconds(endSeconds)
                 .setMapPeriod(mapPeriod)
-                .setMapPeriodSeconds(mapPeriodSeconds)
+                .setRangePeriodSeconds(rangePeriodSeconds)
+                .setRangePeriodDays(rangePeriodDays)
                 .setTotalDays(Long.valueOf(endDay))
                 .setTotalSeconds(totalSeconds);
     }

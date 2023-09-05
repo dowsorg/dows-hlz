@@ -78,34 +78,34 @@ public class ExperimentFlowRules {
         return rst;
     }
 
-    public ExptTimePointVO fillTimeState(ExptTimePointVO rst,ExperimentCacheKey exptKey,ExperimentSettingCollection exptColl){
-        if(null==rst){
+    public ExptTimePointVO fillTimeState(ExptTimePointVO rst,ExperimentCacheKey exptKey,ExperimentSettingCollection exptColl) {
+        if (null == rst) {
             return rst;
         }
-        final Date dtNow=new Date();
-        final LocalDateTime ldtNow=ShareUtil.XDate.localDT4Date(dtNow);
-        final long nowTs=dtNow.getTime();
+        final Date dtNow = new Date();
+        final LocalDateTime ldtNow = ShareUtil.XDate.localDT4Date(dtNow);
+        final long nowTs = dtNow.getTime();
         rst.setServerTimeStamp(nowTs);
         //方案设计模式
-        if(exptColl.hasSchemaMode()){
-            if(exptColl.getSchemaEndTime().isBefore(ldtNow)){
+        if (exptColl.hasSchemaMode()) {
+            if (exptColl.getSchemaEndTime().isBefore(ldtNow)) {
                 rst.setSchemeTotalTime(0L);
-            }else {
-                rst.setSchemeTotalTime(Duration.between(ldtNow,exptColl.getSchemaEndTime()).toMillis());
+            } else {
+                rst.setSchemeTotalTime(Duration.between(ldtNow, exptColl.getSchemaEndTime()).toMillis());
             }
             return rst;
         }
-        if(!exptColl.hasSandMode()){
+        if (!exptColl.hasSandMode()) {
             return rst;
         }
-        ExperimentTimerCache.CacheData cacheTimer=ExperimentTimerCache.Instance().getCacheData(exptKey);
-        AssertUtil.trueThenThrow(ShareUtil.XObject.anyEmpty(cacheTimer,()->cacheTimer.getMapTimer()))
+        ExperimentTimerCache.CacheData cacheTimer = ExperimentTimerCache.Instance().getCacheData(exptKey);
+        AssertUtil.trueThenThrow(ShareUtil.XObject.anyEmpty(cacheTimer, () -> cacheTimer.getMapTimer()))
                 .throwMessage("未找到沙盘时间设置");
         //沙盘模式
         rst.setSandTimeUnit("天");
-        for(ExperimentTimerEntity item:cacheTimer.getMapTimer().values()){
-            if(item.getPaused()){
-                if(item.getStartTime().getTime()<=item.getPauseTime().getTime()&&item.getPauseTime().getTime()<=item.getEndTime().getTime()){
+        for (ExperimentTimerEntity item : cacheTimer.getMapTimer().values()) {
+            if (item.getPaused()) {
+                if (item.getStartTime().getTime() <= item.getPauseTime().getTime() && item.getPauseTime().getTime() <= item.getEndTime().getTime()) {
                     // 剩余时间
                     long rs = item.getEndTime().getTime() - item.getPauseTime().getTime();
                     // 持续时间
@@ -143,9 +143,10 @@ public class ExperimentFlowRules {
                 return rst;
             }
         }
-        final ExperimentTimerEntity lastTimer=cacheTimer.getTimerByPeriod(cacheTimer.getMapTimer().size());
-        if(lastTimer.getState().equals(EnumExperimentState.FINISH.getState())){
-            rst.setState(lastTimer.getState());
+        final ExperimentTimerEntity lastTimer = cacheTimer.getTimerByPeriod(cacheTimer.getMapTimer().size());
+        if (lastTimer.getState().equals(EnumExperimentState.FINISH.getState())
+                || lastTimer.getEndTime().getTime() <= nowTs) {
+            rst.setState(EnumExperimentState.FINISH.getState());
             rst.setPeriod(lastTimer.getPeriod());
             rst.setSandRemnantSecond(0L);
             rst.setSandDurationSecond(exptColl.getTotalSeconds());

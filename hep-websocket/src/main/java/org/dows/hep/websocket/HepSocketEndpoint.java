@@ -65,7 +65,7 @@ public class HepSocketEndpoint {
             //AccountInfo accountInfo = HepClientManager.getAccountInfo(nettySession.channel());
             MsgScheduler.remove(messageBody.getMsgId());
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("HepSocketEndpoint.onMessage",e);
         }
     }
 

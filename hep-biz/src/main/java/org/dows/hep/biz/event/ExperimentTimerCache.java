@@ -53,7 +53,7 @@ public class ExperimentTimerCache extends BaseLoadingCache<ExperimentCacheKey, E
     }
     public CacheData getCacheData(ExperimentCacheKey key){
         key.setAppId(ShareBiz.checkAppId(key.getAppId(), key.getExperimentInstanceId()));
-        return this.getSet(key, true);
+        return this.getSet(key, false);
     }
 
     public void remove(String experimentId){
