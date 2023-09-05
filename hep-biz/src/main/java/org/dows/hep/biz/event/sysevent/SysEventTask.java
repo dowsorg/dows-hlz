@@ -78,7 +78,7 @@ public class SysEventTask extends BaseEventTask {
         }
         LocalDateTime ldtNow=LocalDateTime.now();
         ExperimentTimePoint timePoint= ExperimentSettingCache.getTimePointByRealTimeSilence(exptColl, experimentKey, ldtNow, true);
-        if(ShareUtil.XObject.anyEmpty(timePoint,()->timePoint.getCntPauseSeconds())) {
+        if(ShareUtil.XObject.anyEmpty(timePoint,()->timePoint.getPeriod())) {
             logError("call", "missTimePoint");
             raiseScheduler(getRetryDelaySeconds(),false,true);
             return 0;

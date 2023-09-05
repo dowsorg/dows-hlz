@@ -60,8 +60,11 @@ public class ExperimentSettingCollection implements ICacheClear {
     @Schema(title = "期数设置")
     private Map<Integer,ExperimentPeriodSetting> mapPeriod;
 
-    @Schema(title = "时间线")
-    private RangeMap<Integer,Integer> mapPeriodSeconds;
+    @Schema(title = "相对秒数-期数")
+    private RangeMap<Integer,Integer> rangePeriodSeconds;
+
+    @Schema(title = "天数-期数")
+    private RangeMap<Integer,Integer> rangePeriodDays;
 
     //region 兼容countDown
     private Map<String, Integer> durationMap;
@@ -110,10 +113,10 @@ public class ExperimentSettingCollection implements ICacheClear {
         if(rawEndSeconds<=rawSeconds){
             return periods;
         }
-        if(ShareUtil.XObject.isEmpty(mapPeriodSeconds)){
+        if(ShareUtil.XObject.isEmpty(rangePeriodSeconds)){
             return null;
         }
-        return mapPeriodSeconds.get(rawSeconds);
+        return rangePeriodSeconds.get(rawSeconds);
     }
 
     /**
@@ -153,12 +156,41 @@ public class ExperimentSettingCollection implements ICacheClear {
         return setting.getStartGameDay()-1+(int)Math.ceil(rate*totalDays);
     }
 
+    /**
+     * 按游戏内天数获取相对秒数
+     * @param gameDay
+     * @return
+     */
+
+    public Integer getRawSecondsByGameDay(Integer gameDay){
+        if(gameDay<=0 ){
+            return 0;
+        }
+        if(ShareUtil.XObject.anyEmpty(mapPeriod,rangePeriodDays)){
+            return null;
+        }
+        if(totalDays<=gameDay){
+           return rawEndSeconds;
+        }
+        Integer period = rangePeriodDays.get(gameDay);
+        ExperimentPeriodSetting setting=Optional.ofNullable(period)
+                .map(this::getSettingByPeriod)
+                .orElse(null);
+        if(ShareUtil.XObject.isEmpty(setting)){
+            return null;
+        }
+        double totalSeconds=setting.getTotalSeconds();
+        double totalDays=setting.getTotalDays();
+        double rate=Math.min(1,(gameDay-setting.startGameDay+1)/totalDays);
+        return Math.min(setting.endSecond,  setting.getStartSecond()+(int)Math.ceil(rate*totalSeconds));
+    }
+
     public void clear(){
         if(null!=this.mapPeriod){
             this.mapPeriod.clear();
         }
-        if(null!=this.mapPeriodSeconds){
-            this.mapPeriodSeconds.clear();
+        if(null!=this.rangePeriodSeconds){
+            this.rangePeriodSeconds.clear();
         }
     }
     @Data

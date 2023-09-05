@@ -49,7 +49,8 @@ public class PeriodStartDealer extends BaseEventDealer {
         EventScheduler.Instance().scheduleTimeBasedEvent(appId, experimentInstanceId, 5);
         //实验流程
         EventScheduler.Instance().scheduleSysEvent(appId, experimentInstanceId, 3);
-
+        //随访计划
+        EventScheduler.Instance().scheduleFollowUpPlan(appId, experimentInstanceId, 5);
         ExperimentSettingCollection exptColl= ExperimentSettingCache.Instance().getSet(exptKey, true);
         this.pushTimeState(rst, exptKey, exptColl, EnumWebSocketType.FLOW_PERIOD_START , row);
         return true;

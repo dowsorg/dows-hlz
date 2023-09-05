@@ -15,6 +15,7 @@ import org.dows.hep.biz.request.CaseCalIndicatorExpressionRequest;
 import org.dows.hep.biz.request.DatabaseCalIndicatorExpressionRequest;
 import org.dows.hep.biz.request.ExperimentCalIndicatorExpressionRequest;
 import org.dows.hep.biz.util.BigDecimalUtil;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.ExperimentIndicatorValRsService;
 import org.dows.hep.service.ExperimentPersonHealthRiskFactorRsService;
@@ -63,11 +64,14 @@ public class CalcHealthIndexBiz {
         String experimentId = req.getExperimentId();
         Set<String> experimentPersonIdSet = experimentPersonService.lambdaQuery()
                 .eq(ExperimentPersonEntity::getExperimentInstanceId, experimentId)
+                .in(ShareUtil.XObject.notEmpty(req.getExperimentPersonIds()), ExperimentPersonEntity::getExperimentPersonId,req.getExperimentPersonIds())
+                .select(ExperimentPersonEntity::getExperimentPersonId)
                 .list()
                 .stream()
                 .map(ExperimentPersonEntity::getExperimentPersonId)
                 .collect(Collectors.toSet());
         if (experimentPersonIdSet.isEmpty()) {return;}
+        final boolean saveRiskFalg=req.isSaveRisk();
         List<ExperimentPersonRiskModelRsEntity> experimentPersonRiskModelRsEntityList = new ArrayList<>();
         List<ExperimentPersonHealthRiskFactorRsEntity> experimentPersonHealthRiskFactorRsEntityList = new ArrayList<>();
         Map<String, Map<String, String>> kExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap = new HashMap<>();
@@ -240,19 +244,20 @@ public class CalcHealthIndexBiz {
                         vosFactorScore.add(new RiskFactorScoreVO(riskModelIndicatorExpressionId, curVal,
                                null==minExperimentIndicatorExpressionItemRsEntity?null: BigDecimalUtil.tryParseDecimalElseNull(minExperimentIndicatorExpressionItemRsEntity.getResultRaw()),
                                null==maxExperimentIndicatorExpressionItemRsEntity?null: BigDecimalUtil.tryParseDecimalElseNull(maxExperimentIndicatorExpressionItemRsEntity.getResultRaw())));
-
-                        ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
-                        String name = kExperimentIndicatorIdVNameMap.get(experimentIndicatorInstanceId);
-                        if (Objects.nonNull(experimentIndicatorValRsEntity) && StringUtils.isNotBlank(name)) {
-                            experimentPersonHealthRiskFactorRsEntityList.add(ExperimentPersonHealthRiskFactorRsEntity
-                                    .builder()
-                                    .experimentPersonHealthRiskFactorId(idGenerator.nextIdStr())
-                                    .experimentPersonRiskModelId(experimentPersonRiskModelId)
-                                    .experimentIndicatorInstanceId(experimentIndicatorInstanceId)
-                                    .name(name)
-                                    .val(experimentIndicatorValRsEntity.getCurrentVal())
-                                    .riskScore(curVal.doubleValue())
-                                    .build());
+                        if(saveRiskFalg) {
+                            ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
+                            String name = kExperimentIndicatorIdVNameMap.get(experimentIndicatorInstanceId);
+                            if (Objects.nonNull(experimentIndicatorValRsEntity) && StringUtils.isNotBlank(name)) {
+                                experimentPersonHealthRiskFactorRsEntityList.add(ExperimentPersonHealthRiskFactorRsEntity
+                                        .builder()
+                                        .experimentPersonHealthRiskFactorId(idGenerator.nextIdStr())
+                                        .experimentPersonRiskModelId(experimentPersonRiskModelId)
+                                        .experimentIndicatorInstanceId(experimentIndicatorInstanceId)
+                                        .name(name)
+                                        .val(experimentIndicatorValRsEntity.getCurrentVal())
+                                        .riskScore(curVal.doubleValue())
+                                        .build());
+                            }
                         }
                     });
                     final RiskModelHealthIndexVO voRiskModel=new RiskModelHealthIndexVO()
@@ -262,19 +267,21 @@ public class CalcHealthIndexBiz {
                             .setRiskFactors(vosFactorScore);
                     vosHealthIndex.add(CalcHealthIndexUtil.calcRiskModelHealthIndex(voRiskModel));
 
-                    experimentPersonRiskModelRsEntityList.add(ExperimentPersonRiskModelRsEntity
-                            .builder()
-                            .experimentPersonRiskModelId(experimentPersonRiskModelId)
-                            .experimentId(experimentId)
-                            .appId(appId)
-                            .periods(originPeriods)
-                            .experimentPersonId(experimentPersonId)
-                            .experimentRiskModelId(experimentRiskModelId)
-                            .name(experimentRiskModelRsEntity.getName())
-                            .riskDeathProbability(experimentRiskModelRsEntity.getRiskDeathProbability())
-                            .composeRiskScore(BigDecimalUtil.doubleValue( voRiskModel.getScore()))
-                            .existDeathRiskScore(BigDecimalUtil.doubleValue( voRiskModel.getExistsDeathScore()))
-                            .build());
+                    if(saveRiskFalg) {
+                        experimentPersonRiskModelRsEntityList.add(ExperimentPersonRiskModelRsEntity
+                                .builder()
+                                .experimentPersonRiskModelId(experimentPersonRiskModelId)
+                                .experimentId(experimentId)
+                                .appId(appId)
+                                .periods(periods)
+                                .experimentPersonId(experimentPersonId)
+                                .experimentRiskModelId(experimentRiskModelId)
+                                .name(experimentRiskModelRsEntity.getName())
+                                .riskDeathProbability(experimentRiskModelRsEntity.getRiskDeathProbability())
+                                .composeRiskScore(BigDecimalUtil.doubleValue(voRiskModel.getScore()))
+                                .existDeathRiskScore(BigDecimalUtil.doubleValue(voRiskModel.getExistsDeathScore()))
+                                .build());
+                    }
                 });
 
             });
@@ -284,6 +291,9 @@ public class CalcHealthIndexBiz {
         });
 
         if (!healthExperimentIndicatorValRsEntityList.isEmpty()) {experimentIndicatorValRsService.saveOrUpdateBatch(healthExperimentIndicatorValRsEntityList);}
+        if(!saveRiskFalg){
+            return;
+        }
         if (!experimentPersonRiskModelRsEntityList.isEmpty()) {experimentPersonRiskModelRsService.saveOrUpdateBatch(experimentPersonRiskModelRsEntityList);}
         if (!experimentPersonHealthRiskFactorRsEntityList.isEmpty()) {experimentPersonHealthRiskFactorRsService.saveOrUpdateBatch(experimentPersonHealthRiskFactorRsEntityList);}
     }
