@@ -46,6 +46,9 @@ public class ExperimentSettingCollection implements ICacheClear {
     @Schema(title = "方案截止时间")
     private LocalDateTime schemaEndTime;
 
+    @Schema(title = "方案设计评分截止时间")
+    private LocalDateTime schemaAuditEndTime;
+
     @Schema(title = "沙盒开始时间")
     private LocalDateTime sandStartTime;
 

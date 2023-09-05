@@ -97,7 +97,8 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
         }
         if(null!=schemeSetting) {
             rst.setSchemaDurationMinutes(schemeSetting.getDuration())
-                    .setSchemaEndTime(ShareUtil.XDate.localDT4Date(schemeSetting.getSchemeEndTime()));
+                    .setSchemaEndTime(ShareUtil.XDate.localDT4Date(schemeSetting.getSchemeEndTime()))
+                    .setSchemaAuditEndTime(ShareUtil.XDate.localDT4Date(schemeSetting.getAuditEndTime()));
         }
         if(null==sandSetting){
             return rst.setPeriods(0);

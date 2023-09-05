@@ -23,9 +23,12 @@ public enum EnumSysEventTriggerType {
 
     EXPERIMENTReady(2, "倒计时进入", ExperimentReadyTrigger.class),
     SCHEMAStart(11, "方案设计开始", SchemaStartTrigger.class),
-
     SCHEMAGroupEnd(12,"方案设计小组结束", SchemaGroupEndTrigger.class),
     SCHEMAEnd(13, "方案设计整体结束", SchemaEndTrigger.class),
+//    SCHEMAScoreEnd(14,"方案设计评分结束",14, SchemaScoreEndTrigger.class),
+    SCHEMAAuditEnd(15,"方案设计评分审核结束", SchemaAuditEndTrigger.class),
+
+
     SANDStart(21, "沙盘开始", SandStartTrigger.class),
     PERIODStart(22, "单期开始", PeriodStartTrigger.class),
     PERIODEnd(23, "单期结束", PeriodEndTrigger.class),
