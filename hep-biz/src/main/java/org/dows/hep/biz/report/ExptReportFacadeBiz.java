@@ -160,15 +160,19 @@ public class ExptReportFacadeBiz {
 
     /**
      * @param exptInstanceId - 实验实例ID
-     * @param regenerate     - 是否需要重新生成
+     * @param isCheck        - 是否需要检查
+     * @param regenerateZip  - 是否重新生成zip
+     * @param regeneratePdf  - 是否重新生成pdf
      * @return org.dows.hep.vo.report.ExptReportVO
      * @author - fhb
      * @description 获取实验报告
      * @date 2023/7/21 14:11
      */
-    public ExptReportVO exportExptReport(String exptInstanceId, String accountId, boolean regenerate) {
+    public ExptReportVO exportExptReport(String exptInstanceId, String accountId, boolean isCheck,
+                                         boolean regenerateZip, boolean regeneratePdf) {
         // check
-        ExperimentInstanceEntity exptEntity = checkExpt(exptInstanceId, accountId);
+        ExperimentInstanceEntity exptEntity = checkExpt(exptInstanceId, accountId, isCheck);
+
         String exptZipName = exptEntity.getId()
                 + SystemConstant.SPLIT_UNDER_LINE
                 + exptEntity.getExperimentName();
@@ -177,7 +181,7 @@ public class ExptReportFacadeBiz {
 
         /*是否使用旧数据 不重新生成并且旧数据存在 --> 直接返回*/
         String zipPath1 = reportRecordHelper.getReportOfExpt(exptInstanceId, ExptReportTypeEnum.EXPT_ZIP);
-        if (!regenerate && StrUtil.isNotBlank(zipPath1)) {
+        if (!regenerateZip && StrUtil.isNotBlank(zipPath1)) {
             ExptReportVO exptReportVO = generatePdf(exptInstanceId, null, false);
             exptReportVO.setZipName(exptZipFullName);
             exptReportVO.setZipPath(zipPath1);
@@ -190,7 +194,7 @@ public class ExptReportFacadeBiz {
 
                 /*是否使用旧数据 不重新生成并且旧数据存在 --> 直接返回*/
                 String zipPath2 = reportRecordHelper.getReportOfExpt(exptInstanceId, ExptReportTypeEnum.EXPT_ZIP);
-                if (!regenerate && StrUtil.isNotBlank(zipPath2)) {
+                if (!regenerateZip && StrUtil.isNotBlank(zipPath2)) {
                     ExptReportVO exptReportVO = generatePdf(exptInstanceId, null, false); // 此处可以确定，regenerate 一定为 false
                     exptReportVO.setZipName(exptZipFullName);
                     exptReportVO.setZipPath(zipPath2);
@@ -199,7 +203,7 @@ public class ExptReportFacadeBiz {
 
                 /*使用新数据*/
                 // 生成报告
-                ExptReportVO exptReportVO = generatePdf(exptInstanceId, null, regenerate); // 此处 regenerate 与 参数保持一致
+                ExptReportVO exptReportVO = generatePdf(exptInstanceId, null, regeneratePdf);
                 // 压缩并上传报告
                 Path uploadPath = Paths.get(exptInstanceId, exptZipFullName);
                 boolean zipRes = reportZipHelper.zipAndUploadV2(exptReportVO, uploadPath, exptZipName, exptZipSuffix);
@@ -226,15 +230,18 @@ public class ExptReportFacadeBiz {
     /**
      * @param exptInstanceId - 实验实例ID
      * @param exptGroupId    - 实验小组ID
-     * @param regenerate     - 是否重新生成
+     * @param regenerateZip  - 是否重新生成zip
+     * @param regeneratePdf  - 是否重新生成pdf
      * @return org.dows.hep.vo.report.ExptReportVO
      * @author fhb
      * @description 获取小组实验报告
      * @date 2023/7/21 14:09
      */
-    public ExptReportVO exportGroupReport(String exptInstanceId, String exptGroupId, String accountId, boolean regenerate) {
+    public ExptReportVO exportGroupReport(String exptInstanceId, String exptGroupId, String accountId,
+                                          boolean regenerateZip, boolean regeneratePdf) {
         // check
-        ExperimentInstanceEntity exptEntity = checkExpt(exptInstanceId, accountId);
+        ExperimentInstanceEntity exptEntity = checkExpt(exptInstanceId, accountId, Boolean.TRUE);
+
         String groupZipName = exptEntity.getId()
                 + SystemConstant.SPLIT_UNDER_LINE
                 + exptEntity.getExperimentName()
@@ -245,7 +252,7 @@ public class ExptReportFacadeBiz {
 
         // 不重新生成并且旧数据存在 --> 直接返回
         String zipPath1 = reportRecordHelper.getReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP_ZIP);
-        if (!regenerate && StrUtil.isNotBlank(zipPath1)) {
+        if (!regenerateZip && StrUtil.isNotBlank(zipPath1)) {
             ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId, false);
             exptReportVO.setZipName(groupZipName);
             exptReportVO.setZipPath(zipPath1);
@@ -259,7 +266,7 @@ public class ExptReportFacadeBiz {
                 /*1.使用旧数据*/
                 // 不重新生成并且旧数据存在 --> 直接返回
                 String zipPath2 = reportRecordHelper.getReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP_ZIP);
-                if (!regenerate && StrUtil.isNotBlank(zipPath2)) {
+                if (!regenerateZip && StrUtil.isNotBlank(zipPath2)) {
                     ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId, false); // 此处可以确定，regenerate 一定为 false
                     exptReportVO.setZipName(groupZipName);
                     exptReportVO.setZipPath(zipPath2);
@@ -268,7 +275,7 @@ public class ExptReportFacadeBiz {
 
                 /*2.使用新数据*/
                 // 生成报告
-                ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId, regenerate); // 此处 regenerate 与 参数保持一致
+                ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId, regeneratePdf);
                 // 压缩并上传报告
                 Path uploadPath = Paths.get(exptInstanceId, groupZipFullName);
                 boolean zipRes = reportZipHelper.zipAndUploadV2(exptReportVO, uploadPath, groupZipName, groupZipSuffix);
@@ -295,27 +302,32 @@ public class ExptReportFacadeBiz {
     /**
      * @param exptInstanceId - 实验实例ID
      * @param accountId      - 账号ID
+     * @param regenerateZip
+     * @param regeneratePdf
      * @return org.dows.hep.vo.report.ExptReportVO
      * @author fhb
      * @description 获取学生账号的实验报告
      * @date 2023/7/21 14:08
      */
-    public ExptReportVO exportAccountReport(String exptInstanceId, String accountId, boolean regenerate) {
+    public ExptReportVO exportAccountReport(String exptInstanceId, String accountId, boolean regenerateZip, boolean regeneratePdf) {
         String experimentGroupId = getGroupOfAccountAndExpt(exptInstanceId, accountId);
-        return exportGroupReport(exptInstanceId, experimentGroupId, accountId, regenerate);
+        return exportGroupReport(exptInstanceId, experimentGroupId, accountId, regenerateZip, regeneratePdf);
     }
 
     /**
      * @param exptInstanceId - 实验实例ID
-     * @param regenerate     - 是否重新生成
+     * @param regenerateZip  - 是否重新生成zip
+     * @param regeneratePdf  - 是否重新生成pdf
      * @param request        - http 请求
      * @param response       - http 响应
      * @author fhb
      * @description 预览实验报告
      * @date 2023/8/24 17:41
      */
-    public void previewExptReport(String exptInstanceId, String accountId, boolean regenerate, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        ExptReportVO exptReportVO = exportExptReport(exptInstanceId, accountId, regenerate);
+    public void previewExptReport(String exptInstanceId, String accountId,
+                                  boolean regenerateZip, boolean regeneratePdf,
+                                  HttpServletRequest request, HttpServletResponse response) throws IOException {
+        ExptReportVO exptReportVO = exportExptReport(exptInstanceId, accountId, Boolean.TRUE, regenerateZip, regeneratePdf);
         List<ExptGroupReportVO> groupReportList = exptReportVO.getGroupReportList();
         if (CollUtil.isEmpty(groupReportList)) {
             return;
@@ -338,15 +350,18 @@ public class ExptReportFacadeBiz {
     /**
      * @param exptInstanceId - 实验实例ID
      * @param exptGroupId    - 实验小组ID
-     * @param regenerate     - 是否重新生成
+     * @param regenerateZip  - 是否重新生成zip
+     * @param regeneratePdf  - 是否重新生成pdf
      * @param request        - Http 请求
      * @param response       - Http 响应
      * @author fhb
      * @description 预览小组报告
      * @date 2023/8/24 17:42
      */
-    public void previewGroupReport(String exptInstanceId, String exptGroupId, String accountId, boolean regenerate, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        ExptReportVO exptReportVO = exportGroupReport(exptInstanceId, exptGroupId, accountId, regenerate);
+    public void previewGroupReport(String exptInstanceId, String exptGroupId, String accountId,
+                                   boolean regenerateZip, boolean regeneratePdf,
+                                   HttpServletRequest request, HttpServletResponse response) throws IOException {
+        ExptReportVO exptReportVO = exportGroupReport(exptInstanceId, exptGroupId, accountId, regenerateZip, regeneratePdf);
         List<ExptGroupReportVO> groupReportList = exptReportVO.getGroupReportList();
         if (CollUtil.isEmpty(groupReportList)) {
             return;
@@ -369,16 +384,36 @@ public class ExptReportFacadeBiz {
     /**
      * @param exptInstanceId - 实验实例ID
      * @param accountId      - 账号ID
-     * @param regenerate     - 是否重新生成
+     * @param regenerateZip  - 是否重新生成zip
+     * @param regeneratePdf  - 是否重新生成pdf
      * @param request        - Http 请求
      * @param response       - Http 响应
      * @author fhb
      * @description 预览学生报告
      * @date 2023/8/24 17:43
      */
-    public void previewAccountReport(String exptInstanceId, String accountId, boolean regenerate, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void previewAccountReport(String exptInstanceId, String accountId,
+                                     boolean regenerateZip, boolean regeneratePdf,
+                                     HttpServletRequest request, HttpServletResponse response) throws IOException {
         String experimentGroupId = getGroupOfAccountAndExpt(exptInstanceId, accountId);
-        previewGroupReport(exptInstanceId, experimentGroupId, accountId, regenerate, request, response);
+        previewGroupReport(exptInstanceId, experimentGroupId, accountId, regenerateZip, regeneratePdf, request, response);
+    }
+
+    /**
+     * @param exptInstanceId - 实验示例ID
+     * @return boolean
+     * @author fhb
+     * @description 重新生成方案设计报告
+     * @date 2023/9/5 10:34
+     */
+    public boolean regenerate(String exptInstanceId) {
+        boolean containsScheme = experimentSettingBiz.containsScheme(exptInstanceId);
+        if (!containsScheme) {
+            return Boolean.FALSE;
+        }
+
+        exportExptReport(exptInstanceId, null, Boolean.FALSE, Boolean.TRUE, Boolean.TRUE);
+        return Boolean.TRUE;
     }
 
     private void preview(String urlStr, HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -401,7 +436,7 @@ public class ExptReportFacadeBiz {
         Files.deleteIfExists(tempFilePath);
     }
 
-    private ExperimentInstanceEntity checkExpt(String experimentInstanceId, String accountId) {
+    private ExperimentInstanceEntity checkExpt(String experimentInstanceId, String accountId, boolean isCheck) {
         // 校验状态
         ExperimentInstanceEntity exptInstance = experimentInstanceService.lambdaQuery()
                 .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)

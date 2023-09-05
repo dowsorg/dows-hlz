@@ -109,9 +109,9 @@ public class ExptReportPdfRest {
     @Operation(summary = "导出实验pdf报告")
     @GetMapping(value = "/v1/report/exportExptReport")
     public ExptReportVO exportExptReport(@RequestParam String experimentInstanceId, HttpServletRequest request) {
-        boolean regenerate = regenerate(experimentInstanceId);
         String accountId = baseBiz.getAccountId(request);
-        return exptReportFacadeBiz.exportExptReport(experimentInstanceId, accountId, regenerate);
+        boolean regenerate = regenerate(experimentInstanceId, accountId);
+        return exptReportFacadeBiz.exportExptReport(experimentInstanceId, accountId, Boolean.TRUE, regenerate, regenerate);
     }
 
     /**
@@ -127,9 +127,9 @@ public class ExptReportPdfRest {
     @Operation(summary = "导出小组实验pdf报告")
     @GetMapping(value = "/v1/report/exportGroupReport")
     public ExptReportVO exportGroupReport(@RequestParam String experimentInstanceId, @RequestParam String experimentGroupId, HttpServletRequest request) {
-        boolean regenerate = regenerate(experimentInstanceId);
         String accountId = baseBiz.getAccountId(request);
-        return exptReportFacadeBiz.exportGroupReport(experimentInstanceId, experimentGroupId, accountId, regenerate);
+        boolean regenerate = regenerate(experimentInstanceId, accountId);
+        return exptReportFacadeBiz.exportGroupReport(experimentInstanceId, experimentGroupId, accountId, regenerate, regenerate);
     }
 
     /**
@@ -145,8 +145,8 @@ public class ExptReportPdfRest {
     @GetMapping(value = "/v1/report/exportAccountReport")
     public ExptReportVO exportAccountReport(@RequestParam String experimentInstanceId, HttpServletRequest request) {
         String accountId = baseBiz.getAccountId(request);
-        boolean regenerate = regenerate(experimentInstanceId);
-        return exptReportFacadeBiz.exportAccountReport(experimentInstanceId, accountId, regenerate);
+        boolean regenerate = regenerate(experimentInstanceId, accountId);
+        return exptReportFacadeBiz.exportAccountReport(experimentInstanceId, accountId, regenerate, regenerate);
     }
 
     /**
@@ -164,10 +164,10 @@ public class ExptReportPdfRest {
     public void previewExptReport(@RequestParam String experimentInstanceId,
                                   HttpServletRequest request,
                                   HttpServletResponse response) {
-        boolean regenerate = regenerate(experimentInstanceId);
         String accountId = baseBiz.getAccountId(request);
+        boolean regenerate = regenerate(experimentInstanceId, accountId);
         try {
-            exptReportFacadeBiz.previewExptReport(experimentInstanceId, accountId, regenerate, request, response);
+            exptReportFacadeBiz.previewExptReport(experimentInstanceId, accountId, regenerate, regenerate, request, response);
         } catch (IOException e) {
             log.error(String.format("预览实验报告时，发生IO异常: %s", e));
             throw new BizException(String.format("预览实验报告时，发生IO异常: %s", e));
@@ -192,10 +192,10 @@ public class ExptReportPdfRest {
                                    @RequestParam String accountId,
                                    HttpServletRequest request,
                                    HttpServletResponse response) {
-        boolean regenerate = regenerate(experimentInstanceId);
+        boolean regenerate = regenerate(experimentInstanceId, accountId);
 //        String accountId = baseBiz.getAccountId(request);
         try {
-            exptReportFacadeBiz.previewGroupReport(experimentInstanceId, experimentGroupId, accountId, regenerate, request, response);
+            exptReportFacadeBiz.previewGroupReport(experimentInstanceId, experimentGroupId, accountId, regenerate, regenerate, request, response);
         } catch (IOException e) {
             log.error(String.format("预览小组报告时，发生IO异常: %s", e));
             throw new BizException(String.format("预览小组报告时，发生IO异常: %s", e));
@@ -219,9 +219,9 @@ public class ExptReportPdfRest {
                                      HttpServletRequest request,
                                      HttpServletResponse response) {
 //        String accountId = baseBiz.getAccountId(request);
-        boolean regenerate = regenerate(experimentInstanceId);
+        boolean regenerate = regenerate(experimentInstanceId, accountId);
         try {
-            exptReportFacadeBiz.previewAccountReport(experimentInstanceId, accountId, regenerate, request, response);
+            exptReportFacadeBiz.previewAccountReport(experimentInstanceId, accountId, regenerate, regenerate, request, response);
         } catch (IOException e) {
             log.error(String.format("预览学生报告时，发生IO异常: %s", e));
             throw new BizException(String.format("预览学生报告时，发生IO异常: %s", e));
@@ -256,7 +256,7 @@ public class ExptReportPdfRest {
                     .map(Date::getTime)
                     .orElseThrow(() -> new BizException("下载报告时，获取方案设计设置数据异常"));
             long current = DateUtil.current();
-            // 未到评分截止时间
+            // 未到审核截止时间
             if (current < auditEndTime) {
                 return Boolean.TRUE;
             }
