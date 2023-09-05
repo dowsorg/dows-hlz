@@ -56,7 +56,15 @@ public class RsExperimentCalculateRest {
   @Operation(summary = "实验-计算健康指数")
   @PostMapping("v1/experimentIndicator/healthScore/calculate")
   public void experimentRsCalculateHealthScore(@RequestBody ExperimentRsCalculateHealthScoreRequestRs experimentRsCalculateHealthScoreRequestRs) throws ExecutionException, InterruptedException {
-    rsExperimentCalculateBiz.experimentRsCalculateHealthScore(experimentRsCalculateHealthScoreRequestRs);
+    //rsExperimentCalculateBiz.experimentRsCalculateHealthScore(experimentRsCalculateHealthScoreRequestRs);
+    calcHealthIndexBiz.calcPersonHelthIndex(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
+            .builder()
+            .appId(experimentRsCalculateHealthScoreRequestRs.getAppId())
+            .experimentId(experimentRsCalculateHealthScoreRequestRs.getExperimentId())
+            .periods(experimentRsCalculateHealthScoreRequestRs.getPeriods())
+            .experimentPersonIds(experimentRsCalculateHealthScoreRequestRs.getExperimentPersonIdSet())
+            .saveRisk(false)
+            .build());
   }
 
   @Operation(summary = "实验-计算健康指数并且生成报告")

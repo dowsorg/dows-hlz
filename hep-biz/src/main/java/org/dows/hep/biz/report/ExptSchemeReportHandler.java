@@ -215,6 +215,7 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
         // 不重新生成并且旧数据存在 --> 直接返回
         if (!regenerate && StrUtil.isNotBlank(reportOfGroup)) {
             ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
+                    .parent(exptInstanceId)
                     .name(fileName)
                     .path(reportOfGroup)
                     .build();
@@ -248,6 +249,7 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
 
         // 构造返回信息
         ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
+                .parent(exptInstanceId)
                 .name(ossInfo.getName())
                 .path(ossHelper.getUrlPath(ossInfo, exptInstanceId))
                 .build();

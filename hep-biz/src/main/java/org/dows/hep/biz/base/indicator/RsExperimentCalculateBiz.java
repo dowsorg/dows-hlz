@@ -1388,42 +1388,50 @@ public class RsExperimentCalculateBiz {
 
     /* runsix:1.计算此次结算持续天数 */
     this.experimentUpdateCalculatorTime(RsCalculateTimeRequest
-        .builder()
-        .appId(appId)
-        .experimentId(experimentId)
-        .experimentPersonIdSet(experimentPersonIdSet)
-        .build(),
-        kExperimentPersonIdVDurationMap);
+                    .builder()
+                    .appId(appId)
+                    .experimentId(experimentId)
+                    .experimentPersonIdSet(experimentPersonIdSet)
+                    .build(),
+            kExperimentPersonIdVDurationMap);
 
     /* runsix:2.设置此次结算持续天数 */
     this.experimentSetDuration(RsExperimentSetDurationRequest
-        .builder()
-        .appId(appId)
-        .experimentId(experimentId)
-        .periods(periods)
-        .kExperimentPersonIdVDurationMap(kExperimentPersonIdVDurationMap)
-        .build());
+            .builder()
+            .appId(appId)
+            .experimentId(experimentId)
+            .periods(periods)
+            .kExperimentPersonIdVDurationMap(kExperimentPersonIdVDurationMap)
+            .build());
 
     /* runsix:3.重新计算人的指标 */
     this.experimentReCalculatePerson(RsCalculatePersonRequestRs
-        .builder()
-        .appId(appId)
-        .experimentId(experimentId)
-        .periods(periods)
-        .personIdSet(experimentPersonIdSet)
-        .build());
+            .builder()
+            .appId(appId)
+            .experimentId(experimentId)
+            .periods(periods)
+            .personIdSet(experimentPersonIdSet)
+            .build());
 
     /* runsix:4.重新计算健康指数 */
-    this.experimentRsCalculateHealthScore(ExperimentRsCalculateHealthScoreRequestRs
+/*    this.experimentRsCalculateHealthScore(ExperimentRsCalculateHealthScoreRequestRs
         .builder()
         .appId(appId)
         .experimentId(experimentId)
         .periods(periods)
         .experimentPersonIdSet(experimentPersonIdSet)
-        .build());
+        .build());*/
+    calcHealthIndexBiz.calcPersonHelthIndex(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
+            .builder()
+            .appId(appId)
+            .experimentId(experimentId)
+            .periods(periods)
+            .experimentPersonIds(experimentPersonIdSet)
+            .saveRisk(false)
+            .build());
 
     //计算突发事件触发
-    PersonBasedEventTask.runPersonBasedEvent(appId,experimentId);
+    PersonBasedEventTask.runPersonBasedEvent(appId, experimentId);
   }
 
   /**

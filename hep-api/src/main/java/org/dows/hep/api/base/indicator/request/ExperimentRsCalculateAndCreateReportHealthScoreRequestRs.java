@@ -26,6 +26,10 @@ public class ExperimentRsCalculateAndCreateReportHealthScoreRequestRs implements
   @Schema(title = "期数")
   private Integer periods;
 
-//  @Schema(title = "实验人物id")
-//  private Set<String> experimentPersonIdSet;
+  @Schema(title = "实验人物Id")
+  private Set<String> experimentPersonIds;
+
+  @Schema(title = "是否保存风险模型计算")
+  private boolean saveRisk=true;
+
 }

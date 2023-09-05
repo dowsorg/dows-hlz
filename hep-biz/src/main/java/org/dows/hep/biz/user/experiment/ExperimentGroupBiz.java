@@ -339,7 +339,7 @@ public class ExperimentGroupBiz {
                 return true;
             }
         }finally {
-            if(isLocked) {
+            if(lock.isHeldByCurrentThread()) {
                 lock.unlock();
             }
         }
