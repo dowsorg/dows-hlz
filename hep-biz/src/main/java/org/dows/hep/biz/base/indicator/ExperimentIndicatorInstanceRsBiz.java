@@ -69,14 +69,14 @@ public class ExperimentIndicatorInstanceRsBiz {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public boolean saveChangeMoney(ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity){
-        if(null==experimentIndicatorValRsEntity){
+    public boolean saveChangeMoney(ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity) {
+        if (null == experimentIndicatorValRsEntity) {
             return false;
         }
         return experimentIndicatorValRsService.saveOrUpdate(experimentIndicatorValRsEntity);
     }
 
-    public ExperimentIndicatorValRsEntity getChangeMoney(RsChangeMoneyRequest rsChangeMoneyRequest){
+    public ExperimentIndicatorValRsEntity getChangeMoney(RsChangeMoneyRequest rsChangeMoneyRequest) {
         String appId = rsChangeMoneyRequest.getAppId();
         String experimentId = rsChangeMoneyRequest.getExperimentId();
         String experimentPersonId = rsChangeMoneyRequest.getExperimentPersonId();
@@ -95,7 +95,7 @@ public class ExperimentIndicatorInstanceRsBiz {
         String max = experimentIndicatorValRsEntity.getMax();
         String moneyCurrentVal = experimentIndicatorValRsEntity.getCurrentVal();
         BigDecimal newMoneyCurrentVal = BigDecimal.valueOf(Double.parseDouble(moneyCurrentVal)).add(moneyChange);
-        if(rsChangeMoneyRequest.isAssertEnough()) {
+        if (rsChangeMoneyRequest.isAssertEnough()) {
             AssertUtil.trueThenThrow(newMoneyCurrentVal.compareTo(BigDecimal.ZERO) < 0)
                     .throwMessage("您的资金不足了");
         }
@@ -131,7 +131,7 @@ public class ExperimentIndicatorInstanceRsBiz {
         //2、查询上述人物在实验人物指标表中的指标信息
         //2.1、先获取上述人物的年龄数据总数
         List<String> personIdList = personEntities.stream().map(e -> e.getExperimentPersonId()).collect(Collectors.toList());
-        if(personIdList != null && personIdList.size() > 0){
+        if (personIdList != null && personIdList.size() > 0) {
             List<ExperimentIndicatorInstanceRsEntity> indicatorInstanceRsEntities = experimentIndicatorInstanceRsService.lambdaQuery()
                     .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.AGE.getType())
                     .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, personIdList)
@@ -214,7 +214,7 @@ public class ExperimentIndicatorInstanceRsBiz {
         //2、查询上述人物在实验人物指标表中的指标信息
         //2.1、先获取上述人物的性别数据总数
         List<String> personIdList = personEntities.stream().map(e -> e.getExperimentPersonId()).collect(Collectors.toList());
-        if(personIdList != null && personIdList.size() > 0) {
+        if (personIdList != null && personIdList.size() > 0) {
             List<ExperimentIndicatorInstanceRsEntity> indicatorInstanceRsEntities = experimentIndicatorInstanceRsService.lambdaQuery()
                     .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.SEX.getType())
                     .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, personIdList)
@@ -251,9 +251,9 @@ public class ExperimentIndicatorInstanceRsBiz {
 
     public String getMoneyDef(String experimentPersonId) {
         ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = experimentIndicatorInstanceRsService.lambdaQuery()
-            .eq(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonId)
-            .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.MONEY.getType())
-            .one();
+                .eq(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonId)
+                .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.MONEY.getType())
+                .one();
         if (Objects.isNull(experimentIndicatorInstanceRsEntity)) {
             return "0";
         } else {
@@ -263,42 +263,42 @@ public class ExperimentIndicatorInstanceRsBiz {
 
     public GroupAverageHealthPointResponse groupAverageHealth(String experimentId, String experimentGroupId, Integer periods) {
         Set<String> experimentPersonIdSet = experimentPersonService.lambdaQuery()
-            .eq(ExperimentPersonEntity::getExperimentGroupId, experimentGroupId)
-            .list()
-            .stream()
-            .map(ExperimentPersonEntity::getExperimentPersonId)
-            .collect(Collectors.toSet());
+                .eq(ExperimentPersonEntity::getExperimentGroupId, experimentGroupId)
+                .list()
+                .stream()
+                .map(ExperimentPersonEntity::getExperimentPersonId)
+                .collect(Collectors.toSet());
         if (experimentPersonIdSet.isEmpty()) {
             return GroupAverageHealthPointResponse
-            .builder()
-            .experimentPersonCount(0)
-            .averageHealthPoint("0")
-            .build();
+                    .builder()
+                    .experimentPersonCount(0)
+                    .averageHealthPoint("0")
+                    .build();
         }
 
         Set<String> healthPointExperimentIndicatorInstanceIdSet = experimentIndicatorInstanceRsService.lambdaQuery()
-            .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.HEALTH_POINT.getType())
-            .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdSet)
-            .list()
-            .stream()
-            .map(ExperimentIndicatorInstanceRsEntity::getExperimentIndicatorInstanceId)
-            .collect(Collectors.toSet());
+                .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.HEALTH_POINT.getType())
+                .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdSet)
+                .list()
+                .stream()
+                .map(ExperimentIndicatorInstanceRsEntity::getExperimentIndicatorInstanceId)
+                .collect(Collectors.toSet());
         if (healthPointExperimentIndicatorInstanceIdSet.isEmpty()) {
             return GroupAverageHealthPointResponse
-                .builder()
-                .experimentPersonCount(0)
-                .averageHealthPoint("0")
-                .build();
+                    .builder()
+                    .experimentPersonCount(0)
+                    .averageHealthPoint("0")
+                    .build();
         }
         BigDecimal total = experimentIndicatorValRsService.lambdaQuery()
-            .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
-            .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, healthPointExperimentIndicatorInstanceIdSet)
-            .list()
-            .stream()
-            .map(experimentIndicatorValRsEntity -> {
-                return BigDecimal.valueOf(Double.parseDouble(experimentIndicatorValRsEntity.getCurrentVal()));
-            })
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
+                .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, healthPointExperimentIndicatorInstanceIdSet)
+                .list()
+                .stream()
+                .map(experimentIndicatorValRsEntity -> {
+                    return BigDecimal.valueOf(Double.parseDouble(experimentIndicatorValRsEntity.getCurrentVal()));
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
         int experimentPersonCount = healthPointExperimentIndicatorInstanceIdSet.size();
         String averageHealthPoint = total.divide(BigDecimal.valueOf(experimentPersonCount), 2, RoundingMode.DOWN).toString();
 
@@ -306,47 +306,51 @@ public class ExperimentIndicatorInstanceRsBiz {
         AtomicInteger curRank = new AtomicInteger(1);
         Map<String, Integer> kExperimentGroupIdVRankMap = new HashMap<>();
         experimentScoringService.lambdaQuery()
-            .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
-            .eq(ExperimentScoringEntity::getPeriods, periods-1)
-            .orderByDesc(ExperimentScoringEntity::getTotalScore)
-            .list()
-            .forEach(experimentScoringEntity -> {
-                kExperimentGroupIdVRankMap.put(experimentScoringEntity.getExperimentGroupId(), curRank.getAndIncrement());
-            });
+                .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
+                .eq(ExperimentScoringEntity::getPeriods, periods - 1)
+                .orderByDesc(ExperimentScoringEntity::getTotalScore)
+                .list()
+                .forEach(experimentScoringEntity -> {
+                    kExperimentGroupIdVRankMap.put(experimentScoringEntity.getExperimentGroupId(), curRank.getAndIncrement());
+                });
         if (Objects.nonNull(kExperimentGroupIdVRankMap.get(experimentGroupId))) {
             rank = kExperimentGroupIdVRankMap.get(experimentGroupId);
         }
         return GroupAverageHealthPointResponse
-            .builder()
-            .experimentPersonCount(experimentPersonCount)
-            .averageHealthPoint(averageHealthPoint)
-            .rank(rank)
-            .build();
+                .builder()
+                .experimentPersonCount(experimentPersonCount)
+                .averageHealthPoint(averageHealthPoint)
+                .rank(rank)
+                .build();
     }
 
     public Map<String, String> getInitMoneyByPeriods(RsInitMoneyRequest rsInitMoneyRequest) {
         Integer periods = rsInitMoneyRequest.getPeriods();
         Set<String> experimentPersonIdSet = rsInitMoneyRequest.getExperimentPersonIdSet();
-        if (Objects.isNull(experimentPersonIdSet) || experimentPersonIdSet.isEmpty()) {return new HashMap<>();}
+        if (Objects.isNull(experimentPersonIdSet) || experimentPersonIdSet.isEmpty()) {
+            return new HashMap<>();
+        }
         Map<String, String> kExperimentPersonIdVInitMoneyMap = new HashMap<>();
 
         Map<String, String> kExperimentPersonIdVMoneyExperimentIndicatorInstanceIdMap = new HashMap<>();
         experimentIndicatorInstanceRsService.lambdaQuery()
-            .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.MONEY.getType())
-            .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdSet)
-            .list()
-            .forEach(experimentIndicatorInstanceRsEntity -> {
-                kExperimentPersonIdVMoneyExperimentIndicatorInstanceIdMap.put(experimentIndicatorInstanceRsEntity.getExperimentPersonId(), experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
-            });
-        if (kExperimentPersonIdVMoneyExperimentIndicatorInstanceIdMap.isEmpty()) {return new HashMap<>();}
+                .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.MONEY.getType())
+                .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdSet)
+                .list()
+                .forEach(experimentIndicatorInstanceRsEntity -> {
+                    kExperimentPersonIdVMoneyExperimentIndicatorInstanceIdMap.put(experimentIndicatorInstanceRsEntity.getExperimentPersonId(), experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
+                });
+        if (kExperimentPersonIdVMoneyExperimentIndicatorInstanceIdMap.isEmpty()) {
+            return new HashMap<>();
+        }
         Set<String> moneyExperimentIndicatorInstanceIdSet = new HashSet<>(kExperimentPersonIdVMoneyExperimentIndicatorInstanceIdMap.values());
 
         Map<String, String> kMoneyExperimentIndicatorInstanceIdVInitValMap = experimentIndicatorValRsService.lambdaQuery()
-            .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
-            .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, moneyExperimentIndicatorInstanceIdSet)
-            .list()
-            .stream()
-            .collect(Collectors.toMap(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, ExperimentIndicatorValRsEntity::getInitVal));
+                .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
+                .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, moneyExperimentIndicatorInstanceIdSet)
+                .list()
+                .stream()
+                .collect(Collectors.toMap(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, ExperimentIndicatorValRsEntity::getInitVal));
 
         kExperimentPersonIdVMoneyExperimentIndicatorInstanceIdMap.forEach((experimentPersonId, moneyExperimentIndicatorInstanceId) -> {
             String initVal = kMoneyExperimentIndicatorInstanceIdVInitValMap.get(moneyExperimentIndicatorInstanceId);
@@ -363,29 +367,33 @@ public class ExperimentIndicatorInstanceRsBiz {
         /* runsix:param */
         Integer periods = rsSexRequest.getPeriods();
         Set<String> experimentPersonIdSet = rsSexRequest.getExperimentPersonIdSet();
-        if (Objects.isNull(experimentPersonIdSet) || experimentPersonIdSet.isEmpty()) {return kExperimentPersonIdVSexMap;}
+        if (Objects.isNull(experimentPersonIdSet) || experimentPersonIdSet.isEmpty()) {
+            return kExperimentPersonIdVSexMap;
+        }
 
         Map<String, String> kExperimentPersonIdVSexIdMap = new HashMap<>();
         experimentIndicatorInstanceRsService.lambdaQuery()
-            .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.SEX.getType())
-            .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdSet)
-            .list()
-            .forEach(experimentIndicatorInstanceRsEntity -> {
-                kExperimentPersonIdVSexIdMap.put(experimentIndicatorInstanceRsEntity.getExperimentPersonId(), experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
-            });
-        if (kExperimentPersonIdVSexIdMap.isEmpty()) {return kExperimentPersonIdVSexIdMap;}
+                .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.SEX.getType())
+                .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdSet)
+                .list()
+                .forEach(experimentIndicatorInstanceRsEntity -> {
+                    kExperimentPersonIdVSexIdMap.put(experimentIndicatorInstanceRsEntity.getExperimentPersonId(), experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
+                });
+        if (kExperimentPersonIdVSexIdMap.isEmpty()) {
+            return kExperimentPersonIdVSexIdMap;
+        }
 
         Set<String> sexIdSet = new HashSet<>(kExperimentPersonIdVSexIdMap.values());
         Map<String, String> kSexIdMapVValMap = new HashMap<>();
         experimentIndicatorValRsService.lambdaQuery()
-            .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
-            .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, sexIdSet)
-            .list()
-            .forEach(experimentIndicatorValRsEntity -> {
-                String indicatorInstanceId = experimentIndicatorValRsEntity.getIndicatorInstanceId();
-                String currentVal = experimentIndicatorValRsEntity.getCurrentVal();
-                kSexIdMapVValMap.put(indicatorInstanceId, currentVal);
-            });
+                .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
+                .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, sexIdSet)
+                .list()
+                .forEach(experimentIndicatorValRsEntity -> {
+                    String indicatorInstanceId = experimentIndicatorValRsEntity.getIndicatorInstanceId();
+                    String currentVal = experimentIndicatorValRsEntity.getCurrentVal();
+                    kSexIdMapVValMap.put(indicatorInstanceId, currentVal);
+                });
         kExperimentPersonIdVSexIdMap.forEach((experimentPersonId, sexId) -> {
             String val = kSexIdMapVValMap.get(sexId);
             if (StringUtils.isNotBlank(val)) {
@@ -402,29 +410,33 @@ public class ExperimentIndicatorInstanceRsBiz {
         /* runsix:param */
         Integer periods = rsAgeRequest.getPeriods();
         Set<String> experimentPersonIdSet = rsAgeRequest.getExperimentPersonIdSet();
-        if (Objects.isNull(experimentPersonIdSet) || experimentPersonIdSet.isEmpty()) {return kExperimentPersonIdVAgeMap;}
+        if (Objects.isNull(experimentPersonIdSet) || experimentPersonIdSet.isEmpty()) {
+            return kExperimentPersonIdVAgeMap;
+        }
 
         Map<String, String> kExperimentPersonIdVAgeIdMap = new HashMap<>();
         experimentIndicatorInstanceRsService.lambdaQuery()
-            .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.AGE.getType())
-            .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdSet)
-            .list()
-            .forEach(experimentIndicatorInstanceRsEntity -> {
-                kExperimentPersonIdVAgeIdMap.put(experimentIndicatorInstanceRsEntity.getExperimentPersonId(), experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
-            });
-        if (kExperimentPersonIdVAgeIdMap.isEmpty()) {return kExperimentPersonIdVAgeIdMap;}
+                .eq(ExperimentIndicatorInstanceRsEntity::getType, EnumIndicatorType.AGE.getType())
+                .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdSet)
+                .list()
+                .forEach(experimentIndicatorInstanceRsEntity -> {
+                    kExperimentPersonIdVAgeIdMap.put(experimentIndicatorInstanceRsEntity.getExperimentPersonId(), experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
+                });
+        if (kExperimentPersonIdVAgeIdMap.isEmpty()) {
+            return kExperimentPersonIdVAgeIdMap;
+        }
 
         Set<String> ageIdSet = new HashSet<>(kExperimentPersonIdVAgeIdMap.values());
         Map<String, String> kAgeIdMapVValMap = new HashMap<>();
         experimentIndicatorValRsService.lambdaQuery()
-            .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
-            .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, ageIdSet)
-            .list()
-            .forEach(experimentIndicatorValRsEntity -> {
-                String indicatorInstanceId = experimentIndicatorValRsEntity.getIndicatorInstanceId();
-                String currentVal = experimentIndicatorValRsEntity.getCurrentVal();
-                kAgeIdMapVValMap.put(indicatorInstanceId, currentVal);
-            });
+                .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
+                .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, ageIdSet)
+                .list()
+                .forEach(experimentIndicatorValRsEntity -> {
+                    String indicatorInstanceId = experimentIndicatorValRsEntity.getIndicatorInstanceId();
+                    String currentVal = experimentIndicatorValRsEntity.getCurrentVal();
+                    kAgeIdMapVValMap.put(indicatorInstanceId, currentVal);
+                });
         kExperimentPersonIdVAgeIdMap.forEach((experimentPersonId, sexId) -> {
             String val = kAgeIdMapVValMap.get(sexId);
             if (StringUtils.isNotBlank(val)) {
@@ -437,62 +449,71 @@ public class ExperimentIndicatorInstanceRsBiz {
 
     public Map<String, List<String>> getCoreByPeriodsAndExperimentPersonIdList(Integer periods, List<String> experimentPersonIdList) {
         Map<String, List<String>> resultMap = new HashMap<>();
-        
+
         /* runsix:校验 */
-        if (Objects.isNull(periods)
-            || Objects.isNull(experimentPersonIdList) || experimentPersonIdList.isEmpty()
-        ) {return resultMap;}
+        if (Objects.isNull(periods) || Objects.isNull(experimentPersonIdList) || experimentPersonIdList.isEmpty()) {
+            return resultMap;
+        }
 
         /* runsix:1.获取所有人所有核心指标 */
         Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
         Map<String, List<ExperimentIndicatorInstanceRsEntity>> kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap = new HashMap<>();
         experimentIndicatorInstanceRsService.lambdaQuery()
-            .eq(ExperimentIndicatorInstanceRsEntity::getCore, EnumStatus.ENABLE.getCode())
-            .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdList)
-            .list()
-            .forEach(experimentIndicatorInstanceRsEntity -> {
-                String experimentIndicatorInstanceId = experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId();
-                experimentIndicatorInstanceIdSet.add(experimentIndicatorInstanceId);
+                .eq(ExperimentIndicatorInstanceRsEntity::getCore, EnumStatus.ENABLE.getCode())
+                .in(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonIdList)
+                .list()
+                .forEach(experimentIndicatorInstanceRsEntity -> {
+                    String experimentIndicatorInstanceId = experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId();
+                    experimentIndicatorInstanceIdSet.add(experimentIndicatorInstanceId);
 
-                String experimentPersonId = experimentIndicatorInstanceRsEntity.getExperimentPersonId();
-                List<ExperimentIndicatorInstanceRsEntity> experimentIndicatorInstanceRsEntityList = kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap.get(experimentPersonId);
-                if (Objects.isNull(experimentIndicatorInstanceRsEntityList)) {experimentIndicatorInstanceRsEntityList = new ArrayList<>();}
-                experimentIndicatorInstanceRsEntityList.add(experimentIndicatorInstanceRsEntity);
-                kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap.put(experimentPersonId, experimentIndicatorInstanceRsEntityList);
-            });
+                    String experimentPersonId = experimentIndicatorInstanceRsEntity.getExperimentPersonId();
+                    List<ExperimentIndicatorInstanceRsEntity> experimentIndicatorInstanceRsEntityList = kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap.get(experimentPersonId);
+                    if (Objects.isNull(experimentIndicatorInstanceRsEntityList)) {
+                        experimentIndicatorInstanceRsEntityList = new ArrayList<>();
+                    }
+                    experimentIndicatorInstanceRsEntityList.add(experimentIndicatorInstanceRsEntity);
+                    kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap.put(experimentPersonId, experimentIndicatorInstanceRsEntityList);
+                });
 
         /* runsix:校验 */
-        if (experimentIndicatorInstanceIdSet.isEmpty()) {return resultMap;}
+        if (experimentIndicatorInstanceIdSet.isEmpty()) {
+            return resultMap;
+        }
 
         /* runsix:2.获取所有核心指标的值 */
         Map<String, String> kExperimentIndicatorInstanceIdVCurrentValMap = new HashMap<>();
         experimentIndicatorValRsService.lambdaQuery()
-            .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
-            .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
-            .list()
-            .forEach(experimentIndicatorValRsEntity -> {
-                kExperimentIndicatorInstanceIdVCurrentValMap.put(experimentIndicatorValRsEntity.getIndicatorInstanceId(), experimentIndicatorValRsEntity.getCurrentVal());
-            });
+                .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
+                .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
+                .list()
+                .forEach(experimentIndicatorValRsEntity -> {
+                    kExperimentIndicatorInstanceIdVCurrentValMap
+                            .put(experimentIndicatorValRsEntity.getIndicatorInstanceId(), experimentIndicatorValRsEntity.getCurrentVal());
+                });
 
 
         /* runsix:3.组合数据 */
         kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap.forEach((experimentPersonId, experimentIndicatorInstanceRsEntityList) -> {
             experimentIndicatorInstanceRsEntityList.forEach(experimentIndicatorInstanceRsEntity -> {
                 List<String> resultList = resultMap.get(experimentPersonId);
-                if (Objects.isNull(resultList)) {resultList = new ArrayList<>();}
+                if (Objects.isNull(resultList)) {
+                    resultList = new ArrayList<>();
+                }
 
                 String indicatorName = experimentIndicatorInstanceRsEntity.getIndicatorName();
                 String unit = experimentIndicatorInstanceRsEntity.getUnit();
                 String experimentIndicatorInstanceId = experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId();
                 String currentVal = kExperimentIndicatorInstanceIdVCurrentValMap.get(experimentIndicatorInstanceId);
                 /* runsix:理论上每个指标都有默认值，如果存在数据错误，就丢掉 */
-                if (StringUtils.isBlank(currentVal)) {return;}
+                if (StringUtils.isBlank(currentVal)) {
+                    return;
+                }
                 resultList.add(RsUtilBiz.getCoreString(indicatorName, currentVal, unit));
 
                 resultMap.put(experimentPersonId, resultList);
             });
         });
-        
+
         return resultMap;
     }
 }
