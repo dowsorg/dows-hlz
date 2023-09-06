@@ -134,6 +134,17 @@ public class PersonManageRest {
     }
 
     /**
+     * 登出
+     * @param
+     * @return
+     */
+    @Operation(summary = "登出")
+    @PostMapping("v1/basePerson/person/loginOut")
+    public void loginOut(@RequestBody AccountInstanceRequest request, HttpServletRequest request1) {
+        personManageBiz.loginOut(request,request1);
+    }
+
+    /**
      * 重置密码
      * @param
      * @return
