@@ -3,6 +3,7 @@ package org.dows.hep.rest.base.person;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.request.AccountInstanceRequest;
 import org.dows.account.response.AccountInstanceResponse;
@@ -128,8 +129,8 @@ public class PersonManageRest {
      */
     @Operation(summary = "登录")
     @PostMapping("v1/basePerson/person/login")
-    public Map<String, Object> login(@RequestBody AccountInstanceRequest request) {
-        return personManageBiz.login(request);
+    public Map<String, Object> login(@RequestBody AccountInstanceRequest request, HttpServletRequest request1) {
+        return personManageBiz.login(request,request1);
     }
 
     /**
