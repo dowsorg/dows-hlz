@@ -337,8 +337,8 @@ public class PersonManageBiz {
      * @开始时间:
      * @创建时间: 2023/9/6 15:38
      */
-    public void loginOut(AccountInstanceRequest request, HttpServletRequest request1) {
-        accountInstanceApi.loginOut(request,request1);
+    public void loginOut(String accountId) {
+        StatefulJwtUtil.removeToken(accountId);
     }
 
     /**

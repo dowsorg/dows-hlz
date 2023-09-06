@@ -14,4 +14,9 @@ public class StatefulJwtUtil {
         // 保存token
         TOKENS.put(accountId, token);
     }
+
+    public static void removeToken(String accountId) {
+        // 保存token
+        TOKENS.remove(accountId);
+    }
 }

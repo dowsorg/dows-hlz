@@ -140,8 +140,8 @@ public class PersonManageRest {
      */
     @Operation(summary = "登出")
     @PostMapping("v1/basePerson/person/loginOut")
-    public void loginOut(@RequestBody AccountInstanceRequest request, HttpServletRequest request1) {
-        personManageBiz.loginOut(request,request1);
+    public void loginOut(@RequestParam String accountId) {
+        personManageBiz.loginOut(accountId);
     }
 
     /**
