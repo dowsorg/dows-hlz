@@ -30,6 +30,7 @@ import org.dows.hep.biz.risk.RiskBiz;
 import org.dows.hep.biz.user.experiment.ExperimentQuestionnaireBiz;
 import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.properties.FindSoftProperties;
 import org.dows.hep.service.*;
@@ -604,10 +605,13 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
         // 获取NPC指标数据
         Map<Integer, List<PersonRiskFactor>> collect = riskBiz.get(experimentInstanceId, exptGroupId, null).stream()
                 .collect(Collectors.groupingBy(PersonRiskFactor::getPeriod));
+        if(ShareUtil.XObject.isEmpty(collect)){
+            return result;
+        }
         // 获取第0期
         List<PersonRiskFactor> personRiskFactors1 = collect.get(0);
         // 取最后一期
-        List<PersonRiskFactor> personRiskFactors2 = collect.get(collect.size() - 1);
+        List<PersonRiskFactor> personRiskFactors2 = collect.get(collect.size()-1);
         // 人物ID->NPC人物对象
         Map<String, ExptSandReportModel.NpcData> npcData = new LinkedHashMap<>();
 
