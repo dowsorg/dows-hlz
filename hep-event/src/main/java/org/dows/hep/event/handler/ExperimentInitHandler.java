@@ -164,6 +164,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
                 .appId(appId)
                 .experimentId(experimentInstanceId)
                 .periods(0)
+                .saveRisk(true)
                 .build());
         }
         //复制操作指标和突发事件
