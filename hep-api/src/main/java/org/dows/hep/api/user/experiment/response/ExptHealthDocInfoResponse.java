@@ -25,6 +25,9 @@ public class ExptHealthDocInfoResponse {
     @Schema(title = "实验人物id")
     private String experimentPersonId;
 
+    @Schema(title = "游戏内总天数")
+    private Integer totalDays;
+
     @Schema(title = "当前健康指数")
     private String healthIndex;
 
