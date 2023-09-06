@@ -11,6 +11,7 @@ import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.ExptSettingModeEnum;
 import org.dows.hep.entity.ExperimentSettingEntity;
 import org.dows.hep.service.ExperimentSettingService;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -247,15 +248,16 @@ public class ExperimentSettingBiz {
                 .orElse(null);
     }
 
-    private List<ExperimentSettingEntity> listExptSetting(String exptInstanceId) {
+    @Cacheable(key = "#exptInstanceId",keyGenerator =  "keyGenerator")
+    public List<ExperimentSettingEntity> listExptSetting(String exptInstanceId) {
         Assert.notNull(exptInstanceId, "查询实验设置时，实验ID不能为空");
 
         return experimentSettingService.lambdaQuery()
                 .eq(ExperimentSettingEntity::getExperimentInstanceId, exptInstanceId)
                 .list();
     }
-
-    private List<ExperimentSettingEntity> listExptSetting(List<String> exptInstanceIds) {
+    @Cacheable(key = "#exptInstanceIds",keyGenerator =  "keyGenerator")
+    public List<ExperimentSettingEntity> listExptSetting(List<String> exptInstanceIds) {
         Assert.notEmpty(exptInstanceIds, "查询实验设置时，实验ID不能为空");
 
         return experimentSettingService.lambdaQuery()
