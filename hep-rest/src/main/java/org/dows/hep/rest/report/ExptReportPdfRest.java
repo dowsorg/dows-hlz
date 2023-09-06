@@ -1,6 +1,7 @@
 package org.dows.hep.rest.report;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.http.HttpUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,6 +28,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -275,6 +278,29 @@ public class ExptReportPdfRest {
                                              HttpServletRequest request) {
         accountId = baseBiz.getAccountId(request);
         return exptReportFacadeBiz.getAccountPdfData(exptInstanceId, accountId);
+    }
+
+    /**
+     * 根据提供的页面，提供的功能点实现...指定操作
+     *
+     * @param func - 功能点
+     * @param url  - 页面路径
+     * @return java.lang.String
+     * @author fhb
+     * @description 根据提供的页面，提供的功能点实现...指定操作
+     * @date 2023/9/6 17:18
+     */
+    @Operation(summary = "根据提供的页面，提供的功能点实现...指定操作")
+    @GetMapping("v1/report/exportLooseCoupling")
+    public String exportLooseCoupling(@RequestParam(defaultValue = "export") String func,
+                                      @RequestParam(defaultValue = "hep") String appCode,
+                                      @RequestParam String url) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("fun", func);
+        param.put("appCode", appCode);
+        param.put("url", url);
+        // todo 替换成配置文件读取不同环境
+        return HttpUtil.get("http://192.168.1.60:10004/pdf", param);
     }
 
     private boolean regenerate(String experimentInstanceId) {
