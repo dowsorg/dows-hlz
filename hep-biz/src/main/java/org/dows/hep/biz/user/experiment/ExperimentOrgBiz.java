@@ -526,10 +526,11 @@ public class ExperimentOrgBiz {
              *UserInstanceResponse instanceResponse = userInstanceApi.getUserInstanceByUserId(userId);
              */
             UserInstanceResponse userInstanceResponse = userInstanceResponseMap.get(accountId);
-            String userName = userInstanceResponse.getName();
-            // 2、获取用户头像
-            person.setAvatar(userInstanceResponse.getAvatar());
-            person.setName(userName);
+            if (BeanUtil.isNotEmpty(userInstanceResponse)) {
+                // 2、获取用户头像
+                person.setAvatar(userInstanceResponse.getAvatar());
+                person.setName(userInstanceResponse.getName());
+            }
             //设置挂号状态
             OperateFlowEntity rowFlow = mapFlow.get(person.getExperimentPersonId());
             if (null != rowFlow) {
