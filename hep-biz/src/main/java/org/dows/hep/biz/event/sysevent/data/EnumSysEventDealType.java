@@ -27,6 +27,8 @@ public enum EnumSysEventDealType {
     SCHEMAStart(11,"方案设计开始",11, SchemaStartDealer.class),
     SCHEMAGroupEnd(12,"方案设计小组结束",12, SchemaGroupEndDealer.class),
     SCHEMAEnd(13,"方案设计整体结束",13, SchemaEndDealer.class),
+//    SCHEMAScoreEnd(14,"方案设计评分结束",14, SchemaScoreEndDealer.class),
+    SCHEMAAuditEnd(15,"方案设计评分审核结束",15, SchemaAuditEndDealer.class),
 
     SANDStart(21,"沙盘开始",21, SandStartDealer.class),
     PERIODStart(22,"单期开始",22, PeriodStartDealer.class),

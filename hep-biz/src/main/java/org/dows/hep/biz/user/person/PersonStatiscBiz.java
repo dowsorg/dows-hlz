@@ -25,10 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author jx
@@ -201,7 +198,7 @@ public class PersonStatiscBiz {
             }
         }
         //2、获取参与者负责的uim机构
-        List<String> experimentOrgIds = Arrays.asList(participatorEntity.getExperimentOrgIds().split(","));
+        List<String> experimentOrgIds = Arrays.asList(Optional.ofNullable( participatorEntity.getExperimentOrgIds()).orElse("").split(","));
         List<String> orgIds = new ArrayList<>();
         if (experimentOrgIds != null && experimentOrgIds.size() > 0) {
             experimentOrgIds.forEach(experimentOrgId -> {
