@@ -33,10 +33,7 @@ import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentParticipatorService;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -272,7 +269,7 @@ public class ExperimentParticipatorBiz {
                         .one();
                 //获取实验状态
                 ExperimentInstanceEntity instanceEntity = experimentInstanceService.lambdaQuery()
-                        .eq(ExperimentInstanceEntity::getExperimentInstanceId,pageExperimentRequest.getExperimentInstanceId())
+                        .eq(ExperimentInstanceEntity::getExperimentInstanceId, pageExperimentRequest.getExperimentInstanceId())
                         .eq(ExperimentInstanceEntity::getDeleted, false)
                         .one();
                 response.setGroupNo(groupEntity.getGroupNo());
@@ -286,15 +283,26 @@ public class ExperimentParticipatorBiz {
                 List<ExperimentParticipatorResponse> participatorResponseList = new ArrayList<>();
                 // 获取参与者账号及头像
                 if (participatorEntityList != null && participatorEntityList.size() > 0) {
-                    participatorEntityList.forEach(participatorEntity -> {
-                        AccountInstanceResponse instanceResponse = accountInstanceApi.getPersonalInformationByAccountId(participatorEntity.getAccountId(), "3");
-                        ExperimentParticipatorResponse participatorResponse = ExperimentParticipatorResponse
-                                .builder()
-                                .accountName(participatorEntity.getAccountName())
-                                .avatar(instanceResponse != null ? instanceResponse.getAvatar() : "")
-                                .build();
-                        participatorResponseList.add(participatorResponse);
-                    });
+                    participatorEntityList.stream()
+                            .sorted(Comparator.comparing(ExperimentParticipatorEntity::getParticipatorType))
+                            .forEach(participatorEntity -> {
+                                AccountInstanceResponse instanceResponse = accountInstanceApi.getPersonalInformationByAccountId(participatorEntity.getAccountId(), "3");
+                                ExperimentParticipatorResponse participatorResponse = ExperimentParticipatorResponse
+                                        .builder()
+                                        .accountName(participatorEntity.getAccountName())
+                                        .avatar(instanceResponse != null ? instanceResponse.getAvatar() : "")
+                                        .build();
+                                participatorResponseList.add(participatorResponse);
+                            });
+//                    participatorEntityList.forEach(participatorEntity -> {
+//                        AccountInstanceResponse instanceResponse = accountInstanceApi.getPersonalInformationByAccountId(participatorEntity.getAccountId(), "3");
+//                        ExperimentParticipatorResponse participatorResponse = ExperimentParticipatorResponse
+//                                .builder()
+//                                .accountName(participatorEntity.getAccountName())
+//                                .avatar(instanceResponse != null ? instanceResponse.getAvatar() : "")
+//                                .build();
+//                        participatorResponseList.add(participatorResponse);
+//                    });
                 }
                 response.setParticipatorList(participatorResponseList);
             });
