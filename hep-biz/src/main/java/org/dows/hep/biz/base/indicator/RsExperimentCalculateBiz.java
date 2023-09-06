@@ -1627,6 +1627,7 @@ public class RsExperimentCalculateBiz {
               .appId(appId)
               .experimentId(experimentId)
               .periods(periods)
+              .saveRisk(true)
               .build());
 
       /* runsix:5.存储期数翻转数据 */
