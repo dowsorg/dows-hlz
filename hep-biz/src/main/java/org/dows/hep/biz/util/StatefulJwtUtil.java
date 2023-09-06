@@ -10,9 +10,8 @@ import java.util.Map;
 public class StatefulJwtUtil {
     public static final Map<String, String> TOKENS = new HashMap<String, String>();
 
-    public static String putToken(String token, String accountId) {
+    public static void putToken(String token, String accountId) {
         // 保存token
-        TOKENS.put(accountId, token);;
-        return token;
+        TOKENS.put(accountId, token);
     }
 }

@@ -1,15 +1,16 @@
 package org.dows.hep.config;
 
+import cn.hutool.json.JSONObject;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.util.JwtUtil;
-import org.dows.framework.api.exceptions.JwtException;
 import org.dows.hep.api.enums.EnumToken;
 import org.dows.hep.biz.util.StatefulJwtUtil;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -32,10 +33,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = request.getHeader("token");
             Map<String, Object> map = JwtUtil.parseJWT(token, EnumToken.PROPERTIES_JWT_KEY.getStr());
             if (!token.equals(tokens.get(map.get("accountId").toString()))) {
-                throw new JwtException("jwt already expire");
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.set("code", HttpStatus.UNAUTHORIZED.value());
+            jsonObject.set("descr", HttpStatus.UNAUTHORIZED.getReasonPhrase());
+            jsonObject.set("status", false);
+            jsonObject.set("timestamp", System.currentTimeMillis());
+            jsonObject.set("path", request.getRequestURI());
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            renderString(response, jsonObject.toString());
             }
             filterChain.doFilter(request, response);
+        }else {
+            filterChain.doFilter(request, response);
         }
-        filterChain.doFilter(request, response);
+    }
+
+    public static void renderString(HttpServletResponse response, String info) {
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("application/json;charset=utf-8");
+
+        try {
+            response.getWriter().print(info);
+        } catch (IOException var3) {
+        }
     }
 }
