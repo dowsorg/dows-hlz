@@ -6,8 +6,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.indicator.response.ExperimentIndicatorViewBaseInfoRsResponse;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
+import org.dows.hep.biz.user.experiment.ExperimentHealthDocBiz;
 import org.dows.hep.biz.user.experiment.ExperimentOrgBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +26,37 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "机构操作", description = "机构操作")
 public class ExperimentOrgRest {
     private final ExperimentOrgBiz experimentOrgBiz;
+
+    private final ExperimentHealthDocBiz experimentHealthDocBiz;
+
+
+    /**
+     * 获取健康档案左上基本信息
+     * @param appId
+     * @param experimentInstanceId
+     * @param experimentPersonId
+     * @return
+     */
+    @Operation(summary = "获取健康档案左上基本信息")
+    @GetMapping("v1/userExperiment/healthDoc/getBaseInfo")
+    public ExperimentIndicatorViewBaseInfoRsResponse getBaseInfo(@RequestParam String appId,@RequestParam String experimentInstanceId,@RequestParam String experimentPersonId){
+
+        return experimentHealthDocBiz.getBaseInfo(appId, experimentInstanceId, experimentPersonId);
+    }
+
+    /**
+     * 获取人物指标图
+     * @param appId
+     * @param experimentInstanceId
+     * @param experimentPersonId
+     * @return
+     */
+    @Operation(summary = "获取健康档案人物指标图")
+    @GetMapping("v1/userExperiment/healthDoc/getIndicatorInfo")
+    public ExptHealthDocInfoResponse getIndicatorInfo(@RequestParam String appId,@RequestParam String experimentInstanceId,@RequestParam String experimentPersonId){
+
+        return experimentHealthDocBiz.getIndicatorInfo(appId, experimentInstanceId, experimentPersonId);
+    }
 
     /**
     * 获取机构人物列表，挂号费用，挂号状态
