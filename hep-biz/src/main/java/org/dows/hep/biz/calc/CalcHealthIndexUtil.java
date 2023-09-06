@@ -68,10 +68,10 @@ public class CalcHealthIndexUtil {
             maxScore=score;
         }
         if(score.compareTo(minScore)==0||minScore.compareTo(maxScore)==0){
-            return src.setHealthIndex(BigDecimal.ZERO);
+            return src.setHealthIndex(MAXHealthIndex);
         }
         if(score.compareTo(maxScore)==0){
-            return src.setHealthIndex(MAXHealthIndex);
+            return src.setHealthIndex(BigDecimal.ZERO);
         }
         return src.setHealthIndex(BigDecimalOptional.valueOf(score.subtract(maxScore)).mul(MAXScore)
                 .div(minScore.subtract(maxScore), SCALE, ROUNDINGMode)
