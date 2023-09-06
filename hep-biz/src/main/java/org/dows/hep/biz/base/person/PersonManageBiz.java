@@ -327,7 +327,7 @@ public class PersonManageBiz {
      * @return
      * @说明: 登出
      * @关联表: account_instance
-     * @工时: 2H
+     * @工时: 1H
      * @开发者: jx
      * @开始时间:
      * @创建时间: 2023/9/6 13:20
