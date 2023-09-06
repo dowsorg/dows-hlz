@@ -20,6 +20,7 @@ import org.dows.hep.api.user.experiment.ExptSettingModeEnum;
 import org.dows.hep.biz.report.ExptReportFacadeBiz;
 import org.dows.hep.biz.user.experiment.ExperimentBaseBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
+import org.dows.hep.vo.report.ExptReportModel;
 import org.dows.hep.vo.report.ExptReportVO;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -45,11 +46,10 @@ public class ExptReportPdfRest {
     private final ExperimentBaseBiz baseBiz;
 
     /**
-     *
      * 分页获取报告列表
      *
      * @param pageRequest - 分页请求
-     * @param request - servletRequest
+     * @param request     - servletRequest
      * @return com.baomidou.mybatisplus.core.metadata.IPage<org.dows.hep.api.tenant.experiment.response.ExptReportPageResponse>
      * @author fhb
      * @description 分页获取报告列表
@@ -63,7 +63,6 @@ public class ExptReportPdfRest {
     }
 
     /**
-     *
      * 分页获取实验下小组列表
      *
      * @param pageRequest - 分页请求
@@ -79,11 +78,10 @@ public class ExptReportPdfRest {
     }
 
     /**
-     *
      * 分页获取学生报告列表
      *
      * @param pageRequest - 分页请求
-     * @param request - servletRequest
+     * @param request     - servletRequest
      * @return com.baomidou.mybatisplus.core.metadata.IPage<org.dows.hep.api.tenant.experiment.response.ExptAccountReportResponse>
      * @author fhb
      * @description 分页获取学生报告列表
@@ -118,7 +116,7 @@ public class ExptReportPdfRest {
      * 导出小组实验pdf报告
      *
      * @param experimentInstanceId - 实验实例ID
-     * @param experimentGroupId - 实验小组ID
+     * @param experimentGroupId    - 实验小组ID
      * @return org.dows.hep.vo.report.ExptReportVO
      * @author fhb
      * @description 导出小组实验pdf报告
@@ -153,8 +151,8 @@ public class ExptReportPdfRest {
      * 预览实验报告
      *
      * @param experimentInstanceId - 实验实例ID
-     * @param request -
-     * @param response -
+     * @param request              -
+     * @param response             -
      * @author fhb
      * @description 预览实验报告
      * @date 2023/7/21 14:35
@@ -178,9 +176,9 @@ public class ExptReportPdfRest {
      * 预览小组报告
      *
      * @param experimentInstanceId - 实验实例ID
-     * @param experimentGroupId - 实验小组ID
-     * @param request -
-     * @param response -
+     * @param experimentGroupId    - 实验小组ID
+     * @param request              -
+     * @param response             -
      * @author fhb
      * @description 预览小组报告
      * @date 2023/7/21 14:37
@@ -206,8 +204,8 @@ public class ExptReportPdfRest {
      * 预览学生报告
      *
      * @param experimentInstanceId - 实验实例ID
-     * @param request -
-     * @param response -
+     * @param request              -
+     * @param response             -
      * @author fhb
      * @description 预览学生报告
      * @date 2023/7/21 14:38
@@ -226,6 +224,57 @@ public class ExptReportPdfRest {
             log.error(String.format("预览学生报告时，发生IO异常: %s", e));
             throw new BizException(String.format("预览学生报告时，发生IO异常: %s", e));
         }
+    }
+
+    /**
+     * 获取实验报告数据
+     *
+     * @param exptInstanceId - 实验示例ID
+     * @return org.dows.hep.vo.report.ExptReportModel
+     * @author fhb
+     * @description 获取实验报告数据
+     * @date 2023/9/6 16:40
+     */
+    @Operation(summary = "获取实验报告数据")
+    @GetMapping("v1/report/getExptPdfData")
+    public ExptReportModel getExptPdfData(@RequestParam String exptInstanceId) {
+        return exptReportFacadeBiz.getExptPdfData(exptInstanceId);
+    }
+
+    /**
+     * 获取小组报告数据
+     *
+     * @param exptInstanceId - 实验示例ID
+     * @param exptGroupId    - 实验小组ID
+     * @return org.dows.hep.vo.report.ExptReportModel
+     * @author fhb
+     * @description 获取小组报告数据
+     * @date 2023/9/6 16:41
+     */
+    @Operation(summary = "获取小组报告数据")
+    @GetMapping("v1/report/getGroupPdfData")
+    public ExptReportModel getGroupPdfData(@RequestParam String exptInstanceId,
+                                           @RequestParam String exptGroupId) {
+        return exptReportFacadeBiz.getGroupPdfData(exptInstanceId, exptGroupId);
+    }
+
+    /**
+     * 获取个人报告数据
+     *
+     * @param exptInstanceId - 实验示例ID
+     * @param accountId      - 账号ID
+     * @return org.dows.hep.vo.report.ExptReportModel
+     * @author fhb
+     * @description 获取个人报告数据
+     * @date 2023/9/6 16:43
+     */
+    @Operation(summary = "获取个人报告数据")
+    @GetMapping("v1/report/getAccountPdfData")
+    public ExptReportModel getAccountPdfData(@RequestParam String exptInstanceId,
+                                             @RequestParam String accountId,
+                                             HttpServletRequest request) {
+        accountId = baseBiz.getAccountId(request);
+        return exptReportFacadeBiz.getAccountPdfData(exptInstanceId, accountId);
     }
 
     private boolean regenerate(String experimentInstanceId) {
