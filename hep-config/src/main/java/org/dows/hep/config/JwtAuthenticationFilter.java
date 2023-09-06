@@ -33,14 +33,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = request.getHeader("token");
             Map<String, Object> map = JwtUtil.parseJWT(token, EnumToken.PROPERTIES_JWT_KEY.getStr());
             if (!token.equals(tokens.get(map.get("accountId").toString()))) {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.set("code", HttpStatus.UNAUTHORIZED.value());
-            jsonObject.set("descr", HttpStatus.UNAUTHORIZED.getReasonPhrase());
-            jsonObject.set("status", false);
-            jsonObject.set("timestamp", System.currentTimeMillis());
-            jsonObject.set("path", request.getRequestURI());
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            renderString(response, jsonObject.toString());
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.set("code", HttpStatus.UNAUTHORIZED.value());
+                jsonObject.set("descr", HttpStatus.UNAUTHORIZED.getReasonPhrase());
+                jsonObject.set("status", false);
+                jsonObject.set("timestamp", System.currentTimeMillis());
+                jsonObject.set("path", request.getRequestURI());
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                renderString(response, jsonObject.toString());
+                return;
             }
             filterChain.doFilter(request, response);
         }else {
