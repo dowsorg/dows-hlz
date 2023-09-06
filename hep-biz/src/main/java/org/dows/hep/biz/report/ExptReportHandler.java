@@ -29,14 +29,30 @@ public interface ExptReportHandler<P extends ExptReportHandler.ExptReportData, R
      * - getOutputPosition: 获取 pdf 输出位置
      */
     P prepareData(String exptInstanceId, String exptGroupId);
+
     R convertData2Model(String exptGroupId, P exptReportData);
+
     String getSchemeFlt();
+
     String getOutputPosition(String exptGroupId, P exptReportData);
 
     /**
+     * @param exptInstanceId - 实验示例ID
+     * @param exptGroupId    - 实验小组ID
+     * @return R - 返回报告需要的数据
+     * @author fhb
+     * @description 返回小组报告需要的数据
+     * @date 2023/9/6 16:20
+     */
+    default R getPdfData(String exptInstanceId, String exptGroupId) {
+        P p = prepareData(exptInstanceId, exptGroupId);
+        return convertData2Model(exptGroupId, p);
+    }
+
+    /**
      * @param experimentGroupService - 实验小组 service
-     * @param exptInstanceId - 实验实例ID
-     * @param exptGroupId - 实验小组ID
+     * @param exptInstanceId         - 实验实例ID
+     * @param exptGroupId            - 实验小组ID
      * @return java.util.List<org.dows.hep.entity.ExperimentGroupEntity>
      * @author fhb
      * @description 列出`exptInstanceId` `exptGroupId` 下小组信息
@@ -51,7 +67,7 @@ public interface ExptReportHandler<P extends ExptReportHandler.ExptReportData, R
 
     /**
      * @param experimentInstanceService - 实验实例 service
-     * @param exptInstanceId - 实验实例ID
+     * @param exptInstanceId            - 实验实例ID
      * @return org.dows.hep.entity.ExperimentInstanceEntity
      * @author fhb
      * @description 获取实验信息
@@ -66,8 +82,8 @@ public interface ExptReportHandler<P extends ExptReportHandler.ExptReportData, R
 
     /**
      * @param experimentParticipatorService - 实验参与者 service
-     * @param exptInstanceId - 实验实例ID
-     * @param exptGroupId - 实验小组ID
+     * @param exptInstanceId                - 实验实例ID
+     * @param exptGroupId                   - 实验小组ID
      * @return java.util.List<org.dows.hep.entity.ExperimentParticipatorEntity>
      * @author fhb
      * @description 获取  `exptInstanceId`  `exptGroupId` 下的参与者信息

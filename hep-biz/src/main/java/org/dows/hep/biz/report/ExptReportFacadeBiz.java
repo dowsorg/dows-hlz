@@ -39,8 +39,7 @@ import org.dows.hep.service.ExperimentGroupService;
 import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.hep.service.ExperimentRankingService;
-import org.dows.hep.vo.report.ExptGroupReportVO;
-import org.dows.hep.vo.report.ExptReportVO;
+import org.dows.hep.vo.report.*;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Component;
@@ -414,6 +413,52 @@ public class ExptReportFacadeBiz {
 
         exportExptReport(exptInstanceId, null, Boolean.FALSE, Boolean.TRUE, Boolean.TRUE);
         return Boolean.TRUE;
+    }
+
+    /**
+     * @param exptInstanceId - 实验示例ID
+     * @return org.dows.hep.vo.report.ExptReportModel
+     * @author fhb
+     * @description 获取报告数据 todo 后续换策略模式
+     * @date 2023/9/6 16:29
+     */
+    public ExptReportModel getExptPdfData(String exptInstanceId) {
+        return overviewReportHandler.getPdfData(exptInstanceId, null);
+    }
+
+    /**
+     * @param exptInstanceId - 实验示例ID
+     * @param exptGroupId    - 实验小组ID
+     * @return org.dows.hep.vo.report.ExptReportModel
+     * @author fhb
+     * @description 获取报告数据
+     * @date 2023/9/6 16:29
+     */
+    public ExptReportModel getGroupPdfData(String exptInstanceId, String exptGroupId) {
+        ExptReportModel result = null;
+        ExptSettingModeEnum exptSettingMode = experimentSettingBiz.getExptSettingMode(exptInstanceId);
+        switch (exptSettingMode) {
+            case SCHEME -> {
+                result = schemeReportHandler.getPdfData(exptInstanceId, exptGroupId);
+            }
+            case SAND -> {
+                result = sandReportHandler.getPdfData(exptInstanceId, exptGroupId);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * @param exptInstanceId - 实验示例ID
+     * @param accountId      - 账号ID
+     * @return org.dows.hep.vo.report.ExptReportModel
+     * @author fhb
+     * @description 获取报告数据
+     * @date 2023/9/6 16:29
+     */
+    public ExptReportModel getAccountPdfData(String exptInstanceId, String accountId) {
+        String experimentGroupId = getGroupOfAccountAndExpt(exptInstanceId, accountId);
+        return getGroupPdfData(exptInstanceId, experimentGroupId);
     }
 
     private void preview(String urlStr, HttpServletRequest request, HttpServletResponse response) throws IOException {

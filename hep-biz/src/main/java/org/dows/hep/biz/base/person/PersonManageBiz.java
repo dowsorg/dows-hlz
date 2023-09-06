@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.api.*;
 import org.dows.account.biz.enums.EnumAccountStatusCode;
@@ -317,8 +318,22 @@ public class PersonManageBiz {
      * @开始时间:
      * @创建时间: 2023/4/20 13:20
      */
-    public Map<String, Object> login(AccountInstanceRequest request) {
-        return accountInstanceApi.login(request);
+    public Map<String, Object> login(AccountInstanceRequest request, HttpServletRequest request1) {
+        return accountInstanceApi.login(request,request1);
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 登出
+     * @关联表: account_instance
+     * @工时: 1H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/9/6 15:38
+     */
+    public void loginOut(AccountInstanceRequest request, HttpServletRequest request1) {
+        accountInstanceApi.loginOut(request,request1);
     }
 
     /**
