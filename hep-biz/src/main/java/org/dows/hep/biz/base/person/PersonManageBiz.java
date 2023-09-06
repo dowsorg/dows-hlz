@@ -24,6 +24,7 @@ import org.dows.hep.api.tenant.casus.request.CasePersonIndicatorFuncRequest;
 import org.dows.hep.biz.base.indicator.CaseIndicatorInstanceBiz;
 import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.biz.tenant.casus.TenantCaseEventBiz;
+import org.dows.hep.biz.util.StatefulJwtUtil;
 import org.dows.hep.entity.CasePersonEntity;
 import org.dows.hep.entity.CasePersonIndicatorFuncEntity;
 import org.dows.hep.entity.ExperimentInstanceEntity;
@@ -319,7 +320,11 @@ public class PersonManageBiz {
      * @创建时间: 2023/4/20 13:20
      */
     public Map<String, Object> login(AccountInstanceRequest request, HttpServletRequest request1) {
-        return accountInstanceApi.login(request,request1);
+        Map<String, Object> map = accountInstanceApi.login(request,request1);
+        String accountId = map.get("accountId").toString();
+        String token = map.get("token").toString();
+        StatefulJwtUtil.putToken(token,accountId);
+        return map;
     }
 
     /**
