@@ -12,7 +12,7 @@ public class StatefulJwtUtil {
 
     public static String putToken(String token, String accountId) {
         // 保存token
-        TOKENS.put(accountId, token);
+        TOKENS.put(accountId, token);;
         return token;
     }
 }
