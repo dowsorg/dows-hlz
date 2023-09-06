@@ -2,12 +2,14 @@ package org.dows.hep.biz.user.experiment;
 
 import org.dows.hep.api.base.indicator.response.ExperimentIndicatorViewBaseInfoRsResponse;
 import org.dows.hep.api.user.experiment.response.ExptHealthDocInfoResponse;
+import org.springframework.stereotype.Service;
 
 /**
  * 健康档案接口
  * @author : wuzl
  * @date : 2023/9/6 9:38
  */
+@Service
 public class ExperimentHealthDocBiz {
     /**
      * 获取健康档案左上基本信息
