@@ -10,6 +10,7 @@ import org.dows.framework.api.Response;
 import org.dows.framework.api.uim.AccountInfo;
 import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.WsMessageResponse;
+import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.enums.EnumExperimentTask;
 import org.dows.hep.api.enums.EnumWebSocketType;
@@ -17,10 +18,10 @@ import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
 import org.dows.hep.biz.event.EventScheduler;
-import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.biz.request.ExperimentTaskParamsRequest;
 import org.dows.hep.biz.task.ExperimentCalcTask;
 import org.dows.hep.biz.task.ExperimentFinishTask;
+import org.dows.hep.biz.task.handler.ExperimentFinishTaskHandler;
 import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.biz.util.TimeUtil;
 import org.dows.hep.entity.ExperimentPersonInsuranceEntity;
@@ -52,6 +53,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
 
     private final ExperimentPersonInsuranceService experimentPersonInsuranceService;
 
+    private final ExperimentFinishTaskHandler experimentFinishTaskHandler;
 
     @Override
     public void exec(ExperimentRestartRequest experimentRestartRequest) {
@@ -175,12 +177,12 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
         // 重置定时任务
         resetTimeTask(experimentRestartRequest, updateExperimentTimerEntities, experimentGroupResponses);
         // 突发事件检测
-        final String appId= ShareBiz.checkAppId(null, experimentRestartRequest.getExperimentInstanceId());
+        final String appId = ShareBiz.checkAppId(null, experimentRestartRequest.getExperimentInstanceId());
         EventScheduler.Instance().scheduleTimeBasedEvent(appId, experimentRestartRequest.getExperimentInstanceId(), 5);
         //随访计划
         EventScheduler.Instance().scheduleFollowUpPlan(appId, experimentRestartRequest.getExperimentInstanceId(), 5);
-        if(ConfigExperimentFlow.SWITCH2SysEvent){
-            EventScheduler.Instance().scheduleSysEvent(appId,experimentRestartRequest.getExperimentInstanceId(),3);
+        if (ConfigExperimentFlow.SWITCH2SysEvent) {
+            EventScheduler.Instance().scheduleSysEvent(appId, experimentRestartRequest.getExperimentInstanceId(), 3);
         }
     }
 
@@ -194,7 +196,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
     private void resetTimeTask(ExperimentRestartRequest experimentRestartRequest,
                                List<ExperimentTimerEntity> updateExperimentTimerEntities,
                                List<ExperimentGroupResponse> experimentGroupResponses) {
-        if(ConfigExperimentFlow.SWITCH2SysEvent){
+        if (ConfigExperimentFlow.SWITCH2SysEvent) {
             return;
         }
 
@@ -240,9 +242,11 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
         experimentTaskScheduleService.saveOrUpdate(finishEntity);
 
         // 执行任务
-        ExperimentFinishTask experimentFinishTask = new ExperimentFinishTask(experimentInstanceService,
+       /* ExperimentFinishTask experimentFinishTask = new ExperimentFinishTask(experimentInstanceService,
                 experimentParticipatorService, experimentTimerService, experimentTaskScheduleService, calculatorDispatcher,
-                experimentRestartRequest.getExperimentInstanceId(), lastPeriods.getPeriod());
+                experimentRestartRequest.getExperimentInstanceId(), lastPeriods.getPeriod());*/
+        ExperimentFinishTask experimentFinishTask = new ExperimentFinishTask(experimentRestartRequest.getExperimentInstanceId(),
+                lastPeriods.getPeriod(), experimentFinishTaskHandler);
 
         taskScheduler.schedule(experimentFinishTask, entityList.get(entityList.size() - 1).getEndTime());
         /**

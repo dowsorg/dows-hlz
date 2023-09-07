@@ -1,5 +1,6 @@
 package org.dows.hep.biz.base.indicator;
 
+import cn.hutool.core.util.StrUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.base.indicator.response.*;
@@ -29,22 +30,26 @@ public class ExperimentIndicatorViewBaseInfoRsBiz {
   private final ExperimentIndicatorInstanceRsService experimentIndicatorInstanceRsService;
   private final RsExperimentIndicatorValBiz rsExperimentIndicatorValBiz;
 
-  public ExperimentIndicatorViewBaseInfoRsResponse get(String experimentIndicatorViewBaseInfoId, String experimentPersonId, Integer periods) throws ExecutionException, InterruptedException {
-    ExperimentIndicatorViewBaseInfoRsEntity experimentIndicatorViewBaseInfoRsEntity = experimentIndicatorViewBaseInfoRsService.lambdaQuery()
-        .eq(ExperimentIndicatorViewBaseInfoRsEntity::getExperimentIndicatorViewBaseInfoId, experimentIndicatorViewBaseInfoId)
-        .oneOpt()
-        .orElseThrow(() -> {
-          log.warn("method ExperimentIndicatorViewBaseInfoRsBiz.get experimentIndicatorViewBaseInfoId:{} is illegal", experimentIndicatorViewBaseInfoId);
-          throw new ExperimentIndicatorViewBaseInfoRsException(EnumESC.VALIDATE_EXCEPTION);
-        });
+  public ExperimentIndicatorViewBaseInfoRsResponse get(String experimentId,String experimentIndicatorViewBaseInfoId, String experimentPersonId, Integer periods) throws ExecutionException, InterruptedException {
+//    String experimentId = null;
+    if(StrUtil.isNotBlank(experimentIndicatorViewBaseInfoId)) {
+      ExperimentIndicatorViewBaseInfoRsEntity experimentIndicatorViewBaseInfoRsEntity = experimentIndicatorViewBaseInfoRsService.lambdaQuery()
+              .eq(ExperimentIndicatorViewBaseInfoRsEntity::getExperimentIndicatorViewBaseInfoId, experimentIndicatorViewBaseInfoId)
+              .oneOpt()
+              .orElseThrow(() -> {
+                log.warn("method ExperimentIndicatorViewBaseInfoRsBiz.get experimentIndicatorViewBaseInfoId:{} is illegal", experimentIndicatorViewBaseInfoId);
+                throw new ExperimentIndicatorViewBaseInfoRsException(EnumESC.VALIDATE_EXCEPTION);
+              });
+      String appId = experimentIndicatorViewBaseInfoRsEntity.getAppId();
+      experimentId = experimentIndicatorViewBaseInfoRsEntity.getExperimentId();
+    }
     List<ExperimentIndicatorViewBaseInfoDescrRsResponse> experimentIndicatorViewBaseInfoDescrRsResponseList = new ArrayList<>();
     List<ExperimentIndicatorViewBaseInfoMonitorRsResponse> experimentIndicatorViewBaseInfoMonitorRsResponseList = new ArrayList<>();
     List<ExperimentIndicatorViewBaseInfoSingleRsResponse> experimentIndicatorViewBaseInfoSingleRsResponseList = new ArrayList<>();
     Map<String, ExperimentIndicatorInstanceRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap = new HashMap<>();
     Map<String, String> kExperimentIndicatorInstanceIdVValMap = new HashMap<>();
     Map<String, String> kInstanceIdVExperimentIndicatorInstanceIdMap = new HashMap<>();
-    String appId = experimentIndicatorViewBaseInfoRsEntity.getAppId();
-    String experimentId = experimentIndicatorViewBaseInfoRsEntity.getExperimentId();
+
     experimentIndicatorInstanceRsService.lambdaQuery()
         .select(ExperimentIndicatorInstanceRsEntity::getExperimentIndicatorInstanceId, ExperimentIndicatorInstanceRsEntity::getIndicatorInstanceId, ExperimentIndicatorInstanceRsEntity::getIndicatorName, ExperimentIndicatorInstanceRsEntity::getUnit)
         .eq(ExperimentIndicatorInstanceRsEntity::getExperimentId, experimentId)

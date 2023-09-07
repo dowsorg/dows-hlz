@@ -24,6 +24,7 @@ import org.dows.hep.api.tenant.casus.request.CasePersonIndicatorFuncRequest;
 import org.dows.hep.biz.base.indicator.CaseIndicatorInstanceBiz;
 import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.biz.tenant.casus.TenantCaseEventBiz;
+import org.dows.hep.biz.util.StatefulJwtUtil;
 import org.dows.hep.entity.CasePersonEntity;
 import org.dows.hep.entity.CasePersonIndicatorFuncEntity;
 import org.dows.hep.entity.ExperimentInstanceEntity;
@@ -319,7 +320,11 @@ public class PersonManageBiz {
      * @创建时间: 2023/4/20 13:20
      */
     public Map<String, Object> login(AccountInstanceRequest request, HttpServletRequest request1) {
-        return accountInstanceApi.login(request,request1);
+        Map<String, Object> map = accountInstanceApi.login(request,request1);
+        String accountId = map.get("accountId").toString();
+        String token = map.get("token").toString();
+        StatefulJwtUtil.putToken(token,accountId);
+        return map;
     }
 
     /**
@@ -332,8 +337,8 @@ public class PersonManageBiz {
      * @开始时间:
      * @创建时间: 2023/9/6 15:38
      */
-    public void loginOut(AccountInstanceRequest request, HttpServletRequest request1) {
-        accountInstanceApi.loginOut(request,request1);
+    public void loginOut(String accountId) {
+        StatefulJwtUtil.removeToken(accountId);
     }
 
     /**
@@ -722,7 +727,7 @@ public class PersonManageBiz {
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
-     * @创建时间: 2023/4/25 17:35
+     * @创建时间: 2023/4/25 17:37
      */
     @DSTransactional
     public PersonInstanceResponse addPerson(AccountInstanceRequest request) throws ExecutionException, InterruptedException {
