@@ -32,16 +32,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             //需要验证的
             String token = request.getHeader("token");
             Map<String, Object> map = JwtUtil.parseJWT(token, EnumToken.PROPERTIES_JWT_KEY.getStr());
-            if (!token.equals(tokens.get(map.get("accountId").toString()))) {
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.set("code", HttpStatus.UNAUTHORIZED.value());
-                jsonObject.set("descr", HttpStatus.UNAUTHORIZED.getReasonPhrase());
-                jsonObject.set("status", false);
-                jsonObject.set("timestamp", System.currentTimeMillis());
-                jsonObject.set("path", request.getRequestURI());
-                response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                renderString(response, jsonObject.toString());
-                return;
+            //管理员可以多人登录
+            if(!map.get("accountName").equals("Admin")) {
+                //非管理员只能登录一个账号
+                if (!token.equals(tokens.get(map.get("accountId").toString()))) {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.set("code", HttpStatus.UNAUTHORIZED.value());
+                    jsonObject.set("descr", HttpStatus.UNAUTHORIZED.getReasonPhrase());
+                    jsonObject.set("status", false);
+                    jsonObject.set("timestamp", System.currentTimeMillis());
+                    jsonObject.set("path", request.getRequestURI());
+                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                    renderString(response, jsonObject.toString());
+                    return;
+                }
             }
             filterChain.doFilter(request, response);
         }else {

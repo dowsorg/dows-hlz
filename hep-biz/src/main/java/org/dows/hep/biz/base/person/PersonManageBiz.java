@@ -321,9 +321,11 @@ public class PersonManageBiz {
      */
     public Map<String, Object> login(AccountInstanceRequest request, HttpServletRequest request1) {
         Map<String, Object> map = accountInstanceApi.login(request,request1);
-        String accountId = map.get("accountId").toString();
-        String token = map.get("token").toString();
-        StatefulJwtUtil.putToken(token,accountId);
+        if(!map.get("name").equals("Admin")) {
+            String accountId = map.get("accountId").toString();
+            String token = map.get("token").toString();
+            StatefulJwtUtil.putToken(token, accountId);
+        }
         return map;
     }
 
@@ -338,7 +340,10 @@ public class PersonManageBiz {
      * @创建时间: 2023/9/6 15:38
      */
     public void loginOut(String accountId) {
-        StatefulJwtUtil.removeToken(accountId);
+        AccountInstanceResponse accountInstance = accountInstanceApi.getAccountInstanceByAccountId(accountId);
+        if(!accountInstance.getAccountName().equals("admin")) {
+            StatefulJwtUtil.removeToken(accountId);
+        }
     }
 
     /**
@@ -392,7 +397,7 @@ public class PersonManageBiz {
         }
         //3、根据账户ID获取用户ID
         AccountUserResponse accountUser = accountUserApi.getUserByAccountId(accountId);
-        //3、获取用户拓展信息
+        //4、获取用户拓展信息
         UserExtinfoResponse extinfo = userExtinfoApi.getUserExtinfoByUserId(accountUser.getUserId());
         instance.setIntro(extinfo.getIntro());
         return instance;
