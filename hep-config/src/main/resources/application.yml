@@ -6,12 +6,12 @@ management:
 
 server:
     port: 9001
-#    undertow:
-#        buffer-size: 1024
-#        direct-buffers: true
-#        threads:
-#            io: 4
-#            worker: 32
+    undertow:
+        buffer-size: 1024
+        direct-buffers: true
+        threads:
+            io: 4
+            worker: 32
 #    servlet:
 #        context-path: /hep
 

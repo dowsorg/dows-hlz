@@ -1,8 +1,6 @@
 package org.dows.hep.config;
 
 import cn.hutool.json.JSONObject;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +10,7 @@ import org.dows.hep.biz.util.StatefulJwtUtil;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.io.IOException;
 import java.util.Map;
@@ -24,9 +22,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Order(1)
 @Component
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+public class JwtAuthenticationFilter implements HandlerInterceptor {
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         if(!request.getRequestURI().endsWith("login")) {
             final Map<String, String> tokens = StatefulJwtUtil.TOKENS;
             //需要验证的
@@ -44,12 +42,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     jsonObject.set("path", request.getRequestURI());
                     response.setStatus(HttpStatus.UNAUTHORIZED.value());
                     renderString(response, jsonObject.toString());
-                    return;
+                    return false;
                 }
             }
-            filterChain.doFilter(request, response);
+            return true;
         }else {
-            filterChain.doFilter(request, response);
+            return true;
         }
     }
 

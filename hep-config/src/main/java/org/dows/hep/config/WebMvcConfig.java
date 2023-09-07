@@ -142,6 +142,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         //registry.addInterceptor();
+        registry.addInterceptor(new JwtAuthenticationFilter());
         registry.addInterceptor(new ExperimentPausedInterceptor());
         registry.addInterceptor(new ExperimentResubmitInterceptor(localCache));
     }
