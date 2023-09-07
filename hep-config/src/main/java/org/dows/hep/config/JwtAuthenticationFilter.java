@@ -1,6 +1,8 @@
 package org.dows.hep.config;
 
 import cn.hutool.json.JSONObject;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +12,7 @@ import org.dows.hep.biz.util.StatefulJwtUtil;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Map;
@@ -22,16 +24,16 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Order(1)
 @Component
-public class JwtAuthenticationFilter implements HandlerInterceptor {
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        if(!request.getRequestURI().endsWith("login")) {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        if (!request.getRequestURI().endsWith("login")) {
             final Map<String, String> tokens = StatefulJwtUtil.TOKENS;
             //需要验证的
             String token = request.getHeader("token");
             Map<String, Object> map = JwtUtil.parseJWT(token, EnumToken.PROPERTIES_JWT_KEY.getStr());
             //管理员可以多人登录
-            if(!map.get("accountName").equals("Admin")) {
+            if (!map.get("accountName").equals("Admin")) {
                 //非管理员只能登录一个账号
                 if (!token.equals(tokens.get(map.get("accountId").toString()))) {
                     JSONObject jsonObject = new JSONObject();
@@ -42,12 +44,12 @@ public class JwtAuthenticationFilter implements HandlerInterceptor {
                     jsonObject.set("path", request.getRequestURI());
                     response.setStatus(HttpStatus.UNAUTHORIZED.value());
                     renderString(response, jsonObject.toString());
-                    return false;
+                    return;
                 }
             }
-            return true;
-        }else {
-            return true;
+            filterChain.doFilter(request, response);
+        } else {
+            filterChain.doFilter(request, response);
         }
     }
 

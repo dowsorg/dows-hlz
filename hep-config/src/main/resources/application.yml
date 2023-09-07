@@ -13,7 +13,7 @@ server:
             io: 4
             worker: 32
 #    servlet:
-#        context-path: /hep
+#        context-path: /hep1
 
 
 spring:
