@@ -13,6 +13,8 @@ import org.dows.hep.biz.calc.CalculatorDispatcher;
 import org.dows.hep.biz.noticer.PeriodEndNoticer;
 import org.dows.hep.biz.noticer.PeriodStartNoticer;
 import org.dows.hep.biz.schedule.TaskScheduler;
+import org.dows.hep.biz.task.handler.ExperimentBeginTaskHandler;
+import org.dows.hep.biz.task.handler.ExperimentFinishTaskHandler;
 import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
@@ -60,6 +62,9 @@ public class ExperimentRestartTask implements Runnable {
 
     private final ExperimentSchemeBiz experimentSchemeBiz;
 
+    private final ExperimentBeginTaskHandler experimentBeginTaskHandler;
+
+    private final ExperimentFinishTaskHandler experimentFinishTaskHandler;
     /**
      * todo
      * 1.获取实验计时器，
@@ -298,30 +303,37 @@ public class ExperimentRestartTask implements Runnable {
             JSONObject json = JSONObject.parseObject(scheduleEntity.getTaskParams());
             if (scheduleEntity.getRestartTime() != null && scheduleEntity.getExecuteTime().after(new Date())) {
                 if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentBeginTask.getDesc())) {
-                    ExperimentBeginTask experimentBeginTask = new ExperimentBeginTask(
+                    ExperimentBeginTask experimentBeginTask = new ExperimentBeginTask((String) json.get("experimentInstanceId"),experimentBeginTaskHandler);
+                    /*ExperimentBeginTask experimentBeginTask = new ExperimentBeginTask(
                             experimentInstanceService, experimentParticipatorService, experimentTimerService, applicationEventPublisher,
-                            experimentTaskScheduleService, (String) json.get("experimentInstanceId"));
+                            experimentTaskScheduleService, (String) json.get("experimentInstanceId"));*/
                     taskScheduler.schedule(experimentBeginTask, scheduleEntity.getExecuteTime());
                 }
                 if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentFinishTask.getDesc())) {
-                    ExperimentFinishTask experimentFinishTask = new ExperimentFinishTask(experimentInstanceService,
-                            experimentParticipatorService, experimentTimerService, experimentTaskScheduleService, calculatorDispatcher,
-                            (String) json.get("experimentInstanceId"), (Integer) json.get("period"));
 
+                   /* ExperimentFinishTask experimentFinishTask = new ExperimentFinishTask(experimentInstanceService,
+                            experimentParticipatorService, experimentTimerService, experimentTaskScheduleService, calculatorDispatcher,
+                            (String) json.get("experimentInstanceId"), (Integer) json.get("period"));*/
+
+                    ExperimentFinishTask experimentFinishTask = new ExperimentFinishTask((String) json.get("experimentInstanceId"),
+                            (Integer) json.get("period"),experimentFinishTaskHandler);
                     taskScheduler.schedule(experimentFinishTask, DateUtil.date(scheduleEntity.getExecuteTime()));
                 }
             }
             if (scheduleEntity.getExecuteTime().before(new Date())) {
                 if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentBeginTask.getDesc())) {
-                    ExperimentBeginTask experimentBeginTask = new ExperimentBeginTask(
+                    /*ExperimentBeginTask experimentBeginTask = new ExperimentBeginTask(
                             experimentInstanceService, experimentParticipatorService, experimentTimerService, applicationEventPublisher,
-                            experimentTaskScheduleService, (String) json.get("experimentInstanceId"));
+                            experimentTaskScheduleService, (String) json.get("experimentInstanceId"));*/
+                    ExperimentBeginTask experimentBeginTask = new ExperimentBeginTask((String) json.get("experimentInstanceId"),experimentBeginTaskHandler);
                     experimentBeginTask.run();
                 }
                 if (scheduleEntity.getTaskBeanCode().equals(EnumExperimentTask.experimentFinishTask.getDesc())) {
-                    ExperimentFinishTask experimentFinishTask = new ExperimentFinishTask(experimentInstanceService,
+                    /*ExperimentFinishTask experimentFinishTask = new ExperimentFinishTask(experimentInstanceService,
                             experimentParticipatorService, experimentTimerService, experimentTaskScheduleService, calculatorDispatcher,
-                            (String) json.get("experimentInstanceId"), (Integer) json.get("period"));
+                            (String) json.get("experimentInstanceId"), (Integer) json.get("period"));*/
+                    ExperimentFinishTask experimentFinishTask = new ExperimentFinishTask((String) json.get("experimentInstanceId"),
+                            (Integer) json.get("period"),experimentFinishTaskHandler);
                     experimentFinishTask.run();
                 }
             }
