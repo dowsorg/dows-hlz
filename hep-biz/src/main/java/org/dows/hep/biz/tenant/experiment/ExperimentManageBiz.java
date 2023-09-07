@@ -637,6 +637,8 @@ public class ExperimentManageBiz {
                 String orgCode = createCode(7);
                 AccountOrgRequest request = new AccountOrgRequest();
                 BeanUtil.copyProperties(orgResponse, request, new String[]{"id", "dt"});
+                AccountOrgInfoResponse orgInfoResponse = accountOrgApi.getAccountOrgInfoByOrgId(orgResponse.getOrgId());
+                request.setIsEnable(orgInfoResponse.getIsEnable());
                 request.setOrgCode(orgCode);
                 request.setOperationManual(orgEntity.getHandbook());
                 String orgId = accountOrgApi.createAccountOrg(request);
