@@ -18,5 +18,5 @@ public class EvalRiskValues {
     private String riskId;
 
     @Schema(title = "危险因素名称")
-    private String crowdName;
+    private String riskName;
 }

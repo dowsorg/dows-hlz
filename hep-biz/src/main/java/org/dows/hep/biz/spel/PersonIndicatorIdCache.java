@@ -2,6 +2,7 @@ package org.dows.hep.biz.spel;
 
 import lombok.Getter;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
+import org.dows.hep.api.enums.EnumIndicatorType;
 import org.dows.hep.biz.cache.BaseLoadingCache;
 import org.dows.hep.biz.dao.ExperimentIndicatorExpressionRsDao;
 import org.dows.hep.biz.dao.ExperimentIndicatorInstanceRsDao;
@@ -48,6 +49,14 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
             return Collections.emptySet();
         }
         return coll.getMapExptIndicators().keySet();
+    }
+
+    public String getSysIndicatorId(String exptPersonId, EnumIndicatorType type){
+        PersonIndicatorIdCollection coll= this.loadingCache().get(exptPersonId);
+        if(ShareUtil.XObject.isEmpty(coll)){
+            return null;
+        }
+        return coll.getMapSysIndicatorId().get(type);
     }
 
     public String getIndicatorIdBySourceId(String exptPersonId, String baseOrCaseIndicatorId){
@@ -97,6 +106,14 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
             rst.getMapBaseCase2ExptId().put(i.getIndicatorInstanceId(), i.getExperimentIndicatorInstanceId());
             rst.getMapBaseCase2ExptId().put(i.getCaseIndicatorInstanceId(), i.getExperimentIndicatorInstanceId());
             rst.getMapExptIndicators().put(i.getExperimentIndicatorInstanceId(), i);
+            if(EnumIndicatorType.USER_CREATED.getType().equals(i.getType())) {
+                return;
+            }
+            EnumIndicatorType indicatorType=EnumIndicatorType.of(i.getType());
+            if(null==indicatorType){
+                return;
+            }
+            rst.getMapSysIndicatorId().put(indicatorType, i.getExperimentIndicatorInstanceId());
         });
         final List<ExperimentIndicatorExpressionRsEntity> rowsExperession = experimentIndicatorExpressionRsDao.getByExperimentIndicatorIds(rst.getMapExptIndicators().keySet(),
                 EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource(),
@@ -143,6 +160,9 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
         private final Map<String,String> mapBaseCase2ExptId=new HashMap<>();
         @Getter
         private final Map<String, ExperimentIndicatorInstanceRsEntity> mapExptIndicators=new HashMap<>();
+
+        @Getter
+        private final Map<EnumIndicatorType,String> mapSysIndicatorId=new HashMap<>();
     }
 
 

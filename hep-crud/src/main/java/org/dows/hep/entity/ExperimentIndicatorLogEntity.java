@@ -12,6 +12,7 @@ import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -51,14 +52,23 @@ public class ExperimentIndicatorLogEntity  implements CrudEntity {
     @Schema(title = "指标名称")
     private String experimentIndicatorName;
 
+    @Schema(title = "计算批次")
+    private Integer evalNo;
     @Schema(title = "当前值")
     private String curVal;
+
+    @Schema(title = "之前值")
+    private String lastVal;
+
+    @Schema(title = "期初值")
+    private String periodInitVal;
+
+    @Schema(title = "增量值")
+    private BigDecimal deltaVal;
 
     @Schema(title = "指标单位")
     private String unit;
 
-    @Schema(title = "计算批次")
-    private Integer evalNo;
 
     @Schema(title = "计算天数")
     private Integer evalDay;
