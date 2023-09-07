@@ -37,6 +37,7 @@ import org.dows.hep.biz.snapshot.SnapshotManager;
 import org.dows.hep.biz.snapshot.SnapshotRequest;
 import org.dows.hep.biz.task.ExperimentBeginTask;
 import org.dows.hep.biz.task.ExptSchemeExpireTask;
+import org.dows.hep.biz.task.handler.ExperimentBeginTaskHandler;
 import org.dows.hep.biz.tenant.experiment.ExperimentCaseInfoManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentQuestionnaireManageBiz;
@@ -88,6 +89,8 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
     private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
 
     private final CalcHealthIndexBiz calcHealthIndexBiz;
+
+    private final ExperimentBeginTaskHandler experimentBeginTaskHandler;
 
     @Override
     public void exec(ExperimentGroupSettingRequest request) throws ExecutionException, InterruptedException {
@@ -246,10 +249,11 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
         experimentTaskScheduleService.saveOrUpdate(beginEntity);
 
         //执行定时任务
-        ExperimentBeginTask experimentBeginTask = new ExperimentBeginTask(
+        /*ExperimentBeginTask experimentBeginTask = new ExperimentBeginTask(
                 experimentInstanceService, experimentParticipatorService, experimentTimerService, applicationEventPublisher,
-                experimentTaskScheduleService, experimentGroupSettingRequest.getExperimentInstanceId());
-
+                experimentTaskScheduleService, experimentGroupSettingRequest.getExperimentInstanceId());*/
+        ExperimentBeginTask experimentBeginTask =
+                new ExperimentBeginTask(experimentGroupSettingRequest.getExperimentInstanceId(), experimentBeginTaskHandler);
         /**
          * 设定定时任务
          * todo 设定一个TimeTask,通过timer到时间执行一次，考虑重启情况，写数据库，针对出现的情况，更具时间重新schedule,先用事件处理，后期优化

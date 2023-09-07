@@ -12,6 +12,7 @@ import org.dows.hep.biz.noticer.PeriodEndNoticer;
 import org.dows.hep.biz.noticer.PeriodStartNoticer;
 import org.dows.hep.biz.schedule.TaskScheduler;
 import org.dows.hep.biz.task.ExperimentRestartTask;
+import org.dows.hep.biz.task.handler.ExperimentRestartTaskHandler;
 import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
@@ -27,8 +28,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.util.Date;
 
@@ -73,6 +72,9 @@ public class ApplicationRestartedListener implements ApplicationListener<Applica
     // 启动监听
     private final HepClientMonitor hepClientMonitor;
 
+    private final ExperimentRestartTaskHandler experimentRestartTaskHandler;
+
+
     @SneakyThrows
     @Override
     public void onApplicationEvent(ApplicationStartedEvent event) {
@@ -100,9 +102,11 @@ public class ApplicationRestartedListener implements ApplicationListener<Applica
                         .eq(ExperimentTaskScheduleEntity::getAppId, appId)
                         .gt(ExperimentTaskScheduleEntity::getExecuteTime, now)
                         .update();
-                ExperimentRestartTask experimentRestartTask = new ExperimentRestartTask(experimentTaskScheduleService, experimentInstanceService,
+                /*ExperimentRestartTask experimentRestartTask = new ExperimentRestartTask(experimentTaskScheduleService, experimentInstanceService,
                         experimentParticipatorService, experimentTimerService, applicationEventPublisher,
-                        appId, taskScheduler, experimentTimerBiz, calculatorDispatcher, periodStartNoticer, periodEndNoticer, experimentSettingBiz, experimentSchemeBiz);
+                        appId, taskScheduler, experimentTimerBiz, calculatorDispatcher, periodStartNoticer,
+                        periodEndNoticer, experimentSettingBiz, experimentSchemeBiz, experimentBeginHandler, experimentFinishHandler);*/
+                ExperimentRestartTask experimentRestartTask = new ExperimentRestartTask(appId, experimentRestartTaskHandler);
                 experimentRestartTask.run();
             }
             log.info("ApplicationRestarted succ.");
