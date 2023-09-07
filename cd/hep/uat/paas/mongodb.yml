@@ -1,0 +1,42 @@
+version: '3'
+services:
+  # mongodb
+  mongodb-dev:
+    image: mongo
+    restart: unless-stopped
+    container_name: mongodb-dev
+    #command: mongod --config /etc/mongo/mongod.conf
+    environment:
+      TZ: Asia/Shanghai
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: 123456
+      MONGO_DATA_DIR: /data/db
+      MONGO_LOG_DIR: /data/logs
+    volumes:
+      - /etc/localtime:/etc/localtime
+      - ./mongodb/db:/data/db
+      - ./mongodb/log:/data/logs
+    ports:
+      - "17017:27017"
+    networks:
+      - prd_net
+
+  # 可视化图形工具
+  adminmongo:
+    image: mrvautin/adminmongo
+    restart: unless-stopped
+    container_name: adminmongo
+    environment:
+      - HOST=0.0.0.0
+    depends_on:
+      - 'mongodb-dev'
+    links:
+      - mongodb-dev
+    ports:
+      - "1234:1234"
+    networks:
+      - prd_net
+
+networks:
+  prd_net:
+    external: true
