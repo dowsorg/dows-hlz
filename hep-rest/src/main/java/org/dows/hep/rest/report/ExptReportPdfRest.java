@@ -21,6 +21,7 @@ import org.dows.hep.api.user.experiment.ExptSettingModeEnum;
 import org.dows.hep.biz.report.ExptReportFacadeBiz;
 import org.dows.hep.biz.user.experiment.ExperimentBaseBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
+import org.dows.hep.properties.PdfServerProperties;
 import org.dows.hep.vo.report.ExptReportModel;
 import org.dows.hep.vo.report.ExptReportVO;
 import org.springframework.validation.annotation.Validated;
@@ -47,6 +48,8 @@ public class ExptReportPdfRest {
     private final ExptReportFacadeBiz exptReportFacadeBiz;
     private final ExperimentSettingBiz experimentSettingBiz;
     private final ExperimentBaseBiz baseBiz;
+
+    private final PdfServerProperties pdfServerProperties;
 
     /**
      * 分页获取报告列表
@@ -299,8 +302,9 @@ public class ExptReportPdfRest {
         param.put("fun", func);
         param.put("appCode", appCode);
         param.put("url", url);
-        // todo 替换成配置文件读取不同环境
-        return HttpUtil.get("http://192.168.1.60:10004/pdf", param);
+        // "http://192.168.1.60:10004/pdf"
+        String serverUrl = pdfServerProperties.getUrl();
+        return HttpUtil.get(serverUrl, param);
     }
 
     private boolean regenerate(String experimentInstanceId) {
