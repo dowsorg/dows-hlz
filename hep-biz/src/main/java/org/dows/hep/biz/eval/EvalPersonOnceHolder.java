@@ -396,8 +396,8 @@ public class EvalPersonOnceHolder {
                 .setSyncState(EnumEvalSyncState.SYNCED2DB)
         );
 
-        if(ShareUtil.XObject.notEmpty(rowLog.getRiks())) {
-            rst.setRisks(JacksonUtil.fromJsonSilence(rowLog.getRiks(), new TypeReference<>() {
+        if(ShareUtil.XObject.notEmpty(rowLog.getRisks())) {
+            rst.setRisks(JacksonUtil.fromJsonSilence(rowLog.getRisks(), new TypeReference<>() {
             }));
         }
         ExperimentEvalLogContentEntity rowLogContent=experimentEvalLogDao.getByExperimentEvalLogId(rowLog.getExperimentEvalLogId(),
