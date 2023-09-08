@@ -64,7 +64,7 @@ public class ExperimentIndicatorLogEntity  implements CrudEntity {
     private String periodInitVal;
 
     @Schema(title = "增量值")
-    private BigDecimal deltaVal;
+    private BigDecimal changeVal;
 
     @Schema(title = "指标单位")
     private String unit;

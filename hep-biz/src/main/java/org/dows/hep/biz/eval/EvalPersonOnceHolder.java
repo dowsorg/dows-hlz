@@ -330,7 +330,7 @@ public class EvalPersonOnceHolder {
                         .curVal(item.getCurVal())
                         .lastVal(item.getLastVal())
                         .periodInitVal(item.getPeriodInitVal())
-                        .deltaVal(item.getChangingVal())
+                        .changeVal(item.getChangingVal())
                         .build());
 
         return new EvalPersonToSavePack()
