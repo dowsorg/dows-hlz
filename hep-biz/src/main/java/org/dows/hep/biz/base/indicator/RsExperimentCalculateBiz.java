@@ -9,7 +9,7 @@ import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.RsCalculateBizException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.request.ExperimentPersonRequest;
-import org.dows.hep.biz.calc.CalcHealthIndexBiz;
+import org.dows.hep.biz.eval.EvalHealthIndexBiz;
 import org.dows.hep.biz.event.ExperimentSettingCache;
 import org.dows.hep.biz.event.PersonBasedEventTask;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
@@ -70,7 +70,7 @@ public class RsExperimentCalculateBiz {
   private final ExperimentPersonRiskModelRsService experimentPersonRiskModelRsService;
   private final ExperimentPersonHealthRiskFactorRsService experimentPersonHealthRiskFactorRsService;
 
-  private final CalcHealthIndexBiz calcHealthIndexBiz;
+  private final EvalHealthIndexBiz evalHealthIndexBiz;
 
   @Transactional(rollbackFor = Exception.class)
   public void experimentRsCalculateHealthScore(ExperimentRsCalculateHealthScoreRequestRs experimentRsCalculateHealthScoreRequestRs) throws ExecutionException, InterruptedException {
@@ -1421,13 +1421,13 @@ public class RsExperimentCalculateBiz {
         .periods(periods)
         .experimentPersonIdSet(experimentPersonIdSet)
         .build());*/
-    calcHealthIndexBiz.calcPersonHelthIndex(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
+    evalHealthIndexBiz.evalPersonHealthIndexOld(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
             .builder()
             .appId(appId)
             .experimentId(experimentId)
             .periods(periods)
             .experimentPersonIds(experimentPersonIdSet)
-            .saveRisk(false)
+            .isPeriodEnd(false)
             .build());
 
     //计算突发事件触发
@@ -1516,7 +1516,7 @@ public class RsExperimentCalculateBiz {
           .experimentId(experimentId)
           .periods(periods)
           .build());*/
-      calcHealthIndexBiz.calcPersonHelthIndex(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
+      evalHealthIndexBiz.evalPersonHealthIndexOld(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
               .builder()
               .appId(appId)
               .experimentId(experimentId)
@@ -1622,12 +1622,12 @@ public class RsExperimentCalculateBiz {
           .experimentId(experimentId)
           .periods(periods)
           .build());*/
-      calcHealthIndexBiz.calcPersonHelthIndex(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
+      evalHealthIndexBiz.evalPersonHealthIndexOld(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
               .builder()
               .appId(appId)
               .experimentId(experimentId)
               .periods(periods)
-              .saveRisk(true)
+              .isPeriodEnd(true)
               .build());
 
       /* runsix:5.存储期数翻转数据 */

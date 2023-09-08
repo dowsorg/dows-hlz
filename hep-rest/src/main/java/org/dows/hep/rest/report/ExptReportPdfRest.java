@@ -279,7 +279,7 @@ public class ExptReportPdfRest {
     public ExptReportModel getAccountPdfData(@RequestParam String exptInstanceId,
                                              @RequestParam String accountId,
                                              HttpServletRequest request) {
-        accountId = baseBiz.getAccountId(request);
+//        accountId = baseBiz.getAccountId(request);
         return exptReportFacadeBiz.getAccountPdfData(exptInstanceId, accountId);
     }
 

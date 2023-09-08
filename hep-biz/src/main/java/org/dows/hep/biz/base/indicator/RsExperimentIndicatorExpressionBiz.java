@@ -626,6 +626,10 @@ public class RsExperimentIndicatorExpressionBiz {
       ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity,
       ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity
   ) {
+    if(ShareUtil.XObject.allEmpty(minExperimentIndicatorExpressionItemRsEntity,
+            maxExperimentIndicatorExpressionItemRsEntity)){
+      return;
+    }
     String result = resultAtomicReference.get();
     if (StringUtils.isBlank(result)) {
       return;
@@ -937,17 +941,6 @@ public class RsExperimentIndicatorExpressionBiz {
     rsUtilBiz.checkScene(scene);
     EnumIndicatorExpressionSource enumIndicatorExpressionSource = rsUtilBiz.checkSource(source);
 
-    Map<String, IndicatorRuleEntity> kIndicatorInstanceIdVIndicatorRuleEntityMap = databaseCalIndicatorExpressionRequest.getKIndicatorInstanceIdVIndicatorRuleEntityMap();
-    IndicatorExpressionEntity indicatorExpressionEntity = databaseCalIndicatorExpressionRequest.getIndicatorExpressionEntity();
-    List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = databaseCalIndicatorExpressionRequest.getIndicatorExpressionItemEntityList();
-    IndicatorExpressionItemEntity minIndicatorExpressionItemEntity = databaseCalIndicatorExpressionRequest.getMinIndicatorExpressionItemEntity();
-    IndicatorExpressionItemEntity maxIndicatorExpressionItemEntity = databaseCalIndicatorExpressionRequest.getMaxIndicatorExpressionItemEntity();
-
-    Map<String, CaseIndicatorRuleEntity> kCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap = caseCalIndicatorExpressionRequest.getKCaseIndicatorInstanceIdVCaseIndicatorRuleEntityMap();
-    CaseIndicatorExpressionEntity caseIndicatorExpressionEntity = caseCalIndicatorExpressionRequest.getCaseIndicatorExpressionEntity();
-    List<CaseIndicatorExpressionItemEntity> caseIndicatorExpressionItemEntityList = caseCalIndicatorExpressionRequest.getCaseIndicatorExpressionItemEntityList();
-    CaseIndicatorExpressionItemEntity minCaseIndicatorExpressionItemEntity = caseCalIndicatorExpressionRequest.getMinCaseIndicatorExpressionItemEntity();
-    CaseIndicatorExpressionItemEntity maxCaseIndicatorExpressionItemEntity = caseCalIndicatorExpressionRequest.getMaxCaseIndicatorExpressionItemEntity();
 
     Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = experimentCalIndicatorExpressionRequest.getKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap();
     Map<String, ExperimentIndicatorValRsEntity> lastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = experimentCalIndicatorExpressionRequest.getLastKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap();

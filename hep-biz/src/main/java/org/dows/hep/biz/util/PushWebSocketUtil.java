@@ -126,7 +126,7 @@ public class PushWebSocketUtil {
 
     }
 
-    //region
+    //region oldPush
     public PushWebScoketResult pushPeriodNotice(String experimentId, Set<String> clientIds,ExperimentPeriodMessage periodMessage){
         NoticeContent noticeContent = NoticeContent.builder()
                 .payload(periodMessage)

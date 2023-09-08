@@ -9,12 +9,16 @@ import lombok.RequiredArgsConstructor;
 import org.dows.account.util.JwtUtil;
 import org.dows.hep.api.enums.EnumToken;
 import org.dows.hep.biz.util.StatefulJwtUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -25,9 +29,14 @@ import java.util.Map;
 @Order(1)
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    @Value("${soft.info.anonymous-paths}")
+    private String anonymousPaths;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (!request.getRequestURI().endsWith("login")) {
+        List<String> uriList = new ArrayList<>(Arrays.asList(anonymousPaths.split(";")));
+        boolean isIgnore = uriList.stream().anyMatch(item -> request.getRequestURI().contains(item));
+        if (!isIgnore) {
             final Map<String, String> tokens = StatefulJwtUtil.TOKENS;
             //需要验证的
             String token = request.getHeader("token");

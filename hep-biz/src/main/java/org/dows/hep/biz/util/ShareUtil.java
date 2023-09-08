@@ -93,6 +93,9 @@ public class ShareUtil {
             return !isNumber(obj);
         }
         public static boolean isNumber(String str){
+            if(isEmpty(str)){
+                return false;
+            }
             return NumberUtil.isNumber(str);
         }
         public static boolean notNumber(String str){

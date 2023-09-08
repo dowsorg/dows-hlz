@@ -45,7 +45,10 @@ public class ExperimentEvalLogEntity implements CrudEntity {
     @Schema(title = "实验人物id")
     private String experimentPersonId;
     @Schema(title = "计算批次")
-    private Long evalNo;
+    private Integer evalNo;
+
+    @Schema(title = "功能点类型 1-期数翻转 2-治疗干预 3-健康指导 4-监测随访")
+    private Integer funcType;
 
     @Schema(title = "期数")
     private Integer periods;
@@ -77,7 +80,7 @@ public class ExperimentEvalLogEntity implements CrudEntity {
     private String moneyScore;
 
     @Schema(title = "危险因素")
-    private String riks;
+    private String risks;
 
     @JsonIgnore
     @TableLogic

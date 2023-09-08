@@ -1,5 +1,7 @@
-package org.dows.hep.biz.calc;
+package org.dows.hep.biz.eval;
 
+import org.dows.hep.biz.calc.RiskFactorScoreVO;
+import org.dows.hep.biz.calc.RiskModelHealthIndexVO;
 import org.dows.hep.biz.util.BigDecimalOptional;
 import org.dows.hep.biz.util.BigDecimalUtil;
 import org.dows.hep.biz.util.ShareUtil;
@@ -13,7 +15,7 @@ import java.util.function.Function;
  * @author : wuzl
  * @date : 2023/8/18 11:01
  */
-public class CalcHealthIndexUtil {
+public class EvalHealthIndexUtil {
     final static BigDecimal EMPTYScore=BigDecimal.ZERO;
     final static BigDecimal MINScore=BigDecimal.ZERO;
     final static BigDecimal MAXScore =BigDecimal.valueOf(100);
@@ -30,14 +32,14 @@ public class CalcHealthIndexUtil {
      * @param calcItemFlag
      * @return
      */
-    public static BigDecimal calcPersonHealthIndex(List<RiskModelHealthIndexVO> src,boolean calcItemFlag){
+    public static BigDecimal evalHealthIndex(List<RiskModelHealthIndexVO> src, boolean calcItemFlag){
         if(ShareUtil.XObject.isEmpty(src)){
             return MINHeathIndex;
         }
         BigDecimalOptional healthIndex=BigDecimalOptional.zero();
         for(RiskModelHealthIndexVO item:src){
             if(calcItemFlag){
-                calcRiskModelHealthIndex(item);
+                evalRiskModelHealthIndex(item);
             }
             healthIndex.add(BigDecimalUtil.mul(item.getHealthIndex(),item.getDeathRateWeight()));
         }
@@ -52,14 +54,14 @@ public class CalcHealthIndexUtil {
      * @param src
      * @return
      */
-    public static RiskModelHealthIndexVO calcRiskModelHealthIndex(RiskModelHealthIndexVO src){
+    public static RiskModelHealthIndexVO evalRiskModelHealthIndex(RiskModelHealthIndexVO src){
         final List<RiskFactorScoreVO> scores=src.getRiskFactors();
         if(ShareUtil.XObject.isEmpty(scores)){
             return src.setHealthIndex(BigDecimal.ZERO);
         }
-        BigDecimal score=calcRiskModelScore(scores);
-        BigDecimal minScore=calcRiskModelScore(scores, RiskFactorScoreVO::getMinScore);
-        BigDecimal maxScore=calcRiskModelScore(scores, RiskFactorScoreVO::getMaxScore);
+        BigDecimal score= evalRiskModelScore(scores);
+        BigDecimal minScore= evalRiskModelScore(scores, RiskFactorScoreVO::getMinScore);
+        BigDecimal maxScore= evalRiskModelScore(scores, RiskFactorScoreVO::getMaxScore);
         src.setScore(score).setMinScore(minScore).setMaxScore(maxScore);
         if(null==minScore||score.compareTo(minScore)<0){
             minScore=score;
@@ -83,10 +85,10 @@ public class CalcHealthIndexUtil {
      * @param src
      * @return
      */
-    public static BigDecimal calcRiskModelScore(List<RiskFactorScoreVO> src){
-        return calcRiskModelScore(src, RiskFactorScoreVO::getScore);
+    public static BigDecimal evalRiskModelScore(List<RiskFactorScoreVO> src){
+        return evalRiskModelScore(src, RiskFactorScoreVO::getScore);
     }
-    public static BigDecimal calcRiskModelScore(List<RiskFactorScoreVO> src, Function<RiskFactorScoreVO,BigDecimal> scoreFunc) {
+    public static BigDecimal evalRiskModelScore(List<RiskFactorScoreVO> src, Function<RiskFactorScoreVO,BigDecimal> scoreFunc) {
         if (ShareUtil.XObject.isEmpty(src)) {
             return EMPTYScore;
         }
