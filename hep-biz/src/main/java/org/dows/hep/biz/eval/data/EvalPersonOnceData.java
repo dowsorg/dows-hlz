@@ -94,7 +94,7 @@ public class EvalPersonOnceData {
         private EnumEvalSyncState syncState;
 
         @Schema(title = "功能点类型")
-        private EnumEvalFuncType funcType;
+        private EnumEvalFuncType funcType=EnumEvalFuncType.INIT;
 
         @Schema(title = "期数")
         private Integer periods;

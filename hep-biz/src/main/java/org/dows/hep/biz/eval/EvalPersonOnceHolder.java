@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.api.CrudContextHolder;
+import org.dows.hep.api.enums.EnumEvalFuncType;
 import org.dows.hep.api.enums.EnumIndicatorType;
 import org.dows.hep.biz.dao.ExperimentEvalLogDao;
 import org.dows.hep.biz.dao.ExperimentIndicatorLogDao;
@@ -394,6 +395,7 @@ public class EvalPersonOnceHolder {
         rst.setHeader(CopyWrapper.create(EvalPersonOnceData.Header::new)
                 .endFrom(rowLog)
                 .setSyncState(EnumEvalSyncState.SYNCED2DB)
+                .setFuncType(EnumEvalFuncType.of(rowLog.getFuncType()))
         );
 
         if(ShareUtil.XObject.notEmpty(rowLog.getRisks())) {
