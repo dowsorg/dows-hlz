@@ -23,7 +23,7 @@ spring:
     application:
         name: dows-hep
     profiles:
-        include: hep-mysql,hep-mybatis,hep-mvc,hep-oss,hep-apidoc,hep-redisson,hep-findsoft,hep-websocket,hep-cache
+        include: hep-mysql,hep-mybatis,hep-mvc,hep-oss,hep-apidoc,hep-redisson,hep-findsoft,hep-websocket,hep-cache,hep-mongodb
         active: dev
 
     jackson:
