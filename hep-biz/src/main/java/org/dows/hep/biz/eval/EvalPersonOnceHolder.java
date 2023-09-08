@@ -302,7 +302,7 @@ public class EvalPersonOnceHolder {
                 .setFuncType(data.getHeader().getFuncType().getCode())
                 .setExperimentInstanceId(cacheKey.getExperimentInstanceId())
                 .setExperimentPersonId(cacheKey.getExperimentPersonId());
-        logEval.setRiks(JacksonUtil.toJsonSilence(data.getRisks(), true));
+        logEval.setRisks(JacksonUtil.toJsonSilence(data.getRisks(), true));
         ExperimentEvalLogContentEntity logEvalContent = new ExperimentEvalLogContentEntity()
                 .setEvalNo(logEval.getEvalNo())
                 .setAppId(logEval.getAppId())
