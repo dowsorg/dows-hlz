@@ -16,7 +16,7 @@ server:
 #        context-path: /hep
 soft:
     info:
-        anonymous-paths: /login;/doc;/swagger;/api-docs;
+        anonymous-paths: /login;/doc;/swagger;/api-docs;/hepapi;
 
 
 spring:
