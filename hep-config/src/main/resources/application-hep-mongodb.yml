@@ -15,8 +15,6 @@ spring:
       host: 192.168.1.60
       #collection-name: user
       authentication-database: user
-#      repositories:
-#        enabled: true
 
 
 
@@ -28,7 +26,7 @@ spring:
       on-profile: sit
   data:
     mongodb:
-      uri: mongodb://admin:123456@192.168.1.60:27017/hep
+      uri: mongodb://test:123456@192.168.1.60:27017/hep
 
 ---
 #开发环境
@@ -38,7 +36,7 @@ spring:
       on-profile: uat
   data:
     mongodb:
-      uri: mongodb://admin:123456@192.168.1.60:37017/hep
+      uri: mongodb://uat:123456@192.168.1.60:37017/hep
 ---
 #本地环境
 spring:
@@ -47,4 +45,4 @@ spring:
       on-profile: prd
   data:
     mongodb:
-      uri: mongodb://admin:123456@192.168.1.60:47017/hep
+      uri: mongodb://prd:123456@192.168.1.60:47017/hep
