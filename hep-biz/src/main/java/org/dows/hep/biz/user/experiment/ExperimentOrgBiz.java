@@ -501,7 +501,7 @@ public class ExperimentOrgBiz {
                 .collect(Collectors.toMap(AccountUserResponse::getAccountId, AccountUserResponse::getUserId));
 
         UserInstanceRequest userInstanceRequest = new UserInstanceRequest();
-        userInstanceRequest.setUserIds(accountUserIdMapping.keySet());
+        userInstanceRequest.setUserIds(new HashSet<>(accountUserIdMapping.values()));
         List<UserInstanceResponse> userInstanceListNoPage = userInstanceApi.getUserInstanceListNoPage(userInstanceRequest);
         Map<String, UserInstanceResponse> collect = userInstanceListNoPage.stream()
                 .collect(Collectors.toMap(UserInstanceResponse::getUserId, Function.identity()));
