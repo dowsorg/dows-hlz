@@ -80,7 +80,7 @@ public class ExperimentEvalLogEntity implements CrudEntity {
     private String moneyScore;
 
     @Schema(title = "危险因素")
-    private String riks;
+    private String risks;
 
     @JsonIgnore
     @TableLogic

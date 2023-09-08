@@ -73,6 +73,6 @@ public class ExperimentIndicatorValRsEntity implements CrudEntity {
 
   @JsonIgnore
   @Schema(title = "指标对象")
-
+  @TableField(exist = false)
   private transient ExperimentIndicatorInstanceRsEntity indicatorInstance;
 }
