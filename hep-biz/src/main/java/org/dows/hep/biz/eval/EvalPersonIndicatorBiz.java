@@ -106,7 +106,7 @@ public class EvalPersonIndicatorBiz {
                                     Map<String, ExperimentIndicatorExpressionItemRsEntity> kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap) {
 
         ExperimentIndicatorValRsEntity indicatorOld = mapCurVal.get(indicator.getExperimentIndicatorInstanceId());
-        EvalIndicatorValues  indicatorNew= evalHolder.getIndicator(indicator.getIndicatorInstanceId());
+        EvalIndicatorValues  indicatorNew= evalHolder.getIndicator(indicator.getExperimentIndicatorInstanceId());
         if (ShareUtil.XObject.anyEmpty(indicatorOld,indicatorNew)) {
             return;
         }
