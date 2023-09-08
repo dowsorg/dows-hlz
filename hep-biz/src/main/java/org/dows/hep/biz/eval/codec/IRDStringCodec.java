@@ -1,6 +1,7 @@
 package org.dows.hep.biz.eval.codec;
 
 import org.dows.hep.biz.util.BigDecimalUtil;
+import org.dows.hep.biz.util.ShareUtil;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -47,7 +48,7 @@ public interface IRDStringCodec<T> {
         return toLong(vals[idx]);
     }
     default Long toLong(String str){
-        return null==str?null:Long.valueOf(str);
+        return ShareUtil.XObject.notNumber(str)?null:Long.valueOf(str);
     }
 
     default Integer toInteger(String[] vals, int idx){
@@ -57,7 +58,7 @@ public interface IRDStringCodec<T> {
         return toInteger(vals[idx]);
     }
     default Integer toInteger(String str){
-        return null==str?null:Integer.valueOf(str);
+        return ShareUtil.XObject.notNumber(str)?null:Integer.valueOf(str);
     }
 
     default Byte toByte(String[] vals, int idx){
@@ -67,7 +68,7 @@ public interface IRDStringCodec<T> {
         return toByte(vals[idx]);
     }
     default Byte toByte(String str){
-        return null==str?null:Byte.valueOf(str);
+        return ShareUtil.XObject.notNumber(str)?null:Byte.valueOf(str);
     }
 
     default BigDecimal toBigDecimal(String[] vals, int idx){
