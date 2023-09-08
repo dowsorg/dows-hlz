@@ -35,7 +35,7 @@ public class ExperimentTimerCache extends BaseLoadingCache<ExperimentCacheKey, E
 
     protected final static int CACHEInitCapacity = 2;
     protected final static int CACHEMaxSize = 20;
-    protected final static int CACHEExpireSeconds = 60 * 60 ;
+    protected final static int CACHEExpireSeconds = 60 * 60 *6;
 
     @Autowired
     private ExperimentTimerDao experimentTimerDao;

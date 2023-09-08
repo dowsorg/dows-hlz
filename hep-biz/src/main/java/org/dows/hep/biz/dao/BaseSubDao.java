@@ -110,14 +110,14 @@ public abstract class BaseSubDao<LS extends MybatisCrudService<LE>, LE extends C
      * @return
      */
     @Transactional(rollbackFor = Exception.class)
-    public boolean tranSaveBatch(List<LE> leads, List<SE> subs,boolean dftIfLeadEmpty){
-        AssertUtil.falseThenThrow(coreTranSaveBatch(leads, subs,defaultUseLogicId,dftIfLeadEmpty))
+    public boolean tranSaveBatch(List<LE> leads, List<SE> subs,boolean useLogicId, boolean dftIfLeadEmpty){
+        AssertUtil.falseThenThrow(coreTranSaveBatch(leads, subs,useLogicId,dftIfLeadEmpty))
                 .throwMessage(failedSaveMessage);
         return true;
     }
     @DSTransactional
-    public boolean tranSaveBatch(List<LE> leads, List<SE> subs,boolean dftIfLeadEmpty,Supplier<Boolean> saveOthers) {
-        if (!this.tranSaveBatch(leads, subs, dftIfLeadEmpty)) {
+    public boolean tranSaveBatch(List<LE> leads, List<SE> subs,boolean useLogicId,  boolean dftIfLeadEmpty,Supplier<Boolean> saveOthers) {
+        if (!this.tranSaveBatch(leads, subs, useLogicId,dftIfLeadEmpty)) {
             return false;
         }
         if (null != saveOthers && !saveOthers.get()) {
@@ -192,7 +192,7 @@ public abstract class BaseSubDao<LS extends MybatisCrudService<LE>, LE extends C
      * @return
      */
     protected boolean coreTranSaveBatch(List<LE> leads, List<SE> subs,boolean useLogicId,boolean dftIfLeadEmpty){
-        useLogicId=true;
+        //useLogicId=true;
         if(!saveOrUpdateBatch(leads,useLogicId,dftIfLeadEmpty)){
             return false;
         }

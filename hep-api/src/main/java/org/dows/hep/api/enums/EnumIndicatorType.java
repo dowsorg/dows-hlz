@@ -24,6 +24,10 @@ public enum EnumIndicatorType {
 
   public final static Map<Integer, EnumIndicatorType> kTypeVEnumIndicatorTypeMap = new HashMap<>();
 
+  public static EnumIndicatorType of(Integer code){
+    return kTypeVEnumIndicatorTypeMap.get(code);
+  }
+
   private final Integer type;
   private final String desc;
 

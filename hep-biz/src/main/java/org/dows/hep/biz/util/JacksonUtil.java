@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import lombok.Lombok;
+import lombok.SneakyThrows;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.util.ObjectUtils;
 
@@ -53,6 +55,10 @@ public class JacksonUtil {
 
 
     //reigon facade
+    @SneakyThrows
+    public static String toJsonSilence(Object obj,boolean onlyFields){
+        return toJson(obj,onlyFields);
+    }
     public static String toJson(Object obj,boolean onlyFields) throws JsonProcessingException {
         if (Objects.isNull(obj)) {
             return null;
@@ -64,6 +70,10 @@ public class JacksonUtil {
             return null;
         }
         return s_commonMapper.readValue(json, clz);
+    }
+    @SneakyThrows
+    public static <T> T fromJsonSilence(String json, TypeReference<T> type) {
+        return fromJson(json,type);
     }
     public static <T> T fromJson(String json, TypeReference<T> type) throws JsonProcessingException {
         if(ObjectUtils.isEmpty(json)){

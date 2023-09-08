@@ -2,10 +2,13 @@ package org.dows.hep.biz.spel;
 
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.user.experiment.vo.ExptTreatPlanItemVO;
 import org.dows.hep.biz.dao.ExperimentIndicatorInstanceRsDao;
 import org.dows.hep.biz.dao.ExperimentIndicatorValRsDao;
+import org.dows.hep.biz.eval.EvalPersonCache;
+import org.dows.hep.biz.eval.EvalPersonOnceHolder;
 import org.dows.hep.biz.spel.meta.SpelCheckResult;
 import org.dows.hep.biz.spel.meta.SpelEvalResult;
 import org.dows.hep.biz.spel.meta.SpelEvalSumResult;
@@ -87,7 +90,7 @@ public class SpelInvoker {
                 .withReasonId(experimentId, experimentPersonId, eventIds,
                         EnumIndicatorExpressionSource.EMERGENCY_INFLUENCE_INDICATOR.getSource())
                 .evalSum(context,mapSum);
-        return saveIndicator(evalResults,mapSum.values(),periods);
+        return saveIndicator(experimentPersonId,evalResults,mapSum.values(),periods);
 
     }
 
@@ -109,32 +112,39 @@ public class SpelInvoker {
                 .withReasonId(experimentId, experimentPersonId, actionIds,
                         EnumIndicatorExpressionSource.EMERGENCY_ACTION_INFLUENCE_INDICATOR.getSource())
                 .evalSum(context, mapSum);
-        return saveIndicator(evalResults,mapSum.values(), periods);
+        return saveIndicator(experimentPersonId,evalResults,mapSum.values(), periods);
     }
     //endregion
 
     //region save
 
-    public boolean saveIndicator(Collection<SpelEvalResult> evalResults, Collection<SpelEvalSumResult> evalSumResults,Integer periods){
+    public boolean saveIndicator(String experimentPersonId,Collection<SpelEvalResult> evalResults, Collection<SpelEvalSumResult> evalSumResults,Integer periods){
         log.info("IndicatorDebug..."+JSONUtil.toJsonStr(evalResults));
-        return saveIndicatorChange(evalSumResults);
+        return saveIndicatorChange(experimentPersonId, evalSumResults);
     }
 
 
-    public boolean saveIndicatorChange(Collection<SpelEvalSumResult> evalResults) {
+    public boolean saveIndicatorChange(String experimentPersonId,Collection<SpelEvalSumResult> evalResults) {
         if (ShareUtil.XObject.isEmpty(evalResults)) {
             return true;
         }
-        final Map<String, Double> mapEval = ShareUtil.XCollection.toMap(evalResults, SpelEvalSumResult::getExperimentIndicatorId, SpelEvalSumResult::getValdDouble);
-        List<ExperimentIndicatorInstanceRsEntity> rows = experimentIndicatorInstanceRsDao.getByExperimentIndicatorIds(mapEval.keySet(),
-                ExperimentIndicatorInstanceRsEntity::getId,
-                ExperimentIndicatorInstanceRsEntity::getExperimentIndicatorInstanceId,
-                ExperimentIndicatorInstanceRsEntity::getChangeVal);
-        rows.forEach(i -> i.setChangeVal(
-                Optional.ofNullable(i.getChangeVal()).orElse(0d)
-                        + Optional.ofNullable(mapEval.get(i.getExperimentIndicatorInstanceId())).orElse(0d))
-        );
-        return experimentIndicatorInstanceRsDao.updateIndicatorChange(rows);
+
+        if(ConfigExperimentFlow.SWITCH2EvalCache){
+            EvalPersonOnceHolder evalHolder= EvalPersonCache.Instance().getCurHolder(experimentPersonId);
+            evalResults.forEach(i->evalHolder.putChangeVal(i.getExperimentIndicatorId(), i.getValDecimal(), true));
+            return true;
+        }else {
+            final Map<String, Double> mapEval = ShareUtil.XCollection.toMap(evalResults, SpelEvalSumResult::getExperimentIndicatorId, SpelEvalSumResult::getValDouble);
+            List<ExperimentIndicatorInstanceRsEntity> rows = experimentIndicatorInstanceRsDao.getByExperimentIndicatorIds(mapEval.keySet(),
+                    ExperimentIndicatorInstanceRsEntity::getId,
+                    ExperimentIndicatorInstanceRsEntity::getExperimentIndicatorInstanceId,
+                    ExperimentIndicatorInstanceRsEntity::getChangeVal);
+            rows.forEach(i -> i.setChangeVal(
+                    Optional.ofNullable(i.getChangeVal()).orElse(0d)
+                            + Optional.ofNullable(mapEval.get(i.getExperimentIndicatorInstanceId())).orElse(0d))
+            );
+            return experimentIndicatorInstanceRsDao.updateIndicatorChange(rows);
+        }
     }
 
 

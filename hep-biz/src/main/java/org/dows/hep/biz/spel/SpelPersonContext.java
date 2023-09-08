@@ -2,15 +2,18 @@ package org.dows.hep.biz.spel;
 
 import cn.hutool.extra.spring.SpringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.biz.dao.ExperimentIndicatorValRsDao;
+import org.dows.hep.biz.eval.EvalPersonCache;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentIndicatorInstanceRsEntity;
 import org.dows.hep.entity.ExperimentIndicatorValRsEntity;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 import java.math.BigDecimal;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * @author : wuzl
@@ -41,12 +44,19 @@ public class SpelPersonContext extends StandardEvaluationContext {
     private void loadIndicatorVals(String experimentPersonId,Integer period) {
         try {
             Collection<String> indicatorIds = PersonIndicatorIdCache.Instance().getIndicatorIds(experimentPersonId);
-            List<ExperimentIndicatorValRsEntity> rowsVal = SpringUtil.getBean(ExperimentIndicatorValRsDao.class)
-                    .getByExperimentIdAndIndicatorIds(null, indicatorIds, period,
-                            ExperimentIndicatorValRsEntity::getIndicatorInstanceId,
-                            ExperimentIndicatorValRsEntity::getCurrentVal);
-            rowsVal.forEach(i->setVariable(SpelVarKeyFormatter.getVariableKey(i.getIndicatorInstanceId()), wrapVal(experimentPersonId,i.getIndicatorInstanceId(), i.getCurrentVal())));
-            rowsVal.clear();
+
+            if(ConfigExperimentFlow.SWITCH2EvalCache){
+                EvalPersonCache.Instance().getCurHolder(experimentPersonId).get().getMapIndicators().values().forEach(i->
+                        setVariable(SpelVarKeyFormatter.getVariableKey(i.getIndicatorId()), wrapVal(experimentPersonId,i.getIndicatorId(), i.getCurVal())));
+            }else {
+                List<ExperimentIndicatorValRsEntity> rowsVal = SpringUtil.getBean(ExperimentIndicatorValRsDao.class)
+                        .getByExperimentIdAndIndicatorIds(null, indicatorIds, period,
+                                ExperimentIndicatorValRsEntity::getIndicatorInstanceId,
+                                ExperimentIndicatorValRsEntity::getCurrentVal);
+                rowsVal.forEach(i->setVariable(SpelVarKeyFormatter.getVariableKey(i.getIndicatorInstanceId()), wrapVal(experimentPersonId,i.getIndicatorInstanceId(), i.getCurrentVal())));
+                rowsVal.clear();
+            }
+
         } catch (Exception ex) {
             log.error(String.format("SpelPersonContext.loadIndicatorVals personId:%s period:%s", experimentPersonId, period), ex);
         }

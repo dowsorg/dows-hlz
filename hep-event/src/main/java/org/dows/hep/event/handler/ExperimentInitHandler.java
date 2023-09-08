@@ -29,7 +29,7 @@ import org.dows.hep.api.user.organization.response.CaseOrgResponse;
 import org.dows.hep.biz.base.indicator.RsCopyBiz;
 import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
 import org.dows.hep.biz.base.org.OrgBiz;
-import org.dows.hep.biz.calc.CalcHealthIndexBiz;
+import org.dows.hep.biz.eval.EvalHealthIndexBiz;
 import org.dows.hep.biz.event.EventScheduler;
 import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.biz.request.ExperimentTaskParamsRequest;
@@ -88,7 +88,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
     private final ExperimentSettingService experimentSettingService;
     private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
 
-    private final CalcHealthIndexBiz calcHealthIndexBiz;
+    private final EvalHealthIndexBiz evalHealthIndexBiz;
 
     private final ExperimentBeginTaskHandler experimentBeginTaskHandler;
 
@@ -162,12 +162,12 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
               .build());
             /* runsix:复制实验，拿到第0期的数据 */
             //rsExperimentCalculateBiz.experimentRsCalculateAndCreateReportHealthScore(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
-            calcHealthIndexBiz.calcPersonHelthIndex(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
+            evalHealthIndexBiz.evalPersonHealthIndexOld(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
                 .builder()
                 .appId(appId)
                 .experimentId(experimentInstanceId)
                 .periods(0)
-                .saveRisk(true)
+                .isPeriodEnd(true)
                 .build());
         }
         //复制操作指标和突发事件

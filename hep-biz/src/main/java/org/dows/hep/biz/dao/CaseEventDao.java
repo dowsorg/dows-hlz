@@ -129,7 +129,7 @@ public class CaseEventDao extends BaseSubDao<CaseEventService, CaseEventEntity, 
     public boolean tranSaveBatch(List<CaseEventEntity> events,List<CaseEventActionEntity> actions,
                                  List<CaseIndicatorExpressionRefEntity> expressionRefs, List<CaseIndicatorExpressionEntity> expressions, List<CaseIndicatorExpressionItemEntity> expressionItems) {
         this.tranSaveBatch(events,true,false);
-        subDao.tranSaveBatch(actions,null,true);
+        subDao.tranSaveBatch(actions,null,true,true);
         caseIndicatorExpressionRefDao.tranSaveBatch(expressionRefs,expressions,expressionItems);
         return true;
     }

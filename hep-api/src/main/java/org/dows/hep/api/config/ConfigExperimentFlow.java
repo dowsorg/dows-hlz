@@ -13,4 +13,9 @@ public class ConfigExperimentFlow {
      * 是否使用原实验流程
      */
     public static final boolean SWITCH2TaskSchedule=!SWITCH2SysEvent;
+
+    /**
+     * 使用指标计算缓存
+     */
+    public static final boolean SWITCH2EvalCache=true;
 }
