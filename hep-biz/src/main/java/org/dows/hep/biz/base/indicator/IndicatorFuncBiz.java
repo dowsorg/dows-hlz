@@ -210,6 +210,35 @@ public class IndicatorFuncBiz{
         return new String();
     }
 
+
+    /**
+     * 获取功能点tips
+     * @param appId
+     * @param indicatorCategoryId
+     * @return
+     */
+    public IndicatorFuncResponse getFuncTip(String appId,String indicatorCategoryId){
+
+        IndicatorCategoryEntity indicatorCategoryEntity = indicatorCategoryService.lambdaQuery()
+                .eq(IndicatorCategoryEntity::getIndicatorCategoryId, indicatorCategoryId)
+                .eq(IndicatorCategoryEntity::getAppId, appId)
+                .oneOpt()
+                .orElse(null);
+        if(indicatorCategoryEntity == null){
+            return null;
+        }
+        IndicatorFuncEntity indicatorFuncEntity = indicatorFuncService.lambdaQuery().eq(IndicatorFuncEntity::getAppId, appId)
+                .eq(IndicatorFuncEntity::getIndicatorCategoryId, indicatorCategoryEntity.getPid())
+                .eq(IndicatorFuncEntity::getName, indicatorCategoryEntity.getCategoryName())
+                .eq(IndicatorFuncEntity::getAppId, indicatorCategoryEntity.getAppId())
+                .oneOpt()
+                .orElse(null);
+        if(null == indicatorFuncEntity){
+            return null;
+        }
+        return indicatorFunc2Response(indicatorFuncEntity);
+    }
+
     public List<IndicatorFuncResponse> getByPidAndAppId(String appId, String pid) {
         return indicatorFuncService.lambdaQuery()
             .eq(IndicatorFuncEntity::getAppId, appId)
