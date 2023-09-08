@@ -1,6 +1,6 @@
 package org.dows.hep.biz.eval;
 
-import lombok.Data;
+import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudContextHolder;
 import org.dows.hep.biz.dao.ExperimentEvalLogDao;
@@ -25,7 +25,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @date : 2023/9/5 23:17
  */
 
-@Data
+
 @Accessors(chain = true)
 public class EvalPersonPointer {
     private static final int TRYLOCKSeconds4Read=3;
@@ -43,22 +43,29 @@ public class EvalPersonPointer {
 
     private final ReadWriteLock rwlock=new ReentrantReadWriteLock();
 
-    public EvalPersonOnceHolder getCurHolder() throws InterruptedException{
+
+
+    @SneakyThrows
+    public EvalPersonOnceHolder getCurHolder() {
         int evalNo=getCurEvalNoWithReadLock();
         return getHolder(evalNo);
     }
-    public EvalPersonOnceHolder getLastHolder() throws InterruptedException {
+    @SneakyThrows
+    public EvalPersonOnceHolder getLastHolder()  {
         int evalNo = Math.max(0, getCurEvalNoWithReadLock() - 1);
         return getHolder(evalNo);
     }
-    public EvalPersonOnceHolder getNextHolder() throws InterruptedException{
+    @SneakyThrows
+    public EvalPersonOnceHolder getNextHolder() {
         int evalNo = Math.max(0, getCurEvalNoWithReadLock() + 1);
         return getHolder(evalNo);
     }
-    public boolean startSync(EvalPersonSyncRequest req) throws InterruptedException{
+    @SneakyThrows
+    public boolean startSync(EvalPersonSyncRequest req) {
         return getCurHolder().startSync(req);
     }
-    public boolean sync(EvalPersonSyncRequest req) throws InterruptedException {
+    @SneakyThrows
+    public boolean sync(boolean isPeriodInit)  {
         boolean lockFlag = rwlock.writeLock().tryLock(TRYLOCKSeconds4Write, TimeUnit.SECONDS);
         try {
             final int evalNo = curEvalNo.get();
@@ -66,7 +73,7 @@ public class EvalPersonPointer {
             EvalPersonOnceHolder curHolder = getHolder(evalNo);
             EvalPersonOnceHolder nextHolder = getHolder(nextEvalNo);
             curHolder.save();
-            nextHolder.putFrom(curHolder.getPresent(), nextEvalNo, req.isPeriodInit());
+            nextHolder.putFrom(curHolder.getPresent(), nextEvalNo, isPeriodInit);
             curEvalNo.incrementAndGet();
             return true;
         } finally {
@@ -75,8 +82,8 @@ public class EvalPersonPointer {
             }
         }
     }
-
-    public boolean load() throws InterruptedException {
+    @SneakyThrows
+    public boolean load()  {
         boolean lockFlag = rwlock.writeLock().tryLock(TRYLOCKSeconds4Write, TimeUnit.SECONDS);
         try {
             ExperimentEvalLogEntity rowLog= experimentEvalLogDao.getCurrentByPersonId(cacheKey.getExperimentPersonId(),

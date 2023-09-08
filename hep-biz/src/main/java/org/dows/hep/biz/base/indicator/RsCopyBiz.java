@@ -7,11 +7,11 @@ import org.dows.framework.api.exceptions.BaseException;
 import org.dows.hep.api.base.indicator.request.RsCopyCrowdsAndRiskModelRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyIndicatorFuncRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyPersonIndicatorRequestRs;
-import org.dows.hep.api.enums.EnumESC;
+import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.enums.EnumIndicatorCategory;
 import org.dows.hep.api.enums.EnumStatus;
 import org.dows.hep.api.enums.EnumString;
-import org.dows.hep.api.exception.RsCopyException;
+import org.dows.hep.biz.eval.EvalPersonBiz;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
@@ -97,6 +97,8 @@ public class RsCopyBiz {
   private final RsUtilBiz rsUtilBiz;
   private final RsCaseIndicatorExpressionBiz rsCaseIndicatorExpressionBiz;
   private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
+
+  private final EvalPersonBiz evalPersonBiz;
 
   @Transactional(rollbackFor = Exception.class)
   public void rsCopyIndicatorFunc(RsCopyIndicatorFuncRequestRs rsCopyIndicatorFuncRequestRs) {
@@ -1550,23 +1552,41 @@ public class RsCopyBiz {
       });
     });
     experimentIndicatorInstanceRsEntityList.forEach(experimentIndicatorInstanceRsEntity -> {
-      for (int i = 1; i <= maxPeriods; i++) {
-        experimentIndicatorValRsEntityList.add(
-            ExperimentIndicatorValRsEntity
-                .builder()
-                .experimentIndicatorValId(idGenerator.nextIdStr())
-                .experimentId(experimentInstanceId)
-                .caseId(caseInstanceId)
-                .indicatorInstanceId(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId())
-                .currentVal(experimentIndicatorInstanceRsEntity.getDef())
-                .initVal(experimentIndicatorInstanceRsEntity.getDef())
-                .periods(i)
-                .min(experimentIndicatorInstanceRsEntity.getMin())
-                .max(experimentIndicatorInstanceRsEntity.getMax())
-                .descr(experimentIndicatorInstanceRsEntity.getDescr())
-                .build()
-        );
-      }
+        if(ConfigExperimentFlow.SWITCH2EvalCache){
+            experimentIndicatorValRsEntityList.add(
+                    ExperimentIndicatorValRsEntity
+                            .builder()
+                            .experimentIndicatorValId(idGenerator.nextIdStr())
+                            .experimentId(experimentInstanceId)
+                            .caseId(caseInstanceId)
+                            .indicatorInstanceId(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId())
+                            .currentVal(experimentIndicatorInstanceRsEntity.getDef())
+                            .initVal(experimentIndicatorInstanceRsEntity.getDef())
+                            .periods(1)
+                            .min(experimentIndicatorInstanceRsEntity.getMin())
+                            .max(experimentIndicatorInstanceRsEntity.getMax())
+                            .descr(experimentIndicatorInstanceRsEntity.getDescr())
+                            .indicatorInstance(experimentIndicatorInstanceRsEntity)
+                            .build());
+        }else {
+            for (int i = 1; i <= maxPeriods; i++) {
+                experimentIndicatorValRsEntityList.add(
+                        ExperimentIndicatorValRsEntity
+                                .builder()
+                                .experimentIndicatorValId(idGenerator.nextIdStr())
+                                .experimentId(experimentInstanceId)
+                                .caseId(caseInstanceId)
+                                .indicatorInstanceId(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId())
+                                .currentVal(experimentIndicatorInstanceRsEntity.getDef())
+                                .initVal(experimentIndicatorInstanceRsEntity.getDef())
+                                .periods(i)
+                                .min(experimentIndicatorInstanceRsEntity.getMin())
+                                .max(experimentIndicatorInstanceRsEntity.getMax())
+                                .descr(experimentIndicatorInstanceRsEntity.getDescr())
+                                .build()
+                );
+            }
+        }
     });
     Map<String, List<String>> kCaseReasonIdVIndicatorExpressionIdListMap = new HashMap<>();
     Set<String> caseIndicatorExpressionIdSet = new HashSet<>();
@@ -1734,7 +1754,12 @@ public class RsCopyBiz {
       });
     });
     experimentIndicatorInstanceRsService.saveOrUpdateBatch(experimentIndicatorInstanceRsEntityList);
-    experimentIndicatorValRsService.saveOrUpdateBatch(experimentIndicatorValRsEntityList);
+    if(ConfigExperimentFlow.SWITCH2EvalCache){
+        evalPersonBiz.initEvalPersonLog(experimentIndicatorValRsEntityList);
+        experimentIndicatorValRsService.saveOrUpdateBatch(experimentIndicatorValRsEntityList);
+    }else {
+        experimentIndicatorValRsService.saveOrUpdateBatch(experimentIndicatorValRsEntityList);
+    }
     experimentIndicatorExpressionRefRsService.saveOrUpdateBatch(experimentIndicatorExpressionRefRsEntityList);
     experimentIndicatorExpressionRsService.saveOrUpdateBatch(experimentIndicatorExpressionRsEntityList);
     experimentIndicatorExpressionItemRsService.saveOrUpdateBatch(experimentIndicatorExpressionItemRsEntityList);

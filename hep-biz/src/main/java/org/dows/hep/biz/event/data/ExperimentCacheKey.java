@@ -37,16 +37,17 @@ public class ExperimentCacheKey {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ExperimentCacheKey that = (ExperimentCacheKey) o;
-        return Objects.equals(appId, that.appId) && Objects.equals(experimentInstanceId, that.experimentInstanceId);
+        return Objects.equals(experimentInstanceId, that.experimentInstanceId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(appId, experimentInstanceId);
+        return Objects.hash(experimentInstanceId);
     }
 
     public String getKeyString(){
-        return String.format("%s-%s", appId,experimentInstanceId);
+        return experimentInstanceId;
+        //return String.format("%s-%s", appId,experimentInstanceId);
     }
 
     @Override

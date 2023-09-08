@@ -3,6 +3,7 @@ package org.dows.hep.biz.user.experiment;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.annotation.CalcCode;
@@ -300,8 +301,9 @@ public class ExperimentScoringBiz {
     }
 
 
+    @SneakyThrows
     @Transactional(rollbackFor = Exception.class)
-    public void saveOrUpd(String experimentInstanceId, Integer periods) throws ExecutionException, InterruptedException {
+    public void saveOrUpd(String experimentInstanceId, Integer periods)  {
         List<ExperimentGroupEntity> experimentGroupEntityList = new ArrayList<>();
         experimentGroupEntityList.addAll(experimentGroupService.lambdaQuery()
             .eq(ExperimentGroupEntity::getExperimentInstanceId, experimentInstanceId)

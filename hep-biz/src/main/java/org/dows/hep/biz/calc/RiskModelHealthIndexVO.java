@@ -22,6 +22,8 @@ public class RiskModelHealthIndexVO {
     @Schema(title = "风险模型id")
     private String riskModelId;
 
+    @Schema(title = "风险模型名称")
+    private String riskModelName;
     @Schema(title = "人群总死亡概率")
     private Integer crowdsDeathRate;
 

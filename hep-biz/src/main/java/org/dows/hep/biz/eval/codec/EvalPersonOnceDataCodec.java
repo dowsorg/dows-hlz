@@ -1,6 +1,10 @@
 package org.dows.hep.biz.eval.codec;
 
-import org.dows.hep.biz.eval.data.*;
+import org.dows.hep.api.enums.EnumEvalFuncType;
+import org.dows.hep.biz.eval.data.EnumEvalSyncState;
+import org.dows.hep.biz.eval.data.EvalIndicatorValues;
+import org.dows.hep.biz.eval.data.EvalPersonOnceData;
+import org.dows.hep.biz.eval.data.EvalRiskValues;
 import org.dows.hep.biz.util.ShareUtil;
 import org.redisson.api.RMap;
 import org.springframework.stereotype.Component;
@@ -9,8 +13,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author : wuzl
@@ -42,7 +44,7 @@ public class EvalPersonOnceDataCodec implements IRDMapCodec<EvalPersonOnceData>{
             return null;
         }
         EvalPersonOnceData rst=new EvalPersonOnceData();
-        ConcurrentMap<String, EvalIndicatorValues> mapIndicators=new ConcurrentHashMap<>();
+        rst.getMapIndicators().clear();
         map.forEach((k,v)->{
             if(HASHKey4Header.equals(k)){
                 rst.setHeader(HeaderCodec.instance.fromRDString(v));
@@ -56,9 +58,9 @@ public class EvalPersonOnceDataCodec implements IRDMapCodec<EvalPersonOnceData>{
             if(null==obj){
                 return;
             }
-            mapIndicators.put(obj.getIndicatorId(),obj);
+            rst.getMapIndicators().put(obj.getIndicatorId(),obj);
         });
-        return rst.setMapIndicators(mapIndicators);
+        return rst;
     }
 
     @Override

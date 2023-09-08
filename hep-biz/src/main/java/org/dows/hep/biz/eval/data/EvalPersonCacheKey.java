@@ -21,7 +21,7 @@ public class EvalPersonCacheKey {
     }
 
     @Schema(title = "实验id")
-    private final String experimentInstanceId;
+    private String experimentInstanceId;
     @Schema(title = "实验人物id")
     private final String experimentPersonId;
 

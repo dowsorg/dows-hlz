@@ -7,13 +7,16 @@ import org.dows.hep.api.base.indicator.request.RsExperimentCalculateFuncRequest;
 import org.dows.hep.api.base.indicator.response.ExperimentHealthGuidanceReportResponseRs;
 import org.dows.hep.api.base.indicator.response.ExperimentIndicatorFuncRsResponse;
 import org.dows.hep.api.base.indicator.response.ExperimentOrgModuleRsResponse;
+import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.core.ExptOrgFuncRequest;
+import org.dows.hep.api.enums.EnumEvalFuncType;
 import org.dows.hep.api.enums.EnumIndicatorCategory;
 import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.api.user.experiment.response.ExptOrgFlowReportResponse;
 import org.dows.hep.api.user.experiment.vo.ExptOrgReportNodeDataVO;
 import org.dows.hep.api.user.experiment.vo.ExptOrgReportNodeVO;
 import org.dows.hep.biz.dao.OperateFlowDao;
+import org.dows.hep.biz.eval.EvalPersonBiz;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.orgreport.OrgReportComposer;
 import org.dows.hep.biz.util.*;
@@ -51,6 +54,9 @@ public class ExperimentIndicatorJudgeHealthGuidanceReportRsBiz {
   private final OrgReportComposer orgReportComposer;
 
   private final OperateFlowDao operateFlowDao;
+
+  private final EvalPersonBiz evalPersonBiz;
+
   public static ExperimentHealthGuidanceReportResponseRs experimentHealthGuidanceReport2ResponseRs(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity experimentIndicatorJudgeHealthGuidanceReportRsEntity) {
     if (Objects.isNull(experimentIndicatorJudgeHealthGuidanceReportRsEntity)) {
       return null;
@@ -164,12 +170,23 @@ public class ExperimentIndicatorJudgeHealthGuidanceReportRsBiz {
             .setIndicatorCategoryId(EnumIndicatorCategory.JUDGE_MANAGEMENT_HEALTH_GUIDANCE.getCode())
             .setNodeData(new ExptOrgReportNodeDataVO().setJudgeHealthGuidance(reports));
     try {
-      rsExperimentCalculateBiz.experimentReCalculateFunc(RsExperimentCalculateFuncRequest.builder()
-              .appId(exptValidator.getAppId())
-              .experimentId(exptValidator.getExperimentInstanceId())
-              .periods(timePoint.getPeriod())
-              .experimentPersonId(exptValidator.getExperimentPersonId())
-              .build());
+      if(ConfigExperimentFlow.SWITCH2EvalCache) {
+
+        evalPersonBiz.evalOrgFunc(RsExperimentCalculateFuncRequest.builder()
+                .appId(exptValidator.getAppId())
+                .experimentId(exptValidator.getExperimentInstanceId())
+                .periods(timePoint.getPeriod())
+                .experimentPersonId(exptValidator.getExperimentPersonId())
+                .funcType(EnumEvalFuncType.FUNCHealthGuide)
+                .build());
+      }else {
+        rsExperimentCalculateBiz.experimentReCalculateFunc(RsExperimentCalculateFuncRequest.builder()
+                .appId(exptValidator.getAppId())
+                .experimentId(exptValidator.getExperimentInstanceId())
+                .periods(timePoint.getPeriod())
+                .experimentPersonId(exptValidator.getExperimentPersonId())
+                .build());
+      }
     } catch (Exception ex) {
       log.error(String.format("healthGuidanceCheck experimentId:%s personId:%s",
               exptValidator.getExperimentInstanceId(), exptValidator.getExperimentPersonId()), ex);

@@ -1,6 +1,7 @@
 package org.dows.hep.biz.eval;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.api.CrudContextHolder;
 import org.dows.hep.api.enums.EnumIndicatorType;
@@ -12,22 +13,15 @@ import org.dows.hep.biz.eval.data.*;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.spel.PersonIndicatorIdCache;
 import org.dows.hep.biz.util.*;
-import org.dows.hep.entity.ExperimentEvalLogContentEntity;
-import org.dows.hep.entity.ExperimentEvalLogEntity;
-import org.dows.hep.entity.ExperimentIndicatorInstanceRsEntity;
-import org.dows.hep.entity.ExperimentIndicatorLogEntity;
+import org.dows.hep.entity.*;
 import org.redisson.api.RMap;
 import org.redisson.api.RedissonClient;
 
 import java.math.BigDecimal;
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 /**
@@ -118,6 +112,9 @@ public class EvalPersonOnceHolder {
     //region put
 
     public boolean putCurVal(String indicatorId, String val, boolean saveToRD){
+        if(ShareUtil.XObject.isEmpty(indicatorId)){
+            return false;
+        }
         EvalIndicatorValues values=getIndicator(indicatorId);
         if(null==values){
             return false;
@@ -129,6 +126,9 @@ public class EvalPersonOnceHolder {
         return true;
     }
     public boolean putCurVal(Map<String,String> mapVals, boolean saveToRD){
+        if(ShareUtil.XObject.isEmpty(mapVals)){
+            return false;
+        }
         Map<String,EvalIndicatorValues> map=new ConcurrentHashMap<>();
         mapVals.forEach((k,v)->{
             EvalIndicatorValues values=getIndicator(k);
@@ -215,21 +215,32 @@ public class EvalPersonOnceHolder {
         if(ShareUtil.XObject.isEmpty(src)){
             return;
         }
-        BigDecimal changingVal=src.getChangingVal();
-        if(ShareUtil.XObject.isEmpty(changingVal)
-                ||changingVal.compareTo(BigDecimal.ZERO)==0){
-            src.setSynced().setEvalNo(cacheKey.getEvalNo());
-            return;
-        }
+        final boolean isChanged=src.isChanged();
         final int SCALE4Value=2;
-        if(ShareUtil.XObject.allEmpty(src.getCurVal(),src.getLastVal())){
-            src.setCurVal(BigDecimalUtil.formatRoundDecimal(changingVal, SCALE4Value));
-        }else if(ShareUtil.XObject.isNumber(src.getCurVal())){
-            src.setCurVal(BigDecimalOptional.valueOf(src.getCurVal()).add(changingVal).getString(SCALE4Value));
-        }else if(ShareUtil.XObject.isNumber(src.getLastVal())){
-            src.setCurVal(BigDecimalOptional.valueOf(src.getLastVal()).add(changingVal).getString(SCALE4Value));
+        BigDecimal changingVal=src.getChangingVal();
+        if(ShareUtil.XObject.notEmpty(changingVal)
+                &&changingVal.compareTo(BigDecimal.ZERO)!=0){
+
+            if(ShareUtil.XObject.allEmpty(src.getCurVal(),src.getLastVal())){
+                src.setCurVal(BigDecimalUtil.formatRoundDecimal(changingVal, SCALE4Value));
+            }else if(ShareUtil.XObject.isNumber(src.getCurVal())){
+                src.setCurVal(BigDecimalOptional.valueOf(src.getCurVal()).add(changingVal).getString(SCALE4Value));
+            }else if(ShareUtil.XObject.isNumber(src.getLastVal())){
+                src.setCurVal(BigDecimalOptional.valueOf(src.getLastVal()).add(changingVal).getString(SCALE4Value));
+            }
         }
-        src.setSynced().setEvalNo(cacheKey.getEvalNo());
+        ExperimentIndicatorInstanceRsEntity cacheIndicator=PersonIndicatorIdCache.Instance().getIndicatorById(cacheKey.getExperimentPersonId(), src.getIndicatorId());
+        if(ShareUtil.XObject.notEmpty(cacheIndicator)
+                &&ShareUtil.XObject.isNumber(src.getCurVal())){
+            src.setCurVal(BigDecimalOptional.valueOf(src.getCurVal())
+                    .min(BigDecimalUtil.tryParseDecimalElseNull( cacheIndicator.getMin()))
+                    .max(BigDecimalUtil.tryParseDecimalElseNull( cacheIndicator.getMax()))
+                    .getString(SCALE4Value));
+        }
+        if(isChanged){
+            src.setEvalNo(cacheKey.getEvalNo());
+        }
+        src.setSynced();
 
     }
 
@@ -295,7 +306,9 @@ public class EvalPersonOnceHolder {
         ExperimentEvalLogContentEntity logEvalContent = new ExperimentEvalLogContentEntity()
                 .setEvalNo(logEval.getEvalNo())
                 .setAppId(logEval.getAppId())
-                .setIndicatorContent(JacksonUtil.toJsonSilence(data.getMapIndicators().values(), true));
+                .setIndicatorContent(JacksonUtil.toJsonSilence(data.getMapIndicators().values(), true))
+                .setHealthIndexContent(JacksonUtil.toJsonSilence(data.getEvalRisks(), true));
+
         final Integer evalNo=data.getHeader().getEvalNo();
         List<EvalIndicatorValues> changed=data.getMapIndicators().values()
                 .stream()
@@ -392,9 +405,8 @@ public class EvalPersonOnceHolder {
         if(ShareUtil.XObject.allNotEmpty(rowLogContent,()->rowLogContent.getIndicatorContent())){
             List<EvalIndicatorValues> indicators=JacksonUtil.fromJsonSilence(rowLogContent.getIndicatorContent(),new TypeReference<>() {
             });
-            ConcurrentMap<String,EvalIndicatorValues> map=new ConcurrentHashMap<>();
-            indicators.forEach(item->map.put(item.getIndicatorId(), item));
-            rst.setMapIndicators(map);
+            indicators.forEach(item->rst.getMapIndicators().put(item.getIndicatorId(), item));
+
         }
         return rst;
 
@@ -404,6 +416,74 @@ public class EvalPersonOnceHolder {
     private RMap<String,String> getRDMap() {
         return redissonClient.getMap(RDCACHEPrefix.concat(cacheKey.getKeyString()));
     }
+
+
+    //region 兼容老版本
+    public Map<String,String> getCastMapCur(Set<String> indicatorIds){
+        return fillCastMapCur(new HashMap<>(), indicatorIds);
+    }
+    public Map<String, ExperimentIndicatorValRsEntity> getCastMapCur(){
+        return fillCastMapCur(null);
+    }
+    public Map<String,ExperimentIndicatorValRsEntity> getCastMapLast(){
+        return fillCastMapLast(null);
+    }
+
+    public Map<String,String>  fillCastMapCur( Map<String,String>  rst,Set<String> indicatorIds) {
+        EvalPersonOnceData cached=get();
+        if(null==cached){
+            return rst;
+        }
+        indicatorIds.forEach(i->{
+            EvalIndicatorValues values= cached.getMapIndicators().get(i);
+            if(null==values){
+                return;
+            }
+            rst.put(i,values.getCurVal());
+        });
+        return rst;
+
+    }
+    @SneakyThrows
+    public Map<String,ExperimentIndicatorValRsEntity> fillCastMapCur(Map<String,ExperimentIndicatorValRsEntity> src) {
+        if (null == src) {
+            src = new HashMap<>();
+        } else {
+            src.clear();
+        }
+        EvalPersonOnceData cached=get();
+        if(null==cached){
+            return src;
+        }
+        for (EvalIndicatorValues item : cached.getMapIndicators().values()) {
+            src.computeIfAbsent(item.getIndicatorId(), k -> new ExperimentIndicatorValRsEntity())
+                    .setIndicatorInstanceId(item.getIndicatorId())
+                    .setCurrentVal(item.getCurVal())
+                    .setInitVal(item.getPeriodInitVal());
+        }
+        return src;
+    }
+
+    @SneakyThrows
+    public Map<String,ExperimentIndicatorValRsEntity> fillCastMapLast(Map<String,ExperimentIndicatorValRsEntity> src) {
+        if (null == src) {
+            src = new HashMap<>();
+        } else {
+            src.clear();
+        }
+        EvalPersonOnceData cached=get();
+        if(null==cached){
+            return src;
+        }
+        for (EvalIndicatorValues item : cached.getMapIndicators().values()) {
+            src.computeIfAbsent(item.getIndicatorId(), k -> new ExperimentIndicatorValRsEntity())
+                    .setIndicatorInstanceId(item.getIndicatorId())
+                    .setCurrentVal(item.getLastVal())
+                    .setInitVal(item.getPeriodInitVal());
+        }
+        return src;
+    }
+    //endregion
 
 
 

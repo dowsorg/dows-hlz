@@ -2,6 +2,7 @@ package org.dows.hep.biz.eval.data;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.dows.hep.api.enums.EnumEvalFuncType;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 
 /**

@@ -17,6 +17,7 @@ import org.dows.hep.api.base.intervene.request.FindTreatRequest;
 import org.dows.hep.api.base.intervene.response.*;
 import org.dows.hep.api.base.intervene.vo.FoodCookbookDetailVO;
 import org.dows.hep.api.base.intervene.vo.SportPlanItemVO;
+import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.core.ExptOperateOrgFuncRequest;
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.user.experiment.request.*;
@@ -29,6 +30,7 @@ import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
 import org.dows.hep.biz.base.intervene.*;
 import org.dows.hep.biz.dao.OperateFlowDao;
 import org.dows.hep.biz.dao.OperateOrgFuncDao;
+import org.dows.hep.biz.eval.EvalPersonBiz;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.operate.CostRequest;
 import org.dows.hep.biz.operate.OperateCostBiz;
@@ -84,6 +86,8 @@ public class ExperimentOrgInterveneBiz{
     private final OperateInsuranceService operateInsuranceService;
     private final ExperimentOrgService experimentOrgService;
     private final CaseOrgFeeService caseOrgFeeService;
+
+    private final EvalPersonBiz evalPersonBiz;
 
 
     public List<Categ4ExptVO> listInterveneCateg4Expt(FindInterveneCateg4ExptRequest findCateg ) throws JsonProcessingException {
@@ -256,7 +260,7 @@ public class ExperimentOrgInterveneBiz{
         }
 
         Boolean succFlag= operateOrgFuncDao.tranSave(rowOrgFunc,Arrays.asList(rowOrgFuncSnap),false,()->{
-            AssertUtil.falseThenThrow(SpelInvoker.Instance().saveIndicator(null, evalSumResults, timePoint.getPeriod()))
+            AssertUtil.falseThenThrow(SpelInvoker.Instance().saveIndicator(validator.getExperimentPersonId(), null, evalSumResults, timePoint.getPeriod()))
                     .throwMessage("影响指标数据保存失败");
             return true;
         });
@@ -446,7 +450,7 @@ public class ExperimentOrgInterveneBiz{
                     .snapTime(dateNow)
                     .build();
             succFlag=operateOrgFuncDao.tranSave(rowOrgFunc,List.of(rowOrgFuncSnap),false,()->{
-                AssertUtil.falseThenThrow(SpelInvoker.Instance().saveIndicator(evalResults, mapSum.values(), timePoint.getPeriod()))
+                AssertUtil.falseThenThrow(SpelInvoker.Instance().saveIndicator(validator.getExperimentPersonId(), evalResults, mapSum.values(), timePoint.getPeriod()))
                         .throwMessage("影响指标数据保存失败");
                 if(costFlag){
                     experimentIndicatorInstanceRsBiz.saveChangeMoney(costIndicator);
@@ -455,12 +459,24 @@ public class ExperimentOrgInterveneBiz{
                 return true;
             });
             try {
-                rsExperimentCalculateBiz.experimentReCalculateFunc(RsExperimentCalculateFuncRequest.builder()
-                        .appId(validator.getAppId())
-                        .experimentId(validator.getExperimentInstanceId())
-                        .periods(timePoint.getPeriod())
-                        .experimentPersonId(validator.getExperimentPersonId())
-                        .build());
+                if(ConfigExperimentFlow.SWITCH2EvalCache) {
+
+                    evalPersonBiz.evalOrgFunc(RsExperimentCalculateFuncRequest.builder()
+                            .appId(validator.getAppId())
+                            .experimentId(validator.getExperimentInstanceId())
+                            .periods(timePoint.getPeriod())
+                            .experimentPersonId(validator.getExperimentPersonId())
+                            .funcType(EnumEvalFuncType.FUNCTreat)
+                            .build());
+                }
+                else {
+                    rsExperimentCalculateBiz.experimentReCalculateFunc(RsExperimentCalculateFuncRequest.builder()
+                            .appId(validator.getAppId())
+                            .experimentId(validator.getExperimentInstanceId())
+                            .periods(timePoint.getPeriod())
+                            .experimentPersonId(validator.getExperimentPersonId())
+                            .build());
+                }
             } catch (Exception ex) {
                 log.error(String.format("saveExptTreatPlan.deal experimentId:%s personId:%s",
                         validator.getExperimentInstanceId(), validator.getExperimentPersonId()), ex);
@@ -475,7 +491,7 @@ public class ExperimentOrgInterveneBiz{
             operateFlowDao.tranSave(saveFlow, List.of(saveFlowSnap), false);
         }else{
             succFlag=operateOrgFuncDao.tranSave(rowOrgFunc,List.of(rowOrgFuncSnap),false,()->{
-                AssertUtil.falseThenThrow(SpelInvoker.Instance().saveIndicator(evalResults, mapSum.values(), timePoint.getPeriod()))
+                AssertUtil.falseThenThrow(SpelInvoker.Instance().saveIndicator(validator.getExperimentPersonId(),evalResults, mapSum.values(), timePoint.getPeriod()))
                         .throwMessage("影响指标数据保存失败");
                 if(costFlag){
                     experimentIndicatorInstanceRsBiz.saveChangeMoney(costIndicator);

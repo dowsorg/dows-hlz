@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dows.hep.api.enums.EnumEvalFuncType;
 
 import java.io.Serializable;
 
@@ -27,4 +28,7 @@ public class RsExperimentCalculateFuncRequest implements Serializable {
 
   @Schema(title = "实验人物id，功能点结算是每个人的")
   private String experimentPersonId;
+
+  @Schema(title = "功能点类型")
+  private EnumEvalFuncType funcType;
 }

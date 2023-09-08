@@ -3,6 +3,8 @@ package org.dows.hep.biz.eval.data;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.dows.hep.api.enums.EnumEvalFuncType;
+import org.dows.hep.biz.calc.RiskModelHealthIndexVO;
 import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.ShareUtil;
 
@@ -26,8 +28,11 @@ public class EvalPersonOnceData {
     @Schema(title = "危险因素列表")
     private List<EvalRiskValues> risks;
 
+    @Schema(title = "健康指数计算过程")
+    private List<RiskModelHealthIndexVO> evalRisks;
+
     @Schema(title = "指标列表")
-    private ConcurrentMap<String,EvalIndicatorValues> mapIndicators;
+    private final ConcurrentMap<String,EvalIndicatorValues> mapIndicators=new ConcurrentHashMap<>();
 
     public boolean isValued(){
         if(ShareUtil.XObject.anyEmpty(header,mapIndicators)){
@@ -74,9 +79,8 @@ public class EvalPersonOnceData {
         );
         rst.setRisks(ShareUtil.XCollection.map(risks,i->
                 CopyWrapper.create(EvalRiskValues::new).endFrom(i)));
-        ConcurrentMap<String,EvalIndicatorValues> map=new ConcurrentHashMap<>();
-        getMapIndicators().forEach((k,v)->map.put(k, v.flip(isPeriodInit)));
-        return rst.setMapIndicators(map);
+        getMapIndicators().forEach((k,v)->rst.getMapIndicators().put(k, v.flip(isPeriodInit)));
+        return rst;
     }
 
 

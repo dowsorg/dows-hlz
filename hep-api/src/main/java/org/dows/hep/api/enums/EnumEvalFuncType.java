@@ -1,4 +1,4 @@
-package org.dows.hep.biz.eval.data;
+package org.dows.hep.api.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +12,7 @@ import java.util.Arrays;
 @Getter
 @RequiredArgsConstructor
 public enum EnumEvalFuncType {
-    NONE(0,"NA"),
+    INIT(0,"初始"),
     PERIODEnd(1,"期数翻转"),
     FUNCTreat(2,"治疗干预"),
     FUNCHealthGuide(3,"健康指导"),
@@ -27,6 +27,6 @@ public enum EnumEvalFuncType {
         return Arrays.stream( EnumEvalFuncType.values())
                 .filter(i->i.getCode().equals(code))
                 .findFirst()
-                .orElse(NONE);
+                .orElse(INIT);
     }
 }
