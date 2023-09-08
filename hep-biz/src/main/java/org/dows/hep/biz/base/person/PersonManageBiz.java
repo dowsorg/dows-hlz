@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.api.*;
 import org.dows.account.biz.enums.EnumAccountStatusCode;
@@ -23,6 +24,7 @@ import org.dows.hep.api.tenant.casus.request.CasePersonIndicatorFuncRequest;
 import org.dows.hep.biz.base.indicator.CaseIndicatorInstanceBiz;
 import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.biz.tenant.casus.TenantCaseEventBiz;
+import org.dows.hep.biz.util.StatefulJwtUtil;
 import org.dows.hep.entity.CasePersonEntity;
 import org.dows.hep.entity.CasePersonIndicatorFuncEntity;
 import org.dows.hep.entity.ExperimentInstanceEntity;
@@ -317,8 +319,31 @@ public class PersonManageBiz {
      * @开始时间:
      * @创建时间: 2023/4/20 13:20
      */
-    public Map<String, Object> login(AccountInstanceRequest request) {
-        return accountInstanceApi.login(request);
+    public Map<String, Object> login(AccountInstanceRequest request, HttpServletRequest request1) {
+        Map<String, Object> map = accountInstanceApi.login(request,request1);
+        if(!map.get("name").equals("Admin")) {
+            String accountId = map.get("accountId").toString();
+            String token = map.get("token").toString();
+            StatefulJwtUtil.putToken(token, accountId);
+        }
+        return map;
+    }
+
+    /**
+     * @param
+     * @return
+     * @说明: 登出
+     * @关联表: account_instance
+     * @工时: 1H
+     * @开发者: jx
+     * @开始时间:
+     * @创建时间: 2023/9/6 15:36
+     */
+    public void loginOut(String accountId) {
+        AccountInstanceResponse accountInstance = accountInstanceApi.getAccountInstanceByAccountId(accountId);
+        if(!accountInstance.getAccountName().equals("admin")) {
+            StatefulJwtUtil.removeToken(accountId);
+        }
     }
 
     /**
@@ -372,7 +397,7 @@ public class PersonManageBiz {
         }
         //3、根据账户ID获取用户ID
         AccountUserResponse accountUser = accountUserApi.getUserByAccountId(accountId);
-        //3、获取用户拓展信息
+        //4、获取用户拓展信息
         UserExtinfoResponse extinfo = userExtinfoApi.getUserExtinfoByUserId(accountUser.getUserId());
         instance.setIntro(extinfo.getIntro());
         return instance;
@@ -707,7 +732,7 @@ public class PersonManageBiz {
      * @工时: 2H
      * @开发者: jx
      * @开始时间:
-     * @创建时间: 2023/4/25 17:35
+     * @创建时间: 2023/4/25 17:37
      */
     @DSTransactional
     public PersonInstanceResponse addPerson(AccountInstanceRequest request) throws ExecutionException, InterruptedException {

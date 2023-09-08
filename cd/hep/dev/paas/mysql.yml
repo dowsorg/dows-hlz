@@ -4,7 +4,7 @@ services:
     # 指定镜像和版本
     image: mariadb
     # 指定容器的名称
-    container_name: mysql-prd
+    container_name: mysql-dev
     restart: always
     command:
       --max_connections=1000

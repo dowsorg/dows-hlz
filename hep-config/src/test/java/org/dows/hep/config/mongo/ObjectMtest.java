@@ -1,4 +1,4 @@
-package org.dows.hep;
+package org.dows.hep.config.mongo;
 
 
 import cn.hutool.json.JSONUtil;

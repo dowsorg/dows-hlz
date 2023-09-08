@@ -1,6 +1,7 @@
 package org.dows.hep.rest.report;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.http.HttpUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,12 +21,16 @@ import org.dows.hep.api.user.experiment.ExptSettingModeEnum;
 import org.dows.hep.biz.report.ExptReportFacadeBiz;
 import org.dows.hep.biz.user.experiment.ExperimentBaseBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
+import org.dows.hep.properties.PdfServerProperties;
+import org.dows.hep.vo.report.ExptReportModel;
 import org.dows.hep.vo.report.ExptReportVO;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -44,12 +49,13 @@ public class ExptReportPdfRest {
     private final ExperimentSettingBiz experimentSettingBiz;
     private final ExperimentBaseBiz baseBiz;
 
+    private final PdfServerProperties pdfServerProperties;
+
     /**
-     *
      * 分页获取报告列表
      *
      * @param pageRequest - 分页请求
-     * @param request - servletRequest
+     * @param request     - servletRequest
      * @return com.baomidou.mybatisplus.core.metadata.IPage<org.dows.hep.api.tenant.experiment.response.ExptReportPageResponse>
      * @author fhb
      * @description 分页获取报告列表
@@ -63,7 +69,6 @@ public class ExptReportPdfRest {
     }
 
     /**
-     *
      * 分页获取实验下小组列表
      *
      * @param pageRequest - 分页请求
@@ -79,11 +84,10 @@ public class ExptReportPdfRest {
     }
 
     /**
-     *
      * 分页获取学生报告列表
      *
      * @param pageRequest - 分页请求
-     * @param request - servletRequest
+     * @param request     - servletRequest
      * @return com.baomidou.mybatisplus.core.metadata.IPage<org.dows.hep.api.tenant.experiment.response.ExptAccountReportResponse>
      * @author fhb
      * @description 分页获取学生报告列表
@@ -118,7 +122,7 @@ public class ExptReportPdfRest {
      * 导出小组实验pdf报告
      *
      * @param experimentInstanceId - 实验实例ID
-     * @param experimentGroupId - 实验小组ID
+     * @param experimentGroupId    - 实验小组ID
      * @return org.dows.hep.vo.report.ExptReportVO
      * @author fhb
      * @description 导出小组实验pdf报告
@@ -153,8 +157,8 @@ public class ExptReportPdfRest {
      * 预览实验报告
      *
      * @param experimentInstanceId - 实验实例ID
-     * @param request -
-     * @param response -
+     * @param request              -
+     * @param response             -
      * @author fhb
      * @description 预览实验报告
      * @date 2023/7/21 14:35
@@ -178,9 +182,9 @@ public class ExptReportPdfRest {
      * 预览小组报告
      *
      * @param experimentInstanceId - 实验实例ID
-     * @param experimentGroupId - 实验小组ID
-     * @param request -
-     * @param response -
+     * @param experimentGroupId    - 实验小组ID
+     * @param request              -
+     * @param response             -
      * @author fhb
      * @description 预览小组报告
      * @date 2023/7/21 14:37
@@ -206,8 +210,8 @@ public class ExptReportPdfRest {
      * 预览学生报告
      *
      * @param experimentInstanceId - 实验实例ID
-     * @param request -
-     * @param response -
+     * @param request              -
+     * @param response             -
      * @author fhb
      * @description 预览学生报告
      * @date 2023/7/21 14:38
@@ -226,6 +230,81 @@ public class ExptReportPdfRest {
             log.error(String.format("预览学生报告时，发生IO异常: %s", e));
             throw new BizException(String.format("预览学生报告时，发生IO异常: %s", e));
         }
+    }
+
+    /**
+     * 获取实验报告数据
+     *
+     * @param exptInstanceId - 实验示例ID
+     * @return org.dows.hep.vo.report.ExptReportModel
+     * @author fhb
+     * @description 获取实验报告数据
+     * @date 2023/9/6 16:40
+     */
+    @Operation(summary = "获取实验报告数据")
+    @GetMapping("v1/report/getExptPdfData")
+    public ExptReportModel getExptPdfData(@RequestParam String exptInstanceId) {
+        return exptReportFacadeBiz.getExptPdfData(exptInstanceId);
+    }
+
+    /**
+     * 获取小组报告数据
+     *
+     * @param exptInstanceId - 实验示例ID
+     * @param exptGroupId    - 实验小组ID
+     * @return org.dows.hep.vo.report.ExptReportModel
+     * @author fhb
+     * @description 获取小组报告数据
+     * @date 2023/9/6 16:41
+     */
+    @Operation(summary = "获取小组报告数据")
+    @GetMapping("v1/report/getGroupPdfData")
+    public ExptReportModel getGroupPdfData(@RequestParam String exptInstanceId,
+                                           @RequestParam String exptGroupId) {
+        return exptReportFacadeBiz.getGroupPdfData(exptInstanceId, exptGroupId);
+    }
+
+    /**
+     * 获取个人报告数据
+     *
+     * @param exptInstanceId - 实验示例ID
+     * @param accountId      - 账号ID
+     * @return org.dows.hep.vo.report.ExptReportModel
+     * @author fhb
+     * @description 获取个人报告数据
+     * @date 2023/9/6 16:43
+     */
+    @Operation(summary = "获取个人报告数据")
+    @GetMapping("v1/report/getAccountPdfData")
+    public ExptReportModel getAccountPdfData(@RequestParam String exptInstanceId,
+                                             @RequestParam String accountId,
+                                             HttpServletRequest request) {
+//        accountId = baseBiz.getAccountId(request);
+        return exptReportFacadeBiz.getAccountPdfData(exptInstanceId, accountId);
+    }
+
+    /**
+     * 根据提供的页面，提供的功能点实现...指定操作
+     *
+     * @param func - 功能点
+     * @param url  - 页面路径
+     * @return java.lang.String
+     * @author fhb
+     * @description 根据提供的页面，提供的功能点实现...指定操作
+     * @date 2023/9/6 17:18
+     */
+    @Operation(summary = "根据提供的页面，提供的功能点实现...指定操作")
+    @GetMapping("v1/report/exportLooseCoupling")
+    public String exportLooseCoupling(@RequestParam(defaultValue = "export") String func,
+                                      @RequestParam(defaultValue = "hep") String appCode,
+                                      @RequestParam String url) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("fun", func);
+        param.put("appCode", appCode);
+        param.put("url", url);
+        // "http://192.168.1.60:10004/pdf"
+        String serverUrl = pdfServerProperties.getUrl();
+        return HttpUtil.get(serverUrl, param);
     }
 
     private boolean regenerate(String experimentInstanceId) {

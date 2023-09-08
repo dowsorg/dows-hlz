@@ -13,14 +13,17 @@ server:
             io: 4
             worker: 32
 #    servlet:
-#        context-path: /hep
+#        context-path: /hep1
+soft:
+    info:
+        anonymous-paths: /login;/doc;/swagger;/api-docs;/hepapi;/report;
 
 
 spring:
     application:
         name: dows-hep
     profiles:
-        include: hep-mysql,hep-mybatis,hep-mvc,hep-oss,hep-apidoc,hep-redisson,hep-findsoft,hep-websocket,hep-cache
+        include: hep-mysql,hep-mybatis,hep-mvc,hep-oss,hep-apidoc,hep-redisson,hep-findsoft,hep-websocket,hep-cache,hep-mongodb,hep-pdf
         active: dev
 
     jackson:

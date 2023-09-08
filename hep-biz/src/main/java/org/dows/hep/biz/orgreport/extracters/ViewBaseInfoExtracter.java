@@ -33,7 +33,7 @@ public class ViewBaseInfoExtracter implements IOrgReportExtracter<ExperimentIndi
 
     @Override
     public ExperimentIndicatorViewBaseInfoRsResponse getReportData(OrgReportExtractRequest req) throws ExecutionException, InterruptedException {
-        return experimentIndicatorViewBaseInfoRsBiz.get(req.getIndicatorFuncId(),req.getExperimentPersonId(),req.getPeriod());
+        return experimentIndicatorViewBaseInfoRsBiz.get(null,req.getIndicatorFuncId(),req.getExperimentPersonId(),req.getPeriod());
     }
 
     @Override
