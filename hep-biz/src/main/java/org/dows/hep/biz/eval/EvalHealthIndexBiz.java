@@ -293,7 +293,7 @@ public class EvalHealthIndexBiz {
             });
             BigDecimal personHealthIndex= EvalHealthIndexUtil.evalHealthIndex(vosHealthIndex,false);
             evalHolder.get().setEvalRisks(vosHealthIndex);
-            evalHolder.putCurVal(personIndicatorIdCache.getSysIndicatorId(experimentId, EnumIndicatorType.HEALTH_POINT),
+            evalHolder.putCurVal(personIndicatorIdCache.getSysIndicatorId(experimentPersonId, EnumIndicatorType.HEALTH_POINT),
                     BigDecimalUtil.formatRoundDecimal(personHealthIndex, 2, RoundingMode.DOWN),false);
             evalPointer.sync(isPeriodEnd);
 
