@@ -5,8 +5,9 @@ spring:
     activate:
       on-profile: dev
 pdf-server:
-  url: http://192.168.1.60:10004/pdf
-  namespace: dev-dows-hep
+  server-url: http://192.168.1.60:10004/pdf
+  app-code: hep
+  view-url: http://192.168.1.60:1801/report_view/group/
 ---
 #测试环境
 spring:
@@ -14,8 +15,9 @@ spring:
     activate:
       on-profile: sit
 pdf-server:
-  url: http://192.168.1.60:10004/pdf
-  namespace: sit-dows-hep
+  server-url: http://192.168.1.60:10004/pdf
+  app-code: hep
+  view-url: http://192.168.1.60:1801/report_view/group/
 ---
 #预发布环境
 spring:
@@ -23,8 +25,9 @@ spring:
     activate:
       on-profile: uat
 pdf-server:
-  url: http://192.168.1.60:10004/pdf
-  namespace: uat-dows-hep
+  server-url: http://192.168.1.60:10004/pdf
+  app-code: hep
+  view-url: http://192.168.1.60:1801/report_view/group/
 ---
 #产品环境
 spring:
@@ -32,5 +35,6 @@ spring:
     activate:
       on-profile: prd
 pdf-server:
-  url: http://192.168.1.60:10004/pdf
-  namespace: prd-dows-hep
+  server-url: http://192.168.1.60:10004/pdf
+  app-code: hep
+  view-url: http://192.168.1.60:1801/report_view/group/

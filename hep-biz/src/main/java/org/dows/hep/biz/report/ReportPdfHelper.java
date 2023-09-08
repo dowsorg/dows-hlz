@@ -62,6 +62,10 @@ public class ReportPdfHelper {
      * @date 2023/7/20 11:54
      */
     public OssInfo convertAndUpload(ExptReportModel pdfVO, String schemeFlt, Path filePath, Path uploadPath) {
+        return getOssInfo(pdfVO, schemeFlt, filePath, uploadPath);
+    }
+
+    private OssInfo getOssInfo(ExptReportModel pdfVO, String schemeFlt, Path filePath, Path uploadPath) {
         // convert
         Path homeDir = filePath.getParent();
         File targetFile = filePath.toFile();

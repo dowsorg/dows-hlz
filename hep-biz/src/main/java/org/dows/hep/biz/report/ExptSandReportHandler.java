@@ -71,6 +71,7 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
 
     private final ReportOSSHelper ossHelper;
     private final ReportPdfHelper reportPdfHelper;
+    private final ReportPdfHelper2 reportPdfHelper2;
     private final ReportRecordHelper recordHelper;
     private final FindSoftProperties findSoftProperties;
 
@@ -247,14 +248,16 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
         // 生成 pdf 并上传文件
         Path path = Paths.get(LOCAL_SAND_REPORT, fileName);
         Path uploadPath = Paths.get(exptInstanceId, fileName);
-        OssInfo ossInfo = reportPdfHelper.convertAndUpload(pdfVO, schemeFlt, path, uploadPath);
+//        OssInfo ossInfo = reportPdfHelper.convertAndUpload(pdfVO, schemeFlt, path, uploadPath);
+        OssInfo ossInfo = reportPdfHelper2.convertAndUpload(exptInstanceId, exptGroupId, uploadPath);
 
         // 记录一份数据
         if (StrUtil.isNotBlank(ossInfo.getPath())) {
             MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
                     .fileName(fileName)
                     .fileType("pdf")
-                    .fileUri(ossHelper.getUrlPath(ossInfo, exptInstanceId))
+//                    .fileUri(ossHelper.getUrlPath(ossInfo, exptInstanceId))
+                    .fileUri(ossInfo.getPath())
                     .build();
             MaterialsRequest materialsRequest = MaterialsRequest.builder()
                     .bizCode("EXPT")
@@ -268,7 +271,8 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
         ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
                 .parent(exptInstanceId)
                 .name(ossInfo.getName())
-                .path(ossHelper.getUrlPath(ossInfo, exptInstanceId))
+//                .path(ossHelper.getUrlPath(ossInfo, exptInstanceId))
+                .path(ossInfo.getPath())
                 .build();
         return ExptGroupReportVO.builder()
                 .exptGroupId(exptGroupId)
