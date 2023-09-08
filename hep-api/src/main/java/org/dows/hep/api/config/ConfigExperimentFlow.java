@@ -17,5 +17,5 @@ public class ConfigExperimentFlow {
     /**
      * 使用指标计算缓存
      */
-    public static final boolean SWITCH2EvalCache=false;
+    public static final boolean SWITCH2EvalCache=true;
 }
