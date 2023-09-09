@@ -29,8 +29,8 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
     public static PersonIndicatorIdCache Instance(){
         return s_instance;
     }
-    protected final static int CACHEInitCapacity=10;
-    protected final static int CACHEMaxSize=50;
+    protected final static int CACHEInitCapacity=300;
+    protected final static int CACHEMaxSize=1500;
     protected final static int CACHEExpireSeconds=60*60*24;
 
     private PersonIndicatorIdCache(){
