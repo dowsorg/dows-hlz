@@ -114,6 +114,7 @@ public class ExperimentHealthDocBiz {
 
             }
         });
+        mapTypeLines.clear();
 
 
         return rst;
