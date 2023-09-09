@@ -62,6 +62,8 @@ import java.util.stream.Collectors;
  * @version 1.0
  * @description 报告聚合 biz
  * @date 2023/7/21 13:57
+ *
+ * 随着不断的无法预知的变更，最终变成了现在这个样子
  **/
 @Component
 @AllArgsConstructor
@@ -80,7 +82,8 @@ public class ExptReportFacadeBiz {
     private final ExptSandReportHandler sandReportHandler;
     private final ExptOverviewReportHandler overviewReportHandler;
 
-    private final ReportZipHelper reportZipHelper;
+    private final SchemeReportZipHelper schemeReportZipHelper;
+    private final SandReportZipHelper sandReportZipHelper;
     private final ReportRecordHelper reportRecordHelper;
 
     /**
@@ -205,7 +208,7 @@ public class ExptReportFacadeBiz {
                 ExptReportVO exptReportVO = generatePdf(exptInstanceId, null, regeneratePdf);
                 // 压缩并上传报告
                 Path uploadPath = Paths.get(exptInstanceId, exptZipFullName);
-                boolean zipRes = reportZipHelper.zipAndUploadV2(exptReportVO, uploadPath, exptZipName, exptZipSuffix);
+                boolean zipRes = zip(exptInstanceId, exptReportVO, uploadPath, exptZipName, exptZipSuffix);
                 if (zipRes) {
                     // 存档报告zip数据
                     recordAsync(exptInstanceId, null, ExptReportTypeEnum.EXPT_ZIP, exptReportVO);
@@ -277,7 +280,7 @@ public class ExptReportFacadeBiz {
                 ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId, regeneratePdf);
                 // 压缩并上传报告
                 Path uploadPath = Paths.get(exptInstanceId, groupZipFullName);
-                boolean zipRes = reportZipHelper.zipAndUploadV2(exptReportVO, uploadPath, groupZipName, groupZipSuffix);
+                boolean zipRes = zip(exptInstanceId, exptReportVO, uploadPath, groupZipName, groupZipSuffix);
                 if (zipRes) {
                     // 存档报告zip数据
                     recordAsync(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP_ZIP, exptReportVO);
@@ -714,4 +717,16 @@ public class ExptReportFacadeBiz {
         }
     }
 
+    private boolean zip(String exptInstanceId, ExptReportVO exptReportVO, Path uploadPath, String zipName, String zipSuffix) {
+        ExptSettingModeEnum exptSettingMode = experimentSettingBiz.getExptSettingMode(exptInstanceId);
+        switch (exptSettingMode) {
+            case SCHEME -> {
+                return schemeReportZipHelper.zipAndUploadV2(exptReportVO, uploadPath, zipName, zipSuffix);
+            }
+            case SAND -> {
+                return sandReportZipHelper.zipAndUploadV2(exptReportVO, uploadPath, zipName, zipSuffix);
+            }
+        }
+        return Boolean.FALSE;
+    }
 }
