@@ -5,14 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.enums.EnumExperimentMode;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.biz.dao.ExperimentInstanceDao;
-import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -45,9 +43,9 @@ public class EventStarter implements ApplicationListener<ApplicationStartedEvent
 
 
     public void start(){
-        if(startedFlag){
+        /*if(startedFlag){
             return;
-        }
+        }*/
         final Set<String> sysIds=new HashSet<>();
         final Set<String> userIds=new HashSet<>();
         try {
