@@ -1,6 +1,7 @@
 package org.dows.hep.rest.report;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.http.HttpUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,7 +10,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.framework.api.Response;
 import org.dows.framework.api.exceptions.BizException;
+import org.dows.framework.oss.api.OssInfo;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.tenant.experiment.request.ExptAccountReportRequest;
 import org.dows.hep.api.tenant.experiment.request.ExptGroupReportPageRequest;
@@ -19,6 +22,7 @@ import org.dows.hep.api.tenant.experiment.response.ExptGroupReportPageResponse;
 import org.dows.hep.api.tenant.experiment.response.ExptReportPageResponse;
 import org.dows.hep.api.user.experiment.ExptSettingModeEnum;
 import org.dows.hep.biz.report.ExptReportFacadeBiz;
+import org.dows.hep.biz.report.ReportOSSHelper;
 import org.dows.hep.biz.user.experiment.ExperimentBaseBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
 import org.dows.hep.properties.PdfServerProperties;
@@ -26,12 +30,11 @@ import org.dows.hep.vo.report.ExptReportModel;
 import org.dows.hep.vo.report.ExptReportVO;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.io.InputStream;
+import java.util.*;
 
 /**
  * @author fhb
@@ -48,6 +51,7 @@ public class ExptReportPdfRest {
     private final ExptReportFacadeBiz exptReportFacadeBiz;
     private final ExperimentSettingBiz experimentSettingBiz;
     private final ExperimentBaseBiz baseBiz;
+    private final ReportOSSHelper ossHelper;
 
     private final PdfServerProperties pdfServerProperties;
 
@@ -303,8 +307,36 @@ public class ExptReportPdfRest {
         param.put("appCode", appCode);
         param.put("url", url);
         // "http://192.168.1.60:10004/pdf"
-        String serverUrl = pdfServerProperties.getUrl();
+        String serverUrl = pdfServerProperties.getServerUrl();
         return HttpUtil.get(serverUrl, param);
+    }
+
+    @Operation(summary = "上传文件")
+    @PostMapping("/v1/anonymous/file/upload")
+    public Response<OssInfo> uploadFile(@RequestParam(value = "file") MultipartFile file) {
+        if (Objects.isNull(file) || file.isEmpty()) {
+            return Response.fail("文件不能为空");
+        }
+        // 文件名后缀
+        String suffix = null;
+        String originalFilename = file.getOriginalFilename();
+        if (CharSequenceUtil.isNotBlank(originalFilename)) {
+            assert originalFilename != null;
+            suffix = originalFilename.substring(originalFilename.lastIndexOf("."));
+        }
+        // 文件名
+        String fileName = String.valueOf(System.currentTimeMillis());
+        fileName = fileName + suffix;
+
+        // 输入流
+        OssInfo info = null;
+        try (InputStream is = file.getInputStream()) {
+            info = ossHelper.upload(is, fileName, true);
+        } catch (Exception e) {
+            return Response.fail(e.getMessage());
+        }
+
+        return Response.ok(info);
     }
 
     private boolean regenerate(String experimentInstanceId) {

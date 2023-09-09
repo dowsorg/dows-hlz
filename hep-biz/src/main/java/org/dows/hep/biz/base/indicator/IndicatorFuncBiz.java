@@ -227,8 +227,9 @@ public class IndicatorFuncBiz{
         if(indicatorCategoryEntity == null){
             return null;
         }
-        IndicatorFuncEntity indicatorFuncEntity = indicatorFuncService.lambdaQuery().eq(IndicatorFuncEntity::getAppId, appId)
-                .eq(IndicatorFuncEntity::getIndicatorCategoryId, indicatorCategoryEntity.getPid())
+        IndicatorFuncEntity indicatorFuncEntity = indicatorFuncService.lambdaQuery()
+                .eq(IndicatorFuncEntity::getPid, indicatorCategoryEntity.getPid())
+                .eq(IndicatorFuncEntity::getIndicatorCategoryId, indicatorCategoryEntity.getIndicatorCategoryId())
                 .eq(IndicatorFuncEntity::getName, indicatorCategoryEntity.getCategoryName())
                 .eq(IndicatorFuncEntity::getAppId, indicatorCategoryEntity.getAppId())
                 .oneOpt()
