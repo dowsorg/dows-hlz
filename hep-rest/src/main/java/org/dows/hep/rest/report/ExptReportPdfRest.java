@@ -332,6 +332,8 @@ public class ExptReportPdfRest {
         OssInfo info = null;
         try (InputStream is = file.getInputStream()) {
             info = ossHelper.upload(is, fileName, true);
+            String urlPath = ossHelper.getUrlPath(info);
+            info.setPath(urlPath);
         } catch (Exception e) {
             return Response.fail(e.getMessage());
         }
