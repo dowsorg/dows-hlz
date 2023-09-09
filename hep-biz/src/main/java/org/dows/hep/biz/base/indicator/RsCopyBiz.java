@@ -1756,7 +1756,7 @@ public class RsCopyBiz {
     experimentIndicatorInstanceRsService.saveOrUpdateBatch(experimentIndicatorInstanceRsEntityList);
     if(ConfigExperimentFlow.SWITCH2EvalCache){
         evalPersonBiz.initEvalPersonLog(experimentIndicatorValRsEntityList);
-        experimentIndicatorValRsService.saveOrUpdateBatch(experimentIndicatorValRsEntityList);
+        //experimentIndicatorValRsService.saveOrUpdateBatch(experimentIndicatorValRsEntityList);
     }else {
         experimentIndicatorValRsService.saveOrUpdateBatch(experimentIndicatorValRsEntityList);
     }
