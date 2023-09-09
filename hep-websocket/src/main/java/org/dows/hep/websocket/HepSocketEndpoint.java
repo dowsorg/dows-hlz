@@ -67,6 +67,9 @@ public class HepSocketEndpoint {
             // 确定收到具体用户的信息，处理业务逻辑
             //AccountInfo accountInfo = HepClientManager.getAccountInfo(nettySession.channel());
             msgId=messageBody.getMsgId();
+            if(null==msgId||msgId.isBlank()){
+                return;
+            }
             MsgScheduler.remove(messageBody.getMsgId());
         } catch (Exception e) {
             log.error(String.format( "HepSocketEndpoint.onMessage error. msg[%s] id[%s]", message,msgId),e);
