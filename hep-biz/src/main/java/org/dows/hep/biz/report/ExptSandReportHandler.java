@@ -162,7 +162,12 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
         ExptBaseInfoModel baseInfoVO = generateBaseInfoVO(findSoftProperties);
         ExptSandReportModel.GroupInfo groupInfo = generateGroupInfo(exptGroupId, exptData);
         ExptSandReportModel.ScoreInfo scoreInfo = generateScoreInfo(exptGroupId, exptData);
-        List<ExptSandReportModel.NpcData> npcDataList = generateNpcInfo(exptGroupId, exptData);
+        List<ExptSandReportModel.NpcData> npcDataList = new LinkedList<>();
+        try {
+             npcDataList = generateNpcInfo(exptGroupId, exptData);
+        } catch (Exception e) {
+            log.error(String.format("获取npc数据异常，异常为%s", e));
+        }
         List<List<ExptSandReportModel.KnowledgeAnswer>> periodQuestions = generatePeriodQuestionnaires(exptGroupId, exptData);
 
         return ExptSandReportModel.builder()
