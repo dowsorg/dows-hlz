@@ -13,7 +13,7 @@ pdf-server:
 spring:
   config:
     activate:
-      on-profile: sit
+      on-profile: test
 pdf-server:
   server-url: http://192.168.1.60:10004/pdf
   app-code: hep
@@ -23,7 +23,7 @@ pdf-server:
 spring:
   config:
     activate:
-      on-profile: uat
+      on-profile: staging
 pdf-server:
   server-url: http://192.168.1.60:10004/pdf
   app-code: hep
