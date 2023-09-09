@@ -39,7 +39,9 @@ import org.dows.hep.service.ExperimentGroupService;
 import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.hep.service.ExperimentRankingService;
-import org.dows.hep.vo.report.*;
+import org.dows.hep.vo.report.ExptGroupReportVO;
+import org.dows.hep.vo.report.ExptReportModel;
+import org.dows.hep.vo.report.ExptReportVO;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Component;
@@ -50,7 +52,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -182,37 +183,37 @@ public class ExptReportFacadeBiz {
         String exptZipFullName = exptZipName + exptZipSuffix;
 
         /*是否使用旧数据 不重新生成并且旧数据存在 --> 直接返回*/
-        String zipPath1 = reportRecordHelper.getReportOfExpt(exptInstanceId, ExptReportTypeEnum.EXPT_ZIP);
-        if (!regenerateZip && StrUtil.isNotBlank(zipPath1)) {
-            ExptReportVO exptReportVO = generatePdf(exptInstanceId, null, false);
-            exptReportVO.setZipName(exptZipFullName);
-            exptReportVO.setZipPath(zipPath1);
-            return exptReportVO;
-        }
+//        String zipPath1 = reportRecordHelper.getReportOfExpt(exptInstanceId, ExptReportTypeEnum.EXPT_ZIP);
+//        if (!regenerateZip && StrUtil.isNotBlank(zipPath1)) {
+//            ExptReportVO exptReportVO = generatePdf(exptInstanceId, null, false);
+//            exptReportVO.setZipName(exptZipFullName);
+//            exptReportVO.setZipPath(zipPath1);
+//            return exptReportVO;
+//        }
 
         RLock lock = redissonClient.getLock(RedisKeyConst.HEP_LOCK_REPORT + exptInstanceId);
         try {
             if (lock.tryLock(-1, 30, TimeUnit.SECONDS)) {
 
                 /*是否使用旧数据 不重新生成并且旧数据存在 --> 直接返回*/
-                String zipPath2 = reportRecordHelper.getReportOfExpt(exptInstanceId, ExptReportTypeEnum.EXPT_ZIP);
-                if (!regenerateZip && StrUtil.isNotBlank(zipPath2)) {
-                    ExptReportVO exptReportVO = generatePdf(exptInstanceId, null, false); // 此处可以确定，regenerate 一定为 false
-                    exptReportVO.setZipName(exptZipFullName);
-                    exptReportVO.setZipPath(zipPath2);
-                    return exptReportVO;
-                }
+//                String zipPath2 = reportRecordHelper.getReportOfExpt(exptInstanceId, ExptReportTypeEnum.EXPT_ZIP);
+//                if (!regenerateZip && StrUtil.isNotBlank(zipPath2)) {
+//                    ExptReportVO exptReportVO = generatePdf(exptInstanceId, null, false); // 此处可以确定，regenerate 一定为 false
+//                    exptReportVO.setZipName(exptZipFullName);
+//                    exptReportVO.setZipPath(zipPath2);
+//                    return exptReportVO;
+//                }
 
                 /*使用新数据*/
                 // 生成报告
                 ExptReportVO exptReportVO = generatePdf(exptInstanceId, null, regeneratePdf);
                 // 压缩并上传报告
-                Path uploadPath = Paths.get(exptInstanceId, exptZipFullName);
-                boolean zipRes = zip(exptInstanceId, exptReportVO, uploadPath, exptZipName, exptZipSuffix);
-                if (zipRes) {
-                    // 存档报告zip数据
-                    recordAsync(exptInstanceId, null, ExptReportTypeEnum.EXPT_ZIP, exptReportVO);
-                }
+//                Path uploadPath = Paths.get(exptInstanceId, exptZipFullName);
+//                boolean zipRes = zip(exptInstanceId, exptReportVO, uploadPath, exptZipName, exptZipSuffix);
+//                if (zipRes) {
+//                    // 存档报告zip数据
+//                    recordAsync(exptInstanceId, null, ExptReportTypeEnum.EXPT_ZIP, exptReportVO);
+//                }
 
                 return exptReportVO;
             } else {
@@ -253,13 +254,13 @@ public class ExptReportFacadeBiz {
         String groupZipFullName = groupZipName + groupZipSuffix;
 
         // 不重新生成并且旧数据存在 --> 直接返回
-        String zipPath1 = reportRecordHelper.getReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP_ZIP);
-        if (!regenerateZip && StrUtil.isNotBlank(zipPath1)) {
-            ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId, false);
-            exptReportVO.setZipName(groupZipName);
-            exptReportVO.setZipPath(zipPath1);
-            return exptReportVO;
-        }
+//        String zipPath1 = reportRecordHelper.getReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP_ZIP);
+//        if (!regenerateZip && StrUtil.isNotBlank(zipPath1)) {
+//            ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId, false);
+//            exptReportVO.setZipName(groupZipName);
+//            exptReportVO.setZipPath(zipPath1);
+//            return exptReportVO;
+//        }
 
         RLock lock = redissonClient.getLock(RedisKeyConst.HEP_LOCK_REPORT + exptGroupId);
         try {
@@ -267,24 +268,24 @@ public class ExptReportFacadeBiz {
 
                 /*1.使用旧数据*/
                 // 不重新生成并且旧数据存在 --> 直接返回
-                String zipPath2 = reportRecordHelper.getReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP_ZIP);
-                if (!regenerateZip && StrUtil.isNotBlank(zipPath2)) {
-                    ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId, false); // 此处可以确定，regenerate 一定为 false
-                    exptReportVO.setZipName(groupZipName);
-                    exptReportVO.setZipPath(zipPath2);
-                    return exptReportVO;
-                }
+//                String zipPath2 = reportRecordHelper.getReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP_ZIP);
+//                if (!regenerateZip && StrUtil.isNotBlank(zipPath2)) {
+//                    ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId, false); // 此处可以确定，regenerate 一定为 false
+//                    exptReportVO.setZipName(groupZipName);
+//                    exptReportVO.setZipPath(zipPath2);
+//                    return exptReportVO;
+//                }
 
                 /*2.使用新数据*/
                 // 生成报告
                 ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId, regeneratePdf);
                 // 压缩并上传报告
-                Path uploadPath = Paths.get(exptInstanceId, groupZipFullName);
-                boolean zipRes = zip(exptInstanceId, exptReportVO, uploadPath, groupZipName, groupZipSuffix);
-                if (zipRes) {
-                    // 存档报告zip数据
-                    recordAsync(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP_ZIP, exptReportVO);
-                }
+//                Path uploadPath = Paths.get(exptInstanceId, groupZipFullName);
+//                boolean zipRes = zip(exptInstanceId, exptReportVO, uploadPath, groupZipName, groupZipSuffix);
+//                if (zipRes) {
+//                    // 存档报告zip数据
+//                    recordAsync(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP_ZIP, exptReportVO);
+//                }
 
                 return exptReportVO;
             } else {
