@@ -217,21 +217,21 @@ public class IndicatorFuncBiz{
      * @param indicatorCategoryId
      * @return
      */
-    public IndicatorFuncResponse getFuncTip(String appId,String indicatorCategoryId){
+    public IndicatorFuncResponse getFuncTip(String appId,String indicatorCategoryId,String indicatorFuncName){
 
-        IndicatorCategoryEntity indicatorCategoryEntity = indicatorCategoryService.lambdaQuery()
+       /* IndicatorCategoryEntity indicatorCategoryEntity = indicatorCategoryService.lambdaQuery()
                 .eq(IndicatorCategoryEntity::getIndicatorCategoryId, indicatorCategoryId)
                 .eq(IndicatorCategoryEntity::getAppId, appId)
                 .oneOpt()
                 .orElse(null);
         if(indicatorCategoryEntity == null){
             return null;
-        }
+        }*/
         IndicatorFuncEntity indicatorFuncEntity = indicatorFuncService.lambdaQuery()
-                .eq(IndicatorFuncEntity::getPid, indicatorCategoryEntity.getPid())
-                .eq(IndicatorFuncEntity::getIndicatorCategoryId, indicatorCategoryEntity.getIndicatorCategoryId())
-                .eq(IndicatorFuncEntity::getName, indicatorCategoryEntity.getCategoryName())
-                .eq(IndicatorFuncEntity::getAppId, indicatorCategoryEntity.getAppId())
+                //.eq(IndicatorFuncEntity::getPid, indicatorCategoryEntity.getPid())
+                .eq(IndicatorFuncEntity::getIndicatorCategoryId, indicatorCategoryId)
+                .eq(IndicatorFuncEntity::getName, indicatorFuncName)
+                //.eq(IndicatorFuncEntity::getAppId, indicatorCategoryEntity.getAppId())
                 .oneOpt()
                 .orElse(null);
         if(null == indicatorFuncEntity){

@@ -23,7 +23,19 @@ public class PdfServerProperties {
     @JsonProperty("app-code")
     private String appCode;
 
+    // 环境
+    private String env;
+
     // 前端页面地址
-    @JsonProperty("view-url")
-    private String viewUrl;
+    @JsonProperty("sand-group-view-url")
+    private String sandGroupViewUrl;
+
+    @JsonProperty("sand-expt-view-url")
+    private String sandExptViewUrl;
+
+    @JsonProperty("scheme-group-view-url")
+    private String schemeGroupViewUrl;
+
+    @JsonProperty("scheme-expt-view-url")
+    private String schemeExptViewUrl;
 }

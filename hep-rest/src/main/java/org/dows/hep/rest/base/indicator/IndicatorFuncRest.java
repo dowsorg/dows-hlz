@@ -48,8 +48,9 @@ public class IndicatorFuncRest {
     @GetMapping("v1/baseIndicator/indicatorFunc/getFuncTip")
     public IndicatorFuncResponse getFuncTip(
             @RequestParam @Validated String appId,
-            @RequestParam @Validated String indicatorCategoryId) {
-        return indicatorFuncBiz.getFuncTip(appId, indicatorCategoryId);
+            @RequestParam @Validated String indicatorCategoryId,
+            @RequestParam @Validated String indicatorFuncName) {
+        return indicatorFuncBiz.getFuncTip(appId, indicatorCategoryId,indicatorFuncName);
     }
 
 

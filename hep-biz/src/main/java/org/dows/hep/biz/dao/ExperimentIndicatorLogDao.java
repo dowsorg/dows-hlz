@@ -5,6 +5,8 @@ import org.dows.hep.entity.ExperimentIndicatorLogEntity;
 import org.dows.hep.service.ExperimentIndicatorLogService;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /**
  * @author : wuzl
  * @date : 2023/9/6 14:30
@@ -34,5 +36,16 @@ public class ExperimentIndicatorLogDao extends BaseDao<ExperimentIndicatorLogSer
     @Override
     protected SFunction<Integer, ?> setColState(ExperimentIndicatorLogEntity item) {
         return null;
+    }
+
+    public List<ExperimentIndicatorLogEntity> getDocIndicatorsByPersonId(String experimentPersonId,
+                                                                         SFunction<ExperimentIndicatorLogEntity,?>... cols){
+        return service.lambdaQuery()
+                .eq(ExperimentIndicatorLogEntity::getExperimentPersonId, experimentPersonId)
+                .gt(ExperimentIndicatorLogEntity::getDocType, 0)
+                .orderByAsc(ExperimentIndicatorLogEntity::getExperimentIndicatorId,
+                        ExperimentIndicatorLogEntity::getEvalDay)
+                .select(cols)
+                .list();
     }
 }

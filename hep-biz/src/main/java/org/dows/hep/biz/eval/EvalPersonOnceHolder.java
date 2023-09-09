@@ -117,6 +117,19 @@ public class EvalPersonOnceHolder {
                 .collect(Collectors.toList());
 
     }
+
+    public List<EvalIndicatorValues> getWatchIndicators(EvalPersonOnceData data){
+        if(null==data){
+            return null;
+        }
+        Set<String> watchedIds=PersonIndicatorIdCache.Instance().getWatchIndicatos(cacheKey.getExperimentPersonId());
+
+        return data.getMapIndicators().values()
+                .stream()
+                .filter(i->watchedIds.contains(i.getIndicatorId())
+                        ||Optional.ofNullable(i.getEvalNo()).orElse(0)>=data.getHeader().getEvalNo())
+                .collect(Collectors.toList());
+    }
     //endregion
 
     //region put
@@ -324,29 +337,29 @@ public class EvalPersonOnceHolder {
                 .setIndicatorContent(JacksonUtil.toJsonSilence(data.getMapIndicators().values(), true))
                 .setHealthIndexContent(JacksonUtil.toJsonSilence(data.getEvalRisks(), true));
 
-        final Integer evalNo=data.getHeader().getEvalNo();
-        List<EvalIndicatorValues> changed=data.getMapIndicators().values()
-                .stream()
-                .filter(i->evalNo.equals(i.getEvalNo()))
-                .collect(Collectors.toList());
+
+        List<EvalIndicatorValues> watched=getWatchIndicators(data);
         final PersonIndicatorIdCache cacheIndicator=PersonIndicatorIdCache.Instance();
-        List<ExperimentIndicatorLogEntity> logIndicators = ShareUtil.XCollection.map(changed, item ->
-                ExperimentIndicatorLogEntity.builder()
-                        .experimentInstanceId(cacheKey.getExperimentInstanceId())
-                        .experimentPersonId(cacheKey.getExperimentPersonId())
-                        .experimentIndicatorId(item.getIndicatorId())
-                        .experimentIndicatorName(item.getIndicatorName())
-                        .evalNo(cacheKey.getEvalNo())
-                        .evalDay(data.getHeader().getEvalDay())
-                        .evalTime(data.getHeader().getEvaledTime())
-                        .unit(Optional.ofNullable( cacheIndicator.getIndicatorById(cacheKey.getExperimentPersonId(), item.getIndicatorId()))
-                                .map(ExperimentIndicatorInstanceRsEntity::getUnit)
-                                .orElse(""))
-                        .curVal(item.getCurVal())
-                        .lastVal(item.getLastVal())
-                        .periodInitVal(item.getPeriodInitVal())
-                        .changeVal(item.getChangingVal())
-                        .build());
+        List<ExperimentIndicatorLogEntity> logIndicators = ShareUtil.XCollection.map(watched, item -> {
+            ExperimentIndicatorLogEntity log = ExperimentIndicatorLogEntity.builder()
+                    .experimentInstanceId(cacheKey.getExperimentInstanceId())
+                    .experimentPersonId(cacheKey.getExperimentPersonId())
+                    .experimentIndicatorId(item.getIndicatorId())
+                    .experimentIndicatorName(item.getIndicatorName())
+                    .evalNo(cacheKey.getEvalNo())
+                    .evalDay(data.getHeader().getEvalDay())
+                    .evalTime(data.getHeader().getEvaledTime())
+                    .curVal(item.getCurVal())
+                    .lastVal(item.getLastVal())
+                    .periodInitVal(item.getPeriodInitVal())
+                    .changeVal(item.getChangingVal())
+                    .build();
+            Optional.ofNullable(cacheIndicator.getIndicatorById(cacheKey.getExperimentPersonId(), item.getIndicatorId()))
+                    .ifPresent(i -> log.setUnit(i.getUnit())
+                            .setDocType(i.getDocType().getCode())
+                            .setSycType(i.getType()));
+            return log;
+        });
 
         return new EvalPersonToSavePack()
                 .setHeader(data.getHeader())

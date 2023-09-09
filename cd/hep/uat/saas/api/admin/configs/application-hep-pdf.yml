@@ -5,9 +5,13 @@ spring:
     activate:
       on-profile: dev
 pdf-server:
-  server-url: http://192.168.1.60:10004/pdf
+  server-url: http://192.168.1.60:8801/pdf
   app-code: hep
-  view-url: http://192.168.1.60:1801/report_view/group/
+  env: dev
+  scheme-expt-view-url: http://192.168.1.60:1801/report_view/group/
+  scheme-group-view-url: http://192.168.1.60:1801/report_view/group/
+  sand-expt-view-url: http://192.168.1.60:1801/report_view/summary/
+  sand-group-view-url: http://192.168.1.60:1801/report_view/group/
 ---
 #测试环境
 spring:
@@ -15,9 +19,13 @@ spring:
     activate:
       on-profile: sit
 pdf-server:
-  server-url: http://192.168.1.60:10004/pdf
+  server-url: http://192.168.1.60:8001/pdf
   app-code: hep
-  view-url: http://192.168.1.60:1801/report_view/group/
+  env: sit
+  scheme-expt-view-url: http://192.168.1.60:1801/report_view/group/
+  scheme-group-view-url: http://192.168.1.60:1801/report_view/group/
+  sand-expt-view-url: http://192.168.1.60:1801/report_view/summary/
+  sand-group-view-url: http://192.168.1.60:1801/report_view/group/
 ---
 #预发布环境
 spring:
@@ -25,9 +33,13 @@ spring:
     activate:
       on-profile: uat
 pdf-server:
-  server-url: http://192.168.1.60:10004/pdf
+  server-url: http://192.168.1.60:8001/pdf
   app-code: hep
-  view-url: http://192.168.1.60:1801/report_view/group/
+  env: uat
+  scheme-expt-view-url: http://192.168.1.60:1801/report_view/group/
+  scheme-group-view-url: http://192.168.1.60:1801/report_view/group/
+  sand-expt-view-url: http://192.168.1.60:1801/report_view/summary/
+  sand-group-view-url: http://192.168.1.60:1801/report_view/group/
 ---
 #产品环境
 spring:
@@ -35,6 +47,10 @@ spring:
     activate:
       on-profile: prd
 pdf-server:
-  server-url: http://192.168.1.60:10004/pdf
+  server-url: http://192.168.1.60:8001/pdf
   app-code: hep
-  view-url: http://192.168.1.60:1801/report_view/group/
+  env: prd
+  scheme-expt-view-url: http://192.168.1.60:1801/report_view/group/
+  scheme-group-view-url: http://192.168.1.60:1801/report_view/group/
+  sand-expt-view-url: http://192.168.1.60:1801/report_view/summary/
+  sand-group-view-url: http://192.168.1.60:1801/report_view/group/

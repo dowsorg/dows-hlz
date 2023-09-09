@@ -25,7 +25,7 @@ import java.util.Map;
 @Component
 @Getter
 @RequiredArgsConstructor
-public class ReportPdfHelper2 {
+public class SandReportPdfHelper {
 
     private final ReportOSSHelper ossHelper;
     private final PdfServerProperties pdfServerProperties;
@@ -40,7 +40,14 @@ public class ReportPdfHelper2 {
         // 获取转换后的文件
         String serverUrl = pdfServerProperties.getServerUrl();
         String appCode = pdfServerProperties.getAppCode();
-        String viewUrl = pdfServerProperties.getViewUrl();
+        String env = pdfServerProperties.getEnv();
+        String viewUrl = "";
+        if (StrUtil.isNotBlank(exptGroupId)) {
+            viewUrl = pdfServerProperties.getSandGroupViewUrl();
+        } else {
+            viewUrl = pdfServerProperties.getSandExptViewUrl();
+        }
+
         if (StrUtil.isNotBlank(exptInstanceId)) {
             viewUrl += exptInstanceId + "/";
         }
@@ -51,6 +58,7 @@ public class ReportPdfHelper2 {
         param.put("fun", "save");
         param.put("appCode", appCode);
         param.put("url", viewUrl);
+        param.put("env", env);
         String resultStr = HttpUtil.get(serverUrl, param);
         if (StrUtil.isBlank(resultStr)) {
             return result;

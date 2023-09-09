@@ -36,7 +36,7 @@ import java.util.Map;
 @Component
 @Getter
 @RequiredArgsConstructor
-public class ReportPdfHelper {
+public class SchemeReportPdfHelper {
     private final FreeMarkerConfig freeMarkerConfig;
     private final ReportOSSHelper ossHelper;
 
