@@ -201,10 +201,14 @@ public class EvalPersonOnceHolder {
         final EvalPersonOnceData.Header header = data.getHeader();
         String hpId = PersonIndicatorIdCache.Instance().getSysIndicatorId(cacheKey.getExperimentPersonId(), EnumIndicatorType.HEALTH_POINT);
         String moneyId = PersonIndicatorIdCache.Instance().getSysIndicatorId(cacheKey.getExperimentPersonId(), EnumIndicatorType.MONEY);
-        Optional.ofNullable(data.getMapIndicators().get(hpId))
-                .ifPresent(i -> header.setHealthIndex(i.getCurVal()));
-        Optional.ofNullable(data.getMapIndicators().get(moneyId))
-                .ifPresent(i -> header.setMoney(i.getCurVal()));
+        if(ShareUtil.XObject.notEmpty(hpId)) {
+            Optional.ofNullable(data.getMapIndicators().get(hpId))
+                    .ifPresent(i -> header.setHealthIndex(i.getCurVal()));
+        }
+        if(ShareUtil.XObject.notEmpty(moneyId)) {
+            Optional.ofNullable(data.getMapIndicators().get(moneyId))
+                    .ifPresent(i -> header.setMoney(i.getCurVal()));
+        }
         header.setEvaledTime(new Date());
         saveToRD(header);
         return true;
