@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dows.hep.api.enums.EnumEvalFuncType;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -29,7 +30,11 @@ public class ExperimentRsCalculateAndCreateReportHealthScoreRequestRs implements
   @Schema(title = "实验人物Id")
   private Set<String> experimentPersonIds;
 
-  @Schema(title = "是否保存风险模型计算")
-  private boolean saveRisk=true;
+
+
+  @Schema(title = "功能点类型")
+  private EnumEvalFuncType funcType;
+
+
 
 }

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dows.hep.api.enums.EnumEvalFuncType;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -28,4 +29,7 @@ public class RsCalculatePersonRequestRs implements Serializable {
 
   @Schema(title = "人物id")
   private Set<String> personIdSet;
+
+  @Schema(title = "功能点类型")
+  private EnumEvalFuncType funcType;
 }

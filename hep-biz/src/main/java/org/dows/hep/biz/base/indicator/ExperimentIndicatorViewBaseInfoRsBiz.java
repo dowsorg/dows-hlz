@@ -3,8 +3,10 @@ package org.dows.hep.biz.base.indicator;
 import cn.hutool.core.util.StrUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.base.indicator.request.GetIndicatorBaseInfo;
 import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.enums.EnumESC;
+import org.dows.hep.api.enums.EnumIndicatorCategory;
 import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.api.exception.ExperimentIndicatorViewBaseInfoRsException;
 import org.dows.hep.entity.*;
@@ -29,6 +31,46 @@ public class ExperimentIndicatorViewBaseInfoRsBiz {
   private final ExperimentIndicatorViewBaseInfoSingleRsService experimentIndicatorViewBaseInfoSingleRsService;
   private final ExperimentIndicatorInstanceRsService experimentIndicatorInstanceRsService;
   private final RsExperimentIndicatorValBiz rsExperimentIndicatorValBiz;
+
+  private final IndicatorFuncService indicatorFuncService;
+
+  private final IndicatorViewBaseInfoService indicatorViewBaseInfoService;
+
+  public ExperimentIndicatorViewBaseInfoRsResponse getBaseInfo(GetIndicatorBaseInfo getIndicatorBaseInfo) throws ExecutionException, InterruptedException {
+    IndicatorFuncEntity indicatorFuncEntity = indicatorFuncService.lambdaQuery()
+            .eq(IndicatorFuncEntity::getIndicatorCategoryId, EnumIndicatorCategory.VIEW_MANAGEMENT_BASE_INFO.getCode())
+            .eq(IndicatorFuncEntity::getSeq,2)
+            //.eq(IndicatorFuncEntity::getAppId, getIndicatorBaseInfo.getAppId()))
+            .oneOpt()
+            .orElse(null);
+    if(indicatorFuncEntity == null){
+      return null;
+    }
+    IndicatorViewBaseInfoEntity indicatorViewBaseInfoEntity = indicatorViewBaseInfoService.lambdaQuery()
+            //.eq(IndicatorViewBaseInfoEntity::getAppId, appId)
+            .eq(IndicatorViewBaseInfoEntity::getIndicatorFuncId, indicatorFuncEntity.getIndicatorFuncId())
+            .oneOpt()
+            .orElse(null);
+    if(indicatorViewBaseInfoEntity == null){
+      return null;
+    }
+    ExperimentIndicatorViewBaseInfoRsEntity experimentIndicatorViewBaseInfoRsEntity = experimentIndicatorViewBaseInfoRsService.lambdaQuery()
+            .eq(ExperimentIndicatorViewBaseInfoRsEntity::getIndicatorViewBaseInfoId, indicatorViewBaseInfoEntity.getIndicatorViewBaseInfoId())
+            //.eq(ExperimentIndicatorViewBaseInfoRsEntity::getAppId, appId)
+            .eq(ExperimentIndicatorViewBaseInfoRsEntity::getExperimentId, getIndicatorBaseInfo.getExperimentId())
+            .oneOpt()
+            .orElse(null);
+    if(experimentIndicatorViewBaseInfoRsEntity == null){
+      return null;
+    }
+
+    String experimentIndicatorViewBaseInfoId = experimentIndicatorViewBaseInfoRsEntity.getExperimentIndicatorViewBaseInfoId();
+      ExperimentIndicatorViewBaseInfoRsResponse experimentIndicatorViewBaseInfoRsResponse =
+              get(null, experimentIndicatorViewBaseInfoId, getIndicatorBaseInfo.getExperimentPersonId(), getIndicatorBaseInfo.getPeriods());
+      return experimentIndicatorViewBaseInfoRsResponse;
+
+  }
+
 
   public ExperimentIndicatorViewBaseInfoRsResponse get(String experimentId,String experimentIndicatorViewBaseInfoId, String experimentPersonId, Integer periods) throws ExecutionException, InterruptedException {
 //    String experimentId = null;
@@ -64,8 +106,7 @@ public class ExperimentIndicatorViewBaseInfoRsBiz {
       Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = new HashMap<>();
       CompletableFuture<Void> cfPopulateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = CompletableFuture.runAsync(() -> {
         rsExperimentIndicatorValBiz.populateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(
-            kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap, experimentPersonId, periods
-        );
+            kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap, experimentPersonId, periods);
       });
       cfPopulateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get();
 

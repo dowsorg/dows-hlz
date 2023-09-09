@@ -6,17 +6,20 @@ import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.ExperimentMonitorFollowupCheckRequestRs;
 import org.dows.hep.api.base.indicator.request.RsExperimentCalculateFuncRequest;
 import org.dows.hep.api.base.indicator.response.*;
+import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.core.ExptOrgFuncRequest;
 import org.dows.hep.api.enums.EnumESC;
+import org.dows.hep.api.enums.EnumEvalFuncType;
 import org.dows.hep.api.enums.EnumExperimentOrgReportFlag;
 import org.dows.hep.api.enums.EnumString;
-import org.dows.hep.api.event.FollowupEvent;
 import org.dows.hep.api.exception.ExperimentIndicatorViewBaseInfoRsException;
 import org.dows.hep.api.exception.ExperimentIndicatorViewMonitorFollowupReportRsException;
 import org.dows.hep.api.user.experiment.response.ExptOrgFlowReportResponse;
 import org.dows.hep.api.user.experiment.vo.ExptOrgReportNodeDataVO;
 import org.dows.hep.api.user.experiment.vo.ExptOrgReportNodeVO;
 import org.dows.hep.biz.dao.OperateFlowDao;
+import org.dows.hep.biz.eval.EvalPersonBiz;
+import org.dows.hep.biz.eval.QueryPersonBiz;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.util.*;
 import org.dows.hep.biz.vo.LoginContextVO;
@@ -53,6 +56,10 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
     private final ExperimentOrgModuleBiz experimentOrgModuleBiz;
 
     private final OperateFlowDao operateFlowDao;
+
+    private final EvalPersonBiz evalPersonBiz;
+
+    private final QueryPersonBiz queryPersonBiz;
 
     public static ExperimentIndicatorViewMonitorFollowupPlanRsResponse experimentIndicatorViewMonitorFollowupPlanRs2Response(ExperimentIndicatorViewMonitorFollowupPlanRsEntity experimentIndicatorViewMonitorFollowupPlanRsEntity) {
         if (Objects.isNull(experimentIndicatorViewMonitorFollowupPlanRsEntity)) {
@@ -132,16 +139,28 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
             /**
              * todo 解耦，根据随访计划启动定时调度
              */
-            applicationContext.publishEvent(new FollowupEvent(experimentMonitorFollowupCheckRequestRs));
+            //applicationContext.publishEvent(new FollowupEvent(experimentMonitorFollowupCheckRequestRs));
         }
         /* runsix:监测随访是一个触发计算时间点 */
-        rsExperimentCalculateBiz.experimentReCalculateFunc(RsExperimentCalculateFuncRequest
-                .builder()
-                .appId(appId)
-                .experimentId(experimentId)
-                .periods(periods)
-                .experimentPersonId(experimentPersonId)
-                .build());
+        if(ConfigExperimentFlow.SWITCH2EvalCache) {
+
+            evalPersonBiz.evalOrgFunc(RsExperimentCalculateFuncRequest.builder()
+                    .appId(appId)
+                    .experimentId(experimentId)
+                    .periods(periods)
+                    .experimentPersonId(experimentPersonId)
+                    .funcType(EnumEvalFuncType.FUNCFollowup)
+                    .build());
+        }
+        else {
+            rsExperimentCalculateBiz.experimentReCalculateFunc(RsExperimentCalculateFuncRequest
+                    .builder()
+                    .appId(appId)
+                    .experimentId(experimentId)
+                    .periods(periods)
+                    .experimentPersonId(experimentPersonId)
+                    .build());
+        }
 
         ExperimentIndicatorViewMonitorFollowupRsEntity experimentIndicatorViewMonitorFollowupRsEntity = experimentIndicatorViewMonitorFollowupRsService.lambdaQuery()
                 .eq(ExperimentIndicatorViewMonitorFollowupRsEntity::getExperimentIndicatorViewMonitorFollowupId, indicatorViewMonitorFollowupId)
@@ -185,13 +204,14 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
                             experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId(), experimentIndicatorInstanceRsEntity);
                 });
         if (!experimentIndicatorInstanceIdSet.isEmpty()) {
-            experimentIndicatorValRsService.lambdaQuery()
+            queryPersonBiz.fillIndicatorValMap(kExperimentIndicatorInstanceIdVValMap,periods,experimentPersonId, experimentIndicatorInstanceIdSet);
+           /* experimentIndicatorValRsService.lambdaQuery()
                     .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
                     .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
                     .list()
                     .forEach(experimentIndicatorValRsEntity -> {
                         kExperimentIndicatorInstanceIdVValMap.put(experimentIndicatorValRsEntity.getIndicatorInstanceId(), experimentIndicatorValRsEntity.getCurrentVal());
-                    });
+                    });*/
         }
         String indicatorCurrentValArray = null;
         List<String> indicatorCurrentValArrayList = new ArrayList<>();
@@ -334,13 +354,14 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
                             experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId(), experimentIndicatorInstanceRsEntity);
                 });
         if (!experimentIndicatorInstanceIdSet.isEmpty()) {
-            experimentIndicatorValRsService.lambdaQuery()
+            queryPersonBiz.fillIndicatorValMap(kExperimentIndicatorInstanceIdVValMap,periods,experimentPersonId,experimentIndicatorInstanceIdSet);
+          /*  experimentIndicatorValRsService.lambdaQuery()
                     .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
                     .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
                     .list()
                     .forEach(experimentIndicatorValRsEntity -> {
                         kExperimentIndicatorInstanceIdVValMap.put(experimentIndicatorValRsEntity.getIndicatorInstanceId(), experimentIndicatorValRsEntity.getCurrentVal());
-                    });
+                    });*/
         }
         experimentIndicatorViewMonitorFollowupRsService.lambdaQuery()
                 .eq(ExperimentIndicatorViewMonitorFollowupRsEntity::getIndicatorFuncId, indicatorFuncId)

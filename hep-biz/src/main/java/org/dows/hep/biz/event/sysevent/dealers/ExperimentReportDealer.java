@@ -9,6 +9,7 @@ import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentSettingCollection;
 import org.dows.hep.biz.event.sysevent.BaseEventDealer;
 import org.dows.hep.biz.event.sysevent.data.*;
+import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentSysEventEntity;
@@ -31,6 +32,8 @@ public class ExperimentReportDealer extends BaseEventDealer {
     private final ExperimentTimerBiz experimentTimerBiz;
 
     private final ExperimentTimerDao experimentTimerDao;
+
+    private final ExperimentScoringBiz experimentScoringBiz;
 
     @Override
     protected boolean coreDeal(EventDealResult rst, SysEventRow row, SysEventRunStat stat) {
@@ -62,6 +65,7 @@ public class ExperimentReportDealer extends BaseEventDealer {
             rst.append("failUpdateExptState[%s]",experimentInstanceId);
             return false;
         }
+        experimentScoringBiz.getRank(experimentInstanceId);
         return true;
 
     }

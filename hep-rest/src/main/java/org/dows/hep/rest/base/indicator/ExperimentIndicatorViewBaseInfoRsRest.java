@@ -35,6 +35,6 @@ public class ExperimentIndicatorViewBaseInfoRsRest {
   @Operation(summary = "获取人物基本信息")
   @GetMapping("v1/userExperiment/getBaseInfo")
   public ExperimentIndicatorViewBaseInfoRsResponse baseInfo(GetIndicatorBaseInfo getIndicatorBaseInfo) throws ExecutionException, InterruptedException {
-    return experimentIndicatorViewBaseInfoRsBiz.get(getIndicatorBaseInfo.getExperimentId(),null, getIndicatorBaseInfo.getExperimentPersonId(), getIndicatorBaseInfo.getPeriods());
+    return experimentIndicatorViewBaseInfoRsBiz.getBaseInfo(getIndicatorBaseInfo);
   }
 }

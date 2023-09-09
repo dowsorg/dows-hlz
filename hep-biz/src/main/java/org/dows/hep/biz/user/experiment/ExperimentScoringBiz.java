@@ -3,6 +3,7 @@ package org.dows.hep.biz.user.experiment;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.annotation.CalcCode;
@@ -10,6 +11,7 @@ import org.dows.hep.api.base.indicator.request.RsCalculateCompetitiveScoreReques
 import org.dows.hep.api.base.indicator.request.RsCalculateMoneyScoreRequestRs;
 import org.dows.hep.api.base.indicator.request.RsInitMoneyRequest;
 import org.dows.hep.api.base.indicator.response.*;
+import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.enums.EnumCalcCode;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.enums.EnumIndicatorType;
@@ -18,6 +20,10 @@ import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
 import org.dows.hep.biz.base.indicator.ExperimentIndicatorInstanceRsBiz;
 import org.dows.hep.biz.base.indicator.RsUtilBiz;
+import org.dows.hep.biz.eval.EvalCompetitiveScoreBiz;
+import org.dows.hep.biz.event.ExperimentSettingCache;
+import org.dows.hep.biz.event.data.ExperimentCacheKey;
+import org.dows.hep.biz.event.data.ExperimentSettingCollection;
 import org.dows.hep.biz.operate.OperateCostBiz;
 import org.dows.hep.biz.util.BigDecimalOptional;
 import org.dows.hep.biz.util.BigDecimalUtil;
@@ -71,6 +77,8 @@ public class ExperimentScoringBiz {
     private final OperateCostBiz operateCostBiz;
     private final OperateCostService operateCostService;
 
+    private final EvalCompetitiveScoreBiz evalCompetitiveScoreBiz;
+
     private BigDecimal getWeightTotalScore(
             BigDecimal knowledgeWeight, BigDecimal knowledgeScore,
             BigDecimal healthIndexWeight, BigDecimal healthIndexScore,
@@ -101,6 +109,10 @@ public class ExperimentScoringBiz {
     }
 
     public RsCalculateCompetitiveScoreRsResponse rsCalculateCompetitiveScore(RsCalculateCompetitiveScoreRequestRs rsCalculateCompetitiveScoreRequestRs) {
+        if(ConfigExperimentFlow.SWITCH2EvalCache){
+            return evalCompetitiveScoreBiz.evalCompetitiveScore(rsCalculateCompetitiveScoreRequestRs);
+        }
+
         List<GroupCompetitiveScoreRsResponse> groupCompetitiveScoreRsResponseList = new ArrayList<>();
         String experimentId = rsCalculateCompetitiveScoreRequestRs.getExperimentId();
         Integer periods = rsCalculateCompetitiveScoreRequestRs.getPeriods();
@@ -300,26 +312,29 @@ public class ExperimentScoringBiz {
     }
 
 
+    @SneakyThrows
     @Transactional(rollbackFor = Exception.class)
-    public void saveOrUpd(String experimentInstanceId, Integer periods) throws ExecutionException, InterruptedException {
+    public void saveOrUpd(String experimentInstanceId, Integer periods)  {
         List<ExperimentGroupEntity> experimentGroupEntityList = new ArrayList<>();
         experimentGroupEntityList.addAll(experimentGroupService.lambdaQuery()
             .eq(ExperimentGroupEntity::getExperimentInstanceId, experimentInstanceId)
             .list());
 
         AtomicInteger scoringCountAtomicInteger = new AtomicInteger(1);
+
         experimentScoringService.lambdaQuery()
             .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentInstanceId)
             .eq(ExperimentScoringEntity::getPeriods, periods)
-            .list()
-            .stream()
-            .map(ExperimentScoringEntity::getScoringCount)
-            .max(Integer::compareTo)
-            .ifPresent(a -> scoringCountAtomicInteger.set(a + 1));
+            .orderByDesc(ExperimentScoringEntity::getScoringCount)
+            .select(ExperimentScoringEntity::getScoringCount)
+            .last("limit 1")
+            .oneOpt()
+            .ifPresent(i->scoringCountAtomicInteger.set(i.getScoringCount() + 1));
 
 
 
-        AtomicReference<Float> knowledgeWeightAtomicReference = new AtomicReference<>(0F);
+
+        /*AtomicReference<Float> knowledgeWeightAtomicReference = new AtomicReference<>(0F);
         AtomicReference<Float> healthIndexWeightAtomicReference = new AtomicReference<>(0F);
         AtomicReference<Float> medicalRatioWeightAtomicReference = new AtomicReference<>(0F);
         experimentSettingService.lambdaQuery()
@@ -331,7 +346,17 @@ public class ExperimentScoringBiz {
                 knowledgeWeightAtomicReference.set(sandSetting.getKnowledgeWeight());
                 healthIndexWeightAtomicReference.set(sandSetting.getHealthIndexWeight());
                 medicalRatioWeightAtomicReference.set(sandSetting.getMedicalRatioWeight());
-            });
+            });*/
+
+        AtomicReference<BigDecimal> knowledgeWeightAtomicReference = new AtomicReference<>(BigDecimal.ZERO);
+        AtomicReference<BigDecimal> healthIndexWeightAtomicReference = new AtomicReference<>(BigDecimal.ZERO);
+        AtomicReference<BigDecimal> medicalRatioWeightAtomicReference = new AtomicReference<>(BigDecimal.ZERO);
+        ExperimentSettingCollection exptColl=ExperimentSettingCache.Instance().getSet(ExperimentCacheKey.create("3",experimentInstanceId), false);
+        Optional.ofNullable(exptColl).ifPresent(i->{
+            knowledgeWeightAtomicReference.set(i.getKnowledgeWeight());
+            healthIndexWeightAtomicReference.set(i.getHealthIndexWeight());
+            medicalRatioWeightAtomicReference.set(i.getMedicalRatioWeight());
+        });
 
         Map<String, BigDecimal> questionnaireScoreMap = new HashMap<>();
         questionnaireScoreMap.putAll(experimentQuestionnaireScoreBiz.listExptQuestionnaireScore(experimentInstanceId, periods));
@@ -385,9 +410,9 @@ public class ExperimentScoringBiz {
                 groupIdVGroupMoneyScoreBigDecimal = BigDecimal.ZERO;
             }
             BigDecimal totalScoreBigDecimal = getWeightTotalScore(
-                BigDecimal.valueOf(knowledgeWeightAtomicReference.get()), questionnaireScoreBigDecimal,
-                BigDecimal.valueOf(healthIndexWeightAtomicReference.get()), groupCompetitiveScoreBigDecimal,
-                BigDecimal.valueOf(medicalRatioWeightAtomicReference.get()), groupIdVGroupMoneyScoreBigDecimal
+                    knowledgeWeightAtomicReference.get(), questionnaireScoreBigDecimal,
+                    healthIndexWeightAtomicReference.get(), groupCompetitiveScoreBigDecimal,
+                    medicalRatioWeightAtomicReference.get(), groupIdVGroupMoneyScoreBigDecimal
             );
             experimentScoringEntityList.add(ExperimentScoringEntity
                 .builder()
@@ -871,11 +896,20 @@ public class ExperimentScoringBiz {
                 .stream()
                 .collect(Collectors.toMap(ExperimentGroupEntity::getExperimentGroupId, a -> a));
 
-        AtomicReference<Float> knowledgeWeightAtomicReference = new AtomicReference<>(0F);
+       /* AtomicReference<Float> knowledgeWeightAtomicReference = new AtomicReference<>(0F);
         AtomicReference<Float> healthIndexWeightAtomicReference = new AtomicReference<>(0F);
         AtomicReference<Float> medicalRatioWeightAtomicReference = new AtomicReference<>(0F);
         CompletableFuture<Void> populateWeightCF = getPopulateWeightCF(knowledgeWeightAtomicReference, healthIndexWeightAtomicReference, medicalRatioWeightAtomicReference, experimentId);
-        populateWeightCF.get();
+        populateWeightCF.get();*/
+        AtomicReference<BigDecimal> knowledgeWeightAtomicReference = new AtomicReference<>(BigDecimal.ZERO);
+        AtomicReference<BigDecimal> healthIndexWeightAtomicReference = new AtomicReference<>(BigDecimal.ZERO);
+        AtomicReference<BigDecimal> medicalRatioWeightAtomicReference = new AtomicReference<>(BigDecimal.ZERO);
+        ExperimentSettingCollection exptColl=ExperimentSettingCache.Instance().getSet(ExperimentCacheKey.create("3",experimentId), false);
+        Optional.ofNullable(exptColl).ifPresent(i->{
+            knowledgeWeightAtomicReference.set(i.getKnowledgeWeight());
+            healthIndexWeightAtomicReference.set(i.getHealthIndexWeight());
+            medicalRatioWeightAtomicReference.set(i.getMedicalRatioWeight());
+        });
 
         Map<String, ExperimentScoringEntity> kExperimentGroupIdVExperimentScoringEntityMap = new HashMap<>();
         experimentScoringService.lambdaQuery()
@@ -909,11 +943,11 @@ public class ExperimentScoringBiz {
             if (Objects.nonNull(experimentScoringEntity)) {
                 totalScore = experimentScoringEntity.getTotalScore();
                 knowledgeScore = experimentScoringEntity.getKnowledgeScore();
-                percentKnowledgeScore = BigDecimal.valueOf(Double.parseDouble(knowledgeScore)).multiply(BigDecimal.valueOf(knowledgeWeightAtomicReference.get())).divide(BigDecimal.valueOf(100), 2, RoundingMode.DOWN).divide(BigDecimal.valueOf(Double.parseDouble(totalScore)), 2, RoundingMode.DOWN).toString();
+                percentKnowledgeScore = BigDecimal.valueOf(Double.parseDouble(knowledgeScore)).multiply(knowledgeWeightAtomicReference.get()).divide(BigDecimal.valueOf(100), 2, RoundingMode.DOWN).divide(BigDecimal.valueOf(Double.parseDouble(totalScore)), 2, RoundingMode.DOWN).toString();
                 healthIndexScore = experimentScoringEntity.getHealthIndexScore();
-                percentHealthIndexScore = BigDecimal.valueOf(Double.parseDouble(healthIndexScore)).multiply(BigDecimal.valueOf(healthIndexWeightAtomicReference.get())).divide(BigDecimal.valueOf(100), 2, RoundingMode.DOWN).divide(BigDecimal.valueOf(Double.parseDouble(totalScore)), 2, RoundingMode.DOWN).toString();
+                percentHealthIndexScore = BigDecimal.valueOf(Double.parseDouble(healthIndexScore)).multiply(healthIndexWeightAtomicReference.get()).divide(BigDecimal.valueOf(100), 2, RoundingMode.DOWN).divide(BigDecimal.valueOf(Double.parseDouble(totalScore)), 2, RoundingMode.DOWN).toString();
                 treatmentPercentScore = experimentScoringEntity.getTreatmentPercentScore();
-                percentTreatmentPercentScore = BigDecimal.valueOf(Double.parseDouble(treatmentPercentScore)).multiply(BigDecimal.valueOf(medicalRatioWeightAtomicReference.get())).divide(BigDecimal.valueOf(100), 2, RoundingMode.DOWN).divide(BigDecimal.valueOf(Double.parseDouble(totalScore)), 2, RoundingMode.DOWN).toString();
+                percentTreatmentPercentScore = BigDecimal.valueOf(Double.parseDouble(treatmentPercentScore)).multiply(medicalRatioWeightAtomicReference.get()).divide(BigDecimal.valueOf(100), 2, RoundingMode.DOWN).divide(BigDecimal.valueOf(Double.parseDouble(totalScore)), 2, RoundingMode.DOWN).toString();
             }
             ExperimentGraphRankGroupResponse experimentGraphRankGroupResponse = ExperimentGraphRankGroupResponse
                     .builder()

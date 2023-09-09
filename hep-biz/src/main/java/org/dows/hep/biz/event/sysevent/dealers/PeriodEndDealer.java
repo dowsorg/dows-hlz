@@ -2,12 +2,15 @@ package org.dows.hep.biz.event.sysevent.dealers;
 
 import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.Response;
 import org.dows.framework.api.uim.AccountInfo;
 import org.dows.hep.api.base.indicator.request.RsCalculatePeriodsRequest;
+import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.enums.EnumWebSocketType;
 import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
+import org.dows.hep.biz.eval.EvalPersonBiz;
 import org.dows.hep.biz.event.ExperimentSettingCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentSettingCollection;
@@ -15,6 +18,7 @@ import org.dows.hep.biz.event.sysevent.BaseEventDealer;
 import org.dows.hep.biz.event.sysevent.data.*;
 import org.dows.hep.biz.user.experiment.ExperimentQuestionnaireBiz;
 import org.dows.hep.biz.user.experiment.ExperimentQuestionnaireScoreBiz;
+import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
 import org.dows.hep.entity.ExperimentSysEventEntity;
 import org.dows.hep.websocket.HepClientManager;
 import org.dows.hep.websocket.proto.MessageBody;
@@ -39,12 +43,17 @@ public class PeriodEndDealer extends BaseEventDealer {
     private final ExperimentQuestionnaireScoreBiz experimentQuestionnaireScoreBiz;
 
     private final RsExperimentCalculateBiz rsExperimentCalculateBiz;
+
+    private final EvalPersonBiz evalPersonBiz;
+
+    private final ExperimentScoringBiz experimentScoringBiz;
     @Override
     public EnumSysEventPushType getPushType() {
         return EnumSysEventPushType.ALWAYS;
     }
 
     @Override
+    @SneakyThrows
     protected boolean coreDeal(EventDealResult rst, SysEventRow row, SysEventRunStat stat) {
         final ExperimentSysEventEntity event = row.getEntity();
         final String appId = event.getAppId();
@@ -63,20 +72,31 @@ public class PeriodEndDealer extends BaseEventDealer {
         experimentQuestionnaireScoreBiz.calculateExptQuestionnaireScore(experimentInstanceId, period);
 
         // 指标计算
-        try {
-            rsExperimentCalculateBiz.experimentReCalculatePeriods(RsCalculatePeriodsRequest
+        if(ConfigExperimentFlow.SWITCH2EvalCache){
+            evalPersonBiz.evalPeriodEnd(RsCalculatePeriodsRequest
                     .builder()
                     .appId(appId)
                     .experimentId(experimentInstanceId)
                     .periods(period)
                     .build());
+        }else{
+            try {
+                rsExperimentCalculateBiz.experimentReCalculatePeriods(RsCalculatePeriodsRequest
+                        .builder()
+                        .appId(appId)
+                        .experimentId(experimentInstanceId)
+                        .periods(period)
+                        .build());
 
-        } catch (Exception ex) {
-            rst.append("calcError:%s", ex.getMessage());
-            return false;
+            } catch (Exception ex) {
+                rst.append("calcError:%s", ex.getMessage());
+                return false;
+            }
         }
+
+
         this.pushTimeState(rst, exptKey, exptColl, EnumWebSocketType.FLOW_PERIOD_ENDED , row);
-        this.oldPush(appId, experimentInstanceId, period);
+        //this.oldPush(appId, experimentInstanceId, period);
         return true;
     }
     private void oldPush(String appId, String experimentInstanceId,Integer period){

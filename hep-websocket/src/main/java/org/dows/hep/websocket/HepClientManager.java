@@ -5,6 +5,7 @@ import cn.hutool.json.JSONUtil;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.util.AttributeKey;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.uim.AccountInfo;
 import org.dows.framework.websocket.util.NettyUtil;
@@ -22,6 +23,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -130,12 +132,16 @@ public class HepClientManager {
      *
      * @param channel
      */
+    @SneakyThrows
     public static void removeChannel(Channel channel) {
         StringBuilder sb=new StringBuilder();
+        sb.append("WSTrace--").append(" channel:").append(channel.hashCode()).append(" logout:");
+        boolean lockFlag=rwLock.writeLock().tryLock(3, TimeUnit.SECONDS);
         try {
-            sb.append("WSTrace--").append(" channel:").append(channel.hashCode()).append(" logout:");
-            log.warn("channel will be remove, address is :{}", NettyUtil.parseChannelRemoteAddr(channel));
-            rwLock.writeLock().lock();
+            sb.append(" address:").append(NettyUtil.parseChannelRemoteAddr(channel))
+                            .append(" logout:");
+            //log.warn("channel will be remove, address is :{}", NettyUtil.parseChannelRemoteAddr(channel));
+            //rwLock.writeLock().lock();
             channel.close();
             // 获取通道房间数据
             String room = getRoomIdFromSession(channel);
@@ -150,16 +156,20 @@ public class HepClientManager {
             }else{
                 sb.append("-miss");
             }
+
             sb.append(" expt:").append(room);
             sb.append(" attr:").append(channel.attr(ACCOUNT_IN_SESSION_ATTRIBUTE).get());
-            sb.append(" cnt:").append(Optional.ofNullable( ONLINE_ACCOUNT.get(room)).map(i->i.size()).orElse(null));
+            sb.append(" cntUser:").append(Optional.ofNullable( ONLINE_ACCOUNT.get(room)).map(i->i.size()).orElse(null));
+            sb.append(" cntMsg:").append(MSGIDS.size());
         } catch (Exception ex){
             sb.append("error:").append(ex.getMessage());
             log.error("HepClientManager.logout",ex);
         }finally {
-            rwLock.writeLock().unlock();
+            if(lockFlag) {
+                rwLock.writeLock().unlock();
+            }
             log.info(sb.toString());
-            sb.setLength(0);
+            sb.delete(0,sb.length());
         }
 
     }
@@ -216,9 +226,11 @@ public class HepClientManager {
     /**
      * 广播系统消息
      */
+    @SneakyThrows
     public static void broadcastSysMsg(int code, Object mess) {
+        boolean lockFlag=rwLock.readLock().tryLock(3, TimeUnit.SECONDS);
         try {
-            rwLock.readLock().lock();
+            //rwLock.readLock().lock();
             // 获取所有的通道发送数据
             Collection<ConcurrentMap<Channel, AccountInfo>> collection = ONLINE_ACCOUNT.values();
             for (ConcurrentMap<Channel, AccountInfo> userInfos : collection) {
@@ -233,7 +245,9 @@ public class HepClientManager {
                 }
             }
         } finally {
-            rwLock.readLock().unlock();
+            if(lockFlag) {
+                rwLock.readLock().unlock();
+            }
         }
     }
 
@@ -265,9 +279,11 @@ public class HepClientManager {
     /**
      * 广播PING消息查询失效通道
      */
+    @SneakyThrows
     public static void broadCastPing() {
+        boolean lockFlag=rwLock.readLock().tryLock(3, TimeUnit.SECONDS);
         try {
-            rwLock.readLock().lock();
+            //rwLock.readLock().lock();
            // log.info("broadCastPing userCount: {}", accountCount.intValue());
             // 获取所有的通道发送数据
             Collection<ConcurrentMap<Channel, AccountInfo>> collection = ONLINE_ACCOUNT.values();
@@ -282,7 +298,9 @@ public class HepClientManager {
                 }
             }
         } finally {
-            rwLock.readLock().unlock();
+            if(lockFlag) {
+                rwLock.readLock().unlock();
+            }
         }
     }
 
@@ -407,6 +425,10 @@ public class HepClientManager {
      */
     public static int getAuthUserCount() {
         return accountCount.get();
+    }
+
+    public static int getMsgCount(){
+        return MSGIDS.size();
     }
 
     /**

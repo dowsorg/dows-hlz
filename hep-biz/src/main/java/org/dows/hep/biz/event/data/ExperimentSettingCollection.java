@@ -11,6 +11,7 @@ import org.dows.hep.api.enums.EnumExperimentMode;
 import org.dows.hep.biz.cache.ICacheClear;
 import org.dows.hep.biz.util.ShareUtil;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
@@ -68,6 +69,14 @@ public class ExperimentSettingCollection implements ICacheClear {
 
     @Schema(title = "天数-期数")
     private RangeMap<Integer,Integer> rangePeriodDays;
+
+    //region 权重
+    private BigDecimal knowledgeWeight;
+
+    private BigDecimal healthIndexWeight;
+
+    private BigDecimal medicalRatioWeight;
+    //endregion
 
     //region 兼容countDown
     private Map<String, Integer> durationMap;
