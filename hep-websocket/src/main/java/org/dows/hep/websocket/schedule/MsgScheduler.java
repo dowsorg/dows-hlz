@@ -60,7 +60,10 @@ public class MsgScheduler implements ApplicationContextAware {
 
     public static Object remove(String msgId) {
         log.info("移除消息：{}", msgId);
-        ScheduledFuture scheduledFuture = futureMap.get(msgId);
+        // 移除消息id及消息
+        HepClientManager.removeMsgById(msgId);
+        //ScheduledFuture scheduledFuture = futureMap.get(msgId);
+        ScheduledFuture scheduledFuture = futureMap.remove(msgId);
         if (scheduledFuture != null) {
             // 取消定时任务
             scheduledFuture.cancel(true);
@@ -71,9 +74,8 @@ public class MsgScheduler implements ApplicationContextAware {
                 log.info("定时任务取消中:{}", msgId);
             }
             // 最后从队列中删除
-            futureMap.remove(msgId);
-            // 移除消息id及消息
-            HepClientManager.removeMsgById(msgId);
+            //futureMap.remove(msgId);
+
         }
         return null;
     }

@@ -38,6 +38,8 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
         s_instance=this;
     }
 
+    protected final static Set<String> CATEGDocEnergyNames=Set.of("饮食摄入热量","运动消耗热量");
+    protected final static Set<String> CATEGDocBasicNames=Set.of("体重","BMI","血压","心率","空腹血糖","胆固醇");
     @Autowired
     private ExperimentIndicatorInstanceRsDao experimentIndicatorInstanceRsDao;
 
@@ -199,6 +201,13 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
 
         @Getter
         private final Map<EnumIndicatorType,String> mapSysIndicatorId=new HashMap<>();
+
+        @Getter
+        private final Map<String,ExperimentIndicatorInstanceRsEntity> docEnergyIndicators=new LinkedHashMap<>();
+
+        @Getter
+        private final Map<String,ExperimentIndicatorInstanceRsEntity> docBasicIndicators=new LinkedHashMap<>();
+
     }
 
 

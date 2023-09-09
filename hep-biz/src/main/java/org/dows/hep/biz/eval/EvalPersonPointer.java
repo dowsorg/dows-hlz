@@ -3,6 +3,7 @@ package org.dows.hep.biz.eval;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudContextHolder;
+import org.dows.hep.api.enums.EnumEvalFuncType;
 import org.dows.hep.biz.dao.ExperimentEvalLogDao;
 import org.dows.hep.biz.eval.data.EvalPersonCacheKey;
 import org.dows.hep.biz.eval.data.EvalPersonOnceData;
@@ -10,11 +11,13 @@ import org.dows.hep.biz.eval.data.EvalPersonSyncRequest;
 import org.dows.hep.biz.event.ExperimentSettingCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
+import org.dows.hep.biz.spel.PersonIndicatorIdCache;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentEvalLogEntity;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -65,15 +68,18 @@ public class EvalPersonPointer {
         return getCurHolder().startSync(req);
     }
     @SneakyThrows
-    public boolean sync(boolean isPeriodInit)  {
+    public boolean sync(EnumEvalFuncType funcType)  {
         boolean lockFlag = rwlock.writeLock().tryLock(TRYLOCKSeconds4Write, TimeUnit.SECONDS);
         try {
             final int evalNo = curEvalNo.get();
             final int nextEvalNo = evalNo + 1;
             EvalPersonOnceHolder curHolder = getHolder(evalNo);
             EvalPersonOnceHolder nextHolder = getHolder(nextEvalNo);
+            Optional.ofNullable(curHolder.getPresent())
+                    .map(EvalPersonOnceData::getHeader)
+                    .ifPresent(i->i.setFuncType(funcType));
             curHolder.save();
-            nextHolder.putFrom(curHolder.getPresent(), nextEvalNo, isPeriodInit);
+            nextHolder.putFrom(curHolder.getPresent(), nextEvalNo, funcType);
             curEvalNo.incrementAndGet();
             return true;
         } finally {
@@ -84,8 +90,13 @@ public class EvalPersonPointer {
     }
     @SneakyThrows
     public boolean load()  {
+        if(ShareUtil.XObject.isEmpty(cacheKey.getExperimentInstanceId())){
+            Optional.ofNullable( PersonIndicatorIdCache.Instance().getPerson(cacheKey.getExperimentPersonId()))
+                    .ifPresent(i->cacheKey.setExperimentInstanceId(i.getExperimentInstanceId()));
+        }
         boolean lockFlag = rwlock.writeLock().tryLock(TRYLOCKSeconds4Write, TimeUnit.SECONDS);
         try {
+
             ExperimentEvalLogEntity rowLog= experimentEvalLogDao.getCurrentByPersonId(cacheKey.getExperimentPersonId(),
                     ExperimentEvalLogEntity::getEvalNo,
                     ExperimentEvalLogEntity::getPeriods);
@@ -105,7 +116,7 @@ public class EvalPersonPointer {
                 }
                 if(curData.isSynced()) {
                     nextEvalNo++;
-                    getHolder(nextEvalNo).putFrom(curData, nextEvalNo, !rowLog.getPeriods().equals(curData.getHeader().getPeriods()));
+                    getHolder(nextEvalNo).putFrom(curData, nextEvalNo, getFuncType(curData.getHeader().getPeriods(), timePoint.getPeriod()));
                     curEvalNo.set(nextEvalNo);
                     return true;
                 }
@@ -114,7 +125,7 @@ public class EvalPersonPointer {
             }
             curHolder = getHolder(evalNo);
             curData=curHolder.get(evalNo,true);
-            getHolder(nextEvalNo).putFrom(curData,nextEvalNo,!rowLog.getPeriods().equals(curData.getHeader().getPeriods()));
+            getHolder(nextEvalNo).putFrom(curData,nextEvalNo,getFuncType(curData.getHeader().getPeriods(), timePoint.getPeriod()));
             curEvalNo.set(nextEvalNo);
             return true;
         } finally {
@@ -123,6 +134,13 @@ public class EvalPersonPointer {
             }
         }
 
+    }
+
+    private EnumEvalFuncType getFuncType(int syncedPeriod,int curPeriod){
+        if(syncedPeriod<curPeriod){
+            return EnumEvalFuncType.PERIODEnd;
+        }
+        return EnumEvalFuncType.INIT;
     }
 
 

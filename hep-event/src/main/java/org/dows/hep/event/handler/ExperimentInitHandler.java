@@ -17,6 +17,7 @@ import org.dows.hep.api.base.indicator.request.ExperimentRsCalculateAndCreateRep
 import org.dows.hep.api.base.indicator.request.RsCopyCrowdsAndRiskModelRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyIndicatorFuncRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyPersonIndicatorRequestRs;
+import org.dows.hep.api.enums.EnumEvalFuncType;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.enums.EnumExperimentTask;
 import org.dows.hep.api.exception.ExperimentInitHanlderException;
@@ -167,7 +168,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
                 .appId(appId)
                 .experimentId(experimentInstanceId)
                 .periods(0)
-                .isPeriodEnd(true)
+                .funcType(EnumEvalFuncType.START)
                 .build());
         }
         //复制操作指标和突发事件
