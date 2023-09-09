@@ -15,7 +15,6 @@ import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.materials.request.MaterialsAttachmentRequest;
 import org.dows.hep.api.base.materials.request.MaterialsRequest;
 import org.dows.hep.api.constant.RedisKeyConst;
-import org.dows.hep.api.constant.SystemConstant;
 import org.dows.hep.api.enums.EnumExperimentMode;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
@@ -176,11 +175,11 @@ public class ExptReportFacadeBiz {
         // check
         ExperimentInstanceEntity exptEntity = checkExpt(exptInstanceId, accountId, isCheck);
 
-        String exptZipName = exptEntity.getId()
-                + SystemConstant.SPLIT_UNDER_LINE
-                + exptEntity.getExperimentName();
-        String exptZipSuffix = SystemConstant.SUFFIX_ZIP;
-        String exptZipFullName = exptZipName + exptZipSuffix;
+//        String exptZipName = exptEntity.getId()
+//                + SystemConstant.SPLIT_UNDER_LINE
+//                + exptEntity.getExperimentName();
+//        String exptZipSuffix = SystemConstant.SUFFIX_ZIP;
+//        String exptZipFullName = exptZipName + exptZipSuffix;
 
         /*是否使用旧数据 不重新生成并且旧数据存在 --> 直接返回*/
 //        String zipPath1 = reportRecordHelper.getReportOfExpt(exptInstanceId, ExptReportTypeEnum.EXPT_ZIP);
@@ -245,13 +244,13 @@ public class ExptReportFacadeBiz {
         // check
         ExperimentInstanceEntity exptEntity = checkExpt(exptInstanceId, accountId, Boolean.TRUE);
 
-        String groupZipName = exptEntity.getId()
-                + SystemConstant.SPLIT_UNDER_LINE
-                + exptEntity.getExperimentName()
-                + SystemConstant.SPLIT_UNDER_LINE
-                + exptGroupId;
-        String groupZipSuffix = SystemConstant.SUFFIX_ZIP;
-        String groupZipFullName = groupZipName + groupZipSuffix;
+//        String groupZipName = exptEntity.getId()
+//                + SystemConstant.SPLIT_UNDER_LINE
+//                + exptEntity.getExperimentName()
+//                + SystemConstant.SPLIT_UNDER_LINE
+//                + exptGroupId;
+//        String groupZipSuffix = SystemConstant.SUFFIX_ZIP;
+//        String groupZipFullName = groupZipName + groupZipSuffix;
 
         // 不重新生成并且旧数据存在 --> 直接返回
 //        String zipPath1 = reportRecordHelper.getReportOfGroup(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP_ZIP);
