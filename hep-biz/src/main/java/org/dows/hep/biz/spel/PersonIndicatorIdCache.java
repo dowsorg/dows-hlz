@@ -1,6 +1,7 @@
 package org.dows.hep.biz.spel;
 
 import lombok.Getter;
+import org.dows.hep.api.enums.EnumIndicatorDocType;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.enums.EnumIndicatorType;
 import org.dows.hep.biz.cache.BaseLoadingCache;
@@ -38,8 +39,6 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
         s_instance=this;
     }
 
-    protected final static Set<String> CATEGDocEnergyNames=Set.of("饮食摄入热量","运动消耗热量");
-    protected final static Set<String> CATEGDocBasicNames=Set.of("体重","BMI","血压","心率","空腹血糖","胆固醇");
     @Autowired
     private ExperimentIndicatorInstanceRsDao experimentIndicatorInstanceRsDao;
 
@@ -50,6 +49,17 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
     private ExperimentPersonDao experimentPersonDao;
 
 
+    public PersonIndicatorIdCollection getCacheData(String exptPersonId){
+        return this.loadingCache().get(exptPersonId);
+    }
+
+    public Set<String> getWatchIndicatos(String exptPersonId){
+        PersonIndicatorIdCollection coll= this.loadingCache().get(exptPersonId);
+        if(ShareUtil.XObject.isEmpty(coll)){
+            return null;
+        }
+        return coll.getWatchIndicatorIds();
+    }
     public ExperimentPersonEntity getPerson(String exptPersonId){
         PersonIndicatorIdCollection coll= this.loadingCache().get(exptPersonId);
         if(ShareUtil.XObject.isEmpty(coll)){
@@ -145,6 +155,23 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
                 return;
             }
             rst.getMapSysIndicatorId().put(indicatorType, i.getExperimentIndicatorInstanceId());
+            EnumIndicatorDocType docType=EnumIndicatorDocType.of(indicatorType,i.getIndicatorName());
+            i.setDocType(docType);
+            if(indicatorType!=EnumIndicatorType.USER_CREATED
+                    ||docType!=EnumIndicatorDocType.NONE){
+                rst.watchIndicatorIds.add(i.getExperimentIndicatorInstanceId());
+            }
+           /* switch (docType){
+                case HP -> {
+                    rst.docHPIndicator.set(i);
+                }
+                case BASIC -> {
+                    rst.docBasicIndicators.put(i.getExperimentIndicatorInstanceId(), i);
+                }
+                case ENERGY -> {
+                    rst.docEnergyIndicators.put(i.getExperimentIndicatorInstanceId(),i);
+                }
+            }*/
         });
         rst.sortedIndicators.sort(Comparator.comparingInt(ExperimentIndicatorInstanceRsEntity::getRecalculateSeq));
         final List<ExperimentIndicatorExpressionRsEntity> rowsExperession = experimentIndicatorExpressionRsDao.getByExperimentIndicatorIds(rst.getMapExptIndicators().keySet(),
@@ -203,10 +230,16 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
         private final Map<EnumIndicatorType,String> mapSysIndicatorId=new HashMap<>();
 
         @Getter
+        private final Set<String> watchIndicatorIds=new HashSet<>();
+
+       /* @Getter
         private final Map<String,ExperimentIndicatorInstanceRsEntity> docEnergyIndicators=new LinkedHashMap<>();
 
         @Getter
         private final Map<String,ExperimentIndicatorInstanceRsEntity> docBasicIndicators=new LinkedHashMap<>();
+
+        @Getter
+        private final AtomicReference<ExperimentIndicatorInstanceRsEntity> docHPIndicator=new AtomicReference<>();*/
 
     }
 

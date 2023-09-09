@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.dows.hep.api.user.experiment.vo.ExptIndicatorValLine;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -26,7 +27,7 @@ public class ExptHealthDocInfoResponse {
     private String experimentPersonId;
 
     @Schema(title = "游戏内总天数")
-    private Integer totalDays;
+    private Long totalDays;
 
     @Schema(title = "当前健康指数")
     private String healthIndex;
@@ -41,9 +42,9 @@ public class ExptHealthDocInfoResponse {
     private ExptIndicatorValLine healthIndexLine;
 
     @Schema(title = "右上能量折线图(两个指标)")
-    private List<ExptIndicatorValLine> categEnergy;
+    private final List<ExptIndicatorValLine> categEnergy=new ArrayList<>();
 
     @Schema(title = "左下指标折线图（6个指标）")
-    private List<ExptIndicatorValLine> categOther;
+    private final List<ExptIndicatorValLine> categOther=new ArrayList<>();
 
 }
