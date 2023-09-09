@@ -97,10 +97,11 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
 
     @Override
     public void exec(ExperimentGroupSettingRequest request) throws ExecutionException, InterruptedException {
-        CompletableFuture.runAsync(()->coreExec(request)).exceptionally(e->{
+        CompletableFuture cf= CompletableFuture.runAsync(()->coreExec(request)).exceptionally(e->{
             log.error("ExperimentInitHandler.exec",e);
             return null;
         });
+        cf.get();
     }
     @SneakyThrows
     public void coreExec(ExperimentGroupSettingRequest request) {
