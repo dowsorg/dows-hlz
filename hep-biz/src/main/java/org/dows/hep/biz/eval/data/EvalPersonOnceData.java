@@ -67,19 +67,20 @@ public class EvalPersonOnceData {
         return true;
     }
 
-    public EvalPersonOnceData flip(int evalNo,boolean isPeriodInit){
+    public EvalPersonOnceData flip(int evalNo,EnumEvalFuncType funcType){
         EvalPersonOnceData rst=new EvalPersonOnceData();
         rst.setHeader(new Header()
                 .setEvalNo(evalNo)
                 .setSyncState(EnumEvalSyncState.NEW)
-                .setPeriods(isPeriodInit?header.getPeriods()+1: header.periods)
+                .setPeriods(funcType==EnumEvalFuncType.PERIODEnd?header.getPeriods()+1: header.periods)
                 .setLastEvalDay(header.getEvalDay())
                 .setLastHealthIndex(header.getHealthIndex())
                 .setLastMoney(header.getMoney())
+                .setEvalDay(header.getEvalDay())
         );
         rst.setRisks(ShareUtil.XCollection.map(risks,i->
                 CopyWrapper.create(EvalRiskValues::new).endFrom(i)));
-        getMapIndicators().forEach((k,v)->rst.getMapIndicators().put(k, v.flip(isPeriodInit)));
+        getMapIndicators().forEach((k,v)->rst.getMapIndicators().put(k, v.flip(funcType)));
         return rst;
     }
 
@@ -87,6 +88,7 @@ public class EvalPersonOnceData {
     @Data
     @Accessors(chain = true)
     public static class Header {
+        private final String appId="3";
         @Schema(title = "计算批次")
         private Integer evalNo;
 
@@ -102,8 +104,11 @@ public class EvalPersonOnceData {
         @Schema(title = "计算天数")
         private Integer evalDay;
 
-        @Schema(title = "计算时间")
-        private Date evalTime;
+        @Schema(title = "计算开始时间")
+        private Date evalingTime;
+
+        @Schema(title = "计算结束时间")
+        private Date evaledTime;
 
         @Schema(title = "上次计算天数")
         private Integer lastEvalDay;
@@ -124,10 +129,10 @@ public class EvalPersonOnceData {
 
         public int getLastDays(){
             if(ShareUtil.XObject.isEmpty(evalDay)){
-                return 0;
+                return 1;
             }
-            return Math.max(0,evalDay-Optional.ofNullable(lastEvalDay)
-                            .orElse(0));
+            return Math.max(1,evalDay-Optional.ofNullable(lastEvalDay)
+                            .orElse(1));
         }
     }
 

@@ -5,10 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.ExperimentRsCalculateAndCreateReportHealthScoreRequestRs;
 import org.dows.hep.api.config.ConfigExperimentFlow;
-import org.dows.hep.api.enums.EnumIndicatorExpressionField;
-import org.dows.hep.api.enums.EnumIndicatorExpressionScene;
-import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
-import org.dows.hep.api.enums.EnumIndicatorType;
+import org.dows.hep.api.enums.*;
 import org.dows.hep.biz.base.indicator.RsExperimentCrowdsBiz;
 import org.dows.hep.biz.base.indicator.RsExperimentIndicatorExpressionBiz;
 import org.dows.hep.biz.base.indicator.RsExperimentIndicatorInstanceBiz;
@@ -16,6 +13,7 @@ import org.dows.hep.biz.base.indicator.RsUtilBiz;
 import org.dows.hep.biz.calc.RiskFactorScoreVO;
 import org.dows.hep.biz.calc.RiskModelHealthIndexVO;
 import org.dows.hep.biz.eval.data.EvalIndicatorValues;
+import org.dows.hep.biz.eval.data.EvalRiskValues;
 import org.dows.hep.biz.request.CaseCalIndicatorExpressionRequest;
 import org.dows.hep.biz.request.DatabaseCalIndicatorExpressionRequest;
 import org.dows.hep.biz.request.ExperimentCalIndicatorExpressionRequest;
@@ -80,7 +78,7 @@ public class EvalHealthIndexBiz {
         if (ShareUtil.XObject.isEmpty(experimentPersonIdSet)) {
             return;
         }
-        final boolean isPeriodEnd=req.isPeriodEnd();
+        final boolean isNewPeriod= EnumEvalFuncType.isNewPeriod(req.getFuncType());
         List<ExperimentPersonRiskModelRsEntity> experimentPersonRiskModelRsEntityList = new ArrayList<>();
         List<ExperimentPersonHealthRiskFactorRsEntity> experimentPersonHealthRiskFactorRsEntityList = new ArrayList<>();
        /* Map<String, Map<String, String>> kExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap = new HashMap<>();
@@ -165,6 +163,7 @@ public class EvalHealthIndexBiz {
             evalHolder.fillCastMapCur(mapCurVal);
             evalHolder.fillCastMapLast(mapLastVal);
             final List<RiskModelHealthIndexVO> vosHealthIndex=new ArrayList<>();
+            final List<EvalRiskValues> voRisks=new ArrayList<>();
             AtomicReference<String> crowdsAR = new AtomicReference<>(RsUtilBiz.RESULT_DROP);
 
             experimentCrowdsInstanceRsEntityList.forEach(experimentCrowdsInstanceRsEntity -> {
@@ -250,7 +249,7 @@ public class EvalHealthIndexBiz {
                         vosFactorScore.add(new RiskFactorScoreVO(riskModelIndicatorExpressionId, curVal,
                                 null==minExperimentIndicatorExpressionItemRsEntity?null: BigDecimalUtil.tryParseDecimalElseNull(minExperimentIndicatorExpressionItemRsEntity.getResultRaw()),
                                 null==maxExperimentIndicatorExpressionItemRsEntity?null: BigDecimalUtil.tryParseDecimalElseNull(maxExperimentIndicatorExpressionItemRsEntity.getResultRaw())));
-                        if(isPeriodEnd) {
+                        if(isNewPeriod) {
                             experimentPersonHealthRiskFactorRsEntityList.add(ExperimentPersonHealthRiskFactorRsEntity
                                     .builder()
                                     .experimentPersonHealthRiskFactorId(idGenerator.nextIdStr())
@@ -273,8 +272,13 @@ public class EvalHealthIndexBiz {
                             .setRiskModelDeathRate(experimentRiskModelRsEntity.getRiskDeathProbability())
                             .setRiskFactors(vosFactorScore);
                     vosHealthIndex.add(EvalHealthIndexUtil.evalRiskModelHealthIndex(voRiskModel));
+                    voRisks.add(new EvalRiskValues()
+                            .setCrowdId(experimentRiskModelRsEntity.getCrowdsCategoryId())
+                            .setRiskId(experimentRiskModelId)
+                            .setRiskName(experimentRiskModelRsEntity.getName())
+                    );
 
-                    if(isPeriodEnd) {
+                    if(isNewPeriod) {
                         experimentPersonRiskModelRsEntityList.add(ExperimentPersonRiskModelRsEntity
                                 .builder()
                                 .experimentPersonRiskModelId(experimentPersonRiskModelId)
@@ -292,13 +296,13 @@ public class EvalHealthIndexBiz {
                 });
             });
             BigDecimal personHealthIndex= EvalHealthIndexUtil.evalHealthIndex(vosHealthIndex,false);
-            evalHolder.get().setEvalRisks(vosHealthIndex);
+            evalHolder.get().setEvalRisks(vosHealthIndex).setRisks(voRisks);
             evalHolder.putCurVal(personIndicatorIdCache.getSysIndicatorId(experimentPersonId, EnumIndicatorType.HEALTH_POINT),
                     BigDecimalUtil.formatRoundDecimal(personHealthIndex, 2, RoundingMode.DOWN),false);
-            evalPointer.sync(isPeriodEnd);
+            evalPointer.sync(req.getFuncType());
 
         }
-        if(!isPeriodEnd){
+        if(!isNewPeriod){
             return;
         }
         evalPersonDao.saveRisks(experimentPersonRiskModelRsEntityList,experimentPersonHealthRiskFactorRsEntityList);
@@ -328,7 +332,7 @@ public class EvalHealthIndexBiz {
                 .map(ExperimentPersonEntity::getExperimentPersonId)
                 .collect(Collectors.toSet());
         if (experimentPersonIdSet.isEmpty()) {return;}
-        final boolean saveRiskFalg=req.isPeriodEnd();
+        final boolean saveRiskFalg=EnumEvalFuncType.isNewPeriod(req.getFuncType());
         List<ExperimentPersonRiskModelRsEntity> experimentPersonRiskModelRsEntityList = new ArrayList<>();
         List<ExperimentPersonHealthRiskFactorRsEntity> experimentPersonHealthRiskFactorRsEntityList = new ArrayList<>();
         Map<String, Map<String, String>> kExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap = new HashMap<>();

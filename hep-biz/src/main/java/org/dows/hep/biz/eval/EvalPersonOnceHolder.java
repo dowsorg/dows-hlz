@@ -84,6 +84,15 @@ public class EvalPersonOnceHolder {
         cacheKey.setEvalNo(evalNo);
         return cacheData=load();
     }
+
+    public EvalIndicatorValues getSysIndicator(EnumIndicatorType type){
+        String indicatorId=PersonIndicatorIdCache.Instance().getSysIndicatorId(cacheKey.getExperimentPersonId(), type);
+        if(ShareUtil.XObject.isEmpty(indicatorId)){
+            return null;
+        }
+        return getIndicator(indicatorId);
+    }
+
     public EvalIndicatorValues getIndicator(String indicatorId){
         EvalPersonOnceData cached=get();
         if(null==cached){
@@ -158,8 +167,8 @@ public class EvalPersonOnceHolder {
         return true;
     }
 
-    public boolean putFrom(EvalPersonOnceData src,int evalNo,boolean isPeriodInit){
-        cacheData=src.flip(evalNo,isPeriodInit);
+    public boolean putFrom(EvalPersonOnceData src,int evalNo,EnumEvalFuncType funcType){
+        cacheData=src.flip(evalNo,funcType);
         cacheKey.setEvalNo(evalNo);
         saveToRD(cacheData);
         return true;
@@ -178,7 +187,7 @@ public class EvalPersonOnceHolder {
                 .setFuncType(req.getFuncType())
                 .setPeriods(timePoint.getPeriod())
                 .setEvalDay(timePoint.getGameDay())
-                .setEvalTime(ShareUtil.XDate.localDT2Date(timePoint.getRealTime()));
+                .setEvalingTime(ShareUtil.XDate.localDT2Date(timePoint.getRealTime()));
         saveToRD(header);
         String lastDaysId=PersonIndicatorIdCache.Instance().getSysIndicatorId(cacheKey.getExperimentPersonId(), EnumIndicatorType.DURATION);
         putCurVal(lastDaysId,String.valueOf( header.getLastDays()),true);
@@ -189,13 +198,14 @@ public class EvalPersonOnceHolder {
         if (ShareUtil.XObject.isEmpty(data)) {
             return false;
         }
+        final EvalPersonOnceData.Header header = data.getHeader();
         String hpId = PersonIndicatorIdCache.Instance().getSysIndicatorId(cacheKey.getExperimentPersonId(), EnumIndicatorType.HEALTH_POINT);
         String moneyId = PersonIndicatorIdCache.Instance().getSysIndicatorId(cacheKey.getExperimentPersonId(), EnumIndicatorType.MONEY);
-        final EvalPersonOnceData.Header header = data.getHeader();
         Optional.ofNullable(data.getMapIndicators().get(hpId))
                 .ifPresent(i -> header.setHealthIndex(i.getCurVal()));
         Optional.ofNullable(data.getMapIndicators().get(moneyId))
                 .ifPresent(i -> header.setMoney(i.getCurVal()));
+        header.setEvaledTime(new Date());
         saveToRD(header);
         return true;
 
@@ -324,7 +334,7 @@ public class EvalPersonOnceHolder {
                         .experimentIndicatorName(item.getIndicatorName())
                         .evalNo(cacheKey.getEvalNo())
                         .evalDay(data.getHeader().getEvalDay())
-                        .evalTime(data.getHeader().getEvalTime())
+                        .evalTime(data.getHeader().getEvaledTime())
                         .unit(Optional.ofNullable( cacheIndicator.getIndicatorById(cacheKey.getExperimentPersonId(), item.getIndicatorId()))
                                 .map(ExperimentIndicatorInstanceRsEntity::getUnit)
                                 .orElse(""))
@@ -365,6 +375,10 @@ public class EvalPersonOnceHolder {
     //region load
 
     public EvalPersonOnceData load() {
+        if(ShareUtil.XObject.isEmpty(cacheKey.getExperimentInstanceId())){
+            Optional.ofNullable( PersonIndicatorIdCache.Instance().getPerson(cacheKey.getExperimentPersonId()))
+                    .ifPresent(i->cacheKey.setExperimentInstanceId(i.getExperimentInstanceId()));
+        }
         EvalPersonOnceData cached=loadFromRD();
         if(isValid(cached)){
             return cached;

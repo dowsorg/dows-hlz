@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.*;
 import org.dows.hep.api.base.indicator.response.RsCalculateCompetitiveScoreRsResponse;
 import org.dows.hep.api.base.indicator.response.RsCalculateMoneyScoreRsResponse;
+import org.dows.hep.api.enums.EnumEvalFuncType;
 import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
 import org.dows.hep.biz.eval.EvalHealthIndexBiz;
 import org.dows.hep.biz.risk.RiskBiz;
@@ -63,7 +64,7 @@ public class RsExperimentCalculateRest {
             .experimentId(experimentRsCalculateHealthScoreRequestRs.getExperimentId())
             .periods(experimentRsCalculateHealthScoreRequestRs.getPeriods())
             .experimentPersonIds(experimentRsCalculateHealthScoreRequestRs.getExperimentPersonIdSet())
-            .isPeriodEnd(false)
+            .funcType(EnumEvalFuncType.PERIODEnd)
             .build());
   }
 

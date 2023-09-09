@@ -13,16 +13,21 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public enum EnumEvalFuncType {
     INIT(0,"初始"),
-    PERIODEnd(1,"期数翻转"),
-    FUNCTreat(2,"治疗干预"),
-    FUNCHealthGuide(3,"健康指导"),
-    FUNCFollowup(4,"监测随访"),
+    START(1,"开始"),
+    PERIODEnd(2,"期数翻转"),
+    FUNCTreat(11,"治疗干预"),
+    FUNCHealthGuide(12,"健康指导"),
+    FUNCFollowup(13,"监测随访"),
 
 
     ;
     private final Integer code;
     private final String name;
 
+    public static boolean isNewPeriod(EnumEvalFuncType funcType){
+        return funcType==START
+                ||funcType==PERIODEnd;
+    }
     public static EnumEvalFuncType of(Integer code){
         return Arrays.stream( EnumEvalFuncType.values())
                 .filter(i->i.getCode().equals(code))

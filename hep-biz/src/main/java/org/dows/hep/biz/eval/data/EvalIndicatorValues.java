@@ -3,6 +3,7 @@ package org.dows.hep.biz.eval.data;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.dows.hep.api.enums.EnumEvalFuncType;
 import org.dows.hep.biz.util.ShareUtil;
 
 import java.math.BigDecimal;
@@ -48,14 +49,14 @@ public class EvalIndicatorValues {
     }
 
 
-    public EvalIndicatorValues flip(boolean isPeriodInit){
+    public EvalIndicatorValues flip(EnumEvalFuncType funcType){
         return new EvalIndicatorValues()
                 .setIndicatorId(indicatorId)
                 .setIndicatorName(indicatorName)
                 .setEvalNo(evalNo)
                 .setCurVal(curVal)
                 .setLastVal(curVal)
-                .setPeriodInitVal(isPeriodInit?curVal:periodInitVal)
+                .setPeriodInitVal(EnumEvalFuncType.isNewPeriod(funcType)?curVal:periodInitVal)
                 .setChangingVal(null)
                 .setChangedVal(null);
     }
