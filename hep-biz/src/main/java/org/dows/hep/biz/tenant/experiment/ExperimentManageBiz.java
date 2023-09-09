@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.account.api.*;
 import org.dows.account.request.*;
@@ -17,6 +18,7 @@ import org.dows.account.response.*;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.crud.api.model.PageResponse;
 import org.dows.framework.crud.mybatis.utils.BeanConvert;
+import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.core.CreateExperimentForm;
 import org.dows.hep.api.enums.EnumExperimentGroupStatus;
 import org.dows.hep.api.enums.EnumExperimentState;
@@ -31,6 +33,10 @@ import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.response.ExperimentStateResponse;
 import org.dows.hep.biz.base.person.PersonManageBiz;
+import org.dows.hep.biz.event.EventScheduler;
+import org.dows.hep.biz.snapshot.SnapshotManager;
+import org.dows.hep.biz.snapshot.SnapshotRequest;
+import org.dows.hep.biz.user.experiment.ExperimentGroupingBiz;
 import org.dows.hep.biz.util.PeriodsTimerUtil;
 import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.biz.util.ShareUtil;
@@ -49,6 +55,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static org.dows.hep.biz.base.org.OrgBiz.createCode;
@@ -95,6 +102,8 @@ public class ExperimentManageBiz {
     private final PersonManageBiz personManageBiz;
 
     private final ExperimentTaskScheduleService experimentTaskScheduleService;
+
+    private final ExperimentGroupingBiz experimentGroupingBiz;
 
     /**
      * @param
@@ -231,84 +240,16 @@ public class ExperimentManageBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    @DSTransactional
+    @SneakyThrows
     public Boolean grouping(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
 
-        Long delay = experimentGroupSettingRequest.getStartTime().getTime() - System.currentTimeMillis();
-        if (delay < 0) {
-            throw new ExperimentException("实验时间设置错误,实验开始时间小于当前时间!为确保实验正常初始化，开始时间至少大于当前时间1分钟");
-        }
+        CompletableFuture cf= CompletableFuture.runAsync(()->experimentGroupingBiz.grouping(experimentGroupSettingRequest))
+                .thenRun(()->{
+                    // 发布实验init事件
+                    applicationEventPublisher.publishEvent(new InitializeEvent(experimentGroupSettingRequest));
+                });
+        cf.get();
 
-        List<ExperimentGroupSettingRequest.GroupSetting> experimentGroupSettings = experimentGroupSettingRequest.getGroupSettings();
-        List<ExperimentGroupEntity> experimentGroupEntitys = new ArrayList<>();
-        Map<String, List<ExperimentParticipatorEntity>> groupParticipators = new HashMap<>();
-        for (ExperimentGroupSettingRequest.GroupSetting groupSetting : experimentGroupSettings) {
-            ExperimentGroupEntity experimentGroupEntity = ExperimentGroupEntity.builder()
-                    .appId(experimentGroupSettingRequest.getAppId())
-                    .experimentGroupId(idGenerator.nextIdStr())
-                    .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
-                    .groupAlias(groupSetting.getGroupAlias())
-                    .memberCount(groupSetting.getMemberCount())
-                    .groupState(EnumExperimentGroupStatus.GROUP_RENAME.getCode())
-                    .groupNo(groupSetting.getGroupNo())
-                    //.groupName(groupSetting.getGroupName())
-                    .build();
-            experimentGroupEntitys.add(experimentGroupEntity);
-
-
-            //todo
-            List<ExperimentParticipatorEntity> experimentParticipatorEntityList = new ArrayList<>();
-            List<ExperimentGroupSettingRequest.ExperimentParticipator> experimentParticipators = groupSetting.getExperimentParticipators();
-            for (ExperimentGroupSettingRequest.ExperimentParticipator experimentParticipator : experimentParticipators) {
-                ExperimentParticipatorEntity experimentParticipatorEntity = ExperimentParticipatorEntity.builder()
-                        .experimentParticipatorId(idGenerator.nextIdStr())
-                        .appId(experimentGroupSettingRequest.getAppId())
-                        .model(experimentGroupSettingRequest.getModel())
-                        .caseInstanceId(experimentGroupSettingRequest.getCaseInstanceId())
-                        .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
-                        .experimentName(experimentGroupSettingRequest.getExperimentName())
-                        .experimentStartTime(experimentGroupSettingRequest.getStartTime())
-                        .accountId(experimentParticipator.getParticipatorId())
-                        .accountName(experimentParticipator.getParticipatorName())
-                        .groupNo(groupSetting.getGroupNo())
-                        .groupAlias(groupSetting.getGroupAlias())
-                        .state(EnumExperimentState.UNBEGIN.getState())
-                        .experimentGroupId(experimentGroupEntity.getExperimentGroupId())
-                        .participatorType(EnumParticipatorType.STUDENT.getCode())
-                        .build();
-                // 如果是0【第一个人】设置为组长
-                if (experimentParticipator.getSeq() == 0) {
-                    experimentParticipatorEntity.setParticipatorType(EnumParticipatorType.CAPTAIN.getCode());
-                }
-                experimentParticipatorEntityList.add(experimentParticipatorEntity);
-                // 记录每组对应的组员——
-                groupParticipators.put(experimentGroupEntity.getExperimentGroupId(), experimentParticipatorEntityList);
-            }
-        }
-        List<ExperimentParticipatorEntity> collect = groupParticipators.values().stream().flatMap(x -> x.stream()).collect(Collectors.toList());
-
-        List<String> accountIds = collect.stream().map(ExperimentParticipatorEntity::getAccountId).collect(Collectors.toList());
-        /**
-         * 同一时刻，一个用户职能参与到一个实验中
-         */
-        List<ExperimentParticipatorEntity> list = experimentParticipatorService.lambdaQuery()
-                .eq(ExperimentParticipatorEntity::getExperimentStartTime, experimentGroupSettingRequest.getStartTime())
-                .eq(ExperimentParticipatorEntity::getCaseInstanceId, experimentGroupSettingRequest.getCaseInstanceId())
-                .in(ExperimentParticipatorEntity::getAccountId, accountIds)
-                .list();
-        if (list.size() > 0) {
-            List<String> collect1 = list.stream().map(ExperimentParticipatorEntity::getAccountName).collect(Collectors.toList());
-            List<String> collect2 = list.stream().map(ExperimentParticipatorEntity::getExperimentName).collect(Collectors.toList());
-            throw new ExperimentException("当前用户: " + String.join(",", collect1) + "在同一时刻已参与实验: " + String.join(",", collect2));
-        }
-
-        // 保存实验小组
-        experimentGroupService.saveBatch(experimentGroupEntitys);
-        // 保存实验参与人[学生]
-        experimentParticipatorService.saveBatch(collect);
-
-        // 发布实验init事件
-        applicationEventPublisher.publishEvent(new InitializeEvent(experimentGroupSettingRequest));
         return true;
     }
 
