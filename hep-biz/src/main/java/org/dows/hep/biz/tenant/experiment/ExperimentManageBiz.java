@@ -242,13 +242,9 @@ public class ExperimentManageBiz {
      */
     @SneakyThrows
     public Boolean grouping(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
+        experimentGroupingBiz.grouping(experimentGroupSettingRequest);
 
-        CompletableFuture cf= CompletableFuture.runAsync(()->experimentGroupingBiz.grouping(experimentGroupSettingRequest))
-                .thenRun(()->{
-                    // 发布实验init事件
-                    applicationEventPublisher.publishEvent(new InitializeEvent(experimentGroupSettingRequest));
-                });
-        cf.get();
+        CompletableFuture.runAsync(()->applicationEventPublisher.publishEvent(new InitializeEvent(experimentGroupSettingRequest)));
 
         return true;
     }
