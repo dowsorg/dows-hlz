@@ -663,6 +663,7 @@ public class ExptReportFacadeBiz {
         records.forEach(item -> {
             ExptAccountReportResponse itemResponse = ExptAccountReportResponse.builder()
                     .exptInstanceId(item.getExperimentInstanceId())
+                    .exptGroupId(item.getExperimentGroupId())
                     .exptName(item.getExperimentName())
                     .exptMode(EnumExperimentMode.getNameByCode(item.getModel()))
                     .exptStartTime(item.getExperimentStartTime())

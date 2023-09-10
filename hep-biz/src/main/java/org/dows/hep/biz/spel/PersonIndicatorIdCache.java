@@ -147,31 +147,21 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
             rst.getMapBaseCase2ExptId().put(i.getCaseIndicatorInstanceId(), i.getExperimentIndicatorInstanceId());
             rst.getMapExptIndicators().put(i.getExperimentIndicatorInstanceId(), i);
             rst.getSortedIndicators().add(i);
-            if(EnumIndicatorType.USER_CREATED.getType().equals(i.getType())) {
-                return;
-            }
+            i.setDocType(EnumIndicatorDocType.NONE);
             EnumIndicatorType indicatorType=EnumIndicatorType.of(i.getType());
             if(null==indicatorType){
                 return;
             }
-            rst.getMapSysIndicatorId().put(indicatorType, i.getExperimentIndicatorInstanceId());
+            if(!EnumIndicatorType.USER_CREATED.getType().equals(i.getType())) {
+                rst.getMapSysIndicatorId().put(indicatorType, i.getExperimentIndicatorInstanceId());
+            }
             EnumIndicatorDocType docType=EnumIndicatorDocType.of(indicatorType,i.getIndicatorName());
             i.setDocType(docType);
             if(indicatorType!=EnumIndicatorType.USER_CREATED
                     ||docType!=EnumIndicatorDocType.NONE){
                 rst.watchIndicatorIds.add(i.getExperimentIndicatorInstanceId());
             }
-           /* switch (docType){
-                case HP -> {
-                    rst.docHPIndicator.set(i);
-                }
-                case BASIC -> {
-                    rst.docBasicIndicators.put(i.getExperimentIndicatorInstanceId(), i);
-                }
-                case ENERGY -> {
-                    rst.docEnergyIndicators.put(i.getExperimentIndicatorInstanceId(),i);
-                }
-            }*/
+
         });
         rst.sortedIndicators.sort(Comparator.comparingInt(ExperimentIndicatorInstanceRsEntity::getRecalculateSeq));
         final List<ExperimentIndicatorExpressionRsEntity> rowsExperession = experimentIndicatorExpressionRsDao.getByExperimentIndicatorIds(rst.getMapExptIndicators().keySet(),
