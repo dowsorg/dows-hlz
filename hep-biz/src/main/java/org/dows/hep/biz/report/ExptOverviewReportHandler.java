@@ -319,7 +319,7 @@ public class ExptOverviewReportHandler implements ExptReportHandler<ExptOverview
             List<ExptOverviewReportModel.SandPeriodRanking> itemList = new ArrayList<>();
             for (ExperimentRankGroupItemResponse groupItem : groupItemList) {
                 ExptOverviewReportModel.SandPeriodRanking resultItem = ExptOverviewReportModel.SandPeriodRanking.builder()
-                        .groupNo(groupItem.getExperimentGroupName())
+                        .groupNo(groupItem.getExperimentGroupNo())
                         .groupName(groupItem.getExperimentGroupName())
                         .healthIndexScore(groupItem.getHealthIndexScore())
                         .knowledgeScore(groupItem.getKnowledgeScore())

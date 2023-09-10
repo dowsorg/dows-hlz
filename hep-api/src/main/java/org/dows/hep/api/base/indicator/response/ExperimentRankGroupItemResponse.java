@@ -19,6 +19,9 @@ public class ExperimentRankGroupItemResponse implements Serializable {
   @Schema(title = "实验小组ID")
   private String experimentGroupId;
 
+  @Schema(title = "实验小组序号")
+  private String experimentGroupNo;
+
   @Schema(title = "实验小组名称")
   private String experimentGroupName;
 
