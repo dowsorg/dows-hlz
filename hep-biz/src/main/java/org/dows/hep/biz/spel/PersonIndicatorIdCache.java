@@ -147,14 +147,14 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
             rst.getMapBaseCase2ExptId().put(i.getCaseIndicatorInstanceId(), i.getExperimentIndicatorInstanceId());
             rst.getMapExptIndicators().put(i.getExperimentIndicatorInstanceId(), i);
             rst.getSortedIndicators().add(i);
-            if(EnumIndicatorType.USER_CREATED.getType().equals(i.getType())) {
-                return;
-            }
+            i.setDocType(EnumIndicatorDocType.NONE);
             EnumIndicatorType indicatorType=EnumIndicatorType.of(i.getType());
             if(null==indicatorType){
                 return;
             }
-            rst.getMapSysIndicatorId().put(indicatorType, i.getExperimentIndicatorInstanceId());
+            if(!EnumIndicatorType.USER_CREATED.getType().equals(i.getType())) {
+                rst.getMapSysIndicatorId().put(indicatorType, i.getExperimentIndicatorInstanceId());
+            }
             EnumIndicatorDocType docType=EnumIndicatorDocType.of(indicatorType,i.getIndicatorName());
             i.setDocType(docType);
             if(indicatorType!=EnumIndicatorType.USER_CREATED
