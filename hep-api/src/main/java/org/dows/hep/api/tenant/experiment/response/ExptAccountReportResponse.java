@@ -24,6 +24,9 @@ public class ExptAccountReportResponse {
     @Schema(title = "实验ID")
     private String exptInstanceId;
 
+    @Schema(title = "实验小组ID")
+    private String exptGroupId;
+
     @Schema(title = "实验名称")
     private String exptName;
 
