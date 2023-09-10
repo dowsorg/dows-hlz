@@ -14,6 +14,9 @@ import org.dows.hep.biz.user.experiment.ExperimentOrgBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * @author lait.zhang
  * @description project descr:实验:机构操作
@@ -135,7 +138,10 @@ public class ExperimentOrgRest {
     @PostMapping("v1/userExperiment/experimentOrg/getOrgAlarm")
     public Boolean getOrgAlarm(@RequestBody @Validated FindOrgNoticeRequest findOrgNotice) {
         Page<OrgNoticeResponse> orgNoticeResponsePage = experimentOrgBiz.pageOrgNotice(findOrgNotice);
-        if (orgNoticeResponsePage.getTotal() > 0) {
+        List<OrgNoticeResponse> collect = orgNoticeResponsePage.getRecords().stream()
+                .filter(t -> t.getActionState() == 1)
+                .collect(Collectors.toList());
+        if (collect.size() > 0) {
             return true;
         }
         return false;
