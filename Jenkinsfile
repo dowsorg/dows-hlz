@@ -131,7 +131,7 @@ pipeline {
                         //sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_UAT_CD_PATH/admin/robot.sh '\"${branch}\"' '\"${gitCommitAuthorName}\"' 'api-hep-admin' 'UAT环境构建、打包、传输成功' 'green' '\"${gitCommitMessage}\"'"
                     } else if (branch.startsWith('prd-')){
                         echo "Building for production environment for ${branch}"
-
+                        // 只做推送处理
                         sh "docker build . --file Dockerfile -t registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-prd:$ver"
                         sh "docker push registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-prd:$ver"
 
