@@ -161,17 +161,7 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
                     ||docType!=EnumIndicatorDocType.NONE){
                 rst.watchIndicatorIds.add(i.getExperimentIndicatorInstanceId());
             }
-           /* switch (docType){
-                case HP -> {
-                    rst.docHPIndicator.set(i);
-                }
-                case BASIC -> {
-                    rst.docBasicIndicators.put(i.getExperimentIndicatorInstanceId(), i);
-                }
-                case ENERGY -> {
-                    rst.docEnergyIndicators.put(i.getExperimentIndicatorInstanceId(),i);
-                }
-            }*/
+
         });
         rst.sortedIndicators.sort(Comparator.comparingInt(ExperimentIndicatorInstanceRsEntity::getRecalculateSeq));
         final List<ExperimentIndicatorExpressionRsEntity> rowsExperession = experimentIndicatorExpressionRsDao.getByExperimentIndicatorIds(rst.getMapExptIndicators().keySet(),
