@@ -22,7 +22,7 @@ public class ExperimentIndicatorJudgeHealthGuidanceReportRsRest {
   private final ExperimentIndicatorJudgeHealthGuidanceReportRsBiz experimentIndicatorJudgeHealthGuidanceReportRsBiz;
 
   /* runsix:TODO 这是一个结束操作，报告后期加 */
-  @Resubmit(duration = 5)
+  @Resubmit(duration = 3)
   @Operation(summary = "实验人物和在这个机构功能点下的健康指导报告")
   @PostMapping("v1/userExperiment/healthGuidanceReport/check")
   public ExptOrgFlowReportResponse healthGuidanceCheck(@RequestBody ExperimentHealthGuidanceCheckRequestRs experimentHealthGuidanceCheckRequestRs) {

@@ -112,7 +112,7 @@ public class EvalPersonOnceDataCodec implements IRDMapCodec<EvalPersonOnceData>{
 
         });
         String rst = sb.toString();
-        sb.delete(0, sb.length());
+        sb.setLength(0);
         return rst;
     }
 

@@ -5,6 +5,7 @@ import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
 import org.dows.hep.api.base.indicator.response.GroupAverageHealthPointResponse;
 import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.enums.EnumIndicatorType;
+import org.dows.hep.biz.base.indicator.RsExperimentIndicatorValBiz;
 import org.dows.hep.biz.eval.data.EvalIndicatorValues;
 import org.dows.hep.biz.spel.PersonIndicatorIdCache;
 import org.dows.hep.biz.util.AssertUtil;
@@ -40,6 +41,8 @@ public class QueryPersonBiz {
     private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
 
     private final ExperimentScoringService experimentScoringService;
+
+    private final RsExperimentIndicatorValBiz rsExperimentIndicatorValBiz;
 
     public String getHealthPoint(Integer periods, String experimentPersonId){
         final String dft="1";
@@ -89,16 +92,22 @@ public class QueryPersonBiz {
                 .setCurrentVal(moneyVal);
     }
 
-    public void populateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(
-            Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
+    public Map<String, ExperimentIndicatorValRsEntity> populateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(
             String experimentPersonId,
             Integer curPeriods) {
-        ExperimentPersonEntity person = personIndicatorIdCache.getPerson(experimentPersonId);
-        if (ShareUtil.XObject.isEmpty(person)) {
-            return;
+        if(ConfigExperimentFlow.SWITCH2EvalCache) {
+            ExperimentPersonEntity person = personIndicatorIdCache.getPerson(experimentPersonId);
+            if (ShareUtil.XObject.isEmpty(person)) {
+                return Collections.emptyMap();
+            }
+            return evalPersonCache.getCurHolder(person.getExperimentInstanceId(), experimentPersonId)
+                    .get().getOldMap();
+        }else {
+            Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap=new HashMap<>();
+            rsExperimentIndicatorValBiz.populateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
+                    experimentPersonId,curPeriods);
+            return kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap;
         }
-        evalPersonCache.getCurHolder(person.getExperimentInstanceId(), experimentPersonId)
-                .fillCastMapCur(kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap);
 
     }
 
@@ -111,7 +120,7 @@ public class QueryPersonBiz {
                 return;
             }
             evalPersonCache.getCurHolder(person.getExperimentInstanceId(), experimentPersonId)
-                    .fillCastMapCur(kExperimentIndicatorInstanceIdVValMap,experimentIndicatorInstanceIdSet);
+                    .fillCurVal(kExperimentIndicatorInstanceIdVValMap,experimentIndicatorInstanceIdSet);
             return;
         }
         experimentIndicatorValRsService.lambdaQuery()

@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -58,14 +59,39 @@ public class EvalPersonIndicatorBiz {
                 kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap,
                 kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap
         );
-        final Map<String, ExperimentIndicatorValRsEntity> mapCurVal=new HashMap<>();
-        final Map<String, ExperimentIndicatorValRsEntity> mapLastVal=new HashMap<>();
+
         ExperimentTimePoint timePoint= ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create(req.getAppId(),req.getExperimentId()), LocalDateTime.now(), true);
         EvalPersonSyncRequest evalReq=new EvalPersonSyncRequest()
                 .setFuncType(req.getFuncType())
                 .setTimePoint(timePoint);
-        for(String personId:experimentPersonIdSet) {
-            evalPersonIndicator(experimentId, personId, evalReq, mapCurVal, mapLastVal,
+
+        final int CONCURRENTNum=4;
+        if(experimentPersonIdSet.size()<CONCURRENTNum) {
+            evalPersonIndicator(experimentId, experimentPersonIdSet, evalReq,
+                    kReasonIdVExperimentIndicatorExpressionRsEntityListMap,
+                    kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap,
+                    kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap);
+        }else{
+            List<List<String>> groups = ShareUtil.XCollection.split(List.copyOf(experimentPersonIdSet), CONCURRENTNum);
+            CompletableFuture[] futures = new CompletableFuture[groups.size()];
+            int pos = 0;
+            for (List<String> personIds : groups) {
+                futures[pos++] = CompletableFuture.runAsync(() -> evalPersonIndicator(experimentId, personIds, evalReq,
+                                kReasonIdVExperimentIndicatorExpressionRsEntityListMap,
+                                kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap,
+                                kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap),
+                        EvalPersonExecutor.Instance().getThreadPool());
+            }
+            CompletableFuture.allOf(futures).join();
+        }
+
+    }
+    private void evalPersonIndicator(String experimentId, Collection<String> personIds, EvalPersonSyncRequest evalReq,
+                                     Map<String, List<ExperimentIndicatorExpressionRsEntity>> kReasonIdVExperimentIndicatorExpressionRsEntityListMap,
+                                     Map<String, List<ExperimentIndicatorExpressionItemRsEntity>> kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap,
+                                     Map<String, ExperimentIndicatorExpressionItemRsEntity> kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap) {
+        for(String personId:personIds) {
+            evalPersonIndicator(experimentId, personId, evalReq,
                     kReasonIdVExperimentIndicatorExpressionRsEntityListMap,
                     kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap,
                     kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap
@@ -73,53 +99,57 @@ public class EvalPersonIndicatorBiz {
         }
     }
 
-    private void evalPersonIndicator(String experimentId, String experimentPersonId, EvalPersonSyncRequest evalReq,
-                                    Map<String, ExperimentIndicatorValRsEntity> mapCurVal,
-                                    Map<String, ExperimentIndicatorValRsEntity> mapLastVal,
-                                    Map<String, List<ExperimentIndicatorExpressionRsEntity>> kReasonIdVExperimentIndicatorExpressionRsEntityListMap,
-                                    Map<String, List<ExperimentIndicatorExpressionItemRsEntity>> kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap,
-                                    Map<String, ExperimentIndicatorExpressionItemRsEntity> kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap) {
 
-        List<ExperimentIndicatorInstanceRsEntity> indicators= personIndicatorIdCache.getSortedIndicators(experimentPersonId);
-        if(ShareUtil.XObject.isEmpty(indicators)){
+    private void evalPersonIndicator(String experimentId, String experimentPersonId, EvalPersonSyncRequest evalReq,
+                                Map<String, List<ExperimentIndicatorExpressionRsEntity>> kReasonIdVExperimentIndicatorExpressionRsEntityListMap,
+                                Map<String, List<ExperimentIndicatorExpressionItemRsEntity>> kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap,
+                                Map<String, ExperimentIndicatorExpressionItemRsEntity> kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap) {
+
+        List<ExperimentIndicatorInstanceRsEntity> indicators = personIndicatorIdCache.getSortedIndicators(experimentPersonId);
+        if (ShareUtil.XObject.isEmpty(indicators)) {
             return;
         }
-        final EvalPersonPointer evalPointer=evalPersonCache.getPointer(experimentId,experimentPersonId);
-        final EvalPersonOnceHolder evalHolder=evalPointer.getCurHolder();
+        final EvalPersonPointer evalPointer = evalPersonCache.getPointer(experimentId, experimentPersonId);
+        final EvalPersonOnceHolder evalHolder = evalPointer.getCurHolder();
         evalPointer.startSync(evalReq);
-        evalHolder.fillCastMapCur(mapCurVal);
-        evalHolder.fillCastMapLast(mapLastVal);
-        for(ExperimentIndicatorInstanceRsEntity item:indicators){
-            evalPersonIndicator(evalHolder,item,mapCurVal,mapLastVal,
+        Map<String, ExperimentIndicatorValRsEntity> mapCurVal = evalHolder.get().getOldMap(true);
+        Map<String, ExperimentIndicatorValRsEntity> mapLastVal = evalHolder.getLastHolder().get().getOldMap(true);
+        for (ExperimentIndicatorInstanceRsEntity item : indicators) {
+            ExperimentIndicatorValRsEntity indicatorOld = mapCurVal.get(item.getExperimentIndicatorInstanceId());
+            EvalIndicatorValues indicatorNew = evalHolder.getIndicator(item.getExperimentIndicatorInstanceId());
+            if (ShareUtil.XObject.anyEmpty(indicatorOld, indicatorNew)) {
+                continue;
+            }
+
+            String evalVal = evalPersonIndicator(item.getExperimentIndicatorInstanceId(), mapCurVal, mapLastVal,
                     kReasonIdVExperimentIndicatorExpressionRsEntityListMap,
-                    kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap,
-                    kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap);
+                    kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap);
+            if (ShareUtil.XObject.notEmpty(evalVal)) {
+                indicatorNew.setCurVal(evalVal);
+            }
+            evalHolder.syncIndicator(indicatorNew);
+            indicatorOld.setCurrentVal(indicatorNew.getCurVal());
         }
         //evalPointer.sync(evalReq);
     }
-    private void evalPersonIndicator(EvalPersonOnceHolder evalHolder,
-                                    ExperimentIndicatorInstanceRsEntity indicator,
+    private String evalPersonIndicator(String indicatorId,
                                     Map<String, ExperimentIndicatorValRsEntity> mapCurVal,
                                     Map<String, ExperimentIndicatorValRsEntity> mapLastVal,
                                     Map<String, List<ExperimentIndicatorExpressionRsEntity>> kReasonIdVExperimentIndicatorExpressionRsEntityListMap,
-                                    Map<String, List<ExperimentIndicatorExpressionItemRsEntity>> kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap,
-                                    Map<String, ExperimentIndicatorExpressionItemRsEntity> kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap) {
+                                    Map<String, List<ExperimentIndicatorExpressionItemRsEntity>> kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap
+                                    ) {
 
-        ExperimentIndicatorValRsEntity indicatorOld = mapCurVal.get(indicator.getExperimentIndicatorInstanceId());
-        EvalIndicatorValues  indicatorNew= evalHolder.getIndicator(indicator.getExperimentIndicatorInstanceId());
-        if (ShareUtil.XObject.anyEmpty(indicatorOld,indicatorNew)) {
-            return;
-        }
 
-        List<ExperimentIndicatorExpressionRsEntity> experimentIndicatorExpressionRsEntityList = kReasonIdVExperimentIndicatorExpressionRsEntityListMap.get(indicator.getExperimentIndicatorInstanceId());
+
+        List<ExperimentIndicatorExpressionRsEntity> experimentIndicatorExpressionRsEntityList = kReasonIdVExperimentIndicatorExpressionRsEntityListMap.get(indicatorId);
         if (ShareUtil.XObject.isEmpty(experimentIndicatorExpressionRsEntityList)) {
-            return;
+            return null;
         }
         ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity = experimentIndicatorExpressionRsEntityList.get(0);
         String experimentIndicatorExpressionId = experimentIndicatorExpressionRsEntity.getExperimentIndicatorExpressionId();
         List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList = kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap.get(experimentIndicatorExpressionId);
         if (ShareUtil.XObject.isEmpty(experimentIndicatorExpressionItemRsEntityList)) {
-            return;
+            return null;
         }
         AtomicReference<String> curValRef = new AtomicReference<>();
         rsExperimentIndicatorExpressionBiz.parseExperimentIndicatorExpression(
@@ -140,12 +170,8 @@ public class EvalPersonIndicatorBiz {
                         .maxExperimentIndicatorExpressionItemRsEntity(null)
                         .build()
         );
-        String curVal = curValRef.get();
-        if (ShareUtil.XObject.notEmpty(curVal)) {
-            indicatorNew.setCurVal(curVal);
-        }
-        evalHolder.syncIndicator(indicatorNew);
-        indicatorOld.setCurrentVal(indicatorNew.getCurVal());
+        return curValRef.get();
+
 
     }
 }

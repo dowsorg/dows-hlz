@@ -20,7 +20,7 @@ public class EventExecutor {
     static final int DFTCorePoolSize=4;
     static final int DFTMaxPoolSize=6;
 
-    static final int DFTQUEUESize=100;
+    static final int DFTQUEUESize=500;
     private static final EventExecutor s_instance=new EventExecutor(DFTPOOLNum, DFTCorePoolSize,DFTMaxPoolSize,DFTQUEUESize);
     public static EventExecutor Instance(){
         return s_instance;

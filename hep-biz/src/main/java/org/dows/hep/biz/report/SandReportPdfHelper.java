@@ -48,12 +48,13 @@ public class SandReportPdfHelper {
             viewUrl = pdfServerProperties.getSandExptViewUrl();
         }
 
-        if (StrUtil.isNotBlank(exptInstanceId)) {
-            viewUrl += exptInstanceId + "/";
-        }
-        if (StrUtil.isNotBlank(exptGroupId)) {
-            viewUrl += exptGroupId + "/";
-        }
+//        if (StrUtil.isNotBlank(exptInstanceId)) {
+//            viewUrl += exptInstanceId + "/";
+//        }
+//        if (StrUtil.isNotBlank(exptGroupId)) {
+//            viewUrl += exptGroupId + "/";
+//        }
+        viewUrl += (StrUtil.isBlank(exptInstanceId) ? "null" : exptInstanceId) + "/" + (StrUtil.isBlank(exptGroupId) ? "null" : exptGroupId);
         Map<String, Object> param = new HashMap<>();
         param.put("fun", "save");
         param.put("appCode", appCode);

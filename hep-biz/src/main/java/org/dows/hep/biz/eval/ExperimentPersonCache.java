@@ -2,10 +2,14 @@ package org.dows.hep.biz.eval;
 
 import lombok.Data;
 import org.dows.hep.biz.cache.BaseLoadingCache;
+import org.dows.hep.biz.dao.ExperimentGroupDao;
 import org.dows.hep.biz.dao.ExperimentPersonDao;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.util.ShareUtil;
+import org.dows.hep.entity.ExperimentGroupEntity;
+import org.dows.hep.entity.ExperimentOrgEntity;
 import org.dows.hep.entity.ExperimentPersonEntity;
+import org.dows.hep.service.ExperimentOrgService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -34,6 +38,12 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
     @Autowired
     private ExperimentPersonDao experimentPersonDao;
 
+    @Autowired
+    private ExperimentGroupDao experimentGroupDao;
+
+    @Autowired
+    private ExperimentOrgService experimentOrgService;
+
     protected ExperimentPersonCache() {
         super(CACHEInitCapacity, CACHEMaxSize, CACHEExpireSeconds, 0);
         s_instance = this;
@@ -47,6 +57,27 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
         return this.loadingCache().get(key);
     }
 
+    public ExperimentGroupEntity getGroup(String experimentId,String experimentGroupId){
+        ExperimentPersonCache.CacheData cached=getCacheData(experimentId);
+        if(null==cached){
+            return null;
+        }
+        return cached.getMapGroups().get(experimentGroupId);
+    }
+    public ExperimentOrgEntity getOrg(String experimentId,String experimentOrgId){
+        ExperimentPersonCache.CacheData cached=getCacheData(experimentId);
+        if(null==cached){
+            return null;
+        }
+        return cached.getMapOrgs().get(experimentOrgId);
+    }
+    public ExperimentPersonEntity getPerson(String experimentId,String experimentPersonId){
+        ExperimentPersonCache.CacheData cached=getCacheData(experimentId);
+        if(null==cached){
+            return null;
+        }
+        return cached.getMapPersons().get(experimentPersonId);
+    }
     public Map<String, List<ExperimentPersonEntity>> getMapGroupPersons(String experimentId){
         ExperimentPersonCache.CacheData cached=getCacheData(experimentId);
         if(null==cached){
@@ -93,6 +124,16 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
             rst.mapPersons.put(i.getExperimentPersonId(),i);
             rst.mapGroupPersons.computeIfAbsent(i.getExperimentGroupId(), k->new ArrayList<>()).add(i);
         });
+        List<ExperimentGroupEntity> rowsGroup=experimentGroupDao.getByExperimentId(key.getExperimentInstanceId() );
+        rowsGroup.forEach(i->{
+            rst.mapGroups.put(i.getExperimentGroupId(),i);
+        });
+        List<ExperimentOrgEntity> rowsOrg=experimentOrgService.lambdaQuery()
+                .eq(ExperimentOrgEntity::getExperimentInstanceId, key.getExperimentInstanceId())
+                .list();
+        rowsOrg.forEach(i->{
+            rst.mapOrgs.put(i.getExperimentOrgId(),i);
+        });
         return rst;
     }
 
@@ -101,5 +142,9 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
         private final ConcurrentMap<String, ExperimentPersonEntity> mapPersons=new ConcurrentHashMap<>();
 
         private final Map<String, List<ExperimentPersonEntity>> mapGroupPersons=new HashMap<>();
+
+        private final Map<String, ExperimentGroupEntity> mapGroups=new HashMap<>();
+
+        private final Map<String, ExperimentOrgEntity> mapOrgs=new HashMap<>();
     }
 }
