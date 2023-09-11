@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutionException;
 public class ExperimentIndicatorViewMonitorFollowupReportRsRest {
   private final ExperimentIndicatorViewMonitorFollowupReportRsBiz experimentIndicatorViewMonitorFollowupReportRsBiz;
 
-  @Resubmit(duration = 5)
+  @Resubmit(duration = 3)
   @Operation(summary = "进行随访")
   @PostMapping("v1/userExperiment/monitorFollowup/check")
   public void monitorFollowupCheck(@RequestBody ExperimentMonitorFollowupCheckRequestRs experimentMonitorFollowupCheckRequestRs) throws ExecutionException, InterruptedException {
