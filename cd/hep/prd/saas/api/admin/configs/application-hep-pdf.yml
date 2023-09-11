@@ -50,7 +50,7 @@ pdf-server:
   server-url: http://127.0.0.1:8001/pdf
   app-code: hep
   env: prd
-  scheme-expt-view-url: http://127.0.0.1:4801/report_view/group/
-  scheme-group-view-url: http://127.0.0.1:4801/report_view/group/
-  sand-expt-view-url: http://127.0.0.1:4801/report_view/summary/
-  sand-group-view-url: http://127.0.0.1:4801/report_view/group/
+  scheme-expt-view-url: http://127.0.0.1:40001/report_view/group/
+  scheme-group-view-url: http://127.0.0.1:40001/report_view/group/
+  sand-expt-view-url: http://127.0.0.1:40001/report_view/summary/
+  sand-group-view-url: http://127.0.0.1:40001/report_view/group/

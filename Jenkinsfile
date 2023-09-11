@@ -34,9 +34,17 @@ pipeline {
         AS_HOST='192.168.1.60'
         AS_USERNAME='root'
         AS_PWD='findsoft2022!@#'
+
+        PRD_AS_HOST='139.186.208.204'
+        PRD_AS_USERNAME='root'
+        PRD_AS_PWD='Findsoft20232023'
+
         BRANCH="${env.BRANCH_NAME.split('/')[1]}"
         RTE="${BRANCH.split('-')[0]}"
         VER="${BRANCH.split('-')[1]}"
+
+
+
     }
 
     stages {
@@ -123,15 +131,17 @@ pipeline {
                         //sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_UAT_CD_PATH/admin/robot.sh '\"${branch}\"' '\"${gitCommitAuthorName}\"' 'api-hep-admin' 'UAT环境构建、打包、传输成功' 'green' '\"${gitCommitMessage}\"'"
                     } else if (branch.startsWith('prd-')){
                         echo "Building for production environment for ${branch}"
-
+                        // 只做推送处理
                         sh "docker build . --file Dockerfile -t registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-prd:$ver"
                         sh "docker push registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-prd:$ver"
 
-                        sh "sshpass -p $AS_PWD ssh -o StrictHostKeyChecking=no $AS_USERNAME@$AS_HOST mkdir -p $TO_PRD_CD_PATH"
-                        sh "sshpass -p $AS_PWD scp -r $FORM_PRD_CD_PATH $AS_USERNAME@$AS_HOST:$TO_PRD_CD_PATH"
-                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST 'cd $TO_PRD_CD_PATH/admin;$LOGIN_DOCKER;$START_CONTAINER'"
+                        //sh "sshpass -p $PRD_AS_PWD ssh -o StrictHostKeyChecking=no $PRD_AS_USERNAME@$PRD_AS_HOST mkdir -p $TO_PRD_CD_PATH"
 
-                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_PRD_CD_PATH/admin/robot.sh '\"$branch\"' \"$gitCommitAuthorName\" 'api-hep-admin' 'SIT环境发布' '\"$gitCommitMessage\"' '\"$changes\"' 'green'"
+                        //sh "sshpass -p $PRD_AS_PWD scp -r $FORM_PRD_CD_PATH $AS_USERNAME@$AS_HOST:$TO_PRD_CD_PATH"
+
+                        //sh "sshpass -p $PRD_AS_PWD ssh $PRD_AS_USERNAME@$PRD_AS_HOST 'cd $TO_PRD_CD_PATH/admin;$LOGIN_DOCKER;$START_CONTAINER'"
+
+                        //sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_PRD_CD_PATH/admin/robot.sh '\"$branch\"' \"$gitCommitAuthorName\" 'api-hep-admin' 'SIT环境发布' '\"$gitCommitMessage\"' '\"$changes\"' 'green'"
                         //sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_PRD_CD_PATH/admin/robot.sh '$branch' '$gitCommitAuthorName' 'api-hep-admin' 'SIT环境发布' '$gitCommitMessage' '$changes' 'green'"
                         //sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_PRD_CD_PATH/admin/robot.sh '\"${branch}\"' '\"${gitCommitAuthorName}\"' 'api-hep-admin' 'PRD环境构建、打包、传输成功' 'green' '\"${gitCommitMessage}\"'"
                     }
