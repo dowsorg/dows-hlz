@@ -20,7 +20,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SportCalcBiz {
 
-    private EvalPersonCache evalPersonCache;
+
+    private final EvalPersonCache evalPersonCache;
     private final static BigDecimal MULFactor4SportEnergy=new BigDecimal("0.0175");
     private final static BigDecimal DIVFactor4SportEnergy=new BigDecimal("7");
 

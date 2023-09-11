@@ -45,6 +45,7 @@ public class OrgReportComposer {
                 .setIndicatorFuncId(validator.getIndicatorFuncId())
                 ;
     }
+    final static boolean asyncFlag=false;
 
     public ExptOrgFlowReportResponse composeReport(ExptRequestValidator exptValidator, ExptOrgFlowValidator flowValidator, ExperimentTimePoint timePoint, ExptOrgReportNodeVO newNode){
         final ExperimentOrgEntity exptOrg= exptValidator.getExperimentOrg();
@@ -91,30 +92,52 @@ public class OrgReportComposer {
         if(funcs.size()==0){
             return rst;
         }
-        CompletableFuture[] futures=new CompletableFuture[funcs.size()];
-        int i=0;
-        final List<ExptOrgReportNodeVO> nodes=rst.getNodes();
-        for(ExperimentIndicatorFuncRsResponse func:funcs){
-            futures[i++]=CompletableFuture.runAsync(()->{
-                ExptOrgReportNodeVO node=new ExptOrgReportNodeVO()
+        final List<ExptOrgReportNodeVO> nodes = rst.getNodes();
+        if(asyncFlag) {
+            CompletableFuture[] futures = new CompletableFuture[funcs.size()];
+            int i = 0;
+
+            for (ExperimentIndicatorFuncRsResponse func : funcs) {
+                futures[i++] = CompletableFuture.runAsync(() -> {
+                    ExptOrgReportNodeVO node = new ExptOrgReportNodeVO()
+                            .setIndicatorCategoryId(func.getIndicatorCategoryId())
+                            .setIndicatorFuncId(func.getIndicatorFuncId())
+                            .setIndicatorFuncName(func.getIndicatorFuncName());
+                    nodes.add(node);
+                    OrgReportExtractRequest req = createRequest(exptValidator)
+                            .setPeriod(timePoint.getPeriod())
+                            .setIndicatorFuncId(func.getIndicatorFuncId())
+                            .setOperateFlowId(rowFlow.getOperateFlowId());
+                    try {
+                        orgReportExtracterAdapter.fillReportData(req, node);
+                    } catch (ExecutionException e) {
+                        throw new RuntimeException(e);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+            CompletableFuture.allOf(futures).join();
+        }else{
+            for (ExperimentIndicatorFuncRsResponse func : funcs) {
+                ExptOrgReportNodeVO node = new ExptOrgReportNodeVO()
                         .setIndicatorCategoryId(func.getIndicatorCategoryId())
                         .setIndicatorFuncId(func.getIndicatorFuncId())
                         .setIndicatorFuncName(func.getIndicatorFuncName());
                 nodes.add(node);
-                OrgReportExtractRequest req=createRequest(exptValidator)
+                OrgReportExtractRequest req = createRequest(exptValidator)
                         .setPeriod(timePoint.getPeriod())
                         .setIndicatorFuncId(func.getIndicatorFuncId())
                         .setOperateFlowId(rowFlow.getOperateFlowId());
                 try {
-                    orgReportExtracterAdapter.fillReportData(req,node);
+                    orgReportExtracterAdapter.fillReportData(req, node);
                 } catch (ExecutionException e) {
                     throw new RuntimeException(e);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-            });
+            }
         }
-        CompletableFuture.allOf(futures).join();
         if(null!=newNode) {
             nodes.add(newNode);
         }
