@@ -192,7 +192,7 @@ public class ExptReportFacadeBiz {
 
         RLock lock = redissonClient.getLock(RedisKeyConst.HEP_LOCK_REPORT + exptInstanceId);
         try {
-            if (lock.tryLock(-1, 30, TimeUnit.SECONDS)) {
+            if (lock.tryLock(-1, 10, TimeUnit.SECONDS)) {
 
                 /*是否使用旧数据 不重新生成并且旧数据存在 --> 直接返回*/
 //                String zipPath2 = reportRecordHelper.getReportOfExpt(exptInstanceId, ExptReportTypeEnum.EXPT_ZIP);
@@ -414,7 +414,9 @@ public class ExptReportFacadeBiz {
             return Boolean.FALSE;
         }
 
-        exportExptReport(exptInstanceId, null, Boolean.FALSE, Boolean.TRUE, Boolean.TRUE);
+        CompletableFuture.runAsync(() -> {
+            exportExptReport(exptInstanceId, null, Boolean.FALSE, Boolean.TRUE, Boolean.TRUE);
+        });
         return Boolean.TRUE;
     }
 
