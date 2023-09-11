@@ -386,7 +386,7 @@ public class EvalPersonOnceHolder {
             Optional.ofNullable(cacheIndicator.getIndicatorById(cacheKey.getExperimentPersonId(), item.getIndicatorId()))
                     .ifPresent(i -> log.setUnit(i.getUnit())
                             .setDocType(i.getDocType().getCode())
-                            .setSycType(i.getType()));
+                            .setSysType(i.getType()));
             return log;
         });
 
@@ -440,12 +440,14 @@ public class EvalPersonOnceHolder {
         }
         EvalPersonOnceData cached=loadFromRD();
         if(isValid(cached)){
+            cached.getOldMap(true);
             return cached;
         }
         cached=loadFromDB();
         if(ShareUtil.XObject.isEmpty(cached)){
             return null;
         }
+        cached.getOldMap(true);
         saveToRD(cached);
         return cached;
     }
