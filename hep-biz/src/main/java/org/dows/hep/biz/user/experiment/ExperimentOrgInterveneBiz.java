@@ -542,6 +542,7 @@ public class ExperimentOrgInterveneBiz{
                     .setOperateOrgFuncId(rowOrgFunc.getOperateOrgFuncId())
                     .setReportInfo(report);
         }finally {
+            log.error(sb.toString());
             log.info(sb.toString());
         }
     }
