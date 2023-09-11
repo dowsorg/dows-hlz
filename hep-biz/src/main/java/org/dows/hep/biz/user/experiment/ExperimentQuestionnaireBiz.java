@@ -105,7 +105,7 @@ public class ExperimentQuestionnaireBiz {
                     .eq(ExperimentQuestionnaireEntity::getExperimentInstanceId, request.getExperimentInstanceId())
                     .eq(ExperimentQuestionnaireEntity::getExperimentOrgId, request.getExperimentOrgId())
                     .eq(ExperimentQuestionnaireEntity::getExperimentGroupId, request.getExperimentGroupId())
-                    .eq(ExperimentQuestionnaireEntity::getExperimentAccountId, request.getExperimentAccountId())
+//                    .eq(ExperimentQuestionnaireEntity::getExperimentAccountId, request.getExperimentAccountId())
                     .list();
             if (CollUtil.isEmpty(list)) {
                 return new ExperimentQuestionnaireResponse();
@@ -132,7 +132,7 @@ public class ExperimentQuestionnaireBiz {
                     .eq(ExperimentQuestionnaireEntity::getPeriodSequence, currentPeriod)
                     .eq(ExperimentQuestionnaireEntity::getExperimentOrgId, request.getExperimentOrgId())
                     .eq(ExperimentQuestionnaireEntity::getExperimentGroupId, request.getExperimentGroupId())
-                    .eq(ExperimentQuestionnaireEntity::getExperimentAccountId,  request.getExperimentAccountId())
+//                    .eq(ExperimentQuestionnaireEntity::getExperimentAccountId,  request.getExperimentAccountId())
                     .oneOpt()
                     .orElse(null);
             if (BeanUtil.isEmpty(entity)) {
