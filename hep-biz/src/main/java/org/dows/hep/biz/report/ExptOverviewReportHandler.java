@@ -41,6 +41,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -125,17 +126,20 @@ public class ExptOverviewReportHandler implements ExptReportHandler<ExptOverview
         // 记录一份数据
         assert ossInfo != null;
         if (StrUtil.isNotBlank(ossInfo.getPath())) {
-            MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
-                    .fileName(fileName)
-                    .fileType("pdf")
-                    .fileUri(fileUri)
-                    .build();
-            MaterialsRequest materialsRequest = MaterialsRequest.builder()
-                    .bizCode("EXPT")
-                    .title(fileName)
-                    .materialsAttachments(List.of(attachment))
-                    .build();
-            recordHelper.record(exptInstanceId, null, ExptReportTypeEnum.EXPT, materialsRequest);
+            String finalFileUri = fileUri;
+            CompletableFuture.runAsync(() -> {
+                MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
+                        .fileName(fileName)
+                        .fileType("pdf")
+                        .fileUri(finalFileUri)
+                        .build();
+                MaterialsRequest materialsRequest = MaterialsRequest.builder()
+                        .bizCode("EXPT")
+                        .title(fileName)
+                        .materialsAttachments(List.of(attachment))
+                        .build();
+                recordHelper.record(exptInstanceId, null, ExptReportTypeEnum.EXPT, materialsRequest);
+            });
         }
 
         // build result
@@ -319,7 +323,7 @@ public class ExptOverviewReportHandler implements ExptReportHandler<ExptOverview
             List<ExptOverviewReportModel.SandPeriodRanking> itemList = new ArrayList<>();
             for (ExperimentRankGroupItemResponse groupItem : groupItemList) {
                 ExptOverviewReportModel.SandPeriodRanking resultItem = ExptOverviewReportModel.SandPeriodRanking.builder()
-                        .groupNo(groupItem.getExperimentGroupName())
+                        .groupNo(groupItem.getExperimentGroupNo())
                         .groupName(groupItem.getExperimentGroupName())
                         .healthIndexScore(groupItem.getHealthIndexScore())
                         .knowledgeScore(groupItem.getKnowledgeScore())

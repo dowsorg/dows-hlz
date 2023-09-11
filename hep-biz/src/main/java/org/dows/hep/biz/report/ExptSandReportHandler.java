@@ -45,6 +45,7 @@ import java.math.RoundingMode;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -162,7 +163,12 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
         ExptBaseInfoModel baseInfoVO = generateBaseInfoVO(findSoftProperties);
         ExptSandReportModel.GroupInfo groupInfo = generateGroupInfo(exptGroupId, exptData);
         ExptSandReportModel.ScoreInfo scoreInfo = generateScoreInfo(exptGroupId, exptData);
-        List<ExptSandReportModel.NpcData> npcDataList = generateNpcInfo(exptGroupId, exptData);
+        List<ExptSandReportModel.NpcData> npcDataList = new LinkedList<>();
+        try {
+            npcDataList = generateNpcInfo(exptGroupId, exptData);
+        } catch (Exception e) {
+            log.error(String.format("获取npc数据异常，异常为%s", e));
+        }
         List<List<ExptSandReportModel.KnowledgeAnswer>> periodQuestions = generatePeriodQuestionnaires(exptGroupId, exptData);
 
         return ExptSandReportModel.builder()
@@ -253,17 +259,19 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
 
         // 记录一份数据
         if (StrUtil.isNotBlank(ossInfo.getPath())) {
-            MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
-                    .fileName(fileName)
-                    .fileType("pdf")
-                    .fileUri(fileUri)
-                    .build();
-            MaterialsRequest materialsRequest = MaterialsRequest.builder()
-                    .bizCode("EXPT")
-                    .title(fileName)
-                    .materialsAttachments(List.of(attachment))
-                    .build();
-            recordHelper.record(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP, materialsRequest);
+            CompletableFuture.runAsync(() -> {
+                MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
+                        .fileName(fileName)
+                        .fileType("pdf")
+                        .fileUri(fileUri)
+                        .build();
+                MaterialsRequest materialsRequest = MaterialsRequest.builder()
+                        .bizCode("EXPT")
+                        .title(fileName)
+                        .materialsAttachments(List.of(attachment))
+                        .build();
+                recordHelper.record(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP, materialsRequest);
+            });
         }
 
         // 构建返回信息

@@ -45,6 +45,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author fhb
@@ -236,17 +237,19 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
 
         // 记录一份数据
         if (StrUtil.isNotBlank(ossInfo.getPath())) {
-            MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
-                    .fileName(fileName)
-                    .fileType("pdf")
-                    .fileUri(fileUri)
-                    .build();
-            MaterialsRequest materialsRequest = MaterialsRequest.builder()
-                    .bizCode("EXPT")
-                    .title(fileName)
-                    .materialsAttachments(List.of(attachment))
-                    .build();
-            recordHelper.record(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP, materialsRequest);
+            CompletableFuture.runAsync(() -> {
+                MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
+                        .fileName(fileName)
+                        .fileType("pdf")
+                        .fileUri(fileUri)
+                        .build();
+                MaterialsRequest materialsRequest = MaterialsRequest.builder()
+                        .bizCode("EXPT")
+                        .title(fileName)
+                        .materialsAttachments(List.of(attachment))
+                        .build();
+                recordHelper.record(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP, materialsRequest);
+            });
         }
 
         // 构造返回信息
