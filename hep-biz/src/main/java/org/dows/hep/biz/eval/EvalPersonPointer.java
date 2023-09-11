@@ -101,7 +101,7 @@ public class EvalPersonPointer {
                     ExperimentEvalLogEntity::getPeriods);
             AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(rowLog))
                     .throwMessage(String.format("人物指标未初始化[id:%s]", cacheKey.getExperimentPersonId()));
-            ExperimentTimePoint timePoint= ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create("3", cacheKey.getExperimentInstanceId()), LocalDateTime.now(),false );
+            ExperimentTimePoint timePoint= ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create("3", cacheKey.getExperimentInstanceId()), LocalDateTime.now(),true );
             AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(timePoint))
                     .throwMessage(String.format("未找到实验当前时间点[id:%s]", cacheKey.getExperimentInstanceId()));
 
