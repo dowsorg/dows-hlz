@@ -239,7 +239,11 @@ public class ExperimentManageBiz {
     public Boolean grouping(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
         experimentGroupingBiz.grouping(experimentGroupSettingRequest);
 
-        CompletableFuture.runAsync(()->applicationEventPublisher.publishEvent(new InitializeEvent(experimentGroupSettingRequest)));
+        CompletableFuture.runAsync(()->applicationEventPublisher.publishEvent(new InitializeEvent(experimentGroupSettingRequest)))
+                .exceptionally(ex->{
+                    log.error(String.format( "GROUPINGError. expt:%s",experimentGroupSettingRequest.getExperimentInstanceId()),ex);
+                    return null;
+                });
 
         return true;
     }

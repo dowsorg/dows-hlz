@@ -152,8 +152,10 @@ public class EvalHealthIndexBiz {
         rsExperimentIndicatorExpressionBiz.populateKExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap(kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap, riskModelMinAndMaxExpressionIndicatorExpressionItemIdSet);
 
 
-        final int CONCURRENTNum=4;
-        if(experimentPersonIdSet.size()<CONCURRENTNum) {
+
+        final int CONCURRENTNum=1;
+
+        if(CONCURRENTNum<=1|| experimentPersonIdSet.size()<CONCURRENTNum) {
             evalPersonHealthIndex(req, experimentId, experimentPersonIdSet,
                     experimentCrowdsInstanceRsEntityList,
                     kExperimentCrowdsIdVExperimentIndicatorExpressionRefListMap,
