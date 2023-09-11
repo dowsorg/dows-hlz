@@ -3,6 +3,7 @@ package org.dows.hep.api.enums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,7 +28,10 @@ public enum EnumIndicatorType {
   public final static Map<Integer, EnumIndicatorType> kTypeVEnumIndicatorTypeMap = new HashMap<>();
 
   public static EnumIndicatorType of(Integer code){
-    return kTypeVEnumIndicatorTypeMap.get(code);
+    return Arrays.stream( EnumIndicatorType.values())
+            .filter(i->i.getType().equals(code))
+            .findFirst()
+            .orElse(USER_CREATED);
   }
 
   private final Integer type;
