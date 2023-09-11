@@ -324,7 +324,7 @@ public class EvalHealthIndexBiz {
                     }
 
                     final BigDecimal curVal = BigDecimalUtil.tryParseDecimalElseNull(singleExpressionResultRiskModelAR.get());
-                    vosFactorScore.add(new RiskFactorScoreVO(riskModelIndicatorExpressionId, curVal,
+                    vosFactorScore.add(new RiskFactorScoreVO(experimentRiskModelId, riskModelIndicatorExpressionId, curVal,
                             null == minExperimentIndicatorExpressionItemRsEntity ? null : BigDecimalUtil.tryParseDecimalElseNull(minExperimentIndicatorExpressionItemRsEntity.getResultRaw()),
                             null == maxExperimentIndicatorExpressionItemRsEntity ? null : BigDecimalUtil.tryParseDecimalElseNull(maxExperimentIndicatorExpressionItemRsEntity.getResultRaw())));
                     if (isNewPeriod) {
@@ -574,7 +574,7 @@ public class EvalHealthIndexBiz {
                         }
 
                         final BigDecimal curVal = BigDecimal.valueOf(Double.parseDouble(singleExpressionResultRiskModelAR.get()));
-                        vosFactorScore.add(new RiskFactorScoreVO(riskModelIndicatorExpressionId, curVal,
+                        vosFactorScore.add(new RiskFactorScoreVO(experimentRiskModelId, riskModelIndicatorExpressionId, curVal,
                                null==minExperimentIndicatorExpressionItemRsEntity?null: BigDecimalUtil.tryParseDecimalElseNull(minExperimentIndicatorExpressionItemRsEntity.getResultRaw()),
                                null==maxExperimentIndicatorExpressionItemRsEntity?null: BigDecimalUtil.tryParseDecimalElseNull(maxExperimentIndicatorExpressionItemRsEntity.getResultRaw())));
                         if(saveRiskFalg) {

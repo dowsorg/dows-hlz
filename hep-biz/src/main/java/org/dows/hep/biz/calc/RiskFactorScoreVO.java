@@ -15,8 +15,9 @@ import java.math.BigDecimal;
 @Accessors(chain = true)
 @Schema(name = "RiskFactorScoreVO 对象", title = "危险因素分值")
 public class RiskFactorScoreVO {
-    public RiskFactorScoreVO(String riskFactorId,BigDecimal score,BigDecimal minScore,BigDecimal maxScore){
+    public RiskFactorScoreVO(String riskFactorId,String riskExpressionId,  BigDecimal score,BigDecimal minScore,BigDecimal maxScore){
         this.riskFactorId=riskFactorId;
+        this.riskExpressionId=riskExpressionId;
         this.score=score;
         this.minScore= ShareUtil.XObject.defaultIfNull(minScore, score);
         this.maxScore= ShareUtil.XObject.defaultIfNull(maxScore, score);
@@ -24,6 +25,9 @@ public class RiskFactorScoreVO {
 
     @Schema(title = "危险因素id")
     private String riskFactorId;
+
+    @Schema(title = "危险表达式id")
+    private String riskExpressionId;
     @Schema(title = "当前分值")
     private BigDecimal score;
 
