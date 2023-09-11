@@ -7,10 +7,9 @@ import org.dows.hep.api.enums.EnumEvalFuncType;
 import org.dows.hep.biz.calc.RiskModelHealthIndexVO;
 import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.ShareUtil;
+import org.dows.hep.entity.ExperimentIndicatorValRsEntity;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -33,6 +32,9 @@ public class EvalPersonOnceData {
 
     @Schema(title = "指标列表")
     private final ConcurrentMap<String,EvalIndicatorValues> mapIndicators=new ConcurrentHashMap<>();
+
+    @Schema(title = "兼容旧版指标列表")
+    private final ConcurrentMap<String, ExperimentIndicatorValRsEntity> oldMapIndicators=new ConcurrentHashMap<>();
 
     public boolean isValued(){
         if(ShareUtil.XObject.anyEmpty(header,mapIndicators)){
@@ -81,8 +83,50 @@ public class EvalPersonOnceData {
         rst.setRisks(ShareUtil.XCollection.map(risks,i->
                 CopyWrapper.create(EvalRiskValues::new).endFrom(i)));
         getMapIndicators().forEach((k,v)->rst.getMapIndicators().put(k, v.flip(funcType)));
+        rst. getOldMap(true);
         return rst;
     }
+
+    public Map<String,ExperimentIndicatorValRsEntity> getOldMap(){
+        return oldMapIndicators;
+    }
+    public Map<String,ExperimentIndicatorValRsEntity> getOldMap(boolean getNewly){
+        if(getNewly) {
+            mapIndicators.values().forEach(item -> {
+                oldMapIndicators.computeIfAbsent(item.getIndicatorId(), k -> new ExperimentIndicatorValRsEntity().setIndicatorInstanceId(item.getIndicatorId()))
+                        .setCurrentVal(item.getCurVal())
+                        .setInitVal(item.getPeriodInitVal());
+            });
+        }
+        return oldMapIndicators;
+    }
+
+    public Map<String,ExperimentIndicatorValRsEntity> getOldMap(Set<String> indicatorIds){
+        if(ShareUtil.XObject.isEmpty(indicatorIds)){
+            return getOldMap();
+        }
+        indicatorIds.forEach(i->{
+            Optional.ofNullable(mapIndicators.get(i))
+                    .ifPresent(v->oldMapIndicators.computeIfAbsent(v.getIndicatorId(), k -> new ExperimentIndicatorValRsEntity().setIndicatorInstanceId(v.getIndicatorId()))
+                            .setCurrentVal(v.getCurVal())
+                            .setInitVal(v.getPeriodInitVal()));
+        });
+        return oldMapIndicators;
+    }
+    public Map<String,String> fillCurVal(Map<String,String> mapCurVal,Set<String> indicatorIds){
+        if(ShareUtil.XObject.isEmpty(indicatorIds)){
+            return mapCurVal;
+        }
+
+        indicatorIds.forEach(i->{
+            Optional.ofNullable(mapIndicators.get(i))
+                    .ifPresent(v->mapCurVal.put(v.getIndicatorId(),v.getIndicatorName()));
+        });
+        return mapCurVal;
+
+    }
+
+
 
 
     @Data
@@ -133,6 +177,27 @@ public class EvalPersonOnceData {
             }
             return Math.max(1,evalDay-Optional.ofNullable(lastEvalDay)
                             .orElse(1));
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("{");
+            sb.append("appId='").append(appId).append('\'');
+            sb.append(", evalNo=").append(evalNo);
+            sb.append(", syncState=").append(syncState);
+            sb.append(", funcType=").append(funcType);
+            sb.append(", periods=").append(periods);
+            sb.append(", evalDay=").append(evalDay);
+            sb.append(", evalingTime=").append(evalingTime);
+            sb.append(", evaledTime=").append(evaledTime);
+            sb.append(", lastEvalDay=").append(lastEvalDay);
+            sb.append(", healthIndex='").append(healthIndex).append('\'');
+            sb.append(", lastHealthIndex='").append(lastHealthIndex).append('\'');
+            sb.append(", money='").append(money).append('\'');
+            sb.append(", lastMoney='").append(lastMoney).append('\'');
+            sb.append(", moneyScore='").append(moneyScore).append('\'');
+            sb.append('}');
+            return sb.toString();
         }
     }
 

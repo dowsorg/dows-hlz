@@ -30,7 +30,9 @@ import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
 import org.dows.hep.biz.base.intervene.*;
 import org.dows.hep.biz.dao.OperateFlowDao;
 import org.dows.hep.biz.dao.OperateOrgFuncDao;
+import org.dows.hep.biz.dao.TreatItemDao;
 import org.dows.hep.biz.eval.EvalPersonBiz;
+import org.dows.hep.biz.eval.SportCalcBiz;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.operate.CostRequest;
 import org.dows.hep.biz.operate.OperateCostBiz;
@@ -88,6 +90,12 @@ public class ExperimentOrgInterveneBiz{
     private final CaseOrgFeeService caseOrgFeeService;
 
     private final EvalPersonBiz evalPersonBiz;
+
+    private final PersonIndicatorIdCache personIndicatorIdCache;
+
+    private final TreatItemDao treatItemDao;
+
+    private final SportCalcBiz sportCalcBiz;
 
 
     public List<Categ4ExptVO> listInterveneCateg4Expt(FindInterveneCateg4ExptRequest findCateg ) throws JsonProcessingException {
@@ -244,11 +252,10 @@ public class ExperimentOrgInterveneBiz{
         }catch (Exception ex){
             AssertUtil.justThrow(String.format("记录数据编制失败：%s",ex.getMessage()),ex);
         }
-        final PersonIndicatorIdCache cacheIndicatorId=PersonIndicatorIdCache.Instance();
         List<SpelEvalSumResult> evalSumResults=new ArrayList<>();
         if(ShareUtil.XObject.notEmpty(snapRst.getStatEnergy())) {
             for (CalcFoodStatVO item : snapRst.getStatEnergy()) {
-                String indicatorId = cacheIndicatorId.getIndicatorIdBySourceId(validator.getExperimentPersonId(), item.getInstanceId());
+                String indicatorId = personIndicatorIdCache.getIndicatorIdBySourceId(validator.getExperimentPersonId(), item.getInstanceId());
                 if (ShareUtil.XObject.isEmpty(indicatorId)) {
                     continue;
                 }
@@ -260,7 +267,7 @@ public class ExperimentOrgInterveneBiz{
         }
 
         Boolean succFlag= operateOrgFuncDao.tranSave(rowOrgFunc,Arrays.asList(rowOrgFuncSnap),false,()->{
-            AssertUtil.falseThenThrow(SpelInvoker.Instance().saveIndicator(validator.getExperimentPersonId(), null, evalSumResults, timePoint.getPeriod()))
+            AssertUtil.falseThenThrow(SpelInvoker.Instance().saveIndicatorCurrent(validator.getExperimentPersonId(), null, evalSumResults))
                     .throwMessage("影响指标数据保存失败");
             return true;
         });
@@ -319,6 +326,9 @@ public class ExperimentOrgInterveneBiz{
         }
 
         boolean succFlag= operateOrgFuncDao.tranSave(rowOrgFunc,Arrays.asList(rowOrgFuncSnap),false);
+        if(succFlag){
+            sportCalcBiz.calcSportCostEnergy(validator.getExperimentPersonId(),saveSport.getSportItems(),true);
+        }
         return new SaveExptInterveneResponse()
                 .setSuccess(succFlag)
                 .setOperateOrgFuncId(rowOrgFunc.getOperateOrgFuncId());
@@ -336,6 +346,7 @@ public class ExperimentOrgInterveneBiz{
         saveTreat.getTreatItems().forEach(i->{
             AssertUtil.trueThenThrow(BigDecimalUtil.tryParseDecimalElseZero(i.getWeight()).compareTo(BigDecimal.ZERO)<=0)
                             .throwMessage(String.format("请输入[%s]的有效用量",i.getTreatItemName()));
+
         });
 
         //校验操作类型
@@ -363,6 +374,14 @@ public class ExperimentOrgInterveneBiz{
             }
             item.setItemId(getTimestampId(dateNow,saveTreat.getTreatItems().size()-i)).setDealFlag(0);
             newItems.add(item);
+        }
+        if(ShareUtil.XObject.notEmpty(newItems)) {
+            List<TreatItemEntity> rowsTreatItem = treatItemDao.getByIds(ShareUtil.XCollection.map(newItems, ExptTreatPlanItemVO::getTreatItemId),
+                    TreatItemEntity::getTreatItemId,
+                    TreatItemEntity::getFee);
+            Map<String, TreatItemEntity> mapTreatItem = ShareUtil.XCollection.toMap(rowsTreatItem, TreatItemEntity::getTreatItemId);
+            newItems.forEach(i->Optional.ofNullable(mapTreatItem.get(i.getTreatItemId()))
+                    .ifPresent(v->i.setFee(BigDecimalUtil.formatDecimal(v.getFee()))));
         }
         BigDecimalOptional cost=BigDecimalOptional.zero();
         newItems.forEach(i->cost.add(BigDecimalUtil.mul(BigDecimalUtil.tryParseDecimalElseZero(i.getWeight()), BigDecimalUtil.tryParseDecimalElseZero(i.getFee()))));

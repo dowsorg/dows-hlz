@@ -93,7 +93,7 @@ public class ExperimentEventRules {
                 Map<String, List<OrgNoticeResponse>> mapNotice = experimentOrgNoticeBiz.getWebSocketNotice(experimentId, rowsNotice);
                 if (ShareUtil.XObject.notEmpty(mapNotice)) {
                     mapNotice.forEach((k,v)->{
-                        PushWebScoketResult rstPush= PushWebSocketUtil.Instance().pushCommon(EnumWebSocketType.EVENT_TRIGGERED, experimentId,Set.of(k), v);
+                        PushWebScoketResult rstPush= PushWebSocketUtil.Instance().pushCommon(EnumWebSocketType.EVENT_TRIGGERED, experimentId,Set.of(k), v,false);
                         sb.append(String.format( " -loop clientId:%s noticeIds:%s miss:%s",
                                 k,
                                 v.stream().map(OrgNoticeResponse::getExperimentOrgNoticeId).collect(Collectors.joining(",")),

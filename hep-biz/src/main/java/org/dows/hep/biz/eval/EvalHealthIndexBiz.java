@@ -1,5 +1,6 @@
 package org.dows.hep.biz.eval;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -32,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -149,163 +151,231 @@ public class EvalHealthIndexBiz {
         Map<String, ExperimentIndicatorExpressionItemRsEntity> kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap = new HashMap<>();
         rsExperimentIndicatorExpressionBiz.populateKExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap(kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap, riskModelMinAndMaxExpressionIndicatorExpressionItemIdSet);
 
-        final Map<String, ExperimentIndicatorValRsEntity> mapCurVal=new HashMap<>();
-        final Map<String, ExperimentIndicatorValRsEntity> mapLastVal=new HashMap<>();
-        for(String experimentPersonId:experimentPersonIdSet){
 
-            Map<String, String> kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap = personIndicatorIdCache.getMapBaseCase2ExptId(experimentPersonId);
-            if (Objects.isNull(kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap) || kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.isEmpty()) {
-                continue;
+        final int CONCURRENTNum=4;
+        if(experimentPersonIdSet.size()<CONCURRENTNum) {
+            evalPersonHealthIndex(req, experimentId, experimentPersonIdSet,
+                    experimentCrowdsInstanceRsEntityList,
+                    kExperimentCrowdsIdVExperimentIndicatorExpressionRefListMap,
+                    kCrowdsExpIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap,
+                    kExperimentCrowdsIdVExperimentRiskModelRsEntityListMap,
+                    kExperimentRiskModelIdVExperimentIndicatorExpressionRefListMap,
+                    kRiskModelExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap,
+                    kRiskModelExpIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap,
+                    kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap);
+        }else{
+            List<List<String>> groups = ShareUtil.XCollection.split(List.copyOf(experimentPersonIdSet), CONCURRENTNum);
+            CompletableFuture[] futures = new CompletableFuture[groups.size()];
+            int pos = 0;
+            for (List<String> personIds : groups) {
+                futures[pos++] = CompletableFuture.runAsync(() ->evalPersonHealthIndex(req, experimentId, personIds,
+                                experimentCrowdsInstanceRsEntityList,
+                                kExperimentCrowdsIdVExperimentIndicatorExpressionRefListMap,
+                                kCrowdsExpIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap,
+                                kExperimentCrowdsIdVExperimentRiskModelRsEntityListMap,
+                                kExperimentRiskModelIdVExperimentIndicatorExpressionRefListMap,
+                                kRiskModelExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap,
+                                kRiskModelExpIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap,
+                                kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap),
+                        EvalPersonExecutor.Instance().getThreadPool());
+            }
+            CompletableFuture.allOf(futures).join();
+        }
+
+    }
+
+    public void evalPersonHealthIndex(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs req, String experimentId, Collection<String> experimentPersonIds,
+                                              List<ExperimentCrowdsInstanceRsEntity> experimentCrowdsInstanceRsEntityList,
+                                              Map<String, List<ExperimentIndicatorExpressionRefRsEntity>> kExperimentCrowdsIdVExperimentIndicatorExpressionRefListMap,
+                                              Map<String, List<ExperimentIndicatorExpressionItemRsEntity>> kCrowdsExpIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap,
+                                              Map<String, List<ExperimentRiskModelRsEntity>> kExperimentCrowdsIdVExperimentRiskModelRsEntityListMap,
+                                              Map<String, List<ExperimentIndicatorExpressionRefRsEntity>> kExperimentRiskModelIdVExperimentIndicatorExpressionRefListMap,
+                                              Map<String, ExperimentIndicatorExpressionRsEntity> kRiskModelExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap,
+                                              Map<String, List<ExperimentIndicatorExpressionItemRsEntity>> kRiskModelExpIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap,
+                                              Map<String, ExperimentIndicatorExpressionItemRsEntity> kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap){
+
+        RiskSavePack savePack=new RiskSavePack();
+        for(String personId:experimentPersonIds){
+            evalPersonHealthIndex(savePack,req, experimentId, personId,
+                    experimentCrowdsInstanceRsEntityList,
+                    kExperimentCrowdsIdVExperimentIndicatorExpressionRefListMap,
+                    kCrowdsExpIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap,
+                    kExperimentCrowdsIdVExperimentRiskModelRsEntityListMap,
+                    kExperimentRiskModelIdVExperimentIndicatorExpressionRefListMap,
+                    kRiskModelExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap,
+                    kRiskModelExpIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap,
+                    kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap);
+        }
+        evalPersonDao.saveRisks(savePack.getExperimentPersonRiskModelRsEntityList(),savePack.getExperimentPersonHealthRiskFactorRsEntityList());
+    }
+
+    public void evalPersonHealthIndex(RiskSavePack rst,ExperimentRsCalculateAndCreateReportHealthScoreRequestRs req, String experimentId, String experimentPersonId,
+                                      List<ExperimentCrowdsInstanceRsEntity> experimentCrowdsInstanceRsEntityList,
+                                      Map<String, List<ExperimentIndicatorExpressionRefRsEntity>> kExperimentCrowdsIdVExperimentIndicatorExpressionRefListMap,
+                                      Map<String, List<ExperimentIndicatorExpressionItemRsEntity>> kCrowdsExpIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap,
+                                      Map<String, List<ExperimentRiskModelRsEntity>> kExperimentCrowdsIdVExperimentRiskModelRsEntityListMap,
+                                      Map<String, List<ExperimentIndicatorExpressionRefRsEntity>> kExperimentRiskModelIdVExperimentIndicatorExpressionRefListMap,
+                                      Map<String, ExperimentIndicatorExpressionRsEntity> kRiskModelExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap,
+                                      Map<String, List<ExperimentIndicatorExpressionItemRsEntity>> kRiskModelExpIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap,
+                                      Map<String, ExperimentIndicatorExpressionItemRsEntity> kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap) {
+
+        final boolean isNewPeriod = EnumEvalFuncType.isNewPeriod(req.getFuncType());
+        Map<String, String> kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap = personIndicatorIdCache.getMapBaseCase2ExptId(experimentPersonId);
+        if (Objects.isNull(kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap) || kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.isEmpty()) {
+            return;
+        }
+
+        final EvalPersonPointer evalPointer = evalPersonCache.getPointer(experimentId, experimentPersonId);
+        final EvalPersonOnceHolder evalHolder = evalPointer.getCurHolder();
+        Map<String, ExperimentIndicatorValRsEntity> mapCurVal = evalHolder.get().getOldMap(true);
+        //Map<String, ExperimentIndicatorValRsEntity> mapLastVal=evalHolder.getLastHolder().get().getOldMap();
+
+        final List<RiskModelHealthIndexVO> vosHealthIndex = new ArrayList<>();
+        final List<EvalRiskValues> voRisks = new ArrayList<>();
+        AtomicReference<String> crowdsAR = new AtomicReference<>(RsUtilBiz.RESULT_DROP);
+
+        experimentCrowdsInstanceRsEntityList.forEach(experimentCrowdsInstanceRsEntity -> {
+            crowdsAR.set(RsUtilBiz.RESULT_DROP);
+            String experimentCrowdsId = experimentCrowdsInstanceRsEntity.getExperimentCrowdsId();
+            List<ExperimentIndicatorExpressionRefRsEntity> crowdsExperimentIndicatorExpressionRefRsEntityList = kExperimentCrowdsIdVExperimentIndicatorExpressionRefListMap.get(experimentCrowdsId);
+            if (Objects.isNull(crowdsExperimentIndicatorExpressionRefRsEntityList) || crowdsExperimentIndicatorExpressionRefRsEntityList.isEmpty()) {
+                return;
             }
 
-            final EvalPersonPointer evalPointer=evalPersonCache.getPointer(experimentId,experimentPersonId);
-            final EvalPersonOnceHolder evalHolder=evalPointer.getCurHolder();
-            evalHolder.fillCastMapCur(mapCurVal);
-            evalHolder.fillCastMapLast(mapLastVal);
-            final List<RiskModelHealthIndexVO> vosHealthIndex=new ArrayList<>();
-            final List<EvalRiskValues> voRisks=new ArrayList<>();
-            AtomicReference<String> crowdsAR = new AtomicReference<>(RsUtilBiz.RESULT_DROP);
+            ExperimentIndicatorExpressionRefRsEntity crowdsExperimentIndicatorExpressionRefRsEntity = crowdsExperimentIndicatorExpressionRefRsEntityList.get(0);
+            String crowdsIndicatorExpressionId = crowdsExperimentIndicatorExpressionRefRsEntity.getIndicatorExpressionId();
+            List<ExperimentIndicatorExpressionItemRsEntity> crowdsExperimentIndicatorExpressionItemRsEntityList = kCrowdsExpIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap.get(crowdsIndicatorExpressionId);
+            if (Objects.isNull(crowdsExperimentIndicatorExpressionItemRsEntityList) || crowdsExperimentIndicatorExpressionItemRsEntityList.isEmpty()) {
+                return;
+            }
+            rsExperimentIndicatorExpressionBiz.parseExperimentIndicatorExpression(
+                    EnumIndicatorExpressionField.EXPERIMENT.getField(),
+                    EnumIndicatorExpressionSource.CROWDS.getSource(),
+                    EnumIndicatorExpressionScene.EXPERIMENT_CALCULATE_HEALTH_POINT.getScene(),
+                    crowdsAR,
+                    kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap,
+                    DatabaseCalIndicatorExpressionRequest.builder().build(),
+                    CaseCalIndicatorExpressionRequest.builder().build(),
+                    ExperimentCalIndicatorExpressionRequest
+                            .builder()
+                            .kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(mapCurVal)
+                            .experimentIndicatorExpressionItemRsEntityList(crowdsExperimentIndicatorExpressionItemRsEntityList)
+                            .build()
+            );
+            if (StringUtils.equals(RsUtilBiz.RESULT_DROP, crowdsAR.get())
+                    || !StringUtils.equalsIgnoreCase(Boolean.TRUE.toString(), crowdsAR.get())) {
+                return;
+            }
 
-            experimentCrowdsInstanceRsEntityList.forEach(experimentCrowdsInstanceRsEntity -> {
-                crowdsAR.set(RsUtilBiz.RESULT_DROP);
-                String experimentCrowdsId = experimentCrowdsInstanceRsEntity.getExperimentCrowdsId();
-                List<ExperimentIndicatorExpressionRefRsEntity> crowdsExperimentIndicatorExpressionRefRsEntityList = kExperimentCrowdsIdVExperimentIndicatorExpressionRefListMap.get(experimentCrowdsId);
-                if (Objects.isNull(crowdsExperimentIndicatorExpressionRefRsEntityList) || crowdsExperimentIndicatorExpressionRefRsEntityList.isEmpty()) {return;}
+            List<ExperimentRiskModelRsEntity> experimentRiskModelRsEntityList = kExperimentCrowdsIdVExperimentRiskModelRsEntityListMap.get(experimentCrowdsId);
+            if (Objects.isNull(experimentRiskModelRsEntityList) || experimentRiskModelRsEntityList.isEmpty()) {
+                return;
+            }
 
-                ExperimentIndicatorExpressionRefRsEntity crowdsExperimentIndicatorExpressionRefRsEntity = crowdsExperimentIndicatorExpressionRefRsEntityList.get(0);
-                String crowdsIndicatorExpressionId = crowdsExperimentIndicatorExpressionRefRsEntity.getIndicatorExpressionId();
-                List<ExperimentIndicatorExpressionItemRsEntity> crowdsExperimentIndicatorExpressionItemRsEntityList = kCrowdsExpIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap.get(crowdsIndicatorExpressionId);
-                if (Objects.isNull(crowdsExperimentIndicatorExpressionItemRsEntityList) || crowdsExperimentIndicatorExpressionItemRsEntityList.isEmpty()) {return;}
-                rsExperimentIndicatorExpressionBiz.parseExperimentIndicatorExpression(
-                        EnumIndicatorExpressionField.EXPERIMENT.getField(),
-                        EnumIndicatorExpressionSource.CROWDS.getSource(),
-                        EnumIndicatorExpressionScene.EXPERIMENT_CALCULATE_HEALTH_POINT.getScene(),
-                        crowdsAR,
-                        kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap,
-                        DatabaseCalIndicatorExpressionRequest.builder().build(),
-                        CaseCalIndicatorExpressionRequest.builder().build(),
-                        ExperimentCalIndicatorExpressionRequest
-                                .builder()
-                                .kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(mapCurVal)
-                                .experimentIndicatorExpressionItemRsEntityList(crowdsExperimentIndicatorExpressionItemRsEntityList)
-                                .build()
-                );
-                if (StringUtils.equals(RsUtilBiz.RESULT_DROP, crowdsAR.get())
-                        ||!StringUtils.equalsIgnoreCase(Boolean.TRUE.toString(), crowdsAR.get())) {
+            experimentRiskModelRsEntityList.forEach(experimentRiskModelRsEntity -> {
+                String experimentPersonRiskModelId = idGenerator.nextIdStr();
+                String experimentRiskModelId = experimentRiskModelRsEntity.getExperimentRiskModelId();
+
+
+                List<ExperimentIndicatorExpressionRefRsEntity> riskModelExperimentIndicatorExpressionRefRsEntityList = kExperimentRiskModelIdVExperimentIndicatorExpressionRefListMap.get(experimentRiskModelId);
+                if (Objects.isNull(riskModelExperimentIndicatorExpressionRefRsEntityList) || riskModelExperimentIndicatorExpressionRefRsEntityList.isEmpty()) {
                     return;
                 }
-
-                List<ExperimentRiskModelRsEntity> experimentRiskModelRsEntityList = kExperimentCrowdsIdVExperimentRiskModelRsEntityListMap.get(experimentCrowdsId);
-                if (Objects.isNull(experimentRiskModelRsEntityList) || experimentRiskModelRsEntityList.isEmpty()) {
-                    return;
-                }
-
-                experimentRiskModelRsEntityList.forEach(experimentRiskModelRsEntity -> {
-                    String experimentPersonRiskModelId = idGenerator.nextIdStr();
-                    String experimentRiskModelId = experimentRiskModelRsEntity.getExperimentRiskModelId();
+                final List<RiskFactorScoreVO> vosFactorScore = new ArrayList<>();
 
 
-                    List<ExperimentIndicatorExpressionRefRsEntity> riskModelExperimentIndicatorExpressionRefRsEntityList = kExperimentRiskModelIdVExperimentIndicatorExpressionRefListMap.get(experimentRiskModelId);
-                    if (Objects.isNull(riskModelExperimentIndicatorExpressionRefRsEntityList) || riskModelExperimentIndicatorExpressionRefRsEntityList.isEmpty()) {
+                riskModelExperimentIndicatorExpressionRefRsEntityList.forEach(riskModelExperimentIndicatorExpressionRefRsEntity -> {
+                    String riskModelIndicatorExpressionId = riskModelExperimentIndicatorExpressionRefRsEntity.getIndicatorExpressionId();
+                    ExperimentIndicatorExpressionRsEntity riskModelExperimentIndicatorExpressionRsEntity = kRiskModelExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap.get(riskModelIndicatorExpressionId);
+                    if (Objects.isNull(riskModelExperimentIndicatorExpressionRsEntity)) {
                         return;
                     }
-                    final List<RiskFactorScoreVO> vosFactorScore=new ArrayList<>();
-
-
-                    riskModelExperimentIndicatorExpressionRefRsEntityList.forEach(riskModelExperimentIndicatorExpressionRefRsEntity -> {
-                        String riskModelIndicatorExpressionId = riskModelExperimentIndicatorExpressionRefRsEntity.getIndicatorExpressionId();
-                        ExperimentIndicatorExpressionRsEntity riskModelExperimentIndicatorExpressionRsEntity = kRiskModelExperimentIndicatorExpressionIdVExperimentIndicatorExpressionRsEntityMap.get(riskModelIndicatorExpressionId);
-                        if (Objects.isNull(riskModelExperimentIndicatorExpressionRsEntity)) {return;}
-                        String indicatorInstanceId = riskModelExperimentIndicatorExpressionRsEntity.getPrincipalId();
-                        String experimentIndicatorInstanceId = kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.get(indicatorInstanceId);
-                        AtomicReference<String> singleExpressionResultRiskModelAR = new AtomicReference<>(RsUtilBiz.RESULT_DROP);
-                        String experimentIndicatorExpressionId = riskModelExperimentIndicatorExpressionRsEntity.getExperimentIndicatorExpressionId();
-                        List<ExperimentIndicatorExpressionItemRsEntity> riskModelExperimentIndicatorExpressionItemRsEntityList = kRiskModelExpIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap.get(experimentIndicatorExpressionId);
-                        if (Objects.isNull(riskModelExperimentIndicatorExpressionItemRsEntityList) || riskModelExperimentIndicatorExpressionItemRsEntityList.isEmpty()) {return;}
-                        String minIndicatorExpressionItemId = riskModelExperimentIndicatorExpressionRsEntity.getMinIndicatorExpressionItemId();
-                        ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity = kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(minIndicatorExpressionItemId);
-                        String maxIndicatorExpressionItemId = riskModelExperimentIndicatorExpressionRsEntity.getMaxIndicatorExpressionItemId();
-                        ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity = kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(maxIndicatorExpressionItemId);
-                        rsExperimentIndicatorExpressionBiz.parseExperimentIndicatorExpression(
-                                EnumIndicatorExpressionField.EXPERIMENT.getField(), EnumIndicatorExpressionSource.RISK_MODEL.getSource(), EnumIndicatorExpressionScene.EXPERIMENT_CALCULATE_HEALTH_POINT.getScene(),
-                                singleExpressionResultRiskModelAR,
-                                kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap,
-                                DatabaseCalIndicatorExpressionRequest.builder().build(),
-                                CaseCalIndicatorExpressionRequest.builder().build(),
-                                ExperimentCalIndicatorExpressionRequest
-                                        .builder()
-                                        .kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(mapCurVal)
-                                        .experimentIndicatorExpressionRsEntity(riskModelExperimentIndicatorExpressionRsEntity)
-                                        .experimentIndicatorExpressionItemRsEntityList(riskModelExperimentIndicatorExpressionItemRsEntityList)
-                                        .minExperimentIndicatorExpressionItemRsEntity(minExperimentIndicatorExpressionItemRsEntity)
-                                        .maxExperimentIndicatorExpressionItemRsEntity(maxExperimentIndicatorExpressionItemRsEntity)
-                                        .build()
-                        );
-                        if (StringUtils.equals(RsUtilBiz.RESULT_DROP, singleExpressionResultRiskModelAR.get())) {
-                            return;
-                        }
-
-                        final BigDecimal curVal = BigDecimalUtil.tryParseDecimalElseNull(singleExpressionResultRiskModelAR.get());
-                        vosFactorScore.add(new RiskFactorScoreVO(riskModelIndicatorExpressionId, curVal,
-                                null==minExperimentIndicatorExpressionItemRsEntity?null: BigDecimalUtil.tryParseDecimalElseNull(minExperimentIndicatorExpressionItemRsEntity.getResultRaw()),
-                                null==maxExperimentIndicatorExpressionItemRsEntity?null: BigDecimalUtil.tryParseDecimalElseNull(maxExperimentIndicatorExpressionItemRsEntity.getResultRaw())));
-                        if(isNewPeriod) {
-                            experimentPersonHealthRiskFactorRsEntityList.add(ExperimentPersonHealthRiskFactorRsEntity
+                    String indicatorInstanceId = riskModelExperimentIndicatorExpressionRsEntity.getPrincipalId();
+                    String experimentIndicatorInstanceId = kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap.get(indicatorInstanceId);
+                    AtomicReference<String> singleExpressionResultRiskModelAR = new AtomicReference<>(RsUtilBiz.RESULT_DROP);
+                    String experimentIndicatorExpressionId = riskModelExperimentIndicatorExpressionRsEntity.getExperimentIndicatorExpressionId();
+                    List<ExperimentIndicatorExpressionItemRsEntity> riskModelExperimentIndicatorExpressionItemRsEntityList = kRiskModelExpIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap.get(experimentIndicatorExpressionId);
+                    if (Objects.isNull(riskModelExperimentIndicatorExpressionItemRsEntityList) || riskModelExperimentIndicatorExpressionItemRsEntityList.isEmpty()) {
+                        return;
+                    }
+                    String minIndicatorExpressionItemId = riskModelExperimentIndicatorExpressionRsEntity.getMinIndicatorExpressionItemId();
+                    ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity = kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(minIndicatorExpressionItemId);
+                    String maxIndicatorExpressionItemId = riskModelExperimentIndicatorExpressionRsEntity.getMaxIndicatorExpressionItemId();
+                    ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity = kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(maxIndicatorExpressionItemId);
+                    rsExperimentIndicatorExpressionBiz.parseExperimentIndicatorExpression(
+                            EnumIndicatorExpressionField.EXPERIMENT.getField(), EnumIndicatorExpressionSource.RISK_MODEL.getSource(), EnumIndicatorExpressionScene.EXPERIMENT_CALCULATE_HEALTH_POINT.getScene(),
+                            singleExpressionResultRiskModelAR,
+                            kIndicatorInstanceIdVExperimentIndicatorInstanceIdMap,
+                            DatabaseCalIndicatorExpressionRequest.builder().build(),
+                            CaseCalIndicatorExpressionRequest.builder().build(),
+                            ExperimentCalIndicatorExpressionRequest
                                     .builder()
-                                    .experimentPersonHealthRiskFactorId(idGenerator.nextIdStr())
-                                    .experimentPersonRiskModelId(experimentPersonRiskModelId)
-                                    .experimentIndicatorInstanceId(experimentIndicatorInstanceId)
-                                    .name(Optional.ofNullable(personIndicatorIdCache.getIndicatorById(experimentPersonId, experimentIndicatorInstanceId))
-                                            .map(ExperimentIndicatorInstanceRsEntity::getIndicatorName)
-                                            .orElse(""))
-                                    .val(Optional.ofNullable(evalHolder.getIndicator(experimentIndicatorInstanceId))
-                                            .map(EvalIndicatorValues::getCurVal)
-                                            .orElse(""))
-                                    .riskScore(curVal.doubleValue())
-                                    .build());
-                        }
-                    });
-                    final RiskModelHealthIndexVO voRiskModel=new RiskModelHealthIndexVO()
-                            .setRiskModelId(experimentRiskModelId)
-                            .setRiskModelName(experimentRiskModelRsEntity.getName())
-                            .setCrowdsDeathRate(experimentCrowdsInstanceRsEntity.getDeathProbability())
-                            .setRiskModelDeathRate(experimentRiskModelRsEntity.getRiskDeathProbability())
-                            .setRiskFactors(vosFactorScore);
-                    vosHealthIndex.add(EvalHealthIndexUtil.evalRiskModelHealthIndex(voRiskModel));
-                    voRisks.add(new EvalRiskValues()
-                            .setCrowdId(experimentRiskModelRsEntity.getCrowdsCategoryId())
-                            .setRiskId(experimentRiskModelId)
-                            .setRiskName(experimentRiskModelRsEntity.getName())
+                                    .kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(mapCurVal)
+                                    .experimentIndicatorExpressionRsEntity(riskModelExperimentIndicatorExpressionRsEntity)
+                                    .experimentIndicatorExpressionItemRsEntityList(riskModelExperimentIndicatorExpressionItemRsEntityList)
+                                    .minExperimentIndicatorExpressionItemRsEntity(minExperimentIndicatorExpressionItemRsEntity)
+                                    .maxExperimentIndicatorExpressionItemRsEntity(maxExperimentIndicatorExpressionItemRsEntity)
+                                    .build()
                     );
+                    if (StringUtils.equals(RsUtilBiz.RESULT_DROP, singleExpressionResultRiskModelAR.get())) {
+                        return;
+                    }
 
-                    if(isNewPeriod) {
-                        experimentPersonRiskModelRsEntityList.add(ExperimentPersonRiskModelRsEntity
+                    final BigDecimal curVal = BigDecimalUtil.tryParseDecimalElseNull(singleExpressionResultRiskModelAR.get());
+                    vosFactorScore.add(new RiskFactorScoreVO(riskModelIndicatorExpressionId, curVal,
+                            null == minExperimentIndicatorExpressionItemRsEntity ? null : BigDecimalUtil.tryParseDecimalElseNull(minExperimentIndicatorExpressionItemRsEntity.getResultRaw()),
+                            null == maxExperimentIndicatorExpressionItemRsEntity ? null : BigDecimalUtil.tryParseDecimalElseNull(maxExperimentIndicatorExpressionItemRsEntity.getResultRaw())));
+                    if (isNewPeriod) {
+                        rst.experimentPersonHealthRiskFactorRsEntityList.add(ExperimentPersonHealthRiskFactorRsEntity
                                 .builder()
+                                .experimentPersonHealthRiskFactorId(idGenerator.nextIdStr())
                                 .experimentPersonRiskModelId(experimentPersonRiskModelId)
-                                .experimentId(experimentId)
-                                .appId(appId)
-                                .periods(periods)
-                                .experimentPersonId(experimentPersonId)
-                                .experimentRiskModelId(experimentRiskModelId)
-                                .name(experimentRiskModelRsEntity.getName())
-                                .riskDeathProbability(experimentRiskModelRsEntity.getRiskDeathProbability())
-                                .composeRiskScore(BigDecimalUtil.doubleValue(voRiskModel.getScore()))
-                                .existDeathRiskScore(BigDecimalUtil.doubleValue(voRiskModel.getExistsDeathScore()))
+                                .experimentIndicatorInstanceId(experimentIndicatorInstanceId)
+                                .name(Optional.ofNullable(personIndicatorIdCache.getIndicatorById(experimentPersonId, experimentIndicatorInstanceId))
+                                        .map(ExperimentIndicatorInstanceRsEntity::getIndicatorName)
+                                        .orElse(""))
+                                .val(Optional.ofNullable(evalHolder.getIndicator(experimentIndicatorInstanceId))
+                                        .map(EvalIndicatorValues::getCurVal)
+                                        .orElse(""))
+                                .riskScore(curVal.doubleValue())
                                 .build());
                     }
                 });
-            });
-            BigDecimal personHealthIndex= EvalHealthIndexUtil.evalHealthIndex(vosHealthIndex,false);
-            evalHolder.get().setEvalRisks(vosHealthIndex).setRisks(voRisks);
-            evalHolder.putCurVal(personIndicatorIdCache.getSysIndicatorId(experimentPersonId, EnumIndicatorType.HEALTH_POINT),
-                    BigDecimalUtil.formatRoundDecimal(personHealthIndex, 2, RoundingMode.DOWN),false);
-            evalPointer.sync(req.getFuncType());
+                final RiskModelHealthIndexVO voRiskModel = new RiskModelHealthIndexVO()
+                        .setRiskModelId(experimentRiskModelId)
+                        .setRiskModelName(experimentRiskModelRsEntity.getName())
+                        .setCrowdsDeathRate(experimentCrowdsInstanceRsEntity.getDeathProbability())
+                        .setRiskModelDeathRate(experimentRiskModelRsEntity.getRiskDeathProbability())
+                        .setRiskFactors(vosFactorScore);
+                vosHealthIndex.add(EvalHealthIndexUtil.evalRiskModelHealthIndex(voRiskModel));
+                voRisks.add(new EvalRiskValues()
+                        .setCrowdId(experimentRiskModelRsEntity.getCrowdsCategoryId())
+                        .setRiskId(experimentRiskModelId)
+                        .setRiskName(experimentRiskModelRsEntity.getName())
+                );
 
-        }
-        if(!isNewPeriod){
-            return;
-        }
-        evalPersonDao.saveRisks(experimentPersonRiskModelRsEntityList,experimentPersonHealthRiskFactorRsEntityList);
+                if (isNewPeriod) {
+                    rst.experimentPersonRiskModelRsEntityList.add(ExperimentPersonRiskModelRsEntity
+                            .builder()
+                            .experimentPersonRiskModelId(experimentPersonRiskModelId)
+                            .experimentId(experimentId)
+                            .appId(req.getAppId())
+                            .periods(req.getPeriods())
+                            .experimentPersonId(experimentPersonId)
+                            .experimentRiskModelId(experimentRiskModelId)
+                            .name(experimentRiskModelRsEntity.getName())
+                            .riskDeathProbability(experimentRiskModelRsEntity.getRiskDeathProbability())
+                            .composeRiskScore(BigDecimalUtil.doubleValue(voRiskModel.getScore()))
+                            .existDeathRiskScore(BigDecimalUtil.doubleValue(voRiskModel.getExistsDeathScore()))
+                            .build());
+                }
+            });
+        });
+        BigDecimal personHealthIndex = EvalHealthIndexUtil.evalHealthIndex(vosHealthIndex, false);
+        evalHolder.get().setEvalRisks(vosHealthIndex).setRisks(voRisks);
+        evalHolder.putCurVal(personIndicatorIdCache.getSysIndicatorId(experimentPersonId, EnumIndicatorType.HEALTH_POINT),
+                BigDecimalUtil.formatRoundDecimal(personHealthIndex, 2, RoundingMode.DOWN), false);
+        evalPointer.sync(req.getFuncType());
 
     }
 
@@ -559,4 +629,11 @@ public class EvalHealthIndexBiz {
         if (!experimentPersonHealthRiskFactorRsEntityList.isEmpty()) {experimentPersonHealthRiskFactorRsService.saveOrUpdateBatch(experimentPersonHealthRiskFactorRsEntityList);}
     }
     //endregion
+
+    public static class RiskSavePack {
+        @Getter
+        private final List<ExperimentPersonRiskModelRsEntity> experimentPersonRiskModelRsEntityList = new ArrayList<>();
+        @Getter
+        private final List<ExperimentPersonHealthRiskFactorRsEntity> experimentPersonHealthRiskFactorRsEntityList = new ArrayList<>();
+    }
 }

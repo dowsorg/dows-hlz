@@ -6,12 +6,17 @@ import org.dows.framework.crud.api.CrudContextHolder;
 import org.dows.hep.api.core.BaseExptRequest;
 import org.dows.hep.api.core.ExptOrgFuncRequest;
 import org.dows.hep.api.enums.EnumExperimentState;
+import org.dows.hep.biz.eval.ExperimentPersonCache;
 import org.dows.hep.biz.event.ExperimentSettingCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.snapshot.SnapshotRequestHolder;
+import org.dows.hep.biz.spel.PersonIndicatorIdCache;
 import org.dows.hep.entity.*;
-import org.dows.hep.service.*;
+import org.dows.hep.service.ExperimentGroupService;
+import org.dows.hep.service.ExperimentInstanceService;
+import org.dows.hep.service.ExperimentOrgService;
+import org.dows.hep.service.IndicatorFuncService;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -213,12 +218,16 @@ public class ExptRequestValidator {
     public ExperimentGroupEntity getExperimentGroup(SFunction<ExperimentGroupEntity,?>... cols){
         checkExperimentGroupId();
         if(null== cachedExptGroup) {
-            cachedExptGroup = CrudContextHolder.getBean(ExperimentGroupService.class)
-                    .lambdaQuery()
-                    .eq(ShareUtil.XObject.notEmpty(this.appId),ExperimentGroupEntity::getAppId,appId)
-                    .eq(ExperimentGroupEntity::getExperimentGroupId, experimentGroupId)
-                    .select(cols)
-                    .oneOpt();
+            if(ShareUtil.XObject.notEmpty(experimentInstanceId)) {
+                cachedExptGroup = Optional.ofNullable(ExperimentPersonCache.Instance().getGroup(experimentInstanceId, experimentGroupId));
+            }else {
+                cachedExptGroup = CrudContextHolder.getBean(ExperimentGroupService.class)
+                        .lambdaQuery()
+                        .eq(ShareUtil.XObject.notEmpty(this.appId), ExperimentGroupEntity::getAppId, appId)
+                        .eq(ExperimentGroupEntity::getExperimentGroupId, experimentGroupId)
+                        .select(cols)
+                        .oneOpt();
+            }
         }
         ExperimentGroupEntity rst=AssertUtil.getNotNull(cachedExptGroup).orElseThrow("未找到实验小组");
         if(ShareUtil.XObject.isEmpty(experimentInstanceId)&&ShareUtil.XObject.notEmpty(rst.getExperimentInstanceId())){
@@ -255,12 +264,16 @@ public class ExptRequestValidator {
     public ExperimentOrgEntity getExperimentOrg(SFunction<ExperimentOrgEntity,?>... cols){
         checkExperimentOrgId();
         if(null== cachedExptOrg) {
-            cachedExptOrg = CrudContextHolder.getBean(ExperimentOrgService.class)
-                    .lambdaQuery()
-                    .eq(ShareUtil.XObject.notEmpty(this.appId),ExperimentOrgEntity::getAppId,appId)
-                    .eq(ExperimentOrgEntity::getExperimentOrgId, experimentOrgId)
-                    .select(cols)
-                    .oneOpt();
+            if(ShareUtil.XObject.notEmpty(experimentInstanceId)) {
+                cachedExptOrg = Optional.ofNullable(ExperimentPersonCache.Instance().getOrg(experimentInstanceId, experimentOrgId));
+            }else {
+                cachedExptOrg = CrudContextHolder.getBean(ExperimentOrgService.class)
+                        .lambdaQuery()
+                        .eq(ShareUtil.XObject.notEmpty(this.appId), ExperimentOrgEntity::getAppId, appId)
+                        .eq(ExperimentOrgEntity::getExperimentOrgId, experimentOrgId)
+                        .select(cols)
+                        .oneOpt();
+            }
         }
         ExperimentOrgEntity rst=AssertUtil.getNotNull(cachedExptOrg).orElseThrow("未找到实验机构");
         if(ShareUtil.XObject.isEmpty(experimentInstanceId)&&ShareUtil.XObject.notEmpty(rst.getExperimentInstanceId())){
@@ -301,12 +314,13 @@ public class ExptRequestValidator {
     public ExperimentPersonEntity getExperimentPerson(SFunction<ExperimentPersonEntity,?>... cols){
         checkExperimentPersonId();
         if(null== cachedExptPerson) {
-            cachedExptPerson = CrudContextHolder.getBean(ExperimentPersonService.class)
+            cachedExptPerson =Optional.ofNullable( PersonIndicatorIdCache.Instance().getPerson(experimentPersonId));
+       /*     cachedExptPerson = CrudContextHolder.getBean(ExperimentPersonService.class)
                     .lambdaQuery()
                     .eq(ShareUtil.XObject.notEmpty(this.appId),ExperimentPersonEntity::getAppId,appId)
                     .eq(ExperimentPersonEntity::getExperimentPersonId, experimentPersonId)
                     .select(cols)
-                    .oneOpt();
+                    .oneOpt();*/
         }
         ExperimentPersonEntity rst=AssertUtil.getNotNull(cachedExptPerson).orElseThrow("未找到实验人物");
         if(ShareUtil.XObject.isEmpty(experimentInstanceId) &&ShareUtil.XObject.notEmpty(rst.getExperimentInstanceId())){
