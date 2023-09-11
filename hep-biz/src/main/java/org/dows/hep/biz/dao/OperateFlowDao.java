@@ -156,5 +156,24 @@ public class OperateFlowDao extends BaseSubDao<OperateFlowService, OperateFlowEn
                 .list();
     }
 
+    /**
+     * 获取服务/操作记录
+     * @param experimentId
+     * @param experimentPersonId
+     * @param cols
+     * @return
+     */
+    public List<OperateFlowEntity> listFlowLog(String experimentId,String experimentPersonId,SFunction<OperateFlowEntity,?>... cols){
+
+        return service.lambdaQuery()
+                .select(cols)
+                .eq(OperateFlowEntity::getExperimentInstanceId,experimentId)
+                .eq(OperateFlowEntity::getExperimentPersonId,experimentPersonId)
+                .orderByDesc(OperateFlowEntity::getDt, OperateFlowEntity::getId)
+                .list();
+    }
+
+
+
 
 }

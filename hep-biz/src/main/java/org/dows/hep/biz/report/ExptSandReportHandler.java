@@ -26,7 +26,9 @@ import org.dows.hep.api.user.experiment.ExptReportTypeEnum;
 import org.dows.hep.api.user.experiment.dto.ExptQuestionnaireOptionDTO;
 import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireItemResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireResponse;
+import org.dows.hep.biz.base.indicator.ExperimentIndicatorViewSupportExamRsBiz;
 import org.dows.hep.biz.risk.RiskBiz;
+import org.dows.hep.biz.user.experiment.ExperimentOrgBiz;
 import org.dows.hep.biz.user.experiment.ExperimentQuestionnaireBiz;
 import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
@@ -75,6 +77,7 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
     private final SandReportPdfHelper sandReportPdfHelper;
     private final ReportRecordHelper recordHelper;
     private final FindSoftProperties findSoftProperties;
+    private final ExperimentOrgBiz experimentOrgBiz;
 
     private static final String LOCAL_SAND_REPORT = SystemConstant.PDF_REPORT_TMP_PATH + "沙盘模拟实验报告" + File.separator;
 
@@ -641,6 +644,22 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
             ExptSandReportModel.NpcData npcData1 = npcData.get(personRiskFactor.getPersonId());
             if (npcData1 != null) {
                 npcData1.setInterveneAfters(personRiskFactor);
+            }
+        }
+
+        Set<String> strings = npcData.keySet();
+        for (String personId : strings) {
+            // todo 获取实验人物的服务记录
+            List<OperateFlowEntity> operateFlowEntities = experimentOrgBiz
+                    .listFlowLog(experimentInstanceId, personId);
+            ExptSandReportModel.NpcData npcData1 = npcData.get(personId);
+
+            for (OperateFlowEntity operateFlowEntity : operateFlowEntities) {
+                ExptSandReportModel.ServiceLog serviceLog = new ExptSandReportModel.ServiceLog();
+                serviceLog.setDt(DateUtil.formatDateTime(operateFlowEntity.getOperateTime()));
+                serviceLog.setLable(operateFlowEntity.getFlowName());
+                serviceLog.setDescr(operateFlowEntity.getReportLabel());
+                npcData1.getServiceLogs().add(serviceLog);
             }
         }
         return result;
