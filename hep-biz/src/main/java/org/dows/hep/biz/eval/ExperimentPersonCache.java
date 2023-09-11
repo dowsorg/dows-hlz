@@ -2,12 +2,14 @@ package org.dows.hep.biz.eval;
 
 import lombok.Data;
 import org.dows.hep.biz.cache.BaseLoadingCache;
+import org.dows.hep.biz.dao.ExperimentGroupDao;
 import org.dows.hep.biz.dao.ExperimentPersonDao;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentGroupEntity;
 import org.dows.hep.entity.ExperimentOrgEntity;
 import org.dows.hep.entity.ExperimentPersonEntity;
+import org.dows.hep.service.ExperimentOrgService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -35,6 +37,12 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
 
     @Autowired
     private ExperimentPersonDao experimentPersonDao;
+
+    @Autowired
+    private ExperimentGroupDao experimentGroupDao;
+
+    @Autowired
+    private ExperimentOrgService experimentOrgService;
 
     protected ExperimentPersonCache() {
         super(CACHEInitCapacity, CACHEMaxSize, CACHEExpireSeconds, 0);
@@ -115,6 +123,16 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
         rowsPerson.forEach(i->{
             rst.mapPersons.put(i.getExperimentPersonId(),i);
             rst.mapGroupPersons.computeIfAbsent(i.getExperimentGroupId(), k->new ArrayList<>()).add(i);
+        });
+        List<ExperimentGroupEntity> rowsGroup=experimentGroupDao.getByExperimentId(key.getExperimentInstanceId() );
+        rowsGroup.forEach(i->{
+            rst.mapGroups.put(i.getExperimentGroupId(),i);
+        });
+        List<ExperimentOrgEntity> rowsOrg=experimentOrgService.lambdaQuery()
+                .eq(ExperimentOrgEntity::getExperimentInstanceId, key.getExperimentInstanceId())
+                .list();
+        rowsOrg.forEach(i->{
+            rst.mapOrgs.put(i.getExperimentOrgId(),i);
         });
         return rst;
     }
