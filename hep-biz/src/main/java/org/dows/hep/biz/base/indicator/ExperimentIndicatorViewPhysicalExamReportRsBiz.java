@@ -8,15 +8,19 @@ import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.base.indicator.request.ExperimentPhysicalExamCheckRequestRs;
 import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
 import org.dows.hep.api.base.indicator.response.ExperimentPhysicalExamReportResponseRs;
-import org.dows.hep.api.enums.*;
+import org.dows.hep.api.enums.EnumIndicatorExpressionField;
+import org.dows.hep.api.enums.EnumIndicatorExpressionScene;
+import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
+import org.dows.hep.api.enums.EnumOrgFeeType;
+import org.dows.hep.biz.eval.QueryPersonBiz;
 import org.dows.hep.biz.operate.CostRequest;
 import org.dows.hep.biz.operate.OperateCostBiz;
-import org.dows.hep.biz.util.ShareBiz;
-import org.dows.hep.biz.util.ShareUtil;
-import org.dows.hep.biz.vo.LoginContextVO;
 import org.dows.hep.biz.request.CaseCalIndicatorExpressionRequest;
 import org.dows.hep.biz.request.DatabaseCalIndicatorExpressionRequest;
 import org.dows.hep.biz.request.ExperimentCalIndicatorExpressionRequest;
+import org.dows.hep.biz.util.ShareBiz;
+import org.dows.hep.biz.util.ShareUtil;
+import org.dows.hep.biz.vo.LoginContextVO;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -26,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -50,6 +53,8 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
   private final OperateInsuranceService operateInsuranceService;
   private final ExperimentOrgService experimentOrgService;
   private final CaseOrgFeeService caseOrgFeeService;
+
+  private final QueryPersonBiz queryPersonBiz;
 
   public static ExperimentPhysicalExamReportResponseRs experimentPhysicalExamReport2ResponseRs(ExperimentIndicatorViewPhysicalExamReportRsEntity experimentIndicatorViewPhysicalExamReportRsEntity) {
     if (Objects.isNull(experimentIndicatorViewPhysicalExamReportRsEntity)) {
@@ -97,20 +102,14 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
           });
     }
     AtomicReference<BigDecimal> totalFeeAtomicReference = new AtomicReference<>(BigDecimal.ZERO);
-    CompletableFuture<Void> cfPopulateTotalFee = CompletableFuture.runAsync(() -> {
-      experimentIndicatorViewPhysicalExamRsEntityList.forEach(experimentIndicatorViewPhysicalExamRsEntity -> {
-        totalFeeAtomicReference.set(totalFeeAtomicReference.get().subtract(experimentIndicatorViewPhysicalExamRsEntity.getFee()));
-      });
+    experimentIndicatorViewPhysicalExamRsEntityList.forEach(experimentIndicatorViewPhysicalExamRsEntity -> {
+      totalFeeAtomicReference.set(totalFeeAtomicReference.get().subtract(experimentIndicatorViewPhysicalExamRsEntity.getFee()));
     });
-    cfPopulateTotalFee.get();
 
     Map<String, ExperimentIndicatorInstanceRsEntity> kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap = new HashMap<>();
-    CompletableFuture<Void> cfPopulateKIndicatorInstanceIdVExperimentIndicatorInstanceMap = CompletableFuture.runAsync(() -> {
-      rsExperimentIndicatorInstanceBiz.populateKIndicatorInstanceIdVExperimentIndicatorInstanceMap(
-          kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap, experimentPersonId, indicatorInstanceIdSet
-      );
-    });
-    cfPopulateKIndicatorInstanceIdVExperimentIndicatorInstanceMap.get();
+    rsExperimentIndicatorInstanceBiz.populateKIndicatorInstanceIdVExperimentIndicatorInstanceMap(
+            kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap, experimentPersonId, indicatorInstanceIdSet
+    );
 
     Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
     if (!indicatorInstanceIdSet.isEmpty()) {
@@ -122,31 +121,20 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
       });
     }
 
-    Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = new HashMap<>();
-    CompletableFuture<Void> cfPopulateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = CompletableFuture.runAsync(() -> {
-      rsExperimentIndicatorValBiz.populateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(
-          kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap, experimentPersonId, periods
-      );
-    });
-    cfPopulateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get();
+    Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap =queryPersonBiz.populateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(experimentPersonId,periods);
+
 
     Map<String, ExperimentIndicatorExpressionRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap = new HashMap<>();
-    CompletableFuture<Void> cfPopulateKExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap = CompletableFuture.runAsync(() -> {
-      rsExperimentIndicatorExpressionBiz.populateKExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap(
-          kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap, experimentIndicatorInstanceIdSet
-      );
-    });
-    cfPopulateKExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap.get();
+    rsExperimentIndicatorExpressionBiz.populateKExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap(
+            kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap, experimentIndicatorInstanceIdSet
+    );
 
     Set<String> experimentIndicatorExpressionIdSet = kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap.values()
         .stream().map(ExperimentIndicatorExpressionRsEntity::getExperimentIndicatorExpressionId).collect(Collectors.toSet());
     Map<String, List<ExperimentIndicatorExpressionItemRsEntity>> kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap = new HashMap<>();
-    CompletableFuture<Void> cfPopulateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap = CompletableFuture.runAsync(() -> {
-      rsExperimentIndicatorExpressionBiz.populateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap(
-          kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap, experimentIndicatorExpressionIdSet
-      );
-    });
-    cfPopulateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap.get();
+    rsExperimentIndicatorExpressionBiz.populateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap(
+            kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap, experimentIndicatorExpressionIdSet
+    );
 
     Set<String> minAndMaxExperimentIndicatorExpressionItemIdSet = new HashSet<>();
     Map<String, ExperimentIndicatorExpressionItemRsEntity> kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap = new HashMap<>();
@@ -160,84 +148,78 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
         minAndMaxExperimentIndicatorExpressionItemIdSet.add(maxIndicatorExpressionItemId);
       }
     });
-    CompletableFuture<Void> cfPopulateKExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap = CompletableFuture.runAsync(() -> {
-      rsExperimentIndicatorExpressionBiz.populateKExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap(
-          kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap, minAndMaxExperimentIndicatorExpressionItemIdSet
-      );
-    });
-    cfPopulateKExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get();
+    rsExperimentIndicatorExpressionBiz.populateKExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap(
+            kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap, minAndMaxExperimentIndicatorExpressionItemIdSet
+    );
 
 
     List<ExperimentIndicatorViewPhysicalExamReportRsEntity> experimentIndicatorViewPhysicalExamReportRsEntityList = new ArrayList<>();
-    CompletableFuture<Void> cfPopulateExperimentIndicatorViewPhysicalExamReportRsEntityList = CompletableFuture.runAsync(() -> {
-      experimentIndicatorViewPhysicalExamRsEntityList.forEach(experimentIndicatorViewPhysicalExamRsEntity -> {
-        String currentVal = "";
-        String unit = null;
-        AtomicReference<String> resultExplainAtomicReference = new AtomicReference<>("");
-        String indicatorInstanceId = experimentIndicatorViewPhysicalExamRsEntity.getIndicatorInstanceId();
-        ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.get(indicatorInstanceId);
-        if (Objects.nonNull(experimentIndicatorInstanceRsEntity)) {
-          unit = experimentIndicatorInstanceRsEntity.getUnit();
-          String experimentIndicatorInstanceId = experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId();
-          ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
-          if (Objects.nonNull(experimentIndicatorValRsEntity)) {
-            currentVal = experimentIndicatorValRsEntity.getCurrentVal();
-            ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap.get(experimentIndicatorInstanceId);
-            if (Objects.nonNull(experimentIndicatorExpressionRsEntity)) {
-              String experimentIndicatorExpressionId = experimentIndicatorExpressionRsEntity.getExperimentIndicatorExpressionId();
-              List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList = kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap.get(experimentIndicatorExpressionId);
-              ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity = null;
-              ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity = null;
-              String minIndicatorExpressionItemId = experimentIndicatorExpressionRsEntity.getMinIndicatorExpressionItemId();
-              String maxIndicatorExpressionItemId = experimentIndicatorExpressionRsEntity.getMaxIndicatorExpressionItemId();
-              if (StringUtils.isNotBlank(minIndicatorExpressionItemId) && Objects.nonNull(kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(minIndicatorExpressionItemId))) {
-                minExperimentIndicatorExpressionItemRsEntity = kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(minIndicatorExpressionItemId);
-              }
-              if (StringUtils.isNotBlank(maxIndicatorExpressionItemId) && Objects.nonNull(kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(maxIndicatorExpressionItemId))) {
-                maxExperimentIndicatorExpressionItemRsEntity = kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(maxIndicatorExpressionItemId);
-              }
+    experimentIndicatorViewPhysicalExamRsEntityList.forEach(experimentIndicatorViewPhysicalExamRsEntity -> {
+      String currentVal = "";
+      String unit = null;
+      AtomicReference<String> resultExplainAtomicReference = new AtomicReference<>("");
+      String indicatorInstanceId = experimentIndicatorViewPhysicalExamRsEntity.getIndicatorInstanceId();
+      ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.get(indicatorInstanceId);
+      if (Objects.nonNull(experimentIndicatorInstanceRsEntity)) {
+        unit = experimentIndicatorInstanceRsEntity.getUnit();
+        String experimentIndicatorInstanceId = experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId();
+        ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
+        if (Objects.nonNull(experimentIndicatorValRsEntity)) {
+          currentVal = experimentIndicatorValRsEntity.getCurrentVal();
+          ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap.get(experimentIndicatorInstanceId);
+          if (Objects.nonNull(experimentIndicatorExpressionRsEntity)) {
+            String experimentIndicatorExpressionId = experimentIndicatorExpressionRsEntity.getExperimentIndicatorExpressionId();
+            List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList = kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap.get(experimentIndicatorExpressionId);
+            ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity = null;
+            ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity = null;
+            String minIndicatorExpressionItemId = experimentIndicatorExpressionRsEntity.getMinIndicatorExpressionItemId();
+            String maxIndicatorExpressionItemId = experimentIndicatorExpressionRsEntity.getMaxIndicatorExpressionItemId();
+            if (StringUtils.isNotBlank(minIndicatorExpressionItemId) && Objects.nonNull(kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(minIndicatorExpressionItemId))) {
+              minExperimentIndicatorExpressionItemRsEntity = kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(minIndicatorExpressionItemId);
+            }
+            if (StringUtils.isNotBlank(maxIndicatorExpressionItemId) && Objects.nonNull(kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(maxIndicatorExpressionItemId))) {
+              maxExperimentIndicatorExpressionItemRsEntity = kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(maxIndicatorExpressionItemId);
+            }
 
-              if (Objects.nonNull(experimentIndicatorExpressionItemRsEntityList)) {
-                rsExperimentIndicatorExpressionBiz.parseExperimentIndicatorExpression(
-                    EnumIndicatorExpressionField.EXPERIMENT.getField(),
-                    EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource(),
-                    EnumIndicatorExpressionScene.PHYSICAL_EXAM.getScene(),
-                    resultExplainAtomicReference,
-                    new HashMap<>(),
-                    DatabaseCalIndicatorExpressionRequest.builder().build(),
-                    CaseCalIndicatorExpressionRequest.builder().build(),
-                    ExperimentCalIndicatorExpressionRequest
-                        .builder()
-                        .kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap)
-                        .experimentIndicatorExpressionRsEntity(experimentIndicatorExpressionRsEntity)
-                        .experimentIndicatorExpressionItemRsEntityList(experimentIndicatorExpressionItemRsEntityList)
-                        .minExperimentIndicatorExpressionItemRsEntity(minExperimentIndicatorExpressionItemRsEntity)
-                        .maxExperimentIndicatorExpressionItemRsEntity(maxExperimentIndicatorExpressionItemRsEntity)
-                        .build()
-                );
-              }
+            if (Objects.nonNull(experimentIndicatorExpressionItemRsEntityList)) {
+              rsExperimentIndicatorExpressionBiz.parseExperimentIndicatorExpression(
+                      EnumIndicatorExpressionField.EXPERIMENT.getField(),
+                      EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource(),
+                      EnumIndicatorExpressionScene.PHYSICAL_EXAM.getScene(),
+                      resultExplainAtomicReference,
+                      new HashMap<>(),
+                      DatabaseCalIndicatorExpressionRequest.builder().build(),
+                      CaseCalIndicatorExpressionRequest.builder().build(),
+                      ExperimentCalIndicatorExpressionRequest
+                              .builder()
+                              .kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap)
+                              .experimentIndicatorExpressionRsEntity(experimentIndicatorExpressionRsEntity)
+                              .experimentIndicatorExpressionItemRsEntityList(experimentIndicatorExpressionItemRsEntityList)
+                              .minExperimentIndicatorExpressionItemRsEntity(minExperimentIndicatorExpressionItemRsEntity)
+                              .maxExperimentIndicatorExpressionItemRsEntity(maxExperimentIndicatorExpressionItemRsEntity)
+                              .build()
+              );
             }
           }
         }
-        ExperimentIndicatorViewPhysicalExamReportRsEntity experimentIndicatorViewPhysicalExamReportRsEntity = ExperimentIndicatorViewPhysicalExamReportRsEntity
-            .builder()
-            .experimentIndicatorViewPhysicalExamReportId(idGenerator.nextIdStr())
-            .experimentId(experimentId)
-            .appId(appId)
-            .period(periods)
-            .indicatorFuncId(indicatorFuncId)
-            .experimentPersonId(experimentPersonId)
-            .operateFlowId(operateFlowId)
-            .name(experimentIndicatorViewPhysicalExamRsEntity.getName())
-            .fee(experimentIndicatorViewPhysicalExamRsEntity.getFee())
-            .currentVal(currentVal)
-            .unit(unit)
-            .resultExplain(resultExplainAtomicReference.get())
-            .build();
-        experimentIndicatorViewPhysicalExamReportRsEntityList.add(experimentIndicatorViewPhysicalExamReportRsEntity);
-      });
+      }
+      ExperimentIndicatorViewPhysicalExamReportRsEntity experimentIndicatorViewPhysicalExamReportRsEntity = ExperimentIndicatorViewPhysicalExamReportRsEntity
+              .builder()
+              .experimentIndicatorViewPhysicalExamReportId(idGenerator.nextIdStr())
+              .experimentId(experimentId)
+              .appId(appId)
+              .period(periods)
+              .indicatorFuncId(indicatorFuncId)
+              .experimentPersonId(experimentPersonId)
+              .operateFlowId(operateFlowId)
+              .name(experimentIndicatorViewPhysicalExamRsEntity.getName())
+              .fee(experimentIndicatorViewPhysicalExamRsEntity.getFee())
+              .currentVal(currentVal)
+              .unit(unit)
+              .resultExplain(resultExplainAtomicReference.get())
+              .build();
+      experimentIndicatorViewPhysicalExamReportRsEntityList.add(experimentIndicatorViewPhysicalExamReportRsEntity);
     });
-    cfPopulateExperimentIndicatorViewPhysicalExamReportRsEntityList.get();
 
     experimentIndicatorInstanceRsBiz.changeMoney(RsChangeMoneyRequest
         .builder()

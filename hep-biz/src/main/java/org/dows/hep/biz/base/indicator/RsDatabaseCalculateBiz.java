@@ -174,7 +174,7 @@ public class RsDatabaseCalculateBiz {
           if (Objects.isNull(indicatorExpressionItemEntityList2) || indicatorExpressionItemEntityList2.isEmpty()) {return;}
           String minIndicatorExpressionItemId = indicatorExpressionEntity2.getMinIndicatorExpressionItemId();
           IndicatorExpressionItemEntity minIndicatorExpressionItemEntity = kIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap.get(minIndicatorExpressionItemId);
-          String maxIndicatorExpressionItemId = indicatorExpressionEntity2.getMinIndicatorExpressionItemId();
+          String maxIndicatorExpressionItemId = indicatorExpressionEntity2.getMaxIndicatorExpressionItemId();
           IndicatorExpressionItemEntity maxIndicatorExpressionItemEntity = kIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap.get(maxIndicatorExpressionItemId);
           rsIndicatorExpressionBiz.parseIndicatorExpression(
               EnumIndicatorExpressionField.DATABASE.getField(), EnumIndicatorExpressionSource.RISK_MODEL.getSource(), EnumIndicatorExpressionScene.DATABASE_CALCULATE_HEALTH_POINT.getScene(),

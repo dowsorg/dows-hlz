@@ -304,7 +304,7 @@ public class RsCaseCalculateBiz {
           if (Objects.isNull(indicatorExpressionItemEntityList2) || indicatorExpressionItemEntityList2.isEmpty()) {return;}
           String minIndicatorExpressionItemId = indicatorExpressionEntity2.getMinIndicatorExpressionItemId();
           IndicatorExpressionItemEntity minIndicatorExpressionItemEntity = kIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap.get(minIndicatorExpressionItemId);
-          String maxIndicatorExpressionItemId = indicatorExpressionEntity2.getMinIndicatorExpressionItemId();
+          String maxIndicatorExpressionItemId = indicatorExpressionEntity2.getMaxIndicatorExpressionItemId();
           IndicatorExpressionItemEntity maxIndicatorExpressionItemEntity = kIndicatorExpressionItemIdVIndicatorExpressionItemEntityMap.get(maxIndicatorExpressionItemId);
           rsCaseIndicatorExpressionBiz.parseCaseIndicatorExpression(
               EnumIndicatorExpressionField.CASE.getField(), EnumIndicatorExpressionSource.RISK_MODEL.getSource(), EnumIndicatorExpressionScene.CASE_CALCULATE_HEALTH_POINT.getScene(),

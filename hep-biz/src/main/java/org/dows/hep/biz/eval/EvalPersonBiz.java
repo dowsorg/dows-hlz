@@ -99,7 +99,7 @@ public class EvalPersonBiz {
 
         }catch (Exception ex){
             log.error(String.format( "人物初始指标复制失败[id:%s]",experimentId),ex);
-            return false;
+            throw ex;
         }
 
     }

@@ -9,12 +9,12 @@ import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.enums.EnumIndicatorCategory;
 import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.api.exception.ExperimentIndicatorViewBaseInfoRsException;
+import org.dows.hep.biz.eval.QueryPersonBiz;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -35,6 +35,8 @@ public class ExperimentIndicatorViewBaseInfoRsBiz {
   private final IndicatorFuncService indicatorFuncService;
 
   private final IndicatorViewBaseInfoService indicatorViewBaseInfoService;
+
+  private final QueryPersonBiz queryPersonBiz;
 
   public ExperimentIndicatorViewBaseInfoRsResponse getBaseInfo(GetIndicatorBaseInfo getIndicatorBaseInfo) throws ExecutionException, InterruptedException {
     IndicatorFuncEntity indicatorFuncEntity = indicatorFuncService.lambdaQuery()
@@ -103,12 +105,7 @@ public class ExperimentIndicatorViewBaseInfoRsBiz {
               experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId(), experimentIndicatorInstanceRsEntity);
         });
 
-      Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = new HashMap<>();
-      CompletableFuture<Void> cfPopulateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap = CompletableFuture.runAsync(() -> {
-        rsExperimentIndicatorValBiz.populateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(
-            kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap, experimentPersonId, periods);
-      });
-      cfPopulateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get();
+    Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap =queryPersonBiz.populateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(experimentPersonId,periods);
 
     kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.forEach((experimentIndicatorInstanceId, experimentIndicatorValRsEntity) -> {
       kExperimentIndicatorInstanceIdVValMap.put(experimentIndicatorInstanceId, experimentIndicatorValRsEntity.getCurrentVal());
