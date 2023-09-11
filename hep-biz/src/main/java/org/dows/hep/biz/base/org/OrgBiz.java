@@ -45,6 +45,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /**
  * @author jx
@@ -81,7 +82,7 @@ public class OrgBiz {
      * @创建时间: 2023/4/21 17:12
      */
     @DSTransactional
-    public String addClass(AccountOrgRequest request, String accountId,String loginId) {
+    public String addClass(AccountOrgRequest request, String accountId, String loginId) {
         //1、生成随机code
         String orgCode = createCode(7);
         request.setOrgCode(orgCode);
@@ -103,7 +104,7 @@ public class OrgBiz {
                 .build());
         //5、只创建教师和班级的映射关系
         AccountRoleResponse roleResponse = accountRoleApi.getAccountRoleByPrincipalId(loginId);
-        if(roleResponse.getRoleName().equals("教师")) {
+        if (roleResponse.getRoleName().equals("教师")) {
             HepArmEntity hepArmEntity = HepArmEntity
                     .builder()
                     .armId(idGenerator.nextIdStr())
@@ -114,7 +115,7 @@ public class OrgBiz {
                     .build();
             hepArmService.save(hepArmEntity);
         }
-        if(roleResponse.getRoleName().equals("管理员")) {
+        if (roleResponse.getRoleName().equals("管理员")) {
             HepArmEntity hepArmEntity = HepArmEntity
                     .builder()
                     .armId(idGenerator.nextIdStr())
@@ -195,8 +196,8 @@ public class OrgBiz {
             if (groupList != null && groupList.size() > 0) {
                 groupList.forEach(group -> {
                     //2、删除学生，不删除教师
-                    List<AccountGroupInfoResponse> infoList = accountGroupInfoApi.getAccountGroupInfoByOrgIdAndAccountId(id,group.getAccountId());
-                    if(infoList == null || infoList.size() == 0) {
+                    List<AccountGroupInfoResponse> infoList = accountGroupInfoApi.getAccountGroupInfoByOrgIdAndAccountId(id, group.getAccountId());
+                    if (infoList == null || infoList.size() == 0) {
                         //2.1、说明不是教师，是学生
                         accountIds.add(group.getAccountId());
                     }
@@ -207,7 +208,7 @@ public class OrgBiz {
                     .eq(HepArmEntity::getOrgId, id)
                     .eq(HepArmEntity::getDeleted, false)
                     .list();
-            if(hepArmList != null && hepArmList.size() > 0) {
+            if (hepArmList != null && hepArmList.size() > 0) {
                 LambdaUpdateWrapper<HepArmEntity> armWrapper = Wrappers.lambdaUpdate(HepArmEntity.class);
                 armWrapper.set(HepArmEntity::getDeleted, true)
                         .eq(HepArmEntity::getOrgId, id);
@@ -223,7 +224,7 @@ public class OrgBiz {
             flag = false;
         }
         //5、删除账户实例
-        if(accountIds != null && accountIds.size() > 0) {
+        if (accountIds != null && accountIds.size() > 0) {
             Integer count2 = accountInstanceApi.deleteAccountInstanceByAccountIds(accountIds);
             if (count2 == 0) {
                 flag = false;
@@ -242,21 +243,21 @@ public class OrgBiz {
      * @开始时间:
      * @创建时间: 2023/4/23 16:58
      */
-    public IPage<AccountOrgResponse> listClasss(AccountOrgRequest request,String accountId) {
+    public IPage<AccountOrgResponse> listClasss(AccountOrgRequest request, String accountId) {
         //1、如果是教师，只能查看该教师下面的班级
-        if(StringUtils.isNotEmpty(accountId)){
-          List<String>  newId = Arrays.asList(accountId.split(","));
-          List<HepArmEntity> armList = hepArmService.lambdaQuery().in(HepArmEntity::getAccountId,newId)
-                  .eq(HepArmEntity::getDeleted,false)
-                  .list();
-          Set<String> ids = new HashSet<>();
-          if(armList != null && armList.size() > 0){
-              armList.forEach(arm->{
-                  ids.add(arm.getOrgId());
-              });
-          }else{
-              ids.add("fill");
-          }
+        if (StringUtils.isNotEmpty(accountId)) {
+            List<String> newId = Arrays.asList(accountId.split(","));
+            List<HepArmEntity> armList = hepArmService.lambdaQuery().in(HepArmEntity::getAccountId, newId)
+                    .eq(HepArmEntity::getDeleted, false)
+                    .list();
+            Set<String> ids = new HashSet<>();
+            if (armList != null && armList.size() > 0) {
+                armList.forEach(arm -> {
+                    ids.add(arm.getOrgId());
+                });
+            } else {
+                ids.add("fill");
+            }
             request.setIds(ids);
         }
         IPage<AccountOrgResponse> accountOrgResponse = accountOrgApi.customAccountOrgList(request);
@@ -430,7 +431,7 @@ public class OrgBiz {
      */
     public Page<CaseAccountGroupResponse> listPerson(AccountGroupRequest request, String caseOrgId) {
         Page<CaseAccountGroupResponse> rst = new Page<>();
-        List<CaseAccountGroupResponse> caseResponseList=new ArrayList<>();
+        List<CaseAccountGroupResponse> caseResponseList = new ArrayList<>();
         rst.setRecords(caseResponseList);
 
         //1、获取该案例机构对应的机构ID
@@ -439,14 +440,14 @@ public class OrgBiz {
                 .eq(CaseOrgEntity::getDeleted, false)
                 .eq(CaseOrgEntity::getAppId, request.getAppId())
                 .one();
-        if(null==entity){
+        if (null == entity) {
             return rst;
         }
         Set<String> orgIds = new HashSet<>();
         orgIds.add(entity.getOrgId());
         request.setOrgIds(orgIds);
         IPage<AccountGroupResponse> groupResponseIPage = accountGroupApi.customAccountGroupList(request);
-        if(null==groupResponseIPage||ShareUtil.XObject.isEmpty( groupResponseIPage.getRecords())){
+        if (null == groupResponseIPage || ShareUtil.XObject.isEmpty(groupResponseIPage.getRecords())) {
             return rst;
         }
         //2、因为要加健康指数，必须处理一下
@@ -454,15 +455,15 @@ public class OrgBiz {
         BeanUtils.copyProperties(groupResponseIPage, rst, new String[]{"records"});
         List<AccountGroupResponse> responseList = groupResponseIPage.getRecords();
 
-        final List<String> caseAccountIds= ShareUtil.XCollection.map(responseList,AccountGroupResponse::getAccountId);
-        final Map<String,CasePersonEntity> mapCasePersons=ShareUtil.XCollection.toMap(casePersonService.lambdaQuery()
-                .in(CasePersonEntity::getAccountId,caseAccountIds)
-                .eq(CasePersonEntity::getCaseOrgId,caseOrgId)
+        final List<String> caseAccountIds = ShareUtil.XCollection.map(responseList, AccountGroupResponse::getAccountId);
+        final Map<String, CasePersonEntity> mapCasePersons = ShareUtil.XCollection.toMap(casePersonService.lambdaQuery()
+                .in(CasePersonEntity::getAccountId, caseAccountIds)
+                .eq(CasePersonEntity::getCaseOrgId, caseOrgId)
                 .list(), CasePersonEntity::getAccountId);
-        final Map<String,List<String>> mapCoreIndicators=caseIndicatorInstanceBiz.getCoreByAccountIdList(caseAccountIds);
-        responseList.forEach(group->{
-            CasePersonEntity casePersonEntity=mapCasePersons.get(group.getAccountId());
-            if(null==casePersonEntity){
+        final Map<String, List<String>> mapCoreIndicators = caseIndicatorInstanceBiz.getCoreByAccountIdList(caseAccountIds);
+        responseList.forEach(group -> {
+            CasePersonEntity casePersonEntity = mapCasePersons.get(group.getAccountId());
+            if (null == casePersonEntity) {
                 return;
             }
             //group.setHealthPoint(caseIndicatorInstanceBiz.getHealthPoint(casePersonEntity.getCasePersonId()));
@@ -584,11 +585,11 @@ public class OrgBiz {
      * @创建时间: 2023/5/05 09:00
      */
     @DSTransactional
-    public Boolean deleteOrgs(Set<String> caseOrgIds,String caseInstanceId, String appId) {
+    public Boolean deleteOrgs(Set<String> caseOrgIds, String caseInstanceId, String appId) {
         //1、获取该案例机构对应的机构ID
         List<CaseOrgEntity> entityList = caseOrgService.lambdaQuery()
-                .in(caseOrgIds != null && caseOrgIds.size() > 0 ,CaseOrgEntity::getCaseOrgId, caseOrgIds)
-                .eq(CaseOrgEntity::getCaseInstanceId,caseInstanceId)
+                .in(caseOrgIds != null && caseOrgIds.size() > 0, CaseOrgEntity::getCaseOrgId, caseOrgIds)
+                .eq(CaseOrgEntity::getCaseInstanceId, caseInstanceId)
                 .eq(CaseOrgEntity::getDeleted, false)
                 .eq(CaseOrgEntity::getAppId, appId)
                 .list();
@@ -629,13 +630,13 @@ public class OrgBiz {
             //6、删除组织机构地理位置
             accountOrgGeoApi.batchDeleteAccountOrgGeosByOrgIds(orgIds);
             //7、判断人物如果是机构人物，则删除
-            if(groupResponseList != null && groupResponseList.size() > 0){
+            if (groupResponseList != null && groupResponseList.size() > 0) {
                 Set<String> userIds = new HashSet<>();
                 Set<String> accountIds = new HashSet<>();
-                groupResponseList.forEach(group->{
+                groupResponseList.forEach(group -> {
                     AccountInstanceResponse instanceResponse = accountInstanceApi.getAccountInstanceByAccountId(group.getAccountId());
-                    if(instanceResponse != null && !ReflectUtil.isObjectNull(instanceResponse)){
-                        if(instanceResponse.getSource().equals("机构人物")){
+                    if (instanceResponse != null && !ReflectUtil.isObjectNull(instanceResponse)) {
+                        if (instanceResponse.getSource().equals("机构人物")) {
                             userIds.add(accountUserApi.getUserByAccountId(group.getAccountId()).getUserId());
                             accountIds.add(group.getAccountId());
                         }
@@ -664,21 +665,21 @@ public class OrgBiz {
      */
     /* runsix: TODO 优化这里是删除机构绑定人物的，有问题 */
     @DSTransactional
-    public Boolean deletePersons(Set<String> caseOrgIds,String caseInstanceId, Set<String> accountIds,String appId) {
+    public Boolean deletePersons(Set<String> caseOrgIds, String caseInstanceId, Set<String> accountIds, String appId) {
         //1、如果是自定义人物，需要删除人物实例
         Set<String> userIds = new HashSet<>();
         Set<String> newAccountIds = new HashSet<>();
-        accountIds.forEach(accountId->{
+        accountIds.forEach(accountId -> {
             AccountInstanceResponse instanceResponse = accountInstanceApi.getAccountInstanceByAccountId(accountId);
-            if(instanceResponse != null && instanceResponse.getSource().equals("机构人物")){
+            if (instanceResponse != null && instanceResponse.getSource().equals("机构人物")) {
                 userIds.add(accountUserApi.getUserByAccountId(accountId).getUserId());
                 newAccountIds.add(accountId);
             }
         });
-        if(newAccountIds != null && newAccountIds.size() > 0){
+        if (newAccountIds != null && newAccountIds.size() > 0) {
             accountInstanceApi.deleteAccountInstanceByAccountIds(accountIds);
         }
-        if(userIds != null && userIds.size() > 0){
+        if (userIds != null && userIds.size() > 0) {
             userIds.forEach(userId -> {
                 UserExtinfoResponse extinfoResponse = userExtinfoApi.getUserExtinfoByUserId(userId);
                 userExtinfoApi.deleteUserExtinfoById(extinfoResponse.getId());
@@ -687,7 +688,7 @@ public class OrgBiz {
         //2、获取该案例机构对应的机构ID
         List<CaseOrgEntity> entityList = caseOrgService.lambdaQuery()
                 .in(CaseOrgEntity::getCaseOrgId, caseOrgIds)
-                .eq(CaseOrgEntity::getCaseInstanceId,caseInstanceId)
+                .eq(CaseOrgEntity::getCaseInstanceId, caseInstanceId)
                 .eq(CaseOrgEntity::getDeleted, false)
                 .eq(CaseOrgEntity::getAppId, appId)
                 .list();
@@ -700,7 +701,7 @@ public class OrgBiz {
                 personWrapper.set(CasePersonEntity::getDeleted, true)
                         .eq(CasePersonEntity::getCaseOrgId, entity.getCaseOrgId())
                         .eq(CasePersonEntity::getCaseInstanceId, caseInstanceId)
-                        .in(CasePersonEntity::getAccountId,accountIds);
+                        .in(CasePersonEntity::getAccountId, accountIds);
                 boolean flag1 = casePersonService.update(personWrapper);
             });
             //2.2、获取该机构下的成员并删除
@@ -731,11 +732,11 @@ public class OrgBiz {
     public Boolean checkInstancePerson(String caseOrgId, String caseInstanceId, String accountId) {
         CasePersonEntity entity = casePersonService.lambdaQuery()
                 .eq(CasePersonEntity::getCaseOrgId, caseOrgId)
-                .eq(CasePersonEntity::getCaseInstanceId,caseInstanceId)
+                .eq(CasePersonEntity::getCaseInstanceId, caseInstanceId)
                 .eq(CasePersonEntity::getDeleted, false)
                 .eq(CasePersonEntity::getAccountId, accountId)
                 .one();
-        if(entity != null){
+        if (entity != null) {
             return false;
         }
         return true;
@@ -759,7 +760,7 @@ public class OrgBiz {
         UserInstanceResponse userInstanceResponse = userInstanceApi.getUserInstanceByUserId(accountUser.getUserId());
         UserExtinfoResponse userExtinfoResponse = userExtinfoApi.getUserExtinfoByUserId(accountUser.getUserId());
         UserInstanceRequest userInstanceRequest = new UserInstanceRequest();
-        BeanUtils.copyProperties(userInstanceResponse,userInstanceRequest,new String[]{"id","accountId"});
+        BeanUtils.copyProperties(userInstanceResponse, userInstanceRequest, new String[]{"id", "accountId"});
         String userId = userInstanceApi.insertUserInstance(userInstanceRequest);
         UserExtinfoRequest userExtinfo = UserExtinfoRequest.builder()
                 .userId(userId)
@@ -768,9 +769,9 @@ public class OrgBiz {
         String extinfoId = userExtinfoApi.insertUserExtinfo(userExtinfo);
         //1.2、获取该账户的所有信息
         AccountInstanceResponse accountInstanceResponse = accountInstanceApi.getAccountInstanceByAccountId(accountId);
-        CaseOrgEntity orgEntity =  caseOrgService.lambdaQuery()
-                .eq(CaseOrgEntity::getCaseOrgId,caseOrgId)
-                .eq(CaseOrgEntity::getDeleted,false)
+        CaseOrgEntity orgEntity = caseOrgService.lambdaQuery()
+                .eq(CaseOrgEntity::getCaseOrgId, caseOrgId)
+                .eq(CaseOrgEntity::getDeleted, false)
                 .oneOpt()
                 .orElse(null);
         //1.3、复制账户信息
@@ -808,7 +809,7 @@ public class OrgBiz {
                 .principalId(vo.getAccountId())
                 .build());
         //4.复制事件
-        tenantCaseEventBiz.copyCaseEvent4Person(accountInstanceResponse.getAppId(),vo.getAccountId(),accountId,
+        tenantCaseEventBiz.copyCaseEvent4Person(accountInstanceResponse.getAppId(), vo.getAccountId(), accountId,
                 accountInstanceResponse.getUserName());
         return vo.getAccountId();
     }
@@ -922,7 +923,7 @@ public class OrgBiz {
                 .eq(CasePersonEntity::getCasePersonId, casePersonId)
                 .eq(CasePersonEntity::getDeleted, false)
                 .one();
-        if(entity == null || ReflectUtil.isObjectNull(entity)){
+        if (entity == null || ReflectUtil.isObjectNull(entity)) {
             throw new AccountException(EnumAccountStatusCode.ACCOUNT_NOT_EXIST_EXCEPTION);
         }
         return entity.getAccountId();

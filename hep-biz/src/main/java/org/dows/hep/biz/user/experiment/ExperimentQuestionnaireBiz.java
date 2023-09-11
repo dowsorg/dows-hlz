@@ -275,7 +275,7 @@ public class ExperimentQuestionnaireBiz {
         ExperimentQuestionnaireEntity questionnaireEntity = experimentQuestionnaireService.lambdaQuery()
                 .eq(ExperimentQuestionnaireEntity::getExperimentQuestionnaireId, experimentQuestionnaireId)
                 .oneOpt()
-                .orElseThrow(() -> new BizException(ExperimentESCEnum.SCHEME_NOT_NULL));
+                .orElseThrow(() -> new BizException("知识考点数据为空"));
 
         // check auth
         String experimentAccountId = questionnaireEntity.getExperimentAccountId();
@@ -286,7 +286,7 @@ public class ExperimentQuestionnaireBiz {
         // check state
         Integer state = questionnaireEntity.getState();
         if (Objects.equals(ExptQuestionnaireStateEnum.SUBMITTED.getCode(), state)) {
-            throw new BizException(ExperimentESCEnum.SCHEME_HAS_BEEN_SUBMITTED);
+            throw new BizException("知识考点已经提交");
         }
     }
 

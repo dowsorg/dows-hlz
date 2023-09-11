@@ -20,7 +20,7 @@ public class Sender implements Runnable {
     private final  Object mess;
     private final  Channel channel;
 
-    private final AtomicInteger ttl=new AtomicInteger(12);
+    private final AtomicInteger ttl=new AtomicInteger(5);
     @Override
     public void run() {
         String sc = HepClientManager.getMsgById(msgId);

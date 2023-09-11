@@ -17,7 +17,7 @@ public interface IRDStringCodec<T> {
         StringBuilder sb=new StringBuilder();
         appendRDString(sb, obj);
         String rst=sb.toString();
-        sb.delete(0, sb.length());
+        sb.setLength(0);
         return rst;
     }
 

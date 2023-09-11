@@ -20,8 +20,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author : wuzl
@@ -31,8 +30,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Accessors(chain = true)
 public class EvalPersonPointer {
-    private static final int TRYLOCKSeconds4Read=3;
-    private static final int TRYLOCKSeconds4Write=5;
+
+    private static final int TRYLOCKSeconds4Write=4;
 
     public EvalPersonPointer(EvalPersonCacheKey cacheKey){
         this.cacheKey=cacheKey;
@@ -44,32 +43,32 @@ public class EvalPersonPointer {
 
     private final AtomicInteger curEvalNo=new AtomicInteger();
 
-    private final ReadWriteLock rwlock=new ReentrantReadWriteLock();
+
+    private final ReentrantLock rlock=new ReentrantLock();
 
 
 
-    @SneakyThrows
+
     public EvalPersonOnceHolder getCurHolder() {
-        int evalNo=getCurEvalNoWithReadLock();
-        return getHolder(evalNo);
+        return getHolder(curEvalNo.get());
     }
-    @SneakyThrows
+
     public EvalPersonOnceHolder getLastHolder()  {
-        int evalNo = Math.max(0, getCurEvalNoWithReadLock() - 1);
+        int evalNo = Math.max(0, curEvalNo.get() - 1);
         return getHolder(evalNo);
     }
-    @SneakyThrows
+
     public EvalPersonOnceHolder getNextHolder() {
-        int evalNo = Math.max(0, getCurEvalNoWithReadLock() + 1);
+        int evalNo = Math.max(0, curEvalNo.get() + 1);
         return getHolder(evalNo);
     }
-    @SneakyThrows
+
     public boolean startSync(EvalPersonSyncRequest req) {
         return getCurHolder().startSync(req);
     }
     @SneakyThrows
     public boolean sync(EnumEvalFuncType funcType)  {
-        boolean lockFlag = rwlock.writeLock().tryLock(TRYLOCKSeconds4Write, TimeUnit.SECONDS);
+        boolean lockFlag = rlock.tryLock(TRYLOCKSeconds4Write, TimeUnit.SECONDS);
         try {
             final int evalNo = curEvalNo.get();
             final int nextEvalNo = evalNo + 1;
@@ -78,13 +77,13 @@ public class EvalPersonPointer {
             Optional.ofNullable(curHolder.getPresent())
                     .map(EvalPersonOnceData::getHeader)
                     .ifPresent(i->i.setFuncType(funcType));
-            curHolder.save();
             nextHolder.putFrom(curHolder.getPresent(), nextEvalNo, funcType);
             curEvalNo.incrementAndGet();
+            curHolder.save();
             return true;
         } finally {
             if (lockFlag) {
-                rwlock.writeLock().unlock();
+                rlock.unlock();
             }
         }
     }
@@ -94,7 +93,7 @@ public class EvalPersonPointer {
             Optional.ofNullable( PersonIndicatorIdCache.Instance().getPerson(cacheKey.getExperimentPersonId()))
                     .ifPresent(i->cacheKey.setExperimentInstanceId(i.getExperimentInstanceId()));
         }
-        boolean lockFlag = rwlock.writeLock().tryLock(TRYLOCKSeconds4Write, TimeUnit.SECONDS);
+        rlock.lock();
         try {
 
             ExperimentEvalLogEntity rowLog= experimentEvalLogDao.getCurrentByPersonId(cacheKey.getExperimentPersonId(),
@@ -102,7 +101,7 @@ public class EvalPersonPointer {
                     ExperimentEvalLogEntity::getPeriods);
             AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(rowLog))
                     .throwMessage(String.format("人物指标未初始化[id:%s]", cacheKey.getExperimentPersonId()));
-            ExperimentTimePoint timePoint= ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create("3", cacheKey.getExperimentInstanceId()), LocalDateTime.now(),false );
+            ExperimentTimePoint timePoint= ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create("3", cacheKey.getExperimentInstanceId()), LocalDateTime.now(),true );
             AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(timePoint))
                     .throwMessage(String.format("未找到实验当前时间点[id:%s]", cacheKey.getExperimentInstanceId()));
 
@@ -129,8 +128,8 @@ public class EvalPersonPointer {
             curEvalNo.set(nextEvalNo);
             return true;
         } finally {
-            if (lockFlag) {
-                rwlock.writeLock().unlock();
+            if(rlock.isHeldByCurrentThread()){
+                rlock.unlock();
             }
         }
 
@@ -144,16 +143,7 @@ public class EvalPersonPointer {
     }
 
 
-    private int getCurEvalNoWithReadLock() throws InterruptedException{
-        boolean lockFlag= rwlock.readLock().tryLock(TRYLOCKSeconds4Read, TimeUnit.SECONDS);
-        try{
-            return curEvalNo.get();
-        }finally{
-            if(lockFlag){
-                rwlock.readLock().unlock();
-            }
-        }
-    }
+
     private EvalPersonOnceHolder getHolder(int evalNo) {
         return EvalPersonOnceCache.Instance().getHolder(cacheKey.getExperimentInstanceId(), cacheKey.getExperimentPersonId(), evalNo);
     }

@@ -169,7 +169,7 @@ public class HepClientManager {
                 rwLock.writeLock().unlock();
             }
             log.info(sb.toString());
-            sb.delete(0,sb.length());
+            sb.setLength(0);
         }
 
     }

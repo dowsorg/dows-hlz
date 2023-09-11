@@ -99,7 +99,7 @@ public class EvalPersonBiz {
 
         }catch (Exception ex){
             log.error(String.format( "人物初始指标复制失败[id:%s]",experimentId),ex);
-            return false;
+            throw ex;
         }
 
     }
@@ -110,18 +110,18 @@ public class EvalPersonBiz {
      * @param req
      */
 
-    public void evalOrgFunc(RsExperimentCalculateFuncRequest req){
+    public void evalOrgFunc(RsExperimentCalculateFuncRequest req) {
         String appId = req.getAppId();
         String experimentId = req.getExperimentId();
         Integer periods = req.getPeriods();
-        Set<String> personIds=Set.of(req.getExperimentPersonId());
+        Set<String> personIds = Set.of(req.getExperimentPersonId());
 
         evalPersonIndicatorBiz.evalPersonIndicator(RsCalculatePersonRequestRs
                 .builder()
                 .appId(appId)
                 .experimentId(experimentId)
                 .periods(periods)
-                .personIdSet(null)
+                .personIdSet(personIds)
                 .funcType(req.getFuncType())
                 .build());
         evalHealthIndexBiz.evalPersonHealthIndex(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
@@ -129,10 +129,11 @@ public class EvalPersonBiz {
                 .appId(appId)
                 .experimentId(experimentId)
                 .periods(periods)
+                .experimentPersonIds(personIds)
                 .funcType(req.getFuncType())
                 .build());
 
-        PersonBasedEventTask.runPersonBasedEventAsync(appId,experimentId);
+        PersonBasedEventTask.runPersonBasedEventAsync(appId, experimentId);
 
     }
     /**

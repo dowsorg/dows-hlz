@@ -15,7 +15,6 @@ import org.dows.hep.biz.spel.meta.SpelEvalSumResult;
 import org.dows.hep.biz.util.BigDecimalUtil;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentIndicatorInstanceRsEntity;
-import org.dows.hep.entity.ExperimentIndicatorValRsEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
@@ -148,15 +147,15 @@ public class SpelInvoker {
     }
 
 
-    public boolean saveIndicatorCurrent(Collection<SpelEvalSumResult> evalResults,Integer periods){
-        if(ShareUtil.XObject.isEmpty(evalResults)) {
+    public boolean saveIndicatorCurrent(String experimentPersonId,Collection<SpelEvalResult> evalResults, Collection<SpelEvalSumResult> evalSumResults){
+        if(ShareUtil.XObject.isEmpty(evalSumResults)) {
             return true;
         }
-        List<ExperimentIndicatorValRsEntity> rows=ShareUtil.XCollection.map(evalResults, false, i->
-                new ExperimentIndicatorValRsEntity().setIndicatorInstanceId(i.getExperimentIndicatorId())
-                        .setPeriods(periods)
-                        .setCurrentVal( i.getNewValString()));
-        return experimentIndicatorValRsDao.updateIndicatorCurrent(rows);
+        EvalPersonOnceHolder evalHolder= EvalPersonCache.Instance().getCurHolder(experimentPersonId);
+        Map<String,String> mapVals=ShareUtil.XCollection.toMap(evalSumResults, SpelEvalSumResult::getExperimentIndicatorId,SpelEvalSumResult::getValString);
+        evalSumResults.forEach(i->evalHolder.putCurVal(mapVals, true));
+
+        return true;
     }
 
 
