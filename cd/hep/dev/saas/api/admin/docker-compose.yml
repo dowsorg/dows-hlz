@@ -12,6 +12,7 @@ services:
     ports:
       - $EHP:8080
       - $EWP:80
+      - $EDP:5005
     volumes:
       - ./logs:/dows/saas/hep-admin/logs
       - ./configs:/dows/saas/hep-admin/configs
