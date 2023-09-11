@@ -37,7 +37,6 @@ import org.dows.hep.api.user.experiment.response.*;
 import org.dows.hep.biz.event.sysevent.SysEventInvoker;
 import org.dows.hep.biz.request.ExperimentTaskParamsRequest;
 import org.dows.hep.biz.schedule.TaskScheduler;
-import org.dows.hep.biz.task.ExptSchemeFinishTask;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -407,8 +406,8 @@ public class ExperimentSchemeBiz {
                         .build();
                 experimentTaskScheduleService.save(taskEntity);
                 //执行定时任务
-                ExptSchemeFinishTask exptSchemeFinishTask = new ExptSchemeFinishTask(experimentTaskScheduleService, this, exptInstanceId, exptGroupId);
-                taskScheduler.schedule(exptSchemeFinishTask, endTime);
+                //ExptSchemeFinishTask exptSchemeFinishTask = new ExptSchemeFinishTask(experimentTaskScheduleService, this, exptInstanceId, exptGroupId);
+                //taskScheduler.schedule(exptSchemeFinishTask, endTime);
             }
         });
     }
