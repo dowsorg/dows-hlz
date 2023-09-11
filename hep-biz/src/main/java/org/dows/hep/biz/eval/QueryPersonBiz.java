@@ -62,8 +62,9 @@ public class QueryPersonBiz {
             return false;
         }
         final ExperimentIndicatorInstanceRsEntity indicator=experimentIndicatorValRsEntity.getIndicatorInstance();
-        evalPersonCache.getCurHolder(indicator.getExperimentId(),indicator.getExperimentPersonId())
-                .putCurVal(indicator.getExperimentIndicatorInstanceId(), experimentIndicatorValRsEntity.getCurrentVal(), true);
+        EvalPersonOnceHolder evalHolder= evalPersonCache.getCurHolder(indicator.getExperimentId(),indicator.getExperimentPersonId());
+        evalHolder.putCurVal(indicator.getExperimentIndicatorInstanceId(), experimentIndicatorValRsEntity.getCurrentVal(), true);
+        evalHolder.get().getOldMap(Set.of(indicator.getExperimentIndicatorInstanceId()));
         return true;
     }
 
@@ -101,7 +102,7 @@ public class QueryPersonBiz {
                 return Collections.emptyMap();
             }
             return evalPersonCache.getCurHolder(person.getExperimentInstanceId(), experimentPersonId)
-                    .get().getOldMap();
+                    .get().getOldMap(true);
         }else {
             Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap=new HashMap<>();
             rsExperimentIndicatorValBiz.populateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
