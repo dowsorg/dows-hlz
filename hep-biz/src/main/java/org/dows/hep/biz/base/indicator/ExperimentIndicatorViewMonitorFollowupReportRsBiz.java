@@ -142,24 +142,30 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
             //applicationContext.publishEvent(new FollowupEvent(experimentMonitorFollowupCheckRequestRs));
         }
         /* runsix:监测随访是一个触发计算时间点 */
-        if(ConfigExperimentFlow.SWITCH2EvalCache) {
+        try {
 
-            evalPersonBiz.evalOrgFunc(RsExperimentCalculateFuncRequest.builder()
-                    .appId(appId)
-                    .experimentId(experimentId)
-                    .periods(periods)
-                    .experimentPersonId(experimentPersonId)
-                    .funcType(EnumEvalFuncType.FUNCFollowup)
-                    .build());
-        }
-        else {
-            rsExperimentCalculateBiz.experimentReCalculateFunc(RsExperimentCalculateFuncRequest
-                    .builder()
-                    .appId(appId)
-                    .experimentId(experimentId)
-                    .periods(periods)
-                    .experimentPersonId(experimentPersonId)
-                    .build());
+            if (ConfigExperimentFlow.SWITCH2EvalCache) {
+
+                evalPersonBiz.evalOrgFunc(RsExperimentCalculateFuncRequest.builder()
+                        .appId(appId)
+                        .experimentId(experimentId)
+                        .periods(periods)
+                        .experimentPersonId(experimentPersonId)
+                        .funcType(EnumEvalFuncType.FUNCFollowup)
+                        .build());
+            } else {
+                rsExperimentCalculateBiz.experimentReCalculateFunc(RsExperimentCalculateFuncRequest
+                        .builder()
+                        .appId(appId)
+                        .experimentId(experimentId)
+                        .periods(periods)
+                        .experimentPersonId(experimentPersonId)
+                        .build());
+            }
+        }catch (Exception ex) {
+            log.error(String.format("monitorFollowupCheck experimentId:%s personId:%s",
+                    exptValidator.getExperimentInstanceId(), exptValidator.getExperimentPersonId()), ex);
+            AssertUtil.justThrow(String.format("功能点结算失败：%s",ex.getMessage()),ex);
         }
 
         ExperimentIndicatorViewMonitorFollowupRsEntity experimentIndicatorViewMonitorFollowupRsEntity = experimentIndicatorViewMonitorFollowupRsService.lambdaQuery()

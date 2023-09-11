@@ -76,7 +76,9 @@ public class EvalPersonOnceData {
                 .setSyncState(EnumEvalSyncState.NEW)
                 .setPeriods(funcType==EnumEvalFuncType.PERIODEnd?header.getPeriods()+1: header.periods)
                 .setLastEvalDay(header.getEvalDay())
+                .setHealthIndex(header.getHealthIndex())
                 .setLastHealthIndex(header.getHealthIndex())
+                .setMoney(header.getMoney())
                 .setLastMoney(header.getMoney())
                 .setEvalDay(header.getEvalDay())
         );
