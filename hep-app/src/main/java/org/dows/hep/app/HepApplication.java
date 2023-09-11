@@ -97,7 +97,10 @@ public class HepApplication{
         Set<EnumIndicatorType> needInitMustType = new HashSet<>();
         indicatorInstanceService.lambdaQuery()
             .eq(IndicatorInstanceEntity::getAppId, EnumString.APP_ID.getStr())
-            .ne(IndicatorInstanceEntity::getType, EnumIndicatorType.USER_CREATED.getType())
+                .and(i->i.ne(IndicatorInstanceEntity::getType, EnumIndicatorType.USER_CREATED.getType())
+                .or()
+                .in(IndicatorInstanceEntity::getIndicatorName,EnumIndicatorType.SPORT_ENERGY.getDesc()))
+
             .list()
             .forEach(indicatorInstanceEntity -> {
                 dbExistMustType.add(indicatorInstanceEntity.getType());
@@ -203,7 +206,7 @@ public class HepApplication{
                     .min("0")
                     .max("10000")
                     .build());
-              /*  case SPORT_ENERGY -> createOrUpdateIndicatorInstanceRequestRsList.add(CreateOrUpdateIndicatorInstanceRequestRs
+                case SPORT_ENERGY -> createOrUpdateIndicatorInstanceRequestRsList.add(CreateOrUpdateIndicatorInstanceRequestRs
                         .builder()
                         .indicatorCategoryId(EnumIndicatorCategory.SYSTEM_CALCULATE_INDICATOR.getCode())
                         .appId(EnumString.APP_ID.getStr())
@@ -215,7 +218,7 @@ public class HepApplication{
                         .type(EnumIndicatorType.SPORT_ENERGY.getType())
                         .min("0")
                         .max("10000")
-                        .build());*/
+                        .build());
                 default ->
                     log.error("必须初始化指标类型枚举不存在，type:{}, desc:{}", enumIndicatorType.getType(), enumIndicatorType.getDesc());
             }
