@@ -102,7 +102,7 @@ public class QueryPersonBiz {
                 return Collections.emptyMap();
             }
             return evalPersonCache.getCurHolder(person.getExperimentInstanceId(), experimentPersonId)
-                    .get().getOldMap();
+                    .get().getOldMap(true);
         }else {
             Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap=new HashMap<>();
             rsExperimentIndicatorValBiz.populateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,

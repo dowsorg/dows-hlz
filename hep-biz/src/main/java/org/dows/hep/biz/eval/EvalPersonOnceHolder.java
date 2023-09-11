@@ -408,11 +408,14 @@ public class EvalPersonOnceHolder {
                 }
                 saveToDB(toSavePack(data));
             }catch (Exception ex) {
+                String risks=JacksonUtil.toJsonSilence(data.getRisks(), true);
                 StringBuilder sb = new StringBuilder("EVALTrace--")
                         .append(this.getClass().getName())
                         .append(".saveAsync error")
                         .append(" key:").append(cacheKey)
-                        .append(" header:").append(data.getHeader());
+                        .append(" header:").append(data.getHeader())
+                        .append(" risks:").append(risks.length()).append("-").append(risks);
+
                 log.error(sb.toString(), ex);
                 sb.setLength(0);
             }
