@@ -69,6 +69,11 @@ public class ExperimentIndicatorLogEntity  implements CrudEntity {
     @Schema(title = "指标单位")
     private String unit;
 
+    @Schema(title = "系统指标类型")
+    private Integer sycType;
+    @Schema(title = "健康档案指标类型 1-健康指数 2-基本指标 3-热量")
+    private Integer docType;
+
 
     @Schema(title = "计算天数")
     private Integer evalDay;

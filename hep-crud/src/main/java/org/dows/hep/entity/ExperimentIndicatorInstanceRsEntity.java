@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+import org.dows.hep.api.enums.EnumIndicatorDocType;
 
 import java.util.Date;
 
@@ -94,4 +95,8 @@ public class ExperimentIndicatorInstanceRsEntity implements CrudEntity {
   @TableField(fill = FieldFill.INSERT)
   @Schema(title = "时间戳")
   private Date dt;
+
+  @TableField(exist = false)
+  @Schema(title = "健康档案指标类型")
+  private transient EnumIndicatorDocType docType;
 }

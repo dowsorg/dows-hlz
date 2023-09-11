@@ -45,6 +45,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author fhb
@@ -63,7 +64,8 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
 
     private final OSSBiz ossBiz;
     private final ReportOSSHelper ossHelper;
-    private final ReportPdfHelper reportPdfHelper;
+    private final SchemeReportPdfHelper schemeReportPdfHelper;
+    private final SandReportPdfHelper sandReportPdfHelper;
     private final ReportRecordHelper recordHelper;
     private final FindSoftProperties findSoftProperties;
 
@@ -230,28 +232,31 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
         // 生成 pdf 并上传文件
         Path path = Paths.get(LOCAL_SCHEME_REPORT, fileName);
         Path uploadPath = Paths.get(exptInstanceId, fileName);
-        OssInfo ossInfo = reportPdfHelper.convertAndUpload(pdfVO, schemeFlt, path, uploadPath);
+        OssInfo ossInfo = schemeReportPdfHelper.convertAndUpload(pdfVO, schemeFlt, path, uploadPath);
+        String fileUri = ossHelper.getUrlPath(ossInfo, exptInstanceId);
 
         // 记录一份数据
         if (StrUtil.isNotBlank(ossInfo.getPath())) {
-            MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
-                    .fileName(fileName)
-                    .fileType("pdf")
-                    .fileUri(ossHelper.getUrlPath(ossInfo, exptInstanceId))
-                    .build();
-            MaterialsRequest materialsRequest = MaterialsRequest.builder()
-                    .bizCode("EXPT")
-                    .title(fileName)
-                    .materialsAttachments(List.of(attachment))
-                    .build();
-            recordHelper.record(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP, materialsRequest);
+            CompletableFuture.runAsync(() -> {
+                MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
+                        .fileName(fileName)
+                        .fileType("pdf")
+                        .fileUri(fileUri)
+                        .build();
+                MaterialsRequest materialsRequest = MaterialsRequest.builder()
+                        .bizCode("EXPT")
+                        .title(fileName)
+                        .materialsAttachments(List.of(attachment))
+                        .build();
+                recordHelper.record(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP, materialsRequest);
+            });
         }
 
         // 构造返回信息
         ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
                 .parent(exptInstanceId)
                 .name(ossInfo.getName())
-                .path(ossHelper.getUrlPath(ossInfo, exptInstanceId))
+                .path(fileUri)
                 .build();
         return ExptGroupReportVO.builder()
                 .exptGroupId(exptGroupId)

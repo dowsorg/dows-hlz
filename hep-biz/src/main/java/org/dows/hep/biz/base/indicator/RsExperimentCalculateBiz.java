@@ -1411,6 +1411,7 @@ public class RsExperimentCalculateBiz {
             .experimentId(experimentId)
             .periods(periods)
             .personIdSet(experimentPersonIdSet)
+            .funcType(rsExperimentCalculateFuncRequest.getFuncType())
             .build());
 
     /* runsix:4.重新计算健康指数 */
@@ -1427,7 +1428,7 @@ public class RsExperimentCalculateBiz {
             .experimentId(experimentId)
             .periods(periods)
             .experimentPersonIds(experimentPersonIdSet)
-            .isPeriodEnd(false)
+            .funcType(rsExperimentCalculateFuncRequest.getFuncType())
             .build());
 
     //计算突发事件触发
@@ -1613,6 +1614,7 @@ public class RsExperimentCalculateBiz {
           .experimentId(experimentId)
           .periods(periods)
           .personIdSet(experimentPersonIdSet)
+          .funcType(EnumEvalFuncType.PERIODEnd)
           .build());
 
       /* runsix:4.重新计算所有人的健康指数 */
@@ -1627,7 +1629,7 @@ public class RsExperimentCalculateBiz {
               .appId(appId)
               .experimentId(experimentId)
               .periods(periods)
-              .isPeriodEnd(true)
+              .funcType(EnumEvalFuncType.PERIODEnd)
               .build());
 
       /* runsix:5.存储期数翻转数据 */

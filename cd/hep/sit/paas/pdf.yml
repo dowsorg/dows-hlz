@@ -4,14 +4,43 @@ services:
     image: registry.cn-hangzhou.aliyuncs.com/findsoft/pdf-generator:1.0.230825
     restart: unless-stopped
     container_name: pdf-generator
+    #network_mode: host
+    pull_policy: always
     environment:
-      - TZ=$TZ
+      - TZ=Asia/Shanghai
     ports:
-      - 48080:8080
-    networks:
-      prd_net:
-        ipv4_address: 172.18.0.5
+      - 8001:3000
+    volumes:
+      - ./pdf/config:/app/dist/config/yaml
 
-networks:
-  prd_net:
-    external: true
+    # networks:
+    #   - dev_net
+#    networks:
+#      dev_net:
+#        ipv4_address: 172.18.0.5
+
+
+
+
+#services:
+#  fs_common_test:
+#    image: 192.168.1.60:7080/fs/common
+#    pull_policy: always
+#    ports:
+#      - "10004:3000"
+#    volumes:
+#      - /usr/local/docker-compose/frontend/dev/fs-common/config:/app/dist/config/yaml
+#  fs_common_test:
+#    image: 192.168.1.60:7080/fs/common
+#    pull_policy: always
+#    ports:
+#      - "10005:3000"
+#    volumes:
+#      - /usr/local/docker-compose/frontend/dev/fs-common/test-config:/app/dist/config/yaml
+#  fs_common_uat:
+#    image: 192.168.1.60:7080/fs/common
+#    pull_policy: always
+#    ports:
+#      - "10006:3000"
+#    volumes:
+#      - /usr/local/docker-compose/frontend/dev/fs-common/uat-config:/app/dist/config/yaml

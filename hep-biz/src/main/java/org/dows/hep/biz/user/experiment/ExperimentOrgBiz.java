@@ -473,6 +473,12 @@ public class ExperimentOrgBiz {
                 .orderByDesc(ExperimentPersonEntity::getDt);
         Page<ExperimentPersonEntity> page = new Page<>(personRequest.getPageNo(), personRequest.getPageSize());
         IPage<ExperimentPersonEntity> entityIPage = experimentPersonService.page(page, queryWrapper);
+        //复制
+        Page<ExperimentPersonResponse> voPage = new Page<>();
+        BeanUtils.copyProperties(entityIPage, voPage, new String[]{"records"});
+        if(ShareUtil.XObject.isEmpty(entityIPage.getRecords())){
+            return voPage.setRecords(responseList);
+        }
 
         //获取人物挂号状态
         ExperimentTimePoint timePoint = ExperimentSettingCache.Instance().getTimePointByRealTime(ExperimentCacheKey.create(personRequest.getAppId(), personRequest.getExperimentInstanceId()),
@@ -488,9 +494,7 @@ public class ExperimentOrgBiz {
         //关键指标
         Map<String, List<String>> mapCoreIndicators = experimentIndicatorInstanceRsBiz.getCoreByPeriodsAndExperimentPersonIdList(period, personIds);
 
-        //复制
-        Page<ExperimentPersonResponse> voPage = new Page<>();
-        BeanUtils.copyProperties(entityIPage, voPage, new String[]{"records"});
+
 
         //实验人物账号
         List<String> accountIds = entityIPage.getRecords().stream().map(ExperimentPersonEntity::getAccountId)

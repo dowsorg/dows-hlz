@@ -5,26 +5,41 @@ spring:
     activate:
       on-profile: dev
 pdf-server:
-  url: http://192.168.1.60:10004/pdf
-  namespace: dev-dows-hep
+  server-url: http://192.168.1.60:8801/pdf
+  app-code: hep
+  env: dev
+  scheme-expt-view-url: http://192.168.1.60:1801/report_view/group/
+  scheme-group-view-url: http://192.168.1.60:1801/report_view/group/
+  sand-expt-view-url: http://192.168.1.60:1801/report_view/group/
+  sand-group-view-url: http://192.168.1.60:1801/report_view/group/
 ---
 #测试环境
 spring:
   config:
     activate:
-      on-profile: sit
+      on-profile: test
 pdf-server:
-  url: http://192.168.1.60:10004/pdf
-  namespace: sit-dows-hep
+  server-url: http://192.168.1.60:8001/pdf
+  app-code: hep
+  env: sit
+  scheme-expt-view-url: http://192.168.1.60:2801/report_view/group/
+  scheme-group-view-url: http://192.168.1.60:2801/report_view/group/
+  sand-expt-view-url: http://192.168.1.60:2801/report_view/group/
+  sand-group-view-url: http://192.168.1.60:2801/report_view/group/
 ---
 #预发布环境
 spring:
   config:
     activate:
-      on-profile: uat
+      on-profile: staging
 pdf-server:
-  url: http://192.168.1.60:10004/pdf
-  namespace: uat-dows-hep
+  server-url: http://192.168.1.60:8001/pdf
+  app-code: hep
+  env: uat
+  scheme-expt-view-url: http://192.168.1.60:3801/report_view/group/
+  scheme-group-view-url: http://192.168.1.60:3801/report_view/group/
+  sand-expt-view-url: http://192.168.1.60:3801/report_view/group/
+  sand-group-view-url: http://192.168.1.60:3801/report_view/group/
 ---
 #产品环境
 spring:
@@ -32,5 +47,10 @@ spring:
     activate:
       on-profile: prd
 pdf-server:
-  url: http://192.168.1.60:10004/pdf
-  namespace: prd-dows-hep
+  server-url: http://192.168.1.60:8001/pdf
+  app-code: hep
+  env: prd
+  scheme-expt-view-url: http://192.168.1.60:3801/report_view/group/
+  scheme-group-view-url: http://192.168.1.60:3801/report_view/group/
+  sand-expt-view-url: http://192.168.1.60:3801/report_view/group/
+  sand-group-view-url: http://192.168.1.60:3801/report_view/group/

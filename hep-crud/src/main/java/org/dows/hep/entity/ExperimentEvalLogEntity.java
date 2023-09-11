@@ -56,8 +56,11 @@ public class ExperimentEvalLogEntity implements CrudEntity {
     @Schema(title = "计算天数")
     private Integer evalDay;
 
-    @Schema(title = "计算时间")
-    private Date evalTime;
+    @Schema(title = "计算开始时间")
+    private Date evalingTime;
+
+    @Schema(title = "计算结束时间")
+    private Date evaledTime;
 
     @Schema(title = "上次计算天数")
     private Integer lastEvalDay;

@@ -3,6 +3,7 @@ package org.dows.hep.biz.eval;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudContextHolder;
+import org.dows.hep.api.enums.EnumEvalFuncType;
 import org.dows.hep.biz.dao.ExperimentEvalLogDao;
 import org.dows.hep.biz.eval.data.EvalPersonCacheKey;
 import org.dows.hep.biz.eval.data.EvalPersonOnceData;
@@ -10,15 +11,16 @@ import org.dows.hep.biz.eval.data.EvalPersonSyncRequest;
 import org.dows.hep.biz.event.ExperimentSettingCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
+import org.dows.hep.biz.spel.PersonIndicatorIdCache;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentEvalLogEntity;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author : wuzl
@@ -28,8 +30,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Accessors(chain = true)
 public class EvalPersonPointer {
-    private static final int TRYLOCKSeconds4Read=3;
-    private static final int TRYLOCKSeconds4Write=5;
+
+    private static final int TRYLOCKSeconds4Write=4;
 
     public EvalPersonPointer(EvalPersonCacheKey cacheKey){
         this.cacheKey=cacheKey;
@@ -41,51 +43,59 @@ public class EvalPersonPointer {
 
     private final AtomicInteger curEvalNo=new AtomicInteger();
 
-    private final ReadWriteLock rwlock=new ReentrantReadWriteLock();
+
+    private final ReentrantLock rlock=new ReentrantLock();
 
 
 
-    @SneakyThrows
+
     public EvalPersonOnceHolder getCurHolder() {
-        int evalNo=getCurEvalNoWithReadLock();
-        return getHolder(evalNo);
+        return getHolder(curEvalNo.get());
     }
-    @SneakyThrows
+
     public EvalPersonOnceHolder getLastHolder()  {
-        int evalNo = Math.max(0, getCurEvalNoWithReadLock() - 1);
+        int evalNo = Math.max(0, curEvalNo.get() - 1);
         return getHolder(evalNo);
     }
-    @SneakyThrows
+
     public EvalPersonOnceHolder getNextHolder() {
-        int evalNo = Math.max(0, getCurEvalNoWithReadLock() + 1);
+        int evalNo = Math.max(0, curEvalNo.get() + 1);
         return getHolder(evalNo);
     }
-    @SneakyThrows
+
     public boolean startSync(EvalPersonSyncRequest req) {
         return getCurHolder().startSync(req);
     }
     @SneakyThrows
-    public boolean sync(boolean isPeriodInit)  {
-        boolean lockFlag = rwlock.writeLock().tryLock(TRYLOCKSeconds4Write, TimeUnit.SECONDS);
+    public boolean sync(EnumEvalFuncType funcType)  {
+        boolean lockFlag = rlock.tryLock(TRYLOCKSeconds4Write, TimeUnit.SECONDS);
         try {
             final int evalNo = curEvalNo.get();
             final int nextEvalNo = evalNo + 1;
             EvalPersonOnceHolder curHolder = getHolder(evalNo);
             EvalPersonOnceHolder nextHolder = getHolder(nextEvalNo);
-            curHolder.save();
-            nextHolder.putFrom(curHolder.getPresent(), nextEvalNo, isPeriodInit);
+            Optional.ofNullable(curHolder.getPresent())
+                    .map(EvalPersonOnceData::getHeader)
+                    .ifPresent(i->i.setFuncType(funcType));
+            nextHolder.putFrom(curHolder.getPresent(), nextEvalNo, funcType);
             curEvalNo.incrementAndGet();
+            curHolder.save();
             return true;
         } finally {
             if (lockFlag) {
-                rwlock.writeLock().unlock();
+                rlock.unlock();
             }
         }
     }
     @SneakyThrows
     public boolean load()  {
-        boolean lockFlag = rwlock.writeLock().tryLock(TRYLOCKSeconds4Write, TimeUnit.SECONDS);
+        if(ShareUtil.XObject.isEmpty(cacheKey.getExperimentInstanceId())){
+            Optional.ofNullable( PersonIndicatorIdCache.Instance().getPerson(cacheKey.getExperimentPersonId()))
+                    .ifPresent(i->cacheKey.setExperimentInstanceId(i.getExperimentInstanceId()));
+        }
+        rlock.lock();
         try {
+
             ExperimentEvalLogEntity rowLog= experimentEvalLogDao.getCurrentByPersonId(cacheKey.getExperimentPersonId(),
                     ExperimentEvalLogEntity::getEvalNo,
                     ExperimentEvalLogEntity::getPeriods);
@@ -105,7 +115,7 @@ public class EvalPersonPointer {
                 }
                 if(curData.isSynced()) {
                     nextEvalNo++;
-                    getHolder(nextEvalNo).putFrom(curData, nextEvalNo, !rowLog.getPeriods().equals(curData.getHeader().getPeriods()));
+                    getHolder(nextEvalNo).putFrom(curData, nextEvalNo, getFuncType(curData.getHeader().getPeriods(), timePoint.getPeriod()));
                     curEvalNo.set(nextEvalNo);
                     return true;
                 }
@@ -114,28 +124,26 @@ public class EvalPersonPointer {
             }
             curHolder = getHolder(evalNo);
             curData=curHolder.get(evalNo,true);
-            getHolder(nextEvalNo).putFrom(curData,nextEvalNo,!rowLog.getPeriods().equals(curData.getHeader().getPeriods()));
+            getHolder(nextEvalNo).putFrom(curData,nextEvalNo,getFuncType(curData.getHeader().getPeriods(), timePoint.getPeriod()));
             curEvalNo.set(nextEvalNo);
             return true;
         } finally {
-            if (lockFlag) {
-                rwlock.writeLock().unlock();
+            if(rlock.isHeldByCurrentThread()){
+                rlock.unlock();
             }
         }
 
     }
 
-
-    private int getCurEvalNoWithReadLock() throws InterruptedException{
-        boolean lockFlag= rwlock.readLock().tryLock(TRYLOCKSeconds4Read, TimeUnit.SECONDS);
-        try{
-            return curEvalNo.get();
-        }finally{
-            if(lockFlag){
-                rwlock.readLock().unlock();
-            }
+    private EnumEvalFuncType getFuncType(int syncedPeriod,int curPeriod){
+        if(syncedPeriod<curPeriod){
+            return EnumEvalFuncType.PERIODEnd;
         }
+        return EnumEvalFuncType.INIT;
     }
+
+
+
     private EvalPersonOnceHolder getHolder(int evalNo) {
         return EvalPersonOnceCache.Instance().getHolder(cacheKey.getExperimentInstanceId(), cacheKey.getExperimentPersonId(), evalNo);
     }

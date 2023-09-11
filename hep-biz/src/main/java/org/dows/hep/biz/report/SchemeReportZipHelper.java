@@ -32,7 +32,7 @@ import java.util.zip.ZipOutputStream;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ReportZipHelper {
+public class SchemeReportZipHelper {
     private final ReportOSSHelper ossHelper;
     private static final String ZIP_DIR = "zip";
     private static final String LOCAL_ZIP_DIR = SystemConstant.PDF_REPORT_TMP_PATH + ZIP_DIR + File.separator;
@@ -174,7 +174,8 @@ public class ReportZipHelper {
                     Files.createDirectories(groupPath);
                     Path filePath = Paths.get(sourceDir.toString(), groupPathName, reportFile.getName());
                     OutputStream outputStream = Files.newOutputStream(filePath);
-                    ossHelper.download(outputStream, reportFile.getParent() + File.separator + reportFile.getName());
+                    String targetName = reportFile.getParent() + File.separator + reportFile.getName();
+                    ossHelper.download(outputStream, targetName);
                 } catch (Exception e) {
                     log.error("压缩文件时：下载文件到源文件数据异常");
                 }

@@ -17,6 +17,8 @@ import org.dows.hep.api.base.indicator.request.ExperimentRsCalculateAndCreateRep
 import org.dows.hep.api.base.indicator.request.RsCopyCrowdsAndRiskModelRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyIndicatorFuncRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCopyPersonIndicatorRequestRs;
+import org.dows.hep.api.config.ConfigExperimentFlow;
+import org.dows.hep.api.enums.EnumEvalFuncType;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.enums.EnumExperimentTask;
 import org.dows.hep.api.exception.ExperimentInitHanlderException;
@@ -31,7 +33,6 @@ import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
 import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.biz.eval.EvalHealthIndexBiz;
 import org.dows.hep.biz.event.EventScheduler;
-import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.biz.request.ExperimentTaskParamsRequest;
 import org.dows.hep.biz.snapshot.SnapshotManager;
 import org.dows.hep.biz.snapshot.SnapshotRequest;
@@ -97,20 +98,20 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
         String experimentInstanceId = request.getExperimentInstanceId();
         String caseInstanceId = request.getCaseInstanceId();
         ExperimentInstanceEntity experimentInstanceEntity = experimentInstanceService.lambdaQuery()
-            .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
-            .oneOpt()
-            .orElseThrow(() -> {
-                log.error("实验id:{} 在数据库不存在", experimentInstanceId);
-                throw new ExperimentInitHanlderException(String.format("初始化实验前端传过来的id:%s 对应的实验不存在", experimentInstanceId));
-            });
-        String appId = experimentInstanceEntity.getAppId();
+                .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
+                .oneOpt()
+                .orElseThrow(() -> {
+                    log.error("实验id:{} 在数据库不存在", experimentInstanceId);
+                    throw new ExperimentInitHanlderException(String.format("初始化实验前端传过来的id:%s 对应的实验不存在", experimentInstanceId));
+                });
+        String appId  = experimentInstanceEntity.getAppId();
         List<ExperimentSettingEntity> experimentSettingEntityList = experimentSettingService.lambdaQuery()
-            .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
-            .list();
+                .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
+                .list();
         AtomicReference<ExperimentSetting.SandSetting> sandSettingAtomicReference = new AtomicReference<>();
         AtomicReference<ExperimentSetting.SchemeSetting> schemeSettingAtomicReference = new AtomicReference<>();
-        AtomicBoolean hasSchemeSettingAtomicBoolean  = new AtomicBoolean(Boolean.FALSE);
-        AtomicBoolean hasSandSettingAtomicBoolean  = new AtomicBoolean(Boolean.FALSE);
+        AtomicBoolean hasSchemeSettingAtomicBoolean = new AtomicBoolean(Boolean.FALSE);
+        AtomicBoolean hasSandSettingAtomicBoolean = new AtomicBoolean(Boolean.FALSE);
         experimentSettingEntityList.forEach(experimentSettingEntity -> {
             if (StringUtils.equals(ExperimentSetting.SchemeSetting.class.getName(), experimentSettingEntity.getConfigKey())) {
                 hasSchemeSettingAtomicBoolean.set(Boolean.TRUE);
@@ -141,34 +142,34 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
             ExperimentSetting.SandSetting sandSetting = sandSettingAtomicReference.get();
             Integer periods = sandSetting.getPeriods();
             rsCopyBiz.rsCopyPersonIndicator(RsCopyPersonIndicatorRequestRs
-              .builder()
-              .appId(appId)
-              .experimentInstanceId(experimentInstanceId)
-              .caseInstanceId(caseInstanceId)
-              .periods(periods)
-              .build());
-          /* runsix:初始化实验 '复制人群类型以及死亡原因以及公式到实验' */
-          rsCopyBiz.rsCopyCrowdsAndRiskModel(RsCopyCrowdsAndRiskModelRequestRs
-              .builder()
-              .appId(appId)
-              .experimentInstanceId(experimentInstanceId)
-              .build());
-          /* runsix:初始化实验 '复制功能点到实验' */
-          rsCopyBiz.rsCopyIndicatorFunc(RsCopyIndicatorFuncRequestRs
-              .builder()
-              .appId(appId)
-              .experimentInstanceId(experimentInstanceId)
-              .caseInstanceId(caseInstanceId)
-              .build());
+                    .builder()
+                    .appId(appId)
+                    .experimentInstanceId(experimentInstanceId)
+                    .caseInstanceId(caseInstanceId)
+                    .periods(periods)
+                    .build());
+            /* runsix:初始化实验 '复制人群类型以及死亡原因以及公式到实验' */
+            rsCopyBiz.rsCopyCrowdsAndRiskModel(RsCopyCrowdsAndRiskModelRequestRs
+                    .builder()
+                    .appId(appId)
+                    .experimentInstanceId(experimentInstanceId)
+                    .build());
+            /* runsix:初始化实验 '复制功能点到实验' */
+            rsCopyBiz.rsCopyIndicatorFunc(RsCopyIndicatorFuncRequestRs
+                    .builder()
+                    .appId(appId)
+                    .experimentInstanceId(experimentInstanceId)
+                    .caseInstanceId(caseInstanceId)
+                    .build());
             /* runsix:复制实验，拿到第0期的数据 */
             //rsExperimentCalculateBiz.experimentRsCalculateAndCreateReportHealthScore(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
             evalHealthIndexBiz.evalPersonHealthIndexOld(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
-                .builder()
-                .appId(appId)
-                .experimentId(experimentInstanceId)
-                .periods(0)
-                .isPeriodEnd(true)
-                .build());
+                    .builder()
+                    .appId(appId)
+                    .experimentId(experimentInstanceId)
+                    .periods(0)
+                    .funcType(EnumEvalFuncType.START)
+                    .build());
         }
         //复制操作指标和突发事件
         SnapshotManager.Instance().write( new SnapshotRequest(appId,experimentInstanceId), true);
@@ -176,7 +177,10 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
             //启用新流程
             EventScheduler.Instance().scheduleSysEvent(appId, experimentInstanceId, 1);
         }
+
     }
+
+
 
     private void setExptSchemeExpireTask(AtomicReference<ExperimentSetting.SchemeSetting> schemeSettingAtomicReference, ExperimentGroupSettingRequest request) {
         if(ConfigExperimentFlow.SWITCH2SysEvent){

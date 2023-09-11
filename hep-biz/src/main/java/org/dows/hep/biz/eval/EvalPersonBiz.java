@@ -51,6 +51,7 @@ public class EvalPersonBiz {
         }
         try {
             final String APPId="3";
+            final Date dtNow=new Date();
             Map<String,List<ExperimentIndicatorValRsEntity>> map=new HashMap<>();
             src.forEach(i->map.computeIfAbsent(i.getIndicatorInstance().getExperimentPersonId(), k->new ArrayList<>()).add(i));
             List<ExperimentEvalLogEntity> rowsEval=new ArrayList<>();
@@ -66,7 +67,8 @@ public class EvalPersonBiz {
                         .setFuncType(0)
                         .setPeriods(1)
                         .setEvalDay(0)
-                        .setEvalTime(new Date())
+                        .setEvalingTime(dtNow)
+                        .setEvaledTime(dtNow)
                         .setLastEvalDay(0);
                 List<EvalIndicatorValues> indicators=new ArrayList<>();
                 v.forEach(item->{
@@ -97,7 +99,7 @@ public class EvalPersonBiz {
 
         }catch (Exception ex){
             log.error(String.format( "人物初始指标复制失败[id:%s]",experimentId),ex);
-            return false;
+            throw ex;
         }
 
     }
@@ -127,7 +129,7 @@ public class EvalPersonBiz {
                 .appId(appId)
                 .experimentId(experimentId)
                 .periods(periods)
-                .isPeriodEnd(false)
+                .funcType(req.getFuncType())
                 .build());
 
         PersonBasedEventTask.runPersonBasedEventAsync(appId,experimentId);
@@ -160,7 +162,7 @@ public class EvalPersonBiz {
                 .appId(appId)
                 .experimentId(experimentId)
                 .periods(periods)
-                .isPeriodEnd(true)
+                .funcType(EnumEvalFuncType.PERIODEnd)
                 .build());
 
         experimentScoringBiz.saveOrUpd(experimentId, periods);

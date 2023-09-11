@@ -41,7 +41,7 @@ public class GlobalExceptionAdvice {
   @ExceptionHandler(value = BaseException.class)
   public Response<?> handleBaseException(HttpServletRequest request, HttpServletResponse response, BaseException e) {
     log.error("调用={}服务出现自定义异常，请求的url是={}，请求的方法是={}，原因={}", serviceName, request.getRequestURL(),
-        request.getMethod(), e.getMessage(), e.getMessage());//业务异常不打印堆栈 by wuzl
+        request.getMethod(), e.getMessage(), e);//业务异常不打印堆栈 by wuzl
     if (e.getStatusCode() != null) {
       return Response.failed(e.getStatusCode());
     }

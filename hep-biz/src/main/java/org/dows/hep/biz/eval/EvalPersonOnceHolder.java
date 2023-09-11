@@ -1,7 +1,6 @@
 package org.dows.hep.biz.eval;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.api.CrudContextHolder;
 import org.dows.hep.api.enums.EnumEvalFuncType;
@@ -14,7 +13,10 @@ import org.dows.hep.biz.eval.data.*;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.spel.PersonIndicatorIdCache;
 import org.dows.hep.biz.util.*;
-import org.dows.hep.entity.*;
+import org.dows.hep.entity.ExperimentEvalLogContentEntity;
+import org.dows.hep.entity.ExperimentEvalLogEntity;
+import org.dows.hep.entity.ExperimentIndicatorInstanceRsEntity;
+import org.dows.hep.entity.ExperimentIndicatorLogEntity;
 import org.redisson.api.RMap;
 import org.redisson.api.RedissonClient;
 
@@ -52,6 +54,18 @@ public class EvalPersonOnceHolder {
 
     private EvalPersonOnceData cacheData;
 
+    //region holders
+    public EvalPersonOnceHolder getLastHolder(){
+        return getHolder(cacheKey.getEvalNo()-1);
+    }
+    public EvalPersonOnceHolder getNextHolder(){
+        return getHolder(cacheKey.getEvalNo()+1);
+    }
+    private EvalPersonOnceHolder getHolder(int evalNo) {
+        return EvalPersonOnceCache.Instance().getHolder(cacheKey.getExperimentInstanceId(), cacheKey.getExperimentPersonId(), evalNo);
+    }
+    //endregion
+
     public boolean isValid(EvalPersonOnceData data){
         return ShareUtil.XObject.notEmpty(data)
                 &&data.isValued()
@@ -84,12 +98,29 @@ public class EvalPersonOnceHolder {
         cacheKey.setEvalNo(evalNo);
         return cacheData=load();
     }
+
+    public EvalIndicatorValues getSysIndicator(EnumIndicatorType type){
+        String indicatorId=PersonIndicatorIdCache.Instance().getSysIndicatorId(cacheKey.getExperimentPersonId(), type);
+        if(ShareUtil.XObject.isEmpty(indicatorId)){
+            return null;
+        }
+        return getIndicator(indicatorId);
+    }
+
     public EvalIndicatorValues getIndicator(String indicatorId){
         EvalPersonOnceData cached=get();
         if(null==cached){
             return null;
         }
         return cached.getMapIndicators().get(indicatorId);
+    }
+    public Map<String,String> fillCurVal(Map<String,String> mapCurVal,Set<String> indicatorIds){
+        EvalPersonOnceData cached=get();
+        if(null==cached){
+            return mapCurVal;
+        }
+        return cached.fillCurVal(mapCurVal, indicatorIds);
+
     }
     public List<EvalIndicatorValues> getChangedIndicators(){
         EvalPersonOnceData cached=cacheData;
@@ -108,9 +139,29 @@ public class EvalPersonOnceHolder {
                 .collect(Collectors.toList());
 
     }
+
+    public List<EvalIndicatorValues> getWatchIndicators(EvalPersonOnceData data){
+        if(null==data){
+            return null;
+        }
+        Set<String> watchedIds=PersonIndicatorIdCache.Instance().getWatchIndicatos(cacheKey.getExperimentPersonId());
+
+        return data.getMapIndicators().values()
+                .stream()
+                .filter(i->watchedIds.contains(i.getIndicatorId())
+                        ||Optional.ofNullable(i.getEvalNo()).orElse(0)>=data.getHeader().getEvalNo())
+                .collect(Collectors.toList());
+    }
     //endregion
 
     //region put
+    public boolean putCurVal(EnumIndicatorType type, String val, boolean saveToRD){
+        String indicatorId=PersonIndicatorIdCache.Instance().getSysIndicatorId(cacheKey.getExperimentPersonId(), type);
+        if(ShareUtil.XObject.isEmpty(indicatorId)){
+            return false;
+        }
+        return putCurVal(indicatorId, val,saveToRD);
+    }
 
     public boolean putCurVal(String indicatorId, String val, boolean saveToRD){
         if(ShareUtil.XObject.isEmpty(indicatorId)){
@@ -158,8 +209,8 @@ public class EvalPersonOnceHolder {
         return true;
     }
 
-    public boolean putFrom(EvalPersonOnceData src,int evalNo,boolean isPeriodInit){
-        cacheData=src.flip(evalNo,isPeriodInit);
+    public boolean putFrom(EvalPersonOnceData src,int evalNo,EnumEvalFuncType funcType){
+        cacheData=src.flip(evalNo,funcType);
         cacheKey.setEvalNo(evalNo);
         saveToRD(cacheData);
         return true;
@@ -178,7 +229,7 @@ public class EvalPersonOnceHolder {
                 .setFuncType(req.getFuncType())
                 .setPeriods(timePoint.getPeriod())
                 .setEvalDay(timePoint.getGameDay())
-                .setEvalTime(ShareUtil.XDate.localDT2Date(timePoint.getRealTime()));
+                .setEvalingTime(ShareUtil.XDate.localDT2Date(timePoint.getRealTime()));
         saveToRD(header);
         String lastDaysId=PersonIndicatorIdCache.Instance().getSysIndicatorId(cacheKey.getExperimentPersonId(), EnumIndicatorType.DURATION);
         putCurVal(lastDaysId,String.valueOf( header.getLastDays()),true);
@@ -189,13 +240,18 @@ public class EvalPersonOnceHolder {
         if (ShareUtil.XObject.isEmpty(data)) {
             return false;
         }
+        final EvalPersonOnceData.Header header = data.getHeader();
         String hpId = PersonIndicatorIdCache.Instance().getSysIndicatorId(cacheKey.getExperimentPersonId(), EnumIndicatorType.HEALTH_POINT);
         String moneyId = PersonIndicatorIdCache.Instance().getSysIndicatorId(cacheKey.getExperimentPersonId(), EnumIndicatorType.MONEY);
-        final EvalPersonOnceData.Header header = data.getHeader();
-        Optional.ofNullable(data.getMapIndicators().get(hpId))
-                .ifPresent(i -> header.setHealthIndex(i.getCurVal()));
-        Optional.ofNullable(data.getMapIndicators().get(moneyId))
-                .ifPresent(i -> header.setMoney(i.getCurVal()));
+        if(ShareUtil.XObject.notEmpty(hpId)) {
+            Optional.ofNullable(data.getMapIndicators().get(hpId))
+                    .ifPresent(i -> header.setHealthIndex(i.getCurVal()));
+        }
+        if(ShareUtil.XObject.notEmpty(moneyId)) {
+            Optional.ofNullable(data.getMapIndicators().get(moneyId))
+                    .ifPresent(i -> header.setMoney(i.getCurVal()));
+        }
+        header.setEvaledTime(new Date());
         saveToRD(header);
         return true;
 
@@ -210,8 +266,11 @@ public class EvalPersonOnceHolder {
             changed.forEach(item->syncIndicator(item));
         }
         syncHeaderIndicator(data);
+        data.getOldMap(true);
         return changed;
     }
+
+
     public void syncIndicator(EvalIndicatorValues src){
         if(ShareUtil.XObject.isEmpty(src)){
             return;
@@ -221,13 +280,10 @@ public class EvalPersonOnceHolder {
         BigDecimal changingVal=src.getChangingVal();
         if(ShareUtil.XObject.notEmpty(changingVal)
                 &&changingVal.compareTo(BigDecimal.ZERO)!=0){
-
-            if(ShareUtil.XObject.allEmpty(src.getCurVal(),src.getLastVal())){
+            if(ShareUtil.XObject.isEmpty(src.getCurVal())){
                 src.setCurVal(BigDecimalUtil.formatRoundDecimal(changingVal, SCALE4Value));
-            }else if(ShareUtil.XObject.isNumber(src.getCurVal())){
+            }else if(ShareUtil.XObject.isNumber(src.getCurVal())) {
                 src.setCurVal(BigDecimalOptional.valueOf(src.getCurVal()).add(changingVal).getString(SCALE4Value));
-            }else if(ShareUtil.XObject.isNumber(src.getLastVal())){
-                src.setCurVal(BigDecimalOptional.valueOf(src.getLastVal()).add(changingVal).getString(SCALE4Value));
             }
         }
         ExperimentIndicatorInstanceRsEntity cacheIndicator=PersonIndicatorIdCache.Instance().getIndicatorById(cacheKey.getExperimentPersonId(), src.getIndicatorId());
@@ -255,13 +311,13 @@ public class EvalPersonOnceHolder {
         if (data.isSynced()) {
             return true;
         }
+        data.setSyncState(EnumEvalSyncState.SYNCING);
         syncIndicators(data);
-        data.setSyncState(EnumEvalSyncState.SYNCED2RD);
+       /* data.setSyncState(EnumEvalSyncState.SYNCED2RD);
         if (!saveToRD(data)) {
             data.setSyncState(EnumEvalSyncState.SYNCING);
-        }
-        EvalPersonToSavePack savePack = toSavePack(data);
-        saveToDBAsync(savePack);
+        }*/
+        saveAsync(data);
         return true;
     }
 
@@ -310,29 +366,29 @@ public class EvalPersonOnceHolder {
                 .setIndicatorContent(JacksonUtil.toJsonSilence(data.getMapIndicators().values(), true))
                 .setHealthIndexContent(JacksonUtil.toJsonSilence(data.getEvalRisks(), true));
 
-        final Integer evalNo=data.getHeader().getEvalNo();
-        List<EvalIndicatorValues> changed=data.getMapIndicators().values()
-                .stream()
-                .filter(i->evalNo.equals(i.getEvalNo()))
-                .collect(Collectors.toList());
+
+        List<EvalIndicatorValues> watched=getWatchIndicators(data);
         final PersonIndicatorIdCache cacheIndicator=PersonIndicatorIdCache.Instance();
-        List<ExperimentIndicatorLogEntity> logIndicators = ShareUtil.XCollection.map(changed, item ->
-                ExperimentIndicatorLogEntity.builder()
-                        .experimentInstanceId(cacheKey.getExperimentInstanceId())
-                        .experimentPersonId(cacheKey.getExperimentPersonId())
-                        .experimentIndicatorId(item.getIndicatorId())
-                        .experimentIndicatorName(item.getIndicatorName())
-                        .evalNo(cacheKey.getEvalNo())
-                        .evalDay(data.getHeader().getEvalDay())
-                        .evalTime(data.getHeader().getEvalTime())
-                        .unit(Optional.ofNullable( cacheIndicator.getIndicatorById(cacheKey.getExperimentPersonId(), item.getIndicatorId()))
-                                .map(ExperimentIndicatorInstanceRsEntity::getUnit)
-                                .orElse(""))
-                        .curVal(item.getCurVal())
-                        .lastVal(item.getLastVal())
-                        .periodInitVal(item.getPeriodInitVal())
-                        .changeVal(item.getChangingVal())
-                        .build());
+        List<ExperimentIndicatorLogEntity> logIndicators = ShareUtil.XCollection.map(watched, item -> {
+            ExperimentIndicatorLogEntity log = ExperimentIndicatorLogEntity.builder()
+                    .experimentInstanceId(cacheKey.getExperimentInstanceId())
+                    .experimentPersonId(cacheKey.getExperimentPersonId())
+                    .experimentIndicatorId(item.getIndicatorId())
+                    .experimentIndicatorName(item.getIndicatorName())
+                    .evalNo(cacheKey.getEvalNo())
+                    .evalDay(data.getHeader().getEvalDay())
+                    .evalTime(data.getHeader().getEvaledTime())
+                    .curVal(item.getCurVal())
+                    .lastVal(item.getLastVal())
+                    .periodInitVal(item.getPeriodInitVal())
+                    .changeVal(item.getChangingVal())
+                    .build();
+            Optional.ofNullable(cacheIndicator.getIndicatorById(cacheKey.getExperimentPersonId(), item.getIndicatorId()))
+                    .ifPresent(i -> log.setUnit(i.getUnit())
+                            .setDocType(i.getDocType().getCode())
+                            .setSycType(i.getType()));
+            return log;
+        });
 
         return new EvalPersonToSavePack()
                 .setHeader(data.getHeader())
@@ -343,18 +399,31 @@ public class EvalPersonOnceHolder {
 
     }
 
+    public void saveAsync(EvalPersonOnceData data){
+        CompletableFuture.runAsync(()->{
+            try {
+                data.setSyncState(EnumEvalSyncState.SYNCED2RD);
+                if (!saveToRD(data)) {
+                    data.setSyncState(EnumEvalSyncState.SYNCING);
+                }
+                saveToDB(toSavePack(data));
+            }catch (Exception ex) {
+                StringBuilder sb = new StringBuilder("EVALTrace--")
+                        .append(this.getClass().getName())
+                        .append(".saveAsync error")
+                        .append(" key:").append(cacheKey)
+                        .append(" header:").append(data.getHeader());
+                log.error(sb.toString(), ex);
+                sb.setLength(0);
+            }
+        });
+    }
     public void saveToDBAsync(EvalPersonToSavePack pack){
         CompletableFuture.runAsync(()->saveToDB(pack));
     }
-    public boolean saveToDB(EvalPersonToSavePack pack){
-        if(!experimentEvalLogDao.tranSave(pack.getLogEval(), List.of(pack.getLogEvalContent()),false , ()->{
-            if(ShareUtil.XObject.isEmpty(pack.getLogIndicators())){
-                return true;
-            }
-            return experimentIndicatorLogDao.tranSaveBatch(pack.getLogIndicators());
-        })){
-            return false;
-        }
+    public boolean saveToDB(EvalPersonToSavePack pack) {
+        experimentEvalLogDao.tranSave(pack.getLogEval(), List.of(pack.getLogEvalContent()),false);
+        experimentIndicatorLogDao.tranSaveBatch(pack.getLogIndicators());
         pack.getHeader().setSyncState(EnumEvalSyncState.SYNCED2DB);
         return true;
     }
@@ -365,6 +434,10 @@ public class EvalPersonOnceHolder {
     //region load
 
     public EvalPersonOnceData load() {
+        if(ShareUtil.XObject.isEmpty(cacheKey.getExperimentInstanceId())){
+            Optional.ofNullable( PersonIndicatorIdCache.Instance().getPerson(cacheKey.getExperimentPersonId()))
+                    .ifPresent(i->cacheKey.setExperimentInstanceId(i.getExperimentInstanceId()));
+        }
         EvalPersonOnceData cached=loadFromRD();
         if(isValid(cached)){
             return cached;
@@ -420,72 +493,7 @@ public class EvalPersonOnceHolder {
     }
 
 
-    //region 兼容老版本
-    public Map<String,String> getCastMapCur(Set<String> indicatorIds){
-        return fillCastMapCur(new HashMap<>(), indicatorIds);
-    }
-    public Map<String, ExperimentIndicatorValRsEntity> getCastMapCur(){
-        return fillCastMapCur(null);
-    }
-    public Map<String,ExperimentIndicatorValRsEntity> getCastMapLast(){
-        return fillCastMapLast(null);
-    }
 
-    public Map<String,String>  fillCastMapCur( Map<String,String>  rst,Set<String> indicatorIds) {
-        EvalPersonOnceData cached=get();
-        if(null==cached){
-            return rst;
-        }
-        indicatorIds.forEach(i->{
-            EvalIndicatorValues values= cached.getMapIndicators().get(i);
-            if(null==values){
-                return;
-            }
-            rst.put(i,values.getCurVal());
-        });
-        return rst;
-
-    }
-    @SneakyThrows
-    public Map<String,ExperimentIndicatorValRsEntity> fillCastMapCur(Map<String,ExperimentIndicatorValRsEntity> src) {
-        if (null == src) {
-            src = new HashMap<>();
-        } else {
-            src.clear();
-        }
-        EvalPersonOnceData cached=get();
-        if(null==cached){
-            return src;
-        }
-        for (EvalIndicatorValues item : cached.getMapIndicators().values()) {
-            src.computeIfAbsent(item.getIndicatorId(), k -> new ExperimentIndicatorValRsEntity())
-                    .setIndicatorInstanceId(item.getIndicatorId())
-                    .setCurrentVal(item.getCurVal())
-                    .setInitVal(item.getPeriodInitVal());
-        }
-        return src;
-    }
-
-    @SneakyThrows
-    public Map<String,ExperimentIndicatorValRsEntity> fillCastMapLast(Map<String,ExperimentIndicatorValRsEntity> src) {
-        if (null == src) {
-            src = new HashMap<>();
-        } else {
-            src.clear();
-        }
-        EvalPersonOnceData cached=get();
-        if(null==cached){
-            return src;
-        }
-        for (EvalIndicatorValues item : cached.getMapIndicators().values()) {
-            src.computeIfAbsent(item.getIndicatorId(), k -> new ExperimentIndicatorValRsEntity())
-                    .setIndicatorInstanceId(item.getIndicatorId())
-                    .setCurrentVal(item.getLastVal())
-                    .setInitVal(item.getPeriodInitVal());
-        }
-        return src;
-    }
-    //endregion
 
 
 

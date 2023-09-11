@@ -7,10 +7,9 @@ import org.dows.hep.api.enums.EnumEvalFuncType;
 import org.dows.hep.biz.calc.RiskModelHealthIndexVO;
 import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.ShareUtil;
+import org.dows.hep.entity.ExperimentIndicatorValRsEntity;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -33,6 +32,9 @@ public class EvalPersonOnceData {
 
     @Schema(title = "指标列表")
     private final ConcurrentMap<String,EvalIndicatorValues> mapIndicators=new ConcurrentHashMap<>();
+
+    @Schema(title = "兼容旧版指标列表")
+    private final ConcurrentMap<String, ExperimentIndicatorValRsEntity> oldMapIndicators=new ConcurrentHashMap<>();
 
     public boolean isValued(){
         if(ShareUtil.XObject.anyEmpty(header,mapIndicators)){
@@ -67,26 +69,70 @@ public class EvalPersonOnceData {
         return true;
     }
 
-    public EvalPersonOnceData flip(int evalNo,boolean isPeriodInit){
+    public EvalPersonOnceData flip(int evalNo,EnumEvalFuncType funcType){
         EvalPersonOnceData rst=new EvalPersonOnceData();
         rst.setHeader(new Header()
                 .setEvalNo(evalNo)
                 .setSyncState(EnumEvalSyncState.NEW)
-                .setPeriods(isPeriodInit?header.getPeriods()+1: header.periods)
+                .setPeriods(funcType==EnumEvalFuncType.PERIODEnd?header.getPeriods()+1: header.periods)
                 .setLastEvalDay(header.getEvalDay())
                 .setLastHealthIndex(header.getHealthIndex())
                 .setLastMoney(header.getMoney())
+                .setEvalDay(header.getEvalDay())
         );
         rst.setRisks(ShareUtil.XCollection.map(risks,i->
                 CopyWrapper.create(EvalRiskValues::new).endFrom(i)));
-        getMapIndicators().forEach((k,v)->rst.getMapIndicators().put(k, v.flip(isPeriodInit)));
+        getMapIndicators().forEach((k,v)->rst.getMapIndicators().put(k, v.flip(funcType)));
+        rst. getOldMap(true);
         return rst;
     }
+
+    public Map<String,ExperimentIndicatorValRsEntity> getOldMap(){
+        return oldMapIndicators;
+    }
+    public Map<String,ExperimentIndicatorValRsEntity> getOldMap(boolean getNewly){
+        if(getNewly) {
+            mapIndicators.values().forEach(item -> {
+                oldMapIndicators.computeIfAbsent(item.getIndicatorId(), k -> new ExperimentIndicatorValRsEntity().setIndicatorInstanceId(item.getIndicatorId()))
+                        .setCurrentVal(item.getCurVal())
+                        .setInitVal(item.getPeriodInitVal());
+            });
+        }
+        return oldMapIndicators;
+    }
+
+    public Map<String,ExperimentIndicatorValRsEntity> getOldMap(Set<String> indicatorIds){
+        if(ShareUtil.XObject.isEmpty(indicatorIds)){
+            return getOldMap();
+        }
+        indicatorIds.forEach(i->{
+            Optional.ofNullable(mapIndicators.get(i))
+                    .ifPresent(v->oldMapIndicators.computeIfAbsent(v.getIndicatorId(), k -> new ExperimentIndicatorValRsEntity().setIndicatorInstanceId(v.getIndicatorId()))
+                            .setCurrentVal(v.getCurVal())
+                            .setInitVal(v.getPeriodInitVal()));
+        });
+        return oldMapIndicators;
+    }
+    public Map<String,String> fillCurVal(Map<String,String> mapCurVal,Set<String> indicatorIds){
+        if(ShareUtil.XObject.isEmpty(indicatorIds)){
+            return mapCurVal;
+        }
+
+        indicatorIds.forEach(i->{
+            Optional.ofNullable(mapIndicators.get(i))
+                    .ifPresent(v->mapCurVal.put(v.getIndicatorId(),v.getIndicatorName()));
+        });
+        return mapCurVal;
+
+    }
+
+
 
 
     @Data
     @Accessors(chain = true)
     public static class Header {
+        private final String appId="3";
         @Schema(title = "计算批次")
         private Integer evalNo;
 
@@ -102,8 +148,11 @@ public class EvalPersonOnceData {
         @Schema(title = "计算天数")
         private Integer evalDay;
 
-        @Schema(title = "计算时间")
-        private Date evalTime;
+        @Schema(title = "计算开始时间")
+        private Date evalingTime;
+
+        @Schema(title = "计算结束时间")
+        private Date evaledTime;
 
         @Schema(title = "上次计算天数")
         private Integer lastEvalDay;
@@ -124,10 +173,31 @@ public class EvalPersonOnceData {
 
         public int getLastDays(){
             if(ShareUtil.XObject.isEmpty(evalDay)){
-                return 0;
+                return 1;
             }
-            return Math.max(0,evalDay-Optional.ofNullable(lastEvalDay)
-                            .orElse(0));
+            return Math.max(1,evalDay-Optional.ofNullable(lastEvalDay)
+                            .orElse(1));
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("{");
+            sb.append("appId='").append(appId).append('\'');
+            sb.append(", evalNo=").append(evalNo);
+            sb.append(", syncState=").append(syncState);
+            sb.append(", funcType=").append(funcType);
+            sb.append(", periods=").append(periods);
+            sb.append(", evalDay=").append(evalDay);
+            sb.append(", evalingTime=").append(evalingTime);
+            sb.append(", evaledTime=").append(evaledTime);
+            sb.append(", lastEvalDay=").append(lastEvalDay);
+            sb.append(", healthIndex='").append(healthIndex).append('\'');
+            sb.append(", lastHealthIndex='").append(lastHealthIndex).append('\'');
+            sb.append(", money='").append(money).append('\'');
+            sb.append(", lastMoney='").append(lastMoney).append('\'');
+            sb.append(", moneyScore='").append(moneyScore).append('\'');
+            sb.append('}');
+            return sb.toString();
         }
     }
 

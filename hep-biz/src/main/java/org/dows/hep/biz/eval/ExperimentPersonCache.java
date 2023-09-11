@@ -5,13 +5,13 @@ import org.dows.hep.biz.cache.BaseLoadingCache;
 import org.dows.hep.biz.dao.ExperimentPersonDao;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.util.ShareUtil;
+import org.dows.hep.entity.ExperimentGroupEntity;
+import org.dows.hep.entity.ExperimentOrgEntity;
 import org.dows.hep.entity.ExperimentPersonEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -28,8 +28,8 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
         return s_instance;
     }
 
-    protected final static int CACHEInitCapacity = 2;
-    protected final static int CACHEMaxSize = 20;
+    protected final static int CACHEInitCapacity = 100;
+    protected final static int CACHEMaxSize = 1500;
     protected final static int CACHEExpireSeconds = 60 * 60*24*7 ;
     protected final static String APPId="3";
 
@@ -49,6 +49,48 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
         return this.loadingCache().get(key);
     }
 
+    public ExperimentGroupEntity getGroup(String experimentId,String experimentGroupId){
+        ExperimentPersonCache.CacheData cached=getCacheData(experimentId);
+        if(null==cached){
+            return null;
+        }
+        return cached.getMapGroups().get(experimentGroupId);
+    }
+    public ExperimentOrgEntity getOrg(String experimentId,String experimentOrgId){
+        ExperimentPersonCache.CacheData cached=getCacheData(experimentId);
+        if(null==cached){
+            return null;
+        }
+        return cached.getMapOrgs().get(experimentOrgId);
+    }
+    public ExperimentPersonEntity getPerson(String experimentId,String experimentPersonId){
+        ExperimentPersonCache.CacheData cached=getCacheData(experimentId);
+        if(null==cached){
+            return null;
+        }
+        return cached.getMapPersons().get(experimentPersonId);
+    }
+    public Map<String, List<ExperimentPersonEntity>> getMapGroupPersons(String experimentId){
+        ExperimentPersonCache.CacheData cached=getCacheData(experimentId);
+        if(null==cached){
+            return Collections.emptyMap();
+        }
+        return cached.getMapGroupPersons();
+    }
+    public List<ExperimentPersonEntity> getPersonsByGroupId(String experimentId,String experimentGroupId){
+        ExperimentPersonCache.CacheData cached=getCacheData(experimentId);
+        if(null==cached){
+            return Collections.emptyList();
+        }
+        return cached.getMapGroupPersons().get(experimentGroupId);
+    }
+    public Map<String,ExperimentPersonEntity> getMapPersons(String experimentId){
+        ExperimentPersonCache.CacheData cached=getCacheData(experimentId);
+        if(null==cached){
+            return Collections.emptyMap();
+        }
+        return cached.getMapPersons();
+    }
     public Set<String> getPersondIdSet(String experimentId, Set<String> src){
         ExperimentPersonCache.CacheData cached=getCacheData(experimentId);
         if(ShareUtil.XObject.isEmpty(src)){
@@ -70,7 +112,10 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
         }
         CacheData rst=new CacheData();
         List<ExperimentPersonEntity> rowsPerson= experimentPersonDao.getByExperimentId(key.getAppId(), key.getExperimentInstanceId() );
-        rowsPerson.forEach(i->rst.mapPersons.put(i.getExperimentPersonId(),i));
+        rowsPerson.forEach(i->{
+            rst.mapPersons.put(i.getExperimentPersonId(),i);
+            rst.mapGroupPersons.computeIfAbsent(i.getExperimentGroupId(), k->new ArrayList<>()).add(i);
+        });
         return rst;
     }
 
@@ -78,6 +123,10 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
     public static class CacheData {
         private final ConcurrentMap<String, ExperimentPersonEntity> mapPersons=new ConcurrentHashMap<>();
 
+        private final Map<String, List<ExperimentPersonEntity>> mapGroupPersons=new HashMap<>();
 
+        private final Map<String, ExperimentGroupEntity> mapGroups=new HashMap<>();
+
+        private final Map<String, ExperimentOrgEntity> mapOrgs=new HashMap<>();
     }
 }

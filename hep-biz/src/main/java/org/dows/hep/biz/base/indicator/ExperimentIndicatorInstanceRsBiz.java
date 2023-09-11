@@ -279,6 +279,9 @@ public class ExperimentIndicatorInstanceRsBiz {
     }
 
     public GroupAverageHealthPointResponse groupAverageHealth(String experimentId, String experimentGroupId, Integer periods) {
+        if(ConfigExperimentFlow.SWITCH2EvalCache){
+            return queryPersonBiz.groupAverageHealth(experimentId,experimentGroupId,periods);
+        }
         Set<String> experimentPersonIdSet = experimentPersonService.lambdaQuery()
                 .eq(ExperimentPersonEntity::getExperimentGroupId, experimentGroupId)
                 .list()
@@ -342,6 +345,9 @@ public class ExperimentIndicatorInstanceRsBiz {
     }
 
     public Map<String, String> getInitMoneyByPeriods(RsInitMoneyRequest rsInitMoneyRequest) {
+        if(ConfigExperimentFlow.SWITCH2EvalCache){
+            return queryPersonBiz.getSysIndicatorVals(rsInitMoneyRequest.getExperimentPersonIdSet(),EnumIndicatorType.MONEY,true);
+        }
         Integer periods = rsInitMoneyRequest.getPeriods();
         Set<String> experimentPersonIdSet = rsInitMoneyRequest.getExperimentPersonIdSet();
         if (Objects.isNull(experimentPersonIdSet) || experimentPersonIdSet.isEmpty()) {
@@ -379,6 +385,9 @@ public class ExperimentIndicatorInstanceRsBiz {
     }
 
     public Map<String, String> getSexByPeriods(RsSexRequest rsSexRequest) {
+        if(ConfigExperimentFlow.SWITCH2EvalCache){
+            return queryPersonBiz.getSysIndicatorVals(rsSexRequest.getExperimentPersonIdSet(),EnumIndicatorType.SEX,false);
+        }
         /* runsix:result */
         Map<String, String> kExperimentPersonIdVSexMap = new HashMap<>();
         /* runsix:param */
@@ -422,6 +431,9 @@ public class ExperimentIndicatorInstanceRsBiz {
     }
 
     public Map<String, String> getAgeByPeriods(RsAgeRequest rsAgeRequest) {
+        if(ConfigExperimentFlow.SWITCH2EvalCache){
+            return queryPersonBiz.getSysIndicatorVals(rsAgeRequest.getExperimentPersonIdSet(),EnumIndicatorType.AGE,false);
+        }
         /* runsix:result */
         Map<String, String> kExperimentPersonIdVAgeMap = new HashMap<>();
         /* runsix:param */

@@ -41,6 +41,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -59,7 +60,8 @@ public class ExptOverviewReportHandler implements ExptReportHandler<ExptOverview
     private final ExperimentInstanceService experimentInstanceService;
 
     private final ReportOSSHelper ossHelper;
-    private final ReportPdfHelper reportPdfHelper;
+    private final SchemeReportPdfHelper schemeReportPdfHelper;
+    private final SandReportPdfHelper sandReportPdfHelper;
     private final ReportRecordHelper recordHelper;
     private final FindSoftProperties findSoftProperties;
 
@@ -103,32 +105,48 @@ public class ExptOverviewReportHandler implements ExptReportHandler<ExptOverview
                     .build();
         }
 
+        // 根据实验模式不同,准备不同数据
+        ExptSettingModeEnum exptSettingMode = experimentSettingBiz.getExptSettingMode(exptInstanceId);
+
         /*2.使用新数据*/
         // 生成 pdf 并上传文件
         Path path = Paths.get(LOCAL_OVERVIEW_REPORT, fileName);
         Path uploadPath = Paths.get(exptInstanceId, fileName);
-        OssInfo ossInfo = reportPdfHelper.convertAndUpload(pdfVO, schemeFlt, path, uploadPath);
+        OssInfo ossInfo = null;
+        String fileUri = "";
+        if (ExptSettingModeEnum.SCHEME.equals(exptSettingMode)) {
+            ossInfo = schemeReportPdfHelper.convertAndUpload(pdfVO, schemeFlt, path, uploadPath);
+            fileUri = ossHelper.getUrlPath(ossInfo, exptInstanceId);
+        }
+        if (ExptSettingModeEnum.SAND.equals(exptSettingMode)) {
+            ossInfo = sandReportPdfHelper.convertAndUpload(exptInstanceId, exptGroupId, uploadPath);
+            fileUri = ossInfo.getPath();
+        }
 
         // 记录一份数据
+        assert ossInfo != null;
         if (StrUtil.isNotBlank(ossInfo.getPath())) {
-            MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
-                    .fileName(fileName)
-                    .fileType("pdf")
-                    .fileUri(ossHelper.getUrlPath(ossInfo, exptInstanceId))
-                    .build();
-            MaterialsRequest materialsRequest = MaterialsRequest.builder()
-                    .bizCode("EXPT")
-                    .title(fileName)
-                    .materialsAttachments(List.of(attachment))
-                    .build();
-            recordHelper.record(exptInstanceId, null, ExptReportTypeEnum.EXPT, materialsRequest);
+            String finalFileUri = fileUri;
+            CompletableFuture.runAsync(() -> {
+                MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
+                        .fileName(fileName)
+                        .fileType("pdf")
+                        .fileUri(finalFileUri)
+                        .build();
+                MaterialsRequest materialsRequest = MaterialsRequest.builder()
+                        .bizCode("EXPT")
+                        .title(fileName)
+                        .materialsAttachments(List.of(attachment))
+                        .build();
+                recordHelper.record(exptInstanceId, null, ExptReportTypeEnum.EXPT, materialsRequest);
+            });
         }
 
         // build result
         ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
                 .parent(exptInstanceId)
                 .name(ossInfo.getName())
-                .path(ossHelper.getUrlPath(ossInfo, exptInstanceId))
+                .path(fileUri)
                 .build();
         ExptGroupReportVO groupReportVO = ExptGroupReportVO.builder()
                 .exptGroupId(null)
@@ -305,7 +323,7 @@ public class ExptOverviewReportHandler implements ExptReportHandler<ExptOverview
             List<ExptOverviewReportModel.SandPeriodRanking> itemList = new ArrayList<>();
             for (ExperimentRankGroupItemResponse groupItem : groupItemList) {
                 ExptOverviewReportModel.SandPeriodRanking resultItem = ExptOverviewReportModel.SandPeriodRanking.builder()
-                        .groupNo(groupItem.getExperimentGroupName())
+                        .groupNo(groupItem.getExperimentGroupNo())
                         .groupName(groupItem.getExperimentGroupName())
                         .healthIndexScore(groupItem.getHealthIndexScore())
                         .knowledgeScore(groupItem.getKnowledgeScore())

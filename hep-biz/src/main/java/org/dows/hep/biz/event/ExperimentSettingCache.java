@@ -25,9 +25,13 @@ import org.dows.hep.entity.ExperimentTimerEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author : wuzl
@@ -103,6 +107,9 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
         if(null==sandSetting){
             return rst.setPeriods(0);
         }
+        rst.setKnowledgeWeight(BigDecimal.valueOf(sandSetting.getKnowledgeWeight()) );
+        rst.setHealthIndexWeight(BigDecimal.valueOf(sandSetting.getHealthIndexWeight()));
+        rst.setMedicalRatioWeight(BigDecimal.valueOf(sandSetting.getMedicalRatioWeight()));
         rst.setDurationMap(sandSetting.getDurationMap());
         rst.setPeriodMap(sandSetting.getPeriodMap());
         Map<String, Double> mockRateMap = new HashMap<>();
@@ -217,9 +224,13 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
 
     @Override
     protected boolean isCompleted(ExperimentSettingCollection val) {
-        return ShareUtil.XObject.notEmpty(val)
-                && ShareUtil.XObject.notEmpty(val.getSandStartTime())
-                && ShareUtil.XObject.notEmpty(val.getMapPeriod());
+        if(ShareUtil.XObject.isEmpty(val)){
+            return false;
+        }
+        if(val.hasSchemaMode()){
+            return true;
+        }
+        return ShareUtil.XObject.notEmpty(val.getSandStartTime());
     }
 
     @Override
@@ -227,7 +238,7 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
         if (ShareUtil.XObject.isEmpty(curVal)) {
             return curVal;
         }
-        if (ShareUtil.XObject.isEmpty(curVal.getSandStartTime())) {
+        if (curVal.hasSandMode()&&ShareUtil.XObject.isEmpty(curVal.getSandStartTime())) {
             List<ExperimentTimerEntity> rowsTimer = experimentTimerDao.getByExperimentId(key.getAppId(), key.getExperimentInstanceId(),
                     1, ExperimentTimerEntity::getStartTime, ExperimentTimerEntity::getPauseCount, ExperimentTimerEntity::getState);
             curVal.setSandStartTime(rowsTimer.stream()

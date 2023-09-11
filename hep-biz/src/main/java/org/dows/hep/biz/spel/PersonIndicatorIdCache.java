@@ -1,6 +1,7 @@
 package org.dows.hep.biz.spel;
 
 import lombok.Getter;
+import org.dows.hep.api.enums.EnumIndicatorDocType;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.enums.EnumIndicatorType;
 import org.dows.hep.biz.cache.BaseLoadingCache;
@@ -29,9 +30,9 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
     public static PersonIndicatorIdCache Instance(){
         return s_instance;
     }
-    protected final static int CACHEInitCapacity=10;
-    protected final static int CACHEMaxSize=50;
-    protected final static int CACHEExpireSeconds=60*60*24;
+    protected final static int CACHEInitCapacity=300;
+    protected final static int CACHEMaxSize=1500;
+    protected final static int CACHEExpireSeconds=60*60*24*7;
 
     private PersonIndicatorIdCache(){
         super(CACHEInitCapacity,CACHEMaxSize,CACHEExpireSeconds,0);
@@ -48,6 +49,17 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
     private ExperimentPersonDao experimentPersonDao;
 
 
+    public PersonIndicatorIdCollection getCacheData(String exptPersonId){
+        return this.loadingCache().get(exptPersonId);
+    }
+
+    public Set<String> getWatchIndicatos(String exptPersonId){
+        PersonIndicatorIdCollection coll= this.loadingCache().get(exptPersonId);
+        if(ShareUtil.XObject.isEmpty(coll)){
+            return null;
+        }
+        return coll.getWatchIndicatorIds();
+    }
     public ExperimentPersonEntity getPerson(String exptPersonId){
         PersonIndicatorIdCollection coll= this.loadingCache().get(exptPersonId);
         if(ShareUtil.XObject.isEmpty(coll)){
@@ -135,14 +147,21 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
             rst.getMapBaseCase2ExptId().put(i.getCaseIndicatorInstanceId(), i.getExperimentIndicatorInstanceId());
             rst.getMapExptIndicators().put(i.getExperimentIndicatorInstanceId(), i);
             rst.getSortedIndicators().add(i);
-            if(EnumIndicatorType.USER_CREATED.getType().equals(i.getType())) {
-                return;
-            }
+            i.setDocType(EnumIndicatorDocType.NONE);
             EnumIndicatorType indicatorType=EnumIndicatorType.of(i.getType());
             if(null==indicatorType){
                 return;
             }
-            rst.getMapSysIndicatorId().put(indicatorType, i.getExperimentIndicatorInstanceId());
+            if(!EnumIndicatorType.USER_CREATED.getType().equals(i.getType())) {
+                rst.getMapSysIndicatorId().put(indicatorType, i.getExperimentIndicatorInstanceId());
+            }
+            EnumIndicatorDocType docType=EnumIndicatorDocType.of(indicatorType,i.getIndicatorName());
+            i.setDocType(docType);
+            if(indicatorType!=EnumIndicatorType.USER_CREATED
+                    ||docType!=EnumIndicatorDocType.NONE){
+                rst.watchIndicatorIds.add(i.getExperimentIndicatorInstanceId());
+            }
+
         });
         rst.sortedIndicators.sort(Comparator.comparingInt(ExperimentIndicatorInstanceRsEntity::getRecalculateSeq));
         final List<ExperimentIndicatorExpressionRsEntity> rowsExperession = experimentIndicatorExpressionRsDao.getByExperimentIndicatorIds(rst.getMapExptIndicators().keySet(),
@@ -199,6 +218,19 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
 
         @Getter
         private final Map<EnumIndicatorType,String> mapSysIndicatorId=new HashMap<>();
+
+        @Getter
+        private final Set<String> watchIndicatorIds=new HashSet<>();
+
+       /* @Getter
+        private final Map<String,ExperimentIndicatorInstanceRsEntity> docEnergyIndicators=new LinkedHashMap<>();
+
+        @Getter
+        private final Map<String,ExperimentIndicatorInstanceRsEntity> docBasicIndicators=new LinkedHashMap<>();
+
+        @Getter
+        private final AtomicReference<ExperimentIndicatorInstanceRsEntity> docHPIndicator=new AtomicReference<>();*/
+
     }
 
 

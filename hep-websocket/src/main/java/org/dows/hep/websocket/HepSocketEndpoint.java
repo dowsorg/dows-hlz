@@ -54,18 +54,25 @@ public class HepSocketEndpoint {
 
     @OnMessage
     public void onMessage(NettySession nettySession, String message) {
+        String msgId="";
         try {
 
             Channel channel = nettySession.channel();
             //nettySession.getAttribute("");
 
+
             // todo 应该是dispatch模式，先简单实现
+            //发送为MessageProto格式
             MessageBody messageBody = JSONUtil.toBean(message, MessageBody.class);
             // 确定收到具体用户的信息，处理业务逻辑
             //AccountInfo accountInfo = HepClientManager.getAccountInfo(nettySession.channel());
+            msgId=messageBody.getMsgId();
+            if(null==msgId||msgId.isBlank()){
+                return;
+            }
             MsgScheduler.remove(messageBody.getMsgId());
         } catch (Exception e) {
-            log.error("HepSocketEndpoint.onMessage error",e);
+            log.error(String.format( "HepSocketEndpoint.onMessage error. msg[%s] id[%s]", message,msgId),e);
             String stackTrace="";
             if(e.getStackTrace().length>1){
                 stackTrace=String.join("\r\n",e.getStackTrace()[0].toString(), e.getStackTrace()[1].toString());

@@ -45,6 +45,7 @@ import java.math.RoundingMode;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -70,7 +71,8 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
     private final RiskBiz riskBiz;
 
     private final ReportOSSHelper ossHelper;
-    private final ReportPdfHelper reportPdfHelper;
+    private final SchemeReportPdfHelper schemeReportPdfHelper;
+    private final SandReportPdfHelper sandReportPdfHelper;
     private final ReportRecordHelper recordHelper;
     private final FindSoftProperties findSoftProperties;
 
@@ -161,7 +163,12 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
         ExptBaseInfoModel baseInfoVO = generateBaseInfoVO(findSoftProperties);
         ExptSandReportModel.GroupInfo groupInfo = generateGroupInfo(exptGroupId, exptData);
         ExptSandReportModel.ScoreInfo scoreInfo = generateScoreInfo(exptGroupId, exptData);
-        List<ExptSandReportModel.NpcData> npcDataList = generateNpcInfo(exptGroupId, exptData);
+        List<ExptSandReportModel.NpcData> npcDataList = new LinkedList<>();
+        try {
+            npcDataList = generateNpcInfo(exptGroupId, exptData);
+        } catch (Exception e) {
+            log.error(String.format("获取npc数据异常，异常为%s", e));
+        }
         List<List<ExptSandReportModel.KnowledgeAnswer>> periodQuestions = generatePeriodQuestionnaires(exptGroupId, exptData);
 
         return ExptSandReportModel.builder()
@@ -247,28 +254,31 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
         // 生成 pdf 并上传文件
         Path path = Paths.get(LOCAL_SAND_REPORT, fileName);
         Path uploadPath = Paths.get(exptInstanceId, fileName);
-        OssInfo ossInfo = reportPdfHelper.convertAndUpload(pdfVO, schemeFlt, path, uploadPath);
+        OssInfo ossInfo = sandReportPdfHelper.convertAndUpload(exptInstanceId, exptGroupId, uploadPath);
+        String fileUri = ossInfo.getPath();
 
         // 记录一份数据
         if (StrUtil.isNotBlank(ossInfo.getPath())) {
-            MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
-                    .fileName(fileName)
-                    .fileType("pdf")
-                    .fileUri(ossHelper.getUrlPath(ossInfo, exptInstanceId))
-                    .build();
-            MaterialsRequest materialsRequest = MaterialsRequest.builder()
-                    .bizCode("EXPT")
-                    .title(fileName)
-                    .materialsAttachments(List.of(attachment))
-                    .build();
-            recordHelper.record(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP, materialsRequest);
+            CompletableFuture.runAsync(() -> {
+                MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
+                        .fileName(fileName)
+                        .fileType("pdf")
+                        .fileUri(fileUri)
+                        .build();
+                MaterialsRequest materialsRequest = MaterialsRequest.builder()
+                        .bizCode("EXPT")
+                        .title(fileName)
+                        .materialsAttachments(List.of(attachment))
+                        .build();
+                recordHelper.record(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP, materialsRequest);
+            });
         }
 
         // 构建返回信息
         ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
                 .parent(exptInstanceId)
                 .name(ossInfo.getName())
-                .path(ossHelper.getUrlPath(ossInfo, exptInstanceId))
+                .path(fileUri)
                 .build();
         return ExptGroupReportVO.builder()
                 .exptGroupId(exptGroupId)
@@ -603,15 +613,21 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
         String experimentInstanceId = exptData.getExptInfo().getExperimentInstanceId();
 
         // 获取NPC指标数据
-        Map<Integer, List<PersonRiskFactor>> collect = riskBiz.get(experimentInstanceId, exptGroupId, null).stream()
-                .collect(Collectors.groupingBy(PersonRiskFactor::getPeriod));
-        if(ShareUtil.XObject.isEmpty(collect)){
+        Map<Integer, List<PersonRiskFactor>> collect = new HashMap<>();
+        try {
+            collect = riskBiz.get(experimentInstanceId, exptGroupId, null).stream()
+                    .collect(Collectors.groupingBy(PersonRiskFactor::getPeriod));
+        } catch (Exception e) {
+            log.error(String.format("生成报告时，获取 NPC 数据异常，异常是：%s", e));
+            return result;
+        }
+        if (ShareUtil.XObject.isEmpty(collect)) {
             return result;
         }
         // 获取第0期
         List<PersonRiskFactor> personRiskFactors1 = collect.get(0);
         // 取最后一期
-        List<PersonRiskFactor> personRiskFactors2 = collect.get(collect.size()-1);
+        List<PersonRiskFactor> personRiskFactors2 = collect.get(collect.size() - 1);
         // 人物ID->NPC人物对象
         Map<String, ExptSandReportModel.NpcData> npcData = new LinkedHashMap<>();
 
