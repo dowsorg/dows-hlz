@@ -499,6 +499,7 @@ public class ExperimentOrgInterveneBiz{
             } catch (Exception ex) {
                 log.error(String.format("saveExptTreatPlan.deal experimentId:%s personId:%s",
                         validator.getExperimentInstanceId(), validator.getExperimentPersonId()), ex);
+                AssertUtil.justThrow(String.format("功能点结算失败：%s",ex.getMessage()),ex);
             }
             try{
                 report= orgReportComposer.composeReport(validator,flowValidator.updateFlowOperate(timePoint),timePoint,node);

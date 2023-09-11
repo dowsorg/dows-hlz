@@ -190,6 +190,7 @@ public class ExperimentIndicatorJudgeHealthGuidanceReportRsBiz {
     } catch (Exception ex) {
       log.error(String.format("healthGuidanceCheck experimentId:%s personId:%s",
               exptValidator.getExperimentInstanceId(), exptValidator.getExperimentPersonId()), ex);
+      AssertUtil.justThrow(String.format("功能点结算失败：%s",ex.getMessage()),ex);
     }
     ExptOrgFlowReportResponse report=null;
     try {

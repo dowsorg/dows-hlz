@@ -99,7 +99,6 @@ public class HepOrgOperateBiz {
      */
     @DSTransactional
     public Boolean transferPerson(TransferPersonelRequest request,
-                                  String appId,
                                   String operateAccountId,
                                   String operateAccountName,
                                   Integer periods
