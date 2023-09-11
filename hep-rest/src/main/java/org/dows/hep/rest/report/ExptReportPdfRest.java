@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.Response;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.oss.api.OssInfo;
+import org.dows.hep.api.annotation.Resubmit;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.tenant.experiment.request.ExptAccountReportRequest;
 import org.dows.hep.api.tenant.experiment.request.ExptGroupReportPageRequest;
@@ -114,6 +115,7 @@ public class ExptReportPdfRest {
      * @description 导出实验pdf报告
      * @date 2023/7/18 10:16
      */
+    @Resubmit(duration = 10)
     @Operation(summary = "导出实验pdf报告")
     @GetMapping(value = "/v1/report/exportExptReport")
     public ExptReportVO exportExptReport(@RequestParam String experimentInstanceId, HttpServletRequest request) {
@@ -132,6 +134,7 @@ public class ExptReportPdfRest {
      * @description 导出小组实验pdf报告
      * @date 2023/7/18 10:15
      */
+    @Resubmit(duration = 10)
     @Operation(summary = "导出小组实验pdf报告")
     @GetMapping(value = "/v1/report/exportGroupReport")
     public ExptReportVO exportGroupReport(@RequestParam String experimentInstanceId, @RequestParam String experimentGroupId, HttpServletRequest request) {
@@ -149,6 +152,7 @@ public class ExptReportPdfRest {
      * @description 导出学生实验pdf报告
      * @date 2023/7/18 10:15
      */
+    @Resubmit(duration = 10)
     @Operation(summary = "导出学生实验pdf报告")
     @GetMapping(value = "/v1/report/exportAccountReport")
     public ExptReportVO exportAccountReport(@RequestParam String experimentInstanceId, HttpServletRequest request) {
@@ -167,6 +171,7 @@ public class ExptReportPdfRest {
      * @description 预览实验报告
      * @date 2023/7/21 14:35
      */
+    @Resubmit(duration = 10)
     @Operation(summary = "预览实验报告")
     @GetMapping("v1/report/previewExptReport")
     public void previewExptReport(@RequestParam String experimentInstanceId,
@@ -193,6 +198,7 @@ public class ExptReportPdfRest {
      * @description 预览小组报告
      * @date 2023/7/21 14:37
      */
+    @Resubmit(duration = 10)
     @Operation(summary = "预览小组报告")
     @GetMapping("v1/report/previewGroupReport")
     public void previewGroupReport(@RequestParam String experimentInstanceId,
@@ -220,6 +226,7 @@ public class ExptReportPdfRest {
      * @description 预览学生报告
      * @date 2023/7/21 14:38
      */
+    @Resubmit(duration = 10)
     @Operation(summary = "预览学生报告")
     @GetMapping("v1/report/previewAccountReport")
     public void previewAccountReport(@RequestParam String experimentInstanceId,
