@@ -10,9 +10,14 @@ import org.dows.hep.api.enums.EnumOrgFeeType;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.request.ExperimentPersonInsuranceRequest;
 import org.dows.hep.biz.base.indicator.ExperimentIndicatorInstanceRsBiz;
+import org.dows.hep.biz.event.ExperimentSettingCache;
+import org.dows.hep.biz.event.data.ExperimentCacheKey;
+import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.operate.CostRequest;
 import org.dows.hep.biz.operate.OperateCostBiz;
+import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareBiz;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.util.TimeUtil;
 import org.dows.hep.biz.vo.LoginContextVO;
 import org.dows.hep.entity.*;
@@ -23,6 +28,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.ParseException;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -173,11 +179,17 @@ public class ExperimentInsuranceBiz {
                 .eq(ExperimentPersonInsuranceEntity::getOperateOrgId,experimentPersonInsuranceRequest.getOperateOrgId())
                 .one();
         Boolean flag;
+        ExperimentTimePoint nowPoint= ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create("3",experimentPersonInsuranceRequest.getExperimentInstanceId()),
+                LocalDateTime.now(), true);
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(nowPoint))
+                .throwMessage("未找到实验时间设置");
+        Integer buyDay=nowPoint.getGameDay();
         if(insuranceEntity != null && !ReflectUtil.isObjectNull(insuranceEntity)){
             //更新
             flag = experimentPersonInsuranceService.lambdaUpdate()
                     .set(ExperimentPersonInsuranceEntity::getIndate,new Date())
                     .set(ExperimentPersonInsuranceEntity::getExpdate,expdate)
+                    .set(ExperimentPersonInsuranceEntity::getBuyGameDay,buyDay)
                     .set(ExperimentPersonInsuranceEntity::getPeriods,experimentPersonInsuranceRequest.getPeriods())
                     .eq(ExperimentPersonInsuranceEntity::getId,insuranceEntity.getId())
                     .update();
@@ -195,6 +207,7 @@ public class ExperimentInsuranceBiz {
                     .reimburseRatio(reimburseRatio)
                     .indate(new Date())
                     .expdate(expdate)
+                    .buyGameDay(buyDay)
                     .build();
             flag = experimentPersonInsuranceService.save(experimentPersonInsuranceEntity);
         }
@@ -364,9 +377,17 @@ public class ExperimentInsuranceBiz {
         //如果还未过期
         Boolean flag = TimeUtil.isBeforeTime(new Date(), entity.getExpdate());
         if(flag){
+            ExperimentTimePoint nowPoint= ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create("3",experimentPersonInsuranceRequest.getExperimentInstanceId()),
+                    LocalDateTime.now(), true);
+            AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(nowPoint))
+                    .throwMessage("未找到实验时间设置");
+
+            int intervalDays=Math.max(360,360+entity.getBuyGameDay()-nowPoint.getGameDay());
+
             long interval = (entity.getExpdate().getTime() - new Date().getTime())/1000;
             map.put("result", true);
             map.put("interval",interval);
+            map.put("intervalDays",intervalDays);
         }else{
             map.put("result", false);
         }

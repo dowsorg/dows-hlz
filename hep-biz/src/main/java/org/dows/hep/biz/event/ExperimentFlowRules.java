@@ -111,7 +111,7 @@ public class ExperimentFlowRules {
                     // 持续时间
                     long ds = item.getPeriodDuration() - rs;
                     rst.setSandRemnantSecond(rs / 1000);
-                    rst.setSandDurationSecond(ds / 1000);
+                    rst.setSandDurationSecond(Math.max(0,  ds / 1000));
                     rst.setPeriod(item.getPeriod());
                     rst.setState(item.getState());
                     return rst;
@@ -135,7 +135,7 @@ public class ExperimentFlowRules {
                 long rs = item.getEndTime().getTime() - nowTs + 1;
                 long ds = item.getPeriodDuration() - rs;
                 rst.setSandRemnantSecond(rs / 1000);
-                rst.setSandDurationSecond(ds / 1000);
+                rst.setSandDurationSecond(Math.max(0, ds / 1000));
                 return rst;
             } else if (nowTs >= item.getEndTime().getTime() && nowTs <= item.getEndTime().getTime() + item.getPeriodInterval()) {// // 一期结束倒计时
                 rst.setCountdown(item.getEndTime().getTime() + item.getPeriodInterval() - nowTs);
@@ -146,7 +146,7 @@ public class ExperimentFlowRules {
         final ExperimentTimerEntity lastTimer = cacheTimer.getTimerByPeriod(cacheTimer.getMapTimer().size());
         if (lastTimer.getState().equals(EnumExperimentState.FINISH.getState())
                 || lastTimer.getEndTime().getTime() <= nowTs) {
-            rst.setState(EnumExperimentState.FINISH.getState());
+            rst.setState(lastTimer.getState());
             rst.setPeriod(lastTimer.getPeriod());
             rst.setSandRemnantSecond(0L);
             rst.setSandDurationSecond(exptColl.getTotalSeconds());

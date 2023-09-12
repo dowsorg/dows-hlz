@@ -14,7 +14,7 @@ import java.io.OutputStream;
 /**
  * @author fhb
  * @version 1.0
- * @description 为报告提供 oss 服务, 解耦出来, 以防 oss 服务变更
+ * @description 为报告提供 oss uat, 解耦出来, 以防 oss 服务变更
  * @date 2023/7/21 9:57
  **/
 @Slf4j

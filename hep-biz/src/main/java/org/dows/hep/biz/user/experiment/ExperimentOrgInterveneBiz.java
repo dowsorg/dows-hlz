@@ -337,8 +337,6 @@ public class ExperimentOrgInterveneBiz{
     public SaveExptTreatResponse saveExptTreatPlan( SaveExptTreatRequest saveTreat, HttpServletRequest request){
         StringBuilder sb=new StringBuilder().append("EVALTRACE--saveExptTreatPlan");
         try {
-            long ts=System.currentTimeMillis();
-            ts=logCost(sb,"1-start:",ts);
 
             ExptRequestValidator validator = ExptRequestValidator.create(saveTreat);
             validator.checkExperimentPerson()
@@ -368,8 +366,6 @@ public class ExperimentOrgInterveneBiz{
             ExperimentTimePoint timePoint = validator.getTimePoint(true, ldtNow, true);
             ExptOrgFlowValidator flowValidator = ExptOrgFlowValidator.create(validator)
                     .requireOrgFlowRunning(timePoint.getPeriod());
-
-            ts=logCost(sb,"2-checkFlow:",ts);
             //校验扣费
             final List<ExptTreatPlanItemVO> newItems = new ArrayList<>();
             for (int i = saveTreat.getTreatItems().size() - 1; i >= 0; i--) {
@@ -381,8 +377,6 @@ public class ExperimentOrgInterveneBiz{
                 item.setItemId(getTimestampId(dateNow, saveTreat.getTreatItems().size() - i)).setDealFlag(0);
                 newItems.add(item);
             }
-
-            ts=logCost(sb,"3-checkFee:",ts);
 
             if (ShareUtil.XObject.notEmpty(newItems)) {
                 List<TreatItemEntity> rowsTreatItem = treatItemDao.getByIds(ShareUtil.XCollection.map(newItems, ExptTreatPlanItemVO::getTreatItemId),
@@ -406,7 +400,6 @@ public class ExperimentOrgInterveneBiz{
                     .assertEnough(true)
                     .build());
 
-            ts=logCost(sb,"4-checkCost:",ts);
 
             //计算每次操作应该返回的报销金额
             BigDecimal reimburse = getExperimentPersonRestitution(cost.getValue(), saveTreat.getExperimentPersonId());
@@ -424,8 +417,6 @@ public class ExperimentOrgInterveneBiz{
                     .restitution(reimburse)
                     .period(timePoint.getPeriod())
                     .build();
-
-            ts=logCost(sb,"5-checkBXF:",ts);
 
             //操作记录
             IndicatorFuncEntity defOrgFunc = validator.getIndicatorFunc();
@@ -455,8 +446,6 @@ public class ExperimentOrgInterveneBiz{
             } catch (Exception ex) {
                 AssertUtil.justThrow(String.format("记录数据编制失败：%s", ex.getMessage()), ex);
             }
-
-            ts=logCost(sb,"6-json:",ts);
 
 
             //挂号报告
@@ -497,8 +486,6 @@ public class ExperimentOrgInterveneBiz{
                     return true;
                 });
 
-                ts=logCost(sb,"7-save:",ts);
-
                 try {
                     if (ConfigExperimentFlow.SWITCH2EvalCache) {
 
@@ -523,10 +510,7 @@ public class ExperimentOrgInterveneBiz{
                     AssertUtil.justThrow(String.format("功能点结算失败：%s", ex.getMessage()), ex);
                 }
 
-                ts=logCost(sb,"8-eval:",ts);
 
-
-                ts=System.currentTimeMillis();
                 try {
                     report = orgReportComposer.composeReport(validator, flowValidator.updateFlowOperate(timePoint), timePoint, node);
                     saveFlowSnap.setRecordJson(JacksonUtil.toJson(report, true));
@@ -536,7 +520,6 @@ public class ExperimentOrgInterveneBiz{
                 saveFlow.setOperateOrgFuncId(rowOrgFunc.getOperateOrgFuncId());
                 operateFlowDao.tranSave(saveFlow, List.of(saveFlowSnap), false);
 
-                ts=logCost(sb,"9-end:",ts);
             } else {
                 succFlag = operateOrgFuncDao.tranSave(rowOrgFunc, List.of(rowOrgFuncSnap), false, () -> {
                     AssertUtil.falseThenThrow(SpelInvoker.Instance().saveIndicator(validator.getExperimentPersonId(), evalResults, mapSum.values(), timePoint.getPeriod()))
@@ -560,12 +543,7 @@ public class ExperimentOrgInterveneBiz{
         }
     }
 
-    long logCost(StringBuilder sb,String func,long ts){
-        long newTs=System.currentTimeMillis();
-        sb.append(" ").append(func);
-        sb.append(" cost:").append((newTs-ts)/1000);
-        return newTs;
-    }
+
 
 
 

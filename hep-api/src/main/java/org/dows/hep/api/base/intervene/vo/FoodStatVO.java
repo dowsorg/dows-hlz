@@ -78,7 +78,7 @@ public class FoodStatVO {
         return this;
     }
     public FoodStatVO buildWeightText(){
-        if(!StringUtils.hasLength(this.weight)){
+        if(!StringUtils.hasLength(this.weight)||weight.equals(CHARLink)){
             weightText=CHARLink;
             return this;
         }

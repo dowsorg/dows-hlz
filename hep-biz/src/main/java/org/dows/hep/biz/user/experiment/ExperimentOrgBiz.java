@@ -397,6 +397,21 @@ public class ExperimentOrgBiz {
 
 
     /**
+     * 获取操作记录
+     * @param experimentId
+     * @param experimentPersonId
+     * @return
+     */
+    public List<OperateFlowEntity> listFlowLog(String experimentId,String experimentPersonId){
+        List<OperateFlowEntity> operateFlowEntities = operateFlowDao.listFlowLog(experimentId, experimentPersonId,
+                OperateFlowEntity::getOperateTime,
+                OperateFlowEntity::getFlowName,
+                OperateFlowEntity::getReportLabel);
+        return operateFlowEntities;
+    }
+
+
+    /**
      * 获取机构报告详情
      *
      * @param orgReportRequest

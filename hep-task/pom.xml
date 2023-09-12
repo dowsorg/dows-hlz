@@ -9,8 +9,19 @@
 
     <artifactId>hep-task</artifactId>
 
-
     <dependencies>
 
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.dows.saas</groupId>
+            <artifactId>hep-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.dows.saas</groupId>
+            <artifactId>hep-biz</artifactId>
+        </dependency>
     </dependencies>
 </project>

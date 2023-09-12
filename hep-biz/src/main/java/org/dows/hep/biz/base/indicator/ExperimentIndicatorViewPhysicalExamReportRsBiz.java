@@ -18,6 +18,7 @@ import org.dows.hep.biz.operate.OperateCostBiz;
 import org.dows.hep.biz.request.CaseCalIndicatorExpressionRequest;
 import org.dows.hep.biz.request.DatabaseCalIndicatorExpressionRequest;
 import org.dows.hep.biz.request.ExperimentCalIndicatorExpressionRequest;
+import org.dows.hep.biz.util.BigDecimalOptional;
 import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.vo.LoginContextVO;
@@ -214,9 +215,10 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
               .operateFlowId(operateFlowId)
               .name(experimentIndicatorViewPhysicalExamRsEntity.getName())
               .fee(experimentIndicatorViewPhysicalExamRsEntity.getFee())
-              .currentVal(currentVal)
+              .currentVal(Optional.ofNullable(BigDecimalOptional.valueOf(resultExplainAtomicReference.get()).getString(2, RoundingMode.DOWN))
+                      .orElse(currentVal))
               .unit(unit)
-              .resultExplain(resultExplainAtomicReference.get())
+              .resultExplain(experimentIndicatorViewPhysicalExamRsEntity.getResultAnalysis())
               .build();
       experimentIndicatorViewPhysicalExamReportRsEntityList.add(experimentIndicatorViewPhysicalExamReportRsEntity);
     });
