@@ -111,29 +111,38 @@ public class EvalPersonBiz {
      */
 
     public void evalOrgFunc(RsExperimentCalculateFuncRequest req) {
-        String appId = req.getAppId();
-        String experimentId = req.getExperimentId();
-        Integer periods = req.getPeriods();
-        Set<String> personIds = Set.of(req.getExperimentPersonId());
+        StringBuilder sb=new StringBuilder("EVALTRACE--evalFunc--");
+        try {
+            String appId = req.getAppId();
+            String experimentId = req.getExperimentId();
+            Integer periods = req.getPeriods();
+            Set<String> personIds = Set.of(req.getExperimentPersonId());
 
-        evalPersonIndicatorBiz.evalPersonIndicator(RsCalculatePersonRequestRs
-                .builder()
-                .appId(appId)
-                .experimentId(experimentId)
-                .periods(periods)
-                .personIdSet(personIds)
-                .funcType(req.getFuncType())
-                .build());
-        evalHealthIndexBiz.evalPersonHealthIndex(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
-                .builder()
-                .appId(appId)
-                .experimentId(experimentId)
-                .periods(periods)
-                .experimentPersonIds(personIds)
-                .funcType(req.getFuncType())
-                .build());
+            long ts=System.currentTimeMillis();
+            evalPersonIndicatorBiz.evalPersonIndicator(RsCalculatePersonRequestRs
+                    .builder()
+                    .appId(appId)
+                    .experimentId(experimentId)
+                    .periods(periods)
+                    .personIdSet(personIds)
+                    .funcType(req.getFuncType())
+                    .build());
+            ts=logCostTime(sb,"1-indicator",ts);
+            evalHealthIndexBiz.evalPersonHealthIndex(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
+                    .builder()
+                    .appId(appId)
+                    .experimentId(experimentId)
+                    .periods(periods)
+                    .experimentPersonIds(personIds)
+                    .funcType(req.getFuncType())
+                    .build());
+            ts=logCostTime(sb,"2-hp",ts);
 
-        PersonBasedEventTask.runPersonBasedEventAsync(appId, experimentId);
+            PersonBasedEventTask.runPersonBasedEventAsync(appId, experimentId);
+        }finally {
+            log.error(sb.toString());
+        }
+
 
     }
     /**
@@ -170,5 +179,11 @@ public class EvalPersonBiz {
 
         PersonBasedEventTask.runPersonBasedEventAsync(appId,experimentId);
 
+    }
+
+    long logCostTime(StringBuilder sb,String func,long ts){
+        long newTs=System.currentTimeMillis();
+        sb.append(" ").append(func).append(":").append((newTs-ts)/1000);
+        return newTs;
     }
 }

@@ -122,7 +122,7 @@ public class EvalPersonOnceData {
 
         indicatorIds.forEach(i->{
             Optional.ofNullable(mapIndicators.get(i))
-                    .ifPresent(v->mapCurVal.put(v.getIndicatorId(),v.getIndicatorName()));
+                    .ifPresent(v->mapCurVal.put(v.getIndicatorId(),v.getCurVal()));
         });
         return mapCurVal;
 

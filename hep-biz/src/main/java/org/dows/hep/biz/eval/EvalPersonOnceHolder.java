@@ -106,6 +106,14 @@ public class EvalPersonOnceHolder {
         }
         return getIndicator(indicatorId);
     }
+    public String getHealthPoint(boolean lastFlag){
+        EvalIndicatorValues values=getSysIndicator(EnumIndicatorType.HEALTH_POINT);
+        return Optional.ofNullable(values).map(i->lastFlag?i.getLastVal():i.getCurVal()).orElse("1");
+    }
+    public String getMoney(boolean lastFlag){
+        EvalIndicatorValues values=getSysIndicator(EnumIndicatorType.MONEY);
+        return Optional.ofNullable(values).map(i->lastFlag?i.getLastVal():i.getCurVal()).orElse("");
+    }
 
     public EvalIndicatorValues getIndicator(String indicatorId){
         EvalPersonOnceData cached=get();
@@ -408,13 +416,13 @@ public class EvalPersonOnceHolder {
                 }
                 saveToDB(toSavePack(data));
             }catch (Exception ex) {
-                String risks=JacksonUtil.toJsonSilence(data.getRisks(), true);
+                String risks=JacksonUtil.toJsonSilence(data.getEvalRisks(), true);
                 StringBuilder sb = new StringBuilder("EVALTrace--")
                         .append(this.getClass().getName())
                         .append(".saveAsync error")
                         .append(" key:").append(cacheKey)
                         .append(" header:").append(data.getHeader())
-                        .append(" risks:").append(risks.length()).append("-").append(risks);
+                        .append(" evalRisks:").append(risks.length()).append("-").append(risks);
 
                 log.error(sb.toString(), ex);
                 sb.setLength(0);

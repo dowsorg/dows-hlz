@@ -57,7 +57,7 @@ public class ExperimentTimerCache extends BaseLoadingCache<ExperimentCacheKey, E
     }
 
     public void remove(String experimentId){
-        remove(ExperimentCacheKey.create(null, experimentId));
+        remove(ExperimentCacheKey.create("3", experimentId));
     }
     public void remove(String appId, String experimentId){
         remove(ExperimentCacheKey.create(appId, experimentId));

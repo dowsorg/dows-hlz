@@ -158,14 +158,26 @@ public class QueryPersonBiz {
         int rank = 0;
         AtomicInteger curRank = new AtomicInteger(1);
         Map<String, Integer> kExperimentGroupIdVRankMap = new HashMap<>();
+        Integer scoringCount=experimentScoringService.lambdaQuery()
+                .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
+                .eq(ExperimentScoringEntity::getPeriods, periods)
+                .orderByDesc(ExperimentScoringEntity::getScoringCount)
+                .select(ExperimentScoringEntity::getScoringCount)
+                .last("limit 1")
+                .oneOpt()
+                .map(ExperimentScoringEntity::getScoringCount)
+                .orElse(null);
+
         experimentScoringService.lambdaQuery()
                 .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
                 .eq(ExperimentScoringEntity::getPeriods, periods - 1)
+                .eq(ShareUtil.XObject.notEmpty(scoringCount),ExperimentScoringEntity::getScoringCount,scoringCount)
                 .orderByDesc(ExperimentScoringEntity::getTotalScore)
                 .list()
                 .forEach(experimentScoringEntity -> {
                     kExperimentGroupIdVRankMap.put(experimentScoringEntity.getExperimentGroupId(), curRank.getAndIncrement());
                 });
+
         if (Objects.nonNull(kExperimentGroupIdVRankMap.get(experimentGroupId))) {
             rank = kExperimentGroupIdVRankMap.get(experimentGroupId);
         }

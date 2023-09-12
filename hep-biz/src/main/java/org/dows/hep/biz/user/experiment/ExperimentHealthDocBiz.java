@@ -100,9 +100,9 @@ public class ExperimentHealthDocBiz {
 
         ExptHealthDocInfoResponse rst=new ExptHealthDocInfoResponse();
         rst.setExperimentPersonId(experimentPersonId)
-                .setHealthIndex(Optional.ofNullable( header.getHealthIndex())
-                        .orElse(header.getLastHealthIndex()))
-                .setMoneyScore(getMoneyScore(header.getMoney(), header.getLastMoney()))
+                .setHealthIndex(Optional.ofNullable( evalHolder.getHealthPoint(false))
+                        .orElse(evalHolder.getHealthPoint(true)))
+                .setMoneyScore(getMoneyScore(evalHolder.getMoney(false), evalHolder.getMoney(true)))
                 .setRisks(ShareUtil.XCollection.toSet(evalData.getRisks(), EvalRiskValues::getRiskName))
                 .setTotalDays(exptColl.getTotalDays());
 
