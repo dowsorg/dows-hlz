@@ -102,7 +102,9 @@ public class ExperimentHealthDocBiz {
         rst.setExperimentPersonId(experimentPersonId)
                 .setHealthIndex(Optional.ofNullable( evalHolder.getHealthPoint(false))
                         .orElse(evalHolder.getHealthPoint(true)))
-                .setMoneyScore(getMoneyScore(evalHolder.getMoney(false), evalHolder.getMoney(true)))
+                .setMoney(evalHolder.getMoney(false))
+                .setLastMoney(evalHolder.getMoney(true))
+                .setMoneyScore(getMoneyScore(rst.getMoney(),rst.getLastMoney()))
                 .setRisks(ShareUtil.XCollection.toSet(evalData.getRisks(), EvalRiskValues::getRiskName))
                 .setTotalDays(exptColl.getTotalDays());
 
@@ -127,9 +129,9 @@ public class ExperimentHealthDocBiz {
         }
         BigDecimal lastMoneyVal=BigDecimalUtil.tryParseDecimalElseNull(lastMoney);
 
-        return BigDecimalOptional.valueOf(money).sub(lastMoneyVal)
+        return BigDecimalOptional.valueOf(lastMoneyVal).sub(BigDecimalUtil.tryParseDecimalElseNull(money))
                 .div(lastMoneyVal,2)
-                .min(BigDecimal.ONE)
+                .min(BigDecimal.ZERO)
                 .max(BigDecimalUtil.ONEHundred)
                 .getString(2, RoundingMode.DOWN);
     }
