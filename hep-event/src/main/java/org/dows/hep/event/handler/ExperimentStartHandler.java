@@ -17,7 +17,9 @@ import org.dows.hep.api.enums.EnumWebSocketType;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentRestartRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
+import org.dows.hep.biz.dao.ExperimentTimerDao;
 import org.dows.hep.biz.event.EventScheduler;
+import org.dows.hep.biz.event.ExperimentTimerCache;
 import org.dows.hep.biz.request.ExperimentTaskParamsRequest;
 import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.biz.util.TimeUtil;
@@ -33,6 +35,7 @@ import org.dows.hep.websocket.HepClientManager;
 import org.dows.hep.websocket.proto.MessageCode;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -54,14 +57,21 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
     private final ExperimentPersonInsuranceService experimentPersonInsuranceService;
 
     private final ExperimentFinishTaskHandler experimentFinishTaskHandler;
+    private final ExperimentTimerDao experimentTimerDao;
 
     @Override
     public void exec(ExperimentRestartRequest experimentRestartRequest) {
         // 待更新集合
         List<ExperimentTimerEntity> updateExperimentTimerEntities = new ArrayList<>();
         // 查询实验期数
-        List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerBiz
-                .getPeriodsTimerList(experimentRestartRequest.getExperimentInstanceId());
+      /*  List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerBiz
+                .getPeriodsTimerList(experimentRestartRequest.getExperimentInstanceId());*/
+
+        final String experimentInstanceId=experimentRestartRequest.getExperimentInstanceId();
+        final String appId = ShareBiz.checkAppId(null, experimentInstanceId);
+        ExperimentTimerCache.Instance().remove(experimentInstanceId);
+        Map<Integer, ExperimentTimerEntity> mapTimer = experimentTimerDao.getMapByExperimentId(appId, experimentInstanceId, null);
+        List<ExperimentTimerEntity>  experimentTimerEntityList=mapTimer.values().stream().toList();
 
         // 方案设计模式不需要设计时器，只有标准模式或沙盘模式才需要设计时器//null == experimentRestartRequest.getPeriods() && 或者实验是准备中时
         if (null == experimentRestartRequest.getPeriods()) {
@@ -101,14 +111,18 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
              */
         } else/* if(experimentRestartRequest.getModel() == ExperimentModeEnum.SAND.getCode())*/ {
             // 获取当前时间
-            long ct = experimentRestartRequest.getCurrentTime().getTime();
+      /*      long ct = experimentRestartRequest.getCurrentTime().getTime();
             //todo 计时器
             log.info("执行开始操作....");
             // 找出当前期数计时器集合且暂停次数为最大的
             ExperimentTimerEntity updateExperimentTimer = experimentTimerEntityList.stream()
                     .filter(t -> t.getPeriod() == experimentRestartRequest.getPeriods())
                     .max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount))
-                    .orElse(null);
+                    .orElse(null);*/
+
+            long ct=System.currentTimeMillis();
+            LocalDateTime ldtNow=LocalDateTime.now();
+            final ExperimentTimerEntity updateExperimentTimer=ExperimentTimerCache.getCurTimer(ldtNow, mapTimer);
             if (updateExperimentTimer == null) {
                 throw new ExperimentException("实验计时器不存在！");
             }
@@ -177,7 +191,6 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
         // 重置定时任务
         resetTimeTask(experimentRestartRequest, updateExperimentTimerEntities, experimentGroupResponses);
         // 突发事件检测
-        final String appId = ShareBiz.checkAppId(null, experimentRestartRequest.getExperimentInstanceId());
         EventScheduler.Instance().scheduleTimeBasedEvent(appId, experimentRestartRequest.getExperimentInstanceId(), 5);
         //随访计划
         EventScheduler.Instance().scheduleFollowUpPlan(appId, experimentRestartRequest.getExperimentInstanceId(), 5);

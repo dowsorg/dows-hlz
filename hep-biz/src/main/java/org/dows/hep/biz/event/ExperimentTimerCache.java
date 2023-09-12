@@ -110,7 +110,7 @@ public class ExperimentTimerCache extends BaseLoadingCache<ExperimentCacheKey, E
     }
 
 
-    private static ExperimentTimerEntity getCurTimer(LocalDateTime ldtNow,Map<Integer, ExperimentTimerEntity> mapTimer){
+    public static ExperimentTimerEntity getCurTimer(LocalDateTime ldtNow,Map<Integer, ExperimentTimerEntity> mapTimer){
         final long nowTs=ShareUtil.XDate.localDT2UnixTS(ldtNow, false);
         ExperimentTimerEntity curTimer=null;
         for(ExperimentTimerEntity item:mapTimer.values()){
