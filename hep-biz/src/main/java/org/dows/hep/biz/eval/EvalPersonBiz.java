@@ -183,7 +183,7 @@ public class EvalPersonBiz {
 
     long logCostTime(StringBuilder sb,String func,long ts){
         long newTs=System.currentTimeMillis();
-        sb.append(" ").append(func).append(":").append((newTs-ts)/1000);
+        sb.append(" ").append(func).append(":").append((newTs-ts));
         return newTs;
     }
 }
