@@ -35,6 +35,12 @@ public class ExptHealthDocInfoResponse {
     @Schema(title = "医疗占比")
     private String moneyScore;
 
+    @Schema(title = "当前资金")
+    private String money;
+
+    @Schema(title = "上次资金")
+    private String lastMoney;
+
     @Schema(title = "危险因素列表")
     private Set<String> risks;
 
