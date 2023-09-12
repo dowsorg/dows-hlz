@@ -374,16 +374,13 @@ public class ExperimentInsuranceBiz {
             map.put("result",false);
             return map;
         }
-        //如果还未过期
-        Boolean flag = TimeUtil.isBeforeTime(new Date(), entity.getExpdate());
-        if(flag){
-            ExperimentTimePoint nowPoint= ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create("3",experimentPersonInsuranceRequest.getExperimentInstanceId()),
-                    LocalDateTime.now(), true);
-            AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(nowPoint))
-                    .throwMessage("未找到实验时间设置");
-
-            int intervalDays=Math.max(360,360+entity.getBuyGameDay()-nowPoint.getGameDay());
-
+        int intervalDays=0;
+        ExperimentTimePoint nowPoint= ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create("3",experimentPersonInsuranceRequest.getExperimentInstanceId()),
+                LocalDateTime.now(), true);
+        if(ShareUtil.XObject.notEmpty(nowPoint)){
+            intervalDays=Math.max(360,360+entity.getBuyGameDay()-nowPoint.getGameDay());
+        }
+        if(intervalDays>0){
             long interval = (entity.getExpdate().getTime() - new Date().getTime())/1000;
             map.put("result", true);
             map.put("interval",interval);

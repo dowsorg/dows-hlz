@@ -20,11 +20,8 @@ import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
 import org.dows.hep.biz.dao.ExperimentTimerDao;
 import org.dows.hep.biz.event.EventScheduler;
 import org.dows.hep.biz.event.ExperimentTimerCache;
-import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.request.ExperimentTaskParamsRequest;
-import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareBiz;
-import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.util.TimeUtil;
 import org.dows.hep.entity.ExperimentPersonInsuranceEntity;
 import org.dows.hep.entity.ExperimentTaskScheduleEntity;
@@ -126,9 +123,6 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
             long ct=System.currentTimeMillis();
             LocalDateTime ldtNow=LocalDateTime.now();
             final ExperimentTimerEntity updateExperimentTimer=ExperimentTimerCache.getCurTimer(ldtNow, mapTimer);
-            ExperimentTimerCache.CacheData cacheTimer=ExperimentTimerCache.Instance().getCacheData(ExperimentCacheKey.create(appId,experimentInstanceId));
-            AssertUtil.trueThenThrow(ShareUtil.XObject.anyEmpty(cacheTimer,()->cacheTimer.getMapTimer()))
-                    .throwMessage("未找到沙盘时间设置");
             if (updateExperimentTimer == null) {
                 throw new ExperimentException("实验计时器不存在！");
             }
