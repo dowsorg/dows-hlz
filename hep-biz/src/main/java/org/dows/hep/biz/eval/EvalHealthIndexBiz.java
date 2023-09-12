@@ -344,6 +344,7 @@ public class EvalHealthIndexBiz {
                     }
                 });
                 final RiskModelHealthIndexVO voRiskModel = new RiskModelHealthIndexVO()
+                        .setCrowdsId(experimentCrowdsInstanceRsEntity.getCrowdsId())
                         .setRiskModelId(experimentRiskModelId)
                         .setRiskModelName(experimentRiskModelRsEntity.getName())
                         .setCrowdsDeathRate(experimentCrowdsInstanceRsEntity.getDeathProbability())

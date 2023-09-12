@@ -8,7 +8,9 @@ import org.dows.hep.biz.util.ShareUtil;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -37,11 +39,25 @@ public class EvalHealthIndexUtil {
             return MINHeathIndex;
         }
         BigDecimalOptional healthIndex=BigDecimalOptional.zero();
+        BigDecimalOptional totalDealthRate=BigDecimalOptional.create();
+        Set<String> crowds=new HashSet<>();
+        src.forEach(i->{
+            if(ShareUtil.XObject.isEmpty(i.getCrowdsDeathRate(), true)
+                    ||crowds.contains(i.getCrowdsId())){
+                return;
+            }
+            totalDealthRate.add(BigDecimalUtil.valueOf(i.getCrowdsDeathRate()));
+            crowds.add(i.getCrowdsId());
+        });
+        if(ShareUtil.XObject.isEmpty(crowds)){
+            return MINHeathIndex;
+        }
+
         for(RiskModelHealthIndexVO item:src){
             if(calcItemFlag){
                 evalRiskModelHealthIndex(item);
             }
-            healthIndex.add(BigDecimalUtil.mul(item.getHealthIndex(),item.getDeathRateWeight()));
+            healthIndex.add(BigDecimalUtil.mul(item.getHealthIndex(),item.getDeathRateWeight(totalDealthRate.getValue())));
         }
         return healthIndex.min(MINHeathIndex)
                 .max(MAXHealthIndex)

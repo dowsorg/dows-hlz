@@ -39,9 +39,11 @@ public class ExperimentIndicatorViewBaseInfoRsBiz {
   private final QueryPersonBiz queryPersonBiz;
 
   public ExperimentIndicatorViewBaseInfoRsResponse getBaseInfo(GetIndicatorBaseInfo getIndicatorBaseInfo) throws ExecutionException, InterruptedException {
+
     IndicatorFuncEntity indicatorFuncEntity = indicatorFuncService.lambdaQuery()
             .eq(IndicatorFuncEntity::getIndicatorCategoryId, EnumIndicatorCategory.VIEW_MANAGEMENT_BASE_INFO.getCode())
-            .eq(IndicatorFuncEntity::getSeq,2)
+            .eq(IndicatorFuncEntity::getName,"健康档案")
+            //.eq(IndicatorFuncEntity::getSeq,2)
             //.eq(IndicatorFuncEntity::getAppId, getIndicatorBaseInfo.getAppId()))
             .oneOpt()
             .orElse(null);
