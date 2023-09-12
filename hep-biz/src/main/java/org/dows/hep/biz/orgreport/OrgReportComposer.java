@@ -45,7 +45,7 @@ public class OrgReportComposer {
                 .setIndicatorFuncId(validator.getIndicatorFuncId())
                 ;
     }
-    final static boolean asyncFlag=false;
+    final static boolean asyncFlag=true;
 
     public ExptOrgFlowReportResponse composeReport(ExptRequestValidator exptValidator, ExptOrgFlowValidator flowValidator, ExperimentTimePoint timePoint, ExptOrgReportNodeVO newNode){
         final ExperimentOrgEntity exptOrg= exptValidator.getExperimentOrg();
