@@ -30,6 +30,8 @@ public enum EnumWebSocketType {
     //期数翻转计算完毕 替换 calc
     FLOW_PERIOD_ENDED,
 
+    //沙盘整体结束
+    FLOW_SAND_END,
     //endregion
     ;
 }

@@ -69,7 +69,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
 
         final String experimentInstanceId=experimentRestartRequest.getExperimentInstanceId();
         final String appId = ShareBiz.checkAppId(null, experimentInstanceId);
-        ExperimentTimerCache.Instance().remove(experimentInstanceId);
+        ExperimentTimerCache.Instance().remove(appId, experimentInstanceId);
         Map<Integer, ExperimentTimerEntity> mapTimer = experimentTimerDao.getMapByExperimentId(appId, experimentInstanceId, null);
         List<ExperimentTimerEntity>  experimentTimerEntityList=mapTimer.values().stream().toList();
 

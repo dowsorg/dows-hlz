@@ -140,16 +140,18 @@ public class ExperimentFlowRules {
             } else if (nowTs >= item.getEndTime().getTime() && nowTs <= item.getEndTime().getTime() + item.getPeriodInterval()) {// // 一期结束倒计时
                 rst.setCountdown(item.getEndTime().getTime() + item.getPeriodInterval() - nowTs);
                 rst.setCountdownType(1);
-                return rst;
+                break;
             }
         }
         final ExperimentTimerEntity lastTimer = cacheTimer.getTimerByPeriod(cacheTimer.getMapTimer().size());
         if (lastTimer.getState().equals(EnumExperimentState.FINISH.getState())
                 || lastTimer.getEndTime().getTime() <= nowTs) {
-            rst.setState(lastTimer.getState());
+            rst.setState(EnumExperimentState.FINISH.getState());
             rst.setPeriod(lastTimer.getPeriod());
             rst.setSandRemnantSecond(0L);
             rst.setSandDurationSecond(exptColl.getTotalSeconds());
+            rst.setCountdown(null);
+            rst.setCountdownType(null);
         }
         return rst;
 

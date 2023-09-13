@@ -1,7 +1,8 @@
 package org.dows.hep.biz.event;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.enums.EnumExperimentState;
@@ -63,7 +64,7 @@ public class ExperimentTimerCache extends BaseLoadingCache<ExperimentCacheKey, E
         remove(ExperimentCacheKey.create(appId, experimentId));
     }
 
-    public void remove(ExperimentCacheKey key){
+    private void remove(ExperimentCacheKey key){
         key.setAppId(ShareBiz.checkAppId(key.getAppId(), key.getExperimentInstanceId()));
         this.loadingCache().invalidate(key);
     }
@@ -73,40 +74,34 @@ public class ExperimentTimerCache extends BaseLoadingCache<ExperimentCacheKey, E
         if(ShareUtil.XObject.isEmpty(key)){
             return null;
         }
-        CacheData rst=new CacheData();
         ExperimentSettingCollection exptColl=ExperimentSettingCache.Instance().loadingCache().get(key);
         if(ShareUtil.XObject.isEmpty(exptColl)||!exptColl.hasSandMode()){
-            return rst;
+            return new CacheData(false);
         }
+        CacheData rst=new CacheData(true);
         Map<Integer, ExperimentTimerEntity> mapTimer=experimentTimerDao.getMapByExperimentId(null, key.getExperimentInstanceId(), null );
-        rst.setMapTimer(mapTimer);
-        rst.setSandStartTime(rst.mapTimer.values().stream()
-                .filter(i -> i.getState() >= EnumExperimentState.ONGOING.getState())
-                .max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount))
-                .map(ExperimentTimerEntity::getStartTime)
-                .map(i -> ShareUtil.XDate.localDT4UnixTS(i.getTime(), false))
-                .orElse(null));
+        rst.setMapTimer(mapTimer)
+                .setSandStartTime();
         final LocalDateTime ldtNow=LocalDateTime.now();
         if(ShareUtil.XObject.isEmpty(rst.getSandStartTime())||ldtNow.isBefore(rst.getSandStartTime())){
-            return rst.setCntPauseSeconds(0);
+            return rst.setPausedSeconds(0);
         }
         final ExperimentTimerEntity curTimer=getCurTimer(ldtNow, mapTimer);
         if(ShareUtil.XObject.isEmpty(curTimer)){
-            return rst.setCntPauseSeconds(0);
+            return rst.setPausedSeconds(0);
         }
-        rst.setPaused(Optional.ofNullable(curTimer.getPaused()).orElse(false));
+        if(Optional.ofNullable(curTimer.getPaused()).orElse(false)){
+            rst.setPausing(curTimer.getPauseTime());
+        }
         final int curPeriod=curTimer.getPeriod();
         ExperimentSettingCollection.ExperimentPeriodSetting setting =exptColl.getSettingByPeriod(curPeriod);
         if(null==setting){
             return rst;
         }
-        long pausingSeconds =rst.isPaused?Math.max(0,
-                ShareUtil.XDate.localDT2UnixTS(ldtNow, true)
-                        -curTimer.getPauseTime().getTime()/1000):0;
         long pausedSeconds=Math.max( 0, curTimer.getEndTime().getTime()/1000
                 -ShareUtil.XDate.localDT2UnixTS(rst.getSandStartTime(),true)
                 -setting.getEndSecond());
-        return rst.setCntPauseSeconds(pausingSeconds+pausedSeconds);
+        return rst.setPausedSeconds(pausedSeconds);
     }
 
 
@@ -129,29 +124,79 @@ public class ExperimentTimerCache extends BaseLoadingCache<ExperimentCacheKey, E
         return curTimer;
     }
 
+
+
     @Override
     protected CacheData cotinueLoad(ExperimentCacheKey key, CacheData curVal) {
-        if(null==curVal||curVal.isPaused){
+        if (null == curVal
+                || curVal.hasSandMode && null == curVal.getSandStartTime()) {
             return load(key);
         }
         return curVal;
     }
 
-    @Data
+
+
+
     @Accessors(chain = true)
     public static class CacheData {
 
-        private Map<Integer, ExperimentTimerEntity> mapTimer;
+        public CacheData(boolean hasSandMode){
+            this.hasSandMode =hasSandMode;
+            this.isPausing=false;
+        }
+        @Getter
+        private final Map<Integer, ExperimentTimerEntity> mapTimer=new HashMap<>();
 
+        @Getter
+        @Schema(title = "是否沙盘模式")
+        private final boolean hasSandMode;
 
-        @Schema(title = "累计暂停秒数")
-        private long cntPauseSeconds;
+        @Getter
+        @Setter
+        @Schema(title = "已暂停秒数")
+        private long pausedSeconds;
 
+        @Getter
         @Schema(title = "是否暂停中")
-        private boolean isPaused;
+        private boolean isPausing;
 
+        @Getter
+        @Schema(title = "最新暂停时间")
+        private Date pausingTime;
+
+        @Getter
         @Schema(title = "沙盒开始时间")
         private LocalDateTime sandStartTime;
+
+        public CacheData setMapTimer(Map<Integer, ExperimentTimerEntity> mapTimer){
+            mapTimer.clear();
+            mapTimer.putAll(mapTimer);
+            return this;
+        }
+        public CacheData setPausing(Date pausingTime){
+            this.isPausing=true;
+            this.pausingTime=pausingTime;
+            return this;
+        }
+        public CacheData setUnPause(){
+            this.isPausing=false;
+            return this;
+        }
+
+        public CacheData setSandStartTime(){
+            this.sandStartTime=loadSandStartTime();
+            return this;
+        }
+
+        public long getCntPausSeconds(LocalDateTime ldtNow){
+            if(!isPausing){
+                return pausedSeconds;
+            }
+            long pausingSeconds =Math.max(0, ShareUtil.XDate.localDT2UnixTS(ldtNow, true)
+                            -pausingTime.getTime()/1000);
+            return pausingSeconds+pausedSeconds;
+        }
 
         public ExperimentTimerEntity getCurTimer(LocalDateTime ldtNow){
             return ExperimentTimerCache.getCurTimer(ldtNow,mapTimer);
@@ -168,6 +213,19 @@ public class ExperimentTimerCache extends BaseLoadingCache<ExperimentCacheKey, E
         public ExperimentTimerEntity getTimerByPeriod(Integer period){
             return Optional.ofNullable(mapTimer)
                     .map(i->i.get(period))
+                    .orElse(null);
+        }
+
+        public LocalDateTime loadSandStartTime(){
+            if(ShareUtil.XObject.isEmpty(mapTimer)){
+                return null;
+            }
+
+            return mapTimer.values().stream()
+                    .filter(i ->i.getPeriod().equals(1) && i.getState() >= EnumExperimentState.ONGOING.getState())
+                    .findFirst()
+                    .map(ExperimentTimerEntity::getStartTime)
+                    .map(i -> ShareUtil.XDate.localDT4UnixTS(i.getTime(), false))
                     .orElse(null);
         }
 
