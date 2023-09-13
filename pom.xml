@@ -80,6 +80,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.dows.saas</groupId>
+                <artifactId>hep-edw</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
                 <artifactId>hep-feign</artifactId>
                 <groupId>org.dows.saas</groupId>
                 <version>1.0.0-SNAPSHOT</version>

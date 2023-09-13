@@ -25,6 +25,10 @@
         </dependency>
         <dependency>
             <groupId>org.dows.saas</groupId>
+            <artifactId>hep-edw</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.dows.saas</groupId>
             <artifactId>hep-websocket</artifactId>
         </dependency>
 

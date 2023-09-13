@@ -1,6 +1,10 @@
 package org.dows.edw.domain;
 
 import lombok.Data;
+import org.dows.edw.FieldFill;
+import org.dows.edw.LogicDel;
+import org.dows.edw.MongoEntity;
+import org.dows.edw.MongoEntityId;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -10,10 +14,13 @@ import java.time.LocalDateTime;
  * @TableName hep_psychology_intervene
  */
 @Data
+@MongoEntity
 public class HepPsychologyIntervene implements Serializable {
     /**
      * 心理干預ID
      */
+    @FieldFill
+    @MongoEntityId
     private Long hepPsychologyInterveneId;
 
     /**
@@ -89,6 +96,8 @@ public class HepPsychologyIntervene implements Serializable {
     /**
      * 逻辑删除
      */
+    @FieldFill
+    @LogicDel
     private Integer deleted;
 
     /**
@@ -99,6 +108,7 @@ public class HepPsychologyIntervene implements Serializable {
     /**
      * 时间戳
      */
+    @FieldFill
     private LocalDateTime dt;
 
     private static final long serialVersionUID = 1L;
