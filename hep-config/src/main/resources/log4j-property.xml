@@ -18,7 +18,7 @@
     <!--日志编码-->
     <property name="CHARSET" value="utf-8"/>
     <!--单个日志文件大小-->
-    <property name="MAX_FILE_SIZE" value="3MB"/>
+    <property name="MAX_FILE_SIZE" value="5MB"/>
     <!--日志保存时间-->
     <property name="MAX_HISTORY" value="P30D"/>
 

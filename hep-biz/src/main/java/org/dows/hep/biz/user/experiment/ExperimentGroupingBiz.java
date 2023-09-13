@@ -8,8 +8,10 @@ import org.dows.hep.api.enums.EnumParticipatorType;
 import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentGroupSettingRequest;
 import org.dows.hep.entity.ExperimentGroupEntity;
+import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
 import org.dows.hep.service.ExperimentGroupService;
+import org.dows.hep.service.ExperimentInstanceService;
 import org.dows.hep.service.ExperimentParticipatorService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.context.ApplicationEventPublisher;
@@ -37,6 +39,9 @@ public class ExperimentGroupingBiz {
     private final ExperimentParticipatorService experimentParticipatorService;
     // 实验小组
     private final ExperimentGroupService experimentGroupService;
+
+    private final ExperimentInstanceService experimentInstanceService;
+
     @DSTransactional
     public Boolean grouping(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
 
@@ -116,5 +121,24 @@ public class ExperimentGroupingBiz {
         // 发布实验init事件
         //applicationEventPublisher.publishEvent(new InitializeEvent(experimentGroupSettingRequest));
         return true;
+    }
+
+    @DSTransactional
+    public Boolean groupingFail(ExperimentGroupSettingRequest experimentGroupSettingRequest){
+        final String exptId=experimentGroupSettingRequest.getExperimentInstanceId();
+        experimentInstanceService.lambdaUpdate()
+                .eq(ExperimentInstanceEntity::getExperimentInstanceId , exptId)
+                .set(ExperimentInstanceEntity::getExperimentName, "【系统提示：实验分配失败】" )
+                .update();
+
+        experimentGroupService.lambdaUpdate()
+                .eq(ExperimentGroupEntity::getExperimentInstanceId,exptId)
+                .remove();
+
+        experimentParticipatorService.lambdaUpdate()
+                .eq(ExperimentParticipatorEntity::getExperimentInstanceId ,exptId)
+                .remove();
+        return true;
+
     }
 }
