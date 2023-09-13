@@ -24,4 +24,10 @@ public class ToolRest {
     public String getWebSocketState(@RequestParam String exptId){
         return toolBiz.getWebSocketState(exptId);
     }
+
+
+    @GetMapping("v1/tool/ping")
+    public String getWebSocketState(){
+        return toolBiz.ping();
+    }
 }

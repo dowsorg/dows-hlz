@@ -100,6 +100,18 @@ public class ExptOrgFlowValidator {
     }
 
     /**
+     * 获取保险费
+     * @return
+     */
+    public Optional<Double> getOrgFee4Bxf(){
+        return getOrgFee(EnumOrgFeeType.BXF)
+                .map(i->Math.max(0,i.getFee()))
+                .or(()->Optional.of(0d));
+        //.map(CaseOrgFeeEntity::getFee);
+        //.filter(i->i>0);
+    }
+
+    /**
      * 获取机构费用设置
      * @param feeType
      * @return

@@ -52,6 +52,11 @@ Query对象
         User insert = mongoTemplate.insert(user);
 //        }
         System.out.println(insert);
+
+
+        UserAddress user11 = new UserAddress();
+        mongoTemplate.insert(user11);
+
     }
 
     // 查询操作

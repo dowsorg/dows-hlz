@@ -19,6 +19,11 @@ import java.util.concurrent.atomic.AtomicReference;
 @Service
 public class ToolBiz {
 
+    public String ping(){
+
+        return "ok";
+    }
+
     public String getWebSocketState(String exptId){
         Map<Channel, AccountInfo> map=null;
         if(ShareUtil.XObject.notEmpty(exptId)){

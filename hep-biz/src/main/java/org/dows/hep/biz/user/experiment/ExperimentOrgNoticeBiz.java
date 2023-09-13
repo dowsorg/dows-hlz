@@ -108,6 +108,35 @@ public class ExperimentOrgNoticeBiz {
     }
     //endregion
 
+    //region 随访计划通知
+
+    /*public ExperimentOrgNoticeEntity createNotice(ExperimentFollowupPlanEntity src, Map<String,String> mapAvatar) throws JsonProcessingException {
+
+        ExperimentOrgNoticeEntity rst = new ExperimentOrgNoticeEntity()
+                .setAppId(src.getAppId())
+                .setExperimentInstanceId(src.getExperimentInstanceId())
+                .setExperimentGroupId(src.getExperimentGroupId())
+                .setExperimentOrgId(src.getExperimentOrgId())
+                .setExperimentPersonId(src.getExperimentPersonId())
+                .setAccountId(src.getAccountId())
+                .setPersonName(src.getPersonName())
+                .setPeriods(src.getTriggeredPeriod())
+                .setGameDay(src.getTriggerGameDay())
+                .setNoticeTime(new Date())
+                .setNoticeSrcType(EnumExperimentOrgNoticeType.FOLLOWUP.getCode())
+                .setNoticeSrcId(src.getExperimentEventId())
+                .setTitle(eventData.getCaseEventName())
+                .setContent(eventData.getDescr())
+                .setTips(eventData.getTips())
+                .setReadState(0)
+                .setActionState(EnumEventActionState.TODO.getCode());
+        ExperimentOrgNoticeBox.create(rst)
+                .setJsonData(createNoticeAction(eventBox))
+                .toActionsJson(true);
+        return fillAvatar(mapAvatar, rst);
+    }*/
+    //endregion
+
     /**
      * 填充人物头像
      * @param src

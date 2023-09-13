@@ -94,8 +94,7 @@ public class TimeBasedEventTask extends BaseEventTask  {
             return RUNCode4Silence;
         }
 
-        exptColl.setPauseSeconds(timePoint.getCntPauseSeconds());
-        eventColl.setNextTriggerTime(calcTriggeringTime(dtNow, exptColl,eventColl));
+        eventColl.setNextTriggerTime(calcTriggeringTime(timePoint, exptColl,eventColl));
         List<List<TimeBasedEventCollection.TimeBasedEventGroup>> groups=eventColl.splitGroups(CONCURRENTNum);
         final RunStat runStat=new RunStat(groups.size());
         final ExecutorService executor=EventExecutor.Instance().getThreadPool();
@@ -188,10 +187,11 @@ public class TimeBasedEventTask extends BaseEventTask  {
         final LocalDateTime minNext=LocalDateTime.now().plusSeconds(DELAYSecondsMin);
         EventScheduler.Instance().scheduleTimeBasedEvent(experimentKey, minNext.isBefore(nextTime)?nextTime:minNext);
     }
-    LocalDateTime calcTriggeringTime(LocalDateTime ldtNow, ExperimentSettingCollection exptCollection,TimeBasedEventCollection eventCollection){
+    LocalDateTime calcTriggeringTime(ExperimentTimePoint timePoint, ExperimentSettingCollection exptCollection,TimeBasedEventCollection eventCollection){
         ExperimentTimePoint point;
         LocalDateTime nextTime=LocalDateTime.MAX;
-        final long cntPauseSeconds=exptCollection.getCntPauseSeconds();
+        final LocalDateTime ldtNow=timePoint.getRealTime();
+        final long cntPauseSeconds=timePoint.getCntPauseSeconds();
         for(TimeBasedEventCollection.TimeBasedEventGroup item:eventCollection.getEventGroups()){
             if(null==item.getRawTriggeringTime()){
                 point=calcTriggerTime(exptCollection, item.getTriggerType(), item.getTriggerSpan());
