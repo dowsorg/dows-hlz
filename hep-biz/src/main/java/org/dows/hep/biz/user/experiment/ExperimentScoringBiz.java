@@ -14,6 +14,7 @@ import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.enums.EnumCalcCode;
 import org.dows.hep.api.enums.EnumESC;
+import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.enums.EnumIndicatorType;
 import org.dows.hep.api.exception.ExperimentScoringException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
@@ -24,9 +25,12 @@ import org.dows.hep.biz.eval.EvalCompetitiveScoreBiz;
 import org.dows.hep.biz.event.ExperimentSettingCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentSettingCollection;
+import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.operate.OperateCostBiz;
+import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.BigDecimalOptional;
 import org.dows.hep.biz.util.BigDecimalUtil;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -35,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -322,6 +327,9 @@ public class ExperimentScoringBiz {
     }
 
 
+    /**
+     * 排行榜数据落库
+     */
     @SneakyThrows
     @Transactional(rollbackFor = Exception.class)
     public void saveOrUpd(String experimentInstanceId, Integer periods) {
@@ -368,9 +376,11 @@ public class ExperimentScoringBiz {
             medicalRatioWeightAtomicReference.set(i.getMedicalRatioWeight());
         });
 
+        //A、知识答题得分
         Map<String, BigDecimal> questionnaireScoreMap = new HashMap<>();
         questionnaireScoreMap.putAll(experimentQuestionnaireScoreBiz.listExptQuestionnaireScore(experimentInstanceId, periods));
 
+        //B、健康指数得分
         Map<String, BigDecimal> kExperimentGroupIdVGroupCompetitiveScoreMap = new HashMap<>();
         RsCalculateCompetitiveScoreRsResponse rsCalculateCompetitiveScoreRsResponse = this.rsCalculateCompetitiveScore(RsCalculateCompetitiveScoreRequestRs
                 .builder()
@@ -386,6 +396,7 @@ public class ExperimentScoringBiz {
             });
         }
 
+        //C、医疗占比得分
         Map<String, BigDecimal> kExperimentGroupIdVGroupMoneyScoreMap = new HashMap<>();
         RsCalculateMoneyScoreRsResponse rsCalculateMoneyScoreRsResponse = this.rsCalculateMoneyScore(RsCalculateMoneyScoreRequestRs
                 .builder()
@@ -407,23 +418,42 @@ public class ExperimentScoringBiz {
             String groupName = experimentGroupEntity.getGroupName();
             String groupNo = experimentGroupEntity.getGroupNo();
             String groupAlias = experimentGroupEntity.getGroupAlias();
+            //知识答题分
             BigDecimal questionnaireScoreBigDecimal = questionnaireScoreMap.get(experimentGroupId);
             if (Objects.isNull(questionnaireScoreBigDecimal)) {
                 questionnaireScoreBigDecimal = BigDecimal.ZERO;
             }
+            //健康竞赛分
             BigDecimal groupCompetitiveScoreBigDecimal = kExperimentGroupIdVGroupCompetitiveScoreMap.get(experimentGroupId);
             if (Objects.isNull(groupCompetitiveScoreBigDecimal)) {
                 groupCompetitiveScoreBigDecimal = BigDecimal.ZERO;
             }
+            //医疗得分
             BigDecimal groupIdVGroupMoneyScoreBigDecimal = kExperimentGroupIdVGroupMoneyScoreMap.get(experimentGroupId);
             if (Objects.isNull(groupIdVGroupMoneyScoreBigDecimal)) {
                 groupIdVGroupMoneyScoreBigDecimal = BigDecimal.ZERO;
             }
+            //总分
             BigDecimal totalScoreBigDecimal = getWeightTotalScore(
                     knowledgeWeightAtomicReference.get(), questionnaireScoreBigDecimal,
                     healthIndexWeightAtomicReference.get(), groupCompetitiveScoreBigDecimal,
                     medicalRatioWeightAtomicReference.get(), groupIdVGroupMoneyScoreBigDecimal
             );
+            //当前期排行
+            int rank = 0;
+            AtomicInteger curRank = new AtomicInteger(1);
+            Map<String, Integer> kExperimentGroupIdVRankMap = new HashMap<>();
+            experimentScoringService.lambdaQuery()
+                    .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentInstanceId)
+                    .eq(ExperimentScoringEntity::getPeriods, periods)
+                    .orderByDesc(ExperimentScoringEntity::getTotalScore,ExperimentScoringEntity::getId)
+                    .list()
+                    .forEach(experimentScoringEntity -> {
+                        kExperimentGroupIdVRankMap.put(experimentScoringEntity.getExperimentGroupId(), curRank.getAndIncrement());
+                    });
+            if (Objects.nonNull(kExperimentGroupIdVRankMap.get(experimentGroupId))) {
+                rank = kExperimentGroupIdVRankMap.get(experimentGroupId);
+            }
             experimentScoringEntityList.add(ExperimentScoringEntity
                     .builder()
                     .experimentScoringId(idGenerator.nextIdStr())
@@ -436,6 +466,10 @@ public class ExperimentScoringBiz {
                     .healthIndexScore(groupCompetitiveScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
                     .treatmentPercentScore(groupIdVGroupMoneyScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
                     .totalScore(totalScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
+                    .percentKnowledgeScore(questionnaireScoreBigDecimal.add(totalScoreBigDecimal).setScale(2, RoundingMode.DOWN).toString())
+                    .percentHealthIndexScore(groupCompetitiveScoreBigDecimal.add(totalScoreBigDecimal).setScale(2, RoundingMode.DOWN).toString())
+                    .percentTreatmentPercentScore(groupIdVGroupMoneyScoreBigDecimal.add(totalScoreBigDecimal).setScale(2, RoundingMode.DOWN).toString())
+                    .rank(rank)
                     .scoringCount(scoringCountAtomicInteger.get())
                     .periods(periods)
                     .build());

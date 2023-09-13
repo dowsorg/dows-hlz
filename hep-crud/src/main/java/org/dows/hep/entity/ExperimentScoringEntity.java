@@ -75,7 +75,7 @@ public class ExperimentScoringEntity implements CrudEntity {
     @Schema(title = "医疗占比分数百分比")
     private String percentTreatmentPercentScore;
 
-    @Schema(title = "医疗占比分数百分比")
+    @Schema(title = "操作准确度百分比")
     private String percentOperateRightScore;
 
     @Schema(title = "总分")
