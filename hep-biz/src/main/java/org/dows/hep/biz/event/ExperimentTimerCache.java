@@ -170,8 +170,8 @@ public class ExperimentTimerCache extends BaseLoadingCache<ExperimentCacheKey, E
         private LocalDateTime sandStartTime;
 
         public CacheData setMapTimer(Map<Integer, ExperimentTimerEntity> mapTimer){
-            mapTimer.clear();
-            mapTimer.putAll(mapTimer);
+            this.mapTimer.clear();
+            this.mapTimer.putAll(mapTimer);
             return this;
         }
         public CacheData setPausing(Date pausingTime){
