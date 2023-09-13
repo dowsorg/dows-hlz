@@ -321,11 +321,11 @@ public class PersonManageBiz {
      */
     public Map<String, Object> login(AccountInstanceRequest request, HttpServletRequest request1) {
         Map<String, Object> map = accountInstanceApi.login(request,request1);
-        if(!map.get("name").equals("Admin")) {
-            String accountId = map.get("accountId").toString();
-            String token = map.get("token").toString();
-            StatefulJwtUtil.putToken(token, accountId);
-        }
+//        if(!map.get("name").equals("Admin")) {
+//            String accountId = map.get("accountId").toString();
+//            String token = map.get("token").toString();
+//            StatefulJwtUtil.putToken(token, accountId);
+//        }
         return map;
     }
 
