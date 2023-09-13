@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 实验计分(ExperimentScoring)实体类
@@ -66,6 +66,18 @@ public class ExperimentScoringEntity implements CrudEntity {
     @Schema(title = "操作准确度得分")
     private String operateRightScore;
 
+    @Schema(title = "知识考点分数百分比")
+    private String percentKnowledgeScore;
+
+    @Schema(title = "健康指数分数百分比")
+    private String percentHealthIndexScore;
+
+    @Schema(title = "医疗占比分数百分比")
+    private String percentTreatmentPercentScore;
+
+    @Schema(title = "医疗占比分数百分比")
+    private String percentOperateRightScore;
+
     @Schema(title = "总分")
     private String totalScore;
 
@@ -74,6 +86,9 @@ public class ExperimentScoringEntity implements CrudEntity {
 
     @Schema(title = "期数")
     private Integer periods;
+
+    @Schema(title = "排名")
+    private Integer rank;
 
     @JsonIgnore
     @TableLogic
