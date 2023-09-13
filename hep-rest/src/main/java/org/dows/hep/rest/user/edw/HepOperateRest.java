@@ -43,7 +43,7 @@ public class HepOperateRest {
     @Operation(summary = "新增或更新操作记录")
     @PostMapping("v1/hepOperate/getOperate")
     public HepOperateResponse getOperate(@RequestBody HepOperateGetRequest request) {
-        HepOperateTypeEnum type = request.getType();
+        HepOperateTypeEnum type = HepOperateTypeEnum.valueOf(request.getType());
         Class<?> clazz = type.getClazz();
         Object operateEntity = hepOperateGetRepository.getOperateEntity(request, clazz);
 
@@ -65,7 +65,7 @@ public class HepOperateRest {
     @Operation(summary = "保存操作记录")
     @PostMapping("v1/hepOperate/setOperate")
     public HepOperateResponse setOperate(@RequestBody HepOperateSetRequest request) {
-        HepOperateTypeEnum type = request.getType();
+        HepOperateTypeEnum type = HepOperateTypeEnum.valueOf(request.getType());
         Class<?> clazz = type.getClazz();
         Object operateEntity = hepOperateSetRepository.setOperateEntity(request, clazz);
 
