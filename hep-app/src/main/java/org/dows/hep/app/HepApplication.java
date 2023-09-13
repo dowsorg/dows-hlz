@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 * @date 2023年4月14日 下午3:45:06
 */
 @SpringBootApplication(scanBasePackages = {"org.dows.hep.*",
+                                           "org.dows.edw.*",
                                            "org.dows.framework.*",
                                            "org.dows.account.*",
                                            "org.dows.user.*",
