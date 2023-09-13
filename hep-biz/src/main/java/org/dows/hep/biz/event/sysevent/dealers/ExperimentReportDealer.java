@@ -3,6 +3,7 @@ package org.dows.hep.biz.event.sysevent.dealers;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.enums.EnumExperimentState;
+import org.dows.hep.api.enums.EnumWebSocketType;
 import org.dows.hep.biz.dao.ExperimentTimerDao;
 import org.dows.hep.biz.event.ExperimentSettingCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
@@ -65,6 +66,7 @@ public class ExperimentReportDealer extends BaseEventDealer {
             rst.append("failUpdateExptState[%s]",experimentInstanceId);
             return false;
         }
+        this.pushTimeState(rst, ExperimentCacheKey.create(appId,experimentInstanceId), exptColl, EnumWebSocketType.FLOW_SAND_END , row);
         experimentScoringBiz.getRank(experimentInstanceId);
         return true;
 

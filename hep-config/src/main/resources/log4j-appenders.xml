@@ -8,8 +8,8 @@
     </GRPCLogClientAppender>
     <RollingRandomAccessFile name="FILE-INFO"
                              fileName="${LOG_HOME}/info.log"
-                             filePattern="${LOG_HOME}/info.%d{yyyy-MM-dd}-%i.log.gz">
-        <LevelRangeFilter minLevel="INFO" maxLevel="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
+                             filePattern="${LOG_HOME}/info.%d{yyyyMMdd-HHmm}-%i.log.gz">
+        <LevelRangeFilter minLevel="INFO" maxLevel="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
         <PatternLayout pattern="${PATTERN}" charset="${CHARSET}"/>
         <Policies>
             <!--每天滚动一次-->
@@ -28,7 +28,7 @@
 
     <RollingRandomAccessFile name="FILE-ERROR"
                              fileName="${LOG_HOME}/error.log"
-                             filePattern="${LOG_HOME}/error.%d{yyyy-MM-dd}-%i.log.gz">
+                             filePattern="${LOG_HOME}/error.%d{yyyyMMdd-HHmm}-%i.log.gz">
         <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
         <PatternLayout pattern="${PATTERN}" charset="${CHARSET}"/>
         <Policies>

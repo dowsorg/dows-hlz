@@ -10,6 +10,7 @@ import org.dows.hep.api.base.indicator.request.RsInitMoneyRequest;
 import org.dows.hep.api.base.indicator.request.RsSexRequest;
 import org.dows.hep.api.base.indicator.response.GroupAverageHealthPointResponse;
 import org.dows.hep.api.config.ConfigExperimentFlow;
+import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.enums.EnumIndicatorType;
 import org.dows.hep.api.enums.EnumStatus;
 import org.dows.hep.api.user.experiment.request.ExperimentIndicatorInstanceRequest;
@@ -18,9 +19,13 @@ import org.dows.hep.biz.eval.EvalPersonCache;
 import org.dows.hep.biz.eval.EvalPersonOnceHolder;
 import org.dows.hep.biz.eval.QueryPersonBiz;
 import org.dows.hep.biz.eval.data.EvalIndicatorValues;
+import org.dows.hep.biz.event.ExperimentSettingCache;
+import org.dows.hep.biz.event.data.ExperimentCacheKey;
+import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.EchartsUtils;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentIndicatorInstanceRsEntity;
 import org.dows.hep.entity.ExperimentIndicatorValRsEntity;
 import org.dows.hep.entity.ExperimentPersonEntity;
@@ -31,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -322,13 +328,17 @@ public class ExperimentIndicatorInstanceRsBiz {
         int experimentPersonCount = healthPointExperimentIndicatorInstanceIdSet.size();
         String averageHealthPoint = total.divide(BigDecimal.valueOf(experimentPersonCount), 2, RoundingMode.DOWN).toString();
 
+        ExperimentTimePoint nowPoint= ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create("3",experimentId),
+                LocalDateTime.now(), false);
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(nowPoint))
+                .throwMessage("未找到实验时间设置");
         int rank = 0;
         AtomicInteger curRank = new AtomicInteger(1);
         Map<String, Integer> kExperimentGroupIdVRankMap = new HashMap<>();
         experimentScoringService.lambdaQuery()
                 .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
-                .eq(ExperimentScoringEntity::getPeriods, periods - 1)
-                .orderByDesc(ExperimentScoringEntity::getTotalScore)
+                .eq(ExperimentScoringEntity::getPeriods, nowPoint.getGameState()==EnumExperimentState.FINISH? periods: (periods - 1))
+                .orderByDesc(ExperimentScoringEntity::getTotalScore,ExperimentScoringEntity::getId)
                 .list()
                 .forEach(experimentScoringEntity -> {
                     kExperimentGroupIdVRankMap.put(experimentScoringEntity.getExperimentGroupId(), curRank.getAndIncrement());

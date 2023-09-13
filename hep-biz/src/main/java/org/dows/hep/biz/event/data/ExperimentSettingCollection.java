@@ -56,11 +56,6 @@ public class ExperimentSettingCollection implements ICacheClear {
     @Schema(title = "初始沙盒结束秒数")
     private int rawEndSeconds;
 
-    @Schema(title = "累计暂停秒数")
-    private long cntPauseSeconds;
-    @Schema(title = "上一次累计暂停秒数")
-    private long cntPauseSecondsOld;
-
     @Schema(title = "期数设置")
     private Map<Integer,ExperimentPeriodSetting> mapPeriod;
 
@@ -101,11 +96,6 @@ public class ExperimentSettingCollection implements ICacheClear {
                 .orElse(null);
     }
 
-    public ExperimentSettingCollection setPauseSeconds(long val){
-        this.cntPauseSecondsOld=cntPauseSeconds;
-        this.cntPauseSeconds=val;
-        return this;
-    }
     public ExperimentPeriodSetting getSettingByPeriod(Integer period){
         if(ShareUtil.XObject.isEmpty(mapPeriod)){
             return null;

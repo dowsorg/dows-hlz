@@ -242,6 +242,8 @@ public class ExperimentManageBiz {
         CompletableFuture.runAsync(()->applicationEventPublisher.publishEvent(new InitializeEvent(experimentGroupSettingRequest)))
                 .exceptionally(ex->{
                     log.error(String.format( "GROUPINGError. expt:%s",experimentGroupSettingRequest.getExperimentInstanceId()),ex);
+
+                    experimentGroupingBiz.groupingFail(experimentGroupSettingRequest);
                     return null;
                 });
 

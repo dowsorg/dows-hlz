@@ -208,7 +208,7 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
         }
         AssertUtil.getNotNull(cached.getSettingByPeriod(rst.getPeriod()))
                 .orElseThrow(String.format("getTimePointByRealTime-未找到实验第%s期设置", rst.getPeriod()));
-        rst.setCntPauseSeconds(timerCache.getCntPauseSeconds());
+        rst.setCntPauseSeconds(timerCache.getCntPausSeconds(dtNow));
         if (!fillGameDay) {
             return rst;
         }
