@@ -1,8 +1,9 @@
-package org.dows.hep.api.edw;
+package org.dows.edw;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.dows.edw.domain.*;
+import org.dows.hep.api.edw.HepOperateType;
 
 /**
  * @author fhb
@@ -12,7 +13,7 @@ import org.dows.edw.domain.*;
  **/
 @Getter
 @AllArgsConstructor
-public enum HepOperateTypeEnum {
+public enum HepOperateTypeEnum /*implements HepOperateType*/ {
     HEP_FOLLOW_UP(HepFollowUp.class),
     HEP_FOOD_INTERVENE(HepFoodIntervene.class),
     HEP_HEALTH_EVALUATE(HepHealthEvaluate.class),
