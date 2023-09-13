@@ -1,4 +1,7 @@
 package org.dows.edw.repository;
 
-public class HepFollowUpRespository {
+import org.dows.edw.domain.HepFollowUp;
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+public interface HepFollowUpRespository extends MongoRepository<HepFollowUp,String> {
 }
